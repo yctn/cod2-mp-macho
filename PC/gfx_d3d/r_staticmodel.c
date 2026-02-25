@@ -4,12 +4,12 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern int XModelGetNumLods(void *xmodel);
-extern int XModelGetSurfaces(void *xmodel, void *xsurfs, int lodIndex, void *partBits);
+extern int XModelGetNumLods(struct XModel *xmodel);
+extern int XModelGetSurfaces(struct XModel *xmodel, void *xsurfs, int lodIndex, void *partBits);
 extern void *Hunk_AllocAlignInternal(int size, int alignment);
 
-extern char *r_backend; /* 0x195eec8 */
-extern char *r_world; /* 0x195eebc */
+extern r_globals_t *rg; /* 0x195eec8 */
+extern r_global_permanent_t *rgp; /* 0x195eebc */
 
 long unsigned int R_InitStaticModelDynamicData(int smodelIndex)
 {
@@ -20,16 +20,9 @@ long unsigned int R_InitStaticModelDynamicData(int smodelIndex)
     int instanceSize;
     void *buffer;
 
-    /* Get smodelDync entry (8 bytes per entry) */
-    char *dynBase = *(char **)(r_backend + 0x3194);
-    char *smodelDync = dynBase + smodelIndex * 8;
+    GfxStaticModelDynamic *smodelDync = &rg->smodelDyncs[smodelIndex];
+    struct XModel *xmodel = rgp->world->smodelInsts[smodelIndex].model;
 
-    /* Get xmodel from static model data */
-    char *worldData = *(char **)(r_world + 0x109c);
-    char *modelsBase = *(char **)(worldData + 0xf8);
-    void *xmodel = *(void **)(modelsBase + smodelIndex * 96 + 0x10);
-
-    /* Find max surface count across all LODs */
     int lodCount = XModelGetNumLods(xmodel);
     maxSurfs = 0;
     if (lodCount > 0) {
@@ -42,6 +35,6 @@ long unsigned int R_InitStaticModelDynamicData(int smodelIndex)
 
     instanceSize = maxSurfs << 4;
     buffer = Hunk_AllocAlignInternal(instanceSize, 4);
-    *(void **)(smodelDync + 4) = buffer;
+    smodelDync->staticSurfs = (GfxStaticSurface *)buffer;
     memset(buffer, 0, instanceSize);
 }
