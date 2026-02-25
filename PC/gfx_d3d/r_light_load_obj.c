@@ -1,153 +1,62 @@
-/* ASM dump from: r_light_load_obj.cpp */
+/* Converted to C from ASM: r_light_load_obj.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/gfx_d3d/r_light_load_obj.cpp */
 
 #include "common_types.h"
 #include "imports.h"
 
-GfxLightDef * R_LoadLightDef(const char *name);
+extern GfxImage *Image_Register(const char *name, int trackType, int filter);
+extern const char *va(const char *format, ...);
+extern int FS_ReadFile(const char *path, void **buffer);
+extern void FS_FreeFile(void *buffer);
+extern void *Hunk_AllocInternal(int size);
+extern void I_strlwr(char *s);
 
-/* line 58 */
-__attribute__((naked))
-GfxLightDef * R_LoadLightDef(const char *name)
+GfxLightDef *R_LoadLightDef(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 58 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 68 | name */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x22692c, (%esp)\n" /* "lights/%s" */
-        "calll va\n"
-        "leal -0x1c(%ebp), %edx\n" /* line 69 | file */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_ReadFile\n"
-        "cmpl $0, %eax\n" /* line 70 */
-        "jl .Lffc08c_000fc201\n"
-        "je .Lffc08c_000fc1f6\n" /* line 73 */
-        "movl $0x18, (%esp)\n" /* line 79 */
-        "calll Hunk_AllocInternal\n"
-        "movl %eax, -0x2c(%ebp)\n" /* def */
-        "xorl %ebx, %ebx\n" /* line 80 */
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "movl 8(%ebp), %edi\n" /* name */
-        "movl %ebx, %eax\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll Hunk_AllocInternal\n"
-        "movl -0x2c(%ebp), %edx\n" /* def */
-        "movl %eax, 0x14(%edx)\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 82 | file */
-        "movzbl (%edx), %eax\n" /* line 84 */
-        "movl -0x2c(%ebp), %ecx\n" /* def */
-        "movl %eax, (%ecx)\n"
-        /* { scope 2 */
-        "movzbl 1(%edx), %eax\n" /* line 20 */
-        "movb %al, 8(%ecx)\n"
-        "leal 2(%edx), %esi\n" /* line 21 */
-        "cld\n" /* line 24 */
-        "movl $0xffffffff, %ecx\n"
-        "movl %esi, %edi\n"
-        "movl %ebx, %eax\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "movl %ecx, %ebx\n" /* line 25 */
-        "subl $1, %ebx\n"
-        "jne .Lffc08c_000fc190\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 28 | def */
-        "movl $0, 4(%ecx)\n"
-        "leal (%esi, %ebx), %edx\n" /* line 29 */
-        /* } scope */
-        /* { scope 2 */
-        "movzbl 1(%edx), %eax\n" /* line 20 */
-        "movl -0x2c(%ebp), %ecx\n" /* def */
-        "movb %al, 0x10(%ecx)\n"
-        "addl $2, %edx\n" /* line 23 */
-        "cld\n" /* line 24 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %edx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "cmpl $-2, %ecx\n"
-        "jne .Lffc08c_000fc1d3\n"
-        ".Lffc08c_000fc14d:\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 28 | def */
-        "movl $0, 0xc(%ecx)\n"
-        /* } scope */
-        ".Lffc08c_000fc157:\n"
-        "movl 8(%ebp), %eax\n" /* line 88 | name */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x2c(%ebp), %edx\n" /* def */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 89 | def */
-        "movl 0x14(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strlwr\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 91 | file */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        /* } scope */
-        "movl -0x2c(%ebp), %eax\n" /* line 94 | def */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lffc08c_000fc190:\n"
-        "movl $5, 8(%esp)\n" /* line 26 */
-        "movl $1, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll Image_Register\n"
-        "movl -0x2c(%ebp), %edx\n" /* def */
-        "movl %eax, 4(%edx)\n"
-        "leal (%esi, %ebx), %edx\n" /* line 29 */
-        /* } scope */
-        /* { scope 2 */
-        "movzbl 1(%edx), %eax\n" /* line 20 */
-        "movl -0x2c(%ebp), %ecx\n" /* def */
-        "movb %al, 0x10(%ecx)\n"
-        "addl $2, %edx\n" /* line 23 */
-        "cld\n" /* line 24 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %edx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "cmpl $-2, %ecx\n"
-        "je .Lffc08c_000fc14d\n"
-        ".Lffc08c_000fc1d3:\n"
-        "movl $5, 8(%esp)\n" /* line 26 */
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Image_Register\n"
-        "movl -0x2c(%ebp), %edx\n" /* def */
-        "movl %eax, 0xc(%edx)\n"
-        "jmp .Lffc08c_000fc157\n"
-        /* } scope */
-        ".Lffc08c_000fc1f6:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 75 | file */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        ".Lffc08c_000fc201:\n"
-        "movl $0, -0x2c(%ebp)\n" /* def */
-        /* } scope */
-        "movl -0x2c(%ebp), %eax\n" /* line 94 | def */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    void *file;
+    GfxLightDef *def;
+
+    int fileLen = FS_ReadFile(va("lights/%s", name), &file);
+    if (fileLen < 0) {
+        def = NULL;
+        return def;
+    }
+    if (fileLen == 0) {
+        FS_FreeFile(file);
+        def = NULL;
+        return def;
+    }
+
+    def = (GfxLightDef *)Hunk_AllocInternal(sizeof(GfxLightDef));
+    def->name = (const char *)Hunk_AllocInternal(strlen(name) + 1);
+
+    byte *data = (byte *)file;
+    def->type = (GfxLightType)data[0];
+
+    /* Parse cookie light image */
+    def->cookie.samplerState = (GfxSamplerState)data[1];
+    const char *imageName = (const char *)&data[2];
+    int imageNameLen = strlen(imageName);
+    if (imageNameLen == 0) {
+        def->cookie.image = NULL;
+    } else {
+        def->cookie.image = Image_Register(imageName, 1, 5);
+    }
+
+    /* Parse attenuation light image */
+    const char *ptr = imageName + imageNameLen;
+    def->attenuation.samplerState = (GfxSamplerState)ptr[1];
+    const char *attImageName = ptr + 2;
+    if (strlen(attImageName) == 0) {
+        def->attenuation.image = NULL;
+    } else {
+        def->attenuation.image = Image_Register(attImageName, 1, 5);
+    }
+
+    strcpy((char *)def->name, name);
+    I_strlwr((char *)def->name);
+
+    FS_FreeFile(file);
+    return def;
 }
 
