@@ -1,72 +1,41 @@
-/* ASM dump from: FxChannel.cpp */
+/* Converted to C from ASM: FxChannel.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/EffectsCore/FxChannel.cpp */
 
 #include "common_types.h"
 #include "imports.h"
 
-/* Original includes (from N_BINCL debug info):
- *   #include "PC/universal/com_math.h"
- */
+extern const FxCurve *FxCurve_AllocAndCreateWithKeys(const float *keyArray, int dimensionCount, int keyCount);
+extern void FxRange_SetRange(void *range, float min, float max);
+extern float FxRange_GetValPct(void *range, float pct);
+extern float flrand(float min, float max);
+extern float cosf(float x);
 
-void FxChannel_CreateDefault(FxChannel *createe, int dimensions, float value1, float value2);
-void FxChannel_CreateViaMigration(const FxChannelBackwardCompatible *source, int dimensions, float lifetime, int forceUnitScale, FxChannel *target);
-
-/* line 20 */
-__attribute__((naked))
 void FxChannel_CreateDefault(FxChannel *createe, int dimensions, float value1, float value2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 20 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* dimensions */
-        "movl 0x14(%ebp), %edi\n" /* value2 */
-        /* { scope 1 */
-        "leal 1(%ebx), %eax\n" /* line 31 | dimensions */
-        "movl $0, -0x58(%ebp)\n" /* line 33 | keys */
-        "movl $0x3f800000, -0x58(%ebp, %eax, 4)\n" /* line 34 */
-        "testl %ebx, %ebx\n" /* line 36 | dimensions */
-        "je .Lfacb5c_000acba8\n"
-        "xorl %ecx, %ecx\n"
-        "leal -0x58(%ebp, %eax, 4), %eax\n"
-        "movl $4, %esi\n"
-        "leal -0x54(%ebp), %edx\n"
-        ".Lfacb5c_000acb8f:\n"
-        "movss 0x10(%ebp), %xmm0\n" /* line 38 | value1 */
-        "movss %xmm0, (%edx)\n"
-        "movl %edi, (%eax, %esi)\n" /* line 39 | value2 */
-        "addl $1, %ecx\n"
-        "addl $4, %edx\n"
-        "addl $4, %eax\n"
-        "cmpl %ebx, %ecx\n" /* line 36 | dimensions */
-        "jne .Lfacb5c_000acb8f\n"
-        ".Lfacb5c_000acba8:\n"
-        "movl $2, 8(%esp)\n" /* line 42 */
-        "movl %ebx, 4(%esp)\n" /* dimensions */
-        "leal -0x58(%ebp), %eax\n" /* keys */
-        "movl %eax, (%esp)\n"
-        "calll FxCurve_AllocAndCreateWithKeys\n"
-        "movl 8(%ebp), %edx\n" /* createe */
-        "movl %eax, (%edx)\n"
-        "movl $0x3f800000, %eax\n" /* line 43 */
-        "movl %eax, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, %eax\n"
-        "addl $4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxRange_SetRange\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 44 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int keySize = dimensions + 1;
+    float keys[22]; /* max 2 keys * (max 10 dimensions + 1 time) */
+
+    /* First key at t=0 */
+    keys[0] = 0.0f;
+
+    /* Second key at t=1 */
+    keys[keySize] = 1.0f;
+
+    /* Fill dimension values */
+    int d;
+    for (d = 0; d < dimensions; d++) {
+        keys[1 + d] = value1;
+        keys[keySize + 1 + d] = value2;
+    }
+
+    /* Create curve and store in channel */
+    createe->curve = FxCurve_AllocAndCreateWithKeys(keys, dimensions, 2);
+
+    /* Set range to [1.0, 1.0] (no variation) */
+    FxRange_SetRange(&createe->scaleRange, 1.0f, 1.0f);
 }
+
+void FxChannel_CreateViaMigration(const FxChannelBackwardCompatible *source, int dimensions, float lifetime, int forceUnitScale, FxChannel *target);
 
 /* line 190 */
 __attribute__((naked))
@@ -510,4 +479,3 @@ void FxChannel_CreateViaMigration(const FxChannelBackwardCompatible *source, int
         "jmp .Lfacbe8_000ad2c7\n"
     );
 }
-
