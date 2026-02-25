@@ -1,150 +1,72 @@
-/* ASM dump from: cl_cin_mp.cpp */
+/* Converted to C from ASM: cl_cin_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/client_mp/cl_cin_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
 
-e_status CIN_StopCinematic(int handle);
-e_status CIN_RunCinematic(int handle);
-int CIN_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBits);
-long int CIN_SetExtents(int handle, int x, int y, int w, int h);
-long int CIN_DrawCinematic(int handle);
-long int CL_PlayCinematic_f(void);
-long int SCR_DrawCinematic(void);
-long int SCR_RunCinematic(void);
-long int SCR_StopCinematic(void);
-long int CIN_UploadCinematic(int handle);
-long int CIN_CloseAllVideos(void);
+extern e_status ROQ_StopCinematicFromHandle(int handle);
+extern e_status ROQ_RunCinematicFromHandle(int handle);
+extern int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBits);
+extern long int ROQ_SetExtentsFromHandle(int handle, int x, int y, int w, int h);
+extern long int ROQ_DrawCinematicFromHandle(int handle);
+extern long int ROQ_PlayCinematic_f(void);
+extern long int ROQ_DrawCinematic(void);
+extern long int ROQ_RunCinematic(void);
+extern long int ROQ_StopCinematic(void);
+extern long int ROQ_UploadCinematicFromHandle(int handle);
+extern long int ROQ_CloseAllVideos(void);
 
-/* line 80 */
-__attribute__((naked))
 e_status CIN_StopCinematic(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 80 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 89 */
-        "jmp ROQ_StopCinematicFromHandle\n" /* line 87 */
-    );
+    return ROQ_StopCinematicFromHandle(handle);
 }
 
-/* line 92 */
-__attribute__((naked))
 e_status CIN_RunCinematic(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 92 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 101 */
-        "jmp ROQ_RunCinematicFromHandle\n" /* line 99 */
-    );
+    return ROQ_RunCinematicFromHandle(handle);
 }
 
-/* line 104 */
-__attribute__((naked))
 int CIN_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 104 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 153 */
-        "jmp ROQ_PlayCinematic\n" /* line 151 */
-    );
+    return ROQ_PlayCinematic(arg, x, y, w, h, systemBits);
 }
 
-/* line 156 */
-__attribute__((naked))
 long int CIN_SetExtents(int handle, int x, int y, int w, int h)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 156 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 165 */
-        "jmp ROQ_SetExtentsFromHandle\n" /* line 163 */
-    );
+    return ROQ_SetExtentsFromHandle(handle, x, y, w, h);
 }
 
-/* line 180 */
-__attribute__((naked))
 long int CIN_DrawCinematic(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 180 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 185 */
-        "jmp ROQ_DrawCinematicFromHandle\n" /* line 183 */
-    );
+    return ROQ_DrawCinematicFromHandle(handle);
 }
 
-/* line 188 */
-__attribute__((naked))
 long int CL_PlayCinematic_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 188 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 218 */
-        "jmp ROQ_PlayCinematic_f\n" /* line 216 */
-    );
+    return ROQ_PlayCinematic_f();
 }
 
-/* line 221 */
-__attribute__((naked))
 long int SCR_DrawCinematic(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 221 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 226 */
-        "jmp ROQ_DrawCinematic\n" /* line 224 */
-    );
+    return ROQ_DrawCinematic();
 }
 
-/* line 229 */
-__attribute__((naked))
 long int SCR_RunCinematic(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 229 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 234 */
-        "jmp ROQ_RunCinematic\n" /* line 232 */
-    );
+    return ROQ_RunCinematic();
 }
 
-/* line 237 */
-__attribute__((naked))
 long int SCR_StopCinematic(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 237 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 246 */
-        "jmp ROQ_StopCinematic\n" /* line 244 */
-    );
+    return ROQ_StopCinematic();
 }
 
-/* line 249 */
-__attribute__((naked))
 long int CIN_UploadCinematic(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 249 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 258 */
-        "jmp ROQ_UploadCinematicFromHandle\n" /* line 256 */
-    );
+    return ROQ_UploadCinematicFromHandle(handle);
 }
 
-/* line 260 */
-__attribute__((naked))
 long int CIN_CloseAllVideos(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 260 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 265 */
-        "jmp ROQ_CloseAllVideos\n" /* line 263 */
-    );
+    return ROQ_CloseAllVideos();
 }
-
