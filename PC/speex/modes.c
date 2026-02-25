@@ -45,21 +45,8 @@ static const SpeexSubmode wb_submode4; /* 0x333f20 */
 static const SpeexSBMode sb_wb_mode; /* 0x333e60 */
 static const SpeexSBMode sb_uwb_mode; /* 0x333d00 */
 
-int speex_mode_query(const SpeexMode *mode, int request, unsigned int *ptr);
-
-/* line 721 */
-__attribute__((naked))
 int speex_mode_query(const SpeexMode *mode, int request, unsigned int *ptr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 721 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* mode */
-        "movl (%edx), %eax\n" /* line 723 */
-        "movl %eax, 8(%ebp)\n" /* mode */
-        "movl 4(%edx), %ecx\n"
-        "popl %ebp\n" /* line 724 */
-        "jmpl *%ecx\n" /* line 723 */
-    );
+    return mode->query(mode->mode, request, ptr);
 }
 

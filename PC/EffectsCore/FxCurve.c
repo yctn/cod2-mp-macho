@@ -1,4 +1,4 @@
-/* ASM dump from: FxCurve.cpp */
+/* Converted to C from ASM: FxCurve.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/EffectsCore/FxCurve.cpp */
 
 #include "common_types.h"
@@ -8,23 +8,12 @@
  *   #include "PC/EffectsCore/FxCurve.h"
  */
 
-void FxCurveIterator_Create(FxCurveIterator *createe, const FxCurve *master);
 float FxCurve_Integrate(const FxCurve *curve, float normDuration);
 
-/* line 62 */
-__attribute__((naked))
 void FxCurveIterator_Create(FxCurveIterator *createe, const FxCurve *master)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 62 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* createe */
-        "movl 0xc(%ebp), %eax\n" /* line 76 | master */
-        "movl %eax, (%edx)\n"
-        "movl $0, 4(%edx)\n" /* line 78 */
-        "popl %ebp\n" /* line 79 */
-        "retl\n"
-    );
+    createe->master = master;
+    createe->currentKeyIndex = 0;
 }
 
 /* line 102 */
