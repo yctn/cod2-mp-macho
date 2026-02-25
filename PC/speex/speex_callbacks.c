@@ -1,46 +1,135 @@
-/* Converted to C from ASM: speex_callbacks.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/speex/speex_callbacks.c */
+/* Copyright (C) 2002 Jean-Marc Valin
+   File speex_callbacks.c
+   Callback handling and in-band signalling
 
-#include "common_types.h"
-#include "imports.h"
 
-extern int speex_bits_unpack_unsigned(SpeexBits *bits, int nbBits);
-extern void speex_bits_advance(SpeexBits *bits, int n);
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   
+   - Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+   
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+   
+   - Neither the name of the Xiph.org Foundation nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+   
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
+   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+*/
+
+#include <speex/speex_callbacks.h>
+#include "misc.h"
 
 int speex_inband_handler(SpeexBits *bits, SpeexCallback *callback_list, void *state)
 {
-    int id;
-    int adv;
+   int id;
+   SpeexCallback *callback;
+   /*speex_bits_advance(bits, 5);*/
+   id=speex_bits_unpack_unsigned(bits, 4);
+   callback = callback_list+id;
 
-    id = speex_bits_unpack_unsigned(bits, 4);
-
-    if (callback_list[id].func) {
-        return callback_list[id].func(bits, state, callback_list[id].data);
-    }
-
-    if (id <= 1)
-        adv = 1;
-    else if (id <= 7)
-        adv = 4;
-    else if (id <= 9)
-        adv = 8;
-    else if (id <= 11)
-        adv = 16;
-    else if (id <= 13)
-        adv = 32;
-    else
-        adv = 64;
-
-    speex_bits_advance(bits, adv);
-    return 0;
+   if (callback->func)
+   {
+      return callback->func(bits, state, callback->data);
+   } else
+      /*If callback is not registered, skip the right number of bits*/
+   {
+      int adv;
+      if (id<2)
+         adv = 1;
+      else if (id<8)
+         adv = 4;
+      else if (id<10)
+         adv = 8;
+      else if (id<12)
+         adv = 16;
+      else if (id<14)
+         adv = 32;
+      else 
+         adv = 64;
+      speex_bits_advance(bits, adv);
+   }
+   return 0;
 }
 
+int speex_std_mode_request_handler(SpeexBits *bits, void *state, void *data)
+{
+   int m;
+   m = speex_bits_unpack_unsigned(bits, 4);
+   speex_encoder_ctl(data, SPEEX_SET_MODE, &m);
+   return 0;
+}
+
+int speex_std_low_mode_request_handler(SpeexBits *bits, void *state, void *data)
+{
+   int m;
+   m = speex_bits_unpack_unsigned(bits, 4);
+   speex_encoder_ctl(data, SPEEX_SET_LOW_MODE, &m);
+   return 0;
+}
+
+int speex_std_high_mode_request_handler(SpeexBits *bits, void *state, void *data)
+{
+   int m;
+   m = speex_bits_unpack_unsigned(bits, 4);
+   speex_encoder_ctl(data, SPEEX_SET_HIGH_MODE, &m);
+   return 0;
+}
+
+int speex_std_vbr_request_handler(SpeexBits *bits, void *state, void *data)
+{
+   int vbr;
+   vbr = speex_bits_unpack_unsigned(bits, 1);
+   speex_encoder_ctl(data, SPEEX_SET_VBR, &vbr);
+   return 0;
+}
+
+int speex_std_enh_request_handler(SpeexBits *bits, void *state, void *data)
+{
+   int enh;
+   enh = speex_bits_unpack_unsigned(bits, 1);
+   speex_decoder_ctl(data, SPEEX_SET_ENH, &enh);
+   return 0;
+}
+
+int speex_std_vbr_quality_request_handler(SpeexBits *bits, void *state, void *data)
+{
+   int qual;
+   qual = speex_bits_unpack_unsigned(bits, 4);
+   speex_encoder_ctl(data, SPEEX_SET_VBR_QUALITY, &qual);
+   return 0;
+}
+
+
+int speex_std_char_handler(SpeexBits *bits, void *state, void *data)
+{
+   unsigned char ch;
+   ch = speex_bits_unpack_unsigned(bits, 8);
+   _speex_putc(ch, data);
+   return 0;
+}
+
+
+
+/* Default handler for user callbacks: skip it */
 int speex_default_user_handler(SpeexBits *bits, void *state, void *data)
 {
-    int len;
-
-    len = speex_bits_unpack_unsigned(bits, 4);
-    speex_bits_advance(bits, 5 + len * 8);
-    return 0;
+   int req_size = speex_bits_unpack_unsigned(bits, 4);
+   speex_bits_advance(bits, 5+8*req_size);
+   return 0;
 }
-

@@ -1,421 +1,290 @@
-/* ASM dump from: jdpostct.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jdpostct.c */
+/*
+ * jdpostct.c
+ *
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains the decompression postprocessing controller.
+ * This controller manages the upsampling, color conversion, and color
+ * quantization/reduction steps; specifically, it controls the buffering
+ * between upsample/color conversion and color quantization/reduction.
+ *
+ * If no color quantization/reduction is required, then this module has no
+ * work to do, and it just hands off to the upsample/color conversion code.
+ * An integrated upsample/convert/quantize process would replace this module
+ * entirely.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-static void start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode);
-static void post_process_1pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
-static void post_process_prepass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
-static void post_process_2pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
-void jinit_d_post_controller(j_decompress_ptr cinfo, int need_full_buffer);
 
-/* line 74 */
-static __attribute__((naked))
-void start_pass_dpost(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
+/* Private buffer controller object */
+
+typedef struct {
+  struct jpeg_d_post_controller pub; /* public fields */
+
+  /* Color quantization source buffer: this holds output data from
+   * the upsample/color conversion step to be passed to the quantizer.
+   * For two-pass color quantization, we need a full-image buffer;
+   * for one-pass operation, a strip buffer is sufficient.
+   */
+  jvirt_sarray_ptr whole_image;	/* virtual array, or NULL if one-pass */
+  JSAMPARRAY buffer;		/* strip buffer, or current strip of virtual */
+  JDIMENSION strip_height;	/* buffer size in rows */
+  /* for two-pass mode only: */
+  JDIMENSION starting_row;	/* row # of first row in current strip */
+  JDIMENSION next_row;		/* index of next row to fill/empty in strip */
+} my_post_controller;
+
+typedef my_post_controller * my_post_ptr;
+
+
+/* Forward declarations */
+METHODDEF(void) post_process_1pass
+	JPP((j_decompress_ptr cinfo,
+	     JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
+	     JDIMENSION in_row_groups_avail,
+	     JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+	     JDIMENSION out_rows_avail));
+#ifdef QUANT_2PASS_SUPPORTED
+METHODDEF(void) post_process_prepass
+	JPP((j_decompress_ptr cinfo,
+	     JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
+	     JDIMENSION in_row_groups_avail,
+	     JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+	     JDIMENSION out_rows_avail));
+METHODDEF(void) post_process_2pass
+	JPP((j_decompress_ptr cinfo,
+	     JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
+	     JDIMENSION in_row_groups_avail,
+	     JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+	     JDIMENSION out_rows_avail));
+#endif
+
+
+/*
+ * Initialize for a processing pass.
+ */
+
+METHODDEF(void)
+start_pass_dpost (j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 74 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "movl 0xc(%ebp), %eax\n" /* pass_mode */
-        "movl 0x194(%ecx), %esi\n" /* line 75 | post */
-        "cmpl $2, %eax\n" /* line 77 */
-        "je .Lf2069ac_00206a1f\n"
-        "cmpl $3, %eax\n"
-        "je .Lf2069ac_00206a48\n"
-        "testl %eax, %eax\n"
-        "je .Lf2069ac_002069f8\n"
-        "movl (%ecx), %eax\n" /* line 113 */
-        "movl $4, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%eax)\n"
-        ".Lf2069ac_002069e3:\n"
-        "movl $0, 0x18(%esi)\n" /* line 116 | post */
-        "movl $0, 0x14(%esi)\n" /* post */
-        "addl $0x20, %esp\n" /* line 117 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf2069ac_002069f8:\n"
-        "cmpb $0, 0x52(%ecx)\n" /* line 79 */
-        "jne .Lf2069ac_00206a6d\n"
-        "movl 0x1a8(%ecx), %eax\n" /* line 95 */
-        "movl 4(%eax), %eax\n"
-        "movl %eax, 4(%esi)\n" /* post */
-        "movl $0, 0x18(%esi)\n" /* line 116 | post */
-        "movl $0, 0x14(%esi)\n" /* post */
-        "addl $0x20, %esp\n" /* line 117 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf2069ac_00206a1f:\n"
-        "movl 8(%esi), %eax\n" /* line 107 | post */
-        "testl %eax, %eax\n"
-        "je .Lf2069ac_00206ac2\n"
-        ".Lf2069ac_00206a2a:\n"
-        "leal 0x298(%ebx), %eax\n" /* line 109 */
-        "movl %eax, 4(%esi)\n" /* post */
-        "movl $0, 0x18(%esi)\n" /* line 116 | post */
-        "movl $0, 0x14(%esi)\n" /* post */
-        "addl $0x20, %esp\n" /* line 117 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf2069ac_00206a48:\n"
-        "movl 8(%esi), %edx\n" /* line 101 | post */
-        "testl %edx, %edx\n"
-        "je .Lf2069ac_00206ab0\n"
-        ".Lf2069ac_00206a4f:\n"
-        "leal 0x1b3(%ebx), %eax\n" /* line 103 */
-        "movl %eax, 4(%esi)\n" /* post */
-        "movl $0, 0x18(%esi)\n" /* line 116 | post */
-        "movl $0, 0x14(%esi)\n" /* post */
-        "addl $0x20, %esp\n" /* line 117 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf2069ac_00206a6d:\n"
-        "leal 0x11e(%ebx), %eax\n" /* line 81 */
-        "movl %eax, 4(%esi)\n" /* post */
-        "movl 0xc(%esi), %eax\n" /* line 86 | post */
-        "testl %eax, %eax\n"
-        "jne .Lf2069ac_002069e3\n"
-        "movl 4(%ecx), %edx\n" /* line 87 */
-        "movl $1, 0x10(%esp)\n"
-        "movl 0x10(%esi), %eax\n" /* post */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl 8(%esi), %eax\n" /* post */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *0x1c(%edx)\n"
-        "movl %eax, 0xc(%esi)\n" /* post */
-        "jmp .Lf2069ac_002069e3\n"
-        ".Lf2069ac_00206ab0:\n"
-        "movl (%ecx), %eax\n" /* line 102 */
-        "movl $4, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf2069ac_00206a4f\n"
-        ".Lf2069ac_00206ac2:\n"
-        "movl (%ecx), %eax\n" /* line 108 */
-        "movl $4, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf2069ac_00206a2a\n"
-    );
+  my_post_ptr post = (my_post_ptr) cinfo->post;
+
+  switch (pass_mode) {
+  case JBUF_PASS_THRU:
+    if (cinfo->quantize_colors) {
+      /* Single-pass processing with color quantization. */
+      post->pub.post_process_data = post_process_1pass;
+      /* We could be doing buffered-image output before starting a 2-pass
+       * color quantization; in that case, jinit_d_post_controller did not
+       * allocate a strip buffer.  Use the virtual-array buffer as workspace.
+       */
+      if (post->buffer == NULL) {
+	post->buffer = (*cinfo->mem->access_virt_sarray)
+	  ((j_common_ptr) cinfo, post->whole_image,
+	   (JDIMENSION) 0, post->strip_height, TRUE);
+      }
+    } else {
+      /* For single-pass processing without color quantization,
+       * I have no work to do; just call the upsampler directly.
+       */
+      post->pub.post_process_data = cinfo->upsample->upsample;
+    }
+    break;
+#ifdef QUANT_2PASS_SUPPORTED
+  case JBUF_SAVE_AND_PASS:
+    /* First pass of 2-pass quantization */
+    if (post->whole_image == NULL)
+      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+    post->pub.post_process_data = post_process_prepass;
+    break;
+  case JBUF_CRANK_DEST:
+    /* Second pass of 2-pass quantization */
+    if (post->whole_image == NULL)
+      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+    post->pub.post_process_data = post_process_2pass;
+    break;
+#endif /* QUANT_2PASS_SUPPORTED */
+  default:
+    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+    break;
+  }
+  post->starting_row = post->next_row = 0;
 }
 
-/* line 131 */
-static __attribute__((naked))
-void post_process_1pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
+
+/*
+ * Process some data in the one-pass (strip buffer) case.
+ * This is used for color precision reduction as well as one-pass quantization.
+ */
+
+METHODDEF(void)
+post_process_1pass (j_decompress_ptr cinfo,
+		    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
+		    JDIMENSION in_row_groups_avail,
+		    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+		    JDIMENSION out_rows_avail)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 131 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl 0x20(%ebp), %eax\n" /* out_rows_avail */
-        "movl 0x194(%esi), %edi\n" /* line 132 | cinfo, post */
-        "movl 0x1c(%ebp), %edx\n" /* line 137 | out_row_ctr */
-        "subl (%edx), %eax\n"
-        "movl 0x10(%edi), %edx\n" /* line 138 | post */
-        "cmpl %edx, %eax\n"
-        "cmoval %edx, %eax\n"
-        "movl $0, -0xc(%ebp)\n" /* line 140 | num_rows */
-        "movl 0x1a8(%esi), %edx\n" /* line 141 | cinfo */
-        "movl %eax, 0x18(%esp)\n"
-        "leal -0xc(%ebp), %eax\n" /* num_rows */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0xc(%edi), %eax\n" /* post */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* in_row_groups_avail */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* in_row_group_ctr */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* input_buf */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%edx)\n"
-        "movl 0x1b0(%esi), %ecx\n" /* line 145 | cinfo */
-        "movl -0xc(%ebp), %eax\n" /* num_rows */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x1c(%ebp), %edx\n" /* out_row_ctr */
-        "movl (%edx), %eax\n"
-        "movl 0x18(%ebp), %edx\n" /* output_buf */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%edi), %eax\n" /* post */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%ecx)\n"
-        "movl 0x1c(%ebp), %edx\n" /* line 147 | out_row_ctr */
-        "movl (%edx), %eax\n"
-        "addl -0xc(%ebp), %eax\n" /* num_rows */
-        "movl %eax, (%edx)\n"
-        "addl $0x30, %esp\n" /* line 148 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  my_post_ptr post = (my_post_ptr) cinfo->post;
+  JDIMENSION num_rows, max_rows;
+
+  /* Fill the buffer, but not more than what we can dump out in one go. */
+  /* Note we rely on the upsampler to detect bottom of image. */
+  max_rows = out_rows_avail - *out_row_ctr;
+  if (max_rows > post->strip_height)
+    max_rows = post->strip_height;
+  num_rows = 0;
+  (*cinfo->upsample->upsample) (cinfo,
+		input_buf, in_row_group_ctr, in_row_groups_avail,
+		post->buffer, &num_rows, max_rows);
+  /* Quantize and emit data. */
+  (*cinfo->cquantize->color_quantize) (cinfo,
+		post->buffer, output_buf + *out_row_ctr, (int) num_rows);
+  *out_row_ctr += num_rows;
 }
 
-/* line 163 */
-static __attribute__((naked))
-void post_process_prepass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
+
+#ifdef QUANT_2PASS_SUPPORTED
+
+/*
+ * Process some data in the first pass of 2-pass quantization.
+ */
+
+METHODDEF(void)
+post_process_prepass (j_decompress_ptr cinfo,
+		      JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
+		      JDIMENSION in_row_groups_avail,
+		      JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+		      JDIMENSION out_rows_avail)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 163 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 164 | cinfo */
-        "movl 0x194(%eax), %edi\n" /* post */
-        "movl 0x18(%edi), %edx\n" /* line 168 | post */
-        "testl %edx, %edx\n"
-        "je .Lf206b6c_00206be0\n"
-        ".Lf206b6c_00206b84:\n"
-        "movl 0x18(%edi), %esi\n" /* line 175 | post, old_next_row */
-        "movl 0x1a8(%eax), %edx\n" /* line 176 */
-        "movl 0x10(%edi), %eax\n" /* post */
-        "movl %eax, 0x18(%esp)\n"
-        "leal 0x18(%edi), %eax\n" /* post */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0xc(%edi), %eax\n" /* post */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* in_row_groups_avail */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* in_row_group_ctr */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* input_buf */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "movl 0x18(%edi), %eax\n" /* line 182 | post */
-        "cmpl %eax, %esi\n" /* old_next_row */
-        "jb .Lf206b6c_00206c14\n"
-        ".Lf206b6c_00206bc7:\n"
-        "movl 0x10(%edi), %eax\n" /* line 190 | post */
-        "cmpl %eax, 0x18(%edi)\n" /* post */
-        "jb .Lf206b6c_00206bd9\n"
-        "addl %eax, 0x14(%edi)\n" /* line 191 | post */
-        "movl $0, 0x18(%edi)\n" /* line 192 | post */
-        ".Lf206b6c_00206bd9:\n"
-        "addl $0x30, %esp\n" /* line 194 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf206b6c_00206be0:\n"
-        "movl 4(%eax), %edx\n" /* line 169 */
-        "movl $1, 0x10(%esp)\n"
-        "movl 0x10(%edi), %eax\n" /* post */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* post */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%edi), %eax\n" /* post */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll *0x1c(%edx)\n"
-        "movl %eax, 0xc(%edi)\n" /* post */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "jmp .Lf206b6c_00206b84\n"
-        ".Lf206b6c_00206c14:\n"
-        "subl %esi, %eax\n" /* line 183 | old_next_row */
-        "movl %eax, -0xc(%ebp)\n" /* num_rows */
-        "movl 8(%ebp), %eax\n" /* line 184 | cinfo */
-        "movl 0x1b0(%eax), %edx\n"
-        "movl -0xc(%ebp), %eax\n" /* num_rows */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl 0xc(%edi), %eax\n" /* post */
-        "leal (%eax, %esi, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "movl -0xc(%ebp), %eax\n" /* line 186 | num_rows */
-        "movl 0x1c(%ebp), %edx\n" /* out_row_ctr */
-        "addl %eax, (%edx)\n"
-        "jmp .Lf206b6c_00206bc7\n"
-    );
+  my_post_ptr post = (my_post_ptr) cinfo->post;
+  JDIMENSION old_next_row, num_rows;
+
+  /* Reposition virtual buffer if at start of strip. */
+  if (post->next_row == 0) {
+    post->buffer = (*cinfo->mem->access_virt_sarray)
+	((j_common_ptr) cinfo, post->whole_image,
+	 post->starting_row, post->strip_height, TRUE);
+  }
+
+  /* Upsample some data (up to a strip height's worth). */
+  old_next_row = post->next_row;
+  (*cinfo->upsample->upsample) (cinfo,
+		input_buf, in_row_group_ctr, in_row_groups_avail,
+		post->buffer, &post->next_row, post->strip_height);
+
+  /* Allow quantizer to scan new data.  No data is emitted, */
+  /* but we advance out_row_ctr so outer loop can tell when we're done. */
+  if (post->next_row > old_next_row) {
+    num_rows = post->next_row - old_next_row;
+    (*cinfo->cquantize->color_quantize) (cinfo, post->buffer + old_next_row,
+					 (JSAMPARRAY) NULL, (int) num_rows);
+    *out_row_ctr += num_rows;
+  }
+
+  /* Advance if we filled the strip. */
+  if (post->next_row >= post->strip_height) {
+    post->starting_row += post->strip_height;
+    post->next_row = 0;
+  }
 }
 
-/* line 207 */
-static __attribute__((naked))
-void post_process_2pass(j_decompress_ptr cinfo, JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr, JDIMENSION in_row_groups_avail, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
+
+/*
+ * Process some data in the second pass of 2-pass quantization.
+ */
+
+METHODDEF(void)
+post_process_2pass (j_decompress_ptr cinfo,
+		    JSAMPIMAGE input_buf, JDIMENSION *in_row_group_ctr,
+		    JDIMENSION in_row_groups_avail,
+		    JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+		    JDIMENSION out_rows_avail)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 207 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x40, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 208 | cinfo */
-        "movl 0x194(%eax), %edi\n" /* post */
-        "movl 0x18(%edi), %ecx\n" /* line 212 | post */
-        "testl %ecx, %ecx\n"
-        "je .Lf206c51_00206ce4\n"
-        ".Lf206c51_00206c69:\n"
-        "movl 0x18(%edi), %ecx\n" /* line 219 | post */
-        "movl 0x10(%edi), %esi\n" /* post, num_rows */
-        "subl %ecx, %esi\n" /* num_rows */
-        "movl 0x1c(%ebp), %edx\n" /* line 220 | out_row_ctr */
-        "movl (%edx), %edx\n"
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl 0x20(%ebp), %eax\n" /* out_rows_avail */
-        "subl %edx, %eax\n"
-        "cmpl %eax, %esi\n" /* line 221 | num_rows */
-        "cmoval %eax, %esi\n" /* num_rows */
-        "movl 8(%ebp), %edx\n" /* line 224 | cinfo */
-        "movl 0x68(%edx), %eax\n"
-        "subl 0x14(%edi), %eax\n" /* post */
-        "cmpl %eax, %esi\n" /* line 225 | num_rows */
-        "cmoval %eax, %esi\n" /* num_rows */
-        "movl 0x1b0(%edx), %eax\n" /* line 229 */
-        "movl %eax, -0xc(%ebp)\n"
-        "movl %esi, 0xc(%esp)\n" /* num_rows */
-        "movl -0x1c(%ebp), %edx\n"
-        "movl 0x18(%ebp), %eax\n" /* output_buf */
-        "leal (%eax, %edx, 4), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl 0xc(%edi), %eax\n" /* post */
-        "leal (%eax, %ecx, 4), %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "movl -0xc(%ebp), %edx\n"
-        "calll *4(%edx)\n"
-        "movl 0x1c(%ebp), %eax\n" /* line 232 | out_row_ctr */
-        "addl %esi, (%eax)\n" /* num_rows */
-        "addl 0x18(%edi), %esi\n" /* line 235 | post, num_rows */
-        "movl %esi, 0x18(%edi)\n" /* num_rows, post */
-        "movl 0x10(%edi), %eax\n" /* line 236 | post */
-        "cmpl %eax, %esi\n" /* num_rows */
-        "jb .Lf206c51_00206cdd\n"
-        "addl %eax, 0x14(%edi)\n" /* line 237 | post */
-        "movl $0, 0x18(%edi)\n" /* line 238 | post */
-        ".Lf206c51_00206cdd:\n"
-        "addl $0x40, %esp\n" /* line 240 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf206c51_00206ce4:\n"
-        "movl 4(%eax), %edx\n" /* line 213 */
-        "movl $0, 0x10(%esp)\n"
-        "movl 0x10(%edi), %eax\n" /* post */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x14(%edi), %eax\n" /* post */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%edi), %eax\n" /* post */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll *0x1c(%edx)\n"
-        "movl %eax, 0xc(%edi)\n" /* post */
-        "jmp .Lf206c51_00206c69\n"
-    );
+  my_post_ptr post = (my_post_ptr) cinfo->post;
+  JDIMENSION num_rows, max_rows;
+
+  /* Reposition virtual buffer if at start of strip. */
+  if (post->next_row == 0) {
+    post->buffer = (*cinfo->mem->access_virt_sarray)
+	((j_common_ptr) cinfo, post->whole_image,
+	 post->starting_row, post->strip_height, FALSE);
+  }
+
+  /* Determine number of rows to emit. */
+  num_rows = post->strip_height - post->next_row; /* available in strip */
+  max_rows = out_rows_avail - *out_row_ctr; /* available in output area */
+  if (num_rows > max_rows)
+    num_rows = max_rows;
+  /* We have to check bottom of image here, can't depend on upsampler. */
+  max_rows = cinfo->output_height - post->starting_row;
+  if (num_rows > max_rows)
+    num_rows = max_rows;
+
+  /* Quantize and emit data. */
+  (*cinfo->cquantize->color_quantize) (cinfo,
+		post->buffer + post->next_row, output_buf + *out_row_ctr,
+		(int) num_rows);
+  *out_row_ctr += num_rows;
+
+  /* Advance if we filled the strip. */
+  post->next_row += num_rows;
+  if (post->next_row >= post->strip_height) {
+    post->starting_row += post->strip_height;
+    post->next_row = 0;
+  }
 }
 
-/* line 251 */
-__attribute__((naked))
-void jinit_d_post_controller(j_decompress_ptr cinfo, int need_full_buffer)
-{
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 251 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movzbl 0xc(%ebp), %eax\n" /* need_full_buffer */
-        "movb %al, -0x1d(%ebp)\n" /* need_full_buffer */
-        "movl 8(%ebp), %edx\n" /* line 254 | cinfo */
-        "movl 4(%edx), %eax\n"
-        "movl $0x1c, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "movl %eax, %edi\n" /* post */
-        "movl 8(%ebp), %ecx\n" /* line 257 | cinfo */
-        "movl %eax, 0x194(%ecx)\n"
-        "leal -0x377(%ebx), %eax\n" /* line 258 */
-        "movl %eax, (%edi)\n" /* post */
-        "movl $0, 8(%edi)\n" /* line 259 | post */
-        "movl $0, 0xc(%edi)\n" /* line 260 | post */
-        "cmpb $0, 0x52(%ecx)\n" /* line 263 */
-        "je .Lf206d15_00206da1\n"
-        "movl 0x11c(%ecx), %esi\n" /* line 268 */
-        "movl %esi, 0x10(%edi)\n" /* post */
-        "cmpb $0, -0x1d(%ebp)\n" /* line 269 | need_full_buffer */
-        "jne .Lf206d15_00206da9\n"
-        "movl 8(%ebp), %ecx\n" /* line 284 | cinfo */
-        "movl 4(%ecx), %eax\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl 0x64(%ecx), %edx\n"
-        "imull 0x6c(%ecx), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *8(%eax)\n"
-        "movl %eax, 0xc(%edi)\n" /* post */
-        ".Lf206d15_00206da1:\n"
-        "addl $0x3c, %esp\n" /* line 290 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf206d15_00206da9:\n"
-        "movl 4(%ecx), %eax\n" /* line 273 */
-        "movl 0x10(%eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl 0x68(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jround_up\n"
-        "movl %esi, 0x14(%esp)\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "movl 0x64(%edx), %eax\n"
-        "imull 0x6c(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *-0x1c(%ebp)\n"
-        "movl %eax, 8(%edi)\n" /* post */
-        "addl $0x3c, %esp\n" /* line 290 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
+#endif /* QUANT_2PASS_SUPPORTED */
 
+
+/*
+ * Initialize postprocessing controller.
+ */
+
+GLOBAL(void)
+jinit_d_post_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
+{
+  my_post_ptr post;
+
+  post = (my_post_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_post_controller));
+  cinfo->post = (struct jpeg_d_post_controller *) post;
+  post->pub.start_pass = start_pass_dpost;
+  post->whole_image = NULL;	/* flag for no virtual arrays */
+  post->buffer = NULL;		/* flag for no strip buffer */
+
+  /* Create the quantization buffer, if needed */
+  if (cinfo->quantize_colors) {
+    /* The buffer strip height is max_v_samp_factor, which is typically
+     * an efficient number of rows for upsampling to return.
+     * (In the presence of output rescaling, we might want to be smarter?)
+     */
+    post->strip_height = (JDIMENSION) cinfo->max_v_samp_factor;
+    if (need_full_buffer) {
+      /* Two-pass color quantization: need full-image storage. */
+      /* We round up the number of rows to a multiple of the strip height. */
+#ifdef QUANT_2PASS_SUPPORTED
+      post->whole_image = (*cinfo->mem->request_virt_sarray)
+	((j_common_ptr) cinfo, JPOOL_IMAGE, FALSE,
+	 cinfo->output_width * cinfo->out_color_components,
+	 (JDIMENSION) jround_up((long) cinfo->output_height,
+				(long) post->strip_height),
+	 post->strip_height);
+#else
+      ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+#endif /* QUANT_2PASS_SUPPORTED */
+    } else {
+      /* One-pass color quantization: just make a strip buffer. */
+      post->buffer = (*cinfo->mem->alloc_sarray)
+	((j_common_ptr) cinfo, JPOOL_IMAGE,
+	 cinfo->output_width * cinfo->out_color_components,
+	 post->strip_height);
+    }
+  }
+}

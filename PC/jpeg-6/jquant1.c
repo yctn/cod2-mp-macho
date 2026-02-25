@@ -1,1421 +1,856 @@
-/* ASM dump from: jquant1.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jquant1.c */
+/*
+ * jquant1.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains 1-pass color quantization (color mapping) routines.
+ * These routines provide mapping to a fixed color map using equally spaced
+ * color values.  Optional Floyd-Steinberg or ordered dithering is available.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-static const UINT8 base_dither_matrix[16][16]; /* 0x307280 */
+#ifdef QUANT_1PASS_SUPPORTED
 
-static void color_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows);
-static void color_quantize3(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows);
-static void quantize_ord_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows);
-static void quantize3_ord_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows);
-static void quantize_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows);
-static void finish_pass_1_quant(j_decompress_ptr cinfo);
-static void new_color_map_1_quant(j_decompress_ptr cinfo);
-static void create_colorindex(j_decompress_ptr cinfo);
-void jinit_1pass_quantizer(j_decompress_ptr cinfo);
-static void start_pass_1_quant(j_decompress_ptr cinfo, int is_pre_scan);
 
-/* line 462 */
-static __attribute__((naked))
-void color_quantize(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)
+/*
+ * The main purpose of 1-pass quantization is to provide a fast, if not very
+ * high quality, colormapped output capability.  A 2-pass quantizer usually
+ * gives better visual quality; however, for quantized grayscale output this
+ * quantizer is perfectly adequate.  Dithering is highly recommended with this
+ * quantizer, though you can turn it off if you really want to.
+ *
+ * In 1-pass quantization the colormap must be chosen in advance of seeing the
+ * image.  We use a map consisting of all combinations of Ncolors[i] color
+ * values for the i'th component.  The Ncolors[] values are chosen so that
+ * their product, the total number of colors, is no more than that requested.
+ * (In most cases, the product will be somewhat less.)
+ *
+ * Since the colormap is orthogonal, the representative value for each color
+ * component can be determined without considering the other components;
+ * then these indexes can be combined into a colormap index by a standard
+ * N-dimensional-array-subscript calculation.  Most of the arithmetic involved
+ * can be precalculated and stored in the lookup table colorindex[].
+ * colorindex[i][j] maps pixel value j in component i to the nearest
+ * representative value (grid plane) for that component; this index is
+ * multiplied by the array stride for component i, so that the
+ * index of the colormap entry closest to a given pixel value is just
+ *    sum( colorindex[component-number][pixel-component-value] )
+ * Aside from being fast, this scheme allows for variable spacing between
+ * representative values with no additional lookup cost.
+ *
+ * If gamma correction has been applied in color conversion, it might be wise
+ * to adjust the color grid spacing so that the representative colors are
+ * equidistant in linear space.  At this writing, gamma correction is not
+ * implemented by jdcolor, so nothing is done here.
+ */
+
+
+/* Declarations for ordered dithering.
+ *
+ * We use a standard 16x16 ordered dither array.  The basic concept of ordered
+ * dithering is described in many references, for instance Dale Schumacher's
+ * chapter II.2 of Graphics Gems II (James Arvo, ed. Academic Press, 1991).
+ * In place of Schumacher's comparisons against a "threshold" value, we add a
+ * "dither" value to the input pixel and then round the result to the nearest
+ * output value.  The dither value is equivalent to (0.5 - threshold) times
+ * the distance between output values.  For ordered dithering, we assume that
+ * the output colors are equally spaced; if not, results will probably be
+ * worse, since the dither may be too much or too little at a given point.
+ *
+ * The normal calculation would be to form pixel value + dither, range-limit
+ * this to 0..MAXJSAMPLE, and then index into the colorindex table as usual.
+ * We can skip the separate range-limiting step by extending the colorindex
+ * table in both directions.
+ */
+
+#define ODITHER_SIZE  16	/* dimension of dither matrix */
+/* NB: if ODITHER_SIZE is not a power of 2, ODITHER_MASK uses will break */
+#define ODITHER_CELLS (ODITHER_SIZE*ODITHER_SIZE)	/* # cells in matrix */
+#define ODITHER_MASK  (ODITHER_SIZE-1) /* mask for wrapping around counters */
+
+typedef int ODITHER_MATRIX[ODITHER_SIZE][ODITHER_SIZE];
+typedef int (*ODITHER_MATRIX_PTR)[ODITHER_SIZE];
+
+static const UINT8 base_dither_matrix[ODITHER_SIZE][ODITHER_SIZE] = {
+  /* Bayer's order-4 dither array.  Generated by the code given in
+   * Stephen Hawley's article "Ordered Dithering" in Graphics Gems I.
+   * The values in this array must range from 0 to ODITHER_CELLS-1.
+   */
+  {   0,192, 48,240, 12,204, 60,252,  3,195, 51,243, 15,207, 63,255 },
+  { 128, 64,176,112,140, 76,188,124,131, 67,179,115,143, 79,191,127 },
+  {  32,224, 16,208, 44,236, 28,220, 35,227, 19,211, 47,239, 31,223 },
+  { 160, 96,144, 80,172,108,156, 92,163, 99,147, 83,175,111,159, 95 },
+  {   8,200, 56,248,  4,196, 52,244, 11,203, 59,251,  7,199, 55,247 },
+  { 136, 72,184,120,132, 68,180,116,139, 75,187,123,135, 71,183,119 },
+  {  40,232, 24,216, 36,228, 20,212, 43,235, 27,219, 39,231, 23,215 },
+  { 168,104,152, 88,164,100,148, 84,171,107,155, 91,167,103,151, 87 },
+  {   2,194, 50,242, 14,206, 62,254,  1,193, 49,241, 13,205, 61,253 },
+  { 130, 66,178,114,142, 78,190,126,129, 65,177,113,141, 77,189,125 },
+  {  34,226, 18,210, 46,238, 30,222, 33,225, 17,209, 45,237, 29,221 },
+  { 162, 98,146, 82,174,110,158, 94,161, 97,145, 81,173,109,157, 93 },
+  {  10,202, 58,250,  6,198, 54,246,  9,201, 57,249,  5,197, 53,245 },
+  { 138, 74,186,122,134, 70,182,118,137, 73,185,121,133, 69,181,117 },
+  {  42,234, 26,218, 38,230, 22,214, 41,233, 25,217, 37,229, 21,213 },
+  { 170,106,154, 90,166,102,150, 86,169,105,153, 89,165,101,149, 85 }
+};
+
+
+/* Declarations for Floyd-Steinberg dithering.
+ *
+ * Errors are accumulated into the array fserrors[], at a resolution of
+ * 1/16th of a pixel count.  The error at a given pixel is propagated
+ * to its not-yet-processed neighbors using the standard F-S fractions,
+ *		...	(here)	7/16
+ *		3/16	5/16	1/16
+ * We work left-to-right on even rows, right-to-left on odd rows.
+ *
+ * We can get away with a single array (holding one row's worth of errors)
+ * by using it to store the current row's errors at pixel columns not yet
+ * processed, but the next row's errors at columns already processed.  We
+ * need only a few extra variables to hold the errors immediately around the
+ * current column.  (If we are lucky, those variables are in registers, but
+ * even if not, they're probably cheaper to access than array elements are.)
+ *
+ * The fserrors[] array is indexed [component#][position].
+ * We provide (#columns + 2) entries per component; the extra entry at each
+ * end saves us from special-casing the first and last pixels.
+ *
+ * Note: on a wide image, we might not have enough room in a PC's near data
+ * segment to hold the error array; so it is allocated with alloc_large.
+ */
+
+#if BITS_IN_JSAMPLE == 8
+typedef INT16 FSERROR;		/* 16 bits should be enough */
+typedef int LOCFSERROR;		/* use 'int' for calculation temps */
+#else
+typedef INT32 FSERROR;		/* may need more than 16 bits */
+typedef INT32 LOCFSERROR;	/* be sure calculation temps are big enough */
+#endif
+
+typedef FSERROR FAR *FSERRPTR;	/* pointer to error array (in FAR storage!) */
+
+
+/* Private subobject */
+
+#define MAX_Q_COMPS 4		/* max components I can handle */
+
+typedef struct {
+  struct jpeg_color_quantizer pub; /* public fields */
+
+  /* Initially allocated colormap is saved here */
+  JSAMPARRAY sv_colormap;	/* The color map as a 2-D pixel array */
+  int sv_actual;		/* number of entries in use */
+
+  JSAMPARRAY colorindex;	/* Precomputed mapping for speed */
+  /* colorindex[i][j] = index of color closest to pixel value j in component i,
+   * premultiplied as described above.  Since colormap indexes must fit into
+   * JSAMPLEs, the entries of this array will too.
+   */
+  boolean is_padded;		/* is the colorindex padded for odither? */
+
+  int Ncolors[MAX_Q_COMPS];	/* # of values alloced to each component */
+
+  /* Variables for ordered dithering */
+  int row_index;		/* cur row's vertical index in dither matrix */
+  ODITHER_MATRIX_PTR odither[MAX_Q_COMPS]; /* one dither array per component */
+
+  /* Variables for Floyd-Steinberg dithering */
+  FSERRPTR fserrors[MAX_Q_COMPS]; /* accumulated errors */
+  boolean on_odd_row;		/* flag to remember which row we are on */
+} my_cquantizer;
+
+typedef my_cquantizer * my_cquantize_ptr;
+
+
+/*
+ * Policy-making subroutines for create_colormap and create_colorindex.
+ * These routines determine the colormap to be used.  The rest of the module
+ * only assumes that the colormap is orthogonal.
+ *
+ *  * select_ncolors decides how to divvy up the available colors
+ *    among the components.
+ *  * output_value defines the set of representative values for a component.
+ *  * largest_input_value defines the mapping from input values to
+ *    representative values for a component.
+ * Note that the latter two routines may impose different policies for
+ * different components, though this is not currently done.
+ */
+
+
+LOCAL(int)
+select_ncolors (j_decompress_ptr cinfo, int Ncolors[])
+/* Determine allocation of desired colors to components, */
+/* and fill in Ncolors[] array to indicate choice. */
+/* Return value is total number of colors (product of Ncolors[] values). */
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 462 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "movl 0x1b0(%edx), %eax\n" /* line 464 */
-        "movl 0x18(%eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* colorindex */
-        "movl 0x64(%edx), %eax\n" /* line 469 */
-        "movl %eax, -0x10(%ebp)\n" /* width */
-        "movl 0x6c(%edx), %edx\n" /* line 470 */
-        "movl %edx, -0xc(%ebp)\n" /* nc */
-        "movl 0x14(%ebp), %ecx\n" /* line 472 | num_rows */
-        "testl %ecx, %ecx\n"
-        "jle .Lf201ec0_00201f82\n"
-        "movl $0, -0x14(%ebp)\n" /* row */
-        "movl -0x14(%ebp), %eax\n" /* row */
-        ".Lf201ec0_00201ef8:\n"
-        "shll $2, %eax\n" /* line 462 */
-        "movl 0xc(%ebp), %edx\n" /* line 473 | input_buf */
-        "movl (%edx, %eax), %esi\n" /* ptrin */
-        "movl 0x10(%ebp), %edx\n" /* line 474 | output_buf */
-        "movl (%edx, %eax), %eax\n"
-        "movl -0x10(%ebp), %edx\n" /* line 475 | width */
-        "testl %edx, %edx\n"
-        "je .Lf201ec0_00201f6f\n"
-        "movl %eax, -0x18(%ebp)\n" /* ptrout */
-        "movl -0x10(%ebp), %edx\n" /* width */
-        "leal (%eax, %edx), %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "jmp .Lf201ec0_00201f30\n"
-        ".Lf201ec0_00201f1c:\n"
-        "xorl %eax, %eax\n" /* line 477 */
-        "movl -0x18(%ebp), %edx\n" /* line 480 | ptrout */
-        "movb %al, (%edx)\n"
-        "addl $1, %edx\n"
-        "movl %edx, -0x18(%ebp)\n" /* ptrout */
-        "movl -0x20(%ebp), %eax\n" /* line 475 */
-        "cmpl %eax, %edx\n"
-        "je .Lf201ec0_00201f6f\n"
-        ".Lf201ec0_00201f30:\n"
-        "movl -0xc(%ebp), %eax\n" /* line 477 | nc */
-        "testl %eax, %eax\n"
-        "jle .Lf201ec0_00201f1c\n"
-        "xorl %ecx, %ecx\n" /* line 475 */
-        "xorl %edi, %edi\n" /* pixcode */
-        ".Lf201ec0_00201f3b:\n"
-        "movzbl (%esi), %eax\n" /* line 478 | ptrin */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* colorindex */
-        "movl (%eax, %ecx, 4), %edx\n"
-        "movl -0x24(%ebp), %eax\n"
-        "movzbl (%edx, %eax), %edx\n"
-        "addl %edx, %edi\n" /* pixcode */
-        "addl $1, %esi\n" /* ptrin */
-        "addl $1, %ecx\n" /* line 477 */
-        "cmpl %ecx, -0xc(%ebp)\n" /* nc */
-        "jne .Lf201ec0_00201f3b\n"
-        "movl %edi, %eax\n" /* pixcode */
-        "movl -0x18(%ebp), %edx\n" /* line 480 | ptrout */
-        "movb %al, (%edx)\n"
-        "addl $1, %edx\n"
-        "movl %edx, -0x18(%ebp)\n" /* ptrout */
-        "movl -0x20(%ebp), %eax\n" /* line 475 */
-        "cmpl %eax, %edx\n"
-        "jne .Lf201ec0_00201f30\n"
-        ".Lf201ec0_00201f6f:\n"
-        "addl $1, -0x14(%ebp)\n" /* line 472 | row */
-        "movl -0x14(%ebp), %edx\n" /* row */
-        "cmpl %edx, 0x14(%ebp)\n" /* num_rows */
-        "je .Lf201ec0_00201f82\n"
-        "movl %edx, %eax\n"
-        "jmp .Lf201ec0_00201ef8\n"
-        ".Lf201ec0_00201f82:\n"
-        "addl $0x1c, %esp\n" /* line 483 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  int nc = cinfo->out_color_components; /* number of color components */
+  int max_colors = cinfo->desired_number_of_colors;
+  int total_colors, iroot, i, j;
+  boolean changed;
+  long temp;
+  static const int RGB_order[3] = { RGB_GREEN, RGB_RED, RGB_BLUE };
+
+  /* We can allocate at least the nc'th root of max_colors per component. */
+  /* Compute floor(nc'th root of max_colors). */
+  iroot = 1;
+  do {
+    iroot++;
+    temp = iroot;		/* set temp = iroot ** nc */
+    for (i = 1; i < nc; i++)
+      temp *= iroot;
+  } while (temp <= (long) max_colors); /* repeat till iroot exceeds root */
+  iroot--;			/* now iroot = floor(root) */
+
+  /* Must have at least 2 color values per component */
+  if (iroot < 2)
+    ERREXIT1(cinfo, JERR_QUANT_FEW_COLORS, (int) temp);
+
+  /* Initialize to iroot color values for each component */
+  total_colors = 1;
+  for (i = 0; i < nc; i++) {
+    Ncolors[i] = iroot;
+    total_colors *= iroot;
+  }
+  /* We may be able to increment the count for one or more components without
+   * exceeding max_colors, though we know not all can be incremented.
+   * Sometimes, the first component can be incremented more than once!
+   * (Example: for 16 colors, we start at 2*2*2, go to 3*2*2, then 4*2*2.)
+   * In RGB colorspace, try to increment G first, then R, then B.
+   */
+  do {
+    changed = FALSE;
+    for (i = 0; i < nc; i++) {
+      j = (cinfo->out_color_space == JCS_RGB ? RGB_order[i] : i);
+      /* calculate new total_colors if Ncolors[j] is incremented */
+      temp = total_colors / Ncolors[j];
+      temp *= Ncolors[j]+1;	/* done in long arith to avoid oflo */
+      if (temp > (long) max_colors)
+	break;			/* won't fit, done with this pass */
+      Ncolors[j]++;		/* OK, apply the increment */
+      total_colors = (int) temp;
+      changed = TRUE;
+    }
+  } while (changed);
+
+  return total_colors;
 }
 
-/* line 490 */
-static __attribute__((naked))
-void color_quantize3(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)
+
+LOCAL(int)
+output_value (j_decompress_ptr cinfo, int ci, int j, int maxj)
+/* Return j'th output value, where j will range from 0 to maxj */
+/* The output values must fall in 0..MAXJSAMPLE in increasing order */
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 490 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "movl 0x1b0(%edx), %eax\n" /* line 494 */
-        "movl 0x18(%eax), %eax\n"
-        "movl (%eax), %ecx\n"
-        "movl %ecx, -0x1c(%ebp)\n" /* colorindex0 */
-        "movl 4(%eax), %edi\n" /* line 495 */
-        "movl %edi, -0x18(%ebp)\n" /* colorindex1 */
-        "movl 8(%eax), %eax\n" /* line 496 */
-        "movl %eax, -0x14(%ebp)\n" /* colorindex2 */
-        "movl 0x64(%edx), %edx\n" /* line 499 */
-        "movl %edx, -0xc(%ebp)\n" /* width */
-        "movl 0x14(%ebp), %eax\n" /* line 501 | num_rows */
-        "testl %eax, %eax\n"
-        "jle .Lf201f89_00202023\n"
-        "movl $0, -0x10(%ebp)\n" /* row */
-        "movl -0x10(%ebp), %eax\n" /* row */
-        ".Lf201f89_00201fc5:\n"
-        "shll $2, %eax\n" /* line 490 */
-        "movl 0xc(%ebp), %edx\n" /* line 502 | input_buf */
-        "movl (%eax, %edx), %esi\n" /* ptrin */
-        "movl 0x10(%ebp), %ecx\n" /* line 503 | output_buf */
-        "movl (%eax, %ecx), %eax\n"
-        "movl -0xc(%ebp), %edi\n" /* line 504 | width */
-        "testl %edi, %edi\n"
-        "je .Lf201f89_00202017\n"
-        "movl %eax, %ecx\n"
-        "movl -0xc(%ebp), %edi\n" /* width */
-        "leal (%eax, %edi), %edi\n"
-        "movl %edi, -0x20(%ebp)\n"
-        ".Lf201f89_00201fe6:\n"
-        "movzbl (%esi), %eax\n" /* line 505 | ptrin */
-        "movl -0x1c(%ebp), %edi\n" /* colorindex0 */
-        "movzbl (%edi, %eax), %edx\n"
-        "movzbl 1(%esi), %eax\n" /* line 506 | ptrin */
-        "movl -0x18(%ebp), %edi\n" /* colorindex1 */
-        "movzbl (%edi, %eax), %eax\n"
-        "addl %eax, %edx\n"
-        "movzbl 2(%esi), %eax\n" /* line 507 | ptrin */
-        "movl -0x14(%ebp), %edi\n" /* colorindex2 */
-        "movzbl (%edi, %eax), %eax\n"
-        "addl %eax, %edx\n"
-        "addl $3, %esi\n" /* ptrin */
-        "movb %dl, (%ecx)\n" /* line 508 */
-        "addl $1, %ecx\n"
-        "cmpl %ecx, -0x20(%ebp)\n" /* line 504 */
-        "jne .Lf201f89_00201fe6\n"
-        ".Lf201f89_00202017:\n"
-        "addl $1, -0x10(%ebp)\n" /* line 501 | row */
-        "movl -0x10(%ebp), %eax\n" /* row */
-        "cmpl %eax, 0x14(%ebp)\n" /* num_rows */
-        "jne .Lf201f89_00201fc5\n"
-        ".Lf201f89_00202023:\n"
-        "addl $0x18, %esp\n" /* line 511 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  /* We always provide values 0 and MAXJSAMPLE for each component;
+   * any additional values are equally spaced between these limits.
+   * (Forcing the upper and lower values to the limits ensures that
+   * dithering can't produce a color outside the selected gamut.)
+   */
+  return (int) (((INT32) j * MAXJSAMPLE + maxj/2) / maxj);
 }
 
-/* line 518 */
-static __attribute__((naked))
-void quantize_ord_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)
+
+LOCAL(int)
+largest_input_value (j_decompress_ptr cinfo, int ci, int j, int maxj)
+/* Return largest input value that should map to j'th output value */
+/* Must have largest(j=0) >= 0, and largest(j=maxj) >= MAXJSAMPLE */
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 518 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x50, %esp\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl 0x1b0(%eax), %edx\n" /* line 519 */
-        "movl %edx, -0x38(%ebp)\n" /* cquantize */
-        "movl 0x6c(%eax), %ecx\n" /* line 525 */
-        "movl %ecx, -0x24(%ebp)\n" /* nc */
-        "movl 0x64(%eax), %eax\n" /* line 529 */
-        "movl %eax, -0x18(%ebp)\n" /* width */
-        "movl 0x14(%ebp), %eax\n" /* line 531 | num_rows */
-        "testl %eax, %eax\n"
-        "jg .Lf20202a_00202058\n"
-        ".Lf20202a_00202051:\n"
-        "addl $0x50, %esp\n" /* line 561 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf20202a_00202058:\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 531 | row */
-        "movl -0x1c(%ebp), %esi\n" /* row, output_ptr */
-        ".Lf20202a_00202062:\n"
-        "shll $2, %esi\n" /* line 518 */
-        "movl %esi, -0xc(%ebp)\n"
-        "movl 0x10(%ebp), %eax\n" /* output_buf */
-        "addl %esi, %eax\n"
-        "movl %eax, -0x10(%ebp)\n"
-        "movl -0x18(%ebp), %edx\n" /* line 533 | width */
-        "movl %edx, 4(%esp)\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jzero_far\n"
-        "movl -0x38(%ebp), %esi\n" /* line 535 | cquantize, output_ptr */
-        "movl 0x30(%esi), %esi\n" /* output_ptr */
-        "movl %esi, -0x28(%ebp)\n" /* output_ptr, row_index */
-        "movl -0x24(%ebp), %eax\n" /* line 536 | nc */
-        "testl %eax, %eax\n"
-        "jle .Lf20202a_0020212b\n"
-        "shll $6, %esi\n" /* output_ptr */
-        "movl %esi, -0x14(%ebp)\n" /* output_ptr */
-        "movl $0, -0x20(%ebp)\n" /* ci */
-        "movl $0x30, -0x40(%ebp)\n"
-        "movl -0x20(%ebp), %ecx\n" /* ci */
-        ".Lf20202a_002020ac:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 537 | input_buf */
-        "movl -0xc(%ebp), %edx\n"
-        "addl (%eax, %edx), %ecx\n"
-        "movl %ecx, -0x34(%ebp)\n" /* input_ptr */
-        "movl -0x10(%ebp), %esi\n" /* line 538 | output_ptr */
-        "movl (%esi), %edx\n" /* output_ptr */
-        "movl -0x38(%ebp), %ecx\n" /* line 539 | cquantize */
-        "movl 0x18(%ecx), %eax\n"
-        "movl -0x20(%ebp), %esi\n" /* ci, output_ptr */
-        "movl (%eax, %esi, 4), %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* colorindex_ci */
-        "movl -0x14(%ebp), %esi\n" /* line 540 | output_ptr */
-        "movl -0x40(%ebp), %eax\n"
-        "addl 4(%eax, %ecx), %esi\n" /* output_ptr */
-        "movl %esi, -0x2c(%ebp)\n" /* output_ptr, dither */
-        "movl -0x18(%ebp), %eax\n" /* line 543 | width */
-        "testl %eax, %eax\n"
-        "je .Lf20202a_00202117\n"
-        "movl %edx, %esi\n" /* output_ptr */
-        "xorl %edi, %edi\n" /* col_index */
-        "movl -0x18(%ebp), %eax\n" /* width */
-        "addl %edx, %eax\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        ".Lf20202a_002020ec:\n"
-        "movl -0x34(%ebp), %edx\n" /* line 551 | input_ptr */
-        "movzbl (%edx), %eax\n"
-        "movl -0x2c(%ebp), %edx\n" /* dither */
-        "movl (%edx, %edi, 4), %ecx\n"
-        "addl -0x30(%ebp), %eax\n" /* colorindex_ci */
-        "movzbl (%esi), %edx\n" /* output_ptr */
-        "addb (%eax, %ecx), %dl\n"
-        "movb %dl, (%esi)\n" /* output_ptr */
-        "movl -0x24(%ebp), %ecx\n" /* line 552 | nc */
-        "addl %ecx, -0x34(%ebp)\n" /* input_ptr */
-        "addl $1, %esi\n" /* line 553 | output_ptr */
-        "addl $1, %edi\n" /* line 554 | col_index */
-        "andl $0xf, %edi\n" /* col_index */
-        "cmpl %esi, -0x3c(%ebp)\n" /* line 543 | output_ptr */
-        "jne .Lf20202a_002020ec\n"
-        ".Lf20202a_00202117:\n"
-        "addl $1, -0x20(%ebp)\n" /* line 536 | ci */
-        "addl $4, -0x40(%ebp)\n"
-        "movl -0x20(%ebp), %esi\n" /* ci, output_ptr */
-        "cmpl %esi, -0x24(%ebp)\n" /* output_ptr, nc */
-        "je .Lf20202a_00202150\n"
-        "movl %esi, %ecx\n" /* output_ptr */
-        "jmp .Lf20202a_002020ac\n"
-        ".Lf20202a_0020212b:\n"
-        "movl %esi, %eax\n" /* output_ptr */
-        ".Lf20202a_0020212d:\n"
-        "addl $1, %eax\n" /* line 559 */
-        "andl $0xf, %eax\n"
-        "movl -0x38(%ebp), %edx\n" /* cquantize */
-        "movl %eax, 0x30(%edx)\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 531 | row */
-        "movl -0x1c(%ebp), %ecx\n" /* row */
-        "cmpl %ecx, 0x14(%ebp)\n" /* num_rows */
-        "je .Lf20202a_00202051\n"
-        "movl %ecx, %esi\n" /* output_ptr */
-        "jmp .Lf20202a_00202062\n"
-        ".Lf20202a_00202150:\n"
-        "movl -0x28(%ebp), %eax\n" /* row_index */
-        "jmp .Lf20202a_0020212d\n"
-    );
+  /* Breakpoints are halfway between values returned by output_value */
+  return (int) (((INT32) (2*j + 1) * MAXJSAMPLE + maxj) / (2*maxj));
 }
 
-/* line 568 */
-static __attribute__((naked))
-void quantize3_ord_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)
+
+/*
+ * Create the colormap.
+ */
+
+LOCAL(void)
+create_colormap (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 568 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x38, %esp\n"
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "movl 0x1b0(%edx), %eax\n" /* line 569 */
-        "movl %eax, -0x38(%ebp)\n" /* cquantize */
-        "movl 0x18(%eax), %eax\n" /* line 573 */
-        "movl (%eax), %esi\n"
-        "movl %esi, -0x30(%ebp)\n" /* colorindex0 */
-        "movl 4(%eax), %ecx\n" /* line 574 */
-        "movl %ecx, -0x2c(%ebp)\n" /* colorindex1 */
-        "movl 8(%eax), %eax\n" /* line 575 */
-        "movl %eax, -0x28(%ebp)\n" /* colorindex2 */
-        "movl 0x64(%edx), %edx\n" /* line 582 */
-        "movl %edx, -0xc(%ebp)\n" /* width */
-        "movl 0x14(%ebp), %eax\n" /* line 584 | num_rows */
-        "testl %eax, %eax\n"
-        "jle .Lf202155_00202291\n"
-        "movl $0, -0x10(%ebp)\n" /* row */
-        "movl -0x10(%ebp), %eax\n" /* row */
-        ".Lf202155_00202198:\n"
-        "movl -0x38(%ebp), %esi\n" /* line 585 | cquantize */
-        "movl 0x30(%esi), %esi\n"
-        "movl %esi, -0x18(%ebp)\n" /* row_index */
-        "shll $2, %eax\n" /* line 568 */
-        "movl 0xc(%ebp), %edx\n" /* line 586 | input_buf */
-        "movl (%edx, %eax), %edx\n"
-        "movl %edx, -0x34(%ebp)\n" /* input_ptr */
-        "movl 0x10(%ebp), %ecx\n" /* line 587 | output_buf */
-        "movl (%eax, %ecx), %edx\n"
-        "movl %esi, %eax\n" /* line 588 */
-        "shll $6, %eax\n"
-        "movl -0x38(%ebp), %esi\n" /* cquantize */
-        "movl 0x34(%esi), %ecx\n"
-        "addl %eax, %ecx\n"
-        "movl %ecx, -0x24(%ebp)\n" /* dither0 */
-        "movl 0x38(%esi), %ecx\n" /* line 589 */
-        "addl %eax, %ecx\n"
-        "movl %ecx, -0x20(%ebp)\n" /* dither1 */
-        "addl 0x3c(%esi), %eax\n" /* line 590 */
-        "movl %eax, -0x1c(%ebp)\n" /* dither2 */
-        "movl -0xc(%ebp), %eax\n" /* line 593 | width */
-        "testl %eax, %eax\n"
-        "je .Lf202155_00202277\n"
-        "movl %edx, %edi\n" /* output_ptr */
-        "movl $0, -0x14(%ebp)\n" /* col_index */
-        "movl -0xc(%ebp), %esi\n" /* width */
-        "leal (%edx, %esi), %esi\n"
-        "movl %esi, -0x3c(%ebp)\n"
-        ".Lf202155_002021ee:\n"
-        "movl -0x14(%ebp), %esi\n" /* line 594 | col_index */
-        "shll $2, %esi\n"
-        "movl -0x34(%ebp), %edx\n" /* input_ptr */
-        "movzbl (%edx), %eax\n"
-        "movl -0x24(%ebp), %ecx\n" /* dither0 */
-        "movl (%ecx, %esi), %edx\n"
-        "addl -0x30(%ebp), %eax\n" /* colorindex0 */
-        "movzbl (%eax, %edx), %edx\n"
-        "movl -0x34(%ebp), %eax\n" /* line 596 | input_ptr */
-        "movzbl 1(%eax), %eax\n"
-        "movl %eax, -0x40(%ebp)\n"
-        "movl -0x20(%ebp), %eax\n" /* dither1 */
-        "movl (%eax, %esi), %ecx\n"
-        "movl -0x40(%ebp), %eax\n"
-        "addl -0x2c(%ebp), %eax\n" /* colorindex1 */
-        "movzbl (%eax, %ecx), %eax\n"
-        "addl %eax, %edx\n"
-        "movl -0x34(%ebp), %ecx\n" /* line 598 | input_ptr */
-        "movzbl 2(%ecx), %ecx\n"
-        "movl %ecx, -0x40(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* dither2 */
-        "movl (%eax, %esi), %ecx\n"
-        "movl -0x40(%ebp), %eax\n"
-        "addl -0x28(%ebp), %eax\n" /* colorindex2 */
-        "movzbl (%eax, %ecx), %eax\n"
-        "addl %eax, %edx\n"
-        "addl $3, -0x34(%ebp)\n" /* input_ptr */
-        "movb %dl, (%edi)\n" /* line 600 | output_ptr */
-        "addl $1, %edi\n" /* output_ptr */
-        "addl $1, -0x14(%ebp)\n" /* line 601 | col_index */
-        "andl $0xf, -0x14(%ebp)\n" /* col_index */
-        "cmpl %edi, -0x3c(%ebp)\n" /* line 593 | output_ptr */
-        "jne .Lf202155_002021ee\n"
-        "movl -0x38(%ebp), %edx\n" /* cquantize */
-        "movl -0x18(%ebp), %eax\n" /* line 604 | row_index */
-        "addl $1, %eax\n"
-        "andl $0xf, %eax\n"
-        "movl %eax, 0x30(%edx)\n"
-        "addl $1, -0x10(%ebp)\n" /* line 584 | row */
-        "movl -0x10(%ebp), %ecx\n" /* row */
-        "cmpl %ecx, 0x14(%ebp)\n" /* num_rows */
-        "je .Lf202155_00202291\n"
-        ".Lf202155_00202270:\n"
-        "movl %ecx, %eax\n"
-        "jmp .Lf202155_00202198\n"
-        ".Lf202155_00202277:\n"
-        "movl %esi, %edx\n"
-        "movl -0x18(%ebp), %eax\n" /* line 604 | row_index */
-        "addl $1, %eax\n"
-        "andl $0xf, %eax\n"
-        "movl %eax, 0x30(%edx)\n"
-        "addl $1, -0x10(%ebp)\n" /* line 584 | row */
-        "movl -0x10(%ebp), %ecx\n" /* row */
-        "cmpl %ecx, 0x14(%ebp)\n" /* num_rows */
-        "jne .Lf202155_00202270\n"
-        ".Lf202155_00202291:\n"
-        "addl $0x38, %esp\n" /* line 606 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  JSAMPARRAY colormap;		/* Created colormap */
+  int total_colors;		/* Number of distinct output colors */
+  int i,j,k, nci, blksize, blkdist, ptr, val;
+
+  /* Select number of colors for each component */
+  total_colors = select_ncolors(cinfo, cquantize->Ncolors);
+
+  /* Report selected color counts */
+  if (cinfo->out_color_components == 3)
+    TRACEMS4(cinfo, 1, JTRC_QUANT_3_NCOLORS,
+	     total_colors, cquantize->Ncolors[0],
+	     cquantize->Ncolors[1], cquantize->Ncolors[2]);
+  else
+    TRACEMS1(cinfo, 1, JTRC_QUANT_NCOLORS, total_colors);
+
+  /* Allocate and fill in the colormap. */
+  /* The colors are ordered in the map in standard row-major order, */
+  /* i.e. rightmost (highest-indexed) color changes most rapidly. */
+
+  colormap = (*cinfo->mem->alloc_sarray)
+    ((j_common_ptr) cinfo, JPOOL_IMAGE,
+     (JDIMENSION) total_colors, (JDIMENSION) cinfo->out_color_components);
+
+  /* blksize is number of adjacent repeated entries for a component */
+  /* blkdist is distance between groups of identical entries for a component */
+  blkdist = total_colors;
+
+  for (i = 0; i < cinfo->out_color_components; i++) {
+    /* fill in colormap entries for i'th color component */
+    nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
+    blksize = blkdist / nci;
+    for (j = 0; j < nci; j++) {
+      /* Compute j'th output value (out of nci) for component */
+      val = output_value(cinfo, i, j, nci-1);
+      /* Fill in all colormap entries that have this value of this component */
+      for (ptr = j * blksize; ptr < total_colors; ptr += blkdist) {
+	/* fill in blksize entries beginning at ptr */
+	for (k = 0; k < blksize; k++)
+	  colormap[i][ptr+k] = (JSAMPLE) val;
+      }
+    }
+    blkdist = blksize;		/* blksize of this color is blkdist of next */
+  }
+
+  /* Save the colormap in private storage,
+   * where it will survive color quantization mode changes.
+   */
+  cquantize->sv_colormap = colormap;
+  cquantize->sv_actual = total_colors;
 }
 
-/* line 613 */
-static __attribute__((naked))
-void quantize_fs_dither(j_decompress_ptr cinfo, JSAMPARRAY input_buf, JSAMPARRAY output_buf, int num_rows)
+
+/*
+ * Create the color index table.
+ */
+
+LOCAL(void)
+create_colorindex (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 613 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x90, %esp\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl 0x1b0(%eax), %edx\n" /* line 614 */
-        "movl %edx, -0xc(%ebp)\n"
-        "movl 0x6c(%eax), %ecx\n" /* line 626 */
-        "movl %ecx, -0x40(%ebp)\n" /* nc */
-        "movl 0x64(%eax), %edx\n" /* line 632 */
-        "movl %edx, -0x2c(%ebp)\n" /* width */
-        "movl 0x128(%eax), %eax\n" /* line 633 */
-        "movl %eax, -0x28(%ebp)\n" /* range_limit */
-        "movl 0x14(%ebp), %esi\n" /* line 636 | num_rows */
-        "testl %esi, %esi\n"
-        "jg .Lf202298_002022d5\n"
-        ".Lf202298_002022cb:\n"
-        "addl $0x90, %esp\n" /* line 714 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf202298_002022d5:\n"
-        "subl $1, %edx\n" /* line 645 */
-        "imull %ecx, %edx\n"
-        "movl %edx, -0x60(%ebp)\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 649 | width */
-        "addl %ecx, %ecx\n"
-        "movl %ecx, -0x5c(%ebp)\n"
-        "movl $0, -0x30(%ebp)\n" /* row */
-        "movl -0x30(%ebp), %eax\n" /* row */
-        ".Lf202298_002022f0:\n"
-        "shll $2, %eax\n" /* line 613 */
-        "movl %eax, -0x14(%ebp)\n"
-        "movl 0x10(%ebp), %edx\n" /* output_buf */
-        "addl %eax, %edx\n"
-        "movl %edx, -0x18(%ebp)\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 638 | width */
-        "movl %ecx, 4(%esp)\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jzero_far\n"
-        "movl -0x40(%ebp), %ecx\n" /* line 640 | nc */
-        "testl %ecx, %ecx\n"
-        "jle .Lf202298_0020249c\n"
-        "movl -0xc(%ebp), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl $0, -0x34(%ebp)\n" /* ci */
-        "movl -0x34(%ebp), %eax\n" /* ci */
-        "jmp .Lf202298_00202396\n"
-        ".Lf202298_0020232c:\n"
-        "movl %edx, %ecx\n"
-        "movl -0x60(%ebp), %edx\n" /* line 645 */
-        "addl %edx, %eax\n"
-        "movl %eax, -0x50(%ebp)\n" /* input_ptr */
-        "movl -0x2c(%ebp), %eax\n" /* line 646 | width */
-        "leal -1(%ecx, %eax), %ecx\n"
-        "movl %ecx, -0x4c(%ebp)\n" /* output_ptr */
-        "movl -0x40(%ebp), %eax\n" /* line 648 | nc */
-        "negl %eax\n"
-        "movl %eax, -0x38(%ebp)\n" /* dirnc */
-        "movl -0x5c(%ebp), %eax\n" /* line 649 */
-        "movl -0x1c(%ebp), %edx\n"
-        "addl 0x44(%edx), %eax\n"
-        "leal 2(%eax), %edi\n" /* errorptr */
-        "movl $0xffffffff, -0x3c(%ebp)\n" /* dir */
-        "movl -0x34(%ebp), %eax\n" /* line 654 | ci */
-        "shll $2, %eax\n"
-        "movl -0xc(%ebp), %ecx\n" /* line 656 */
-        "movl 0x18(%ecx), %edx\n"
-        "movl (%eax, %edx), %edx\n"
-        "movl %edx, -0x48(%ebp)\n" /* colorindex_ci */
-        "movl 0x10(%ecx), %edx\n" /* line 657 */
-        "movl (%eax, %edx), %eax\n"
-        "movl %eax, -0x44(%ebp)\n" /* colormap_ci */
-        "movl -0x2c(%ebp), %edx\n" /* line 663 | width */
-        "testl %edx, %edx\n"
-        "jne .Lf202298_002023ec\n"
-        ".Lf202298_0020237d:\n"
-        "xorl %eax, %eax\n"
-        "movw %ax, (%edi)\n" /* line 710 | errorptr */
-        "addl $1, -0x34(%ebp)\n" /* line 640 | ci */
-        "addl $4, -0x1c(%ebp)\n"
-        "movl -0x34(%ebp), %eax\n" /* ci */
-        "cmpl %eax, -0x40(%ebp)\n" /* nc */
-        "je .Lf202298_0020249c\n"
-        ".Lf202298_00202396:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 641 | input_buf */
-        "movl -0x14(%ebp), %ecx\n"
-        "addl (%edx, %ecx), %eax\n"
-        "movl %eax, -0x50(%ebp)\n" /* input_ptr */
-        "movl -0x18(%ebp), %edx\n" /* line 642 */
-        "movl (%edx), %edx\n"
-        "movl %edx, -0x4c(%ebp)\n" /* output_ptr */
-        "movl -0xc(%ebp), %ecx\n" /* line 643 */
-        "cmpb $0, 0x54(%ecx)\n"
-        "jne .Lf202298_0020232c\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 654 */
-        "movl 0x44(%ecx), %edi\n" /* errorptr */
-        "movl -0x40(%ebp), %eax\n" /* nc */
-        "movl %eax, -0x38(%ebp)\n" /* dirnc */
-        "movl $1, -0x3c(%ebp)\n" /* dir */
-        "movl -0x34(%ebp), %eax\n" /* ci */
-        "shll $2, %eax\n"
-        "movl -0xc(%ebp), %ecx\n" /* line 656 */
-        "movl 0x18(%ecx), %edx\n"
-        "movl (%eax, %edx), %edx\n"
-        "movl %edx, -0x48(%ebp)\n" /* colorindex_ci */
-        "movl 0x10(%ecx), %edx\n" /* line 657 */
-        "movl (%eax, %edx), %eax\n"
-        "movl %eax, -0x44(%ebp)\n" /* colormap_ci */
-        "movl -0x2c(%ebp), %edx\n" /* line 663 | width */
-        "testl %edx, %edx\n"
-        "je .Lf202298_0020237d\n"
-        ".Lf202298_002023ec:\n"
-        "movl -0x3c(%ebp), %eax\n" /* dir */
-        "addl %eax, %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %edi, -0x10(%ebp)\n" /* errorptr */
-        "xorl %edx, %edx\n"
-        "movl $0, -0x58(%ebp)\n" /* belowerr */
-        "movl $0, -0x54(%ebp)\n" /* bpreverr */
-        "movl $0, -0x20(%ebp)\n"
-        "jmp .Lf202298_00202413\n"
-        ".Lf202298_00202410:\n"
-        "movl %edi, -0x10(%ebp)\n" /* errorptr */
-        ".Lf202298_00202413:\n"
-        "addl -0x24(%ebp), %edi\n" /* line 672 | errorptr */
-        "movswl (%edi), %eax\n" /* errorptr */
-        "leal 8(%edx, %eax), %eax\n"
-        "sarl $4, %eax\n"
-        "movl -0x50(%ebp), %ecx\n" /* line 678 | input_ptr */
-        "movzbl (%ecx), %edx\n"
-        "addl -0x28(%ebp), %eax\n" /* range_limit */
-        "movzbl (%eax, %edx), %esi\n"
-        "movl -0x48(%ebp), %edx\n" /* line 680 | colorindex_ci */
-        "movzbl (%edx, %esi), %eax\n"
-        "movl -0x4c(%ebp), %ecx\n" /* line 681 | output_ptr */
-        "addb %al, (%ecx)\n"
-        "movl -0x44(%ebp), %edx\n" /* line 685 | colormap_ci */
-        "movzbl (%edx, %eax), %eax\n"
-        "subl %eax, %esi\n"
-        "leal (%esi, %esi), %ecx\n" /* line 691 */
-        "leal (%esi, %ecx), %eax\n" /* line 692 */
-        "movl %eax, -0x7c(%ebp)\n"
-        "movl -0x54(%ebp), %edx\n" /* line 693 | bpreverr */
-        "addl %eax, %edx\n"
-        "movl -0x10(%ebp), %eax\n"
-        "movw %dx, (%eax)\n"
-        "movl -0x7c(%ebp), %edx\n" /* line 694 */
-        "leal (%ecx, %edx), %eax\n"
-        "movl -0x58(%ebp), %edx\n" /* line 695 | belowerr */
-        "addl %eax, %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* bpreverr */
-        "leal (%ecx, %eax), %edx\n" /* line 697 */
-        "movl -0x38(%ebp), %ecx\n" /* line 702 | dirnc */
-        "addl %ecx, -0x50(%ebp)\n" /* input_ptr */
-        "movl -0x3c(%ebp), %eax\n" /* line 703 | dir */
-        "addl %eax, -0x4c(%ebp)\n" /* output_ptr */
-        "addl $1, -0x20(%ebp)\n"
-        "movl %esi, -0x58(%ebp)\n" /* belowerr */
-        "movl -0x20(%ebp), %ecx\n" /* line 663 */
-        "cmpl %ecx, -0x2c(%ebp)\n" /* width */
-        "jne .Lf202298_00202410\n"
-        "movl -0x54(%ebp), %eax\n" /* bpreverr */
-        "movw %ax, (%edi)\n" /* line 710 | errorptr */
-        "addl $1, -0x34(%ebp)\n" /* line 640 | ci */
-        "addl $4, -0x1c(%ebp)\n"
-        "movl -0x34(%ebp), %eax\n" /* ci */
-        "cmpl %eax, -0x40(%ebp)\n" /* nc */
-        "jne .Lf202298_00202396\n"
-        ".Lf202298_0020249c:\n"
-        "movl -0xc(%ebp), %edx\n" /* line 712 */
-        "cmpb $0, 0x54(%edx)\n"
-        "sete 0x54(%edx)\n"
-        "addl $1, -0x30(%ebp)\n" /* line 636 | row */
-        "movl -0x30(%ebp), %ecx\n" /* row */
-        "cmpl %ecx, 0x14(%ebp)\n" /* num_rows */
-        "je .Lf202298_002022cb\n"
-        "movl %ecx, %eax\n"
-        "jmp .Lf202298_002022f0\n"
-    );
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  JSAMPROW indexptr;
+  int i,j,k, nci, blksize, val, pad;
+
+  /* For ordered dither, we pad the color index tables by MAXJSAMPLE in
+   * each direction (input index values can be -MAXJSAMPLE .. 2*MAXJSAMPLE).
+   * This is not necessary in the other dithering modes.  However, we
+   * flag whether it was done in case user changes dithering mode.
+   */
+  if (cinfo->dither_mode == JDITHER_ORDERED) {
+    pad = MAXJSAMPLE*2;
+    cquantize->is_padded = TRUE;
+  } else {
+    pad = 0;
+    cquantize->is_padded = FALSE;
+  }
+
+  cquantize->colorindex = (*cinfo->mem->alloc_sarray)
+    ((j_common_ptr) cinfo, JPOOL_IMAGE,
+     (JDIMENSION) (MAXJSAMPLE+1 + pad),
+     (JDIMENSION) cinfo->out_color_components);
+
+  /* blksize is number of adjacent repeated entries for a component */
+  blksize = cquantize->sv_actual;
+
+  for (i = 0; i < cinfo->out_color_components; i++) {
+    /* fill in colorindex entries for i'th color component */
+    nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
+    blksize = blksize / nci;
+
+    /* adjust colorindex pointers to provide padding at negative indexes. */
+    if (pad)
+      cquantize->colorindex[i] += MAXJSAMPLE;
+
+    /* in loop, val = index of current output value, */
+    /* and k = largest j that maps to current val */
+    indexptr = cquantize->colorindex[i];
+    val = 0;
+    k = largest_input_value(cinfo, i, 0, nci-1);
+    for (j = 0; j <= MAXJSAMPLE; j++) {
+      while (j > k)		/* advance val if past boundary */
+	k = largest_input_value(cinfo, i, ++val, nci-1);
+      /* premultiply so that no multiplication needed in main processing */
+      indexptr[j] = (JSAMPLE) (val * blksize);
+    }
+    /* Pad at both ends if necessary */
+    if (pad)
+      for (j = 1; j <= MAXJSAMPLE; j++) {
+	indexptr[-j] = indexptr[0];
+	indexptr[MAXJSAMPLE+j] = indexptr[MAXJSAMPLE];
+      }
+  }
 }
 
-/* line 799 */
-static __attribute__((naked))
-void finish_pass_1_quant(j_decompress_ptr cinfo)
+
+/*
+ * Create an ordered-dither array for a component having ncolors
+ * distinct output values.
+ */
+
+LOCAL(ODITHER_MATRIX_PTR)
+make_odither_array (j_decompress_ptr cinfo, int ncolors)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 799 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 801 */
-        "retl\n"
-    );
+  ODITHER_MATRIX_PTR odither;
+  int j,k;
+  INT32 num,den;
+
+  odither = (ODITHER_MATRIX_PTR)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(ODITHER_MATRIX));
+  /* The inter-value distance for this color is MAXJSAMPLE/(ncolors-1).
+   * Hence the dither value for the matrix cell with fill order f
+   * (f=0..N-1) should be (N-1-2*f)/(2*N) * MAXJSAMPLE/(ncolors-1).
+   * On 16-bit-int machine, be careful to avoid overflow.
+   */
+  den = 2 * ODITHER_CELLS * ((INT32) (ncolors - 1));
+  for (j = 0; j < ODITHER_SIZE; j++) {
+    for (k = 0; k < ODITHER_SIZE; k++) {
+      num = ((INT32) (ODITHER_CELLS-1 - 2*((int)base_dither_matrix[j][k])))
+	    * MAXJSAMPLE;
+      /* Ensure round towards zero despite C's lack of consistency
+       * about rounding negative values in integer division...
+       */
+      odither[j][k] = (int) (num<0 ? -((-num)/den) : num/den);
+    }
+  }
+  return odither;
 }
 
-/* line 811 */
-static __attribute__((naked))
-void new_color_map_1_quant(j_decompress_ptr cinfo)
+
+/*
+ * Create the ordered-dither tables.
+ * Components having the same number of representative colors may 
+ * share a dither table.
+ */
+
+LOCAL(void)
+create_odither_tables (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 811 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl (%eax), %edx\n" /* line 812 */
-        "movl $0x2e, 0x14(%edx)\n"
-        "movl (%eax), %edx\n"
-        "movl %eax, 8(%ebp)\n" /* cinfo */
-        "movl (%edx), %ecx\n"
-        "popl %ebp\n" /* line 813 */
-        "jmpl *%ecx\n" /* line 812 */
-    );
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  ODITHER_MATRIX_PTR odither;
+  int i, j, nci;
+
+  for (i = 0; i < cinfo->out_color_components; i++) {
+    nci = cquantize->Ncolors[i]; /* # of distinct values for this color */
+    odither = NULL;		/* search for matching prior component */
+    for (j = 0; j < i; j++) {
+      if (nci == cquantize->Ncolors[j]) {
+	odither = cquantize->odither[j];
+	break;
+      }
+    }
+    if (odither == NULL)	/* need a new table? */
+      odither = make_odither_array(cinfo, nci);
+    cquantize->odither[i] = odither;
+  }
 }
 
-/* line 334 */
-static __attribute__((naked))
-void create_colorindex(j_decompress_ptr cinfo)
+
+/*
+ * Map some rows of pixels to the output colormapped representation.
+ */
+
+METHODDEF(void)
+color_quantize (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+		JSAMPARRAY output_buf, int num_rows)
+/* General case, no dithering */
 {
-    __asm__ __volatile__ (
-        /* { scope 1: maxj */
-        "pushl %ebp\n" /* line 334 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x60, %esp\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "movl 0x1b0(%eax), %eax\n" /* line 335 */
-        "movl %eax, -0x2c(%ebp)\n" /* cquantize */
-        "movl -0x30(%ebp), %edx\n" /* line 344 */
-        "cmpl $1, 0x54(%edx)\n"
-        "je .Lf2024dc_0020265e\n"
-        "movl -0x2c(%ebp), %esi\n" /* line 349 | cquantize */
-        "movb $0, 0x1c(%esi)\n"
-        "movl $0, -0x1c(%ebp)\n" /* pad */
-        "movl $0x100, %ecx\n"
-        ".Lf2024dc_00202510:\n"
-        "movl -0x30(%ebp), %edi\n" /* line 352 | val */
-        "movl 4(%edi), %eax\n" /* val */
-        "movl 0x6c(%edi), %edx\n" /* val */
-        "movl %edx, 0xc(%esp)\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* val */
-        "calll *8(%eax)\n"
-        "movl -0x2c(%ebp), %edx\n" /* cquantize */
-        "movl %eax, 0x18(%edx)\n"
-        "movl 0x14(%edx), %esi\n" /* line 358 */
-        "movl %esi, -0x20(%ebp)\n" /* blksize */
-        "movl 0x6c(%edi), %eax\n" /* line 360 | val */
-        "testl %eax, %eax\n"
-        "jle .Lf2024dc_00202657\n"
-        "movl %edx, -0x10(%ebp)\n"
-        "movl $0, -0x24(%ebp)\n" /* i */
-        "movl $0, -0x14(%ebp)\n"
-        ".Lf2024dc_00202557:\n"
-        "movl -0x10(%ebp), %edi\n" /* line 362 | val */
-        "movl 0x20(%edi), %ecx\n" /* val */
-        "movl -0x20(%ebp), %eax\n" /* line 363 | blksize */
-        "cltd\n"
-        "idivl %ecx\n"
-        "movl %eax, -0x34(%ebp)\n"
-        "movl %eax, -0x20(%ebp)\n" /* blksize */
-        "movl -0x1c(%ebp), %eax\n" /* line 366 | pad */
-        "testl %eax, %eax\n"
-        "je .Lf2024dc_0020257f\n"
-        "movl -0x14(%ebp), %eax\n" /* line 367 */
-        "movl -0x2c(%ebp), %edx\n" /* cquantize */
-        "addl 0x18(%edx), %eax\n"
-        "addl $0xff, (%eax)\n"
-        ".Lf2024dc_0020257f:\n"
-        "movl -0x2c(%ebp), %esi\n" /* line 371 | cquantize */
-        "movl 0x18(%esi), %eax\n"
-        "movl -0x14(%ebp), %edi\n" /* val */
-        "movl (%eax, %edi), %eax\n"
-        "movl %eax, -0x28(%ebp)\n" /* indexptr */
-        "leal -1(%ecx), %eax\n" /* line 373 */
-        "movl %eax, -0x18(%ebp)\n" /* maxj */
-        /* { scope 2 */
-        "addl %eax, %eax\n" /* line 264 */
-        "movl %eax, -0x4c(%ebp)\n"
-        "leal 0xfe(%ecx), %edx\n"
-        "movl %edx, %eax\n"
-        "cltd\n"
-        "idivl -0x4c(%ebp)\n"
-        "movl %eax, %ecx\n"
-        "xorl %edi, %edi\n"
-        "movl $0, -0xc(%ebp)\n"
-        /* } scope */
-        ".Lf2024dc_002025b0:\n"
-        "cmpl -0xc(%ebp), %ecx\n" /* line 375 */
-        "jge .Lf2024dc_002025e6\n"
-        "leal (%edi, %edi), %edx\n" /* val */
-        "movl %edi, %eax\n" /* val */
-        "shll $9, %eax\n"
-        "subl %edx, %eax\n"
-        "movl -0x18(%ebp), %edx\n" /* maxj */
-        "leal 0x2fd(%edx, %eax), %eax\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        "jmp .Lf2024dc_002025d1\n"
-        ".Lf2024dc_002025ce:\n"
-        "movl -0x3c(%ebp), %eax\n"
-        ".Lf2024dc_002025d1:\n"
-        "addl $1, %edi\n" /* line 376 | val */
-        "cltd\n" /* line 264 */
-        "idivl -0x4c(%ebp)\n"
-        "movl %eax, %ecx\n"
-        "addl $0x1fe, -0x3c(%ebp)\n"
-        "cmpl -0xc(%ebp), %eax\n" /* line 375 */
-        "jl .Lf2024dc_002025ce\n"
-        ".Lf2024dc_002025e6:\n"
-        "movl -0x34(%ebp), %edx\n" /* line 378 */
-        "imull %edi, %edx\n" /* val */
-        "movl -0xc(%ebp), %esi\n"
-        "movl -0x28(%ebp), %eax\n" /* indexptr */
-        "movb %dl, (%esi, %eax)\n"
-        "addl $1, %esi\n" /* line 374 */
-        "movl %esi, -0xc(%ebp)\n"
-        "cmpl $0x100, %esi\n"
-        "jne .Lf2024dc_002025b0\n"
-        "movl -0x1c(%ebp), %edi\n" /* line 381 | pad, val */
-        "testl %edi, %edi\n" /* val */
-        "je .Lf2024dc_0020263c\n"
-        "movl -0x28(%ebp), %esi\n" /* indexptr */
-        "addl $0xff, %esi\n"
-        "movl $1, %ecx\n"
-        "movl $0xff, %edx\n"
-        ".Lf2024dc_0020261d:\n"
-        "movl -0x28(%ebp), %edi\n" /* line 383 | indexptr, val */
-        "movzbl (%edi), %eax\n" /* val */
-        "movb %al, -0x100(%edi, %edx)\n" /* val */
-        "movzbl (%esi), %eax\n" /* line 384 */
-        "movb %al, 0xff(%edi, %ecx)\n" /* val */
-        "addl $1, %ecx\n" /* line 382 */
-        "subl $1, %edx\n"
-        "jne .Lf2024dc_0020261d\n"
-        ".Lf2024dc_0020263c:\n"
-        "addl $1, -0x24(%ebp)\n" /* line 360 | i */
-        "addl $4, -0x14(%ebp)\n"
-        "addl $4, -0x10(%ebp)\n"
-        "movl -0x24(%ebp), %edx\n" /* i */
-        "movl -0x30(%ebp), %eax\n"
-        "cmpl %edx, 0x6c(%eax)\n"
-        "jg .Lf2024dc_00202557\n"
-        ".Lf2024dc_00202657:\n"
-        "addl $0x60, %esp\n" /* line 387 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf2024dc_0020265e:\n"
-        "movb $1, 0x1c(%eax)\n" /* line 346 */
-        "movl $0x1fe, -0x1c(%ebp)\n" /* pad */
-        "movl $0x2fe, %ecx\n"
-        "jmp .Lf2024dc_00202510\n"
-    );
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  JSAMPARRAY colorindex = cquantize->colorindex;
+  register int pixcode, ci;
+  register JSAMPROW ptrin, ptrout;
+  int row;
+  JDIMENSION col;
+  JDIMENSION width = cinfo->output_width;
+  register int nc = cinfo->out_color_components;
+
+  for (row = 0; row < num_rows; row++) {
+    ptrin = input_buf[row];
+    ptrout = output_buf[row];
+    for (col = width; col > 0; col--) {
+      pixcode = 0;
+      for (ci = 0; ci < nc; ci++) {
+	pixcode += GETJSAMPLE(colorindex[ci][GETJSAMPLE(*ptrin++)]);
+      }
+      *ptrout++ = (JSAMPLE) pixcode;
+    }
+  }
 }
 
-/* line 822 */
-__attribute__((naked))
-void jinit_1pass_quantizer(j_decompress_ptr cinfo)
+
+METHODDEF(void)
+color_quantize3 (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+		 JSAMPARRAY output_buf, int num_rows)
+/* Fast path for out_color_components==3, no dithering */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 822 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %edx\n" /* line 825 | cinfo */
-        "movl 4(%edx), %eax\n"
-        "movl $0x58, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "movl 8(%ebp), %ecx\n" /* line 828 | cinfo */
-        "movl %eax, 0x1b0(%ecx)\n"
-        "leal 0x3db(%ebx), %edx\n" /* line 829 */
-        "movl %edx, (%eax)\n"
-        "leal -0x1c3(%ebx), %edx\n" /* line 830 */
-        "movl %edx, 8(%eax)\n"
-        "leal -0x1be(%ebx), %edx\n" /* line 831 */
-        "movl %edx, 0xc(%eax)\n"
-        "movl $0, 0x44(%eax)\n" /* line 832 */
-        "movl $0, 0x34(%eax)\n" /* line 833 */
-        "cmpl $4, 0x6c(%ecx)\n" /* line 836 */
-        "jg .Lf202673_002029aa\n"
-        ".Lf202673_002026d7:\n"
-        "movl 8(%ebp), %esi\n" /* line 839 | cinfo, nc */
-        "cmpl $0x100, 0x5c(%esi)\n" /* nc */
-        "jg .Lf202673_00202986\n"
-        "movl %esi, %edi\n" /* nc, i */
-        "movl %esi, %eax\n" /* nc */
-        /* { scope 1: Ncolors, j, ci */
-        ".Lf202673_002026eb:\n"
-        "movl 0x1b0(%edi), %edi\n" /* line 275 */
-        "movl %edi, -0x58(%ebp)\n" /* cquantize */
-        "addl $0x20, %edi\n" /* line 281 */
-        "movl %edi, -0x4c(%ebp)\n" /* Ncolors */
-        /* { scope 2: max_colors, j, changed */
-        /* { scope 3 */
-        "movl 0x6c(%eax), %esi\n" /* line 191 | nc */
-        "movl 0x5c(%eax), %edx\n" /* line 192 */
-        "movl %edx, -0x48(%ebp)\n" /* max_colors */
-        "movl $1, %ecx\n"
-        "jmp .Lf202673_00202711\n"
-        ".Lf202673_0020270a:\n"
-        "movl %ecx, %edx\n" /* line 204 */
-        "cmpl %edx, -0x48(%ebp)\n" /* line 206 | max_colors */
-        "jl .Lf202673_0020272f\n"
-        ".Lf202673_00202711:\n"
-        "addl $1, %ecx\n" /* line 202 */
-        "cmpl $1, %esi\n" /* line 204 | nc */
-        "jle .Lf202673_0020270a\n"
-        "movl %ecx, %edx\n"
-        "movl $1, %eax\n"
-        ".Lf202673_00202720:\n"
-        "imull %ecx, %edx\n" /* line 205 */
-        "addl $1, %eax\n" /* line 204 */
-        "cmpl %eax, %esi\n" /* nc */
-        "jne .Lf202673_00202720\n"
-        "cmpl %edx, -0x48(%ebp)\n" /* line 206 | max_colors */
-        "jge .Lf202673_00202711\n"
-        ".Lf202673_0020272f:\n"
-        "leal -1(%ecx), %edi\n" /* line 207 */
-        "cmpl $1, %edi\n" /* line 210 */
-        "jle .Lf202673_002029c8\n"
-        ".Lf202673_0020273b:\n"
-        "testl %esi, %esi\n" /* line 215 | nc */
-        "jg .Lf202673_002028b1\n"
-        "movl $1, -0x20(%ebp)\n"
-        ".Lf202673_0020274a:\n"
-        "testl %esi, %esi\n" /* line 227 | nc */
-        "jg .Lf202673_002029e5\n"
-        "movl -0x20(%ebp), %esi\n" /* nc */
-        "movl %esi, -0x1c(%ebp)\n" /* nc */
-        /* } scope */
-        /* } scope */
-        ".Lf202673_00202758:\n"
-        "movl 8(%ebp), %ecx\n" /* line 284 | cinfo */
-        "cmpl $3, 0x6c(%ecx)\n"
-        "je .Lf202673_00202948\n"
-        "movl %ecx, %edx\n"
-        "movl (%ecx), %eax\n" /* line 289 */
-        "movl $0x5f, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl -0x20(%ebp), %ecx\n"
-        "movl %ecx, 0x18(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *4(%eax)\n"
-        ".Lf202673_00202788:\n"
-        "movl 8(%ebp), %esi\n" /* line 295 | cinfo, nc */
-        "movl 4(%esi), %edx\n" /* nc */
-        "movl 0x6c(%esi), %eax\n" /* nc */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x20(%ebp), %edi\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* nc */
-        "calll *8(%edx)\n"
-        "movl %eax, -0x54(%ebp)\n" /* colormap */
-        "movl 0x6c(%esi), %edx\n" /* line 303 | nc */
-        "testl %edx, %edx\n"
-        "jle .Lf202673_0020288a\n"
-        "movl -0x58(%ebp), %eax\n" /* cquantize */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl $0, -0x38(%ebp)\n" /* ci */
-        "movl %eax, %edx\n"
-        "movl -0x1c(%ebp), %eax\n"
-        ".Lf202673_002027ca:\n"
-        "movl 0x20(%edx), %edx\n" /* line 305 */
-        "movl %edx, -0x50(%ebp)\n" /* nci */
-        "cltd\n" /* line 306 */
-        "idivl -0x50(%ebp)\n" /* nci */
-        "movl %eax, -0x74(%ebp)\n"
-        "movl -0x50(%ebp), %eax\n" /* line 307 | nci */
-        "testl %eax, %eax\n"
-        "jle .Lf202673_00202869\n"
-        "movl -0x50(%ebp), %edx\n" /* nci */
-        "subl $1, %edx\n"
-        "movl %edx, -0x30(%ebp)\n"
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "addl %edx, %eax\n"
-        "sarl $1, %eax\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl $0, -0x3c(%ebp)\n" /* j */
-        /* { scope 2: max_colors, j, changed */
-        ".Lf202673_002027fe:\n"
-        "cltd\n" /* line 254 */
-        "idivl -0x30(%ebp)\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        /* } scope */
-        "movl -0x3c(%ebp), %edx\n" /* line 311 | j */
-        "imull -0x74(%ebp), %edx\n"
-        "movl %edx, -0x70(%ebp)\n" /* ptr */
-        "movl -0x20(%ebp), %ecx\n"
-        "cmpl %ecx, %edx\n"
-        "jge .Lf202673_00202851\n"
-        ".Lf202673_00202816:\n"
-        "movl -0x74(%ebp), %eax\n" /* line 313 */
-        "testl %eax, %eax\n"
-        "jle .Lf202673_00202843\n"
-        "movzbl -0x5c(%ebp), %edx\n"
-        "movb %dl, -0x69(%ebp)\n"
-        "xorl %edx, %edx\n"
-        ".Lf202673_00202826:\n"
-        "movl %edx, %eax\n" /* line 314 */
-        "movl -0x38(%ebp), %esi\n" /* ci, nc */
-        "movl -0x54(%ebp), %edi\n" /* colormap */
-        "addl (%edi, %esi, 4), %eax\n"
-        "movzbl -0x69(%ebp), %ecx\n"
-        "movl -0x70(%ebp), %esi\n" /* ptr, nc */
-        "movb %cl, (%eax, %esi)\n"
-        "addl $1, %edx\n" /* line 313 */
-        "cmpl %edx, -0x74(%ebp)\n"
-        "jne .Lf202673_00202826\n"
-        ".Lf202673_00202843:\n"
-        "movl -0x1c(%ebp), %edi\n" /* line 311 */
-        "addl %edi, -0x70(%ebp)\n" /* ptr */
-        "movl -0x20(%ebp), %eax\n"
-        "cmpl %eax, -0x70(%ebp)\n" /* ptr */
-        "jl .Lf202673_00202816\n"
-        ".Lf202673_00202851:\n"
-        "addl $1, -0x3c(%ebp)\n" /* line 307 | j */
-        "addl $0xff, -0x2c(%ebp)\n"
-        "movl -0x3c(%ebp), %ecx\n" /* j */
-        "cmpl %ecx, -0x50(%ebp)\n" /* nci */
-        "je .Lf202673_00202869\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "jmp .Lf202673_002027fe\n"
-        ".Lf202673_00202869:\n"
-        "addl $1, -0x38(%ebp)\n" /* line 303 | ci */
-        "addl $4, -0x28(%ebp)\n"
-        "movl -0x38(%ebp), %esi\n" /* ci, nc */
-        "movl 8(%ebp), %edi\n" /* cinfo */
-        "cmpl 0x6c(%edi), %esi\n" /* nc */
-        "jge .Lf202673_002028d5\n"
-        "movl -0x74(%ebp), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x28(%ebp), %edx\n"
-        "jmp .Lf202673_002027ca\n"
-        ".Lf202673_0020288a:\n"
-        "movl %eax, %ecx\n"
-        "movl -0x58(%ebp), %edx\n" /* line 323 | cquantize */
-        "movl %ecx, 0x10(%edx)\n"
-        "movl -0x20(%ebp), %esi\n" /* line 324 | nc */
-        "movl %esi, 0x14(%edx)\n" /* nc */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 844 | cinfo */
-        "calll create_colorindex\n"
-        "movl 8(%ebp), %edi\n" /* line 852 | cinfo, i */
-        "cmpl $2, 0x54(%edi)\n" /* i */
-        "je .Lf202673_002028f5\n"
-        ".Lf202673_002028a9:\n"
-        "addl $0x7c, %esp\n" /* line 854 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: Ncolors, j, ci */
-        /* { scope 2: max_colors, j, changed */
-        /* { scope 3 */
-        ".Lf202673_002028b1:\n"
-        "xorl %eax, %eax\n" /* line 215 */
-        "movl $1, -0x20(%ebp)\n"
-        ".Lf202673_002028ba:\n"
-        "movl -0x4c(%ebp), %edx\n" /* line 216 | Ncolors */
-        "movl %edi, (%edx, %eax, 4)\n"
-        "movl -0x20(%ebp), %ecx\n" /* line 217 */
-        "imull %edi, %ecx\n"
-        "movl %ecx, -0x20(%ebp)\n"
-        "addl $1, %eax\n" /* line 215 */
-        "cmpl %eax, %esi\n" /* nc */
-        "jne .Lf202673_002028ba\n"
-        "jmp .Lf202673_0020274a\n"
-        ".Lf202673_002028d5:\n"
-        "movl -0x54(%ebp), %ecx\n" /* colormap */
-        /* } scope */
-        /* } scope */
-        "movl -0x58(%ebp), %edx\n" /* line 323 | cquantize */
-        "movl %ecx, 0x10(%edx)\n"
-        "movl -0x20(%ebp), %esi\n" /* line 324 | nc */
-        "movl %esi, 0x14(%edx)\n" /* nc */
-        /* } scope */
-        "movl 8(%ebp), %eax\n" /* line 844 | cinfo */
-        "calll create_colorindex\n"
-        "movl 8(%ebp), %edi\n" /* line 852 | cinfo, i */
-        "cmpl $2, 0x54(%edi)\n" /* i */
-        "jne .Lf202673_002028a9\n"
-        /* { scope 1: Ncolors, j, ci */
-        ".Lf202673_002028f5:\n"
-        "movl 0x1b0(%edi), %edx\n" /* line 724 | cquantize */
-        "movl 0x64(%edi), %eax\n" /* line 728 | i */
-        "leal 4(%eax, %eax), %eax\n"
-        "movl %eax, -0x34(%ebp)\n" /* arraysize */
-        "movl 0x6c(%edi), %eax\n" /* line 729 | i */
-        "testl %eax, %eax\n"
-        "jle .Lf202673_002028a9\n"
-        "movl %edx, %esi\n" /* nc */
-        "xorl %edi, %edi\n" /* i */
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "jmp .Lf202673_00202917\n"
-        ".Lf202673_00202915:\n"
-        "movl %eax, %edx\n"
-        ".Lf202673_00202917:\n"
-        "movl 4(%edx), %eax\n" /* line 730 */
-        "movl -0x34(%ebp), %ecx\n" /* arraysize */
-        "movl %ecx, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *4(%eax)\n"
-        "movl %eax, 0x44(%esi)\n" /* nc */
-        "addl $1, %edi\n" /* line 729 | i */
-        "addl $4, %esi\n" /* nc */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "cmpl %edi, 0x6c(%eax)\n" /* i */
-        "jg .Lf202673_00202915\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 854 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: Ncolors, j, ci */
-        /* { scope 2: max_colors, j, changed */
-        ".Lf202673_00202948:\n"
-        "movl (%ecx), %eax\n" /* line 285 */
-        "leal 0x18(%eax), %edx\n" /* _mp */
-        "movl -0x20(%ebp), %esi\n" /* nc */
-        "movl %esi, 0x18(%eax)\n" /* nc */
-        "movl -0x58(%ebp), %edi\n" /* cquantize */
-        "movl 0x20(%edi), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 0x24(%edi), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl 0x28(%edi), %eax\n"
-        "movl %eax, 0xc(%edx)\n"
-        "movl (%ecx), %eax\n"
-        "movl $0x5e, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl $1, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *4(%eax)\n"
-        "jmp .Lf202673_00202788\n"
-        /* } scope */
-        /* } scope */
-        ".Lf202673_00202986:\n"
-        "movl (%esi), %eax\n" /* line 840 | nc */
-        "movl $0x39, 0x14(%eax)\n"
-        "movl (%esi), %eax\n" /* nc */
-        "movl $0x100, 0x18(%eax)\n"
-        "movl (%esi), %eax\n" /* nc */
-        "movl %esi, (%esp)\n" /* nc */
-        "calll *(%eax)\n"
-        "movl 8(%ebp), %edi\n" /* cinfo, i */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "jmp .Lf202673_002026eb\n"
-        ".Lf202673_002029aa:\n"
-        "movl (%ecx), %eax\n" /* line 837 */
-        "movl $0x37, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl $4, 0x18(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf202673_002026d7\n"
-        /* { scope 1: Ncolors, j, ci */
-        /* { scope 2: max_colors, j, changed */
-        /* { scope 3 */
-        ".Lf202673_002029c8:\n"
-        "movl 8(%ebp), %ecx\n" /* line 211 | cinfo */
-        "movl (%ecx), %eax\n"
-        "movl $0x38, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %edx, 0x18(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf202673_0020273b\n"
-        ".Lf202673_002029e5:\n"
-        "movl -0x20(%ebp), %edi\n" /* line 227 */
-        "movl %edi, -0x1c(%ebp)\n"
-        "leal 0x104cff(%ebx), %eax\n"
-        "movl %eax, -0x60(%ebp)\n"
-        ".Lf202673_002029f4:\n"
-        "movl $0, -0x44(%ebp)\n" /* j */
-        "movb $0, -0x3d(%ebp)\n" /* changed */
-        "movl -0x60(%ebp), %edx\n"
-        "movl %edx, -0x24(%ebp)\n"
-        ".Lf202673_00202a05:\n"
-        "movl 8(%ebp), %ecx\n" /* line 228 | cinfo */
-        "cmpl $2, 0x34(%ecx)\n"
-        "je .Lf202673_00202a44\n"
-        "movl -0x44(%ebp), %eax\n" /* j */
-        ".Lf202673_00202a11:\n"
-        "movl -0x4c(%ebp), %edx\n" /* line 230 | Ncolors */
-        "leal (%edx, %eax, 4), %edi\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "cltd\n"
-        "idivl (%edi)\n"
-        "movl %eax, %ecx\n"
-        "movl (%edi), %eax\n" /* line 231 */
-        "addl $1, %eax\n"
-        "imull %eax, %ecx\n"
-        "cmpl %ecx, -0x48(%ebp)\n" /* line 232 | max_colors */
-        "jl .Lf202673_00202a4b\n"
-        "movl %eax, (%edi)\n" /* line 234 */
-        "addl $1, -0x44(%ebp)\n" /* line 227 | j */
-        "addl $4, -0x24(%ebp)\n"
-        "movb $1, -0x3d(%ebp)\n" /* changed */
-        "movl %ecx, -0x1c(%ebp)\n"
-        "cmpl -0x44(%ebp), %esi\n" /* j, nc */
-        "jne .Lf202673_00202a05\n"
-        "jmp .Lf202673_002029f4\n"
-        ".Lf202673_00202a44:\n"
-        "movl -0x24(%ebp), %edi\n" /* line 228 */
-        "movl (%edi), %eax\n"
-        "jmp .Lf202673_00202a11\n"
-        ".Lf202673_00202a4b:\n"
-        "cmpb $0, -0x3d(%ebp)\n" /* line 238 | changed */
-        "jne .Lf202673_002029f4\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "movl %edx, -0x20(%ebp)\n"
-        "jmp .Lf202673_00202758\n"
-    );
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  register int pixcode;
+  register JSAMPROW ptrin, ptrout;
+  JSAMPROW colorindex0 = cquantize->colorindex[0];
+  JSAMPROW colorindex1 = cquantize->colorindex[1];
+  JSAMPROW colorindex2 = cquantize->colorindex[2];
+  int row;
+  JDIMENSION col;
+  JDIMENSION width = cinfo->output_width;
+
+  for (row = 0; row < num_rows; row++) {
+    ptrin = input_buf[row];
+    ptrout = output_buf[row];
+    for (col = width; col > 0; col--) {
+      pixcode  = GETJSAMPLE(colorindex0[GETJSAMPLE(*ptrin++)]);
+      pixcode += GETJSAMPLE(colorindex1[GETJSAMPLE(*ptrin++)]);
+      pixcode += GETJSAMPLE(colorindex2[GETJSAMPLE(*ptrin++)]);
+      *ptrout++ = (JSAMPLE) pixcode;
+    }
+  }
 }
 
-/* line 742 */
-static __attribute__((naked))
-void start_pass_1_quant(j_decompress_ptr cinfo, int is_pre_scan)
+
+METHODDEF(void)
+quantize_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+		     JSAMPARRAY output_buf, int num_rows)
+/* General case, with ordered dithering */
 {
-    __asm__ __volatile__ (
-        /* { scope 1: cquantize, odither, i, arraysize, ... */
-        "pushl %ebp\n" /* line 742 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, -0x3c(%ebp)\n" /* cinfo */
-        "movl 0x1b0(%eax), %esi\n" /* line 743 | cquantize */
-        "movl 0x10(%esi), %eax\n" /* line 748 | cquantize */
-        "movl -0x3c(%ebp), %edx\n" /* cinfo */
-        "movl %eax, 0x7c(%edx)\n"
-        "movl 0x14(%esi), %eax\n" /* line 749 | cquantize */
-        "movl %eax, 0x78(%edx)\n"
-        "movl 0x54(%edx), %eax\n" /* line 752 */
-        "cmpl $1, %eax\n"
-        "je .Lf202a5c_00202ad2\n"
-        "jae .Lf202a5c_00202aad\n"
-        "movl -0x3c(%ebp), %ecx\n" /* line 754 | cinfo */
-        "cmpl $3, 0x6c(%ecx)\n"
-        "je .Lf202a5c_00202c2f\n"
-        "leal -0xbaa(%ebx), %eax\n" /* line 757 */
-        "movl %eax, 4(%esi)\n" /* cquantize */
-        ".Lf202a5c_00202aa5:\n"
-        "addl $0x4c, %esp\n" /* line 790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf202a5c_00202aad:\n"
-        "cmpl $2, %eax\n" /* line 752 */
-        "je .Lf202a5c_00202c40\n"
-        "movl -0x3c(%ebp), %ecx\n" /* line 787 | cinfo */
-        "movl (%ecx), %eax\n"
-        "movl $0x30, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, 8(%ebp)\n" /* cinfo */
-        "movl (%eax), %ecx\n"
-        "addl $0x4c, %esp\n" /* line 790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 787 */
-        ".Lf202a5c_00202ad2:\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 760 | cinfo */
-        "cmpl $3, 0x6c(%eax)\n"
-        "je .Lf202a5c_00202ca2\n"
-        "leal -0xa40(%ebx), %eax\n" /* line 763 */
-        "movl %eax, 4(%esi)\n" /* cquantize */
-        ".Lf202a5c_00202ae8:\n"
-        "movl $0, 0x30(%esi)\n" /* line 764 | cquantize */
-        "cmpb $0, 0x1c(%esi)\n" /* line 769 | cquantize */
-        "je .Lf202a5c_00202c95\n"
-        ".Lf202a5c_00202af9:\n"
-        "movl 0x34(%esi), %eax\n" /* line 772 | cquantize */
-        "testl %eax, %eax\n"
-        "jne .Lf202a5c_00202aa5\n"
-        /* { scope 2 */
-        "movl -0x3c(%ebp), %edx\n" /* line 434 | cinfo */
-        "movl 0x1b0(%edx), %edx\n"
-        "movl %edx, -0x34(%ebp)\n" /* cquantize */
-        "movl -0x3c(%ebp), %ecx\n" /* line 438 | cinfo */
-        "movl 0x6c(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf202a5c_00202aa5\n"
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl $0, -0x2c(%ebp)\n" /* i */
-        "leal 0x104816(%ebx), %eax\n"
-        "movl %eax, -0x44(%ebp)\n"
-        "movl 0x20(%edx), %esi\n" /* line 439 */
-        "movl -0x2c(%ebp), %eax\n" /* line 441 | i */
-        "testl %eax, %eax\n"
-        "jle .Lf202a5c_00202b91\n"
-        ".Lf202a5c_00202b33:\n"
-        "movl -0x34(%ebp), %ecx\n" /* line 442 | cquantize */
-        "cmpl 0x20(%ecx), %esi\n"
-        "je .Lf202a5c_00202c28\n"
-        "movl %ecx, %edx\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf202a5c_00202b43:\n"
-        "addl $1, %ecx\n" /* line 441 */
-        "cmpl %ecx, -0x2c(%ebp)\n" /* i */
-        "je .Lf202a5c_00202b91\n"
-        "movl 0x24(%edx), %eax\n" /* line 442 */
-        "addl $4, %edx\n"
-        "cmpl %esi, %eax\n"
-        "jne .Lf202a5c_00202b43\n"
-        ".Lf202a5c_00202b55:\n"
-        "movl -0x34(%ebp), %eax\n" /* line 443 | cquantize */
-        "movl 0x34(%eax, %ecx, 4), %ecx\n"
-        "movl %ecx, -0x30(%ebp)\n" /* odither */
-        "testl %ecx, %ecx\n" /* line 447 */
-        "je .Lf202a5c_00202b91\n"
-        "movl %ecx, %eax\n"
-        ".Lf202a5c_00202b65:\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 449 */
-        "movl %eax, 0x34(%ecx)\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 438 | i */
-        "addl $4, %ecx\n"
-        "movl %ecx, -0x1c(%ebp)\n"
-        "movl -0x2c(%ebp), %ecx\n" /* i */
-        "movl -0x3c(%ebp), %edx\n" /* cinfo */
-        "cmpl 0x6c(%edx), %ecx\n"
-        "jge .Lf202a5c_00202aa5\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "movl 0x20(%edx), %esi\n" /* line 439 */
-        "movl -0x2c(%ebp), %eax\n" /* line 441 | i */
-        "testl %eax, %eax\n"
-        "jg .Lf202a5c_00202b33\n"
-        /* { scope 3: j */
-        /* { scope 4 */
-        ".Lf202a5c_00202b91:\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 402 | cinfo */
-        "movl 4(%edx), %eax\n"
-        "movl $0x400, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "movl %eax, -0x30(%ebp)\n" /* odither */
-        "shll $9, %esi\n" /* line 410 */
-        "leal -0x200(%esi), %edi\n" /* den */
-        "movl %eax, %edx\n"
-        "movl $0, -0x28(%ebp)\n" /* j */
-        ".Lf202a5c_00202bc1:\n"
-        "movl -0x28(%ebp), %eax\n" /* j */
-        "shll $4, %eax\n"
-        "movl -0x44(%ebp), %ecx\n"
-        "leal (%eax, %ecx), %esi\n"
-        "movl %edx, %ecx\n"
-        "leal 0x40(%edx), %eax\n"
-        "movl %eax, -0x40(%ebp)\n"
-        "jmp .Lf202a5c_00202be7\n"
-        ".Lf202a5c_00202bd7:\n"
-        "cltd\n" /* line 418 */
-        "idivl %edi\n" /* den */
-        "movl %eax, (%ecx)\n"
-        "addl $1, %esi\n"
-        "addl $4, %ecx\n"
-        "cmpl %ecx, -0x40(%ebp)\n" /* line 412 */
-        "je .Lf202a5c_00202c11\n"
-        ".Lf202a5c_00202be7:\n"
-        "movzbl (%esi), %eax\n" /* line 413 */
-        "leal (%eax, %eax), %edx\n"
-        "shll $9, %eax\n"
-        "subl %edx, %eax\n"
-        "movl $0xfe01, %edx\n" /* line 418 */
-        "subl %eax, %edx\n"
-        "movl %edx, %eax\n"
-        "jns .Lf202a5c_00202bd7\n"
-        "negl %eax\n"
-        "cltd\n"
-        "idivl %edi\n" /* den */
-        "negl %eax\n"
-        "movl %eax, (%ecx)\n"
-        "addl $1, %esi\n"
-        "addl $4, %ecx\n"
-        "cmpl %ecx, -0x40(%ebp)\n" /* line 412 */
-        "jne .Lf202a5c_00202be7\n"
-        ".Lf202a5c_00202c11:\n"
-        "addl $1, -0x28(%ebp)\n" /* line 411 | j */
-        "cmpl $0x10, -0x28(%ebp)\n" /* j */
-        "je .Lf202a5c_00202c20\n"
-        "movl -0x40(%ebp), %edx\n"
-        "jmp .Lf202a5c_00202bc1\n"
-        ".Lf202a5c_00202c20:\n"
-        "movl -0x30(%ebp), %eax\n" /* odither */
-        "jmp .Lf202a5c_00202b65\n"
-        /* } scope */
-        /* } scope */
-        ".Lf202a5c_00202c28:\n"
-        "xorl %ecx, %ecx\n" /* line 442 */
-        "jmp .Lf202a5c_00202b55\n"
-        /* } scope */
-        ".Lf202a5c_00202c2f:\n"
-        "leal -0xae1(%ebx), %eax\n" /* line 755 */
-        "movl %eax, 4(%esi)\n" /* cquantize */
-        "addl $0x4c, %esp\n" /* line 790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf202a5c_00202c40:\n"
-        "leal -0x7d2(%ebx), %eax\n" /* line 776 */
-        "movl %eax, 4(%esi)\n" /* cquantize */
-        "movb $0, 0x54(%esi)\n" /* line 777 | cquantize */
-        "movl 0x44(%esi), %eax\n" /* line 779 | cquantize */
-        "testl %eax, %eax\n"
-        "je .Lf202a5c_00202cb0\n"
-        "movl -0x3c(%ebp), %edx\n" /* cinfo */
-        "movl 0x64(%edx), %eax\n"
-        "movl %edx, %ecx\n"
-        ".Lf202a5c_00202c5c:\n"
-        "leal 4(%eax, %eax), %eax\n" /* line 782 */
-        "movl %eax, -0x38(%ebp)\n" /* arraysize */
-        "movl 0x6c(%ecx), %ecx\n" /* line 783 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf202a5c_00202aa5\n"
-        "xorl %edi, %edi\n" /* i */
-        ".Lf202a5c_00202c70:\n"
-        "movl -0x38(%ebp), %eax\n" /* line 784 | arraysize */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x44(%esi), %eax\n" /* cquantize */
-        "movl %eax, (%esp)\n"
-        "calll jzero_far\n"
-        "addl $1, %edi\n" /* line 783 | i */
-        "addl $4, %esi\n" /* cquantize */
-        "movl -0x3c(%ebp), %edx\n" /* cinfo */
-        "cmpl 0x6c(%edx), %edi\n" /* i */
-        "jl .Lf202a5c_00202c70\n"
-        "jmp .Lf202a5c_00202aa5\n"
-        ".Lf202a5c_00202c95:\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 770 | cinfo */
-        "calll create_colorindex\n"
-        "jmp .Lf202a5c_00202af9\n"
-        ".Lf202a5c_00202ca2:\n"
-        "leal -0x915(%ebx), %eax\n" /* line 761 */
-        "movl %eax, 4(%esi)\n" /* cquantize */
-        "jmp .Lf202a5c_00202ae8\n"
-        /* { scope 2 */
-        ".Lf202a5c_00202cb0:\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 724 | cinfo */
-        "movl 0x1b0(%eax), %edx\n" /* cquantize */
-        "movl 0x64(%eax), %eax\n" /* line 728 */
-        "leal 4(%eax, %eax), %ecx\n"
-        "movl %ecx, -0x24(%ebp)\n" /* arraysize */
-        "movl -0x3c(%ebp), %ecx\n" /* line 729 | cinfo */
-        "movl 0x6c(%ecx), %edi\n" /* den */
-        "testl %edi, %edi\n" /* den */
-        "jle .Lf202a5c_00202c5c\n"
-        "movl %edx, %edi\n" /* den */
-        "movl $0, -0x20(%ebp)\n" /* i */
-        ".Lf202a5c_00202cd6:\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 730 | cinfo */
-        "movl 4(%edx), %eax\n"
-        "movl -0x24(%ebp), %ecx\n" /* arraysize */
-        "movl %ecx, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *4(%eax)\n"
-        "movl %eax, 0x44(%edi)\n" /* den */
-        "addl $1, -0x20(%ebp)\n" /* line 729 | i */
-        "addl $4, %edi\n" /* den */
-        "movl -0x20(%ebp), %edx\n" /* i */
-        "movl -0x3c(%ebp), %eax\n" /* cinfo */
-        "cmpl %edx, 0x6c(%eax)\n"
-        "jg .Lf202a5c_00202cd6\n"
-        "movl 0x64(%eax), %eax\n"
-        "movl -0x3c(%ebp), %ecx\n" /* cinfo */
-        "jmp .Lf202a5c_00202c5c\n"
-    );
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  register JSAMPROW input_ptr;
+  register JSAMPROW output_ptr;
+  JSAMPROW colorindex_ci;
+  int * dither;			/* points to active row of dither matrix */
+  int row_index, col_index;	/* current indexes into dither matrix */
+  int nc = cinfo->out_color_components;
+  int ci;
+  int row;
+  JDIMENSION col;
+  JDIMENSION width = cinfo->output_width;
+
+  for (row = 0; row < num_rows; row++) {
+    /* Initialize output values to 0 so can process components separately */
+    jzero_far((void FAR *) output_buf[row],
+	      (size_t) (width * SIZEOF(JSAMPLE)));
+    row_index = cquantize->row_index;
+    for (ci = 0; ci < nc; ci++) {
+      input_ptr = input_buf[row] + ci;
+      output_ptr = output_buf[row];
+      colorindex_ci = cquantize->colorindex[ci];
+      dither = cquantize->odither[ci][row_index];
+      col_index = 0;
+
+      for (col = width; col > 0; col--) {
+	/* Form pixel value + dither, range-limit to 0..MAXJSAMPLE,
+	 * select output value, accumulate into output code for this pixel.
+	 * Range-limiting need not be done explicitly, as we have extended
+	 * the colorindex table to produce the right answers for out-of-range
+	 * inputs.  The maximum dither is +- MAXJSAMPLE; this sets the
+	 * required amount of padding.
+	 */
+	*output_ptr += colorindex_ci[GETJSAMPLE(*input_ptr)+dither[col_index]];
+	input_ptr += nc;
+	output_ptr++;
+	col_index = (col_index + 1) & ODITHER_MASK;
+      }
+    }
+    /* Advance row index for next row */
+    row_index = (row_index + 1) & ODITHER_MASK;
+    cquantize->row_index = row_index;
+  }
 }
 
+
+METHODDEF(void)
+quantize3_ord_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+		      JSAMPARRAY output_buf, int num_rows)
+/* Fast path for out_color_components==3, with ordered dithering */
+{
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  register int pixcode;
+  register JSAMPROW input_ptr;
+  register JSAMPROW output_ptr;
+  JSAMPROW colorindex0 = cquantize->colorindex[0];
+  JSAMPROW colorindex1 = cquantize->colorindex[1];
+  JSAMPROW colorindex2 = cquantize->colorindex[2];
+  int * dither0;		/* points to active row of dither matrix */
+  int * dither1;
+  int * dither2;
+  int row_index, col_index;	/* current indexes into dither matrix */
+  int row;
+  JDIMENSION col;
+  JDIMENSION width = cinfo->output_width;
+
+  for (row = 0; row < num_rows; row++) {
+    row_index = cquantize->row_index;
+    input_ptr = input_buf[row];
+    output_ptr = output_buf[row];
+    dither0 = cquantize->odither[0][row_index];
+    dither1 = cquantize->odither[1][row_index];
+    dither2 = cquantize->odither[2][row_index];
+    col_index = 0;
+
+    for (col = width; col > 0; col--) {
+      pixcode  = GETJSAMPLE(colorindex0[GETJSAMPLE(*input_ptr++) +
+					dither0[col_index]]);
+      pixcode += GETJSAMPLE(colorindex1[GETJSAMPLE(*input_ptr++) +
+					dither1[col_index]]);
+      pixcode += GETJSAMPLE(colorindex2[GETJSAMPLE(*input_ptr++) +
+					dither2[col_index]]);
+      *output_ptr++ = (JSAMPLE) pixcode;
+      col_index = (col_index + 1) & ODITHER_MASK;
+    }
+    row_index = (row_index + 1) & ODITHER_MASK;
+    cquantize->row_index = row_index;
+  }
+}
+
+
+METHODDEF(void)
+quantize_fs_dither (j_decompress_ptr cinfo, JSAMPARRAY input_buf,
+		    JSAMPARRAY output_buf, int num_rows)
+/* General case, with Floyd-Steinberg dithering */
+{
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  register LOCFSERROR cur;	/* current error or pixel value */
+  LOCFSERROR belowerr;		/* error for pixel below cur */
+  LOCFSERROR bpreverr;		/* error for below/prev col */
+  LOCFSERROR bnexterr;		/* error for below/next col */
+  LOCFSERROR delta;
+  register FSERRPTR errorptr;	/* => fserrors[] at column before current */
+  register JSAMPROW input_ptr;
+  register JSAMPROW output_ptr;
+  JSAMPROW colorindex_ci;
+  JSAMPROW colormap_ci;
+  int pixcode;
+  int nc = cinfo->out_color_components;
+  int dir;			/* 1 for left-to-right, -1 for right-to-left */
+  int dirnc;			/* dir * nc */
+  int ci;
+  int row;
+  JDIMENSION col;
+  JDIMENSION width = cinfo->output_width;
+  JSAMPLE *range_limit = cinfo->sample_range_limit;
+  SHIFT_TEMPS
+
+  for (row = 0; row < num_rows; row++) {
+    /* Initialize output values to 0 so can process components separately */
+    jzero_far((void FAR *) output_buf[row],
+	      (size_t) (width * SIZEOF(JSAMPLE)));
+    for (ci = 0; ci < nc; ci++) {
+      input_ptr = input_buf[row] + ci;
+      output_ptr = output_buf[row];
+      if (cquantize->on_odd_row) {
+	/* work right to left in this row */
+	input_ptr += (width-1) * nc; /* so point to rightmost pixel */
+	output_ptr += width-1;
+	dir = -1;
+	dirnc = -nc;
+	errorptr = cquantize->fserrors[ci] + (width+1); /* => entry after last column */
+      } else {
+	/* work left to right in this row */
+	dir = 1;
+	dirnc = nc;
+	errorptr = cquantize->fserrors[ci]; /* => entry before first column */
+      }
+      colorindex_ci = cquantize->colorindex[ci];
+      colormap_ci = cquantize->sv_colormap[ci];
+      /* Preset error values: no error propagated to first pixel from left */
+      cur = 0;
+      /* and no error propagated to row below yet */
+      belowerr = bpreverr = 0;
+
+      for (col = width; col > 0; col--) {
+	/* cur holds the error propagated from the previous pixel on the
+	 * current line.  Add the error propagated from the previous line
+	 * to form the complete error correction term for this pixel, and
+	 * round the error term (which is expressed * 16) to an integer.
+	 * RIGHT_SHIFT rounds towards minus infinity, so adding 8 is correct
+	 * for either sign of the error value.
+	 * Note: errorptr points to *previous* column's array entry.
+	 */
+	cur = RIGHT_SHIFT(cur + errorptr[dir] + 8, 4);
+	/* Form pixel value + error, and range-limit to 0..MAXJSAMPLE.
+	 * The maximum error is +- MAXJSAMPLE; this sets the required size
+	 * of the range_limit array.
+	 */
+	cur += GETJSAMPLE(*input_ptr);
+	cur = GETJSAMPLE(range_limit[cur]);
+	/* Select output value, accumulate into output code for this pixel */
+	pixcode = GETJSAMPLE(colorindex_ci[cur]);
+	*output_ptr += (JSAMPLE) pixcode;
+	/* Compute actual representation error at this pixel */
+	/* Note: we can do this even though we don't have the final */
+	/* pixel code, because the colormap is orthogonal. */
+	cur -= GETJSAMPLE(colormap_ci[pixcode]);
+	/* Compute error fractions to be propagated to adjacent pixels.
+	 * Add these into the running sums, and simultaneously shift the
+	 * next-line error sums left by 1 column.
+	 */
+	bnexterr = cur;
+	delta = cur * 2;
+	cur += delta;		/* form error * 3 */
+	errorptr[0] = (FSERROR) (bpreverr + cur);
+	cur += delta;		/* form error * 5 */
+	bpreverr = belowerr + cur;
+	belowerr = bnexterr;
+	cur += delta;		/* form error * 7 */
+	/* At this point cur contains the 7/16 error value to be propagated
+	 * to the next pixel on the current line, and all the errors for the
+	 * next line have been shifted over. We are therefore ready to move on.
+	 */
+	input_ptr += dirnc;	/* advance input ptr to next column */
+	output_ptr += dir;	/* advance output ptr to next column */
+	errorptr += dir;	/* advance errorptr to current column */
+      }
+      /* Post-loop cleanup: we must unload the final error value into the
+       * final fserrors[] entry.  Note we need not unload belowerr because
+       * it is for the dummy column before or after the actual array.
+       */
+      errorptr[0] = (FSERROR) bpreverr; /* unload prev err into array */
+    }
+    cquantize->on_odd_row = (cquantize->on_odd_row ? FALSE : TRUE);
+  }
+}
+
+
+/*
+ * Allocate workspace for Floyd-Steinberg errors.
+ */
+
+LOCAL(void)
+alloc_fs_workspace (j_decompress_ptr cinfo)
+{
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  size_t arraysize;
+  int i;
+
+  arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
+  for (i = 0; i < cinfo->out_color_components; i++) {
+    cquantize->fserrors[i] = (FSERRPTR)
+      (*cinfo->mem->alloc_large)((j_common_ptr) cinfo, JPOOL_IMAGE, arraysize);
+  }
+}
+
+
+/*
+ * Initialize for one-pass color quantization.
+ */
+
+METHODDEF(void)
+start_pass_1_quant (j_decompress_ptr cinfo, boolean is_pre_scan)
+{
+  my_cquantize_ptr cquantize = (my_cquantize_ptr) cinfo->cquantize;
+  size_t arraysize;
+  int i;
+
+  /* Install my colormap. */
+  cinfo->colormap = cquantize->sv_colormap;
+  cinfo->actual_number_of_colors = cquantize->sv_actual;
+
+  /* Initialize for desired dithering mode. */
+  switch (cinfo->dither_mode) {
+  case JDITHER_NONE:
+    if (cinfo->out_color_components == 3)
+      cquantize->pub.color_quantize = color_quantize3;
+    else
+      cquantize->pub.color_quantize = color_quantize;
+    break;
+  case JDITHER_ORDERED:
+    if (cinfo->out_color_components == 3)
+      cquantize->pub.color_quantize = quantize3_ord_dither;
+    else
+      cquantize->pub.color_quantize = quantize_ord_dither;
+    cquantize->row_index = 0;	/* initialize state for ordered dither */
+    /* If user changed to ordered dither from another mode,
+     * we must recreate the color index table with padding.
+     * This will cost extra space, but probably isn't very likely.
+     */
+    if (! cquantize->is_padded)
+      create_colorindex(cinfo);
+    /* Create ordered-dither tables if we didn't already. */
+    if (cquantize->odither[0] == NULL)
+      create_odither_tables(cinfo);
+    break;
+  case JDITHER_FS:
+    cquantize->pub.color_quantize = quantize_fs_dither;
+    cquantize->on_odd_row = FALSE; /* initialize state for F-S dither */
+    /* Allocate Floyd-Steinberg workspace if didn't already. */
+    if (cquantize->fserrors[0] == NULL)
+      alloc_fs_workspace(cinfo);
+    /* Initialize the propagated errors to zero. */
+    arraysize = (size_t) ((cinfo->output_width + 2) * SIZEOF(FSERROR));
+    for (i = 0; i < cinfo->out_color_components; i++)
+      jzero_far((void FAR *) cquantize->fserrors[i], arraysize);
+    break;
+  default:
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+    break;
+  }
+}
+
+
+/*
+ * Finish up at the end of the pass.
+ */
+
+METHODDEF(void)
+finish_pass_1_quant (j_decompress_ptr cinfo)
+{
+  /* no work in 1-pass case */
+}
+
+
+/*
+ * Switch to a new external colormap between output passes.
+ * Shouldn't get to this module!
+ */
+
+METHODDEF(void)
+new_color_map_1_quant (j_decompress_ptr cinfo)
+{
+  ERREXIT(cinfo, JERR_MODE_CHANGE);
+}
+
+
+/*
+ * Module initialization routine for 1-pass color quantization.
+ */
+
+GLOBAL(void)
+jinit_1pass_quantizer (j_decompress_ptr cinfo)
+{
+  my_cquantize_ptr cquantize;
+
+  cquantize = (my_cquantize_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_cquantizer));
+  cinfo->cquantize = (struct jpeg_color_quantizer *) cquantize;
+  cquantize->pub.start_pass = start_pass_1_quant;
+  cquantize->pub.finish_pass = finish_pass_1_quant;
+  cquantize->pub.new_color_map = new_color_map_1_quant;
+  cquantize->fserrors[0] = NULL; /* Flag FS workspace not allocated */
+  cquantize->odither[0] = NULL;	/* Also flag odither arrays not allocated */
+
+  /* Make sure my internal arrays won't overflow */
+  if (cinfo->out_color_components > MAX_Q_COMPS)
+    ERREXIT1(cinfo, JERR_QUANT_COMPONENTS, MAX_Q_COMPS);
+  /* Make sure colormap indexes can be represented by JSAMPLEs */
+  if (cinfo->desired_number_of_colors > (MAXJSAMPLE+1))
+    ERREXIT1(cinfo, JERR_QUANT_MANY_COLORS, MAXJSAMPLE+1);
+
+  /* Create the colormap and color index table. */
+  create_colormap(cinfo);
+  create_colorindex(cinfo);
+
+  /* Allocate Floyd-Steinberg workspace now if requested.
+   * We do this now since it is FAR storage and may affect the memory
+   * manager's space calculations.  If the user changes to FS dither
+   * mode in a later pass, we will allocate the space then, and will
+   * possibly overrun the max_memory_to_use setting.
+   */
+  if (cinfo->dither_mode == JDITHER_FS)
+    alloc_fs_workspace(cinfo);
+}
+
+#endif /* QUANT_1PASS_SUPPORTED */

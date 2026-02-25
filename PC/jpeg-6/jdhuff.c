@@ -1,1573 +1,651 @@
-/* ASM dump from: jdhuff.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jdhuff.c */
+/*
+ * jdhuff.c
+ *
+ * Copyright (C) 1991-1997, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains Huffman entropy decoding routines.
+ *
+ * Much of the complexity here has to do with supporting input suspension.
+ * If the data source module demands suspension, we want to be able to back
+ * up to the start of the current MCU.  To do this, we copy state variables
+ * into local working storage, and update them back to the permanent
+ * storage only upon successful completion of an MCU.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jdhuff.h"		/* Declarations shared with jdphuff.c */
 
-static const int extend_test[16]; /* 0x3073e0 */
-static const int extend_offset[16]; /* 0x3073a0 */
 
-void jpeg_make_d_derived_tbl(j_decompress_ptr cinfo, int isDC, int tblno, d_derived_tbl * *pdtbl);
-static void start_pass_huff_decoder(j_decompress_ptr cinfo);
-boolean jpeg_fill_bit_buffer(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, int nbits);
-int jpeg_huff_decode(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, d_derived_tbl *htbl, int min_bits);
-void jinit_huff_decoder(j_decompress_ptr cinfo);
-static boolean decode_mcu(j_decompress_ptr cinfo, JBLOCKROW *MCU_data);
+/*
+ * Expanded entropy decoder object for Huffman decoding.
+ *
+ * The savable_state subrecord contains fields that change within an MCU,
+ * but must not be updated permanently until we complete the MCU.
+ */
 
-/* line 151 */
-__attribute__((naked))
-void jpeg_make_d_derived_tbl(j_decompress_ptr cinfo, int isDC, int tblno, d_derived_tbl * *pdtbl)
+typedef struct {
+  int last_dc_val[MAX_COMPS_IN_SCAN]; /* last DC coef for each component */
+} savable_state;
+
+/* This macro is to work around compilers with missing or broken
+ * structure assignment.  You'll need to fix this code if you have
+ * such a compiler and you change MAX_COMPS_IN_SCAN.
+ */
+
+#ifndef NO_STRUCT_ASSIGN
+#define ASSIGN_STATE(dest,src)  ((dest) = (src))
+#else
+#if MAX_COMPS_IN_SCAN == 4
+#define ASSIGN_STATE(dest,src)  \
+	((dest).last_dc_val[0] = (src).last_dc_val[0], \
+	 (dest).last_dc_val[1] = (src).last_dc_val[1], \
+	 (dest).last_dc_val[2] = (src).last_dc_val[2], \
+	 (dest).last_dc_val[3] = (src).last_dc_val[3])
+#endif
+#endif
+
+
+typedef struct {
+  struct jpeg_entropy_decoder pub; /* public fields */
+
+  /* These fields are loaded into local variables at start of each MCU.
+   * In case of suspension, we exit WITHOUT updating them.
+   */
+  bitread_perm_state bitstate;	/* Bit buffer at start of MCU */
+  savable_state saved;		/* Other state at start of MCU */
+
+  /* These fields are NOT loaded into local working state. */
+  unsigned int restarts_to_go;	/* MCUs left in this restart interval */
+
+  /* Pointers to derived tables (these workspaces have image lifespan) */
+  d_derived_tbl * dc_derived_tbls[NUM_HUFF_TBLS];
+  d_derived_tbl * ac_derived_tbls[NUM_HUFF_TBLS];
+
+  /* Precalculated info set up by start_pass for use in decode_mcu: */
+
+  /* Pointers to derived tables to be used for each block within an MCU */
+  d_derived_tbl * dc_cur_tbls[D_MAX_BLOCKS_IN_MCU];
+  d_derived_tbl * ac_cur_tbls[D_MAX_BLOCKS_IN_MCU];
+  /* Whether we care about the DC and AC coefficient values for each block */
+  boolean dc_needed[D_MAX_BLOCKS_IN_MCU];
+  boolean ac_needed[D_MAX_BLOCKS_IN_MCU];
+} huff_entropy_decoder;
+
+typedef huff_entropy_decoder * huff_entropy_ptr;
+
+
+/*
+ * Initialize for a Huffman-compressed scan.
+ */
+
+METHODDEF(void)
+start_pass_huff_decoder (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 151 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x560, %esp\n"
-        "movl 0x10(%ebp), %esi\n" /* tblno */
-        "movl 0x14(%ebp), %edi\n" /* pdtbl */
-        "movzbl 0xc(%ebp), %eax\n" /* isDC */
-        "movb %al, -0x549(%ebp)\n" /* isDC */
-        "cmpl $3, %esi\n" /* line 165 | code */
-        "ja .Lf206df8_0020723f\n"
-        ".Lf206df8_00206e1c:\n"
-        "cmpb $0, -0x549(%ebp)\n" /* line 167 | isDC */
-        "je .Lf206df8_002071db\n"
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "movl 0xa8(%ecx, %esi, 4), %ecx\n"
-        "movl %ecx, -0x548(%ebp)\n" /* htbl */
-        "movl -0x548(%ebp), %eax\n" /* line 169 | htbl */
-        "testl %eax, %eax\n"
-        "je .Lf206df8_002071f9\n"
-        ".Lf206df8_00206e47:\n"
-        "movl (%edi), %ecx\n" /* line 173 | l */
-        "testl %ecx, %ecx\n"
-        "je .Lf206df8_0020721b\n"
-        ".Lf206df8_00206e51:\n"
-        "movl (%edi), %edi\n" /* l */
-        ".Lf206df8_00206e53:\n"
-        "movl %edi, -0x544(%ebp)\n" /* line 177 | l, dtbl */
-        "movl -0x548(%ebp), %eax\n" /* line 178 | htbl */
-        "movl %eax, 0x8c(%edi)\n" /* l */
-        "movl %eax, -0x528(%ebp)\n"
-        "movl $0, -0x51c(%ebp)\n"
-        "movl $1, %edi\n" /* l */
-        "movl %eax, %edx\n"
-        ".Lf206df8_00206e7c:\n"
-        "movzbl 1(%edx), %esi\n" /* line 184 | code */
-        "movl -0x51c(%ebp), %ecx\n" /* line 185 */
-        "leal (%esi, %ecx), %eax\n" /* code */
-        "cmpl $0x100, %eax\n"
-        "jle .Lf206df8_00206ea3\n"
-        "movl 8(%ebp), %edx\n" /* line 186 | cinfo */
-        "movl (%edx), %eax\n"
-        "movl $8, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        ".Lf206df8_00206ea3:\n"
-        "testl %esi, %esi\n" /* line 187 | code */
-        "je .Lf206df8_00206ecb\n"
-        "movl -0x51c(%ebp), %ecx\n"
-        "leal -0x109(%ebp, %ecx), %eax\n"
-        "xorl %edx, %edx\n"
-        ".Lf206df8_00206eb6:\n"
-        "movl %edi, %ecx\n" /* line 188 | l */
-        "movb %cl, (%eax)\n"
-        "addl $1, -0x51c(%ebp)\n"
-        "addl $1, %edx\n"
-        "addl $1, %eax\n"
-        "cmpl %esi, %edx\n" /* line 187 | code */
-        "jne .Lf206df8_00206eb6\n"
-        ".Lf206df8_00206ecb:\n"
-        "addl $1, %edi\n" /* line 183 | l */
-        "addl $1, -0x528(%ebp)\n"
-        "cmpl $0x11, %edi\n" /* l */
-        "je .Lf206df8_00206ee2\n"
-        "movl -0x528(%ebp), %edx\n"
-        "jmp .Lf206df8_00206e7c\n"
-        ".Lf206df8_00206ee2:\n"
-        "movl -0x51c(%ebp), %esi\n" /* line 190 | code */
-        "movb $0, -0x109(%ebp, %esi)\n"
-        "movzbl -0x109(%ebp), %eax\n" /* line 197 | huffsize */
-        "movsbl %al, %edx\n"
-        "movl %edx, -0x538(%ebp)\n" /* si */
-        "testb %al, %al\n" /* line 199 */
-        "je .Lf206df8_00206f89\n"
-        "movl $0, -0x540(%ebp)\n" /* p */
-        "xorl %esi, %esi\n" /* code */
-        "movl -0x540(%ebp), %eax\n" /* p */
-        "jmp .Lf206df8_00206f37\n"
-        ".Lf206df8_00206f1c:\n"
-        "addl %esi, %esi\n" /* line 209 | code */
-        "addl $1, -0x538(%ebp)\n" /* line 210 | si */
-        "movl -0x540(%ebp), %ecx\n" /* line 199 | p */
-        "cmpb $0, -0x109(%ebp, %ecx)\n"
-        "je .Lf206df8_00206f89\n"
-        ".Lf206df8_00206f35:\n"
-        "movl %ecx, %eax\n"
-        ".Lf206df8_00206f37:\n"
-        "movsbl -0x109(%ebp, %eax), %edi\n" /* line 200 | l */
-        "cmpl -0x538(%ebp), %edi\n" /* si, l */
-        "je .Lf206df8_0020710f\n"
-        ".Lf206df8_00206f4b:\n"
-        "movl $1, %eax\n" /* line 207 */
-        "movzbl -0x538(%ebp), %ecx\n" /* si */
-        "shll %cl, %eax\n"
-        "cmpl %eax, %esi\n" /* code */
-        "jl .Lf206df8_00206f1c\n"
-        "movl 8(%ebp), %edx\n" /* line 208 | cinfo */
-        "movl (%edx), %eax\n"
-        "movl $8, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "addl %esi, %esi\n" /* line 209 | code */
-        "addl $1, -0x538(%ebp)\n" /* line 210 | si */
-        "movl -0x540(%ebp), %ecx\n" /* line 199 | p */
-        "cmpb $0, -0x109(%ebp, %ecx)\n"
-        "jne .Lf206df8_00206f35\n"
-        ".Lf206df8_00206f89:\n"
-        "movl -0x548(%ebp), %ecx\n" /* line 200 | htbl */
-        "movl -0x544(%ebp), %edx\n" /* dtbl */
-        "xorl %edi, %edi\n" /* l */
-        "movl $0x10, %esi\n" /* code */
-        "jmp .Lf206df8_00206fc5\n"
-        ".Lf206df8_00206f9e:\n"
-        "movl %edi, %eax\n" /* line 221 | l */
-        "subl -0x510(%ebp, %edi, 4), %eax\n"
-        "movl %eax, 0x4c(%edx)\n"
-        "movzbl 1(%ecx), %eax\n" /* line 222 */
-        "addl %eax, %edi\n" /* l */
-        "movl -0x514(%ebp, %edi, 4), %eax\n" /* line 223 */
-        "movl %eax, 4(%edx)\n"
-        "addl $1, %ecx\n" /* line 225 */
-        "addl $4, %edx\n"
-        "subl $1, %esi\n" /* line 216 | code */
-        "je .Lf206df8_00206fdd\n"
-        ".Lf206df8_00206fc5:\n"
-        "cmpb $0, 1(%ecx)\n" /* line 217 */
-        "jne .Lf206df8_00206f9e\n"
-        "movl $0xffffffff, 4(%edx)\n" /* line 225 */
-        "addl $1, %ecx\n"
-        "addl $4, %edx\n"
-        "subl $1, %esi\n" /* line 216 | code */
-        "jne .Lf206df8_00206fc5\n"
-        ".Lf206df8_00206fdd:\n"
-        "movl -0x544(%ebp), %ecx\n" /* line 228 | dtbl */
-        "movl $0xfffff, 0x44(%ecx)\n"
-        "movl %ecx, %eax\n" /* line 237 */
-        "addl $0x90, %eax\n"
-        "movl $0x400, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl -0x548(%ebp), %eax\n" /* htbl */
-        "movl $0, -0x520(%ebp)\n"
-        "movl $7, -0x52c(%ebp)\n"
-        "leal -0x510(%ebp), %esi\n" /* huffcode, code */
-        "movl %esi, -0x550(%ebp)\n" /* code */
-        ".Lf206df8_0020702f:\n"
-        "movl $8, %edx\n"
-        "subl -0x52c(%ebp), %edx\n"
-        "movl %edx, -0x524(%ebp)\n"
-        "leal 1(%eax), %ecx\n" /* line 151 */
-        "movl %ecx, -0x554(%ebp)\n"
-        "cmpb $0, 1(%eax)\n" /* line 241 */
-        "je .Lf206df8_00207148\n"
-        "movl $1, %esi\n" /* code */
-        "movzbl -0x52c(%ebp), %ecx\n"
-        "shll %cl, %esi\n" /* code */
-        "movl %esi, -0x534(%ebp)\n" /* code */
-        "movl -0x520(%ebp), %eax\n"
-        "movl -0x550(%ebp), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, -0x530(%ebp)\n"
-        "movl -0x520(%ebp), %edx\n"
-        "movl -0x548(%ebp), %ecx\n" /* htbl */
-        "leal 0x11(%edx, %ecx), %edi\n" /* l */
-        "movl $1, -0x53c(%ebp)\n" /* i */
-        "movl %eax, %esi\n" /* code */
-        ".Lf206df8_00207098:\n"
-        "movl (%esi), %eax\n" /* line 244 | code */
-        "movzbl -0x52c(%ebp), %ecx\n"
-        "shll %cl, %eax\n"
-        "movl -0x534(%ebp), %edx\n" /* line 245 */
-        "testl %edx, %edx\n"
-        "jle .Lf206df8_002070e1\n"
-        "movl -0x544(%ebp), %esi\n" /* dtbl, code */
-        "leal 0x90(%esi, %eax, 4), %ecx\n" /* code */
-        "leal 0x490(%eax, %esi), %edx\n"
-        "xorl %esi, %esi\n" /* code */
-        ".Lf206df8_002070c3:\n"
-        "movl -0x524(%ebp), %eax\n" /* line 246 */
-        "movl %eax, (%ecx)\n"
-        "movzbl (%edi), %eax\n" /* line 247 | l */
-        "movb %al, (%edx)\n"
-        "addl $1, %esi\n" /* code */
-        "addl $4, %ecx\n"
-        "addl $1, %edx\n"
-        "cmpl -0x534(%ebp), %esi\n" /* line 245 | code */
-        "jne .Lf206df8_002070c3\n"
-        ".Lf206df8_002070e1:\n"
-        "addl $1, -0x53c(%ebp)\n" /* line 241 | i */
-        "addl $4, -0x530(%ebp)\n"
-        "addl $1, %edi\n" /* l */
-        "movl -0x554(%ebp), %edx\n"
-        "movzbl (%edx), %eax\n"
-        "cmpl %eax, -0x53c(%ebp)\n" /* i */
-        "jg .Lf206df8_002071ba\n"
-        "movl -0x530(%ebp), %esi\n" /* code */
-        "jmp .Lf206df8_00207098\n"
-        ".Lf206df8_0020710f:\n"
-        "leal -0x510(%ebp, %eax, 4), %ecx\n" /* line 200 */
-        "leal -0x109(%ebp), %edx\n" /* huffsize */
-        "movl %edx, -0x558(%ebp)\n"
-        "addl %eax, %edx\n"
-        ".Lf206df8_00207124:\n"
-        "movl %esi, (%ecx)\n" /* line 201 | code */
-        "addl $1, %esi\n" /* line 202 | code */
-        "movsbl 1(%edx), %eax\n" /* line 200 */
-        "addl $4, %ecx\n"
-        "addl $1, %edx\n"
-        "cmpl %eax, %edi\n" /* l */
-        "je .Lf206df8_00207124\n"
-        "subl -0x558(%ebp), %edx\n"
-        "movl %edx, -0x540(%ebp)\n" /* p */
-        "jmp .Lf206df8_00206f4b\n"
-        ".Lf206df8_00207148:\n"
-        "movl %ecx, %eax\n"
-        ".Lf206df8_0020714a:\n"
-        "subl $1, -0x52c(%ebp)\n" /* line 241 */
-        "cmpl $-1, -0x52c(%ebp)\n" /* line 240 */
-        "jne .Lf206df8_0020702f\n"
-        "cmpb $0, -0x549(%ebp)\n" /* line 259 | isDC */
-        "je .Lf206df8_002071b0\n"
-        "movl -0x51c(%ebp), %eax\n" /* line 260 */
-        "testl %eax, %eax\n"
-        "jle .Lf206df8_002071b0\n"
-        "movl -0x548(%ebp), %edi\n" /* htbl, l */
-        "xorl %esi, %esi\n" /* code */
-        "jmp .Lf206df8_00207189\n"
-        ".Lf206df8_0020717b:\n"
-        "addl $1, %esi\n" /* code */
-        "addl $1, %edi\n" /* l */
-        "cmpl -0x51c(%ebp), %esi\n" /* code */
-        "je .Lf206df8_002071b0\n"
-        ".Lf206df8_00207189:\n"
-        "cmpb $0xf, 0x11(%edi)\n" /* line 262 | l */
-        "jbe .Lf206df8_0020717b\n"
-        "movl 8(%ebp), %edx\n" /* line 263 | cinfo */
-        "movl (%edx), %eax\n"
-        "movl $8, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "addl $1, %esi\n" /* line 260 | code */
-        "addl $1, %edi\n" /* l */
-        "cmpl -0x51c(%ebp), %esi\n" /* code */
-        "jne .Lf206df8_00207189\n"
-        ".Lf206df8_002071b0:\n"
-        "addl $0x560, %esp\n" /* line 266 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf206df8_002071ba:\n"
-        "movl -0x520(%ebp), %ecx\n" /* line 241 */
-        "movl -0x53c(%ebp), %esi\n" /* i, code */
-        "leal -1(%ecx, %esi), %ecx\n"
-        "movl %ecx, -0x520(%ebp)\n"
-        "movl -0x554(%ebp), %eax\n"
-        "jmp .Lf206df8_0020714a\n"
-        ".Lf206df8_002071db:\n"
-        "movl 8(%ebp), %eax\n" /* line 167 | cinfo */
-        "movl 0xb8(%eax, %esi, 4), %eax\n"
-        "movl %eax, -0x548(%ebp)\n" /* htbl */
-        "movl -0x548(%ebp), %eax\n" /* line 169 | htbl */
-        "testl %eax, %eax\n"
-        "jne .Lf206df8_00206e47\n"
-        ".Lf206df8_002071f9:\n"
-        "movl 8(%ebp), %edx\n" /* line 170 | cinfo */
-        "movl (%edx), %eax\n"
-        "movl $0x32, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl %esi, 0x18(%eax)\n" /* code */
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "movl (%edi), %ecx\n" /* line 173 | l */
-        "testl %ecx, %ecx\n"
-        "jne .Lf206df8_00206e51\n"
-        ".Lf206df8_0020721b:\n"
-        "movl 8(%ebp), %ecx\n" /* line 174 | cinfo */
-        "movl 4(%ecx), %eax\n"
-        "movl $0x590, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%eax)\n"
-        "movl %eax, (%edi)\n" /* l */
-        "movl %eax, %edi\n" /* l */
-        "jmp .Lf206df8_00206e53\n"
-        ".Lf206df8_0020723f:\n"
-        "movl 8(%ebp), %edx\n" /* line 166 | cinfo */
-        "movl (%edx), %eax\n"
-        "movl $0x32, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl %esi, 0x18(%eax)\n" /* code */
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf206df8_00206e1c\n"
-    );
+  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
+  int ci, blkn, dctbl, actbl;
+  jpeg_component_info * compptr;
+
+  /* Check that the scan parameters Ss, Se, Ah/Al are OK for sequential JPEG.
+   * This ought to be an error condition, but we make it a warning because
+   * there are some baseline files out there with all zeroes in these bytes.
+   */
+  if (cinfo->Ss != 0 || cinfo->Se != DCTSIZE2-1 ||
+      cinfo->Ah != 0 || cinfo->Al != 0)
+    WARNMS(cinfo, JWRN_NOT_SEQUENTIAL);
+
+  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
+    compptr = cinfo->cur_comp_info[ci];
+    dctbl = compptr->dc_tbl_no;
+    actbl = compptr->ac_tbl_no;
+    /* Compute derived values for Huffman tables */
+    /* We may do this more than once for a table, but it's not expensive */
+    jpeg_make_d_derived_tbl(cinfo, TRUE, dctbl,
+			    & entropy->dc_derived_tbls[dctbl]);
+    jpeg_make_d_derived_tbl(cinfo, FALSE, actbl,
+			    & entropy->ac_derived_tbls[actbl]);
+    /* Initialize DC predictions to 0 */
+    entropy->saved.last_dc_val[ci] = 0;
+  }
+
+  /* Precalculate decoding info for each block in an MCU of this scan */
+  for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
+    ci = cinfo->MCU_membership[blkn];
+    compptr = cinfo->cur_comp_info[ci];
+    /* Precalculate which table to use for each block */
+    entropy->dc_cur_tbls[blkn] = entropy->dc_derived_tbls[compptr->dc_tbl_no];
+    entropy->ac_cur_tbls[blkn] = entropy->ac_derived_tbls[compptr->ac_tbl_no];
+    /* Decide whether we really care about the coefficient values */
+    if (compptr->component_needed) {
+      entropy->dc_needed[blkn] = TRUE;
+      /* we don't need the ACs if producing a 1/8th-size image */
+      entropy->ac_needed[blkn] = (compptr->DCT_scaled_size > 1);
+    } else {
+      entropy->dc_needed[blkn] = entropy->ac_needed[blkn] = FALSE;
+    }
+  }
+
+  /* Initialize bitread state variables */
+  entropy->bitstate.bits_left = 0;
+  entropy->bitstate.get_buffer = 0; /* unnecessary, but keeps Purify quiet */
+  entropy->pub.insufficient_data = FALSE;
+
+  /* Initialize restart counter */
+  entropy->restarts_to_go = cinfo->restart_interval;
 }
 
-/* line 87 */
-static __attribute__((naked))
-void start_pass_huff_decoder(j_decompress_ptr cinfo)
+
+/*
+ * Compute the derived values for a Huffman table.
+ * This routine also performs some validation checks on the table.
+ *
+ * Note this is also used by jdphuff.c.
+ */
+
+GLOBAL(void)
+jpeg_make_d_derived_tbl (j_decompress_ptr cinfo, boolean isDC, int tblno,
+			 d_derived_tbl ** pdtbl)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 87 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x40, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 88 | cinfo */
-        "movl 0x1a0(%eax), %eax\n"
-        "movl %eax, -0x18(%ebp)\n" /* entropy */
-        "movl 8(%ebp), %edx\n" /* line 96 | cinfo */
-        "movl 0x174(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf20725c_002073ad\n"
-        "cmpl $0x3f, 0x178(%edx)\n"
-        "je .Lf20725c_0020738c\n"
-        ".Lf20725c_0020728e:\n"
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        ".Lf20725c_00207291:\n"
-        "movl (%ecx), %eax\n" /* line 98 */
-        "movl $0x7a, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *4(%eax)\n"
-        ".Lf20725c_002072aa:\n"
-        "movl 8(%ebp), %edi\n" /* line 100 | cinfo */
-        "movl 0x12c(%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lf20725c_002073b4\n"
-        "movl %edi, %ecx\n"
-        ".Lf20725c_002072bd:\n"
-        "movl 0x148(%ecx), %eax\n" /* line 115 */
-        "testl %eax, %eax\n"
-        "jle .Lf20725c_00207364\n"
-        "movl %ecx, -0x2c(%ebp)\n"
-        "movl -0x18(%ebp), %esi\n" /* entropy, actbl */
-        "movl %esi, %ecx\n" /* actbl */
-        "movl $0, -0x10(%ebp)\n" /* blkn */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "jmp .Lf20725c_0020730d\n"
-        ".Lf20725c_002072df:\n"
-        "movb $1, 0x98(%ecx)\n" /* line 123 */
-        "cmpl $1, 0x24(%edx)\n" /* line 125 */
-        "setg 0xa2(%ecx)\n"
-        "addl $1, -0x10(%ebp)\n" /* line 115 | blkn */
-        "addl $4, -0x2c(%ebp)\n"
-        "addl $4, %esi\n" /* actbl */
-        "addl $1, %ecx\n"
-        "movl -0x10(%ebp), %edx\n" /* blkn */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "cmpl 0x148(%eax), %edx\n"
-        "jge .Lf20725c_00207364\n"
-        ".Lf20725c_0020730d:\n"
-        "movl -0x2c(%ebp), %edi\n" /* line 117 */
-        "movl 0x14c(%edi), %edx\n"
-        "movl 0x130(%eax, %edx, 4), %edx\n"
-        "movl 0x14(%edx), %eax\n" /* line 119 */
-        "movl -0x18(%ebp), %edi\n" /* entropy */
-        "movl 0x28(%edi, %eax, 4), %eax\n"
-        "movl %eax, 0x48(%esi)\n" /* actbl */
-        "movl 0x18(%edx), %eax\n" /* line 120 */
-        "movl 0x38(%edi, %eax, 4), %eax\n"
-        "movl %eax, 0x70(%esi)\n" /* actbl */
-        "cmpb $0, 0x30(%edx)\n" /* line 122 */
-        "jne .Lf20725c_002072df\n"
-        "movb $0, 0xa2(%ecx)\n" /* line 127 */
-        "movb $0, 0x98(%ecx)\n"
-        "addl $1, -0x10(%ebp)\n" /* line 115 | blkn */
-        "addl $4, -0x2c(%ebp)\n"
-        "addl $4, %esi\n" /* actbl */
-        "addl $1, %ecx\n"
-        "movl -0x10(%ebp), %edx\n" /* blkn */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "cmpl 0x148(%eax), %edx\n"
-        "jl .Lf20725c_0020730d\n"
-        ".Lf20725c_00207364:\n"
-        "movl -0x18(%ebp), %ecx\n" /* line 132 | entropy */
-        "movl $0, 0x10(%ecx)\n"
-        "movl $0, 0xc(%ecx)\n" /* line 133 */
-        "movb $0, 8(%ecx)\n" /* line 134 */
-        "movl 8(%ebp), %edi\n" /* line 137 | cinfo */
-        "movl 0x104(%edi), %eax\n"
-        "movl %eax, 0x24(%ecx)\n"
-        "addl $0x40, %esp\n" /* line 138 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf20725c_0020738c:\n"
-        "movl 0x17c(%edx), %eax\n" /* line 96 */
-        "testl %eax, %eax\n"
-        "jne .Lf20725c_0020728e\n"
-        "movl 0x180(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf20725c_002072aa\n"
-        "jmp .Lf20725c_0020728e\n"
-        ".Lf20725c_002073ad:\n"
-        "movl %edx, %ecx\n"
-        "jmp .Lf20725c_00207291\n"
-        ".Lf20725c_002073b4:\n"
-        "movl %edi, -0xc(%ebp)\n" /* line 100 */
-        "movl -0x18(%ebp), %edi\n" /* entropy */
-        "movl $0, -0x14(%ebp)\n" /* ci */
-        "movl %edi, %eax\n"
-        "addl $0x28, %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl %edi, %edx\n"
-        "addl $0x38, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n"
-        ".Lf20725c_002073d1:\n"
-        "movl -0xc(%ebp), %ecx\n" /* line 101 */
-        "movl 0x130(%ecx), %eax\n"
-        "movl 0x14(%eax), %edx\n" /* line 102 */
-        "movl 0x18(%eax), %esi\n" /* line 103 | actbl */
-        "movl -0x20(%ebp), %ecx\n" /* line 106 */
-        "leal (%ecx, %edx, 4), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll jpeg_make_d_derived_tbl\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 108 */
-        "leal (%edx, %esi, 4), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* actbl */
-        "movl $0, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "movl %ecx, (%esp)\n"
-        "calll jpeg_make_d_derived_tbl\n"
-        "movl $0, 0x14(%edi)\n" /* line 111 */
-        "addl $1, -0x14(%ebp)\n" /* line 100 | ci */
-        "addl $4, -0xc(%ebp)\n"
-        "addl $4, %edi\n"
-        "movl -0x14(%ebp), %edx\n" /* ci */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "cmpl 0x12c(%eax), %edx\n"
-        "jl .Lf20725c_002073d1\n"
-        "movl %eax, %ecx\n"
-        "jmp .Lf20725c_002072bd\n"
-    );
+  JHUFF_TBL *htbl;
+  d_derived_tbl *dtbl;
+  int p, i, l, si, numsymbols;
+  int lookbits, ctr;
+  char huffsize[257];
+  unsigned int huffcode[257];
+  unsigned int code;
+
+  /* Note that huffsize[] and huffcode[] are filled in code-length order,
+   * paralleling the order of the symbols themselves in htbl->huffval[].
+   */
+
+  /* Find the input Huffman table */
+  if (tblno < 0 || tblno >= NUM_HUFF_TBLS)
+    ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, tblno);
+  htbl =
+    isDC ? cinfo->dc_huff_tbl_ptrs[tblno] : cinfo->ac_huff_tbl_ptrs[tblno];
+  if (htbl == NULL)
+    ERREXIT1(cinfo, JERR_NO_HUFF_TABLE, tblno);
+
+  /* Allocate a workspace if we haven't already done so. */
+  if (*pdtbl == NULL)
+    *pdtbl = (d_derived_tbl *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				  SIZEOF(d_derived_tbl));
+  dtbl = *pdtbl;
+  dtbl->pub = htbl;		/* fill in back link */
+  
+  /* Figure C.1: make table of Huffman code length for each symbol */
+
+  p = 0;
+  for (l = 1; l <= 16; l++) {
+    i = (int) htbl->bits[l];
+    if (i < 0 || p + i > 256)	/* protect against table overrun */
+      ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
+    while (i--)
+      huffsize[p++] = (char) l;
+  }
+  huffsize[p] = 0;
+  numsymbols = p;
+  
+  /* Figure C.2: generate the codes themselves */
+  /* We also validate that the counts represent a legal Huffman code tree. */
+  
+  code = 0;
+  si = huffsize[0];
+  p = 0;
+  while (huffsize[p]) {
+    while (((int) huffsize[p]) == si) {
+      huffcode[p++] = code;
+      code++;
+    }
+    /* code is now 1 more than the last code used for codelength si; but
+     * it must still fit in si bits, since no code is allowed to be all ones.
+     */
+    if (((INT32) code) >= (((INT32) 1) << si))
+      ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
+    code <<= 1;
+    si++;
+  }
+
+  /* Figure F.15: generate decoding tables for bit-sequential decoding */
+
+  p = 0;
+  for (l = 1; l <= 16; l++) {
+    if (htbl->bits[l]) {
+      /* valoffset[l] = huffval[] index of 1st symbol of code length l,
+       * minus the minimum code of length l
+       */
+      dtbl->valoffset[l] = (INT32) p - (INT32) huffcode[p];
+      p += htbl->bits[l];
+      dtbl->maxcode[l] = huffcode[p-1]; /* maximum code of length l */
+    } else {
+      dtbl->maxcode[l] = -1;	/* -1 if no codes of this length */
+    }
+  }
+  dtbl->maxcode[17] = 0xFFFFFL; /* ensures jpeg_huff_decode terminates */
+
+  /* Compute lookahead tables to speed up decoding.
+   * First we set all the table entries to 0, indicating "too long";
+   * then we iterate through the Huffman codes that are short enough and
+   * fill in all the entries that correspond to bit sequences starting
+   * with that code.
+   */
+
+  MEMZERO(dtbl->look_nbits, SIZEOF(dtbl->look_nbits));
+
+  p = 0;
+  for (l = 1; l <= HUFF_LOOKAHEAD; l++) {
+    for (i = 1; i <= (int) htbl->bits[l]; i++, p++) {
+      /* l = current code's length, p = its index in huffcode[] & huffval[]. */
+      /* Generate left-justified code followed by all possible bit sequences */
+      lookbits = huffcode[p] << (HUFF_LOOKAHEAD-l);
+      for (ctr = 1 << (HUFF_LOOKAHEAD-l); ctr > 0; ctr--) {
+	dtbl->look_nbits[lookbits] = l;
+	dtbl->look_sym[lookbits] = htbl->huffval[p];
+	lookbits++;
+      }
+    }
+  }
+
+  /* Validate symbols as being reasonable.
+   * For AC tables, we make no check, but accept all byte values 0..255.
+   * For DC tables, we require the symbols to be in range 0..15.
+   * (Tighter bounds could be applied depending on the data depth and mode,
+   * but this is sufficient to ensure safe decoding.)
+   */
+  if (isDC) {
+    for (i = 0; i < numsymbols; i++) {
+      int sym = htbl->huffval[i];
+      if (sym < 0 || sym > 15)
+	ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
+    }
+  }
 }
 
-/* line 296 */
-__attribute__((naked))
-boolean jpeg_fill_bit_buffer(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, int nbits)
+
+/*
+ * Out-of-line code for bit fetching (shared with jdphuff.c).
+ * See jdhuff.h for info about usage.
+ * Note: current values of get_buffer and bits_left are passed as parameters,
+ * but are returned in the corresponding fields of the state struct.
+ *
+ * On most machines MIN_GET_BITS should be 25 to allow the full 32-bit width
+ * of get_buffer to be used.  (On machines with wider words, an even larger
+ * buffer could be used.)  However, on some machines 32-bit shifts are
+ * quite slow and take time proportional to the number of places shifted.
+ * (This is true with most PC compilers, for instance.)  In this case it may
+ * be a win to set MIN_GET_BITS to the minimum value of 15.  This reduces the
+ * average shift distance at the cost of more calls to jpeg_fill_bit_buffer.
+ */
+
+#ifdef SLOW_SHIFT_32
+#define MIN_GET_BITS  15	/* minimum allowable value */
+#else
+#define MIN_GET_BITS  (BIT_BUF_SIZE-7)
+#endif
+
+
+GLOBAL(boolean)
+jpeg_fill_bit_buffer (bitread_working_state * state,
+		      register bit_buf_type get_buffer, register int bits_left,
+		      int nbits)
+/* Load up the bit buffer to a depth of at least nbits */
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 296 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 298 | state */
-        "movl (%eax), %edi\n" /* next_input_byte */
-        "movl 4(%eax), %esi\n" /* line 299 | bytes_in_buffer */
-        "movl 0x10(%eax), %edx\n" /* line 300 */
-        "movl %edx, -0xc(%ebp)\n" /* cinfo */
-        "movl 0x184(%edx), %edx\n" /* line 306 */
-        "testl %edx, %edx\n"
-        "jne .Lf207449_00207530\n"
-        "cmpl $0x18, 0x10(%ebp)\n" /* line 307 | bits_left */
-        "jle .Lf207449_002074d3\n"
-        ".Lf207449_00207473:\n"
-        "movl 8(%ebp), %eax\n" /* line 383 | state */
-        "movl %edi, (%eax)\n" /* next_input_byte */
-        "movl %esi, 4(%eax)\n" /* line 384 | bytes_in_buffer */
-        "movl 0xc(%ebp), %edx\n" /* line 385 | get_buffer */
-        "movl %edx, 8(%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 386 | bits_left */
-        "movl %edx, 0xc(%eax)\n"
-        "movl $1, %eax\n"
-        ".Lf207449_0020748c:\n"
-        "addl $0x20, %esp\n" /* line 389 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 2 */
-        ".Lf207449_00207493:\n"
-        "movl -0xc(%ebp), %edx\n" /* line 312 | cinfo */
-        "movl 0x20(%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *0xc(%eax)\n"
-        "testb %al, %al\n"
-        "je .Lf207449_0020758a\n"
-        "movl -0xc(%ebp), %edx\n" /* line 314 | cinfo */
-        "movl 0x20(%edx), %eax\n"
-        "movl (%eax), %edi\n" /* next_input_byte */
-        "movl 4(%eax), %esi\n" /* line 315 | bytes_in_buffer */
-        ".Lf207449_002074b2:\n"
-        "subl $1, %esi\n" /* line 317 | bytes_in_buffer */
-        "movzbl (%edi), %eax\n" /* line 318 | next_input_byte */
-        "movzbl %al, %edx\n"
-        "addl $1, %edi\n" /* next_input_byte */
-        "addb $1, %al\n" /* line 321 */
-        "je .Lf207449_00207508\n"
-        ".Lf207449_002074c2:\n"
-        "shll $8, 0xc(%ebp)\n" /* line 357 | get_buffer */
-        "orl %edx, 0xc(%ebp)\n" /* get_buffer */
-        "addl $8, 0x10(%ebp)\n" /* line 358 | bits_left */
-        /* } scope */
-        "cmpl $0x18, 0x10(%ebp)\n" /* line 307 | bits_left */
-        "jg .Lf207449_00207473\n"
-        /* { scope 2 */
-        ".Lf207449_002074d3:\n"
-        "testl %esi, %esi\n" /* line 311 | bytes_in_buffer */
-        "jne .Lf207449_002074b2\n"
-        "jmp .Lf207449_00207493\n"
-        ".Lf207449_002074d9:\n"
-        "movl -0xc(%ebp), %edx\n" /* line 329 | cinfo */
-        "movl 0x20(%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *0xc(%eax)\n"
-        "testb %al, %al\n"
-        "je .Lf207449_0020758a\n"
-        "movl -0xc(%ebp), %edx\n" /* line 331 | cinfo */
-        "movl 0x20(%edx), %eax\n"
-        "movl (%eax), %edi\n" /* next_input_byte */
-        "movl 4(%eax), %esi\n" /* line 332 | bytes_in_buffer */
-        "subl $1, %esi\n" /* line 334 | bytes_in_buffer */
-        "movzbl (%edi), %eax\n" /* line 335 | next_input_byte */
-        "movzbl %al, %edx\n"
-        "addl $1, %edi\n" /* next_input_byte */
-        "cmpb $0xff, %al\n" /* line 336 */
-        "jne .Lf207449_0020751c\n"
-        ".Lf207449_00207508:\n"
-        "testl %esi, %esi\n" /* line 328 | bytes_in_buffer */
-        "je .Lf207449_002074d9\n"
-        "subl $1, %esi\n" /* line 334 | bytes_in_buffer */
-        "movzbl (%edi), %eax\n" /* line 335 | next_input_byte */
-        "movzbl %al, %edx\n"
-        "addl $1, %edi\n" /* next_input_byte */
-        "cmpb $0xff, %al\n" /* line 336 */
-        "je .Lf207449_00207508\n"
-        ".Lf207449_0020751c:\n"
-        "testb %al, %al\n" /* line 338 */
-        "jne .Lf207449_00207527\n"
-        "movl $0xff, %edx\n" /* line 352 */
-        "jmp .Lf207449_002074c2\n"
-        ".Lf207449_00207527:\n"
-        "movl -0xc(%ebp), %eax\n" /* line 350 | cinfo */
-        "movl %edx, 0x184(%eax)\n"
-        /* } scope */
-        ".Lf207449_00207530:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 366 | bits_left */
-        "cmpl 0x14(%ebp), %edx\n" /* nbits */
-        "jge .Lf207449_00207473\n"
-        "movl -0xc(%ebp), %edx\n" /* line 372 | cinfo */
-        "movl 0x1a0(%edx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf207449_00207562\n"
-        ".Lf207449_0020754b:\n"
-        "movl $0x19, %ecx\n" /* line 377 */
-        "subl 0x10(%ebp), %ecx\n" /* bits_left */
-        "shll %cl, 0xc(%ebp)\n" /* get_buffer */
-        "movl $0x19, 0x10(%ebp)\n" /* bits_left */
-        "jmp .Lf207449_00207473\n"
-        ".Lf207449_00207562:\n"
-        "movl (%edx), %eax\n" /* line 373 */
-        "movl $0x75, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *4(%eax)\n"
-        "movl -0xc(%ebp), %edx\n" /* line 374 | cinfo */
-        "movl 0x1a0(%edx), %eax\n"
-        "movb $1, 8(%eax)\n"
-        "jmp .Lf207449_0020754b\n"
-        ".Lf207449_0020758a:\n"
-        "xorl %eax, %eax\n" /* line 388 */
-        "jmp .Lf207449_0020748c\n"
-    );
+  /* Copy heavily used state fields into locals (hopefully registers) */
+  register const JOCTET * next_input_byte = state->next_input_byte;
+  register size_t bytes_in_buffer = state->bytes_in_buffer;
+  j_decompress_ptr cinfo = state->cinfo;
+
+  /* Attempt to load at least MIN_GET_BITS bits into get_buffer. */
+  /* (It is assumed that no request will be for more than that many bits.) */
+  /* We fail to do so only if we hit a marker or are forced to suspend. */
+
+  if (cinfo->unread_marker == 0) {	/* cannot advance past a marker */
+    while (bits_left < MIN_GET_BITS) {
+      register int c;
+
+      /* Attempt to read a byte */
+      if (bytes_in_buffer == 0) {
+	if (! (*cinfo->src->fill_input_buffer) (cinfo))
+	  return FALSE;
+	next_input_byte = cinfo->src->next_input_byte;
+	bytes_in_buffer = cinfo->src->bytes_in_buffer;
+      }
+      bytes_in_buffer--;
+      c = GETJOCTET(*next_input_byte++);
+
+      /* If it's 0xFF, check and discard stuffed zero byte */
+      if (c == 0xFF) {
+	/* Loop here to discard any padding FF's on terminating marker,
+	 * so that we can save a valid unread_marker value.  NOTE: we will
+	 * accept multiple FF's followed by a 0 as meaning a single FF data
+	 * byte.  This data pattern is not valid according to the standard.
+	 */
+	do {
+	  if (bytes_in_buffer == 0) {
+	    if (! (*cinfo->src->fill_input_buffer) (cinfo))
+	      return FALSE;
+	    next_input_byte = cinfo->src->next_input_byte;
+	    bytes_in_buffer = cinfo->src->bytes_in_buffer;
+	  }
+	  bytes_in_buffer--;
+	  c = GETJOCTET(*next_input_byte++);
+	} while (c == 0xFF);
+
+	if (c == 0) {
+	  /* Found FF/00, which represents an FF data byte */
+	  c = 0xFF;
+	} else {
+	  /* Oops, it's actually a marker indicating end of compressed data.
+	   * Save the marker code for later use.
+	   * Fine point: it might appear that we should save the marker into
+	   * bitread working state, not straight into permanent state.  But
+	   * once we have hit a marker, we cannot need to suspend within the
+	   * current MCU, because we will read no more bytes from the data
+	   * source.  So it is OK to update permanent state right away.
+	   */
+	  cinfo->unread_marker = c;
+	  /* See if we need to insert some fake zero bits. */
+	  goto no_more_bytes;
+	}
+      }
+
+      /* OK, load c into get_buffer */
+      get_buffer = (get_buffer << 8) | c;
+      bits_left += 8;
+    } /* end while */
+  } else {
+  no_more_bytes:
+    /* We get here if we've read the marker that terminates the compressed
+     * data segment.  There should be enough bits in the buffer register
+     * to satisfy the request; if so, no problem.
+     */
+    if (nbits > bits_left) {
+      /* Uh-oh.  Report corrupted data to user and stuff zeroes into
+       * the data stream, so that we can produce some kind of image.
+       * We use a nonvolatile flag to ensure that only one warning message
+       * appears per data segment.
+       */
+      if (! cinfo->entropy->insufficient_data) {
+	WARNMS(cinfo, JWRN_HIT_MARKER);
+	cinfo->entropy->insufficient_data = TRUE;
+      }
+      /* Fill the buffer with zero bits */
+      get_buffer <<= MIN_GET_BITS - bits_left;
+      bits_left = MIN_GET_BITS;
+    }
+  }
+
+  /* Unload the local registers */
+  state->next_input_byte = next_input_byte;
+  state->bytes_in_buffer = bytes_in_buffer;
+  state->get_buffer = get_buffer;
+  state->bits_left = bits_left;
+
+  return TRUE;
 }
 
-/* line 401 */
-__attribute__((naked))
-int jpeg_huff_decode(bitread_working_state *state, bit_buf_type get_buffer, int bits_left, d_derived_tbl *htbl, int min_bits)
+
+/*
+ * Out-of-line code for Huffman code decoding.
+ * See jdhuff.h for info about usage.
+ */
+
+GLOBAL(int)
+jpeg_huff_decode (bitread_working_state * state,
+		  register bit_buf_type get_buffer, register int bits_left,
+		  d_derived_tbl * htbl, int min_bits)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 401 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x30, %esp\n"
-        "movl 0x10(%ebp), %eax\n" /* bits_left */
-        "movl 0x18(%ebp), %esi\n" /* min_bits */
-        "cmpl %eax, %esi\n" /* line 408 | min_bits */
-        "jg .Lf207591_002076a8\n"
-        "movl 0xc(%ebp), %edx\n" /* get_buffer */
-        ".Lf207591_002075aa:\n"
-        "subl %esi, %eax\n" /* line 409 | min_bits */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %eax, %ecx\n"
-        "sarl %cl, %edx\n"
-        "movl $1, %eax\n"
-        "movl %esi, %ecx\n" /* min_bits */
-        "shll %cl, %eax\n"
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        "movl 0x14(%ebp), %eax\n" /* line 414 | htbl */
-        "cmpl (%eax, %esi, 4), %edx\n"
-        "jle .Lf207591_0020762b\n"
-        "movl %esi, %edi\n" /* min_bits, l */
-        "leal (%eax, %edi, 4), %esi\n" /* min_bits */
-        ".Lf207591_002075ce:\n"
-        "addl %edx, %edx\n" /* line 415 */
-        "movl %edx, -0xc(%ebp)\n" /* code */
-        "movl -0x1c(%ebp), %ecx\n" /* line 416 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf207591_0020766c\n"
-        "movl 0xc(%ebp), %edx\n" /* get_buffer */
-        ".Lf207591_002075e1:\n"
-        "subl $1, -0x1c(%ebp)\n" /* line 417 */
-        "movzbl -0x1c(%ebp), %ecx\n"
-        "sarl %cl, %edx\n"
-        "andl $1, %edx\n"
-        "orl -0xc(%ebp), %edx\n" /* code */
-        "addl $1, %edi\n" /* line 418 | l */
-        "movl 4(%esi), %eax\n" /* line 414 | min_bits */
-        "addl $4, %esi\n" /* min_bits */
-        "cmpl %edx, %eax\n"
-        "jl .Lf207591_002075ce\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 422 | get_buffer */
-        "movl 8(%ebp), %eax\n" /* state */
-        "movl %ecx, 8(%eax)\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 423 */
-        "movl %ecx, 0xc(%eax)\n"
-        "cmpl $0x10, %edi\n" /* line 427 | l */
-        "jg .Lf207591_00207641\n"
-        ".Lf207591_00207612:\n"
-        "movl 0x14(%ebp), %ecx\n" /* line 432 | htbl */
-        "movl 0x48(%ecx, %edi, 4), %eax\n"
-        "addl 0x8c(%ecx), %eax\n"
-        "movzbl 0x11(%eax, %edx), %eax\n"
-        ".Lf207591_00207624:\n"
-        "addl $0x30, %esp\n" /* line 433 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf207591_0020762b:\n"
-        "movl %esi, %edi\n" /* line 414 | min_bits, l */
-        "movl 0xc(%ebp), %ecx\n" /* line 422 | get_buffer */
-        "movl 8(%ebp), %eax\n" /* state */
-        "movl %ecx, 8(%eax)\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 423 */
-        "movl %ecx, 0xc(%eax)\n"
-        "cmpl $0x10, %edi\n" /* line 427 | l */
-        "jle .Lf207591_00207612\n"
-        ".Lf207591_00207641:\n"
-        "movl 8(%ebp), %edx\n" /* line 428 | state */
-        "movl 0x10(%edx), %eax\n"
-        "movl (%eax), %eax\n"
-        "movl $0x76, 0x14(%eax)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "xorl %eax, %eax\n"
-        "addl $0x30, %esp\n" /* line 433 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf207591_0020766c:\n"
-        "movl $1, 0xc(%esp)\n" /* line 416 */
-        "movl -0x1c(%ebp), %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl 0xc(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* state */
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207591_002076dc\n"
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl 8(%edx), %edx\n"
-        "movl %edx, 0xc(%ebp)\n" /* get_buffer */
-        "movl 8(%ebp), %ecx\n" /* state */
-        "movl 0xc(%ecx), %ecx\n"
-        "movl %ecx, -0x1c(%ebp)\n"
-        "jmp .Lf207591_002075e1\n"
-        ".Lf207591_002076a8:\n"
-        "movl %esi, 0xc(%esp)\n" /* line 408 | min_bits */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* get_buffer */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl %edx, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207591_002076dc\n"
-        "movl 8(%ebp), %ecx\n" /* state */
-        "movl 8(%ecx), %ecx\n"
-        "movl %ecx, 0xc(%ebp)\n" /* get_buffer */
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl 0xc(%edx), %eax\n"
-        "movl %ecx, %edx\n"
-        "jmp .Lf207591_002075aa\n"
-        ".Lf207591_002076dc:\n"
-        "movl $0xffffffff, %eax\n" /* line 432 */
-        "jmp .Lf207591_00207624\n"
-    );
+  register int l = min_bits;
+  register INT32 code;
+
+  /* HUFF_DECODE has determined that the code is at least min_bits */
+  /* bits long, so fetch that many bits in one swoop. */
+
+  CHECK_BIT_BUFFER(*state, l, return -1);
+  code = GET_BITS(l);
+
+  /* Collect the rest of the Huffman code one bit at a time. */
+  /* This is per Figure F.16 in the JPEG spec. */
+
+  while (code > htbl->maxcode[l]) {
+    code <<= 1;
+    CHECK_BIT_BUFFER(*state, 1, return -1);
+    code |= GET_BITS(1);
+    l++;
+  }
+
+  /* Unload the local registers */
+  state->get_buffer = get_buffer;
+  state->bits_left = bits_left;
+
+  /* With garbage input we may reach the sentinel value l = 17. */
+
+  if (l > 16) {
+    WARNMS(state->cinfo, JWRN_HUFF_BAD_CODE);
+    return 0;			/* fake a zero as the safest result */
+  }
+
+  return htbl->pub->huffval[ (int) (code + htbl->valoffset[l]) ];
 }
 
-/* line 636 */
-__attribute__((naked))
-void jinit_huff_decoder(j_decompress_ptr cinfo)
+
+/*
+ * Figure F.12: extend sign bit.
+ * On some machines, a shift and add will be faster than a table lookup.
+ */
+
+#ifdef AVOID_TABLES
+
+#define HUFF_EXTEND(x,s)  ((x) < (1<<((s)-1)) ? (x) + (((-1)<<(s)) + 1) : (x))
+
+#else
+
+#define HUFF_EXTEND(x,s)  ((x) < extend_test[s] ? (x) + extend_offset[s] : (x))
+
+static const int extend_test[16] =   /* entry n is 2**(n-1) */
+  { 0, 0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080,
+    0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000 };
+
+static const int extend_offset[16] = /* entry n is (-1 << n) + 1 */
+  { 0, ((-1)<<1) + 1, ((-1)<<2) + 1, ((-1)<<3) + 1, ((-1)<<4) + 1,
+    ((-1)<<5) + 1, ((-1)<<6) + 1, ((-1)<<7) + 1, ((-1)<<8) + 1,
+    ((-1)<<9) + 1, ((-1)<<10) + 1, ((-1)<<11) + 1, ((-1)<<12) + 1,
+    ((-1)<<13) + 1, ((-1)<<14) + 1, ((-1)<<15) + 1 };
+
+#endif /* AVOID_TABLES */
+
+
+/*
+ * Check for a restart marker & resynchronize decoder.
+ * Returns FALSE if must suspend.
+ */
+
+LOCAL(boolean)
+process_restart (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 636 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl 4(%esi), %eax\n" /* line 640 | cinfo */
-        "movl $0xac, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "movl %eax, 0x1a0(%esi)\n" /* line 643 | cinfo */
-        "leal -0x497(%ebx), %edx\n" /* line 644 */
-        "movl %edx, (%eax)\n"
-        "leal 0x54(%ebx), %edx\n" /* line 645 */
-        "movl %edx, 4(%eax)\n"
-        "movl $4, %edx\n"
-        ".Lf2076e6_0020772a:\n"
-        "movl $0, 0x38(%eax)\n" /* line 649 */
-        "movl $0, 0x28(%eax)\n"
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 648 */
-        "jne .Lf2076e6_0020772a\n"
-        "addl $0x10, %esp\n" /* line 651 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
+  int ci;
+
+  /* Throw away any unused bits remaining in bit buffer; */
+  /* include any full bytes in next_marker's count of discarded bytes */
+  cinfo->marker->discarded_bytes += entropy->bitstate.bits_left / 8;
+  entropy->bitstate.bits_left = 0;
+
+  /* Advance past the RSTn marker */
+  if (! (*cinfo->marker->read_restart_marker) (cinfo))
+    return FALSE;
+
+  /* Re-initialize DC predictions to 0 */
+  for (ci = 0; ci < cinfo->comps_in_scan; ci++)
+    entropy->saved.last_dc_val[ci] = 0;
+
+  /* Reset restart counter */
+  entropy->restarts_to_go = cinfo->restart_interval;
+
+  /* Reset out-of-data flag, unless read_restart_marker left us smack up
+   * against a marker.  In that case we will end up treating the next data
+   * segment as empty, and we can avoid producing bogus output pixels by
+   * leaving the flag set.
+   */
+  if (cinfo->unread_marker == 0)
+    entropy->pub.insufficient_data = FALSE;
+
+  return TRUE;
 }
 
-/* line 518 */
-static __attribute__((naked))
-boolean decode_mcu(j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
+
+/*
+ * Decode and return one MCU's worth of Huffman-compressed coefficients.
+ * The coefficients are reordered from zigzag order into natural array order,
+ * but are not dequantized.
+ *
+ * The i'th block of the MCU is stored into the block pointed to by
+ * MCU_data[i].  WE ASSUME THIS AREA HAS BEEN ZEROED BY THE CALLER.
+ * (Wholesale zeroing is usually a little faster than retail...)
+ *
+ * Returns FALSE if data source requested suspension.  In that case no
+ * changes have been made to permanent state.  (Exception: some output
+ * coefficients may already have been assigned.  This is harmless for
+ * this module, since we'll just re-assign them on the next call.)
+ */
+
+METHODDEF(boolean)
+decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
 {
-    __asm__ __volatile__ (
-        /* { scope 1: block, dctbl, actbl, k */
-        "pushl %ebp\n" /* line 518 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xac, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %eax\n" /* line 519 | cinfo */
-        "movl 0x1a0(%eax), %eax\n"
-        "movl %eax, -0x60(%ebp)\n"
-        "movl 8(%ebp), %edx\n" /* line 525 | cinfo */
-        "movl 0x104(%edx), %esi\n" /* bits_left */
-        "testl %esi, %esi\n" /* bits_left */
-        "je .Lf207747_0020777f\n"
-        "movl 0x24(%eax), %ecx\n" /* line 526 */
-        "testl %ecx, %ecx\n"
-        "je .Lf207747_00208033\n"
-        ".Lf207747_0020777c:\n"
-        "movl -0x60(%ebp), %eax\n"
-        ".Lf207747_0020777f:\n"
-        "cmpb $0, 8(%eax)\n" /* line 534 */
-        "jne .Lf207747_00207b1e\n"
-        "movl 8(%ebp), %edx\n" /* line 537 | cinfo */
-        "movl %edx, -0x2c(%ebp)\n"
-        "movl 0x20(%edx), %edx\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x3c(%ebp)\n" /* br_state */
-        "movl 4(%edx), %eax\n"
-        "movl %eax, -0x38(%ebp)\n"
-        "movl -0x60(%ebp), %eax\n"
-        "movl 0xc(%eax), %eax\n"
-        "movl %eax, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x60(%ebp), %ecx\n"
-        "movl 0x10(%ecx), %esi\n" /* bits_left */
-        "movl 0x14(%ecx), %eax\n" /* line 538 */
-        "movl %eax, -0x28(%ebp)\n" /* state */
-        "movl 0x18(%ecx), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x1c(%ecx), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x20(%ecx), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl 8(%ebp), %eax\n" /* line 542 | cinfo */
-        "movl 0x148(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf207747_00207ae3\n"
-        "movl %ecx, -0x68(%ebp)\n"
-        "movl %ecx, -0x64(%ebp)\n"
-        "movl $1, -0x6c(%ebp)\n"
-        "leal -0x3c(%ebp), %ecx\n" /* br_state */
-        "movl %ecx, -0x88(%ebp)\n"
-        "movl %ecx, -0x90(%ebp)\n"
-        "movl %ecx, -0x8c(%ebp)\n"
-        "movl %ecx, -0x94(%ebp)\n"
-        "movl %ecx, -0x98(%ebp)\n"
-        /* { scope 2 */
-        ".Lf207747_00207806:\n"
-        "movl -0x6c(%ebp), %eax\n" /* line 543 */
-        "movl 0xc(%ebp), %edx\n" /* MCU_data */
-        "movl -4(%edx, %eax, 4), %eax\n"
-        "movl %eax, -0x80(%ebp)\n" /* block */
-        "movl -0x68(%ebp), %edx\n" /* line 544 */
-        "movl 0x48(%edx), %edx\n"
-        "movl %edx, -0x7c(%ebp)\n" /* dctbl */
-        "movl -0x68(%ebp), %ecx\n" /* line 545 */
-        "movl 0x70(%ecx), %ecx\n"
-        "movl %ecx, -0x78(%ebp)\n" /* actbl */
-        /* { scope 3: bits_left */
-        "cmpl $7, %esi\n" /* line 551 | bits_left */
-        "jle .Lf207747_00207f97\n"
-        "movl -0x84(%ebp), %eax\n" /* get_buffer, look */
-        ".Lf207747_00207834:\n"
-        "leal -8(%esi), %ecx\n" /* bits_left */
-        "sarl %cl, %eax\n" /* look */
-        "andl $0xff, %eax\n" /* look */
-        "movl 0x90(%edx, %eax, 4), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lf207747_00207f46\n"
-        "movl $9, %edi\n" /* nb */
-        /* { scope 4: code */
-        /* { scope 5 */
-        "cmpl %edi, %esi\n" /* line 408 */
-        "jl .Lf207747_00207fde\n"
-        ".Lf207747_0020785a:\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_00207860:\n"
-        "subl %edi, %esi\n" /* line 409 */
-        "movl %esi, -0x9c(%ebp)\n" /* bits_left */
-        "movzbl -0x9c(%ebp), %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "movl $1, %eax\n"
-        "movl %edi, %ecx\n"
-        "shll %cl, %eax\n"
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        "movl -0x7c(%ebp), %eax\n" /* line 414 | dctbl */
-        "cmpl (%eax, %edi, 4), %edx\n"
-        "jle .Lf207747_002078c6\n"
-        "leal (%eax, %edi, 4), %esi\n"
-        ".Lf207747_0020788a:\n"
-        "addl %edx, %edx\n" /* line 415 */
-        "movl %edx, -0x5c(%ebp)\n"
-        "movl -0x9c(%ebp), %eax\n" /* line 416 | bits_left */
-        "testl %eax, %eax\n"
-        "jle .Lf207747_00207f58\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_002078a3:\n"
-        "subl $1, -0x9c(%ebp)\n" /* line 417 | bits_left */
-        "movzbl -0x9c(%ebp), %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "andl $1, %edx\n"
-        "orl -0x5c(%ebp), %edx\n"
-        "addl $1, %edi\n" /* line 418 */
-        "movl 4(%esi), %eax\n" /* line 414 */
-        "addl $4, %esi\n"
-        "cmpl %edx, %eax\n"
-        "jl .Lf207747_0020788a\n"
-        ".Lf207747_002078c6:\n"
-        "movl -0x84(%ebp), %eax\n" /* line 422 | get_buffer */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl -0x9c(%ebp), %ecx\n" /* line 423 | bits_left */
-        "movl %ecx, -0x30(%ebp)\n"
-        "cmpl $0x10, %edi\n" /* line 427 */
-        "jg .Lf207747_002080c8\n"
-        "movl -0x7c(%ebp), %eax\n" /* line 432 | dctbl */
-        "addl 0x8c(%eax), %edx\n"
-        "addl 0x48(%eax, %edi, 4), %edx\n"
-        "movzbl 0x11(%edx), %edi\n"
-        /* } scope */
-        /* } scope */
-        ".Lf207747_002078f2:\n"
-        "movl -0x34(%ebp), %edx\n" /* line 551 */
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        /* } scope */
-        ".Lf207747_002078fe:\n"
-        "testl %edi, %edi\n" /* line 552 | nb */
-        "je .Lf207747_00207933\n"
-        "cmpl %edi, %esi\n" /* line 553 | nb, bits_left */
-        "jl .Lf207747_002080ee\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_00207910:\n"
-        "subl %edi, %esi\n" /* line 554 | nb, bits_left */
-        "movl %esi, %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "movl $1, %eax\n"
-        "movl %edi, %ecx\n" /* nb */
-        "shll %cl, %eax\n"
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        "cmpl 0xffc88(%ebx, %edi, 4), %edx\n" /* line 555 */
-        "jl .Lf207747_00208010\n"
-        ".Lf207747_00207931:\n"
-        "movl %edx, %edi\n" /* nb */
-        ".Lf207747_00207933:\n"
-        "movl -0x64(%ebp), %eax\n" /* line 558 */
-        "cmpb $0, 0x98(%eax)\n"
-        "je .Lf207747_00207f3f\n"
-        /* { scope 3: bits_left */
-        "movl -0x6c(%ebp), %edx\n" /* line 560 */
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "movl 0x148(%ecx, %edx, 4), %eax\n" /* ci */
-        "movl %edi, %edx\n" /* line 561 | nb */
-        "addl -0x28(%ebp, %eax, 4), %edx\n"
-        "movl %edx, -0x28(%ebp, %eax, 4)\n" /* line 562 */
-        "movl -0x80(%ebp), %eax\n" /* line 564 | block */
-        "movw %dx, (%eax)\n"
-        "movl -0x64(%ebp), %edx\n"
-        /* } scope */
-        ".Lf207747_00207963:\n"
-        "cmpb $0, 0xa2(%edx)\n" /* line 567 */
-        "je .Lf207747_00207c9a\n"
-        "movl $1, -0x4c(%ebp)\n"
-        /* { scope 3: bits_left */
-        ".Lf207747_00207977:\n"
-        "cmpl $7, %esi\n" /* line 572 | bits_left */
-        "jle .Lf207747_00207b63\n"
-        "movl -0x84(%ebp), %eax\n" /* get_buffer, look */
-        ".Lf207747_00207986:\n"
-        "leal -8(%esi), %ecx\n" /* bits_left */
-        "sarl %cl, %eax\n" /* look */
-        "andl $0xff, %eax\n" /* look */
-        "movl -0x78(%ebp), %ecx\n" /* actbl */
-        "movl 0x90(%ecx, %eax, 4), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf207747_00207b47\n"
-        "movl $9, %edi\n" /* nb */
-        /* { scope 4: code */
-        /* { scope 5 */
-        ".Lf207747_002079a7:\n"
-        "cmpl %edi, %esi\n" /* line 408 */
-        "jl .Lf207747_00207bf4\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_002079b5:\n"
-        "subl %edi, %esi\n" /* line 409 */
-        "movl %esi, -0x9c(%ebp)\n" /* bits_left */
-        "movzbl -0x9c(%ebp), %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "movl $1, %eax\n"
-        "movl %edi, %ecx\n"
-        "shll %cl, %eax\n"
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        "movl -0x78(%ebp), %eax\n" /* line 414 | actbl */
-        "cmpl (%eax, %edi, 4), %edx\n"
-        "jle .Lf207747_00207a1b\n"
-        "leal (%eax, %edi, 4), %esi\n"
-        ".Lf207747_002079df:\n"
-        "addl %edx, %edx\n" /* line 415 */
-        "movl %edx, -0x58(%ebp)\n"
-        "movl -0x9c(%ebp), %eax\n" /* line 416 | bits_left */
-        "testl %eax, %eax\n"
-        "jle .Lf207747_00207bab\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_002079f8:\n"
-        "subl $1, -0x9c(%ebp)\n" /* line 417 | bits_left */
-        "movzbl -0x9c(%ebp), %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "andl $1, %edx\n"
-        "orl -0x58(%ebp), %edx\n"
-        "addl $1, %edi\n" /* line 418 */
-        "movl 4(%esi), %eax\n" /* line 414 */
-        "addl $4, %esi\n"
-        "cmpl %eax, %edx\n"
-        "jg .Lf207747_002079df\n"
-        ".Lf207747_00207a1b:\n"
-        "movl -0x84(%ebp), %eax\n" /* line 422 | get_buffer */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl -0x9c(%ebp), %ecx\n" /* line 423 | bits_left */
-        "movl %ecx, -0x30(%ebp)\n"
-        "cmpl $0x10, %edi\n" /* line 427 */
-        "jg .Lf207747_00207c2d\n"
-        "movl -0x78(%ebp), %eax\n" /* line 432 | actbl */
-        "addl 0x8c(%eax), %edx\n"
-        "addl 0x48(%eax, %edi, 4), %edx\n"
-        "movzbl 0x11(%edx), %eax\n"
-        /* } scope */
-        /* } scope */
-        "movl %eax, %edx\n" /* line 572 | look */
-        "sarl $4, %edx\n"
-        "movl %eax, %edi\n" /* look, nb */
-        "andl $0xf, %edi\n" /* nb */
-        ".Lf207747_00207a51:\n"
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %ecx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        /* } scope */
-        ".Lf207747_00207a5d:\n"
-        "testl %edi, %edi\n" /* line 577 | nb */
-        "je .Lf207747_00207b32\n"
-        "addl -0x4c(%ebp), %edx\n" /* line 578 */
-        "movl %edx, -0x74(%ebp)\n" /* k */
-        "cmpl %edi, %esi\n" /* line 579 | nb, bits_left */
-        "jl .Lf207747_00207c5f\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_00207a79:\n"
-        "subl %edi, %esi\n" /* line 580 | nb, bits_left */
-        "movl %esi, %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "movl $1, %eax\n"
-        "movl %edi, %ecx\n" /* nb */
-        "shll %cl, %eax\n"
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        "cmpl 0xffc88(%ebx, %edi, 4), %edx\n" /* line 581 */
-        "jge .Lf207747_00207a9d\n"
-        "addl 0xffc48(%ebx, %edi, 4), %edx\n"
-        ".Lf207747_00207a9d:\n"
-        "movl 0x1758270(%ebx), %eax\n" /* line 586 */
-        "movl -0x74(%ebp), %ecx\n" /* k */
-        "movl (%eax, %ecx, 4), %eax\n"
-        "movl -0x80(%ebp), %ecx\n" /* block */
-        "movw %dx, (%ecx, %eax, 2)\n"
-        "movl -0x74(%ebp), %edx\n" /* k */
-        ".Lf207747_00207ab3:\n"
-        "addl $1, %edx\n" /* line 571 */
-        "movl %edx, -0x4c(%ebp)\n"
-        "cmpl $0x3f, %edx\n"
-        "jle .Lf207747_00207977\n"
-        ".Lf207747_00207ac2:\n"
-        "movl -0x6c(%ebp), %eax\n" /* line 598 */
-        "addl $1, -0x6c(%ebp)\n"
-        "addl $4, -0x68(%ebp)\n"
-        "addl $1, -0x64(%ebp)\n"
-        /* } scope */
-        "movl 8(%ebp), %edx\n" /* line 542 | cinfo */
-        "cmpl 0x148(%edx), %eax\n"
-        "jl .Lf207747_00207806\n"
-        "movl 0x20(%edx), %edx\n"
-        ".Lf207747_00207ae3:\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 619 | br_state */
-        "movl %eax, (%edx)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl 0x20(%eax), %edx\n"
-        "movl -0x38(%ebp), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl -0x60(%ebp), %edx\n"
-        "movl %ecx, 0xc(%edx)\n"
-        "movl %esi, 0x10(%edx)\n" /* bits_left */
-        "movl -0x28(%ebp), %eax\n" /* line 620 | state */
-        "movl %eax, 0x14(%edx)\n"
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, 0x1c(%edx)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "movl %eax, 0x20(%edx)\n"
-        "movl -0x60(%ebp), %eax\n"
-        ".Lf207747_00207b1e:\n"
-        "subl $1, 0x24(%eax)\n" /* line 624 */
-        "movl $1, %eax\n"
-        "addl $0xac, %esp\n" /* line 627 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 2 */
-        ".Lf207747_00207b32:\n"
-        "cmpl $0xf, %edx\n" /* line 588 */
-        "jne .Lf207747_00207ac2\n"
-        "movl -0x4c(%ebp), %eax\n" /* line 590 */
-        "addl $0xf, %eax\n"
-        "movl %eax, -0x74(%ebp)\n" /* k */
-        "movl %eax, %edx\n"
-        "jmp .Lf207747_00207ab3\n"
-        /* { scope 3: bits_left */
-        ".Lf207747_00207b47:\n"
-        "subl %edx, %esi\n" /* line 572 | bits_left */
-        "movl -0x78(%ebp), %edx\n" /* actbl */
-        "movzbl 0x490(%eax, %edx), %eax\n" /* look */
-        "movl %eax, %edx\n" /* look */
-        "sarl $4, %edx\n"
-        "movl %eax, %edi\n" /* look, nb */
-        "andl $0xf, %edi\n" /* nb */
-        "jmp .Lf207747_00207a5d\n"
-        ".Lf207747_00207b63:\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* bits_left */
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x8c(%ebp), %eax\n" /* look */
-        "movl %eax, (%esp)\n" /* look */
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n" /* look */
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        "cmpl $7, %esi\n" /* bits_left */
-        "jle .Lf207747_00207c55\n"
-        "movl %edx, %eax\n" /* look */
-        "jmp .Lf207747_00207986\n"
-        /* { scope 4: code */
-        /* { scope 5 */
-        ".Lf207747_00207bab:\n"
-        "movl $1, 0xc(%esp)\n" /* line 416 */
-        "movl -0x9c(%ebp), %edx\n" /* bits_left */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x94(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %ecx\n"
-        "movl %ecx, -0x9c(%ebp)\n" /* bits_left */
-        "jmp .Lf207747_002079f8\n"
-        ".Lf207747_00207bf4:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 408 */
-        "movl %esi, 8(%esp)\n"
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x8c(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n"
-        "jmp .Lf207747_002079b5\n"
-        ".Lf207747_00207c2d:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movl $0x76, 0x14(%eax)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "xorl %edx, %edx\n"
-        "xorl %edi, %edi\n"
-        "jmp .Lf207747_00207a51\n"
-        /* } scope */
-        /* } scope */
-        ".Lf207747_00207c55:\n"
-        "movl $1, %edi\n" /* line 572 | nb */
-        "jmp .Lf207747_002079a7\n"
-        /* } scope */
-        ".Lf207747_00207c5f:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 579 | nb */
-        "movl %esi, 8(%esp)\n" /* bits_left */
-        "movl -0x84(%ebp), %eax\n" /* get_buffer */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x8c(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %ecx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        "movl %ecx, %edx\n"
-        "jmp .Lf207747_00207a79\n"
-        ".Lf207747_00207c9a:\n"
-        "movl $1, -0x50(%ebp)\n" /* line 571 */
-        /* { scope 3: bits_left */
-        "cmpl $7, %esi\n" /* line 599 | bits_left */
-        "jle .Lf207747_00207dbb\n"
-        ".Lf207747_00207caa:\n"
-        "movl -0x84(%ebp), %eax\n" /* get_buffer, look */
-        "leal -8(%esi), %ecx\n" /* bits_left */
-        "sarl %cl, %eax\n" /* look */
-        "andl $0xff, %eax\n" /* look */
-        "movl -0x78(%ebp), %ecx\n" /* actbl */
-        "movl 0x90(%ecx, %eax, 4), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf207747_00207e1a\n"
-        ".Lf207747_00207ccc:\n"
-        "movl $9, %edi\n" /* nb */
-        /* { scope 4: code */
-        /* { scope 5 */
-        ".Lf207747_00207cd1:\n"
-        "cmpl %edi, %esi\n" /* line 408 */
-        "jl .Lf207747_00207ed4\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_00207cdf:\n"
-        "subl %edi, %esi\n" /* line 409 */
-        "movl %esi, -0x9c(%ebp)\n" /* bits_left */
-        "movzbl -0x9c(%ebp), %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "movl $1, %eax\n"
-        "movl %edi, %ecx\n"
-        "shll %cl, %eax\n"
-        "subl $1, %eax\n"
-        "andl %eax, %edx\n"
-        "movl -0x78(%ebp), %eax\n" /* line 414 | actbl */
-        "cmpl (%eax, %edi, 4), %edx\n"
-        "jle .Lf207747_00207d45\n"
-        "leal (%eax, %edi, 4), %esi\n"
-        ".Lf207747_00207d09:\n"
-        "addl %edx, %edx\n" /* line 415 */
-        "movl %edx, -0x70(%ebp)\n" /* code */
-        "movl -0x9c(%ebp), %eax\n" /* line 416 | bits_left */
-        "testl %eax, %eax\n"
-        "jle .Lf207747_00207e8b\n"
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        ".Lf207747_00207d22:\n"
-        "subl $1, -0x9c(%ebp)\n" /* line 417 | bits_left */
-        "movzbl -0x9c(%ebp), %ecx\n" /* bits_left */
-        "sarl %cl, %edx\n"
-        "andl $1, %edx\n"
-        "orl -0x70(%ebp), %edx\n" /* code */
-        "addl $1, %edi\n" /* line 418 */
-        "movl 4(%esi), %eax\n" /* line 414 */
-        "addl $4, %esi\n"
-        "cmpl %eax, %edx\n"
-        "jg .Lf207747_00207d09\n"
-        ".Lf207747_00207d45:\n"
-        "movl -0x84(%ebp), %eax\n" /* line 422 | get_buffer */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl -0x9c(%ebp), %ecx\n" /* line 423 | bits_left */
-        "movl %ecx, -0x30(%ebp)\n"
-        "cmpl $0x10, %edi\n" /* line 427 */
-        "jg .Lf207747_00207f0d\n"
-        "movl -0x78(%ebp), %ecx\n" /* line 432 | actbl */
-        "movl 0x48(%ecx, %edi, 4), %eax\n"
-        "addl 0x8c(%ecx), %eax\n"
-        "movzbl 0x11(%eax, %edx), %eax\n"
-        /* } scope */
-        /* } scope */
-        "movl %eax, %edx\n" /* line 599 | look */
-        "sarl $4, %edx\n"
-        "movl %eax, %edi\n" /* look, nb */
-        "andl $0xf, %edi\n" /* nb */
-        ".Lf207747_00207d7c:\n"
-        "movl -0x34(%ebp), %eax\n" /* look */
-        "movl %eax, -0x84(%ebp)\n" /* look, get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        /* } scope */
-        "testl %edi, %edi\n" /* line 604 | nb */
-        "je .Lf207747_00207e39\n"
-        ".Lf207747_00207d90:\n"
-        "addl -0x50(%ebp), %edx\n" /* line 605 */
-        "movl %edx, -0x54(%ebp)\n"
-        "cmpl %edi, %esi\n" /* line 606 | nb, bits_left */
-        "jl .Lf207747_00207e52\n"
-        ".Lf207747_00207d9e:\n"
-        "subl %edi, %esi\n" /* line 607 | nb, bits_left */
-        "movl -0x54(%ebp), %ecx\n"
-        ".Lf207747_00207da3:\n"
-        "addl $1, %ecx\n" /* line 598 */
-        "movl %ecx, -0x50(%ebp)\n"
-        "cmpl $0x3f, %ecx\n"
-        "jg .Lf207747_00207ac2\n"
-        /* { scope 3: bits_left */
-        "cmpl $7, %esi\n" /* line 599 | bits_left */
-        "jg .Lf207747_00207caa\n"
-        ".Lf207747_00207dbb:\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n" /* bits_left */
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x90(%ebp), %eax\n" /* look */
-        "movl %eax, (%esp)\n" /* look */
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n" /* look */
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        "cmpl $7, %esi\n" /* bits_left */
-        "jle .Lf207747_00207f35\n"
-        "movl %edx, %eax\n" /* look */
-        "leal -8(%esi), %ecx\n" /* bits_left */
-        "sarl %cl, %eax\n" /* look */
-        "andl $0xff, %eax\n" /* look */
-        "movl -0x78(%ebp), %ecx\n" /* actbl */
-        "movl 0x90(%ecx, %eax, 4), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf207747_00207ccc\n"
-        ".Lf207747_00207e1a:\n"
-        "subl %edx, %esi\n" /* bits_left */
-        "movl -0x78(%ebp), %edx\n" /* actbl */
-        "movzbl 0x490(%eax, %edx), %eax\n" /* look */
-        "movl %eax, %edx\n" /* look */
-        "sarl $4, %edx\n"
-        "movl %eax, %edi\n" /* look, nb */
-        "andl $0xf, %edi\n" /* nb */
-        /* } scope */
-        "testl %edi, %edi\n" /* line 604 | nb */
-        "jne .Lf207747_00207d90\n"
-        ".Lf207747_00207e39:\n"
-        "cmpl $0xf, %edx\n" /* line 609 */
-        "jne .Lf207747_00207ac2\n"
-        "movl -0x50(%ebp), %edx\n" /* line 611 */
-        "addl $0xf, %edx\n"
-        "movl %edx, -0x54(%ebp)\n"
-        "movl %edx, %ecx\n"
-        "jmp .Lf207747_00207da3\n"
-        ".Lf207747_00207e52:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 606 | nb */
-        "movl %esi, 8(%esp)\n" /* bits_left */
-        "movl -0x84(%ebp), %edx\n" /* get_buffer */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x90(%ebp), %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movl %eax, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        "jmp .Lf207747_00207d9e\n"
-        /* { scope 3: bits_left */
-        /* { scope 4: code */
-        /* { scope 5 */
-        ".Lf207747_00207e8b:\n"
-        "movl $1, 0xc(%esp)\n" /* line 416 */
-        "movl -0x9c(%ebp), %edx\n" /* bits_left */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x98(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %ecx\n"
-        "movl %ecx, -0x9c(%ebp)\n" /* bits_left */
-        "jmp .Lf207747_00207d22\n"
-        ".Lf207747_00207ed4:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 408 */
-        "movl %esi, 8(%esp)\n"
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x90(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n"
-        "jmp .Lf207747_00207cdf\n"
-        ".Lf207747_00207f0d:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movl $0x76, 0x14(%eax)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "xorl %edx, %edx\n"
-        "xorl %edi, %edi\n"
-        "jmp .Lf207747_00207d7c\n"
-        /* } scope */
-        /* } scope */
-        ".Lf207747_00207f35:\n"
-        "movl $1, %edi\n" /* line 599 | nb */
-        "jmp .Lf207747_00207cd1\n"
-        ".Lf207747_00207f3f:\n"
-        "movl %eax, %edx\n" /* look */
-        "jmp .Lf207747_00207963\n"
-        /* } scope */
-        /* { scope 3: bits_left */
-        ".Lf207747_00207f46:\n"
-        "subl %ecx, %esi\n" /* line 551 | bits_left */
-        "movl -0x7c(%ebp), %ecx\n" /* dctbl */
-        "movzbl 0x490(%eax, %ecx), %edi\n" /* nb */
-        "jmp .Lf207747_002078fe\n"
-        /* { scope 4: code */
-        /* { scope 5 */
-        ".Lf207747_00207f58:\n"
-        "movl $1, 0xc(%esp)\n" /* line 416 */
-        "movl -0x9c(%ebp), %edx\n" /* bits_left */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x88(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "jne .Lf207747_0020801c\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lf207747_00207f8a:\n"
-        "xorl %eax, %eax\n" /* line 626 */
-        "addl $0xac, %esp\n" /* line 627 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 2 */
-        /* { scope 3: bits_left */
-        ".Lf207747_00207f97:\n"
-        "movl $0, 0xc(%esp)\n" /* line 551 */
-        "movl %esi, 8(%esp)\n" /* bits_left */
-        "movl -0x84(%ebp), %eax\n" /* get_buffer, look */
-        "movl %eax, 4(%esp)\n" /* look */
-        "leal -0x3c(%ebp), %eax\n" /* br_state, look */
-        "movl %eax, (%esp)\n" /* look */
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n" /* look */
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        "cmpl $7, %esi\n" /* bits_left */
-        "jg .Lf207747_002080be\n"
-        "movl $1, %edi\n" /* nb */
-        /* { scope 4: code */
-        /* { scope 5 */
-        "cmpl %edi, %esi\n" /* line 408 */
-        "jge .Lf207747_0020785a\n"
-        ".Lf207747_00207fde:\n"
-        "movl %edi, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n"
-        "movl -0x84(%ebp), %eax\n" /* get_buffer */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* br_state */
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n"
-        "jmp .Lf207747_00207860\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lf207747_00208010:\n"
-        "addl 0xffc48(%ebx, %edi, 4), %edx\n" /* line 555 */
-        "jmp .Lf207747_00207931\n"
-        /* { scope 3: bits_left */
-        /* { scope 4: code */
-        /* { scope 5 */
-        ".Lf207747_0020801c:\n"
-        "movl -0x34(%ebp), %edx\n" /* line 416 */
-        "movl %edx, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %ecx\n"
-        "movl %ecx, -0x9c(%ebp)\n" /* bits_left */
-        "jmp .Lf207747_002078a3\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        ".Lf207747_00208033:\n"
-        "movl 0x19c(%edx), %ecx\n" /* line 475 */
-        "movl 0x10(%eax), %eax\n"
-        "leal 7(%eax), %edx\n"
-        "cmpl $-1, %eax\n"
-        "cmovlel %edx, %eax\n"
-        "sarl $3, %eax\n"
-        "addl %eax, 0x14(%ecx)\n"
-        "movl -0x60(%ebp), %ecx\n" /* line 476 */
-        "movl $0, 0x10(%ecx)\n"
-        "movl 8(%ebp), %edx\n" /* line 479 | cinfo */
-        "movl 0x19c(%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *8(%eax)\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl 8(%ebp), %edx\n" /* line 483 | cinfo */
-        "movl 0x12c(%edx), %esi\n"
-        "testl %esi, %esi\n"
-        "jle .Lf207747_00208098\n"
-        "movl -0x60(%ebp), %edx\n"
-        "xorl %eax, %eax\n"
-        ".Lf207747_0020807e:\n"
-        "movl $0, 0x14(%edx)\n" /* line 484 */
-        "addl $1, %eax\n" /* line 483 */
-        "addl $4, %edx\n"
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "cmpl 0x12c(%ecx), %eax\n"
-        "jl .Lf207747_0020807e\n"
-        "movl %ecx, %edx\n"
-        ".Lf207747_00208098:\n"
-        "movl 0x104(%edx), %eax\n" /* line 487 */
-        "movl -0x60(%ebp), %ecx\n"
-        "movl %eax, 0x24(%ecx)\n"
-        "movl 0x184(%edx), %eax\n" /* line 494 */
-        "testl %eax, %eax\n"
-        "jne .Lf207747_0020777c\n"
-        "movb $0, 8(%ecx)\n" /* line 495 */
-        "movl -0x60(%ebp), %eax\n"
-        "jmp .Lf207747_0020777f\n"
-        ".Lf207747_002080be:\n"
-        "movl %edx, %eax\n"
-        "movl -0x7c(%ebp), %edx\n" /* dctbl */
-        "jmp .Lf207747_00207834\n"
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3: bits_left */
-        /* { scope 4: code */
-        /* { scope 5 */
-        ".Lf207747_002080c8:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movl $0x76, 0x14(%eax)\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "xorl %edi, %edi\n"
-        "jmp .Lf207747_002078f2\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lf207747_002080ee:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 553 | nb */
-        "movl %esi, 8(%esp)\n" /* bits_left */
-        "movl -0x84(%ebp), %ecx\n" /* get_buffer */
-        "movl %ecx, 4(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* br_state */
-        "movl %eax, (%esp)\n"
-        "calll jpeg_fill_bit_buffer\n"
-        "testb %al, %al\n"
-        "je .Lf207747_00207f8a\n"
-        "movl -0x34(%ebp), %eax\n"
-        "movl %eax, -0x84(%ebp)\n" /* get_buffer */
-        "movl -0x30(%ebp), %esi\n" /* bits_left */
-        "movl %eax, %edx\n"
-        "jmp .Lf207747_00207910\n"
-    );
+  huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
+  int blkn;
+  BITREAD_STATE_VARS;
+  savable_state state;
+
+  /* Process restart marker if needed; may have to suspend */
+  if (cinfo->restart_interval) {
+    if (entropy->restarts_to_go == 0)
+      if (! process_restart(cinfo))
+	return FALSE;
+  }
+
+  /* If we've run out of data, just leave the MCU set to zeroes.
+   * This way, we return uniform gray for the remainder of the segment.
+   */
+  if (! entropy->pub.insufficient_data) {
+
+    /* Load up working state */
+    BITREAD_LOAD_STATE(cinfo,entropy->bitstate);
+    ASSIGN_STATE(state, entropy->saved);
+
+    /* Outer loop handles each block in the MCU */
+
+    for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
+      JBLOCKROW block = MCU_data[blkn];
+      d_derived_tbl * dctbl = entropy->dc_cur_tbls[blkn];
+      d_derived_tbl * actbl = entropy->ac_cur_tbls[blkn];
+      register int s, k, r;
+
+      /* Decode a single block's worth of coefficients */
+
+      /* Section F.2.2.1: decode the DC coefficient difference */
+      HUFF_DECODE(s, br_state, dctbl, return FALSE, label1);
+      if (s) {
+	CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	r = GET_BITS(s);
+	s = HUFF_EXTEND(r, s);
+      }
+
+      if (entropy->dc_needed[blkn]) {
+	/* Convert DC difference to actual value, update last_dc_val */
+	int ci = cinfo->MCU_membership[blkn];
+	s += state.last_dc_val[ci];
+	state.last_dc_val[ci] = s;
+	/* Output the DC coefficient (assumes jpeg_natural_order[0] = 0) */
+	(*block)[0] = (JCOEF) s;
+      }
+
+      if (entropy->ac_needed[blkn]) {
+
+	/* Section F.2.2.2: decode the AC coefficients */
+	/* Since zeroes are skipped, output area must be cleared beforehand */
+	for (k = 1; k < DCTSIZE2; k++) {
+	  HUFF_DECODE(s, br_state, actbl, return FALSE, label2);
+      
+	  r = s >> 4;
+	  s &= 15;
+      
+	  if (s) {
+	    k += r;
+	    CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	    r = GET_BITS(s);
+	    s = HUFF_EXTEND(r, s);
+	    /* Output coefficient in natural (dezigzagged) order.
+	     * Note: the extra entries in jpeg_natural_order[] will save us
+	     * if k >= DCTSIZE2, which could happen if the data is corrupted.
+	     */
+	    (*block)[jpeg_natural_order[k]] = (JCOEF) s;
+	  } else {
+	    if (r != 15)
+	      break;
+	    k += 15;
+	  }
+	}
+
+      } else {
+
+	/* Section F.2.2.2: decode the AC coefficients */
+	/* In this path we just discard the values */
+	for (k = 1; k < DCTSIZE2; k++) {
+	  HUFF_DECODE(s, br_state, actbl, return FALSE, label3);
+      
+	  r = s >> 4;
+	  s &= 15;
+      
+	  if (s) {
+	    k += r;
+	    CHECK_BIT_BUFFER(br_state, s, return FALSE);
+	    DROP_BITS(s);
+	  } else {
+	    if (r != 15)
+	      break;
+	    k += 15;
+	  }
+	}
+
+      }
+    }
+
+    /* Completed MCU, so update state */
+    BITREAD_SAVE_STATE(cinfo,entropy->bitstate);
+    ASSIGN_STATE(entropy->saved, state);
+  }
+
+  /* Account for restart interval (no-op if not using restarts) */
+  entropy->restarts_to_go--;
+
+  return TRUE;
 }
 
+
+/*
+ * Module initialization routine for Huffman entropy decoding.
+ */
+
+GLOBAL(void)
+jinit_huff_decoder (j_decompress_ptr cinfo)
+{
+  huff_entropy_ptr entropy;
+  int i;
+
+  entropy = (huff_entropy_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(huff_entropy_decoder));
+  cinfo->entropy = (struct jpeg_entropy_decoder *) entropy;
+  entropy->pub.start_pass = start_pass_huff_decoder;
+  entropy->pub.decode_mcu = decode_mcu;
+
+  /* Mark tables unallocated */
+  for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    entropy->dc_derived_tbls[i] = entropy->ac_derived_tbls[i] = NULL;
+  }
+}

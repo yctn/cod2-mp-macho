@@ -1,397 +1,283 @@
-/* ASM dump from: jfdctint.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jfdctint.c */
+/*
+ * jfdctint.c
+ *
+ * Copyright (C) 1991-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains a slow-but-accurate integer implementation of the
+ * forward DCT (Discrete Cosine Transform).
+ *
+ * A 2-D DCT can be done by 1-D DCT on each row followed by 1-D DCT
+ * on each column.  Direct algorithms are also available, but they are
+ * much more complex and seem not to be any faster when reduced to code.
+ *
+ * This implementation is based on an algorithm described in
+ *   C. Loeffler, A. Ligtenberg and G. Moschytz, "Practical Fast 1-D DCT
+ *   Algorithms with 11 Multiplications", Proc. Int'l. Conf. on Acoustics,
+ *   Speech, and Signal Processing 1989 (ICASSP '89), pp. 988-991.
+ * The primary algorithm described there uses 11 multiplies and 29 adds.
+ * We use their alternate method with 12 multiplies and 32 adds.
+ * The advantage of this method is that no data path contains more than one
+ * multiplication; this allows a very simple and accurate implementation in
+ * scaled fixed-point arithmetic, with a minimal number of shifts.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jdct.h"		/* Private declarations for DCT subsystem */
 
-void jpeg_fdct_islow(DCTELEM *data);
+#ifdef DCT_ISLOW_SUPPORTED
 
-/* line 141 */
-__attribute__((naked))
-void jpeg_fdct_islow(DCTELEM *data)
+
+/*
+ * This module is specialized to the case DCTSIZE = 8.
+ */
+
+#if DCTSIZE != 8
+  Sorry, this code only copes with 8x8 DCTs. /* deliberate syntax err */
+#endif
+
+
+/*
+ * The poop on this scaling stuff is as follows:
+ *
+ * Each 1-D DCT step produces outputs which are a factor of sqrt(N)
+ * larger than the true DCT outputs.  The final outputs are therefore
+ * a factor of N larger than desired; since N=8 this can be cured by
+ * a simple right shift at the end of the algorithm.  The advantage of
+ * this arrangement is that we save two multiplications per 1-D DCT,
+ * because the y0 and y4 outputs need not be divided by sqrt(N).
+ * In the IJG code, this factor of 8 is removed by the quantization step
+ * (in jcdctmgr.c), NOT in this module.
+ *
+ * We have to do addition and subtraction of the integer inputs, which
+ * is no problem, and multiplication by fractional constants, which is
+ * a problem to do in integer arithmetic.  We multiply all the constants
+ * by CONST_SCALE and convert them to integer constants (thus retaining
+ * CONST_BITS bits of precision in the constants).  After doing a
+ * multiplication we have to divide the product by CONST_SCALE, with proper
+ * rounding, to produce the correct output.  This division can be done
+ * cheaply as a right shift of CONST_BITS bits.  We postpone shifting
+ * as long as possible so that partial sums can be added together with
+ * full fractional precision.
+ *
+ * The outputs of the first pass are scaled up by PASS1_BITS bits so that
+ * they are represented to better-than-integral precision.  These outputs
+ * require BITS_IN_JSAMPLE + PASS1_BITS + 3 bits; this fits in a 16-bit word
+ * with the recommended scaling.  (For 12-bit sample data, the intermediate
+ * array is INT32 anyway.)
+ *
+ * To avoid overflow of the 32-bit intermediate results in pass 2, we must
+ * have BITS_IN_JSAMPLE + CONST_BITS + PASS1_BITS <= 26.  Error analysis
+ * shows that the values given below are the most effective.
+ */
+
+#if BITS_IN_JSAMPLE == 8
+#define CONST_BITS  13
+#define PASS1_BITS  2
+#else
+#define CONST_BITS  13
+#define PASS1_BITS  1		/* lose a little precision to avoid overflow */
+#endif
+
+/* Some C compilers fail to reduce "FIX(constant)" at compile time, thus
+ * causing a lot of useless floating-point operations at run time.
+ * To get around this we use the following pre-calculated constants.
+ * If you change CONST_BITS you may want to add appropriate values.
+ * (With a reasonable C compiler, you can just rely on the FIX() macro...)
+ */
+
+#if CONST_BITS == 13
+#define FIX_0_298631336  ((INT32)  2446)	/* FIX(0.298631336) */
+#define FIX_0_390180644  ((INT32)  3196)	/* FIX(0.390180644) */
+#define FIX_0_541196100  ((INT32)  4433)	/* FIX(0.541196100) */
+#define FIX_0_765366865  ((INT32)  6270)	/* FIX(0.765366865) */
+#define FIX_0_899976223  ((INT32)  7373)	/* FIX(0.899976223) */
+#define FIX_1_175875602  ((INT32)  9633)	/* FIX(1.175875602) */
+#define FIX_1_501321110  ((INT32)  12299)	/* FIX(1.501321110) */
+#define FIX_1_847759065  ((INT32)  15137)	/* FIX(1.847759065) */
+#define FIX_1_961570560  ((INT32)  16069)	/* FIX(1.961570560) */
+#define FIX_2_053119869  ((INT32)  16819)	/* FIX(2.053119869) */
+#define FIX_2_562915447  ((INT32)  20995)	/* FIX(2.562915447) */
+#define FIX_3_072711026  ((INT32)  25172)	/* FIX(3.072711026) */
+#else
+#define FIX_0_298631336  FIX(0.298631336)
+#define FIX_0_390180644  FIX(0.390180644)
+#define FIX_0_541196100  FIX(0.541196100)
+#define FIX_0_765366865  FIX(0.765366865)
+#define FIX_0_899976223  FIX(0.899976223)
+#define FIX_1_175875602  FIX(1.175875602)
+#define FIX_1_501321110  FIX(1.501321110)
+#define FIX_1_847759065  FIX(1.847759065)
+#define FIX_1_961570560  FIX(1.961570560)
+#define FIX_2_053119869  FIX(2.053119869)
+#define FIX_2_562915447  FIX(2.562915447)
+#define FIX_3_072711026  FIX(3.072711026)
+#endif
+
+
+/* Multiply an INT32 variable by an INT32 constant to yield an INT32 result.
+ * For 8-bit samples with the recommended scaling, all the variable
+ * and constant values involved are no more than 16 bits wide, so a
+ * 16x16->32 bit multiply can be used instead of a full 32x32 multiply.
+ * For 12-bit samples, a full 32-bit multiplication will be needed.
+ */
+
+#if BITS_IN_JSAMPLE == 8
+#define MULTIPLY(var,const)  MULTIPLY16C16(var,const)
+#else
+#define MULTIPLY(var,const)  ((var) * (const))
+#endif
+
+
+/*
+ * Perform the forward DCT on one block of samples.
+ */
+
+GLOBAL(void)
+jpeg_fdct_islow (DCTELEM * data)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 141 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x64, %esp\n"
-        "movl 8(%ebp), %eax\n" /* data */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl $8, -0x3c(%ebp)\n"
-        "movl %eax, %ecx\n"
-        "jmp .Lf215358_00215373\n"
-        ".Lf215358_00215371:\n"
-        "movl %edx, %ecx\n"
-        ".Lf215358_00215373:\n"
-        "movl (%ecx), %edx\n" /* line 155 */
-        "movl 0x1c(%ecx), %eax\n"
-        "leal (%edx, %eax), %esi\n" /* tmp12 */
-        "subl %eax, %edx\n" /* line 156 */
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl 4(%ecx), %edx\n" /* line 157 */
-        "movl 0x18(%ecx), %eax\n"
-        "leal (%edx, %eax), %edi\n" /* tmp13 */
-        "subl %eax, %edx\n" /* line 158 */
-        "movl %edx, -0x18(%ebp)\n"
-        "movl 8(%ecx), %edx\n" /* line 159 */
-        "movl 0x14(%ecx), %eax\n"
-        "leal (%edx, %eax), %ecx\n"
-        "movl %ecx, -0xc(%ebp)\n"
-        "subl %eax, %edx\n" /* line 160 */
-        "movl %edx, -0x14(%ebp)\n"
-        "movl -0x34(%ebp), %eax\n" /* line 161 */
-        "movl 0xc(%eax), %edx\n"
-        "movl 0x10(%eax), %eax\n"
-        "leal (%edx, %eax), %ecx\n"
-        "subl %eax, %edx\n" /* line 162 */
-        "movl %edx, -0x10(%ebp)\n"
-        "leal (%esi, %ecx), %edx\n" /* line 168 | tmp12 */
-        "subl %ecx, %esi\n" /* line 169 | tmp12 */
-        "movl -0xc(%ebp), %eax\n" /* line 170 */
-        "addl %edi, %eax\n" /* tmp13 */
-        "movl %eax, -0x64(%ebp)\n" /* tmp11 */
-        "subl -0xc(%ebp), %edi\n" /* line 171 | tmp13 */
-        "leal (%edx, %eax), %eax\n" /* line 173 */
-        "shll $2, %eax\n"
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %eax, (%ecx)\n"
-        "subl -0x64(%ebp), %edx\n" /* line 174 | tmp11 */
-        "shll $2, %edx\n"
-        "movl %edx, 0x10(%ecx)\n"
-        "leal (%esi, %edi), %edx\n" /* line 176 | tmp12 */
-        "leal (%edx, %edx, 8), %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "movl %eax, %ecx\n"
-        "shll $5, %ecx\n"
-        "subl %eax, %ecx\n"
-        "leal (%esi, %esi, 2), %eax\n" /* line 177 | tmp12 */
-        "shll $5, %eax\n"
-        "subl %esi, %eax\n" /* tmp12 */
-        "movl %eax, %edx\n"
-        "shll $5, %edx\n"
-        "addl %edx, %eax\n"
-        "leal 0x400(%ecx, %eax, 2), %eax\n"
-        "sarl $0xb, %eax\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %eax, 8(%edx)\n"
-        "leal (, %edi, 4), %edx\n" /* line 179 */
-        "movl %edi, %eax\n" /* tmp13 */
-        "shll $6, %eax\n"
-        "subl %edx, %eax\n"
-        "subl %edi, %eax\n" /* tmp13 */
-        "leal (%edi, %eax, 8), %eax\n" /* tmp13 */
-        "shll $5, %eax\n"
-        "addl %edi, %eax\n" /* tmp13 */
-        "subl %eax, %ecx\n"
-        "addl $0x400, %ecx\n"
-        "sarl $0xb, %ecx\n"
-        "movl -0x34(%ebp), %edi\n" /* tmp13 */
-        "movl %ecx, 0x18(%edi)\n" /* tmp13 */
-        "movl -0x1c(%ebp), %edi\n" /* line 187 | tmp13 */
-        "addl -0x10(%ebp), %edi\n" /* tmp13 */
-        "movl -0x18(%ebp), %eax\n" /* line 188 */
-        "addl -0x14(%ebp), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl -0x18(%ebp), %edx\n" /* line 189 */
-        "addl -0x10(%ebp), %edx\n"
-        "movl %edx, -0x28(%ebp)\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 190 */
-        "addl -0x14(%ebp), %ecx\n"
-        "movl %ecx, -0x30(%ebp)\n"
-        "movl %edx, %eax\n" /* line 191 */
-        "addl %ecx, %eax\n"
-        "leal (%eax, %eax, 4), %edx\n"
-        "movl %edx, %esi\n" /* tmp12 */
-        "shll $4, %esi\n" /* tmp12 */
-        "subl %edx, %esi\n" /* tmp12 */
-        "leal (%eax, %esi, 4), %esi\n" /* tmp12 */
-        "shll $5, %esi\n" /* tmp12 */
-        "addl %eax, %esi\n" /* tmp12 */
-        "leal (%edi, %edi, 2), %ecx\n" /* line 197 | tmp13 */
-        "shll $3, %ecx\n"
-        "subl %edi, %ecx\n" /* tmp13 */
-        "leal (%ecx, %ecx, 4), %ecx\n"
-        "leal (%edi, %ecx, 8), %ecx\n" /* tmp13 */
-        "leal (%edi, %ecx, 2), %ecx\n" /* tmp13 */
-        "leal (%edi, %ecx, 4), %ecx\n" /* tmp13 */
-        "negl %ecx\n"
-        "movl -0x20(%ebp), %eax\n" /* line 198 */
-        "leal (%eax, %eax, 4), %edi\n" /* tmp13 */
-        "leal (%eax, %edi, 8), %edi\n" /* tmp13 */
-        "shll $8, %edi\n" /* tmp13 */
-        "addl %eax, %edi\n" /* tmp13 */
-        "leal (%eax, %edi, 2), %edi\n" /* tmp13 */
-        "negl %edi\n" /* tmp13 */
-        "movl -0x28(%ebp), %eax\n" /* line 199 */
-        "shll $2, %eax\n"
-        "movl -0x28(%ebp), %edx\n"
-        "shll $8, %edx\n"
-        "subl %eax, %edx\n"
-        "subl -0x28(%ebp), %edx\n"
-        "shll $4, %edx\n"
-        "addl -0x28(%ebp), %edx\n"
-        "movl -0x28(%ebp), %eax\n"
-        "leal (%eax, %edx, 4), %edx\n"
-        "movl %edx, -0x68(%ebp)\n"
-        "movl -0x30(%ebp), %edx\n" /* line 200 */
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $5, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %esi, %eax\n" /* line 202 | tmp12 */
-        "subl -0x68(%ebp), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "leal (%esi, %edx, 4), %esi\n" /* line 203 | tmp12 */
-        "movl -0x10(%ebp), %edx\n" /* line 205 */
-        "leal (%edx, %edx, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "shll $3, %eax\n"
-        "subl -0x10(%ebp), %eax\n"
-        "leal (%ecx, %eax, 2), %eax\n"
-        "movl -0x24(%ebp), %edx\n"
-        "leal 0x400(%edx, %eax), %eax\n"
-        "sarl $0xb, %eax\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %eax, 0x1c(%edx)\n"
-        "movl -0x14(%ebp), %edx\n" /* line 206 */
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "subl %edx, %eax\n"
-        "addl %edi, %eax\n" /* tmp13 */
-        "leal 0x400(%esi, %eax), %eax\n" /* tmp12 */
-        "sarl $0xb, %eax\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %eax, 0x14(%edx)\n"
-        "movl -0x18(%ebp), %edx\n" /* line 207 */
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "leal (%edi, %edx, 4), %edx\n" /* tmp13 */
-        "movl -0x24(%ebp), %edi\n" /* tmp13 */
-        "leal 0x400(%edi, %edx), %eax\n" /* tmp13 */
-        "sarl $0xb, %eax\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %eax, 0xc(%edx)\n"
-        "movl -0x1c(%ebp), %edi\n" /* line 208 | tmp13 */
-        "leal (%edi, %edi, 2), %eax\n" /* tmp13 */
-        "movl %eax, %edx\n"
-        "shll $0xa, %edx\n"
-        "addl %edx, %eax\n"
-        "shll $2, %eax\n"
-        "subl %edi, %eax\n" /* tmp13 */
-        "addl %ecx, %eax\n"
-        "leal 0x400(%esi, %eax), %eax\n" /* tmp12 */
-        "sarl $0xb, %eax\n"
-        "movl -0x34(%ebp), %edx\n"
-        "movl %eax, 4(%edx)\n"
-        "addl $0x20, %edx\n" /* line 210 */
-        "movl %edx, -0x34(%ebp)\n"
-        "subl $1, -0x3c(%ebp)\n" /* line 154 */
-        "jne .Lf215358_00215371\n"
-        "movl 8(%ebp), %ecx\n" /* data */
-        "movl %ecx, -0x40(%ebp)\n" /* dataptr */
-        "movl $8, -0x38(%ebp)\n"
-        "movl %ecx, %edi\n" /* tmp13 */
-        "jmp .Lf215358_0021558c\n"
-        ".Lf215358_0021558a:\n"
-        "movl %edx, %edi\n" /* tmp13 */
-        ".Lf215358_0021558c:\n"
-        "movl (%edi), %edx\n" /* line 220 | tmp13 */
-        "movl 0xe0(%edi), %eax\n" /* tmp13 */
-        "leal (%edx, %eax), %edi\n" /* tmp13 */
-        "subl %eax, %edx\n" /* line 221 */
-        "movl %edx, -0x50(%ebp)\n" /* tmp7 */
-        "movl -0x40(%ebp), %eax\n" /* line 222 | dataptr */
-        "movl 0x20(%eax), %edx\n"
-        "movl %eax, %ecx\n"
-        "movl 0xc0(%eax), %eax\n"
-        "leal (%edx, %eax), %esi\n" /* tmp12 */
-        "subl %eax, %edx\n" /* line 223 */
-        "movl %edx, -0x54(%ebp)\n" /* tmp6 */
-        "movl 0x40(%ecx), %edx\n" /* line 224 */
-        "movl 0xa0(%ecx), %eax\n"
-        "leal (%edx, %eax), %ecx\n"
-        "movl %ecx, -0x60(%ebp)\n" /* tmp2 */
-        "subl %eax, %edx\n" /* line 225 */
-        "movl %edx, -0x58(%ebp)\n" /* tmp5 */
-        "movl -0x40(%ebp), %eax\n" /* line 226 | dataptr */
-        "movl 0x60(%eax), %edx\n"
-        "movl 0x80(%eax), %eax\n"
-        "leal (%edx, %eax), %ecx\n"
-        "subl %eax, %edx\n" /* line 227 */
-        "movl %edx, -0x5c(%ebp)\n" /* tmp4 */
-        "leal (%edi, %ecx), %edx\n" /* line 233 | tmp13 */
-        "subl %ecx, %edi\n" /* line 234 | tmp13 */
-        "movl -0x60(%ebp), %eax\n" /* line 235 | tmp2 */
-        "addl %esi, %eax\n" /* tmp12 */
-        "movl %eax, -0x64(%ebp)\n" /* tmp11 */
-        "subl -0x60(%ebp), %esi\n" /* line 236 | tmp2, tmp12 */
-        "leal 2(%edx, %eax), %eax\n" /* line 238 */
-        "sarl $2, %eax\n"
-        "movl -0x40(%ebp), %ecx\n" /* dataptr */
-        "movl %eax, (%ecx)\n"
-        "subl -0x64(%ebp), %edx\n" /* line 239 | tmp11 */
-        "addl $2, %edx\n"
-        "sarl $2, %edx\n"
-        "movl %edx, 0x80(%ecx)\n"
-        "leal (%edi, %esi), %edx\n" /* line 241 | tmp13 */
-        "leal (%edx, %edx, 8), %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "movl %eax, %ecx\n"
-        "shll $5, %ecx\n"
-        "subl %eax, %ecx\n"
-        "leal (%edi, %edi, 2), %eax\n" /* line 242 | tmp13 */
-        "shll $5, %eax\n"
-        "subl %edi, %eax\n" /* tmp13 */
-        "movl %eax, %edx\n"
-        "shll $5, %edx\n"
-        "addl %edx, %eax\n"
-        "leal 0x4000(%ecx, %eax, 2), %eax\n"
-        "sarl $0xf, %eax\n"
-        "movl -0x40(%ebp), %edi\n" /* dataptr, tmp13 */
-        "movl %eax, 0x40(%edi)\n" /* tmp13 */
-        "leal (, %esi, 4), %edx\n" /* line 244 */
-        "movl %esi, %eax\n" /* tmp12 */
-        "shll $6, %eax\n"
-        "subl %edx, %eax\n"
-        "subl %esi, %eax\n" /* tmp12 */
-        "leal (%esi, %eax, 8), %eax\n" /* tmp12 */
-        "shll $5, %eax\n"
-        "addl %esi, %eax\n" /* tmp12 */
-        "subl %eax, %ecx\n"
-        "addl $0x4000, %ecx\n"
-        "sarl $0xf, %ecx\n"
-        "movl %ecx, 0xc0(%edi)\n" /* tmp13 */
-        "movl -0x50(%ebp), %edi\n" /* line 252 | tmp7, tmp13 */
-        "addl -0x5c(%ebp), %edi\n" /* tmp4, tmp13 */
-        "movl -0x54(%ebp), %eax\n" /* line 253 | tmp6 */
-        "addl -0x58(%ebp), %eax\n" /* tmp5 */
-        "movl %eax, -0x4c(%ebp)\n" /* z2 */
-        "movl -0x54(%ebp), %edx\n" /* line 254 | tmp6 */
-        "addl -0x5c(%ebp), %edx\n" /* tmp4 */
-        "movl %edx, -0x48(%ebp)\n" /* z3 */
-        "movl -0x50(%ebp), %ecx\n" /* line 255 | tmp7 */
-        "addl -0x58(%ebp), %ecx\n" /* tmp5 */
-        "movl %ecx, -0x44(%ebp)\n" /* z4 */
-        "movl %edx, %eax\n" /* line 256 */
-        "addl %ecx, %eax\n"
-        "leal (%eax, %eax, 4), %edx\n"
-        "movl %edx, %esi\n" /* tmp12 */
-        "shll $4, %esi\n" /* tmp12 */
-        "subl %edx, %esi\n" /* tmp12 */
-        "leal (%eax, %esi, 4), %esi\n" /* tmp12 */
-        "shll $5, %esi\n" /* tmp12 */
-        "addl %eax, %esi\n" /* tmp12 */
-        "leal (%edi, %edi, 2), %ecx\n" /* line 262 | tmp13 */
-        "shll $3, %ecx\n"
-        "subl %edi, %ecx\n" /* tmp13 */
-        "leal (%ecx, %ecx, 4), %ecx\n"
-        "leal (%edi, %ecx, 8), %ecx\n" /* tmp13 */
-        "leal (%edi, %ecx, 2), %ecx\n" /* tmp13 */
-        "leal (%edi, %ecx, 4), %ecx\n" /* tmp13 */
-        "negl %ecx\n"
-        "movl -0x4c(%ebp), %eax\n" /* line 263 | z2 */
-        "leal (%eax, %eax, 4), %edi\n" /* tmp13 */
-        "leal (%eax, %edi, 8), %edi\n" /* tmp13 */
-        "shll $8, %edi\n" /* tmp13 */
-        "addl %eax, %edi\n" /* tmp13 */
-        "leal (%eax, %edi, 2), %edi\n" /* tmp13 */
-        "negl %edi\n" /* tmp13 */
-        "movl -0x48(%ebp), %eax\n" /* line 264 | z3 */
-        "shll $2, %eax\n"
-        "movl -0x48(%ebp), %edx\n" /* z3 */
-        "shll $8, %edx\n"
-        "subl %eax, %edx\n"
-        "subl -0x48(%ebp), %edx\n" /* z3 */
-        "shll $4, %edx\n"
-        "addl -0x48(%ebp), %edx\n" /* z3 */
-        "movl -0x48(%ebp), %eax\n" /* z3 */
-        "leal (%eax, %edx, 4), %edx\n"
-        "movl %edx, -0x68(%ebp)\n"
-        "movl -0x44(%ebp), %edx\n" /* line 265 | z4 */
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $5, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %esi, %eax\n" /* line 267 | tmp12 */
-        "subl -0x68(%ebp), %eax\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "leal (%esi, %edx, 4), %esi\n" /* line 268 | tmp12 */
-        "movl -0x5c(%ebp), %edx\n" /* line 270 | tmp4 */
-        "leal (%edx, %edx, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "shll $3, %eax\n"
-        "subl -0x5c(%ebp), %eax\n" /* tmp4 */
-        "leal (%ecx, %eax, 2), %eax\n"
-        "movl -0x2c(%ebp), %edx\n"
-        "leal 0x4000(%edx, %eax), %eax\n"
-        "sarl $0xf, %eax\n"
-        "movl -0x40(%ebp), %edx\n" /* dataptr */
-        "movl %eax, 0xe0(%edx)\n"
-        "movl -0x58(%ebp), %edx\n" /* line 272 | tmp5 */
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "subl %edx, %eax\n"
-        "addl %edi, %eax\n" /* tmp13 */
-        "leal 0x4000(%esi, %eax), %eax\n" /* tmp12 */
-        "sarl $0xf, %eax\n"
-        "movl -0x40(%ebp), %edx\n" /* dataptr */
-        "movl %eax, 0xa0(%edx)\n"
-        "movl -0x54(%ebp), %edx\n" /* line 274 | tmp6 */
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "leal (%edi, %edx, 4), %edx\n" /* tmp13 */
-        "movl -0x2c(%ebp), %edi\n" /* tmp13 */
-        "leal 0x4000(%edi, %edx), %eax\n" /* tmp13 */
-        "sarl $0xf, %eax\n"
-        "movl -0x40(%ebp), %edx\n" /* dataptr */
-        "movl %eax, 0x60(%edx)\n"
-        "movl -0x50(%ebp), %edi\n" /* line 276 | tmp7, tmp13 */
-        "leal (%edi, %edi, 2), %eax\n" /* tmp13 */
-        "movl %eax, %edx\n"
-        "shll $0xa, %edx\n"
-        "addl %edx, %eax\n"
-        "shll $2, %eax\n"
-        "subl %edi, %eax\n" /* tmp13 */
-        "addl %ecx, %eax\n"
-        "leal 0x4000(%esi, %eax), %eax\n" /* tmp12 */
-        "sarl $0xf, %eax\n"
-        "movl -0x40(%ebp), %edx\n" /* dataptr */
-        "movl %eax, 0x20(%edx)\n"
-        "addl $4, %edx\n" /* line 279 */
-        "movl %edx, -0x40(%ebp)\n" /* dataptr */
-        "subl $1, -0x38(%ebp)\n" /* line 219 */
-        "jne .Lf215358_0021558a\n"
-        "addl $0x64, %esp\n" /* line 281 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  INT32 tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+  INT32 tmp10, tmp11, tmp12, tmp13;
+  INT32 z1, z2, z3, z4, z5;
+  DCTELEM *dataptr;
+  int ctr;
+  SHIFT_TEMPS
+
+  /* Pass 1: process rows. */
+  /* Note results are scaled up by sqrt(8) compared to a true DCT; */
+  /* furthermore, we scale the results by 2**PASS1_BITS. */
+
+  dataptr = data;
+  for (ctr = DCTSIZE-1; ctr >= 0; ctr--) {
+    tmp0 = dataptr[0] + dataptr[7];
+    tmp7 = dataptr[0] - dataptr[7];
+    tmp1 = dataptr[1] + dataptr[6];
+    tmp6 = dataptr[1] - dataptr[6];
+    tmp2 = dataptr[2] + dataptr[5];
+    tmp5 = dataptr[2] - dataptr[5];
+    tmp3 = dataptr[3] + dataptr[4];
+    tmp4 = dataptr[3] - dataptr[4];
+    
+    /* Even part per LL&M figure 1 --- note that published figure is faulty;
+     * rotator "sqrt(2)*c1" should be "sqrt(2)*c6".
+     */
+    
+    tmp10 = tmp0 + tmp3;
+    tmp13 = tmp0 - tmp3;
+    tmp11 = tmp1 + tmp2;
+    tmp12 = tmp1 - tmp2;
+    
+    dataptr[0] = (DCTELEM) ((tmp10 + tmp11) << PASS1_BITS);
+    dataptr[4] = (DCTELEM) ((tmp10 - tmp11) << PASS1_BITS);
+    
+    z1 = MULTIPLY(tmp12 + tmp13, FIX_0_541196100);
+    dataptr[2] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp13, FIX_0_765366865),
+				   CONST_BITS-PASS1_BITS);
+    dataptr[6] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp12, - FIX_1_847759065),
+				   CONST_BITS-PASS1_BITS);
+    
+    /* Odd part per figure 8 --- note paper omits factor of sqrt(2).
+     * cK represents cos(K*pi/16).
+     * i0..i3 in the paper are tmp4..tmp7 here.
+     */
+    
+    z1 = tmp4 + tmp7;
+    z2 = tmp5 + tmp6;
+    z3 = tmp4 + tmp6;
+    z4 = tmp5 + tmp7;
+    z5 = MULTIPLY(z3 + z4, FIX_1_175875602); /* sqrt(2) * c3 */
+    
+    tmp4 = MULTIPLY(tmp4, FIX_0_298631336); /* sqrt(2) * (-c1+c3+c5-c7) */
+    tmp5 = MULTIPLY(tmp5, FIX_2_053119869); /* sqrt(2) * ( c1+c3-c5+c7) */
+    tmp6 = MULTIPLY(tmp6, FIX_3_072711026); /* sqrt(2) * ( c1+c3+c5-c7) */
+    tmp7 = MULTIPLY(tmp7, FIX_1_501321110); /* sqrt(2) * ( c1+c3-c5-c7) */
+    z1 = MULTIPLY(z1, - FIX_0_899976223); /* sqrt(2) * (c7-c3) */
+    z2 = MULTIPLY(z2, - FIX_2_562915447); /* sqrt(2) * (-c1-c3) */
+    z3 = MULTIPLY(z3, - FIX_1_961570560); /* sqrt(2) * (-c3-c5) */
+    z4 = MULTIPLY(z4, - FIX_0_390180644); /* sqrt(2) * (c5-c3) */
+    
+    z3 += z5;
+    z4 += z5;
+    
+    dataptr[7] = (DCTELEM) DESCALE(tmp4 + z1 + z3, CONST_BITS-PASS1_BITS);
+    dataptr[5] = (DCTELEM) DESCALE(tmp5 + z2 + z4, CONST_BITS-PASS1_BITS);
+    dataptr[3] = (DCTELEM) DESCALE(tmp6 + z2 + z3, CONST_BITS-PASS1_BITS);
+    dataptr[1] = (DCTELEM) DESCALE(tmp7 + z1 + z4, CONST_BITS-PASS1_BITS);
+    
+    dataptr += DCTSIZE;		/* advance pointer to next row */
+  }
+
+  /* Pass 2: process columns.
+   * We remove the PASS1_BITS scaling, but leave the results scaled up
+   * by an overall factor of 8.
+   */
+
+  dataptr = data;
+  for (ctr = DCTSIZE-1; ctr >= 0; ctr--) {
+    tmp0 = dataptr[DCTSIZE*0] + dataptr[DCTSIZE*7];
+    tmp7 = dataptr[DCTSIZE*0] - dataptr[DCTSIZE*7];
+    tmp1 = dataptr[DCTSIZE*1] + dataptr[DCTSIZE*6];
+    tmp6 = dataptr[DCTSIZE*1] - dataptr[DCTSIZE*6];
+    tmp2 = dataptr[DCTSIZE*2] + dataptr[DCTSIZE*5];
+    tmp5 = dataptr[DCTSIZE*2] - dataptr[DCTSIZE*5];
+    tmp3 = dataptr[DCTSIZE*3] + dataptr[DCTSIZE*4];
+    tmp4 = dataptr[DCTSIZE*3] - dataptr[DCTSIZE*4];
+    
+    /* Even part per LL&M figure 1 --- note that published figure is faulty;
+     * rotator "sqrt(2)*c1" should be "sqrt(2)*c6".
+     */
+    
+    tmp10 = tmp0 + tmp3;
+    tmp13 = tmp0 - tmp3;
+    tmp11 = tmp1 + tmp2;
+    tmp12 = tmp1 - tmp2;
+    
+    dataptr[DCTSIZE*0] = (DCTELEM) DESCALE(tmp10 + tmp11, PASS1_BITS);
+    dataptr[DCTSIZE*4] = (DCTELEM) DESCALE(tmp10 - tmp11, PASS1_BITS);
+    
+    z1 = MULTIPLY(tmp12 + tmp13, FIX_0_541196100);
+    dataptr[DCTSIZE*2] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp13, FIX_0_765366865),
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*6] = (DCTELEM) DESCALE(z1 + MULTIPLY(tmp12, - FIX_1_847759065),
+					   CONST_BITS+PASS1_BITS);
+    
+    /* Odd part per figure 8 --- note paper omits factor of sqrt(2).
+     * cK represents cos(K*pi/16).
+     * i0..i3 in the paper are tmp4..tmp7 here.
+     */
+    
+    z1 = tmp4 + tmp7;
+    z2 = tmp5 + tmp6;
+    z3 = tmp4 + tmp6;
+    z4 = tmp5 + tmp7;
+    z5 = MULTIPLY(z3 + z4, FIX_1_175875602); /* sqrt(2) * c3 */
+    
+    tmp4 = MULTIPLY(tmp4, FIX_0_298631336); /* sqrt(2) * (-c1+c3+c5-c7) */
+    tmp5 = MULTIPLY(tmp5, FIX_2_053119869); /* sqrt(2) * ( c1+c3-c5+c7) */
+    tmp6 = MULTIPLY(tmp6, FIX_3_072711026); /* sqrt(2) * ( c1+c3+c5-c7) */
+    tmp7 = MULTIPLY(tmp7, FIX_1_501321110); /* sqrt(2) * ( c1+c3-c5-c7) */
+    z1 = MULTIPLY(z1, - FIX_0_899976223); /* sqrt(2) * (c7-c3) */
+    z2 = MULTIPLY(z2, - FIX_2_562915447); /* sqrt(2) * (-c1-c3) */
+    z3 = MULTIPLY(z3, - FIX_1_961570560); /* sqrt(2) * (-c3-c5) */
+    z4 = MULTIPLY(z4, - FIX_0_390180644); /* sqrt(2) * (c5-c3) */
+    
+    z3 += z5;
+    z4 += z5;
+    
+    dataptr[DCTSIZE*7] = (DCTELEM) DESCALE(tmp4 + z1 + z3,
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*5] = (DCTELEM) DESCALE(tmp5 + z2 + z4,
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*3] = (DCTELEM) DESCALE(tmp6 + z2 + z3,
+					   CONST_BITS+PASS1_BITS);
+    dataptr[DCTSIZE*1] = (DCTELEM) DESCALE(tmp7 + z1 + z4,
+					   CONST_BITS+PASS1_BITS);
+    
+    dataptr++;			/* advance pointer to next column */
+  }
 }
 
+#endif /* DCT_ISLOW_SUPPORTED */

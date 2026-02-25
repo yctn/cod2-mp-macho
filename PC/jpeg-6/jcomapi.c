@@ -1,110 +1,106 @@
-/* ASM dump from: jcomapi.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jcomapi.c */
+/*
+ * jcomapi.c
+ *
+ * Copyright (C) 1994-1997, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains application interface routines that are used for both
+ * compression and decompression.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-void jpeg_abort(j_common_ptr cinfo);
-void jpeg_destroy(j_common_ptr cinfo);
-JQUANT_TBL * jpeg_alloc_quant_table(j_common_ptr cinfo);
-JHUFF_TBL * jpeg_alloc_huff_table(j_common_ptr cinfo);
 
-/* line 30 */
-__attribute__((naked))
-void jpeg_abort(j_common_ptr cinfo)
+/*
+ * Abort processing of a JPEG compression or decompression operation,
+ * but don't destroy the object itself.
+ *
+ * For this, we merely clean up all the nonpermanent memory pools.
+ * Note that temp files (virtual arrays) are not allowed to belong to
+ * the permanent pool, so we will be able to close all temp files here.
+ * Closing a data source or destination, if necessary, is the application's
+ * responsibility.
+ */
+
+GLOBAL(void)
+jpeg_abort (j_common_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 30 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl 4(%esi), %eax\n" /* line 34 | cinfo */
-        "testl %eax, %eax\n"
-        "je .Lf1fd4e0_001fd50c\n"
-        "movl $1, 4(%esp)\n" /* line 41 */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *0x24(%eax)\n"
-        "cmpb $0, 0x10(%esi)\n" /* line 45 | cinfo */
-        "jne .Lf1fd4e0_001fd512\n"
-        "movl $0x64, 0x14(%esi)\n" /* line 52 | cinfo */
-        ".Lf1fd4e0_001fd50c:\n"
-        "addl $0x14, %esp\n" /* line 54 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1fd4e0_001fd512:\n"
-        "movl $0xc8, 0x14(%esi)\n" /* line 46 | cinfo */
-        "movl $0, 0x114(%esi)\n" /* line 50 | cinfo */
-        "addl $0x14, %esp\n" /* line 54 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  int pool;
+
+  /* Do nothing if called on a not-initialized or destroyed JPEG object. */
+  if (cinfo->mem == NULL)
+    return;
+
+  /* Releasing pools in reverse order might help avoid fragmentation
+   * with some (brain-damaged) malloc libraries.
+   */
+  for (pool = JPOOL_NUMPOOLS-1; pool > JPOOL_PERMANENT; pool--) {
+    (*cinfo->mem->free_pool) (cinfo, pool);
+  }
+
+  /* Reset overall state for possible reuse of object */
+  if (cinfo->is_decompressor) {
+    cinfo->global_state = DSTATE_START;
+    /* Try to keep application from accessing now-deleted marker list.
+     * A bit kludgy to do it here, but this is the most central place.
+     */
+    ((j_decompress_ptr) cinfo)->marker_list = NULL;
+  } else {
+    cinfo->global_state = CSTATE_START;
+  }
 }
 
-/* line 70 */
-__attribute__((naked))
-void jpeg_destroy(j_common_ptr cinfo)
+
+/*
+ * Destruction of a JPEG object.
+ *
+ * Everything gets deallocated except the master jpeg_compress_struct itself
+ * and the error manager struct.  Both of these are supplied by the application
+ * and must be freed, if necessary, by the application.  (Often they are on
+ * the stack and so don't need to be freed anyway.)
+ * Closing a data source or destination, if necessary, is the application's
+ * responsibility.
+ */
+
+GLOBAL(void)
+jpeg_destroy (j_common_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 70 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl 4(%esi), %eax\n" /* line 73 | cinfo */
-        "testl %eax, %eax\n"
-        "je .Lf1fd529_001fd540\n"
-        "movl %esi, (%esp)\n" /* line 74 | cinfo */
-        "calll *0x28(%eax)\n"
-        ".Lf1fd529_001fd540:\n"
-        "movl $0, 4(%esi)\n" /* line 75 | cinfo */
-        "movl $0, 0x14(%esi)\n" /* line 76 | cinfo */
-        "addl $0x14, %esp\n" /* line 77 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  /* We need only tell the memory manager to release everything. */
+  /* NB: mem pointer is NULL if memory mgr failed to initialize. */
+  if (cinfo->mem != NULL)
+    (*cinfo->mem->self_destruct) (cinfo);
+  cinfo->mem = NULL;		/* be safe if jpeg_destroy is called twice */
+  cinfo->global_state = 0;	/* mark it destroyed */
 }
 
-/* line 87 */
-__attribute__((naked))
-JQUANT_TBL * jpeg_alloc_quant_table(j_common_ptr cinfo)
+
+/*
+ * Convenience routines for allocating quantization and Huffman tables.
+ * (Would jutils.c be a more reasonable place to put these?)
+ */
+
+GLOBAL(JQUANT_TBL *)
+jpeg_alloc_quant_table (j_common_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 87 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl 4(%eax), %edx\n" /* line 90 */
-        "movl $0x82, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *(%edx)\n"
-        "movb $0, 0x80(%eax)\n" /* line 92 */
-        "leave\n" /* line 94 */
-        "retl\n"
-    );
+  JQUANT_TBL *tbl;
+
+  tbl = (JQUANT_TBL *)
+    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, SIZEOF(JQUANT_TBL));
+  tbl->sent_table = FALSE;	/* make sure this is false in any new table */
+  return tbl;
 }
 
-/* line 99 */
-__attribute__((naked))
-JHUFF_TBL * jpeg_alloc_huff_table(j_common_ptr cinfo)
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 99 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl 4(%eax), %edx\n" /* line 102 */
-        "movl $0x112, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *(%edx)\n"
-        "movb $0, 0x111(%eax)\n" /* line 104 */
-        "leave\n" /* line 106 */
-        "retl\n"
-    );
-}
 
+GLOBAL(JHUFF_TBL *)
+jpeg_alloc_huff_table (j_common_ptr cinfo)
+{
+  JHUFF_TBL *tbl;
+
+  tbl = (JHUFF_TBL *)
+    (*cinfo->mem->alloc_small) (cinfo, JPOOL_PERMANENT, SIZEOF(JHUFF_TBL));
+  tbl->sent_table = FALSE;	/* make sure this is false in any new table */
+  return tbl;
+}

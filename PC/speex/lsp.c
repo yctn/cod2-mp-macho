@@ -1,611 +1,328 @@
-/* ASM dump from: lsp.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/speex/lsp.c */
+/*---------------------------------------------------------------------------*\
+Original copyright
+	FILE........: AKSLSPD.C
+	TYPE........: Turbo C
+	COMPANY.....: Voicetronix
+	AUTHOR......: David Rowe
+	DATE CREATED: 24/2/93
 
-#include "common_types.h"
-#include "imports.h"
+Modified by Jean-Marc Valin
 
-void lsp_to_lpc(spx_lsp_t *freq, spx_coef_t *ak, int lpcrdr, char *stack);
-void lsp_enforce_margin(spx_lsp_t *lsp, int len, spx_word16_t margin);
-void lsp_interpolate(spx_lsp_t *old_lsp, spx_lsp_t *new_lsp, spx_lsp_t *interp_lsp, int len, int subframe, int nb_subframes);
-int lpc_to_lsp(spx_coef_t *a, int lpcrdr, spx_lsp_t *freq, int nb, spx_word16_t delta, char *stack);
+   This file contains functions for converting Linear Prediction
+   Coefficients (LPC) to Line Spectral Pair (LSP) and back. Note that the
+   LSP coefficients are not in radians format but in the x domain of the
+   unit circle.
 
-/* line 488 */
-__attribute__((naked))
-void lsp_to_lpc(spx_lsp_t *freq, spx_coef_t *ak, int lpcrdr, char *stack)
+   Speex License:
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions
+   are met:
+   
+   - Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+   
+   - Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+   
+   - Neither the name of the Xiph.org Foundation nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+   
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+   A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR
+   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+   EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+   PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+#include <math.h>
+#include "lsp.h"
+#include "stack_alloc.h"
+
+
+#ifndef M_PI
+#define M_PI           3.14159265358979323846  /* pi */
+#endif
+
+#ifndef NULL
+#define NULL 0
+#endif
+
+/*---------------------------------------------------------------------------*\
+
+	FUNCTION....: cheb_poly_eva()
+
+	AUTHOR......: David Rowe
+	DATE CREATED: 24/2/93
+
+    This function evaluates a series of Chebyshev polynomials
+
+\*---------------------------------------------------------------------------*/
+
+
+
+static float cheb_poly_eva(float *coef,float x,int m,char *stack)
+/*  float coef[]  	coefficients of the polynomial to be evaluated 	*/
+/*  float x   		the point where polynomial is to be evaluated 	*/
+/*  int m 		order of the polynomial 			*/
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 488 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 0x14(%ebp), %eax\n" /* stack */
-        /* { scope 1 */
-        "movl 0x10(%ebp), %ebx\n" /* line 500 | lpcrdr, m */
-        "sarl $1, %ebx\n" /* m */
-        "movl %eax, %edx\n" /* line 502 */
-        "negl %edx\n"
-        "andl $3, %edx\n"
-        "addl %edx, %eax\n"
-        "movl %ebx, %edx\n" /* m */
-        "shll $4, %edx\n"
-        "leal 8(%eax, %edx), %esi\n" /* j */
-        "movl %eax, -0x10(%ebp)\n" /* Wp */
-        "leal 1(, %ebx, 4), %ecx\n" /* line 507 */
-        "testl %ecx, %ecx\n"
-        "js .Lf1f5464_001f54a7\n"
-        "xorl %edx, %edx\n"
-        ".Lf1f5464_001f5497:\n"
-        "movl $0, (%eax)\n" /* line 508 */
-        "addl $4, %eax\n"
-        "addl $1, %edx\n" /* line 507 */
-        "cmpl %edx, %ecx\n"
-        "jge .Lf1f5464_001f5497\n"
-        ".Lf1f5464_001f54a7:\n"
-        "movl %esi, %eax\n" /* line 517 | j */
-        "negl %eax\n"
-        "andl $3, %eax\n"
-        "leal (%esi, %eax), %edi\n" /* j, x_freq */
-        "cmpl $0, 0x10(%ebp)\n" /* line 518 | lpcrdr */
-        "jle .Lf1f5464_001f5638\n"
-        "xorl %edx, %edx\n"
-        "movsd 0x307fa8, %xmm3\n" /* 1.5707963268 */
-        "movss 0x2edac4, %xmm7\n" /* 0.04148774594068527f */
-        "movss 0x2edac8, %xmm6\n" /* 0.49991244077682495f */
-        "movss 0x2edacc, %xmm5\n" /* 0.9999933242797852f */
-        "movsd 0x307c28, %xmm4\n" /* 3.141592653589793 */
-        "movss 0x306ac0, %xmm2\n"
-        "jmp .Lf1f5464_001f551f\n"
-        /* { scope 2 */
-        ".Lf1f5464_001f54ef:\n"
-        "mulss %xmm0, %xmm0\n" /* line 113 */
-        "movaps %xmm0, %xmm1\n" /* line 114 */
-        "mulss 0x2edac0, %xmm1\n" /* -0.0012712094467133284f */
-        "addss %xmm7, %xmm1\n"
-        "mulss %xmm0, %xmm1\n"
-        "subss %xmm6, %xmm1\n"
-        "mulss %xmm0, %xmm1\n"
-        "addss %xmm5, %xmm1\n"
-        /* } scope */
-        "movss %xmm1, (%edi, %eax)\n" /* line 519 | x_freq */
-        "addl $1, %edx\n" /* line 518 */
-        "cmpl %edx, 0x10(%ebp)\n" /* lpcrdr */
-        "je .Lf1f5464_001f5577\n"
-        ".Lf1f5464_001f551f:\n"
-        "leal (, %edx, 4), %eax\n" /* line 488 | stack */
-        "movl 8(%ebp), %ecx\n" /* line 519 | freq */
-        "movss (%ecx, %eax), %xmm0\n" /* x */
-        /* { scope 2 */
-        "cvtss2sd %xmm0, %xmm1\n" /* line 111 */
-        "ucomisd %xmm1, %xmm3\n"
-        "ja .Lf1f5464_001f54ef\n"
-        "movapd %xmm4, %xmm0\n" /* line 116 */
-        "subsd %xmm1, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "mulss %xmm0, %xmm0\n" /* line 117 */
-        "movaps %xmm0, %xmm1\n" /* line 118 */
-        "mulss 0x2edac0, %xmm1\n" /* -0.0012712094467133284f */
-        "addss %xmm7, %xmm1\n"
-        "mulss %xmm0, %xmm1\n"
-        "subss %xmm6, %xmm1\n"
-        "mulss %xmm0, %xmm1\n"
-        "addss %xmm5, %xmm1\n"
-        "xorps %xmm2, %xmm1\n"
-        /* } scope */
-        "movss %xmm1, (%edi, %eax)\n" /* line 519 | x_freq */
-        "addl $1, %edx\n" /* line 518 */
-        "cmpl %edx, 0x10(%ebp)\n" /* lpcrdr */
-        "jne .Lf1f5464_001f551f\n"
-        ".Lf1f5464_001f5577:\n"
-        "xorl %eax, %eax\n" /* line 525 */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm3, %xmm4\n"
-        "xorl %esi, %esi\n" /* j */
-        ".Lf1f5464_001f5586:\n"
-        "testl %ebx, %ebx\n" /* line 527 | m */
-        "jle .Lf1f5464_001f55f1\n"
-        "movl -0x10(%ebp), %edx\n" /* Wp */
-        "xorl %ecx, %ecx\n"
-        "movss 0x2ed628, %xmm5\n" /* -2.0f */
-        ".Lf1f5464_001f5597:\n"
-        "leal (%edi, %ecx, 8), %eax\n" /* line 488 | stack */
-        "movss (%edx), %xmm2\n" /* line 532 */
-        "movss (%eax), %xmm1\n"
-        "mulss %xmm5, %xmm1\n"
-        "mulss %xmm2, %xmm1\n"
-        "addss %xmm3, %xmm1\n"
-        "addss 4(%edx), %xmm1\n"
-        "movss 4(%eax), %xmm0\n" /* line 533 */
-        "mulss %xmm5, %xmm0\n"
-        "mulss 8(%edx), %xmm0\n"
-        "addss %xmm4, %xmm0\n"
-        "addss 0xc(%edx), %xmm0\n"
-        "movss %xmm2, 4(%edx)\n" /* line 534 */
-        "movl 8(%edx), %eax\n" /* line 535 */
-        "movl %eax, 0xc(%edx)\n"
-        "movss %xmm3, (%edx)\n" /* line 536 */
-        "movss %xmm4, 8(%edx)\n" /* line 537 */
-        "addl $1, %ecx\n" /* line 527 */
-        "addl $0x10, %edx\n"
-        "movaps %xmm0, %xmm4\n"
-        "movaps %xmm1, %xmm3\n"
-        "cmpl %ecx, %ebx\n" /* m */
-        "jne .Lf1f5464_001f5597\n"
-        "leal -4(%edx), %eax\n"
-        ".Lf1f5464_001f55f1:\n"
-        "movaps %xmm3, %xmm0\n" /* line 541 */
-        "addss 4(%eax), %xmm0\n"
-        "movaps %xmm4, %xmm1\n" /* line 542 */
-        "subss 8(%eax), %xmm1\n"
-        "testl %esi, %esi\n" /* line 543 | j */
-        "jle .Lf1f5464_001f561a\n"
-        "addss %xmm1, %xmm0\n" /* line 544 */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movl 0xc(%ebp), %edx\n" /* ak */
-        "movss %xmm0, -4(%edx, %esi, 4)\n"
-        ".Lf1f5464_001f561a:\n"
-        "movss %xmm3, 4(%eax)\n" /* line 545 */
-        "movss %xmm4, 8(%eax)\n" /* line 546 */
-        "addl $1, %esi\n" /* line 525 | j */
-        "cmpl %esi, 0x10(%ebp)\n" /* j, lpcrdr */
-        "jl .Lf1f5464_001f563e\n"
-        "pxor %xmm3, %xmm3\n"
-        "movaps %xmm3, %xmm4\n"
-        "jmp .Lf1f5464_001f5586\n"
-        ".Lf1f5464_001f5638:\n"
-        "je .Lf1f5464_001f5577\n"
-        /* } scope */
-        ".Lf1f5464_001f563e:\n"
-        "addl $4, %esp\n" /* line 552 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+    float *T,sum;
+    int m2=m>>1;
+
+    /* Allocate memory for Chebyshev series formulation */
+    T=PUSH(stack, m2+1, float);
+
+    /* Initialise values */
+    T[0]=1;
+    T[1]=x;
+
+    /* Evaluate Chebyshev series formulation using iterative approach  */
+    /* Evaluate polynomial and return value also free memory space */
+    sum = coef[m2] + coef[m2-1]*x;
+    x *= 2;
+    for(i=2;i<=m2;i++)
+    {
+       T[i] = x*T[i-1] - T[i-2];
+       sum += coef[m2-i] * T[i];
+    }
+    
+    return sum;
 }
 
-/* line 594 */
-__attribute__((naked))
-void lsp_enforce_margin(spx_lsp_t *lsp, int len, spx_word16_t margin)
+
+/*---------------------------------------------------------------------------*\
+
+	FUNCTION....: lpc_to_lsp()
+
+	AUTHOR......: David Rowe
+	DATE CREATED: 24/2/93
+
+    This function converts LPC coefficients to LSP
+    coefficients.
+
+\*---------------------------------------------------------------------------*/
+
+
+int lpc_to_lsp (float *a,int lpcrdr,float *freq,int nb,float delta, char *stack)
+/*  float *a 		     	lpc coefficients			*/
+/*  int lpcrdr			order of LPC coefficients (10) 		*/
+/*  float *freq 	      	LSP frequencies in the x domain       	*/
+/*  int nb			number of sub-intervals (4) 		*/
+/*  float delta			grid spacing interval (0.02) 		*/
+
+
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 594 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* lsp */
-        "movl 0xc(%ebp), %edx\n" /* len */
-        "movss 0x10(%ebp), %xmm5\n" /* margin */
-        /* { scope 1 */
-        "ucomiss (%ebx), %xmm5\n" /* line 597 | lsp */
-        "jbe .Lf1f5646_001f565e\n"
-        "movss %xmm5, (%ebx)\n" /* line 598 | lsp */
-        ".Lf1f5646_001f565e:\n"
-        "leal (%ebx, %edx, 4), %eax\n" /* line 599 | lsp */
-        "cvtss2sd %xmm5, %xmm4\n"
-        "movsd 0x307c28, %xmm1\n" /* 3.141592653589793 */
-        "subsd %xmm4, %xmm1\n"
-        "cvtss2sd -4(%eax), %xmm0\n"
-        "ucomisd %xmm1, %xmm0\n"
-        "jbe .Lf1f5646_001f5685\n"
-        "cvtsd2ss %xmm1, %xmm1\n" /* line 600 */
-        "movss %xmm1, -4(%eax)\n"
-        ".Lf1f5646_001f5685:\n"
-        "leal -1(%edx), %ecx\n" /* line 601 */
-        "cmpl $1, %ecx\n"
-        "jle .Lf1f5646_001f56fd\n"
-        "movl $1, %edx\n"
-        "movsd 0x307ce0, %xmm6\n" /* 0.5 */
-        "leal 4(%ebx), %eax\n" /* lsp */
-        "jmp .Lf1f5646_001f56e0\n"
-        ".Lf1f5646_001f569f:\n"
-        "addss %xmm5, %xmm2\n" /* line 604 */
-        "movss %xmm2, (%eax)\n"
-        ".Lf1f5646_001f56a7:\n"
-        "movss 4(%eax), %xmm3\n" /* line 606 */
-        "cvtss2sd %xmm2, %xmm1\n"
-        "cvtss2sd %xmm3, %xmm0\n"
-        "subsd %xmm4, %xmm0\n"
-        "ucomisd %xmm0, %xmm1\n"
-        "jbe .Lf1f5646_001f56d6\n"
-        "addss %xmm3, %xmm2\n" /* line 607 */
-        "cvtss2sd %xmm2, %xmm0\n"
-        "subsd %xmm4, %xmm0\n"
-        "mulsd %xmm6, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        ".Lf1f5646_001f56d6:\n"
-        "addl $1, %edx\n" /* line 601 */
-        "addl $4, %eax\n"
-        "cmpl %ecx, %edx\n"
-        "je .Lf1f5646_001f56fd\n"
-        ".Lf1f5646_001f56e0:\n"
-        "movss -4(%eax), %xmm2\n" /* line 603 */
-        "cvtss2sd (%eax), %xmm1\n"
-        "cvtss2sd %xmm2, %xmm0\n"
-        "addsd %xmm4, %xmm0\n"
-        "ucomisd %xmm1, %xmm0\n"
-        "ja .Lf1f5646_001f569f\n"
-        "movss (%eax), %xmm2\n"
-        "jmp .Lf1f5646_001f56a7\n"
-        /* } scope */
-        ".Lf1f5646_001f56fd:\n"
-        "popl %ebx\n" /* line 609 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+
+    float psuml,psumr,psumm,temp_xr,xl,xr,xm=0;
+    float temp_psumr/*,temp_qsumr*/;
+    int i,j,m,flag,k;
+    float *Q;                 	/* ptrs for memory allocation 		*/
+    float *P;
+    float *px;                	/* ptrs of respective P'(z) & Q'(z)	*/
+    float *qx;
+    float *p;
+    float *q;
+    float *pt;                	/* ptr used for cheb_poly_eval()
+				whether P' or Q' 			*/
+    int roots=0;              	/* DR 8/2/94: number of roots found 	*/
+    flag = 1;                	/*  program is searching for a root when,
+				1 else has found one 			*/
+    m = lpcrdr/2;            	/* order of P'(z) & Q'(z) polynomials 	*/
+
+
+    /* Allocate memory space for polynomials */
+    Q = PUSH(stack, (m+1), float);
+    P = PUSH(stack, (m+1), float);
+
+    /* determine P'(z)'s and Q'(z)'s coefficients where
+      P'(z) = P(z)/(1 + z^(-1)) and Q'(z) = Q(z)/(1-z^(-1)) */
+
+    px = P;                      /* initialise ptrs 			*/
+    qx = Q;
+    p = px;
+    q = qx;
+    *px++ = 1.0;
+    *qx++ = 1.0;
+    for(i=1;i<=m;i++){
+	*px++ = a[i]+a[lpcrdr+1-i]-*p++;
+	*qx++ = a[i]-a[lpcrdr+1-i]+*q++;
+    }
+    px = P;
+    qx = Q;
+    for(i=0;i<m;i++){
+	*px = 2**px;
+	*qx = 2**qx;
+	 px++;
+	 qx++;
+    }
+    px = P;             	/* re-initialise ptrs 			*/
+    qx = Q;
+
+    /* Search for a zero in P'(z) polynomial first and then alternate to Q'(z).
+    Keep alternating between the two polynomials as each zero is found 	*/
+
+    xr = 0;             	/* initialise xr to zero 		*/
+    xl = 1.0;               	/* start at point xl = 1 		*/
+
+
+    for(j=0;j<lpcrdr;j++){
+	if(j%2)            	/* determines whether P' or Q' is eval. */
+	    pt = qx;
+	else
+	    pt = px;
+
+	psuml = cheb_poly_eva(pt,xl,lpcrdr,stack);	/* evals poly. at xl 	*/
+	flag = 1;
+	while(flag && (xr >= -1.0)){
+           float dd;
+           /* Modified by JMV to provide smaller steps around x=+-1 */
+           dd=(delta*(1-.9*xl*xl));
+           if (fabs(psuml)<.2)
+              dd *= .5;
+
+           xr = xl - dd;                        	/* interval spacing 	*/
+	    psumr = cheb_poly_eva(pt,xr,lpcrdr,stack);/* poly(xl-delta_x) 	*/
+	    temp_psumr = psumr;
+	    temp_xr = xr;
+
+    /* if no sign change increment xr and re-evaluate poly(xr). Repeat til
+    sign change.
+    if a sign change has occurred the interval is bisected and then
+    checked again for a sign change which determines in which
+    interval the zero lies in.
+    If there is no sign change between poly(xm) and poly(xl) set interval
+    between xm and xr else set interval between xl and xr and repeat till
+    root is located within the specified limits 			*/
+
+	    if((psumr*psuml)<0.0){
+		roots++;
+
+		psumm=psuml;
+		for(k=0;k<=nb;k++){
+		    xm = (xl+xr)/2;        	/* bisect the interval 	*/
+		    psumm=cheb_poly_eva(pt,xm,lpcrdr,stack);
+		    if(psumm*psuml>0.){
+			psuml=psumm;
+			xl=xm;
+		    }
+		    else{
+			psumr=psumm;
+			xr=xm;
+		    }
+		}
+
+	       /* once zero is found, reset initial interval to xr 	*/
+	       freq[j] = (xm);
+	       xl = xm;
+	       flag = 0;       		/* reset flag for next search 	*/
+	    }
+	    else{
+		psuml=temp_psumr;
+		xl=temp_xr;
+	    }
+	}
+    }
+    return(roots);
 }
 
-/* line 612 */
-__attribute__((naked))
-void lsp_interpolate(spx_lsp_t *old_lsp, spx_lsp_t *new_lsp, spx_lsp_t *interp_lsp, int len, int subframe, int nb_subframes)
+
+/*---------------------------------------------------------------------------*\
+
+	FUNCTION....: lsp_to_lpc()
+
+	AUTHOR......: David Rowe
+	DATE CREATED: 24/2/93
+
+    lsp_to_lpc: This function converts LSP coefficients to LPC
+    coefficients.
+
+\*---------------------------------------------------------------------------*/
+
+
+void lsp_to_lpc(float *freq,float *ak,int lpcrdr, char *stack)
+/*  float *freq 	array of LSP frequencies in the x domain	*/
+/*  float *ak 		array of LPC coefficients 			*/
+/*  int lpcrdr  	order of LPC coefficients 			*/
+
+
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 612 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edi\n" /* old_lsp */
-        "movl 0xc(%ebp), %esi\n" /* new_lsp */
-        "movl 0x10(%ebp), %ebx\n" /* interp_lsp */
-        "movl 0x14(%ebp), %ecx\n" /* len */
-        /* { scope 1 */
-        "cvtsi2ssl 0x18(%ebp), %xmm3\n" /* line 615 | subframe, tmp */
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "addss %xmm1, %xmm3\n" /* tmp */
-        "cvtsi2ssl 0x1c(%ebp), %xmm0\n" /* nb_subframes */
-        "divss %xmm0, %xmm3\n" /* tmp */
-        "testl %ecx, %ecx\n" /* line 616 */
-        "jle .Lf1f5700_001f5760\n"
-        "movaps %xmm1, %xmm2\n"
-        "subss %xmm3, %xmm2\n"
-        "xorl %edx, %edx\n"
-        ".Lf1f5700_001f5739:\n"
-        "leal (, %edx, 4), %eax\n" /* line 612 */
-        "movaps %xmm2, %xmm0\n" /* line 618 */
-        "mulss (%eax, %edi), %xmm0\n"
-        "movaps %xmm3, %xmm1\n"
-        "mulss (%eax, %esi), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, (%ebx, %eax)\n" /* interp_lsp */
-        "addl $1, %edx\n" /* line 616 */
-        "cmpl %edx, %ecx\n"
-        "jne .Lf1f5700_001f5739\n"
-        /* } scope */
-        ".Lf1f5700_001f5760:\n"
-        "popl %ebx\n" /* line 620 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i,j;
+    float xout1,xout2,xin1,xin2;
+    float *Wp;
+    float *pw,*n1,*n2,*n3,*n4=NULL;
+    int m = lpcrdr/2;
+
+    Wp = PUSH(stack, 4*m+2, float);
+    pw = Wp;
+
+    /* initialise contents of array */
+
+    for(i=0;i<=4*m+1;i++){       	/* set contents of buffer to 0 */
+	*pw++ = 0.0;
+    }
+
+    /* Set pointers up */
+
+    pw = Wp;
+    xin1 = 1.0;
+    xin2 = 1.0;
+
+    /* reconstruct P(z) and Q(z) by  cascading second order
+      polynomials in form 1 - 2xz(-1) +z(-2), where x is the
+      LSP coefficient */
+
+    for(j=0;j<=lpcrdr;j++){
+       int i2=0;
+	for(i=0;i<m;i++,i2+=2){
+	    n1 = pw+(i*4);
+	    n2 = n1 + 1;
+	    n3 = n2 + 1;
+	    n4 = n3 + 1;
+	    xout1 = xin1 - 2*(freq[i2]) * *n1 + *n2;
+	    xout2 = xin2 - 2*(freq[i2+1]) * *n3 + *n4;
+	    *n2 = *n1;
+	    *n4 = *n3;
+	    *n1 = xin1;
+	    *n3 = xin2;
+	    xin1 = xout1;
+	    xin2 = xout2;
+	}
+	xout1 = xin1 + *(n4+1);
+	xout2 = xin2 - *(n4+2);
+	ak[j] = (xout1 + xout2)*0.5;
+	*(n4+1) = xin1;
+	*(n4+2) = xin2;
+
+	xin1 = 0.0;
+	xin2 = 0.0;
+    }
+
 }
 
-/* line 238 */
-__attribute__((naked))
-int lpc_to_lsp(spx_coef_t *a, int lpcrdr, spx_lsp_t *freq, int nb, spx_word16_t delta, char *stack)
+/*Added by JMV
+  Makes sure the LSPs are stable*/
+void lsp_enforce_margin(float *lsp, int len, float margin)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 238 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        "movl 0x1c(%ebp), %edx\n" /* stack */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 261 | lpcrdr */
-        "shrl $0x1f, %eax\n"
-        "movl 0xc(%ebp), %ecx\n" /* lpcrdr */
-        "leal (%eax, %ecx), %edi\n" /* k */
-        "sarl $1, %edi\n" /* k */
-        "leal (, %edi, 4), %ebx\n" /* line 264 | i */
-        "movl $4, %ecx\n"
-        "movl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "andl $3, %eax\n"
-        "addl %eax, %edx\n"
-        "leal 4(%edx, %ebx), %edx\n"
-        "movl %ebx, %eax\n" /* i */
-        "negl %eax\n"
-        "leal (%edx, %eax), %esi\n"
-        "movl %esi, -0x3c(%ebp)\n"
-        "subl $4, %esi\n"
-        "movl %esi, -0x34(%ebp)\n" /* Q */
-        "subl %edx, %ecx\n" /* line 265 */
-        "andl $3, %ecx\n"
-        "addl %ecx, %edx\n"
-        "leal 4(%ebx, %edx), %edx\n" /* i */
-        "movl %edx, -0x1c(%ebp)\n"
-        "addl %edx, %eax\n"
-        "movl %eax, -0x6c(%ebp)\n"
-        "subl $4, %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* P */
-        "movl -0x6c(%ebp), %eax\n" /* line 299 */
-        "movl $0x3f800000, -4(%eax)\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 300 */
-        "movl $0x3f800000, -4(%edx)\n"
-        "testl %edi, %edi\n" /* line 301 | k */
-        "jle .Lf1f5766_001f5863\n"
-        "movl 0xc(%ebp), %esi\n" /* line 238 | lpcrdr */
-        "movl 8(%ebp), %eax\n" /* a */
-        "leal (%eax, %esi, 4), %ecx\n"
-        "xorl %ebx, %ebx\n" /* i */
-        "movl %eax, %esi\n"
-        "jmp .Lf1f5766_001f57f0\n"
-        ".Lf1f5766_001f57ed:\n"
-        "movl 8(%ebp), %esi\n" /* a */
-        ".Lf1f5766_001f57f0:\n"
-        "leal (, %ebx, 4), %eax\n"
-        "leal (%eax, %esi), %edx\n" /* stack */
-        "movss (%edx), %xmm0\n" /* line 302 */
-        "addss -4(%ecx), %xmm0\n"
-        "movl -0x30(%ebp), %esi\n" /* P */
-        "subss (%eax, %esi), %xmm0\n"
-        "movl -0x6c(%ebp), %esi\n"
-        "movss %xmm0, (%eax, %esi)\n"
-        "movss (%edx), %xmm0\n" /* line 303 */
-        "subss -4(%ecx), %xmm0\n"
-        "movl -0x34(%ebp), %edx\n" /* Q */
-        "addss (%eax, %edx), %xmm0\n"
-        "movl -0x3c(%ebp), %esi\n"
-        "movss %xmm0, (%eax, %esi)\n"
-        "addl $1, %ebx\n" /* line 301 | i */
-        "subl $4, %ecx\n"
-        "cmpl %ebx, %edi\n" /* i, k */
-        "jne .Lf1f5766_001f57ed\n"
-        "movl -0x30(%ebp), %edx\n" /* P */
-        "movl -0x34(%ebp), %eax\n" /* Q */
-        "xorl %ecx, %ecx\n"
-        ".Lf1f5766_001f583e:\n"
-        "movss (%edx), %xmm0\n" /* line 308 */
-        "addss %xmm0, %xmm0\n"
-        "movss %xmm0, (%edx)\n"
-        "movss (%eax), %xmm0\n" /* line 309 */
-        "addss %xmm0, %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        "addl $4, %edx\n" /* line 310 */
-        "addl $4, %eax\n" /* line 311 */
-        "addl $1, %ecx\n" /* line 307 */
-        "cmpl %ecx, %edi\n" /* k */
-        "jne .Lf1f5766_001f583e\n"
-        ".Lf1f5766_001f5863:\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 325 | lpcrdr */
-        "testl %ecx, %ecx\n"
-        "jle .Lf1f5766_001f5b13\n"
-        "movl 0xc(%ebp), %esi\n" /* lpcrdr */
-        "sarl $1, %esi\n"
-        "leal (, %esi, 4), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "negl %eax\n"
-        "andl $3, %eax\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "leal 4(%edx, %eax), %eax\n"
-        "movl %eax, -0x40(%ebp)\n"
-        "subl $4, %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "pxor %xmm4, %xmm4\n"
-        "movaps %xmm4, %xmm5\n"
-        "movss 0x2ed5d0, %xmm6\n" /* 1.0f */
-        "movl $0, -0x38(%ebp)\n" /* j */
-        "movl $0, -0x2c(%ebp)\n" /* roots */
-        "cvtss2sd 0x18(%ebp), %xmm0\n" /* delta */
-        "movsd %xmm0, -0x48(%ebp)\n"
-        "movl %eax, %edx\n"
-        ".Lf1f5766_001f58be:\n"
-        "testb $1, -0x38(%ebp)\n" /* line 326 | j */
-        "movl -0x34(%ebp), %eax\n" /* Q */
-        "cmovel -0x30(%ebp), %eax\n" /* P */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl $0x3f800000, (%edx)\n" /* line 202 */
-        "movl -0x40(%ebp), %ecx\n" /* line 203 */
-        "movss %xmm6, (%ecx)\n"
-        "addl -0x24(%ebp), %eax\n" /* line 207 */
-        "leal -4(%eax), %edx\n"
-        "movl %edx, -0x28(%ebp)\n"
-        "movaps %xmm6, %xmm3\n"
-        "mulss -4(%eax), %xmm3\n"
-        "addss (%eax), %xmm3\n"
-        "movaps %xmm6, %xmm1\n" /* line 208 */
-        "addss %xmm6, %xmm1\n"
-        "cmpl $1, %esi\n" /* line 209 */
-        "jle .Lf1f5766_001f592b\n"
-        "movl %eax, %ecx\n" /* line 238 */
-        "movl $2, %ebx\n" /* i */
-        "movl -0x20(%ebp), %edx\n" /* stack */
-        "addl $8, %edx\n" /* stack */
-        ".Lf1f5766_001f5904:\n"
-        "movaps %xmm1, %xmm0\n" /* line 211 */
-        "mulss -4(%edx), %xmm0\n"
-        "subss -8(%edx), %xmm0\n"
-        "movss %xmm0, (%edx)\n"
-        "mulss -8(%ecx), %xmm0\n" /* line 212 */
-        "addss %xmm0, %xmm3\n"
-        "addl $1, %ebx\n" /* line 209 | i */
-        "addl $4, %edx\n"
-        "subl $4, %ecx\n"
-        "cmpl %esi, %ebx\n" /* i */
-        "jle .Lf1f5766_001f5904\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1f5766_001f592b:\n"
-        "ucomiss 0x2ed5dc, %xmm4\n" /* line 333 | -1.0f */
-        "jb .Lf1f5766_001f5ae0\n"
-        "movss 0x306ad0, %xmm7\n"
-        /* { scope 2 */
-        ".Lf1f5766_001f5940:\n"
-        "cvtss2sd %xmm6, %xmm0\n" /* line 341 */
-        "movapd %xmm0, %xmm1\n"
-        "mulsd 0x307fb0, %xmm1\n" /* -0.9 */
-        "mulsd %xmm1, %xmm0\n"
-        "addsd 0x307c10, %xmm0\n" /* 1.0 */
-        "mulsd -0x48(%ebp), %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm1\n"
-        "movaps %xmm3, %xmm0\n" /* line 342 */
-        "andps %xmm7, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd 0x307f60, %xmm2\n" /* 0.2 */
-        "ucomisd %xmm0, %xmm2\n"
-        "jbe .Lf1f5766_001f5985\n"
-        "mulss 0x2ed5d8, %xmm1\n" /* line 343 | 0.5f */
-        ".Lf1f5766_001f5985:\n"
-        "movaps %xmm6, %xmm4\n" /* line 345 */
-        "subss %xmm1, %xmm4\n"
-        /* { scope 3 */
-        /* { scope 4 */
-        "movl -0x20(%ebp), %edx\n" /* line 202 */
-        "movl $0x3f800000, (%edx)\n"
-        "movl -0x40(%ebp), %ecx\n" /* line 203 */
-        "movss %xmm4, (%ecx)\n"
-        "movaps %xmm4, %xmm1\n" /* line 207 */
-        "movl -0x28(%ebp), %edx\n"
-        "mulss (%edx), %xmm1\n"
-        "addss (%eax), %xmm1\n"
-        "movaps %xmm4, %xmm2\n" /* line 208 */
-        "addss %xmm4, %xmm2\n"
-        "cmpl $1, %esi\n" /* line 209 */
-        "jle .Lf1f5766_001f59ea\n"
-        "movl %eax, %ecx\n" /* line 238 */
-        "movl $2, %ebx\n" /* i */
-        "movl -0x20(%ebp), %edx\n" /* stack */
-        "addl $8, %edx\n" /* stack */
-        ".Lf1f5766_001f59c3:\n"
-        "movaps %xmm2, %xmm0\n" /* line 211 */
-        "mulss -4(%edx), %xmm0\n"
-        "subss -8(%edx), %xmm0\n"
-        "movss %xmm0, (%edx)\n"
-        "mulss -8(%ecx), %xmm0\n" /* line 212 */
-        "addss %xmm0, %xmm1\n"
-        "addl $1, %ebx\n" /* line 209 | i */
-        "addl $4, %edx\n"
-        "subl $4, %ecx\n"
-        "cmpl %esi, %ebx\n" /* i */
-        "jle .Lf1f5766_001f59c3\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1f5766_001f59ea:\n"
-        "movaps %xmm1, %xmm0\n" /* line 359 */
-        "mulss %xmm3, %xmm0\n"
-        "pxor %xmm2, %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1f5766_001f5a12\n"
-        /* } scope */
-        "ucomiss 0x2ed5dc, %xmm4\n" /* line 333 | -1.0f */
-        "jb .Lf1f5766_001f5af9\n"
-        "movaps %xmm4, %xmm6\n"
-        "movaps %xmm1, %xmm3\n"
-        "jmp .Lf1f5766_001f5940\n"
-        /* { scope 2 */
-        ".Lf1f5766_001f5a12:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 361 | roots */
-        "movl 0x14(%ebp), %edx\n" /* line 364 | nb */
-        "testl %edx, %edx\n"
-        "js .Lf1f5766_001f5ab6\n"
-        "xorl %edi, %edi\n" /* k */
-        "movss 0x2ed5d8, %xmm7\n" /* 0.5f */
-        ".Lf1f5766_001f5a2b:\n"
-        "movaps %xmm6, %xmm5\n" /* line 368 */
-        "addss %xmm4, %xmm5\n"
-        "mulss %xmm7, %xmm5\n"
-        /* { scope 3 */
-        /* { scope 4 */
-        "movl -0x20(%ebp), %edx\n" /* line 202 */
-        "movl $0x3f800000, (%edx)\n"
-        "movl -0x40(%ebp), %ecx\n" /* line 203 */
-        "movss %xmm5, (%ecx)\n"
-        "movaps %xmm5, %xmm1\n" /* line 207 */
-        "movl -0x28(%ebp), %edx\n"
-        "mulss (%edx), %xmm1\n"
-        "addss (%eax), %xmm1\n"
-        "movaps %xmm5, %xmm2\n" /* line 208 */
-        "addss %xmm5, %xmm2\n"
-        "cmpl $1, %esi\n" /* line 209 */
-        "jle .Lf1f5766_001f5a94\n"
-        "movl %eax, %ecx\n" /* line 238 */
-        "movl $2, %ebx\n" /* i */
-        "movl -0x20(%ebp), %edx\n" /* stack */
-        "addl $8, %edx\n" /* stack */
-        ".Lf1f5766_001f5a6d:\n"
-        "movaps %xmm2, %xmm0\n" /* line 211 */
-        "mulss -4(%edx), %xmm0\n"
-        "subss -8(%edx), %xmm0\n"
-        "movss %xmm0, (%edx)\n"
-        "mulss -8(%ecx), %xmm0\n" /* line 212 */
-        "addss %xmm0, %xmm1\n"
-        "addl $1, %ebx\n" /* line 209 | i */
-        "addl $4, %edx\n"
-        "subl $4, %ecx\n"
-        "cmpl %esi, %ebx\n" /* i */
-        "jle .Lf1f5766_001f5a6d\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1f5766_001f5a94:\n"
-        "movaps %xmm1, %xmm0\n" /* line 372 */
-        "mulss %xmm3, %xmm0\n"
-        "pxor %xmm2, %xmm2\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1f5766_001f5af4\n"
-        "movaps %xmm5, %xmm6\n"
-        "movaps %xmm1, %xmm3\n"
-        ".Lf1f5766_001f5aaa:\n"
-        "addl $1, %edi\n" /* line 364 | k */
-        "cmpl %edi, 0x14(%ebp)\n" /* k, nb */
-        "jge .Lf1f5766_001f5a2b\n"
-        ".Lf1f5766_001f5ab6:\n"
-        "movss %xmm5, (%esp)\n" /* line 383 */
-        "movss %xmm4, -0x58(%ebp)\n"
-        "movss %xmm5, -0x68(%ebp)\n"
-        "calll acosf\n"
-        "movl -0x38(%ebp), %eax\n" /* j */
-        "movl 0x10(%ebp), %edx\n" /* freq */
-        "fstps (%edx, %eax, 4)\n"
-        "movss -0x68(%ebp), %xmm5\n"
-        "movaps %xmm5, %xmm6\n"
-        "movss -0x58(%ebp), %xmm4\n"
-        /* } scope */
-        ".Lf1f5766_001f5ae0:\n"
-        "addl $1, -0x38(%ebp)\n" /* line 325 | j */
-        "movl -0x38(%ebp), %ecx\n" /* j */
-        "cmpl %ecx, 0xc(%ebp)\n" /* lpcrdr */
-        "je .Lf1f5766_001f5b08\n"
-        ".Lf1f5766_001f5aec:\n"
-        "movl -0x20(%ebp), %edx\n"
-        "jmp .Lf1f5766_001f58be\n"
-        /* { scope 2 */
-        ".Lf1f5766_001f5af4:\n"
-        "movaps %xmm5, %xmm4\n" /* line 372 */
-        "jmp .Lf1f5766_001f5aaa\n"
-        /* } scope */
-        ".Lf1f5766_001f5af9:\n"
-        "movaps %xmm4, %xmm6\n" /* line 333 */
-        "addl $1, -0x38(%ebp)\n" /* line 325 | j */
-        "movl -0x38(%ebp), %ecx\n" /* j */
-        "cmpl %ecx, 0xc(%ebp)\n" /* lpcrdr */
-        "jne .Lf1f5766_001f5aec\n"
-        /* } scope */
-        ".Lf1f5766_001f5b08:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 394 | roots */
-        "addl $0x7c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1f5766_001f5b13:\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 325 | roots */
-        /* } scope */
-        "movl -0x2c(%ebp), %eax\n" /* line 394 | roots */
-        "addl $0x7c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
+   int i;
+   if (lsp[0]<margin)
+      lsp[0]=margin;
+   if (lsp[len-1]>M_PI-margin)
+      lsp[len-1]=M_PI-margin;
+   for (i=1;i<len-1;i++)
+   {
+      if (lsp[i]<lsp[i-1]+margin)
+         lsp[i]=lsp[i-1]+margin;
 
+      if (lsp[i]>lsp[i+1]-margin)
+         lsp[i]= .5* (lsp[i] + lsp[i+1]-margin);
+   }
+}

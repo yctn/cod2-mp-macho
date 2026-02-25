@@ -1,479 +1,395 @@
-/* ASM dump from: jdapimin.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jdapimin.c */
+/*
+ * jdapimin.c
+ *
+ * Copyright (C) 1994-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains application interface code for the decompression half
+ * of the JPEG library.  These are the "minimum" API routines that may be
+ * needed in either the normal full-decompression case or the
+ * transcoding-only case.
+ *
+ * Most of the routines intended to be called directly by an application
+ * are in this file or in jdapistd.c.  But also see jcomapi.c for routines
+ * shared by compression and decompression, and jdtrans.c for the transcoding
+ * case.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-void jpeg_CreateDecompress(j_decompress_ptr cinfo, int version, size_t structsize);
-void jpeg_destroy_decompress(j_decompress_ptr cinfo);
-int jpeg_consume_input(j_decompress_ptr cinfo);
-int jpeg_read_header(j_decompress_ptr cinfo, int require_image);
-boolean jpeg_finish_decompress(j_decompress_ptr cinfo);
 
-/* line 31 */
-__attribute__((naked))
-void jpeg_CreateDecompress(j_decompress_ptr cinfo, int version, size_t structsize)
+/*
+ * Initialization of a JPEG decompression object.
+ * The error manager must already be set up (in case memory manager fails).
+ */
+
+GLOBAL(void)
+jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 31 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x20, %esp\n"
-        "movl 0xc(%ebp), %edx\n" /* version */
-        "movl 0x10(%ebp), %esi\n" /* structsize */
-        "movl 8(%ebp), %eax\n" /* line 35 | cinfo */
-        "movl $0, 4(%eax)\n"
-        "cmpl $0x3e, %edx\n" /* line 36 */
-        "je .Lf1f7a14_001f7a52\n"
-        "movl 8(%ebp), %ecx\n" /* line 37 | cinfo */
-        "movl (%ecx), %eax\n"
-        "movl $0xc, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl $0x3e, 0x18(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %edx, 0x1c(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%eax)\n"
-        ".Lf1f7a14_001f7a52:\n"
-        "cmpl $0x1b4, %esi\n" /* line 38 | structsize */
-        "je .Lf1f7a14_001f7a7b\n"
-        "movl 8(%ebp), %edx\n" /* line 39 | cinfo */
-        "movl (%edx), %eax\n"
-        "movl $0x15, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl $0x1b4, 0x18(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl %esi, 0x1c(%eax)\n" /* structsize */
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        /* { scope 1 */
-        ".Lf1f7a14_001f7a7b:\n"
-        "movl 8(%ebp), %ecx\n" /* line 49 | cinfo */
-        "movl (%ecx), %esi\n" /* err */
-        "movl 0xc(%ecx), %edi\n" /* line 50 | client_data */
-        "movl 0x18(%ecx), %eax\n" /* line 53 */
-        "movl 0x1c(%ecx), %edx\n"
-        "movl %eax, -0x10(%ebp)\n"
-        "movl %edx, -0xc(%ebp)\n"
-        "movl $0x1b4, 8(%esp)\n" /* line 55 */
-        "movl $0, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll memset\n"
-        "movl 8(%ebp), %ecx\n" /* line 57 | cinfo */
-        "movl %esi, (%ecx)\n" /* err */
-        "movl %edi, 0xc(%ecx)\n" /* line 58 | client_data */
-        "movl -0x10(%ebp), %eax\n" /* line 59 */
-        "movl -0xc(%ebp), %edx\n"
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "movl %eax, 0x18(%ecx)\n"
-        "movl %edx, 0x1c(%ecx)\n"
-        /* } scope */
-        "movb $1, 0x10(%ecx)\n" /* line 61 */
-        "movl %ecx, (%esp)\n" /* line 64 */
-        "calll jinit_memory_mgr\n"
-        "movl 8(%ebp), %eax\n" /* line 67 | cinfo */
-        "movl $0, 8(%eax)\n"
-        "movl $0, 0x20(%eax)\n" /* line 68 */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl $4, %edx\n"
-        ".Lf1f7a14_001f7ae3:\n"
-        "movl $0, 0x98(%eax)\n" /* line 71 */
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 70 */
-        "jne .Lf1f7a14_001f7ae3\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl $4, %edx\n"
-        ".Lf1f7a14_001f7afd:\n"
-        "movl $0, 0xa8(%eax)\n" /* line 74 */
-        "movl $0, 0xb8(%eax)\n" /* line 75 */
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 73 */
-        "jne .Lf1f7a14_001f7afd\n"
-        "movl 8(%ebp), %edx\n" /* line 81 | cinfo */
-        "movl $0, 0x114(%edx)\n"
-        "movl %edx, (%esp)\n" /* line 82 */
-        "calll jinit_marker_reader\n"
-        "movl 8(%ebp), %ecx\n" /* line 85 | cinfo */
-        "movl %ecx, (%esp)\n"
-        "calll jinit_input_controller\n"
-        "movl 8(%ebp), %eax\n" /* line 88 | cinfo */
-        "movl $0xc8, 0x14(%eax)\n"
-        "addl $0x20, %esp\n" /* line 89 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  int i;
+
+  /* Guard against version mismatches between library and caller. */
+  cinfo->mem = NULL;		/* so jpeg_destroy knows mem mgr not called */
+  if (version != JPEG_LIB_VERSION)
+    ERREXIT2(cinfo, JERR_BAD_LIB_VERSION, JPEG_LIB_VERSION, version);
+  if (structsize != SIZEOF(struct jpeg_decompress_struct))
+    ERREXIT2(cinfo, JERR_BAD_STRUCT_SIZE, 
+	     (int) SIZEOF(struct jpeg_decompress_struct), (int) structsize);
+
+  /* For debugging purposes, we zero the whole master structure.
+   * But the application has already set the err pointer, and may have set
+   * client_data, so we have to save and restore those fields.
+   * Note: if application hasn't set client_data, tools like Purify may
+   * complain here.
+   */
+  {
+    struct jpeg_error_mgr * err = cinfo->err;
+    void * client_data = cinfo->client_data; /* ignore Purify complaint here */
+    MEMZERO(cinfo, SIZEOF(struct jpeg_decompress_struct));
+    cinfo->err = err;
+    cinfo->client_data = client_data;
+  }
+  cinfo->is_decompressor = TRUE;
+
+  /* Initialize a memory manager instance for this object */
+  jinit_memory_mgr((j_common_ptr) cinfo);
+
+  /* Zero out pointers to permanent structures. */
+  cinfo->progress = NULL;
+  cinfo->src = NULL;
+
+  for (i = 0; i < NUM_QUANT_TBLS; i++)
+    cinfo->quant_tbl_ptrs[i] = NULL;
+
+  for (i = 0; i < NUM_HUFF_TBLS; i++) {
+    cinfo->dc_huff_tbl_ptrs[i] = NULL;
+    cinfo->ac_huff_tbl_ptrs[i] = NULL;
+  }
+
+  /* Initialize marker processor so application can override methods
+   * for COM, APPn markers before calling jpeg_read_header.
+   */
+  cinfo->marker_list = NULL;
+  jinit_marker_reader(cinfo);
+
+  /* And initialize the overall input controller. */
+  jinit_input_controller(cinfo);
+
+  /* OK, I'm ready */
+  cinfo->global_state = DSTATE_START;
 }
 
-/* line 98 */
-__attribute__((naked))
-void jpeg_destroy_decompress(j_decompress_ptr cinfo)
+
+/*
+ * Destruction of a JPEG decompression object
+ */
+
+GLOBAL(void)
+jpeg_destroy_decompress (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 98 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 100 */
-        "jmp jpeg_destroy\n" /* line 99 */
-    );
+  jpeg_destroy((j_common_ptr) cinfo); /* use common routine */
 }
 
-/* line 294 */
-__attribute__((naked))
-int jpeg_consume_input(j_decompress_ptr cinfo)
+
+/*
+ * Abort processing of a JPEG decompression operation,
+ * but don't destroy the object itself.
+ */
+
+GLOBAL(void)
+jpeg_abort_decompress (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        /* { scope 1: cid1 */
-        "pushl %ebp\n" /* line 294 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl 0x14(%esi), %eax\n" /* line 298 | cinfo */
-        "subl $0xc8, %eax\n"
-        "cmpl $0xa, %eax\n"
-        "ja .Lf1f7b54_001f7bac\n"
-        "movl 0x1e(%ebx, %eax, 4), %eax\n"
-        "addl %ebx, %eax\n"
-        "jmpl *%eax\n"
-        "nop\n"
-        "nop\n"
-        "nop\n"
-        "insb %dx, %es:(%edi)\n" /* cid2 */
-        "addb %al, (%eax)\n"
-        "addb %cl, 0x27000000(%eax)\n"
-        "addl %eax, (%eax)\n"
-        "addb %dh, (%ecx, %eax)\n"
-        "addb %al, (%eax)\n"
-        "xorb $1, %al\n"
-        "addb %al, (%eax)\n"
-        "xorb $1, %al\n"
-        "addb %al, (%eax)\n"
-        "xorb $1, %al\n"
-        "addb %al, (%eax)\n"
-        "xorb $1, %al\n"
-        "addb %al, (%eax)\n"
-        "xorb $1, %al\n"
-        "addb %al, (%eax)\n"
-        "decl %edx\n"
-        "addb %al, (%eax)\n"
-        "addb %dh, (%ecx, %eax)\n"
-        "addb %al, (%eax)\n"
-        ".Lf1f7b54_001f7bac:\n"
-        "movl (%esi), %eax\n" /* line 329 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%esi), %edx\n" /* cinfo */
-        "movl 0x14(%esi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "xorl %eax, %eax\n"
-        ".Lf1f7b54_001f7bc6:\n"
-        "addl $0x2c, %esp\n" /* line 332 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl 0x198(%esi), %eax\n" /* line 301 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%eax)\n"
-        "movl 0x20(%esi), %eax\n" /* line 303 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *8(%eax)\n"
-        "movl $0xc9, 0x14(%esi)\n" /* line 304 | cinfo */
-        "movl 0x198(%esi), %eax\n" /* line 307 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "cmpl $1, %eax\n" /* line 308 */
-        "jne .Lf1f7b54_001f7bc6\n"
-        "movl 0x2c(%esi), %eax\n" /* line 125 */
-        "cmpl $3, %eax\n"
-        "je .Lf1f7b54_001f7d02\n"
-        "cmpl $4, %eax\n"
-        "je .Lf1f7b54_001f7caa\n"
-        "subl $1, %eax\n"
-        "je .Lf1f7b54_001f7dc4\n"
-        "movl $0, 0x30(%esi)\n" /* line 188 */
-        "movl $0, 0x34(%esi)\n" /* line 189 */
-        ".Lf1f7b54_001f7c26:\n"
-        "movl $1, 0x38(%esi)\n" /* line 194 */
-        "movl $1, 0x3c(%esi)\n" /* line 195 */
-        "movl $0, 0x40(%esi)\n" /* line 196 */
-        "movl $0x3ff00000, 0x44(%esi)\n"
-        "movb $0, 0x48(%esi)\n" /* line 197 */
-        "movb $0, 0x49(%esi)\n" /* line 198 */
-        "movl $0, 0x4c(%esi)\n" /* line 199 */
-        "movb $1, 0x50(%esi)\n" /* line 200 */
-        "movb $1, 0x51(%esi)\n" /* line 201 */
-        "movb $0, 0x52(%esi)\n" /* line 202 */
-        "movl $2, 0x54(%esi)\n" /* line 204 */
-        "movb $1, 0x58(%esi)\n" /* line 206 */
-        "movl $0x100, 0x5c(%esi)\n" /* line 210 */
-        "movl $0, 0x7c(%esi)\n" /* line 211 */
-        "movb $0, 0x60(%esi)\n" /* line 213 */
-        "movb $0, 0x61(%esi)\n" /* line 214 */
-        "movb $0, 0x62(%esi)\n" /* line 215 */
-        "movl $0xca, 0x14(%esi)\n" /* line 312 | cinfo */
-        "movl $1, %eax\n"
-        "addl $0x2c, %esp\n" /* line 332 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl 0x198(%esi), %eax\n" /* line 326 | cinfo */
-        "movl %esi, 8(%ebp)\n" /* cinfo */
-        "movl (%eax), %ecx\n"
-        "addl $0x2c, %esp\n" /* line 332 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 326 */
-        ".Lf1f7b54_001f7caa:\n"
-        "cmpb $0, 0x110(%esi)\n" /* line 167 */
-        "je .Lf1f7b54_001f7db8\n"
-        "movzbl 0x111(%esi), %eax\n" /* line 168 */
-        "testb %al, %al\n"
-        "je .Lf1f7b54_001f7db8\n"
-        "cmpb $2, %al\n"
-        "je .Lf1f7b54_001f7cef\n"
-        "movl (%esi), %eax\n" /* line 176 */
-        "movl $0x72, 0x14(%eax)\n"
-        "movl (%esi), %edx\n"
-        "movzbl 0x111(%esi), %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll *4(%eax)\n"
-        ".Lf1f7b54_001f7cef:\n"
-        "movl $5, 0x30(%esi)\n" /* line 177 */
-        ".Lf1f7b54_001f7cf6:\n"
-        "movl $4, 0x34(%esi)\n" /* line 184 */
-        "jmp .Lf1f7b54_001f7c26\n"
-        ".Lf1f7b54_001f7d02:\n"
-        "cmpb $0, 0x108(%esi)\n" /* line 132 */
-        "jne .Lf1f7b54_001f7daf\n"
-        "cmpb $0, 0x110(%esi)\n" /* line 134 */
-        "je .Lf1f7b54_001f7d67\n"
-        "movzbl 0x111(%esi), %eax\n" /* line 135 */
-        "testb %al, %al\n"
-        "je .Lf1f7b54_001f7de2\n"
-        "subb $1, %al\n"
-        "je .Lf1f7b54_001f7daf\n"
-        "movl (%esi), %eax\n" /* line 143 */
-        "movl $0x72, 0x14(%eax)\n"
-        "movl (%esi), %edx\n"
-        "movzbl 0x111(%esi), %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n"
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll *4(%eax)\n"
-        "movl $3, 0x30(%esi)\n" /* line 144 */
-        ".Lf1f7b54_001f7d5b:\n"
-        "movl $2, 0x34(%esi)\n" /* line 163 */
-        "jmp .Lf1f7b54_001f7c26\n"
-        /* { scope 2 */
-        ".Lf1f7b54_001f7d67:\n"
-        "movl 0xcc(%esi), %eax\n" /* line 149 */
-        "movl (%eax), %ecx\n" /* cid0 */
-        "movl 0x54(%eax), %edx\n" /* line 150 */
-        "movl %edx, -0x1c(%ebp)\n" /* cid1 */
-        "movl 0xa8(%eax), %edi\n" /* line 151 | cid2 */
-        "cmpl $1, %ecx\n" /* line 153 */
-        "je .Lf1f7b54_001f7dee\n"
-        "cmpl $0x52, %ecx\n" /* line 155 */
-        "je .Lf1f7b54_001f7dd7\n"
-        /* { scope 3 */
-        ".Lf1f7b54_001f7d85:\n"
-        "movl (%esi), %eax\n" /* line 158 */
-        "leal 0x18(%eax), %edx\n" /* _mp */
-        "movl %ecx, 0x18(%eax)\n"
-        "movl -0x1c(%ebp), %eax\n" /* cid1 */
-        "movl %eax, 4(%edx)\n"
-        "movl %edi, 8(%edx)\n" /* cid2 */
-        "movl (%esi), %eax\n"
-        "movl $0x6f, 0x14(%eax)\n"
-        "movl (%esi), %eax\n"
-        "movl $1, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll *4(%eax)\n"
-        /* } scope */
-        ".Lf1f7b54_001f7daf:\n"
-        "movl $3, 0x30(%esi)\n" /* line 159 */
-        "jmp .Lf1f7b54_001f7d5b\n"
-        /* } scope */
-        ".Lf1f7b54_001f7db8:\n"
-        "movl $4, 0x30(%esi)\n" /* line 182 */
-        "jmp .Lf1f7b54_001f7cf6\n"
-        ".Lf1f7b54_001f7dc4:\n"
-        "movl $1, 0x30(%esi)\n" /* line 127 */
-        "movl $1, 0x34(%esi)\n" /* line 128 */
-        "jmp .Lf1f7b54_001f7c26\n"
-        /* { scope 2 */
-        ".Lf1f7b54_001f7dd7:\n"
-        "cmpl $0x47, -0x1c(%ebp)\n" /* line 155 | cid1 */
-        "jne .Lf1f7b54_001f7d85\n"
-        "cmpl $0x42, %edi\n" /* cid2 */
-        "jne .Lf1f7b54_001f7d85\n"
-        ".Lf1f7b54_001f7de2:\n"
-        "movl $2, 0x30(%esi)\n" /* line 156 */
-        "jmp .Lf1f7b54_001f7d5b\n"
-        ".Lf1f7b54_001f7dee:\n"
-        "cmpl $2, %edx\n" /* line 153 */
-        "jne .Lf1f7b54_001f7d85\n"
-        "cmpl $3, %edi\n" /* cid2 */
-        "jne .Lf1f7b54_001f7d85\n"
-        "jmp .Lf1f7b54_001f7daf\n"
-    );
+  jpeg_abort((j_common_ptr) cinfo); /* use common routine */
 }
 
-/* line 248 */
-__attribute__((naked))
-int jpeg_read_header(j_decompress_ptr cinfo, int require_image)
+
+/*
+ * Set default decompression parameters.
+ */
+
+LOCAL(void)
+default_decompress_parms (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 248 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x20, %esp\n"
-        "movl 8(%ebp), %edi\n" /* cinfo */
-        "movzbl 0xc(%ebp), %eax\n" /* require_image */
-        "movb %al, -9(%ebp)\n" /* require_image */
-        "movl 0x14(%edi), %eax\n" /* line 251 | cinfo */
-        "subl $0xc8, %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf1f7dfa_001f7e31\n"
-        "movl (%edi), %eax\n" /* line 253 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%edi), %edx\n" /* cinfo */
-        "movl 0x14(%edi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%edi), %eax\n" /* cinfo */
-        "movl %edi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f7dfa_001f7e31:\n"
-        "movl %edi, (%esp)\n" /* line 255 | cinfo */
-        "calll jpeg_consume_input\n"
-        "movl %eax, %esi\n" /* retcode */
-        "cmpl $1, %eax\n" /* line 257 */
-        "je .Lf1f7dfa_001f7e45\n"
-        "cmpl $2, %eax\n"
-        "je .Lf1f7dfa_001f7e4e\n"
-        ".Lf1f7dfa_001f7e45:\n"
-        "movl %esi, %eax\n" /* line 277 | retcode */
-        "addl $0x20, %esp\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f7dfa_001f7e4e:\n"
-        "cmpb $0, -9(%ebp)\n" /* line 262 | require_image */
-        "jne .Lf1f7dfa_001f7e65\n"
-        ".Lf1f7dfa_001f7e54:\n"
-        "movl %edi, (%esp)\n" /* line 268 | cinfo */
-        "calll jpeg_abort\n"
-        "movl %esi, %eax\n" /* line 277 | retcode */
-        "addl $0x20, %esp\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f7dfa_001f7e65:\n"
-        "movl (%edi), %eax\n" /* line 263 | cinfo */
-        "movl $0x33, 0x14(%eax)\n"
-        "movl (%edi), %eax\n" /* cinfo */
-        "movl %edi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "jmp .Lf1f7dfa_001f7e54\n"
-    );
+  /* Guess the input colorspace, and set output colorspace accordingly. */
+  /* (Wish JPEG committee had provided a real way to specify this...) */
+  /* Note application may override our guesses. */
+  switch (cinfo->num_components) {
+  case 1:
+    cinfo->jpeg_color_space = JCS_GRAYSCALE;
+    cinfo->out_color_space = JCS_GRAYSCALE;
+    break;
+    
+  case 3:
+    if (cinfo->saw_JFIF_marker) {
+      cinfo->jpeg_color_space = JCS_YCbCr; /* JFIF implies YCbCr */
+    } else if (cinfo->saw_Adobe_marker) {
+      switch (cinfo->Adobe_transform) {
+      case 0:
+	cinfo->jpeg_color_space = JCS_RGB;
+	break;
+      case 1:
+	cinfo->jpeg_color_space = JCS_YCbCr;
+	break;
+      default:
+	WARNMS1(cinfo, JWRN_ADOBE_XFORM, cinfo->Adobe_transform);
+	cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+	break;
+      }
+    } else {
+      /* Saw no special markers, try to guess from the component IDs */
+      int cid0 = cinfo->comp_info[0].component_id;
+      int cid1 = cinfo->comp_info[1].component_id;
+      int cid2 = cinfo->comp_info[2].component_id;
+
+      if (cid0 == 1 && cid1 == 2 && cid2 == 3)
+	cinfo->jpeg_color_space = JCS_YCbCr; /* assume JFIF w/out marker */
+      else if (cid0 == 82 && cid1 == 71 && cid2 == 66)
+	cinfo->jpeg_color_space = JCS_RGB; /* ASCII 'R', 'G', 'B' */
+      else {
+	TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);
+	cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+      }
+    }
+    /* Always guess RGB is proper output colorspace. */
+    cinfo->out_color_space = JCS_RGB;
+    break;
+    
+  case 4:
+    if (cinfo->saw_Adobe_marker) {
+      switch (cinfo->Adobe_transform) {
+      case 0:
+	cinfo->jpeg_color_space = JCS_CMYK;
+	break;
+      case 2:
+	cinfo->jpeg_color_space = JCS_YCCK;
+	break;
+      default:
+	WARNMS1(cinfo, JWRN_ADOBE_XFORM, cinfo->Adobe_transform);
+	cinfo->jpeg_color_space = JCS_YCCK; /* assume it's YCCK */
+	break;
+      }
+    } else {
+      /* No special markers, assume straight CMYK. */
+      cinfo->jpeg_color_space = JCS_CMYK;
+    }
+    cinfo->out_color_space = JCS_CMYK;
+    break;
+    
+  default:
+    cinfo->jpeg_color_space = JCS_UNKNOWN;
+    cinfo->out_color_space = JCS_UNKNOWN;
+    break;
+  }
+
+  /* Set defaults for other decompression parameters. */
+  cinfo->scale_num = 1;		/* 1:1 scaling */
+  cinfo->scale_denom = 1;
+  cinfo->output_gamma = 1.0;
+  cinfo->buffered_image = FALSE;
+  cinfo->raw_data_out = FALSE;
+  cinfo->dct_method = JDCT_DEFAULT;
+  cinfo->do_fancy_upsampling = TRUE;
+  cinfo->do_block_smoothing = TRUE;
+  cinfo->quantize_colors = FALSE;
+  /* We set these in case application only sets quantize_colors. */
+  cinfo->dither_mode = JDITHER_FS;
+#ifdef QUANT_2PASS_SUPPORTED
+  cinfo->two_pass_quantize = TRUE;
+#else
+  cinfo->two_pass_quantize = FALSE;
+#endif
+  cinfo->desired_number_of_colors = 256;
+  cinfo->colormap = NULL;
+  /* Initialize for no mode change in buffered-image mode. */
+  cinfo->enable_1pass_quant = FALSE;
+  cinfo->enable_external_quant = FALSE;
+  cinfo->enable_2pass_quant = FALSE;
 }
 
-/* line 376 */
-__attribute__((naked))
-boolean jpeg_finish_decompress(j_decompress_ptr cinfo)
+
+/*
+ * Decompression startup: read start of JPEG datastream to see what's there.
+ * Need only initialize JPEG object and supply a data source before calling.
+ *
+ * This routine will read as far as the first SOS marker (ie, actual start of
+ * compressed data), and will save all tables and parameters in the JPEG
+ * object.  It will also initialize the decompression parameters to default
+ * values, and finally return JPEG_HEADER_OK.  On return, the application may
+ * adjust the decompression parameters and then call jpeg_start_decompress.
+ * (Or, if the application only wanted to determine the image parameters,
+ * the data need not be decompressed.  In that case, call jpeg_abort or
+ * jpeg_destroy to release any temporary space.)
+ * If an abbreviated (tables only) datastream is presented, the routine will
+ * return JPEG_HEADER_TABLES_ONLY upon reaching EOI.  The application may then
+ * re-use the JPEG object to read the abbreviated image datastream(s).
+ * It is unnecessary (but OK) to call jpeg_abort in this case.
+ * The JPEG_SUSPENDED return code only occurs if the data source module
+ * requests suspension of the decompressor.  In this case the application
+ * should load more source data and then re-call jpeg_read_header to resume
+ * processing.
+ * If a non-suspending data source is used and require_image is TRUE, then the
+ * return code need not be inspected since only JPEG_HEADER_OK is possible.
+ *
+ * This routine is now just a front end to jpeg_consume_input, with some
+ * extra error checking.
+ */
+
+GLOBAL(int)
+jpeg_read_header (j_decompress_ptr cinfo, boolean require_image)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 376 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl 0x14(%esi), %edx\n" /* line 377 | cinfo */
-        "leal -0xcd(%edx), %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf1f7e79_001f7efb\n"
-        ".Lf1f7e79_001f7e91:\n"
-        "cmpl $0xcf, %edx\n" /* line 384 */
-        "je .Lf1f7e79_001f7ef2\n"
-        "cmpl $0xd2, %edx\n" /* line 387 */
-        "je .Lf1f7e79_001f7eb9\n"
-        "movl (%esi), %eax\n" /* line 389 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%esi), %edx\n" /* cinfo */
-        "movl 0x14(%esi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f7e79_001f7eb9:\n"
-        "movl 0x198(%esi), %eax\n" /* line 392 | cinfo */
-        "cmpb $0, 0x11(%eax)\n"
-        "jne .Lf1f7e79_001f7ed6\n"
-        "movl %esi, (%esp)\n" /* line 393 | cinfo */
-        "calll *(%eax)\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1f7e79_001f7eb9\n"
-        "xorl %eax, %eax\n"
-        "addl $0x14, %esp\n" /* line 401 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f7e79_001f7ed6:\n"
-        "movl 0x20(%esi), %eax\n" /* line 397 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *0x18(%eax)\n"
-        "movl %esi, (%esp)\n" /* line 399 | cinfo */
-        "calll jpeg_abort\n"
-        "movl $1, %eax\n"
-        "addl $0x14, %esp\n" /* line 401 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f7e79_001f7ef2:\n"
-        "movl $0xd2, 0x14(%esi)\n" /* line 386 | cinfo */
-        "jmp .Lf1f7e79_001f7eb9\n"
-        ".Lf1f7e79_001f7efb:\n"
-        "cmpb $0, 0x48(%esi)\n" /* line 377 | cinfo */
-        "jne .Lf1f7e79_001f7e91\n"
-        "movl 0x80(%esi), %eax\n" /* line 380 | cinfo */
-        "cmpl 0x68(%esi), %eax\n" /* cinfo */
-        "jb .Lf1f7e79_001f7f21\n"
-        ".Lf1f7e79_001f7f0c:\n"
-        "movl 0x188(%esi), %eax\n" /* line 382 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%eax)\n"
-        "movl $0xd2, 0x14(%esi)\n" /* line 383 | cinfo */
-        "jmp .Lf1f7e79_001f7eb9\n"
-        ".Lf1f7e79_001f7f21:\n"
-        "movl (%esi), %eax\n" /* line 381 | cinfo */
-        "movl $0x43, 0x14(%eax)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "jmp .Lf1f7e79_001f7f0c\n"
-    );
+  int retcode;
+
+  if (cinfo->global_state != DSTATE_START &&
+      cinfo->global_state != DSTATE_INHEADER)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  retcode = jpeg_consume_input(cinfo);
+
+  switch (retcode) {
+  case JPEG_REACHED_SOS:
+    retcode = JPEG_HEADER_OK;
+    break;
+  case JPEG_REACHED_EOI:
+    if (require_image)		/* Complain if application wanted an image */
+      ERREXIT(cinfo, JERR_NO_IMAGE);
+    /* Reset to start state; it would be safer to require the application to
+     * call jpeg_abort, but we can't change it now for compatibility reasons.
+     * A side effect is to free any temporary memory (there shouldn't be any).
+     */
+    jpeg_abort((j_common_ptr) cinfo); /* sets state = DSTATE_START */
+    retcode = JPEG_HEADER_TABLES_ONLY;
+    break;
+  case JPEG_SUSPENDED:
+    /* no work */
+    break;
+  }
+
+  return retcode;
 }
 
+
+/*
+ * Consume data in advance of what the decompressor requires.
+ * This can be called at any time once the decompressor object has
+ * been created and a data source has been set up.
+ *
+ * This routine is essentially a state machine that handles a couple
+ * of critical state-transition actions, namely initial setup and
+ * transition from header scanning to ready-for-start_decompress.
+ * All the actual input is done via the input controller's consume_input
+ * method.
+ */
+
+GLOBAL(int)
+jpeg_consume_input (j_decompress_ptr cinfo)
+{
+  int retcode = JPEG_SUSPENDED;
+
+  /* NB: every possible DSTATE value should be listed in this switch */
+  switch (cinfo->global_state) {
+  case DSTATE_START:
+    /* Start-of-datastream actions: reset appropriate modules */
+    (*cinfo->inputctl->reset_input_controller) (cinfo);
+    /* Initialize application's data source module */
+    (*cinfo->src->init_source) (cinfo);
+    cinfo->global_state = DSTATE_INHEADER;
+    /*FALLTHROUGH*/
+  case DSTATE_INHEADER:
+    retcode = (*cinfo->inputctl->consume_input) (cinfo);
+    if (retcode == JPEG_REACHED_SOS) { /* Found SOS, prepare to decompress */
+      /* Set up default parameters based on header data */
+      default_decompress_parms(cinfo);
+      /* Set global state: ready for start_decompress */
+      cinfo->global_state = DSTATE_READY;
+    }
+    break;
+  case DSTATE_READY:
+    /* Can't advance past first SOS until start_decompress is called */
+    retcode = JPEG_REACHED_SOS;
+    break;
+  case DSTATE_PRELOAD:
+  case DSTATE_PRESCAN:
+  case DSTATE_SCANNING:
+  case DSTATE_RAW_OK:
+  case DSTATE_BUFIMAGE:
+  case DSTATE_BUFPOST:
+  case DSTATE_STOPPING:
+    retcode = (*cinfo->inputctl->consume_input) (cinfo);
+    break;
+  default:
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  }
+  return retcode;
+}
+
+
+/*
+ * Have we finished reading the input file?
+ */
+
+GLOBAL(boolean)
+jpeg_input_complete (j_decompress_ptr cinfo)
+{
+  /* Check for valid jpeg object */
+  if (cinfo->global_state < DSTATE_START ||
+      cinfo->global_state > DSTATE_STOPPING)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  return cinfo->inputctl->eoi_reached;
+}
+
+
+/*
+ * Is there more than one scan?
+ */
+
+GLOBAL(boolean)
+jpeg_has_multiple_scans (j_decompress_ptr cinfo)
+{
+  /* Only valid after jpeg_read_header completes */
+  if (cinfo->global_state < DSTATE_READY ||
+      cinfo->global_state > DSTATE_STOPPING)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  return cinfo->inputctl->has_multiple_scans;
+}
+
+
+/*
+ * Finish JPEG decompression.
+ *
+ * This will normally just verify the file trailer and release temp storage.
+ *
+ * Returns FALSE if suspended.  The return value need be inspected only if
+ * a suspending data source is used.
+ */
+
+GLOBAL(boolean)
+jpeg_finish_decompress (j_decompress_ptr cinfo)
+{
+  if ((cinfo->global_state == DSTATE_SCANNING ||
+       cinfo->global_state == DSTATE_RAW_OK) && ! cinfo->buffered_image) {
+    /* Terminate final pass of non-buffered mode */
+    if (cinfo->output_scanline < cinfo->output_height)
+      ERREXIT(cinfo, JERR_TOO_LITTLE_DATA);
+    (*cinfo->master->finish_output_pass) (cinfo);
+    cinfo->global_state = DSTATE_STOPPING;
+  } else if (cinfo->global_state == DSTATE_BUFIMAGE) {
+    /* Finishing after a buffered-image operation */
+    cinfo->global_state = DSTATE_STOPPING;
+  } else if (cinfo->global_state != DSTATE_STOPPING) {
+    /* STOPPING = repeat call after a suspension, anything else is error */
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  }
+  /* Read until EOI */
+  while (! cinfo->inputctl->eoi_reached) {
+    if ((*cinfo->inputctl->consume_input) (cinfo) == JPEG_SUSPENDED)
+      return FALSE;		/* Suspend, come back later */
+  }
+  /* Do final cleanup */
+  (*cinfo->src->term_source) (cinfo);
+  /* We can use jpeg_abort to release memory and reset global_state */
+  jpeg_abort((j_common_ptr) cinfo);
+  return TRUE;
+}

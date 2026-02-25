@@ -1,775 +1,610 @@
-/* ASM dump from: jcparam.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jcparam.c */
+/*
+ * jcparam.c
+ *
+ * Copyright (C) 1991-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains optional default-setting code for the JPEG compressor.
+ * Applications do not have to use this file, but those that don't use it
+ * must know a lot more about the innards of the JPEG code.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-static const unsigned int std_luminance_quant_tbl[64]; /* 0x306c00 */
-static const unsigned int std_chrominance_quant_tbl[64]; /* 0x306b00 */
 
-void jpeg_add_quant_table(j_compress_ptr cinfo, int which_tbl, const unsigned int *basic_table, int scale_factor, int force_baseline, j_compress_ptr cinfo_5, int scale_factor_6, int force_baseline_7);
-void jpeg_set_colorspace(j_compress_ptr cinfo, J_COLOR_SPACE colorspace);
-void jpeg_default_colorspace(j_compress_ptr cinfo);
-void jpeg_set_quality(j_compress_ptr cinfo, int quality, int force_baseline);
-void jpeg_set_defaults(j_compress_ptr cinfo);
+/*
+ * Quantization table setup routines
+ */
 
-/* line 31 */
-__attribute__((naked))
-void jpeg_add_quant_table(j_compress_ptr cinfo, int which_tbl, const unsigned int *basic_table, int scale_factor, int force_baseline, j_compress_ptr cinfo_5, int scale_factor_6, int force_baseline_7)
+GLOBAL(void)
+jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
+		      const unsigned int *basic_table,
+		      int scale_factor, boolean force_baseline)
+/* Define a quantization table equal to the basic_table times
+ * a scale factor (given as a percentage).
+ * If force_baseline is TRUE, the computed quantization table entries
+ * are limited to 1..255 for JPEG baseline compatibility.
+ */
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 31 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %edi\n" /* cinfo */
-        "movl 0xc(%ebp), %esi\n" /* which_tbl */
-        "movzbl 0x18(%ebp), %eax\n" /* force_baseline */
-        "movb %al, -9(%ebp)\n" /* force_baseline */
-        "cmpl $0x64, 0x14(%edi)\n" /* line 37 | cinfo */
-        "je .Lf1f8254_001f8287\n"
-        "movl (%edi), %eax\n" /* line 38 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%edi), %edx\n" /* cinfo */
-        "movl 0x14(%edi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%edi), %eax\n" /* cinfo */
-        "movl %edi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f8254_001f8287:\n"
-        "cmpl $3, %esi\n" /* line 40 | qtblptr */
-        "ja 0x1f8310\n"
-        "leal 0x4c(%edi, %esi, 4), %esi\n" /* line 43 | cinfo, qtblptr */
-        "movl (%esi), %eax\n" /* line 45 | qtblptr */
-        "testl %eax, %eax\n"
-        "je 0x1f832a\n"
-        "cmpb $0, -9(%ebp)\n" /* line 46 | force_baseline */
-        "jne 0x1f8339\n"
-        "xorl %ecx, %ecx\n" /* line 60 */
-        "movl $0x51eb851f, %edi\n" /* cinfo */
-        "jmp 0x1f82cc\n"
-        "cmpl $0x7fff, %edx\n" /* line 52 */
-        "jle 0x1f82be\n"
-    );
+  JQUANT_TBL ** qtblptr;
+  int i;
+  long temp;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  if (which_tbl < 0 || which_tbl >= NUM_QUANT_TBLS)
+    ERREXIT1(cinfo, JERR_DQT_INDEX, which_tbl);
+
+  qtblptr = & cinfo->quant_tbl_ptrs[which_tbl];
+
+  if (*qtblptr == NULL)
+    *qtblptr = jpeg_alloc_quant_table((j_common_ptr) cinfo);
+
+  for (i = 0; i < DCTSIZE2; i++) {
+    temp = ((long) basic_table[i] * scale_factor + 50L) / 100L;
+    /* limit the values to the valid range */
+    if (temp <= 0L) temp = 1L;
+    if (temp > 32767L) temp = 32767L; /* max quantizer needed for 12 bits */
+    if (force_baseline && temp > 255L)
+      temp = 255L;		/* limit to baseline range if requested */
+    (*qtblptr)->quantval[i] = (UINT16) temp;
+  }
+
+  /* Initialize sent_table FALSE so table will be written to JPEG file. */
+  (*qtblptr)->sent_table = FALSE;
 }
 
-/* line 392 */
-__attribute__((naked))
-void jpeg_set_colorspace(j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
+
+GLOBAL(void)
+jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
+			 boolean force_baseline)
+/* Set or change the 'quality' (quantization) setting, using default tables
+ * and a straight percentage-scaling quality scale.  In most cases it's better
+ * to use jpeg_set_quality (below); this entry point is provided for
+ * applications that insist on a linear percentage scaling.
+ */
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 392 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl 0xc(%ebp), %edi\n" /* colorspace */
-        "cmpl $0x64, 0x14(%esi)\n" /* line 406 | cinfo */
-        "je .Lf1f8390_001f83c2\n"
-        "movl (%esi), %eax\n" /* line 407 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%esi), %edx\n" /* cinfo */
-        "movl 0x14(%esi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f8390_001f83c2:\n"
-        "movl %edi, 0x44(%esi)\n" /* line 413 | colorspace, cinfo */
-        "movb $0, 0xc8(%esi)\n" /* line 415 | cinfo */
-        "movb $0, 0xd0(%esi)\n" /* line 416 | cinfo */
-        "cmpl $5, %edi\n" /* line 418 | colorspace */
-        "ja .Lf1f8390_001f83fc\n"
-        "movl 0x46(%ebx, %edi, 4), %eax\n"
-        "addl %ebx, %eax\n"
-        "jmpl *%eax\n"
-        "nop\n"
-        "ja .Lf1f8390_001f83e6\n"
-        ".Lf1f8390_001f83e6:\n"
-        "addb %al, (%eax)\n"
-        "movb $3, %ch\n"
-        "addb %al, (%eax)\n"
-        "xorl (%ebx), %eax\n"
-        "addb %al, (%eax)\n"
-        "movw (%edx), %es\n"
-        "addb %al, (%eax)\n"
-        "movb $1, %al\n"
-        "addb %al, (%eax)\n"
-        "rolb %cl, (%eax)\n"
-        "addb %al, (%eax)\n"
-        ".Lf1f8390_001f83fc:\n"
-        "movl (%esi), %eax\n" /* line 467 | cinfo */
-        "movl $0xa, 0x14(%eax)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, 8(%ebp)\n" /* cinfo */
-        "movl (%eax), %ecx\n"
-        "addl $0x1c, %esp\n" /* line 469 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 467 */
-        "movl 0x2c(%esi), %eax\n" /* line 458 | cinfo */
-        "movl %eax, 0x40(%esi)\n" /* cinfo */
-        "subl $1, %eax\n" /* line 459 */
-        "cmpl $9, %eax\n"
-        "ja .Lf1f8390_001f876f\n"
-        ".Lf1f8390_001f8427:\n"
-        "movl 0x40(%esi), %edx\n" /* line 462 | cinfo */
-        "testl %edx, %edx\n"
-        "jle .Lf1f8390_001f8546\n"
-        "xorl %edx, %edx\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf1f8390_001f8436:\n"
-        "movl %ecx, %eax\n" /* line 463 */
-        "addl 0x48(%esi), %eax\n" /* cinfo */
-        "movl %edx, (%eax)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "addl $1, %edx\n" /* line 462 */
-        "addl $0x54, %ecx\n"
-        "cmpl %edx, 0x40(%esi)\n" /* cinfo */
-        "jg .Lf1f8390_001f8436\n"
-        "jmp .Lf1f8390_001f8546\n"
-        "movb $1, 0xd0(%esi)\n" /* line 450 | cinfo */
-        "movl $4, 0x40(%esi)\n" /* line 451 | cinfo */
-        "movl 0x48(%esi), %eax\n" /* line 452 | cinfo */
-        "movl $1, (%eax)\n"
-        "movl $2, 8(%eax)\n"
-        "movl $2, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 453 | cinfo */
-        "leal 0x54(%edx), %eax\n"
-        "movl $2, 0x54(%edx)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $1, 0x10(%eax)\n"
-        "movl $1, 0x14(%eax)\n"
-        "movl $1, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 454 | cinfo */
-        "leal 0xa8(%edx), %eax\n"
-        "movl $3, 0xa8(%edx)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $1, 0x10(%eax)\n"
-        "movl $1, 0x14(%eax)\n"
-        "movl $1, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 455 | cinfo */
-        "leal 0xfc(%edx), %eax\n"
-        "movl $4, 0xfc(%edx)\n"
-        "movl $2, 8(%eax)\n"
-        "movl $2, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        ".Lf1f8390_001f8546:\n"
-        "addl $0x1c, %esp\n" /* line 469 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movb $1, 0xd0(%esi)\n" /* line 442 | cinfo */
-        "movl $4, 0x40(%esi)\n" /* line 443 | cinfo */
-        "movl 0x48(%esi), %eax\n" /* line 444 | cinfo */
-        "movl $0x43, (%eax)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 445 | cinfo */
-        "leal 0x54(%edx), %eax\n"
-        "movl $0x4d, 0x54(%edx)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 446 | cinfo */
-        "leal 0xa8(%edx), %eax\n"
-        "movl $0x59, 0xa8(%edx)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 447 | cinfo */
-        "leal 0xfc(%edx), %eax\n"
-        "movl $0x4b, 0xfc(%edx)\n"
-        ".Lf1f8390_001f8601:\n"
-        "movl $1, 8(%eax)\n" /* line 430 */
-        "movl $1, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "addl $0x1c, %esp\n" /* line 469 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movb $1, 0xc8(%esi)\n" /* line 433 | cinfo */
-        "movl $3, 0x40(%esi)\n" /* line 434 | cinfo */
-        "movl 0x48(%esi), %eax\n" /* line 437 | cinfo */
-        "movl $1, (%eax)\n"
-        "movl $2, 8(%eax)\n"
-        "movl $2, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 438 | cinfo */
-        "leal 0x54(%edx), %eax\n"
-        "movl $2, 0x54(%edx)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $1, 0x10(%eax)\n"
-        "movl $1, 0x14(%eax)\n"
-        "movl $1, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 439 | cinfo */
-        "leal 0xa8(%edx), %eax\n"
-        "movl $3, 0xa8(%edx)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $1, 0x10(%eax)\n"
-        "movl $1, 0x14(%eax)\n"
-        "movl $1, 0x18(%eax)\n"
-        "jmp .Lf1f8390_001f8546\n"
-        "movb $1, 0xd0(%esi)\n" /* line 426 | cinfo */
-        "movl $3, 0x40(%esi)\n" /* line 427 | cinfo */
-        "movl 0x48(%esi), %eax\n" /* line 428 | cinfo */
-        "movl $0x52, (%eax)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 429 | cinfo */
-        "leal 0x54(%edx), %eax\n"
-        "movl $0x47, 0x54(%edx)\n"
-        "movl $1, 8(%eax)\n"
-        "movl $1, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x14(%eax)\n"
-        "movl $0, 0x18(%eax)\n"
-        "movl 0x48(%esi), %edx\n" /* line 430 | cinfo */
-        "leal 0xa8(%edx), %eax\n"
-        "movl $0x42, 0xa8(%edx)\n"
-        "jmp .Lf1f8390_001f8601\n"
-        "movb $1, 0xc8(%esi)\n" /* line 420 | cinfo */
-        "movl $1, 0x40(%esi)\n" /* line 421 | cinfo */
-        "movl 0x48(%esi), %eax\n" /* line 423 | cinfo */
-        "movl $1, (%eax)\n"
-        "jmp .Lf1f8390_001f8601\n"
-        ".Lf1f8390_001f876f:\n"
-        "movl (%esi), %eax\n" /* line 460 | cinfo */
-        "movl $0x1a, 0x14(%eax)\n"
-        "movl (%esi), %edx\n" /* cinfo */
-        "movl 0x40(%esi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl $0xa, 0x1c(%eax)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "jmp .Lf1f8390_001f8427\n"
-    );
+  /* These are the sample quantization tables given in JPEG spec section K.1.
+   * The spec says that the values given produce "good" quality, and
+   * when divided by 2, "very good" quality.
+   */
+  static const unsigned int std_luminance_quant_tbl[DCTSIZE2] = {
+    16,  11,  10,  16,  24,  40,  51,  61,
+    12,  12,  14,  19,  26,  58,  60,  55,
+    14,  13,  16,  24,  40,  57,  69,  56,
+    14,  17,  22,  29,  51,  87,  80,  62,
+    18,  22,  37,  56,  68, 109, 103,  77,
+    24,  35,  55,  64,  81, 104, 113,  92,
+    49,  64,  78,  87, 103, 121, 120, 101,
+    72,  92,  95,  98, 112, 100, 103,  99
+  };
+  static const unsigned int std_chrominance_quant_tbl[DCTSIZE2] = {
+    17,  18,  24,  47,  99,  99,  99,  99,
+    18,  21,  26,  66,  99,  99,  99,  99,
+    24,  26,  56,  99,  99,  99,  99,  99,
+    47,  66,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99,
+    99,  99,  99,  99,  99,  99,  99,  99
+  };
+
+  /* Set up two quantization tables using the specified scaling */
+  jpeg_add_quant_table(cinfo, 0, std_luminance_quant_tbl,
+		       scale_factor, force_baseline);
+  jpeg_add_quant_table(cinfo, 1, std_chrominance_quant_tbl,
+		       scale_factor, force_baseline);
 }
 
-/* line 360 */
-__attribute__((naked))
-void jpeg_default_colorspace(j_compress_ptr cinfo)
+
+GLOBAL(int)
+jpeg_quality_scaling (int quality)
+/* Convert a user-specified quality rating to a percentage scaling factor
+ * for an underlying quantization table, using our recommended scaling curve.
+ * The input 'quality' factor should be 0 (terrible) to 100 (very good).
+ */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 360 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "cmpl $5, 0x30(%edx)\n" /* line 361 */
-        "ja .Lf1f8795_001f87d0\n"
-        "movl 0x30(%edx), %eax\n"
-        "movl 0x17(%ebx, %eax, 4), %eax\n"
-        "addl %ebx, %eax\n"
-        "jmpl *%eax\n"
-        "popl %esp\n"
-        "addb %al, (%eax)\n"
-        "addb %ch, (%esi)\n"
-        "addb %al, (%eax)\n"
-        "incl %esi\n"
-        "addb %al, (%eax)\n"
-        "addb %al, (%esi)\n"
-        "addb %al, (%eax)\n"
-        "xchgl %eax, %edx\n"
-        "addb %al, (%eax)\n"
-        "addb %al, -0x75000000(%eax)\n"
-        ".Lf1f8795_001f87d0:\n"
-        "addb %bh, %al\n" /* line 381 */
-        "incl %eax\n"
-        "adcb $9, %al\n"
-        "addb %al, (%eax)\n"
-        "addb %cl, 0x8558902(%ebx)\n"
-        "movl (%eax), %ecx\n"
-        "addl $0x14, %esp\n" /* line 383 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 381 */
-        "movl $3, 4(%esp)\n" /* line 369 */
-        "movl %edx, (%esp)\n"
-        "calll jpeg_set_colorspace\n"
-        ".Lf1f8795_001f87f7:\n"
-        "addl $0x14, %esp\n" /* line 383 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        "movl $0, 4(%esp)\n" /* line 378 */
-        "movl %edx, (%esp)\n"
-        "calll jpeg_set_colorspace\n"
-        "jmp .Lf1f8795_001f87f7\n"
-        "movl $1, 4(%esp)\n" /* line 363 */
-        "movl %edx, (%esp)\n"
-        "calll jpeg_set_colorspace\n"
-        "jmp .Lf1f8795_001f87f7\n"
-        "movl $5, 4(%esp)\n" /* line 375 */
-        "movl %edx, (%esp)\n"
-        "calll jpeg_set_colorspace\n"
-        "jmp .Lf1f8795_001f87f7\n"
-        "movl $4, 4(%esp)\n" /* line 372 */
-        "movl %edx, (%esp)\n"
-        "calll jpeg_set_colorspace\n"
-        "jmp .Lf1f8795_001f87f7\n"
-    );
+  /* Safety limit on quality factor.  Convert 0 to 1 to avoid zero divide. */
+  if (quality <= 0) quality = 1;
+  if (quality > 100) quality = 100;
+
+  /* The basic table is used as-is (scaling 100) for a quality of 50.
+   * Qualities 50..100 are converted to scaling percentage 200 - 2*Q;
+   * note that at Q=100 the scaling is 0, which will cause jpeg_add_quant_table
+   * to make all the table entries 1 (hence, minimum quantization loss).
+   * Qualities 1..50 are converted to scaling percentage 5000/Q.
+   */
+  if (quality < 50)
+    quality = 5000 / quality;
+  else
+    quality = 200 - quality*2;
+
+  return quality;
 }
 
-/* line 138 */
-__attribute__((naked))
-void jpeg_set_quality(j_compress_ptr cinfo, int quality, int force_baseline)
+
+GLOBAL(void)
+jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
+/* Set or change the 'quality' (quantization) setting, using default tables.
+ * This is the standard quality-adjusting entry point for typical user
+ * interfaces; only those who want detailed control over quantization tables
+ * would use the preceding three routines directly.
+ */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 138 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 0xc(%ebp), %edx\n" /* quality */
-        "movzbl 0x10(%ebp), %ecx\n" /* force_baseline */
-        "testl %edx, %edx\n" /* line 113 */
-        "jle .Lf1f8848_001f88d1\n"
-        "cmpl $0x64, %edx\n" /* line 114 */
-        "jg .Lf1f8848_001f88ca\n"
-        "cmpl $0x31, %edx\n" /* line 122 */
-        "jle .Lf1f8848_001f88d8\n"
-        "leal (%edx, %edx), %eax\n"
-        ".Lf1f8848_001f886e:\n"
-        "movl $0xc8, %edi\n" /* line 125 */
-        "subl %eax, %edi\n"
-        ".Lf1f8848_001f8875:\n"
-        "movzbl %cl, %esi\n" /* line 98 */
-        "movl %esi, 0x10(%esp)\n"
-        "movl %edi, 0xc(%esp)\n"
-        "leal 0x10e3aa(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll jpeg_add_quant_table\n"
-        "movl %esi, 0x10(%esp)\n" /* line 100 */
-        "movl %edi, 0xc(%esp)\n"
-        "leal 0x10e2aa(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl %esi, (%esp)\n"
-        "calll jpeg_add_quant_table\n"
-        "addl $0x2c, %esp\n" /* line 144 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f8848_001f88ca:\n"
-        "movl $0xc8, %eax\n" /* line 122 */
-        "jmp .Lf1f8848_001f886e\n"
-        ".Lf1f8848_001f88d1:\n"
-        "movl $0x1388, %edi\n" /* line 113 */
-        "jmp .Lf1f8848_001f8875\n"
-        ".Lf1f8848_001f88d8:\n"
-        "movl $0x1388, %edi\n" /* line 122 */
-        "movl %edi, %eax\n"
-        "movl %edx, %esi\n"
-        "cltd\n"
-        "idivl %esi\n"
-        "movl %eax, %edi\n"
-        "jmp .Lf1f8848_001f8875\n"
-    );
+  /* Convert user 0-100 rating to percentage scaling */
+  quality = jpeg_quality_scaling(quality);
+
+  /* Set up standard quality tables */
+  jpeg_set_linear_quality(cinfo, quality, force_baseline);
 }
 
-/* line 269 */
-__attribute__((naked))
-void jpeg_set_defaults(j_compress_ptr cinfo)
+
+/*
+ * Huffman table setup routines
+ */
+
+LOCAL(void)
+add_huff_table (j_compress_ptr cinfo,
+		JHUFF_TBL **htblptr, const UINT8 *bits, const UINT8 *val)
+/* Define a Huffman table */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 269 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %edi\n" /* cinfo */
-        "cmpl $0x64, 0x14(%edi)\n" /* line 273 | cinfo */
-        "je .Lf1f88e8_001f8917\n"
-        "movl (%edi), %eax\n" /* line 274 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%edi), %edx\n" /* cinfo */
-        "movl 0x14(%edi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%edi), %eax\n" /* cinfo */
-        "movl %edi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f88e8_001f8917:\n"
-        "movl 0x48(%edi), %eax\n" /* line 280 | cinfo */
-        "testl %eax, %eax\n"
-        "je .Lf1f88e8_001f8d1f\n"
-        ".Lf1f88e8_001f8922:\n"
-        "movl $8, 0x3c(%edi)\n" /* line 287 | cinfo */
-        "movl $1, 0x10(%esp)\n" /* line 98 */
-        "movl $0x32, 0xc(%esp)\n"
-        "leal 0x10e30a(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll jpeg_add_quant_table\n"
-        "movl $1, 0x10(%esp)\n" /* line 100 */
-        "movl $0x32, 0xc(%esp)\n"
-        "leal 0x10e20a(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll jpeg_add_quant_table\n"
-        "leal 0x5c(%edi), %eax\n" /* line 246 */
-        "movl %eax, -0x28(%ebp)\n" /* htblptr */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl 0x5c(%edi), %eax\n" /* line 158 */
-        "testl %eax, %eax\n"
-        "je .Lf1f88e8_001f8d3f\n"
-        "movl 0x5c(%edi), %edx\n"
-        ".Lf1f88e8_001f8991:\n"
-        "movl 0x10e5a6(%ebx), %eax\n" /* line 162 */
-        "movl %eax, (%edx)\n"
-        "movl 0x10e5aa(%ebx), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 0x10e5ae(%ebx), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl 0x10e5b2(%ebx), %eax\n"
-        "movl %eax, 0xc(%edx)\n"
-        "movzbl 0x10e5b6(%ebx), %eax\n"
-        "movb %al, 0x10(%edx)\n"
-        "xorl %esi, %esi\n" /* nsymbols */
-        "leal 0x10e5a6(%ebx), %edx\n"
-        "leal 0x10(%edx), %ecx\n"
-        ".Lf1f88e8_001f89c9:\n"
-        "movzbl 1(%edx), %eax\n" /* line 170 */
-        "addl %eax, %esi\n" /* nsymbols */
-        "addl $1, %edx\n"
-        "cmpl %ecx, %edx\n" /* line 169 */
-        "jne .Lf1f88e8_001f89c9\n"
-        "leal -1(%esi), %eax\n" /* line 171 | nsymbols */
-        "cmpl $0xff, %eax\n"
-        "ja .Lf1f88e8_001f8c8d\n"
-        ".Lf1f88e8_001f89e4:\n"
-        "movl -0x28(%ebp), %edx\n" /* line 174 | htblptr */
-        "movl (%edx), %eax\n"
-        "addl $0x11, %eax\n"
-        "movl %esi, 8(%esp)\n" /* nsymbols */
-        "leal 0x10e59a(%ebx), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x28(%ebp), %edx\n" /* line 177 | htblptr */
-        "movl (%edx), %eax\n"
-        "movb $0, 0x111(%eax)\n"
-        /* } scope */
-        /* } scope */
-        "leal 0x6c(%edi), %eax\n" /* line 248 */
-        "movl %eax, -0x24(%ebp)\n" /* htblptr */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl 0x6c(%edi), %eax\n" /* line 158 */
-        "testl %eax, %eax\n"
-        "je .Lf1f88e8_001f8ce1\n"
-        "movl 0x6c(%edi), %edx\n"
-        ".Lf1f88e8_001f8a22:\n"
-        "movl 0x10e56c(%ebx), %eax\n" /* line 162 */
-        "movl %eax, (%edx)\n"
-        "movl 0x10e570(%ebx), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 0x10e574(%ebx), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl 0x10e578(%ebx), %eax\n"
-        "movl %eax, 0xc(%edx)\n"
-        "movzbl 0x10e57c(%ebx), %eax\n"
-        "movb %al, 0x10(%edx)\n"
-        "xorl %esi, %esi\n" /* nsymbols */
-        "leal 0x10e56c(%ebx), %edx\n"
-        "leal 0x10(%edx), %ecx\n"
-        ".Lf1f88e8_001f8a5a:\n"
-        "movzbl 1(%edx), %eax\n" /* line 170 */
-        "addl %eax, %esi\n" /* nsymbols */
-        "addl $1, %edx\n"
-        "cmpl %ecx, %edx\n" /* line 169 */
-        "jne .Lf1f88e8_001f8a5a\n"
-        "leal -1(%esi), %eax\n" /* line 171 | nsymbols */
-        "cmpl $0xff, %eax\n"
-        "ja .Lf1f88e8_001f8ccc\n"
-        ".Lf1f88e8_001f8a75:\n"
-        "movl -0x24(%ebp), %edx\n" /* line 174 | htblptr */
-        "movl (%edx), %eax\n"
-        "addl $0x11, %eax\n"
-        "movl %esi, 8(%esp)\n" /* nsymbols */
-        "leal 0x10e4ca(%ebx), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x24(%ebp), %edx\n" /* line 177 | htblptr */
-        "movl (%edx), %eax\n"
-        "movb $0, 0x111(%eax)\n"
-        /* } scope */
-        /* } scope */
-        "movl -0x28(%ebp), %eax\n" /* line 250 | htblptr */
-        "addl $4, %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* htblptr */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl -0x28(%ebp), %edx\n" /* line 158 | htblptr */
-        "movl 4(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1f88e8_001f8cf3\n"
-        "movl %edx, %eax\n"
-        ".Lf1f88e8_001f8ab8:\n"
-        "movl 4(%eax), %edx\n" /* line 162 */
-        "movl 0x10e589(%ebx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl 0x10e58d(%ebx), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 0x10e591(%ebx), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl 0x10e595(%ebx), %eax\n"
-        "movl %eax, 0xc(%edx)\n"
-        "movzbl 0x10e599(%ebx), %eax\n"
-        "movb %al, 0x10(%edx)\n"
-        "xorl %esi, %esi\n" /* nsymbols */
-        "leal 0x10e589(%ebx), %edx\n"
-        "leal 0x10(%edx), %ecx\n"
-        ".Lf1f88e8_001f8af3:\n"
-        "movzbl 1(%edx), %eax\n" /* line 170 */
-        "addl %eax, %esi\n" /* nsymbols */
-        "addl $1, %edx\n"
-        "cmpl %ecx, %edx\n" /* line 169 */
-        "jne .Lf1f88e8_001f8af3\n"
-        "leal -1(%esi), %eax\n" /* line 171 | nsymbols */
-        "cmpl $0xff, %eax\n"
-        "ja .Lf1f88e8_001f8cb7\n"
-        ".Lf1f88e8_001f8b0e:\n"
-        "movl -0x20(%ebp), %edx\n" /* line 174 | htblptr */
-        "movl (%edx), %eax\n"
-        "addl $0x11, %eax\n"
-        "movl %esi, 8(%esp)\n" /* nsymbols */
-        "leal 0x10e57d(%ebx), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x20(%ebp), %edx\n" /* line 177 | htblptr */
-        "movl (%edx), %eax\n"
-        "movb $0, 0x111(%eax)\n"
-        /* } scope */
-        /* } scope */
-        "movl -0x24(%ebp), %eax\n" /* line 252 | htblptr */
-        "addl $4, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* htblptr */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl -0x24(%ebp), %edx\n" /* line 158 | htblptr */
-        "movl 4(%edx), %esi\n" /* nsymbols */
-        "testl %esi, %esi\n" /* nsymbols */
-        "je .Lf1f88e8_001f8d09\n"
-        "movl %edx, %eax\n"
-        ".Lf1f88e8_001f8b51:\n"
-        "movl 4(%eax), %edx\n" /* line 162 */
-        "movl 0x10e4ac(%ebx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl 0x10e4b0(%ebx), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 0x10e4b4(%ebx), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl 0x10e4b8(%ebx), %eax\n"
-        "movl %eax, 0xc(%edx)\n"
-        "movzbl 0x10e4bc(%ebx), %eax\n"
-        "movb %al, 0x10(%edx)\n"
-        "xorl %esi, %esi\n" /* nsymbols */
-        "leal 0x10e4ac(%ebx), %edx\n"
-        "leal 0x10(%edx), %ecx\n"
-        ".Lf1f88e8_001f8b8c:\n"
-        "movzbl 1(%edx), %eax\n" /* line 170 */
-        "addl %eax, %esi\n" /* nsymbols */
-        "addl $1, %edx\n"
-        "cmpl %ecx, %edx\n" /* line 169 */
-        "jne .Lf1f88e8_001f8b8c\n"
-        "leal -1(%esi), %eax\n" /* line 171 | nsymbols */
-        "cmpl $0xff, %eax\n"
-        "ja .Lf1f88e8_001f8ca2\n"
-        ".Lf1f88e8_001f8ba7:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 174 | htblptr */
-        "movl (%edx), %eax\n"
-        "addl $0x11, %eax\n"
-        "movl %esi, 8(%esp)\n" /* nsymbols */
-        "leal 0x10e40a(%ebx), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 177 | htblptr */
-        "movl (%edx), %eax\n"
-        "movb $0, 0x111(%eax)\n"
-        "movl %edi, %eax\n"
-        "movl $0x10, %edx\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1f88e8_001f8bd8:\n"
-        "movb $0, 0x7c(%eax)\n" /* line 295 */
-        "movb $1, 0x8c(%eax)\n" /* line 296 */
-        "movb $5, 0x9c(%eax)\n" /* line 297 */
-        "addl $1, %eax\n"
-        "subl $1, %edx\n" /* line 294 */
-        "jne .Lf1f88e8_001f8bd8\n"
-        "movl $0, 0xb0(%edi)\n" /* line 301 | cinfo */
-        "movl $0, 0xac(%edi)\n" /* line 302 | cinfo */
-        "movb $0, 0xb4(%edi)\n" /* line 305 | cinfo */
-        "movb $0, 0xb5(%edi)\n" /* line 308 | cinfo */
-        "movb $0, 0xb6(%edi)\n" /* line 311 | cinfo */
-        "cmpl $8, 0x3c(%edi)\n" /* line 317 | cinfo */
-        "jle .Lf1f88e8_001f8c28\n"
-        "movb $1, 0xb6(%edi)\n" /* line 318 | cinfo */
-        ".Lf1f88e8_001f8c28:\n"
-        "movb $0, 0xb7(%edi)\n" /* line 321 | cinfo */
-        "movl $0, 0xb8(%edi)\n" /* line 324 | cinfo */
-        "movl $0, 0xbc(%edi)\n" /* line 327 | cinfo */
-        "movl $0, 0xc0(%edi)\n" /* line 330 | cinfo */
-        "movl $0, 0xc4(%edi)\n" /* line 331 | cinfo */
-        "movb $1, 0xc9(%edi)\n" /* line 342 | cinfo */
-        "movb $1, 0xca(%edi)\n" /* line 343 | cinfo */
-        "movb $0, 0xcb(%edi)\n" /* line 344 | cinfo */
-        "movw $1, 0xcc(%edi)\n" /* line 345 | cinfo */
-        "movw $1, 0xce(%edi)\n" /* line 346 | cinfo */
-        "movl %edi, 8(%ebp)\n" /* line 350 | cinfo */
-        "addl $0x3c, %esp\n" /* line 351 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp jpeg_default_colorspace\n" /* line 350 */
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1f88e8_001f8c8d:\n"
-        "movl (%edi), %eax\n" /* line 172 */
-        "movl $8, 0x14(%eax)\n"
-        "movl (%edi), %eax\n"
-        "movl %edi, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf1f88e8_001f89e4\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1f88e8_001f8ca2:\n"
-        "movl (%edi), %eax\n"
-        "movl $8, 0x14(%eax)\n"
-        "movl (%edi), %eax\n"
-        "movl %edi, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf1f88e8_001f8ba7\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1f88e8_001f8cb7:\n"
-        "movl (%edi), %eax\n"
-        "movl $8, 0x14(%eax)\n"
-        "movl (%edi), %eax\n"
-        "movl %edi, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf1f88e8_001f8b0e\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1f88e8_001f8ccc:\n"
-        "movl (%edi), %eax\n"
-        "movl $8, 0x14(%eax)\n"
-        "movl (%edi), %eax\n"
-        "movl %edi, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf1f88e8_001f8a75\n"
-        ".Lf1f88e8_001f8ce1:\n"
-        "movl %edi, (%esp)\n" /* line 159 */
-        "calll jpeg_alloc_huff_table\n"
-        "movl %eax, 0x6c(%edi)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1f88e8_001f8a22\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1f88e8_001f8cf3:\n"
-        "movl %edi, (%esp)\n"
-        "calll jpeg_alloc_huff_table\n"
-        "movl -0x28(%ebp), %edx\n" /* htblptr */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x28(%ebp), %eax\n" /* htblptr */
-        "jmp .Lf1f88e8_001f8ab8\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1f88e8_001f8d09:\n"
-        "movl %edi, (%esp)\n"
-        "calll jpeg_alloc_huff_table\n"
-        "movl -0x24(%ebp), %edx\n" /* htblptr */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x24(%ebp), %eax\n" /* htblptr */
-        "jmp .Lf1f88e8_001f8b51\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1f88e8_001f8d1f:\n"
-        "movl 4(%edi), %eax\n" /* line 281 | cinfo */
-        "movl $0x348, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "movl %eax, 0x48(%edi)\n" /* cinfo */
-        "jmp .Lf1f88e8_001f8922\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1f88e8_001f8d3f:\n"
-        "movl %edi, (%esp)\n" /* line 159 */
-        "calll jpeg_alloc_huff_table\n"
-        "movl %eax, 0x5c(%edi)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1f88e8_001f8991\n"
-    );
+  int nsymbols, len;
+
+  if (*htblptr == NULL)
+    *htblptr = jpeg_alloc_huff_table((j_common_ptr) cinfo);
+
+  /* Copy the number-of-symbols-of-each-code-length counts */
+  MEMCOPY((*htblptr)->bits, bits, SIZEOF((*htblptr)->bits));
+
+  /* Validate the counts.  We do this here mainly so we can copy the right
+   * number of symbols from the val[] array, without risking marching off
+   * the end of memory.  jchuff.c will do a more thorough test later.
+   */
+  nsymbols = 0;
+  for (len = 1; len <= 16; len++)
+    nsymbols += bits[len];
+  if (nsymbols < 1 || nsymbols > 256)
+    ERREXIT(cinfo, JERR_BAD_HUFF_TABLE);
+
+  MEMCOPY((*htblptr)->huffval, val, nsymbols * SIZEOF(UINT8));
+
+  /* Initialize sent_table FALSE so table will be written to JPEG file. */
+  (*htblptr)->sent_table = FALSE;
 }
 
+
+LOCAL(void)
+std_huff_tables (j_compress_ptr cinfo)
+/* Set up the standard Huffman tables (cf. JPEG standard section K.3) */
+/* IMPORTANT: these are only valid for 8-bit data precision! */
+{
+  static const UINT8 bits_dc_luminance[17] =
+    { /* 0-base */ 0, 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
+  static const UINT8 val_dc_luminance[] =
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+  
+  static const UINT8 bits_dc_chrominance[17] =
+    { /* 0-base */ 0, 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 };
+  static const UINT8 val_dc_chrominance[] =
+    { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+  
+  static const UINT8 bits_ac_luminance[17] =
+    { /* 0-base */ 0, 0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 0x7d };
+  static const UINT8 val_ac_luminance[] =
+    { 0x01, 0x02, 0x03, 0x00, 0x04, 0x11, 0x05, 0x12,
+      0x21, 0x31, 0x41, 0x06, 0x13, 0x51, 0x61, 0x07,
+      0x22, 0x71, 0x14, 0x32, 0x81, 0x91, 0xa1, 0x08,
+      0x23, 0x42, 0xb1, 0xc1, 0x15, 0x52, 0xd1, 0xf0,
+      0x24, 0x33, 0x62, 0x72, 0x82, 0x09, 0x0a, 0x16,
+      0x17, 0x18, 0x19, 0x1a, 0x25, 0x26, 0x27, 0x28,
+      0x29, 0x2a, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+      0x3a, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49,
+      0x4a, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59,
+      0x5a, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69,
+      0x6a, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79,
+      0x7a, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89,
+      0x8a, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98,
+      0x99, 0x9a, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+      0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6,
+      0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3, 0xc4, 0xc5,
+      0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2, 0xd3, 0xd4,
+      0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda, 0xe1, 0xe2,
+      0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9, 0xea,
+      0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
+      0xf9, 0xfa };
+  
+  static const UINT8 bits_ac_chrominance[17] =
+    { /* 0-base */ 0, 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 0x77 };
+  static const UINT8 val_ac_chrominance[] =
+    { 0x00, 0x01, 0x02, 0x03, 0x11, 0x04, 0x05, 0x21,
+      0x31, 0x06, 0x12, 0x41, 0x51, 0x07, 0x61, 0x71,
+      0x13, 0x22, 0x32, 0x81, 0x08, 0x14, 0x42, 0x91,
+      0xa1, 0xb1, 0xc1, 0x09, 0x23, 0x33, 0x52, 0xf0,
+      0x15, 0x62, 0x72, 0xd1, 0x0a, 0x16, 0x24, 0x34,
+      0xe1, 0x25, 0xf1, 0x17, 0x18, 0x19, 0x1a, 0x26,
+      0x27, 0x28, 0x29, 0x2a, 0x35, 0x36, 0x37, 0x38,
+      0x39, 0x3a, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
+      0x49, 0x4a, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58,
+      0x59, 0x5a, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68,
+      0x69, 0x6a, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,
+      0x79, 0x7a, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+      0x88, 0x89, 0x8a, 0x92, 0x93, 0x94, 0x95, 0x96,
+      0x97, 0x98, 0x99, 0x9a, 0xa2, 0xa3, 0xa4, 0xa5,
+      0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xb2, 0xb3, 0xb4,
+      0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xc2, 0xc3,
+      0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xd2,
+      0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8, 0xd9, 0xda,
+      0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, 0xe8, 0xe9,
+      0xea, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
+      0xf9, 0xfa };
+  
+  add_huff_table(cinfo, &cinfo->dc_huff_tbl_ptrs[0],
+		 bits_dc_luminance, val_dc_luminance);
+  add_huff_table(cinfo, &cinfo->ac_huff_tbl_ptrs[0],
+		 bits_ac_luminance, val_ac_luminance);
+  add_huff_table(cinfo, &cinfo->dc_huff_tbl_ptrs[1],
+		 bits_dc_chrominance, val_dc_chrominance);
+  add_huff_table(cinfo, &cinfo->ac_huff_tbl_ptrs[1],
+		 bits_ac_chrominance, val_ac_chrominance);
+}
+
+
+/*
+ * Default parameter setup for compression.
+ *
+ * Applications that don't choose to use this routine must do their
+ * own setup of all these parameters.  Alternately, you can call this
+ * to establish defaults and then alter parameters selectively.  This
+ * is the recommended approach since, if we add any new parameters,
+ * your code will still work (they'll be set to reasonable defaults).
+ */
+
+GLOBAL(void)
+jpeg_set_defaults (j_compress_ptr cinfo)
+{
+  int i;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* Allocate comp_info array large enough for maximum component count.
+   * Array is made permanent in case application wants to compress
+   * multiple images at same param settings.
+   */
+  if (cinfo->comp_info == NULL)
+    cinfo->comp_info = (jpeg_component_info *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+				  MAX_COMPONENTS * SIZEOF(jpeg_component_info));
+
+  /* Initialize everything not dependent on the color space */
+
+  cinfo->data_precision = BITS_IN_JSAMPLE;
+  /* Set up two quantization tables using default quality of 75 */
+  jpeg_set_quality(cinfo, 75, TRUE);
+  /* Set up two Huffman tables */
+  std_huff_tables(cinfo);
+
+  /* Initialize default arithmetic coding conditioning */
+  for (i = 0; i < NUM_ARITH_TBLS; i++) {
+    cinfo->arith_dc_L[i] = 0;
+    cinfo->arith_dc_U[i] = 1;
+    cinfo->arith_ac_K[i] = 5;
+  }
+
+  /* Default is no multiple-scan output */
+  cinfo->scan_info = NULL;
+  cinfo->num_scans = 0;
+
+  /* Expect normal source image, not raw downsampled data */
+  cinfo->raw_data_in = FALSE;
+
+  /* Use Huffman coding, not arithmetic coding, by default */
+  cinfo->arith_code = FALSE;
+
+  /* By default, don't do extra passes to optimize entropy coding */
+  cinfo->optimize_coding = FALSE;
+  /* The standard Huffman tables are only valid for 8-bit data precision.
+   * If the precision is higher, force optimization on so that usable
+   * tables will be computed.  This test can be removed if default tables
+   * are supplied that are valid for the desired precision.
+   */
+  if (cinfo->data_precision > 8)
+    cinfo->optimize_coding = TRUE;
+
+  /* By default, use the simpler non-cosited sampling alignment */
+  cinfo->CCIR601_sampling = FALSE;
+
+  /* No input smoothing */
+  cinfo->smoothing_factor = 0;
+
+  /* DCT algorithm preference */
+  cinfo->dct_method = JDCT_DEFAULT;
+
+  /* No restart markers */
+  cinfo->restart_interval = 0;
+  cinfo->restart_in_rows = 0;
+
+  /* Fill in default JFIF marker parameters.  Note that whether the marker
+   * will actually be written is determined by jpeg_set_colorspace.
+   *
+   * By default, the library emits JFIF version code 1.01.
+   * An application that wants to emit JFIF 1.02 extension markers should set
+   * JFIF_minor_version to 2.  We could probably get away with just defaulting
+   * to 1.02, but there may still be some decoders in use that will complain
+   * about that; saying 1.01 should minimize compatibility problems.
+   */
+  cinfo->JFIF_major_version = 1; /* Default JFIF version = 1.01 */
+  cinfo->JFIF_minor_version = 1;
+  cinfo->density_unit = 0;	/* Pixel size is unknown by default */
+  cinfo->X_density = 1;		/* Pixel aspect ratio is square by default */
+  cinfo->Y_density = 1;
+
+  /* Choose JPEG colorspace based on input space, set defaults accordingly */
+
+  jpeg_default_colorspace(cinfo);
+}
+
+
+/*
+ * Select an appropriate JPEG colorspace for in_color_space.
+ */
+
+GLOBAL(void)
+jpeg_default_colorspace (j_compress_ptr cinfo)
+{
+  switch (cinfo->in_color_space) {
+  case JCS_GRAYSCALE:
+    jpeg_set_colorspace(cinfo, JCS_GRAYSCALE);
+    break;
+  case JCS_RGB:
+    jpeg_set_colorspace(cinfo, JCS_YCbCr);
+    break;
+  case JCS_YCbCr:
+    jpeg_set_colorspace(cinfo, JCS_YCbCr);
+    break;
+  case JCS_CMYK:
+    jpeg_set_colorspace(cinfo, JCS_CMYK); /* By default, no translation */
+    break;
+  case JCS_YCCK:
+    jpeg_set_colorspace(cinfo, JCS_YCCK);
+    break;
+  case JCS_UNKNOWN:
+    jpeg_set_colorspace(cinfo, JCS_UNKNOWN);
+    break;
+  default:
+    ERREXIT(cinfo, JERR_BAD_IN_COLORSPACE);
+  }
+}
+
+
+/*
+ * Set the JPEG colorspace, and choose colorspace-dependent default values.
+ */
+
+GLOBAL(void)
+jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
+{
+  jpeg_component_info * compptr;
+  int ci;
+
+#define SET_COMP(index,id,hsamp,vsamp,quant,dctbl,actbl)  \
+  (compptr = &cinfo->comp_info[index], \
+   compptr->component_id = (id), \
+   compptr->h_samp_factor = (hsamp), \
+   compptr->v_samp_factor = (vsamp), \
+   compptr->quant_tbl_no = (quant), \
+   compptr->dc_tbl_no = (dctbl), \
+   compptr->ac_tbl_no = (actbl) )
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* For all colorspaces, we use Q and Huff tables 0 for luminance components,
+   * tables 1 for chrominance components.
+   */
+
+  cinfo->jpeg_color_space = colorspace;
+
+  cinfo->write_JFIF_header = FALSE; /* No marker for non-JFIF colorspaces */
+  cinfo->write_Adobe_marker = FALSE; /* write no Adobe marker by default */
+
+  switch (colorspace) {
+  case JCS_GRAYSCALE:
+    cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
+    cinfo->num_components = 1;
+    /* JFIF specifies component ID 1 */
+    SET_COMP(0, 1, 1,1, 0, 0,0);
+    break;
+  case JCS_RGB:
+    cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag RGB */
+    cinfo->num_components = 3;
+    SET_COMP(0, 0x52 /* 'R' */, 1,1, 0, 0,0);
+    SET_COMP(1, 0x47 /* 'G' */, 1,1, 0, 0,0);
+    SET_COMP(2, 0x42 /* 'B' */, 1,1, 0, 0,0);
+    break;
+  case JCS_YCbCr:
+    cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
+    cinfo->num_components = 3;
+    /* JFIF specifies component IDs 1,2,3 */
+    /* We default to 2x2 subsamples of chrominance */
+    SET_COMP(0, 1, 2,2, 0, 0,0);
+    SET_COMP(1, 2, 1,1, 1, 1,1);
+    SET_COMP(2, 3, 1,1, 1, 1,1);
+    break;
+  case JCS_CMYK:
+    cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag CMYK */
+    cinfo->num_components = 4;
+    SET_COMP(0, 0x43 /* 'C' */, 1,1, 0, 0,0);
+    SET_COMP(1, 0x4D /* 'M' */, 1,1, 0, 0,0);
+    SET_COMP(2, 0x59 /* 'Y' */, 1,1, 0, 0,0);
+    SET_COMP(3, 0x4B /* 'K' */, 1,1, 0, 0,0);
+    break;
+  case JCS_YCCK:
+    cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag YCCK */
+    cinfo->num_components = 4;
+    SET_COMP(0, 1, 2,2, 0, 0,0);
+    SET_COMP(1, 2, 1,1, 1, 1,1);
+    SET_COMP(2, 3, 1,1, 1, 1,1);
+    SET_COMP(3, 4, 2,2, 0, 0,0);
+    break;
+  case JCS_UNKNOWN:
+    cinfo->num_components = cinfo->input_components;
+    if (cinfo->num_components < 1 || cinfo->num_components > MAX_COMPONENTS)
+      ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
+	       MAX_COMPONENTS);
+    for (ci = 0; ci < cinfo->num_components; ci++) {
+      SET_COMP(ci, ci, 1,1, 0, 0,0);
+    }
+    break;
+  default:
+    ERREXIT(cinfo, JERR_BAD_J_COLORSPACE);
+  }
+}
+
+
+#ifdef C_PROGRESSIVE_SUPPORTED
+
+LOCAL(jpeg_scan_info *)
+fill_a_scan (jpeg_scan_info * scanptr, int ci,
+	     int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for specified component */
+{
+  scanptr->comps_in_scan = 1;
+  scanptr->component_index[0] = ci;
+  scanptr->Ss = Ss;
+  scanptr->Se = Se;
+  scanptr->Ah = Ah;
+  scanptr->Al = Al;
+  scanptr++;
+  return scanptr;
+}
+
+LOCAL(jpeg_scan_info *)
+fill_scans (jpeg_scan_info * scanptr, int ncomps,
+	    int Ss, int Se, int Ah, int Al)
+/* Support routine: generate one scan for each component */
+{
+  int ci;
+
+  for (ci = 0; ci < ncomps; ci++) {
+    scanptr->comps_in_scan = 1;
+    scanptr->component_index[0] = ci;
+    scanptr->Ss = Ss;
+    scanptr->Se = Se;
+    scanptr->Ah = Ah;
+    scanptr->Al = Al;
+    scanptr++;
+  }
+  return scanptr;
+}
+
+LOCAL(jpeg_scan_info *)
+fill_dc_scans (jpeg_scan_info * scanptr, int ncomps, int Ah, int Al)
+/* Support routine: generate interleaved DC scan if possible, else N scans */
+{
+  int ci;
+
+  if (ncomps <= MAX_COMPS_IN_SCAN) {
+    /* Single interleaved DC scan */
+    scanptr->comps_in_scan = ncomps;
+    for (ci = 0; ci < ncomps; ci++)
+      scanptr->component_index[ci] = ci;
+    scanptr->Ss = scanptr->Se = 0;
+    scanptr->Ah = Ah;
+    scanptr->Al = Al;
+    scanptr++;
+  } else {
+    /* Noninterleaved DC scan for each component */
+    scanptr = fill_scans(scanptr, ncomps, 0, 0, Ah, Al);
+  }
+  return scanptr;
+}
+
+
+/*
+ * Create a recommended progressive-JPEG script.
+ * cinfo->num_components and cinfo->jpeg_color_space must be correct.
+ */
+
+GLOBAL(void)
+jpeg_simple_progression (j_compress_ptr cinfo)
+{
+  int ncomps = cinfo->num_components;
+  int nscans;
+  jpeg_scan_info * scanptr;
+
+  /* Safety check to ensure start_compress not called yet. */
+  if (cinfo->global_state != CSTATE_START)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+
+  /* Figure space needed for script.  Calculation must match code below! */
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    /* Custom script for YCbCr color images. */
+    nscans = 10;
+  } else {
+    /* All-purpose script for other color spaces. */
+    if (ncomps > MAX_COMPS_IN_SCAN)
+      nscans = 6 * ncomps;	/* 2 DC + 4 AC scans per component */
+    else
+      nscans = 2 + 4 * ncomps;	/* 2 DC scans; 4 AC scans per component */
+  }
+
+  /* Allocate space for script.
+   * We need to put it in the permanent pool in case the application performs
+   * multiple compressions without changing the settings.  To avoid a memory
+   * leak if jpeg_simple_progression is called repeatedly for the same JPEG
+   * object, we try to re-use previously allocated space, and we allocate
+   * enough space to handle YCbCr even if initially asked for grayscale.
+   */
+  if (cinfo->script_space == NULL || cinfo->script_space_size < nscans) {
+    cinfo->script_space_size = MAX(nscans, 10);
+    cinfo->script_space = (jpeg_scan_info *)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+			cinfo->script_space_size * SIZEOF(jpeg_scan_info));
+  }
+  scanptr = cinfo->script_space;
+  cinfo->scan_info = scanptr;
+  cinfo->num_scans = nscans;
+
+  if (ncomps == 3 && cinfo->jpeg_color_space == JCS_YCbCr) {
+    /* Custom script for YCbCr color images. */
+    /* Initial DC scan */
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+    /* Initial AC scan: get some luma data out in a hurry */
+    scanptr = fill_a_scan(scanptr, 0, 1, 5, 0, 2);
+    /* Chroma data is too small to be worth expending many scans on */
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 0, 1);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 0, 1);
+    /* Complete spectral selection for luma AC */
+    scanptr = fill_a_scan(scanptr, 0, 6, 63, 0, 2);
+    /* Refine next bit of luma AC */
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 2, 1);
+    /* Finish DC successive approximation */
+    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+    /* Finish AC successive approximation */
+    scanptr = fill_a_scan(scanptr, 2, 1, 63, 1, 0);
+    scanptr = fill_a_scan(scanptr, 1, 1, 63, 1, 0);
+    /* Luma bottom bit comes last since it's usually largest scan */
+    scanptr = fill_a_scan(scanptr, 0, 1, 63, 1, 0);
+  } else {
+    /* All-purpose script for other color spaces. */
+    /* Successive approximation first pass */
+    scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
+    scanptr = fill_scans(scanptr, ncomps, 1, 5, 0, 2);
+    scanptr = fill_scans(scanptr, ncomps, 6, 63, 0, 2);
+    /* Successive approximation second pass */
+    scanptr = fill_scans(scanptr, ncomps, 1, 63, 2, 1);
+    /* Successive approximation final pass */
+    scanptr = fill_dc_scans(scanptr, ncomps, 1, 0);
+    scanptr = fill_scans(scanptr, ncomps, 1, 63, 1, 0);
+  }
+}
+
+#endif /* C_PROGRESSIVE_SUPPORTED */

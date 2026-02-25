@@ -1,261 +1,252 @@
-/* ASM dump from: jerror.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jerror.c */
+/*
+ * jerror.c
+ *
+ * Copyright (C) 1991-1998, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains simple error-reporting and trace-message routines.
+ * These are suitable for Unix-like systems and others where writing to
+ * stderr is the right thing to do.  Many applications will want to replace
+ * some or all of these routines.
+ *
+ * If you define USE_WINDOWS_MESSAGEBOX in jconfig.h or in the makefile,
+ * you get a Windows-specific hack to display error messages in a dialog box.
+ * It ain't much, but it beats dropping error messages into the bit bucket,
+ * which is what happens to output to stderr under most Windows C compilers.
+ *
+ * These routines are used by both the compression and decompression code.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+/* this is not a core library module, so it doesn't define JPEG_INTERNALS */
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jversion.h"
+#include "jerror.h"
 
-extern const const char * jpeg_std_message_table[125]; /* 0x0 */
+#ifdef USE_WINDOWS_MESSAGEBOX
+#include <windows.h>
+#endif
 
-static void error_exit(j_common_ptr cinfo);
-static void output_message(j_common_ptr cinfo);
-static void emit_message(j_common_ptr cinfo, int msg_level);
-static void format_message(j_common_ptr cinfo, char *buffer);
-static void reset_error_mgr(j_common_ptr cinfo);
-jpeg_error_mgr * jpeg_std_error(jpeg_error_mgr *err, void (*exit)(), void (*printf)());
+#ifndef EXIT_FAILURE		/* define exit() codes if not provided */
+#define EXIT_FAILURE  1
+#endif
 
-/* line 71 */
-static __attribute__((naked))
-void error_exit(j_common_ptr cinfo)
+
+/*
+ * Create the message string table.
+ * We do this from the master message list in jerror.h by re-reading
+ * jerror.h with a suitable definition for macro JMESSAGE.
+ * The message table is made an external symbol just in case any applications
+ * want to refer to it directly.
+ */
+
+#ifdef NEED_SHORT_EXTERNAL_NAMES
+#define jpeg_std_message_table	jMsgTable
+#endif
+
+#define JMESSAGE(code,string)	string ,
+
+const char * const jpeg_std_message_table[] = {
+#include "jerror.h"
+  NULL
+};
+
+
+/*
+ * Error exit handler: must not return to caller.
+ *
+ * Applications may override this if they want to get control back after
+ * an error.  Typically one would longjmp somewhere instead of exiting.
+ * The setjmp buffer can be made a private field within an expanded error
+ * handler object.  Note that the info needed to generate an error message
+ * is stored in the error object, so you can generate the message now or
+ * later, at your convenience.
+ * You should make sure that the JPEG object is cleaned up (with jpeg_abort
+ * or jpeg_destroy) at some point.
+ */
+
+METHODDEF(void)
+error_exit (j_common_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 71 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl (%esi), %eax\n" /* line 73 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *8(%eax)\n"
-        "movl %esi, (%esp)\n" /* line 76 | cinfo */
-        "calll jpeg_destroy\n"
-        "movl (%esi), %eax\n" /* line 78 | cinfo */
-        "movl 0x84(%eax), %ecx\n"
-        "addl $0x14, %esp\n" /* line 79 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 78 */
-    );
+  /* Always display the message */
+  (*cinfo->err->output_message) (cinfo);
+
+  /* Let the memory manager delete any temp files before we die */
+  jpeg_destroy(cinfo);
+
+  exit(EXIT_FAILURE);
 }
 
-/* line 99 */
-static __attribute__((naked))
-void output_message(j_common_ptr cinfo)
+
+/*
+ * Actual output of an error or trace message.
+ * Applications may override this method to send JPEG messages somewhere
+ * other than stderr.
+ *
+ * On Windows, printing to stderr is generally completely useless,
+ * so we provide optional code to produce an error-dialog popup.
+ * Most Windows applications will still prefer to override this routine,
+ * but if they don't, it'll do something at least marginally useful.
+ *
+ * NOTE: to use the library in an environment that doesn't support the
+ * C stdio library, you may have to delete the call to fprintf() entirely,
+ * not just not use this routine.
+ */
+
+METHODDEF(void)
+output_message (j_common_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 99 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0xe0, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "movl (%esi), %eax\n" /* line 103 | cinfo */
-        "leal -0xd0(%ebp), %edi\n" /* buffer */
-        "movl %edi, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *0xc(%eax)\n"
-        "movl (%esi), %eax\n" /* line 110 | cinfo */
-        "movl %edi, (%esp)\n"
-        "calll *0x88(%eax)\n"
-        "addl $0xe0, %esp\n" /* line 112 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  char buffer[JMSG_LENGTH_MAX];
+
+  /* Create the message */
+  (*cinfo->err->format_message) (cinfo, buffer);
+
+#ifdef USE_WINDOWS_MESSAGEBOX
+  /* Display it in a message dialog box */
+  MessageBox(GetActiveWindow(), buffer, "JPEG Library Error",
+	     MB_OK | MB_ICONERROR);
+#else
+  /* Send it to stderr, adding a newline */
+  fprintf(stderr, "%s\n", buffer);
+#endif
 }
 
-/* line 128 */
-static __attribute__((naked))
-void emit_message(j_common_ptr cinfo, int msg_level)
+
+/*
+ * Decide whether to emit a trace or warning message.
+ * msg_level is one of:
+ *   -1: recoverable corrupt-data warning, may want to abort.
+ *    0: important advisory messages (always display to user).
+ *    1: first level of tracing detail.
+ *    2,3,...: successively more detailed tracing messages.
+ * An application might override this method if it wanted to abort on warnings
+ * or change the policy about which messages to display.
+ */
+
+METHODDEF(void)
+emit_message (j_common_ptr cinfo, int msg_level)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 128 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "movl 0xc(%ebp), %eax\n" /* msg_level */
-        "movl (%edx), %esi\n" /* line 129 | err */
-        "testl %eax, %eax\n" /* line 131 */
-        "js .Lf1f8f0a_001f8f35\n"
-        "cmpl 0x68(%esi), %eax\n" /* line 142 | err */
-        "jle .Lf1f8f0a_001f8f28\n"
-        "addl $0x14, %esp\n" /* line 145 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f8f0a_001f8f28:\n"
-        "movl %edx, 8(%ebp)\n" /* line 143 | cinfo */
-        "movl 8(%esi), %ecx\n" /* err */
-        "addl $0x14, %esp\n" /* line 145 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 143 */
-        ".Lf1f8f0a_001f8f35:\n"
-        "movl 0x6c(%esi), %eax\n" /* line 136 | err */
-        "testl %eax, %eax\n"
-        "je .Lf1f8f0a_001f8f42\n"
-        "cmpl $2, 0x68(%esi)\n" /* err */
-        "jle .Lf1f8f0a_001f8f48\n"
-        ".Lf1f8f0a_001f8f42:\n"
-        "movl %edx, (%esp)\n" /* line 137 */
-        "calll *8(%esi)\n" /* err */
-        ".Lf1f8f0a_001f8f48:\n"
-        "addl $1, 0x6c(%esi)\n" /* line 139 | err */
-        "addl $0x14, %esp\n" /* line 145 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  struct jpeg_error_mgr * err = cinfo->err;
+
+  if (msg_level < 0) {
+    /* It's a warning message.  Since corrupt files may generate many warnings,
+     * the policy implemented here is to show only the first warning,
+     * unless trace_level >= 3.
+     */
+    if (err->num_warnings == 0 || err->trace_level >= 3)
+      (*err->output_message) (cinfo);
+    /* Always count warnings in num_warnings. */
+    err->num_warnings++;
+  } else {
+    /* It's a trace message.  Show it if trace_level >= msg_level. */
+    if (err->trace_level >= msg_level)
+      (*err->output_message) (cinfo);
+  }
 }
 
-/* line 157 */
-static __attribute__((naked))
-void format_message(j_common_ptr cinfo, char *buffer)
+
+/*
+ * Format a message string for the most recent JPEG error or message.
+ * The message is stored into buffer, which should be at least JMSG_LENGTH_MAX
+ * characters.  Note that no '\n' character is added to the string.
+ * Few applications should need to override this method.
+ */
+
+METHODDEF(void)
+format_message (j_common_ptr cinfo, char * buffer)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 157 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 158 | cinfo */
-        "movl (%eax), %ecx\n" /* err */
-        "movl 0x14(%ecx), %edx\n" /* line 159 | msg_code */
-        "testl %edx, %edx\n" /* line 166 */
-        "jle .Lf1f8f52_001f8fd9\n"
-        "cmpl 0x74(%ecx), %edx\n"
-        "jg .Lf1f8f52_001f8fd9\n"
-        "movl 0x70(%ecx), %eax\n" /* line 167 */
-        "movl (%eax, %edx, 4), %esi\n" /* msgtext */
-        ".Lf1f8f52_001f8f71:\n"
-        "testl %esi, %esi\n" /* line 175 | msgtext */
-        "je .Lf1f8f52_001f8fef\n"
-        ".Lf1f8f52_001f8f75:\n"
-        "movl %esi, %eax\n" /* line 177 | msgtext */
-        ".Lf1f8f52_001f8f77:\n"
-        "movzbl (%eax), %edx\n" /* line 183 */
-        "addl $1, %eax\n"
-        "testb %dl, %dl\n"
-        "je .Lf1f8f52_001f8f8b\n"
-        "cmpb $0x25, %dl\n" /* line 184 */
-        "jne .Lf1f8f52_001f8f77\n"
-        "cmpb $0x73, (%eax)\n" /* line 185 */
-        "je .Lf1f8f52_001f9008\n"
-        ".Lf1f8f52_001f8f8b:\n"
-        "movl 0x34(%ecx), %eax\n" /* line 194 */
-        "movl %eax, 0x24(%esp)\n"
-        "movl 0x30(%ecx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x2c(%ecx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x28(%ecx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x24(%ecx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x20(%ecx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x1c(%ecx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ecx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* msgtext */
-        "movl 0xc(%ebp), %edi\n" /* buffer */
-        "movl %edi, (%esp)\n"
-        "calll sprintf\n"
-        "addl $0x30, %esp\n" /* line 199 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f8f52_001f8fd9:\n"
-        "movl 0x78(%ecx), %esi\n" /* line 168 | msgtext */
-        "testl %esi, %esi\n" /* msgtext */
-        "je .Lf1f8f52_001f8fef\n"
-        "movl 0x7c(%ecx), %eax\n"
-        "cmpl %eax, %edx\n"
-        "jl .Lf1f8f52_001f8fef\n"
-        "cmpl 0x80(%ecx), %edx\n"
-        "jle .Lf1f8f52_001f8ffc\n"
-        ".Lf1f8f52_001f8fef:\n"
-        "movl %edx, 0x18(%ecx)\n" /* line 176 */
-        "movl 0x70(%ecx), %eax\n" /* line 177 */
-        "movl (%eax), %esi\n" /* msgtext */
-        "jmp .Lf1f8f52_001f8f75\n"
-        ".Lf1f8f52_001f8ffc:\n"
-        "movl %edx, %edi\n" /* line 171 */
-        "subl %eax, %edi\n"
-        "movl (%esi, %edi, 4), %esi\n" /* msgtext */
-        "jmp .Lf1f8f52_001f8f71\n"
-        ".Lf1f8f52_001f9008:\n"
-        "leal 0x18(%ecx), %eax\n" /* line 192 */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* msgtext */
-        "movl 0xc(%ebp), %eax\n" /* buffer */
-        "movl %eax, (%esp)\n"
-        "calll sprintf\n"
-        "addl $0x30, %esp\n" /* line 199 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  struct jpeg_error_mgr * err = cinfo->err;
+  int msg_code = err->msg_code;
+  const char * msgtext = NULL;
+  const char * msgptr;
+  char ch;
+  boolean isstring;
+
+  /* Look up message string in proper table */
+  if (msg_code > 0 && msg_code <= err->last_jpeg_message) {
+    msgtext = err->jpeg_message_table[msg_code];
+  } else if (err->addon_message_table != NULL &&
+	     msg_code >= err->first_addon_message &&
+	     msg_code <= err->last_addon_message) {
+    msgtext = err->addon_message_table[msg_code - err->first_addon_message];
+  }
+
+  /* Defend against bogus message number */
+  if (msgtext == NULL) {
+    err->msg_parm.i[0] = msg_code;
+    msgtext = err->jpeg_message_table[0];
+  }
+
+  /* Check for string parameter, as indicated by %s in the message text */
+  isstring = FALSE;
+  msgptr = msgtext;
+  while ((ch = *msgptr++) != '\0') {
+    if (ch == '%') {
+      if (*msgptr == 's') isstring = TRUE;
+      break;
+    }
+  }
+
+  /* Format the message into the passed buffer */
+  if (isstring)
+    sprintf(buffer, msgtext, err->msg_parm.s);
+  else
+    sprintf(buffer, msgtext,
+	    err->msg_parm.i[0], err->msg_parm.i[1],
+	    err->msg_parm.i[2], err->msg_parm.i[3],
+	    err->msg_parm.i[4], err->msg_parm.i[5],
+	    err->msg_parm.i[6], err->msg_parm.i[7]);
 }
 
-/* line 212 */
-static __attribute__((naked))
-void reset_error_mgr(j_common_ptr cinfo)
+
+/*
+ * Reset error state variables at start of a new image.
+ * This is called during compression startup to reset trace/error
+ * processing to default state, without losing any application-specific
+ * method pointers.  An application might possibly want to override
+ * this method if it has additional error processing state.
+ */
+
+METHODDEF(void)
+reset_error_mgr (j_common_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 212 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl (%eax), %edx\n" /* line 213 */
-        "movl $0, 0x6c(%edx)\n"
-        "movl (%eax), %eax\n" /* line 215 */
-        "movl $0, 0x14(%eax)\n"
-        "popl %ebp\n" /* line 216 */
-        "retl\n"
-    );
+  cinfo->err->num_warnings = 0;
+  /* trace_level is not reset since it is an application-supplied parameter */
+  cinfo->err->msg_code = 0;	/* may be useful as a flag for "no error" */
 }
 
-/* line 231 */
-__attribute__((naked))
-jpeg_error_mgr * jpeg_std_error(jpeg_error_mgr *err, void (*exit)(), void (*printf)())
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 231 */
-        "movl %esp, %ebp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %eax\n" /* err */
-        "leal -0x19b(%ecx), %edx\n" /* line 232 */
-        "movl %edx, (%eax)\n"
-        "leal -0x13d(%ecx), %edx\n" /* line 233 */
-        "movl %edx, 4(%eax)\n"
-        "leal -0x172(%ecx), %edx\n" /* line 234 */
-        "movl %edx, 8(%eax)\n"
-        "leal -0xf5(%ecx), %edx\n" /* line 235 */
-        "movl %edx, 0xc(%eax)\n"
-        "leal -0x22(%ecx), %edx\n" /* line 236 */
-        "movl %edx, 0x10(%eax)\n"
-        "movl $0, 0x68(%eax)\n" /* line 238 */
-        "movl $0, 0x6c(%eax)\n" /* line 239 */
-        "movl $0, 0x14(%eax)\n" /* line 240 */
-        "leal 0x13b459(%ecx), %edx\n" /* line 243 */
-        "movl %edx, 0x70(%eax)\n"
-        "movl $0x7b, 0x74(%eax)\n" /* line 244 */
-        "movl $0, 0x78(%eax)\n" /* line 246 */
-        "movl $0, 0x7c(%eax)\n" /* line 247 */
-        "movl $0, 0x80(%eax)\n" /* line 248 */
-        "movl 0xc(%ebp), %edx\n" /* line 250 | exit */
-        "movl %edx, 0x84(%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 251 | printf */
-        "movl %edx, 0x88(%eax)\n"
-        "popl %ebp\n" /* line 254 */
-        "retl\n"
-    );
-}
 
+/*
+ * Fill in the standard error-handling methods in a jpeg_error_mgr object.
+ * Typical call is:
+ *	struct jpeg_compress_struct cinfo;
+ *	struct jpeg_error_mgr err;
+ *
+ *	cinfo.err = jpeg_std_error(&err);
+ * after which the application may override some of the methods.
+ */
+
+GLOBAL(struct jpeg_error_mgr *)
+jpeg_std_error (struct jpeg_error_mgr * err)
+{
+  err->error_exit = error_exit;
+  err->emit_message = emit_message;
+  err->output_message = output_message;
+  err->format_message = format_message;
+  err->reset_error_mgr = reset_error_mgr;
+
+  err->trace_level = 0;		/* default = no tracing */
+  err->num_warnings = 0;	/* no warnings emitted yet */
+  err->msg_code = 0;		/* may be useful as a flag for "no error" */
+
+  /* Initialize message table pointers */
+  err->jpeg_message_table = jpeg_std_message_table;
+  err->last_jpeg_message = (int) JMSG_LASTMSGCODE - 1;
+
+  err->addon_message_table = NULL;
+  err->first_addon_message = 0;	/* for safety */
+  err->last_addon_message = 0;
+
+  return err;
+}

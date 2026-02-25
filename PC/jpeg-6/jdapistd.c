@@ -1,275 +1,275 @@
-/* ASM dump from: jdapistd.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jdapistd.c */
+/*
+ * jdapistd.c
+ *
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains application interface code for the decompression half
+ * of the JPEG library.  These are the "standard" API routines that are
+ * used in the normal full-decompression case.  They are not used by a
+ * transcoding-only application.  Note that if an application links in
+ * jpeg_start_decompress, it will end up linking in the entire decompressor.
+ * We thus must separate this file from jdapimin.c to avoid linking the
+ * whole decompression library into a transcoder.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-static boolean output_pass_setup(void);
-boolean jpeg_start_decompress(j_decompress_ptr cinfo);
-JDIMENSION jpeg_read_scanlines(j_decompress_ptr cinfo, JSAMPARRAY scanlines, JDIMENSION max_lines, j_decompress_ptr cinfo_3, JSAMPIMAGE data, JDIMENSION max_lines_5);
 
-/* line 96 */
-static __attribute__((naked))
-boolean output_pass_setup(void)
+/* Forward declarations */
+LOCAL(boolean) output_pass_setup JPP((j_decompress_ptr cinfo));
+
+
+/*
+ * Decompression initialization.
+ * jpeg_read_header must be completed before calling this.
+ *
+ * If a multipass operating mode was selected, this will do all but the
+ * last pass, and thus may take a great deal of time.
+ *
+ * Returns FALSE if suspended.  The return value need be inspected only if
+ * a suspending data source is used.
+ */
+
+GLOBAL(boolean)
+jpeg_start_decompress (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 96 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x10, %esp\n"
-        "movl %eax, %esi\n" /* cinfo */
-        "cmpl $0xcc, 0x14(%eax)\n" /* line 97 */
-        "je .Lf1f7fd8_001f8007\n"
-        "movl 0x188(%eax), %eax\n" /* line 99 */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "movl $0, 0x80(%esi)\n" /* line 100 | cinfo */
-        "movl $0xcc, 0x14(%esi)\n" /* line 101 | cinfo */
-        ".Lf1f7fd8_001f8007:\n"
-        "movl 0x188(%esi), %eax\n" /* line 104 | cinfo */
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1f7fd8_001f8076\n"
-        ".Lf1f7fd8_001f8013:\n"
-        "movl 0x80(%esi), %edi\n" /* line 107 | cinfo */
-        "cmpl 0x68(%esi), %edi\n" /* cinfo */
-        "jae .Lf1f7fd8_001f8097\n"
-        "movl 8(%esi), %eax\n" /* line 110 | cinfo */
-        "testl %eax, %eax\n"
-        "je .Lf1f7fd8_001f803f\n"
-        "movl %edi, 4(%eax)\n" /* line 111 */
-        "movl 8(%esi), %eax\n" /* line 112 | cinfo */
-        "movl 0x68(%esi), %edx\n" /* cinfo */
-        "movl %edx, 8(%eax)\n"
-        "movl 8(%esi), %eax\n" /* line 113 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "movl 0x80(%esi), %edi\n" /* cinfo */
-        ".Lf1f7fd8_001f803f:\n"
-        "movl 0x18c(%esi), %edx\n" /* line 117 | cinfo */
-        "movl $0, 0xc(%esp)\n"
-        "leal 0x80(%esi), %eax\n" /* cinfo */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%edx)\n"
-        "cmpl 0x80(%esi), %edi\n" /* line 119 | cinfo */
-        "jne .Lf1f7fd8_001f8013\n"
-        "xorl %eax, %eax\n"
-        "addl $0x10, %esp\n" /* line 135 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f7fd8_001f8076:\n"
-        "cmpb $0, 0x49(%esi)\n" /* line 133 | cinfo */
-        "je .Lf1f7fd8_001f8090\n"
-        "movl $0xce, %eax\n"
-        ".Lf1f7fd8_001f8081:\n"
-        "movl %eax, 0x14(%esi)\n" /* cinfo */
-        "movl $1, %eax\n"
-        "addl $0x10, %esp\n" /* line 135 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f7fd8_001f8090:\n"
-        "movl $0xcd, %eax\n" /* line 133 */
-        "jmp .Lf1f7fd8_001f8081\n"
-        ".Lf1f7fd8_001f8097:\n"
-        "movl 0x188(%esi), %eax\n" /* line 123 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%eax)\n"
-        "movl 0x188(%esi), %eax\n" /* line 124 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "movl $0, 0x80(%esi)\n" /* line 125 | cinfo */
-        "jmp .Lf1f7fd8_001f8007\n"
-    );
+  if (cinfo->global_state == DSTATE_READY) {
+    /* First call: initialize master control, select active modules */
+    jinit_master_decompress(cinfo);
+    if (cinfo->buffered_image) {
+      /* No more work here; expecting jpeg_start_output next */
+      cinfo->global_state = DSTATE_BUFIMAGE;
+      return TRUE;
+    }
+    cinfo->global_state = DSTATE_PRELOAD;
+  }
+  if (cinfo->global_state == DSTATE_PRELOAD) {
+    /* If file has multiple scans, absorb them all into the coef buffer */
+    if (cinfo->inputctl->has_multiple_scans) {
+#ifdef D_MULTISCAN_FILES_SUPPORTED
+      for (;;) {
+	int retcode;
+	/* Call progress monitor hook if present */
+	if (cinfo->progress != NULL)
+	  (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+	/* Absorb some more input */
+	retcode = (*cinfo->inputctl->consume_input) (cinfo);
+	if (retcode == JPEG_SUSPENDED)
+	  return FALSE;
+	if (retcode == JPEG_REACHED_EOI)
+	  break;
+	/* Advance progress counter if appropriate */
+	if (cinfo->progress != NULL &&
+	    (retcode == JPEG_ROW_COMPLETED || retcode == JPEG_REACHED_SOS)) {
+	  if (++cinfo->progress->pass_counter >= cinfo->progress->pass_limit) {
+	    /* jdmaster underestimated number of scans; ratchet up one scan */
+	    cinfo->progress->pass_limit += (long) cinfo->total_iMCU_rows;
+	  }
+	}
+      }
+#else
+      ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif /* D_MULTISCAN_FILES_SUPPORTED */
+    }
+    cinfo->output_scan_number = cinfo->input_scan_number;
+  } else if (cinfo->global_state != DSTATE_PRESCAN)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  /* Perform any dummy output passes, and set up for the final pass */
+  return output_pass_setup(cinfo);
 }
 
-/* line 39 */
-__attribute__((naked))
-boolean jpeg_start_decompress(j_decompress_ptr cinfo)
+
+/*
+ * Set up for an output pass, and perform any dummy pass(es) needed.
+ * Common subroutine for jpeg_start_decompress and jpeg_start_output.
+ * Entry: global_state = DSTATE_PRESCAN only if previously suspended.
+ * Exit: If done, returns TRUE and sets global_state for proper output mode.
+ *       If suspended, returns FALSE and sets global_state = DSTATE_PRESCAN.
+ */
+
+LOCAL(boolean)
+output_pass_setup (j_decompress_ptr cinfo)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 39 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "cmpl $0xca, 0x14(%esi)\n" /* line 40 | cinfo */
-        "je .Lf1f80bd_001f8179\n"
-        ".Lf1f80bd_001f80d4:\n"
-        "movl 0x14(%esi), %eax\n" /* line 50 | cinfo */
-        "cmpl $0xcb, %eax\n"
-        "je .Lf1f80bd_001f810d\n"
-        "cmpl $0xcc, %eax\n" /* line 79 */
-        "je .Lf1f80bd_001f80fd\n"
-        "movl (%esi), %eax\n" /* line 80 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%esi), %edx\n" /* cinfo */
-        "movl 0x14(%esi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f80bd_001f80fd:\n"
-        "movl %esi, %eax\n" /* line 82 | cinfo */
-        "calll output_pass_setup\n"
-        "movzbl %al, %eax\n"
-        ".Lf1f80bd_001f8107:\n"
-        "addl $0x14, %esp\n" /* line 83 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f80bd_001f810d:\n"
-        "movl 0x198(%esi), %eax\n" /* line 52 | cinfo */
-        "cmpb $0, 0x10(%eax)\n"
-        "je .Lf1f80bd_001f816b\n"
-        "movl 8(%esi), %edx\n" /* cinfo */
-        /* { scope 1 */
-        ".Lf1f80bd_001f811c:\n"
-        "testl %edx, %edx\n" /* line 57 */
-        "je .Lf1f80bd_001f8125\n"
-        "movl %esi, (%esp)\n" /* line 58 | cinfo */
-        "calll *(%edx)\n"
-        ".Lf1f80bd_001f8125:\n"
-        "movl 0x198(%esi), %eax\n" /* line 60 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        "testl %eax, %eax\n" /* line 61 */
-        "je .Lf1f80bd_001f81a4\n"
-        "cmpl $2, %eax\n" /* line 63 */
-        "je .Lf1f80bd_001f816b\n"
-        "movl 8(%esi), %edx\n" /* line 66 | cinfo */
-        "testl %edx, %edx\n"
-        "je .Lf1f80bd_001f8125\n"
-        "cmpl $3, %eax\n"
-        "je .Lf1f80bd_001f814a\n"
-        "subl $1, %eax\n"
-        "jne .Lf1f80bd_001f811c\n"
-        ".Lf1f80bd_001f814a:\n"
-        "movl 4(%edx), %eax\n" /* line 68 */
-        "addl $1, %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%esi), %edx\n" /* cinfo */
-        "movl 8(%edx), %ecx\n"
-        "cmpl %ecx, %eax\n"
-        "jl .Lf1f80bd_001f811c\n"
-        "addl 0x124(%esi), %ecx\n" /* line 70 | cinfo */
-        "movl %ecx, 8(%edx)\n"
-        "movl 8(%esi), %edx\n" /* cinfo */
-        "jmp .Lf1f80bd_001f811c\n"
-        /* } scope */
-        ".Lf1f80bd_001f816b:\n"
-        "movl 0x84(%esi), %eax\n" /* line 78 | cinfo */
-        "movl %eax, 0x8c(%esi)\n" /* cinfo */
-        "jmp .Lf1f80bd_001f80fd\n"
-        ".Lf1f80bd_001f8179:\n"
-        "movl %esi, (%esp)\n" /* line 42 | cinfo */
-        "calll jinit_master_decompress\n"
-        "cmpb $0, 0x48(%esi)\n" /* line 43 | cinfo */
-        "je .Lf1f80bd_001f8198\n"
-        "movl $0xcf, 0x14(%esi)\n" /* line 45 | cinfo */
-        "movl $1, %eax\n"
-        "jmp .Lf1f80bd_001f8107\n"
-        ".Lf1f80bd_001f8198:\n"
-        "movl $0xcb, 0x14(%esi)\n" /* line 48 | cinfo */
-        "jmp .Lf1f80bd_001f80d4\n"
-        /* { scope 1 */
-        ".Lf1f80bd_001f81a4:\n"
-        "xorl %eax, %eax\n" /* line 61 */
-        "jmp .Lf1f80bd_001f8107\n"
-    );
+  if (cinfo->global_state != DSTATE_PRESCAN) {
+    /* First call: do pass setup */
+    (*cinfo->master->prepare_for_output_pass) (cinfo);
+    cinfo->output_scanline = 0;
+    cinfo->global_state = DSTATE_PRESCAN;
+  }
+  /* Loop over any required dummy passes */
+  while (cinfo->master->is_dummy_pass) {
+#ifdef QUANT_2PASS_SUPPORTED
+    /* Crank through the dummy pass */
+    while (cinfo->output_scanline < cinfo->output_height) {
+      JDIMENSION last_scanline;
+      /* Call progress monitor hook if present */
+      if (cinfo->progress != NULL) {
+	cinfo->progress->pass_counter = (long) cinfo->output_scanline;
+	cinfo->progress->pass_limit = (long) cinfo->output_height;
+	(*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+      }
+      /* Process some data */
+      last_scanline = cinfo->output_scanline;
+      (*cinfo->main->process_data) (cinfo, (JSAMPARRAY) NULL,
+				    &cinfo->output_scanline, (JDIMENSION) 0);
+      if (cinfo->output_scanline == last_scanline)
+	return FALSE;		/* No progress made, must suspend */
+    }
+    /* Finish up dummy pass, and set up for another one */
+    (*cinfo->master->finish_output_pass) (cinfo);
+    (*cinfo->master->prepare_for_output_pass) (cinfo);
+    cinfo->output_scanline = 0;
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif /* QUANT_2PASS_SUPPORTED */
+  }
+  /* Ready for application to drive output pass through
+   * jpeg_read_scanlines or jpeg_read_raw_data.
+   */
+  cinfo->global_state = cinfo->raw_data_out ? DSTATE_RAW_OK : DSTATE_SCANNING;
+  return TRUE;
 }
 
-/* line 154 */
-__attribute__((naked))
-JDIMENSION jpeg_read_scanlines(j_decompress_ptr cinfo, JSAMPARRAY scanlines, JDIMENSION max_lines, j_decompress_ptr cinfo_3, JSAMPIMAGE data, JDIMENSION max_lines_5)
+
+/*
+ * Read some scanlines of data from the JPEG decompressor.
+ *
+ * The return value will be the number of lines actually read.
+ * This may be less than the number requested in several cases,
+ * including bottom of image, data source suspension, and operating
+ * modes that emit multiple scanlines at a time.
+ *
+ * Note: we warn about excess calls to jpeg_read_scanlines() since
+ * this likely signals an application programmer error.  However,
+ * an oversize buffer (max_lines > scanlines remaining) is not an error.
+ */
+
+GLOBAL(JDIMENSION)
+jpeg_read_scanlines (j_decompress_ptr cinfo, JSAMPARRAY scanlines,
+		     JDIMENSION max_lines)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 154 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "cmpl $0xcd, 0x14(%esi)\n" /* line 157 | cinfo */
-        "je .Lf1f81ab_001f81d6\n"
-        "movl (%esi), %eax\n" /* line 158 | cinfo */
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%esi), %edx\n" /* cinfo */
-        "movl 0x14(%esi), %eax\n" /* cinfo */
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f81ab_001f81d6:\n"
-        "movl 0x80(%esi), %edx\n" /* line 159 | cinfo */
-        "cmpl 0x68(%esi), %edx\n" /* cinfo */
-        "jae .Lf1f81ab_001f8233\n"
-        "movl 8(%esi), %eax\n" /* line 165 | cinfo */
-        "testl %eax, %eax\n"
-        "je .Lf1f81ab_001f81fc\n"
-        "movl %edx, 4(%eax)\n" /* line 166 */
-        "movl 8(%esi), %eax\n" /* line 167 | cinfo */
-        "movl 0x68(%esi), %edx\n" /* cinfo */
-        "movl %edx, 8(%eax)\n"
-        "movl 8(%esi), %eax\n" /* line 168 | cinfo */
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *(%eax)\n"
-        ".Lf1f81ab_001f81fc:\n"
-        "movl $0, -0xc(%ebp)\n" /* line 172 | row_ctr */
-        "movl 0x18c(%esi), %edx\n" /* line 173 | cinfo */
-        "movl 0x10(%ebp), %eax\n" /* max_lines */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0xc(%ebp), %eax\n" /* row_ctr */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* scanlines */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%edx)\n"
-        "movl -0xc(%ebp), %eax\n" /* line 174 | row_ctr */
-        "addl %eax, 0x80(%esi)\n" /* cinfo */
-        "addl $0x24, %esp\n" /* line 176 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1f81ab_001f8233:\n"
-        "movl (%esi), %eax\n" /* line 160 | cinfo */
-        "movl $0x7b, 0x14(%eax)\n"
-        "movl (%esi), %eax\n" /* cinfo */
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* cinfo */
-        "calll *4(%eax)\n"
-        "xorl %eax, %eax\n"
-        "addl $0x24, %esp\n" /* line 176 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        "pushl %ebp\n"
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %edi\n" /* cinfo */
-        "movl 0xc(%ebp), %esi\n" /* scanlines, cinfo */
-        "movzbl 0x18(%ebp), %eax\n"
-        "movb %al, -9(%ebp)\n"
-        "cmpl $0x64, 0x14(%edi)\n"
-        "je .Lf1f81ab_001f8287\n"
-        "movl (%edi), %eax\n"
-        "movl $0x14, 0x14(%eax)\n"
-        "movl (%edi), %edx\n"
-        "movl 0x14(%edi), %eax\n"
-        "movl %eax, 0x18(%edx)\n"
-        "movl (%edi), %eax\n"
-        "movl %edi, (%esp)\n"
-        "calll *(%eax)\n"
-        ".Lf1f81ab_001f8287:\n"
-        "cmpl $3, %esi\n" /* cinfo */
-        "ja 0x1f8310\n"
-    );
+  JDIMENSION row_ctr;
+
+  if (cinfo->global_state != DSTATE_SCANNING)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  if (cinfo->output_scanline >= cinfo->output_height) {
+    WARNMS(cinfo, JWRN_TOO_MUCH_DATA);
+    return 0;
+  }
+
+  /* Call progress monitor hook if present */
+  if (cinfo->progress != NULL) {
+    cinfo->progress->pass_counter = (long) cinfo->output_scanline;
+    cinfo->progress->pass_limit = (long) cinfo->output_height;
+    (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+  }
+
+  /* Process some data */
+  row_ctr = 0;
+  (*cinfo->main->process_data) (cinfo, scanlines, &row_ctr, max_lines);
+  cinfo->output_scanline += row_ctr;
+  return row_ctr;
 }
 
+
+/*
+ * Alternate entry point to read raw data.
+ * Processes exactly one iMCU row per call, unless suspended.
+ */
+
+GLOBAL(JDIMENSION)
+jpeg_read_raw_data (j_decompress_ptr cinfo, JSAMPIMAGE data,
+		    JDIMENSION max_lines)
+{
+  JDIMENSION lines_per_iMCU_row;
+
+  if (cinfo->global_state != DSTATE_RAW_OK)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  if (cinfo->output_scanline >= cinfo->output_height) {
+    WARNMS(cinfo, JWRN_TOO_MUCH_DATA);
+    return 0;
+  }
+
+  /* Call progress monitor hook if present */
+  if (cinfo->progress != NULL) {
+    cinfo->progress->pass_counter = (long) cinfo->output_scanline;
+    cinfo->progress->pass_limit = (long) cinfo->output_height;
+    (*cinfo->progress->progress_monitor) ((j_common_ptr) cinfo);
+  }
+
+  /* Verify that at least one iMCU row can be returned. */
+  lines_per_iMCU_row = cinfo->max_v_samp_factor * cinfo->min_DCT_scaled_size;
+  if (max_lines < lines_per_iMCU_row)
+    ERREXIT(cinfo, JERR_BUFFER_SIZE);
+
+  /* Decompress directly into user's buffer. */
+  if (! (*cinfo->coef->decompress_data) (cinfo, data))
+    return 0;			/* suspension forced, can do nothing more */
+
+  /* OK, we processed one iMCU row. */
+  cinfo->output_scanline += lines_per_iMCU_row;
+  return lines_per_iMCU_row;
+}
+
+
+/* Additional entry points for buffered-image mode. */
+
+#ifdef D_MULTISCAN_FILES_SUPPORTED
+
+/*
+ * Initialize for an output pass in buffered-image mode.
+ */
+
+GLOBAL(boolean)
+jpeg_start_output (j_decompress_ptr cinfo, int scan_number)
+{
+  if (cinfo->global_state != DSTATE_BUFIMAGE &&
+      cinfo->global_state != DSTATE_PRESCAN)
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  /* Limit scan number to valid range */
+  if (scan_number <= 0)
+    scan_number = 1;
+  if (cinfo->inputctl->eoi_reached &&
+      scan_number > cinfo->input_scan_number)
+    scan_number = cinfo->input_scan_number;
+  cinfo->output_scan_number = scan_number;
+  /* Perform any dummy output passes, and set up for the real pass */
+  return output_pass_setup(cinfo);
+}
+
+
+/*
+ * Finish up after an output pass in buffered-image mode.
+ *
+ * Returns FALSE if suspended.  The return value need be inspected only if
+ * a suspending data source is used.
+ */
+
+GLOBAL(boolean)
+jpeg_finish_output (j_decompress_ptr cinfo)
+{
+  if ((cinfo->global_state == DSTATE_SCANNING ||
+       cinfo->global_state == DSTATE_RAW_OK) && cinfo->buffered_image) {
+    /* Terminate this pass. */
+    /* We do not require the whole pass to have been completed. */
+    (*cinfo->master->finish_output_pass) (cinfo);
+    cinfo->global_state = DSTATE_BUFPOST;
+  } else if (cinfo->global_state != DSTATE_BUFPOST) {
+    /* BUFPOST = repeat call after a suspension, anything else is error */
+    ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
+  }
+  /* Read markers looking for SOS or EOI */
+  while (cinfo->input_scan_number <= cinfo->output_scan_number &&
+	 ! cinfo->inputctl->eoi_reached) {
+    if ((*cinfo->inputctl->consume_input) (cinfo) == JPEG_SUSPENDED)
+      return FALSE;		/* Suspend, come back later */
+  }
+  cinfo->global_state = DSTATE_BUFIMAGE;
+  return TRUE;
+}
+
+#endif /* D_MULTISCAN_FILES_SUPPORTED */

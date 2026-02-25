@@ -1,766 +1,512 @@
-/* ASM dump from: jdmainct.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jdmainct.c */
+/*
+ * jdmainct.c
+ *
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains the main buffer controller for decompression.
+ * The main buffer lies between the JPEG decompressor proper and the
+ * post-processor; it holds downsampled data in the JPEG colorspace.
+ *
+ * Note that this code is bypassed in raw-data mode, since the application
+ * supplies the equivalent of the main buffer in that case.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
 
-static void start_pass_main(j_decompress_ptr cinfo, J_BUF_MODE pass_mode);
-static void process_data_simple_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
-static void process_data_context_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
-static void process_data_crank_post(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail);
-void jinit_d_main_controller(j_decompress_ptr cinfo, int need_full_buffer);
 
-/* line 308 */
-static __attribute__((naked))
-void start_pass_main(j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
+/*
+ * In the current system design, the main buffer need never be a full-image
+ * buffer; any full-height buffers will be found inside the coefficient or
+ * postprocessing controllers.  Nonetheless, the main controller is not
+ * trivial.  Its responsibility is to provide context rows for upsampling/
+ * rescaling, and doing this in an efficient fashion is a bit tricky.
+ *
+ * Postprocessor input data is counted in "row groups".  A row group
+ * is defined to be (v_samp_factor * DCT_scaled_size / min_DCT_scaled_size)
+ * sample rows of each component.  (We require DCT_scaled_size values to be
+ * chosen such that these numbers are integers.  In practice DCT_scaled_size
+ * values will likely be powers of two, so we actually have the stronger
+ * condition that DCT_scaled_size / min_DCT_scaled_size is an integer.)
+ * Upsampling will typically produce max_v_samp_factor pixel rows from each
+ * row group (times any additional scale factor that the upsampler is
+ * applying).
+ *
+ * The coefficient controller will deliver data to us one iMCU row at a time;
+ * each iMCU row contains v_samp_factor * DCT_scaled_size sample rows, or
+ * exactly min_DCT_scaled_size row groups.  (This amount of data corresponds
+ * to one row of MCUs when the image is fully interleaved.)  Note that the
+ * number of sample rows varies across components, but the number of row
+ * groups does not.  Some garbage sample rows may be included in the last iMCU
+ * row at the bottom of the image.
+ *
+ * Depending on the vertical scaling algorithm used, the upsampler may need
+ * access to the sample row(s) above and below its current input row group.
+ * The upsampler is required to set need_context_rows TRUE at global selection
+ * time if so.  When need_context_rows is FALSE, this controller can simply
+ * obtain one iMCU row at a time from the coefficient controller and dole it
+ * out as row groups to the postprocessor.
+ *
+ * When need_context_rows is TRUE, this controller guarantees that the buffer
+ * passed to postprocessing contains at least one row group's worth of samples
+ * above and below the row group(s) being processed.  Note that the context
+ * rows "above" the first passed row group appear at negative row offsets in
+ * the passed buffer.  At the top and bottom of the image, the required
+ * context rows are manufactured by duplicating the first or last real sample
+ * row; this avoids having special cases in the upsampling inner loops.
+ *
+ * The amount of context is fixed at one row group just because that's a
+ * convenient number for this controller to work with.  The existing
+ * upsamplers really only need one sample row of context.  An upsampler
+ * supporting arbitrary output rescaling might wish for more than one row
+ * group of context when shrinking the image; tough, we don't handle that.
+ * (This is justified by the assumption that downsizing will be handled mostly
+ * by adjusting the DCT_scaled_size values, so that the actual scale factor at
+ * the upsample step needn't be much less than one.)
+ *
+ * To provide the desired context, we have to retain the last two row groups
+ * of one iMCU row while reading in the next iMCU row.  (The last row group
+ * can't be processed until we have another row group for its below-context,
+ * and so we have to save the next-to-last group too for its above-context.)
+ * We could do this most simply by copying data around in our buffer, but
+ * that'd be very slow.  We can avoid copying any data by creating a rather
+ * strange pointer structure.  Here's how it works.  We allocate a workspace
+ * consisting of M+2 row groups (where M = min_DCT_scaled_size is the number
+ * of row groups per iMCU row).  We create two sets of redundant pointers to
+ * the workspace.  Labeling the physical row groups 0 to M+1, the synthesized
+ * pointer lists look like this:
+ *                   M+1                          M-1
+ * master pointer --> 0         master pointer --> 0
+ *                    1                            1
+ *                   ...                          ...
+ *                   M-3                          M-3
+ *                   M-2                           M
+ *                   M-1                          M+1
+ *                    M                           M-2
+ *                   M+1                          M-1
+ *                    0                            0
+ * We read alternate iMCU rows using each master pointer; thus the last two
+ * row groups of the previous iMCU row remain un-overwritten in the workspace.
+ * The pointer lists are set up so that the required context rows appear to
+ * be adjacent to the proper places when we pass the pointer lists to the
+ * upsampler.
+ *
+ * The above pictures describe the normal state of the pointer lists.
+ * At top and bottom of the image, we diddle the pointer lists to duplicate
+ * the first or last sample row as necessary (this is cheaper than copying
+ * sample rows around).
+ *
+ * This scheme breaks down if M < 2, ie, min_DCT_scaled_size is 1.  In that
+ * situation each iMCU row provides only one row group so the buffering logic
+ * must be different (eg, we must read two iMCU rows before we can emit the
+ * first row group).  For now, we simply do not support providing context
+ * rows when min_DCT_scaled_size is 1.  That combination seems unlikely to
+ * be worth providing --- if someone wants a 1/8th-size preview, they probably
+ * want it quick and dirty, so a context-free upsampler is sufficient.
+ */
+
+
+/* Private buffer controller object */
+
+typedef struct {
+  struct jpeg_d_main_controller pub; /* public fields */
+
+  /* Pointer to allocated workspace (M or M+2 row groups). */
+  JSAMPARRAY buffer[MAX_COMPONENTS];
+
+  boolean buffer_full;		/* Have we gotten an iMCU row from decoder? */
+  JDIMENSION rowgroup_ctr;	/* counts row groups output to postprocessor */
+
+  /* Remaining fields are only used in the context case. */
+
+  /* These are the master pointers to the funny-order pointer lists. */
+  JSAMPIMAGE xbuffer[2];	/* pointers to weird pointer lists */
+
+  int whichptr;			/* indicates which pointer set is now in use */
+  int context_state;		/* process_data state machine status */
+  JDIMENSION rowgroups_avail;	/* row groups available to postprocessor */
+  JDIMENSION iMCU_row_ctr;	/* counts iMCU rows to detect image top/bot */
+} my_main_controller;
+
+typedef my_main_controller * my_main_ptr;
+
+/* context_state values: */
+#define CTX_PREPARE_FOR_IMCU	0	/* need to prepare for MCU row */
+#define CTX_PROCESS_IMCU	1	/* feeding iMCU to postprocessor */
+#define CTX_POSTPONED_ROW	2	/* feeding postponed row group */
+
+
+/* Forward declarations */
+METHODDEF(void) process_data_simple_main
+	JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
+	     JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
+METHODDEF(void) process_data_context_main
+	JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
+	     JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
+#ifdef QUANT_2PASS_SUPPORTED
+METHODDEF(void) process_data_crank_post
+	JPP((j_decompress_ptr cinfo, JSAMPARRAY output_buf,
+	     JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail));
+#endif
+
+
+LOCAL(void)
+alloc_funny_pointers (j_decompress_ptr cinfo)
+/* Allocate space for the funny pointer lists.
+ * This is done only once, not once per pass.
+ */
 {
-    __asm__ __volatile__ (
-        /* { scope 1: main, ci, M, compptr, ... */
-        "pushl %ebp\n" /* line 308 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x38, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, -0x3c(%ebp)\n" /* cinfo */
-        "movl 0xc(%ebp), %eax\n" /* pass_mode */
-        "movl -0x3c(%ebp), %edx\n" /* line 309 | cinfo */
-        "movl 0x18c(%edx), %edx\n"
-        "movl %edx, -0x38(%ebp)\n" /* main */
-        "testl %eax, %eax\n" /* line 311 */
-        "je .Lf20612c_00206178\n"
-        "cmpl $2, %eax\n"
-        "je .Lf20612c_00206317\n"
-        "movl -0x3c(%ebp), %ecx\n" /* line 333 | cinfo */
-        "movl (%ecx), %eax\n"
-        "movl $4, 0x14(%eax)\n"
-        "movl (%ecx), %eax\n"
-        "movl %ecx, 8(%ebp)\n" /* cinfo */
-        "movl (%eax), %ecx\n"
-        "addl $0x38, %esp\n" /* line 336 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 333 */
-        ".Lf20612c_00206178:\n"
-        "movl -0x3c(%ebp), %ecx\n" /* line 313 | cinfo */
-        "movl 0x1a8(%ecx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf20612c_002061a9\n"
-        "leal 0x1f1(%ebx), %eax\n" /* line 321 */
-        "movl -0x38(%ebp), %esi\n" /* main */
-        "movl %eax, 4(%esi)\n"
-        ".Lf20612c_00206193:\n"
-        "movl -0x38(%ebp), %eax\n" /* line 323 | main */
-        "movb $0, 0x30(%eax)\n"
-        "movl $0, 0x34(%eax)\n" /* line 324 */
-        "addl $0x38, %esp\n" /* line 336 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf20612c_002061a9:\n"
-        "leal 0x287(%ebx), %eax\n" /* line 314 */
-        "movl -0x38(%ebp), %esi\n" /* main */
-        "movl %eax, 4(%esi)\n"
-        /* { scope 2 */
-        "movl 0x18c(%ecx), %eax\n" /* line 203 */
-        "movl %eax, -0x30(%ebp)\n" /* main */
-        "movl 0x120(%ecx), %edx\n" /* line 205 */
-        "movl %edx, -0x28(%ebp)\n" /* M */
-        "movl 0xcc(%ecx), %ecx\n" /* line 209 */
-        "movl %ecx, -0x24(%ebp)\n" /* compptr */
-        "movl -0x3c(%ebp), %esi\n" /* cinfo */
-        "movl 0x2c(%esi), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jle .Lf20612c_002062fa\n"
-        "addl $2, %edx\n"
-        "movl %edx, -0x18(%ebp)\n"
-        "movl %eax, -0x14(%ebp)\n"
-        "movl $0, -0x2c(%ebp)\n" /* ci */
-        "movl -0x3c(%ebp), %esi\n" /* cinfo */
-        ".Lf20612c_002061f1:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 211 | compptr */
-        "movl 0xc(%eax), %ecx\n"
-        "imull 0x24(%eax), %ecx\n"
-        "movl %ecx, %eax\n"
-        "cltd\n"
-        "idivl 0x120(%esi)\n"
-        "movl %eax, -0x40(%ebp)\n"
-        "movl -0x2c(%ebp), %edx\n" /* ci */
-        "shll $2, %edx\n"
-        "movl -0x30(%ebp), %ecx\n" /* line 213 | main */
-        "movl 0x38(%ecx), %eax\n"
-        "movl (%eax, %edx), %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* xbuf0 */
-        "movl 0x3c(%ecx), %eax\n" /* line 214 */
-        "movl (%eax, %edx), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* xbuf1 */
-        "movl -0x14(%ebp), %esi\n" /* line 216 */
-        "movl 8(%esi), %esi\n"
-        "movl %esi, -0x44(%ebp)\n" /* buf */
-        "movl -0x40(%ebp), %edi\n" /* line 217 */
-        "imull -0x18(%ebp), %edi\n"
-        "testl %edi, %edi\n"
-        "jle .Lf20612c_00206258\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf20612c_00206238:\n"
-        "leal (, %ecx, 4), %eax\n" /* line 308 */
-        "movl -0x44(%ebp), %esi\n" /* line 218 | buf */
-        "movl (%esi, %eax), %edx\n"
-        "movl -0x1c(%ebp), %esi\n" /* xbuf1 */
-        "movl %edx, (%esi, %eax)\n"
-        "movl -0x20(%ebp), %esi\n" /* xbuf0 */
-        "movl %edx, (%esi, %eax)\n"
-        "addl $1, %ecx\n" /* line 217 */
-        "cmpl %ecx, %edi\n"
-        "jne .Lf20612c_00206238\n"
-        ".Lf20612c_00206258:\n"
-        "movl -0x40(%ebp), %eax\n" /* line 221 */
-        "addl %eax, %eax\n"
-        "movl %eax, -0x34(%ebp)\n"
-        "testl %eax, %eax\n"
-        "jle .Lf20612c_002062b6\n"
-        "movl -0x28(%ebp), %edx\n" /* line 308 | M */
-        "imull -0x40(%ebp), %edx\n"
-        "shll $2, %edx\n"
-        "movl -0x44(%ebp), %edi\n" /* buf */
-        "addl %edx, %edi\n"
-        "movl -0x28(%ebp), %eax\n" /* M */
-        "subl $2, %eax\n"
-        "imull -0x40(%ebp), %eax\n"
-        "leal (, %eax, 4), %ecx\n"
-        "movl -0x44(%ebp), %esi\n" /* buf */
-        "addl %ecx, %esi\n"
-        "movl $0, -0x10(%ebp)\n"
-        "addl -0x1c(%ebp), %edx\n" /* xbuf1 */
-        "addl -0x1c(%ebp), %ecx\n" /* xbuf1 */
-        ".Lf20612c_00206296:\n"
-        "movl (%edi), %eax\n" /* line 222 */
-        "movl %eax, (%ecx)\n"
-        "movl (%esi), %eax\n" /* line 223 */
-        "movl %eax, (%edx)\n"
-        "addl $1, -0x10(%ebp)\n" /* line 221 */
-        "addl $4, %ecx\n"
-        "addl $4, %edx\n"
-        "addl $4, %edi\n"
-        "addl $4, %esi\n"
-        "movl -0x10(%ebp), %eax\n"
-        "cmpl %eax, -0x34(%ebp)\n"
-        "jne .Lf20612c_00206296\n"
-        ".Lf20612c_002062b6:\n"
-        "movl -0x40(%ebp), %eax\n" /* line 230 */
-        "testl %eax, %eax\n"
-        "jle .Lf20612c_002062dc\n"
-        "movl -0x40(%ebp), %eax\n"
-        "shll $2, %eax\n"
-        "movl -0x20(%ebp), %edx\n" /* xbuf0 */
-        "subl %eax, %edx\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf20612c_002062ca:\n"
-        "movl -0x20(%ebp), %esi\n" /* line 231 | xbuf0 */
-        "movl (%esi), %eax\n"
-        "movl %eax, (%edx)\n"
-        "addl $1, %ecx\n" /* line 230 */
-        "addl $4, %edx\n"
-        "cmpl %ecx, -0x40(%ebp)\n"
-        "jne .Lf20612c_002062ca\n"
-        ".Lf20612c_002062dc:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 210 | ci */
-        "addl $0x54, -0x24(%ebp)\n" /* compptr */
-        "addl $4, -0x14(%ebp)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 209 | ci */
-        "movl -0x3c(%ebp), %edx\n" /* cinfo */
-        "cmpl 0x2c(%edx), %eax\n"
-        "jge .Lf20612c_002062fa\n"
-        "movl %edx, %esi\n"
-        "jmp .Lf20612c_002061f1\n"
-        /* } scope */
-        ".Lf20612c_002062fa:\n"
-        "movl -0x38(%ebp), %ecx\n" /* line 316 | main */
-        "movl $0, 0x40(%ecx)\n"
-        "movl $0, 0x44(%ecx)\n" /* line 317 */
-        "movl $0, 0x4c(%ecx)\n" /* line 318 */
-        "jmp .Lf20612c_00206193\n"
-        ".Lf20612c_00206317:\n"
-        "leal 0x5f8(%ebx), %eax\n" /* line 329 */
-        "movl -0x38(%ebp), %edx\n" /* main */
-        "movl %eax, 4(%edx)\n"
-        "addl $0x38, %esp\n" /* line 336 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+  int ci, rgroup;
+  int M = cinfo->min_DCT_scaled_size;
+  jpeg_component_info *compptr;
+  JSAMPARRAY xbuf;
+
+  /* Get top-level space for component array pointers.
+   * We alloc both arrays with one call to save a few cycles.
+   */
+  main->xbuffer[0] = (JSAMPIMAGE)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				cinfo->num_components * 2 * SIZEOF(JSAMPARRAY));
+  main->xbuffer[1] = main->xbuffer[0] + cinfo->num_components;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
+      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    /* Get space for pointer lists --- M+4 row groups in each list.
+     * We alloc both pointer lists with one call to save a few cycles.
+     */
+    xbuf = (JSAMPARRAY)
+      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				  2 * (rgroup * (M + 4)) * SIZEOF(JSAMPROW));
+    xbuf += rgroup;		/* want one row group at negative offsets */
+    main->xbuffer[0][ci] = xbuf;
+    xbuf += rgroup * (M + 4);
+    main->xbuffer[1][ci] = xbuf;
+  }
 }
 
-/* line 348 */
-static __attribute__((naked))
-void process_data_simple_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
+
+LOCAL(void)
+make_funny_pointers (j_decompress_ptr cinfo)
+/* Create the funny pointer lists discussed in the comments above.
+ * The actual workspace is already allocated (in main->buffer),
+ * and the space for the pointer lists is allocated too.
+ * This routine just fills in the curiously ordered lists.
+ * This will be repeated at the beginning of each pass.
+ */
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 348 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 349 | cinfo */
-        "movl 0x18c(%eax), %edi\n" /* main */
-        "cmpb $0, 0x30(%edi)\n" /* line 353 | main */
-        "jne .Lf20632b_00206365\n"
-        "movl 0x190(%eax), %eax\n" /* line 354 */
-        "leal 8(%edi), %edx\n" /* main */
-        "movl %edx, -0xc(%ebp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "movl %edx, (%esp)\n"
-        "calll *0xc(%eax)\n"
-        "testl %eax, %eax\n"
-        "je .Lf20632b_002063ba\n"
-        "movb $1, 0x30(%edi)\n" /* line 356 | main */
-        "jmp .Lf20632b_0020636b\n"
-        ".Lf20632b_00206365:\n"
-        "leal 8(%edi), %eax\n" /* main */
-        "movl %eax, -0xc(%ebp)\n"
-        ".Lf20632b_0020636b:\n"
-        "movl 8(%ebp), %edx\n" /* line 360 | cinfo */
-        "movl 0x120(%edx), %esi\n" /* rowgroups_avail */
-        "movl 0x194(%edx), %edx\n" /* line 367 */
-        "movl 0x14(%ebp), %eax\n" /* out_rows_avail */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* out_row_ctr */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* output_buf */
-        "movl %eax, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n" /* rowgroups_avail */
-        "leal 0x34(%edi), %eax\n" /* main */
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll *4(%edx)\n"
-        "cmpl 0x34(%edi), %esi\n" /* line 372 | main, rowgroups_avail */
-        "ja .Lf20632b_002063ba\n"
-        "movb $0, 0x30(%edi)\n" /* line 373 | main */
-        "movl $0, 0x34(%edi)\n" /* line 374 | main */
-        ".Lf20632b_002063ba:\n"
-        "addl $0x30, %esp\n" /* line 376 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+  int ci, i, rgroup;
+  int M = cinfo->min_DCT_scaled_size;
+  jpeg_component_info *compptr;
+  JSAMPARRAY buf, xbuf0, xbuf1;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
+      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    xbuf0 = main->xbuffer[0][ci];
+    xbuf1 = main->xbuffer[1][ci];
+    /* First copy the workspace pointers as-is */
+    buf = main->buffer[ci];
+    for (i = 0; i < rgroup * (M + 2); i++) {
+      xbuf0[i] = xbuf1[i] = buf[i];
+    }
+    /* In the second list, put the last four row groups in swapped order */
+    for (i = 0; i < rgroup * 2; i++) {
+      xbuf1[rgroup*(M-2) + i] = buf[rgroup*M + i];
+      xbuf1[rgroup*M + i] = buf[rgroup*(M-2) + i];
+    }
+    /* The wraparound pointers at top and bottom will be filled later
+     * (see set_wraparound_pointers, below).  Initially we want the "above"
+     * pointers to duplicate the first actual data line.  This only needs
+     * to happen in xbuffer[0].
+     */
+    for (i = 0; i < rgroup; i++) {
+      xbuf0[i - rgroup] = xbuf0[0];
+    }
+  }
 }
 
-/* line 388 */
-static __attribute__((naked))
-void process_data_context_main(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
+
+LOCAL(void)
+set_wraparound_pointers (j_decompress_ptr cinfo)
+/* Set up the "wraparound" pointers at top and bottom of the pointer lists.
+ * This changes the pointer list state from top-of-image to the normal state.
+ */
 {
-    __asm__ __volatile__ (
-        /* { scope 1: main, ci, i, compptr, ... */
-        "pushl %ebp\n" /* line 388 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "subl $0x90, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 389 | cinfo */
-        "movl 0x18c(%eax), %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* main */
-        "cmpb $0, 0x30(%eax)\n" /* line 392 */
-        "je .Lf2063c1_002064c8\n"
-        "movl %eax, %edi\n"
-        "movl 0x44(%edi), %eax\n" /* line 405 */
-        "cmpl $1, %eax\n"
-        "je .Lf2063c1_002064ff\n"
-        ".Lf2063c1_002063f0:\n"
-        "cmpl $2, %eax\n"
-        "je .Lf2063c1_0020650c\n"
-        "testl %eax, %eax\n"
-        "jne .Lf2063c1_002064be\n"
-        "movl -0x30(%ebp), %ecx\n" /* main */
-        "addl $0x34, %ecx\n"
-        "movl %ecx, -0x40(%ebp)\n"
-        ".Lf2063c1_0020640a:\n"
-        "movl -0x30(%ebp), %esi\n" /* line 419 | main */
-        "movl $0, 0x34(%esi)\n"
-        "movl 8(%ebp), %edi\n" /* line 420 | cinfo */
-        "movl 0x120(%edi), %eax\n"
-        "subl $1, %eax\n"
-        "movl %eax, 0x48(%esi)\n"
-        "movl 0x4c(%esi), %eax\n" /* line 424 */
-        "cmpl 0x124(%edi), %eax\n"
-        "je .Lf2063c1_00206684\n"
-        ".Lf2063c1_00206432:\n"
-        "movl -0x30(%ebp), %ecx\n" /* line 426 | main */
-        "movl $1, 0x44(%ecx)\n"
-        ".Lf2063c1_0020643c:\n"
-        "movl 8(%ebp), %edi\n" /* line 430 | cinfo */
-        "movl 0x194(%edi), %edx\n"
-        "movl 0x14(%ebp), %eax\n" /* out_rows_avail */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* out_row_ctr */
-        "movl %ecx, 0x14(%esp)\n"
-        "movl 0xc(%ebp), %esi\n" /* output_buf */
-        "movl %esi, 0x10(%esp)\n"
-        "movl -0x30(%ebp), %edi\n" /* main */
-        "movl 0x48(%edi), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x40(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x40(%edi), %eax\n"
-        "movl 0x38(%edi, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "movl %ecx, (%esp)\n"
-        "calll *4(%edx)\n"
-        "movl 0x34(%edi), %eax\n" /* line 433 */
-        "cmpl 0x48(%edi), %eax\n"
-        "jb .Lf2063c1_002064be\n"
-        "cmpl $1, 0x4c(%edi)\n" /* line 436 */
-        "je .Lf2063c1_0020657b\n"
-        ".Lf2063c1_00206491:\n"
-        "movl -0x30(%ebp), %edi\n" /* line 439 | main */
-        "xorl $1, 0x40(%edi)\n"
-        "movb $0, 0x30(%edi)\n" /* line 440 */
-        "movl 8(%ebp), %edx\n" /* line 443 | cinfo */
-        "movl 0x120(%edx), %eax\n"
-        "addl $1, %eax\n"
-        "movl %eax, 0x34(%edi)\n"
-        "movl 0x120(%edx), %eax\n" /* line 444 */
-        "addl $2, %eax\n"
-        "movl %eax, 0x48(%edi)\n"
-        "movl $2, 0x44(%edi)\n" /* line 445 */
-        ".Lf2063c1_002064be:\n"
-        "addl $0x90, %esp\n" /* line 447 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf2063c1_002064c8:\n"
-        "movl 8(%ebp), %ecx\n" /* line 393 | cinfo */
-        "movl 0x190(%ecx), %edx\n"
-        "movl %eax, %esi\n"
-        "movl 0x40(%eax), %eax\n"
-        "movl 0x38(%esi, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *0xc(%edx)\n"
-        "testl %eax, %eax\n"
-        "je .Lf2063c1_002064be\n"
-        "movb $1, 0x30(%esi)\n" /* line 396 */
-        "addl $1, 0x4c(%esi)\n" /* line 397 */
-        "movl -0x30(%ebp), %edi\n" /* main */
-        "movl 0x44(%edi), %eax\n" /* line 405 */
-        "cmpl $1, %eax\n"
-        "jne .Lf2063c1_002063f0\n"
-        ".Lf2063c1_002064ff:\n"
-        "movl %edi, %esi\n"
-        "addl $0x34, %esi\n"
-        "movl %esi, -0x40(%ebp)\n"
-        "jmp .Lf2063c1_0020643c\n"
-        ".Lf2063c1_0020650c:\n"
-        "movl 8(%ebp), %eax\n" /* line 408 | cinfo */
-        "movl 0x194(%eax), %edx\n"
-        "movl 0x14(%ebp), %ecx\n" /* out_rows_avail */
-        "movl %ecx, 0x18(%esp)\n"
-        "movl 0x10(%ebp), %esi\n" /* out_row_ctr */
-        "movl %esi, 0x14(%esp)\n"
-        "movl 0xc(%ebp), %edi\n" /* output_buf */
-        "movl %edi, 0x10(%esp)\n"
-        "movl -0x30(%ebp), %ecx\n" /* main */
-        "movl 0x48(%ecx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "addl $0x34, %ecx\n"
-        "movl %ecx, -0x40(%ebp)\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl -0x30(%ebp), %esi\n" /* main */
-        "movl 0x40(%esi), %eax\n"
-        "movl 0x38(%esi, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edi\n" /* cinfo */
-        "movl %edi, (%esp)\n"
-        "calll *4(%edx)\n"
-        "movl 0x34(%esi), %eax\n" /* line 411 */
-        "cmpl 0x48(%esi), %eax\n"
-        "jb .Lf2063c1_002064be\n"
-        "movl $0, 0x44(%esi)\n" /* line 413 */
-        "movl 0x14(%ebp), %edx\n" /* line 414 | out_rows_avail */
-        "movl 0x10(%ebp), %eax\n" /* out_row_ctr */
-        "cmpl (%eax), %edx\n"
-        "ja .Lf2063c1_0020640a\n"
-        "jmp .Lf2063c1_002064be\n"
-        /* { scope 2 */
-        ".Lf2063c1_0020657b:\n"
-        "movl 8(%ebp), %esi\n" /* line 243 | cinfo */
-        "movl 0x18c(%esi), %esi\n"
-        "movl %esi, -0x20(%ebp)\n" /* main */
-        "movl 8(%ebp), %edi\n" /* line 245 | cinfo */
-        "movl 0x120(%edi), %eax\n" /* M */
-        "movl 0xcc(%edi), %edx\n" /* line 249 */
-        "movl %edx, -0x14(%ebp)\n" /* compptr */
-        "movl 0x2c(%edi), %edx\n"
-        "testl %edx, %edx\n"
-        "jle .Lf2063c1_00206491\n"
-        "movl $0, -0x1c(%ebp)\n" /* ci */
-        "leal 1(%eax), %ecx\n"
-        "movl %ecx, -0x38(%ebp)\n"
-        "addl $2, %eax\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        ".Lf2063c1_002065b7:\n"
-        "movl -0x14(%ebp), %esi\n" /* line 251 | compptr */
-        "movl 0xc(%esi), %ecx\n"
-        "imull 0x24(%esi), %ecx\n"
-        "movl %ecx, %eax\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        "cltd\n"
-        "idivl 0x120(%esi)\n"
-        "movl %eax, -0x34(%ebp)\n"
-        "movl -0x1c(%ebp), %edx\n" /* ci */
-        "shll $2, %edx\n"
-        "movl -0x20(%ebp), %edi\n" /* line 253 | main */
-        "movl 0x38(%edi), %eax\n"
-        "movl (%eax, %edx), %eax\n"
-        "movl %eax, -0x10(%ebp)\n" /* xbuf0 */
-        "movl 0x3c(%edi), %eax\n" /* line 254 */
-        "movl (%eax, %edx), %eax\n"
-        "movl %eax, -0xc(%ebp)\n" /* xbuf1 */
-        "movl -0x34(%ebp), %edi\n" /* line 255 */
-        "testl %edi, %edi\n"
-        "jle .Lf2063c1_0020666b\n"
-        "movl -0x38(%ebp), %edx\n"
-        "imull -0x34(%ebp), %edx\n"
-        "movl -0x34(%ebp), %eax\n"
-        "imull -0x3c(%ebp), %eax\n"
-        "movl $0, -0x18(%ebp)\n" /* i */
-        "movl -0x34(%ebp), %edi\n"
-        "shll $2, %edi\n"
-        "leal (, %eax, 4), %esi\n"
-        "negl %edi\n"
-        "leal (, %edx, 4), %ecx\n"
-        ".Lf2063c1_0020661d:\n"
-        "movl -0x10(%ebp), %edx\n" /* line 256 | xbuf0 */
-        "movl (%ecx, %edx), %eax\n"
-        "movl %eax, (%edi, %edx)\n"
-        "movl -0xc(%ebp), %edx\n" /* line 257 | xbuf1 */
-        "movl (%ecx, %edx), %eax\n"
-        "movl %eax, (%edi, %edx)\n"
-        "movl -0x18(%ebp), %eax\n" /* line 388 | i */
-        "shll $2, %eax\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "movl -0x10(%ebp), %edx\n" /* line 258 | xbuf0 */
-        "movl (%edx, %eax), %edx\n"
-        "movl -0x10(%ebp), %eax\n" /* xbuf0 */
-        "movl %edx, (%esi, %eax)\n"
-        "movl -0xc(%ebp), %edx\n" /* line 259 | xbuf1 */
-        "movl -0x5c(%ebp), %eax\n"
-        "movl (%edx, %eax), %edx\n"
-        "movl -0xc(%ebp), %eax\n" /* xbuf1 */
-        "movl %edx, (%esi, %eax)\n"
-        "addl $1, -0x18(%ebp)\n" /* line 255 | i */
-        "addl $4, %ecx\n"
-        "addl $4, %edi\n"
-        "addl $4, %esi\n"
-        "movl -0x18(%ebp), %edx\n" /* i */
-        "cmpl %edx, -0x34(%ebp)\n"
-        "jne .Lf2063c1_0020661d\n"
-        "movl 8(%ebp), %esi\n" /* cinfo */
-        ".Lf2063c1_0020666b:\n"
-        "addl $1, -0x1c(%ebp)\n" /* line 250 | ci */
-        "addl $0x54, -0x14(%ebp)\n" /* compptr */
-        "movl -0x1c(%ebp), %ecx\n" /* line 249 | ci */
-        "cmpl 0x2c(%esi), %ecx\n"
-        "jl .Lf2063c1_002065b7\n"
-        "jmp .Lf2063c1_00206491\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf2063c1_00206684:\n"
-        "movl 0x18c(%edi), %eax\n" /* line 272 */
-        "movl %eax, -0x2c(%ebp)\n" /* main */
-        "movl 0xcc(%edi), %edx\n" /* line 277 */
-        "movl %edx, -0x24(%ebp)\n" /* compptr */
-        "movl 0x2c(%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf2063c1_00206432\n"
-        "movl $0, -0x28(%ebp)\n" /* ci */
-        "movl 8(%ebp), %edi\n" /* cinfo */
-        ".Lf2063c1_002066ab:\n"
-        "movl -0x24(%ebp), %esi\n" /* line 280 | compptr */
-        "movl 0xc(%esi), %ecx\n"
-        "imull 0x24(%esi), %ecx\n"
-        "movl %ecx, %eax\n" /* line 281 */
-        "cltd\n"
-        "idivl 0x120(%edi)\n"
-        "movl %eax, %esi\n"
-        "movl -0x24(%ebp), %edx\n" /* line 283 | compptr */
-        "movl 0x2c(%edx), %eax\n"
-        "xorl %edx, %edx\n"
-        "divl %ecx\n"
-        "testl %edx, %edx\n" /* line 284 */
-        "cmovnel %edx, %ecx\n"
-        "movl -0x28(%ebp), %edi\n" /* line 288 | ci */
-        "testl %edi, %edi\n"
-        "jne .Lf2063c1_002066e5\n"
-        "leal -1(%ecx), %eax\n" /* line 289 */
-        "cltd\n"
-        "idivl %esi\n"
-        "addl $1, %eax\n"
-        "movl -0x2c(%ebp), %edi\n" /* main */
-        "movl %eax, 0x48(%edi)\n"
-        ".Lf2063c1_002066e5:\n"
-        "movl -0x2c(%ebp), %edx\n" /* line 294 | main */
-        "movl 0x40(%edx), %eax\n"
-        "movl 0x38(%edx, %eax, 4), %eax\n"
-        "movl -0x28(%ebp), %edi\n" /* ci */
-        "movl (%eax, %edi, 4), %eax\n"
-        "leal (%esi, %esi), %edi\n" /* line 295 */
-        "testl %edi, %edi\n"
-        "jle .Lf2063c1_00206714\n"
-        "leal (%eax, %ecx, 4), %eax\n"
-        "leal -4(%eax), %esi\n"
-        "movl %eax, %edx\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf2063c1_00206706:\n"
-        "movl (%esi), %eax\n" /* line 296 */
-        "movl %eax, (%edx)\n"
-        "addl $1, %ecx\n" /* line 295 */
-        "addl $4, %edx\n"
-        "cmpl %ecx, %edi\n"
-        "jne .Lf2063c1_00206706\n"
-        ".Lf2063c1_00206714:\n"
-        "addl $1, -0x28(%ebp)\n" /* line 278 | ci */
-        "addl $0x54, -0x24(%ebp)\n" /* compptr */
-        "movl -0x28(%ebp), %eax\n" /* line 277 | ci */
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "cmpl %eax, 0x2c(%edx)\n"
-        "jle .Lf2063c1_00206432\n"
-        "movl %edx, %edi\n"
-        "jmp .Lf2063c1_002066ab\n"
-    );
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+  int ci, i, rgroup;
+  int M = cinfo->min_DCT_scaled_size;
+  jpeg_component_info *compptr;
+  JSAMPARRAY xbuf0, xbuf1;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
+      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    xbuf0 = main->xbuffer[0][ci];
+    xbuf1 = main->xbuffer[1][ci];
+    for (i = 0; i < rgroup; i++) {
+      xbuf0[i - rgroup] = xbuf0[rgroup*(M+1) + i];
+      xbuf1[i - rgroup] = xbuf1[rgroup*(M+1) + i];
+      xbuf0[rgroup*(M+2) + i] = xbuf0[i];
+      xbuf1[rgroup*(M+2) + i] = xbuf1[i];
+    }
+  }
 }
 
-/* line 462 */
-static __attribute__((naked))
-void process_data_crank_post(j_decompress_ptr cinfo, JSAMPARRAY output_buf, JDIMENSION *out_row_ctr, JDIMENSION out_rows_avail)
+
+LOCAL(void)
+set_bottom_pointers (j_decompress_ptr cinfo)
+/* Change the pointer lists to duplicate the last sample row at the bottom
+ * of the image.  whichptr indicates which xbuffer holds the final iMCU row.
+ * Also sets rowgroups_avail to indicate number of nondummy row groups in row.
+ */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 462 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %edx\n" /* cinfo */
-        "movl 0x194(%edx), %ecx\n" /* line 463 */
-        "movl 0x14(%ebp), %eax\n" /* out_rows_avail */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* out_row_ctr */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* output_buf */
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *4(%ecx)\n"
-        "leave\n" /* line 466 */
-        "retl\n"
-    );
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+  int ci, i, rgroup, iMCUheight, rows_left;
+  jpeg_component_info *compptr;
+  JSAMPARRAY xbuf;
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    /* Count sample rows in one iMCU row and in one row group */
+    iMCUheight = compptr->v_samp_factor * compptr->DCT_scaled_size;
+    rgroup = iMCUheight / cinfo->min_DCT_scaled_size;
+    /* Count nondummy sample rows remaining for this component */
+    rows_left = (int) (compptr->downsampled_height % (JDIMENSION) iMCUheight);
+    if (rows_left == 0) rows_left = iMCUheight;
+    /* Count nondummy row groups.  Should get same answer for each component,
+     * so we need only do it once.
+     */
+    if (ci == 0) {
+      main->rowgroups_avail = (JDIMENSION) ((rows_left-1) / rgroup + 1);
+    }
+    /* Duplicate the last real sample row rgroup*2 times; this pads out the
+     * last partial rowgroup and ensures at least one full rowgroup of context.
+     */
+    xbuf = main->xbuffer[main->whichptr][ci];
+    for (i = 0; i < rgroup * 2; i++) {
+      xbuf[rows_left + i] = xbuf[rows_left-1];
+    }
+  }
 }
 
-/* line 477 */
-__attribute__((naked))
-void jinit_d_main_controller(j_decompress_ptr cinfo, int need_full_buffer)
+
+/*
+ * Initialize for a processing pass.
+ */
+
+METHODDEF(void)
+start_pass_main (j_decompress_ptr cinfo, J_BUF_MODE pass_mode)
 {
-    __asm__ __volatile__ (
-        /* { scope 1: main, ci */
-        "pushl %ebp\n" /* line 477 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movzbl 0xc(%ebp), %esi\n" /* need_full_buffer */
-        "movl 8(%ebp), %edx\n" /* line 482 | cinfo */
-        "movl 4(%edx), %eax\n"
-        "movl $0x50, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "movl %eax, -0x38(%ebp)\n" /* main */
-        "movl 8(%ebp), %ecx\n" /* line 485 | cinfo */
-        "movl %eax, 0x18c(%ecx)\n"
-        "leal -0x658(%ebx), %eax\n" /* line 486 */
-        "movl -0x38(%ebp), %edx\n" /* main */
-        "movl %eax, (%edx)\n"
-        "movl %esi, %ecx\n" /* line 488 | need_full_buffer */
-        "testb %cl, %cl\n"
-        "jne .Lf206776_002068f0\n"
-        ".Lf206776_002067c4:\n"
-        "movl 8(%ebp), %edx\n" /* line 494 | cinfo */
-        "movl 0x1a8(%edx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf206776_00206860\n"
-        "cmpl $1, 0x120(%edx)\n" /* line 495 */
-        "jle .Lf206776_00206996\n"
-        /* { scope 2 */
-        ".Lf206776_002067e4:\n"
-        "movl 8(%ebp), %ecx\n" /* line 162 | cinfo */
-        "movl 0x18c(%ecx), %ecx\n"
-        "movl %ecx, -0x2c(%ebp)\n" /* main */
-        "movl 8(%ebp), %eax\n" /* line 164 | cinfo */
-        "movl 0x120(%eax), %esi\n" /* M */
-        "movl 4(%eax), %edx\n" /* line 171 */
-        "movl %eax, %ecx\n"
-        "movl 0x2c(%eax), %eax\n"
-        "shll $3, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%edx)\n"
-        "movl -0x2c(%ebp), %edx\n" /* main */
-        "movl %eax, 0x38(%edx)\n"
-        "movl 8(%ebp), %ecx\n" /* line 174 | cinfo */
-        "movl 0x2c(%ecx), %edx\n"
-        "leal (%eax, %edx, 4), %edx\n"
-        "movl -0x2c(%ebp), %eax\n" /* main */
-        "movl %edx, 0x3c(%eax)\n"
-        "movl 0xcc(%ecx), %eax\n" /* line 176 */
-        "movl %eax, %edi\n" /* compptr */
-        "movl 0x2c(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "jg .Lf206776_00206908\n"
-        /* } scope */
-        ".Lf206776_0020683d:\n"
-        "movl 8(%ebp), %esi\n" /* line 498 | cinfo, need_full_buffer */
-        "movl 0x120(%esi), %edx\n" /* need_full_buffer */
-        "addl $2, %edx\n"
-        "movl %edx, -0x30(%ebp)\n" /* ngroups */
-        "movl %eax, %edi\n" /* line 503 | compptr */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl 0x2c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lf206776_0020687b\n"
-        ".Lf206776_00206858:\n"
-        "addl $0x5c, %esp\n" /* line 512 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf206776_00206860:\n"
-        "movl 0x120(%edx), %ecx\n" /* line 500 */
-        "movl %ecx, -0x30(%ebp)\n" /* ngroups */
-        "movl 0xcc(%edx), %eax\n"
-        "movl %eax, %edi\n" /* line 503 | compptr */
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl 0x2c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf206776_00206858\n"
-        ".Lf206776_0020687b:\n"
-        "movl -0x38(%ebp), %edx\n" /* main */
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl $0, -0x34(%ebp)\n" /* ci */
-        "movl 8(%ebp), %esi\n" /* cinfo, need_full_buffer */
-        "jmp .Lf206776_0020688f\n"
-        ".Lf206776_0020688d:\n"
-        "movl %ecx, %esi\n" /* need_full_buffer */
-        ".Lf206776_0020688f:\n"
-        "movl 0x24(%edi), %ecx\n" /* line 505 | compptr */
-        "movl %ecx, -0x3c(%ebp)\n"
-        "movl 4(%esi), %ecx\n" /* line 507 | need_full_buffer */
-        "movl -0x3c(%ebp), %eax\n"
-        "imull 0xc(%edi), %eax\n" /* compptr */
-        "cltd\n"
-        "idivl 0x120(%esi)\n" /* need_full_buffer */
-        "imull -0x30(%ebp), %eax\n" /* ngroups */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x3c(%ebp), %esi\n" /* need_full_buffer */
-        "imull 0x1c(%edi), %esi\n" /* compptr, need_full_buffer */
-        "movl %esi, 8(%esp)\n" /* need_full_buffer */
-        "movl $1, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cinfo */
-        "movl %eax, (%esp)\n"
-        "calll *8(%ecx)\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "movl %eax, 8(%edx)\n"
-        "addl $1, -0x34(%ebp)\n" /* line 504 | ci */
-        "addl $0x54, %edi\n" /* compptr */
-        "addl $4, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl -0x34(%ebp), %esi\n" /* line 503 | ci, need_full_buffer */
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "cmpl 0x2c(%ecx), %esi\n" /* need_full_buffer */
-        "jl .Lf206776_0020688d\n"
-        "addl $0x5c, %esp\n" /* line 512 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf206776_002068f0:\n"
-        "movl 8(%ebp), %esi\n" /* line 489 | cinfo, need_full_buffer */
-        "movl (%esi), %eax\n" /* need_full_buffer */
-        "movl $4, 0x14(%eax)\n"
-        "movl (%esi), %eax\n" /* need_full_buffer */
-        "movl %esi, (%esp)\n" /* need_full_buffer */
-        "calll *(%eax)\n"
-        "jmp .Lf206776_002067c4\n"
-        /* { scope 2 */
-        ".Lf206776_00206908:\n"
-        "leal 0x20(, %esi, 8), %edx\n" /* line 176 */
-        "movl %edx, -0x24(%ebp)\n"
-        "leal 0x10(, %esi, 4), %esi\n" /* M */
-        "movl %esi, -0x20(%ebp)\n" /* M */
-        "movl $0, -0x28(%ebp)\n" /* ci */
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        ".Lf206776_00206926:\n"
-        "movl 0xc(%edi), %esi\n" /* line 178 | compptr, M */
-        "imull 0x24(%edi), %esi\n" /* compptr, M */
-        "movl %esi, %eax\n" /* M */
-        "cltd\n"
-        "idivl 0x120(%ecx)\n"
-        "movl %eax, %esi\n" /* M */
-        "movl 4(%ecx), %edx\n" /* line 183 */
-        "movl -0x24(%ebp), %eax\n"
-        "imull %esi, %eax\n" /* M */
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll *(%edx)\n"
-        "leal (%eax, %esi, 4), %edx\n" /* line 186 */
-        "movl -0x28(%ebp), %ecx\n" /* ci */
-        "shll $2, %ecx\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 187 | main */
-        "movl 0x38(%eax), %eax\n"
-        "movl %eax, -0x4c(%ebp)\n"
-        "movl %edx, (%eax, %ecx)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 189 | main */
-        "movl 0x3c(%eax), %eax\n"
-        "movl %eax, -0x50(%ebp)\n"
-        "imull -0x20(%ebp), %esi\n" /* M */
-        "addl %esi, %edx\n" /* M */
-        "movl %edx, (%eax, %ecx)\n"
-        "addl $1, -0x28(%ebp)\n" /* line 177 | ci */
-        "addl $0x54, %edi\n" /* compptr */
-        "movl -0x28(%ebp), %edx\n" /* line 176 | ci */
-        "movl 8(%ebp), %ecx\n" /* cinfo */
-        "cmpl %edx, 0x2c(%ecx)\n"
-        "jg .Lf206776_00206926\n"
-        "movl 0xcc(%ecx), %eax\n"
-        "jmp .Lf206776_0020683d\n"
-        /* } scope */
-        ".Lf206776_00206996:\n"
-        "movl (%edx), %eax\n" /* line 496 */
-        "movl $0x2f, 0x14(%eax)\n"
-        "movl (%edx), %eax\n"
-        "movl %edx, (%esp)\n"
-        "calll *(%eax)\n"
-        "jmp .Lf206776_002067e4\n"
-    );
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+
+  switch (pass_mode) {
+  case JBUF_PASS_THRU:
+    if (cinfo->upsample->need_context_rows) {
+      main->pub.process_data = process_data_context_main;
+      make_funny_pointers(cinfo); /* Create the xbuffer[] lists */
+      main->whichptr = 0;	/* Read first iMCU row into xbuffer[0] */
+      main->context_state = CTX_PREPARE_FOR_IMCU;
+      main->iMCU_row_ctr = 0;
+    } else {
+      /* Simple case with no context needed */
+      main->pub.process_data = process_data_simple_main;
+    }
+    main->buffer_full = FALSE;	/* Mark buffer empty */
+    main->rowgroup_ctr = 0;
+    break;
+#ifdef QUANT_2PASS_SUPPORTED
+  case JBUF_CRANK_DEST:
+    /* For last pass of 2-pass quantization, just crank the postprocessor */
+    main->pub.process_data = process_data_crank_post;
+    break;
+#endif
+  default:
+    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+    break;
+  }
 }
 
+
+/*
+ * Process some data.
+ * This handles the simple case where no context is required.
+ */
+
+METHODDEF(void)
+process_data_simple_main (j_decompress_ptr cinfo,
+			  JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+			  JDIMENSION out_rows_avail)
+{
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+  JDIMENSION rowgroups_avail;
+
+  /* Read input data if we haven't filled the main buffer yet */
+  if (! main->buffer_full) {
+    if (! (*cinfo->coef->decompress_data) (cinfo, main->buffer))
+      return;			/* suspension forced, can do nothing more */
+    main->buffer_full = TRUE;	/* OK, we have an iMCU row to work with */
+  }
+
+  /* There are always min_DCT_scaled_size row groups in an iMCU row. */
+  rowgroups_avail = (JDIMENSION) cinfo->min_DCT_scaled_size;
+  /* Note: at the bottom of the image, we may pass extra garbage row groups
+   * to the postprocessor.  The postprocessor has to check for bottom
+   * of image anyway (at row resolution), so no point in us doing it too.
+   */
+
+  /* Feed the postprocessor */
+  (*cinfo->post->post_process_data) (cinfo, main->buffer,
+				     &main->rowgroup_ctr, rowgroups_avail,
+				     output_buf, out_row_ctr, out_rows_avail);
+
+  /* Has postprocessor consumed all the data yet? If so, mark buffer empty */
+  if (main->rowgroup_ctr >= rowgroups_avail) {
+    main->buffer_full = FALSE;
+    main->rowgroup_ctr = 0;
+  }
+}
+
+
+/*
+ * Process some data.
+ * This handles the case where context rows must be provided.
+ */
+
+METHODDEF(void)
+process_data_context_main (j_decompress_ptr cinfo,
+			   JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+			   JDIMENSION out_rows_avail)
+{
+  my_main_ptr main = (my_main_ptr) cinfo->main;
+
+  /* Read input data if we haven't filled the main buffer yet */
+  if (! main->buffer_full) {
+    if (! (*cinfo->coef->decompress_data) (cinfo,
+					   main->xbuffer[main->whichptr]))
+      return;			/* suspension forced, can do nothing more */
+    main->buffer_full = TRUE;	/* OK, we have an iMCU row to work with */
+    main->iMCU_row_ctr++;	/* count rows received */
+  }
+
+  /* Postprocessor typically will not swallow all the input data it is handed
+   * in one call (due to filling the output buffer first).  Must be prepared
+   * to exit and restart.  This switch lets us keep track of how far we got.
+   * Note that each case falls through to the next on successful completion.
+   */
+  switch (main->context_state) {
+  case CTX_POSTPONED_ROW:
+    /* Call postprocessor using previously set pointers for postponed row */
+    (*cinfo->post->post_process_data) (cinfo, main->xbuffer[main->whichptr],
+			&main->rowgroup_ctr, main->rowgroups_avail,
+			output_buf, out_row_ctr, out_rows_avail);
+    if (main->rowgroup_ctr < main->rowgroups_avail)
+      return;			/* Need to suspend */
+    main->context_state = CTX_PREPARE_FOR_IMCU;
+    if (*out_row_ctr >= out_rows_avail)
+      return;			/* Postprocessor exactly filled output buf */
+    /*FALLTHROUGH*/
+  case CTX_PREPARE_FOR_IMCU:
+    /* Prepare to process first M-1 row groups of this iMCU row */
+    main->rowgroup_ctr = 0;
+    main->rowgroups_avail = (JDIMENSION) (cinfo->min_DCT_scaled_size - 1);
+    /* Check for bottom of image: if so, tweak pointers to "duplicate"
+     * the last sample row, and adjust rowgroups_avail to ignore padding rows.
+     */
+    if (main->iMCU_row_ctr == cinfo->total_iMCU_rows)
+      set_bottom_pointers(cinfo);
+    main->context_state = CTX_PROCESS_IMCU;
+    /*FALLTHROUGH*/
+  case CTX_PROCESS_IMCU:
+    /* Call postprocessor using previously set pointers */
+    (*cinfo->post->post_process_data) (cinfo, main->xbuffer[main->whichptr],
+			&main->rowgroup_ctr, main->rowgroups_avail,
+			output_buf, out_row_ctr, out_rows_avail);
+    if (main->rowgroup_ctr < main->rowgroups_avail)
+      return;			/* Need to suspend */
+    /* After the first iMCU, change wraparound pointers to normal state */
+    if (main->iMCU_row_ctr == 1)
+      set_wraparound_pointers(cinfo);
+    /* Prepare to load new iMCU row using other xbuffer list */
+    main->whichptr ^= 1;	/* 0=>1 or 1=>0 */
+    main->buffer_full = FALSE;
+    /* Still need to process last row group of this iMCU row, */
+    /* which is saved at index M+1 of the other xbuffer */
+    main->rowgroup_ctr = (JDIMENSION) (cinfo->min_DCT_scaled_size + 1);
+    main->rowgroups_avail = (JDIMENSION) (cinfo->min_DCT_scaled_size + 2);
+    main->context_state = CTX_POSTPONED_ROW;
+  }
+}
+
+
+/*
+ * Process some data.
+ * Final pass of two-pass quantization: just call the postprocessor.
+ * Source data will be the postprocessor controller's internal buffer.
+ */
+
+#ifdef QUANT_2PASS_SUPPORTED
+
+METHODDEF(void)
+process_data_crank_post (j_decompress_ptr cinfo,
+			 JSAMPARRAY output_buf, JDIMENSION *out_row_ctr,
+			 JDIMENSION out_rows_avail)
+{
+  (*cinfo->post->post_process_data) (cinfo, (JSAMPIMAGE) NULL,
+				     (JDIMENSION *) NULL, (JDIMENSION) 0,
+				     output_buf, out_row_ctr, out_rows_avail);
+}
+
+#endif /* QUANT_2PASS_SUPPORTED */
+
+
+/*
+ * Initialize main buffer controller.
+ */
+
+GLOBAL(void)
+jinit_d_main_controller (j_decompress_ptr cinfo, boolean need_full_buffer)
+{
+  my_main_ptr main;
+  int ci, rgroup, ngroups;
+  jpeg_component_info *compptr;
+
+  main = (my_main_ptr)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+				SIZEOF(my_main_controller));
+  cinfo->main = (struct jpeg_d_main_controller *) main;
+  main->pub.start_pass = start_pass_main;
+
+  if (need_full_buffer)		/* shouldn't happen */
+    ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
+
+  /* Allocate the workspace.
+   * ngroups is the number of row groups we need.
+   */
+  if (cinfo->upsample->need_context_rows) {
+    if (cinfo->min_DCT_scaled_size < 2) /* unsupported, see comments above */
+      ERREXIT(cinfo, JERR_NOTIMPL);
+    alloc_funny_pointers(cinfo); /* Alloc space for xbuffer[] lists */
+    ngroups = cinfo->min_DCT_scaled_size + 2;
+  } else {
+    ngroups = cinfo->min_DCT_scaled_size;
+  }
+
+  for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+       ci++, compptr++) {
+    rgroup = (compptr->v_samp_factor * compptr->DCT_scaled_size) /
+      cinfo->min_DCT_scaled_size; /* height of a row group of component */
+    main->buffer[ci] = (*cinfo->mem->alloc_sarray)
+			((j_common_ptr) cinfo, JPOOL_IMAGE,
+			 compptr->width_in_blocks * compptr->DCT_scaled_size,
+			 (JDIMENSION) (rgroup * ngroups));
+  }
+}

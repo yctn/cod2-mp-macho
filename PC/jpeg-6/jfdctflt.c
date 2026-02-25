@@ -1,181 +1,168 @@
-/* ASM dump from: jfdctflt.c */
-/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/jpeg-6/jfdctflt.c */
+/*
+ * jfdctflt.c
+ *
+ * Copyright (C) 1994-1996, Thomas G. Lane.
+ * This file is part of the Independent JPEG Group's software.
+ * For conditions of distribution and use, see the accompanying README file.
+ *
+ * This file contains a floating-point implementation of the
+ * forward DCT (Discrete Cosine Transform).
+ *
+ * This implementation should be more accurate than either of the integer
+ * DCT implementations.  However, it may not give the same results on all
+ * machines because of differences in roundoff behavior.  Speed will depend
+ * on the hardware's floating point capacity.
+ *
+ * A 2-D DCT can be done by 1-D DCT on each row followed by 1-D DCT
+ * on each column.  Direct algorithms are also available, but they are
+ * much more complex and seem not to be any faster when reduced to code.
+ *
+ * This implementation is based on Arai, Agui, and Nakajima's algorithm for
+ * scaled DCT.  Their original paper (Trans. IEICE E-71(11):1095) is in
+ * Japanese, but the algorithm is described in the Pennebaker & Mitchell
+ * JPEG textbook (see REFERENCES section in file README).  The following code
+ * is based directly on figure 4-8 in P&M.
+ * While an 8-point DCT cannot be done in less than 11 multiplies, it is
+ * possible to arrange the computation so that many of the multiplies are
+ * simple scalings of the final outputs.  These multiplies can then be
+ * folded into the multiplications or divisions by the JPEG quantization
+ * table entries.  The AA&N method leaves only 5 multiplies and 29 adds
+ * to be done in the DCT itself.
+ * The primary disadvantage of this method is that with a fixed-point
+ * implementation, accuracy is lost due to imprecise representation of the
+ * scaled quantization values.  However, that problem does not arise if
+ * we use floating point arithmetic.
+ */
 
-#include "common_types.h"
-#include "imports.h"
+#define JPEG_INTERNALS
+#include "jinclude.h"
+#include "jpeglib.h"
+#include "jdct.h"		/* Private declarations for DCT subsystem */
 
-void jpeg_fdct_float(float *data);
+#ifdef DCT_FLOAT_SUPPORTED
 
-/* line 60 */
-__attribute__((naked))
-void jpeg_fdct_float(float *data)
+
+/*
+ * This module is specialized to the case DCTSIZE = 8.
+ */
+
+#if DCTSIZE != 8
+  Sorry, this code only copes with 8x8 DCTs. /* deliberate syntax err */
+#endif
+
+
+/*
+ * Perform the forward DCT on one block of samples.
+ */
+
+GLOBAL(void)
+jpeg_fdct_float (FAST_FLOAT * data)
 {
-    __asm__ __volatile__ (
-        /* { scope 1 */
-        "pushl %ebp\n" /* line 60 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x18, %esp\n"
-        "nop\n" /* PIC thunk - removed */
-        "movl 8(%ebp), %ecx\n" /* data */
-        "movl %ecx, %eax\n"
-        "movl $8, %edx\n"
-        ".Lf214e30_00214e47:\n"
-        "movss (%eax), %xmm7\n" /* line 71 */
-        "movss 0x1c(%eax), %xmm0\n"
-        "movaps %xmm7, %xmm4\n"
-        "addss %xmm0, %xmm4\n"
-        "subss %xmm0, %xmm7\n" /* line 72 */
-        "movss 4(%eax), %xmm6\n" /* line 73 */
-        "movss 0x18(%eax), %xmm0\n"
-        "movaps %xmm6, %xmm2\n"
-        "addss %xmm0, %xmm2\n"
-        "subss %xmm0, %xmm6\n" /* line 74 */
-        "movss 8(%eax), %xmm3\n" /* line 75 */
-        "movss 0x14(%eax), %xmm0\n"
-        "movaps %xmm3, %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -0xc(%ebp)\n"
-        "subss %xmm0, %xmm3\n" /* line 76 */
-        "movss %xmm3, -0x10(%ebp)\n"
-        "movss 0xc(%eax), %xmm3\n" /* line 77 */
-        "movss 0x10(%eax), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        "addss %xmm3, %xmm0\n"
-        "movaps %xmm4, %xmm1\n" /* line 82 */
-        "addss %xmm0, %xmm1\n"
-        "subss %xmm0, %xmm4\n" /* line 83 */
-        "movss -0xc(%ebp), %xmm5\n" /* line 84 */
-        "addss %xmm2, %xmm5\n"
-        "movaps %xmm1, %xmm0\n" /* line 87 */
-        "addss %xmm5, %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        "subss %xmm5, %xmm1\n" /* line 88 */
-        "movss %xmm1, 0x10(%eax)\n"
-        "subss -0xc(%ebp), %xmm2\n" /* line 90 */
-        "addss %xmm4, %xmm2\n"
-        "leal 0xd8ca3(%ebx), %esi\n" /* 0.7071067690849304f */
-        "mulss (%esi), %xmm2\n"
-        "movaps %xmm4, %xmm0\n" /* line 91 */
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, 8(%eax)\n"
-        "subss %xmm2, %xmm4\n" /* line 92 */
-        "movss %xmm4, 0x18(%eax)\n"
-        "subss -0x20(%ebp), %xmm3\n" /* line 96 */
-        "addss -0x10(%ebp), %xmm3\n"
-        "movaps %xmm7, %xmm1\n" /* line 98 */
-        "addss %xmm6, %xmm1\n"
-        "movaps %xmm3, %xmm0\n" /* line 101 */
-        "subss %xmm1, %xmm0\n"
-        "leal 0xd8ca7(%ebx), %esi\n" /* 0.3826834261417389f */
-        "mulss (%esi), %xmm0\n"
-        "leal 0xd8cab(%ebx), %esi\n" /* line 102 | 0.5411961078643799f */
-        "mulss (%esi), %xmm3\n"
-        "addss %xmm0, %xmm3\n"
-        "leal 0xd8caf(%ebx), %esi\n" /* line 103 | 1.3065630197525024f */
-        "mulss (%esi), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "addss -0x10(%ebp), %xmm6\n" /* line 104 */
-        "leal 0xd8ca3(%ebx), %esi\n" /* 0.7071067690849304f */
-        "mulss (%esi), %xmm6\n"
-        "movaps %xmm7, %xmm2\n" /* line 106 */
-        "addss %xmm6, %xmm2\n"
-        "subss %xmm6, %xmm7\n" /* line 107 */
-        "movaps %xmm3, %xmm0\n" /* line 109 */
-        "addss %xmm7, %xmm0\n"
-        "movss %xmm0, 0x14(%eax)\n"
-        "subss %xmm3, %xmm7\n" /* line 110 */
-        "movss %xmm7, 0xc(%eax)\n"
-        "movaps %xmm1, %xmm0\n" /* line 111 */
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, 4(%eax)\n"
-        "subss %xmm1, %xmm2\n" /* line 112 */
-        "movss %xmm2, 0x1c(%eax)\n"
-        "addl $0x20, %eax\n" /* line 114 */
-        "subl $1, %edx\n" /* line 70 */
-        "jne .Lf214e30_00214e47\n"
-        "movl %ecx, %eax\n"
-        "movl $8, %edx\n"
-        ".Lf214e30_00214f87:\n"
-        "movss (%eax), %xmm7\n" /* line 121 */
-        "movss 0xe0(%eax), %xmm0\n"
-        "movaps %xmm7, %xmm4\n"
-        "addss %xmm0, %xmm4\n"
-        "subss %xmm0, %xmm7\n" /* line 122 */
-        "movss 0x20(%eax), %xmm6\n" /* line 123 */
-        "movss 0xc0(%eax), %xmm0\n"
-        "movaps %xmm6, %xmm2\n"
-        "addss %xmm0, %xmm2\n"
-        "subss %xmm0, %xmm6\n" /* line 124 */
-        "movss 0x40(%eax), %xmm3\n" /* line 125 */
-        "movss 0xa0(%eax), %xmm0\n"
-        "movaps %xmm3, %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x18(%ebp)\n" /* tmp2 */
-        "subss %xmm0, %xmm3\n" /* line 126 */
-        "movss %xmm3, -0x14(%ebp)\n" /* tmp5 */
-        "movss 0x60(%eax), %xmm3\n" /* line 127 */
-        "movss 0x80(%eax), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "addss %xmm3, %xmm0\n"
-        "movaps %xmm4, %xmm1\n" /* line 132 */
-        "addss %xmm0, %xmm1\n"
-        "subss %xmm0, %xmm4\n" /* line 133 */
-        "movss -0x18(%ebp), %xmm5\n" /* line 134 | tmp2 */
-        "addss %xmm2, %xmm5\n"
-        "movaps %xmm1, %xmm0\n" /* line 137 */
-        "addss %xmm5, %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        "subss %xmm5, %xmm1\n" /* line 138 */
-        "movss %xmm1, 0x80(%eax)\n"
-        "subss -0x18(%ebp), %xmm2\n" /* line 140 | tmp2 */
-        "addss %xmm4, %xmm2\n"
-        "leal 0xd8ca3(%ebx), %ecx\n" /* 0.7071067690849304f */
-        "mulss (%ecx), %xmm2\n"
-        "movaps %xmm4, %xmm0\n" /* line 141 */
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, 0x40(%eax)\n"
-        "subss %xmm2, %xmm4\n" /* line 142 */
-        "movss %xmm4, 0xc0(%eax)\n"
-        "subss -0x1c(%ebp), %xmm3\n" /* line 146 */
-        "addss -0x14(%ebp), %xmm3\n" /* tmp5 */
-        "movaps %xmm7, %xmm1\n" /* line 148 */
-        "addss %xmm6, %xmm1\n"
-        "movaps %xmm3, %xmm0\n" /* line 151 */
-        "subss %xmm1, %xmm0\n"
-        "leal 0xd8ca7(%ebx), %esi\n" /* 0.3826834261417389f */
-        "mulss (%esi), %xmm0\n"
-        "leal 0xd8cab(%ebx), %ecx\n" /* line 152 | 0.5411961078643799f */
-        "mulss (%ecx), %xmm3\n"
-        "addss %xmm0, %xmm3\n"
-        "leal 0xd8caf(%ebx), %esi\n" /* line 153 | 1.3065630197525024f */
-        "mulss (%esi), %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "addss -0x14(%ebp), %xmm6\n" /* line 154 | tmp5 */
-        "leal 0xd8ca3(%ebx), %ecx\n" /* 0.7071067690849304f */
-        "mulss (%ecx), %xmm6\n"
-        "movaps %xmm7, %xmm2\n" /* line 156 */
-        "addss %xmm6, %xmm2\n"
-        "subss %xmm6, %xmm7\n" /* line 157 */
-        "movaps %xmm3, %xmm0\n" /* line 159 */
-        "addss %xmm7, %xmm0\n"
-        "movss %xmm0, 0xa0(%eax)\n"
-        "subss %xmm3, %xmm7\n" /* line 160 */
-        "movss %xmm7, 0x60(%eax)\n"
-        "movaps %xmm1, %xmm0\n" /* line 161 */
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, 0x20(%eax)\n"
-        "subss %xmm1, %xmm2\n" /* line 162 */
-        "movss %xmm2, 0xe0(%eax)\n"
-        "addl $4, %eax\n" /* line 164 */
-        "subl $1, %edx\n" /* line 120 */
-        "jne .Lf214e30_00214f87\n"
-        "addl $0x18, %esp\n" /* line 166 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+  FAST_FLOAT tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+  FAST_FLOAT tmp10, tmp11, tmp12, tmp13;
+  FAST_FLOAT z1, z2, z3, z4, z5, z11, z13;
+  FAST_FLOAT *dataptr;
+  int ctr;
+
+  /* Pass 1: process rows. */
+
+  dataptr = data;
+  for (ctr = DCTSIZE-1; ctr >= 0; ctr--) {
+    tmp0 = dataptr[0] + dataptr[7];
+    tmp7 = dataptr[0] - dataptr[7];
+    tmp1 = dataptr[1] + dataptr[6];
+    tmp6 = dataptr[1] - dataptr[6];
+    tmp2 = dataptr[2] + dataptr[5];
+    tmp5 = dataptr[2] - dataptr[5];
+    tmp3 = dataptr[3] + dataptr[4];
+    tmp4 = dataptr[3] - dataptr[4];
+    
+    /* Even part */
+    
+    tmp10 = tmp0 + tmp3;	/* phase 2 */
+    tmp13 = tmp0 - tmp3;
+    tmp11 = tmp1 + tmp2;
+    tmp12 = tmp1 - tmp2;
+    
+    dataptr[0] = tmp10 + tmp11; /* phase 3 */
+    dataptr[4] = tmp10 - tmp11;
+    
+    z1 = (tmp12 + tmp13) * ((FAST_FLOAT) 0.707106781); /* c4 */
+    dataptr[2] = tmp13 + z1;	/* phase 5 */
+    dataptr[6] = tmp13 - z1;
+    
+    /* Odd part */
+
+    tmp10 = tmp4 + tmp5;	/* phase 2 */
+    tmp11 = tmp5 + tmp6;
+    tmp12 = tmp6 + tmp7;
+
+    /* The rotator is modified from fig 4-8 to avoid extra negations. */
+    z5 = (tmp10 - tmp12) * ((FAST_FLOAT) 0.382683433); /* c6 */
+    z2 = ((FAST_FLOAT) 0.541196100) * tmp10 + z5; /* c2-c6 */
+    z4 = ((FAST_FLOAT) 1.306562965) * tmp12 + z5; /* c2+c6 */
+    z3 = tmp11 * ((FAST_FLOAT) 0.707106781); /* c4 */
+
+    z11 = tmp7 + z3;		/* phase 5 */
+    z13 = tmp7 - z3;
+
+    dataptr[5] = z13 + z2;	/* phase 6 */
+    dataptr[3] = z13 - z2;
+    dataptr[1] = z11 + z4;
+    dataptr[7] = z11 - z4;
+
+    dataptr += DCTSIZE;		/* advance pointer to next row */
+  }
+
+  /* Pass 2: process columns. */
+
+  dataptr = data;
+  for (ctr = DCTSIZE-1; ctr >= 0; ctr--) {
+    tmp0 = dataptr[DCTSIZE*0] + dataptr[DCTSIZE*7];
+    tmp7 = dataptr[DCTSIZE*0] - dataptr[DCTSIZE*7];
+    tmp1 = dataptr[DCTSIZE*1] + dataptr[DCTSIZE*6];
+    tmp6 = dataptr[DCTSIZE*1] - dataptr[DCTSIZE*6];
+    tmp2 = dataptr[DCTSIZE*2] + dataptr[DCTSIZE*5];
+    tmp5 = dataptr[DCTSIZE*2] - dataptr[DCTSIZE*5];
+    tmp3 = dataptr[DCTSIZE*3] + dataptr[DCTSIZE*4];
+    tmp4 = dataptr[DCTSIZE*3] - dataptr[DCTSIZE*4];
+    
+    /* Even part */
+    
+    tmp10 = tmp0 + tmp3;	/* phase 2 */
+    tmp13 = tmp0 - tmp3;
+    tmp11 = tmp1 + tmp2;
+    tmp12 = tmp1 - tmp2;
+    
+    dataptr[DCTSIZE*0] = tmp10 + tmp11; /* phase 3 */
+    dataptr[DCTSIZE*4] = tmp10 - tmp11;
+    
+    z1 = (tmp12 + tmp13) * ((FAST_FLOAT) 0.707106781); /* c4 */
+    dataptr[DCTSIZE*2] = tmp13 + z1; /* phase 5 */
+    dataptr[DCTSIZE*6] = tmp13 - z1;
+    
+    /* Odd part */
+
+    tmp10 = tmp4 + tmp5;	/* phase 2 */
+    tmp11 = tmp5 + tmp6;
+    tmp12 = tmp6 + tmp7;
+
+    /* The rotator is modified from fig 4-8 to avoid extra negations. */
+    z5 = (tmp10 - tmp12) * ((FAST_FLOAT) 0.382683433); /* c6 */
+    z2 = ((FAST_FLOAT) 0.541196100) * tmp10 + z5; /* c2-c6 */
+    z4 = ((FAST_FLOAT) 1.306562965) * tmp12 + z5; /* c2+c6 */
+    z3 = tmp11 * ((FAST_FLOAT) 0.707106781); /* c4 */
+
+    z11 = tmp7 + z3;		/* phase 5 */
+    z13 = tmp7 - z3;
+
+    dataptr[DCTSIZE*5] = z13 + z2; /* phase 6 */
+    dataptr[DCTSIZE*3] = z13 - z2;
+    dataptr[DCTSIZE*1] = z11 + z4;
+    dataptr[DCTSIZE*7] = z11 - z4;
+
+    dataptr++;			/* advance pointer to next column */
+  }
 }
 
+#endif /* DCT_FLOAT_SUPPORTED */
