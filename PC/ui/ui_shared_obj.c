@@ -1,0 +1,9186 @@
+/* ASM dump from: ui_shared_obj.cpp */
+/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/ui/ui_shared_obj.cpp */
+
+#include "common_types.h"
+#include "imports.h"
+
+/* Original includes (from N_BINCL debug info):
+ *   #include "PC/ui/ui_utils.h"
+ */
+
+extern keywordHash_t * itemParseKeywordHash[512]; /* 0x0 */
+extern keywordHash_t menuParseKeywords[33]; /* 0x0 */
+extern keywordHash_t itemParseKeywords[66]; /* 0x0 */
+static char string_00f3b9c0[4096]; /* 0xf3b9c0 */
+static int g_load; /* 0xf39b80 */
+static char menuBuf[32768]; /* 0xf31b80 */
+static keywordHash_t * menuParseKeywordHash[512]; /* 0xf3a1c0 */
+static char menuBuf1[4096]; /* 0xf3a9c0 */
+
+void UI_MapLoadInfo(const char *filename);
+void PC_SourceError(int handle, char *format);
+qboolean PC_Script_Parse(int handle, const char * *out);
+void Item_InitControls(const char (*item)[4]);
+qboolean MenuParse_onOpen(const char (*item)[4], int handle);
+qboolean MenuParse_onClose(const char (*item)[4], int handle);
+qboolean MenuParse_onESC(const char (*item)[4], int handle);
+qboolean MenuParse_soundLoop(const char (*item)[4], int handle);
+static void Item_ValidateTypeData(void);
+qboolean ItemParse_textsavegame(const char (*item)[4], int handle);
+qboolean ItemParse_notselectable(const char (*item)[4], int handle);
+qboolean ItemParse_noScrollBars(const char (*item)[4], int handle);
+qboolean ItemParse_horizontalscroll(const char (*item)[4], int handle);
+qboolean ItemParse_doubleClick(const char (*item)[4], int handle);
+qboolean ItemParse_onFocus(const char (*item)[4], int handle);
+qboolean ItemParse_leaveFocus(const char (*item)[4], int handle);
+qboolean ItemParse_mouseEnter(const char (*item)[4], int handle);
+qboolean ItemParse_mouseExit(const char (*item)[4], int handle);
+qboolean ItemParse_mouseEnterText(const char (*item)[4], int handle);
+qboolean ItemParse_mouseExitText(const char (*item)[4], int handle);
+qboolean ItemParse_action(const char (*item)[4], int handle);
+qboolean ItemParse_accept(const char (*item)[4], int handle);
+qboolean Item_Parse_maxCharsGotoNext(const char (*item)[4], int handle);
+qboolean ItemParse_dvarStrList(const char (*item)[4], int handle);
+qboolean ItemParse_enableDvar(const char (*item)[4], int handle);
+qboolean ItemParse_disableDvar(const char (*item)[4], int handle);
+qboolean ItemParse_showDvar(const char (*item)[4], int handle);
+qboolean ItemParse_hideDvar(const char (*item)[4], int handle);
+qboolean ItemParse_focusDvar(const char (*item)[4], int handle);
+void Menu_PostParse(menuDef_t *menu);
+qboolean MenuParse_popup(const char (*item)[4], int handle);
+qboolean MenuParse_outOfBounds(const char (*item)[4], int handle);
+qboolean MenuParse_legacySplitScreenScale(const char (*item)[4], int handle);
+qboolean ItemParse_decoration(const char (*item)[4], int handle);
+qboolean ItemParse_wrapped(const char (*item)[4], int handle);
+qboolean ItemParse_autowrapped(const char (*item)[4], int handle);
+qboolean MenuParse_execKey(const char (*item)[4], int handle);
+qboolean ItemParse_execKey(const char (*item)[4], int handle);
+qboolean ItemParse_textfile(const char (*item)[4], int handle);
+static Bool Menu_New(int handle);
+qboolean Item_Parse(int handle, const char (*item)[4]);
+qboolean MenuParse_itemDef(const char (*item)[4], int handle);
+void Item_SetupKeywordHash(void);
+void Menu_SetupKeywordHash(void);
+qboolean MenuParse_name(const char (*item)[4], int handle);
+qboolean MenuParse_background(const char (*item)[4], int handle);
+qboolean MenuParse_cinematic(const char (*item)[4], int handle);
+qboolean ItemParse_name(const char (*item)[4], int handle);
+qboolean ItemParse_focusSound(const char (*item)[4], int handle);
+qboolean ItemParse_text(const char (*item)[4], int handle);
+qboolean ItemParse_group(const char (*item)[4], int handle);
+qboolean ItemParse_background(const char (*item)[4], int handle);
+qboolean ItemParse_cinematic(const char (*item)[4], int handle);
+qboolean ItemParse_dvarTest(const char (*item)[4], int handle);
+qboolean ItemParse_dvar(const char (*item)[4], int handle);
+qboolean ItemParse_dvarEnumList(const char (*item)[4], int handle);
+qboolean ItemParse_outlinecolor(const char (*item)[4], int handle);
+qboolean MenuParse_outlinecolor(const char (*item)[4], int handle);
+qboolean PC_Rect_Parse(int handle, rectDef_t *r);
+qboolean ItemParse_rect(const char (*item)[4], int handle);
+qboolean MenuParse_rect(const char (*item)[4], int handle);
+qboolean MenuParse_borderSize(const char (*item)[4], int handle);
+qboolean MenuParse_backcolor(const char (*item)[4], int handle);
+qboolean MenuParse_forecolor(const char (*item)[4], int handle);
+qboolean MenuParse_bordercolor(const char (*item)[4], int handle);
+qboolean MenuParse_focuscolor(const char (*item)[4], int handle);
+qboolean MenuParse_disablecolor(const char (*item)[4], int handle);
+qboolean MenuParse_fadeClamp(const char (*item)[4], int handle);
+qboolean MenuParse_fadeAmount(const char (*item)[4], int handle);
+qboolean MenuParse_fadeInAmount(const char (*item)[4], int handle);
+qboolean MenuParse_blurWorld(const char (*item)[4], int handle);
+qboolean ItemParse_elementwidth(const char (*item)[4], int handle);
+qboolean ItemParse_elementheight(const char (*item)[4], int handle);
+qboolean ItemParse_feeder(const char (*item)[4], int handle);
+qboolean ItemParse_bordersize(const char (*item)[4], int handle);
+qboolean ItemParse_textalignx(const char (*item)[4], int handle);
+qboolean ItemParse_textaligny(const char (*item)[4], int handle);
+qboolean ItemParse_textscale(const char (*item)[4], int handle);
+qboolean ItemParse_backcolor(const char (*item)[4], int handle);
+qboolean ItemParse_forecolor(const char (*item)[4], int handle);
+qboolean ItemParse_bordercolor(const char (*item)[4], int handle);
+qboolean ItemParse_special(const char (*item)[4], int handle);
+qboolean ItemParse_dvarFloat(const char (*item)[4], int handle);
+qboolean ItemParse_dvarFloatList(const char (*item)[4], int handle);
+qboolean MenuParse_fullscreen(const char (*item)[4], int handle);
+qboolean MenuParse_style(const char (*item)[4], int handle);
+qboolean MenuParse_visible(const char (*item)[4], int handle);
+qboolean MenuParse_border(const char (*item)[4], int handle);
+qboolean MenuParse_ownerdrawFlag(const char (*item)[4], int handle);
+qboolean MenuParse_ownerdraw(const char (*item)[4], int handle);
+qboolean MenuParse_fadeCycle(const char (*item)[4], int handle);
+qboolean MenuParse_execKeyInt(const char (*item)[4], int handle);
+qboolean ItemParse_origin(const char (*item)[4], int handle);
+qboolean ItemParse_style(const char (*item)[4], int handle);
+qboolean ItemParse_type(const char (*item)[4], int handle);
+qboolean ItemParse_elementtype(const char (*item)[4], int handle);
+qboolean ItemParse_columns(const char (*item)[4], int handle);
+qboolean ItemParse_border(const char (*item)[4], int handle);
+qboolean ItemParse_visible(const char (*item)[4], int handle);
+qboolean ItemParse_ownerdraw(const char (*item)[4], int handle);
+qboolean ItemParse_align(const char (*item)[4], int handle);
+qboolean ItemParse_textalign(const char (*item)[4], int handle);
+qboolean ItemParse_textstyle(const char (*item)[4], int handle);
+qboolean ItemParse_textfont(const char (*item)[4], int handle);
+qboolean ItemParse_maxChars(const char (*item)[4], int handle);
+qboolean ItemParse_maxPaintChars(const char (*item)[4], int handle);
+qboolean ItemParse_ownerdrawFlag(const char (*item)[4], int handle);
+qboolean ItemParse_execKeyInt(const char (*item)[4], int handle);
+static Bool UI_ParseMenuInternal(int imageTrack);
+MenuList * UI_LoadMenus(const char *menuFile, int imageTrack);
+MenuList * UI_LoadMenu(const char *menuFile, int imageTrack);
+
+/* line 103 */
+__attribute__((naked))
+void UI_MapLoadInfo(const char *filename)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 103 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x17c, %esp\n"
+        /* { scope 1: name */
+        "movl 8(%ebp), %eax\n" /* line 113 | filename */
+        "cmpb $0, (%eax)\n"
+        "jne .Lf1a6004_001a6023\n"
+        /* } scope */
+        ".Lf1a6004_001a6018:\n"
+        "addl $0x17c, %esp\n" /* line 151 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lf1a6004_001a6023:\n"
+        "movl %eax, %ecx\n"
+        /* { scope 1: name */
+        "leal -0x1c(%ebp), %eax\n" /* line 116 | loadfile */
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll FS_ReadFile\n"
+        "testl %eax, %eax\n" /* line 117 */
+        "js .Lf1a6004_001a6197\n"
+        "movl -0x1c(%ebp), %eax\n" /* line 123 | loadfile */
+        "movl %eax, -0x20(%ebp)\n" /* parse */
+        "movl 8(%ebp), %eax\n" /* line 124 | filename */
+        "movl %eax, (%esp)\n"
+        "calll Com_BeginParseSession\n"
+        "movl $1, (%esp)\n" /* line 125 */
+        "calll Com_SetCSV\n"
+        "jmp .Lf1a6004_001a60d0\n"
+        ".Lf1a6004_001a605b:\n"
+        "leal -0x160(%ebp), %edi\n" /* key */
+        "movl %ebx, 8(%esp)\n" /* line 137 | material */
+        "movl %esi, 4(%esp)\n" /* token */
+        "movl %edi, (%esp)\n"
+        "calll memcpy\n"
+        "leal -0x20(%ebp), %eax\n" /* line 139 | parse */
+        "movl %eax, (%esp)\n"
+        "calll Com_ParseOnLine\n"
+        "cmpb $0, (%eax)\n" /* line 140 */
+        "je .Lf1a6004_001a6158\n"
+        /* { scope 2 */
+        ".Lf1a6004_001a6085:\n"
+        "movl $3, 4(%esp)\n" /* line 96 */
+        "movl %eax, (%esp)\n"
+        "calll CL_RegisterMaterialNoMip\n"
+        "movl %eax, %ebx\n" /* material */
+        "movl %edi, 0xc(%esp)\n" /* line 97 */
+        "movl $0x2b409c, 8(%esp)\n" /* "$%s" */
+        "movl $0x40, 4(%esp)\n"
+        "leal -0x60(%ebp), %ecx\n" /* name */
+        "movl %ecx, (%esp)\n"
+        "calll Com_sprintf\n"
+        "leal -0x60(%ebp), %eax\n" /* line 98 | name */
+        "movl %eax, (%esp)\n"
+        "calll I_strlwr\n"
+        "leal -0x60(%ebp), %ecx\n" /* line 99 | name */
+        "movl %ecx, 4(%esp)\n"
+        "movl %ebx, (%esp)\n" /* material */
+        "calll CL_Material_Duplicate\n"
+        /* } scope */
+        ".Lf1a6004_001a60d0:\n"
+        "leal -0x20(%ebp), %ecx\n" /* line 128 | parse */
+        "movl %ecx, (%esp)\n"
+        "calll Com_Parse\n"
+        "movl %eax, %esi\n" /* token */
+        "cmpb $0, (%eax)\n" /* line 129 */
+        "je .Lf1a6004_001a617c\n"
+        "cld\n" /* line 131 */
+        "movl $0xffffffff, %ecx\n"
+        "movl %eax, %edi\n"
+        "xorl %eax, %eax\n"
+        "repne scasb %es:(%edi), %al\n"
+        "movl %ecx, %ebx\n" /* material */
+        "notl %ebx\n" /* material */
+        "leal -1(%ebx), %edi\n" /* material */
+        "cmpl $0xff, %ebx\n" /* line 132 | material */
+        "jbe .Lf1a6004_001a605b\n"
+        "calll Com_EndParseSession\n" /* line 134 */
+        "movl $0xff, 0x10(%esp)\n" /* line 135 */
+        "movl %edi, 0xc(%esp)\n"
+        "leal -0x160(%ebp), %edi\n" /* key */
+        "movl %edi, 8(%esp)\n"
+        "movl $0x2b4058, 4(%esp)\n" /* "key '%s' is %i > %i characters long" */
+        "movl $1, (%esp)\n"
+        "calll Com_Error\n"
+        "movl %ebx, 8(%esp)\n" /* line 137 | material */
+        "movl %esi, 4(%esp)\n" /* token */
+        "movl %edi, (%esp)\n"
+        "calll memcpy\n"
+        "leal -0x20(%ebp), %eax\n" /* line 139 | parse */
+        "movl %eax, (%esp)\n"
+        "calll Com_ParseOnLine\n"
+        "cmpb $0, (%eax)\n" /* line 140 */
+        "jne .Lf1a6004_001a6085\n"
+        ".Lf1a6004_001a6158:\n"
+        "calll Com_EndParseSession\n" /* line 142 */
+        "movl 8(%ebp), %ecx\n" /* line 143 | filename */
+        "movl %ecx, 0xc(%esp)\n"
+        "movl %edi, 8(%esp)\n"
+        "movl $0x2b407c, 4(%esp)\n" /* "key '%s' missing value in '%s'
+" */
+        "movl $1, (%esp)\n"
+        "calll Com_Error\n"
+        ".Lf1a6004_001a617c:\n"
+        "calll Com_EndParseSession\n" /* line 149 */
+        "movl -0x1c(%ebp), %eax\n" /* line 150 | loadfile */
+        "movl %eax, (%esp)\n"
+        "calll FS_FreeFile\n"
+        /* } scope */
+        "addl $0x17c, %esp\n" /* line 151 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: name */
+        ".Lf1a6004_001a6197:\n"
+        "movl 8(%ebp), %eax\n" /* line 119 | filename */
+        "movl %eax, 4(%esp)\n"
+        "movl $0x2b4034, (%esp)\n" /* "^3WARNING: Could not find '%s'.
+" */
+        "calll Com_Printf\n"
+        "jmp .Lf1a6004_001a6018\n"
+    );
+}
+
+/* line 159 */
+__attribute__((naked))
+void PC_SourceError(int handle, char *format)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 159 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0xa4, %esp\n"
+        /* { scope 1 */
+        "leal 0x10(%ebp), %eax\n" /* line 166 */
+        "movl %eax, -0x10(%ebp)\n" /* argptr */
+        "movl %eax, 0xc(%esp)\n" /* line 167 */
+        "movl 0xc(%ebp), %eax\n" /* format */
+        "movl %eax, 8(%esp)\n"
+        "movl $__mh_execute_header, 4(%esp)\n"
+        "movl $string, (%esp)\n"
+        "calll vsnprintf\n"
+        "movb $0, -0x90(%ebp)\n" /* line 170 | filename */
+        "movl $0, -0xc(%ebp)\n" /* line 171 | line */
+        "leal -0xc(%ebp), %eax\n" /* line 172 | line */
+        "movl %eax, 8(%esp)\n"
+        "leal -0x90(%ebp), %ebx\n" /* filename */
+        "movl %ebx, 4(%esp)\n"
+        "movl 8(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_SourceFileAndLine\n"
+        "movl $string, 0xc(%esp)\n" /* line 174 */
+        "movl -0xc(%ebp), %eax\n" /* line */
+        "movl %eax, 8(%esp)\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl $0x2b40a0, (%esp)\n" /* "^1Menu load error: %s, line %d: %s
+" */
+        "calll Com_Printf\n"
+        /* } scope */
+        "addl $0xa4, %esp\n" /* line 175 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 371 */
+__attribute__((naked))
+qboolean PC_Script_Parse(int handle, const char * *out)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 371 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x82c, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %esi\n" /* line 376 | script */
+        "movl $0x400, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll memset\n"
+        "leal -0x828(%ebp), %edi\n" /* line 380 | token */
+        "movl %edi, 4(%esp)\n"
+        "movl 8(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a6232_001a6282\n"
+        ".Lf1a6232_001a6275:\n"
+        "xorl %eax, %eax\n" /* line 387 */
+        /* } scope */
+        "addl $0x82c, %esp\n" /* line 408 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a6232_001a6282:\n"
+        "movl $0x21e50c, 4(%esp)\n" /* line 382 */
+        "leal -0x818(%ebp), %ebx\n"
+        "movl %ebx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a6232_001a6275\n"
+        "jmp .Lf1a6232_001a62da\n"
+        ".Lf1a6232_001a629e:\n"
+        "movl %ebx, 4(%esp)\n" /* line 400 */
+        "movl $0x21f878, (%esp)\n" /* ""%s"" */
+        "calll va\n"
+        "movl %eax, 8(%esp)\n"
+        "movl $0x400, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll I_strncat\n"
+        ".Lf1a6232_001a62c2:\n"
+        "movl $0x217914, 8(%esp)\n" /* line 406 */
+        "movl $0x400, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll I_strncat\n"
+        ".Lf1a6232_001a62da:\n"
+        "movl %edi, 4(%esp)\n" /* line 389 */
+        "movl 8(%ebp), %edx\n" /* handle */
+        "movl %edx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6232_001a6275\n"
+        "movl $0x21e508, 4(%esp)\n" /* line 392 */
+        "movl %ebx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6232_001a6329\n"
+        "cmpb $0, -0x818(%ebp)\n" /* line 398 */
+        "je .Lf1a6232_001a629e\n"
+        "cmpb $0, -0x817(%ebp)\n"
+        "jne .Lf1a6232_001a629e\n"
+        "movl %ebx, 8(%esp)\n" /* line 404 */
+        "movl $0x400, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll I_strncat\n"
+        "jmp .Lf1a6232_001a62c2\n"
+        ".Lf1a6232_001a6329:\n"
+        "movl %esi, (%esp)\n" /* line 394 */
+        "calll String_Alloc\n"
+        "movl 0xc(%ebp), %edx\n" /* out */
+        "movl %eax, (%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x82c, %esp\n" /* line 408 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 540 */
+__attribute__((naked))
+void Item_InitControls(const char (*item)[4])
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 540 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x10, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "testl %ebx, %ebx\n" /* line 542 | item */
+        "je .Lf1a6348_001a6360\n"
+        "cmpl $6, 0x270(%ebx)\n" /* line 546 | item */
+        "je .Lf1a6348_001a6367\n"
+        ".Lf1a6348_001a6360:\n"
+        "addl $0x10, %esp\n" /* line 558 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a6348_001a6367:\n"
+        "movl %ebx, (%esp)\n" /* line 548 | item */
+        "calll Item_GetListBoxDef\n"
+        "movl %eax, %esi\n" /* listPtr */
+        "movl $0, 4(%esp)\n" /* line 550 */
+        "movl %ebx, (%esp)\n" /* item */
+        "calll Item_SetCursorPos\n"
+        "testl %esi, %esi\n" /* line 551 | listPtr */
+        "je .Lf1a6348_001a6360\n"
+        "movl $0, 4(%esp)\n" /* line 553 */
+        "movl %esi, (%esp)\n" /* listPtr */
+        "calll ListBox_SetCursorPos\n"
+        "movl $0, 4(%esp)\n" /* line 554 */
+        "movl %esi, (%esp)\n" /* listPtr */
+        "calll ListBox_SetStartPos\n"
+        "movl $0, 4(%esp)\n" /* line 555 */
+        "movl %esi, (%esp)\n" /* listPtr */
+        "calll ListBox_SetEndPos\n"
+        /* } scope */
+        "addl $0x10, %esp\n" /* line 558 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 632 */
+__attribute__((naked))
+qboolean MenuParse_onOpen(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 632 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 636 | item */
+        "addl $0x244, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 641 */
+        "retl\n"
+    );
+}
+
+/* line 644 */
+__attribute__((naked))
+qboolean MenuParse_onClose(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 644 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 648 | item */
+        "addl $0x248, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 653 */
+        "retl\n"
+    );
+}
+
+/* line 656 */
+__attribute__((naked))
+qboolean MenuParse_onESC(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 656 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 660 | item */
+        "addl $0x24c, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 665 */
+        "retl\n"
+    );
+}
+
+/* line 875 */
+__attribute__((naked))
+qboolean MenuParse_soundLoop(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 875 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 880 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6434_001a6464\n"
+        "cmpb $0, -0x408(%ebp)\n" /* line 883 */
+        "jne .Lf1a6434_001a6466\n"
+        "movl $1, %eax\n" /* line 884 */
+        /* } scope */
+        ".Lf1a6434_001a6464:\n"
+        "leave\n" /* line 887 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a6434_001a6466:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 884 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0x254(%edx)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a6434_001a6464\n"
+    );
+}
+
+/* line 1117 */
+static __attribute__((naked))
+void Item_ValidateTypeData(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1117 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl %eax, %ebx\n" /* item */
+        "movl 0x2ec(%eax), %ecx\n" /* line 1119 */
+        "testl %ecx, %ecx\n"
+        "je .Lf1a6484_001a64c5\n"
+        "movl 0x274(%eax), %ecx\n" /* line 1121 */
+        "movl 0x270(%eax), %eax\n"
+        "cmpl %eax, %ecx\n"
+        "je .Lf1a6484_001a64bf\n"
+        "movl %eax, 0xc(%esp)\n" /* line 1122 */
+        "movl %ecx, 8(%esp)\n"
+        "movl $0x2b4104, 4(%esp)\n" /* "Attempting to change type from %d to %d.
+Move the type defin" */
+        "movl %edx, (%esp)\n" /* handle */
+        "calll PC_SourceError\n"
+        ".Lf1a6484_001a64bf:\n"
+        "addl $0x14, %esp\n" /* line 1149 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lf1a6484_001a64c5:\n"
+        "movl 0x270(%eax), %eax\n" /* line 1126 */
+        "movl %eax, 0x274(%ebx)\n" /* item */
+        "cmpl $6, %eax\n" /* line 1127 */
+        "je .Lf1a6484_001a6583\n"
+        "cmpl $4, %eax\n" /* line 1131 */
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $9, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $0x10, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $0x12, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $0xb, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $0xe, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $0xa, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $0x11, %eax\n"
+        "je .Lf1a6484_001a6527\n"
+        "cmpl $0xc, %eax\n" /* line 1145 */
+        "jne .Lf1a6484_001a64bf\n"
+        "movl $4, 4(%esp)\n" /* line 1147 */
+        "movl $0x188, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movl %eax, 0x2ec(%ebx)\n" /* item */
+        "jmp .Lf1a6484_001a64bf\n"
+        ".Lf1a6484_001a6527:\n"
+        "movl $4, 4(%esp)\n" /* line 1133 */
+        "movl $0x20, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movl %eax, 0x2ec(%ebx)\n" /* item */
+        "movl 0x270(%ebx), %eax\n" /* line 1134 | item */
+        "cmpl $4, %eax\n"
+        "je .Lf1a6484_001a6564\n"
+        "cmpl $0x10, %eax\n"
+        "je .Lf1a6484_001a6564\n"
+        "cmpl $9, %eax\n"
+        "je .Lf1a6484_001a6564\n"
+        "cmpl $0x12, %eax\n"
+        "je .Lf1a6484_001a6564\n"
+        "cmpl $0x11, %eax\n"
+        "jne .Lf1a6484_001a64bf\n"
+        /* { scope 1 */
+        ".Lf1a6484_001a6564:\n"
+        "movl %ebx, (%esp)\n" /* line 1136 | item */
+        "calll Item_GetEditFieldDef\n"
+        "movl 0x18(%eax), %edx\n" /* line 1139 | handle */
+        "testl %edx, %edx\n" /* handle */
+        "jne .Lf1a6484_001a64bf\n"
+        "movl $0x100, 0x18(%eax)\n" /* line 1141 */
+        "jmp .Lf1a6484_001a64bf\n"
+        /* } scope */
+        ".Lf1a6484_001a6583:\n"
+        "movl $4, 4(%esp)\n" /* line 1129 */
+        "movl $0x110, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movl %eax, 0x2ec(%ebx)\n" /* item */
+        "jmp .Lf1a6484_001a64bf\n"
+    );
+}
+
+/* line 1201 */
+__attribute__((naked))
+qboolean ItemParse_textsavegame(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1201 */
+        "movl %esp, %ebp\n"
+        "movl 8(%ebp), %eax\n" /* item */
+        "movl $0x2b4164, 0x294(%eax)\n" /* line 1204 */
+        "movl $1, 0x298(%eax)\n" /* line 1205 */
+        "movl $1, %eax\n" /* line 1207 */
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 1272 */
+__attribute__((naked))
+qboolean ItemParse_notselectable(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1272 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %edx\n" /* handle */
+        /* { scope 1 */
+        "movl %ebx, %eax\n" /* line 1276 | item */
+        "calll Item_ValidateTypeData\n"
+        "movl %ebx, (%esp)\n" /* line 1277 | item */
+        "calll Item_GetListBoxDef\n"
+        "testl %eax, %eax\n" /* line 1278 */
+        "je .Lf1a65c4_001a65f2\n"
+        "cmpl $6, 0x270(%ebx)\n" /* line 1280 | item */
+        "je .Lf1a65c4_001a65f8\n"
+        ".Lf1a65c4_001a65ed:\n"
+        "movl $1, %eax\n" /* line 1282 */
+        /* } scope */
+        ".Lf1a65c4_001a65f2:\n"
+        "addl $0x14, %esp\n" /* line 1285 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a65c4_001a65f8:\n"
+        "movl $1, 0x108(%eax)\n" /* line 1282 */
+        "jmp .Lf1a65c4_001a65ed\n"
+    );
+}
+
+/* line 1288 */
+__attribute__((naked))
+qboolean ItemParse_noScrollBars(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1288 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %edx\n" /* handle */
+        /* { scope 1 */
+        "movl %ebx, %eax\n" /* line 1292 | item */
+        "calll Item_ValidateTypeData\n"
+        "movl %ebx, (%esp)\n" /* line 1293 | item */
+        "calll Item_GetListBoxDef\n"
+        "testl %eax, %eax\n" /* line 1294 */
+        "je .Lf1a6604_001a6632\n"
+        "cmpl $6, 0x270(%ebx)\n" /* line 1296 | item */
+        "je .Lf1a6604_001a6638\n"
+        ".Lf1a6604_001a662d:\n"
+        "movl $1, %eax\n" /* line 1298 */
+        /* } scope */
+        ".Lf1a6604_001a6632:\n"
+        "addl $0x14, %esp\n" /* line 1301 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a6604_001a6638:\n"
+        "movl $1, 0x10c(%eax)\n" /* line 1298 */
+        "jmp .Lf1a6604_001a662d\n"
+    );
+}
+
+/* line 1327 */
+__attribute__((naked))
+qboolean ItemParse_horizontalscroll(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1327 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl 0xe4(%edx), %eax\n" /* line 1332 */
+        "orl $0x200000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetStaticFlags\n"
+        "movl $1, %eax\n" /* line 1334 */
+        "leave\n"
+        "retl\n"
+    );
+}
+
+/* line 1681 */
+__attribute__((naked))
+qboolean ItemParse_doubleClick(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1681 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x10, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1 */
+        "movl %esi, %edx\n" /* line 1685 | handle */
+        "movl %ebx, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%ebx), %eax\n" /* line 1686 | item */
+        "testl %eax, %eax\n"
+        "je .Lf1a666c_001a66ae\n"
+        "movl %ebx, (%esp)\n" /* line 1691 | item */
+        "calll Item_GetListBoxDef\n"
+        "testl %eax, %eax\n" /* line 1692 */
+        "je .Lf1a666c_001a66ae\n"
+        "addl $0x104, %eax\n" /* line 1695 */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a666c_001a66b7\n"
+        ".Lf1a666c_001a66ae:\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        "addl $0x10, %esp\n" /* line 1700 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a666c_001a66b7:\n"
+        "movl $1, %eax\n" /* line 1695 */
+        /* } scope */
+        "addl $0x10, %esp\n" /* line 1700 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 1703 */
+__attribute__((naked))
+qboolean ItemParse_onFocus(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1703 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1705 | item */
+        "addl $0x2b8, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1710 */
+        "retl\n"
+    );
+}
+
+/* line 1713 */
+__attribute__((naked))
+qboolean ItemParse_leaveFocus(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1713 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1715 | item */
+        "addl $0x2bc, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1720 */
+        "retl\n"
+    );
+}
+
+/* line 1723 */
+__attribute__((naked))
+qboolean ItemParse_mouseEnter(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1723 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1725 | item */
+        "addl $0x2a8, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1730 */
+        "retl\n"
+    );
+}
+
+/* line 1733 */
+__attribute__((naked))
+qboolean ItemParse_mouseExit(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1733 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1735 | item */
+        "addl $0x2ac, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1740 */
+        "retl\n"
+    );
+}
+
+/* line 1743 */
+__attribute__((naked))
+qboolean ItemParse_mouseEnterText(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1743 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1745 | item */
+        "addl $0x2a0, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1750 */
+        "retl\n"
+    );
+}
+
+/* line 1753 */
+__attribute__((naked))
+qboolean ItemParse_mouseExitText(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1753 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1755 | item */
+        "addl $0x2a4, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1760 */
+        "retl\n"
+    );
+}
+
+/* line 1763 */
+__attribute__((naked))
+qboolean ItemParse_action(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1763 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1765 | item */
+        "addl $0x2b0, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1770 */
+        "retl\n"
+    );
+}
+
+/* line 1774 */
+__attribute__((naked))
+qboolean ItemParse_accept(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1774 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 1776 | item */
+        "addl $0x2b4, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "setne %al\n"
+        "movzbl %al, %eax\n"
+        "leave\n" /* line 1781 */
+        "retl\n"
+    );
+}
+
+/* line 1851 */
+__attribute__((naked))
+qboolean Item_Parse_maxCharsGotoNext(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1851 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %edx\n" /* handle */
+        /* { scope 1 */
+        "movl %ebx, %eax\n" /* line 1855 | item */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%ebx), %eax\n" /* line 1856 | item */
+        "testl %eax, %eax\n"
+        "je .Lf1a6804_001a6840\n"
+        "movl %ebx, (%esp)\n" /* line 1859 | item */
+        "calll Item_GetEditFieldDef\n"
+        "testl %eax, %eax\n" /* line 1860 */
+        "je .Lf1a6804_001a6840\n"
+        "movl $1, 0x14(%eax)\n" /* line 1862 */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x14, %esp\n" /* line 1864 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a6804_001a6840:\n"
+        "xorl %eax, %eax\n" /* line 1863 */
+        /* } scope */
+        "addl $0x14, %esp\n" /* line 1864 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 1906 */
+__attribute__((naked))
+qboolean ItemParse_dvarStrList(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1906 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %edi\n" /* handle */
+        /* { scope 1 */
+        "movl %edi, %edx\n" /* line 1912 | handle */
+        "movl %ebx, %eax\n" /* pass */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%ebx), %eax\n" /* line 1913 | pass */
+        "testl %eax, %eax\n"
+        "je .Lf1a6848_001a6876\n"
+        "cmpl $0xc, 0x270(%ebx)\n" /* line 1915 | pass */
+        "je .Lf1a6848_001a6883\n"
+        ".Lf1a6848_001a6876:\n"
+        "xorl %eax, %eax\n" /* line 1958 */
+        /* } scope */
+        ".Lf1a6848_001a6878:\n"
+        "addl $0x42c, %esp\n" /* line 1965 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a6848_001a6883:\n"
+        "movl %ebx, (%esp)\n" /* line 1917 | pass */
+        "calll Item_GetMultiDef\n"
+        "movl %eax, %esi\n" /* multiPtr */
+        "movl $0, 0x180(%eax)\n" /* line 1919 */
+        "movl $1, 0x184(%eax)\n" /* line 1920 */
+        "leal -0x428(%ebp), %eax\n" /* line 1922 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n" /* handle */
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6848_001a6876\n"
+        "cmpb $0x7b, -0x418(%ebp)\n" /* line 1924 */
+        "jne .Lf1a6848_001a6876\n"
+        ".Lf1a6848_001a68c0:\n"
+        "xorl %ebx, %ebx\n" /* pass */
+        ".Lf1a6848_001a68c2:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 1932 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n" /* handle */
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6848_001a6925\n"
+        ".Lf1a6848_001a68d8:\n"
+        "movzbl -0x418(%ebp), %eax\n" /* line 1938 */
+        "cmpb $0x7d, %al\n"
+        "je .Lf1a6848_001a6974\n"
+        "cmpb $0x2c, %al\n" /* line 1943 */
+        "je .Lf1a6848_001a68c2\n"
+        "cmpb $0x3b, %al\n"
+        "je .Lf1a6848_001a68c2\n"
+        "testl %ebx, %ebx\n" /* line 1948 | pass */
+        "jne .Lf1a6848_001a693c\n"
+        "movl 0x180(%esi), %ebx\n" /* line 1950 | multiPtr, pass */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, (%esi, %ebx, 4)\n" /* multiPtr */
+        "movl $1, %ebx\n" /* pass */
+        "leal -0x428(%ebp), %eax\n" /* line 1932 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n" /* handle */
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a6848_001a68d8\n"
+        ".Lf1a6848_001a6925:\n"
+        "movl $0x2b4174, 4(%esp)\n" /* line 1934 */
+        "movl %edi, (%esp)\n" /* handle */
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a6848_001a6878\n"
+        ".Lf1a6848_001a693c:\n"
+        "movl 0x180(%esi), %ebx\n" /* line 1955 | multiPtr, pass */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, 0x80(%esi, %ebx, 4)\n" /* multiPtr */
+        "movl 0x180(%esi), %eax\n" /* line 1957 | multiPtr */
+        "addl $1, %eax\n"
+        "movl %eax, 0x180(%esi)\n" /* multiPtr */
+        "cmpl $0x1f, %eax\n" /* line 1958 */
+        "jle .Lf1a6848_001a68c0\n"
+        "jmp .Lf1a6848_001a6876\n"
+        ".Lf1a6848_001a6974:\n"
+        "movl $1, %eax\n" /* line 1938 */
+        "jmp .Lf1a6848_001a6878\n"
+    );
+}
+
+/* line 2049 */
+__attribute__((naked))
+qboolean ItemParse_enableDvar(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2049 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "leal 0x2cc(%ebx), %eax\n" /* line 2051 | item */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a697e_001a69ad\n"
+        "orl $1, 0x2d0(%ebx)\n" /* line 2053 | item */
+        "movl $1, %eax\n"
+        ".Lf1a697e_001a69ad:\n"
+        "addl $0x14, %esp\n" /* line 2057 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 2060 */
+__attribute__((naked))
+qboolean ItemParse_disableDvar(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2060 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "leal 0x2cc(%ebx), %eax\n" /* line 2062 | item */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a69b4_001a69e3\n"
+        "orl $2, 0x2d0(%ebx)\n" /* line 2064 | item */
+        "movl $1, %eax\n"
+        ".Lf1a69b4_001a69e3:\n"
+        "addl $0x14, %esp\n" /* line 2068 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 2071 */
+__attribute__((naked))
+qboolean ItemParse_showDvar(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2071 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "leal 0x2cc(%ebx), %eax\n" /* line 2073 | item */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a69ea_001a6a19\n"
+        "orl $4, 0x2d0(%ebx)\n" /* line 2075 | item */
+        "movl $1, %eax\n"
+        ".Lf1a69ea_001a6a19:\n"
+        "addl $0x14, %esp\n" /* line 2079 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 2082 */
+__attribute__((naked))
+qboolean ItemParse_hideDvar(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2082 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "leal 0x2cc(%ebx), %eax\n" /* line 2084 | item */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6a20_001a6a4f\n"
+        "orl $8, 0x2d0(%ebx)\n" /* line 2086 | item */
+        "movl $1, %eax\n"
+        ".Lf1a6a20_001a6a4f:\n"
+        "addl $0x14, %esp\n" /* line 2090 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 2093 */
+__attribute__((naked))
+qboolean ItemParse_focusDvar(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2093 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "leal 0x2cc(%ebx), %eax\n" /* line 2095 | item */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6a56_001a6a85\n"
+        "orl $0x10, 0x2d0(%ebx)\n" /* line 2097 | item */
+        "movl $1, %eax\n"
+        ".Lf1a6a56_001a6a85:\n"
+        "addl $0x14, %esp\n" /* line 2101 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 2483 */
+__attribute__((naked))
+void Menu_PostParse(menuDef_t *menu)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2483 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x30, %esp\n"
+        "movl 8(%ebp), %esi\n" /* menu */
+        /* { scope 1 */
+        "movl 0x218(%esi), %ebx\n" /* line 2491 | menu, size */
+        "shll $2, %ebx\n" /* size */
+        "movl $4, 4(%esp)\n" /* line 2492 */
+        "movl %ebx, (%esp)\n" /* size */
+        "calll UI_Alloc\n"
+        "movl %eax, 0x27c(%esi)\n" /* menu */
+        "movl %ebx, 8(%esp)\n" /* line 2493 | size */
+        "movl $0xf39bc0, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll memcpy\n"
+        "movl 0x214(%esi), %eax\n" /* line 2495 | menu */
+        "testl %eax, %eax\n"
+        "je .Lf1a6a8c_001a6b05\n"
+        "movl 0x10(%esi), %eax\n" /* line 2498 | menu */
+        "movl %eax, -0x10(%ebp)\n"
+        "movl 0x14(%esi), %eax\n" /* menu */
+        "movl %eax, -0xc(%ebp)\n"
+        "xorl %eax, %eax\n" /* line 2499 */
+        "movl %eax, -0x20(%ebp)\n" /* rect */
+        "movl %eax, -0x1c(%ebp)\n" /* line 2500 */
+        "movl $0x44200000, -0x18(%ebp)\n" /* line 2501 */
+        "movl $0x43f00000, -0x14(%ebp)\n" /* line 2502 */
+        "leal -0x20(%ebp), %eax\n" /* line 2504 | rect */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* menu */
+        "calll Window_SetRect\n"
+        ".Lf1a6a8c_001a6b05:\n"
+        "movl %esi, (%esp)\n" /* line 2506 | menu */
+        "calll Menu_UpdatePosition\n"
+        /* } scope */
+        "addl $0x30, %esp\n" /* line 2507 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 853 */
+__attribute__((naked))
+qboolean MenuParse_popup(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 853 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl 0xe4(%edx), %eax\n" /* line 859 */
+        "orl $0x1000000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetStaticFlags\n"
+        "movl $1, %eax\n" /* line 861 */
+        "leave\n"
+        "retl\n"
+    );
+}
+
+/* line 864 */
+__attribute__((naked))
+qboolean MenuParse_outOfBounds(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 864 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl 0xe4(%edx), %eax\n" /* line 870 */
+        "orl $0x2000000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetStaticFlags\n"
+        "movl $1, %eax\n" /* line 872 */
+        "leave\n"
+        "retl\n"
+    );
+}
+
+/* line 1021 */
+__attribute__((naked))
+qboolean MenuParse_legacySplitScreenScale(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1021 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl 0xe4(%edx), %eax\n" /* line 1029 */
+        "orl $0x4000000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetStaticFlags\n"
+        "movl $1, %eax\n" /* line 1031 */
+        "leave\n"
+        "retl\n"
+    );
+}
+
+/* line 1261 */
+__attribute__((naked))
+qboolean ItemParse_decoration(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1261 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl 0xe4(%edx), %eax\n" /* line 1266 */
+        "orl $0x100000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetStaticFlags\n"
+        "movl $1, %eax\n" /* line 1268 */
+        "leave\n"
+        "retl\n"
+    );
+}
+
+/* line 1305 */
+__attribute__((naked))
+qboolean ItemParse_wrapped(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1305 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl 0xe4(%edx), %eax\n" /* line 1310 */
+        "orl $0x400000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetStaticFlags\n"
+        "movl $1, %eax\n" /* line 1312 */
+        "leave\n"
+        "retl\n"
+    );
+}
+
+/* line 1316 */
+__attribute__((naked))
+qboolean ItemParse_autowrapped(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1316 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl 0xe4(%edx), %eax\n" /* line 1321 */
+        "orl $0x800000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetStaticFlags\n"
+        "movl $1, %eax\n" /* line 1323 */
+        "leave\n"
+        "retl\n"
+    );
+}
+
+/* line 957 */
+__attribute__((naked))
+qboolean MenuParse_execKey(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 957 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x430, %esp\n"
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x41c(%ebp), %eax\n" /* line 358 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6c04_001a6c43\n"
+        /* } scope */
+        "movzbw -0x40c(%ebp), %si\n" /* line 968 | keyindex */
+        "leal -0xc(%ebp), %eax\n" /* line 970 | action */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n" /* handle */
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a6c04_001a6c4f\n"
+        ".Lf1a6c04_001a6c43:\n"
+        "xorl %eax, %eax\n" /* line 978 */
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 979 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1a6c04_001a6c4f:\n"
+        "movl $4, 4(%esp)\n" /* line 973 */
+        "movl $0xc, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movswl %si, %edx\n" /* line 974 | keyindex */
+        "movl %edx, (%eax)\n"
+        "movl -0xc(%ebp), %edx\n" /* line 975 | action */
+        "movl %edx, 4(%eax)\n"
+        "movl 8(%ebp), %ecx\n" /* line 976 | item */
+        "movl 0x250(%ecx), %edx\n"
+        "movl %edx, 8(%eax)\n"
+        "movl %eax, 0x250(%ecx)\n" /* line 977 */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 979 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 2104 */
+__attribute__((naked))
+qboolean ItemParse_execKey(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2104 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x430, %esp\n"
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x41c(%ebp), %eax\n" /* line 358 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6c90_001a6ccf\n"
+        /* } scope */
+        "movzbw -0x40c(%ebp), %si\n" /* line 2114 | keyindex */
+        "leal -0xc(%ebp), %eax\n" /* line 2116 | action */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n" /* handle */
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a6c90_001a6cdb\n"
+        ".Lf1a6c90_001a6ccf:\n"
+        "xorl %eax, %eax\n" /* line 2124 */
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 2125 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1a6c90_001a6cdb:\n"
+        "movl $4, 4(%esp)\n" /* line 2119 */
+        "movl $0xc, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movswl %si, %edx\n" /* line 2120 | keyindex */
+        "movl %edx, (%eax)\n"
+        "movl -0xc(%ebp), %edx\n" /* line 2121 | action */
+        "movl %edx, 4(%eax)\n"
+        "movl 8(%ebp), %ecx\n" /* line 2122 | item */
+        "movl 0x2c8(%ecx), %edx\n"
+        "movl %edx, 8(%eax)\n"
+        "movl %eax, 0x2c8(%ecx)\n" /* line 2123 */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 2125 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 1186 */
+__attribute__((naked))
+qboolean ItemParse_textfile(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1186 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x434, %esp\n"
+        /* { scope 1: f */
+        "leal -0x41c(%ebp), %eax\n" /* line 1191 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a6d1c_001a6d48\n"
+        /* } scope */
+        "addl $0x434, %esp\n" /* line 1198 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: f */
+        /* { scope 2 */
+        ".Lf1a6d1c_001a6d48:\n"
+        "movl $0, 8(%esp)\n" /* line 1099 */
+        "leal -0xc(%ebp), %eax\n" /* f */
+        "movl %eax, 4(%esp)\n"
+        "leal -0x40c(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll FS_FOpenFileByMode\n"
+        "movl %eax, %ebx\n" /* len */
+        "movl -0xc(%ebp), %eax\n" /* line 1100 | f */
+        "testl %eax, %eax\n"
+        "jne .Lf1a6d1c_001a6d8d\n"
+        /* } scope */
+        ".Lf1a6d1c_001a6d6e:\n"
+        "movl %eax, (%esp)\n" /* line 1195 */
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0x294(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x434, %esp\n" /* line 1198 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: f */
+        /* { scope 2 */
+        ".Lf1a6d1c_001a6d8d:\n"
+        "movl %eax, 8(%esp)\n" /* line 1105 */
+        "movl %ebx, 4(%esp)\n" /* len */
+        "movl $menuBuf1, (%esp)\n"
+        "calll FS_Read\n"
+        "movb $0, menuBuf1(%ebx)\n" /* line 1106 | len */
+        "movl -0xc(%ebp), %eax\n" /* line 1107 | f */
+        "movl %eax, (%esp)\n"
+        "calll FS_FCloseFile\n"
+        "movl $menuBuf1, %eax\n"
+        "jmp .Lf1a6d1c_001a6d6e\n"
+    );
+}
+
+/* line 2515 */
+static __attribute__((naked))
+Bool Menu_New(int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2515 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x43c, %esp\n"
+        "movl %eax, -0x434(%ebp)\n"
+        "movl %edx, %ebx\n" /* imageTrack */
+        /* { scope 1: token */
+        "movl $4, 4(%esp)\n" /* line 2519 */
+        "movl $0x280, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movl %eax, -0x430(%ebp)\n" /* menu */
+        "movl $0x280, 8(%esp)\n" /* line 430 */
+        "movl $0, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll memset\n"
+        "movl $0xffffffff, 4(%esp)\n" /* line 431 */
+        "movl -0x430(%ebp), %eax\n" /* menu */
+        "movl %eax, (%esp)\n"
+        "calll Menu_SetCursorItem\n"
+        "movl 0xf39b94, %eax\n" /* line 432 */
+        "movl -0x430(%ebp), %edx\n" /* menu */
+        "movl %eax, 0x238(%edx)\n"
+        "movl 0xf39b98, %eax\n" /* line 433 */
+        "movl %eax, 0x23c(%edx)\n"
+        "movl 0xf39b8c, %eax\n" /* line 434 */
+        "movl %eax, 0x234(%edx)\n"
+        "movl 0xf39b90, %eax\n" /* line 435 */
+        "movl %eax, 0x230(%edx)\n"
+        "movl %ebx, 0x258(%edx)\n" /* line 436 */
+        "movl $0xf39bc0, 0x27c(%edx)\n" /* line 437 */
+        "movl $0x210, 8(%esp)\n" /* line 421 */
+        "movl $0, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll memset\n"
+        "movl $0x3f800000, %eax\n" /* line 422 */
+        "movl -0x430(%ebp), %ecx\n" /* menu */
+        "movl %eax, 0xe0(%ecx)\n"
+        "movl %eax, 0x1d8(%ecx)\n" /* line 423 */
+        "movl %eax, 0x1d4(%ecx)\n"
+        "movl %eax, 0x1d0(%ecx)\n"
+        "movl %eax, 0x1cc(%ecx)\n"
+        "movl $0xffffffff, 0xcc(%ecx)\n" /* line 424 */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %eax\n" /* line 2451 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl -0x434(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6dba_001a6ec8\n"
+        "cmpb $0x7b, -0x418(%ebp)\n" /* line 2453 */
+        "je .Lf1a6dba_001a6ef5\n"
+        ".Lf1a6dba_001a6ec8:\n"
+        "xorl %eax, %eax\n" /* line 2461 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a6dba_001a6eca:\n"
+        "addl $0x43c, %esp\n" /* line 2546 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a6dba_001a6ed5:\n"
+        "leal -0x418(%ebp), %eax\n" /* line 2471 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b4208, 4(%esp)\n" /* "unknown menu keyword %s" */
+        "movl -0x434(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll PC_SourceError\n"
+        ".Lf1a6dba_001a6ef5:\n"
+        "movl $0x410, 8(%esp)\n" /* line 2458 */
+        "movl $0, 4(%esp)\n"
+        "leal -0x428(%ebp), %ecx\n" /* token */
+        "movl %ecx, (%esp)\n"
+        "calll memset\n"
+        "leal -0x428(%ebp), %eax\n" /* line 2459 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl -0x434(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6dba_001a7076\n"
+        "cmpb $0x7d, -0x418(%ebp)\n" /* line 2465 */
+        "je .Lf1a6dba_001a7091\n"
+        /* { scope 3 */
+        "movzbl -0x418(%ebp), %eax\n" /* line 461 */
+        "testb %al, %al\n"
+        "jne .Lf1a6dba_001a6fee\n"
+        "xorl %ebx, %ebx\n" /* hash */
+        "xorl %edx, %edx\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        ".Lf1a6dba_001a6f55:\n"
+        "xorl %edx, %ebx\n" /* line 489 | hash */
+        "xorl %eax, %ebx\n" /* hash */
+        "andl $0x1ff, %ebx\n" /* hash */
+        "movl menuParseKeywordHash(, %ebx, 4), %ebx\n" /* hash */
+        "testl %ebx, %ebx\n" /* hash */
+        "je .Lf1a6dba_001a6ed5\n"
+        "leal -0x418(%ebp), %eax\n" /* line 491 */
+        "movl %eax, 4(%esp)\n"
+        "movl (%ebx), %eax\n" /* hash */
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a6dba_001a6fa9\n"
+        ".Lf1a6dba_001a6f86:\n"
+        "movl 8(%ebx), %ebx\n" /* line 489 | hash */
+        "testl %ebx, %ebx\n" /* hash */
+        "je .Lf1a6dba_001a6ed5\n"
+        "leal -0x418(%ebp), %eax\n" /* line 491 */
+        "movl %eax, 4(%esp)\n"
+        "movl (%ebx), %eax\n" /* hash */
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a6dba_001a6f86\n"
+        ".Lf1a6dba_001a6fa9:\n"
+        "movl -0x434(%ebp), %edx\n" /* line 2474 */
+        "movl %edx, 4(%esp)\n"
+        "movl -0x430(%ebp), %ecx\n" /* menu */
+        "movl %ecx, (%esp)\n"
+        "calll *4(%ebx)\n" /* key */
+        "testl %eax, %eax\n"
+        "jne .Lf1a6dba_001a6ef5\n"
+        "leal -0x418(%ebp), %eax\n" /* line 2476 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b41b0, 4(%esp)\n" /* "couldn't parse menu keyword %s" */
+        "movl -0x434(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a6dba_001a6eca\n"
+        /* { scope 3 */
+        ".Lf1a6dba_001a6fee:\n"
+        "leal -0x417(%ebp), %ecx\n" /* line 461 */
+        "movl %ecx, -0x42c(%ebp)\n"
+        "xorl %ebx, %ebx\n" /* hash */
+        "leal -0x418(%ebp), %esi\n"
+        "movl $0x77, %edi\n"
+        "jmp .Lf1a6dba_001a7032\n"
+        ".Lf1a6dba_001a7009:\n"
+        "movsbl (%esi), %eax\n" /* line 464 */
+        "addl $0x20, %eax\n"
+        "imull %edi, %eax\n"
+        "addl %eax, %ebx\n" /* hash */
+        "movl -0x42c(%ebp), %esi\n" /* line 466 */
+        "movzbl -0x48e(%ebp, %edi), %eax\n" /* line 461 */
+        "leal 1(%esi), %ecx\n"
+        "movl %ecx, -0x42c(%ebp)\n"
+        "addl $1, %edi\n"
+        "testb %al, %al\n"
+        "je .Lf1a6dba_001a7067\n"
+        ".Lf1a6dba_001a7032:\n"
+        "movsbl %al, %eax\n" /* line 463 */
+        "movl %eax, (%esp)\n"
+        "calll I_isupper\n"
+        "testb %al, %al\n"
+        "jne .Lf1a6dba_001a7009\n"
+        "movsbl (%esi), %eax\n" /* line 466 */
+        "imull %edi, %eax\n"
+        "addl %eax, %ebx\n" /* hash */
+        "movl -0x42c(%ebp), %esi\n"
+        "movzbl -0x48e(%ebp, %edi), %eax\n" /* line 461 */
+        "leal 1(%esi), %ecx\n"
+        "movl %ecx, -0x42c(%ebp)\n"
+        "addl $1, %edi\n"
+        "testb %al, %al\n"
+        "jne .Lf1a6dba_001a7032\n"
+        ".Lf1a6dba_001a7067:\n"
+        "movl %ebx, %edx\n" /* hash */
+        "sarl $0xa, %edx\n"
+        "movl %ebx, %eax\n" /* hash */
+        "sarl $0x14, %eax\n"
+        "jmp .Lf1a6dba_001a6f55\n"
+        /* } scope */
+        ".Lf1a6dba_001a7076:\n"
+        "movl $0x2b4194, 4(%esp)\n" /* line 2461 */
+        "movl -0x434(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "jmp .Lf1a6dba_001a6ec8\n"
+        /* } scope */
+        ".Lf1a6dba_001a7091:\n"
+        "movl -0x430(%ebp), %eax\n" /* line 2524 | menu */
+        "movl 0xc0(%eax), %edx\n"
+        "testl %edx, %edx\n"
+        "je .Lf1a6dba_001a70ed\n"
+        "movl %eax, (%esp)\n" /* line 2538 */
+        "calll Menu_PostParse\n"
+        "cmpl $0x7f, 0xf39bb8\n" /* line 2540 */
+        "jg .Lf1a6dba_001a70d7\n"
+        ".Lf1a6dba_001a70b2:\n"
+        "movl 0xf39bb8, %edx\n" /* line 2543 */
+        "movl 0xf39bbc, %eax\n"
+        "movl -0x430(%ebp), %ecx\n" /* menu */
+        "movl %ecx, (%eax, %edx, 4)\n"
+        "addl $1, 0xf39bb8\n" /* line 2544 */
+        "movl $1, %eax\n"
+        "jmp .Lf1a6dba_001a6eca\n"
+        ".Lf1a6dba_001a70d7:\n"
+        "movl $0x2b41e4, 4(%esp)\n" /* line 2541 */
+        "movl $1, (%esp)\n"
+        "calll Com_Error\n"
+        "jmp .Lf1a6dba_001a70b2\n"
+        ".Lf1a6dba_001a70ed:\n"
+        "movl $0x2b41d0, 4(%esp)\n" /* line 2526 */
+        "movl -0x434(%ebp), %ecx\n"
+        "movl %ecx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a6dba_001a6eca\n"
+    );
+}
+
+/* line 503 */
+__attribute__((naked))
+qboolean Item_Parse(int handle, const char (*item)[4])
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 503 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x43c, %esp\n"
+        /* { scope 1 */
+        "leal -0x428(%ebp), %eax\n" /* line 508 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 8(%ebp), %edx\n" /* handle */
+        "movl %edx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a710a_001a7138\n"
+        "cmpb $0x7b, -0x418(%ebp)\n" /* line 510 */
+        "je .Lf1a710a_001a7162\n"
+        ".Lf1a710a_001a7138:\n"
+        "xorl %eax, %eax\n" /* line 534 */
+        /* } scope */
+        ".Lf1a710a_001a713a:\n"
+        "addl $0x43c, %esp\n" /* line 537 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a710a_001a7145:\n"
+        "leal -0x418(%ebp), %edx\n" /* line 528 */
+        "movl %edx, 8(%esp)\n"
+        "movl $0x2b4244, 4(%esp)\n" /* "unknown menu item keyword %s" */
+        "movl 8(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_SourceError\n"
+        ".Lf1a710a_001a7162:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 516 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 8(%ebp), %edx\n" /* handle */
+        "movl %edx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a710a_001a72b4\n"
+        "cmpb $0x7d, -0x418(%ebp)\n" /* line 522 */
+        "je .Lf1a710a_001a72ce\n"
+        /* { scope 2 */
+        "movzbl -0x418(%ebp), %eax\n" /* line 461 */
+        "testb %al, %al\n"
+        "jne .Lf1a710a_001a722c\n"
+        "xorl %edi, %edi\n" /* hash */
+        "xorl %eax, %eax\n"
+        "xorl %edx, %edx\n"
+        /* } scope */
+        ".Lf1a710a_001a71a1:\n"
+        "xorl %edi, %eax\n" /* line 489 | hash */
+        "xorl %edx, %eax\n"
+        "andl $0x1ff, %eax\n"
+        "movl itemParseKeywordHash(, %eax, 4), %ebx\n"
+        "testl %ebx, %ebx\n"
+        "je .Lf1a710a_001a7145\n"
+        "leal -0x418(%ebp), %eax\n" /* line 491 */
+        "movl %eax, 4(%esp)\n"
+        "movl (%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a710a_001a71f0\n"
+        ".Lf1a710a_001a71cd:\n"
+        "movl 8(%ebx), %ebx\n" /* line 489 */
+        "testl %ebx, %ebx\n"
+        "je .Lf1a710a_001a7145\n"
+        "leal -0x418(%ebp), %eax\n" /* line 491 */
+        "movl %eax, 4(%esp)\n"
+        "movl (%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a710a_001a71cd\n"
+        ".Lf1a710a_001a71f0:\n"
+        "movl 8(%ebp), %edx\n" /* line 531 | handle */
+        "movl %edx, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* item */
+        "movl %eax, (%esp)\n"
+        "calll *4(%ebx)\n" /* key */
+        "testl %eax, %eax\n"
+        "jne .Lf1a710a_001a7162\n"
+        "leal -0x418(%ebp), %edx\n" /* line 533 */
+        "movl %edx, 8(%esp)\n"
+        "movl $0x2b4220, 4(%esp)\n" /* "couldn't parse menu item keyword %s" */
+        "movl 8(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a710a_001a713a\n"
+        /* { scope 2 */
+        ".Lf1a710a_001a722c:\n"
+        "leal -0x417(%ebp), %edx\n" /* line 461 */
+        "movl %edx, -0x42c(%ebp)\n"
+        "leal -0x418(%ebp), %esi\n"
+        "xorl %edi, %edi\n" /* hash */
+        "movl $0x77, %ebx\n"
+        "jmp .Lf1a710a_001a7270\n"
+        ".Lf1a710a_001a7247:\n"
+        "movsbl (%esi), %eax\n" /* line 464 */
+        "addl $0x20, %eax\n"
+        "imull %ebx, %eax\n"
+        "addl %eax, %edi\n" /* hash */
+        "movl -0x42c(%ebp), %esi\n" /* line 466 */
+        "movzbl -0x48e(%ebp, %ebx), %eax\n" /* line 461 */
+        "leal 1(%esi), %edx\n"
+        "movl %edx, -0x42c(%ebp)\n"
+        "addl $1, %ebx\n"
+        "testb %al, %al\n"
+        "je .Lf1a710a_001a72a5\n"
+        ".Lf1a710a_001a7270:\n"
+        "movsbl %al, %eax\n" /* line 463 */
+        "movl %eax, (%esp)\n"
+        "calll I_isupper\n"
+        "testb %al, %al\n"
+        "jne .Lf1a710a_001a7247\n"
+        "movsbl (%esi), %eax\n" /* line 466 */
+        "imull %ebx, %eax\n"
+        "addl %eax, %edi\n" /* hash */
+        "movl -0x42c(%ebp), %esi\n"
+        "movzbl -0x48e(%ebp, %ebx), %eax\n" /* line 461 */
+        "leal 1(%esi), %edx\n"
+        "movl %edx, -0x42c(%ebp)\n"
+        "addl $1, %ebx\n"
+        "testb %al, %al\n"
+        "jne .Lf1a710a_001a7270\n"
+        ".Lf1a710a_001a72a5:\n"
+        "movl %edi, %eax\n" /* hash */
+        "sarl $0xa, %eax\n"
+        "movl %edi, %edx\n" /* hash */
+        "sarl $0x14, %edx\n"
+        "jmp .Lf1a710a_001a71a1\n"
+        /* } scope */
+        ".Lf1a710a_001a72b4:\n"
+        "movl $0x2b4174, 4(%esp)\n" /* line 518 */
+        "movl 8(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a710a_001a713a\n"
+        ".Lf1a710a_001a72ce:\n"
+        "movl $1, %eax\n" /* line 522 */
+        "jmp .Lf1a710a_001a713a\n"
+    );
+}
+
+/* line 938 */
+__attribute__((naked))
+qboolean MenuParse_itemDef(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 938 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x1c, %esp\n"
+        "movl 8(%ebp), %edi\n" /* item */
+        "movl 0x218(%edi), %edx\n" /* line 942 | item */
+        "cmpl $0xff, %edx\n"
+        "jle .Lf1a72d8_001a72ff\n"
+        ".Lf1a72d8_001a72f2:\n"
+        "movl $1, %eax\n" /* line 951 */
+        ".Lf1a72d8_001a72f7:\n"
+        "addl $0x1c, %esp\n" /* line 954 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lf1a72d8_001a72ff:\n"
+        "movl 0x27c(%edi), %eax\n" /* line 944 | item */
+        "leal (%eax, %edx, 4), %ebx\n"
+        "movl $4, 4(%esp)\n"
+        "movl $0x2f4, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movl %eax, (%ebx)\n"
+        "movl 0x258(%edi), %esi\n" /* line 945 | item, imageTrack */
+        "movl 0x218(%edi), %edx\n" /* item */
+        "movl 0x27c(%edi), %eax\n" /* item */
+        "movl (%eax, %edx, 4), %ebx\n" /* item */
+        /* { scope 1 */
+        "movl $0x2f4, 8(%esp)\n" /* line 444 */
+        "movl $0, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll memset\n"
+        "movl $0x3f0ccccd, 0x28c(%ebx)\n" /* line 445 */
+        "movl %esi, 0x2f0(%ebx)\n" /* line 446 */
+        "movl $0x210, 8(%esp)\n" /* line 421 */
+        "movl $0, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll memset\n"
+        "movl $0x3f800000, %eax\n" /* line 422 */
+        "movl %eax, 0xe0(%ebx)\n"
+        "movl %eax, 0x1d8(%ebx)\n" /* line 423 */
+        "movl %eax, 0x1d4(%ebx)\n"
+        "movl %eax, 0x1d0(%ebx)\n"
+        "movl %eax, 0x1cc(%ebx)\n"
+        "movl $0xffffffff, 0xcc(%ebx)\n" /* line 424 */
+        /* } scope */
+        "movl 0x218(%edi), %edx\n" /* line 946 | item */
+        "movl 0x27c(%edi), %eax\n" /* item */
+        "movl (%eax, %edx, 4), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll Item_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a72d8_001a72f7\n"
+        "movl 0x218(%edi), %edx\n" /* line 950 | item */
+        "movl 0x27c(%edi), %eax\n" /* item */
+        "movl (%eax, %edx, 4), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll Item_InitControls\n"
+        "movl 0x218(%edi), %eax\n" /* line 951 | item */
+        "movl 0x27c(%edi), %edx\n" /* item */
+        "movl (%edx, %eax, 4), %edx\n"
+        "movl %edi, 0x29c(%edx)\n" /* item */
+        "addl $1, %eax\n"
+        "movl %eax, 0x218(%edi)\n" /* item */
+        "jmp .Lf1a72d8_001a72f2\n"
+    );
+}
+
+/* line 2225 */
+__attribute__((naked))
+void Item_SetupKeywordHash(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2225 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x3c, %esp\n"
+        "movl $0x800, 8(%esp)\n" /* line 2229 */
+        "movl $0, 4(%esp)\n"
+        "movl $itemParseKeywordHash, (%esp)\n"
+        "calll memset\n"
+        "movl itemParseKeywords, %ecx\n" /* line 2230 */
+        "testl %ecx, %ecx\n"
+        "je .Lf1a7400_001a751d\n"
+        "movl $itemParseKeywords, -0x1c(%ebp)\n"
+        "movl $0, -0x2c(%ebp)\n"
+        "jmp .Lf1a7400_001a748d\n"
+        /* { scope 1: keyword */
+        /* { scope 2: hash */
+        /* { scope 3 */
+        ".Lf1a7400_001a7443:\n"
+        "movl $0, -0x20(%ebp)\n" /* line 461 | hash */
+        "xorl %edx, %edx\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a7400_001a744e:\n"
+        "xorl -0x20(%ebp), %edx\n" /* line 478 | hash */
+        "xorl %edx, %eax\n"
+        "andl $0x1ff, %eax\n"
+        "shll $2, %eax\n"
+        "movl itemParseKeywordHash(%eax), %edx\n"
+        "movl -0x2c(%ebp), %ecx\n"
+        "movl %edx, 0x313ca8(%ecx)\n"
+        "movl -0x28(%ebp), %edx\n" /* line 479 | key */
+        "movl %edx, itemParseKeywordHash(%eax)\n"
+        /* } scope */
+        "addl $0xc, %ecx\n" /* line 2230 */
+        "movl %ecx, -0x2c(%ebp)\n"
+        "movl -0x1c(%ebp), %ecx\n"
+        "movl 0xc(%ecx), %eax\n"
+        "addl $0xc, %ecx\n"
+        "movl %ecx, -0x1c(%ebp)\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7400_001a751d\n"
+        ".Lf1a7400_001a748d:\n"
+        "movl -0x2c(%ebp), %eax\n" /* line 2232 */
+        "addl $itemParseKeywords, %eax\n"
+        "movl %eax, -0x28(%ebp)\n" /* key */
+        /* { scope 1: keyword */
+        "movl -0x2c(%ebp), %edx\n" /* line 477 */
+        "movl itemParseKeywords(%edx), %edx\n"
+        "movl %edx, -0x24(%ebp)\n" /* keyword */
+        /* { scope 2: hash */
+        /* { scope 3 */
+        "movzbl (%edx), %eax\n" /* line 461 */
+        "testb %al, %al\n"
+        "je .Lf1a7400_001a7443\n"
+        "movl %edx, %ebx\n"
+        "movl %edx, %esi\n"
+        "addl $1, %ebx\n"
+        "movl $0, -0x20(%ebp)\n" /* hash */
+        "movl $0x77, %edi\n"
+        "jmp .Lf1a7400_001a74e0\n"
+        ".Lf1a7400_001a74c0:\n"
+        "movsbl (%esi), %eax\n" /* line 464 */
+        "addl $0x20, %eax\n"
+        "imull %edi, %eax\n"
+        "addl %eax, -0x20(%ebp)\n" /* hash */
+        "movl %ebx, %esi\n" /* line 466 */
+        "movl -0x24(%ebp), %ecx\n" /* line 461 | keyword */
+        "movzbl -0x76(%ecx, %edi), %eax\n"
+        "addl $1, %ebx\n"
+        "addl $1, %edi\n"
+        "testb %al, %al\n"
+        "je .Lf1a7400_001a750c\n"
+        ".Lf1a7400_001a74e0:\n"
+        "movsbl %al, %eax\n" /* line 463 */
+        "movl %eax, (%esp)\n"
+        "calll I_isupper\n"
+        "testb %al, %al\n"
+        "jne .Lf1a7400_001a74c0\n"
+        "movsbl (%esi), %eax\n" /* line 466 */
+        "imull %edi, %eax\n"
+        "addl %eax, -0x20(%ebp)\n" /* hash */
+        "movl %ebx, %esi\n"
+        "movl -0x24(%ebp), %ecx\n" /* line 461 | keyword */
+        "movzbl -0x76(%ecx, %edi), %eax\n"
+        "addl $1, %ebx\n"
+        "addl $1, %edi\n"
+        "testb %al, %al\n"
+        "jne .Lf1a7400_001a74e0\n"
+        ".Lf1a7400_001a750c:\n"
+        "movl -0x20(%ebp), %edx\n" /* hash */
+        "sarl $0xa, %edx\n"
+        "movl -0x20(%ebp), %eax\n" /* hash */
+        "sarl $0x14, %eax\n"
+        "jmp .Lf1a7400_001a744e\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        ".Lf1a7400_001a751d:\n"
+        "addl $0x3c, %esp\n" /* line 2234 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 1077 */
+__attribute__((naked))
+void Menu_SetupKeywordHash(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1077 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x3c, %esp\n"
+        "movl $0x800, 8(%esp)\n" /* line 1081 */
+        "movl $0, 4(%esp)\n"
+        "movl $menuParseKeywordHash, (%esp)\n"
+        "calll memset\n"
+        "movl menuParseKeywords, %ebx\n" /* line 1082 */
+        "testl %ebx, %ebx\n"
+        "je .Lf1a7526_001a7643\n"
+        "movl $menuParseKeywords, -0x1c(%ebp)\n"
+        "movl $0, -0x2c(%ebp)\n"
+        "jmp .Lf1a7526_001a75b3\n"
+        /* { scope 1: keyword */
+        /* { scope 2: hash */
+        /* { scope 3 */
+        ".Lf1a7526_001a7569:\n"
+        "movl $0, -0x20(%ebp)\n" /* line 461 | hash */
+        "xorl %edx, %edx\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a7526_001a7574:\n"
+        "xorl -0x20(%ebp), %edx\n" /* line 478 | hash */
+        "xorl %edx, %eax\n"
+        "andl $0x1ff, %eax\n"
+        "shll $2, %eax\n"
+        "movl menuParseKeywordHash(%eax), %edx\n"
+        "movl -0x2c(%ebp), %ecx\n"
+        "movl %edx, 0x313fc8(%ecx)\n"
+        "movl -0x28(%ebp), %edx\n" /* line 479 | key */
+        "movl %edx, menuParseKeywordHash(%eax)\n"
+        /* } scope */
+        "addl $0xc, %ecx\n" /* line 1082 */
+        "movl %ecx, -0x2c(%ebp)\n"
+        "movl -0x1c(%ebp), %ecx\n"
+        "movl 0xc(%ecx), %eax\n"
+        "addl $0xc, %ecx\n"
+        "movl %ecx, -0x1c(%ebp)\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7526_001a7643\n"
+        ".Lf1a7526_001a75b3:\n"
+        "movl -0x2c(%ebp), %eax\n" /* line 1084 */
+        "addl $menuParseKeywords, %eax\n"
+        "movl %eax, -0x28(%ebp)\n" /* key */
+        /* { scope 1: keyword */
+        "movl -0x2c(%ebp), %edx\n" /* line 477 */
+        "movl menuParseKeywords(%edx), %edx\n"
+        "movl %edx, -0x24(%ebp)\n" /* keyword */
+        /* { scope 2: hash */
+        /* { scope 3 */
+        "movzbl (%edx), %eax\n" /* line 461 */
+        "testb %al, %al\n"
+        "je .Lf1a7526_001a7569\n"
+        "movl %edx, %ebx\n"
+        "movl %edx, %esi\n"
+        "addl $1, %ebx\n"
+        "movl $0, -0x20(%ebp)\n" /* hash */
+        "movl $0x77, %edi\n"
+        "jmp .Lf1a7526_001a7606\n"
+        ".Lf1a7526_001a75e6:\n"
+        "movsbl (%esi), %eax\n" /* line 464 */
+        "addl $0x20, %eax\n"
+        "imull %edi, %eax\n"
+        "addl %eax, -0x20(%ebp)\n" /* hash */
+        "movl %ebx, %esi\n" /* line 466 */
+        "movl -0x24(%ebp), %ecx\n" /* line 461 | keyword */
+        "movzbl -0x76(%ecx, %edi), %eax\n"
+        "addl $1, %ebx\n"
+        "addl $1, %edi\n"
+        "testb %al, %al\n"
+        "je .Lf1a7526_001a7632\n"
+        ".Lf1a7526_001a7606:\n"
+        "movsbl %al, %eax\n" /* line 463 */
+        "movl %eax, (%esp)\n"
+        "calll I_isupper\n"
+        "testb %al, %al\n"
+        "jne .Lf1a7526_001a75e6\n"
+        "movsbl (%esi), %eax\n" /* line 466 */
+        "imull %edi, %eax\n"
+        "addl %eax, -0x20(%ebp)\n" /* hash */
+        "movl %ebx, %esi\n"
+        "movl -0x24(%ebp), %ecx\n" /* line 461 | keyword */
+        "movzbl -0x76(%ecx, %edi), %eax\n"
+        "addl $1, %ebx\n"
+        "addl $1, %edi\n"
+        "testb %al, %al\n"
+        "jne .Lf1a7526_001a7606\n"
+        ".Lf1a7526_001a7632:\n"
+        "movl -0x20(%ebp), %edx\n" /* hash */
+        "sarl $0xa, %edx\n"
+        "movl -0x20(%ebp), %eax\n" /* hash */
+        "sarl $0x14, %eax\n"
+        "jmp .Lf1a7526_001a7574\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        ".Lf1a7526_001a7643:\n"
+        "addl $0x3c, %esp\n" /* line 1086 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 567 */
+__attribute__((naked))
+qboolean MenuParse_name(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 567 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a764e_001a7672\n"
+        /* } scope */
+        "leave\n" /* line 572 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a764e_001a7672:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0xc0(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 572 */
+        "retl\n"
+    );
+}
+
+/* line 798 */
+__attribute__((naked))
+qboolean MenuParse_background(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 798 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x464, %esp\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x458(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7690_001a76bc\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x464, %esp\n" /* line 811 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7690_001a76bc:\n"
+        "leal -0x448(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl $0x40, 8(%esp)\n" /* line 807 */
+        "movl %eax, 4(%esp)\n"
+        "leal -0x48(%ebp), %ebx\n" /* name */
+        "movl %ebx, (%esp)\n"
+        "calll I_strncpyz\n"
+        "movl %ebx, (%esp)\n" /* line 808 */
+        "calll I_strlwr\n"
+        "movl 8(%ebp), %edx\n" /* line 809 | item */
+        "movl 0x258(%edx), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterMaterialNoMip\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0x20c(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x464, %esp\n" /* line 811 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 814 */
+__attribute__((naked))
+qboolean MenuParse_cinematic(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 814 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7716_001a773a\n"
+        /* } scope */
+        "leave\n" /* line 823 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a7716_001a773a:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0xc8(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 823 */
+        "retl\n"
+    );
+}
+
+/* line 1159 */
+__attribute__((naked))
+qboolean ItemParse_name(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1159 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7758_001a777c\n"
+        /* } scope */
+        "leave\n" /* line 1162 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a7758_001a777c:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0xc0(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 1162 */
+        "retl\n"
+    );
+}
+
+/* line 1166 */
+__attribute__((naked))
+qboolean ItemParse_focusSound(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1166 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a779a_001a77be\n"
+        /* } scope */
+        /* } scope */
+        "leave\n" /* line 1174 */
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a779a_001a77be:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl %eax, (%esp)\n" /* line 1172 */
+        "calll Com_FindSoundAlias\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0x2d4(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 1174 */
+        "retl\n"
+    );
+}
+
+/* line 1178 */
+__attribute__((naked))
+qboolean ItemParse_text(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1178 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a77e4_001a7808\n"
+        /* } scope */
+        "leave\n" /* line 1181 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a77e4_001a7808:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0x294(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 1181 */
+        "retl\n"
+    );
+}
+
+/* line 1211 */
+__attribute__((naked))
+qboolean ItemParse_group(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1211 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7826_001a784a\n"
+        /* } scope */
+        "leave\n" /* line 1214 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a7826_001a784a:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0xc4(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 1214 */
+        "retl\n"
+    );
+}
+
+/* line 1656 */
+__attribute__((naked))
+qboolean ItemParse_background(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1656 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x464, %esp\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x458(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7868_001a7894\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x464, %esp\n" /* line 1668 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7868_001a7894:\n"
+        "leal -0x448(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl $0x40, 8(%esp)\n" /* line 1664 */
+        "movl %eax, 4(%esp)\n"
+        "leal -0x48(%ebp), %ebx\n" /* name */
+        "movl %ebx, (%esp)\n"
+        "calll I_strncpyz\n"
+        "movl %ebx, (%esp)\n" /* line 1665 */
+        "calll I_strlwr\n"
+        "movl 8(%ebp), %edx\n" /* line 1666 | item */
+        "movl 0x2f0(%edx), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterMaterialNoMip\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0x20c(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x464, %esp\n" /* line 1668 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 1671 */
+__attribute__((naked))
+qboolean ItemParse_cinematic(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1671 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a78ee_001a7912\n"
+        /* } scope */
+        "leave\n" /* line 1678 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a78ee_001a7912:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0xc8(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 1678 */
+        "retl\n"
+    );
+}
+
+/* line 1796 */
+__attribute__((naked))
+qboolean ItemParse_dvarTest(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1796 */
+        "movl %esp, %ebp\n"
+        "subl $0x428, %esp\n"
+        /* { scope 1 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7930_001a7954\n"
+        /* } scope */
+        "leave\n" /* line 1803 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a7930_001a7954:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl 8(%ebp), %edx\n" /* item */
+        "movl %eax, 0x2c4(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "leave\n" /* line 1803 */
+        "retl\n"
+    );
+}
+
+/* line 1806 */
+__attribute__((naked))
+qboolean ItemParse_dvar(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1806 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x420, %esp\n"
+        "movl 8(%ebp), %esi\n" /* item */
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        /* { scope 1: token */
+        "movl %ebx, %edx\n" /* line 1810 | handle */
+        "movl %esi, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        /* { scope 2 */
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7972_001a79ac\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 1827 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7972_001a79ac:\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, 0x2c0(%esi)\n"
+        /* } scope */
+        "movl 0x2ec(%esi), %eax\n" /* line 1815 | item */
+        "testl %eax, %eax\n"
+        "je .Lf1a7972_001a79d6\n"
+        "movl %esi, (%esp)\n" /* line 1817 | item */
+        "calll Item_IsEditFieldDef\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7972_001a79e5\n"
+        ".Lf1a7972_001a79d6:\n"
+        "movl $1, %eax\n" /* line 1823 */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 1827 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1a7972_001a79e5:\n"
+        "movl %esi, (%esp)\n" /* line 1819 | item */
+        "calll Item_GetEditFieldDef\n"
+        "movl $0xbf800000, %edx\n" /* line 1821 */
+        "movl %edx, (%eax)\n"
+        "movl %edx, 4(%eax)\n" /* line 1822 */
+        "movl %edx, 8(%eax)\n" /* line 1823 */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 1827 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 2022 */
+__attribute__((naked))
+qboolean ItemParse_dvarEnumList(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2022 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x420, %esp\n"
+        "movl 8(%ebp), %esi\n" /* item */
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        "movl %ebx, %edx\n" /* line 2024 | handle */
+        "movl %esi, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "cmpl $0xd, 0x270(%esi)\n" /* line 2025 | item */
+        "je .Lf1a7a0a_001a7a39\n"
+        /* { scope 1 */
+        ".Lf1a7a0a_001a7a2d:\n"
+        "xorl %eax, %eax\n" /* line 344 */
+        /* } scope */
+        ".Lf1a7a0a_001a7a2f:\n"
+        "addl $0x420, %esp\n" /* line 2033 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lf1a7a0a_001a7a39:\n"
+        "movl 0x2ec(%esi), %eax\n" /* line 2027 | item */
+        "testl %eax, %eax\n"
+        "je .Lf1a7a0a_001a7a5f\n"
+        "movl $0x2b4264, 4(%esp)\n" /* line 2029 */
+        "movl %ebx, (%esp)\n" /* handle */
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "addl $0x420, %esp\n" /* line 2033 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf1a7a0a_001a7a5f:\n"
+        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7a0a_001a7a2d\n"
+        "leal -0x408(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, 0x2ec(%esi)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7a0a_001a7a2f\n"
+    );
+}
+
+/* line 1646 */
+__attribute__((naked))
+qboolean ItemParse_outlinecolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1646 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "addl $0x1fc, %ebx\n"
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7a90_001a7aad:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7a90_001a7b14\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a7a90_001a7afe\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a7a90_001a7ace:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a7a90_001a7b21\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1653 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7a90_001a7afe:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7a90_001a7b4d\n"
+        ".Lf1a7a90_001a7b14:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a7a90_001a7b16:\n"
+        "addl $0x42c, %esp\n" /* line 1653 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7a90_001a7b21:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a7a90_001a7b45\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a7a90_001a7b30:\n"
+        "movl %eax, (%ebx)\n" /* line 264 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 258 */
+        "jne .Lf1a7a90_001a7aad\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7a90_001a7b16\n"
+        /* { scope 2 */
+        ".Lf1a7a90_001a7b45:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a7a90_001a7b30\n"
+        ".Lf1a7a90_001a7b4d:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a7a90_001a7ace\n"
+    );
+}
+
+/* line 786 */
+__attribute__((naked))
+qboolean MenuParse_outlinecolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 786 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "addl $0x1fc, %ebx\n"
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7b58_001a7b75:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7b58_001a7bdc\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a7b58_001a7bc6\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a7b58_001a7b96:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a7b58_001a7be9\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 795 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7b58_001a7bc6:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7b58_001a7c15\n"
+        ".Lf1a7b58_001a7bdc:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a7b58_001a7bde:\n"
+        "addl $0x42c, %esp\n" /* line 795 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7b58_001a7be9:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a7b58_001a7c0d\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a7b58_001a7bf8:\n"
+        "movl %eax, (%ebx)\n" /* line 264 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 258 */
+        "jne .Lf1a7b58_001a7b75\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7b58_001a7bde\n"
+        /* { scope 2 */
+        ".Lf1a7b58_001a7c0d:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a7b58_001a7bf8\n"
+        ".Lf1a7b58_001a7c15:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a7b58_001a7b96\n"
+    );
+}
+
+/* line 307 */
+__attribute__((naked))
+qboolean PC_Rect_Parse(int handle, rectDef_t *r)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 307 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* handle */
+        /* { scope 1: token */
+        "leal -0x428(%ebp), %esi\n" /* line 188 | token */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7df1\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a7c22_001a7de1\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a7c22_001a7c5a:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "jne .Lf1a7c22_001a7dfe\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a7c22_001a7e25\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl 0xc(%ebp), %edx\n" /* r */
+        "movl %eax, (%edx)\n"
+        /* } scope */
+        ".Lf1a7c22_001a7c7f:\n"
+        "movl 0xc(%ebp), %edi\n" /* line 311 | r, f */
+        "addl $4, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "movl %esi, 4(%esp)\n" /* line 188 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7df1\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a7c22_001a7e4c\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a7c22_001a7ca8:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "jne .Lf1a7c22_001a7dfe\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a7c22_001a7e3f\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a7c22_001a7cca:\n"
+        "movl 0xc(%ebp), %edi\n" /* line 313 | r, f */
+        "addl $8, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "movl %esi, 4(%esp)\n" /* line 188 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7df1\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a7c22_001a7e73\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a7c22_001a7cf3:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "jne .Lf1a7c22_001a7dfe\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a7c22_001a7e66\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a7c22_001a7d15:\n"
+        "movl 0xc(%ebp), %edi\n" /* line 315 | r, f */
+        "addl $0xc, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "movl %esi, 4(%esp)\n" /* line 188 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7df1\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a7c22_001a7ed5\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a7c22_001a7d3e:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "jne .Lf1a7c22_001a7dfe\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a7c22_001a7ec8\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a7c22_001a7d60:\n"
+        "movl 0xc(%ebp), %edi\n" /* line 317 | r, i */
+        "addl $0x10, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "movl %esi, 4(%esp)\n" /* line 225 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadLineHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7c22_001a7e91\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a7c22_001a7d7a:\n"
+        "movl 0xc(%ebp), %eax\n" /* line 318 | r */
+        "movl $0, 0x10(%eax)\n"
+        ".Lf1a7c22_001a7d84:\n"
+        "movl 0xc(%ebp), %edi\n" /* line 320 | r, i */
+        "addl $0x14, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "movl %esi, 4(%esp)\n" /* line 225 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadLineHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7dd0\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 229 */
+        "je .Lf1a7c22_001a7f2a\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a7c22_001a7da9:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 235 | token */
+        "je .Lf1a7c22_001a7ef3\n"
+        "leal -0x418(%ebp), %eax\n" /* line 237 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %ebx, (%esp)\n"
+        "calll PC_SourceError\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a7c22_001a7dd0:\n"
+        "movl 0xc(%ebp), %edx\n" /* line 321 | r */
+        "movl $0, 0x14(%edx)\n"
+        ".Lf1a7c22_001a7dda:\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7c22_001a7df3\n"
+        /* { scope 1: token */
+        ".Lf1a7c22_001a7de1:\n"
+        "movl %esi, 4(%esp)\n" /* line 194 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a7c22_001a7e35\n"
+        /* } scope */
+        ".Lf1a7c22_001a7df1:\n"
+        "xorl %eax, %eax\n" /* line 321 */
+        ".Lf1a7c22_001a7df3:\n"
+        "addl $0x42c, %esp\n" /* line 329 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7dfe:\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %ebx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 329 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1a7c22_001a7e25:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl 0xc(%ebp), %edx\n" /* r */
+        "movl %eax, (%edx)\n"
+        "jmp .Lf1a7c22_001a7c7f\n"
+        ".Lf1a7c22_001a7e35:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a7c22_001a7c5a\n"
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7e3f:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "jmp .Lf1a7c22_001a7cca\n"
+        ".Lf1a7c22_001a7e4c:\n"
+        "movl %esi, 4(%esp)\n" /* line 194 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7df1\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7c22_001a7ca8\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7e66:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "jmp .Lf1a7c22_001a7d15\n"
+        ".Lf1a7c22_001a7e73:\n"
+        "movl %esi, 4(%esp)\n" /* line 194 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7df1\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7c22_001a7cf3\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7e91:\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 229 */
+        "je .Lf1a7c22_001a7f48\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a7c22_001a7ea0:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 235 | token */
+        "je .Lf1a7c22_001a7f11\n"
+        "leal -0x418(%ebp), %eax\n" /* line 237 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %ebx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "jmp .Lf1a7c22_001a7d7a\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7ec8:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "jmp .Lf1a7c22_001a7d60\n"
+        ".Lf1a7c22_001a7ed5:\n"
+        "movl %esi, 4(%esp)\n" /* line 194 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7df1\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7c22_001a7d3e\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7ef3:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 240 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 241 */
+        "je .Lf1a7c22_001a7dda\n"
+        "negl %eax\n" /* line 242 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7c22_001a7df3\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7f11:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 240 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 241 */
+        "je .Lf1a7c22_001a7d84\n"
+        "negl %eax\n" /* line 242 */
+        "movl %eax, (%edi)\n"
+        "jmp .Lf1a7c22_001a7d84\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7f2a:\n"
+        "movl %esi, 4(%esp)\n" /* line 231 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadLineHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7dd0\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a7c22_001a7da9\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7c22_001a7f48:\n"
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadLineHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7c22_001a7d7a\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a7c22_001a7ea0\n"
+    );
+}
+
+/* line 1218 */
+__attribute__((naked))
+qboolean ItemParse_rect(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1218 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x34, %esp\n"
+        /* { scope 1 */
+        "leal -0x20(%ebp), %ebx\n" /* line 1221 | rectClient */
+        "movl %ebx, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Rect_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7f66_001a7f97\n"
+        "movl %ebx, 4(%esp)\n" /* line 1224 */
+        "movl 8(%ebp), %eax\n" /* item */
+        "movl %eax, (%esp)\n"
+        "calll Window_SetRectClient\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        ".Lf1a7f66_001a7f97:\n"
+        "addl $0x34, %esp\n" /* line 1226 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 587 */
+__attribute__((naked))
+qboolean MenuParse_rect(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 587 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x34, %esp\n"
+        /* { scope 1 */
+        "leal -0x20(%ebp), %ebx\n" /* line 592 | rect */
+        "movl %ebx, 4(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* handle */
+        "movl %eax, (%esp)\n"
+        "calll PC_Rect_Parse\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7f9e_001a7fcf\n"
+        "movl %ebx, 4(%esp)\n" /* line 596 */
+        "movl 8(%ebp), %eax\n" /* item */
+        "movl %eax, (%esp)\n"
+        "calll Window_SetRect\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        ".Lf1a7f9e_001a7fcf:\n"
+        "addl $0x34, %esp\n" /* line 598 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 680 */
+__attribute__((naked))
+qboolean MenuParse_borderSize(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 680 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 684 | item, f */
+        "addl $0xe0, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7fd6_001a805b\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a7fd6_001a8085\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a7fd6_001a800f:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a7fd6_001a803f\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 689 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7fd6_001a803f:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a7fd6_001a8068\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 689 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7fd6_001a805b:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 689 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7fd6_001a8068:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 689 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a7fd6_001a8085:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a7fd6_001a805b\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a7fd6_001a800f\n"
+    );
+}
+
+/* line 692 */
+__attribute__((naked))
+qboolean MenuParse_backcolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 692 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a80a0_001a80b7:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a80a0_001a811e\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a80a0_001a8108\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a80a0_001a80d8:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a80a0_001a812b\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 707 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a80a0_001a8108:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a80a0_001a815b\n"
+        ".Lf1a80a0_001a811e:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a80a0_001a8120:\n"
+        "addl $0x42c, %esp\n" /* line 707 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a80a0_001a812b:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a80a0_001a8153\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a80a0_001a813a:\n"
+        "movl %eax, 0x1dc(%ebx)\n" /* line 704 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 698 */
+        "jne .Lf1a80a0_001a80b7\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a80a0_001a8120\n"
+        /* { scope 2 */
+        ".Lf1a80a0_001a8153:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a80a0_001a813a\n"
+        ".Lf1a80a0_001a815b:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a80a0_001a80d8\n"
+    );
+}
+
+/* line 710 */
+__attribute__((naked))
+qboolean MenuParse_forecolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 710 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %esi\n" /* item */
+        "movl 0xc(%ebp), %edi\n" /* handle */
+        /* { scope 1: token */
+        "movl %esi, %ebx\n" /* line 715 | item */
+        /* { scope 2 */
+        ".Lf1a8166_001a817a:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8166_001a81e1\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8166_001a81cb\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8166_001a819b:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8166_001a81ee\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %edi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 729 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8166_001a81cb:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a8166_001a8237\n"
+        ".Lf1a8166_001a81e1:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a8166_001a81e3:\n"
+        "addl $0x42c, %esp\n" /* line 729 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8166_001a81ee:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a8166_001a822f\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a8166_001a81fd:\n"
+        "movl %eax, 0x1cc(%ebx)\n" /* line 723 */
+        "movl 0xe8(%esi), %eax\n" /* line 726 | item */
+        "orl $0x10000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* item */
+        "calll Window_SetDynamicFlags\n"
+        "addl $4, %ebx\n"
+        "leal 0x10(%esi), %eax\n" /* line 717 | item */
+        "cmpl %ebx, %eax\n"
+        "jne .Lf1a8166_001a817a\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8166_001a81e3\n"
+        /* { scope 2 */
+        ".Lf1a8166_001a822f:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a8166_001a81fd\n"
+        ".Lf1a8166_001a8237:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a8166_001a819b\n"
+    );
+}
+
+/* line 732 */
+__attribute__((naked))
+qboolean MenuParse_bordercolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 732 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8242_001a8259:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8242_001a82c0\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8242_001a82aa\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8242_001a827a:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8242_001a82cd\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 747 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8242_001a82aa:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a8242_001a82fd\n"
+        ".Lf1a8242_001a82c0:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a8242_001a82c2:\n"
+        "addl $0x42c, %esp\n" /* line 747 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8242_001a82cd:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a8242_001a82f5\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a8242_001a82dc:\n"
+        "movl %eax, 0x1ec(%ebx)\n" /* line 744 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 738 */
+        "jne .Lf1a8242_001a8259\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8242_001a82c2\n"
+        /* { scope 2 */
+        ".Lf1a8242_001a82f5:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a8242_001a82dc\n"
+        ".Lf1a8242_001a82fd:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a8242_001a827a\n"
+    );
+}
+
+/* line 750 */
+__attribute__((naked))
+qboolean MenuParse_focuscolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 750 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8308_001a831f:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8308_001a8386\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8308_001a8370\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8308_001a8340:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8308_001a8393\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 765 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8308_001a8370:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a8308_001a83c3\n"
+        ".Lf1a8308_001a8386:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a8308_001a8388:\n"
+        "addl $0x42c, %esp\n" /* line 765 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8308_001a8393:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a8308_001a83bb\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a8308_001a83a2:\n"
+        "movl %eax, 0x25c(%ebx)\n" /* line 762 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 756 */
+        "jne .Lf1a8308_001a831f\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8308_001a8388\n"
+        /* { scope 2 */
+        ".Lf1a8308_001a83bb:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a8308_001a83a2\n"
+        ".Lf1a8308_001a83c3:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a8308_001a8340\n"
+    );
+}
+
+/* line 768 */
+__attribute__((naked))
+qboolean MenuParse_disablecolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 768 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a83ce_001a83e5:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a83ce_001a844c\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a83ce_001a8436\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a83ce_001a8406:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a83ce_001a8459\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 783 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a83ce_001a8436:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a83ce_001a8489\n"
+        ".Lf1a83ce_001a844c:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a83ce_001a844e:\n"
+        "addl $0x42c, %esp\n" /* line 783 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a83ce_001a8459:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a83ce_001a8481\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a83ce_001a8468:\n"
+        "movl %eax, 0x26c(%ebx)\n" /* line 780 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 774 */
+        "jne .Lf1a83ce_001a83e5\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a83ce_001a844e\n"
+        /* { scope 2 */
+        ".Lf1a83ce_001a8481:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a83ce_001a8468\n"
+        ".Lf1a83ce_001a8489:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a83ce_001a8406\n"
+    );
+}
+
+/* line 890 */
+__attribute__((naked))
+qboolean MenuParse_fadeClamp(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 890 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 894 | item, f */
+        "addl $0x234, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8494_001a8519\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8494_001a8543\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8494_001a84cd:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8494_001a84fd\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 899 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8494_001a84fd:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a8494_001a8526\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 899 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8494_001a8519:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 899 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8494_001a8526:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 899 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8494_001a8543:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8494_001a8519\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8494_001a84cd\n"
+    );
+}
+
+/* line 902 */
+__attribute__((naked))
+qboolean MenuParse_fadeAmount(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 902 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 906 | item, f */
+        "addl $0x238, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a855e_001a85e3\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a855e_001a860d\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a855e_001a8597:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a855e_001a85c7\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 911 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a855e_001a85c7:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a855e_001a85f0\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 911 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a855e_001a85e3:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 911 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a855e_001a85f0:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 911 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a855e_001a860d:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a855e_001a85e3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a855e_001a8597\n"
+    );
+}
+
+/* line 914 */
+__attribute__((naked))
+qboolean MenuParse_fadeInAmount(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 914 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 918 | item, f */
+        "addl $0x23c, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8628_001a86ad\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8628_001a86d7\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8628_001a8661:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8628_001a8691\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 923 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8628_001a8691:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a8628_001a86ba\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 923 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8628_001a86ad:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 923 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8628_001a86ba:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 923 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8628_001a86d7:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8628_001a86ad\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8628_001a8661\n"
+    );
+}
+
+/* line 1004 */
+__attribute__((naked))
+qboolean MenuParse_blurWorld(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1004 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1010 | item, f */
+        "addl $0x240, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a86f2_001a876b\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a86f2_001a875b\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a86f2_001a872b:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a86f2_001a8778\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1018 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a86f2_001a875b:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a86f2_001a87d7\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a86f2_001a876b:\n"
+        "xorl %eax, %eax\n" /* line 1015 */
+        ".Lf1a86f2_001a876d:\n"
+        "addl $0x42c, %esp\n" /* line 1018 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a86f2_001a8778:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a86f2_001a87af\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a86f2_001a8789:\n"
+        "movl 8(%ebp), %eax\n" /* line 1012 | item */
+        "movss 0x240(%eax), %xmm0\n"
+        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "jp .Lf1a86f2_001a879f\n"
+        "jb .Lf1a86f2_001a87b9\n"
+        ".Lf1a86f2_001a879f:\n"
+        "movl $1, %eax\n"
+        "addl $0x42c, %esp\n" /* line 1018 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a86f2_001a87af:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "jmp .Lf1a86f2_001a8789\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a86f2_001a87b9:\n"
+        "cvtss2sd %xmm0, %xmm0\n" /* line 1014 */
+        "movsd %xmm0, 8(%esp)\n"
+        "movl $0x2b4280, 4(%esp)\n" /* "blur must be >= 0; %g is invalid" */
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a86f2_001a876d\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a86f2_001a87d7:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a86f2_001a872b\n"
+    );
+}
+
+/* line 1351 */
+__attribute__((naked))
+qboolean ItemParse_elementwidth(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1351 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1 */
+        "movl %esi, %edx\n" /* line 1355 | handle */
+        "movl %ebx, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl %ebx, (%esp)\n" /* line 1356 | item */
+        "calll Item_GetListBoxDef\n"
+        "testl %eax, %eax\n" /* line 1357 */
+        "je .Lf1a87e2_001a886d\n"
+        "leal 0x34(%eax), %edi\n" /* line 1359 | f */
+        /* { scope 2: token */
+        /* { scope 3 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a87e2_001a886d\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a87e2_001a885d\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a87e2_001a882d:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a87e2_001a887a\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1364 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a87e2_001a885d:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a87e2_001a88a1\n"
+        ".Lf1a87e2_001a886d:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        ".Lf1a87e2_001a886f:\n"
+        "addl $0x42c, %esp\n" /* line 1364 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a87e2_001a887a:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a87e2_001a8892\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a87e2_001a886f\n"
+        ".Lf1a87e2_001a8892:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a87e2_001a886f\n"
+        ".Lf1a87e2_001a88a1:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a87e2_001a882d\n"
+    );
+}
+
+/* line 1369 */
+__attribute__((naked))
+qboolean ItemParse_elementheight(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1369 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1 */
+        "movl %esi, %edx\n" /* line 1373 | handle */
+        "movl %ebx, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl %ebx, (%esp)\n" /* line 1374 | item */
+        "calll Item_GetListBoxDef\n"
+        "testl %eax, %eax\n" /* line 1375 */
+        "je .Lf1a88a8_001a8933\n"
+        "leal 0x38(%eax), %edi\n" /* line 1377 | f */
+        /* { scope 2: token */
+        /* { scope 3 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a88a8_001a8933\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a88a8_001a8923\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a88a8_001a88f3:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a88a8_001a8940\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1382 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a88a8_001a8923:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a88a8_001a8967\n"
+        ".Lf1a88a8_001a8933:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        ".Lf1a88a8_001a8935:\n"
+        "addl $0x42c, %esp\n" /* line 1382 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a88a8_001a8940:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a88a8_001a8958\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a88a8_001a8935\n"
+        ".Lf1a88a8_001a8958:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a88a8_001a8935\n"
+        ".Lf1a88a8_001a8967:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a88a8_001a88f3\n"
+    );
+}
+
+/* line 1386 */
+__attribute__((naked))
+qboolean ItemParse_feeder(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1386 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1388 | item, f */
+        "addl $0x2d8, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a896e_001a89f3\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a896e_001a8a1d\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a896e_001a89a7:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a896e_001a89d7\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1393 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a896e_001a89d7:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a896e_001a8a00\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1393 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a896e_001a89f3:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1393 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a896e_001a8a00:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1393 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a896e_001a8a1d:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a896e_001a89f3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a896e_001a89a7\n"
+    );
+}
+
+/* line 1469 */
+__attribute__((naked))
+qboolean ItemParse_bordersize(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1469 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1471 | item, f */
+        "addl $0xe0, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8a38_001a8abd\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8a38_001a8ae7\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8a38_001a8a71:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8a38_001a8aa1\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1476 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8a38_001a8aa1:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a8a38_001a8aca\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1476 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8a38_001a8abd:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1476 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8a38_001a8aca:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1476 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8a38_001a8ae7:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8a38_001a8abd\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8a38_001a8a71\n"
+    );
+}
+
+/* line 1541 */
+__attribute__((naked))
+qboolean ItemParse_textalignx(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1541 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1543 | item, f */
+        "addl $0x284, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8b02_001a8b87\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8b02_001a8bb1\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8b02_001a8b3b:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8b02_001a8b6b\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1548 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8b02_001a8b6b:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a8b02_001a8b94\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1548 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8b02_001a8b87:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1548 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8b02_001a8b94:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1548 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8b02_001a8bb1:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8b02_001a8b87\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8b02_001a8b3b\n"
+    );
+}
+
+/* line 1551 */
+__attribute__((naked))
+qboolean ItemParse_textaligny(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1551 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1553 | item, f */
+        "addl $0x288, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8bcc_001a8c51\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8bcc_001a8c7b\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8bcc_001a8c05:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8bcc_001a8c35\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1558 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8bcc_001a8c35:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a8bcc_001a8c5e\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1558 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8bcc_001a8c51:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1558 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8bcc_001a8c5e:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1558 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8bcc_001a8c7b:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8bcc_001a8c51\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8bcc_001a8c05\n"
+    );
+}
+
+/* line 1561 */
+__attribute__((naked))
+qboolean ItemParse_textscale(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1561 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1563 | item, f */
+        "addl $0x28c, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8c96_001a8d1b\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8c96_001a8d45\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8c96_001a8ccf:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8c96_001a8cff\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1568 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8c96_001a8cff:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a8c96_001a8d28\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1568 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8c96_001a8d1b:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1568 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8c96_001a8d28:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1568 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8c96_001a8d45:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8c96_001a8d1b\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8c96_001a8ccf\n"
+    );
+}
+
+/* line 1591 */
+__attribute__((naked))
+qboolean ItemParse_backcolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1591 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8d60_001a8d77:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8d60_001a8dde\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8d60_001a8dc8\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8d60_001a8d98:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8d60_001a8deb\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1605 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8d60_001a8dc8:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a8d60_001a8e1b\n"
+        ".Lf1a8d60_001a8dde:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a8d60_001a8de0:\n"
+        "addl $0x42c, %esp\n" /* line 1605 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8d60_001a8deb:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a8d60_001a8e13\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a8d60_001a8dfa:\n"
+        "movl %eax, 0x1dc(%ebx)\n" /* line 1602 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 1596 */
+        "jne .Lf1a8d60_001a8d77\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8d60_001a8de0\n"
+        /* { scope 2 */
+        ".Lf1a8d60_001a8e13:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a8d60_001a8dfa\n"
+        ".Lf1a8d60_001a8e1b:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a8d60_001a8d98\n"
+    );
+}
+
+/* line 1608 */
+__attribute__((naked))
+qboolean ItemParse_forecolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1608 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %esi\n" /* item */
+        "movl 0xc(%ebp), %edi\n" /* handle */
+        "movl %esi, %ebx\n" /* item */
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8e26_001a8e3a:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8e26_001a8ea1\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8e26_001a8e8b\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8e26_001a8e5b:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8e26_001a8eae\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %edi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1626 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8e26_001a8e8b:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a8e26_001a8ef7\n"
+        ".Lf1a8e26_001a8ea1:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a8e26_001a8ea3:\n"
+        "addl $0x42c, %esp\n" /* line 1626 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8e26_001a8eae:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a8e26_001a8eef\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a8e26_001a8ebd:\n"
+        "movl %eax, 0x1cc(%ebx)\n" /* line 1620 */
+        "movl 0xe8(%esi), %eax\n" /* line 1623 | item */
+        "orl $0x10000, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* item */
+        "calll Window_SetDynamicFlags\n"
+        "addl $4, %ebx\n"
+        "leal 0x10(%esi), %eax\n" /* line 1614 | item */
+        "cmpl %ebx, %eax\n"
+        "jne .Lf1a8e26_001a8e3a\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8e26_001a8ea3\n"
+        /* { scope 2 */
+        ".Lf1a8e26_001a8eef:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a8e26_001a8ebd\n"
+        ".Lf1a8e26_001a8ef7:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a8e26_001a8e5b\n"
+    );
+}
+
+/* line 1629 */
+__attribute__((naked))
+qboolean ItemParse_bordercolor(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1629 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl $4, %edi\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8f02_001a8f19:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8f02_001a8f80\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8f02_001a8f6a\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8f02_001a8f3a:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8f02_001a8f8d\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1643 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8f02_001a8f6a:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a8f02_001a8fbd\n"
+        ".Lf1a8f02_001a8f80:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a8f02_001a8f82:\n"
+        "addl $0x42c, %esp\n" /* line 1643 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8f02_001a8f8d:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a8f02_001a8fb5\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1a8f02_001a8f9c:\n"
+        "movl %eax, 0x1ec(%ebx)\n" /* line 1640 */
+        "addl $4, %ebx\n"
+        "subl $1, %edi\n" /* line 1634 */
+        "jne .Lf1a8f02_001a8f19\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8f02_001a8f82\n"
+        /* { scope 2 */
+        ".Lf1a8f02_001a8fb5:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1a8f02_001a8f9c\n"
+        ".Lf1a8f02_001a8fbd:\n"
+        "movl $1, %eax\n" /* line 194 */
+        "jmp .Lf1a8f02_001a8f3a\n"
+    );
+}
+
+/* line 1786 */
+__attribute__((naked))
+qboolean ItemParse_special(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1786 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1788 | item, f */
+        "addl $0x2d8, %edi\n" /* f */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8fc8_001a904d\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a8fc8_001a9077\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a8fc8_001a9001:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "je .Lf1a8fc8_001a9031\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1793 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8fc8_001a9031:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "jne .Lf1a8fc8_001a905a\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1793 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8fc8_001a904d:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1793 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8fc8_001a905a:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%edi)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1793 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a8fc8_001a9077:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a8fc8_001a904d\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a8fc8_001a9001\n"
+    );
+}
+
+/* line 1888 */
+__attribute__((naked))
+qboolean ItemParse_dvarFloat(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1888 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %edi\n" /* handle */
+        /* { scope 1: token */
+        "movl %edi, %edx\n" /* line 1892 | handle */
+        "movl %ebx, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%ebx), %eax\n" /* line 1893 | item */
+        "testl %eax, %eax\n"
+        "je .Lf1a9092_001a90db\n"
+        "movl %ebx, (%esp)\n" /* line 1895 | item */
+        "calll Item_GetEditFieldDef\n"
+        "movl %eax, %esi\n" /* editPtr */
+        "testl %eax, %eax\n" /* line 1896 */
+        "je .Lf1a9092_001a90db\n"
+        /* { scope 2: token */
+        "leal -0x428(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a9092_001a90e8\n"
+        /* } scope */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9092_001a90db:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        ".Lf1a9092_001a90dd:\n"
+        "addl $0x42c, %esp\n" /* line 1903 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2: token */
+        ".Lf1a9092_001a90e8:\n"
+        "leal -0x418(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, 0x2c0(%ebx)\n"
+        /* } scope */
+        "leal 8(%esi), %ebx\n" /* line 1898 | editPtr, f */
+        /* { scope 2: token */
+        /* { scope 3 */
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9092_001a90db\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a9092_001a9215\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a9092_001a9124:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "jne .Lf1a9092_001a91e1\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a9092_001a9208\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%ebx)\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 2: token */
+        ".Lf1a9092_001a9146:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9092_001a90db\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a9092_001a9246\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a9092_001a916f:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "jne .Lf1a9092_001a91e1\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a9092_001a9239\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%esi)\n"
+        /* } scope */
+        ".Lf1a9092_001a918d:\n"
+        "leal 4(%esi), %ebx\n" /* line 1898 | editPtr, f */
+        /* { scope 2: token */
+        /* { scope 3 */
+        "leal -0x428(%ebp), %eax\n" /* line 188 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9092_001a90db\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 192 */
+        "je .Lf1a9092_001a927c\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a9092_001a91b9:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 198 | token */
+        "jne .Lf1a9092_001a91e1\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a9092_001a926a\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, (%ebx)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9092_001a90dd\n"
+        ".Lf1a9092_001a91e1:\n"
+        "leal -0x418(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %edi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1903 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9092_001a9208:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%ebx)\n"
+        "jmp .Lf1a9092_001a9146\n"
+        ".Lf1a9092_001a9215:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9092_001a90db\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9092_001a9124\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 2: token */
+        ".Lf1a9092_001a9239:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%esi)\n"
+        "jmp .Lf1a9092_001a918d\n"
+        ".Lf1a9092_001a9246:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9092_001a90db\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9092_001a916f\n"
+        /* } scope */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9092_001a926a:\n"
+        "movl -0x41c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, (%ebx)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9092_001a90dd\n"
+        ".Lf1a9092_001a927c:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9092_001a90db\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9092_001a91b9\n"
+    );
+}
+
+/* line 1968 */
+__attribute__((naked))
+qboolean ItemParse_dvarFloatList(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1968 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x84c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1: f */
+        "movl %esi, %edx\n" /* line 1973 | handle */
+        "movl %ebx, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%ebx), %eax\n" /* line 1974 | item */
+        "testl %eax, %eax\n"
+        "je .Lf1a92a0_001a92ce\n"
+        "cmpl $0xc, 0x270(%ebx)\n" /* line 1976 | item */
+        "je .Lf1a92a0_001a92db\n"
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a92a0_001a92ce:\n"
+        "xorl %eax, %eax\n" /* line 206 */
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        ".Lf1a92a0_001a92d0:\n"
+        "addl $0x84c, %esp\n" /* line 2019 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: f */
+        ".Lf1a92a0_001a92db:\n"
+        "movl %ebx, (%esp)\n" /* line 1978 | item */
+        "calll Item_GetMultiDef\n"
+        "movl %eax, %edi\n" /* multiPtr */
+        "movl $0, 0x180(%eax)\n" /* line 1980 */
+        "movl $0, 0x184(%eax)\n" /* line 1981 */
+        "leal -0x428(%ebp), %eax\n" /* line 1983 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a92a0_001a92ce\n"
+        "cmpb $0x7b, -0x418(%ebp)\n" /* line 1985 */
+        "jne .Lf1a92a0_001a92ce\n"
+        ".Lf1a92a0_001a9318:\n"
+        "leal -0x428(%ebp), %edx\n" /* line 1990 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a92a0_001a942e\n"
+        "movzbl -0x418(%ebp), %eax\n" /* line 1996 */
+        "cmpb $0x7d, %al\n"
+        "je .Lf1a92a0_001a9424\n"
+        "cmpb $0x2c, %al\n" /* line 2001 */
+        "je .Lf1a92a0_001a9318\n"
+        "cmpb $0x3b, %al\n"
+        "je .Lf1a92a0_001a9318\n"
+        "movl 0x180(%edi), %ebx\n" /* line 2006 | multiPtr, item */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, (%edi, %ebx, 4)\n" /* multiPtr */
+        "movl 0x180(%edi), %eax\n" /* line 2007 | multiPtr */
+        "leal 0x100(%edi, %eax, 4), %eax\n" /* multiPtr */
+        "movl %eax, -0x83c(%ebp)\n" /* f */
+        /* { scope 2: token */
+        /* { scope 3 */
+        "leal -0x838(%ebp), %ebx\n" /* line 188 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a92a0_001a92ce\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 192 */
+        "je .Lf1a92a0_001a9406\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a92a0_001a9398:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 198 | token */
+        "je .Lf1a92a0_001a93c2\n"
+        "leal -0x828(%ebp), %eax\n" /* line 200 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a92a0_001a92d0\n"
+        ".Lf1a92a0_001a93c2:\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1a92a0_001a93f6\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl -0x83c(%ebp), %edx\n" /* f */
+        "movl %eax, (%edx)\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a92a0_001a93d9:\n"
+        "movl 0x180(%edi), %eax\n" /* line 2012 | multiPtr */
+        "addl $1, %eax\n"
+        "movl %eax, 0x180(%edi)\n" /* multiPtr */
+        "cmpl $0x1f, %eax\n" /* line 2013 */
+        "jle .Lf1a92a0_001a9318\n"
+        "jmp .Lf1a92a0_001a92ce\n"
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a92a0_001a93f6:\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 206 */
+        "movl -0x83c(%ebp), %edx\n" /* f */
+        "movl %eax, (%edx)\n"
+        "jmp .Lf1a92a0_001a93d9\n"
+        ".Lf1a92a0_001a9406:\n"
+        "movl %ebx, 4(%esp)\n" /* line 194 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a92a0_001a92ce\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a92a0_001a9398\n"
+        /* } scope */
+        /* } scope */
+        ".Lf1a92a0_001a9424:\n"
+        "movl $1, %eax\n" /* line 1996 */
+        "jmp .Lf1a92a0_001a92d0\n"
+        ".Lf1a92a0_001a942e:\n"
+        "movl $0x2b4174, 4(%esp)\n" /* line 1992 */
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        "jmp .Lf1a92a0_001a92d0\n"
+    );
+}
+
+/* line 575 */
+__attribute__((naked))
+qboolean MenuParse_fullscreen(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 575 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 579 | item, i */
+        "addl $0x214, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9446_001a94cf\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9446_001a94dc\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a9446_001a947f:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a9446_001a94af\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 584 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9446_001a94af:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1a9446_001a94bf\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1a9446_001a94bf:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 584 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9446_001a94cf:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 584 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9446_001a94dc:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9446_001a94cf\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a9446_001a947f\n"
+    );
+}
+
+/* line 601 */
+__attribute__((naked))
+qboolean MenuParse_style(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 601 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 605 | item, i */
+        "addl $0xd0, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a94f4_001a957d\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a94f4_001a958a\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a94f4_001a952d:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a94f4_001a955d\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 610 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a94f4_001a955d:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1a94f4_001a956d\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1a94f4_001a956d:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 610 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a94f4_001a957d:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 610 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a94f4_001a958a:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a94f4_001a957d\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a94f4_001a952d\n"
+    );
+}
+
+/* line 613 */
+__attribute__((naked))
+qboolean MenuParse_visible(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 613 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x420, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x418(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a95a2_001a9610\n"
+        "cmpb $0x2d, -0x408(%ebp)\n" /* line 284 */
+        "je .Lf1a95a2_001a9600\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a95a2_001a95d1:\n"
+        "cmpl $3, -0x418(%ebp)\n" /* line 290 | token */
+        "je .Lf1a95a2_001a961c\n"
+        "leal -0x408(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 629 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a95a2_001a9600:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a95a2_001a9663\n"
+        /* } scope */
+        ".Lf1a95a2_001a9610:\n"
+        "xorl %eax, %eax\n" /* line 625 */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 629 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a95a2_001a961c:\n"
+        "movl -0x410(%ebp), %eax\n" /* line 295 */
+        "testl %edx, %edx\n" /* line 296 */
+        "jne .Lf1a95a2_001a9636\n"
+        /* } scope */
+        "testl %eax, %eax\n" /* line 622 */
+        "jne .Lf1a95a2_001a963c\n"
+        ".Lf1a95a2_001a962a:\n"
+        "movb $1, %al\n"
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 629 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a95a2_001a9636:\n"
+        "negl %eax\n" /* line 297 */
+        /* } scope */
+        "testl %eax, %eax\n" /* line 622 */
+        "je .Lf1a95a2_001a962a\n"
+        ".Lf1a95a2_001a963c:\n"
+        "movl 8(%ebp), %edx\n" /* line 625 | item */
+        "movl 0xe8(%edx), %eax\n"
+        "orl $4, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetDynamicFlags\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 629 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a95a2_001a9663:\n"
+        "movl $1, %edx\n" /* line 286 */
+        "jmp .Lf1a95a2_001a95d1\n"
+    );
+}
+
+/* line 668 */
+__attribute__((naked))
+qboolean MenuParse_border(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 668 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 672 | item, i */
+        "addl $0xd4, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a966e_001a96f7\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a966e_001a9704\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a966e_001a96a7:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a966e_001a96d7\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 677 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a966e_001a96d7:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1a966e_001a96e7\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1a966e_001a96e7:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 677 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a966e_001a96f7:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 677 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a966e_001a9704:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a966e_001a96f7\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a966e_001a96a7\n"
+    );
+}
+
+/* line 826 */
+__attribute__((naked))
+qboolean MenuParse_ownerdrawFlag(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 826 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x420, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x418(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a971c_001a978a\n"
+        "cmpb $0x2d, -0x408(%ebp)\n" /* line 284 */
+        "je .Lf1a971c_001a977a\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a971c_001a974b:\n"
+        "cmpl $3, -0x418(%ebp)\n" /* line 290 | token */
+        "je .Lf1a971c_001a9796\n"
+        "leal -0x408(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 837 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a971c_001a977a:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a971c_001a97ca\n"
+        ".Lf1a971c_001a978a:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 837 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a971c_001a9796:\n"
+        "movl -0x410(%ebp), %eax\n" /* line 295 */
+        "testl %edx, %edx\n" /* line 296 */
+        "jne .Lf1a971c_001a97b8\n"
+        /* } scope */
+        "movl 8(%ebp), %edx\n" /* line 835 | item */
+        "orl %eax, 0xdc(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        ".Lf1a971c_001a97ae:\n"
+        "addl $0x420, %esp\n" /* line 837 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a971c_001a97b8:\n"
+        "negl %eax\n" /* line 297 */
+        /* } scope */
+        "movl 8(%ebp), %edx\n" /* line 835 | item */
+        "orl %eax, 0xdc(%edx)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a971c_001a97ae\n"
+        /* { scope 2 */
+        ".Lf1a971c_001a97ca:\n"
+        "movl $1, %edx\n" /* line 286 */
+        "jmp .Lf1a971c_001a974b\n"
+    );
+}
+
+/* line 840 */
+__attribute__((naked))
+qboolean MenuParse_ownerdraw(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 840 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 844 | item, i */
+        "addl $0xd8, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a97d4_001a985d\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a97d4_001a986a\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a97d4_001a980d:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a97d4_001a983d\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 849 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a97d4_001a983d:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1a97d4_001a984d\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1a97d4_001a984d:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 849 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a97d4_001a985d:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 849 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a97d4_001a986a:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a97d4_001a985d\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a97d4_001a980d\n"
+    );
+}
+
+/* line 926 */
+__attribute__((naked))
+qboolean MenuParse_fadeCycle(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 926 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 930 | item, i */
+        "addl $0x230, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9882_001a990b\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9882_001a9918\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a9882_001a98bb:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a9882_001a98eb\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 935 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9882_001a98eb:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1a9882_001a98fb\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1a9882_001a98fb:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 935 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9882_001a990b:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 935 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9882_001a9918:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9882_001a990b\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a9882_001a98bb\n"
+    );
+}
+
+/* line 982 */
+__attribute__((naked))
+qboolean MenuParse_execKeyInt(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 982 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x430, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x41c(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9930_001a99b1\n"
+        "cmpb $0x2d, -0x40c(%ebp)\n" /* line 284 */
+        "je .Lf1a9930_001a99fa\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a9930_001a9963:\n"
+        "cmpl $3, -0x41c(%ebp)\n" /* line 290 | token */
+        "je .Lf1a9930_001a9992\n"
+        "leal -0x40c(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 1001 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9930_001a9992:\n"
+        "movl -0x414(%ebp), %ebx\n" /* line 295 */
+        "testl %eax, %eax\n" /* line 296 */
+        "je .Lf1a9930_001a999e\n"
+        "negl %ebx\n" /* line 297 */
+        /* } scope */
+        ".Lf1a9930_001a999e:\n"
+        "leal -0xc(%ebp), %eax\n" /* line 992 | action */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a9930_001a99bd\n"
+        ".Lf1a9930_001a99b1:\n"
+        "xorl %eax, %eax\n" /* line 1000 */
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 1001 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1a9930_001a99bd:\n"
+        "movl $4, 4(%esp)\n" /* line 995 */
+        "movl $0xc, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movl %ebx, (%eax)\n" /* line 996 | keyname */
+        "movl -0xc(%ebp), %edx\n" /* line 997 | action */
+        "movl %edx, 4(%eax)\n"
+        "movl 8(%ebp), %ecx\n" /* line 998 | item */
+        "movl 0x250(%ecx), %edx\n"
+        "movl %edx, 8(%eax)\n"
+        "movl %eax, 0x250(%ecx)\n" /* line 999 */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 1001 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9930_001a99fa:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9930_001a99b1\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9930_001a9963\n"
+    );
+}
+
+/* line 1230 */
+__attribute__((naked))
+qboolean ItemParse_origin(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1230 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x44c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x440(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9a14_001a9b14\n"
+        "cmpb $0x2d, -0x430(%ebp)\n" /* line 284 */
+        "je .Lf1a9a14_001a9b04\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a9a14_001a9a4c:\n"
+        "cmpl $3, -0x440(%ebp)\n" /* line 290 | token */
+        "jne .Lf1a9a14_001a9b21\n"
+        "movl -0x438(%ebp), %edi\n" /* line 295 */
+        "testl %eax, %eax\n" /* line 296 */
+        "jne .Lf1a9a14_001a9b48\n"
+        /* } scope */
+        /* { scope 2 */
+        "movl %ebx, 4(%esp)\n" /* line 280 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9a14_001a9b14\n"
+        ".Lf1a9a14_001a9a7b:\n"
+        "cmpb $0x2d, -0x430(%ebp)\n" /* line 284 */
+        "je .Lf1a9a14_001a9b70\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a9a14_001a9a8a:\n"
+        "cmpl $3, -0x440(%ebp)\n" /* line 290 | token */
+        "jne .Lf1a9a14_001a9b21\n"
+        "movl -0x438(%ebp), %ecx\n" /* line 295 */
+        "testl %eax, %eax\n" /* line 296 */
+        "jne .Lf1a9a14_001a9b69\n"
+        /* } scope */
+        ".Lf1a9a14_001a9aa5:\n"
+        "movl 8(%ebp), %edx\n" /* line 60 | item */
+        "addl $0x60, %edx\n"
+        "movl 8(%ebp), %ebx\n" /* line 1242 | item */
+        "movl 0x60(%ebx), %eax\n"
+        "movl %eax, -0x30(%ebp)\n" /* newRect */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, -0x2c(%ebp)\n"
+        "movl 8(%edx), %eax\n"
+        "movl %eax, -0x28(%ebp)\n"
+        "movl 0xc(%edx), %eax\n"
+        "movl %eax, -0x24(%ebp)\n"
+        "movl 0x10(%edx), %eax\n"
+        "movl 0x14(%edx), %edx\n"
+        "cvtsi2ssl %edi, %xmm0\n" /* line 1243 | x */
+        "addss -0x30(%ebp), %xmm0\n" /* newRect */
+        "movss %xmm0, -0x30(%ebp)\n" /* newRect */
+        "cvtsi2ssl %ecx, %xmm0\n" /* line 1244 */
+        "addss -0x2c(%ebp), %xmm0\n"
+        "movss %xmm0, -0x2c(%ebp)\n"
+        "movl %eax, -0x20(%ebp)\n" /* line 1245 */
+        "movl %edx, -0x1c(%ebp)\n" /* line 1246 */
+        "leal -0x30(%ebp), %eax\n" /* line 1247 | newRect */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll Window_SetRectClient\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9a14_001a9b16\n"
+        /* { scope 2 */
+        ".Lf1a9a14_001a9b04:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a9a14_001a9b5f\n"
+        /* } scope */
+        /* { scope 2 */
+        ".Lf1a9a14_001a9b14:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        ".Lf1a9a14_001a9b16:\n"
+        "addl $0x44c, %esp\n" /* line 1250 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9a14_001a9b21:\n"
+        "leal -0x430(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x44c, %esp\n" /* line 1250 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9a14_001a9b48:\n"
+        "negl %edi\n" /* line 297 */
+        /* } scope */
+        /* { scope 2 */
+        "movl %ebx, 4(%esp)\n" /* line 280 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9a14_001a9b14\n"
+        "jmp .Lf1a9a14_001a9a7b\n"
+        /* } scope */
+        /* { scope 2 */
+        ".Lf1a9a14_001a9b5f:\n"
+        "movl $1, %eax\n" /* line 286 */
+        "jmp .Lf1a9a14_001a9a4c\n"
+        /* } scope */
+        /* { scope 2 */
+        ".Lf1a9a14_001a9b69:\n"
+        "negl %ecx\n" /* line 297 */
+        "jmp .Lf1a9a14_001a9aa5\n"
+        ".Lf1a9a14_001a9b70:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9a14_001a9b14\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9a14_001a9a8a\n"
+    );
+}
+
+/* line 1254 */
+__attribute__((naked))
+qboolean ItemParse_style(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1254 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1256 | item, i */
+        "addl $0xd0, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9b8a_001a9c13\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9b8a_001a9c20\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a9b8a_001a9bc3:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a9b8a_001a9bf3\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1257 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9b8a_001a9bf3:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1a9b8a_001a9c03\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1a9b8a_001a9c03:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1257 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9b8a_001a9c13:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1257 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9b8a_001a9c20:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9b8a_001a9c13\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a9b8a_001a9bc3\n"
+    );
+}
+
+/* line 1338 */
+__attribute__((naked))
+qboolean ItemParse_type(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1338 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x43c, %esp\n"
+        "movl 8(%ebp), %edi\n" /* item */
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        "leal 0x270(%edi), %eax\n" /* line 1340 | item */
+        "movl %eax, -0x42c(%ebp)\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %esi\n" /* line 280 | token */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9c38_001a9cb7\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9c38_001a9ca7\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a9c38_001a9c77:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a9c38_001a9cc4\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %ebx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x43c, %esp\n" /* line 1346 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9c38_001a9ca7:\n"
+        "movl %esi, 4(%esp)\n" /* line 286 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1a9c38_001a9d03\n"
+        ".Lf1a9c38_001a9cb7:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x43c, %esp\n" /* line 1346 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9c38_001a9cc4:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl -0x42c(%ebp), %ecx\n" /* i */
+        "movl %eax, (%ecx)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "jne .Lf1a9c38_001a9cef\n"
+        /* } scope */
+        /* } scope */
+        "movl %ebx, %edx\n" /* line 1344 | handle */
+        "movl %edi, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl $1, %eax\n"
+        ".Lf1a9c38_001a9ce4:\n"
+        "addl $0x43c, %esp\n" /* line 1346 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9c38_001a9cef:\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%ecx)\n"
+        /* } scope */
+        /* } scope */
+        "movl %ebx, %edx\n" /* line 1344 | handle */
+        "movl %edi, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9c38_001a9ce4\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1a9c38_001a9d03:\n"
+        "movl $1, %edx\n" /* line 286 */
+        "jmp .Lf1a9c38_001a9c77\n"
+    );
+}
+
+/* line 1398 */
+__attribute__((naked))
+qboolean ItemParse_elementtype(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1398 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1 */
+        "movl %esi, %edx\n" /* line 1402 | handle */
+        "movl %ebx, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%ebx), %eax\n" /* line 1403 | item */
+        "testl %eax, %eax\n"
+        "je .Lf1a9d0e_001a9d93\n"
+        "movl %ebx, (%esp)\n" /* line 1405 | item */
+        "calll Item_GetListBoxDef\n"
+        "testl %eax, %eax\n" /* line 1406 */
+        "je .Lf1a9d0e_001a9d93\n"
+        "leal 0x3c(%eax), %edi\n" /* line 1408 | i */
+        /* { scope 2: token */
+        /* { scope 3 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9d0e_001a9d93\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9d0e_001a9dc0\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a9d0e_001a9d63:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a9d0e_001a9da0\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1413 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9d0e_001a9d93:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1413 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9d0e_001a9da0:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1a9d0e_001a9db0\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1a9d0e_001a9db0:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1413 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9d0e_001a9dc0:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9d0e_001a9d93\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a9d0e_001a9d63\n"
+    );
+}
+
+/* line 1417 */
+__attribute__((naked))
+qboolean ItemParse_columns(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1417 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x43c, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* item */
+        "movl 0xc(%ebp), %edi\n" /* handle */
+        /* { scope 1: token */
+        "movl %edi, %edx\n" /* line 1422 | handle */
+        "movl %ebx, %eax\n" /* listPtr */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%ebx), %eax\n" /* line 1423 | listPtr */
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "movl %ebx, (%esp)\n" /* line 1425 | listPtr */
+        "calll Item_GetListBoxDef\n"
+        "movl %eax, %ebx\n" /* listPtr */
+        "testl %eax, %eax\n" /* line 1426 */
+        "je .Lf1a9dd8_001a9e53\n"
+        /* { scope 2: token */
+        "leal -0x428(%ebp), %eax\n" /* line 280 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9dd8_001a9fe1\n"
+        "xorl %eax, %eax\n"
+        ".Lf1a9dd8_001a9e30:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1a9dd8_001a9e60\n"
+        /* } scope */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9dd8_001a9e39:\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %edi, (%esp)\n"
+        "calll PC_SourceError\n"
+        ".Lf1a9dd8_001a9e53:\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        /* } scope */
+        "addl $0x43c, %esp\n" /* line 1456 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2: token */
+        ".Lf1a9dd8_001a9e60:\n"
+        "movl -0x420(%ebp), %edx\n" /* line 295 */
+        "movl %edx, -0x434(%ebp)\n" /* num */
+        "testl %eax, %eax\n" /* line 296 */
+        "je .Lf1a9dd8_001a9e78\n"
+        "negl %edx\n" /* line 297 */
+        "movl %edx, -0x434(%ebp)\n" /* num */
+        /* } scope */
+        ".Lf1a9dd8_001a9e78:\n"
+        "cmpl $0x10, -0x434(%ebp)\n" /* line 1430 | num */
+        "jle .Lf1a9dd8_001a9e8b\n"
+        /* { scope 2: token */
+        "movl $0x10, -0x434(%ebp)\n" /* line 297 | num */
+        /* } scope */
+        ".Lf1a9dd8_001a9e8b:\n"
+        "movl -0x434(%ebp), %eax\n" /* line 1434 | num */
+        "movl %eax, 0x40(%ebx)\n" /* listPtr */
+        "testl %eax, %eax\n" /* line 1435 */
+        "jg .Lf1a9dd8_001a9ea8\n"
+        ".Lf1a9dd8_001a9e98:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x43c, %esp\n" /* line 1456 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1a9dd8_001a9ea8:\n"
+        "movl %ebx, -0x42c(%ebp)\n" /* line 1435 | listPtr */
+        "movl $0, -0x430(%ebp)\n" /* i */
+        "jmp .Lf1a9dd8_001a9f96\n"
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9dd8_001a9ebd:\n"
+        "xorl %edx, %edx\n" /* line 284 */
+        ".Lf1a9dd8_001a9ebf:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "jne .Lf1a9dd8_001a9e39\n"
+        "movl -0x420(%ebp), %esi\n" /* line 295 */
+        "movl %esi, %eax\n" /* line 297 */
+        "negl %eax\n"
+        "testl %edx, %edx\n"
+        "cmovnel %eax, %esi\n"
+        /* } scope */
+        /* { scope 3 */
+        "leal -0x428(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9dd8_001aa005\n"
+        "xorl %edx, %edx\n"
+        ".Lf1a9dd8_001a9f04:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "jne .Lf1a9dd8_001a9e39\n"
+        "movl -0x420(%ebp), %ebx\n" /* line 295 */
+        "movl %ebx, %eax\n" /* line 297 */
+        "negl %eax\n"
+        "testl %edx, %edx\n"
+        "cmovnel %eax, %ebx\n"
+        /* } scope */
+        /* { scope 3 */
+        "leal -0x428(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1a9dd8_001aa029\n"
+        "xorl %ecx, %ecx\n"
+        ".Lf1a9dd8_001a9f49:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "jne .Lf1a9dd8_001a9e39\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, %edx\n" /* line 297 */
+        "negl %edx\n"
+        "testl %ecx, %ecx\n"
+        "cmovnel %edx, %eax\n"
+        /* } scope */
+        "movl -0x42c(%ebp), %edx\n" /* line 1441 */
+        "movl %esi, 0x44(%edx)\n" /* pos */
+        "movl %ebx, 0x48(%edx)\n" /* line 1442 | width */
+        "movl %eax, 0x4c(%edx)\n" /* line 1443 */
+        /* } scope */
+        "addl $1, -0x430(%ebp)\n" /* line 1435 | i */
+        "addl $0xc, %edx\n"
+        "movl %edx, -0x42c(%ebp)\n"
+        "movl -0x434(%ebp), %eax\n" /* num */
+        "cmpl %eax, -0x430(%ebp)\n" /* i */
+        "je .Lf1a9dd8_001a9e98\n"
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9dd8_001a9f96:\n"
+        "leal -0x428(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "jne .Lf1a9dd8_001a9ebd\n"
+        "leal -0x428(%ebp), %eax\n" /* line 286 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a9dd8_001a9ebf\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 2: token */
+        ".Lf1a9dd8_001a9fe1:\n"
+        "leal -0x428(%ebp), %edx\n" /* token */
+        "movl %edx, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1a9dd8_001a9e30\n"
+        /* } scope */
+        /* { scope 2: token */
+        /* { scope 3 */
+        ".Lf1a9dd8_001aa005:\n"
+        "leal -0x428(%ebp), %eax\n" /* token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1a9dd8_001a9f04\n"
+        /* } scope */
+        /* { scope 3 */
+        ".Lf1a9dd8_001aa029:\n"
+        "leal -0x428(%ebp), %eax\n" /* token */
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1a9dd8_001a9e53\n"
+        "movl $1, %ecx\n"
+        "jmp .Lf1a9dd8_001a9f49\n"
+    );
+}
+
+/* line 1459 */
+__attribute__((naked))
+qboolean ItemParse_border(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1459 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1461 | item, i */
+        "addl $0xd4, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa04e_001aa0d7\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa04e_001aa0e4\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa04e_001aa087:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa04e_001aa0b7\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1466 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa04e_001aa0b7:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1aa04e_001aa0c7\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1aa04e_001aa0c7:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1466 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa04e_001aa0d7:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1466 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa04e_001aa0e4:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa04e_001aa0d7\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1aa04e_001aa087\n"
+    );
+}
+
+/* line 1479 */
+__attribute__((naked))
+qboolean ItemParse_visible(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1479 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %esi\n" /* line 280 | token */
+        "movl %esi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa0fc_001aa170\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa0fc_001aa15c\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa0fc_001aa12c:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa0fc_001aa17d\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %ebx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1507 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa0fc_001aa15c:\n"
+        "movl %esi, 4(%esp)\n" /* line 286 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa0fc_001aa23e\n"
+        /* } scope */
+        ".Lf1aa0fc_001aa170:\n"
+        "xorl %eax, %eax\n" /* line 1504 */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1507 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa0fc_001aa17d:\n"
+        "movl -0x420(%ebp), %ebx\n" /* line 295 */
+        "testl %eax, %eax\n" /* line 296 */
+        "jne .Lf1aa0fc_001aa219\n"
+        /* } scope */
+        "movl 8(%ebp), %eax\n" /* line 1491 | item */
+        "movl 0x294(%eax), %edx\n"
+        "testl %edx, %edx\n"
+        "je .Lf1aa0fc_001aa1bc\n"
+        ".Lf1aa0fc_001aa198:\n"
+        "movl $0x2b42a4, %edi\n" /* "@MENU_SHADOWS" */
+        "movl $0xe, %ecx\n"
+        "cld\n"
+        "movl %edx, %esi\n"
+        "repe cmpsb %es:(%edi), (%esi)\n"
+        "movl $0, %edx\n"
+        "je .Lf1aa0fc_001aa1b8\n"
+        "movzbl -1(%esi), %edx\n"
+        "movzbl -1(%edi), %ecx\n"
+        "subl %ecx, %edx\n"
+        ".Lf1aa0fc_001aa1b8:\n"
+        "testl %edx, %edx\n"
+        "je .Lf1aa0fc_001aa22e\n"
+        ".Lf1aa0fc_001aa1bc:\n"
+        "movl 8(%ebp), %eax\n" /* line 1495 | item */
+        "movl 0x2c0(%eax), %edx\n"
+        "testl %edx, %edx\n"
+        "je .Lf1aa0fc_001aa1ed\n"
+        "movl $0x2b42b4, %edi\n" /* "ui_sc_enable" */
+        "movl $0xd, %ecx\n"
+        "cld\n"
+        "movl %edx, %esi\n"
+        "repe cmpsb %es:(%edi), (%esi)\n"
+        "movl $0, %edx\n"
+        "je .Lf1aa0fc_001aa1e9\n"
+        "movzbl -1(%esi), %edx\n"
+        "movzbl -1(%edi), %ecx\n"
+        "subl %ecx, %edx\n"
+        ".Lf1aa0fc_001aa1e9:\n"
+        "testl %edx, %edx\n"
+        "je .Lf1aa0fc_001aa22e\n"
+        ".Lf1aa0fc_001aa1ed:\n"
+        "testl %ebx, %ebx\n" /* line 1501 | i */
+        "je .Lf1aa0fc_001aa22e\n"
+        "movl 8(%ebp), %edx\n" /* line 1504 | item */
+        "movl 0xe8(%edx), %eax\n"
+        "orl $4, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll Window_SetDynamicFlags\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1507 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa0fc_001aa219:\n"
+        "negl %ebx\n" /* line 297 */
+        /* } scope */
+        "movl 8(%ebp), %eax\n" /* line 1491 | item */
+        "movl 0x294(%eax), %edx\n"
+        "testl %edx, %edx\n"
+        "jne .Lf1aa0fc_001aa198\n"
+        "jmp .Lf1aa0fc_001aa1bc\n"
+        ".Lf1aa0fc_001aa22e:\n"
+        "movl $1, %eax\n" /* line 1504 */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1507 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa0fc_001aa23e:\n"
+        "movl $1, %eax\n" /* line 286 */
+        "jmp .Lf1aa0fc_001aa12c\n"
+    );
+}
+
+/* line 1510 */
+__attribute__((naked))
+qboolean ItemParse_ownerdraw(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1510 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1512 | item, i */
+        "addl $0xd8, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa248_001aa2c1\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa248_001aa2b1\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa248_001aa281:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa248_001aa2ce\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1518 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa248_001aa2b1:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa248_001aa30f\n"
+        ".Lf1aa248_001aa2c1:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1518 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa248_001aa2ce:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "jne .Lf1aa248_001aa2f7\n"
+        /* } scope */
+        /* } scope */
+        "movl 8(%ebp), %eax\n" /* line 1516 | item */
+        "movl $8, 0x270(%eax)\n"
+        "movl $1, %eax\n"
+        ".Lf1aa248_001aa2ec:\n"
+        "addl $0x42c, %esp\n" /* line 1518 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa248_001aa2f7:\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        /* } scope */
+        /* } scope */
+        "movl 8(%ebp), %eax\n" /* line 1516 | item */
+        "movl $8, 0x270(%eax)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa248_001aa2ec\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa248_001aa30f:\n"
+        "movl $1, %edx\n" /* line 286 */
+        "jmp .Lf1aa248_001aa281\n"
+    );
+}
+
+/* line 1521 */
+__attribute__((naked))
+qboolean ItemParse_align(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1521 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1523 | item, i */
+        "addl $0x278, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa31a_001aa3a3\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa31a_001aa3b0\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa31a_001aa353:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa31a_001aa383\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1528 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa31a_001aa383:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1aa31a_001aa393\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1aa31a_001aa393:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1528 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa31a_001aa3a3:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1528 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa31a_001aa3b0:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa31a_001aa3a3\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1aa31a_001aa353\n"
+    );
+}
+
+/* line 1531 */
+__attribute__((naked))
+qboolean ItemParse_textalign(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1531 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1533 | item, i */
+        "addl $0x280, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa3c8_001aa451\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa3c8_001aa45e\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa3c8_001aa401:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa3c8_001aa431\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1538 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa3c8_001aa431:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1aa3c8_001aa441\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1aa3c8_001aa441:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1538 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa3c8_001aa451:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1538 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa3c8_001aa45e:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa3c8_001aa451\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1aa3c8_001aa401\n"
+    );
+}
+
+/* line 1571 */
+__attribute__((naked))
+qboolean ItemParse_textstyle(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1571 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1573 | item, i */
+        "addl $0x290, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa476_001aa4ff\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa476_001aa50c\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa476_001aa4af:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa476_001aa4df\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1578 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa476_001aa4df:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1aa476_001aa4ef\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1aa476_001aa4ef:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1578 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa476_001aa4ff:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1578 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa476_001aa50c:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa476_001aa4ff\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1aa476_001aa4af\n"
+    );
+}
+
+/* line 1581 */
+__attribute__((naked))
+qboolean ItemParse_textfont(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1581 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        "movl 8(%ebp), %edi\n" /* line 1583 | item, i */
+        "addl $0x27c, %edi\n" /* i */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x428(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa524_001aa5ad\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa524_001aa5ba\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa524_001aa55d:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa524_001aa58d\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1588 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa524_001aa58d:\n"
+        "movl -0x420(%ebp), %eax\n" /* line 295 */
+        "movl %eax, (%edi)\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1aa524_001aa59d\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, (%edi)\n"
+        ".Lf1aa524_001aa59d:\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1588 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa524_001aa5ad:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1588 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa524_001aa5ba:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa524_001aa5ad\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1aa524_001aa55d\n"
+    );
+}
+
+/* line 1830 */
+__attribute__((naked))
+qboolean ItemParse_maxChars(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1830 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %esi\n" /* item */
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        /* { scope 1: token */
+        "movl %ebx, %edx\n" /* line 1835 | maxChars */
+        "movl %esi, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%esi), %edx\n" /* line 1836 | item */
+        "testl %edx, %edx\n"
+        "je .Lf1aa5d2_001aa658\n"
+        /* { scope 2 */
+        "leal -0x428(%ebp), %edi\n" /* line 280 | token */
+        "movl %edi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa5d2_001aa658\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa5d2_001aa648\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa5d2_001aa618:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa5d2_001aa665\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %ebx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1848 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa5d2_001aa648:\n"
+        "movl %edi, 4(%esp)\n" /* line 286 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa5d2_001aa690\n"
+        /* } scope */
+        ".Lf1aa5d2_001aa658:\n"
+        "xorl %eax, %eax\n" /* line 1847 */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1848 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa5d2_001aa665:\n"
+        "movl -0x420(%ebp), %ebx\n" /* line 295 */
+        "testl %eax, %eax\n" /* line 296 */
+        "je .Lf1aa5d2_001aa671\n"
+        "negl %ebx\n" /* line 297 */
+        /* } scope */
+        ".Lf1aa5d2_001aa671:\n"
+        "movl %esi, (%esp)\n" /* line 1843 | item */
+        "calll Item_GetEditFieldDef\n"
+        "testl %eax, %eax\n" /* line 1844 */
+        "je .Lf1aa5d2_001aa658\n"
+        "movl %ebx, 0x10(%eax)\n" /* line 1846 | maxChars */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1848 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa5d2_001aa690:\n"
+        "movl $1, %eax\n" /* line 286 */
+        "jmp .Lf1aa5d2_001aa618\n"
+    );
+}
+
+/* line 1867 */
+__attribute__((naked))
+qboolean ItemParse_maxPaintChars(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1867 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x42c, %esp\n"
+        "movl 8(%ebp), %esi\n" /* item */
+        "movl 0xc(%ebp), %ebx\n" /* handle */
+        /* { scope 1: token */
+        "movl %ebx, %edx\n" /* line 1872 | maxChars */
+        "movl %esi, %eax\n" /* item */
+        "calll Item_ValidateTypeData\n"
+        "movl 0x2ec(%esi), %ecx\n" /* line 1873 | item */
+        "testl %ecx, %ecx\n"
+        "je .Lf1aa698_001aa71e\n"
+        /* { scope 2 */
+        "leal -0x428(%ebp), %edi\n" /* line 280 | token */
+        "movl %edi, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa698_001aa71e\n"
+        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
+        "je .Lf1aa698_001aa70e\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa698_001aa6de:\n"
+        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa698_001aa72b\n"
+        "leal -0x418(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %ebx, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1885 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa698_001aa70e:\n"
+        "movl %edi, 4(%esp)\n" /* line 286 */
+        "movl %ebx, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa698_001aa756\n"
+        /* } scope */
+        ".Lf1aa698_001aa71e:\n"
+        "xorl %eax, %eax\n" /* line 1884 */
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1885 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa698_001aa72b:\n"
+        "movl -0x420(%ebp), %ebx\n" /* line 295 */
+        "testl %eax, %eax\n" /* line 296 */
+        "je .Lf1aa698_001aa737\n"
+        "negl %ebx\n" /* line 297 */
+        /* } scope */
+        ".Lf1aa698_001aa737:\n"
+        "movl %esi, (%esp)\n" /* line 1880 | item */
+        "calll Item_GetEditFieldDef\n"
+        "testl %eax, %eax\n" /* line 1881 */
+        "je .Lf1aa698_001aa71e\n"
+        "movl %ebx, 0x18(%eax)\n" /* line 1883 | maxChars */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x42c, %esp\n" /* line 1885 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa698_001aa756:\n"
+        "movl $1, %eax\n" /* line 286 */
+        "jmp .Lf1aa698_001aa6de\n"
+    );
+}
+
+/* line 2036 */
+__attribute__((naked))
+qboolean ItemParse_ownerdrawFlag(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2036 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x420, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x418(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa75e_001aa7cc\n"
+        "cmpb $0x2d, -0x408(%ebp)\n" /* line 284 */
+        "je .Lf1aa75e_001aa7bc\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa75e_001aa78d:\n"
+        "cmpl $3, -0x418(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa75e_001aa7d8\n"
+        "leal -0x408(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 2046 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa75e_001aa7bc:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa75e_001aa80c\n"
+        ".Lf1aa75e_001aa7cc:\n"
+        "xorl %eax, %eax\n" /* line 297 */
+        /* } scope */
+        /* } scope */
+        "addl $0x420, %esp\n" /* line 2046 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa75e_001aa7d8:\n"
+        "movl -0x410(%ebp), %eax\n" /* line 295 */
+        "testl %edx, %edx\n" /* line 296 */
+        "jne .Lf1aa75e_001aa7fa\n"
+        /* } scope */
+        "movl 8(%ebp), %edx\n" /* line 2044 | item */
+        "orl %eax, 0xdc(%edx)\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        ".Lf1aa75e_001aa7f0:\n"
+        "addl $0x420, %esp\n" /* line 2046 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa75e_001aa7fa:\n"
+        "negl %eax\n" /* line 297 */
+        /* } scope */
+        "movl 8(%ebp), %edx\n" /* line 2044 | item */
+        "orl %eax, 0xdc(%edx)\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa75e_001aa7f0\n"
+        /* { scope 2 */
+        ".Lf1aa75e_001aa80c:\n"
+        "movl $1, %edx\n" /* line 286 */
+        "jmp .Lf1aa75e_001aa78d\n"
+    );
+}
+
+/* line 2128 */
+__attribute__((naked))
+qboolean ItemParse_execKeyInt(const char (*item)[4], int handle)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2128 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x430, %esp\n"
+        "movl 0xc(%ebp), %esi\n" /* handle */
+        /* { scope 1: token */
+        /* { scope 2 */
+        "leal -0x41c(%ebp), %ebx\n" /* line 280 | token */
+        "movl %ebx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa816_001aa897\n"
+        "cmpb $0x2d, -0x40c(%ebp)\n" /* line 284 */
+        "je .Lf1aa816_001aa8e0\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa816_001aa849:\n"
+        "cmpl $3, -0x41c(%ebp)\n" /* line 290 | token */
+        "je .Lf1aa816_001aa878\n"
+        "leal -0x40c(%ebp), %eax\n" /* line 292 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 2146 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa816_001aa878:\n"
+        "movl -0x414(%ebp), %ebx\n" /* line 295 */
+        "testl %eax, %eax\n" /* line 296 */
+        "je .Lf1aa816_001aa884\n"
+        "negl %ebx\n" /* line 297 */
+        /* } scope */
+        ".Lf1aa816_001aa884:\n"
+        "leal -0xc(%ebp), %eax\n" /* line 2137 | action */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_Script_Parse\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa816_001aa8a3\n"
+        ".Lf1aa816_001aa897:\n"
+        "xorl %eax, %eax\n" /* line 2145 */
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 2146 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1aa816_001aa8a3:\n"
+        "movl $4, 4(%esp)\n" /* line 2140 */
+        "movl $0xc, (%esp)\n"
+        "calll UI_Alloc\n"
+        "movl %ebx, (%eax)\n" /* line 2141 | keyname */
+        "movl -0xc(%ebp), %edx\n" /* line 2142 | action */
+        "movl %edx, 4(%eax)\n"
+        "movl 8(%ebp), %ecx\n" /* line 2143 | item */
+        "movl 0x2c8(%ecx), %edx\n"
+        "movl %edx, 8(%eax)\n"
+        "movl %eax, 0x2c8(%ecx)\n" /* line 2144 */
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0x430, %esp\n" /* line 2146 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2 */
+        ".Lf1aa816_001aa8e0:\n"
+        "movl %ebx, 4(%esp)\n" /* line 286 */
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa816_001aa897\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa816_001aa849\n"
+    );
+}
+
+/* line 2549 */
+static __attribute__((naked))
+Bool UI_ParseMenuInternal(int imageTrack)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2549 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0xc5c, %esp\n"
+        "movl %eax, %ebx\n" /* menuFile */
+        "movl %edx, -0xc4c(%ebp)\n"
+        /* { scope 1: token */
+        "movl %eax, 4(%esp)\n" /* line 2554 */
+        "movl $0x2b42c4, (%esp)\n" /* "	Loading '%s'...
+" */
+        "calll Com_Printf\n"
+        "movl %ebx, (%esp)\n" /* line 2556 | menuFile */
+        "calll PC_LoadSourceHandle\n"
+        "movl %eax, %esi\n" /* handle */
+        "testl %eax, %eax\n" /* line 2557 */
+        "jne .Lf1aa8fa_001aa964\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        "addl $0xc5c, %esp\n" /* line 2584 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        ".Lf1aa8fa_001aa939:\n"
+        "movl $0x2b43a4, 4(%esp)\n" /* line 2575 */
+        "leal -0xc38(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aa964\n"
+        "movl -0xc4c(%ebp), %edx\n" /* line 2577 */
+        "movl %esi, %eax\n" /* handle */
+        "calll Menu_New\n"
+        "testb %al, %al\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        ".Lf1aa8fa_001aa964:\n"
+        "leal -0xc48(%ebp), %eax\n" /* line 2562 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* handle */
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x7d, -0xc38(%ebp)\n" /* line 2565 */
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $0x2b42d8, 4(%esp)\n" /* line 2568 */
+        "leal -0xc38(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aa939\n"
+        /* { scope 2: token */
+        "leal -0x428(%ebp), %eax\n" /* line 2245 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aa9cb\n"
+        /* } scope */
+        ".Lf1aa8fa_001aa9b3:\n"
+        "movl %esi, (%esp)\n" /* line 2582 | handle */
+        "calll PC_FreeSourceHandle\n"
+        "movl $1, %eax\n"
+        /* } scope */
+        "addl $0xc5c, %esp\n" /* line 2584 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: token */
+        /* { scope 2: token */
+        ".Lf1aa8fa_001aa9cb:\n"
+        "movl $0x21e50c, 4(%esp)\n" /* line 2247 */
+        "leal -0x418(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aa9b3\n"
+        ".Lf1aa8fa_001aa9e5:\n"
+        "leal -0x428(%ebp), %eax\n" /* line 2252 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        ".Lf1aa8fa_001aa9fb:\n"
+        "movl $0x21e508, 4(%esp)\n" /* line 2255 */
+        "leal -0x418(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa964\n"
+        "movl $0x2ace38, 4(%esp)\n" /* line 2258 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aaad6\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 341 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, %ebx\n"
+        /* } scope */
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 284 */
+        "je .Lf1aa8fa_001aacbf\n"
+        ".Lf1aa8fa_001aaa88:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 290 | token */
+        "jne .Lf1aa8fa_001ab058\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %eax\n" /* line 2265 */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterFont\n"
+        "movl $0x2a9fd4, 4(%esp)\n" /* line 2266 */
+        "movl %eax, (%esp)\n"
+        "calll CL_DuplicateFont\n"
+        "leal -0x428(%ebp), %eax\n" /* line 2252 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aa9fb\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        ".Lf1aa8fa_001aaad6:\n"
+        "movl $0x2b42e8, 4(%esp)\n" /* line 2270 */
+        "leal -0x418(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aab79\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %edi\n" /* line 344 */
+        "movl %edi, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, %ebx\n"
+        /* } scope */
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 284 */
+        "je .Lf1aa8fa_001aad81\n"
+        ".Lf1aa8fa_001aab45:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 290 | token */
+        "jne .Lf1aa8fa_001ab03f\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %edx\n" /* line 2277 */
+        "movl %edx, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterFont\n"
+        "movl $0x2a9fac, 4(%esp)\n" /* line 2278 */
+        "movl %eax, (%esp)\n"
+        "calll CL_DuplicateFont\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001aab79:\n"
+        "movl $0x2b42f4, 4(%esp)\n" /* line 2282 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aac1c\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 341 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %edi\n" /* line 344 */
+        "movl %edi, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, %ebx\n"
+        /* } scope */
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %eax\n" /* line 280 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 284 */
+        "je .Lf1aa8fa_001aaeb0\n"
+        ".Lf1aa8fa_001aabe8:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 290 | token */
+        "jne .Lf1aa8fa_001ab03f\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %eax\n" /* line 2289 */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterFont\n"
+        "movl $0x2a9fa0, 4(%esp)\n" /* line 2290 */
+        "movl %eax, (%esp)\n"
+        "calll CL_DuplicateFont\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001aac1c:\n"
+        "movl $0x2b42fc, 4(%esp)\n" /* line 2294 */
+        "leal -0x418(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aacde\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %edi\n" /* line 344 */
+        "movl %edi, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, %ebx\n"
+        /* } scope */
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 284 */
+        "je .Lf1aa8fa_001aaecf\n"
+        ".Lf1aa8fa_001aac8b:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 290 | token */
+        "jne .Lf1aa8fa_001ab03f\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %edx\n" /* line 2301 */
+        "movl %edx, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterFont\n"
+        "movl $0x2a9fdc, 4(%esp)\n" /* line 2302 */
+        "movl %eax, (%esp)\n"
+        "calll CL_DuplicateFont\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* { scope 3: token */
+        ".Lf1aa8fa_001aacbf:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 286 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aaa88\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        ".Lf1aa8fa_001aacde:\n"
+        "movl $0x2b430c, 4(%esp)\n" /* line 2306 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aada0\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 341 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %edi\n" /* line 344 */
+        "movl %edi, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, %ebx\n"
+        /* } scope */
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %eax\n" /* line 280 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 284 */
+        "je .Lf1aa8fa_001aaf42\n"
+        ".Lf1aa8fa_001aad4d:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 290 | token */
+        "jne .Lf1aa8fa_001ab03f\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %eax\n" /* line 2313 */
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterFont\n"
+        "movl $0x2a9fc8, 4(%esp)\n" /* line 2314 */
+        "movl %eax, (%esp)\n"
+        "calll CL_DuplicateFont\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* { scope 3: token */
+        ".Lf1aa8fa_001aad81:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 286 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aab45\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        ".Lf1aa8fa_001aada0:\n"
+        "movl $0x2b4318, 4(%esp)\n" /* line 2318 */
+        "leal -0x418(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aae43\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %edi\n" /* line 344 */
+        "movl %edi, (%esp)\n"
+        "calll String_Alloc\n"
+        "movl %eax, %ebx\n"
+        /* } scope */
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 284 */
+        "je .Lf1aa8fa_001aafb5\n"
+        ".Lf1aa8fa_001aae0f:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 290 | token */
+        "jne .Lf1aa8fa_001ab03f\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %edx\n" /* line 2325 */
+        "movl %edx, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll CL_RegisterFont\n"
+        "movl $0x2a9fb8, 4(%esp)\n" /* line 2326 */
+        "movl %eax, (%esp)\n"
+        "calll CL_DuplicateFont\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001aae43:\n"
+        "movl $0x2b4324, 4(%esp)\n" /* line 2330 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aaeee\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 341 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %edx\n" /* line 2335 */
+        "movl %edx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll CL_RegisterMaterialNoMip\n"
+        "movl $0x2b4330, 4(%esp)\n" /* line 2336 */
+        "movl %eax, (%esp)\n"
+        "calll CL_Material_Duplicate\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* { scope 3: token */
+        ".Lf1aa8fa_001aaeb0:\n"
+        "leal -0x838(%ebp), %edx\n" /* line 286 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aabe8\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001aaecf:\n"
+        "leal -0x838(%ebp), %eax\n" /* token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aac8b\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        ".Lf1aa8fa_001aaeee:\n"
+        "movl $0x2b4340, 4(%esp)\n" /* line 2340 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aaf61\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 341 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl %eax, (%esp)\n" /* line 2345 */
+        "calll Com_FindSoundAlias\n"
+        "movl %eax, g_load\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* { scope 3: token */
+        ".Lf1aa8fa_001aaf42:\n"
+        "leal -0x838(%ebp), %edx\n" /* line 286 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aad4d\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        ".Lf1aa8fa_001aaf61:\n"
+        "movl $0x2b4350, 4(%esp)\n" /* line 2349 */
+        "leal -0x418(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aafd4\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %edx\n" /* line 344 */
+        "movl %edx, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl %eax, (%esp)\n" /* line 2354 */
+        "calll Com_FindSoundAlias\n"
+        "movl %eax, 0xf39b84\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* { scope 3: token */
+        ".Lf1aa8fa_001aafb5:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 286 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aae0f\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        ".Lf1aa8fa_001aafd4:\n"
+        "movl $0x2b4360, 4(%esp)\n" /* line 2358 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab077\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 341 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl %eax, (%esp)\n" /* line 2363 */
+        "calll Com_FindSoundAlias\n"
+        "testl %eax, %eax\n" /* line 2364 */
+        "je .Lf1aa8fa_001aa9e5\n"
+        "movl $0x2a9fec, 4(%esp)\n" /* line 2365 */
+        "movl %eax, (%esp)\n"
+        "calll Com_DuplicateSoundAlias\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab03f:\n"
+        "movl %edi, 8(%esp)\n" /* line 292 */
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab058:\n"
+        "leal -0x828(%ebp), %edx\n"
+        "movl %edx, 8(%esp)\n"
+        "movl $0x2b40e4, 4(%esp)\n" /* "expected integer but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab077:\n"
+        "movl $0x2b4370, 4(%esp)\n" /* line 2369 */
+        "leal -0x418(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab0cb\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %eax\n" /* line 341 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %edx\n" /* line 344 */
+        "movl %edx, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl %eax, (%esp)\n" /* line 2374 */
+        "calll Com_FindSoundAlias\n"
+        "movl %eax, 0xf39b88\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001ab0cb:\n"
+        "movl $0x2b4380, 4(%esp)\n" /* line 2378 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab134\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 341 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "leal -0x828(%ebp), %eax\n" /* line 344 */
+        "movl %eax, (%esp)\n"
+        "calll String_Alloc\n"
+        /* } scope */
+        "movl -0xc4c(%ebp), %edx\n" /* line 2383 */
+        "movl %edx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll CL_RegisterMaterialNoMip\n"
+        "movl $0x2a9f98, 4(%esp)\n" /* line 2384 */
+        "movl %eax, (%esp)\n"
+        "calll CL_Material_Duplicate\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001ab134:\n"
+        "movl $0x2b3fdc, 4(%esp)\n" /* line 2388 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab1a1\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 188 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 192 */
+        "je .Lf1aa8fa_001ab2d0\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa8fa_001ab177:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 198 | token */
+        "jne .Lf1aa8fa_001ab27d\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1aa8fa_001ab29c\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, 0xf39b8c\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab1a1:\n"
+        "movl $0x2b3fe8, 4(%esp)\n" /* line 2395 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab210\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 280 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 284 */
+        "je .Lf1aa8fa_001ab2ac\n"
+        "xorl %edx, %edx\n"
+        ".Lf1aa8fa_001ab1e4:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 290 | token */
+        "jne .Lf1aa8fa_001ab058\n"
+        "movl -0x830(%ebp), %eax\n" /* line 295 */
+        "movl %eax, 0xf39b90\n"
+        "testl %edx, %edx\n" /* line 296 */
+        "je .Lf1aa8fa_001aa9e5\n"
+        "negl %eax\n" /* line 297 */
+        "movl %eax, 0xf39b90\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab210:\n"
+        "movl $0x2b3ff4, 4(%esp)\n" /* line 2402 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab328\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 188 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 192 */
+        "je .Lf1aa8fa_001ab304\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa8fa_001ab257:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 198 | token */
+        "jne .Lf1aa8fa_001ab27d\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1aa8fa_001ab2f4\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, 0xf39b94\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* } scope */
+        /* { scope 3: token */
+        /* { scope 4 */
+        ".Lf1aa8fa_001ab27d:\n"
+        "leal -0x828(%ebp), %edx\n" /* line 200 */
+        "movl %edx, 8(%esp)\n"
+        "movl $0x2b40c4, 4(%esp)\n" /* "expected float but found %s
+" */
+        "movl %esi, (%esp)\n"
+        "calll PC_SourceError\n"
+        "jmp .Lf1aa8fa_001aa9b3\n"
+        /* } scope */
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab29c:\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, 0xf39b8c\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab2ac:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 286 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $1, %edx\n"
+        "jmp .Lf1aa8fa_001ab1e4\n"
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab2d0:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa8fa_001ab177\n"
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab2f4:\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, 0xf39b94\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001ab304:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa8fa_001ab257\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab328:\n"
+        "movl $0x2b4000, 4(%esp)\n" /* line 2409 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab391\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 188 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 192 */
+        "je .Lf1aa8fa_001ab40a\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa8fa_001ab36b:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 198 | token */
+        "jne .Lf1aa8fa_001ab27d\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1aa8fa_001ab3fa\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, 0xf39b98\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab391:\n"
+        "movl $0x2b4388, 4(%esp)\n" /* line 2416 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab462\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 188 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 192 */
+        "je .Lf1aa8fa_001ab43e\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa8fa_001ab3d4:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 198 | token */
+        "jne .Lf1aa8fa_001ab27d\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1aa8fa_001ab42e\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, 0xf39b9c\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab3fa:\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, 0xf39b98\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001ab40a:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa8fa_001ab36b\n"
+        /* } scope */
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab42e:\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, 0xf39b9c\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001ab43e:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa8fa_001ab3d4\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab462:\n"
+        "movl $0x2b4390, 4(%esp)\n" /* line 2423 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001ab4cf\n"
+        /* { scope 3: token */
+        "leal -0x838(%ebp), %edx\n" /* line 188 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 192 */
+        "je .Lf1aa8fa_001ab560\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa8fa_001ab4a5:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 198 | token */
+        "jne .Lf1aa8fa_001ab27d\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1aa8fa_001ab550\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        "movl %eax, 0xf39ba0\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab4cf:\n"
+        "movl $0x2b4398, 4(%esp)\n" /* line 2430 */
+        "leal -0x418(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1aa8fa_001aa9e5\n"
+        "movl $g_load, %ebx\n"
+        /* { scope 3: token */
+        /* { scope 4 */
+        ".Lf1aa8fa_001ab4f2:\n"
+        "leal -0x838(%ebp), %edx\n" /* line 188 | token */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "cmpb $0x2d, -0x828(%ebp)\n" /* line 192 */
+        "je .Lf1aa8fa_001ab58c\n"
+        "xorl %eax, %eax\n"
+        ".Lf1aa8fa_001ab517:\n"
+        "cmpl $3, -0x838(%ebp)\n" /* line 198 | token */
+        "jne .Lf1aa8fa_001ab27d\n"
+        "testl %eax, %eax\n" /* line 203 */
+        "je .Lf1aa8fa_001ab584\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 204 */
+        "xorl $0x80000000, %eax\n"
+        /* } scope */
+        ".Lf1aa8fa_001ab533:\n"
+        "movl %eax, 0x24(%ebx)\n" /* line 264 */
+        "addl $4, %ebx\n"
+        "cmpl $0xf39b90, %ebx\n" /* line 258 */
+        "jne .Lf1aa8fa_001ab4f2\n"
+        /* } scope */
+        "movl 0xf39bb0, %eax\n" /* line 2434 */
+        "movl %eax, 0xf39bb4\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        /* { scope 3: token */
+        ".Lf1aa8fa_001ab550:\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 206 */
+        "movl %eax, 0xf39ba0\n"
+        "jmp .Lf1aa8fa_001aa9e5\n"
+        ".Lf1aa8fa_001ab560:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa8fa_001ab4a5\n"
+        /* } scope */
+        /* { scope 3: token */
+        /* { scope 4 */
+        ".Lf1aa8fa_001ab584:\n"
+        "movl -0x82c(%ebp), %eax\n" /* line 206 */
+        "jmp .Lf1aa8fa_001ab533\n"
+        ".Lf1aa8fa_001ab58c:\n"
+        "leal -0x838(%ebp), %eax\n" /* line 194 | token */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll PC_ReadTokenHandle\n"
+        "testl %eax, %eax\n"
+        "je .Lf1aa8fa_001aa9b3\n"
+        "movl $1, %eax\n"
+        "jmp .Lf1aa8fa_001ab517\n"
+    );
+}
+
+/* line 2640 */
+__attribute__((naked))
+MenuList * UI_LoadMenus(const char *menuFile, int imageTrack)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2640 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x3c, %esp\n"
+        "movl 8(%ebp), %edi\n" /* menuFile */
+        /* { scope 1 */
+        "movl $0x640, 8(%esp)\n" /* line 2647 */
+        "movl $0, 4(%esp)\n"
+        "movl $g_load, (%esp)\n"
+        "calll memset\n"
+        "movl $0xf39fc0, 0xf39bbc\n" /* line 2650 */
+        "movl $0, 8(%esp)\n" /* line 2657 */
+        "leal -0x20(%ebp), %esi\n" /* f */
+        "movl %esi, 4(%esp)\n"
+        "movl %edi, (%esp)\n" /* menuFile */
+        "calll FS_FOpenFileByMode\n"
+        "movl %eax, %ebx\n" /* len */
+        "movl -0x20(%ebp), %eax\n" /* line 2658 | f */
+        "testl %eax, %eax\n"
+        "je .Lf1ab5b0_001ab6ef\n"
+        ".Lf1ab5b0_001ab606:\n"
+        "cmpl $0x7fff, %ebx\n" /* line 2666 | len */
+        "jg .Lf1ab5b0_001ab73d\n"
+        ".Lf1ab5b0_001ab612:\n"
+        "movl -0x20(%ebp), %eax\n" /* line 2672 | f */
+        "movl %eax, 8(%esp)\n"
+        "movl %ebx, 4(%esp)\n" /* len */
+        "movl $menuBuf, (%esp)\n"
+        "calll FS_Read\n"
+        "movb $0, menuBuf(%ebx)\n" /* line 2673 | len */
+        "movl -0x20(%ebp), %eax\n" /* line 2674 | f */
+        "movl %eax, (%esp)\n"
+        "calll FS_FCloseFile\n"
+        "movl $menuBuf, (%esp)\n" /* line 2676 */
+        "calll Com_Compress\n"
+        "movl $menuBuf, -0x1c(%ebp)\n" /* line 2678 | p */
+        "movl %edi, (%esp)\n" /* line 2679 | menuFile */
+        "calll Com_BeginParseSession\n"
+        "leal -0x1c(%ebp), %esi\n" /* p */
+        ".Lf1ab5b0_001ab659:\n"
+        "movl %esi, (%esp)\n" /* line 2683 */
+        "calll Com_Parse\n"
+        "movl %eax, %ebx\n" /* len */
+        "testl %eax, %eax\n" /* line 2684 */
+        "je .Lf1ab5b0_001ab6a7\n"
+        "movzbl (%eax), %eax\n"
+        "testb %al, %al\n"
+        "je .Lf1ab5b0_001ab6a7\n"
+        "cmpb $0x7d, %al\n"
+        "je .Lf1ab5b0_001ab6a7\n"
+        "movl $0x21e508, 4(%esp)\n" /* line 2687 */
+        "movl %ebx, (%esp)\n" /* len */
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "je .Lf1ab5b0_001ab6a7\n"
+        "movl $0x2b4460, 4(%esp)\n" /* line 2690 */
+        "movl %ebx, (%esp)\n" /* len */
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1ab5b0_001ab659\n"
+        /* { scope 2 */
+        "movl %esi, (%esp)\n" /* line 2620 */
+        "calll Com_Parse\n"
+        "cmpb $0x7b, (%eax)\n" /* line 2622 */
+        "je .Lf1ab5b0_001ab6cc\n"
+        /* } scope */
+        ".Lf1ab5b0_001ab6a7:\n"
+        "calll Com_EndParseSession\n" /* line 2699 */
+        /* } scope */
+        "movl $0xf39bb8, %eax\n" /* line 2708 */
+        "addl $0x3c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2 */
+        ".Lf1ab5b0_001ab6b9:\n"
+        "testl %ebx, %ebx\n" /* line 2632 */
+        "je .Lf1ab5b0_001ab6a7\n"
+        "cmpb $0, (%ebx)\n"
+        "je .Lf1ab5b0_001ab6a7\n"
+        "movl 0xc(%ebp), %edx\n" /* line 2635 | imageTrack */
+        "movl %ebx, %eax\n"
+        "calll UI_ParseMenuInternal\n"
+        ".Lf1ab5b0_001ab6cc:\n"
+        "movl %esi, (%esp)\n" /* line 2627 */
+        "calll Com_Parse\n"
+        "movl %eax, %ebx\n"
+        "movl $0x21e508, 4(%esp)\n" /* line 2629 */
+        "movl %eax, (%esp)\n"
+        "calll I_stricmp\n"
+        "testl %eax, %eax\n"
+        "jne .Lf1ab5b0_001ab6b9\n"
+        "jmp .Lf1ab5b0_001ab659\n"
+        /* } scope */
+        ".Lf1ab5b0_001ab6ef:\n"
+        "movl %edi, 4(%esp)\n" /* line 2660 | menuFile */
+        "movl $0x2b43ac, (%esp)\n" /* "^3WARNING: menu file not found: %s
+" */
+        "calll Com_Printf\n"
+        "movl $0, 8(%esp)\n" /* line 2661 */
+        "movl %esi, 4(%esp)\n"
+        "movl $0x2b43d0, (%esp)\n" /* "ui/default.menu" */
+        "calll FS_FOpenFileByMode\n"
+        "movl %eax, %ebx\n" /* len */
+        "movl -0x20(%ebp), %esi\n" /* line 2662 | f */
+        "testl %esi, %esi\n"
+        "jne .Lf1ab5b0_001ab606\n"
+        "movl $0x2b43e0, 4(%esp)\n" /* line 2663 */
+        "movl $1, (%esp)\n"
+        "calll Com_Error\n"
+        "jmp .Lf1ab5b0_001ab606\n"
+        ".Lf1ab5b0_001ab73d:\n"
+        "movl -0x20(%ebp), %eax\n" /* line 2668 | f */
+        "movl %eax, (%esp)\n"
+        "calll FS_FCloseFile\n"
+        "movl $0x8000, 0x10(%esp)\n" /* line 2669 */
+        "movl %ebx, 0xc(%esp)\n" /* len */
+        "movl %edi, 8(%esp)\n" /* menuFile */
+        "movl $0x2b442c, 4(%esp)\n" /* "^1menu file too large: %s is %i, max allowed is %i" */
+        "movl $1, (%esp)\n"
+        "calll Com_Error\n"
+        "jmp .Lf1ab5b0_001ab612\n"
+    );
+}
+
+/* line 2587 */
+__attribute__((naked))
+MenuList * UI_LoadMenu(const char *menuFile, int imageTrack)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2587 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x10, %esp\n"
+        "movl 8(%ebp), %esi\n" /* menuFile */
+        "movl 0xc(%ebp), %ebx\n" /* imageTrack */
+        "movl $0x640, 8(%esp)\n" /* line 2589 */
+        "movl $0, 4(%esp)\n"
+        "movl $g_load, (%esp)\n"
+        "calll memset\n"
+        "movl $0xf39fc0, 0xf39bbc\n" /* line 2592 */
+        "movl %ebx, %edx\n" /* line 2599 | imageTrack */
+        "movl %esi, %eax\n" /* menuFile */
+        "calll UI_ParseMenuInternal\n"
+        "testb %al, %al\n"
+        "je .Lf1ab772_001ab7bf\n"
+        ".Lf1ab772_001ab7b3:\n"
+        "movl $0xf39bb8, %eax\n" /* line 2613 */
+        "addl $0x10, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lf1ab772_001ab7bf:\n"
+        "movl %esi, 4(%esp)\n" /* line 2601 | menuFile */
+        "movl $0x2b43ac, (%esp)\n" /* "^3WARNING: menu file not found: %s
+" */
+        "calll Com_Printf\n"
+        "movl %ebx, %edx\n" /* line 2602 | imageTrack */
+        "movl $0x2b43d0, %eax\n" /* "ui/default.menu" */
+        "calll UI_ParseMenuInternal\n"
+        "testb %al, %al\n"
+        "jne .Lf1ab772_001ab7b3\n"
+        "movl $0x2b43e0, 4(%esp)\n" /* line 2603 */
+        "movl $1, (%esp)\n"
+        "calll Com_Error\n"
+        "movl $0xf39bb8, %eax\n" /* line 2613 */
+        "addl $0x10, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+

@@ -1,0 +1,4046 @@
+/* ASM dump from: scr_yacc.c */
+/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/script/scr_yacc.c */
+
+#include "common_types.h"
+#include "imports.h"
+
+/* Original includes (from N_BINCL debug info):
+ *   #include ".\script\scr_lex.h"
+ */
+
+extern int yychar; /* 0x0 */
+extern stype_t yylval; /* 0x0 */
+extern int yynerrs; /* 0x0 */
+extern int yyleng; /* 0x0 */
+extern FILE *yyin; /* 0x0 */
+extern FILE *yyout; /* 0x0 */
+extern char *yytext; /* 0x0 */
+static sval_t yaccResult; /* 0xce7280 */
+static unsigned int g_out_pos; /* 0xceb2b0 */
+static unsigned int g_sourcePos; /* 0xceb2ac */
+static unsigned char g_parse_user; /* 0xceb2a8 */
+static sval_t g_dummyVal; /* 0xceb2a4 */
+static const char yytranslate[344]; /* 0x300a80 */
+static const short int yyr1[131]; /* 0x2ff180 */
+static const short int yyr2[131]; /* 0x2ff2a0 */
+static const short int yydefact[256]; /* 0x2ff3c0 */
+static const short int yydefgoto[26]; /* 0x2ff100 */
+static const short int yypact[256]; /* 0x300be0 */
+static const short int yypgoto[26]; /* 0x2ff140 */
+static const short int yytable[1313]; /* 0x2ff5c0 */
+static const short int yycheck[1313]; /* 0x300020 */
+static YY_BUFFER_STATE yy_current_buffer; /* 0xce7288 */
+static char yy_hold_char; /* 0xceb2b4 */
+static int yy_n_chars; /* 0xceb2bc */
+static char *yy_c_buf_p; /* 0xceb2b8 */
+static int yy_init; /* 0x311468 */
+static int yy_start; /* 0xce7284 */
+static int yy_did_buffer_switch_on_eof; /* 0xceb2c0 */
+static const short int yy_accept[256]; /* 0x301ae0 */
+static const int yy_ec[256]; /* 0x301ce0 */
+static const int yy_meta[59]; /* 0x3017c0 */
+static const short int yy_base[264]; /* 0x3015a0 */
+static const short int yy_def[264]; /* 0x3018c0 */
+static const short int yy_nxt[490]; /* 0x300de0 */
+static const short int yy_chk[490]; /* 0x3011c0 */
+static yy_state_type yy_last_accepting_state; /* 0xceb2c8 */
+static char *yy_last_accepting_cpos; /* 0xceb2c4 */
+static char ch_buf[16386]; /* 0xce72a0 */
+
+YY_BUFFER_STATE yy_create_buffer(FILE *file, int size);
+int yyparse(void);
+void ScriptParse(sval_t *parseData, int user);
+
+/* line 1838 */
+__attribute__((naked))
+YY_BUFFER_STATE yy_create_buffer(FILE *file, int size)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1838 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x1c, %esp\n"
+        "movl 8(%ebp), %edi\n" /* file */
+        "movl 0xc(%ebp), %esi\n" /* size */
+        "movl $0x28, (%esp)\n" /* line 2172 */
+        "calll malloc\n"
+        "movl %eax, %ebx\n"
+        "testl %eax, %eax\n" /* line 1848 */
+        "je .Lf10c61a_0010c6ec\n"
+        "movl %esi, 0xc(%eax)\n" /* line 1851 | size */
+        "leal 2(%esi), %eax\n" /* line 2172 | size */
+        "movl %eax, (%esp)\n"
+        "calll malloc\n"
+        "movl %eax, 4(%ebx)\n" /* line 1856 */
+        "testl %eax, %eax\n" /* line 1857 */
+        "je .Lf10c61a_0010c6ec\n"
+        "movl $1, 0x14(%ebx)\n" /* line 1860 */
+        "movl $0, 0x10(%ebx)\n" /* line 1932 */
+        "movb $0, (%eax)\n" /* line 1938 */
+        "movb $0, 1(%eax)\n" /* line 1939 */
+        "movl %eax, 8(%ebx)\n" /* line 1941 */
+        "movl $1, 0x1c(%ebx)\n" /* line 1943 */
+        "movl $0, 0x24(%ebx)\n" /* line 1944 */
+        "cmpl yy_current_buffer, %ebx\n" /* line 1946 */
+        "je .Lf10c61a_0010c6c8\n"
+        ".Lf10c61a_0010c686:\n"
+        "movl %edi, (%ebx)\n" /* line 1906 | file */
+        "movl $1, 0x20(%ebx)\n" /* line 1907 */
+        "testl %edi, %edi\n" /* line 1915 | file */
+        "je .Lf10c61a_0010c6b9\n"
+        "movl %edi, (%esp)\n" /* file */
+        "calll fileno\n"
+        "movl %eax, (%esp)\n"
+        "calll isatty\n"
+        "testl %eax, %eax\n"
+        "jle .Lf10c61a_0010c6b9\n"
+        "movl $1, %eax\n"
+        "movl %eax, 0x18(%ebx)\n"
+        "movl %ebx, %eax\n" /* line 1865 */
+        "addl $0x1c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lf10c61a_0010c6b9:\n"
+        "xorl %eax, %eax\n" /* line 1915 */
+        "movl %eax, 0x18(%ebx)\n"
+        "movl %ebx, %eax\n" /* line 1865 */
+        "addl $0x1c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lf10c61a_0010c6c8:\n"
+        "movl $0, yy_n_chars\n" /* line 1830 */
+        "movl %eax, yy_c_buf_p\n" /* line 1831 */
+        "movl %eax, yytext\n"
+        "movl (%ebx), %eax\n" /* line 1832 */
+        "movl %eax, yyin\n"
+        "movb $0, yy_hold_char\n" /* line 1833 */
+        "jmp .Lf10c61a_0010c686\n"
+        ".Lf10c61a_0010c6ec:\n"
+        "movl $0x228cbc, 8(%esp)\n" /* line 2108 */
+        "movl $0x215bbc, 4(%esp)\n" /* "%s
+" */
+        "movl ___sF, %eax\n"
+        "addl $0xb0, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll fprintf\n"
+        "movl $2, (%esp)\n" /* line 2109 */
+        "calll exit\n"
+    );
+}
+
+/* line 463 */
+__attribute__((naked))
+int yyparse(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 463 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x28ac, %esp\n"
+        /* { scope 1 */
+        "movl $0, yynerrs\n" /* line 514 */
+        "movl $0xfffffffe, yychar\n" /* line 515 */
+        "leal -0x1aa(%ebp), %eax\n" /* line 522 */
+        "movl %eax, -0x2850(%ebp)\n" /* yyssp */
+        "leal -0x1a8(%ebp), %edx\n" /* yyssa */
+        "movl %edx, -0x2844(%ebp)\n" /* yyss */
+        "leal -0x7e8(%ebp), %ecx\n" /* yyvsa */
+        "movl %ecx, -0x2840(%ebp)\n" /* yyvs */
+        "movl $0xc8, -0x283c(%ebp)\n" /* yystacksize */
+        "movl $0, -0x2858(%ebp)\n" /* yystate */
+        "movl $0, -0x2848(%ebp)\n" /* yyerrstatus */
+        "movl %ecx, -0x284c(%ebp)\n" /* yyvsp */
+        ".Lf10c71a_0010c782:\n"
+        "addl $2, -0x2850(%ebp)\n" /* line 533 | yyssp */
+        "movl -0x2858(%ebp), %edi\n" /* yystate */
+        "movl -0x2850(%ebp), %ebx\n" /* yyssp */
+        "movw %di, (%ebx)\n"
+        "movl -0x283c(%ebp), %edx\n" /* line 535 | yystacksize */
+        "addl %edx, %edx\n"
+        "movl -0x2844(%ebp), %ecx\n" /* yyss */
+        "leal -2(%ecx, %edx), %eax\n"
+        "cmpl %eax, %ebx\n"
+        "jb .Lf10c71a_0010c886\n"
+        /* { scope 2 */
+        "subl %ecx, %ebx\n" /* line 546 | size */
+        "sarl $1, %ebx\n" /* size */
+        "movl %ebx, -0x2850(%ebp)\n" /* size, yyssp */
+        "addl $1, %ebx\n" /* size */
+        "cmpl $0x270f, -0x283c(%ebp)\n" /* line 572 | yystacksize */
+        "jg .Lf10c71a_0011029f\n"
+        "movl %edx, -0x283c(%ebp)\n" /* line 585 | yystacksize */
+        "cmpl $0x2710, %edx\n" /* line 586 */
+        "jle .Lf10c71a_0010caeb\n"
+        "movl $0x2710, -0x283c(%ebp)\n" /* yystacksize */
+        "movl $0x2710, %edi\n"
+        "movl $0x2710, -0x2808(%ebp)\n"
+        ".Lf10c71a_0010c7fa:\n"
+        "leal 0x1e(%edi, %edi), %eax\n" /* line 591 */
+        "andl $0xfffffff0, %eax\n"
+        "subl %eax, %esp\n"
+        "leal 0x30(%esp), %eax\n"
+        "movl %eax, -0x2874(%ebp)\n"
+        "leal (%ebx, %ebx), %esi\n" /* line 592 | size */
+        "movl %esi, 8(%esp)\n"
+        "movl -0x2844(%ebp), %edx\n" /* yyss */
+        "movl %edx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll memcpy\n"
+        "leal 0x10(, %edi, 8), %eax\n" /* line 594 */
+        "subl %eax, %esp\n"
+        "leal 0x30(%esp), %edi\n"
+        "shll $3, %ebx\n" /* line 595 | size */
+        "movl %ebx, 8(%esp)\n" /* size */
+        "movl -0x2840(%ebp), %ecx\n" /* yyvs */
+        "movl %ecx, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll memcpy\n"
+        "movl -0x2874(%ebp), %eax\n" /* line 604 */
+        "leal -2(%eax, %esi), %esi\n"
+        "movl %esi, -0x2850(%ebp)\n" /* yyssp */
+        "leal -8(%edi, %ebx), %ebx\n" /* line 605 | size */
+        "movl %ebx, -0x284c(%ebp)\n" /* size, yyvsp */
+        "movl -0x2808(%ebp), %edx\n" /* line 615 */
+        "movl %eax, %ecx\n"
+        "leal -2(%eax, %edx, 2), %eax\n"
+        "cmpl %eax, %esi\n"
+        "jae .Lf10c71a_0010cb4a\n"
+        "movl %ecx, -0x2844(%ebp)\n" /* line 616 | yyss */
+        "movl %edi, -0x2840(%ebp)\n" /* yyvs */
+        /* } scope */
+        ".Lf10c71a_0010c886:\n"
+        "movl -0x2858(%ebp), %ebx\n" /* line 633 | yystate, size */
+        "movzwl yypact(%ebx, %ebx), %eax\n" /* size */
+        "movswl %ax, %edi\n"
+        "movl %edi, -0x27fc(%ebp)\n"
+        "cmpw $0x8000, %ax\n" /* line 634 */
+        "je .Lf10c71a_0010c9dd\n"
+        "cmpl $-2, yychar\n" /* line 642 */
+        "je .Lf10c71a_0010cb7a\n"
+        "movl yychar, %eax\n"
+        ".Lf10c71a_0010c8b9:\n"
+        "testl %eax, %eax\n" /* line 653 */
+        "jle .Lf10c71a_0010cd0c\n"
+        "cmpl $0x157, %eax\n" /* line 665 */
+        "jbe .Lf10c71a_0010caf8\n"
+        "movl $0x74, %ecx\n"
+        ".Lf10c71a_0010c8d1:\n"
+        "movl -0x27fc(%ebp), %edi\n" /* line 681 */
+        "leal (%ecx, %edi), %edx\n"
+        "cmpl $0x520, %edx\n" /* line 682 */
+        "ja .Lf10c71a_0010c8f2\n"
+        "movswl yycheck(%edx, %edx), %eax\n"
+        "cmpl %eax, %ecx\n"
+        "je .Lf10c71a_0010cd4b\n"
+        ".Lf10c71a_0010c8f2:\n"
+        "movl -0x2858(%ebp), %edi\n" /* yystate */
+        "movzwl yydefact(%edi, %edi), %eax\n" /* line 732 */
+        "movswl %ax, %edx\n"
+        "movl %edx, -0x2854(%ebp)\n" /* yyn */
+        "testw %ax, %ax\n" /* line 733 */
+        "jne .Lf10c71a_0010c9f9\n"
+        ".Lf10c71a_0010c912:\n"
+        "movl -0x2848(%ebp), %ebx\n" /* line 817 | yyerrstatus, size */
+        "testl %ebx, %ebx\n" /* size */
+        "je .Lf10c71a_0010cb04\n"
+        "cmpl $3, -0x2848(%ebp)\n" /* line 869 | yyerrstatus */
+        "je .Lf10c71a_0010cdd6\n"
+        ".Lf10c71a_0010c92d:\n"
+        "movl -0x2850(%ebp), %ecx\n" /* line 882 | yyssp */
+        "movl -0x2858(%ebp), %edx\n" /* yystate */
+        "jmp .Lf10c71a_0010c95d\n"
+        ".Lf10c71a_0010c93b:\n"
+        "cmpl %ecx, -0x2844(%ebp)\n" /* line 903 | yyss */
+        "je .Lf10c71a_0010cb4a\n"
+        "subl $8, -0x284c(%ebp)\n" /* line 904 | yyvsp */
+        "movswl -2(%ecx), %eax\n" /* line 905 */
+        "movl %eax, -0x2858(%ebp)\n" /* yystate */
+        "subl $2, %ecx\n"
+        "movl %eax, %edx\n"
+        ".Lf10c71a_0010c95d:\n"
+        "movl %ecx, -0x2850(%ebp)\n" /* line 921 | yyssp */
+        "movzwl yypact(%edx, %edx), %eax\n" /* line 923 */
+        "movswl %ax, %edx\n"
+        "cmpw $0x8000, %ax\n" /* line 924 */
+        "je .Lf10c71a_0010c93b\n"
+        "leal 1(%edx), %eax\n" /* line 927 */
+        "cmpl $0x520, %eax\n" /* line 928 */
+        "ja .Lf10c71a_0010c93b\n"
+        "cmpw $1, yycheck(%eax, %eax)\n"
+        "jne .Lf10c71a_0010c93b\n"
+        "movzwl yytable(%eax, %eax), %eax\n" /* line 931 */
+        "movswl %ax, %ebx\n" /* size */
+        "testl %ebx, %ebx\n" /* line 932 | size */
+        "js .Lf10c71a_0010cb57\n"
+        "testw %ax, %ax\n" /* line 939 */
+        "je .Lf10c71a_0010c93b\n"
+        "cmpw $0xff, %ax\n" /* line 942 */
+        "je .Lf10c71a_001102d2\n"
+        "addl $8, -0x284c(%ebp)\n" /* line 950 | yyvsp */
+        "movl yylval, %eax\n"
+        "movl 0x1218b90, %edx\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl %eax, (%ecx)\n"
+        "movl %edx, 4(%ecx)\n"
+        "movl %ebx, -0x2858(%ebp)\n" /* size, yystate */
+        "movl $3, -0x2848(%ebp)\n" /* yyerrstatus */
+        "jmp .Lf10c71a_0010c782\n"
+        ".Lf10c71a_0010c9dd:\n"
+        "movl %ebx, %edi\n" /* size */
+        "movzwl yydefact(%edi, %edi), %eax\n" /* line 732 */
+        "movswl %ax, %edx\n"
+        "movl %edx, -0x2854(%ebp)\n" /* yyn */
+        "testw %ax, %ax\n" /* line 733 */
+        "je .Lf10c71a_0010c912\n"
+        ".Lf10c71a_0010c9f9:\n"
+        "movl %edx, %ecx\n"
+        ".Lf10c71a_0010c9fb:\n"
+        "movswl yyr2(%ecx, %ecx), %ecx\n" /* line 738 */
+        "movl %ecx, -0x2838(%ebp)\n" /* yylen */
+        "testl %ecx, %ecx\n" /* line 739 */
+        "jle .Lf10c71a_0010ca39\n"
+        "movl $1, %eax\n" /* line 740 */
+        "subl %ecx, %eax\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl (%ecx, %eax, 8), %edx\n"
+        "movl 4(%ecx, %eax, 8), %ecx\n"
+        "movl %edx, -0x2870(%ebp)\n" /* yyval */
+        "movl %ecx, -0x286c(%ebp)\n"
+        "movl %ecx, -0x2810(%ebp)\n"
+        "movl %edx, -0x280c(%ebp)\n"
+        ".Lf10c71a_0010ca39:\n"
+        "cmpl $0x82, -0x2854(%ebp)\n" /* line 758 | yyn */
+        "jbe .Lf10c71a_0010cb3d\n"
+        "movl -0x2810(%ebp), %ebx\n" /* size */
+        "movl -0x280c(%ebp), %edi\n"
+        ".Lf10c71a_0010ca55:\n"
+        "movl -0x2838(%ebp), %eax\n" /* line 764 | yylen */
+        "shll $3, %eax\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "subl %eax, %edx\n"
+        "movl -0x2838(%ebp), %eax\n" /* line 765 | yylen */
+        "addl %eax, %eax\n"
+        "subl %eax, -0x2850(%ebp)\n" /* yyssp */
+        "leal 8(%edx), %ecx\n" /* line 781 */
+        "movl %ecx, -0x284c(%ebp)\n" /* yyvsp */
+        "movl %ebx, -0x286c(%ebp)\n" /* size */
+        "movl %edi, -0x2870(%ebp)\n" /* yyval */
+        "movl -0x2870(%ebp), %ecx\n" /* yyval */
+        "movl -0x286c(%ebp), %ebx\n" /* size */
+        "movl %ecx, 8(%edx)\n"
+        "movl %ebx, 0xc(%edx)\n" /* size */
+        "movl -0x2854(%ebp), %ebx\n" /* line 807 | yyn, size */
+        "movswl yyr1(%ebx, %ebx), %eax\n" /* size */
+        "leal -0x5a(%eax), %ebx\n" /* size */
+        "movl -0x2850(%ebp), %edi\n" /* yyssp */
+        "movswl (%edi), %ecx\n"
+        "movswl yypgoto(%ebx, %ebx), %eax\n" /* size */
+        "leal (%eax, %ecx), %edx\n"
+        "cmpl $0x520, %edx\n" /* line 808 */
+        "ja .Lf10c71a_0010cad8\n"
+        "movswl yycheck(%edx, %edx), %eax\n"
+        "cmpl %eax, %ecx\n"
+        "je .Lf10c71a_0010cdf3\n"
+        ".Lf10c71a_0010cad8:\n"
+        "movswl yydefgoto(%ebx, %ebx), %ebx\n" /* line 811 | size */
+        "movl %ebx, -0x2858(%ebp)\n" /* size, yystate */
+        "jmp .Lf10c71a_0010c782\n"
+        /* { scope 2 */
+        ".Lf10c71a_0010caeb:\n"
+        "movl %edx, -0x2808(%ebp)\n" /* line 586 */
+        "movl %edx, %edi\n"
+        "jmp .Lf10c71a_0010c7fa\n"
+        /* } scope */
+        ".Lf10c71a_0010caf8:\n"
+        "movsbl yytranslate(%eax), %ecx\n" /* line 665 */
+        "jmp .Lf10c71a_0010c8d1\n"
+        ".Lf10c71a_0010cb04:\n"
+        "addl $1, yynerrs\n" /* line 820 */
+        "movl yychar, %eax\n" /* line 483 */
+        "testl %eax, %eax\n"
+        "je .Lf10c71a_0010cdbc\n"
+        "cmpl $0x101, %eax\n" /* line 487 */
+        "je .Lf10c71a_0010c92d\n"
+        "movl $0x228d08, 4(%esp)\n" /* line 489 */
+        "movl g_sourcePos, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll CompileError\n"
+        "jmp .Lf10c71a_0010c92d\n"
+        ".Lf10c71a_0010cb3d:\n"
+        "movl -0x2854(%ebp), %ebx\n" /* line 758 | yyn, size */
+        "jmpl *0x3020e0(, %ebx, 4)\n"
+        ".Lf10c71a_0010cb4a:\n"
+        "movl $1, %eax\n" /* line 956 */
+        /* } scope */
+        ".Lf10c71a_0010cb4f:\n"
+        "leal -0xc(%ebp), %esp\n" /* line 981 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lf10c71a_0010cb57:\n"
+        "cmpw $0x8000, %ax\n" /* line 934 */
+        "je .Lf10c71a_0010c93b\n"
+        "negl %ebx\n" /* line 936 | size */
+        "movl %ebx, -0x2854(%ebp)\n" /* size, yyn */
+        "movl $3, -0x2848(%ebp)\n" /* yyerrstatus */
+        "movl %ebx, %ecx\n" /* size */
+        "jmp .Lf10c71a_0010c9fb\n"
+        ".Lf10c71a_0010cb7a:\n"
+        "movl yy_init, %ecx\n" /* line 776 */
+        "testl %ecx, %ecx\n"
+        "je .Lf10c71a_0010cbfb\n"
+        "movl $0, yy_init\n" /* line 778 */
+        "movl $1, %eax\n" /* line 785 */
+        "movl yy_start, %edx\n"
+        "testl %edx, %edx\n"
+        "cmovnel yy_start, %eax\n"
+        "movl %eax, yy_start\n"
+        "movl yyin, %eax\n" /* line 787 */
+        "testl %eax, %eax\n"
+        "je .Lf10c71a_0010ce06\n"
+        ".Lf10c71a_0010cbb4:\n"
+        "movl yyout, %eax\n" /* line 790 */
+        "testl %eax, %eax\n"
+        "je .Lf10c71a_00110255\n"
+        ".Lf10c71a_0010cbc1:\n"
+        "movl yy_current_buffer, %eax\n" /* line 793 */
+        "testl %eax, %eax\n"
+        "je .Lf10c71a_0011027e\n"
+        "movl yy_current_buffer, %edx\n"
+        ".Lf10c71a_0010cbd4:\n"
+        "movl 0x10(%edx), %eax\n" /* line 1830 */
+        "movl %eax, yy_n_chars\n"
+        "movl 8(%edx), %eax\n" /* line 1831 */
+        "movl %eax, yy_c_buf_p\n"
+        "movl %eax, %ebx\n" /* size */
+        "movl %eax, yytext\n"
+        "movl (%edx), %eax\n" /* line 1832 */
+        "movl %eax, yyin\n"
+        "movzbl (%ebx), %eax\n" /* line 1833 | size */
+        "movb %al, yy_hold_char\n"
+        ".Lf10c71a_0010cbfb:\n"
+        "movl yy_c_buf_p, %eax\n" /* line 802 */
+        "movl %eax, -0x2830(%ebp)\n"
+        "movzbl yy_hold_char, %eax\n" /* line 805 */
+        "movl -0x2830(%ebp), %edx\n"
+        "movb %al, (%edx)\n"
+        "movl yy_start, %ecx\n" /* line 812 */
+        "movl %edx, %edi\n"
+        ".Lf10c71a_0010cc1d:\n"
+        "movzbl (%edi), %eax\n" /* line 816 */
+        "movzbl yy_ec(, %eax, 4), %esi\n"
+        "cmpw $0, yy_accept(%ecx, %ecx)\n" /* line 817 */
+        "je .Lf10c71a_0010cc3f\n"
+        "movl %ecx, yy_last_accepting_state\n" /* line 819 */
+        "movl %edi, yy_last_accepting_cpos\n" /* line 820 */
+        ".Lf10c71a_0010cc3f:\n"
+        "movswl yy_base(%ecx, %ecx), %eax\n" /* line 822 */
+        "movl %esi, %edx\n"
+        "movzbl %dl, %ebx\n" /* size */
+        "leal (%eax, %ebx), %edx\n"
+        "movswl yy_chk(%edx, %edx), %eax\n"
+        "cmpl %ecx, %eax\n"
+        "je .Lf10c71a_0010cc8f\n"
+        ".Lf10c71a_0010cc5b:\n"
+        "movswl yy_def(%ecx, %ecx), %ecx\n" /* line 824 */
+        "cmpl $0xff, %ecx\n" /* line 825 */
+        "jle .Lf10c71a_0010cc3f\n"
+        "movzbl yy_meta(, %ebx, 4), %esi\n" /* line 826 */
+        "movswl yy_base(%ecx, %ecx), %eax\n" /* line 822 */
+        "movl %esi, %edx\n"
+        "movzbl %dl, %ebx\n" /* size */
+        "leal (%eax, %ebx), %edx\n"
+        "movswl yy_chk(%edx, %edx), %eax\n"
+        "cmpl %ecx, %eax\n"
+        "jne .Lf10c71a_0010cc5b\n"
+        ".Lf10c71a_0010cc8f:\n"
+        "movswl yy_nxt(%edx, %edx), %ecx\n" /* line 828 */
+        "addl $1, %edi\n" /* line 829 */
+        "cmpw $0x1af, yy_base(%ecx, %ecx)\n" /* line 814 */
+        "jne .Lf10c71a_0010cc1d\n"
+        "movl -0x2830(%ebp), %ebx\n" /* size */
+        "movl %ebx, -0x27f8(%ebp)\n" /* size */
+        ".Lf10c71a_0010ccb6:\n"
+        "movzwl yy_accept(%ecx, %ecx), %eax\n" /* line 834 */
+        "movswl %ax, %edx\n"
+        "testw %ax, %ax\n" /* line 835 */
+        "jne .Lf10c71a_0010ccd9\n"
+        "movl yy_last_accepting_cpos, %edi\n" /* line 837 */
+        "movl yy_last_accepting_state, %eax\n" /* line 839 */
+        "movswl yy_accept(%eax, %eax), %edx\n"
+        ".Lf10c71a_0010ccd9:\n"
+        "movl -0x27f8(%ebp), %ebx\n" /* line 842 | size */
+        "movl %ebx, yytext\n" /* size */
+        "movl %edi, %eax\n"
+        "subl %ebx, %eax\n" /* size */
+        "movl %eax, yyleng\n"
+        "movzbl (%edi), %eax\n"
+        "movb %al, yy_hold_char\n"
+        "movb $0, (%edi)\n"
+        "movl %edi, yy_c_buf_p\n"
+        ".Lf10c71a_0010cd00:\n"
+        "cmpl $0x61, %edx\n" /* line 848 */
+        "ja .Lf10c71a_0010cd1d\n"
+        "jmpl *0x3022ec(, %edx, 4)\n"
+        ".Lf10c71a_0010cd0c:\n"
+        "movl $0, yychar\n" /* line 656 */
+        "xorl %ecx, %ecx\n"
+        "jmp .Lf10c71a_0010c8d1\n"
+        ".Lf10c71a_0010cd1d:\n"
+        "movl $0x228d88, 8(%esp)\n" /* line 2108 */
+        ".Lf10c71a_0010cd25:\n"
+        "movl $0x215bbc, 4(%esp)\n" /* "%s
+" */
+        "movl ___sF, %eax\n"
+        "addl $0xb0, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll fprintf\n"
+        "movl $2, (%esp)\n" /* line 2109 */
+        "calll exit\n"
+        ".Lf10c71a_0010cd4b:\n"
+        "movzwl yytable(%edx, %edx), %eax\n" /* line 685 */
+        "movswl %ax, %ecx\n"
+        "testl %ecx, %ecx\n" /* line 694 */
+        "js .Lf10c71a_00110267\n"
+        "testw %ax, %ax\n" /* line 701 */
+        "je .Lf10c71a_0010c912\n"
+        "cmpw $0xff, %ax\n" /* line 704 */
+        "je .Lf10c71a_001102d2\n"
+        "movl $0xfffffffe, %eax\n" /* line 716 */
+        "movl yychar, %edi\n"
+        "testl %edi, %edi\n"
+        "cmovel yychar, %eax\n"
+        "movl %eax, yychar\n"
+        "addl $8, -0x284c(%ebp)\n" /* line 718 | yyvsp */
+        "movl yylval, %eax\n"
+        "movl 0x1218b90, %edx\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp, size */
+        "movl %eax, (%ebx)\n" /* size */
+        "movl %edx, 4(%ebx)\n" /* size */
+        "movl -0x2848(%ebp), %esi\n" /* line 724 | yyerrstatus */
+        "testl %esi, %esi\n"
+        "jne .Lf10c71a_0010ce15\n"
+        "movl %ecx, -0x2858(%ebp)\n" /* line 522 | yystate */
+        "jmp .Lf10c71a_0010c782\n"
+        ".Lf10c71a_0010cdbc:\n"
+        "movl $0x228ce8, 4(%esp)\n" /* line 485 */
+        "movl g_sourcePos, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll CompileError\n"
+        "jmp .Lf10c71a_0010c92d\n"
+        ".Lf10c71a_0010cdd6:\n"
+        "movl yychar, %ecx\n" /* line 874 */
+        "testl %ecx, %ecx\n"
+        "je .Lf10c71a_0010cb4a\n"
+        "movl $0xfffffffe, yychar\n" /* line 882 */
+        "jmp .Lf10c71a_0010c92d\n"
+        ".Lf10c71a_0010cdf3:\n"
+        "movswl yytable(%edx, %edx), %edx\n" /* line 809 */
+        "movl %edx, -0x2858(%ebp)\n" /* yystate */
+        "jmp .Lf10c71a_0010c782\n"
+        ".Lf10c71a_0010ce06:\n"
+        "movl ___sF, %eax\n" /* line 788 */
+        "movl %eax, yyin\n"
+        "jmp .Lf10c71a_0010cbb4\n"
+        ".Lf10c71a_0010ce15:\n"
+        "subl $1, -0x2848(%ebp)\n" /* line 724 | yyerrstatus */
+        "movl %ecx, -0x2858(%ebp)\n" /* yystate */
+        "jmp .Lf10c71a_0010c782\n"
+        "movl g_out_pos, %eax\n" /* line 103 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "jmp .Lf10c71a_0010cbfb\n"
+        "movl g_out_pos, %eax\n" /* line 162 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x13b, %eax\n"
+        ".Lf10c71a_0010ce65:\n"
+        "movl %eax, yychar\n" /* line 648 */
+        "jmp .Lf10c71a_0010c8b9\n"
+        "movl g_out_pos, %eax\n" /* line 161 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x13a, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 160 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x139, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 159 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x138, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 158 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x137, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 157 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x136, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 156 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x135, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 155 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x134, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 154 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x133, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 153 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x132, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 152 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x131, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 151 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x130, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 150 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x12f, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 149 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x12e, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 148 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x12d, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 147 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x12c, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 146 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x12b, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 145 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x12a, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 144 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x129, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 143 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x128, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 142 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x127, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 141 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x124, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 140 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x125, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 139 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x123, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 138 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x126, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 137 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x121, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 136 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x122, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 135 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $yylval, 8(%esp)\n" /* line 59 */
+        "movl $0x215a68, 4(%esp)\n" /* "%f" */
+        "movl yytext, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll sscanf\n"
+        "movl $0x120, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 134 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $yylval, 8(%esp)\n" /* line 55 */
+        "movl $0x215a64, 4(%esp)\n" /* "%d" */
+        "movl yytext, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll sscanf\n"
+        "movl $0x11f, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 133 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x11e, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 132 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x11d, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 179 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x14d, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 178 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x14c, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 177 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x14b, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 176 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x14a, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 175 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x149, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 174 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x148, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 173 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x147, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 172 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x146, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 171 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x145, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 170 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x143, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 169 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x142, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 168 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x141, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 167 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x140, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 166 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x13f, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 165 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x13e, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 164 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x13d, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 187 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x155, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 186 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x154, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 185 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x153, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 184 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x152, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 183 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x151, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 182 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x150, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 181 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x14f, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 180 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x14e, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 192 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "movl %eax, %edx\n"
+        "addl yyleng, %edx\n"
+        "movl %edx, g_out_pos\n"
+        "movl yytext, %edx\n" /* line 190 */
+        "movl %edx, 8(%esp)\n"
+        "movl $0x228d14, 4(%esp)\n" /* "bad token '%s'" */
+        "movl %eax, (%esp)\n"
+        "calll CompileError\n"
+        "movl $0x101, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 191 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "movl yyleng, %edx\n"
+        "addl %edx, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0xd, 0xc(%esp)\n" /* line 4 */
+        "addl $1, %edx\n"
+        "movl %edx, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl yytext, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_GetStringOfLen\n"
+        "movl %eax, yylval\n"
+        "movl $0x144, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 189 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "movl yyleng, %edx\n"
+        "addl %edx, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0xd, 0xc(%esp)\n" /* line 4 */
+        "addl $1, %edx\n"
+        "movl %edx, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl yytext, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_GetStringOfLen\n"
+        "movl %eax, yylval\n"
+        "movl $0x102, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 188 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x156, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl %edi, %eax\n" /* line 1331 */
+        "subl yytext, %eax\n"
+        "subl $1, %eax\n"
+        "movl %eax, -0x2834(%ebp)\n"
+        "movzbl yy_hold_char, %eax\n" /* line 1334 */
+        "movb %al, (%edi)\n"
+        "movl yy_current_buffer, %esi\n" /* line 1337 */
+        "movl 0x24(%esi), %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Lf10c71a_0010d778\n"
+        "movl 0x10(%esi), %eax\n" /* line 1348 */
+        "movl %eax, yy_n_chars\n"
+        "movl yyin, %eax\n" /* line 1349 */
+        "movl %eax, (%esi)\n"
+        "movl $1, 0x24(%esi)\n" /* line 1350 */
+        ".Lf10c71a_0010d778:\n"
+        "movl 4(%esi), %eax\n" /* line 1360 */
+        "movl %eax, -0x2828(%ebp)\n"
+        "movl yy_n_chars, %edx\n"
+        "movl %edx, -0x2884(%ebp)\n"
+        "movl yy_c_buf_p, %edx\n"
+        "addl -0x2884(%ebp), %eax\n"
+        "cmpl %edx, %eax\n"
+        "jae .Lf10c71a_001104c4\n"
+        "movl yytext, %ebx\n" /* line 1469 | size */
+        "movl %ebx, %ecx\n" /* size */
+        "addl $1, %eax\n" /* line 1473 */
+        "cmpl %eax, %edx\n"
+        "ja .Lf10c71a_001104b7\n"
+        "movl 0x20(%esi), %eax\n" /* line 1477 */
+        "testl %eax, %eax\n"
+        "jne .Lf10c71a_00110585\n"
+        "subl %ebx, %edx\n" /* line 1479 | size */
+        "subl $1, %edx\n"
+        "jne .Lf10c71a_001103f8\n"
+        ".Lf10c71a_0010d7ca:\n"
+        "movl $0, yy_did_buffer_switch_on_eof\n" /* line 1400 */
+        "movl %ebx, yy_c_buf_p\n" /* line 1413 | size */
+        "movl yy_start, %edx\n" /* line 1415 */
+        "subl $1, %edx\n"
+        "movl %edx, %eax\n"
+        "shrl $0x1f, %eax\n"
+        "addl %edx, %eax\n"
+        "sarl $1, %eax\n"
+        "leal 0x5f(%eax), %edx\n"
+        "jmp .Lf10c71a_0010cd00\n"
+        "movl g_out_pos, %eax\n" /* line 193 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "movl yyleng, %edx\n"
+        "addl %edx, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl yyout, %eax\n" /* line 191 */
+        "movl %eax, 0xc(%esp)\n"
+        "movl $1, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl yytext, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll fwrite\n"
+        "jmp .Lf10c71a_0010cbfb\n"
+        "xorl %eax, %eax\n" /* line 2109 */
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 434 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 430 | yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl %eax, %ebx\n"
+        "movl $0, (%esp)\n"
+        "calll node0\n"
+        "movl %eax, (%esp)\n"
+        "calll linked_list_end\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 397 */
+        "calll node0\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_dummyVal, %ebx\n" /* line 393 */
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0xc(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -8(%edi), %edi\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %edi, 4(%esp)\n"
+        "movl $0x2d, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 456 | yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl -8(%ebx), %edi\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 452 | yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x46, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 450 | yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x45, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 448 | yyvsp */
+        "movl -0xc(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x1c(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x10(%edi), %edi\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %edi, 4(%esp)\n"
+        "movl $0x47, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 446 | yyvsp */
+        "subl $0x30, %esi\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl -0x30(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 446 | yyvsp */
+        "movl %eax, -0x30(%ecx)\n"
+        "movl g_dummyVal, %edi\n"
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl -8(%edx), %edx\n"
+        "movl %edx, -0x2864(%ebp)\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x20(%ecx), %ecx\n"
+        "movl %ecx, -0x285c(%ebp)\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x30(%ecx), %edx\n"
+        "movl %edi, 0x18(%esp)\n"
+        "movl %ebx, 0x14(%esp)\n"
+        "movl %eax, 0x10(%esp)\n"
+        "movl -0x2864(%ebp), %ebx\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl -0x285c(%ebp), %edi\n"
+        "movl %edi, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x44, (%esp)\n"
+        "calll node6\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 442 */
+        "calll node0\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll prepend_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 440 | yyvsp */
+        "movl -0x10(%edi), %edi\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl %edi, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll prepend_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 436 | yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl %eax, %ebx\n"
+        "movl $0, (%esp)\n"
+        "calll node0\n"
+        "movl %eax, (%esp)\n"
+        "calll linked_list_end\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 468 */
+        "calll node0\n"
+        "movl %eax, (%esp)\n"
+        "calll linked_list_end\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 466 | yyvsp */
+        "movl -8(%edi), %edi\n"
+        "movl -0x284c(%ebp), %eax\n" /* yyvsp */
+        "movl -0x10(%eax), %eax\n"
+        "movl %edi, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 462 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x55, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 0x195ee5c, %eax\n"
+        "addl $1, 4(%eax)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 458 */
+        "calll node0\n"
+        "movl %eax, (%esp)\n"
+        "calll linked_list_end\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 168 | yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x52, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, yaccResult\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 166 | yyvsp */
+        "movl (%edx), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x41, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, yaccResult\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 416 */
+        "calll node0\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 414 */
+        "calll node0\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll prepend_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 412 | yyvsp */
+        "movl -0x10(%ecx), %ecx\n"
+        "movl %ecx, -0x2860(%ebp)\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl -0x2860(%ebp), %edi\n"
+        "movl %edi, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll prepend_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 408 */
+        "calll node0\n"
+        "movl %eax, (%esp)\n"
+        "calll linked_list_end\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %eax\n" /* line 406 | yyvsp */
+        "movl (%eax), %ecx\n"
+        "movl -8(%eax), %edx\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_dummyVal, %ebx\n" /* line 401 */
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %ebx, 8(%esp)\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x3e, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_dummyVal, %ebx\n" /* line 399 */
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl -0xc(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -8(%ecx), %ecx\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x3d, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl %eax, (%edi)\n" /* line 428 */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 424 */
+        "calll node0\n"
+        "movl %eax, (%esp)\n"
+        "calll linked_list_end\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl (%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 422 | yyvsp */
+        "movl %eax, (%ecx)\n"
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl %eax, %ebx\n"
+        "movl $0, (%esp)\n"
+        "calll node0\n"
+        "movl %eax, (%esp)\n"
+        "calll linked_list_end\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl (%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 420 | yyvsp */
+        "movl %eax, (%ecx)\n"
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ecx, (%esp)\n"
+        "calll node2_\n"
+        "movl -0x10(%ebx), %edi\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edi, (%esp)\n"
+        "calll append_node\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_out_pos, %eax\n" /* line 163 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x13c, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 174 | yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $6, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 170 | yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x52, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, yaccResult\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 182 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x67, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 180 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x66, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 178 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %edi\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl -0xc(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl (%edx), %ecx\n"
+        "movl -0x10(%edx), %edx\n"
+        "movl %edi, 0x14(%esp)\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x30, (%esp)\n"
+        "calll node5\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 176 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %edi\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0xc(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl (%edx), %ecx\n"
+        "movl -0x10(%edx), %edx\n"
+        "movl %edi, 0x14(%esp)\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2f, (%esp)\n"
+        "calll node5\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 198 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x6f, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 196 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x6e, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 194 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x6d, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 192 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x6c, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 190 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x6b, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 188 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x6a, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 186 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x69, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 184 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x68, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl %eax, (%ebx)\n" /* line 238 */
+        "movl -4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x14, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl %eax, (%edi)\n" /* line 236 */
+        "movl -0xc(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x15, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -4(%edi), %ecx\n"
+        "movl %ecx, -0x2810(%ebp)\n"
+        "movl 0x195ee5c, %eax\n"
+        "addl $1, 4(%eax)\n"
+        "movl %ecx, %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl (%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 232 | yyvsp */
+        "movl %eax, (%ebx)\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x14, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl %eax, (%edi)\n" /* line 230 */
+        "movl -0xc(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x15, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 0x195ee5c, %eax\n"
+        "addl $1, 4(%eax)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl %eax, (%ebx)\n" /* line 226 */
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl (%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 224 | yyvsp */
+        "movl %eax, (%ecx)\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 220 */
+        "calll node0\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %eax\n" /* line 218 | yyvsp */
+        "movl (%eax), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x41, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 214 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x33, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 212 | yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x32, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 210 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x75, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 208 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x74, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 206 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x73, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 204 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x72, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 202 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x71, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 200 | yyvsp */
+        "subl $8, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x70, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x31, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 312 | yyvsp */
+        "movl -0xc(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x35, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%edi), %ecx\n"
+        "movl %ecx, -0x2810(%ebp)\n"
+        "movl %ecx, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl (%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 310 | yyvsp */
+        "movl %eax, (%ecx)\n"
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x4f, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl %eax, (%edi)\n" /* line 308 */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $4, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 306 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x14(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -8(%edi), %edi\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x18(%ecx), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %edi, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0xd, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl -0xc(%ebx), %ebx\n"
+        "movl %ebx, -0x2810(%ebp)\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl %eax, (%ebx)\n" /* line 304 */
+        "movl -0xc(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%ebx), %ecx\n"
+        "movl -0x10(%ebx), %edi\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edi, 4(%esp)\n"
+        "movl $0xf, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, -0x2810(%ebp)\n"
+        "movl %eax, %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 300 | yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x4a, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 298 | yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x49, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 296 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x48, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0xd, 8(%esp)\n" /* line 37 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl (%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll SL_ConvertToLowercase\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 294 | yyvsp */
+        "movl %eax, (%ebx)\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x43, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 292 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x42, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 290 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x12, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 288 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -8(%ecx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x34, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl 4(%ebx), %ebx\n"
+        "movl %ebx, -0x2810(%ebp)\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 286 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x24, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 284 | yyvsp */
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x23, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 282 | yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x22, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 280 | yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x20, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 278 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x1f, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 276 | yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x11, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %eax\n" /* line 274 | yyvsp */
+        "movl (%eax), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x13, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 272 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0xc, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 270 | yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0xb, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 268 | yyvsp */
+        "movl -4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0xa, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 266 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $9, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 264 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $8, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 262 | yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $7, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 260 | yyvsp */
+        "movl -0xc(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%edi), %edx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2e, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %esi\n" /* line 256 | yyvsp */
+        "subl $0x10, %esi\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl -0x1c(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -8(%ecx), %ecx\n"
+        "movl %ecx, -0x2864(%ebp)\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x18(%edi), %edx\n"
+        "movl -0x20(%edi), %ecx\n"
+        "movl %ebx, 0x14(%esp)\n"
+        "movl %eax, 0x10(%esp)\n"
+        "movl -0x2864(%ebp), %ebx\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %edx, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x18, (%esp)\n"
+        "calll node5\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%esi), %esi\n"
+        "movl %esi, -0x2810(%ebp)\n"
+        "movl %esi, %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 254 | yyvsp */
+        "subl $0x10, %ebx\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl -8(%edx), %edx\n"
+        "movl %edx, -0x2864(%ebp)\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x18(%ecx), %edx\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl -0x2864(%ebp), %edi\n"
+        "movl %edi, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x17, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%ebx), %ebx\n"
+        "movl %ebx, -0x2810(%ebp)\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 250 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x1e, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl 4(%edi), %eax\n"
+        "movl %eax, -0x2810(%ebp)\n"
+        "movl %eax, %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 248 | yyvsp */
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x1a, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 244 | yyvsp */
+        "movl -0xc(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x10(%ecx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x16, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 242 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x12, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 164 | yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -8(%edi), %eax\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll node2_\n"
+        "movl %eax, yaccResult\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl -0x280c(%ebp), %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_out_pos, %eax\n" /* line 131 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x11c, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 130 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x11b, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 129 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x11a, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 128 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x119, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 127 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x118, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 126 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x117, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 125 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x116, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 124 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x115, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 123 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x114, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 122 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x113, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 121 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x112, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 120 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x111, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 119 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x110, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 118 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x10f, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 117 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x10e, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 116 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x10d, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 115 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x10c, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 114 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x10b, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 113 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x10a, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 112 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x109, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 111 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x108, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 110 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x107, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 109 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x106, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 108 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $0x105, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movzbl yy_hold_char, %eax\n" /* line 852 */
+        "movb %al, (%edi)\n"
+        "movl yy_last_accepting_cpos, %edi\n" /* line 853 */
+        "movl yy_last_accepting_state, %edx\n" /* line 854 */
+        ".Lf10c71a_0010f6bf:\n"
+        "movl %edx, %ecx\n" /* line 814 */
+        "jmp .Lf10c71a_0010ccb6\n"
+        "movl g_out_pos, %eax\n" /* line 98 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $3, yy_start\n" /* line 97 */
+        "jmp .Lf10c71a_0010cbfb\n"
+        "movl g_out_pos, %ecx\n" /* line 107 */
+        "movl %ecx, 0x1218b90\n"
+        "movl %ecx, g_sourcePos\n"
+        "movl yyleng, %edx\n"
+        "leal (%ecx, %edx), %eax\n"
+        "movl %eax, g_out_pos\n"
+        "subl $3, %edx\n" /* line 105 */
+        "movl yytext, %ebx\n"
+        "addl $2, %ebx\n"
+        "cmpl $0x1fff, %edx\n" /* line 11 */
+        "jg .Lf10c71a_001103b6\n"
+        "testl %edx, %edx\n" /* line 17 */
+        "jne .Lf10c71a_00110368\n"
+        "leal -0x27e8(%ebp), %esi\n"
+        "movl %esi, %eax\n"
+        ".Lf10c71a_0010f737:\n"
+        "movb $0, (%eax)\n" /* line 49 */
+        "movl $0xd, 8(%esp)\n" /* line 50 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll SL_GetString_\n"
+        "movl %eax, yylval\n"
+        "movl $0x104, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %ecx\n" /* line 105 */
+        "movl %ecx, 0x1218b90\n"
+        "movl %ecx, g_sourcePos\n"
+        "movl yyleng, %edx\n"
+        "leal (%ecx, %edx), %eax\n"
+        "movl %eax, g_out_pos\n"
+        "subl $2, %edx\n" /* line 104 */
+        "movl yytext, %ebx\n"
+        "addl $1, %ebx\n"
+        "cmpl $0x1fff, %edx\n" /* line 11 */
+        "jg .Lf10c71a_001103b6\n"
+        "testl %edx, %edx\n" /* line 17 */
+        "jne .Lf10c71a_001102f8\n"
+        "leal -0x27e8(%ebp), %esi\n"
+        "movl %esi, %eax\n"
+        ".Lf10c71a_0010f7ac:\n"
+        "movb $0, (%eax)\n" /* line 49 */
+        "movl $0xd, 8(%esp)\n" /* line 50 */
+        "movzbl g_parse_user, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll SL_GetString_\n"
+        "movl %eax, yylval\n"
+        "movl $0x103, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        "movl g_out_pos, %eax\n" /* line 104 */
+        "movl %eax, 0x1218b90\n"
+        "movl %eax, g_sourcePos\n"
+        "addl yyleng, %eax\n"
+        "movl %eax, g_out_pos\n"
+        "movl $5, yy_start\n" /* line 102 */
+        "jmp .Lf10c71a_0010cbfb\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 391 | yyvsp */
+        "movl -0x1c(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%ebx), %edi\n"
+        "movl -0x20(%ebx), %edx\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %edi, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x3c, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_dummyVal, %ebx\n" /* line 389 */
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0x34(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %esi\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x1c(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %edx, -0x2860(%ebp)\n"
+        "movl -0x20(%edi), %edi\n"
+        "movl %edi, -0x285c(%ebp)\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x28(%edi), %edx\n"
+        "movl %ebx, 0x20(%esp)\n"
+        "movl %ebx, 0x1c(%esp)\n"
+        "movl %esi, 0x18(%esp)\n"
+        "movl %eax, 0x14(%esp)\n"
+        "movl %ecx, 0x10(%esp)\n"
+        "movl -0x2860(%ebp), %eax\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl -0x285c(%ebp), %ecx\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x28, (%esp)\n"
+        "calll node8\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_dummyVal, %esi\n" /* line 387 */
+        "movl -0x284c(%ebp), %edx\n" /* yyvsp */
+        "movl -0x1c(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0xc(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %esi, 0x14(%esp)\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x27, (%esp)\n"
+        "calll node5\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_dummyVal, %ebx\n" /* line 385 */
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %esi\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x1c(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl -0x20(%edi), %edi\n"
+        "movl %ebx, 0x1c(%esp)\n"
+        "movl %ebx, 0x18(%esp)\n"
+        "movl %esi, 0x14(%esp)\n"
+        "movl %eax, 0x10(%esp)\n"
+        "movl %ecx, 0xc(%esp)\n"
+        "movl %edx, 8(%esp)\n"
+        "movl %edi, 4(%esp)\n"
+        "movl $0x26, (%esp)\n"
+        "calll node7\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl g_dummyVal, %ebx\n" /* line 383 */
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -0xc(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x25, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 381 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0xc(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%edi), %edx\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2c, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl $0, (%esp)\n" /* line 375 */
+        "calll node0\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 370 | yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x19, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 366 | yyvsp */
+        "movl -0x14(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%edi), %edx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x4d, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 364 | yyvsp */
+        "movl -0x14(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl -8(%ebx), %ebx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl $0x4c, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 362 | yyvsp */
+        "movl 4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x4b, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 360 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x40, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 358 | yyvsp */
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x3f, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 356 | yyvsp */
+        "movl -4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x1c(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%edi), %edx\n"
+        "movl -0x20(%edi), %ecx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %edx, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x3b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 354 | yyvsp */
+        "movl -0x14(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x1c(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%edi), %edx\n"
+        "movl -0x20(%edi), %ecx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %edx, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x3a, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 352 | yyvsp */
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x39, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 350 | yyvsp */
+        "movl -0x14(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x1c(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%edi), %edx\n"
+        "movl -0x20(%edi), %ecx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %edx, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x38, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 348 | yyvsp */
+        "movl -0x14(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -0x1c(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%edi), %edx\n"
+        "movl -0x20(%edi), %ecx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %edx, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x37, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 346 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x75, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 344 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x74, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 342 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x73, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 340 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x72, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 338 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x71, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 336 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x70, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 334 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x6f, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 332 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x68, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 330 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x67, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 328 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl $0x66, (%esp)\n"
+        "calll node1_\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x2b, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 326 | yyvsp */
+        "movl -4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -8(%ebx), %edi\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %edi, 4(%esp)\n"
+        "movl $0x2a, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 324 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl -8(%ecx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x29, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edx\n" /* line 322 | yyvsp */
+        "movl -4(%edx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %ecx\n" /* yyvsp */
+        "movl 4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl (%edi), %ecx\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x1d, (%esp)\n"
+        "calll node3\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %edi\n" /* line 320 | yyvsp */
+        "movl 4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $0x1c, (%esp)\n"
+        "calll node1\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ecx\n" /* line 318 | yyvsp */
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl -0x284c(%ebp), %ebx\n" /* yyvsp */
+        "movl (%ebx), %ecx\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ecx, 4(%esp)\n"
+        "movl $0x1b, (%esp)\n"
+        "calll node2\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        "movl -0x284c(%ebp), %ebx\n" /* line 316 | yyvsp */
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl %eax, %ebx\n"
+        "movl -0x284c(%ebp), %edi\n" /* yyvsp */
+        "movl -4(%edi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll node_pos\n"
+        "movl (%edi), %ecx\n"
+        "movl -0x10(%edi), %edx\n"
+        "movl %ebx, 0x10(%esp)\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl %ecx, 8(%esp)\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $2, (%esp)\n"
+        "calll node4\n"
+        "movl %eax, -0x280c(%ebp)\n"
+        "movl -0x2810(%ebp), %ebx\n"
+        "movl %eax, %edi\n"
+        "jmp .Lf10c71a_0010ca55\n"
+        ".Lf10c71a_00110255:\n"
+        "movl ___sF, %eax\n" /* line 791 */
+        "addl $0x58, %eax\n"
+        "movl %eax, yyout\n"
+        "jmp .Lf10c71a_0010cbc1\n"
+        ".Lf10c71a_00110267:\n"
+        "cmpw $0x8000, %ax\n" /* line 696 */
+        "je .Lf10c71a_0010c912\n"
+        "negl %ecx\n" /* line 698 */
+        "movl %ecx, -0x2854(%ebp)\n" /* yyn */
+        "jmp .Lf10c71a_0010c9fb\n"
+        ".Lf10c71a_0011027e:\n"
+        "movl $0x4000, 4(%esp)\n" /* line 795 */
+        "movl yyin, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll yy_create_buffer\n"
+        "movl %eax, yy_current_buffer\n"
+        "movl %eax, %edx\n"
+        "jmp .Lf10c71a_0010cbd4\n"
+        /* { scope 2 */
+        ".Lf10c71a_0011029f:\n"
+        "movl yychar, %eax\n" /* line 483 */
+        "testl %eax, %eax\n"
+        "je .Lf10c71a_001102d9\n"
+        "cmpl $0x101, %eax\n" /* line 487 */
+        "je .Lf10c71a_00110346\n"
+        "movl $0x228d08, 4(%esp)\n" /* line 489 */
+        "movl g_sourcePos, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll CompileError\n"
+        "movl $2, %eax\n"
+        "jmp .Lf10c71a_0010cb4f\n"
+        /* } scope */
+        ".Lf10c71a_001102d2:\n"
+        "xorl %eax, %eax\n" /* line 956 */
+        "jmp .Lf10c71a_0010cb4f\n"
+        /* { scope 2 */
+        ".Lf10c71a_001102d9:\n"
+        "movl $0x228ce8, 4(%esp)\n" /* line 485 */
+        "movl g_sourcePos, %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll CompileError\n"
+        "movl $2, %eax\n"
+        "jmp .Lf10c71a_0010cb4f\n"
+        /* } scope */
+        ".Lf10c71a_001102f8:\n"
+        "leal -0x27e8(%ebp), %esi\n" /* line 17 */
+        "movl %esi, %eax\n"
+        "jmp .Lf10c71a_00110315\n"
+        ".Lf10c71a_00110302:\n"
+        "subl $1, %edx\n" /* line 21 */
+        "movb %cl, (%eax)\n" /* line 22 */
+        "addl $1, %eax\n"
+        "addl $1, %ebx\n"
+        ".Lf10c71a_0011030d:\n"
+        "testl %edx, %edx\n" /* line 17 */
+        "je .Lf10c71a_0010f7ac\n"
+        ".Lf10c71a_00110315:\n"
+        "movzbl (%ebx), %ecx\n" /* line 19 */
+        "cmpb $0x5c, %cl\n"
+        "jne .Lf10c71a_00110302\n"
+        "cmpl $1, %edx\n" /* line 27 */
+        "je .Lf10c71a_0010f7ac\n"
+        "movzbl 1(%ebx), %ecx\n" /* line 30 */
+        "cmpb $0x72, %cl\n"
+        "je .Lf10c71a_00110360\n"
+        "cmpb $0x74, %cl\n"
+        "je .Lf10c71a_00110358\n"
+        "cmpb $0x6e, %cl\n"
+        "je .Lf10c71a_00110350\n"
+        "movb %cl, (%eax)\n" /* line 42 */
+        "addl $1, %eax\n"
+        ".Lf10c71a_0011033e:\n"
+        "subl $2, %edx\n" /* line 45 */
+        "addl $2, %ebx\n" /* line 46 */
+        "jmp .Lf10c71a_0011030d\n"
+        ".Lf10c71a_00110346:\n"
+        "movl $2, %eax\n" /* line 956 */
+        "jmp .Lf10c71a_0010cb4f\n"
+        ".Lf10c71a_00110350:\n"
+        "movb $0xa, (%eax)\n" /* line 33 */
+        "addl $1, %eax\n"
+        "jmp .Lf10c71a_0011033e\n"
+        ".Lf10c71a_00110358:\n"
+        "movb $9, (%eax)\n" /* line 39 */
+        "addl $1, %eax\n"
+        "jmp .Lf10c71a_0011033e\n"
+        ".Lf10c71a_00110360:\n"
+        "movb $0xd, (%eax)\n" /* line 36 */
+        "addl $1, %eax\n"
+        "jmp .Lf10c71a_0011033e\n"
+        ".Lf10c71a_00110368:\n"
+        "leal -0x27e8(%ebp), %esi\n" /* line 17 */
+        "movl %esi, %eax\n"
+        "jmp .Lf10c71a_00110385\n"
+        ".Lf10c71a_00110372:\n"
+        "subl $1, %edx\n" /* line 21 */
+        "movb %cl, (%eax)\n" /* line 22 */
+        "addl $1, %eax\n"
+        "addl $1, %ebx\n"
+        ".Lf10c71a_0011037d:\n"
+        "testl %edx, %edx\n" /* line 17 */
+        "je .Lf10c71a_0010f737\n"
+        ".Lf10c71a_00110385:\n"
+        "movzbl (%ebx), %ecx\n" /* line 19 */
+        "cmpb $0x5c, %cl\n"
+        "jne .Lf10c71a_00110372\n"
+        "cmpl $1, %edx\n" /* line 27 */
+        "je .Lf10c71a_0010f737\n"
+        "movzbl 1(%ebx), %ecx\n" /* line 30 */
+        "cmpb $0x72, %cl\n"
+        "je .Lf10c71a_001103e4\n"
+        "cmpb $0x74, %cl\n"
+        "je .Lf10c71a_001103dc\n"
+        "cmpb $0x6e, %cl\n"
+        "je .Lf10c71a_001103d4\n"
+        "movb %cl, (%eax)\n" /* line 42 */
+        "addl $1, %eax\n"
+        ".Lf10c71a_001103ae:\n"
+        "subl $2, %edx\n" /* line 45 */
+        "addl $2, %ebx\n" /* line 46 */
+        "jmp .Lf10c71a_0011037d\n"
+        ".Lf10c71a_001103b6:\n"
+        "movl %ebx, 8(%esp)\n" /* line 13 */
+        "movl $0x217bfc, 4(%esp)\n" /* "max string length exceeded: "%s"" */
+        "movl %ecx, (%esp)\n"
+        "calll CompileError\n"
+        "movl $0x101, %eax\n"
+        "jmp .Lf10c71a_0010ce65\n"
+        ".Lf10c71a_001103d4:\n"
+        "movb $0xa, (%eax)\n" /* line 33 */
+        "addl $1, %eax\n"
+        "jmp .Lf10c71a_001103ae\n"
+        ".Lf10c71a_001103dc:\n"
+        "movb $9, (%eax)\n" /* line 39 */
+        "addl $1, %eax\n"
+        "jmp .Lf10c71a_001103ae\n"
+        ".Lf10c71a_001103e4:\n"
+        "movb $0xd, (%eax)\n" /* line 36 */
+        "addl $1, %eax\n"
+        "jmp .Lf10c71a_001103ae\n"
+        ".Lf10c71a_001103ec:\n"
+        "movl yy_n_chars, %edi\n"
+        "movl %edi, -0x2884(%ebp)\n"
+        ".Lf10c71a_001103f8:\n"
+        "movl yy_current_buffer, %eax\n" /* line 1439 */
+        "movl -0x2884(%ebp), %edi\n"
+        "addl 4(%eax), %edi\n"
+        "movl %edi, yy_c_buf_p\n"
+        "movl yy_start, %edx\n" /* line 1603 */
+        "movl %ebx, -0x27f8(%ebp)\n" /* line 1605 | size */
+        "cmpl %ebx, %edi\n" /* size */
+        "jbe .Lf10c71a_0010f6bf\n"
+        "movl yy_last_accepting_cpos, %eax\n"
+        "movl %eax, -0x27f0(%ebp)\n"
+        "movl yy_last_accepting_state, %ecx\n"
+        "movl %ecx, -0x2800(%ebp)\n"
+        "movl %edi, -0x2880(%ebp)\n"
+        ".Lf10c71a_0011043d:\n"
+        "movzbl (%ebx), %eax\n" /* line 1607 | size */
+        "testb %al, %al\n"
+        "jne .Lf10c71a_001104a4\n"
+        "movb $1, -0x2811(%ebp)\n"
+        ".Lf10c71a_0011044b:\n"
+        "cmpw $0, yy_accept(%edx, %edx)\n" /* line 1608 */
+        "je .Lf10c71a_00110462\n"
+        "movl %ebx, -0x27f0(%ebp)\n" /* size */
+        "movl %edx, -0x2800(%ebp)\n"
+        ".Lf10c71a_00110462:\n"
+        "movswl yy_base(%edx, %edx), %eax\n" /* line 1613 */
+        "movzbl -0x2811(%ebp), %esi\n"
+        "leal (%eax, %esi), %ecx\n"
+        "movswl yy_chk(%ecx, %ecx), %eax\n"
+        "cmpl %eax, %edx\n"
+        "je .Lf10c71a_0011070c\n"
+        "movswl yy_def(%edx, %edx), %edx\n" /* line 1615 */
+        "cmpl $0xff, %edx\n" /* line 1616 */
+        "jle .Lf10c71a_00110462\n"
+        "movzbl yy_meta(, %esi, 4), %eax\n" /* line 1617 */
+        "movb %al, -0x2811(%ebp)\n"
+        "jmp .Lf10c71a_00110462\n"
+        ".Lf10c71a_001104a4:\n"
+        "movzbl %al, %eax\n" /* line 1607 */
+        "movzbl yy_ec(, %eax, 4), %eax\n"
+        "movb %al, -0x2811(%ebp)\n"
+        "jmp .Lf10c71a_0011044b\n"
+        ".Lf10c71a_001104b7:\n"
+        "movl $0x228d24, 8(%esp)\n" /* line 2108 */
+        "jmp .Lf10c71a_0010cd25\n"
+        ".Lf10c71a_001104c4:\n"
+        "movl yytext, %ecx\n" /* line 1364 */
+        "movl %ecx, -0x27f8(%ebp)\n"
+        "movl %ecx, %edi\n"
+        "addl -0x2834(%ebp), %edi\n"
+        "movl %edi, yy_c_buf_p\n"
+        "movl yy_start, %edx\n" /* line 1603 */
+        "cmpl %ecx, %edi\n" /* line 1605 */
+        "jbe .Lf10c71a_0011095c\n"
+        "movl yy_last_accepting_cpos, %ebx\n" /* size */
+        "movl %ebx, -0x27f4(%ebp)\n" /* size */
+        "movl yy_last_accepting_state, %eax\n"
+        "movl %eax, -0x2818(%ebp)\n"
+        "movl %ecx, %ebx\n" /* size */
+        "movl %edi, -0x2878(%ebp)\n"
+        ".Lf10c71a_0011050b:\n"
+        "movzbl (%ebx), %eax\n" /* line 1607 | size */
+        "testb %al, %al\n"
+        "jne .Lf10c71a_00110572\n"
+        "movb $1, -0x282a(%ebp)\n"
+        ".Lf10c71a_00110519:\n"
+        "cmpw $0, yy_accept(%edx, %edx)\n" /* line 1608 */
+        "je .Lf10c71a_00110530\n"
+        "movl %ebx, -0x27f4(%ebp)\n" /* size */
+        "movl %edx, -0x2818(%ebp)\n"
+        ".Lf10c71a_00110530:\n"
+        "movswl yy_base(%edx, %edx), %eax\n" /* line 1613 */
+        "movzbl -0x282a(%ebp), %esi\n"
+        "leal (%eax, %esi), %ecx\n"
+        "movswl yy_chk(%ecx, %ecx), %eax\n"
+        "cmpl %eax, %edx\n"
+        "je .Lf10c71a_0011092e\n"
+        "movswl yy_def(%edx, %edx), %edx\n" /* line 1615 */
+        "cmpl $0xff, %edx\n" /* line 1616 */
+        "jle .Lf10c71a_00110530\n"
+        "movzbl yy_meta(, %esi, 4), %ecx\n" /* line 1617 */
+        "movb %cl, -0x282a(%ebp)\n"
+        "jmp .Lf10c71a_00110530\n"
+        ".Lf10c71a_00110572:\n"
+        "movzbl %al, %eax\n" /* line 1607 */
+        "movzbl yy_ec(, %eax, 4), %eax\n"
+        "movb %al, -0x282a(%ebp)\n"
+        "jmp .Lf10c71a_00110519\n"
+        ".Lf10c71a_00110585:\n"
+        "subl %ebx, %edx\n" /* line 1499 | size */
+        "subl $1, %edx\n"
+        "movl %edx, -0x2824(%ebp)\n"
+        "testl %edx, %edx\n" /* line 1501 */
+        "jle .Lf10c71a_001105b8\n"
+        "xorl %edx, %edx\n"
+        ".Lf10c71a_00110596:\n"
+        "movzbl (%ecx), %eax\n" /* line 1502 */
+        "movl -0x2828(%ebp), %ebx\n" /* size */
+        "movb %al, (%ebx)\n" /* size */
+        "addl $1, %ebx\n" /* size */
+        "movl %ebx, -0x2828(%ebp)\n" /* size */
+        "addl $1, %ecx\n"
+        "addl $1, %edx\n" /* line 1501 */
+        "cmpl %edx, -0x2824(%ebp)\n"
+        "jne .Lf10c71a_00110596\n"
+        ".Lf10c71a_001105b8:\n"
+        "cmpl $2, 0x24(%esi)\n" /* line 1504 */
+        "je .Lf10c71a_00110918\n"
+        "movl -0x2824(%ebp), %edx\n" /* line 1513 */
+        "notl %edx\n"
+        "addl 0xc(%esi), %edx\n"
+        "testl %edx, %edx\n" /* line 1515 */
+        "jle .Lf10c71a_001108a3\n"
+        "movl yy_current_buffer, %esi\n"
+        ".Lf10c71a_001105db:\n"
+        "cmpl $0x2001, %edx\n" /* line 1557 */
+        "movl $0x2000, %eax\n"
+        "cmovgel %eax, %edx\n"
+        "movl %edx, 4(%esp)\n" /* line 1561 */
+        "movl -0x2824(%ebp), %eax\n"
+        "addl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll Scr_ScanFile\n"
+        "movl %eax, yy_n_chars\n"
+        "movl yy_current_buffer, %edx\n" /* line 1564 */
+        "movl %eax, 0x10(%edx)\n"
+        ".Lf10c71a_0011060c:\n"
+        "movl yy_n_chars, %ebx\n" /* line 1567 | size */
+        "testl %ebx, %ebx\n" /* size */
+        "je .Lf10c71a_0011078c\n"
+        "xorl %ecx, %ecx\n"
+        "movl yy_current_buffer, %esi\n"
+        ".Lf10c71a_00110622:\n"
+        "movl -0x2824(%ebp), %eax\n" /* line 1586 */
+        "addl yy_n_chars, %eax\n"
+        "movl %eax, yy_n_chars\n"
+        "movl 4(%esi), %edx\n" /* line 1587 */
+        "movb $0, (%edx, %eax)\n"
+        "movl 4(%esi), %edx\n" /* line 1588 */
+        "movb $0, 1(%edx, %eax)\n"
+        "movl 4(%esi), %ebx\n" /* line 1590 | size */
+        "movl %ebx, -0x2830(%ebp)\n" /* size */
+        "movl %ebx, yytext\n" /* size */
+        "cmpl $1, %ecx\n" /* line 1396 */
+        "je .Lf10c71a_0010d7ca\n"
+        "cmpl $2, %ecx\n"
+        "je .Lf10c71a_001103ec\n"
+        "testl %ecx, %ecx\n"
+        "jne .Lf10c71a_0010cbfb\n"
+        "movl -0x2834(%ebp), %ecx\n" /* line 1429 */
+        "leal (%ebx, %ecx), %edi\n" /* size */
+        "movl %edi, yy_c_buf_p\n"
+        "movl yy_start, %ecx\n" /* line 1603 */
+        "cmpl %edi, %ebx\n" /* line 1605 | size */
+        "jae .Lf10c71a_0010cc1d\n"
+        "movl yy_last_accepting_cpos, %eax\n"
+        "movl %eax, -0x27ec(%ebp)\n"
+        "movl yy_last_accepting_state, %edx\n"
+        "movl %edx, -0x2804(%ebp)\n"
+        "movl %edi, -0x287c(%ebp)\n"
+        ".Lf10c71a_001106a5:\n"
+        "movzbl (%ebx), %eax\n" /* line 1607 | size */
+        "testb %al, %al\n"
+        "jne .Lf10c71a_00110776\n"
+        "movb $1, -0x2819(%ebp)\n"
+        ".Lf10c71a_001106b7:\n"
+        "cmpw $0, yy_accept(%ecx, %ecx)\n" /* line 1608 */
+        "je .Lf10c71a_001106ce\n"
+        "movl %ebx, -0x27ec(%ebp)\n" /* size */
+        "movl %ecx, -0x2804(%ebp)\n"
+        ".Lf10c71a_001106ce:\n"
+        "movswl yy_base(%ecx, %ecx), %eax\n" /* line 1613 */
+        "movzbl -0x2819(%ebp), %esi\n"
+        "leal (%eax, %esi), %edx\n"
+        "movswl yy_chk(%edx, %edx), %eax\n"
+        "cmpl %eax, %ecx\n"
+        "je .Lf10c71a_00110742\n"
+        "movswl yy_def(%ecx, %ecx), %ecx\n" /* line 1615 */
+        "cmpl $0xff, %ecx\n" /* line 1616 */
+        "jle .Lf10c71a_001106ce\n"
+        "movzbl yy_meta(, %esi, 4), %eax\n" /* line 1617 */
+        "movb %al, -0x2819(%ebp)\n"
+        "jmp .Lf10c71a_001106ce\n"
+        ".Lf10c71a_0011070c:\n"
+        "movswl yy_nxt(%ecx, %ecx), %edx\n" /* line 1619 */
+        "addl $1, %ebx\n" /* line 1605 | size */
+        "cmpl -0x2880(%ebp), %ebx\n" /* size */
+        "jne .Lf10c71a_0011043d\n"
+        "movl -0x27f0(%ebp), %ecx\n"
+        "movl %ecx, yy_last_accepting_cpos\n"
+        "movl -0x2800(%ebp), %ebx\n" /* size */
+        "movl %ebx, yy_last_accepting_state\n" /* size */
+        "movl %edx, %ecx\n" /* line 814 */
+        "jmp .Lf10c71a_0010ccb6\n"
+        ".Lf10c71a_00110742:\n"
+        "movswl yy_nxt(%edx, %edx), %ecx\n" /* line 1619 */
+        "addl $1, %ebx\n" /* line 1605 | size */
+        "cmpl -0x287c(%ebp), %ebx\n" /* size */
+        "jne .Lf10c71a_001106a5\n"
+        "movl -0x27ec(%ebp), %edx\n"
+        "movl %edx, yy_last_accepting_cpos\n"
+        "movl -0x2804(%ebp), %ebx\n" /* size */
+        "movl %ebx, yy_last_accepting_state\n" /* size */
+        "jmp .Lf10c71a_0010cc1d\n"
+        ".Lf10c71a_00110776:\n"
+        "movzbl %al, %eax\n" /* line 1607 */
+        "movzbl yy_ec(, %eax, 4), %eax\n"
+        "movb %al, -0x2819(%ebp)\n"
+        "jmp .Lf10c71a_001106b7\n"
+        ".Lf10c71a_0011078c:\n"
+        "movl -0x2824(%ebp), %ecx\n" /* line 1569 */
+        "testl %ecx, %ecx\n"
+        "jne .Lf10c71a_00110883\n"
+        "movl yyin, %eax\n" /* line 1572 */
+        "movl %eax, -0x2820(%ebp)\n"
+        "movl yy_current_buffer, %edx\n" /* line 1786 */
+        "testl %edx, %edx\n"
+        "jne .Lf10c71a_001107c4\n"
+        "movl $0x4000, 4(%esp)\n" /* line 1787 */
+        "movl %eax, (%esp)\n"
+        "calll yy_create_buffer\n"
+        "movl %eax, yy_current_buffer\n"
+        ".Lf10c71a_001107c4:\n"
+        "movl yy_current_buffer, %esi\n" /* line 1789 */
+        "testl %esi, %esi\n" /* line 1929 */
+        "je .Lf10c71a_0011081d\n"
+        "movl $0, 0x10(%esi)\n" /* line 1932 */
+        "movl 4(%esi), %eax\n" /* line 1938 */
+        "movb $0, (%eax)\n"
+        "movl 4(%esi), %eax\n" /* line 1939 */
+        "movb $0, 1(%eax)\n"
+        "movl 4(%esi), %eax\n" /* line 1941 */
+        "movl %eax, 8(%esi)\n"
+        "movl $1, 0x1c(%esi)\n" /* line 1943 */
+        "movl $0, 0x24(%esi)\n" /* line 1944 */
+        "movl 0x10(%esi), %eax\n" /* line 1830 */
+        "movl %eax, yy_n_chars\n"
+        "movl 8(%esi), %eax\n" /* line 1831 */
+        "movl %eax, yy_c_buf_p\n"
+        "movl %eax, %ebx\n" /* size */
+        "movl %eax, yytext\n"
+        "movl (%esi), %eax\n" /* line 1832 */
+        "movl %eax, yyin\n"
+        "movzbl (%ebx), %eax\n" /* line 1833 | size */
+        "movb %al, yy_hold_char\n"
+        ".Lf10c71a_0011081d:\n"
+        "movl -0x2820(%ebp), %edx\n" /* line 1906 */
+        "movl %edx, (%esi)\n"
+        "movl $1, 0x20(%esi)\n" /* line 1907 */
+        "testl %edx, %edx\n" /* line 1915 */
+        "je .Lf10c71a_0011089f\n"
+        "movl %edx, (%esp)\n"
+        "calll fileno\n"
+        "movl %eax, (%esp)\n"
+        "calll isatty\n"
+        "testl %eax, %eax\n"
+        "jle .Lf10c71a_0011089f\n"
+        "movl $1, %eax\n"
+        ".Lf10c71a_00110849:\n"
+        "movl %eax, 0x18(%esi)\n"
+        "movl yy_current_buffer, %esi\n" /* line 1830 */
+        "movl 0x10(%esi), %eax\n"
+        "movl %eax, yy_n_chars\n"
+        "movl 8(%esi), %eax\n" /* line 1831 */
+        "movl %eax, yy_c_buf_p\n"
+        "movl %eax, %ebx\n" /* size */
+        "movl %eax, yytext\n"
+        "movl (%esi), %eax\n" /* line 1832 */
+        "movl %eax, yyin\n"
+        "movzbl (%ebx), %eax\n" /* line 1833 | size */
+        "movb %al, yy_hold_char\n"
+        "movl $1, %ecx\n"
+        "jmp .Lf10c71a_00110622\n"
+        ".Lf10c71a_00110883:\n"
+        "movl yy_current_buffer, %eax\n" /* line 1579 */
+        "movl $2, 0x24(%eax)\n"
+        "movl $2, %ecx\n"
+        "movl yy_current_buffer, %esi\n"
+        "jmp .Lf10c71a_00110622\n"
+        ".Lf10c71a_0011089f:\n"
+        "xorl %eax, %eax\n" /* line 1915 */
+        "jmp .Lf10c71a_00110849\n"
+        ".Lf10c71a_001108a3:\n"
+        "movl yy_current_buffer, %esi\n"
+        "jmp .Lf10c71a_001108ff\n"
+        ".Lf10c71a_001108ab:\n"
+        "movl 0xc(%esi), %edx\n" /* line 1530 */
+        "leal (%edx, %edx), %eax\n"
+        "testl %eax, %eax\n" /* line 1532 */
+        "jle .Lf10c71a_001109ff\n"
+        "movl %eax, 0xc(%esi)\n" /* line 1535 */
+        ".Lf10c71a_001108bc:\n"
+        "movl 0xc(%esi), %eax\n" /* line 2190 */
+        "addl $2, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 4(%esi), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll realloc\n"
+        "movl %eax, 4(%esi)\n" /* line 1540 */
+        ".Lf10c71a_001108d4:\n"
+        "movl 4(%esi), %eax\n" /* line 1546 */
+        "testl %eax, %eax\n"
+        "je .Lf10c71a_001109f2\n"
+        "addl %ebx, %eax\n" /* line 1550 | size */
+        "movl %eax, yy_c_buf_p\n"
+        "movl yy_current_buffer, %esi\n" /* line 1553 */
+        "movl -0x2824(%ebp), %edx\n"
+        "notl %edx\n"
+        "addl 0xc(%esi), %edx\n"
+        "testl %edx, %edx\n" /* line 1515 */
+        "jg .Lf10c71a_001105db\n"
+        ".Lf10c71a_001108ff:\n"
+        "movl yy_c_buf_p, %ebx\n" /* line 1526 | size */
+        "subl 4(%esi), %ebx\n" /* size */
+        "movl 0x14(%esi), %eax\n" /* line 1528 */
+        "testl %eax, %eax\n"
+        "jne .Lf10c71a_001108ab\n"
+        "movl $0, 4(%esi)\n" /* line 1544 */
+        "jmp .Lf10c71a_001108d4\n"
+        ".Lf10c71a_00110918:\n"
+        "movl $0, yy_n_chars\n" /* line 1508 */
+        "movl $0, 0x10(%esi)\n"
+        "jmp .Lf10c71a_0011060c\n"
+        ".Lf10c71a_0011092e:\n"
+        "movswl yy_nxt(%ecx, %ecx), %edx\n" /* line 1619 */
+        "addl $1, %ebx\n" /* line 1605 | size */
+        "cmpl -0x2878(%ebp), %ebx\n" /* size */
+        "jne .Lf10c71a_0011050b\n"
+        "movl -0x27f4(%ebp), %ebx\n" /* size */
+        "movl %ebx, yy_last_accepting_cpos\n" /* size */
+        "movl -0x2818(%ebp), %eax\n"
+        "movl %eax, yy_last_accepting_state\n"
+        ".Lf10c71a_0011095c:\n"
+        "cmpw $0, yy_accept(%edx, %edx)\n" /* line 1643 */
+        "je .Lf10c71a_00110973\n"
+        "movl %edx, yy_last_accepting_state\n" /* line 1645 */
+        "movl %edi, yy_last_accepting_cpos\n" /* line 1646 */
+        ".Lf10c71a_00110973:\n"
+        "movl %edx, %ecx\n"
+        "movb $1, -0x2829(%ebp)\n"
+        ".Lf10c71a_0011097c:\n"
+        "movswl yy_base(%ecx, %ecx), %eax\n" /* line 1648 */
+        "movzbl -0x2829(%ebp), %esi\n"
+        "leal (%eax, %esi), %ebx\n" /* size */
+        "movswl yy_chk(%ebx, %ebx), %eax\n" /* size */
+        "cmpl %eax, %ecx\n"
+        "je .Lf10c71a_001109ba\n"
+        "movswl yy_def(%ecx, %ecx), %ecx\n" /* line 1650 */
+        "cmpl $0xff, %ecx\n" /* line 1651 */
+        "jle .Lf10c71a_0011097c\n"
+        "movzbl yy_meta(, %esi, 4), %ebx\n" /* line 1652 | size */
+        "movb %bl, -0x2829(%ebp)\n" /* size */
+        "jmp .Lf10c71a_0011097c\n"
+        ".Lf10c71a_001109ba:\n"
+        "movzwl yy_nxt(%ebx, %ebx), %eax\n" /* line 1654 | size */
+        "movswl %ax, %ecx\n"
+        "cmpw $0xff, %ax\n" /* line 1657 */
+        "je .Lf10c71a_0010f6bf\n"
+        "testw %ax, %ax\n" /* line 1381 */
+        "je .Lf10c71a_0010f6bf\n"
+        "addl $1, %edi\n" /* line 1384 */
+        "movl %edi, yy_c_buf_p\n"
+        "movl -0x27f8(%ebp), %eax\n"
+        "movl %eax, -0x2830(%ebp)\n"
+        "jmp .Lf10c71a_0010cc1d\n"
+        ".Lf10c71a_001109f2:\n"
+        "movl $0x228d5c, 8(%esp)\n" /* line 2108 */
+        "jmp .Lf10c71a_0010cd25\n"
+        ".Lf10c71a_001109ff:\n"
+        "movl %edx, %eax\n" /* line 1533 */
+        "shrl $3, %eax\n"
+        "leal (%edx, %eax), %eax\n"
+        "movl %eax, 0xc(%esi)\n"
+        "jmp .Lf10c71a_001108bc\n"
+    );
+}
+
+/* line 494 */
+__attribute__((naked))
+void ScriptParse(sval_t *parseData, int user)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 494 */
+        "movl %esp, %ebp\n"
+        "subl $0x38, %esp\n"
+        /* { scope 1 */
+        "movl $0xffffffff, g_out_pos\n" /* line 498 */
+        "movl $0, g_sourcePos\n" /* line 499 */
+        "movl 0xc(%ebp), %eax\n" /* line 500 | user */
+        "movb %al, g_parse_user\n"
+        "movl $0, g_dummyVal\n" /* line 501 */
+        "movl $1, yy_init\n" /* line 503 */
+        "movl $0x4000, -0x24(%ebp)\n" /* line 505 */
+        "movl $ch_buf, -0x2c(%ebp)\n" /* line 510 */
+        "movl $0, -0x1c(%ebp)\n" /* line 511 */
+        "movl $0, -0x20(%ebp)\n" /* line 1932 */
+        "movb $0, ch_buf\n" /* line 1938 */
+        "movb $0, 0xce72a1\n" /* line 1939 */
+        "movl $ch_buf, -0x28(%ebp)\n" /* line 1941 */
+        "movl $1, -0x14(%ebp)\n" /* line 1943 */
+        "movl $0, -0xc(%ebp)\n" /* line 1944 */
+        "leal -0x30(%ebp), %edx\n" /* line 1946 | buffer_state */
+        "cmpl yy_current_buffer, %edx\n"
+        "je .Lf110a10_00110ac8\n"
+        ".Lf110a10_00110a91:\n"
+        "movl $0, -0x30(%ebp)\n" /* line 1906 | buffer_state */
+        "movl $1, -0x10(%ebp)\n" /* line 1907 */
+        "movl $0, -0x18(%ebp)\n" /* line 1915 */
+        "movl %edx, yy_current_buffer\n" /* line 514 */
+        "movl $3, yy_start\n" /* line 517 */
+        "calll yyparse\n" /* line 519 */
+        "movl yaccResult, %edx\n" /* line 521 */
+        "movl 8(%ebp), %eax\n" /* parseData */
+        "movl %edx, (%eax)\n"
+        /* } scope */
+        "leave\n" /* line 522 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lf110a10_00110ac8:\n"
+        "movl $0, yy_n_chars\n" /* line 1830 */
+        "movl $0xce72a0, yy_c_buf_p\n" /* line 1831 */
+        "movl $0xce72a0, yytext\n"
+        "movl -0x30(%ebp), %eax\n" /* line 1832 | buffer_state */
+        "movl %eax, yyin\n"
+        "movb $0, yy_hold_char\n" /* line 1833 */
+        "jmp .Lf110a10_00110a91\n"
+    );
+}
+

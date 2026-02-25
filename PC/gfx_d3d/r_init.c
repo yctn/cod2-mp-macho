@@ -1,0 +1,3147 @@
+/* ASM dump from: r_init.cpp */
+/* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/gfx_d3d/r_init.cpp */
+
+#include "common_types.h"
+#include "imports.h"
+
+/* Original includes (from N_BINCL debug info):
+ *   #include "PC/universal/com_vector.h"
+ *   #include "PC/gfx_d3d/r_local.h"
+ *   #include "PC/universal/com_math.h"
+ */
+
+extern int alwaysfails; /* 0x0 */
+extern int g_disableRendering; /* 0x0 */
+extern struct DxGlobals dx; /* 0x0 */
+extern struct r_global_permanent_t rgp; /* 0x0 */
+extern struct r_globals_t rg; /* 0x0 */
+extern refimport_t ri; /* 0x0 */
+extern vidConfig_t vidConfig; /* 0x0 */
+static vec2_t cornerTexCoords[4]; /* 0x2f2240 */
+static const r_index_t quadIndices[6]; /* 0x2f2220 */
+static refexport_t re; /* 0xc85980 */
+
+void R_FatalInitError(const char *msg);
+const char * R_ErrorDescription(HRESULT hr);
+static void R_CreateParticleCloudBuffer(void);
+static void R_ReleaseForShutdownOrReset(void);
+static Bool R_DisplayModeLess(const D3DDISPLAYMODE *mode0, const D3DDISPLAYMODE *mode1);
+static HRESULT R_CreateDevice(HWND hwnd, DWORD behavior);
+void R_UpdateGpuSyncType(void);
+void R_EndRegistration(void);
+static void R_EndView(int viewIndex);
+static void R_DoneRenderingViews(void);
+static void R_TrackStatistics(trStatistics_t *stats);
+refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp);
+void R_Error(errorParm_t errorLevel, const char *msg);
+void R_GammaCorrect(byte *buffer, int bufSize);
+static void R_InitSystems(void);
+void R_FatalLockError(HRESULT hr);
+static void R_Shutdown(qboolean destroyWindow);
+void R_SetColorMappings(void);
+static Bool R_CreateForInitOrReset(void);
+void R_BeginRegistration(vidConfig_t *vidConfigOut);
+Bool R_RecoverLostDevice(void);
+void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(void); /* void std___adjust_heap<_D3DDISPLAYMODE*, int, _D3DDISPLAYMODE, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(void); /* void std___insertion_sort<_D3DDISPLAYMODE*, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void); /* void std___introsort_loop<_D3DDISPLAYMODE*, int, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+
+/* line 123 */
+__attribute__((naked))
+void R_FatalInitError(const char *msg)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 123 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* msg */
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl %ebx, 8(%esp)\n" /* line 128 | msg */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl 0x1180708, %ecx\n" /* line 131 */
+        "addl $0x14, %esp\n" /* line 137 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "jmpl *%ecx\n" /* line 131 */
+    );
+}
+
+/* line 169 */
+__attribute__((naked))
+const char * R_ErrorDescription(HRESULT hr)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 169 */
+        "movl %esp, %ebp\n"
+        "popl %ebp\n" /* line 179 */
+        "jmp DXGetErrorDescription9A\n" /* line 177 */
+    );
+}
+
+/* line 629 */
+static __attribute__((naked))
+void R_CreateParticleCloudBuffer(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 629 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x6c, %esp\n"
+        /* { scope 1 */
+        "movl $0x14000, 4(%esp)\n" /* line 649 */
+        "movl $0x1180658, (%esp)\n"
+        "calll R_AllocStaticVertexBuffer\n"
+        "movl %eax, %ebx\n" /* particleVertsIter */
+        "movl $0x3000, 4(%esp)\n" /* line 650 */
+        "movl $0x118065c, (%esp)\n"
+        "calll R_AllocStaticIndexBuffer\n"
+        "movl %eax, -0x20(%ebp)\n"
+        "movl %ebx, -0x1c(%ebp)\n" /* particleVertsIter */
+        "movl $0, -0x44(%ebp)\n" /* xIter */
+        ".Lfcab7e_000cabbe:\n"
+        "cvtsi2ssl -0x44(%ebp), %xmm0\n" /* xIter */
+        "movss %xmm0, -0x38(%ebp)\n"
+        "movl -0x44(%ebp), %eax\n" /* xIter */
+        "shll $7, %eax\n"
+        "movw %ax, -0x2a(%ebp)\n"
+        "movl -0x1c(%ebp), %eax\n"
+        "movl %eax, -0x28(%ebp)\n"
+        "movl -0x20(%ebp), %eax\n"
+        "movl %eax, -0x24(%ebp)\n"
+        "movl $0, -0x40(%ebp)\n" /* yIter */
+        ".Lfcab7e_000cabe5:\n"
+        "cvtsi2ssl -0x40(%ebp), %xmm0\n" /* yIter */
+        "movss %xmm0, -0x34(%ebp)\n"
+        "movl %eax, -0x30(%ebp)\n"
+        "movl -0x28(%ebp), %edi\n"
+        "movl $0, -0x3c(%ebp)\n" /* zIter */
+        "movl %eax, %esi\n" /* particleIndicesIter */
+        ".Lfcab7e_000cabfe:\n"
+        "movl %edi, %ebx\n" /* particleVertsIter */
+        "calll rand\n" /* line 665 */
+        "cvtsi2ssl %eax, %xmm3\n"
+        "mulss 0x2ed630, %xmm3\n" /* 4.656612873077393e-10f */
+        "addss -0x38(%ebp), %xmm3\n"
+        "mulss 0x2ed604, %xmm3\n" /* 0.25f */
+        "subss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss %xmm3, -0x68(%ebp)\n" /* line 666 */
+        "calll rand\n"
+        "cvtsi2ssl %eax, %xmm2\n"
+        "mulss 0x2ed630, %xmm2\n" /* 4.656612873077393e-10f */
+        "addss -0x34(%ebp), %xmm2\n"
+        "mulss 0x2ed604, %xmm2\n" /* 0.25f */
+        "subss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss %xmm2, -0x58(%ebp)\n" /* line 667 */
+        "calll rand\n"
+        "cvtsi2ssl %eax, %xmm1\n"
+        "mulss 0x2ed630, %xmm1\n" /* 4.656612873077393e-10f */
+        "cvtsi2ssl -0x3c(%ebp), %xmm0\n" /* zIter */
+        "addss %xmm0, %xmm1\n"
+        "mulss 0x2ed610, %xmm1\n" /* 0.125f */
+        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "xorl %ecx, %ecx\n"
+        "xorl %edx, %edx\n"
+        "movss -0x68(%ebp), %xmm3\n"
+        "movss -0x58(%ebp), %xmm2\n"
+        ".Lfcab7e_000cac8e:\n"
+        "movss %xmm3, (%ebx)\n" /* line 199 */
+        "movss %xmm2, 4(%ebx)\n" /* line 200 */
+        "movss %xmm1, 8(%ebx)\n" /* line 201 */
+        "movl cornerTexCoords(%edx), %eax\n" /* line 37 */
+        "movl %eax, 0xc(%ebx)\n"
+        "movl 0x2f2244(%edx), %eax\n" /* line 38 */
+        "movl %eax, 0x10(%ebx)\n"
+        "addl $0x14, %ebx\n" /* line 673 | particleVertsIter */
+        "addl $1, %ecx\n" /* line 669 */
+        "addl $8, %edx\n"
+        "cmpl $4, %ecx\n"
+        "jne .Lfcab7e_000cac8e\n"
+        "movzwl -0x2a(%ebp), %eax\n"
+        "addl -0x3c(%ebp), %eax\n" /* zIter */
+        "leal (, %eax, 4), %ecx\n"
+        "movl $quadIndices, %edx\n"
+        ".Lfcab7e_000caccf:\n"
+        "movl %ecx, %eax\n" /* line 678 */
+        "addw (%edx), %ax\n"
+        "movw %ax, (%esi)\n" /* particleIndicesIter */
+        "addl $2, %esi\n" /* line 680 | particleIndicesIter */
+        "addl $2, %edx\n"
+        "movl $0x2f222c, %eax\n" /* line 676 */
+        "cmpl %edx, %eax\n"
+        "jne .Lfcab7e_000caccf\n"
+        "addl $1, -0x3c(%ebp)\n" /* line 660 | zIter */
+        "addl $0xc, -0x30(%ebp)\n"
+        "addl $0x50, %edi\n"
+        "cmpl $0x10, -0x3c(%ebp)\n" /* zIter */
+        "je .Lfcab7e_000cacff\n"
+        "movl -0x30(%ebp), %esi\n" /* particleIndicesIter */
+        "jmp .Lfcab7e_000cabfe\n"
+        ".Lfcab7e_000cacff:\n"
+        "addl $1, -0x40(%ebp)\n" /* line 658 | yIter */
+        "addw $0x10, -0x2a(%ebp)\n"
+        "addl $0x500, -0x28(%ebp)\n"
+        "addl $0xc0, -0x24(%ebp)\n"
+        "cmpl $8, -0x40(%ebp)\n" /* yIter */
+        "je .Lfcab7e_000cad24\n"
+        "movl -0x24(%ebp), %eax\n"
+        "jmp .Lfcab7e_000cabe5\n"
+        ".Lfcab7e_000cad24:\n"
+        "addl $1, -0x44(%ebp)\n" /* line 656 | xIter */
+        "addl $0x600, -0x20(%ebp)\n"
+        "addl $0x2800, -0x1c(%ebp)\n"
+        "cmpl $8, -0x44(%ebp)\n" /* xIter */
+        "jne .Lfcab7e_000cabbe\n"
+        "movl 0x118065c, %eax\n" /* line 687 */
+        "movl %eax, (%esp)\n"
+        "calll R_FinishStaticIndexBuffer\n"
+        "movl 0x1180658, %eax\n" /* line 688 */
+        "movl %eax, (%esp)\n"
+        "calll R_FinishStaticVertexBuffer\n"
+        /* } scope */
+        "addl $0x6c, %esp\n" /* line 695 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+    );
+}
+
+/* line 930 */
+static __attribute__((naked))
+void R_ReleaseForShutdownOrReset(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 930 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x2c, %esp\n"
+        /* { scope 1 */
+        "movl 0x11805e8, %edx\n" /* line 936 */
+        "testl %edx, %edx\n"
+        "jg .Lfcad62_000caef3\n"
+        ".Lfcad62_000cad79:\n"
+        "calll R_ShutdownRenderTargets\n" /* line 943 */
+        "calll R_ShutdownStaticModelCache\n" /* line 945 */
+        "movl 0x1180628, %eax\n" /* line 722 */
+        "testl %eax, %eax\n"
+        "je .Lfcad62_000cadac\n"
+        ".Lfcad62_000cad8c:\n"
+        "movl 0x1180628, %eax\n" /* line 723 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, 0x1180628\n"
+        "movl alwaysfails, %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Lfcad62_000cad8c\n"
+        ".Lfcad62_000cadac:\n"
+        "movl 0x1180650, %eax\n" /* line 729 */
+        "testl %eax, %eax\n"
+        "je .Lfcad62_000cadd5\n"
+        ".Lfcad62_000cadb5:\n"
+        "movl 0x1180650, %eax\n" /* line 730 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, 0x1180650\n"
+        "movl alwaysfails, %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Lfcad62_000cadb5\n"
+        ".Lfcad62_000cadd5:\n"
+        "movl $dx, %esi\n"
+        "movl $0x117d8b8, %edi\n"
+        ".Lfcad62_000caddf:\n"
+        "leal 0x2d98(%esi), %ebx\n" /* line 930 */
+        "movl 0x2d98(%esi), %eax\n" /* line 736 */
+        "testl %eax, %eax\n"
+        "je .Lfcad62_000cae08\n"
+        ".Lfcad62_000cadef:\n"
+        "movl (%ebx), %eax\n" /* line 737 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, (%ebx)\n"
+        "movl alwaysfails, %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Lfcad62_000cadef\n"
+        ".Lfcad62_000cae08:\n"
+        "addl $0xc, %esi\n"
+        "cmpl %esi, %edi\n" /* line 734 */
+        "jne .Lfcad62_000caddf\n"
+        "movl 0x1180670, %eax\n" /* line 740 */
+        "testl %eax, %eax\n"
+        "je .Lfcad62_000cae35\n"
+        "movl %eax, (%esp)\n" /* line 742 */
+        "calll *0x11806ec\n"
+        "movl $0, 0x1180670\n" /* line 743 */
+        "movl $0, 0x1180674\n" /* line 744 */
+        ".Lfcad62_000cae35:\n"
+        "movl 0x1180658, %eax\n" /* line 702 */
+        "testl %eax, %eax\n"
+        "je .Lfcad62_000cae50\n"
+        "movl %eax, (%esp)\n" /* line 704 */
+        "calll R_FreeStaticVertexBuffer\n"
+        "movl $0, 0x1180658\n" /* line 705 */
+        ".Lfcad62_000cae50:\n"
+        "movl 0x118065c, %eax\n" /* line 708 */
+        "testl %eax, %eax\n"
+        "je .Lfcad62_000cae6b\n"
+        "movl %eax, (%esp)\n" /* line 710 */
+        "calll R_FreeStaticIndexBuffer\n"
+        "movl $0, 0x118065c\n" /* line 711 */
+        ".Lfcad62_000cae6b:\n"
+        "movl 0x11805fc, %ebx\n" /* line 952 */
+        "testl %ebx, %ebx\n"
+        "je .Lfcad62_000cae96\n"
+        ".Lfcad62_000cae75:\n"
+        "movl 0x11805fc, %eax\n" /* line 953 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, 0x11805fc\n"
+        "movl alwaysfails, %ecx\n"
+        "testl %ecx, %ecx\n"
+        "jne .Lfcad62_000cae75\n"
+        ".Lfcad62_000cae96:\n"
+        "movl $0, -0x1c(%ebp)\n" /* viewIndex */
+        "movl $0, -0x20(%ebp)\n"
+        ".Lfcad62_000caea4:\n"
+        "movl -0x20(%ebp), %esi\n" /* windowIndex */
+        "addl 0x195f088, %esi\n" /* windowIndex */
+        "movl $2, %edi\n"
+        ".Lfcad62_000caeb2:\n"
+        "leal 0x24(%esi), %ebx\n" /* line 930 */
+        "movl 0x24(%esi), %edx\n" /* line 959 | windowIndex */
+        "testl %edx, %edx\n"
+        "je .Lfcad62_000caed5\n"
+        ".Lfcad62_000caebc:\n"
+        "movl (%ebx), %eax\n" /* line 960 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, (%ebx)\n"
+        "movl alwaysfails, %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Lfcad62_000caebc\n"
+        ".Lfcad62_000caed5:\n"
+        "addl $4, %esi\n" /* windowIndex */
+        "subl $1, %edi\n" /* line 957 */
+        "jne .Lfcad62_000caeb2\n"
+        "addl $1, -0x1c(%ebp)\n" /* line 955 | viewIndex */
+        "addl $0x30, -0x20(%ebp)\n"
+        "cmpl $4, -0x1c(%ebp)\n" /* viewIndex */
+        "jne .Lfcad62_000caea4\n"
+        /* } scope */
+        "addl $0x2c, %esp\n" /* line 963 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lfcad62_000caef3:\n"
+        "xorl %esi, %esi\n" /* line 936 | windowIndex */
+        "movl $dx, %ebx\n"
+        /* { scope 2 */
+        ".Lfcad62_000caefa:\n"
+        "movl 0x2d50(%ebx), %eax\n" /* line 938 | psc */
+        "movl (%eax), %edx\n" /* line 939 */
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, 0x2d50(%ebx)\n" /* line 940 */
+        /* } scope */
+        "addl $1, %esi\n" /* line 936 | windowIndex */
+        "addl $0x10, %ebx\n"
+        "cmpl 0x11805e8, %esi\n" /* windowIndex */
+        "jl .Lfcad62_000caefa\n"
+        "jmp .Lfcad62_000cad79\n"
+    );
+}
+
+/* line 968 */
+static __attribute__((naked))
+Bool R_DisplayModeLess(const D3DDISPLAYMODE *mode0, const D3DDISPLAYMODE *mode1)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 968 */
+        "movl %esp, %ebp\n"
+        "movl 8(%ebp), %edx\n" /* mode0 */
+        "movl 0xc(%ebp), %ecx\n" /* mode1 */
+        "movl (%ecx), %eax\n" /* line 970 */
+        "cmpl %eax, (%edx)\n"
+        "ja .Lfcaf26_000caf56\n"
+        "jb .Lfcaf26_000caf4f\n" /* line 972 */
+        "movl 4(%ecx), %eax\n" /* line 975 */
+        "cmpl %eax, 4(%edx)\n"
+        "ja .Lfcaf26_000caf56\n"
+        "jb .Lfcaf26_000caf4f\n" /* line 977 */
+        "movl 8(%edx), %eax\n" /* line 980 */
+        "cmpl 8(%ecx), %eax\n"
+        "setb %al\n"
+        "movzbl %al, %eax\n"
+        "popl %ebp\n" /* line 981 */
+        "retl\n"
+        ".Lfcaf26_000caf4f:\n"
+        "movl $1, %eax\n" /* line 980 */
+        "popl %ebp\n" /* line 981 */
+        "retl\n"
+        ".Lfcaf26_000caf56:\n"
+        "xorl %eax, %eax\n" /* line 980 */
+        "popl %ebp\n" /* line 981 */
+        "retl\n"
+    );
+}
+
+/* line 1107 */
+static __attribute__((naked))
+HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1107 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x3c, %esp\n"
+        "movl %eax, -0x1c(%ebp)\n"
+        "movl %edx, -0x20(%ebp)\n"
+        "movl %ecx, %edi\n" /* d3dpp */
+        /* { scope 1 */
+        ".Lfcaf5a_000caf6b:\n"
+        "movl $0x2239f8, 4(%esp)\n" /* line 1113 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "xorl %esi, %esi\n" /* attempt */
+        "jmp .Lfcaf5a_000caf98\n"
+        ".Lfcaf5a_000caf84:\n"
+        "movl $0x64, (%esp)\n" /* line 1120 */
+        "calll WinSleep\n"
+        "addl $1, %esi\n" /* line 1121 | attempt */
+        "cmpl $0x14, %esi\n" /* line 1115 | attempt */
+        "je .Lfcaf5a_000cafe1\n"
+        ".Lfcaf5a_000caf98:\n"
+        "movl 0x117d8a4, %eax\n" /* line 1117 */
+        "movl (%eax), %ecx\n"
+        "movl $0x117d8a8, 0x18(%esp)\n"
+        "movl %edi, 0x14(%esp)\n" /* d3dpp */
+        "movl -0x20(%ebp), %edx\n"
+        "movl %edx, 0x10(%esp)\n"
+        "movl -0x1c(%ebp), %edx\n"
+        "movl %edx, 0xc(%esp)\n"
+        "movl $1, 8(%esp)\n"
+        "movl 0x117d8ac, %edx\n"
+        "movl %edx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x40(%ecx)\n"
+        "movl %eax, %ebx\n" /* hr */
+        "testl %eax, %eax\n" /* line 1118 */
+        "js .Lfcaf5a_000caf84\n"
+        /* } scope */
+        ".Lfcaf5a_000cafd7:\n"
+        "movl %ebx, %eax\n" /* line 1137 | hr */
+        "addl $0x3c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lfcaf5a_000cafe1:\n"
+        "movl 0x117d8ac, %ecx\n" /* line 1124 */
+        "testl %ecx, %ecx\n"
+        "je .Lfcaf5a_000cafd7\n"
+        "movl $0, 0x117d8ac\n" /* line 1126 */
+        "jmp .Lfcaf5a_000caf6b\n"
+    );
+}
+
+/* line 1256 */
+__attribute__((naked))
+void R_UpdateGpuSyncType(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1256 */
+        "movl %esp, %ebp\n"
+        "movl 0x195ef50, %eax\n" /* line 1258 */
+        "movl (%eax), %eax\n"
+        "cmpb $0, 8(%eax)\n"
+        "jne .Lfcaffa_000cb01b\n"
+        "movl 0x195ef20, %eax\n"
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %eax\n"
+        "movl %eax, 0x11804c0\n"
+        "popl %ebp\n" /* line 1259 */
+        "retl\n"
+        ".Lfcaffa_000cb01b:\n"
+        "xorl %eax, %eax\n" /* line 1258 */
+        "movl %eax, 0x11804c0\n"
+        "popl %ebp\n" /* line 1259 */
+        "retl\n"
+    );
+}
+
+/* line 2011 */
+__attribute__((naked))
+void R_EndRegistration(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2011 */
+        "movl %esp, %ebp\n"
+        "subl $8, %esp\n"
+        "calll Material_FinishLoading\n" /* line 2017 */
+        "leave\n" /* line 2022 */
+        "jmp R_AddCmdTouchAllImages\n" /* line 2020 */
+    );
+}
+
+/* line 2025 */
+static __attribute__((naked))
+void R_EndView(int viewIndex)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2025 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        "movl 8(%ebp), %eax\n" /* line 2027 | viewIndex */
+        "movl %eax, 4(%esp)\n"
+        "movl $4, (%esp)\n"
+        "calll R_EndDrawGroupLoop\n"
+        "movl $4, 8(%ebp)\n" /* line 2028 | viewIndex */
+        "leave\n" /* line 2029 */
+        "jmp R_EndDrawGroupSection\n" /* line 2028 */
+    );
+}
+
+/* line 2032 */
+static __attribute__((naked))
+void R_DoneRenderingViews(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2032 */
+        "movl %esp, %ebp\n"
+        "popl %ebp\n" /* line 2035 */
+        "jmp R_IssueDrawGroups\n" /* line 2034 */
+    );
+}
+
+/* line 2038 */
+static __attribute__((naked))
+void R_TrackStatistics(trStatistics_t *stats)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2038 */
+        "movl %esp, %ebp\n"
+        "movl 8(%ebp), %eax\n" /* line 2040 | stats */
+        "movl %eax, 0x1183a78\n"
+        "popl %ebp\n" /* line 2041 */
+        "retl\n"
+    );
+}
+
+/* line 2097 */
+__attribute__((naked))
+refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2097 */
+        "movl %esp, %ebp\n"
+        "subl $0x18, %esp\n"
+        /* { scope 1 */
+        "movl $0x21c, 8(%esp)\n" /* line 2103 */
+        "movl 0xc(%ebp), %eax\n" /* rimp */
+        "movl %eax, 4(%esp)\n"
+        "movl $ri, (%esp)\n"
+        "calll memcpy\n"
+        "movl $0x160, 8(%esp)\n" /* line 2105 */
+        "movl $0, 4(%esp)\n"
+        "movl $re, (%esp)\n"
+        "calll memset\n"
+        "cmpl $0x3b, 8(%ebp)\n" /* line 2107 | apiVersion */
+        "jne .Lfcb074_000cb42f\n"
+        "movl $0xcb66e, re\n" /* line 2115 */
+        "movl $R_BeginRegistration, 0xc85984\n" /* line 2117 */
+        "movl 0x195f040, %eax\n" /* line 2118 */
+        "movl %eax, 0xc85988\n"
+        "movl 0x195f070, %eax\n" /* line 2119 */
+        "movl %eax, 0xc8598c\n"
+        "movl 0x195ef58, %eax\n" /* line 2124 */
+        "movl %eax, 0xc859b0\n"
+        "movl 0x195ef68, %eax\n" /* line 2133 */
+        "movl %eax, 0xc85990\n"
+        "movl 0x195ef84, %eax\n" /* line 2134 */
+        "movl %eax, 0xc85994\n"
+        "movl 0x195f0bc, %eax\n" /* line 2135 */
+        "movl %eax, 0xc85998\n"
+        "movl 0x195f06c, %eax\n" /* line 2136 */
+        "movl %eax, 0xc8599c\n"
+        "movl 0x195efb8, %eax\n" /* line 2137 */
+        "movl %eax, 0xc859a0\n"
+        "movl 0x195f0a0, %eax\n" /* line 2139 */
+        "movl %eax, 0xc859a4\n"
+        "movl 0x195f064, %eax\n" /* line 2141 */
+        "movl %eax, 0xc859a8\n"
+        "movl 0x195efc4, %eax\n" /* line 2142 */
+        "movl %eax, 0xc859ac\n"
+        "movl $R_EndRegistration, 0xc859c4\n" /* line 2143 */
+        "movl 0x195f078, %eax\n" /* line 2144 */
+        "movl %eax, 0xc859b4\n"
+        "movl 0x195efbc, %eax\n" /* line 2145 */
+        "movl %eax, 0xc859b8\n"
+        "movl 0x195f098, %eax\n" /* line 2146 */
+        "movl %eax, 0xc859bc\n"
+        "movl 0x195f014, %eax\n" /* line 2147 */
+        "movl %eax, 0xc859c0\n"
+        "movl 0x195f0b4, %eax\n" /* line 2149 */
+        "movl %eax, 0xc85a28\n"
+        "movl 0x195f04c, %eax\n" /* line 2150 */
+        "movl %eax, 0xc85a2c\n"
+        "movl 0x195ef70, %eax\n" /* line 2152 */
+        "movl %eax, 0xc85a30\n"
+        "movl 0x195ef78, %eax\n" /* line 2153 */
+        "movl %eax, 0xc85a34\n"
+        "movl $R_EndView, 0xc85a38\n" /* line 2155 */
+        "movl $R_DoneRenderingViews, 0xc85a3c\n" /* line 2156 */
+        "movl 0x195f00c, %eax\n" /* line 2158 */
+        "movl %eax, 0xc85a40\n"
+        "movl 0x195f020, %eax\n" /* line 2159 */
+        "movl %eax, 0xc85a44\n"
+        "movl 0x195ef60, %eax\n" /* line 2160 */
+        "movl %eax, 0xc85a48\n"
+        "movl 0x195f0a4, %eax\n" /* line 2161 */
+        "movl %eax, 0xc85a4c\n"
+        "movl 0x195f07c, %eax\n" /* line 2163 */
+        "movl %eax, 0xc85a50\n"
+        "movl 0x195f02c, %eax\n" /* line 2164 */
+        "movl %eax, 0xc85a54\n"
+        "movl 0x195f05c, %eax\n" /* line 2166 */
+        "movl %eax, 0xc859c8\n"
+        "movl 0x195efd0, %eax\n" /* line 2177 */
+        "movl %eax, 0xc859cc\n"
+        "movl 0x195eff0, %eax\n" /* line 2178 */
+        "movl %eax, 0xc859d0\n"
+        "movl 0x195efa0, %eax\n" /* line 2179 */
+        "movl %eax, 0xc859d4\n"
+        "movl 0x195f084, %eax\n" /* line 2180 */
+        "movl %eax, 0xc859d8\n"
+        "movl 0x195efec, %eax\n" /* line 2181 */
+        "movl %eax, 0xc859dc\n"
+        "movl 0x195ef90, %eax\n" /* line 2182 */
+        "movl %eax, 0xc859e0\n"
+        "movl 0x195f0ac, %eax\n" /* line 2183 */
+        "movl %eax, 0xc859e4\n"
+        "movl 0x195efd4, %eax\n" /* line 2184 */
+        "movl %eax, 0xc859e8\n"
+        "movl 0x195f080, %eax\n" /* line 2185 */
+        "movl %eax, 0xc859ec\n"
+        "movl 0x195efcc, %eax\n" /* line 2186 */
+        "movl %eax, 0xc859f0\n"
+        "movl 0x195efe8, %eax\n" /* line 2187 */
+        "movl %eax, 0xc859f4\n"
+        "movl 0x195f018, %eax\n" /* line 2188 */
+        "movl %eax, 0xc859f8\n"
+        "movl 0x195ef64, %eax\n" /* line 2190 */
+        "movl %eax, 0xc859fc\n"
+        "movl 0x195f044, %eax\n" /* line 2192 */
+        "movl %eax, 0xc85a00\n"
+        "movl 0x195efc0, %eax\n" /* line 2193 */
+        "movl %eax, 0xc85a04\n"
+        "movl 0x195f01c, %eax\n" /* line 2194 */
+        "movl %eax, 0xc85a08\n"
+        "movl 0x195efc8, %eax\n" /* line 2196 */
+        "movl %eax, 0xc85a0c\n"
+        "movl 0x195f08c, %eax\n" /* line 2198 */
+        "movl %eax, 0xc85a14\n"
+        "movl 0x195f004, %eax\n" /* line 2199 */
+        "movl %eax, 0xc85a18\n"
+        "movl 0x195f09c, %eax\n" /* line 2200 */
+        "movl %eax, 0xc85a1c\n"
+        "movl 0x195f038, %eax\n" /* line 2201 */
+        "movl %eax, 0xc85a20\n"
+        "movl 0x195efa4, %eax\n" /* line 2202 */
+        "movl %eax, 0xc85a24\n"
+        "movl 0x195effc, %eax\n" /* line 2204 */
+        "movl %eax, 0xc85a10\n"
+        "movl 0x195f0c0, %eax\n" /* line 2206 */
+        "movl %eax, 0xc85a60\n"
+        "movl 0x195ef74, %eax\n" /* line 2207 */
+        "movl %eax, 0xc85a64\n"
+        "movl 0x195f074, %eax\n" /* line 2208 */
+        "movl %eax, 0xc85a68\n"
+        "movl 0x195efe0, %eax\n" /* line 2210 */
+        "movl %eax, 0xc85a6c\n"
+        "movl 0x195f090, %eax\n" /* line 2211 */
+        "movl %eax, 0xc85a70\n"
+        "movl 0x195efdc, %eax\n" /* line 2212 */
+        "movl %eax, 0xc85a74\n"
+        "movl 0x195efb0, %eax\n" /* line 2213 */
+        "movl %eax, 0xc85a78\n"
+        "movl 0x195f048, %eax\n" /* line 2215 */
+        "movl %eax, 0xc85a7c\n"
+        "movl 0x195ef80, %eax\n" /* line 2216 */
+        "movl %eax, 0xc85a80\n"
+        "movl 0x195eff4, %eax\n" /* line 2217 */
+        "movl %eax, 0xc85a84\n"
+        "movl 0x195f068, %eax\n" /* line 2218 */
+        "movl %eax, 0xc85a88\n"
+        "movl $R_TrackStatistics, 0xc85a58\n" /* line 2220 */
+        "movl 0x195efac, %eax\n" /* line 2221 */
+        "movl %eax, 0xc85a5c\n"
+        "movl 0x195f060, %eax\n" /* line 2223 */
+        "movl %eax, 0xc85a8c\n"
+        "movl 0x195efd8, %eax\n" /* line 2224 */
+        "movl %eax, 0xc85a90\n"
+        "movl 0x195ef7c, %eax\n" /* line 2225 */
+        "movl %eax, 0xc85a94\n"
+        "movl 0x195efe4, %eax\n" /* line 2226 */
+        "movl %eax, 0xc85a98\n"
+        "movl 0x195f030, %eax\n" /* line 2227 */
+        "movl %eax, 0xc85a9c\n"
+        "movl 0x195f008, %eax\n" /* line 2228 */
+        "movl %eax, 0xc85aa0\n"
+        "movl 0x195f0b8, %eax\n" /* line 2229 */
+        "movl %eax, 0xc85aa4\n"
+        "movl 0x195f054, %eax\n" /* line 2230 */
+        "movl %eax, 0xc85aa8\n"
+        "movl 0x195f010, %eax\n" /* line 2231 */
+        "movl %eax, 0xc85aac\n"
+        "movl 0x195f03c, %eax\n" /* line 2233 */
+        "movl %eax, 0xc85ab0\n"
+        "movl 0x195eff8, %eax\n" /* line 2234 */
+        "movl %eax, 0xc85ab4\n"
+        "movl 0x195f034, %eax\n" /* line 2237 */
+        "movl %eax, 0xc85ab8\n"
+        "movl 0x195ef6c, %eax\n" /* line 2287 */
+        "movl %eax, 0xc85abc\n"
+        "movl 0x195efb4, %eax\n" /* line 2288 */
+        "movl %eax, 0xc85ac0\n"
+        "movb $1, 0xc85ac4\n" /* line 2318 */
+        "movl 0x195ef9c, %eax\n" /* line 2321 */
+        "movl %eax, 0xc85ac8\n"
+        "movl 0x195ef94, %eax\n" /* line 2322 */
+        "movl %eax, 0xc85acc\n"
+        "movl 0x195ef98, %eax\n" /* line 2330 */
+        "movl %eax, 0xc85ad0\n"
+        "movl 0x195ef8c, %eax\n" /* line 2331 */
+        "movl %eax, 0xc85ad4\n"
+        "movl 0x195f0b0, %eax\n" /* line 2332 */
+        "movl %eax, 0xc85ad8\n"
+        "movl 0x195ef5c, %eax\n" /* line 2334 */
+        "movl %eax, 0xc85adc\n"
+        "movl $re, %eax\n"
+        /* } scope */
+        "leave\n" /* line 2338 */
+        "retl\n"
+        /* { scope 1 */
+        ".Lfcb074_000cb42f:\n"
+        "movl 8(%ebp), %eax\n" /* line 2109 | apiVersion */
+        "movl %eax, 0xc(%esp)\n"
+        "movl $0x3b, 8(%esp)\n"
+        "movl $0x223a18, 4(%esp)\n" /* "Mismatched REF_API_VERSION: expected %i, got %i
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "xorl %eax, %eax\n"
+        /* } scope */
+        "leave\n" /* line 2338 */
+        "retl\n"
+    );
+}
+
+/* line 2463 */
+__attribute__((naked))
+void R_Error(errorParm_t errorLevel, const char *msg)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2463 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x424, %esp\n"
+        /* { scope 1 */
+        "calll Sys_IsMainThread\n" /* line 2468 */
+        "testb %al, %al\n"
+        "jne .Lfcb458_000cb4d7\n"
+        ".Lfcb458_000cb46b:\n"
+        "cmpb $0, 0x11805dd\n" /* line 2471 */
+        "je .Lfcb458_000cb48b\n"
+        "movl 0x117d8a8, %eax\n" /* line 2473 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *0xa8(%edx)\n"
+        "movb $0, 0x11805dd\n" /* line 2474 */
+        ".Lfcb458_000cb48b:\n"
+        "leal 0x10(%ebp), %eax\n" /* line 2477 */
+        "movl %eax, -0xc(%ebp)\n" /* vargs */
+        "movl %eax, 0xc(%esp)\n" /* line 2478 */
+        "movl 0xc(%ebp), %eax\n" /* msg */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x3ff, 4(%esp)\n"
+        "leal -0x40c(%ebp), %ebx\n" /* text */
+        "movl %ebx, (%esp)\n"
+        "calll vsnprintf\n"
+        "movb $0, -0xd(%ebp)\n" /* line 2479 */
+        "movl %ebx, 8(%esp)\n" /* line 2482 */
+        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl 8(%ebp), %eax\n" /* errorLevel */
+        "movl %eax, (%esp)\n"
+        "calll *0x11806c4\n"
+        /* } scope */
+        "addl $0x424, %esp\n" /* line 2483 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lfcb458_000cb4d7:\n"
+        "calll R_SyncRenderThread\n" /* line 2469 */
+        "jmp .Lfcb458_000cb46b\n"
+    );
+}
+
+/* line 802 */
+__attribute__((naked))
+void R_GammaCorrect(byte *buffer, int bufSize)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 802 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x23c, %esp\n"
+        "movl 8(%ebp), %edi\n" /* buffer */
+        /* { scope 1 */
+        /* { scope 2 */
+        "movl 0x195efa8, %eax\n" /* line 768 */
+        "movl (%eax), %eax\n"
+        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movaps %xmm1, %xmm0\n"
+        "divss 8(%eax), %xmm0\n"
+        "xorl %ebx, %ebx\n"
+        "cvtss2sd %xmm0, %xmm2\n"
+        "movsd %xmm2, -0x220(%ebp)\n"
+        "ucomiss %xmm1, %xmm0\n"
+        "jp .Lfcb4e0_000cb56d\n"
+        "jne .Lfcb4e0_000cb56d\n"
+        ".Lfcb4e0_000cb51b:\n"
+        "movl %ebx, %eax\n" /* line 772 */
+        "shll $8, %eax\n"
+        "addl %ebx, %eax\n"
+        "movw %ax, -0x218(%ebp, %ebx, 2)\n" /* line 784 */
+        "addl $1, %ebx\n"
+        "cmpl $0x100, %ebx\n" /* line 770 */
+        "jne .Lfcb4e0_000cb51b\n"
+        /* } scope */
+        ".Lfcb4e0_000cb535:\n"
+        "movl 0xc(%ebp), %eax\n" /* line 814 | bufSize */
+        "testl %eax, %eax\n"
+        "jle .Lfcb4e0_000cb562\n"
+        /* { scope 2 */
+        "xorl %ebx, %ebx\n" /* line 770 */
+        "movl $0x7f807f81, %esi\n"
+        ".Lfcb4e0_000cb543:\n"
+        "leal (%ebx, %edi), %ecx\n" /* line 802 */
+        /* } scope */
+        "movzbl (%ecx), %eax\n" /* line 823 */
+        "movzwl -0x218(%ebp, %eax, 2), %edx\n"
+        "movl %edx, %eax\n"
+        "imull %esi\n"
+        "shrl $7, %edx\n"
+        "movb %dl, (%ecx)\n"
+        "addl $1, %ebx\n" /* line 814 | tableIndex */
+        "cmpl %ebx, 0xc(%ebp)\n" /* tableIndex, bufSize */
+        "jne .Lfcb4e0_000cb543\n"
+        /* } scope */
+        ".Lfcb4e0_000cb562:\n"
+        "addl $0x23c, %esp\n" /* line 825 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2 */
+        ".Lfcb4e0_000cb56d:\n"
+        "cvtsi2ssl %ebx, %xmm0\n" /* line 779 */
+        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "movsd -0x220(%ebp), %xmm1\n"
+        "movsd %xmm1, 8(%esp)\n"
+        "cvtss2sd %xmm0, %xmm0\n"
+        "movsd %xmm0, (%esp)\n"
+        "calll pow\n"
+        "fstpl -0x228(%ebp)\n"
+        "cvtsd2ss -0x228(%ebp), %xmm0\n"
+        "mulss 0x2ed84c, %xmm0\n" /* 65535.0f */
+        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss %xmm0, (%esp)\n"
+        "calll floorf\n"
+        "fstps -0x22c(%ebp)\n"
+        "cvttss2si -0x22c(%ebp), %eax\n"
+        "movw %ax, -0x218(%ebp, %ebx, 2)\n" /* line 784 */
+        "addl $1, %ebx\n"
+        "cmpl $0x100, %ebx\n" /* line 770 */
+        "jne .Lfcb4e0_000cb56d\n"
+        "jmp .Lfcb4e0_000cb535\n"
+    );
+}
+
+/* line 830 */
+static __attribute__((naked))
+void R_InitSystems(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 830 */
+        "movl %esp, %ebp\n"
+        "subl $8, %esp\n"
+        "calll R_InitImages\n" /* line 833 */
+        "calll Material_Init\n" /* line 834 */
+        "calll R_InitFonts\n" /* line 835 */
+        "movl $0, 0x1181928\n" /* line 1825 */
+        "calll R_InitLightDefs\n" /* line 838 */
+        "calll R_ClearFogs\n" /* line 839 */
+        "calll R_InitDebug\n" /* line 841 */
+        "movb $1, rg\n" /* line 848 */
+        "leave\n" /* line 855 */
+        "retl\n"
+    );
+}
+
+/* line 140 */
+__attribute__((naked))
+void R_FatalLockError(HRESULT hr)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 140 */
+        "movl %esp, %ebp\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x10, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* hr */
+        "movl $0x223a4c, 4(%esp)\n" /* line 142 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl ri, %esi\n" /* line 143 */
+        "movl %ebx, (%esp)\n" /* line 177 | hr */
+        "calll DXGetErrorDescription9A\n"
+        "movl %eax, 8(%esp)\n" /* line 143 */
+        "movl $0x223aa4, 4(%esp)\n" /* "********** error information:  %s
+" */
+        "movl $0, (%esp)\n"
+        "calll *%esi\n"
+        "movl 0x1180708, %ecx\n" /* line 146 */
+        "addl $0x10, %esp\n" /* line 152 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %ebp\n"
+        "jmpl *%ecx\n" /* line 146 */
+    );
+}
+
+/* line 1920 */
+static __attribute__((naked))
+void R_Shutdown(qboolean destroyWindow)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1920 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x14, %esp\n"
+        "movl 8(%ebp), %ebx\n" /* destroyWindow */
+        "movb $0, rg\n" /* line 1923 */
+        "movl 0x117d8a8, %eax\n" /* line 1908 */
+        "testl %eax, %eax\n"
+        "je .Lfcb66e_000cb695\n"
+        "cmpb $0, 0x11805dc\n" /* line 1912 */
+        "je .Lfcb66e_000cb776\n"
+        ".Lfcb66e_000cb695:\n"
+        "calll R_ShutdownBackendData\n" /* line 1935 */
+        "calll R_ShutdownDebug\n" /* line 1936 */
+        "calll RB_SaveLightVisHistory\n" /* line 1937 */
+        "calll R_ShutdownLightDefs\n" /* line 1938 */
+        "calll R_ShutdownWorld\n" /* line 1940 */
+        "calll R_ShutdownFonts\n" /* line 1941 */
+        "calll R_ShutdownModels\n" /* line 1942 */
+        "calll Material_Shutdown\n" /* line 1943 */
+        "calll R_ShutdownImages\n" /* line 1944 */
+        "movl $0, 0x1184b9c\n" /* line 1953 */
+        "calll R_UnlockSkinnedCache\n" /* line 1957 */
+        "calll R_FlushStaticModelCache\n" /* line 1961 */
+        "testl %ebx, %ebx\n" /* line 1964 | destroyWindow */
+        "jne .Lfcb66e_000cb6e4\n"
+        "addl $0x14, %esp\n" /* line 1973 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "jmp R_UnregisterCmds\n" /* line 1972 */
+        ".Lfcb66e_000cb6e4:\n"
+        "calll R_ReleaseForShutdownOrReset\n" /* line 1741 */
+        "movl 0x11805e8, %eax\n" /* line 1743 */
+        "testl %eax, %eax\n"
+        "je .Lfcb66e_000cb713\n"
+        "movl $0x11805e0, %edx\n"
+        ".Lfcb66e_000cb6f7:\n"
+        "subl $1, %eax\n" /* line 1745 */
+        "movl %eax, 0x11805e8\n"
+        "shll $4, %eax\n" /* line 1754 */
+        "movl $0, 0xc(%eax, %edx)\n"
+        "movl 0x11805e8, %eax\n" /* line 1743 */
+        "testl %eax, %eax\n"
+        "jne .Lfcb66e_000cb6f7\n"
+        ".Lfcb66e_000cb713:\n"
+        "movl 0x117d8a8, %eax\n" /* line 1757 */
+        "testl %eax, %eax\n"
+        "je .Lfcb66e_000cb73c\n"
+        ".Lfcb66e_000cb71c:\n"
+        "movl 0x117d8a8, %eax\n" /* line 1758 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, 0x117d8a8\n"
+        "movl alwaysfails, %eax\n"
+        "testl %eax, %eax\n"
+        "jne .Lfcb66e_000cb71c\n"
+        ".Lfcb66e_000cb73c:\n"
+        "movl 0x117d8a4, %ebx\n" /* line 1760 */
+        "testl %ebx, %ebx\n"
+        "je .Lfcb66e_000cb767\n"
+        ".Lfcb66e_000cb746:\n"
+        "movl 0x117d8a4, %eax\n" /* line 1761 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *8(%edx)\n"
+        "movl $0, 0x117d8a4\n"
+        "movl alwaysfails, %ecx\n"
+        "testl %ecx, %ecx\n"
+        "jne .Lfcb66e_000cb746\n"
+        ".Lfcb66e_000cb767:\n"
+        "calll R_UnregisterDvars\n" /* line 1968 */
+        "addl $0x14, %esp\n" /* line 1973 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "jmp R_UnregisterCmds\n" /* line 1972 */
+        ".Lfcb66e_000cb776:\n"
+        "calll RB_ClearAllStreamSources\n" /* line 1916 */
+        "jmp .Lfcb66e_000cb695\n"
+    );
+}
+
+/* line 789 */
+__attribute__((naked))
+void R_SetColorMappings(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 789 */
+        "movl %esp, %ebp\n"
+        "pushl %ebx\n"
+        "subl $0x234, %esp\n"
+        /* { scope 1 */
+        "cmpb $0, 0x11806a8\n" /* line 793 */
+        "je .Lfcb780_000cb7e7\n"
+        /* { scope 2 */
+        "movl 0x195efa8, %eax\n" /* line 768 */
+        "movl (%eax), %eax\n"
+        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movaps %xmm1, %xmm0\n"
+        "divss 8(%eax), %xmm0\n"
+        "xorl %ebx, %ebx\n"
+        "cvtss2sd %xmm0, %xmm2\n"
+        "movsd %xmm2, -0x210(%ebp)\n"
+        "ucomiss %xmm1, %xmm0\n"
+        "jp .Lfcb780_000cb7f0\n"
+        "jne .Lfcb780_000cb7f0\n"
+        ".Lfcb780_000cb7bf:\n"
+        "movl %ebx, %eax\n" /* line 772 */
+        "shll $8, %eax\n"
+        "addl %ebx, %eax\n"
+        "movw %ax, -0x208(%ebp, %ebx, 2)\n" /* line 784 */
+        "addl $1, %ebx\n"
+        "cmpl $0x100, %ebx\n" /* line 770 */
+        "jne .Lfcb780_000cb7bf\n"
+        /* } scope */
+        ".Lfcb780_000cb7d9:\n"
+        "leal -0x208(%ebp), %eax\n" /* line 798 | gammaRamp */
+        "movl %eax, (%esp)\n"
+        "calll RB_SetGammaRamp\n"
+        /* } scope */
+        ".Lfcb780_000cb7e7:\n"
+        "addl $0x234, %esp\n" /* line 799 */
+        "popl %ebx\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        /* { scope 2 */
+        ".Lfcb780_000cb7f0:\n"
+        "cvtsi2ssl %ebx, %xmm0\n" /* line 779 */
+        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "movsd -0x210(%ebp), %xmm1\n"
+        "movsd %xmm1, 8(%esp)\n"
+        "cvtss2sd %xmm0, %xmm0\n"
+        "movsd %xmm0, (%esp)\n"
+        "calll pow\n"
+        "fstpl -0x218(%ebp)\n"
+        "cvtsd2ss -0x218(%ebp), %xmm0\n"
+        "mulss 0x2ed84c, %xmm0\n" /* 65535.0f */
+        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss %xmm0, (%esp)\n"
+        "calll floorf\n"
+        "fstps -0x21c(%ebp)\n"
+        "cvttss2si -0x21c(%ebp), %eax\n"
+        "movw %ax, -0x208(%ebp, %ebx, 2)\n" /* line 784 */
+        "addl $1, %ebx\n"
+        "cmpl $0x100, %ebx\n" /* line 770 */
+        "jne .Lfcb780_000cb7f0\n"
+        "jmp .Lfcb780_000cb7d9\n"
+    );
+}
+
+/* line 871 */
+static __attribute__((naked))
+Bool R_CreateForInitOrReset(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 871 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x3c, %esp\n"
+        /* { scope 1 */
+        "movl $0x223ac8, 4(%esp)\n" /* line 879 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll R_InitRenderTargets\n" /* line 880 */
+        "movl $0x223ae8, 4(%esp)\n" /* line 882 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll R_InitStaticModelCache\n" /* line 883 */
+        "movl $0x223b0c, 4(%esp)\n" /* line 885 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl 0x195eec0, %eax\n" /* line 1067 | d3dpp */
+        "movl (%eax), %eax\n" /* d3dpp */
+        "movl $0x120000, %ebx\n" /* viewIndex */
+        "cmpl $2, 8(%eax)\n" /* d3dpp */
+        "movl $0x200000, %eax\n" /* d3dpp */
+        "cmovnel %eax, %ebx\n" /* d3dpp, viewIndex */
+        "movl $0, 0x1180648\n" /* line 538 */
+        "movl %ebx, 0x118064c\n" /* line 539 */
+        "movl 0x117d8a8, %eax\n" /* line 552 */
+        "movl (%eax), %edx\n"
+        "movl $0, 0x18(%esp)\n"
+        "movl $0x1180650, 0x14(%esp)\n"
+        "movl $0, 0x10(%esp)\n"
+        "movl $0, 0xc(%esp)\n"
+        "movl $0x208, 8(%esp)\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x68(%edx)\n"
+        "testl %eax, %eax\n" /* line 553 */
+        "js .Lfcb866_000cbb37\n"
+        ".Lfcb866_000cb921:\n"
+        "movl $0x1180648, 0x1180654\n" /* line 593 */
+        "movl $0, -0x1c(%ebp)\n"
+        "movl $0x2d90, %esi\n"
+        "movl $0x1180638, %edi\n"
+        ".Lfcb866_000cb93c:\n"
+        "movl 0x195eec0, %eax\n" /* line 1067 | d3dpp */
+        "movl (%eax), %eax\n" /* d3dpp */
+        "movl $0x480000, %ebx\n" /* viewIndex */
+        "cmpl $2, 8(%eax)\n" /* d3dpp */
+        "movl $0x800000, %eax\n" /* d3dpp */
+        "cmovnel %eax, %ebx\n" /* d3dpp, viewIndex */
+        "movl $0, dx(%esi)\n" /* line 538 */
+        "movl %ebx, 0x117d8a4(%esi)\n" /* line 539 */
+        "movl 0x117d8a8, %eax\n" /* line 552 */
+        "movl (%eax), %edx\n"
+        "movl $0, 0x18(%esp)\n"
+        "movl %edi, 0x14(%esp)\n"
+        "movl $0, 0x10(%esp)\n"
+        "movl $0, 0xc(%esp)\n"
+        "movl $0x208, 8(%esp)\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x68(%edx)\n"
+        "testl %eax, %eax\n" /* line 553 */
+        "js .Lfcb866_000cbab6\n"
+        ".Lfcb866_000cb9a1:\n"
+        "addl $1, -0x1c(%ebp)\n" /* line 596 */
+        "addl $0xc, %esi\n"
+        "addl $0xc, %edi\n"
+        "cmpl $2, -0x1c(%ebp)\n"
+        "jne .Lfcb866_000cb93c\n"
+        "movl $0, 0x1180620\n" /* line 563 */
+        "movl $0x200000, 0x1180624\n" /* line 564 */
+        "movl 0x117d8a8, %eax\n" /* line 577 */
+        "movl (%eax), %edx\n"
+        "movl $0, 0x18(%esp)\n"
+        "movl $0x1180628, 0x14(%esp)\n"
+        "movl $0, 0x10(%esp)\n"
+        "movl $0x65, 0xc(%esp)\n"
+        "movl $0x208, 8(%esp)\n"
+        "movl $0x200000, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x6c(%edx)\n"
+        "testl %eax, %eax\n" /* line 578 */
+        "js .Lfcb866_000cbbb8\n"
+        ".Lfcb866_000cba0a:\n"
+        "movl $0x1180620, 0x118062c\n" /* line 601 */
+        "movl $0xa00000, (%esp)\n" /* line 606 */
+        "calll *0x11806e0\n"
+        "movl %eax, 0x1180670\n"
+        "movl $0x223b98, 4(%esp)\n" /* line 887 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll R_CreateParticleCloudBuffer\n" /* line 888 */
+        "movl $0x223bc0, 4(%esp)\n" /* line 890 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movb $0, 0x1180608\n" /* line 893 */
+        "movl $0, 0x11805fc\n" /* line 899 */
+        "xorl %ebx, %ebx\n" /* viewIndex */
+        "movl 0x195f088, %esi\n"
+        "xorl %ecx, %ecx\n"
+        ".Lfcb866_000cba70:\n"
+        "leal (%ecx, %esi), %eax\n" /* d3dpp */
+        "movl $2, %edx\n" /* wndParms */
+        ".Lfcb866_000cba78:\n"
+        "movb $0, 0x2c(%eax)\n" /* line 919 | d3dpp */
+        "addl $1, %eax\n" /* d3dpp */
+        "subl $1, %edx\n" /* line 912 | wndParms */
+        "jne .Lfcb866_000cba78\n"
+        "addl $1, %ebx\n" /* line 910 | viewIndex */
+        "addl $0x30, %ecx\n"
+        "cmpl $4, %ebx\n" /* viewIndex */
+        "jne .Lfcb866_000cba70\n"
+        "movl $0x223be0, 4(%esp)\n" /* line 923 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll RB_SetInitialState\n" /* line 924 */
+        /* } scope */
+        "movl $1, %eax\n" /* line 926 | d3dpp */
+        "addl $0x3c, %esp\n"
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1 */
+        ".Lfcb866_000cbab6:\n"
+        "movl %eax, (%esp)\n" /* line 177 */
+        "calll DXGetErrorDescription9A\n"
+        "movl %eax, 8(%esp)\n" /* line 554 */
+        "movl %ebx, 4(%esp)\n"
+        "movl $0x223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
+        "calll va\n"
+        "movl %eax, %ebx\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl %ebx, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        "jmp .Lfcb866_000cb9a1\n"
+        ".Lfcb866_000cbb37:\n"
+        "movl %eax, (%esp)\n" /* line 177 */
+        "calll DXGetErrorDescription9A\n"
+        "movl %eax, 8(%esp)\n" /* line 554 */
+        "movl %ebx, 4(%esp)\n"
+        "movl $0x223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
+        "calll va\n"
+        "movl %eax, %ebx\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl %ebx, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        "jmp .Lfcb866_000cb921\n"
+        ".Lfcb866_000cbbb8:\n"
+        "movl %eax, (%esp)\n" /* line 177 */
+        "calll DXGetErrorDescription9A\n"
+        "movl %eax, 8(%esp)\n" /* line 579 */
+        "movl $0x200000, 4(%esp)\n"
+        "movl $0x223b64, (%esp)\n" /* "Couldn't create a %i-byte dynamic index buffer: %s" */
+        "calll va\n"
+        "movl %eax, %ebx\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl %ebx, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        "jmp .Lfcb866_000cba0a\n"
+    );
+}
+
+/* line 1985 */
+__attribute__((naked))
+void R_BeginRegistration(vidConfig_t *vidConfigOut)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 1985 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0xddc, %esp\n"
+        "movl $0x223bfc, 4(%esp)\n" /* line 1861 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll Swap_Init\n" /* line 1869 */
+        "calll R_RegisterDvars\n" /* line 1788 */
+        "calll R_RegisterCmds\n" /* line 1789 */
+        "movl $0x31a0, 8(%esp)\n" /* line 1795 */
+        "movl $0, 4(%esp)\n"
+        "movl $rg, (%esp)\n"
+        "calll memset\n"
+        "movl $0x10f0, 8(%esp)\n" /* line 1798 */
+        "movl $0, 4(%esp)\n"
+        "movl $rgp, (%esp)\n"
+        "calll memset\n"
+        "calll RB_InitBackendGlobalStructs\n" /* line 1801 */
+        "calll RB_DecideDefaultSamplerState\n" /* line 1803 */
+        "calll R_InitBackendData\n" /* line 1874 */
+        "calll R_InitDrawGroups\n" /* line 1876 */
+        "movl 0x117d8a8, %esi\n" /* line 1568 */
+        "testl %esi, %esi\n"
+        "je .Lfcbc3e_000cbdf9\n"
+        "calll R_InitSystems\n" /* line 1571 */
+        ".Lfcbc3e_000cbccd:\n"
+        "calll RB_RegisterBackendAssets\n" /* line 1886 */
+        "xorl %ebx, %ebx\n"
+        "movl $rg, %edi\n"
+        ".Lfcbc3e_000cbcd9:\n"
+        "cvtsi2ssl %ebx, %xmm0\n" /* line 1812 */
+        "mulss 0x2ed850, %xmm0\n" /* 0.3515625f */
+        "cvtss2sd %xmm0, %xmm0\n"
+        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "movsd %xmm0, (%esp)\n"
+        "calll sin\n"
+        "fstpl -0xdb8(%ebp)\n"
+        "cvtsd2ss -0xdb8(%ebp), %xmm0\n"
+        "movss %xmm0, 0x1510(%edi)\n"
+        "addl $1, %ebx\n" /* line 1811 */
+        "addl $4, %edi\n"
+        "cmpl $0x400, %ebx\n"
+        "jne .Lfcbc3e_000cbcd9\n"
+        "movl $0x1182e10, 4(%esp)\n" /* line 1818 */
+        "movl $0x1183610, (%esp)\n"
+        "calll FFT_Init\n"
+        "movl $0, -0x170(%ebp)\n" /* line 1834 */
+        "movl $0, -0x16c(%ebp)\n" /* line 1835 */
+        "movl $0, -0x168(%ebp)\n" /* line 1836 */
+        "movl $0, 0x10(%esp)\n" /* line 1838 */
+        "movl $0x1183a14, 0xc(%esp)\n"
+        "movl $0, 8(%esp)\n"
+        "movl $1, 4(%esp)\n"
+        "leal -0x170(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x118089c\n"
+        "movl $0x1183a14, 0x1183a10\n" /* line 1839 */
+        "calll RB_CalcSunSpriteSamples\n" /* line 1896 */
+        "movl %eax, 0x11804cc\n"
+        "movl vidConfig, %eax\n" /* line 2007 */
+        "movl 8(%ebp), %edx\n" /* vidConfigOut */
+        "movl %eax, (%edx)\n"
+        "movl 0x1180684, %eax\n"
+        "movl %eax, 4(%edx)\n"
+        "movl 0x1180688, %eax\n"
+        "movl %eax, 8(%edx)\n"
+        "movl 0x118068c, %eax\n"
+        "movl %eax, 0xc(%edx)\n"
+        "movl 0x1180690, %eax\n"
+        "movl %eax, 0x10(%edx)\n"
+        "movl 0x1180694, %eax\n"
+        "movl %eax, 0x14(%edx)\n"
+        "movl 0x1180698, %eax\n"
+        "movl %eax, 0x18(%edx)\n"
+        "movl 0x118069c, %eax\n"
+        "movl %eax, 0x1c(%edx)\n"
+        "movl 0x11806a0, %eax\n"
+        "movl %eax, 0x20(%edx)\n"
+        "movl 0x11806a4, %eax\n"
+        "movl %eax, 0x24(%edx)\n"
+        "movl 0x11806a8, %eax\n"
+        "movl %eax, 0x28(%edx)\n"
+        "addl $0xddc, %esp\n" /* line 2008 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lfcbc3e_000cbdf9:\n"
+        "movl 0x117d8a4, %ebx\n" /* line 1228 */
+        "testl %ebx, %ebx\n"
+        "je .Lfcbc3e_000ccd37\n"
+        ".Lfcbc3e_000cbe07:\n"
+        "movl $0, 0x117d8ac\n" /* line 1245 */
+        "xorl %edi, %edi\n"
+        "jmp .Lfcbc3e_000cbe2d\n"
+        ".Lfcbc3e_000cbe15:\n"
+        "movl $0x64, (%esp)\n" /* line 411 */
+        "calll WinSleep\n"
+        "addl $1, %edi\n" /* line 412 */
+        "cmpl $0x14, %edi\n" /* line 406 */
+        "je .Lfcbc3e_000ccafb\n"
+        ".Lfcbc3e_000cbe2d:\n"
+        "movl 0x117d8a4, %eax\n" /* line 408 */
+        "movl (%eax), %edx\n"
+        "leal -0x170(%ebp), %ecx\n"
+        "movl %ecx, 0xc(%esp)\n"
+        "movl $1, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x38(%edx)\n"
+        "movl %eax, %ebx\n"
+        "testl %eax, %eax\n" /* line 409 */
+        "js .Lfcbc3e_000cbe15\n"
+        ".Lfcbc3e_000cbe5a:\n"
+        "movl -0xa4(%ebp), %eax\n" /* line 443 */
+        "movzbl %al, %edx\n"
+        "movl %edx, 0xc(%esp)\n"
+        "movzbl %ah, %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl $0x223c74, 4(%esp)\n" /* "Pixel shader version is %i.%i
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl -0xac(%ebp), %eax\n" /* line 444 */
+        "movzbl %al, %edx\n"
+        "movl %edx, 0xc(%esp)\n"
+        "movzbl %ah, %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl $0x223c94, 4(%esp)\n" /* "Vertex shader version is %i.%i
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "leal -0x170(%ebp), %ebx\n" /* line 446 */
+        "movl %ebx, (%esp)\n"
+        "calll R_CheckDxCaps\n"
+        "movl %eax, %edx\n"
+        "movl 0x195f050, %eax\n" /* line 464 */
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %edi\n"
+        "testl %edi, %edi\n"
+        "je .Lfcbc3e_000ccbc1\n"
+        "movl %edi, %ecx\n" /* line 466 */
+        "sarl %cl, %edx\n"
+        "andb $1, %dl\n"
+        "jne .Lfcbc3e_000ccb82\n"
+        "movl $0x223cb4, %eax\n" /* line 428 */
+        "subl $1, %edi\n"
+        "movl $0x223cc0, %edx\n" /* "Direct3D 7" */
+        "cmovnel %edx, %eax\n"
+        "movl %eax, 0xc(%esp)\n" /* line 473 */
+        "movl $0x223cc0, 8(%esp)\n" /* "Direct3D 7" */
+        "movl $0x223d0c, 4(%esp)\n" /* "Using %s code path because the requested %s code path is una" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $2, %ecx\n"
+        ".Lfcbc3e_000cbf11:\n"
+        "movl %ecx, 4(%esp)\n" /* line 480 */
+        "movl 0x195eec0, %eax\n"
+        "movl (%eax), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x1180758\n"
+        "movl -0x114(%ebp), %eax\n" /* line 512 */
+        "movl -0x118(%ebp), %edx\n"
+        "cmpl %edx, %eax\n" /* line 154 */
+        "cmovnsl %edx, %eax\n"
+        "movl %eax, 0x1180698\n" /* line 512 */
+        "movl -0xd8(%ebp), %eax\n" /* line 513 */
+        "movl %eax, 0x118069c\n"
+        "movl -0xdc(%ebp), %eax\n" /* line 514 */
+        "movl %eax, 0x11806a0\n"
+        "movl -0xd0(%ebp), %eax\n" /* line 515 */
+        "movl %eax, 0x11806a4\n"
+        "movl -0x164(%ebp), %eax\n" /* line 516 */
+        "shrl $0x11, %eax\n"
+        "andl $1, %eax\n"
+        "movb %al, 0x11806a8\n"
+        "movl -0xcc(%ebp), %eax\n" /* line 520 */
+        "movl %eax, %ebx\n" /* line 154 */
+        "subl $6, %ebx\n"
+        "movl $6, %edx\n"
+        "cmovnsl %edx, %eax\n"
+        "movl %eax, 0x1180614\n" /* line 520 */
+        "movl -0x104(%ebp), %eax\n" /* line 521 */
+        "movl %eax, 0x1180610\n"
+        "movl -0xe8(%ebp), %edx\n" /* line 522 */
+        "movl %edx, %eax\n"
+        "shrl $8, %eax\n"
+        "andl $1, %eax\n"
+        "movb %al, 0x1180618\n"
+        "andl $0xc0, %edx\n" /* line 523 */
+        "cmpl $0xc0, %edx\n"
+        "sete 0x1180619\n"
+        "movl -0x14c(%ebp), %eax\n" /* line 524 */
+        "shrl $0x19, %eax\n"
+        "andl $1, %eax\n"
+        "movb %al, 0x118061a\n"
+        "movzwl -0x132(%ebp), %eax\n" /* line 525 */
+        "andl $1, %eax\n"
+        "movb %al, 0x118061b\n"
+        "movl -0x150(%ebp), %eax\n" /* line 526 */
+        "shrl $0xb, %eax\n"
+        "movl %eax, %edx\n"
+        "andl $1, %edx\n"
+        "movb %dl, 0x118061c\n"
+        "shrl $6, %eax\n" /* line 527 */
+        "andl $1, %eax\n"
+        "movb %al, 0x118061d\n"
+        "movl 0x195f094, %eax\n" /* line 490 */
+        "movl (%eax), %eax\n"
+        "cmpl $1, 8(%eax)\n"
+        "je .Lfcbc3e_000cc04c\n"
+        "movl 0x117d8a4, %eax\n" /* line 494 */
+        "movl (%eax), %edx\n"
+        "movl $0x41415353, 0x18(%esp)\n"
+        "movl $1, 0x14(%esp)\n"
+        "movl $0, 0x10(%esp)\n"
+        "movl $0x15, 0xc(%esp)\n"
+        "movl $1, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x28(%edx)\n"
+        "testl %eax, %eax\n"
+        "je .Lfcbc3e_000ccb78\n"
+        ".Lfcbc3e_000cc04c:\n"
+        "xorl %eax, %eax\n"
+        ".Lfcbc3e_000cc04e:\n"
+        "movb %al, 0x118061e\n" /* line 530 */
+        "movl 0x117d8ac, %edi\n" /* line 1248 */
+        "movl %edi, -0xda8(%ebp)\n"
+        "movl 0x117d8a4, %eax\n" /* line 1040 */
+        "movl (%eax), %edx\n"
+        "movl $0x16, 8(%esp)\n"
+        "movl %edi, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x18(%edx)\n"
+        "movl %eax, %edi\n"
+        "movl $0, 0x117d8b4\n" /* line 1041 */
+        "testl %eax, %eax\n" /* line 1042 */
+        "je .Lfcbc3e_000cc104\n"
+        "xorl %esi, %esi\n"
+        "xorl %ebx, %ebx\n"
+        "jmp .Lfcbc3e_000cc09d\n"
+        ".Lfcbc3e_000cc08f:\n"
+        "movl 0x117d8b4, %eax\n"
+        "movl %eax, %ebx\n"
+        "cmpl $0xff, %eax\n"
+        "ja .Lfcbc3e_000cc109\n"
+        ".Lfcbc3e_000cc09d:\n"
+        "movl 0x117d8a4, %edx\n" /* line 1044 */
+        "movl (%edx), %ecx\n"
+        "shll $4, %ebx\n"
+        "leal 0x117d8b8(%ebx), %eax\n"
+        "movl %eax, 0x10(%esp)\n"
+        "movl %esi, 0xc(%esp)\n"
+        "movl $0x16, 8(%esp)\n"
+        "movl -0xda8(%ebp), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll *0x1c(%ecx)\n"
+        "testl %eax, %eax\n" /* line 1045 */
+        "js .Lfcbc3e_000cc0fd\n"
+        "movl 0x117d8b4, %eax\n" /* line 1047 */
+        "movl %eax, %edx\n"
+        "shll $4, %edx\n"
+        "movl 0x117d8c0(%edx), %ecx\n"
+        "testl %ecx, %ecx\n"
+        "jne .Lfcbc3e_000cc0f5\n"
+        "movl $0x3c, 0x117d8c0(%edx)\n" /* line 1048 */
+        "movl 0x117d8b4, %eax\n"
+        ".Lfcbc3e_000cc0f5:\n"
+        "addl $1, %eax\n" /* line 1049 */
+        "movl %eax, 0x117d8b4\n"
+        ".Lfcbc3e_000cc0fd:\n"
+        "addl $1, %esi\n" /* line 1042 */
+        "cmpl %esi, %edi\n"
+        "jne .Lfcbc3e_000cc08f\n"
+        ".Lfcbc3e_000cc104:\n"
+        "movl 0x117d8b4, %eax\n"
+        ".Lfcbc3e_000cc109:\n"
+        "shll $4, %eax\n" /* line 1052 */
+        "addl $0x117d8b8, %eax\n"
+        "movl %eax, -0xd98(%ebp)\n"
+        "cmpl $0x117d8b8, %eax\n" /* line 2604 */
+        "je .Lfcbc3e_000cc254\n"
+        "movl %eax, %ebx\n" /* line 2606 */
+        "subl $0x117d8b8, %ebx\n"
+        "movl %ebx, %eax\n"
+        "sarl $4, %eax\n"
+        "cmpl $1, %eax\n" /* line 2253 */
+        "je .Lfcbc3e_000ccc9e\n"
+        "xorl %edx, %edx\n"
+        ".Lfcbc3e_000cc13a:\n"
+        "addl $1, %edx\n" /* line 2254 */
+        "sarl $1, %eax\n" /* line 2253 */
+        "cmpl $1, %eax\n"
+        "jne .Lfcbc3e_000cc13a\n"
+        "leal (%edx, %edx), %eax\n"
+        ".Lfcbc3e_000cc147:\n"
+        "movl $R_DisplayModeLess, 0xc(%esp)\n" /* line 2606 */
+        "movl %eax, 8(%esp)\n"
+        "movl -0xd98(%ebp), %edx\n"
+        "movl %edx, 4(%esp)\n"
+        "movl $0x117d8b8, (%esp)\n"
+        "calll ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_\n"
+        "cmpl $0x10f, %ebx\n" /* line 2233 */
+        "jle .Lfcbc3e_000ccca5\n"
+        "movl $R_DisplayModeLess, 8(%esp)\n" /* line 2235 */
+        "movl $0x117d9b8, 4(%esp)\n"
+        "movl $0x117d8b8, (%esp)\n"
+        "calll ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_\n"
+        "cmpl $0x117d9b8, -0xd98(%ebp)\n" /* line 2200 */
+        "je .Lfcbc3e_000cc254\n"
+        "movl $0x117d9b8, -0xd94(%ebp)\n"
+        "movl $0x117d9c4, %esi\n"
+        ".Lfcbc3e_000cc1b0:\n"
+        "movl -4(%esi), %edx\n" /* line 2201 */
+        "movl -8(%esi), %ecx\n"
+        "movl -0xc(%esi), %ebx\n"
+        "movl (%esi), %eax\n"
+        "movl %eax, -0x164(%ebp)\n"
+        "movl %edx, -0x168(%ebp)\n"
+        "movl %ecx, -0x16c(%ebp)\n"
+        "movl %ebx, -0x170(%ebp)\n"
+        "movl -0xd94(%ebp), %ebx\n"
+        "subl $0x10, %ebx\n"
+        "movl -0xd94(%ebp), %edi\n"
+        "jmp .Lfcbc3e_000cc1ff\n"
+        ".Lfcbc3e_000cc1e4:\n"
+        "movl (%ebx), %eax\n" /* line 2110 */
+        "movl %eax, (%edi)\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, 4(%edi)\n"
+        "movl 8(%ebx), %eax\n"
+        "movl %eax, 8(%edi)\n"
+        "movl 0xc(%ebx), %eax\n"
+        "movl %eax, 0xc(%edi)\n"
+        "movl %ebx, %edi\n" /* line 2112 */
+        "subl $0x10, %ebx\n"
+        ".Lfcbc3e_000cc1ff:\n"
+        "movl %ebx, 4(%esp)\n" /* line 2108 */
+        "leal -0x170(%ebp), %ecx\n"
+        "movl %ecx, (%esp)\n"
+        "calll R_DisplayModeLess\n"
+        "testb %al, %al\n"
+        "jne .Lfcbc3e_000cc1e4\n"
+        "movl -0x170(%ebp), %eax\n" /* line 2114 */
+        "movl %eax, (%edi)\n"
+        "movl -0x16c(%ebp), %eax\n"
+        "movl %eax, 4(%edi)\n"
+        "movl -0x168(%ebp), %eax\n"
+        "movl %eax, 8(%edi)\n"
+        "movl -0x164(%ebp), %eax\n"
+        "movl %eax, 0xc(%edi)\n"
+        "addl $0x10, -0xd94(%ebp)\n" /* line 2200 */
+        "addl $0x10, %esi\n"
+        "movl -0xd94(%ebp), %ebx\n"
+        "cmpl %ebx, -0xd98(%ebp)\n"
+        "jne .Lfcbc3e_000cc1b0\n"
+        ".Lfcbc3e_000cc254:\n"
+        "movl 0x117d8b4, %esi\n" /* line 1055 */
+        "testl %esi, %esi\n"
+        "jne .Lfcbc3e_000cc95c\n"
+        "movl $0, -0xda4(%ebp)\n"
+        "movl $0, -0xda0(%ebp)\n"
+        ".Lfcbc3e_000cc276:\n"
+        "movl $0x1e0, 8(%esp)\n" /* line 1063 */
+        "movl $0x280, 4(%esp)\n"
+        "movl $0x223da0, (%esp)\n" /* "No valid resolutions of %i x %i or above found" */
+        "calll va\n"
+        "movl %eax, %ebx\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl %ebx, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        ".Lfcbc3e_000cc2f2:\n"
+        "movl -0xda4(%ebp), %eax\n" /* line 1066 */
+        "testl %eax, %eax\n"
+        "jg .Lfcbc3e_000ccbe8\n"
+        "movl $0x117f0c0, -0xd9c(%ebp)\n"
+        "xorl %esi, %esi\n"
+        "movl $0, -0xda4(%ebp)\n"
+        ".Lfcbc3e_000cc316:\n"
+        "movl -0xda4(%ebp), %ecx\n" /* line 1073 */
+        "movl $0, 0x117e8b8(, %ecx, 4)\n"
+        "movl $0x2021, 0xc(%esp)\n" /* line 1074 */
+        "movl %esi, 8(%esp)\n"
+        "movl $0x117e8b8, 4(%esp)\n"
+        "movl $0x223dd8, (%esp)\n" /* "r_mode" */
+        "calll *0x1180728\n"
+        "movl 0x195f0a8, %edx\n"
+        "movl %eax, (%edx)\n"
+        "movl -0xda0(%ebp), %eax\n" /* line 1077 */
+        "testl %eax, %eax\n"
+        "jg .Lfcbc3e_000cccd3\n"
+        "xorl %edi, %edi\n"
+        "movl $0, -0xda0(%ebp)\n"
+        ".Lfcbc3e_000cc36a:\n"
+        "movl -0xda0(%ebp), %ebx\n" /* line 1084 */
+        "movl $0, 0x117ecbc(, %ebx, 4)\n"
+        "movl $0x2021, 0xc(%esp)\n" /* line 1085 */
+        "movl %edi, 8(%esp)\n"
+        "movl $0x117ecbc, 4(%esp)\n"
+        "movl $0x223de8, (%esp)\n" /* "r_displayRefresh" */
+        "calll *0x1180728\n"
+        "movl 0x195f024, %edx\n"
+        "movl %eax, (%edx)\n"
+        ".Lfcbc3e_000cc3a4:\n"
+        "movl 0x195f0a8, %eax\n" /* line 1495 */
+        "movl (%eax), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x11807b0\n"
+        "leal -0x28(%ebp), %edi\n" /* line 1496 */
+        "movl %edi, 0xc(%esp)\n"
+        "leal -0x2c(%ebp), %edx\n"
+        "movl %edx, 8(%esp)\n"
+        "movl $0x223dd0, 4(%esp)\n" /* "%ix%i" */
+        "movl %eax, (%esp)\n"
+        "calll sscanf\n"
+        "movl 0x195f024, %eax\n" /* line 1498 */
+        "movl (%eax), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x11807b0\n"
+        "leal -0x1c(%ebp), %ecx\n" /* line 1499 */
+        "movl %ecx, 8(%esp)\n"
+        "movl $0x223de0, 4(%esp)\n" /* "%i Hz" */
+        "movl %eax, (%esp)\n"
+        "calll sscanf\n"
+        "movl -0x1c(%ebp), %ebx\n" /* line 1500 */
+        "movl %ebx, -0xd90(%ebp)\n"
+        "movl -0x28(%ebp), %edi\n"
+        "movl %edi, -0xd8c(%ebp)\n"
+        "movl -0x2c(%ebp), %edi\n"
+        "movl 0x117d8b4, %ebx\n" /* line 1451 */
+        "subl $1, %ebx\n"
+        "jns .Lfcbc3e_000cc6c0\n"
+        "xorl %esi, %esi\n"
+        ".Lfcbc3e_000cc41f:\n"
+        "movl %ebx, %eax\n" /* line 1475 */
+        "shll $4, %eax\n"
+        "cmpl 0x117d8b8(%eax), %edi\n"
+        "je .Lfcbc3e_000cc83b\n"
+        ".Lfcbc3e_000cc430:\n"
+        "shll $4, %esi\n" /* line 1478 */
+        "movl 0x117d8c0(%esi), %esi\n"
+        "movl %esi, -0xd90(%ebp)\n"
+        "movl %esi, %ecx\n"
+        ".Lfcbc3e_000cc441:\n"
+        "movl %ecx, -0x3c(%ebp)\n" /* line 1500 */
+        "movl 0x195f028, %eax\n" /* line 1502 */
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %eax\n"
+        "movl %eax, -0x34(%ebp)\n"
+        "movl 0x195ef88, %eax\n" /* line 1503 */
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %eax\n"
+        "movl %eax, -0x30(%ebp)\n"
+        "movb $1, -0x38(%ebp)\n" /* line 1505 */
+        "movl $0, -0x40(%ebp)\n" /* line 1509 */
+        "movl 0x195f094, %eax\n" /* line 1511 */
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %eax\n"
+        "movl %eax, -0x20(%ebp)\n"
+        "calll MacDisplay_GetMainWindow\n" /* line 1374 */
+        "movl %eax, -0x40(%ebp)\n"
+        "movl $0x223dfc, 4(%esp)\n" /* line 1376 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl -0x40(%ebp), %ebx\n" /* line 1274 */
+        "movl %ebx, -0xd88(%ebp)\n"
+        "movl %ebx, %edx\n"
+        "movl -0x20(%ebp), %eax\n" /* line 212 */
+        "cmpl $1, %eax\n" /* line 213 */
+        "jle .Lfcbc3e_000cc507\n"
+        "movl %eax, %ebx\n"
+        "leal -2(%eax), %eax\n"
+        "negl %eax\n"
+        "leal -1(%eax, %ebx), %esi\n"
+        ".Lfcbc3e_000cc4b1:\n"
+        "movl %ebx, 0x11804c4\n" /* line 215 */
+        "movl 0x117d8a4, %edx\n" /* line 216 */
+        "movl (%edx), %ecx\n"
+        "leal -0x1c(%ebp), %edi\n"
+        "movl %edi, 0x18(%esp)\n"
+        "movl %ebx, 0x14(%esp)\n"
+        "xorl %eax, %eax\n"
+        "cmpb $0, -0x38(%ebp)\n"
+        "sete %al\n"
+        "movl %eax, 0x10(%esp)\n"
+        "movl $0x15, 0xc(%esp)\n"
+        "movl $1, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll *0x2c(%ecx)\n"
+        "testl %eax, %eax\n" /* line 217 */
+        "jns .Lfcbc3e_000cc8c3\n"
+        "subl $1, %ebx\n" /* line 222 */
+        "cmpl %ebx, %esi\n" /* line 213 */
+        "jne .Lfcbc3e_000cc4b1\n"
+        "movl -0x40(%ebp), %edx\n"
+        ".Lfcbc3e_000cc507:\n"
+        "movl $0, 0x11804c4\n" /* line 225 */
+        "movl $0, 0x11804c8\n" /* line 226 */
+        ".Lfcbc3e_000cc51b:\n"
+        "cld\n" /* line 246 */
+        "movl $0xe, %ecx\n"
+        "xorl %eax, %eax\n"
+        "leal -0x170(%ebp), %edi\n"
+        "rep stosl %eax, %es:(%edi)\n"
+        "movl -0x2c(%ebp), %eax\n" /* line 247 */
+        "movl %eax, -0x170(%ebp)\n"
+        "movl -0x28(%ebp), %eax\n" /* line 248 */
+        "movl %eax, -0x16c(%ebp)\n"
+        "movl $0x15, -0x168(%ebp)\n" /* line 249 */
+        "movl $1, -0x164(%ebp)\n" /* line 250 */
+        "movl 0x11804c4, %eax\n" /* line 251 */
+        "movl %eax, -0x160(%ebp)\n"
+        "movl 0x11804c8, %eax\n" /* line 252 */
+        "movl %eax, -0x15c(%ebp)\n"
+        "movl $1, -0x158(%ebp)\n" /* line 253 */
+        "movl $0, -0x14c(%ebp)\n" /* line 254 */
+        "movl $0x4b, -0x148(%ebp)\n" /* line 255 */
+        "movl 0x195f058, %eax\n" /* line 276 */
+        "movl (%eax), %eax\n"
+        "cmpb $1, 8(%eax)\n"
+        "sbbl %eax, %eax\n"
+        "andl $0x7fffffff, %eax\n"
+        "addl $1, %eax\n"
+        "movl %eax, -0x13c(%ebp)\n"
+        "movl %edx, -0x154(%ebp)\n" /* line 278 */
+        "movl $0, -0x144(%ebp)\n" /* line 279 */
+        "cmpb $0, -0x38(%ebp)\n" /* line 280 */
+        "je .Lfcbc3e_000cc714\n"
+        "movl $0, -0x150(%ebp)\n" /* line 282 */
+        "movl -0x3c(%ebp), %eax\n" /* line 283 */
+        "movl %eax, -0x140(%ebp)\n"
+        "leal -0x170(%ebp), %ecx\n" /* line 1296 */
+        "movl $0x40, %edx\n"
+        "movl -0xd88(%ebp), %eax\n"
+        "calll R_CreateDevice\n"
+        "testl %eax, %eax\n" /* line 1304 */
+        "js .Lfcbc3e_000cc746\n"
+        ".Lfcbc3e_000cc5eb:\n"
+        "movb $0, 0x11805dc\n" /* line 1313 */
+        "movl 0x195ef50, %eax\n" /* line 1258 */
+        "movl (%eax), %eax\n"
+        "cmpb $0, 8(%eax)\n"
+        "je .Lfcbc3e_000cc82c\n"
+        "xorl %eax, %eax\n"
+        ".Lfcbc3e_000cc605:\n"
+        "movl %eax, 0x11804c0\n"
+        "movl -0x2c(%ebp), %eax\n" /* line 347 */
+        "movl %eax, vidConfig\n"
+        "movl -0x28(%ebp), %eax\n" /* line 348 */
+        "movl %eax, 0x1180684\n"
+        "movl -0x3c(%ebp), %eax\n" /* line 351 */
+        "movl %eax, 0x1180688\n"
+        "movzbl -0x38(%ebp), %edx\n" /* line 352 */
+        "movzbl %dl, %eax\n"
+        "movl %eax, 0x118068c\n"
+        "movl 0x195f000, %eax\n" /* line 355 */
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %eax\n"
+        "cmpl $1, %eax\n"
+        "je .Lfcbc3e_000cc8d6\n"
+        "jle .Lfcbc3e_000cc8e5\n"
+        "cmpl $2, %eax\n"
+        "je .Lfcbc3e_000cc94d\n"
+        "cmpl $3, %eax\n"
+        "je .Lfcbc3e_000cc93e\n"
+        ".Lfcbc3e_000cc659:\n"
+        "cvtsi2ssl 0x1180684, %xmm0\n" /* line 393 */
+        "mulss 0x1180690, %xmm0\n"
+        "cvtsi2ssl vidConfig, %xmm1\n"
+        "divss %xmm1, %xmm0\n"
+        "movss %xmm0, 0x1180694\n"
+        "calll RB_InitSceneViewport\n" /* line 1321 */
+        "leal -0x40(%ebp), %edx\n" /* line 1323 */
+        "leal -0x170(%ebp), %eax\n"
+        "calll R_CreateForInitOrReset\n"
+        "testb %al, %al\n"
+        "jne .Lfcbc3e_000cc860\n"
+        "movl 0x195f094, %eax\n" /* line 1541 */
+        "movl (%eax), %edx\n"
+        "movl 8(%edx), %eax\n"
+        "cmpl $1, %eax\n"
+        "jle .Lfcbc3e_000cc77c\n"
+        ".Lfcbc3e_000cc6ab:\n"
+        "subl $1, %eax\n" /* line 1555 */
+        "movl %eax, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll *0x1180758\n"
+        "jmp .Lfcbc3e_000cc3a4\n"
+        ".Lfcbc3e_000cc6c0:\n"
+        "xorl %esi, %esi\n" /* line 1451 */
+        "jmp .Lfcbc3e_000cc6cf\n"
+        ".Lfcbc3e_000cc6c4:\n"
+        "leal -1(%ecx), %ebx\n" /* line 1470 */
+        ".Lfcbc3e_000cc6c7:\n"
+        "cmpl %esi, %ebx\n" /* line 1451 */
+        "jl .Lfcbc3e_000cc41f\n"
+        ".Lfcbc3e_000cc6cf:\n"
+        "leal (%esi, %ebx), %edx\n" /* line 1453 */
+        "movl %edx, %eax\n"
+        "shrl $0x1f, %eax\n"
+        "leal (%eax, %edx), %ecx\n"
+        "sarl $1, %ecx\n"
+        "movl %ecx, %edx\n" /* line 1455 */
+        "shll $4, %edx\n"
+        "movl 0x117d8b8(%edx), %eax\n"
+        "subl %edi, %eax\n" /* line 1456 */
+        "jne .Lfcbc3e_000cc70b\n"
+        "movl 0x117d8bc(%edx), %eax\n" /* line 1458 */
+        "subl -0xd8c(%ebp), %eax\n" /* line 1459 */
+        "jne .Lfcbc3e_000cc70b\n"
+        "movl 0x117d8c0(%edx), %eax\n" /* line 1461 */
+        "subl -0xd90(%ebp), %eax\n" /* line 1462 */
+        "je .Lfcbc3e_000cccc8\n"
+        ".Lfcbc3e_000cc70b:\n"
+        "testl %eax, %eax\n" /* line 1467 */
+        "jns .Lfcbc3e_000cc6c4\n"
+        "leal 1(%ecx), %esi\n" /* line 1468 */
+        "jmp .Lfcbc3e_000cc6c7\n"
+        ".Lfcbc3e_000cc714:\n"
+        "movl $1, -0x150(%ebp)\n" /* line 287 */
+        "movl $0, -0x140(%ebp)\n" /* line 288 */
+        "leal -0x170(%ebp), %ecx\n" /* line 1296 */
+        "movl $0x40, %edx\n"
+        "movl -0xd88(%ebp), %eax\n"
+        "calll R_CreateDevice\n"
+        "testl %eax, %eax\n" /* line 1304 */
+        "jns .Lfcbc3e_000cc5eb\n"
+        ".Lfcbc3e_000cc746:\n"
+        "movl ri, %ebx\n" /* line 1306 */
+        "movl %eax, (%esp)\n" /* line 177 */
+        "calll DXGetErrorDescription9A\n"
+        "movl %eax, 8(%esp)\n" /* line 1306 */
+        "movl $0x223e20, 4(%esp)\n" /* "Couldn't create a Direct3D device: %s
+" */
+        "movl $0, (%esp)\n"
+        "calll *%ebx\n"
+        "movl 0x195f094, %eax\n" /* line 1541 */
+        "movl (%eax), %edx\n"
+        "movl 8(%edx), %eax\n"
+        "cmpl $1, %eax\n"
+        "jg .Lfcbc3e_000cc6ab\n"
+        ".Lfcbc3e_000cc77c:\n"
+        "movl 0x195f024, %eax\n" /* line 1547 */
+        "movl (%eax), %edx\n"
+        "movl 8(%edx), %eax\n"
+        "testl %eax, %eax\n"
+        "jle .Lfcbc3e_000cc797\n"
+        "cmpl $0x3c, 0x1180688\n"
+        "jg .Lfcbc3e_000cc6ab\n"
+        ".Lfcbc3e_000cc797:\n"
+        "movl 0x195f0a8, %eax\n" /* line 1553 */
+        "movl (%eax), %edx\n"
+        "movl 8(%edx), %eax\n"
+        "testl %eax, %eax\n"
+        "jle .Lfcbc3e_000cc7c5\n"
+        "cmpl $0x280, vidConfig\n"
+        "jg .Lfcbc3e_000cc6ab\n"
+        "cmpl $0x1e0, 0x1180684\n"
+        "jg .Lfcbc3e_000cc6ab\n"
+        ".Lfcbc3e_000cc7c5:\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223e48, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        "jmp .Lfcbc3e_000cc3a4\n"
+        ".Lfcbc3e_000cc82c:\n"
+        "movl 0x195ef20, %eax\n" /* line 1258 */
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %eax\n"
+        "jmp .Lfcbc3e_000cc605\n"
+        ".Lfcbc3e_000cc83b:\n"
+        "movl -0xd8c(%ebp), %edx\n" /* line 1475 */
+        "cmpl %edx, 0x117d8bc(%eax)\n"
+        "jne .Lfcbc3e_000cc430\n"
+        "movl 0x117d8c0(%eax), %eax\n" /* line 1476 */
+        "movl %eax, -0xd90(%ebp)\n"
+        "movl %eax, %ecx\n"
+        "jmp .Lfcbc3e_000cc441\n"
+        ".Lfcbc3e_000cc860:\n"
+        "movl 0x195efa8, %eax\n" /* line 755 */
+        "movl (%eax), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x118074c\n"
+        "calll R_InitSystems\n" /* line 1349 */
+        "movl 0x11805e8, %eax\n" /* line 863 */
+        "movl $0x11805e0, %ecx\n"
+        "shll $4, %eax\n"
+        "movl -0x40(%ebp), %edx\n"
+        "movl %edx, 0xc(%eax, %ecx)\n"
+        "movl 0x11805e8, %eax\n" /* line 864 */
+        "shll $4, %eax\n"
+        "movl -0x2c(%ebp), %edx\n"
+        "movl %edx, 0x14(%eax, %ecx)\n"
+        "movl 0x11805e8, %eax\n" /* line 865 */
+        "shll $4, %eax\n"
+        "movl -0x28(%ebp), %edx\n"
+        "movl %edx, 0x18(%eax, %ecx)\n"
+        "addl $1, 0x11805e8\n" /* line 866 */
+        "calll *0x1180710\n" /* line 1433 */
+        "movl $0, 0x11805e4\n" /* line 1434 */
+        "jmp .Lfcbc3e_000cbccd\n"
+        ".Lfcbc3e_000cc8c3:\n"
+        "movl -0x1c(%ebp), %eax\n" /* line 219 */
+        "subl $1, %eax\n"
+        "movl %eax, 0x11804c8\n"
+        "movl -0x40(%ebp), %edx\n"
+        "jmp .Lfcbc3e_000cc51b\n"
+        ".Lfcbc3e_000cc8d6:\n"
+        "movl $0x3faaaaab, 0x1180690\n" /* line 368 */
+        "jmp .Lfcbc3e_000cc659\n"
+        ".Lfcbc3e_000cc8e5:\n"
+        "testl %eax, %eax\n" /* line 355 */
+        "jne .Lfcbc3e_000cc659\n"
+        "testb %dl, %dl\n" /* line 305 */
+        "jne .Lfcbc3e_000ccd7f\n"
+        ".Lfcbc3e_000cc8f5:\n"
+        "movl vidConfig, %ebx\n" /* line 324 */
+        "movl 0x1180684, %eax\n" /* line 325 */
+        ".Lfcbc3e_000cc900:\n"
+        "cvtsi2ssl %eax, %xmm0\n" /* line 428 */
+        "mulss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "cvtsi2ssl %ebx, %xmm1\n"
+        "divss %xmm1, %xmm0\n"
+        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss %xmm0, (%esp)\n"
+        "calll floorf\n"
+        "fstps -0xdac(%ebp)\n"
+        "cvttss2si -0xdac(%ebp), %eax\n"
+        "cmpl $0xa, %eax\n" /* line 360 */
+        "je .Lfcbc3e_000cc94d\n"
+        "cmpl $9, %eax\n" /* line 362 */
+        "jg .Lfcbc3e_000cc8d6\n"
+        ".Lfcbc3e_000cc93e:\n"
+        "movl $0x3fe38e39, 0x1180690\n" /* line 371 */
+        "jmp .Lfcbc3e_000cc659\n"
+        ".Lfcbc3e_000cc94d:\n"
+        "movl $0x3fcccccd, 0x1180690\n" /* line 374 */
+        "jmp .Lfcbc3e_000cc659\n"
+        ".Lfcbc3e_000cc95c:\n"
+        "movl $0, -0xd7c(%ebp)\n" /* line 1055 */
+        "movl $0, -0xda4(%ebp)\n"
+        "movl $0, -0xda0(%ebp)\n"
+        "movl $dx, -0xd80(%ebp)\n"
+        "leal -0xd70(%ebp), %eax\n"
+        "movl %eax, -0xdc0(%ebp)\n"
+        ".Lfcbc3e_000cc990:\n"
+        "movl -0xd80(%ebp), %edx\n" /* line 1057 */
+        "movl 0x1c(%edx), %ecx\n"
+        "movl 0x18(%edx), %eax\n"
+        "movl -0xda4(%ebp), %ebx\n" /* line 1009 */
+        "testl %ebx, %ebx\n"
+        "jle .Lfcbc3e_000cc9be\n"
+        "movl -0xdc0(%ebp), %edx\n" /* line 1011 */
+        "subl $8, %edx\n"
+        "movl -0xdc0(%ebp), %ebx\n"
+        "cmpl -8(%ebx), %eax\n"
+        "je .Lfcbc3e_000cca89\n"
+        ".Lfcbc3e_000cc9be:\n"
+        "cmpl $0x27f, %eax\n" /* line 1015 */
+        "jle .Lfcbc3e_000cc9e8\n"
+        "cmpl $0x1df, %ecx\n"
+        "jle .Lfcbc3e_000cc9e8\n"
+        "movl -0xdc0(%ebp), %edi\n" /* line 1018 */
+        "movl %eax, (%edi)\n"
+        "movl %ecx, 4(%edi)\n" /* line 1019 */
+        "addl $1, -0xda4(%ebp)\n" /* line 1021 */
+        "addl $8, %edi\n"
+        "movl %edi, -0xdc0(%ebp)\n"
+        ".Lfcbc3e_000cc9e8:\n"
+        "movl -0xd80(%ebp), %eax\n" /* line 1058 */
+        "movl 0x20(%eax), %esi\n"
+        "movl -0xda0(%ebp), %edx\n" /* line 988 */
+        "testl %edx, %edx\n"
+        "jle .Lfcbc3e_000cca50\n"
+        "cmpl %esi, -0x570(%ebp)\n" /* line 990 */
+        "je .Lfcbc3e_000cca1d\n"
+        "xorl %eax, %eax\n"
+        ".Lfcbc3e_000cca05:\n"
+        "addl $1, %eax\n" /* line 988 */
+        "cmpl %eax, -0xda0(%ebp)\n"
+        "je .Lfcbc3e_000cca97\n"
+        "cmpl %esi, -0x570(%ebp, %eax, 4)\n" /* line 990 */
+        "jne .Lfcbc3e_000cca05\n"
+        ".Lfcbc3e_000cca1d:\n"
+        "addl $1, -0xd7c(%ebp)\n" /* line 1055 */
+        "addl $0x10, -0xd80(%ebp)\n"
+        "movl -0xd7c(%ebp), %eax\n"
+        "cmpl %eax, 0x117d8b4\n"
+        "ja .Lfcbc3e_000cc990\n"
+        ".Lfcbc3e_000cca3d:\n"
+        "movl -0xda4(%ebp), %eax\n" /* line 1062 */
+        "testl %eax, %eax\n"
+        "jne .Lfcbc3e_000cc2f2\n"
+        "jmp .Lfcbc3e_000cc276\n"
+        ".Lfcbc3e_000cca50:\n"
+        "movl -0xda0(%ebp), %eax\n" /* line 988 */
+        "shll $2, %eax\n"
+        ".Lfcbc3e_000cca59:\n"
+        "movl %esi, -0x570(%ebp, %eax)\n" /* line 1000 */
+        "addl $1, -0xda0(%ebp)\n" /* line 1001 */
+        "addl $1, -0xd7c(%ebp)\n" /* line 1055 */
+        "addl $0x10, -0xd80(%ebp)\n"
+        "movl -0xd7c(%ebp), %eax\n"
+        "cmpl %eax, 0x117d8b4\n"
+        "ja .Lfcbc3e_000cc990\n"
+        "jmp .Lfcbc3e_000cca3d\n"
+        ".Lfcbc3e_000cca89:\n"
+        "cmpl 4(%edx), %ecx\n" /* line 1011 */
+        "jne .Lfcbc3e_000cc9be\n"
+        "jmp .Lfcbc3e_000cc9e8\n"
+        ".Lfcbc3e_000cca97:\n"
+        "movl -0xda0(%ebp), %eax\n" /* line 995 */
+        "shll $2, %eax\n"
+        "movl -0x574(%ebp, %eax), %ecx\n"
+        "cmpl %ecx, %esi\n"
+        "jge .Lfcbc3e_000cca59\n"
+        "leal -4(%eax), %edx\n"
+        "movl -0xda0(%ebp), %ebx\n"
+        "movl %ebx, %edi\n"
+        "subl $1, %edi\n"
+        "movl %edi, -0xdbc(%ebp)\n"
+        "jmp .Lfcbc3e_000ccac5\n"
+        ".Lfcbc3e_000ccac1:\n"
+        "movl %edx, %eax\n" /* line 988 */
+        "movl %edi, %edx\n"
+        ".Lfcbc3e_000ccac5:\n"
+        "movl %ecx, -0x570(%ebp, %eax)\n" /* line 997 */
+        "subl $1, %ebx\n" /* line 998 */
+        "movl -0xda0(%ebp), %eax\n" /* line 995 */
+        "subl -0xdbc(%ebp), %eax\n"
+        "subl $1, %eax\n"
+        "cmpl %ebx, %eax\n"
+        "je .Lfcbc3e_000ccdae\n"
+        "movl -0x574(%ebp, %edx), %ecx\n"
+        "leal -4(%edx), %edi\n"
+        "cmpl %ecx, %esi\n"
+        "jl .Lfcbc3e_000ccac1\n"
+        "movl %edx, %eax\n"
+        "jmp .Lfcbc3e_000cca59\n"
+        ".Lfcbc3e_000ccafb:\n"
+        "movl %ebx, (%esp)\n" /* line 177 */
+        "calll DXGetErrorDescription9A\n"
+        "movl %eax, 4(%esp)\n" /* line 415 */
+        "movl $0x223c58, (%esp)\n" /* "GetDeviceCaps failed: %s" */
+        "calll va\n"
+        "movl %eax, %ebx\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl %ebx, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        "jmp .Lfcbc3e_000cbe5a\n"
+        ".Lfcbc3e_000ccb78:\n"
+        "movl $1, %eax\n" /* line 494 */
+        "jmp .Lfcbc3e_000cc04e\n"
+        ".Lfcbc3e_000ccb82:\n"
+        "movl ri, %ebx\n" /* line 469 */
+        "movl %eax, (%esp)\n"
+        "calll *0x11807b0\n"
+        "movl $0x223cb4, %ecx\n" /* line 428 */
+        "cmpl $1, %edi\n"
+        "movl $0x223cc0, %edx\n" /* "Direct3D 7" */
+        "cmovnel %edx, %ecx\n"
+        "movl %eax, 0xc(%esp)\n" /* line 469 */
+        "movl %ecx, 8(%esp)\n"
+        "movl $0x223ccc, 4(%esp)\n" /* "Using %s code path because r_rendererPreference is set to %s" */
+        "movl $0, (%esp)\n"
+        "calll *%ebx\n"
+        "movl %edi, %ecx\n"
+        "jmp .Lfcbc3e_000cbf11\n"
+        ".Lfcbc3e_000ccbc1:\n"
+        "movl $0x223cc0, 8(%esp)\n" /* line 478 */
+        "movl $0x223d54, 4(%esp)\n" /* "Using %s code path because it is the best available path on " */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $2, %ecx\n"
+        "jmp .Lfcbc3e_000cbf11\n"
+        ".Lfcbc3e_000ccbe8:\n"
+        "xorl %edi, %edi\n" /* line 1066 */
+        "movl $0x117f0c0, -0xd9c(%ebp)\n"
+        "xorl %esi, %esi\n"
+        "movl $dx, -0xd84(%ebp)\n"
+        "xorl %ebx, %ebx\n"
+        ".Lfcbc3e_000ccc02:\n"
+        "movl -0xd9c(%ebp), %ecx\n" /* line 1068 */
+        "movl -0xd84(%ebp), %edx\n"
+        "movl %ecx, 0x1018(%edx)\n"
+        "movl -0xd6c(%ebx, %ebp), %eax\n" /* line 1069 */
+        "movl %eax, 0xc(%esp)\n"
+        "movl -0xd70(%ebx, %ebp), %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl $0x223dd0, 4(%esp)\n" /* "%ix%i" */
+        "movl %ecx, (%esp)\n"
+        "calll sprintf\n"
+        "movl -0xd9c(%ebp), %edx\n"
+        "leal 1(%edx, %eax), %eax\n"
+        "movl %eax, -0xd9c(%ebp)\n"
+        "cmpl $0x27f, -0xd70(%ebp, %esi, 8)\n" /* line 1070 */
+        "jle .Lfcbc3e_000ccc7e\n"
+        "cmpl $0x1df, -0xd6c(%ebp, %esi, 8)\n"
+        "jle .Lfcbc3e_000ccc7e\n"
+        "addl $1, %edi\n" /* line 1066 */
+        "addl $8, %ebx\n"
+        "addl $4, -0xd84(%ebp)\n"
+        "cmpl -0xda4(%ebp), %edi\n"
+        "jne .Lfcbc3e_000ccc02\n"
+        "jmp .Lfcbc3e_000cc316\n"
+        ".Lfcbc3e_000ccc7e:\n"
+        "movl %edi, %esi\n" /* line 1070 */
+        "addl $1, %edi\n" /* line 1066 */
+        "addl $8, %ebx\n"
+        "addl $4, -0xd84(%ebp)\n"
+        "cmpl -0xda4(%ebp), %edi\n"
+        "jne .Lfcbc3e_000ccc02\n"
+        "jmp .Lfcbc3e_000cc316\n"
+        ".Lfcbc3e_000ccc9e:\n"
+        "xorb %al, %al\n" /* line 2253 */
+        "jmp .Lfcbc3e_000cc147\n"
+        ".Lfcbc3e_000ccca5:\n"
+        "movl $R_DisplayModeLess, 8(%esp)\n" /* line 2240 */
+        "movl -0xd98(%ebp), %edi\n"
+        "movl %edi, 4(%esp)\n"
+        "movl $0x117d8b8, (%esp)\n"
+        "calll ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_\n"
+        "jmp .Lfcbc3e_000cc254\n"
+        ".Lfcbc3e_000cccc8:\n"
+        "movl -0xd90(%ebp), %ecx\n"
+        "jmp .Lfcbc3e_000cc441\n"
+        ".Lfcbc3e_000cccd3:\n"
+        "xorl %edi, %edi\n" /* line 1077 */
+        "xorl %ebx, %ebx\n"
+        "movl $dx, %esi\n"
+        "movl -0xd9c(%ebp), %eax\n"
+        ".Lfcbc3e_000ccce2:\n"
+        "movl %eax, 0x141c(%esi)\n" /* line 1079 */
+        "movl -0x570(%ebp, %ebx, 4), %eax\n" /* line 1080 */
+        "movl %eax, 8(%esp)\n"
+        "movl $0x223de0, 4(%esp)\n" /* "%i Hz" */
+        "movl -0xd9c(%ebp), %edx\n"
+        "movl %edx, (%esp)\n"
+        "calll sprintf\n"
+        "movl -0xd9c(%ebp), %ecx\n"
+        "leal 1(%ecx, %eax), %eax\n"
+        "movl %eax, -0xd9c(%ebp)\n"
+        "cmpl $0x3b, -0x570(%ebp, %edi, 4)\n" /* line 1081 */
+        "cmovlel %ebx, %edi\n"
+        "addl $1, %ebx\n" /* line 1077 */
+        "addl $4, %esi\n"
+        "cmpl -0xda0(%ebp), %ebx\n"
+        "jne .Lfcbc3e_000ccce2\n"
+        "jmp .Lfcbc3e_000cc36a\n"
+        ".Lfcbc3e_000ccd37:\n"
+        "movl $0x223c10, 4(%esp)\n" /* line 1230 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x20, (%esp)\n" /* line 1231 */
+        "calll Direct3DCreate9\n"
+        "movl %eax, 0x117d8a4\n"
+        "testl %eax, %eax\n" /* line 1232 */
+        "jne .Lfcbc3e_000cbe07\n"
+        "movl $0x223c34, 4(%esp)\n" /* line 1234 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "jmp .Lfcbc3e_000cc3a4\n"
+        ".Lfcbc3e_000ccd7f:\n"
+        "movl $0, (%esp)\n" /* line 318 */
+        "calll GetSystemMetrics\n"
+        "movl %eax, %ebx\n"
+        "movl $1, (%esp)\n" /* line 319 */
+        "calll GetSystemMetrics\n"
+        "testl %ebx, %ebx\n" /* line 320 */
+        "jle .Lfcbc3e_000cc8f5\n"
+        "testl %eax, %eax\n"
+        "jg .Lfcbc3e_000cc900\n"
+        "jmp .Lfcbc3e_000cc8f5\n"
+        ".Lfcbc3e_000ccdae:\n"
+        "leal (, %ebx, 4), %eax\n" /* line 995 */
+        "jmp .Lfcbc3e_000cca59\n"
+    );
+}
+
+/* line 2408 */
+__attribute__((naked))
+Bool R_RecoverLostDevice(void)
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2408 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x8c, %esp\n"
+        "movl 0x117d8a8, %eax\n" /* line 2400 */
+        "movl (%eax), %edx\n"
+        "movl %eax, (%esp)\n"
+        "calll *0xc(%edx)\n"
+        "cmpl $0x88760868, %eax\n" /* line 2418 */
+        "jne .Lfccdba_000ccde7\n"
+        "xorl %eax, %eax\n"
+        "addl $0x8c, %esp\n" /* line 2459 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lfccdba_000ccde7:\n"
+        "movl $0x223e68, 4(%esp)\n" /* line 2421 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll R_ReleaseAllModels\n" /* line 2424 */
+        "calll R_ReleaseLostImages\n" /* line 2426 */
+        "calll Material_ReleaseAll\n" /* line 2427 */
+        "movl 0x1184b9c, %eax\n" /* line 2434 */
+        "testl %eax, %eax\n"
+        "je .Lfccdba_000cce19\n"
+        "calll R_ReleaseWorld\n" /* line 2435 */
+        ".Lfccdba_000cce19:\n"
+        "movl 0x11805ec, %eax\n" /* line 2351 */
+        "movl %eax, -0x40(%ebp)\n"
+        "movl $0, -0x34(%ebp)\n" /* line 2352 */
+        "movl $0, -0x30(%ebp)\n" /* line 2353 */
+        "movl 0x11805f4, %eax\n" /* line 2354 */
+        "movl %eax, -0x2c(%ebp)\n"
+        "movl 0x11805f8, %eax\n" /* line 2355 */
+        "movl %eax, -0x28(%ebp)\n"
+        "movl 0x1180688, %eax\n" /* line 2356 */
+        "movl %eax, -0x3c(%ebp)\n"
+        "movl 0x118068c, %eax\n" /* line 2357 */
+        "testl %eax, %eax\n"
+        "setne -0x38(%ebp)\n"
+        "movl 0x195f094, %eax\n" /* line 2358 */
+        "movl (%eax), %eax\n"
+        "movl 8(%eax), %eax\n"
+        "movl %eax, -0x20(%ebp)\n"
+        "cmpl $1, %eax\n" /* line 213 */
+        "jle .Lfccdba_000ccec2\n"
+        "movl %eax, %ebx\n"
+        "leal -0x1c(%ebp), %esi\n"
+        "leal -2(%eax), %eax\n"
+        "negl %eax\n"
+        "leal -1(%eax, %ebx), %edi\n"
+        ".Lfccdba_000cce72:\n"
+        "movl %ebx, 0x11804c4\n" /* line 215 */
+        "movl 0x117d8a4, %edx\n" /* line 216 */
+        "movl (%edx), %ecx\n"
+        "movl %esi, 0x18(%esp)\n"
+        "movl %ebx, 0x14(%esp)\n"
+        "xorl %eax, %eax\n"
+        "cmpb $0, -0x38(%ebp)\n"
+        "sete %al\n"
+        "movl %eax, 0x10(%esp)\n"
+        "movl $0x15, 0xc(%esp)\n"
+        "movl $1, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl %edx, (%esp)\n"
+        "calll *0x2c(%ecx)\n"
+        "testl %eax, %eax\n" /* line 217 */
+        "jns .Lfccdba_000cd05c\n"
+        "subl $1, %ebx\n" /* line 222 */
+        "cmpl %ebx, %edi\n" /* line 213 */
+        "jne .Lfccdba_000cce72\n"
+        ".Lfccdba_000ccec2:\n"
+        "movl $0, 0x11804c4\n" /* line 225 */
+        "movl $0, 0x11804c8\n" /* line 226 */
+        ".Lfccdba_000cced6:\n"
+        "leal -0x78(%ebp), %esi\n" /* line 246 */
+        "cld\n"
+        "movl $0xe, %ecx\n"
+        "xorl %eax, %eax\n"
+        "movl %esi, %edi\n"
+        "rep stosl %eax, %es:(%edi)\n"
+        "movl -0x2c(%ebp), %eax\n" /* line 247 */
+        "movl %eax, -0x78(%ebp)\n"
+        "movl -0x28(%ebp), %eax\n" /* line 248 */
+        "movl %eax, -0x74(%ebp)\n"
+        "movl $0x15, -0x70(%ebp)\n" /* line 249 */
+        "movl $1, -0x6c(%ebp)\n" /* line 250 */
+        "movl 0x11804c4, %eax\n" /* line 251 */
+        "movl %eax, -0x68(%ebp)\n"
+        "movl 0x11804c8, %eax\n" /* line 252 */
+        "movl %eax, -0x64(%ebp)\n"
+        "movl $1, -0x60(%ebp)\n" /* line 253 */
+        "movl $0, -0x54(%ebp)\n" /* line 254 */
+        "movl $0x4b, -0x50(%ebp)\n" /* line 255 */
+        "movl 0x195f058, %eax\n" /* line 276 */
+        "movl (%eax), %eax\n"
+        "cmpb $1, 8(%eax)\n"
+        "sbbl %eax, %eax\n"
+        "andl $0x7fffffff, %eax\n"
+        "addl $1, %eax\n"
+        "movl %eax, -0x44(%ebp)\n"
+        "movl -0x40(%ebp), %eax\n" /* line 278 */
+        "movl %eax, -0x5c(%ebp)\n"
+        "movl $0, -0x4c(%ebp)\n" /* line 279 */
+        "cmpb $0, -0x38(%ebp)\n" /* line 280 */
+        "je .Lfccdba_000ccfe2\n"
+        "movl $0, -0x58(%ebp)\n" /* line 282 */
+        "movl -0x3c(%ebp), %eax\n" /* line 283 */
+        "movl %eax, -0x48(%ebp)\n"
+        ".Lfccdba_000ccf60:\n"
+        "calll R_ReleaseForShutdownOrReset\n" /* line 2362 */
+        "movl 0x117d8a8, %eax\n" /* line 2364 */
+        "movl (%eax), %edx\n"
+        "movl %esi, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll *0x40(%edx)\n"
+        "movl %eax, %ebx\n"
+        "testl %eax, %eax\n" /* line 2366 */
+        "js .Lfccdba_000cd06c\n"
+        ".Lfccdba_000ccf80:\n"
+        "movb $0, 0x11805dc\n" /* line 2368 */
+        "leal -0x40(%ebp), %edx\n" /* line 2370 */
+        "movl %esi, %eax\n"
+        "calll R_CreateForInitOrReset\n"
+        "testb %al, %al\n"
+        "je .Lfccdba_000ccff5\n"
+        ".Lfccdba_000ccf95:\n"
+        "movl 0x1184b9c, %edi\n" /* line 2441 */
+        "testl %edi, %edi\n"
+        "je .Lfccdba_000ccfa4\n"
+        "calll R_ReloadWorld\n" /* line 2442 */
+        ".Lfccdba_000ccfa4:\n"
+        "calll Material_ReloadAll\n" /* line 2449 */
+        "calll R_ReloadLostImages\n" /* line 2450 */
+        "calll R_OptimizeAllModels\n" /* line 2451 */
+        "calll RB_CalcSunSpriteSamples\n" /* line 2454 */
+        "movl %eax, 0x11804cc\n"
+        "movl $0x223f10, 4(%esp)\n" /* line 2457 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $1, %eax\n"
+        "addl $0x8c, %esp\n" /* line 2459 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        ".Lfccdba_000ccfe2:\n"
+        "movl $1, -0x58(%ebp)\n" /* line 287 */
+        "movl $0, -0x48(%ebp)\n" /* line 288 */
+        "jmp .Lfccdba_000ccf60\n"
+        ".Lfccdba_000ccff5:\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223edc, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        "jmp .Lfccdba_000ccf95\n"
+        ".Lfccdba_000cd05c:\n"
+        "movl -0x1c(%ebp), %eax\n" /* line 219 */
+        "subl $1, %eax\n"
+        "movl %eax, 0x11804c8\n"
+        "jmp .Lfccdba_000cced6\n"
+        ".Lfccdba_000cd06c:\n"
+        "movl %eax, (%esp)\n" /* line 177 */
+        "calll DXGetErrorDescription9A\n"
+        "movl %eax, 8(%esp)\n" /* line 2367 */
+        "movl %ebx, 4(%esp)\n"
+        "movl $0x223e84, (%esp)\n" /* "Couldn't reset a lost Direct3D device - IDirect3DDevice9::Re" */
+        "calll va\n"
+        "movl %eax, %ebx\n"
+        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "movl %ebx, 8(%esp)\n" /* line 128 */
+        "movl $0x2239f0, 4(%esp)\n" /* "
+%s
+" */
+        "movl $0, (%esp)\n"
+        "calll *ri\n"
+        "calll *0x1180708\n" /* line 131 */
+        "jmp .Lfccdba_000ccf80\n"
+    );
+}
+
+/* line 273 */
+__attribute__((naked))
+void ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(void) /* void std___adjust_heap<_D3DDISPLAYMODE*, int, _D3DDISPLAYMODE, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 273 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x4c, %esp\n"
+        "movl 0x20(%ebp), %eax\n"
+        "movl %eax, -0x30(%ebp)\n"
+        "movl 0x1c(%ebp), %edx\n"
+        "movl %edx, -0x34(%ebp)\n"
+        "movl 0x18(%ebp), %ecx\n"
+        "movl %ecx, -0x38(%ebp)\n"
+        "movl 0x14(%ebp), %eax\n" /* __value */
+        "movl %eax, -0x3c(%ebp)\n"
+        /* { scope 1: __value */
+        "movl 0xc(%ebp), %edx\n" /* line 276 | __holeIndex */
+        "leal 2(%edx, %edx), %esi\n" /* __secondChild */
+        "cmpl 0x10(%ebp), %esi\n" /* line 277 | __len, __secondChild */
+        "jl .Lf2bf346_002bf432\n"
+        "movl %edx, %eax\n"
+        "shll $4, %eax\n"
+        "movl 8(%ebp), %ecx\n" /* __first */
+        "leal (%eax, %ecx), %ebx\n"
+        "movl %edx, %edi\n"
+        "cmpl %esi, 0x10(%ebp)\n" /* line 286 | __secondChild, __len */
+        "je .Lf2bf346_002bf49b\n"
+        ".Lf2bf346_002bf38d:\n"
+        "movl -0x30(%ebp), %eax\n" /* line 289 */
+        "movl %eax, -0x1c(%ebp)\n"
+        "movl -0x34(%ebp), %edx\n"
+        "movl %edx, -0x20(%ebp)\n"
+        "movl -0x38(%ebp), %ecx\n"
+        "movl %ecx, -0x24(%ebp)\n"
+        "movl -0x3c(%ebp), %eax\n"
+        "movl %eax, -0x28(%ebp)\n" /* __value */
+        /* { scope 2 */
+        "leal -1(%edi), %edx\n" /* line 165 */
+        "movl %edx, %eax\n"
+        "shrl $0x1f, %eax\n"
+        "leal (%eax, %edx), %esi\n"
+        "sarl $1, %esi\n"
+        "cmpl 0xc(%ebp), %edi\n" /* line 166 | __holeIndex */
+        "jg .Lf2bf346_002bf40d\n"
+        ".Lf2bf346_002bf3b7:\n"
+        "movl -0x28(%ebp), %eax\n" /* line 173 | __value */
+        "movl %eax, (%ebx)\n"
+        "movl -0x24(%ebp), %eax\n"
+        "movl %eax, 4(%ebx)\n"
+        "movl -0x20(%ebp), %eax\n"
+        "movl %eax, 8(%ebx)\n"
+        "movl -0x1c(%ebp), %eax\n"
+        "movl %eax, 0xc(%ebx)\n"
+        /* } scope */
+        /* } scope */
+        "addl $0x4c, %esp\n" /* line 291 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: __value */
+        /* { scope 2 */
+        ".Lf2bf346_002bf3d6:\n"
+        "movl %edi, %edx\n" /* line 169 */
+        "shll $4, %edx\n"
+        "movl (%ebx), %eax\n"
+        "movl 8(%ebp), %ecx\n" /* __first */
+        "movl %eax, (%edx, %ecx)\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, 4(%edx, %ecx)\n"
+        "movl 8(%ebx), %eax\n"
+        "movl %eax, 8(%edx, %ecx)\n"
+        "movl 0xc(%ebx), %eax\n"
+        "movl %eax, 0xc(%edx, %ecx)\n"
+        "leal -1(%esi), %edx\n" /* line 171 */
+        "movl %edx, %eax\n"
+        "shrl $0x1f, %eax\n"
+        "addl %edx, %eax\n"
+        "sarl $1, %eax\n"
+        "cmpl 0xc(%ebp), %esi\n" /* line 166 | __holeIndex */
+        "jle .Lf2bf346_002bf3b7\n"
+        "movl %esi, %edi\n"
+        "movl %eax, %esi\n"
+        ".Lf2bf346_002bf40d:\n"
+        "movl %esi, %eax\n"
+        "shll $4, %eax\n"
+        "movl 8(%ebp), %ebx\n" /* __first */
+        "addl %eax, %ebx\n"
+        "leal -0x28(%ebp), %edx\n" /* __value */
+        "movl %edx, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll *0x24(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "jne .Lf2bf346_002bf3d6\n"
+        "shll $4, %edi\n"
+        "movl 8(%ebp), %ebx\n" /* __first */
+        "addl %edi, %ebx\n"
+        "jmp .Lf2bf346_002bf3b7\n"
+        /* } scope */
+        ".Lf2bf346_002bf432:\n"
+        "movl %edx, -0x2c(%ebp)\n" /* line 277 */
+        "movl %esi, %edi\n" /* __secondChild */
+        "jmp .Lf2bf346_002bf43e\n"
+        ".Lf2bf346_002bf439:\n"
+        "movl %edi, -0x2c(%ebp)\n"
+        "movl %esi, %edi\n" /* __secondChild */
+        ".Lf2bf346_002bf43e:\n"
+        "movl %esi, %eax\n" /* line 279 | __secondChild */
+        "shll $4, %eax\n"
+        "movl 8(%ebp), %ebx\n" /* __first */
+        "addl %eax, %ebx\n"
+        "leal -0x10(%ebx), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl %ebx, (%esp)\n"
+        "calll *0x24(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "je .Lf2bf346_002bf466\n"
+        "leal -1(%esi), %edi\n" /* line 281 | __secondChild */
+        "movl %edi, %eax\n"
+        "shll $4, %eax\n"
+        "movl 8(%ebp), %ebx\n" /* __first */
+        "addl %eax, %ebx\n"
+        ".Lf2bf346_002bf466:\n"
+        "movl -0x2c(%ebp), %edx\n" /* line 282 */
+        "shll $4, %edx\n"
+        "movl (%ebx), %eax\n"
+        "movl 8(%ebp), %ecx\n" /* __first */
+        "movl %eax, (%edx, %ecx)\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, 4(%edx, %ecx)\n"
+        "movl 8(%ebx), %eax\n"
+        "movl %eax, 8(%edx, %ecx)\n"
+        "movl 0xc(%ebx), %eax\n"
+        "movl %eax, 0xc(%edx, %ecx)\n"
+        "leal 2(%edi, %edi), %esi\n" /* line 284 | __secondChild */
+        "cmpl %esi, 0x10(%ebp)\n" /* line 277 | __secondChild, __len */
+        "jg .Lf2bf346_002bf439\n"
+        "cmpl %esi, 0x10(%ebp)\n" /* line 286 | __secondChild, __len */
+        "jne .Lf2bf346_002bf38d\n"
+        ".Lf2bf346_002bf49b:\n"
+        "movl 0x10(%ebp), %eax\n" /* line 288 | __len */
+        "shll $4, %eax\n"
+        "addl 8(%ebp), %eax\n" /* __first */
+        "leal -0x10(%eax), %edx\n"
+        "movl -0x10(%eax), %eax\n"
+        "movl %eax, (%ebx)\n"
+        "movl 4(%edx), %eax\n"
+        "movl %eax, 4(%ebx)\n"
+        "movl 8(%edx), %eax\n"
+        "movl %eax, 8(%ebx)\n"
+        "movl 0xc(%edx), %eax\n"
+        "movl %eax, 0xc(%ebx)\n"
+        "movl 0x10(%ebp), %edi\n" /* line 289 | __len */
+        "subl $1, %edi\n"
+        "movl %edi, %eax\n"
+        "shll $4, %eax\n"
+        "movl 8(%ebp), %ebx\n" /* __first */
+        "addl %eax, %ebx\n"
+        "jmp .Lf2bf346_002bf38d\n"
+    );
+}
+
+/* line 2152 */
+__attribute__((naked))
+void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(void) /* void std___insertion_sort<_D3DDISPLAYMODE*, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+{
+    __asm__ __volatile__ (
+        "pushl %ebp\n" /* line 2152 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x4c, %esp\n"
+        "movl 0xc(%ebp), %eax\n" /* line 2154 | __last */
+        "cmpl %eax, 8(%ebp)\n" /* __first */
+        "je .Lf2bf4d4_002bf583\n"
+        /* { scope 1: __val */
+        "movl 8(%ebp), %edi\n" /* line 2156 | __first, __i */
+        "addl $0x10, %edi\n" /* __i */
+        "cmpl %edi, %eax\n" /* __i */
+        "je .Lf2bf4d4_002bf583\n"
+        /* { scope 2: __val */
+        ".Lf2bf4d4_002bf4f7:\n"
+        "movl (%edi), %eax\n" /* line 2159 | __i */
+        "movl %eax, -0x28(%ebp)\n" /* __val */
+        "movl 4(%edi), %eax\n" /* __i */
+        "movl %eax, -0x24(%ebp)\n"
+        "movl 8(%edi), %eax\n" /* __i */
+        "movl %eax, -0x20(%ebp)\n"
+        "movl 0xc(%edi), %eax\n" /* __i */
+        "movl %eax, -0x1c(%ebp)\n"
+        "movl 8(%ebp), %edx\n" /* line 2160 | __first */
+        "movl %edx, 4(%esp)\n"
+        "leal -0x28(%ebp), %eax\n" /* __val */
+        "movl %eax, (%esp)\n"
+        "calll *0x10(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "je .Lf2bf4d4_002bf58b\n"
+        "leal 0x10(%edi), %edx\n" /* line 2162 | __i */
+        "movl %edx, -0x3c(%ebp)\n"
+        /* { scope 3 */
+        "movl %edi, %esi\n" /* line 411 */
+        "subl 8(%ebp), %esi\n" /* __first */
+        "sarl $4, %esi\n"
+        "testl %esi, %esi\n"
+        "jle .Lf2bf4d4_002bf55d\n"
+        "movl %edi, %ecx\n"
+        "xorl %ebx, %ebx\n"
+        ".Lf2bf4d4_002bf538:\n"
+        "movl -0x10(%ecx), %eax\n" /* line 412 */
+        "movl %eax, -0x10(%edx)\n"
+        "movl -0xc(%ecx), %eax\n"
+        "movl %eax, -0xc(%edx)\n"
+        "movl -8(%ecx), %eax\n"
+        "movl %eax, -8(%edx)\n"
+        "movl -4(%ecx), %eax\n"
+        "movl %eax, -4(%edx)\n"
+        "addl $1, %ebx\n"
+        "subl $0x10, %ecx\n"
+        "subl $0x10, %edx\n"
+        "cmpl %esi, %ebx\n" /* line 411 */
+        "jne .Lf2bf4d4_002bf538\n"
+        /* } scope */
+        ".Lf2bf4d4_002bf55d:\n"
+        "movl -0x28(%ebp), %eax\n" /* line 2163 | __val */
+        "movl 8(%ebp), %edx\n" /* __first */
+        "movl %eax, (%edx)\n"
+        "movl -0x24(%ebp), %eax\n"
+        "movl %eax, 4(%edx)\n"
+        "movl -0x20(%ebp), %eax\n"
+        "movl %eax, 8(%edx)\n"
+        "movl -0x1c(%ebp), %eax\n"
+        "movl %eax, 0xc(%edx)\n"
+        "movl -0x3c(%ebp), %edi\n" /* __i */
+        /* } scope */
+        ".Lf2bf4d4_002bf57a:\n"
+        "cmpl %edi, 0xc(%ebp)\n" /* line 2156 | __i, __last */
+        "jne .Lf2bf4d4_002bf4f7\n"
+        /* } scope */
+        ".Lf2bf4d4_002bf583:\n"
+        "addl $0x4c, %esp\n" /* line 2166 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: __val */
+        /* { scope 2: __val */
+        ".Lf2bf4d4_002bf58b:\n"
+        "movl -0x1c(%ebp), %eax\n"
+        "movl %eax, -0x2c(%ebp)\n"
+        "movl -0x20(%ebp), %eax\n"
+        "movl %eax, -0x30(%ebp)\n"
+        "movl -0x24(%ebp), %eax\n"
+        "movl %eax, -0x34(%ebp)\n"
+        "movl -0x28(%ebp), %eax\n" /* __val */
+        "movl %eax, -0x38(%ebp)\n" /* __val */
+        /* { scope 3 */
+        "leal -0x10(%edi), %ebx\n" /* line 2107 */
+        "movl %edi, %esi\n"
+        "jmp .Lf2bf4d4_002bf5c5\n"
+        ".Lf2bf4d4_002bf5aa:\n"
+        "movl (%ebx), %eax\n" /* line 2110 */
+        "movl %eax, (%esi)\n"
+        "movl 4(%ebx), %eax\n"
+        "movl %eax, 4(%esi)\n"
+        "movl 8(%ebx), %eax\n"
+        "movl %eax, 8(%esi)\n"
+        "movl 0xc(%ebx), %eax\n"
+        "movl %eax, 0xc(%esi)\n"
+        "movl %ebx, %esi\n" /* line 2112 */
+        "subl $0x10, %ebx\n"
+        ".Lf2bf4d4_002bf5c5:\n"
+        "movl %ebx, 4(%esp)\n" /* line 2108 */
+        "leal -0x38(%ebp), %eax\n" /* __val */
+        "movl %eax, (%esp)\n"
+        "calll *0x10(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "jne .Lf2bf4d4_002bf5aa\n"
+        "movl -0x38(%ebp), %eax\n" /* line 2114 | __val */
+        "movl %eax, (%esi)\n"
+        "movl -0x34(%ebp), %eax\n"
+        "movl %eax, 4(%esi)\n"
+        "movl -0x30(%ebp), %eax\n"
+        "movl %eax, 8(%esi)\n"
+        "movl -0x2c(%ebp), %eax\n"
+        "movl %eax, 0xc(%esi)\n"
+        "addl $0x10, %edi\n"
+        "jmp .Lf2bf4d4_002bf57a\n"
+    );
+}
+
+/* line 2514 */
+__attribute__((naked))
+void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void) /* void std___introsort_loop<_D3DDISPLAYMODE*, int, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
+{
+    __asm__ __volatile__ (
+        ".Lf2bf5f2_002bf5f2:\n"
+        "pushl %ebp\n" /* line 2514 */
+        "movl %esp, %ebp\n"
+        "pushl %edi\n"
+        "pushl %esi\n"
+        "pushl %ebx\n"
+        "subl $0x9c, %esp\n"
+        /* { scope 1: __pivot */
+        "movl 0xc(%ebp), %eax\n" /* line 2519 | __last */
+        "subl 8(%ebp), %eax\n" /* __first */
+        "cmpl $0x10f, %eax\n"
+        "jle .Lf2bf5f2_002bf761\n"
+        /* { scope 2 */
+        "movl 0x10(%ebp), %edx\n" /* line 2521 | __depth_limit */
+        "testl %edx, %edx\n"
+        "jne .Lf2bf5f2_002bf76c\n"
+        /* { scope 3 */
+        /* { scope 4 */
+        ".Lf2bf5f2_002bf61a:\n"
+        "cmpl $0x1f, %eax\n" /* line 397 */
+        "jle .Lf2bf5f2_002bf761\n"
+        "sarl $4, %eax\n" /* line 400 */
+        "movl %eax, -0x6c(%ebp)\n"
+        "subl $2, %eax\n" /* line 2514 */
+        "movl %eax, %edx\n"
+        "shrl $0x1f, %edx\n"
+        "addl %eax, %edx\n"
+        "sarl $1, %edx\n"
+        "movl %edx, -0x7c(%ebp)\n"
+        "movl %edx, %eax\n"
+        "shll $4, %eax\n"
+        "movl 8(%ebp), %esi\n" /* __first */
+        "addl %eax, %esi\n"
+        "movl $0, -0x54(%ebp)\n"
+        "jmp .Lf2bf5f2_002bf64f\n"
+        ".Lf2bf5f2_002bf64b:\n"
+        "addl $1, -0x54(%ebp)\n" /* line 406 */
+        ".Lf2bf5f2_002bf64f:\n"
+        "movl (%esi), %ebx\n" /* line 404 */
+        "movl %ebx, -0x38(%ebp)\n"
+        "movl 4(%esi), %ecx\n"
+        "movl %ecx, -0x34(%ebp)\n"
+        "movl 8(%esi), %edx\n"
+        "movl %edx, -0x30(%ebp)\n"
+        "movl 0xc(%esi), %eax\n"
+        "movl %eax, -0x2c(%ebp)\n"
+        "movl 0x14(%ebp), %edi\n" /* __comp */
+        "movl %edi, 0x1c(%esp)\n"
+        "movl %ebx, 0xc(%esp)\n"
+        "movl %ecx, 0x10(%esp)\n"
+        "movl %edx, 0x14(%esp)\n"
+        "movl %eax, 0x18(%esp)\n"
+        "movl -0x6c(%ebp), %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl -0x7c(%ebp), %eax\n"
+        "subl -0x54(%ebp), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 8(%ebp), %edx\n" /* __first */
+        "movl %edx, (%esp)\n"
+        "calll ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_\n"
+        "subl $0x10, %esi\n"
+        "movl -0x7c(%ebp), %edi\n" /* line 406 */
+        "cmpl %edi, -0x54(%ebp)\n"
+        "jne .Lf2bf5f2_002bf64b\n"
+        /* } scope */
+        /* } scope */
+        "movl 0xc(%ebp), %esi\n" /* line 2521 | __last */
+        "movl %esi, -0x60(%ebp)\n"
+        "movl %esi, %edi\n"
+        "subl $4, %edi\n"
+        "movl %esi, %eax\n" /* line 2514 */
+        "subl 8(%ebp), %eax\n" /* __first */
+        "movl %eax, -0x58(%ebp)\n"
+        "subl $0x10, %eax\n"
+        "movl %eax, -0x5c(%ebp)\n"
+        ".Lf2bf5f2_002bf6bd:\n"
+        "movl (%edi), %eax\n" /* line 330 */
+        "movl %eax, -0x68(%ebp)\n"
+        "movl -4(%edi), %ebx\n"
+        "movl -8(%edi), %ecx\n"
+        "movl -0xc(%edi), %edx\n"
+        /* { scope 3 */
+        /* { scope 4 */
+        "movl 8(%ebp), %esi\n" /* line 301 | __first */
+        "movl (%esi), %eax\n"
+        "movl -0x60(%ebp), %esi\n"
+        "movl %eax, -0x10(%esi)\n"
+        "movl 8(%ebp), %esi\n" /* __first */
+        "movl 4(%esi), %eax\n"
+        "movl -0x60(%ebp), %esi\n"
+        "movl %eax, -0xc(%esi)\n"
+        "movl 8(%ebp), %esi\n" /* __first */
+        "movl 8(%esi), %eax\n"
+        "movl -0x60(%ebp), %esi\n"
+        "movl %eax, -8(%esi)\n"
+        "movl 8(%ebp), %esi\n" /* __first */
+        "movl 0xc(%esi), %eax\n"
+        "movl -0x60(%ebp), %esi\n"
+        "movl %eax, -4(%esi)\n"
+        "movl -0x68(%ebp), %eax\n" /* line 302 */
+        "movl %eax, -0x1c(%ebp)\n"
+        "movl %ebx, -0x20(%ebp)\n"
+        "movl %ecx, -0x24(%ebp)\n"
+        "movl %edx, -0x28(%ebp)\n"
+        "movl 0x14(%ebp), %esi\n" /* __comp */
+        "movl %esi, 0x1c(%esp)\n"
+        "movl %edx, 0xc(%esp)\n"
+        "movl %ecx, 0x10(%esp)\n"
+        "movl %ebx, 0x14(%esp)\n"
+        "movl %eax, 0x18(%esp)\n"
+        "movl -0x5c(%ebp), %eax\n"
+        "sarl $4, %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl $0, 4(%esp)\n"
+        "movl 8(%ebp), %eax\n" /* __first */
+        "movl %eax, (%esp)\n"
+        "calll ZSt13__adjust_heapIP15_D3DDISPLAYMODEiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_\n"
+        "subl $0x10, -0x60(%ebp)\n"
+        "subl $0x10, %edi\n"
+        "subl $0x10, -0x5c(%ebp)\n"
+        /* } scope */
+        /* } scope */
+        "movl 8(%ebp), %eax\n" /* line 457 | __first */
+        "subl 0xc(%ebp), %eax\n" /* __last */
+        "addl -0x58(%ebp), %eax\n"
+        "movl -0x5c(%ebp), %edx\n"
+        "leal 0x10(%eax, %edx), %eax\n"
+        "cmpl $0x1f, %eax\n"
+        "jg .Lf2bf5f2_002bf6bd\n"
+        /* } scope */
+        /* } scope */
+        ".Lf2bf5f2_002bf761:\n"
+        "addl $0x9c, %esp\n" /* line 2538 */
+        "popl %ebx\n"
+        "popl %esi\n"
+        "popl %edi\n"
+        "popl %ebp\n"
+        "retl\n"
+        /* { scope 1: __pivot */
+        ".Lf2bf5f2_002bf76c:\n"
+        "movl 0x10(%ebp), %esi\n" /* line 457 | __depth_limit */
+        "movl %esi, -0x4c(%ebp)\n"
+        "movl $0, -0x50(%ebp)\n"
+        "movl 0xc(%ebp), %edi\n" /* __last */
+        ".Lf2bf5f2_002bf77c:\n"
+        "subl $1, -0x4c(%ebp)\n" /* line 2526 */
+        "movl 8(%ebp), %esi\n" /* __first */
+        "sarl $4, %eax\n"
+        "movl %eax, %edx\n"
+        "shrl $0x1f, %edx\n"
+        "addl %eax, %edx\n"
+        "sarl $1, %edx\n"
+        "shll $4, %edx\n"
+        "movl %esi, %ebx\n"
+        "addl %edx, %ebx\n"
+        "subl $0x10, %edi\n"
+        /* { scope 2 */
+        "movl %ebx, 4(%esp)\n" /* line 124 */
+        "movl %esi, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "je .Lf2bf5f2_002bf8b3\n"
+        "movl %edi, 4(%esp)\n" /* line 125 */
+        "movl %ebx, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "je .Lf2bf5f2_002bf850\n"
+        ".Lf2bf5f2_002bf7bd:\n"
+        "movl %ebx, %esi\n" /* line 133 */
+        ".Lf2bf5f2_002bf7bf:\n"
+        "movl 8(%esi), %edx\n" /* line 2536 | __b */
+        "movl 4(%esi), %ecx\n" /* __b */
+        "movl (%esi), %ebx\n" /* __b */
+        "movl 0xc(%esi), %eax\n" /* __b */
+        "movl %eax, -0x3c(%ebp)\n"
+        "movl %edx, -0x40(%ebp)\n"
+        "movl %ecx, -0x44(%ebp)\n"
+        "movl %ebx, -0x48(%ebp)\n" /* __pivot */
+        "movl 8(%ebp), %esi\n" /* __first, __b */
+        "movl 0xc(%ebp), %edi\n" /* __last */
+        /* } scope */
+        /* { scope 2 */
+        ".Lf2bf5f2_002bf7dc:\n"
+        "leal -0x48(%ebp), %edx\n" /* line 2056 | __pivot */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "jne .Lf2bf5f2_002bf84b\n"
+        ".Lf2bf5f2_002bf7ed:\n"
+        "subl $0x10, %edi\n" /* line 2060 */
+        "movl %edi, 4(%esp)\n" /* line 2059 */
+        "leal -0x48(%ebp), %eax\n" /* __pivot */
+        "movl %eax, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "jne .Lf2bf5f2_002bf7ed\n"
+        "cmpl %edi, %esi\n" /* line 2061 */
+        "jae .Lf2bf5f2_002bf86c\n"
+        /* } scope */
+        /* } scope */
+        "movl 0xc(%esi), %edx\n" /* line 97 */
+        "movl 8(%esi), %ecx\n"
+        "movl 4(%esi), %ebx\n"
+        "movl (%esi), %eax\n"
+        "movl %eax, -0x64(%ebp)\n"
+        /* { scope 1: __pivot */
+        /* { scope 2 */
+        /* { scope 3 */
+        "movl (%edi), %eax\n" /* line 98 */
+        "movl %eax, (%esi)\n"
+        "movl 4(%edi), %eax\n"
+        "movl %eax, 4(%esi)\n"
+        "movl 8(%edi), %eax\n"
+        "movl %eax, 8(%esi)\n"
+        "movl 0xc(%edi), %eax\n"
+        "movl %eax, 0xc(%esi)\n"
+        "movl %edx, 0xc(%edi)\n" /* line 99 */
+        "movl %ecx, 8(%edi)\n"
+        "movl %ebx, 4(%edi)\n"
+        "movl -0x64(%ebp), %edx\n"
+        "movl %edx, (%edi)\n"
+        /* } scope */
+        "addl $0x10, %esi\n" /* line 2064 */
+        "leal -0x48(%ebp), %edx\n" /* line 2056 | __pivot */
+        "movl %edx, 4(%esp)\n"
+        "movl %esi, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "je .Lf2bf5f2_002bf7ed\n"
+        ".Lf2bf5f2_002bf84b:\n"
+        "addl $0x10, %esi\n" /* line 2057 */
+        "jmp .Lf2bf5f2_002bf7dc\n"
+        /* } scope */
+        /* { scope 2 */
+        ".Lf2bf5f2_002bf850:\n"
+        "movl %edi, 4(%esp)\n" /* line 127 */
+        "movl 8(%ebp), %edx\n" /* __first */
+        "movl %edx, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "je .Lf2bf5f2_002bf7bf\n"
+        "movl %edi, %esi\n" /* line 133 */
+        "jmp .Lf2bf5f2_002bf7bf\n"
+        /* } scope */
+        ".Lf2bf5f2_002bf86c:\n"
+        "movl 0x14(%ebp), %edx\n" /* line 2537 | __comp */
+        "movl %edx, 0xc(%esp)\n"
+        "movl -0x4c(%ebp), %edi\n"
+        "movl %edi, 8(%esp)\n"
+        "movl 0xc(%ebp), %eax\n" /* __last */
+        "movl %eax, 4(%esp)\n"
+        "movl %esi, (%esp)\n" /* __b */
+        "calll ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_\n"
+        /* } scope */
+        "movl %esi, %eax\n" /* line 2519 */
+        "subl 8(%ebp), %eax\n" /* __first */
+        "cmpl $0x10f, %eax\n"
+        "jle .Lf2bf5f2_002bf761\n"
+        "addl $1, -0x50(%ebp)\n"
+        "movl %esi, 0xc(%ebp)\n" /* __last */
+        /* { scope 1: __pivot */
+        "movl 0x10(%ebp), %edx\n" /* line 2521 | __depth_limit */
+        "cmpl %edx, -0x50(%ebp)\n"
+        "je .Lf2bf5f2_002bf61a\n"
+        "movl %esi, %edi\n"
+        "jmp .Lf2bf5f2_002bf77c\n"
+        /* { scope 2 */
+        ".Lf2bf5f2_002bf8b3:\n"
+        "movl %edi, 4(%esp)\n" /* line 131 */
+        "movl 8(%ebp), %eax\n" /* __first */
+        "movl %eax, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "jne .Lf2bf5f2_002bf7bf\n"
+        "movl %edi, 4(%esp)\n" /* line 133 */
+        "movl %ebx, (%esp)\n"
+        "calll *0x14(%ebp)\n" /* __comp */
+        "testb %al, %al\n"
+        "je .Lf2bf5f2_002bf7bd\n"
+        "movl %edi, %esi\n"
+        "jmp .Lf2bf5f2_002bf7bf\n"
+    );
+}
+
