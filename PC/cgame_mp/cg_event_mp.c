@@ -1,1823 +1,1839 @@
-/* ASM dump from: cg_event_mp.cpp */
+/* Converted to C from ASM: cg_event_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/cgame_mp/cg_event_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
 
-/* Original includes (from N_BINCL debug info):
- *   #include "PC/universal/com_vector.h"
+/*
+ * NOTE: The binary uses different struct sizes than common_types.h:
+ *   - entityState_t is 0xf0 (240) bytes in binary vs 0xec (236) in C
+ *   - centity_s is 0x224 (548) bytes in binary vs 0x220 (544) in C
+ * Therefore all struct accesses use byte-offset pointer arithmetic
+ * with the actual binary offsets.
  */
 
+/* External globals (pointers-to-pointers, accessed via absolute addresses in binary) */
+extern char **cg_glob;            /* 0x195f584 -- pointer to cg_t base */
+extern char **cgs_glob;           /* 0x195f5c4 -- pointer to cgs_t base */
+extern char **cg_weaponDefs;      /* 0x195f5c8 -- pointer to weapon defs base */
+extern char **cg_entities_glob;   /* 0x195f5cc -- pointer to centity array base */
+extern char **cg_itemDefs;        /* 0x195f5d0 -- pointer to item defs base */
+extern char **cg_dvar_debug;      /* 0x195f964 -- debug event dvar */
+extern char **cg_dvar_footsteps;  /* 0x195f960 -- footstep dvar */
+extern char **cg_eventNames;      /* 0x195f95c -- event name strings array */
+extern char **cg_uiglob;          /* 0x195ecb4 -- pointer to UI globals base */
+extern char **cg_dvar_shellshock_min; /* 0x195ee10 -- shellshock min dvar */
+extern char **cg_dvar_shellshock_max; /* 0x195ede4 -- shellshock max dvar */
+extern int  **cg_itemCount;       /* 0x195edac -- max item count */
+extern char **cg_itemInfo;        /* 0x195eda8 -- item info base */
+extern char **cg_dvar1;           /* 0x195f788 */
+extern char **cg_dvar2;           /* 0x195f78c */
+
+/* External function declarations */
+extern void Com_Printf(const char *msg, ...);
+extern void Com_DPrintf(const char *msg, ...);
+extern void Com_Error(int level, const char *msg, ...);
+extern void *BG_GetWeaponDef(int weapon);
+extern int BG_WeaponIsClipOnly(int weapon);
+extern void CG_PlayEntitySoundAlias(int entNum, int alias);
+extern void CG_PlaySoundAlias(int entNum, void *origin, int alias);
+extern void CG_PlaySoundAliasByName(int entNum, void *origin, const char *name);
+extern void CG_PlaySoundAliasAsMasterByName(int entNum, void *origin, const char *name);
+extern void CG_FireWeapon(centity_t *cent, int weaponId, int hand);
+extern void CG_EjectWeaponBrass(entityState_t *es, int weaponId);
+extern void CG_PrepOffHand(entityState_t *es, int weaponId, int eventParm);
+extern void CG_UseOffHand(centity_t *cent, int weaponId, int eventParm);
+extern void CG_SetEquippedOffHand(int weaponId);
+extern void CG_SelectWeaponIndex(int weaponId);
+extern void CG_OutOfAmmoChange(void);
+extern void CG_SwitchOffHandCmd(void);
+extern void CG_MenuShowNotify(int val);
+extern void CG_StartShakeCamera(float intensity, void *origin, int radius, float duration);
+extern void CG_BulletHitEvent(int otherEntNum, void *position, void *dir, void *reflect, int surfType, int event);
+extern void CG_BulletHitClientEvent(int otherEntNum, void *position, int surfType, int event);
+extern void CG_CompassAddWeaponPingInfo(void *ent, void *position, int duration);
+extern void CG_PriorityCenterPrint(const char *msg, float scale, int priority);
+extern void CL_DeathMessagePrint(const char *attackerName, float *attackerColor, const char *targetName, float *victimColor, const char *iconShader, float iconWidth, float iconHeight, float *iconColor, int iconHorzFlip);
+extern void CG_DrawScoreboard_GetTeamColor(int team, float *color);
+extern void CL_SetADS(int val);
+extern void CG_CalcEntityLerpPositions(centity_t *cent);
+extern void CG_CheckOpenWaitingScriptMenu(void);
+extern void ByteToDir(int dirByte, float *dir);
+extern void AngleVectors(float *angles, float *forward, void *right, float *up);
+extern void FX_PlayEffect(int effectId, void *origin, float *dir);
+extern void FX_PlayEntityEffect(int effectId, void *origin, int boneIndex, int *entityInfo);
+extern void FX_WarpTime(int time);
+extern int FX_GetBoneIndex(int entNum, int tagName);
+extern const char *CL_GetConfigString(int index);
+extern unsigned short SL_GetString(const char *str, int a2);
+extern void Scr_SetString(unsigned short *str, int a2);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern void I_strncat(char *dest, int maxlen, const char *src);
+extern const char *va(const char *fmt, ...);
+
+/* entityState_s field offsets (0xf0-byte struct in binary) */
+#define ES_NUMBER       0x00
+#define ES_ETYPE        0x04
+#define ES_EFLAGS       0x08
+#define ES_APOS_BASE    0x3c  /* apos.trBase (vec3_t) */
+#define ES_TIME         0x54
+#define ES_ORIGIN2      0x5c
+#define ES_ANGLES2      0x68
+#define ES_OTHERENTNUM  0x74
+#define ES_ATTACKERENTNUM 0x78
+#define ES_SURFTYPE     0x88
+#define ES_INDEX        0x8c
+#define ES_CLIENTNUM    0x90
+#define ES_EVENTPARM    0xa0
+#define ES_EVENTSEQ     0xa4
+#define ES_WEAPON       0xc8
+#define ES_LEANF        0xd4
+#define ES_DMGFLAGS     0xd8
+
+/* centity_s field offsets */
+#define CENT_NEXTSTATE  0xf0
+#define CENT_EVPARM     0x190  /* nextState.eventParm (for CG_CheckEvents) */
+#define CENT_EVSEQ      0x194  /* nextState.eventSequence */
+#define CENT_EVENTS     0x198  /* nextState.events[4] */
+#define CENT_EVPARMS    0x1a8  /* nextState.eventParms[4] */
+#define CENT_NEXTVALID  0x1e0
+#define CENT_PREVEVSEQ  0x1e4
+#define CENT_MISCTIME   0x1e8
+#define CENT_LERPORIGIN 0x1ec  /* position */
+#define CENT_ETYPE      0xf4   /* nextState.eType */
+
+/* cg_t field offsets */
+#define CG_SNAP         0x24
+#define CG_LOCALCLIENT  0x04
+#define CG_FIELD_8      0x08
+#define CG_CLIENTNUM    0x25c90
+#define CG_TIME         0x25bb0
+#define CG_SHELLSHOCK_VIEWANGLE 0x284d0
+#define CG_SHELLSHOCK_TILT   0x284d8
+#define CG_SHELLSHOCK_TIME   0x284dc
+#define CG_VEHFLAG      0x2bee8
+#define CG_DEATHFADE     0x2cd14
+#define CG_KILLCAM_NAME  0x2b54c
+#define CG_OFFHAND       0x2be70
+#define CG_OFFHAND2      0x2be50
+#define CG_CLIENTINFO    0xe0900
+
+/* snapshot field offsets */
+#define SNAP_FLAGS      0x18
+#define SNAP_PS_CLIENTNUM 0xd8
+#define SNAP_PS_WEAPON    0x5a0
+
+/* cgs_t field offsets */
+/* Sound alias table: various arrays at offsets in cgs_t */
+#define CGS_SND_FOOTSTEP1_FIRST       0xbeb8   /* first person footsteps set 1 */
+#define CGS_SND_FOOTSTEP1_THIRD       0xbf14   /* third person footsteps set 1 */
+#define CGS_SND_FOOTSTEP2_THIRD       0xbf70   /* third person footsteps set 2 */
+#define CGS_SND_FOOTSTEP2_FIRST       0xbfcc   /* first person footsteps set 2 */
+#define CGS_SND_FOOTSTEP3_FIRST       0xc028   /* first person footsteps set 3 */
+#define CGS_SND_FOOTSTEP3_THIRD       0xc084   /* third person footsteps set 3 */
+#define CGS_SND_SPRINT_FIRST          0xc0e0   /* first person sprint */
+#define CGS_SND_SPRINT_THIRD          0xc13c   /* third person sprint */
+#define CGS_SND_PRONE_LOOP_3P         0xc198   /* third person prone loop */
+#define CGS_SND_PRONE_LOOP_1P_NONVIEW 0xc19c   /* first person prone loop (non-viewer) */
+#define CGS_SND_PRONE_LOOP_1P_VIEW    0xc1a0   /* first person prone loop (viewer) */
+#define CGS_SND_PRONE_STOP_1P         0xc1a4   /* first person prone stop */
+#define CGS_SND_WEAPON_PICKUP         0xc1a8   /* weapon pickup */
+#define CGS_SND_NIGHTVISION_ON        0xc1b8   /* nightvision on */
+#define CGS_SND_NIGHTVISION_OFF       0xc1bc   /* nightvision off */
+#define CGS_SND_NOAMMO                0xbc84   /* no ammo click */
+#define CGS_SND_MELEE_HIT             0xbc88   /* melee hit */
+#define CGS_SND_BULLET_WHIZBY         0xbc90   /* bullet whizby sounds (array) */
+#define CGS_SND_BULLET_FLESH          0xbcec   /* bullet flesh sounds (array) */
+#define CGS_SND_GRENADE_BOUNCE        0xbd48   /* grenade bounce sounds (array) */
+#define CGS_FXLOOKUP                  0xc200   /* fx lookup table */
+#define CGS_FX_CUSTOM                 0x5f80   /* custom fx (configstring-based) */
+#define CGS_FX_DEATHFX                0x67c0   /* death fx array */
+
+/* weaponDef field offsets (used for weapon sound lookups) */
+/* These are offsets within the weapon-indexed data structure */
+
+/* Item-related offset calculations */
+/* item stride: index * (index*2*5 + 1) * 4... actually: index * 0x6d * 4 = index * 0x1b4 */
+/* weapon data stride: weapon * (weapon*2+weapon*2*8+weapon) * 4 */
+
+/* Float constants from rodata */
+static const float f_0_01   = 0.009999999776482582f;
+static const float f_4_0    = 4.0f;
+static const float f_12_0   = 12.0f;
+static const float f_24_0   = 24.0f;
+static const float f_26_0   = 26.0f;
+static const float f_100_0  = 100.0f;
+static const float f_0_9    = 0.8999999761581421f;
+static const float f_neg16  = -16.0f;
+static const float f_1_4    = 1.399999976158142f;
+static const float f_2_8    = 2.799999952316284f;
+
+/* Helper: compute weapon data offset for weapon index */
+/* (%ecx, %ecx, 2) -> ecx*3, (%eax, %eax, 8) -> eax*9, so ecx*3*9=ecx*27, then (ecx + ecx*27*4) = ecx*(1+108)=ecx*109 */
+/* Actually: lea (%ecx,%ecx,2),%eax => eax=ecx*3; lea (%eax,%eax,8),%eax => eax=ecx*3*9=ecx*27; lea (%ecx,%eax,4),%eax => eax=ecx+ecx*27*4=ecx*109=ecx*0x6d */
+#define WEAPON_DATA_STRIDE 109
+
+static int weaponDataOffset(int weapon) {
+    return weapon * WEAPON_DATA_STRIDE;
+}
+
+/* Forward declarations */
 void CG_EntityEvent(centity_t *cent, int event);
 void CG_CheckEvents(centity_t *cent);
 
+/*
+ * Helper: CG_PlayFootstepWithProne
+ * Plays a prone movement sound based on isFirstPerson flag.
+ * entNum = es->number
+ * isFirstPerson = 1 if viewer is this entity, 0 otherwise
+ */
+static void PlayProneSound(int entNum, int isFirstPerson, int soundOffset) {
+    char *cgs = *cgs_glob;
+    int alias = *(int *)(cgs + soundOffset);
+    CG_PlayEntitySoundAlias(entNum, alias);
+}
+
 /* line 346 */
-__attribute__((naked))
 void CG_EntityEvent(centity_t *cent, int event)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 346 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xfc, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* event */
-        /* { scope 1: iconWidth, iconShader, targetName, attackerName, ... */
-        "testl %edi, %edi\n" /* line 361 | event */
-        "jne .Lf1e1f7c_001e1fab\n"
-        "movl 0x195f964, %eax\n" /* line 363 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1e1f7c_001e20c1\n"
-        /* } scope */
-        ".Lf1e1f7c_001e1fa0:\n"
-        "addl $0xfc, %esp\n" /* line 862 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: iconWidth, iconShader, targetName, attackerName, ... */
-        ".Lf1e1f7c_001e1fab:\n"
-        "movl 8(%ebp), %eax\n" /* line 368 | cent */
-        "addl $0x1ec, %eax\n"
-        "movl %eax, -0xc8(%ebp)\n" /* position */
-        "movl 8(%ebp), %esi\n" /* line 370 | cent, es */
-        "addl $0xf0, %esi\n" /* es */
-        "movl 0xa0(%esi), %edx\n" /* line 371 | es */
-        "movl %edx, -0xcc(%ebp)\n" /* eventParm */
-        "movl 0x195f584, %eax\n" /* line 372 */
-        "movl (%eax), %eax\n"
-        "movl 0x24(%eax), %edx\n"
-        "testl $0xc00000, 0x18(%edx)\n"
-        "jne .Lf1e1f7c_001e2099\n"
-        ".Lf1e1f7c_001e1fe5:\n"
-        "movb $0, -0xcd(%ebp)\n"
-        "movb $0, -0xa9(%ebp)\n"
-        ".Lf1e1f7c_001e1ff3:\n"
-        "movl 0x195f964, %ebx\n" /* line 374 | clientNum */
-        "movl (%ebx), %eax\n" /* clientNum */
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1e1f7c_001e21e3\n"
-        ".Lf1e1f7c_001e2005:\n"
-        "movl 0x90(%esi), %ebx\n" /* line 383 | es, clientNum */
-        "cmpl $0x40, %ebx\n" /* line 384 | clientNum */
-        "movl $0, %eax\n"
-        "cmovael %eax, %ebx\n" /* clientNum */
-        "movl 0xc8(%esi), %ecx\n" /* line 387 | es */
-        "testl %ecx, %ecx\n"
-        "jne .Lf1e1f7c_001e21d6\n"
-        ".Lf1e1f7c_001e2024:\n"
-        "leal -1(%edi), %edx\n" /* line 389 | event */
-        "cmpl $0x16, %edx\n"
-        "ja .Lf1e1f7c_001e20d8\n"
-        "movl 0x195f960, %eax\n" /* line 391 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1e1f7c_001e2066\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 393 */
-        "je .Lf1e1f7c_001e229f\n"
-        "movl 0x195f5c4, %eax\n" /* line 394 */
-        "movl (%eax), %eax\n"
-        "movl 0xbf14(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        ".Lf1e1f7c_001e2066:\n"
-        "movl (%esi), %edx\n" /* line 398 | es, entNum */
-        /* { scope 2: forward, up */
-        "cmpb $0, -0xa9(%ebp)\n" /* line 268 */
-        "jne .Lf1e1f7c_001e21b2\n"
-        "movl 0x195f5c4, %eax\n" /* line 278 */
-        "movl (%eax), %eax\n"
-        "movl 0xc198(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        /* } scope */
-        /* } scope */
-        "addl $0xfc, %esp\n" /* line 862 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: iconWidth, iconShader, targetName, attackerName, ... */
-        ".Lf1e1f7c_001e2099:\n"
-        "movl 8(%ebp), %ecx\n" /* line 372 | cent */
-        "movl 0xf0(%ecx), %eax\n"
-        "cmpl 0xd8(%edx), %eax\n"
-        "jne .Lf1e1f7c_001e1fe5\n"
-        "movb $1, -0xcd(%ebp)\n"
-        "movb $1, -0xa9(%ebp)\n"
-        "jmp .Lf1e1f7c_001e1ff3\n"
-        ".Lf1e1f7c_001e20c1:\n"
-        "movl $0x2b83c8, (%esp)\n" /* line 364 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0xfc, %esp\n" /* line 862 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: iconWidth, iconShader, targetName, attackerName, ... */
-        ".Lf1e1f7c_001e20d8:\n"
-        "leal -0x18(%edi), %edx\n" /* line 401 | event */
-        "cmpl $0x16, %edx\n"
-        "jbe .Lf1e1f7c_001e214f\n"
-        "leal -0x2f(%edi), %edx\n" /* line 413 | event */
-        "cmpl $0x16, %edx\n"
-        "ja .Lf1e1f7c_001e2222\n"
-        "movl 0x195f960, %eax\n" /* line 415 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1e1f7c_001e2122\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 417 */
-        "je .Lf1e1f7c_001e236f\n"
-        "movl 0x195f5c4, %eax\n" /* line 418 */
-        "movl (%eax), %eax\n"
-        "movl 0xc084(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        ".Lf1e1f7c_001e2122:\n"
-        "movl (%esi), %edx\n" /* line 422 | es, entNum */
-        /* { scope 2: forward, up */
-        "cmpb $0, -0xa9(%ebp)\n" /* line 268 */
-        "jne .Lf1e1f7c_001e22de\n"
-        "movl 0x195f5c4, %eax\n" /* line 280 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1a0(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        ".Lf1e1f7c_001e214f:\n"
-        "movl 0x195f960, %eax\n" /* line 403 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1e1f7c_001e2185\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 405 */
-        "jne .Lf1e1f7c_001e22fc\n"
-        "movl 0x195f5c4, %eax\n" /* line 408 */
-        "movl (%eax), %eax\n"
-        "movl 0xbf70(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        ".Lf1e1f7c_001e2185:\n"
-        "movl (%esi), %edx\n" /* line 410 | es, entNum */
-        /* { scope 2: forward, up */
-        "cmpb $0, -0xa9(%ebp)\n" /* line 268 */
-        "je .Lf1e1f7c_001e22c0\n"
-        "movl 0x195f5c4, %eax\n" /* line 273 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1a4(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        /* { scope 2: forward, up */
-        ".Lf1e1f7c_001e21b2:\n"
-        "movl 0x195f5c4, %eax\n" /* line 271 */
-        "movl (%eax), %eax\n"
-        "movl 0xc19c(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        /* } scope */
-        /* } scope */
-        "addl $0xfc, %esp\n" /* line 862 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: iconWidth, iconShader, targetName, attackerName, ... */
-        ".Lf1e1f7c_001e21d6:\n"
-        "movl %ecx, (%esp)\n" /* line 387 */
-        "calll BG_GetWeaponDef\n"
-        "jmp .Lf1e1f7c_001e2024\n"
-        ".Lf1e1f7c_001e21e3:\n"
-        "movl %edi, 8(%esp)\n" /* line 375 | event */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b83e4, (%esp)\n" /* "ent:%3i  event:%3i " */
-        "calll Com_Printf\n"
-        "movl (%ebx), %eax\n" /* line 380 | clientNum */
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1e1f7c_001e2005\n"
-        "movl 0x195f95c, %eax\n" /* line 381 */
-        "movl (%eax, %edi, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b83f8, (%esp)\n" /* "CG_EntityEvent:%s
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf1e1f7c_001e2005\n"
-        ".Lf1e1f7c_001e2222:\n"
-        "leal -0x46(%edi), %edx\n" /* line 425 | event */
-        "cmpl $0x16, %edx\n"
-        "jbe .Lf1e1f7c_001e231d\n"
-        "leal -0x5d(%edi), %edx\n" /* line 434 | event */
-        "cmpl $0x16, %edx\n"
-        "ja .Lf1e1f7c_001e23cf\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 436 */
-        "je .Lf1e1f7c_001e3270\n"
-        "movl 0x195f5c4, %eax\n" /* line 437 */
-        "movl (%eax), %eax\n"
-        "movl 0xc13c(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        ".Lf1e1f7c_001e2263:\n"
-        "movl 0x195f584, %eax\n" /* line 440 */
-        "movl (%eax), %edx\n"
-        "cmpl 0x25c90(%edx), %ebx\n" /* clientNum */
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "cvtsi2ssl -0xcc(%ebp), %xmm0\n" /* line 443 | eventParm */
-        "pxor %xmm1, %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x284d8(%edx)\n"
-        "movl 0x25bb0(%edx), %eax\n" /* line 444 */
-        "movl %eax, 0x284dc(%edx)\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e229f:\n"
-        "movl 0x195f5c4, %eax\n" /* line 396 */
-        "movl (%eax), %eax\n"
-        "movl 0xbeb8(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e2066\n"
-        /* { scope 2: forward, up */
-        ".Lf1e1f7c_001e22c0:\n"
-        "movl 0x195f5c4, %eax\n" /* line 280 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1a0(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        /* { scope 2: forward, up */
-        ".Lf1e1f7c_001e22de:\n"
-        "movl 0x195f5c4, %eax\n" /* line 273 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1a4(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        ".Lf1e1f7c_001e22fc:\n"
-        "movl 0x195f5c4, %eax\n" /* line 406 */
-        "movl (%eax), %eax\n"
-        "movl 0xbfcc(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e2185\n"
-        ".Lf1e1f7c_001e231d:\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 427 */
-        "je .Lf1e1f7c_001e23ae\n"
-        "movl 0x195f5c4, %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movl 0xbf14(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        ".Lf1e1f7c_001e2346:\n"
-        "movl (%esi), %edx\n" /* line 431 | es, entNum */
-        /* { scope 2: forward, up */
-        "cmpb $0, -0xa9(%ebp)\n" /* line 268 */
-        "je .Lf1e1f7c_001e2390\n"
-        "movl 0x195f5c4, %eax\n" /* line 271 */
-        "movl (%eax), %eax\n"
-        "movl 0xc19c(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        ".Lf1e1f7c_001e236f:\n"
-        "movl 0x195f5c4, %eax\n" /* line 420 */
-        "movl (%eax), %eax\n"
-        "movl 0xc028(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e2122\n"
-        /* { scope 2: forward, up */
-        ".Lf1e1f7c_001e2390:\n"
-        "movl 0x195f5c4, %eax\n" /* line 278 */
-        "movl (%eax), %eax\n"
-        "movl 0xc198(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        ".Lf1e1f7c_001e23ae:\n"
-        "movl 0x195f5c4, %eax\n" /* line 430 */
-        "movl (%eax), %eax\n"
-        "movl 0xbeb8(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e2346\n"
-        ".Lf1e1f7c_001e23cf:\n"
-        "leal -0x74(%edi), %edx\n" /* line 448 | event */
-        "cmpl $0x16, %edx\n"
-        "ja .Lf1e1f7c_001e24ce\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 450 */
-        "je .Lf1e1f7c_001e3291\n"
-        "movl 0x195f5c4, %eax\n" /* line 451 */
-        "movl (%eax), %eax\n"
-        "movl 0xc13c(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        ".Lf1e1f7c_001e2404:\n"
-        "movl 0x195f5c4, %eax\n" /* line 454 */
-        "movl (%eax), %eax\n"
-        "movl 0xbc88(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "movl 0x195f584, %edx\n" /* line 455 */
-        "movl (%edx), %ecx\n"
-        "cmpl 0x25c90(%ecx), %ebx\n" /* clientNum */
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195ee10, %eax\n" /* line 457 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "cvtsi2ssl -0xcc(%ebp), %xmm2\n" /* eventParm */
-        "mulss 0x2ed738, %xmm2\n" /* 0.009999999776482582f */
-        "movl 0x195ede4, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "addss %xmm1, %xmm2\n"
-        "ucomiss 0x2ed79c, %xmm2\n" /* line 460 | 12.0f */
-        "jp .Lf1e1f7c_001e2476\n"
-        "jbe .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e2476:\n"
-        "subss 0x2ed79c, %xmm2\n" /* line 463 | 12.0f */
-        "divss 0x2ed7a0, %xmm2\n" /* 26.0f */
-        "movss 0x2ed608, %xmm0\n" /* 4.0f */
-        "mulss %xmm0, %xmm2\n"
-        "addss %xmm0, %xmm2\n"
-        "cvttss2si %xmm2, %eax\n"
-        "cmpl $0x18, %eax\n" /* line 464 */
-        "jle .Lf1e1f7c_001e32b2\n"
-        "movss 0x2ed8b8, %xmm1\n" /* 24.0f */
-        ".Lf1e1f7c_001e24ab:\n"
-        "pxor %xmm0, %xmm0\n" /* line 470 */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x284d8(%ecx)\n"
-        "movl (%edx), %edx\n" /* line 471 */
-        "movl 0x25bb0(%edx), %eax\n"
-        "movl %eax, 0x284dc(%edx)\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e24ce:\n"
-        "leal -0x8b(%edi), %eax\n" /* line 477 | event */
-        "cmpl $0x3b, %eax\n"
-        "ja .Lf1e1f7c_001e24e0\n"
-        "jmpl *0x303be0(, %eax, 4)\n"
-        ".Lf1e1f7c_001e24e0:\n"
-        "movl 0x195f95c, %eax\n" /* line 859 */
-        "movl (%eax, %edi, 4), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2b84e8, 4(%esp)\n" /* "Unknown event: '%s'" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f584, %eax\n" /* line 799 */
-        "movl (%eax), %eax\n"
-        "movl $1, 0x2bee8(%eax)\n"
-        "leal -0x28(%ebp), %edi\n" /* line 803 | dir, event */
-        "movl %edi, 4(%esp)\n" /* event */
-        "movl 0xa0(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll ByteToDir\n"
-        "movl 0x195f5c4, %eax\n" /* line 804 */
-        "movl (%eax), %ebx\n" /* index */
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl 0xbd48(%ebx, %eax, 4), %eax\n" /* index */
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x3fe, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        "movl 0xc200(%ebx), %eax\n" /* line 805 | index */
-        "movl 4(%eax), %edx\n"
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl 0x398(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e2589\n"
-        "movl %edi, 8(%esp)\n" /* line 806 | event */
-        "movl -0xc8(%ebp), %edx\n" /* position */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_PlayEffect\n"
-        ".Lf1e1f7c_001e2589:\n"
-        "movl 0xc8(%esi), %ecx\n" /* line 808 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ebx\n" /* index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x164(%ebx, %eax, 4), %eax\n" /* index */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e25c6\n"
-        "movl %edi, 8(%esp)\n" /* line 809 | event */
-        "movl -0xc8(%ebp), %ecx\n" /* position */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_PlayEffect\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        ".Lf1e1f7c_001e25c6:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 810 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x168(%ebx, %eax, 4), %eax\n" /* index */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e25f4\n"
-        "movl %eax, 8(%esp)\n" /* line 811 */
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x3fe, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        ".Lf1e1f7c_001e25f4:\n"
-        "movl 0x195f584, %eax\n" /* line 812 */
-        "movl (%eax), %eax\n"
-        "movl $0, 0x2bee8(%eax)\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f5c4, %eax\n" /* line 484 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1a8(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f584, %eax\n" /* line 489 */
-        "movl (%eax), %eax\n"
-        "cmpl 0x25c90(%eax), %ebx\n" /* clientNum */
-        "jne .Lf1e1f7c_001e3437\n"
-        "movl 0x195ecb4, %eax\n" /* line 492 */
-        "movl (%eax), %eax\n"
-        "movl 0xc(%eax), %ebx\n" /* clientNum */
-        "testl %ebx, %ebx\n" /* clientNum */
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl $0, 8(%eax)\n" /* line 493 */
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f584, %eax\n" /* line 498 */
-        "movl (%eax), %eax\n"
-        "cmpl 0x25c90(%eax), %ebx\n" /* clientNum */
-        "jne .Lf1e1f7c_001e345b\n"
-        "movl 0x195ecb4, %eax\n" /* line 501 */
-        "movl (%eax), %eax\n"
-        "movl 0xc(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl $1, 8(%eax)\n" /* line 502 */
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f584, %eax\n" /* line 507 */
-        "movl (%eax), %eax\n"
-        "cmpl 0x25c90(%eax), %ebx\n" /* clientNum */
-        "jne .Lf1e1f7c_001e3531\n"
-        "movl 0x195ecb4, %eax\n" /* line 510 */
-        "movl (%eax), %eax\n"
-        "movl 0xc(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl $2, 8(%eax)\n" /* line 511 */
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f584, %eax\n" /* line 620 */
-        "movl (%eax), %eax\n"
-        "movl 0x24(%eax), %edx\n"
-        "testl $0xc00000, 0x18(%edx)\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl (%esi), %eax\n" /* es */
-        "cmpl 0xd8(%edx), %eax\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl $4, (%esp)\n" /* line 622 */
-        "calll CG_MenuShowNotify\n"
-        "calll CG_SwitchOffHandCmd\n" /* line 623 */
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "movl 0xa0(%esi), %ebx\n" /* line 552 | es, index */
-        "testl %ebx, %ebx\n" /* line 553 | index */
-        "jle .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195edac, %eax\n"
-        "cmpl (%eax), %ebx\n" /* index */
-        "jge .Lf1e1f7c_001e1fa0\n"
-        "leal (%ebx, %ebx, 8), %eax\n" /* line 556 | index */
-        "movl 0x195f5d0, %edx\n"
-        "movl (%edx), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "cmpl $0x90, %edi\n" /* line 558 | event */
-        "je .Lf1e1f7c_001e34f7\n"
-        "cmpl $0x91, %edi\n" /* line 560 | event */
-        "jne .Lf1e1f7c_001e2746\n"
-        "movl 0x20(%eax), %eax\n" /* line 561 */
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        ".Lf1e1f7c_001e2746:\n"
-        "movl 0x195f584, %eax\n" /* line 564 */
-        "movl (%eax), %edi\n" /* event */
-        "movl 0x24(%edi), %edx\n" /* event */
-        "testl $0xc00000, 0x18(%edx)\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl (%esi), %eax\n" /* es */
-        "cmpl 0xd8(%edx), %eax\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        /* { scope 3 */
-        "leal (%ebx, %ebx, 4), %eax\n" /* line 237 | itemid */
-        "leal (%ebx, %eax, 2), %eax\n" /* itemid */
-        "shll $2, %eax\n"
-        "addl 0x195eda8, %eax\n"
-        "movl 0x20(%eax), %ebx\n" /* itemid */
-        "cmpl $1, 0x1c(%eax)\n" /* line 240 */
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl %ebx, (%esp)\n" /* line 242 | itemid */
-        "calll BG_GetWeaponDef\n"
-        "cmpl $9, 0x7c(%eax)\n" /* line 244 */
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl 0x84(%eax), %eax\n" /* line 247 */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e3555\n"
-        "movl 0x2be70(%edi), %eax\n" /* line 249 | attacker */
-        "testl %eax, %eax\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl %ebx, (%esp)\n" /* line 250 | itemid */
-        "calll CG_SetEquippedOffHand\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        /* } scope */
-        "movl 0xc8(%esi), %eax\n" /* line 613 | es */
-        "movl %eax, (%esp)\n"
-        "calll BG_WeaponIsClipOnly\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e347f\n"
-        ".Lf1e1f7c_001e27d8:\n"
-        "movl 0x195f584, %eax\n" /* line 615 */
-        "movl (%eax), %eax\n"
-        "movl 0x24(%eax), %edx\n"
-        "testl $0xc00000, 0x18(%edx)\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl (%esi), %eax\n" /* es */
-        "cmpl 0xd8(%edx), %eax\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "calll CG_OutOfAmmoChange\n" /* line 616 */
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "movl 0x195f584, %edx\n" /* line 520 */
-        "movl (%edx), %esi\n" /* es */
-        "cmpl 0x25c90(%esi), %ebx\n" /* es, clientNum */
-        "jne .Lf1e1f7c_001e350d\n"
-        "movl 8(%esi), %eax\n" /* line 523 | es */
-        "testl %eax, %eax\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f788, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f78c, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl 0x25bb0(%esi), %ecx\n" /* line 528 | es */
-        "subl 0x284d4(%esi), %ecx\n" /* es */
-        "pxor %xmm2, %xmm2\n" /* line 529 */
-        "cmpl $0x63, %ecx\n"
-        "jg .Lf1e1f7c_001e2880\n"
-        "movl $0x64, %eax\n" /* line 530 */
-        "subl %ecx, %eax\n"
-        "cvtsi2ssl %eax, %xmm2\n"
-        "mulss 0x284d0(%esi), %xmm2\n" /* es */
-        "divss 0x2ed798, %xmm2\n" /* 100.0f */
-        "mulss 0x2ed7b8, %xmm2\n" /* 0.8999999761581421f */
-        ".Lf1e1f7c_001e2880:\n"
-        "movl -0xcc(%ebp), %eax\n" /* line 536 | eventParm */
-        "addl $-0x80, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "movss %xmm2, 0x284d0(%esi)\n" /* es */
-        "movl (%edx), %ecx\n" /* line 537 */
-        "movss 0x284d0(%ecx), %xmm0\n"
-        "ucomiss 0x2ed8b8, %xmm0\n" /* 24.0f */
-        "jbe .Lf1e1f7c_001e336e\n"
-        "movl $0x41c00000, 0x284d0(%ecx)\n" /* line 538 */
-        ".Lf1e1f7c_001e28ba:\n"
-        "movl (%edx), %edx\n" /* line 542 */
-        "movl 0x25bb0(%edx), %eax\n"
-        "movl %eax, 0x284d4(%edx)\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        "cmpb $0, -0xcd(%ebp)\n" /* line 576 */
-        "je .Lf1e1f7c_001e33fc\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %ebx\n" /* index */
-        "movl (%ebx), %edx\n" /* index */
-        "leal (%edx, %eax, 4), %edx\n"
-        "movl 0xfc(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e33df\n"
-        "movl %eax, 4(%esp)\n" /* line 577 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f584, %eax\n" /* line 629 */
-        "movl (%eax), %eax\n"
-        "movl 0x24(%eax), %edx\n"
-        "testl $0xc00000, 0x18(%edx)\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl (%esi), %eax\n" /* es */
-        "cmpl 0xd8(%edx), %eax\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl $0, (%esp)\n" /* line 630 */
-        "calll CL_SetADS\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 587 */
-        "je .Lf1e1f7c_001e34bc\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %ebx\n" /* index */
-        "movl (%ebx), %edx\n" /* index */
-        "leal (%edx, %eax, 4), %edx\n"
-        "movl 0x104(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e349f\n"
-        "movl %eax, 4(%esp)\n" /* line 588 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "leal -0x28(%ebp), %edi\n" /* line 781 | dir, event */
-        "movl %edi, 4(%esp)\n" /* event */
-        "movl 0xa0(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll ByteToDir\n"
-        "movl 0xc8(%esi), %ecx\n" /* line 783 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ebx\n" /* index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x164(%ebx, %eax, 4), %eax\n" /* index */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e2a1b\n"
-        "movl 0x54(%esi), %eax\n" /* line 786 | es */
-        "movl %eax, (%esp)\n"
-        "calll FX_WarpTime\n"
-        "movl %edi, 8(%esp)\n" /* line 787 | event */
-        "movl -0xc8(%ebp), %edx\n" /* position */
-        "movl %edx, 4(%esp)\n"
-        "movl 0xc8(%esi), %edx\n" /* es */
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x164(%ebx, %eax, 4), %eax\n" /* index */
-        "movl %eax, (%esp)\n"
-        "calll FX_PlayEffect\n"
-        "movl 0x195f584, %eax\n" /* line 789 */
-        "movl (%eax), %eax\n"
-        "movl 0x25bb0(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_WarpTime\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        ".Lf1e1f7c_001e2a1b:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 791 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x168(%ebx, %eax, 4), %edx\n" /* index */
-        "testl %edx, %edx\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "testb $1, 0xa(%esi)\n" /* line 793 | es */
-        "je .Lf1e1f7c_001e2a52\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x25bb0(%eax), %eax\n"
-        "subl 0x54(%esi), %eax\n" /* es */
-        "cmpl $0x31, %eax\n"
-        "jg .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e2a52:\n"
-        "movl %edx, 8(%esp)\n" /* line 794 */
-        "movl -0xc8(%ebp), %ecx\n" /* position */
-        "movl %ecx, 4(%esp)\n"
-        "movl $0x3fe, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "leal 0x3c(%esi), %ecx\n" /* line 219 */
-        /* } scope */
-        /* { scope 2: forward, up */
-        /* { scope 3 */
-        "movl 8(%ebp), %eax\n" /* line 292 | cent */
-        "movl 0x190(%eax), %edx\n"
-        "leal -1(%edx), %eax\n" /* line 293 */
-        "cmpl $0x3e, %eax\n"
-        "jbe .Lf1e1f7c_001e3391\n"
-        "movl %edx, 4(%esp)\n" /* line 295 */
-        "movl $0x2abd90, (%esp)\n" /* "ERROR: CG_PlayFx called with invalid effect id %i
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        /* } scope */
-        "cmpb $0, -0xcd(%ebp)\n" /* line 598 */
-        "je .Lf1e1f7c_001e32fc\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* index */
-        "movl (%ebx), %edx\n" /* index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x10c(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e3308\n"
-        "movl %eax, 4(%esp)\n" /* line 599 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl $0, 8(%esp)\n" /* line 651 */
-        "movl $0xb0, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cent */
-        "movl %eax, (%esp)\n"
-        "calll CG_FireWeapon\n"
-        "movl $1, 8(%esp)\n" /* line 652 */
-        "movl $0xb0, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* cent */
-        "movl %edx, (%esp)\n"
-        "calll CG_FireWeapon\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl $2, 8(%esp)\n" /* line 656 */
-        "movl $0xb1, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* cent */
-        "movl %ecx, (%esp)\n"
-        "calll CG_FireWeapon\n"
-        "movl $3, 8(%esp)\n" /* line 657 */
-        "movl $0xb1, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cent */
-        "movl %eax, (%esp)\n"
-        "calll CG_FireWeapon\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl $0xa2, 4(%esp)\n" /* line 692 */
-        "movl %esi, (%esp)\n" /* es */
-        "calll CG_EjectWeaponBrass\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xc8(%esi), %edx\n" /* line 696 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ecx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0xec(%ecx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 697 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xa0(%esi), %eax\n" /* line 704 | es */
-        "movl %eax, 8(%esp)\n"
-        "movl $0xa5, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* es */
-        "calll CG_PrepOffHand\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xa0(%esi), %eax\n" /* line 708 | es */
-        "movl %eax, 8(%esp)\n"
-        "movl $0xa6, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* cent */
-        "movl %ecx, (%esp)\n"
-        "calll CG_UseOffHand\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 712 */
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl 0xa0(%esi), %eax\n" /* line 713 | es */
-        "movl %eax, (%esp)\n"
-        "calll CG_SetEquippedOffHand\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f5c4, %eax\n" /* line 724 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1b8(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x74(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f5c4, %eax\n" /* line 728 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1bc(%eax), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x74(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "movl $0x42c80000, 0xc(%esp)\n" /* line 664 */
-        "movl -0xc8(%ebp), %edx\n" /* position */
-        "movl %edx, 8(%esp)\n"
-        "movl $0x64, 4(%esp)\n"
-        "movl $0x3d4ccccd, (%esp)\n"
-        "calll CG_StartShakeCamera\n"
-        "movl $0, 8(%esp)\n" /* line 665 */
-        "movl $0xaf, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* cent */
-        "movl %ecx, (%esp)\n"
-        "calll CG_FireWeapon\n"
-        "movl -0xcc(%ebp), %eax\n" /* line 667 | eventParm */
-        "shll $4, %eax\n"
-        "addl -0xcc(%ebp), %eax\n" /* eventParm */
-        "movl -0xcc(%ebp), %edx\n" /* eventParm */
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl 0x195f5cc, %edx\n"
-        "movl (%edx), %edx\n"
-        "leal (%edx, %eax, 4), %edx\n"
-        "cmpb $0, 0x1e0(%edx)\n" /* line 668 */
-        "je .Lf1e1f7c_001e1fa0\n"
-        "cmpl $1, 0xf4(%edx)\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        "movl 0x5a0(%eax), %eax\n"
-        "movl 8(%ebp), %ecx\n" /* cent */
-        "cmpl 0xf0(%ecx), %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl $0x32, 8(%esp)\n" /* line 669 */
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_CompassAddWeaponPingInfo\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        "movl 0xc8(%esi), %edx\n" /* line 646 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ecx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x11c(%ecx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 647 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xc8(%esi), %edx\n" /* line 674 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ecx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0xd8(%ecx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 675 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl $0, 8(%esp)\n" /* line 681 */
-        "movl %edi, 4(%esp)\n" /* event */
-        "movl 8(%ebp), %edx\n" /* cent */
-        "movl %edx, (%esp)\n"
-        "calll CG_FireWeapon\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 685 */
-        "je .Lf1e1f7c_001e3335\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* index */
-        "movl (%ebx), %edx\n" /* index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0xf4(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e3341\n"
-        "movl %eax, 4(%esp)\n" /* line 686 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xc8(%esi), %edx\n" /* line 634 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ecx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x118(%ecx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 635 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xc8(%esi), %edx\n" /* line 640 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ecx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x120(%ecx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 641 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "cmpb $0, -0xcd(%ebp)\n" /* line 605 */
-        "je .Lf1e1f7c_001e32c3\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* index */
-        "movl (%ebx), %edx\n" /* index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x114(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e32cf\n"
-        "movl %eax, 4(%esp)\n" /* line 606 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "movl 0xa0(%esi), %eax\n" /* line 317 */
-        "addl $0x38e, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl 0x195f5c4, %edx\n" /* line 323 */
-        "movl (%edx), %ebx\n" /* fx */
-        "movsbl (%eax), %edx\n"
-        "movsbl 1(%eax), %ecx\n"
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (%ecx, %edx, 2), %edx\n"
-        "movl 0x5f80(%ebx, %edx, 4), %ebx\n" /* fx */
-        "movl 8(%ebp), %ecx\n" /* line 325 | cent */
-        "movl 0xf0(%ecx), %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* attackerColor */
-        "movl $0, 4(%esp)\n" /* line 326 */
-        "addl $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll SL_GetString\n"
-        "movw %ax, -0x1a(%ebp)\n" /* tagName */
-        "movzwl %ax, %eax\n" /* line 327 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x54(%ebp), %eax\n" /* attackerColor */
-        "movl %eax, (%esp)\n"
-        "calll FX_GetBoneIndex\n"
-        "movl %eax, -0x50(%ebp)\n"
-        "movl $0, 4(%esp)\n" /* line 328 */
-        "leal -0x1a(%ebp), %eax\n" /* tagName */
-        "movl %eax, (%esp)\n"
-        "calll Scr_SetString\n"
-        "movl -0x50(%ebp), %eax\n" /* line 329 */
-        "testl %eax, %eax\n"
-        "js .Lf1e1f7c_001e1fa0\n"
-        "leal -0x54(%ebp), %eax\n" /* line 332 | attackerColor */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* fx */
-        "calll FX_PlayEntityEffect\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        "movl 0x6c(%esi), %eax\n" /* line 837 | es */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0xc8(%ebp), %edx\n" /* position */
-        "movl %edx, 8(%esp)\n"
-        "movl 0x54(%esi), %eax\n" /* es */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x68(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_StartShakeCamera\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "leal -0x28(%ebp), %ebx\n" /* line 747 | dir, index */
-        "movl %ebx, 4(%esp)\n" /* index */
-        "movl 0xa0(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll ByteToDir\n"
-        "leal -0x34(%ebp), %eax\n" /* line 748 | reflect */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xd8(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll ByteToDir\n"
-        "movl %edi, 0x14(%esp)\n" /* line 749 | event */
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x34(%ebp), %edx\n" /* reflect */
-        "movl %edx, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* index */
-        "movl -0xc8(%ebp), %ecx\n" /* position */
-        "movl %ecx, 4(%esp)\n"
-        "movl 0x74(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_BulletHitEvent\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl %edi, 0xc(%esp)\n" /* line 754 | event */
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x74(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_BulletHitClientEvent\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "leal -0x28(%ebp), %edi\n" /* line 759 | dir, event */
-        "movl %edi, 4(%esp)\n" /* event */
-        "movl 0xa0(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll ByteToDir\n"
-        "movl 0x195f5c4, %eax\n" /* line 760 */
-        "movl (%eax), %ebx\n" /* index */
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl 0xbc90(%ebx, %eax, 4), %eax\n" /* index */
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc8(%ebp), %edx\n" /* position */
-        "movl %edx, 4(%esp)\n"
-        "movl $0x3fe, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        "movl 0xc200(%ebx), %eax\n" /* line 761 | index */
-        "movl 4(%eax), %edx\n"
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl 0x2e0(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %edi, 8(%esp)\n" /* line 762 | event */
-        "movl -0xc8(%ebp), %ecx\n" /* position */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_PlayEffect\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "leal -0x28(%ebp), %edi\n" /* line 767 | dir, event */
-        "movl %edi, 4(%esp)\n" /* event */
-        "movl 0xa0(%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll ByteToDir\n"
-        "movl 0x195f5c4, %eax\n" /* line 768 */
-        "movl (%eax), %ebx\n" /* index */
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl 0xbcec(%ebx, %eax, 4), %eax\n" /* index */
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x3fe, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        "movl 0xc200(%ebx), %eax\n" /* line 770 | index */
-        "movl 4(%eax), %edx\n"
-        "movl 0x88(%esi), %eax\n" /* es */
-        "movl 0x33c(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e30df\n"
-        "movl %edi, 8(%esp)\n" /* line 771 | event */
-        "movl -0xc8(%ebp), %edx\n" /* position */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_PlayEffect\n"
-        ".Lf1e1f7c_001e30df:\n"
-        "movl 0xc8(%esi), %ecx\n" /* line 773 | es */
-        "movl 0x195f5c8, %eax\n"
-        "movl (%eax), %ebx\n" /* index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x164(%ebx, %eax, 4), %eax\n" /* index */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e311c\n"
-        "movl %edi, 8(%esp)\n" /* line 774 | event */
-        "movl -0xc8(%ebp), %ecx\n" /* position */
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FX_PlayEffect\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        ".Lf1e1f7c_001e311c:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 776 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x168(%ebx, %eax, 4), %eax\n" /* index */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 8(%esp)\n" /* line 777 */
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x3fe, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xa0(%esi), %eax\n" /* line 816 | es */
-        "addl $0x24e, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x18(%esi), %eax\n" /* es */
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlaySoundAliasByName\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movl 0xa0(%esi), %eax\n" /* line 819 | es */
-        "addl $0x24e, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 0x18(%esi), %eax\n" /* es */
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlaySoundAliasAsMasterByName\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "xorl %eax, %eax\n" /* line 191 */
-        "movl %eax, -0x28(%ebp)\n" /* dir */
-        "movl %eax, -0x24(%ebp)\n" /* line 192 */
-        "movl $0x3f800000, -0x20(%ebp)\n" /* line 193 */
-        "movl 0x195f5c4, %eax\n" /* line 733 */
-        "movl (%eax), %ebx\n" /* index */
-        "movl 0xbcec(%ebx), %eax\n" /* index */
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc8(%ebp), %edx\n" /* position */
-        "movl %edx, 4(%esp)\n"
-        "movl $0x3fe, (%esp)\n"
-        "calll CG_PlaySoundAlias\n"
-        "movl 0xc200(%ebx), %eax\n" /* line 734 | index */
-        "movl 4(%eax), %eax\n"
-        "movl 0x33c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "leal -0x28(%ebp), %eax\n" /* line 735 | dir */
-        "movl %eax, 8(%esp)\n"
-        "movl -0xc8(%ebp), %ecx\n" /* position */
-        "movl %ecx, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll FX_PlayEffect\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "movl $0x3f800000, %eax\n" /* line 40 */
-        "movl %eax, -0x54(%ebp)\n" /* attackerColor */
-        "movl %eax, -0x50(%ebp)\n"
-        "movl %eax, -0x4c(%ebp)\n"
-        "movl %eax, -0x48(%ebp)\n"
-        "movl %eax, -0x64(%ebp)\n" /* line 41 | victimColor */
-        "movl %eax, -0x60(%ebp)\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "movl %eax, -0x58(%ebp)\n"
-        "movl %eax, -0x44(%ebp)\n" /* line 42 | iconColor */
-        "movl %eax, -0x40(%ebp)\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        "movl %eax, -0x38(%ebp)\n"
-        "movl 0x74(%esi), %edx\n" /* line 50 */
-        "movl %edx, -0xb0(%ebp)\n" /* target */
-        "movl 0x78(%esi), %edi\n" /* line 51 | attacker */
-        "movl 0xa0(%esi), %eax\n" /* line 87 */
-        "testb %al, %al\n"
-        "jns .Lf1e1f7c_001e3938\n"
-        "andb $0x7f, %al\n" /* line 116 */
-        "subl $7, %eax\n"
-        "cmpl $5, %eax\n"
-        "ja .Lf1e1f7c_001e3912\n"
-        "jmpl *0x303cd0(, %eax, 4)\n"
-        /* } scope */
-        ".Lf1e1f7c_001e3270:\n"
-        "movl 0x195f5c4, %eax\n" /* line 439 */
-        "movl (%eax), %eax\n"
-        "movl 0xc0e0(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e2263\n"
-        ".Lf1e1f7c_001e3291:\n"
-        "movl 0x195f5c4, %eax\n" /* line 453 */
-        "movl (%eax), %eax\n"
-        "movl 0xc0e0(%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e2404\n"
-        ".Lf1e1f7c_001e32b2:\n"
-        "testl %eax, %eax\n" /* line 467 */
-        "jle .Lf1e1f7c_001e1fa0\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "jmp .Lf1e1f7c_001e24ab\n"
-        ".Lf1e1f7c_001e32c3:\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* clientNum */
-        ".Lf1e1f7c_001e32cf:\n"
-        "movl (%ebx), %edx\n" /* line 607 | index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x110(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 608 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e32fc:\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* index */
-        ".Lf1e1f7c_001e3308:\n"
-        "movl (%ebx), %edx\n" /* line 600 | index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x108(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 601 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e3335:\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* index */
-        ".Lf1e1f7c_001e3341:\n"
-        "movl (%ebx), %edx\n" /* line 687 | index */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0xf0(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 688 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        ".Lf1e1f7c_001e336e:\n"
-        "ucomiss 0x2eda74, %xmm0\n" /* line 539 | -16.0f */
-        "jae .Lf1e1f7c_001e28ba\n"
-        "jp .Lf1e1f7c_001e28ba\n"
-        "movl $0xc1800000, %eax\n" /* line 540 */
-        "movl %eax, 0x284d0(%ecx)\n"
-        "jmp .Lf1e1f7c_001e28ba\n"
-        /* } scope */
-        /* { scope 2: forward, up */
-        /* { scope 3 */
-        ".Lf1e1f7c_001e3391:\n"
-        "movl 0x195f5c4, %eax\n" /* line 298 */
-        "movl (%eax), %eax\n"
-        "movl 0x67c0(%eax, %edx, 4), %edi\n" /* fx */
-        "leal -0x44(%ebp), %edx\n" /* line 300 | iconColor */
-        "movl %edx, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "leal -0x54(%ebp), %ebx\n" /* attackerColor, itemid */
-        "movl %ebx, 4(%esp)\n" /* itemid */
-        "movl %ecx, (%esp)\n"
-        "calll AngleVectors\n"
-        "leal -0x44(%ebp), %ecx\n" /* line 301 | iconColor */
-        "movl %ecx, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* itemid */
-        "movl -0xc8(%ebp), %eax\n" /* position */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* fx */
-        "calll FX_PlayEffect\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1e1f7c_001e33df:\n"
-        "movl 0x104(%edx), %eax\n" /* line 578 */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e3408\n"
-        "movl %eax, 4(%esp)\n" /* line 579 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e33fc:\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* index */
-        ".Lf1e1f7c_001e3408:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 580 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl (%ebx), %edx\n" /* index */
-        "leal (%edx, %eax, 4), %edx\n"
-        "movl 0xf8(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e39cf\n"
-        "movl %eax, 4(%esp)\n" /* line 581 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e3437:\n"
-        "movl %ebx, 8(%esp)\n" /* line 489 | clientNum */
-        "movl 0x195f95c, %eax\n"
-        "movl 0x230(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b840c, (%esp)\n" /* "Event %s just for client %i was sent to other clients
-" */
-        "calll Com_DPrintf\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e345b:\n"
-        "movl %ebx, 8(%esp)\n" /* line 498 | clientNum */
-        "movl 0x195f95c, %eax\n"
-        "movl 0x234(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b840c, (%esp)\n" /* "Event %s just for client %i was sent to other clients
-" */
-        "calll Com_DPrintf\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e347f:\n"
-        "movl 0x195f5c4, %eax\n" /* line 614 */
-        "movl (%eax), %eax\n"
-        "movl 0xbc84(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e27d8\n"
-        ".Lf1e1f7c_001e349f:\n"
-        "movl 0xfc(%edx), %eax\n" /* line 589 */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e34c8\n"
-        "movl %eax, 4(%esp)\n" /* line 590 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        ".Lf1e1f7c_001e34bc:\n"
-        "movl 0xc8(%esi), %ecx\n" /* es */
-        "movl 0x195f5c8, %ebx\n" /* index */
-        ".Lf1e1f7c_001e34c8:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 591 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl (%ebx), %edx\n" /* index */
-        "leal (%edx, %eax, 4), %edx\n"
-        "movl 0x100(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e3570\n"
-        "movl %eax, 4(%esp)\n" /* line 592 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        ".Lf1e1f7c_001e34f7:\n"
-        "movl 0x1c(%eax), %eax\n" /* line 559 */
-        "movl %eax, 4(%esp)\n"
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e2746\n"
-        /* } scope */
-        /* { scope 2: forward, up */
-        ".Lf1e1f7c_001e350d:\n"
-        "movl %ebx, 8(%esp)\n" /* line 520 | clientNum */
-        "movl 0x195f95c, %eax\n"
-        "movl 0x23c(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b840c, (%esp)\n" /* "Event %s just for client %i was sent to other clients
-" */
-        "calll Com_DPrintf\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        ".Lf1e1f7c_001e3531:\n"
-        "movl %ebx, 8(%esp)\n" /* line 507 | clientNum */
-        "movl 0x195f95c, %eax\n"
-        "movl 0x238(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b840c, (%esp)\n" /* "Event %s just for client %i was sent to other clients
-" */
-        "calll Com_DPrintf\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        /* { scope 3 */
-        ".Lf1e1f7c_001e3555:\n"
-        "movl 0x2be50(%edi), %eax\n" /* line 254 | attacker */
-        "testl %eax, %eax\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl %ebx, (%esp)\n" /* line 255 | itemid */
-        "calll CG_SelectWeaponIndex\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1e1f7c_001e3570:\n"
-        "movl 0xf8(%edx), %eax\n" /* line 593 */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 594 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "movss 0x2eda90, %xmm0\n" /* line 129 | 1.399999976158142f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        "movl $0x2a761c, -0xc0(%ebp)\n" /* iconShader */
-        "movb $0, -0xb1(%ebp)\n" /* iconHorzFlip */
-        ".Lf1e1f7c_001e35b2:\n"
-        "cmpl $0x3f, -0xb0(%ebp)\n" /* line 144 | target */
-        "ja .Lf1e1f7c_001e38f9\n"
-        ".Lf1e1f7c_001e35bf:\n"
-        "movl -0xb0(%ebp), %edx\n" /* line 146 | target */
-        "leal (%edx, %edx, 4), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "subl %eax, %edx\n"
-        "movl -0xb0(%ebp), %ecx\n" /* target */
-        "leal (%ecx, %edx, 2), %edx\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %ebx\n"
-        "leal 0xe0900(%ebx, %edx, 8), %eax\n"
-        "leal 0x14(%eax), %edx\n"
-        "movl %edx, -0xbc(%ebp)\n" /* victimCI */
-        "movl 0x14(%eax), %edx\n" /* line 147 */
-        "testl %edx, %edx\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl $0x20, 8(%esp)\n" /* line 150 */
-        "addl $0x20, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0xa8(%ebp), %ecx\n" /* targetName */
-        "movl %ecx, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $0x2b3b48, 8(%esp)\n" /* line 151 */
-        "movl $0x22, 4(%esp)\n"
-        "leal -0xa8(%ebp), %eax\n" /* targetName */
-        "movl %eax, (%esp)\n"
-        "calll I_strncat\n"
-        "leal -0x64(%ebp), %edx\n" /* line 152 | victimColor */
-        "movl %edx, 4(%esp)\n"
-        "movl -0xbc(%ebp), %ecx\n" /* victimCI */
-        "movl 0x30(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_DrawScoreboard_GetTeamColor\n"
-        "movl 4(%ebx), %edx\n" /* line 155 */
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %ecx, %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl 0xe0914(%ebx, %eax, 8), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "cmpl $0x3f, %edi\n" /* line 158 | attacker */
-        "jbe .Lf1e1f7c_001e3850\n"
-        "movb $0, -0x86(%ebp)\n" /* line 162 | attackerName */
-        "movl $0x3fe, %edi\n" /* attacker */
-        "movl $0, -0xb8(%ebp)\n" /* attackerCI */
-        ".Lf1e1f7c_001e368b:\n"
-        "cmpl -0xb0(%ebp), %edi\n" /* line 178 | target, attacker */
-        "je .Lf1e1f7c_001e3819\n"
-        "movl 0x195f584, %edx\n" /* line 183 */
-        "movl (%edx), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        "movl 0xd8(%eax), %eax\n"
-        "cmpl %eax, %edi\n" /* attacker */
-        "je .Lf1e1f7c_001e37e4\n"
-        "cmpl %eax, -0xb0(%ebp)\n" /* line 199 | target */
-        "je .Lf1e1f7c_001e374f\n"
-        ".Lf1e1f7c_001e36bc:\n"
-        "movl (%edx), %eax\n" /* line 217 */
-        "movl 0x2cd14(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movzbl -0xb1(%ebp), %eax\n" /* line 219 | iconHorzFlip */
-        "movl %eax, 0x20(%esp)\n"
-        "leal -0x44(%ebp), %eax\n" /* iconColor */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0x3fb33333, 0x18(%esp)\n"
-        "movss -0xc4(%ebp), %xmm0\n" /* iconWidth */
-        "movss %xmm0, 0x14(%esp)\n"
-        "movl -0xc0(%ebp), %eax\n" /* iconShader */
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x64(%ebp), %edx\n" /* victimColor */
-        "movl %edx, 0xc(%esp)\n"
-        "leal -0xa8(%ebp), %ecx\n" /* targetName */
-        "movl %ecx, 8(%esp)\n"
-        "leal -0x54(%ebp), %eax\n" /* attackerColor */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x86(%ebp), %eax\n" /* attackerName */
-        "movl %eax, (%esp)\n"
-        "calll CL_DeathMessagePrint\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        "movss 0x2eda90, %xmm0\n" /* line 125 | 1.399999976158142f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        "movl $0x2a760c, -0xc0(%ebp)\n" /* iconShader */
-        "movb $0, -0xb1(%ebp)\n" /* iconHorzFlip */
-        "jmp .Lf1e1f7c_001e35b2\n"
-        ".Lf1e1f7c_001e374f:\n"
-        "movl -0xb8(%ebp), %ebx\n" /* line 199 | attackerCI */
-        "testl %ebx, %ebx\n"
-        "je .Lf1e1f7c_001e36bc\n"
-        "movl -0xb8(%ebp), %edx\n" /* line 201 | attackerCI */
-        "movl 0x30(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e3775\n"
-        "movl -0xbc(%ebp), %ecx\n" /* victimCI */
-        "cmpl 0x30(%ecx), %eax\n"
-        "je .Lf1e1f7c_001e37c2\n"
-        ".Lf1e1f7c_001e3775:\n"
-        "leal -0x86(%ebp), %eax\n" /* line 204 | attackerName */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b84d0, (%esp)\n" /* "CGAME_YOUWEREKILLED%s" */
-        "calll va\n"
-        "movl %eax, %edx\n"
-        ".Lf1e1f7c_001e378d:\n"
-        "movl 0x195f584, %ebx\n" /* line 205 */
-        "movl (%ebx), %eax\n"
-        "movl 0x2cd14(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lf1e1f7c_001e1fa0\n"
-        "movl $1, 8(%esp)\n" /* line 210 */
-        "movl $0x4119999a, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll CG_PriorityCenterPrint\n"
-        "movl %ebx, %edx\n"
-        "jmp .Lf1e1f7c_001e36bc\n"
-        ".Lf1e1f7c_001e37c2:\n"
-        "movl $0x2b8468, 8(%esp)\n" /* line 202 */
-        "leal -0x86(%ebp), %eax\n" /* attackerName */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b84ac, (%esp)\n" /* "CGAME_YOUWEREKILLED^1&&2^7 %s%s" */
-        "calll va\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1e1f7c_001e378d\n"
-        ".Lf1e1f7c_001e37e4:\n"
-        "movl -0xb8(%ebp), %ecx\n" /* line 185 | attackerCI */
-        "movl 0x30(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e37fc\n"
-        "movl -0xbc(%ebp), %edx\n" /* victimCI */
-        "cmpl 0x30(%edx), %eax\n"
-        "je .Lf1e1f7c_001e382b\n"
-        ".Lf1e1f7c_001e37fc:\n"
-        "leal -0xa8(%ebp), %eax\n" /* line 188 | targetName */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b8498, (%esp)\n" /* "CGAME_YOUKILLED%s" */
-        "calll va\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1e1f7c_001e378d\n"
-        ".Lf1e1f7c_001e3819:\n"
-        "movb $0, -0x86(%ebp)\n" /* line 180 | attackerName */
-        "movl 0x195f584, %edx\n"
-        "jmp .Lf1e1f7c_001e36bc\n"
-        ".Lf1e1f7c_001e382b:\n"
-        "movl $0x2b8468, 8(%esp)\n" /* line 186 */
-        "leal -0xa8(%ebp), %ecx\n" /* targetName */
-        "movl %ecx, 4(%esp)\n"
-        "movl $0x2b8478, (%esp)\n" /* "CGAME_YOUKILLED^1&&2^7 %s%s" */
-        "calll va\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf1e1f7c_001e378d\n"
-        ".Lf1e1f7c_001e3850:\n"
-        "leal (%edi, %edi, 4), %edx\n" /* line 166 | attacker */
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%edi, %eax, 2), %eax\n" /* attacker */
-        "leal 0xe0900(%ebx, %eax, 8), %eax\n"
-        "leal 0x14(%eax), %edx\n"
-        "movl %edx, -0xb8(%ebp)\n" /* attackerCI */
-        "movl 0x14(%eax), %esi\n" /* line 167 */
-        "testl %esi, %esi\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl $0x20, 8(%esp)\n" /* line 169 */
-        "addl $0x20, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x86(%ebp), %esi\n" /* attackerName */
-        "movl %esi, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $0x2b3b48, 8(%esp)\n" /* line 170 */
-        "movl $0x22, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll I_strncat\n"
-        "leal -0x54(%ebp), %eax\n" /* line 171 | attackerColor */
-        "movl %eax, 4(%esp)\n"
-        "movl -0xb8(%ebp), %ecx\n" /* attackerCI */
-        "movl 0x30(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_DrawScoreboard_GetTeamColor\n"
-        "movl 0x24(%ebx), %eax\n" /* line 174 */
-        "movl -0xb0(%ebp), %edx\n" /* target */
-        "cmpl 0xd8(%eax), %edx\n"
-        "jne .Lf1e1f7c_001e368b\n"
-        "movl $0x20, 8(%esp)\n" /* line 175 */
-        "movl %esi, 4(%esp)\n"
-        "leal 0x2b54c(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "jmp .Lf1e1f7c_001e368b\n"
-        ".Lf1e1f7c_001e38f9:\n"
-        "movl $0x2b8444, 4(%esp)\n" /* line 145 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1e1f7c_001e35bf\n"
-        ".Lf1e1f7c_001e3912:\n"
-        "movss 0x2eda90, %xmm0\n" /* line 100 | 1.399999976158142f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        "movl $0x2a763c, -0xc0(%ebp)\n" /* iconShader */
-        "movb $0, -0xb1(%ebp)\n" /* iconHorzFlip */
-        "jmp .Lf1e1f7c_001e35b2\n"
-        ".Lf1e1f7c_001e3938:\n"
-        "movl %eax, (%esp)\n" /* line 99 */
-        "calll BG_GetWeaponDef\n"
-        "movl 0x34c(%eax), %edx\n" /* line 100 */
-        "cmpb $0, (%edx)\n"
-        "je .Lf1e1f7c_001e3912\n"
-        "movl %edx, -0xc0(%ebp)\n" /* line 102 | iconShader */
-        "movl 0x350(%eax), %ebx\n" /* line 103 */
-        "testl %ebx, %ebx\n"
-        "je .Lf1e1f7c_001e3a16\n"
-        "movss 0x2eda94, %xmm0\n" /* 2.799999952316284f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        ".Lf1e1f7c_001e396f:\n"
-        "movl 0x354(%eax), %ecx\n" /* line 105 */
-        "testl %ecx, %ecx\n"
-        "setne -0xb1(%ebp)\n" /* iconHorzFlip */
-        "jmp .Lf1e1f7c_001e35b2\n"
-        "movss 0x2eda90, %xmm0\n" /* line 121 | 1.399999976158142f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        "movl $0x2a89d8, -0xc0(%ebp)\n" /* iconShader */
-        "movb $0, -0xb1(%ebp)\n" /* iconHorzFlip */
-        "jmp .Lf1e1f7c_001e35b2\n"
-        "movss 0x2eda90, %xmm0\n" /* line 105 | 1.399999976158142f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        "movl $0x2a75fc, -0xc0(%ebp)\n" /* iconShader */
-        "movb $0, -0xb1(%ebp)\n" /* iconHorzFlip */
-        "jmp .Lf1e1f7c_001e35b2\n"
-        /* } scope */
-        ".Lf1e1f7c_001e39cf:\n"
-        "movl 0x100(%edx), %eax\n" /* line 582 */
-        "testl %eax, %eax\n"
-        "je .Lf1e1f7c_001e1fa0\n"
-        "movl %eax, 4(%esp)\n" /* line 583 */
-        "movl (%esi), %eax\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll CG_PlayEntitySoundAlias\n"
-        "jmp .Lf1e1f7c_001e1fa0\n"
-        /* { scope 2: forward, up */
-        "movss 0x2eda90, %xmm0\n" /* line 116 | 1.399999976158142f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        "movl $0x2a762c, -0xc0(%ebp)\n" /* iconShader */
-        "movb $0, -0xb1(%ebp)\n" /* iconHorzFlip */
-        "jmp .Lf1e1f7c_001e35b2\n"
-        ".Lf1e1f7c_001e3a16:\n"
-        "movss 0x2eda90, %xmm0\n" /* line 103 | 1.399999976158142f */
-        "movss %xmm0, -0xc4(%ebp)\n" /* iconWidth */
-        "jmp .Lf1e1f7c_001e396f\n"
-    );
+    char *es;           /* nextState pointer */
+    char *position;     /* lerpOrigin pointer */
+    int eventParm;
+    int clientNum;
+    int isFirstPerson;  /* flag: this entity is the viewer's entity */
+    int isViewerFlag;   /* flag: related to viewer entity check */
+    int entNum;
+    float dir[3];
+    float reflect[3];
+    float forward[3];   /* reused as attackerColor in some paths */
+    float up[3];        /* reused as iconColor in some paths */
+    char *cgs;
+    char *cg;
+    char *snap;
+    int idx;
+    int weapon;
+
+    /* Obituary-related locals */
+    float attackerColor[4];
+    float victimColor[4];
+    float iconColor[4];
+    int target;
+    int attacker;
+    char targetName[34];    /* 0x22 bytes */
+    char attackerName[34];  /* 0x22 bytes */
+    float iconWidth;
+    const char *iconShader;
+    int iconHorzFlip;
+    char *victimCI;
+    char *attackerCI;
+    unsigned short tagName;
+    int boneIndex;
+
+    /* line 361 */
+    if (event == 0) {
+        /* line 363 */
+        cg = *((char **)cg_dvar_debug);
+        if (*(char *)(cg + 8) != 0) {
+            /* "CG_EntityEvent: NULL\n" */
+            Com_Printf((const char *)0x2b83c8);
+        }
+        return;
+    }
+
+    /* line 368 */
+    position = (char *)cent + CENT_LERPORIGIN;
+    /* line 370 */
+    es = (char *)cent + CENT_NEXTSTATE;
+    /* line 371 */
+    eventParm = *(int *)(es + ES_EVENTPARM);
+
+    /* line 372: check if this entity is the viewer */
+    cg = *cg_glob;
+    snap = *(char **)(cg + CG_SNAP);
+    isFirstPerson = 0;
+    isViewerFlag = 0;
+    if (*(int *)(snap + SNAP_FLAGS) & 0xc00000) {
+        int esNumber = *(int *)(es + ES_NUMBER);
+        if (esNumber == *(int *)(snap + SNAP_PS_CLIENTNUM)) {
+            isFirstPerson = 1;
+            isViewerFlag = 1;
+        }
+    }
+
+    /* line 374: debug event printing */
+    cg = *((char **)cg_dvar_debug);
+    if (*(char *)(cg + 8) != 0) {
+        /* "ent:%3i  event:%3i " */
+        Com_Printf((const char *)0x2b83e4, *(int *)(es + ES_NUMBER), event);
+        /* line 380 */
+        cg = *((char **)cg_dvar_debug);
+        if (*(char *)(cg + 8) != 0) {
+            /* "CG_EntityEvent:%s\n" */
+            char **eventNames = (char **)(*cg_eventNames);
+            Com_Printf((const char *)0x2b83f8, eventNames[event]);
+        }
+    }
+
+    /* line 383 */
+    clientNum = *(int *)(es + ES_CLIENTNUM);
+    /* line 384 */
+    if ((unsigned int)clientNum >= 0x40) {
+        clientNum = 0;
+    }
+
+    /* line 387 */
+    weapon = *(int *)(es + ES_WEAPON);
+    if (weapon != 0) {
+        BG_GetWeaponDef(weapon);
+    }
+
+    /* line 389: main event dispatch */
+    if (event >= 1 && event <= 23) {
+        /* Footstep sounds set 1 (events 1-23) */
+        int sndIdx = event - 1;
+
+        /* line 391 */
+        cg = *((char **)cg_dvar_footsteps);
+        if (*(char *)(cg + 8) != 0) {
+            /* line 393 */
+            cgs = *cgs_glob;
+            if (isFirstPerson) {
+                /* line 394: third person sound */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(cgs + CGS_SND_FOOTSTEP1_THIRD + sndIdx * 4));
+            } else {
+                /* line 396: first person sound */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(cgs + CGS_SND_FOOTSTEP1_FIRST + sndIdx * 4));
+            }
+        }
+
+        /* line 398 */
+        entNum = *(int *)(es + ES_NUMBER);
+
+        /* Prone movement sound (lines 268-280) */
+        cgs = *cgs_glob;
+        if (isViewerFlag) {
+            /* line 271 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_NONVIEW));
+        } else {
+            /* line 278 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_3P));
+        }
+        return;
+    }
+
+    if (event >= 24 && event <= 46) {
+        /* Footstep sounds set 2 (events 24-46) */
+        int sndIdx = event - 24;
+
+        /* line 403 */
+        cg = *((char **)cg_dvar_footsteps);
+        if (*(char *)(cg + 8) != 0) {
+            cgs = *cgs_glob;
+            if (isFirstPerson) {
+                /* line 405-406: first person */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(cgs + CGS_SND_FOOTSTEP2_FIRST + sndIdx * 4));
+            } else {
+                /* line 408: third person */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(cgs + CGS_SND_FOOTSTEP2_THIRD + sndIdx * 4));
+            }
+        }
+
+        /* line 410 */
+        entNum = *(int *)(es + ES_NUMBER);
+
+        /* Prone sound */
+        cgs = *cgs_glob;
+        if (isViewerFlag) {
+            /* line 273 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_STOP_1P));
+        } else {
+            /* line 280 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_VIEW));
+        }
+        return;
+    }
+
+    if (event >= 47 && event <= 69) {
+        /* Footstep sounds set 3 (events 47-69) */
+        int sndIdx = event - 47;
+
+        /* line 415 */
+        cg = *((char **)cg_dvar_footsteps);
+        if (*(char *)(cg + 8) != 0) {
+            cgs = *cgs_glob;
+            if (isFirstPerson) {
+                /* line 417-418: third person */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(cgs + CGS_SND_FOOTSTEP3_THIRD + sndIdx * 4));
+            } else {
+                /* line 420: first person */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(cgs + CGS_SND_FOOTSTEP3_FIRST + sndIdx * 4));
+            }
+        }
+
+        /* line 422 */
+        entNum = *(int *)(es + ES_NUMBER);
+
+        /* Prone sound */
+        cgs = *cgs_glob;
+        if (isViewerFlag) {
+            /* line 273 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_STOP_1P));
+        } else {
+            /* line 280 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_VIEW));
+        }
+        return;
+    }
+
+    if (event >= 70 && event <= 92) {
+        /* Sprint sounds set 1 (events 70-92) */
+        int sndIdx = event - 70;
+
+        /* line 427 */
+        cgs = *cgs_glob;
+        if (isFirstPerson) {
+            /* line 428 */
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                *(int *)(cgs + CGS_SND_FOOTSTEP1_THIRD + sndIdx * 4));
+        } else {
+            /* line 430 */
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                *(int *)(cgs + CGS_SND_FOOTSTEP1_FIRST + sndIdx * 4));
+        }
+
+        /* line 431 */
+        entNum = *(int *)(es + ES_NUMBER);
+
+        /* Prone sound */
+        cgs = *cgs_glob;
+        if (isViewerFlag) {
+            /* line 271 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_1P_NONVIEW));
+        } else {
+            /* line 278 */
+            CG_PlayEntitySoundAlias(entNum, *(int *)(cgs + CGS_SND_PRONE_LOOP_3P));
+        }
+        return;
+    }
+
+    if (event >= 93 && event <= 115) {
+        /* Sprint sounds set 2 (events 93-115) */
+        int sndIdx = event - 93;
+
+        /* line 436 */
+        cgs = *cgs_glob;
+        if (isFirstPerson) {
+            /* line 437 */
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                *(int *)(cgs + CGS_SND_SPRINT_THIRD + sndIdx * 4));
+        } else {
+            /* line 439 */
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                *(int *)(cgs + CGS_SND_SPRINT_FIRST + sndIdx * 4));
+        }
+
+        /* line 440 */
+        cg = *cg_glob;
+        if (clientNum == *(int *)(cg + CG_CLIENTNUM)) {
+            /* line 443 */
+            float neg = -(float)eventParm;
+            *(float *)(cg + CG_SHELLSHOCK_TILT) = neg;
+            /* line 444 */
+            *(int *)(cg + CG_SHELLSHOCK_TIME) = *(int *)(cg + CG_TIME);
+        }
+        return;
+    }
+
+    if (event >= 116 && event <= 138) {
+        /* Prone sounds (events 116-138) */
+        int sndIdx = event - 116;
+
+        /* line 450 */
+        cgs = *cgs_glob;
+        if (isFirstPerson) {
+            /* line 451 */
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                *(int *)(cgs + CGS_SND_SPRINT_THIRD + sndIdx * 4));
+        } else {
+            /* line 453 */
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                *(int *)(cgs + CGS_SND_SPRINT_FIRST + sndIdx * 4));
+        }
+
+        /* line 454: melee hit sound */
+        CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+            *(int *)(cgs + CGS_SND_MELEE_HIT));
+
+        /* line 455 */
+        cg = *cg_glob;
+        if (clientNum == *(int *)(cg + CG_CLIENTNUM)) {
+            /* line 457: shellshock calculation */
+            char *ssMin = *cg_dvar_shellshock_min;
+            float ssMinVal = *(float *)(ssMin + 8);
+            float parm = (float)eventParm * f_0_01;
+            char *ssMax = *cg_dvar_shellshock_max;
+            float ssMaxVal = *(float *)(ssMax + 8);
+            float delta = ssMaxVal - ssMinVal;
+            float shellshock = parm * delta + ssMinVal;
+
+            /* line 460 */
+            if (shellshock > f_12_0) {
+                /* line 463 */
+                float tilt = (shellshock - f_12_0) / f_26_0;
+                tilt = tilt * f_4_0 + f_4_0;
+                int tiltInt = (int)tilt;
+
+                /* line 464 */
+                float tiltVal;
+                if (tiltInt > 24) {
+                    tiltVal = f_24_0;
+                } else if (tiltInt <= 0) {
+                    return;
+                } else {
+                    tiltVal = (float)tiltInt;
+                }
+
+                /* line 470 */
+                *(float *)(cg + CG_SHELLSHOCK_TILT) = -tiltVal;
+                /* line 471 */
+                cg = *cg_glob;
+                *(int *)(cg + CG_SHELLSHOCK_TIME) = *(int *)(cg + CG_TIME);
+            }
+        }
+        return;
+    }
+
+    /* Events 139+ go through jump table (event - 0x8b) */
+    /* Since we can't reproduce the exact jump table, we use a switch */
+    {
+        int jmpIdx = event - 0x8b;
+        if ((unsigned int)jmpIdx > 0x3b) {
+            /* line 859: unknown event */
+            char **eventNames = (char **)(*cg_eventNames);
+            /* "Unknown event: '%s'" */
+            Com_Error(1, (const char *)0x2b84e8, eventNames[event]);
+            return;
+        }
+
+        /* The jump table maps event codes 0x8b-0xc6 to various handlers.
+         * We reconstruct the switch based on the asm source line references. */
+        switch (event) {
+
+        /* line 484: weapon pickup sound */
+        case 0x8b:
+        {
+            cgs = *cgs_glob;
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                *(int *)(cgs + CGS_SND_WEAPON_PICKUP));
+            return;
+        }
+
+        /* line 489: stance change down (client-only) */
+        case 0x8c:
+        {
+            cg = *cg_glob;
+            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+                /* "Event %s just for client %i was sent to other clients\n" */
+                char **eventNames2 = (char **)(*cg_eventNames);
+                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x230), clientNum);
+                return;
+            }
+            /* line 492 */
+            char *ui = *cg_uiglob;
+            if (*(int *)(ui + 0xc) != 0)
+                return;
+            /* line 493 */
+            *(int *)(ui + 0x8) = 0;
+            return;
+        }
+
+        /* line 498: stance change up (client-only) */
+        case 0x8d:
+        {
+            cg = *cg_glob;
+            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+                char **eventNames2 = (char **)(*cg_eventNames);
+                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x234), clientNum);
+                return;
+            }
+            /* line 501 */
+            char *ui = *cg_uiglob;
+            if (*(int *)(ui + 0xc) != 0)
+                return;
+            /* line 502 */
+            *(int *)(ui + 0x8) = 1;
+            return;
+        }
+
+        /* line 507: stance change crouch (client-only) */
+        case 0x8e:
+        {
+            cg = *cg_glob;
+            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+                char **eventNames2 = (char **)(*cg_eventNames);
+                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x238), clientNum);
+                return;
+            }
+            /* line 510 */
+            char *ui = *cg_uiglob;
+            if (*(int *)(ui + 0xc) != 0)
+                return;
+            /* line 511 */
+            *(int *)(ui + 0x8) = 2;
+            return;
+        }
+
+        /* line 520: shellshock / viewkick (client-only) */
+        case 0x8f:
+        {
+            cg = *cg_glob;
+            if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
+                char **eventNames2 = (char **)(*cg_eventNames);
+                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x23c), clientNum);
+                return;
+            }
+            /* line 523 */
+            if (*(int *)(cg + CG_FIELD_8) != 0)
+                return;
+            char *dv1 = *cg_dvar1;
+            if (*(char *)(dv1 + 8) != 0)
+                return;
+            char *dv2 = *cg_dvar2;
+            if (*(char *)(dv2 + 8) != 0)
+                return;
+
+            /* line 528 */
+            int cgTime = *(int *)(cg + CG_TIME);
+            int prevTime = *(int *)(cg + CG_SHELLSHOCK_VIEWANGLE + 4);
+            int timeDiff = cgTime - prevTime;
+            float viewAngle = 0.0f;
+
+            /* line 529 */
+            if (timeDiff <= 99) {
+                /* line 530 */
+                int remaining = 100 - timeDiff;
+                viewAngle = (float)remaining * *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE);
+                viewAngle /= f_100_0;
+                viewAngle *= f_0_9;
+            }
+
+            /* line 536 */
+            int parmAdj = eventParm - 128;
+            viewAngle += (float)parmAdj;
+            *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE) = viewAngle;
+
+            /* line 537 */
+            cg = *cg_glob;
+            float curAngle = *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE);
+            if (curAngle > f_24_0) {
+                /* line 538 */
+                *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE) = 24.0f;
+            } else if (curAngle < f_neg16) {
+                /* line 540 */
+                *(float *)(cg + CG_SHELLSHOCK_VIEWANGLE) = -16.0f;
+            }
+
+            /* line 542 */
+            cg = *cg_glob;
+            *(int *)(cg + CG_SHELLSHOCK_VIEWANGLE + 4) = *(int *)(cg + CG_TIME);
+            return;
+        }
+
+        /* line 552: item sound events (0x90, 0x91) */
+        case 0x90:
+        case 0x91:
+        {
+            int itemIndex = *(int *)(es + ES_EVENTPARM);
+            if (itemIndex <= 0)
+                return;
+            int *itemCnt = *cg_itemCount;
+            if (itemIndex >= *itemCnt)
+                return;
+
+            /* line 556 */
+            char *itemDefs = *cg_itemDefs;
+            char *itemData = itemDefs + itemIndex * 9 * 4;
+
+            if (event == 0x90) {
+                /* line 559 */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(itemData + 0x1c));
+            } else {
+                /* line 561 */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(itemData + 0x20));
+            }
+
+            /* line 564 */
+            cg = *cg_glob;
+            snap = *(char **)(cg + CG_SNAP);
+            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+                return;
+            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+                return;
+
+            /* line 237: check item type for offhand weapon equip */
+            {
+                int itemid = itemIndex;
+                char *itemInfoBase = *cg_itemInfo;
+                char *item = itemInfoBase + itemid * (1 + 2 * 5) * 4;
+                int weapId = *(int *)(item + 0x20);
+                if (*(int *)(item + 0x1c) != 1)
+                    return;
+
+                /* line 242 */
+                char *weapDef = (char *)BG_GetWeaponDef(weapId);
+                /* line 244 */
+                if (*(int *)(weapDef + 0x7c) == 9)
+                    return;
+
+                /* line 247 */
+                if (*(int *)(weapDef + 0x84) != 0) {
+                    /* line 249 */
+                    if (*(int *)(cg + CG_OFFHAND) != 0)
+                        return;
+                    /* line 250 */
+                    CG_SetEquippedOffHand(weapId);
+                } else {
+                    /* line 254 */
+                    if (*(int *)(cg + CG_OFFHAND2) != 0)
+                        return;
+                    /* line 255 */
+                    CG_SelectWeaponIndex(weapId);
+                }
+            }
+            return;
+        }
+
+        /* line 576: weapon fire sound 1 */
+        case 0x92:
+        {
+            if (isFirstPerson) {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                int alias = *(int *)(wepData + 0xfc);
+                if (alias != 0) {
+                    /* line 577 */
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+                /* line 578: fall through to alt sound */
+                alias = *(int *)(wepData + 0x104);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+            } else {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                /* line 580 */
+                int alias = *(int *)(wepData + 0xf8);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+                /* line 582-583 */
+                alias = *(int *)(wepData + 0x100);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+            }
+            return;
+        }
+
+        /* line 587: weapon fire sound 2 */
+        case 0x93:
+        {
+            if (isFirstPerson) {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                int alias = *(int *)(wepData + 0x104);
+                if (alias != 0) {
+                    /* line 588 */
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+                /* line 589-590 */
+                alias = *(int *)(wepData + 0xfc);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+            } else {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                /* line 591-592 */
+                int alias = *(int *)(wepData + 0x100);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+                /* line 593-594 */
+                alias = *(int *)(wepData + 0xf8);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+            }
+            return;
+        }
+
+        /* line 598: weapon reload sound 1 */
+        case 0x94:
+        {
+            if (isFirstPerson) {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                int alias = *(int *)(wepData + 0x10c);
+                if (alias != 0) {
+                    /* line 599 */
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+                /* fallthrough: line 600 */
+                alias = *(int *)(wepData + 0x108);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                }
+            } else {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                /* line 607 */
+                int alias = *(int *)(wepData + 0x110);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                }
+            }
+            return;
+        }
+
+        /* line 605: weapon reload sound 2 */
+        case 0x95:
+        {
+            if (isFirstPerson) {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                int alias = *(int *)(wepData + 0x114);
+                if (alias != 0) {
+                    /* line 606 */
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+                /* fallthrough: line 607-608 */
+                alias = *(int *)(wepData + 0x110);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                }
+            } else {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                /* line 608 */
+                int alias = *(int *)(wepData + 0x108);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                }
+            }
+            return;
+        }
+
+        /* line 613: no ammo / weapon change */
+        case 0x96:
+        {
+            int w = *(int *)(es + ES_WEAPON);
+            if (!BG_WeaponIsClipOnly(w)) {
+                /* line 614 */
+                cgs = *cgs_glob;
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER),
+                    *(int *)(cgs + CGS_SND_NOAMMO));
+            }
+            /* line 615 */
+            cg = *cg_glob;
+            snap = *(char **)(cg + CG_SNAP);
+            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+                return;
+            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+                return;
+            /* line 616 */
+            CG_OutOfAmmoChange();
+            return;
+        }
+
+        /* line 620: switch offhand */
+        case 0x97:
+        {
+            cg = *cg_glob;
+            snap = *(char **)(cg + CG_SNAP);
+            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+                return;
+            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+                return;
+            /* line 622 */
+            CG_MenuShowNotify(4);
+            /* line 623 */
+            CG_SwitchOffHandCmd();
+            return;
+        }
+
+        /* line 629: clear ADS */
+        case 0x98:
+        {
+            cg = *cg_glob;
+            snap = *(char **)(cg + CG_SNAP);
+            if (!(*(int *)(snap + SNAP_FLAGS) & 0xc00000))
+                return;
+            if (*(int *)(es + ES_NUMBER) != *(int *)(snap + SNAP_PS_CLIENTNUM))
+                return;
+            /* line 630 */
+            CL_SetADS(0);
+            return;
+        }
+
+        /* line 634: weapon raise sound */
+        case 0x99:
+        {
+            weapon = *(int *)(es + ES_WEAPON);
+            int wepOff = weaponDataOffset(weapon);
+            char *wepDefs = *cg_weaponDefs;
+            char *wepData = wepDefs + wepOff * 4;
+            int alias = *(int *)(wepData + 0x118);
+            if (alias != 0) {
+                /* line 635 */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+            }
+            return;
+        }
+
+        /* line 640: weapon putaway sound */
+        case 0x9a:
+        {
+            weapon = *(int *)(es + ES_WEAPON);
+            int wepOff = weaponDataOffset(weapon);
+            char *wepDefs = *cg_weaponDefs;
+            char *wepData = wepDefs + wepOff * 4;
+            int alias = *(int *)(wepData + 0x120);
+            if (alias != 0) {
+                /* line 641 */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+            }
+            return;
+        }
+
+        /* line 646: weapon alt raise sound */
+        case 0x9b:
+        {
+            weapon = *(int *)(es + ES_WEAPON);
+            int wepOff = weaponDataOffset(weapon);
+            char *wepDefs = *cg_weaponDefs;
+            char *wepData = wepDefs + wepOff * 4;
+            int alias = *(int *)(wepData + 0x11c);
+            if (alias != 0) {
+                /* line 647 */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+            }
+            return;
+        }
+
+        /* line 651: fire weapon both barrels */
+        case 0x9c:
+        {
+            /* line 651 */
+            CG_FireWeapon(cent, 0xb0, 0);
+            /* line 652 */
+            CG_FireWeapon(cent, 0xb0, 1);
+            return;
+        }
+
+        /* line 656: fire weapon alt both barrels */
+        case 0x9d:
+        {
+            /* line 656 */
+            CG_FireWeapon(cent, 0xb1, 2);
+            /* line 657 */
+            CG_FireWeapon(cent, 0xb1, 3);
+            return;
+        }
+
+        /* line 664: grenade explosion / shake camera */
+        case 0x9e:
+        {
+            /* line 664: CG_StartShakeCamera(0.05f, position, 100, 100.0f) */
+            /* 0x3d4ccccd = 0.05f, 0x42c80000 = 100.0f */
+            CG_StartShakeCamera(0.05f, position, 100, 100.0f);
+            /* line 665 */
+            CG_FireWeapon(cent, 0xaf, 0);
+            /* line 667 */
+            {
+                int ep = eventParm;
+                int entStride = ep * 16 + ep;
+                entStride = ep + entStride * 8;
+                char *ents = *cg_entities_glob;
+                char *entData = ents + entStride * 4;
+                /* line 668 */
+                if (*(char *)(entData + 0x1e0) == 0)
+                    return;
+                if (*(int *)(entData + 0xf4) != 1)
+                    return;
+                cg = *cg_glob;
+                snap = *(char **)(cg + CG_SNAP);
+                int snapWeapon = *(int *)(snap + SNAP_PS_WEAPON);
+                if (snapWeapon == *(int *)((char *)cent + CENT_NEXTSTATE + ES_NUMBER))
+                    return;
+                /* line 669 */
+                CG_CompassAddWeaponPingInfo(entData, position, 50);
+            }
+            return;
+        }
+
+        /* line 674: weapon sound alt */
+        case 0x9f:
+        {
+            weapon = *(int *)(es + ES_WEAPON);
+            int wepOff = weaponDataOffset(weapon);
+            char *wepDefs = *cg_weaponDefs;
+            char *wepData = wepDefs + wepOff * 4;
+            int alias = *(int *)(wepData + 0xd8);
+            if (alias != 0) {
+                /* line 675 */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+            }
+            return;
+        }
+
+        /* line 681: fire weapon generic */
+        case 0xa0:
+        {
+            /* line 681 */
+            CG_FireWeapon(cent, event, 0);
+            return;
+        }
+
+        /* line 685: weapon bolt sound */
+        case 0xa1:
+        {
+            if (isFirstPerson) {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                int alias = *(int *)(wepData + 0xf4);
+                if (alias != 0) {
+                    /* line 686 */
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                    return;
+                }
+                /* line 687-688 */
+                alias = *(int *)(wepData + 0xf0);
+                if (alias != 0) {
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                }
+            } else {
+                weapon = *(int *)(es + ES_WEAPON);
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                char *wepData = wepDefs + wepOff * 4;
+                int alias = *(int *)(wepData + 0xec);
+                if (alias != 0) {
+                    /* line 697 */
+                    CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+                }
+            }
+            return;
+        }
+
+        /* line 692: eject brass */
+        case 0xa2:
+        {
+            /* line 692 */
+            CG_EjectWeaponBrass((entityState_t *)es, 0xa2);
+            return;
+        }
+
+        /* line 696: weapon sound misc */
+        case 0xa3:
+        {
+            weapon = *(int *)(es + ES_WEAPON);
+            int wepOff = weaponDataOffset(weapon);
+            char *wepDefs = *cg_weaponDefs;
+            char *wepData = wepDefs + wepOff * 4;
+            int alias = *(int *)(wepData + 0xec);
+            if (alias != 0) {
+                /* line 697 */
+                CG_PlayEntitySoundAlias(*(int *)(es + ES_NUMBER), alias);
+            }
+            return;
+        }
+
+        /* line 704: prep offhand */
+        case 0xa4:
+        {
+            /* line 704 */
+            CG_PrepOffHand((entityState_t *)es, 0xa5, *(int *)(es + ES_EVENTPARM));
+            return;
+        }
+
+        /* line 708: use offhand */
+        case 0xa5:
+        {
+            /* line 708 */
+            CG_UseOffHand(cent, 0xa6, *(int *)(es + ES_EVENTPARM));
+            return;
+        }
+
+        /* line 712: equip offhand */
+        case 0xa6:
+        {
+            /* line 712 */
+            if (!isFirstPerson)
+                return;
+            CG_SetEquippedOffHand(*(int *)(es + ES_EVENTPARM));
+            return;
+        }
+
+        /* line 724: nightvision on sound */
+        case 0xa7:
+        {
+            cgs = *cgs_glob;
+            CG_PlayEntitySoundAlias(*(int *)(es + ES_OTHERENTNUM),
+                *(int *)(cgs + CGS_SND_NIGHTVISION_ON));
+            return;
+        }
+
+        /* line 728: nightvision off sound */
+        case 0xa8:
+        {
+            cgs = *cgs_glob;
+            CG_PlaySoundAlias(*(int *)(es + ES_OTHERENTNUM), position,
+                *(int *)(cgs + CGS_SND_NIGHTVISION_OFF));
+            return;
+        }
+
+        /* line 733: bullet impact (no direction) */
+        case 0xa9:
+        {
+            /* line 191-193: up vector */
+            dir[0] = 0.0f;
+            dir[1] = 0.0f;
+            dir[2] = 1.0f;
+
+            /* line 733 */
+            cgs = *cgs_glob;
+            CG_PlaySoundAlias(0x3fe, position,
+                *(int *)(cgs + CGS_SND_BULLET_FLESH));
+
+            /* line 734 */
+            {
+                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxData = *(char **)(fxLookup + 4);
+                int fxId = *(int *)(fxData + 0x33c);
+                if (fxId != 0) {
+                    /* line 735 */
+                    FX_PlayEffect(fxId, position, dir);
+                }
+            }
+            return;
+        }
+
+        /* line 747: bullet hit event (with direction + reflect) */
+        case 0xaa:
+        {
+            /* line 747 */
+            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            /* line 748 */
+            ByteToDir(*(int *)(es + ES_DMGFLAGS), reflect);
+            /* line 749 */
+            CG_BulletHitEvent(*(int *)(es + ES_OTHERENTNUM), position,
+                dir, reflect, *(int *)(es + ES_SURFTYPE), event);
+            return;
+        }
+
+        /* line 754: bullet hit client event */
+        case 0xab:
+        {
+            /* line 754 */
+            CG_BulletHitClientEvent(*(int *)(es + ES_OTHERENTNUM), position,
+                *(int *)(es + ES_SURFTYPE), event);
+            return;
+        }
+
+        /* line 759: bullet whizby */
+        case 0xac:
+        {
+            /* line 759 */
+            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            /* line 760 */
+            cgs = *cgs_glob;
+            int surfType = *(int *)(es + ES_SURFTYPE);
+            CG_PlaySoundAlias(0x3fe, position,
+                *(int *)(cgs + CGS_SND_BULLET_WHIZBY + surfType * 4));
+            /* line 761 */
+            {
+                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxData = *(char **)(fxLookup + 4);
+                int fxId = *(int *)(fxData + 0x2e0 + surfType * 4);
+                if (fxId != 0) {
+                    /* line 762 */
+                    FX_PlayEffect(fxId, position, dir);
+                }
+            }
+            return;
+        }
+
+        /* line 767: bullet flesh hit */
+        case 0xad:
+        {
+            /* line 767 */
+            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            /* line 768 */
+            cgs = *cgs_glob;
+            int surfType2 = *(int *)(es + ES_SURFTYPE);
+            CG_PlaySoundAlias(0x3fe, position,
+                *(int *)(cgs + CGS_SND_BULLET_FLESH + surfType2 * 4));
+
+            /* line 770 */
+            {
+                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxData = *(char **)(fxLookup + 4);
+                int fxId = *(int *)(fxData + 0x33c + surfType2 * 4);
+                if (fxId != 0) {
+                    /* line 771 */
+                    FX_PlayEffect(fxId, position, dir);
+                }
+            }
+
+            /* line 773 */
+            weapon = *(int *)(es + ES_WEAPON);
+            {
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                int fxId = *(int *)(wepDefs + 0x164 + wepOff * 4);
+                if (fxId != 0) {
+                    /* line 774 */
+                    FX_PlayEffect(fxId, position, dir);
+                }
+
+                weapon = *(int *)(es + ES_WEAPON);
+                wepOff = weaponDataOffset(weapon);
+                /* line 776 */
+                int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
+                if (sndAlias != 0) {
+                    /* line 777 */
+                    CG_PlaySoundAlias(0x3fe, position, sndAlias);
+                }
+            }
+            return;
+        }
+
+        /* line 781: grenade bounce FX */
+        case 0xae:
+        {
+            /* line 781 */
+            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+            /* line 783 */
+            weapon = *(int *)(es + ES_WEAPON);
+            {
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+
+                /* line 804 */
+                cgs = *cgs_glob;
+                int surfType3 = *(int *)(es + ES_SURFTYPE);
+                CG_PlaySoundAlias(0x3fe, position,
+                    *(int *)(cgs + CGS_SND_GRENADE_BOUNCE + surfType3 * 4));
+
+                /* line 805 */
+                {
+                    char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                    char *fxData = *(char **)(fxLookup + 4);
+                    int surfType4 = *(int *)(es + ES_SURFTYPE);
+                    int fxId = *(int *)(fxData + 0x398 + surfType4 * 4);
+                    if (fxId != 0) {
+                        /* line 806 */
+                        FX_PlayEffect(fxId, position, dir);
+                    }
+                }
+
+                /* line 808 */
+                weapon = *(int *)(es + ES_WEAPON);
+                wepOff = weaponDataOffset(weapon);
+                int fxId2 = *(int *)(wepDefs + 0x164 + wepOff * 4);
+                if (fxId2 != 0) {
+                    /* line 809 */
+                    FX_PlayEffect(fxId2, position, dir);
+                }
+
+                /* line 810 */
+                weapon = *(int *)(es + ES_WEAPON);
+                wepOff = weaponDataOffset(weapon);
+                int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
+                if (sndAlias != 0) {
+                    /* line 811 */
+                    CG_PlaySoundAlias(0x3fe, position, sndAlias);
+                }
+            }
+
+            /* line 812 */
+            cg = *cg_glob;
+            *(int *)(cg + CG_VEHFLAG) = 0;
+            return;
+        }
+
+        /* line 799: grenade explosion FX (with warp time) */
+        case 0xaf:
+        {
+            /* line 799 */
+            cg = *cg_glob;
+            *(int *)(cg + CG_VEHFLAG) = 1;
+
+            /* line 803 */
+            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+
+            /* line 804 */
+            cgs = *cgs_glob;
+            int surfType5 = *(int *)(es + ES_SURFTYPE);
+            CG_PlaySoundAlias(0x3fe, position,
+                *(int *)(cgs + CGS_SND_GRENADE_BOUNCE + surfType5 * 4));
+
+            /* line 805 */
+            {
+                char *fxLookup = *(char **)(cgs + CGS_FXLOOKUP);
+                char *fxData = *(char **)(fxLookup + 4);
+                int surfType6 = *(int *)(es + ES_SURFTYPE);
+                int fxId = *(int *)(fxData + 0x398 + surfType6 * 4);
+                if (fxId != 0) {
+                    /* line 806 */
+                    FX_PlayEffect(fxId, position, dir);
+                }
+            }
+
+            /* line 808 */
+            weapon = *(int *)(es + ES_WEAPON);
+            {
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                int fxId = *(int *)(wepDefs + 0x164 + wepOff * 4);
+                if (fxId != 0) {
+                    /* line 809 */
+                    FX_PlayEffect(fxId, position, dir);
+                }
+
+                weapon = *(int *)(es + ES_WEAPON);
+                wepOff = weaponDataOffset(weapon);
+                /* line 810 */
+                int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
+                if (sndAlias != 0) {
+                    /* line 811 */
+                    CG_PlaySoundAlias(0x3fe, position, sndAlias);
+                }
+            }
+
+            /* line 812 */
+            cg = *cg_glob;
+            *(int *)(cg + CG_VEHFLAG) = 0;
+            return;
+        }
+
+        /* line 781 (variant): grenade bounce with warp time */
+        case 0xb0:
+        {
+            /* line 781 */
+            ByteToDir(*(int *)(es + ES_EVENTPARM), dir);
+
+            /* line 783 */
+            weapon = *(int *)(es + ES_WEAPON);
+            {
+                int wepOff = weaponDataOffset(weapon);
+                char *wepDefs = *cg_weaponDefs;
+                int fxId = *(int *)(wepDefs + 0x164 + wepOff * 4);
+                if (fxId != 0) {
+                    /* line 786 */
+                    FX_WarpTime(*(int *)(es + ES_TIME));
+                    /* line 787 */
+                    weapon = *(int *)(es + ES_WEAPON);
+                    wepOff = weaponDataOffset(weapon);
+                    fxId = *(int *)(wepDefs + 0x164 + wepOff * 4);
+                    FX_PlayEffect(fxId, position, dir);
+                    /* line 789 */
+                    cg = *cg_glob;
+                    FX_WarpTime(*(int *)(cg + CG_TIME));
+                }
+
+                /* line 791 */
+                weapon = *(int *)(es + ES_WEAPON);
+                wepOff = weaponDataOffset(weapon);
+                int sndAlias = *(int *)(wepDefs + 0x168 + wepOff * 4);
+                if (sndAlias == 0)
+                    return;
+
+                /* line 793 */
+                if (*(char *)(es + 0x0a) & 1) {
+                    cg = *cg_glob;
+                    int cgTime2 = *(int *)(cg + CG_TIME);
+                    int esTime = *(int *)(es + ES_TIME);
+                    if (cgTime2 - esTime > 49)
+                        return;
+                }
+                /* line 794 */
+                CG_PlaySoundAlias(0x3fe, position, sndAlias);
+            }
+            return;
+        }
+
+        /* line 816: play config string sound */
+        case 0xb1:
+        {
+            int csIndex = *(int *)(es + ES_EVENTPARM) + 0x24e;
+            const char *csStr = CL_GetConfigString(csIndex);
+            CG_PlaySoundAliasByName(*(int *)(es + ES_NUMBER),
+                es + 0x18, csStr);
+            return;
+        }
+
+        /* line 819: play config string sound as master */
+        case 0xb2:
+        {
+            int csIndex = *(int *)(es + ES_EVENTPARM) + 0x24e;
+            const char *csStr = CL_GetConfigString(csIndex);
+            CG_PlaySoundAliasAsMasterByName(*(int *)(es + ES_NUMBER),
+                es + 0x18, csStr);
+            return;
+        }
+
+        /* line 837: shake camera from entity */
+        case 0xb3:
+        {
+            int duration = *(int *)(es + 0x6c);
+            int esTime = *(int *)(es + ES_TIME);
+            float intensity = *(float *)(es + 0x68);
+            CG_StartShakeCamera(intensity, position, esTime, *(float *)&duration);
+            return;
+        }
+
+        /* Obituary event (death message) */
+        case 0xc5:
+        {
+            /* line 40-42: init colors to 1.0 */
+            attackerColor[0] = 1.0f;
+            attackerColor[1] = 1.0f;
+            attackerColor[2] = 1.0f;
+            attackerColor[3] = 1.0f;
+            victimColor[0] = 1.0f;
+            victimColor[1] = 1.0f;
+            victimColor[2] = 1.0f;
+            victimColor[3] = 1.0f;
+            iconColor[0] = 1.0f;
+            iconColor[1] = 1.0f;
+            iconColor[2] = 1.0f;
+            iconColor[3] = 1.0f;
+
+            /* line 50-51 */
+            target = *(int *)(es + ES_OTHERENTNUM);
+            attacker = *(int *)(es + ES_ATTACKERENTNUM);
+
+            /* line 87: check eventParm for weapon/means of death */
+            int ep = *(int *)(es + ES_EVENTPARM);
+            if ((ep & 0x80) == 0) {
+                /* line 99 */
+                char *weapDef = (char *)BG_GetWeaponDef(ep);
+                /* line 100 */
+                const char *killIcon = *(const char **)(weapDef + 0x34c);
+                if (*killIcon == '\0') {
+                    /* Default icon */
+                    iconWidth = f_1_4;
+                    iconShader = (const char *)0x2a763c;
+                    iconHorzFlip = 0;
+                } else {
+                    /* line 102 */
+                    iconShader = killIcon;
+                    /* line 103 */
+                    int isWideIcon = *(int *)(weapDef + 0x350);
+                    if (isWideIcon) {
+                        iconWidth = f_2_8;
+                    } else {
+                        iconWidth = f_1_4;
+                    }
+                    /* line 105 */
+                    iconHorzFlip = *(int *)(weapDef + 0x354) != 0;
+                }
+            } else {
+                /* Means of death icon lookup */
+                int mod = (ep & 0x7f) - 7;
+                if ((unsigned int)mod > 5) {
+                    /* default icon */
+                    iconWidth = f_1_4;
+                    iconShader = (const char *)0x2a763c;
+                    iconHorzFlip = 0;
+                } else {
+                    switch (mod) {
+                    case 0: /* line 105 - melee icon */
+                        iconWidth = f_1_4;
+                        iconShader = (const char *)0x2a75fc;
+                        iconHorzFlip = 0;
+                        break;
+                    case 1: /* line 116 */
+                        iconWidth = f_1_4;
+                        iconShader = (const char *)0x2a762c;
+                        iconHorzFlip = 0;
+                        break;
+                    case 2: /* line 121 */
+                        iconWidth = f_1_4;
+                        iconShader = (const char *)0x2a89d8;
+                        iconHorzFlip = 0;
+                        break;
+                    case 3: /* line 125 */
+                        iconWidth = f_1_4;
+                        iconShader = (const char *)0x2a760c;
+                        iconHorzFlip = 0;
+                        break;
+                    case 4: /* line 129 */
+                        iconWidth = f_1_4;
+                        iconShader = (const char *)0x2a761c;
+                        iconHorzFlip = 0;
+                        break;
+                    default:
+                        iconWidth = f_1_4;
+                        iconShader = (const char *)0x2a763c;
+                        iconHorzFlip = 0;
+                        break;
+                    }
+                }
+            }
+
+            /* line 144: validate target */
+            if ((unsigned int)target > 63) {
+                /* line 145 */
+                Com_Error(1, (const char *)0x2b8444);
+            }
+
+            /* line 146: get victim client info */
+            {
+                int tgt = target;
+                int tgtOff = tgt * (1 + (tgt * 5 * 16 - tgt * 5) * 2);
+                /* Simplified: the asm computes: tgt + (tgt*5 * (16-1)) * 2 = tgt*(1 + 5*15*2) = tgt*151 */
+                /* Actually: lea (%edx,%edx,4),%eax => eax=tgt*5; shl $4,%edx; sub %eax,%edx => edx=tgt*5*16-tgt*5=tgt*75 */
+                /* lea (%ecx,%edx,2),%edx => edx=tgt+tgt*75*2=tgt*(1+150)=tgt*151 */
+                /* then lea 0xe0900(%ebx,%edx,8) => base + 0xe0900 + tgt*151*8 = base + 0xe0900 + tgt*1208 */
+            }
+            cg = *cg_glob;
+            {
+                char *clientInfoBase = cg + CG_CLIENTINFO + target * 1208;
+                victimCI = clientInfoBase + 0x14;
+
+                /* line 147 */
+                if (*(int *)(clientInfoBase + 0x14) == 0)
+                    return;
+
+                /* line 150 */
+                I_strncpyz(targetName, clientInfoBase + 0x20, 0x20);
+                /* line 151 */
+                I_strncat(targetName, 0x22, (const char *)0x2b3b48);
+                /* line 152 */
+                CG_DrawScoreboard_GetTeamColor(*(int *)(victimCI + 0x30 - 0x14), victimColor);
+
+                /* line 155: check if local client info exists */
+                int localClient = *(int *)(cg + CG_LOCALCLIENT);
+                char *localCI = cg + CG_CLIENTINFO + localClient * 1208;
+                if (*(int *)(localCI + 0x14) == 0)
+                    return;
+            }
+
+            /* line 158: check attacker */
+            if ((unsigned int)attacker <= 63) {
+                /* line 166: get attacker client info */
+                char *atkInfoBase = cg + CG_CLIENTINFO + attacker * 1208;
+                attackerCI = atkInfoBase + 0x14;
+
+                /* line 167 */
+                if (*(int *)(atkInfoBase + 0x14) == 0)
+                    return;
+
+                /* line 169 */
+                I_strncpyz(attackerName, atkInfoBase + 0x20, 0x20);
+                /* line 170 */
+                I_strncat(attackerName, 0x22, (const char *)0x2b3b48);
+                /* line 171 */
+                CG_DrawScoreboard_GetTeamColor(*(int *)(attackerCI + 0x30 - 0x14), attackerColor);
+
+                /* line 174 */
+                snap = *(char **)(cg + CG_SNAP);
+                if (target == *(int *)(snap + SNAP_PS_CLIENTNUM)) {
+                    /* line 175: copy attacker name to killcam */
+                    I_strncpyz(cg + CG_KILLCAM_NAME, attackerName, 0x20);
+                }
+            } else {
+                /* line 162 */
+                attackerName[0] = '\0';
+                attacker = 0x3fe;
+                attackerCI = (char *)0;
+            }
+
+            /* line 178: check if suicide */
+            if (attacker == target) {
+                /* line 180 */
+                attackerName[0] = '\0';
+                cg = *cg_glob;
+            } else {
+                /* line 183 */
+                cg = *cg_glob;
+                snap = *(char **)(cg + CG_SNAP);
+                int localClientNum = *(int *)(snap + SNAP_PS_CLIENTNUM);
+
+                if (attacker == localClientNum) {
+                    /* line 185: "you killed" */
+                    if (attackerCI != (char *)0) {
+                        int atkTeam = *(int *)(attackerCI + 0x30 - 0x14);
+                        if (atkTeam != 0 && atkTeam == *(int *)(victimCI + 0x30 - 0x14)) {
+                            /* line 186: team kill */
+                            const char *msg = va((const char *)0x2b8478, targetName, (const char *)0x2b8468);
+                            /* line 205 */
+                            cg = *cg_glob;
+                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                                CG_PriorityCenterPrint(msg, 9.6f, 1);
+                            }
+                            cg = *cg_glob;
+                        } else {
+                            /* line 188 */
+                            const char *msg = va((const char *)0x2b8498, targetName);
+                            cg = *cg_glob;
+                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                                CG_PriorityCenterPrint(msg, 9.6f, 1);
+                            }
+                            cg = *cg_glob;
+                        }
+                    } else {
+                        const char *msg = va((const char *)0x2b8498, targetName);
+                        cg = *cg_glob;
+                        if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                            CG_PriorityCenterPrint(msg, 9.6f, 1);
+                        }
+                        cg = *cg_glob;
+                    }
+                } else if (target == localClientNum) {
+                    /* line 199: "you were killed" */
+                    if (attackerCI != (char *)0) {
+                        int atkTeam = *(int *)(attackerCI + 0x30 - 0x14);
+                        if (atkTeam != 0 && atkTeam == *(int *)(victimCI + 0x30 - 0x14)) {
+                            /* line 202 */
+                            const char *msg = va((const char *)0x2b84ac, attackerName, (const char *)0x2b8468);
+                            cg = *cg_glob;
+                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                                CG_PriorityCenterPrint(msg, 9.6f, 1);
+                            }
+                            cg = *cg_glob;
+                        } else {
+                            /* line 204 */
+                            const char *msg = va((const char *)0x2b84d0, attackerName);
+                            cg = *cg_glob;
+                            if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                                CG_PriorityCenterPrint(msg, 9.6f, 1);
+                            }
+                            cg = *cg_glob;
+                        }
+                    } else {
+                        const char *msg = va((const char *)0x2b84d0, attackerName);
+                        cg = *cg_glob;
+                        if (*(int *)(cg + CG_DEATHFADE) == 0) {
+                            CG_PriorityCenterPrint(msg, 9.6f, 1);
+                        }
+                        cg = *cg_glob;
+                    }
+                }
+            }
+
+            /* line 217: death message print */
+            if (*(int *)(cg + CG_DEATHFADE) != 0)
+                return;
+
+            /* line 219 */
+            CL_DeathMessagePrint(attackerName, attackerColor, targetName,
+                victimColor, iconShader, iconWidth, 1.4f, iconColor, iconHorzFlip);
+            return;
+        }
+
+        /* line 292: CG_PlayFx - play effect from entity config */
+        case 0xb4:
+        {
+            /* line 219: get angles */
+            float *angles = (float *)(es + ES_APOS_BASE);
+
+            /* line 292 */
+            int fxIndex = *(int *)((char *)cent + 0x190);
+            int fxIdx = fxIndex - 1;
+            if ((unsigned int)fxIdx > 62) {
+                /* line 295 */
+                Com_Printf((const char *)0x2abd90, fxIndex);
+                return;
+            }
+
+            /* line 298 */
+            cgs = *cgs_glob;
+            int fxId = *(int *)(cgs + CGS_FX_DEATHFX + fxIdx * 4);
+
+            /* line 300 */
+            AngleVectors(angles, forward, (void *)0, up);
+            /* line 301 */
+            FX_PlayEffect(fxId, position, forward);
+            return;
+        }
+
+        /* line 317: play fx from config string */
+        case 0xb5:
+        {
+            int csIndex2 = *(int *)(es + ES_EVENTPARM) + 0x38e;
+            const char *csStr2 = CL_GetConfigString(csIndex2);
+
+            /* line 323: parse fx index from config string */
+            cgs = *cgs_glob;
+            {
+                signed char c0 = csStr2[0];
+                signed char c1 = csStr2[1];
+                int fxIdx2 = c1 + c0 * 10;
+                int fxId2 = *(int *)(cgs + CGS_FX_CUSTOM + fxIdx2 * 4);
+
+                /* line 325 */
+                int entNum2 = *(int *)((char *)cent + CENT_NEXTSTATE + ES_NUMBER);
+                int entityInfo = entNum2;
+
+                /* line 326 */
+                tagName = SL_GetString(csStr2 + 2, 0);
+
+                /* line 327 */
+                boneIndex = FX_GetBoneIndex(entityInfo, (int)tagName);
+
+                /* line 328 */
+                Scr_SetString(&tagName, 0);
+
+                /* line 329 */
+                if (boneIndex < 0)
+                    return;
+
+                /* line 332 */
+                FX_PlayEntityEffect(fxId2, position, 0, &entityInfo);
+            }
+            return;
+        }
+
+        /* All other events that don't have specific handlers go to the default case */
+        default:
+        {
+            /* line 859: unknown event */
+            char **eventNames3 = (char **)(*cg_eventNames);
+            Com_Error(1, (const char *)0x2b84e8, eventNames3[event]);
+            return;
+        }
+
+        } /* end switch(event) */
+    } /* end jump table block */
 }
 
 /* line 871 */
-__attribute__((naked))
 void CG_CheckEvents(centity_t *cent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 871 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* cent */
-        /* { scope 1 */
-        "cmpl $0xa, 0xf4(%ebx)\n" /* line 877 | cent */
-        "jle .Lf1e3a2c_001e3a53\n"
-        "movl 0x1e4(%ebx), %esi\n" /* line 879 | cent, i */
-        "testl %esi, %esi\n" /* i */
-        "je .Lf1e3a2c_001e3a98\n"
-        /* } scope */
-        ".Lf1e3a2c_001e3a4b:\n"
-        "addl $0x1c, %esp\n" /* line 926 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e3a2c_001e3a53:\n"
-        "movl 0x194(%ebx), %edx\n" /* line 891 | cent */
-        "testl %edx, %edx\n"
-        "je .Lf1e3a2c_001e3a86\n"
-        "movl 0x1e4(%ebx), %eax\n" /* line 897 | cent */
-        "cmpl %eax, %edx\n"
-        "jl .Lf1e3a2c_001e3ada\n"
-        "movl %edx, %ecx\n" /* line 901 */
-        "subl %eax, %ecx\n"
-        "cmpl $4, %ecx\n"
-        "jg .Lf1e3a2c_001e3ac7\n"
-        ".Lf1e3a2c_001e3a70:\n"
-        "cmpl %edx, 0x1e4(%ebx)\n" /* line 906 | cent */
-        "jl .Lf1e3a2c_001e3af0\n"
-        ".Lf1e3a2c_001e3a78:\n"
-        "movl %edx, 0x1e4(%ebx)\n" /* line 908 | cent */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 926 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e3a2c_001e3a86:\n"
-        "movl $0, 0x1e4(%ebx)\n" /* line 893 | cent */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 926 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e3a2c_001e3a98:\n"
-        "movl $1, 0x1e4(%ebx)\n" /* line 881 | cent */
-        "movl %ebx, (%esp)\n" /* line 884 | cent */
-        "calll CG_CalcEntityLerpPositions\n"
-        "movl 0xf4(%ebx), %eax\n" /* line 885 | cent */
-        "subl $0xa, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* cent */
-        "calll CG_EntityEvent\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 926 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e3a2c_001e3ac7:\n"
-        "leal -4(%edx), %eax\n" /* line 903 */
-        "movl %eax, 0x1e4(%ebx)\n" /* cent */
-        "cmpl %edx, 0x1e4(%ebx)\n" /* line 906 | cent */
-        "jge .Lf1e3a2c_001e3a78\n"
-        "jmp .Lf1e3a2c_001e3af0\n"
-        ".Lf1e3a2c_001e3ada:\n"
-        "subl $0x100, %eax\n" /* line 899 */
-        "movl %eax, 0x1e4(%ebx)\n" /* cent */
-        "movl %edx, %ecx\n" /* line 901 */
-        "subl %eax, %ecx\n"
-        "cmpl $4, %ecx\n"
-        "jle .Lf1e3a2c_001e3a70\n"
-        "jmp .Lf1e3a2c_001e3ac7\n"
-        ".Lf1e3a2c_001e3af0:\n"
-        "movl %ebx, (%esp)\n" /* line 913 | cent */
-        "calll CG_CalcEntityLerpPositions\n"
-        "movzbl 0x190(%ebx), %edi\n" /* line 916 | cent, oldEventParm */
-        "movl 0x1e4(%ebx), %esi\n" /* line 917 | cent, i */
-        "cmpl 0x194(%ebx), %esi\n" /* cent, i */
-        "je .Lf1e3a2c_001e3b3d\n"
-        ".Lf1e3a2c_001e3b0d:\n"
-        "movl %esi, %eax\n" /* line 919 | i */
-        "andl $3, %eax\n"
-        "movl 0x198(%ebx, %eax, 4), %edx\n" /* cent */
-        "movl 0x1a8(%ebx, %eax, 4), %eax\n" /* line 921 | cent */
-        "movl %eax, 0x190(%ebx)\n" /* cent */
-        "movl %edx, 4(%esp)\n" /* line 922 */
-        "movl %ebx, (%esp)\n" /* cent */
-        "calll CG_EntityEvent\n"
-        "addl $1, %esi\n" /* line 917 | i */
-        "cmpl 0x194(%ebx), %esi\n" /* cent, i */
-        "jne .Lf1e3a2c_001e3b0d\n"
-        ".Lf1e3a2c_001e3b3d:\n"
-        "movl %edi, %edx\n" /* line 924 | oldEventParm */
-        "movzbl %dl, %eax\n"
-        "movl %eax, 0x190(%ebx)\n" /* cent */
-        "movl 0x194(%ebx), %eax\n" /* line 925 | cent */
-        "movl %eax, 0x1e4(%ebx)\n" /* cent */
-        "jmp .Lf1e3a2c_001e3a4b\n"
-    );
-}
+    char *c = (char *)cent;
+    int eType;
+    int eventSequence;
+    int prevEventSeq;
+    int i;
+    int oldEventParm;
+    int diff;
 
+    /* line 877 */
+    eType = *(int *)(c + CENT_ETYPE);
+    if (eType > 10) {
+        /* line 879 */
+        i = *(int *)(c + CENT_PREVEVSEQ);
+        if (i == 0) {
+            /* line 881 */
+            *(int *)(c + CENT_PREVEVSEQ) = 1;
+            /* line 884 */
+            CG_CalcEntityLerpPositions(cent);
+            /* line 885 */
+            CG_EntityEvent(cent, eType - 10);
+        }
+        return;
+    }
+
+    /* line 891 */
+    eventSequence = *(int *)(c + CENT_EVSEQ);
+    if (eventSequence == 0) {
+        /* line 893 */
+        *(int *)(c + CENT_PREVEVSEQ) = 0;
+        return;
+    }
+
+    prevEventSeq = *(int *)(c + CENT_PREVEVSEQ);
+
+    /* line 897 */
+    if (eventSequence < prevEventSeq) {
+        /* line 899 */
+        prevEventSeq -= 256;
+        *(int *)(c + CENT_PREVEVSEQ) = prevEventSeq;
+    }
+
+    /* line 901 */
+    diff = eventSequence - prevEventSeq;
+    if (diff > 4) {
+        /* line 903 */
+        prevEventSeq = eventSequence - 4;
+        *(int *)(c + CENT_PREVEVSEQ) = prevEventSeq;
+    }
+
+    /* line 906 */
+    if (prevEventSeq >= eventSequence) {
+        /* line 908 */
+        *(int *)(c + CENT_PREVEVSEQ) = eventSequence;
+        return;
+    }
+
+    /* line 913 */
+    CG_CalcEntityLerpPositions(cent);
+
+    /* line 916 */
+    oldEventParm = *(unsigned char *)(c + CENT_EVPARM);
+    i = *(int *)(c + CENT_PREVEVSEQ);
+
+    /* line 917 */
+    while (i != eventSequence) {
+        /* line 919 */
+        int evIdx = i & 3;
+        int ev = *(int *)(c + CENT_EVENTS + evIdx * 4);
+
+        /* line 921 */
+        int evParm = *(int *)(c + CENT_EVPARMS + evIdx * 4);
+        *(int *)(c + CENT_EVPARM) = evParm;
+
+        /* line 922 */
+        CG_EntityEvent(cent, ev);
+
+        /* line 917 */
+        i++;
+    }
+
+    /* line 924 */
+    *(int *)(c + CENT_EVPARM) = (unsigned char)oldEventParm;
+
+    /* line 925 */
+    *(int *)(c + CENT_PREVEVSEQ) = eventSequence;
+}

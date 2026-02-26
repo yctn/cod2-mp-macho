@@ -1,958 +1,771 @@
-/* ASM dump from: cg_compassfriendlies_mp.cpp */
+/* Converted to C from ASM: cg_compassfriendlies_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/cgame_mp/cg_compassfriendlies_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
+
+/* math function declarations (can't include <math.h> due to libc.h conflicts) */
+extern float floorf(float x);
+extern float sinf(float x);
+extern float cosf(float x);
+extern float sqrtf(float x);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
  *   #include "PC/universal/com_math.h"
  */
 
+/* External globals (pointer-to-pointer indirections from binary) */
+extern byte **cg_glob;              /* 0x195f584 — pointer to cg_t base */
+extern byte **cgs_glob;             /* 0x195f5c4 — pointer to cgs_t base */
+extern byte **cg_entities_glob;     /* 0x195f5cc — pointer to centity array base */
+
+/* Dvar pointers (each is a pointer to a dvar_t*) */
+extern const dvar_t **dvar_compassSize;              /* 0x195f640 */
+extern const dvar_t **dvar_compassMinRange;          /* 0x195f644 */
+extern const dvar_t **dvar_compassMinSaturation;     /* 0x195f650 */
+extern const dvar_t **dvar_compassMaxRange;          /* 0x195f654 */
+extern const dvar_t **dvar_compassClampDist;         /* 0x195f660 */
+extern const dvar_t **dvar_compassClampSaturation;   /* 0x195f664 */
+extern const dvar_t **dvar_compassPingFadeTime;      /* 0x195f674 */
+extern const dvar_t **dvar_compassFade;              /* 0x195f678 */
+
+/* External function declarations */
+extern float CG_FadeHudMenu(const dvar_t *fadeDvar, int displayStartTime, int duration);
+extern void CG_UpdateCompPointerOrientation(void);
+extern void CG_ApplySplitScreenCompassScale(float *x, float *y, float *w, float *h);
+extern float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle hMaterial);
+extern void CG_DrawRotatedPic(float x, float y, float width, float height, int horzAlign, int vertAlign, float angle, const vec_t *color, MaterialHandle material);
+extern const float vectoyaw(const vec_t *vec);
+extern const float AngleNormalize360(const float angle);
+extern const vec_t Vec2Normalize(vec_t *v);
+
+/*
+ * cg_t field offsets (from binary layout, may differ from compiled struct).
+ * The cg_t struct is very large; these are raw byte offsets.
+ */
+#define CG_SNAP_PTR            0x24     /* snapshot_t* */
+#define CG_TIME                0x25bb0  /* int cg.time */
+#define CG_COMPASS_YAW         0x2c5b8  /* float - compass map yaw */
+#define CG_COMPASS_DISPLAYTIME 0x2c5c0  /* int - compass display start time */
+#define CG_REFDEF_YAW          0x285cc  /* float - refdef viewaxis yaw */
+#define CG_ORIGIN_X            0x28588  /* float - predicted player origin X */
+#define CG_ORIGIN_Y            0x2858c  /* float - predicted player origin Y */
+
+/*
+ * Compass actor array: 64 entries of compassactor_t (28 bytes each)
+ * starting at cg_base + 0x2c5d8.
+ *
+ * compassactor_t layout (binary):
+ *   +0x00: int   iLastUpdate
+ *   +0x04: float vLastPos[0]   (x)
+ *   +0x08: float vLastPos[1]   (y)
+ *   +0x0c: float fLastYaw
+ *   +0x10: int   pingTime
+ *   +0x14: int   beginFadeTime
+ *   +0x18: byte  enemy
+ * Size = 0x1c (28), count = 64 (0x40)
+ */
+#define CG_COMPASS_ACTORS      0x2c5d8
+#define COMPASS_ACTOR_SIZE     0x1c
+#define COMPASS_ACTOR_COUNT    64
+
+/* clientInfo_t is at cg_base + 0xe0914 with stride 1208 bytes.
+ * +0x00: infoValid (int)
+ * +0x2c: team (int)
+ */
+#define CG_CLIENTINFO_BASE     0xe0914
+#define CLIENTINFO_STRIDE      1208
+#define CI_INFOVALID           0x00
+#define CI_TEAM                0x2c
+
+/* cgs_t offsets */
+#define CGS_COMPASS_BACK       0xc1e0  /* MaterialHandle - compass friendly back material */
+#define CGS_COMPASS_PING       0xc1e8  /* MaterialHandle - compass ping material */
+#define CGS_COMPASS_DIR(i)     (0xbc6c + (i) * 4) /* MaterialHandle array - compass direction materials */
+#define CGS_COMPASS_DOT        0xbc70  /* MaterialHandle - compass dot material */
+
+/* snapshot/ps offsets */
+#define SNAP_PS_CLIENTNUM      0xd8    /* int - clientNum within snap->ps */
+
+/* entityState_t offsets within centity_s (binary layout) */
+#define ES_EFLAGS              0x08    /* int eFlags */
+#define ES_CLIENTNUM           0xf0    /* int clientNum */
+#define ES_ETYPE               0xf4    /* int eType */
+#define ES_ORIGIN_X            0x1ec   /* float (lerpOrigin.x) */
+#define ES_ORIGIN_Y            0x1f0   /* float (lerpOrigin.y) */
+#define ES_LEAN                0x1fc   /* float leanf (or similar) used for fLastYaw */
+
+/* centity binary size */
+#define CENTITY_BIN_SIZE       0x224   /* binary centity stride, not matching C struct */
+
+/* playerState compass-related */
+#define PS_COMPASS_PACKED      0x5b0   /* packed compass friend data */
+#define PS_COMPASS_FRIEND_YAW  0x5b3   /* signed byte - friend yaw */
+#define PS_COMPASS_EFLAGS      0xae    /* byte - eFlags packed */
+
+/* snapshot playerInfo count + array */
+#define SNAP_PS_NUMCLIENTS     0x26b4  /* int - number of clients in snapshot playerInfo */
+#define SNAP_PS_CLIENTBASE     0x26bc  /* int array - client nums in playerInfo */
+#define SNAP_PI_STRIDE         0xf0    /* stride between playerInfo entries (256-16=240) */
+
+static float dvar_value(const dvar_t **dvpp)
+{
+    const dvar_t *dv = *dvpp;
+    return dv->current.value;
+}
+
 void CG_ApplyCompassPointerRadiusScale(float *radiusScale);
 void CG_CompassAddWeaponPingInfo(centity_t *cent, const vec_t *origin, int msec);
 void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *color);
 
 /* line 51 */
-__attribute__((naked))
 void CG_ApplyCompassPointerRadiusScale(float *radiusScale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 51 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* radiusScale */
-        "movl 0x195f640, %eax\n" /* line 55 */
-        "movl (%eax), %eax\n"
-        "cvtss2sd 8(%eax), %xmm0\n"
-        "mulsd 0x307d60, %xmm0\n" /* 43.75 */
-        "cvtss2sd (%edx), %xmm1\n"
-        "mulsd %xmm1, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, (%edx)\n"
-        "popl %ebp\n" /* line 56 */
-        "retl\n"
-    );
+    float compassSizeVal = dvar_value(dvar_compassSize);
+    *radiusScale = (float)((double)*radiusScale * ((double)compassSizeVal * 43.75));
 }
 
 /* line 15 */
-__attribute__((naked))
 void CG_CompassAddWeaponPingInfo(centity_t *cent, const vec_t *origin, int msec)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 15 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %edi\n" /* cent */
-        "movl 0x10(%ebp), %esi\n" /* msec */
-        /* { scope 1 */
-        "cmpl $2, 0xf4(%edi)\n" /* line 22 | cent */
-        "je .Lf18cecc_0018cf98\n"
-        "movl 0x195f584, %eax\n" /* line 26 */
-        "movl (%eax), %ebx\n"
-        "movl 4(%ebx), %edx\n"
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %ecx, %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "leal 0xe0914(%ebx, %eax, 8), %eax\n"
-        "movl %eax, -0x10(%ebp)\n" /* localClientInfo */
-        "movl 0xf0(%edi), %ecx\n" /* line 27 | cent */
-        "leal (, %ecx, 4), %edi\n" /* cent */
-        "leal (%edi, %ecx), %edx\n" /* cent */
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%ecx, %eax, 2), %eax\n"
-        "leal 0xe0914(%ebx, %eax, 8), %eax\n"
-        "cmpl %eax, -0x10(%ebp)\n" /* line 29 | localClientInfo */
-        "je .Lf18cecc_0018cf98\n"
-        "movl 0x2c(%eax), %edx\n" /* line 33 */
-        "cmpl $3, %edx\n" /* line 35 */
-        "je .Lf18cecc_0018cf98\n"
-        "movl %ecx, %eax\n" /* line 40 */
-        "shll $5, %eax\n"
-        "subl %edi, %eax\n" /* cent */
-        "addl 0x25bb0(%ebx), %esi\n" /* msec */
-        "movl %esi, 0x2c5ec(%eax, %ebx)\n" /* msec */
-        "movl -0x10(%ebp), %esi\n" /* line 41 | localClientInfo, msec */
-        "movl 0x2c(%esi), %eax\n" /* msec */
-        "testl %eax, %eax\n"
-        "jne .Lf18cecc_0018cfa0\n"
-        ".Lf18cecc_0018cf55:\n"
-        "movl $1, %esi\n" /* msec */
-        ".Lf18cecc_0018cf5a:\n"
-        "leal (, %ecx, 4), %eax\n"
-        "movl %ecx, %edx\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "movl %esi, %eax\n" /* msec */
-        "movb %al, 0x2c5f0(%edx, %ebx)\n"
-        "movl 0x195f584, %ecx\n" /* line 43 */
-        "movl (%ecx), %eax\n"
-        "cmpb $0, 0x2c5f0(%edx, %eax)\n"
-        "je .Lf18cecc_0018cf98\n"
-        "leal 0x2c5d0(%edx, %eax), %eax\n" /* line 44 */
-        "movl 0xc(%ebp), %esi\n" /* line 37 | origin, msec */
-        "movl (%esi), %edx\n" /* msec */
-        "movl %edx, 0xc(%eax)\n"
-        "movl 4(%esi), %edx\n" /* line 38 | msec */
-        "movl %edx, 0x10(%eax)\n"
-        /* } scope */
-        ".Lf18cecc_0018cf98:\n"
-        "addl $4, %esp\n" /* line 45 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18cecc_0018cfa0:\n"
-        "cmpl %eax, %edx\n" /* line 41 */
-        "jne .Lf18cecc_0018cf55\n"
-        "xorl %esi, %esi\n" /* msec */
-        "jmp .Lf18cecc_0018cf5a\n"
-    );
+    byte *cg = *cg_glob;
+    byte *centRaw = (byte *)cent;
+    int eType = *(int *)(centRaw + ES_ETYPE);
+
+    /* line 22: Skip if eType == 2 (ET_PLAYER) */
+    if (eType == 2)
+        return;
+
+    /* line 26: Get local client number (at cg_base + 4) */
+    int localClientNum = *(int *)(cg + 4);
+
+    /* Compute localClientInfo pointer: cg_base + 0xe0914 + localClientNum * 1208 */
+    byte *localClientInfo = cg + CG_CLIENTINFO_BASE + localClientNum * CLIENTINFO_STRIDE;
+
+    /* line 27: Get entity's clientNum */
+    int entClientNum = *(int *)(centRaw + ES_CLIENTNUM);
+
+    /* Compute entity's clientInfo pointer */
+    byte *entClientInfo = cg + CG_CLIENTINFO_BASE + entClientNum * CLIENTINFO_STRIDE;
+
+    /* line 29: Skip if same clientInfo (same client) */
+    if (localClientInfo == entClientInfo)
+        return;
+
+    /* line 33-35: Check entity's team; skip if spectator (3) */
+    int entTeam = *(int *)(entClientInfo + CI_TEAM);
+    if (entTeam == 3)
+        return;
+
+    /* line 40: Store ping time = cg.time + msec */
+    int cgTime = *(int *)(cg + CG_TIME);
+    byte *actor = cg + CG_COMPASS_ACTORS + entClientNum * COMPASS_ACTOR_SIZE;
+    *(int *)(actor + 0x14) = cgTime + msec; /* beginFadeTime */
+
+    /* line 41: Determine enemy flag based on local client's team vs entity's team */
+    int localTeam = *(int *)(localClientInfo + CI_TEAM);
+    byte enemyFlag;
+    if (localTeam == 0) {
+        /* No team (FFA) - mark as enemy */
+        enemyFlag = 1;
+    } else if (localTeam == entTeam) {
+        /* Same team - not enemy */
+        enemyFlag = 0;
+    } else {
+        /* Different team - enemy */
+        enemyFlag = 1;
+    }
+    *(byte *)(actor + 0x18) = enemyFlag; /* enemy */
+
+    /* line 43: Only store position if enemy flag is set */
+    if (*(byte *)(actor + 0x18) == 0)
+        return;
+
+    /* line 44: Store origin into vLastPos */
+    *(float *)(actor + 0x04) = origin[0]; /* vLastPos[0] */
+    *(float *)(actor + 0x08) = origin[1]; /* vLastPos[1] */
+}
+
+/*
+ * Helper: compute compass radius scale (distance -> pixel radius)
+ * Used in CG_DrawCompassFriendlies for both weapon ping and friendly paths.
+ * Equivalent to the repeated asm pattern at lines 55-67 / 321-327.
+ */
+static float CompassDistToRadius(float dist)
+{
+    float maxRange = dvar_value(dvar_compassMaxRange);
+    float minRange = dvar_value(dvar_compassMinRange);
+    float minSat = dvar_value(dvar_compassMinSaturation);
+    float compassSize = dvar_value(dvar_compassSize);
+
+    float clampedDist = dist;
+    if (clampedDist > maxRange)
+        clampedDist = maxRange;
+
+    float rangeFrac = (clampedDist - minRange) / (maxRange - minRange);
+    float saturation = minSat + rangeFrac * (1.0f - minSat);
+
+    return (float)((double)compassSize * 43.75 * (double)saturation);
 }
 
 /* line 95 */
-__attribute__((naked))
 void CG_DrawCompassFriendlies(rectDef_t *rect, MaterialHandle material, vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 95 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x11c, %esp\n"
-        /* { scope 1: radians, radians */
-        "movl 0x195f678, %eax\n" /* line 124 */
-        "movl (%eax), %ebx\n" /* drawMaterial */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "mulss 8(%ebx), %xmm0\n" /* drawMaterial */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x9c(%ebp)\n"
-        "cvttss2si -0x9c(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x195f584, %edi\n"
-        "movl (%edi), %esi\n" /* cent */
-        "movl 0x2c5c0(%esi), %eax\n" /* cent */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* drawMaterial */
-        "calll CG_FadeHudMenu\n"
-        "fstps -0x8c(%ebp)\n" /* compassFadeOutAlpha */
-        "movss -0x8c(%ebp), %xmm0\n" /* line 125 | compassFadeOutAlpha */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
-        "jp .Lf18cfaa_0018d025\n"
-        "je .Lf18cfaa_0018d3b6\n"
-        ".Lf18cfaa_0018d025:\n"
-        "movl 0x24(%esi), %eax\n" /* line 128 | cent */
-        "movl 0xd8(%eax), %edx\n"
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %ecx, %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "leal (%esi, %eax, 8), %eax\n" /* cent */
-        "movl 0xe0914(%eax), %ebx\n" /* drawMaterial */
-        "testl %ebx, %ebx\n" /* drawMaterial */
-        "je .Lf18cfaa_0018d3b6\n"
-        "movl 0xe0940(%eax), %eax\n" /* line 130 */
-        "movl %eax, -0x88(%ebp)\n" /* team */
-        "cmpl $3, %eax\n" /* line 132 */
-        "je .Lf18cfaa_0018d3b6\n"
-        "calll CG_UpdateCompPointerOrientation\n" /* line 135 */
-        "movl 0x195f640, %eax\n" /* line 137 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "movaps %xmm0, %xmm1\n"
-        "movl 8(%ebp), %eax\n" /* rect */
-        "mulss 8(%eax), %xmm1\n"
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
-        "mulss %xmm1, %xmm2\n"
-        "movss %xmm2, -0x98(%ebp)\n" /* centerX */
-        "addss (%eax), %xmm2\n"
-        "movss %xmm2, -0x98(%ebp)\n" /* centerX */
-        "movss 0xc(%eax), %xmm1\n" /* line 138 */
-        "movaps %xmm1, %xmm3\n"
-        "addss 4(%eax), %xmm3\n"
-        "mulss %xmm1, %xmm0\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
-        "addss %xmm3, %xmm0\n"
-        "movss %xmm0, -0x94(%ebp)\n" /* centerY */
-        "movl 0x10(%ebp), %edx\n" /* line 456 | color */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x50(%ebp)\n" /* fadedColor */
-        "addl $4, %edx\n" /* line 457 */
-        "movl %edx, -0x84(%ebp)\n"
-        "movl 0x10(%ebp), %ecx\n" /* color */
-        "movl 4(%ecx), %eax\n"
-        "movl %eax, -0x4c(%ebp)\n"
-        "addl $8, %ecx\n" /* line 458 */
-        "movl %ecx, -0x80(%ebp)\n"
-        "movl 0x10(%ebp), %ebx\n" /* color, drawMaterial */
-        "movl 8(%ebx), %eax\n" /* drawMaterial */
-        "movl %eax, -0x48(%ebp)\n"
-        "addl $0xc, %ebx\n" /* line 459 | drawMaterial */
-        "movl %ebx, -0x7c(%ebp)\n" /* drawMaterial */
-        "movl 0x10(%ebp), %edx\n" /* color */
-        "movl 0xc(%edx), %eax\n"
-        "movl %eax, -0x44(%ebp)\n"
-        "movl -0x88(%ebp), %ecx\n" /* line 142 | team */
-        "testl %ecx, %ecx\n"
-        "jne .Lf18cfaa_0018d3f2\n"
-        ".Lf18cfaa_0018d108:\n"
-        "movl (%edi), %ebx\n" /* line 309 | drawMaterial */
-        "addl $0x2c5d8, %ebx\n" /* drawMaterial */
-        "movl $0x40, %edi\n"
-        "jmp .Lf18cfaa_0018d123\n"
-        ".Lf18cfaa_0018d117:\n"
-        "addl $0x1c, %ebx\n" /* line 310 | drawMaterial */
-        "subl $1, %edi\n"
-        "je .Lf18cfaa_0018d3b6\n"
-        ".Lf18cfaa_0018d123:\n"
-        "cmpb $0, 0x18(%ebx)\n" /* line 312 | drawMaterial */
-        "je .Lf18cfaa_0018d117\n"
-        "movl 0x14(%ebx), %edx\n" /* line 314 | drawMaterial */
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %esi\n" /* cent */
-        "cvtsi2ssl %edx, %xmm1\n"
-        "movl 0x195f674, %ecx\n"
-        "movl (%ecx), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss %xmm0, %xmm1\n"
-        "cvtsi2ssl 0x25bb0(%esi), %xmm0\n" /* cent */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf18cfaa_0018d117\n"
-        "testl %edx, %edx\n"
-        "je .Lf18cfaa_0018d117\n"
-        "movss 4(%ebx), %xmm0\n" /* line 65 */
-        "subss 0x28588(%esi), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* posDelta */
-        "movss 8(%ebx), %xmm0\n" /* line 66 */
-        "subss 0x2858c(%esi), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 318 | posDelta */
-        "movl %eax, (%esp)\n"
-        "calll vectoyaw\n"
-        "fstps -0xec(%ebp)\n"
-        "movss -0xec(%ebp), %xmm0\n"
-        "subss 0x2c5b8(%esi), %xmm0\n" /* cent */
-        "movss %xmm0, (%esp)\n"
-        "calll AngleNormalize360\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x30(%ebp), %xmm2\n" /* line 134 | posDelta */
-        "movss -0x2c(%ebp), %xmm0\n"
-        "mulss %xmm2, %xmm2\n" /* line 81 */
-        "mulss %xmm0, %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "sqrtss %xmm2, %xmm2\n"
-        "movl 0x195f654, %eax\n" /* line 321 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "movaps %xmm0, %xmm1\n"
-        "minss %xmm2, %xmm1\n"
-        "movaps %xmm1, %xmm2\n"
-        "movl 0x195f644, %eax\n" /* line 66 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "subss %xmm1, %xmm2\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm2\n"
-        "movl 0x195f650, %eax\n" /* line 67 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "subss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "movl 0x195f640, %edx\n" /* line 55 */
-        "movl (%edx), %eax\n"
-        "movss 8(%eax), %xmm3\n"
-        "cvtss2sd %xmm3, %xmm0\n"
-        "mulsd 0x307d60, %xmm0\n" /* 43.75 */
-        "addss %xmm2, %xmm1\n"
-        "cvtss2sd %xmm1, %xmm1\n"
-        "mulsd %xmm1, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x64(%ebp)\n"
-        "cvtss2sd -0x6c(%ebp), %xmm0\n" /* line 327 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x74(%ebp)\n" /* radians */
-        /* { scope 2 */
-        "movss %xmm0, (%esp)\n" /* line 485 */
-        "movss %xmm3, -0xe8(%ebp)\n"
-        "calll sinf\n"
-        "fstps -0xb0(%ebp)\n"
-        "movss -0x74(%ebp), %xmm0\n" /* line 486 | radians */
-        "movss %xmm0, (%esp)\n"
-        "calll cosf\n"
-        "fstps -0xb4(%ebp)\n"
-        /* } scope */
-        "movss -0xe8(%ebp), %xmm3\n" /* line 82 */
-        "mulss 0x2ed6b4, %xmm3\n" /* 10.0f */
-        "movss %xmm3, -0x24(%ebp)\n" /* w */
-        "movl 0x195f640, %edx\n" /* line 83 */
-        "movl (%edx), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed6b4, %xmm0\n" /* 10.0f */
-        "movss %xmm0, -0x1c(%ebp)\n" /* h */
-        "mulss 0x2ed63c, %xmm3\n" /* line 329 | -0.5f */
-        "addss -0x98(%ebp), %xmm3\n" /* centerX */
-        "movss -0x64(%ebp), %xmm1\n"
-        "mulss -0xb0(%ebp), %xmm1\n"
-        "subss %xmm1, %xmm3\n"
-        "movss %xmm3, -0x28(%ebp)\n" /* x */
-        "mulss 0x2ed63c, %xmm0\n" /* line 330 | -0.5f */
-        "addss -0x94(%ebp), %xmm0\n" /* centerY */
-        "movss -0x64(%ebp), %xmm2\n"
-        "mulss -0xb4(%ebp), %xmm2\n"
-        "subss %xmm2, %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* y */
-        "leal -0x1c(%ebp), %eax\n" /* line 332 | h */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x20(%ebp), %eax\n" /* y */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll CG_ApplySplitScreenCompassScale\n"
-        "movl 0x14(%ebx), %edx\n" /* line 334 | drawMaterial */
-        "movl 0x25bb0(%esi), %eax\n" /* cent */
-        "cmpl %eax, %edx\n"
-        "jl .Lf18cfaa_0018d3c1\n"
-        "movl $0x3f800000, -0x44(%ebp)\n" /* line 335 */
-        "movss -0x44(%ebp), %xmm0\n"
-        ".Lf18cfaa_0018d340:\n"
-        "movss -0x8c(%ebp), %xmm1\n" /* line 341 | compassFadeOutAlpha */
-        "movaps %xmm1, %xmm2\n"
-        "cmpltss %xmm0, %xmm1\n"
-        "andps %xmm1, %xmm2\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm2, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "movl 0x195f5c4, %eax\n" /* line 343 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1e8(%eax), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "leal -0x50(%ebp), %eax\n" /* fadedColor */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* rect */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* h */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x24(%ebp), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* y */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x28(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawHandlePic\n"
-        "addl $0x1c, %ebx\n" /* line 310 | drawMaterial */
-        "subl $1, %edi\n"
-        "jne .Lf18cfaa_0018d123\n"
-        /* } scope */
-        ".Lf18cfaa_0018d3b6:\n"
-        "addl $0x11c, %esp\n" /* line 345 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: radians, radians */
-        ".Lf18cfaa_0018d3c1:\n"
-        "subl %edx, %eax\n" /* line 337 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movl 0x195f674, %edx\n"
-        "movl (%edx), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "mulss 0x2ed96c, %xmm1\n" /* -1000.0f */
-        "divss %xmm1, %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, -0x44(%ebp)\n"
-        "jmp .Lf18cfaa_0018d340\n"
-        ".Lf18cfaa_0018d3f2:\n"
-        "movl %esi, -0x70(%ebp)\n" /* line 145 | cent */
-        "movl 0x24(%esi), %ecx\n" /* cent */
-        "movl 0x26b4(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf18cfaa_0018d525\n"
-        "xorl %ebx, %ebx\n" /* drawMaterial */
-        "jmp .Lf18cfaa_0018d423\n"
-        ".Lf18cfaa_0018d40a:\n"
-        "addl $1, %ebx\n" /* drawMaterial */
-        "movl (%edi), %esi\n" /* cent */
-        "movl %esi, -0x70(%ebp)\n" /* cent */
-        "movl 0x24(%esi), %ecx\n" /* cent */
-        "movl %ecx, %eax\n"
-        "cmpl %ebx, 0x26b4(%ecx)\n" /* drawMaterial */
-        "jle .Lf18cfaa_0018d52d\n"
-        ".Lf18cfaa_0018d423:\n"
-        "movl %ebx, %edx\n" /* line 147 | drawMaterial */
-        "shll $4, %edx\n"
-        "movl %ebx, %eax\n" /* drawMaterial */
-        "shll $8, %eax\n"
-        "subl %edx, %eax\n"
-        "movl 0x26bc(%eax, %ecx), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %ecx, %eax\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movl 0x195f5cc, %esi\n" /* cent */
-        "movl (%esi), %edx\n" /* cent */
-        "leal (%edx, %eax, 4), %esi\n" /* cent */
-        "cmpl $1, 0xf4(%esi)\n" /* line 148 | cent */
-        "jne .Lf18cfaa_0018d40a\n"
-        "testb $2, 0xfa(%esi)\n" /* line 150 | cent */
-        "jne .Lf18cfaa_0018d40a\n"
-        "testl %ecx, %ecx\n" /* line 154 */
-        "js .Lf18cfaa_0018d40a\n"
-        "leal (, %ecx, 4), %eax\n" /* line 157 */
-        "movl %eax, -0xa0(%ebp)\n"
-        "movl %eax, %edx\n"
-        "addl %ecx, %edx\n"
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%ecx, %eax, 2), %eax\n"
-        "movl -0x70(%ebp), %edx\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl 0xe0914(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf18cfaa_0018d40a\n"
-        "movl -0x88(%ebp), %edx\n" /* line 159 | team */
-        "cmpl 0xe0940(%eax), %edx\n"
-        "jne .Lf18cfaa_0018d40a\n"
-        "movl %ecx, %edx\n" /* line 165 */
-        "shll $5, %edx\n"
-        "subl -0xa0(%ebp), %edx\n"
-        "movl -0x70(%ebp), %ecx\n"
-        "movl 0x25bb0(%ecx), %eax\n"
-        "movl %eax, 0x2c5d8(%edx, %ecx)\n"
-        "movl (%edi), %eax\n" /* line 166 */
-        "movl %eax, -0xa4(%ebp)\n"
-        "leal 0x2c5d0(%edx, %eax), %ecx\n"
-        "movl 0x1ec(%esi), %eax\n" /* line 37 */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl 0x1f0(%esi), %eax\n" /* line 38 */
-        "movl %eax, 0x10(%ecx)\n"
-        "addl -0xa4(%ebp), %edx\n" /* line 167 */
-        "movl 0x1fc(%esi), %eax\n" /* cent */
-        "movl %eax, 0x2c5e4(%edx)\n"
-        "testb $0x40, 0xfa(%esi)\n" /* line 169 | cent */
-        "je .Lf18cfaa_0018d40a\n"
-        "movl -0xa4(%ebp), %ecx\n"
-        "movl 0x25bb0(%ecx), %eax\n"
-        "cmpl %eax, 0x2c5e8(%edx)\n"
-        "jg .Lf18cfaa_0018d40a\n"
-        "addl $0xbb8, %eax\n" /* line 170 */
-        "movl %eax, 0x2c5e8(%edx)\n"
-        "jmp .Lf18cfaa_0018d40a\n"
-        ".Lf18cfaa_0018d525:\n"
-        "movl %ecx, %eax\n"
-        "movl 0x195f584, %edi\n"
-        ".Lf18cfaa_0018d52d:\n"
-        "movl 0x5b0(%eax), %eax\n" /* line 174 */
-        "testl %eax, %eax\n"
-        "je .Lf18cfaa_0018d67e\n"
-        "movl %eax, %esi\n" /* line 176 | cent */
-        "andl $0x3f, %esi\n" /* cent */
-        "leal (, %esi, 4), %edx\n" /* line 179 */
-        "movl %esi, %eax\n" /* cent */
-        "shll $5, %eax\n"
-        "subl %edx, %eax\n"
-        "movl -0x70(%ebp), %ecx\n"
-        "movl 0x25bb0(%ecx), %edx\n"
-        "movl %edx, 0x2c5d8(%eax, %ecx)\n"
-        "movl (%edi), %edx\n" /* line 181 */
-        "movl 0x24(%edx), %eax\n"
-        "movl 0x5b0(%eax), %eax\n"
-        "andl $0x7fc0, %eax\n"
-        "shrl $4, %eax\n"
-        "subl $0x3fc, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "movss %xmm1, -0x30(%ebp)\n" /* posDelta */
-        "movl 0x24(%edx), %eax\n" /* line 182 */
-        "movl 0x5b0(%eax), %eax\n"
-        "andl $0xff8000, %eax\n"
-        "shrl $0xd, %eax\n"
-        "subl $0x3fc, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "ucomiss 0x2ed960, %xmm1\n" /* line 184 | 1024.0f */
-        "jp .Lf18cfaa_0018d5a9\n"
-        "je .Lf18cfaa_0018d609\n"
-        ".Lf18cfaa_0018d5a9:\n"
-        "ucomiss 0x2ed964, %xmm1\n" /* -1020.0f */
-        "jp .Lf18cfaa_0018d5b4\n"
-        "je .Lf18cfaa_0018d609\n"
-        ".Lf18cfaa_0018d5b4:\n"
-        "ucomiss 0x2ed960, %xmm0\n" /* 1024.0f */
-        "jp .Lf18cfaa_0018d5bf\n"
-        "je .Lf18cfaa_0018d609\n"
-        ".Lf18cfaa_0018d5bf:\n"
-        "ucomiss 0x2ed964, %xmm0\n" /* -1020.0f */
-        "jne .Lf18cfaa_0018d5ca\n"
-        "jnp .Lf18cfaa_0018d609\n"
-        ".Lf18cfaa_0018d5ca:\n"
-        "movl (%edi), %edx\n" /* line 191 */
-        "movss 0x2858c(%edx), %xmm1\n" /* line 200 */
-        "leal (, %esi, 4), %ecx\n" /* line 192 */
-        "movl %esi, %eax\n" /* cent */
-        "shll $5, %eax\n"
-        "subl %ecx, %eax\n"
-        "leal 0x2c5d0(%eax, %edx), %eax\n"
-        "movss 0x28588(%edx), %xmm0\n" /* line 58 */
-        "addss -0x30(%ebp), %xmm0\n" /* posDelta */
-        "movss %xmm0, 0xc(%eax)\n"
-        "addss -0x2c(%ebp), %xmm1\n" /* line 59 */
-        "movss %xmm1, 0x10(%eax)\n"
-        "movl %edx, %ebx\n"
-        "jmp .Lf18cfaa_0018d641\n"
-        ".Lf18cfaa_0018d609:\n"
-        "leal -0x30(%ebp), %eax\n" /* line 186 | posDelta */
-        "movl %eax, (%esp)\n"
-        "calll Vec2Normalize\n"
-        "fstp %st(0)\n"
-        "movl 0x195f584, %edi\n" /* line 187 */
-        "leal (, %esi, 4), %edx\n"
-        "movl %esi, %eax\n" /* cent */
-        "shll $5, %eax\n"
-        "subl %edx, %eax\n"
-        "movl (%edi), %edx\n"
-        "leal 0x2c5d0(%eax, %edx), %eax\n"
-        "movl -0x30(%ebp), %edx\n" /* line 37 | posDelta */
-        "movl %edx, 0xc(%eax)\n"
-        "movl -0x2c(%ebp), %edx\n" /* line 38 */
-        "movl %edx, 0x10(%eax)\n"
-        "movl (%edi), %ebx\n"
-        ".Lf18cfaa_0018d641:\n"
-        "leal (, %esi, 4), %eax\n" /* line 195 */
-        "shll $5, %esi\n" /* cent */
-        "subl %eax, %esi\n" /* cent */
-        "leal (%esi, %ebx), %edx\n" /* cent */
-        "movl 0x24(%ebx), %eax\n" /* drawMaterial */
-        "movsbl 0x5b3(%eax), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed968, %xmm0\n" /* 1.40625f */
-        "movss %xmm0, 0x2c5e4(%edx)\n"
-        "movl 0x24(%ebx), %eax\n" /* line 197 | drawMaterial */
-        "testb $0x80, 0xae(%eax)\n"
-        "jne .Lf18cfaa_0018dced\n"
-        ".Lf18cfaa_0018d67e:\n"
-        "movl 0x10(%ebp), %ebx\n" /* line 202 | color, drawMaterial */
-        "movss 0xc(%ebx), %xmm0\n" /* drawMaterial */
-        "ucomiss -0x8c(%ebp), %xmm0\n" /* compassFadeOutAlpha */
-        "jbe .Lf18cfaa_0018d69c\n"
-        "movss -0x8c(%ebp), %xmm0\n" /* line 203 | compassFadeOutAlpha */
-        "movss %xmm0, 0xc(%ebx)\n" /* drawMaterial */
-        ".Lf18cfaa_0018d69c:\n"
-        "movss -0x44(%ebp), %xmm0\n" /* line 204 */
-        "movss -0x8c(%ebp), %xmm1\n" /* line 205 | compassFadeOutAlpha */
-        "movaps %xmm1, %xmm2\n"
-        "cmpltss %xmm0, %xmm1\n"
-        "andps %xmm1, %xmm2\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm2, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "movl (%edi), %esi\n" /* cent */
-        "addl $0x2c5f4, %esi\n" /* cent */
-        "movl $0, -0x5c(%ebp)\n"
-        "movl $0x2c5d0, -0xb8(%ebp)\n"
-        "movl $0, -0xbc(%ebp)\n"
-        ".Lf18cfaa_0018d6e5:\n"
-        "movl (%edi), %ebx\n" /* line 211 | drawMaterial */
-        "movl -0x1c(%esi), %eax\n" /* cent */
-        "cmpl 0x25bb0(%ebx), %eax\n" /* drawMaterial */
-        "jle .Lf18cfaa_0018d6f9\n"
-        "movl $0, -0x1c(%esi)\n" /* line 212 | cent */
-        ".Lf18cfaa_0018d6f9:\n"
-        "movl 0x25bb0(%ebx), %eax\n" /* line 213 | drawMaterial */
-        "subl $0x320, %eax\n"
-        "cmpl %eax, -0x1c(%esi)\n" /* cent */
-        "jl .Lf18cfaa_0018db2a\n"
-        "movl 0x24(%ebx), %eax\n" /* line 216 | drawMaterial */
-        "movl -0x5c(%ebp), %edx\n"
-        "cmpl 0xd8(%eax), %edx\n"
-        "je .Lf18cfaa_0018db2a\n"
-        "movl -0xbc(%ebp), %eax\n" /* line 220 */
-        "addl %ebx, %eax\n" /* drawMaterial */
-        "movss 0x302fe0, %xmm1\n"
-        "movss 0x2c5dc(%eax), %xmm0\n"
-        "andps %xmm1, %xmm0\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        "ucomiss %xmm0, %xmm2\n"
-        "jb .Lf18cfaa_0018d75b\n"
-        "movss 0x2c5e0(%eax), %xmm0\n"
-        "andps %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "jae .Lf18cfaa_0018dc13\n"
-        ".Lf18cfaa_0018d75b:\n"
-        "movl -0xb8(%ebp), %ecx\n" /* line 310 */
-        "leal (%ebx, %ecx), %eax\n" /* drawMaterial */
-        "movss 0xc(%eax), %xmm0\n" /* line 65 */
-        "subss 0x28588(%ebx), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* posDelta */
-        "movss 0x10(%eax), %xmm0\n" /* line 66 */
-        "subss 0x2858c(%ebx), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 233 | posDelta */
-        "movl %eax, (%esp)\n"
-        "calll vectoyaw\n"
-        "fstps -0xec(%ebp)\n"
-        "movss -0xec(%ebp), %xmm0\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "subss 0x2c5b8(%eax), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll AngleNormalize360\n"
-        "fstps -0x90(%ebp)\n" /* yawTo */
-        "movss -0x30(%ebp), %xmm1\n" /* line 134 | posDelta */
-        "movss -0x2c(%ebp), %xmm0\n"
-        "mulss %xmm1, %xmm1\n" /* line 81 */
-        "mulss %xmm0, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "sqrtss %xmm1, %xmm2\n"
-        "movss %xmm2, -0x44(%ebp)\n" /* line 237 */
-        "movl 0x195f660, %ebx\n" /* line 238 | drawMaterial */
-        "movl (%ebx), %eax\n" /* drawMaterial */
-        "movss 8(%eax), %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf18cfaa_0018dbbf\n"
-        "movss %xmm0, -0x44(%ebp)\n" /* line 239 */
-        "movl 0x195f654, %ecx\n"
-        "movl (%ecx), %edx\n"
-        "movaps %xmm0, %xmm1\n"
-        ".Lf18cfaa_0018d805:\n"
-        "subss 8(%edx), %xmm1\n" /* line 243 */
-        "movss %xmm1, -0x44(%ebp)\n"
-        "movl 0x195f660, %ebx\n" /* line 244 | drawMaterial */
-        "movl (%ebx), %eax\n" /* drawMaterial */
-        "movss 8(%eax), %xmm0\n"
-        "subss 8(%edx), %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x44(%ebp)\n"
-        "movl 0x195f664, %eax\n" /* line 245 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "subss %xmm3, %xmm0\n"
-        "mulss %xmm0, %xmm1\n"
-        "addss %xmm3, %xmm1\n"
-        "movss %xmm1, -0x44(%ebp)\n"
-        "movss 8(%edx), %xmm0\n" /* line 248 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jbe .Lf18cfaa_0018dba6\n"
-        "movaps %xmm0, %xmm2\n"
-        "movl 0x195f644, %edx\n"
-        "movl (%edx), %eax\n"
-        ".Lf18cfaa_0018d868:\n"
-        "movss 8(%eax), %xmm1\n" /* line 66 */
-        "subss %xmm1, %xmm2\n"
-        "movl (%ecx), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "divss %xmm0, %xmm2\n"
-        "movl 0x195f650, %eax\n" /* line 67 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "subss %xmm1, %xmm3\n"
-        "mulss %xmm2, %xmm3\n"
-        "movl 0x195f640, %edx\n" /* line 55 */
-        "movl (%edx), %eax\n"
-        "movss 8(%eax), %xmm2\n"
-        "cvtss2sd %xmm2, %xmm0\n"
-        "mulsd 0x307d60, %xmm0\n" /* 43.75 */
-        "addss %xmm3, %xmm1\n"
-        "cvtss2sd %xmm1, %xmm1\n"
-        "mulsd %xmm1, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x60(%ebp)\n"
-        "cvtss2sd -0x90(%ebp), %xmm0\n" /* line 257 | yawTo */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x78(%ebp)\n" /* radians */
-        /* { scope 2 */
-        "movss %xmm0, (%esp)\n" /* line 485 */
-        "movss %xmm2, -0xd8(%ebp)\n"
-        "calll sinf\n"
-        "fstps -0xa8(%ebp)\n"
-        "movss -0x78(%ebp), %xmm0\n" /* line 486 | radians */
-        "movss %xmm0, (%esp)\n"
-        "calll cosf\n"
-        "fstps -0xac(%ebp)\n"
-        /* } scope */
-        "movss 0x2ed6b4, %xmm0\n" /* line 82 | 10.0f */
-        "movss -0xd8(%ebp), %xmm2\n"
-        "mulss %xmm0, %xmm2\n"
-        "movss %xmm2, -0x24(%ebp)\n" /* w */
-        "movl 0x195f640, %edx\n" /* line 83 */
-        "movl (%edx), %eax\n"
-        "mulss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n" /* h */
-        "movss 0x2ed63c, %xmm1\n" /* line 259 | -0.5f */
-        "mulss %xmm1, %xmm2\n"
-        "addss -0x98(%ebp), %xmm2\n" /* centerX */
-        "movss -0x60(%ebp), %xmm3\n"
-        "mulss -0xa8(%ebp), %xmm3\n"
-        "subss %xmm3, %xmm2\n"
-        "movss %xmm2, -0x28(%ebp)\n" /* x */
-        "mulss %xmm1, %xmm0\n" /* line 260 */
-        "addss -0x94(%ebp), %xmm0\n" /* centerY */
-        "movss -0x60(%ebp), %xmm1\n"
-        "mulss -0xac(%ebp), %xmm1\n"
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* y */
-        "leal -0x1c(%ebp), %eax\n" /* line 262 | h */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x20(%ebp), %eax\n" /* y */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll CG_ApplySplitScreenCompassScale\n"
-        "movl 0x195f584, %eax\n" /* line 265 */
-        "movl (%eax), %ebx\n" /* drawMaterial */
-        "movss 0x285cc(%ebx), %xmm0\n" /* drawMaterial */
-        "movl -0xbc(%ebp), %eax\n"
-        "subss 0x2c5e4(%eax, %ebx), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll AngleNormalize360\n"
-        "fstps -0x68(%ebp)\n"
-        "movl -0xc(%esi), %eax\n" /* line 267 | cent */
-        "movl 0x25bb0(%ebx), %ebx\n" /* drawMaterial */
-        "cmpl %ebx, %eax\n" /* drawMaterial */
-        "jg .Lf18cfaa_0018db4e\n"
-        ".Lf18cfaa_0018d9db:\n"
-        "xorl %ecx, %ecx\n" /* line 270 */
-        ".Lf18cfaa_0018d9dd:\n"
-        "movl -8(%esi), %edx\n" /* line 276 | cent */
-        "movl 0x195f674, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm2\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "movaps %xmm2, %xmm1\n"
-        "mulss 0x2ed5c8, %xmm1\n" /* 1000.0f */
-        "addss %xmm1, %xmm0\n"
-        "cvtsi2ssl %ebx, %xmm1\n" /* drawMaterial */
-        "ucomiss %xmm1, %xmm0\n"
-        "jae .Lf18cfaa_0018db89\n"
-        "xorl %ebx, %ebx\n" /* drawMaterial */
-        ".Lf18cfaa_0018da0e:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 456 | color */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x40(%ebp)\n" /* baseColorModdedByComapassFadeOut */
-        "movl -0x84(%ebp), %edx\n" /* line 457 */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        "movl -0x80(%ebp), %edx\n" /* line 458 */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x38(%ebp)\n"
-        "movl -0x7c(%ebp), %eax\n" /* line 459 */
-        "movss (%eax), %xmm0\n"
-        "movss -0x8c(%ebp), %xmm1\n" /* line 289 | compassFadeOutAlpha */
-        "minss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x34(%ebp)\n"
-        "movss -0x44(%ebp), %xmm0\n" /* line 290 */
-        "movss -0x8c(%ebp), %xmm2\n" /* line 291 | compassFadeOutAlpha */
-        "movaps %xmm2, %xmm3\n"
-        "cmpltss %xmm0, %xmm2\n"
-        "andps %xmm2, %xmm3\n"
-        "andnps %xmm0, %xmm2\n"
-        "orps %xmm3, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "cmpl $1, %ecx\n" /* line 293 */
-        "je .Lf18cfaa_0018dc99\n"
-        "testl %ebx, %ebx\n" /* line 299 | drawMaterial */
-        "je .Lf18cfaa_0018da84\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "ucomiss -0x44(%ebp), %xmm0\n"
-        "jp .Lf18cfaa_0018da84\n"
-        "je .Lf18cfaa_0018dadd\n"
-        ".Lf18cfaa_0018da84:\n"
-        "movl 0x195f5c4, %eax\n" /* line 300 */
-        "movl (%eax), %eax\n"
-        "movl 0xbc6c(%eax, %ecx, 4), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "leal -0x40(%ebp), %eax\n" /* baseColorModdedByComapassFadeOut */
-        "movl %eax, 0x1c(%esp)\n"
-        "movss -0x68(%ebp), %xmm0\n"
-        "movss %xmm0, 0x18(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* rect */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* h */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x24(%ebp), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* y */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x28(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll CG_DrawRotatedPic\n"
-        "testl %ebx, %ebx\n" /* line 302 | drawMaterial */
-        "je .Lf18cfaa_0018db24\n"
-        ".Lf18cfaa_0018dadd:\n"
-        "movl %ebx, 0x20(%esp)\n" /* line 303 | drawMaterial */
-        "leal -0x50(%ebp), %eax\n" /* fadedColor */
-        "movl %eax, 0x1c(%esp)\n"
-        "movss -0x68(%ebp), %xmm0\n"
-        "movss %xmm0, 0x18(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* rect */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* h */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x24(%ebp), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* y */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x28(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll CG_DrawRotatedPic\n"
-        ".Lf18cfaa_0018db24:\n"
-        "movl 0x195f584, %edi\n"
-        ".Lf18cfaa_0018db2a:\n"
-        "addl $1, -0x5c(%ebp)\n" /* line 209 */
-        "addl $0x1c, -0xbc(%ebp)\n"
-        "addl $0x1c, -0xb8(%ebp)\n"
-        "addl $0x1c, %esi\n" /* cent */
-        "cmpl $0x40, -0x5c(%ebp)\n"
-        "jne .Lf18cfaa_0018d6e5\n"
-        "jmp .Lf18cfaa_0018d108\n"
-        ".Lf18cfaa_0018db4e:\n"
-        "movl %eax, %edi\n" /* line 270 */
-        "subl %ebx, %edi\n" /* drawMaterial */
-        "movl $0x10624dd3, %edx\n"
-        "movl %edi, %eax\n"
-        "imull %edx\n"
-        "sarl $5, %edx\n"
-        "movl %edi, %ecx\n"
-        "sarl $0x1f, %ecx\n"
-        "subl %ecx, %edx\n"
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (%edx, %edx, 4), %edx\n"
-        "shll $2, %edx\n"
-        "subl %edx, %edi\n"
-        "cmpl $0xf9, %edi\n"
-        "jle .Lf18cfaa_0018d9db\n"
-        "movl $1, %ecx\n"
-        "jmp .Lf18cfaa_0018d9dd\n"
-        ".Lf18cfaa_0018db89:\n"
-        "cmpl %edx, %ebx\n" /* line 278 | drawMaterial */
-        "jg .Lf18cfaa_0018dbf2\n"
-        "movl $0x3f800000, -0x44(%ebp)\n" /* line 279 */
-        ".Lf18cfaa_0018db94:\n"
-        "movl 0x195f5c4, %eax\n" /* line 283 */
-        "movl (%eax), %eax\n"
-        "movl 0xc1e0(%eax), %ebx\n" /* drawMaterial */
-        "jmp .Lf18cfaa_0018da0e\n"
-        ".Lf18cfaa_0018dba6:\n"
-        "movl 0x195f644, %edx\n" /* line 250 */
-        "movl (%edx), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "maxss %xmm2, %xmm0\n"
-        "movaps %xmm0, %xmm2\n"
-        "jmp .Lf18cfaa_0018d868\n"
-        ".Lf18cfaa_0018dbbf:\n"
-        "movl 0x195f654, %ecx\n" /* line 240 */
-        "movl (%ecx), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "movaps %xmm2, %xmm1\n" /* line 241 */
-        "movaps %xmm2, %xmm3\n"
-        "cmpnltss %xmm0, %xmm1\n"
-        "andps %xmm1, %xmm3\n"
-        "andnps %xmm0, %xmm1\n"
-        "orps %xmm3, %xmm1\n"
-        "movaps %xmm1, %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "movl %eax, %edx\n"
-        "movaps %xmm0, %xmm1\n"
-        "jmp .Lf18cfaa_0018d805\n"
-        ".Lf18cfaa_0018dbf2:\n"
-        "subl %edx, %ebx\n" /* line 281 | drawMaterial */
-        "cvtsi2ssl %ebx, %xmm0\n" /* drawMaterial */
-        "mulss 0x2ed96c, %xmm2\n" /* -1000.0f */
-        "divss %xmm2, %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, -0x44(%ebp)\n"
-        "jmp .Lf18cfaa_0018db94\n"
-        ".Lf18cfaa_0018dc13:\n"
-        "movl -0xbc(%ebp), %edx\n" /* line 223 */
-        "leal 0x2c5dc(%edx, %ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll vectoyaw\n"
-        "fstps -0xec(%ebp)\n"
-        "movss -0xec(%ebp), %xmm0\n"
-        "subss 0x2c5b8(%ebx), %xmm0\n" /* drawMaterial */
-        "movss %xmm0, (%esp)\n"
-        "calll AngleNormalize360\n"
-        "fstps -0x90(%ebp)\n" /* yawTo */
-        "movl 0x195f654, %ecx\n" /* line 224 */
-        "movl (%ecx), %eax\n"
-        "movss 8(%eax), %xmm2\n"
-        "movl 0x195f664, %eax\n" /* line 227 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "subss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x44(%ebp)\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movl 0x195f644, %edx\n"
-        "movl (%edx), %eax\n"
-        "jmp .Lf18cfaa_0018d868\n"
-        ".Lf18cfaa_0018dc99:\n"
-        "movl 0x195f5c4, %eax\n" /* line 295 */
-        "movl (%eax), %eax\n"
-        "movl 0xbc70(%eax), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "leal -0x50(%ebp), %eax\n" /* fadedColor */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* rect */
-        "movl 0x14(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x10(%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* h */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x24(%ebp), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* y */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x28(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "calll UI_DrawHandlePic\n"
-        "movl 0x195f584, %edi\n"
-        "jmp .Lf18cfaa_0018db2a\n"
-        ".Lf18cfaa_0018dced:\n"
-        "movl 0x25bb0(%ebx), %eax\n" /* line 197 | drawMaterial */
-        "cmpl %eax, 0x2c5e8(%edx)\n"
-        "jg .Lf18cfaa_0018d67e\n"
-        "addl $0xbb8, %eax\n" /* line 198 */
-        "movl %eax, 0x2c5e8(%edx)\n"
-        "jmp .Lf18cfaa_0018d67e\n"
-    );
-}
+    byte *cg;
+    byte *cgs;
+    float compassFadeOutAlpha;
+    float centerX, centerY;
+    int team;
+    int i;
 
+    /* line 124: Get the fade dvar and compute duration */
+    const dvar_t *fadeDvar = *dvar_compassFade;
+    int duration = (int)floorf(fadeDvar->current.value * 1000.0f + 0.5f);
+
+    /* Get cg base */
+    cg = *cg_glob;
+
+    /* Compute fade alpha */
+    int displayStartTime = *(int *)(cg + CG_COMPASS_DISPLAYTIME);
+    compassFadeOutAlpha = CG_FadeHudMenu(fadeDvar, displayStartTime, duration);
+
+    /* line 125: Skip if fully transparent */
+    if (compassFadeOutAlpha == 0.0f)
+        return;
+
+    /* line 128: Get our snap clientNum and check clientInfo */
+    byte *snapPtr = *(byte **)(cg + CG_SNAP_PTR);
+    int ourClientNum = *(int *)(snapPtr + SNAP_PS_CLIENTNUM);
+    byte *ourCI = cg + CG_CLIENTINFO_BASE + ourClientNum * CLIENTINFO_STRIDE;
+    int infoValid = *(int *)(ourCI + CI_INFOVALID);
+
+    if (infoValid == 0)
+        return;
+
+    /* line 130: Get our team */
+    team = *(int *)(ourCI + CI_TEAM);
+
+    /* line 132: Skip if spectator */
+    if (team == 3)
+        return;
+
+    /* line 135 */
+    CG_UpdateCompPointerOrientation();
+
+    /* line 137: Compute compass center */
+    float compassSize = dvar_value(dvar_compassSize);
+    centerX = rect->x + 0.5f * compassSize * rect->w;
+    centerY = rect->y + rect->h + (-0.5f) * compassSize * rect->h;
+
+    /* line 456-459: Copy base color to fadedColor */
+    vec4_t fadedColor;
+    fadedColor[0] = color[0];
+    fadedColor[1] = color[1];
+    fadedColor[2] = color[2];
+    fadedColor[3] = color[3];
+
+    /* line 142: Branch based on team */
+    if (team != 0) {
+        /* team != 0: iterate over snapshot clients */
+        byte *snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
+        int numClients = *(int *)(snapPtr2 + SNAP_PS_NUMCLIENTS);
+
+        for (i = 0; i < numClients; i++) {
+            byte *snap = *(byte **)(cg + CG_SNAP_PTR);
+
+            /* line 147: Get clientNum from playerInfo array */
+            int clientIdx = *(int *)(snap + SNAP_PI_STRIDE * i + SNAP_PS_CLIENTBASE);
+
+            /* Compute centity pointer for this client */
+            byte *entities = *cg_entities_glob;
+            byte *centRaw = entities + clientIdx * CENTITY_BIN_SIZE;
+
+            /* line 148: Check eType == 1 (ET_PLAYER_CORPSE? or ET_GENERAL) */
+            if (*(int *)(centRaw + ES_ETYPE) != 1)
+                continue;
+
+            /* line 150: Check eFlags bit 1 (crouching/dead?) */
+            if (*(byte *)(centRaw + 0xfa) & 0x02)
+                continue;
+
+            /* line 154: Skip negative clientNum */
+            if ((int)clientIdx < 0)
+                continue;
+
+            /* line 157: Compute clientInfo for this client */
+            cg = *cg_glob;
+            byte *ci = cg + CG_CLIENTINFO_BASE + clientIdx * CLIENTINFO_STRIDE;
+
+            /* Check infoValid */
+            if (*(int *)(ci + CI_INFOVALID) == 0)
+                continue;
+
+            /* line 159: Check team matches ours */
+            if (*(int *)(ci + CI_TEAM) != team)
+                continue;
+
+            /* line 165: Update compass actor iLastUpdate */
+            byte *actor = cg + CG_COMPASS_ACTORS + clientIdx * COMPASS_ACTOR_SIZE;
+            int cgTime = *(int *)(cg + CG_TIME);
+            *(int *)(actor + 0x00) = cgTime; /* iLastUpdate */
+
+            /* line 166: Store lerpOrigin into vLastPos */
+            *(float *)(actor + 0x04) = *(float *)(centRaw + ES_ORIGIN_X);
+            *(float *)(actor + 0x08) = *(float *)(centRaw + ES_ORIGIN_Y);
+
+            /* line 167: Store lean/yaw into fLastYaw */
+            *(float *)(actor + 0x0c) = *(float *)(centRaw + ES_LEAN);
+
+            /* line 169: Check eFlags bit 6 (firing?) for weapon ping */
+            if (!(*(byte *)(centRaw + 0xfa) & 0x40))
+                continue;
+
+            /* line 170: Extend pingTime if expired */
+            cg = *cg_glob;
+            cgTime = *(int *)(cg + CG_TIME);
+            if (*(int *)(actor + 0x10) <= cgTime) {
+                *(int *)(actor + 0x10) = cgTime + 3000; /* 0xbb8 = 3000ms */
+            }
+        }
+
+        /* Reload snap pointer for compass packed data below */
+        snapPtr2 = *(byte **)(*(byte **)(cg_glob) + CG_SNAP_PTR);
+
+        /* line 174: Check ps.compassFriend packed data */
+        int compassPacked = *(int *)(snapPtr2 + PS_COMPASS_PACKED);
+        if (compassPacked == 0)
+            goto draw_friendlies;
+
+        /* line 176: Extract clientNum from packed data (bits 0-5) */
+        int packedClientNum = compassPacked & 0x3f;
+
+        /* line 179: Update compass actor iLastUpdate for packed client */
+        cg = *cg_glob;
+        byte *packedActor = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
+        *(int *)(packedActor + 0x00) = *(int *)(cg + CG_TIME); /* iLastUpdate */
+
+        /* line 181-182: Extract packed position offsets */
+        cg = *cg_glob;
+        snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
+        compassPacked = *(int *)(snapPtr2 + PS_COMPASS_PACKED);
+        int packedX = ((compassPacked & 0x7fc0) >> 4) - 0x3fc;
+        int packedY = ((compassPacked & 0xff8000) >> 13) - 0x3fc;
+        float deltaX = (float)packedX;
+        float deltaY = (float)packedY;
+
+        /* line 184: Check for out-of-range markers (1024 or -1020) */
+        if (deltaX == 1024.0f || deltaX == -1020.0f ||
+            deltaY == 1024.0f || deltaY == -1020.0f)
+        {
+            /* line 186: Normalize direction (out-of-range, use unit vector) */
+            vec2_t dir;
+            dir[0] = deltaX;
+            dir[1] = deltaY;
+            Vec2Normalize(dir);
+
+            /* line 187: Store normalized position */
+            cg = *cg_glob;
+            packedActor = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
+            *(float *)(packedActor + 0x04) = dir[0];
+            *(float *)(packedActor + 0x08) = dir[1];
+        }
+        else
+        {
+            /* line 191-200: Store absolute position (playerOrigin + delta) */
+            cg = *cg_glob;
+            packedActor = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
+            float playerX = *(float *)(cg + CG_ORIGIN_X);
+            float playerY = *(float *)(cg + CG_ORIGIN_Y);
+            *(float *)(packedActor + 0x04) = playerX + deltaX;
+            *(float *)(packedActor + 0x08) = playerY + deltaY;
+        }
+
+        /* line 195: Store packed yaw */
+        cg = *cg_glob;
+        snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
+        signed char packedYaw = *(signed char *)(snapPtr2 + PS_COMPASS_FRIEND_YAW);
+        *(float *)(cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE + 0x0c) =
+            (float)packedYaw * 1.40625f;
+
+        /* line 197: Check eFlags for firing bit */
+        snapPtr2 = *(byte **)(cg + CG_SNAP_PTR);
+        if (*(byte *)(snapPtr2 + PS_COMPASS_EFLAGS) & 0x80) {
+            /* Update ping time if expired */
+            int cgTime2 = *(int *)(cg + CG_TIME);
+            byte *pActor2 = cg + CG_COMPASS_ACTORS + packedClientNum * COMPASS_ACTOR_SIZE;
+            if (*(int *)(pActor2 + 0x10) <= cgTime2) {
+                *(int *)(pActor2 + 0x10) = cgTime2 + 3000;
+            }
+        }
+    }
+
+draw_friendlies:
+    /* line 202: Clamp color alpha to compassFadeOutAlpha */
+    {
+        float origAlpha = color[3];
+        if (origAlpha > compassFadeOutAlpha)
+            color[3] = compassFadeOutAlpha;
+    }
+
+    /* line 204-205: Min of fadedColor[3] and compassFadeOutAlpha */
+    {
+        float a = fadedColor[3];
+        if (a > compassFadeOutAlpha)
+            a = compassFadeOutAlpha;
+        fadedColor[3] = a;
+    }
+
+    cg = *cg_glob;
+
+    /* line 209: Iterate over 64 compass actors */
+    for (i = 0; i < COMPASS_ACTOR_COUNT; i++) {
+        byte *cgBase = *cg_glob;
+        byte *actor = cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE;
+
+        /* line 211: Reset iLastUpdate if in the future */
+        int lastUpdate = *(int *)(actor + 0x00);
+        int cgTime = *(int *)(cgBase + CG_TIME);
+        if (lastUpdate > cgTime) {
+            *(int *)(actor + 0x00) = 0;
+        }
+
+        /* line 213: Skip if too old (> 800ms ago) */
+        cgTime = *(int *)(cgBase + CG_TIME);
+        if (*(int *)(actor + 0x00) < cgTime - 0x320)
+            continue;
+
+        /* line 216: Skip our own client */
+        byte *snap2 = *(byte **)(cgBase + CG_SNAP_PTR);
+        if (i == *(int *)(snap2 + SNAP_PS_CLIENTNUM))
+            continue;
+
+        /* line 220: Check if position is valid (not tiny/zero) */
+        float posX = *(float *)(actor + 0x04);
+        float posY = *(float *)(actor + 0x08);
+        unsigned int absX = *(unsigned int *)(actor + 0x04) & 0x7fffffff;
+        unsigned int absY = *(unsigned int *)(actor + 0x08) & 0x7fffffff;
+        float fabsX, fabsY;
+        *(unsigned int *)&fabsX = absX;
+        *(unsigned int *)&fabsY = absY;
+
+        float iconAlpha2 = 1.0f;
+        float radius;
+
+        if (fabsX <= 1.0f && fabsY <= 1.0f) {
+            /* line 223: Position is a normalized direction vector (out-of-range target) */
+            float dirVec[2];
+            dirVec[0] = posX;
+            dirVec[1] = posY;
+            float yawTo = vectoyaw(dirVec);
+            yawTo = AngleNormalize360(yawTo - *(float *)(cgBase + CG_COMPASS_YAW));
+
+            /* line 224-227: For out-of-range targets, use midpoint alpha and max radius */
+            float clampSat = dvar_value(dvar_compassClampSaturation);
+            iconAlpha2 = clampSat + (1.0f - clampSat) * 0.5f;
+
+            /* Radius = max (compassSize * 43.75), since dist = maxRange -> frac = 1.0 -> sat = 1.0 */
+            float compassSize2 = dvar_value(dvar_compassSize);
+            float minRange = dvar_value(dvar_compassMinRange);
+            float maxRange = dvar_value(dvar_compassMaxRange);
+            float minSat = dvar_value(dvar_compassMinSaturation);
+            float rangeFrac = (maxRange - minRange) / (maxRange - minRange);
+            float saturation = minSat + rangeFrac * (1.0f - minSat);
+            float radius = (float)((double)compassSize2 * 43.75 * (double)saturation);
+
+            float radians = (float)((double)yawTo * 0.017453292519943295);
+            float sinVal = sinf(radians);
+            float cosVal = cosf(radians);
+
+            float w = compassSize2 * 10.0f;
+            float h = dvar_value(dvar_compassSize) * 10.0f;
+            float x = centerX + w * (-0.5f) - radius * sinVal;
+            float y = centerY + h * (-0.5f) - radius * cosVal;
+
+            CG_ApplySplitScreenCompassScale(&x, &y, &w, &h);
+
+            /* line 265: Compute angle for drawing */
+            float refYaw = *(float *)(cgBase + CG_REFDEF_YAW);
+            float actorYaw = *(float *)(actor + 0x0c);
+            float drawAngle = AngleNormalize360(refYaw - actorYaw);
+
+            /* line 267-270: Determine ping flash state */
+            int pingTime = *(int *)(actor + 0x10);
+            cgTime = *(int *)(cgBase + CG_TIME);
+            int pingFlash = 0;
+            if (pingTime > cgTime) {
+                int elapsed = pingTime - cgTime;
+                int mod = elapsed % 500;
+                if (mod > 249) {
+                    pingFlash = 1;
+                }
+            }
+
+            /* line 276: Check if ping has expired */
+            int beginFade = *(int *)(actor + 0x14);
+            float pingFadeTime = dvar_value(dvar_compassPingFadeTime);
+            float fadeEnd = (float)beginFade + pingFadeTime * 1000.0f;
+            MaterialHandle friendMat = NULL;
+            float iconAlpha;
+
+            if ((float)cgTime < fadeEnd) {
+                /* line 278-279: Within ping time */
+                if (cgTime >= beginFade) {
+                    iconAlpha = 1.0f;
+                } else {
+                    /* line 281: Fading */
+                    iconAlpha = 1.0f + (float)(cgTime - beginFade) / (pingFadeTime * -1000.0f);
+                }
+                /* line 283: Get compass back material */
+                cgs = *cgs_glob;
+                friendMat = *(MaterialHandle *)(cgs + CGS_COMPASS_BACK);
+            } else {
+                friendMat = NULL;
+            }
+
+            /* line 456-459: Copy color to per-actor color */
+            vec4_t actorColor;
+            actorColor[0] = color[0];
+            actorColor[1] = color[1];
+            actorColor[2] = color[2];
+            /* line 289: Clamp alpha */
+            actorColor[3] = color[3] < compassFadeOutAlpha ? color[3] : compassFadeOutAlpha;
+
+            /* line 290-291: Min of iconAlpha and compassFadeOutAlpha */
+            iconAlpha = compassFadeOutAlpha < iconAlpha ? compassFadeOutAlpha : iconAlpha;
+
+            /* line 293: Draw based on ping flash state */
+            if (pingFlash == 1) {
+                /* line 295: Draw compass dot */
+                cgs = *cgs_glob;
+                MaterialHandle dotMat = *(MaterialHandle *)(cgs + CGS_COMPASS_DOT);
+                UI_DrawHandlePic(x, y, w, h, rect->horzAlign, rect->vertAlign, fadedColor, dotMat);
+            } else {
+                /* line 299-303: Draw direction indicator and/or friend material */
+                if (friendMat == NULL || iconAlpha != 1.0f) {
+                    /* line 300: Draw direction material */
+                    cgs = *cgs_glob;
+                    MaterialHandle dirMat = *(MaterialHandle *)(cgs + CGS_COMPASS_DIR(pingFlash));
+                    CG_DrawRotatedPic(x, y, w, h, rect->horzAlign, rect->vertAlign, drawAngle, actorColor, dirMat);
+                }
+                if (friendMat != NULL) {
+                    /* line 303: Draw friend material overlay */
+                    CG_DrawRotatedPic(x, y, w, h, rect->horzAlign, rect->vertAlign, drawAngle, fadedColor, friendMat);
+                }
+            }
+
+            cg = *cg_glob;
+            continue;
+        }
+
+        /* Normal case: position is absolute coordinates */
+        /* line 65-66: Compute position delta */
+        vec2_t posDelta;
+        posDelta[0] = posX - *(float *)(cgBase + CG_ORIGIN_X);
+        posDelta[1] = posY - *(float *)(cgBase + CG_ORIGIN_Y);
+
+        /* line 233: Compute yaw to target */
+        float yawTo = vectoyaw(posDelta);
+        cgBase = *cg_glob;
+        yawTo = AngleNormalize360(yawTo - *(float *)(cgBase + CG_COMPASS_YAW));
+
+        /* line 134/81: Compute distance */
+        float dist = sqrtf(posDelta[0] * posDelta[0] + posDelta[1] * posDelta[1]);
+
+        /*
+         * line 237-250: Compute iconAlpha2 (fade based on distance beyond maxRange)
+         * and radius (compass pixel distance from center).
+         *
+         * iconAlpha2: lerp from 1.0 to clampSat as dist goes from maxRange to clampDist.
+         *   If dist <= maxRange, iconAlpha2 = 1.0
+         *   If dist >= clampDist, iconAlpha2 = clampSat
+         *
+         * radius: standard compass radius using clamped distance in [minRange, maxRange].
+         */
+        float clampDistVal = dvar_value(dvar_compassClampDist);
+        float maxRangeVal = dvar_value(dvar_compassMaxRange);
+        float minRangeVal = dvar_value(dvar_compassMinRange);
+        float minSatVal = dvar_value(dvar_compassMinSaturation);
+        float clampSatVal = dvar_value(dvar_compassClampSaturation);
+        float compassSzVal = dvar_value(dvar_compassSize);
+
+        /* Compute the alpha-for-distance value (clamp between maxRange and clampDist) */
+        float alphaClampedDist;
+        if (dist > clampDistVal) {
+            alphaClampedDist = clampDistVal;
+        } else if (dist >= maxRangeVal) {
+            alphaClampedDist = dist;
+        } else {
+            alphaClampedDist = maxRangeVal;
+        }
+        {
+            float alphaFrac = (alphaClampedDist - maxRangeVal) / (clampDistVal - maxRangeVal);
+            iconAlpha2 = 1.0f + alphaFrac * (clampSatVal - 1.0f);
+        }
+
+        /* Compute the radius (clamp distance between minRange and maxRange) */
+        {
+            float radiusDist = dist;
+            if (radiusDist > maxRangeVal)
+                radiusDist = maxRangeVal;
+            if (radiusDist < minRangeVal)
+                radiusDist = minRangeVal;
+            float rangeFrac = (radiusDist - minRangeVal) / (maxRangeVal - minRangeVal);
+            float saturation = minSatVal + rangeFrac * (1.0f - minSatVal);
+            radius = (float)((double)compassSzVal * 43.75 * (double)saturation);
+        }
+
+        /* line 257: Convert yaw to radians and compute sin/cos */
+        float radians2 = (float)((double)yawTo * 0.017453292519943295);
+        float sinVal2 = sinf(radians2);
+        float cosVal2 = cosf(radians2);
+
+        /* line 82-83: Compute icon size */
+        float compassSzFinal = dvar_value(dvar_compassSize);
+        float w2 = compassSzFinal * 10.0f;
+        float h2 = dvar_value(dvar_compassSize) * 10.0f;
+
+        /* line 259-260: Compute draw position */
+        float x2 = centerX + w2 * (-0.5f) - radius * sinVal2;
+        float y2 = centerY + h2 * (-0.5f) - radius * cosVal2;
+
+        /* line 262 */
+        CG_ApplySplitScreenCompassScale(&x2, &y2, &w2, &h2);
+
+        /* line 265: Compute draw angle */
+        cgBase = *cg_glob;
+        float refYaw2 = *(float *)(cgBase + CG_REFDEF_YAW);
+        float actorYaw2 = *(float *)(cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE + 0x0c);
+        float drawAngle2 = AngleNormalize360(refYaw2 - actorYaw2);
+
+        /* line 267-270: Ping flash calculation */
+        int pingTime2 = *(int *)(cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE + 0x10);
+        cgTime = *(int *)(cgBase + CG_TIME);
+        int pingFlash2 = 0;
+        if (pingTime2 > cgTime) {
+            int elapsed2 = pingTime2 - cgTime;
+            int mod2 = elapsed2 % 500;
+            if (mod2 > 249) {
+                pingFlash2 = 1;
+            }
+        }
+
+        /* line 276: Check begin fade time for ping display */
+        int beginFade2 = *(int *)(cgBase + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE + 0x14);
+        float pingFadeTime2 = dvar_value(dvar_compassPingFadeTime);
+        float fadeEnd2 = (float)beginFade2 + pingFadeTime2 * 1000.0f;
+        MaterialHandle friendMat2 = NULL;
+
+        if ((float)cgTime < fadeEnd2) {
+            if (cgTime >= beginFade2) {
+                iconAlpha2 = 1.0f;
+            } else {
+                iconAlpha2 = 1.0f + (float)(cgTime - beginFade2) / (pingFadeTime2 * -1000.0f);
+            }
+            cgs = *cgs_glob;
+            friendMat2 = *(MaterialHandle *)(cgs + CGS_COMPASS_BACK);
+        }
+
+        /* line 456-459: Build per-actor color */
+        vec4_t actorColor2;
+        actorColor2[0] = color[0];
+        actorColor2[1] = color[1];
+        actorColor2[2] = color[2];
+        actorColor2[3] = color[3] < compassFadeOutAlpha ? color[3] : compassFadeOutAlpha;
+
+        /* line 290-291: Clamp iconAlpha */
+        iconAlpha2 = compassFadeOutAlpha < iconAlpha2 ? compassFadeOutAlpha : iconAlpha2;
+
+        /* line 293: Draw based on ping state */
+        if (pingFlash2 == 1) {
+            cgs = *cgs_glob;
+            MaterialHandle dotMat2 = *(MaterialHandle *)(cgs + CGS_COMPASS_DOT);
+            UI_DrawHandlePic(x2, y2, w2, h2, rect->horzAlign, rect->vertAlign, fadedColor, dotMat2);
+        } else {
+            if (friendMat2 == NULL || iconAlpha2 != 1.0f) {
+                cgs = *cgs_glob;
+                MaterialHandle dirMat2 = *(MaterialHandle *)(cgs + CGS_COMPASS_DIR(pingFlash2));
+                CG_DrawRotatedPic(x2, y2, w2, h2, rect->horzAlign, rect->vertAlign, drawAngle2, actorColor2, dirMat2);
+            }
+            if (friendMat2 != NULL) {
+                CG_DrawRotatedPic(x2, y2, w2, h2, rect->horzAlign, rect->vertAlign, drawAngle2, fadedColor, friendMat2);
+            }
+        }
+
+        cg = *cg_glob;
+    }
+
+    /* line 309: Draw weapon pings (separate loop over all 64 actors) */
+    {
+        byte *cgBase2 = *cg_glob;
+        for (i = 0; i < COMPASS_ACTOR_COUNT; i++) {
+            byte *actor2 = cgBase2 + CG_COMPASS_ACTORS + i * COMPASS_ACTOR_SIZE;
+
+            /* line 312: Check enemy flag */
+            if (*(byte *)(actor2 + 0x18) == 0)
+                continue;
+
+            /* line 314: Check if ping is still valid */
+            int pingBeginFade = *(int *)(actor2 + 0x14);
+            cgBase2 = *cg_glob;
+            byte *cg2 = cgBase2;
+            float pingFadeVal = dvar_value(dvar_compassPingFadeTime);
+            float pingEnd = (float)pingBeginFade + pingFadeVal * 1000.0f;
+            int cgTime2 = *(int *)(cg2 + CG_TIME);
+            if ((float)cgTime2 > pingEnd)
+                continue;
+            if (pingBeginFade == 0)
+                continue;
+
+            /* line 65-66: Compute position delta */
+            vec2_t posDelta2;
+            posDelta2[0] = *(float *)(actor2 + 0x04) - *(float *)(cg2 + CG_ORIGIN_X);
+            posDelta2[1] = *(float *)(actor2 + 0x08) - *(float *)(cg2 + CG_ORIGIN_Y);
+
+            /* line 318: Compute yaw and distance */
+            float yaw = vectoyaw(posDelta2);
+            yaw = AngleNormalize360(yaw - *(float *)(cg2 + CG_COMPASS_YAW));
+
+            float pingDist = sqrtf(posDelta2[0] * posDelta2[0] + posDelta2[1] * posDelta2[1]);
+
+            /* line 321: Compute radius */
+            float pingRadius = CompassDistToRadius(pingDist);
+
+            /* line 327: Convert to radians */
+            float pingRadians = (float)((double)yaw * 0.017453292519943295);
+            float pingSin = sinf(pingRadians);
+            float pingCos = cosf(pingRadians);
+
+            /* line 82-83: Icon size */
+            float compassSz3 = dvar_value(dvar_compassSize);
+            float pw = compassSz3 * 10.0f;
+            float ph = dvar_value(dvar_compassSize) * 10.0f;
+
+            /* line 329-330: Position */
+            float px = centerX + pw * (-0.5f) - pingRadius * pingSin;
+            float py = centerY + ph * (-0.5f) - pingRadius * pingCos;
+
+            CG_ApplySplitScreenCompassScale(&px, &py, &pw, &ph);
+
+            /* line 334-337: Compute fade alpha */
+            float pingAlpha;
+            int cgTime3 = *(int *)(cg2 + CG_TIME);
+            if (pingBeginFade >= cgTime3) {
+                pingAlpha = 1.0f;
+            } else {
+                float elapsed = (float)(cgTime3 - pingBeginFade);
+                float fadeRange = dvar_value(dvar_compassPingFadeTime) * -1000.0f;
+                pingAlpha = 1.0f + elapsed / fadeRange;
+            }
+
+            /* line 341: Clamp to compassFadeOutAlpha */
+            pingAlpha = compassFadeOutAlpha < pingAlpha ? compassFadeOutAlpha : pingAlpha;
+            fadedColor[3] = pingAlpha;
+
+            /* line 343: Draw ping */
+            cgs = *cgs_glob;
+            MaterialHandle pingMat = *(MaterialHandle *)(cgs + CGS_COMPASS_PING);
+            UI_DrawHandlePic(px, py, pw, ph, rect->horzAlign, rect->vertAlign, fadedColor, pingMat);
+        }
+    }
+}
