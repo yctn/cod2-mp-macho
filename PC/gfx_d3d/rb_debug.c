@@ -9,826 +9,651 @@
  *   #include "PC/gfx_d3d/rb_backend.h"
  */
 
-static int RB_AddDebugLine(const vec_t *end, const vec_t *color, int depthTest, int vertCount, int vertLimit, GfxPointVertex *verts);
-static JCOEF RB_DrawDebugStrings(void);
+extern refimport_t *ri;                 /* 0x195eee0 */
+extern r_global_permanent_t *rgp;       /* 0x195eebc */
+extern void **g_dxCaps;                 /* 0x195eec0 */
+extern r_backEndGlobals_t *backEnd;     /* 0x195f0c8 */
+extern void **g_drawSurf;              /* 0x195f160 */
+extern void **g_viewParms;             /* 0x195f188 */
+
+extern double R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
+extern void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depthTest);
+extern void RB_EndSurface(void);
+extern void RB_Set3D(void);
+extern void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
+extern void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, const vec_t *xPixelStep, const vec_t *yPixelStep, D3DCOLOR color);
+extern void R_AddDebugString(DebugGlobals *debugGlobalsEntry, const vec_t *origin, const vec_t *color, float scale, const char *string);
+extern const char *va(const char *fmt, ...);
+extern double sin(double x);
+
+/* DebugGlobals base offset within *g_viewParms (GfxBackEndData): 0x249d18 */
+#define DBGGLOB_OFF   0x249d18
+
+static int RB_AddDebugLine(const vec_t *start, const vec_t *end, const vec_t *color, int depthTest, int vertCount, int vertLimit, GfxPointVertex *verts);
+static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount);
 static JCOEF RB_DrawPolyOutlines(void);
-static JCOEF RB_DrawDebugLines(int lineCount);
+static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount);
 static JCOEF RB_DrawPolyInteriors(void);
 JCOEF RB_DrawDebug(const GfxViewParms *viewParms);
 
-/* line 19 */
-static __attribute__((naked))
-int RB_AddDebugLine(const vec_t *end, const vec_t *color, int depthTest, int vertCount, int vertLimit, GfxPointVertex *verts)
+/*
+ * RB_AddDebugLine
+ *
+ * Adds a debug line (2 verts) to the vertex buffer.
+ * If the buffer is full, flushes current lines via RB_DrawLines3D,
+ * then resets vertCount to 0 and starts fresh.
+ *
+ * Returns new vertCount.
+ */
+static int RB_AddDebugLine(const vec_t *start, const vec_t *end, const vec_t *color, int depthTest, int vertCount, int vertLimit, GfxPointVertex *verts)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 19 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %edi\n" /* depthTest, start */
-        "movl %edx, -0x1c(%ebp)\n" /* vertCount */
-        "movl %ecx, -0x20(%ebp)\n"
-        "movl 0xc(%ebp), %edx\n" /* vertCount */
-        "movl 0x14(%ebp), %ebx\n" /* verts */
-        "movzbl 8(%ebp), %eax\n" /* depthTest */
-        "leal 2(%edx), %esi\n" /* line 21 */
-        "cmpl 0x10(%ebp), %esi\n" /* vertLimit */
-        "jg .Lf108ef0_00108f64\n"
-        "movl %edx, %eax\n"
-        ".Lf108ef0_00108f15:\n"
-        "shll $4, %eax\n" /* line 27 */
-        "leal (%eax, %ebx), %ebx\n" /* verts */
-        "leal 0xc(%ebx), %eax\n" /* verts */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll R_ConvertColorToBytes\n"
-        "leal 0x10(%ebx), %edx\n" /* line 28 | verts */
-        "movl 0xc(%ebx), %eax\n" /* line 606 | verts */
-        "movl %eax, 0xc(%edx)\n"
-        "movl (%edi), %eax\n" /* line 199 | start */
-        "movl %eax, (%ebx)\n" /* verts */
-        "movl 4(%edi), %eax\n" /* line 200 | start */
-        "movl %eax, 4(%ebx)\n" /* verts */
-        "movl 8(%edi), %eax\n" /* line 201 | start */
-        "movl %eax, 8(%ebx)\n" /* verts */
-        "movl -0x1c(%ebp), %ecx\n" /* line 199 */
-        "movl (%ecx), %eax\n"
-        "movl %eax, 0x10(%ebx)\n" /* verts */
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        "movl %esi, %eax\n" /* line 34 */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf108ef0_00108f64:\n"
-        "movzbl %al, %eax\n" /* line 23 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* verts */
-        "movl $1, 4(%esp)\n"
-        "movl %edx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "addl %edx, %eax\n"
-        "sarl $1, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawLines3D\n"
-        "xorl %eax, %eax\n"
-        "movl $2, %esi\n"
-        "jmp .Lf108ef0_00108f15\n"
-    );
+    int newVertCount = vertCount + 2;
+
+    if (newVertCount > vertLimit) {
+        /* Buffer full - flush existing lines */
+        RB_DrawLines3D(vertCount / 2, 1, verts, depthTest);
+        vertCount = 0;
+        newVertCount = 2;
+    }
+
+    {
+        GfxPointVertex *v0 = &verts[vertCount];
+        GfxPointVertex *v1 = &verts[vertCount + 1];
+
+        /* Convert color to bytes and store in first vert */
+        R_ConvertColorToBytes(color, v0->color);
+
+        /* Copy color bytes to second vert */
+        *(int *)v1->color = *(int *)v0->color;
+
+        /* Copy start position */
+        v0->xyz[0] = start[0];
+        v0->xyz[1] = start[1];
+        v0->xyz[2] = start[2];
+
+        /* Copy end position */
+        v1->xyz[0] = end[0];
+        v1->xyz[1] = end[1];
+        v1->xyz[2] = end[2];
+    }
+
+    return newVertCount;
 }
 
-/* line 199 */
-static __attribute__((naked))
-JCOEF RB_DrawDebugStrings(void)
+/*
+ * RB_DrawDebugStrings
+ *
+ * Draws all debug strings in world space.
+ * If the back-end is in 2D projection mode, switches to 3D first.
+ * After drawing, checks if there are pending tris and flushes them.
+ */
+static JCOEF RB_DrawDebugStrings(trDebugString_t *strings, int stringCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 199 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl %eax, %ebx\n" /* strings */
-        "movl %edx, %esi\n" /* stringCount */
-        /* { scope 1 */
-        "testl %edx, %edx\n" /* line 206 */
-        "je .Lf108f92_00108fd7\n"
-        "movl 0x195f0c8, %eax\n" /* line 209 */
-        "cmpb $0, 0x4bd(%eax)\n"
-        "jne .Lf108f92_001090b9\n"
-        "testl %esi, %esi\n" /* line 212 | stringCount */
-        "jg .Lf108f92_00108fdf\n"
-        ".Lf108f92_00108fb9:\n"
-        "movl 0x195f160, %eax\n" /* line 261 */
-        "movl 0x5a7d0(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf108f92_00108fd2\n"
-        ".Lf108f92_00108fc8:\n"
-        "movl 0x5a7e0(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf108f92_00108fd7\n"
-        ".Lf108f92_00108fd2:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        /* } scope */
-        ".Lf108f92_00108fd7:\n"
-        "addl $0x5c, %esp\n" /* line 220 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf108f92_00108fdf:\n"
-        "xorl %edi, %edi\n" /* line 212 | stringIndex */
-        "movl 0x195f0c8, %edx\n"
-        "movl %edx, -0x3c(%ebp)\n"
-        ".Lf108f92_00108fea:\n"
-        "leal -0x1c(%ebp), %eax\n" /* line 214 | color */
-        "movl %eax, 4(%esp)\n"
-        "leal 0xc(%ebx), %eax\n" /* strings */
-        "movl %eax, (%esp)\n"
-        "calll R_ConvertColorToBytes\n"
-        "movss 0x1c(%ebx), %xmm0\n" /* line 215 | strings, scale */
-        "xorps 0x2f30c0, %xmm0\n" /* scale */
-        "movl -0x3c(%ebp), %edx\n" /* v */
-        "movl 0x3c8(%edx), %eax\n"
-        "leal 0x18(%eax), %edx\n" /* v */
-        /* { scope 2 */
-        "movaps %xmm0, %xmm1\n" /* line 272 */
-        "mulss 0x18(%eax), %xmm1\n"
-        "movss %xmm1, -0x28(%ebp)\n" /* xStep */
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss 4(%edx), %xmm1\n"
-        "movss %xmm1, -0x24(%ebp)\n"
-        "movaps %xmm0, %xmm1\n" /* line 274 */
-        "mulss 8(%edx), %xmm1\n"
-        "movss %xmm1, -0x20(%ebp)\n"
-        /* } scope */
-        "leal 0x24(%eax), %edx\n" /* line 216 | v */
-        /* { scope 2 */
-        "movaps %xmm0, %xmm1\n" /* line 272 */
-        "mulss 0x24(%eax), %xmm1\n"
-        "movss %xmm1, -0x34(%ebp)\n" /* yStep */
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss 4(%edx), %xmm1\n"
-        "movss %xmm1, -0x30(%ebp)\n"
-        "mulss 8(%edx), %xmm0\n" /* line 274 */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 217 | color */
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x34(%ebp), %eax\n" /* yStep */
-        "movl %eax, 0x10(%esp)\n"
-        "leal -0x28(%ebp), %edx\n" /* xStep */
-        "movl %edx, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n" /* strings */
-        "movl -0x3c(%ebp), %edx\n"
-        "movl 0x36e88(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x20(%ebx), %eax\n" /* strings */
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawTextInSpace\n"
-        "addl $1, %edi\n" /* line 212 | stringIndex */
-        "subl $-0x80, %ebx\n" /* strings */
-        "cmpl %edi, %esi\n" /* stringIndex, stringCount */
-        "jne .Lf108f92_00108fea\n"
-        "movl 0x195f160, %eax\n" /* line 261 */
-        "movl 0x5a7d0(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf108f92_00108fc8\n"
-        "jmp .Lf108f92_00108fd2\n"
-        ".Lf108f92_001090b9:\n"
-        "calll RB_Set3D\n" /* line 210 */
-        "testl %esi, %esi\n" /* line 212 | stringCount */
-        "jle .Lf108f92_00108fb9\n"
-        "jmp .Lf108f92_00108fdf\n"
-    );
+    int stringIndex;
+    byte *backEndPtr;
+    byte *drawSurf;
+
+    if (stringCount == 0) {
+        return 0;
+    }
+
+    backEndPtr = (byte *)*(int *)&backEnd;
+
+    /* If currently in 2D projection, switch to 3D */
+    if (*(byte *)(backEndPtr + 0x4bd) != 0) {
+        RB_Set3D();
+    }
+
+    if (stringCount > 0) {
+        for (stringIndex = 0; stringIndex < stringCount; stringIndex++) {
+            trDebugString_t *s = &strings[stringIndex];
+            byte colorBytes[4];
+            vec3_t xStep, yStep;
+            byte *v;
+            int fontAxisOffset;
+
+            /* Convert color float to bytes */
+            R_ConvertColorToBytes(s->color, colorBytes);
+
+            /* Scale is negated */
+            float scale = -s->scale;
+
+            /* Get font glyph info from backEnd */
+            v = *(byte **)(backEndPtr + 0x3c8);
+
+            /* xStep = scale * axis[1] (offset 0x18 from font info) */
+            xStep[0] = scale * *(float *)(v + 0x18);
+            xStep[1] = scale * *(float *)(v + 0x1c);
+            xStep[2] = scale * *(float *)(v + 0x20);
+
+            /* yStep = scale * axis[2] (offset 0x24 from font info) */
+            yStep[0] = scale * *(float *)(v + 0x24);
+            yStep[1] = scale * *(float *)(v + 0x28);
+            yStep[2] = scale * *(float *)(v + 0x2c);
+
+            /* Draw text in 3D space */
+            RB_DrawTextInSpace(
+                s->text,
+                *(FontHandle *)(backEndPtr + 0x36e88),
+                s->xyz,
+                xStep,
+                yStep,
+                *(D3DCOLOR *)colorBytes
+            );
+        }
+    }
+
+    /* Check if there are pending tris to flush */
+    drawSurf = *(byte **)g_drawSurf;
+    if (*(int *)(drawSurf + 0x5a7d0) != 0 || *(int *)(drawSurf + 0x5a7e0) != 0) {
+        RB_EndSurface();
+    }
+
+    return 0;
 }
 
-/* line 111 */
-static __attribute__((naked))
-JCOEF RB_DrawPolyOutlines(void)
+/*
+ * RB_DrawPolyOutlines
+ *
+ * Draws wireframe outlines for all debug polygons.
+ * Allocates temporary vertex buffer, iterates over all polys,
+ * and draws lines between consecutive vertices.
+ */
+static JCOEF RB_DrawPolyOutlines(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 111 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl $0xaa50, (%esp)\n" /* line 123 */
-        "movl 0x195eee0, %eax\n"
-        "calll *0x14(%eax)\n"
-        "movl %eax, -0x20(%ebp)\n" /* verts */
-        "movl 0x195f188, %ebx\n" /* line 126 */
-        "movl (%ebx), %edx\n"
-        "movl 0x249d28(%edx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jle .Lf1090cc_001091be\n"
-        "movl $0, -0x28(%ebp)\n" /* polyIndex */
-        "xorl %ecx, %ecx\n"
-        "movl $0, -0x1c(%ebp)\n"
-        "movl %ebx, -0x2c(%ebp)\n"
-        "jmp .Lf1090cc_0010912b\n"
-        ".Lf1090cc_00109112:\n"
-        "addl $1, -0x28(%ebp)\n" /* polyIndex */
-        "movl (%ebx), %edx\n"
-        "addl $0x18, -0x1c(%ebp)\n"
-        "movl -0x28(%ebp), %eax\n" /* polyIndex */
-        "cmpl 0x249d28(%edx), %eax\n"
-        "jge .Lf1090cc_001091b0\n"
-        ".Lf1090cc_0010912b:\n"
-        "movl -0x1c(%ebp), %esi\n" /* line 128 | poly */
-        "addl 0x249d24(%edx), %esi\n" /* poly */
-        "movl 0x10(%esi), %eax\n" /* line 129 | poly */
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x249d18(%edx), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, -0x24(%ebp)\n" /* polyVerts */
-        "movl 0x14(%esi), %eax\n" /* line 131 | poly */
-        "leal -1(%eax), %edx\n"
-        "testl %eax, %eax\n"
-        "jle .Lf1090cc_00109112\n"
-        "movl -0x24(%ebp), %ebx\n" /* polyVerts */
-        "xorl %edi, %edi\n" /* vertIndex */
-        "jmp .Lf1090cc_0010915b\n"
-        ".Lf1090cc_00109157:\n"
-        "movl %edi, %edx\n" /* vertIndex */
-        "movl %eax, %edi\n" /* vertIndex */
-        ".Lf1090cc_0010915b:\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 132 */
-        "movl -0x24(%ebp), %edx\n" /* polyVerts */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl -0x20(%ebp), %edx\n" /* verts */
-        "movl %edx, 0xc(%esp)\n"
-        "movl $0xaa5, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "movl %esi, %ecx\n" /* poly */
-        "movl %ebx, %edx\n"
-        "calll RB_AddDebugLine\n"
-        "movl %eax, %ecx\n"
-        "leal 1(%edi), %eax\n" /* line 131 | vertIndex */
-        "addl $0xc, %ebx\n"
-        "cmpl 0x14(%esi), %eax\n" /* poly */
-        "jl .Lf1090cc_00109157\n"
-        "movl -0x2c(%ebp), %ebx\n"
-        "addl $1, -0x28(%ebp)\n" /* line 126 | polyIndex */
-        "movl (%ebx), %edx\n"
-        "addl $0x18, -0x1c(%ebp)\n"
-        "movl -0x28(%ebp), %eax\n" /* polyIndex */
-        "cmpl 0x249d28(%edx), %eax\n"
-        "jl .Lf1090cc_0010912b\n"
-        ".Lf1090cc_001091b0:\n"
-        "movl %ecx, %eax\n"
-        "shrl $0x1f, %eax\n"
-        "addl %ecx, %eax\n"
-        "sarl $1, %eax\n" /* line 39 */
-        "jne .Lf1090cc_001091d1\n"
-        "movl -0x20(%ebp), %eax\n" /* verts */
-        ".Lf1090cc_001091be:\n"
-        "movl %eax, (%esp)\n" /* line 136 */
-        "movl 0x195eee0, %eax\n"
-        "calll *0x18(%eax)\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 137 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1090cc_001091d1:\n"
-        "movl $0, 0xc(%esp)\n" /* line 40 */
-        "movl -0x20(%ebp), %edx\n" /* verts */
-        "movl %edx, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawLines3D\n"
-        "movl -0x20(%ebp), %eax\n" /* verts */
-        "movl %eax, (%esp)\n" /* line 136 */
-        "movl 0x195eee0, %eax\n"
-        "calll *0x18(%eax)\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 137 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxPointVertex *verts;
+    byte *data;
+    int polyIndex;
+    int vertCount = 0;
+    int polyCount;
+    int polyOffset;
+
+    /* Allocate temp vertex buffer: 0xaa50 bytes = 2730 GfxPointVertex (16 bytes each) */
+    verts = (GfxPointVertex *)ri->Z_MallocInternal(0xaa50);
+
+    data = *(byte **)g_viewParms;
+    polyCount = *(int *)(data + DBGGLOB_OFF + 0x10); /* debugGlobals.polyCount */
+
+    if (polyCount <= 0) {
+        ri->Z_FreeInternal(verts);
+        return 0;
+    }
+
+    polyOffset = 0;
+    for (polyIndex = 0; polyIndex < polyCount; polyIndex++) {
+        byte *poly;
+        vec3_t *polyVerts;
+        int polyVertCount;
+        int vertIndex;
+        int lastVert;
+
+        data = *(byte **)g_viewParms;
+
+        poly = data + *(int *)(data + DBGGLOB_OFF + 0x0C) + polyOffset; /* debugGlobals.polys + offset */
+
+        /* Get first vert index and compute polyVerts base */
+        {
+            int firstVert = *(int *)(poly + 0x10);
+            vec3_t *vertsBase = *(vec3_t **)(data + DBGGLOB_OFF); /* debugGlobals.verts */
+            polyVerts = &vertsBase[firstVert];
+        }
+
+        polyVertCount = *(int *)(poly + 0x14);
+        if (polyVertCount <= 0) {
+            polyOffset += 0x18;
+            continue;
+        }
+
+        lastVert = polyVertCount - 1;
+        {
+            vec3_t *currentEdgeStart = &polyVerts[lastVert];
+            for (vertIndex = 0; vertIndex < polyVertCount; vertIndex++) {
+                vertCount = RB_AddDebugLine(
+                    (const vec_t *)currentEdgeStart,
+                    (const vec_t *)&polyVerts[vertIndex],
+                    (const vec_t *)poly, /* color at start of GfxDebugPoly */
+                    0,
+                    vertCount,
+                    0xaa5, /* vertLimit = 2725 */
+                    verts
+                );
+                currentEdgeStart = &polyVerts[vertIndex];
+            }
+        }
+
+        polyOffset += 0x18;
+    }
+
+    /* Flush remaining lines if any */
+    {
+        int lineCount = vertCount / 2;
+        if (lineCount != 0) {
+            RB_DrawLines3D(lineCount, 1, verts, 0);
+        }
+    }
+
+    ri->Z_FreeInternal(verts);
+
+    return 0;
 }
 
-/* line 154 */
-static __attribute__((naked))
-JCOEF RB_DrawDebugLines(int lineCount)
+/*
+ * RB_DrawDebugLines
+ *
+ * Draws a set of debug lines, grouping by depth test state.
+ * When the depthTest flag changes between consecutive lines,
+ * the current batch is flushed with RB_DrawLines3D.
+ */
+static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 154 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %ebx\n" /* lines */
-        "movl %edx, -0x28(%ebp)\n"
-        /* { scope 1 */
-        "testl %edx, %edx\n" /* line 165 */
-        "je .Lf109206_0010930a\n"
-        "movl 0x195f0c8, %eax\n" /* line 168 */
-        "cmpb $0, 0x4bd(%eax)\n"
-        "jne .Lf109206_00109312\n"
-        "movl $0xaa50, (%esp)\n" /* line 171 */
-        "movl 0x195eee0, %eax\n"
-        "calll *0x14(%eax)\n"
-        "movl %eax, -0x24(%ebp)\n" /* verts */
-        "movl 0x28(%ebx), %edi\n" /* line 174 | lineDepthTest, depthTest */
-        "testl %edi, %edi\n" /* depthTest */
-        "setne %al\n"
-        "movl %eax, %edi\n" /* depthTest */
-        "movl -0x28(%ebp), %esi\n" /* line 179 */
-        "testl %esi, %esi\n"
-        "jle .Lf109206_001092f3\n"
-        ".Lf109206_00109255:\n"
-        "movl %ebx, %esi\n" /* lineDepthTest */
-        "movl $0, -0x1c(%ebp)\n" /* lineIndex */
-        "movl $0, -0x20(%ebp)\n" /* vertCount */
-        "jmp .Lf109206_001092b1\n"
-        /* { scope 2 */
-        ".Lf109206_00109267:\n"
-        "movl %ebx, %edi\n" /* line 40 */
-        "movl $0, -0x20(%ebp)\n" /* vertCount */
-        /* } scope */
-        ".Lf109206_00109270:\n"
-        "movl %edi, %ecx\n" /* line 190 | depthTest */
-        "movzbl %cl, %ebx\n" /* lineDepthTest */
-        "leal 0x18(%esi), %ecx\n"
-        "leal 0xc(%esi), %edx\n"
-        "movl -0x24(%ebp), %eax\n" /* verts */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0xaa5, 8(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* vertCount */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* lineDepthTest */
-        "movl %esi, %eax\n"
-        "calll RB_AddDebugLine\n"
-        "movl %eax, -0x20(%ebp)\n" /* vertCount */
-        "addl $1, -0x1c(%ebp)\n" /* line 179 | lineIndex */
-        "addl $0x2c, %esi\n"
-        "movl -0x1c(%ebp), %ecx\n" /* lineIndex */
-        "cmpl %ecx, -0x28(%ebp)\n"
-        "je .Lf109206_00109340\n"
-        ".Lf109206_001092b1:\n"
-        "movl 0x28(%esi), %ebx\n" /* line 183 | lineDepthTest */
-        "testl %ebx, %ebx\n" /* lineDepthTest */
-        "setne %bl\n" /* lineDepthTest */
-        "movl %edi, %ecx\n" /* line 184 | depthTest */
-        "cmpb %cl, %bl\n" /* lineDepthTest */
-        "je .Lf109206_00109270\n"
-        "movl -0x20(%ebp), %eax\n" /* line 186 | vertCount */
-        "shrl $0x1f, %eax\n"
-        "addl -0x20(%ebp), %eax\n" /* vertCount */
-        "movl %edi, %edx\n" /* depthTest */
-        /* { scope 2 */
-        "movl %eax, %ecx\n" /* line 39 */
-        "sarl $1, %ecx\n"
-        "je .Lf109206_00109267\n"
-        "movzbl %dl, %eax\n" /* line 40 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x24(%ebp), %eax\n" /* verts */
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll RB_DrawLines3D\n"
-        "jmp .Lf109206_00109267\n"
-        /* } scope */
-        ".Lf109206_001092f3:\n"
-        "movzbl %al, %ebx\n" /* line 179 | lineDepthTest */
-        "xorl %edx, %edx\n"
-        /* { scope 2 */
-        "testl %edx, %edx\n" /* line 39 */
-        "jne .Lf109206_0010934e\n"
-        /* } scope */
-        ".Lf109206_001092fc:\n"
-        "movl -0x24(%ebp), %ecx\n" /* line 195 | verts */
-        "movl %ecx, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
-        "calll *0x18(%eax)\n"
-        /* } scope */
-        ".Lf109206_0010930a:\n"
-        "addl $0x2c, %esp\n" /* line 196 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf109206_00109312:\n"
-        "calll RB_Set3D\n" /* line 169 */
-        "movl $0xaa50, (%esp)\n" /* line 171 */
-        "movl 0x195eee0, %eax\n"
-        "calll *0x14(%eax)\n"
-        "movl %eax, -0x24(%ebp)\n" /* verts */
-        "movl 0x28(%ebx), %edi\n" /* line 174 | lineDepthTest, depthTest */
-        "testl %edi, %edi\n" /* depthTest */
-        "setne %al\n"
-        "movl %eax, %edi\n" /* depthTest */
-        "movl -0x28(%ebp), %esi\n" /* line 179 */
-        "testl %esi, %esi\n"
-        "jg .Lf109206_00109255\n"
-        "jmp .Lf109206_001092f3\n"
-        ".Lf109206_00109340:\n"
-        "movl %eax, %ecx\n"
-        "shrl $0x1f, %eax\n"
-        "leal (%eax, %ecx), %edx\n"
-        "sarl $1, %edx\n"
-        /* { scope 2 */
-        "testl %edx, %edx\n" /* line 39 */
-        "je .Lf109206_001092fc\n"
-        ".Lf109206_0010934e:\n"
-        "movzbl %bl, %eax\n" /* line 40 */
-        "movl %eax, 0xc(%esp)\n"
-        "movl -0x24(%ebp), %eax\n" /* verts */
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll RB_DrawLines3D\n"
-        "jmp .Lf109206_001092fc\n"
-    );
+    GfxPointVertex *verts;
+    byte *backEndPtr;
+    int depthTest;
+    int lineIndex;
+    int vertCount;
+    int lineDepthTest;
+
+    if (lineCount == 0) {
+        return 0;
+    }
+
+    backEndPtr = (byte *)*(int *)&backEnd;
+
+    /* If currently in 2D projection, switch to 3D */
+    if (*(byte *)(backEndPtr + 0x4bd) != 0) {
+        RB_Set3D();
+    }
+
+    /* Allocate temp vertex buffer */
+    verts = (GfxPointVertex *)ri->Z_MallocInternal(0xaa50);
+
+    /* Initialize depthTest from first line */
+    depthTest = (lines->depthTest != 0) ? 1 : 0;
+
+    if (lineCount > 0) {
+        trDebugLine_t *line = lines;
+        lineIndex = 0;
+        vertCount = 0;
+
+        while (lineIndex < lineCount) {
+            lineDepthTest = (line->depthTest != 0) ? 1 : 0;
+
+            if (lineDepthTest != depthTest) {
+                /* Depth test changed - flush current batch */
+                int count = vertCount / 2;
+                if (count != 0) {
+                    RB_DrawLines3D(count, 1, verts, depthTest);
+                }
+                depthTest = lineDepthTest;
+                vertCount = 0;
+            }
+
+            /* Add this line */
+            vertCount = RB_AddDebugLine(
+                line->start,
+                line->end,
+                line->color,
+                lineDepthTest,
+                vertCount,
+                0xaa5,
+                verts
+            );
+
+            lineIndex++;
+            line++;
+        }
+    } else {
+        lineDepthTest = depthTest;
+        vertCount = 0;
+    }
+
+    /* Flush remaining lines */
+    {
+        int count = vertCount / 2;
+        if (count != 0) {
+            RB_DrawLines3D(count, 1, verts, lineDepthTest);
+        }
+    }
+
+    ri->Z_FreeInternal(verts);
+
+    return 0;
 }
 
-/* line 68 */
-static __attribute__((naked))
-JCOEF RB_DrawPolyInteriors(void)
+/*
+ * RB_DrawPolyInteriors
+ *
+ * Draws filled debug polygons as triangle fans.
+ * Uses RB_BeginSurface/RB_EndSurface for batched rendering.
+ */
+static JCOEF RB_DrawPolyInteriors(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 68 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1: color */
-        "movl $0, 8(%esp)\n" /* line 79 */
-        "movl $3, 4(%esp)\n"
-        "movl 0x195eebc, %eax\n"
-        "movl 0x1038(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "movl 0x195f188, %eax\n" /* line 81 */
-        "movl (%eax), %edx\n"
-        "movl 0x249d28(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lf10936e_001093b8\n"
-        "calll RB_EndSurface\n" /* line 104 */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 105 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: color */
-        ".Lf10936e_001093b8:\n"
-        "movl $0, -0x34(%ebp)\n" /* line 81 | polyIndex */
-        "movl $0, -0x2c(%ebp)\n"
-        ".Lf10936e_001093c6:\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 83 */
-        "addl 0x249d24(%edx), %eax\n"
-        "movl %eax, -0x38(%ebp)\n" /* poly */
-        "movl %eax, %ecx\n" /* line 84 */
-        "movl 0x10(%eax), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x249d18(%edx), %edx\n"
-        "leal (%edx, %eax, 4), %edi\n" /* vertIndex */
-        "leal -0x1c(%ebp), %eax\n" /* line 85 | color */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll R_ConvertColorToBytes\n"
-        "movl -0x38(%ebp), %edx\n" /* line 87 | poly, indexCount */
-        "movl 0x14(%edx), %eax\n"
-        "leal -6(%eax, %eax, 2), %edx\n" /* indexCount */
-        /* { scope 2 */
-        "movl 0x195f160, %esi\n" /* line 344 */
-        "addl 0x5a7d4(%esi), %eax\n"
-        "cmpl $0x154a, %eax\n"
-        "jg .Lf10936e_0010941d\n"
-        "addl 0x5a7d0(%esi), %edx\n"
-        "cmpl $0x100000, %edx\n"
-        "jle .Lf10936e_0010947a\n"
-        ".Lf10936e_0010941d:\n"
-        "movl 0x5a7cc(%esi), %ebx\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x5a7c4(%esi), %eax\n" /* line 331 */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl 0x5a7cc(%esi), %ebx\n" /* line 310 */
-        "je .Lf10936e_0010947a\n"
-        "movl 0x5a7d0(%esi), %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lf10936e_00109640\n"
-        "movl 0x5a7e0(%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf10936e_00109640\n"
-        ".Lf10936e_0010946e:\n"
-        "movl 0x195f160, %esi\n" /* line 313 */
-        "movl %ebx, 0x5a7cc(%esi)\n"
-        /* } scope */
-        ".Lf10936e_0010947a:\n"
-        "movl -0x38(%ebp), %ecx\n" /* line 88 | poly */
-        "movl 0x14(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf10936e_001095a1\n"
-        /* { scope 2 */
-        "movl 0x195eec0, %eax\n" /* line 48 */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "movl %edi, %ebx\n"
-        "xorl %edi, %edi\n"
-        "movl %eax, %ecx\n"
-        "jmp .Lf10936e_00109530\n"
-        ".Lf10936e_0010949d:\n"
-        "movl %eax, %edx\n" /* line 58 */
-        "shll $6, %edx\n"
-        "leal (%edx, %esi), %ecx\n" /* to */
-        /* { scope 3 */
-        "movl (%ebx), %eax\n" /* line 199 */
-        "movl %eax, (%ecx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movl $0x3f800000, 0xc(%ecx)\n" /* line 59 */
-        "leal 0x10(%edx, %esi), %eax\n" /* line 60 | v */
-        /* { scope 3 */
-        "movl $0, (%eax)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0x3f800000, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "movl -0x3c(%ebp), %eax\n" /* line 61 | color */
-        "movl %eax, 0x1c(%ecx)\n"
-        "leal 0x20(%edx, %esi), %ecx\n" /* line 62 */
-        "leal 8(%ecx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl $0, 8(%ecx)\n" /* line 191 */
-        "movl $0x3f800000, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "leal 0x30(%edx, %esi), %edx\n" /* line 63 */
-        "leal 4(%edx), %eax\n" /* v */
-        /* { scope 3 */
-        "movl $0x3f800000, 4(%edx)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "movl $0, (%ecx)\n" /* line 30 */
-        "movl $0, 4(%ecx)\n" /* line 31 */
-        /* } scope */
-        "addl $1, %edi\n" /* line 88 | vertIndex */
-        "addl $0xc, %ebx\n"
-        "movl -0x38(%ebp), %edx\n" /* poly */
-        "cmpl 0x14(%edx), %edi\n" /* vertIndex */
-        "jge .Lf10936e_0010959f\n"
-        ".Lf10936e_0010952d:\n"
-        "movl -0x30(%ebp), %ecx\n"
-        ".Lf10936e_00109530:\n"
-        "movl %edi, %eax\n" /* line 90 | vertIndex */
-        "addl 0x5a7d4(%esi), %eax\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 91 | color */
-        "movl %edx, -0x3c(%ebp)\n" /* color */
-        /* { scope 2 */
-        "cmpl $2, 8(%ecx)\n" /* line 48 */
-        "jne .Lf10936e_0010949d\n"
-        "leal (%eax, %eax, 8), %edx\n" /* line 50 */
-        "shll $2, %edx\n"
-        "leal (%edx, %esi), %ecx\n" /* to */
-        /* { scope 3 */
-        "movl (%ebx), %eax\n" /* line 199 */
-        "movl %eax, (%ecx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "leal 0xc(%ecx), %eax\n" /* line 51 | v */
-        /* { scope 3 */
-        "movl $0, 0xc(%ecx)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0x3f800000, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "movl -0x3c(%ebp), %eax\n" /* line 52 | color */
-        "movl %eax, 0x18(%ecx)\n"
-        "leal 0x10(%edx, %esi), %edx\n" /* line 53 */
-        "movl $0, 0xc(%edx)\n" /* line 30 */
-        "movl $0, 0x10(%edx)\n" /* line 31 */
-        /* } scope */
-        "addl $1, %edi\n" /* line 88 | vertIndex */
-        "addl $0xc, %ebx\n"
-        "movl -0x38(%ebp), %edx\n" /* poly */
-        "cmpl 0x14(%edx), %edi\n" /* vertIndex */
-        "jl .Lf10936e_0010952d\n"
-        ".Lf10936e_0010959f:\n"
-        "movl %edx, %ecx\n"
-        ".Lf10936e_001095a1:\n"
-        "movl 0x14(%ecx), %eax\n" /* line 94 */
-        "cmpl $2, %eax\n"
-        "jle .Lf10936e_0010960f\n"
-        "movl $2, %edi\n" /* vertIndex */
-        ".Lf10936e_001095ae:\n"
-        "movl 0x5a7d0(%esi), %ecx\n" /* line 96 */
-        "movl 0x5a7b0(%esi), %edx\n"
-        "movl 0x5a7d4(%esi), %eax\n"
-        "movw %ax, (%edx, %ecx, 2)\n"
-        "movl %edi, %edx\n" /* vertIndex */
-        "movl 0x5a7d0(%esi), %ebx\n" /* line 97 */
-        "movl 0x5a7b0(%esi), %ecx\n"
-        "movl %edi, %eax\n" /* vertIndex */
-        "addw 0x5a7d4(%esi), %ax\n"
-        "movw %ax, 2(%ecx, %ebx, 2)\n"
-        "movl 0x5a7d0(%esi), %ecx\n" /* line 98 */
-        "movl 0x5a7b0(%esi), %eax\n"
-        "addw 0x5a7d4(%esi), %dx\n"
-        "subl $1, %edx\n"
-        "movw %dx, 4(%eax, %ecx, 2)\n"
-        "addl $3, 0x5a7d0(%esi)\n" /* line 99 */
-        "addl $1, %edi\n" /* line 94 | vertIndex */
-        "movl -0x38(%ebp), %edx\n" /* poly */
-        "movl 0x14(%edx), %eax\n"
-        "cmpl %eax, %edi\n" /* vertIndex */
-        "jl .Lf10936e_001095ae\n"
-        ".Lf10936e_0010960f:\n"
-        "addl %eax, 0x5a7d4(%esi)\n" /* line 102 */
-        "addl $1, -0x34(%ebp)\n" /* line 81 | polyIndex */
-        "movl 0x195f188, %eax\n"
-        "movl (%eax), %edx\n"
-        "addl $0x18, -0x2c(%ebp)\n"
-        "movl -0x34(%ebp), %ecx\n" /* polyIndex */
-        "cmpl 0x249d28(%edx), %ecx\n"
-        "jl .Lf10936e_001093c6\n"
-        "calll RB_EndSurface\n" /* line 104 */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 105 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: color */
-        /* { scope 2 */
-        ".Lf10936e_00109640:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lf10936e_0010946e\n"
-    );
+    byte *data;
+    byte *drawSurf;
+    int polyCount;
+    int polyIndex;
+    int polyOffset;
+
+    /* Begin surface with white material, technique type 3, no lightmap */
+    RB_BeginSurface(rgp->whiteMaterial, 3, 0);
+
+    data = *(byte **)g_viewParms;
+    polyCount = *(int *)(data + DBGGLOB_OFF + 0x10); /* debugGlobals.polyCount */
+
+    if (polyCount <= 0) {
+        RB_EndSurface();
+        return 0;
+    }
+
+    polyOffset = 0;
+    drawSurf = *(byte **)g_drawSurf;
+
+    for (polyIndex = 0; polyIndex < polyCount; polyIndex++) {
+        byte *poly;
+        vec3_t *polyVerts;
+        int polyVertCount;
+        int indexCount;
+        int vertIndex;
+        D3DCOLOR colorBytes;
+
+        poly = data + *(int *)(data + DBGGLOB_OFF + 0x0C) + polyOffset;
+
+        /* Get polygon vertices */
+        {
+            int firstVert = *(int *)(poly + 0x10);
+            vec3_t *vertsBase = *(vec3_t **)(data + DBGGLOB_OFF);
+            polyVerts = &vertsBase[firstVert];
+        }
+
+        /* Convert color */
+        R_ConvertColorToBytes((const vec_t *)poly, (byte *)&colorBytes);
+
+        polyVertCount = *(int *)(poly + 0x14);
+        indexCount = polyVertCount * 3 - 6; /* triangle fan: (n-2) * 3 indices */
+
+        /* Check if we need to overflow / restart the surface */
+        {
+            int newVertTotal = polyVertCount + *(int *)(drawSurf + 0x5a7d4);
+            int newIndexTotal = indexCount + *(int *)(drawSurf + 0x5a7d0);
+
+            if (newVertTotal > 0x154a || newIndexTotal > 0x100000) {
+                int oldBatch = *(int *)(drawSurf + 0x5a7cc);
+
+                RB_EndSurface();
+                RB_BeginSurface(
+                    *(const Material **)(drawSurf + 0x5a7bc),
+                    *(MaterialTechniqueType *)(drawSurf + 0x5a7c0),
+                    *(int *)(drawSurf + 0x5a7c4)
+                );
+
+                if (oldBatch != *(int *)(drawSurf + 0x5a7cc)) {
+                    /* Batch counter changed - check pending tris */
+                    if (*(int *)(drawSurf + 0x5a7d0) != 0 || *(int *)(drawSurf + 0x5a7e0) != 0) {
+                        RB_EndSurface();
+                    }
+                    drawSurf = *(byte **)g_drawSurf;
+                    *(int *)(drawSurf + 0x5a7cc) = oldBatch;
+                }
+            }
+        }
+
+        /* Emit vertices */
+        if (polyVertCount > 0) {
+            byte *dxCapsData = *(byte **)g_dxCaps;
+            int surfaceType = *(int *)(dxCapsData + 8);
+            vec3_t *pv = polyVerts;
+
+            for (vertIndex = 0; vertIndex < polyVertCount; vertIndex++) {
+                int baseVert = vertIndex + *(int *)(drawSurf + 0x5a7d4);
+
+                if (surfaceType == 2) {
+                    /* Type 2: 36-byte stride vertices (GfxWorldVertexDx7-like) */
+                    int vertOff = baseVert * 9 * 4; /* 36 bytes per vert */
+                    byte *to = drawSurf + vertOff;
+
+                    /* xyz */
+                    *(float *)(to + 0) = (*pv)[0];
+                    *(float *)(to + 4) = (*pv)[1];
+                    *(float *)(to + 8) = (*pv)[2];
+
+                    /* normal = {0, 0, 1} */
+                    *(float *)(to + 0x0c) = 0.0f;
+                    *(float *)(to + 0x10) = 0.0f;
+                    *(float *)(to + 0x14) = 1.0f;
+
+                    /* color */
+                    *(D3DCOLOR *)(to + 0x18) = colorBytes;
+
+                    /* texcoord = {0, 0} */
+                    *(float *)(to + 0x0c + 0x10) = 0.0f;
+                    *(float *)(to + 0x10 + 0x10) = 0.0f;
+                } else {
+                    /* Type != 2: 64-byte stride vertices (GfxVertex-like) */
+                    int vertOff = baseVert * 64;
+                    byte *to = drawSurf + vertOff;
+
+                    /* xyz */
+                    *(float *)(to + 0) = (*pv)[0];
+                    *(float *)(to + 4) = (*pv)[1];
+                    *(float *)(to + 8) = (*pv)[2];
+
+                    /* w = 1.0 */
+                    *(float *)(to + 0x0c) = 1.0f;
+
+                    /* normal = {0, 0, 1} at offset 0x10 */
+                    *(float *)(to + 0x10) = 0.0f;
+                    *(float *)(to + 0x14) = 0.0f;
+                    *(float *)(to + 0x18) = 1.0f;
+
+                    /* color */
+                    *(D3DCOLOR *)(to + 0x1c) = colorBytes;
+
+                    /* binormal at offset 0x20 */
+                    *(float *)(to + 0x20) = 0.0f;
+                    *(float *)(to + 0x24) = 1.0f;
+                    *(float *)(to + 0x28) = 0.0f;
+
+                    /* tangent at offset 0x30 */
+                    *(float *)(to + 0x30) = 1.0f;
+                    *(float *)(to + 0x34) = 0.0f;
+                    *(float *)(to + 0x38) = 0.0f;
+
+                    /* texcoord at offset 0x20 */
+                    *(float *)(to + 0x20) = 0.0f;
+                    *(float *)(to + 0x24) = 0.0f;
+                }
+
+                pv++;
+            }
+        }
+
+        /* Emit triangle fan indices */
+        if (polyVertCount > 2) {
+            for (vertIndex = 2; vertIndex < polyVertCount; vertIndex++) {
+                short *indices;
+                int indexBase;
+                short baseVertIdx;
+
+                /* Index 0: first vertex */
+                indexBase = *(int *)(drawSurf + 0x5a7d0);
+                indices = *(short **)(drawSurf + 0x5a7b0);
+                baseVertIdx = (short)*(int *)(drawSurf + 0x5a7d4);
+                indices[indexBase] = baseVertIdx;
+
+                /* Index 1: current vertex */
+                indexBase = *(int *)(drawSurf + 0x5a7d0);
+                indices = *(short **)(drawSurf + 0x5a7b0);
+                indices[indexBase + 1] = (short)(vertIndex + *(int *)(drawSurf + 0x5a7d4));
+
+                /* Index 2: previous vertex */
+                indexBase = *(int *)(drawSurf + 0x5a7d0);
+                indices = *(short **)(drawSurf + 0x5a7b0);
+                indices[indexBase + 2] = (short)(vertIndex + *(int *)(drawSurf + 0x5a7d4) - 1);
+
+                *(int *)(drawSurf + 0x5a7d0) += 3;
+            }
+        }
+
+        /* Advance vertex base count */
+        *(int *)(drawSurf + 0x5a7d4) += polyVertCount;
+
+        /* Next poly */
+        polyOffset += 0x18;
+        data = *(byte **)g_viewParms;
+        drawSurf = *(byte **)g_drawSurf;
+    }
+
+    RB_EndSurface();
+
+    return 0;
 }
 
-/* line 252 */
-__attribute__((naked))
+/*
+ * RB_DrawDebug
+ *
+ * Main entry point for drawing all debug primitives:
+ * plumes, polygon interiors/outlines, debug lines, and debug strings.
+ */
 JCOEF RB_DrawDebug(const GfxViewParms *viewParms)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 252 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        /* { scope 1: dir */
-        "movl 0x195f188, %edi\n" /* line 230 */
-        "movl (%edi), %eax\n"
-        "movl 0x249d64(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jle .Lf10964c_001097da\n"
-        "movl $0, -0x30(%ebp)\n" /* plumeIndex */
-        "xorl %ebx, %ebx\n"
-        "movl 8(%ebp), %edx\n" /* viewParms */
-        "addl $0x18, %edx\n"
-        "movl %edx, -0x2c(%ebp)\n" /* dir */
-        "movl %edi, -0x3c(%ebp)\n"
-        "jmp .Lf10964c_00109773\n"
-        ".Lf10964c_00109685:\n"
-        "cvtsi2ssl %ecx, %xmm2\n" /* line 238 */
-        ".Lf10964c_00109689:\n"
-        "cvtsi2sdl %ecx, %xmm0\n" /* line 242 */
-        "mulsd 0x307d08, %xmm0\n" /* 0.012566370614359173 */
-        "cvtsi2sdl -0x30(%ebp), %xmm1\n" /* plumeIndex */
-        "addsd %xmm1, %xmm0\n"
-        "movsd %xmm0, (%esp)\n"
-        "movss %xmm2, -0x58(%ebp)\n"
-        "calll sin\n"
-        "fstpl -0x38(%ebp)\n"
-        "cvtsd2ss -0x38(%ebp), %xmm1\n"
-        "mulss 0x2ed608, %xmm1\n" /* 4.0f */
-        "movl (%edi), %edx\n" /* line 243 */
-        "movl %ebx, %eax\n" /* start */
-        "addl 0x249d60(%edx), %eax\n" /* start */
-        /* { scope 2 */
-        "movaps %xmm1, %xmm0\n" /* line 288 */
-        "movl 8(%ebp), %ecx\n" /* viewParms */
-        "mulss 0x18(%ecx), %xmm0\n"
-        "addss (%eax), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n" /* org */
-        "movaps %xmm1, %xmm0\n" /* line 289 */
-        "movl -0x2c(%ebp), %ecx\n" /* dir */
-        "mulss 4(%ecx), %xmm0\n"
-        "addss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        "mulss 8(%ecx), %xmm1\n" /* line 290 */
-        "addss 8(%eax), %xmm1\n"
-        /* } scope */
-        "movss -0x58(%ebp), %xmm2\n" /* line 244 */
-        "mulss 0x2ed8a8, %xmm2\n" /* 0.06400000303983688f */
-        "addss %xmm1, %xmm2\n"
-        "movss %xmm2, -0x1c(%ebp)\n"
-        "movl 0x249d60(%edx), %eax\n" /* line 247 */
-        "movl 0x1c(%ebx, %eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl (%edi), %edx\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0x3f000000, 0xc(%esp)\n"
-        "movl %ebx, %eax\n"
-        "addl 0x249d60(%edx), %eax\n"
-        "addl $0xc, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* org */
-        "movl %eax, 4(%esp)\n"
-        "addl $0x249d18, %edx\n" /* "x;
-DP4 oPos.y, v0, c23[1];
-MAX r0.w, r0.w, c0.y;
-DP4 oPos.z," */
-        "movl %edx, (%esp)\n"
-        "calll R_AddDebugString\n"
-        "movl -0x3c(%ebp), %edi\n"
-        ".Lf10964c_0010975f:\n"
-        "addl $1, -0x30(%ebp)\n" /* line 230 | plumeIndex */
-        "movl (%edi), %eax\n"
-        "addl $0x28, %ebx\n"
-        "movl -0x30(%ebp), %edx\n" /* plumeIndex */
-        "cmpl 0x249d64(%eax), %edx\n"
-        "jge .Lf10964c_001097da\n"
-        ".Lf10964c_00109773:\n"
-        "movl %ebx, %edx\n" /* line 232 */
-        "addl 0x249d60(%eax), %edx\n"
-        "movl 0x195f0c8, %eax\n"
-        "movl 0x3b8(%eax), %eax\n"
-        "movl %eax, %ecx\n" /* line 233 */
-        "subl 0x20(%edx), %ecx\n"
-        "js .Lf10964c_0010975f\n"
-        "cmpl 0x24(%edx), %ecx\n"
-        "jg .Lf10964c_0010975f\n"
-        "movl $0x3f800000, 0x18(%edx)\n" /* line 237 */
-        "movl (%edi), %eax\n" /* line 238 */
-        "movl %ebx, %esi\n"
-        "addl 0x249d60(%eax), %esi\n"
-        "movl 0x24(%esi), %edx\n"
-        "leal (%ecx, %ecx), %eax\n"
-        "cmpl %edx, %eax\n"
-        "jle .Lf10964c_00109685\n"
-        "cvtsi2ssl %ecx, %xmm2\n" /* line 239 */
-        "movaps %xmm2, %xmm0\n"
-        "mulss 0x2ed628, %xmm0\n" /* -2.0f */
-        "cvtsi2ssl %edx, %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "addss 0x2ed62c, %xmm0\n" /* 2.0f */
-        "movss %xmm0, 0x18(%esi)\n"
-        "jmp .Lf10964c_00109689\n"
-        /* } scope */
-        ".Lf10964c_001097da:\n"
-        "movl 0x249d28(%eax), %eax\n" /* line 142 */
-        "testl %eax, %eax\n"
-        "je .Lf10964c_0010980e\n"
-        "movl 0x195f0c8, %eax\n" /* line 145 */
-        "cmpb $0, 0x4bd(%eax)\n"
-        "jne .Lf10964c_0010986e\n"
-        ".Lf10964c_001097f2:\n"
-        "calll RB_DrawPolyInteriors\n" /* line 148 */
-        "calll RB_DrawPolyOutlines\n" /* line 149 */
-        "movl 0x195f188, %edi\n" /* line 150 */
-        "movl (%edi), %eax\n"
-        "movl $0, 0x249d28(%eax)\n"
-        ".Lf10964c_0010980e:\n"
-        "movl (%edi), %eax\n" /* line 261 */
-        "movl 0x249d4c(%eax), %edx\n"
-        "movl 0x249d48(%eax), %eax\n"
-        "calll RB_DrawDebugLines\n"
-        "movl (%edi), %eax\n" /* line 262 */
-        "movl 0x249d58(%eax), %edx\n"
-        "movl 0x249d54(%eax), %eax\n"
-        "calll RB_DrawDebugLines\n"
-        "movl (%edi), %eax\n" /* line 263 */
-        "movl $0, 0x249d4c(%eax)\n"
-        "movl (%edi), %eax\n" /* line 266 */
-        "movl 0x249d34(%eax), %edx\n"
-        "movl 0x249d30(%eax), %eax\n"
-        "calll RB_DrawDebugStrings\n"
-        "movl (%edi), %eax\n" /* line 267 */
-        "movl 0x249d40(%eax), %edx\n"
-        "movl 0x249d3c(%eax), %eax\n"
-        "calll RB_DrawDebugStrings\n"
-        "addl $0x6c, %esp\n" /* line 268 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf10964c_0010986e:\n"
-        "calll RB_Set3D\n" /* line 146 */
-        "jmp .Lf10964c_001097f2\n"
-    );
-}
+    byte *data;
+    int plumeIndex;
+    int plumeCount;
+    byte *backEndPtr;
 
+    data = *(byte **)g_viewParms;
+    plumeCount = *(int *)(data + DBGGLOB_OFF + 0x4C); /* debugGlobals.plumeCount */
+
+    if (plumeCount > 0) {
+        const vec_t *dir = viewParms->axis[1]; /* axis[1] at offset 0x18 */
+        int plumeOffset = 0;
+
+        for (plumeIndex = 0; plumeIndex < plumeCount; plumeIndex++) {
+            byte *plume;
+            int time;
+            int startTime;
+            int duration;
+            int elapsed;
+            vec3_t org;
+
+            data = *(byte **)g_viewParms;
+            plume = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
+
+            backEndPtr = (byte *)*(int *)&backEnd;
+            time = *(int *)(backEndPtr + 0x3b8); /* sceneDef.time */
+
+            startTime = *(int *)(plume + 0x20);
+            elapsed = time - startTime;
+
+            if (elapsed < 0) {
+                plumeOffset += 0x28;
+                continue;
+            }
+
+            duration = *(int *)(plume + 0x24);
+            if (elapsed > duration) {
+                plumeOffset += 0x28;
+                continue;
+            }
+
+            /* Set alpha based on fade */
+            *(float *)(plume + 0x18) = 1.0f;
+
+            data = *(byte **)g_viewParms;
+            {
+                byte *plumeData = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
+
+                if (elapsed * 2 > duration) {
+                    /* Fading out: alpha = -2*elapsed/duration + 2 */
+                    float fElapsed = (float)elapsed;
+                    float fDuration = (float)duration;
+                    *(float *)(plumeData + 0x18) = fElapsed * -2.0f / fDuration + 2.0f;
+                }
+            }
+
+            /* Compute world position with sin-based animation */
+            {
+                double angle = (double)elapsed * 0.012566370614359173 + (double)plumeIndex;
+                float sinVal = (float)sin(angle);
+                float height = sinVal * 4.0f;
+
+                data = *(byte **)g_viewParms;
+                {
+                    byte *plumeOrigin = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
+
+                    /* org = plumeOrigin + height * viewParms->axis[1] */
+                    org[0] = height * viewParms->axis[1][0] + *(float *)(plumeOrigin + 0);
+                    org[1] = height * viewParms->axis[1][1] + *(float *)(plumeOrigin + 4);
+                    org[2] = height * viewParms->axis[1][2] + *(float *)(plumeOrigin + 8);
+
+                    /* Adjust Z by small vertical offset */
+                    org[2] = (float)elapsed * 0.06400000303983688f + org[2];
+                }
+
+                /* Add debug string showing the score */
+                data = *(byte **)g_viewParms;
+                {
+                    byte *plumeData2 = data + *(int *)(data + DBGGLOB_OFF + 0x48) + plumeOffset;
+                    const char *scoreStr = va("%i", *(int *)(plumeData2 + 0x1c));
+
+                    R_AddDebugString(
+                        (DebugGlobals *)(data + DBGGLOB_OFF),
+                        org,
+                        (const vec_t *)(plumeData2 + 0xc), /* color */
+                        0.5f,
+                        scoreStr
+                    );
+                }
+            }
+
+            plumeOffset += 0x28;
+        }
+    }
+
+    /* Draw debug polys if any */
+    data = *(byte **)g_viewParms;
+    if (*(int *)(data + DBGGLOB_OFF + 0x10) != 0) { /* debugGlobals.polyCount */
+        backEndPtr = (byte *)*(int *)&backEnd;
+        if (*(byte *)(backEndPtr + 0x4bd) != 0) {
+            RB_Set3D();
+        }
+        RB_DrawPolyInteriors();
+        RB_DrawPolyOutlines();
+
+        /* Clear poly count */
+        data = *(byte **)g_viewParms;
+        *(int *)(data + DBGGLOB_OFF + 0x10) = 0;
+    }
+
+    /* Draw debug lines (internal + external) */
+    data = *(byte **)g_viewParms;
+    RB_DrawDebugLines(
+        *(trDebugLine_t **)(data + DBGGLOB_OFF + 0x30), /* debugGlobals.lines */
+        *(int *)(data + DBGGLOB_OFF + 0x34)              /* debugGlobals.lineCount */
+    );
+
+    data = *(byte **)g_viewParms;
+    RB_DrawDebugLines(
+        *(trDebugLine_t **)(data + DBGGLOB_OFF + 0x3C), /* debugGlobals.externLines */
+        *(int *)(data + DBGGLOB_OFF + 0x40)              /* debugGlobals.externLineCount */
+    );
+
+    /* Clear line count */
+    data = *(byte **)g_viewParms;
+    *(int *)(data + DBGGLOB_OFF + 0x34) = 0;
+
+    /* Draw debug strings (internal + external) */
+    data = *(byte **)g_viewParms;
+    RB_DrawDebugStrings(
+        *(trDebugString_t **)(data + DBGGLOB_OFF + 0x18), /* debugGlobals.strings */
+        *(int *)(data + DBGGLOB_OFF + 0x1C)                /* debugGlobals.stringCount */
+    );
+
+    data = *(byte **)g_viewParms;
+    RB_DrawDebugStrings(
+        *(trDebugString_t **)(data + DBGGLOB_OFF + 0x24), /* debugGlobals.externStrings */
+        *(int *)(data + DBGGLOB_OFF + 0x28)                /* debugGlobals.externStringCount */
+    );
+
+    return 0;
+}

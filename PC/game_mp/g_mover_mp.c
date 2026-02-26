@@ -1,1337 +1,754 @@
-/* ASM dump from: g_mover_mp.cpp */
+/* Decompiled from: g_mover_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/game_mp/g_mover_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
 
+#ifndef qtrue
+#define qtrue 1
+#define qfalse 0
+#endif
+
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
  */
+
+/*
+ * Binary gentity_s layout uses byte pointer arithmetic.
+ *
+ * Key offsets (binary):
+ *   0x00  s.number           0x04  s.eType            0x08  s.eFlags
+ *   0x0C  s.pos (trajectory) 0x18  s.pos.trBase       0x30  s.apos
+ *   0x54  s.time             0x58  s.time2
+ *   0x7C  s.groundEntityNum  0xD8  s.dmgFlags         0xDC  s.animMovetype
+ *   0xF0  r.linked           0xF1  r.bmodel           0xF2  r.svFlags
+ *   0x104 r.mins             0x110 r.maxs             0x11C r.contents
+ *   0x120 r.absmin           0x12C r.absmax
+ *   0x138 r.currentOrigin    0x144 r.currentAngles
+ *   0x150 r.ownerNum         0x158 client
+ *   0x160 physicsObject      0x161 takedamage
+ *   0x166 handler            0x168 classname
+ *   0x174 flags              0x184 clipmask
+ *   0x190 nextthink          0x194 health
+ *   0x1A8 (chain)            0x1AC (tagInfo)
+ *   0x208 tagInfo(binary)    0x1B4 (useCount area)
+ */
+
+/* Entity byte pointer offset macros */
+#define ENT_NUMBER(e)         (*(int *)((byte *)(e) + 0x00))
+#define ENT_ETYPE(e)          (*(int *)((byte *)(e) + 0x04))
+#define ENT_POS(e)            ((trajectory_t *)((byte *)(e) + 0x0C))
+#define ENT_POS_TRTYPE(e)     (*(int *)((byte *)(e) + 0x0C))
+#define ENT_POS_TRTIME(e)     (*(int *)((byte *)(e) + 0x10))
+#define ENT_POS_TRDURATION(e) (*(int *)((byte *)(e) + 0x14))
+#define ENT_POS_TRBASE(e)     ((vec_t *)((byte *)(e) + 0x18))
+#define ENT_APOS(e)           ((trajectory_t *)((byte *)(e) + 0x30))
+#define ENT_APOS_TRTYPE(e)    (*(int *)((byte *)(e) + 0x30))
+#define ENT_APOS_TRTIME(e)    (*(int *)((byte *)(e) + 0x34))
+#define ENT_APOS_TRDURATION(e)(*(int *)((byte *)(e) + 0x38))
+#define ENT_TIME(e)           (*(int *)((byte *)(e) + 0x54))
+#define ENT_GROUNDENTNUM(e)   (*(int *)((byte *)(e) + 0x7C))
+#define ENT_DMGFLAGS(e)       (*(int *)((byte *)(e) + 0xD8))
+#define ENT_ANIMMOVETYPE(e)   (*(int *)((byte *)(e) + 0xDC))
+#define ENT_LINKED(e)         (*(byte *)((byte *)(e) + 0xF0))
+#define ENT_BMODEL(e)         (*(byte *)((byte *)(e) + 0xF1))
+#define ENT_SVFLAGS(e)        (*(byte *)((byte *)(e) + 0xF2))
+#define ENT_MINS(e)           ((vec_t *)((byte *)(e) + 0x104))
+#define ENT_MAXS(e)           ((vec_t *)((byte *)(e) + 0x110))
+#define ENT_CONTENTS(e)       (*(int *)((byte *)(e) + 0x11C))
+#define ENT_CONTENTS_BYTE3(e) (*(byte *)((byte *)(e) + 0x11F))
+#define ENT_ABSMIN(e)         ((vec_t *)((byte *)(e) + 0x120))
+#define ENT_ABSMAX(e)         ((vec_t *)((byte *)(e) + 0x12C))
+#define ENT_CURRENTORIGIN(e)  ((vec_t *)((byte *)(e) + 0x138))
+#define ENT_CURRENTANGLES(e)  ((vec_t *)((byte *)(e) + 0x144))
+#define ENT_OWNERNUM(e)       (*(int *)((byte *)(e) + 0x150))
+#define ENT_CLIENT(e)         (*(byte **)((byte *)(e) + 0x158))
+#define ENT_PHYSICSOBJECT(e)  (*(byte *)((byte *)(e) + 0x160))
+#define ENT_TAKEDAMAGE(e)     (*(byte *)((byte *)(e) + 0x161))
+#define ENT_HANDLER(e)        (*(byte *)((byte *)(e) + 0x166))
+#define ENT_CLIPMASK(e)       (*(int *)((byte *)(e) + 0x184))
+#define ENT_TAGINFO(e)        (*(int *)((byte *)(e) + 0x208))
+
+/* Entity stride is 0x230 bytes */
+#define ENTITY_STRIDE 0x230
+
+/* External globals (BSS/data pointers) */
+extern byte *level_ptr;         /* 0x195f6a0 */
+extern byte *g_entities_ptr;    /* 0x195f688 */
+extern byte *entityHandlers_ptr; /* 0x195f6b4 */
+
+/* level_ptr field access */
+#define LEVEL_TIME          (*(int *)(level_ptr + 0x1EC))
+#define LEVEL_PREVIOUSTIME  (*(int *)(level_ptr + 0x1F0))
+
+/* Handler table access: each entry is 40 bytes */
+#define HANDLER_ENTRY(h)    (entityHandlers_ptr + (h) * 40)
+#define HANDLER_REACHED(h)  (*(void (**)())(HANDLER_ENTRY(h) + 4))
+#define HANDLER_BLOCKED(h)  (*(void (**)(gentity_t *, gentity_t *))(HANDLER_ENTRY(h) + 8))
+
+/* g_entities_ptr entity access by number */
+#define G_ENTITY(num) ((gentity_t *)(g_entities_ptr + (num) * ENTITY_STRIDE))
+
+/* VectorCopy inline */
+#define VectorCopy(a, b) ((b)[0]=(a)[0], (b)[1]=(a)[1], (b)[2]=(a)[2])
 
 extern char * hintStrings[6]; /* 0x0 */
 static pushed_t pushed[1024]; /* 0xfdf780 */
 static pushed_t *pushed_p; /* 0xfe7780 */
 
+/* Forward declarations for extern functions */
+extern void SV_SetBrushModel(gentity_t *ent);
+extern void SV_LinkEntity(gentity_t *ent);
+extern void SV_UnlinkEntity(gentity_t *ent);
+extern qboolean G_SpawnString(const char *key, const char *defaultString, const char **out);
+extern int I_stricmp(const char *s1, const char *s2);
+extern void SV_GetConfigstring(int index, char *buffer, int bufferSize);
+extern void SV_SetConfigstring(int index, const char *val);
+extern void Com_Error(int code, const char *fmt, ...);
+extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
+extern void G_TraceCapsule(trace_t *result, vec_t *start, vec_t *mins, vec_t *maxs, vec_t *end, int skipNumber, int mask);
+extern float RadiusFromBounds(vec_t *mins, vec_t *maxs);
+extern int CM_AreaEntities(vec_t *mins, vec_t *maxs, int *entityList, int maxcount, int contentmask);
+extern void BG_EvaluateTrajectory(trajectory_t *tr, int atTime, vec_t *result);
+extern void G_Damage(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const vec_t *dir, const vec_t *point, int damage, int dflags, int mod, int hitLoc, int timeOffset);
+extern unsigned char G_GeneralLink(gentity_t *ent);
+extern int G_RunThink(gentity_t *ent);
+
+/* Function prototypes */
 bitread_perm_state use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator);
-static bitread_perm_state trigger_use_shared(void);
+static void trigger_use_shared(gentity_t *ent);
 bitread_perm_state trigger_use(gentity_t *ent);
 bitread_perm_state trigger_use_touch(gentity_t *ent);
 qboolean G_TryPushingEntity(gentity_t *check, gentity_t *pusher, vec_t *move, vec_t *amove);
 bitread_perm_state G_MoverTeam(gentity_t *ent);
 bitread_perm_state G_RunMover(gentity_t *ent);
 
+/*
+ * Helper: G_TraceCapsuleForEntity
+ * Wraps G_TraceCapsule with entity-specific clipmask/ownerNum logic.
+ * Based on repeated pattern at "line 65" / "line 67" / "line 81-84"
+ */
+static void G_TraceCapsuleForEntity(trace_t *tr, gentity_t *check, vec_t *origin, vec_t *mins, vec_t *maxs)
+{
+    int mask;
+    int passEntityNum;
+
+    mask = ENT_CLIPMASK(check);
+    if (mask != 0) {
+        if (ENT_CONTENTS_BYTE3(check) & 4) {
+            /* Use entity's ownerNum as passEntityNum */
+            if (ENT_ETYPE(check) == 4) {
+                passEntityNum = ENT_OWNERNUM(check);
+            } else {
+                passEntityNum = ENT_NUMBER(check);
+            }
+            G_TraceCapsule(tr, origin, mins, maxs, origin, passEntityNum, mask);
+            return;
+        }
+    } else {
+        mask = 0x811; /* default mask */
+    }
+
+    if (ENT_ETYPE(check) == 4) {
+        passEntityNum = ENT_OWNERNUM(check);
+    } else {
+        passEntityNum = ENT_NUMBER(check);
+    }
+    G_TraceCapsule(tr, origin, mins, maxs, origin, passEntityNum, mask);
+}
+
+/*
+ * Helper: trace_is_stuck
+ * Returns non-zero if the trace indicates the entity is stuck (allsolid or startsolid).
+ * Checks the 16-bit word covering both allsolid and startsolid bytes.
+ */
+#define TRACE_IS_STUCK(tr) (*(unsigned short *)&(tr)->allsolid)
+
 /* line 522 */
-__attribute__((naked))
 bitread_perm_state use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 522 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 524 */
-        "retl\n"
-    );
+    /* Empty function - just returns */
+    (void)ent;
+    (void)other;
+    (void)activator;
 }
 
 /* line 527 */
-static __attribute__((naked))
-bitread_perm_state trigger_use_shared(void)
+static void trigger_use_shared(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 527 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x42c, %esp\n"
-        "movl %eax, %edi\n" /* ent */
-        /* { scope 1 */
-        "movl %eax, (%esp)\n" /* line 535 */
-        "calll SV_SetBrushModel\n"
-        "movl %edi, (%esp)\n" /* line 536 | ent */
-        "calll SV_LinkEntity\n"
-        "movl $0x3ff, 0x1b4(%edi)\n" /* line 538 | ent */
-        "movl $0, 0xc(%edi)\n" /* line 539 | ent */
-        "leal 0x18(%edi), %ecx\n" /* line 540 | ent, to */
-        "leal 0x138(%edi), %edx\n" /* ent, from */
-        /* { scope 2 */
-        "movl 0x138(%edi), %eax\n" /* line 199 */
-        "movl %eax, 0x18(%edi)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movl $0x200000, 0x11c(%edi)\n" /* line 542 | ent */
-        "movb $1, 0xf2(%edi)\n" /* line 544 | ent */
-        "movb $0x12, 0x166(%edi)\n" /* line 546 | ent */
-        "movl $2, 0xdc(%edi)\n" /* line 549 | ent */
-        "leal -0x1c(%ebp), %eax\n" /* line 552 | cursorhint */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2b57a4, (%esp)\n" /* "cursorhint" */
-        "calll G_SpawnString\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1b8274_001b83b5\n"
-        ".Lf1b8274_001b8306:\n"
-        "movl $0xff, 0xd8(%edi)\n" /* line 570 | ent */
-        "leal -0x1c(%ebp), %eax\n" /* line 571 | cursorhint */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2b57b0, (%esp)\n" /* "hintstring" */
-        "calll G_SpawnString\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1b8274_001b833a\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 593 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1b8274_001b833a:\n"
-        "xorl %esi, %esi\n" /* line 571 | i */
-        "jmp .Lf1b8274_001b8367\n"
-        ".Lf1b8274_001b833e:\n"
-        "leal -0x41c(%ebp), %eax\n" /* line 583 | szConfigString */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* cursorhint */
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b8274_001b840b\n"
-        "addl $1, %esi\n" /* line 574 | i */
-        "cmpl $0x20, %esi\n" /* i */
-        "je .Lf1b8274_001b8421\n"
-        ".Lf1b8274_001b8367:\n"
-        "leal 0x4fe(%esi), %ebx\n" /* line 571 | i */
-        "movl $0x400, 8(%esp)\n" /* line 576 */
-        "leal -0x41c(%ebp), %edx\n" /* szConfigString */
-        "movl %edx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll SV_GetConfigstring\n"
-        "cmpb $0, -0x41c(%ebp)\n" /* line 577 | szConfigString */
-        "jne .Lf1b8274_001b833e\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 579 | cursorhint */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll SV_SetConfigstring\n"
-        "movl %esi, %edx\n" /* line 580 | i */
-        "movzbl %dl, %eax\n"
-        "movl %eax, 0xd8(%edi)\n" /* ent */
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 593 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1b8274_001b83b5:\n"
-        "movl $0x2b2be0, 4(%esp)\n" /* line 554 */
-        "movl -0x1c(%ebp), %eax\n" /* cursorhint */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b8274_001b83fc\n"
-        "movl $1, %esi\n" /* line 555 | i */
-        "movl $hintStrings, %ebx\n"
-        ".Lf1b8274_001b83d6:\n"
-        "movl 4(%ebx), %eax\n" /* line 560 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* cursorhint */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b8274_001b8448\n"
-        "addl $1, %esi\n" /* line 558 | i */
-        "addl $4, %ebx\n"
-        "cmpl $6, %esi\n" /* i */
-        "jne .Lf1b8274_001b83d6\n"
-        "jmp .Lf1b8274_001b8306\n"
-        ".Lf1b8274_001b83fc:\n"
-        "movl $0xffffffff, 0xdc(%edi)\n" /* line 555 | ent */
-        "jmp .Lf1b8274_001b8306\n"
-        ".Lf1b8274_001b840b:\n"
-        "movl %esi, %edx\n" /* line 585 | i */
-        "movzbl %dl, %eax\n"
-        "movl %eax, 0xd8(%edi)\n" /* ent */
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 593 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1b8274_001b8421:\n"
-        "movl $0x20, 8(%esp)\n" /* line 591 */
-        "movl $0x2b57bc, 4(%esp)\n" /* "Too many different hintstring key values on trigger_use ent" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 593 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1b8274_001b8448:\n"
-        "movl %esi, 0xdc(%edi)\n" /* line 562 | i, ent */
-        "jmp .Lf1b8274_001b8306\n"
-    );
+    const char *cursorhint;
+    char szConfigString[1024];
+    int i;
+
+    /* line 535 */
+    SV_SetBrushModel(ent);
+    /* line 536 */
+    SV_LinkEntity(ent);
+    /* line 538 - set spawnflags area to ENTITYNUM_NONE */
+    *(int *)((byte *)ent + 0x1b4) = 0x3ff;
+    /* line 539 */
+    ENT_POS_TRTYPE(ent) = 0;
+    /* line 540 - VectorCopy(currentOrigin, pos.trBase) */
+    VectorCopy(ENT_CURRENTORIGIN(ent), ENT_POS_TRBASE(ent));
+    /* line 542 - set contents */
+    ENT_CONTENTS(ent) = 0x200000;
+    /* line 544 - set bmodel flag */
+    ENT_BMODEL(ent) = 1;
+    /* line 546 - set handler */
+    ENT_HANDLER(ent) = 0x12;
+    /* line 549 - set animMovetype */
+    ENT_ANIMMOVETYPE(ent) = 2;
+
+    /* line 552 - G_SpawnString for "cursorhint" */
+    if (G_SpawnString("cursorhint", "", &cursorhint)) {
+        /* line 554 */
+        if (I_stricmp(cursorhint, "HINT_NOICON") == 0) {
+            /* line 555 */
+            ENT_ANIMMOVETYPE(ent) = -1;
+        } else {
+            for (i = 1; i < 6; i++) {
+                /* line 560 */
+                if (I_stricmp(cursorhint, hintStrings[i]) == 0) {
+                    /* line 562 */
+                    ENT_ANIMMOVETYPE(ent) = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    /* line 570 - set dmgFlags to default 0xff */
+    ENT_DMGFLAGS(ent) = 0xff;
+
+    /* line 571 - G_SpawnString for "hintstring" */
+    if (G_SpawnString("hintstring", "", &cursorhint)) {
+        /* Search through configstrings 0x4fe..0x51d (32 entries) */
+        for (i = 0; i < 32; i++) {
+            /* line 576 */
+            SV_GetConfigstring(0x4fe + i, szConfigString, 1024);
+            /* line 577 */
+            if (szConfigString[0] == '\0') {
+                /* line 579 - empty slot, set the configstring */
+                SV_SetConfigstring(0x4fe + i, cursorhint);
+                /* line 580 */
+                ENT_DMGFLAGS(ent) = (unsigned char)i;
+                return;
+            }
+            /* line 583 - check if already exists */
+            if (strcmp(cursorhint, szConfigString) == 0) {
+                /* line 585 */
+                ENT_DMGFLAGS(ent) = (unsigned char)i;
+                return;
+            }
+        }
+        /* line 591 - too many different hintstrings */
+        Com_Error(1, "Too many different hintstring key values on trigger_use ent", 32);
+    }
 }
 
 /* line 596 */
-__attribute__((naked))
 bitread_perm_state trigger_use(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 596 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* ent */
-        "popl %ebp\n" /* line 599 */
-        "jmp trigger_use_shared\n" /* line 598 */
-    );
+    /* line 598 */
+    trigger_use_shared(ent);
 }
 
 /* line 602 */
-__attribute__((naked))
 bitread_perm_state trigger_use_touch(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 602 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* ent */
-        "popl %ebp\n" /* line 605 */
-        "jmp trigger_use_shared\n" /* line 604 */
-    );
+    /* line 604 */
+    trigger_use_shared(ent);
 }
 
 /* line 154 */
-__attribute__((naked))
 qboolean G_TryPushingEntity(gentity_t *check, gentity_t *pusher, vec_t *move, vec_t *amove)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 154 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x11c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* check */
-        "movl 0x10(%ebp), %eax\n" /* move */
-        /* { scope 1: tr */
-        "leal 0x138(%edi), %edx\n" /* line 163 | check */
-        "movl %edx, -0xd8(%ebp)\n"
-        "movss 0x138(%edi), %xmm0\n" /* line 240 | check */
-        "addss (%eax), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n" /* vOrigin */
-        "movss 4(%edx), %xmm0\n" /* line 241 */
-        "addss 4(%eax), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        "movss 8(%edx), %xmm0\n" /* line 242 */
-        "addss 8(%eax), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* line 100 */
-        "leal -0x48(%ebp), %edx\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "leal -0x54(%ebp), %eax\n" /* transpose */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x14(%ebp), %edx\n" /* amove */
-        "movl %edx, (%esp)\n"
-        "calll AngleVectors\n"
-        "movss 0x303230, %xmm0\n" /* line 224 */
-        "movss -0x48(%ebp), %xmm1\n"
-        "xorps %xmm0, %xmm1\n"
-        "movss %xmm1, -0x48(%ebp)\n"
-        "movss -0x44(%ebp), %xmm1\n" /* line 225 */
-        "xorps %xmm0, %xmm1\n"
-        "movss %xmm1, -0x44(%ebp)\n"
-        "movss -0x40(%ebp), %xmm1\n" /* line 226 */
-        "xorps %xmm0, %xmm1\n"
-        "movss %xmm1, -0x40(%ebp)\n"
-        "xorl %esi, %esi\n" /* i */
-        "leal -0x9c(%ebp), %eax\n" /* matrix */
-        ".Lf1b846c_001b8510:\n"
-        "leal -0x54(%ebp, %esi, 4), %ecx\n"
-        "movl %eax, %edx\n"
-        "leal 0xc(%eax), %ebx\n"
-        /* { scope 2 */
-        ".Lf1b846c_001b8519:\n"
-        "movl (%ecx), %eax\n" /* line 120 */
-        "movl %eax, (%edx)\n"
-        "addl $0xc, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl %edx, %ebx\n" /* line 118 */
-        "jne .Lf1b846c_001b8519\n"
-        "addl $1, %esi\n" /* line 116 | i */
-        "cmpl $3, %esi\n" /* i */
-        "je .Lf1b846c_001b8533\n"
-        "movl %ebx, %eax\n"
-        "jmp .Lf1b846c_001b8510\n"
-        ".Lf1b846c_001b8533:\n"
-        "movl 0xc(%ebp), %eax\n" /* pusher */
-        "addl $0x138, %eax\n"
-        /* } scope */
-        /* { scope 2 */
-        "movss -0x24(%ebp), %xmm5\n" /* line 248 | vOrigin */
-        "movl 0xc(%ebp), %edx\n" /* pusher */
-        "subss 0x138(%edx), %xmm5\n"
-        "movss -0x20(%ebp), %xmm4\n" /* line 249 */
-        "subss 4(%eax), %xmm4\n"
-        "movss -0x1c(%ebp), %xmm6\n" /* line 250 */
-        "subss 8(%eax), %xmm6\n"
-        /* } scope */
-        "movaps %xmm5, %xmm3\n" /* line 138 */
-        "mulss -0x9c(%ebp), %xmm3\n" /* matrix */
-        "movaps %xmm4, %xmm0\n"
-        "mulss -0x98(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm3\n"
-        "movaps %xmm6, %xmm0\n"
-        "mulss -0x94(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm3\n"
-        "movss %xmm3, -0x30(%ebp)\n" /* org2 */
-        "movaps %xmm5, %xmm2\n" /* line 139 */
-        "mulss -0x90(%ebp), %xmm2\n"
-        "movaps %xmm4, %xmm0\n"
-        "mulss -0x8c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "movaps %xmm6, %xmm0\n"
-        "mulss -0x88(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "movss %xmm2, -0x2c(%ebp)\n"
-        "movaps %xmm5, %xmm0\n" /* line 304 */
-        "mulss -0x84(%ebp), %xmm0\n"
-        "movaps %xmm4, %xmm1\n"
-        "mulss -0x80(%ebp), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movaps %xmm6, %xmm1\n"
-        "mulss -0x7c(%ebp), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n" /* line 140 */
-        "subss %xmm4, %xmm2\n" /* line 249 */
-        "subss %xmm5, %xmm3\n" /* line 240 */
-        "addss -0x24(%ebp), %xmm3\n" /* vOrigin */
-        "movss %xmm3, -0x24(%ebp)\n" /* vOrigin */
-        "addss -0x20(%ebp), %xmm2\n" /* line 241 */
-        "movss %xmm2, -0x20(%ebp)\n"
-        "subss %xmm6, %xmm0\n" /* line 242 */
-        "addss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        /* { scope 2 */
-        "movl 0x184(%edi), %eax\n" /* line 65 */
-        "testl %eax, %eax\n"
-        "jne .Lf1b846c_001b8952\n"
-        "movw $0x811, %ax\n"
-        ".Lf1b846c_001b861f:\n"
-        "cmpl $4, 4(%edi)\n" /* line 81 */
-        "je .Lf1b846c_001b8b10\n"
-        "movl %eax, 0x18(%esp)\n" /* line 84 */
-        "movl (%edi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* vOrigin */
-        "movl %eax, 0x10(%esp)\n"
-        "leal 0x110(%edi), %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "leal 0x104(%edi), %ebx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x78(%ebp), %edx\n" /* tr */
-        "movl %edx, (%esp)\n"
-        "calll G_TraceCapsule\n"
-        ".Lf1b846c_001b865d:\n"
-        "cmpw $0, -0x56(%ebp)\n" /* line 86 */
-        "je .Lf1b846c_001b895f\n"
-        /* } scope */
-        "movzwl -0x5c(%ebp), %edx\n" /* line 175 */
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (, %edx, 8), %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b846c_001b895f\n"
-        "cvtss2sd 0x110(%edi), %xmm3\n" /* line 193 | check */
-        "movsd 0x307ce0, %xmm4\n" /* 0.5 */
-        "movapd %xmm3, %xmm0\n"
-        "mulsd %xmm4, %xmm0\n"
-        "ucomisd 0x307d68, %xmm0\n" /* 4.0 */
-        "jbe .Lf1b846c_001b8a9e\n"
-        "movss -0x24(%ebp), %xmm1\n" /* line 199 | vOrigin */
-        "movss %xmm1, -0xac(%ebp)\n"
-        "movss -0x20(%ebp), %xmm1\n" /* line 200 */
-        "movss %xmm1, -0xb0(%ebp)\n"
-        "movss -0x1c(%ebp), %xmm1\n" /* line 201 */
-        "movss %xmm1, -0xb4(%ebp)\n"
-        "ucomisd 0x307c80, %xmm0\n" /* line 196 | 0.0 */
-        "jbe .Lf1b846c_001b8a9e\n"
-        "pxor %xmm6, %xmm6\n"
-        "movaps %xmm6, %xmm2\n"
-        "movss 0x2ed608, %xmm7\n" /* 4.0f */
-        ".Lf1b846c_001b86f3:\n"
-        "movaps %xmm6, %xmm0\n" /* line 198 */
-        "xorps 0x303230, %xmm0\n"
-        "movss %xmm0, -0xc0(%ebp)\n" /* fz */
-        "ucomiss %xmm0, %xmm6\n"
-        "jb .Lf1b846c_001b8a84\n"
-        "movaps %xmm6, %xmm1\n"
-        "addss %xmm6, %xmm1\n"
-        "movss %xmm1, -0xcc(%ebp)\n"
-        ".Lf1b846c_001b871d:\n"
-        "movapd %xmm3, %xmm0\n" /* line 200 */
-        "mulsd %xmm4, %xmm0\n"
-        "ucomisd 0x307d68, %xmm0\n" /* 4.0 */
-        "jbe .Lf1b846c_001b8a5c\n"
-        "movaps %xmm7, %xmm5\n"
-        ".Lf1b846c_001b8736:\n"
-        "movaps %xmm5, %xmm0\n" /* line 202 */
-        "xorps 0x303230, %xmm0\n"
-        "movss %xmm0, -0xc8(%ebp)\n" /* fx */
-        "ucomiss %xmm0, %xmm5\n"
-        "jb .Lf1b846c_001b8a3e\n"
-        "movaps %xmm5, %xmm1\n"
-        "addss %xmm5, %xmm1\n"
-        "movss %xmm1, -0xd0(%ebp)\n"
-        ".Lf1b846c_001b8760:\n"
-        "movapd %xmm3, %xmm0\n" /* line 204 */
-        "mulsd %xmm4, %xmm0\n"
-        "ucomisd 0x307d68, %xmm0\n" /* 4.0 */
-        "jbe .Lf1b846c_001b8a1d\n"
-        "movaps %xmm7, %xmm2\n"
-        ".Lf1b846c_001b8779:\n"
-        "movaps %xmm2, %xmm0\n" /* line 206 */
-        "xorps 0x303230, %xmm0\n"
-        "movss %xmm0, -0xc4(%ebp)\n" /* fy */
-        "ucomiss %xmm0, %xmm2\n"
-        "jb .Lf1b846c_001b8a03\n"
-        "movss -0xc8(%ebp), %xmm1\n" /* fx */
-        "addss -0xac(%ebp), %xmm1\n"
-        "movss %xmm1, -0xbc(%ebp)\n"
-        "movss -0xc0(%ebp), %xmm0\n" /* fz */
-        "addss -0xb4(%ebp), %xmm0\n"
-        "movss %xmm0, -0xb8(%ebp)\n"
-        "movaps %xmm2, %xmm1\n"
-        "addss %xmm2, %xmm1\n"
-        "movss %xmm1, -0xd4(%ebp)\n"
-        "movaps %xmm0, %xmm1\n"
-        "jmp .Lf1b846c_001b8892\n"
-        /* { scope 2 */
-        ".Lf1b846c_001b87db:\n"
-        "movw $0x811, %ax\n" /* line 65 */
-        ".Lf1b846c_001b87df:\n"
-        "cmpl $4, 4(%edi)\n" /* line 81 */
-        "je .Lf1b846c_001b8b71\n"
-        "movl %eax, 0x18(%esp)\n" /* line 84 */
-        "movl (%edi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x30(%ebp), %edx\n" /* org2 */
-        "movl %edx, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "leal -0x78(%ebp), %edx\n" /* tr */
-        "movl %edx, (%esp)\n"
-        "movss %xmm2, -0xe8(%ebp)\n"
-        "movss %xmm5, -0xf8(%ebp)\n"
-        "movss %xmm6, -0x108(%ebp)\n"
-        "calll G_TraceCapsule\n"
-        "movss -0x108(%ebp), %xmm6\n"
-        "movss -0xf8(%ebp), %xmm5\n"
-        "movss -0xe8(%ebp), %xmm2\n"
-        ".Lf1b846c_001b8841:\n"
-        "cmpw $0, -0x56(%ebp)\n" /* line 86 */
-        "je .Lf1b846c_001b88d4\n"
-        /* } scope */
-        "movzwl -0x5c(%ebp), %edx\n" /* line 214 */
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (, %edx, 8), %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b846c_001b88d4\n"
-        "movss -0xc4(%ebp), %xmm0\n" /* line 206 | fy */
-        "addss -0xd4(%ebp), %xmm0\n"
-        "movss %xmm0, -0xc4(%ebp)\n" /* fy */
-        "ucomiss %xmm0, %xmm2\n"
-        "jb .Lf1b846c_001b89eb\n"
-        "movss -0xb8(%ebp), %xmm1\n"
-        ".Lf1b846c_001b8892:\n"
-        "movss -0xbc(%ebp), %xmm0\n" /* line 240 */
-        "movss %xmm0, -0x30(%ebp)\n" /* org2 */
-        "movss -0xc4(%ebp), %xmm0\n" /* line 241 | fy */
-        "addss -0xb0(%ebp), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movss %xmm1, -0x28(%ebp)\n" /* line 242 */
-        /* { scope 2 */
-        "movl 0x184(%edi), %eax\n" /* line 65 */
-        "testl %eax, %eax\n"
-        "je .Lf1b846c_001b87db\n"
-        "testb $4, 0x11f(%edi)\n" /* line 67 */
-        "je .Lf1b846c_001b87df\n"
-        /* } scope */
-        ".Lf1b846c_001b88d4:\n"
-        "movl 0x7c(%edi), %eax\n" /* line 217 | check */
-        "movl 0xc(%ebp), %edx\n" /* pusher */
-        "cmpl (%edx), %eax\n"
-        "je .Lf1b846c_001b88e5\n"
-        "movl $0x3ff, 0x7c(%edi)\n" /* line 218 | check */
-        ".Lf1b846c_001b88e5:\n"
-        "movl -0x30(%ebp), %ebx\n" /* line 199 | org2 */
-        "movl -0xd8(%ebp), %eax\n"
-        "movl %ebx, (%eax)\n"
-        "movl -0x2c(%ebp), %ecx\n" /* line 200 */
-        "movl %ecx, 4(%eax)\n"
-        "movl -0x28(%ebp), %edx\n" /* line 201 */
-        "movl %edx, 8(%eax)\n"
-        "leal 0x18(%edi), %eax\n" /* line 221 | check, to */
-        /* { scope 2 */
-        "movl %ebx, 0x18(%edi)\n" /* line 199 | check */
-        "movl %ecx, 4(%eax)\n" /* line 200 */
-        "movl %edx, 8(%eax)\n" /* line 201 */
-        /* } scope */
-        "movl 0x158(%edi), %edx\n" /* line 222 | check */
-        "testl %edx, %edx\n"
-        "je .Lf1b846c_001b89d4\n"
-        "movl 0x14(%ebp), %eax\n" /* line 224 | amove */
-        "movss 4(%eax), %xmm0\n"
-        "mulss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
-        "cvttss2si %xmm0, %eax\n"
-        "andl $0xffff, %eax\n"
-        "addl %eax, 0x58(%edx)\n"
-        "movl 0x158(%edi), %edx\n" /* line 225 | check */
-        "leal 0x14(%edx), %ecx\n" /* to */
-        /* { scope 2 */
-        "movl -0x30(%ebp), %eax\n" /* line 199 | org2 */
-        "movl %eax, 0x14(%edx)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x28(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        "jmp .Lf1b846c_001b89d4\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1b846c_001b8952:\n"
-        "testb $4, 0x11f(%edi)\n" /* line 67 */
-        "je .Lf1b846c_001b861f\n"
-        /* } scope */
-        ".Lf1b846c_001b895f:\n"
-        "movl 0x7c(%edi), %eax\n" /* line 178 | check */
-        "movl 0xc(%ebp), %edx\n" /* pusher */
-        "cmpl (%edx), %eax\n"
-        "je .Lf1b846c_001b8970\n"
-        "movl $0x3ff, 0x7c(%edi)\n" /* line 179 | check */
-        ".Lf1b846c_001b8970:\n"
-        "movl -0x24(%ebp), %ebx\n" /* line 199 | vOrigin */
-        "movl -0xd8(%ebp), %eax\n"
-        "movl %ebx, (%eax)\n"
-        "movl -0x20(%ebp), %ecx\n" /* line 200 */
-        "movl %ecx, 4(%eax)\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 201 */
-        "movl %edx, 8(%eax)\n"
-        "leal 0x18(%edi), %eax\n" /* line 182 | check, to */
-        /* { scope 2 */
-        "movl %ebx, 0x18(%edi)\n" /* line 199 | check */
-        "movl %ecx, 4(%eax)\n" /* line 200 */
-        "movl %edx, 8(%eax)\n" /* line 201 */
-        /* } scope */
-        "movl 0x158(%edi), %edx\n" /* line 183 | check */
-        "testl %edx, %edx\n"
-        "je .Lf1b846c_001b89d4\n"
-        "movss 0x2ed644, %xmm0\n" /* line 185 | 182.04444885253906f */
-        "movl 0x14(%ebp), %eax\n" /* amove */
-        "mulss 4(%eax), %xmm0\n"
-        "cvttss2si %xmm0, %eax\n"
-        "andl $0xffff, %eax\n"
-        "addl %eax, 0x58(%edx)\n"
-        "movl 0x158(%edi), %edx\n" /* line 186 | check */
-        "leal 0x14(%edx), %ecx\n" /* to */
-        /* { scope 2 */
-        "movl -0x24(%ebp), %eax\n" /* line 199 | vOrigin */
-        "movl %eax, 0x14(%edx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        ".Lf1b846c_001b89d4:\n"
-        "addl $0x20, pushed_p\n" /* line 227 */
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf1b846c_001b89e0:\n"
-        "addl $0x11c, %esp\n" /* line 253 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1b846c_001b89eb:\n"
-        "cvtss2sd 0x110(%edi), %xmm3\n" /* check */
-        "movsd 0x307ce0, %xmm4\n" /* 0.5 */
-        "movss 0x2ed608, %xmm7\n" /* 4.0f */
-        /* { scope 1: tr */
-        ".Lf1b846c_001b8a03:\n"
-        "addss %xmm7, %xmm2\n" /* line 204 */
-        "movapd %xmm3, %xmm1\n"
-        "mulsd %xmm4, %xmm1\n"
-        "cvtss2sd %xmm2, %xmm0\n"
-        "ucomisd %xmm0, %xmm1\n"
-        "ja .Lf1b846c_001b8779\n"
-        ".Lf1b846c_001b8a1d:\n"
-        "movss -0xc8(%ebp), %xmm1\n" /* line 202 | fx */
-        "addss -0xd0(%ebp), %xmm1\n"
-        "movss %xmm1, -0xc8(%ebp)\n" /* fx */
-        "ucomiss %xmm1, %xmm5\n"
-        "jae .Lf1b846c_001b8760\n"
-        ".Lf1b846c_001b8a3e:\n"
-        "addss %xmm7, %xmm5\n" /* line 200 */
-        "movapd %xmm3, %xmm1\n"
-        "mulsd %xmm4, %xmm1\n"
-        "cvtss2sd %xmm5, %xmm0\n"
-        "ucomisd %xmm0, %xmm1\n"
-        "ja .Lf1b846c_001b8736\n"
-        "pxor %xmm2, %xmm2\n"
-        ".Lf1b846c_001b8a5c:\n"
-        "movss -0xc0(%ebp), %xmm0\n" /* line 235 | fz */
-        "ucomiss %xmm2, %xmm0\n"
-        "jp .Lf1b846c_001b8a6b\n"
-        "je .Lf1b846c_001b8a84\n"
-        ".Lf1b846c_001b8a6b:\n"
-        "addss -0xcc(%ebp), %xmm0\n" /* line 198 */
-        "movss %xmm0, -0xc0(%ebp)\n" /* fz */
-        "ucomiss %xmm0, %xmm6\n"
-        "jae .Lf1b846c_001b871d\n"
-        ".Lf1b846c_001b8a84:\n"
-        "addss %xmm7, %xmm6\n" /* line 196 */
-        "movapd %xmm3, %xmm1\n"
-        "mulsd %xmm4, %xmm1\n"
-        "cvtss2sd %xmm6, %xmm0\n"
-        "ucomisd %xmm0, %xmm1\n"
-        "ja .Lf1b846c_001b86f3\n"
-        /* { scope 2 */
-        ".Lf1b846c_001b8a9e:\n"
-        "movl 0x184(%edi), %eax\n" /* line 65 */
-        "testl %eax, %eax\n"
-        "jne .Lf1b846c_001b8b4d\n"
-        "movw $0x811, %ax\n"
-        ".Lf1b846c_001b8ab0:\n"
-        "cmpl $4, 4(%edi)\n" /* line 81 */
-        "je .Lf1b846c_001b8bd2\n"
-        "movl %eax, 0x18(%esp)\n" /* line 84 */
-        "movl (%edi), %eax\n"
-        ".Lf1b846c_001b8ac0:\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl -0xd8(%ebp), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x78(%ebp), %edx\n" /* tr */
-        "movl %edx, (%esp)\n"
-        "calll G_TraceCapsule\n"
-        "cmpw $0, -0x56(%ebp)\n" /* line 86 */
-        "je .Lf1b846c_001b8b5a\n"
-        /* } scope */
-        "movzwl -0x5c(%ebp), %edx\n" /* line 245 */
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (, %edx, 8), %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b846c_001b8b5a\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf1b846c_001b89e0\n"
-        /* { scope 2 */
-        ".Lf1b846c_001b8b10:\n"
-        "movl %eax, 0x18(%esp)\n" /* line 82 */
-        "movl 0x150(%edi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* vOrigin */
-        "movl %eax, 0x10(%esp)\n"
-        "leal 0x110(%edi), %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "leal 0x104(%edi), %ebx\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x78(%ebp), %eax\n" /* tr */
-        "movl %eax, (%esp)\n"
-        "calll G_TraceCapsule\n"
-        "jmp .Lf1b846c_001b865d\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1b846c_001b8b4d:\n"
-        "testb $4, 0x11f(%edi)\n" /* line 67 */
-        "je .Lf1b846c_001b8ab0\n"
-        /* } scope */
-        ".Lf1b846c_001b8b5a:\n"
-        "movl $0x3ff, 0x7c(%edi)\n" /* line 247 | check */
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x11c, %esp\n" /* line 253 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: tr */
-        /* { scope 2 */
-        ".Lf1b846c_001b8b71:\n"
-        "movl %eax, 0x18(%esp)\n" /* line 82 */
-        "movl 0x150(%edi), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* org2 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x78(%ebp), %eax\n" /* tr */
-        "movl %eax, (%esp)\n"
-        "movss %xmm2, -0xe8(%ebp)\n"
-        "movss %xmm5, -0xf8(%ebp)\n"
-        "movss %xmm6, -0x108(%ebp)\n"
-        "calll G_TraceCapsule\n"
-        "movss -0xe8(%ebp), %xmm2\n"
-        "movss -0xf8(%ebp), %xmm5\n"
-        "movss -0x108(%ebp), %xmm6\n"
-        "jmp .Lf1b846c_001b8841\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1b846c_001b8bd2:\n"
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x150(%edi), %eax\n"
-        "jmp .Lf1b846c_001b8ac0\n"
-    );
+    trace_t tr;
+    vec3_t vOrigin;
+    vec3_t org2;
+    vec3_t forward, right, up;
+    float matrix[9]; /* 3x3 transpose matrix */
+    vec3_t org, org2_rel;
+    int i, j;
+    float fx, fy, fz;
+    float halfSize;
+    gentity_t *hitEnt;
+    byte *client;
+    vec_t *savedOrigin;
+
+    savedOrigin = ENT_CURRENTORIGIN(check);
+
+    /* line 240-242: vOrigin = currentOrigin + move */
+    vOrigin[0] = ENT_CURRENTORIGIN(check)[0] + move[0];
+    vOrigin[1] = ENT_CURRENTORIGIN(check)[1] + move[1];
+    vOrigin[2] = ENT_CURRENTORIGIN(check)[2] + move[2];
+
+    /* line 100: AngleVectors for rotation */
+    AngleVectors(amove, forward, right, up);
+
+    /* line 224-226: negate right vector */
+    right[0] = -right[0];
+    right[1] = -right[1];
+    right[2] = -right[2];
+
+    /* Build transpose matrix from forward/right/up (3x3) */
+    /* matrix[col][row] = vectors transposed */
+    for (i = 0; i < 3; i++) {
+        vec_t *src;
+        if (i == 0) src = forward;
+        else if (i == 1) src = right;
+        else src = up;
+        for (j = 0; j < 3; j++) {
+            matrix[j * 3 + i] = src[j];
+        }
+    }
+
+    /* line 248-250: org = vOrigin - pusher->currentOrigin */
+    org[0] = vOrigin[0] - ENT_CURRENTORIGIN(pusher)[0];
+    org[1] = vOrigin[1] - ENT_CURRENTORIGIN(pusher)[1];
+    org[2] = vOrigin[2] - ENT_CURRENTORIGIN(pusher)[2];
+
+    /* line 138-140: org2 = matrix * org (3x3 matrix multiply) */
+    org2[0] = org[0] * matrix[0] + org[1] * matrix[1] + org[2] * matrix[2];
+    org2[1] = org[0] * matrix[3] + org[1] * matrix[4] + org[2] * matrix[5];
+    org2[2] = org[0] * matrix[6] + org[1] * matrix[7] + org[2] * matrix[8];
+
+    /* Update vOrigin with rotation delta */
+    vOrigin[0] += org2[0] - org[0];
+    vOrigin[1] += org2[1] - org[1];
+    vOrigin[2] += org2[2] - org[2];
+
+    /* First trace with vOrigin */
+    G_TraceCapsuleForEntity(&tr, check, vOrigin, ENT_MINS(check), ENT_MAXS(check));
+
+    /* line 86: check if entity is stuck at new position */
+    if (TRACE_IS_STUCK(&tr)) {
+        /* line 175: check if hit entity is valid */
+        hitEnt = G_ENTITY((int)tr.entityNum);
+        if (hitEnt != NULL) {
+            /* line 193: try multiple positions if entity is large enough */
+            halfSize = (double)ENT_MAXS(check)[0] * 0.5;
+            if (halfSize > 4.0 && halfSize > 0.0) {
+                /* Try different offsets to find a clear position */
+                for (fz = 0.0f; (double)fz < (double)ENT_MAXS(check)[0] * 0.5; fz += 4.0f) {
+                    float neg_fz = -fz;
+                    float fz_step = fz + fz;
+                    for (fx = 4.0f; (double)fx < (double)ENT_MAXS(check)[0] * 0.5; fx += 4.0f) {
+                        float neg_fx = -fx;
+                        float fx_step = fx + fx;
+                        for (fy = 4.0f; (double)fy < (double)ENT_MAXS(check)[0] * 0.5; fy += 4.0f) {
+                            float neg_fy = -fy;
+                            float fy_step = fy + fy;
+                            float saved_z;
+                            /* line 206-208: try origin with offsets */
+                            org2[0] = neg_fx + vOrigin[0];
+                            saved_z = neg_fz + vOrigin[2];
+                            while (1) {
+                                org2[1] = neg_fy + vOrigin[1];
+                                org2[2] = saved_z;
+                                G_TraceCapsuleForEntity(&tr, check, org2, ENT_MINS(check), ENT_MAXS(check));
+
+                                /* line 86: check if stuck */
+                                if (TRACE_IS_STUCK(&tr)) {
+                                    hitEnt = G_ENTITY((int)tr.entityNum);
+                                    if (hitEnt != NULL) {
+                                        /* Advance fy */
+                                        neg_fy += fy_step;
+                                        if (neg_fy < fy) {
+                                            continue;
+                                        }
+                                        /* Reload constants after function call may have clobbered them */
+                                        goto advance_fy_done;
+                                    }
+                                }
+                                /* Found clear position */
+                                goto try_push_success;
+                            }
+advance_fy_done:
+                            ; /* fy loop continues */
+                        }
+                        /* fy exhausted */
+                    }
+                    /* fx exhausted */
+                }
+            }
+
+            /* All offset attempts failed, try original origin */
+            G_TraceCapsuleForEntity(&tr, check, ENT_CURRENTORIGIN(check), ENT_MINS(check), ENT_MAXS(check));
+
+            if (TRACE_IS_STUCK(&tr)) {
+                hitEnt = G_ENTITY((int)tr.entityNum);
+                if (hitEnt != NULL) {
+                    /* Can't push - blocked */
+                    /* line 247 */
+                    ENT_GROUNDENTNUM(check) = 0x3ff;
+                    return qtrue;
+                }
+            }
+
+            /* Blocked but entity is not solid */
+            ENT_GROUNDENTNUM(check) = 0x3ff;
+            return qtrue;
+        }
+    }
+
+    /* line 178: first trace passed, update groundEntityNum */
+    if (ENT_GROUNDENTNUM(check) != ENT_NUMBER(pusher)) {
+        ENT_GROUNDENTNUM(check) = 0x3ff;
+    }
+
+    /* Copy vOrigin to currentOrigin and pos.trBase */
+    VectorCopy(vOrigin, ENT_CURRENTORIGIN(check));
+    VectorCopy(vOrigin, ENT_POS_TRBASE(check));
+
+    /* line 183: update client if present */
+    client = ENT_CLIENT(check);
+    if (client != NULL) {
+        /* line 185: add amove[1] * 182.044... to client delta yaw */
+        int deltaYaw = (int)(amove[1] * 182.04444885253906f);
+        deltaYaw &= 0xffff;
+        *(int *)(client + 0x58) += deltaYaw;
+
+        /* line 186: copy origin to client origin */
+        client = ENT_CLIENT(check);
+        VectorCopy(vOrigin, (vec_t *)(client + 0x14));
+    }
+
+    /* line 227: advance pushed_p */
+    pushed_p++;
+    return qtrue;
+
+try_push_success:
+    /* line 217: successful push with adjusted org2 */
+    if (ENT_GROUNDENTNUM(check) != ENT_NUMBER(pusher)) {
+        ENT_GROUNDENTNUM(check) = 0x3ff;
+    }
+
+    /* Copy org2 to currentOrigin and pos.trBase */
+    VectorCopy(org2, ENT_CURRENTORIGIN(check));
+    VectorCopy(org2, ENT_POS_TRBASE(check));
+
+    /* line 222: update client if present */
+    client = ENT_CLIENT(check);
+    if (client != NULL) {
+        int deltaYaw = (int)(amove[1] * 182.04444885253906f);
+        deltaYaw &= 0xffff;
+        *(int *)(client + 0x58) += deltaYaw;
+
+        client = ENT_CLIENT(check);
+        VectorCopy(org2, (vec_t *)(client + 0x14));
+    }
+
+    pushed_p++;
+    return qtrue;
 }
 
 /* line 417 */
-__attribute__((naked))
 bitread_perm_state G_MoverTeam(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 417 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x212c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* ent */
-        /* { scope 1: e, mins, maxs, entityList, ... */
-        "movl $0xfdf780, pushed_p\n" /* line 434 */
-        "leal 0xc(%edi), %eax\n" /* line 437 | ent */
-        "movl %eax, -0x20f8(%ebp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* origin */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x195f6a0, %ebx\n" /* p */
-        "movl 0x1ec(%ebx), %eax\n" /* p */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20f8(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll BG_EvaluateTrajectory\n"
-        "leal 0x30(%edi), %ecx\n" /* line 438 | ent */
-        "movl %ecx, -0x20f4(%ebp)\n"
-        "leal -0x48(%ebp), %eax\n" /* angles */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x1ec(%ebx), %eax\n" /* p */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll BG_EvaluateTrajectory\n"
-        "leal 0x138(%edi), %eax\n" /* line 439 | ent */
-        "movl %eax, -0x20f0(%ebp)\n"
-        "movss -0x3c(%ebp), %xmm0\n" /* line 248 | origin */
-        "subss 0x138(%edi), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n" /* move */
-        "leal 0x13c(%edi), %edx\n" /* line 249 */
-        "movl %edx, -0x20e4(%ebp)\n"
-        "movss -0x38(%ebp), %xmm0\n"
-        "subss 0x13c(%edi), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        "leal 0x140(%edi), %ecx\n" /* line 250 */
-        "movl %ecx, -0x20e0(%ebp)\n"
-        "movss -0x34(%ebp), %xmm0\n"
-        "subss 0x140(%edi), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "leal 0x144(%edi), %eax\n" /* line 440 | ent */
-        "movl %eax, -0x20ec(%ebp)\n"
-        "movss -0x48(%ebp), %xmm0\n" /* line 248 | angles */
-        "subss 0x144(%edi), %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* amove */
-        "leal 0x148(%edi), %edx\n" /* line 249 */
-        "movl %edx, -0x20dc(%ebp)\n"
-        "movss -0x44(%ebp), %xmm0\n"
-        "subss 0x148(%edi), %xmm0\n"
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "leal 0x14c(%edi), %ecx\n" /* line 250 */
-        "movl %ecx, -0x20d8(%ebp)\n"
-        "movss -0x40(%ebp), %xmm0\n"
-        "subss 0x14c(%edi), %xmm0\n"
-        "movss %xmm0, -0x28(%ebp)\n"
-        /* { scope 2 */
-        "pxor %xmm2, %xmm2\n" /* line 285 */
-        "ucomiss 0x144(%edi), %xmm2\n"
-        "jne .Lf1b8be2_001b8d1b\n"
-        "jp .Lf1b8be2_001b8d1b\n"
-        "ucomiss 0x148(%edi), %xmm2\n"
-        "je .Lf1b8be2_001b93af\n"
-        ".Lf1b8be2_001b8d1b:\n"
-        "leal 0x110(%edi), %eax\n" /* line 287 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x104(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RadiusFromBounds\n"
-        "fstps -0x20fc(%ebp)\n"
-        "movss -0x20fc(%ebp), %xmm4\n"
-        "movl %edi, %edx\n"
-        "movl $1, %ecx\n"
-        "leal -0x60(%ebp), %esi\n" /* maxs */
-        "leal -0x78(%ebp), %ebx\n" /* totalMaxs */
-        ".Lf1b8be2_001b8d4e:\n"
-        "movss 0x138(%edx), %xmm2\n" /* line 290 */
-        "movaps %xmm2, %xmm3\n"
-        "subss %xmm4, %xmm3\n"
-        "leal (, %ecx, 4), %eax\n"
-        "movss -0x28(%ebp, %eax), %xmm0\n"
-        "movaps %xmm3, %xmm1\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x58(%ebp, %eax)\n"
-        "addss %xmm4, %xmm2\n" /* line 291 */
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, -4(%esi, %eax)\n"
-        "movss %xmm3, -0x70(%ebp, %eax)\n" /* line 292 */
-        "movaps %xmm4, %xmm0\n" /* line 293 */
-        "addss 0x138(%edx), %xmm0\n"
-        "movss %xmm0, -4(%ebx, %eax)\n"
-        "addl $1, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl $4, %ecx\n" /* line 288 */
-        "jne .Lf1b8be2_001b8d4e\n"
-        "pxor %xmm2, %xmm2\n"
-        /* { scope 3: tr */
-        ".Lf1b8be2_001b8dab:\n"
-        "movl $1, %edx\n" /* line 201 */
-        /* } scope */
-        ".Lf1b8be2_001b8db0:\n"
-        "leal (, %edx, 4), %eax\n" /* line 308 */
-        "movss -0x28(%ebp, %eax), %xmm0\n"
-        "ucomiss %xmm2, %xmm0\n"
-        "jbe .Lf1b8be2_001b939a\n"
-        "leal (%ebx, %eax), %eax\n" /* line 417 | to */
-        "addss -4(%eax), %xmm0\n" /* line 309 */
-        "movss %xmm0, -4(%eax)\n"
-        ".Lf1b8be2_001b8dd3:\n"
-        "addl $1, %edx\n" /* line 311 */
-        "cmpl $4, %edx\n" /* line 306 */
-        "jne .Lf1b8be2_001b8db0\n"
-        "movl %edi, (%esp)\n" /* line 315 */
-        "calll SV_UnlinkEntity\n"
-        "movl $0x2000180, 0x10(%esp)\n" /* line 317 */
-        "movl $0x400, 0xc(%esp)\n"
-        "leal -0x109c(%ebp), %esi\n" /* entityList */
-        "movl %esi, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "leal -0x6c(%ebp), %eax\n" /* totalMins */
-        "movl %eax, (%esp)\n"
-        "calll CM_AreaEntities\n"
-        "movl %eax, -0x20b8(%ebp)\n" /* listedEntities */
-        "movl -0x20f0(%ebp), %edx\n" /* line 240 */
-        "movss (%edx), %xmm0\n"
-        "addss -0x24(%ebp), %xmm0\n" /* move */
-        "movss %xmm0, (%edx)\n"
-        "movl -0x20e4(%ebp), %ecx\n" /* line 241 */
-        "movss (%ecx), %xmm0\n"
-        "addss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%edx)\n"
-        "movl -0x20e0(%ebp), %eax\n" /* line 242 */
-        "movss (%eax), %xmm0\n"
-        "addss -0x1c(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%edx)\n"
-        "movl -0x20ec(%ebp), %edx\n" /* line 240 */
-        "movss (%edx), %xmm0\n"
-        "addss -0x30(%ebp), %xmm0\n" /* amove */
-        "movss %xmm0, (%edx)\n"
-        "movl -0x20dc(%ebp), %ecx\n" /* line 241 */
-        "movss (%ecx), %xmm0\n"
-        "addss -0x2c(%ebp), %xmm0\n"
-        "movss %xmm0, 4(%edx)\n"
-        "movl -0x20d8(%ebp), %eax\n" /* line 242 */
-        "movss (%eax), %xmm0\n"
-        "addss -0x28(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%edx)\n"
-        "movl %edi, (%esp)\n" /* line 322 */
-        "calll SV_LinkEntity\n"
-        "movl -0x20b8(%ebp), %ebx\n" /* line 326 | listedEntities */
-        "testl %ebx, %ebx\n"
-        "jle .Lf1b8be2_001b9149\n"
-        "movss -0x60(%ebp), %xmm0\n" /* line 340 | maxs */
-        "movss %xmm0, -0x20d4(%ebp)\n"
-        "movss -0x5c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x20d0(%ebp)\n"
-        "movss -0x58(%ebp), %xmm0\n"
-        "movss %xmm0, -0x20cc(%ebp)\n"
-        "movss -0x54(%ebp), %xmm0\n" /* mins */
-        "movss %xmm0, -0x20c8(%ebp)\n"
-        "movss -0x50(%ebp), %xmm0\n"
-        "movss %xmm0, -0x20c4(%ebp)\n"
-        "movss -0x4c(%ebp), %xmm0\n"
-        "movss %xmm0, -0x20c0(%ebp)\n"
-        "movl $0, -0x20bc(%ebp)\n" /* e */
-        "movl $0, -0x20b4(%ebp)\n" /* moveEntities */
-        ".Lf1b8be2_001b8f00:\n"
-        "movl (%esi), %ecx\n" /* line 328 */
-        "leal (%ecx, %ecx, 4), %eax\n"
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
-        "movl 4(%edx), %ebx\n" /* line 331 */
-        "leal -3(%ebx), %eax\n"
-        "cmpl $1, %eax\n"
-        "jbe .Lf1b8be2_001b8f30\n"
-        "cmpl $1, %ebx\n"
-        "je .Lf1b8be2_001b8f30\n"
-        "cmpb $0, 0x160(%edx)\n"
-        "je .Lf1b8be2_001b8f72\n"
-        ".Lf1b8be2_001b8f30:\n"
-        "movl 0x7c(%edx), %eax\n" /* line 337 */
-        "cmpl (%edi), %eax\n"
-        "je .Lf1b8be2_001b9363\n"
-        "movss 0x120(%edx), %xmm0\n" /* line 340 */
-        "ucomiss -0x20d4(%ebp), %xmm0\n"
-        "jae .Lf1b8be2_001b8f72\n"
-        "movss 0x124(%edx), %xmm0\n"
-        "ucomiss -0x20d0(%ebp), %xmm0\n"
-        "jae .Lf1b8be2_001b8f72\n"
-        "movss 0x128(%edx), %xmm0\n"
-        "ucomiss -0x20cc(%ebp), %xmm0\n"
-        "jb .Lf1b8be2_001b92a1\n"
-        ".Lf1b8be2_001b8f72:\n"
-        "addl $1, -0x20bc(%ebp)\n" /* line 326 | e */
-        "addl $4, %esi\n"
-        "movl -0x20bc(%ebp), %edx\n" /* e */
-        "cmpl %edx, -0x20b8(%ebp)\n" /* listedEntities */
-        "jne .Lf1b8be2_001b8f00\n"
-        ".Lf1b8be2_001b8f8e:\n"
-        "movl -0x20b4(%ebp), %ecx\n" /* line 355 | moveEntities */
-        "testl %ecx, %ecx\n"
-        "jle .Lf1b8be2_001b9149\n"
-        "xorl %ebx, %ebx\n"
-        ".Lf1b8be2_001b8f9e:\n"
-        "movl -0x209c(%ebp, %ebx, 4), %edx\n" /* line 358 */
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (, %edx, 8), %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll SV_UnlinkEntity\n"
-        "addl $1, %ebx\n" /* line 355 */
-        "cmpl -0x20b4(%ebp), %ebx\n" /* moveEntities */
-        "jne .Lf1b8be2_001b8f9e\n"
-        "movl $0, -0x20ac(%ebp)\n"
-        "movl $0, -0x20e8(%ebp)\n" /* obstacle */
-        "movb $1, -0x20ad(%ebp)\n" /* success */
-        "jmp .Lf1b8be2_001b902e\n"
-        ".Lf1b8be2_001b8fea:\n"
-        "cmpl $3, 4(%esi)\n" /* line 382 */
-        "je .Lf1b8be2_001b909e\n"
-        "cmpl $4, 0xc(%edi)\n" /* line 389 */
-        "je .Lf1b8be2_001b94b6\n"
-        "cmpl $4, 0x30(%edi)\n"
-        "je .Lf1b8be2_001b94b6\n"
-        "movl %esi, -0x20e8(%ebp)\n" /* obstacle */
-        "movb $0, -0x20ad(%ebp)\n" /* success */
-        ".Lf1b8be2_001b9015:\n"
-        "addl $1, -0x20ac(%ebp)\n" /* line 361 */
-        "movl -0x20b4(%ebp), %ecx\n" /* moveEntities */
-        "cmpl %ecx, -0x20ac(%ebp)\n"
-        "je .Lf1b8be2_001b90bf\n"
-        ".Lf1b8be2_001b902e:\n"
-        "movl -0x20ac(%ebp), %ecx\n" /* line 363 */
-        "movl -0x209c(%ebp, %ecx, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (, %eax, 8), %esi\n"
-        "subl %eax, %esi\n"
-        "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
-        "movl pushed_p, %edx\n" /* line 366 */
-        "movl %esi, (%edx)\n"
-        "leal 4(%edx), %ebx\n" /* line 367 | to */
-        "leal 0x138(%esi), %ecx\n" /* from */
-        /* { scope 3: tr */
-        "movl 0x138(%esi), %eax\n" /* line 199 */
-        "movl %eax, 4(%edx)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        "movl -0x2c(%ebp), %eax\n" /* line 368 */
-        "movl %eax, 0x1c(%edx)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 371 | amove */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x24(%ebp), %edx\n" /* move */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll G_TryPushingEntity\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b8be2_001b8fea\n"
-        ".Lf1b8be2_001b909e:\n"
-        "movl %esi, (%esp)\n" /* line 384 */
-        "calll SV_LinkEntity\n"
-        "addl $1, -0x20ac(%ebp)\n" /* line 361 */
-        "movl -0x20b4(%ebp), %ecx\n" /* moveEntities */
-        "cmpl %ecx, -0x20ac(%ebp)\n"
-        "jne .Lf1b8be2_001b902e\n"
-        ".Lf1b8be2_001b90bf:\n"
-        "xorl %ebx, %ebx\n"
-        ".Lf1b8be2_001b90c1:\n"
-        "movl -0x209c(%ebp, %ebx, 4), %edx\n" /* line 405 */
-        "leal (%edx, %edx, 4), %edx\n"
-        "leal (, %edx, 8), %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll SV_LinkEntity\n"
-        "addl $1, %ebx\n" /* line 402 | to */
-        "cmpl -0x20b4(%ebp), %ebx\n" /* moveEntities, to */
-        "jne .Lf1b8be2_001b90c1\n"
-        /* } scope */
-        "cmpb $0, -0x20ad(%ebp)\n" /* line 442 | success */
-        "je .Lf1b8be2_001b9163\n"
-        ".Lf1b8be2_001b90f9:\n"
-        "movl 0xc(%edi), %edx\n" /* line 481 | ent */
-        "testl %edx, %edx\n"
-        "jne .Lf1b8be2_001b9476\n"
-        ".Lf1b8be2_001b9104:\n"
-        "movl 0x30(%edi), %eax\n" /* line 492 | ent */
-        "testl %eax, %eax\n"
-        "je .Lf1b8be2_001b913e\n"
-        "movl 0x34(%edi), %eax\n" /* line 494 | ent */
-        "addl 0x38(%edi), %eax\n" /* ent */
-        "movl 0x195f6a0, %edx\n"
-        "cmpl %eax, 0x1ec(%edx)\n"
-        "jl .Lf1b8be2_001b913e\n"
-        "movzbl 0x166(%edi), %eax\n" /* line 496 | ent */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
-        "movl 4(%eax), %eax\n"
-        "testl %eax, %eax\n" /* line 497 */
-        "je .Lf1b8be2_001b913e\n"
-        "movl %edi, (%esp)\n" /* line 472 | ent */
-        "calll *%eax\n"
-        /* } scope */
-        ".Lf1b8be2_001b913e:\n"
-        "addl $0x212c, %esp\n" /* line 501 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: e, mins, maxs, entityList, ... */
-        /* { scope 2 */
-        ".Lf1b8be2_001b9149:\n"
-        "movl $0, -0x20e8(%ebp)\n" /* line 402 | obstacle */
-        "movb $1, -0x20ad(%ebp)\n" /* success */
-        /* } scope */
-        "cmpb $0, -0x20ad(%ebp)\n" /* line 442 | success */
-        "jne .Lf1b8be2_001b90f9\n"
-        ".Lf1b8be2_001b9163:\n"
-        "movl pushed_p, %ebx\n" /* line 447 | p */
-        "subl $0x20, %ebx\n" /* p */
-        "cmpl $pushed, %ebx\n" /* p */
-        "jb .Lf1b8be2_001b91ff\n"
-        ".Lf1b8be2_001b9178:\n"
-        "movl (%ebx), %esi\n" /* line 449 | p, check */
-        "leal 0x138(%esi), %edx\n" /* line 451 | check, to */
-        /* { scope 2 */
-        "movl 4(%ebx), %eax\n" /* line 199 */
-        "movl %eax, 0x138(%esi)\n"
-        "movl 8(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "leal 0x18(%esi), %edx\n" /* line 452 | check, to */
-        /* { scope 2 */
-        "movl 4(%ebx), %eax\n" /* line 199 */
-        "movl %eax, 0x18(%esi)\n"
-        "movl 8(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl 0x158(%esi), %edx\n" /* line 453 | check */
-        "testl %edx, %edx\n"
-        "je .Lf1b8be2_001b91e8\n"
-        "movss 0x1c(%ebx), %xmm0\n" /* line 455 | p */
-        "mulss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
-        "cvttss2si %xmm0, %eax\n"
-        "andl $0xffff, %eax\n"
-        "subl %eax, 0x58(%edx)\n"
-        "movl 0x158(%esi), %edx\n" /* line 456 | check */
-        "leal 0x14(%edx), %ecx\n" /* to */
-        /* { scope 2 */
-        "movl 4(%ebx), %eax\n" /* line 199 */
-        "movl %eax, 0x14(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 0xc(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        ".Lf1b8be2_001b91e8:\n"
-        "movl %esi, (%esp)\n" /* line 459 | check */
-        "calll SV_LinkEntity\n"
-        "subl $0x20, %ebx\n" /* line 447 | p */
-        "cmpl $pushed, %ebx\n" /* p */
-        "jae .Lf1b8be2_001b9178\n"
-        ".Lf1b8be2_001b91ff:\n"
-        "movl 0x195f6a0, %ebx\n" /* line 463 | p */
-        "movl 0x1ec(%ebx), %eax\n" /* p */
-        "subl 0x1f0(%ebx), %eax\n" /* p */
-        "addl %eax, 0x10(%edi)\n" /* ent */
-        "movl 0x1ec(%ebx), %eax\n" /* line 464 | p */
-        "subl 0x1f0(%ebx), %eax\n" /* p */
-        "addl %eax, 0x34(%edi)\n" /* ent */
-        "movl -0x20f0(%ebp), %eax\n" /* line 465 */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x1ec(%ebx), %eax\n" /* p */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20f8(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll BG_EvaluateTrajectory\n"
-        "movl -0x20ec(%ebp), %ecx\n" /* line 466 */
-        "movl %ecx, 8(%esp)\n"
-        "movl 0x1ec(%ebx), %eax\n" /* p */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20f4(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_EvaluateTrajectory\n"
-        "movl %edi, (%esp)\n" /* line 467 | ent */
-        "calll SV_LinkEntity\n"
-        "movzbl 0x166(%edi), %eax\n" /* line 470 | ent */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n" /* line 471 */
-        "je .Lf1b8be2_001b913e\n"
-        "movl -0x20e8(%ebp), %edx\n" /* line 472 | obstacle */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* ent */
-        "calll *%eax\n"
-        "jmp .Lf1b8be2_001b913e\n"
-        /* { scope 2 */
-        ".Lf1b8be2_001b92a1:\n"
-        "movss -0x20c8(%ebp), %xmm0\n" /* line 340 */
-        "ucomiss 0x12c(%edx), %xmm0\n"
-        "jae .Lf1b8be2_001b8f72\n"
-        "movss -0x20c4(%ebp), %xmm0\n"
-        "ucomiss 0x130(%edx), %xmm0\n"
-        "jae .Lf1b8be2_001b8f72\n"
-        "movss -0x20c0(%ebp), %xmm0\n"
-        "ucomiss 0x134(%edx), %xmm0\n"
-        "jae .Lf1b8be2_001b8f72\n"
-        "leal 0x138(%edx), %ecx\n" /* line 347 | vOrigin */
-        /* { scope 3: tr */
-        /* { scope 4 */
-        "movl 0x184(%edx), %eax\n" /* line 65 */
-        "testl %eax, %eax\n"
-        "jne .Lf1b8be2_001b9503\n"
-        "movw $0x811, %ax\n"
-        ".Lf1b8be2_001b92f8:\n"
-        "cmpl $4, %ebx\n" /* line 81 */
-        "je .Lf1b8be2_001b9517\n"
-        "movl %eax, 0x18(%esp)\n" /* line 84 */
-        "movl (%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl %ecx, 0x10(%esp)\n"
-        "leal 0x110(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x104(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "leal -0x9c(%ebp), %edx\n" /* tr */
-        "movl %edx, (%esp)\n"
-        "calll G_TraceCapsule\n"
-        ".Lf1b8be2_001b9335:\n"
-        "cmpw $0, -0x7a(%ebp)\n" /* line 86 */
-        "je .Lf1b8be2_001b9510\n"
-        "movzwl -0x80(%ebp), %eax\n" /* line 87 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1b8be2_001b9359:\n"
-        "cmpl %edi, %edx\n" /* line 347 | ent */
-        "jne .Lf1b8be2_001b8f72\n"
-        "movl (%esi), %ecx\n" /* vOrigin */
-        ".Lf1b8be2_001b9363:\n"
-        "movl -0x20b4(%ebp), %eax\n" /* line 351 | moveEntities */
-        "movl %ecx, -0x209c(%ebp, %eax, 4)\n"
-        "addl $1, %eax\n"
-        "movl %eax, -0x20b4(%ebp)\n" /* moveEntities */
-        "addl $1, -0x20bc(%ebp)\n" /* line 326 | e */
-        "addl $4, %esi\n"
-        "movl -0x20bc(%ebp), %edx\n" /* e */
-        "cmpl %edx, -0x20b8(%ebp)\n" /* listedEntities */
-        "jne .Lf1b8be2_001b8f00\n"
-        "jmp .Lf1b8be2_001b8f8e\n"
-        ".Lf1b8be2_001b939a:\n"
-        "leal -0x6c(%ebp), %ecx\n" /* line 417 | totalMins */
-        "leal (%ecx, %eax), %eax\n"
-        "addss -4(%eax), %xmm0\n" /* line 311 */
-        "movss %xmm0, -4(%eax)\n"
-        "jmp .Lf1b8be2_001b8dd3\n"
-        ".Lf1b8be2_001b93af:\n"
-        "jp .Lf1b8be2_001b8d1b\n" /* line 285 */
-        "ucomiss 0x14c(%edi), %xmm2\n"
-        "jne .Lf1b8be2_001b8d1b\n"
-        "jp .Lf1b8be2_001b8d1b\n"
-        "ucomiss -0x30(%ebp), %xmm2\n" /* amove */
-        "jne .Lf1b8be2_001b8d1b\n"
-        "jp .Lf1b8be2_001b8d1b\n"
-        "ucomiss -0x2c(%ebp), %xmm2\n"
-        "jne .Lf1b8be2_001b8d1b\n"
-        "jp .Lf1b8be2_001b8d1b\n"
-        "ucomiss %xmm2, %xmm0\n"
-        "jp .Lf1b8be2_001b8d1b\n"
-        "jne .Lf1b8be2_001b8d1b\n"
-        "movl %edi, %edx\n" /* line 288 */
-        "movl $1, %ecx\n"
-        "leal -0x60(%ebp), %esi\n" /* maxs */
-        ".Lf1b8be2_001b9401:\n"
-        "leal (, %ecx, 4), %eax\n" /* line 300 */
-        "movss -0x28(%ebp, %eax), %xmm0\n"
-        "movaps %xmm0, %xmm1\n"
-        "addss 0x120(%edx), %xmm1\n"
-        "movss %xmm1, -0x58(%ebp, %eax)\n"
-        "addss 0x12c(%edx), %xmm0\n" /* line 301 */
-        "movss %xmm0, -4(%esi, %eax)\n"
-        "addl $1, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl $4, %ecx\n" /* line 298 */
-        "jne .Lf1b8be2_001b9401\n"
-        "leal 0x120(%edi), %edx\n"
-        /* { scope 3: tr */
-        "movl 0x120(%edi), %eax\n" /* line 199 */
-        "movl %eax, -0x6c(%ebp)\n" /* totalMins */
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x68(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x64(%ebp)\n"
-        "leal 0x12c(%edi), %edx\n"
-        /* } scope */
-        /* { scope 3: tr */
-        "movl 0x12c(%edi), %eax\n" /* line 199 */
-        "movl %eax, -0x78(%ebp)\n" /* totalMaxs */
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, -0x74(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, -0x70(%ebp)\n"
-        "leal -0x78(%ebp), %ebx\n" /* totalMaxs */
-        "jmp .Lf1b8be2_001b8dab\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1b8be2_001b9476:\n"
-        "movl 0x10(%edi), %eax\n" /* line 483 | ent */
-        "addl 0x14(%edi), %eax\n" /* ent */
-        "movl 0x195f6a0, %edx\n"
-        "cmpl %eax, 0x1ec(%edx)\n"
-        "jl .Lf1b8be2_001b9104\n"
-        "movzbl 0x166(%edi), %eax\n" /* line 485 | ent */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
-        "movl 4(%eax), %eax\n"
-        "testl %eax, %eax\n" /* line 486 */
-        "je .Lf1b8be2_001b9104\n"
-        "movl %edi, (%esp)\n" /* line 487 | ent */
-        "calll *%eax\n"
-        "jmp .Lf1b8be2_001b9104\n"
-        /* { scope 2 */
-        ".Lf1b8be2_001b94b6:\n"
-        "movl $0, 0x24(%esp)\n" /* line 391 */
-        "movl $0, 0x20(%esp)\n"
-        "movl $9, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0x1869f, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll G_Damage\n"
-        "jmp .Lf1b8be2_001b9015\n"
-        /* { scope 3: tr */
-        /* { scope 4 */
-        ".Lf1b8be2_001b9503:\n"
-        "testb $4, 0x11f(%edx)\n" /* line 67 */
-        "je .Lf1b8be2_001b92f8\n"
-        ".Lf1b8be2_001b9510:\n"
-        "xorl %edx, %edx\n" /* line 87 */
-        "jmp .Lf1b8be2_001b9359\n"
-        ".Lf1b8be2_001b9517:\n"
-        "movl %eax, 0x18(%esp)\n" /* line 82 */
-        "movl 0x150(%edx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl %ecx, 0x10(%esp)\n"
-        "leal 0x110(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x104(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "leal -0x9c(%ebp), %eax\n" /* tr */
-        "movl %eax, (%esp)\n"
-        "calll G_TraceCapsule\n"
-        "jmp .Lf1b8be2_001b9335\n"
-    );
+    vec3_t origin, angles;
+    vec3_t move, amove;
+    vec3_t mins, maxs;
+    vec3_t totalMins, totalMaxs;
+    int entityList[1024];
+    int listedEntities;
+    int moveEntities;
+    int moveEntityList[1024];
+    int e;
+    gentity_t *check;
+    pushed_t *p;
+    qboolean success;
+    gentity_t *obstacle;
+    int i;
+    float radius;
+    byte *client;
+
+    /* line 434: reset pushed_p to beginning of pushed array */
+    pushed_p = pushed;
+
+    /* line 437-438: evaluate pos and apos trajectories */
+    BG_EvaluateTrajectory(ENT_POS(ent), LEVEL_TIME, origin);
+    BG_EvaluateTrajectory(ENT_APOS(ent), LEVEL_TIME, angles);
+
+    /* line 439: compute move = origin - currentOrigin */
+    move[0] = origin[0] - ENT_CURRENTORIGIN(ent)[0];
+    move[1] = origin[1] - ENT_CURRENTORIGIN(ent)[1];
+    move[2] = origin[2] - ENT_CURRENTORIGIN(ent)[2];
+
+    /* line 440: compute amove = angles - currentAngles */
+    amove[0] = angles[0] - ENT_CURRENTANGLES(ent)[0];
+    amove[1] = angles[1] - ENT_CURRENTANGLES(ent)[1];
+    amove[2] = angles[2] - ENT_CURRENTANGLES(ent)[2];
+
+    /* line 285: check if there is any angular movement */
+    if (ENT_CURRENTANGLES(ent)[0] != 0.0f || ENT_CURRENTANGLES(ent)[1] != 0.0f ||
+        ENT_CURRENTANGLES(ent)[2] != 0.0f || amove[0] != 0.0f || amove[1] != 0.0f || amove[2] != 0.0f) {
+        /* Angular movement present - use radius-based bounds */
+        /* line 287 */
+        radius = RadiusFromBounds(ENT_MINS(ent), ENT_MAXS(ent));
+
+        /* line 288-293: compute expanded bounds */
+        for (i = 0; i < 3; i++) {
+            float curOrigin = ENT_CURRENTORIGIN(ent)[i];
+            float moveI = move[i];
+            mins[i] = curOrigin - radius + moveI;
+            maxs[i] = curOrigin + radius + moveI;
+            totalMins[i] = curOrigin - radius;
+            totalMaxs[i] = curOrigin + radius;
+        }
+    } else {
+        /* No angular movement - use linear bounds */
+        /* line 298-301 */
+        for (i = 0; i < 3; i++) {
+            float moveI = move[i];
+            mins[i] = moveI + ENT_ABSMIN(ent)[i];
+            maxs[i] = moveI + ENT_ABSMAX(ent)[i];
+        }
+        VectorCopy(ENT_ABSMIN(ent), totalMins);
+        VectorCopy(ENT_ABSMAX(ent), totalMaxs);
+    }
+
+    /* line 306-311: extend totalMins/totalMaxs by move */
+    for (i = 0; i < 3; i++) {
+        if (move[i] > 0.0f) {
+            totalMaxs[i] += move[i];
+        } else {
+            totalMins[i] += move[i];
+        }
+    }
+
+    /* line 315 */
+    SV_UnlinkEntity(ent);
+
+    /* line 317 */
+    listedEntities = CM_AreaEntities(totalMins, totalMaxs, entityList, 1024, 0x2000180);
+
+    /* Update currentOrigin += move */
+    ENT_CURRENTORIGIN(ent)[0] += move[0];
+    ENT_CURRENTORIGIN(ent)[1] += move[1];
+    ENT_CURRENTORIGIN(ent)[2] += move[2];
+
+    /* Update currentAngles += amove */
+    ENT_CURRENTANGLES(ent)[0] += amove[0];
+    ENT_CURRENTANGLES(ent)[1] += amove[1];
+    ENT_CURRENTANGLES(ent)[2] += amove[2];
+
+    /* line 322 */
+    SV_LinkEntity(ent);
+
+    /* line 326: process listed entities */
+    if (listedEntities <= 0) {
+        obstacle = NULL;
+        success = qtrue;
+    } else {
+        moveEntities = 0;
+
+        for (e = 0; e < listedEntities; e++) {
+            int entNum = entityList[e];
+            check = G_ENTITY(entNum);
+
+            /* line 331: check entity type - include movers (3,4), players (1), physics objects */
+            {
+                int eType = ENT_ETYPE(check);
+                if (!((unsigned)(eType - 3) <= 1 || eType == 1 || ENT_PHYSICSOBJECT(check) != 0)) {
+                    goto skip_entity;
+                }
+            }
+
+            /* line 337: skip if already pushed by this mover */
+            if (ENT_GROUNDENTNUM(check) == ENT_NUMBER(ent)) {
+                goto add_to_move_list;
+            }
+
+            /* line 340: AABB overlap check */
+            if (ENT_ABSMIN(check)[0] >= maxs[0]) goto skip_entity;
+            if (ENT_ABSMIN(check)[1] >= maxs[1]) goto skip_entity;
+            if (ENT_ABSMIN(check)[2] >= maxs[2]) goto skip_entity;
+            if (mins[0] >= ENT_ABSMAX(check)[0]) goto skip_entity;
+            if (mins[1] >= ENT_ABSMAX(check)[1]) goto skip_entity;
+            if (mins[2] >= ENT_ABSMAX(check)[2]) goto skip_entity;
+
+            /* line 347: trace to see if entity touches mover */
+            {
+                trace_t tr2;
+                vec_t *checkOrigin = ENT_CURRENTORIGIN(check);
+
+                G_TraceCapsuleForEntity(&tr2, check, checkOrigin, ENT_MINS(check), ENT_MAXS(check));
+
+                if (TRACE_IS_STUCK(&tr2)) {
+                    int hitNum = (int)tr2.entityNum;
+                    check = G_ENTITY(hitNum);
+                } else {
+                    check = NULL;
+                }
+
+                if (check != ent) {
+                    goto skip_entity;
+                }
+                /* Restore entityList entry */
+                entNum = entityList[e];
+            }
+
+add_to_move_list:
+            /* line 351 */
+            moveEntityList[moveEntities] = entNum;
+            moveEntities++;
+            continue;
+
+skip_entity:
+            continue;
+        }
+
+        /* line 355: process move entities */
+        if (moveEntities <= 0) {
+            obstacle = NULL;
+            success = qtrue;
+        } else {
+            /* Unlink all move entities first */
+            for (i = 0; i < moveEntities; i++) {
+                int num = moveEntityList[i];
+                gentity_t *moveEnt = G_ENTITY(num);
+                SV_UnlinkEntity(moveEnt);
+            }
+
+            obstacle = NULL;
+            success = qtrue;
+
+            /* Try pushing each entity */
+            for (i = 0; i < moveEntities; i++) {
+                int num = moveEntityList[i];
+                gentity_t *pushEnt = G_ENTITY(num);
+
+                /* line 366-367: save entity state to pushed list */
+                pushed_p->ent = pushEnt;
+                VectorCopy(ENT_CURRENTORIGIN(pushEnt), pushed_p->origin);
+                /* line 368: save deltayaw */
+                pushed_p->deltayaw = amove[1];
+
+                /* line 371: try pushing */
+                if (!G_TryPushingEntity(pushEnt, ent, move, amove)) {
+                    /* line 382: check if entity is a mover (eType 3) */
+                    if (ENT_ETYPE(pushEnt) == 3) {
+                        /* line 384 */
+                        SV_LinkEntity(pushEnt);
+                    } else {
+                        /* line 389: check if mover has pos or apos trType == 4 */
+                        if (ENT_POS_TRTYPE(ent) == 4 || ENT_APOS_TRTYPE(ent) == 4) {
+                            /* line 391: damage the entity */
+                            G_Damage(pushEnt, ent, ent, NULL, NULL, 99999, 0, 9, 0, 0);
+                        } else {
+                            obstacle = pushEnt;
+                            success = qfalse;
+                        }
+                    }
+                } else {
+                    /* line 384 */
+                    SV_LinkEntity(pushEnt);
+                }
+            }
+
+            /* line 402-405: relink all move entities */
+            for (i = 0; i < moveEntities; i++) {
+                int num = moveEntityList[i];
+                gentity_t *moveEnt = G_ENTITY(num);
+                SV_LinkEntity(moveEnt);
+            }
+        }
+    }
+
+    /* line 442: check success */
+    if (!success) {
+        /* line 447: undo all pushes */
+        for (p = pushed_p - 1; p >= pushed; p--) {
+            gentity_t *checkEnt = p->ent;
+
+            /* line 451: restore currentOrigin */
+            VectorCopy(p->origin, ENT_CURRENTORIGIN(checkEnt));
+            /* line 452: restore pos.trBase */
+            VectorCopy(p->origin, ENT_POS_TRBASE(checkEnt));
+
+            /* line 453: restore client if present */
+            client = ENT_CLIENT(checkEnt);
+            if (client != NULL) {
+                /* line 455: undo deltayaw */
+                int deltaYaw = (int)(p->deltayaw * 182.04444885253906f);
+                deltaYaw &= 0xffff;
+                *(int *)(client + 0x58) -= deltaYaw;
+
+                /* line 456: restore client origin */
+                client = ENT_CLIENT(checkEnt);
+                VectorCopy(p->origin, (vec_t *)(client + 0x14));
+            }
+
+            /* line 459 */
+            SV_LinkEntity(checkEnt);
+        }
+
+        /* line 463: revert mover position */
+        {
+            int timeDelta = LEVEL_TIME - LEVEL_PREVIOUSTIME;
+            ENT_POS_TRTIME(ent) += timeDelta;
+            ENT_APOS_TRTIME(ent) += timeDelta;
+        }
+
+        /* line 465-466: re-evaluate trajectories */
+        BG_EvaluateTrajectory(ENT_POS(ent), LEVEL_TIME, ENT_CURRENTORIGIN(ent));
+        BG_EvaluateTrajectory(ENT_APOS(ent), LEVEL_TIME, ENT_CURRENTANGLES(ent));
+
+        /* line 467 */
+        SV_LinkEntity(ent);
+
+        /* line 470: call blocked handler */
+        {
+            byte handlerIdx = ENT_HANDLER(ent);
+            void (*blocked)(gentity_t *, gentity_t *) = *(void (**)(gentity_t *, gentity_t *))(HANDLER_ENTRY(handlerIdx) + 8);
+            if (blocked != NULL) {
+                blocked(ent, obstacle);
+            }
+        }
+    } else {
+        /* line 481: check pos trType for reached callback */
+        if (ENT_POS_TRTYPE(ent) != 0) {
+            /* line 483 */
+            if (ENT_POS_TRTIME(ent) + ENT_POS_TRDURATION(ent) <= LEVEL_TIME) {
+                /* line 485-487: call reached handler for pos */
+                byte handlerIdx = ENT_HANDLER(ent);
+                void (*reached)(gentity_t *) = *(void (**)(gentity_t *))(HANDLER_ENTRY(handlerIdx) + 4);
+                if (reached != NULL) {
+                    reached(ent);
+                }
+            }
+        }
+
+        /* line 492: check apos trType for reached callback */
+        if (ENT_APOS_TRTYPE(ent) != 0) {
+            /* line 494 */
+            if (ENT_APOS_TRTIME(ent) + ENT_APOS_TRDURATION(ent) <= LEVEL_TIME) {
+                /* line 496-497: call reached handler for apos */
+                byte handlerIdx = ENT_HANDLER(ent);
+                void (*reached)(gentity_t *) = *(void (**)(gentity_t *))(HANDLER_ENTRY(handlerIdx) + 4);
+                if (reached != NULL) {
+                    reached(ent);
+                }
+            }
+        }
+    }
 }
 
 /* line 510 */
-__attribute__((naked))
 bitread_perm_state G_RunMover(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 510 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ent */
-        "movl 0x208(%ebx), %eax\n" /* line 512 | ent */
-        "testl %eax, %eax\n"
-        "je .Lf1b9554_001b957d\n"
-        "movl %ebx, (%esp)\n" /* line 513 | ent */
-        "calll G_GeneralLink\n"
-        ".Lf1b9554_001b9570:\n"
-        "movl %ebx, 8(%ebp)\n" /* line 518 | ent */
-        "addl $0x14, %esp\n" /* line 519 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp G_RunThink\n" /* line 518 */
-        ".Lf1b9554_001b957d:\n"
-        "movl 0xc(%ebx), %eax\n" /* line 514 | ent */
-        "testl %eax, %eax\n"
-        "jne .Lf1b9554_001b958b\n"
-        "movl 0x30(%ebx), %eax\n" /* ent */
-        "testl %eax, %eax\n"
-        "je .Lf1b9554_001b9570\n"
-        ".Lf1b9554_001b958b:\n"
-        "movl %ebx, (%esp)\n" /* line 515 | ent */
-        "calll G_MoverTeam\n"
-        "movl %ebx, 8(%ebp)\n" /* line 518 | ent */
-        "addl $0x14, %esp\n" /* line 519 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp G_RunThink\n" /* line 518 */
-    );
+    /* line 512: check tagInfo */
+    if (ENT_TAGINFO(ent) != 0) {
+        /* line 513 */
+        G_GeneralLink(ent);
+    } else {
+        /* line 514: check if pos or apos trType is non-zero */
+        if (ENT_POS_TRTYPE(ent) != 0 || ENT_APOS_TRTYPE(ent) != 0) {
+            /* line 515 */
+            G_MoverTeam(ent);
+        }
+    }
+    /* line 518 */
+    G_RunThink(ent);
 }
-

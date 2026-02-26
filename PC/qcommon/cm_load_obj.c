@@ -1,2613 +1,1564 @@
-/* ASM dump from: cm_load_obj.cpp */
+/* Decompiled from: cm_load_obj.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/qcommon/cm_load_obj.cpp */
 
 #include "common_types.h"
 #include "imports.h"
+/* sqrtf declaration for radius computation */
+extern float sqrtf(float x);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
  *   #include "PC/universal/com_vector.h"
  */
 
-static int cml; /* 0x4ea684 */
+/* cml is a static block; the BSS has 124 bytes at 0x4ea684.
+ * Only the first 12 bytes are used in this file:
+ *   offset 0: numPlanes (int)
+ *   offset 4: planes (cplane_t *)
+ *   offset 8: bsp base pointer (void *)
+ */
+typedef struct cml_s {
+    int numPlanes;
+    cplane_t *planes;
+    void *base;
+    char _pad[124 - 12];
+} cml_t;
 
+static cml_t cml; /* 0x4ea684 */
+
+/* Global clipMap_t pointer stored at 0x195eda4 */
+extern clipMap_t cm;
+#define cm_ptr (*(clipMap_t **)&cm)
+
+/* Forward declarations */
 void CM_Cleanup(void);
-cplane_t * CM_GetPlaneNum(int planeNum);
+cplane_t *CM_GetPlaneNum(int planeNum);
 void CMod_LoadPlanes(const byte *base, const lump_t *l);
-static cLeafBrushNode_t * CMod_PartionLeafBrushes_r(short unsigned int *leafBrushes, int numLeafBrushes, const vec_t *mins, const vec_t *maxs);
-static void CMod_PartionLeafBrushes(short unsigned int *leafBrushes, cLeaf_t *leaf);
+static cLeafBrushNode_t *CMod_PartionLeafBrushes_r(unsigned short *leafBrushes, int numLeafBrushes, const vec_t *mins, const vec_t *maxs);
+static void CMod_PartionLeafBrushes(unsigned short *leafBrushes, int numLeafBrushes, cLeaf_t *leaf);
 void CM_LoadMapFromBsp(const char *name, int usePvs);
 
+/* Extern function declarations */
+extern void *CM_Hunk_Alloc(int size, const char *name, int type);
+extern void CM_Hunk_CheckTempMemoryClear(void);
+extern void CM_Hunk_CheckTempMemoryHighClear(void);
+extern void *CM_Hunk_AllocateTempMemoryHigh(int size, const char *name);
+extern void CM_Hunk_ClearTempMemory(void);
+extern void CM_Hunk_ClearTempMemoryHigh(void);
+extern char *TempMalloc(int len);
+extern void TempMemoryReset(void);
+extern const dheader_t *Com_GetBsp(int *fileSize, unsigned int *checksum);
+extern void Com_Error(errorParm_t code, const char *fmt, ...);
+extern void Com_Memset(void *dest, int val, int count);
+extern void Com_Memcpy(void *dest, const void *src, int count);
+
 /* line 1318 */
-__attribute__((naked))
 void CM_Cleanup(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1318 */
-        "movl %esp, %ebp\n"
-        "movl $0, 0x4ea68c\n" /* line 1320 */
-        "popl %ebp\n" /* line 1321 */
-        "retl\n"
-    );
+    cml.base = (void *)0;
 }
 
 /* line 1329 */
-__attribute__((naked))
-cplane_t * CM_GetPlaneNum(int planeNum)
+cplane_t *CM_GetPlaneNum(int planeNum)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1329 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* planeNum */
-        "leal (%eax, %eax, 4), %eax\n" /* planeNum */
-        "movl 0x4ea688, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n" /* planeNum */
-        "popl %ebp\n" /* line 1335 */
-        "retl\n"
-    );
+    return cml.planes + planeNum;
 }
 
 /* line 772 */
-__attribute__((naked))
 void CMod_LoadPlanes(const byte *base, const lump_t *l)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 772 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* l */
-        /* { scope 1: i */
-        "movl 4(%ebx), %edi\n" /* line 781 | j, in */
-        "addl 8(%ebp), %edi\n" /* base, in */
-        "movl (%ebx), %eax\n" /* line 782 | j */
-        "testb $0xf, %al\n"
-        "jne .Lf78542_00078649\n"
-        "shrl $4, %eax\n" /* line 784 */
-        "movl %eax, -0x30(%ebp)\n" /* count */
-        "testl %eax, %eax\n" /* line 786 */
-        "jle .Lf78542_0007866d\n"
-        ".Lf78542_0007856c:\n"
-        "movl %eax, %edx\n"
-        ".Lf78542_0007856e:\n"
-        "movl $0x17, 8(%esp)\n" /* line 789 */
-        "movl $0x21c32c, 4(%esp)\n" /* "CMod_LoadPlanes" */
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl %eax, 0x4ea688\n"
-        "movl -0x30(%ebp), %ecx\n" /* line 790 | count */
-        "movl %ecx, cml\n"
-        "movl %eax, %esi\n" /* line 792 | out */
-        "testl %ecx, %ecx\n" /* line 794 */
-        "jle .Lf78542_00078614\n"
-        "movl $0, -0x34(%ebp)\n" /* i */
-        "pxor %xmm2, %xmm2\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        ".Lf78542_000785b3:\n"
-        "movl %esi, -0x3c(%ebp)\n" /* out */
-        "movb $0, -0x29(%ebp)\n" /* bits */
-        "xorl %ebx, %ebx\n" /* j */
-        "movl %edi, %edx\n" /* in */
-        ".Lf78542_000785be:\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        /* { scope 2 */
-        "movss -0x1c(%ebp), %xmm0\n" /* line 341 | i */
-        /* } scope */
-        "movl -0x3c(%ebp), %eax\n" /* line 799 */
-        "movss %xmm0, (%eax)\n"
-        "ucomiss %xmm0, %xmm2\n" /* line 800 */
-        "ja .Lf78542_0007861c\n"
-        ".Lf78542_000785d4:\n"
-        "addl $1, %ebx\n" /* line 797 | j */
-        "addl $4, %edx\n"
-        "addl $4, -0x3c(%ebp)\n"
-        "cmpl $3, %ebx\n" /* j */
-        "jne .Lf78542_000785be\n"
-        "movl 0xc(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n" /* i */
-        "movl -0x1c(%ebp), %eax\n" /* line 804 | i */
-        "movl %eax, 0xc(%esi)\n" /* out */
-        "ucomiss (%esi), %xmm1\n" /* line 805 | out */
-        "jne .Lf78542_0007862a\n"
-        "jp .Lf78542_0007862a\n"
-        "xorl %eax, %eax\n"
-        ".Lf78542_000785f8:\n"
-        "movb %al, 0x10(%esi)\n" /* out */
-        "movzbl -0x29(%ebp), %eax\n" /* line 806 | bits */
-        "movb %al, 0x11(%esi)\n" /* out */
-        "addl $1, -0x34(%ebp)\n" /* line 794 | i */
-        "addl $0x10, %edi\n" /* in */
-        "addl $0x14, %esi\n" /* out */
-        "movl -0x34(%ebp), %edx\n" /* i */
-        "cmpl %edx, -0x30(%ebp)\n" /* count */
-        "jne .Lf78542_000785b3\n"
-        /* } scope */
-        ".Lf78542_00078614:\n"
-        "addl $0x4c, %esp\n" /* line 808 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: i */
-        ".Lf78542_0007861c:\n"
-        "movl $1, %eax\n" /* line 801 */
-        "movl %ebx, %ecx\n" /* j */
-        "shll %cl, %eax\n"
-        "orb %al, -0x29(%ebp)\n" /* bits */
-        "jmp .Lf78542_000785d4\n"
-        ".Lf78542_0007862a:\n"
-        "ucomiss 4(%esi), %xmm1\n" /* line 805 | out */
-        "jne .Lf78542_00078639\n"
-        "jp .Lf78542_00078639\n"
-        "movl $1, %eax\n"
-        "jmp .Lf78542_000785f8\n"
-        ".Lf78542_00078639:\n"
-        "ucomiss 8(%esi), %xmm1\n" /* out */
-        "setne %al\n"
-        "setp %dl\n"
-        "orb %dl, %al\n"
-        "addb $2, %al\n"
-        "jmp .Lf78542_000785f8\n"
-        ".Lf78542_00078649:\n"
-        "movl $0x21c2f4, 4(%esp)\n" /* line 783 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl (%ebx), %eax\n" /* j */
-        "shrl $4, %eax\n" /* line 784 */
-        "movl %eax, -0x30(%ebp)\n" /* count */
-        "testl %eax, %eax\n" /* line 786 */
-        "jg .Lf78542_0007856c\n"
-        ".Lf78542_0007866d:\n"
-        "movl $0x21c318, 4(%esp)\n" /* line 787 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0x30(%ebp), %edx\n" /* count */
-        "jmp .Lf78542_0007856e\n"
-    );
+    int i, j;
+    int count;
+    const byte *in;
+    cplane_t *out;
+    byte bits;
+
+    in = base + l->fileofs;
+
+    if (l->filelen & 0xf) {
+        Com_Error(ERR_DROP, "CMod_LoadPlanes: funny lump size");
+    }
+
+    count = l->filelen >> 4;
+
+    if (count <= 0) {
+        Com_Error(ERR_DROP, "CMod_LoadPlanes: map has no planes");
+    }
+
+    out = (cplane_t *)CM_Hunk_Alloc(count * sizeof(cplane_t), "CMod_LoadPlanes", 0x17);
+    cml.planes = out;
+    cml.numPlanes = count;
+
+    for (i = 0; i < count; i++) {
+        bits = 0;
+        for (j = 0; j < 3; j++) {
+            out->normal[j] = *(const float *)(in + j * 4);
+            if (0.0f > out->normal[j]) {
+                bits |= (1 << j);
+            }
+        }
+        out->dist = *(const float *)(in + 12);
+
+        if (out->normal[0] == 1.0f) {
+            out->type = 0;
+        } else if (out->normal[1] == 1.0f) {
+            out->type = 1;
+        } else {
+            byte t = (out->normal[2] != 1.0f) | ((*(unsigned int *)&out->normal[2] ^ 0x3f800000) ? 1 : 0);
+            /* Simplified: if normal[2] == 1.0f, type = 2; else type = 3 */
+            if (out->normal[2] == 1.0f) {
+                out->type = 2;
+            } else {
+                out->type = 3;
+            }
+        }
+
+        out->signbits = bits;
+        in += 16;
+        out++;
+    }
+}
+
+/* Branchless min-like helper matching assembly's cmpltss / andps / andnps / orps pattern.
+ * Computes: if (a - b < 0) return a; else return b; */
+static float _branchless_select(float a, float b)
+{
+    return (a - b) < 0.0f ? a : b;
 }
 
 /* line 218 */
-static __attribute__((naked))
-cLeafBrushNode_t * CMod_PartionLeafBrushes_r(short unsigned int *leafBrushes, int numLeafBrushes, const vec_t *mins, const vec_t *maxs)
+static cLeafBrushNode_t *CMod_PartionLeafBrushes_r(unsigned short *leafBrushes, int numLeafBrushes, const vec_t *mins, const vec_t *maxs)
 {
-    __asm__ __volatile__ (
-        ".Lf7868a_0007868a:\n"
-        "pushl %ebp\n" /* line 218 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x8c, %esp\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "movl %edx, -0x60(%ebp)\n"
-        "movl %ecx, -0x64(%ebp)\n"
-        /* { scope 1 */
-        "movl $0x14, (%esp)\n" /* line 92 */
-        "calll TempMalloc\n"
-        "movl %eax, -0x4c(%ebp)\n" /* node */
-        "movl $0, (%eax)\n" /* line 93 */
-        "movl $0, 4(%eax)\n"
-        "movl $0, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movss 0x2ed680, %xmm6\n" /* line 94 | -3.4028234663852886e+38f */
-        "movss %xmm6, 8(%eax)\n"
-        "movl 0x195eda4, %eax\n" /* line 254 */
-        "movl 0x80(%eax), %esi\n" /* leafBrushesCopy */
-        "movl 8(%ebp), %edx\n" /* maxs */
-        "movl %edx, -0x44(%ebp)\n"
-        "pxor %xmm5, %xmm5\n"
-        "movaps %xmm5, %xmm7\n"
-        "movl $0xffffffff, -0x50(%ebp)\n" /* axis */
-        "movss %xmm5, -0x54(%ebp)\n" /* dist */
-        "xorl %ebx, %ebx\n" /* numLeafBrushesChild */
-        ".Lf7868a_000786fc:\n"
-        "movl -0x60(%ebp), %eax\n" /* line 251 */
-        "testl %eax, %eax\n"
-        "jle .Lf7868a_000788d3\n"
-        "movl $0, -0x58(%ebp)\n" /* k */
-        "movl -0x58(%ebp), %ecx\n" /* k */
-        ".Lf7868a_00078711:\n"
-        "movl -0x5c(%ebp), %edi\n" /* line 254 */
-        "movzwl (%edi, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "leal (%esi, %eax), %eax\n" /* leafBrushesCopy */
-        "movl %eax, -0x40(%ebp)\n"
-        "movss (%eax, %ebx, 4), %xmm2\n" /* line 256 */
-        "xorl %edx, %edx\n"
-        "movl $0xffffffff, %ecx\n"
-        "movl $0xffffffff, -0x7c(%ebp)\n" /* side */
-        "movaps %xmm6, %xmm4\n"
-        "movss 0x2ed684, %xmm1\n" /* 3.4028234663852886e+38f */
-        "jmp .Lf7868a_0007875a\n"
-        /* { scope 2 */
-        ".Lf7868a_00078744:\n"
-        "addl $1, %ecx\n" /* line 188 */
-        "ucomiss %xmm0, %xmm1\n" /* line 189 */
-        "jbe .Lf7868a_0007874f\n"
-        "movaps %xmm0, %xmm1\n"
-        ".Lf7868a_0007874f:\n"
-        "addl $1, %edx\n" /* line 182 */
-        "cmpl %edx, -0x60(%ebp)\n"
-        "je .Lf7868a_0007878f\n"
-        ".Lf7868a_00078757:\n"
-        "movl -0x5c(%ebp), %edi\n"
-        ".Lf7868a_0007875a:\n"
-        "movzwl (%edi, %edx, 2), %eax\n" /* line 185 */
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "leal (%esi, %eax), %eax\n"
-        "movss (%eax, %ebx, 4), %xmm0\n" /* line 186 */
-        "ucomiss %xmm2, %xmm0\n"
-        "jae .Lf7868a_00078744\n"
-        "movss 0x10(%eax, %ebx, 4), %xmm0\n" /* line 193 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jb .Lf7868a_0007874f\n"
-        "addl $1, -0x7c(%ebp)\n" /* line 195 | side */
-        "maxss %xmm4, %xmm0\n" /* line 196 */
-        "movaps %xmm0, %xmm4\n"
-        "addl $1, %edx\n" /* line 182 */
-        "cmpl %edx, -0x60(%ebp)\n"
-        "jne .Lf7868a_00078757\n"
-        ".Lf7868a_0007878f:\n"
-        "cmpl -0x7c(%ebp), %ecx\n" /* line 154 | side */
-        "cmovnsl -0x7c(%ebp), %ecx\n" /* side */
-        "movaps %xmm4, %xmm3\n" /* line 207 */
-        "addss %xmm1, %xmm3\n"
-        "mulss 0x2ed5d8, %xmm3\n" /* 0.5f */
-        "testl %ecx, %ecx\n" /* line 209 */
-        "jle .Lf7868a_00078a55\n"
-        "movl -0x44(%ebp), %eax\n"
-        "movss (%eax), %xmm0\n"
-        "subss %xmm4, %xmm0\n"
-        "movl -0x64(%ebp), %edx\n"
-        "subss (%edx, %ebx, 4), %xmm1\n"
-        /* { scope 3 */
-        "movaps %xmm0, %xmm2\n" /* line 45 */
-        "subss %xmm1, %xmm2\n"
-        "movaps %xmm0, %xmm4\n"
-        "cmpltss %xmm7, %xmm2\n"
-        "andps %xmm2, %xmm4\n"
-        "andnps %xmm1, %xmm2\n"
-        "orps %xmm4, %xmm2\n"
-        /* } scope */
-        "cvtsi2ssl %ecx, %xmm0\n" /* line 209 */
-        "mulss %xmm0, %xmm2\n"
-        /* } scope */
-        ".Lf7868a_000787e0:\n"
-        "ucomiss %xmm5, %xmm2\n" /* line 258 */
-        "jbe .Lf7868a_000787f0\n"
-        "movaps %xmm2, %xmm5\n"
-        "movl %ebx, -0x50(%ebp)\n" /* numLeafBrushesChild, axis */
-        "movss %xmm3, -0x54(%ebp)\n" /* dist */
-        ".Lf7868a_000787f0:\n"
-        "movl -0x40(%ebp), %eax\n" /* line 265 */
-        "movss 0x10(%eax, %ebx, 4), %xmm2\n"
-        "xorl %edx, %edx\n"
-        "movl $0xffffffff, %ecx\n"
-        "movl $0xffffffff, -0x7c(%ebp)\n" /* side */
-        "movaps %xmm6, %xmm4\n"
-        "movss 0x2ed684, %xmm1\n" /* 3.4028234663852886e+38f */
-        "jmp .Lf7868a_00078827\n"
-        /* { scope 2 */
-        ".Lf7868a_00078814:\n"
-        "addl $1, %ecx\n" /* line 188 */
-        "ucomiss %xmm0, %xmm1\n" /* line 189 */
-        "jbe .Lf7868a_0007881f\n"
-        "movaps %xmm0, %xmm1\n"
-        ".Lf7868a_0007881f:\n"
-        "addl $1, %edx\n" /* line 182 */
-        "cmpl %edx, -0x60(%ebp)\n"
-        "je .Lf7868a_0007885f\n"
-        ".Lf7868a_00078827:\n"
-        "movl -0x5c(%ebp), %edi\n" /* line 185 */
-        "movzwl (%edi, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "leal (%esi, %eax), %eax\n"
-        "movss (%eax, %ebx, 4), %xmm0\n" /* line 186 */
-        "ucomiss %xmm2, %xmm0\n"
-        "jae .Lf7868a_00078814\n"
-        "movss 0x10(%eax, %ebx, 4), %xmm0\n" /* line 193 */
-        "ucomiss %xmm0, %xmm2\n"
-        "jb .Lf7868a_0007881f\n"
-        "addl $1, -0x7c(%ebp)\n" /* line 195 | side */
-        "maxss %xmm4, %xmm0\n" /* line 196 */
-        "movaps %xmm0, %xmm4\n"
-        "addl $1, %edx\n" /* line 182 */
-        "cmpl %edx, -0x60(%ebp)\n"
-        "jne .Lf7868a_00078827\n"
-        ".Lf7868a_0007885f:\n"
-        "cmpl -0x7c(%ebp), %ecx\n" /* line 154 | side */
-        "cmovnsl -0x7c(%ebp), %ecx\n" /* side */
-        "movaps %xmm4, %xmm3\n" /* line 207 */
-        "addss %xmm1, %xmm3\n"
-        "mulss 0x2ed5d8, %xmm3\n" /* 0.5f */
-        "testl %ecx, %ecx\n" /* line 209 */
-        "jle .Lf7868a_00078a4d\n"
-        "movl -0x44(%ebp), %eax\n"
-        "movss (%eax), %xmm0\n"
-        "subss %xmm4, %xmm0\n"
-        "movl -0x64(%ebp), %edx\n"
-        "subss (%edx, %ebx, 4), %xmm1\n"
-        /* { scope 3 */
-        "movaps %xmm0, %xmm2\n" /* line 45 */
-        "subss %xmm1, %xmm2\n"
-        "movaps %xmm0, %xmm4\n"
-        "cmpltss %xmm7, %xmm2\n"
-        "andps %xmm2, %xmm4\n"
-        "andnps %xmm1, %xmm2\n"
-        "orps %xmm4, %xmm2\n"
-        /* } scope */
-        "cvtsi2ssl %ecx, %xmm0\n" /* line 209 */
-        "mulss %xmm0, %xmm2\n"
-        /* } scope */
-        ".Lf7868a_000788b0:\n"
-        "ucomiss %xmm5, %xmm2\n" /* line 267 */
-        "jbe .Lf7868a_000788c0\n"
-        "movaps %xmm2, %xmm5\n"
-        "movl %ebx, -0x50(%ebp)\n" /* numLeafBrushesChild, axis */
-        "movss %xmm3, -0x54(%ebp)\n" /* dist */
-        ".Lf7868a_000788c0:\n"
-        "addl $1, -0x58(%ebp)\n" /* line 251 | k */
-        "movl -0x58(%ebp), %eax\n" /* k */
-        "cmpl %eax, -0x60(%ebp)\n"
-        "je .Lf7868a_000788d3\n"
-        "movl %eax, %ecx\n"
-        "jmp .Lf7868a_00078711\n"
-        ".Lf7868a_000788d3:\n"
-        "addl $1, %ebx\n" /* numLeafBrushesChild */
-        "addl $4, -0x44(%ebp)\n"
-        "cmpl $3, %ebx\n" /* line 249 | numLeafBrushesChild */
-        "jne .Lf7868a_000786fc\n"
-        "movl -0x50(%ebp), %eax\n" /* line 276 | axis */
-        "testl %eax, %eax\n"
-        "js .Lf7868a_00078b6f\n"
-        "movl -0x60(%ebp), %ebx\n" /* line 295 | numLeafBrushesChild */
-        "addl %ebx, %ebx\n" /* numLeafBrushesChild */
-        "movl $0x21c370, 4(%esp)\n" /* line 296 */
-        "movl %ebx, (%esp)\n" /* numLeafBrushesChild */
-        "calll CM_Hunk_AllocateTempMemoryHigh\n"
-        "movl %eax, %esi\n" /* leafBrushesCopy */
-        "movl %ebx, 8(%esp)\n" /* line 297 | numLeafBrushesChild */
-        "movl -0x5c(%ebp), %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x60(%ebp), %edi\n" /* line 301 */
-        "testl %edi, %edi\n"
-        "jg .Lf7868a_00078aee\n"
-        ".Lf7868a_00078923:\n"
-        "movzbl -0x50(%ebp), %edx\n" /* line 326 | axis */
-        "movl -0x4c(%ebp), %ecx\n" /* node */
-        "movb %dl, (%ecx)\n"
-        "movss -0x54(%ebp), %xmm0\n" /* line 327 | dist */
-        "movss %xmm0, 8(%ecx)\n"
-        "movss 0x2ed684, %xmm2\n" /* 3.4028234663852886e+38f */
-        "movl $0, -0x7c(%ebp)\n" /* side */
-        "movl -0x50(%ebp), %eax\n" /* axis */
-        "shll $2, %eax\n"
-        "movl %eax, -0x68(%ebp)\n"
-        ".Lf7868a_0007894e:\n"
-        "movl -0x60(%ebp), %ebx\n" /* line 333 | numLeafBrushesChild */
-        "testl %ebx, %ebx\n" /* numLeafBrushesChild */
-        "jg .Lf7868a_00078a74\n"
-        "xorl %ebx, %ebx\n" /* numLeafBrushesChild */
-        "movl $0, -0x48(%ebp)\n"
-        ".Lf7868a_00078962:\n"
-        "movl -0x64(%ebp), %ecx\n" /* line 199 */
-        "movl (%ecx), %eax\n"
-        "movl %eax, -0x24(%ebp)\n" /* childMins */
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl 8(%ebp), %edi\n" /* line 199 | maxs */
-        "movl (%edi), %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* childMaxs */
-        "movl 4(%edi), %eax\n" /* line 200 */
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 8(%edi), %eax\n" /* line 201 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl -0x7c(%ebp), %edx\n" /* line 360 | side */
-        "testl %edx, %edx\n"
-        "jne .Lf7868a_00078a5d\n"
-        "movss -0x54(%ebp), %xmm0\n" /* line 361 | dist */
-        "addss %xmm2, %xmm0\n"
-        "movl -0x50(%ebp), %eax\n" /* axis */
-        "movss %xmm0, -0x24(%ebp, %eax, 4)\n"
-        ".Lf7868a_000789a7:\n"
-        "leal -0x30(%ebp), %ecx\n" /* line 365 | childMaxs */
-        "movl %ecx, (%esp)\n"
-        "leal -0x24(%ebp), %ecx\n" /* childMins */
-        "movl %ebx, %edx\n" /* numLeafBrushesChild */
-        "movl -0x5c(%ebp), %eax\n"
-        "movss %xmm2, -0x78(%ebp)\n"
-        "calll CMod_PartionLeafBrushes_r\n"
-        "movl %eax, %ebx\n" /* numLeafBrushesChild */
-        "movl %eax, %ecx\n" /* line 366 */
-        "subl -0x4c(%ebp), %ecx\n" /* node */
-        "sarl $2, %ecx\n"
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "movl %eax, %edx\n"
-        "shll $8, %edx\n"
-        "addl %edx, %eax\n"
-        "movl %eax, %edx\n"
-        "shll $0x10, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl -0x7c(%ebp), %edi\n" /* line 367 | side */
-        "movl -0x4c(%ebp), %edx\n" /* node */
-        "movw %ax, 0x10(%edx, %edi, 2)\n"
-        "movzwl %ax, %edx\n" /* line 368 */
-        "cmpl %edx, %eax\n"
-        "movss -0x78(%ebp), %xmm2\n"
-        "je .Lf7868a_00078a14\n"
-        "movl $0x21c38c, 4(%esp)\n" /* line 369 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movss -0x78(%ebp), %xmm2\n"
-        ".Lf7868a_00078a14:\n"
-        "movl -0x4c(%ebp), %ecx\n" /* line 371 | node */
-        "movl 4(%ecx), %eax\n"
-        "orl 4(%ebx), %eax\n" /* numLeafBrushesChild */
-        "movl %eax, 4(%ecx)\n"
-        "movl -0x5c(%ebp), %eax\n" /* line 373 */
-        "movl -0x48(%ebp), %edi\n"
-        "leal (%eax, %edi, 2), %eax\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "addl $1, -0x7c(%ebp)\n" /* line 329 | side */
-        "cmpl $2, -0x7c(%ebp)\n" /* side */
-        "jne .Lf7868a_0007894e\n"
-        "movss %xmm2, 0xc(%ecx)\n" /* line 376 */
-        /* } scope */
-        "movl -0x4c(%ebp), %eax\n" /* line 379 | node */
-        "addl $0x8c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf7868a_00078a4d:\n"
-        "movaps %xmm7, %xmm2\n" /* line 209 */
-        "jmp .Lf7868a_000788b0\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf7868a_00078a55:\n"
-        "movaps %xmm7, %xmm2\n"
-        "jmp .Lf7868a_000787e0\n"
-        /* } scope */
-        ".Lf7868a_00078a5d:\n"
-        "movss -0x54(%ebp), %xmm0\n" /* line 363 | dist */
-        "subss %xmm2, %xmm0\n"
-        "movl -0x50(%ebp), %edx\n" /* axis */
-        "movss %xmm0, -0x30(%ebp, %edx, 4)\n"
-        "jmp .Lf7868a_000789a7\n"
-        ".Lf7868a_00078a74:\n"
-        "movl -0x7c(%ebp), %ecx\n" /* line 376 | side */
-        "testl %ecx, %ecx\n"
-        "je .Lf7868a_00078be7\n"
-        "xorl %ecx, %ecx\n"
-        "xorl %ebx, %ebx\n" /* numLeafBrushesChild */
-        "jmp .Lf7868a_00078a8d\n"
-        ".Lf7868a_00078a85:\n"
-        "addl $1, %ecx\n" /* line 333 */
-        "cmpl -0x60(%ebp), %ecx\n"
-        "je .Lf7868a_00078adf\n"
-        ".Lf7868a_00078a8d:\n"
-        "movzwl (%esi, %ecx, 2), %edx\n" /* line 335 | leafBrushesCopy */
-        "leal (%edx, %edx, 2), %eax\n" /* line 346 */
-        "shll $4, %eax\n"
-        "movl -0x50(%ebp), %edi\n" /* axis */
-        "leal (%eax, %edi, 4), %eax\n"
-        "movl 0x195eda4, %edi\n"
-        "addl 0x80(%edi), %eax\n"
-        "movss 0x10(%eax), %xmm0\n"
-        "ucomiss -0x54(%ebp), %xmm0\n" /* dist */
-        "ja .Lf7868a_00078a85\n"
-        "movss -0x54(%ebp), %xmm1\n" /* line 348 | dist */
-        "subss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss %xmm2, %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
-        "jb .Lf7868a_00078ae7\n"
-        ".Lf7868a_00078acd:\n"
-        "movl -0x5c(%ebp), %eax\n" /* line 351 */
-        "movw %dx, (%eax, %ebx, 2)\n"
-        "addl $1, %ebx\n" /* line 352 | numLeafBrushesChild */
-        "addl $1, %ecx\n" /* line 333 */
-        "cmpl -0x60(%ebp), %ecx\n"
-        "jne .Lf7868a_00078a8d\n"
-        ".Lf7868a_00078adf:\n"
-        "movl %ebx, -0x48(%ebp)\n" /* numLeafBrushesChild */
-        "jmp .Lf7868a_00078962\n"
-        ".Lf7868a_00078ae7:\n"
-        "jp .Lf7868a_00078acd\n" /* line 45 */
-        "movaps %xmm1, %xmm2\n" /* line 333 */
-        "jmp .Lf7868a_00078acd\n"
-        ".Lf7868a_00078aee:\n"
-        "xorl %ecx, %ecx\n" /* line 301 */
-        "xorl %ebx, %ebx\n" /* numLeafBrushesChild */
-        ".Lf7868a_00078af2:\n"
-        "movzwl (%esi, %ecx, 2), %edx\n" /* line 303 | leafBrushesCopy */
-        "leal (%edx, %edx, 2), %eax\n" /* line 304 */
-        "shll $4, %eax\n"
-        "movl 0x195eda4, %edi\n"
-        "addl 0x80(%edi), %eax\n"
-        "movl -0x50(%ebp), %edi\n" /* line 305 | axis */
-        "movss (%eax, %edi, 4), %xmm0\n"
-        "ucomiss -0x54(%ebp), %xmm0\n" /* dist */
-        "jae .Lf7868a_00078b2c\n"
-        "movss -0x54(%ebp), %xmm0\n" /* line 307 | dist */
-        "ucomiss 0x10(%eax, %edi, 4), %xmm0\n"
-        "jae .Lf7868a_00078b2c\n"
-        "movl -0x5c(%ebp), %eax\n" /* line 309 */
-        "movw %dx, (%eax, %ebx, 2)\n"
-        "addl $1, %ebx\n" /* line 310 | numLeafBrushesChild */
-        ".Lf7868a_00078b2c:\n"
-        "addl $1, %ecx\n" /* line 301 */
-        "cmpl %ecx, -0x60(%ebp)\n"
-        "jne .Lf7868a_00078af2\n"
-        "testl %ebx, %ebx\n" /* line 313 | numLeafBrushesChild */
-        "je .Lf7868a_00078923\n"
-        "movl 8(%ebp), %edx\n" /* line 315 | maxs */
-        "movl %edx, (%esp)\n"
-        "movl -0x64(%ebp), %ecx\n"
-        "movl %ebx, %edx\n" /* numLeafBrushesChild */
-        "movl -0x5c(%ebp), %eax\n"
-        "calll CMod_PartionLeafBrushes_r\n"
-        "movl -0x4c(%ebp), %ecx\n" /* line 317 | node */
-        "movw $0xffff, 2(%ecx)\n"
-        "movl 4(%eax), %ecx\n" /* line 319 */
-        "movl -0x4c(%ebp), %edi\n" /* node */
-        "movl %ecx, 4(%edi)\n"
-        "movl -0x5c(%ebp), %eax\n" /* line 321 */
-        "leal (%eax, %ebx, 2), %eax\n"
-        "movl %eax, -0x5c(%ebp)\n"
-        "jmp .Lf7868a_00078923\n"
-        ".Lf7868a_00078b6f:\n"
-        "movl -0x60(%ebp), %ecx\n" /* line 278 */
-        "movl -0x4c(%ebp), %edx\n" /* node */
-        "movw %cx, 2(%edx)\n"
-        "movswl -0x60(%ebp), %eax\n" /* line 279 */
-        "cmpl %eax, -0x60(%ebp)\n"
-        "je .Lf7868a_00078b96\n"
-        "movl $0x21c33c, 4(%esp)\n" /* line 280 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf7868a_00078b96:\n"
-        "movl -0x60(%ebp), %eax\n" /* line 282 */
-        "testl %eax, %eax\n"
-        "jle .Lf7868a_00078bd0\n"
-        "xorl %ebx, %ebx\n" /* numLeafBrushesChild */
-        "movl -0x4c(%ebp), %esi\n" /* node, leafBrushesCopy */
-        "movl 4(%esi), %ecx\n" /* leafBrushesCopy */
-        "movl 0x195eda4, %esi\n" /* leafBrushesCopy */
-        ".Lf7868a_00078bab:\n"
-        "movl -0x5c(%ebp), %edi\n" /* line 286 */
-        "movzwl (%edi, %ebx, 2), %eax\n"
-        "movl 0x80(%esi), %edx\n" /* leafBrushesCopy */
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "orl 0xc(%eax, %edx), %ecx\n"
-        "movl -0x4c(%ebp), %edi\n" /* node */
-        "movl %ecx, 4(%edi)\n"
-        "addl $1, %ebx\n" /* line 282 | numLeafBrushesChild */
-        "cmpl %ebx, -0x60(%ebp)\n" /* numLeafBrushesChild */
-        "jne .Lf7868a_00078bab\n"
-        ".Lf7868a_00078bd0:\n"
-        "movl -0x5c(%ebp), %edx\n" /* line 291 */
-        "movl -0x4c(%ebp), %eax\n" /* node */
-        "movl %edx, 8(%eax)\n"
-        /* } scope */
-        "movl -0x4c(%ebp), %eax\n" /* line 379 | node */
-        "addl $0x8c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf7868a_00078be7:\n"
-        "movl $0, -0x3c(%ebp)\n" /* line 333 */
-        "xorl %ebx, %ebx\n" /* numLeafBrushesChild */
-        "pxor %xmm3, %xmm3\n"
-        ".Lf7868a_00078bf4:\n"
-        "movl -0x3c(%ebp), %edx\n" /* line 335 */
-        "movzwl (%esi, %edx, 2), %ecx\n" /* leafBrushesCopy */
-        "movl 0x195eda4, %edi\n" /* line 340 */
-        "movl 0x80(%edi), %edx\n"
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "shll $4, %eax\n"
-        "addl -0x68(%ebp), %eax\n"
-        "movss (%eax, %edx), %xmm1\n"
-        "movss -0x54(%ebp), %xmm0\n" /* dist */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf7868a_00078c48\n"
-        "subss %xmm0, %xmm1\n" /* line 342 */
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss %xmm2, %xmm0\n"
-        "movaps %xmm2, %xmm4\n"
-        "cmpnltss %xmm3, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        "movaps %xmm0, %xmm2\n"
-        "movl -0x5c(%ebp), %eax\n" /* line 351 */
-        "movw %cx, (%eax, %ebx, 2)\n"
-        "addl $1, %ebx\n" /* line 352 | numLeafBrushesChild */
-        ".Lf7868a_00078c48:\n"
-        "addl $1, -0x3c(%ebp)\n" /* line 333 */
-        "movl -0x3c(%ebp), %edx\n"
-        "cmpl %edx, -0x60(%ebp)\n"
-        "jne .Lf7868a_00078bf4\n"
-        "movl %ebx, -0x48(%ebp)\n" /* numLeafBrushesChild */
-        "jmp .Lf7868a_00078962\n"
-    );
+    cLeafBrushNode_t *node;
+    cbrush_t *brushesBase;
+    int bestAxis;
+    float bestDist;
+    float bestScore;
+    int axisLoop;
+    int k;
+    const vec_t *curMaxs;
+
+    /* Allocate a new node via temp memory */
+    node = (cLeafBrushNode_t *)TempMalloc(sizeof(cLeafBrushNode_t));
+    node->axis = 0;
+    node->contents = 0;
+    node->data.children.range = 0;
+    node->data.children.childOffset[0] = 0;
+    node->data.children.childOffset[1] = 0;
+    *(float *)&node->data = -3.4028234663852886e+38f;
+
+    brushesBase = cm_ptr->brushes;
+    curMaxs = maxs;
+
+    bestAxis = -1;
+    bestDist = 0.0f;
+    bestScore = 0.0f;
+
+    /* Try each axis (0,1,2) to find the best split plane */
+    for (axisLoop = 0; axisLoop < 3; axisLoop++) {
+        int k;
+
+        for (k = 0; k < numLeafBrushes; k++) {
+            cbrush_t *brush_k = brushesBase + leafBrushes[k];
+            float pivot;
+            float splitMax, splitMin;
+            int countAbove, countBelow;
+            float mid, score;
+            int jj;
+
+            /* First try using this brush's min on the current axis as pivot */
+            pivot = ((float *)&brush_k->mins)[axisLoop];
+            countAbove = -1;
+            countBelow = -1;
+            splitMax = -3.4028234663852886e+38f;
+            splitMin = 3.4028234663852886e+38f;
+
+            for (jj = 0; jj < numLeafBrushes; jj++) {
+                cbrush_t *brush_j = brushesBase + leafBrushes[jj];
+                float bmin = ((float *)&brush_j->mins)[axisLoop];
+
+                if (bmin >= pivot) {
+                    countAbove++;
+                    if (bmin < splitMin)
+                        splitMin = bmin;
+                } else {
+                    float bmax = ((float *)&brush_j->maxs)[axisLoop];
+                    if (bmax >= pivot) {
+                        countBelow++;
+                        if (bmax > splitMax)
+                            splitMax = bmax;
+                    }
+                }
+            }
+
+            if (countAbove >= countBelow)
+                countAbove = countBelow;
+
+            mid = (splitMax + splitMin) * 0.5f;
+
+            if (countAbove > 0) {
+                float rangeHigh = curMaxs[0] - splitMax;
+                float rangeLow = splitMin - mins[axisLoop];
+                score = _branchless_select(rangeHigh, rangeLow);
+                score *= (float)countAbove;
+            } else {
+                score = 0.0f;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestAxis = axisLoop;
+                bestDist = mid;
+            }
+
+            /* Now try using this brush's max on the current axis as pivot */
+            pivot = ((float *)&brush_k->maxs)[axisLoop];
+            countAbove = -1;
+            countBelow = -1;
+            splitMax = -3.4028234663852886e+38f;
+            splitMin = 3.4028234663852886e+38f;
+
+            for (jj = 0; jj < numLeafBrushes; jj++) {
+                cbrush_t *brush_j = brushesBase + leafBrushes[jj];
+                float bmin = ((float *)&brush_j->mins)[axisLoop];
+
+                if (bmin >= pivot) {
+                    countAbove++;
+                    if (bmin < splitMin)
+                        splitMin = bmin;
+                } else {
+                    float bmax = ((float *)&brush_j->maxs)[axisLoop];
+                    if (bmax >= pivot) {
+                        countBelow++;
+                        if (bmax > splitMax)
+                            splitMax = bmax;
+                    }
+                }
+            }
+
+            if (countAbove >= countBelow)
+                countAbove = countBelow;
+
+            mid = (splitMax + splitMin) * 0.5f;
+
+            if (countAbove > 0) {
+                float rangeHigh = curMaxs[0] - splitMax;
+                float rangeLow = splitMin - mins[axisLoop];
+                score = _branchless_select(rangeHigh, rangeLow);
+                score *= (float)countAbove;
+            } else {
+                score = 0.0f;
+            }
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestAxis = axisLoop;
+                bestDist = mid;
+            }
+        }
+
+        curMaxs++;
+    }
+
+    if (bestAxis < 0) {
+        /* Leaf node -- no good split found */
+        node->leafBrushCount = (short)numLeafBrushes;
+        if ((int)(short)numLeafBrushes != numLeafBrushes) {
+            Com_Error(ERR_DROP, "CMod_PartionLeafBrushes_r: numLeafBrushes overflows a short");
+        }
+
+        if (numLeafBrushes > 0) {
+            int contents = 0;
+            for (k = 0; k < numLeafBrushes; k++) {
+                cbrush_t *b = brushesBase + leafBrushes[k];
+                contents |= b->contents;
+            }
+            node->contents = contents;
+        }
+
+        node->data.leaf.brushes = leafBrushes;
+        return node;
+    }
+
+    /* Internal node -- partition the brushes */
+    {
+        unsigned short *leafBrushesCopy;
+        int numChild;
+        int sideIdx;
+        int m;
+
+        leafBrushesCopy = (unsigned short *)CM_Hunk_AllocateTempMemoryHigh(numLeafBrushes * 2, "CMod_PartionLeafBrushes_r");
+        memcpy(leafBrushesCopy, leafBrushes, numLeafBrushes * 2);
+
+        /* First pass: collect brushes that straddle the split plane */
+        numChild = 0;
+        for (m = 0; m < numLeafBrushes; m++) {
+            unsigned short brushIdx = leafBrushesCopy[m];
+            cbrush_t *b = brushesBase + brushIdx;
+            float bmin = ((float *)&b->mins)[bestAxis];
+            float bmax = ((float *)&b->maxs)[bestAxis];
+
+            if (bmin < bestDist && bestDist < bmax) {
+                leafBrushes[numChild] = brushIdx;
+                numChild++;
+            }
+        }
+
+        if (numChild > 0) {
+            /* Recursively partition the straddling brushes */
+            cLeafBrushNode_t *stradChild = CMod_PartionLeafBrushes_r(leafBrushes, numChild, mins, maxs);
+            node->leafBrushCount = (short)0xFFFF;
+            node->contents = stradChild->contents;
+            leafBrushes += numChild;
+        }
+
+        /* Set up node axis and dist */
+        node->axis = (byte)bestAxis;
+        node->data.children.dist = bestDist;
+
+        {
+            float tolerance = 3.4028234663852886e+38f;
+
+            for (sideIdx = 0; sideIdx < 2; sideIdx++) {
+                vec3_t childMins, childMaxs;
+                cLeafBrushNode_t *childNode;
+                int childOffset, encoded;
+                int numChildBrushes = 0;
+                int numChildSaved;
+
+                if (sideIdx == 0) {
+                    /* Left child: brushes with min[axis] <= dist (below the split) */
+                    for (m = 0; m < numLeafBrushes; m++) {
+                        unsigned short brushIdx = leafBrushesCopy[m];
+                        cbrush_t *b = brushesBase + brushIdx;
+                        float bmin = ((float *)&b->mins)[bestAxis];
+
+                        if (bmin >= bestDist) {
+                            continue;
+                        }
+                        {
+                            float diff = bestDist - bmin;
+                            float ddiff = diff - tolerance;
+                            if (!(ddiff < 0.0f)) {
+                                /* tolerance stays or grows */
+                            } else {
+                                tolerance = diff;
+                            }
+                        }
+                        leafBrushes[numChildBrushes] = brushIdx;
+                        numChildBrushes++;
+                    }
+                } else {
+                    /* Right child: brushes with max[axis] >= dist (above the split) */
+                    tolerance = 3.4028234663852886e+38f;
+                    for (m = 0; m < numLeafBrushes; m++) {
+                        unsigned short brushIdx = leafBrushesCopy[m];
+                        cbrush_t *b = brushesBase + brushIdx;
+                        float bval = ((float *)&b->mins)[bestAxis];
+                        float bmax_val;
+
+                        /* For right side, check if brush max >= dist */
+                        /* The assembly uses a different pattern for side 1 vs side 0 */
+                        bmax_val = ((float *)&b->maxs)[bestAxis];
+                        if (bmax_val <= bestDist) {
+                            continue;
+                        }
+                        {
+                            float diff = bval - bestDist;
+                            float test = diff - tolerance;
+                            if (test >= 0.0f) {
+                                /* diff is ok, no update needed */
+                            } else {
+                                tolerance = diff;
+                            }
+                        }
+                        leafBrushes[numChildBrushes] = brushIdx;
+                        numChildBrushes++;
+                    }
+                }
+
+                numChildSaved = numChildBrushes;
+
+                /* Set up child bounds */
+                childMins[0] = mins[0];
+                childMins[1] = mins[1];
+                childMins[2] = mins[2];
+                childMaxs[0] = maxs[0];
+                childMaxs[1] = maxs[1];
+                childMaxs[2] = maxs[2];
+
+                if (sideIdx == 0) {
+                    childMins[bestAxis] = bestDist + tolerance;
+                } else {
+                    childMaxs[bestAxis] = bestDist - tolerance;
+                }
+
+                /* Recurse */
+                childNode = CMod_PartionLeafBrushes_r(leafBrushes, numChildBrushes, childMins, childMaxs);
+
+                /* Encode child offset as a 16-bit value */
+                childOffset = (int)(childNode - node);
+                /* The assembly does: x = offset; t = x*3; t += t<<4; t += t<<8; t += t<<16; encoded = x + t*4
+                 * This is equivalent to: encoded = offset * 0x33333334 / 4 ... actually it's just:
+                 * t = x * 3 * (1 + 16) * (1 + 256) * (1 + 65536) * 4 + x = x * (1 + 12 * 17 * 257 * 65537)
+                 * Actually: x*3 = 3x; 3x + 3x*16 = 3x*17 = 51x; 51x + 51x*256 = 51x*257 = 13107x;
+                 * 13107x + 13107x*65536 = 13107x*65537 = 858993459x; 858993459*4 = 3435973836; +x = 3435973837x
+                 * Hmm, that's 0xCCCCCCCD * x which is the multiplication constant for dividing by 5.
+                 * Actually it computes (childOffset - node) as a pointer difference / 4 (since cLeafBrushNode_t is
+                 * not necessarily 4 bytes), then does encoding.
+                 *
+                 * Wait, the assembly does: (childNode - node) where node is cLeafBrushNode_t *.
+                 * The subtraction gives byte offset, then sarl $2 divides by 4.
+                 * Then the multiplication chain reconstructs a 16-bit packed value.
+                 * Actually, the sarl $2 divides by 4 (sizeof(int)), and then the multiplication
+                 * by 0xCCCCCCCD is dividing by 5, yielding offset / 20 (sizeof(cLeafBrushNode_t)).
+                 *
+                 * So: encoded = ((byte*)childNode - (byte*)node) / sizeof(cLeafBrushNode_t)
+                 * which is just: childNode - node (C pointer arithmetic).
+                 */
+                encoded = (int)((byte *)childNode - (byte *)node);
+                encoded >>= 2;
+                {
+                    int t = encoded * 3;
+                    t = t + (t << 4);
+                    t = t + (t << 8);
+                    t = t + (t << 16);
+                    encoded = encoded + t * 4;
+                }
+                node->data.children.childOffset[sideIdx] = (unsigned short)encoded;
+                if ((int)(unsigned short)encoded != encoded) {
+                    Com_Error(ERR_DROP, "CMod_PartionLeafBrushes_r: childOffset overflows a short");
+                }
+
+                /* Merge contents */
+                node->contents |= childNode->contents;
+
+                /* Advance leafBrushes pointer past the children we just processed */
+                leafBrushes += numChildSaved;
+            }
+
+            node->data.children.range = tolerance;
+        }
+    }
+
+    return node;
 }
 
 /* line 387 */
-static __attribute__((naked))
-void CMod_PartionLeafBrushes(short unsigned int *leafBrushes, cLeaf_t *leaf)
+static void CMod_PartionLeafBrushes(unsigned short *leafBrushes, int numLeafBrushes, cLeaf_t *leaf)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 387 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl %eax, -0x40(%ebp)\n"
-        "movl %edx, %edi\n" /* numLeafBrushes */
-        "movl %ecx, -0x44(%ebp)\n"
-        /* { scope 1 */
-        "cmpl $0, %edx\n" /* line 396 */
-        "je .Lf78c5c_00078db0\n"
-        "movl $0x7f7fffff, %eax\n" /* line 191 */
-        "movl %eax, -0x24(%ebp)\n" /* mins */
-        "movl %eax, -0x20(%ebp)\n" /* line 192 */
-        "movl %eax, -0x1c(%ebp)\n" /* line 193 */
-        "movl $0xff7fffff, %eax\n" /* line 191 */
-        "movl %eax, -0x30(%ebp)\n" /* maxs */
-        "movl %eax, -0x2c(%ebp)\n" /* line 192 */
-        "movl %eax, -0x28(%ebp)\n" /* line 193 */
-        "jle .Lf78c5c_00078d01\n" /* line 405 */
-        "movl 0x195eda4, %eax\n" /* line 408 */
-        "movl 0x80(%eax), %eax\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        "xorl %esi, %esi\n" /* k */
-        ".Lf78c5c_00078ca4:\n"
-        "movl -0x40(%ebp), %edx\n"
-        "movzwl (%edx, %esi, 2), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "movl -0x3c(%ebp), %edx\n"
-        "addl %eax, %edx\n"
-        "movl $1, %ebx\n"
-        ".Lf78c5c_00078cbb:\n"
-        "leal (, %ebx, 4), %ecx\n" /* line 387 */
-        "leal -0x24(%ebp), %eax\n" /* mins */
-        "addl %ecx, %eax\n"
-        "movss (%edx), %xmm1\n" /* line 411 */
-        "movss -4(%eax), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lf78c5c_00078cda\n"
-        "movss %xmm1, -4(%eax)\n" /* line 412 */
-        ".Lf78c5c_00078cda:\n"
-        "leal -0x30(%ebp), %eax\n" /* line 387 | maxs */
-        "addl %ecx, %eax\n"
-        "movss 0x10(%edx), %xmm0\n" /* line 413 */
-        "ucomiss -4(%eax), %xmm0\n"
-        "jbe .Lf78c5c_00078cef\n"
-        "movss %xmm0, -4(%eax)\n" /* line 414 */
-        ".Lf78c5c_00078cef:\n"
-        "addl $1, %ebx\n"
-        "addl $4, %edx\n"
-        "cmpl $4, %ebx\n" /* line 409 */
-        "jne .Lf78c5c_00078cbb\n"
-        "addl $1, %esi\n" /* line 405 | k */
-        "cmpl %esi, %edi\n" /* k, numLeafBrushes */
-        "jne .Lf78c5c_00078ca4\n"
-        ".Lf78c5c_00078d01:\n"
-        "movl -0x44(%ebp), %edx\n" /* line 418 | to */
-        "addl $0xc, %edx\n" /* to */
-        /* { scope 2 */
-        "movl -0x24(%ebp), %eax\n" /* line 199 | mins */
-        "movl -0x44(%ebp), %ecx\n"
-        "movl %eax, 0xc(%ecx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl %ecx, %edx\n" /* line 419 | to */
-        "addl $0x18, %edx\n" /* to */
-        /* { scope 2 */
-        "movl -0x30(%ebp), %eax\n" /* line 199 | maxs */
-        "movl %eax, 0x18(%ecx)\n"
-        "movl -0x2c(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x28(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        "movl %ecx, %eax\n"
-        "movl $3, %edx\n"
-        "movss 0x2ed610, %xmm1\n" /* 0.125f */
-        /* } scope */
-        ".Lf78c5c_00078d42:\n"
-        "movss 0xc(%eax), %xmm0\n" /* line 423 */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0xc(%eax)\n"
-        "movss 0x18(%eax), %xmm0\n" /* line 424 */
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x18(%eax)\n"
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 421 */
-        "jne .Lf78c5c_00078d42\n"
-        "calll CM_Hunk_CheckTempMemoryHighClear\n" /* line 427 */
-        "leal -0x30(%ebp), %eax\n" /* line 428 | maxs */
-        "movl %eax, (%esp)\n"
-        "leal -0x24(%ebp), %ecx\n" /* mins */
-        "movl %edi, %edx\n" /* numLeafBrushes */
-        "movl -0x40(%ebp), %eax\n"
-        "calll CMod_PartionLeafBrushes_r\n"
-        "movl 0x195eda4, %edx\n"
-        "subl 0x30(%edx), %eax\n"
-        "sarl $2, %eax\n"
-        "leal (%eax, %eax, 2), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "addl %ecx, %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $8, %ecx\n"
-        "addl %ecx, %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $0x10, %ecx\n"
-        "addl %ecx, %edx\n"
-        "leal (%eax, %edx, 4), %edx\n"
-        "movl -0x44(%ebp), %ecx\n"
-        "movl %edx, 0x24(%ecx)\n"
-        "calll CM_Hunk_ClearTempMemoryHigh\n" /* line 429 */
-        /* } scope */
-        ".Lf78c5c_00078db0:\n"
-        "addl $0x4c, %esp\n" /* line 430 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int k, j;
+    vec3_t mins, maxs;
+    cbrush_t *brushesBase;
+    cLeafBrushNode_t *resultNode;
+
+    if (numLeafBrushes == 0) {
+        return;
+    }
+
+    /* Initialize bounds to extreme values */
+    mins[0] = 3.4028234663852886e+38f;
+    mins[1] = 3.4028234663852886e+38f;
+    mins[2] = 3.4028234663852886e+38f;
+    maxs[0] = -3.4028234663852886e+38f;
+    maxs[1] = -3.4028234663852886e+38f;
+    maxs[2] = -3.4028234663852886e+38f;
+
+    if (numLeafBrushes > 0) {
+        brushesBase = cm_ptr->brushes;
+        for (k = 0; k < numLeafBrushes; k++) {
+            cbrush_t *b = brushesBase + leafBrushes[k];
+            /* The assembly iterates j from 1 to 3 and accesses -4(%eax + j*4) = (j-1)*4
+             * where %edx points to brush data. This accesses brush mins[0..2] and maxs[0..2].
+             * The brush layout is: mins[3], contents, maxs[3], ...
+             * Access pattern: (%edx) for first float, then +4, +8 for mins
+             * 0x10(%edx) for maxs[0], etc. */
+            for (j = 0; j < 3; j++) {
+                float bmin = ((float *)&b->mins)[j];
+                float bmax = ((float *)&b->maxs)[j];
+                if (bmin < mins[j]) {
+                    mins[j] = bmin;
+                }
+                if (bmax > maxs[j]) {
+                    maxs[j] = bmax;
+                }
+            }
+        }
+    }
+
+    /* Copy bounds to leaf */
+    leaf->mins[0] = mins[0];
+    leaf->mins[1] = mins[1];
+    leaf->mins[2] = mins[2];
+    leaf->maxs[0] = maxs[0];
+    leaf->maxs[1] = maxs[1];
+    leaf->maxs[2] = maxs[2];
+
+    /* Expand bounds by 0.125 */
+    for (j = 0; j < 3; j++) {
+        leaf->mins[j] -= 0.125f;
+        leaf->maxs[j] += 0.125f;
+    }
+
+    CM_Hunk_CheckTempMemoryHighClear();
+
+    resultNode = CMod_PartionLeafBrushes_r(leafBrushes, numLeafBrushes, mins, maxs);
+
+    /* Convert node pointer to index relative to leafbrushNodes base */
+    {
+        int byteOffset = (int)((byte *)resultNode - (byte *)cm_ptr->leafbrushNodes);
+        int dwordOffset = byteOffset >> 2;
+        int t = dwordOffset * 3;
+        t = t + (t << 4);
+        t = t + (t << 8);
+        t = t + (t << 16);
+        leaf->leafBrushNode = dwordOffset + t * 4;
+    }
+
+    CM_Hunk_ClearTempMemoryHigh();
+}
+
+/* Helper: get terrain contents from collision aabb trees */
+static int CM_GetLeafTerrainContents(cLeaf_t *leaf)
+{
+    int contents = 0;
+    int count = leaf->collAabbCount;
+    int k;
+    clipMap_t *cmLocal = cm_ptr;
+
+    if (count <= 0)
+        return 0;
+
+    {
+        dmaterial_t *materials = cmLocal->materials;
+        CollisionAabbTree *trees = cmLocal->aabbTrees + leaf->firstCollAabbIndex;
+
+        for (k = 0; k < count; k++) {
+            contents |= materials[trees[k].materialIndex].contentFlags;
+        }
+    }
+    return contents;
 }
 
 /* line 1228 */
-__attribute__((naked))
 void CM_LoadMapFromBsp(const char *name, int usePvs)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1228 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xec, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* name */
-        "movzbl 0xc(%ebp), %eax\n" /* usePvs */
-        "movb %al, -0xc1(%ebp)\n" /* usePvs */
-        /* { scope 1: in, usePvs, in, out, ... */
-        "movl $0x110, 8(%esp)\n" /* line 1232 */
-        "movl $0, 4(%esp)\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll Com_Memset\n"
-        "movl $0xc, 8(%esp)\n" /* line 1233 */
-        "movl $0, 4(%esp)\n"
-        "movl $cml, (%esp)\n"
-        "calll Com_Memset\n"
-        "movl $0x17, 8(%esp)\n" /* line 1235 */
-        "movl $0x21c3b8, 4(%esp)\n" /* "CM_LoadMapFromBsp" */
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n" /* name, count */
-        "repne scasb %es:(%edi), %al\n" /* count */
-        "notl %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, (%edx)\n"
-        "movl %ebx, 4(%esp)\n" /* line 1236 | name */
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl 0x195eda4, %eax\n" /* line 1238 */
-        "addl $0x10c, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Com_GetBsp\n"
-        "movl %eax, %esi\n" /* usePvs */
-        "movl %eax, -0xc0(%ebp)\n" /* line 1242 | header */
-        "movl %eax, 0x4ea68c\n"
-        /* { scope 2: count, l, l, i, ... */
-        "movl 0xc(%eax), %ecx\n" /* line 55 */
-        "addl %eax, %ecx\n"
-        "movl %ecx, -0xbc(%ebp)\n" /* in */
-        "movl 8(%eax), %ecx\n" /* line 56 */
-        "movl $0x38e38e39, %ebx\n"
-        "movl %ecx, %eax\n"
-        "mull %ebx\n"
-        "shrl $4, %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "shll $3, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a4f2\n"
-        "movl %ecx, %eax\n" /* line 60 */
-        "mull %ebx\n"
-        "movl %edx, %edi\n" /* count */
-        "shrl $4, %edi\n" /* count */
-        "testl %edi, %edi\n" /* line 62 | count */
-        "jle .Lf78db8_0007a51a\n"
-        ".Lf78db8_00078ea5:\n"
-        "movl $0x17, 8(%esp)\n" /* line 66 */
-        "movl $0x21c40c, 4(%esp)\n" /* "CMod_LoadMaterials" */
-        "leal (%edi, %edi, 8), %ebx\n" /* count */
-        "shll $3, %ebx\n"
-        "leal 0x48(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "addl $0x48, %eax\n"
-        "movl 0x195eda4, %ecx\n"
-        "movl %eax, 0x10(%ecx)\n"
-        "movl %edi, 0xc(%ecx)\n" /* line 67 | count */
-        "movl %ebx, 8(%esp)\n" /* line 69 */
-        "movl -0xbc(%ebp), %ebx\n" /* in */
-        "movl %ebx, 4(%esp)\n"
-        "movl 0x10(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memcpy\n"
-        /* } scope */
-        "leal 0x28(%esi), %eax\n" /* line 1246 | usePvs */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x4ea68c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CMod_LoadPlanes\n"
-        "movzbl -0xc1(%ebp), %eax\n" /* usePvs */
-        "movb %al, -0xb5(%ebp)\n" /* usePvs */
-        /* { scope 2: count, l, l, i, ... */
-        "leal 0x30(%esi), %ebx\n" /* line 1194 | index, sidesLump */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        "movl 0x3c(%esi), %eax\n" /* line 569 | j */
-        "movl 0x4ea68c, %esi\n" /* j */
-        "leal (%esi, %eax), %eax\n" /* j */
-        "movl %eax, -0xb4(%ebp)\n" /* inBrush */
-        "movl -0xc0(%ebp), %edx\n" /* line 570 | header */
-        "movl 0x38(%edx), %eax\n"
-        "testb $3, %al\n"
-        "jne .Lf78db8_0007a533\n"
-        ".Lf78db8_00078f35:\n"
-        "shrl $2, %eax\n" /* line 574 */
-        "movl %eax, -0xa0(%ebp)\n" /* brushCount */
-        "addl 4(%ebx), %esi\n" /* line 576 | materialNum, j */
-        "movl %esi, -0xb0(%ebp)\n" /* j, inSides */
-        "movl -0xc0(%ebp), %ebx\n" /* line 577 | header, materialNum */
-        "movl 0x30(%ebx), %edx\n" /* materialNum */
-        "testb $7, %dl\n"
-        "jne .Lf78db8_0007a48b\n"
-        "movl %eax, %edi\n" /* index */
-        "shrl $3, %edx\n" /* line 581 */
-        "leal (%edi, %edi, 2), %eax\n" /* index */
-        "addl %eax, %eax\n"
-        "movl %edx, %ebx\n" /* line 582 | materialNum */
-        "subl %eax, %ebx\n" /* materialNum */
-        "js .Lf78db8_0007a4ba\n"
-        ".Lf78db8_00078f6d:\n"
-        "leal (, %ebx, 8), %eax\n" /* line 585 */
-        "testl %ebx, %ebx\n" /* line 586 | materialNum */
-        "jne .Lf78db8_0007a3c7\n"
-        "xorl %eax, %eax\n"
-        ".Lf78db8_00078f7e:\n"
-        "movl 0x195eda4, %esi\n" /* j */
-        "movl %eax, 0x18(%esi)\n" /* j */
-        "movl %ebx, 0x14(%esi)\n" /* line 587 | materialNum, j */
-        "movl %eax, -0xa8(%ebp)\n" /* line 589 | outSides */
-        "movl $0x18, 8(%esp)\n" /* line 593 */
-        "movl $0x21c47c, 4(%esp)\n" /* "CMod_LoadBrushes" */
-        "movl -0xa0(%ebp), %edx\n" /* brushCount */
-        "leal 3(%edx, %edx, 2), %eax\n"
-        "shll $4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl %eax, 0x80(%esi)\n" /* j */
-        "movl -0xa0(%ebp), %ecx\n" /* line 594 | brushCount */
-        "movw %cx, 0x7c(%esi)\n" /* j */
-        "movzwl %cx, %eax\n" /* line 595 */
-        "cmpl %eax, -0xa0(%ebp)\n" /* brushCount */
-        "je .Lf78db8_00078fe4\n"
-        "movl $0x21c490, 4(%esp)\n" /* line 596 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_00078fe4:\n"
-        "movl 0x80(%esi), %ebx\n" /* line 598 | j, materialNum */
-        "movl %ebx, -0xac(%ebp)\n" /* materialNum, outBrush */
-        "movl -0xa0(%ebp), %eax\n" /* line 600 | brushCount */
-        "testl %eax, %eax\n"
-        "jle .Lf78db8_00079257\n"
-        "movl $0, -0xa4(%ebp)\n" /* i */
-        "movl %esi, -0xc8(%ebp)\n" /* j */
-        "movl -0xac(%ebp), %edx\n" /* outBrush */
-        "movl -0xac(%ebp), %ecx\n" /* outBrush */
-        "movl -0xb4(%ebp), %edi\n" /* line 603 | inBrush, index */
-        "movswl (%edi), %eax\n" /* index */
-        "subl $6, %eax\n"
-        "addl $0x1c, %edx\n" /* line 1228 */
-        "movl %edx, -0x30(%ebp)\n"
-        "movl %eax, 0x1c(%ecx)\n" /* line 603 */
-        "testl %eax, %eax\n" /* line 604 */
-        "js .Lf78db8_00079224\n"
-        ".Lf78db8_00079037:\n"
-        "movl -0xac(%ebp), %ebx\n" /* line 607 | outBrush, materialNum */
-        "movl 0x1c(%ebx), %eax\n" /* materialNum */
-        "testl %eax, %eax\n"
-        "je .Lf78db8_00079249\n"
-        ".Lf78db8_00079048:\n"
-        "movl -0xa8(%ebp), %eax\n" /* outSides */
-        ".Lf78db8_0007904e:\n"
-        "movl -0xac(%ebp), %edx\n" /* outBrush */
-        "movl %eax, 0x20(%edx)\n"
-        "movl %edx, -0x34(%ebp)\n"
-        "movl $0, -0x2c(%ebp)\n"
-        "movl %edx, %ebx\n" /* materialNum */
-        ".Lf78db8_00079063:\n"
-        "movl -0xb0(%ebp), %ecx\n" /* line 614 | inSides */
-        "movl (%ecx), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 615 */
-        "movl %eax, (%ebx)\n" /* materialNum */
-        "movl -0x2c(%ebp), %edi\n" /* index */
-        "movl -0xac(%ebp), %eax\n" /* outBrush */
-        "leal 0x24(%eax, %edi, 2), %esi\n" /* j */
-        "xorl %edi, %edi\n" /* index */
-        "jmp .Lf78db8_0007909f\n"
-        ".Lf78db8_00079084:\n"
-        "addl $6, %esi\n" /* line 608 | j */
-        "testl %edi, %edi\n" /* line 614 | index */
-        "je .Lf78db8_0007910a\n"
-        "movl -0xb0(%ebp), %edx\n" /* line 615 | inSides */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 617 */
-        "movl -0x34(%ebp), %ecx\n"
-        "movl %eax, 0x10(%ecx)\n"
-        ".Lf78db8_0007909f:\n"
-        "movl -0xb0(%ebp), %eax\n" /* line 619 | inSides */
-        "movl 4(%eax), %ebx\n" /* materialNum */
-        "testl %ebx, %ebx\n" /* line 620 | materialNum */
-        "js .Lf78db8_000790b7\n"
-        "movl -0xc8(%ebp), %edx\n"
-        "cmpl 0xc(%edx), %ebx\n" /* materialNum */
-        "jl .Lf78db8_000790cf\n"
-        ".Lf78db8_000790b7:\n"
-        "movl %ebx, 8(%esp)\n" /* line 622 | materialNum */
-        "movl $0x21c4ec, 4(%esp)\n" /* "CMod_LoadBrushes: bad materialNum: %i" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_000790cf:\n"
-        "movw %bx, (%esi)\n" /* line 624 | materialNum, j */
-        "movswl %bx, %eax\n" /* line 625 | materialNum */
-        "cmpl %eax, %ebx\n" /* materialNum */
-        "je .Lf78db8_000790ed\n"
-        "movl $0x21c514, 4(%esp)\n" /* line 626 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_000790ed:\n"
-        "addl $1, %edi\n" /* line 611 | index */
-        "addl $8, -0xb0(%ebp)\n" /* inSides */
-        "cmpl $2, %edi\n" /* index */
-        "jne .Lf78db8_00079084\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 608 */
-        "addl $4, -0x34(%ebp)\n"
-        "cmpl $3, -0x2c(%ebp)\n"
-        "je .Lf78db8_00079112\n"
-        ".Lf78db8_0007910a:\n"
-        "movl -0x34(%ebp), %ebx\n" /* materialNum */
-        "jmp .Lf78db8_00079063\n"
-        ".Lf78db8_00079112:\n"
-        "movl -0x30(%ebp), %edi\n" /* line 630 | index */
-        "movl (%edi), %eax\n" /* index */
-        "testl %eax, %eax\n"
-        "jle .Lf78db8_0007917e\n"
-        "xorl %ebx, %ebx\n" /* materialNum */
-        ".Lf78db8_0007911d:\n"
-        "movl -0xb0(%ebp), %ecx\n" /* line 634 | inSides */
-        "movl (%ecx), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "movl 0x4ea688, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl -0xa8(%ebp), %edi\n" /* outSides, index */
-        "movl %eax, (%edi)\n" /* index */
-        "movl 4(%ecx), %eax\n" /* line 636 */
-        "movl %eax, 4(%edi)\n" /* index */
-        "testl %eax, %eax\n" /* line 637 */
-        "js .Lf78db8_0007914e\n"
-        "movl -0xc8(%ebp), %edx\n"
-        "cmpl 0xc(%edx), %eax\n"
-        "jl .Lf78db8_00079166\n"
-        ".Lf78db8_0007914e:\n"
-        "movl %eax, 8(%esp)\n" /* line 639 */
-        "movl $0x21c4ec, 4(%esp)\n" /* "CMod_LoadBrushes: bad materialNum: %i" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_00079166:\n"
-        "addl $1, %ebx\n" /* line 630 | materialNum */
-        "addl $8, -0xb0(%ebp)\n" /* inSides */
-        "addl $8, -0xa8(%ebp)\n" /* outSides */
-        "movl -0x30(%ebp), %ecx\n"
-        "cmpl %ebx, (%ecx)\n" /* materialNum */
-        "jg .Lf78db8_0007911d\n"
-        ".Lf78db8_0007917e:\n"
-        "movl -0xb4(%ebp), %edi\n" /* line 643 | inBrush, index */
-        "movswl 2(%edi), %ebx\n" /* index, materialNum */
-        "testl %ebx, %ebx\n" /* line 644 | materialNum */
-        "js .Lf78db8_000791a0\n"
-        "movl 0x195eda4, %eax\n"
-        "movl %eax, -0xcc(%ebp)\n"
-        "cmpl 0xc(%eax), %ebx\n" /* materialNum */
-        "jl .Lf78db8_00079250\n"
-        ".Lf78db8_000791a0:\n"
-        "movl %ebx, 8(%esp)\n" /* line 646 | materialNum */
-        "movl $0x21c4ec, 4(%esp)\n" /* "CMod_LoadBrushes: bad materialNum: %i" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %edx, -0xcc(%ebp)\n"
-        "movl %edx, %ecx\n"
-        ".Lf78db8_000791c6:\n"
-        "movl 0x10(%ecx), %eax\n" /* line 648 */
-        "leal (%ebx, %ebx, 8), %edx\n" /* materialNum */
-        "movl 0x44(%eax, %edx, 8), %eax\n"
-        "andl $0xdffffffb, %eax\n"
-        "movl -0xac(%ebp), %ebx\n" /* outBrush, materialNum */
-        "movl %eax, 0xc(%ebx)\n" /* materialNum */
-        "addl $1, -0xa4(%ebp)\n" /* line 600 | i */
-        "addl $0x30, %ebx\n" /* materialNum */
-        "movl %ebx, -0xac(%ebp)\n" /* materialNum, outBrush */
-        "addl $4, -0xb4(%ebp)\n" /* inBrush */
-        "movl -0xa4(%ebp), %edi\n" /* i, index */
-        "cmpl %edi, -0xa0(%ebp)\n" /* index, brushCount */
-        "je .Lf78db8_00079257\n"
-        "movl %ebx, %edx\n" /* materialNum */
-        "movl %ebx, %ecx\n" /* materialNum */
-        "movl -0xb4(%ebp), %edi\n" /* line 603 | inBrush, index */
-        "movswl (%edi), %eax\n" /* index */
-        "subl $6, %eax\n"
-        "addl $0x1c, %edx\n" /* line 1228 */
-        "movl %edx, -0x30(%ebp)\n"
-        "movl %eax, 0x1c(%ecx)\n" /* line 603 */
-        "testl %eax, %eax\n" /* line 604 */
-        "jns .Lf78db8_00079037\n"
-        ".Lf78db8_00079224:\n"
-        "movl $0x21c4bc, 4(%esp)\n" /* line 605 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0xac(%ebp), %ebx\n" /* line 607 | outBrush, materialNum */
-        "movl 0x1c(%ebx), %eax\n" /* materialNum */
-        "testl %eax, %eax\n"
-        "jne .Lf78db8_00079048\n"
-        ".Lf78db8_00079249:\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf78db8_0007904e\n"
-        ".Lf78db8_00079250:\n"
-        "movl %eax, %ecx\n"
-        "jmp .Lf78db8_000791c6\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        ".Lf78db8_00079257:\n"
-        "movl 0x4ea68c, %edi\n" /* line 825 | in */
-        "movl -0xc0(%ebp), %eax\n" /* header */
-        "addl 0xe4(%eax), %edi\n" /* in */
-        "movl 0xe0(%eax), %eax\n" /* line 826 */
-        "testb $3, %al\n"
-        "jne .Lf78db8_0007a670\n"
-        ".Lf78db8_00079277:\n"
-        "shrl $2, %eax\n" /* line 828 */
-        "movl %eax, -0x9c(%ebp)\n" /* count */
-        "movl $0x18, 8(%esp)\n" /* line 831 */
-        "movl $0x21c56c, 4(%esp)\n" /* "CMod_LoadLeafBrushes" */
-        "movl %eax, %ebx\n" /* out */
-        "leal 2(%eax, %eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x38(%edx)\n"
-        "movl %ebx, 0x34(%edx)\n" /* line 832 | out */
-        "movl %eax, %ebx\n" /* line 834 | out */
-        "movl -0x9c(%ebp), %eax\n" /* line 836 | count */
-        "testl %eax, %eax\n"
-        "jle .Lf78db8_000792e9\n"
-        "xorl %esi, %esi\n" /* i */
-        ".Lf78db8_000792b8:\n"
-        "movl (%edi), %eax\n" /* line 838 | in */
-        "movw %ax, (%ebx)\n" /* line 839 | out */
-        "movzwl %ax, %edx\n" /* line 840 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_000792d8\n"
-        "movl $0x21c584, 4(%esp)\n" /* line 841 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_000792d8:\n"
-        "addl $1, %esi\n" /* line 836 | i */
-        "addl $4, %edi\n" /* in */
-        "addl $2, %ebx\n" /* out */
-        "cmpl %esi, -0x9c(%ebp)\n" /* i, count */
-        "jne .Lf78db8_000792b8\n"
-        /* } scope */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        ".Lf78db8_000792e9:\n"
-        "movl 0x4ea68c, %ebx\n" /* line 1104 | in */
-        "movl -0xc0(%ebp), %edi\n" /* header, count */
-        "addl 0x11c(%edi), %ebx\n" /* count, in */
-        "movl 0x118(%edi), %eax\n" /* line 1105 | count */
-        "testb $0x1f, %al\n"
-        "jne .Lf78db8_0007a651\n"
-        ".Lf78db8_00079309:\n"
-        "movl %eax, %edi\n" /* line 1107 | count */
-        "shrl $5, %edi\n" /* count */
-        "movl $0x1a, 8(%esp)\n" /* line 1110 */
-        "movl $0x21c5e0, 4(%esp)\n" /* "CMod_LoadCollisionAabbTrees" */
-        "movl %edi, %eax\n" /* count */
-        "shll $5, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x70(%edx)\n"
-        "movl %edi, 0x6c(%edx)\n" /* line 1111 | count */
-        "movl %eax, %edx\n" /* line 1120 */
-        "testl %edi, %edi\n" /* line 1121 | count */
-        "jle .Lf78db8_000793a5\n"
-        "leal -0x1c(%ebp), %ecx\n"
-        "xorl %esi, %esi\n" /* index */
-        ".Lf78db8_00079342:\n"
-        "movl (%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1123 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1124 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1125 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1126 */
-        "movl %eax, 0xc(%edx)\n"
-        "movl 0x10(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1127 */
-        "movl %eax, 0x10(%edx)\n"
-        "movl 0x14(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1128 */
-        "movl %eax, 0x14(%edx)\n"
-        "movzwl 0x18(%ebx), %eax\n" /* line 1129 | in */
-        "movw %ax, 0x18(%edx)\n"
-        "movzwl 0x1a(%ebx), %eax\n" /* line 1130 | in */
-        "movw %ax, 0x1a(%edx)\n"
-        "movl 0x1c(%ebx), %eax\n" /* line 1131 | in */
-        "movl %eax, 0x1c(%edx)\n"
-        "addl $1, %esi\n" /* line 1121 | index */
-        "addl $0x20, %ebx\n" /* in */
-        "addl $0x20, %edx\n"
-        "cmpl %esi, %edi\n" /* index, count */
-        "jne .Lf78db8_00079342\n"
-        /* } scope */
-        ".Lf78db8_000793a5:\n"
-        "movl -0xc0(%ebp), %eax\n" /* line 1197 | header */
-        "addl $0xd8, %eax\n"
-        "movl %eax, -0x98(%ebp)\n" /* l */
-        "movzbl -0xb5(%ebp), %esi\n" /* usePvs */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        "movl 0x4ea68c, %edi\n" /* line 671 | in */
-        "addl 4(%eax), %edi\n" /* in */
-        "movl -0xc0(%ebp), %edx\n" /* line 672 | header */
-        "movl 0xd8(%edx), %ecx\n"
-        "movl $0x38e38e39, %ebx\n" /* out */
-        "movl %ecx, %eax\n"
-        "mull %ebx\n" /* out */
-        "shrl $3, %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a5fd\n"
-        "movl %ecx, %eax\n" /* line 674 */
-        "mull %ebx\n" /* out */
-        "shrl $3, %edx\n"
-        "movl %edx, -0x90(%ebp)\n" /* count */
-        "testl %edx, %edx\n" /* line 676 */
-        "jle .Lf78db8_0007a632\n"
-        ".Lf78db8_00079401:\n"
-        "movl %edx, %ecx\n"
-        ".Lf78db8_00079403:\n"
-        "movl $0x17, 8(%esp)\n" /* line 680 */
-        "movl $0x21c634, 4(%esp)\n" /* "CMod_LoadLeafs" */
-        "leal (%ecx, %ecx, 4), %eax\n"
-        "leal (%ecx, %eax, 2), %eax\n"
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x28(%edx)\n"
-        "movl -0x90(%ebp), %ebx\n" /* line 681 | count, out */
-        "movl %ebx, 0x24(%edx)\n" /* out */
-        "movl %eax, %ebx\n" /* line 685 | out */
-        "movl -0x90(%ebp), %eax\n" /* line 686 | count */
-        "testl %eax, %eax\n"
-        "jg .Lf78db8_0007a20b\n"
-        /* } scope */
-        /* } scope */
-        ".Lf78db8_00079446:\n"
-        "movl -0xc0(%ebp), %edx\n" /* line 1198 | header */
-        "addl $0x120, %edx\n"
-        "movl %edx, -0x8c(%ebp)\n" /* l */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        "movl 0x4ea68c, %esi\n" /* line 114 | in */
-        "addl 4(%edx), %esi\n" /* in */
-        "movl -0xc0(%ebp), %ebx\n" /* line 115 | header, j */
-        "movl 0x120(%ebx), %ecx\n" /* j */
-        "movl $0xaaaaaaab, %ebx\n" /* j */
-        "movl %ecx, %eax\n"
-        "mull %ebx\n" /* j */
-        "shrl $5, %edx\n"
-        "leal (%edx, %edx, 2), %edx\n"
-        "shll $4, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a5a9\n"
-        "movl %ecx, %eax\n" /* line 117 */
-        "mull %ebx\n" /* j */
-        "shrl $5, %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* count */
-        "testl %edx, %edx\n" /* line 119 */
-        "jle .Lf78db8_0007a5de\n"
-        ".Lf78db8_0007949c:\n"
-        "movl %edx, %ecx\n"
-        ".Lf78db8_0007949e:\n"
-        "movl $0x18, 8(%esp)\n" /* line 123 */
-        "movl $0x21c6fc, 4(%esp)\n" /* "CMod_LoadSubmodels" */
-        "leal (%ecx, %ecx, 8), %eax\n"
-        "shll $3, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %ebx\n" /* j */
-        "movl %ebx, -0xcc(%ebp)\n" /* j */
-        "movl %eax, 0x78(%ebx)\n" /* j */
-        "movl -0x84(%ebp), %edi\n" /* line 124 | count */
-        "movl %edi, 0x74(%ebx)\n" /* count, j */
-        "cmpl $0x3ff, %edi\n" /* line 126 | count */
-        "jg .Lf78db8_0007962b\n"
-        "movl -0x84(%ebp), %edi\n" /* line 131 | count */
-        "testl %edi, %edi\n" /* count */
-        "jg .Lf78db8_0007963f\n"
-        /* } scope */
-        /* } scope */
-        ".Lf78db8_000794ee:\n"
-        "calll CM_Hunk_CheckTempMemoryClear\n" /* line 1200 */
-        "calll TempMemoryReset\n" /* line 1202 */
-        "movl $0, (%esp)\n" /* line 1203 */
-        "calll TempMalloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %edx, -0xcc(%ebp)\n"
-        "subl $0x14, %eax\n"
-        "movl %eax, 0x30(%edx)\n"
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        "movl 0x4ea68c, %esi\n" /* line 736 | contents */
-        "movl -0x98(%ebp), %ecx\n" /* l */
-        "movl 4(%ecx), %ebx\n" /* j */
-        "addl %esi, %ebx\n" /* contents, j */
-        "movl %ebx, -0x7c(%ebp)\n" /* j, in */
-        "movl 0x28(%edx), %edi\n" /* line 741 | in */
-        "movl %edi, -0x70(%ebp)\n" /* in, leaf */
-        "movl 0x24(%edx), %ecx\n" /* line 742 */
-        "testl %ecx, %ecx\n"
-        "jle .Lf78db8_00079782\n"
-        "movl $0, -0x80(%ebp)\n" /* i */
-        "jmp .Lf78db8_000795a2\n"
-        ".Lf78db8_00079544:\n"
-        "xorl %esi, %esi\n" /* line 752 | contents */
-        "movl -0x70(%ebp), %ecx\n" /* line 758 | leaf */
-        "movl %esi, 4(%ecx)\n" /* contents */
-        /* { scope 4 */
-        /* { scope 5 */
-        "movzwl 2(%ecx), %edi\n" /* line 445 | count */
-        "testl %edi, %edi\n" /* count */
-        "jg .Lf78db8_000795f8\n"
-        ".Lf78db8_00079558:\n"
-        "xorl %esi, %esi\n" /* contents */
-        /* } scope */
-        /* } scope */
-        ".Lf78db8_0007955a:\n"
-        "movl -0x70(%ebp), %edx\n" /* line 760 | leaf */
-        "movl %esi, 8(%edx)\n" /* contents */
-        "movl -0xcc(%ebp), %ecx\n" /* line 762 */
-        "movl 0x38(%ecx), %eax\n"
-        "movl -0x74(%ebp), %ebx\n" /* indexFirstLeafBrush, j */
-        "leal (%eax, %ebx, 2), %eax\n"
-        "movl %edx, %ecx\n"
-        "movl -0x78(%ebp), %edx\n" /* numLeafBrushes */
-        "calll CMod_PartionLeafBrushes\n"
-        "addl $1, -0x80(%ebp)\n" /* line 742 | i */
-        "addl $0x24, -0x7c(%ebp)\n" /* in */
-        "addl $0x2c, -0x70(%ebp)\n" /* leaf */
-        "movl -0x80(%ebp), %eax\n" /* i */
-        "movl -0xcc(%ebp), %edi\n" /* in */
-        "cmpl %eax, 0x24(%edi)\n" /* in */
-        "jle .Lf78db8_0007a1f2\n"
-        "movl 0x195eda4, %eax\n"
-        "movl %eax, -0xcc(%ebp)\n"
-        ".Lf78db8_000795a2:\n"
-        "movl -0x7c(%ebp), %edx\n" /* line 745 | in */
-        "movl 0x14(%edx), %edx\n"
-        "movl %edx, -0x78(%ebp)\n" /* numLeafBrushes */
-        "movl -0x7c(%ebp), %ecx\n" /* line 748 | in */
-        "movl 0x10(%ecx), %ecx\n"
-        "movl %ecx, -0x74(%ebp)\n" /* indexFirstLeafBrush */
-        "testl %edx, %edx\n" /* line 752 */
-        "jle .Lf78db8_00079544\n"
-        "movl -0xcc(%ebp), %ebx\n" /* line 755 | j */
-        "movl 0x80(%ebx), %edi\n" /* j, in */
-        "movl 0x38(%ebx), %eax\n" /* j */
-        "leal (%eax, %ecx, 2), %ecx\n"
-        "xorl %ebx, %ebx\n" /* j */
-        "xorl %esi, %esi\n" /* contents */
-        ".Lf78db8_000795ce:\n"
-        "movzwl (%ecx), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "orl 0xc(%eax, %edi), %esi\n" /* contents */
-        "addl $1, %ebx\n" /* line 752 | j */
-        "addl $2, %ecx\n"
-        "cmpl %ebx, -0x78(%ebp)\n" /* j, numLeafBrushes */
-        "jne .Lf78db8_000795ce\n"
-        "movl -0x70(%ebp), %ecx\n" /* line 758 | leaf */
-        "movl %esi, 4(%ecx)\n" /* contents */
-        /* { scope 4 */
-        /* { scope 5 */
-        "movzwl 2(%ecx), %edi\n" /* line 445 | count */
-        "testl %edi, %edi\n" /* count */
-        "jle .Lf78db8_00079558\n"
-        ".Lf78db8_000795f8:\n"
-        "movl -0xcc(%ebp), %ebx\n" /* line 446 | k */
-        "movl 0x10(%ebx), %edx\n" /* k */
-        "movl -0x70(%ebp), %eax\n" /* leaf */
-        "movzwl (%eax), %ecx\n"
-        "shll $5, %ecx\n"
-        "addl 0x70(%ebx), %ecx\n" /* k */
-        "xorl %ebx, %ebx\n" /* k */
-        "xorl %esi, %esi\n" /* contents */
-        ".Lf78db8_00079611:\n"
-        "movzwl 0x18(%ecx), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "orl 0x44(%edx, %eax, 8), %esi\n" /* contents */
-        "addl $1, %ebx\n" /* line 445 | k */
-        "addl $0x20, %ecx\n"
-        "cmpl %ebx, %edi\n" /* k, count */
-        "jne .Lf78db8_00079611\n"
-        "jmp .Lf78db8_0007955a\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        ".Lf78db8_0007962b:\n"
-        "movl $0x21c710, 4(%esp)\n" /* line 128 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007963f:\n"
-        "movl $0, -0x88(%ebp)\n" /* line 131 | i */
-        "movl $0, -0x38(%ebp)\n"
-        "movl -0xcc(%ebp), %edx\n"
-        ".Lf78db8_00079656:\n"
-        "movl -0x38(%ebp), %edi\n" /* line 133 | count */
-        "addl 0x78(%edx), %edi\n" /* count */
-        "movl %edi, %ecx\n" /* count */
-        "xorl %ebx, %ebx\n" /* j */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
-        "movss 0x2f09a0, %xmm3\n"
-        "pxor %xmm4, %xmm4\n"
-        ".Lf78db8_00079674:\n"
-        "leal (, %ebx, 4), %edx\n"
-        "movl (%esi, %edx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* line 137 */
-        "subss %xmm5, %xmm0\n"
-        "movss %xmm0, (%ecx)\n"
-        "movl 0xc(%esi, %edx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movss -0x1c(%ebp), %xmm2\n" /* line 138 */
-        "addss %xmm5, %xmm2\n"
-        "movss %xmm2, 0xc(%ecx)\n"
-        "andps %xmm3, %xmm2\n" /* line 54 */
-        "movss (%ecx), %xmm1\n"
-        "andps %xmm3, %xmm1\n"
-        /* { scope 5 */
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss %xmm2, %xmm0\n"
-        "movaps %xmm2, %xmm6\n"
-        "cmpltss %xmm4, %xmm0\n"
-        "andps %xmm0, %xmm6\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm6, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, -0x28(%ebp, %edx)\n" /* line 139 */
-        "addl $1, %ebx\n" /* line 135 | j */
-        "addl $4, %ecx\n"
-        "cmpl $3, %ebx\n" /* j */
-        "jne .Lf78db8_00079674\n"
-        "movss -0x28(%ebp), %xmm0\n" /* line 324 | extent */
-        "movss -0x24(%ebp), %xmm1\n"
-        "movss -0x20(%ebp), %xmm2\n"
-        "mulss %xmm0, %xmm0\n" /* line 81 */
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm2\n"
-        "addss %xmm2, %xmm0\n"
-        "sqrtss %xmm0, %xmm0\n"
-        "movss %xmm0, 0x18(%edi)\n" /* count */
-        "movl -0x88(%ebp), %ebx\n" /* line 144 | i, j */
-        "testl %ebx, %ebx\n" /* j */
-        "je .Lf78db8_00079750\n"
-        "movl 0x24(%esi), %eax\n" /* line 147 | in */
-        "movw %ax, 0x1e(%edi)\n" /* line 148 | count */
-        "movzwl %ax, %edx\n" /* line 149 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_0007972e\n"
-        "movl $0x21c728, 4(%esp)\n" /* line 150 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007972e:\n"
-        "movl 0x20(%esi), %eax\n" /* line 151 | in */
-        "movw %ax, 0x1c(%edi)\n" /* line 152 | count */
-        "movzwl %ax, %edx\n" /* line 153 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_00079750\n"
-        "movl $0x21c754, 4(%esp)\n" /* line 154 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_00079750:\n"
-        "addl $1, -0x88(%ebp)\n" /* line 131 | i */
-        "addl $0x30, %esi\n" /* in */
-        "addl $0x48, -0x38(%ebp)\n"
-        "movl -0x88(%ebp), %eax\n" /* i */
-        "cmpl %eax, -0x84(%ebp)\n" /* count */
-        "je .Lf78db8_000794ee\n"
-        "movl 0x195eda4, %eax\n"
-        "movl %eax, -0xcc(%ebp)\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf78db8_00079656\n"
-        ".Lf78db8_00079782:\n"
-        "movl -0xcc(%ebp), %ebx\n" /* j */
-        /* } scope */
-        /* } scope */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        ".Lf78db8_00079788:\n"
-        "movl %esi, %eax\n" /* line 468 | j */
-        "movl -0x8c(%ebp), %ecx\n" /* l */
-        "addl 4(%ecx), %eax\n"
-        "movl 0x74(%ebx), %edx\n" /* line 471 | firstBrush */
-        "testl %edx, %edx\n"
-        "jle .Lf78db8_0007986f\n"
-        "addl $0x5c, %eax\n"
-        "movl %eax, -0x3c(%ebp)\n"
-        "movl $0, -0x68(%ebp)\n" /* i */
-        "movl $0x48, -0x40(%ebp)\n"
-        "movl 0x195eda4, %edi\n" /* contents */
-        "movl %edi, -0xd0(%ebp)\n" /* contents */
-        "movl %edi, -0xd4(%ebp)\n" /* contents */
-        "jmp .Lf78db8_000797ce\n"
-        ".Lf78db8_000797c6:\n"
-        "addl $0x48, -0x40(%ebp)\n" /* line 498 */
-        "addl $0x30, -0x3c(%ebp)\n"
-        ".Lf78db8_000797ce:\n"
-        "addl $1, -0x68(%ebp)\n" /* line 471 | i */
-        "movl -0x68(%ebp), %ecx\n" /* i */
-        "movl -0xcc(%ebp), %edx\n"
-        "cmpl %ecx, 0x74(%edx)\n"
-        "jle .Lf78db8_0007986d\n"
-        "movl -0x68(%ebp), %eax\n" /* line 473 | i */
-        "testl %eax, %eax\n"
-        "je .Lf78db8_000797c6\n"
-        "movl -0x40(%ebp), %edx\n" /* line 476 */
-        "movl -0xcc(%ebp), %eax\n"
-        "addl 0x78(%eax), %edx\n"
-        "movl %edx, -0x6c(%ebp)\n" /* out */
-        "movl -0x3c(%ebp), %ecx\n" /* line 479 */
-        "movl (%ecx), %ecx\n"
-        "movl %ecx, -0x60(%ebp)\n" /* numLeafBrushes */
-        "movl $0x18, 8(%esp)\n" /* line 481 */
-        "movl $0x21c788, 4(%esp)\n" /* "CMod_LoadSubmodelBrushNodes" */
-        "movl %ecx, %eax\n"
-        "addl %eax, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl %eax, -0x64(%ebp)\n" /* indexes */
-        "movl -0x60(%ebp), %eax\n" /* line 485 | numLeafBrushes */
-        "testl %eax, %eax\n"
-        "jg .Lf78db8_0007a113\n"
-        "xorl %edi, %edi\n" /* contents */
-        ".Lf78db8_0007982e:\n"
-        "movl -0x6c(%ebp), %ebx\n" /* line 494 | out, firstBrush */
-        "movl %edi, 0x20(%ebx)\n" /* contents, firstBrush */
-        "addl $0x1c, %ebx\n" /* line 496 | firstBrush */
-        "movl %ebx, -0x5c(%ebp)\n" /* firstBrush, leaf */
-        /* { scope 4 */
-        /* { scope 5 */
-        "movzwl 2(%ebx), %edi\n" /* line 445 | k, count */
-        "testl %edi, %edi\n" /* count */
-        "jg .Lf78db8_0007a0e0\n"
-        "xorl %esi, %esi\n" /* contents */
-        /* } scope */
-        /* } scope */
-        ".Lf78db8_00079848:\n"
-        "movl -0x6c(%ebp), %edi\n" /* line 496 | out, contents */
-        "movl %esi, 0x24(%edi)\n" /* j, contents */
-        "movl -0x5c(%ebp), %ecx\n" /* line 498 | leaf */
-        "movl -0x60(%ebp), %edx\n" /* numLeafBrushes */
-        "movl -0x64(%ebp), %eax\n" /* indexes */
-        "calll CMod_PartionLeafBrushes\n"
-        "movl -0xd4(%ebp), %eax\n"
-        "movl %eax, -0xcc(%ebp)\n"
-        "jmp .Lf78db8_000797c6\n"
-        ".Lf78db8_0007986d:\n"
-        "movl %edx, %ebx\n" /* firstBrush */
-        /* } scope */
-        ".Lf78db8_0007986f:\n"
-        "movzwl 0x7c(%ebx), %eax\n" /* line 1285 | l */
-        "leal (%eax, %eax, 2), %eax\n"
-        "shll $4, %eax\n"
-        "addl 0x80(%ebx), %eax\n" /* l */
-        "movl %eax, 0x9c(%ebx)\n" /* l */
-        "movl $0, 0x1c(%eax)\n" /* line 1286 */
-        "movl 0x9c(%ebx), %eax\n" /* line 1287 | l */
-        "movl $0, 0x20(%eax)\n"
-        "movl 0x9c(%ebx), %eax\n" /* line 1288 | l */
-        "movl $0xffffffff, 0xc(%eax)\n"
-        "movl $0xffffffff, 0xc0(%ebx)\n" /* line 1289 | l */
-        "movl $0, 0xc4(%ebx)\n" /* line 1290 | l */
-        "movl $0x7f7fffff, %eax\n" /* line 191 */
-        "movl %eax, 0xc8(%ebx)\n" /* j */
-        "movl %eax, 0xcc(%ebx)\n" /* line 192 | j */
-        "movl %eax, 0xd0(%ebx)\n" /* line 193 | j */
-        "movl $0xff7fffff, %ebx\n" /* line 191 | j */
-        "movl -0xcc(%ebp), %edi\n" /* count */
-        "movl %ebx, 0xd4(%edi)\n" /* j, count */
-        "movl %ebx, 0xd8(%edi)\n" /* line 192 | j, count */
-        "movl %ebx, 0xdc(%edi)\n" /* line 193 | j, count */
-        "movl 0x9c(%edi), %eax\n" /* line 1294 | count */
-        "movw $0xffff, 0x24(%eax)\n"
-        "movl 0x9c(%edi), %eax\n" /* line 1295 | count */
-        "movw $0xffff, 0x26(%eax)\n"
-        "movl 0x9c(%edi), %eax\n" /* line 1296 | count */
-        "movw $0xffff, 0x28(%eax)\n"
-        "movl 0x9c(%edi), %eax\n" /* line 1297 | count */
-        "movw $0xffff, 0x2a(%eax)\n"
-        "movl 0x9c(%edi), %eax\n" /* line 1298 | count */
-        "movw $0xffff, 0x2c(%eax)\n"
-        "movl 0x9c(%edi), %eax\n" /* line 1299 | count */
-        "movw $0xffff, 0x2e(%eax)\n"
-        "movl $0x14, (%esp)\n" /* line 92 */
-        "calll TempMalloc\n"
-        "movl $0, (%eax)\n" /* line 93 */
-        "movl $0, 4(%eax)\n"
-        "movl $0, 0xc(%eax)\n"
-        "movl $0, 0x10(%eax)\n"
-        "movl %ebx, 8(%eax)\n" /* line 94 */
-        "movl %eax, %ebx\n" /* line 1303 | l */
-        "subl 0x30(%edi), %ebx\n" /* count, l */
-        "sarl $2, %ebx\n" /* l */
-        "leal (%ebx, %ebx, 2), %edx\n" /* l */
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "addl %ecx, %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $8, %ecx\n"
-        "addl %ecx, %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $0x10, %ecx\n"
-        "addl %ecx, %edx\n"
-        "leal (%ebx, %edx, 4), %edx\n" /* l */
-        "movl %edx, 0xe0(%edi)\n" /* count */
-        "movw $1, 2(%eax)\n" /* line 1304 */
-        "movl 0x34(%edi), %edx\n" /* line 1305 | count */
-        "movl 0x38(%edi), %ecx\n" /* count */
-        "leal (%ecx, %edx, 2), %edx\n"
-        "movl %edx, 8(%eax)\n"
-        "movl 0x34(%edi), %ecx\n" /* line 1306 | count */
-        "movl 0x38(%edi), %edx\n" /* count */
-        "movzwl 0x7c(%edi), %eax\n" /* count */
-        "movw %ax, (%edx, %ecx, 2)\n"
-        "addl $0x14, 0x30(%edi)\n" /* line 1209 | count */
-        "movl $0, (%esp)\n" /* line 1210 */
-        "calll TempMalloc\n"
-        "subl 0x30(%edi), %eax\n" /* count */
-        "sarl $2, %eax\n"
-        "leal (%eax, %eax, 2), %ebx\n" /* sidesLump */
-        "movl %ebx, %edx\n" /* sidesLump */
-        "shll $4, %edx\n"
-        "addl %edx, %ebx\n" /* sidesLump */
-        "movl %ebx, %edx\n" /* sidesLump */
-        "shll $8, %edx\n"
-        "addl %edx, %ebx\n" /* sidesLump */
-        "movl %ebx, %edx\n" /* sidesLump */
-        "shll $0x10, %edx\n"
-        "addl %edx, %ebx\n" /* sidesLump */
-        "leal (%eax, %ebx, 4), %ebx\n" /* sidesLump */
-        "leal 1(%ebx), %eax\n" /* line 1212 | sidesLump */
-        "movl %eax, 0x2c(%edi)\n" /* count */
-        "movl $0x18, 8(%esp)\n" /* line 1213 */
-        "movl $0x21c7d8, 4(%esp)\n" /* "CMod_LoadBrushRelated" */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl %eax, %esi\n" /* usePvs */
-        "leal 0x14(%eax), %edx\n" /* line 1214 */
-        "leal (%ebx, %ebx, 4), %ebx\n" /* sidesLump */
-        "shll $2, %ebx\n" /* sidesLump */
-        "movl 0x30(%edi), %eax\n" /* count */
-        "movl %ebx, 8(%esp)\n" /* sidesLump */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memcpy\n"
-        "movl %esi, 0x30(%edi)\n" /* line 1215 | usePvs, count */
-        "calll CM_Hunk_ClearTempMemory\n" /* line 1217 */
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        "movl 0x4ea68c, %eax\n" /* line 517 */
-        "movl %eax, -0x58(%ebp)\n" /* in */
-        "movl -0xc0(%ebp), %edx\n" /* header */
-        "movl 0xd4(%edx), %edx\n"
-        "addl %edx, %eax\n"
-        "movl %eax, -0x58(%ebp)\n" /* in */
-        "movl -0xc0(%ebp), %ebx\n" /* line 518 | header, firstBrush */
-        "movl 0xd0(%ebx), %ecx\n" /* firstBrush */
-        "movl $0x38e38e39, %ebx\n" /* firstBrush */
-        "movl %ecx, %eax\n"
-        "mull %ebx\n" /* firstBrush */
-        "shrl $3, %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "shll $2, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a55b\n"
-        "movl %ecx, %eax\n" /* line 520 */
-        "mull %ebx\n" /* firstBrush */
-        "shrl $3, %edx\n"
-        "movl %edx, -0x4c(%ebp)\n" /* count */
-        "testl %edx, %edx\n" /* line 522 */
-        "jle .Lf78db8_0007a58d\n"
-        ".Lf78db8_00079a75:\n"
-        "movl %edx, %eax\n"
-        ".Lf78db8_00079a77:\n"
-        "movl $0x17, 8(%esp)\n" /* line 525 */
-        "movl $0x21c804, 4(%esp)\n" /* "CMod_LoadNodes" */
-        "shll $3, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl -0xcc(%ebp), %ecx\n"
-        "movl %eax, 0x20(%ecx)\n"
-        "movl -0x4c(%ebp), %ebx\n" /* line 526 | count, firstBrush */
-        "movl %ebx, 0x1c(%ecx)\n" /* firstBrush */
-        "movl %eax, -0x54(%ebp)\n" /* line 528 | out */
-        "testl %ebx, %ebx\n" /* line 530 | firstBrush */
-        "jle .Lf78db8_00079b0f\n"
-        "movl $0, -0x50(%ebp)\n" /* i */
-        ".Lf78db8_00079aaf:\n"
-        "movl -0x58(%ebp), %edi\n" /* line 532 | in, j */
-        "movl (%edi), %eax\n" /* j */
-        "leal (%eax, %eax, 4), %eax\n"
-        "movl 0x4ea688, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl -0x54(%ebp), %edx\n" /* out */
-        "movl %eax, (%edx)\n"
-        "movl %edi, %esi\n" /* j */
-        "movl %edx, %ebx\n" /* firstBrush */
-        "xorl %edi, %edi\n" /* j */
-        ".Lf78db8_00079acb:\n"
-        "movl 4(%esi), %eax\n" /* line 536 | j */
-        "movw %ax, 4(%ebx)\n" /* line 537 | firstBrush */
-        "movswl %ax, %edx\n" /* line 538 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_00079aed\n"
-        "movl $0x21c814, 4(%esp)\n" /* line 539 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_00079aed:\n"
-        "addl $1, %edi\n" /* line 533 | j */
-        "addl $4, %esi\n" /* j */
-        "addl $2, %ebx\n" /* firstBrush */
-        "cmpl $2, %edi\n" /* j */
-        "jne .Lf78db8_00079acb\n"
-        "addl $1, -0x50(%ebp)\n" /* line 530 | i */
-        "addl $8, -0x54(%ebp)\n" /* out */
-        "addl $0x24, -0x58(%ebp)\n" /* in */
-        "movl -0x50(%ebp), %ecx\n" /* i */
-        "cmpl %ecx, -0x4c(%ebp)\n" /* count */
-        "jne .Lf78db8_00079aaf\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_00079b0f:\n"
-        "movl 0x4ea68c, %ebx\n" /* line 860 | in */
-        "movl -0xc0(%ebp), %edi\n" /* header, in */
-        "addl 0xec(%edi), %ebx\n" /* in */
-        "movl 0xe8(%edi), %eax\n" /* line 861 | in */
-        "testb $3, %al\n"
-        "jne .Lf78db8_0007a428\n"
-        ".Lf78db8_00079b2f:\n"
-        "movl %eax, %esi\n" /* line 863 | count */
-        "shrl $2, %esi\n" /* count */
-        "movl $0x1a, 8(%esp)\n" /* line 866 */
-        "movl $0x21c860, 4(%esp)\n" /* "CMod_LoadLeafSurfaces" */
-        "leal (, %esi, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x40(%edx)\n"
-        "movl %esi, 0x3c(%edx)\n" /* line 867 | count */
-        "movl %eax, %edx\n" /* line 868 */
-        "testl %esi, %esi\n" /* line 870 | count */
-        "jle .Lf78db8_00079b78\n"
-        "xorl %ecx, %ecx\n"
-        ".Lf78db8_00079b67:\n"
-        "movl (%ebx), %eax\n" /* line 872 | in */
-        "movl %eax, (%edx)\n"
-        "addl $1, %ecx\n" /* line 870 */
-        "addl $4, %ebx\n" /* in */
-        "addl $4, %edx\n"
-        "cmpl %ecx, %esi\n" /* count */
-        "jne .Lf78db8_00079b67\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_00079b78:\n"
-        "movl 0x4ea68c, %ebx\n" /* line 885 | in */
-        "movl -0xc0(%ebp), %eax\n" /* header */
-        "addl 0xf4(%eax), %ebx\n" /* in */
-        "movl 0xf0(%eax), %eax\n" /* line 886 */
-        "testb $0xf, %al\n"
-        "jne .Lf78db8_0007a403\n"
-        ".Lf78db8_00079b98:\n"
-        "movl %eax, %edi\n" /* line 888 | count */
-        "shrl $4, %edi\n" /* count */
-        "movl $0x1a, 8(%esp)\n" /* line 891 */
-        "movl $0x21c8a4, 4(%esp)\n" /* "CMod_LoadCollisionVerts" */
-        "leal (%edi, %edi, 2), %eax\n" /* count */
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x48(%edx)\n"
-        "movl %edi, 0x44(%edx)\n" /* line 892 | count */
-        "movl %eax, %edx\n" /* line 897 */
-        "testl %edi, %edi\n" /* line 898 | count */
-        "jle .Lf78db8_00079bff\n"
-        "leal -0x1c(%ebp), %ecx\n"
-        "xorl %esi, %esi\n" /* index */
-        ".Lf78db8_00079bd2:\n"
-        "movl 4(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 900 */
-        "movl %eax, (%edx)\n"
-        "movl 8(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 901 */
-        "movl %eax, 4(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 902 */
-        "movl %eax, 8(%edx)\n"
-        "addl $1, %esi\n" /* line 898 | index */
-        "addl $0x10, %ebx\n" /* in */
-        "addl $0xc, %edx\n"
-        "cmpl %esi, %edi\n" /* index, count */
-        "jne .Lf78db8_00079bd2\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_00079bff:\n"
-        "movl 0x4ea68c, %ebx\n" /* line 917 | in */
-        "movl -0xc0(%ebp), %edi\n" /* header, count */
-        "addl 0xfc(%edi), %ebx\n" /* count, in */
-        "movl 0xf8(%edi), %ecx\n" /* line 918 | count */
-        "movl %ecx, %edx\n"
-        "shrl $3, %edx\n"
-        "movl $0x24924925, %esi\n" /* index */
-        "movl %edx, %eax\n"
-        "mull %esi\n" /* index */
-        "leal (, %edx, 8), %eax\n"
-        "shll $6, %edx\n"
-        "subl %eax, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a3e4\n"
-        ".Lf78db8_00079c39:\n"
-        "shrl $3, %ecx\n" /* line 920 */
-        "movl %ecx, %eax\n"
-        "mull %esi\n" /* index */
-        "movl %edx, %edi\n" /* count */
-        "movl $0x1a, 8(%esp)\n" /* line 923 */
-        "movl $0x21c8e8, 4(%esp)\n" /* "CMod_LoadCollisionEdges" */
-        "leal (%edx, %edx, 2), %eax\n"
-        "shll $4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x50(%edx)\n"
-        "movl %edi, 0x4c(%edx)\n" /* line 924 | count */
-        "movl %eax, %edx\n" /* line 941 */
-        "testl %edi, %edi\n" /* line 942 | count */
-        "jle .Lf78db8_00079d4b\n"
-        "leal -0x1c(%ebp), %ecx\n"
-        "xorl %esi, %esi\n" /* index */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
-        ".Lf78db8_00079c83:\n"
-        "movl 4(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 944 */
-        "movl %eax, (%edx)\n"
-        "movl 8(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 945 */
-        "movl %eax, 4(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 946 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0x10(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 947 */
-        "movl %eax, 0xc(%edx)\n"
-        "movl 0x14(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 948 */
-        "movl %eax, 0x10(%edx)\n"
-        "movl 0x18(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 949 */
-        "movl %eax, 0x14(%edx)\n"
-        "movl 0x1c(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 950 */
-        "movl %eax, 0x18(%edx)\n"
-        "movl 0x20(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 951 */
-        "movl %eax, 0x1c(%edx)\n"
-        "movl 0x24(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 952 */
-        "movl %eax, 0x20(%edx)\n"
-        "movl 0x28(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 953 */
-        "movl %eax, 0x24(%edx)\n"
-        "movl 0x2c(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 954 */
-        "movl %eax, 0x28(%edx)\n"
-        "movl 0x30(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 955 */
-        "movl %eax, 0x2c(%edx)\n"
-        "movl 0x34(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movaps %xmm5, %xmm0\n" /* line 959 */
-        "divss (%ecx), %xmm0\n"
-        "leal 0x24(%edx), %eax\n" /* line 960 | result */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        "movaps %xmm0, %xmm1\n" /* line 272 */
-        "mulss 0x24(%edx), %xmm1\n"
-        "movss %xmm1, 0x24(%edx)\n"
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss 4(%eax), %xmm1\n"
-        "movss %xmm1, 4(%eax)\n"
-        "mulss 8(%eax), %xmm0\n" /* line 274 */
-        "movss %xmm0, 8(%eax)\n"
-        /* } scope */
-        "addl $1, %esi\n" /* line 942 | index */
-        "addl $0x38, %ebx\n" /* in */
-        "addl $0x30, %edx\n"
-        "cmpl %esi, %edi\n" /* index, count */
-        "jne .Lf78db8_00079c83\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_00079d4b:\n"
-        "movl 0x4ea68c, %edi\n" /* line 974 | in */
-        "movl -0xc0(%ebp), %ecx\n" /* header */
-        "addl 0x104(%ecx), %edi\n" /* in */
-        "movl 0x100(%ecx), %ecx\n" /* line 975 */
-        "movl $0x38e38e39, %ebx\n" /* sideIndex */
-        "movl %ecx, %eax\n"
-        "mull %ebx\n" /* sideIndex */
-        "shrl $4, %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "shll $3, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a466\n"
-        ".Lf78db8_00079d7d:\n"
-        "movl %ecx, %eax\n" /* line 977 */
-        "mull %ebx\n" /* sideIndex */
-        "shrl $4, %edx\n"
-        "movl %edx, -0x44(%ebp)\n" /* count */
-        "movl $0x1a, 8(%esp)\n" /* line 980 */
-        "movl $0x21c930, 4(%esp)\n" /* "CMod_LoadCollisionTriangles" */
-        "leal (%edx, %edx, 8), %eax\n"
-        "shll $3, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x58(%edx)\n"
-        "movl -0x44(%ebp), %ecx\n" /* line 981 | count */
-        "movl %ecx, 0x54(%edx)\n"
-        "movl %eax, %esi\n" /* line 998 | index */
-        "testl %ecx, %ecx\n" /* line 999 */
-        "jle .Lf78db8_00079e89\n"
-        "movl $0, -0x48(%ebp)\n" /* index */
-        ".Lf78db8_00079dc5:\n"
-        "movl (%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1001 */
-        "movl %eax, (%esi)\n" /* index */
-        "movl 4(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1002 */
-        "movl %eax, 4(%esi)\n" /* index */
-        "movl 8(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1003 */
-        "movl %eax, 8(%esi)\n" /* index */
-        "movl 0xc(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1004 */
-        "movl %eax, 0xc(%esi)\n" /* index */
-        "movl 0x10(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1005 */
-        "movl %eax, 0x10(%esi)\n" /* index */
-        "movl 0x14(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1006 */
-        "movl %eax, 0x14(%esi)\n" /* index */
-        "movl 0x18(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1007 */
-        "movl %eax, 0x18(%esi)\n" /* index */
-        "movl 0x1c(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1008 */
-        "movl %eax, 0x1c(%esi)\n" /* index */
-        "movl 0x20(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1009 */
-        "movl %eax, 0x20(%esi)\n" /* index */
-        "movl 0x24(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1010 */
-        "movl %eax, 0x24(%esi)\n" /* index */
-        "movl 0x28(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1011 */
-        "movl %eax, 0x28(%esi)\n" /* index */
-        "movl 0x2c(%edi), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1012 */
-        "movl %eax, 0x2c(%esi)\n" /* index */
-        "movl %edi, %ecx\n" /* in */
-        "movl %esi, %edx\n" /* index */
-        "xorl %ebx, %ebx\n" /* sideIndex */
-        ".Lf78db8_00079e59:\n"
-        "movl 0x3c(%ecx), %eax\n" /* line 1016 */
-        "movl %eax, 0x3c(%edx)\n"
-        "movl 0x30(%ecx), %eax\n" /* line 1017 */
-        "movl %eax, 0x30(%edx)\n"
-        "addl $1, %ebx\n" /* line 1014 | sideIndex */
-        "addl $4, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl $3, %ebx\n" /* sideIndex */
-        "jne .Lf78db8_00079e59\n"
-        "addl $1, -0x48(%ebp)\n" /* line 999 | index */
-        "addl $0x48, %edi\n" /* in */
-        "addl $0x48, %esi\n" /* index */
-        "movl -0x48(%ebp), %ebx\n" /* index, sideIndex */
-        "cmpl %ebx, -0x44(%ebp)\n" /* sideIndex, count */
-        "jne .Lf78db8_00079dc5\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_00079e89:\n"
-        "movl 0x4ea68c, %ebx\n" /* line 1031 | in */
-        "movl -0xc0(%ebp), %edi\n" /* header, in */
-        "addl 0x10c(%edi), %ebx\n" /* in */
-        "movl 0x108(%edi), %ecx\n" /* line 1032 | in */
-        "movl %ecx, %edx\n"
-        "shrl $2, %edx\n"
-        "movl $0x24924925, %esi\n" /* index */
-        "movl %edx, %eax\n"
-        "mull %esi\n" /* index */
-        "leal (, %edx, 4), %eax\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a447\n"
-        ".Lf78db8_00079ec3:\n"
-        "shrl $2, %ecx\n" /* line 1034 */
-        "movl %ecx, %eax\n"
-        "mull %esi\n" /* index */
-        "movl %edx, %edi\n" /* in */
-        "movl $0x1a, 8(%esp)\n" /* line 1037 */
-        "movl $0x21c978, 4(%esp)\n" /* "CMod_LoadCollisionBorders" */
-        "leal (, %edx, 4), %edx\n"
-        "movl %edi, %eax\n" /* in */
-        "shll $5, %eax\n"
-        "subl %edx, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %eax, 0x60(%edx)\n"
-        "movl %edi, 0x5c(%edx)\n" /* line 1038 | in */
-        "movl %eax, %edx\n" /* line 1046 */
-        "testl %edi, %edi\n" /* line 1047 | in */
-        "jle .Lf78db8_00079f61\n"
-        "leal -0x1c(%ebp), %ecx\n"
-        "xorl %esi, %esi\n" /* index */
-        ".Lf78db8_00079f09:\n"
-        "movl (%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1049 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1050 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1051 */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1052 */
-        "movl %eax, 0xc(%edx)\n"
-        "movl 0x10(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1053 */
-        "movl %eax, 0x10(%edx)\n"
-        "movl 0x14(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1054 */
-        "movl %eax, 0x14(%edx)\n"
-        "movl 0x18(%ebx), %eax\n" /* in */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl (%ecx), %eax\n" /* line 1055 */
-        "movl %eax, 0x18(%edx)\n"
-        "addl $1, %esi\n" /* line 1047 | index */
-        "addl $0x1c, %ebx\n" /* in */
-        "addl $0x1c, %edx\n"
-        "cmpl %esi, %edi\n" /* index, in */
-        "jne .Lf78db8_00079f09\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_00079f61:\n"
-        "movl 0x4ea68c, %ebx\n" /* line 1068 | in */
-        "movl -0xc0(%ebp), %ecx\n" /* header */
-        "addl 0x114(%ecx), %ebx\n" /* in */
-        "movl %ecx, %edi\n" /* line 1069 | index */
-        "movl 0x110(%ecx), %ecx\n"
-        "movl $0xaaaaaaab, %esi\n" /* count */
-        "movl %ecx, %eax\n"
-        "mull %esi\n" /* count */
-        "shrl $3, %edx\n"
-        "leal (%edx, %edx, 2), %edx\n"
-        "shll $2, %edx\n"
-        "cmpl %edx, %ecx\n"
-        "jne .Lf78db8_0007a4d3\n"
-        ".Lf78db8_00079f95:\n"
-        "movl %ecx, %eax\n" /* line 1071 */
-        "mull %esi\n" /* count */
-        "movl %edx, %esi\n" /* count */
-        "shrl $3, %esi\n" /* count */
-        "movl $0x1a, 8(%esp)\n" /* line 1074 */
-        "movl $0x21c9c4, 4(%esp)\n" /* "CMod_LoadCollisionPartitions" */
-        "leal (%esi, %esi, 2), %eax\n" /* count */
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl 0x195eda4, %ecx\n"
-        "movl %ecx, -0xcc(%ebp)\n"
-        "movl %eax, 0x68(%ecx)\n"
-        "movl %esi, 0x64(%ecx)\n" /* line 1075 | count */
-        "movl %eax, %ecx\n" /* line 1083 */
-        "testl %esi, %esi\n" /* line 1084 | count */
-        "jle .Lf78db8_0007a02c\n"
-        "xorl %edi, %edi\n" /* index */
-        ".Lf78db8_00079fd6:\n"
-        "movzbl 2(%ebx), %eax\n" /* line 1086 | in */
-        "movb %al, (%ecx)\n"
-        "movzbl 3(%ebx), %eax\n" /* line 1087 | in */
-        "movb %al, 1(%ecx)\n"
-        "movl 4(%ebx), %eax\n" /* line 1088 | in */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, -0xdc(%ebp)\n"
-        "movl -0xcc(%ebp), %eax\n"
-        "movl 0x58(%eax), %edx\n"
-        "movl -0xdc(%ebp), %eax\n"
-        "leal (%edx, %eax, 8), %edx\n"
-        "movl %edx, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 1089 | in */
-        "leal (, %eax, 4), %edx\n"
-        "shll $5, %eax\n"
-        "subl %edx, %eax\n"
-        "movl -0xcc(%ebp), %edx\n"
-        "addl 0x60(%edx), %eax\n"
-        "movl %eax, 8(%ecx)\n"
-        "addl $1, %edi\n" /* line 1084 | index */
-        "addl $0xc, %ebx\n" /* in */
-        "addl $0xc, %ecx\n"
-        "cmpl %edi, %esi\n" /* index, count */
-        "jne .Lf78db8_00079fd6\n"
-        /* } scope */
-        ".Lf78db8_0007a02c:\n"
-        "cmpb $0, -0xc1(%ebp)\n" /* line 1256 | usePvs */
-        "je .Lf78db8_0007a164\n"
-        "movl -0xc0(%ebp), %eax\n" /* line 1258 | header, l */
-        "addl $0x128, %eax\n" /* l */
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        "movl -0xc0(%ebp), %ecx\n" /* line 1160 | header */
-        "movl 0x128(%ecx), %edx\n"
-        "testl %edx, %edx\n" /* line 1161 */
-        "je .Lf78db8_0007a321\n"
-        "movl 0x4ea68c, %ebx\n" /* line 1169 | buf */
-        "addl 4(%eax), %ebx\n" /* buf */
-        "movl -0xcc(%ebp), %eax\n" /* line 1171 */
-        "movl $1, 0x90(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 1172 | buf */
-        "movl -0xcc(%ebp), %ecx\n"
-        "movl %eax, 0x84(%ecx)\n"
-        "movl 4(%ebx), %eax\n" /* line 1173 | buf */
-        "movl %eax, 0x88(%ecx)\n"
-        "leal -8(%edx), %esi\n" /* line 1175 | index */
-        "movl $9, 8(%esp)\n"
-        "movl $0x21c9e4, 4(%esp)\n" /* "CMod_LoadVisibility" */
-        "movl %esi, (%esp)\n" /* index */
-        "calll CM_Hunk_Alloc\n"
-        "movl -0xcc(%ebp), %edi\n" /* count */
-        "movl %eax, 0x8c(%edi)\n" /* count */
-        "movl %esi, 8(%esp)\n" /* line 1176 | index */
-        "addl $8, %ebx\n" /* buf */
-        "movl %ebx, 4(%esp)\n" /* buf */
-        "movl %eax, (%esp)\n"
-        "calll Com_Memcpy\n"
-        "movl 0x195eda4, %eax\n"
-        "movl %eax, -0xcc(%ebp)\n"
-        "movl -0xc0(%ebp), %ebx\n" /* header, buf */
-        "movl -0xc0(%ebp), %edi\n" /* header, count */
-        "movl %eax, %edx\n"
-        "jmp .Lf78db8_0007a182\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        /* { scope 5 */
-        ".Lf78db8_0007a0e0:\n"
-        "movl 0x195eda4, %eax\n" /* line 446 */
-        "movl 0x10(%eax), %ecx\n"
-        "movl -0x6c(%ebp), %ebx\n" /* out, k */
-        "movzwl 0x1c(%ebx), %edx\n" /* k */
-        "shll $5, %edx\n"
-        "addl 0x70(%eax), %edx\n"
-        "xorl %ebx, %ebx\n" /* k */
-        "xorl %esi, %esi\n" /* contents */
-        ".Lf78db8_0007a0f9:\n"
-        "movzwl 0x18(%edx), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "orl 0x44(%ecx, %eax, 8), %esi\n" /* contents */
-        "addl $1, %ebx\n" /* line 445 | k */
-        "addl $0x20, %edx\n"
-        "cmpl %ebx, %edi\n" /* k, count */
-        "jne .Lf78db8_0007a0f9\n"
-        "jmp .Lf78db8_00079848\n"
-        /* } scope */
-        /* } scope */
-        ".Lf78db8_0007a113:\n"
-        "xorl %esi, %esi\n" /* line 485 | j */
-        "xorl %edi, %edi\n" /* contents */
-        ".Lf78db8_0007a117:\n"
-        "movl %esi, %ebx\n" /* line 487 | j, firstBrush */
-        "movl -0x3c(%ebp), %eax\n"
-        "addl -4(%eax), %ebx\n" /* firstBrush */
-        "movl -0x64(%ebp), %edx\n" /* line 488 | indexes */
-        "movw %bx, (%edx, %esi, 2)\n" /* firstBrush */
-        "movzwl %bx, %eax\n" /* line 489 | firstBrush */
-        "cmpl %eax, %ebx\n" /* firstBrush */
-        "je .Lf78db8_0007a141\n"
-        "movl $0x21c7a4, 4(%esp)\n" /* line 490 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007a141:\n"
-        "movl -0xd0(%ebp), %ecx\n" /* line 491 */
-        "movl 0x80(%ecx), %edx\n"
-        "leal (%ebx, %ebx, 2), %eax\n" /* firstBrush */
-        "shll $4, %eax\n"
-        "orl 0xc(%eax, %edx), %edi\n" /* contents */
-        "addl $1, %esi\n" /* line 485 | j */
-        "cmpl %esi, -0x60(%ebp)\n" /* j, numLeafBrushes */
-        "jne .Lf78db8_0007a117\n"
-        "jmp .Lf78db8_0007982e\n"
-        /* } scope */
-        /* } scope */
-        ".Lf78db8_0007a164:\n"
-        "movl -0xc0(%ebp), %edx\n" /* line 1262 | header */
-        "movl 0x128(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf78db8_0007a394\n"
-        "movl %edx, %ebx\n" /* name */
-        "movl %edx, %edi\n" /* count */
-        "movl -0xcc(%ebp), %edx\n"
-        ".Lf78db8_0007a182:\n"
-        "addl $0x130, %ebx\n" /* line 1266 | l */
-        /* { scope 2: count, l, l, i, ... */
-        "movl 0x130(%edi), %eax\n" /* line 1143 | count */
-        "movl %eax, 0x94(%edx)\n"
-        "movl $9, 8(%esp)\n" /* line 1144 */
-        "movl $0x21ca34, 4(%esp)\n" /* "CMod_LoadEntityString" */
-        "movl 0x130(%edi), %eax\n" /* count */
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl -0xcc(%ebp), %ecx\n"
-        "movl %eax, 0x98(%ecx)\n"
-        "movl 0x130(%edi), %edx\n" /* line 1145 | count */
-        "movl %edx, 8(%esp)\n"
-        "movl 0x4ea68c, %edx\n"
-        "addl 4(%ebx), %edx\n" /* in */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memcpy\n"
-        /* } scope */
-        "movl $0, 0x4ea68c\n" /* line 1267 */
-        /* } scope */
-        "addl $0xec, %esp\n" /* line 1268 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf78db8_0007a1f2:\n"
-        "movl 0x195eda4, %edx\n"
-        "movl %edx, -0xcc(%ebp)\n"
-        "movl 0x4ea68c, %esi\n" /* usePvs */
-        "movl %edx, %ebx\n" /* l */
-        "jmp .Lf78db8_00079788\n"
-        /* { scope 1: in, usePvs, in, out, ... */
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        ".Lf78db8_0007a20b:\n"
-        "movl $0, -0x94(%ebp)\n" /* line 686 | i */
-        "movl %esi, %ecx\n" /* cluster */
-        "testb %cl, %cl\n"
-        "je .Lf78db8_0007a2be\n"
-        ".Lf78db8_0007a21f:\n"
-        "movl (%edi), %esi\n" /* line 691 | in, cluster */
-        "movw %si, 0x28(%ebx)\n" /* line 692 | cluster, out */
-        "movswl %si, %eax\n" /* line 693 | cluster */
-        "cmpl %eax, %esi\n" /* cluster */
-        "je .Lf78db8_0007a240\n"
-        "movl $0x21c644, 4(%esp)\n" /* line 694 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007a240:\n"
-        "movl 8(%edi), %eax\n" /* line 698 | in */
-        "movw %ax, (%ebx)\n" /* line 699 | out */
-        "movzwl %ax, %edx\n" /* line 700 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_0007a261\n"
-        "movl $0x21c668, 4(%esp)\n" /* line 701 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007a261:\n"
-        "movl 0xc(%edi), %eax\n" /* line 704 | in */
-        "movw %ax, 2(%ebx)\n" /* line 705 | out */
-        "movzwl %ax, %edx\n" /* line 706 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_0007a283\n"
-        "movl $0x21c698, 4(%esp)\n" /* line 707 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007a283:\n"
-        "movl 0x195eda4, %edx\n" /* line 711 */
-        "cmpl 0x84(%edx), %esi\n" /* cluster */
-        "jl .Lf78db8_0007a29a\n"
-        "leal 1(%esi), %eax\n" /* line 712 | cluster */
-        "movl %eax, 0x84(%edx)\n"
-        ".Lf78db8_0007a29a:\n"
-        "addl $1, -0x94(%ebp)\n" /* line 686 | i */
-        "addl $0x24, %edi\n" /* in */
-        "addl $0x2c, %ebx\n" /* out */
-        "movl -0x94(%ebp), %eax\n" /* i */
-        "cmpl %eax, -0x90(%ebp)\n" /* count */
-        "jne .Lf78db8_0007a21f\n"
-        "jmp .Lf78db8_00079446\n"
-        ".Lf78db8_0007a2be:\n"
-        "movl 8(%edi), %eax\n" /* line 698 | in */
-        "movw %ax, (%ebx)\n" /* line 699 | out */
-        "movzwl %ax, %edx\n" /* line 700 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_0007a2df\n"
-        "movl $0x21c668, 4(%esp)\n" /* line 701 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007a2df:\n"
-        "movl 0xc(%edi), %eax\n" /* line 704 | in */
-        "movw %ax, 2(%ebx)\n" /* line 705 | out */
-        "movzwl %ax, %edx\n" /* line 706 */
-        "cmpl %edx, %eax\n"
-        "je .Lf78db8_0007a301\n"
-        "movl $0x21c698, 4(%esp)\n" /* line 707 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf78db8_0007a301:\n"
-        "addl $1, -0x94(%ebp)\n" /* line 686 | i */
-        "addl $0x24, %edi\n" /* in */
-        "addl $0x2c, %ebx\n" /* out */
-        "movl -0x94(%ebp), %eax\n" /* i */
-        "cmpl %eax, -0x90(%ebp)\n" /* count */
-        "jne .Lf78db8_0007a2be\n"
-        "jmp .Lf78db8_00079446\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        ".Lf78db8_0007a321:\n"
-        "movl -0xcc(%ebp), %ebx\n" /* line 1163 | buf */
-        "movl 0x84(%ebx), %eax\n" /* buf */
-        "addl $0x1f, %eax\n"
-        "andl $0xffffffe0, %eax\n"
-        "movl %eax, 0x88(%ebx)\n" /* buf */
-        "movl $9, 8(%esp)\n" /* line 1164 */
-        "movl $0x21c9e4, 4(%esp)\n" /* "CMod_LoadVisibility" */
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "movl %eax, 0x8c(%ebx)\n" /* buf */
-        "movl 0x88(%ebx), %edx\n" /* line 1165 | buf */
-        "movl %edx, 8(%esp)\n"
-        "movl $0xff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memset\n"
-        "movl 0x195eda4, %edi\n" /* count */
-        "movl %edi, -0xcc(%ebp)\n" /* count */
-        "movl -0xc0(%ebp), %ebx\n" /* header, buf */
-        "movl -0xc0(%ebp), %edi\n" /* header, count */
-        "movl -0xcc(%ebp), %edx\n"
-        "jmp .Lf78db8_0007a182\n"
-        /* } scope */
-        /* } scope */
-        ".Lf78db8_0007a394:\n"
-        "movl $0x21c9f8, 4(%esp)\n" /* line 1263 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x195eda4, %ecx\n"
-        "movl %ecx, -0xcc(%ebp)\n"
-        "movl -0xc0(%ebp), %ebx\n" /* header, name */
-        "movl -0xc0(%ebp), %edi\n" /* header, count */
-        "movl %ecx, %edx\n"
-        "jmp .Lf78db8_0007a182\n"
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        ".Lf78db8_0007a3c7:\n"
-        "movl $0x18, 8(%esp)\n" /* line 586 */
-        "movl $0x21c468, 4(%esp)\n" /* "CMod_LoadBrushSides" */
-        "movl %eax, (%esp)\n"
-        "calll CM_Hunk_Alloc\n"
-        "jmp .Lf78db8_00078f7e\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a3e4:\n"
-        "movl $0x21c8bc, 4(%esp)\n" /* line 919 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0xf8(%edi), %ecx\n" /* count */
-        "jmp .Lf78db8_00079c39\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a403:\n"
-        "movl $0x21c878, 4(%esp)\n" /* line 887 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0xc0(%ebp), %ecx\n" /* header */
-        "movl 0xf0(%ecx), %eax\n"
-        "jmp .Lf78db8_00079b98\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a428:\n"
-        "movl $0x21c838, 4(%esp)\n" /* line 862 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0xe8(%edi), %eax\n" /* in */
-        "jmp .Lf78db8_00079b2f\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a447:\n"
-        "movl $0x21c94c, 4(%esp)\n" /* line 1033 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x108(%edi), %ecx\n" /* in */
-        "jmp .Lf78db8_00079ec3\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a466:\n"
-        "movl $0x21c900, 4(%esp)\n" /* line 976 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0xc0(%ebp), %edx\n" /* header */
-        "movl 0x100(%edx), %ecx\n"
-        "jmp .Lf78db8_00079d7d\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        ".Lf78db8_0007a48b:\n"
-        "movl $0x21c420, 4(%esp)\n" /* line 579 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x30(%ebx), %edx\n" /* materialNum */
-        "movl -0xa0(%ebp), %edi\n" /* brushCount, index */
-        "shrl $3, %edx\n" /* line 581 */
-        "leal (%edi, %edi, 2), %eax\n" /* index */
-        "addl %eax, %eax\n"
-        "movl %edx, %ebx\n" /* line 582 | materialNum */
-        "subl %eax, %ebx\n" /* materialNum */
-        "jns .Lf78db8_00078f6d\n"
-        ".Lf78db8_0007a4ba:\n"
-        "movl $0x21c444, 4(%esp)\n" /* line 583 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf78db8_00078f6d\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a4d3:\n"
-        "movl $0x21c994, 4(%esp)\n" /* line 1070 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x110(%edi), %ecx\n" /* index */
-        "jmp .Lf78db8_00079f95\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a4f2:\n"
-        "movl $0x21c3cc, 4(%esp)\n" /* line 58 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 8(%esi), %ecx\n"
-        "movl %ecx, %eax\n" /* line 60 */
-        "mull %ebx\n"
-        "movl %edx, %edi\n" /* count */
-        "shrl $4, %edi\n" /* count */
-        "testl %edi, %edi\n" /* line 62 | count */
-        "jg .Lf78db8_00078ea5\n"
-        ".Lf78db8_0007a51a:\n"
-        "movl $0x21c3f4, 4(%esp)\n" /* line 63 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf78db8_00078ea5\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        ".Lf78db8_0007a533:\n"
-        "movl $0x21c420, 4(%esp)\n" /* line 572 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x4ea68c, %esi\n" /* j */
-        "movl -0xc0(%ebp), %ecx\n" /* header */
-        "movl 0x38(%ecx), %eax\n"
-        "jmp .Lf78db8_00078f35\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        ".Lf78db8_0007a55b:\n"
-        "movl $0x21c2f4, 4(%esp)\n" /* line 519 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0xc0(%ebp), %edx\n" /* header */
-        "movl 0xd0(%edx), %ecx\n"
-        "movl %ecx, %eax\n" /* line 520 */
-        "mull %ebx\n" /* firstBrush */
-        "shrl $3, %edx\n"
-        "movl %edx, -0x4c(%ebp)\n" /* count */
-        "testl %edx, %edx\n" /* line 522 */
-        "jg .Lf78db8_00079a75\n"
-        ".Lf78db8_0007a58d:\n"
-        "movl $0x21c7f0, 4(%esp)\n" /* line 523 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0x4c(%ebp), %eax\n" /* count */
-        "jmp .Lf78db8_00079a77\n"
-        /* } scope */
-        /* { scope 2: count, l, l, i, ... */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        ".Lf78db8_0007a5a9:\n"
-        "movl $0x21c6c0, 4(%esp)\n" /* line 116 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0xc0(%ebp), %edx\n" /* header */
-        "movl 0x120(%edx), %ecx\n"
-        "movl %ecx, %eax\n" /* line 117 */
-        "mull %ebx\n" /* j */
-        "shrl $5, %edx\n"
-        "movl %edx, -0x84(%ebp)\n" /* count */
-        "testl %edx, %edx\n" /* line 119 */
-        "jg .Lf78db8_0007949c\n"
-        ".Lf78db8_0007a5de:\n"
-        "movl $0x21c6e8, 4(%esp)\n" /* line 120 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0x84(%ebp), %ecx\n" /* count */
-        "jmp .Lf78db8_0007949e\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        /* { scope 4 */
-        ".Lf78db8_0007a5fd:\n"
-        "movl $0x21c5fc, 4(%esp)\n" /* line 673 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0xc0(%ebp), %edx\n" /* header */
-        "movl 0xd8(%edx), %ecx\n"
-        "movl %ecx, %eax\n" /* line 674 */
-        "mull %ebx\n" /* out */
-        "shrl $3, %edx\n"
-        "movl %edx, -0x90(%ebp)\n" /* count */
-        "testl %edx, %edx\n" /* line 676 */
-        "jg .Lf78db8_00079401\n"
-        ".Lf78db8_0007a632:\n"
-        "movl $0x21c620, 4(%esp)\n" /* line 677 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0x90(%ebp), %ecx\n" /* count */
-        "jmp .Lf78db8_00079403\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        ".Lf78db8_0007a651:\n"
-        "movl $0x21c5b0, 4(%esp)\n" /* line 1106 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x118(%edi), %eax\n" /* count */
-        "jmp .Lf78db8_00079309\n"
-        /* } scope */
-        /* { scope 3: inBrush, inSides, outBrush, outSides, ... */
-        ".Lf78db8_0007a670:\n"
-        "movl $0x21c544, 4(%esp)\n" /* line 827 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl -0xc0(%ebp), %ecx\n" /* header */
-        "movl 0xe0(%ecx), %eax\n"
-        "jmp .Lf78db8_00079277\n"
-    );
-}
+    clipMap_t *cmLocal;
+    const dheader_t *header;
+    const byte *bspBase;
+    int count;
+    int i, j;
+    byte usePvsFlag;
 
+    cmLocal = cm_ptr;
+    usePvsFlag = (byte)usePvs;
+
+    /* Clear clipmap and cml */
+    Com_Memset(cmLocal, 0, sizeof(clipMap_t));
+    Com_Memset(&cml, 0, 12);
+
+    /* Allocate and copy name */
+    {
+        int nameLen = strlen(name) + 1;
+        cmLocal->name = (const char *)CM_Hunk_Alloc(nameLen, "CM_LoadMapFromBsp", 0x17);
+        strcpy((char *)cmLocal->name, name);
+    }
+
+    /* Get BSP data */
+    header = Com_GetBsp(NULL, &cmLocal->checksum);
+    bspBase = (const byte *)header;
+    cml.base = (void *)header;
+
+    /* ===========================
+     * CMod_LoadMaterials (lump 0)
+     * =========================== */
+    {
+        const byte *in;
+        int matLumpLen, matLumpOfs;
+
+        /* lumps[0] at header offset 8: {filelen, fileofs} */
+        matLumpOfs = header->lumps[0].fileofs;
+        matLumpLen = header->lumps[0].filelen;
+        in = bspBase + matLumpOfs;
+
+        /* sizeof(dmaterial_t) = 72. Division uses magic mul by 0x38e38e39, shift right 4 */
+        if (matLumpLen % 72 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadMaterials: funny lump size");
+        }
+        count = matLumpLen / 72;
+        if (count <= 0) {
+            Com_Error(ERR_DROP, "CMod_LoadMaterials: map has no materials");
+        }
+
+        /* Allocate materials with one extra slot at the beginning (indexed -1) */
+        cmLocal->materials = (dmaterial_t *)CM_Hunk_Alloc(count * 72 + 72, "CMod_LoadMaterials", 0x17);
+        cmLocal->materials = (dmaterial_t *)((byte *)cmLocal->materials + 72);
+        cmLocal->numMaterials = count;
+
+        Com_Memcpy(cmLocal->materials, (const void *)in, count * 72);
+    }
+
+    /* ===========================
+     * CMod_LoadPlanes (lump 4)
+     * =========================== */
+    /* header offset 0x28 = lumps[4] */
+    CMod_LoadPlanes(bspBase, &header->lumps[4]);
+
+    usePvsFlag = (byte)usePvs; /* re-read since function call may clobber */
+
+    /* ===========================
+     * CMod_LoadBrushes + BrushSides (lumps 5,6)
+     * =========================== */
+    {
+        /* Lump 6 (offset 0x38): brush definitions */
+        /* Lump 5 (offset 0x30): brush sides */
+        const byte *inBrush;
+        const byte *inSides;
+        int brushCount;
+        int sideCount;
+        int sideLumpLen;
+        cbrush_t *outBrush;
+        cbrushside_t *outSides;
+
+        /* Brush lump: header->lumps[6] at offset 0x38 */
+        inBrush = bspBase + header->lumps[6].fileofs;
+        if (header->lumps[6].filelen & 3) {
+            Com_Error(ERR_DROP, "CMod_LoadBrushes: funny lump size");
+        }
+        brushCount = header->lumps[6].filelen >> 2;
+
+        /* Sides lump: header->lumps[5] at offset 0x30 */
+        inSides = bspBase + header->lumps[5].fileofs;
+        sideLumpLen = header->lumps[5].filelen;
+        if (sideLumpLen & 7) {
+            Com_Error(ERR_DROP, "CMod_LoadBrushes: funny lump size");
+        }
+        sideCount = sideLumpLen >> 3;
+        if (sideCount - brushCount * 6 < 0) {
+            Com_Error(ERR_DROP, "CMod_LoadBrushSides: too few sides");
+        }
+
+        /* Allocate brush sides */
+        if (sideCount == 0) {
+            outSides = (cbrushside_t *)0;
+        } else {
+            outSides = (cbrushside_t *)CM_Hunk_Alloc(sideCount * 8, "CMod_LoadBrushSides", 0x18);
+        }
+        cmLocal->brushsides = outSides;
+        cmLocal->numBrushSides = sideCount;
+
+        /* Allocate brushes: (brushCount * 3 + 3) * sizeof(cplane_t)
+         * The asm: leal 3(%edx, %edx, 2), %eax = 3*brushCount + 3; shll $4 = *16
+         * But cbrush_t is 48 bytes... Actually sizeof(cplane_t) is 20 bytes.
+         * (brushCount*3 + 3) * 16 = total allocation.
+         * Actually: brushCount * 3 + 3 = total items; each item is 16 bytes... but that's not cbrush_t(48).
+         * Let me re-examine: leal 3(%edx, %edx, 2) = edx*3 + 3; shll $4 = *16.
+         * So allocation = (brushCount*3 + 3) * 16 bytes.
+         * But a cbrush_t is 48 bytes = 3*16. So this is (brushCount + 1) cbrush_t structs.
+         * The +1 is for box_brush. */
+        outBrush = (cbrush_t *)CM_Hunk_Alloc((brushCount * 3 + 3) * 16, "CMod_LoadBrushes", 0x18);
+        cmLocal->brushes = outBrush;
+        cmLocal->numBrushes = (unsigned short)brushCount;
+        if ((int)(unsigned short)brushCount != brushCount) {
+            Com_Error(ERR_DROP, "CMod_LoadBrushes: numBrushes overflows a short");
+        }
+
+        for (i = 0; i < brushCount; i++) {
+            int numSides;
+            int materialNum;
+            int axialIdx, sideIdx;
+
+            /* Each inBrush entry is 4 bytes: short numTotalSides, short materialNum */
+            numSides = (int)*(const short *)inBrush - 6;
+            outBrush->numsides = numSides;
+            if (numSides < 0) {
+                Com_Error(ERR_DROP, "CMod_LoadBrushes: bad numsides");
+            }
+
+            if (outBrush->numsides == 0) {
+                outBrush->sides = (cbrushside_t *)0;
+            } else {
+                outBrush->sides = outSides;
+            }
+
+            /* Load 3 axial side pairs (6 axial sides, stored as 3 pairs of plane+material) */
+            for (axialIdx = 0; axialIdx < 3; axialIdx++) {
+                /* First side of this axial pair (sideIdx 0) */
+                {
+                    int planeNum = *(const int *)inSides;
+                    /* Store planeNum as the axial plane reference in the brush
+                     * outBrush byte layout: offset 0x00 = mins[0..2], 0x0C = contents, 0x10 = maxs[0..2] */
+                    *(int *)((byte *)outBrush + axialIdx * 4) = planeNum;
+                }
+                for (sideIdx = 0; sideIdx < 2; sideIdx++) {
+                    if (sideIdx > 0) {
+                        int planeNum = *(const int *)inSides;
+                        /* Store second axial plane in outBrush + 0x10 + axialIdx*4 */
+                        *(int *)((byte *)outBrush + 0x10 + axialIdx * 4) = planeNum;
+                    }
+
+                    materialNum = *(const int *)(inSides + 4);
+                    if (materialNum < 0 || materialNum >= cmLocal->numMaterials) {
+                        Com_Error(ERR_DROP, "CMod_LoadBrushes: bad materialNum: %i", materialNum);
+                    }
+
+                    /* Store material in axialMaterialNum[sideIdx][axialIdx]
+                     * axialMaterialNum is at offset 0x24 in cbrush_t (short[2][3])
+                     * axialMaterialNum[sideIdx][axialIdx] offset = 0x24 + (sideIdx*3 + axialIdx)*2 */
+                    outBrush->axialMaterialNum[sideIdx][axialIdx] = (short)materialNum;
+                    if ((int)(short)materialNum != materialNum) {
+                        Com_Error(ERR_DROP, "CMod_LoadBrushSides: materialNum overflows a short");
+                    }
+
+                    inSides += 8;
+                }
+            }
+
+            /* Load extra (non-axial) brush sides */
+            {
+                int *outSideNumSides = (int *)((byte *)outBrush + 0x1C);  /* numsides field */
+                for (j = 0; j < *outSideNumSides; j++) {
+                    int planeNum = *(const int *)inSides;
+                    outSides->plane = cml.planes + planeNum;
+                    outSides->materialNum = *(const int *)(inSides + 4);
+                    if (outSides->materialNum < 0 || outSides->materialNum >= cmLocal->numMaterials) {
+                        Com_Error(ERR_DROP, "CMod_LoadBrushes: bad materialNum: %i", outSides->materialNum);
+                    }
+                    inSides += 8;
+                    outSides++;
+                }
+            }
+
+            /* Get brush content flags from material */
+            materialNum = (int)((const short *)inBrush)[1];
+            if (materialNum < 0 || materialNum >= cmLocal->numMaterials) {
+                Com_Error(ERR_DROP, "CMod_LoadBrushes: bad materialNum: %i", materialNum);
+            }
+            outBrush->contents = cmLocal->materials[materialNum].contentFlags & 0xDFFFFFFB;
+
+            outBrush++;
+            inBrush += 4;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadLeafBrushes (lump 28)
+     * header offsets: 0xE0 = lumps[27].filelen, 0xE4 = lumps[27].fileofs
+     * =========================== */
+    {
+        const byte *in;
+        unsigned short *out;
+
+        in = bspBase + header->lumps[27].fileofs;
+        if (header->lumps[27].filelen & 3) {
+            Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: funny lump size");
+        }
+        count = header->lumps[27].filelen >> 2;
+
+        out = (unsigned short *)CM_Hunk_Alloc(count * 2 + 2, "CMod_LoadLeafBrushes", 0x18);
+        cmLocal->leafbrushes = out;
+        cmLocal->numLeafBrushes = count;
+
+        for (i = 0; i < count; i++) {
+            int val = *(const int *)in;
+            *out = (unsigned short)val;
+            if ((int)(unsigned short)val != val) {
+                Com_Error(ERR_DROP, "CMod_LoadLeafBrushes: leaf brush overflows a short");
+            }
+            in += 4;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadCollisionAabbTrees (lump 34)
+     * header offset: 0x118 = lumps[33].filelen, 0x11C = lumps[33].fileofs
+     * =========================== */
+    {
+        const byte *in;
+        CollisionAabbTree *out;
+
+        in = bspBase + header->lumps[33].fileofs;
+        if (header->lumps[33].filelen & 0x1f) {
+            Com_Error(ERR_DROP, "CMod_LoadCollisionAabbTrees: funny lump size");
+        }
+        count = header->lumps[33].filelen >> 5;
+
+        out = (CollisionAabbTree *)CM_Hunk_Alloc(count * 32, "CMod_LoadCollisionAabbTrees", 0x1a);
+        cmLocal->aabbTrees = out;
+        cmLocal->aabbTreeCount = count;
+
+        for (i = 0; i < count; i++) {
+            out[i].origin[0] = *(const float *)(in + 0);
+            out[i].origin[1] = *(const float *)(in + 4);
+            out[i].origin[2] = *(const float *)(in + 8);
+            out[i].halfSize[0] = *(const float *)(in + 0xc);
+            out[i].halfSize[1] = *(const float *)(in + 0x10);
+            out[i].halfSize[2] = *(const float *)(in + 0x14);
+            out[i].materialIndex = *(const unsigned short *)(in + 0x18);
+            out[i].childCount = *(const unsigned short *)(in + 0x1a);
+            out[i].u.firstChildIndex = *(const int *)(in + 0x1c);
+            in += 0x20;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadLeafs (lump 26)
+     * header offset: 0xD8 = lumps[26].filelen, 0xDC = lumps[26].fileofs
+     * =========================== */
+    {
+        const lump_t *leafLump;
+        const byte *in;
+        cLeaf_t *out;
+        int leafLumpLen;
+
+        /* header offset 0xD8 = lumps[26] */
+        leafLump = &header->lumps[26];
+
+        in = bspBase + leafLump->fileofs;
+        leafLumpLen = leafLump->filelen;
+
+        /* sizeof leaf on disk = 36. Magic mul 0x38e38e39, shift right 3 => divide by 36 */
+        if (leafLumpLen % 36 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadLeafs: funny lump size");
+        }
+        count = leafLumpLen / 36;
+        if (count <= 0) {
+            Com_Error(ERR_DROP, "CMod_LoadLeafs: map has no leafs");
+        }
+
+        /* sizeof(cLeaf_t) = 0x2C = 44. Alloc: count * (1 + 2*5) * 4 = count * 44
+         * The asm: leal (%ecx, %ecx, 4), %eax; leal (%ecx, %eax, 2), %eax; shll $2
+         * = count*5, count + count*10 = count*11, *4 = count*44 */
+        out = (cLeaf_t *)CM_Hunk_Alloc(count * sizeof(cLeaf_t), "CMod_LoadLeafs", 0x17);
+        cmLocal->leafs = out;
+        cmLocal->numLeafs = count;
+
+        for (i = 0; i < count; i++) {
+            if (usePvsFlag) {
+                int cluster = *(const int *)in;
+                out->cluster = (short)cluster;
+                if ((int)(short)cluster != cluster) {
+                    Com_Error(ERR_DROP, "CMod_LoadLeafs: cluster overflows a short");
+                }
+
+                {
+                    int fcaa = *(const int *)(in + 8);
+                    out->firstCollAabbIndex = (unsigned short)fcaa;
+                    if ((int)(unsigned short)fcaa != fcaa) {
+                        Com_Error(ERR_DROP, "CMod_LoadLeafs: firstCollAabbIndex overflows an unsigned short");
+                    }
+                }
+
+                {
+                    int cac = *(const int *)(in + 0xc);
+                    out->collAabbCount = (unsigned short)cac;
+                    if ((int)(unsigned short)cac != cac) {
+                        Com_Error(ERR_DROP, "CMod_LoadLeafs: collAabbCount overflows an unsigned short");
+                    }
+                }
+
+                if (cluster >= cmLocal->numClusters) {
+                    cmLocal->numClusters = cluster + 1;
+                }
+            } else {
+                int fcaa = *(const int *)(in + 8);
+                out->firstCollAabbIndex = (unsigned short)fcaa;
+                if ((int)(unsigned short)fcaa != fcaa) {
+                    Com_Error(ERR_DROP, "CMod_LoadLeafs: firstCollAabbIndex overflows an unsigned short");
+                }
+
+                int cac = *(const int *)(in + 0xc);
+                out->collAabbCount = (unsigned short)cac;
+                if ((int)(unsigned short)cac != cac) {
+                    Com_Error(ERR_DROP, "CMod_LoadLeafs: collAabbCount overflows an unsigned short");
+                }
+            }
+
+            in += 0x24;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadSubmodels (lump 36)
+     * header offset: 0x120 = lumps[35].filelen, 0x124 = lumps[35].fileofs
+     * Disk submodel size = 48 (0x30). Magic mul 0xaaaaaaab, shift 5 => /48
+     * =========================== */
+    {
+        const byte *in;
+        cmodel_t *out;
+        int subLumpLen;
+
+        in = bspBase + header->lumps[35].fileofs;
+        subLumpLen = header->lumps[35].filelen;
+
+        if (subLumpLen % 48 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadSubmodels: funny lump size");
+        }
+        count = subLumpLen / 48;
+        if (count <= 0) {
+            Com_Error(ERR_DROP, "CMod_LoadSubmodels: map has no submodels");
+        }
+        if (count > 1023) {
+            Com_Error(ERR_DROP, "CMod_LoadSubmodels: too many submodels");
+        }
+
+        /* sizeof(cmodel_t) = 72 = 0x48. count * 72 */
+        out = (cmodel_t *)CM_Hunk_Alloc(count * 72, "CMod_LoadSubmodels", 0x18);
+        cmLocal->cmodels = out;
+        cmLocal->numSubModels = count;
+
+        for (i = 0; i < count; i++) {
+            float extent[3];
+            float absMin, absMax;
+
+            for (j = 0; j < 3; j++) {
+                float minVal = *(const float *)(in + j * 4) - 1.0f;
+                float maxVal = *(const float *)(in + 12 + j * 4) + 1.0f;
+                out[i].mins[j] = minVal;
+                out[i].maxs[j] = maxVal;
+
+                /* Compute extent for radius */
+                absMin = minVal < 0.0f ? -minVal : minVal;
+                absMax = maxVal < 0.0f ? -maxVal : maxVal;
+                extent[j] = (absMin - absMax) < 0.0f ? absMin : absMax;
+            }
+
+            /* radius = length(extent) */
+            out[i].radius = sqrtf(extent[0] * extent[0] + extent[1] * extent[1] + extent[2] * extent[2]);
+
+            if (i > 0) {
+                int numBrushes = *(const int *)(in + 0x24);
+                out[i].leaf.collAabbCount = (unsigned short)numBrushes;
+                if ((int)(unsigned short)numBrushes != numBrushes) {
+                    Com_Error(ERR_DROP, "CMod_LoadSubmodels: collAabbCount overflows a short");
+                }
+
+                int firstBrush = *(const int *)(in + 0x20);
+                out[i].leaf.firstCollAabbIndex = (unsigned short)firstBrush;
+                if ((int)(unsigned short)firstBrush != firstBrush) {
+                    Com_Error(ERR_DROP, "CMod_LoadSubmodels: firstCollAabbIndex overflows a short");
+                }
+            }
+
+            in += 0x30;
+        }
+    }
+
+    /* ===========================
+     * Post-submodel initialization
+     * =========================== */
+    CM_Hunk_CheckTempMemoryClear();
+    TempMemoryReset();
+    TempMalloc(0);
+
+    /* Set up leafbrushNodes base pointer:
+     * The asm subtracts 0x14 (sizeof cLeafBrushNode_t) from the TempMalloc(0) result
+     * and stores it as the leafbrushNodes pointer. */
+    {
+        cLeafBrushNode_t *tempBase = (cLeafBrushNode_t *)((byte *)TempMalloc(0) - sizeof(cLeafBrushNode_t));
+        /* Wait, TempMalloc(0) was already called above. Let me re-read the asm. */
+        /* "calll TempMalloc\n"  -- returns current temp pointer
+         * "subl $0x14, %eax\n"  -- subtract sizeof(cLeafBrushNode_t)
+         * "movl %eax, 0x30(%edx)\n"  -- store as cmLocal->leafbrushNodes */
+        /* Actually TempMalloc(0) was already called and returned. Then we subtract 0x14. */
+        cmLocal->leafbrushNodes = (cLeafBrushNode_t *)((byte *)tempBase);
+    }
+
+    /* ===========================
+     * Build leaf brush nodes for each leaf
+     * header->lumps[26] was stored in a local
+     * =========================== */
+    {
+        const lump_t *leafDataLump = &header->lumps[26];
+        const byte *leafIn;
+        cLeaf_t *leaf;
+        int numLeafs;
+
+        leafIn = bspBase + leafDataLump->fileofs;
+        leaf = cmLocal->leafs;
+        numLeafs = cmLocal->numLeafs;
+
+        for (i = 0; i < numLeafs; i++) {
+            int numLeafBrushes;
+            int indexFirstLeafBrush;
+            int brushContents = 0;
+            int terrainContents = 0;
+
+            numLeafBrushes = *(const int *)(leafIn + 0x14);
+            indexFirstLeafBrush = *(const int *)(leafIn + 0x10);
+
+            /* Compute brush contents */
+            if (numLeafBrushes > 0) {
+                unsigned short *lb = cmLocal->leafbrushes + indexFirstLeafBrush;
+                cbrush_t *brushes = cmLocal->brushes;
+
+                for (j = 0; j < numLeafBrushes; j++) {
+                    cbrush_t *b = brushes + lb[j];
+                    brushContents |= b->contents;
+                }
+            }
+            leaf->brushContents = brushContents;
+
+            /* Compute terrain contents from collision aabb trees */
+            {
+                int collCount = leaf->collAabbCount;
+                if (collCount > 0) {
+                    dmaterial_t *materials = cmLocal->materials;
+                    CollisionAabbTree *trees = cmLocal->aabbTrees + leaf->firstCollAabbIndex;
+
+                    for (j = 0; j < collCount; j++) {
+                        terrainContents |= materials[trees[j].materialIndex].contentFlags;
+                    }
+                }
+            }
+            leaf->terrainContents = terrainContents;
+
+            /* Partition leaf brushes */
+            CMod_PartionLeafBrushes(cmLocal->leafbrushes + indexFirstLeafBrush, numLeafBrushes, leaf);
+
+            leafIn += 0x24;
+            leaf++;
+
+            /* Refresh cmLocal pointer */
+            cmLocal = cm_ptr;
+        }
+    }
+
+    /* ===========================
+     * Build submodel brush nodes
+     * =========================== */
+    {
+        const lump_t *submodelLump = &header->lumps[35];
+        const byte *submodelIn;
+        int numSubModels;
+
+        submodelIn = bspBase + submodelLump->fileofs;
+        numSubModels = cmLocal->numSubModels;
+
+        for (i = 1; i < numSubModels; i++) {
+            cmodel_t *cmod;
+            int numBrushes;
+            int firstBrush;
+            unsigned short *indexes;
+            int contents;
+            cLeaf_t *subLeaf;
+            int terrainContents;
+
+            cmod = cmLocal->cmodels + i;
+            numBrushes = *(const int *)(submodelIn + i * 0x30 + 0x5C - 0x30);
+
+            /* Actually, let me be more careful. The asm says:
+             * movl 0x5c + submodelIn_offset ... for the first submodel data.
+             * After lump offset, the submodelIn points to the start of the data.
+             * The iteration starts at i=1. The field "numBrushes" is at offset 0x1C into each
+             * disk submodel entry (0x30 bytes each).
+             * So for submodel i: base + i*0x30 + firstBrush_offset
+             *
+             * From the asm at the call site:
+             * movl -0x3c(%ebp), %ecx -> points to submodelIn + i*0x30 + 0x5C-0x30
+             * Actually the asm is:
+             * "addl $0x5c, %eax\n" -- starts at submodelIn + 0x5C (first submodel, offset 0x2C into the disk data? )
+             * This is offset relative to the base of the lump data.
+             * "movl (%ecx), %ecx\n" -- reads numBrushes
+             * Index 0x5C - 0x30 = 0x2C, then each step adds 0x30.
+             * Actually first iteration: base + fileofs + 0x5C. That's the second submodel (i=1) at offset 0x5C = 0x30 + 0x2C.
+             * So 0x2C into the 0x30-byte structure is the "numBrushes" field of the disk submodel.
+             * Which matches: dmodel_t at offset 0x2C = numBrushes (firstBrush=0x20, numBrushes=0x24... let me check).
+             * dmodel_t: mins[3]=12, maxs[3]=12, firstTriangle=4, numTriangles=4, firstSurface=4, numSurfaces=4, firstBrush=4, numBrushes=4 = 48 total.
+             * Offsets: mins=0, maxs=12, firstTri=24, numTri=28, firstSurf=32, numSurf=36, firstBrush=40(0x28), numBrushes=44(0x2C). YES!
+             */
+            numBrushes = *(const int *)(submodelIn + i * 0x30 + 0x2C); /* numBrushes */
+            firstBrush = *(const int *)(submodelIn + i * 0x30 + 0x28); /* firstBrush */
+
+            if (numBrushes <= 0) continue;
+
+            /* Allocate indexes array for this submodel's brushes */
+            indexes = (unsigned short *)CM_Hunk_Alloc(numBrushes * 2, "CMod_LoadSubmodelBrushNodes", 0x18);
+
+            /* Fill indexes and compute contents */
+            {
+                int brushContents = 0;
+                for (j = 0; j < numBrushes; j++) {
+                    int brushIdx = firstBrush + j;
+                    indexes[j] = (unsigned short)brushIdx;
+                    if ((int)(unsigned short)brushIdx != brushIdx) {
+                        Com_Error(ERR_DROP, "CMod_LoadSubmodelBrushNodes: brush index overflows a short");
+                    }
+                    brushContents |= cmLocal->brushes[brushIdx].contents;
+                }
+                cmod->leaf.brushContents = brushContents;
+            }
+
+            /* Compute terrain contents for submodel leaf */
+            subLeaf = &cmod->leaf;
+            {
+                int collCount = subLeaf->collAabbCount;
+                terrainContents = 0;
+                if (collCount > 0) {
+                    dmaterial_t *materials = cmLocal->materials;
+                    CollisionAabbTree *trees = cmLocal->aabbTrees + subLeaf->firstCollAabbIndex;
+
+                    for (j = 0; j < collCount; j++) {
+                        terrainContents |= materials[trees[j].materialIndex].contentFlags;
+                    }
+                }
+            }
+            cmod->leaf.terrainContents = terrainContents;
+
+            /* Partition submodel leaf brushes */
+            CMod_PartionLeafBrushes(indexes, numBrushes, subLeaf);
+
+            cmLocal = cm_ptr;
+        }
+    }
+
+    /* ===========================
+     * Set up box_brush and box_model
+     * =========================== */
+    {
+        cbrush_t *box_brush;
+
+        /* box_brush is located right after the last regular brush */
+        box_brush = cmLocal->brushes + cmLocal->numBrushes;
+        cmLocal->box_brush = box_brush;
+        box_brush->numsides = 0;
+        box_brush->sides = (cbrushside_t *)0;
+        box_brush->contents = -1;
+
+        /* Initialize box_model with cleared values */
+        cmLocal->box_model.leaf.leafBrushNode = -1;
+        cmLocal->box_model.leaf.brushContents = 0;
+        cmLocal->box_model.leaf.mins[0] = 3.4028234663852886e+38f;
+        cmLocal->box_model.leaf.mins[1] = 3.4028234663852886e+38f;
+        cmLocal->box_model.leaf.mins[2] = 3.4028234663852886e+38f;
+        cmLocal->box_model.leaf.maxs[0] = -3.4028234663852886e+38f;
+        cmLocal->box_model.leaf.maxs[1] = -3.4028234663852886e+38f;
+        cmLocal->box_model.leaf.maxs[2] = -3.4028234663852886e+38f;
+
+        /* Set collision AABB indices on box_brush to 0xFFFF */
+        box_brush->axialMaterialNum[0][0] = (short)0xFFFF;
+        box_brush->axialMaterialNum[0][1] = (short)0xFFFF;
+        box_brush->axialMaterialNum[0][2] = (short)0xFFFF;
+        box_brush->axialMaterialNum[1][0] = (short)0xFFFF;
+        box_brush->axialMaterialNum[1][1] = (short)0xFFFF;
+        box_brush->axialMaterialNum[1][2] = (short)0xFFFF;
+    }
+
+    /* Allocate a cLeafBrushNode_t for the box */
+    {
+        cLeafBrushNode_t *boxNode;
+        int boxNodeIndex;
+
+        boxNode = (cLeafBrushNode_t *)TempMalloc(sizeof(cLeafBrushNode_t));
+        boxNode->axis = 0;
+        boxNode->contents = 0;
+        boxNode->data.children.range = 0;
+        boxNode->data.children.childOffset[0] = 0;
+        boxNode->data.children.childOffset[1] = 0;
+        /* Store -FLT_MAX into data.children.dist (the float at offset 8 in the node) */
+        *(float *)&boxNode->data = -3.4028234663852886e+38f;
+
+        /* Compute box node index */
+        {
+            int byteOffset = (int)((byte *)boxNode - (byte *)cmLocal->leafbrushNodes);
+            int dwordOffset = byteOffset >> 2;
+            int t = dwordOffset * 3;
+            t = t + (t << 4);
+            t = t + (t << 8);
+            t = t + (t << 16);
+            cmLocal->box_model.leaf.leafBrushNode = dwordOffset + t * 4;
+        }
+
+        /* Set leafBrushCount to 1 */
+        boxNode->leafBrushCount = 1;
+
+        /* Set leaf brushes pointer to the end of the leafbrushes array */
+        boxNode->data.leaf.brushes = cmLocal->leafbrushes + cmLocal->numLeafBrushes;
+
+        /* Write box brush index into the leafbrushes at the end */
+        cmLocal->leafbrushes[cmLocal->numLeafBrushes] = cmLocal->numBrushes;
+    }
+
+    /* Finalize leafbrushNodes: copy temp memory into hunk */
+    {
+        cLeafBrushNode_t *tempNodes;
+        int tempNodesByteSize;
+        int nodeCount;
+
+        /* Advance the temp node pointer */
+        cmLocal->leafbrushNodes = (cLeafBrushNode_t *)((byte *)cmLocal->leafbrushNodes + sizeof(cLeafBrushNode_t));
+
+        /* Get temp memory top to compute total nodes size */
+        {
+            byte *tempTop = (byte *)TempMalloc(0);
+            int totalBytes = (int)(tempTop - (byte *)cmLocal->leafbrushNodes);
+            int byteOffset = totalBytes >> 2;
+            int t = byteOffset * 3;
+            t = t + (t << 4);
+            t = t + (t << 8);
+            t = t + (t << 16);
+            nodeCount = byteOffset + t * 4;
+        }
+
+        cmLocal->leafbrushNodesCount = nodeCount + 1;
+
+        /* Allocate permanent hunk memory for leafbrushNodes */
+        {
+            cLeafBrushNode_t *permNodes;
+            permNodes = (cLeafBrushNode_t *)CM_Hunk_Alloc((nodeCount + 1) * sizeof(cLeafBrushNode_t), "CMod_LoadBrushRelated", 0x18);
+
+            /* Copy from offset sizeof(cLeafBrushNode_t) of permNodes (skip first entry) */
+            {
+                int copySize;
+                int t2 = nodeCount;
+                t2 = t2 * 5;
+                copySize = t2 * 4; /* nodeCount * sizeof(cLeafBrushNode_t) */
+
+                memcpy((byte *)permNodes + sizeof(cLeafBrushNode_t), cmLocal->leafbrushNodes, copySize);
+            }
+            cmLocal->leafbrushNodes = permNodes;
+        }
+
+        CM_Hunk_ClearTempMemory();
+    }
+
+    /* ===========================
+     * CMod_LoadNodes (lump 25)
+     * header offset: 0xD0 = lumps[25].filelen, 0xD4 = lumps[25].fileofs
+     * Disk node size = 36. Magic 0x38e38e39 / shift 3 => /36
+     * =========================== */
+    {
+        const byte *in;
+        cNode_t *out;
+        int nodeLumpLen;
+
+        in = bspBase + header->lumps[25].fileofs;
+        nodeLumpLen = header->lumps[25].filelen;
+
+        if (nodeLumpLen % 36 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadNodes: funny lump size");
+        }
+        count = nodeLumpLen / 36;
+        if (count <= 0) {
+            Com_Error(ERR_DROP, "CMod_LoadNodes: map has no nodes");
+        }
+
+        out = (cNode_t *)CM_Hunk_Alloc(count * sizeof(cNode_t), "CMod_LoadNodes", 0x17);
+        cmLocal->nodes = out;
+        cmLocal->numNodes = count;
+
+        for (i = 0; i < count; i++) {
+            int planeNum = *(const int *)in;
+            out->plane = cml.planes + planeNum;
+
+            for (j = 0; j < 2; j++) {
+                int child = *(const int *)(in + 4 + j * 4);
+                out->children[j] = (short)child;
+                if ((int)(short)child != child) {
+                    Com_Error(ERR_DROP, "CMod_LoadNodes: child overflows a short");
+                }
+            }
+
+            in += 0x24;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadLeafSurfaces (lump 29)
+     * header offset: 0xE8 = lumps[28].filelen, 0xEC = lumps[28].fileofs
+     * =========================== */
+    {
+        const byte *in;
+        int *out;
+
+        in = bspBase + header->lumps[28].fileofs;
+        if (header->lumps[28].filelen & 3) {
+            Com_Error(ERR_DROP, "CMod_LoadLeafSurfaces: funny lump size");
+        }
+        count = header->lumps[28].filelen >> 2;
+
+        out = (int *)CM_Hunk_Alloc(count * 4, "CMod_LoadLeafSurfaces", 0x1a);
+        cmLocal->leafsurfaces = out;
+        cmLocal->numLeafSurfaces = count;
+
+        for (i = 0; i < count; i++) {
+            *out = *(const int *)in;
+            in += 4;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadCollisionVerts (lump 30)
+     * header offset: 0xF0 = lumps[29].filelen, 0xF4 = lumps[29].fileofs
+     * Disk vertex size = 16. filelen >> 4
+     * =========================== */
+    {
+        const byte *in;
+        CollisionVertex *out;
+
+        in = bspBase + header->lumps[29].fileofs;
+        if (header->lumps[29].filelen & 0xf) {
+            Com_Error(ERR_DROP, "CMod_LoadCollisionVerts: funny lump size");
+        }
+        count = header->lumps[29].filelen >> 4;
+
+        /* CollisionVertex = {vec3_t xyz} = 12 bytes. Alloc count*12 */
+        out = (CollisionVertex *)CM_Hunk_Alloc(count * 12, "CMod_LoadCollisionVerts", 0x1a);
+        cmLocal->verts = out;
+        cmLocal->vertCount = count;
+
+        for (i = 0; i < count; i++) {
+            out->xyz[0] = *(const float *)(in + 4);
+            out->xyz[1] = *(const float *)(in + 8);
+            out->xyz[2] = *(const float *)(in + 12);
+            in += 16;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadCollisionEdges (lump 31)
+     * header offset: 0xF8 = lumps[30].filelen, 0xFC = lumps[30].fileofs
+     * Disk edge size = 56 (0x38). Division: shift right 3 then divide by 7 (magic 0x24924925).
+     * Output edge size = 48 (0x30)
+     * =========================== */
+    {
+        const byte *in;
+        CollisionEdge *out;
+        int edgeLumpLen;
+
+        in = bspBase + header->lumps[30].fileofs;
+        edgeLumpLen = header->lumps[30].filelen;
+
+        /* Check: (len >> 3) * 56 == len, i.e. len % 56 == 0
+         * The asm does: edx = len>>3; magic_mul 0x24924925; result * 56 == len? */
+        if (edgeLumpLen % 56 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadCollisionEdges: funny lump size");
+        }
+        count = edgeLumpLen / 56;
+
+        /* CollisionEdge = {vec3_t origin; vec3_t axis[3]} = 48 bytes */
+        out = (CollisionEdge *)CM_Hunk_Alloc(count * 48, "CMod_LoadCollisionEdges", 0x1a);
+        cmLocal->edges = out;
+        cmLocal->edgeCount = count;
+
+        for (i = 0; i < count; i++) {
+            /* Copy 12 floats from disk (first 12 fields) */
+            ((float *)out)[0] = *(const float *)(in + 4);
+            ((float *)out)[1] = *(const float *)(in + 8);
+            ((float *)out)[2] = *(const float *)(in + 0xc);
+            ((float *)out)[3] = *(const float *)(in + 0x10);
+            ((float *)out)[4] = *(const float *)(in + 0x14);
+            ((float *)out)[5] = *(const float *)(in + 0x18);
+            ((float *)out)[6] = *(const float *)(in + 0x1c);
+            ((float *)out)[7] = *(const float *)(in + 0x20);
+            ((float *)out)[8] = *(const float *)(in + 0x24);
+            ((float *)out)[9] = *(const float *)(in + 0x28);
+            ((float *)out)[10] = *(const float *)(in + 0x2c);
+            ((float *)out)[11] = *(const float *)(in + 0x30);
+
+            /* Normalize the last axis vector: divide axis[2] by length stored in in+0x34
+             * The asm: 1.0f / *(float *)(in + 0x34), then multiply axis[2][0..2] */
+            {
+                float invLen = 1.0f / *(const float *)(in + 0x34);
+                out->axis[2][0] *= invLen;
+                out->axis[2][1] *= invLen;
+                out->axis[2][2] *= invLen;
+            }
+
+            in += 0x38;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadCollisionTriangles (lump 32)
+     * header offset: 0x100 = lumps[31].filelen, 0x104 = lumps[31].fileofs
+     * Disk and output size = 72 (0x48). Magic 0x38e38e39, shift 4 => /72
+     * =========================== */
+    {
+        const byte *in;
+        CollisionTriangle *out;
+        int triLumpLen;
+
+        in = bspBase + header->lumps[31].fileofs;
+        triLumpLen = header->lumps[31].filelen;
+
+        if (triLumpLen % 72 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadCollisionTriangles: funny lump size");
+        }
+        count = triLumpLen / 72;
+
+        out = (CollisionTriangle *)CM_Hunk_Alloc(count * 72, "CMod_LoadCollisionTriangles", 0x1a);
+        cmLocal->tris = out;
+        cmLocal->triCount = count;
+
+        for (i = 0; i < count; i++) {
+            /* Copy plane (vec4), svec (vec4), tvec (vec4) = 12 floats */
+            ((float *)out)[0] = *(const float *)(in + 0);
+            ((float *)out)[1] = *(const float *)(in + 4);
+            ((float *)out)[2] = *(const float *)(in + 8);
+            ((float *)out)[3] = *(const float *)(in + 0xc);
+            ((float *)out)[4] = *(const float *)(in + 0x10);
+            ((float *)out)[5] = *(const float *)(in + 0x14);
+            ((float *)out)[6] = *(const float *)(in + 0x18);
+            ((float *)out)[7] = *(const float *)(in + 0x1c);
+            ((float *)out)[8] = *(const float *)(in + 0x20);
+            ((float *)out)[9] = *(const float *)(in + 0x24);
+            ((float *)out)[10] = *(const float *)(in + 0x28);
+            ((float *)out)[11] = *(const float *)(in + 0x2c);
+
+            /* Copy verts[3] and edges[3] with stride */
+            for (j = 0; j < 3; j++) {
+                out->edges[j] = *(const int *)(in + 0x3c + j * 4);
+                out->verts[j] = *(const int *)(in + 0x30 + j * 4);
+            }
+
+            in += 0x48;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadCollisionBorders (lump 33)
+     * header offset: 0x108 = lumps[32].filelen, 0x10C = lumps[32].fileofs
+     * Disk and output size = 28 (0x1C). Magic 0x24924925 for /7 on dwords.
+     * =========================== */
+    {
+        const byte *in;
+        CollisionBorder *out;
+        int borderLumpLen;
+
+        in = bspBase + header->lumps[32].fileofs;
+        borderLumpLen = header->lumps[32].filelen;
+
+        /* Division: (len >> 2) / 7 using magic mul 0x24924925 */
+        if (borderLumpLen % 28 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadCollisionBorders: funny lump size");
+        }
+        count = borderLumpLen / 28;
+
+        /* CollisionBorder = 28 bytes */
+        out = (CollisionBorder *)CM_Hunk_Alloc(count * 28, "CMod_LoadCollisionBorders", 0x1a);
+        cmLocal->borders = out;
+        cmLocal->borderCount = count;
+
+        for (i = 0; i < count; i++) {
+            ((float *)out)[0] = *(const float *)(in + 0);
+            ((float *)out)[1] = *(const float *)(in + 4);
+            ((float *)out)[2] = *(const float *)(in + 8);
+            ((float *)out)[3] = *(const float *)(in + 0xc);
+            ((float *)out)[4] = *(const float *)(in + 0x10);
+            ((float *)out)[5] = *(const float *)(in + 0x14);
+            ((float *)out)[6] = *(const float *)(in + 0x18);
+            in += 0x1c;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadCollisionPartitions (lump 34)
+     * header offset: 0x110 = lumps[33].filelen, 0x114 = lumps[33].fileofs
+     * Wait, lump 33 was already used for aabb trees at 0x118/0x11C.
+     * Let me recalculate: lumps[33] at offset 8 + 33*8 = 272 = 0x110.
+     * But 0x118 = 8 + 34*8 = 280 which is lumps[34].
+     *
+     * Re-checking: lumps[N] is at header offset 8 + N*8.
+     * lumps[0] = 0x08, lumps[1] = 0x10, ..., lumps[N] = 8 + 8N.
+     * lumps[25] = 0xD0, lumps[26] = 0xD8, lumps[27] = 0xE0,
+     * lumps[28] = 0xE8, lumps[29] = 0xF0, lumps[30] = 0xF8,
+     * lumps[31] = 0x100, lumps[32] = 0x108, lumps[33] = 0x110,
+     * lumps[34] = 0x118, lumps[35] = 0x120, lumps[36] = 0x128,
+     * lumps[37] = 0x130.
+     *
+     * So collision partitions use 0x110/0x114 = lumps[33].
+     * But aabb trees used 0x118/0x11C = lumps[34].
+     * Let me re-examine: the original aabb trees code used header offsets 0x118 and 0x11C.
+     * 0x118 = lumps[34].filelen, 0x11C = lumps[34].fileofs. Yes, lumps[34] for aabb trees.
+     *
+     * And partitions: 0x110 = lumps[33].filelen, 0x114 = lumps[33].fileofs.
+     * Disk partition size = 12 (0xC). Magic 0xaaaaaaab / shift 3 => /12.
+     */
+    {
+        const byte *in;
+        CollisionPartition *out;
+        int partLumpLen;
+
+        in = bspBase + header->lumps[33].fileofs;
+        partLumpLen = header->lumps[33].filelen;
+
+        if (partLumpLen % 12 != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadCollisionPartitions: funny lump size");
+        }
+        count = partLumpLen / 12;
+
+        /* CollisionPartition = 12 bytes */
+        out = (CollisionPartition *)CM_Hunk_Alloc(count * 12, "CMod_LoadCollisionPartitions", 0x1a);
+        cmLocal->partitions = out;
+        cmLocal->partitionCount = count;
+
+        for (i = 0; i < count; i++) {
+            out->triCount = *(const byte *)(in + 2);
+            out->borderCount = *(const byte *)(in + 3);
+            {
+                int triIndex = *(const int *)(in + 4);
+                out->tris = cmLocal->tris + triIndex;
+            }
+            {
+                int borderIndex = *(const int *)(in + 8);
+                out->borders = cmLocal->borders + borderIndex;
+            }
+            in += 12;
+            out++;
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadVisibility (lump 36 = 0x128)
+     * =========================== */
+    if (usePvsFlag) {
+        const lump_t *visLump = &header->lumps[36];
+
+        if (visLump->filelen == 0) {
+            /* No vis data -- generate default */
+            int visSize = (cmLocal->numClusters + 31) & ~31;
+            cmLocal->clusterBytes = visSize;
+
+            cmLocal->visibility = (byte *)CM_Hunk_Alloc(visSize, "CMod_LoadVisibility", 9);
+            Com_Memset(cmLocal->visibility, 0xFF, visSize);
+        } else {
+            const byte *buf = bspBase + visLump->fileofs;
+            int visDataLen;
+
+            cmLocal->vised = 1;
+            cmLocal->numClusters = *(const int *)buf;
+            cmLocal->clusterBytes = *(const int *)(buf + 4);
+
+            visDataLen = visLump->filelen - 8;
+            cmLocal->visibility = (byte *)CM_Hunk_Alloc(visDataLen, "CMod_LoadVisibility", 9);
+            Com_Memcpy(cmLocal->visibility, buf + 8, visDataLen);
+        }
+    } else {
+        if (header->lumps[36].filelen != 0) {
+            Com_Error(ERR_DROP, "CMod_LoadVisibility: vis data present but usePvs is false");
+        }
+    }
+
+    /* ===========================
+     * CMod_LoadEntityString (lump 37 = 0x130)
+     * =========================== */
+    {
+        int entLen = header->lumps[37].filelen;
+        cmLocal->numEntityChars = entLen;
+
+        cmLocal->entityString = (char *)CM_Hunk_Alloc(entLen, "CMod_LoadEntityString", 9);
+        Com_Memcpy(cmLocal->entityString, bspBase + header->lumps[37].fileofs, entLen);
+    }
+
+    /* Clear BSP base */
+    cml.base = (void *)0;
+}
