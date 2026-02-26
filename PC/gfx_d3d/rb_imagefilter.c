@@ -1,8 +1,13 @@
-/* ASM dump from: rb_imagefilter.cpp */
+/* Converted to C from ASM: rb_imagefilter.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/gfx_d3d/rb_imagefilter.cpp */
 
 #include "common_types.h"
 #include "imports.h"
+
+/* math functions - declared manually to avoid conflicts with imports/libc.h */
+extern float floorf(float);
+extern float expf(float);
+extern float sqrtf(float);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
@@ -11,1344 +16,736 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-extern bool g_LastGlowFilter; /* 0x0 */
-extern UINT32 g_TotalFilterPasses; /* 0x0 */
+extern bool g_LastGlowFilter;
+extern UINT32 g_TotalFilterPasses;
 
-static int RB_GaussianFilterPoints1D(float *tapOffsets, float *tapWeights);
+/*
+ * Global pointers - these BSS symbols are declared as byte arrays in bss.c
+ * but the original binary uses them as typed structures with known offsets.
+ * We declare them as extern byte arrays and use raw offset arithmetic to
+ * match the original binary's field layout (which may differ from the
+ * common_types.h struct definitions due to array size differences).
+ */
+extern unsigned char rgp[];       /* r_global_permanent_t data */
+extern unsigned char dx[];        /* DxGlobals data */
+extern unsigned char vidConfig[]; /* vidConfig_t data */
+extern unsigned char backEnd[];   /* r_backEndGlobals_t data */
+
+/* External function declarations */
+extern void RB_SetRenderTarget(GfxRenderTargetId newTargetId);
+extern void RB_DrawStretchPic(MaterialHandle material, float x, float y, float w, float h,
+                               float s0, float t0, float s1, float t1,
+                               unsigned int color, int splitScreen);
+extern void RB_EndSurface(void);
+
+/* Function prototypes */
+static int RB_GaussianFilterPoints1D(float pixels, int srcRes, int dstRes, int tapLimit, float *tapOffsets, float *tapWeights);
 static int RB_GenerateGaussianFilter2D(float radius, int srcWidth, int srcHeight, int dstWidth, int dstHeight, GfxImageFilterPass *filterPass);
-static int RB_GenerateGaussianFilterChain(int dstWidth, int dstHeight, int passLimit, GfxImageFilterPass *filterPass);
-static GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId dstRenderTarget);
+static int RB_GenerateGaussianFilterChain(float radiusX, float radiusY, int srcWidth, int srcHeight, int dstWidth, int dstHeight, int passLimit, GfxImageFilterPass *filterPass);
+static GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId srcRenderTarget, GfxRenderTargetId dstRenderTarget, float glowRadius);
 int RB_GlowFilterImage(float *radius);
 int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId);
 
-/* line 81 */
-static __attribute__((naked))
-int RB_GaussianFilterPoints1D(float *tapOffsets, float *tapWeights)
+/*
+ * Binary layout accessors for DxGlobals (offsets differ from common_types.h due to
+ * array size differences in resolutionNameTable/refreshRateNameTable).
+ *
+ * DxGlobals renderTargets[id] at offset 0x2c30, each GfxRenderTarget is 20 bytes:
+ *   +0  = GfxImage *image
+ *   +4  = IDirect3DSurface9 *colorSurface
+ *   +8  = IDirect3DSurface9 *depthStencilSurface
+ *   +12 = int width
+ *   +16 = int height
+ */
+#define DX_RT_IMAGE(id)     (*(GfxImage **)((byte *)dx + 0x2c30 + (id) * 20))
+#define DX_RT_WIDTH(id)     (*(int *)((byte *)dx + 0x2c3c + (id) * 20))
+#define DX_RT_HEIGHT(id)    (*(int *)((byte *)dx + 0x2c40 + (id) * 20))
+
+/*
+ * r_global_permanent_t accessors:
+ *   symmetricFilterMaterial[i] at offset 0x10b0 + i*4
+ *   glowSetupMaterial at offset 0x10d4
+ */
+#define RGP_SYM_FILTER_MAT(i) (*(Material **)((byte *)rgp + 0x10b0 + (i) * 4))
+#define RGP_GLOW_SETUP_MAT()  (*(Material **)((byte *)rgp + 0x10d4))
+
+/*
+ * r_backEndGlobals_t accessors (confirmed matching offsets):
+ *   0x0230 = codeConsts[35] (pixel shader constants upload target)
+ *   0x03c8 = viewParms pointer
+ *   0x2e88 = source render target ID (used in glow path)
+ *   0x2e8c = currentRenderTargetImage (GfxImage* for feedback)
+ *   0x04d0 = glow pass count
+ *   0x04d4 = glow blur image 0
+ *   0x04d8 = glow blur image 1
+ *
+ * GfxViewParms:
+ *   0x3c = viewport.Height
+ *
+ * vidConfig_t:
+ *   0x00 = width
+ *   0x04 = height
+ *   0x14 = aspectRatioPixel
+ */
+
+/* Helper: compute next power of 2 >= val, as float (matches binary's inline code) */
+static float nextPowerOfTwoF(unsigned int val)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 81 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        "movaps %xmm0, %xmm1\n" /* pixels */
-        "movl %ecx, %edi\n" /* tapLimit */
-        /* { scope 1 */
-        "cvtsi2ssl %eax, %xmm0\n" /* line 97 */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "cvtsi2ssl %edx, %xmm0\n" /* line 428 | dstRes */
-        "movss -0x2c(%ebp), %xmm2\n"
-        "divss %xmm0, %xmm2\n"
-        "movaps %xmm2, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x48(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x30(%ebp)\n"
-        "cvttss2si -0x30(%ebp), %eax\n"
-        "testb $1, %al\n"
-        "movss -0x48(%ebp), %xmm1\n"
-        "je .Lf10611c_001061a3\n"
-        "pxor %xmm4, %xmm4\n"
-        "movss %xmm4, -0x28(%ebp)\n" /* offset */
-        "mulss %xmm1, %xmm1\n" /* line 101 */
-        "movss 0x2ed63c, %xmm0\n" /* -0.5f */
-        "divss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* gaussianExponent */
-        "testl %edi, %edi\n" /* line 104 | tapLimit */
-        "jg .Lf10611c_001061c3\n"
-        ".Lf10611c_0010618d:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 125 | tapWeights */
-        "movl $0x3f000000, (%eax)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lf10611c_0010619b:\n"
-        "addl $0x7c, %esp\n" /* line 141 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf10611c_001061a3:\n"
-        "movl $0x3f000000, -0x28(%ebp)\n" /* line 428 | offset */
-        "mulss %xmm1, %xmm1\n" /* line 101 */
-        "movss 0x2ed63c, %xmm0\n" /* -0.5f */
-        "divss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n" /* gaussianExponent */
-        "testl %edi, %edi\n" /* line 104 | tapLimit */
-        "jle .Lf10611c_0010618d\n"
-        ".Lf10611c_001061c3:\n"
-        "xorl %ebx, %ebx\n" /* tapIndex */
-        "pxor %xmm2, %xmm2\n"
-        "movss %xmm2, -0x24(%ebp)\n" /* totalWeight */
-        "movl $1, %esi\n"
-        "jmp .Lf10611c_00106210\n"
-        ".Lf10611c_001061d5:\n"
-        "mulss %xmm3, %xmm1\n" /* line 119 */
-        "mulss -0x1c(%ebp), %xmm2\n"
-        "addss %xmm2, %xmm1\n"
-        "mulss -0x2c(%ebp), %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        "movl 8(%ebp), %eax\n" /* line 117 | tapOffsets */
-        "movss %xmm1, -2(%edx, %eax)\n" /* dstRes */
-        "movss -0x24(%ebp), %xmm0\n" /* line 120 | totalWeight */
-        "addss (%ecx), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n" /* totalWeight */
-        "addl $1, %ebx\n" /* line 104 | tapIndex */
-        "addl $2, %esi\n"
-        "cmpl %ebx, %edi\n" /* tapIndex, tapLimit */
-        "je .Lf10611c_00106300\n"
-        ".Lf10611c_00106210:\n"
-        "leal (%ebx, %ebx), %eax\n" /* line 106 | tapIndex */
-        "cvtsi2ssl %eax, %xmm1\n"
-        "addss -0x28(%ebp), %xmm1\n" /* offset */
-        "cvtsi2ssl %esi, %xmm2\n" /* line 107 */
-        "addss -0x28(%ebp), %xmm2\n" /* offset */
-        "movss -0x20(%ebp), %xmm0\n" /* line 108 | gaussianExponent */
-        "mulss %xmm1, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x48(%ebp)\n"
-        "movss %xmm2, -0x58(%ebp)\n"
-        "calll expf\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm3\n"
-        "movss -0x58(%ebp), %xmm2\n" /* line 109 */
-        "movss -0x20(%ebp), %xmm0\n" /* gaussianExponent */
-        "mulss %xmm2, %xmm0\n"
-        "mulss %xmm2, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm3, -0x68(%ebp)\n"
-        "calll expf\n"
-        "fstps -0x1c(%ebp)\n"
-        "testl %ebx, %ebx\n" /* line 110 | tapIndex */
-        "movss -0x48(%ebp), %xmm1\n"
-        "movss -0x58(%ebp), %xmm2\n"
-        "movss -0x68(%ebp), %xmm3\n"
-        "jne .Lf10611c_0010629d\n"
-        "movss -0x28(%ebp), %xmm4\n" /* offset */
-        "pxor %xmm0, %xmm0\n"
-        "ucomiss %xmm0, %xmm4\n"
-        "jne .Lf10611c_0010629d\n"
-        "jp .Lf10611c_0010629d\n"
-        "mulss 0x2ed5d8, %xmm3\n" /* line 113 | 0.5f */
-        ".Lf10611c_0010629d:\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* line 115 */
-        "addss %xmm3, %xmm0\n"
-        "leal (%esi, %esi), %edx\n" /* line 81 | dstRes */
-        "movl 0xc(%ebp), %ecx\n" /* tapWeights */
-        "leal (%edx, %ecx), %eax\n" /* dstRes, srcRes */
-        "leal -2(%eax), %ecx\n" /* srcRes */
-        "movss %xmm0, -2(%eax)\n" /* line 115 */
-        "pxor %xmm4, %xmm4\n" /* line 116 */
-        "ucomiss %xmm4, %xmm0\n"
-        "jne .Lf10611c_001061d5\n"
-        "jp .Lf10611c_001061d5\n"
-        "addss %xmm2, %xmm1\n" /* line 117 */
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f */
-        "divss -0x2c(%ebp), %xmm1\n"
-        "movl 8(%ebp), %eax\n" /* tapOffsets */
-        "movss %xmm1, -2(%edx, %eax)\n" /* dstRes */
-        "movss -0x24(%ebp), %xmm0\n" /* line 120 | totalWeight */
-        "addss (%ecx), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n" /* totalWeight */
-        "addl $1, %ebx\n" /* line 104 | tapIndex */
-        "addl $2, %esi\n"
-        "cmpl %ebx, %edi\n" /* tapIndex, tapLimit */
-        "jne .Lf10611c_00106210\n"
-        ".Lf10611c_00106300:\n"
-        "ucomiss 0x2ed658, %xmm0\n" /* line 123 | 0.0010000000474974513f */
-        "jbe .Lf10611c_0010635b\n"
-        ".Lf10611c_00106309:\n"
-        "movss 0x2ed5d8, %xmm1\n" /* line 131 | 0.5f */
-        "divss -0x24(%ebp), %xmm1\n" /* totalWeight */
-        "movl %edi, %eax\n" /* line 133 | tapLimit */
-        "subl $1, %eax\n"
-        "js .Lf10611c_00106354\n"
-        "movl 0xc(%ebp), %edx\n" /* line 81 | tapWeights, dstRes */
-        "leal (%edx, %eax, 4), %ecx\n" /* dstRes */
-        "movl %edi, %eax\n" /* tapLimit, srcRes */
-        "movl %edi, %edx\n" /* tapLimit, dstRes */
-        "movss 0x2ed738, %xmm2\n" /* 0.009999999776482582f */
-        "xorl %ebx, %ebx\n"
-        ".Lf10611c_00106331:\n"
-        "movaps %xmm1, %xmm0\n" /* line 135 */
-        "mulss (%ecx), %xmm0\n"
-        "movss %xmm0, (%ecx)\n"
-        "ucomiss %xmm0, %xmm2\n" /* line 136 */
-        "cmoval %edx, %eax\n" /* dstRes */
-        "subl $4, %ecx\n"
-        "subl $1, %edx\n" /* dstRes */
-        "cmpl %edx, %ebx\n" /* line 133 | dstRes, tapIndex */
-        "jne .Lf10611c_00106331\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 141 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf10611c_00106354:\n"
-        "movl %edi, %eax\n" /* line 133 | tapLimit */
-        "jmp .Lf10611c_0010619b\n"
-        ".Lf10611c_0010635b:\n"
-        "jnp .Lf10611c_0010618d\n" /* line 123 */
-        "jmp .Lf10611c_00106309\n"
-    );
+    unsigned int d;
+    int i;
+
+    if (val <= 1)
+        return 1.0f;
+
+    d = 1;
+    for (i = 32; i > 0; i--) {
+        d += d;
+        if (val <= d)
+            return (float)d;
+    }
+    return (float)d;
+}
+
+/* Helper: absolute value of float */
+static float absf(float x) { return x < 0.0f ? -x : x; }
+
+/* Constants from the binary's float literal pool */
+#define GLOW_MAX_RADIUS    1.3895604610443115f   /* 0x2ed894 */
+#define GLOW_MAX_RADIUS_SQ 1.9308782815933228f   /* 0x2ed898 */
+#define FILTER_MIN_RADIUS  0.3295051157474518f    /* 0x2ed89c */
+#define FILTER_MAX_SINGLE  6.497750282287598f     /* 0x2ed8a0 */
+#define FILTER_MAX_SQ      42.220760345458984f    /* 0x2ed8a4 */
+
+/* line 81 */
+static int RB_GaussianFilterPoints1D(float pixels, int srcRes, int dstRes, int tapLimit, float *tapOffsets, float *tapWeights)
+{
+    float srcResF;
+    float ratio;
+    int ratioRounded;
+    float offset;
+    float gaussianExponent;
+    float totalWeight;
+    int tapIndex;
+    float weight0, weight1;
+    float sample0, sample1;
+    float combinedWeight;
+    int tapCount;
+
+    srcResF = (float)srcRes;
+    ratio = srcResF / (float)dstRes;
+    ratioRounded = (int)floorf(ratio + 0.5f);
+
+    /* Odd ratio: center-aligned samples (offset=0), even ratio: half-pixel offset */
+    if (ratioRounded & 1) {
+        offset = 0.0f;
+    } else {
+        offset = 0.5f;
+    }
+
+    /* line 101 - Gaussian exponent: -1/(2*sigma^2) where sigma=pixels */
+    gaussianExponent = -0.5f / (pixels * pixels);
+
+    /* line 104 */
+    if (tapLimit <= 0) {
+        /* line 125 - degenerate case: single center tap */
+        tapWeights[0] = 0.5f;
+        return 1;
+    }
+
+    /* Compute tap weights and offsets using bilinear tap combining */
+    totalWeight = 0.0f;
+    for (tapIndex = 0; tapIndex < tapLimit; tapIndex++) {
+        /* line 106-107: compute positions of two adjacent texels */
+        sample0 = (float)(tapIndex * 2) + offset;
+        sample1 = (float)(tapIndex * 2 + 1) + offset;
+
+        /* line 108-109: evaluate Gaussian at each texel position */
+        weight0 = expf(gaussianExponent * sample0 * sample0);
+        weight1 = expf(gaussianExponent * sample1 * sample1);
+
+        /* line 110-113: halve center tap weight when center-aligned */
+        if (tapIndex == 0 && offset == 0.0f) {
+            weight0 *= 0.5f;
+        }
+
+        /* line 115: combine two texel weights into one bilinear tap */
+        combinedWeight = weight1 + weight0;
+        tapWeights[tapIndex] = combinedWeight;
+
+        /* line 116-119: compute bilinear sampling offset */
+        if (combinedWeight != 0.0f) {
+            /* Weighted average of two texel positions, normalized to texcoord space */
+            tapOffsets[tapIndex] = (weight0 * sample0 + weight1 * sample1) / (combinedWeight * srcResF);
+        } else {
+            /* Zero weight: just use midpoint */
+            tapOffsets[tapIndex] = (sample0 + sample1) * 0.5f / srcResF;
+        }
+
+        /* line 120 */
+        totalWeight += tapWeights[tapIndex];
+    }
+
+    /* line 123: if total weight is negligible, fall back to single tap */
+    if (totalWeight <= 0.001f) {
+        tapWeights[0] = 0.5f;
+        return 1;
+    }
+
+    /* line 131-136: normalize weights so they sum to 0.5 (symmetric filter) */
+    {
+        float normFactor = 0.5f / totalWeight;
+        tapCount = tapLimit;
+
+        /* Normalize backwards, trimming trailing near-zero taps */
+        for (tapIndex = tapLimit - 1; tapIndex >= 0; tapIndex--) {
+            tapWeights[tapIndex] *= normFactor;
+            if (0.01f > tapWeights[tapIndex]) {
+                tapCount = tapIndex + 1;
+            }
+        }
+    }
+
+    /* line 141 */
+    return tapCount;
 }
 
 /* line 173 */
-static __attribute__((naked))
-int RB_GenerateGaussianFilter2D(float radius, int srcWidth, int srcHeight, int dstWidth, int dstHeight, GfxImageFilterPass *filterPass)
+static int RB_GenerateGaussianFilter2D(float radius, int srcWidth, int srcHeight, int dstWidth, int dstHeight, GfxImageFilterPass *filterPass)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 173 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "movl %eax, -0x48(%ebp)\n"
-        "movl %edx, -0x4c(%ebp)\n"
-        "movl %ecx, -0x50(%ebp)\n"
-        /* { scope 1 */
-        "leal -0x30(%ebp), %eax\n" /* line 183 | tapWeightsX */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x20(%ebp), %edx\n" /* tapOffsetsX */
-        "movl %edx, (%esp)\n"
-        "movl $2, %ecx\n"
-        "movl -0x50(%ebp), %edx\n"
-        "movl -0x48(%ebp), %eax\n"
-        "calll RB_GaussianFilterPoints1D\n"
-        "leal -0x38(%ebp), %ecx\n" /* line 184 | tapWeightsY */
-        "movl %ecx, 4(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* tapOffsetsY */
-        "movl %eax, (%esp)\n"
-        "movl $2, %ecx\n"
-        "movl 8(%ebp), %edx\n" /* dstHeight */
-        "movl -0x4c(%ebp), %eax\n"
-        "movss -0x44(%ebp), %xmm0\n"
-        "calll RB_GaussianFilterPoints1D\n"
-        "movl $0, -0x40(%ebp)\n"
-        "movss 0x2f3080, %xmm1\n"
-        "movl -0x40(%ebp), %eax\n"
-        ".Lf106364_001063cc:\n"
-        "shll $5, %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* filterPass */
-        "leal 0x18(%eax, %edx), %ebx\n"
-        "movl $1, %esi\n"
-        "movl -0x40(%ebp), %eax\n"
-        "addl %eax, %eax\n"
-        "leal -0x28(%ebp), %ecx\n" /* tapOffsetsY */
-        "addl %eax, %ecx\n"
-        "movl %ecx, -0x3c(%ebp)\n"
-        "leal -0x38(%ebp), %edi\n" /* tapWeightsY */
-        "addl %eax, %edi\n"
-        ".Lf106364_001063ed:\n"
-        "leal (, %esi, 4), %edx\n" /* line 173 */
-        "leal -0x20(%ebp), %ecx\n" /* tapOffsetsX */
-        "addl %edx, %ecx\n"
-        "movss -4(%ecx), %xmm0\n" /* line 191 */
-        "xorps %xmm1, %xmm0\n"
-        "movss %xmm0, (%ebx)\n"
-        "movl -0x3c(%ebp), %eax\n" /* line 192 */
-        "movss (%eax), %xmm0\n"
-        "movss %xmm0, 4(%ebx)\n"
-        "movl $0, 8(%ebx)\n" /* line 193 */
-        "leal -0x30(%ebp), %eax\n" /* line 173 | tapWeightsX */
-        "leal (%eax, %edx), %edx\n"
-        "movss -4(%edx), %xmm0\n" /* line 194 */
-        "mulss (%edi), %xmm0\n"
-        "movss %xmm0, 0xc(%ebx)\n"
-        "movl -4(%ecx), %eax\n" /* line 196 */
-        "movl %eax, 0x10(%ebx)\n"
-        "movl -0x3c(%ebp), %ecx\n" /* line 197 */
-        "movl (%ecx), %eax\n"
-        "movl %eax, 0x14(%ebx)\n"
-        "movl $0, 0x18(%ebx)\n" /* line 198 */
-        "movss -4(%edx), %xmm0\n" /* line 199 */
-        "mulss (%edi), %xmm0\n"
-        "movss %xmm0, 0x1c(%ebx)\n"
-        "addl $1, %esi\n" /* line 201 */
-        "addl $0x20, %ebx\n"
-        "cmpl $3, %esi\n" /* line 189 */
-        "jne .Lf106364_001063ed\n"
-        "movl -0x40(%ebp), %eax\n"
-        "addl $2, %eax\n"
-        "movl %eax, -0x40(%ebp)\n"
-        "cmpl $4, %eax\n" /* line 187 */
-        "jne .Lf106364_001063cc\n"
-        "movl 0x195eebc, %eax\n" /* line 76 */
-        "movl 0x10cc(%eax), %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* filterPass */
-        "movl %eax, (%edx)\n"
-        "movl $8, 0x14(%edx)\n" /* line 206 */
-        "cvtsi2ssl -0x48(%ebp), %xmm0\n" /* line 208 */
-        /* { scope 2 */
-        "cmpl $1, -0x48(%ebp)\n" /* line 144 */
-        "ja .Lf106364_001064f3\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        /* } scope */
-        ".Lf106364_00106496:\n"
-        "divss %xmm1, %xmm0\n" /* line 208 */
-        "movl 0xc(%ebp), %ecx\n" /* filterPass */
-        "movss %xmm0, 4(%ecx)\n"
-        "cvtsi2ssl -0x4c(%ebp), %xmm1\n" /* line 209 */
-        /* { scope 2 */
-        "cmpl $1, -0x4c(%ebp)\n" /* line 144 */
-        "jbe .Lf106364_0010652c\n"
-        ".Lf106364_001064ad:\n"
-        "movl $1, %edx\n"
-        "movl $0x20, %eax\n"
-        ".Lf106364_001064b7:\n"
-        "addl %edx, %edx\n"
-        "cmpl %edx, -0x4c(%ebp)\n"
-        "jbe .Lf106364_00106554\n"
-        "subl $1, %eax\n"
-        "jne .Lf106364_001064b7\n"
-        "testl %edx, %edx\n"
-        "js .Lf106364_0010656b\n"
-        ".Lf106364_001064cf:\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        /* } scope */
-        ".Lf106364_001064d3:\n"
-        "divss %xmm0, %xmm1\n" /* line 209 */
-        "movl 0xc(%ebp), %eax\n" /* filterPass */
-        "movss %xmm1, 8(%eax)\n"
-        "movl -0x50(%ebp), %edx\n" /* line 214 */
-        "movl %edx, 0xc(%eax)\n"
-        "movl 8(%ebp), %ecx\n" /* line 215 | dstHeight */
-        "movl %ecx, 0x10(%eax)\n"
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 216 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf106364_001064f3:\n"
-        "movl $1, %edx\n" /* line 144 */
-        "movl $0x20, %eax\n"
-        ".Lf106364_001064fd:\n"
-        "addl %edx, %edx\n"
-        "cmpl %edx, -0x48(%ebp)\n"
-        "jbe .Lf106364_00106597\n"
-        "subl $1, %eax\n"
-        "jne .Lf106364_001064fd\n"
-        "testl %edx, %edx\n"
-        "js .Lf106364_00106581\n"
-        ".Lf106364_00106511:\n"
-        "cvtsi2ssl %edx, %xmm1\n"
-        /* } scope */
-        "divss %xmm1, %xmm0\n" /* line 208 */
-        "movl 0xc(%ebp), %ecx\n" /* filterPass */
-        "movss %xmm0, 4(%ecx)\n"
-        "cvtsi2ssl -0x4c(%ebp), %xmm1\n" /* line 209 */
-        /* { scope 2 */
-        "cmpl $1, -0x4c(%ebp)\n" /* line 144 */
-        "ja .Lf106364_001064ad\n"
-        ".Lf106364_0010652c:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        /* } scope */
-        "divss %xmm0, %xmm1\n" /* line 209 */
-        "movl 0xc(%ebp), %eax\n" /* filterPass */
-        "movss %xmm1, 8(%eax)\n"
-        "movl -0x50(%ebp), %edx\n" /* line 214 */
-        "movl %edx, 0xc(%eax)\n"
-        "movl 8(%ebp), %ecx\n" /* line 215 | dstHeight */
-        "movl %ecx, 0x10(%eax)\n"
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 216 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf106364_00106554:\n"
-        "testl %edx, %edx\n" /* line 144 */
-        "jns .Lf106364_001064cf\n"
-        "shrl $1, %edx\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf106364_001064d3\n"
-        ".Lf106364_0010656b:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf106364_001064d3\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf106364_00106581:\n"
-        "movl %edx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "addss %xmm1, %xmm1\n"
-        "jmp .Lf106364_00106496\n"
-        ".Lf106364_00106597:\n"
-        "testl %edx, %edx\n"
-        "jns .Lf106364_00106511\n"
-        "shrl $1, %edx\n"
-        "cvtsi2ssl %edx, %xmm1\n"
-        "addss %xmm1, %xmm1\n"
-        "jmp .Lf106364_00106496\n"
-    );
+    float tapOffsetsX[4];
+    float tapOffsetsY[4];
+    float tapWeightsX[4];
+    float tapWeightsY[4];
+    int iy, ix;
+    int tapEntryIdx;
+
+    /* line 183-184: compute 1D filter taps for each axis (max 2 bilinear taps each) */
+    RB_GaussianFilterPoints1D(radius, srcWidth, dstWidth, 2, tapOffsetsX, tapWeightsX);
+    RB_GaussianFilterPoints1D(radius, srcHeight, dstHeight, 2, tapOffsetsY, tapWeightsY);
+
+    /*
+     * Build 8 tap entries as outer product of 2 X-taps x 2 Y-taps, with mirroring.
+     * For each (iy, ix): two vec4 entries are generated:
+     *   {-offsetX[ix], offsetY[iy], 0, weightX[ix]*weightY[iy]}
+     *   {+offsetX[ix], offsetY[iy], 0, weightX[ix]*weightY[iy]}
+     */
+    tapEntryIdx = 0;
+    for (iy = 0; iy < 2; iy++) {
+        for (ix = 0; ix < 2; ix++) {
+            /* Negated X offset entry */
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][0] = -tapOffsetsX[ix];
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][1] = tapOffsetsY[iy];
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][2] = 0.0f;
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][3] = tapWeightsX[ix] * tapWeightsY[iy];
+            tapEntryIdx++;
+
+            /* Positive X offset entry */
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][0] = tapOffsetsX[ix];
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][1] = tapOffsetsY[iy];
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][2] = 0.0f;
+            filterPass->tapOffsetsAndWeights[tapEntryIdx][3] = tapWeightsX[ix] * tapWeightsY[iy];
+            tapEntryIdx++;
+        }
+    }
+
+    /* line 76/206: use the 8-tap 2D symmetric filter material */
+    filterPass->material = RGP_SYM_FILTER_MAT(7);
+    filterPass->tapHalfCount = 8;
+
+    /* line 208-209: texture coordinate scale (texel-to-texcoord) */
+    filterPass->srcWidth = (float)srcWidth / nextPowerOfTwoF((unsigned int)srcWidth);
+    filterPass->srcHeight = (float)srcHeight / nextPowerOfTwoF((unsigned int)srcHeight);
+
+    /* line 214-215: destination dimensions */
+    filterPass->dstWidth = dstWidth;
+    filterPass->dstHeight = dstHeight;
+
+    return 0;
 }
 
 /* line 220 */
-static __attribute__((naked))
-int RB_GenerateGaussianFilterChain(int dstWidth, int dstHeight, int passLimit, GfxImageFilterPass *filterPass)
+static int RB_GenerateGaussianFilterChain(float radiusX, float radiusY, int srcWidth, int srcHeight, int dstWidth, int dstHeight, int passLimit, GfxImageFilterPass *filterPass)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 220 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9c, %esp\n"
-        "movaps %xmm0, %xmm2\n" /* radiusX */
-        "movaps %xmm1, %xmm3\n" /* radiusY */
-        "movl %ecx, -0x74(%ebp)\n"
-        /* { scope 1: tapOffsets, tapWeights */
-        "movl %ecx, -0x20(%ebp)\n" /* line 228 | dstRes */
-        "movl 8(%ebp), %ecx\n" /* line 229 | dstHeight */
-        "movl %ecx, -0x1c(%ebp)\n"
-        "cmpl %eax, -0x74(%ebp)\n" /* line 232 | srcWidth */
-        "je .Lf1065ae_00106937\n"
-        ".Lf1065ae_001065d5:\n"
-        "movaps %xmm3, %xmm1\n" /* line 45 */
-        "subss %xmm2, %xmm1\n"
-        "movaps %xmm2, %xmm0\n"
-        "cmpnltss 0x2ed5e8, %xmm1\n" /* 0.0f */
-        "andps %xmm1, %xmm0\n"
-        "andnps %xmm3, %xmm1\n"
-        "orps %xmm0, %xmm1\n"
-        "ucomiss 0x2ed894, %xmm1\n" /* line 235 | 1.3895604610443115f */
-        "jbe .Lf1065ae_00106819\n"
-        "movss 0x2ed894, %xmm1\n" /* 1.3895604610443115f */
-        "movss 0x2ed898, %xmm4\n" /* 1.9308782815933228f */
-        ".Lf1065ae_0010660e:\n"
-        "mulss %xmm2, %xmm2\n" /* line 81 */
-        "subss %xmm4, %xmm2\n"
-        "sqrtss %xmm2, %xmm2\n"
-        "cvtsi2ssl -0x74(%ebp), %xmm0\n"
-        "mulss %xmm0, %xmm2\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss %xmm0, %xmm2\n"
-        "mulss %xmm3, %xmm3\n"
-        "subss %xmm4, %xmm3\n"
-        "sqrtss %xmm3, %xmm3\n"
-        "cvtsi2ssl 8(%ebp), %xmm0\n" /* dstHeight */
-        "mulss %xmm0, %xmm3\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        "divss %xmm0, %xmm3\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 240 | filterPass */
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %ecx\n" /* dstHeight */
-        "movl %ecx, (%esp)\n"
-        "movl -0x74(%ebp), %ecx\n"
-        "movaps %xmm1, %xmm0\n"
-        "movss %xmm2, -0x88(%ebp)\n" /* radiusX */
-        "movss %xmm3, -0x98(%ebp)\n" /* radiusY */
-        "calll RB_GenerateGaussianFilter2D\n"
-        "movl $1, -0x70(%ebp)\n" /* passCount */
-        "movss -0x98(%ebp), %xmm3\n" /* radiusY */
-        "movss -0x88(%ebp), %xmm2\n" /* radiusX */
-        ".Lf1065ae_00106687:\n"
-        "movl -0x70(%ebp), %edx\n" /* passCount, srcHeight */
-        "leal (%edx, %edx, 8), %eax\n" /* srcHeight, srcWidth */
-        "leal (%edx, %eax, 2), %eax\n" /* srcHeight, srcWidth */
-        "movl 0x10(%ebp), %ecx\n" /* filterPass */
-        "leal (%ecx, %eax, 8), %eax\n" /* srcWidth */
-        "movl %eax, -0x6c(%ebp)\n" /* srcWidth */
-        ".Lf1065ae_00106699:\n"
-        "ucomiss 0x2ed89c, %xmm2\n" /* line 244 | 0.3295051157474518f, radiusX */
-        "jae .Lf1065ae_001066af\n"
-        "ucomiss 0x2ed89c, %xmm3\n" /* 0.3295051157474518f, radiusY */
-        "jb .Lf1065ae_0010680b\n"
-        ".Lf1065ae_001066af:\n"
-        "movaps %xmm2, %xmm0\n" /* line 246 | radiusX */
-        "subss %xmm3, %xmm0\n" /* radiusY */
-        "andps 0x2f3090, %xmm0\n"
-        "ucomiss 0x2ed89c, %xmm0\n" /* 0.3295051157474518f */
-        "jae .Lf1065ae_001066e6\n"
-        "jp .Lf1065ae_001066e6\n"
-        "movaps %xmm2, %xmm0\n" /* line 248 | radiusX */
-        "addss %xmm3, %xmm0\n" /* radiusY */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "ucomiss 0x2ed894, %xmm0\n" /* line 249 | 1.3895604610443115f */
-        "jp .Lf1065ae_001066e6\n"
-        "jbe .Lf1065ae_0010694b\n"
-        ".Lf1065ae_001066e6:\n"
-        "ucomiss %xmm3, %xmm2\n" /* line 257 | radiusY, radiusX */
-        "jbe .Lf1065ae_00106893\n"
-        "movss 0x2ed8a0, %xmm0\n" /* line 259 | 6.497750282287598f */
-        "ucomiss %xmm2, %xmm0\n" /* radiusX */
-        "jbe .Lf1065ae_001068e2\n"
-        "movaps %xmm2, %xmm0\n" /* radiusX */
-        "pxor %xmm2, %xmm2\n" /* radiusX */
-        "xorl %esi, %esi\n" /* passAxis */
-        "xorl %eax, %eax\n" /* srcWidth */
-        "movl $1, %ebx\n"
-        /* { scope 2 */
-        ".Lf1065ae_00106710:\n"
-        "movl -0x20(%ebp, %eax, 4), %eax\n" /* line 151 */
-        "leal -0x60(%ebp), %edx\n" /* tapWeights */
-        "movl %edx, 4(%esp)\n"
-        "leal -0x40(%ebp), %ecx\n" /* tapOffsets */
-        "movl %ecx, (%esp)\n"
-        "movl $8, %ecx\n"
-        "movl %eax, %edx\n"
-        "movss %xmm2, -0x88(%ebp)\n"
-        "movss %xmm3, -0x98(%ebp)\n"
-        "calll RB_GaussianFilterPoints1D\n"
-        /* { scope 3 */
-        "movl 0x195eebc, %edx\n" /* line 76 */
-        "movl 0x10ac(%edx, %eax, 4), %edx\n"
-        "movl -0x6c(%ebp), %ecx\n"
-        "movl %edx, (%ecx)\n"
-        /* } scope */
-        "movl %eax, 0x14(%ecx)\n" /* line 152 | halfTapCount */
-        "leal 0x18(%ecx, %esi, 4), %esi\n"
-        "leal 0x18(%ecx, %ebx, 4), %ebx\n"
-        "movl -0x6c(%ebp), %ecx\n"
-        "movl $1, %edi\n"
-        "movss -0x98(%ebp), %xmm3\n"
-        "movss -0x88(%ebp), %xmm2\n"
-        ".Lf1065ae_00106772:\n"
-        "leal (, %edi, 4), %eax\n" /* line 155 */
-        "movl -0x44(%ebp, %eax), %edx\n"
-        "movl %edx, (%esi)\n"
-        "movl $0, (%ebx)\n" /* line 156 */
-        "movl $0, 0x20(%ecx)\n" /* line 157 */
-        "movl -0x64(%ebp, %eax), %eax\n" /* line 158 */
-        "movl %eax, 0x24(%ecx)\n"
-        "addl $1, %edi\n"
-        "addl $0x10, %esi\n"
-        "addl $0x10, %ebx\n"
-        "addl $0x10, %ecx\n"
-        "cmpl $9, %edi\n" /* line 153 */
-        "jne .Lf1065ae_00106772\n"
-        "movl -0x20(%ebp), %edx\n" /* line 162 | dstRes */
-        "cvtsi2ssl %edx, %xmm0\n"
-        /* { scope 3 */
-        "cmpl $1, %edx\n" /* line 144 */
-        "ja .Lf1065ae_0010685b\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        /* } scope */
-        ".Lf1065ae_001067bc:\n"
-        "divss %xmm1, %xmm0\n" /* line 162 */
-        "movl -0x6c(%ebp), %eax\n"
-        "movss %xmm0, 4(%eax)\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 163 */
-        "cvtsi2ssl %edx, %xmm0\n"
-        /* { scope 3 */
-        "cmpl $1, %edx\n" /* line 144 */
-        "ja .Lf1065ae_00106825\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        /* } scope */
-        ".Lf1065ae_001067dc:\n"
-        "divss %xmm1, %xmm0\n" /* line 163 */
-        "movl -0x6c(%ebp), %edx\n"
-        "movss %xmm0, 8(%edx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 168 | dstRes */
-        "movl %eax, 0xc(%edx)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 169 */
-        "movl %eax, 0x10(%edx)\n"
-        /* } scope */
-        "addl $1, -0x70(%ebp)\n" /* line 289 | passCount */
-        "addl $0x98, %edx\n" /* srcHeight */
-        "movl %edx, -0x6c(%ebp)\n" /* srcHeight */
-        "cmpl $0x10, -0x70(%ebp)\n" /* line 244 | passCount */
-        "jne .Lf1065ae_00106699\n"
-        /* } scope */
-        ".Lf1065ae_0010680b:\n"
-        "movl -0x70(%ebp), %eax\n" /* line 293 | passCount, srcWidth */
-        "addl $0x9c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: tapOffsets, tapWeights */
-        ".Lf1065ae_00106819:\n"
-        "movaps %xmm1, %xmm4\n" /* line 235 */
-        "mulss %xmm1, %xmm4\n"
-        "jmp .Lf1065ae_0010660e\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf1065ae_00106825:\n"
-        "movl $1, %ecx\n" /* line 144 */
-        "movl $0x20, %eax\n"
-        ".Lf1065ae_0010682f:\n"
-        "addl %ecx, %ecx\n"
-        "cmpl %ecx, %edx\n"
-        "jbe .Lf1065ae_001068cb\n"
-        "subl $1, %eax\n"
-        "jne .Lf1065ae_0010682f\n"
-        "testl %ecx, %ecx\n"
-        "js .Lf1065ae_00106848\n"
-        ".Lf1065ae_00106842:\n"
-        "cvtsi2ssl %ecx, %xmm1\n"
-        "jmp .Lf1065ae_001067dc\n"
-        ".Lf1065ae_00106848:\n"
-        "movl %ecx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %ecx\n"
-        "orl %ecx, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "addss %xmm1, %xmm1\n"
-        "jmp .Lf1065ae_001067dc\n"
-        /* } scope */
-        /* { scope 3 */
-        ".Lf1065ae_0010685b:\n"
-        "movl $1, %ecx\n"
-        "movl $0x20, %eax\n"
-        ".Lf1065ae_00106865:\n"
-        "addl %ecx, %ecx\n"
-        "cmpl %ecx, %edx\n"
-        "jbe .Lf1065ae_001068b8\n"
-        "subl $1, %eax\n"
-        "jne .Lf1065ae_00106865\n"
-        "testl %ecx, %ecx\n"
-        "js .Lf1065ae_0010687d\n"
-        ".Lf1065ae_00106874:\n"
-        "cvtsi2ssl %ecx, %xmm1\n"
-        "jmp .Lf1065ae_001067bc\n"
-        ".Lf1065ae_0010687d:\n"
-        "movl %ecx, %eax\n"
-        "shrl $1, %eax\n"
-        "andl $1, %ecx\n"
-        "orl %ecx, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "addss %xmm1, %xmm1\n"
-        "jmp .Lf1065ae_001067bc\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1065ae_00106893:\n"
-        "movss 0x2ed8a0, %xmm0\n" /* line 274 | 6.497750282287598f */
-        "ucomiss %xmm3, %xmm0\n" /* radiusY */
-        "jb .Lf1065ae_0010690b\n"
-        "movaps %xmm3, %xmm0\n" /* radiusY */
-        "pxor %xmm3, %xmm3\n" /* radiusY */
-        "movl $1, %esi\n" /* passAxis */
-        "movl $1, %eax\n" /* srcWidth */
-        "xorl %ebx, %ebx\n"
-        "jmp .Lf1065ae_00106710\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf1065ae_001068b8:\n"
-        "testl %ecx, %ecx\n" /* line 144 */
-        "jns .Lf1065ae_00106874\n"
-        "shrl $1, %ecx\n"
-        "cvtsi2ssl %ecx, %xmm1\n"
-        "addss %xmm1, %xmm1\n"
-        "jmp .Lf1065ae_001067bc\n"
-        /* } scope */
-        /* { scope 3 */
-        ".Lf1065ae_001068cb:\n"
-        "testl %ecx, %ecx\n"
-        "jns .Lf1065ae_00106842\n"
-        "shrl $1, %ecx\n"
-        "cvtsi2ssl %ecx, %xmm1\n"
-        "addss %xmm1, %xmm1\n"
-        "jmp .Lf1065ae_001067dc\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1065ae_001068e2:\n"
-        "movaps %xmm2, %xmm0\n" /* line 81 */
-        "mulss %xmm2, %xmm0\n"
-        "subss 0x2ed8a4, %xmm0\n" /* 42.220760345458984f */
-        "sqrtss %xmm0, %xmm2\n"
-        "movss 0x2ed8a0, %xmm0\n" /* 6.497750282287598f */
-        "xorl %esi, %esi\n"
-        "xorl %eax, %eax\n"
-        "movl $1, %ebx\n"
-        "jmp .Lf1065ae_00106710\n"
-        ".Lf1065ae_0010690b:\n"
-        "movaps %xmm3, %xmm0\n"
-        "mulss %xmm3, %xmm0\n"
-        "subss 0x2ed8a4, %xmm0\n" /* 42.220760345458984f */
-        "sqrtss %xmm0, %xmm3\n"
-        "movss 0x2ed8a0, %xmm0\n" /* 6.497750282287598f */
-        "movl $1, %esi\n"
-        "movl $1, %eax\n"
-        "xorl %ebx, %ebx\n"
-        "jmp .Lf1065ae_00106710\n"
-        ".Lf1065ae_00106937:\n"
-        "cmpl %edx, %ecx\n" /* line 232 | srcHeight */
-        "jne .Lf1065ae_001065d5\n"
-        "movl $0, -0x70(%ebp)\n" /* passCount */
-        "jmp .Lf1065ae_00106687\n"
-        ".Lf1065ae_0010694b:\n"
-        "movl -0x70(%ebp), %edx\n" /* line 251 | passCount, srcHeight */
-        "leal (%edx, %edx, 8), %eax\n" /* srcHeight, srcWidth */
-        "leal (%edx, %eax, 2), %eax\n" /* srcHeight, srcWidth */
-        "movl 0x10(%ebp), %ecx\n" /* filterPass */
-        "leal (%ecx, %eax, 8), %eax\n" /* srcWidth */
-        "movl %eax, 4(%esp)\n" /* srcWidth */
-        "movl 8(%ebp), %eax\n" /* dstHeight, srcWidth */
-        "movl %eax, (%esp)\n" /* srcWidth */
-        "movl -0x74(%ebp), %ecx\n"
-        "movl %eax, %edx\n" /* srcWidth, srcHeight */
-        "movl %ecx, %eax\n" /* srcWidth */
-        "calll RB_GenerateGaussianFilter2D\n"
-        "addl $1, -0x70(%ebp)\n" /* line 252 | passCount */
-        /* } scope */
-        "movl -0x70(%ebp), %eax\n" /* line 293 | passCount, srcWidth */
-        "addl $0x9c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float tapOffsets[8];
+    float tapWeights[8];
+    int passCount;
+    GfxImageFilterPass *curPass;
+    float minRadius;
+    float maxRadiusSq;
+    int halfTapCount;
+    int passAxis;
+    int i;
+    int curDstWidth;
+    int curDstHeight;
+
+    /* line 228-229 */
+    curDstWidth = dstWidth;
+    curDstHeight = dstHeight;
+
+    /* line 232: if src and dst dimensions match, skip the initial downscale pass */
+    if (dstWidth == srcWidth && dstHeight == srcHeight) {
+        passCount = 0;
+    } else {
+        /* Determine initial 2D filter radius, clamped to GLOW_MAX_RADIUS */
+        /* line 45: take min of the two radii */
+        minRadius = radiusX < radiusY ? radiusX : radiusY;
+
+        /* line 235 */
+        if (minRadius > GLOW_MAX_RADIUS) {
+            minRadius = GLOW_MAX_RADIUS;
+            maxRadiusSq = GLOW_MAX_RADIUS_SQ;
+        } else {
+            maxRadiusSq = minRadius * minRadius;
+        }
+
+        /* line 81: compute residual radii after first pass, scaled to dst space */
+        radiusX = sqrtf(radiusX * radiusX - maxRadiusSq) * (float)dstWidth / (float)srcWidth;
+        radiusY = sqrtf(radiusY * radiusY - maxRadiusSq) * (float)dstHeight / (float)srcHeight;
+
+        /* line 240 */
+        RB_GenerateGaussianFilter2D(minRadius, srcWidth, srcHeight, dstWidth, dstHeight, filterPass);
+        passCount = 1;
+    }
+
+    /* Iterative separable blur passes */
+    curPass = &filterPass[passCount];
+
+    while (passCount < 16) {
+        float filterRadius;
+        int dstRes;
+
+        /* line 244: both radii below minimum threshold, done */
+        if (radiusX < FILTER_MIN_RADIUS && radiusY < FILTER_MIN_RADIUS) {
+            break;
+        }
+
+        /* line 246: if radii are close, try a combined 2D pass */
+        if (absf(radiusX - radiusY) < FILTER_MIN_RADIUS) {
+            float avgRadius = (radiusX + radiusY) * 0.5f;
+            /* line 249 */
+            if (avgRadius <= GLOW_MAX_RADIUS) {
+                /* line 251: combined 2D pass */
+                RB_GenerateGaussianFilter2D(avgRadius, curDstWidth, curDstHeight, curDstWidth, curDstHeight, curPass);
+                passCount++;
+                break;
+            }
+        }
+
+        /* line 257: pick the axis with larger remaining radius */
+        if (radiusX > radiusY) {
+            /* X-axis pass */
+            if (FILTER_MAX_SINGLE >= radiusX) {
+                filterRadius = radiusX;
+                radiusX = 0.0f;
+            } else {
+                radiusX = sqrtf(radiusX * radiusX - FILTER_MAX_SQ);
+                filterRadius = FILTER_MAX_SINGLE;
+            }
+            passAxis = 0;
+            dstRes = curDstWidth;
+        } else {
+            /* Y-axis pass */
+            if (FILTER_MAX_SINGLE >= radiusY) {
+                filterRadius = radiusY;
+                radiusY = 0.0f;
+            } else {
+                radiusY = sqrtf(radiusY * radiusY - FILTER_MAX_SQ);
+                filterRadius = FILTER_MAX_SINGLE;
+            }
+            passAxis = 1;
+            dstRes = curDstHeight;
+        }
+
+        /* Generate 1D filter for the chosen axis */
+        halfTapCount = RB_GaussianFilterPoints1D(filterRadius, dstRes, dstRes, 8, tapOffsets, tapWeights);
+
+        /* Select material based on tap count */
+        curPass->material = RGP_SYM_FILTER_MAT(halfTapCount - 1);
+        curPass->tapHalfCount = halfTapCount;
+
+        /* Fill tap entries: offset on active axis, zero on other axis */
+        for (i = 0; i < 8; i++) {
+            if (passAxis == 0) {
+                curPass->tapOffsetsAndWeights[i][0] = tapOffsets[i];
+                curPass->tapOffsetsAndWeights[i][1] = 0.0f;
+            } else {
+                curPass->tapOffsetsAndWeights[i][0] = 0.0f;
+                curPass->tapOffsetsAndWeights[i][1] = tapOffsets[i];
+            }
+            curPass->tapOffsetsAndWeights[i][2] = 0.0f;
+            curPass->tapOffsetsAndWeights[i][3] = tapWeights[i];
+        }
+
+        /* Texture coordinate scale */
+        curPass->srcWidth = (float)curDstWidth / nextPowerOfTwoF((unsigned int)curDstWidth);
+        curPass->srcHeight = (float)curDstHeight / nextPowerOfTwoF((unsigned int)curDstHeight);
+        curPass->dstWidth = curDstWidth;
+        curPass->dstHeight = curDstHeight;
+
+        passCount++;
+        curPass++;
+    }
+
+    /* line 293 */
+    return passCount;
+}
+
+/*
+ * Apply filter passes to render targets with ping-pong buffers.
+ * Shared logic used by both RB_ApplyGlowFilter and RB_GaussianFilterImage.
+ */
+static void RB_ApplyFilterPasses(GfxImageFilter *filter, int swapLastPass)
+{
+    int passIndex;
+    int passCount = filter->passCount;
+
+    for (passIndex = 0; passIndex < passCount; passIndex++) {
+        GfxImageFilterPass *pass = &filter->passes[passIndex];
+        int pingPong = passIndex & 1;
+        GfxRenderTargetId setTarget;
+        int constIndex;
+        float dstW, dstH;
+        byte *be = (byte *)backEnd;
+
+        /* Set source texture on backEnd */
+        if (passIndex == 0) {
+            /* First pass: use original source image */
+            *(GfxImage **)(be + 0x2e8c) = filter->sourceImage;
+        } else {
+            /* Subsequent passes: use previous ping-pong buffer's image */
+            int srcPP = 1 - pingPong;
+            GfxRenderTargetId ppTarget = filter->pingPongTargets[srcPP];
+            *(GfxImage **)(be + 0x2e8c) = DX_RT_IMAGE(ppTarget);
+        }
+
+        /* Determine render target */
+        if (passIndex == passCount - 1) {
+            /* Last pass: render to final target */
+            setTarget = filter->finalTarget;
+        } else {
+            /* Intermediate pass: render to ping-pong buffer */
+            setTarget = filter->pingPongTargets[pingPong];
+        }
+
+        RB_SetRenderTarget(setTarget);
+
+        /* Upload pixel shader constants (tap offsets and weights) */
+        if (pass->tapHalfCount > 0) {
+            byte *constDst = be + 0x230;
+            byte *constSrc = (byte *)&pass->tapOffsetsAndWeights[0];
+            for (constIndex = 0; constIndex < pass->tapHalfCount; constIndex++) {
+                *(int *)(constDst + 0) = *(int *)(constSrc + 0);
+                *(int *)(constDst + 4) = *(int *)(constSrc + 4);
+                *(int *)(constDst + 8) = *(int *)(constSrc + 8);
+                *(int *)(constDst + 12) = *(int *)(constSrc + 12);
+                constDst += 16;
+                constSrc += 16;
+            }
+        }
+
+        dstW = (float)pass->dstWidth;
+        dstH = (float)pass->dstHeight;
+
+        /* Draw the filter quad */
+        if (swapLastPass && passIndex == passCount - 1) {
+            /* Last pass with swapped t0/t1 (used for sky bleed in glow) */
+            RB_DrawStretchPic(pass->material, 0.0f, 0.0f, dstW, dstH,
+                              0.0f, pass->srcHeight, pass->srcWidth, 0.0f,
+                              0xFFFFFFFF, 0xa);
+        } else {
+            /* Normal draw */
+            RB_DrawStretchPic(pass->material, 0.0f, 0.0f, dstW, dstH,
+                              0.0f, 0.0f, pass->srcWidth, pass->srcHeight,
+                              0xFFFFFFFF, 0xa);
+        }
+
+        RB_EndSurface();
+    }
 }
 
 /* line 500 */
-static __attribute__((naked))
-GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId dstRenderTarget)
+static GfxRenderTargetId RB_ApplyGlowFilter(GfxRenderTargetId srcRenderTarget, GfxRenderTargetId dstRenderTarget, float glowRadius)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 500 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9fc, %esp\n"
-        "movl %eax, %esi\n" /* srcRenderTarget */
-        "movl %edx, -0x9c8(%ebp)\n"
-        /* { scope 1 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 509 | 0.0f */
-        "jp .Lf106982_001069a5\n"
-        "je .Lf106982_00106c0f\n"
-        ".Lf106982_001069a5:\n"
-        "movl 0x195f0c8, %eax\n" /* line 59 */
-        "movl 0x3c8(%eax), %eax\n"
-        "movl 0x3c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "js .Lf106982_00106d45\n"
-        "cvtsi2ssl %edx, %xmm1\n"
-        ".Lf106982_001069bf:\n"
-        "mulss %xmm0, %xmm1\n"
-        "divss 0x2ed840, %xmm1\n" /* 480.0f */
-        "movl 0x195eeec, %eax\n" /* line 60 */
-        "movaps %xmm1, %xmm0\n"
-        "mulss 0x14(%eax), %xmm0\n"
-        "movl $0xb, -0x20(%ebp)\n" /* line 519 */
-        "movl $0xc, -0x1c(%ebp)\n" /* line 520 */
-        "movl 0x195eed0, %edi\n" /* line 523 */
-        "movl -0x9c8(%ebp), %edx\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%edi, %eax, 4), %eax\n"
-        "movl 0x2c3c(%eax), %ebx\n" /* Mask */
-        "movl %ebx, -0x9c4(%ebp)\n" /* Mask, width */
-        "movl 0x2c40(%eax), %edx\n" /* line 524 */
-        "leal (%esi, %esi, 4), %eax\n" /* line 526 | srcRenderTarget */
-        "movl 0x2c30(%edi, %eax, 4), %eax\n"
-        "movl %eax, -0x28(%ebp)\n"
-        "movl -0x9c8(%ebp), %eax\n" /* line 527 */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl $0, -0x9ac(%ebp)\n" /* line 528 | filter */
-        "cmpl $2, %esi\n" /* line 530 | srcRenderTarget */
-        "je .Lf106982_00106cbd\n"
-        "movl %ebx, %ecx\n" /* Mask */
-        ".Lf106982_00106a35:\n"
-        "movl -0x9ac(%ebp), %ebx\n" /* line 546 | filter, Mask */
-        "leal -0x9ac(%ebp), %edi\n" /* filter */
-        "leal (%ebx, %ebx, 8), %eax\n" /* Mask */
-        "leal (%ebx, %eax, 2), %eax\n" /* Mask */
-        "leal 4(%edi, %eax, 8), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x10, %eax\n"
-        "subl %ebx, %eax\n" /* Mask */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "movl %ecx, %eax\n"
-        "calll RB_GenerateGaussianFilterChain\n"
-        "leal (%ebx, %eax), %edx\n" /* Mask */
-        "movl %edx, -0x9ac(%ebp)\n" /* filter */
-        "testl %edx, %edx\n" /* line 547 */
-        "je .Lf106982_00106c0f\n"
-        "movl 0x195f13c, %eax\n" /* line 552 */
-        "addl %edx, (%eax)\n"
-        /* { scope 2: passIndex */
-        "testl %edx, %edx\n" /* line 400 */
-        "jle .Lf106982_00106c09\n"
-        "movl $0, -0x9c0(%ebp)\n" /* passIndex */
-        "movl %edi, -0x9bc(%ebp)\n"
-        "movl 0x195f0c8, %eax\n"
-        "movl %eax, -0x9cc(%ebp)\n"
-        "leal -0x9a8(%ebp), %ebx\n" /* Mask */
-        "movl %ebx, -0x9d0(%ebp)\n" /* Mask */
-        /* { scope 3 */
-        /* { scope 4 */
-        ".Lf106982_00106aab:\n"
-        "movl -0x9c0(%ebp), %ecx\n" /* line 325 | passIndex */
-        "andl $1, %ecx\n"
-        "movl -0x9c0(%ebp), %eax\n" /* line 326 | passIndex */
-        "testl %eax, %eax\n"
-        "jne .Lf106982_00106c37\n"
-        "movl -0x28(%ebp), %eax\n" /* line 360 */
-        "movl -0x9cc(%ebp), %ebx\n" /* Mask */
-        "movl %eax, 0x2e8c(%ebx)\n" /* Mask */
-        "leal -1(%edx), %eax\n" /* line 331 */
-        "cmpl %eax, -0x9c0(%ebp)\n" /* passIndex */
-        "je .Lf106982_00106c6f\n"
-        ".Lf106982_00106ae0:\n"
-        "movl -0x20(%ebp, %ecx, 4), %eax\n" /* line 334 */
-        "movl %eax, (%esp)\n" /* line 336 */
-        "calll RB_SetRenderTarget\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 3 */
-        "movl -0x9d0(%ebp), %eax\n" /* line 301 */
-        "movl 0x14(%eax), %edi\n"
-        "testl %edi, %edi\n"
-        "jle .Lf106982_00106c8b\n"
-        ".Lf106982_00106afd:\n"
-        "xorl %esi, %esi\n" /* constIndex */
-        "movl 0x195f0c8, %ecx\n"
-        "addl $0x230, %ecx\n"
-        "movl %eax, %ebx\n" /* Mask */
-        "addl $0x10, %ebx\n" /* Mask */
-        ".Lf106982_00106b10:\n"
-        "leal 8(%ebx), %edx\n" /* line 302 | Mask */
-        /* { scope 4 */
-        "movl 8(%ebx), %eax\n" /* line 456 | Mask */
-        "movl %eax, (%ecx)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "addl $1, %esi\n" /* line 301 | constIndex */
-        "addl $0x10, %ebx\n" /* Mask */
-        "addl $0x10, %ecx\n"
-        "cmpl %esi, %edi\n" /* constIndex */
-        "jne .Lf106982_00106b10\n"
-        "movl -0x9d0(%ebp), %edx\n"
-        /* } scope */
-        ".Lf106982_00106b3d:\n"
-        "cvtsi2ssl 0xc(%edx), %xmm1\n" /* line 406 */
-        "cvtsi2ssl 0x10(%edx), %xmm0\n" /* line 407 */
-        "cmpb $0, g_LastGlowFilter\n" /* line 410 */
-        "je .Lf106982_00106c22\n"
-        "testb $1, g_TotalFilterPasses\n"
-        "jne .Lf106982_00106c1c\n"
-        "movl -0x9ac(%ebp), %eax\n" /* line 412 | filter */
-        "subl $1, %eax\n"
-        "cmpl %eax, -0x9c0(%ebp)\n" /* passIndex */
-        "je .Lf106982_00106c92\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 418 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl -0x9d0(%ebp), %edx\n"
-        ".Lf106982_00106b8c:\n"
-        "movl 8(%edx), %eax\n" /* line 423 */
-        "movl %eax, 0x20(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        ".Lf106982_00106ba2:\n"
-        "movl $0, 0x14(%esp)\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl -0x9bc(%ebp), %ebx\n" /* Mask */
-        "movl 4(%ebx), %eax\n" /* Mask */
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "calll RB_EndSurface\n" /* line 428 */
-        "addl $1, -0x9c0(%ebp)\n" /* line 400 | passIndex */
-        "addl $0x98, -0x9d0(%ebp)\n"
-        "movl -0x9ac(%ebp), %edx\n" /* filter */
-        "addl $0x98, -0x9bc(%ebp)\n"
-        "cmpl %edx, -0x9c0(%ebp)\n" /* passIndex */
-        "jl .Lf106982_00106aab\n"
-        ".Lf106982_00106c09:\n"
-        "movl -0x9c8(%ebp), %esi\n" /* constIndex */
-        /* } scope */
-        /* } scope */
-        ".Lf106982_00106c0f:\n"
-        "movl %esi, %eax\n" /* line 560 | srcRenderTarget */
-        "addl $0x9fc, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf106982_00106c1c:\n"
-        "movl -0x9d0(%ebp), %edx\n"
-        /* { scope 1 */
-        /* { scope 2: passIndex */
-        ".Lf106982_00106c22:\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 423 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "jmp .Lf106982_00106b8c\n"
-        /* { scope 3 */
-        /* { scope 4 */
-        ".Lf106982_00106c37:\n"
-        "movl $1, %eax\n" /* line 360 */
-        "subl %ecx, %eax\n"
-        "movl -0x20(%ebp, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl 0x195eed0, %eax\n"
-        "movl 0x2c30(%eax), %eax\n"
-        "movl -0x9cc(%ebp), %ebx\n" /* Mask */
-        "movl %eax, 0x2e8c(%ebx)\n" /* Mask */
-        "leal -1(%edx), %eax\n" /* line 331 */
-        "cmpl %eax, -0x9c0(%ebp)\n" /* passIndex */
-        "jne .Lf106982_00106ae0\n"
-        ".Lf106982_00106c6f:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 332 */
-        "movl %eax, (%esp)\n" /* line 336 */
-        "calll RB_SetRenderTarget\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 3 */
-        "movl -0x9d0(%ebp), %eax\n" /* line 301 */
-        "movl 0x14(%eax), %edi\n"
-        "testl %edi, %edi\n"
-        "jg .Lf106982_00106afd\n"
-        ".Lf106982_00106c8b:\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf106982_00106b3d\n"
-        /* } scope */
-        ".Lf106982_00106c92:\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 414 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl $0, 0x20(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "jmp .Lf106982_00106ba2\n"
-        /* } scope */
-        ".Lf106982_00106cbd:\n"
-        "movl 0x2c64(%edi), %ecx\n" /* line 533 */
-        "cvtsi2ssl %ecx, %xmm3\n"
-        /* { scope 2: passIndex */
-        "cmpl $1, %ecx\n" /* line 144 */
-        "ja .Lf106982_00106d7a\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        /* } scope */
-        ".Lf106982_00106cd8:\n"
-        "divss %xmm2, %xmm3\n" /* line 533 */
-        "movss %xmm3, -0x9a4(%ebp)\n"
-        "movl 0x2c68(%edi), %ecx\n" /* line 534 */
-        "cvtsi2ssl %ecx, %xmm3\n"
-        /* { scope 2: passIndex */
-        "cmpl $1, %ecx\n" /* line 144 */
-        "ja .Lf106982_00106d5b\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        /* } scope */
-        ".Lf106982_00106cfb:\n"
-        "divss %xmm2, %xmm3\n" /* line 534 */
-        "movss %xmm3, -0x9a0(%ebp)\n"
-        "movl -0x9c4(%ebp), %ebx\n" /* line 539 | width, Mask */
-        "movl %ebx, -0x99c(%ebp)\n" /* Mask */
-        "movl %edx, -0x998(%ebp)\n" /* line 540 */
-        "movl $0, -0x994(%ebp)\n" /* line 541 */
-        "movl 0x195eebc, %eax\n" /* line 542 */
-        "movl 0x10d4(%eax), %eax\n"
-        "movl %eax, -0x9a8(%ebp)\n"
-        "movl $1, -0x9ac(%ebp)\n" /* line 543 | filter */
-        "movl %ebx, %ecx\n" /* Mask */
-        "jmp .Lf106982_00106a35\n"
-        ".Lf106982_00106d45:\n"
-        "movl %edx, %eax\n" /* line 59 */
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm1\n"
-        "addss %xmm1, %xmm1\n"
-        "jmp .Lf106982_001069bf\n"
-        /* { scope 2: passIndex */
-        ".Lf106982_00106d5b:\n"
-        "movl $1, %ebx\n" /* line 144 | Mask */
-        "movl $0x20, %eax\n"
-        ".Lf106982_00106d65:\n"
-        "addl %ebx, %ebx\n" /* Mask */
-        "cmpl %ebx, %ecx\n" /* Mask */
-        "jbe .Lf106982_00106ddb\n"
-        "subl $1, %eax\n"
-        "jne .Lf106982_00106d65\n"
-        "testl %ebx, %ebx\n" /* Mask */
-        "js .Lf106982_00106db2\n"
-        ".Lf106982_00106d74:\n"
-        "cvtsi2ssl %ebx, %xmm2\n" /* Mask */
-        "jmp .Lf106982_00106cfb\n"
-        /* } scope */
-        /* { scope 2: passIndex */
-        ".Lf106982_00106d7a:\n"
-        "movl $1, %ebx\n" /* Mask */
-        "movl $0x20, %eax\n"
-        ".Lf106982_00106d84:\n"
-        "addl %ebx, %ebx\n" /* Mask */
-        "cmpl %ebx, %ecx\n" /* Mask */
-        "jbe .Lf106982_00106dc8\n"
-        "subl $1, %eax\n"
-        "jne .Lf106982_00106d84\n"
-        "testl %ebx, %ebx\n" /* Mask */
-        "js .Lf106982_00106d9c\n"
-        ".Lf106982_00106d93:\n"
-        "cvtsi2ssl %ebx, %xmm2\n" /* Mask */
-        "jmp .Lf106982_00106cd8\n"
-        ".Lf106982_00106d9c:\n"
-        "movl %ebx, %eax\n" /* Mask */
-        "shrl $1, %eax\n"
-        "andl $1, %ebx\n" /* Mask */
-        "orl %ebx, %eax\n" /* Mask */
-        "cvtsi2ssl %eax, %xmm2\n"
-        "addss %xmm2, %xmm2\n"
-        "jmp .Lf106982_00106cd8\n"
-        /* } scope */
-        /* { scope 2: passIndex */
-        ".Lf106982_00106db2:\n"
-        "movl %ebx, %eax\n" /* Mask */
-        "shrl $1, %eax\n"
-        "andl $1, %ebx\n" /* Mask */
-        "orl %ebx, %eax\n" /* Mask */
-        "cvtsi2ssl %eax, %xmm2\n"
-        "addss %xmm2, %xmm2\n"
-        "jmp .Lf106982_00106cfb\n"
-        /* } scope */
-        /* { scope 2: passIndex */
-        ".Lf106982_00106dc8:\n"
-        "testl %ebx, %ebx\n" /* Mask */
-        "jns .Lf106982_00106d93\n"
-        "shrl $1, %ebx\n" /* Mask */
-        "cvtsi2ssl %ebx, %xmm2\n" /* Mask */
-        "addss %xmm2, %xmm2\n"
-        "jmp .Lf106982_00106cd8\n"
-        /* } scope */
-        /* { scope 2: passIndex */
-        ".Lf106982_00106ddb:\n"
-        "testl %ebx, %ebx\n" /* Mask */
-        "jns .Lf106982_00106d74\n"
-        "shrl $1, %ebx\n" /* Mask */
-        "cvtsi2ssl %ebx, %xmm2\n" /* Mask */
-        "addss %xmm2, %xmm2\n"
-        "jmp .Lf106982_00106cfb\n"
+    GfxImageFilter filter;
+    int passCount;
+    int chainPassCount;
+    int startPass;
+    byte *be;
+    byte *vc;
+    int dstWidth, dstHeight;
+    float scaledRadius;
+
+    /* line 509: zero radius means no filtering */
+    if (glowRadius == 0.0f) {
+        return dstRenderTarget;
+    }
+
+    /* line 59: scale radius by viewport height / 480 */
+    be = (byte *)backEnd;
+    {
+        const GfxViewParms *viewParms = *(const GfxViewParms **)(be + 0x3c8);
+        int viewportHeight = *(int *)((byte *)viewParms + 0x3c);
+        float heightScaled = (float)viewportHeight * glowRadius / 480.0f;
+
+        /* line 60: multiply by aspect ratio */
+        vc = (byte *)vidConfig;
+        scaledRadius = heightScaled * *(float *)(vc + 0x14);
+    }
+
+    /* line 519-520 */
+    filter.pingPongTargets[0] = R_RENDERTARGET_PINGPONG_0;
+    filter.pingPongTargets[1] = R_RENDERTARGET_PINGPONG_1;
+
+    /* line 523-524 */
+    dstWidth = DX_RT_WIDTH(dstRenderTarget);
+    dstHeight = DX_RT_HEIGHT(dstRenderTarget);
+
+    /* line 526-528 */
+    filter.sourceImage = DX_RT_IMAGE(srcRenderTarget);
+    filter.finalTarget = dstRenderTarget;
+    filter.passCount = 0;
+
+    /* line 530: special handling for resolved scene source */
+    if (srcRenderTarget == R_RENDERTARGET_RESOLVED_SCENE) {
+        /* Setup initial downscale pass from full-res scene to glow buffer */
+        int sceneWidth = DX_RT_WIDTH(R_RENDERTARGET_RESOLVED_SCENE);
+        int sceneHeight = DX_RT_HEIGHT(R_RENDERTARGET_RESOLVED_SCENE);
+
+        filter.passes[0].srcWidth = (float)sceneWidth / nextPowerOfTwoF((unsigned int)sceneWidth);
+        filter.passes[0].srcHeight = (float)sceneHeight / nextPowerOfTwoF((unsigned int)sceneHeight);
+        filter.passes[0].dstWidth = dstWidth;
+        filter.passes[0].dstHeight = dstHeight;
+        filter.passes[0].tapHalfCount = 0;
+        filter.passes[0].material = RGP_GLOW_SETUP_MAT();
+        filter.passCount = 1;
+    }
+
+    /* line 546: generate gaussian filter chain */
+    startPass = filter.passCount;
+    chainPassCount = RB_GenerateGaussianFilterChain(
+        scaledRadius, scaledRadius,
+        dstWidth, dstHeight,
+        dstWidth, dstHeight,
+        16 - startPass,
+        &filter.passes[startPass]
     );
+    filter.passCount = startPass + chainPassCount;
+    passCount = filter.passCount;
+
+    /* line 547: no passes means no filtering */
+    if (passCount == 0) {
+        return dstRenderTarget;
+    }
+
+    /* line 552: accumulate total filter passes */
+    g_TotalFilterPasses += passCount;
+
+    /* Apply filter passes */
+    {
+        int swapLast = (g_LastGlowFilter && !(g_TotalFilterPasses & 1));
+        RB_ApplyFilterPasses(&filter, swapLast);
+    }
+
+    return dstRenderTarget;
 }
 
 /* line 562 */
-__attribute__((naked))
 int RB_GlowFilterImage(float *radius)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 562 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xc, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* radius */
-        /* { scope 1 */
-        "movss (%ebx), %xmm2\n" /* line 570 | radius */
-        "pxor %xmm3, %xmm3\n"
-        "ucomiss %xmm3, %xmm2\n"
-        "jp .Lf106dee_00106e0d\n"
-        "je .Lf106dee_00106ead\n"
-        ".Lf106dee_00106e0d:\n"
-        "movl 0x195eed0, %eax\n" /* line 576 */
-        "cvtsi2ssl 0x2cf0(%eax), %xmm0\n"
-        "cvtsi2ssl 0x2c64(%eax), %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "mulss %xmm0, %xmm2\n" /* line 577 */
-        "movss %xmm2, (%ebx)\n" /* radius */
-        "leal 4(%ebx), %edi\n" /* line 578 | radius */
-        "mulss 4(%ebx), %xmm0\n" /* radius */
-        "movss %xmm0, 4(%ebx)\n" /* radius */
-        "ucomiss %xmm3, %xmm0\n" /* line 580 */
-        "sete %dl\n"
-        "setnp %al\n"
-        "andb %al, %dl\n"
-        "movb %dl, g_LastGlowFilter\n"
-        "movss 4(%ebx), %xmm1\n" /* line 582 | radius */
-        "ucomiss %xmm3, %xmm1\n"
-        "jp .Lf106dee_00106f14\n"
-        "jne .Lf106dee_00106f14\n"
-        ".Lf106dee_00106e60:\n"
-        "movl 0x195f0c8, %esi\n" /* line 591 */
-        "movl 0x2e88(%esi), %eax\n"
-        "movl $9, %edx\n"
-        "movss (%ebx), %xmm0\n" /* radius */
-        "calll RB_ApplyGlowFilter\n"
-        "movl %eax, %ecx\n"
-        "leal (%eax, %eax, 4), %eax\n" /* line 592 */
-        "shll $2, %eax\n"
-        "addl 0x195eed0, %eax\n"
-        "movl 0x2c30(%eax), %eax\n"
-        "movl %eax, 0x4d4(%esi)\n"
-        "movss (%edi), %xmm1\n" /* line 593 */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
-        "jne .Lf106dee_00106eb5\n"
-        "jp .Lf106dee_00106eb5\n"
-        "movl $1, 0x4d0(%esi)\n" /* line 595 */
-        /* } scope */
-        ".Lf106dee_00106ead:\n"
-        "addl $0xc, %esp\n" /* line 607 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf106dee_00106eb5:\n"
-        "movss (%ebx), %xmm0\n" /* line 600 | radius */
-        "mulss %xmm1, %xmm1\n"
-        "mulss %xmm0, %xmm0\n"
-        "subss %xmm0, %xmm1\n"
-        "sqrtss %xmm1, %xmm0\n"
-        "movss %xmm0, (%edi)\n"
-        "movb $1, g_LastGlowFilter\n" /* line 602 */
-        "movl $9, %edx\n" /* line 604 */
-        "movl %ecx, %eax\n"
-        "movss (%edi), %xmm0\n"
-        "calll RB_ApplyGlowFilter\n"
-        "movl 0x195f0c8, %edx\n" /* line 605 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl 0x195eed0, %eax\n"
-        "movl 0x2c30(%eax), %eax\n"
-        "movl %eax, 0x4d8(%edx)\n"
-        "movl $2, 0x4d0(%edx)\n" /* line 606 */
-        /* } scope */
-        "addl $0xc, %esp\n" /* line 607 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf106dee_00106f14:\n"
-        "movss (%ebx), %xmm0\n" /* line 584 | radius */
-        "mulss %xmm1, %xmm1\n"
-        "mulss %xmm0, %xmm0\n"
-        "subss %xmm0, %xmm1\n"
-        "sqrtss %xmm1, %xmm0\n"
-        "movl $1, %eax\n" /* line 587 */
-        "ucomiss %xmm3, %xmm0\n"
-        "cmovnel %edx, %eax\n"
-        "cmovpl %edx, %eax\n"
-        "movb %al, g_LastGlowFilter\n"
-        "jmp .Lf106dee_00106e60\n"
-    );
+    float radiusX, radiusY;
+    float scaleRatio;
+    GfxRenderTargetId result;
+    byte *be;
+
+    /* line 570 */
+    radiusX = radius[0];
+    if (radiusX == 0.0f) {
+        return 0;
+    }
+
+    /* line 576: scale radii by glow-to-scene render target size ratio */
+    scaleRatio = (float)DX_RT_WIDTH(R_RENDERTARGET_GLOW_0) / (float)DX_RT_WIDTH(R_RENDERTARGET_RESOLVED_SCENE);
+
+    /* line 577-578 */
+    radiusX *= scaleRatio;
+    radius[0] = radiusX;
+    radiusY = radius[1] * scaleRatio;
+    radius[1] = radiusY;
+
+    /* line 580: set g_LastGlowFilter based on whether second radius is zero */
+    g_LastGlowFilter = (radiusY == 0.0f);
+
+    /* line 582 */
+    if (radius[1] != 0.0f) {
+        /* line 584: compute orthogonal component */
+        float rx = radius[0];
+        float ry = radius[1];
+        float orthoRadius = sqrtf(ry * ry - rx * rx);
+        /* line 587 */
+        g_LastGlowFilter = (orthoRadius == 0.0f) ? 1 : 0;
+    }
+
+    /* line 591: apply first glow filter pass */
+    be = (byte *)backEnd;
+    {
+        GfxRenderTargetId srcTarget = *(GfxRenderTargetId *)(be + 0x2e88);
+        result = RB_ApplyGlowFilter(srcTarget, R_RENDERTARGET_GLOW_0, radius[0]);
+    }
+
+    /* line 592: store first blurred image result */
+    {
+        GfxImage *blurImage = DX_RT_IMAGE(result);
+        *(GfxImage **)(be + 0x4d4) = blurImage;
+    }
+
+    /* line 593: check if second pass is needed */
+    if (radius[1] == 0.0f) {
+        /* line 595: single-pass glow */
+        *(int *)(be + 0x4d0) = 1;
+        return 0;
+    }
+
+    /* line 600: compute second-pass radius from orthogonal component */
+    {
+        float rx = radius[0];
+        float ry = radius[1];
+        radius[1] = sqrtf(ry * ry - rx * rx);
+    }
+
+    /* line 602 */
+    g_LastGlowFilter = 1;
+
+    /* line 604: apply second glow pass */
+    {
+        GfxRenderTargetId secondResult = RB_ApplyGlowFilter(result, R_RENDERTARGET_GLOW_0, radius[1]);
+
+        /* line 605: store second blurred image */
+        be = (byte *)backEnd;
+        *(GfxImage **)(be + 0x4d8) = DX_RT_IMAGE(secondResult);
+
+        /* line 606: two-pass glow */
+        *(int *)(be + 0x4d0) = 2;
+    }
+
+    return 0;
 }
 
 /* line 468 */
-__attribute__((naked))
 int RB_GaussianFilterImage(float radius, GfxRenderTargetId renderTargetId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 468 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x9fc, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* renderTargetId */
-        /* { scope 1 */
-        "movl 0x195f0c8, %eax\n" /* line 59 */
-        "movl 0x3c8(%eax), %eax\n"
-        "movl 0x3c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "js .Lf106f42_001071ed\n"
-        "cvtsi2ssl %edx, %xmm0\n"
-        ".Lf106f42_00106f6b:\n"
-        "movss 8(%ebp), %xmm1\n" /* radius */
-        "mulss %xmm0, %xmm1\n"
-        "divss 0x2ed840, %xmm1\n" /* 480.0f */
-        "movl 0x195eeec, %ebx\n" /* line 60 */
-        "movaps %xmm1, %xmm0\n"
-        "mulss 0x14(%ebx), %xmm0\n"
-        "movl $0xb, -0x20(%ebp)\n" /* line 483 */
-        "movl $0xc, -0x1c(%ebp)\n" /* line 484 */
-        "movl 0x195eed0, %edx\n" /* line 487 */
-        "leal (%edi, %edi, 4), %eax\n" /* renderTargetId */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x2c3c(%eax), %ecx\n"
-        "movl 0x2c40(%eax), %esi\n" /* line 488 | height */
-        "movl 0x2c58(%edx), %eax\n" /* line 489 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl %edi, -0x24(%ebp)\n" /* line 490 | renderTargetId */
-        "movl 4(%ebx), %edx\n" /* line 491 */
-        "leal -0x9ac(%ebp), %edi\n" /* filter, renderTargetId */
-        "leal -0x9a8(%ebp), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x10, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* height */
-        "movl (%ebx), %eax\n"
-        "calll RB_GenerateGaussianFilterChain\n"
-        "movl %eax, %edx\n"
-        "movl %eax, -0x9ac(%ebp)\n" /* filter */
-        /* { scope 2: passIndex */
-        "andl $1, %eax\n" /* line 362 */
-        "movl %eax, -0x9c4(%ebp)\n"
-        "testl %edx, %edx\n" /* line 364 */
-        "jle .Lf106f42_00107170\n"
-        "movl $0, -0x9c0(%ebp)\n" /* passIndex */
-        "movl %edi, -0x9bc(%ebp)\n"
-        "movl 0x195f0c8, %ebx\n"
-        "movl %ebx, -0x9c8(%ebp)\n"
-        "leal -0x9a8(%ebp), %eax\n"
-        "movl %eax, -0x9cc(%ebp)\n"
-        /* { scope 3 */
-        /* { scope 4 */
-        ".Lf106f42_00107022:\n"
-        "movl -0x9c0(%ebp), %ecx\n" /* line 325 | passIndex */
-        "andl $1, %ecx\n"
-        "movl -0x9c0(%ebp), %ebx\n" /* line 326 | passIndex */
-        "testl %ebx, %ebx\n"
-        "jne .Lf106f42_00107182\n"
-        "movl -0x28(%ebp), %eax\n" /* line 360 */
-        "movl -0x9c8(%ebp), %ebx\n"
-        "movl %eax, 0x2e8c(%ebx)\n"
-        "leal -1(%edx), %eax\n" /* line 331 */
-        "cmpl %eax, -0x9c0(%ebp)\n" /* passIndex */
-        "je .Lf106f42_001071ba\n"
-        ".Lf106f42_00107057:\n"
-        "movl -0x20(%ebp, %ecx, 4), %eax\n" /* line 334 */
-        ".Lf106f42_0010705b:\n"
-        "movl %eax, (%esp)\n" /* line 336 */
-        "calll RB_SetRenderTarget\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 3 */
-        "movl -0x9cc(%ebp), %eax\n" /* line 301 */
-        "movl 0x14(%eax), %edi\n"
-        "testl %edi, %edi\n"
-        "jle .Lf106f42_0010717b\n"
-        "xorl %esi, %esi\n" /* constIndex */
-        "movl 0x195f0c8, %ecx\n"
-        "addl $0x230, %ecx\n"
-        "movl %eax, %ebx\n"
-        "addl $0x10, %ebx\n"
-        ".Lf106f42_00107087:\n"
-        "leal 8(%ebx), %edx\n" /* line 302 */
-        /* { scope 4 */
-        "movl 8(%ebx), %eax\n" /* line 456 */
-        "movl %eax, (%ecx)\n"
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "addl $1, %esi\n" /* line 301 | constIndex */
-        "addl $0x10, %ebx\n"
-        "addl $0x10, %ecx\n"
-        "cmpl %edi, %esi\n" /* constIndex */
-        "jne .Lf106f42_00107087\n"
-        "movl -0x9cc(%ebp), %edx\n"
-        /* } scope */
-        ".Lf106f42_001070b4:\n"
-        "cvtsi2ssl 0xc(%edx), %xmm1\n" /* line 370 */
-        "cvtsi2ssl 0x10(%edx), %xmm0\n" /* line 371 */
-        "movl -0x9c4(%ebp), %ecx\n" /* line 374 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf106f42_001070e3\n"
-        "movl -0x9ac(%ebp), %eax\n" /* filter */
-        "subl $1, %eax\n"
-        "cmpl %eax, -0x9c0(%ebp)\n" /* passIndex */
-        "je .Lf106f42_001071c2\n"
-        "movl -0x9cc(%ebp), %edx\n"
-        ".Lf106f42_001070e3:\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 381 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        ".Lf106f42_00107109:\n"
-        "movl $0, 0x14(%esp)\n"
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss %xmm1, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl -0x9bc(%ebp), %ebx\n"
-        "movl 4(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_DrawStretchPic\n"
-        "calll RB_EndSurface\n" /* line 383 */
-        "addl $1, -0x9c0(%ebp)\n" /* line 364 | passIndex */
-        "addl $0x98, -0x9cc(%ebp)\n"
-        "movl -0x9ac(%ebp), %edx\n" /* filter */
-        "addl $0x98, -0x9bc(%ebp)\n"
-        "cmpl %edx, -0x9c0(%ebp)\n" /* passIndex */
-        "jl .Lf106f42_00107022\n"
-        /* } scope */
-        /* } scope */
-        ".Lf106f42_00107170:\n"
-        "addl $0x9fc, %esp\n" /* line 498 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf106f42_0010717b:\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf106f42_001070b4\n"
-        /* { scope 1 */
-        /* { scope 2: passIndex */
-        /* { scope 3 */
-        /* { scope 4 */
-        ".Lf106f42_00107182:\n"
-        "movl $1, %eax\n" /* line 360 */
-        "subl %ecx, %eax\n"
-        "movl -0x20(%ebp, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $2, %eax\n"
-        "addl 0x195eed0, %eax\n"
-        "movl 0x2c30(%eax), %eax\n"
-        "movl -0x9c8(%ebp), %ebx\n"
-        "movl %eax, 0x2e8c(%ebx)\n"
-        "leal -1(%edx), %eax\n" /* line 331 */
-        "cmpl %eax, -0x9c0(%ebp)\n" /* passIndex */
-        "jne .Lf106f42_00107057\n"
-        ".Lf106f42_001071ba:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 332 */
-        "jmp .Lf106f42_0010705b\n"
-        /* } scope */
-        /* } scope */
-        ".Lf106f42_001071c2:\n"
-        "movl $0xa, 0x28(%esp)\n" /* line 376 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl $0, 0x20(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 0x18(%esp)\n"
-        "jmp .Lf106f42_00107109\n"
-        /* } scope */
-        ".Lf106f42_001071ed:\n"
-        "movl %edx, %eax\n" /* line 59 */
-        "shrl $1, %eax\n"
-        "andl $1, %edx\n"
-        "orl %edx, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "addss %xmm0, %xmm0\n"
-        "jmp .Lf106f42_00106f6b\n"
-    );
-}
+    GfxImageFilter filter;
+    int passCount;
+    int passIndex;
+    byte *be;
+    byte *vc;
+    int width, height;
+    float scaledRadius;
+    int oddPassCount;
 
+    /* line 59: scale radius by viewport height / 480 */
+    be = (byte *)backEnd;
+    {
+        const GfxViewParms *viewParms = *(const GfxViewParms **)(be + 0x3c8);
+        int viewportHeight = *(int *)((byte *)viewParms + 0x3c);
+        float heightScaled = (float)viewportHeight * radius / 480.0f;
+
+        /* line 60 */
+        vc = (byte *)vidConfig;
+        scaledRadius = heightScaled * *(float *)(vc + 0x14);
+    }
+
+    /* line 483-484 */
+    filter.pingPongTargets[0] = R_RENDERTARGET_PINGPONG_0;
+    filter.pingPongTargets[1] = R_RENDERTARGET_PINGPONG_1;
+
+    /* line 487-490 */
+    width = DX_RT_WIDTH(renderTargetId);
+    height = DX_RT_HEIGHT(renderTargetId);
+    filter.sourceImage = DX_RT_IMAGE(R_RENDERTARGET_RESOLVED_SCENE);
+    filter.finalTarget = renderTargetId;
+
+    /* line 491: generate filter chain from vidConfig dimensions to target dimensions */
+    {
+        int vidWidth = *(int *)(vc + 0x0);   /* vidConfig->width */
+        int vidHeight = *(int *)(vc + 0x4);  /* vidConfig->height */
+
+        passCount = RB_GenerateGaussianFilterChain(
+            scaledRadius, scaledRadius,
+            vidWidth, vidHeight,
+            width, height,
+            16,
+            &filter.passes[0]
+        );
+    }
+    filter.passCount = passCount;
+
+    /* line 362 */
+    oddPassCount = passCount & 1;
+
+    /* line 364: apply filter passes */
+    for (passIndex = 0; passIndex < passCount; passIndex++) {
+        GfxImageFilterPass *pass = &filter.passes[passIndex];
+        int pingPong = passIndex & 1;
+        GfxRenderTargetId setTarget;
+        int constIndex;
+        float dstW, dstH;
+
+        be = (byte *)backEnd;
+
+        /* line 325-326: set source texture */
+        if (passIndex == 0) {
+            *(GfxImage **)(be + 0x2e8c) = filter.sourceImage;
+        } else {
+            int srcPP = 1 - pingPong;
+            GfxRenderTargetId ppTarget = filter.pingPongTargets[srcPP];
+            *(GfxImage **)(be + 0x2e8c) = DX_RT_IMAGE(ppTarget);
+        }
+
+        /* line 331-334: determine render target */
+        if (passIndex == passCount - 1) {
+            setTarget = filter.finalTarget;
+        } else {
+            setTarget = filter.pingPongTargets[pingPong];
+        }
+
+        /* line 336 */
+        RB_SetRenderTarget(setTarget);
+
+        /* line 301: upload pixel shader constants */
+        if (pass->tapHalfCount > 0) {
+            byte *constDst = be + 0x230;
+            byte *constSrc = (byte *)&pass->tapOffsetsAndWeights[0];
+            for (constIndex = 0; constIndex < pass->tapHalfCount; constIndex++) {
+                *(int *)(constDst + 0) = *(int *)(constSrc + 0);
+                *(int *)(constDst + 4) = *(int *)(constSrc + 4);
+                *(int *)(constDst + 8) = *(int *)(constSrc + 8);
+                *(int *)(constDst + 12) = *(int *)(constSrc + 12);
+                constDst += 16;
+                constSrc += 16;
+            }
+        }
+
+        /* line 370-371 */
+        dstW = (float)pass->dstWidth;
+        dstH = (float)pass->dstHeight;
+
+        /* line 374: draw filter quad */
+        if (!oddPassCount && passIndex == passCount - 1) {
+            /* Last pass with even total: swap t0/t1 */
+            RB_DrawStretchPic(pass->material, 0.0f, 0.0f, dstW, dstH,
+                              0.0f, pass->srcHeight, pass->srcWidth, 0.0f,
+                              0xFFFFFFFF, 0xa);
+        } else {
+            /* Normal draw */
+            RB_DrawStretchPic(pass->material, 0.0f, 0.0f, dstW, dstH,
+                              0.0f, 0.0f, pass->srcWidth, pass->srcHeight,
+                              0xFFFFFFFF, 0xa);
+        }
+
+        /* line 383 */
+        RB_EndSurface();
+    }
+
+    /* line 498 */
+    return 0;
+}
