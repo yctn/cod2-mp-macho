@@ -3,10 +3,106 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
+
+extern float floorf(float x);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
  */
+
+/* extern globals */
+extern byte *_cg_p; /* 0x195f584 - pointer to cg_t* */
+#define cg (*(byte **)_cg_p)
+
+/* dvar pointers - each is a dvar_t** (pointer to pointer to dvar_s) */
+extern byte *_dvar_shellshock_fadein;          /* 0x195f878 */
+extern byte *_dvar_shellshock_fadeout;         /* 0x195f89c */
+extern byte *_dvar_shellshock_screenblend;     /* 0x195f8b4 */
+extern byte *_dvar_shellshock_screentype;      /* 0x195f880 */
+extern byte *_dvar_shellshock_screenenabled;   /* 0x195f890 */
+extern byte *_dvar_shellshock_soundfadein;     /* 0x195f8a8 */
+extern byte *_dvar_shellshock_soundfadeout;    /* 0x195f898 */
+extern byte *_dvar_shellshock_loopfadein;      /* 0x195f8e4 */
+extern byte *_dvar_shellshock_loopfadeout;     /* 0x195f8c8 */
+extern byte *_dvar_shellshock_looptype;        /* 0x195f8b0 */
+extern byte *_dvar_shellshock_sounddrylevellooptype; /* 0x195f88c */
+extern byte *_dvar_shellshock_soundwetlevellooptype; /* 0x195f8e0 */
+extern byte *_dvar_shellshock_soundloopsilent; /* 0x195f8cc */
+extern byte *_dvar_shellshock_viewkickfadein;  /* 0x195f8b8 */
+extern byte *_dvar_shellshock_viewkickperiod;  /* 0x195f888 */
+extern byte *_dvar_shellshock_viewkickradius;  /* 0x195f8bc */
+extern byte *_dvar_shellshock_viewkickpitch;   /* 0x195f8c0 */
+extern byte *_dvar_shellshock_viewkickyaw;     /* 0x195f8c4 */
+extern byte *_dvar_shellshock_soundroomtype;   /* 0x195f894 */
+extern byte *_dvar_shellshock_sounddrylevel;   /* 0x195f8d0 */
+extern byte *_dvar_shellshock_soundwetlevel;   /* 0x195f8a0 */
+extern byte *_dvar_shellshock_soundmodenddelay;/* 0x195f8d8 */
+extern byte *_dvar_shellshock_soundendduration;/* 0x195f8a4 */
+extern byte *_dvar_shellshock_soundfade;       /* 0x195f884 */
+extern byte *_dvar_shellshock_mouseenable;     /* 0x195f8ac */
+extern byte *_dvar_shellshock_mousefadein;     /* 0x195f8d4 */
+extern byte *_dvar_shellshock_mouseturnrate;   /* 0x195f874 */
+extern byte *_dvar_shellshock_mousereducemax;  /* 0x195f87c */
+extern byte *_dvar_shellshock_mousesensitivity;/* 0x195f8dc */
+
+extern int _snd_local_listener; /* 0x195ed4c */
+
+/* extern function declarations */
+extern float Vec3Normalize(vec3_t v);
+extern void Vec3Cross(const vec3_t v1, const vec3_t v2, vec3_t out);
+extern void AxisCopy(const float (*src)[3], float (*dst)[3]);
+extern void MatrixMultiply(const vec3_t axis, const float (*in1)[3], float (*out)[3]);
+extern qboolean Com_SaveDvarsToBuffer(const char **dvar_names, int count, char *buf, int bufsize);
+extern qboolean Com_LoadDvarsFromBuffer(const char **dvar_names, int count, const char *buf, const char *path);
+extern const char *va(const char *format, ...);
+extern int FS_FOpenFileByMode(const char *name, int *fh, int mode);
+extern void FS_Write(const void *buf, int len, int fh);
+extern void FS_Read(void *buf, int len, int fh);
+extern void FS_FCloseFile(int fh);
+extern void *Z_MallocInternal(int size);
+extern void Z_FreeInternal(void *ptr);
+extern void Com_Printf(const char *fmt, ...);
+extern void CL_SaveScreen(void);
+extern void CL_BlendSavedScreen(int blend);
+extern const char *Dvar_EnumToString(dvar_t *dvar);
+extern void SND_SetChannelVolumes(int type, float *volumes, int flags);
+extern void SND_SetEnvironmentEffects(int type, const char *name, float drylevel, float wetlevel, int flags);
+extern void SND_DeactivateChannelVolumes(int type, int flags);
+extern void SND_DeactivateEnvironmentEffects(int type, int flags);
+extern void *CL_PickSoundAlias(const char *name);
+extern void SND_PlayBlendedSoundAliases(void *alias0, void *alias1, float fade, int channel, int entity, int flags, int loop);
+extern void SND_PlaySoundAlias(void *alias, int channel, int entity, int duration, int loop);
+extern void CL_CapTurnRate(int min_rate, int max_rate);
+extern void CL_SetUserCmdInShellshock(int inShellshock);
+
+/* Helper: read dvar float current value: *(float *)(&(*(dvar_t**)addr)->current) */
+static inline float dvar_get_float(byte *dvar_pp) {
+    dvar_t *dvar = *(dvar_t **)dvar_pp;
+    return dvar->current.value;
+}
+
+/* Helper: read dvar int current value */
+static inline int dvar_get_int(byte *dvar_pp) {
+    dvar_t *dvar = *(dvar_t **)dvar_pp;
+    return dvar->current.integer;
+}
+
+/* Helper: read dvar bool current value */
+static inline int dvar_get_bool(byte *dvar_pp) {
+    dvar_t *dvar = *(dvar_t **)dvar_pp;
+    return (int)dvar->current.enabled;
+}
+
+/* Helper: get dvar_t* from pointer-to-pointer */
+static inline dvar_t *dvar_get_ptr(byte *dvar_pp) {
+    return *(dvar_t **)dvar_pp;
+}
+
+/* Helper: convert seconds float to milliseconds int with rounding */
+static inline int float_seconds_to_ms(float val) {
+    return (int)floorf(val * 1000.0f + 0.5f);
+}
 
 static const char * cg_shock_dvar_names[29]; /* 0x314a80 */
 static vec2_t cg_perturbations[131]; /* 0x303480 */
@@ -19,1164 +115,607 @@ void CG_SetShellShockParmsFromDvars(shellshock_parms_t *parms);
 void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duration);
 
 /* line 256 */
-__attribute__((naked))
 void CG_PerturbCamera(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 256 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 261 */
-        "movl (%eax), %ecx\n"
-        "pxor %xmm0, %xmm0\n"
-        "ucomiss 0x2ccec(%ecx), %xmm0\n"
-        "jne .Lf1d453c_001d456a\n"
-        "jp .Lf1d453c_001d456a\n"
-        "ucomiss 0x2ccf0(%ecx), %xmm0\n"
-        "jp .Lf1d453c_001d456a\n"
-        "je .Lf1d453c_001d45fe\n"
-        ".Lf1d453c_001d456a:\n"
-        "movl $0x3f800000, %edx\n" /* line 264 */
-        "movl %edx, -0x3c(%ebp)\n" /* rot */
-        "movl 0x2ccec(%ecx), %eax\n" /* line 265 */
-        "movl %eax, -0x38(%ebp)\n"
-        "movl 0x2ccf0(%ecx), %eax\n" /* line 266 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl $0, -0x24(%ebp)\n" /* line 267 */
-        "movl $0, -0x20(%ebp)\n" /* line 268 */
-        "movl %edx, -0x1c(%ebp)\n" /* line 269 */
-        "leal -0x3c(%ebp), %edi\n" /* line 271 | rot */
-        "movl %edi, (%esp)\n"
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "leal -0x30(%ebp), %ebx\n" /* line 272 */
-        "movl %ebx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "leal -0x24(%ebp), %esi\n"
-        "movl %esi, (%esp)\n"
-        "calll Vec3Cross\n"
-        "movl %ebx, (%esp)\n" /* line 273 */
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movl %esi, 8(%esp)\n" /* line 274 */
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Vec3Cross\n"
-        "leal -0x60(%ebp), %esi\n" /* line 276 | axis */
-        "movl %esi, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %ebx\n"
-        "addl $0x28594, %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll AxisCopy\n"
-        "movl %ebx, 8(%esp)\n" /* line 277 */
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll MatrixMultiply\n"
-        /* } scope */
-        ".Lf1d453c_001d45fe:\n"
-        "addl $0x6c, %esp\n" /* line 278 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cgp = cg;
+    vec3_t rot;
+    vec3_t up;
+    vec3_t cross;
+    float (*refdefAxis)[3];
+    float axis[3][3];
+
+    /* Check if perturbation angles are non-zero */
+    if (*(float *)(cgp + 0x2ccec) == 0.0f && *(float *)(cgp + 0x2ccf0) == 0.0f) {
+        return;
+    }
+
+    /* line 264-269: build rotation axis */
+    rot[0] = 1.0f;
+    rot[1] = *(float *)(cgp + 0x2ccec);
+    rot[2] = *(float *)(cgp + 0x2ccf0);
+
+    up[0] = 0.0f;
+    up[1] = 0.0f;
+    up[2] = 1.0f;
+
+    /* line 271-274: orthonormalize */
+    Vec3Normalize(rot);
+    Vec3Cross(up, rot, cross);
+    Vec3Normalize(cross);
+    Vec3Cross(rot, cross, up);
+
+    /* line 276-277: apply rotation to refdef axis */
+    refdefAxis = (float (*)[3])(cgp + 0x28594);
+    AxisCopy(refdefAxis, axis);
+    MatrixMultiply(rot, axis, refdefAxis);
 }
 
 /* line 323 */
-__attribute__((naked))
 qboolean CG_SaveShellShockDvars(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 323 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %ebx\n"
-        "subl $0x10020, %esp\n"
-        /* { scope 1 */
-        "movl $0x10000, 0xc(%esp)\n" /* line 329 */
-        "leal -0x1000c(%ebp), %ebx\n" /* filebuf */
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x1d, 4(%esp)\n"
-        "movl $cg_shock_dvar_names, (%esp)\n"
-        "calll Com_SaveDvarsToBuffer\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1d4606_001d4647\n"
-        ".Lf1d4606_001d463b:\n"
-        "xorl %eax, %eax\n" /* line 338 */
-        /* } scope */
-        "addl $0x10020, %esp\n" /* line 339 */
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1d4606_001d4647:\n"
-        "movl 8(%ebp), %eax\n" /* line 332 | name */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b798c, (%esp)\n" /* "shock/%s.shock" */
-        "calll va\n"
-        "movl $1, 8(%esp)\n" /* line 333 */
-        "leal -0xc(%ebp), %edx\n" /* fh */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FOpenFileByMode\n"
-        "testl %eax, %eax\n"
-        "js .Lf1d4606_001d463b\n"
-        "movl -0xc(%ebp), %eax\n" /* line 336 | fh */
-        "movl %eax, 8(%esp)\n"
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_Write\n"
-        "movl -0xc(%ebp), %eax\n" /* line 337 | fh */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x10020, %esp\n" /* line 339 */
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char filebuf[0x10000];
+    int fh;
+    const char *path;
+
+    /* line 329: save dvars to buffer */
+    if (!Com_SaveDvarsToBuffer(cg_shock_dvar_names, 0x1d, filebuf, 0x10000)) {
+        return 0; /* line 338 */
+    }
+
+    /* line 332: build path */
+    path = va("shock/%s.shock", name);
+
+    /* line 333: open file for writing (mode 1 = write) */
+    if (FS_FOpenFileByMode(path, &fh, 1) < 0) {
+        return 0; /* line 338 */
+    }
+
+    /* line 336: write buffer, then close */
+    FS_Write(filebuf, (int)strlen(filebuf), fh);
+
+    /* line 337 */
+    FS_FCloseFile(fh);
+    return 1;
 }
 
 /* line 347 */
-__attribute__((naked))
 qboolean CG_LoadShellShockDvars(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 347 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 362 | name */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b798c, (%esp)\n" /* "shock/%s.shock" */
-        "calll va\n"
-        "movl %eax, %edi\n" /* fullpath */
-        "movl $0, 8(%esp)\n" /* line 380 */
-        "leal -0x1c(%ebp), %ebx\n" /* fh */
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FOpenFileByMode\n"
-        "movl %eax, %esi\n" /* filesize */
-        "testl %eax, %eax\n" /* line 381 */
-        "js .Lf1d46b4_001d474e\n"
-        ".Lf1d46b4_001d46ef:\n"
-        "leal 1(%esi), %eax\n" /* line 392 | filesize */
-        "movl %eax, (%esp)\n"
-        "calll Z_MallocInternal\n"
-        "movl %eax, %ebx\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 393 | fh */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* filesize */
-        "movl %ebx, (%esp)\n"
-        "calll FS_Read\n"
-        "movb $0, (%ebx, %esi)\n" /* line 394 */
-        "movl -0x1c(%ebp), %eax\n" /* line 395 | fh */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl %edi, 0xc(%esp)\n" /* line 398 | fullpath */
-        "movl %ebx, 8(%esp)\n"
-        "movl $0x1d, 4(%esp)\n"
-        "movl $cg_shock_dvar_names, (%esp)\n"
-        "calll Com_LoadDvarsFromBuffer\n"
-        "movl %eax, %esi\n" /* filesize */
-        "movl %ebx, (%esp)\n" /* line 401 */
-        "calll Z_FreeInternal\n"
-        /* } scope */
-        ".Lf1d46b4_001d4744:\n"
-        "movl %esi, %eax\n" /* line 405 | filesize */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1d46b4_001d474e:\n"
-        "movl %edi, 4(%esp)\n" /* line 383 | fullpath */
-        "movl $0x2b799c, (%esp)\n" /* "^1couldn't open '%s'.
-" */
-        "calll Com_Printf\n"
-        "movl $0, 8(%esp)\n" /* line 384 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0x2b79b4, (%esp)\n" /* "shock/default.shock" */
-        "calll FS_FOpenFileByMode\n"
-        "movl %eax, %esi\n" /* filesize */
-        "testl %eax, %eax\n" /* line 385 */
-        "jns .Lf1d46b4_001d46ef\n"
-        "movl $0x2b79c8, (%esp)\n" /* line 387 */
-        "calll Com_Printf\n"
-        "xorl %esi, %esi\n" /* filesize */
-        "jmp .Lf1d46b4_001d4744\n"
-    );
+    const char *fullpath;
+    int fh;
+    int filesize;
+    char *buf;
+    qboolean result;
+
+    /* line 362 */
+    fullpath = va("shock/%s.shock", name);
+
+    /* line 380: open file for reading (mode 0 = read) */
+    filesize = FS_FOpenFileByMode(fullpath, &fh, 0);
+    if (filesize < 0) {
+        /* line 383 */
+        Com_Printf("^1couldn't open '%s'.\n", fullpath);
+
+        /* line 384: try default */
+        filesize = FS_FOpenFileByMode("shock/default.shock", &fh, 0);
+        if (filesize < 0) {
+            /* line 387 */
+            Com_Printf("^1couldn't open 'shock/default.shock'.\n");
+            filesize = 0;
+            return filesize;
+        }
+    }
+
+    /* line 392 */
+    buf = (char *)Z_MallocInternal(filesize + 1);
+
+    /* line 393 */
+    FS_Read(buf, filesize, fh);
+
+    /* line 394 */
+    buf[filesize] = '\0';
+
+    /* line 395 */
+    FS_FCloseFile(fh);
+
+    /* line 398 */
+    result = Com_LoadDvarsFromBuffer(cg_shock_dvar_names, 0x1d, buf, fullpath);
+
+    /* line 401 */
+    Z_FreeInternal(buf);
+
+    return result;
 }
 
 /* line 286 */
-__attribute__((naked))
 qboolean CG_DrawShellShockSavedScreenBlend(const shellshock_parms_t *parms, int start, int duration)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 286 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl 0xc(%ebp), %edx\n" /* start */
-        /* { scope 1 */
-        "testl %edx, %edx\n" /* line 291 */
-        "je .Lf1d4790_001d47f3\n"
-        "movl 0x10(%ebp), %ecx\n" /* duration */
-        "testl %ecx, %ecx\n"
-        "jle .Lf1d4790_001d47f3\n"
-        "movl 0x195f584, %eax\n" /* line 297 */
-        "movl (%eax), %ebx\n"
-        "movl 0x10(%ebp), %ecx\n" /* duration */
-        "leal (%edx, %ecx), %eax\n"
-        "subl 0x25bb0(%ebx), %eax\n"
-        "testl %eax, %eax\n" /* line 298 */
-        "jle .Lf1d4790_001d4847\n"
-        "movl 8(%ebp), %esi\n" /* line 304 | parms */
-        "movl 0x10(%esi), %edx\n"
-        "movl 0xc(%esi), %ecx\n" /* line 305 */
-        "cmpl %ecx, %eax\n"
-        "jl .Lf1d4790_001d480d\n"
-        ".Lf1d4790_001d47ce:\n"
-        "movl 0x2ccf4(%ebx), %eax\n" /* line 310 */
-        "testl %eax, %eax\n"
-        "jne .Lf1d4790_001d483d\n"
-        ".Lf1d4790_001d47d8:\n"
-        "calll CL_SaveScreen\n" /* line 312 */
-        "movl $1, 0x2ccf4(%ebx)\n" /* line 313 */
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 315 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1d4790_001d47f3:\n"
-        "movl 0x195f584, %eax\n" /* line 293 */
-        "movl (%eax), %eax\n"
-        "movl $0, 0x2ccf4(%eax)\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf1d4790_001d4806:\n"
-        "addl $0x20, %esp\n" /* line 315 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1d4790_001d480d:\n"
-        "cvtsi2ssl %edx, %xmm1\n" /* line 428 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "cvtsi2ssl %ecx, %xmm2\n"
-        "divss %xmm2, %xmm0\n"
-        "mulss %xmm0, %xmm1\n"
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
-        "movss %xmm1, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0xc(%ebp)\n"
-        "cvttss2si -0xc(%ebp), %edx\n"
-        "jmp .Lf1d4790_001d47ce\n"
-        ".Lf1d4790_001d483d:\n"
-        "movl %edx, (%esp)\n" /* line 311 */
-        "calll CL_BlendSavedScreen\n"
-        "jmp .Lf1d4790_001d47d8\n"
-        ".Lf1d4790_001d4847:\n"
-        "movl $0, 0x2ccf4(%ebx)\n" /* line 300 */
-        "xorl %eax, %eax\n"
-        "jmp .Lf1d4790_001d4806\n"
-    );
+    byte *cgp;
+    int timeLeft;
+    int blend;
+    int fadeDuration;
+    int fadeIn;
+
+    /* line 291 */
+    if (start == 0 || duration <= 0) {
+        /* line 293 */
+        cgp = cg;
+        *(int *)(cgp + 0x2ccf4) = 0;
+        return 0;
+    }
+
+    /* line 297 */
+    cgp = cg;
+    timeLeft = start + duration - *(int *)(cgp + 0x25bb0);
+
+    /* line 298 */
+    if (timeLeft <= 0) {
+        /* line 300 */
+        *(int *)(cgp + 0x2ccf4) = 0;
+        return 0;
+    }
+
+    /* line 304-305 */
+    fadeIn = *(int *)((byte *)parms + 0x10);
+    fadeDuration = *(int *)((byte *)parms + 0x0c);
+
+    blend = fadeIn;
+    if (timeLeft < fadeDuration) {
+        /* line 428: scale blend based on time remaining */
+        blend = (int)floorf((float)fadeIn * (float)timeLeft / (float)fadeDuration + 0.5f);
+    }
+
+    /* line 310-313 */
+    if (*(int *)(cgp + 0x2ccf4) != 0) {
+        /* line 311 */
+        CL_BlendSavedScreen(blend);
+    }
+
+    /* line 312 */
+    CL_SaveScreen();
+
+    /* line 313 */
+    *(int *)(cgp + 0x2ccf4) = 1;
+    return 1;
 }
 
 /* line 413 */
-__attribute__((naked))
 void CG_SetShellShockParmsFromDvars(shellshock_parms_t *parms)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 413 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x34, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* parms */
-        "movl 0x195f878, %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0xc(%ebp)\n"
-        "cvttss2si -0xc(%ebp), %eax\n"
-        "movl %eax, 0xc(%ebx)\n" /* parms */
-        "movl 0x195f89c, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x10(%ebp)\n"
-        "cvttss2si -0x10(%ebp), %eax\n"
-        "movl %eax, 0x10(%ebx)\n" /* parms */
-        "movl $0xbb8, (%ebx)\n" /* line 422 | parms */
-        "movl 0x195f8b4, %eax\n" /* line 423 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        /* { scope 1 */
-        "movss 0x2ed658, %xmm2\n" /* line 45 | 0.0010000000474974513f */
-        "movaps %xmm2, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
-        "jp .Lf1d4856_001d48f2\n"
-        "jb .Lf1d4856_001d4dbd\n"
-        ".Lf1d4856_001d48f2:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        /* } scope */
-        ".Lf1d4856_001d48fa:\n"
-        "movss %xmm0, 4(%ebx)\n" /* line 423 | parms */
-        "movl 0x195f880, %eax\n" /* line 424 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 8(%ebx)\n" /* parms */
-        "movl 0x195f890, %eax\n" /* line 426 */
-        "movl (%eax), %eax\n"
-        "movzbl 8(%eax), %eax\n"
-        "movl %eax, 0x14(%ebx)\n" /* parms */
-        "movl 0x195f8a8, %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x14(%ebp)\n"
-        "cvttss2si -0x14(%ebp), %eax\n"
-        "movl %eax, 0x18(%ebx)\n" /* parms */
-        "movl 0x195f898, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x18(%ebp)\n"
-        "cvttss2si -0x18(%ebp), %eax\n"
-        "movl %eax, 0x1c(%ebx)\n" /* parms */
-        "movl 0x195f8e4, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1c(%ebp)\n"
-        "cvttss2si -0x1c(%ebp), %eax\n"
-        "movl %eax, 0x68(%ebx)\n" /* parms */
-        "movl 0x195f8c8, %eax\n"
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x20(%ebp)\n"
-        "cvttss2si -0x20(%ebp), %eax\n"
-        "movl %eax, 0x6c(%ebx)\n" /* parms */
-        "movl 0x195f8b0, %eax\n" /* line 431 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_EnumToString\n"
-        "movl $0xf, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x28(%ebx), %eax\n" /* parms */
-        "movl %eax, (%esp)\n"
-        "calll strncpy\n"
-        "movb $0, 0x37(%ebx)\n" /* line 432 | parms */
-        "movl 0x195f88c, %eax\n" /* line 433 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x20(%ebx)\n" /* parms */
-        "movl 0x195f8e0, %eax\n" /* line 434 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x24(%ebx)\n" /* parms */
-        "movl 0x195f8cc, %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "mulss 8(%eax), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x24(%ebp)\n"
-        "cvttss2si -0x24(%ebp), %eax\n"
-        "movl %eax, 0x64(%ebx)\n" /* parms */
-        "movl 0x195f8b8, %eax\n" /* line 436 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "pxor %xmm2, %xmm2\n" /* line 45 */
-        "movaps %xmm2, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4e44\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4a7e:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x38(%ebx)\n" /* line 436 | parms */
-        "movl 0x195f888, %eax\n" /* line 437 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4e38\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4ac3:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x3c(%ebx)\n" /* line 437 | parms */
-        "movl 0x195f8bc, %eax\n" /* line 438 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4e2c\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4b08:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x40(%ebx)\n" /* line 438 | parms */
-        "movl 0x195f8c0, %eax\n" /* line 439 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4e20\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4b4d:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x4c(%ebx)\n" /* line 439 | parms */
-        "movl 0x195f8c4, %eax\n" /* line 440 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4e14\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4b92:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x50(%ebx)\n" /* line 440 | parms */
-        "movl 0x195f894, %eax\n" /* line 441 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4e08\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4bd7:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x48(%ebx)\n" /* line 441 | parms */
-        "movl 0x195f8d0, %eax\n" /* line 442 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4dfc\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4c1c:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x44(%ebx)\n" /* line 442 | parms */
-        "movl 0x195f8a0, %eax\n" /* line 443 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4df0\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4c61:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x54(%ebx)\n" /* line 443 | parms */
-        "movl 0x195f8d8, %eax\n" /* line 444 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4de4\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4ca6:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x58(%ebx)\n" /* line 444 | parms */
-        "movl 0x195f8a4, %eax\n" /* line 445 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4dd8\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4ceb:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm0\n"
-        "andps %xmm0, %xmm4\n"
-        "andnps %xmm3, %xmm0\n"
-        "orps %xmm4, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, 0x5c(%ebx)\n" /* line 445 | parms */
-        "movl 0x195f884, %eax\n" /* line 446 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "subss %xmm1, %xmm0\n"
-        "ucomiss %xmm0, %xmm2\n"
-        "ja .Lf1d4856_001d4dc9\n"
-        "movaps %xmm2, %xmm1\n"
-        "movss 0x2ed5dc, %xmm3\n" /* -1.0f */
-        /* { scope 1 */
-        ".Lf1d4856_001d4d30:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "movaps %xmm1, %xmm4\n"
-        "cmpltss %xmm2, %xmm3\n"
-        "andps %xmm3, %xmm4\n"
-        "andnps %xmm0, %xmm3\n"
-        "orps %xmm4, %xmm3\n"
-        /* } scope */
-        "movss %xmm3, 0x60(%ebx)\n" /* line 446 | parms */
-        "movl 0x195f8ac, %eax\n" /* line 465 */
-        "movl (%eax), %eax\n"
-        "movzbl 8(%eax), %eax\n"
-        "movl %eax, 0x70(%ebx)\n" /* parms */
-        "movl 0x195f8d4, %eax\n" /* line 428 */
-        "movl (%eax), %eax\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "mulss 8(%eax), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x28(%ebp)\n"
-        "cvttss2si -0x28(%ebp), %eax\n"
-        "movl %eax, 0x74(%ebx)\n" /* parms */
-        "movl 0x195f874, %eax\n" /* line 468 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x7c(%ebx)\n" /* parms */
-        "movl 0x195f87c, %eax\n" /* line 469 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x80(%ebx)\n" /* parms */
-        "movl 0x195f8dc, %eax\n" /* line 470 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x78(%ebx)\n" /* parms */
-        "addl $0x34, %esp\n" /* line 471 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1d4856_001d4dbd:\n"
-        "movaps %xmm2, %xmm0\n" /* line 45 */
-        "divss %xmm1, %xmm0\n"
-        "jmp .Lf1d4856_001d48fa\n"
-        /* } scope */
-        ".Lf1d4856_001d4dc9:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "movaps %xmm0, %xmm3\n"
-        "jmp .Lf1d4856_001d4d30\n"
-        ".Lf1d4856_001d4dd8:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4ceb\n"
-        ".Lf1d4856_001d4de4:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4ca6\n"
-        ".Lf1d4856_001d4df0:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4c61\n"
-        ".Lf1d4856_001d4dfc:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4c1c\n"
-        ".Lf1d4856_001d4e08:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4bd7\n"
-        ".Lf1d4856_001d4e14:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4b92\n"
-        ".Lf1d4856_001d4e20:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4b4d\n"
-        ".Lf1d4856_001d4e2c:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4b08\n"
-        ".Lf1d4856_001d4e38:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "jmp .Lf1d4856_001d4ac3\n"
-        ".Lf1d4856_001d4e44:\n"
-        "movaps %xmm1, %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "jmp .Lf1d4856_001d4a7e\n"
-    );
+    byte *p = (byte *)parms;
+    float val;
+    float epsilon;
+
+    /* line 428: fadein (ms from seconds) */
+    *(int *)(p + 0x0c) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_fadein));
+
+    /* fadeout */
+    *(int *)(p + 0x10) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_fadeout));
+
+    /* line 422: view = 3000 */
+    *(int *)(p + 0x00) = 3000;
+
+    /* line 423: screenblend ratio */
+    val = dvar_get_float(_dvar_shellshock_screenblend);
+    epsilon = 0.001f;
+    if (epsilon - val == 0.0f) {
+        *(float *)(p + 0x04) = 1.0f;
+    } else {
+        *(float *)(p + 0x04) = epsilon / val;
+    }
+
+    /* line 424: screentype */
+    *(int *)(p + 0x08) = dvar_get_int(_dvar_shellshock_screentype);
+
+    /* line 426: screenenabled (bool) */
+    *(int *)(p + 0x14) = dvar_get_bool(_dvar_shellshock_screenenabled);
+
+    /* line 428: soundfadein (ms) */
+    *(int *)(p + 0x18) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundfadein));
+
+    /* soundfadeout (ms) */
+    *(int *)(p + 0x1c) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundfadeout));
+
+    /* loopfadein (ms) */
+    *(int *)(p + 0x68) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_loopfadein));
+
+    /* loopfadeout (ms) */
+    *(int *)(p + 0x6c) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_loopfadeout));
+
+    /* line 431: looptype - enum to string */
+    strncpy((char *)(p + 0x28), Dvar_EnumToString(dvar_get_ptr(_dvar_shellshock_looptype)), 0xf);
+    *(p + 0x37) = 0; /* null terminator */
+
+    /* line 433: sounddrylevellooptype */
+    *(int *)(p + 0x20) = dvar_get_int(_dvar_shellshock_sounddrylevellooptype);
+
+    /* line 434: soundwetlevellooptype */
+    *(int *)(p + 0x24) = dvar_get_int(_dvar_shellshock_soundwetlevellooptype);
+
+    /* soundloopsilent (ms) */
+    *(int *)(p + 0x64) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_soundloopsilent));
+
+    /* line 436: viewkickfadein - max(val, 1.0f) */
+    val = dvar_get_float(_dvar_shellshock_viewkickfadein);
+    *(float *)(p + 0x38) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 437: viewkickperiod */
+    val = dvar_get_float(_dvar_shellshock_viewkickperiod);
+    *(float *)(p + 0x3c) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 438: viewkickradius */
+    val = dvar_get_float(_dvar_shellshock_viewkickradius);
+    *(float *)(p + 0x40) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 439: viewkickpitch */
+    val = dvar_get_float(_dvar_shellshock_viewkickpitch);
+    *(float *)(p + 0x4c) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 440: viewkickyaw */
+    val = dvar_get_float(_dvar_shellshock_viewkickyaw);
+    *(float *)(p + 0x50) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 441: soundroomtype */
+    val = dvar_get_float(_dvar_shellshock_soundroomtype);
+    *(float *)(p + 0x48) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 442: sounddrylevel */
+    val = dvar_get_float(_dvar_shellshock_sounddrylevel);
+    *(float *)(p + 0x44) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 443: soundwetlevel */
+    val = dvar_get_float(_dvar_shellshock_soundwetlevel);
+    *(float *)(p + 0x54) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 444: soundmodenddelay */
+    val = dvar_get_float(_dvar_shellshock_soundmodenddelay);
+    *(float *)(p + 0x58) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 445: soundendduration */
+    val = dvar_get_float(_dvar_shellshock_soundendduration);
+    *(float *)(p + 0x5c) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 446: soundfade */
+    val = dvar_get_float(_dvar_shellshock_soundfade);
+    *(float *)(p + 0x60) = (val > 0.0f && val > 1.0f) ? val : 1.0f;
+
+    /* line 465: mouseenable (bool) */
+    *(int *)(p + 0x70) = dvar_get_bool(_dvar_shellshock_mouseenable);
+
+    /* line 428: mousefadein (ms) */
+    *(int *)(p + 0x74) = float_seconds_to_ms(dvar_get_float(_dvar_shellshock_mousefadein));
+
+    /* line 468: mouseturnrate */
+    *(int *)(p + 0x7c) = dvar_get_int(_dvar_shellshock_mouseturnrate);
+
+    /* line 469: mousereducemax */
+    *(int *)(p + 0x80) = dvar_get_int(_dvar_shellshock_mousereducemax);
+
+    /* line 470: mousesensitivity */
+    *(int *)(p + 0x78) = dvar_get_int(_dvar_shellshock_mousesensitivity);
+}
+
+/* Deactivate sound and reset shellshock state */
+static void CG_DeactivateShellShockSound(byte *cgp)
+{
+    SND_DeactivateChannelVolumes(3, 0);
+    SND_DeactivateEnvironmentEffects(2, 0);
+
+    /* line 488: check and stop loop sound */
+    if (*(int *)(cgp + 0x2cce4) != 0) {
+        *(int *)(cgp + 0x2cce4) = 0;
+        /* line 491 */
+        {
+            void *alias = CL_PickSoundAlias("shellshock_loop_end");
+            SND_PlaySoundAlias(alias, 0x3ff, _snd_local_listener, 0, 1);
+        }
+    }
+}
+
+/* Reset motion/view state on cgp */
+static void CG_ResetShellShockMotion(byte *cgp)
+{
+    /* line 503: sensitivity = 1.0f */
+    *(int *)(cgp + 0x2cce8) = 0x3f800000; /* 1.0f as int bits */
+
+    /* line 504: cap turn rate to 0,0 */
+    CL_CapTurnRate(0, 0);
 }
 
 /* line 706 */
-__attribute__((naked))
 void CG_UpdateShellShock(const shellshock_parms_t *parms, int start, int duration)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 706 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x8c, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* start */
-        /* { scope 1: fade, channelvolume */
-        "movl 0x195f584, %ebx\n" /* line 710 */
-        "movl (%ebx), %esi\n" /* pAlias0 */
-        "movl 0x25bb0(%esi), %edi\n" /* pAlias0, time */
-        "subl %eax, %edi\n" /* time */
-        "testl %eax, %eax\n" /* line 711 */
-        "je .Lf1d4e54_001d51f4\n"
-        "testl %edi, %edi\n" /* time */
-        "js .Lf1d4e54_001d51f4\n"
-        /* { scope 2 */
-        "movl 8(%ebp), %eax\n" /* line 551 | parms */
-        "movl 0x14(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf1d4e54_001d5282\n"
-        "movl %eax, %ecx\n"
-        "movl 0x1c(%eax), %edx\n" /* line 557 */
-        "movl 0x10(%ebp), %eax\n" /* duration */
-        "addl 0x64(%ecx), %eax\n"
-        "addl %edx, %eax\n"
-        "subl %edi, %eax\n"
-        "cmpl %eax, %edx\n" /* line 558 */
-        "jle .Lf1d4e54_001d5265\n"
-        "cvtsi2ssl %eax, %xmm0\n" /* line 559 */
-        "movss %xmm0, -0x4c(%ebp)\n" /* fade */
-        "cvtsi2ssl %edx, %xmm0\n"
-        "movss -0x4c(%ebp), %xmm1\n" /* fade */
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x4c(%ebp)\n" /* fade */
-        ".Lf1d4e54_001d4ec3:\n"
-        "pxor %xmm0, %xmm0\n" /* line 564 */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf1d4e54_001d5372\n"
-        "ucomiss %xmm0, %xmm1\n" /* line 567 */
-        "jp .Lf1d4e54_001d4edb\n"
-        "je .Lf1d4e54_001d5377\n"
-        ".Lf1d4e54_001d4edb:\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        ".Lf1d4e54_001d4ee3:\n"
-        "movl 8(%ebp), %eax\n" /* parms */
-        "movl $1, %edx\n"
-        "leal -0x44(%ebp), %ecx\n" /* channelvolume */
-        ".Lf1d4e54_001d4eee:\n"
-        "movss 0x38(%eax), %xmm0\n" /* line 570 */
-        "subss %xmm2, %xmm0\n"
-        "mulss -0x4c(%ebp), %xmm0\n" /* fade */
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, -4(%ecx, %edx, 4)\n"
-        "addl $1, %edx\n"
-        "addl $4, %eax\n"
-        "cmpl $0xc, %edx\n" /* line 569 */
-        "jne .Lf1d4e54_001d4eee\n"
-        "movl $0, 8(%esp)\n" /* line 571 */
-        "movl %ecx, 4(%esp)\n"
-        "movl $3, (%esp)\n"
-        "calll SND_SetChannelVolumes\n"
-        "movl $0, 0x10(%esp)\n" /* line 573 */
-        "movss -0x4c(%ebp), %xmm0\n" /* fade */
-        "movl 8(%ebp), %eax\n" /* parms */
-        "mulss 0x24(%eax), %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x4c(%ebp), %xmm0\n" /* fade */
-        "mulss 0x20(%eax), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "addl $0x28, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll SND_SetEnvironmentEffects\n"
-        ".Lf1d4e54_001d4f67:\n"
-        "movl 8(%ebp), %edx\n" /* line 583 | parms */
-        "movl 0x6c(%edx), %ecx\n"
-        "movl 0x10(%ebp), %ebx\n" /* duration */
-        "addl %ecx, %ebx\n"
-        "addl 0x68(%edx), %ebx\n"
-        "subl %edi, %ebx\n"
-        "testl %ebx, %ebx\n" /* line 584 */
-        "jle .Lf1d4e54_001d5007\n"
-        /* { scope 3 */
-        "movl $0x2b7a3c, (%esp)\n" /* line 586 */
-        "calll CL_PickSoundAlias\n"
-        "movl %eax, %esi\n" /* pAlias0 */
-        "movl $0x2b7a4c, (%esp)\n" /* line 587 */
-        "calll CL_PickSoundAlias\n"
-        "movl %eax, %edx\n" /* pAlias1 */
-        "movl 8(%ebp), %ecx\n" /* line 589 | parms */
-        "movl 0x68(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1d4e54_001d53e9\n"
-        "cvtsi2ssl %ebx, %xmm0\n" /* line 591 */
-        "cvtsi2ssl %eax, %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "subss %xmm0, %xmm1\n"
-        "pxor %xmm0, %xmm0\n" /* line 592 */
-        "maxss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x4c(%ebp)\n" /* fade */
-        ".Lf1d4e54_001d4fce:\n"
-        "movl $1, 0x18(%esp)\n" /* line 595 */
-        "movl $0, 0x14(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl $0x3ff, 0xc(%esp)\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* pAlias0 */
-        "calll SND_PlayBlendedSoundAliases\n"
-        "movl 8(%ebp), %eax\n" /* parms */
-        "movl 0x6c(%eax), %ecx\n"
-        /* } scope */
-        ".Lf1d4e54_001d5007:\n"
-        "movl 0x195f584, %esi\n" /* line 598 | pAlias0 */
-        "movl (%esi), %ebx\n" /* pAlias0 */
-        "movl 0x25bb0(%ebx), %edx\n"
-        "movl %edx, %eax\n"
-        "subl %edi, %eax\n"
-        "addl 0x10(%ebp), %eax\n" /* duration */
-        "addl %ecx, %eax\n"
-        "cmpl %eax, %edx\n" /* line 599 */
-        "jge .Lf1d4e54_001d5325\n"
-        "movl 0x2cce4(%ebx), %eax\n" /* line 601 */
-        "testl %eax, %eax\n"
-        "jne .Lf1d4e54_001d545b\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1d4e54_001d5034:\n"
-        "movl 8(%ebp), %edx\n" /* line 628 | parms */
-        "movl 0x70(%edx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf1d4e54_001d52c8\n"
-        ".Lf1d4e54_001d5042:\n"
-        "movl %edx, %ecx\n"
-        "movl 0x10(%ebp), %ebx\n" /* line 634 | duration */
-        "subl %edi, %ebx\n"
-        "movl 0x74(%edx), %eax\n"
-        "cmpl %eax, %ebx\n"
-        "jge .Lf1d4e54_001d507e\n"
-        "testl %ebx, %ebx\n" /* line 638 */
-        "jle .Lf1d4e54_001d54cd\n"
-        "cvtsi2ssl %ebx, %xmm1\n" /* line 640 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 648 | 1.0f */
-        "ucomiss %xmm2, %xmm1\n"
-        "jp .Lf1d4e54_001d5413\n"
-        "jne .Lf1d4e54_001d5413\n"
-        "movl 8(%ebp), %ecx\n" /* parms */
-        ".Lf1d4e54_001d507e:\n"
-        "movl (%esi), %edx\n" /* line 650 | pAlias0 */
-        "movl 0x78(%ecx), %eax\n"
-        "movl %eax, 0x2cce8(%edx)\n"
-        "movl 0x80(%ecx), %eax\n" /* line 651 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x7c(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_CapTurnRate\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1d4e54_001d509e:\n"
-        "testl %ebx, %ebx\n" /* line 679 */
-        "jle .Lf1d4e54_001d52ef\n"
-        ".Lf1d4e54_001d50a6:\n"
-        "movl 8(%ebp), %ecx\n" /* line 686 | parms */
-        "movl (%ecx), %eax\n"
-        "cmpl %ebx, %eax\n"
-        "jg .Lf1d4e54_001d5309\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "movss 0x2ed628, %xmm5\n" /* -2.0f */
-        ".Lf1d4e54_001d50c3:\n"
-        "addss 0x2ed720, %xmm5\n" /* line 689 | 3.0f */
-        "mulss %xmm1, %xmm5\n"
-        "mulss %xmm1, %xmm5\n"
-        "movl 8(%ebp), %eax\n" /* parms */
-        "mulss 8(%eax), %xmm5\n"
-        "cvtsi2ssl %edi, %xmm4\n" /* line 691 */
-        "mulss 4(%eax), %xmm4\n"
-        /* { scope 3 */
-        "movss %xmm4, (%esp)\n" /* line 443 */
-        "movss %xmm4, -0x68(%ebp)\n"
-        "movss %xmm5, -0x78(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x50(%ebp)\n"
-        "cvttss2si -0x50(%ebp), %edx\n"
-        /* } scope */
-        "cvtsi2ssl %edx, %xmm0\n" /* line 693 */
-        "movss -0x68(%ebp), %xmm4\n"
-        "subss %xmm0, %xmm4\n"
-        "movl 0x10(%ebp), %eax\n" /* line 695 | duration */
-        "shll $4, %eax\n"
-        "subl 0x10(%ebp), %eax\n" /* duration */
-        "movl 0x10(%ebp), %ecx\n" /* duration */
-        "leal (%ecx, %eax, 4), %eax\n"
-        "addl %eax, %edx\n"
-        "andl $0x7f, %edx\n"
-        "shll $3, %edx\n"
-        "leal cg_perturbations(%edx), %ecx\n"
-        "movss 0x10(%ecx), %xmm2\n" /* line 696 | x2 */
-        "movss 8(%ecx), %xmm3\n"
-        "movss cg_perturbations(%edx), %xmm1\n" /* x0 */
-        /* { scope 3 */
-        /* { scope 4 */
-        "movss 0x18(%ecx), %xmm0\n" /* line 200 */
-        "subss %xmm2, %xmm0\n"
-        "addss %xmm3, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        /* } scope */
-        /* } scope */
-        "movl 0x195f584, %eax\n" /* line 696 */
-        "movl (%eax), %eax\n"
-        "subss %xmm1, %xmm2\n" /* x0, x2 */
-        "subss %xmm3, %xmm1\n" /* x0 */
-        "subss %xmm0, %xmm1\n" /* x0 */
-        "mulss %xmm4, %xmm0\n"
-        "addss %xmm0, %xmm1\n" /* x0 */
-        "mulss %xmm4, %xmm1\n" /* x0 */
-        "addss %xmm1, %xmm2\n" /* x0, x2 */
-        "mulss %xmm4, %xmm2\n" /* x2 */
-        "addss %xmm2, %xmm3\n" /* x2 */
-        "movss -0x78(%ebp), %xmm5\n"
-        "mulss %xmm5, %xmm3\n"
-        "movss %xmm3, 0x2ccec(%eax)\n"
-        "movss 0x14(%ecx), %xmm2\n" /* line 697 | x2 */
-        "movss 0xc(%ecx), %xmm3\n"
-        "movss 4(%ecx), %xmm1\n" /* x0 */
-        /* { scope 3 */
-        /* { scope 4 */
-        "movss 0x1c(%ecx), %xmm0\n" /* line 200 */
-        "subss %xmm2, %xmm0\n"
-        "addss %xmm3, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        /* } scope */
-        /* } scope */
-        "subss %xmm1, %xmm2\n" /* line 697 | x0, x2 */
-        "subss %xmm3, %xmm1\n" /* x0 */
-        "subss %xmm0, %xmm1\n" /* x0 */
-        "mulss %xmm4, %xmm0\n" /* t */
-        "addss %xmm0, %xmm1\n" /* x0 */
-        "mulss %xmm4, %xmm1\n" /* t, x0 */
-        "addss %xmm1, %xmm2\n" /* x0, x2 */
-        "mulss %xmm2, %xmm4\n" /* x2, t */
-        "addss %xmm4, %xmm3\n" /* t */
-        "mulss %xmm3, %xmm5\n"
-        "movss %xmm5, 0x2ccf0(%eax)\n"
-        /* } scope */
-        ".Lf1d4e54_001d51d9:\n"
-        "xorl %eax, %eax\n" /* line 720 */
-        "cmpl 0x10(%ebp), %edi\n" /* duration, time */
-        "setl %al\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_SetUserCmdInShellshock\n" /* line 530 */
-        /* } scope */
-        "addl $0x8c, %esp\n" /* line 721 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: fade, channelvolume */
-        ".Lf1d4e54_001d51f4:\n"
-        "movl $0, 4(%esp)\n" /* line 481 */
-        "movl $3, (%esp)\n"
-        "calll SND_DeactivateChannelVolumes\n"
-        "movl $0, 4(%esp)\n" /* line 483 */
-        "movl $2, (%esp)\n"
-        "calll SND_DeactivateEnvironmentEffects\n"
-        "movl 0x2cce4(%esi), %ecx\n" /* line 488 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf1d4e54_001d53a4\n"
-        ".Lf1d4e54_001d522a:\n"
-        "movl $0x3f800000, 0x2cce8(%esi)\n" /* line 503 */
-        "xorl %ebx, %ebx\n" /* line 504 */
-        "movl %ebx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CL_CapTurnRate\n"
-        "movl %ebx, 0x2ccec(%esi)\n" /* line 515 */
-        "movl %ebx, 0x2ccf0(%esi)\n" /* line 516 */
-        "movl $0, (%esp)\n" /* line 530 */
-        "calll CL_SetUserCmdInShellshock\n"
-        /* } scope */
-        "addl $0x8c, %esp\n" /* line 721 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: fade, channelvolume */
-        /* { scope 2 */
-        ".Lf1d4e54_001d5265:\n"
-        "movl 0x18(%ecx), %eax\n" /* line 560 */
-        "cmpl %eax, %edi\n"
-        "jl .Lf1d4e54_001d53f3\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        "movss %xmm2, -0x4c(%ebp)\n" /* fade */
-        "jmp .Lf1d4e54_001d4ee3\n"
-        ".Lf1d4e54_001d5282:\n"
-        "movl $0, 4(%esp)\n" /* line 481 */
-        "movl $3, (%esp)\n"
-        "calll SND_DeactivateChannelVolumes\n"
-        "movl $0, 4(%esp)\n" /* line 483 */
-        "movl $2, (%esp)\n"
-        "calll SND_DeactivateEnvironmentEffects\n"
-        "movl 0x2cce4(%esi), %eax\n" /* line 488 */
-        "testl %eax, %eax\n"
-        "jne .Lf1d4e54_001d5486\n"
-        "movl %ebx, %esi\n"
-        /* } scope */
-        /* { scope 2 */
-        "movl 8(%ebp), %edx\n" /* line 628 | parms */
-        "movl 0x70(%edx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jne .Lf1d4e54_001d5042\n"
-        ".Lf1d4e54_001d52c8:\n"
-        "movl (%esi), %eax\n" /* line 503 */
-        "movl $0x3f800000, 0x2cce8(%eax)\n"
-        "xorl %eax, %eax\n" /* line 504 */
-        "movl %eax, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_CapTurnRate\n"
-        "movl 0x10(%ebp), %ebx\n" /* duration */
-        "subl %edi, %ebx\n"
-        /* } scope */
-        /* { scope 2 */
-        "testl %ebx, %ebx\n" /* line 679 */
-        "jg .Lf1d4e54_001d50a6\n"
-        ".Lf1d4e54_001d52ef:\n"
-        "movl 0x195f584, %eax\n" /* line 515 */
-        "movl (%eax), %edx\n"
-        "xorl %eax, %eax\n"
-        "movl %eax, 0x2ccec(%edx)\n"
-        "movl %eax, 0x2ccf0(%edx)\n" /* line 516 */
-        "jmp .Lf1d4e54_001d51d9\n"
-        ".Lf1d4e54_001d5309:\n"
-        "cvtsi2ssl %ebx, %xmm1\n" /* line 687 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss %xmm0, %xmm1\n"
-        "movaps %xmm1, %xmm5\n"
-        "mulss 0x2ed628, %xmm5\n" /* -2.0f */
-        "jmp .Lf1d4e54_001d50c3\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1d4e54_001d5325:\n"
-        "cmpl 0x2cce4(%ebx), %eax\n" /* line 607 */
-        "je .Lf1d4e54_001d5034\n"
-        "movl %eax, 0x2cce4(%ebx)\n" /* line 609 */
-        "movl %edx, %ebx\n" /* line 610 */
-        "subl %eax, %ebx\n"
-        "movl $0x2b7a64, (%esp)\n" /* "shellshock_end" */
-        "calll CL_PickSoundAlias\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n"
-        ".Lf1d4e54_001d5353:\n"
-        "movl 0x195ed4c, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0x3ff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SND_PlaySoundAlias\n"
-        "jmp .Lf1d4e54_001d5034\n"
-        ".Lf1d4e54_001d5372:\n"
-        "movss %xmm0, -0x4c(%ebp)\n" /* line 573 | fade */
-        ".Lf1d4e54_001d5377:\n"
-        "movl $0, 4(%esp)\n" /* line 577 */
-        "movl $3, (%esp)\n"
-        "calll SND_DeactivateChannelVolumes\n"
-        "movl $0, 4(%esp)\n" /* line 579 */
-        "movl $2, (%esp)\n"
-        "calll SND_DeactivateEnvironmentEffects\n"
-        "jmp .Lf1d4e54_001d4f67\n"
-        /* } scope */
-        ".Lf1d4e54_001d53a4:\n"
-        "movl $0, 0x2cce4(%esi)\n" /* line 490 */
-        "movl $0x2b7a24, (%esp)\n" /* line 491 */
-        "calll CL_PickSoundAlias\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl 0x195ed4c, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0x3ff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SND_PlaySoundAlias\n"
-        "jmp .Lf1d4e54_001d522a\n"
-        ".Lf1d4e54_001d53e9:\n"
-        "movss -0x4c(%ebp), %xmm0\n" /* fade */
-        "jmp .Lf1d4e54_001d4fce\n"
-        /* { scope 2 */
-        ".Lf1d4e54_001d53f3:\n"
-        "cvtsi2ssl %edi, %xmm0\n" /* line 561 */
-        "movss %xmm0, -0x4c(%ebp)\n" /* fade */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss -0x4c(%ebp), %xmm1\n" /* fade */
-        "divss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x4c(%ebp)\n" /* fade */
-        "jmp .Lf1d4e54_001d4ec3\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1d4e54_001d5413:\n"
-        "movl (%esi), %eax\n" /* line 655 | pAlias0 */
-        "movl 8(%ebp), %edx\n" /* parms */
-        "movss 0x78(%edx), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, 0x2cce8(%eax)\n"
-        "movss 0x80(%edx), %xmm0\n" /* line 656 */
-        "divss %xmm1, %xmm0\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movss 0x7c(%edx), %xmm0\n"
-        "divss %xmm1, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll CL_CapTurnRate\n"
-        "jmp .Lf1d4e54_001d509e\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1d4e54_001d545b:\n"
-        "movl $0, 0x2cce4(%ebx)\n" /* line 603 */
-        "movl $0x2b7a24, (%esp)\n" /* line 604 */
-        "calll CL_PickSoundAlias\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "jmp .Lf1d4e54_001d5353\n"
-        ".Lf1d4e54_001d5486:\n"
-        "movl $0, 0x2cce4(%esi)\n" /* line 490 */
-        "movl $0x2b7a24, (%esp)\n" /* line 491 */
-        "calll CL_PickSoundAlias\n"
-        "movl $1, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl 0x195ed4c, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movl $0x3ff, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SND_PlaySoundAlias\n"
-        "movl %ebx, %esi\n"
-        "jmp .Lf1d4e54_001d5034\n"
-        /* } scope */
-        /* { scope 2 */
-        ".Lf1d4e54_001d54cd:\n"
-        "movl (%esi), %eax\n" /* line 503 */
-        "movl $0x3f800000, 0x2cce8(%eax)\n"
-        "xorl %eax, %eax\n" /* line 504 */
-        "movl %eax, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_CapTurnRate\n"
-        "jmp .Lf1d4e54_001d509e\n"
-    );
-}
+    byte *cgp;
+    int time;
+    int timeSinceStart;
+    byte *p = (byte *)parms;
+    float fade;
+    float channelvolume[11];
+    int i;
+    int loopTimeLeft;
+    int loopFadeOut;
 
+    /* line 710 */
+    cgp = cg;
+    time = *(int *)(cgp + 0x25bb0) - start;
+
+    /* line 711 */
+    if (start == 0 || time < 0) {
+        /* Deactivate everything */
+        CG_DeactivateShellShockSound(cgp);
+
+        /* line 503 */
+        CG_ResetShellShockMotion(cgp);
+
+        /* line 515-516 */
+        *(int *)(cgp + 0x2ccec) = 0;
+        *(int *)(cgp + 0x2ccf0) = 0;
+
+        /* line 530 */
+        CL_SetUserCmdInShellshock(0);
+        return;
+    }
+
+    /* Active shellshock */
+    /* line 551: check if sound is enabled in parms */
+    if (*(int *)(p + 0x14) == 0) {
+        /* Sound not enabled */
+        SND_DeactivateChannelVolumes(3, 0);
+        SND_DeactivateEnvironmentEffects(2, 0);
+
+        /* line 488 */
+        if (*(int *)(cgp + 0x2cce4) != 0) {
+            *(int *)(cgp + 0x2cce4) = 0;
+            {
+                void *alias = CL_PickSoundAlias("shellshock_loop_end");
+                SND_PlaySoundAlias(alias, 0x3ff, _snd_local_listener, 0, 1);
+            }
+        }
+        goto check_mouse;
+    }
+
+    {
+        /* line 557 */
+        int soundFadeOut = *(int *)(p + 0x1c);
+        int soundFadeIn = *(int *)(p + 0x18);  /* actually this is at +0x18 which is soundfadein in ms */
+        int totalWithFade = duration + *(int *)(p + 0x64) + soundFadeOut;
+        int soundTimeLeft = totalWithFade - time;
+
+        /* line 558 */
+        if (soundFadeOut > soundTimeLeft) {
+            /* In fadeout phase */
+            /* line 560 */
+            if (time < soundFadeIn) {
+                /* line 561: still fading in */
+                fade = (float)time / (float)soundFadeIn;
+            } else {
+                fade = 1.0f;
+            }
+        } else {
+            /* line 559 */
+            fade = (float)soundTimeLeft / (float)soundFadeOut;
+        }
+
+        /* line 564 */
+        if (fade < 0.0f) {
+            fade = 0.0f;
+        }
+
+        /* line 567 */
+        if (fade == 0.0f) {
+            /* line 577 */
+            SND_DeactivateChannelVolumes(3, 0);
+            SND_DeactivateEnvironmentEffects(2, 0);
+        } else {
+            /* line 570: compute channel volumes */
+            for (i = 0; i < 11; i++) {
+                channelvolume[i] = (*(float *)(p + 0x38 + i * 4) - 1.0f) * fade + 1.0f;
+            }
+
+            /* line 571 */
+            SND_SetChannelVolumes(3, channelvolume, 0);
+
+            /* line 573 */
+            SND_SetEnvironmentEffects(2, (const char *)(p + 0x28),
+                fade * *(float *)(p + 0x20),
+                fade * *(float *)(p + 0x24), 0);
+        }
+    }
+
+    {
+        /* line 583: loop sound */
+        int loopFadeOutVal = *(int *)(p + 0x6c);
+        loopTimeLeft = duration + loopFadeOutVal + *(int *)(p + 0x68) - time;
+
+        /* line 584 */
+        if (loopTimeLeft > 0) {
+            /* line 586-587 */
+            void *pAlias0 = CL_PickSoundAlias("shellshock_loop");
+            void *pAlias1 = CL_PickSoundAlias("shellshock_loop2");
+            int loopFadeIn = *(int *)(p + 0x68);
+
+            /* line 589 */
+            if (loopFadeIn == 0) {
+                /* fade stays as previous sound fade value */
+            } else {
+                /* line 591: compute loop fade */
+                fade = 1.0f - (float)loopTimeLeft / (float)loopFadeIn;
+
+                /* line 592: clamp to 0 */
+                if (fade < 0.0f) fade = 0.0f;
+            }
+
+            /* line 595: play blended loop */
+            SND_PlayBlendedSoundAliases(pAlias0, pAlias1, fade, 0x3ff, _snd_local_listener, 0, 1);
+
+            loopFadeOutVal = *(int *)(p + 0x6c);
+        }
+
+        /* line 598: check loop end */
+        cgp = cg;
+        {
+            int cgTime = *(int *)(cgp + 0x25bb0);
+            int loopEndTime = cgTime - time + duration + loopFadeOutVal;
+
+            /* line 599 */
+            if (cgTime < loopEndTime) {
+                /* line 601 */
+                if (*(int *)(cgp + 0x2cce4) != 0) {
+                    /* line 603 */
+                    *(int *)(cgp + 0x2cce4) = 0;
+                    /* line 604 */
+                    {
+                        void *alias = CL_PickSoundAlias("shellshock_loop_end");
+                        SND_PlaySoundAlias(alias, 0x3ff, _snd_local_listener, 0, 1);
+                    }
+                }
+            } else {
+                /* line 607 */
+                if (*(int *)(cgp + 0x2cce4) != loopEndTime) {
+                    /* line 609 */
+                    *(int *)(cgp + 0x2cce4) = loopEndTime;
+
+                    /* line 610 */
+                    {
+                        int delayMs = cgTime - loopEndTime;
+                        void *alias = CL_PickSoundAlias("shellshock_end");
+                        SND_PlaySoundAlias(alias, 0x3ff, _snd_local_listener, delayMs, 1);
+                    }
+                }
+            }
+        }
+    }
+
+check_mouse:
+    {
+        /* line 628: check mouse enabled */
+        byte *parms_p = (byte *)parms;
+        int mouseEnabled = *(int *)(parms_p + 0x70);
+        int timeSinceStart2 = duration - time;
+
+        if (mouseEnabled == 0) {
+            /* line 503 */
+            cgp = *(byte **)_cg_p;
+            CG_ResetShellShockMotion(cgp);
+
+            timeSinceStart2 = duration - time;
+            goto check_viewkick;
+        }
+
+        {
+            /* line 634 */
+            int mouseFadeIn = *(int *)(parms_p + 0x74);
+            if (timeSinceStart2 >= mouseFadeIn) {
+                /* Fully faded in */
+                /* line 650 */
+                cgp = *(byte **)_cg_p;
+                *(int *)(cgp + 0x2cce8) = *(int *)(parms_p + 0x78);
+
+                /* line 651 */
+                CL_CapTurnRate(*(int *)(parms_p + 0x7c), *(int *)(parms_p + 0x80));
+            } else if (timeSinceStart2 <= 0) {
+                /* line 503: not started yet */
+                cgp = *(byte **)_cg_p;
+                CG_ResetShellShockMotion(cgp);
+            } else {
+                /* line 640: fading in */
+                float t = (float)timeSinceStart2 / (float)mouseFadeIn;
+
+                /* line 648 */
+                if (t == 1.0f) {
+                    /* Fully faded in */
+                    /* line 650 */
+                    cgp = *(byte **)_cg_p;
+                    *(int *)(cgp + 0x2cce8) = *(int *)(parms_p + 0x78);
+                    CL_CapTurnRate(*(int *)(parms_p + 0x7c), *(int *)(parms_p + 0x80));
+                } else {
+                    /* line 655-656: interpolate */
+                    cgp = *(byte **)_cg_p;
+                    float sensitivity = *(float *)(parms_p + 0x78);
+                    *(float *)(cgp + 0x2cce8) = (sensitivity - 1.0f) * t + 1.0f;
+
+                    float minRate = *(float *)(parms_p + 0x7c) / t;
+                    float maxRate = *(float *)(parms_p + 0x80) / t;
+                    CL_CapTurnRate(*(int *)&minRate, *(int *)&maxRate);
+                }
+            }
+        }
+    }
+
+check_viewkick:
+    /* line 679: view kick */
+    timeSinceStart = duration - time;
+    if (timeSinceStart <= 0) {
+        /* line 515 */
+        cgp = cg;
+        *(int *)(cgp + 0x2ccec) = 0;
+        *(int *)(cgp + 0x2ccf0) = 0;
+    } else {
+        /* line 686 */
+        int viewKickTime = *(int *)(p + 0x00); /* view (3000ms) */
+        float t;
+        float amplitude;
+
+        if (timeSinceStart >= viewKickTime) {
+            t = 1.0f;
+            amplitude = (-2.0f + 3.0f) * t * t; /* = t*t = 1.0 */
+        } else {
+            /* line 687 */
+            t = (float)timeSinceStart / (float)viewKickTime;
+            amplitude = (-2.0f * t + 3.0f) * t * t;
+        }
+
+        /* line 689 */
+        amplitude = amplitude * *(float *)(p + 0x08);
+
+        /* line 691 */
+        {
+            float phase = (float)time * *(float *)(p + 0x04);
+            int phaseFloor = (int)floorf(phase);
+            float frac = phase - (float)phaseFloor;
+
+            /* line 695: compute index into perturbation table */
+            int idx = (phaseFloor + duration * 60) & 0x7f;
+            int byteOff = idx * 8; /* sizeof(vec2_t) = 8 */
+            byte *base = (byte *)cg_perturbations + byteOff;
+
+            /* Catmull-Rom spline interpolation for X */
+            float x0 = *(float *)(base + 0);
+            float x1 = *(float *)(base + 8);
+            float x2 = *(float *)(base + 16);
+            float x3 = *(float *)(base + 24);
+
+            /* Cubic interpolation (matching asm exactly) */
+            float coeff_a = x3 - x2 + x1 - x0;
+            float c_x = x2 - x0;
+            float b_x = x0 - x1 - coeff_a;
+            b_x = (coeff_a * frac + b_x) * frac;
+            c_x = (c_x + b_x) * frac;
+            float resultX = x1 + c_x;
+
+            cgp = cg;
+            *(float *)(cgp + 0x2ccec) = amplitude * resultX;
+
+            /* Same interpolation for Y component */
+            float y0 = *(float *)(base + 4);
+            float y1 = *(float *)(base + 12);
+            float y2 = *(float *)(base + 20);
+            float y3 = *(float *)(base + 28);
+
+            float coeff_a_y = y3 - y2 + y1 - y0;
+            float yxmm2 = y2 - y0;
+            float yxmm1 = y0 - y1 - coeff_a_y;
+            float ytmp = coeff_a_y * frac;
+            yxmm1 += ytmp;
+            yxmm1 *= frac;
+            yxmm2 += yxmm1;
+            yxmm2 *= frac;
+            float resultY = y1 + yxmm2;
+
+            *(float *)(cgp + 0x2ccf0) = amplitude * resultY;
+        }
+    }
+
+    /* line 720 */
+    CL_SetUserCmdInShellshock(time < duration ? 1 : 0);
+}
