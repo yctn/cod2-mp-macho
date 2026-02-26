@@ -3,6 +3,8 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include ".\script\scr_lex.h"
@@ -52,88 +54,52 @@ int yyparse(void);
 void ScriptParse(sval_t *parseData, int user);
 
 /* line 1838 */
-__attribute__((naked))
 YY_BUFFER_STATE yy_create_buffer(FILE *file, int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1838 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* file */
-        "movl 0xc(%ebp), %esi\n" /* size */
-        "movl $0x28, (%esp)\n" /* line 2172 */
-        "calll malloc\n"
-        "movl %eax, %ebx\n"
-        "testl %eax, %eax\n" /* line 1848 */
-        "je .Lf10c61a_0010c6ec\n"
-        "movl %esi, 0xc(%eax)\n" /* line 1851 | size */
-        "leal 2(%esi), %eax\n" /* line 2172 | size */
-        "movl %eax, (%esp)\n"
-        "calll malloc\n"
-        "movl %eax, 4(%ebx)\n" /* line 1856 */
-        "testl %eax, %eax\n" /* line 1857 */
-        "je .Lf10c61a_0010c6ec\n"
-        "movl $1, 0x14(%ebx)\n" /* line 1860 */
-        "movl $0, 0x10(%ebx)\n" /* line 1932 */
-        "movb $0, (%eax)\n" /* line 1938 */
-        "movb $0, 1(%eax)\n" /* line 1939 */
-        "movl %eax, 8(%ebx)\n" /* line 1941 */
-        "movl $1, 0x1c(%ebx)\n" /* line 1943 */
-        "movl $0, 0x24(%ebx)\n" /* line 1944 */
-        "cmpl yy_current_buffer, %ebx\n" /* line 1946 */
-        "je .Lf10c61a_0010c6c8\n"
-        ".Lf10c61a_0010c686:\n"
-        "movl %edi, (%ebx)\n" /* line 1906 | file */
-        "movl $1, 0x20(%ebx)\n" /* line 1907 */
-        "testl %edi, %edi\n" /* line 1915 | file */
-        "je .Lf10c61a_0010c6b9\n"
-        "movl %edi, (%esp)\n" /* file */
-        "calll fileno\n"
-        "movl %eax, (%esp)\n"
-        "calll isatty\n"
-        "testl %eax, %eax\n"
-        "jle .Lf10c61a_0010c6b9\n"
-        "movl $1, %eax\n"
-        "movl %eax, 0x18(%ebx)\n"
-        "movl %ebx, %eax\n" /* line 1865 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf10c61a_0010c6b9:\n"
-        "xorl %eax, %eax\n" /* line 1915 */
-        "movl %eax, 0x18(%ebx)\n"
-        "movl %ebx, %eax\n" /* line 1865 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf10c61a_0010c6c8:\n"
-        "movl $0, yy_n_chars\n" /* line 1830 */
-        "movl %eax, yy_c_buf_p\n" /* line 1831 */
-        "movl %eax, yytext\n"
-        "movl (%ebx), %eax\n" /* line 1832 */
-        "movl %eax, yyin\n"
-        "movb $0, yy_hold_char\n" /* line 1833 */
-        "jmp .Lf10c61a_0010c686\n"
-        ".Lf10c61a_0010c6ec:\n"
-        "movl $0x228cbc, 8(%esp)\n" /* line 2108 */
-        "movl $0x215bbc, 4(%esp)\n" /* "%s
-" */
-        "movl ___sF, %eax\n"
-        "addl $0xb0, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll fprintf\n"
-        "movl $2, (%esp)\n" /* line 2109 */
-        "calll exit\n"
-    );
+    YY_BUFFER_STATE b;
+    char *buf;
+
+    b = (YY_BUFFER_STATE)malloc(0x28);
+    if (!b) {
+        fprintf(stderr, "%s\n", "fatal flex scanner internal error--no action found");
+        exit(2);
+    }
+
+    b->yy_buf_size = size;
+
+    buf = (char *)malloc(size + 2);
+    b->yy_ch_buf = buf;
+    if (!buf) {
+        fprintf(stderr, "%s\n", "fatal flex scanner internal error--no action found");
+        exit(2);
+    }
+
+    b->yy_is_our_buffer = 1;
+    b->yy_n_chars = 0;
+    buf[0] = 0;
+    buf[1] = 0;
+    b->yy_buf_pos = buf;
+    b->yy_at_bol = 1;
+    b->yy_buffer_status = 0;
+
+    if (b == yy_current_buffer) {
+        yy_n_chars = 0;
+        yy_c_buf_p = buf;
+        yytext = buf;
+        yyin = b->yy_input_file;
+        yy_hold_char = 0;
+    }
+
+    b->yy_input_file = file;
+    b->yy_fill_buffer = 1;
+
+    if (file && isatty(fileno(file)) > 0) {
+        b->yy_is_interactive = 1;
+    } else {
+        b->yy_is_interactive = 0;
+    }
+
+    return b;
 }
 
 /* line 463 */
@@ -3993,54 +3959,41 @@ int yyparse(void)
 }
 
 /* line 494 */
-__attribute__((naked))
 void ScriptParse(sval_t *parseData, int user)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 494 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        /* { scope 1 */
-        "movl $0xffffffff, g_out_pos\n" /* line 498 */
-        "movl $0, g_sourcePos\n" /* line 499 */
-        "movl 0xc(%ebp), %eax\n" /* line 500 | user */
-        "movb %al, g_parse_user\n"
-        "movl $0, g_dummyVal\n" /* line 501 */
-        "movl $1, yy_init\n" /* line 503 */
-        "movl $0x4000, -0x24(%ebp)\n" /* line 505 */
-        "movl $ch_buf, -0x2c(%ebp)\n" /* line 510 */
-        "movl $0, -0x1c(%ebp)\n" /* line 511 */
-        "movl $0, -0x20(%ebp)\n" /* line 1932 */
-        "movb $0, ch_buf\n" /* line 1938 */
-        "movb $0, 0xce72a1\n" /* line 1939 */
-        "movl $ch_buf, -0x28(%ebp)\n" /* line 1941 */
-        "movl $1, -0x14(%ebp)\n" /* line 1943 */
-        "movl $0, -0xc(%ebp)\n" /* line 1944 */
-        "leal -0x30(%ebp), %edx\n" /* line 1946 | buffer_state */
-        "cmpl yy_current_buffer, %edx\n"
-        "je .Lf110a10_00110ac8\n"
-        ".Lf110a10_00110a91:\n"
-        "movl $0, -0x30(%ebp)\n" /* line 1906 | buffer_state */
-        "movl $1, -0x10(%ebp)\n" /* line 1907 */
-        "movl $0, -0x18(%ebp)\n" /* line 1915 */
-        "movl %edx, yy_current_buffer\n" /* line 514 */
-        "movl $3, yy_start\n" /* line 517 */
-        "calll yyparse\n" /* line 519 */
-        "movl yaccResult, %edx\n" /* line 521 */
-        "movl 8(%ebp), %eax\n" /* parseData */
-        "movl %edx, (%eax)\n"
-        /* } scope */
-        "leave\n" /* line 522 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf110a10_00110ac8:\n"
-        "movl $0, yy_n_chars\n" /* line 1830 */
-        "movl $0xce72a0, yy_c_buf_p\n" /* line 1831 */
-        "movl $0xce72a0, yytext\n"
-        "movl -0x30(%ebp), %eax\n" /* line 1832 | buffer_state */
-        "movl %eax, yyin\n"
-        "movb $0, yy_hold_char\n" /* line 1833 */
-        "jmp .Lf110a10_00110a91\n"
-    );
+    struct yy_buffer_state buffer_state;
+
+    g_out_pos = 0xFFFFFFFF;
+    g_sourcePos = 0;
+    g_parse_user = (unsigned char)user;
+    g_dummyVal.type = 0;
+    yy_init = 1;
+
+    buffer_state.yy_buf_size = 0x4000;
+    buffer_state.yy_ch_buf = ch_buf;
+    buffer_state.yy_is_our_buffer = 0;
+    buffer_state.yy_n_chars = 0;
+    ch_buf[0] = 0;
+    ch_buf[1] = 0;
+    buffer_state.yy_buf_pos = ch_buf;
+    buffer_state.yy_at_bol = 1;
+    buffer_state.yy_buffer_status = 0;
+
+    if (&buffer_state == yy_current_buffer) {
+        yy_n_chars = 0;
+        yy_c_buf_p = ch_buf;
+        yytext = ch_buf;
+        yyin = buffer_state.yy_input_file;
+        yy_hold_char = 0;
+    }
+
+    buffer_state.yy_input_file = NULL;
+    buffer_state.yy_fill_buffer = 1;
+    buffer_state.yy_is_interactive = 0;
+
+    yy_current_buffer = &buffer_state;
+    yy_start = 3;
+    yyparse();
+    *parseData = yaccResult;
 }
 
