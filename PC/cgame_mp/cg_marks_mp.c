@@ -1,8 +1,10 @@
-/* ASM dump from: cg_marks_mp.cpp */
+/* Decompiled from: cg_marks_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/cgame_mp/cg_marks_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
+
+extern float floorf(float x);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
@@ -13,462 +15,270 @@ extern MarkPoly cg_markPolys[1024]; /* 0x0 */
 extern MarkPoly *cg_freeMarkPolys; /* 0x0 */
 extern MarkVertAssemblyBuffer markVerts; /* 0x0 */
 
+/* Extern declarations for called functions */
+extern const vec_t Vec3NormalizeTo(const vec_t *v, vec_t *out);
+extern void PerpendicularVector(const vec_t *src, vec_t *dst);
+extern void RotatePointAroundVector(vec_t *dst, const vec_t *dir, const vec_t *point, const float degrees);
+extern void Vec3Cross(const vec_t *v0, const vec_t *v1, vec_t *cross);
+extern Bool FxHelper_CullSphere(const FxHelper *_this, const vec_t *worldPos, float radius, int planeCount);
+extern void CL_AddPolyToScene(MaterialHandle mtlHandle, int lmapIndex, int vertCount, const GfxWorldVertex *verts);
+extern int CL_MarkFragments(const vec3_t *points, const vec_t *origin, const vec3_t *axis, float radius, int maxPoints, GfxWorldVertex *verts, int maxFragments, GfxMarkFragment *fragmentBuffer, MaterialHandle markMaterial);
+extern void Com_Error(errorParm_t code, const char *fmt);
+
+/*
+ * Indirect global pointers (absolute addresses from original binary).
+ * These are pointer-to-pointer indirections used by the cgame module.
+ *   0x195f5f8 -> int** : points to a struct whose field at offset 8 holds the max markPoly count
+ *   0x195f584 -> char** : points to cg_t* (the main cgame state)
+ *   0x195f5fc -> char** : points to a struct whose byte at offset 8 is a "marks enabled" flag
+ *   0x195ed88 -> FxHelper* : the FX helper singleton
+ */
+#define CG_MARKCOUNT_PTR   (*(int **)(0x195f5f8))
+#define CG_PTR             (*(char **)(0x195f584))
+#define CG_MARKS_ENABLED   (*(char **)(0x195f5fc))
+#define FX_HELPER_PTR      (*(FxHelper **)(0x195ed88))
+
+/* Offset of activeMarkPolys sentinel within cg_t */
+#define CG_ACTIVE_MARKS_OFFSET  0xf3714
+
+/* Helper: get sentinel MarkPoly from cg pointer */
+static MarkPoly *CG_GetActiveMarksSentinel(char *cg)
+{
+    return (MarkPoly *)(cg + CG_ACTIVE_MARKS_OFFSET);
+}
+
+/* Helper: interpret int field as MarkPoly pointer */
+#define MARKPOLY_PREV(mp)  ((MarkPoly *)(intptr_t)(mp)->prevMark)
+#define MARKPOLY_NEXT(mp)  ((MarkPoly *)(intptr_t)(mp)->nextMark)
+#define SET_PREV(mp, ptr)  ((mp)->prevMark = (int)(intptr_t)(ptr))
+#define SET_NEXT(mp, ptr)  ((mp)->nextMark = (int)(intptr_t)(ptr))
+
+/* Helper: clamp float color component to byte [0, 255] */
+static unsigned char ColorFloatToByte(float f)
+{
+    int val = (int)floorf(f * 255.0f + 0.5f);
+    if (val > 255) val = 255;
+    else if (val < 0) val = 0;
+    return (unsigned char)val;
+}
+
 void CG_InitMarkPolys(void);
 void CG_AddMarks(void);
 void CG_ImpactMark(MaterialHandle markMaterial, const vec_t *origin, const vec_t *dir, float orientation, const vec_t *color, float radius);
 
 /* line 34 */
-__attribute__((naked))
 void CG_InitMarkPolys(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 34 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f5f8, %eax\n" /* line 44 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %ebx\n" /* lasttrav */
-        "leal (%ebx, %ebx, 8), %eax\n" /* line 46 | lasttrav */
-        "leal (%eax, %eax, 8), %eax\n"
-        "shll $3, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $cg_markPolys, (%esp)\n"
-        "calll memset\n"
-        "movl 0x195f584, %eax\n" /* line 48 */
-        "movl (%eax), %eax\n"
-        "leal 0xf3714(%eax), %edx\n"
-        "movl %edx, 0xf3718(%eax)\n"
-        "movl %edx, 0xf3714(%eax)\n" /* line 49 */
-        "movl $0x173b880, cg_freeMarkPolys\n" /* line 50 */
-        "leal -1(%ebx), %esi\n" /* line 52 | lasttrav */
-        "testl %esi, %esi\n"
-        "jle .Lf17a7b0_0017a82f\n"
-        "xorl %ecx, %ecx\n"
-        "movl $0x173bb08, %eax\n"
-        "movl $cg_markPolys, %ebx\n" /* lasttrav */
-        "jmp .Lf17a7b0_0017a81d\n"
-        ".Lf17a7b0_0017a81b:\n"
-        "movl %edx, %eax\n"
-        ".Lf17a7b0_0017a81d:\n"
-        "movl %eax, 4(%ebx)\n" /* line 54 | lasttrav */
-        "addl $1, %ecx\n" /* line 52 */
-        "leal 0x288(%eax), %edx\n"
-        "movl %eax, %ebx\n" /* lasttrav */
-        "cmpl %ecx, %esi\n"
-        "jne .Lf17a7b0_0017a81b\n"
-        /* } scope */
-        ".Lf17a7b0_0017a82f:\n"
-        "addl $0x10, %esp\n" /* line 57 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int lasttrav;
+    int i;
+    char *cg;
+    MarkPoly *sentinel;
+
+    /* Get max mark poly count from indirect config pointer */
+    lasttrav = CG_MARKCOUNT_PTR[2]; /* offset 8 = index 2 */
+
+    /* Zero out all mark polys */
+    memset(cg_markPolys, 0, (size_t)lasttrav * sizeof(MarkPoly));
+
+    /* Initialize the active marks doubly-linked list sentinel to empty (self-referencing) */
+    cg = CG_PTR;
+    sentinel = CG_GetActiveMarksSentinel(cg);
+    SET_NEXT(sentinel, sentinel);
+    SET_PREV(sentinel, sentinel);
+
+    /* Set head of free list to first mark poly */
+    cg_freeMarkPolys = &cg_markPolys[0];
+
+    /* Link free mark polys into a singly-linked list via nextMark */
+    for (i = 0; i < lasttrav - 1; i++) {
+        SET_NEXT(&cg_markPolys[i], &cg_markPolys[i + 1]);
+    }
 }
 
 /* line 220 */
-__attribute__((naked))
 void CG_AddMarks(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 220 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f5fc, %eax\n" /* line 228 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf17a838_0017a8de\n"
-        "movl 0x195f584, %edx\n" /* line 234 */
-        "movl (%edx), %eax\n"
-        "movl 0xf3718(%eax), %ebx\n" /* markPoly */
-        "addl $0xf3714, %eax\n"
-        "cmpl %eax, %ebx\n" /* markPoly */
-        "je .Lf17a838_0017a8de\n"
-        "movl 0x195ed88, %edi\n"
-        "movl %edx, %esi\n"
-        "jmp .Lf17a838_0017a881\n"
-        ".Lf17a838_0017a873:\n"
-        "movl 4(%ebx), %ebx\n" /* markPoly */
-        "movl (%esi), %eax\n"
-        "addl $0xf3714, %eax\n"
-        "cmpl %eax, %ebx\n" /* markPoly */
-        "je .Lf17a838_0017a8de\n"
-        ".Lf17a838_0017a881:\n"
-        "movl (%edi), %edx\n" /* line 236 */
-        "movl 0x80(%edx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x18(%ebx), %eax\n" /* markPoly */
-        "movl %eax, 8(%esp)\n"
-        "leal 0xc(%ebx), %eax\n" /* markPoly */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll FxHelper_CullSphere\n"
-        "testb %al, %al\n" /* line 238 */
-        "jne .Lf17a838_0017a873\n"
-        "movl (%esi), %eax\n" /* line 241 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 8(%ebx)\n" /* markPoly */
-        "leal 0x24(%ebx), %eax\n" /* line 243 | markPoly */
-        "movl %eax, 0xc(%esp)\n"
-        "movzbl 0x22(%ebx), %eax\n" /* markPoly */
-        "movl %eax, 8(%esp)\n"
-        "movzwl 0x20(%ebx), %eax\n" /* markPoly */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x1c(%ebx), %eax\n" /* markPoly */
-        "movl %eax, (%esp)\n"
-        "calll CL_AddPolyToScene\n"
-        "movl 4(%ebx), %ebx\n" /* line 234 | markPoly */
-        "movl (%esi), %eax\n"
-        "addl $0xf3714, %eax\n"
-        "cmpl %eax, %ebx\n" /* markPoly */
-        "jne .Lf17a838_0017a881\n"
-        /* } scope */
-        ".Lf17a838_0017a8de:\n"
-        "addl $0x1c, %esp\n" /* line 247 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *cg;
+    MarkPoly *sentinel;
+    MarkPoly *markPoly;
+    MarkPoly *next;
+    FxHelper *fxHelper;
+
+    /* Check if marks are enabled */
+    if (!*(unsigned char *)(CG_MARKS_ENABLED + 8))
+        return;
+
+    cg = CG_PTR;
+    sentinel = CG_GetActiveMarksSentinel(cg);
+    markPoly = MARKPOLY_NEXT(sentinel);
+
+    if (markPoly == sentinel)
+        return;
+
+    fxHelper = FX_HELPER_PTR;
+
+    while (markPoly != sentinel) {
+        next = MARKPOLY_NEXT(markPoly);
+
+        /* Cull check: skip if mark is outside the view frustum */
+        if (FxHelper_CullSphere(fxHelper, markPoly->origin, markPoly->radius, fxHelper->mCamera.numPlanes)) {
+            markPoly = next;
+            continue;
+        }
+
+        /* Record the frame this mark was last drawn */
+        markPoly->lastFrameDrawn = *(int *)cg; /* cg->clientFrame at offset 0 */
+
+        /* Add the mark poly to the render scene */
+        CL_AddPolyToScene(markPoly->mtlHandle, (int)markPoly->lmapIndex, (int)markPoly->vertCount, markPoly->verts);
+
+        markPoly = MARKPOLY_NEXT(markPoly);
+    }
 }
 
 /* line 138 */
-__attribute__((naked))
 void CG_ImpactMark(MaterialHandle markMaterial, const vec_t *origin, const vec_t *dir, float orientation, const vec_t *color, float radius)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 138 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x12cc, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f5fc, %eax\n" /* line 158 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf17a8e6_0017a910\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x2bee8(%eax), %esi\n"
-        "testl %esi, %esi\n"
-        "je .Lf17a8e6_0017a91b\n"
-        /* } scope */
-        ".Lf17a8e6_0017a910:\n"
-        "addl $0x12cc, %esp\n" /* line 217 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17a8e6_0017a91b:\n"
-        "leal -0x40(%ebp), %eax\n" /* line 165 | axis */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x10(%ebp), %edx\n" /* dir */
-        "movl %edx, (%esp)\n"
-        "calll Vec3NormalizeTo\n"
-        "fstp %st(0)\n"
-        "leal -0x34(%ebp), %esi\n" /* line 166 */
-        "movl %esi, 4(%esp)\n"
-        "leal -0x40(%ebp), %eax\n" /* axis */
-        "movl %eax, (%esp)\n"
-        "calll PerpendicularVector\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 167 | orientation */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl %esi, 8(%esp)\n"
-        "leal -0x40(%ebp), %eax\n" /* axis */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x28(%ebp), %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll RotatePointAroundVector\n"
-        "movl %esi, 8(%esp)\n" /* line 168 */
-        "movl %ebx, 4(%esp)\n"
-        "leal -0x40(%ebp), %edx\n" /* axis */
-        "movl %edx, (%esp)\n"
-        "calll Vec3Cross\n"
-        "movl $1, %esi\n"
-        "leal -0x70(%ebp), %edi\n" /* originalPoints, fragmentIndex */
-        ".Lf17a8e6_0017a97d:\n"
-        "leal (, %esi, 4), %edx\n" /* line 138 */
-        "movl 0xc(%ebp), %eax\n" /* origin */
-        "addl %edx, %eax\n"
-        "leal 0xc(%edx), %ecx\n" /* line 175 */
-        "movss 0x1c(%ebp), %xmm2\n" /* radius */
-        "mulss -0x44(%ebp, %ecx), %xmm2\n"
-        "leal 0x18(%edx), %ebx\n"
-        "movss 0x1c(%ebp), %xmm1\n" /* radius */
-        "mulss -0x44(%ebp, %ebx), %xmm1\n"
-        "movss -4(%eax), %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, -4(%edi, %edx)\n" /* fragmentIndex */
-        "movaps %xmm2, %xmm0\n" /* line 176 */
-        "addss -4(%eax), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, -4(%edi, %ecx)\n" /* fragmentIndex */
-        "movaps %xmm2, %xmm0\n" /* line 177 */
-        "addss -4(%eax), %xmm0\n"
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, -4(%edi, %ebx)\n" /* fragmentIndex */
-        "movss -4(%eax), %xmm0\n" /* line 178 */
-        "subss %xmm2, %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, 0x20(%edx, %edi)\n"
-        "addl $1, %esi\n"
-        "cmpl $4, %esi\n" /* line 173 */
-        "jne .Lf17a8e6_0017a97d\n"
-        "movl 8(%ebp), %eax\n" /* line 183 | markMaterial */
-        "movl %eax, 0x20(%esp)\n"
-        "leal -0x1270(%ebp), %eax\n" /* markFragments */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl $0x180, 0x18(%esp)\n"
-        "movl $markVerts, 0x14(%esp)\n"
-        "movl $0x400, 0x10(%esp)\n"
-        "movss 0x1c(%ebp), %xmm0\n" /* radius */
-        "movss %xmm0, 0xc(%esp)\n"
-        "leal -0x40(%ebp), %eax\n" /* axis */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* origin */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* fragmentIndex */
-        "calll CL_MarkFragments\n"
-        "movl %eax, -0x127c(%ebp)\n" /* fragmentCount */
-        "movl 0x18(%ebp), %eax\n" /* line 428 | color */
-        "movss (%eax), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1280(%ebp)\n"
-        "cvttss2si -0x1280(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lf17a8e6_0017acc3\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lf17a8e6_0017aa88:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lf17a8e6_0017aa8a:\n"
-        "movb %al, -0x1b(%ebp)\n" /* line 188 */
-        "movl 0x18(%ebp), %edx\n" /* line 428 | color */
-        "movss 4(%edx), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1284(%ebp)\n"
-        "cvttss2si -0x1284(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lf17a8e6_0017acfc\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lf17a8e6_0017aacf:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lf17a8e6_0017aad1:\n"
-        "movb %al, -0x1a(%ebp)\n" /* line 189 */
-        "movl 0x18(%ebp), %edx\n" /* line 428 | color */
-        "movss 8(%edx), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x1288(%ebp)\n"
-        "cvttss2si -0x1288(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lf17a8e6_0017ace9\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lf17a8e6_0017ab16:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lf17a8e6_0017ab18:\n"
-        "movb %al, -0x19(%ebp)\n" /* line 190 */
-        "movss 0x2ed5d4, %xmm0\n" /* line 428 | 255.0f */
-        "movl 0x18(%ebp), %edx\n" /* color */
-        "mulss 0xc(%edx), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x128c(%ebp)\n"
-        "cvttss2si -0x128c(%ebp), %edx\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "subl $0xff, %eax\n"
-        "js .Lf17a8e6_0017acd6\n"
-        "movl $0xff, %edx\n"
-        /* { scope 2 */
-        ".Lf17a8e6_0017ab5d:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        ".Lf17a8e6_0017ab5f:\n"
-        "movb %al, -0x1c(%ebp)\n" /* line 191 | nativeColor */
-        "movl -0x127c(%ebp), %ebx\n" /* line 196 | fragmentCount */
-        "testl %ebx, %ebx\n"
-        "jle .Lf17a8e6_0017a910\n"
-        "xorl %edi, %edi\n" /* fragmentIndex */
-        "leal -0x126a(%ebp), %esi\n"
-        ".Lf17a8e6_0017ab78:\n"
-        "movl 2(%esi), %edx\n" /* line 201 */
-        "movl %edx, %eax\n"
-        "shll $6, %eax\n"
-        "leal markVerts(%eax, %edx, 4), %eax\n"
-        "movzbl (%esi), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jle .Lf17a8e6_0017aba0\n"
-        "xorl %edx, %edx\n"
-        "movl -0x1c(%ebp), %ebx\n" /* nativeColor */
-        ".Lf17a8e6_0017ab93:\n"
-        "movl %ebx, 0x18(%eax)\n" /* line 606 | to */
-        "addl $1, %edx\n" /* line 201 */
-        "addl $0x44, %eax\n"
-        "cmpl %ecx, %edx\n"
-        "jl .Lf17a8e6_0017ab93\n"
-        ".Lf17a8e6_0017aba0:\n"
-        "movl cg_freeMarkPolys, %ecx\n" /* line 108 */
-        "testl %ecx, %ecx\n"
-        "je .Lf17a8e6_0017ac72\n"
-        "movl cg_freeMarkPolys, %ecx\n"
-        ".Lf17a8e6_0017abb4:\n"
-        "movl 4(%ecx), %eax\n" /* line 119 */
-        "movl %eax, cg_freeMarkPolys\n"
-        "movl 0x195f584, %eax\n" /* line 126 */
-        "movl (%eax), %edx\n"
-        "movl 0xf3718(%edx), %eax\n"
-        "movl %eax, 4(%ecx)\n"
-        "leal 0xf3714(%edx), %eax\n" /* line 127 */
-        "movl %eax, (%ecx)\n"
-        "movl 0xf3718(%edx), %eax\n" /* line 128 */
-        "movl %ecx, (%eax)\n"
-        "movl %ecx, 0xf3718(%edx)\n" /* line 129 */
-        "leal 0xc(%ecx), %ebx\n" /* line 207 | to */
-        /* { scope 2 */
-        "movl 0xc(%ebp), %eax\n" /* line 199 | origin */
-        "movss (%eax), %xmm0\n"
-        "movss %xmm0, 0xc(%ecx)\n"
-        "movss 4(%eax), %xmm0\n" /* line 200 */
-        "movss %xmm0, 4(%ebx)\n"
-        "movss 8(%eax), %xmm0\n" /* line 201 */
-        "movss %xmm0, 8(%ebx)\n"
-        /* } scope */
-        "movss 0x1c(%ebp), %xmm0\n" /* line 208 | radius */
-        "movss %xmm0, 0x18(%ecx)\n"
-        "movl -6(%esi), %eax\n" /* line 210 */
-        "movl %eax, 0x1c(%ecx)\n"
-        "movzwl -2(%esi), %eax\n" /* line 211 */
-        "movw %ax, 0x20(%ecx)\n"
-        "movzbl (%esi), %eax\n" /* line 212 */
-        "movb %al, 0x22(%ecx)\n"
-        "movl (%edx), %eax\n" /* line 213 */
-        "movl %eax, 8(%ecx)\n"
-        "addl $0x24, %ecx\n" /* line 215 */
-        "movzbl (%esi), %ebx\n" /* to */
-        "movl %ebx, %eax\n" /* to */
-        "shll $6, %eax\n"
-        "leal (%eax, %ebx, 4), %ebx\n" /* to */
-        "movl 2(%esi), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal markVerts(%edx, %eax, 4), %eax\n"
-        "movl %ebx, 8(%esp)\n" /* to */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll memcpy\n"
-        "addl $1, %edi\n" /* line 196 | fragmentIndex */
-        "addl $0xc, %esi\n"
-        "cmpl %edi, -0x127c(%ebp)\n" /* fragmentIndex, fragmentCount */
-        "jne .Lf17a8e6_0017ab78\n"
-        /* } scope */
-        "addl $0x12cc, %esp\n" /* line 217 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17a8e6_0017ac72:\n"
-        "movl 0x195f584, %edx\n" /* line 83 */
-        "movl (%edx), %eax\n"
-        "movl 0xf3714(%eax), %ebx\n"
-        "leal 0xf3714(%eax), %ecx\n" /* line 86 */
-        "cmpl %ecx, %ebx\n"
-        "je .Lf17a8e6_0017ac9b\n"
-        "movl %ebx, %edx\n"
-        ".Lf17a8e6_0017ac8c:\n"
-        "movl 8(%edx), %eax\n" /* line 90 */
-        "cmpl 8(%ebx), %eax\n"
-        "cmovll %edx, %ebx\n"
-        "movl (%edx), %edx\n" /* line 86 */
-        "cmpl %ecx, %edx\n"
-        "jne .Lf17a8e6_0017ac8c\n"
-        ".Lf17a8e6_0017ac9b:\n"
-        "movl (%ebx), %edx\n" /* line 62 */
-        "testl %edx, %edx\n"
-        "je .Lf17a8e6_0017ad0f\n"
-        ".Lf17a8e6_0017aca1:\n"
-        "movl (%ebx), %edx\n" /* line 66 */
-        "movl 4(%ebx), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 67 */
-        "movl %edx, (%eax)\n"
-        "movl cg_freeMarkPolys, %eax\n" /* line 70 */
-        "movl %eax, 4(%ebx)\n"
-        "movl %ebx, cg_freeMarkPolys\n" /* line 71 */
-        "movl %ebx, %ecx\n"
-        "jmp .Lf17a8e6_0017abb4\n"
-        ".Lf17a8e6_0017acc3:\n"
-        "movl %edx, %eax\n" /* line 154 */
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lf17a8e6_0017aa88\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf17a8e6_0017aa8a\n"
-        /* } scope */
-        ".Lf17a8e6_0017acd6:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lf17a8e6_0017ab5d\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf17a8e6_0017ab5f\n"
-        /* } scope */
-        ".Lf17a8e6_0017ace9:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lf17a8e6_0017ab16\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf17a8e6_0017ab18\n"
-        /* } scope */
-        ".Lf17a8e6_0017acfc:\n"
-        "movl %edx, %eax\n"
-        "negl %eax\n"
-        /* { scope 2 */
-        "testl %eax, %eax\n"
-        "js .Lf17a8e6_0017aacf\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf17a8e6_0017aad1\n"
-        /* } scope */
-        ".Lf17a8e6_0017ad0f:\n"
-        "movl $0x2ade80, 4(%esp)\n" /* line 63 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf17a8e6_0017aca1\n"
-    );
-}
+    char *cg;
+    vec3_t axisDir;     /* axis[0]: normalized impact direction */
+    vec3_t axisCross;   /* axis[2]: cross product of dir and rotated perp */
+    vec3_t axisRight;   /* axis[1]: perpendicular rotated around dir */
+    vec3_t perpVec;
+    vec3_t originalPoints[4];
+    GfxMarkFragment markFragments[384]; /* 0x180 = 384 max fragments */
+    int fragmentCount;
+    int fragmentIndex;
+    GfxColor nativeColor;
+    int j;
+    MarkPoly *sentinel;
+    MarkPoly *markPoly;
+    MarkPoly *oldest;
+    MarkPoly *current;
+    float a, b;
 
+    /* Check if marks are enabled */
+    if (!*(unsigned char *)(CG_MARKS_ENABLED + 8))
+        return;
+
+    /* Check additional condition in cg_t (offset 0x2bee8, e.g. snapshot availability) */
+    cg = CG_PTR;
+    if (*(int *)(cg + 0x2bee8) == 0)
+        return;
+
+    /* Build orthonormal axis from impact direction */
+    Vec3NormalizeTo(dir, axisDir);
+    PerpendicularVector(axisDir, perpVec);
+    RotatePointAroundVector(axisRight, axisDir, perpVec, orientation);
+    Vec3Cross(axisDir, axisRight, axisCross);
+
+    /* Compute 4 corner points of the mark rectangle */
+    for (j = 0; j < 3; j++) {
+        a = radius * axisCross[j];
+        b = radius * axisRight[j];
+        originalPoints[0][j] = origin[j] - a - b;
+        originalPoints[1][j] = origin[j] + a - b;
+        originalPoints[2][j] = origin[j] + a + b;
+        originalPoints[3][j] = origin[j] - a + b;
+    }
+
+    /* Generate mark fragments against world geometry */
+    fragmentCount = CL_MarkFragments(
+        originalPoints,
+        origin,
+        (const vec3_t *)axisDir,
+        radius,
+        1024,                              /* maxPoints = 0x400 */
+        (GfxWorldVertex *)&markVerts,
+        384,                               /* maxFragments = 0x180 */
+        markFragments,
+        markMaterial
+    );
+
+    /* Convert float color [0,1] to packed byte color */
+    nativeColor.array[0] = ColorFloatToByte(color[3]); /* alpha */
+    nativeColor.array[1] = ColorFloatToByte(color[0]); /* red */
+    nativeColor.array[2] = ColorFloatToByte(color[1]); /* green */
+    nativeColor.array[3] = ColorFloatToByte(color[2]); /* blue */
+
+    if (fragmentCount <= 0)
+        return;
+
+    /* Process each mark fragment */
+    for (fragmentIndex = 0; fragmentIndex < fragmentCount; fragmentIndex++) {
+        GfxMarkFragment *frag = &markFragments[fragmentIndex];
+        GfxWorldVertex *verts = (GfxWorldVertex *)((char *)&markVerts + frag->firstPoint * (int)sizeof(GfxWorldVertex));
+        int vertCount = (int)frag->pointCount;
+
+        /* Apply the native color to all vertices in this fragment */
+        for (j = 0; j < vertCount; j++) {
+            verts[j].color.packed = nativeColor.packed;
+        }
+
+        /* Allocate a mark poly from the free list */
+        if (cg_freeMarkPolys == NULL) {
+            /* No free polys: recycle the oldest active mark */
+            cg = CG_PTR;
+            sentinel = CG_GetActiveMarksSentinel(cg);
+            oldest = MARKPOLY_PREV(sentinel);
+
+            /* Find the mark with the lowest lastFrameDrawn (oldest) */
+            if (oldest != sentinel) {
+                current = oldest;
+                while (1) {
+                    if (current->lastFrameDrawn < oldest->lastFrameDrawn) {
+                        oldest = current;
+                    }
+                    current = MARKPOLY_PREV(current);
+                    if (current == sentinel)
+                        break;
+                }
+            }
+
+            /* Verify the oldest mark has a valid prev link */
+            if (MARKPOLY_PREV(oldest) == NULL) {
+                Com_Error(ERR_DROP, "CG_FreeLocalEntity: not active");
+                /* Com_Error may return for non-fatal errors; continue with unlink */
+            }
+
+            /* Unlink oldest from the active list */
+            {
+                MarkPoly *prev = MARKPOLY_PREV(oldest);
+                MarkPoly *next = MARKPOLY_NEXT(oldest);
+                SET_NEXT(prev, next);
+                SET_PREV(next, prev);
+            }
+
+            /* Push oldest onto the free list */
+            SET_NEXT(oldest, cg_freeMarkPolys);
+            cg_freeMarkPolys = oldest;
+        }
+
+        /* Pop a mark poly from the free list */
+        markPoly = cg_freeMarkPolys;
+        cg_freeMarkPolys = MARKPOLY_NEXT(markPoly);
+
+        /* Insert the new mark at the head of the active list (after sentinel) */
+        cg = CG_PTR;
+        sentinel = CG_GetActiveMarksSentinel(cg);
+        {
+            MarkPoly *oldFirst = MARKPOLY_NEXT(sentinel);
+            SET_NEXT(markPoly, oldFirst);
+            SET_PREV(markPoly, sentinel);
+            SET_PREV(oldFirst, markPoly);
+            SET_NEXT(sentinel, markPoly);
+        }
+
+        /* Fill in the mark poly fields */
+        markPoly->origin[0] = origin[0];
+        markPoly->origin[1] = origin[1];
+        markPoly->origin[2] = origin[2];
+        markPoly->radius = radius;
+        markPoly->mtlHandle = frag->markMaterial;
+        markPoly->lmapIndex = frag->lmapIndex;
+        markPoly->vertCount = frag->pointCount;
+        markPoly->lastFrameDrawn = *(int *)cg; /* cg->clientFrame at offset 0 */
+
+        /* Copy vertex data from the mark vert assembly buffer */
+        memcpy(markPoly->verts, verts, (size_t)frag->pointCount * sizeof(GfxWorldVertex));
+    }
+}

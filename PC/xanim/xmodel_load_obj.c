@@ -16,1577 +16,804 @@
 int XModelGetStaticBounds(const XModel *model, vec3_t *axis, vec_t *mins, vec_t *maxs);
 XModel * XModelLoad(const char *name, Alloc_t Alloc, Alloc_t AllocColl);
 
+extern void MatrixTransformVector(const float *in1, const float (*in2)[3], float *out);
+extern void QuatMultiply(const float *in1, const float *in2, float *out);
+extern XModelParts * XModelPartsFindData(const char *name);
+extern void XModelPartsSetData(const char *name, XModelParts *modelParts, Alloc_t Alloc);
+extern XModelSurfs * XModelSurfsFindData(const char *name);
+extern void XModelSurfsSetData(const char *name, XModelSurfs *modelSurfs, Alloc_t Alloc);
+extern XSurface * XModelReadSurface(XModel *model, int *partBits, const byte **pos, Alloc_t Alloc);
+extern void XModelFree(XModel *model);
+extern trXSkin_t * R_LoadXSkins(XModel *model);
+extern int Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern int FS_ReadFile(const char *qpath, void **buffer);
+extern void FS_FreeFile(void *buffer);
+extern void Com_Printf(const char *fmt, ...);
+extern unsigned int SL_GetString_(const char *str, unsigned int user, int type);
+extern unsigned int SL_GetStringOfLen(const char *str, unsigned int user, unsigned int len, int type);
+
+extern float floorf(float x);
+extern float sqrtf(float x);
+extern char *g_renderer_ptr; /* 0x195eca8 */
+
 /* line 711 */
-__attribute__((naked))
 int XModelGetStaticBounds(const XModel *model, vec3_t *axis, vec_t *mins, vec_t *maxs)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 711 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 718 | model */
-        "movl 0x58(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lfbbb82_000bbcbc\n"
-        "movl $0x7f7fffff, %eax\n" /* line 191 */
-        "movl 0x10(%ebp), %edx\n" /* mins */
-        "movl %eax, (%edx)\n"
-        "movl %eax, 4(%edx)\n" /* line 192 */
-        "movl %eax, 8(%edx)\n" /* line 193 */
-        "movl $0xff7fffff, %eax\n" /* line 191 */
-        "movl 0x14(%ebp), %edx\n" /* maxs */
-        "movl %eax, (%edx)\n"
-        "movl %eax, 4(%edx)\n" /* line 192 */
-        "movl %eax, 8(%edx)\n" /* line 193 */
-        "movl 8(%ebp), %eax\n" /* line 728 | model */
-        "movl 0x58(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lfbbb82_000bbc97\n"
-        "movl $0, -0x40(%ebp)\n" /* i */
-        "movl $0, -0x3c(%ebp)\n"
-        ".Lfbbb82_000bbbd5:\n"
-        "movl -0x3c(%ebp), %esi\n" /* line 730 | csurf */
-        "movl 8(%ebp), %edx\n" /* model */
-        "addl 0x54(%edx), %esi\n" /* csurf */
-        "xorl %edi, %edi\n" /* k */
-        ".Lfbbb82_000bbbe0:\n"
-        "testl $1, %edi\n" /* line 734 | k */
-        "je .Lfbbb82_000bbcb4\n"
-        "movl 8(%esi), %eax\n" /* csurf */
-        ".Lfbbb82_000bbbef:\n"
-        "movl %eax, -0x24(%ebp)\n" /* corner */
-        "testl $2, %edi\n" /* line 735 | k */
-        "je .Lfbbb82_000bbcac\n"
-        "movl 0xc(%esi), %eax\n" /* csurf */
-        ".Lfbbb82_000bbc01:\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "testl $4, %edi\n" /* line 736 | k */
-        "je .Lfbbb82_000bbca4\n"
-        "movl 0x10(%esi), %eax\n" /* csurf */
-        ".Lfbbb82_000bbc13:\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "leal -0x30(%ebp), %eax\n" /* line 738 | rotated */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* axis */
-        "movl %edx, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* corner */
-        "movl %eax, (%esp)\n"
-        "calll MatrixTransformVector\n"
-        "movl $1, %ebx\n"
-        ".Lfbbb82_000bbc34:\n"
-        "leal (, %ebx, 4), %eax\n" /* line 711 */
-        "movl 0x10(%ebp), %edx\n" /* mins */
-        "addl %eax, %edx\n"
-        "leal -0x30(%ebp), %ecx\n" /* rotated */
-        "addl %eax, %ecx\n"
-        "movss -4(%ecx), %xmm1\n" /* line 742 */
-        "movss -4(%edx), %xmm0\n"
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lfbbb82_000bbc5e\n"
-        "movss %xmm1, -4(%edx)\n" /* line 743 */
-        "movss -4(%ecx), %xmm1\n"
-        ".Lfbbb82_000bbc5e:\n"
-        "addl 0x14(%ebp), %eax\n" /* line 711 | maxs */
-        "ucomiss -4(%eax), %xmm1\n" /* line 744 */
-        "jbe .Lfbbb82_000bbc6c\n"
-        "movss %xmm1, -4(%eax)\n" /* line 745 */
-        ".Lfbbb82_000bbc6c:\n"
-        "addl $1, %ebx\n"
-        "cmpl $4, %ebx\n" /* line 740 */
-        "jne .Lfbbb82_000bbc34\n"
-        "addl $1, %edi\n" /* line 732 | k */
-        "cmpl $8, %edi\n" /* k */
-        "jne .Lfbbb82_000bbbe0\n"
-        "addl $1, -0x40(%ebp)\n" /* line 728 | i */
-        "addl $0x2c, -0x3c(%ebp)\n"
-        "movl -0x40(%ebp), %eax\n" /* i */
-        "movl 8(%ebp), %edx\n" /* model */
-        "cmpl 0x58(%edx), %eax\n"
-        "jl .Lfbbb82_000bbbd5\n"
-        ".Lfbbb82_000bbc97:\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 751 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfbbb82_000bbca4:\n"
-        "movl 0x1c(%esi), %eax\n" /* line 736 | csurf */
-        "jmp .Lfbbb82_000bbc13\n"
-        ".Lfbbb82_000bbcac:\n"
-        "movl 0x18(%esi), %eax\n" /* line 735 | csurf */
-        "jmp .Lfbbb82_000bbc01\n"
-        ".Lfbbb82_000bbcb4:\n"
-        "movl 0x14(%esi), %eax\n" /* line 734 | csurf */
-        "jmp .Lfbbb82_000bbbef\n"
-        ".Lfbbb82_000bbcbc:\n"
-        "xorl %eax, %eax\n" /* line 728 */
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 751 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i, k, j;
+    XModelCollSurf *csurf;
+    vec3_t corner;
+    vec3_t rotated;
+
+    if (!model->numCollSurfs) {
+        return 0;
+    }
+
+    /* ClearBounds */
+    mins[0] = 3.4028234663852886e+38f;
+    mins[1] = 3.4028234663852886e+38f;
+    mins[2] = 3.4028234663852886e+38f;
+    maxs[0] = -3.4028234663852886e+38f;
+    maxs[1] = -3.4028234663852886e+38f;
+    maxs[2] = -3.4028234663852886e+38f;
+
+    if (model->numCollSurfs <= 0) {
+        return 1;
+    }
+
+    for (i = 0; i < model->numCollSurfs; i++) {
+        csurf = &model->collSurfs[i];
+
+        for (k = 0; k < 8; k++) {
+            /* Build corner from mins/maxs based on bits of k */
+            if (k & 1) {
+                corner[0] = csurf->mins[0];
+            } else {
+                corner[0] = csurf->maxs[0];
+            }
+
+            if (k & 2) {
+                corner[1] = csurf->mins[1];
+            } else {
+                corner[1] = csurf->maxs[1];
+            }
+
+            if (k & 4) {
+                corner[2] = csurf->mins[2];
+            } else {
+                corner[2] = csurf->maxs[2];
+            }
+
+            MatrixTransformVector(corner, axis, rotated);
+
+            for (j = 1; j < 4; j++) {
+                if (mins[j - 1] > rotated[j - 1]) {
+                    mins[j - 1] = rotated[j - 1];
+                }
+                if (rotated[j - 1] > maxs[j - 1]) {
+                    maxs[j - 1] = rotated[j - 1];
+                }
+            }
+        }
+    }
+
+    return 1;
 }
 
 /* line 679 */
-__attribute__((naked))
 XModel * XModelLoad(const char *name, Alloc_t Alloc, Alloc_t AllocColl)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 679 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x11bc, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* name */
-        /* { scope 1: config, nameLens, lodFilename, j, ... */
-        /* { scope 2: i, i, u, modelParts */
-        "movl %ebx, 0xc(%esp)\n" /* line 387 | size */
-        "movl $0x21fdc8, 8(%esp)\n" /* "xmodel/%s" */
-        "movl $0x40, 4(%esp)\n"
-        "leal -0xc0(%ebp), %eax\n" /* filename */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "testl %eax, %eax\n"
-        "js .Lfbbcc6_000bc5cb\n"
-        "leal -0x1c(%ebp), %ecx\n" /* line 393 | buf */
-        "movl %ecx, 4(%esp)\n"
-        "leal -0xc0(%ebp), %edi\n" /* filename, j */
-        "movl %edi, (%esp)\n" /* j */
-        "calll FS_ReadFile\n"
-        "cmpl $0, %eax\n" /* line 395 */
-        "jl .Lfbbcc6_000bc6ed\n"
-        "je .Lfbbcc6_000bc53b\n" /* line 406 */
-        "movl -0x1c(%ebp), %edx\n" /* line 413 | buf */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movzwl (%edx), %eax\n" /* line 104 */
-        "movw %ax, -0x30(%ebp)\n" /* u */
-        "movswl %ax, %ecx\n" /* line 106 */
-        /* } scope */
-        "cmpw $0x14, %ax\n" /* line 245 */
-        "je .Lfbbcc6_000bbd78\n"
-        "movl $0x14, 0xc(%esp)\n" /* line 247 */
-        "movl %ecx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* size */
-        "movl $0x21fe18, (%esp)\n" /* "^1ERROR: xmodel '%s' out of date (version %d, expecting %d)." */
-        ".Lfbbcc6_000bbd4d:\n"
-        "calll Com_Printf\n"
-        /* } scope */
-        "movl -0x1c(%ebp), %eax\n" /* line 416 | buf */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        "movl $0, -0x1170(%ebp)\n" /* model */
-        /* } scope */
-        /* } scope */
-        ".Lfbbcc6_000bbd67:\n"
-        "movl -0x1170(%ebp), %eax\n" /* line 701 | model */
-        "addl $0x11bc, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: config, nameLens, lodFilename, j, ... */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        ".Lfbbcc6_000bbd78:\n"
-        "movzbl 2(%edx), %eax\n" /* line 251 */
-        "movb %al, -0xc4(%ebp)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 3(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 254 | u */
-        "movl %eax, -0xe0(%ebp)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 7(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 255 | u */
-        "movl %eax, -0xdc(%ebp)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0xb(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 256 | u */
-        "movl %eax, -0xd8(%ebp)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0xf(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 258 | u */
-        "movl %eax, -0xd4(%ebp)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x13(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 259 | u */
-        "movl %eax, -0xd0(%ebp)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x17(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        "leal 0x1b(%edx), %ecx\n" /* line 150 */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 260 | u */
-        "movl %eax, -0xcc(%ebp)\n"
-        "movl $0, -0x1164(%ebp)\n" /* i */
-        "leal -0x10f0(%ebp), %esi\n" /* config, trans */
-        "movl %esi, %ebx\n" /* trans, size */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        ".Lfbbcc6_000bbdf1:\n"
-        "movl (%ecx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        "addl $4, %ecx\n" /* line 150 */
-        "movl %ecx, -0x11ac(%ebp)\n" /* boneInfo */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 264 | u */
-        "movl %eax, 0x400(%esi)\n" /* trans */
-        "movl %ecx, 4(%esp)\n" /* line 265 */
-        "movl %ebx, (%esp)\n" /* size */
-        "calll strcpy\n"
-        "cld\n" /* line 266 */
-        "movl $0xffffffff, %ecx\n"
-        "movl -0x11ac(%ebp), %edi\n" /* boneInfo, parentList */
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n" /* parentList */
-        "notl %ecx\n"
-        "movl -0x11ac(%ebp), %eax\n" /* boneInfo */
-        "leal -1(%ecx, %eax), %edx\n"
-        "leal 1(%edx), %ecx\n"
-        "addl $1, -0x1164(%ebp)\n" /* line 262 | i */
-        "addl $0x404, %ebx\n" /* size */
-        "addl $0x404, %esi\n" /* trans */
-        "cmpl $4, -0x1164(%ebp)\n" /* i */
-        "jne .Lfbbcc6_000bbdf1\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 1(%edx), %eax\n" /* line 134 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        "addl $5, %edx\n" /* line 135 */
-        "movl %edx, -0x1104(%ebp)\n"
-        /* } scope */
-        "movl %eax, -0xc8(%ebp)\n" /* line 269 */
-        /* } scope */
-        "xorl %ebx, %ebx\n" /* line 416 | size */
-        "xorl %edx, %edx\n"
-        "xorl %esi, %esi\n" /* numBones */
-        "leal -0x10f0(%ebp), %ecx\n" /* config */
-        "movl %ecx, -0x11b0(%ebp)\n"
-        "movl %ecx, %edi\n" /* j */
-        "movl $0xffffffff, %ecx\n" /* line 896 */
-        "movl %esi, %eax\n" /* modelSurfs */
-        "repne scasb %es:(%edi), %al\n" /* j */
-        "notl %ecx\n"
-        "movl %ecx, -0x40(%ebp, %edx, 4)\n" /* line 423 */
-        "addl %ecx, %ebx\n" /* line 424 | size */
-        "addl $1, %edx\n" /* line 421 */
-        "addl $0x404, -0x11b0(%ebp)\n"
-        "cmpl $4, %edx\n"
-        "je .Lfbbcc6_000bbec4\n"
-        ".Lfbbcc6_000bbe9b:\n"
-        "movl -0x11b0(%ebp), %edi\n" /* j */
-        "movl $0xffffffff, %ecx\n" /* line 896 */
-        "movl %esi, %eax\n" /* modelSurfs */
-        "repne scasb %es:(%edi), %al\n" /* j */
-        "notl %ecx\n"
-        "movl %ecx, -0x40(%ebp, %edx, 4)\n" /* line 423 */
-        "addl %ecx, %ebx\n" /* line 424 | size */
-        "addl $1, %edx\n" /* line 421 */
-        "addl $0x404, -0x11b0(%ebp)\n"
-        "cmpl $4, %edx\n"
-        "jne .Lfbbcc6_000bbe9b\n"
-        ".Lfbbcc6_000bbec4:\n"
-        "addl $0x90, %ebx\n" /* line 427 | size */
-        "movl %ebx, (%esp)\n" /* line 428 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl %eax, -0x1170(%ebp)\n" /* model */
-        "movl %ebx, 0x84(%eax)\n" /* line 429 | size */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl -0x1104(%ebp), %ecx\n" /* line 134 */
-        "movl (%ecx), %edx\n"
-        "movl %edx, -0x30(%ebp)\n" /* u */
-        "addl $4, %ecx\n" /* line 135 */
-        "movl %ecx, -0x1108(%ebp)\n"
-        /* } scope */
-        "movl %edx, 0x58(%eax)\n" /* line 281 */
-        "testl %edx, %edx\n" /* line 282 */
-        "jne .Lfbbcc6_000bc24a\n"
-        /* } scope */
-        ".Lfbbcc6_000bbefb:\n"
-        "movl -0x1170(%ebp), %eax\n" /* line 433 | model */
-        "addl $0x90, %eax\n"
-        "movl %eax, -0x116c(%ebp)\n" /* lodFilename */
-        "movl -0x1170(%ebp), %edx\n" /* line 434 | model */
-        "movw $0, 0x7c(%edx)\n"
-        "movl %edx, %esi\n" /* numBones */
-        "movl $0, -0x10fc(%ebp)\n"
-        "leal -0x10f0(%ebp), %ecx\n" /* config */
-        "movl %ecx, -0x1118(%ebp)\n"
-        "movl $0, -0x118c(%ebp)\n"
-        "movl %ecx, -0x1190(%ebp)\n"
-        "movl %ecx, %edi\n" /* j */
-        "movl %edi, 4(%esp)\n" /* line 437 | j */
-        "movl -0x116c(%ebp), %eax\n" /* lodFilename */
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl -0x116c(%ebp), %edx\n" /* line 438 | lodFilename */
-        "movl %edx, 8(%esi)\n" /* numBones */
-        "cmpb $0, (%edx)\n" /* line 439 */
-        "jne .Lfbbcc6_000bbfe6\n"
-        ".Lfbbcc6_000bbf66:\n"
-        "movl $0, 0x10(%esi)\n" /* line 459 | numBones */
-        ".Lfbbcc6_000bbf6d:\n"
-        "movl -0x1118(%ebp), %ecx\n" /* line 462 */
-        "movl 0x400(%ecx), %eax\n"
-        "movl %eax, 4(%esi)\n" /* numBones */
-        "movl -0x118c(%ebp), %edi\n" /* line 463 | j */
-        "movl -0x40(%edi, %ebp), %edi\n" /* j */
-        "addl %edi, -0x116c(%ebp)\n" /* j, lodFilename */
-        "addl $1, -0x10fc(%ebp)\n" /* line 435 */
-        "addl $0x404, -0x1190(%ebp)\n"
-        "addl $4, -0x118c(%ebp)\n"
-        "addl $0x14, %esi\n" /* numBones */
-        "addl $0x404, %ecx\n"
-        "movl %ecx, -0x1118(%ebp)\n"
-        "cmpl $4, -0x10fc(%ebp)\n"
-        "je .Lfbbcc6_000bc0aa\n"
-        "movl -0x1190(%ebp), %edi\n" /* j */
-        "movl %edi, 4(%esp)\n" /* line 437 | j */
-        "movl -0x116c(%ebp), %eax\n" /* lodFilename */
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl -0x116c(%ebp), %edx\n" /* line 438 | lodFilename */
-        "movl %edx, 8(%esi)\n" /* numBones */
-        "cmpb $0, (%edx)\n" /* line 439 */
-        "je .Lfbbcc6_000bbf66\n"
-        ".Lfbbcc6_000bbfe6:\n"
-        "movl -0x1170(%ebp), %ecx\n" /* line 441 | model */
-        "addw $1, 0x7c(%ecx)\n"
-        /* { scope 3: u, modelName, name */
-        "movl -0x1108(%ebp), %edi\n" /* line 104 | parentList */
-        "movswl (%edi), %ebx\n" /* parentList */
-        "movw %bx, -0x30(%ebp)\n" /* u */
-        "addl $2, %edi\n" /* line 105 | parentList */
-        "movl %edi, -0x1108(%ebp)\n" /* parentList */
-        "leal 0xc(%esi), %eax\n" /* line 679 | modelSurfs */
-        "movl %eax, -0x1114(%ebp)\n"
-        /* } scope */
-        "movw %bx, 0xc(%esi)\n" /* line 443 | size, numBones */
-        "addl %ebx, %ebx\n" /* line 445 | size */
-        "movl %ebx, (%esp)\n" /* line 446 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "leal 0x10(%esi), %edx\n" /* line 679 | modelSurfs */
-        "movl %edx, -0x1110(%ebp)\n"
-        "movl %eax, 0x10(%esi)\n" /* line 446 | numBones */
-        "movl -0x1170(%ebp), %ecx\n" /* line 447 | model */
-        "addl %ebx, 0x84(%ecx)\n" /* size */
-        "cmpw $0, 0xc(%esi)\n" /* line 449 | numBones */
-        "jle .Lfbbcc6_000bbf6d\n"
-        "movl $0, -0x1168(%ebp)\n" /* j */
-        ".Lfbbcc6_000bc049:\n"
-        "movl -0x1108(%ebp), %edx\n" /* line 451 */
-        "cld\n" /* line 452 */
-        "movl $0xffffffff, %ecx\n"
-        "movl %edx, %edi\n" /* j */
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n" /* j */
-        "notl %ecx\n"
-        "addl %ecx, -0x1108(%ebp)\n"
-        "movl -0x1110(%ebp), %ecx\n" /* line 454 */
-        "movl (%ecx), %eax\n"
-        "movl -0x1168(%ebp), %edi\n" /* j */
-        "leal (%eax, %edi, 2), %ebx\n" /* size */
-        "movl $8, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll SL_GetString_\n"
-        "movw %ax, (%ebx)\n" /* size */
-        "addl $1, %edi\n" /* line 449 | j */
-        "movl %edi, -0x1168(%ebp)\n" /* j */
-        "movl -0x1114(%ebp), %edx\n"
-        "movswl (%edx), %eax\n"
-        "cmpl %edi, %eax\n" /* j */
-        "jg .Lfbbcc6_000bc049\n"
-        "jmp .Lfbbcc6_000bbf6d\n"
-        ".Lfbbcc6_000bc0aa:\n"
-        "movl -0x1170(%ebp), %eax\n" /* line 467 | model */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, -0x1158(%ebp)\n" /* name */
-        /* { scope 3: u, modelName, name */
-        "movl %eax, (%esp)\n" /* line 349 */
-        "calll XModelPartsFindData\n"
-        "movl %eax, -0x115c(%ebp)\n" /* modelParts */
-        "testl %eax, %eax\n" /* line 350 */
-        "je .Lfbbcc6_000bc5f0\n"
-        "movl %eax, %ecx\n"
-        /* } scope */
-        ".Lfbbcc6_000bc0d1:\n"
-        "movl -0x1170(%ebp), %edx\n" /* line 467 | model */
-        "movl %ecx, (%edx)\n"
-        "testl %ecx, %ecx\n" /* line 468 */
-        "je .Lfbbcc6_000bc76d\n"
-        "movl -0x115c(%ebp), %edx\n" /* line 475 | modelParts */
-        "movswl (%edx), %esi\n" /* numBones */
-        "leal (%esi, %esi, 4), %ebx\n" /* line 477 | numBones, size */
-        "shll $3, %ebx\n" /* size */
-        "movl %ebx, (%esp)\n" /* line 478 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl %eax, -0x11ac(%ebp)\n" /* boneInfo */
-        "movl -0x1170(%ebp), %ecx\n" /* line 479 | model */
-        "addl %ebx, 0x84(%ecx)\n" /* size */
-        "testl %esi, %esi\n" /* line 481 | numBones */
-        "jg .Lfbbcc6_000bc452\n"
-        ".Lfbbcc6_000bc110:\n"
-        "movl -0x11ac(%ebp), %edx\n" /* line 500 | boneInfo */
-        "movl -0x1170(%ebp), %eax\n" /* model */
-        "movl %edx, 0x60(%eax)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 502 | buf */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        "movl -0x1170(%ebp), %edx\n" /* line 504 | model, to */
-        "addl $0x64, %edx\n" /* to */
-        /* { scope 3: u, modelName, name */
-        "movl -0xe0(%ebp), %eax\n" /* line 199 */
-        "movl -0x1170(%ebp), %ecx\n" /* model */
-        "movl %eax, 0x64(%ecx)\n"
-        "movl -0xdc(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0xd8(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl %ecx, %edx\n" /* line 505 | to */
-        "addl $0x70, %edx\n" /* to */
-        /* { scope 3: u, modelName, name */
-        "movl -0xd4(%ebp), %eax\n" /* line 199 */
-        "movl %eax, 0x70(%ecx)\n"
-        "movl -0xd0(%ebp), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0xcc(%ebp), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "movl -0xc8(%ebp), %eax\n" /* line 507 */
-        "movw %ax, 0x7e(%ecx)\n"
-        "movzbl -0xc4(%ebp), %eax\n" /* line 510 */
-        "movb %al, 0x8c(%ecx)\n"
-        /* } scope */
-        "movl 0x195eca8, %eax\n" /* line 687 */
-        "cmpb $0, 0x144(%eax)\n"
-        "je .Lfbbcc6_000bbd67\n"
-        "movl $0, -0x1128(%ebp)\n" /* lodIndex */
-        "addl $4, %ecx\n"
-        "movl %ecx, -0x1188(%ebp)\n"
-        "movl %ecx, %eax\n"
-        /* { scope 2: i, i, u, modelParts */
-        "movl 4(%eax), %edi\n" /* line 668 | j */
-        "cmpb $0, (%edi)\n" /* j */
-        "je .Lfbbcc6_000bc21f\n"
-        ".Lfbbcc6_000bc1ba:\n"
-        "movl -0x1170(%ebp), %edx\n" /* line 671 | model */
-        "movl 0x88(%edx), %edx\n"
-        "movl %edx, -0x1124(%ebp)\n" /* modelName */
-        "movzwl 8(%eax), %ebx\n" /* modelNumsurfs */
-        "movswl %bx, %ecx\n" /* modelNumsurfs */
-        "movl %ecx, -0x112c(%ebp)\n"
-        /* { scope 3: u, modelName, name */
-        "movl %edi, (%esp)\n" /* line 641 | j */
-        "calll XModelSurfsFindData\n"
-        "movl %eax, %esi\n" /* modelSurfs */
-        "testl %eax, %eax\n" /* line 642 */
-        "je .Lfbbcc6_000bc54b\n"
-        /* } scope */
-        ".Lfbbcc6_000bc1eb:\n"
-        "movl -0x1188(%ebp), %edi\n" /* line 671 | j */
-        "movl %esi, 0x10(%edi)\n" /* modelSurfs, j */
-        "testl %esi, %esi\n" /* line 672 | modelSurfs */
-        "je .Lfbbcc6_000bc687\n"
-        "addl $1, -0x1128(%ebp)\n" /* line 665 | lodIndex */
-        "addl $0x14, %edi\n" /* j */
-        "movl %edi, -0x1188(%ebp)\n" /* j */
-        "cmpl $4, -0x1128(%ebp)\n" /* lodIndex */
-        "je .Lfbbcc6_000bc21f\n"
-        "movl %edi, %eax\n" /* j */
-        "movl 4(%eax), %edi\n" /* line 668 | j */
-        "cmpb $0, (%edi)\n" /* j */
-        "jne .Lfbbcc6_000bc1ba\n"
-        /* } scope */
-        ".Lfbbcc6_000bc21f:\n"
-        "movl -0x1170(%ebp), %eax\n" /* line 696 | model */
-        "movl %eax, (%esp)\n"
-        "calll R_LoadXSkins\n"
-        "movl -0x1170(%ebp), %edx\n" /* model */
-        "movl %eax, 0x80(%edx)\n"
-        /* } scope */
-        "movl -0x1170(%ebp), %eax\n" /* line 701 | model */
-        "addl $0x11bc, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: config, nameLens, lodFilename, j, ... */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        ".Lfbbcc6_000bc24a:\n"
-        "leal (%edx, %edx, 4), %eax\n" /* line 288 */
-        "leal (%edx, %eax, 2), %eax\n"
-        "shll $2, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x10(%ebp)\n" /* AllocColl */
-        "movl -0x1170(%ebp), %edi\n" /* model, j */
-        "movl %eax, 0x54(%edi)\n" /* j */
-        "movl 0x58(%edi), %eax\n" /* line 290 | j */
-        "testl %eax, %eax\n"
-        "jle .Lfbbcc6_000bbefb\n"
-        "movl $0, -0x1160(%ebp)\n" /* i */
-        "movl $0, -0x110c(%ebp)\n"
-        "movss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
-        "jmp .Lfbbcc6_000bc35a\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        ".Lfbbcc6_000bc28e:\n"
-        "movl (%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movss -0x30(%ebp), %xmm0\n" /* line 324 | u */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 8(%esi)\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 4(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movss -0x30(%ebp), %xmm0\n" /* line 325 | u */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0xc(%esi)\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 8(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movss -0x30(%ebp), %xmm0\n" /* line 326 | u */
-        "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x10(%esi)\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0xc(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movss -0x30(%ebp), %xmm0\n" /* line 328 | u */
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x14(%esi)\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x10(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movss -0x30(%ebp), %xmm0\n" /* line 329 | u */
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x18(%esi)\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x14(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movss -0x30(%ebp), %xmm0\n" /* line 330 | u */
-        "addss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x1c(%esi)\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x18(%ebx), %eax\n" /* line 134 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl %eax, 0x20(%esi)\n" /* line 332 | surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x1c(%ebx), %eax\n" /* line 134 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "andl $0xdffffffb, %eax\n" /* line 334 */
-        "movl %eax, 0x24(%esi)\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x20(%ebx), %eax\n" /* line 134 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        "addl $0x24, %ebx\n" /* line 135 | size */
-        "movl %ebx, -0x1108(%ebp)\n" /* size */
-        /* } scope */
-        "movl %eax, 0x28(%esi)\n" /* line 337 | surf */
-        "movl -0x1170(%ebp), %ecx\n" /* line 340 | model */
-        "movl 0x5c(%ecx), %eax\n"
-        "orl 0x24(%esi), %eax\n" /* surf */
-        "movl %eax, 0x5c(%ecx)\n"
-        "addl $1, -0x1160(%ebp)\n" /* line 290 | i */
-        "addl $0x2c, -0x110c(%ebp)\n"
-        "movl -0x1160(%ebp), %edi\n" /* i, j */
-        "cmpl 0x58(%ecx), %edi\n" /* j */
-        "jge .Lfbbcc6_000bbefb\n"
-        ".Lfbbcc6_000bc35a:\n"
-        "movl -0x110c(%ebp), %esi\n" /* line 292 | surf */
-        "movl -0x1170(%ebp), %eax\n" /* model */
-        "addl 0x54(%eax), %esi\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl -0x1108(%ebp), %edx\n" /* line 134 */
-        "movl (%edx), %eax\n"
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        "movl %edx, %ebx\n" /* line 135 | size */
-        "addl $4, %ebx\n" /* size */
-        /* } scope */
-        "movl %eax, 4(%esi)\n" /* line 294 | surf */
-        "leal (%eax, %eax, 2), %eax\n" /* line 300 */
-        "shll $4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "movss %xmm1, -0x11a8(%ebp)\n"
-        "calll *0x10(%ebp)\n" /* AllocColl */
-        "movl %eax, (%esi)\n" /* surf */
-        "movl 4(%esi), %edi\n" /* line 302 | surf, j */
-        "testl %edi, %edi\n" /* j */
-        "movss -0x11a8(%ebp), %xmm1\n"
-        "jle .Lfbbcc6_000bc28e\n"
-        "xorl %edi, %edi\n" /* j */
-        "xorl %ecx, %ecx\n"
-        ".Lfbbcc6_000bc3a9:\n"
-        "movl %ecx, %edx\n" /* line 304 */
-        "addl (%esi), %edx\n" /* surf */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl (%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 306 | u */
-        "movl %eax, (%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 4(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 307 | u */
-        "movl %eax, 4(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 8(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 308 | u */
-        "movl %eax, 8(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0xc(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 309 | u */
-        "movl %eax, 0xc(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x10(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 313 | u */
-        "movl %eax, 0x10(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x14(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 314 | u */
-        "movl %eax, 0x14(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x18(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 315 | u */
-        "movl %eax, 0x18(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x1c(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 316 | u */
-        "movl %eax, 0x1c(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x20(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 318 | u */
-        "movl %eax, 0x20(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x24(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 319 | u */
-        "movl %eax, 0x24(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x28(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 320 | u */
-        "movl %eax, 0x28(%edx)\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        "movl 0x2c(%ebx), %eax\n" /* line 149 | size */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        "addl $0x30, %ebx\n" /* line 150 | size */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 321 | u */
-        "movl %eax, 0x2c(%edx)\n"
-        "addl $1, %edi\n" /* line 302 | j */
-        "addl $0x30, %ecx\n"
-        "cmpl 4(%esi), %edi\n" /* surf, j */
-        "jl .Lfbbcc6_000bc3a9\n"
-        "jmp .Lfbbcc6_000bc28e\n"
-        /* } scope */
-        ".Lfbbcc6_000bc452:\n"
-        "movl %eax, %ecx\n" /* line 481 */
-        "xorl %ebx, %ebx\n" /* size */
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
-        /* { scope 3: u, modelName, name */
-        ".Lfbbcc6_000bc45e:\n"
-        "movl -0x1108(%ebp), %edi\n" /* line 149 | parentList */
-        "movl (%edi), %eax\n" /* parentList */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 484 | u */
-        "movl %eax, (%ecx)\n"
-        /* { scope 3: u, modelName, name */
-        "movl 4(%edi), %eax\n" /* line 149 | parentList */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 485 | u */
-        "movl %eax, 4(%ecx)\n"
-        /* { scope 3: u, modelName, name */
-        "movl 8(%edi), %eax\n" /* line 149 | parentList */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 486 | u */
-        "movl %eax, 8(%ecx)\n"
-        "leal 0xc(%ecx), %edx\n" /* line 488 */
-        /* { scope 3: u, modelName, name */
-        "movl 0xc(%edi), %eax\n" /* line 149 | parentList */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 489 | u */
-        "movl %eax, 0xc(%ecx)\n"
-        /* { scope 3: u, modelName, name */
-        "movl 0x10(%edi), %eax\n" /* line 149 | parentList */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 490 | u */
-        "movl %eax, 4(%edx)\n"
-        /* { scope 3: u, modelName, name */
-        "movl 0x14(%edi), %eax\n" /* line 149 | parentList */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        "addl $0x18, %edi\n" /* line 150 | parentList */
-        "movl %edi, -0x1108(%ebp)\n" /* parentList */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 491 | u */
-        "movl %eax, 8(%edx)\n"
-        "leal 0x18(%ecx), %eax\n" /* line 493 */
-        /* { scope 3: u, modelName, name */
-        "movss (%ecx), %xmm0\n" /* line 256 */
-        "addss 0xc(%ecx), %xmm0\n"
-        "mulss %xmm3, %xmm0\n"
-        "movss %xmm0, 0x18(%ecx)\n"
-        "movss 4(%ecx), %xmm0\n" /* line 257 */
-        "addss 0x10(%ecx), %xmm0\n"
-        "mulss %xmm3, %xmm0\n"
-        "movss %xmm0, 4(%eax)\n"
-        "movss 8(%ecx), %xmm0\n" /* line 258 */
-        "addss 0x14(%ecx), %xmm0\n"
-        "mulss %xmm3, %xmm0\n"
-        "movss %xmm0, 8(%eax)\n"
-        /* } scope */
-        "movss 0xc(%ecx), %xmm0\n" /* line 248 */
-        "subss 0x18(%ecx), %xmm0\n"
-        "movss 0x10(%ecx), %xmm1\n" /* line 249 */
-        "subss 4(%eax), %xmm1\n"
-        "movss 0x14(%ecx), %xmm2\n" /* line 250 */
-        "subss 8(%eax), %xmm2\n"
-        "mulss %xmm0, %xmm0\n" /* line 497 */
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm2\n"
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, 0x24(%ecx)\n"
-        "addl $1, %ebx\n" /* line 481 | size */
-        "addl $0x28, %ecx\n"
-        "cmpl %ebx, %esi\n" /* size, numBones */
-        "jne .Lfbbcc6_000bc45e\n"
-        "jmp .Lfbbcc6_000bc110\n"
-        ".Lfbbcc6_000bc53b:\n"
-        "movl %ebx, 4(%esp)\n" /* line 408 | size */
-        "movl $0x21fdf4, (%esp)\n" /* "^1ERROR: xmodel '%s' has 0 length
-" */
-        "jmp .Lfbbcc6_000bbd4d\n"
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc54b:\n"
-        "movl %edi, 0xc(%esp)\n" /* line 580 | j */
-        "movl $0x21ff54, 8(%esp)\n" /* "xmodelsurfs/%s" */
-        "movl $0x40, 4(%esp)\n"
-        "leal -0xc0(%ebp), %eax\n" /* filename */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "testl %eax, %eax\n"
-        "js .Lfbbcc6_000bc70c\n"
-        "leal -0x1c(%ebp), %ecx\n" /* line 586 | buf */
-        "movl %ecx, 4(%esp)\n"
-        "leal -0xc0(%ebp), %eax\n" /* filename */
-        "movl %eax, (%esp)\n"
-        "calll FS_ReadFile\n"
-        "cmpl $0, %eax\n" /* line 588 */
-        "jl .Lfbbcc6_000bc7e9\n"
-        "jne .Lfbbcc6_000bc6a4\n" /* line 595 */
-        "movl %edi, 4(%esp)\n" /* line 597 | j */
-        "movl $0x21ff88, (%esp)\n" /* "^1ERROR: xmodelsurf '%s' has 0 length
-" */
-        "calll Com_Printf\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 598 | buf */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        /* } scope */
-        /* } scope */
-        ".Lfbbcc6_000bc5b4:\n"
-        "movl %edi, 4(%esp)\n" /* line 648 | j */
-        "movl $0x220070, (%esp)\n" /* "^1ERROR: Cannot find 'xmodelsurfs '%s'.
-" */
-        "calll Com_Printf\n"
-        "xorl %esi, %esi\n" /* modelSurfs */
-        "jmp .Lfbbcc6_000bc1eb\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        ".Lfbbcc6_000bc5cb:\n"
-        "leal -0xc0(%ebp), %edx\n" /* line 389 | filename */
-        "movl %edx, 4(%esp)\n"
-        "movl $0x21fd24, (%esp)\n" /* "^1ERROR: filename '%s' too long
-" */
-        "calll Com_Printf\n"
-        "movl $0, -0x1170(%ebp)\n" /* model */
-        "jmp .Lfbbcc6_000bbd67\n"
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc5f0:\n"
-        "movl -0x1158(%ebp), %edx\n" /* line 115 | name */
-        "movl %edx, 0xc(%esp)\n"
-        "movl $0x21fe58, 8(%esp)\n" /* "xmodelparts/%s" */
-        "movl $0x40, 4(%esp)\n"
-        "leal -0x80(%ebp), %ebx\n" /* filename, size */
-        "movl %ebx, (%esp)\n" /* size */
-        "calll Com_sprintf\n"
-        "testl %eax, %eax\n"
-        "js .Lfbbcc6_000bc7d4\n"
-        "leal -0x20(%ebp), %eax\n" /* line 121 | pos */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* size */
-        "calll FS_ReadFile\n"
-        "cmpl $0, %eax\n" /* line 123 */
-        "jl .Lfbbcc6_000bc891\n"
-        "jne .Lfbbcc6_000bc727\n" /* line 130 */
-        "movl -0x1158(%ebp), %edi\n" /* line 132 | name, parentList */
-        "movl %edi, 4(%esp)\n" /* parentList */
-        "movl $0x21fe90, (%esp)\n" /* "^1ERROR: xmodelparts '%s' has 0 length
-" */
-        "calll Com_Printf\n"
-        "movl -0x20(%ebp), %eax\n" /* line 133 | pos */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        /* } scope */
-        /* } scope */
-        ".Lfbbcc6_000bc65c:\n"
-        "movl -0x1158(%ebp), %eax\n" /* line 356 | name */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21ff2c, (%esp)\n" /* "^1ERROR: Cannot find xmodelparts '%s'.
-" */
-        "calll Com_Printf\n"
-        "movl $0, -0x115c(%ebp)\n" /* modelParts */
-        "movl -0x115c(%ebp), %ecx\n" /* modelParts */
-        "jmp .Lfbbcc6_000bc0d1\n"
-        /* } scope */
-        /* } scope */
-        ".Lfbbcc6_000bc687:\n"
-        "movl -0x1170(%ebp), %eax\n" /* line 691 | model */
-        "movl %eax, (%esp)\n"
-        "calll XModelFree\n"
-        "movl $0, -0x1170(%ebp)\n" /* model */
-        "jmp .Lfbbcc6_000bbd67\n"
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc6a4:\n"
-        "movl -0x1c(%ebp), %ecx\n" /* line 604 | buf */
-        "movl %ecx, -0x20(%ebp)\n" /* pos */
-        /* { scope 6 */
-        "movzwl (%ecx), %edx\n" /* line 104 */
-        "movw %dx, -0x30(%ebp)\n" /* u */
-        "leal 2(%ecx), %eax\n" /* line 105 */
-        "movl %eax, -0x20(%ebp)\n" /* pos */
-        "movswl %dx, %esi\n" /* line 106 | i */
-        /* } scope */
-        "cmpw $0x14, %dx\n" /* line 606 */
-        "je .Lfbbcc6_000bc795\n"
-        "movl %ecx, (%esp)\n" /* line 608 */
-        "calll FS_FreeFile\n"
-        "movl $0x14, 0xc(%esp)\n" /* line 609 */
-        "movl %esi, 8(%esp)\n" /* numBones */
-        "movl %edi, 4(%esp)\n" /* j */
-        "movl $0x21ffb0, (%esp)\n" /* "^1ERROR: xmodelsurfs '%s' out of date (version %d, expecting" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc5b4\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        ".Lfbbcc6_000bc6ed:\n"
-        "movl %ebx, 4(%esp)\n" /* line 402 | size */
-        "movl $0x21fdd4, (%esp)\n" /* "^1ERROR: xmodel '%s' not found
-" */
-        "calll Com_Printf\n"
-        "movl $0, -0x1170(%ebp)\n" /* model */
-        "jmp .Lfbbcc6_000bbd67\n"
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc70c:\n"
-        "leal -0xc0(%ebp), %edx\n" /* line 582 | filename */
-        "movl %edx, 4(%esp)\n"
-        "movl $0x21fd24, (%esp)\n" /* "^1ERROR: filename '%s' too long
-" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc5b4\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc727:\n"
-        "movl -0x20(%ebp), %edx\n" /* line 139 | pos */
-        /* { scope 6 */
-        "movzwl (%edx), %eax\n" /* line 104 */
-        "movw %ax, -0x30(%ebp)\n" /* u */
-        "movswl %ax, %ebx\n" /* line 106 */
-        /* } scope */
-        "cmpw $0x14, %ax\n" /* line 141 */
-        "je .Lfbbcc6_000bc7fe\n"
-        "movl %edx, (%esp)\n" /* line 143 */
-        "calll FS_FreeFile\n"
-        "movl $0x14, 0xc(%esp)\n" /* line 144 */
-        "movl %ebx, 8(%esp)\n" /* size */
-        "movl -0x1158(%ebp), %eax\n" /* name */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21feb8, (%esp)\n" /* "^1ERROR: xmodelparts '%s' out of date (version %d, expecting" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc65c\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfbbcc6_000bc76d:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 470 | buf */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        "movl -0x1170(%ebp), %edi\n" /* line 471 | model, j */
-        "movl %edi, (%esp)\n" /* j */
-        "calll XModelFree\n"
-        "movl $0, -0x1170(%ebp)\n" /* model */
-        "jmp .Lfbbcc6_000bbd67\n"
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        /* { scope 6 */
-        ".Lfbbcc6_000bc795:\n"
-        "movzwl 2(%ecx), %eax\n" /* line 104 */
-        "movw %ax, -0x30(%ebp)\n" /* u */
-        "leal 4(%ecx), %eax\n" /* line 105 */
-        "movl %eax, -0x20(%ebp)\n" /* pos */
-        /* } scope */
-        "cmpw -0x30(%ebp), %bx\n" /* line 615 | u, size */
-        "je .Lfbbcc6_000bc8ac\n"
-        "movl %ecx, (%esp)\n" /* line 617 */
-        "calll FS_FreeFile\n"
-        "movl -0x1124(%ebp), %edx\n" /* line 618 | modelName */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* j */
-        "movl $0x21fff4, (%esp)\n" /* "^1ERROR: File conflict (between non-iwd and iwd file) on xmo" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc5b4\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc7d4:\n"
-        "movl %ebx, 4(%esp)\n" /* line 117 | size */
-        "movl $0x21fd24, (%esp)\n" /* "^1ERROR: filename '%s' too long
-" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc65c\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc7e9:\n"
-        "movl %edi, 4(%esp)\n" /* line 591 | j */
-        "movl $0x21ff64, (%esp)\n" /* "^1ERROR: xmodelsurf '%s' not found
-" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc5b4\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        /* { scope 6 */
-        ".Lfbbcc6_000bc7fe:\n"
-        "movzwl 2(%edx), %edi\n" /* line 104 | parentList */
-        "movw %di, -0x30(%ebp)\n" /* parentList, u */
-        /* } scope */
-        /* { scope 6 */
-        "movzwl 4(%edx), %ecx\n"
-        "movw %cx, -0x1176(%ebp)\n"
-        "movw %cx, -0x30(%ebp)\n" /* u */
-        "addl $6, %edx\n" /* line 105 */
-        "movl %edx, -0x1100(%ebp)\n"
-        "movswl %cx, %eax\n" /* line 106 */
-        "movl %eax, -0x1174(%ebp)\n"
-        /* } scope */
-        "addl %edi, %ecx\n" /* line 151 | parentList */
-        "movw %cx, -0x1142(%ebp)\n" /* numBones */
-        "movswl %cx, %edx\n" /* line 153 */
-        "movl %edx, -0x1154(%ebp)\n"
-        "movl %edx, %ebx\n" /* size */
-        "addl %ebx, %ebx\n" /* size */
-        "movl %ebx, (%esp)\n" /* line 154 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl %eax, -0x114c(%ebp)\n" /* boneNames */
-        "movl -0x1170(%ebp), %ecx\n" /* line 155 | model */
-        "addl %ebx, 0x84(%ecx)\n" /* size */
-        "cmpw $0x7f, -0x1142(%ebp)\n" /* line 157 | numBones */
-        "jle .Lfbbcc6_000bc912\n"
-        "movl -0x20(%ebp), %eax\n" /* line 159 | pos */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        "movl $0x7f, 8(%esp)\n" /* line 160 */
-        "movl -0x1158(%ebp), %edi\n" /* name, parentList */
-        "movl %edi, 4(%esp)\n" /* parentList */
-        "movl $0x21fefc, (%esp)\n" /* "^1ERROR: xmodel '%s' has more than %d bones
-" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc65c\n"
-        ".Lfbbcc6_000bc891:\n"
-        "movl -0x1158(%ebp), %ecx\n" /* line 126 | name */
-        "movl %ecx, 4(%esp)\n"
-        "movl $0x21fe68, (%esp)\n" /* "^1ERROR: xmodelparts '%s' not found
-" */
-        "calll Com_Printf\n"
-        "jmp .Lfbbcc6_000bc65c\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc8ac:\n"
-        "movl -0x112c(%ebp), %ecx\n" /* line 622 */
-        "leal 0x14(, %ecx, 4), %ebx\n" /* size */
-        "movl %ebx, (%esp)\n" /* line 623 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl %eax, %esi\n" /* numBones */
-        "movl -0x1170(%ebp), %eax\n" /* line 624 | model */
-        "addl %ebx, 0x84(%eax)\n" /* size */
-        "leal 0x14(%esi), %edx\n" /* line 626 | numBones */
-        "movl %edx, -0x1120(%ebp)\n"
-        "movl %edx, (%esi)\n" /* numBones */
-        "leal 4(%esi), %ecx\n" /* line 627 | numBones */
-        "movl %ecx, -0x111c(%ebp)\n" /* modelPartBits */
-        /* { scope 6 */
-        /* { scope 7: u */
-        "movl -0x112c(%ebp), %ecx\n" /* line 564 */
-        "testl %ecx, %ecx\n"
-        "jg .Lfbbcc6_000bcbac\n"
-        /* } scope */
-        /* } scope */
-        ".Lfbbcc6_000bc8ef:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 629 | buf */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        /* } scope */
-        /* } scope */
-        "movl 0xc(%ebp), %ecx\n" /* line 652 | Alloc */
-        "movl %ecx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* modelSurfs */
-        "movl %edi, (%esp)\n" /* j */
-        "calll XModelSurfsSetData\n"
-        "jmp .Lfbbcc6_000bc1eb\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bc912:\n"
-        "movswl %di, %eax\n" /* line 164 | parentList */
-        "movl %eax, -0x1150(%ebp)\n"
-        "movl %eax, %ebx\n" /* size */
-        "addl $7, %ebx\n" /* size */
-        "movl %ebx, (%esp)\n" /* line 165 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl %eax, %esi\n" /* trans */
-        "movl -0x1170(%ebp), %edx\n" /* line 166 | model */
-        "addl %ebx, 0x84(%edx)\n" /* size */
-        "movl -0x114c(%ebp), %ecx\n" /* line 168 | boneNames */
-        "movl %ecx, (%eax)\n"
-        "leal 4(%eax), %eax\n" /* line 169 */
-        "movl %eax, -0x1148(%ebp)\n" /* parentList */
-        "movl -0x1154(%ebp), %ebx\n" /* line 171 | size */
-        "shll $5, %ebx\n" /* size */
-        "addl $0x44, %ebx\n" /* size */
-        "movl %ebx, (%esp)\n" /* line 172 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl %eax, -0x115c(%ebp)\n" /* modelParts */
-        "movl -0x1170(%ebp), %edx\n" /* line 173 | model */
-        "addl %ebx, 0x84(%edx)\n" /* size */
-        "movl %esi, 4(%eax)\n" /* line 175 | trans */
-        "testw %di, %di\n" /* line 177 | parentList */
-        "jne .Lfbbcc6_000bcb65\n"
-        "movl -0x115c(%ebp), %ecx\n" /* line 189 | modelParts */
-        "movl $0, 8(%ecx)\n"
-        "movl $0, 0xc(%ecx)\n" /* line 190 */
-        ".Lfbbcc6_000bc989:\n"
-        "movl -0x1154(%ebp), %edi\n" /* line 194 | parentList */
-        "movl %edi, (%esp)\n" /* parentList */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl -0x115c(%ebp), %edx\n" /* modelParts */
-        "movl %eax, 0x10(%edx)\n"
-        "movl -0x1170(%ebp), %ecx\n" /* line 195 | model */
-        "addl %edi, 0x84(%ecx)\n" /* parentList */
-        "movzwl -0x1142(%ebp), %edi\n" /* line 197 | numBones, parentList */
-        "movw %di, (%edx)\n" /* parentList */
-        "movzwl -0x1176(%ebp), %eax\n" /* line 198 */
-        "movw %ax, 2(%edx)\n"
-        "movl 8(%edx), %eax\n" /* line 200 */
-        "movl 0xc(%edx), %esi\n" /* line 201 | trans */
-        "movl -0x1154(%ebp), %edx\n" /* line 203 */
-        "cmpl %edx, -0x1174(%ebp)\n"
-        "jl .Lfbbcc6_000bcbed\n"
-        ".Lfbbcc6_000bc9d7:\n"
-        "movl -0x1154(%ebp), %ebx\n" /* line 220 | size */
-        "testl %ebx, %ebx\n" /* size */
-        "jg .Lfbbcc6_000bcb09\n"
-        "movl -0x1100(%ebp), %edx\n"
-        ".Lfbbcc6_000bc9eb:\n"
-        "movl -0x115c(%ebp), %ecx\n" /* line 227 | modelParts */
-        "movl 0x10(%ecx), %eax\n"
-        "movl -0x1154(%ebp), %edi\n" /* parentList */
-        "movl %edi, 8(%esp)\n" /* parentList */
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl -0x20(%ebp), %eax\n" /* line 230 | pos */
-        "movl %eax, (%esp)\n"
-        "calll FS_FreeFile\n"
-        /* { scope 6 */
-        "movl -0x115c(%ebp), %ecx\n" /* line 60 | modelParts */
-        "movl 4(%ecx), %edi\n" /* parentList */
-        "addl $4, %edi\n" /* parentList */
-        "movswl (%ecx), %esi\n" /* line 61 | numBones */
-        "movl 8(%ecx), %eax\n" /* line 62 */
-        "movl %eax, -0x1140(%ebp)\n" /* quats */
-        "movl 0xc(%ecx), %edx\n" /* line 63 */
-        "movl %edx, -0x113c(%ebp)\n" /* trans */
-        "movl %ecx, %ebx\n" /* line 65 */
-        "addl $0x44, %ebx\n"
-        "movzwl 2(%ecx), %eax\n" /* line 68 */
-        "movswl %ax, %ecx\n"
-        "testw %ax, %ax\n"
-        "je .Lfbbcc6_000bca8d\n"
-        "xorl %edx, %edx\n"
-        ".Lfbbcc6_000bca49:\n"
-        "movl $0, (%ebx)\n" /* line 183 | size */
-        "movl $0, 4(%ebx)\n" /* line 184 | size */
-        "movl $0, 8(%ebx)\n" /* line 185 | size */
-        "movl $0x3f800000, 0xc(%ebx)\n" /* line 71 */
-        "leal 0x10(%ebx), %eax\n" /* line 73 | v */
-        /* { scope 7: u */
-        "movl $0, 0x10(%ebx)\n" /* line 183 | size */
-        "movl $0, 4(%eax)\n" /* line 184 */
-        "movl $0, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "movl $0x40000000, 0x1c(%ebx)\n" /* line 74 */
-        "addl $0x20, %ebx\n" /* line 68 */
-        "addl $1, %edx\n"
-        "cmpl %ecx, %edx\n"
-        "jne .Lfbbcc6_000bca49\n"
-        ".Lfbbcc6_000bca8d:\n"
-        "movl -0x115c(%ebp), %ecx\n" /* line 78 | modelParts */
-        "movswl 2(%ecx), %eax\n"
-        "subl %eax, %esi\n" /* numBones */
-        "movl %esi, %eax\n" /* numBones */
-        "jne .Lfbbcc6_000bccd3\n"
-        "movl %ecx, %eax\n"
-        "movl %ecx, %edx\n"
-        ".Lfbbcc6_000bcaa5:\n"
-        "addl $0x14, %eax\n" /* line 89 */
-        "movl $0xffffffff, 0x14(%edx)\n"
-        "movl $0xffffffff, 4(%eax)\n"
-        "movl $0xffffffff, 8(%eax)\n"
-        "movl $0xffffffff, 0xc(%eax)\n"
-        "movl %edx, %eax\n" /* line 90 */
-        "addl $0x34, %eax\n"
-        "movl $0xffffffff, 0x34(%edx)\n"
-        "movl $0xffffffff, 4(%eax)\n"
-        "movl $0xffffffff, 8(%eax)\n"
-        "movl $0xffffffff, 0xc(%eax)\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        "movl 0xc(%ebp), %ecx\n" /* line 360 | Alloc */
-        "movl %ecx, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl -0x1158(%ebp), %edi\n" /* name, j */
-        "movl %edi, (%esp)\n" /* j */
-        "calll XModelPartsSetData\n"
-        "movl -0x115c(%ebp), %ecx\n" /* modelParts */
-        "jmp .Lfbbcc6_000bc0d1\n"
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bcb09:\n"
-        "xorl %esi, %esi\n" /* line 220 | trans */
-        "movl -0x1100(%ebp), %edi\n" /* parentList */
-        ".Lfbbcc6_000bcb11:\n"
-        "cld\n" /* line 896 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n" /* j */
-        "movl %ecx, %ebx\n" /* name */
-        "notl %ebx\n" /* name */
-        "movl $0xa, 0xc(%esp)\n" /* line 223 */
-        "movl %ebx, 8(%esp)\n" /* size */
-        "movl $0, 4(%esp)\n"
-        "movl -0x1100(%ebp), %edi\n" /* parentList */
-        "movl %edi, (%esp)\n" /* parentList */
-        "calll SL_GetStringOfLen\n"
-        "movl -0x114c(%ebp), %edx\n" /* boneNames */
-        "movw %ax, (%edx, %esi, 2)\n"
-        "addl %ebx, %edi\n" /* line 224 | size, parentList */
-        "movl %edi, -0x1100(%ebp)\n" /* parentList */
-        "addl $1, %esi\n" /* line 220 | trans */
-        "cmpl %esi, -0x1154(%ebp)\n" /* trans */
-        "jne .Lfbbcc6_000bcb11\n"
-        "movl %edi, %edx\n" /* parentList */
-        "jmp .Lfbbcc6_000bc9eb\n"
-        ".Lfbbcc6_000bcb65:\n"
-        "movl -0x1150(%ebp), %ebx\n" /* line 179 | size */
-        "shll $3, %ebx\n" /* size */
-        "movl %ebx, (%esp)\n" /* line 180 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl -0x115c(%ebp), %ecx\n" /* modelParts */
-        "movl %eax, 8(%ecx)\n"
-        "movl -0x1170(%ebp), %edi\n" /* line 181 | model, parentList */
-        "addl %ebx, 0x84(%edi)\n" /* size, parentList */
-        "movl -0x1150(%ebp), %ebx\n" /* line 183 | size */
-        "shll $4, %ebx\n" /* size */
-        "movl %ebx, (%esp)\n" /* line 184 | size */
-        "calll *0xc(%ebp)\n" /* Alloc */
-        "movl -0x115c(%ebp), %edx\n" /* modelParts */
-        "movl %eax, 0xc(%edx)\n"
-        "addl %ebx, 0x84(%edi)\n" /* line 185 | size, parentList */
-        "jmp .Lfbbcc6_000bc989\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        /* { scope 6 */
-        /* { scope 7: u */
-        ".Lfbbcc6_000bcbac:\n"
-        "xorl %ebx, %ebx\n" /* line 564 | surfIndex */
-        ".Lfbbcc6_000bcbae:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 565 | Alloc */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x20(%ebp), %edx\n" /* pos */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x111c(%ebp), %ecx\n" /* modelPartBits */
-        "movl %ecx, 4(%esp)\n"
-        "movl -0x1170(%ebp), %eax\n" /* model */
-        "movl %eax, (%esp)\n"
-        "calll XModelReadSurface\n"
-        "movl -0x1120(%ebp), %edx\n"
-        "movl %eax, (%edx, %ebx, 4)\n"
-        "addl $1, %ebx\n" /* line 564 | surfIndex */
-        "cmpl %ebx, -0x112c(%ebp)\n" /* surfIndex */
-        "jne .Lfbbcc6_000bcbae\n"
-        "jmp .Lfbbcc6_000bc8ef\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: i, i, u, modelParts */
-        /* { scope 3: u, modelName, name */
-        /* { scope 4: buf, pos, filename, filename, ... */
-        /* { scope 5: u, modelPartBits, quats, trans */
-        ".Lfbbcc6_000bcbed:\n"
-        "xorl %edi, %edi\n" /* line 203 | parentList */
-        "movl %eax, %ebx\n" /* size */
-        "jmp .Lfbbcc6_000bcc3c\n"
-        /* { scope 6 */
-        /* { scope 7: u */
-        ".Lfbbcc6_000bcbf3:\n"
-        "cvtsi2ssl %edx, %xmm0\n" /* line 81 */
-        "sqrtss %xmm0, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x117c(%ebp)\n"
-        "cvttss2si -0x117c(%ebp), %eax\n"
-        ".Lfbbcc6_000bcc1b:\n"
-        "movw %ax, 6(%ebx)\n" /* line 38 */
-        /* } scope */
-        /* } scope */
-        "addl $0xc, %esi\n" /* line 203 | trans */
-        "addl $1, %edi\n" /* parentList */
-        "addl $8, %ebx\n" /* size */
-        "movl -0x1154(%ebp), %eax\n"
-        "subl -0x1174(%ebp), %eax\n"
-        "cmpl %edi, %eax\n" /* parentList */
-        "je .Lfbbcc6_000bc9d7\n"
-        ".Lfbbcc6_000bcc3c:\n"
-        "movzbl -0x1174(%ebp), %ecx\n" /* line 210 */
-        "leal (%edi, %ecx), %eax\n" /* parentList */
-        "movl -0x1100(%ebp), %edx\n"
-        "subb (%edx), %al\n"
-        "movl -0x1148(%ebp), %ecx\n" /* parentList */
-        "movb %al, (%ecx, %edi)\n"
-        /* { scope 6 */
-        "movl 1(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 213 | u */
-        "movl %eax, (%esi)\n" /* trans */
-        /* { scope 6 */
-        "movl 5(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 214 | u */
-        "movl %eax, 4(%esi)\n" /* trans */
-        /* { scope 6 */
-        "movl 9(%edx), %eax\n" /* line 149 */
-        "movl %eax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movl -0x30(%ebp), %eax\n" /* line 215 | u */
-        "movl %eax, 8(%esi)\n" /* trans */
-        /* { scope 6 */
-        /* { scope 7: u */
-        /* { scope 8: xx, yy, yz */
-        "movzwl 0xd(%edx), %eax\n" /* line 104 */
-        "movw %ax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movw %ax, (%ebx)\n" /* line 25 */
-        /* { scope 8: xx, yy, yz */
-        "movzwl 0xf(%edx), %eax\n" /* line 104 */
-        "movw %ax, -0x30(%ebp)\n" /* u */
-        /* } scope */
-        "movw %ax, 2(%ebx)\n" /* line 26 */
-        /* { scope 8: xx, yy, yz */
-        "movzwl 0x11(%edx), %eax\n" /* line 104 */
-        "movw %ax, -0x30(%ebp)\n" /* u */
-        "addl $0x13, %edx\n" /* line 105 */
-        "movl %edx, -0x1100(%ebp)\n"
-        "movswl %ax, %ecx\n" /* line 106 */
-        /* } scope */
-        "movw %ax, 4(%ebx)\n" /* line 27 */
-        "movswl (%ebx), %eax\n" /* line 29 */
-        "movswl 2(%ebx), %edx\n" /* line 30 */
-        "imull %eax, %eax\n" /* line 33 */
-        "imull %edx, %edx\n"
-        "addl %edx, %eax\n"
-        "imull %ecx, %ecx\n"
-        "addl %ecx, %eax\n"
-        "movl $0x3fff0001, %edx\n"
-        "subl %eax, %edx\n"
-        "testl %edx, %edx\n" /* line 35 */
-        "jg .Lfbbcc6_000bcbf3\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lfbbcc6_000bcc1b\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 6 */
-        ".Lfbbcc6_000bccd3:\n"
-        "movl -0x113c(%ebp), %esi\n" /* line 78 | trans, numBones */
-        "addl $0xc, %esi\n" /* numBones */
-        "leal (%edi, %eax), %eax\n" /* parentList */
-        "movl %eax, -0x1180(%ebp)\n"
-        "jmp .Lfbbcc6_000bce7f\n"
-        /* { scope 7: u */
-        ".Lfbbcc6_000bccea:\n"
-        "movss 0x2ed5d0, %xmm6\n" /* line 155 | 1.0f */
-        "movss %xmm6, -0x1184(%ebp)\n"
-        "movss %xmm6, 0xc(%ebx)\n" /* size */
-        "movl $0x40000000, 0x1c(%ebx)\n" /* line 156 | size */
-        /* } scope */
-        ".Lfbbcc6_000bcd06:\n"
-        "leal 0x10(%ebx), %edx\n" /* line 86 | out */
-        "movzbl (%edi), %eax\n" /* parentList */
-        "shll $5, %eax\n"
-        "movl %ebx, %ecx\n"
-        "subl %eax, %ecx\n"
-        /* { scope 7: u */
-        /* { scope 8: xx, yy, yz */
-        /* { scope 9 */
-        "movss 0x1c(%ecx), %xmm3\n" /* line 306 | scale */
-        /* { scope 10 */
-        "movaps %xmm3, %xmm5\n" /* line 272 */
-        "mulss (%ecx), %xmm5\n"
-        "movaps %xmm3, %xmm7\n" /* line 273 */
-        "mulss 4(%ecx), %xmm7\n"
-        "mulss 8(%ecx), %xmm3\n" /* line 274 */
-        /* } scope */
-        "movaps %xmm5, %xmm0\n" /* line 308 */
-        "mulss (%ecx), %xmm0\n"
-        "movss %xmm0, -0x1138(%ebp)\n" /* xx */
-        "movss 4(%ecx), %xmm6\n" /* line 309 */
-        "movaps %xmm5, %xmm2\n"
-        "mulss %xmm6, %xmm2\n"
-        "movss 8(%ecx), %xmm1\n" /* line 310 */
-        "movaps %xmm5, %xmm4\n"
-        "mulss %xmm1, %xmm4\n"
-        "movss 0xc(%ecx), %xmm0\n" /* line 311 */
-        "mulss %xmm0, %xmm5\n"
-        "mulss %xmm7, %xmm6\n" /* line 313 */
-        "movss %xmm6, -0x1134(%ebp)\n" /* yy */
-        "movaps %xmm7, %xmm6\n" /* line 314 */
-        "mulss %xmm1, %xmm6\n"
-        "movss %xmm6, -0x1130(%ebp)\n" /* yz */
-        "mulss %xmm0, %xmm7\n" /* line 315 */
-        "movaps %xmm3, %xmm6\n" /* line 317 */
-        "mulss %xmm1, %xmm6\n"
-        "mulss %xmm0, %xmm3\n" /* line 318 */
-        /* } scope */
-        /* } scope */
-        "movss -0x1134(%ebp), %xmm0\n" /* line 398 | yy */
-        "addss %xmm6, %xmm0\n"
-        "movss -0x1184(%ebp), %xmm1\n"
-        "subss %xmm0, %xmm1\n"
-        "mulss -0xc(%esi), %xmm1\n" /* numBones */
-        "movaps %xmm2, %xmm0\n"
-        "subss %xmm3, %xmm0\n"
-        "mulss -8(%esi), %xmm0\n" /* numBones */
-        "addss %xmm0, %xmm1\n"
-        "movaps %xmm4, %xmm0\n"
-        "addss %xmm7, %xmm0\n"
-        "mulss -4(%esi), %xmm0\n" /* numBones */
-        "addss %xmm0, %xmm1\n"
-        "addss 0x10(%ecx), %xmm1\n"
-        "movss %xmm1, 0x10(%ebx)\n" /* size */
-        "addss %xmm3, %xmm2\n" /* line 399 */
-        "mulss -0xc(%esi), %xmm2\n" /* numBones */
-        "addss -0x1138(%ebp), %xmm6\n" /* xx */
-        "movss -0x1184(%ebp), %xmm0\n"
-        "subss %xmm6, %xmm0\n"
-        "mulss -8(%esi), %xmm0\n" /* numBones */
-        "addss %xmm0, %xmm2\n"
-        "movss -0x1130(%ebp), %xmm0\n" /* yz */
-        "subss %xmm5, %xmm0\n"
-        "mulss -4(%esi), %xmm0\n" /* numBones */
-        "addss %xmm0, %xmm2\n"
-        "addss 0x14(%ecx), %xmm2\n"
-        "movss %xmm2, 4(%edx)\n"
-        "subss %xmm7, %xmm4\n" /* line 400 */
-        "mulss -0xc(%esi), %xmm4\n" /* numBones */
-        "addss -0x1130(%ebp), %xmm5\n" /* yz */
-        "mulss -8(%esi), %xmm5\n" /* numBones */
-        "addss %xmm5, %xmm4\n"
-        "movss -0x1138(%ebp), %xmm0\n" /* xx */
-        "addss -0x1134(%ebp), %xmm0\n" /* yy */
-        "movss -0x1184(%ebp), %xmm6\n"
-        "subss %xmm0, %xmm6\n"
-        "movss %xmm6, -0x1184(%ebp)\n"
-        "mulss -4(%esi), %xmm6\n" /* numBones */
-        "addss %xmm6, %xmm4\n"
-        "addss 0x18(%ecx), %xmm4\n"
-        "movss %xmm4, 8(%edx)\n"
-        /* } scope */
-        "addl $8, -0x1140(%ebp)\n" /* line 78 | quats */
-        "addl $0x20, %ebx\n"
-        "addl $1, %edi\n" /* parentList */
-        "addl $0xc, %esi\n" /* numBones */
-        "cmpl %edi, -0x1180(%ebp)\n" /* parentList */
-        "je .Lfbbcc6_000bcf59\n"
-        ".Lfbbcc6_000bce7f:\n"
-        "movl -0x1140(%ebp), %edx\n" /* line 80 | quats */
-        "movswl (%edx), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed664, %xmm0\n" /* 3.0518509447574615e-05f */
-        "movss %xmm0, -0x30(%ebp)\n" /* u */
-        "movswl 2(%edx), %eax\n" /* line 81 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed664, %xmm0\n" /* 3.0518509447574615e-05f */
-        "movss %xmm0, -0x2c(%ebp)\n"
-        "movswl 4(%edx), %eax\n" /* line 82 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed664, %xmm0\n" /* 3.0518509447574615e-05f */
-        "movss %xmm0, -0x28(%ebp)\n"
-        "movswl 6(%edx), %eax\n" /* line 83 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed664, %xmm0\n" /* 3.0518509447574615e-05f */
-        "movss %xmm0, -0x24(%ebp)\n"
-        "movl %ebx, 8(%esp)\n" /* line 84 */
-        "movzbl (%edi), %eax\n" /* parentList */
-        "shll $5, %eax\n"
-        "movl %ebx, %ecx\n"
-        "subl %eax, %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* u */
-        "movl %eax, (%esp)\n"
-        "calll QuatMultiply\n"
-        /* { scope 7: u */
-        "movss (%ebx), %xmm3\n" /* line 567 | surfIndex */
-        "movss 4(%ebx), %xmm0\n" /* surfIndex */
-        "movss 8(%ebx), %xmm1\n" /* surfIndex */
-        "movss 0xc(%ebx), %xmm2\n" /* surfIndex */
-        "mulss %xmm3, %xmm3\n"
-        "mulss %xmm0, %xmm0\n"
-        "addss %xmm0, %xmm3\n"
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm3\n"
-        "mulss %xmm2, %xmm2\n"
-        "addss %xmm2, %xmm3\n"
-        "ucomiss 0x2ed5e8, %xmm3\n" /* line 149 | 0.0f */
-        "jp .Lfbbcc6_000bcf33\n"
-        "je .Lfbbcc6_000bccea\n"
-        ".Lfbbcc6_000bcf33:\n"
-        "movss 0x2ed62c, %xmm0\n" /* line 151 | 2.0f */
-        "divss %xmm3, %xmm0\n"
-        "movss %xmm0, 0x1c(%ebx)\n" /* size */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "movss %xmm0, -0x1184(%ebp)\n"
-        "jmp .Lfbbcc6_000bcd06\n"
-        ".Lfbbcc6_000bcf59:\n"
-        "movl -0x115c(%ebp), %eax\n" /* modelParts */
-        "movl -0x115c(%ebp), %edx\n" /* modelParts */
-        "jmp .Lfbbcc6_000bcaa5\n"
-    );
-}
+    XModelConfig config;
+    int nameLens[4];
+    char filename[64];
+    char partsFilename[64];
+    void *buf;
+    void *partsBuf;
+    int i, j;
+    XModel *model;
+    const byte *pos;
+    int size;
+    XModelParts *modelParts;
+    char *lodFilename;
+    int lodIndex;
+    const char *modelName;
+    short modelNumSurfs;
 
+    union {
+        short s;
+        int i;
+        float f;
+    } u;
+
+    /* Format filename "xmodel/%s" */
+    if (Com_sprintf(filename, 64, "xmodel/%s", name) < 0) {
+        Com_Printf("^1ERROR: filename '%s' too long\n", filename);
+        model = NULL;
+        goto done;
+    }
+
+    /* Read the xmodel file */
+    i = FS_ReadFile(filename, &buf);
+    if (i < 0) {
+        Com_Printf("^1ERROR: xmodel '%s' not found\n", name);
+        model = NULL;
+        goto done;
+    }
+
+    if (i == 0) {
+        Com_Printf("^1ERROR: xmodel '%s' has 0 length\n", name);
+        goto version_error;
+    }
+
+    /* Check version */
+    pos = (const byte *)buf;
+    u.s = *(short *)pos;
+    if (u.s != 0x14) {
+        Com_Printf("^1ERROR: xmodel '%s' out of date (version %d, expecting %d).", name, (int)(signed short)u.s, 0x14);
+version_error:
+        FS_FreeFile(buf);
+        model = NULL;
+        goto done;
+    }
+
+    /* Read flags byte at offset 2 */
+    config.flags = *(unsigned char *)(pos + 2);
+
+    /* Read 6 floats: mins[3] and maxs[3] starting at offset 3 */
+    memcpy(&config.mins[0], pos + 3, 4);
+    memcpy(&config.mins[1], pos + 7, 4);
+    memcpy(&config.mins[2], pos + 11, 4);
+    memcpy(&config.maxs[0], pos + 15, 4);
+    memcpy(&config.maxs[1], pos + 19, 4);
+    memcpy(&config.maxs[2], pos + 23, 4);
+
+    /* Read collLod at offset 27 (4 bytes, but used as int) */
+    {
+        const byte *cur = pos + 27;
+
+        /* Read 4 config entries (lod filenames and distances) */
+        for (i = 0; i < 4; i++) {
+            memcpy(&config.entries[i].dist, cur, 4);
+            cur += 4;
+            strcpy(config.entries[i].filename, (const char *)cur);
+            cur += strlen((const char *)cur) + 1;
+        }
+
+        /* Read collLod (4 bytes) */
+        memcpy(&config.collLod, cur, 4);
+        cur += 4;
+
+        /* Compute string lengths and total size */
+        size = 0;
+        for (j = 0; j < 4; j++) {
+            nameLens[j] = strlen(config.entries[j].filename) + 1;
+            size += nameLens[j];
+        }
+
+        /* Allocate model struct (size 0x90 + string space) */
+        size += sizeof(XModel);
+        model = (XModel *)Alloc(size);
+        model->memUsage = size;
+
+        /* Read numCollSurfs from file data */
+        {
+            int numCS;
+            memcpy(&numCS, cur, 4);
+            cur += 4;
+
+            model->numCollSurfs = numCS;
+
+            if (numCS != 0) {
+                /* Allocate collision surfaces: numCS * (numCS*10+1) * 4 ... */
+                /* Actually: size = numCS * 11 * 4 = numCS * 44 = numCS * sizeof(XModelCollSurf) */
+                model->collSurfs = (XModelCollSurf *)AllocColl(numCS * sizeof(XModelCollSurf));
+
+                if (model->numCollSurfs > 0) {
+                    float epsilon = 0.0010000000474974513f;
+                    for (i = 0; i < model->numCollSurfs; i++) {
+                        XModelCollSurf *surf = &model->collSurfs[i];
+                        int numTris;
+
+                        /* Read numCollTris */
+                        memcpy(&numTris, cur, 4);
+                        cur += 4;
+                        surf->numCollTris = numTris;
+
+                        /* Allocate collision triangles: numTris * 3 * 16 = numTris * 48 */
+                        surf->collTris = (XModelCollTri *)AllocColl(numTris * sizeof(XModelCollTri));
+
+                        /* Read collision triangles */
+                        if (surf->numCollTris > 0) {
+                            for (j = 0; j < surf->numCollTris; j++) {
+                                XModelCollTri *tri = &surf->collTris[j];
+                                /* Read 12 floats (plane, svec, tvec = 3 vec4_t) */
+                                memcpy(&tri->plane[0], cur, 4); cur += 4;
+                                memcpy(&tri->plane[1], cur, 4); cur += 4;
+                                memcpy(&tri->plane[2], cur, 4); cur += 4;
+                                memcpy(&tri->plane[3], cur, 4); cur += 4;
+                                memcpy(&tri->svec[0], cur, 4); cur += 4;
+                                memcpy(&tri->svec[1], cur, 4); cur += 4;
+                                memcpy(&tri->svec[2], cur, 4); cur += 4;
+                                memcpy(&tri->svec[3], cur, 4); cur += 4;
+                                memcpy(&tri->tvec[0], cur, 4); cur += 4;
+                                memcpy(&tri->tvec[1], cur, 4); cur += 4;
+                                memcpy(&tri->tvec[2], cur, 4); cur += 4;
+                                memcpy(&tri->tvec[3], cur, 4); cur += 4;
+                            }
+                        }
+
+                        /* Read bounds with epsilon adjustment */
+                        {
+                            float tmp;
+                            memcpy(&tmp, cur, 4); surf->mins[0] = tmp - epsilon; cur += 4;
+                            memcpy(&tmp, cur, 4); surf->mins[1] = tmp - epsilon; cur += 4;
+                            memcpy(&tmp, cur, 4); surf->mins[2] = tmp - epsilon; cur += 4;
+                            memcpy(&tmp, cur, 4); surf->maxs[0] = tmp + epsilon; cur += 4;
+                            memcpy(&tmp, cur, 4); surf->maxs[1] = tmp + epsilon; cur += 4;
+                            memcpy(&tmp, cur, 4); surf->maxs[2] = tmp + epsilon; cur += 4;
+                        }
+
+                        /* Read boneIdx */
+                        memcpy(&surf->boneIdx, cur, 4); cur += 4;
+
+                        /* Read contents with mask */
+                        {
+                            int contents;
+                            memcpy(&contents, cur, 4); cur += 4;
+                            surf->contents = contents & 0xdffffffb;
+                        }
+
+                        /* Read surfFlags */
+                        memcpy(&surf->surfFlags, cur, 4); cur += 4;
+
+                        /* Accumulate contents */
+                        model->contents |= surf->contents;
+                    }
+                }
+            }
+        }
+
+        /* Set up LOD info */
+        lodFilename = (char *)model + sizeof(XModel);
+        model->numLods = 0;
+
+        for (i = 0; i < 4; i++) {
+            strcpy(lodFilename, config.entries[i].filename);
+            model->lodInfo[i].filename = lodFilename;
+
+            if (*lodFilename == '\0') {
+                model->lodInfo[i].surfNames = NULL;
+                goto next_lod;
+            }
+
+            model->numLods += 1;
+
+            /* Read numsurfs from file data */
+            {
+                short ns;
+                memcpy(&ns, cur, 2);
+                cur += 2;
+
+                model->lodInfo[i].numsurfs = ns;
+
+                /* Allocate surfNames */
+                model->lodInfo[i].surfNames = (short unsigned int *)Alloc(ns * 2);
+                model->memUsage += ns * 2;
+
+                if (model->lodInfo[i].numsurfs > 0) {
+                    for (j = 0; j < model->lodInfo[i].numsurfs; j++) {
+                        int len;
+                        const char *str = (const char *)cur;
+                        len = strlen(str) + 1;
+                        cur += len;
+                        model->lodInfo[i].surfNames[j] = (unsigned short)SL_GetString_(str, 0, 8);
+                    }
+                }
+            }
+
+next_lod:
+            model->lodInfo[i].dist = config.entries[i].dist;
+            lodFilename += nameLens[i];
+        }
+
+        /* Find model parts data */
+        {
+            const char *partsName = model->lodInfo[0].filename;
+
+            modelParts = XModelPartsFindData(partsName);
+            if (!modelParts) {
+                /* Need to load parts from file */
+                if (Com_sprintf(partsFilename, 64, "xmodelparts/%s", partsName) < 0) {
+                    Com_Printf("^1ERROR: filename '%s' too long\n", partsFilename);
+                    goto cannot_find_parts;
+                }
+
+                i = FS_ReadFile(partsFilename, &partsBuf);
+                if (i < 0) {
+                    Com_Printf("^1ERROR: xmodelparts '%s' not found\n", partsName);
+                    goto cannot_find_parts;
+                }
+
+                if (i == 0) {
+                    Com_Printf("^1ERROR: xmodelparts '%s' has 0 length\n", partsName);
+                    FS_FreeFile(partsBuf);
+cannot_find_parts:
+                    Com_Printf("^1ERROR: Cannot find xmodelparts '%s'.\n", partsName);
+                    modelParts = NULL;
+                    goto have_parts;
+                }
+
+                /* Check version */
+                {
+                    const byte *partsPos = (const byte *)partsBuf;
+                    short ver;
+                    memcpy(&ver, partsPos, 2);
+                    if (ver != 0x14) {
+                        FS_FreeFile(partsBuf);
+                        Com_Printf("^1ERROR: xmodelparts '%s' out of date (version %d, expecting %d).", partsName, (int)ver, 0x14);
+                        goto cannot_find_parts;
+                    }
+
+                    {
+                        short numRootBones;
+                        short numNonRootBones;
+                        short totalBones;
+                        int numNonRoot;
+                        short unsigned int *boneNames;
+                        XBoneHierarchy *hierarchy;
+                        const byte *filePos;
+
+                        memcpy(&numRootBones, partsPos + 2, 2);
+                        memcpy(&numNonRootBones, partsPos + 4, 2);
+                        numNonRoot = (int)(signed short)numNonRootBones;
+                        filePos = partsPos + 6;
+
+                        totalBones = numRootBones + numNonRootBones;
+
+                        if ((int)(signed short)totalBones > 127) {
+                            FS_FreeFile(partsBuf);
+                            Com_Printf("^1ERROR: xmodel '%s' has more than %d bones\n", partsName, 127);
+                            goto cannot_find_parts;
+                        }
+
+                        /* Allocate boneNames */
+                        boneNames = (short unsigned int *)Alloc((int)(signed short)totalBones * 2);
+                        model->memUsage += (int)(signed short)totalBones * 2;
+
+                        /* Allocate hierarchy */
+                        {
+                            int hierSize = (int)(signed short)numRootBones + 7;
+                            hierarchy = (XBoneHierarchy *)Alloc(hierSize);
+                            model->memUsage += hierSize;
+                        }
+
+                        hierarchy->names = boneNames;
+
+                        /* Allocate modelParts */
+                        {
+                            int partsSize = (int)(signed short)totalBones * 32 + 0x44;
+                            modelParts = (XModelParts *)Alloc(partsSize);
+                            model->memUsage += partsSize;
+                        }
+
+                        modelParts->hierarchy = hierarchy;
+
+                        /* Allocate quats and trans if there are root bones */
+                        if (numRootBones != 0) {
+                            modelParts->quats = (short int *)Alloc((int)(signed short)numRootBones * 8);
+                            model->memUsage += (int)(signed short)numRootBones * 8;
+                            modelParts->trans = (float *)Alloc((int)(signed short)numRootBones * 16);
+                            model->memUsage += (int)(signed short)numRootBones * 16;
+                        } else {
+                            modelParts->quats = NULL;
+                            modelParts->trans = NULL;
+                        }
+
+                        /* Allocate partClassification */
+                        modelParts->partClassification = (unsigned char *)Alloc((int)(signed short)totalBones);
+                        model->memUsage += (int)(signed short)totalBones;
+
+                        /* Set header fields */
+                        modelParts->numBones = totalBones;
+                        modelParts->numRootBones = numNonRootBones;
+
+                        /* Read bone names */
+                        {
+                            int totalB = (int)(signed short)totalBones;
+                            if (totalB > 0) {
+                                for (i = 0; i < totalB; i++) {
+                                    int slen = strlen((const char *)filePos) + 1;
+                                    boneNames[i] = (unsigned short)SL_GetStringOfLen((const char *)filePos, 0, slen, 10);
+                                    filePos += slen;
+                                }
+                            }
+                        }
+
+                        /* Copy part classification data */
+                        memcpy(modelParts->partClassification, filePos, (int)(signed short)totalBones);
+
+                        /* Read non-root bone hierarchy data */
+                        if (numNonRoot > (int)(signed short)totalBones - numNonRoot) {
+                            /* There are non-root bones with parent data */
+                            int numWithParents = (int)(signed short)totalBones - numNonRoot;
+                            const byte *hierPos = filePos;
+                            short *quats = modelParts->quats;
+                            float *trans = modelParts->trans;
+
+                            /* Read non-root bones data */
+                            {
+                                DObjAnimMat *skelMat = (DObjAnimMat *)((byte *)modelParts + 0x44);
+                                int numNR = (int)(signed short)totalBones - numNonRoot;
+                                int bi;
+
+                                /* First, handle root bones: identity quats, zero trans */
+                                {
+                                    int nr = (int)(signed short)numNonRootBones;
+                                    if (nr > 0) {
+                                        DObjAnimMat *mat = (DObjAnimMat *)((byte *)modelParts + 0x44);
+                                        for (bi = 0; bi < nr; bi++) {
+                                            mat[bi].quat[0] = 0.0f;
+                                            mat[bi].quat[1] = 0.0f;
+                                            mat[bi].quat[2] = 0.0f;
+                                            mat[bi].quat[3] = 1.0f;
+                                            mat[bi].trans[0] = 0.0f;
+                                            mat[bi].trans[1] = 0.0f;
+                                            mat[bi].trans[2] = 0.0f;
+                                            mat[bi].transWeight = 2.0f;
+                                        }
+                                    }
+                                }
+
+                                /* Process non-root bones that have parents */
+                                {
+                                    int numToProcess = (int)(signed short)totalBones - numNonRoot - numNonRoot;
+                                    float *parentTrans;
+                                    DObjAnimMat *mat;
+
+                                    if (numToProcess <= 0) {
+                                        goto set_part_bits;
+                                    }
+
+                                    parentTrans = modelParts->trans + 3; /* skip first trans entry */
+                                    mat = (DObjAnimMat *)((byte *)modelParts + 0x44 + (int)(signed short)numNonRootBones * 32);
+
+                                    for (bi = 0; bi < (int)(signed short)totalBones - numNonRoot - numNonRoot; bi++) {
+                                        /* Read parent index */
+                                        hierarchy->parentList[bi] = (unsigned char)((bi + (int)(signed short)numNonRootBones) - filePos[0]);
+                                        filePos++;
+
+                                        /* Read trans (3 floats) */
+                                        memcpy(&parentTrans[0], filePos + 1, 4);
+                                        memcpy(&parentTrans[1], filePos + 5, 4);
+                                        memcpy(&parentTrans[2], filePos + 9, 4);
+
+                                        /* Read compressed quat (3 shorts) */
+                                        {
+                                            short qx, qy, qz, qw;
+                                            int xx, yy, zz;
+                                            int rem;
+
+                                            memcpy(&qx, filePos + 13, 2);
+                                            memcpy(&qy, filePos + 15, 2);
+                                            memcpy(&qz, filePos + 17, 2);
+                                            filePos += 19;
+
+                                            mat[bi].quat[0] = *(float *)&qx; /* store raw short */
+                                            /* Actually the asm stores the short values directly */
+                                            /* Let me re-read: movw %ax, (%ebx) etc */
+                                            /* These are stored as shorts into the quat memory */
+                                            /* The DObjAnimMat uses floats, but here we're writing
+                                               into it as if it were a short array */
+                                            /* This is the compressed quaternion representation */
+                                            ((short *)&mat[bi].quat[0])[0] = qx;
+                                            ((short *)&mat[bi].quat[0])[1] = qy;
+                                            ((short *)&mat[bi].quat[0])[2] = qz;
+
+                                            /* Compute qw = sqrt(0x3fff0001 - xx - yy - zz) */
+                                            xx = (int)qx * (int)qx;
+                                            yy = (int)qy * (int)qy;
+                                            zz = (int)qz * (int)qz;
+                                            rem = 0x3fff0001 - xx - yy - zz;
+
+                                            if (rem > 0) {
+                                                ((short *)&mat[bi].quat[0])[3] = (short)(int)floorf(sqrtf((float)rem) + 0.5f);
+                                            } else {
+                                                ((short *)&mat[bi].quat[0])[3] = 0;
+                                            }
+                                        }
+
+                                        parentTrans += 3;
+                                        /* mat stride is 8 shorts = 0x20 bytes per entry */
+                                    }
+                                }
+
+                                goto finish_parts;
+                            }
+                        }
+
+finish_parts:
+                        /* Read remaining bones with full quats */
+                        {
+                            DObjAnimMat *mat;
+                            float *trans;
+                            int numRemaining;
+                            short *quatData;
+                            int bi;
+                            float one = 1.0f;
+
+                            mat = (DObjAnimMat *)((byte *)modelParts + 0x44 + (int)(signed short)numNonRootBones * 32);
+                            numRemaining = (int)(signed short)totalBones - (int)(signed short)numNonRootBones;
+                            quatData = modelParts->quats;
+                            trans = modelParts->trans + 3; /* past first root bone trans */
+
+                            if (numRemaining > 0) {
+                                float scale = 3.0518509447574615e-05f;
+                                float two = 2.0f;
+                                float fone = 1.0f;
+
+                                for (bi = 0; bi < numRemaining; bi++) {
+                                    /* Read 4 shorts, convert to float quat */
+                                    float q[4];
+                                    DObjAnimMat *parentMat;
+                                    unsigned char parentIdx;
+
+                                    q[0] = (float)(short)quatData[bi * 4 + 0] * scale;
+                                    q[1] = (float)(short)quatData[bi * 4 + 1] * scale;
+                                    q[2] = (float)(short)quatData[bi * 4 + 2] * scale;
+                                    q[3] = (float)(short)quatData[bi * 4 + 3] * scale;
+
+                                    /* Multiply with parent quaternion */
+                                    parentIdx = hierarchy->parentList[0]; /* accessed via edi */
+                                    parentMat = &mat[bi] - (parentIdx); /* parent is parentIdx entries back */
+                                    /* Actually: ecx = ebx - parentIdx*32 */
+                                    parentMat = (DObjAnimMat *)((byte *)&mat[bi] - ((int)parentIdx << 5));
+
+                                    QuatMultiply(q, (float *)parentMat, (float *)&mat[bi]);
+
+                                    /* Normalize quaternion and compute transWeight */
+                                    {
+                                        float len2 = mat[bi].quat[0] * mat[bi].quat[0]
+                                                   + mat[bi].quat[1] * mat[bi].quat[1]
+                                                   + mat[bi].quat[2] * mat[bi].quat[2]
+                                                   + mat[bi].quat[3] * mat[bi].quat[3];
+
+                                        if (len2 == 0.0f) {
+                                            mat[bi].quat[3] = fone;
+                                            mat[bi].transWeight = two;
+                                        } else {
+                                            mat[bi].transWeight = two / len2;
+                                        }
+                                    }
+
+                                    /* Compute transformed translation */
+                                    {
+                                        /* This is a quaternion rotation of the parent's translation
+                                           applied to this bone's local translation */
+                                        float scale2 = parentMat->transWeight;
+                                        float sx = scale2 * parentMat->quat[0];
+                                        float sy = scale2 * parentMat->quat[1];
+                                        float sz = scale2 * parentMat->quat[2];
+
+                                        float xx = sx * parentMat->quat[0];
+                                        float xy = sx * parentMat->quat[1];
+                                        float xz = sx * parentMat->quat[2];
+                                        float xw = sx * parentMat->quat[3];
+
+                                        float yy = sy * parentMat->quat[1];
+                                        float yz = sy * parentMat->quat[2];
+                                        float yw = sy * parentMat->quat[3];
+
+                                        float zz = sz * parentMat->quat[2];
+                                        float zw = sz * parentMat->quat[3];
+
+                                        mat[bi].trans[0] = (fone - (yy + zz)) * trans[bi * 3 + 0]
+                                                         + (xy - zw) * trans[bi * 3 + 1]
+                                                         + (xz + yw) * trans[bi * 3 + 2]
+                                                         + parentMat->trans[0];
+
+                                        mat[bi].trans[1] = (xy + zw) * trans[bi * 3 + 0]
+                                                         + (fone - (xx + zz)) * trans[bi * 3 + 1]
+                                                         + (yz - xw) * trans[bi * 3 + 2]
+                                                         + parentMat->trans[1];
+
+                                        mat[bi].trans[2] = (xz - yw) * trans[bi * 3 + 0]
+                                                         + (yz + xw) * trans[bi * 3 + 1]
+                                                         + (fone - (xx + yy)) * trans[bi * 3 + 2]
+                                                         + parentMat->trans[2];
+                                    }
+                                }
+                            }
+                        }
+
+set_part_bits:
+                        /* Set partBits to 0xFFFFFFFF */
+                        {
+                            int *bits1 = (int *)((byte *)modelParts + 0x14);
+                            int *bits2 = (int *)((byte *)modelParts + 0x34);
+                            bits1[0] = -1;
+                            bits1[1] = -1;
+                            bits1[2] = -1;
+                            bits1[3] = -1;
+                            bits2[0] = -1;
+                            bits2[1] = -1;
+                            bits2[2] = -1;
+                            bits2[3] = -1;
+                        }
+
+                        XModelPartsSetData(partsName, modelParts, Alloc);
+                    }
+                }
+            }
+        }
+
+have_parts:
+        model->parts = (void (*)())modelParts;
+
+        if (!modelParts) {
+            /* Failed to load parts */
+            FS_FreeFile(buf);
+            XModelFree(model);
+            model = NULL;
+            goto done;
+        }
+
+        {
+            int numBones = (int)(signed short)modelParts->numBones;
+            int boneInfoSize = numBones * 40;
+            XBoneInfo *boneInfo;
+
+            boneInfo = (XBoneInfo *)Alloc(boneInfoSize);
+            model->memUsage += boneInfoSize;
+
+            if (numBones > 0) {
+                float half = 0.5f;
+                for (i = 0; i < numBones; i++) {
+                    /* Read 6 floats: bounds[0] and bounds[1] (mins/maxs) */
+                    memcpy(&boneInfo[i].bounds[0][0], cur, 4); cur += 4;
+                    memcpy(&boneInfo[i].bounds[0][1], cur, 4); cur += 4;
+                    memcpy(&boneInfo[i].bounds[0][2], cur, 4); cur += 4;
+                    memcpy(&boneInfo[i].bounds[1][0], cur, 4); cur += 4;
+                    memcpy(&boneInfo[i].bounds[1][1], cur, 4); cur += 4;
+                    memcpy(&boneInfo[i].bounds[1][2], cur, 4); cur += 4;
+
+                    /* Compute offset = (bounds[0] + bounds[1]) * 0.5 */
+                    boneInfo[i].offset[0] = (boneInfo[i].bounds[0][0] + boneInfo[i].bounds[1][0]) * half;
+                    boneInfo[i].offset[1] = (boneInfo[i].bounds[0][1] + boneInfo[i].bounds[1][1]) * half;
+                    boneInfo[i].offset[2] = (boneInfo[i].bounds[0][2] + boneInfo[i].bounds[1][2]) * half;
+
+                    /* Compute radiusSquared */
+                    {
+                        float dx = boneInfo[i].bounds[1][0] - boneInfo[i].offset[0];
+                        float dy = boneInfo[i].bounds[1][1] - boneInfo[i].offset[1];
+                        float dz = boneInfo[i].bounds[1][2] - boneInfo[i].offset[2];
+                        boneInfo[i].radiusSquared = dx * dx + dy * dy + dz * dz;
+                    }
+                }
+            }
+
+            model->boneInfo = boneInfo;
+        }
+
+        FS_FreeFile(buf);
+
+        /* Copy mins and maxs vectors */
+        model->mins[0] = config.mins[0];
+        model->mins[1] = config.mins[1];
+        model->mins[2] = config.mins[2];
+        model->maxs[0] = config.maxs[0];
+        model->maxs[1] = config.maxs[1];
+        model->maxs[2] = config.maxs[2];
+
+        /* Set collLod and flags */
+        model->collLod = (short)config.collLod;
+        model->flags = config.flags;
+
+        /* Check renderer for loading surfs */
+        if (!*(char *)(g_renderer_ptr + 0x144)) {
+            goto done;
+        }
+
+        /* Load model surfaces for each LOD */
+        lodIndex = 0;
+        for (lodIndex = 0; lodIndex < 4; lodIndex++) {
+            const char *lodName = model->lodInfo[lodIndex].filename;
+            if (*lodName == '\0') {
+                break;
+            }
+
+            modelName = model->name;
+            modelNumSurfs = model->lodInfo[lodIndex].numsurfs;
+
+            {
+                XModelSurfs *modelSurfs = XModelSurfsFindData(lodName);
+
+                if (!modelSurfs) {
+                    /* Need to load surfs from file */
+                    if (Com_sprintf(filename, 64, "xmodelsurfs/%s", lodName) < 0) {
+                        Com_Printf("^1ERROR: filename '%s' too long\n", filename);
+                        goto cannot_find_surfs;
+                    }
+
+                    i = FS_ReadFile(filename, &buf);
+                    if (i < 0) {
+                        Com_Printf("^1ERROR: xmodelsurf '%s' not found\n", lodName);
+                        goto cannot_find_surfs;
+                    }
+
+                    if (i == 0) {
+                        Com_Printf("^1ERROR: xmodelsurf '%s' has 0 length\n", lodName);
+                        FS_FreeFile(buf);
+cannot_find_surfs:
+                        Com_Printf("^1ERROR: Cannot find 'xmodelsurfs '%s'.\n", lodName);
+                        modelSurfs = NULL;
+                        goto have_surfs;
+                    }
+
+                    /* Check surfs version */
+                    {
+                        const byte *surfsPos = (const byte *)buf;
+                        short surfsVer;
+                        memcpy(&surfsVer, surfsPos, 2);
+                        surfsPos += 2;
+
+                        if (surfsVer != 0x14) {
+                            FS_FreeFile(buf);
+                            Com_Printf("^1ERROR: xmodelsurfs '%s' out of date (version %d, expecting %d).", lodName, (int)(signed short)surfsVer, 0x14);
+                            goto cannot_find_surfs;
+                        }
+
+                        /* Check numsurfs matches */
+                        {
+                            short fileNumSurfs;
+                            memcpy(&fileNumSurfs, surfsPos, 2);
+                            surfsPos += 2;
+
+                            if (modelNumSurfs != fileNumSurfs) {
+                                FS_FreeFile(buf);
+                                Com_Printf("^1ERROR: File conflict (between non-iwd and iwd file) on xmo", lodName, modelName);
+                                goto cannot_find_surfs;
+                            }
+
+                            /* Allocate XModelSurfs structure */
+                            {
+                                int surfsAllocSize = 0x14 + (int)(signed short)modelNumSurfs * 4;
+                                XSurface **surfPtrs;
+
+                                modelSurfs = (XModelSurfs *)Alloc(surfsAllocSize);
+                                model->memUsage += surfsAllocSize;
+
+                                surfPtrs = (XSurface **)((byte *)modelSurfs + 0x14);
+                                modelSurfs->surfs = surfPtrs;
+
+                                /* Read surfaces */
+                                if ((int)(signed short)modelNumSurfs > 0) {
+                                    int *partBits = (int *)((byte *)modelSurfs + 4);
+                                    for (j = 0; j < (int)(signed short)modelNumSurfs; j++) {
+                                        surfPtrs[j] = XModelReadSurface(model, partBits, &surfsPos, Alloc);
+                                    }
+                                }
+
+                                FS_FreeFile(buf);
+                                XModelSurfsSetData(lodName, modelSurfs, Alloc);
+                            }
+                        }
+                    }
+                }
+
+have_surfs:
+                model->lodInfo[lodIndex].surfs = modelSurfs;
+                if (!modelSurfs) {
+                    /* Failed to load surfs - free model */
+                    XModelFree(model);
+                    model = NULL;
+                    goto done;
+                }
+            }
+        }
+
+        /* Load skins */
+        model->xskins = R_LoadXSkins(model);
+    }
+
+done:
+    return model;
+}
