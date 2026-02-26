@@ -1,14 +1,57 @@
-/* ASM dump from: cg_players_mp.cpp */
+/* Converted to C from ASM: cg_players_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/cgame_mp/cg_players_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
  *   #include "PC/xanim/xanim_public.h"
  *   #include "PC/universal/q_shared.h"
  */
+
+extern void *Com_GetClientDObj(int clientNum, int localClientNum);
+extern void BG_UpdatePlayerDObj(void *obj, entityState_t *es, byte *ci, int p4);
+extern void BG_PlayerAnimation(void *obj, entityState_t *es, byte *ci);
+extern void XAnimClearTreeGoalWeights(void *pAnimTree, unsigned short animIndex, int flags);
+extern void XAnimSetCompleteGoalWeight(void *pAnimTree, unsigned short animIndex, float goalWeight, float goalTime, float rate, int p6, int p7, int p8);
+extern void Com_Printf(const char *fmt, ...);
+extern void AnglesToAxis(float *angles, float *axis);
+extern void CG_AddCEntityToScene(byte *body, void *obj, centity_t *cent);
+extern void CG_AddPlayerWeapon(byte *body, int unused, centity_t *cent, int flag);
+extern int CG_DObjGetWorldTagPos(centity_t *cent, void *obj, unsigned short tag, float *origin);
+extern void CL_DrawSprite(MaterialHandle material, byte *rgbaColor, float *origin, float radius, int time, int flags);
+extern void XAnimClearTreeGoalWeightsStrict(void *pAnimTree, unsigned short animIndex, int flags);
+extern void XAnimSetGoalWeight(void *pAnimTree, unsigned short animIndex, float goalWeight, float goalTime, float rate, int p6, int p7, int p8);
+extern float XAnimGetWeight(void *pAnimTree, unsigned short animIndex);
+extern int XAnimGetNumChildren(void *pXAnims, unsigned short animIndex);
+extern unsigned short XAnimGetChildAt(void *pXAnims, unsigned short parentIndex, int childNum);
+extern const char *XAnimGetAnimDebugName(void *pXAnims, unsigned short animIndex);
+extern void XAnimCalcAbsDelta(void *pAnimTree, unsigned short animIndex, float *rot, float *trans);
+extern void Com_Error(int level, const char *fmt, ...);
+extern void *BG_GetWeaponDef(int weaponIndex);
+extern float vectosignedyaw(float *axis);
+extern float RotationToYaw(float *rot);
+extern void YawToAxis(float yaw, float *axis);
+extern void MatrixMultiply43(float *a, float *b, float *out);
+extern void AxisToAngles(float *axis, float *angles);
+extern void VectorAngleMultiply(float *trans, float yaw);
+extern void CG_TraceCapsule(byte *trace, float *start, float *mins, float *maxs, float *end, int entityNum, int contentMask);
+extern const char *CL_GetConfigString(int index);
+extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
+
+extern byte *cgs_ptr;           /* 0x195f584 */
+extern byte *cg_ptr;            /* 0x195f5c4 */
+extern byte *cg_entities_ptr;   /* 0x195f5cc */
+extern byte *cg_tags_ptr;       /* 0x195f5bc */
+extern byte *cg_debug_ptr;      /* 0x195f970 */
+extern byte *cg_sprite_ptr;     /* 0x195f96c */
+extern byte *cg_sprite2_ptr;    /* 0x195f968 */
+extern byte *cg_sprite3_ptr;    /* 0x195f978 */
+extern byte *cg_sprite4_ptr;    /* 0x195f974 */
+extern byte *cg_sprite5_ptr;    /* 0x195f97c */
+extern byte *cg_sprite6_ptr;    /* 0x195f980 */
 
 void CG_UpdatePlayerDObj(centity_t *cent);
 void CG_ResetPlayerEntity(centity_t *cent);
@@ -17,168 +60,84 @@ void CG_PlayerSprites(centity_t *cent);
 void CG_Player(centity_t *cent);
 void CG_Corpse(centity_t *cent);
 
+/* Client info stride: clientNum * 151 * 8 = clientNum * 1208 */
+#define CI_STRIDE 1208
+
 /* line 531 */
-__attribute__((naked))
 void CG_UpdatePlayerDObj(centity_t *cent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 531 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* cent */
-        /* { scope 1 */
-        "cmpb $0, 0x1e0(%ecx)\n" /* line 535 */
-        "je .Lf1e3b5c_001e3bc1\n"
-        "leal 0xf0(%ecx), %esi\n" /* line 537 | es */
-        "movl 0x90(%esi), %edx\n" /* line 539 | es */
-        "leal (%edx, %edx, 4), %eax\n"
-        "movl %eax, %ebx\n"
-        "shll $4, %ebx\n"
-        "subl %eax, %ebx\n"
-        "leal (%edx, %ebx, 2), %ebx\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "leal 0xe0914(%eax, %ebx, 8), %ebx\n"
-        "movl 0x220(%ecx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Com_GetClientDObj\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl %ebx, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll BG_UpdatePlayerDObj\n"
-        /* } scope */
-        ".Lf1e3b5c_001e3bc1:\n"
-        "addl $0x10, %esp\n" /* line 540 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    entityState_t *es;
+    int clientNum;
+    byte *cgs;
+    byte *ci;
+    void *obj;
+
+    if (!cent->nextValid)
+        return;
+
+    es = &cent->nextState;
+    clientNum = es->clientNum;
+
+    cgs = *(byte **)cgs_ptr;
+    ci = cgs + 0xe0914 + clientNum * CI_STRIDE;
+
+    obj = Com_GetClientDObj(clientNum, cent->localClientNum);
+    BG_UpdatePlayerDObj(obj, es, ci, 0);
 }
 
 /* line 552 */
-__attribute__((naked))
 void CG_ResetPlayerEntity(centity_t *cent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 552 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %ebx\n" /* line 557 | cent, es */
-        "addl $0xf0, %ebx\n" /* es */
-        "movl 0x195f584, %eax\n" /* line 558 */
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl 0x90(%ebx), %edx\n" /* es */
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %ecx, %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "leal 0xe0900(%edx, %eax, 8), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl %eax, %esi\n" /* ci */
-        "addl $0x14, %esi\n" /* ci */
-        "movl 8(%ebx), %ecx\n" /* line 560 | es */
-        "andl $0x20000, %ecx\n"
-        "movl %ecx, -0x24(%ebp)\n"
-        "je .Lf1e3bc8_001e3c53\n"
-        ".Lf1e3bc8_001e3c17:\n"
-        "movl 0x195f970, %eax\n" /* line 587 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf1e3bc8_001e3c4b\n"
-        "cvtss2sd 0x3b0(%esi), %xmm0\n" /* line 589 | ci */
-        "movsd %xmm0, 8(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* cent */
-        "movl 0xf0(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b8500, (%esp)\n" /* "%i ResetPlayerEntity yaw=%i
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf1e3bc8_001e3c4b:\n"
-        "addl $0x4c, %esp\n" /* line 591 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1e3bc8_001e3c53:\n"
-        "movl 0x4a4(%esi), %edi\n" /* line 564 | ci, pAnimTree */
-        "xorl %ebx, %ebx\n" /* line 567 | es */
-        "movl %ebx, 8(%esp)\n" /* es */
-        "movzwl 0xe08e4(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* pAnimTree */
-        "calll XAnimClearTreeGoalWeights\n"
-        "movl $0, 0x1c(%esp)\n" /* line 570 */
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* es */
-        "movl %ebx, 8(%esp)\n" /* es */
-        "movl -0x1c(%ebp), %edx\n"
-        "movzwl 0xe08d0(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* pAnimTree */
-        "calll XAnimSetCompleteGoalWeight\n"
-        "movl $0, 0x1c(%esp)\n" /* line 571 */
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* es */
-        "movl $0x3f800000, 8(%esp)\n"
-        "movl -0x1c(%ebp), %ecx\n"
-        "movzwl 0xe08d2(%ecx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* pAnimTree */
-        "calll XAnimSetCompleteGoalWeight\n"
-        "movl $0, 0x1c(%esp)\n" /* line 572 */
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* es */
-        "movl %ebx, 8(%esp)\n" /* es */
-        "movl -0x1c(%ebp), %edx\n"
-        "movzwl 0xe08d4(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* pAnimTree */
-        "calll XAnimSetCompleteGoalWeight\n"
-        "movl -0x20(%ebp), %edi\n" /* line 574 | pAnimTree */
-        "addl $0x394, %edi\n" /* pAnimTree */
-        "cld\n"
-        "movl $0xc, %edx\n"
-        "movl %edx, %ecx\n"
-        "movl -0x24(%ebp), %eax\n"
-        "rep stosl %eax, %es:(%edi)\n" /* pAnimTree */
-        "movss 0x3ec(%esi), %xmm0\n" /* line 575 | ci */
-        "movss %xmm0, 0x380(%esi)\n" /* ci */
-        "movl $0, 0x384(%esi)\n" /* line 576 | ci */
-        "movl %ebx, 0x388(%esi)\n" /* line 577 | es, ci */
-        "movl $0, 0x38c(%esi)\n" /* line 578 | ci */
-        "movl -0x20(%ebp), %edi\n" /* line 580 | pAnimTree */
-        "addl $0x3c4, %edi\n" /* pAnimTree */
-        "movl %edx, %ecx\n"
-        "rep stosl %eax, %es:(%edi)\n" /* pAnimTree */
-        "movss %xmm0, 0x3b0(%esi)\n" /* line 581 | ci */
-        "movl $0, 0x3b4(%esi)\n" /* line 582 | ci */
-        "movl 0x3e8(%esi), %eax\n" /* line 583 | ci */
-        "movl %eax, 0x3b8(%esi)\n" /* ci */
-        "movl $0, 0x3bc(%esi)\n" /* line 584 | ci */
-        "jmp .Lf1e3bc8_001e3c17\n"
-    );
+    entityState_t *es;
+    byte *cgs;
+    byte *ciBase;
+    byte *ci;
+    int clientNum;
+    int deadFlag;
+    void *pAnimTree;
+
+    es = &cent->nextState;
+    cgs = *(byte **)cgs_ptr;
+    clientNum = es->clientNum;
+
+    ciBase = cgs + 0xe0900 + clientNum * CI_STRIDE;
+    ci = ciBase + 0x14;
+
+    deadFlag = es->eFlags & 0x20000;
+
+    if (!deadFlag) {
+        pAnimTree = *(void **)(ci + 0x4a4);
+
+        /* Clear tree goal weights */
+        XAnimClearTreeGoalWeights(pAnimTree, *(unsigned short *)(cgs + 0xe08e4), 0);
+
+        /* Set complete goal weights for 3 anim indices */
+        XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d0), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+        XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d2), 1.0f, 0.0f, 1.0f, 0, 0, 0);
+        XAnimSetCompleteGoalWeight(pAnimTree, *(unsigned short *)(cgs + 0xe08d4), 0.0f, 0.0f, 1.0f, 0, 0, 0);
+
+        /* Zero out lerpAnim ranges */
+        memset(ciBase + 0x394, 0, 48);
+        *(float *)(ci + 0x380) = *(float *)(ci + 0x3ec);
+        *(int *)(ci + 0x384) = 0;
+        *(int *)(ci + 0x388) = 0;
+        *(int *)(ci + 0x38c) = 0;
+
+        memset(ciBase + 0x3c4, 0, 48);
+        *(float *)(ci + 0x3b0) = *(float *)(ci + 0x3ec);
+        *(int *)(ci + 0x3b4) = 0;
+        *(int *)(ci + 0x3b8) = *(int *)(ci + 0x3e8);
+        *(int *)(ci + 0x3bc) = 0;
+    }
+
+    /* Debug print */
+    {
+        byte *debugDvar = *(byte **)cg_debug_ptr;
+        debugDvar = *(byte **)debugDvar;
+        if (*(byte *)(debugDvar + 8)) {
+            Com_Printf("%i ResetPlayerEntity yaw=%f\n", cent->nextState.number, (double)*(float *)(ci + 0x3b0));
+        }
+    }
 }
 
 /* line 25 */
@@ -726,7 +685,7 @@ void CG_Player(centity_t *cent)
         "movl %eax, (%esp)\n"
         "calll XAnimGetAnimDebugName\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
+        "movl $0x2b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf1e4118_001e45ec:\n"
@@ -926,7 +885,7 @@ void CG_Player(centity_t *cent)
         "movl %edx, (%esp)\n"
         "calll XAnimGetAnimDebugName\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
+        "movl $0x2b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1e4118_001e47bb\n"
@@ -1343,122 +1302,77 @@ void CG_Player(centity_t *cent)
 }
 
 /* line 466 */
-__attribute__((naked))
 void CG_Corpse(centity_t *cent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 466 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xac, %esp\n"
-        "movl 8(%ebp), %esi\n" /* cent */
-        /* { scope 1 */
-        "leal 0xf0(%esi), %ebx\n" /* line 474 | cent, es */
-        "testb $0x20, 8(%ebx)\n" /* line 479 | es */
-        "je .Lf1e51ce_001e51f4\n"
-        /* } scope */
-        ".Lf1e51ce_001e51e9:\n"
-        "addl $0xac, %esp\n" /* line 520 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e51ce_001e51f4:\n"
-        "movl 0xf0(%esi), %ecx\n" /* line 482 | cent */
-        "leal (%ecx, %ecx, 4), %edx\n" /* line 484 */
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%ecx, %eax, 2), %eax\n"
-        "movl 0x195f5c4, %edx\n"
-        "movl (%edx), %edx\n"
-        "leal -0x6bec(%edx, %eax, 8), %edx\n"
-        "movl %edx, -0x9c(%ebp)\n" /* ci */
-        "movl 0x220(%esi), %eax\n" /* line 486 | cent */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll Com_GetClientDObj\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl -0x9c(%ebp), %edx\n" /* ci */
-        "movl %edx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* es */
-        "movl %eax, (%esp)\n"
-        "calll BG_UpdatePlayerDObj\n"
-        "movl 0x220(%esi), %eax\n" /* line 488 | cent */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xf0(%esi), %eax\n" /* cent */
-        "movl %eax, (%esp)\n"
-        "calll Com_GetClientDObj\n"
-        "movl %eax, %edi\n" /* obj */
-        "testl %eax, %eax\n" /* line 489 */
-        "je .Lf1e51ce_001e51e9\n"
-        "movl $0x74, 8(%esp)\n" /* line 492 */
-        "movl $0, 4(%esp)\n"
-        "leal -0x8c(%ebp), %eax\n" /* body */
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movb $0xff, -0x34(%ebp)\n" /* line 494 */
-        "movb $0xff, -0x33(%ebp)\n" /* line 495 */
-        "movb $0xff, -0x32(%ebp)\n" /* line 496 */
-        "movb $0xff, -0x31(%ebp)\n" /* line 497 */
-        "movl -0x9c(%ebp), %edx\n" /* line 500 | ci */
-        "movl %edx, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* es */
-        "movl %edi, (%esp)\n" /* obj */
-        "calll BG_PlayerAnimation\n"
-        "leal -0x78(%ebp), %eax\n" /* line 502 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x1f8(%esi), %eax\n" /* cent */
-        "movl %eax, (%esp)\n"
-        "calll AnglesToAxis\n"
-        "leal 0x1ec(%esi), %eax\n" /* cent */
-        /* { scope 2 */
-        "movl 0x1ec(%esi), %ecx\n" /* line 199 */
-        "movl %ecx, -0x50(%ebp)\n"
-        "movl 4(%eax), %edx\n" /* line 200 */
-        "movl %edx, -0x4c(%ebp)\n"
-        "movss 8(%eax), %xmm0\n" /* line 201 */
-        "movss %xmm0, -0x48(%ebp)\n"
-        /* } scope */
-        "movl %ecx, -0x84(%ebp)\n" /* line 199 */
-        "movl %edx, -0x80(%ebp)\n" /* line 200 */
-        "addss 0xe4(%ebx), %xmm0\n" /* line 506 | es */
-        "movss %xmm0, -0x7c(%ebp)\n"
-        "movl 8(%ebx), %eax\n" /* line 508 | es */
-        "testb $8, %al\n"
-        "jne .Lf1e51ce_001e5316\n"
-        "testb $4, %al\n" /* line 510 */
-        "je .Lf1e51ce_001e5358\n"
-        "addss 0x2ed694, %xmm0\n" /* line 511 | 20.0f */
-        "movss %xmm0, -0x7c(%ebp)\n"
-        "jmp .Lf1e51ce_001e5323\n"
-        ".Lf1e51ce_001e5316:\n"
-        "addss 0x2ed79c, %xmm0\n" /* line 509 | 12.0f */
-        "movss %xmm0, -0x7c(%ebp)\n"
-        ".Lf1e51ce_001e5323:\n"
-        "movl $0, -0x8c(%ebp)\n" /* line 515 | body */
-        "movl $0x80, -0x88(%ebp)\n" /* line 517 */
-        "movl %esi, 8(%esp)\n" /* line 519 | cent */
-        "movl %edi, 4(%esp)\n" /* obj */
-        "leal -0x8c(%ebp), %eax\n" /* body */
-        "movl %eax, (%esp)\n"
-        "calll CG_AddCEntityToScene\n"
-        /* } scope */
-        "addl $0xac, %esp\n" /* line 520 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e51ce_001e5358:\n"
-        "addss 0x2ed830, %xmm0\n" /* line 513 | 32.0f */
-        "movss %xmm0, -0x7c(%ebp)\n"
-        "jmp .Lf1e51ce_001e5323\n"
-    );
-}
+    entityState_t *es;
+    byte *cg;
+    byte *ci;
+    int clientNum;
+    void *obj;
+    byte body[0x74];
+    float z;
 
+    es = &cent->nextState;
+
+    /* Check EF_NODRAW */
+    if (es->eFlags & 0x20)
+        return;
+
+    clientNum = cent->nextState.number;
+
+    cg = *(byte **)cg_ptr;
+    ci = cg - 0x6bec + clientNum * CI_STRIDE;
+
+    /* Update player DObj */
+    obj = Com_GetClientDObj(clientNum, cent->localClientNum);
+    BG_UpdatePlayerDObj(obj, es, ci, 0);
+
+    /* Get DObj again */
+    obj = Com_GetClientDObj(cent->nextState.number, cent->localClientNum);
+    if (!obj)
+        return;
+
+    /* Set up body refEntity */
+    memset(body, 0, 0x74);
+
+    /* body.materialRGBA = white */
+    body[0x58] = 0xFF;
+    body[0x59] = 0xFF;
+    body[0x5A] = 0xFF;
+    body[0x5B] = 0xFF;
+
+    /* BG_PlayerAnimation */
+    BG_PlayerAnimation(obj, es, ci);
+
+    /* AnglesToAxis(lerpAngles, body.axis) */
+    AnglesToAxis(cent->lerpAngles, (float *)(body + 0x14));
+
+    /* body.origin = lerpOrigin */
+    *(float *)(body + 0x3C) = cent->lerpOrigin[0];
+    *(float *)(body + 0x40) = cent->lerpOrigin[1];
+    *(float *)(body + 0x44) = cent->lerpOrigin[2];
+
+    /* body.oldOrigin[0,1] = lerpOrigin[0,1] */
+    *(float *)(body + 0x08) = cent->lerpOrigin[0];
+    *(float *)(body + 0x0C) = cent->lerpOrigin[1];
+
+    /* body.oldOrigin[2] = lerpOrigin[2] + fTorsoPitch + stance height */
+    z = cent->lerpOrigin[2] + es->fTorsoPitch;
+
+    if (es->eFlags & 8) {
+        z += 12.0f;  /* crouching */
+    } else if (es->eFlags & 4) {
+        z += 20.0f;  /* prone */
+    } else {
+        z += 32.0f;  /* standing */
+    }
+    *(float *)(body + 0x10) = z;
+
+    /* body.reType = 0 */
+    *(int *)(body + 0x00) = 0;
+    /* body.renderFxFlags = RF_SHADOW */
+    *(int *)(body + 0x04) = 0x80;
+
+    /* Add to scene */
+    CG_AddCEntityToScene(body, obj, cent);
+}
