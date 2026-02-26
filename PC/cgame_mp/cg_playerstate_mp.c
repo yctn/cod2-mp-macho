@@ -1,4 +1,4 @@
-/* ASM dump from: cg_playerstate_mp.cpp */
+/* Converted to C from ASM: cg_playerstate_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/cgame_mp/cg_playerstate_mp.cpp */
 
 #include "common_types.h"
@@ -8,351 +8,336 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+/* External globals (pointer-to-pointer indirections from binary) */
+extern char **cg_glob;    /* 0x195f584 -- pointer to cg_t base */
+extern char **cg_globUI;  /* 0x195ecb4 -- pointer to cg_t base (UI/alternate) */
+extern char **cg_globSnap; /* 0x195f950 -- pointer to snap/cgs base */
+
+/* External function declarations */
+extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);
+extern const float AngleNormalize360(const float angle);
+extern float randomf(void);
+extern void CL_SetADS(int ads);
+extern void CG_SetEquippedOffHand(int offHandIndex);
+extern void CG_HoldBreathInit(void);
+extern void CG_ResetLowHealthOverlay(void);
+extern void CG_MenuShowNotify(int menuToShow);
+extern void CG_EntityEvent(centity_t *cent, int event);
+
 void CG_Respawn(void);
 void CG_DamageFeedback(int yawByte, int pitchByte, int damage);
 void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops);
 
+/*
+ * cg_t field offsets from binary layout (may differ from compiled struct).
+ * These are raw byte offsets from the cg_t base pointer.
+ */
+#define CG_SNAP_PTR            0x20     /* snapshot_t* snap */
+#define CG_OFF_25BB0           0x25bb0  /* field copied to damageTime area */
+#define CG_OFF_25BBC           0x25bbc  /* zeroed on respawn */
+#define CG_OFF_25BC4           0x25bc4  /* memcpy dest (snap->ps area) */
+#define CG_OFF_25C94           0x25c94  /* offHandIndex-related, copied to 0x2be70 */
+#define CG_OFF_25C98           0x25c98  /* copied to 0x2be50 */
+#define CG_OFF_28490           0x28490  /* 48-byte region zeroed (rep stosl 0xc dwords) */
+#define CG_OFF_284C4           0x284c4  /* vec3 zeroed */
+#define CG_OFF_285D4           0x285d4  /* vec3 zeroed */
+#define CG_OFF_285E0           0x285e0  /* vec3 zeroed */
+#define CG_OFF_285EC           0x285ec  /* vec3 zeroed */
+#define CG_OFF_28594           0x28594  /* refdef right vector (3 floats) */
+#define CG_OFF_285A0           0x285a0  /* refdef up vector (3 floats) */
+#define CG_OFF_2826C           0x2826c  /* predictedPlayerEntity (centity_t) */
+#define CG_OFF_2BDE8           0x2bde8  /* zeroed */
+#define CG_OFF_2BDEC           0x2bdec  /* zeroed */
+#define CG_OFF_2BE30           0x2be30  /* zeroed */
+#define CG_OFF_2BE48           0x2be48  /* attackerTime store */
+#define CG_OFF_2BE50           0x2be50  /* copy from 25c98 */
+#define CG_OFF_2BE54           0x2be54  /* copy from 25bb0 */
+#define CG_OFF_2BE70           0x2be70  /* copy from 25c94 */
+#define CG_OFF_2BE74           0x2be74  /* viewDamage[0].time -- memset 0x60 bytes */
+#define CG_OFF_2BE80           0x2be80  /* viewDamage[i].time for comparison */
+#define CG_OFF_2BED4           0x2bed4  /* zeroed on respawn; snap serverTime on damage */
+#define CG_OFF_2BF0C           0x2bf0c  /* damageTime = time + 500 */
+#define CG_OFF_2BF10           0x2bf10  /* damageX */
+#define CG_OFF_2BF14           0x2bf14  /* damageY */
+#define CG_OFF_2BF1C           0x2bf1c  /* zeroed */
+#define CG_OFF_2C030           0x2c030  /* vec3 zeroed */
+#define CG_OFF_2C03C           0x2c03c  /* vec3 zeroed */
+#define CG_OFF_2C0A4           0x2c0a4  /* vec3 zeroed */
+#define CG_OFF_2C0B0           0x2c0b0  /* vec3 zeroed */
+#define CG_OFF_2C50C           0x2c50c  /* memset 0x90 bytes */
+#define CG_OFF_2CD10           0x2cd10  /* zeroed */
+
+/* Offset of eventParm in binary's centity layout */
+#define CENT_EVENT_PARM        0x190
+
+/* Helper macros for byte-offset pointer access */
+#define CG_INT(base, off)      (*(int *)((base) + (off)))
+#define CG_FLOAT(base, off)    (*(float *)((base) + (off)))
+#define CG_PTR(base, off)      (*(char **)((base) + (off)))
+
+static void VectorClear3Int(char *base, int off)
+{
+    CG_INT(base, off + 0) = 0;
+    CG_INT(base, off + 4) = 0;
+    CG_INT(base, off + 8) = 0;
+}
+
 /* line 83 */
-__attribute__((naked))
 void CG_Respawn(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 83 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0x195f584, %eax\n" /* line 85 */
-        "movl (%eax), %ebx\n"
-        "movl $0, 0x25bbc(%ebx)\n"
-        "leal 0x25bc4(%ebx), %edx\n" /* line 88 */
-        "movl 0x20(%ebx), %eax\n"
-        "addl $0xc, %eax\n"
-        "movl $0x26a8, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memcpy\n"
-        "movl 0x25c98(%ebx), %eax\n" /* line 91 */
-        "movl %eax, 0x2be50(%ebx)\n"
-        "movl 0x25bb0(%ebx), %eax\n" /* line 92 */
-        "movl %eax, 0x2be54(%ebx)\n"
-        "movl 0x25c94(%ebx), %eax\n" /* line 93 */
-        "movl %eax, 0x2be70(%ebx)\n"
-        "movl $0, 0x2bde8(%ebx)\n" /* line 95 */
-        "movl $0, 0x2bdec(%ebx)\n" /* line 96 */
-        "movl $0, 0x2be30(%ebx)\n" /* line 97 */
-        "leal 0x285d4(%ebx), %eax\n" /* line 99 | v */
-        /* { scope 1 */
-        "xorl %esi, %esi\n" /* line 183 */
-        "movl %esi, 0x285d4(%ebx)\n"
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "leal 0x285e0(%ebx), %eax\n" /* line 100 | v */
-        /* { scope 1 */
-        "movl %esi, 0x285e0(%ebx)\n" /* line 183 */
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "leal 0x285ec(%ebx), %eax\n" /* line 101 | v */
-        /* { scope 1 */
-        "movl %esi, 0x285ec(%ebx)\n" /* line 183 */
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "leal 0x2c03c(%ebx), %eax\n" /* line 103 | v */
-        /* { scope 1 */
-        "movl %esi, 0x2c03c(%ebx)\n" /* line 183 */
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "leal 0x2c030(%ebx), %eax\n" /* line 104 | v */
-        /* { scope 1 */
-        "movl %esi, 0x2c030(%ebx)\n" /* line 183 */
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "movl %esi, 0x2bf1c(%ebx)\n" /* line 106 */
-        "leal 0x28490(%ebx), %edi\n" /* line 108 */
-        "cld\n"
-        "movl $0xc, %ecx\n"
-        "xorl %eax, %eax\n"
-        "rep stosl %eax, %es:(%edi)\n"
-        "movl $0, 0x2bed4(%ebx)\n" /* line 110 */
-        "movl %esi, 0x2bf10(%ebx)\n" /* line 111 */
-        "movl %esi, 0x2bf14(%ebx)\n" /* line 112 */
-        "leal 0x2c0a4(%ebx), %eax\n" /* line 113 | v */
-        /* { scope 1 */
-        "movl %esi, 0x2c0a4(%ebx)\n" /* line 183 */
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "leal 0x2c0b0(%ebx), %eax\n" /* line 114 | v */
-        /* { scope 1 */
-        "movl %esi, 0x2c0b0(%ebx)\n" /* line 183 */
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "leal 0x2be74(%ebx), %eax\n" /* line 116 */
-        "movl $0x60, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "leal 0x2c50c(%ebx), %eax\n" /* line 117 */
-        "movl $0x90, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "leal 0x284c4(%ebx), %eax\n" /* line 119 | v */
-        /* { scope 1 */
-        "movl %esi, 0x284c4(%ebx)\n" /* line 183 */
-        "movl %esi, 4(%eax)\n" /* line 184 */
-        "movl %esi, 8(%eax)\n" /* line 185 */
-        /* } scope */
-        "movl $0, 0x2cd10(%ebx)\n" /* line 121 */
-        "movl 0x195ecb4, %eax\n" /* line 124 */
-        "movl (%eax), %eax\n"
-        "movl $0, 8(%eax)\n"
-        "movl $0, (%esp)\n" /* line 127 */
-        "calll CL_SetADS\n"
-        "movl 0x25c94(%ebx), %eax\n" /* line 130 */
-        "movl %eax, (%esp)\n"
-        "calll CG_SetEquippedOffHand\n"
-        "calll CG_HoldBreathInit\n" /* line 132 */
-        "addl $0x1c, %esp\n" /* line 135 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp CG_ResetLowHealthOverlay\n" /* line 134 */
-    );
+    char *cg = *cg_glob;
+    char *snap;
+
+    /* line 85: cg->field_25bbc = 0 */
+    CG_INT(cg, CG_OFF_25BBC) = 0;
+
+    /* line 88: memcpy(cg + 0x25bc4, snap->ps + 0xc, 0x26a8)
+     * snap is at cg->snap (offset 0x20), ps starts at snap + 0xc */
+    snap = CG_PTR(cg, CG_SNAP_PTR);
+    memcpy(cg + CG_OFF_25BC4, snap + 0xc, 0x26a8);
+
+    /* line 91: cg->field_2be50 = cg->field_25c98 */
+    CG_INT(cg, CG_OFF_2BE50) = CG_INT(cg, CG_OFF_25C98);
+
+    /* line 92: cg->field_2be54 = cg->field_25bb0 */
+    CG_INT(cg, CG_OFF_2BE54) = CG_INT(cg, CG_OFF_25BB0);
+
+    /* line 93: cg->field_2be70 = cg->field_25c94 */
+    CG_INT(cg, CG_OFF_2BE70) = CG_INT(cg, CG_OFF_25C94);
+
+    /* lines 95-97: zero three fields */
+    CG_INT(cg, CG_OFF_2BDE8) = 0;
+    CG_INT(cg, CG_OFF_2BDEC) = 0;
+    CG_INT(cg, CG_OFF_2BE30) = 0;
+
+    /* lines 99-101: zero three vec3 regions (inline VectorClear) */
+    VectorClear3Int(cg, CG_OFF_285D4);
+    VectorClear3Int(cg, CG_OFF_285E0);
+    VectorClear3Int(cg, CG_OFF_285EC);
+
+    /* lines 103-104: zero two more vec3 regions */
+    VectorClear3Int(cg, CG_OFF_2C03C);
+    VectorClear3Int(cg, CG_OFF_2C030);
+
+    /* line 106 */
+    CG_INT(cg, CG_OFF_2BF1C) = 0;
+
+    /* line 108: memset(cg + 0x28490, 0, 48) -- rep stosl 0xc dwords */
+    memset(cg + CG_OFF_28490, 0, 48);
+
+    /* line 110 */
+    CG_INT(cg, CG_OFF_2BED4) = 0;
+
+    /* lines 111-112: zero damageX and damageY */
+    CG_INT(cg, CG_OFF_2BF10) = 0;
+    CG_INT(cg, CG_OFF_2BF14) = 0;
+
+    /* lines 113-114: zero two more vec3 regions */
+    VectorClear3Int(cg, CG_OFF_2C0A4);
+    VectorClear3Int(cg, CG_OFF_2C0B0);
+
+    /* line 116: memset(cg + 0x2be74, 0, 0x60) -- viewDamage array (8 * 12 = 96 = 0x60) */
+    memset(cg + CG_OFF_2BE74, 0, 0x60);
+
+    /* line 117: memset(cg + 0x2c50c, 0, 0x90) */
+    memset(cg + CG_OFF_2C50C, 0, 0x90);
+
+    /* line 119: zero another vec3 */
+    VectorClear3Int(cg, CG_OFF_284C4);
+
+    /* line 121 */
+    CG_INT(cg, CG_OFF_2CD10) = 0;
+
+    /* line 124: *(*(cg_globUI) + 8) = 0 */
+    {
+        char *uiBase = *cg_globUI;
+        CG_INT(uiBase, 8) = 0;
+    }
+
+    /* line 127 */
+    CL_SetADS(0);
+
+    /* line 130: CG_SetEquippedOffHand(cg->field_25c94) */
+    CG_SetEquippedOffHand(CG_INT(cg, CG_OFF_25C94));
+
+    /* line 132 */
+    CG_HoldBreathInit();
+
+    /* line 134: tail-call to CG_ResetLowHealthOverlay */
+    CG_ResetLowHealthOverlay();
 }
 
 /* line 18 */
-__attribute__((naked))
 void CG_DamageFeedback(int yawByte, int pitchByte, int damage)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 18 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x7c, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* yawByte */
-        "movl 0xc(%ebp), %ebx\n" /* pitchByte */
-        /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 28 */
-        "movl (%eax), %edx\n"
-        "movl 0x25bb0(%edx), %eax\n"
-        "movl %eax, 0x2be48(%edx)\n"
-        "cvtsi2ssl 0x10(%ebp), %xmm3\n" /* line 30 | damage */
-        "mulss 0x2ed724, %xmm3\n" /* 0.20000000298023224f */
-        "ucomiss 0x2ed6d4, %xmm3\n" /* line 32 | 5.0f */
-        "jae .Lf1e173c_001e1957\n"
-        "jp .Lf1e173c_001e1957\n"
-        "movss 0x2ed6d4, %xmm3\n" /* 5.0f */
-        "movss 0x2ed920, %xmm5\n" /* -5.0f */
-        ".Lf1e173c_001e178e:\n"
-        "cmpl $0xff, %ecx\n" /* line 38 */
-        "je .Lf1e173c_001e1976\n"
-        ".Lf1e173c_001e179a:\n"
-        "cvtsi2ssl %ecx, %xmm4\n" /* line 47 */
-        "movss 0x2ed5d4, %xmm2\n" /* 255.0f */
-        "divss %xmm2, %xmm4\n"
-        "movss 0x2ed638, %xmm1\n" /* 360.0f */
-        "mulss %xmm1, %xmm4\n"
-        "cvtsi2ssl %ebx, %xmm0\n" /* line 49 | i */
-        "divss %xmm2, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x30(%ebp)\n" /* angles */
-        "movss %xmm4, -0x2c(%ebp)\n" /* line 50 */
-        "movl $0, -0x28(%ebp)\n" /* line 51 */
-        "movl $0, 0xc(%esp)\n" /* line 53 */
-        "movl $0, 8(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* dir */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* angles */
-        "movl %eax, (%esp)\n"
-        "movss %xmm3, -0x48(%ebp)\n"
-        "movss %xmm4, -0x58(%ebp)\n"
-        "movss %xmm5, -0x68(%ebp)\n"
-        "calll AngleVectors\n"
-        "movl 0x195f584, %eax\n" /* line 55 */
-        "movl (%eax), %edi\n"
-        "leal 0x285a0(%edi), %eax\n"
-        "movss -0x24(%ebp), %xmm1\n" /* dir */
-        "mulss 0x285a0(%edi), %xmm1\n"
-        "movss -0x20(%ebp), %xmm0\n"
-        "mulss 4(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss -0x1c(%ebp), %xmm0\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss -0x68(%ebp), %xmm5\n"
-        "mulss %xmm5, %xmm1\n"
-        "movss %xmm1, 0x2bf14(%edi)\n"
-        "leal 0x28594(%edi), %eax\n" /* line 56 */
-        "movss -0x24(%ebp), %xmm1\n" /* dir */
-        "mulss 0x28594(%edi), %xmm1\n"
-        "movss -0x20(%ebp), %xmm0\n"
-        "mulss 4(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss -0x1c(%ebp), %xmm0\n"
-        "mulss 8(%eax), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss -0x48(%ebp), %xmm3\n"
-        "mulss %xmm3, %xmm1\n"
-        "movss %xmm1, 0x2bf10(%edi)\n"
-        "movl %edi, %ecx\n" /* line 61 */
-        "xorl %esi, %esi\n" /* slot */
-        "movl $1, %ebx\n" /* i */
-        "movss -0x58(%ebp), %xmm4\n"
-        ".Lf1e173c_001e1899:\n"
-        "leal (%esi, %esi, 2), %edx\n" /* slot */
-        "movl 0x2be80(%ecx), %eax\n"
-        "cmpl 0x2be74(%edi, %edx, 4), %eax\n"
-        "cmovll %ebx, %esi\n" /* i, slot */
-        "addl $1, %ebx\n" /* line 59 | i */
-        "addl $0xc, %ecx\n"
-        "cmpl $8, %ebx\n" /* i */
-        "jne .Lf1e173c_001e1899\n"
-        "leal (%esi, %esi, 2), %ebx\n" /* line 65 | slot, i */
-        "shll $2, %ebx\n" /* i */
-        "movl 0x20(%edi), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x2be74(%ebx, %edi)\n" /* i */
-        "movl 0x195f584, %edx\n" /* line 66 */
-        "addl (%edx), %ebx\n" /* i */
-        "movl 0x195f950, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x2be78(%ebx)\n" /* i */
-        "movss %xmm4, -0x58(%ebp)\n" /* line 67 */
-        "calll randomf\n"
-        "fstps -0x6c(%ebp)\n"
-        "movss -0x6c(%ebp), %xmm0\n"
-        "subss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "mulss 0x2ed694, %xmm0\n" /* 20.0f */
-        "movss -0x58(%ebp), %xmm4\n"
-        "addss %xmm0, %xmm4\n"
-        "movss %xmm4, (%esp)\n"
-        "calll AngleNormalize360\n"
-        "fstps 0x2be7c(%ebx)\n" /* i */
-        "movl 0x195f584, %edx\n"
-        ".Lf1e173c_001e1923:\n"
-        "movl (%edx), %eax\n" /* line 70 */
-        "movl 0x25bb0(%eax), %edx\n"
-        "addl $0x1f4, %edx\n"
-        "movl %edx, 0x2bf0c(%eax)\n"
-        "movl 0x20(%eax), %edx\n" /* line 71 */
-        "movl 8(%edx), %edx\n"
-        "movl %edx, 0x2bed4(%eax)\n"
-        "movl $0, (%esp)\n" /* line 72 */
-        "calll CG_MenuShowNotify\n"
-        /* } scope */
-        "addl $0x7c, %esp\n" /* line 73 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e173c_001e1957:\n"
-        "ucomiss 0x2ed5f8, %xmm3\n" /* line 34 | 90.0f */
-        "ja .Lf1e173c_001e199e\n"
-        "movaps %xmm3, %xmm5\n"
-        "xorps 0x303bc0, %xmm5\n"
-        "cmpl $0xff, %ecx\n" /* line 38 */
-        "jne .Lf1e173c_001e179a\n"
-        ".Lf1e173c_001e1976:\n"
-        "cmpl $0xff, %ebx\n" /* i */
-        "jne .Lf1e173c_001e179a\n"
-        "movl 0x195f584, %edx\n" /* line 40 */
-        "movl (%edx), %eax\n"
-        "movl $0, 0x2bf14(%eax)\n"
-        "movss %xmm5, 0x2bf10(%eax)\n" /* line 41 */
-        "jmp .Lf1e173c_001e1923\n"
-        ".Lf1e173c_001e199e:\n"
-        "movss 0x2ed5f8, %xmm3\n" /* line 34 | 90.0f */
-        "movss 0x2ed660, %xmm5\n" /* -90.0f */
-        "jmp .Lf1e173c_001e178e\n"
-    );
+    char *cg;
+    float count;
+    float negCount;
+    vec3_t angles;
+    vec3_t dir;
+    float dot;
+    int slot;
+    int i;
+    char *snap;
+
+    /* line 28: cg->attackerTime = cg->field_25bb0 (time) */
+    cg = *cg_glob;
+    CG_INT(cg, CG_OFF_2BE48) = CG_INT(cg, CG_OFF_25BB0);
+
+    /* line 30: count = (float)damage * 0.2f */
+    count = (float)damage * 0.2f;
+
+    /* line 32-34: clamp count to [5.0, 90.0] */
+    if (count < 5.0f) {
+        count = 5.0f;
+        negCount = -5.0f;
+    } else if (count > 90.0f) {
+        count = 90.0f;
+        negCount = -90.0f;
+    } else {
+        negCount = -count;
+    }
+
+    /* line 38: if yawByte == 255 and pitchByte == 255, use non-directional damage */
+    if (yawByte == 255 && pitchByte == 255) {
+        /* lines 40-41: non-directional damage */
+        cg = *cg_glob;
+        CG_FLOAT(cg, CG_OFF_2BF14) = 0.0f;
+        CG_FLOAT(cg, CG_OFF_2BF10) = negCount;
+    } else {
+        /* line 47: yaw angle = (float)yawByte / 255.0f * 360.0f */
+        float yaw = (float)yawByte / 255.0f * 360.0f;
+        /* line 49: pitch angle = (float)pitchByte / 255.0f * 360.0f */
+        float pitch = (float)pitchByte / 255.0f * 360.0f;
+
+        /* lines 49-51: set up angles vector */
+        angles[0] = pitch;
+        angles[1] = yaw;
+        angles[2] = 0.0f;
+
+        /* line 53: compute direction vectors from angles */
+        AngleVectors(angles, dir, NULL, NULL);
+
+        /* line 55: reload cg pointer after function call */
+        cg = *cg_glob;
+
+        /* lines 55-56: compute dot products with refdef axes
+         * cg->damageY = DotProduct(dir, cg->refdef_up) * negCount
+         * cg->damageX = DotProduct(dir, cg->refdef_right) * count */
+        {
+            float *up = (float *)(cg + CG_OFF_285A0);
+            float *right = (float *)(cg + CG_OFF_28594);
+
+            /* damageY = DotProduct(dir, up) * negCount */
+            dot = dir[0] * up[0] + dir[1] * up[1] + dir[2] * up[2];
+            CG_FLOAT(cg, CG_OFF_2BF14) = dot * negCount;
+
+            /* damageX = DotProduct(dir, right) * count */
+            dot = dir[0] * right[0] + dir[1] * right[1] + dir[2] * right[2];
+            CG_FLOAT(cg, CG_OFF_2BF10) = dot * count;
+        }
+
+        /* lines 59-63: find the viewDamage slot with the smallest time
+         * viewDamage entries are 12 bytes each: { int time, int duration, float yaw } */
+        slot = 0;
+        for (i = 1; i < 8; i++) {
+            int thisTime = CG_INT(cg, CG_OFF_2BE74 + i * 12);
+            int slotTime = CG_INT(cg, CG_OFF_2BE74 + slot * 12);
+            if (thisTime < slotTime) {
+                slot = i;
+            }
+        }
+
+        /* line 65: viewDamage[slot].time = snap->serverTime */
+        snap = CG_PTR(cg, CG_SNAP_PTR);
+        CG_INT(cg, CG_OFF_2BE74 + slot * 12) = CG_INT(snap, 8);
+
+        /* line 66: viewDamage[slot].duration = (*cg_globSnap)->serverTime */
+        {
+            char *snapBase = *cg_globSnap;
+            CG_INT(cg, CG_OFF_2BE74 + slot * 12 + 4) = CG_INT(snapBase, 8);
+        }
+
+        /* line 67: viewDamage[slot].yaw = AngleNormalize360(yaw + (randomf() - 0.5f) * 20.0f) */
+        {
+            float r = randomf();
+            float jitteredYaw = yaw + (r - 0.5f) * 20.0f;
+            float normYaw = AngleNormalize360(jitteredYaw);
+            CG_FLOAT(cg, CG_OFF_2BE74 + slot * 12 + 8) = normYaw;
+        }
+
+        /* Need to re-read cg after function calls */
+        cg = *cg_glob;
+    }
+
+    /* line 70: cg->damageTime = cg->time + 500 */
+    cg = *cg_glob;
+    CG_INT(cg, CG_OFF_2BF0C) = CG_INT(cg, CG_OFF_25BB0) + 500;
+
+    /* line 71: cg->field_2bed4 = snap->serverTime */
+    snap = CG_PTR(cg, CG_SNAP_PTR);
+    CG_INT(cg, CG_OFF_2BED4) = CG_INT(snap, 8);
+
+    /* line 72 */
+    CG_MenuShowNotify(0);
 }
 
-/* line 173 */
-__attribute__((naked))
+/* line 173: CG_TransitionPlayerState
+ * This function processes player state transitions, checking for new events
+ * and optionally calling CG_DamageFeedback for damage events.
+ *
+ * Inner logic (lines 149-165) iterates backward through the event sequence
+ * to fire any new events that occurred between ops and ps.
+ */
 void CG_TransitionPlayerState(playerState_t *ps, playerState_t *ops)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 173 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* ps */
-        "movl 0x11c(%esi), %eax\n" /* line 176 | ps */
-        "movl 0xc(%ebp), %edx\n" /* ops */
-        "cmpl 0x11c(%edx), %eax\n"
-        "je .Lf1e19b4_001e19db\n"
-        "movl 0x128(%esi), %eax\n" /* ps */
-        "testl %eax, %eax\n"
-        "jne .Lf1e19b4_001e1a59\n"
-        /* { scope 1 */
-        ".Lf1e19b4_001e19db:\n"
-        "movl 0x195f584, %eax\n" /* line 149 */
-        "movl (%eax), %edi\n" /* cent */
-        "addl $0x2826c, %edi\n" /* cent */
-        "movl 0xa4(%esi), %ebx\n" /* line 151 | i */
-        "subl $4, %ebx\n" /* i */
-        "jmp .Lf1e19b4_001e1a36\n"
-        ".Lf1e19b4_001e19f3:\n"
-        "subl $4, %eax\n" /* line 154 */
-        "cmpl %eax, %ebx\n" /* i */
-        "jle .Lf1e19b4_001e1a2b\n"
-        "movl %ebx, %eax\n" /* i */
-        "andl $3, %eax\n"
-        "movl 0xa8(%esi, %eax, 4), %edx\n"
-        "movl 0xc(%ebp), %ecx\n" /* ops */
-        "cmpl 0xa8(%ecx, %eax, 4), %edx\n"
-        "je .Lf1e19b4_001e1a2b\n"
-        ".Lf1e19b4_001e1a12:\n"
-        "movl 0xb8(%esi, %eax, 4), %eax\n" /* line 160 */
-        "movl %eax, 0x190(%edi)\n" /* cent */
-        "movl %edx, 4(%esp)\n" /* line 161 */
-        "movl %edi, (%esp)\n" /* cent */
-        "calll CG_EntityEvent\n"
-        ".Lf1e19b4_001e1a2b:\n"
-        "addl $1, %ebx\n" /* line 151 | i */
-        "cmpl 0xa4(%esi), %ebx\n" /* i */
-        "jge .Lf1e19b4_001e1a51\n"
-        ".Lf1e19b4_001e1a36:\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 154 | ops */
-        "movl 0xa4(%ecx), %eax\n"
-        "cmpl %eax, %ebx\n" /* i */
-        "jl .Lf1e19b4_001e19f3\n"
-        "movl %ebx, %eax\n" /* i */
-        "andl $3, %eax\n"
-        "movl 0xa8(%esi, %eax, 4), %edx\n"
-        "jmp .Lf1e19b4_001e1a12\n"
-        /* } scope */
-        ".Lf1e19b4_001e1a51:\n"
-        "addl $0x1c, %esp\n" /* line 183 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1e19b4_001e1a59:\n"
-        "movl %eax, 8(%esp)\n" /* line 178 */
-        "movl 0x124(%esi), %eax\n" /* ps */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x120(%esi), %eax\n" /* ps */
-        "movl %eax, (%esp)\n"
-        "calll CG_DamageFeedback\n"
-        "jmp .Lf1e19b4_001e19db\n"
-    );
-}
+    char *cg;
+    char *cent;
+    int i;
+    int idx;
+    int event;
 
+    /* line 176: if ps->damageEvent != ops->damageEvent */
+    if (ps->damageEvent != ops->damageEvent) {
+        /* line 178: if ps->damageCount != 0, call CG_DamageFeedback */
+        if (ps->damageCount != 0) {
+            CG_DamageFeedback(ps->damageYaw, ps->damagePitch, ps->damageCount);
+        }
+    }
+
+    /* line 149: get cent = cg_base + 0x2826c (predictedPlayerEntity) */
+    cg = *cg_glob;
+    cent = cg + CG_OFF_2826C;
+
+    /* line 151: iterate from ps->eventSequence - 4 up to ps->eventSequence */
+    i = ps->eventSequence - 4;
+
+    while (i < ps->eventSequence) {
+        /* line 154: if i < ops->eventSequence, skip old events */
+        if (i < ops->eventSequence) {
+            /* But if i is within 4 of ops->eventSequence, check for changes */
+            if (i < ops->eventSequence - 4) {
+                i++;
+                continue;
+            }
+            idx = i & 3;
+            event = ps->events[idx];
+            if (event == ops->events[idx]) {
+                i++;
+                continue;
+            }
+        } else {
+            /* i >= ops->eventSequence: this is a new event, always process it */
+            idx = i & 3;
+            event = ps->events[idx];
+        }
+
+        /* line 160: set cent->eventParm from ps->eventParms[idx] */
+        CG_INT(cent, CENT_EVENT_PARM) = ps->eventParms[idx];
+
+        /* line 161: fire the event */
+        CG_EntityEvent((centity_t *)cent, event);
+
+        i++;
+    }
+}
