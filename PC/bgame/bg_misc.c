@@ -57,6 +57,15 @@ extern const dvar_t *player_backSpeedScale; /* 0x0 */
 extern const dvar_t *player_spectateSpeedScale; /* 0x0 */
 extern const dvar_t *player_turnAnims; /* 0x0 */
 
+/* Extern declarations for called functions */
+extern int I_stricmp(const char *s1, const char *s2);
+extern int G_GetWeaponIndexForName(const char *name);
+extern qboolean BG_DoesWeaponNeedSlot(int weapon);
+extern int BG_GetMaxPickupableAmmo(const playerState_t *ps, int weapon);
+extern qboolean BG_WeaponIsClipOnly(int weapon);
+extern void Com_Error(errorParm_t code, const char *fmt, ...);
+extern const char *va(const char *format, ...);
+
 void BG_RegisterDvars(void);
 const gitem_t * BG_FindItemForWeapon(int weapon);
 const gitem_t * G_FindItem(const char *pickupName);
@@ -399,119 +408,54 @@ void BG_RegisterDvars(void)
 }
 
 /* line 463 */
-__attribute__((naked))
-const gitem_t * BG_FindItemForWeapon(int weapon)
+const gitem_t *BG_FindItemForWeapon(int weapon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 463 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* weapon */
-        "leal (%edx, %edx, 4), %eax\n" /* line 466 */
-        "leal (%edx, %eax, 2), %eax\n"
-        "shll $2, %eax\n"
-        "addl 0x195eda8, %eax\n"
-        "popl %ebp\n" /* line 467 */
-        "retl\n"
-    );
+    char *base = *(char **)0x195eda8;
+    return (const gitem_t *)(base + weapon * 44);
 }
 
 /* line 476 */
-__attribute__((naked))
-const gitem_t * G_FindItem(const char *pickupName)
+const gitem_t *G_FindItem(const char *pickupName)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 476 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* pickupName */
-        /* { scope 1 */
-        "movl 0x195edac, %eax\n" /* line 481 */
-        "cmpl $0x81, (%eax)\n"
-        "jle .Lf6a452_0006a4b0\n"
-        "movl $0x81, %esi\n" /* iIndex */
-        ".Lf6a452_0006a470:\n"
-        "leal (%esi, %esi, 4), %eax\n" /* line 483 | iIndex */
-        "leal (%esi, %eax, 2), %eax\n" /* iIndex */
-        "movl 0x195eda8, %edx\n"
-        "leal (%edx, %eax, 4), %ebx\n" /* it */
-        "movl %edi, 4(%esp)\n" /* line 485 | pickupName */
-        "movl 0x14(%ebx), %eax\n" /* it */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf6a452_0006a4cd\n"
-        "movl %edi, 4(%esp)\n" /* pickupName */
-        "movl (%ebx), %eax\n" /* it */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf6a452_0006a4cd\n"
-        "addl $1, %esi\n" /* line 481 | iIndex */
-        "movl 0x195edac, %eax\n"
-        "cmpl (%eax), %esi\n" /* iIndex */
-        "jl .Lf6a452_0006a470\n"
-        ".Lf6a452_0006a4b0:\n"
-        "movl %edi, (%esp)\n" /* line 489 | pickupName */
-        "calll G_GetWeaponIndexForName\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 490 */
-        "je .Lf6a452_0006a4d7\n"
-        "leal (%eax, %eax, 4), %eax\n" /* line 491 */
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl 0x195eda8, %edx\n"
-        "leal (%edx, %eax, 4), %ebx\n" /* it */
-        /* } scope */
-        ".Lf6a452_0006a4cd:\n"
-        "movl %ebx, %eax\n" /* line 494 | it */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf6a452_0006a4d7:\n"
-        "xorl %ebx, %ebx\n" /* line 490 | it */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 494 | it */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int iIndex;
+    int count;
+    char *base;
+    int weaponIndex;
+
+    count = **(int **)0x195edac;
+    base = *(char **)0x195eda8;
+
+    for (iIndex = 0x81; iIndex < count; iIndex++) {
+        char *it = base + iIndex * 44;
+        if (I_stricmp(*(const char **)(it + 0x14), pickupName) == 0) {
+            return (const gitem_t *)it;
+        }
+        if (I_stricmp(*(const char **)it, pickupName) == 0) {
+            return (const gitem_t *)it;
+        }
+    }
+
+    weaponIndex = G_GetWeaponIndexForName(pickupName);
+    if (weaponIndex == 0) {
+        return NULL;
+    }
+    return (const gitem_t *)(base + weaponIndex * 44);
 }
 
 /* line 793 */
-__attribute__((naked))
 void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 793 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* newEvent */
-        "movl 0x10(%ebp), %ebx\n" /* ps */
-        "testl %eax, %eax\n" /* line 795 */
-        "je .Lf6a4e4_0006a51b\n"
-        "movl 0xa4(%ebx), %edx\n" /* line 805 | ps */
-        "movl %edx, %ecx\n"
-        "andl $3, %ecx\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 0xa8(%ebx, %ecx, 4)\n" /* ps */
-        "movzbl 0xc(%ebp), %eax\n" /* line 806 | eventParm */
-        "movl %eax, 0xb8(%ebx, %ecx, 4)\n" /* ps */
-        "addl $1, %edx\n" /* line 807 */
-        "movl %edx, 0xa4(%ebx)\n" /* ps */
-        ".Lf6a4e4_0006a51b:\n"
-        "popl %ebx\n" /* line 808 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int seq;
+    int index;
+
+    if (newEvent == 0)
+        return;
+
+    seq = *(int *)((char *)ps + 0xa4);
+    index = seq & 3;
+    *(int *)((char *)ps + 0xa8 + index * 4) = (unsigned char)newEvent;
+    *(int *)((char *)ps + 0xb8 + index * 4) = (unsigned char)eventParm;
+    *(int *)((char *)ps + 0xa4) = seq + 1;
 }
 
 /* line 819 */
@@ -1008,137 +952,67 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
 }
 
 /* line 529 */
-__attribute__((naked))
 qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, qboolean bTouched)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 529 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ent */
-        "movl 0xc(%ebp), %edi\n" /* ps */
-        /* { scope 1 */
-        "movl 0x8c(%ebx), %edx\n" /* line 533 | ent */
-        "testl %edx, %edx\n"
-        "jle .Lf6ab32_0006ab97\n"
-        "movl 0x195edac, %eax\n"
-        "cmpl (%eax), %edx\n"
-        "jge .Lf6ab32_0006ab97\n"
-        ".Lf6ab32_0006ab54:\n"
-        "leal (%edx, %edx, 4), %eax\n" /* line 538 */
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl 0x195eda8, %edx\n"
-        "leal (%edx, %eax, 4), %esi\n" /* item */
-        "movl 0x90(%ebx), %eax\n" /* line 542 | ent */
-        "cmpl 0xcc(%edi), %eax\n" /* ps */
-        "je .Lf6ab32_0006ab8d\n"
-        "movl 0x1c(%esi), %eax\n" /* line 546 | item */
-        "cmpl $1, %eax\n"
-        "je .Lf6ab32_0006abc6\n"
-        "jle .Lf6ab32_0006abf8\n"
-        "cmpl $2, %eax\n"
-        "je .Lf6ab32_0006ac54\n"
-        "cmpl $3, %eax\n"
-        "je .Lf6ab32_0006ac17\n"
-        ".Lf6ab32_0006ab8d:\n"
-        "xorl %eax, %eax\n" /* line 581 */
-        /* } scope */
-        ".Lf6ab32_0006ab8f:\n"
-        "addl $0x1c, %esp\n" /* line 586 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf6ab32_0006ab97:\n"
-        "movl 4(%ebx), %eax\n" /* line 535 | ent */
-        "movl %eax, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl $0x21be08, (%esp)\n" /* "BG_CanItemBeGrabbed: index out of range (index is %i, eType" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl 0x8c(%ebx), %edx\n" /* ent */
-        "jmp .Lf6ab32_0006ab54\n"
-        ".Lf6ab32_0006abc6:\n"
-        "movl 0x20(%esi), %eax\n" /* line 550 | item */
-        "movl %eax, (%esp)\n"
-        "calll BG_DoesWeaponNeedSlot\n"
-        "testb %al, %al\n"
-        "je .Lf6ab32_0006ac36\n"
-        "movl 0x20(%esi), %edx\n" /* item */
-        "movl %edx, %eax\n"
-        "sarl $5, %eax\n"
-        "movl %edx, %ecx\n"
-        "andl $0x1f, %ecx\n"
-        "movl 0x544(%edi, %eax, 4), %eax\n" /* ps */
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "jne .Lf6ab32_0006ac39\n"
-        "movl 0x10(%ebp), %ebx\n" /* line 557 | bTouched, ent */
-        "testl %ebx, %ebx\n" /* ent */
-        "jne .Lf6ab32_0006ab8d\n"
-        "jmp .Lf6ab32_0006ac39\n"
-        ".Lf6ab32_0006abf8:\n"
-        "testl %eax, %eax\n" /* line 546 */
-        "jne .Lf6ab32_0006ab8d\n"
-        "movl $0x21be4c, 4(%esp)\n" /* line 581 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf6ab32_0006ab8f\n"
-        ".Lf6ab32_0006ac17:\n"
-        "movl 0x12c(%edi), %eax\n" /* line 563 | ps */
-        "cmpl 0x134(%edi), %eax\n" /* ps */
-        "jge .Lf6ab32_0006ab8d\n"
-        "movl $1, %eax\n" /* line 581 */
-        /* } scope */
-        ".Lf6ab32_0006ac2e:\n"
-        "addl $0x1c, %esp\n" /* line 586 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf6ab32_0006ac36:\n"
-        "movl 0x20(%esi), %edx\n" /* item */
-        /* { scope 1 */
-        ".Lf6ab32_0006ac39:\n"
-        "movl %edx, 4(%esp)\n" /* line 571 */
-        "movl %edi, (%esp)\n" /* ps */
-        "calll BG_GetMaxPickupableAmmo\n"
-        "testl %eax, %eax\n"
-        "jle .Lf6ab32_0006ab8d\n"
-        "movl $1, %eax\n" /* line 581 */
-        "jmp .Lf6ab32_0006ac2e\n"
-        ".Lf6ab32_0006ac54:\n"
-        "movl 0x20(%esi), %edx\n" /* line 569 | item */
-        "movl %edx, %eax\n"
-        "sarl $5, %eax\n"
-        "movl %edx, %ecx\n"
-        "andl $0x1f, %ecx\n"
-        "movl 0x544(%edi, %eax, 4), %eax\n" /* ps */
-        "sarl %cl, %eax\n"
-        "testb $1, %al\n"
-        "jne .Lf6ab32_0006ac39\n"
-        "movl %edx, (%esp)\n" /* line 574 */
-        "calll BG_WeaponIsClipOnly\n"
-        "testl %eax, %eax\n"
-        "je .Lf6ab32_0006ab8d\n"
-        "movl 0x20(%esi), %eax\n" /* item */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* ps */
-        "calll BG_GetMaxPickupableAmmo\n"
-        "testl %eax, %eax\n"
-        "jle .Lf6ab32_0006ab8d\n"
-        "movl $1, %eax\n" /* line 581 */
-        "jmp .Lf6ab32_0006ac2e\n"
-    );
+    int index;
+    int giType;
+    int weapon;
+    char *base;
+
+    index = *(int *)((const char *)ent + 0x8c);
+    if (index <= 0 || index >= **(int **)0x195edac) {
+        Com_Error(ERR_DROP, va((const char *)0x21be08, index, *(int *)((const char *)ent + 4)));
+        index = *(int *)((const char *)ent + 0x8c);
+    }
+
+    base = *(char **)0x195eda8;
+
+    if (*(int *)((const char *)ent + 0x90) == *(int *)((const char *)ps + 0xcc)) {
+        return 0;
+    }
+
+    giType = *(int *)(base + index * 44 + 0x1c);
+
+    switch (giType) {
+        case 0:
+            Com_Error(ERR_DROP, (const char *)0x21be4c);
+            return 0;
+
+        case 1: /* IT_WEAPON */
+            weapon = *(int *)(base + index * 44 + 0x20);
+            if (BG_DoesWeaponNeedSlot(weapon)) {
+                if (!(*(int *)((const char *)ps + 0x544 + (weapon >> 5) * 4) & (1 << (weapon & 0x1f)))) {
+                    if (bTouched) {
+                        return 0;
+                    }
+                }
+            }
+            if (BG_GetMaxPickupableAmmo(ps, weapon) <= 0) {
+                return 0;
+            }
+            return 1;
+
+        case 2: /* IT_AMMO */
+            weapon = *(int *)(base + index * 44 + 0x20);
+            if (!(*(int *)((const char *)ps + 0x544 + (weapon >> 5) * 4) & (1 << (weapon & 0x1f)))) {
+                if (!BG_WeaponIsClipOnly(weapon)) {
+                    return 0;
+                }
+            }
+            if (BG_GetMaxPickupableAmmo(ps, weapon) <= 0) {
+                return 0;
+            }
+            return 1;
+
+        case 3: /* IT_HEALTH */
+            if (*(int *)((const char *)ps + 0x12c) >= *(int *)((const char *)ps + 0x134)) {
+                return 0;
+            }
+            return 1;
+
+        default:
+            return 0;
+    }
 }
 
 /* line 995 */
@@ -1887,17 +1761,9 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
 }
 
 /* line 1275 */
-__attribute__((naked))
 qboolean BG_CheckProne(int passEntityNum, const vec_t *vPos, const float fSize, const float fHeight, const float fYaw, float *pfTorsoHeight, float *pfTorsoPitch, float *pfWaistPitch, const qboolean bAlreadyProne, const qboolean bOnGround, vec_t *vGroundNormal, int handler, proneCheckType_t proneCheckType, float prone_feet_dist)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1275 */
-        "movl %esp, %ebp\n"
-        "movzbl 0x34(%ebp), %eax\n" /* line 1278 | handler */
-        "movl %eax, 0x34(%ebp)\n" /* handler */
-        "popl %ebp\n" /* line 1380 */
-        "jmp BG_CheckProneValid\n" /* line 1278 */
-    );
+    return BG_CheckProneValid(passEntityNum, vPos, fSize, fHeight, fYaw, pfTorsoHeight, pfTorsoPitch, pfWaistPitch, bAlreadyProne, bOnGround, vGroundNormal, (unsigned char)handler, proneCheckType, prone_feet_dist);
 }
 
 /* line 597 */
@@ -2134,58 +2000,24 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
 }
 
 /* line 505 */
-__attribute__((naked))
 qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 505 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ps */
-        /* { scope 1 */
-        "leal -0x14(%ebp), %eax\n" /* line 509 | origin */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* atTime */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "addl $0xc, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_EvaluateTrajectory\n"
-        "movss 0x14(%ebx), %xmm0\n" /* line 512 | ps */
-        "subss -0x14(%ebp), %xmm0\n" /* origin */
-        "ucomiss 0x2ed6dc, %xmm0\n" /* 36.0f */
-        "ja .Lf6bcdc_0006bd20\n"
-        "ucomiss 0x2ed6e0, %xmm0\n" /* -36.0f */
-        "jp .Lf6bcdc_0006bd28\n"
-        "jae .Lf6bcdc_0006bd28\n"
-        ".Lf6bcdc_0006bd20:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf6bcdc_0006bd22:\n"
-        "addl $0x24, %esp\n" /* line 518 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf6bcdc_0006bd28:\n"
-        "movss 0x18(%ebx), %xmm1\n" /* line 512 | ps */
-        "subss -0x10(%ebp), %xmm1\n"
-        "ucomiss 0x2ed6dc, %xmm1\n" /* 36.0f */
-        "ja .Lf6bcdc_0006bd20\n"
-        "movss 0x2ed6e0, %xmm0\n" /* -36.0f */
-        "ucomiss %xmm1, %xmm0\n"
-        "ja .Lf6bcdc_0006bd20\n"
-        "movss 0x1c(%ebx), %xmm0\n" /* ps */
-        "subss -0xc(%ebp), %xmm0\n"
-        "ucomiss 0x2ed6c8, %xmm0\n" /* 18.0f */
-        "ja .Lf6bcdc_0006bd20\n"
-        "ucomiss 0x2ed6e4, %xmm0\n" /* -88.0f */
-        "jp .Lf6bcdc_0006bd66\n"
-        "jb .Lf6bcdc_0006bd20\n"
-        ".Lf6bcdc_0006bd66:\n"
-        "movl $1, %eax\n"
-        "jmp .Lf6bcdc_0006bd22\n"
-    );
-}
+    vec3_t origin;
+    float dx, dy, dz;
 
+    BG_EvaluateTrajectory((const trajectory_t *)((char *)item + 0xc), atTime, origin);
+
+    dx = *(float *)((char *)ps + 0x14) - origin[0];
+    if (dx > 36.0f || dx < -36.0f)
+        return 0;
+
+    dy = *(float *)((char *)ps + 0x18) - origin[1];
+    if (dy > 36.0f || dy < -36.0f)
+        return 0;
+
+    dz = *(float *)((char *)ps + 0x1c) - origin[2];
+    if (dz > 18.0f || dz < -88.0f)
+        return 0;
+
+    return 1;
+}

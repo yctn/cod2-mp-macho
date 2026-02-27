@@ -1,8 +1,9 @@
-/* ASM dump from: sv_snapshot_mp.cpp */
+/* Converted to C from ASM: sv_snapshot_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/server_mp/sv_snapshot_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -11,8 +12,119 @@
 static int startOffset; /* 0x3131e4 */
 static int endOffset; /* 0x3131e0 */
 
+/* Global pointers accessed by absolute address */
+extern byte *svs_ptr;              /* 0x195f284 - serverStatic_t */
+extern byte *sv_ptr;               /* 0x195ee80 - server_t */
+extern byte *sv_showcommands_dvar; /* 0x195f278 */
+extern byte *sv_maxclients_dvar;   /* 0x195f290 */
+extern byte *sv_minPingRate_dvar;  /* 0x195f268 */
+extern byte *sv_padPackets_dvar;   /* 0x195f2b0 */
+extern byte *sv_showAverageBPS_dvar; /* 0x195f288 */
+extern byte *showpackets_dvar;     /* 0x195f2bc */
+extern byte *sv_maxRate_dvar;      /* 0x195f2f8 */
+extern int __mh_execute_header;
+
+/* client_t field offsets */
+#define CLIENT_RELIABLESEQUENCE   0x2080c
+#define CLIENT_RELIABLEACK        0x20810
+#define CLIENT_RELIABLESENT       0x20814
+#define CLIENT_NAME               0x20c48
+#define CLIENT_STATE              0x0
+#define CLIENT_NETCHAN            0x6e5b4
+#define CLIENT_SNAPSHOTMSEC       0x20d18
+#define CLIENT_PUREAUTH           0x20d1c
+#define CLIENT_LASTPACKETTIME     0x20d08
+#define CLIENT_RATE               0x6e5a8
+#define CLIENT_RATEDELAYED        0x6e5ac
+#define CLIENT_NETTYPE            0x6e5c4
+#define CLIENT_GAMESTATEMSGSENT   0x20840
+#define CLIENT_OLDSERVERTIME      0x20c44
+#define CLIENT_LASTCLIENTCMD      0x4
+#define CLIENT_CMDENTRY_BASE      0xc
+#define CLIENT_CMDENTRY_SIZE      0x408
+#define CLIENT_CMDENTRY_STROFF    0x400
+#define CLIENT_CMDENTRY_MASK      0x7f
+#define CLIENT_STRIDE             0x78f0c
+#define CLIENT_NETCHAN_SENDFRAG   0x725dc
+#define CLIENT_NETCHAN_SENDLEN    0x725e4
+#define CLIENT_NETCHAN_SENDSTART  0x725e0
+#define CLIENT_DOWNLOAD           0x20c68
+
+/* cachedClient_t stride */
+#define CACHEDCLIENT_STRIDE       9992  /* 0x2708: 4 (valid) + 0x5c (clientState) + 0x26a8 (playerState) */
+
+/* serverStatic_t field offsets */
+#define SVS_TIME                  0x4
+#define SVS_FLAGS                 0x8
+#define SVS_CLIENTS               0xc
+#define SVS_NUMENTITIES           0x10
+#define SVS_NUMCLIENTS            0x14
+#define SVS_NEXTSNAPSHOTENTITIES  0x18
+#define SVS_NEXTSNAPSHOTCLIENTS   0x1c
+#define SVS_ENTITYSTATES          0x20
+#define SVS_CLIENTSTATES          0x24
+#define SVS_NUMONEWAYCLIENTS      0x28
+#define SVS_ARCHIVEDFRAMECOUNT    0x2c
+#define SVS_ARCHIVEDENTITYPARTS   0x30
+#define SVS_ARCHIVEDENTITYBUF     0x34
+#define SVS_ARCHIVEDENTITYBUFSIZE 0x38
+#define SVS_ARCHIVEDENTNUMINDEX   0x3c
+#define SVS_ARCHIVEDCLIENTNUMINDEX 0x40
+#define SVS_ARCHIVEDFRAMENUM      0x44
+#define SVS_ARCHIVEDENTITYDATA    0x48
+#define SVS_ARCHIVEDCLIENTDATA    0x4c
+#define SVS_CACHEDFRAMES          0x50
+#define SVS_NEXTARCHIVEDFRAMENUM  0x54
+
+extern void Com_Printf(const char *fmt, ...);
+extern void Com_DPrintf(const char *fmt, ...);
+extern void Com_Error(int code, const char *fmt, ...);
+extern void MSG_WriteByte(msg_t *msg, int value);
+extern void MSG_WriteLong(msg_t *msg, int value);
+extern void MSG_WriteString(msg_t *msg, const char *s);
+extern void MSG_WriteBit0(msg_t *msg);
+extern void MSG_WriteBit1(msg_t *msg);
+extern void MSG_WriteBits(msg_t *msg, int value, int bits);
+extern int MSG_ReadBit(msg_t *msg);
+extern int MSG_ReadBits(msg_t *msg, int bits);
+extern int MSG_ReadLong(msg_t *msg);
+extern void MSG_Init(msg_t *msg, byte *data, int length);
+extern int MSG_WriteBitsCompress(byte *from, byte *to, int size);
+extern void MSG_WriteDeltaEntity(msg_t *msg, byte *from, byte *to, int force);
+extern void MSG_WriteDeltaClient(msg_t *msg, byte *from, byte *to, int force);
+extern void MSG_WriteDeltaPlayerstate(msg_t *msg, byte *from, byte *to);
+extern void MSG_WriteDeltaArchivedEntity(msg_t *msg, byte *from, byte *to, int force);
+extern void MSG_ReadDeltaClient(msg_t *msg, byte *from, byte *to, int clientNum);
+extern void MSG_ReadDeltaPlayerstate(msg_t *msg, byte *from, byte *to);
+extern void MSG_ReadDeltaArchivedEntity(msg_t *msg, byte *from, byte *to, int entNum);
+extern void SV_DropClient(client_t *client, const char *reason);
+extern void SV_Netchan_Transmit(client_t *client, int length, byte *data);
+extern void SV_Netchan_TransmitNextFragment(netchan_t *chan);
+extern void SV_WriteDownloadToClient(client_t *client, msg_t *msg);
+extern void SV_SendClientVoiceData(client_t *client);
+extern byte *SV_GentityNum(int num);
+extern byte *SV_SvEntityForGentity(byte *gent);
+extern void *G_GetClientState(int clientNum);
+extern int GetFollowPlayerState(int clientNum, byte *ps);
+extern int G_GetClientArchiveTime(int clientNum);
+extern void G_SetClientArchiveTime(int clientNum, int archiveTime);
+extern float G_GetFogOpaqueDistSqrd(void);
+extern int BoxDistSqrdExceeds(byte *absmin, byte *absmax, byte *org, float distSqrd);
+extern int CM_PointLeafnum(byte *p);
+extern int CM_LeafCluster(int leafnum);
+extern byte *CM_ClusterPVS(int cluster);
+extern int CM_BoxLeafnums(byte *mins, byte *maxs, int *leafs, int count, int *lastLeaf);
+extern void AddLeanToPosition(byte *org, int viewAngleYaw, int leanf, float a, float b);
+extern void LargeLocal_LargeLocal(byte *ll, int size);
+extern byte *LargeLocal_GetBuf(byte *ll);
+extern void ZN10LargeLocalD1Ev(byte *ll);
+extern int Sys_IsLANAddress(int a, int b, int c);
+extern void Dvar_SetInt(byte *dvar, int value);
+extern void NET_OutOfBandPrint(int sock, int a, int b, int c, const char *data);
+extern void *SV_GameClientNum(int clientNum);
+
 void SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg);
-static cachedSnapshot_t * SV_GetCachedSnapshotInternal(void);
+static cachedSnapshot_t * __attribute__((regparm(1))) SV_GetCachedSnapshotInternal(int archivedFrame);
 void SV_ArchiveSnapshot(void);
 void SV_SendMessageToClient(msg_t *msg, client_t *client);
 qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4], void (*cs)());
@@ -21,823 +133,302 @@ void SV_SendClientSnapshot(client_t *client);
 void SV_SendClientMessages(void);
 
 /* line 483 */
-__attribute__((naked))
 void SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 483 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* client */
-        /* { scope 1 */
-        "movl 0x20810(%edi), %edx\n" /* line 490 | client */
-        "leal 1(%edx), %eax\n"
-        "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edi), %eax\n" /* client */
-        "jge .Lf191f90_00191fbe\n"
-        "movl 0x195f278, %eax\n" /* line 492 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf191f90_0019205e\n"
-        ".Lf191f90_00191fbe:\n"
-        "leal 1(%edx), %ebx\n" /* line 501 | i */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edi), %eax\n" /* client */
-        "cmpl %eax, %ebx\n" /* i */
-        "jle .Lf191f90_00192005\n"
-        ".Lf191f90_00191fcb:\n"
-        "movl %eax, 0x20814(%edi)\n" /* line 515 | client */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 516 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf191f90_00191fd9:\n"
-        "movl %esi, 8(%esp)\n" /* line 508 */
-        "movl %ebx, %eax\n" /* i */
-        "subl 0x20810(%edi), %eax\n" /* client */
-        "subl $1, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b03cc, (%esp)\n" /* "%i: %s
-" */
-        "calll Com_Printf\n"
-        ".Lf191f90_00191ff8:\n"
-        "addl $1, %ebx\n" /* line 501 | i */
-        "movl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%edi), %eax\n" /* client */
-        "cmpl %ebx, %eax\n" /* i */
-        "jl .Lf191f90_00191fcb\n"
-        ".Lf191f90_00192005:\n"
-        "movl $4, 4(%esp)\n" /* line 503 */
-        "movl 0xc(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteByte\n"
-        "movl %ebx, 4(%esp)\n" /* line 504 | i */
-        "movl 0xc(%ebp), %edx\n" /* msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_WriteLong\n"
-        "movl %ebx, %eax\n" /* line 505 | i */
-        "andl $0x7f, %eax\n"
-        "movl %eax, %edx\n"
-        "shll $0xa, %edx\n"
-        "leal 0x400(%edx, %eax, 8), %eax\n"
-        "leal 0xc(%edi, %eax), %esi\n" /* client */
-        "movl %esi, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteString\n"
-        "movl 0x195f278, %edx\n" /* line 507 */
-        "movl (%edx), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf191f90_00191ff8\n"
-        "jmp .Lf191f90_00191fd9\n"
-        ".Lf191f90_0019205e:\n"
-        "leal 0x20c48(%edi), %eax\n" /* line 493 | client */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b0390, (%esp)\n" /* "Client %s has the following un-ack'd reliable commands:
-" */
-        "calll Com_Printf\n"
-        "movl 0x20810(%edi), %edx\n" /* client */
-        "jmp .Lf191f90_00191fbe\n"
-    );
+    byte *cl = (byte *)client;
+    int reliableAck = *(int *)(cl + CLIENT_RELIABLEACK);
+    int reliableSeq = *(int *)(cl + CLIENT_RELIABLESEQUENCE);
+    byte *showdvar = *(byte **)&sv_showcommands_dvar;
+    int i;
+    int idx;
+    char *cmdStr;
+
+    if (reliableAck + 1 < reliableSeq) {
+        if (*(byte *)(*(byte **)showdvar + 8) != 0) {
+            Com_Printf("Client %s has the following un-ack'd reliable commands:\n", cl + CLIENT_NAME);
+            reliableAck = *(int *)(cl + CLIENT_RELIABLEACK);
+        }
+    }
+
+    for (i = reliableAck + 1; i <= reliableSeq; i++) {
+        MSG_WriteByte(msg, 4);
+        MSG_WriteLong(msg, i);
+        idx = i & CLIENT_CMDENTRY_MASK;
+        cmdStr = (char *)(cl + CLIENT_CMDENTRY_BASE + idx * CLIENT_CMDENTRY_SIZE + CLIENT_CMDENTRY_STROFF);
+        MSG_WriteString(msg, cmdStr);
+        if (*(byte *)(*(byte **)*(byte **)&sv_showcommands_dvar + 8) != 0) {
+            Com_Printf("%i: %s\n", i - *(int *)(cl + CLIENT_RELIABLEACK) - 1, cmdStr);
+        }
+    }
+
+    *(int *)(cl + CLIENT_RELIABLESENT) = reliableSeq;
 }
 
 /* line 836 */
-static __attribute__((naked))
-cachedSnapshot_t * SV_GetCachedSnapshotInternal(void)
+static __attribute__((regparm(1)))
+cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
 {
-    __asm__ __volatile__ (
-        ".Lf192080_00192080:\n"
-        "pushl %ebp\n" /* line 836 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl %eax, %edi\n" /* archivedFrame */
-        /* { scope 1 */
-        "movl $0x20000, 4(%esp)\n" /* line 853 */
-        "leal -0x1c(%ebp), %eax\n" /* msg_buf_large_local */
-        "movl %eax, (%esp)\n"
-        "calll LargeLocal_LargeLocal\n"
-        "leal -0x1c(%ebp), %edx\n" /* msg_buf_large_local */
-        "movl %edx, (%esp)\n"
-        "calll LargeLocal_GetBuf\n"
-        "movl %eax, -0x44(%ebp)\n" /* msg_buf */
-        "movl $0x1b4e81b5, %edx\n" /* line 855 */
-        "movl %edi, %eax\n" /* oldnum */
-        "imull %edx\n"
-        "sarl $7, %edx\n"
-        "movl %edi, %eax\n" /* oldnum */
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "leal (%edx, %edx, 4), %edx\n"
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "movl %edi, %edx\n" /* oldnum */
-        "subl %eax, %edx\n"
-        "movl 0x195f284, %ecx\n"
-        "movl 0x30(%ecx), %eax\n"
-        "leal (%eax, %edx, 8), %esi\n" /* partSize */
-        "movl 0x38(%ecx), %eax\n" /* line 856 */
-        "subl $0x2000000, %eax\n"
-        "cmpl %eax, (%esi)\n" /* partSize */
-        "jl .Lf192080_001921e2\n"
-        "movl 0x44(%ecx), %eax\n" /* line 860 */
-        "movl %eax, %ebx\n" /* line 861 | oldArchivedFrame */
-        "subl $0x200, %ebx\n" /* oldArchivedFrame */
-        "movl $0, %edx\n"
-        "cmovsl %edx, %ebx\n" /* oldArchivedFrame */
-        "leal -1(%eax), %ecx\n" /* line 864 */
-        "cmpl %ecx, %ebx\n" /* oldArchivedFrame */
-        "jg .Lf192080_00192154\n"
-        "movl 0x195f284, %edx\n" /* line 866 */
-        "movl 0x50(%edx), %edx\n"
-        "movl %edx, -0x40(%ebp)\n"
-        "movl %ecx, %edx\n"
-        "andl $0x800001ff, %edx\n"
-        "js .Lf192080_00192537\n"
-        "leal (, %edx, 4), %eax\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "addl -0x40(%ebp), %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* cachedFrame */
-        "cmpl (%edx), %edi\n" /* line 867 | oldnum */
-        "jne .Lf192080_00192221\n"
-        ".Lf192080_0019213a:\n"
-        "movl -0x54(%ebp), %ecx\n" /* cachedFrame */
-        "movl 0x195f284, %edx\n" /* line 869 */
-        "movl 0x3c(%edx), %eax\n"
-        "subl $0x4000, %eax\n"
-        "cmpl %eax, 0xc(%ecx)\n"
-        "jge .Lf192080_00192265\n"
-        ".Lf192080_00192154:\n"
-        "movl $0x20000, 8(%esp)\n" /* line 876 */
-        "movl -0x44(%ebp), %eax\n" /* msg_buf */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x34(%ebp), %edx\n" /* msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_Init\n"
-        "movl 4(%esi), %ecx\n" /* line 877 | partSize */
-        "movl %ecx, -0x28(%ebp)\n"
-        "movl (%esi), %edx\n" /* line 879 | partSize */
-        "andl $0x81ffffff, %edx\n"
-        "js .Lf192080_00192562\n"
-        ".Lf192080_00192182:\n"
-        "movl $0x2000000, %esi\n" /* line 881 | partSize */
-        "subl %edx, %esi\n" /* partSize */
-        "cmpl %esi, %ecx\n" /* line 882 | partSize */
-        "jg .Lf192080_0019227b\n"
-        "movl 0x195f284, %eax\n" /* line 884 */
-        "addl 0x34(%eax), %edx\n"
-        "movl %ecx, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl -0x30(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        ".Lf192080_001921ac:\n"
-        "leal -0x34(%ebp), %ecx\n" /* line 892 | msg */
-        "movl %ecx, (%esp)\n"
-        "calll MSG_ReadBit\n"
-        "testl %eax, %eax\n"
-        "jne .Lf192080_001922b9\n"
-        "leal -0x34(%ebp), %eax\n" /* line 894 | msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadLong\n"
-        "movl %eax, %ebx\n" /* oldArchivedFrame */
-        "movl 0x195f284, %esi\n" /* line 896 | partSize */
-        "movl 0x2c(%esi), %eax\n" /* partSize */
-        "subl $0x4b0, %eax\n"
-        "cmpl %eax, %ebx\n" /* oldArchivedFrame */
-        "jge .Lf192080_00192584\n"
-        ".Lf192080_001921e2:\n"
-        "movl $0, -0x54(%ebp)\n" /* line 1097 | cachedFrame */
-        ".Lf192080_001921e9:\n"
-        "leal -0x1c(%ebp), %ecx\n" /* msg_buf_large_local */
-        "movl %ecx, (%esp)\n"
-        "calll ZN10LargeLocalD1Ev\n"
-        /* } scope */
-        "movl -0x54(%ebp), %eax\n" /* line 1098 | cachedFrame */
-        "addl $0x5c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf192080_001921ff:\n"
-        "subl $1, %edx\n" /* line 866 */
-        "orl $0xfffffe00, %edx\n"
-        "addl $1, %edx\n"
-        "leal (, %edx, 4), %eax\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "addl -0x40(%ebp), %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* cachedFrame */
-        "cmpl (%edx), %edi\n" /* line 867 | oldnum */
-        "je .Lf192080_0019224c\n"
-        ".Lf192080_00192221:\n"
-        "subl $1, %ecx\n" /* line 864 */
-        "cmpl %ecx, %ebx\n" /* oldArchivedFrame */
-        "jg .Lf192080_00192154\n"
-        "movl %ecx, %edx\n" /* line 866 */
-        "andl $0x800001ff, %edx\n"
-        "js .Lf192080_001921ff\n"
-        "leal (, %edx, 4), %eax\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "addl -0x40(%ebp), %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* cachedFrame */
-        "cmpl (%edx), %edi\n" /* line 867 | oldnum */
-        "jne .Lf192080_00192221\n"
-        ".Lf192080_0019224c:\n"
-        "movl %edx, %ecx\n"
-        "movl 0x195f284, %edx\n" /* line 869 */
-        "movl 0x3c(%edx), %eax\n"
-        "subl $0x4000, %eax\n"
-        "cmpl %eax, 0xc(%ecx)\n"
-        "jl .Lf192080_00192154\n"
-        ".Lf192080_00192265:\n"
-        "movl 0x40(%edx), %eax\n" /* line 871 */
-        "subl $__mh_execute_header, %eax\n"
-        "cmpl %eax, 0x14(%ecx)\n"
-        "jl .Lf192080_00192154\n"
-        "jmp .Lf192080_001921e9\n"
-        ".Lf192080_0019227b:\n"
-        "movl 0x195f284, %ebx\n" /* line 888 | oldArchivedFrame */
-        "addl 0x34(%ebx), %edx\n" /* oldArchivedFrame */
-        "movl %esi, 8(%esp)\n" /* partSize */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x30(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl %esi, %ecx\n" /* line 889 | partSize */
-        "addl -0x30(%ebp), %ecx\n"
-        "movl -0x28(%ebp), %eax\n"
-        "subl %esi, %eax\n" /* partSize */
-        "movl 0x34(%ebx), %edx\n" /* oldArchivedFrame */
-        "movl %eax, 8(%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll memcpy\n"
-        "jmp .Lf192080_001921ac\n"
-        ".Lf192080_001922b9:\n"
-        "movl 0x195f284, %ebx\n" /* line 1031 | oldArchivedFrame */
-        "movl 0x44(%ebx), %edx\n" /* oldArchivedFrame */
-        "andl $0x800001ff, %edx\n"
-        "js .Lf192080_00192573\n"
-        ".Lf192080_001922ce:\n"
-        "leal (, %edx, 4), %eax\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "movl 0x50(%ebx), %eax\n" /* oldArchivedFrame */
-        "addl %eax, %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* cachedFrame */
-        "movl %edi, (%edx)\n" /* line 1033 | oldnum */
-        "movl $0, 8(%edx)\n" /* line 1034 */
-        "movl 0x3c(%ebx), %eax\n" /* line 1035 | oldArchivedFrame */
-        "movl %eax, 0xc(%edx)\n"
-        "movl $0, 0x10(%edx)\n" /* line 1036 */
-        "movl 0x40(%ebx), %eax\n" /* line 1037 | oldArchivedFrame */
-        "movl %eax, 0x14(%edx)\n"
-        "movl $0, 0x18(%edx)\n" /* line 1038 */
-        "leal -0x34(%ebp), %edx\n" /* line 1039 | msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadLong\n"
-        "movl -0x54(%ebp), %ecx\n" /* cachedFrame */
-        "movl %eax, 4(%ecx)\n"
-        "movl %ebx, %esi\n" /* oldArchivedFrame, partSize */
-        "jmp .Lf192080_00192335\n"
-        ".Lf192080_0019231a:\n"
-        "movl 0x40(%esi), %eax\n" /* line 1058 | partSize */
-        "addl $1, %eax\n"
-        "movl %eax, 0x40(%esi)\n" /* partSize */
-        "cmpl $0x7ffffffd, %eax\n" /* line 1060 */
-        "jg .Lf192080_001923fc\n"
-        ".Lf192080_0019232e:\n"
-        "movl -0x54(%ebp), %ecx\n" /* line 1062 | cachedFrame */
-        "addl $1, 0x10(%ecx)\n"
-        ".Lf192080_00192335:\n"
-        "leal -0x34(%ebp), %eax\n" /* line 1043 | msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadBit\n"
-        "testl %eax, %eax\n"
-        "je .Lf192080_00192430\n"
-        "movl $6, 4(%esp)\n" /* line 1047 */
-        "leal -0x34(%ebp), %edx\n" /* msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadBits\n"
-        "movl %eax, %edi\n" /* oldnum */
-        "movl -0x24(%ebp), %eax\n" /* line 1049 */
-        "cmpl -0x28(%ebp), %eax\n"
-        "jle .Lf192080_00192379\n"
-        "movl $0x2b0418, 4(%esp)\n" /* line 1050 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf192080_00192379:\n"
-        "movl 0x40(%esi), %edx\n" /* line 1052 | partSize */
-        "andl $0x80000fff, %edx\n"
-        "js .Lf192080_001924d4\n"
-        ".Lf192080_00192388:\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl 0x4c(%esi), %edx\n" /* partSize */
-        "leal (%edx, %eax, 8), %ebx\n" /* oldArchivedFrame */
-        "movl %edi, 0xc(%esp)\n" /* line 1053 | oldnum */
-        "leal 4(%ebx), %eax\n" /* oldArchivedFrame */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x34(%ebp), %ecx\n" /* msg */
-        "movl %ecx, (%esp)\n"
-        "calll MSG_ReadDeltaClient\n"
-        "leal -0x34(%ebp), %eax\n" /* line 1054 | msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadBit\n"
-        "movl %eax, (%ebx)\n" /* oldArchivedFrame */
-        "testl %eax, %eax\n" /* line 1055 */
-        "je .Lf192080_0019231a\n"
-        "leal 0x60(%ebx), %eax\n" /* line 1056 | oldArchivedFrame */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x34(%ebp), %edx\n" /* msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadDeltaPlayerstate\n"
-        "movl 0x40(%esi), %eax\n" /* line 1058 | partSize */
-        "addl $1, %eax\n"
-        "movl %eax, 0x40(%esi)\n" /* partSize */
-        "cmpl $0x7ffffffd, %eax\n" /* line 1060 */
-        "jle .Lf192080_0019232e\n"
-        ".Lf192080_001923fc:\n"
-        "movl $0x2b0440, 4(%esp)\n" /* line 1061 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf192080_0019232e\n"
-        ".Lf192080_00192415:\n"
-        "movl $0x2b0468, 4(%esp)\n" /* line 1082 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf192080_00192429:\n"
-        "movl -0x54(%ebp), %ecx\n" /* line 1083 | cachedFrame */
-        "addl $1, 8(%ecx)\n"
-        ".Lf192080_00192430:\n"
-        "movl $0xa, 4(%esp)\n" /* line 1068 */
-        "leal -0x34(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadBits\n"
-        "movl %eax, %ebx\n" /* oldArchivedFrame */
-        "cmpl $0x3ff, %eax\n" /* line 1070 */
-        "je .Lf192080_001924f3\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1073 */
-        "cmpl -0x28(%ebp), %eax\n"
-        "jle .Lf192080_0019246c\n"
-        "movl $0x2b0418, 4(%esp)\n" /* line 1074 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf192080_0019246c:\n"
-        "movl %ebx, 0xc(%esp)\n" /* line 1077 | oldArchivedFrame */
-        "movl 0x195f284, %esi\n" /* partSize */
-        "movl 0x3c(%esi), %edx\n" /* partSize */
-        "andl $0x80003fff, %edx\n"
-        "js .Lf192080_001924e5\n"
-        ".Lf192080_00192481:\n"
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x48(%esi), %edx\n" /* partSize */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal (%ebx, %ebx, 2), %edx\n" /* oldArchivedFrame */
-        "movl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "subl %edx, %eax\n"
-        "movl 0x195ee80, %edx\n"
-        "leal 0x241c(%edx, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x34(%ebp), %edx\n" /* msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadDeltaArchivedEntity\n"
-        "movl 0x3c(%esi), %eax\n" /* line 1079 | partSize */
-        "addl $1, %eax\n"
-        "movl %eax, 0x3c(%esi)\n" /* partSize */
-        "cmpl $0x7ffffffd, %eax\n" /* line 1081 */
-        "jle .Lf192080_00192429\n"
-        "jmp .Lf192080_00192415\n"
-        ".Lf192080_001924d4:\n"
-        "subl $1, %edx\n" /* line 1052 */
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_00192388\n"
-        ".Lf192080_001924e5:\n"
-        "subl $1, %edx\n" /* line 1077 */
-        "orl $0xffffc000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_00192481\n"
-        ".Lf192080_001924f3:\n"
-        "movl 0x195f284, %eax\n" /* line 1086 */
-        "movl 0x44(%eax), %edx\n"
-        "addl $1, %edx\n"
-        "movl %edx, 0x44(%eax)\n"
-        "cmpl $0x7ffffffd, %edx\n" /* line 1088 */
-        "jle .Lf192080_001921e9\n"
-        "movl $0x2b0490, 4(%esp)\n" /* line 1089 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        "leal -0x1c(%ebp), %ecx\n" /* line 1097 | msg_buf_large_local */
-        "movl %ecx, (%esp)\n"
-        "calll ZN10LargeLocalD1Ev\n"
-        /* } scope */
-        "movl -0x54(%ebp), %eax\n" /* line 1098 | cachedFrame */
-        "addl $0x5c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf192080_00192537:\n"
-        "subl $1, %edx\n" /* line 866 */
-        "orl $0xfffffe00, %edx\n"
-        "addl $1, %edx\n"
-        "leal (, %edx, 4), %eax\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "addl -0x40(%ebp), %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* cachedFrame */
-        "cmpl (%edx), %edi\n" /* line 867 | oldnum */
-        "jne .Lf192080_00192221\n"
-        "jmp .Lf192080_0019213a\n"
-        ".Lf192080_00192562:\n"
-        "subl $1, %edx\n" /* line 879 */
-        "orl $0xfe000000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_00192182\n"
-        ".Lf192080_00192573:\n"
-        "subl $1, %edx\n" /* line 1031 */
-        "orl $0xfffffe00, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_001922ce\n"
-        ".Lf192080_00192584:\n"
-        "movl $0x1b4e81b5, %edx\n" /* line 900 */
-        "movl %ebx, %eax\n" /* oldArchivedFrame */
-        "imull %edx\n"
-        "sarl $7, %edx\n"
-        "movl %ebx, %eax\n" /* oldArchivedFrame */
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "leal (%edx, %edx, 4), %edx\n"
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "movl %ebx, %ecx\n" /* oldArchivedFrame */
-        "subl %eax, %ecx\n"
-        "movl 0x30(%esi), %edx\n" /* partSize */
-        "movl 0x38(%esi), %eax\n" /* partSize */
-        "subl $0x2000000, %eax\n"
-        "cmpl %eax, (%edx, %ecx, 8)\n"
-        "jl .Lf192080_001921e2\n"
-        "movl %ebx, %eax\n" /* line 903 | oldArchivedFrame */
-        "calll SV_GetCachedSnapshotInternal\n"
-        "movl %eax, -0x50(%ebp)\n" /* oldCachedFrame */
-        "testl %eax, %eax\n" /* line 904 */
-        "je .Lf192080_001921e2\n"
-        "movl 0x44(%esi), %edx\n" /* line 908 | partSize */
-        "andl $0x800001ff, %edx\n"
-        "js .Lf192080_00192a26\n"
-        ".Lf192080_001925dd:\n"
-        "leal (, %edx, 4), %eax\n"
-        "shll $5, %edx\n"
-        "subl %eax, %edx\n"
-        "movl 0x50(%esi), %ecx\n" /* partSize */
-        "addl %ecx, %edx\n"
-        "movl %edx, -0x54(%ebp)\n" /* cachedFrame */
-        "movl %edi, (%edx)\n" /* line 910 | oldnum */
-        "movl $0, 8(%edx)\n" /* line 911 */
-        "movl 0x3c(%esi), %eax\n" /* line 912 | partSize */
-        "movl %eax, 0xc(%edx)\n"
-        "movl $0, 0x10(%edx)\n" /* line 913 */
-        "movl 0x40(%esi), %eax\n" /* line 914 | partSize */
-        "movl %eax, 0x14(%edx)\n"
-        "movl $1, 0x18(%edx)\n" /* line 915 */
-        "leal -0x34(%ebp), %eax\n" /* line 916 | msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadLong\n"
-        "movl -0x54(%ebp), %edx\n" /* cachedFrame */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x50(%ebp), %ecx\n" /* line 922 | oldCachedFrame */
-        "movl 0x10(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf192080_00192a15\n"
-        "movl -0x50(%ebp), %eax\n" /* line 928 | oldCachedFrame */
-        "movl 0x14(%eax), %edx\n"
-        "andl $0x80000fff, %edx\n"
-        "js .Lf192080_00192a04\n"
-        ".Lf192080_00192645:\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl 0x4c(%esi), %edx\n" /* partSize */
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl %eax, -0x4c(%ebp)\n" /* oldCachedClient */
-        "movl 4(%eax), %edi\n" /* line 929 | oldnum */
-        ".Lf192080_0019265e:\n"
-        "movl $0, -0x48(%ebp)\n" /* oldindex */
-        ".Lf192080_00192665:\n"
-        "leal -0x34(%ebp), %edx\n" /* line 934 | msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadBit\n"
-        "testl %eax, %eax\n"
-        "je .Lf192080_0019279c\n"
-        "movl $6, 4(%esp)\n" /* line 938 */
-        "leal -0x34(%ebp), %ecx\n" /* msg */
-        "movl %ecx, (%esp)\n"
-        "calll MSG_ReadBits\n"
-        "movl %eax, %esi\n" /* partSize */
-        "movl -0x24(%ebp), %eax\n" /* line 940 */
-        "cmpl -0x28(%ebp), %eax\n"
-        "jg .Lf192080_00192855\n"
-        ".Lf192080_00192699:\n"
-        "cmpl %esi, %edi\n" /* line 943 | partSize, oldnum */
-        "jge .Lf192080_001926f7\n"
-        "movl -0x50(%ebp), %eax\n" /* line 948 | oldCachedFrame */
-        "movl 0x10(%eax), %ebx\n" /* oldArchivedFrame */
-        "movl 0x195f284, %edx\n" /* line 954 */
-        "movl 0x4c(%edx), %edx\n"
-        "movl %edx, -0x3c(%ebp)\n"
-        "movl -0x48(%ebp), %ecx\n" /* oldindex */
-        "addl 0x14(%eax), %ecx\n"
-        "jmp .Lf192080_001926c0\n"
-        ".Lf192080_001926b7:\n"
-        "movl $0x1869f, %edi\n" /* line 948 | oldnum */
-        "cmpl %edi, %esi\n" /* line 943 | oldnum, partSize */
-        "jle .Lf192080_001926f7\n"
-        ".Lf192080_001926c0:\n"
-        "addl $1, -0x48(%ebp)\n" /* line 946 | oldindex */
-        "addl $1, %ecx\n"
-        "cmpl -0x48(%ebp), %ebx\n" /* line 948 | oldindex, oldArchivedFrame */
-        "jle .Lf192080_001926b7\n"
-        "movl %ecx, %edx\n" /* line 954 */
-        "andl $0x80000fff, %edx\n"
-        "js .Lf192080_00192844\n"
-        ".Lf192080_001926da:\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl -0x3c(%ebp), %edx\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl %eax, -0x4c(%ebp)\n" /* oldCachedClient */
-        "movl 4(%eax), %edi\n" /* line 955 | oldnum */
-        "cmpl %edi, %esi\n" /* line 943 | oldnum, partSize */
-        "jg .Lf192080_001926c0\n"
-        ".Lf192080_001926f7:\n"
-        "cmpl %esi, %edi\n" /* line 959 | partSize, oldnum */
-        "je .Lf192080_0019286e\n"
-        "movl 0x195f284, %eax\n" /* line 990 */
-        "movl 0x40(%eax), %edx\n"
-        "andl $0x80000fff, %edx\n"
-        "js .Lf192080_00192970\n"
-        "movl %eax, %ecx\n"
-        ".Lf192080_00192715:\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl 0x4c(%ecx), %edx\n"
-        "leal (%edx, %eax, 8), %ebx\n" /* oldArchivedFrame */
-        "movl %esi, 0xc(%esp)\n" /* line 991 | partSize */
-        "leal 4(%ebx), %eax\n" /* oldArchivedFrame */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x34(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadDeltaClient\n"
-        "leal -0x34(%ebp), %edx\n" /* line 992 | msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadBit\n"
-        "movl %eax, (%ebx)\n" /* oldArchivedFrame */
-        "testl %eax, %eax\n" /* line 993 */
-        "jne .Lf192080_00192951\n"
-        ".Lf192080_0019275b:\n"
-        "movl 0x195f284, %edx\n" /* line 996 */
-        "movl 0x40(%edx), %eax\n"
-        "addl $1, %eax\n"
-        "movl %eax, 0x40(%edx)\n"
-        "cmpl $0x7ffffffd, %eax\n" /* line 998 */
-        "jg .Lf192080_00192938\n"
-        ".Lf192080_00192775:\n"
-        "movl -0x54(%ebp), %ecx\n" /* line 1000 | cachedFrame */
-        "addl $1, 0x10(%ecx)\n"
-        "jmp .Lf192080_00192665\n"
-        ".Lf192080_00192781:\n"
-        "movl $0x2b0468, 4(%esp)\n" /* line 1020 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf192080_00192795:\n"
-        "movl -0x54(%ebp), %ecx\n" /* line 1021 | cachedFrame */
-        "addl $1, 8(%ecx)\n"
-        ".Lf192080_0019279c:\n"
-        "movl $0xa, 4(%esp)\n" /* line 1006 */
-        "leal -0x34(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadBits\n"
-        "movl %eax, %ebx\n" /* oldArchivedFrame */
-        "cmpl $0x3ff, %eax\n" /* line 1008 */
-        "je .Lf192080_001924f3\n"
-        "movl -0x24(%ebp), %eax\n" /* line 1011 */
-        "cmpl -0x28(%ebp), %eax\n"
-        "jle .Lf192080_001927d8\n"
-        "movl $0x2b0418, 4(%esp)\n" /* line 1012 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf192080_001927d8:\n"
-        "movl %ebx, 0xc(%esp)\n" /* line 1015 | oldArchivedFrame */
-        "movl 0x195f284, %esi\n" /* partSize */
-        "movl 0x3c(%esi), %edx\n" /* partSize */
-        "andl $0x80003fff, %edx\n"
-        "js .Lf192080_001929cb\n"
-        ".Lf192080_001927f1:\n"
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x48(%esi), %edx\n" /* partSize */
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal (%ebx, %ebx, 2), %edx\n" /* oldArchivedFrame */
-        "movl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "subl %edx, %eax\n"
-        "movl 0x195ee80, %edx\n"
-        "leal 0x241c(%edx, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x34(%ebp), %edx\n" /* msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadDeltaArchivedEntity\n"
-        "movl 0x3c(%esi), %eax\n" /* line 1017 | partSize */
-        "addl $1, %eax\n"
-        "movl %eax, 0x3c(%esi)\n" /* partSize */
-        "cmpl $0x7ffffffd, %eax\n" /* line 1019 */
-        "jle .Lf192080_00192795\n"
-        "jmp .Lf192080_00192781\n"
-        ".Lf192080_00192844:\n"
-        "subl $1, %edx\n" /* line 954 */
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_001926da\n"
-        ".Lf192080_00192855:\n"
-        "movl $0x2b0418, 4(%esp)\n" /* line 941 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf192080_00192699\n"
-        ".Lf192080_0019286e:\n"
-        "movl 0x195f284, %ecx\n" /* line 961 */
-        "movl 0x40(%ecx), %edx\n"
-        "andl $0x80000fff, %edx\n"
-        "js .Lf192080_001929dc\n"
-        ".Lf192080_00192883:\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl 0x4c(%ecx), %edx\n"
-        "leal (%edx, %eax, 8), %ebx\n" /* oldArchivedFrame */
-        "movl %esi, 0xc(%esp)\n" /* line 962 | partSize */
-        "leal 4(%ebx), %eax\n" /* oldArchivedFrame */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* oldCachedClient */
-        "addl $4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x34(%ebp), %eax\n" /* msg */
-        "movl %eax, (%esp)\n"
-        "calll MSG_ReadDeltaClient\n"
-        "leal -0x34(%ebp), %edx\n" /* line 963 | msg */
-        "movl %edx, (%esp)\n"
-        "calll MSG_ReadBit\n"
-        "movl %eax, (%ebx)\n" /* oldArchivedFrame */
-        "testl %eax, %eax\n" /* line 964 */
-        "jne .Lf192080_001929aa\n"
-        ".Lf192080_001928cb:\n"
-        "movl 0x195f284, %edx\n" /* line 967 */
-        "movl 0x40(%edx), %eax\n"
-        "addl $1, %eax\n"
-        "movl %eax, 0x40(%edx)\n"
-        "cmpl $0x7ffffffd, %eax\n" /* line 969 */
-        "jg .Lf192080_00192991\n"
-        ".Lf192080_001928e5:\n"
-        "movl -0x54(%ebp), %ecx\n" /* line 971 | cachedFrame */
-        "addl $1, 0x10(%ecx)\n"
-        "addl $1, -0x48(%ebp)\n" /* line 973 | oldindex */
-        "movl -0x48(%ebp), %edx\n" /* line 975 | oldindex */
-        "movl -0x50(%ebp), %eax\n" /* oldCachedFrame */
-        "cmpl 0x10(%eax), %edx\n"
-        "jge .Lf192080_00192987\n"
-        "movl %eax, %ecx\n"
-        "movl %edx, %eax\n" /* line 981 */
-        "addl 0x14(%ecx), %eax\n"
-        "movl %eax, %edx\n"
-        "andl $0x80000fff, %edx\n"
-        "js .Lf192080_001929f3\n"
-        ".Lf192080_00192914:\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl 0x195f284, %ecx\n"
-        "movl 0x4c(%ecx), %edx\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl %eax, -0x4c(%ebp)\n" /* oldCachedClient */
-        "movl 4(%eax), %edi\n" /* line 982 | oldnum */
-        "jmp .Lf192080_00192665\n"
-        ".Lf192080_00192938:\n"
-        "movl $0x2b0440, 4(%esp)\n" /* line 999 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf192080_00192775\n"
-        ".Lf192080_00192951:\n"
-        "leal 0x60(%ebx), %eax\n" /* line 994 | oldArchivedFrame */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "leal -0x34(%ebp), %ecx\n" /* msg */
-        "movl %ecx, (%esp)\n"
-        "calll MSG_ReadDeltaPlayerstate\n"
-        "jmp .Lf192080_0019275b\n"
-        ".Lf192080_00192970:\n"
-        "subl $1, %edx\n" /* line 990 */
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "movl 0x195f284, %ecx\n"
-        "jmp .Lf192080_00192715\n"
-        ".Lf192080_00192987:\n"
-        "movl $0x1869f, %edi\n" /* line 929 | oldnum */
-        "jmp .Lf192080_00192665\n"
-        ".Lf192080_00192991:\n"
-        "movl $0x2b0440, 4(%esp)\n" /* line 970 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf192080_001928e5\n"
-        ".Lf192080_001929aa:\n"
-        "leal 0x60(%ebx), %eax\n" /* line 965 | oldArchivedFrame */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x4c(%ebp), %eax\n" /* oldCachedClient */
-        "addl $0x60, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal -0x34(%ebp), %ecx\n" /* msg */
-        "movl %ecx, (%esp)\n"
-        "calll MSG_ReadDeltaPlayerstate\n"
-        "jmp .Lf192080_001928cb\n"
-        ".Lf192080_001929cb:\n"
-        "subl $1, %edx\n" /* line 1015 */
-        "orl $0xffffc000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_001927f1\n"
-        ".Lf192080_001929dc:\n"
-        "subl $1, %edx\n" /* line 961 */
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "movl 0x195f284, %ecx\n"
-        "jmp .Lf192080_00192883\n"
-        ".Lf192080_001929f3:\n"
-        "subl $1, %edx\n" /* line 981 */
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_00192914\n"
-        ".Lf192080_00192a04:\n"
-        "subl $1, %edx\n" /* line 928 */
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_00192645\n"
-        ".Lf192080_00192a15:\n"
-        "movl $0, -0x4c(%ebp)\n" /* line 922 | oldCachedClient */
-        "movl $0x1869f, %edi\n" /* oldnum */
-        "jmp .Lf192080_0019265e\n"
-        ".Lf192080_00192a26:\n"
-        "subl $1, %edx\n" /* line 908 */
-        "orl $0xfffffe00, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf192080_001925dd\n"
-        "movl %eax, %ebx\n" /* oldArchivedFrame */
-        "leal -0x1c(%ebp), %eax\n" /* line 1097 | msg_buf_large_local */
-        "movl %eax, (%esp)\n"
-        "calll ZN10LargeLocalD1Ev\n"
-        "movl %ebx, (%esp)\n" /* oldArchivedFrame */
-        "calll __Unwind_Resume\n"
-    );
+    byte msg_buf_ll[16]; /* LargeLocal */
+    byte *msg_buf;
+    msg_t msg;
+    byte *svs;
+    cachedSnapshot_t *cachedFrame = NULL;
+    byte *partEntry;
+
+    LargeLocal_LargeLocal(msg_buf_ll, 0x20000);
+    msg_buf = LargeLocal_GetBuf(msg_buf_ll);
+
+    svs = *(byte **)&svs_ptr;
+
+    /* Compute archived entity part entry (archivedFrame % 1200, stride 8) */
+    partEntry = *(byte **)(svs + SVS_ARCHIVEDENTITYPARTS) + (archivedFrame % 1200) * 8;
+
+    /* Check data freshness */
+    if (*(int *)partEntry < *(int *)(svs + SVS_ARCHIVEDENTITYBUFSIZE) - 0x2000000)
+        goto return_null;
+
+    /* Search existing cached frames */
+    {
+        int searchStart = *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM);
+        int searchEnd = searchStart - 0x200;
+        byte *cfBase;
+        int i;
+
+        if (searchEnd < 0) searchEnd = 0;
+
+        if (searchStart - 1 >= searchEnd) {
+            cfBase = *(byte **)(*(byte **)&svs_ptr + SVS_CACHEDFRAMES);
+            for (i = searchStart - 1; i >= searchEnd; i--) {
+                cachedSnapshot_t *cf = (cachedSnapshot_t *)(cfBase + (i % 512) * 28);
+                if (cf->archivedFrame == archivedFrame) {
+                    cachedFrame = cf;
+                    svs = *(byte **)&svs_ptr;
+                    if (cf->first_entity >= *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) - 0x4000) {
+                        if (cf->first_client >= *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) - (int)&__mh_execute_header) {
+                            goto cleanup; /* Still valid */
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    /* Decode from archived entity data */
+    MSG_Init(&msg, msg_buf, 0x20000);
+    msg.cursize = *(int *)(partEntry + 4);
+
+    {
+        int dataOffset = *(int *)partEntry % 0x2000000;
+        int remaining = 0x2000000 - dataOffset;
+        byte *entBuf;
+
+        if (msg.cursize <= remaining) {
+            svs = *(byte **)&svs_ptr;
+            entBuf = *(byte **)(svs + SVS_ARCHIVEDENTITYBUF);
+            memcpy(msg.data, entBuf + dataOffset, msg.cursize);
+        } else {
+            svs = *(byte **)&svs_ptr;
+            entBuf = *(byte **)(svs + SVS_ARCHIVEDENTITYBUF);
+            memcpy(msg.data, entBuf + dataOffset, remaining);
+            memcpy(msg.data + remaining, entBuf, msg.cursize - remaining);
+        }
+    }
+
+    if (MSG_ReadBit(&msg) == 0) {
+        /* Delta decode from old archived frame */
+        int oldArchivedFrame = MSG_ReadLong(&msg);
+        cachedSnapshot_t *oldCachedFrame;
+
+        svs = *(byte **)&svs_ptr;
+        if (oldArchivedFrame < *(int *)(svs + SVS_ARCHIVEDFRAMECOUNT) - 0x4b0)
+            goto return_null;
+
+        /* Validate old data freshness */
+        {
+            byte *oldPart = *(byte **)(svs + SVS_ARCHIVEDENTITYPARTS) + (oldArchivedFrame % 1200) * 8;
+            if (*(int *)oldPart < *(int *)(svs + SVS_ARCHIVEDENTITYBUFSIZE) - 0x2000000)
+                goto return_null;
+        }
+
+        oldCachedFrame = SV_GetCachedSnapshotInternal(oldArchivedFrame);
+        if (oldCachedFrame == NULL)
+            goto return_null;
+
+        /* Allocate new cached frame slot */
+        {
+            int frameIdx = *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) % 512;
+            cachedFrame = (cachedSnapshot_t *)(*(byte **)(svs + SVS_CACHEDFRAMES) + frameIdx * 28);
+        }
+        cachedFrame->archivedFrame = archivedFrame;
+        cachedFrame->num_entities = 0;
+        cachedFrame->first_entity = *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX);
+        cachedFrame->num_clients = 0;
+        cachedFrame->first_client = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX);
+        cachedFrame->usesDelta = 1;
+        cachedFrame->time = MSG_ReadLong(&msg);
+
+        /* Decode clients with delta from old cached frame */
+        {
+            int oldNumClients = oldCachedFrame->num_clients;
+            byte *oldCachedClient = NULL;
+            int oldClientNum = 0x1869f;
+            int oldindex = 0;
+
+            if (oldNumClients > 0) {
+                int firstIdx = oldCachedFrame->first_client % 0x1000;
+                oldCachedClient = *(byte **)(svs + SVS_ARCHIVEDCLIENTDATA) + firstIdx * CACHEDCLIENT_STRIDE;
+                oldClientNum = *(int *)(oldCachedClient + 4);
+            }
+
+            while (MSG_ReadBit(&msg) != 0) {
+                int newClientNum = MSG_ReadBits(&msg, 6);
+                int clientIdx;
+                byte *newCachedClient;
+
+                if (msg.readcount > msg.cursize)
+                    Com_Error(1, "SV_GetCachedSnapshot: msg overflow");
+
+                /* Skip old clients before this one */
+                while (oldClientNum < newClientNum) {
+                    oldindex++;
+                    if (oldindex >= oldNumClients) {
+                        oldClientNum = 0x1869f;
+                        break;
+                    }
+                    {
+                        byte *cdata = *(byte **)(*(byte **)&svs_ptr + SVS_ARCHIVEDCLIENTDATA);
+                        int nextIdx = (oldCachedFrame->first_client + oldindex) % 0x1000;
+                        oldCachedClient = cdata + nextIdx * CACHEDCLIENT_STRIDE;
+                        oldClientNum = *(int *)(oldCachedClient + 4);
+                    }
+                }
+
+                svs = *(byte **)&svs_ptr;
+                clientIdx = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) % 0x1000;
+                newCachedClient = *(byte **)(svs + SVS_ARCHIVEDCLIENTDATA) + clientIdx * CACHEDCLIENT_STRIDE;
+
+                if (oldClientNum == newClientNum) {
+                    /* Delta from old cached client */
+                    MSG_ReadDeltaClient(&msg, oldCachedClient + 4, newCachedClient + 4, newClientNum);
+                    *(int *)newCachedClient = MSG_ReadBit(&msg);
+                    if (*(int *)newCachedClient != 0)
+                        MSG_ReadDeltaPlayerstate(&msg, oldCachedClient + 0x60, newCachedClient + 0x60);
+
+                    svs = *(byte **)&svs_ptr;
+                    *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
+                    if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
+                        Com_Error(0, "SV_GetCachedSnapshot: too many clients");
+
+                    cachedFrame->num_clients++;
+
+                    /* Advance old client */
+                    oldindex++;
+                    if (oldindex >= oldCachedFrame->num_clients) {
+                        oldClientNum = 0x1869f;
+                    } else {
+                        byte *cdata = *(byte **)(*(byte **)&svs_ptr + SVS_ARCHIVEDCLIENTDATA);
+                        int nextIdx = (oldCachedFrame->first_client + oldindex) % 0x1000;
+                        oldCachedClient = cdata + nextIdx * CACHEDCLIENT_STRIDE;
+                        oldClientNum = *(int *)(oldCachedClient + 4);
+                    }
+                } else {
+                    /* New client not in old frame - delta from NULL */
+                    MSG_ReadDeltaClient(&msg, NULL, newCachedClient + 4, newClientNum);
+                    *(int *)newCachedClient = MSG_ReadBit(&msg);
+                    if (*(int *)newCachedClient != 0)
+                        MSG_ReadDeltaPlayerstate(&msg, NULL, newCachedClient + 0x60);
+
+                    svs = *(byte **)&svs_ptr;
+                    *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
+                    if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
+                        Com_Error(0, "SV_GetCachedSnapshot: too many clients");
+
+                    cachedFrame->num_clients++;
+                }
+            }
+        }
+    } else {
+        /* Full fresh decode (no delta base) */
+        svs = *(byte **)&svs_ptr;
+
+        {
+            int frameIdx = *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) % 512;
+            cachedFrame = (cachedSnapshot_t *)(*(byte **)(svs + SVS_CACHEDFRAMES) + frameIdx * 28);
+        }
+        cachedFrame->archivedFrame = archivedFrame;
+        cachedFrame->num_entities = 0;
+        cachedFrame->first_entity = *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX);
+        cachedFrame->num_clients = 0;
+        cachedFrame->first_client = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX);
+        cachedFrame->usesDelta = 0;
+        cachedFrame->time = MSG_ReadLong(&msg);
+
+        /* Decode clients fresh (no delta base) */
+        while (MSG_ReadBit(&msg) != 0) {
+            int clientNum = MSG_ReadBits(&msg, 6);
+            int clientIdx;
+            byte *newCachedClient;
+
+            if (msg.readcount > msg.cursize)
+                Com_Error(1, "SV_GetCachedSnapshot: msg overflow");
+
+            clientIdx = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) % 0x1000;
+            newCachedClient = *(byte **)(svs + SVS_ARCHIVEDCLIENTDATA) + clientIdx * CACHEDCLIENT_STRIDE;
+
+            MSG_ReadDeltaClient(&msg, NULL, newCachedClient + 4, clientNum);
+            *(int *)newCachedClient = MSG_ReadBit(&msg);
+            if (*(int *)newCachedClient != 0)
+                MSG_ReadDeltaPlayerstate(&msg, NULL, newCachedClient + 0x60);
+
+            *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
+            if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
+                Com_Error(0, "SV_GetCachedSnapshot: too many clients");
+
+            cachedFrame->num_clients++;
+        }
+    }
+
+    /* Decode entities (shared between delta and fresh paths) */
+    while (1) {
+        int entNum = MSG_ReadBits(&msg, 10);
+        int entIdx;
+        byte *archivedEnt;
+        byte *sv;
+
+        if (entNum == 0x3ff)
+            break;
+
+        if (msg.readcount > msg.cursize)
+            Com_Error(1, "SV_GetCachedSnapshot: msg overflow");
+
+        svs = *(byte **)&svs_ptr;
+        entIdx = *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) % 0x4000;
+        archivedEnt = *(byte **)(svs + SVS_ARCHIVEDENTITYDATA) + entIdx * 276;
+
+        sv = *(byte **)&sv_ptr;
+        MSG_ReadDeltaArchivedEntity(&msg, sv + 0x241c + entNum * 372, archivedEnt, entNum);
+
+        *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) += 1;
+        if (*(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) > 0x7ffffffd)
+            Com_Error(0, "SV_GetCachedSnapshot: too many entities");
+
+        cachedFrame->num_entities++;
+    }
+
+    /* Increment archived frame number */
+    svs = *(byte **)&svs_ptr;
+    *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) += 1;
+    if (*(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) > 0x7ffffffd)
+        Com_Error(0, "SV_GetCachedSnapshot: too many frames");
+
+    goto cleanup;
+
+return_null:
+    cachedFrame = NULL;
+cleanup:
+    ZN10LargeLocalD1Ev(msg_buf_ll);
+    return cachedFrame;
 }
 
 /* line 1772 */
@@ -1546,691 +1137,328 @@ void SV_ArchiveSnapshot(void)
 }
 
 /* line 1619 */
-__attribute__((naked))
+/* line 1619 */
 void SV_SendMessageToClient(msg_t *msg, client_t *client)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1619 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* msg */
-        "movl 0xc(%ebp), %ebx\n" /* client */
-        /* { scope 1 */
-        "movl $0x4000, 4(%esp)\n" /* line 1623 */
-        "leal -0x1c(%ebp), %eax\n" /* compressedBuf_large_local */
-        "movl %eax, (%esp)\n"
-        "calll LargeLocal_LargeLocal\n"
-        "leal -0x1c(%ebp), %edx\n" /* compressedBuf_large_local */
-        "movl %edx, (%esp)\n"
-        "calll LargeLocal_GetBuf\n"
-        "movl %eax, %edi\n" /* compressedSize */
-        "movl 4(%esi), %eax\n" /* line 1626 | rateMsec */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%edi)\n" /* compressedSize */
-        "movl 0xc(%esi), %eax\n" /* line 1627 | rateMsec */
-        "subl $4, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "leal 4(%edi), %eax\n" /* compressedSize */
-        "movl %eax, 4(%esp)\n"
-        "movl 4(%esi), %eax\n" /* rateMsec */
-        "addl $4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteBitsCompress\n"
-        "addl $4, %eax\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl 8(%ebx), %eax\n" /* line 1629 | client */
-        "testl %eax, %eax\n"
-        "je .Lf19342a_00193498\n"
-        "movl %eax, 4(%esp)\n" /* line 1631 */
-        "movl %ebx, (%esp)\n" /* client */
-        "calll SV_DropClient\n"
-        ".Lf19342a_00193498:\n"
-        "movl 0x6e5b4(%ebx), %edx\n" /* line 1637 | client */
-        "andl $0x1f, %edx\n"
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $5, %eax\n"
-        "subl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "movl -0x2c(%ebp), %edx\n"
-        "movl %edx, 0x233e4(%ebx, %eax, 4)\n" /* client */
-        "movl 0x6e5b4(%ebx), %edx\n" /* line 1638 | client */
-        "andl $0x1f, %edx\n"
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $5, %eax\n"
-        "subl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "movl 0x195f284, %esi\n" /* rateMsec */
-        "movl 4(%esi), %edx\n" /* rateMsec */
-        "movl %edx, 0x233dc(%ebx, %eax, 4)\n" /* client */
-        "movl 0x6e5b4(%ebx), %edx\n" /* line 1639 | client */
-        "andl $0x1f, %edx\n"
-        "leal (%edx, %edx, 4), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $5, %eax\n"
-        "subl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "movl $0xffffffff, 0x233e0(%ebx, %eax, 4)\n" /* client */
-        "movl -0x2c(%ebp), %eax\n" /* line 1642 */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* compressedSize */
-        "movl %ebx, (%esp)\n" /* client */
-        "calll SV_Netchan_Transmit\n"
-        "cmpl $2, 0x6e5c4(%ebx)\n" /* line 1653 | client */
-        "je .Lf19342a_00193550\n"
-        "movl 0x6e5c4(%ebx), %ecx\n" /* client */
-        "movl %ecx, -0x28(%ebp)\n"
-        "movl 0x6e5c8(%ebx), %edx\n" /* client */
-        "movl %edx, -0x24(%ebp)\n"
-        "movl 0x6e5cc(%ebx), %eax\n" /* client */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll Sys_IsLANAddress\n"
-        "testl %eax, %eax\n"
-        "je .Lf19342a_0019356f\n"
-        ".Lf19342a_00193550:\n"
-        "movl 4(%esi), %eax\n" /* line 1655 | rateMsec */
-        "subl $1, %eax\n"
-        "movl %eax, 0x20d18(%ebx)\n" /* client */
-        "leal -0x1c(%ebp), %edx\n" /* line 1687 | compressedBuf_large_local */
-        "movl %edx, (%esp)\n"
-        "calll ZN10LargeLocalD1Ev\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 1688 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf19342a_0019356f:\n"
-        "cmpl $0x5dc, -0x2c(%ebp)\n" /* line 1587 */
-        "jg .Lf19342a_00193633\n"
-        "movl -0x2c(%ebp), %edi\n"
-        ".Lf19342a_0019357f:\n"
-        "movl 0x6e5a8(%ebx), %esi\n" /* line 1591 | rate */
-        "movl 0x195f268, %eax\n" /* line 1592 */
-        "movl (%eax), %edx\n"
-        "movl 8(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf19342a_001935a6\n"
-        "cmpl $0x3e7, %eax\n" /* line 1594 */
-        "jle .Lf19342a_00193676\n"
-        ".Lf19342a_0019359e:\n"
-        "movl 8(%edx), %eax\n" /* line 1598 */
-        "cmpl %eax, %esi\n" /* rate */
-        "cmovgl %eax, %esi\n" /* rate */
-        ".Lf19342a_001935a6:\n"
-        "leal (%edi, %edi, 4), %eax\n" /* line 1603 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal 0xbb80(, %eax, 8), %edx\n"
-        "movl %edx, %eax\n"
-        "cltd\n"
-        "idivl %esi\n" /* rate */
-        "movl %eax, %esi\n" /* rate */
-        "movl 0x195f2bc, %eax\n" /* line 1605 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf19342a_00193649\n"
-        /* } scope */
-        ".Lf19342a_001935ca:\n"
-        "movl 0x6e5ac(%ebx), %eax\n" /* line 1662 | client */
-        "cmpl %eax, %esi\n" /* rateMsec */
-        "jge .Lf19342a_0019363d\n"
-        "movl $0, 0x20d1c(%ebx)\n" /* line 1666 | client */
-        "movl %eax, %esi\n" /* rateMsec */
-        ".Lf19342a_001935e0:\n"
-        "movl 0x195f284, %edx\n" /* line 1673 */
-        "movl %esi, %eax\n" /* rateMsec */
-        "addl 4(%edx), %eax\n"
-        "movl %eax, 0x20d18(%ebx)\n" /* client */
-        "cmpl $4, (%ebx)\n" /* line 1676 | client */
-        "je .Lf19342a_00193612\n"
-        "cmpb $0, 0x20c68(%ebx)\n" /* line 1681 | client */
-        "jne .Lf19342a_00193612\n"
-        "movl 4(%edx), %edx\n"
-        "addl $0x3e8, %edx\n"
-        "cmpl %edx, %eax\n"
-        "jge .Lf19342a_00193612\n"
-        "movl %edx, 0x20d18(%ebx)\n" /* line 1683 | client */
-        ".Lf19342a_00193612:\n"
-        "movl 0x195ee80, %eax\n" /* line 1687 */
-        "movl -0x2c(%ebp), %edx\n"
-        "addl %edx, 0x5f48c(%eax)\n"
-        "leal -0x1c(%ebp), %eax\n" /* compressedBuf_large_local */
-        "movl %eax, (%esp)\n"
-        "calll ZN10LargeLocalD1Ev\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 1688 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19342a_00193633:\n"
-        "movl $0x5dc, %edi\n" /* line 1656 | compressedSize */
-        "jmp .Lf19342a_0019357f\n"
-        ".Lf19342a_0019363d:\n"
-        "movl $1, 0x20d1c(%ebx)\n" /* line 1670 | client */
-        "jmp .Lf19342a_001935e0\n"
-        /* { scope 2 */
-        ".Lf19342a_00193649:\n"
-        "movl 0x6e5a8(%ebx), %eax\n" /* line 1606 */
-        "movl %eax, 0x10(%esp)\n"
-        "leal 0x20c48(%ebx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* rate */
-        "movl $0x2b0548, (%esp)\n" /* "It would take %ims to send %i bytes to client %s (rate %i)
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf19342a_001935ca\n"
-        ".Lf19342a_00193676:\n"
-        "movl $0x3e8, 4(%esp)\n" /* line 1596 */
-        "movl %edx, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl 0x195f268, %eax\n"
-        "movl (%eax), %edx\n"
-        "jmp .Lf19342a_0019359e\n"
-        "movl %eax, %ebx\n"
-        /* } scope */
-        "leal -0x1c(%ebp), %edx\n" /* line 1687 | compressedBuf_large_local */
-        "movl %edx, (%esp)\n"
-        "calll ZN10LargeLocalD1Ev\n"
-        "movl %ebx, (%esp)\n" /* client */
-        "calll __Unwind_Resume\n"
-    );
+    byte *cl = (byte *)client;
+    byte *svs = *(byte **)&svs_ptr;
+    byte *sv = *(byte **)&sv_ptr;
+    byte compressedBuf_ll[24];
+    byte *compressedBuf;
+    int compressedSize;
+    int idx;
+    int rateMsec;
+    int rate;
+    int messageSize;
+    byte *dvar;
+    int svsTime;
+
+    LargeLocal_LargeLocal(compressedBuf_ll, 0x4000);
+    compressedBuf = LargeLocal_GetBuf(compressedBuf_ll);
+
+    /* Copy sequence number as first 4 bytes */
+    *(int *)compressedBuf = *(int *)*(byte **)((byte *)msg + 4);
+
+    /* Compress the message data */
+    compressedSize = MSG_WriteBitsCompress(*(byte **)((byte *)msg + 4) + 4, compressedBuf + 4, *(int *)((byte *)msg + 0xc) - 4) + 4;
+
+    /* Check for client error */
+    if (*(int *)(cl + 8) != 0) {
+        SV_DropClient(client, (const char *)*(int *)(cl + 8));
+    }
+
+    /* Store snapshot info in client frame history */
+    /* idx = netchan.outgoingSequence & 31 */
+    /* frame index math: idx*5 => *32 - idx*5 => *16 + idx = idx*2401, *4 for array */
+    idx = *(int *)(cl + CLIENT_NETCHAN) & 0x1f;
+    {
+        int t = idx * 5;
+        int frameOff = ((t * 32 - t) * 16 + idx) * 4;
+        *(int *)(cl + 0x233e4 + frameOff) = compressedSize;
+        *(int *)(cl + 0x233dc + frameOff) = *(int *)(svs + SVS_TIME);
+        *(int *)(cl + 0x233e0 + frameOff) = -1;
+    }
+
+    /* Transmit */
+    SV_Netchan_Transmit(client, compressedSize, compressedBuf);
+
+    /* Rate limiting */
+    if (*(int *)(cl + CLIENT_NETTYPE) == 2 ||
+        Sys_IsLANAddress(*(int *)(cl + CLIENT_NETTYPE), *(int *)(cl + CLIENT_NETTYPE + 4), *(int *)(cl + CLIENT_NETTYPE + 8))) {
+        /* LAN client - set next snapshot time to svs.time - 1 */
+        *(int *)(cl + CLIENT_SNAPSHOTMSEC) = *(int *)(svs + SVS_TIME) - 1;
+        ZN10LargeLocalD1Ev(compressedBuf_ll);
+        return;
+    }
+
+    /* Rate-limited client */
+    messageSize = compressedSize;
+    if (messageSize > 0x5dc)
+        messageSize = 0x5dc;
+
+    rate = *(int *)(cl + CLIENT_RATE);
+    dvar = *(byte **)&sv_minPingRate_dvar;
+    dvar = *(byte **)dvar;
+    if (*(int *)(dvar + 8) != 0) {
+        if (*(int *)(dvar + 8) <= 0x3e7) {
+            Dvar_SetInt(dvar, 0x3e8);
+            dvar = *(byte **)&sv_minPingRate_dvar;
+            dvar = *(byte **)dvar;
+        }
+        if (rate > *(int *)(dvar + 8))
+            rate = *(int *)(dvar + 8);
+    }
+
+    /* rateMsec = (messageSize * 1000 * 8 + 48000) / rate */
+    rateMsec = (messageSize * 5 * 5 * 5 * 8 + 0xbb80) / rate;
+
+    /* showpackets dvar check */
+    dvar = *(byte **)&showpackets_dvar;
+    if (*(byte *)(*(byte **)dvar + 8) != 0) {
+        Com_Printf("It would take %ims to send %i bytes to client %s (rate %i)\n",
+            rateMsec, messageSize, cl + CLIENT_NAME, *(int *)(cl + CLIENT_RATE));
+    }
+
+    if (rateMsec < *(int *)(cl + CLIENT_RATEDELAYED)) {
+        *(int *)(cl + CLIENT_PUREAUTH) = 0;
+        rateMsec = *(int *)(cl + CLIENT_RATEDELAYED);
+    } else {
+        *(int *)(cl + CLIENT_PUREAUTH) = 1;
+    }
+
+    svsTime = *(int *)(svs + SVS_TIME);
+    *(int *)(cl + CLIENT_SNAPSHOTMSEC) = rateMsec + svsTime;
+
+    if (*(int *)(cl + CLIENT_STATE) != 4) {
+        if (*(byte *)(cl + CLIENT_DOWNLOAD) == 0) {
+            if (rateMsec + svsTime < svsTime + 0x3e8) {
+                *(int *)(cl + CLIENT_SNAPSHOTMSEC) = svsTime + 0x3e8;
+            }
+        }
+    }
+
+    /* Track bandwidth */
+    *(int *)(sv + 0x5f48c) += compressedSize;
+
+    ZN10LargeLocalD1Ev(compressedBuf_ll);
 }
 
 /* line 1302 */
-__attribute__((naked))
 qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4], void (*cs)())
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1302 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl 0x195f284, %esi\n" /* line 1116 */
-        "movl 0x28(%esi), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_0019372e\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1125 | pArchiveTime */
-        "movl (%eax), %edx\n"
-        "testl %edx, %edx\n" /* line 1126 */
-        "jle .Lf1936a8_0019371e\n"
-        "movl 0x2c(%esi), %ecx\n" /* line 1129 */
-        "movl 0x195f2f8, %ebx\n" /* archivedFrame */
-        "movl (%ebx), %eax\n" /* archivedFrame */
-        "movl 8(%eax), %edi\n"
-        "movl %edx, %ebx\n" /* archivedFrame */
-        "imull %edi, %ebx\n" /* archivedFrame */
-        "movl $0x10624dd3, %edx\n"
-        "movl %ebx, %eax\n" /* archivedFrame */
-        "imull %edx\n"
-        "sarl $6, %edx\n"
-        "movl %ebx, %eax\n" /* archivedFrame */
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edx\n"
-        "movl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "leal -0x4b0(%ecx), %ebx\n" /* line 1130 | archivedFrame */
-        "cmpl %ebx, %eax\n" /* archivedFrame */
-        "jl .Lf1936a8_00193798\n"
-        "movl %eax, %ebx\n" /* archivedFrame */
-        ".Lf1936a8_00193701:\n"
-        "testl %ebx, %ebx\n" /* line 1135 | archivedFrame */
-        "js .Lf1936a8_00193866\n"
-        ".Lf1936a8_00193709:\n"
-        "cmpl %ebx, 0x2c(%esi)\n" /* line 1141 | archivedFrame */
-        "jg .Lf1936a8_001937b3\n"
-        ".Lf1936a8_00193712:\n"
-        "movl 0xc(%ebp), %ebx\n" /* line 1149 | pArchiveTime, archivedFrame */
-        "movl $0, (%ebx)\n" /* archivedFrame */
-        "movl 0xc(%ebp), %eax\n" /* pArchiveTime */
-        /* } scope */
-        ".Lf1936a8_0019371e:\n"
-        "movl (%eax), %eax\n" /* line 1315 */
-        "testl %eax, %eax\n"
-        "jle .Lf1936a8_00193737\n"
-        ".Lf1936a8_00193724:\n"
-        "xorl %eax, %eax\n" /* line 1378 */
-        /* } scope */
-        ".Lf1936a8_00193726:\n"
-        "addl $0x2c, %esp\n" /* line 1379 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1936a8_0019372e:\n"
-        "movl 0xc(%ebp), %eax\n" /* pArchiveTime */
-        /* { scope 1 */
-        "movl (%eax), %eax\n" /* line 1315 */
-        "testl %eax, %eax\n"
-        "jg .Lf1936a8_00193724\n"
-        ".Lf1936a8_00193737:\n"
-        "movl 0xc(%esi), %ecx\n" /* line 1165 */
-        "movl 8(%ebp), %edx\n" /* clientNum */
-        "leal (%edx, %edx, 4), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $7, %edx\n"
-        "addl %edx, %eax\n"
-        "shll $6, %eax\n"
-        "addl 8(%ebp), %eax\n" /* clientNum */
-        "leal (, %eax, 4), %edx\n"
-        "subl %eax, %edx\n"
-        "cmpl $4, (%ecx, %edx, 4)\n"
-        "jne .Lf1936a8_00193724\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 1167 | ps */
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %ebx\n" /* clientNum, archivedFrame */
-        "movl %ebx, (%esp)\n" /* archivedFrame */
-        "calll GetFollowPlayerState\n"
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_00193724\n"
-        "movl %ebx, (%esp)\n" /* line 1169 | archivedFrame */
-        "calll G_GetClientState\n"
-        "movl $0x5c, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* cs */
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl $1, %eax\n"
-        "jmp .Lf1936a8_00193726\n"
-        /* { scope 2 */
-        ".Lf1936a8_00193798:\n"
-        "subl %ebx, %ecx\n" /* line 1133 | archivedFrame */
-        "leal (%ecx, %ecx, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $3, %eax\n"
-        "cltd\n"
-        "idivl %edi\n"
-        "movl 0xc(%ebp), %edx\n" /* pArchiveTime */
-        "movl %eax, (%edx)\n"
-        "jmp .Lf1936a8_00193701\n"
-        ".Lf1936a8_001937b3:\n"
-        "movl 0x195f284, %edi\n"
-        "jmp .Lf1936a8_001937c9\n"
-        ".Lf1936a8_001937bb:\n"
-        "addl $1, %ebx\n" /* line 1146 | archivedFrame */
-        "movl %edi, %esi\n" /* line 1141 */
-        "cmpl 0x2c(%edi), %ebx\n" /* archivedFrame */
-        "jge .Lf1936a8_00193712\n"
-        ".Lf1936a8_001937c9:\n"
-        "movl %ebx, %eax\n" /* line 1143 | archivedFrame */
-        "calll SV_GetCachedSnapshotInternal\n"
-        "testl %eax, %eax\n" /* line 1144 */
-        "je .Lf1936a8_001937bb\n"
-        /* } scope */
-        "movl 0x195f284, %edx\n" /* line 1320 */
-        "movl 4(%edx), %esi\n" /* deltaTime */
-        "subl 4(%eax), %esi\n" /* deltaTime */
-        "movl 0x10(%eax), %ecx\n" /* line 1323 */
-        "movl %ecx, -0x20(%ebp)\n"
-        "testl %ecx, %ecx\n"
-        "jle .Lf1936a8_00193724\n"
-        "movl 0x4c(%edx), %edx\n" /* line 1325 */
-        "movl %edx, -0x1c(%ebp)\n"
-        "movl 0x14(%eax), %edi\n"
-        "movl %edi, %edx\n"
-        "andl $0x80000fff, %edx\n"
-        "js .Lf1936a8_001939f9\n"
-        ".Lf1936a8_00193805:\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "leal (%edx, %eax, 8), %ebx\n" /* cachedClient */
-        "movl 8(%ebp), %ecx\n" /* line 1326 | clientNum */
-        "cmpl 4(%ebx), %ecx\n" /* cachedClient */
-        "je .Lf1936a8_0019388d\n"
-        "xorl %ecx, %ecx\n" /* line 1328 */
-        "jmp .Lf1936a8_0019383f\n"
-        ".Lf1936a8_00193824:\n"
-        "leal (%edx, %edx, 4), %eax\n" /* line 1325 */
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "addl %edx, %eax\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "leal (%edx, %eax, 8), %ebx\n" /* cachedClient */
-        "movl 8(%ebp), %eax\n" /* line 1326 | clientNum */
-        "cmpl 4(%ebx), %eax\n" /* cachedClient */
-        "je .Lf1936a8_0019388d\n"
-        ".Lf1936a8_0019383f:\n"
-        "addl $1, %ecx\n" /* line 1323 */
-        "cmpl %ecx, -0x20(%ebp)\n"
-        "je .Lf1936a8_00193724\n"
-        "leal (%edi, %ecx), %eax\n" /* line 1325 */
-        "movl %eax, %edx\n"
-        "andl $0x80000fff, %edx\n"
-        "jns .Lf1936a8_00193824\n"
-        "subl $1, %edx\n"
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf1936a8_00193824\n"
-        /* { scope 2 */
-        ".Lf1936a8_00193866:\n"
-        "movl 0x2c(%esi), %eax\n" /* line 1138 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $3, %eax\n"
-        "movl 0x195f2f8, %ecx\n"
-        "movl (%ecx), %ebx\n" /* archivedFrame */
-        "cltd\n"
-        "idivl 8(%ebx)\n" /* archivedFrame */
-        "movl 0xc(%ebp), %ecx\n" /* pArchiveTime */
-        "movl %eax, (%ecx)\n"
-        "xorl %ebx, %ebx\n" /* archivedFrame */
-        "jmp .Lf1936a8_00193709\n"
-        /* } scope */
-        ".Lf1936a8_0019388d:\n"
-        "movl (%ebx), %eax\n" /* line 1328 | cachedClient */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_00193724\n"
-        "leal 0x60(%ebx), %eax\n" /* line 1340 | cachedClient */
-        "movl $0x26a8, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x10(%ebp), %edx\n" /* ps */
-        "movl %edx, (%esp)\n"
-        "calll memcpy\n"
-        "leal 4(%ebx), %eax\n" /* line 1341 | cachedClient */
-        "movl $0x5c, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x14(%ebp), %ecx\n" /* cs */
-        "movl %ecx, (%esp)\n"
-        "calll memcpy\n"
-        "movl 0x10(%ebp), %ebx\n" /* line 1344 | ps, cachedClient */
-        "movl (%ebx), %eax\n" /* cachedClient */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_001939f2\n"
-        "leal (%esi, %eax), %eax\n" /* line 1345 | deltaTime */
-        "movl %eax, (%ebx)\n" /* cachedClient */
-        "movl 0x10(%ebp), %edx\n" /* ps */
-        ".Lf1936a8_001938e0:\n"
-        "movl 0x10(%edx), %eax\n" /* line 1346 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_001939eb\n"
-        "leal (%esi, %eax), %eax\n" /* line 1347 | deltaTime */
-        "movl %eax, 0x10(%edx)\n"
-        "movl 0x10(%ebp), %ecx\n" /* ps */
-        ".Lf1936a8_001938f4:\n"
-        "movl 0x44(%ecx), %eax\n" /* line 1348 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_001939e4\n"
-        "leal (%esi, %eax), %eax\n" /* line 1349 | deltaTime */
-        "movl %eax, 0x44(%ecx)\n"
-        "movl 0x10(%ebp), %ebx\n" /* ps, cachedClient */
-        ".Lf1936a8_00193908:\n"
-        "movl 0x70(%ebx), %eax\n" /* line 1350 | cachedClient */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_001939dd\n"
-        "leal (%esi, %eax), %eax\n" /* line 1351 | deltaTime */
-        "movl %eax, 0x70(%ebx)\n" /* cachedClient */
-        "movl 0x10(%ebp), %edx\n" /* ps */
-        ".Lf1936a8_0019391c:\n"
-        "movl 0xfc(%edx), %eax\n" /* line 1352 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_001939d6\n"
-        "leal (%esi, %eax), %eax\n" /* line 1353 | deltaTime */
-        "movl %eax, 0xfc(%edx)\n"
-        "movl 0x10(%ebp), %ecx\n" /* ps */
-        ".Lf1936a8_00193936:\n"
-        "movl 0x5dc(%ecx), %eax\n" /* line 1354 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_001939cf\n"
-        "leal (%esi, %eax), %eax\n" /* line 1355 | deltaTime */
-        "movl %eax, 0x5dc(%ecx)\n"
-        "movl 0x10(%ebp), %edx\n" /* ps */
-        ".Lf1936a8_00193950:\n"
-        "xorl %ebx, %ebx\n" /* cachedClient */
-        "movl 0x195f284, %edi\n"
-        ".Lf1936a8_00193958:\n"
-        "movl 0x1790(%edx), %eax\n" /* line 1358 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_0019396b\n"
-        "leal (%esi, %eax), %eax\n" /* line 1359 | deltaTime */
-        "movl %eax, 0x1790(%edx)\n"
-        ".Lf1936a8_0019396b:\n"
-        "movl 0x1750(%edx), %eax\n" /* line 1360 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_0019398b\n"
-        "leal (%esi, %eax), %eax\n" /* line 1362 | deltaTime */
-        "movl %eax, 0x1750(%edx)\n"
-        "movl 4(%edi), %ecx\n" /* line 1364 */
-        "cmpl %ecx, %eax\n"
-        "jle .Lf1936a8_0019398b\n"
-        "movl %ecx, 0x1750(%edx)\n" /* line 1365 */
-        ".Lf1936a8_0019398b:\n"
-        "movl 0x1770(%edx), %eax\n" /* line 1370 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_0019399e\n"
-        "leal (%esi, %eax), %eax\n" /* line 1371 | deltaTime */
-        "movl %eax, 0x1770(%edx)\n"
-        ".Lf1936a8_0019399e:\n"
-        "movl 0x1788(%edx), %eax\n" /* line 1372 */
-        "testl %eax, %eax\n"
-        "je .Lf1936a8_001939b1\n"
-        "leal (%esi, %eax), %eax\n" /* line 1373 | deltaTime */
-        "movl %eax, 0x1788(%edx)\n"
-        ".Lf1936a8_001939b1:\n"
-        "addl $1, %ebx\n" /* line 1356 | cachedClient */
-        "subl $-0x80, %edx\n"
-        "cmpl $0x1f, %ebx\n" /* cachedClient */
-        "jne .Lf1936a8_00193958\n"
-        "movl 0x10(%ebp), %ebx\n" /* line 1375 | ps, cachedClient */
-        "addl %esi, 0x7a4(%ebx)\n" /* deltaTime, cachedClient */
-        "movl $1, %eax\n"
-        "jmp .Lf1936a8_00193726\n"
-        ".Lf1936a8_001939cf:\n"
-        "movl %ecx, %edx\n"
-        "jmp .Lf1936a8_00193950\n"
-        ".Lf1936a8_001939d6:\n"
-        "movl %edx, %ecx\n"
-        "jmp .Lf1936a8_00193936\n"
-        ".Lf1936a8_001939dd:\n"
-        "movl %ebx, %edx\n" /* cachedClient */
-        "jmp .Lf1936a8_0019391c\n"
-        ".Lf1936a8_001939e4:\n"
-        "movl %ecx, %ebx\n" /* cachedClient */
-        "jmp .Lf1936a8_00193908\n"
-        ".Lf1936a8_001939eb:\n"
-        "movl %edx, %ecx\n"
-        "jmp .Lf1936a8_001938f4\n"
-        ".Lf1936a8_001939f2:\n"
-        "movl %ebx, %edx\n" /* cachedClient */
-        "jmp .Lf1936a8_001938e0\n"
-        ".Lf1936a8_001939f9:\n"
-        "subl $1, %edx\n" /* line 1325 */
-        "orl $0xfffff000, %edx\n"
-        "addl $1, %edx\n"
-        "jmp .Lf1936a8_00193805\n"
-    );
+    byte *svs = *(byte **)&svs_ptr;
+    cachedSnapshot_t *snap = NULL;
+    int archivedFrame = 0;
+
+    if (*(int *)(svs + SVS_NUMONEWAYCLIENTS) != 0 && *pArchiveTime > 0) {
+        int archivedSnapshotCount = *(int *)(svs + SVS_ARCHIVEDFRAMECOUNT);
+        int rate = *(int *)(*(byte **)sv_maxRate_dvar + 8);
+        int minFrame;
+
+        archivedFrame = archivedSnapshotCount - (*pArchiveTime * rate / 1000);
+        minFrame = archivedSnapshotCount - 0x4b0;
+
+        if (archivedFrame < minFrame) {
+            *pArchiveTime = (archivedSnapshotCount - minFrame) * 1000 / rate;
+            archivedFrame = minFrame;
+        }
+
+        if (archivedFrame < 0) {
+            *pArchiveTime = archivedSnapshotCount * 1000 / rate;
+            archivedFrame = 0;
+        }
+
+        if (*(int *)(svs + SVS_ARCHIVEDFRAMECOUNT) > archivedFrame) {
+            byte *svsReload = *(byte **)&svs_ptr;
+            while (archivedFrame < *(int *)(svsReload + SVS_ARCHIVEDFRAMECOUNT)) {
+                snap = SV_GetCachedSnapshotInternal(archivedFrame);
+                if (snap != NULL)
+                    break;
+                archivedFrame++;
+            }
+        }
+
+        if (snap == NULL) {
+            *pArchiveTime = 0;
+        }
+    }
+
+    if (snap != NULL) {
+        /* Found cached snapshot - extract archived client data */
+        byte *snapBytes = (byte *)snap;
+        byte *svs2 = *(byte **)&svs_ptr;
+        int deltaTime = *(int *)(svs2 + SVS_TIME) - *(int *)(snapBytes + 4);
+        int numClients = *(int *)(snapBytes + 0x10);
+        byte *cachedClientsBase;
+        int firstIndex;
+        byte *cachedClient = NULL;
+        byte *psBytes;
+        int i;
+
+        if (numClients <= 0)
+            return 0;
+
+        cachedClientsBase = *(byte **)(svs2 + SVS_ARCHIVEDCLIENTDATA);
+        firstIndex = *(int *)(snapBytes + 0x14);
+
+        for (i = 0; i < numClients; i++) {
+            int idx = (firstIndex + i) % 0x1000;
+            byte *cc = cachedClientsBase + idx * CACHEDCLIENT_STRIDE;
+            if (*(int *)(cc + 4) == clientNum) {
+                cachedClient = cc;
+                break;
+            }
+        }
+
+        if (cachedClient == NULL || *(int *)cachedClient == 0)
+            return 0;
+
+        /* Copy playerState and clientState from cache */
+        memcpy(ps, cachedClient + 0x60, 0x26a8);
+        memcpy(cs, cachedClient + 4, 0x5c);
+
+        /* Adjust time fields by deltaTime */
+        psBytes = (byte *)ps;
+
+        if (*(int *)(psBytes + 0x0) != 0)
+            *(int *)(psBytes + 0x0) += deltaTime;
+        if (*(int *)(psBytes + 0x10) != 0)
+            *(int *)(psBytes + 0x10) += deltaTime;
+        if (*(int *)(psBytes + 0x44) != 0)
+            *(int *)(psBytes + 0x44) += deltaTime;
+        if (*(int *)(psBytes + 0x70) != 0)
+            *(int *)(psBytes + 0x70) += deltaTime;
+        if (*(int *)(psBytes + 0xfc) != 0)
+            *(int *)(psBytes + 0xfc) += deltaTime;
+        if (*(int *)(psBytes + 0x5dc) != 0)
+            *(int *)(psBytes + 0x5dc) += deltaTime;
+
+        /* Adjust time fields in 31 weapon/anim entries at stride 0x80 */
+        {
+            byte *p = psBytes;
+            byte *svsPtr = *(byte **)&svs_ptr;
+            for (i = 0; i < 31; i++) {
+                if (*(int *)(p + 0x1790) != 0)
+                    *(int *)(p + 0x1790) += deltaTime;
+                if (*(int *)(p + 0x1750) != 0) {
+                    *(int *)(p + 0x1750) += deltaTime;
+                    if (*(int *)(p + 0x1750) > *(int *)(svsPtr + SVS_TIME))
+                        *(int *)(p + 0x1750) = *(int *)(svsPtr + SVS_TIME);
+                }
+                if (*(int *)(p + 0x1770) != 0)
+                    *(int *)(p + 0x1770) += deltaTime;
+                if (*(int *)(p + 0x1788) != 0)
+                    *(int *)(p + 0x1788) += deltaTime;
+                p += 0x80;
+            }
+        }
+
+        *(int *)(psBytes + 0x7a4) += deltaTime;
+        return 1;
+    }
+
+    /* Live data path */
+    if (*pArchiveTime > 0)
+        return 0;
+
+    {
+        byte *clients = *(byte **)(svs + SVS_CLIENTS);
+        byte *client = clients + clientNum * CLIENT_STRIDE;
+
+        if (*(int *)(client + CLIENT_STATE) != 4)
+            return 0;
+
+        if (!GetFollowPlayerState(clientNum, (byte *)ps))
+            return 0;
+
+        memcpy(cs, G_GetClientState(clientNum), 0x5c);
+        return 1;
+    }
 }
 
 /* line 1179 */
-__attribute__((naked))
-Bool SV_GetClientPositionAtTime(int client, int gametime, vec_t *pos)
+Bool SV_GetClientPositionAtTime(int clientNum, int gametime, vec_t *pos)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1179 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x275c, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f2f8, %eax\n" /* line 1195 */
-        "movl (%eax), %ecx\n"
-        "movl $0x3e8, %ebx\n"
-        "movl %ebx, %eax\n"
-        "cltd\n"
-        "idivl 8(%ecx)\n"
-        "movl %eax, %esi\n"
-        "movl 0x195f284, %eax\n" /* line 1202 */
-        "movl 4(%eax), %eax\n"
-        "cltd\n"
-        "idivl %esi\n"
-        "imull %esi, %eax\n"
-        "subl 0xc(%ebp), %eax\n" /* gametime */
-        "cltd\n"
-        "idivl %esi\n"
-        "movl %eax, %edx\n"
-        "addl startOffset, %edx\n"
-        "imull %esi, %edx\n"
-        "movl %edx, -0x2744(%ebp)\n" /* startTime */
-        "addl endOffset, %eax\n" /* line 1203 */
-        "imull %esi, %eax\n"
-        "movl %eax, -0x2740(%ebp)\n" /* endTime */
-        "movl %edx, -0x1c(%ebp)\n" /* line 1209 | timeRequest */
-        "movw $0xa, %bx\n"
-        "leal -0x1c(%ebp), %edi\n" /* timeRequest */
-        ".Lf193a0a_00193a68:\n"
-        "leal -0x90(%ebp), %eax\n" /* line 1215 | cs */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x2738(%ebp), %edx\n" /* ps */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* client */
-        "movl %eax, (%esp)\n"
-        "calll SV_GetArchivedClientInfo\n"
-        "testl %eax, %eax\n"
-        "jne .Lf193a0a_00193be7\n"
-        "addl %esi, -0x1c(%ebp)\n" /* line 1225 | timeRequest */
-        "subl $1, %ebx\n" /* line 1211 */
-        "jne .Lf193a0a_00193a68\n"
-        "movb $0, -0x2739(%ebp)\n" /* foundStart */
-        ".Lf193a0a_00193aa2:\n"
-        "movl -0x2740(%ebp), %edx\n" /* line 1230 | endTime */
-        "movl %edx, -0x1c(%ebp)\n" /* timeRequest */
-        "movl $0xa, %ebx\n"
-        ".Lf193a0a_00193ab0:\n"
-        "leal -0x90(%ebp), %eax\n" /* line 1236 | cs */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x2738(%ebp), %edx\n" /* ps */
-        "movl %edx, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* client */
-        "movl %eax, (%esp)\n"
-        "calll SV_GetArchivedClientInfo\n"
-        "testl %eax, %eax\n"
-        "jne .Lf193a0a_00193bb9\n"
-        "subl %esi, -0x1c(%ebp)\n" /* line 1246 | timeRequest */
-        "subl $1, %ebx\n" /* line 1232 */
-        "jne .Lf193a0a_00193ab0\n"
-        ".Lf193a0a_00193ae3:\n"
-        "cmpb $0, -0x2739(%ebp)\n" /* line 1250 | foundStart */
-        "je .Lf193a0a_00193b17\n"
-        "testb %al, %al\n"
-        "jne .Lf193a0a_00193b89\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, -0x34(%ebp)\n" /* endPos */
-        "movl %eax, -0x30(%ebp)\n" /* line 184 */
-        "movl %eax, -0x2c(%ebp)\n" /* line 185 */
-        "movl %eax, -0x274c(%ebp)\n"
-        "movss -0x274c(%ebp), %xmm2\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "jmp .Lf193a0a_00193b40\n"
-        ".Lf193a0a_00193b17:\n"
-        "testb %al, %al\n" /* line 1264 */
-        "je .Lf193a0a_00193c17\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, -0x28(%ebp)\n" /* startPos */
-        "movl %eax, -0x24(%ebp)\n" /* line 184 */
-        "movl %eax, -0x20(%ebp)\n" /* line 185 */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        "movl %eax, -0x274c(%ebp)\n"
-        "movss -0x274c(%ebp), %xmm3\n"
-        ".Lf193a0a_00193b40:\n"
-        "movl $1, %edx\n"
-        "leal -0x28(%ebp), %ebx\n" /* startPos */
-        "leal -0x34(%ebp), %ecx\n" /* endPos */
-        ".Lf193a0a_00193b4b:\n"
-        "leal (, %edx, 4), %eax\n" /* line 1288 */
-        "movaps %xmm3, %xmm0\n"
-        "mulss -4(%ebx, %eax), %xmm0\n"
-        "movaps %xmm2, %xmm1\n"
-        "mulss -4(%ecx, %eax), %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "movl 0x10(%ebp), %eax\n" /* pos */
-        "movss %xmm0, -4(%eax, %edx, 4)\n"
-        "addl $1, %edx\n"
-        "cmpl $4, %edx\n" /* line 1283 */
-        "jne .Lf193a0a_00193b4b\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x275c, %esp\n" /* line 1294 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf193a0a_00193b89:\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1254 | gametime */
-        "cltd\n"
-        "idivl %esi\n"
-        "cvtsi2ssl %edx, %xmm2\n"
-        "movl -0x2740(%ebp), %edx\n" /* endTime */
-        "subl %edx, -0x2744(%ebp)\n" /* startTime */
-        "cvtsi2ssl -0x2744(%ebp), %xmm0\n" /* startTime */
-        "divss %xmm0, %xmm2\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "subss %xmm2, %xmm3\n"
-        "jmp .Lf193a0a_00193b40\n"
-        ".Lf193a0a_00193bb9:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 1239 | timeRequest */
-        "movl %eax, -0x2740(%ebp)\n" /* endTime */
-        "movl -0x2724(%ebp), %eax\n" /* line 1240 */
-        "movl %eax, -0x34(%ebp)\n" /* endPos */
-        "movl -0x2720(%ebp), %eax\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "movl -0x271c(%ebp), %eax\n"
-        "movl %eax, -0x2c(%ebp)\n"
-        "movl $1, %eax\n"
-        "jmp .Lf193a0a_00193ae3\n"
-        ".Lf193a0a_00193be7:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 1218 | timeRequest */
-        "movl %edx, -0x2744(%ebp)\n" /* startTime */
-        "movl -0x2724(%ebp), %eax\n" /* line 1219 */
-        "movl %eax, -0x28(%ebp)\n" /* startPos */
-        "movl -0x2720(%ebp), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl -0x271c(%ebp), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movb $1, -0x2739(%ebp)\n" /* foundStart */
-        "jmp .Lf193a0a_00193aa2\n"
-        ".Lf193a0a_00193c17:\n"
-        "xorl %eax, %eax\n" /* line 1264 */
-        /* } scope */
-        "addl $0x275c, %esp\n" /* line 1294 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *svs = *(byte **)&svs_ptr;
+    byte *maxRateDvar = *(byte **)&sv_maxRate_dvar;
+    int msPerFrame;
+    int svsTime;
+    int frameOffset;
+    int startTime, endTime;
+    int timeRequest;
+    int i;
+    byte foundStart, foundEnd;
+    float startPos[3], endPos[3];
+    float startWeight, endWeight;
+    byte ps[0x26a8];
+    byte cs[0x74];
+
+    /* msPerFrame = 1000 / sv_maxRate->current.integer */
+    msPerFrame = 1000 / *(int *)(*(byte **)maxRateDvar + 8);
+
+    svsTime = *(int *)(svs + SVS_TIME);
+    frameOffset = (svsTime / msPerFrame) * msPerFrame - gametime;
+    frameOffset = frameOffset / msPerFrame;
+
+    startTime = (frameOffset + startOffset) * msPerFrame;
+    endTime = (frameOffset + endOffset) * msPerFrame;
+
+    /* Search forward for start position */
+    timeRequest = startTime;
+    foundStart = 0;
+    for (i = 10; i > 0; i--) {
+        if (SV_GetArchivedClientInfo(clientNum, &timeRequest, (int (*)[4])ps, (void (*)())cs)) {
+            startTime = timeRequest;
+            startPos[0] = *(float *)(ps + 0x14);
+            startPos[1] = *(float *)(ps + 0x18);
+            startPos[2] = *(float *)(ps + 0x1c);
+            foundStart = 1;
+            break;
+        }
+        timeRequest += msPerFrame;
+    }
+
+    /* Search backward for end position */
+    timeRequest = endTime;
+    foundEnd = 0;
+    for (i = 10; i > 0; i--) {
+        if (SV_GetArchivedClientInfo(clientNum, &timeRequest, (int (*)[4])ps, (void (*)())cs)) {
+            endTime = timeRequest;
+            endPos[0] = *(float *)(ps + 0x14);
+            endPos[1] = *(float *)(ps + 0x18);
+            endPos[2] = *(float *)(ps + 0x1c);
+            foundEnd = 1;
+            break;
+        }
+        timeRequest -= msPerFrame;
+    }
+
+    if (foundStart && !foundEnd) {
+        /* Only have start - zero end, weight = (0.0, 1.0) */
+        endPos[0] = 0.0f;
+        endPos[1] = 0.0f;
+        endPos[2] = 0.0f;
+        endWeight = 0.0f;
+        startWeight = 1.0f;
+    } else if (!foundStart && foundEnd) {
+        /* Only have end - zero start, weight = (1.0, 0.0) */
+        startPos[0] = 0.0f;
+        startPos[1] = 0.0f;
+        startPos[2] = 0.0f;
+        endWeight = 1.0f;
+        startWeight = 0.0f;
+    } else if (!foundStart && !foundEnd) {
+        return 0;
+    } else {
+        /* Both found - interpolate */
+        endWeight = (float)(gametime % msPerFrame) / (float)(startTime - endTime);
+        startWeight = 1.0f - endWeight;
+    }
+
+    for (i = 0; i < 3; i++) {
+        pos[i] = startWeight * startPos[i] + endWeight * endPos[i];
+    }
+    return 1;
 }
 
 /* line 1699 */
@@ -3614,261 +2842,135 @@ void SV_SendClientSnapshot(client_t *client)
 }
 
 /* line 2077 */
-__attribute__((naked))
 void SV_SendClientMessages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2077 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x6c, %esp\n"
-        /* { scope 1 */
-        "movl 0x195ee80, %eax\n" /* line 2085 */
-        "movl $0, 0x5f48c(%eax)\n"
-        "movl $0, 0x5f4e4(%eax)\n" /* line 2086 */
-        "movl 0x195f284, %eax\n" /* line 2089 */
-        "movl 0xc(%eax), %ebx\n" /* c */
-        "movl 0x195f290, %edx\n"
-        "movl (%edx), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jle .Lf195022_0019520b\n"
-        "movl $0, -0x2c(%ebp)\n" /* i */
-        "movl $0, -0x28(%ebp)\n" /* numclients */
-        ".Lf195022_0019506d:\n"
-        "movl (%ebx), %edi\n" /* line 2091 | c */
-        "testl %edi, %edi\n"
-        "je .Lf195022_00195140\n"
-        "movl 0x195f284, %eax\n" /* line 2096 */
-        "movl 4(%eax), %eax\n"
-        "movl %eax, -0x30(%ebp)\n"
-        "leal 0x20d18(%ebx), %eax\n" /* line 2077 */
-        "movl %eax, -0x20(%ebp)\n"
-        "movl -0x30(%ebp), %ecx\n" /* line 2096 */
-        "cmpl 0x20d18(%ebx), %ecx\n" /* c */
-        "jl .Lf195022_00195140\n"
-        "addl $1, -0x28(%ebp)\n" /* line 2101 | numclients */
-        "movl 0x725dc(%ebx), %esi\n" /* line 2105 | c, rate */
-        "testl %esi, %esi\n" /* rate */
-        "je .Lf195022_00195319\n"
-        "movl 0x725e4(%ebx), %edi\n" /* line 2107 | c, messageSize */
-        "subl 0x725e0(%ebx), %edi\n" /* c, messageSize */
-        /* { scope 2 */
-        /* { scope 3 */
-        "cmpl $0x5dc, %edi\n" /* line 1587 */
-        "jle .Lf195022_00195217\n"
-        "movl $0x5dc, %edi\n"
-        "movl $0x16e360, -0x24(%ebp)\n"
-        ".Lf195022_001950d0:\n"
-        "leal 0x6e5a8(%ebx), %eax\n" /* line 2077 */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl 0x6e5a8(%ebx), %esi\n" /* line 1591 | rate */
-        "movl 0x195f268, %ecx\n" /* line 1592 */
-        "movl (%ecx), %edx\n"
-        "movl 8(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf195022_00195101\n"
-        "cmpl $0x3e7, %eax\n" /* line 1594 */
-        "jle .Lf195022_00195378\n"
-        ".Lf195022_001950f9:\n"
-        "movl 8(%edx), %eax\n" /* line 1598 */
-        "cmpl %eax, %esi\n" /* rate */
-        "cmovgl %eax, %esi\n" /* rate */
-        ".Lf195022_00195101:\n"
-        "movl -0x24(%ebp), %edx\n" /* line 1603 */
-        "addl $0xbb80, %edx\n"
-        "movl %edx, %eax\n"
-        "cltd\n"
-        "idivl %esi\n" /* rate */
-        "movl %eax, %esi\n" /* rate */
-        "movl 0x195f2bc, %eax\n" /* line 1605 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf195022_0019534c\n"
-        /* } scope */
-        /* } scope */
-        ".Lf195022_00195122:\n"
-        "movl -0x30(%ebp), %eax\n" /* line 2107 */
-        "addl %esi, %eax\n" /* rate */
-        "movl -0x20(%ebp), %ecx\n"
-        "movl %eax, (%ecx)\n"
-        "leal 0x6e5b4(%ebx), %eax\n" /* line 2108 | c */
-        "movl %eax, (%esp)\n"
-        "calll SV_Netchan_TransmitNextFragment\n"
-        "movl 0x195f290, %edx\n"
-        ".Lf195022_00195140:\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 2089 | i */
-        "addl $0x78f0c, %ebx\n" /* c */
-        "movl (%edx), %eax\n"
-        "movl -0x2c(%ebp), %ecx\n" /* i */
-        "cmpl 8(%eax), %ecx\n"
-        "jl .Lf195022_0019506d\n"
-        ".Lf195022_00195158:\n"
-        "movl 0x195f288, %eax\n" /* line 2128 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf195022_00195203\n"
-        "movl -0x28(%ebp), %ebx\n" /* numclients, c */
-        "testl %ebx, %ebx\n" /* c */
-        "jle .Lf195022_00195203\n"
-        "pxor %xmm2, %xmm2\n"
-        "movaps %xmm2, %xmm1\n"
-        "movl 0x195ee80, %ebx\n" /* c */
-        "movl %ebx, %edx\n" /* c */
-        "leal 0x4c(%ebx), %ecx\n" /* c */
-        /* { scope 2 */
-        ".Lf195022_00195186:\n"
-        "movl 0x5f43c(%edx), %eax\n" /* line 2134 */
-        "movl %eax, 0x5f438(%edx)\n"
-        "cvtsi2ssl %eax, %xmm0\n" /* line 2135 */
-        "addss %xmm0, %xmm1\n"
-        "movl 0x5f498(%edx), %eax\n" /* line 2137 */
-        "movl %eax, 0x5f494(%edx)\n"
-        "cvtsi2ssl %eax, %xmm0\n" /* line 2138 */
-        "addss %xmm0, %xmm2\n"
-        "addl $4, %edx\n"
-        "cmpl %ecx, %edx\n" /* line 2132 */
-        "jne .Lf195022_00195186\n"
-        "movl %ebx, %eax\n" /* line 2141 | c */
-        "movl 0x5f48c(%ebx), %ecx\n" /* c */
-        "movl %ecx, 0x5f484(%ebx)\n" /* c */
-        "cvtsi2ssl %ecx, %xmm3\n" /* line 2142 */
-        "addss %xmm1, %xmm3\n"
-        "movl 0x5f4e4(%ebx), %edx\n" /* line 2144 | c */
-        "movl %edx, 0x5f4e0(%ebx)\n" /* c */
-        "cvtsi2ssl %edx, %xmm4\n" /* line 2145 */
-        "addss %xmm2, %xmm4\n"
-        "cmpl 0x5f490(%ebx), %ecx\n" /* line 2147 | c */
-        "jge .Lf195022_00195247\n"
-        "cmpl 0x5f4e8(%eax), %edx\n" /* line 2150 */
-        "jge .Lf195022_0019522b\n"
-        ".Lf195022_001951ef:\n"
-        "movl 0x5f488(%ebx), %eax\n" /* line 2153 | c */
-        "addl $1, %eax\n"
-        "movl %eax, 0x5f488(%ebx)\n" /* c */
-        "cmpl $0x13, %eax\n" /* line 2155 */
-        "jg .Lf195022_00195257\n"
-        /* } scope */
-        /* } scope */
-        ".Lf195022_00195203:\n"
-        "addl $0x6c, %esp\n" /* line 2173 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf195022_0019520b:\n"
-        "movl $0, -0x28(%ebp)\n" /* line 2089 | numclients */
-        "jmp .Lf195022_00195158\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf195022_00195217:\n"
-        "leal (%edi, %edi, 4), %eax\n" /* line 1587 */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "shll $3, %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "jmp .Lf195022_001950d0\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        ".Lf195022_0019522b:\n"
-        "movl %edx, 0x5f4e8(%eax)\n" /* line 2151 */
-        "movl 0x5f488(%ebx), %eax\n" /* line 2153 | c */
-        "addl $1, %eax\n"
-        "movl %eax, 0x5f488(%ebx)\n" /* c */
-        "cmpl $0x13, %eax\n" /* line 2155 */
-        "jle .Lf195022_00195203\n"
-        "jmp .Lf195022_00195257\n"
-        ".Lf195022_00195247:\n"
-        "movl %ecx, 0x5f490(%ebx)\n" /* line 2148 | c */
-        "cmpl 0x5f4e8(%eax), %edx\n" /* line 2150 */
-        "jl .Lf195022_001951ef\n"
-        "jmp .Lf195022_0019522b\n"
-        /* { scope 3 */
-        ".Lf195022_00195257:\n"
-        "movl $0, 0x5f488(%ebx)\n" /* line 2159 | c */
-        "movss 0x2ed694, %xmm0\n" /* line 2161 | 20.0f */
-        "divss %xmm0, %xmm3\n"
-        "divss %xmm0, %xmm4\n" /* line 2162 */
-        "movaps %xmm3, %xmm0\n" /* line 2164 */
-        "divss %xmm4, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "subss %xmm0, %xmm1\n"
-        "mulss 0x2ed798, %xmm1\n" /* 100.0f */
-        "movaps %xmm1, %xmm0\n" /* line 2165 */
-        "addss 0x5f4ec(%ebx), %xmm0\n" /* c */
-        "movss %xmm0, 0x5f4ec(%ebx)\n" /* c */
-        "movl 0x5f4f0(%ebx), %eax\n" /* line 2166 | c */
-        "addl $1, %eax\n"
-        "movl %eax, 0x5f4f0(%ebx)\n" /* c */
-        "cvtsi2ssl %eax, %xmm2\n" /* line 2168 */
-        "divss %xmm2, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0x2c(%esp)\n"
-        "cvtss2sd %xmm1, %xmm1\n"
-        "movsd %xmm1, 0x24(%esp)\n"
-        "movl 0x5f4e8(%ebx), %eax\n" /* c */
-        "movl %eax, 0x20(%esp)\n"
-        "cvtss2sd %xmm4, %xmm4\n"
-        "movsd %xmm4, 0x18(%esp)\n"
-        "movl 0x5f490(%ebx), %eax\n" /* c */
-        "movl %eax, 0x14(%esp)\n"
-        "cvtss2sd %xmm3, %xmm0\n"
-        "movsd %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl -0x28(%ebp), %xmm0\n" /* numclients */
-        "divss %xmm0, %xmm3\n"
-        "cvtss2sd %xmm3, %xmm3\n"
-        "movsd %xmm3, 4(%esp)\n"
-        "movl $0x2b06d0, (%esp)\n" /* "bpspc(%2.0f) bps(%2.0f) pk(%i) ubps(%2.0f) upk(%i) cr(%2.2f)" */
-        "calll Com_DPrintf\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        "addl $0x6c, %esp\n" /* line 2173 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf195022_00195319:\n"
-        "movl %ebx, (%esp)\n" /* line 2119 | c */
-        "calll SV_SendClientSnapshot\n"
-        "movl %ebx, (%esp)\n" /* line 2123 | c */
-        "calll SV_SendClientVoiceData\n"
-        "movl 0x195f290, %edx\n"
-        "addl $1, -0x2c(%ebp)\n" /* line 2089 | i */
-        "addl $0x78f0c, %ebx\n" /* c */
-        "movl (%edx), %eax\n"
-        "movl -0x2c(%ebp), %ecx\n" /* i */
-        "cmpl 8(%eax), %ecx\n"
-        "jl .Lf195022_0019506d\n"
-        "jmp .Lf195022_00195158\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lf195022_0019534c:\n"
-        "movl -0x1c(%ebp), %edx\n" /* line 1606 */
-        "movl (%edx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "leal 0x20c48(%ebx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n" /* rate */
-        "movl $0x2b0548, (%esp)\n" /* "It would take %ims to send %i bytes to client %s (rate %i)
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf195022_00195122\n"
-        ".Lf195022_00195378:\n"
-        "movl $0x3e8, 4(%esp)\n" /* line 1596 */
-        "movl %edx, (%esp)\n"
-        "calll Dvar_SetInt\n"
-        "movl 0x195f268, %eax\n"
-        "movl (%eax), %edx\n"
-        "jmp .Lf195022_001950f9\n"
-    );
+    byte *sv = *(byte **)&sv_ptr;
+    byte *svs = *(byte **)&svs_ptr;
+    byte *c;
+    int i, numclients;
+    int maxClients;
+    int svsTime;
+    int sendFrag, messageSize;
+    int rate, rateMsec;
+    byte *dvar;
+    float totalBps, totalUBps;
+    int j;
+
+    /* Reset bandwidth counters */
+    *(int *)(sv + 0x5f48c) = 0;
+    *(int *)(sv + 0x5f4e4) = 0;
+
+    c = *(byte **)(svs + SVS_CLIENTS);
+    dvar = *(byte **)&sv_maxclients_dvar;
+    maxClients = *(int *)(*(byte **)dvar + 8);
+    numclients = 0;
+
+    svsTime = *(int *)(svs + SVS_TIME);
+
+    for (i = 0; i < maxClients; i++, c += CLIENT_STRIDE) {
+        if (*(int *)(c + CLIENT_STATE) == 0)
+            continue;
+        if (svsTime < *(int *)(c + CLIENT_SNAPSHOTMSEC))
+            continue;
+
+        numclients++;
+
+        sendFrag = *(int *)(c + CLIENT_NETCHAN_SENDFRAG);
+        if (sendFrag == 0) {
+            /* No pending fragment - send snapshot */
+            SV_SendClientSnapshot((client_t *)c);
+            SV_SendClientVoiceData((client_t *)c);
+            continue;
+        }
+
+        /* Has pending fragment - calculate rate and retransmit */
+        messageSize = *(int *)(c + CLIENT_NETCHAN_SENDLEN) - *(int *)(c + CLIENT_NETCHAN_SENDSTART);
+        if (messageSize > 0x5dc)
+            messageSize = 0x5dc;
+
+        /* messageSize * 1000 (messageSize * 5 * 5 * 5 * 8) */
+        {
+            int msgBytes = messageSize * 5 * 5 * 5 * 8;
+
+            rate = *(int *)(c + CLIENT_RATE);
+            dvar = *(byte **)&sv_minPingRate_dvar;
+            dvar = *(byte **)dvar;
+            if (*(int *)(dvar + 8) != 0) {
+                if (*(int *)(dvar + 8) <= 0x3e7) {
+                    Dvar_SetInt(dvar, 0x3e8);
+                    dvar = *(byte **)&sv_minPingRate_dvar;
+                    dvar = *(byte **)dvar;
+                }
+                if (rate > *(int *)(dvar + 8))
+                    rate = *(int *)(dvar + 8);
+            }
+
+            rateMsec = (msgBytes + 0xbb80) / rate;
+
+            dvar = *(byte **)&showpackets_dvar;
+            if (*(byte *)(*(byte **)dvar + 8) != 0) {
+                Com_Printf("It would take %ims to send %i bytes to client %s (rate %i)\n",
+                    rateMsec, messageSize, c + CLIENT_NAME, *(int *)(c + CLIENT_RATE));
+            }
+        }
+
+        *(int *)(c + CLIENT_SNAPSHOTMSEC) = svsTime + rateMsec;
+        SV_Netchan_TransmitNextFragment((netchan_t *)(c + CLIENT_NETCHAN));
+    }
+
+    /* BPS tracking */
+    dvar = *(byte **)&sv_showAverageBPS_dvar;
+    if (*(byte *)(*(byte **)dvar + 8) == 0 || numclients <= 0)
+        return;
+
+    sv = *(byte **)&sv_ptr;
+    totalBps = 0.0f;
+    totalUBps = 0.0f;
+
+    /* Loop over 19 history slots (sv + 0 to sv + 0x4c, step 4) */
+    for (j = 0; j < 19; j++) {
+        int bpsVal = *(int *)(sv + 0x5f43c + j * 4);
+        *(int *)(sv + 0x5f438 + j * 4) = bpsVal;
+        totalBps += (float)bpsVal;
+
+        int ubpsVal = *(int *)(sv + 0x5f498 + j * 4);
+        *(int *)(sv + 0x5f494 + j * 4) = ubpsVal;
+        totalUBps += (float)ubpsVal;
+    }
+
+    {
+        int sentBps = *(int *)(sv + 0x5f48c);
+        *(int *)(sv + 0x5f484) = sentBps;
+        float bpsTotal = (float)sentBps + totalBps;
+
+        int sentUBps = *(int *)(sv + 0x5f4e4);
+        *(int *)(sv + 0x5f4e0) = sentUBps;
+        float ubpsTotal = (float)sentUBps + totalUBps;
+
+        if (sentBps >= *(int *)(sv + 0x5f490))
+            *(int *)(sv + 0x5f490) = sentBps;
+        if (sentUBps >= *(int *)(sv + 0x5f4e8))
+            *(int *)(sv + 0x5f4e8) = sentUBps;
+
+        int counter = *(int *)(sv + 0x5f488) + 1;
+        *(int *)(sv + 0x5f488) = counter;
+
+        if (counter > 19) {
+            *(int *)(sv + 0x5f488) = 0;
+            float bpsAvg = bpsTotal / 20.0f;
+            float ubpsAvg = ubpsTotal / 20.0f;
+            float compressionRatio = bpsAvg / ubpsAvg;
+            float pctSaved = (1.0f - compressionRatio) * 100.0f;
+            float totalPctSaved = pctSaved + *(float *)(sv + 0x5f4ec);
+            *(float *)(sv + 0x5f4ec) = totalPctSaved;
+            int numSamples = *(int *)(sv + 0x5f4f0) + 1;
+            *(int *)(sv + 0x5f4f0) = numSamples;
+            float avgPctSaved = totalPctSaved / (float)numSamples;
+            Com_DPrintf("bpspc(%2.0f) bps(%2.0f) pk(%i) ubps(%2.0f) upk(%i) cr(%2.2f)",
+                (double)(bpsAvg / (float)numclients), (double)bpsAvg,
+                *(int *)(sv + 0x5f490), (double)ubpsAvg,
+                *(int *)(sv + 0x5f4e8), (double)pctSaved, (double)avgPctSaved);
+        }
+    }
 }
 

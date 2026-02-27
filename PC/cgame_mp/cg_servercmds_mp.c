@@ -1,12 +1,71 @@
-/* ASM dump from: cg_servercmds_mp.cpp */
+/* Decompiled from: cg_servercmds_mp.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/PC/cgame_mp/cg_servercmds_mp.cpp */
 
 #include "common_types.h"
 #include "imports.h"
 
+#include <string.h>
+#include <stdlib.h>
+
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
  */
+
+extern float floorf(float x);
+
+/* Extern declarations for called functions */
+extern const char *CL_GetConfigString(int index);
+extern const char *Info_ValueForKey(const char *s, const char *key);
+extern void Dvar_SetStringByName(const char *dvarName, const char *value);
+extern void Dvar_SetFromStringByName(const char *dvarName, const char *value);
+extern const char *GetBspExtension(void);
+extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern void Com_Printf(const char *fmt, ...);
+extern void Com_Error(errorParm_t code, const char *fmt, ...);
+extern const char *CG_Argv(int arg);
+extern int Cmd_Argc(void);
+extern void Cbuf_AddText(const char *text);
+extern const char *va(const char *format, ...);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern int I_stricmp(const char *s1, const char *s2);
+extern int CL_Popup(const char *menuName);
+extern void CL_ClosePopup(const char *menuName);
+extern const char *Com_Parse(const char **data_p);
+extern void CL_SwitchFog(int fogIndex, int serverTime, int transitionTime);
+extern void CL_SetFog(int fogIndex, float start, float halfDist, int r, int g, int b, float density);
+extern void SND_DeactivateChannelVolumes(int prio, int fadeTime);
+extern void SND_SetChannelVolumes(int prio, char *volumes, int fadeTime);
+extern void SND_DeactivateEnvironmentEffects(int prio, int fadeTime);
+extern int Load_ScriptMenu(const char *name, int flags);
+extern void CL_RegisterMaterialNoMip(const char *name, int flags);
+extern void CL_RegisterMaterial(const char *name, int flags);
+extern void CG_InitLocalEntities(void);
+extern void CG_InitMarkPolys(void);
+extern void FX_FreeActive(void);
+extern void SND_StopSounds(int mode);
+extern void CG_StartAmbient(void);
+extern void Dvar_SetBool(void *dvar, int value);
+extern void CL_SetADS(int value);
+extern void CL_CloseAllMenus(void);
+extern void CG_ScoresUp_f(void);
+extern void CL_SyncTimes(void);
+extern int CL_GetServerCommand(int seq);
+extern int stricmp(const char *s1, const char *s2);
+
+/*
+ * Indirect global pointers (absolute addresses from original binary).
+ *   0x195f5c4 -> cgs_t* (game static state)
+ *   0x195f584 -> cg_t* (main cgame state)
+ *   0x195ecb4 -> cgame UI state
+ *   0x195f7e4 -> dvar (cg_teamChatHeight)
+ *   0x195f810 -> dvar (cg_teamChatTime)
+ *   0x195f940 -> dvar (developer)
+ *   0x195f860 -> dvar
+ *   0x195f94c -> dvar (cl_paused)
+ */
+#define CGS_PTR      (*(char **)*(void **)0x195f5c4)
+#define CG_PTR       (*(char **)*(void **)0x195f584)
+#define CGUI_PTR     (*(char **)*(void **)0x195ecb4)
 
 void CG_ParseServerinfo(void);
 void CG_ParseCodinfo(void);
@@ -26,126 +85,57 @@ void CG_ServerCommand(void);
 void CG_ExecuteNewServerCommands(int latestSequence);
 
 /* line 148 */
-__attribute__((naked))
 void CG_ParseServerinfo(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 148 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 153 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, %edi\n" /* info */
-        "movl $0x2a714c, 4(%esp)\n" /* line 154 */
-        "movl %eax, (%esp)\n"
-        "calll Info_ValueForKey\n"
-        "movl $0x100, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x195f5c4, %eax\n"
-        "movl (%eax), %esi\n"
-        "leal 0x5ec4(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strncpy\n"
-        "movl $0x2a7100, 4(%esp)\n" /* line 155 */
-        "movl %edi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl $0x20, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x5ea4(%esi), %ebx\n" /* mapname */
-        "movl %ebx, (%esp)\n" /* mapname */
-        "calll strncpy\n"
-        "movl 0x5ea0(%esi), %eax\n" /* line 156 */
-        "testl %eax, %eax\n"
-        "jne .Lf1df74c_001df7d8\n"
-        "movl %ebx, 4(%esp)\n" /* line 157 | mapname */
-        "movl $0x2a7100, (%esp)\n" /* "g_gametype" */
-        "calll Dvar_SetStringByName\n"
-        ".Lf1df74c_001df7d8:\n"
-        "movl $0x2a70dc, 4(%esp)\n" /* line 158 */
-        "movl %edi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, 0x5fc4(%esi)\n"
-        "movl $0x2a7124, 4(%esp)\n" /* line 160 */
-        "movl %edi, (%esp)\n" /* info */
-        "calll Info_ValueForKey\n"
-        "movl %eax, %ebx\n" /* mapname */
-        "calll GetBspExtension\n" /* line 161 */
-        "movl %eax, 0x10(%esp)\n"
-        "movl %ebx, 0xc(%esp)\n" /* mapname */
-        "movl $0x2a74ac, 8(%esp)\n" /* "maps/mp/%s.%s" */
-        "movl $0x40, 4(%esp)\n"
-        "leal 0x5fc8(%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 162 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *info;
+    const char *val;
+    char *cgs;
+    const char *mapname;
+    const char *ext;
+
+    info = CL_GetConfigString(0);
+
+    val = Info_ValueForKey(info, (const char *)0x2a714c);
+    cgs = CGS_PTR;
+    strncpy(cgs + 0x5ec4, val, 0x100);
+
+    val = Info_ValueForKey(info, (const char *)0x2a7100);
+    strncpy(cgs + 0x5ea4, val, 0x20);
+
+    if (*(int *)(cgs + 0x5ea0) == 0) {
+        Dvar_SetStringByName((const char *)0x2a7100, cgs + 0x5ea4);
+    }
+
+    val = Info_ValueForKey(info, (const char *)0x2a70dc);
+    *(int *)(cgs + 0x5fc4) = atoi(val);
+
+    mapname = Info_ValueForKey(info, (const char *)0x2a7124);
+    ext = GetBspExtension();
+    Com_sprintf(cgs + 0x5fc8, 0x40, (const char *)0x2a74ac, mapname, ext);
 }
 
 /* line 172 */
-__attribute__((naked))
 void CG_ParseCodinfo(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 172 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f5c4, %eax\n" /* line 178 */
-        "movl (%eax), %eax\n"
-        "movl 0x5ea0(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf1df83c_001df85c\n"
-        /* } scope */
-        ".Lf1df83c_001df855:\n"
-        "addl $0x10, %esp\n" /* line 189 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1df83c_001df85c:\n"
-        "movl $0x8e, %esi\n" /* line 179 */
-        "jmp .Lf1df83c_001df885\n"
-        ".Lf1df83c_001df863:\n"
-        "leal 0x60(%esi), %eax\n" /* line 186 */
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, 4(%esp)\n" /* line 187 */
-        "movl %ebx, (%esp)\n" /* key */
-        "calll Dvar_SetFromStringByName\n"
-        "addl $1, %esi\n"
-        "cmpl $0xee, %esi\n" /* line 181 */
-        "je .Lf1df83c_001df855\n"
-        ".Lf1df83c_001df885:\n"
-        "movl %esi, (%esp)\n" /* line 183 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, %ebx\n" /* key */
-        "cmpb $0, (%eax)\n" /* line 184 */
-        "jne .Lf1df83c_001df863\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 189 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *cgs;
+    int i;
+    const char *key;
+
+    cgs = CGS_PTR;
+    if (*(int *)(cgs + 0x5ea0) != 0) {
+        return;
+    }
+
+    for (i = 0x8e; i < 0xee; i++) {
+        key = CL_GetConfigString(i);
+        if (*key == '\0') {
+            break;
+        }
+        Dvar_SetFromStringByName(key, CL_GetConfigString(i + 0x60));
+    }
 }
 
-/* line 540 */
+/* line 540 — uses register calling convention (str in eax), called from naked CG_ServerCommand */
 static __attribute__((naked))
 void CG_AddToTeamChat(void)
 {
@@ -329,231 +319,132 @@ void CG_AddToTeamChat(void)
 }
 
 /* line 692 */
-static __attribute__((naked))
-void CG_OpenScriptMenu(void)
+static void CG_OpenScriptMenu(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 692 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl $1, (%esp)\n" /* line 700 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %esi\n" /* menuIndex */
-        "cmpl $0x1f, %eax\n" /* line 701 */
-        "jbe .Lf1dfa98_001dfaec\n"
-        "movl %eax, 4(%esp)\n" /* line 703 */
-        "movl $0x2b8070, (%esp)\n" /* "Server tried to open a bad script menu index: %i
-" */
-        ".Lf1dfa98_001dfac7:\n"
-        "calll Com_Printf\n" /* line 714 */
-        "movl %esi, 4(%esp)\n" /* line 715 | menuIndex */
-        "movl $0x2b80a4, (%esp)\n" /* "cmd mr %i bad
-" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Cbuf_AddText\n"
-        /* } scope */
-        ".Lf1dfa98_001dfae4:\n"
-        "addl $0x2c, %esp\n" /* line 755 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1dfa98_001dfaec:\n"
-        "leal 0x4de(%eax), %eax\n" /* line 709 */
-        "movl %eax, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, %edi\n" /* pszMenu */
-        "cmpb $0, (%eax)\n" /* line 712 */
-        "je .Lf1dfa98_001dfbed\n"
-        "calll Cmd_Argc\n" /* line 720 */
-        "cmpl $2, %eax\n"
-        "jg .Lf1dfa98_001dfc0e\n"
-        ".Lf1dfa98_001dfb13:\n"
-        "movb $0, -0x19(%ebp)\n" /* noMouseControl */
-        ".Lf1dfa98_001dfb17:\n"
-        "movl $0x100, 8(%esp)\n" /* line 726 */
-        "movl %edi, 4(%esp)\n" /* pszMenu */
-        "movl 0x195ecb4, %ebx\n"
-        "movl (%ebx), %eax\n"
-        "addl $0x2e4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl (%ebx), %eax\n" /* line 727 */
-        "movl %esi, 0x3e4(%eax)\n" /* menuIndex */
-        "cmpb $0, -0x19(%ebp)\n" /* line 730 | noMouseControl */
-        "je .Lf1dfa98_001dfbfd\n"
-        "movl $0x2adc98, (%esp)\n" /* line 731 */
-        "calll CL_Popup\n"
-        ".Lf1dfa98_001dfb56:\n"
-        "testl %eax, %eax\n" /* line 735 */
-        "jne .Lf1dfa98_001dfae4\n"
-        "movl 0x195ecb4, %ebx\n" /* line 738 */
-        "movl (%ebx), %eax\n"
-        "movb $0, 0x2e4(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 739 */
-        "movl $0xffffffff, 0x3e4(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 741 */
-        "cmpb $0, 0x3e8(%eax)\n"
-        "je .Lf1dfa98_001dfbb9\n"
-        "addl $0x3e8, %eax\n" /* line 743 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* pszMenu */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1dfa98_001dfae4\n"
-        "movl (%ebx), %eax\n" /* line 747 */
-        "movl 0x4e8(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b80f0, (%esp)\n" /* "cmd mr %i noop
-" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Cbuf_AddText\n"
-        ".Lf1dfa98_001dfbb9:\n"
-        "movl $0x100, 8(%esp)\n" /* line 751 */
-        "movl %edi, 4(%esp)\n" /* pszMenu */
-        "movl (%ebx), %eax\n"
-        "addl $0x3e8, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl (%ebx), %eax\n" /* line 752 */
-        "movl %esi, 0x4e8(%eax)\n" /* menuIndex */
-        "movl (%ebx), %eax\n" /* line 753 */
-        "movzbl -0x19(%ebp), %edx\n" /* noMouseControl */
-        "movb %dl, 0x4ec(%eax)\n"
-        "jmp .Lf1dfa98_001dfae4\n"
-        ".Lf1dfa98_001dfbed:\n"
-        "movl %esi, 4(%esp)\n" /* line 714 | menuIndex */
-        "movl $0x2b80b4, (%esp)\n" /* "Server tried to open a non-loaded script menu index: %i
-" */
-        "jmp .Lf1dfa98_001dfac7\n"
-        ".Lf1dfa98_001dfbfd:\n"
-        "movl $0x2adc84, (%esp)\n" /* line 733 */
-        "calll CL_Popup\n"
-        "jmp .Lf1dfa98_001dfb56\n"
-        ".Lf1dfa98_001dfc0e:\n"
-        "movl $2, (%esp)\n" /* line 720 */
-        "calll CG_Argv\n"
-        "testl %eax, %eax\n"
-        "je .Lf1dfa98_001dfb13\n"
-        "movl $2, (%esp)\n"
-        "calll CG_Argv\n"
-        "cmpb $0, (%eax)\n"
-        "je .Lf1dfa98_001dfb13\n"
-        "movb $1, -0x19(%ebp)\n" /* noMouseControl */
-        "jmp .Lf1dfa98_001dfb17\n"
-    );
+    int menuIndex;
+    const char *pszMenu;
+    unsigned char noMouseControl;
+    char *cgui;
+    int result;
+    const char *arg2;
+
+    menuIndex = atoi(CG_Argv(1));
+
+    if ((unsigned int)menuIndex > 31) {
+        Com_Printf((const char *)0x2b8070, menuIndex);
+        Cbuf_AddText(va((const char *)0x2b80a4, menuIndex));
+        return;
+    }
+
+    pszMenu = CL_GetConfigString(menuIndex + 0x4de);
+
+    if (*pszMenu == '\0') {
+        Com_Printf((const char *)0x2b80b4, menuIndex);
+        Cbuf_AddText(va((const char *)0x2b80a4, menuIndex));
+        return;
+    }
+
+    if (Cmd_Argc() > 2) {
+        arg2 = CG_Argv(2);
+        if (arg2 != NULL) {
+            arg2 = CG_Argv(2);
+            noMouseControl = (*arg2 != '\0') ? 1 : 0;
+        } else {
+            noMouseControl = 0;
+        }
+    } else {
+        noMouseControl = 0;
+    }
+
+    cgui = CGUI_PTR;
+    I_strncpyz(cgui + 0x2e4, pszMenu, 0x100);
+    *(int *)(cgui + 0x3e4) = menuIndex;
+
+    if (noMouseControl) {
+        result = CL_Popup((const char *)0x2adc98);
+    } else {
+        result = CL_Popup((const char *)0x2adc84);
+    }
+
+    if (result) {
+        return;
+    }
+
+    /* Popup failed */
+    cgui = CGUI_PTR;
+    *(cgui + 0x2e4) = '\0';
+    *(int *)(cgui + 0x3e4) = -1;
+
+    if (*(cgui + 0x3e8) != '\0') {
+        if (I_stricmp(pszMenu, cgui + 0x3e8) == 0) {
+            return;
+        }
+        Cbuf_AddText(va((const char *)0x2b80f0, *(int *)(cgui + 0x4e8)));
+    }
+
+    /* Store as waiting menu */
+    cgui = CGUI_PTR;
+    I_strncpyz(cgui + 0x3e8, pszMenu, 0x100);
+    *(int *)(cgui + 0x4e8) = menuIndex;
+    *(unsigned char *)(cgui + 0x4ec) = noMouseControl;
 }
 
 /* line 763 */
-__attribute__((naked))
 void CG_CheckOpenWaitingScriptMenu(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 763 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0x195ecb4, %ebx\n" /* line 765 */
-        "movl (%ebx), %edx\n"
-        "cmpb $0, 0x3e8(%edx)\n"
-        "jne .Lf1dfc40_001dfc5e\n"
-        "addl $0x14, %esp\n" /* line 797 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1dfc40_001dfc5e:\n"
-        "leal 0x3e8(%edx), %eax\n" /* line 770 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x2e4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl (%ebx), %edx\n" /* line 771 */
-        "movl 0x4e8(%edx), %eax\n"
-        "movl %eax, 0x3e4(%edx)\n"
-        "movl (%ebx), %eax\n" /* line 773 */
-        "cmpb $0, 0x4ec(%eax)\n"
-        "je .Lf1dfc40_001dfcc9\n"
-        "movl $0x2adc98, (%esp)\n" /* line 780 */
-        "calll CL_Popup\n"
-        "testl %eax, %eax\n" /* line 784 */
-        "je .Lf1dfc40_001dfcd9\n"
-        ".Lf1dfc40_001dfc9f:\n"
-        "movl 0x195ecb4, %edx\n" /* line 786 */
-        "movl (%edx), %eax\n"
-        "movb $0, 0x3e8(%eax)\n"
-        "movl (%edx), %eax\n" /* line 787 */
-        "movl $0xffffffff, 0x4e8(%eax)\n"
-        "movl (%edx), %eax\n" /* line 788 */
-        "movb $0, 0x4ec(%eax)\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 797 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1dfc40_001dfcc9:\n"
-        "movl $0x2adc84, (%esp)\n" /* line 782 */
-        "calll CL_Popup\n"
-        "testl %eax, %eax\n" /* line 784 */
-        "jne .Lf1dfc40_001dfc9f\n"
-        ".Lf1dfc40_001dfcd9:\n"
-        "movl 0x195ecb4, %eax\n" /* line 793 */
-        "movl (%eax), %edx\n"
-        "movb $0, 0x2e4(%edx)\n"
-        "movl (%eax), %eax\n" /* line 794 */
-        "movl $0xffffffff, 0x3e4(%eax)\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 797 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *cgui;
+    int result;
+
+    cgui = CGUI_PTR;
+    if (*(cgui + 0x3e8) == '\0') {
+        return;
+    }
+
+    /* Copy waiting menu to active */
+    strcpy(cgui + 0x2e4, cgui + 0x3e8);
+    cgui = CGUI_PTR;
+    *(int *)(cgui + 0x3e4) = *(int *)(cgui + 0x4e8);
+
+    cgui = CGUI_PTR;
+    if (*(unsigned char *)(cgui + 0x4ec)) {
+        result = CL_Popup((const char *)0x2adc98);
+    } else {
+        result = CL_Popup((const char *)0x2adc84);
+    }
+
+    if (result) {
+        /* Popup succeeded, clear waiting */
+        cgui = CGUI_PTR;
+        *(cgui + 0x3e8) = '\0';
+        *(int *)(cgui + 0x4e8) = -1;
+        *(unsigned char *)(cgui + 0x4ec) = 0;
+    } else {
+        /* Popup failed, clear active */
+        cgui = CGUI_PTR;
+        *(cgui + 0x2e4) = '\0';
+        *(int *)(cgui + 0x3e4) = -1;
+    }
 }
 
 /* line 805 */
-__attribute__((naked))
 void CG_CloseScriptMenu(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 805 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x2adc84, (%esp)\n" /* line 808 */
-        "calll CL_ClosePopup\n"
-        "movl $0x2adc98, (%esp)\n" /* line 809 */
-        "calll CL_ClosePopup\n"
-        "movl 0x195ecb4, %edx\n" /* line 812 */
-        "movl (%edx), %eax\n"
-        "movb $0, 0x1de(%eax)\n"
-        "movl (%edx), %eax\n" /* line 813 */
-        "movl $0xffffffff, 0x2e0(%eax)\n"
-        "movl (%edx), %eax\n" /* line 814 */
-        "movb $0, 0x2e4(%eax)\n"
-        "movl (%edx), %eax\n" /* line 815 */
-        "movl $0xffffffff, 0x3e4(%eax)\n"
-        "movl (%edx), %eax\n" /* line 816 */
-        "movb $0, 0x3e8(%eax)\n"
-        "movl (%edx), %eax\n" /* line 817 */
-        "movl $0xffffffff, 0x4e8(%eax)\n"
-        "movl (%edx), %eax\n" /* line 818 */
-        "movb $0, 0x4ec(%eax)\n"
-        "leave\n" /* line 819 */
-        "retl\n"
-    );
+    char *cgui;
+
+    CL_ClosePopup((const char *)0x2adc84);
+    CL_ClosePopup((const char *)0x2adc98);
+
+    cgui = CGUI_PTR;
+    *(unsigned char *)(cgui + 0x1de) = 0;
+    *(int *)(cgui + 0x2e0) = -1;
+    *(cgui + 0x2e4) = '\0';
+    *(int *)(cgui + 0x3e4) = -1;
+    *(cgui + 0x3e8) = '\0';
+    *(int *)(cgui + 0x4e8) = -1;
+    *(unsigned char *)(cgui + 0x4ec) = 0;
 }
 
-/* line 825 */
+/* line 825 — jump table, kept as naked */
 __attribute__((naked))
 void CG_MenuShowNotify(int menuToShow)
 {
@@ -693,7 +584,7 @@ void CG_MenuShowNotify(int menuToShow)
     );
 }
 
-/* line 1165 */
+/* line 1165 — uses register calling convention (dvarname in eax, value in edx) */
 static __attribute__((naked))
 void CG_SetClientDvarFromServer(void)
 {
@@ -771,565 +662,225 @@ void CG_SetClientDvarFromServer(void)
 }
 
 /* line 272 */
-__attribute__((naked))
 void CG_ParseFog(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 272 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x84, %esp\n"
-        /* { scope 1 */
-        "movl $0xc, (%esp)\n" /* line 284 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, -0xc(%ebp)\n" /* info */
-        "leal -0xc(%ebp), %ebx\n" /* line 285 | info, transitionTime */
-        "movl %ebx, (%esp)\n" /* transitionTime */
-        "calll Com_Parse\n"
-        "movl %eax, (%esp)\n" /* line 286 */
-        "calll atof\n"
-        "fstpl -0x50(%ebp)\n"
-        "cvtsd2ss -0x50(%ebp), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n" /* start */
-        "movl %ebx, (%esp)\n" /* line 287 | transitionTime */
-        "calll Com_Parse\n"
-        "testl %eax, %eax\n" /* line 289 */
-        "je .Lf1e0068_001e00b2\n"
-        "cmpb $0, (%eax)\n"
-        "jne .Lf1e0068_001e00e1\n"
-        ".Lf1e0068_001e00b2:\n"
-        "cvttss2si -0x1c(%ebp), %eax\n" /* line 293 | start */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x25bb0(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll CL_SwitchFog\n"
-        /* } scope */
-        "addl $0x84, %esp\n" /* line 308 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e0068_001e00e1:\n"
-        "movl %eax, (%esp)\n" /* line 297 */
-        "calll atof\n"
-        "fstpl -0x48(%ebp)\n"
-        "movl %ebx, (%esp)\n" /* line 300 | transitionTime */
-        "calll Com_Parse\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x40(%ebp)\n"
-        "movl %ebx, (%esp)\n" /* line 301 | transitionTime */
-        "calll Com_Parse\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x38(%ebp)\n"
-        "movl %ebx, (%esp)\n" /* line 302 | transitionTime */
-        "calll Com_Parse\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x30(%ebp)\n"
-        "movl %ebx, (%esp)\n" /* line 303 | transitionTime */
-        "calll Com_Parse\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x28(%ebp)\n"
-        "movl %ebx, (%esp)\n" /* line 304 | transitionTime */
-        "calll Com_Parse\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %ebx\n" /* transitionTime */
-        "cvtsd2ss -0x40(%ebp), %xmm0\n" /* line 306 */
-        "movss %xmm0, 0x18(%esp)\n"
-        "cvtsd2ss -0x28(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x54(%ebp)\n"
-        "cvttss2si -0x54(%ebp), %eax\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "cvtsd2ss -0x30(%ebp), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x58(%ebp)\n"
-        "cvttss2si -0x58(%ebp), %eax\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "cvtsd2ss -0x38(%ebp), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x5c(%ebp)\n"
-        "cvttss2si -0x5c(%ebp), %eax\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "cvtsd2ss -0x48(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x1c(%ebp), %xmm0\n" /* start */
-        "movss %xmm0, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll CL_SetFog\n"
-        "movl %ebx, 8(%esp)\n" /* line 307 | transitionTime */
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x25bb0(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll CL_SwitchFog\n"
-        /* } scope */
-        "addl $0x84, %esp\n" /* line 308 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *info;
+    const char *token;
+    float start;
+    double halfDist_d, val3_d, val4_d, val5_d, val6_d;
+    int transitionTime;
+    char *cg;
+
+    info = CL_GetConfigString(12);
+
+    token = Com_Parse(&info);
+    start = (float)atof(token);
+
+    token = Com_Parse(&info);
+    if (token == NULL || *token == '\0') {
+        /* Simple fog: just switch */
+        cg = CG_PTR;
+        CL_SwitchFog(0, *(int *)(cg + 0x25bb0), (int)start);
+        return;
+    }
+
+    halfDist_d = atof(token);
+
+    val3_d = atof(Com_Parse(&info));
+    val4_d = atof(Com_Parse(&info));
+    val5_d = atof(Com_Parse(&info));
+    val6_d = atof(Com_Parse(&info));
+
+    token = Com_Parse(&info);
+    transitionTime = atoi(token);
+
+    CL_SetFog(1, start, (float)halfDist_d,
+        (int)(unsigned char)(int)floorf((float)val4_d * 255.0f + 0.5f),
+        (int)(unsigned char)(int)floorf((float)val5_d * 255.0f + 0.5f),
+        (int)(unsigned char)(int)floorf((float)val6_d * 255.0f + 0.5f),
+        (float)val3_d);
+
+    cg = CG_PTR;
+    CL_SwitchFog(1, *(int *)(cg + 0x25bb0), transitionTime);
 }
 
 /* line 1097 */
-static __attribute__((naked))
-void CG_DeactivateChannelVolCmd(void)
+static void CG_DeactivateChannelVolCmd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1097 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 1103 */
-        "cmpl $3, %eax\n" /* line 1104 */
-        "je .Lf1e022c_001e0253\n"
-        "movl %eax, 4(%esp)\n" /* line 1106 */
-        "movl $0x2b8134, (%esp)\n" /* "ERROR: CG_DeactivateChannelVolCmd called with %i args (shoul" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 1113 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e022c_001e0253:\n"
-        "movl $1, (%esp)\n" /* line 1110 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %ebx\n" /* prio */
-        "movl $2, (%esp)\n" /* line 1111 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x10(%ebp)\n"
-        "cvtsd2ss -0x10(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x14(%ebp)\n"
-        "cvttss2si -0x14(%ebp), %eax\n"
-        "cvtsi2ssl %eax, %xmm2\n"
-        /* { scope 2 */
-        "pxor %xmm1, %xmm1\n" /* line 45 */
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf1e022c_001e02cf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf1e022c_001e02bd:\n"
-        "movl %eax, 4(%esp)\n" /* line 1112 */
-        "movl %ebx, (%esp)\n" /* prio */
-        "calll SND_DeactivateChannelVolumes\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 1113 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1e022c_001e02cf:\n"
-        "cvttss2si %xmm2, %eax\n" /* line 45 */
-        "jmp .Lf1e022c_001e02bd\n"
-    );
+    int argc;
+    int prio;
+    int fadeTime;
+    float fval;
+
+    argc = Cmd_Argc();
+    if (argc != 3) {
+        Com_Printf((const char *)0x2b8134, argc);
+        return;
+    }
+
+    prio = atoi(CG_Argv(1));
+    fval = (float)(int)floorf((float)atof(CG_Argv(2)) * 1000.0f + 0.5f);
+    fadeTime = (fval > 0.0f) ? (int)fval : 0;
+
+    SND_DeactivateChannelVolumes(prio, fadeTime);
 }
 
 /* line 1071 */
-static __attribute__((naked))
-void CG_SetChannelVolCmd(void)
+static void CG_SetChannelVolCmd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1071 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 1078 */
-        "cmpl $4, %eax\n" /* line 1079 */
-        "je .Lf1e02d6_001e02ff\n"
-        "movl %eax, 4(%esp)\n" /* line 1081 */
-        "movl $0x2b817c, (%esp)\n" /* "ERROR: CG_SetChannelVolCmd called with %i args (should be 4)" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1089 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e02d6_001e02ff:\n"
-        "movl $1, (%esp)\n" /* line 1085 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %esi\n" /* prio */
-        "movl $2, (%esp)\n" /* line 1086 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %ebx\n" /* shockIndex */
-        "movl $3, (%esp)\n" /* line 1087 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x10(%ebp)\n"
-        "cvtsd2ss -0x10(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x14(%ebp)\n"
-        "cvttss2si -0x14(%ebp), %eax\n"
-        "cvtsi2ssl %eax, %xmm2\n"
-        /* { scope 2 */
-        "pxor %xmm1, %xmm1\n" /* line 45 */
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf1e02d6_001e03ad\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf1e02d6_001e037f:\n"
-        "movl %eax, 8(%esp)\n" /* line 1088 */
-        "movl %ebx, %eax\n" /* shockIndex */
-        "shll $7, %eax\n"
-        "leal 0x68f0(%eax, %ebx, 4), %eax\n"
-        "movl 0x195f5c4, %edx\n"
-        "addl (%edx), %eax\n"
-        "addl $0xc, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* prio */
-        "calll SND_SetChannelVolumes\n"
-        /* } scope */
-        "addl $0x20, %esp\n" /* line 1089 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1e02d6_001e03ad:\n"
-        "cvttss2si %xmm2, %eax\n" /* line 45 */
-        "jmp .Lf1e02d6_001e037f\n"
-    );
+    int argc;
+    int prio;
+    int shockIndex;
+    int fadeTime;
+    float fval;
+    char *cgs;
+
+    argc = Cmd_Argc();
+    if (argc != 4) {
+        Com_Printf((const char *)0x2b817c, argc);
+        return;
+    }
+
+    prio = atoi(CG_Argv(1));
+    shockIndex = atoi(CG_Argv(2));
+    fval = (float)(int)floorf((float)atof(CG_Argv(3)) * 1000.0f + 0.5f);
+    fadeTime = (fval > 0.0f) ? (int)fval : 0;
+
+    cgs = CGS_PTR;
+    SND_SetChannelVolumes(prio, cgs + 0x68fc + shockIndex * 132, fadeTime);
 }
 
 /* line 1047 */
-static __attribute__((naked))
-void CG_DeactivateReverbCmd(void)
+static void CG_DeactivateReverbCmd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1047 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 1053 */
-        "cmpl $3, %eax\n" /* line 1054 */
-        "je .Lf1e03b4_001e03db\n"
-        "movl %eax, 4(%esp)\n" /* line 1056 */
-        "movl $0x2b81bc, (%esp)\n" /* "ERROR: CG_DeactivateReverbCmd called with %i args (should be" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 1063 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1e03b4_001e03db:\n"
-        "movl $1, (%esp)\n" /* line 1060 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %ebx\n" /* prio */
-        "movl $2, (%esp)\n" /* line 1061 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x10(%ebp)\n"
-        "cvtsd2ss -0x10(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x14(%ebp)\n"
-        "cvttss2si -0x14(%ebp), %eax\n"
-        "cvtsi2ssl %eax, %xmm2\n"
-        /* { scope 2 */
-        "pxor %xmm1, %xmm1\n" /* line 45 */
-        "movaps %xmm1, %xmm0\n"
-        "subss %xmm2, %xmm0\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "ja .Lf1e03b4_001e0457\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf1e03b4_001e0445:\n"
-        "movl %eax, 4(%esp)\n" /* line 1062 */
-        "movl %ebx, (%esp)\n" /* prio */
-        "calll SND_DeactivateEnvironmentEffects\n"
-        /* } scope */
-        "addl $0x24, %esp\n" /* line 1063 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1e03b4_001e0457:\n"
-        "cvttss2si %xmm2, %eax\n" /* line 45 */
-        "jmp .Lf1e03b4_001e0445\n"
-    );
+    int argc;
+    int prio;
+    int fadeTime;
+    float fval;
+
+    argc = Cmd_Argc();
+    if (argc != 3) {
+        Com_Printf((const char *)0x2b81bc, argc);
+        return;
+    }
+
+    prio = atoi(CG_Argv(1));
+    fval = (float)(int)floorf((float)atof(CG_Argv(2)) * 1000.0f + 0.5f);
+    fadeTime = (fval > 0.0f) ? (int)fval : 0;
+
+    SND_DeactivateEnvironmentEffects(prio, fadeTime);
 }
 
 /* line 359 */
-__attribute__((naked))
 void CG_SetConfigValues(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 359 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f5c4, %eax\n" /* line 363 */
-        "movl (%eax), %ebx\n" /* i */
-        "movl $5, (%esp)\n"
-        "calll CL_GetConfigString\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, 0x63b8(%ebx)\n" /* i */
-        "movl $6, (%esp)\n" /* line 364 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, 0x63bc(%ebx)\n" /* i */
-        "movl $0xd, (%esp)\n" /* line 365 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, 0x63b4(%ebx)\n" /* i */
-        "movl $0, 8(%esp)\n" /* line 367 */
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x25bb0(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll CL_SwitchFog\n"
-        "movl $0x4de, %esi\n"
-        "jmp .Lf1e045e_001e04f2\n"
-        ".Lf1e045e_001e04e7:\n"
-        "addl $1, %esi\n" /* line 369 */
-        "cmpl $0x4fe, %esi\n"
-        "je .Lf1e045e_001e0538\n"
-        /* { scope 2 */
-        ".Lf1e045e_001e04f2:\n"
-        "movl %esi, (%esp)\n" /* line 322 */
-        "calll CL_GetConfigString\n"
-        "movl %eax, %ebx\n" /* pszConfigString */
-        "cmpb $0, (%eax)\n" /* line 323 */
-        "je .Lf1e045e_001e04e7\n"
-        "movl $7, 4(%esp)\n" /* line 326 */
-        "movl %eax, (%esp)\n"
-        "calll Load_ScriptMenu\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1e045e_001e04e7\n"
-        "movl %ebx, 8(%esp)\n" /* line 327 | pszConfigString */
-        "movl $0x2b8200, 4(%esp)\n" /* "Could not load script menu file '%s'
-" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        /* } scope */
-        "addl $1, %esi\n" /* line 369 */
-        "cmpl $0x4fe, %esi\n"
-        "jne .Lf1e045e_001e04f2\n"
-        ".Lf1e045e_001e0538:\n"
-        "movl $0x17, %ebx\n" /* i */
-        ".Lf1e045e_001e053d:\n"
-        "movl %ebx, (%esp)\n" /* line 373 | i */
-        "calll CL_GetConfigString\n"
-        "movl $7, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "addl $1, %ebx\n" /* line 372 | i */
-        "cmpl $0x1f, %ebx\n" /* i */
-        "jne .Lf1e045e_001e053d\n"
-        ".Lf1e045e_001e055d:\n"
-        "movl %ebx, (%esp)\n" /* line 376 | i */
-        "calll CL_GetConfigString\n"
-        "movl $7, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterial\n"
-        "addl $1, %ebx\n" /* line 375 | i */
-        "cmpl $0x2e, %ebx\n" /* i */
-        "jne .Lf1e045e_001e055d\n"
-        "movw $0x61f, %bx\n" /* i */
-        "jmp .Lf1e045e_001e058e\n"
-        ".Lf1e045e_001e0583:\n"
-        "addl $1, %ebx\n" /* line 378 | i */
-        "cmpl $0x69e, %ebx\n" /* i */
-        "je .Lf1e045e_001e05b6\n"
-        /* { scope 2 */
-        ".Lf1e045e_001e058e:\n"
-        "movl %ebx, (%esp)\n" /* line 343 | pszConfigString */
-        "calll CL_GetConfigString\n"
-        "cmpb $0, (%eax)\n" /* line 344 */
-        "je .Lf1e045e_001e0583\n"
-        "movl $7, 4(%esp)\n" /* line 347 */
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        /* } scope */
-        "addl $1, %ebx\n" /* line 378 | i */
-        "cmpl $0x69e, %ebx\n" /* i */
-        "jne .Lf1e045e_001e058e\n"
-        /* } scope */
-        ".Lf1e045e_001e05b6:\n"
-        "addl $0x10, %esp\n" /* line 380 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *cgs;
+    int i;
+    const char *str;
+
+    cgs = CGS_PTR;
+    *(int *)(cgs + 0x63b8) = atoi(CL_GetConfigString(5));
+    *(int *)(cgs + 0x63bc) = atoi(CL_GetConfigString(6));
+    *(int *)(cgs + 0x63b4) = atoi(CL_GetConfigString(13));
+
+    CL_SwitchFog(0, *(int *)(CG_PTR + 0x25bb0), 0);
+
+    /* Load script menus */
+    for (i = 0x4de; i < 0x4fe; i++) {
+        str = CL_GetConfigString(i);
+        if (*str == '\0') {
+            continue;
+        }
+        if (!Load_ScriptMenu(str, 7)) {
+            Com_Error(ERR_DROP, (const char *)0x2b8200, str);
+        }
+    }
+
+    /* Register materials (no mip) */
+    for (i = 0x17; i < 0x1f; i++) {
+        CL_RegisterMaterialNoMip(CL_GetConfigString(i), 7);
+    }
+
+    /* Register materials */
+    for (i = 0x1f; i < 0x2e; i++) {
+        CL_RegisterMaterial(CL_GetConfigString(i), 7);
+    }
+
+    /* Register additional materials (no mip, skip empty) */
+    for (i = 0x61f; i < 0x69e; i++) {
+        str = CL_GetConfigString(i);
+        if (*str == '\0') {
+            continue;
+        }
+        CL_RegisterMaterialNoMip(str, 7);
+    }
 }
 
 /* line 621 */
-__attribute__((naked))
 void CG_MapRestart(qboolean savepersist)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 621 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* savepersist */
-        "movl 0x195f940, %eax\n" /* line 623 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1e05be_001e07bf\n"
-        ".Lf1e05be_001e05dc:\n"
-        "movl 0x195f584, %eax\n" /* line 626 */
-        "movl (%eax), %ebx\n"
-        "movl $0, 0x2b990(%ebx)\n"
-        "movl $0, 0x2bdf0(%ebx)\n" /* line 627 */
-        "movl $1, 0x2be00(%ebx)\n" /* line 628 */
-        "calll CG_InitLocalEntities\n" /* line 630 */
-        "calll CG_InitMarkPolys\n" /* line 631 */
-        "calll FX_FreeActive\n" /* line 632 */
-        "movl 0x195f5c4, %eax\n" /* line 634 */
-        "movl (%eax), %eax\n"
-        "movl $0, 0x6088(%eax)\n"
-        "movl $1, 0x25bbc(%ebx)\n" /* line 636 */
-        "movl $0, (%esp)\n" /* line 638 */
-        "calll SND_StopSounds\n"
-        "calll CG_StartAmbient\n" /* line 640 */
-        "movl $0, 0x2c5a4(%ebx)\n" /* line 642 */
-        "movl $0, 0x2bf0c(%ebx)\n" /* line 645 */
-        "leal 0x2be74(%ebx), %eax\n" /* line 646 */
-        "movl $0x60, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "leal 0x2be60(%ebx), %eax\n" /* line 649 */
-        "movl $0, 0x2be60(%ebx)\n"
-        "movl $0, 4(%eax)\n"
-        "movl $0, 8(%eax)\n"
-        "movl $0, 0x2be6c(%ebx)\n" /* line 650 */
-        "movl $0, 4(%esp)\n" /* line 652 */
-        "movl 0x195f860, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetBool\n"
-        "movl 0x195ecb4, %esi\n" /* line 655 */
-        "movl (%esi), %eax\n"
-        "movl $0, 8(%eax)\n"
-        "movl $0, (%esp)\n" /* line 658 */
-        "calll CL_SetADS\n"
-        "testl %edi, %edi\n" /* line 660 | savepersist */
-        "jne .Lf1e05be_001e07a7\n"
-        "movl (%esi), %eax\n" /* line 664 */
-        "movb $0, 0x4ed(%eax)\n"
-        "movl $0x2adc84, (%esp)\n" /* line 808 */
-        "calll CL_ClosePopup\n"
-        "movl $0x2adc98, (%esp)\n" /* line 809 */
-        "calll CL_ClosePopup\n"
-        "movl (%esi), %eax\n" /* line 812 */
-        "movb $0, 0x1de(%eax)\n"
-        "movl (%esi), %eax\n" /* line 813 */
-        "movl $0xffffffff, 0x2e0(%eax)\n"
-        "movl (%esi), %eax\n" /* line 814 */
-        "movb $0, 0x2e4(%eax)\n"
-        "movl (%esi), %eax\n" /* line 815 */
-        "movl $0xffffffff, 0x3e4(%eax)\n"
-        "movl (%esi), %eax\n" /* line 816 */
-        "movb $0, 0x3e8(%eax)\n"
-        "movl (%esi), %eax\n" /* line 817 */
-        "movl $0xffffffff, 0x4e8(%eax)\n"
-        "movl (%esi), %eax\n" /* line 818 */
-        "movb $0, 0x4ec(%eax)\n"
-        "movl $0x2adc84, (%esp)\n" /* line 808 */
-        "calll CL_ClosePopup\n"
-        "movl $0x2adc98, (%esp)\n" /* line 809 */
-        "calll CL_ClosePopup\n"
-        "movl (%esi), %eax\n" /* line 812 */
-        "movb $0, 0x1de(%eax)\n"
-        "movl (%esi), %eax\n" /* line 813 */
-        "movl $0xffffffff, 0x2e0(%eax)\n"
-        "movl (%esi), %eax\n" /* line 814 */
-        "movb $0, 0x2e4(%eax)\n"
-        "movl (%esi), %eax\n" /* line 815 */
-        "movl $0xffffffff, 0x3e4(%eax)\n"
-        "movl (%esi), %eax\n" /* line 816 */
-        "movb $0, 0x3e8(%eax)\n"
-        "movl (%esi), %eax\n" /* line 817 */
-        "movl $0xffffffff, 0x4e8(%eax)\n"
-        "movl (%esi), %eax\n" /* line 818 */
-        "movb $0, 0x4ec(%eax)\n"
-        "movl (%esi), %eax\n" /* line 667 */
-        "movb $1, 0x4ed(%eax)\n"
-        "calll CL_CloseAllMenus\n" /* line 669 */
-        ".Lf1e05be_001e07a7:\n"
-        "calll CG_ScoresUp_f\n" /* line 673 */
-        "movb $0, 0x2a9fc(%ebx)\n" /* line 676 */
-        "addl $0x1c, %esp\n" /* line 684 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp CL_SyncTimes\n" /* line 678 */
-        ".Lf1e05be_001e07bf:\n"
-        "movl $0x2b8228, (%esp)\n" /* line 624 */
-        "calll Com_Printf\n"
-        "jmp .Lf1e05be_001e05dc\n"
-    );
+    char *cg;
+    char *cgs;
+    char *cgui;
+
+    if (*(int *)(*(char **)*(void **)0x195f940 + 8) != 0) {
+        Com_Printf((const char *)0x2b8228);
+    }
+
+    cg = CG_PTR;
+    *(int *)(cg + 0x2b990) = 0;
+    *(int *)(cg + 0x2bdf0) = 0;
+    *(int *)(cg + 0x2be00) = 1;
+
+    CG_InitLocalEntities();
+    CG_InitMarkPolys();
+    FX_FreeActive();
+
+    cgs = CGS_PTR;
+    *(int *)(cgs + 0x6088) = 0;
+
+    *(int *)(cg + 0x25bbc) = 1;
+
+    SND_StopSounds(0);
+    CG_StartAmbient();
+
+    *(int *)(cg + 0x2c5a4) = 0;
+    *(int *)(cg + 0x2bf0c) = 0;
+
+    memset(cg + 0x2be74, 0, 0x60);
+
+    *(int *)(cg + 0x2be60) = 0;
+    *(int *)(cg + 0x2be64) = 0;
+    *(int *)(cg + 0x2be68) = 0;
+    *(int *)(cg + 0x2be6c) = 0;
+
+    Dvar_SetBool(*(void **)*(void **)0x195f860, 0);
+
+    cgui = CGUI_PTR;
+    *(int *)(cgui + 8) = 0;
+
+    CL_SetADS(0);
+
+    if (!savepersist) {
+        cgui = CGUI_PTR;
+        *(unsigned char *)(cgui + 0x4ed) = 0;
+
+        CG_CloseScriptMenu();
+        CG_CloseScriptMenu();
+
+        cgui = CGUI_PTR;
+        *(unsigned char *)(cgui + 0x4ed) = 1;
+
+        CL_CloseAllMenus();
+    }
+
+    CG_ScoresUp_f();
+    *(unsigned char *)(cg + 0x2a9fc) = 0;
+
+    CL_SyncTimes();
 }
 
-/* line 1189 */
+/* line 1189 — massive jump table dispatch, kept as naked */
 __attribute__((naked))
 void CG_ServerCommand(void)
 {
@@ -1400,8 +951,7 @@ void CG_ServerCommand(void)
         "movl $0, (%esp)\n" /* line 1357 */
         "calll CG_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b8350, (%esp)\n" /* "Unknown client game command: %s
-" */
+        "movl $0x2b8350, (%esp)\n"
         "calll Com_Printf\n"
         "calll Cmd_Argc\n" /* line 1359 */
         "movl %eax, %esi\n" /* argc */
@@ -1409,14 +959,14 @@ void CG_ServerCommand(void)
         "jle .Lf1e07d0_001e08a3\n"
         "leal -1(%eax), %eax\n" /* line 1362 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b8374, (%esp)\n" /* "Arguments(%i):" */
+        "movl $0x2b8374, (%esp)\n"
         "calll Com_Printf\n"
         "movl $1, %ebx\n" /* weapIndex */
         ".Lf1e07d0_001e08ee:\n"
         "movl %ebx, (%esp)\n" /* line 1364 | weapIndex */
         "calll CG_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2abc2c, (%esp)\n" /* " %s" */
+        "movl $0x2abc2c, (%esp)\n"
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 1363 | weapIndex */
         "cmpl %ebx, %esi\n" /* weapIndex, argc */
@@ -1433,12 +983,12 @@ void CG_ServerCommand(void)
         /* { scope 1 */
         "movl $1, (%esp)\n" /* line 1230 */
         "calll CG_Argv\n"
-        "leal -0x1b2(%ebp), %ebx\n" /* hudElemString, weapIndex */
-        "movl %ebx, 8(%esp)\n" /* weapIndex */
-        "movl $0x2b8250, 4(%esp)\n" /* "game message" */
+        "leal -0x1b2(%ebp), %ebx\n"
+        "movl %ebx, 8(%esp)\n"
+        "movl $0x2b8250, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
-        "movl %ebx, (%esp)\n" /* line 1231 | weapIndex */
+        "movl %ebx, (%esp)\n" /* line 1231 */
         "calll CG_GameMessage\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1327 */
@@ -1465,7 +1015,7 @@ void CG_ServerCommand(void)
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1345 */
         "calll CG_Argv\n"
-        "movl %eax, (%esp)\n" /* score */
+        "movl %eax, (%esp)\n"
         "calll atoi\n"
         /* { scope 2 */
         "movl 0x195f5c4, %edx\n" /* line 1008 */
@@ -1475,7 +1025,7 @@ void CG_ServerCommand(void)
         /* } scope */
         "movl $1, (%esp)\n" /* line 1349 */
         "calll CG_Argv\n"
-        "movl %eax, (%esp)\n" /* score */
+        "movl %eax, (%esp)\n"
         "calll atoi\n"
         /* { scope 2 */
         "movl 0x195f5c4, %edx\n" /* line 1008 */
@@ -1618,22 +1168,22 @@ void CG_ServerCommand(void)
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1216 */
         "calll CG_Argv\n"
-        "leal -0x1b2(%ebp), %ebx\n" /* hudElemString, weapIndex */
-        "movl %ebx, 8(%esp)\n" /* weapIndex */
-        "movl $0x2b8238, 4(%esp)\n" /* "announcement message" */
+        "leal -0x1b2(%ebp), %ebx\n"
+        "movl %ebx, 8(%esp)\n"
+        "movl $0x2b8238, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
-        "movl %ebx, (%esp)\n" /* line 1217 | weapIndex */
+        "movl %ebx, (%esp)\n" /* line 1217 */
         "calll CG_BoldGameMessage\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1235 */
         "calll CG_Argv\n"
-        "leal -0x1b2(%ebp), %ebx\n" /* hudElemString, weapIndex */
-        "movl %ebx, 8(%esp)\n" /* weapIndex */
-        "movl $0x2b8260, 4(%esp)\n" /* "bold game message" */
+        "leal -0x1b2(%ebp), %ebx\n"
+        "movl %ebx, 8(%esp)\n"
+        "movl $0x2b8260, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
-        "movl %ebx, (%esp)\n" /* line 1236 | weapIndex */
+        "movl %ebx, (%esp)\n" /* line 1236 */
         "calll CG_BoldGameMessage\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "movl 0x195f94c, %eax\n" /* line 1240 */
@@ -1643,16 +1193,16 @@ void CG_ServerCommand(void)
         "movl $1, (%esp)\n" /* line 1243 */
         "calll CG_Argv\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x2b8274, 4(%esp)\n" /* "chat message" */
+        "movl $0x2b8274, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl $0x96, 8(%esp)\n" /* line 1245 */
         "movl %eax, 4(%esp)\n"
-        "leal -0xb2(%ebp), %ebx\n" /* text, weapIndex */
-        "movl %ebx, (%esp)\n" /* weapIndex */
+        "leal -0xb2(%ebp), %ebx\n"
+        "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
         /* { scope 2 */
-        "movzbl -0xb2(%ebp), %eax\n" /* line 990 | text */
+        "movzbl -0xb2(%ebp), %eax\n" /* line 990 */
         "testb %al, %al\n"
         "je .Lf1e07d0_001e0fb7\n"
         "xorl %ecx, %ecx\n"
@@ -1674,26 +1224,25 @@ void CG_ServerCommand(void)
         ".Lf1e07d0_001e0d4c:\n"
         "movb $0, -0xb2(%ebp, %eax)\n" /* line 996 */
         /* } scope */
-        "movl %ebx, %eax\n" /* line 1256 | weapIndex */
+        "movl %ebx, %eax\n" /* line 1256 */
         "calll CG_AddToTeamChat\n"
-        "movl %ebx, 4(%esp)\n" /* line 1257 | weapIndex */
-        "movl $0x215bbc, (%esp)\n" /* "%s
-" */
+        "movl %ebx, 4(%esp)\n" /* line 1257 */
+        "movl $0x215bbc, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1252 */
         "calll CG_Argv\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x2b8284, 4(%esp)\n" /* "team chat message" */
+        "movl $0x2b8284, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl $0x96, 8(%esp)\n" /* line 1254 */
         "movl %eax, 4(%esp)\n"
-        "leal -0xb2(%ebp), %ebx\n" /* text, weapIndex */
-        "movl %ebx, (%esp)\n" /* weapIndex */
+        "leal -0xb2(%ebp), %ebx\n"
+        "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
         /* { scope 2 */
-        "movzbl -0xb2(%ebp), %eax\n" /* line 990 | text */
+        "movzbl -0xb2(%ebp), %eax\n" /* line 990 */
         "testb %al, %al\n"
         "je .Lf1e07d0_001e0fb7\n"
         "xorl %ecx, %ecx\n"
@@ -1738,13 +1287,13 @@ void CG_ServerCommand(void)
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
-        "movl %eax, %ebx\n" /* weapIndex */
+        "movl %eax, %ebx\n"
         "movl $1, (%esp)\n"
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
         "calll atof\n"
         "fstpl -0x2e8(%ebp)\n"
-        "movl %ebx, 4(%esp)\n" /* weapIndex */
+        "movl %ebx, 4(%esp)\n"
         "cvtsd2ss -0x2e8(%ebp), %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll SND_FadeAllSounds\n"
@@ -1753,16 +1302,14 @@ void CG_ServerCommand(void)
         "cmpl $6, %eax\n" /* line 1027 */
         "je .Lf1e07d0_001e1167\n"
         "movl %eax, 4(%esp)\n" /* line 1029 */
-        "movl $0x2b8298, (%esp)\n" /* "ERROR: CG_ReverbCmd called with %i args (should be 6)
-" */
+        "movl $0x2b8298, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "calll Cmd_Argc\n" /* line 1127 */
         "cmpl $2, %eax\n" /* line 1128 */
         "je .Lf1e07d0_001e1274\n"
         "movl %eax, 4(%esp)\n" /* line 1130 */
-        "movl $0x2b82d0, (%esp)\n" /* "ERROR: CG_LocalSound called with %i args (should be 2)
-" */
+        "movl $0x2b82d0, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $0x2adc84, (%esp)\n" /* line 808 */
@@ -1791,13 +1338,13 @@ void CG_ServerCommand(void)
         "calll CG_Argv\n"
         "movl $0x96, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "leal -0xb2(%ebp), %ebx\n" /* text, weapIndex */
-        "movl %ebx, (%esp)\n" /* weapIndex */
+        "leal -0xb2(%ebp), %ebx\n"
+        "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
         "movl $2, (%esp)\n" /* line 1313 */
         "calll CG_Argv\n"
         "movl %eax, %edx\n"
-        "movl %ebx, %eax\n" /* weapIndex */
+        "movl %ebx, %eax\n"
         "calll CG_SetClientDvarFromServer\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1261 */
@@ -1940,8 +1487,8 @@ void CG_ServerCommand(void)
         "calll CG_Argv\n"
         "movl %eax, %ebx\n"
         "cvtsd2ss -0x2c8(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss 0x2ed5c8, %xmm0\n"
+        "addss 0x2ed5d8, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x2ec(%ebp)\n"
@@ -1974,7 +1521,7 @@ void CG_ServerCommand(void)
         "jbe .Lf1e07d0_001e12bb\n"
         "movl $0x100, 8(%esp)\n" /* line 1137 */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b8308, (%esp)\n" /* "ERROR: CG_LocalSound called with index %i (should be in rang" */
+        "movl $0x2b8308, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e12b1:\n"
@@ -2069,7 +1616,7 @@ void CG_ServerCommand(void)
         ".Lf1e07d0_001e13e9:\n"
         "movb $0, -0x1b3(%ebp)\n" /* line 418 */
         "movl $0, 8(%esp)\n" /* line 420 */
-        "movl $0x2a79f4, 4(%esp)\n" /* "vote string" */
+        "movl $0x2a79f4, 4(%esp)\n"
         "leal -0x2b2(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
@@ -2153,39 +1700,16 @@ void CG_ServerCommand(void)
 }
 
 /* line 1380 */
-__attribute__((naked))
 void CG_ExecuteNewServerCommands(int latestSequence)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1380 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* latestSequence */
-        "movl 0x195f5c4, %eax\n"
-        "movl (%eax), %ebx\n"
-        ".Lf1e153a_001e154c:\n"
-        "movl 0x5e98(%ebx), %eax\n" /* line 1382 */
-        "cmpl %esi, %eax\n" /* latestSequence */
-        "jge .Lf1e153a_001e157a\n"
-        ".Lf1e153a_001e1556:\n"
-        "addl $1, %eax\n" /* line 1386 */
-        "movl %eax, 0x5e98(%ebx)\n"
-        "movl %eax, (%esp)\n"
-        "calll CL_GetServerCommand\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e153a_001e154c\n"
-        "calll CG_ServerCommand\n" /* line 1387 */
-        "movl 0x5e98(%ebx), %eax\n" /* line 1382 */
-        "cmpl %esi, %eax\n" /* latestSequence */
-        "jl .Lf1e153a_001e1556\n"
-        ".Lf1e153a_001e157a:\n"
-        "addl $0x10, %esp\n" /* line 1389 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
+    char *cgs;
 
+    cgs = CGS_PTR;
+
+    while (*(int *)(cgs + 0x5e98) < latestSequence) {
+        *(int *)(cgs + 0x5e98) += 1;
+        if (CL_GetServerCommand(*(int *)(cgs + 0x5e98))) {
+            CG_ServerCommand();
+        }
+    }
+}

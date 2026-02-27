@@ -3,6 +3,42 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <math.h>
+
+extern clipHandle_t CM_TempBoxModel(const vec_t *mins, const vec_t *maxs, int contents);
+extern void CM_UnlinkEntity(int svEntity);
+extern int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const vec_t *mins, const vec_t *maxs, int brushmask, int contentmask);
+extern int CM_PointSightTraceToEntities(const sightpointtrace_t *clip);
+extern int CM_ClipSightTraceToEntities(const sightclip_t *clip);
+extern void CM_BoxTrace(trace_t *results, const vec_t *start, const vec_t *end, const vec_t *mins, const vec_t *maxs, int brushmask, int contentmask);
+extern void CM_PointTraceStaticModels(trace_t *results, const vec_t *start, const vec_t *end, int contentmask);
+extern void CM_CalcTraceEntents(const void *extents);
+extern void CM_PointTraceToEntities(const pointtrace_t *clip, trace_t *results);
+extern void CM_ClipMoveToEntities(const moveclip_t *clip, trace_t *results);
+extern int CM_PointTraceStaticModelsComplete(const vec_t *start, const vec_t *end, int contentmask);
+extern float RadiusFromBounds(const vec_t *mins, const vec_t *maxs);
+extern float RadiusFromBounds2D(const vec_t *mins, const vec_t *maxs);
+extern int CM_BoxLeafnums(const vec_t *mins, const vec_t *maxs, int *leafs, int maxLeafs, int *lastLeaf);
+extern int CM_LeafCluster(int leafnum);
+extern void CM_LinkEntity(int svEntity, const vec_t *absmin, const vec_t *absmax, int clipHandle);
+extern int CM_TraceBox(const void *extents, const vec_t *absmin, const vec_t *absmax, float fraction);
+extern void CM_TransformedBoxTrace(trace_t *results, const vec_t *start, const vec_t *end, const vec_t *mins, const vec_t *maxs, int clipHandle, int contentmask, const vec_t *origin, const vec_t *angles);
+extern int CM_TransformedBoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const vec_t *mins, const vec_t *maxs, int clipHandle, int contentmask, const vec_t *origin, const vec_t *angles);
+extern int CM_AreaEntities(const vec_t *mins, const vec_t *maxs, int *entityList, int maxcount, int contentmask);
+extern int CM_PointContents(const vec_t *p, int brushmask);
+extern int CM_TransformedPointContents(const vec_t *p, int clipHandle, const vec_t *origin, const vec_t *angles);
+extern void Com_Error(int code, const char *fmt, ...);
+extern gentity_t *SV_GentityNum(int num);
+extern void *Com_GetServerDObj(int entityNum);
+extern void DObjGetBounds(void *obj, vec_t *absmin, vec_t *absmax);
+extern int DObjHasContents(void *obj, int contentmask);
+extern void G_DObjCalcPose(gentity_t *ent);
+extern void AnglesToAxis(const vec_t *angles, float (*axis)[3]);
+extern void MatrixTransposeTransformVector43(const vec_t *in, const float *mat, vec_t *out);
+extern void MatrixTransformVector(const vec_t *in, const float (*axis)[3], vec_t *out);
+extern int DObjGeomTraceline(void *obj, const vec_t *start, const vec_t *end, int contentmask, void *objTrace);
+extern int DObjTraceline(void *obj, const vec_t *start, const vec_t *end, unsigned char *priorityMap, void *objTrace);
+extern int SV_SvEntityForGentity(const gentity_t *gEnt);
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"

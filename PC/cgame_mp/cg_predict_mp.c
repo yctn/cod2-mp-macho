@@ -16,6 +16,12 @@ static cg_solidEntities_t cg_solidEntities; /* 0xfea980 */
 static int cg_numTriggerEntities; /* 0xfea4f8 */
 static centity_t * cg_triggerEntities[256]; /* 0xfea500 */
 
+extern int CM_PointContents(const vec_t *point, unsigned int model);
+extern int CM_TransformedPointContents(const vec_t *point, unsigned int model, const vec_t *origin, const vec_t *angles);
+extern int CM_ContentsOfModel(unsigned int model);
+extern void CM_BoxTrace(trace_t *results, const vec_t *start, const vec_t *end, const vec_t *mins, const vec_t *maxs, unsigned int model, int brushmask);
+
+
 void CG_ClearSolidList(void);
 int CG_PointContents(const vec_t *point, int passEntityNum, int contentmask);
 static void CG_InterpolatePlayerState(qboolean grabAngles);
@@ -26,83 +32,37 @@ void CG_TraceCapsule(trace_t *result, const vec_t *start, const vec_t *mins, con
 void CG_BuildSolidList(void);
 
 /* line 49 */
-__attribute__((naked))
 void CG_ClearSolidList(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 49 */
-        "movl %esp, %ebp\n"
-        "movl $0, cg_numSolidEntities\n" /* line 51 */
-        "movl $0, cg_numTriggerEntities\n" /* line 52 */
-        "popl %ebp\n" /* line 53 */
-        "retl\n"
-    );
+    cg_numSolidEntities = 0;
+    cg_numTriggerEntities = 0;
 }
 
 /* line 276 */
-__attribute__((naked))
 int CG_PointContents(const vec_t *point, int passEntityNum, int contentmask)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 276 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 0x10(%ebp), %edi\n" /* contentmask */
-        /* { scope 1 */
-        "movl $0, 4(%esp)\n" /* line 284 */
-        "movl 8(%ebp), %eax\n" /* point */
-        "movl %eax, (%esp)\n"
-        "calll CM_PointContents\n"
-        "movl %eax, -0x1c(%ebp)\n" /* contents */
-        "movl cg_numSolidEntities, %eax\n" /* line 286 */
-        "testl %eax, %eax\n"
-        "jle .Lf1db132_001db1d1\n"
-        "xorl %esi, %esi\n" /* i */
-        "movl $cg_solidEntities, %ebx\n"
-        "jmp .Lf1db132_001db174\n"
-        ".Lf1db132_001db166:\n"
-        "addl $1, %esi\n" /* i */
-        "addl $4, %ebx\n"
-        "cmpl %esi, cg_numSolidEntities\n" /* i */
-        "jle .Lf1db132_001db1d1\n"
-        ".Lf1db132_001db174:\n"
-        "movl (%ebx), %edx\n" /* line 288 */
-        "leal 0xf0(%edx), %eax\n" /* line 290 */
-        "movl 0xc(%ebp), %ecx\n" /* line 292 | passEntityNum */
-        "cmpl %ecx, 0xf0(%edx)\n"
-        "je .Lf1db132_001db166\n"
-        "cmpl $0xffffff, 0x9c(%eax)\n" /* line 297 */
-        "jne .Lf1db132_001db166\n"
-        "movl 0x8c(%eax), %ecx\n" /* line 302 */
-        "testl %ecx, %ecx\n" /* line 303 */
-        "je .Lf1db132_001db166\n"
-        "leal 0x1f8(%edx), %eax\n" /* line 306 */
-        "movl %eax, 0xc(%esp)\n"
-        "leal 0x1ec(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* point */
-        "movl %eax, (%esp)\n"
-        "calll CM_TransformedPointContents\n"
-        "orl %eax, -0x1c(%ebp)\n" /* contents */
-        "addl $1, %esi\n" /* line 286 | i */
-        "addl $4, %ebx\n"
-        "cmpl %esi, cg_numSolidEntities\n" /* i */
-        "jg .Lf1db132_001db174\n"
-        ".Lf1db132_001db1d1:\n"
-        "andl -0x1c(%ebp), %edi\n" /* contents, contentmask */
-        /* } scope */
-        "movl %edi, %eax\n" /* line 310 | contentmask */
-        "addl $0x2c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int contents;
+    int i;
+
+    contents = CM_PointContents(point, 0);
+
+    for (i = 0; i < cg_numSolidEntities; i++) {
+        char *cent = ((char **)&cg_solidEntities)[i];
+        char *ent = cent + 0xf0;
+
+        if (*(int *)(ent) == passEntityNum)
+            continue;
+        if (*(int *)(ent + 0x9c) != 0xffffff)
+            continue;
+        if (*(int *)(ent + 0x8c) == 0)
+            continue;
+
+        contents |= CM_TransformedPointContents(point, *(unsigned int *)(ent + 0x8c),
+                                                 (const vec_t *)(cent + 0x1ec),
+                                                 (const vec_t *)(cent + 0x1f8));
+    }
+
+    return contents & contentmask;
 }
 
 /* line 321 */
@@ -1195,152 +1155,59 @@ void CG_ClipMoveToEntities(const vec_t *start, const vec_t *mins, const vec_t *m
 }
 
 /* line 256 */
-__attribute__((naked))
 void CG_TraceCapsule(trace_t *result, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int skipNumber, int mask)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 256 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* result */
-        "movl 0x18(%ebp), %edi\n" /* end */
-        "movl 0x20(%ebp), %esi\n" /* mask */
-        "movl %esi, 0x18(%esp)\n" /* line 260 | mask */
-        "movl $0, 0x14(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* maxs */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* mins */
-        "movl %eax, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n" /* end */
-        "movl 0xc(%ebp), %eax\n" /* start */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* result */
-        "calll CM_BoxTrace\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 261 | 1.0f */
-        "ucomiss (%ebx), %xmm0\n" /* result */
-        "sete %al\n"
-        "setnp %dl\n"
-        "andb %dl, %al\n"
-        "movzbw %al, %ax\n"
-        "addw $0x3fe, %ax\n"
-        "movw %ax, 0x1c(%ebx)\n" /* result */
-        "pxor %xmm0, %xmm0\n" /* line 264 */
-        "ucomiss (%ebx), %xmm0\n" /* result */
-        "jp .Lf1dc284_001dc2f5\n"
-        "jne .Lf1dc284_001dc2f5\n"
-        "addl $0x2c, %esp\n" /* line 268 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1dc284_001dc2f5:\n"
-        "movl %ebx, 0x1c(%esp)\n" /* line 265 | result */
-        "movl $1, 0x18(%esp)\n"
-        "movl %esi, 0x14(%esp)\n" /* mask */
-        "movl 0x1c(%ebp), %eax\n" /* skipNumber */
-        "movl %eax, 0x10(%esp)\n"
-        "movl %edi, 0xc(%esp)\n" /* end */
-        "movl 0x14(%ebp), %eax\n" /* maxs */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* mins */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* start */
-        "movl %eax, (%esp)\n"
-        "calll CG_ClipMoveToEntities\n"
-        "addl $0x2c, %esp\n" /* line 268 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CM_BoxTrace(result, start, end, mins, maxs, 0, mask);
+
+    if (result->fraction == 1.0f) {
+        result->entityNum = 1023;
+    } else {
+        result->entityNum = 1022;
+    }
+
+    if (result->fraction == 0.0f) {
+        return;
+    }
+
+    CG_ClipMoveToEntities(start, mins, maxs, end, skipNumber, mask, 1, result);
 }
 
 /* line 65 */
-__attribute__((naked))
 void CG_BuildSolidList(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 65 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl $0, cg_numSolidEntities\n" /* line 51 */
-        "movl $0, cg_numTriggerEntities\n" /* line 52 */
-        "movl 0x195f584, %eax\n" /* line 74 */
-        "movl (%eax), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl 0x26b4(%eax), %edx\n" /* line 77 */
-        "testl %edx, %edx\n"
-        "jle .Lf1dc332_001dc419\n"
-        "movl %eax, %edi\n"
-        "movl $0, -0x20(%ebp)\n" /* i */
-        "jmp .Lf1dc332_001dc3b5\n"
-        ".Lf1dc332_001dc375:\n"
-        "cmpl $3, 4(%ebx)\n" /* line 92 | ent */
-        "je .Lf1dc332_001dc421\n"
-        "movl 0x9c(%ebx), %eax\n" /* line 99 | ent */
-        "testl %eax, %eax\n"
-        "je .Lf1dc332_001dc39d\n"
-        "movl cg_numSolidEntities, %eax\n" /* line 101 */
-        "movl %esi, cg_solidEntities(, %eax, 4)\n" /* cent */
-        "addl $1, %eax\n" /* line 102 */
-        "movl %eax, cg_numSolidEntities\n"
-        ".Lf1dc332_001dc39d:\n"
-        "addl $1, -0x20(%ebp)\n" /* line 77 | i */
-        "addl $0xf0, %edi\n"
-        "movl -0x20(%ebp), %edx\n" /* i */
-        "movl -0x1c(%ebp), %eax\n"
-        "cmpl %edx, 0x26b4(%eax)\n"
-        "jle .Lf1dc332_001dc419\n"
-        ".Lf1dc332_001dc3b5:\n"
-        "movl 0x26bc(%edi), %eax\n" /* line 79 */
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %eax, %edx\n"
-        "leal (%eax, %edx, 8), %edx\n"
-        "leal (, %edx, 4), %esi\n" /* cent */
-        "movl 0x195f5cc, %eax\n"
-        "addl (%eax), %esi\n" /* cent */
-        "leal 0xf0(%esi), %ebx\n" /* line 80 | cent, ent */
-        "cmpl $0xffffff, 0x9c(%ebx)\n" /* line 83 | ent */
-        "jne .Lf1dc332_001dc375\n"
-        "testb $1, 8(%ebx)\n" /* line 85 | ent */
-        "jne .Lf1dc332_001dc39d\n"
-        "movl 0x8c(%ebx), %eax\n" /* line 88 | ent */
-        "movl %eax, (%esp)\n"
-        "calll CM_ContentsOfModel\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1dc332_001dc375\n"
-        "addl $1, -0x20(%ebp)\n" /* line 77 | i */
-        "addl $0xf0, %edi\n"
-        "movl -0x20(%ebp), %edx\n" /* i */
-        "movl -0x1c(%ebp), %eax\n"
-        "cmpl %edx, 0x26b4(%eax)\n"
-        "jg .Lf1dc332_001dc3b5\n"
-        /* } scope */
-        ".Lf1dc332_001dc419:\n"
-        "addl $0x2c, %esp\n" /* line 106 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1dc332_001dc421:\n"
-        "movl cg_numTriggerEntities, %eax\n" /* line 94 */
-        "movl %esi, cg_triggerEntities(, %eax, 4)\n" /* cent */
-        "addl $1, %eax\n" /* line 95 */
-        "movl %eax, cg_numTriggerEntities\n"
-        "jmp .Lf1dc332_001dc39d\n"
-    );
+    int i;
+    char *cg_s;
+    char *snap;
+    int numEntities;
+    char *cg_entities_base;
+
+    cg_numSolidEntities = 0;
+    cg_numTriggerEntities = 0;
+
+    cg_s = *(char **)(*(int *)0x195f584);
+    snap = *(char **)(cg_s + 0x24);
+    numEntities = *(int *)(snap + 0x26b4);
+    cg_entities_base = *(char **)(*(int *)0x195f5cc);
+
+    for (i = 0; i < numEntities; i++) {
+        int entityNum = *(int *)(snap + 0x26bc + i * 0xf0);
+        char *cent = cg_entities_base + entityNum * 548;
+        char *ent = cent + 0xf0;
+
+        if (*(int *)(ent + 0x9c) == 0xffffff) {
+            if (*(unsigned char *)(ent + 8) & 1)
+                continue;
+            if (CM_ContentsOfModel(*(unsigned int *)(ent + 0x8c)) == 0)
+                continue;
+        }
+
+        if (*(int *)(ent + 4) == 3) {
+            cg_triggerEntities[cg_numTriggerEntities] = (centity_t *)cent;
+            cg_numTriggerEntities++;
+        } else if (*(int *)(ent + 0x9c) != 0) {
+            ((centity_t **)&cg_solidEntities)[cg_numSolidEntities] = (centity_t *)cent;
+            cg_numSolidEntities++;
+        }
+    }
 }
 

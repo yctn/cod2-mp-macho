@@ -14,6 +14,28 @@
 static vec3_t mins; /* 0x31466c */
 static vec3_t maxs; /* 0x314660 */
 
+extern void Com_Printf(const char *fmt, ...);
+extern void FX_FreeSystem(void);
+extern void FX_InitSystem(int maxEffects);
+extern int Cmd_Argc(void);
+extern const char *CG_Argv(int arg);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern int FX_RegisterEffect(const char *name);
+extern void FX_PlaySimpleEffect(int effectIndex, const vec_t *origin);
+extern double atof(const char *str);
+extern int BG_GetViewmodelWeaponIndex(void *ps);
+extern void *BG_GetWeaponDef(int weapIndex);
+extern int BG_IsAimDownSightWeapon(int weapIndex);
+extern float atanf(float x);
+extern float sinf(float x);
+extern double tan(double x);
+extern void CL_ResetSkeletonCache(int level);
+extern void CG_UpdateViewWeaponAnim(void *ps);
+extern void CL_FX_AdjustCamera(void *refdef);
+extern void FX_AdjustTime(int serverTime);
+extern int CG_PointContents(const vec_t *point, int passEntityNum, int contentmask);
+extern void CG_PredictPlayerState(void);
+
 void CG_FxRestart(void);
 void CG_FxTest(void);
 float CG_GetViewFov(void);
@@ -25,341 +47,148 @@ void CG_InitView(void);
 qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubemapShot, int cubemapSize, qboolean renderScreen);
 
 /* line 56 */
-__attribute__((naked))
 void CG_FxRestart(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 56 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x2b74b0, (%esp)\n" /* line 58 */
-        "calll Com_Printf\n"
-        "calll FX_FreeSystem\n" /* line 59 */
-        "movl $1, (%esp)\n" /* line 60 */
-        "calll FX_InitSystem\n"
-        "leave\n" /* line 61 */
-        "retl\n"
-    );
+    Com_Printf((const char *)0x2b74b0);
+    FX_FreeSystem();
+    FX_InitSystem(1);
 }
 
 /* line 64 */
-__attribute__((naked))
 void CG_FxTest(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 64 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "calll Cmd_Argc\n" /* line 66 */
-        "subl $1, %eax\n"
-        "jle .Lf1d0e56_001d0f24\n"
-        ".Lf1d0e56_001d0e6d:\n"
-        "movl $1, (%esp)\n" /* line 71 */
-        "calll CG_Argv\n"
-        "movl $0x40, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %edi\n"
-        "leal 0x2bfdc(%edi), %ebx\n"
-        "movl %ebx, (%esp)\n"
-        "calll I_strncpyz\n"
-        /* { scope 1 */
-        "movl %ebx, (%esp)\n" /* line 75 */
-        "calll FX_RegisterEffect\n"
-        "movl %eax, %esi\n" /* fx */
-        "movl %ebx, 4(%esp)\n" /* line 77 */
-        "movl $0x2b7520, (%esp)\n" /* "Spawning Fx %s
-" */
-        "calll Com_Printf\n"
-        "leal 0x2c01c(%edi), %eax\n" /* line 78 */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* fx */
-        "calll FX_PlaySimpleEffect\n"
-        "movl 0x25bb0(%edi), %eax\n" /* line 79 */
-        "movl %eax, 0x2c028(%edi)\n"
-        "calll Cmd_Argc\n" /* line 80 */
-        "cmpl $3, %eax\n"
-        "je .Lf1d0e56_001d0eee\n"
-        "movl $0, 0x2c02c(%edi)\n" /* line 85 */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 87 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1d0e56_001d0eee:\n"
-        "movl $2, (%esp)\n" /* line 82 */
-        "calll CG_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x20(%ebp)\n"
-        "movsd -0x20(%ebp), %xmm0\n"
-        "mulsd 0x307d50, %xmm0\n" /* 1000.0 */
-        "cvttsd2si %xmm0, %eax\n"
-        "movl %eax, 0x2c02c(%edi)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 87 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1d0e56_001d0f24:\n"
-        "movl $0x2b74e0, (%esp)\n" /* line 68 */
-        "calll Com_Printf\n"
-        "jmp .Lf1d0e56_001d0e6d\n"
-    );
+    char *cg_s;
+    char *fxName;
+    int fx;
+
+    if (Cmd_Argc() - 1 <= 0) {
+        Com_Printf((const char *)0x2b74e0);
+    }
+
+    cg_s = *(char **)(*(int *)0x195f584);
+    fxName = cg_s + 0x2bfdc;
+    I_strncpyz(fxName, CG_Argv(1), 0x40);
+
+    fx = FX_RegisterEffect(fxName);
+    Com_Printf((const char *)0x2b7520, fxName);
+    FX_PlaySimpleEffect(fx, (const vec_t *)(cg_s + 0x2c01c));
+    *(int *)(cg_s + 0x2c028) = *(int *)(cg_s + 0x25bb0);
+
+    if (Cmd_Argc() == 3) {
+        double d = atof(CG_Argv(2));
+        *(int *)(cg_s + 0x2c02c) = (int)(d * 1000.0);
+    } else {
+        *(int *)(cg_s + 0x2c02c) = 0;
+    }
 }
 
 /* line 390 */
-__attribute__((naked))
 float CG_GetViewFov(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 390 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 402 */
-        "movl (%eax), %ebx\n"
-        "leal 0x25bc4(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll BG_GetViewmodelWeaponIndex\n"
-        "movl %eax, %esi\n" /* weapIndex */
-        "movl %eax, (%esp)\n" /* line 403 */
-        "calll BG_GetWeaponDef\n"
-        "movl %eax, %edi\n" /* weapDef */
-        "cmpl $5, 0x25bc8(%ebx)\n" /* line 405 */
-        "je .Lf1d0f36_001d1061\n"
-        "movl 0x195f868, %eax\n" /* line 411 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm2\n"
-        "movl %esi, (%esp)\n" /* line 414 | weapIndex */
-        "movss %xmm2, -0x28(%ebp)\n"
-        "calll BG_IsAimDownSightWeapon\n"
-        "testl %eax, %eax\n"
-        "movss -0x28(%ebp), %xmm2\n"
-        "jne .Lf1d0f36_001d0fee\n"
-        "pxor %xmm5, %xmm5\n"
-        ".Lf1d0f36_001d0f93:\n"
-        "movl 0x195f584, %eax\n" /* line 448 */
-        "movl (%eax), %eax\n"
-        "testl $0x300, 0x25c64(%eax)\n"
-        "je .Lf1d0f36_001d0fae\n"
-        "movss 0x2ed708, %xmm2\n" /* 55.0f */
-        ".Lf1d0f36_001d0fae:\n"
-        "movl 0x195f864, %eax\n" /* line 451 */
-        "movl (%eax), %eax\n"
-        "mulss 8(%eax), %xmm2\n"
-        "movl 0x195f850, %eax\n" /* line 452 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss %xmm2, %xmm0\n"
-        "movaps %xmm2, %xmm3\n"
-        "cmpltss %xmm5, %xmm0\n"
-        "andps %xmm0, %xmm3\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm3, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, -0x2c(%ebp)\n" /* line 455 */
-        "flds -0x2c(%ebp)\n"
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1d0f36_001d0fee:\n"
-        "movss 0x25ca0(%ebx), %xmm1\n" /* line 416 | fPosLerp */
-        "movss 0x268(%edi), %xmm3\n" /* line 417 | weapDef */
-        "leal 0x28490(%ebx), %eax\n" /* line 419 */
-        "movss 0x2ed5d0, %xmm0\n" /* line 421 | 1.0f */
-        "ucomiss %xmm0, %xmm1\n"
-        "je .Lf1d0f36_001d1072\n"
-        ".Lf1d0f36_001d1011:\n"
-        "pxor %xmm5, %xmm5\n" /* line 425 */
-        "ucomiss %xmm5, %xmm1\n"
-        "jp .Lf1d0f36_001d1020\n"
-        "je .Lf1d0f36_001d0f93\n"
-        /* { scope 3 */
-        ".Lf1d0f36_001d1020:\n"
-        "movl 4(%eax), %eax\n" /* line 429 */
-        "testl %eax, %eax\n"
-        "je .Lf1d0f36_001d1080\n"
-        "movss 0x26c(%edi), %xmm4\n" /* line 431 | weapDef */
-        ".Lf1d0f36_001d102f:\n"
-        "subss %xmm4, %xmm0\n" /* line 437 */
-        "subss %xmm0, %xmm1\n"
-        "ucomiss %xmm5, %xmm1\n" /* line 438 */
-        "jbe .Lf1d0f36_001d0f93\n"
-        "divss %xmm4, %xmm1\n" /* line 439 */
-        "ucomiss %xmm5, %xmm1\n" /* line 442 */
-        "jbe .Lf1d0f36_001d0f93\n"
-        "movaps %xmm2, %xmm0\n" /* line 443 */
-        "subss %xmm3, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "subss %xmm0, %xmm2\n"
-        "jmp .Lf1d0f36_001d0f93\n"
-        /* } scope */
-        /* } scope */
-        ".Lf1d0f36_001d1061:\n"
-        "movss 0x2ed5f8, %xmm2\n" /* line 405 | 90.0f */
-        "pxor %xmm5, %xmm5\n"
-        "jmp .Lf1d0f36_001d0f93\n"
-        /* { scope 2 */
-        ".Lf1d0f36_001d1072:\n"
-        "jp .Lf1d0f36_001d1011\n" /* line 421 */
-        "movaps %xmm3, %xmm2\n"
-        "pxor %xmm5, %xmm5\n"
-        "jmp .Lf1d0f36_001d0f93\n"
-        /* { scope 3 */
-        ".Lf1d0f36_001d1080:\n"
-        "movss 0x270(%edi), %xmm4\n" /* line 437 | weapDef */
-        "jmp .Lf1d0f36_001d102f\n"
-    );
+    char *cg_s;
+    int weapIndex;
+    char *weapDef;
+    float fov_x;
+
+    cg_s = *(char **)(*(int *)0x195f584);
+    weapIndex = BG_GetViewmodelWeaponIndex((void *)(cg_s + 0x25bc4));
+    weapDef = (char *)BG_GetWeaponDef(weapIndex);
+
+    if (*(int *)(cg_s + 0x25bc8) == 5) {
+        fov_x = 90.0f;
+    } else {
+        fov_x = *(float *)(*(char **)(*(int *)0x195f868) + 8);
+
+        if (BG_IsAimDownSightWeapon(weapIndex)) {
+            float fPosLerp = *(float *)(cg_s + 0x25ca0);
+            float adsFov = *(float *)(weapDef + 0x268);
+
+            if (fPosLerp == 1.0f) {
+                fov_x = adsFov;
+            } else if (fPosLerp != 0.0f) {
+                float transTime;
+                float normalizedLerp;
+
+                if (*(int *)(cg_s + 0x28490 + 4) != 0) {
+                    transTime = *(float *)(weapDef + 0x26c);
+                } else {
+                    transTime = *(float *)(weapDef + 0x270);
+                }
+
+                normalizedLerp = fPosLerp - (1.0f - transTime);
+                if (normalizedLerp > 0.0f) {
+                    normalizedLerp /= transTime;
+                    if (normalizedLerp > 0.0f) {
+                        fov_x -= (fov_x - adsFov) * normalizedLerp;
+                    }
+                }
+            }
+        }
+    }
+
+    /* Scope overlay check */
+    if (*(int *)(*(char **)(*(int *)0x195f584) + 0x25c64) & 0x300) {
+        fov_x = 55.0f;
+    }
+
+    /* Apply fov scale */
+    fov_x *= *(float *)(*(char **)(*(int *)0x195f864) + 8);
+
+    /* Clamp to minimum */
+    {
+        float fovClamp = *(float *)(*(char **)(*(int *)0x195f850) + 8);
+        if (fovClamp > fov_x) {
+            fov_x = fovClamp;
+        }
+    }
+
+    return fov_x;
 }
 
 /* line 468 */
-static __attribute__((naked))
-void CG_CalcFov(void)
+static void CG_CalcFov(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 468 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x54, %esp\n"
-        /* { scope 1 */
-        "calll CG_GetViewFov\n" /* line 481 */
-        "fstps -0xc(%ebp)\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n" /* line 484 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
-        "mulsd 0x307ce0, %xmm0\n" /* 0.5 */
-        "movsd %xmm0, (%esp)\n"
-        "calll tan\n"
-        "fstpl -0x20(%ebp)\n"
-        "cvtsd2ss -0x20(%ebp), %xmm1\n"
-        "mulss 0x2ed67c, %xmm1\n" /* 0.75f */
-        "movl 0x195f5c4, %eax\n" /* line 488 */
-        "movl (%eax), %eax\n"
-        "movaps %xmm1, %xmm0\n"
-        "mulss 0x5e94(%eax), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "movss %xmm1, -0x38(%ebp)\n"
-        "calll atanf\n"
-        "fstps -0x24(%ebp)\n"
-        "cvtss2sd -0x24(%ebp), %xmm0\n"
-        "mulsd 0x307c40, %xmm0\n" /* 57.29577951308232 */
-        "addsd %xmm0, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n" /* fov_x */
-        "movss -0x38(%ebp), %xmm1\n" /* line 489 */
-        "movss %xmm1, (%esp)\n"
-        "calll atanf\n"
-        "fstps -0x28(%ebp)\n"
-        "cvtss2sd -0x28(%ebp), %xmm0\n"
-        "mulsd 0x307c40, %xmm0\n" /* 57.29577951308232 */
-        "addsd %xmm0, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n" /* fov_y */
-        "movl $0x20, 8(%esp)\n" /* line 492 */
-        "movl $0xffffffff, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %ebx\n"
-        "leal 0x28588(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_PointContents\n"
-        "testl %eax, %eax\n" /* line 493 */
-        "je .Lf1d108a_001d11b5\n"
-        "cvtsi2ssl 0x25bb0(%ebx), %xmm0\n" /* line 496 */
-        "divss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "mulss 0x2ed71c, %xmm0\n" /* 0.4000000059604645f */
-        "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
-        "addsd %xmm0, %xmm0\n"
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll sinf\n"
-        "fstps -0x3c(%ebp)\n"
-        "movss -0x3c(%ebp), %xmm0\n"
-        "movss -0x14(%ebp), %xmm1\n" /* line 497 | fov_x */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x14(%ebp)\n" /* fov_x */
-        "movss -0x10(%ebp), %xmm1\n" /* line 498 | fov_y */
-        "subss %xmm0, %xmm1\n"
-        "movss %xmm1, -0x10(%ebp)\n" /* fov_y */
-        ".Lf1d108a_001d11b5:\n"
-        "movss -0x14(%ebp), %xmm0\n" /* line 502 | fov_x */
-        "movss %xmm0, 0x28580(%ebx)\n"
-        "movss -0x10(%ebp), %xmm1\n" /* line 503 | fov_y */
-        "movss %xmm1, 0x28584(%ebx)\n"
-        "movl 0x195f868, %eax\n" /* line 504 */
-        "movl (%eax), %eax\n"
-        "divss 8(%eax), %xmm0\n"
-        "movss %xmm0, 0x2a5f8(%ebx)\n"
-        /* } scope */
-        "addl $0x54, %esp\n" /* line 505 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float fov;
+    double halfAngle;
+    float tanVal;
+    float fov_x, fov_y;
+    char *cg_s;
+
+    fov = CG_GetViewFov();
+
+    halfAngle = (double)fov * 0.017453292519943295 * 0.5;
+    tanVal = (float)tan(halfAngle) * 0.75f;
+
+    cg_s = *(char **)(*(int *)0x195f584);
+    fov_x = (float)((double)atanf(tanVal * *(float *)(*(char **)(*(int *)0x195f5c4) + 0x5e94)) * 57.29577951308232 * 2.0);
+    fov_y = (float)((double)atanf(tanVal) * 57.29577951308232 * 2.0);
+
+    if (CG_PointContents((const vec_t *)(cg_s + 0x28588), -1, 0x20)) {
+        float phase = (float)(*(int *)(cg_s + 0x25bb0)) / 1000.0f * 0.4f;
+        float wave = sinf((float)((double)phase * 3.141592653589793 * 2.0));
+        fov_x += wave;
+        fov_y -= wave;
+    }
+
+    *(float *)(cg_s + 0x28580) = fov_x;
+    *(float *)(cg_s + 0x28584) = fov_y;
+    *(float *)(cg_s + 0x2a5f8) = fov_x / *(float *)(*(char **)(*(int *)0x195f868) + 8);
 }
 
 /* line 49 */
-__attribute__((naked))
 void CG_FxSetTestPosition(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 49 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        "movl 0x195f584, %eax\n" /* line 51 */
-        "movl (%eax), %eax\n"
-        "leal 0x2c01c(%eax), %ebx\n" /* result */
-        "leal 0x28588(%eax), %ecx\n" /* start */
-        "leal 0x28594(%eax), %edx\n" /* dir */
-        /* { scope 1 */
-        "movss 0x2ed798, %xmm1\n" /* line 288 | 100.0f */
-        "movss 0x28594(%eax), %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "addss 0x28588(%eax), %xmm0\n"
-        "movss %xmm0, 0x2c01c(%eax)\n"
-        "movss 4(%edx), %xmm0\n" /* line 289 */
-        "mulss %xmm1, %xmm0\n"
-        "addss 4(%ecx), %xmm0\n"
-        "movss %xmm0, 4(%ebx)\n" /* result */
-        "mulss 8(%edx), %xmm1\n" /* line 290 */
-        "addss 8(%ecx), %xmm1\n"
-        "movss %xmm1, 8(%ebx)\n" /* result */
-        /* } scope */
-        "cvtss2sd 0x2c024(%eax), %xmm0\n" /* line 52 */
-        "movsd %xmm0, 0x14(%esp)\n"
-        "cvtss2sd 0x2c020(%eax), %xmm0\n"
-        "movsd %xmm0, 0xc(%esp)\n"
-        "cvtss2sd 0x2c01c(%eax), %xmm0\n"
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b7530, (%esp)\n" /* "
+    char *cg_s = *(char **)(*(int *)0x195f584);
+    float *start = (float *)(cg_s + 0x28588);
+    float *dir = (float *)(cg_s + 0x28594);
+    float *result = (float *)(cg_s + 0x2c01c);
 
-FX Testing position set to: (%f, %f, %f)
+    result[0] = start[0] + 100.0f * dir[0];
+    result[1] = start[1] + 100.0f * dir[1];
+    result[2] = start[2] + 100.0f * dir[2];
 
-" */
-        "calll Com_Printf\n"
-        "addl $0x24, %esp\n" /* line 53 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Com_Printf((const char *)0x2b7530,
+               (double)result[0], (double)result[1], (double)result[2]);
 }
 
 /* line 128 */
@@ -1422,54 +1251,32 @@ void CG_CalcViewValues(void)
     );
 }
 
-/* line 852 */
-__attribute__((naked))
 void CG_InitView(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 852 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0x195f584, %eax\n" /* line 854 */
-        "movl (%eax), %edx\n"
-        "movl 0x25bb0(%edx), %eax\n"
-        "movl %eax, 0x285b8(%edx)\n"
-        "movl $0x3f800000, 0x285bc(%edx)\n" /* line 855 */
-        "movl 0x195f860, %eax\n" /* line 842 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1d2526_001d2560\n"
-        "movl 0x24(%edx), %eax\n"
-        "cmpl $5, 0x10(%eax)\n"
-        "jle .Lf1d2526_001d25b8\n"
-        ".Lf1d2526_001d2560:\n"
-        "movl $1, %eax\n"
-        ".Lf1d2526_001d2565:\n"
-        "movl %eax, 0x25bc0(%edx)\n"
-        "calll CG_PredictPlayerState\n" /* line 859 */
-        "movl $0, (%esp)\n" /* line 861 */
-        "calll CL_ResetSkeletonCache\n"
-        "movl 0x195f584, %eax\n" /* line 863 */
-        "movl (%eax), %ebx\n"
-        "leal 0x25bc4(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CG_UpdateViewWeaponAnim\n"
-        "calll CG_CalcViewValues\n" /* line 864 */
-        "leal 0x28570(%ebx), %eax\n" /* line 866 */
-        "movl %eax, (%esp)\n"
-        "calll CL_FX_AdjustCamera\n"
-        "movl 0x25bb0(%ebx), %eax\n" /* line 867 */
-        "movl %eax, (%esp)\n"
-        "calll FX_AdjustTime\n"
-        "addl $0x14, %esp\n" /* line 868 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1d2526_001d25b8:\n"
-        "xorl %eax, %eax\n" /* line 842 */
-        "jmp .Lf1d2526_001d2565\n"
-    );
+    char *cg_s;
+    int renderPlayerState;
+
+    cg_s = *(char **)(*(int *)0x195f584);
+    *(int *)(cg_s + 0x285b8) = *(int *)(cg_s + 0x25bb0);
+    *(int *)(cg_s + 0x285bc) = 0x3f800000;
+
+    if (*(unsigned char *)(*(char **)(*(int *)0x195f860) + 8) != 0) {
+        renderPlayerState = 1;
+    } else if (*(int *)(*(char **)(cg_s + 0x24) + 0x10) > 5) {
+        renderPlayerState = 1;
+    } else {
+        renderPlayerState = 0;
+    }
+
+    *(int *)(cg_s + 0x25bc0) = renderPlayerState;
+    CG_PredictPlayerState();
+    CL_ResetSkeletonCache(0);
+
+    cg_s = *(char **)(*(int *)0x195f584);
+    CG_UpdateViewWeaponAnim((void *)(cg_s + 0x25bc4));
+    CG_CalcViewValues();
+    CL_FX_AdjustCamera((void *)(cg_s + 0x28570));
+    FX_AdjustTime(*(int *)(cg_s + 0x25bb0));
 }
 
 /* line 935 */

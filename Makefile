@@ -2,7 +2,7 @@
 # Build with: make -j$(nproc)
 
 CC = gcc
-CFLAGS = -m32 -fno-pie -no-pie -w -O0 -g -I. -IPC/jpeg-6 -IPC/zlib -IPC/speex
+CFLAGS = -m32 -fno-pie -no-pie -w -O0 -g -msse -msse2 -I. -IPC/jpeg-6 -IPC/zlib -IPC/speex
 LDFLAGS = -m32 -no-pie
 LIBS = -lGL -lm -lpthread -ldl -lstdc++
 TARGET = cod2_linux
