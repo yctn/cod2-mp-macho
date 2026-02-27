@@ -12,8 +12,28 @@
 
 static vec2_t traceOffsets[5]; /* 0x3032e0 */
 
+/* Math functions */
+extern float floorf(float x);
+extern float ceilf(float x);
+
+/* Extern functions */
+extern char * va(const char *format, ...);
+extern void SV_GameSendServerCommand(int clientNum, int svscmd_type, const char *text);
+extern int BG_FindWeaponIndexForName(const char *name);
+extern int BG_GetWeaponIndexForName(const char *name, void *weaponInfoMem);
+extern qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2);
+
+/* External globals */
+extern struct level_locals_t level;
+extern void *bg_weaponInfoMem; /* 0x195f75c - weapon info memory ptr */
+
+/* Entity accessor macros */
+#define ENT_TAKEDAMAGE(e)  (*(byte *)((byte *)(e) + 0x161))
+#define ENT_CLIENT(e)      (*(gclient_t **)((byte *)(e) + 0x158))
+#define CLIENT_PS_PM_TYPE(c) (*(int *)((byte *)(c) + 0x04))
+
 void SnapVectorTowards(vec_t *v, vec_t *to);
-qboolean LogAccuracyHit(gentity_s (*target)[16], gentity_s (*attacker)[16]);
+qboolean LogAccuracyHit(gentity_t *target, gentity_t *attacker);
 int G_GetWeaponIndexForName(const char *name);
 void G_SetEquippedOffHand(int clientNum, int offHandIndex);
 void G_SelectWeaponIndex(int clientNum, int iWeaponIndex);
@@ -31,152 +51,54 @@ void FireWeaponAntiLag(gentity_s (*ent)[16], int gametime);
 qboolean G_GivePlayerWeapon(playerState_t *pPS, int iWeaponIndex);
 
 /* line 172 */
-__attribute__((naked))
 void SnapVectorTowards(vec_t *v, vec_t *to)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 172 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* to */
-        "movl $1, %esi\n"
-        ".Lf1c57a4_001c57b5:\n"
-        "leal (, %esi, 4), %eax\n"
-        "movl 8(%ebp), %ebx\n" /* v */
-        "addl %eax, %ebx\n"
-        "movss -4(%ebx), %xmm0\n" /* line 178 */
-        "ucomiss -4(%edi, %eax), %xmm0\n" /* to */
-        "jb .Lf1c57a4_001c57ea\n"
-        "movss %xmm0, (%esp)\n" /* line 181 */
-        "calll floorf\n"
-        "fstps -4(%ebx)\n"
-        ".Lf1c57a4_001c57da:\n"
-        "addl $1, %esi\n" /* line 186 */
-        "cmpl $4, %esi\n" /* line 176 */
-        "jne .Lf1c57a4_001c57b5\n"
-        "addl $0x1c, %esp\n" /* line 189 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1c57a4_001c57ea:\n"
-        "movss %xmm0, (%esp)\n" /* line 186 */
-        "calll ceilf\n"
-        "fstps -4(%ebx)\n"
-        "jmp .Lf1c57a4_001c57da\n"
-    );
+    int i;
+
+    for (i = 0; i < 3; i++) {
+        if (v[i] >= to[i])
+            v[i] = floorf(v[i]);
+        else
+            v[i] = ceilf(v[i]);
+    }
 }
 
 /* line 679 */
-__attribute__((naked))
-qboolean LogAccuracyHit(gentity_s (*target)[16], gentity_s (*attacker)[16])
+qboolean LogAccuracyHit(gentity_t *target, gentity_t *attacker)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 679 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* target */
-        "movl 0xc(%ebp), %ecx\n" /* attacker */
-        "cmpb $0, 0x161(%edx)\n" /* line 684 */
-        "je .Lf1c57fa_001c583c\n"
-        "cmpl %ecx, %edx\n" /* line 689 */
-        "je .Lf1c57fa_001c583c\n"
-        "movl 0x158(%edx), %eax\n" /* line 694 */
-        "testl %eax, %eax\n"
-        "je .Lf1c57fa_001c583c\n"
-        "cmpl $0, 0x158(%ecx)\n" /* line 699 */
-        "je .Lf1c57fa_001c583c\n"
-        "cmpl $5, 4(%eax)\n" /* line 704 */
-        "jg .Lf1c57fa_001c583c\n"
-        "movl %ecx, 4(%esp)\n" /* line 709 */
-        "movl %edx, (%esp)\n"
-        "calll OnSameTeam\n"
-        "testl %eax, %eax\n"
-        "je .Lf1c57fa_001c5840\n"
-        ".Lf1c57fa_001c583c:\n"
-        "xorl %eax, %eax\n"
-        "leave\n" /* line 715 */
-        "retl\n"
-        ".Lf1c57fa_001c5840:\n"
-        "movb $1, %al\n" /* line 709 */
-        "leave\n" /* line 715 */
-        "retl\n"
-    );
+    if (!ENT_TAKEDAMAGE(target))
+        return 0;
+    if (target == attacker)
+        return 0;
+    if (!ENT_CLIENT(target))
+        return 0;
+    if (!ENT_CLIENT(attacker))
+        return 0;
+    if (CLIENT_PS_PM_TYPE(ENT_CLIENT(target)) > 5)
+        return 0;
+    if (OnSameTeam(target, attacker))
+        return 0;
+    return 1;
 }
 
 /* line 963 */
-__attribute__((naked))
 int G_GetWeaponIndexForName(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 963 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* name */
-        "movl 0x195f6a0, %eax\n" /* line 965 */
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1c5844_001c585f\n"
-        "leave\n" /* line 966 */
-        "jmp BG_FindWeaponIndexForName\n" /* line 965 */
-        ".Lf1c5844_001c585f:\n"
-        "movl 0x195f75c, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll BG_GetWeaponIndexForName\n"
-        "leave\n" /* line 966 */
-        "retl\n"
-    );
+    if (!level.initializing)
+        return BG_FindWeaponIndexForName(name);
+    return BG_GetWeaponIndexForName(name, bg_weaponInfoMem);
 }
 
 /* line 985 */
-__attribute__((naked))
 void G_SetEquippedOffHand(int clientNum, int offHandIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 985 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 987 | offHandIndex */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x43, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* clientNum */
-        "movl %eax, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        "leave\n" /* line 988 */
-        "retl\n"
-    );
+    SV_GameSendServerCommand(clientNum, 1, va("%c %i", 0x43, offHandIndex));
 }
 
 /* line 974 */
-__attribute__((naked))
 void G_SelectWeaponIndex(int clientNum, int iWeaponIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 974 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 976 | iWeaponIndex */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x61, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* clientNum */
-        "movl %eax, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        "leave\n" /* line 977 */
-        "retl\n"
-    );
+    SV_GameSendServerCommand(clientNum, 1, va("%c %i", 0x61, iWeaponIndex));
 }
 
 /* line 644 */
