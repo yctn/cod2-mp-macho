@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -10,6 +11,59 @@
  */
 
 static vec3_t range; /* 0x313c60 */
+
+/* Extern functions */
+extern void Scr_IsSystemActive(int);
+extern void Scr_AddEntity(gentity_t *ent);
+extern void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount);
+extern void BG_WeaponFireRecoil(playerState_t *ps, float *kickAVel, float *kickAVel_out);
+extern void BG_Player_DoControllers(void *obj, gentity_t *self, int *partBits, clientInfo_t *ci, int serverTime);
+extern void *Com_GetServerDObj(int entityNum);
+extern void SV_GetUsercmd(int clientNum, usercmd_t *ucmd);
+extern void ClientThink_real(gentity_t *ent, usercmd_t *ucmd);
+extern void G_SetFixedLink(gentity_t *ent, int mode);
+extern void G_SetOrigin(gentity_t *ent, const vec_t *origin);
+extern void G_SetAngle(gentity_t *ent, const vec_t *angles);
+extern void SV_LinkEntity(gentity_t *ent);
+extern void SV_UnlinkEntity(gentity_t *ent);
+
+/* External globals */
+extern gentity_t g_entities[];
+extern struct level_locals_t level;
+extern const dvar_t *g_synchronousClients;
+
+/*
+ * gclient_t field offsets (from binary):
+ *   0x0000  ps (playerState_t, 0x26A8 bytes)
+ *   0x26A8  sess.sessionState
+ *   0x26AC  sess.forceSpectatorClient
+ *   0x26C8  sess.cmd (usercmd_t, 28 bytes)
+ *   0x26CC  sess.cmd.buttons
+ *   0x26E0  sess.cmd.forwardmove (byte)
+ *   0x26E4  sess.oldcmd
+ *   0x2700  sess.localClient
+ *   0x2740  sess.noSpectate
+ *   0x27A4  spectatorClient
+ *   0x27A8  noclip
+ *   0x27AC  ufo
+ *   0x27B0  bFrozen
+ *   0x27B8  buttons
+ *   0x27BC  oldbuttons
+ *   0x27C0  latched_buttons
+ *   0x27C4  buttonsSinceLastFrame
+ *   0x27C8  oldOrigin (vec3)
+ *   0x289C  lastServerTime
+ */
+
+/* gclient_t accessor macros */
+#define CLIENT_SESS_STATE(c)        (*(int *)((byte *)(c) + 0x26A8))
+#define CLIENT_SESS_NOSPECTATE(c)   (*(int *)((byte *)(c) + 0x2740))
+#define CLIENT_UFO(c)               (*(int *)((byte *)(c) + 0x27AC))
+#define CLIENT_BFROZEN(c)           (*(int *)((byte *)(c) + 0x27B0))
+#define CLIENT_LASTSERVERTIME(c)    (*(int *)((byte *)(c) + 0x289C))
+#define CLIENT_PS_FLAGS(c)          (*(int *)((byte *)(c) + 0x0E))
+#define CLIENT_PS_PM_TYPE(c)        (*(int *)((byte *)(c) + 0x04))
+#define CLIENT_PS_KICKAVEL(c)       ((float *)((byte *)(c) + 0x288C))
 
 void ClientImpacts(gentity_t *ent, pmove_t *pm);
 qboolean G_ClientCanSpectateTeam(gclient_t *client, team_t team);
@@ -26,7 +80,6 @@ void ClientEvents(gentity_t *ent, int oldEventSequence);
 void P_DamageFeedback(gentity_t *player);
 qboolean StuckInClient(gentity_t *self);
 static void G_PlayerStateToEntityStateExtrapolate(qboolean snap);
-void ClientThink_real(gentity_t *ent, usercmd_t *ucmd);
 void G_RunClient(gentity_t *ent);
 void ClientThink(int clientNum);
 void ClientEndFrame(gentity_t *ent);
@@ -154,21 +207,9 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm)
 }
 
 /* line 1191 */
-__attribute__((naked))
 qboolean G_ClientCanSpectateTeam(gclient_t *client, team_t team)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1191 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %ecx\n" /* team */
-        "movl 8(%ebp), %eax\n" /* client */
-        "movl 0x2740(%eax), %eax\n" /* client */
-        "sarl %cl, %eax\n" /* team, client */
-        "xorl $1, %eax\n" /* client */
-        "andl $1, %eax\n" /* client */
-        "popl %ebp\n" /* line 1194 */
-        "retl\n"
-    );
+    return !((CLIENT_SESS_NOSPECTATE(client) >> team) & 1);
 }
 
 /* line 312 */
@@ -283,112 +324,57 @@ qboolean ClientInactivityTimer(gclient_t *client)
 }
 
 /* line 479 */
-__attribute__((naked))
 void G_SetLastServerTime(int clientNum, int lastServerTime)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 479 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* clientNum */
-        "movl 0xc(%ebp), %esi\n" /* lastServerTime */
-        "leal (%eax, %eax, 4), %eax\n" /* line 483 */
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
-        "movl 0x195f6a0, %eax\n" /* line 487 */
-        "movl 0x1ec(%eax), %ebx\n"
-        "movl %ebx, %eax\n"
-        "subl %esi, %eax\n" /* lastServerTime */
-        "leal -0x3e8(%ebx), %ecx\n" /* line 488 */
-        "cmpl $0x3e9, %eax\n"
-        "cmovgel %ecx, %esi\n" /* lastServerTime */
-        "movl 0x158(%edx), %eax\n" /* line 491 */
-        "cmpl 0x289c(%eax), %esi\n" /* lastServerTime */
-        "jge .Lf1a04ce_001a051d\n"
-        "cmpl %ebx, %esi\n" /* lastServerTime */
-        "jl .Lf1a04ce_001a0523\n"
-        ".Lf1a04ce_001a051d:\n"
-        "movl %esi, 0x289c(%eax)\n" /* line 494 | lastServerTime */
-        ".Lf1a04ce_001a0523:\n"
-        "popl %ebx\n" /* line 495 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    gentity_t *ent = &g_entities[clientNum];
+    gclient_t *client;
+    int levelTime = level.time;
+
+    /* Clamp lastServerTime to within 1000ms of level.time */
+    if (levelTime - lastServerTime >= 1001)
+        lastServerTime = levelTime - 1000;
+
+    client = ent->client;
+
+    /* Only update if lastServerTime moves forward or is at/past level.time */
+    if (lastServerTime >= CLIENT_LASTSERVERTIME(client) || lastServerTime >= levelTime)
+        CLIENT_LASTSERVERTIME(client) = lastServerTime;
 }
 
 /* line 504 */
-__attribute__((naked))
 void G_SetClientContents(gentity_t *pEnt)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 504 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* pEnt */
-        "movl 0x158(%ecx), %edx\n" /* line 508 */
-        "movl 0x27ac(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a0528_001a0561\n"
-        "movl 0x27b0(%edx), %eax\n" /* line 510 */
-        "testl %eax, %eax\n"
-        "jne .Lf1a0528_001a0561\n"
-        "xorl %eax, %eax\n" /* line 513 */
-        "cmpl $1, 0x26a8(%edx)\n"
-        "movl $0x2000000, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, 0x11c(%ecx)\n"
-        "popl %ebp\n" /* line 516 */
-        "retl\n"
-        ".Lf1a0528_001a0561:\n"
-        "movl $0, 0x11c(%ecx)\n" /* line 511 */
-        "popl %ebp\n" /* line 516 */
-        "retl\n"
-    );
+    gclient_t *client = pEnt->client;
+
+    if (CLIENT_UFO(client) || CLIENT_BFROZEN(client)) {
+        pEnt->r.contents = 0;
+        return;
+    }
+
+    /* SESS_STATE_DEAD = 1 -> contents = 0, else CONTENTS_BODY (0x2000000) */
+    if (CLIENT_SESS_STATE(client) == SESS_STATE_DEAD)
+        pEnt->r.contents = 0;
+    else
+        pEnt->r.contents = 0x2000000;
 }
 
 /* line 1203 */
-__attribute__((naked))
 qboolean GetFollowPlayerState(int clientNum, playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1203 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* clientNum */
-        /* { scope 1 */
-        "leal (%eax, %eax, 4), %eax\n" /* line 1209 */
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
-        "movl 0x158(%edx, %eax), %eax\n"
-        "testb $0x80, 0xe(%eax)\n" /* line 1213 */
-        "jne .Lf1a056e_001a059c\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1219 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a056e_001a059c:\n"
-        "movl $0x26a8, 8(%esp)\n" /* line 1216 */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* ps */
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1217 | ps */
-        "addl $0x7a8, %eax\n"
-        "movl $0xf80, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1219 */
-        "retl\n"
-    );
+    gentity_t *ent = &g_entities[clientNum];
+    gclient_t *client = ent->client;
+
+    /* Check if ps.eFlags has EF_CROUCHING (0x80) at byte offset 0x0E */
+    if (!(CLIENT_PS_FLAGS(client) & 0x80))
+        return 0;
+
+    /* Copy playerState_t (0x26A8 bytes) */
+    memcpy(ps, client, 0x26A8);
+
+    /* Zero out portion from offset 0x7A8 (0xF80 bytes) */
+    memset((byte *)ps + 0x7A8, 0, 0xF80);
+
+    return 1;
 }
 
 /* line 1317 */
@@ -437,45 +423,22 @@ void G_PlayerController(gentity_t *self, int *partBits)
 }
 
 /* line 1600 */
-__attribute__((naked))
 void G_PlayerEvent(int clientNum, int event)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1600 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %edx\n" /* clientNum */
-        /* { scope 1 */
-        "leal (%edx, %edx, 4), %edx\n" /* line 1605 */
-        "leal (, %edx, 8), %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
-        "movl 0x158(%eax), %edx\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 1608 | event */
-        "subl $0x9e, %ecx\n"
-        "cmpl $0x11, %ecx\n"
-        "ja .Lf1a0646_001a0686\n"
-        "movl $1, %eax\n"
-        "shll %cl, %eax\n"
-        "testl $0x20007, %eax\n"
-        "jne .Lf1a0646_001a0688\n"
-        /* } scope */
-        ".Lf1a0646_001a0686:\n"
-        "leave\n" /* line 1617 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a0646_001a0688:\n"
-        "leal -0x14(%ebp), %eax\n" /* line 1614 | kickAVel */
-        "movl %eax, 8(%esp)\n"
-        "leal 0x288c(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll BG_WeaponFireRecoil\n"
-        /* } scope */
-        "leave\n" /* line 1617 */
-        "retl\n"
-    );
+    gentity_t *ent = &g_entities[clientNum];
+    gclient_t *client = ent->client;
+    vec3_t kickAVel;
+    int idx;
+
+    /* Check if event is a weapon fire event (0x9E..0xAF range, specific bits) */
+    idx = event - 0x9E;
+    if ((unsigned)idx > 0x11)
+        return;
+    if (!((1 << idx) & 0x20007))
+        return;
+
+    /* Call BG_WeaponFireRecoil(ps, kickAVel_in, kickAVel_out) */
+    BG_WeaponFireRecoil((playerState_t *)client, CLIENT_PS_KICKAVEL(client), kickAVel);
 }
 
 /* line 249 */
@@ -2328,86 +2291,44 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
 }
 
 /* line 990 */
-__attribute__((naked))
 void G_RunClient(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 990 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* ent */
-        "movl 0x195f6f4, %eax\n" /* line 995 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1a2252_001a2316\n"
-        ".Lf1a2252_001a226e:\n"
-        "movl 0x158(%esi), %ecx\n" /* line 1001 | ent */
-        "movl 0x27ac(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a2252_001a230f\n"
-        "movl 0x208(%esi), %eax\n" /* line 1003 | ent */
-        "testl %eax, %eax\n"
-        "je .Lf1a2252_001a2349\n"
-        "movl $7, %eax\n" /* line 1005 */
-        "cmpl $1, 0x26a8(%ecx)\n"
-        "movl $1, %edx\n"
-        "cmovnel %edx, %eax\n"
-        "movl %eax, 4(%ecx)\n"
-        "movl $2, 4(%esp)\n" /* line 1006 */
-        "movl %esi, (%esp)\n" /* ent */
-        "calll G_SetFixedLink\n"
-        "leal 0x138(%esi), %ebx\n" /* line 1008 | ent */
-        "movl %ebx, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* ent */
-        "calll G_SetOrigin\n"
-        "leal 0x144(%esi), %eax\n" /* line 1009 | ent */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* ent */
-        "calll G_SetAngle\n"
-        "movl $1, 0xc(%esi)\n" /* line 1011 | ent */
-        "movl $1, 0x30(%esi)\n" /* line 1012 | ent */
-        "movl %esi, (%esp)\n" /* line 1014 | ent */
-        "calll SV_LinkEntity\n"
-        "movl 0x158(%esi), %edx\n" /* line 1016 | ent */
-        "leal 0x14(%edx), %ecx\n" /* to */
-        /* { scope 1 */
-        "movl 0x138(%esi), %eax\n" /* line 199 */
-        "movl %eax, 0x14(%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        ".Lf1a2252_001a230f:\n"
-        "addl $0x10, %esp\n" /* line 1025 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1a2252_001a2316:\n"
-        "movl 0x158(%esi), %edx\n" /* line 997 | ent */
-        "movl 0x195f6a0, %eax\n"
-        "movl 0x1ec(%eax), %eax\n"
-        "movl %eax, 0x26c8(%edx)\n"
-        "movl 0x158(%esi), %eax\n" /* line 998 | ent */
-        "addl $0x26c8, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* ent */
-        "calll ClientThink_real\n"
-        "jmp .Lf1a2252_001a226e\n"
-        ".Lf1a2252_001a2349:\n"
-        "movl 4(%ecx), %eax\n" /* line 1018 */
-        "cmpl $1, %eax\n"
-        "je .Lf1a2252_001a2356\n"
-        "cmpl $7, %eax\n"
-        "jne .Lf1a2252_001a230f\n"
-        ".Lf1a2252_001a2356:\n"
-        "subl $1, %eax\n" /* line 1022 */
-        "movl %eax, 4(%ecx)\n"
-        "jmp .Lf1a2252_001a230f\n"
-    );
+    gclient_t *client;
+    int pm_type;
+
+    /* If synchronous clients, set cmd.serverTime = level.time and run think */
+    if (g_synchronousClients->current.enabled) {
+        client = ent->client;
+        *(int *)((byte *)client + 0x26C8) = level.time;  /* sess.cmd.serverTime */
+        ClientThink_real(ent, (usercmd_t *)((byte *)client + 0x26C8));
+    }
+
+    client = ent->client;
+
+    /* If ufo mode, skip linked entity updates */
+    if (CLIENT_UFO(client))
+        return;
+
+    if (ent->tagInfo) {
+        /* Entity is linked to a tag - set pm_type based on session state */
+        pm_type = (CLIENT_SESS_STATE(client) == SESS_STATE_DEAD) ? 7 : 1;
+        CLIENT_PS_PM_TYPE(client) = pm_type;
+        G_SetFixedLink(ent, 2);
+        G_SetOrigin(ent, ent->r.currentOrigin);
+        G_SetAngle(ent, ent->r.currentAngles);
+        ent->s.pos.trType = TR_INTERPOLATE;
+        ent->s.apos.trType = TR_INTERPOLATE;
+        SV_LinkEntity(ent);
+        /* Copy currentOrigin to ps.origin */
+        *(vec_t *)((byte *)client + 0x14) = ent->r.currentOrigin[0];
+        *(vec_t *)((byte *)client + 0x18) = ent->r.currentOrigin[1];
+        *(vec_t *)((byte *)client + 0x1C) = ent->r.currentOrigin[2];
+    } else {
+        /* No tag - if pm_type is 1 or 7, decrement it */
+        pm_type = CLIENT_PS_PM_TYPE(client);
+        if (pm_type == 1 || pm_type == 7)
+            CLIENT_PS_PM_TYPE(client) = pm_type - 1;
+    }
 }
 
 /* line 963 */
