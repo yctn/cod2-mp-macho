@@ -23,74 +23,38 @@ static float CG_DrawScoreboard_ScoresList(float alpha);
 qboolean CG_DrawScoreboard(void);
 
 /* line 1392 */
-__attribute__((naked))
 qboolean CG_ScoreboardDisplayed(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1392 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f584, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x2b534(%eax), %eax\n"
-        "popl %ebp\n" /* line 1401 */
-        "retl\n"
-    );
+    return *(int *)(*(int *)0x195f584 + 0x2b534);
 }
 
 /* line 1404 */
-__attribute__((naked))
 float CG_ScrollScoreboardUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1404 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f584, %eax\n" /* line 1406 */
-        "movl (%eax), %ecx\n"
-        "movl 0x2b53c(%ecx), %edx\n"
-        "testl %edx, %edx\n"
-        "jle .Lf1c2cee_001c2d16\n"
-        "movl 0x195f754, %eax\n" /* line 1408 */
-        "movl (%eax), %eax\n"
-        "subl 8(%eax), %edx\n"
-        "movl %edx, 0x2b53c(%ecx)\n"
-        "testl %edx, %edx\n" /* line 1409 */
-        "js .Lf1c2cee_001c2d18\n"
-        ".Lf1c2cee_001c2d16:\n"
-        "popl %ebp\n" /* line 1412 */
-        "retl\n"
-        ".Lf1c2cee_001c2d18:\n"
-        "movl $0, 0x2b53c(%ecx)\n" /* line 1410 */
-        "popl %ebp\n" /* line 1412 */
-        "retl\n"
-    );
+    int *cg = (int *)*(int *)0x195f584;
+    int scrollOffset = *(int *)((byte *)cg + 0x2b53c);
+    if (scrollOffset > 0) {
+        scrollOffset -= *(int *)(*(int *)0x195f754 + 8);
+        *(int *)((byte *)cg + 0x2b53c) = scrollOffset;
+        if (scrollOffset < 0)
+            *(int *)((byte *)cg + 0x2b53c) = 0;
+    }
+    return 0;
 }
 
 /* line 1415 */
-__attribute__((naked))
 float CG_ScrollScoreboardDown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1415 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f584, %eax\n" /* line 1418 */
-        "movl (%eax), %ecx\n"
-        "movl 0x2b540(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1c2d24_001c2d65\n"
-        "movl 0x195f754, %eax\n" /* line 1421 */
-        "movl (%eax), %edx\n"
-        "movl 0x2b53c(%ecx), %eax\n"
-        "addl 8(%edx), %eax\n"
-        "movl %eax, 0x2b53c(%ecx)\n"
-        "movl 0x2af00(%ecx), %eax\n" /* line 1422 */
-        "subl $1, %eax\n"
-        "cmpl %eax, 0x2b53c(%ecx)\n"
-        "jle .Lf1c2d24_001c2d65\n"
-        "movl %eax, 0x2b53c(%ecx)\n" /* line 1423 */
-        ".Lf1c2d24_001c2d65:\n"
-        "popl %ebp\n" /* line 1424 */
-        "retl\n"
-    );
+    int *cg = (int *)*(int *)0x195f584;
+    if (*(int *)((byte *)cg + 0x2b540) != 0) {
+        int scrollOffset = *(int *)((byte *)cg + 0x2b53c);
+        scrollOffset += *(int *)(*(int *)0x195f754 + 8);
+        *(int *)((byte *)cg + 0x2b53c) = scrollOffset;
+        int maxScroll = *(int *)((byte *)cg + 0x2af00) - 1;
+        if (scrollOffset > maxScroll)
+            *(int *)((byte *)cg + 0x2b53c) = maxScroll;
+    }
+    return 0;
 }
 
 /* line 1427 */

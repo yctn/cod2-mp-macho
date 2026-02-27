@@ -10,6 +10,17 @@
  *   #include "PC/universal/com_math.h"
  */
 
+extern Bool Sys_IsMainThread(void);
+extern int UI_IsFullscreen(void);
+extern void Com_Printf(const char *fmt, ...);
+extern const char * FS_LoadedIwdNames(void);
+extern const char * FS_ReferencedIwdNames(void);
+extern Bool Voice_IsClientTalking(int clientIndex);
+extern void Com_SetRecommended(int);
+extern void Sys_StartProcess(const char *exeName, int doexit);
+extern void UI_SetActiveMenu(int menu);
+extern void Sys_ShowIP(void);
+
 extern refexport_t re; /* 0x0 */
 extern const clientActive_t * cl; /* 0x0 */
 extern const clientConnection_t * clc; /* 0x0 */
@@ -157,119 +168,55 @@ void CL_NextDownload(void);
 void CL_InitDownloads(void);
 
 /* line 250 */
-__attribute__((naked))
 void CL_SwitchToLocalClient(int clientNum)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 250 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 304 */
-        "retl\n"
-    );
+    /* no-op - single client */
 }
 
 /* line 331 */
-__attribute__((naked))
 Bool CL_GetLocalClientActive(int clientNum)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 331 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n" /* line 340 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 1;
 }
 
 /* line 343 */
-__attribute__((naked))
 int CL_GetLocalClientActiveCount(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 343 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n" /* line 361 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 1;
 }
 
 /* line 462 */
-__attribute__((naked))
 Bool CL_AllLocalClientsDisconnected(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 462 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "calll Sys_IsMainThread\n" /* line 468 */
-        "testb %al, %al\n"
-        "jne .Lf14778e_001477a4\n"
-        ".Lf14778e_0014779d:\n"
-        "movl $1, %eax\n" /* line 476 */
-        ".Lf14778e_001477a2:\n"
-        "leave\n" /* line 481 */
-        "retl\n"
-        ".Lf14778e_001477a4:\n"
-        "calll UI_IsFullscreen\n" /* line 471 */
-        "testl %eax, %eax\n"
-        "jne .Lf14778e_0014779d\n"
-        "cmpb $0, clients\n" /* line 476 */
-        "je .Lf14778e_0014779d\n"
-        "cmpl $2, clientConnections\n"
-        "jg .Lf14778e_001477a2\n"
-        "movl $1, %eax\n"
-        "jmp .Lf14778e_001477a2\n"
-    );
+    if (!Sys_IsMainThread())
+        return 1;
+    if (UI_IsFullscreen())
+        return 1;
+    if (*(byte *)&clients[0] == 0)
+        return 1;
+    if (*(int *)&clientConnections[0] > 2)
+        return 0;
+    return 1;
 }
 
 /* line 517 */
-__attribute__((naked))
 Bool CL_AnyLocalClientChallenging(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 517 */
-        "movl %esp, %ebp\n"
-        "cmpb $0, clients\n" /* line 526 */
-        "je .Lf1477c8_001477dd\n"
-        "cmpl $4, clientConnections\n" /* line 528 */
-        "je .Lf1477c8_001477e1\n"
-        ".Lf1477c8_001477dd:\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 534 */
-        "retl\n"
-        ".Lf1477c8_001477e1:\n"
-        "movl $1, %eax\n" /* line 528 */
-        "popl %ebp\n" /* line 534 */
-        "retl\n"
-    );
+    if (*(byte *)&clients[0] != 0 && *(int *)&clientConnections[0] == 4)
+        return 1;
+    return 0;
 }
 
 /* line 537 */
-__attribute__((naked))
 Bool CL_IsRenderingSplitScreen(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 537 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 547 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 609 */
-__attribute__((naked))
 const char * CL_GetUsernameForLocalClient(int controllerIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 609 */
-        "movl %esp, %ebp\n"
-        "movl name, %eax\n"
-        "movl 8(%eax), %eax\n"
-        "popl %ebp\n" /* line 619 */
-        "retl\n"
-    );
+    return name->current.string;
 }
 
 /* line 645 */
@@ -665,39 +612,15 @@ void CL_Reconnect_f(void)
 }
 
 /* line 1946 */
-__attribute__((naked))
 void CL_OpenedIWDList_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1946 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "calll FS_LoadedIwdNames\n" /* line 1948 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2a8af0, (%esp)\n" /* "Opened IWD Names: %s
-" */
-        "calll Com_Printf\n"
-        "leave\n" /* line 1949 */
-        "retl\n"
-    );
+    Com_Printf("Opened IWD Names: %s\n", FS_LoadedIwdNames());
 }
 
 /* line 1957 */
-__attribute__((naked))
 void CL_ReferencedIWDList_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1957 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "calll FS_ReferencedIwdNames\n" /* line 1959 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2a8b08, (%esp)\n" /* "Referenced IWD Names: %s
-" */
-        "calll Com_Printf\n"
-        "leave\n" /* line 1960 */
-        "retl\n"
-    );
+    Com_Printf("Referenced IWD Names: %s\n", FS_ReferencedIwdNames());
 }
 
 /* line 1970 */
@@ -866,20 +789,9 @@ void CL_VoicePacket(msg_t *msg)
 }
 
 /* line 2463 */
-__attribute__((naked))
 Bool CL_IsPlayerTalking(int clientIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2463 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 2466 | clientIndex */
-        "movl %eax, (%esp)\n"
-        "calll Voice_IsClientTalking\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 2471 */
-        "retl\n"
-    );
+    return Voice_IsClientTalking(clientIndex);
 }
 
 /* line 4736 */
@@ -1017,31 +929,15 @@ Bool Voice_SendVoiceData(void)
 }
 
 /* line 4979 */
-__attribute__((naked))
 void CL_SyncGpu(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4979 */
-        "movl %esp, %ebp\n"
-        "movl 0x121c7f4, %ecx\n" /* line 4981 */
-        "popl %ebp\n" /* line 4982 */
-        "jmpl *%ecx\n" /* line 4981 */
-    );
+    ((void (*)(void))*(int *)0x121c7f4)();
 }
 
 /* line 3141 */
-__attribute__((naked))
 void CL_SetRecommended_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3141 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, (%esp)\n" /* line 3143 */
-        "calll Com_SetRecommended\n"
-        "leave\n" /* line 3144 */
-        "retl\n"
-    );
+    Com_SetRecommended(1);
 }
 
 /* line 3181 */
@@ -1252,16 +1148,9 @@ void CL_StartHunkUsers(void)
 }
 
 /* line 3386 */
-__attribute__((naked))
 int CL_ScaledMilliseconds(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3386 */
-        "movl %esp, %ebp\n"
-        "movl 0x1220a78, %eax\n"
-        "popl %ebp\n" /* line 3389 */
-        "retl\n"
-    );
+    return *(int *)0x1220a78;
 }
 
 /* line 3422 */
@@ -1551,59 +1440,25 @@ void CL_InitRef(void)
 }
 
 /* line 3739 */
-__attribute__((naked))
 void CL_startSingleplayer_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3739 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, 4(%esp)\n" /* line 3756 */
-        "movl $0x2a8cac, (%esp)\n" /* "cod2sp_s.exe" */
-        "calll Sys_StartProcess\n"
-        "leave\n" /* line 3772 */
-        "retl\n"
-    );
+    Sys_StartProcess("cod2sp_s.exe", 1);
 }
 
 /* line 3824 */
-__attribute__((naked))
 void CL_StopLogo(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3824 */
-        "movl %esp, %ebp\n"
-        "movl $0, clientConnections\n" /* line 3826 */
-        "popl %ebp\n" /* line 3827 */
-        "retl\n"
-    );
+    *(int *)&clientConnections[0] = 0;
 }
 
 /* line 3893 */
-__attribute__((naked))
 void CL_ToggleMenu_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3893 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x1501bc0, %edx\n" /* line 3895 */
-        "testl %edx, %edx\n"
-        "jne .Lf1487c6_001487f4\n"
-        "movl 0x195ecb4, %eax\n" /* line 3898 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 0xdc(%eax)\n"
-        "jne .Lf1487c6_001487f4\n"
-        "movl $2, (%esp)\n" /* line 3901 */
-        "calll UI_SetActiveMenu\n"
-        "leave\n" /* line 3907 */
-        "retl\n"
-        ".Lf1487c6_001487f4:\n"
-        "movl $1, (%esp)\n" /* line 3905 */
-        "calll UI_SetActiveMenu\n"
-        "leave\n" /* line 3907 */
-        "retl\n"
-    );
+    if (*(int *)0x1501bc0 != 0 || *(byte *)(*(int *)(*(int *)0x195ecb4) + 0xdc) != 0) {
+        UI_SetActiveMenu(1);
+    } else {
+        UI_SetActiveMenu(2);
+    }
 }
 
 /* line 3911 */
@@ -2326,15 +2181,9 @@ void CL_GetPing(int n, char *buf, int buflen, int *pingtime)
 }
 
 /* line 4704 */
-__attribute__((naked))
 void CL_ShowIP_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4704 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 4707 */
-        "jmp Sys_ShowIP\n" /* line 4706 */
-    );
+    Sys_ShowIP();
 }
 
 /* line 4715 */
@@ -2567,55 +2416,27 @@ void CL_UpdateDebugData(void)
 }
 
 /* line 4991 */
-__attribute__((naked))
 int CL_TextWidth(const char *text, int maxChars, FontHandle font)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4991 */
-        "movl %esp, %ebp\n"
-        "movl 0x121c7b4, %ecx\n" /* line 4993 */
-        "popl %ebp\n" /* line 4994 */
-        "jmpl *%ecx\n" /* line 4993 */
-    );
+    return ((int (*)(const char *, int, FontHandle))*(int *)0x121c7b4)(text, maxChars, font);
 }
 
 /* line 5002 */
-__attribute__((naked))
 int CL_TextHeight(FontHandle font)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5002 */
-        "movl %esp, %ebp\n"
-        "movl 0x121c7b8, %ecx\n" /* line 5004 */
-        "popl %ebp\n" /* line 5005 */
-        "jmpl *%ecx\n" /* line 5004 */
-    );
+    return ((int (*)(FontHandle))*(int *)0x121c7b8)(font);
 }
 
 /* line 5013 */
-__attribute__((naked))
 float CL_NormalizedTextScale(FontHandle font, float scale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5013 */
-        "movl %esp, %ebp\n"
-        "movl 0x121c7b0, %ecx\n" /* line 5015 */
-        "popl %ebp\n" /* line 5016 */
-        "jmpl *%ecx\n" /* line 5015 */
-    );
+    return ((float (*)(FontHandle, float))*(int *)0x121c7b0)(font, scale);
 }
 
 /* line 5019 */
-__attribute__((naked))
 void CL_DrawTextPhysical(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5019 */
-        "movl %esp, %ebp\n"
-        "movl 0x121c7bc, %ecx\n" /* line 5021 */
-        "popl %ebp\n" /* line 5022 */
-        "jmpl *%ecx\n" /* line 5021 */
-    );
+    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int))*(int *)0x121c7bc)(text, maxChars, font, x, y, xScale, yScale, color, style);
 }
 
 /* line 5025 */
@@ -2672,18 +2493,10 @@ void CL_DrawText(const char *text, int maxChars, FontHandle font, float x, float
 }
 
 /* line 5033 */
-__attribute__((naked))
 void CL_DrawTextPhysicalWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5033 */
-        "movl %esp, %ebp\n"
-        "movsbl 0x30(%ebp), %eax\n" /* line 5035 | cursor */
-        "movl %eax, 0x30(%ebp)\n" /* cursor */
-        "movl 0x121c7cc, %ecx\n"
-        "popl %ebp\n" /* line 5036 */
-        "jmpl *%ecx\n" /* line 5035 */
-    );
+    cursor = (signed char)cursor;
+    ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int, int, int))*(int *)0x121c7cc)(text, maxChars, font, x, y, xScale, yScale, color, style, cursorPos, cursor);
 }
 
 /* line 5039 */
@@ -2746,42 +2559,21 @@ void CL_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
 }
 
 /* line 5052 */
-__attribute__((naked))
 int CL_GetKeyCatchers(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5052 */
-        "movl %esp, %ebp\n"
-        "movl 0x1509c44, %eax\n"
-        "popl %ebp\n" /* line 5055 */
-        "retl\n"
-    );
+    return *(int *)0x1509c44;
 }
 
 /* line 5062 */
-__attribute__((naked))
 Bool CL_GetDisplayHUDWithKeycatchUI(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5062 */
-        "movl %esp, %ebp\n"
-        "movzbl 0x1509c48, %eax\n"
-        "popl %ebp\n" /* line 5065 */
-        "retl\n"
-    );
+    return *(byte *)0x1509c48;
 }
 
 /* line 5072 */
-__attribute__((naked))
 FontHandle CL_RegisterFont(const char *fontName, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5072 */
-        "movl %esp, %ebp\n"
-        "movl 0x121c780, %ecx\n" /* line 5074 */
-        "popl %ebp\n" /* line 5075 */
-        "jmpl *%ecx\n" /* line 5074 */
-    );
+    return ((FontHandle (*)(const char *, int))*(int *)0x121c780)(fontName, imageTrack);
 }
 
 /* line 676 */

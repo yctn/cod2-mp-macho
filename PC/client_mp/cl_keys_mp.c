@@ -4,6 +4,8 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern void ReplaceStringInternal(char **dest, const char *src);
+
 extern PlayerKeyState playerKeys[1]; /* 0x0 */
 extern field_t *chatField; /* 0x0 */
 extern qboolean *chat_team; /* 0x0 */
@@ -50,17 +52,9 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time);
 void Key_ClearStates(void);
 
 /* line 1152 */
-__attribute__((naked))
 qboolean Key_GetOverstrikeMode(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1152 */
-        "movl %esp, %ebp\n"
-        "movl key_overstrikeMode, %eax\n"
-        "movl (%eax), %eax\n"
-        "popl %ebp\n" /* line 1155 */
-        "retl\n"
-    );
+    return *key_overstrikeMode;
 }
 
 /* line 451 */
@@ -285,18 +279,9 @@ void Field_AdjustScroll(field_t *edit)
 }
 
 /* line 1158 */
-__attribute__((naked))
 void Key_SetOverstrikeMode(qboolean state)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1158 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* line 1160 | state */
-        "movl key_overstrikeMode, %eax\n"
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n" /* line 1161 */
-        "retl\n"
-    );
+    *key_overstrikeMode = state;
 }
 
 /* line 711 */
@@ -738,51 +723,20 @@ char * Key_KeynumToString(int keynum, qboolean translate)
 }
 
 /* line 1345 */
-__attribute__((naked))
 void Key_SetBinding(int keynum, const char *binding)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1345 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* keynum */
-        "cmpl $-1, %eax\n" /* line 1347 */
-        "je .Lf140176_001401a8\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1353 | binding */
-        "movl %edx, 4(%esp)\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl keys, %edx\n"
-        "leal 8(%edx, %eax, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll ReplaceStringInternal\n"
-        "movl 0x195ec9c, %eax\n" /* line 1357 */
-        "orl $1, (%eax)\n"
-        ".Lf140176_001401a8:\n"
-        "leave\n" /* line 1358 */
-        "retl\n"
-    );
+    if (keynum == -1)
+        return;
+    ReplaceStringInternal((char **)((byte *)keys + keynum * 12 + 8), binding);
+    *(int *)(*(int *)0x195ec9c) |= 1;
 }
 
 /* line 1366 */
-__attribute__((naked))
 char * Key_GetBinding(int keynum)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1366 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* keynum */
-        "cmpl $-1, %eax\n" /* line 1368 */
-        "je .Lf1401aa_001401c3\n"
-        "leal (%eax, %eax, 2), %edx\n" /* line 1373 */
-        "movl keys, %eax\n"
-        "movl 8(%eax, %edx, 4), %eax\n"
-        "popl %ebp\n" /* line 1374 */
-        "retl\n"
-        ".Lf1401aa_001401c3:\n"
-        "movl $0x2157b8, %eax\n" /* line 1368 */
-        "popl %ebp\n" /* line 1374 */
-        "retl\n"
-    );
+    if (keynum == -1)
+        return "";
+    return *(char **)((byte *)keys + keynum * 12 + 8);
 }
 
 /* line 1611 */

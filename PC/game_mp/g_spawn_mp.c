@@ -8,6 +8,13 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+extern qboolean G_SpawnStringInternal(const char *spawnVars, const char *key, const char *defaultString, const char **out);
+extern void Scr_AddFields(const char *name, const void *fields);
+extern void Scr_AddEntityNum(int entNum, int classnum);
+extern int Scr_ExecEntThreadNum(int entNum, int classnum, scr_func_t handle, unsigned int paramcount);
+extern void Scr_NotifyNum(int entNum, int classnum, int stringValue, unsigned int paramcount);
+extern void Scr_Error(const char *msg);
+
 extern spawn_t spawns[22]; /* 0x0 */
 static const ent_field_t fields[11]; /* 0x333360 */
 
@@ -42,26 +49,9 @@ my_upsampler G_CallSpawn(void);
 my_upsampler G_SpawnEntitiesFromString(void);
 
 /* line 7 */
-__attribute__((naked))
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 7 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x10(%ebp), %eax\n" /* line 9 | out */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* defaultString */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* key */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
-        "addl $0x1348, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll G_SpawnStringInternal\n"
-        "leave\n" /* line 10 */
-        "retl\n"
-    );
+    return G_SpawnStringInternal((const char *)(*(int *)0x195f6a0 + 0x1348), key, defaultString, out);
 }
 
 /* line 47 */
@@ -456,37 +446,15 @@ my_upsampler GScr_AddFieldsForEntity(void)
 }
 
 /* line 543 */
-__attribute__((naked))
 my_upsampler GScr_AddFieldsForRadiant(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 543 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x2b3448, 4(%esp)\n" /* line 545 */
-        "movl $0x2b344c, (%esp)\n" /* "radiant" */
-        "calll Scr_AddFields\n"
-        "leave\n" /* line 546 */
-        "retl\n"
-    );
+    Scr_AddFields("radiant", (const void *)0x2b3448);
 }
 
 /* line 814 */
-__attribute__((naked))
 my_upsampler Scr_AddEntity(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 814 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 4(%esp)\n" /* line 820 */
-        "movl 8(%ebp), %eax\n" /* ent */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddEntityNum\n"
-        "leave\n" /* line 821 */
-        "retl\n"
-    );
+    Scr_AddEntityNum(*(int *)ent, 0);
 }
 
 /* line 829 */
@@ -572,48 +540,15 @@ my_upsampler Scr_AddHudElem(game_hudelem_t *hud)
 }
 
 /* line 900 */
-__attribute__((naked))
 scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int paramcount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 900 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x10(%ebp), %eax\n" /* line 906 | paramcount */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* ent */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_ExecEntThreadNum\n"
-        "movzwl %ax, %eax\n"
-        "leave\n" /* line 907 */
-        "retl\n"
-    );
+    return (unsigned short)Scr_ExecEntThreadNum(*(int *)ent, 0, handle, paramcount);
 }
 
 /* line 930 */
-__attribute__((naked))
 my_upsampler Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 930 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movzwl 0xc(%ebp), %eax\n" /* stringValue */
-        "movl 0x10(%ebp), %edx\n" /* line 936 | paramcount */
-        "movl %edx, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* ent */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_NotifyNum\n"
-        "leave\n" /* line 937 */
-        "retl\n"
-    );
+    Scr_NotifyNum(*(int *)ent, 0, (unsigned short)stringValue, paramcount);
 }
 
 /* line 225 */

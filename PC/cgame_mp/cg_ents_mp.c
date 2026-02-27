@@ -8,6 +8,9 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+extern void DObjUpdateClientInfo(struct DObj_s *obj, float timescale);
+extern void * MT_Alloc(int size, int type);
+
 static const int boxVerts[24][3]; /* 0x3028e0 */
 
 struct XAnim_s * CG_GetMG42Anims(centity_t *cent);
@@ -368,24 +371,11 @@ long unsigned int CG_ProcessClientNoteTracks(int clientNum)
 }
 
 /* line 686 */
-__attribute__((naked))
 long unsigned int CG_DObjUpdateInfo(struct DObj_s *obj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 686 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195f584, %eax\n" /* line 688 */
-        "movl (%eax), %eax\n"
-        "cvtsi2ssl 0x25bac(%eax), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
-        "movss %xmm0, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl %eax, (%esp)\n"
-        "calll DObjUpdateClientInfo\n"
-        "leave\n" /* line 689 */
-        "retl\n"
-    );
+    float timescale = (float)(*(int *)(*(int *)0x195f584 + 0x25bac)) * 0.001f;
+    DObjUpdateClientInfo(obj, timescale);
+    return 0;
 }
 
 /* line 905 */
@@ -476,56 +466,25 @@ long unsigned int CG_SoundBlend(centity_t *cent)
 }
 
 /* line 1138 */
-static __attribute__((naked))
-long unsigned int * CG_AllocAnimTree(int size)
+static long unsigned int * CG_AllocAnimTree(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1138 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $5, 4(%esp)\n" /* line 1140 */
-        "movl 8(%ebp), %eax\n" /* size */
-        "movl %eax, (%esp)\n"
-        "calll MT_Alloc\n"
-        "leave\n" /* line 1141 */
-        "retl\n"
-    );
+    return (long unsigned int *)MT_Alloc(size, 5);
 }
 
 /* line 1410 */
-__attribute__((naked))
 long unsigned int CG_UsedDObjCalcPose(const centity_t *cent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1410 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* cent */
-        "testl %eax, %eax\n" /* line 1412 */
-        "je .Lf161ff6_00162010\n"
-        "cmpb $0, 0x1e1(%eax)\n" /* line 1414 */
-        "jne .Lf161ff6_00162010\n"
-        "movb $1, 0x1e1(%eax)\n" /* line 1415 */
-        ".Lf161ff6_00162010:\n"
-        "popl %ebp\n" /* line 1417 */
-        "retl\n"
-    );
+    if (cent != NULL && *(byte *)((byte *)cent + 0x1e1) == 0)
+        *(byte *)((byte *)cent + 0x1e1) = 1;
+    return 0;
 }
 
 /* line 1425 */
-__attribute__((naked))
 long unsigned int CG_CullIn(const centity_t *cent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1425 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* cent */
-        "testl %eax, %eax\n" /* line 1427 */
-        "je .Lf162012_00162023\n"
-        "movb $2, 0x1e1(%eax)\n" /* line 1428 */
-        ".Lf162012_00162023:\n"
-        "popl %ebp\n" /* line 1429 */
-        "retl\n"
-    );
+    if (cent != NULL)
+        *(byte *)((byte *)cent + 0x1e1) = 2;
+    return 0;
 }
 
 /* line 1438 */

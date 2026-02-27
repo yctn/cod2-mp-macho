@@ -4,6 +4,10 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern void Scr_FreeValue(int value);
+extern void SV_ResetSkeletonCache(void);
+extern void G_RunFrame(int levelTime);
+
 extern struct serverStatic_t svs; /* 0x0 */
 extern struct server_t sv; /* 0x0 */
 extern const dvar_t *sv_fps; /* 0x0 */
@@ -1836,41 +1840,19 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
 }
 
 /* line 1190 */
-__attribute__((naked))
 long int SV_FreeClientScriptId(client_t *cl)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1190 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* cl */
-        "movzwl 0x765f0(%ebx), %eax\n" /* line 1193 | cl */
-        "movl %eax, (%esp)\n"
-        "calll Scr_FreeValue\n"
-        "movw $0, 0x765f0(%ebx)\n" /* line 1194 | cl */
-        "addl $0x14, %esp\n" /* line 1195 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Scr_FreeValue(*(unsigned short *)((byte *)cl + 0x765f0));
+    *(unsigned short *)((byte *)cl + 0x765f0) = 0;
+    return 0;
 }
 
 /* line 1329 */
-__attribute__((naked))
 long int SV_RunFrame(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1329 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "calll SV_ResetSkeletonCache\n" /* line 1333 */
-        "movl 0x1700484, %eax\n" /* line 1335 */
-        "movl %eax, (%esp)\n"
-        "calll G_RunFrame\n"
-        "leave\n" /* line 1347 */
-        "retl\n"
-    );
+    SV_ResetSkeletonCache();
+    G_RunFrame(*(int *)0x1700484);
+    return 0;
 }
 
 /* line 1356 */
