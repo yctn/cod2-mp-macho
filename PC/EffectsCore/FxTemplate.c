@@ -82,24 +82,11 @@ void PrimitiveTemplate_Shutdown(const PrimitiveTemplate * _this)
 }
 
 /* line 2213 */
-__attribute__((naked))
 float FxRange_GetValPct(const FxRange * _this, float percent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2213 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movss (%eax), %xmm1\n" /* line 2215 */
-        "movss 4(%eax), %xmm0\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss 0xc(%ebp), %xmm0\n" /* percent */
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, -4(%ebp)\n" /* line 2216 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-    );
+    float base = *(float *)((byte *)_this);
+    float range = *(float *)((byte *)_this + 4) - base;
+    return base + range * percent;
 }
 
 /* line 351 */

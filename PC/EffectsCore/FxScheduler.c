@@ -216,15 +216,8 @@ EffectTemplate * FX_TryRegisterEffect(const char *name)
 }
 
 /* line 952 */
-static __attribute__((naked))
-void GLOBAL__I__ZN17PrimitiveTemplate8gmMemMgrE(void) /* global constructors keyed to PrimitiveTemplate_gmMemMgr */
+static void GLOBAL__I__ZN17PrimitiveTemplate8gmMemMgrE(void) /* global constructors keyed to PrimitiveTemplate_gmMemMgr */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 952 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
 }
 
 /* line 580 */

@@ -390,15 +390,8 @@ qboolean CG_ServerMaterialName(int index, char *materialName, int maxLen)
 }
 
 /* line 1079 */
-__attribute__((naked))
 void CG_ApplySplitScreenCompassScale(float *x, float *y, float *w, float *h)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1079 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1100 */
-        "retl\n"
-    );
 }
 
 /* line 1373 */
@@ -1143,18 +1136,9 @@ const char * CG_GetKillerText(void)
 }
 
 /* line 1768 */
-__attribute__((naked))
 const char * CG_GameTypeString(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1768 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f5c4, %eax\n"
-        "movl (%eax), %eax\n"
-        "addl $0x5ea4, %eax\n"
-        "popl %ebp\n" /* line 1771 */
-        "retl\n"
-    );
+    return (const char *)((byte *)*(void **)*(void **)0x195f5c4 + 0x5ea4);
 }
 
 /* line 1926 */

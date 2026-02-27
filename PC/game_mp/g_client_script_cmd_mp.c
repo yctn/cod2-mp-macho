@@ -2288,19 +2288,11 @@ void PlayerCmd_setEnterTime(scr_entref_t entref)
 }
 
 /* line 1382 */
-__attribute__((naked))
 void BodyEnd(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1382 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* ent */
-        "andl $0xfff7ffff, 8(%eax)\n" /* line 1384 */
-        "movl $0x4000000, 0x11c(%eax)\n" /* line 1385 */
-        "movb $0, 0xf2(%eax)\n" /* line 1386 */
-        "popl %ebp\n" /* line 1387 */
-        "retl\n"
-    );
+    *(int *)((byte *)ent + 8) &= 0xfff7ffff;
+    *(int *)((byte *)ent + 0x11c) = 0x4000000;
+    *(byte *)((byte *)ent + 0xf2) = 0;
 }
 
 /* line 1484 */

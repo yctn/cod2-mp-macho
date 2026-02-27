@@ -233,22 +233,11 @@ int PM_GetViewHeightLerpTime(const playerState_t *ps, int iTarget, qboolean bDow
 }
 
 /* line 3954 */
-__attribute__((naked))
 void PM_SetProneMovementOverride(playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3954 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* ps */
-        "movl 0xc(%edx), %eax\n" /* line 3956 */
-        "testb $1, %al\n"
-        "je .Lf6be98_0006beab\n"
-        "orb $8, %ah\n" /* line 3957 */
-        "movl %eax, 0xc(%edx)\n"
-        ".Lf6be98_0006beab:\n"
-        "popl %ebp\n" /* line 3958 */
-        "retl\n"
-    );
+    int flags = *(int *)((byte *)ps + 0xc);
+    if (flags & 1)
+        *(int *)((byte *)ps + 0xc) = flags | 0x800;
 }
 
 /* line 4728 */

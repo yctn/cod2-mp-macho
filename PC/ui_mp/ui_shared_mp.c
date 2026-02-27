@@ -10,6 +10,7 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+extern unsigned char updateScreenCalled[];
 extern qboolean g_waitingForKey; /* 0x0 */
 extern qboolean g_editingField; /* 0x0 */
 extern itemDef_t *g_editItem; /* 0x0 */
@@ -1590,24 +1591,14 @@ void Controls_SetConfig(qboolean restart)
 }
 
 /* line 4381 */
-__attribute__((naked))
 void Controls_SetDefaults(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4381 */
-        "movl %esp, %ebp\n"
-        "movl $g_bindings, %edx\n"
-        ".Lf1648d8_001648e0:\n"
-        "movl 4(%edx), %eax\n" /* line 4392 */
-        "movl %eax, 0xc(%edx)\n"
-        "movl 8(%edx), %eax\n" /* line 4393 */
-        "movl %eax, 0x10(%edx)\n"
-        "addl $0x14, %edx\n"
-        "cmpl $updateScreenCalled, %edx\n" /* line 4390 */
-        "jne .Lf1648d8_001648e0\n"
-        "popl %ebp\n" /* line 4399 */
-        "retl\n"
-    );
+    byte *p = (byte *)g_bindings;
+    do {
+        *(int *)(p + 0xc) = *(int *)(p + 4);
+        *(int *)(p + 0x10) = *(int *)(p + 8);
+        p += 0x14;
+    } while (p != (byte *)updateScreenCalled);
 }
 
 /* line 4416 */
@@ -1942,30 +1933,15 @@ int GetKeyBindingLocalizedString(const char *command, char *keys)
 }
 
 /* line 4722 */
-__attribute__((naked))
 qboolean Display_KeyBindPending(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4722 */
-        "movl %esp, %ebp\n"
-        "movl g_waitingForKey, %eax\n"
-        "popl %ebp\n" /* line 4725 */
-        "retl\n"
-    );
+    return g_waitingForKey;
 }
 
 /* line 5659 */
-__attribute__((naked))
 int Menu_Count(displayContextDef_t *dc)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5659 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dc */
-        "movl 0x22c(%eax), %eax\n" /* dc */
-        "popl %ebp\n" /* line 5662 */
-        "retl\n"
-    );
+    return *(int *)((byte *)dc + 0x22c);
 }
 
 /* line 5843 */

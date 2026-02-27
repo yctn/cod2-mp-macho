@@ -448,26 +448,10 @@ XAnim * XAnimGetAnims(const XAnimTree *tree)
 }
 
 /* line 2832 */
-__attribute__((naked))
 float XAnimGetLength(const XAnim *anims, unsigned int animIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2832 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 2844 | animIndex */
-        "movl 8(%ebp), %eax\n" /* anims */
-        "movl 0x10(%eax, %edx, 8), %edx\n"
-        "movzwl (%edx), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss 4(%edx), %xmm0\n"
-        /* } scope */
-        "movss %xmm0, -4(%ebp)\n" /* line 2848 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-    );
+    byte *entry = *(byte **)((byte *)anims + 0x10 + animIndex * 8);
+    return (float)*(unsigned short *)entry / *(float *)(entry + 4);
 }
 
 /* line 2868 */
@@ -1763,25 +1747,10 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
 }
 
 /* line 2857 */
-__attribute__((naked))
 int XAnimGetLengthMsec(const XAnim *anims, unsigned int anim)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2857 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 2844 | anim */
-        "movl 8(%ebp), %eax\n" /* anims */
-        "movl 0x10(%eax, %edx, 8), %edx\n"
-        "movzwl (%edx), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "divss 4(%edx), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "cvttss2si %xmm0, %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 2860 */
-        "retl\n"
-    );
+    byte *entry = *(byte **)((byte *)anims + 0x10 + anim * 8);
+    return (int)((float)*(unsigned short *)entry / *(float *)(entry + 4) * 1000.0f);
 }
 
 /* line 3586 */

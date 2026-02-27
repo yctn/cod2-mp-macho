@@ -82,16 +82,9 @@ void ZSt13__adjust_heapIP19GfxCachedShaderTextiS0_PFhRKS0_S3_EEvT_T0_S7_T1_T2_(v
 void ZSt16__introsort_loopIP19GfxCachedShaderTextiPFhRKS0_S3_EEvT_S6_T0_T1_(void); /* void std___introsort_loop<GfxCachedShaderText*, int, unsigned char (*)(GfxCachedShaderText const&, GfxCachedShaderText const&)> */
 
 /* line 907 */
-__attribute__((naked))
 HRESULT IncludeClass_Close(const IncludeClass * _this, LPCVOID data)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 907 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 910 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 3290 */

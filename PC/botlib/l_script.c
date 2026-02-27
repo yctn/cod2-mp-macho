@@ -876,20 +876,9 @@ void StripDoubleQuotes(char *string)
 }
 
 /* line 1318 */
-__attribute__((naked))
 int EndOfScript(script_t *script)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1318 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* script */
-        "movl 0x44(%edx), %eax\n"
-        "cmpl 0x48(%edx), %eax\n"
-        "setae %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 1321 */
-        "retl\n"
-    );
+    return *(unsigned int *)((byte *)script + 0x44) >= *(unsigned int *)((byte *)script + 0x48);
 }
 
 /* line 1457 */

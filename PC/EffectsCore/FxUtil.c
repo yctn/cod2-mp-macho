@@ -82,16 +82,9 @@ int FX_Init(int rendererExists);
 void FX_Free(int bRemoveTemplates);
 
 /* line 340 */
-__attribute__((naked))
 void FX_InitServer(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 340 */
-        "movl %esp, %ebp\n"
-        "movl $0, g_effectVisArrayCount\n" /* line 342 */
-        "popl %ebp\n" /* line 343 */
-        "retl\n"
-    );
+    g_effectVisArrayCount = 0;
 }
 
 /* line 974 */
@@ -146,22 +139,11 @@ int CompareSortedEffects(const void *e0, const void *e1)
 }
 
 /* line 1001 */
-static __attribute__((naked))
-int CompareSortedClusters(const void *e0, const void *e1)
+static int CompareSortedClusters(const void *e0, const void *e1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1001 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1007 | e1 */
-        "movss 4(%eax), %xmm0\n"
-        "movl 8(%ebp), %eax\n" /* e0 */
-        "ucomiss 4(%eax), %xmm0\n"
-        "seta %al\n"
-        "movzbl %al, %eax\n"
-        "leal -1(%eax, %eax), %eax\n"
-        "popl %ebp\n" /* line 1008 */
-        "retl\n"
-    );
+    float v1 = *(float *)((byte *)e1 + 4);
+    float v0 = *(float *)((byte *)e0 + 4);
+    return (v1 > v0) ? 1 : -1;
 }
 
 /* line 1549 */

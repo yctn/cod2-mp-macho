@@ -183,26 +183,9 @@ int BG_FindWeaponIndexForName(const char *name)
 }
 
 /* line 889 */
-__attribute__((naked))
 Bool BG_IsAnyEmptyPrimaryWeaponSlot(const playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 889 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* ps */
-        "cmpb $0, 0x555(%eax)\n" /* line 891 */
-        "je .Lf7a7a6_0007a7be\n"
-        "cmpb $0, 0x556(%eax)\n"
-        "jne .Lf7a7a6_0007a7c5\n"
-        ".Lf7a7a6_0007a7be:\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n" /* line 892 */
-        "retl\n"
-        ".Lf7a7a6_0007a7c5:\n"
-        "xorl %eax, %eax\n" /* line 891 */
-        "popl %ebp\n" /* line 892 */
-        "retl\n"
-    );
+    return *(byte *)((byte *)ps + 0x555) == 0 || *(byte *)((byte *)ps + 0x556) == 0;
 }
 
 /* line 1425 */
@@ -234,27 +217,10 @@ void PM_ExitAimDownSight(playerState_t *ps)
 }
 
 /* line 4071 */
-__attribute__((naked))
 float BG_GetBobCycle(const playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4071 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %eax\n" /* ps */
-        "movzbl 8(%eax), %eax\n" /* ps */
-        "cvtsi2ssl %eax, %xmm0\n" /* ps */
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
-        "addsd %xmm0, %xmm0\n"
-        "addsd 0x307c98, %xmm0\n" /* 6.283185307179586 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, -4(%ebp)\n"
-        "flds -4(%ebp)\n" /* line 4074 */
-        "leave\n"
-        "retl\n"
-    );
+    double val = (float)(*(unsigned char *)((byte *)ps + 8)) / 255.0f;
+    return (float)(val * 3.141592653589793 * 2.0 + 6.283185307179586);
 }
 
 /* line 4088 */
@@ -720,22 +686,10 @@ qboolean BG_IsAimDownSightWeapon(int iWeapon)
 }
 
 /* line 880 */
-__attribute__((naked))
 Bool BG_DoesWeaponRequireSlot(int weaponIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 880 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* weaponIndex */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n" /* weaponIndex */
-        "movl 0x80(%eax), %eax\n" /* weaponIndex */
-        "subl $1, %eax\n" /* weaponIndex */
-        "cmpl $1, %eax\n" /* weaponIndex */
-        "setbe %al\n" /* weaponIndex */
-        "movzbl %al, %eax\n" /* weaponIndex */
-        "popl %ebp\n" /* line 887 */
-        "retl\n"
-    );
+    int val = *(int *)(*(byte **)((byte *)&bg_weaponDefs + weaponIndex * 4) + 0x80);
+    return (unsigned int)(val - 1) <= 1;
 }
 
 /* line 920 */

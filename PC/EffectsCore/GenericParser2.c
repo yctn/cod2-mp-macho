@@ -266,21 +266,12 @@ char * GetToken(Bool readUntilEOL)
 }
 
 /* line 335 */
-__attribute__((naked))
 const char * GPValue_GetTopValue(const GPValue * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 335 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 337 | this */
-        "movl 0x10(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfac1a2_000ac1b1\n"
-        "movl (%eax), %eax\n" /* line 49 */
-        ".Lfac1a2_000ac1b1:\n"
-        "popl %ebp\n" /* line 343 */
-        "retl\n"
-    );
+    void *p = *(void **)((byte *)_this + 0x10);
+    if (p)
+        return *(const char **)p;
+    return (const char *)p;
 }
 
 /* line 324 */

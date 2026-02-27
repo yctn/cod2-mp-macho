@@ -139,19 +139,9 @@ JCOEF ClearVariableValue(unsigned int id);
 JCOEF ClearArray(unsigned int parentId, VariableValue *value);
 
 /* line 3584 */
-__attribute__((naked))
 int GetVarType(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3584 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "movl 0x104cf08(%eax), %eax\n" /* id */
-        "andl $0x1f, %eax\n" /* id */
-        "popl %ebp\n" /* line 3588 */
-        "retl\n"
-    );
+    return *(unsigned int *)(0x104cf08 + id * 16) & 0x1f;
 }
 
 /* line 361 */
@@ -225,51 +215,18 @@ int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2)
 }
 
 /* line 2647 */
-__attribute__((naked))
 unsigned int FindNextSibling(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2647 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* id */
-        /* { scope 1 */
-        "movl %edx, %eax\n" /* line 2654 */
-        "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
-        "shll $4, %eax\n"
-        "movzwl scrVarGlob(%eax), %ecx\n"
-        "cmpl %ecx, %edx\n" /* line 2660 */
-        "je .Lf88b08_00088b3f\n"
-        "movl %ecx, %eax\n" /* line 2665 */
-        "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
-        "andl $0x1f, %eax\n"
-        "cmpl $0xe, %eax\n"
-        "ja .Lf88b08_00088b3f\n"
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 2666 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf88b08_00088b3f:\n"
-        "xorl %ecx, %ecx\n" /* line 2665 */
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 2666 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    unsigned int nextIdx = *(unsigned short *)(0x104cf0e + id * 16);
+    unsigned int sibling = *(unsigned short *)(0x104cf00 + nextIdx * 16);
+    if (sibling == id || (*(unsigned int *)(0x104cf08 + sibling * 16) & 0x1f) > 0xe)
+        return 0;
+    return sibling;
 }
 
 /* line 618 */
-__attribute__((naked))
 JCOEF Scr_DumpScriptVariables(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 618 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 620 */
-        "retl\n"
-    );
 }
 
 /* line 681 */
@@ -324,48 +281,21 @@ JCOEF Var_Init(void)
 }
 
 /* line 715 */
-__attribute__((naked))
 unsigned int Scr_GetNumScriptVars(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 715 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 722 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 725 */
-__attribute__((naked))
 unsigned int GetVariableKeyObject(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 725 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "movl 0x104cf08(%eax), %eax\n" /* id */
-        "shrl $8, %eax\n" /* id */
-        "subl $0x10000, %eax\n" /* id */
-        "popl %ebp\n" /* line 730 */
-        "retl\n"
-    );
+    return (*(unsigned int *)(0x104cf08 + id * 16) >> 8) - 0x10000;
 }
 
 /* line 1737 */
-__attribute__((naked))
 JCOEF AddRefToObject(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1737 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* line 1748 */
-        "addw $1, 0x104cf04(%eax)\n"
-        "popl %ebp\n" /* line 1750 */
-        "retl\n"
-    );
+    *(unsigned short *)(0x104cf04 + id * 16) += 1;
 }
 
 /* line 1279 */
@@ -393,18 +323,9 @@ JCOEF Scr_SetThreadNotifyName(unsigned int startLocalId, unsigned int stringValu
 }
 
 /* line 1352 */
-__attribute__((naked))
 short unsigned int Scr_GetThreadNotifyName(unsigned int startLocalId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1352 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* startLocalId */
-        "shll $4, %eax\n" /* startLocalId */
-        "movzwl 0x104cf09(%eax), %eax\n" /* startLocalId */
-        "popl %ebp\n" /* line 1357 */
-        "retl\n"
-    );
+    return *(unsigned short *)(0x104cf09 + startLocalId * 16);
 }
 
 /* line 1360 */
@@ -455,131 +376,45 @@ JCOEF Scr_ClearWaitTime(unsigned int startLocalId)
 }
 
 /* line 1387 */
-__attribute__((naked))
 unsigned int Scr_GetThreadWaitTime(unsigned int startLocalId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1387 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* startLocalId */
-        "shll $4, %eax\n" /* startLocalId */
-        "movl 0x104cf08(%eax), %eax\n" /* startLocalId */
-        "shrl $8, %eax\n" /* startLocalId */
-        "popl %ebp\n" /* line 1392 */
-        "retl\n"
-    );
+    return *(unsigned int *)(0x104cf08 + startLocalId * 16) >> 8;
 }
 
 /* line 1395 */
-__attribute__((naked))
 unsigned int GetParentLocalId(unsigned int threadId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1395 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* threadId */
-        "shll $4, %eax\n" /* threadId */
-        "movl 0x104cf08(%eax), %eax\n" /* threadId */
-        "shrl $8, %eax\n" /* threadId */
-        "popl %ebp\n" /* line 1400 */
-        "retl\n"
-    );
+    return *(unsigned int *)(0x104cf08 + threadId * 16) >> 8;
 }
 
 /* line 1403 */
-__attribute__((naked))
 unsigned int GetSafeParentLocalId(unsigned int threadId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1403 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* threadId */
-        "shll $4, %eax\n" /* line 1407 */
-        "movl 0x104cf08(%eax), %edx\n"
-        "movl %edx, %eax\n"
-        "andl $0x1f, %eax\n"
-        "cmpl $0x12, %eax\n"
-        "je .Lf88cd0_00088ced\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 1408 */
-        "retl\n"
-        ".Lf88cd0_00088ced:\n"
-        "movl %edx, %eax\n" /* line 1407 */
-        "shrl $8, %eax\n"
-        "popl %ebp\n" /* line 1408 */
-        "retl\n"
-    );
+    unsigned int val = *(unsigned int *)(0x104cf08 + threadId * 16);
+    if ((val & 0x1f) == 0x12)
+        return val >> 8;
+    return 0;
 }
 
 /* line 1411 */
-__attribute__((naked))
 unsigned int GetStartLocalId(unsigned int threadId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1411 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* threadId */
-        "movl %edx, %eax\n" /* line 1416 */
-        "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
-        "andl $0x1f, %eax\n"
-        "cmpl $0x12, %eax\n"
-        "je .Lf88cf4_00088d11\n"
-        ".Lf88cf4_00088d0d:\n"
-        "movl %edx, %eax\n" /* line 1422 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf88cf4_00088d11:\n"
-        "shll $4, %edx\n" /* line 1417 */
-        "movl 0x104cf08(%edx), %edx\n"
-        "shrl $8, %edx\n"
-        "movl %edx, %eax\n" /* line 1416 */
-        "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
-        "andl $0x1f, %eax\n"
-        "cmpl $0x12, %eax\n"
-        "jne .Lf88cf4_00088d0d\n"
-        "shll $4, %edx\n" /* line 1417 */
-        "movl 0x104cf08(%edx), %edx\n"
-        "shrl $8, %edx\n"
-        "movl %edx, %eax\n" /* line 1416 */
-        "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
-        "andl $0x1f, %eax\n"
-        "cmpl $0x12, %eax\n"
-        "je .Lf88cf4_00088d11\n"
-        "jmp .Lf88cf4_00088d0d\n"
-    );
+    while ((*(unsigned int *)(0x104cf08 + threadId * 16) & 0x1f) == 0x12) {
+        threadId = *(unsigned int *)(0x104cf08 + threadId * 16) >> 8;
+    }
+    return threadId;
 }
 
 /* line 2733 */
-__attribute__((naked))
 unsigned int FindObject(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2733 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "movl 0x104cf04(%eax), %eax\n" /* id */
-        "popl %ebp\n" /* line 2744 */
-        "retl\n"
-    );
+    return *(unsigned int *)(0x104cf04 + id * 16);
 }
 
 /* line 2442 */
-__attribute__((naked))
 VariableUnion * GetVariableValueAddress(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2442 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "addl $0x104cf04, %eax\n" /* id */
-        "popl %ebp\n" /* line 2453 */
-        "retl\n"
-    );
+    return (VariableUnion *)(0x104cf04 + id * 16);
 }
 
 /* line 1802 */
@@ -642,18 +477,9 @@ JCOEF RemoveRefToEmptyObject(unsigned int id)
 }
 
 /* line 1709 */
-__attribute__((naked))
 unsigned int Scr_GetSelf(unsigned int threadId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1709 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* threadId */
-        "shll $4, %eax\n" /* threadId */
-        "movzwl 0x104cf06(%eax), %eax\n" /* threadId */
-        "popl %ebp\n" /* line 1714 */
-        "retl\n"
-    );
+    return *(unsigned short *)(0x104cf06 + threadId * 16);
 }
 
 /* line 1899 */
@@ -686,35 +512,15 @@ JCOEF RemoveRefToVector(const float *vectorValue)
 }
 
 /* line 1962 */
-__attribute__((naked))
 Bool IsValidArrayIndex(unsigned int unsignedValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1962 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* unsignedValue */
-        "addl $0x7e0002, %eax\n"
-        "cmpl $0xfe0001, %eax\n"
-        "setbe %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 1965 */
-        "retl\n"
-    );
+    return (unsignedValue + 0x7e0002) <= 0xfe0001;
 }
 
 /* line 1968 */
-__attribute__((naked))
 unsigned int GetInternalVariableIndex(unsigned int unsignedValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1968 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* unsignedValue */
-        "addl $0x800000, %eax\n"
-        "andl $0xffffff, %eax\n"
-        "popl %ebp\n" /* line 1973 */
-        "retl\n"
-    );
+    return (unsignedValue + 0x800000) & 0xffffff;
 }
 
 /* line 2422 */
@@ -785,18 +591,9 @@ unsigned int Scr_EvalVariableObject(unsigned int id)
 }
 
 /* line 2634 */
-__attribute__((naked))
 unsigned int GetArraySize(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2634 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "movzwl 0x104cf06(%eax), %eax\n" /* id */
-        "popl %ebp\n" /* line 2644 */
-        "retl\n"
-    );
+    return *(unsigned short *)(0x104cf06 + id * 16);
 }
 
 /* line 2669 */
@@ -830,55 +627,21 @@ unsigned int FindPrevSibling(unsigned int id)
 }
 
 /* line 2681 */
-__attribute__((naked))
 unsigned int GetVariableName(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2681 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "movl 0x104cf08(%eax), %eax\n" /* id */
-        "shrl $8, %eax\n" /* id */
-        "popl %ebp\n" /* line 2686 */
-        "retl\n"
-    );
+    return *(unsigned int *)(0x104cf08 + id * 16) >> 8;
 }
 
 /* line 2747 */
-__attribute__((naked))
 Bool IsFieldObject(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2747 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "movl 0x104cf08(%eax), %eax\n" /* id */
-        "andl $0x1f, %eax\n" /* id */
-        "cmpl $0x15, %eax\n" /* id */
-        "setbe %al\n" /* id */
-        "movzbl %al, %eax\n" /* id */
-        "popl %ebp\n" /* line 2757 */
-        "retl\n"
-    );
+    return (*(unsigned int *)(0x104cf08 + id * 16) & 0x1f) <= 0x15;
 }
 
 /* line 3578 */
-__attribute__((naked))
 Bool IsVarFree(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3578 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        "shll $4, %eax\n" /* id */
-        "testb $0x60, 0x104cf08(%eax)\n"
-        "sete %al\n" /* id */
-        "movzbl %al, %eax\n" /* id */
-        "popl %ebp\n" /* line 3581 */
-        "retl\n"
-    );
+    return (*(unsigned char *)(0x104cf08 + id * 16) & 0x60) == 0;
 }
 
 /* line 4185 */
@@ -7179,15 +6942,9 @@ JCOEF RemoveRefToObject(unsigned int id)
 }
 
 /* line 4552 */
-__attribute__((naked))
 JCOEF Scr_FreeValue(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4552 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 4556 */
-        "jmp RemoveRefToObject\n" /* line 4555 */
-    );
+    RemoveRefToObject(id);
 }
 
 /* line 3882 */
@@ -9009,16 +8766,9 @@ JCOEF Scr_FreeEntityNum(int entnum, int classnum)
 }
 
 /* line 2298 */
-__attribute__((naked))
 JCOEF RemoveObjectVariable(unsigned int parentId, unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2298 */
-        "movl %esp, %ebp\n"
-        "addl $0x10000, 0xc(%ebp)\n" /* line 2302 | id */
-        "popl %ebp\n" /* line 2303 */
-        "jmp RemoveVariable\n" /* line 2302 */
-    );
+    RemoveVariable(parentId, id + 0x10000);
 }
 
 /* line 2181 */

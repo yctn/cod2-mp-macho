@@ -170,23 +170,11 @@ int LAN_GetServerCount(int source)
 }
 
 /* line 106 */
-__attribute__((naked))
 qboolean LAN_WaitServerResponse(int source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 106 */
-        "movl %esp, %ebp\n"
-        "cmpl $1, 8(%ebp)\n" /* line 109 | source */
-        "je .Lf17f126_0017f133\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 116 */
-        "retl\n"
-        ".Lf17f126_0017f133:\n"
-        "movl 0x195ecac, %eax\n" /* line 112 */
-        "movl 0x453c(%eax), %eax\n"
-        "popl %ebp\n" /* line 116 */
-        "retl\n"
-    );
+    if (source != 1)
+        return 0;
+    return *(int *)(*(byte **)0x195ecac + 0x453c);
 }
 
 /* line 124 */

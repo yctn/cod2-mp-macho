@@ -11,6 +11,14 @@
  */
 
 extern struct scr_data_t g_scr_data; /* 0x0 */
+extern unsigned int Scr_AllocString(const char *s, int user);
+extern void Scr_AddString(const char *s);
+extern void Scr_AddInt(int value);
+extern int Scr_GetInt(int argIndex);
+extern void Scr_AddEntity(void *ent);
+extern void Scr_AddUndefined(void);
+extern int SV_AddTestClient(void);
+extern void SV_EnableArchivedSnapshot(int enable);
 extern BuiltinFunctionDef functions[144]; /* 0x0 */
 static BuiltinMethodDef methods[59]; /* 0x3138c0 */
 
@@ -244,20 +252,9 @@ unsigned int GScr_LoadGameTypeScript(void);
 unsigned int GScr_LoadScripts(void);
 
 /* line 35 */
-__attribute__((naked))
 unsigned int GScr_AllocString(const char *s)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 35 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, 4(%esp)\n" /* line 37 */
-        "movl 8(%ebp), %eax\n" /* s */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AllocString\n"
-        "leave\n" /* line 38 */
-        "retl\n"
-    );
+    return Scr_AllocString(s, 1);
 }
 
 /* line 57 */
@@ -315,68 +312,38 @@ unsigned int GScr_FreeScripts(void)
 }
 
 /* line 208 */
-static __attribute__((naked))
-unsigned int ScrCmd_GetClanId(struct scr_entref_t entref)
+static unsigned int ScrCmd_GetClanId(struct scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 208 */
-        "movl %esp, %ebp\n"
-        "movl $0x21952c, 8(%ebp)\n" /* line 221 | entref */
-        "popl %ebp\n" /* line 223 */
-        "jmp Scr_AddString\n" /* line 221 */
-    );
+    Scr_AddString("0");
+    return 0;
 }
 
 /* line 230 */
-static __attribute__((naked))
-unsigned int ScrCmd_GetClanName(scr_entref_t entref)
+static unsigned int ScrCmd_GetClanName(scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 230 */
-        "movl %esp, %ebp\n"
-        "movl $0x2157b8, 8(%ebp)\n" /* line 241 | entref */
-        "popl %ebp\n" /* line 243 */
-        "jmp Scr_AddString\n" /* line 241 */
-    );
+    Scr_AddString("");
+    return 0;
 }
 
 /* line 251 */
-static __attribute__((naked))
-unsigned int ScrCmd_GetClanMotto(scr_entref_t entref)
+static unsigned int ScrCmd_GetClanMotto(scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 251 */
-        "movl %esp, %ebp\n"
-        "movl $0x2157b8, 8(%ebp)\n" /* line 262 | entref */
-        "popl %ebp\n" /* line 264 */
-        "jmp Scr_AddString\n" /* line 262 */
-    );
+    Scr_AddString("");
+    return 0;
 }
 
 /* line 272 */
-static __attribute__((naked))
-unsigned int ScrCmd_GetClanDescription(scr_entref_t entref)
+static unsigned int ScrCmd_GetClanDescription(scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 272 */
-        "movl %esp, %ebp\n"
-        "movl $0x2157b8, 8(%ebp)\n" /* line 283 | entref */
-        "popl %ebp\n" /* line 285 */
-        "jmp Scr_AddString\n" /* line 283 */
-    );
+    Scr_AddString("");
+    return 0;
 }
 
 /* line 293 */
-static __attribute__((naked))
-unsigned int ScrCmd_GetClanURL(scr_entref_t entref)
+static unsigned int ScrCmd_GetClanURL(scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 293 */
-        "movl %esp, %ebp\n"
-        "movl $0x2157b8, 8(%ebp)\n" /* line 304 | entref */
-        "popl %ebp\n" /* line 306 */
-        "jmp Scr_AddString\n" /* line 304 */
-    );
+    Scr_AddString("");
+    return 0;
 }
 
 /* line 315 */
@@ -669,20 +636,10 @@ unsigned int GScr_GetDvarFloat(void)
 }
 
 /* line 836 */
-static __attribute__((naked))
-unsigned int GScr_GetTime(void)
+static unsigned int GScr_GetTime(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 836 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195f6a0, %eax\n" /* line 838 */
-        "movl 0x1ec(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 839 */
-        "retl\n"
-    );
+    Scr_AddInt(*(int *)((byte *)*(void **)0x195f6a0 + 0x1ec));
+    return 0;
 }
 
 /* line 847 */
@@ -909,39 +866,21 @@ unsigned int ScrCmd_SoundExists(void)
 }
 
 /* line 1543 */
-static __attribute__((naked))
-unsigned int ScrCmd_PlayRumble(scr_entref_t entref)
+static unsigned int ScrCmd_PlayRumble(scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1543 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1548 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 1556 */
-static __attribute__((naked))
-unsigned int ScrCmd_PlayLoopRumble(scr_entref_t entref)
+static unsigned int ScrCmd_PlayLoopRumble(scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1556 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1561 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 1569 */
-static __attribute__((naked))
-unsigned int ScrCmd_StopRumble(scr_entref_t entref)
+static unsigned int ScrCmd_StopRumble(scr_entref_t entref)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1569 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1601 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 1862 */
@@ -1419,18 +1358,10 @@ unsigned int GScr_LogPrint(void)
 }
 
 /* line 2407 */
-static __attribute__((naked))
-unsigned int GScr_WorldEntNumber(void)
+static unsigned int GScr_WorldEntNumber(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2407 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x3fe, (%esp)\n" /* line 2409 */
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 2410 */
-        "retl\n"
-    );
+    Scr_AddInt(0x3fe);
+    return 0;
 }
 
 /* line 2418 */
@@ -1517,20 +1448,10 @@ unsigned int GScr_Obituary(void)
 }
 
 /* line 2541 */
-static __attribute__((naked))
-unsigned int GScr_getStartTime(void)
+static unsigned int GScr_getStartTime(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2541 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195f6a0, %eax\n" /* line 2543 */
-        "movl 0x1f8(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 2544 */
-        "retl\n"
-    );
+    Scr_AddInt(*(int *)((byte *)*(void **)0x195f6a0 + 0x1f8));
+    return 0;
 }
 
 /* line 2552 */
@@ -3349,15 +3270,9 @@ unsigned int Scr_PrecacheString(void)
 }
 
 /* line 3596 */
-static __attribute__((naked))
-unsigned int Scr_PrecacheRumble(void)
+static unsigned int Scr_PrecacheRumble(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3596 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 3604 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 3711 */
@@ -3410,20 +3325,10 @@ unsigned int GScr_RadiusDamage(void)
 }
 
 /* line 3734 */
-static __attribute__((naked))
-unsigned int GScr_SetPlayerIgnoreRadiusDamage(void)
+static unsigned int GScr_SetPlayerIgnoreRadiusDamage(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3734 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 3736 */
-        "calll Scr_GetInt\n"
-        "movl 0x195f6a0, %edx\n"
-        "movl %eax, 0x35f8(%edx)\n"
-        "leave\n" /* line 3737 */
-        "retl\n"
-    );
+    *(int *)((byte *)*(void **)0x195f6a0 + 0x35f8) = Scr_GetInt(0);
+    return 0;
 }
 
 /* line 3747 */
@@ -4808,24 +4713,12 @@ unsigned int GScr_ExitLevel(void)
 }
 
 /* line 4817 */
-static __attribute__((naked))
-unsigned int GScr_AddTestClient(void)
+static unsigned int GScr_AddTestClient(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4817 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll SV_AddTestClient\n" /* line 4821 */
-        "testl %eax, %eax\n" /* line 4822 */
-        "je .Lf198282_00198299\n"
-        "movl %eax, (%esp)\n" /* line 4823 */
-        "calll Scr_AddEntity\n"
-        /* } scope */
-        ".Lf198282_00198299:\n"
-        "leave\n" /* line 4824 */
-        "retl\n"
-    );
+    void *ent = (void *)SV_AddTestClient();
+    if (ent)
+        Scr_AddEntity(ent);
+    return 0;
 }
 
 /* line 4887 */
@@ -5732,107 +5625,53 @@ unsigned int GScr_FGetArg(void)
 }
 
 /* line 5420 */
-static __attribute__((naked))
-unsigned int GScr_SetArchive(void)
+static unsigned int GScr_SetArchive(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5420 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 5422 */
-        "calll Scr_GetInt\n"
-        "movl %eax, (%esp)\n"
-        "calll SV_EnableArchivedSnapshot\n"
-        "leave\n" /* line 5423 */
-        "retl\n"
-    );
+    SV_EnableArchivedSnapshot(Scr_GetInt(0));
+    return 0;
 }
 
 /* line 5448 */
-static __attribute__((naked))
-unsigned int Scr_PlayRumbleOnPos(void)
+static unsigned int Scr_PlayRumbleOnPos(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5448 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 5456 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 5459 */
-static __attribute__((naked))
-unsigned int Scr_PlayLoopRumbleOnPos(void)
+static unsigned int Scr_PlayLoopRumbleOnPos(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5459 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 5467 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 5470 */
-static __attribute__((naked))
-unsigned int Scr_StopAllRumbles(void)
+static unsigned int Scr_StopAllRumbles(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5470 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 5481 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 5484 */
-static __attribute__((naked))
-unsigned int Scr_IsSplitscreen(void)
+static unsigned int Scr_IsSplitscreen(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5484 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 5492 */
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 5494 */
-        "retl\n"
-    );
+    Scr_AddInt(0);
+    return 0;
 }
 
 /* line 5497 */
-static __attribute__((naked))
-unsigned int GScr_MatchEnd(void)
+static unsigned int GScr_MatchEnd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5497 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 5499 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 5581 */
-static __attribute__((naked))
-unsigned int GScr_SetPlayerTeamRank(void)
+static unsigned int GScr_SetPlayerTeamRank(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5581 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 5584 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 5586 */
-static __attribute__((naked))
-unsigned int GScr_SendXboxLiveRanks(void)
+static unsigned int GScr_SendXboxLiveRanks(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5586 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 5589 */
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 5678 */
@@ -6127,21 +5966,13 @@ unsigned int Scr_SetHealth(gentity_t *ent, int offset)
 }
 
 /* line 6125 */
-__attribute__((naked))
 unsigned int GScr_AddEntity(gentity_t *pEnt)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 6125 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* pEnt */
-        "testl %eax, %eax\n" /* line 6127 */
-        "je .Lf198fa4_00198fb4\n"
-        "popl %ebp\n" /* line 6131 */
-        "jmp Scr_AddEntity\n" /* line 6128 */
-        ".Lf198fa4_00198fb4:\n"
-        "popl %ebp\n" /* line 6131 */
-        "jmp Scr_AddUndefined\n" /* line 6130 */
-    );
+    if (pEnt)
+        Scr_AddEntity(pEnt);
+    else
+        Scr_AddUndefined();
+    return 0;
 }
 
 /* line 6159 */

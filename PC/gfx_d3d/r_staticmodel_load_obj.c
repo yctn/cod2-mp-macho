@@ -27,19 +27,9 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree);
 int R_AllocStaticModels(GfxAabbTree *tree);
 
 /* line 86 */
-static __attribute__((naked))
-int CompareStaticModels(const int *smodel0, const int *smodel1)
+static int CompareStaticModels(const int *smodel0, const int *smodel1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 86 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* smodel0 */
-        "movl (%eax), %eax\n" /* smodel0 */
-        "movl 0xc(%ebp), %edx\n" /* smodel1 */
-        "subl (%edx), %eax\n" /* smodel0 */
-        "popl %ebp\n" /* line 89 */
-        "retl\n"
-    );
+    return *smodel0 - *smodel1;
 }
 
 /* line 449 */

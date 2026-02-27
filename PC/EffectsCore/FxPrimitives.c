@@ -17,6 +17,8 @@
  */
 
 extern FxBoltFrame *FxBoltFrame_g_mFrameList; /* 0x0 */
+extern void * Hunk_AllocInternal(int size);
+extern struct XModel * XModelPrecache(const char *name, void *(*alloc1)(int), void *(*alloc2)(int));
 
 void FxBoltFrame_Release(const FxBoltFrame * _this);
 const orientation_t * FxBoltFrame_GetOrientation(const FxBoltFrame * _this);
@@ -244,112 +246,49 @@ const orientation_t * FxBoltFrame_GetOrientation(const FxBoltFrame * _this)
 }
 
 /* line 165 */
-static __attribute__((naked))
-void * FxModelAlloc(int size)
+static void * FxModelAlloc(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 165 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 168 */
-        "jmp Hunk_AllocInternal\n" /* line 167 */
-    );
+    return Hunk_AllocInternal(size);
 }
 
 /* line 171 */
-__attribute__((naked))
 struct XModel * FX_XModelPrecache(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 171 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $FxModelAlloc, 8(%esp)\n" /* line 173 */
-        "movl $FxModelAlloc, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* name */
-        "movl %eax, (%esp)\n"
-        "calll XModelPrecache\n"
-        "leave\n" /* line 174 */
-        "retl\n"
-    );
+    return XModelPrecache(name, FxModelAlloc, FxModelAlloc);
 }
 
 /* line 187 */
-__attribute__((naked))
 void Effect_Die(const Effect * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 187 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 189 */
-        "retl\n"
-    );
 }
 
 /* line 192 */
-__attribute__((naked))
 Bool Effect_Cull(const Effect * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 192 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 195 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 198 */
-__attribute__((naked))
 void Effect_Draw(const Effect * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 198 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 200 */
-        "retl\n"
-    );
 }
 
 /* line 250 */
-__attribute__((naked))
 void Effect_SetTimeStartEnd(const Effect * _this, int start, int end)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 250 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* line 254 | start */
-        "movl %edx, 0xb8(%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 255 | end */
-        "movl %edx, 0xbc(%eax)\n"
-        "popl %ebp\n" /* line 256 */
-        "retl\n"
-    );
+    *(int *)((byte *)_this + 0xb8) = start;
+    *(int *)((byte *)_this + 0xbc) = end;
 }
 
 /* line 278 */
-__attribute__((naked))
 unsigned char Effect_TypeID(const Effect * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 278 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 282 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 322 */
-__attribute__((naked))
 void Effect_FixupArchiveLoad(const Effect * _this, const PrimitiveTemplate *primTemplate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 322 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 324 */
-        "retl\n"
-    );
 }
 
 /* line 468 */
@@ -510,63 +449,28 @@ void Particle_CreateChannelInstances(const Particle * _this, const PrimitiveTemp
 }
 
 /* line 522 */
-__attribute__((naked))
 void Particle_SetRandomVelocity2Weights(const Particle * _this, float weight1, float weight2, float weight3)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 522 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "leal 0x138(%edx), %ecx\n" /* line 531 | v */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 191 | weight1 */
-        "movl %eax, 0x138(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 192 | weight2 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 193 | weight3 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 532 */
-        "retl\n"
-    );
+    *(float *)((byte *)_this + 0x138) = weight1;
+    *(float *)((byte *)_this + 0x13c) = weight2;
+    *(float *)((byte *)_this + 0x140) = weight3;
 }
 
 /* line 1160 */
-__attribute__((naked))
 unsigned char Particle_TypeID(const Particle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1160 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n" /* line 1163 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 1;
 }
 
 /* line 1323 */
-__attribute__((naked))
 unsigned char OrientedParticle_TypeID(const OrientedParticle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1323 */
-        "movl %esp, %ebp\n"
-        "movl $7, %eax\n" /* line 1326 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 7;
 }
 
 /* line 1352 */
-__attribute__((naked))
 void Cloud_Die(const Cloud * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1352 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1354 */
-        "retl\n"
-    );
 }
 
 /* line 1395 */
@@ -602,41 +506,20 @@ void Cloud_CreateChannelInstances(const Cloud * _this, const PrimitiveTemplate *
 }
 
 /* line 1466 */
-__attribute__((naked))
 unsigned char Cloud_TypeID(const Cloud * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1466 */
-        "movl %esp, %ebp\n"
-        "movl $0xc, %eax\n" /* line 1469 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 12;
 }
 
 /* line 1509 */
-__attribute__((naked))
 void Line_Die(const Line * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1509 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1511 */
-        "retl\n"
-    );
 }
 
 /* line 1561 */
-__attribute__((naked))
 unsigned char Line_TypeID(const Line * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1561 */
-        "movl %esp, %ebp\n"
-        "movl $2, %eax\n" /* line 1564 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 2;
 }
 
 /* line 1602 */
@@ -672,55 +555,27 @@ void Tail_CreateChannelInstances(const Tail * _this, const PrimitiveTemplate *pr
 }
 
 /* line 1693 */
-__attribute__((naked))
 unsigned char Tail_TypeID(const Tail * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1693 */
-        "movl %esp, %ebp\n"
-        "movl $3, %eax\n" /* line 1696 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 3;
 }
 
 /* line 1788 */
-__attribute__((naked))
 unsigned char Cylinder_TypeID(const Cylinder * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1788 */
-        "movl %esp, %ebp\n"
-        "movl $4, %eax\n" /* line 1791 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 4;
 }
 
 /* line 1814 */
-__attribute__((naked))
 Bool Emitter_Cull(const Emitter * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1814 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 1817 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 2098 */
-__attribute__((naked))
 unsigned char Emitter_TypeID(const Emitter * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2098 */
-        "movl %esp, %ebp\n"
-        "movl $5, %eax\n" /* line 2101 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 5;
 }
 
 /* line 2141 */
@@ -791,16 +646,9 @@ void Light_Draw(const Light * _this)
 }
 
 /* line 2214 */
-__attribute__((naked))
 unsigned char Light_TypeID(const Light * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2214 */
-        "movl %esp, %ebp\n"
-        "movl $9, %eax\n" /* line 2217 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 9;
 }
 
 /* line 2264 */
@@ -879,28 +727,14 @@ void Flash_Init(const Flash * _this)
 }
 
 /* line 2305 */
-__attribute__((naked))
 unsigned char Flash_TypeID(const Flash * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2305 */
-        "movl %esp, %ebp\n"
-        "movl $0xb, %eax\n" /* line 2308 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 11;
 }
 
 /* line 2322 */
-static __attribute__((naked))
-void GLOBAL__I__ZN11FxBoltFrame12g_mFrameListE(void) /* global constructors keyed to FxBoltFrame_g_mFrameList */
+static void GLOBAL__I__ZN11FxBoltFrame12g_mFrameListE(void) /* global constructors keyed to FxBoltFrame_g_mFrameList */
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2322 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
 }
 
 /* line 563 */
@@ -1559,25 +1393,11 @@ Bool Light_Cull(const Light * _this)
 }
 
 /* line 509 */
-__attribute__((naked))
 void Particle_SetRandomVelocityWeights(const Particle * _this, float weight1, float weight2, float weight3)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 509 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "leal 0x12c(%edx), %ecx\n" /* line 518 | v */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 191 | weight1 */
-        "movl %eax, 0x12c(%edx)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 192 | weight2 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 193 | weight3 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 519 */
-        "retl\n"
-    );
+    *(float *)((byte *)_this + 0x12c) = weight1;
+    *(float *)((byte *)_this + 0x130) = weight2;
+    *(float *)((byte *)_this + 0x134) = weight3;
 }
 
 /* line 535 */
@@ -3799,25 +3619,13 @@ void Particle_IntegrateTotalVelocity(const Particle * _this, int duration, vec_t
 }
 
 /* line 360 */
-__attribute__((naked))
 void Particle_Particle(const Particle * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 360 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0, 0xc0(%eax)\n" /* line 58 */
-        "movl $0x32ffc8, (%eax)\n" /* line 360 */
-        "leal 0xc4(%eax), %ecx\n" /* line 362 | v */
-        /* { scope 1 */
-        "xorl %edx, %edx\n" /* line 183 */
-        "movl %edx, 0xc4(%eax)\n"
-        "movl %edx, 4(%ecx)\n" /* line 184 */
-        "movl %edx, 8(%ecx)\n" /* line 185 */
-        /* } scope */
-        "popl %ebp\n" /* line 363 */
-        "retl\n"
-    );
+    *(int *)((byte *)_this + 0xc0) = 0;
+    *(int *)_this = 0x32ffc8;
+    *(int *)((byte *)_this + 0xc4) = 0;
+    *(int *)((byte *)_this + 0xc8) = 0;
+    *(int *)((byte *)_this + 0xcc) = 0;
 }
 
 /* overload skip: Particle_Particle (0xa2e3c) */
@@ -3937,18 +3745,10 @@ void ZN8ParticleD0Ev(void) /* Particle_~Particle */
 }
 
 /* line 2131 */
-__attribute__((naked))
 void Light_Light(const Light * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2131 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0, 0xc0(%eax)\n" /* line 58 */
-        "movl $0x330188, (%eax)\n" /* line 2131 */
-        "popl %ebp\n" /* line 2133 */
-        "retl\n"
-    );
+    *(int *)((byte *)_this + 0xc0) = 0;
+    *(int *)_this = 0x330188;
 }
 
 /* overload skip: Light_Light (0xa2f4c) */
@@ -11386,12 +11186,7 @@ void Light_Archive(const Light * _this, FxArchive *arch)
 __attribute__((naked))
 void Flash_Archive(const Flash * _this, FxArchive *arch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2311 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 2316 */
-        "jmp Light_Archive\n" /* line 2315 */
-    );
+    Light_Archive((const Light *)_this, arch);
 }
 
 /* line 1166 */
@@ -12361,12 +12156,7 @@ void Tail_Archive(const Tail * _this, FxArchive *arch)
 __attribute__((naked))
 void Cylinder_Archive(const Cylinder * _this, FxArchive *arch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1794 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1799 */
-        "jmp Tail_Archive\n" /* line 1798 */
-    );
+    Tail_Archive((const Tail *)_this, arch);
 }
 
 /* line 2104 */
@@ -13533,41 +13323,20 @@ void ZN7EmitterD0Ev(void) /* Emitter_~Emitter */
 }
 
 /* line 186 */
-__attribute__((naked))
 float Effect_GetVisibility(const Effect * _this, const vec_t *start, const vec_t *dir, float halfLen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 186 */
-        "movl %esp, %ebp\n"
-        "fld1\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 1.0f;
 }
 
 /* line 189 */
-__attribute__((naked))
 void Effect_AddVisibility(const Effect * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 189 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
 }
 
 /* line 284 */
-__attribute__((naked))
 Bool Flash_Cull(const Flash * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 284 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 282 */

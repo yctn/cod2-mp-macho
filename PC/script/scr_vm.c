@@ -85,43 +85,24 @@ void Scr_AddObject(unsigned int id);
 void Scr_AddString(const char *value);
 void Scr_AddConstString(unsigned int value);
 void Scr_AddVector(const float *value);
+extern void RemoveRefToObject(unsigned int id);
 
 /* line 86 */
-__attribute__((naked))
 void Scr_ClearErrorMessage(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 86 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee58, %eax\n" /* line 88 */
-        "movl $0, 0x10(%eax)\n"
-        "movl $0, 0x4ead90\n" /* line 89 */
-        "movl $0, 0x14(%eax)\n" /* line 90 */
-        "popl %ebp\n" /* line 91 */
-        "retl\n"
-    );
+    byte *p = *(byte **)0x195ee58;
+    *(int *)(p + 0x10) = 0;
+    *(int *)0x4ead90 = 0;
+    *(int *)(p + 0x14) = 0;
 }
 
 /* line 182 */
-__attribute__((naked))
 void Scr_Settings(int developer, int developer_script, int abort_on_error)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 182 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee58, %eax\n" /* line 186 */
-        "movl 8(%ebp), %ecx\n" /* developer */
-        "testl %ecx, %ecx\n"
-        "setne 0xa(%eax)\n"
-        "movl 0xc(%ebp), %edx\n" /* line 187 | developer_script */
-        "testl %edx, %edx\n"
-        "setne 0xb(%eax)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 188 | abort_on_error */
-        "testl %eax, %eax\n"
-        "setne 0x1008215\n"
-        "popl %ebp\n" /* line 189 */
-        "retl\n"
-    );
+    byte *p = *(byte **)0x195ee58;
+    *(byte *)(p + 0xa) = developer != 0;
+    *(byte *)(p + 0xb) = developer_script != 0;
+    *(byte *)0x1008215 = abort_on_error != 0;
 }
 
 /* line 192 */
@@ -163,62 +144,31 @@ void Scr_Shutdown(void)
 }
 
 /* line 204 */
-__attribute__((naked))
 void Scr_Abort(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 204 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee58, %eax\n" /* line 206 */
-        "movl $0, 0x1c(%eax)\n"
-        "movb $0, 0x38(%eax)\n" /* line 207 */
-        "popl %ebp\n" /* line 208 */
-        "retl\n"
-    );
+    byte *p = *(byte **)0x195ee58;
+    *(int *)(p + 0x1c) = 0;
+    *(byte *)(p + 0x38) = 0;
 }
 
 /* line 211 */
-__attribute__((naked))
 void Scr_SetLoading(int bLoading)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 211 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 213 | bLoading */
-        "movl %eax, 0x4ead94\n"
-        "popl %ebp\n" /* line 214 */
-        "retl\n"
-    );
+    *(int *)0x4ead94 = bLoading;
 }
 
 /* line 267 */
-__attribute__((naked))
 unsigned int Scr_GetNumScriptThreads(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 267 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n" /* line 274 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 0;
 }
 
 /* line 5100 */
-__attribute__((naked))
 void Scr_ResetTimeout(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5100 */
-        "movl %esp, %ebp\n"
-        "rdtsc\n" /* line 33 */
-        "xorl %edx, %edx\n" /* line 5102 */
-        "shrdl $2, %edx, %eax\n"
-        "shrl $2, %edx\n"
-        "movl %eax, 0x4ead98\n"
-        "popl %ebp\n" /* line 5113 */
-        "retl\n"
-    );
+    unsigned int tsc_low;
+    __asm__ __volatile__ ("rdtsc" : "=a" (tsc_low) : : "edx");
+    *(unsigned int *)0x4ead98 = tsc_low >> 2;
 }
 
 /* line 2620 */
@@ -814,17 +764,9 @@ void Scr_CancelNotifyList(unsigned int notifyListOwnerId)
 }
 
 /* line 4095 */
-__attribute__((naked))
 void Scr_FreeThread(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4095 */
-        "movl %esp, %ebp\n"
-        "movzwl 8(%ebp), %eax\n" /* line 4104 | handle */
-        "movl %eax, 8(%ebp)\n" /* handle */
-        "popl %ebp\n" /* line 4109 */
-        "jmp RemoveRefToObject\n" /* line 4104 */
-    );
+    RemoveRefToObject((unsigned short)handle);
 }
 
 /* line 4241 */
@@ -994,33 +936,15 @@ void Scr_ShutdownSystem(int sys, int bComplete)
 }
 
 /* line 4388 */
-__attribute__((naked))
 int Scr_IsSystemActive(int sys)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4388 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee58, %eax\n"
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 4391 */
-        "retl\n"
-    );
+    return *(int *)(*(byte **)0x195ee58 + 0x1c) != 0;
 }
 
 /* line 4743 */
-__attribute__((naked))
 unsigned int Scr_GetNumParam(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4743 */
-        "movl %esp, %ebp\n"
-        "movl 0x100821c, %eax\n"
-        "popl %ebp\n" /* line 4746 */
-        "retl\n"
-    );
+    return *(unsigned int *)0x100821c;
 }
 
 /* line 4883 */
