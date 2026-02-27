@@ -11,6 +11,9 @@
  *   #include "PC/universal/q_shared.h"
  */
 
+extern void G_FreeEntity(gentity_t *ent);
+extern void G_SetOrigin(gentity_t *ent, const vec_t *origin);
+
 static turretInfo_t turretInfo[32]; /* 0xfe7800 */
 
 void SP_info_null(gentity_t *self);
@@ -32,87 +35,41 @@ void SP_turret(gentity_t *self);
 void turret_think_client(gentity_t *self);
 
 /* line 17 */
-__attribute__((naked))
 void SP_info_null(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 17 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 20 */
-        "jmp G_FreeEntity\n" /* line 19 */
-    );
+    G_FreeEntity(self);
 }
 
 /* line 23 */
-__attribute__((naked))
 void SP_info_notnull(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 23 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* self */
-        "leal 0x138(%edx), %eax\n" /* line 25 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll G_SetOrigin\n"
-        "leave\n" /* line 26 */
-        "retl\n"
-    );
+    G_SetOrigin(self, (vec_t *)((byte *)self + 0x138));
 }
 
 /* line 29 */
-__attribute__((naked))
 void SP_light(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 29 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 32 */
-        "jmp G_FreeEntity\n" /* line 31 */
-    );
+    G_FreeEntity(self);
 }
 
 /* line 77 */
-__attribute__((naked))
 void SP_misc_model(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 77 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 80 */
-        "jmp G_FreeEntity\n" /* line 79 */
-    );
+    G_FreeEntity(ent);
 }
 
 /* line 108 */
-__attribute__((naked))
 void SP_corona(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 108 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 111 */
-        "jmp G_FreeEntity\n" /* line 110 */
-    );
+    G_FreeEntity(ent);
 }
 
 /* line 119 */
-__attribute__((naked))
 void G_InitTurrets(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 119 */
-        "movl %esp, %ebp\n"
-        "movl $turretInfo, %eax\n"
-        ".Lf1b9af0_001b9af8:\n"
-        "movl $0, (%eax)\n" /* line 124 */
-        "addl $0x44, %eax\n"
-        "cmpl $g_HitLocConstNames, %eax\n" /* line 123 */
-        "jne .Lf1b9af0_001b9af8\n"
-        "popl %ebp\n" /* line 125 */
-        "retl\n"
-    );
+    int i;
+    for (i = 0; i < 32; i++)
+        *(int *)&turretInfo[i] = 0;
 }
 
 /* line 724 */

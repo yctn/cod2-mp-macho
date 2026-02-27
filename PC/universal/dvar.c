@@ -105,30 +105,15 @@ void Dvar_SetCommand(const char *dvarName, const char *string);
 void Dvar_SetFromStringByName(const char *dvarName, const char *string);
 
 /* line 45 */
-__attribute__((naked))
 void Dvar_SetInAutoExec(int inAutoExec)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 45 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 47 | inAutoExec */
-        "movb %al, isLoadingAutoExecGlobalFlag\n"
-        "popl %ebp\n" /* line 48 */
-        "retl\n"
-    );
+    isLoadingAutoExecGlobalFlag = (byte)inAutoExec;
 }
 
 /* line 51 */
-__attribute__((naked))
 Bool Dvar_IsSystemActive(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 51 */
-        "movl %esp, %ebp\n"
-        "movzbl isDvarSystemActive, %eax\n"
-        "popl %ebp\n" /* line 54 */
-        "retl\n"
-    );
+    return isDvarSystemActive;
 }
 
 /* line 85 */
@@ -541,67 +526,31 @@ Bool Dvar_IsAtDefaultValue(const dvar_t *dvar)
 }
 
 /* line 1078 */
-__attribute__((naked))
 void Dvar_ClearModified(const dvar_t *dvar)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1078 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1081 | dvar */
-        "movb $0, 7(%eax)\n"
-        "popl %ebp\n" /* line 1082 */
-        "retl\n"
-    );
+    *(byte *)((byte *)dvar + 7) = 0;
 }
 
 /* line 1085 */
-__attribute__((naked))
 void Dvar_SetModified(const dvar_t *dvar)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1085 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1088 | dvar */
-        "movb $1, 7(%eax)\n"
-        "popl %ebp\n" /* line 1089 */
-        "retl\n"
-    );
+    *(byte *)((byte *)dvar + 7) = 1;
 }
 
 /* line 2319 */
-__attribute__((naked))
 void Dvar_AddFlags(const dvar_t *dvar, int flags)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2319 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* dvar */
-        "movzwl 4(%edx), %eax\n" /* line 2323 */
-        "orl 0xc(%ebp), %eax\n" /* flags */
-        "movw %ax, 4(%edx)\n"
-        "popl %ebp\n" /* line 2324 */
-        "retl\n"
-    );
+    *(unsigned short *)((byte *)dvar + 4) |= (unsigned short)flags;
 }
 
 /* line 2388 */
-__attribute__((naked))
 void Dvar_ResetScriptInfo(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2388 */
-        "movl %esp, %ebp\n"
-        "movl $dvarPool, %eax\n"
-        /* { scope 1 */
-        ".Lf51750_00051758:\n"
-        "andw $0xfbff, 4(%eax)\n" /* line 2397 */
-        "movl 0x1c(%eax), %eax\n" /* line 2396 */
-        "testl %eax, %eax\n"
-        "jne .Lf51750_00051758\n"
-        /* } scope */
-        "popl %ebp\n" /* line 2402 */
-        "retl\n"
-    );
+    dvar_t *dvar = dvarPool;
+    while (dvar) {
+        *(unsigned short *)((byte *)dvar + 4) &= ~0x0400;
+        dvar = (dvar_t *)*(int *)((byte *)dvar + 0x1c);
+    }
 }
 
 /* line 260 */

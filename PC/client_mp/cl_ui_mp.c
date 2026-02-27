@@ -4,6 +4,12 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern qboolean CL_UpdateDirtyPings_f(int source);
+extern int CL_ServerStatus(char *serverAddress, char *serverStatus, int maxLen);
+extern int SND_PlayLocalSoundAlias(snd_alias_list_t *aliasList, int channel);
+extern int SND_PlayLocalSoundAliasByName(const char *aliasname, int channel);
+extern void Com_LoadSoundAliases(const char *zone, const char *spec, int flags);
+
 void GetClientState(uiClientState_t *state);
 void LAN_ResetPings(int source);
 int LAN_GetServerCount(int source);
@@ -647,27 +653,15 @@ int LAN_ServerIsDirty(int source, int n)
 }
 
 /* line 526 */
-__attribute__((naked))
 qboolean LAN_UpdateDirtyPings(int source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 526 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 529 */
-        "jmp CL_UpdateDirtyPings_f\n" /* line 528 */
-    );
+    return CL_UpdateDirtyPings_f(source);
 }
 
 /* line 538 */
-__attribute__((naked))
 int LAN_GetServerStatus(char *serverAddress, char *serverStatus, int maxLen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 538 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 541 */
-        "jmp CL_ServerStatus\n" /* line 540 */
-    );
+    return CL_ServerStatus(serverAddress, serverStatus, maxLen);
 }
 
 /* line 550 */
@@ -737,18 +731,9 @@ void Key_GetBindingBuf(int keynum, char *buf, int buflen)
 }
 
 /* line 582 */
-__attribute__((naked))
 int Key_GetCatcher(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 582 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee78, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %eax\n"
-        "popl %ebp\n" /* line 585 */
-        "retl\n"
-    );
+    return *(int *)(*(int *)(*(int *)0x195ee78) + 4);
 }
 
 /* line 593 */
@@ -921,54 +906,21 @@ qboolean GetClientname(int index, char *buf, int size)
 }
 
 /* line 851 */
-__attribute__((naked))
 int UI_PlayLocalSoundAlias(snd_alias_list_t *aliasList)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 851 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 4(%esp)\n" /* line 853 */
-        "movl 8(%ebp), %eax\n" /* aliasList */
-        "movl %eax, (%esp)\n"
-        "calll SND_PlayLocalSoundAlias\n"
-        "leave\n" /* line 854 */
-        "retl\n"
-    );
+    return SND_PlayLocalSoundAlias(aliasList, 0);
 }
 
 /* line 863 */
-__attribute__((naked))
 int UI_PlayLocalSoundAliasByName(const char *aliasname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 863 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 4(%esp)\n" /* line 865 */
-        "movl 8(%ebp), %eax\n" /* aliasname */
-        "movl %eax, (%esp)\n"
-        "calll SND_PlayLocalSoundAliasByName\n"
-        "leave\n" /* line 866 */
-        "retl\n"
-    );
+    return SND_PlayLocalSoundAliasByName(aliasname, 0);
 }
 
 /* line 884 */
-__attribute__((naked))
 qboolean UI_ClientIsInGame(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 884 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee8c, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpl $8, (%eax)\n"
-        "sete %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 887 */
-        "retl\n"
-    );
+    return *(int *)(*(int *)(*(int *)0x195ee8c)) == 8;
 }
 
 /* line 899 */
@@ -1051,20 +1003,9 @@ qboolean UI_checkKeyExec(int key)
 }
 
 /* line 979 */
-__attribute__((naked))
 void UI_LoadSoundAliases(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 979 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 8(%esp)\n" /* line 981 */
-        "movl $0x21f990, 4(%esp)\n" /* "all_mp" */
-        "movl $0x216cd8, (%esp)\n" /* "menu" */
-        "calll Com_LoadSoundAliases\n"
-        "leave\n" /* line 982 */
-        "retl\n"
-    );
+    Com_LoadSoundAliases("menu", "all_mp", 0);
 }
 
 /* line 301 */
