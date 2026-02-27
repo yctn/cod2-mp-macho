@@ -60,19 +60,11 @@ void MSG_WriteDeltaEntity(msg_t *msg, entityState_s *from, entityState_s *to, qb
 void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *to);
 
 /* line 781 */
-__attribute__((naked))
 void MSG_BeginReading(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 781 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* msg */
-        "movl $0, (%eax)\n" /* line 783 */
-        "movl $0, 0x10(%eax)\n" /* line 784 */
-        "movl $0, 0x14(%eax)\n" /* line 785 */
-        "popl %ebp\n" /* line 786 */
-        "retl\n"
-    );
+    *(int *)msg = 0;
+    *(int *)((byte *)msg + 0x10) = 0;
+    *(int *)((byte *)msg + 0x14) = 0;
 }
 
 /* line 804 */

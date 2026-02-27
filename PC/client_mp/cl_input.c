@@ -106,17 +106,9 @@ void CL_Input(void);
 void CL_SendCmd(void);
 
 /* line 102 */
-__attribute__((naked))
 void IN_MLookDown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 102 */
-        "movl %esp, %ebp\n"
-        "movl kb, %eax\n" /* line 104 */
-        "movb $1, 0x114(%eax)\n"
-        "popl %ebp\n" /* line 105 */
-        "retl\n"
-    );
+    *(byte *)((byte *)kb + 0x114) = 1;
 }
 
 /* line 654 */
@@ -303,56 +295,21 @@ void IN_UpDown(void)
 }
 
 /* line 300 */
-__attribute__((naked))
 void IN_UpUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 300 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 302 */
-        "addl $0xf0, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "movl kb, %eax\n" /* line 303 */
-        "addl $0xc8, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 304 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0xc8));
 }
 
 /* line 322 */
-__attribute__((naked))
 void IN_LeftDown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 322 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 324 */
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyDown\n"
-        "leave\n" /* line 325 */
-        "retl\n"
-    );
+    IN_KeyDown(kb);
 }
 
 /* line 328 */
-__attribute__((naked))
 void IN_LeftUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 328 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 330 */
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 331 */
-        "retl\n"
-    );
+    IN_KeyUp(kb);
 }
 
 /* line 334 */
@@ -373,20 +330,9 @@ void IN_RightDown(void)
 }
 
 /* line 340 */
-__attribute__((naked))
 void IN_RightUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 340 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 342 */
-        "addl $0x14, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 343 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x14));
 }
 
 /* line 346 */
@@ -407,20 +353,9 @@ void IN_ForwardDown(void)
 }
 
 /* line 352 */
-__attribute__((naked))
 void IN_ForwardUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 352 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 354 */
-        "addl $0x28, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 355 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x28));
 }
 
 /* line 358 */
@@ -441,20 +376,9 @@ void IN_BackDown(void)
 }
 
 /* line 364 */
-__attribute__((naked))
 void IN_BackUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 364 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 366 */
-        "addl $0x3c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 367 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x3c));
 }
 
 /* line 370 */
@@ -475,20 +399,9 @@ void IN_LookupDown(void)
 }
 
 /* line 376 */
-__attribute__((naked))
 void IN_LookupUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 376 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 378 */
-        "addl $0x50, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 379 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x50));
 }
 
 /* line 382 */
@@ -509,20 +422,9 @@ void IN_LookdownDown(void)
 }
 
 /* line 388 */
-__attribute__((naked))
 void IN_LookdownUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 388 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 390 */
-        "addl $0x64, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 391 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x64));
 }
 
 /* line 394 */
@@ -543,20 +445,9 @@ void IN_MoveleftDown(void)
 }
 
 /* line 400 */
-__attribute__((naked))
 void IN_MoveleftUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 400 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 402 */
-        "addl $0x78, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 403 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x78));
 }
 
 /* line 406 */
@@ -577,20 +468,9 @@ void IN_MoverightDown(void)
 }
 
 /* line 412 */
-__attribute__((naked))
 void IN_MoverightUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 412 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 414 */
-        "addl $0x8c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 415 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x8c));
 }
 
 /* line 418 */
@@ -611,20 +491,9 @@ void IN_SpeedDown(void)
 }
 
 /* line 424 */
-__attribute__((naked))
 void IN_SpeedUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 424 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 426 */
-        "addl $0xb4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 427 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0xb4));
 }
 
 /* line 430 */
@@ -645,20 +514,9 @@ void IN_StrafeDown(void)
 }
 
 /* line 436 */
-__attribute__((naked))
 void IN_StrafeUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 436 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 438 */
-        "addl $0xa0, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 439 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0xa0));
 }
 
 /* line 442 */
@@ -679,20 +537,9 @@ void IN_Attack_Down(void)
 }
 
 /* line 448 */
-__attribute__((naked))
 void IN_Attack_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 448 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 450 */
-        "addl $0x118, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 451 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x118));
 }
 
 /* line 454 */
@@ -713,20 +560,9 @@ void IN_Breath_Down(void)
 }
 
 /* line 460 */
-__attribute__((naked))
 void IN_Breath_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 460 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 462 */
-        "addl $0x12c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 463 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x12c));
 }
 
 /* line 466 */
@@ -751,24 +587,9 @@ void IN_MeleeBreath_Down(void)
 }
 
 /* line 473 */
-__attribute__((naked))
 void IN_MeleeBreath_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 473 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 475 */
-        "addl $0x17c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "movl kb, %eax\n" /* line 476 */
-        "addl $0x12c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 477 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x12c));
 }
 
 /* line 480 */
@@ -789,20 +610,9 @@ void IN_Frag_Down(void)
 }
 
 /* line 486 */
-__attribute__((naked))
 void IN_Frag_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 486 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 488 */
-        "addl $0x140, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 489 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x140));
 }
 
 /* line 492 */
@@ -823,20 +633,9 @@ void IN_Smoke_Down(void)
 }
 
 /* line 498 */
-__attribute__((naked))
 void IN_Smoke_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 498 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 500 */
-        "addl $0x154, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 501 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x154));
 }
 
 /* line 504 */
@@ -857,20 +656,9 @@ void IN_Binoculars_Down(void)
 }
 
 /* line 510 */
-__attribute__((naked))
 void IN_Binoculars_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 510 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 512 */
-        "addl $0x168, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 513 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x168));
 }
 
 /* line 516 */
@@ -895,24 +683,9 @@ void IN_BreathBinoculars_Down(void)
 }
 
 /* line 523 */
-__attribute__((naked))
 void IN_BreathBinoculars_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 523 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 525 */
-        "addl $0x12c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "movl kb, %eax\n" /* line 526 */
-        "addl $0x168, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 527 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x168));
 }
 
 /* line 530 */
@@ -933,20 +706,9 @@ void IN_Melee_Down(void)
 }
 
 /* line 536 */
-__attribute__((naked))
 void IN_Melee_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 536 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 538 */
-        "addl $0x17c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 539 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x17c));
 }
 
 /* line 542 */
@@ -967,20 +729,9 @@ void IN_Activate_Down(void)
 }
 
 /* line 548 */
-__attribute__((naked))
 void IN_Activate_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 548 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 550 */
-        "addl $0x190, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 551 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x190));
 }
 
 /* line 554 */
@@ -1001,20 +752,9 @@ void IN_Reload_Down(void)
 }
 
 /* line 560 */
-__attribute__((naked))
 void IN_Reload_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 560 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 562 */
-        "addl $0x1a4, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 563 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1a4));
 }
 
 /* line 566 */
@@ -1035,20 +775,9 @@ void IN_UseReload_Down(void)
 }
 
 /* line 572 */
-__attribute__((naked))
 void IN_UseReload_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 572 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 574 */
-        "addl $0x1b8, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 575 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1b8));
 }
 
 /* line 578 */
@@ -1069,20 +798,9 @@ void IN_LeanLeft_Down(void)
 }
 
 /* line 584 */
-__attribute__((naked))
 void IN_LeanLeft_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 584 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 586 */
-        "addl $0x1cc, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 587 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1cc));
 }
 
 /* line 590 */
@@ -1103,20 +821,9 @@ void IN_LeanRight_Down(void)
 }
 
 /* line 596 */
-__attribute__((naked))
 void IN_LeanRight_Up(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 596 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 598 */
-        "addl $0x1e0, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 599 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x1e0));
 }
 
 /* line 616 */
@@ -1185,34 +892,16 @@ void IN_Stance_Up(void)
 }
 
 /* line 660 */
-__attribute__((naked))
 void IN_ToggleADS(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 660 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee78, %eax\n" /* line 662 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 0xb(%eax)\n"
-        "sete 0xb(%eax)\n"
-        "popl %ebp\n" /* line 663 */
-        "retl\n"
-    );
+    byte *p = (byte *)(*(int *)(*(int *)0x195ee78)) + 0xb;
+    *p = (*p == 0) ? 1 : 0;
 }
 
 /* line 666 */
-__attribute__((naked))
 void IN_LeaveADS(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 666 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee78, %eax\n" /* line 668 */
-        "movl (%eax), %eax\n"
-        "movb $0, 0xb(%eax)\n"
-        "popl %ebp\n" /* line 669 */
-        "retl\n"
-    );
+    *(byte *)(*(int *)(*(int *)0x195ee78) + 0xb) = 0;
 }
 
 /* line 672 */
@@ -1404,72 +1093,27 @@ void IN_GoStandDown(void)
 }
 
 /* line 801 */
-__attribute__((naked))
 void IN_GoStandUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 801 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 803 */
-        "addl $0xf0, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "movl kb, %eax\n" /* line 804 */
-        "addl $0xc8, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 805 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0xc8));
 }
 
 /* line 837 */
-__attribute__((naked))
 void IN_TalkDown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 837 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 839 */
-        "addl $0x21c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyDown\n"
-        "leave\n" /* line 840 */
-        "retl\n"
-    );
+    IN_KeyDown((kbutton_t *)((byte *)kb + 0x21c));
 }
 
 /* line 842 */
-__attribute__((naked))
 void IN_TalkUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 842 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl kb, %eax\n" /* line 844 */
-        "addl $0x21c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll IN_KeyUp\n"
-        "leave\n" /* line 845 */
-        "retl\n"
-    );
+    IN_KeyUp((kbutton_t *)((byte *)kb + 0x21c));
 }
 
 /* line 847 */
-__attribute__((naked))
 Bool IsTalking(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 847 */
-        "movl %esp, %ebp\n"
-        "movl kb, %eax\n"
-        "movzbl 0x22c(%eax), %eax\n"
-        "popl %ebp\n" /* line 850 */
-        "retl\n"
-    );
+    return *(byte *)((byte *)kb + 0x22c);
 }
 
 /* line 1006 */

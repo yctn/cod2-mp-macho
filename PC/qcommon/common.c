@@ -8,6 +8,18 @@
  *   #include "PC/universal/com_math.h"
  */
 
+extern void BG_ShutdownWeaponDefFiles(void);
+extern void Com_ShutdownInternal(char *finalmsg);
+extern void UI_SetMap(const char *a, const char *b);
+extern void CL_StartHunkUsers(void);
+extern void Com_ShutdownDObj(void);
+extern void DObjShutdown(void);
+extern void XAnimShutdown(void);
+extern void CM_Shutdown(void);
+extern void SND_ShutdownChannels(void);
+extern void Hunk_Clear(void);
+extern void Scr_Shutdown(void);
+
 extern const dvar_t *com_statmon; /* 0x0 */
 extern const dvar_t *com_viewlog; /* 0x0 */
 extern const dvar_t *com_developer; /* 0x0 */
@@ -134,26 +146,13 @@ void Com_BeginRedirect(char *buffer, int buffersize, void (*flush)())
 }
 
 /* line 314 */
-__attribute__((naked))
 void Com_EndRedirect(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 314 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl rd_flush, %edx\n" /* line 316 */
-        "testl %edx, %edx\n"
-        "je .Lf2e94e_0002e968\n"
-        "movl rd_buffer, %eax\n" /* line 318 */
-        "movl %eax, (%esp)\n"
-        "calll *%edx\n"
-        ".Lf2e94e_0002e968:\n"
-        "movl $0, rd_buffer\n" /* line 321 */
-        "movl $0, rd_buffersize\n" /* line 322 */
-        "movl $0, rd_flush\n" /* line 323 */
-        "leave\n" /* line 324 */
-        "retl\n"
-    );
+    if (rd_flush)
+        rd_flush(rd_buffer);
+    rd_buffer = 0;
+    rd_buffersize = 0;
+    rd_flush = 0;
 }
 
 /* line 481 */
@@ -932,16 +931,9 @@ void Com_Error_f(void)
 }
 
 /* line 1891 */
-static __attribute__((naked))
-void Com_Crash_f(void)
+static void Com_Crash_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1891 */
-        "movl %esp, %ebp\n"
-        "movl $0x12345678, 0\n" /* line 1893 */
-        "popl %ebp\n" /* line 1894 */
-        "retl\n"
-    );
+    *(int *)0 = 0x12345678;
 }
 
 /* line 1985 */
@@ -1539,80 +1531,39 @@ float Com_GetTimescaleForSnd(void)
 }
 
 /* line 3779 */
-__attribute__((naked))
 void Com_Close(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3779 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "calll Com_ShutdownDObj\n" /* line 3781 */
-        "calll DObjShutdown\n" /* line 3782 */
-        "calll XAnimShutdown\n" /* line 3783 */
-        "calll CM_Shutdown\n" /* line 3785 */
-        "calll SND_ShutdownChannels\n" /* line 3786 */
-        "calll Hunk_Clear\n" /* line 3788 */
-        "leave\n" /* line 3805 */
-        "jmp Scr_Shutdown\n" /* line 3794 */
-    );
+    Com_ShutdownDObj();
+    DObjShutdown();
+    XAnimShutdown();
+    CM_Shutdown();
+    SND_ShutdownChannels();
+    Hunk_Clear();
+    Scr_Shutdown();
 }
 
 /* line 3821 */
-__attribute__((naked))
 void Field_Clear(field_t *edit)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3821 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* edit */
-        "leal 0x18(%ebx), %eax\n" /* line 3823 | edit */
-        "movl $0x100, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0, (%ebx)\n" /* line 3824 | edit */
-        "movl $0, 4(%ebx)\n" /* line 3825 | edit */
-        "movl $0x100, 8(%ebx)\n" /* line 3826 | edit */
-        "addl $0x14, %esp\n" /* line 3827 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    memset((byte *)edit + 0x18, 0, 0x100);
+    *(int *)edit = 0;
+    *(int *)((byte *)edit + 4) = 0;
+    *(int *)((byte *)edit + 8) = 0x100;
 }
 
 /* line 3953 */
-__attribute__((naked))
 void Com_SetWeaponInfoMemory(int iSource)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3953 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 3958 | iSource */
-        "movl %eax, iWeaponInfoSource\n"
-        "popl %ebp\n" /* line 3959 */
-        "retl\n"
-    );
+    iWeaponInfoSource = iSource;
 }
 
 /* line 3967 */
-__attribute__((naked))
 void Com_FreeWeaponInfoMemory(int iSource)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3967 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 3972 | iSource */
-        "cmpl %eax, iWeaponInfoSource\n"
-        "je .Lf2f8a8_0002f8b8\n"
-        "popl %ebp\n" /* line 3977 */
-        "retl\n"
-        ".Lf2f8a8_0002f8b8:\n"
-        "movl $0, iWeaponInfoSource\n" /* line 3974 */
-        "popl %ebp\n" /* line 3977 */
-        "jmp BG_ShutdownWeaponDefFiles\n" /* line 3976 */
-    );
+    if (iWeaponInfoSource != iSource)
+        return;
+    iWeaponInfoSource = 0;
+    BG_ShutdownWeaponDefFiles();
 }
 
 /* line 3985 */
@@ -3379,22 +3330,11 @@ void Com_Frame_Try_Block_Function(void)
 }
 
 /* line 558 */
-__attribute__((naked))
 void Com_Shutdown(char *finalmsg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 558 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 560 | finalmsg */
-        "movl %eax, (%esp)\n"
-        "calll Com_ShutdownInternal\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 3487 */
-        "movl $0x2157b8, (%esp)\n"
-        "calll UI_SetMap\n"
-        "leave\n" /* line 564 */
-        "jmp CL_StartHunkUsers\n" /* line 3490 */
-    );
+    Com_ShutdownInternal(finalmsg);
+    UI_SetMap("", "");
+    CL_StartHunkUsers();
 }
 
 /* line 3505 */
