@@ -2053,10 +2053,8 @@ void SND_Restore(MemoryFile *memFile)
 
         MemFile_ReadData(memFile, 2, &value);
         pAlias0 = SND_GetAliasWithOffset(name, (unsigned short)value);
-        if (!pAlias0) {
-            channel = -1;
+        if (!pAlias0)
             goto restore_streams;
-        }
 
         name = MemFile_ReadCString(memFile);
         if (*name != '\0') {
@@ -2098,20 +2096,8 @@ void SND_Restore(MemoryFile *memFile)
     }
 
 restore_streams:
-    /* Restore stream channels */
-    i = -1;
-    for (;;) {
-        SND_RestoreStreamChannel(i + 33, memFile);
-        i++;
-        if (i == 2) {
-            break;
-        }
-        if (i > 1)
-            continue;
-        i++;
-        if (i == 2)
-            break;
-    }
+    /* Restore stream channel 32 */
+    SND_RestoreStreamChannel(32, memFile);
 
     /* Restore additional stream channels */
     if (!SND_RestoreStreamChannel(-1, memFile))

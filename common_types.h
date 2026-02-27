@@ -14629,6 +14629,7 @@ struct entityState_s {
     float fTorsoHeight;
     float fTorsoPitch;
     float fWaistPitch;
+    int _pad;  /* padding to match binary sizeof(entityState_t) = 0xf0 */
 };
 
 struct archivedEntity_s {
