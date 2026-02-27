@@ -65,6 +65,10 @@ static const serverFilter_t serverFilters[1]; /* 0x3325e0 */
 static char menuBuf2[32768]; /* 0xec7120 */
 static int ui_serverFilterType; /* 0xec7104 */
 
+extern void Menus_CloseAll(uiInfo_t *info);
+extern qboolean Menus_AnyFullScreenVisible(uiInfo_t *info);
+extern void LAN_SaveServersToCache(void);
+
 void UI_AssetCache(void);
 void UI_DrawSides(float x, float y, float w, float h, int horzAlign, int vertAlign, float size, const vec_t *color);
 void UI_DrawTopBottom(float x, float y, float w, float h, int horzAlign, int vertAlign, float size, const vec_t *color);
@@ -536,20 +540,11 @@ void UI_UpdateTime(int realtime)
 }
 
 /* line 542 */
-__attribute__((naked))
 void UI_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 542 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl uiInfo, %eax\n" /* line 544 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "movl $0, 0x1684ae0\n" /* line 545 */
-        "leave\n" /* line 548 */
-        "jmp LAN_SaveServersToCache\n" /* line 547 */
-    );
+    Menus_CloseAll(uiInfo);
+    *(int *)0x1684ae0 = 0;
+    LAN_SaveServersToCache();
 }
 
 /* line 551 */
@@ -2852,17 +2847,9 @@ void UI_MouseEvent(int dx, int dy)
 }
 
 /* line 4364 */
-__attribute__((naked))
 uiMenuCommand_t UI_GetActiveMenu(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4364 */
-        "movl %esp, %ebp\n"
-        "movl uiInfo, %eax\n"
-        "movl 0x49c(%eax), %eax\n"
-        "popl %ebp\n" /* line 4367 */
-        "retl\n"
-    );
+    return *(uiMenuCommand_t *)((byte *)uiInfo + 0x49c);
 }
 
 /* line 4386 */
@@ -3082,19 +3069,9 @@ qboolean UI_SetActiveMenu(int menu)
 }
 
 /* line 4646 */
-__attribute__((naked))
 qboolean UI_IsFullscreen(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4646 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl uiInfo, %eax\n" /* line 4648 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_AnyFullScreenVisible\n"
-        "leave\n" /* line 4649 */
-        "retl\n"
-    );
+    return Menus_AnyFullScreenVisible(uiInfo);
 }
 
 /* line 4654 */
@@ -3219,33 +3196,15 @@ void UI_ReadableSize(char *buf)
 }
 
 /* line 4984 */
-__attribute__((naked))
 float UI_GetBlurRadius(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4984 */
-        "movl %esp, %ebp\n"
-        "movl uiInfo, %eax\n"
-        "flds 0x28(%eax)\n"
-        "popl %ebp\n" /* line 4988 */
-        "retl\n"
-    );
+    return *(float *)((byte *)uiInfo + 0x28);
 }
 
 /* line 5196 */
-__attribute__((naked))
 qboolean UI_AnyFullScreenMenuVisible(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5196 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl uiInfo, %eax\n" /* line 5198 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_AnyFullScreenVisible\n"
-        "leave\n" /* line 5199 */
-        "retl\n"
-    );
+    return Menus_AnyFullScreenVisible(uiInfo);
 }
 
 /* line 5232 */
@@ -3425,19 +3384,9 @@ const char * UI_ReplaceConversionString(const char *sourceString, const char *re
 }
 
 /* line 5293 */
-__attribute__((naked))
 void UI_CloseAll(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5293 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl uiInfo, %eax\n" /* line 5295 */
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseAll\n"
-        "leave\n" /* line 5296 */
-        "retl\n"
-    );
+    Menus_CloseAll(uiInfo);
 }
 
 /* line 5299 */
