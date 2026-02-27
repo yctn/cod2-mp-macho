@@ -3,7 +3,6 @@
 
 #include "common_types.h"
 #include "imports.h"
-#include <math.h>
 
 extern clipHandle_t CM_TempBoxModel(const vec_t *mins, const vec_t *maxs, int contents);
 extern void CM_UnlinkEntity(int svEntity);
@@ -62,54 +61,20 @@ int SV_SightTraceToEntity(const vec_t *start, const vec_t *mins, const vec_t *ma
 int SV_PointContents(const vec_t *p, int passEntityNum, int contentmask);
 
 /* line 24 */
-__attribute__((naked))
 clipHandle_t SV_ClipHandleForEntity(const gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 24 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* ent */
-        "cmpb $0, 0xf1(%edx)\n" /* line 26 */
-        "je .Lf1bbef8_001bbf12\n"
-        "movl 0x8c(%edx), %eax\n" /* line 29 */
-        "leave\n" /* line 34 */
-        "retl\n"
-        ".Lf1bbef8_001bbf12:\n"
-        "movl 0x11c(%edx), %eax\n" /* line 33 */
-        "movl %eax, 8(%esp)\n"
-        "leal 0x110(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0x104(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll CM_TempBoxModel\n"
-        "leave\n" /* line 34 */
-        "retl\n"
-    );
+    if (ent->r.bmodel)
+        return *(int *)((byte *)ent + 0x8C); /* brush model handle */
+    return CM_TempBoxModel(ent->r.mins, ent->r.maxs, ent->r.contents);
 }
 
 /* line 43 */
-__attribute__((naked))
 int SV_UnlinkEntity(gentity_t *gEnt)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 43 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* gEnt */
-        /* { scope 1 */
-        "movl %ebx, (%esp)\n" /* line 47 | gEnt */
-        "calll SV_SvEntityForGentity\n"
-        "movb $0, 0xf0(%ebx)\n" /* line 49 | gEnt */
-        "movl %eax, 8(%ebp)\n" /* line 52 | gEnt */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 54 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp CM_UnlinkEntity\n" /* line 52 */
-    );
+    int svEntityNum = SV_SvEntityForGentity(gEnt);
+    gEnt->r.linked = 0;
+    CM_UnlinkEntity(svEntityNum);
+    return 0;
 }
 
 /* line 817 */

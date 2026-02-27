@@ -160,15 +160,9 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
 }
 
 /* line 66 */
-__attribute__((naked))
 void Cmd_Score_f(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 66 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 69 */
-        "jmp DeathmatchScoreboardMessage\n" /* line 68 */
-    );
+    DeathmatchScoreboardMessage(ent);
 }
 
 /* line 77 */
@@ -457,21 +451,10 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir)
 }
 
 /* line 794 */
-__attribute__((naked))
 qboolean G_IsPlaying(gentity_t *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 794 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* ent */
-        "movl 0x158(%eax), %eax\n" /* ent */
-        "movl 0x26a8(%eax), %eax\n" /* ent */
-        "testl %eax, %eax\n" /* ent */
-        "sete %al\n" /* ent */
-        "movzbl %al, %eax\n" /* ent */
-        "popl %ebp\n" /* line 800 */
-        "retl\n"
-    );
+    /* Returns true if client's session state is SESS_STATE_PLAYING (0) */
+    return *(int *)((byte *)ent->client + 0x26A8) == SESS_STATE_PLAYING;
 }
 
 /* line 1059 */
