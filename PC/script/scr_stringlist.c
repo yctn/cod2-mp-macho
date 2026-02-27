@@ -61,16 +61,9 @@ unsigned int SL_ConvertFromString(const char *str)
 }
 
 /* line 299 */
-__attribute__((naked))
 unsigned int SL_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 299 */
-        "movl %esp, %ebp\n"
-        "movb $0, 0x3f6680\n" /* line 303 */
-        "popl %ebp\n" /* line 308 */
-        "retl\n"
-    );
+    *(byte *)0x3f6680 = 0;
 }
 
 /* line 151 */
@@ -130,19 +123,10 @@ unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 }
 
 /* line 810 */
-__attribute__((naked))
 unsigned int SL_AddRefToString(unsigned int stringValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 810 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* stringValue */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
-        "movl (%eax), %eax\n"
-        "addw $1, 2(%eax, %edx, 8)\n" /* line 832 */
-        "popl %ebp\n" /* line 840 */
-        "retl\n"
-    );
+    byte *base = *(byte **)*(void **)0x195ecc4;
+    *(unsigned short *)(base + stringValue * 8 + 2) += 1;
 }
 
 /* line 986 */

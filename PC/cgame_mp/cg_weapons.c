@@ -123,17 +123,9 @@ void CG_PlayADSAnim(void)
 }
 
 /* line 311 */
-__attribute__((naked))
 int CG_WeaponDObjHandle(int weaponNum)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 311 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* weaponNum */
-        "addl $0x400, %eax\n"
-        "popl %ebp\n" /* line 314 */
-        "retl\n"
-    );
+    return weaponNum + 0x400;
 }
 
 /* line 363 */
@@ -207,21 +199,13 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
 }
 
 /* line 1246 */
-__attribute__((naked))
 void CG_HoldBreathInit(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1246 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f584, %eax\n" /* line 1248 */
-        "movl (%eax), %eax\n"
-        "movl $0xffffffff, 0x2cd00(%eax)\n"
-        "movl $0, 0x2cd04(%eax)\n" /* line 1249 */
-        "movl $0, 0x2cd08(%eax)\n" /* line 1250 */
-        "movl $0, 0x2cd0c(%eax)\n" /* line 1251 */
-        "popl %ebp\n" /* line 1252 */
-        "retl\n"
-    );
+    byte *p = *(byte **)*(void **)0x195f584;
+    *(int *)(p + 0x2cd00) = -1;
+    *(int *)(p + 0x2cd04) = 0;
+    *(int *)(p + 0x2cd08) = 0;
+    *(int *)(p + 0x2cd0c) = 0;
 }
 
 /* line 2631 */

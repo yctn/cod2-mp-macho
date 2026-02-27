@@ -7,6 +7,8 @@
 extern struct scrMemTreePub_t scrMemTreePub; /* 0x0 */
 static struct scrMemTreeGlob_t scrMemTreeGlob; /* 0x3f6700 */
 
+extern byte * Z_VirtualAllocInternal(int size);
+
 unsigned int Scr_GetStringUsage(void);
 byte * MT_InitForceAlloc(void);
 static unsigned int MT_AddMemoryNode(int newNode);
@@ -22,33 +24,17 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes);
 unsigned int MT_FinishForceAlloc(byte *allocBits);
 
 /* line 218 */
-__attribute__((naked))
 unsigned int Scr_GetStringUsage(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 218 */
-        "movl %esp, %ebp\n"
-        "movl 0x476a28, %eax\n"
-        "popl %ebp\n" /* line 221 */
-        "retl\n"
-    );
+    return *(unsigned int *)0x476a28;
 }
 
 /* line 755 */
-__attribute__((naked))
 byte * MT_InitForceAlloc(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 755 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 0x476a24\n" /* line 757 */
-        "movl $0, 0x476a28\n" /* line 758 */
-        "movl $0x2000, (%esp)\n" /* line 765 */
-        "calll Z_VirtualAllocInternal\n"
-        "leave\n" /* line 766 */
-        "retl\n"
-    );
+    *(int *)0x476a24 = 0;
+    *(int *)0x476a28 = 0;
+    return Z_VirtualAllocInternal(0x2000);
 }
 
 /* line 287 */

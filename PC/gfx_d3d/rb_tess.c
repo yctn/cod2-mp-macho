@@ -30,15 +30,8 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType);
 void RB_TessTriangles(const surfaceType_t *surfType);
 
 /* line 61 */
-__attribute__((naked))
 void RB_TessBad(const surfaceType_t *surfType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 61 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 64 */
-        "retl\n"
-    );
 }
 
 /* line 1063 */
@@ -3075,18 +3068,9 @@ void RB_TessEntity(const GfxEntity *re)
 }
 
 /* line 1193 */
-__attribute__((naked))
 void RB_TessBackEndEntity(const surfaceType_t *surfType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1193 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f0c8, %eax\n" /* line 1200 */
-        "movl 0x440(%eax), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* surfType */
-        "popl %ebp\n" /* line 1201 */
-        "jmp RB_TessEntity\n" /* line 1200 */
-    );
+    RB_TessEntity((const GfxEntity *)*(void **)((byte *)*(void **)0x195f0c8 + 0x440));
 }
 
 /* line 75 */

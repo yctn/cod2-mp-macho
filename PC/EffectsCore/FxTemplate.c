@@ -15,6 +15,8 @@ extern const FxFlagEntry fxAttributeFlags[24]; /* 0x0 */
 extern const FxFlagEntry fxSpawnFlags[13]; /* 0x0 */
 extern Bool g_rendererExists; /* 0x0 */
 
+extern MaterialHandle Material_RegisterHandle(const char *name, int imageTrack, int materialType);
+
 void FxRange_SetRange(const FxRange * _this, float min, float max);
 void PrimitiveTemplate_Shutdown(const PrimitiveTemplate * _this);
 float FxRange_GetValPct(const FxRange * _this, float percent);
@@ -42,20 +44,10 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
 Bool PrimitiveTemplate_ParsePrimitive(const PrimitiveTemplate * _this, GPGroup *grp);
 
 /* line 2199 */
-__attribute__((naked))
 void FxRange_SetRange(const FxRange * _this, float min, float max)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2199 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* line 2201 | min */
-        "movl %edx, (%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 2202 | max */
-        "movl %edx, 4(%eax)\n"
-        "popl %ebp\n" /* line 2203 */
-        "retl\n"
-    );
+    *(float *)_this = min;
+    *(float *)((byte *)_this + 4) = max;
 }
 
 /* line 151 */
@@ -174,21 +166,9 @@ void FX_Print(const char *msg)
 }
 
 /* line 2151 */
-__attribute__((naked))
 MaterialHandle FX_RegisterMaterial(const char *material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2151 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $6, 8(%esp)\n" /* line 2156 */
-        "movl $3, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* material */
-        "movl %eax, (%esp)\n"
-        "calll Material_RegisterHandle\n"
-        "leave\n" /* line 2158 */
-        "retl\n"
-    );
+    return Material_RegisterHandle(material, 3, 6);
 }
 
 /* line 2161 */

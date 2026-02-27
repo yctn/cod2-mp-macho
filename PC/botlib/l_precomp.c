@@ -248,21 +248,10 @@ int PC_OperatorPriority(int op)
 }
 
 /* line 2312 */
-__attribute__((naked))
 int PC_Directive_line(source_t *source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2312 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x222124, 4(%esp)\n" /* line 2314 */
-        "movl 8(%ebp), %eax\n" /* source */
-        "movl %eax, (%esp)\n"
-        "calll SourceError\n"
-        "xorl %eax, %eax\n" /* line 2316 */
-        "leave\n"
-        "retl\n"
-    );
+    SourceError(source, "#line directive not supported");
+    return 0;
 }
 
 /* line 3150 */
@@ -3467,37 +3456,15 @@ int PC_Directive_if_def(source_t *source, int type)
 }
 
 /* line 1416 */
-__attribute__((naked))
 int PC_Directive_ifndef(source_t *source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1416 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x10, 4(%esp)\n" /* line 1418 */
-        "movl 8(%ebp), %eax\n" /* source */
-        "movl %eax, (%esp)\n"
-        "calll PC_Directive_if_def\n"
-        "leave\n" /* line 1419 */
-        "retl\n"
-    );
+    return PC_Directive_if_def(source, 0x10);
 }
 
 /* line 1404 */
-__attribute__((naked))
 int PC_Directive_ifdef(source_t *source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1404 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $8, 4(%esp)\n" /* line 1406 */
-        "movl 8(%ebp), %eax\n" /* source */
-        "movl %eax, (%esp)\n"
-        "calll PC_Directive_if_def\n"
-        "leave\n" /* line 1407 */
-        "retl\n"
-    );
+    return PC_Directive_if_def(source, 8);
 }
 
 /* line 982 */

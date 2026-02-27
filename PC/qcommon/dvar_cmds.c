@@ -511,17 +511,9 @@ Bool Dvar_ToggleInternal(void)
 }
 
 /* line 244 */
-__attribute__((naked))
 void Dvar_Toggle_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 244 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "calll Dvar_ToggleInternal\n" /* line 246 */
-        "leave\n" /* line 247 */
-        "retl\n"
-    );
+    Dvar_ToggleInternal();
 }
 
 /* line 258 */
@@ -1507,18 +1499,9 @@ void Com_DvarDump(print_msg_type_t type)
 }
 
 /* line 738 */
-__attribute__((naked))
 void Dvar_Dump_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 738 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 740 */
-        "calll Com_DvarDump\n"
-        "leave\n" /* line 741 */
-        "retl\n"
-    );
+    Com_DvarDump(0);
 }
 
 /* line 751 */
