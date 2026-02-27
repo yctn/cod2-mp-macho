@@ -11,6 +11,8 @@
 extern SkinBuffers g_skinBuffers[1]; /* 0x0 */
 extern GfxBackEndData *frontEndDataOut; /* 0x0 */
 static byte g_dummyBuf[1]; /* 0xc8596c */
+extern void R_ShutdownDebugEntry(void *entry);
+
 static GfxBackEndData s_backEndData[1]; /* 0xa3bc00 */
 static GfxCmdArray *s_cmdList; /* 0x7f1e00 */
 static struct GfxDebugFrameGlob s_debugFrameGlob; /* 0x7f1e80 */
@@ -57,18 +59,9 @@ void R_AddCmdSaveScreen(void);
 void R_AddCmdBlendSavedScreen(int fadeMsec);
 
 /* line 158 */
-__attribute__((naked))
 void R_ShutdownBackendData(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 158 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0xc85918, (%esp)\n" /* line 163 */
-        "calll R_ShutdownDebugEntry\n"
-        "leave\n" /* line 164 */
-        "retl\n"
-    );
+    R_ShutdownDebugEntry((void *)0xc85918);
 }
 
 /* line 253 */
@@ -133,15 +126,8 @@ void R_AddFrontendCmd(int type, void *data)
 }
 
 /* line 626 */
-__attribute__((naked))
 void R_SyncRenderThread(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 626 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 649 */
-        "retl\n"
-    );
 }
 
 /* line 1140 */

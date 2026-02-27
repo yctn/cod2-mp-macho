@@ -10,6 +10,8 @@
 
 extern serverStatus_t cl_serverStatusList[16]; /* 0x0 */
 static Bool s_playerMute[64]; /* 0xf00680 */
+extern int NET_CompareAdrSigned(const int *a, const int *b);
+
 static int rconGlob; /* 0xf006c0 */
 
 static int CL_CompareAdrSigned(const int *a, const int *b);
@@ -33,15 +35,9 @@ int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen);
 int CL_ServerStatus_f(void);
 
 /* line 89 */
-static __attribute__((naked))
-int CL_CompareAdrSigned(const int *a, const int *b)
+static int CL_CompareAdrSigned(const int *a, const int *b)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 89 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 92 */
-        "jmp NET_CompareAdrSigned\n" /* line 91 */
-    );
+    return NET_CompareAdrSigned(a, b);
 }
 
 /* line 156 */
@@ -795,17 +791,10 @@ int CL_SortGlobalServers(void)
 }
 
 /* line 677 */
-__attribute__((naked))
 int CL_RconInit(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 677 */
-        "movl %esp, %ebp\n"
-        "movb $0, rconGlob\n" /* line 679 */
-        "movl $1, 0xf006d8\n" /* line 680 */
-        "popl %ebp\n" /* line 681 */
-        "retl\n"
-    );
+    *(byte *)&rconGlob = 0;
+    *(int *)0xf006d8 = 1;
 }
 
 /* line 750 */
@@ -1333,17 +1322,9 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
 }
 
 /* line 1328 */
-__attribute__((naked))
 int CL_ResetPlayerMuting(int clientIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1328 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1331 | clientIndex */
-        "movb $0, s_playerMute(%eax)\n"
-        "popl %ebp\n" /* line 1332 */
-        "retl\n"
-    );
+    s_playerMute[clientIndex] = 0;
 }
 
 /* line 1335 */
@@ -1381,34 +1362,15 @@ int CL_MutePlayer(int clientIndex)
 }
 
 /* line 1346 */
-__attribute__((naked))
 Bool CL_IsPlayerMuted(int clientIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1346 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* clientIndex */
-        "movzbl s_playerMute(%eax), %eax\n" /* clientIndex */
-        "popl %ebp\n" /* line 1350 */
-        "retl\n"
-    );
+    return s_playerMute[clientIndex];
 }
 
 /* line 1353 */
-__attribute__((naked))
 int CL_ClearMutedList(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1353 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x40, 8(%esp)\n" /* line 1355 */
-        "movl $0, 4(%esp)\n"
-        "movl $s_playerMute, (%esp)\n"
-        "calll memset\n"
-        "leave\n" /* line 1356 */
-        "retl\n"
-    );
+    memset(s_playerMute, 0, 0x40);
 }
 
 /* line 622 */

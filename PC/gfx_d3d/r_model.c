@@ -23,6 +23,8 @@ static int warnCount_00c85b0c; /* 0xc85b0c */
 static int warnCount_00c85b10; /* 0xc85b10 */
 static int warnCount_00c85b10; /* 0xc85b10 */
 static int warnCount_00c85b10; /* 0xc85b10 */
+extern void * Hunk_AllocInternal(int size);
+extern void DB_EnumXAssets(int type, void (*func)(XAssetHeader, void *), void *data, qboolean overrides);
 static const int boxVerts[24][3]; /* 0x2f24c0 */
 
 static void * Hunk_AllocXModelPrecache(int size);
@@ -60,27 +62,15 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context);
 void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd);
 
 /* line 75 */
-static __attribute__((naked))
-void * Hunk_AllocXModelPrecache(int size)
+static void * Hunk_AllocXModelPrecache(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 75 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 78 */
-        "jmp Hunk_AllocInternal\n" /* line 77 */
-    );
+    return Hunk_AllocInternal(size);
 }
 
 /* line 81 */
-static __attribute__((naked))
-void * Hunk_AllocXModelPrecacheColl(int size)
+static void * Hunk_AllocXModelPrecacheColl(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 81 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 84 */
-        "jmp Hunk_AllocInternal\n" /* line 83 */
-    );
+    return Hunk_AllocInternal(size);
 }
 
 /* line 188 */
@@ -122,52 +112,22 @@ struct XModel * R_RegisterModel(const char *name)
 }
 
 /* line 200 */
-__attribute__((naked))
 GfxBrushModel * R_RegisterInlineModel(int modelIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 200 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* modelIndex */
-        "movl 0x195eebc, %edx\n"
-        "movl 0x109c(%edx), %edx\n"
-        "shll $5, %eax\n" /* modelIndex */
-        "addl 0x138(%edx), %eax\n" /* modelIndex */
-        "popl %ebp\n" /* line 207 */
-        "retl\n"
-    );
+    int *world = *(int **)(*(int *)0x195eebc + 0x109c);
+    return (GfxBrushModel *)(*(int *)((byte *)world + 0x138) + modelIndex * 32);
 }
 
 /* line 218 */
-__attribute__((naked))
 void R_SetIgnorePrecacheErrors(qboolean ignore)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 218 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 220 | ignore */
-        "testl %eax, %eax\n"
-        "movl 0x195eec8, %eax\n"
-        "setne 2(%eax)\n"
-        "popl %ebp\n" /* line 221 */
-        "retl\n"
-    );
+    *(byte *)(*(int *)0x195eec8 + 2) = (ignore != 0);
 }
 
 /* line 224 */
-__attribute__((naked))
 qboolean R_GetIgnorePrecacheErrors(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 224 */
-        "movl %esp, %ebp\n"
-        "movl 0x195eec8, %eax\n"
-        "cmpb $0, 2(%eax)\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 227 */
-        "retl\n"
-    );
+    return *(byte *)(*(int *)0x195eec8 + 2) != 0;
 }
 
 /* line 587 */
@@ -365,33 +325,15 @@ void R_OptimizeAllModels(void)
 }
 
 /* line 2925 */
-__attribute__((naked))
 void R_ReleaseAllModels(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2925 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, 0xc(%esp)\n" /* line 2927 */
-        "movl $0, 8(%esp)\n"
-        "movl $R_ReleaseModel, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll DB_EnumXAssets\n"
-        "leave\n" /* line 2928 */
-        "retl\n"
-    );
+    DB_EnumXAssets(1, R_ReleaseModel, 0, 1);
 }
 
 /* line 2931 */
-__attribute__((naked))
 void * Model_Alloc(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2931 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 2934 */
-        "jmp Hunk_AllocInternal\n" /* line 2933 */
-    );
+    return Hunk_AllocInternal(size);
 }
 
 /* line 2941 */
@@ -698,21 +640,9 @@ void R_LockSkinnedCache(GfxLockType lockType)
 }
 
 /* line 2911 */
-__attribute__((naked))
 void R_ShutdownModels(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2911 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, 0xc(%esp)\n" /* line 2927 */
-        "movl $0, 8(%esp)\n"
-        "movl $R_ReleaseModel, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll DB_EnumXAssets\n"
-        "leave\n" /* line 2914 */
-        "retl\n"
-    );
+    DB_EnumXAssets(1, R_ReleaseModel, 0, 1);
 }
 
 /* line 211 */
@@ -2710,15 +2640,9 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
 }
 
 /* line 2651 */
-__attribute__((naked))
 void R_SkinStaticModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2651 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 2655 */
-        "jmp R_SkinXModel\n" /* line 2654 */
-    );
+    R_SkinXModel(sceneEnt, ent, smodelIndex);
 }
 
 /* line 2639 */

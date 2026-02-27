@@ -4,6 +4,9 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern void * Hunk_AllocateTempMemoryInternal(int size, const char *name);
+extern void * Hunk_AllocInternal(int size);
+
 extern struct g_sa_type g_sa; /* 0x0 */
 
 float Com_GetVolumeFalloffCurveValue(SndCurve *volumeFalloffCurve, float fraction);
@@ -49,33 +52,15 @@ float Com_GetVolumeFalloffCurveValue(SndCurve *volumeFalloffCurve, float fractio
 }
 
 /* line 874 */
-__attribute__((naked))
 const char * Com_GetSoundFileName(const snd_alias_t *pAlias)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 874 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* pAlias */
-        "movl 0xc(%eax), %eax\n" /* pAlias */
-        "movl (%eax), %eax\n" /* pAlias */
-        "popl %ebp\n" /* line 877 */
-        "retl\n"
-    );
+    return *(const char **)(*(int *)((byte *)pAlias + 0xc));
 }
 
 /* line 887 */
-__attribute__((naked))
 J_COLOR_SPACE * Com_GetSoundFileMem(const snd_alias_t *pAlias)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 887 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* pAlias */
-        "movl 0xc(%eax), %eax\n" /* pAlias */
-        "movl 4(%eax), %eax\n" /* pAlias */
-        "popl %ebp\n" /* line 890 */
-        "retl\n"
-    );
+    return *(J_COLOR_SPACE **)(*(int *)((byte *)pAlias + 0xc) + 4);
 }
 
 /* line 979 */
@@ -384,40 +369,21 @@ SndCurve * Com_RegisterSoundAliasVolumeFalloffCurve(const char *filename, const 
 }
 
 /* line 1322 */
-__attribute__((naked))
 SndCurve * Com_GetDefaultSoundAliasVolumeFalloffCurve(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1322 */
-        "movl %esp, %ebp\n"
-        "movl $0x114f534, %eax\n" /* line 1325 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return (SndCurve *)0x114f534;
 }
 
 /* line 1346 */
-__attribute__((naked))
 J_COLOR_SPACE * Com_AllocateTempSoundMemory(int size, const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1346 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1349 */
-        "jmp Hunk_AllocateTempMemoryInternal\n" /* line 1348 */
-    );
+    return (J_COLOR_SPACE *)Hunk_AllocateTempMemoryInternal(size, name);
 }
 
 /* line 1357 */
-__attribute__((naked))
 J_COLOR_SPACE * Com_AllocSoundMemory(int size, const char *name, int type)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1357 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1360 */
-        "jmp Hunk_AllocInternal\n" /* line 1359 */
-    );
+    return (J_COLOR_SPACE *)Hunk_AllocInternal(size);
 }
 
 /* line 902 */

@@ -9,6 +9,10 @@
  *   #include "PC/universal/com_math.h"
  */
 
+extern struct XModel * CL_RegisterModel(const char *name);
+extern void * Hunk_AllocAlignInternal(int size, int alignment);
+extern void * Hunk_AllocInternal(int size);
+
 extern const centity_t * cg_entities; /* 0x0 */
 extern const weaponInfo_t * cg_weapons; /* 0x0 */
 extern const itemInfo_t * cg_items; /* 0x0 */
@@ -739,29 +743,15 @@ void CG_StartAmbient(void)
 }
 
 /* line 1120 */
-__attribute__((naked))
 Bool CG_PlaySoundOnFirstClient(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1120 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n" /* line 1147 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 1;
 }
 
 /* line 1150 */
-__attribute__((naked))
 Bool CG_PlaySoundOnCurrentLocalClient(int entitynum, const vec_t *origin, const char *aliasname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1150 */
-        "movl %esp, %ebp\n"
-        "movl $1, %eax\n" /* line 1199 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    return 1;
 }
 
 /* line 1290 */
@@ -1056,15 +1046,9 @@ void CG_InitVote(void)
 }
 
 /* line 1578 */
-static __attribute__((naked))
-struct XModel * CG_GetXModel(const char *modelName)
+static struct XModel * CG_GetXModel(const char *modelName)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1578 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1581 */
-        "jmp CL_RegisterModel\n" /* line 1580 */
-    );
+    return CL_RegisterModel(modelName);
 }
 
 /* line 1590 */
@@ -1262,32 +1246,15 @@ void CG_Shutdown(void)
 }
 
 /* line 2022 */
-__attribute__((naked))
 void * Hunk_AllocXAnimPrecache(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2022 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $4, 4(%esp)\n" /* line 2024 */
-        "movl 8(%ebp), %eax\n" /* size */
-        "movl %eax, (%esp)\n"
-        "calll Hunk_AllocAlignInternal\n"
-        "leave\n" /* line 2025 */
-        "retl\n"
-    );
+    return Hunk_AllocAlignInternal(size, 4);
 }
 
 /* line 2035 */
-__attribute__((naked))
 void * Hunk_AllocXAnimClient(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2035 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 2038 */
-        "jmp Hunk_AllocInternal\n" /* line 2037 */
-    );
+    return Hunk_AllocInternal(size);
 }
 
 /* line 1271 */
