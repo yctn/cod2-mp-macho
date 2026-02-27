@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -11,6 +12,10 @@
  */
 
 extern qboolean itemRegistered[256]; /* 0x0 */
+
+/* Entity accessor macros */
+#define ENT_CLIENTNUM(e)  (*(int *)((byte *)(e) + 0x90))
+#define ENT_ACTIVE(e)     (*(byte *)((byte *)(e) + 0x162))
 
 void DroppedItemClearOwner(gentity_t *pSelf);
 void G_GetItemClassname(const gitem_t *item, scr_string_t *out);
@@ -32,17 +37,9 @@ void Touch_Item_Auto(gentity_t *ent, gentity_t *other, qboolean bTouched);
 void G_SpawnItem(gentity_t *ent, const gitem_t *item);
 
 /* line 711 */
-__attribute__((naked))
 void DroppedItemClearOwner(gentity_t *pSelf)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 711 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 714 | pSelf */
-        "movl $0x3fe, 0x90(%eax)\n"
-        "popl %ebp\n" /* line 715 */
-        "retl\n"
-    );
+    ENT_CLIENTNUM(pSelf) = 0x3FE; /* ENTITYNUM_NONE - 1 */
 }
 
 /* line 724 */
@@ -113,21 +110,10 @@ void G_GetItemClassname(const gitem_t *item, scr_string_t *out)
 }
 
 /* line 1109 */
-__attribute__((naked))
 void ClearRegisteredItems(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1109 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x400, 8(%esp)\n" /* line 1111 */
-        "movl $0, 4(%esp)\n"
-        "movl $itemRegistered, (%esp)\n"
-        "calll memset\n"
-        "movl $1, itemRegistered\n" /* line 1112 */
-        "leave\n" /* line 1113 */
-        "retl\n"
-    );
+    memset(itemRegistered, 0, sizeof(itemRegistered));
+    itemRegistered[0] = 1;
 }
 
 /* line 1124 */
@@ -439,17 +425,9 @@ void G_RegisterWeapon(int weapIndex)
 }
 
 /* line 1294 */
-__attribute__((naked))
 qboolean IsItemRegistered(int iItemIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1294 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* iItemIndex */
-        "movl itemRegistered(, %eax, 4), %eax\n" /* iItemIndex */
-        "popl %ebp\n" /* line 1298 */
-        "retl\n"
-    );
+    return itemRegistered[iItemIndex];
 }
 
 /* line 1021 */
@@ -3430,18 +3408,10 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
 }
 
 /* line 516 */
-__attribute__((naked))
 void Touch_Item_Auto(gentity_t *ent, gentity_t *other, qboolean bTouched)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 516 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* ent */
-        "movb $1, 0x162(%eax)\n" /* line 518 */
-        "movl %eax, 8(%ebp)\n" /* line 519 | ent */
-        "popl %ebp\n" /* line 520 */
-        "jmp Touch_Item\n" /* line 519 */
-    );
+    ENT_ACTIVE(ent) = 1;
+    Touch_Item(ent, other, bTouched);
 }
 
 /* line 1311 */
