@@ -12,6 +12,8 @@
  *   #include "PC/xanim/xanim_public.h"
  */
 
+extern int XModelGetLodForDist(XModel *model, float dist);
+
 static unsigned int g_empty; /* 0x4e9580 */
 
 void DObjInit(void);
@@ -106,33 +108,15 @@ void DObjShutdown(void)
 }
 
 /* line 52 */
-__attribute__((naked))
 void DObjAbort(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 52 */
-        "movl %esp, %ebp\n"
-        "movl $0, g_empty\n" /* line 54 */
-        "popl %ebp\n" /* line 55 */
-        "retl\n"
-    );
+    g_empty = 0;
 }
 
 /* line 123 */
-__attribute__((naked))
 Bool DObjIgnoreCollision(const DObj *obj, int modelIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 123 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %ecx\n" /* modelIndex */
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movzbl 0x1a(%eax), %eax\n" /* obj */
-        "sarl %cl, %eax\n" /* modelIndex, obj */
-        "andl $1, %eax\n" /* obj */
-        "popl %ebp\n" /* line 126 */
-        "retl\n"
-    );
+    return (*(unsigned char *)((byte *)obj + 0x1a) >> modelIndex) & 1;
 }
 
 /* line 580 */
@@ -237,19 +221,9 @@ void DObjFree(DObj_s *obj)
 }
 
 /* line 1223 */
-__attribute__((naked))
 int DObjGetAllocSkelSize(const DObj *obj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1223 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movzbl 0x19(%eax), %eax\n" /* obj */
-        "shll $5, %eax\n" /* obj */
-        "addl $0x30, %eax\n" /* obj */
-        "popl %ebp\n" /* line 1228 */
-        "retl\n"
-    );
+    return (*(unsigned char *)((byte *)obj + 0x19) << 5) + 0x30;
 }
 
 /* line 1236 */
@@ -277,18 +251,10 @@ qboolean DObjSkelExists(const DObj *obj, int timeStamp)
 }
 
 /* line 1261 */
-__attribute__((naked))
 void DObjSkelClear(const DObj *obj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1261 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl $0, 8(%eax)\n" /* line 1263 */
-        "movl $0, 4(%eax)\n" /* line 1264 */
-        "popl %ebp\n" /* line 1265 */
-        "retl\n"
-    );
+    *(int *)((byte *)obj + 8) = 0;
+    *(int *)((byte *)obj + 4) = 0;
 }
 
 /* line 1273 */
@@ -318,65 +284,30 @@ void DObjCreateSkel(const DObj *obj, char *buf, int timeStamp)
 }
 
 /* line 1301 */
-__attribute__((naked))
 int DObjGetNumModels(const DObj *obj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1301 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movzbl 0x18(%eax), %eax\n" /* obj */
-        "popl %ebp\n" /* line 1304 */
-        "retl\n"
-    );
+    return *(unsigned char *)((byte *)obj + 0x18);
 }
 
 /* line 1312 */
-__attribute__((naked))
 XModel * DObjGetModel(const DObj *obj, int modelIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1312 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* modelIndex */
-        "movl 8(%ebp), %edx\n" /* obj */
-        "movl 0x1c(%edx, %eax, 4), %eax\n" /* modelIndex */
-        "popl %ebp\n" /* line 1315 */
-        "retl\n"
-    );
+    return *(XModel **)((byte *)obj + 0x1c + modelIndex * 4);
 }
 
 /* line 1337 */
-__attribute__((naked))
 DObjAnimMat * DObjGetRotTransArray(const DObj *obj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1337 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1341 | obj */
-        "movl 4(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf7473c_0007474c\n"
-        "addl $0x30, %eax\n"
-        ".Lf7473c_0007474c:\n"
-        "popl %ebp\n" /* line 1342 */
-        "retl\n"
-    );
+    int *skel = *(int **)((byte *)obj + 4);
+    if (skel)
+        return (DObjAnimMat *)((byte *)skel + 0x30);
+    return 0;
 }
 
 /* line 1380 */
-__attribute__((naked))
 int DObjGetMatOffset(const DObj *obj, int modelIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1380 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* modelIndex */
-        "movl 8(%ebp), %edx\n" /* obj */
-        "movzbl 0x44(%eax, %edx), %eax\n" /* modelIndex */
-        "popl %ebp\n" /* line 1385 */
-        "retl\n"
-    );
+    return *(unsigned char *)((byte *)obj + 0x44 + modelIndex);
 }
 
 /* line 1393 */
@@ -613,17 +544,9 @@ int DObjGetBoneIndex(const DObj *obj, unsigned int boneName)
 }
 
 /* line 1696 */
-__attribute__((naked))
 XAnimTree * DObjGetTree(const DObj *obj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1696 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl (%eax), %eax\n" /* obj */
-        "popl %ebp\n" /* line 1700 */
-        "retl\n"
-    );
+    return *(XAnimTree **)obj;
 }
 
 /* line 1709 */
@@ -679,35 +602,15 @@ int DObjBad(const DObj *obj)
 }
 
 /* line 1728 */
-__attribute__((naked))
 int DObjNumBones(const DObj *obj)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1728 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movzbl 0x19(%eax), %eax\n" /* obj */
-        "popl %ebp\n" /* line 1731 */
-        "retl\n"
-    );
+    return *(unsigned char *)((byte *)obj + 0x19);
 }
 
 /* line 2125 */
-__attribute__((naked))
 int DObjGetLodForDist(const DObj *obj, int modelIndex, float dist)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2125 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* modelIndex */
-        "movl 0x10(%ebp), %eax\n" /* line 2127 | dist */
-        "movl %eax, 0xc(%ebp)\n" /* modelIndex */
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl 0x1c(%eax, %edx, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* obj */
-        "popl %ebp\n" /* line 2128 */
-        "jmp XModelGetLodForDist\n" /* line 2127 */
-    );
+    return XModelGetLodForDist(*(XModel **)((byte *)obj + 0x1c + modelIndex * 4), dist);
 }
 
 /* line 2131 */

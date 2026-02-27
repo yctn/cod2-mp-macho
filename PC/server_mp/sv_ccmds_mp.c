@@ -4,6 +4,16 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern const char * FS_GetMapBaseName(const char *mapname);
+extern void Com_Printf(const char *fmt, ...);
+extern char * Dvar_InfoString(int bit);
+extern void Info_Print(const char *s);
+extern void Com_Shutdown(const char *finalmsg);
+extern void SV_MasterGameCompleteStatus(void);
+extern void Scr_DumpScriptThreads(void);
+extern void MT_DumpTree(void);
+extern void Cmd_AddCommand(const char *cmd_name, void (*function)(void));
+
 static qboolean initialized; /* 0xf00780 */
 
 static client_t * SV_GetPlayerByName(void);
@@ -237,15 +247,9 @@ client_t * SV_GetPlayerByNum(void)
 }
 
 /* line 136 */
-__attribute__((naked))
 const char * SV_GetMapBaseName(const char *mapname)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 136 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 139 */
-        "jmp FS_GetMapBaseName\n" /* line 138 */
-    );
+    return FS_GetMapBaseName(mapname);
 }
 
 /* line 216 */
@@ -1066,55 +1070,23 @@ short int SV_ConTell_f(void)
 }
 
 /* line 848 */
-__attribute__((naked))
 short int SV_Heartbeat_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 848 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f284, %eax\n" /* line 850 */
-        "movl $0x80000000, 0x54(%eax)\n"
-        "popl %ebp\n" /* line 851 */
-        "retl\n"
-    );
+    *(int *)(*(int *)0x195f284 + 0x54) = (int)0x80000000;
 }
 
 /* line 861 */
-static __attribute__((naked))
-short int SV_Serverinfo_f(void)
+static short int SV_Serverinfo_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 861 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x2ac690, (%esp)\n" /* line 863 */
-        "calll Com_Printf\n"
-        "movl $0x404, (%esp)\n" /* line 864 */
-        "calll Dvar_InfoString\n"
-        "movl %eax, (%esp)\n"
-        "calll Info_Print\n"
-        "leave\n" /* line 865 */
-        "retl\n"
-    );
+    Com_Printf("Server info settings:\n");
+    Info_Print(Dvar_InfoString(0x404));
 }
 
 /* line 875 */
-static __attribute__((naked))
-short int SV_Systeminfo_f(void)
+static short int SV_Systeminfo_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 875 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x2ac6a8, (%esp)\n" /* line 877 */
-        "calll Com_Printf\n"
-        "movl $8, (%esp)\n" /* line 878 */
-        "calll Dvar_InfoString\n"
-        "movl %eax, (%esp)\n"
-        "calll Info_Print\n"
-        "leave\n" /* line 879 */
-        "retl\n"
-    );
+    Com_Printf("System info settings:\n");
+    Info_Print(Dvar_InfoString(8));
 }
 
 /* line 889 */
@@ -1173,85 +1145,39 @@ short int SV_DumpUser_f(void)
 }
 
 /* line 923 */
-static __attribute__((naked))
-short int SV_KillServer_f(void)
+static short int SV_KillServer_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 923 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x2ac6f0, (%esp)\n" /* line 925 */
-        "calll Com_Shutdown\n"
-        "leave\n" /* line 926 */
-        "retl\n"
-    );
+    Com_Shutdown("EXE_SERVERKILLED");
 }
 
 /* line 936 */
-__attribute__((naked))
 short int SV_GameCompleteStatus_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 936 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 939 */
-        "jmp SV_MasterGameCompleteStatus\n" /* line 938 */
-    );
+    SV_MasterGameCompleteStatus();
 }
 
 /* line 947 */
-static __attribute__((naked))
-short int SV_ScriptUsage_f(void)
+static short int SV_ScriptUsage_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 947 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 950 */
-        "jmp Scr_DumpScriptThreads\n" /* line 949 */
-    );
+    Scr_DumpScriptThreads();
 }
 
 /* line 1028 */
-static __attribute__((naked))
-short int SV_StringUsage_f(void)
+static short int SV_StringUsage_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1028 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1031 */
-        "jmp MT_DumpTree\n" /* line 1030 */
-    );
+    MT_DumpTree();
 }
 
 /* line 1111 */
-__attribute__((naked))
 short int SV_AddDedicatedCommands(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1111 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $SV_ConSay_f, 4(%esp)\n" /* line 1113 */
-        "movl $0x2ac704, (%esp)\n" /* "say" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_ConTell_f, 4(%esp)\n" /* line 1114 */
-        "movl $0x2ac708, (%esp)\n" /* "tell" */
-        "calll Cmd_AddCommand\n"
-        "leave\n" /* line 1115 */
-        "retl\n"
-    );
+    Cmd_AddCommand("say", (void (*)(void))SV_ConSay_f);
+    Cmd_AddCommand("tell", (void (*)(void))SV_ConTell_f);
 }
 
 /* line 1101 */
-__attribute__((naked))
 short int SV_RemoveOperatorCommands(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1101 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1103 */
-        "retl\n"
-    );
 }
 
 /* line 151 */

@@ -9,6 +9,17 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+extern void FS_FCloseFile(int f);
+extern int AIL_digital_CPU_percent(void *dig);
+extern int AIL_sample_playback_rate(void *S);
+extern void AIL_set_sample_playback_rate(void *S, int rate);
+extern int AIL_3D_sample_playback_rate(void *S);
+extern void AIL_set_3D_sample_playback_rate(void *S, int rate);
+extern int AIL_stream_playback_rate(void *stream);
+extern void AIL_set_stream_playback_rate(void *stream, int rate);
+extern float AIL_3D_sample_volume(void *S);
+extern int AIL_3D_sample_length(void *S);
+
 extern const dvar_t *mss_3d_provider; /* 0x0 */
 extern const dvar_t *mss_q3fs; /* 0x0 */
 static struct MssLocal milesGlob; /* 0x4a3b80 */
@@ -93,15 +104,9 @@ long unsigned int MSS_FileOpenCallback(const char *pszFilename, long unsigned in
 }
 
 /* line 125 */
-static __attribute__((naked))
-void MSS_FileCloseCallback(long unsigned int hFileHandle)
+static void MSS_FileCloseCallback(long unsigned int hFileHandle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 125 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 128 */
-        "jmp FS_FCloseFile\n" /* line 127 */
-    );
+    FS_FCloseFile((int)hFileHandle);
 }
 
 /* line 131 */
@@ -211,19 +216,9 @@ void SND_ShutdownDriver(void)
 }
 
 /* line 479 */
-__attribute__((naked))
 int SND_GetDriverCPUPercentage(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 479 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl milesGlob, %eax\n" /* line 481 */
-        "movl %eax, (%esp)\n"
-        "calll AIL_digital_CPU_percent\n"
-        "leave\n" /* line 482 */
-        "retl\n"
-    );
+    return AIL_digital_CPU_percent(*(void **)&milesGlob);
 }
 
 /* line 549 */
@@ -667,18 +662,9 @@ float SND_Get2DChannelVolume(int index)
 }
 
 /* line 1033 */
-__attribute__((naked))
 float SND_Get3DChannelVolume(int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1033 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1037 | index */
-        "movl 0x4a3ba8(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1042 */
-        "jmp AIL_3D_sample_volume\n" /* line 1037 */
-    );
+    return AIL_3D_sample_volume(*(void **)(0x4a3ba8 + index * 4));
 }
 
 /* line 1057 */
@@ -732,93 +718,39 @@ float SND_GetStreamChannelVolume(int index)
 }
 
 /* line 1098 */
-__attribute__((naked))
 int SND_Get2DChannelPlaybackRate(int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1098 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1101 | index */
-        "movl 0x4a3ad4(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1102 */
-        "jmp AIL_sample_playback_rate\n" /* line 1101 */
-    );
+    return AIL_sample_playback_rate(*(void **)(0x4a3ad4 + index * 4));
 }
 
 /* line 1105 */
-__attribute__((naked))
 void SND_Set2DChannelPlaybackRate(int index, int rate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1105 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1108 | index */
-        "movl 0x4a3ad4(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1109 */
-        "jmp AIL_set_sample_playback_rate\n" /* line 1108 */
-    );
+    AIL_set_sample_playback_rate(*(void **)(0x4a3ad4 + index * 4), rate);
 }
 
 /* line 1112 */
-__attribute__((naked))
 int SND_Get3DChannelPlaybackRate(int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1112 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1115 | index */
-        "movl 0x4a3ba8(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1116 */
-        "jmp AIL_3D_sample_playback_rate\n" /* line 1115 */
-    );
+    return AIL_3D_sample_playback_rate(*(void **)(0x4a3ba8 + index * 4));
 }
 
 /* line 1119 */
-__attribute__((naked))
 void SND_Set3DChannelPlaybackRate(int index, int rate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1119 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1122 | index */
-        "movl 0x4a3ba8(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1123 */
-        "jmp AIL_set_3D_sample_playback_rate\n" /* line 1122 */
-    );
+    AIL_set_3D_sample_playback_rate(*(void **)(0x4a3ba8 + index * 4), rate);
 }
 
 /* line 1126 */
-__attribute__((naked))
 int SND_GetStreamChannelPlaybackRate(int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1126 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1129 | index */
-        "movl 0x4a3ba8(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1130 */
-        "jmp AIL_stream_playback_rate\n" /* line 1129 */
-    );
+    return AIL_stream_playback_rate(*(void **)(0x4a3ba8 + index * 4));
 }
 
 /* line 1133 */
-__attribute__((naked))
 void SND_SetStreamChannelPlaybackRate(int index, int rate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1133 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1136 | index */
-        "movl 0x4a3ba8(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1137 */
-        "jmp AIL_set_stream_playback_rate\n" /* line 1136 */
-    );
+    AIL_set_stream_playback_rate(*(void **)(0x4a3ba8 + index * 4), rate);
 }
 
 /* line 1156 */
@@ -897,18 +829,9 @@ int SND_Get2DChannelLength(int index)
 }
 
 /* line 1175 */
-__attribute__((naked))
 int SND_Get3DChannelLength(int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1175 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1178 | index */
-        "movl 0x4a3ba8(, %eax, 4), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "popl %ebp\n" /* line 1179 */
-        "jmp AIL_3D_sample_length\n" /* line 1178 */
-    );
+    return AIL_3D_sample_length(*(void **)(0x4a3ba8 + index * 4));
 }
 
 /* line 1182 */
@@ -1511,30 +1434,14 @@ void SND_RawSamples(int samples, int rate, int width, int s_channels, const byte
 }
 
 /* line 1569 */
-__attribute__((naked))
 int SND_GetSoundFileSize(const void *pSoundFile)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1569 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* pSoundFile */
-        "movl 8(%eax), %eax\n" /* pSoundFile */
-        "addl $0x24, %eax\n" /* pSoundFile */
-        "popl %ebp\n" /* line 1577 */
-        "retl\n"
-    );
+    return *(int *)((byte *)pSoundFile + 8) + 0x24;
 }
 
 /* line 1587 */
-__attribute__((naked))
 void SND_DriverPreUpdate(int frametime)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1587 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1589 */
-        "retl\n"
-    );
 }
 
 /* line 984 */

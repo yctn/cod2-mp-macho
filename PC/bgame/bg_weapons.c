@@ -77,30 +77,15 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles);
 void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles);
 
 /* line 67 */
-__attribute__((naked))
 void BG_ShutdownWeaponDefFiles(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 67 */
-        "movl %esp, %ebp\n"
-        "movl $0, bg_iNumWeapons\n" /* line 78 */
-        "popl %ebp\n" /* line 83 */
-        "retl\n"
-    );
+    bg_iNumWeapons = 0;
 }
 
 /* line 517 */
-__attribute__((naked))
 WeaponDef * BG_GetWeaponDef(int iWeapon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 517 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* iWeapon */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n" /* iWeapon */
-        "popl %ebp\n" /* line 522 */
-        "retl\n"
-    );
+    return bg_weaponDefs[iWeapon];
 }
 
 /* line 376 */
@@ -133,46 +118,21 @@ void BG_ClearWeaponDef(void)
 }
 
 /* line 558 */
-__attribute__((naked))
 int BG_GetNumWeapons(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 558 */
-        "movl %esp, %ebp\n"
-        "movl bg_iNumWeapons, %eax\n"
-        "popl %ebp\n" /* line 561 */
-        "retl\n"
-    );
+    return bg_iNumWeapons;
 }
 
 /* line 580 */
-__attribute__((naked))
 int BG_GetAmmoTypeMax(int iAmmoIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 580 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* iAmmoIndex */
-        "movl bg_weapAmmoTypes(, %eax, 4), %eax\n" /* iAmmoIndex */
-        "movl 0x1d4(%eax), %eax\n" /* iAmmoIndex */
-        "popl %ebp\n" /* line 585 */
-        "retl\n"
-    );
+    return *(int *)((byte *)bg_weapAmmoTypes[iAmmoIndex] + 0x1d4);
 }
 
 /* line 604 */
-__attribute__((naked))
 int BG_GetAmmoClipSize(int iClipIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 604 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* iClipIndex */
-        "movl bg_weapClips(, %eax, 4), %eax\n" /* iClipIndex */
-        "movl 0x1d8(%eax), %eax\n" /* iClipIndex */
-        "popl %ebp\n" /* line 609 */
-        "retl\n"
-    );
+    return *(int *)((byte *)bg_weapClips[iClipIndex] + 0x1d8);
 }
 
 /* line 713 */
@@ -246,21 +206,10 @@ Bool BG_IsAnyEmptyPrimaryWeaponSlot(const playerState_t *ps)
 }
 
 /* line 1425 */
-__attribute__((naked))
 Bool PM_IsBinocularsADS(const playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1425 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* ps */
-        "movl 0xd8(%eax), %eax\n" /* ps */
-        "subl $0x13, %eax\n" /* ps */
-        "cmpl $1, %eax\n" /* ps */
-        "setbe %al\n" /* ps */
-        "movzbl %al, %eax\n" /* ps */
-        "popl %ebp\n" /* line 1428 */
-        "retl\n"
-    );
+    int val = *(int *)((byte *)ps + 0xd8) - 0x13;
+    return (unsigned int)val <= 1;
 }
 
 /* line 1482 */
@@ -765,18 +714,9 @@ void BG_SetupAmmoIndexes(int weapIndex)
 }
 
 /* line 870 */
-__attribute__((naked))
 qboolean BG_IsAimDownSightWeapon(int iWeapon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 870 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* iWeapon */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n" /* iWeapon */
-        "movl 0x32c(%eax), %eax\n" /* iWeapon */
-        "popl %ebp\n" /* line 873 */
-        "retl\n"
-    );
+    return *(int *)((byte *)bg_weaponDefs[iWeapon] + 0x32c);
 }
 
 /* line 880 */
@@ -1036,65 +976,29 @@ void BG_GetSpreadForWeapon(const playerState_t *ps, int weaponIndex, float *minS
 }
 
 /* line 1723 */
-__attribute__((naked))
 int BG_ClipForWeapon(int weapon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1723 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* weapon */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n" /* weapon */
-        "movl 0x1d0(%eax), %eax\n" /* weapon */
-        "popl %ebp\n" /* line 1726 */
-        "retl\n"
-    );
+    return *(int *)((byte *)bg_weaponDefs[weapon] + 0x1d0);
 }
 
 /* line 1734 */
-__attribute__((naked))
 int BG_AmmoForWeapon(int weapon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1734 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* weapon */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n" /* weapon */
-        "movl 0x1c8(%eax), %eax\n" /* weapon */
-        "popl %ebp\n" /* line 1737 */
-        "retl\n"
-    );
+    return *(int *)((byte *)bg_weaponDefs[weapon] + 0x1c8);
 }
 
 /* line 1745 */
-__attribute__((naked))
 qboolean BG_WeaponIsClipOnly(int weapon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1745 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* weapon */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n" /* weapon */
-        "movl 0x340(%eax), %eax\n" /* weapon */
-        "popl %ebp\n" /* line 1748 */
-        "retl\n"
-    );
+    return *(int *)((byte *)bg_weaponDefs[weapon] + 0x340);
 }
 
 /* line 1844 */
-__attribute__((naked))
 int PM_WeaponAmmoAvailable(playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1844 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* ps */
-        "movl 0xd4(%edx), %eax\n"
-        "movl bg_weaponDefs(, %eax, 4), %eax\n"
-        "movl 0x1d0(%eax), %eax\n"
-        "movl 0x344(%edx, %eax, 4), %eax\n"
-        "popl %ebp\n" /* line 1850 */
-        "retl\n"
-    );
+    int weapon = *(int *)((byte *)ps + 0xd4);
+    int clipIndex = *(int *)((byte *)bg_weaponDefs[weapon] + 0x1d0);
+    return *(int *)((byte *)ps + 0x344 + clipIndex * 4);
 }
 
 /* line 1758 */

@@ -36,6 +36,9 @@ extern char lastValidBase[256]; /* 0x0 */
 extern char lastValidGame[256]; /* 0x0 */
 static char szIwdLanguageName[2][64]; /* 0x33ce20 */
 static int iString; /* 0x33ce00 */
+extern void Hunk_FreeTempMemory(void *buf);
+extern float FS_DisplayPath(qboolean bLanguageCull);
+
 static qboolean bLanguagesListed; /* 0x33cea0 */
 
 qboolean FS_Initialized(void);
@@ -102,43 +105,20 @@ qboolean FS_ConditionalRestart(int checksumFeed);
 float FS_InitFilesystem(void);
 
 /* line 319 */
-__attribute__((naked))
 qboolean FS_Initialized(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 319 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "cmpl $0, fs_searchpaths\n"
-        "setne %al\n"
-        "popl %ebp\n" /* line 322 */
-        "retl\n"
-    );
+    return fs_searchpaths != 0;
 }
 
 /* line 336 */
-__attribute__((naked))
 float FS_CheckFileSystemStarted(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 336 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 348 */
-        "retl\n"
-    );
 }
 
 /* line 398 */
-__attribute__((naked))
 int FS_LoadStack(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 398 */
-        "movl %esp, %ebp\n"
-        "movl fs_loadStack, %eax\n"
-        "popl %ebp\n" /* line 401 */
-        "retl\n"
-    );
+    return fs_loadStack;
 }
 
 /* line 415 */
@@ -381,20 +361,9 @@ fileHandle_t FS_HandleForFile(qboolean streamThread)
 }
 
 /* line 538 */
-__attribute__((naked))
 FILE * FS_FileForHandle(fileHandle_t f)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 538 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* f */
-        "leal (%eax, %eax, 8), %edx\n"
-        "shll $3, %edx\n"
-        "subl %eax, %edx\n" /* f */
-        "movl fsh(, %edx, 4), %eax\n" /* f */
-        "popl %ebp\n" /* line 545 */
-        "retl\n"
-    );
+    return *(FILE **)((byte *)fsh + f * 284);
 }
 
 /* line 708 */
@@ -460,19 +429,9 @@ qboolean FS_CreatePath(char *OSPath)
 }
 
 /* line 796 */
-__attribute__((naked))
 float FS_Remove(const char *osPath)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 796 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 799 | osPath */
-        "movl %eax, (%esp)\n"
-        "calll remove\n"
-        "leave\n" /* line 801 */
-        "retl\n"
-    );
+    remove(osPath);
 }
 
 /* line 1089 */
@@ -603,16 +562,9 @@ qboolean FS_PureIgnoresExtension(const char *extension)
 }
 
 /* line 2167 */
-__attribute__((naked))
 float FS_ResetFiles(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2167 */
-        "movl %esp, %ebp\n"
-        "movl $0, fs_loadStack\n" /* line 2169 */
-        "popl %ebp\n" /* line 2170 */
-        "retl\n"
-    );
+    fs_loadStack = 0;
 }
 
 /* line 2900 */
@@ -872,16 +824,10 @@ const char * GetBspExtension(void)
 }
 
 /* line 2180 */
-__attribute__((naked))
 float FS_FreeFile(float *buffer)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2180 */
-        "movl %esp, %ebp\n"
-        "subl $1, fs_loadStack\n" /* line 2186 */
-        "popl %ebp\n" /* line 2189 */
-        "jmp Hunk_FreeTempMemory\n" /* line 2188 */
-    );
+    fs_loadStack--;
+    Hunk_FreeTempMemory(buffer);
 }
 
 /* line 2829 */
@@ -2205,33 +2151,15 @@ float FS_DisplayPath(qboolean bLanguageCull)
 }
 
 /* line 3085 */
-__attribute__((naked))
 float FS_Path_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3085 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, (%esp)\n" /* line 3091 */
-        "calll FS_DisplayPath\n"
-        "leave\n" /* line 3093 */
-        "retl\n"
-    );
+    FS_DisplayPath(1);
 }
 
 /* line 3072 */
-__attribute__((naked))
 float FS_FullPath_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3072 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 3074 */
-        "calll FS_DisplayPath\n"
-        "leave\n" /* line 3075 */
-        "retl\n"
-    );
+    FS_DisplayPath(0);
 }
 
 /* line 1948 */

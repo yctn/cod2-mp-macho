@@ -24,6 +24,8 @@ static const dvar_t *con_inputHintBoxColor; /* 0xf00230 */
 static const dvar_t *con_outputBarColor; /* 0xf0022c */
 static const dvar_t *con_outputSliderColor; /* 0xf00228 */
 static const dvar_t *con_outputWindowColor; /* 0xf00224 */
+extern int I_stricmp(const char *s1, const char *s2);
+
 static vec4_t con_versionColor; /* 0x302880 */
 static vec4_t con_inputCommandMatchColor; /* 0x3028a0 */
 static vec4_t con_inputDvarMatchColor; /* 0x302890 */
@@ -129,17 +131,9 @@ void CL_RegisterHudMsgIconMaterial(const char *name)
 }
 
 /* line 229 */
-__attribute__((naked))
 const char * CL_GetHudMsgIconMaterialName(int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 229 */
-        "movl %esp, %ebp\n"
-        "movzbl 8(%ebp), %eax\n" /* index */
-        "movl hudMsgIconMaterials(, %eax, 4), %eax\n"
-        "popl %ebp\n" /* line 234 */
-        "retl\n"
-    );
+    return hudMsgIconMaterials[(unsigned char)index];
 }
 
 /* line 265 */
@@ -252,17 +246,9 @@ void Con_ChatModeTeam_f(void)
 }
 
 /* line 2032 */
-__attribute__((naked))
 void Con_Bottom(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2032 */
-        "movl %esp, %ebp\n"
-        "movl 0xefb204, %eax\n" /* line 2034 */
-        "movl %eax, 0xefb20c\n"
-        "popl %ebp\n" /* line 2035 */
-        "retl\n"
-    );
+    *(int *)0xefb20c = *(int *)0xefb204;
 }
 
 /* line 354 */
@@ -917,21 +903,9 @@ void ConDraw_Box(float x, float y, float w, float h)
 }
 
 /* line 1278 */
-static __attribute__((naked))
-int ConDrawInput_CompareStrings(const void *e0, const void *e1)
+static int ConDrawInput_CompareStrings(const void *e0, const void *e1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1278 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 1280 | e1 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 0xc(%ebp)\n" /* e1 */
-        "movl 8(%ebp), %eax\n" /* e0 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 8(%ebp)\n" /* e0 */
-        "popl %ebp\n" /* line 1281 */
-        "jmp I_stricmp\n" /* line 1280 */
-    );
+    return I_stricmp(*(const char **)e0, *(const char **)e1);
 }
 
 /* line 1528 */
@@ -1156,17 +1130,9 @@ void Con_DrawSay(int y)
 }
 
 /* line 1873 */
-__attribute__((naked))
 void Con_ToggleConsoleOutput(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1873 */
-        "movl %esp, %ebp\n"
-        "cmpb $0, 0xefb21c\n" /* line 1875 */
-        "sete 0xefb21c\n"
-        "popl %ebp\n" /* line 1876 */
-        "retl\n"
-    );
+    *(byte *)0xefb21c = (*(byte *)0xefb21c == 0) ? 1 : 0;
 }
 
 /* line 1952 */
@@ -1411,20 +1377,9 @@ void Con_Top(void)
 }
 
 /* line 2060 */
-__attribute__((naked))
 Bool Con_IsActive(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2060 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ee78, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 4(%eax), %eax\n"
-        "andl $1, %eax\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 2063 */
-        "retl\n"
-    );
+    return (*(int *)(*(int *)(*(int *)0x195ee78) + 4) & 1) != 0;
 }
 
 /* line 343 */
