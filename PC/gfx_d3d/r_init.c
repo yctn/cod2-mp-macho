@@ -17,6 +17,13 @@ extern struct r_global_permanent_t rgp; /* 0x0 */
 extern struct r_globals_t rg; /* 0x0 */
 extern refimport_t ri; /* 0x0 */
 extern vidConfig_t vidConfig; /* 0x0 */
+extern const char * DXGetErrorDescription9A(HRESULT hr);
+extern void Material_FinishLoading(void);
+extern void R_AddCmdTouchAllImages(void);
+extern void R_EndDrawGroupLoop(int section, int viewIndex);
+extern void R_EndDrawGroupSection(int section);
+extern void R_IssueDrawGroups(void);
+
 static vec2_t cornerTexCoords[4]; /* 0x2f2240 */
 static const r_index_t quadIndices[6]; /* 0x2f2220 */
 static refexport_t re; /* 0xc85980 */
@@ -80,15 +87,9 @@ void R_FatalInitError(const char *msg)
 }
 
 /* line 169 */
-__attribute__((naked))
 const char * R_ErrorDescription(HRESULT hr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 169 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 179 */
-        "jmp DXGetErrorDescription9A\n" /* line 177 */
-    );
+    return DXGetErrorDescription9A(hr);
 }
 
 /* line 629 */
@@ -499,61 +500,29 @@ void R_UpdateGpuSyncType(void)
 }
 
 /* line 2011 */
-__attribute__((naked))
 void R_EndRegistration(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2011 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "calll Material_FinishLoading\n" /* line 2017 */
-        "leave\n" /* line 2022 */
-        "jmp R_AddCmdTouchAllImages\n" /* line 2020 */
-    );
+    Material_FinishLoading();
+    R_AddCmdTouchAllImages();
 }
 
 /* line 2025 */
-static __attribute__((naked))
-void R_EndView(int viewIndex)
+static void R_EndView(int viewIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2025 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 2027 | viewIndex */
-        "movl %eax, 4(%esp)\n"
-        "movl $4, (%esp)\n"
-        "calll R_EndDrawGroupLoop\n"
-        "movl $4, 8(%ebp)\n" /* line 2028 | viewIndex */
-        "leave\n" /* line 2029 */
-        "jmp R_EndDrawGroupSection\n" /* line 2028 */
-    );
+    R_EndDrawGroupLoop(4, viewIndex);
+    R_EndDrawGroupSection(4);
 }
 
 /* line 2032 */
-static __attribute__((naked))
-void R_DoneRenderingViews(void)
+static void R_DoneRenderingViews(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2032 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 2035 */
-        "jmp R_IssueDrawGroups\n" /* line 2034 */
-    );
+    R_IssueDrawGroups();
 }
 
 /* line 2038 */
-static __attribute__((naked))
-void R_TrackStatistics(trStatistics_t *stats)
+static void R_TrackStatistics(trStatistics_t *stats)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2038 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 2040 | stats */
-        "movl %eax, 0x1183a78\n"
-        "popl %ebp\n" /* line 2041 */
-        "retl\n"
-    );
+    *(trStatistics_t **)0x1183a78 = stats;
 }
 
 /* line 2097 */

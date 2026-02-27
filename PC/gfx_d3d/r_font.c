@@ -290,28 +290,14 @@ int R_DuplicateFont(FontHandle fontCopy, const char *name)
 }
 
 /* line 138 */
-__attribute__((naked))
 int R_InitFonts(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 138 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 141 */
-        "retl\n"
-    );
 }
 
 /* line 144 */
-__attribute__((naked))
 int R_ShutdownFonts(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 144 */
-        "movl %esp, %ebp\n"
-        "movl $0, registeredFontCount\n" /* line 146 */
-        "popl %ebp\n" /* line 147 */
-        "retl\n"
-    );
+    registeredFontCount = 0;
 }
 
 /* line 152 */
@@ -335,17 +321,9 @@ float R_NormalizedTextScale(FontHandle font, float scale)
 }
 
 /* line 202 */
-__attribute__((naked))
 int R_TextHeight(FontHandle font)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 202 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* font */
-        "movl 4(%eax), %eax\n" /* font */
-        "popl %ebp\n" /* line 206 */
-        "retl\n"
-    );
+    return *(int *)((byte *)font + 4);
 }
 
 /* line 209 */

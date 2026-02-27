@@ -154,21 +154,10 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 }
 
 /* line 899 */
-__attribute__((naked))
 void RB_DecideDefaultSamplerState(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 899 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f0dc, %eax\n" /* line 903 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movzbl defaultSamplerStateTable(%eax), %edx\n"
-        "movl 0x195f0c8, %eax\n"
-        "movb %dl, 0x4be(%eax)\n"
-        "popl %ebp\n" /* line 904 */
-        "retl\n"
-    );
+    int idx = *(int *)((byte *)*(void **)*(void **)0x195f0dc + 8);
+    *((byte *)*(void **)0x195f0c8 + 0x4be) = defaultSamplerStateTable[idx];
 }
 
 /* line 907 */
@@ -1488,21 +1477,12 @@ void RB_PopMatrixStack(void)
 }
 
 /* line 1472 */
-__attribute__((naked))
 void RB_InitSceneViewport(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1472 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f0c8, %ecx\n" /* line 1474 */
-        "movl 0x195eeec, %edx\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, 0x3e8(%ecx)\n"
-        "movl 4(%edx), %eax\n" /* line 1475 */
-        "movl %eax, 0x3ec(%ecx)\n"
-        "popl %ebp\n" /* line 1476 */
-        "retl\n"
-    );
+    void *ecx = *(void **)0x195f0c8;
+    void *edx = *(void **)0x195eeec;
+    *(int *)((byte *)ecx + 0x3e8) = *(int *)edx;
+    *(int *)((byte *)ecx + 0x3ec) = *(int *)((byte *)edx + 4);
 }
 
 /* line 1480 */

@@ -71,18 +71,10 @@ TMediaElement MediaHandles_GetHandle(const MediaHandles * _this)
 }
 
 /* line 90 */
-__attribute__((naked))
 void FxScheduler_FxScheduler(const FxScheduler * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 90 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0, 4(%eax)\n" /* line 95 */
-        "movl $0, 8(%eax)\n" /* line 96 */
-        "popl %ebp\n" /* line 97 */
-        "retl\n"
-    );
+    *(int *)((byte *)_this + 4) = 0;
+    *(int *)((byte *)_this + 8) = 0;
 }
 
 /* line 459 */
@@ -125,16 +117,9 @@ float FxScheduler_GetEffectLength(const FxScheduler * _this, EffectTemplate *fx)
 }
 
 /* line 789 */
-__attribute__((naked))
 void FX_InitTemplates(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 789 */
-        "movl %esp, %ebp\n"
-        "movl $0, effectTemplateArrayCount\n" /* line 791 */
-        "popl %ebp\n" /* line 792 */
-        "retl\n"
-    );
+    effectTemplateArrayCount = 0;
 }
 
 /* line 834 */

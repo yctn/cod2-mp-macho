@@ -23,6 +23,8 @@ static const Bool refEntIsInWorldSpace[10]; /* 0x2f2690 */
 static const void (*rb_tessTable[8])(); /* 0x3303e0 */
 static const void (*RB_RenderCommandTable[34])(); /* 0x330340 */
 
+extern FontHandle R_RegisterFont(const char *fontName, int imageTrack);
+
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 static void RB_GotoCmd(GfxRenderCommandExecState *execState);
 static void RB_ReturnCmd(GfxRenderCommandExecState *execState);
@@ -111,37 +113,17 @@ void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w)
 }
 
 /* line 577 */
-static __attribute__((naked))
-void RB_GotoCmd(GfxRenderCommandExecState *execState)
+static void RB_GotoCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 577 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* execState */
-        "movl (%eax), %edx\n" /* line 583 */
-        "movl 4(%edx), %edx\n"
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n" /* line 584 */
-        "retl\n"
-    );
+    *(void **)execState = *(void **)((byte *)*(void **)execState + 4);
 }
 
 /* line 600 */
-static __attribute__((naked))
-void RB_ReturnCmd(GfxRenderCommandExecState *execState)
+static void RB_ReturnCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 600 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* execState */
-        "movl 4(%eax), %edx\n" /* line 603 */
-        "subl $1, %edx\n"
-        "movl %edx, 4(%eax)\n"
-        "movl 8(%eax, %edx, 4), %edx\n" /* line 604 */
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n" /* line 606 */
-        "retl\n"
-    );
+    int idx = *(int *)((byte *)execState + 4) - 1;
+    *(int *)((byte *)execState + 4) = idx;
+    *(void **)execState = *(void **)((byte *)execState + 8 + idx * 4);
 }
 
 /* line 1750 */
@@ -257,18 +239,9 @@ qboolean RB_IsGpuFenceFinished(void)
 }
 
 /* line 3214 */
-__attribute__((naked))
 void RB_GpuWaited(int ticks)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3214 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* line 3216 | ticks */
-        "movl 0x195eed0, %eax\n"
-        "movl %edx, 0x2d64(%eax)\n"
-        "popl %ebp\n" /* line 3217 */
-        "retl\n"
-    );
+    *(int *)((byte *)*(void **)0x195eed0 + 0x2d64) = ticks;
 }
 
 /* line 3710 */
@@ -369,20 +342,9 @@ void RB_InitBackendGlobalStructs(void)
 }
 
 /* line 4234 */
-__attribute__((naked))
 void RB_RegisterBackendAssets(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4234 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, 4(%esp)\n" /* line 4236 */
-        "movl $0x2245c4, (%esp)\n" /* "fonts/smalldevfont" */
-        "calll R_RegisterFont\n"
-        "movl %eax, 0x1218488\n"
-        "leave\n" /* line 4237 */
-        "retl\n"
-    );
+    *(FontHandle *)0x1218488 = R_RegisterFont("fonts/smalldevfont", 1);
 }
 
 /* line 2828 */

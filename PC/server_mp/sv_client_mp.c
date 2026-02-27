@@ -7,6 +7,8 @@
 static int botport; /* 0xf13100 */
 static ucmd_t ucmds[12]; /* 0x312ca0 */
 
+extern float FX_GetServerVisibility(const vec_t *start, const vec_t *end);
+
 void SV_AuthorizeRequest(struct netadr_t from, int challenge);
 static qboolean SV_IsBannedGuid(void);
 void SV_BanGuidBriefly(int guid);
@@ -1886,17 +1888,9 @@ void SV_VerifyIwds_f(client_t *cl)
 }
 
 /* line 1553 */
-static __attribute__((naked))
-void SV_ResetPureClient_f(client_t *cl)
+static void SV_ResetPureClient_f(client_t *cl)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1553 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 1555 | cl */
-        "movl $0, 0x6e5b0(%eax)\n"
-        "popl %ebp\n" /* line 1556 */
-        "retl\n"
-    );
+    *(int *)((byte *)cl + 0x6e5b0) = 0;
 }
 
 /* line 1694 */
@@ -1995,15 +1989,9 @@ void SV_UnmutePlayer_f(client_t *cl)
 }
 
 /* line 1779 */
-__attribute__((naked))
 float SV_FX_GetVisibility(const vec_t *start, const vec_t *end)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1779 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1785 */
-        "jmp FX_GetServerVisibility\n" /* line 1784 */
-    );
+    return FX_GetServerVisibility(start, end);
 }
 
 /* line 1795 */
@@ -2677,20 +2665,9 @@ void SV_DropClient(client_t *drop, const char *reason)
 }
 
 /* line 1402 */
-static __attribute__((naked))
-void SV_Disconnect_f(client_t *cl)
+static void SV_Disconnect_f(client_t *cl)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1402 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x215fa4, 4(%esp)\n" /* line 1404 */
-        "movl 8(%ebp), %eax\n" /* cl */
-        "movl %eax, (%esp)\n"
-        "calll SV_DropClient\n"
-        "leave\n" /* line 1405 */
-        "retl\n"
-    );
+    SV_DropClient(cl, "EXE_DISCONNECTED");
 }
 
 /* line 244 */

@@ -13,6 +13,8 @@ static char szReference[1024]; /* 0x7ef080 */
 static const char * g_pszSndAliasKeyNames[24]; /* 0x30f600 */
 static const char * g_pszChannelNames[11]; /* 0x30f660 */
 
+extern int I_stricmp(const char *s0, const char *s1);
+
 void Com_InitSoundAlias(void);
 static void Com_RefreshVolumeModGroups_f(void);
 static int AliasNameCompare(snd_alias_build_t *pFrontList, snd_alias_build_t *pBackList);
@@ -30,46 +32,22 @@ void Com_WriteLocalizedSoundAliasFiles(void);
 void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, const char *sourceFile);
 
 /* line 764 */
-__attribute__((naked))
 void Com_InitSoundAlias(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 764 */
-        "movl %esp, %ebp\n"
-        "movl $0, saLoadObjGlob\n" /* line 766 */
-        "movl $0, 0x1150524\n" /* line 767 */
-        "popl %ebp\n" /* line 768 */
-        "retl\n"
-    );
+    *(int *)&saLoadObjGlob = 0;
+    *(int *)0x1150524 = 0;
 }
 
 /* line 873 */
-static __attribute__((naked))
-void Com_RefreshVolumeModGroups_f(void)
+static void Com_RefreshVolumeModGroups_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 873 */
-        "movl %esp, %ebp\n"
-        "movb $0, 0x1150da8\n" /* line 875 */
-        "popl %ebp\n" /* line 876 */
-        "retl\n"
-    );
+    *(byte *)0x1150da8 = 0;
 }
 
 /* line 1013 */
-static __attribute__((naked))
-int AliasNameCompare(snd_alias_build_t *pFrontList, snd_alias_build_t *pBackList)
+static int AliasNameCompare(snd_alias_build_t *pFrontList, snd_alias_build_t *pBackList)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1013 */
-        "movl %esp, %ebp\n"
-        "addl $0x40, 0xc(%ebp)\n" /* line 1015 | pBackList */
-        "movl 8(%ebp), %eax\n" /* pFrontList */
-        "addl $0x40, %eax\n"
-        "movl %eax, 8(%ebp)\n" /* pFrontList */
-        "popl %ebp\n" /* line 1016 */
-        "jmp I_stricmp\n" /* line 1015 */
-    );
+    return I_stricmp((const char *)pFrontList + 0x40, (const char *)pBackList + 0x40);
 }
 
 /* line 1024 */

@@ -8,6 +8,8 @@ extern struct scrAnimPub_t scrAnimPub; /* 0x0 */
 static struct scrAnimGlob_t scrAnimGlob; /* 0x4ed000 */
 static const char * propertyNames[3]; /* 0x30aa80 */
 
+extern void * Hunk_AllocAlignInternal(int size, int align);
+
 void SetAnimCheck(int bAnimCheck);
 static void * Hunk_AllocXAnimTreePrecache(int size);
 static int Scr_GetAnimTreeSize(void);
@@ -24,34 +26,15 @@ static Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, B
 void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user);
 
 /* line 60 */
-__attribute__((naked))
 void SetAnimCheck(int bAnimCheck)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 60 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 62 | bAnimCheck */
-        "movl %eax, 0x4ed208\n"
-        "popl %ebp\n" /* line 63 */
-        "retl\n"
-    );
+    *(int *)0x4ed208 = bAnimCheck;
 }
 
 /* line 315 */
-static __attribute__((naked))
-void * Hunk_AllocXAnimTreePrecache(int size)
+static void * Hunk_AllocXAnimTreePrecache(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 315 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $4, 4(%esp)\n" /* line 317 */
-        "movl 8(%ebp), %eax\n" /* size */
-        "movl %eax, (%esp)\n"
-        "calll Hunk_AllocAlignInternal\n"
-        "leave\n" /* line 318 */
-        "retl\n"
-    );
+    return Hunk_AllocAlignInternal(size, 4);
 }
 
 /* line 322 */
@@ -200,17 +183,9 @@ void ConnectScriptToAnim(int index, unsigned int name, int treeIndex)
 }
 
 /* line 396 */
-__attribute__((naked))
 struct XAnim_s * Scr_GetAnims(int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 396 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* index */
-        "movl 0x114e22c(, %eax, 4), %eax\n" /* index */
-        "popl %ebp\n" /* line 402 */
-        "retl\n"
-    );
+    return *(struct XAnim_s **)(0x114e22c + index * 4);
 }
 
 /* line 407 */

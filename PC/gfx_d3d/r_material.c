@@ -481,15 +481,8 @@ Bool R_IsMaterialRefractive(_ValueType handle)
 }
 
 /* line 1366 */
-__attribute__((naked))
 void Material_FinishLoading(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1366 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1371 */
-        "retl\n"
-    );
 }
 
 /* line 1470 */
@@ -647,33 +640,16 @@ int Material_LoadFile(const char *filename, fileHandle_t *file)
 }
 
 /* line 1261 */
-__attribute__((naked))
 const char * R_GetMaterialName(_ValueType handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1261 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* handle */
-        "movl (%eax), %eax\n" /* handle */
-        "popl %ebp\n" /* line 1265 */
-        "retl\n"
-    );
+    return *(const char **)(*(int *)&handle);
 }
 
 /* line 1268 */
-__attribute__((naked))
 int R_GetMaterialSubimageCount(_ValueType handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1268 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* handle */
-        "movzbl 0xf(%edx), %eax\n" /* line 207 */
-        "movzbl 0xe(%edx), %edx\n"
-        "imull %edx, %eax\n"
-        "popl %ebp\n" /* line 1275 */
-        "retl\n"
-    );
+    byte *p = (byte *)(*(int *)&handle);
+    return (unsigned char)p[0xf] * (unsigned char)p[0xe];
 }
 
 /* line 876 */

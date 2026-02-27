@@ -50,21 +50,12 @@ void ZSt16__insertion_sortIPP8GfxImagePFiS1_S1_EEvT_S5_T0_(void); /* void std___
 void ZSt16__introsort_loopIPP8GfxImageiPFiS1_S1_EEvT_S5_T0_T1_(void); /* void std___introsort_loop<GfxImage**, int, int (*)(GfxImage*, GfxImage*)> */
 
 /* line 183 */
-static __attribute__((naked))
-void R_AddImageToList(union XAssetHeader header, void *data)
+static void R_AddImageToList(union XAssetHeader header, void *data)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 183 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* data */
-        "movl (%eax), %edx\n" /* line 189 */
-        "movl 8(%ebp), %ecx\n" /* header */
-        "movl %ecx, 4(%eax, %edx, 4)\n"
-        "addl $1, %edx\n" /* line 190 */
-        "movl %edx, (%eax)\n"
-        "popl %ebp\n" /* line 191 */
-        "retl\n"
-    );
+    int *list = (int *)data;
+    int count = list[0];
+    *(int *)((byte *)data + 4 + count * 4) = (int)header.data;
+    list[0] = count + 1;
 }
 
 /* line 194 */
@@ -88,40 +79,19 @@ void R_GetImageList(ImageList *imageList)
 }
 
 /* line 255 */
-__attribute__((naked))
 int R_GetMinSpecImageMemory(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 255 */
-        "movl %esp, %ebp\n"
-        "movl 0xc96bd0, %eax\n"
-        "popl %ebp\n" /* line 258 */
-        "retl\n"
-    );
+    return *(int *)0xc96bd0;
 }
 
 /* line 637 */
-__attribute__((naked))
 void R_ResetImageAllocations(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 637 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 639 */
-        "retl\n"
-    );
 }
 
 /* line 642 */
-__attribute__((naked))
 void R_FreeImageAllocations(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 642 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 644 */
-        "retl\n"
-    );
 }
 
 /* line 648 */

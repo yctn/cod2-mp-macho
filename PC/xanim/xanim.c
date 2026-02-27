@@ -15,6 +15,8 @@ static XAnimNotify g_notifyList[128]; /* 0x3e6020 */
 static int g_notifyListSize; /* 0x3e6000 */
 static Bool g_anim_developer; /* 0x3e6625 */
 
+extern void * Hunk_AllocAlignInternal(int size, int align);
+
 void XAnimInit(void);
 void XAnimShutdown(void);
 void XAnimAbort(void);
@@ -174,16 +176,9 @@ void XAnimShutdown(void)
 }
 
 /* line 169 */
-__attribute__((naked))
 void XAnimAbort(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 169 */
-        "movl %esp, %ebp\n"
-        "movl $0, g_end\n" /* line 171 */
-        "popl %ebp\n" /* line 172 */
-        "retl\n"
-    );
+    g_end = 0;
 }
 
 /* line 175 */
@@ -447,17 +442,9 @@ void XAnimFreeList(XAnim *anims)
 }
 
 /* line 597 */
-__attribute__((naked))
 XAnim * XAnimGetAnims(const XAnimTree *tree)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 597 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* tree */
-        "movl (%eax), %eax\n" /* tree */
-        "popl %ebp\n" /* line 600 */
-        "retl\n"
-    );
+    return *(XAnim **)tree;
 }
 
 /* line 2832 */
@@ -581,34 +568,15 @@ Bool XAnimHasFinished(const XAnimTree *tree, unsigned int animIndex)
 }
 
 /* line 2930 */
-__attribute__((naked))
 int XAnimGetNumChildren(const XAnim *anims, unsigned int animIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2930 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* animIndex */
-        "movl 8(%ebp), %edx\n" /* anims */
-        "movzwl 0xc(%edx, %eax, 8), %eax\n" /* animIndex */
-        "popl %ebp\n" /* line 2936 */
-        "retl\n"
-    );
+    return *(unsigned short *)((byte *)anims + animIndex * 8 + 0xc);
 }
 
 /* line 2944 */
-__attribute__((naked))
 unsigned int XAnimGetChildAt(const XAnim *anims, unsigned int animIndex, unsigned int childIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2944 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* animIndex */
-        "movl 8(%ebp), %eax\n" /* anims */
-        "movzwl 0x12(%eax, %edx, 8), %eax\n" /* anims */
-        "addl 0x10(%ebp), %eax\n" /* childIndex, anims */
-        "popl %ebp\n" /* line 2951 */
-        "retl\n"
-    );
+    return *(unsigned short *)((byte *)anims + animIndex * 8 + 0x12) + childIndex;
 }
 
 /* line 2959 */
@@ -640,80 +608,34 @@ const char * XAnimGetAnimName(const XAnim *anims, unsigned int animIndex)
 }
 
 /* line 3021 */
-__attribute__((naked))
 const char * XAnimGetAnimTreeDebugName(const XAnim *anims)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3021 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* anims */
-        "movl (%eax), %eax\n" /* anims */
-        "popl %ebp\n" /* line 3025 */
-        "retl\n"
-    );
+    return *(const char **)anims;
 }
 
 /* line 3033 */
-__attribute__((naked))
 unsigned int XAnimGetAnimTreeSize(const XAnim *anims)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3033 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* anims */
-        "movl 4(%eax), %eax\n" /* anims */
-        "popl %ebp\n" /* line 3037 */
-        "retl\n"
-    );
+    return *(unsigned int *)((byte *)anims + 4);
 }
 
 /* line 3196 */
-__attribute__((naked))
 int DObjGetClientNotifyList(XAnimNotify * *notifyList)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3196 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 3200 | notifyList */
-        "movl $g_notifyList, (%eax)\n"
-        "movl g_notifyListSize, %eax\n"
-        "popl %ebp\n" /* line 3202 */
-        "retl\n"
-    );
+    *notifyList = g_notifyList;
+    return g_notifyListSize;
 }
 
 /* line 4025 */
-static __attribute__((naked))
-void * Hunk_AllocXAnimPrecache(int size)
+static void * Hunk_AllocXAnimPrecache(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4025 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $4, 4(%esp)\n" /* line 4027 */
-        "movl 8(%ebp), %eax\n" /* size */
-        "movl %eax, (%esp)\n"
-        "calll Hunk_AllocAlignInternal\n"
-        "leave\n" /* line 4028 */
-        "retl\n"
-    );
+    return Hunk_AllocAlignInternal(size, 4);
 }
 
 /* line 4131 */
-__attribute__((naked))
 Bool XAnimIsPrimitive(XAnim *anims, unsigned int animIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4131 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* animIndex */
-        "movl 8(%ebp), %eax\n" /* anims */
-        "cmpw $0, 0xc(%eax, %edx, 8)\n"
-        "sete %al\n" /* anims */
-        "movzbl %al, %eax\n" /* anims */
-        "popl %ebp\n" /* line 4134 */
-        "retl\n"
-    );
+    return *(unsigned short *)((byte *)anims + animIndex * 8 + 0xc) == 0;
 }
 
 /* line 4137 */
@@ -747,21 +669,10 @@ void XAnimSetTime(XAnimTree *tree, unsigned int animIndex, float time)
 }
 
 /* line 4272 */
-__attribute__((naked))
 void XAnimSetAnimRate(XAnimTree *tree, unsigned int animIndex, float rate)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4272 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %edx\n" /* line 4019 | animIndex */
-        "movl 8(%ebp), %eax\n" /* tree */
-        "movzwl 8(%eax, %edx, 2), %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "movl 0x10(%ebp), %edx\n" /* rate */
-        "movl %edx, 0x3be024(, %eax, 8)\n"
-        "popl %ebp\n" /* line 4275 */
-        "retl\n"
-    );
+    unsigned short index = *(unsigned short *)((byte *)tree + 8 + animIndex * 2);
+    *(float *)((byte *)&g_xAnimInfo[index] + 0x24) = rate;
 }
 
 /* line 4279 */
