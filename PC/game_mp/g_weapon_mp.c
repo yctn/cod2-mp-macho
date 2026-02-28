@@ -27,10 +27,10 @@ extern qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2);
 extern struct level_locals_t level;
 extern void *bg_weaponInfoMem; /* 0x195f75c - weapon info memory ptr */
 
-/* Entity accessor macros */
-#define ENT_TAKEDAMAGE(e)  (*(byte *)((byte *)(e) + 0x161))
-#define ENT_CLIENT(e)      (*(gclient_t **)((byte *)(e) + 0x158))
-#define CLIENT_PS_PM_TYPE(c) (*(int *)((byte *)(c) + 0x04))
+/* Entity/client field access macros */
+#define ENT_TAKEDAMAGE(e)    ((e)->takedamage)
+#define ENT_CLIENT(e)        ((e)->client)
+#define CLIENT_PS_PM_TYPE(c) ((c)->ps.pm_type)
 
 void SnapVectorTowards(vec_t *v, vec_t *to);
 qboolean LogAccuracyHit(gentity_t *target, gentity_t *attacker);

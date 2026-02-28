@@ -28,8 +28,8 @@ extern byte *g_scr_data_ptr; /* 0x195f5bc - direct pointer to scr data */
 extern byte *level_ptr;      /* 0x195f6a0 - points to level struct */
 extern byte *g_entities_ptr; /* 0x195f688 - points to entity array */
 
-#define CLIENT_STRIDE 0x28a4
-#define ENTITY_STRIDE 560
+#define CLIENT_STRIDE sizeof(gclient_s)
+#define ENTITY_STRIDE sizeof(gentity_s)
 
 static const client_fields_t fields[14]; /* 0x333760 */
 

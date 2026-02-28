@@ -55,15 +55,16 @@ extern const dvar_t *g_synchronousClients;
  *   0x289C  lastServerTime
  */
 
-/* gclient_t accessor macros */
-#define CLIENT_SESS_STATE(c)        (*(int *)((byte *)(c) + 0x26A8))
-#define CLIENT_SESS_NOSPECTATE(c)   (*(int *)((byte *)(c) + 0x2740))
-#define CLIENT_UFO(c)               (*(int *)((byte *)(c) + 0x27AC))
-#define CLIENT_BFROZEN(c)           (*(int *)((byte *)(c) + 0x27B0))
-#define CLIENT_LASTSERVERTIME(c)    (*(int *)((byte *)(c) + 0x289C))
-#define CLIENT_PS_FLAGS(c)          (*(int *)((byte *)(c) + 0x0E))
-#define CLIENT_PS_PM_TYPE(c)        (*(int *)((byte *)(c) + 0x04))
-#define CLIENT_PS_KICKAVEL(c)       ((float *)((byte *)(c) + 0x288C))
+/* gclient_t field access macros */
+#define _GC(c)                      ((gclient_t *)(c))
+#define CLIENT_SESS_STATE(c)        (_GC(c)->sess.sessionState)
+#define CLIENT_SESS_NOSPECTATE(c)   (*(int *)((byte *)(c) + 0x2740)) /* inside clientSession_t */
+#define CLIENT_UFO(c)               (_GC(c)->noclip) /* 0x27AC per STABS */
+#define CLIENT_BFROZEN(c)           (_GC(c)->ufo) /* 0x27B0 per STABS */
+#define CLIENT_LASTSERVERTIME(c)    (*(int *)((byte *)(c) + 0x289C)) /* deep in gclient_t */
+#define CLIENT_PS_FLAGS(c)          (*(int *)((byte *)(c) + 0x0E)) /* unaligned read spanning pm_flags */
+#define CLIENT_PS_PM_TYPE(c)        (_GC(c)->ps.pm_type)
+#define CLIENT_PS_KICKAVEL(c)       ((float *)((byte *)(c) + 0x288C)) /* deep in gclient_t */
 
 void ClientImpacts(gentity_t *ent, pmove_t *pm);
 qboolean G_ClientCanSpectateTeam(gclient_t *client, team_t team);

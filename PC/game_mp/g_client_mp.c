@@ -76,8 +76,8 @@ void G_GetPlayerViewOrigin(const gentity_t *ent, vec_t *origin);
 void ClientUserinfoChanged(int clientNum);
 char * ClientConnect(int clientNum, int scriptPersId);
 
-#define GENTITY_STRIDE 560
-#define CLIENT_STRIDE 0x28a4
+#define GENTITY_STRIDE sizeof(gentity_s)
+#define CLIENT_STRIDE sizeof(gclient_s)
 
 /* line 156 */
 void G_GetPlayerViewDirection(const gentity_t *ent, vec_t *forward, vec_t *right, vec_t *up)

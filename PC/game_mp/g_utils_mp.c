@@ -59,66 +59,50 @@ extern qboolean SV_DObjExists(gentity_t *ent);
 
 static struct XModel * cached_models[256]; /* 0xfdf380 */
 
-/*
- * Binary gentity_s layout (byte offsets):
- *   0x00  s.number           0x04  s.eType            0x08  s.eFlags
- *   0x0C  s.pos (trajectory) 0x18  s.pos.trBase       0x24  s.pos.trDelta
- *   0x30  s.apos             0x3C  s.apos.trBase      0x48  s.apos.trDelta
- *   0x7C  s.otherEntityNum   0x8C  s.weapon
- *   0xA4  s.eventSequence    0xA8  s.events[4]        0xB8  s.eventParms[4]
- *   0xFC  r.inuse            0x138 r.currentOrigin     0x144 r.currentAngles
- *   0x150 r.ownerNum         0x154 r.eventTime
- *   0x158 client             0x15C turretInfo
- *   0x164 s.modelindex       0x165 attachIgnoreCollision
- *   0x166 handler            0x168 classname
- *   0x174 flags              0x178 freetime           0x17C freeAfterEvent
- *   0x18C parent             0x208 tagInfo            0x20C tagChildren
- *   0x210 attachModelIndex[7] 0x218 attachTagNames[7]
- *   0x228 useCount           0x22C nextFreeEnt
- *   Entity stride = 0x230
- */
+/* gentity_s field access macros (using struct fields from common_types.h).
+ * _ENT(e) casts to gentity_t* so these work with both gentity_t* and byte*. */
+#define _ENT(e)                ((gentity_t *)(e))
+#define ENT_NUMBER(e)          (_ENT(e)->s.number)
+#define ENT_ETYPE(e)           (_ENT(e)->s.eType)
+#define ENT_EFLAGS(e)          (_ENT(e)->s.eFlags)
+#define ENT_POS_TRTYPE(e)      (_ENT(e)->s.pos.trType)
+#define ENT_POS_TRTIME(e)      (_ENT(e)->s.pos.trTime)
+#define ENT_POS_TRDURATION(e)  (_ENT(e)->s.pos.trDuration)
+#define ENT_POS_TRBASE(e)      (_ENT(e)->s.pos.trBase)
+#define ENT_POS_TRDELTA(e)     (_ENT(e)->s.pos.trDelta)
+#define ENT_APOS_TRTYPE(e)     (_ENT(e)->s.apos.trType)
+#define ENT_APOS_TRTIME(e)     (_ENT(e)->s.apos.trTime)
+#define ENT_APOS_TRDURATION(e) (_ENT(e)->s.apos.trDuration)
+#define ENT_APOS_TRBASE(e)     (_ENT(e)->s.apos.trBase)
+#define ENT_APOS_TRDELTA(e)    (_ENT(e)->s.apos.trDelta)
+#define ENT_GROUNDENTNUM(e)    (_ENT(e)->s.groundEntityNum)
+#define ENT_INDEX(e)           (*(int *)&_ENT(e)->s.index)
+#define ENT_EVENTSEQ(e)        (_ENT(e)->s.eventSequence)
+#define ENT_EVENTS(e, i)       (_ENT(e)->s.events[i])
+#define ENT_EVENTPARMS(e, i)   (_ENT(e)->s.eventParms[i])
+#define ENT_INUSE(e)           (_ENT(e)->r.inuse)
+#define ENT_CURRENTORIGIN(e)   (_ENT(e)->r.currentOrigin)
+#define ENT_CURRENTANGLES(e)   (_ENT(e)->r.currentAngles)
+#define ENT_OWNERNUM(e)        (_ENT(e)->r.ownerNum)
+#define ENT_EVENTTIME(e)       (_ENT(e)->r.eventTime)
+#define ENT_CLIENT(e)          ((byte *)(_ENT(e)->client))
+#define ENT_TURRET(e)          (*(int *)&_ENT(e)->pTurretInfo)
+#define ENT_MODELINDEX(e)      (_ENT(e)->model)
+#define ENT_IGNORECOLLISION(e) (_ENT(e)->attachIgnoreCollision)
+#define ENT_HANDLER(e)         (_ENT(e)->handler)
+#define ENT_CLASSNAME(e)       (_ENT(e)->classname)
+#define ENT_FLAGS(e)           (_ENT(e)->flags)
+#define ENT_FREETIME(e)        (_ENT(e)->eventTime)
+#define ENT_FREEAFTEREVENT(e)  (_ENT(e)->freeAfterEvent)
+#define ENT_PARENT(e)          (*(gentity_t **)&_ENT(e)->parent)
+#define ENT_TAGINFO(e)         (*(byte **)&_ENT(e)->tagInfo)
+#define ENT_TAGCHILDREN(e)     (*(gentity_t **)&_ENT(e)->tagChildren)
+#define ENT_ATTACHMODEL(e, i)  (_ENT(e)->attachModelNames[i])
+#define ENT_ATTACHTAG(e, i)    (_ENT(e)->attachTagNames[i])
+#define ENT_USECOUNT(e)        (_ENT(e)->useCount)
+#define ENT_NEXTFREEENT(e)     (*(gentity_t **)&_ENT(e)->nextFree)
 
-#define ENT_NUMBER(e)          (*(int *)((byte *)(e) + 0x00))
-#define ENT_ETYPE(e)           (*(int *)((byte *)(e) + 0x04))
-#define ENT_EFLAGS(e)          (*(int *)((byte *)(e) + 0x08))
-#define ENT_POS_TRTYPE(e)      (*(int *)((byte *)(e) + 0x0C))
-#define ENT_POS_TRTIME(e)      (*(int *)((byte *)(e) + 0x10))
-#define ENT_POS_TRDURATION(e)  (*(int *)((byte *)(e) + 0x14))
-#define ENT_POS_TRBASE(e)      ((vec_t *)((byte *)(e) + 0x18))
-#define ENT_POS_TRDELTA(e)     ((vec_t *)((byte *)(e) + 0x24))
-#define ENT_APOS_TRTYPE(e)     (*(int *)((byte *)(e) + 0x30))
-#define ENT_APOS_TRTIME(e)     (*(int *)((byte *)(e) + 0x34))
-#define ENT_APOS_TRDURATION(e) (*(int *)((byte *)(e) + 0x38))
-#define ENT_APOS_TRBASE(e)     ((vec_t *)((byte *)(e) + 0x3C))
-#define ENT_APOS_TRDELTA(e)    ((vec_t *)((byte *)(e) + 0x48))
-#define ENT_OTHERENTNUM(e)     (*(int *)((byte *)(e) + 0x7C))
-#define ENT_WEAPON(e)          (*(int *)((byte *)(e) + 0x8C))
-#define ENT_EVENTSEQ(e)        (*(int *)((byte *)(e) + 0xA4))
-#define ENT_EVENTS(e, i)       (*(int *)((byte *)(e) + 0xA8 + (i)*4))
-#define ENT_EVENTPARMS(e, i)   (*(int *)((byte *)(e) + 0xB8 + (i)*4))
-#define ENT_INUSE(e)           (*(byte *)((byte *)(e) + 0xFC))
-#define ENT_CURRENTORIGIN(e)   ((vec_t *)((byte *)(e) + 0x138))
-#define ENT_CURRENTANGLES(e)   ((vec_t *)((byte *)(e) + 0x144))
-#define ENT_OWNERNUM(e)        (*(int *)((byte *)(e) + 0x150))
-#define ENT_EVENTTIME(e)       (*(int *)((byte *)(e) + 0x154))
-#define ENT_CLIENT(e)          (*(byte **)((byte *)(e) + 0x158))
-#define ENT_TURRET(e)          (*(int *)((byte *)(e) + 0x15C))
-#define ENT_MODELINDEX(e)      (*(byte *)((byte *)(e) + 0x164))
-#define ENT_IGNORECOLLISION(e) (*(byte *)((byte *)(e) + 0x165))
-#define ENT_HANDLER(e)         (*(byte *)((byte *)(e) + 0x166))
-#define ENT_CLASSNAME(e)       (*(unsigned short *)((byte *)(e) + 0x168))
-#define ENT_FLAGS(e)           (*(int *)((byte *)(e) + 0x174))
-#define ENT_FREETIME(e)        (*(int *)((byte *)(e) + 0x178))
-#define ENT_FREEAFTEREVENT(e)  (*(int *)((byte *)(e) + 0x17C))
-#define ENT_PARENT(e)          (*(gentity_t **)((byte *)(e) + 0x18C))
-#define ENT_TAGINFO(e)         (*(byte **)((byte *)(e) + 0x208))
-#define ENT_TAGCHILDREN(e)     (*(gentity_t **)((byte *)(e) + 0x20C))
-#define ENT_ATTACHMODEL(e, i)  (*(byte *)((byte *)(e) + 0x210 + (i)))
-#define ENT_ATTACHTAG(e, i)    (*(unsigned short *)((byte *)(e) + 0x218 + (i)*2))
-#define ENT_USECOUNT(e)        (*(int *)((byte *)(e) + 0x228))
-#define ENT_NEXTFREEENT(e)     (*(gentity_t **)((byte *)(e) + 0x22C))
-
-#define ENTITY_STRIDE 0x230
+#define ENTITY_STRIDE sizeof(gentity_s)
 
 /* TagInfo structure (0x70 bytes allocated with MT_Alloc):
  *   0x00  parent (gentity_t *)
@@ -160,14 +144,14 @@ extern byte *playerCorpseInfo_ptr;   /* 0x195f6d0 */
 #define CORPSE_ENTNUM(ptr, i)  (*(int *)((byte *)(ptr) + (i) * 0x4C8 + 0x10BC))
 #define CORPSE_CALLBACK(ptr)   (*(int *)((byte *)(ptr) + 0x10AC))
 
-/* Client structure offsets */
-#define CLIENT_EVENTSEQ(c)     (*(int *)((byte *)(c) + 0xA4))
-#define CLIENT_EVENTS(c, i)    (*(int *)((byte *)(c) + 0xA8 + (i)*4))
-#define CLIENT_EVENTPARMS(c, i)(*(int *)((byte *)(c) + 0xB8 + (i)*4))
-#define CLIENT_VIEWANGLES(c)   ((vec_t *)((byte *)(c) + 0xE8))
-#define CLIENT_OWNERENT(c)     (*(gentity_t **)((byte *)(c) + 0x282C))
-#define CLIENT_OWNERNUM(c)     (*(int *)((byte *)(c) + 0x2830))
-#define CLIENT_WEAPENT(c)      (*(int *)((byte *)(c) + 0x5A0))
+/* Client (gclient_t) field access macros */
+#define CLIENT_EVENTSEQ(c)     (((gclient_t *)(c))->ps.eventSequence)
+#define CLIENT_EVENTS(c, i)    (((gclient_t *)(c))->ps.events[i])
+#define CLIENT_EVENTPARMS(c, i)(((gclient_t *)(c))->ps.eventParms[i])
+#define CLIENT_VIEWANGLES(c)   (((gclient_t *)(c))->ps.viewangles)
+#define CLIENT_OWNERENT(c)     (((gclient_t *)(c))->pLookatEnt)
+#define CLIENT_OWNERNUM(c)     (((gclient_t *)(c))->useHoldEntity)
+#define CLIENT_WEAPENT(c)      (*(int *)((byte *)(c) + 0x5A0)) /* deep in playerState_s */
 
 /* VectorCopy / VectorClear */
 #define VectorCopy(a, b) ((b)[0]=(a)[0], (b)[1]=(a)[1], (b)[2]=(a)[2])
@@ -1021,11 +1005,11 @@ unsigned char G_FreeEntity(gentity_t *ed)
         if (ENT_OWNERNUM(ent) == entnum) {
             ENT_OWNERNUM(ent) = 0x3FF;
             if (ENT_ETYPE(ent) == 9) {
-                *(byte *)((byte *)ent + 0x162) = 0;
+                _ENT(ent)->active = 0;
             }
         }
-        if (ENT_OTHERENTNUM(ent) == entnum) {
-            ENT_OTHERENTNUM(ent) = 0x3FF;
+        if (ENT_GROUNDENTNUM(ent) == entnum) {
+            ENT_GROUNDENTNUM(ent) = 0x3FF;
         }
     }
 
@@ -1202,7 +1186,7 @@ unsigned char G_DObjUpdate(gentity_t *ent)
     dobjModels[2] = 0;
 
     if (ENT_ETYPE(ent) == 0 || ENT_ETYPE(ent) == 6 || ENT_ETYPE(ent) == 9) {
-        ENT_WEAPON(ent) = ENT_MODELINDEX(ent);
+        ENT_INDEX(ent) = ENT_MODELINDEX(ent);
     }
 
     numModels = 1;

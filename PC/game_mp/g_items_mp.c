@@ -13,9 +13,10 @@
 
 extern qboolean itemRegistered[256]; /* 0x0 */
 
-/* Entity accessor macros */
-#define ENT_CLIENTNUM(e)  (*(int *)((byte *)(e) + 0x90))
-#define ENT_ACTIVE(e)     (*(byte *)((byte *)(e) + 0x162))
+/* Entity field access macros */
+#define _ENT(e)           ((gentity_t *)(e))
+#define ENT_CLIENTNUM(e)  (_ENT(e)->s.clientNum)
+#define ENT_ACTIVE(e)     (_ENT(e)->active)
 
 void DroppedItemClearOwner(gentity_t *pSelf);
 void G_GetItemClassname(const gitem_t *item, scr_string_t *out);
