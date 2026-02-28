@@ -2919,7 +2919,7 @@ typedef int list;  /* opaque */
 typedef int lit;  /* opaque */
 typedef int loopEndDelay;  /* opaque */
 typedef int loopFadeTime;  /* opaque */
-typedef int main;  /* opaque */
+/* typedef int main; */ /* removed: conflicts with main() */
 typedef int marker;  /* opaque */
 typedef int max;  /* opaque */
 typedef int maxPitchSpeed;  /* opaque */
@@ -3145,7 +3145,7 @@ typedef struct D3DXFLOAT16 D3DXFLOAT16;
 typedef struct D3DXMATRIX D3DXMATRIX;
 typedef struct D3DXVECTOR3 D3DXVECTOR3;
 typedef struct D3DXVECTOR4 D3DXVECTOR4;
-typedef struct DIR DIR;
+/* typedef struct DIR DIR; */ /* removed: conflicts with system dirent.h */
 typedef struct DInfo DInfo;
 typedef struct DObjAnimMat_s DObjAnimMat_s;
 typedef struct DObjModel_s DObjModel_s;
@@ -4077,7 +4077,7 @@ typedef struct spawn_t spawn_t;
 typedef struct split_cb_params split_cb_params;
 typedef struct srfPoly_t srfPoly_t;
 typedef struct srfTriangles_t srfTriangles_t;
-typedef struct stat stat;
+/* typedef struct stat stat; */ /* removed: conflicts with system stat.h */
 typedef struct static_model_cache_t static_model_cache_t;
 typedef union static_model_leaf_t static_model_leaf_t;
 typedef struct static_model_node_list_t static_model_node_list_t;

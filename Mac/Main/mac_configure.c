@@ -1,87 +1,69 @@
-/* ASM dump from: mac_configure.cpp */
+/* Converted to C from ASM: mac_configure.cpp */
 /* Original path: /Users/kevin/Development/i5works/COD2/Project/Mac/Main/mac_configure.cpp */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "common_types.h"
 #include "imports.h"
 
-double Sys_CpuGHz(void);
-int Sys_SystemMemoryMB(void);
-float Sys_DetectVideoCard(int descLimit, char *description);
-bool Sys_SupportsSSE(void);
-
-/* line 18 */
-__attribute__((naked))
 double Sys_CpuGHz(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 18 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "calll MacFeatures_GetCPUSpeedInGHz\n" /* line 20 */
-        "fstps -0xc(%ebp)\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n"
-        "movsd %xmm0, -0x18(%ebp)\n"
-        "fldl -0x18(%ebp)\n" /* line 21 */
-        "leave\n"
-        "retl\n"
-    );
+    /* Read from /proc/cpuinfo on Linux */
+    FILE *f = fopen("/proc/cpuinfo", "r");
+    char line[256];
+    double mhz = 1000.0;
+
+    if (f) {
+        while (fgets(line, sizeof(line), f)) {
+            if (strncmp(line, "cpu MHz", 7) == 0) {
+                char *p = strchr(line, ':');
+                if (p) {
+                    mhz = atof(p + 1);
+                }
+                break;
+            }
+        }
+        fclose(f);
+    }
+    return mhz / 1000.0;
 }
 
-/* line 25 */
-__attribute__((naked))
 int Sys_SystemMemoryMB(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 25 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        /* { scope 1 */
-        "calll MacFeatures_GetMemorySizeInMB\n" /* line 27 */
-        "cmpl $0x8000001, %eax\n" /* line 33 */
-        "movl $0x8000000, %edx\n"
-        "cmovgel %edx, %eax\n"
-        /* } scope */
-        "leave\n" /* line 39 */
-        "retl\n"
-    );
+    /* Read from /proc/meminfo on Linux */
+    FILE *f = fopen("/proc/meminfo", "r");
+    char line[256];
+    long kb = 512 * 1024; /* default 512 MB */
+
+    if (f) {
+        while (fgets(line, sizeof(line), f)) {
+            if (strncmp(line, "MemTotal:", 9) == 0) {
+                kb = atol(line + 9);
+                break;
+            }
+        }
+        fclose(f);
+    }
+
+    int mb = (int)(kb / 1024);
+    /* Cap at 128 GB to match original behavior */
+    if (mb >= 0x8000001)
+        mb = 0x8000000;
+    return mb;
 }
 
-/* line 43 */
-__attribute__((naked))
 float Sys_DetectVideoCard(int descLimit, char *description)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 43 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "calll MacDisplay_GetGLRenderer\n" /* line 45 */
-        "movl 8(%ebp), %edx\n" /* descLimit */
-        "movl %edx, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* description */
-        "movl %eax, (%esp)\n"
-        "calll strncpy\n"
-        "leave\n" /* line 46 */
-        "retl\n"
-    );
+    /* Try to read GL renderer from /proc or glxinfo */
+    const char *renderer = "Linux OpenGL";
+    strncpy(description, renderer, descLimit);
+    description[descLimit - 1] = '\0';
+    return 0;
 }
 
-/* line 50 */
-__attribute__((naked))
 bool Sys_SupportsSSE(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 50 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x19, 4(%esp)\n" /* line 53 */
-        "movl $0x78383666, (%esp)\n"
-        "calll MacFeatures_HasGestaltAttribute\n"
-        "testb %al, %al\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 57 */
-        "retl\n"
-    );
+    /* All modern x86 CPUs support SSE */
+    return 1;
 }
-

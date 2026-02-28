@@ -300,7 +300,7 @@ int Znwm(); /* __Znwm */
 int CFConstantStringClassReference(); /* ___CFConstantStringClassReference */
 int dynamic_cast(); /* ___dynamic_cast */
 /* error() — provided by system headers */
-int isnanf(); /* ___isnanf */
+/* int isnanf(); */ /* ___isnanf — provided by system headers */
 int keymgr_dwarf2_register_sections(); /* ___keymgr_dwarf2_register_sections */
 int maskrune(); /* ___maskrune */
 int sF(); /* ___sF */
@@ -324,7 +324,7 @@ int cthread_init_routine(); /* __cthread_init_routine */
 /* ceilf() — provided by system headers */
 /* chdir() — provided by system headers */
 /* close() — provided by system headers */
-int closedir(); /* _closedir */
+/* int closedir(); */ /* _closedir — provided by system headers */
 /* connect() — provided by system headers */
 /* cos() — provided by system headers */
 /* cosf() — provided by system headers */
@@ -352,21 +352,21 @@ int getrlimit(); /* _getrlimit */
 /* inet_addr() — provided by system headers */
 /* ioctl() — provided by system headers */
 /* isatty() — provided by system headers */
-int isprint(); /* _isprint */
-int isspace(); /* _isspace */
+/* int isprint(); */ /* _isprint — provided by system headers */
+/* int isspace(); */ /* _isspace — provided by system headers */
 /* localtime() — provided by system headers */
 /* log() — provided by system headers */
 /* log10f() — provided by system headers */
 /* logf() — provided by system headers */
 /* longjmp() — provided by system headers */
-int lround(); /* _lround */
+/* int lround(); */ /* _lround — provided by system headers */
 int mach_init_routine(); /* _mach_init_routine */
 /* malloc() — provided by system headers */
 /* memcpy() — provided by system headers */
 /* memmove() — provided by system headers */
 /* memset() — provided by system headers */
 /* mkdir() — provided by system headers */
-int opendir(); /* _opendir */
+/* int opendir(); */ /* _opendir — provided by system headers */
 /* pow() — provided by system headers */
 /* printf() — provided by system headers */
 /* pthread_create() — provided by system headers */
@@ -384,7 +384,7 @@ int putenv(); /* _putenv */
 /* puts() — provided by system headers */
 /* qsort() — provided by system headers */
 /* rand() — provided by system headers */
-int readdir(); /* _readdir */
+/* int readdir(); */ /* _readdir — provided by system headers */
 /* realloc() — provided by system headers */
 /* recv() — provided by system headers */
 /* recvfrom() — provided by system headers */
