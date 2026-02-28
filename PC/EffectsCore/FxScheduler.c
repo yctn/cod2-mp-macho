@@ -16,6 +16,8 @@
  *   #include "Mac/Tools/MacSwap.h"
  */
 
+extern int irand(int min, int max);
+
 extern FxScheduler * fxSchedulers[1]; /* 0x0 */
 static EffectTemplate * effectTemplateArray[256]; /* 0x4b5720 */
 static int effectTemplateArrayCount; /* 0x4b5700 */
@@ -39,35 +41,19 @@ void ScheduledEffect_Archive(const ScheduledEffect * _this, FxArchive *arch);
 void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch);
 
 /* line 75 */
-__attribute__((naked))
 TMediaElement MediaHandles_GetHandle(const MediaHandles * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 75 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* this */
-        "movzwl 4(%edx), %eax\n" /* line 79 */
-        "testw %ax, %ax\n"
-        "jne .Lf6159e_000615b9\n"
-        "xorl %eax, %eax\n" /* line 82 */
-        "addl $0x14, %esp\n" /* line 85 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf6159e_000615b9:\n"
-        "movl (%edx), %ebx\n" /* line 84 */
-        "movzwl %ax, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll irand\n"
-        "movl (%ebx, %eax, 4), %eax\n"
-        "addl $0x14, %esp\n" /* line 85 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    unsigned short count = *(unsigned short *)((byte *)_this + 4);
+    TMediaElement result;
+    TMediaElement *elements;
+
+    if (!count) {
+        result.data = NULL;
+        return result;
+    }
+
+    elements = *(TMediaElement **)((byte *)_this);
+    return elements[irand(0, count)];
 }
 
 /* line 90 */
@@ -78,42 +64,20 @@ void FxScheduler_FxScheduler(const FxScheduler * _this)
 }
 
 /* line 459 */
-__attribute__((naked))
 float FxScheduler_GetEffectLength(const FxScheduler * _this, EffectTemplate *fx)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 459 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* fx */
-        /* { scope 1 */
-        "movl 4(%eax), %ebx\n" /* line 466 */
-        "pxor %xmm1, %xmm1\n"
-        "testl %ebx, %ebx\n"
-        "jle .Lf615f0_0006162b\n"
-        "movl %eax, %edx\n"
-        "xorl %ecx, %ecx\n"
-        "pxor %xmm1, %xmm1\n"
-        ".Lf615f0_0006160d:\n"
-        "movl 8(%edx), %eax\n" /* line 468 */
-        "movss 0x4c(%eax), %xmm0\n" /* line 474 */
-        "addss 0x5c(%eax), %xmm0\n"
-        "maxss %xmm1, %xmm0\n"
-        "movaps %xmm0, %xmm1\n"
-        "addl $1, %ecx\n" /* line 466 */
-        "addl $4, %edx\n"
-        "cmpl %ebx, %ecx\n"
-        "jne .Lf615f0_0006160d\n"
-        /* } scope */
-        ".Lf615f0_0006162b:\n"
-        "movss %xmm1, -8(%ebp)\n" /* line 479 */
-        "flds -8(%ebp)\n"
-        "addl $4, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int count = *(int *)((byte *)fx + 4);
+    float maxLen = 0.0f;
+    int i;
+
+    for (i = 0; i < count; i++) {
+        PrimitiveTemplate *prim = *(PrimitiveTemplate **)((byte *)fx + 8 + i * 4);
+        float len = *(float *)((byte *)prim + 0x4c) + *(float *)((byte *)prim + 0x5c);
+        if (len > maxLen)
+            maxLen = len;
+    }
+
+    return maxLen;
 }
 
 /* line 789 */

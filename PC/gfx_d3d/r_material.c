@@ -63,102 +63,32 @@ void * Material_Alloc(int size)
 }
 
 /* line 314 */
-__attribute__((naked))
 const float * Material_RegisterLiteral(const vec_t *literal)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 314 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* literal */
-        /* { scope 1 */
-        "movl 0xc87e8c, %ebx\n" /* line 318 */
-        "testl %ebx, %ebx\n"
-        "jg .Lfd30e8_000d3137\n"
-        "xorl %ebx, %ebx\n"
-        "movss (%edi), %xmm1\n" /* literal */
-        ".Lfd30e8_000d3104:\n"
-        "shll $4, %ebx\n" /* line 327 */
-        "leal 0x2310(%ebx), %eax\n"
-        "leal materialGlobals(%eax), %edx\n" /* to */
-        /* { scope 2 */
-        "movss %xmm1, materialGlobals(%eax)\n" /* line 456 */
-        "movl 4(%edi), %eax\n" /* line 457 | literal */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%edi), %eax\n" /* line 458 | literal */
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%edi), %eax\n" /* line 459 | literal */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "movl %edx, %eax\n" /* line 328 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 329 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfd30e8_000d3137:\n"
-        "movss (%edi), %xmm1\n" /* line 561 | literal */
-        "xorl %eax, %eax\n"
-        "movl $0x2310, %esi\n"
-        ".Lfd30e8_000d3142:\n"
-        "leal materialGlobals(%esi), %ecx\n"
-        "ucomiss materialGlobals(%esi), %xmm1\n"
-        "jne .Lfd30e8_000d3193\n"
-        "jp .Lfd30e8_000d3193\n"
-        "movss 4(%edi), %xmm0\n" /* literal */
-        "ucomiss 4(%ecx), %xmm0\n"
-        "jne .Lfd30e8_000d3193\n"
-        "jp .Lfd30e8_000d3193\n"
-        "movss 8(%edi), %xmm0\n" /* literal */
-        "ucomiss 8(%ecx), %xmm0\n"
-        "jne .Lfd30e8_000d3193\n"
-        "jp .Lfd30e8_000d3193\n"
-        "movss 0xc(%edi), %xmm0\n" /* literal */
-        "ucomiss 0xc(%ecx), %xmm0\n"
-        "jne .Lfd30e8_000d3193\n"
-        "jp .Lfd30e8_000d3193\n"
-        "movl $1, %edx\n"
-        /* } scope */
-        "testl %edx, %edx\n" /* line 320 */
-        "je .Lfd30e8_000d3199\n"
-        ".Lfd30e8_000d3183:\n"
-        "shll $4, %eax\n" /* line 321 */
-        "addl $0xc87e90, %eax\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 329 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfd30e8_000d3193:\n"
-        "xorl %edx, %edx\n" /* line 561 */
-        /* } scope */
-        "testl %edx, %edx\n" /* line 320 */
-        "jne .Lfd30e8_000d3183\n"
-        ".Lfd30e8_000d3199:\n"
-        "addl $1, %eax\n" /* line 318 */
-        "addl $0x10, %esi\n"
-        "cmpl %ebx, %eax\n"
-        "jne .Lfd30e8_000d3142\n"
-        "cmpl $0x10, %ebx\n" /* line 324 */
-        "jne .Lfd30e8_000d3104\n"
-        "movl $0x10, 8(%esp)\n" /* line 325 */
-        "movl $0x224334, 4(%esp)\n" /* "more than %i shader literals used" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "movss (%edi), %xmm1\n" /* literal */
-        "jmp .Lfd30e8_000d3104\n"
-    );
+    int literalCount = *(int *)((byte *)&materialGlobals + 0x230c);
+    float *literals = (float *)((byte *)&materialGlobals + 0x2310);
+    int i;
+
+    for (i = 0; i < literalCount; i++) {
+        float *entry = literals + i * 4;
+        if (entry[0] == literal[0] && entry[1] == literal[1] &&
+            entry[2] == literal[2] && entry[3] == literal[3]) {
+            return entry;
+        }
+    }
+
+    if (literalCount >= 16) {
+        R_Error(1, "more than %i shader literals used", 16);
+    }
+
+    {
+        float *dest = literals + literalCount * 4;
+        dest[0] = literal[0];
+        dest[1] = literal[1];
+        dest[2] = literal[2];
+        dest[3] = literal[3];
+        return dest;
+    }
 }
 
 /* line 529 */

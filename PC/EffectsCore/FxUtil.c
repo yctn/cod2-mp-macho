@@ -43,12 +43,13 @@ static effectListArray_t effectListArrayNonBolt; /* 0x4a3d00 */
 static SortedEffect visibleEffectsNonBolt[1800]; /* 0x4b1ec0 */
 static SortedEffect visibleEffectsBolt[1800]; /* 0x4ae680 */
 
+extern Bool FxHelper_IsMaterialRefractive(FxHelper *helper, MaterialHandle material);
+extern void FxHelper_FxHelper(FxHelper *helper);
+
 void FX_InitServer(void);
 static int CompareSortedEffects(const void *e0, const void *e1);
 static int CompareSortedClusters(const void *e0, const void *e1);
 void FX_SetSortGroup(Effect *fx);
-static void __static_initialization_and_destruction_0(void);
-static void GLOBAL__I_effectClusters(void); /* global constructors keyed to effectClusters */
 int FX_GetCluster(const vec_t *origin);
 void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, const vec_t *origin, vec3_t *ax);
 Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient);
@@ -88,54 +89,25 @@ void FX_InitServer(void)
 }
 
 /* line 974 */
-static __attribute__((naked))
-int CompareSortedEffects(const void *e0, const void *e1)
+static int CompareSortedEffects(const void *e0, const void *e1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 974 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 0xc(%ebp), %edi\n" /* e1 */
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 982 | e0 */
-        "movl (%eax), %esi\n"
-        "movl (%edi), %ebx\n" /* line 983 | e1 */
-        "movl 0xb0(%esi), %eax\n" /* line 985 */
-        "subl 0xb0(%ebx), %eax\n" /* line 986 */
-        "jne .Lf5946e_000594ae\n"
-        "movl clusterSort, %edx\n" /* line 989 */
-        "movl 0xac(%esi), %eax\n"
-        "movl 0xac(%ebx), %ecx\n"
-        "movl (%edx, %eax, 4), %eax\n"
-        "subl (%edx, %ecx, 4), %eax\n" /* line 990 */
-        "jne .Lf5946e_000594ae\n"
-        "movl 0x40(%esi), %eax\n" /* line 993 */
-        "subl 0x40(%ebx), %eax\n" /* line 994 */
-        "je .Lf5946e_000594b3\n"
-        /* } scope */
-        ".Lf5946e_000594ae:\n"
-        "popl %ebx\n" /* line 998 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5946e_000594b3:\n"
-        "movss 4(%edi), %xmm0\n" /* line 997 | e1 */
-        "movl 8(%ebp), %eax\n" /* e0 */
-        "ucomiss 4(%eax), %xmm0\n"
-        "seta %al\n"
-        "movzbl %al, %eax\n"
-        "leal -1(%eax, %eax), %eax\n"
-        /* } scope */
-        "popl %ebx\n" /* line 998 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    Effect *fx0 = *(Effect **)e0;
+    Effect *fx1 = *(Effect **)e1;
+    int result;
+
+    result = *(int *)((byte *)fx0 + 0xb0) - *(int *)((byte *)fx1 + 0xb0);
+    if (result)
+        return result;
+
+    result = clusterSort[*(int *)((byte *)fx0 + 0xac)] - clusterSort[*(int *)((byte *)fx1 + 0xac)];
+    if (result)
+        return result;
+
+    result = *(int *)((byte *)fx0 + 0x40) - *(int *)((byte *)fx1 + 0x40);
+    if (result)
+        return result;
+
+    return (*(float *)((byte *)e1 + 4) > *(float *)((byte *)e0 + 4)) ? 1 : -1;
 }
 
 /* line 1001 */
@@ -147,69 +119,18 @@ static int CompareSortedClusters(const void *e0, const void *e1)
 }
 
 /* line 1549 */
-__attribute__((naked))
 void FX_SetSortGroup(Effect *fx)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1549 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* fx */
-        "movl $0, 0xb0(%ebx)\n" /* line 1551 | fx */
-        "movl 0x40(%ebx), %eax\n" /* line 1552 | fx */
-        "testl %eax, %eax\n"
-        "je .Lf594ec_00059526\n"
-        "movl %eax, 4(%esp)\n"
-        "movl theFxHelper, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FxHelper_IsMaterialRefractive\n"
-        "testb %al, %al\n"
-        "je .Lf594ec_00059526\n"
-        "movl $0xffffffff, 0xb0(%ebx)\n" /* line 1553 | fx */
-        ".Lf594ec_00059526:\n"
-        "addl $0x14, %esp\n" /* line 1554 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    *(int *)((byte *)fx + 0xb0) = 0;
+    if (*(MaterialHandle *)((byte *)fx + 0x40) && FxHelper_IsMaterialRefractive(theFxHelper, *(MaterialHandle *)((byte *)fx + 0x40))) {
+        *(int *)((byte *)fx + 0xb0) = -1;
+    }
 }
 
 /* line 2306 */
-static __attribute__((naked))
-void __static_initialization_and_destruction_0(void)
+static void __attribute__((constructor)) GLOBAL__I_effectClusters(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2306 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "cmpl $0xffff, %edx\n" /* line 110 */
-        "je .Lf5952c_0005953c\n"
-        ".Lf5952c_0005953a:\n"
-        "leave\n" /* line 2306 */
-        "retl\n"
-        ".Lf5952c_0005953c:\n"
-        "subl $1, %eax\n" /* line 110 */
-        "jne .Lf5952c_0005953a\n"
-        "movl $theFxHelpers, (%esp)\n"
-        "calll FxHelper_FxHelper\n"
-        "leave\n" /* line 2306 */
-        "retl\n"
-    );
-}
-
-/* line 2307 */
-static __attribute__((naked))
-void GLOBAL__I_effectClusters(void) /* global constructors keyed to effectClusters */
-{
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2307 */
-        "movl %esp, %ebp\n"
-        "movl $0xffff, %edx\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n"
-        "jmp __static_initialization_and_destruction_0\n"
-    );
+    FxHelper_FxHelper(theFxHelpers);
 }
 
 /* line 122 */

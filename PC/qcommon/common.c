@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdarg.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_math.h"
@@ -73,9 +74,9 @@ static char * noticeErrors[8]; /* 0x308ba0 */
 
 void Com_BeginRedirect(char *buffer, int buffersize, void (*flush)());
 void Com_EndRedirect(void);
-void Com_Printf(const char *fmt);
+void Com_Printf(const char *fmt, ...);
 void Com_PrintMessage(print_msg_type_t type, const char *msg);
-void Com_DPrintf(const char *fmt);
+void Com_DPrintf(const char *fmt, ...);
 static void Com_SetErrorMessage(void);
 void Com_Error(errorParm_t code, const char *fmt);
 qboolean Com_SafeMode(void);
@@ -142,34 +143,16 @@ void Com_EndRedirect(void)
 }
 
 /* line 481 */
-__attribute__((naked))
-void Com_Printf(const char *fmt)
+void Com_Printf(const char *fmt, ...)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 481 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x1024, %esp\n"
-        /* { scope 1 */
-        "leal 0xc(%ebp), %eax\n" /* line 487 */
-        "movl %eax, -0xc(%ebp)\n" /* argptr */
-        "movl %eax, 0xc(%esp)\n" /* line 488 */
-        "movl 8(%ebp), %eax\n" /* fmt */
-        "movl %eax, 8(%esp)\n"
-        "movl $__mh_execute_header, 4(%esp)\n"
-        "leal -0x100c(%ebp), %ebx\n" /* msg */
-        "movl %ebx, (%esp)\n"
-        "calll vsnprintf\n"
-        "movb $0, -0xd(%ebp)\n" /* line 489 */
-        "movl %ebx, 4(%esp)\n" /* line 492 */
-        "movl $0, (%esp)\n"
-        "calll Com_PrintMessage\n"
-        /* } scope */
-        "addl $0x1024, %esp\n" /* line 493 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char msg[4096];
+    va_list argptr;
+
+    va_start(argptr, fmt);
+    vsnprintf(msg, sizeof(msg), fmt, argptr);
+    va_end(argptr);
+
+    Com_PrintMessage(0, msg);
 }
 
 /* line 335 */
@@ -324,48 +307,20 @@ void Com_PrintMessage(print_msg_type_t type, const char *msg)
 }
 
 /* line 503 */
-__attribute__((naked))
-void Com_DPrintf(const char *fmt)
+void Com_DPrintf(const char *fmt, ...)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 503 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x1024, %esp\n"
-        /* { scope 1 */
-        "movl com_developer, %eax\n" /* line 508 */
-        "testl %eax, %eax\n"
-        "je .Lf2eb90_0002ebaa\n"
-        "movl 8(%eax), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jne .Lf2eb90_0002ebb3\n"
-        /* } scope */
-        ".Lf2eb90_0002ebaa:\n"
-        "addl $0x1024, %esp\n" /* line 517 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf2eb90_0002ebb3:\n"
-        "leal 0xc(%ebp), %eax\n" /* line 511 */
-        "movl %eax, -0xc(%ebp)\n" /* argptr */
-        "movl %eax, 0xc(%esp)\n" /* line 512 */
-        "movl 8(%ebp), %eax\n" /* fmt */
-        "movl %eax, 8(%esp)\n"
-        "movl $__mh_execute_header, 4(%esp)\n"
-        "leal -0x100c(%ebp), %ebx\n" /* msg */
-        "movl %ebx, (%esp)\n"
-        "calll vsnprintf\n"
-        "movb $0, -0xd(%ebp)\n" /* line 513 */
-        "movl %ebx, 4(%esp)\n" /* line 516 */
-        "movl $0x216058, (%esp)\n" /* "%s" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x1024, %esp\n" /* line 517 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char msg[4096];
+    va_list argptr;
+
+    if (!com_developer || !com_developer->current.integer) {
+        return;
+    }
+
+    va_start(argptr, fmt);
+    vsnprintf(msg, sizeof(msg), fmt, argptr);
+    va_end(argptr);
+
+    Com_Printf("%s", msg);
 }
 
 /* line 634 */

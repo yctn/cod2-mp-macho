@@ -16,12 +16,19 @@ extern const FxFlagEntry fxSpawnFlags[13]; /* 0x0 */
 extern Bool g_rendererExists; /* 0x0 */
 
 extern MaterialHandle Material_RegisterHandle(const char *name, int imageTrack, int materialType);
+extern void MediaHandles_Shutdown(MediaHandles *handles);
+extern void Com_Printf(const char *fmt, ...);
+extern Bool Com_ValidXModelName(const char *name);
+extern struct XModel * FX_XModelPrecache(const char *name);
+extern float flrand(float min, float max);
+
+#include <stdarg.h>
 
 void FxRange_SetRange(const FxRange * _this, float min, float max);
 void PrimitiveTemplate_Shutdown(const PrimitiveTemplate * _this);
 float FxRange_GetValPct(const FxRange * _this, float percent);
 Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const char *val, int *groupFlags, const PrimitiveTemplate * _this_3, const char *flag, const FxFlagEntry *flagEntries, int flagEntryCount);
-void FX_Print(const char *msg);
+void FX_Print(const char *msg, ...);
 MaterialHandle FX_RegisterMaterial(const char *material);
 struct XModel * FX_ModelRegister(const char *name);
 float FxRange_GetVal(const FxRange * _this);
@@ -51,34 +58,13 @@ void FxRange_SetRange(const FxRange * _this, float min, float max)
 }
 
 /* line 151 */
-__attribute__((naked))
 void PrimitiveTemplate_Shutdown(const PrimitiveTemplate * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 151 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "leal 0x68(%ebx), %eax\n" /* line 153 | this */
-        "movl %eax, (%esp)\n"
-        "calll MediaHandles_Shutdown\n"
-        "leal 0x70(%ebx), %eax\n" /* line 154 | this */
-        "movl %eax, (%esp)\n"
-        "calll MediaHandles_Shutdown\n"
-        "leal 0x78(%ebx), %eax\n" /* line 155 | this */
-        "movl %eax, (%esp)\n"
-        "calll MediaHandles_Shutdown\n"
-        "leal 0x80(%ebx), %eax\n" /* line 156 | this */
-        "movl %eax, (%esp)\n"
-        "calll MediaHandles_Shutdown\n"
-        "addl $0x88, %ebx\n" /* line 157 | this */
-        "movl %ebx, 8(%ebp)\n" /* this */
-        "addl $0x14, %esp\n" /* line 158 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp MediaHandles_Shutdown\n" /* line 157 */
-    );
+    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x68));
+    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x70));
+    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x78));
+    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x80));
+    MediaHandles_Shutdown((MediaHandles *)((byte *)_this + 0x88));
 }
 
 /* line 2213 */
@@ -124,32 +110,16 @@ Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const ch
 }
 
 /* line 2127 */
-__attribute__((naked))
-void FX_Print(const char *msg)
+void FX_Print(const char *msg, ...)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2127 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x424, %esp\n"
-        /* { scope 1 */
-        "leal 0xc(%ebp), %eax\n" /* line 2132 */
-        "movl %eax, -0xc(%ebp)\n" /* argptr */
-        "movl %eax, 0xc(%esp)\n" /* line 2133 */
-        "movl 8(%ebp), %eax\n" /* msg */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x40c(%ebp), %ebx\n" /* text */
-        "movl %ebx, (%esp)\n"
-        "calll vsnprintf\n"
-        "movl %ebx, (%esp)\n" /* line 2143 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x424, %esp\n" /* line 2145 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char text[1024];
+    va_list argptr;
+
+    va_start(argptr, msg);
+    vsnprintf(text, 0x400, msg, argptr);
+    va_end(argptr);
+
+    Com_Printf("%s", text);
 }
 
 /* line 2151 */
@@ -159,59 +129,26 @@ MaterialHandle FX_RegisterMaterial(const char *material)
 }
 
 /* line 2161 */
-__attribute__((naked))
 struct XModel * FX_ModelRegister(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2161 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* name */
-        "movl %ebx, (%esp)\n" /* line 2165 | name */
-        "calll Com_ValidXModelName\n"
-        "testb %al, %al\n"
-        "jne .Lf5e0ba_0005e0d8\n"
-        "xorl %eax, %eax\n" /* line 2175 */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf5e0ba_0005e0d8:\n"
-        "leal 7(%ebx), %eax\n" /* line 2171 | name */
-        "movl %eax, 8(%ebp)\n" /* name */
-        "addl $0x14, %esp\n" /* line 2175 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp FX_XModelPrecache\n" /* line 2171 */
-    );
+    if (!Com_ValidXModelName(name)) {
+        return NULL;
+    }
+
+    return FX_XModelPrecache(name + 7);
 }
 
 /* line 2205 */
-__attribute__((naked))
 float FxRange_GetVal(const FxRange * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2205 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "flds (%eax)\n" /* line 2207 */
-        "movss 4(%eax), %xmm0\n"
-        "fsts -0xc(%ebp)\n"
-        "movss -0xc(%ebp), %xmm1\n"
-        "ucomiss %xmm0, %xmm1\n"
-        "jp .Lf5e0ea_0005e10b\n"
-        "jne .Lf5e0ea_0005e10b\n"
-        "leave\n" /* line 2210 */
-        "retl\n"
-        ".Lf5e0ea_0005e10b:\n"
-        "movss %xmm0, 4(%esp)\n" /* line 2209 */
-        "fstps (%esp)\n"
-        "calll flrand\n"
-        "leave\n" /* line 2210 */
-        "retl\n"
-    );
+    float base = *(float *)((byte *)_this);
+    float amplitude = *(float *)((byte *)_this + 4);
+
+    if (base == amplitude) {
+        return base;
+    }
+
+    return flrand(base, amplitude);
 }
 
 /* line 94 */
