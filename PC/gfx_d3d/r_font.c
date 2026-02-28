@@ -12,6 +12,10 @@ extern int I_stricmp(const char *s1, const char *s2);
 extern int R_Error(int code, const char *fmt, ...);
 extern FontHandle R_LoadFont(const char *fontName, int imageTrack);
 extern void R_AddCmdDrawTextWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor);
+extern void R_AddCmdDrawStretchPic(float x, float y, float w, float h, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material);
+extern unsigned char ColorIndex(int c);
+extern MaterialHandle Material_RegisterHandle(const char *name, int lightmapIndex, int imageTrack);
+extern refimport_t *ri; /* 0x195eee0 */
 
 static int registeredFontCount; /* 0xc96d00 */
 static Font * registeredFont[16]; /* 0xc96d20 */
@@ -24,8 +28,8 @@ int R_ShutdownFonts(void);
 float R_NormalizedTextScale(FontHandle font, float scale);
 int R_TextHeight(FontHandle font);
 int R_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style);
-static const short int * R_GetConsoleString(int *limit, char *text, vec_t *color, Bool *foundIcon);
-static const short int * R_GetConsoleIcon(float *iconHeight, MaterialHandle *iconMaterial, vec_t *color, Bool *iconHorzFlip);
+static const short int * __attribute__((regparm(3))) R_GetConsoleString(const short int *string, int *limit, char *text, vec_t *color, Bool *foundIcon);
+static const short int * __attribute__((regparm(3))) R_GetConsoleIcon(const short int *string, int *maxChars, float *iconWidth, float *iconHeight, MaterialHandle *iconMaterial, vec_t *color, Bool *iconHorzFlip);
 int R_TextWidth(const char *text, int maxChars, FontHandle font);
 int R_ConsoleTextWidth(const short int *string, int maxChars, FontHandle font);
 int R_DrawConsoleText(const short int *string, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style);
@@ -162,169 +166,125 @@ int R_DrawText(const char *text, int maxChars, FontHandle font, float x, float y
 }
 
 /* line 218 */
-static __attribute__((naked))
-const short int * R_GetConsoleString(int *limit, char *text, vec_t *color, Bool *foundIcon)
+static __attribute__((regparm(3)))
+const short int * R_GetConsoleString(const short int *string, int *limit, char *text, vec_t *color, Bool *foundIcon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 218 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        "movl %eax, %ebx\n" /* string */
-        "movl %edx, -0x4c(%ebp)\n"
-        "movl %ecx, -0x28(%ebp)\n"
-        /* { scope 1 */
-        "cmpl $0x3ff, (%edx)\n" /* line 232 */
-        "jle .Lfece4a_000ecfc2\n"
-        "movl $0x3ff, (%edx)\n" /* line 233 */
-        "movl -0x28(%ebp), %eax\n"
-        ".Lfece4a_000ece70:\n"
-        "movb $0, (%eax)\n" /* line 236 */
-        "movl $0x37, (%esp)\n" /* line 237 */
-        "calll ColorIndex\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, -0x20(%ebp)\n" /* currentColor */
-        "movl 0xc(%ebp), %edx\n" /* line 239 | foundIcon */
-        "movb $0, (%edx)\n"
-        "movl -0x4c(%ebp), %esi\n" /* line 241 */
-        "movl (%esi), %edi\n"
-        "testl %edi, %edi\n"
-        "jg .Lfece4a_000ececd\n"
-        "movl $0xffffffff, -0x1c(%ebp)\n" /* markedEnd */
-        "xorl %ebx, %ebx\n" /* stringEndPos */
-        "movl $0, -0x24(%ebp)\n" /* i */
-        "xorl %eax, %eax\n"
-        ".Lfece4a_000ecea6:\n"
-        "movl -0x28(%ebp), %edx\n" /* line 294 */
-        "movb $0, (%edx, %eax)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 295 | markedEnd */
-        "testl %eax, %eax\n"
-        "js .Lfece4a_000ecebb\n"
-        "movl -0x1c(%ebp), %esi\n" /* line 296 | markedEnd */
-        "movb $0, (%edx, %esi)\n"
-        ".Lfece4a_000ecebb:\n"
-        "movl -0x24(%ebp), %eax\n" /* line 298 | i */
-        "movl -0x4c(%ebp), %edi\n"
-        "subl %eax, (%edi)\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 300 | stringEndPos */
-        "addl $0x5c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfece4a_000ececd:\n"
-        "movl %ebx, %ecx\n" /* line 241 | stringEndPos */
-        "movl $0xffffffff, -0x1c(%ebp)\n" /* markedEnd */
-        "movl $0, -0x24(%ebp)\n" /* i */
-        "movl $0, -0x3c(%ebp)\n" /* pos */
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        ".Lfece4a_000eceec:\n"
-        "movl %ecx, %ebx\n" /* stringEndPos */
-        "movzwl (%ecx), %eax\n" /* line 243 */
-        "movzbl %ah, %edx\n"
-        "cmpl %edx, -0x20(%ebp)\n" /* line 245 | currentColor */
-        "je .Lfece4a_000ed00d\n"
-        "cmpl $0xd, %edx\n" /* line 248 */
-        "je .Lfece4a_000ecff8\n"
-        "cmpl $0x10, %edx\n"
-        "je .Lfece4a_000ecff8\n"
-        "cmpl $0x11, %edx\n"
-        "je .Lfece4a_000ecff8\n"
-        "cmpl $0x12, %edx\n"
-        "je .Lfece4a_000ecff8\n"
-        "cmpl $0xa, %edx\n" /* line 256 */
-        "je .Lfece4a_000ecf8b\n"
-        "cmpl $0xb, %edx\n" /* line 262 */
-        "je .Lfece4a_000ecfa6\n"
-        "cmpl $0xc, %edx\n" /* line 268 */
-        "je .Lfece4a_000ecfc9\n"
-        "movl -0x28(%ebp), %esi\n" /* line 277 */
-        "movl -0x3c(%ebp), %edi\n" /* pos */
-        "movb $0x5e, (%esi, %edi)\n"
-        "leal 0x30(%edx), %eax\n" /* line 278 */
-        "movb %al, 1(%edi, %esi)\n"
-        "addl $2, %edi\n"
-        "movl %edi, -0x3c(%ebp)\n" /* pos */
-        "movl %edx, -0x20(%ebp)\n" /* currentColor */
-        "movzwl (%ecx), %eax\n"
-        "movl %edi, %ebx\n" /* stringEndPos */
-        ".Lfece4a_000ecf53:\n"
-        "movl -0x28(%ebp), %edx\n" /* line 280 */
-        "movb %al, (%edx, %ebx)\n"
-        "cmpb $0x20, %al\n" /* line 281 */
-        "je .Lfece4a_000ecfe5\n"
-        "movl $0xffffffff, -0x1c(%ebp)\n" /* markedEnd */
-        ".Lfece4a_000ecf68:\n"
-        "addl $1, -0x3c(%ebp)\n" /* line 288 | pos */
-        ".Lfece4a_000ecf6c:\n"
-        "addl $1, -0x24(%ebp)\n" /* line 241 | i */
-        "addl $2, %ecx\n"
-        "movl -0x24(%ebp), %eax\n" /* i */
-        "movl -0x4c(%ebp), %edi\n"
-        "cmpl %eax, (%edi)\n"
-        "jg .Lfece4a_000eceec\n"
-        "movl -0x3c(%ebp), %eax\n" /* pos */
-        "xorl %ebx, %ebx\n" /* stringEndPos */
-        "jmp .Lfece4a_000ecea6\n"
-        ".Lfece4a_000ecf8b:\n"
-        "movl 8(%ebp), %esi\n" /* line 258 | color */
-        "testl %esi, %esi\n"
-        "je .Lfece4a_000ecf6c\n"
-        "movzbl %al, %eax\n" /* line 259 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movl 8(%ebp), %eax\n" /* color */
-        "movss %xmm0, (%eax)\n"
-        "jmp .Lfece4a_000ecf6c\n"
-        ".Lfece4a_000ecfa6:\n"
-        "movl 8(%ebp), %ebx\n" /* line 264 | color, stringEndPos */
-        "testl %ebx, %ebx\n" /* stringEndPos */
-        "je .Lfece4a_000ecf6c\n"
-        "movzbl %al, %eax\n" /* line 265 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movl 8(%ebp), %edx\n" /* color */
-        "movss %xmm0, 4(%edx)\n"
-        "jmp .Lfece4a_000ecf6c\n"
-        ".Lfece4a_000ecfc2:\n"
-        "movl %ecx, %eax\n"
-        "jmp .Lfece4a_000ece70\n"
-        ".Lfece4a_000ecfc9:\n"
-        "movl 8(%ebp), %edx\n" /* line 270 | color */
-        "testl %edx, %edx\n"
-        "je .Lfece4a_000ecf6c\n"
-        "movzbl %al, %eax\n" /* line 271 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movl 8(%ebp), %ebx\n" /* color, stringEndPos */
-        "movss %xmm0, 8(%ebx)\n" /* stringEndPos */
-        "jmp .Lfece4a_000ecf6c\n"
-        ".Lfece4a_000ecfe5:\n"
-        "cmpl $-1, -0x1c(%ebp)\n" /* line 283 | markedEnd */
-        "movl -0x3c(%ebp), %esi\n" /* pos */
-        "cmovnel -0x1c(%ebp), %esi\n" /* markedEnd */
-        "movl %esi, -0x1c(%ebp)\n" /* markedEnd */
-        "jmp .Lfece4a_000ecf68\n"
-        ".Lfece4a_000ecff8:\n"
-        "movl 0xc(%ebp), %edi\n" /* line 252 | foundIcon */
-        "movb $1, (%edi)\n"
-        "movl -0x3c(%ebp), %eax\n" /* pos */
-        "movl $0xffffffff, -0x1c(%ebp)\n" /* markedEnd */
-        "jmp .Lfece4a_000ecea6\n"
-        ".Lfece4a_000ed00d:\n"
-        "movl -0x3c(%ebp), %ebx\n" /* pos, stringEndPos */
-        "jmp .Lfece4a_000ecf53\n"
-    );
+    int currentColor;
+    int markedEnd;
+    const short int *stringEndPos;
+    int i;
+    int pos;
+    unsigned short entry;
+    unsigned char ch;
+    unsigned char type;
+
+    if (*limit > 0x3ff) {
+        *limit = 0x3ff;
+    }
+
+    text[0] = '\0';
+    currentColor = (int)ColorIndex(0x37);
+    *foundIcon = 0;
+
+    if (*limit <= 0) {
+        markedEnd = -1;
+        stringEndPos = 0;
+        i = 0;
+        pos = 0;
+        goto finish;
+    }
+
+    stringEndPos = string;
+    markedEnd = -1;
+    i = 0;
+    pos = 0;
+
+    for (i = 0; i < *limit; i++) {
+        stringEndPos = &string[i];
+        entry = *(const unsigned short *)&string[i];
+        ch = (unsigned char)entry;
+        type = (unsigned char)(entry >> 8);
+
+        if (type == currentColor) {
+            /* same color - just write character */
+            text[pos] = ch;
+            if (ch == 0x20) {
+                if (markedEnd == -1) {
+                    markedEnd = pos;
+                }
+                pos++;
+                continue;
+            }
+            markedEnd = -1;
+            pos++;
+            continue;
+        }
+
+        if (type == 0x0d || type == 0x10 || type == 0x11 || type == 0x12) {
+            *foundIcon = 1;
+            markedEnd = -1;
+            pos = pos; /* keep pos for null-termination */
+            goto finish;
+        }
+
+        if (type == 0x0a) {
+            if (color) {
+                color[0] = (float)(unsigned int)ch * 0.003921568859368563f;
+            }
+            continue;
+        }
+
+        if (type == 0x0b) {
+            if (color) {
+                color[1] = (float)(unsigned int)ch * 0.003921568859368563f;
+            }
+            continue;
+        }
+
+        if (type == 0x0c) {
+            if (color) {
+                color[2] = (float)(unsigned int)ch * 0.003921568859368563f;
+            }
+            continue;
+        }
+
+        /* different color - emit color code */
+        text[pos] = '^';
+        text[pos + 1] = (char)(type + 0x30);
+        pos += 2;
+        currentColor = type;
+        stringEndPos = &string[i];
+
+        /* write character */
+        entry = *(const unsigned short *)&string[i];
+        ch = (unsigned char)entry;
+        text[pos] = ch;
+        if (ch == 0x20) {
+            if (markedEnd == -1) {
+                markedEnd = pos;
+            }
+            pos++;
+            continue;
+        }
+        markedEnd = -1;
+        pos++;
+    }
+
+    /* loop completed - consumed all chars */
+    stringEndPos = 0;
+
+finish:
+    text[pos] = '\0';
+    if (markedEnd >= 0) {
+        text[markedEnd] = '\0';
+    }
+    *limit -= i;
+    return stringEndPos;
 }
 
 /* line 303 */
-static __attribute__((naked))
-const short int * R_GetConsoleIcon(float *iconHeight, MaterialHandle *iconMaterial, vec_t *color, Bool *iconHorzFlip)
+static __attribute__((naked)) __attribute__((regparm(3)))
+const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float *iconWidth, float *iconHeight, MaterialHandle *iconMaterial, vec_t *color, Bool *iconHorzFlip)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 303 */
@@ -556,670 +516,144 @@ const short int * R_GetConsoleIcon(float *iconHeight, MaterialHandle *iconMateri
 }
 
 /* line 160 */
-__attribute__((naked))
 int R_TextWidth(const char *text, int maxChars, FontHandle font)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 160 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 173 | maxChars */
-        "testl %eax, %eax\n"
-        "movl $0x7fffffff, %eax\n"
-        "cmovgl 0xc(%ebp), %eax\n" /* maxChars */
-        "movl %eax, 0xc(%ebp)\n" /* maxChars */
-        "movl $0, -0x20(%ebp)\n" /* lineWidth */
-        "movl $0, -0x1c(%ebp)\n" /* maxWidth */
-        "movl $0, -0x24(%ebp)\n" /* count */
-        "movl 8(%ebp), %eax\n" /* text */
-        "movl %eax, -0x28(%ebp)\n"
-        "movl %eax, %ecx\n"
-        ".Lfed2ce_000ed305:\n"
-        "cmpb $0, (%ecx)\n" /* line 177 */
-        "je .Lfed2ce_000ed377\n"
-        ".Lfed2ce_000ed30a:\n"
-        "movl -0x24(%ebp), %eax\n" /* count */
-        "cmpl %eax, 0xc(%ebp)\n" /* maxChars */
-        "jle .Lfed2ce_000ed377\n"
-        "movl $0, 4(%esp)\n" /* line 179 */
-        "leal 8(%ebp), %edx\n" /* text */
-        "movl %edx, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
-        "calll *0x118(%eax)\n"
-        "movl %eax, %ebx\n" /* letter */
-        "cmpl $0xa, %eax\n" /* line 180 */
-        "je .Lfed2ce_000ed39f\n"
-        "cmpl $0x5e, %eax\n" /* line 184 */
-        "je .Lfed2ce_000ed3b1\n"
-        "movl 8(%ebp), %ecx\n" /* text */
-        "movl %ecx, -0x28(%ebp)\n"
-        /* { scope 2 */
-        ".Lfed2ce_000ed33d:\n"
-        "leal -0x20(%ebx), %eax\n" /* line 23 */
-        "cmpl $0x5f, %eax\n"
-        "ja .Lfed2ce_000ed382\n"
-        "leal (%ebx, %ebx, 2), %edx\n" /* line 26 */
-        "movl 0x10(%ebp), %ecx\n" /* font */
-        "movl 0x10(%ecx), %eax\n"
-        "leal -0x300(%eax, %edx, 8), %eax\n"
-        /* } scope */
-        ".Lfed2ce_000ed355:\n"
-        "movzbl 4(%eax), %eax\n" /* line 191 */
-        "addl %eax, -0x20(%ebp)\n" /* lineWidth */
-        "movl -0x1c(%ebp), %eax\n" /* line 192 | maxWidth */
-        "cmpl %eax, -0x20(%ebp)\n" /* lineWidth */
-        "movl -0x20(%ebp), %edx\n" /* lineWidth */
-        "cmovlel %eax, %edx\n"
-        "movl %edx, -0x1c(%ebp)\n" /* maxWidth */
-        "addl $1, -0x24(%ebp)\n" /* line 194 | count */
-        "movl -0x28(%ebp), %ecx\n"
-        "cmpb $0, (%ecx)\n" /* line 177 */
-        "jne .Lfed2ce_000ed30a\n"
-        /* } scope */
-        ".Lfed2ce_000ed377:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 199 | maxWidth */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfed2ce_000ed382:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 29 | font */
-        "movl 8(%edx), %eax\n"
-        "leal -1(%eax), %edi\n" /* top */
-        "cmpl $0x5f, %edi\n" /* line 31 | top */
-        "jg .Lfed2ce_000ed3e8\n"
-        "movl 0x10(%edx), %ecx\n"
-        "movl %ecx, -0x2c(%ebp)\n"
-        "movl %ecx, %eax\n"
-        ".Lfed2ce_000ed398:\n"
-        "addl $0x150, %eax\n" /* line 41 */
-        "jmp .Lfed2ce_000ed355\n"
-        /* } scope */
-        ".Lfed2ce_000ed39f:\n"
-        "movl $0, -0x20(%ebp)\n" /* line 180 | lineWidth */
-        "movl 8(%ebp), %ecx\n" /* text */
-        "movl %ecx, -0x28(%ebp)\n"
-        "jmp .Lfed2ce_000ed305\n"
-        ".Lfed2ce_000ed3b1:\n"
-        "movl 8(%ebp), %eax\n" /* line 184 | text */
-        "movl %eax, -0x28(%ebp)\n"
-        "testl %eax, %eax\n"
-        "je .Lfed2ce_000ed33d\n"
-        "movl %eax, %edx\n"
-        "movzbl (%eax), %eax\n"
-        "cmpb $0x5e, %al\n"
-        "je .Lfed2ce_000ed33d\n"
-        "cmpb $0x2f, %al\n"
-        "jle .Lfed2ce_000ed33d\n"
-        "cmpb $0x39, %al\n"
-        "jg .Lfed2ce_000ed33d\n"
-        "addl $1, %edx\n" /* line 187 */
-        "movl %edx, -0x28(%ebp)\n"
-        "movl %edx, 8(%ebp)\n" /* text */
-        "movl %edx, %ecx\n"
-        "jmp .Lfed2ce_000ed305\n"
-        ".Lfed2ce_000ed3e8:\n"
-        "movl %edx, %ecx\n"
-        /* { scope 2 */
-        "addl $0x5f, %eax\n" /* line 33 */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "movl 0x10(%ecx), %ecx\n" /* line 34 */
-        "movl %ecx, -0x2c(%ebp)\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ecx, %ebx\n"
-        "je .Lfed2ce_000ed355\n"
-        "movl $0x60, %esi\n" /* bot */
-        "jmp .Lfed2ce_000ed43b\n"
-        ".Lfed2ce_000ed414:\n"
-        "leal 1(%edx), %esi\n" /* line 37 | bot */
-        "cmpl %esi, %edi\n" /* line 31 | bot, top */
-        "jl .Lfed2ce_000ed446\n"
-        ".Lfed2ce_000ed41b:\n"
-        "leal (%edi, %esi), %eax\n" /* line 33 | top */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 34 */
-        "movl -0x2c(%ebp), %ecx\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ecx, %ebx\n"
-        "je .Lfed2ce_000ed355\n"
-        ".Lfed2ce_000ed43b:\n"
-        "cmpl %ecx, %ebx\n" /* line 36 */
-        "ja .Lfed2ce_000ed414\n"
-        "leal -1(%edx), %edi\n" /* line 39 | top */
-        "cmpl %esi, %edi\n" /* line 31 | bot, top */
-        "jge .Lfed2ce_000ed41b\n"
-        ".Lfed2ce_000ed446:\n"
-        "movl -0x2c(%ebp), %eax\n"
-        "jmp .Lfed2ce_000ed398\n"
-    );
+    int lineWidth;
+    int maxWidth;
+    int count;
+    unsigned int letter;
+    const Glyph *glyph;
+
+    if (maxChars > 0) {
+        /* use provided maxChars */
+    } else {
+        maxChars = 0x7fffffff;
+    }
+
+    lineWidth = 0;
+    maxWidth = 0;
+    count = 0;
+
+    while (*text && count <= maxChars) {
+        letter = ri->SEH_ReadCharFromString(&text, 0);
+        if (letter == '\n') {
+            lineWidth = 0;
+            continue;
+        }
+        if (letter == '^') {
+            if (text && *text != '^' && *text > '/' && *text <= '9') {
+                text++;
+                continue;
+            }
+        }
+        glyph = R_GetCharacterGlyph(font, letter);
+        lineWidth += glyph->dx;
+        if (lineWidth > maxWidth) {
+            maxWidth = lineWidth;
+        }
+        count++;
+    }
+
+    return maxWidth;
 }
 
 /* line 378 */
-__attribute__((naked))
 int R_ConsoleTextWidth(const short int *string, int maxChars, FontHandle font)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 378 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x45c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* string */
-        /* { scope 1: maxChars, text */
-        "testl %eax, %eax\n" /* line 390 */
-        "je .Lfed44e_000ed5bf\n"
-        "movl %eax, -0x44c(%ebp)\n" /* stringRemaining */
-        "pxor %xmm0, %xmm0\n"
-        "movss %xmm0, -0x450(%ebp)\n" /* width */
-        ".Lfed44e_000ed477:\n"
-        "leal -0x19(%ebp), %eax\n" /* line 392 | iconWasFound */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "leal -0x42c(%ebp), %ecx\n" /* convertedString */
-        "leal 0xc(%ebp), %edx\n" /* maxChars */
-        "movl -0x44c(%ebp), %eax\n" /* stringRemaining */
-        "calll R_GetConsoleString\n"
-        "movl %eax, -0x44c(%ebp)\n" /* stringRemaining */
-        "movl 0xc(%ebp), %edx\n" /* line 394 | maxChars */
-        "leal -0x42c(%ebp), %ecx\n" /* convertedString */
-        "movl %ecx, -0x458(%ebp)\n"
-        "movl %ecx, -0x2c(%ebp)\n" /* text */
-        /* { scope 2: count, lineWidth */
-        /* { scope 3 */
-        "testl %edx, %edx\n" /* line 173 */
-        "movl $0x7fffffff, %eax\n"
-        "cmovgl %edx, %eax\n"
-        "movl %eax, -0x448(%ebp)\n" /* maxChars */
-        "movl $0, -0x440(%ebp)\n" /* lineWidth */
-        "movl $0, -0x43c(%ebp)\n"
-        "movl $0, -0x444(%ebp)\n" /* count */
-        ".Lfed44e_000ed4df:\n"
-        "cmpb $0, (%ecx)\n" /* line 177 */
-        "je .Lfed44e_000ed587\n"
-        ".Lfed44e_000ed4e8:\n"
-        "movl -0x444(%ebp), %eax\n" /* count */
-        "cmpl %eax, -0x448(%ebp)\n" /* maxChars */
-        "jle .Lfed44e_000ed587\n"
-        "movl $0, 4(%esp)\n" /* line 179 */
-        "leal -0x2c(%ebp), %eax\n" /* text */
-        "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
-        "calll *0x118(%eax)\n"
-        "movl %eax, %ebx\n"
-        "cmpl $0xa, %eax\n" /* line 180 */
-        "je .Lfed44e_000ed5ed\n"
-        "cmpl $0x5e, %eax\n" /* line 184 */
-        "je .Lfed44e_000ed607\n"
-        "movl -0x2c(%ebp), %ecx\n" /* text */
-        "movl %ecx, -0x458(%ebp)\n"
-        /* { scope 4 */
-        /* { scope 5 */
-        ".Lfed44e_000ed530:\n"
-        "leal -0x20(%ebx), %eax\n" /* line 23 */
-        "cmpl $0x5f, %eax\n"
-        "ja .Lfed44e_000ed5ca\n"
-        "leal (%ebx, %ebx, 2), %edx\n" /* line 26 */
-        "movl 0x10(%ebp), %ecx\n" /* font */
-        "movl 0x10(%ecx), %eax\n"
-        "leal -0x300(%eax, %edx, 8), %eax\n"
-        /* } scope */
-        /* } scope */
-        ".Lfed44e_000ed54c:\n"
-        "movzbl 4(%eax), %eax\n" /* line 191 */
-        "addl %eax, -0x440(%ebp)\n" /* lineWidth */
-        "movl -0x43c(%ebp), %eax\n" /* line 192 */
-        "cmpl %eax, -0x440(%ebp)\n" /* lineWidth */
-        "movl -0x440(%ebp), %edx\n" /* lineWidth */
-        "cmovlel %eax, %edx\n"
-        "movl %edx, -0x43c(%ebp)\n"
-        "addl $1, -0x444(%ebp)\n" /* line 194 | count */
-        "movl -0x458(%ebp), %ecx\n"
-        "cmpb $0, (%ecx)\n" /* line 177 */
-        "jne .Lfed44e_000ed4e8\n"
-        /* } scope */
-        /* } scope */
-        ".Lfed44e_000ed587:\n"
-        "cvtsi2ssl -0x43c(%ebp), %xmm0\n" /* line 394 */
-        "addss -0x450(%ebp), %xmm0\n" /* width */
-        "movss %xmm0, -0x450(%ebp)\n" /* width */
-        "cmpb $0, -0x19(%ebp)\n" /* line 396 | iconWasFound */
-        "jne .Lfed44e_000ed6bc\n"
-        ".Lfed44e_000ed5a9:\n"
-        "movl -0x44c(%ebp), %edx\n" /* line 390 | stringRemaining */
-        "testl %edx, %edx\n"
-        "jne .Lfed44e_000ed477\n"
-        "cvttss2si -0x450(%ebp), %eax\n" /* width */
-        /* } scope */
-        ".Lfed44e_000ed5bf:\n"
-        "addl $0x45c, %esp\n" /* line 404 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: maxChars, text */
-        /* { scope 2: count, lineWidth */
-        /* { scope 3 */
-        /* { scope 4 */
-        /* { scope 5 */
-        ".Lfed44e_000ed5ca:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 29 | font */
-        "movl 8(%edx), %eax\n"
-        "leal -1(%eax), %edi\n" /* top */
-        "cmpl $0x5f, %edi\n" /* line 31 | top */
-        "jg .Lfed44e_000ed646\n"
-        "movl 0x10(%edx), %ecx\n"
-        "movl %ecx, -0x454(%ebp)\n"
-        "movl %ecx, %eax\n"
-        ".Lfed44e_000ed5e3:\n"
-        "addl $0x150, %eax\n" /* line 41 */
-        "jmp .Lfed44e_000ed54c\n"
-        /* } scope */
-        /* } scope */
-        ".Lfed44e_000ed5ed:\n"
-        "movl $0, -0x440(%ebp)\n" /* line 180 | lineWidth */
-        "movl -0x2c(%ebp), %eax\n" /* text */
-        "movl %eax, -0x458(%ebp)\n"
-        "movl %eax, %ecx\n"
-        "jmp .Lfed44e_000ed4df\n"
-        ".Lfed44e_000ed607:\n"
-        "movl -0x2c(%ebp), %edx\n" /* line 184 | text */
-        "movl %edx, -0x458(%ebp)\n"
-        "testl %edx, %edx\n"
-        "je .Lfed44e_000ed530\n"
-        "movzbl (%edx), %eax\n"
-        "cmpb $0x5e, %al\n"
-        "je .Lfed44e_000ed530\n"
-        "cmpb $0x2f, %al\n"
-        "jle .Lfed44e_000ed530\n"
-        "cmpb $0x39, %al\n"
-        "jg .Lfed44e_000ed530\n"
-        "addl $1, %edx\n" /* line 187 */
-        "movl %edx, -0x458(%ebp)\n"
-        "movl %edx, -0x2c(%ebp)\n" /* text */
-        "movl %edx, %ecx\n"
-        "jmp .Lfed44e_000ed4df\n"
-        /* { scope 4 */
-        /* { scope 5 */
-        ".Lfed44e_000ed646:\n"
-        "addl $0x5f, %eax\n" /* line 33 */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "movl 0x10(%ebp), %eax\n" /* line 34 | font */
-        "movl 0x10(%eax), %eax\n"
-        "movl %eax, -0x454(%ebp)\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "movl -0x454(%ebp), %ecx\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ecx, %ebx\n"
-        "je .Lfed44e_000ed54c\n"
-        "movl $0x60, %esi\n" /* bot */
-        "jmp .Lfed44e_000ed6a6\n"
-        ".Lfed44e_000ed67c:\n"
-        "leal 1(%edx), %esi\n" /* line 37 | bot */
-        "cmpl %esi, %edi\n" /* line 31 | bot, top */
-        "jl .Lfed44e_000ed6b1\n"
-        ".Lfed44e_000ed683:\n"
-        "leal (%edi, %esi), %eax\n" /* line 33 | top */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 34 */
-        "movl -0x454(%ebp), %ecx\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ecx, %ebx\n"
-        "je .Lfed44e_000ed54c\n"
-        ".Lfed44e_000ed6a6:\n"
-        "cmpl %ecx, %ebx\n" /* line 36 */
-        "ja .Lfed44e_000ed67c\n"
-        "leal -1(%edx), %edi\n" /* line 39 | top */
-        "cmpl %esi, %edi\n" /* line 31 | bot, top */
-        "jge .Lfed44e_000ed683\n"
-        ".Lfed44e_000ed6b1:\n"
-        "movl -0x454(%ebp), %eax\n"
-        "jmp .Lfed44e_000ed5e3\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfed44e_000ed6bc:\n"
-        "movl $0, 0xc(%esp)\n" /* line 398 */
-        "movl $0, 8(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* iconMaterial */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x24(%ebp), %eax\n" /* iconHeight */
-        "movl %eax, (%esp)\n"
-        "leal -0x20(%ebp), %ecx\n" /* iconWidth */
-        "leal 0xc(%ebp), %edx\n" /* maxChars */
-        "movl -0x44c(%ebp), %eax\n" /* stringRemaining */
-        "calll R_GetConsoleIcon\n"
-        "movl %eax, -0x44c(%ebp)\n" /* stringRemaining */
-        "movss -0x450(%ebp), %xmm0\n" /* line 399 | width */
-        "addss -0x20(%ebp), %xmm0\n" /* iconWidth */
-        "movss %xmm0, -0x450(%ebp)\n" /* width */
-        "jmp .Lfed44e_000ed5a9\n"
-    );
+    const short int *stringRemaining;
+    float width;
+    char convertedString[1024];
+    Bool iconWasFound;
+    float iconWidth;
+    float iconHeight;
+    MaterialHandle iconMaterial;
+
+    if (!string) {
+        return 0;
+    }
+
+    stringRemaining = string;
+    width = 0.0f;
+
+    while (stringRemaining) {
+        stringRemaining = R_GetConsoleString(stringRemaining, &maxChars, convertedString, NULL, &iconWasFound);
+        width += (float)R_TextWidth(convertedString, maxChars, font);
+
+        if (iconWasFound) {
+            stringRemaining = R_GetConsoleIcon(stringRemaining, &maxChars, &iconWidth, &iconHeight, &iconMaterial, NULL, NULL);
+            width += iconWidth;
+        }
+    }
+
+    return (int)width;
 }
 
 /* line 417 */
-__attribute__((naked))
 int R_DrawConsoleText(const short int *string, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 417 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x48c, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* string */
-        "movl 0x24(%ebp), %edx\n" /* color */
-        /* { scope 1: maxChars, text */
-        "movl (%edx), %eax\n" /* line 456 */
-        "movl %eax, -0x3c(%ebp)\n" /* curColor */
-        "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, -0x38(%ebp)\n"
-        "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, -0x34(%ebp)\n"
-        "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, -0x30(%ebp)\n"
-        "testl %ecx, %ecx\n" /* line 433 */
-        "je .Lfed70a_000eda1f\n"
-        "movl %ecx, -0x45c(%ebp)\n" /* stringRemaining */
-        "pxor %xmm0, %xmm0\n"
-        "movss %xmm0, -0x460(%ebp)\n" /* xOfs */
-        "jmp .Lfed70a_000ed767\n"
-        ".Lfed70a_000ed74f:\n"
-        "cmpb $0, -0x19(%ebp)\n" /* line 445 | iconWasFound */
-        "jne .Lfed70a_000ed923\n"
-        ".Lfed70a_000ed759:\n"
-        "movl -0x45c(%ebp), %ecx\n" /* line 433 | stringRemaining */
-        "testl %ecx, %ecx\n"
-        "je .Lfed70a_000eda1f\n"
-        ".Lfed70a_000ed767:\n"
-        "leal -0x19(%ebp), %eax\n" /* line 435 | iconWasFound */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x3c(%ebp), %edx\n" /* curColor */
-        "movl %edx, (%esp)\n"
-        "leal -0x43c(%ebp), %ecx\n" /* convertedString */
-        "leal 0xc(%ebp), %edx\n" /* maxChars */
-        "movl -0x45c(%ebp), %eax\n" /* stringRemaining */
-        "calll R_GetConsoleString\n"
-        "movl %eax, -0x45c(%ebp)\n" /* stringRemaining */
-        "cmpb $0, -0x43c(%ebp)\n" /* line 437 | convertedString */
-        "je .Lfed70a_000ed74f\n"
-        "movl $0, 0x28(%esp)\n" /* line 211 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl 0x28(%ebp), %ecx\n" /* style */
-        "movl %ecx, 0x20(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* curColor */
-        "movl %eax, 0x1c(%esp)\n"
-        "movss 0x20(%ebp), %xmm0\n" /* yScale */
-        "movss %xmm0, 0x18(%esp)\n"
-        "movss 0x1c(%ebp), %xmm0\n" /* xScale */
-        "movss %xmm0, 0x14(%esp)\n"
-        "movss 0x18(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, 0x10(%esp)\n"
-        "movss -0x460(%ebp), %xmm0\n" /* xOfs */
-        "addss 0x14(%ebp), %xmm0\n" /* x */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x7fffffff, 4(%esp)\n"
-        "leal -0x43c(%ebp), %edx\n" /* convertedString */
-        "movl %edx, (%esp)\n"
-        "calll R_AddCmdDrawTextWithCursor\n"
-        "cmpb $0, -0x19(%ebp)\n" /* line 441 | iconWasFound */
-        "je .Lfed70a_000ed759\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 442 | maxChars */
-        "leal -0x43c(%ebp), %eax\n" /* convertedString */
-        "movl %eax, -0x468(%ebp)\n"
-        "movl %eax, -0x24(%ebp)\n" /* text */
-        /* { scope 2: count, lineWidth */
-        /* { scope 3 */
-        "testl %ecx, %ecx\n" /* line 173 */
-        "movl $0x7fffffff, %eax\n"
-        "cmovgl %ecx, %eax\n"
-        "movl %eax, -0x458(%ebp)\n" /* maxChars */
-        "movl $0, -0x450(%ebp)\n" /* lineWidth */
-        "movl $0, -0x44c(%ebp)\n"
-        "movl $0, -0x454(%ebp)\n" /* count */
-        "movl -0x468(%ebp), %edx\n"
-        ".Lfed70a_000ed856:\n"
-        "cmpb $0, (%edx)\n" /* line 177 */
-        "je .Lfed70a_000ed8fc\n"
-        ".Lfed70a_000ed85f:\n"
-        "movl -0x454(%ebp), %ecx\n" /* count */
-        "cmpl %ecx, -0x458(%ebp)\n" /* maxChars */
-        "jle .Lfed70a_000ed8fc\n"
-        "movl $0, 4(%esp)\n" /* line 179 */
-        "leal -0x24(%ebp), %eax\n" /* text */
-        "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
-        "calll *0x118(%eax)\n"
-        "movl %eax, %ebx\n"
-        "cmpl $0xa, %eax\n" /* line 180 */
-        "je .Lfed70a_000eda4d\n"
-        "cmpl $0x5e, %eax\n" /* line 184 */
-        "je .Lfed70a_000eda65\n"
-        "movl -0x24(%ebp), %eax\n" /* text */
-        "movl %eax, -0x468(%ebp)\n"
-        /* { scope 4 */
-        /* { scope 5 */
-        ".Lfed70a_000ed8a7:\n"
-        "leal -0x20(%ebx), %eax\n" /* line 23 */
-        "cmpl $0x5f, %eax\n"
-        "ja .Lfed70a_000eda2a\n"
-        "leal (%ebx, %ebx, 2), %edx\n" /* line 26 */
-        "movl 0x10(%ebp), %ecx\n" /* font */
-        "movl 0x10(%ecx), %eax\n"
-        "leal -0x300(%eax, %edx, 8), %eax\n"
-        /* } scope */
-        /* } scope */
-        ".Lfed70a_000ed8c3:\n"
-        "movzbl 4(%eax), %eax\n" /* line 191 */
-        "addl %eax, -0x450(%ebp)\n" /* lineWidth */
-        "movl -0x450(%ebp), %eax\n" /* line 192 | lineWidth */
-        "cmpl %eax, -0x44c(%ebp)\n"
-        "cmovgel -0x44c(%ebp), %eax\n"
-        "movl %eax, -0x44c(%ebp)\n"
-        "addl $1, -0x454(%ebp)\n" /* line 194 | count */
-        "movl -0x468(%ebp), %edx\n"
-        "cmpb $0, (%edx)\n" /* line 177 */
-        "jne .Lfed70a_000ed85f\n"
-        /* } scope */
-        /* } scope */
-        ".Lfed70a_000ed8fc:\n"
-        "cvtsi2ssl -0x44c(%ebp), %xmm0\n" /* line 442 */
-        "mulss 0x1c(%ebp), %xmm0\n" /* xScale */
-        "addss -0x460(%ebp), %xmm0\n" /* xOfs */
-        "movss %xmm0, -0x460(%ebp)\n" /* xOfs */
-        "cmpb $0, -0x19(%ebp)\n" /* line 445 | iconWasFound */
-        "je .Lfed70a_000ed759\n"
-        ".Lfed70a_000ed923:\n"
-        "leal -0x1a(%ebp), %eax\n" /* line 447 | iconHorzFlip */
-        "movl %eax, 0xc(%esp)\n"
-        "leal -0x3c(%ebp), %eax\n" /* curColor */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x20(%ebp), %eax\n" /* iconMaterial */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* iconHeight */
-        "movl %eax, (%esp)\n"
-        "leal -0x2c(%ebp), %ecx\n" /* iconWidth */
-        "leal 0xc(%ebp), %edx\n" /* maxChars */
-        "movl -0x45c(%ebp), %eax\n" /* stringRemaining */
-        "calll R_GetConsoleIcon\n"
-        "movl %eax, -0x45c(%ebp)\n" /* stringRemaining */
-        "movl 0x10(%ebp), %edx\n" /* line 448 | font */
-        "cvtsi2ssl 4(%edx), %xmm0\n"
-        "movss 0x1c(%ebp), %xmm2\n" /* xScale */
-        "mulss %xmm0, %xmm2\n"
-        "mulss -0x2c(%ebp), %xmm2\n" /* iconWidth */
-        "movss %xmm2, -0x2c(%ebp)\n" /* iconWidth */
-        "mulss 0x20(%ebp), %xmm0\n" /* line 449 | yScale */
-        "movaps %xmm0, %xmm1\n"
-        "mulss -0x28(%ebp), %xmm1\n" /* iconHeight */
-        "movss %xmm1, -0x28(%ebp)\n" /* iconHeight */
-        "mulss 0x2ed7f0, %xmm0\n" /* line 450 | 0.800000011920929f */
-        "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
-        "addss 0x18(%ebp), %xmm0\n" /* y */
-        "movl -0x20(%ebp), %eax\n" /* line 451 | iconMaterial, material */
-        "movss 0x14(%ebp), %xmm3\n" /* x */
-        "addss -0x460(%ebp), %xmm3\n" /* xOfs, x */
-        /* { scope 2: count, lineWidth */
-        "cmpb $0, -0x1a(%ebp)\n" /* line 409 | iconHorzFlip */
-        "je .Lfed70a_000edb1a\n"
-        "movl %eax, 0x24(%esp)\n" /* line 410 */
-        "leal -0x3c(%ebp), %ecx\n" /* curColor */
-        "movl %ecx, 0x20(%esp)\n"
-        "movl $0x3f800000, 0x1c(%esp)\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0x3f800000, 0x10(%esp)\n"
-        ".Lfed70a_000ed9e0:\n"
-        "movss %xmm1, 0xc(%esp)\n" /* line 412 */
-        "movss %xmm2, 8(%esp)\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movss %xmm3, (%esp)\n"
-        "calll R_AddCmdDrawStretchPic\n"
-        /* } scope */
-        "movss -0x460(%ebp), %xmm0\n" /* line 452 | xOfs */
-        "addss -0x2c(%ebp), %xmm0\n" /* iconWidth */
-        "movss %xmm0, -0x460(%ebp)\n" /* xOfs */
-        "movl -0x45c(%ebp), %ecx\n" /* line 433 | stringRemaining */
-        "testl %ecx, %ecx\n"
-        "jne .Lfed70a_000ed767\n"
-        /* } scope */
-        ".Lfed70a_000eda1f:\n"
-        "addl $0x48c, %esp\n" /* line 455 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: maxChars, text */
-        /* { scope 2: count, lineWidth */
-        /* { scope 3 */
-        /* { scope 4 */
-        /* { scope 5 */
-        ".Lfed70a_000eda2a:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 29 | font */
-        "movl 8(%edx), %eax\n"
-        "leal -1(%eax), %edi\n" /* top */
-        "cmpl $0x5f, %edi\n" /* line 31 | top */
-        "jg .Lfed70a_000edaa4\n"
-        "movl 0x10(%edx), %ecx\n"
-        "movl %ecx, -0x464(%ebp)\n"
-        "movl %ecx, %eax\n"
-        ".Lfed70a_000eda43:\n"
-        "addl $0x150, %eax\n" /* line 41 */
-        "jmp .Lfed70a_000ed8c3\n"
-        /* } scope */
-        /* } scope */
-        ".Lfed70a_000eda4d:\n"
-        "movl $0, -0x450(%ebp)\n" /* line 180 | lineWidth */
-        "movl -0x24(%ebp), %edx\n" /* text */
-        "movl %edx, -0x468(%ebp)\n"
-        "jmp .Lfed70a_000ed856\n"
-        ".Lfed70a_000eda65:\n"
-        "movl -0x24(%ebp), %ecx\n" /* line 184 | text */
-        "movl %ecx, -0x468(%ebp)\n"
-        "testl %ecx, %ecx\n"
-        "je .Lfed70a_000ed8a7\n"
-        "movzbl (%ecx), %eax\n"
-        "cmpb $0x5e, %al\n"
-        "je .Lfed70a_000ed8a7\n"
-        "cmpb $0x2f, %al\n"
-        "jle .Lfed70a_000ed8a7\n"
-        "cmpb $0x39, %al\n"
-        "jg .Lfed70a_000ed8a7\n"
-        "addl $1, %ecx\n" /* line 187 */
-        "movl %ecx, -0x468(%ebp)\n"
-        "movl %ecx, -0x24(%ebp)\n" /* text */
-        "movl %ecx, %edx\n"
-        "jmp .Lfed70a_000ed856\n"
-        /* { scope 4 */
-        /* { scope 5 */
-        ".Lfed70a_000edaa4:\n"
-        "addl $0x5f, %eax\n" /* line 33 */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "movl 0x10(%ebp), %eax\n" /* line 34 | font */
-        "movl 0x10(%eax), %eax\n"
-        "movl %eax, -0x464(%ebp)\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "movl -0x464(%ebp), %ecx\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ecx, %ebx\n"
-        "je .Lfed70a_000ed8c3\n"
-        "movl $0x60, %esi\n" /* bot */
-        "jmp .Lfed70a_000edb04\n"
-        ".Lfed70a_000edada:\n"
-        "leal 1(%edx), %esi\n" /* line 37 | bot */
-        "cmpl %esi, %edi\n" /* line 31 | bot, top */
-        "jl .Lfed70a_000edb0f\n"
-        ".Lfed70a_000edae1:\n"
-        "leal (%edi, %esi), %eax\n" /* line 33 | top */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 34 */
-        "movl -0x464(%ebp), %ecx\n"
-        "leal (%ecx, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ebx, %ecx\n"
-        "je .Lfed70a_000ed8c3\n"
-        ".Lfed70a_000edb04:\n"
-        "cmpl %ecx, %ebx\n" /* line 36 */
-        "ja .Lfed70a_000edada\n"
-        "leal -1(%edx), %edi\n" /* line 39 | top */
-        "cmpl %esi, %edi\n" /* line 31 | bot, top */
-        "jge .Lfed70a_000edae1\n"
-        ".Lfed70a_000edb0f:\n"
-        "movl -0x464(%ebp), %eax\n"
-        "jmp .Lfed70a_000eda43\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* { scope 2: count, lineWidth */
-        ".Lfed70a_000edb1a:\n"
-        "movl %eax, 0x24(%esp)\n" /* line 412 */
-        "leal -0x3c(%ebp), %eax\n" /* curColor */
-        "movl %eax, 0x20(%esp)\n"
-        "movl $0x3f800000, 0x1c(%esp)\n"
-        "movl $0x3f800000, 0x18(%esp)\n"
-        "movl $0, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "jmp .Lfed70a_000ed9e0\n"
-    );
+    const short int *stringRemaining;
+    float xOfs;
+    char convertedString[1024];
+    Bool iconWasFound;
+    vec4_t curColor;
+    float iconWidth;
+    float iconHeight;
+    MaterialHandle iconMaterial;
+    Bool iconHorzFlip;
+    float fontPixelHeight;
+    float scaledW;
+    float scaledH;
+    float iconY;
+    float iconX;
+    int textWidth;
+
+    curColor[0] = color[0];
+    curColor[1] = color[1];
+    curColor[2] = color[2];
+    curColor[3] = color[3];
+
+    if (!string) {
+        return 0;
+    }
+
+    stringRemaining = string;
+    xOfs = 0.0f;
+
+    while (stringRemaining) {
+        stringRemaining = R_GetConsoleString(stringRemaining, &maxChars, convertedString, curColor, &iconWasFound);
+
+        if (convertedString[0] != '\0') {
+            R_AddCmdDrawTextWithCursor(convertedString, 0x7fffffff, font, x + xOfs, y, xScale, yScale, curColor, style, -1, 0);
+        }
+
+        if (!iconWasFound) {
+            continue;
+        }
+
+        /* compute text width of the converted string to advance xOfs */
+        textWidth = R_TextWidth(convertedString, maxChars, font);
+        xOfs += (float)textWidth * xScale;
+
+        /* process icon */
+        stringRemaining = R_GetConsoleIcon(stringRemaining, &maxChars, &iconWidth, &iconHeight, &iconMaterial, curColor, &iconHorzFlip);
+
+        fontPixelHeight = (float)font->pixelHeight;
+        scaledW = xScale * fontPixelHeight * iconWidth;
+        iconWidth = scaledW;
+        scaledH = yScale * fontPixelHeight * iconHeight;
+        iconHeight = scaledH;
+        iconY = y + (yScale * fontPixelHeight * 0.800000011920929f + scaledH) * -0.5f;
+        iconX = x + xOfs;
+
+        if (iconHorzFlip) {
+            R_AddCmdDrawStretchPic(iconX, iconY, scaledW, scaledH, 1.0f, 0.0f, 0.0f, 1.0f, curColor, iconMaterial);
+        } else {
+            R_AddCmdDrawStretchPic(iconX, iconY, scaledW, scaledH, 0.0f, 0.0f, 1.0f, 1.0f, curColor, iconMaterial);
+        }
+
+        xOfs += scaledW;
+    }
+
+    return 0;
 }
 

@@ -14,6 +14,28 @@
  *   #include "PC/gfx_d3d/r_material.h"
  */
 
+extern void RB_EndSurface(void);
+extern void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
+extern void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
+extern void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
+extern void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs *args);
+extern void RB_PushMatrixStack(void);
+extern void RB_PopMatrixStack(void);
+extern D3DMATRIX * RB_GetActiveWorldMatrix(void);
+extern void RB_ChangedWorldMatrix(float worldScale);
+extern void Com_Memcpy(void *dest, const void *src, int count);
+extern int XSurfaceGetNumVerts(const XSurface *surface);
+extern int XSurfaceGetNumTris(const XSurface *surface);
+extern long unsigned int XSurfaceGetTris(const XSurface *surface, r_index_t *dstIndices, int offset);
+extern float Vec3Normalize(vec3_t v);
+extern void Vec3Cross(const vec3_t v0, const vec3_t v1, vec3_t cross);
+extern int VecNCompareCustomEpsilon(const vec_t *v0, const vec_t *v1, float epsilon, int coordCount);
+extern void Vec3RotateTranspose(const vec_t *scaledWorldUp, const vec_t *viewAxis, vec_t *viewUp);
+extern void MakeNormalVectors(const vec_t *forward, vec_t *right, vec_t *up);
+extern float sinf(float x);
+extern float cosf(float x);
+extern float floorf(float x);
+
 void RB_TessBad(const surfaceType_t *surfType);
 void RB_TessParticleCloud(const GfxEntity *re);
 void RB_TessXModelRigid(const surfaceType_t *surfType);
@@ -35,379 +57,235 @@ void RB_TessBad(const surfaceType_t *surfType)
 }
 
 /* line 1063 */
-__attribute__((naked))
 void RB_TessParticleCloud(const GfxEntity *re)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1063 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x8c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* re */
-        /* { scope 1: worldUp, scaledWorldUp, viewUp, viewAxis */
-        "movl 0x195eec0, %eax\n" /* line 1066 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lffe3ae_000fe51e\n"
-        "movl 0x195f160, %eax\n" /* line 261 */
-        "movl 0x5a7d0(%eax), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jne .Lffe3ae_000fe529\n"
-        "movl 0x5a7e0(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lffe3ae_000fe529\n"
-        ".Lffe3ae_000fe3ef:\n"
-        "movl $0, -0x54(%ebp)\n" /* line 1080 */
-        "movl $0, -0x50(%ebp)\n" /* line 1081 */
-        "movl $0, -0x60(%ebp)\n" /* line 1082 | args */
-        "movl $__mh_execute_header, -0x5c(%ebp)\n" /* line 1083 */
-        "movl $0x800, -0x58(%ebp)\n" /* line 1084 */
-        /* { scope 2: viewAxis */
-        "movss 0x64(%edi), %xmm0\n" /* line 1036 */
-        "ucomiss 0x68(%edi), %xmm0\n"
-        "jp .Lffe3ae_000fe533\n"
-        "jne .Lffe3ae_000fe533\n"
-        ".Lffe3ae_000fe427:\n"
-        "movss %xmm0, -0x4c(%ebp)\n" /* line 30 | viewAxis */
-        ".Lffe3ae_000fe42c:\n"
-        "xorl %eax, %eax\n" /* line 31 */
-        "movl %eax, -0x48(%ebp)\n"
-        "movl 0x68(%edi), %edx\n" /* line 997 | y */
-        /* { scope 3 */
-        "movl %eax, -0x44(%ebp)\n" /* line 30 */
-        "movl %edx, -0x40(%ebp)\n" /* line 31 */
-        /* } scope */
-        ".Lffe3ae_000fe43a:\n"
-        "movl 0x195f0c8, %edx\n" /* line 275 | to */
-        "addl $0x310, %edx\n" /* to */
-        /* { scope 3 */
-        "movl -0x4c(%ebp), %eax\n" /* line 456 | viewAxis */
-        "movl %eax, (%edx)\n"
-        "movl -0x48(%ebp), %eax\n" /* line 457 */
-        "movl %eax, 4(%edx)\n"
-        "movl -0x44(%ebp), %eax\n" /* line 458 */
-        "movl %eax, 8(%edx)\n"
-        "movl -0x40(%ebp), %eax\n" /* line 459 */
-        "movl %eax, 0xc(%edx)\n"
-        /* } scope */
-        "leal 0x58(%edi), %edx\n" /* line 1058 | from */
-        /* { scope 3 */
-        "movzbl 1(%edx), %eax\n" /* line 706 */
-        "cvtsi2ssl %eax, %xmm4\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm4\n"
-        "movzbl 2(%edx), %eax\n" /* line 707 */
-        "cvtsi2ssl %eax, %xmm3\n"
-        "mulss %xmm1, %xmm3\n"
-        "movzbl 3(%edx), %eax\n" /* line 708 */
-        "cvtsi2ssl %eax, %xmm2\n"
-        "mulss %xmm1, %xmm2\n"
-        /* } scope */
-        "movl 0x195f0c8, %edx\n" /* line 275 | to */
-        "addl $0x300, %edx\n" /* to */
-        /* { scope 3 */
-        "movzbl 0x58(%edi), %eax\n" /* line 456 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, (%edx)\n"
-        "movss %xmm4, 4(%edx)\n" /* line 457 */
-        "movss %xmm3, 8(%edx)\n" /* line 458 */
-        "movss %xmm2, 0xc(%edx)\n" /* line 459 */
-        /* } scope */
-        /* } scope */
-        "movl 0x195eed0, %esi\n" /* line 1098 | v1 */
-        "movl 0x2dbc(%esi), %eax\n" /* v1, ib */
-        /* { scope 2: viewAxis */
-        "movl 0x195f138, %ebx\n" /* line 212 */
-        "cmpl 0x20cc(%ebx), %eax\n"
-        "je .Lffe3ae_000fe4d9\n"
-        "movl %eax, (%esp)\n" /* line 213 */
-        "calll RB_ChangeIndices\n"
-        /* } scope */
-        ".Lffe3ae_000fe4d9:\n"
-        "movl 0x2db8(%esi), %eax\n" /* line 1099 | v1, vb */
-        /* { scope 2: viewAxis */
-        "cmpl 0x20d0(%ebx), %eax\n" /* line 220 */
-        "je .Lffe3ae_000fe6c0\n"
-        ".Lffe3ae_000fe4eb:\n"
-        "movl $0x14, 0xc(%esp)\n" /* line 221 */
-        "movl $0, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_ChangeStreamSource\n"
-        /* } scope */
-        ".Lffe3ae_000fe50b:\n"
-        "leal -0x60(%ebp), %eax\n" /* line 1107 | args */
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll RB_DrawTechnique\n"
-        /* } scope */
-        ".Lffe3ae_000fe51e:\n"
-        "addl $0x8c, %esp\n" /* line 1112 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: worldUp, scaledWorldUp, viewUp, viewAxis */
-        ".Lffe3ae_000fe529:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lffe3ae_000fe3ef\n"
-        /* { scope 2: viewAxis */
-        ".Lffe3ae_000fe533:\n"
-        "leal 0x48(%edi), %esi\n" /* line 1036 | v1 */
-        "leal 0x3c(%edi), %ebx\n" /* v0 */
-        /* { scope 3 */
-        "movl $3, 0xc(%esp)\n" /* line 378 */
-        "movl $0x3a83126f, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll VecNCompareCustomEpsilon\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 1036 */
-        "jne .Lffe3ae_000fe6e0\n"
-        "movss 0x48(%edi), %xmm0\n" /* line 248 */
-        "subss 0x3c(%edi), %xmm0\n"
-        "movss %xmm0, -0x24(%ebp)\n" /* worldUp */
-        "movss 4(%esi), %xmm0\n" /* line 249 */
-        "subss 4(%ebx), %xmm0\n"
-        "movss %xmm0, -0x20(%ebp)\n"
-        "movss 8(%esi), %xmm0\n" /* line 250 */
-        "subss 8(%ebx), %xmm0\n"
-        "movss %xmm0, -0x1c(%ebp)\n"
-        "leal -0x24(%ebp), %eax\n" /* line 1046 | worldUp */
-        "movl %eax, (%esp)\n"
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movss 0x68(%edi), %xmm0\n" /* line 1048 | scale */
-        /* { scope 3 */
-        "movaps %xmm0, %xmm1\n" /* line 272 */
-        "mulss -0x24(%ebp), %xmm1\n" /* worldUp */
-        "movss %xmm1, -0x30(%ebp)\n" /* scaledWorldUp */
-        "movaps %xmm0, %xmm1\n" /* line 273 */
-        "mulss -0x20(%ebp), %xmm1\n"
-        "movss %xmm1, -0x2c(%ebp)\n"
-        "mulss -0x1c(%ebp), %xmm0\n" /* line 274 */
-        "movss %xmm0, -0x28(%ebp)\n"
-        /* } scope */
-        /* { scope 3 */
-        "movl 0x195f0c8, %eax\n" /* line 975 */
-        "movl 0x3c8(%eax), %eax\n"
-        "leal 0x48(%eax), %edx\n"
-        "movl 8(%edx), %ebx\n" /* line 978 | z */
-        "movl 4(%edx), %ecx\n" /* y */
-        /* { scope 4 */
-        "movl 0x48(%eax), %eax\n" /* line 191 */
-        "movl %eax, -0x84(%ebp)\n" /* viewAxis */
-        "leal -0x84(%ebp), %esi\n" /* line 192 | viewAxis */
-        "movl %ecx, -0x80(%ebp)\n"
-        "movl %ebx, -0x7c(%ebp)\n" /* line 193 */
-        /* } scope */
-        "movl 0x18(%edx), %ebx\n" /* line 979 | z */
-        "movl 0x14(%edx), %ecx\n" /* y */
-        /* { scope 4 */
-        "movl 0x10(%edx), %eax\n" /* line 191 */
-        "movl %eax, -0x78(%ebp)\n"
-        "movl %ecx, -0x74(%ebp)\n" /* line 192 */
-        "movl %ebx, -0x70(%ebp)\n" /* line 193 */
-        /* } scope */
-        "movl 0x28(%edx), %ebx\n" /* line 980 | z */
-        "movl 0x24(%edx), %ecx\n" /* y */
-        /* { scope 4 */
-        "movl 0x20(%edx), %eax\n" /* line 191 */
-        "movl %eax, -0x6c(%ebp)\n"
-        "movl %ecx, -0x68(%ebp)\n" /* line 192 */
-        "movl %ebx, -0x64(%ebp)\n" /* line 193 */
-        /* } scope */
-        "leal -0x3c(%ebp), %eax\n" /* line 982 | viewUp */
-        "movl %eax, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "leal -0x30(%ebp), %eax\n" /* scaledWorldUp */
-        "movl %eax, (%esp)\n"
-        "calll Vec3RotateTranspose\n"
-        /* } scope */
-        "movss -0x3c(%ebp), %xmm1\n" /* line 994 | viewUp */
-        "movss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
-        "ucomiss %xmm1, %xmm0\n"
-        "jbe .Lffe3ae_000fe6f5\n"
-        "movss -0x38(%ebp), %xmm2\n"
-        "ucomiss %xmm2, %xmm0\n"
-        "ja .Lffe3ae_000fe6ea\n"
-        ".Lffe3ae_000fe647:\n"
-        "movss %xmm2, -0x4c(%ebp)\n" /* line 30 | viewAxis */
-        "movaps %xmm1, %xmm0\n" /* line 31 */
-        "xorps 0x2f2fc0, %xmm0\n"
-        "movss %xmm0, -0x48(%ebp)\n"
-        "movss %xmm1, -0x44(%ebp)\n" /* line 30 */
-        "movss %xmm2, -0x40(%ebp)\n" /* line 31 */
-        "mulss %xmm2, %xmm2\n" /* line 81 */
-        "mulss %xmm0, %xmm0\n"
-        "addss %xmm0, %xmm2\n"
-        "sqrtss %xmm2, %xmm2\n"
-        "movss 0x64(%edi), %xmm1\n" /* line 1015 */
-        "movaps %xmm1, %xmm3\n" /* scale */
-        "divss %xmm2, %xmm3\n" /* scale */
-        /* { scope 3 */
-        "movaps %xmm3, %xmm0\n" /* line 86 */
-        "mulss -0x4c(%ebp), %xmm0\n" /* viewAxis */
-        "movss %xmm0, -0x4c(%ebp)\n" /* viewAxis */
-        "movaps %xmm3, %xmm0\n" /* line 87 */
-        "mulss -0x48(%ebp), %xmm0\n"
-        "movss %xmm0, -0x48(%ebp)\n"
-        /* } scope */
-        "ucomiss %xmm2, %xmm1\n" /* line 1018 */
-        "jbe .Lffe3ae_000fe43a\n"
-        "movaps %xmm3, %xmm0\n" /* line 86 */
-        "mulss -0x44(%ebp), %xmm0\n"
-        "movss %xmm0, -0x44(%ebp)\n"
-        "mulss -0x40(%ebp), %xmm3\n" /* line 87 */
-        "movss %xmm3, -0x40(%ebp)\n"
-        "jmp .Lffe3ae_000fe43a\n"
-        /* } scope */
-        /* { scope 2: viewAxis */
-        ".Lffe3ae_000fe6c0:\n"
-        "movl 0x20d4(%ebx), %edx\n" /* line 220 */
-        "testl %edx, %edx\n"
-        "jne .Lffe3ae_000fe4eb\n"
-        "cmpl $0x14, 0x20d8(%ebx)\n"
-        "jne .Lffe3ae_000fe4eb\n"
-        "jmp .Lffe3ae_000fe50b\n"
-        ".Lffe3ae_000fe6e0:\n"
-        "movss 0x64(%edi), %xmm0\n"
-        "jmp .Lffe3ae_000fe427\n"
-        /* } scope */
-        /* { scope 2: viewAxis */
-        ".Lffe3ae_000fe6ea:\n"
-        "movl 0x64(%edi), %eax\n" /* line 30 */
-        "movl %eax, -0x4c(%ebp)\n" /* viewAxis */
-        "jmp .Lffe3ae_000fe42c\n"
-        ".Lffe3ae_000fe6f5:\n"
-        "movss -0x38(%ebp), %xmm2\n"
-        "jmp .Lffe3ae_000fe647\n"
-    );
+    char *dxCaps;
+    char *tess;
+    char *backEnd;
+    char *backEndData;
+    char *dxGlobals;
+    GfxDrawPrimArgs args;
+    float viewAxis[4]; /* 2D view axis for particle orientation */
+    vec3_t worldUp, scaledWorldUp, viewUp;
+    float localViewAxis[9]; /* 3x3 view matrix copy */
+    float *camAxis;
+    float scale, invLen, len;
+    float oneOver255 = 0.003921568859368563f;
+    IDirect3DIndexBuffer9 *ib;
+    IDirect3DVertexBuffer9 *vb;
+
+    /* Check DX level - particle clouds not supported in DX7 */
+    dxCaps = *(char **)0x195eec0;
+    dxCaps = *(char **)dxCaps;
+    if (*(int *)(dxCaps + 8) == 2) {
+        return;
+    }
+
+    /* Flush if surface has existing data */
+    tess = *(char **)0x195f160;
+    if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+        RB_EndSurface();
+    }
+
+    /* Set up draw prim args */
+    args.vertexCount = 0;
+    args.primCount = 0;
+    args.firstVertexFromBase = 0;
+    args.u.buf.baseVertex = 0; /* __mh_execute_header = 0 */
+    args.u.buf.baseIndex = 0x800;
+
+    /* Compute view axis for particle orientation */
+    if (re->radius[0] == re->radius[1] ||
+        VecNCompareCustomEpsilon(re->origin, re->endpos, 0.001f, 3)) {
+        /* Uniform scale - use radius[0] as scale */
+        viewAxis[0] = re->radius[0];
+        viewAxis[1] = 0.0f;
+        viewAxis[2] = 0.0f;
+        viewAxis[3] = re->radius[1];
+    } else {
+        /* Anisotropic scale - compute from worldUp direction */
+        worldUp[0] = re->endpos[0] - re->origin[0];
+        worldUp[1] = re->endpos[1] - re->origin[1];
+        worldUp[2] = re->endpos[2] - re->origin[2];
+        Vec3Normalize(worldUp);
+
+        /* Scale worldUp by radius[1] */
+        scale = re->radius[1];
+        scaledWorldUp[0] = worldUp[0] * scale;
+        scaledWorldUp[1] = worldUp[1] * scale;
+        scaledWorldUp[2] = worldUp[2] * scale;
+
+        /* Copy camera view axis (3x3 matrix at backEnd->viewParms+0x48) */
+        backEnd = *(char **)0x195f0c8;
+        camAxis = (float *)(*(char **)(backEnd + 0x3c8) + 0x48);
+        localViewAxis[0] = camAxis[0];
+        localViewAxis[1] = camAxis[1];
+        localViewAxis[2] = camAxis[2];
+        localViewAxis[3] = camAxis[4];
+        localViewAxis[4] = camAxis[5];
+        localViewAxis[5] = camAxis[6];
+        localViewAxis[6] = camAxis[8];
+        localViewAxis[7] = camAxis[9];
+        localViewAxis[8] = camAxis[10];
+
+        /* Rotate scaledWorldUp by transposed view matrix */
+        Vec3RotateTranspose(scaledWorldUp, localViewAxis, viewUp);
+
+        /* viewUp[0] is x component in view space */
+        /* If viewUp[0] < epsilon, viewUp is nearly in the yz plane */
+        if (viewUp[0] < 0.001f && viewUp[1] < 0.001f) {
+            /* Both small - use radius[0] as uniform */
+            viewAxis[0] = re->radius[0];
+            viewAxis[1] = 0.0f;
+            viewAxis[2] = 0.0f;
+            viewAxis[3] = re->radius[1];
+        } else {
+            /* Compute 2D view axis from viewUp projection */
+            /* viewAxis = perpendicular to viewUp in 2D */
+            float vx = viewUp[0];
+            float vy = viewUp[1];
+
+            viewAxis[0] = vy;       /* cos component */
+            viewAxis[1] = -vx;      /* -sin component */
+            viewAxis[2] = vx;       /* sin component */
+            viewAxis[3] = vy;       /* cos component */
+
+            /* Compute 2D length */
+            len = __builtin_sqrtf(vy * vy + (-vx) * (-vx));
+
+            /* Scale first axis by radius[0]/len */
+            scale = re->radius[0];
+            invLen = scale / len;
+            viewAxis[0] *= invLen;
+            viewAxis[1] *= invLen;
+
+            /* Scale second axis too if needed */
+            if (scale > len) {
+                viewAxis[2] *= invLen;
+                viewAxis[3] *= invLen;
+            }
+        }
+    }
+
+    /* Store viewAxis to backEnd+0x310 */
+    backEnd = *(char **)0x195f0c8;
+    *(float *)(backEnd + 0x310) = viewAxis[0];
+    *(float *)(backEnd + 0x314) = viewAxis[1];
+    *(float *)(backEnd + 0x318) = viewAxis[2];
+    *(float *)(backEnd + 0x31c) = viewAxis[3];
+
+    /* Convert materialRGBA to float color and store to backEnd+0x300 */
+    *(float *)(backEnd + 0x300) = (float)re->materialRGBA[0] * oneOver255;
+    *(float *)(backEnd + 0x304) = (float)re->materialRGBA[1] * oneOver255;
+    *(float *)(backEnd + 0x308) = (float)re->materialRGBA[2] * oneOver255;
+    *(float *)(backEnd + 0x30c) = (float)re->materialRGBA[3] * oneOver255;
+
+    /* Set up index and vertex buffers from DxGlobals */
+    dxGlobals = *(char **)0x195eed0;
+    ib = *(IDirect3DIndexBuffer9 **)(dxGlobals + 0x2dbc);
+    backEndData = *(char **)0x195f138;
+    if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
+        RB_ChangeIndices(ib);
+    }
+
+    vb = *(IDirect3DVertexBuffer9 **)(dxGlobals + 0x2db8);
+    if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||
+        *(int *)(backEndData + 0x20d4) != 0 ||
+        *(int *)(backEndData + 0x20d8) != 0x14) {
+        RB_ChangeStreamSource(0, vb, 0, 0x14);
+    }
+
+    RB_DrawTechnique(2, &args);
 }
 
 /* line 1406 */
-__attribute__((naked))
 void RB_TessXModelRigid(const surfaceType_t *surfType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1406 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* surfType */
-        /* { scope 1 */
-        "movl 0x195f160, %eax\n" /* line 261 */
-        "movl 0x5a7d0(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lffe700_000fe848\n"
-        "movl 0x5a7e0(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lffe700_000fe848\n"
-        ".Lffe700_000fe72d:\n"
-        "movl 4(%esi), %ebx\n" /* line 1426 | surfType, xsurf */
-        "movl $0, -0x1c(%ebp)\n" /* line 1431 */
-        "movl $0, -0x20(%ebp)\n" /* line 1432 */
-        "movl $0, -0x2c(%ebp)\n" /* line 1433 | args */
-        "movswl 2(%ebx), %eax\n" /* line 1434 | xsurf */
-        "movl %eax, -0x28(%ebp)\n"
-        "movswl 4(%ebx), %eax\n" /* line 1435 | xsurf */
-        "movl %eax, -0x24(%ebp)\n"
-        "movl 0x14(%ebx), %eax\n" /* line 24 */
-        "movl 0x195f138, %edi\n" /* line 212 */
-        "cmpl 0x20cc(%edi), %eax\n"
-        "je .Lffe700_000fe76c\n"
-        "movl %eax, (%esp)\n" /* line 213 */
-        "calll RB_ChangeIndices\n"
-        ".Lffe700_000fe76c:\n"
-        "movl 0x10(%ebx), %ecx\n" /* line 38 */
-        "movl 0x195eec0, %eax\n" /* line 1067 */
-        "movl (%eax), %eax\n"
-        "movl $0x24, %edx\n"
-        "cmpl $2, 8(%eax)\n"
-        "movl $0x40, %eax\n"
-        "cmovnel %eax, %edx\n"
-        /* { scope 2 */
-        "cmpl 0x20d0(%edi), %ecx\n" /* line 220 */
-        "je .Lffe700_000fe852\n"
-        ".Lffe700_000fe793:\n"
-        "movl %edx, 0xc(%esp)\n" /* line 221 */
-        "movl $0, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_ChangeStreamSource\n"
-        /* } scope */
-        ".Lffe700_000fe7af:\n"
-        "calll RB_PushMatrixStack\n" /* line 1452 */
-        "movl 0x195f0c8, %eax\n"
-        "movl 0x440(%eax), %ebx\n" /* xsurf */
-        /* { scope 2 */
-        /* { scope 3 */
-        "calll RB_GetActiveWorldMatrix\n" /* line 35 */
-        "movl 8(%esi), %edx\n" /* line 37 */
-        "movl %edx, (%eax)\n"
-        "movl 0xc(%esi), %edx\n" /* line 38 */
-        "movl %edx, 4(%eax)\n"
-        "movl 0x10(%esi), %edx\n" /* line 39 */
-        "movl %edx, 8(%eax)\n"
-        "xorl %ecx, %ecx\n" /* line 40 */
-        "movl %ecx, 0xc(%eax)\n"
-        "movl 0x14(%esi), %edx\n" /* line 42 */
-        "movl %edx, 0x10(%eax)\n"
-        "movl 0x18(%esi), %edx\n" /* line 43 */
-        "movl %edx, 0x14(%eax)\n"
-        "movl 0x1c(%esi), %edx\n" /* line 44 */
-        "movl %edx, 0x18(%eax)\n"
-        "movl %ecx, 0x1c(%eax)\n" /* line 45 */
-        "movl 0x20(%esi), %edx\n" /* line 47 */
-        "movl %edx, 0x20(%eax)\n"
-        "movl 0x24(%esi), %edx\n" /* line 48 */
-        "movl %edx, 0x24(%eax)\n"
-        "movl 0x28(%esi), %edx\n" /* line 49 */
-        "movl %edx, 0x28(%eax)\n"
-        "movl %ecx, 0x2c(%eax)\n" /* line 50 */
-        "movl 0x2c(%esi), %edx\n" /* line 52 */
-        "movl %edx, 0x30(%eax)\n"
-        "movl 0x30(%esi), %edx\n" /* line 53 */
-        "movl %edx, 0x34(%eax)\n"
-        "movl 0x34(%esi), %edx\n" /* line 54 */
-        "movl %edx, 0x38(%eax)\n"
-        "movl $0x3f800000, 0x3c(%eax)\n" /* line 55 */
-        "movl 0x38(%ebx), %eax\n" /* line 57 */
-        "movl %eax, (%esp)\n"
-        "calll RB_ChangedWorldMatrix\n"
-        /* } scope */
-        /* } scope */
-        "leal -0x2c(%ebp), %eax\n" /* line 1454 | args */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_DrawTechnique\n"
-        "calll RB_PopMatrixStack\n" /* line 1455 */
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 1462 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lffe700_000fe848:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lffe700_000fe72d\n"
-        /* { scope 2 */
-        ".Lffe700_000fe852:\n"
-        "movl 0x20d4(%edi), %eax\n" /* line 220 */
-        "testl %eax, %eax\n"
-        "jne .Lffe700_000fe793\n"
-        "cmpl 0x20d8(%edi), %edx\n"
-        "jne .Lffe700_000fe793\n"
-        "jmp .Lffe700_000fe7af\n"
-    );
+    char *tess;
+    char *backEndData;
+    char *dxCaps;
+    XSurface *xsurf;
+    GfxDrawPrimArgs args;
+    IDirect3DVertexBuffer9 *vb;
+    IDirect3DIndexBuffer9 *ib;
+    int vertexStride;
+    D3DMATRIX *worldMatrix;
+    float *boneAxis;
+    char *entity;
+
+    tess = *(char **)0x195f160;
+
+    /* Flush if surface has existing data */
+    if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+        RB_EndSurface();
+    }
+
+    /* Get XSurface from surfType (GfxModelRigidSurface: +0 surfType, +4 xsurf) */
+    xsurf = *(XSurface **)((byte *)surfType + 4);
+
+    /* Set up draw prim args */
+    args.firstVertexFromBase = 0;
+    args.vertexCount = (int)xsurf->vertCount;
+    args.primCount = (int)xsurf->triCount;
+    args.u.buf.baseVertex = 0;
+    args.u.buf.baseIndex = 0;
+
+    /* Change index buffer if needed */
+    ib = xsurf->indexBuffer;
+    backEndData = *(char **)0x195f138;
+    if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
+        RB_ChangeIndices(ib);
+    }
+
+    /* Determine vertex stride based on DX level */
+    vb = xsurf->surfRigid.vb;
+    dxCaps = *(char **)0x195eec0;
+    dxCaps = *(char **)dxCaps;
+    if (*(int *)(dxCaps + 8) == 2) {
+        vertexStride = 0x24;
+    } else {
+        vertexStride = 0x40;
+    }
+
+    /* Change stream source if needed */
+    if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||
+        *(int *)(backEndData + 0x20d4) != 0 ||
+        *(int *)(backEndData + 0x20d8) != vertexStride) {
+        RB_ChangeStreamSource(0, vb, 0, vertexStride);
+    }
+
+    /* Push matrix and set up world transform from boneAxis */
+    RB_PushMatrixStack();
+
+    entity = *(char **)((byte *)*(void **)0x195f0c8 + 0x440);
+    boneAxis = (float *)((byte *)surfType + 8);
+
+    worldMatrix = RB_GetActiveWorldMatrix();
+    /* Row 0: boneAxis[0] */
+    ((float *)worldMatrix)[0] = boneAxis[0];
+    ((float *)worldMatrix)[1] = boneAxis[1];
+    ((float *)worldMatrix)[2] = boneAxis[2];
+    ((float *)worldMatrix)[3] = 0.0f;
+    /* Row 1: boneAxis[1] */
+    ((float *)worldMatrix)[4] = boneAxis[3];
+    ((float *)worldMatrix)[5] = boneAxis[4];
+    ((float *)worldMatrix)[6] = boneAxis[5];
+    ((float *)worldMatrix)[7] = 0.0f;
+    /* Row 2: boneAxis[2] */
+    ((float *)worldMatrix)[8] = boneAxis[6];
+    ((float *)worldMatrix)[9] = boneAxis[7];
+    ((float *)worldMatrix)[10] = boneAxis[8];
+    ((float *)worldMatrix)[11] = 0.0f;
+    /* Row 3: boneAxis[3] (translation) */
+    ((float *)worldMatrix)[12] = boneAxis[9];
+    ((float *)worldMatrix)[13] = boneAxis[10];
+    ((float *)worldMatrix)[14] = boneAxis[11];
+    ((float *)worldMatrix)[15] = 1.0f;
+
+    RB_ChangedWorldMatrix(*(float *)(entity + 0x38));
+
+    RB_DrawTechnique(0, &args);
+    RB_PopMatrixStack();
 }
 
 /* line 205 */
@@ -3074,640 +2952,354 @@ void RB_TessBackEndEntity(const surfaceType_t *surfType)
 }
 
 /* line 75 */
-__attribute__((naked))
 void RB_TessPoly(const surfaceType_t *surfType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 75 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f160, %eax\n" /* line 310 */
-        "cmpl $1, 0x5a7cc(%eax)\n"
-        "je .Lf1010cc_0010136b\n"
-        "movl 0x5a7d0(%eax), %ecx\n" /* line 261 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf1010cc_00101310\n"
-        "movl 0x5a7e0(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf1010cc_00101310\n"
-        ".Lf1010cc_00101103:\n"
-        "movl 0x195f160, %edx\n" /* line 313 */
-        "movl $1, 0x5a7cc(%edx)\n"
-        "movl %edx, %edi\n"
-        ".Lf1010cc_00101115:\n"
-        "movl 8(%ebp), %ebx\n" /* line 85 | surfType, vertIndex */
-        "movzwl 0xa(%ebx), %ecx\n" /* vertIndex */
-        "leal -6(%ecx, %ecx, 2), %edx\n" /* indexCount */
-        /* { scope 2 */
-        "movl %ecx, %eax\n" /* line 344 */
-        "addl 0x5a7d4(%edi), %eax\n"
-        "cmpl $0x154a, %eax\n"
-        "jg .Lf1010cc_00101364\n"
-        "addl 0x5a7d0(%edi), %edx\n"
-        "cmpl $0x100000, %edx\n"
-        "jle .Lf1010cc_001011ba\n"
-        "movl 0x195f160, %eax\n"
-        ".Lf1010cc_00101146:\n"
-        "movl 0x5a7cc(%eax), %ebx\n" /* line 327 | vertIndex */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x195f160, %edx\n" /* line 331 */
-        "movl 0x5a7c4(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "movl 0x195f160, %ecx\n" /* line 310 */
-        "cmpl 0x5a7cc(%ecx), %ebx\n" /* vertIndex */
-        "je .Lf1010cc_00101372\n"
-        "movl 0x5a7d0(%ecx), %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lf1010cc_0010131a\n"
-        "movl 0x5a7e0(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1010cc_0010131a\n"
-        ".Lf1010cc_001011a7:\n"
-        "movl 0x195f160, %edi\n" /* line 313 */
-        "movl %ebx, 0x5a7cc(%edi)\n" /* vertIndex */
-        "movl 8(%ebp), %eax\n" /* surfType */
-        "movzwl 0xa(%eax), %ecx\n"
-        /* } scope */
-        ".Lf1010cc_001011ba:\n"
-        "movl 0x195eec0, %eax\n" /* line 89 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "jne .Lf1010cc_00101324\n"
-        "testl %ecx, %ecx\n" /* line 92 */
-        "jle .Lf1010cc_00101281\n"
-        "xorl %ebx, %ebx\n" /* vertIndex */
-        "xorl %esi, %esi\n"
-        ".Lf1010cc_001011d7:\n"
-        "movl %ebx, %eax\n" /* line 94 | vertIndex, to */
-        "movl 0x195f160, %ecx\n" /* from */
-        "addl 0x5a7d4(%ecx), %eax\n" /* to */
-        "shll $5, %eax\n" /* to */
-        "addl %ecx, %eax\n" /* from, to */
-        "movl %esi, %ecx\n" /* from */
-        "movl 8(%ebp), %edi\n" /* surfType */
-        "addl 0xc(%edi), %ecx\n" /* from */
-        /* { scope 2 */
-        "movl (%ecx), %edx\n" /* line 199 */
-        "movl %edx, (%eax)\n"
-        "movl 4(%ecx), %edx\n" /* line 200 */
-        "movl %edx, 4(%eax)\n"
-        "movl 8(%ecx), %edx\n" /* line 201 */
-        "movl %edx, 8(%eax)\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 95 | vertIndex */
-        "movl 0x195f160, %edx\n"
-        "addl 0x5a7d4(%edx), %eax\n"
-        "shll $5, %eax\n"
-        "movl 0xc(%edi), %edx\n"
-        "movl 0x18(%esi, %edx), %edx\n"
-        "movl 0x195f160, %ecx\n"
-        "movl %edx, 0xc(%eax, %ecx)\n"
-        "movl %ebx, %eax\n" /* line 96 | vertIndex, to */
-        "addl 0x5a7d4(%ecx), %eax\n" /* to */
-        "shll $5, %eax\n" /* to */
-        "leal 0x10(%eax, %ecx), %eax\n" /* to */
-        "movl %esi, %ecx\n"
-        "addl 0xc(%edi), %ecx\n"
-        /* { scope 2 */
-        "movl 0x1c(%ecx), %edx\n" /* line 37 */
-        "movl %edx, (%eax)\n"
-        "movl 0x20(%ecx), %edx\n" /* line 38 */
-        "movl %edx, 4(%eax)\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 97 | vertIndex */
-        "movl 0x195f160, %edi\n"
-        "addl 0x5a7d4(%edi), %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x10(%eax, %edi), %eax\n"
-        "movl %esi, %ecx\n"
-        "movl 8(%ebp), %edx\n" /* surfType */
-        "addl 0xc(%edx), %ecx\n"
-        "movl 0x24(%ecx), %edx\n" /* line 37 */
-        "movl %edx, 8(%eax)\n"
-        "movl 0x28(%ecx), %edx\n" /* line 38 */
-        "movl %edx, 0xc(%eax)\n"
-        "addl $1, %ebx\n" /* line 92 | vertIndex */
-        "addl $0x44, %esi\n"
-        "movl 8(%ebp), %edi\n" /* surfType */
-        "movzwl 0xa(%edi), %ecx\n"
-        "cmpl %ebx, %ecx\n" /* vertIndex */
-        "jg .Lf1010cc_001011d7\n"
-        ".Lf1010cc_00101281:\n"
-        "leal -2(%ecx), %edi\n" /* line 110 */
-        "movl %edi, -0x1c(%ebp)\n" /* vertCount */
-        "testl %edi, %edi\n" /* line 111 */
-        "jle .Lf1010cc_001012fc\n"
-        "xorl %esi, %esi\n"
-        ".Lf1010cc_0010128d:\n"
-        "movl 0x195f160, %eax\n" /* line 113 */
-        "movl 0x5a7d0(%eax), %ecx\n"
-        "movl 0x5a7b0(%eax), %edx\n"
-        "movl %eax, %ebx\n" /* vertIndex */
-        "movl 0x5a7d4(%eax), %eax\n"
-        "movw %ax, (%edx, %ecx, 2)\n"
-        "movl %esi, %edx\n"
-        "movl %ebx, %edi\n" /* line 114 | vertIndex */
-        "movl 0x5a7d0(%ebx), %ebx\n" /* vertIndex */
-        "movl 0x5a7b0(%edi), %ecx\n"
-        "movl %esi, %eax\n"
-        "addw 0x5a7d4(%edi), %ax\n"
-        "addl $1, %eax\n"
-        "movw %ax, 2(%ecx, %ebx, 2)\n"
-        "movl 0x5a7d0(%edi), %ecx\n" /* line 115 */
-        "movl 0x5a7b0(%edi), %eax\n"
-        "addw 0x5a7d4(%edi), %dx\n"
-        "addl $2, %edx\n"
-        "movw %dx, 4(%eax, %ecx, 2)\n"
-        "addl $3, 0x5a7d0(%edi)\n" /* line 116 */
-        "addl $1, %esi\n" /* line 111 */
-        "cmpl %esi, -0x1c(%ebp)\n" /* vertCount */
-        "jne .Lf1010cc_0010128d\n"
-        "movl 8(%ebp), %eax\n" /* surfType */
-        "movzwl 0xa(%eax), %ecx\n"
-        ".Lf1010cc_001012fc:\n"
-        "movl 0x195f160, %edx\n" /* line 119 */
-        "addl %ecx, 0x5a7d4(%edx)\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 122 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1010cc_00101310:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lf1010cc_00101103\n"
-        /* { scope 2 */
-        ".Lf1010cc_0010131a:\n"
-        "calll RB_EndSurface\n"
-        "jmp .Lf1010cc_001011a7\n"
-        /* } scope */
-        ".Lf1010cc_00101324:\n"
-        "movl 0x195f160, %eax\n" /* line 105 */
-        "movl 0x5a7d4(%eax), %edx\n"
-        "movl %edx, %eax\n"
-        "shll $6, %eax\n"
-        "leal (%eax, %edx, 4), %edx\n"
-        "addl 0x195f160, %edx\n"
-        "movl %ecx, %eax\n"
-        "shll $6, %eax\n"
-        "leal (%eax, %ecx, 4), %eax\n"
-        "movl 8(%ebp), %ebx\n" /* surfType, vertIndex */
-        "movl 0xc(%ebx), %ecx\n" /* vertIndex */
-        "movl %eax, 8(%esp)\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memcpy\n"
-        "movzwl 0xa(%ebx), %ecx\n" /* vertIndex */
-        "jmp .Lf1010cc_00101281\n"
-        ".Lf1010cc_00101364:\n"
-        "movl %edi, %eax\n"
-        "jmp .Lf1010cc_00101146\n"
-        ".Lf1010cc_0010136b:\n"
-        "movl %eax, %edi\n"
-        "jmp .Lf1010cc_00101115\n"
-        ".Lf1010cc_00101372:\n"
-        "movl 8(%ebp), %edx\n" /* surfType */
-        "movzwl 0xa(%edx), %ecx\n"
-        "jmp .Lf1010cc_001011ba\n"
-    );
+    char *tess;
+    int sortedIndex;
+    int vertCount;
+    int indexCount;
+    int vertBase;
+    int i;
+    int triCount;
+    char *dxCaps;
+    char *src;
+    char *dest;
+    unsigned short *indices;
+
+    tess = *(char **)0x195f160;
+
+    /* Check if sorted index matches (poly mode = 1) */
+    if (*(int *)(tess + 0x5a7cc) != 1) {
+        if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+            RB_EndSurface();
+        }
+        tess = *(char **)0x195f160;
+        *(int *)(tess + 0x5a7cc) = 1;
+    }
+
+    vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
+    indexCount = vertCount * 3 - 6;
+
+    /* RB_CheckOverflow */
+    if (vertCount + *(int *)(tess + 0x5a7d4) > 0x154a ||
+        indexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
+        sortedIndex = *(int *)(tess + 0x5a7cc);
+        RB_EndSurface();
+        tess = *(char **)0x195f160;
+        RB_BeginSurface(
+            *(const Material **)(tess + 0x5a7bc),
+            *(MaterialTechniqueType *)(tess + 0x5a7c0),
+            *(int *)(tess + 0x5a7c4));
+        tess = *(char **)0x195f160;
+        if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
+            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+                RB_EndSurface();
+            }
+            tess = *(char **)0x195f160;
+            *(int *)(tess + 0x5a7cc) = sortedIndex;
+            vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
+        }
+    }
+
+    /* Check DX level for vertex copy method */
+    dxCaps = *(char **)0x195eec0;
+    dxCaps = *(char **)dxCaps;
+
+    if (*(int *)(dxCaps + 8) == 2) {
+        /* DX7 mode: per-vertex copy, dest stride = 32, src stride = 0x44 */
+        src = *(char **)((byte *)surfType + 0xc);
+        for (i = 0; i < vertCount; i++) {
+            char *srcVert = src + i * 0x44;
+            tess = *(char **)0x195f160;
+            vertBase = *(int *)(tess + 0x5a7d4);
+            dest = tess + (vertBase + i) * 32;
+
+            /* Copy position (vec3 = 12 bytes) */
+            *(int *)(dest + 0) = *(int *)(srcVert + 0);
+            *(int *)(dest + 4) = *(int *)(srcVert + 4);
+            *(int *)(dest + 8) = *(int *)(srcVert + 8);
+
+            /* Copy D3DCOLOR (4 bytes at src+0x18 -> dest+0xc) */
+            *(int *)(dest + 0xc) = *(int *)(srcVert + 0x18);
+
+            /* Copy texcoord set 1 (8 bytes at src+0x1c -> dest+0x10) */
+            *(int *)(dest + 0x10) = *(int *)(srcVert + 0x1c);
+            *(int *)(dest + 0x14) = *(int *)(srcVert + 0x20);
+
+            /* Copy texcoord set 2 (8 bytes at src+0x24 -> dest+0x18) */
+            *(int *)(dest + 0x18) = *(int *)(srcVert + 0x24);
+            *(int *)(dest + 0x1c) = *(int *)(srcVert + 0x28);
+        }
+    } else {
+        /* DX9 mode: memcpy with stride 68 (0x44) */
+        tess = *(char **)0x195f160;
+        vertBase = *(int *)(tess + 0x5a7d4);
+        dest = tess + vertBase * 68;
+        src = *(char **)((byte *)surfType + 0xc);
+        memcpy(dest, src, vertCount * 68);
+    }
+
+    /* Generate triangle fan indices */
+    triCount = vertCount - 2;
+    if (triCount > 0) {
+        tess = *(char **)0x195f160;
+        for (i = 0; i < triCount; i++) {
+            int idxOff = *(int *)(tess + 0x5a7d0);
+            indices = (unsigned short *)(*(char **)(tess + 0x5a7b0) + idxOff * 2);
+            vertBase = *(unsigned short *)(tess + 0x5a7d4);
+
+            indices[0] = (unsigned short)vertBase;
+            indices[1] = (unsigned short)(i + vertBase + 1);
+            indices[2] = (unsigned short)(i + vertBase + 2);
+            *(int *)(tess + 0x5a7d0) += 3;
+        }
+    }
+
+    /* Update vertex count */
+    vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
+    tess = *(char **)0x195f160;
+    *(int *)(tess + 0x5a7d4) += vertCount;
 }
 
 /* line 1485 */
-__attribute__((naked))
 void RB_TessStaticModelCached(const surfaceType_t *surfType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1485 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %edx\n" /* line 1503 | surfType */
-        "movl 4(%edx), %eax\n"
-        "movswl 4(%eax), %eax\n"
-        "leal (%eax, %eax, 2), %esi\n"
-        "movl 0x195f160, %ebx\n" /* line 352 */
-        "movl %esi, %eax\n"
-        "addl 0x5a7e0(%ebx), %eax\n"
-        "cmpl $0x100000, %eax\n"
-        "jg .Lf10137e_00101414\n"
-        ".Lf10137e_001013a9:\n"
-        "movl $2, 0x5a7b8(%ebx)\n" /* line 1508 */
-        "movl $0, 0x5a7e8(%ebx)\n" /* line 1509 */
-        "movl $0x10000, 0x5a7e4(%ebx)\n" /* line 1510 */
-        "movl 0x5a7e0(%ebx), %eax\n" /* line 1521 */
-        "movl 0x5a7b4(%ebx), %edx\n"
-        "leal (%edx, %eax, 2), %ecx\n"
-        "leal (%esi, %eax), %eax\n" /* line 1522 */
-        "movl %eax, 0x5a7e0(%ebx)\n"
-        "leal (%esi, %esi), %eax\n" /* line 1530 */
-        "movl %eax, 8(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* surfType */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %eax\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x195eed0, %edx\n"
-        "movl 0x2dc8(%edx), %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll Com_Memcpy\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1537 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf10137e_00101414:\n"
-        "movl 0x5a7cc(%ebx), %edi\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x5a7c4(%ebx), %eax\n" /* line 331 */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl 0x5a7cc(%ebx), %edi\n" /* line 310 */
-        "je .Lf10137e_001013a9\n"
-        "movl 0x5a7d0(%ebx), %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lf10137e_00101472\n"
-        "movl 0x5a7e0(%ebx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jne .Lf10137e_00101472\n"
-        "movl 0x195f160, %ebx\n" /* line 313 */
-        "movl %edi, 0x5a7cc(%ebx)\n"
-        "jmp .Lf10137e_001013a9\n"
-        ".Lf10137e_00101472:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "movl 0x195f160, %ebx\n" /* line 313 */
-        "movl %edi, 0x5a7cc(%ebx)\n"
-        "jmp .Lf10137e_001013a9\n"
-    );
+    char *tess;
+    int triIndexCount;
+    int sortedIndex;
+    int baseVertIndex;
+    char *dest;
+    char *src;
+
+    /* surfType[1] is a pointer (XSurface*), triCount is signed short at offset 4 */
+    triIndexCount = (int)(*(short *)((byte *)*(void **)((byte *)surfType + 4) + 4)) * 3;
+
+    tess = *(char **)0x195f160;
+
+    /* RB_CheckOverflow for cached triangles */
+    if (triIndexCount + *(int *)(tess + 0x5a7e0) > 0x100000) {
+        sortedIndex = *(int *)(tess + 0x5a7cc);
+        RB_EndSurface();
+        RB_BeginSurface(
+            *(const Material **)(tess + 0x5a7bc),
+            *(MaterialTechniqueType *)(tess + 0x5a7c0),
+            *(int *)(tess + 0x5a7c4));
+        tess = *(char **)0x195f160;
+        if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
+            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+                RB_EndSurface();
+                tess = *(char **)0x195f160;
+            }
+            *(int *)(tess + 0x5a7cc) = sortedIndex;
+        }
+    }
+
+    /* Set cached mode */
+    *(int *)(tess + 0x5a7b8) = 2;
+    *(int *)(tess + 0x5a7e8) = 0;
+    *(int *)(tess + 0x5a7e4) = 0x10000;
+
+    /* Compute dest and update triIndexCount */
+    baseVertIndex = *(int *)(tess + 0x5a7e0);
+    dest = *(char **)(tess + 0x5a7b4) + baseVertIndex * 2;
+    *(int *)(tess + 0x5a7e0) = baseVertIndex + triIndexCount;
+
+    /* Copy cached triangle data from DxGlobals static model cache */
+    src = *(char **)(*(char **)0x195eed0 + 0x2dc8) + *(int *)(*(void **)((byte *)surfType + 8)) * 12;
+    Com_Memcpy(dest, src, triIndexCount * 2);
 }
 
 /* line 1367 */
-__attribute__((naked))
 void RB_TessXModelSkinned(const surfaceType_t *surfType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1367 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* surfType */
-        "movl 8(%ebx), %eax\n" /* line 1380 | surfType */
-        "testl %eax, %eax\n"
-        "js .Lf101488_00101586\n"
-        /* { scope 1 */
-        "movl 0x195f160, %eax\n" /* line 261 */
-        "movl 0x5a7d0(%eax), %edi\n"
-        "testl %edi, %edi\n"
-        "jne .Lf101488_00101568\n"
-        "movl 0x5a7e0(%eax), %esi\n"
-        "testl %esi, %esi\n"
-        "jne .Lf101488_00101568\n"
-        ".Lf101488_001014c0:\n"
-        "movl 4(%ebx), %edi\n" /* line 1264 */
-        "movl 0x195eec0, %eax\n" /* line 1067 */
-        "movl (%eax), %eax\n"
-        "movl $0x24, %esi\n"
-        "cmpl $2, 8(%eax)\n"
-        "movl $0x40, %eax\n"
-        "cmovnel %eax, %esi\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 1274 */
-        "movl 8(%ebx), %eax\n" /* line 1275 */
-        "cltd\n"
-        "idivl %esi\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl $0, -0x2c(%ebp)\n" /* line 1276 | args */
-        "movswl 2(%edi), %eax\n" /* line 1278 */
-        "movl %eax, -0x28(%ebp)\n"
-        "movswl 4(%edi), %eax\n" /* line 1279 */
-        "movl %eax, -0x24(%ebp)\n"
-        /* { scope 2 */
-        "movl 0x14(%edi), %eax\n" /* line 24 */
-        /* } scope */
-        /* { scope 2 */
-        "movl 0x195f138, %ebx\n" /* line 212 */
-        "cmpl 0x20cc(%ebx), %eax\n"
-        "je .Lf101488_00101519\n"
-        "movl %eax, (%esp)\n" /* line 213 */
-        "calll RB_ChangeIndices\n"
-        /* } scope */
-        ".Lf101488_00101519:\n"
-        "movl 0x195f188, %eax\n" /* line 1005 */
-        "movl (%eax), %eax\n"
-        "movl 0x217c78(%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        /* { scope 2 */
-        "cmpl 0x20d0(%ebx), %eax\n" /* line 220 */
-        "je .Lf101488_00101572\n"
-        ".Lf101488_00101531:\n"
-        "movl %esi, 0xc(%esp)\n" /* line 221 */
-        "movl $0, 8(%esp)\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_ChangeStreamSource\n"
-        /* } scope */
-        ".Lf101488_0010154d:\n"
-        "leal -0x2c(%ebp), %eax\n" /* line 1293 | args */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll RB_DrawTechnique\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 1385 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf101488_00101568:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lf101488_001014c0\n"
-        /* { scope 2 */
-        ".Lf101488_00101572:\n"
-        "movl 0x20d4(%ebx), %ecx\n" /* line 220 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf101488_00101531\n"
-        "cmpl 0x20d8(%ebx), %esi\n"
-        "jne .Lf101488_00101531\n"
-        "jmp .Lf101488_0010154d\n"
-        /* } scope */
-        /* } scope */
-        /* { scope 1 */
-        ".Lf101488_00101586:\n"
-        "movl 4(%ebx), %eax\n" /* line 1324 */
-        "movl %eax, -0x3c(%ebp)\n" /* xsurf */
-        "movl %eax, (%esp)\n" /* line 1326 */
-        "calll XSurfaceGetNumVerts\n"
-        "movl %eax, %edi\n" /* surface */
-        "movl -0x3c(%ebp), %edx\n" /* line 1327 | xsurf */
-        "movl %edx, (%esp)\n"
-        "calll XSurfaceGetNumTris\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "movl %eax, -0x40(%ebp)\n"
-        /* { scope 2 */
-        "movl %edi, %eax\n" /* line 344 */
-        "movl 0x195f160, %edx\n"
-        "addl 0x5a7d4(%edx), %eax\n"
-        "cmpl $0x154a, %eax\n"
-        "jg .Lf101488_001016da\n"
-        "movl -0x40(%ebp), %eax\n"
-        "addl 0x5a7d0(%edx), %eax\n"
-        "cmpl $0x100000, %eax\n"
-        "jg .Lf101488_00101663\n"
-        "movl 0x195f160, %eax\n"
-        /* } scope */
-        ".Lf101488_001015d9:\n"
-        "testb $1, 0x5a7d0(%eax)\n" /* line 1331 */
-        "jne .Lf101488_001016de\n"
-        ".Lf101488_001015e6:\n"
-        "movzwl 0x5a7d4(%eax), %edx\n" /* line 1335 */
-        "movl 0x195eec0, %eax\n" /* line 1340 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lf101488_0010174c\n"
-        "movzwl %dx, %esi\n" /* line 1347 | vertexStride */
-        "movl %edi, %eax\n" /* vertexCount */
-        "shll $6, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, %eax\n" /* vertexStride */
-        "shll $6, %eax\n"
-        "addl 0x195f160, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memcpy\n"
-        ".Lf101488_00101624:\n"
-        "movl 0x195f160, %ebx\n" /* line 1352 */
-        "addl %edi, 0x5a7d4(%ebx)\n" /* vertexCount */
-        "movl %esi, 8(%esp)\n" /* line 1356 | vertexStride */
-        "movl 0x5a7d0(%ebx), %eax\n"
-        "movl 0x5a7b0(%ebx), %edx\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x3c(%ebp), %eax\n" /* xsurf */
-        "movl %eax, (%esp)\n"
-        "calll XSurfaceGetTris\n"
-        "movl -0x40(%ebp), %edx\n" /* line 1360 */
-        "addl %edx, 0x5a7d0(%ebx)\n"
-        /* } scope */
-        "addl $0x4c, %esp\n" /* line 1385 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf101488_00101663:\n"
-        "movl 0x195f160, %eax\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf101488_00101668:\n"
-        "movl 0x5a7cc(%eax), %esi\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x195f160, %edx\n" /* line 331 */
-        "movl 0x5a7c4(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "movl 0x195f160, %eax\n" /* line 310 */
-        "cmpl 0x5a7cc(%eax), %esi\n"
-        "je .Lf101488_001015d9\n"
-        "movl 0x5a7d0(%eax), %edx\n" /* line 261 */
-        "testl %edx, %edx\n"
-        "jne .Lf101488_001016d3\n"
-        "movl 0x5a7e0(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lf101488_001016d3\n"
-        ".Lf101488_001016c0:\n"
-        "movl 0x195f160, %edx\n" /* line 313 */
-        "movl %esi, 0x5a7cc(%edx)\n"
-        "movl %edx, %eax\n"
-        "jmp .Lf101488_001015d9\n"
-        ".Lf101488_001016d3:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lf101488_001016c0\n"
-        ".Lf101488_001016da:\n"
-        "movl %edx, %eax\n"
-        "jmp .Lf101488_00101668\n"
-        /* } scope */
-        ".Lf101488_001016de:\n"
-        "movl 0x5a7cc(%eax), %esi\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x195f160, %edx\n" /* line 331 */
-        "movl 0x5a7c4(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "movl 0x195f160, %eax\n" /* line 310 */
-        "cmpl 0x5a7cc(%eax), %esi\n"
-        "je .Lf101488_00101779\n"
-        "movl 0x5a7d0(%eax), %edx\n" /* line 261 */
-        "testl %edx, %edx\n"
-        "jne .Lf101488_00101745\n"
-        "movl 0x5a7e0(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf101488_00101745\n"
-        ".Lf101488_00101732:\n"
-        "movl 0x195f160, %edx\n" /* line 313 */
-        "movl %esi, 0x5a7cc(%edx)\n"
-        "movl %edx, %eax\n"
-        "jmp .Lf101488_001015e6\n"
-        ".Lf101488_00101745:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "jmp .Lf101488_00101732\n"
-        ".Lf101488_0010174c:\n"
-        "movzwl %dx, %esi\n" /* line 1342 | vertexStride */
-        "leal (%edi, %edi, 8), %eax\n" /* vertexCount */
-        "shll $2, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal (%esi, %esi, 8), %eax\n" /* vertexStride */
-        "movl 0x195f160, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memcpy\n"
-        "jmp .Lf101488_00101624\n"
-        ".Lf101488_00101779:\n"
-        "movl 0x195f160, %eax\n"
-        "jmp .Lf101488_001015e6\n"
-    );
+    GfxModelSkinnedSurface *skinSurf = (GfxModelSkinnedSurface *)surfType;
+    XSurface *xsurf;
+    char *tess;
+    char *backEndData;
+    char *dxCaps;
+    int vertexStride;
+    GfxDrawPrimArgs args;
+    IDirect3DVertexBuffer9 *vb;
+    int sortedIndex;
+    int vertexCount;
+    int triIndexCount;
+    int vertBase;
+    int isDx7;
+
+    xsurf = skinSurf->surf.xsurf;
+
+    /* Check if skinnedCachedOffset >= 0 (hardware skinning path) */
+    if (skinSurf->skinnedCachedOffset >= 0) {
+        /* Hardware skinning path: use pre-computed buffers */
+        tess = *(char **)0x195f160;
+
+        /* Flush if surface has existing data */
+        if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+            RB_EndSurface();
+        }
+
+        /* Determine vertex stride based on DX level */
+        dxCaps = *(char **)0x195eec0;
+        dxCaps = *(char **)dxCaps;
+        isDx7 = (*(int *)(dxCaps + 8) == 2);
+        vertexStride = isDx7 ? 0x24 : 0x40;
+
+        /* Set up draw prim args */
+        args.u.buf.baseIndex = 0;
+        args.u.buf.baseVertex = skinSurf->skinnedCachedOffset / vertexStride;
+        args.firstVertexFromBase = 0;
+        args.vertexCount = (int)xsurf->vertCount;
+        args.primCount = (int)xsurf->triCount;
+
+        /* Change index buffer if needed */
+        backEndData = *(char **)0x195f138;
+        if (xsurf->indexBuffer != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
+            RB_ChangeIndices(xsurf->indexBuffer);
+        }
+
+        /* Get skinned vertex buffer from viewParms */
+        vb = *(IDirect3DVertexBuffer9 **)((byte *)*(void **)(*(char **)0x195f188) + 0x217c78 + 8);
+
+        /* Change stream source if needed */
+        if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||
+            *(int *)(backEndData + 0x20d4) != 0 ||
+            *(int *)(backEndData + 0x20d8) != vertexStride) {
+            RB_ChangeStreamSource(0, vb, 0, vertexStride);
+        }
+
+        RB_DrawTechnique(0, &args);
+    } else {
+        /* Software skinning path: copy vertex data into tess buffer */
+        vertexCount = XSurfaceGetNumVerts(xsurf);
+        triIndexCount = XSurfaceGetNumTris(xsurf) * 3;
+
+        /* RB_CheckOverflow */
+        tess = *(char **)0x195f160;
+        if (vertexCount + *(int *)(tess + 0x5a7d4) > 0x154a ||
+            triIndexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
+            sortedIndex = *(int *)(tess + 0x5a7cc);
+            RB_EndSurface();
+            tess = *(char **)0x195f160;
+            RB_BeginSurface(
+                *(const Material **)(tess + 0x5a7bc),
+                *(MaterialTechniqueType *)(tess + 0x5a7c0),
+                *(int *)(tess + 0x5a7c4));
+            tess = *(char **)0x195f160;
+            if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
+                if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+                    RB_EndSurface();
+                }
+                tess = *(char **)0x195f160;
+                *(int *)(tess + 0x5a7cc) = sortedIndex;
+            }
+        }
+
+        /* Flush if index count is odd (alignment issue) */
+        if (*(int *)(tess + 0x5a7d0) & 1) {
+            sortedIndex = *(int *)(tess + 0x5a7cc);
+            RB_EndSurface();
+            tess = *(char **)0x195f160;
+            RB_BeginSurface(
+                *(const Material **)(tess + 0x5a7bc),
+                *(MaterialTechniqueType *)(tess + 0x5a7c0),
+                *(int *)(tess + 0x5a7c4));
+            tess = *(char **)0x195f160;
+            if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
+                if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+                    RB_EndSurface();
+                }
+                tess = *(char **)0x195f160;
+                *(int *)(tess + 0x5a7cc) = sortedIndex;
+            }
+        }
+
+        /* Copy vertex data into tess buffer */
+        vertBase = *(unsigned short *)(tess + 0x5a7d4);
+        dxCaps = *(char **)0x195eec0;
+        dxCaps = *(char **)dxCaps;
+
+        if (*(int *)(dxCaps + 8) == 2) {
+            /* DX7 mode: vertex size = 0x24 (36 bytes), stride = vertCount * 36 */
+            Com_Memcpy(tess + vertBase * 36, (void *)skinSurf->skinnedVert.variant, vertexCount * 36);
+        } else {
+            /* DX9 mode: vertex size = 0x40 (64 bytes), stride = vertCount * 64 */
+            Com_Memcpy(tess + vertBase * 64, (void *)skinSurf->skinnedVert.variant, vertexCount * 64);
+        }
+
+        /* Update vertex count */
+        tess = *(char **)0x195f160;
+        *(int *)(tess + 0x5a7d4) += vertexCount;
+
+        /* Copy triangle indices with vertex offset */
+        XSurfaceGetTris(xsurf,
+            (r_index_t *)(*(char **)(tess + 0x5a7b0) + *(int *)(tess + 0x5a7d0) * 2),
+            vertBase);
+
+        /* Update index count */
+        *(int *)(tess + 0x5a7d0) += triIndexCount;
+    }
 }
 
 /* line 1553 */
-__attribute__((naked))
 void RB_TessTriangles(const surfaceType_t *surfType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1553 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* surfType */
-        "movl 0x195f160, %edi\n" /* line 1564 */
-        "movl 0x5a7e0(%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf101784_0010180c\n"
-        "movl 0x5a7e8(%edi), %eax\n"
-        "cmpl 0x1c(%ebx), %eax\n" /* surfType */
-        "je .Lf101784_00101874\n"
-        ".Lf101784_001017af:\n"
-        "movl 0x5a7cc(%edi), %esi\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x5a7c4(%edi), %eax\n" /* line 331 */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl 0x5a7cc(%edi), %esi\n" /* line 310 */
-        "je .Lf101784_0010180c\n"
-        "movl 0x5a7d0(%edi), %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lf101784_001018f6\n"
-        "movl 0x5a7e0(%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf101784_001018f6\n"
-        "movl 0x195f160, %edi\n" /* line 313 */
-        "movl %esi, 0x5a7cc(%edi)\n"
-        ".Lf101784_0010180c:\n"
-        "movzwl 0x22(%ebx), %eax\n" /* line 352 */
-        "addl 0x5a7e0(%edi), %eax\n"
-        "cmpl $0x100000, %eax\n"
-        "jg .Lf101784_00101886\n"
-        ".Lf101784_0010181d:\n"
-        "movl $1, 0x5a7b8(%edi)\n" /* line 1573 */
-        "movzwl 0x22(%ebx), %eax\n" /* line 1577 | surfType */
-        "addl %eax, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x24(%ebx), %eax\n" /* surfType */
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7e0(%edi), %eax\n"
-        "movl 0x5a7b4(%edi), %edx\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Memcpy\n"
-        "movzwl 0x22(%ebx), %eax\n" /* line 1581 | surfType */
-        "addl %eax, 0x5a7e0(%edi)\n"
-        "movl 0x1c(%ebx), %eax\n" /* line 1584 | surfType */
-        "movl %eax, 0x5a7e8(%edi)\n"
-        "movzwl 0x20(%ebx), %eax\n" /* line 1585 | surfType */
-        "movl %eax, 0x5a7e4(%edi)\n"
-        "addl $0x1c, %esp\n" /* line 1588 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf101784_00101874:\n"
-        "movzwl 0x20(%ebx), %eax\n" /* line 1564 | surfType */
-        "cmpl %eax, 0x5a7e4(%edi)\n"
-        "jne .Lf101784_001017af\n"
-        "jmp .Lf101784_0010180c\n"
-        ".Lf101784_00101886:\n"
-        "movl 0x5a7cc(%edi), %esi\n" /* line 327 */
-        "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x5a7c4(%edi), %eax\n" /* line 331 */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x5a7c0(%edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0x5a7bc(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll RB_BeginSurface\n"
-        "cmpl 0x5a7cc(%edi), %esi\n" /* line 310 */
-        "je .Lf101784_0010190c\n"
-        "movl 0x5a7d0(%edi), %eax\n" /* line 261 */
-        "testl %eax, %eax\n"
-        "jne .Lf101784_001018e0\n"
-        "movl 0x5a7e0(%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf101784_001018e0\n"
-        "movl 0x195f160, %edi\n" /* line 313 */
-        "movl %esi, 0x5a7cc(%edi)\n"
-        "jmp .Lf101784_0010181d\n"
-        ".Lf101784_001018e0:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "movl 0x195f160, %edi\n" /* line 313 */
-        "movl %esi, 0x5a7cc(%edi)\n"
-        "jmp .Lf101784_0010181d\n"
-        ".Lf101784_001018f6:\n"
-        "calll RB_EndSurface\n" /* line 262 */
-        "movl 0x195f160, %edi\n" /* line 313 */
-        "movl %esi, 0x5a7cc(%edi)\n"
-        "jmp .Lf101784_0010180c\n"
-        ".Lf101784_0010190c:\n"
-        "movl 0x195f160, %edi\n"
-        "jmp .Lf101784_0010181d\n"
-    );
+    char *tess;
+    int sortedIndex;
+    srfTriangles_t *tri = (srfTriangles_t *)surfType;
+
+    tess = *(char **)0x195f160;
+
+    /* Check if we need to flush existing cached data due to buffer mismatch */
+    if (*(int *)(tess + 0x5a7e0) != 0) {
+        if (*(int *)(tess + 0x5a7e8) != tri->firstVertex ||
+            *(int *)(tess + 0x5a7e4) != (int)tri->vertexCount) {
+            /* Buffer mismatch - flush and restart */
+            sortedIndex = *(int *)(tess + 0x5a7cc);
+            RB_EndSurface();
+            RB_BeginSurface(
+                *(const Material **)(tess + 0x5a7bc),
+                *(MaterialTechniqueType *)(tess + 0x5a7c0),
+                *(int *)(tess + 0x5a7c4));
+            if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
+                if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+                    RB_EndSurface();
+                }
+                tess = *(char **)0x195f160;
+                *(int *)(tess + 0x5a7cc) = sortedIndex;
+            }
+        }
+    }
+
+    /* Check overflow for cached indices */
+    if ((int)tri->indexCount + *(int *)(tess + 0x5a7e0) > 0x100000) {
+        sortedIndex = *(int *)(tess + 0x5a7cc);
+        RB_EndSurface();
+        RB_BeginSurface(
+            *(const Material **)(tess + 0x5a7bc),
+            *(MaterialTechniqueType *)(tess + 0x5a7c0),
+            *(int *)(tess + 0x5a7c4));
+        tess = *(char **)0x195f160;
+        if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
+            if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
+                RB_EndSurface();
+                tess = *(char **)0x195f160;
+            }
+            *(int *)(tess + 0x5a7cc) = sortedIndex;
+        }
+    }
+
+    /* Set triangle mode */
+    *(int *)(tess + 0x5a7b8) = 1;
+
+    /* Copy index data */
+    Com_Memcpy(
+        *(char **)(tess + 0x5a7b4) + *(int *)(tess + 0x5a7e0) * 2,
+        (void *)tri->indices,
+        (int)tri->indexCount * 2);
+
+    /* Update state */
+    *(int *)(tess + 0x5a7e0) += (int)tri->indexCount;
+    *(int *)(tess + 0x5a7e8) = tri->firstVertex;
+    *(int *)(tess + 0x5a7e4) = (int)tri->vertexCount;
 }
 

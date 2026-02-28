@@ -15,16 +15,22 @@
 static static_model_cache_t s_cache; /* 0xc88580 */
 
 extern refimport_t *ri; /* 0x195eee0 */
+extern GfxBackEndData **gfxBuf; /* 0x195eef4 */
+extern void **g_dxCaps; /* 0x195eec0 */
+extern byte *g_dx; /* 0x195eed0 */
+extern volatile int *g_dxIter; /* 0x195f0e0 */
+extern r_global_permanent_t *rgp; /* 0x195eebc */
 
+void R_AddFrontendCmd(int type, void *data);
 void R_InitStaticModelIndexCache(void);
 void R_StaticModelCacheStats_f(void);
 void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf);
 void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *skinBuffers);
 void R_InitStaticModelCache(void);
-static void SMC_FreeCachedSurface_r(static_model_cache_t *cache, int levelsToLeaf);
+static __attribute__((regparm(3))) void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIndex, int levelsToLeaf);
 void R_StaticModelCacheFlush_f(void);
 void R_ShutdownStaticModelCache(void);
-static Bool SMC_GetFreeBlockOfSize(static_model_cache_t *cache, int listIndex);
+static __attribute__((regparm(2))) Bool SMC_GetFreeBlockOfSize(static_model_cache_t *cache, int listIndex);
 GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *staticSurf, const XSurface *xsurf, int smodelIndex, const Material *material);
 void R_FlushStaticModelCache(void);
 
@@ -47,44 +53,25 @@ void R_StaticModelCacheStats_f(void)
 }
 
 /* line 713 */
-__attribute__((naked))
 void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 713 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* surf */
-        /* { scope 1 */
-        "subl $s_cache, %edx\n" /* line 721 */
-        "movl $0x5397829d, %eax\n"
-        "mull %edx\n"
-        "shrl $7, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "shll $3, %eax\n"
-        "leal s_cache(%eax), %ecx\n"
-        "movl 0x195eef4, %edx\n" /* line 725 */
-        "movl (%edx), %edx\n"
-        "movl (%edx), %edx\n"
-        "movl %edx, 8(%ecx)\n"
-        "movl 4(%ecx), %ebx\n" /* line 134 */
-        "movl s_cache(%eax), %edx\n"
-        "movl %edx, (%ebx)\n"
-        "movl s_cache(%eax), %edx\n" /* line 135 */
-        "movl %ebx, 4(%edx)\n"
-        "movl $0xc949a8, s_cache(%eax)\n" /* line 125 */
-        "movl 0xc949ac, %eax\n" /* line 126 */
-        "movl %eax, 4(%ecx)\n"
-        "movl %ecx, 0xc949ac\n" /* line 127 */
-        "movl 4(%ecx), %eax\n" /* line 128 */
-        "movl %ecx, (%eax)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 729 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int treeIndex;
+
+    treeIndex = ((unsigned int)((char *)surf - (char *)&s_cache)) / sizeof(static_model_tree_t);
+    static_model_tree_t *tree = &s_cache.trees[treeIndex];
+
+    /* Update frame count */
+    tree->frameCount = (*gfxBuf)->frameCount;
+
+    /* Remove tree from its current usedlist position */
+    ((static_model_tree_list_t *)tree->usedlist.next)->prev = tree->usedlist.prev;
+    ((static_model_tree_list_t *)tree->usedlist.prev)->next = tree->usedlist.next;
+
+    /* Insert tree at front of usedlist */
+    tree->usedlist.prev = (int)&s_cache.usedlist;
+    tree->usedlist.next = s_cache.usedlist.next;
+    s_cache.usedlist.next = (int)&tree->usedlist;
+    ((static_model_tree_list_t *)tree->usedlist.next)->prev = (int)&tree->usedlist;
 }
 
 /* line 592 */
@@ -878,89 +865,54 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
 }
 
 /* line 774 */
-__attribute__((naked))
 void R_InitStaticModelCache(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 774 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 0x195eec0, %eax\n" /* line 1067 */
-        "movl (%eax), %eax\n"
-        "movl $0x240000, %esi\n" /* "
-DP4 oPos.w, v0, c23[3];
-DP3 r0.x, v1, c4[0];
-DP3 r0.y, v1, " */
-        "cmpl $2, 8(%eax)\n"
-        "movl $0x400000, %eax\n"
-        "cmovnel %eax, %esi\n"
-        "movl 0x195eed0, %ebx\n"
-        "addl $0x2dc4, %ebx\n"
-        "movl 0x195f0e0, %edi\n"
-        ".Lfe0f6a_000e0f9d:\n"
-        "movl 0x195eed0, %edx\n" /* line 748 */
-        "movl 8(%edx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl $0, 0x18(%esp)\n"
-        "movl %ebx, 0x14(%esp)\n"
-        "movl $0, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movl $0x400208, 8(%esp)\n"
-        "movl %esi, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll *0x68(%edx)\n"
-        "movl (%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfe0f6a_000e0f9d\n"
-        "movl $0xc438, 8(%esp)\n" /* line 758 */
-        "movl $0, 4(%esp)\n"
-        "movl $s_cache, (%esp)\n"
-        "calll memset\n"
-        "movl $0xc949a8, 0xc949a8\n" /* line 760 */
-        "movl $0xc949a8, 0xc949ac\n" /* line 761 */
-        "xorl %ecx, %ecx\n"
-        "movl $s_cache, %edx\n"
-        "movl $0xc94980, %eax\n"
-        ".Lfe0f6a_000e1018:\n"
-        "movl %eax, 0xc400(%edx)\n" /* line 765 */
-        "movl %eax, 0xc404(%edx)\n" /* line 766 */
-        "addl $1, %ecx\n" /* line 763 */
-        "addl $8, %eax\n"
-        "addl $8, %edx\n"
-        "cmpl $5, %ecx\n"
-        "jne .Lfe0f6a_000e1018\n"
-        "xorl %ebx, %ebx\n"
-        "movl $0xc88600, %ecx\n"
-        "movl 0xc94984, %edx\n"
-        "jmp .Lfe0f6a_000e1043\n"
-        ".Lfe0f6a_000e1041:\n"
-        "movl %eax, %edx\n"
-        ".Lfe0f6a_000e1043:\n"
-        "leal 8(%ecx), %eax\n" /* line 770 */
-        "movl $0xc94980, 8(%ecx)\n" /* line 125 */
-        "movl %edx, 0xc(%ecx)\n" /* line 126 */
-        "movl %eax, 0xc94984\n" /* line 127 */
-        "movl 0xc(%ecx), %edx\n" /* line 128 */
-        "movl %eax, (%edx)\n"
-        "addl $1, %ebx\n" /* line 769 */
-        "addl $0x188, %ecx\n"
-        "cmpl $0x80, %ebx\n"
-        "jne .Lfe0f6a_000e1041\n"
-        "addl $0x2c, %esp\n" /* line 778 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int size;
+    int i;
+    void *device;
+    void **vtable;
+    static_model_node_list_t *freenode;
+
+    /* Determine VB size based on device caps */
+    size = 0x240000;
+    if (((int *)*(void **)g_dxCaps)[2] != 2) {
+        size = 0x400000;
+    }
+
+    /* Create vertex buffer (retry loop for device lost) */
+    do {
+        device = *(void **)(g_dx + 8);
+        vtable = *(void ***)device;
+        ((int (__attribute__((stdcall)) *)(void *, int, int, int, int, void *, int))vtable[0x68 / 4])(
+            device, size, 0x400208, 0, 0, (void *)(g_dx + 0x2dc4), 0);
+    } while (*g_dxIter != 0);
+
+    /* Reset the cache */
+    memset(&s_cache, 0, sizeof(s_cache));
+
+    /* Initialize usedlist as empty (self-pointing) */
+    s_cache.usedlist.prev = (int)&s_cache.usedlist;
+    s_cache.usedlist.next = (int)&s_cache.usedlist;
+
+    /* Initialize each freelist as empty (self-pointing) */
+    for (i = 0; i < 5; i++) {
+        s_cache.freelist[i].prev = (int)&s_cache.freelist[i];
+        s_cache.freelist[i].next = (int)&s_cache.freelist[i];
+    }
+
+    /* Insert each tree's first leaf freenode into freelist[0] */
+    for (i = 0; i < 128; i++) {
+        freenode = &s_cache.trees[i].leafs[0].freenode;
+        freenode->prev = (int)&s_cache.freelist[0];
+        freenode->next = s_cache.freelist[0].next;
+        s_cache.freelist[0].next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+    }
 }
 
 /* line 147 */
-static __attribute__((naked))
-void SMC_FreeCachedSurface_r(static_model_cache_t *cache, int levelsToLeaf)
+static __attribute__((naked)) __attribute__((regparm(3)))
+void SMC_FreeCachedSurface_r(static_model_cache_t *cache, void *tree, int nodeIndex, int levelsToLeaf)
 {
     __asm__ __volatile__ (
         ".Lfe1074_000e1074:\n"
@@ -1611,805 +1563,513 @@ void SMC_FreeCachedSurface_r(static_model_cache_t *cache, int levelsToLeaf)
 }
 
 /* line 827 */
-__attribute__((naked))
 void R_StaticModelCacheFlush_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 827 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc949ac, %ebx\n" /* line 791 */
-        "testl %ebx, %ebx\n"
-        "jne .Lfe1788_000e17ee\n"
-        "jmp .Lfe1788_000e18e6\n"
-        ".Lfe1788_000e17a0:\n"
-        "leal 0x88(%ebx), %esi\n" /* line 158 */
-        "movl 4(%esi), %eax\n" /* line 134 */
-        "movl 0x88(%ebx), %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl 0x88(%ebx), %edx\n" /* line 135 */
-        "movl %eax, 4(%edx)\n"
-        ".Lfe1788_000e17ba:\n"
-        "movl 0xc949ac, %eax\n" /* line 802 */
-        "movl 4(%eax), %ecx\n" /* line 134 */
-        "movl (%eax), %edx\n"
-        "movl %edx, (%ecx)\n"
-        "movl (%eax), %eax\n" /* line 135 */
-        "movl %ecx, 4(%eax)\n"
-        "movl $0xc94980, 0x88(%ebx)\n" /* line 125 */
-        "movl 0xc94984, %eax\n" /* line 126 */
-        "movl %eax, 4(%esi)\n"
-        "movl %esi, 0xc94984\n" /* line 127 */
-        "movl 4(%esi), %eax\n" /* line 128 */
-        "movl %esi, (%eax)\n"
-        "movl 0xc949ac, %ebx\n" /* line 797 */
-        ".Lfe1788_000e17ee:\n"
-        "cmpl $0xc949a8, %ebx\n"
-        "je .Lfe1788_000e185b\n"
-        "cmpw $0, 0xc(%ebx)\n" /* line 155 */
-        "je .Lfe1788_000e17a0\n"
-        "movw $0, 0xc(%ebx)\n" /* line 162 */
-        "cmpb $0, 0xe(%ebx)\n" /* line 164 */
-        "je .Lfe1788_000e18ee\n"
-        "leal 0x88(%ebx), %esi\n" /* line 167 */
-        "movl 0xc(%esi), %ecx\n" /* line 168 */
-        "cmpl %esi, (%ecx)\n" /* line 172 */
-        "je .Lfe1788_000e1929\n"
-        "movl %ecx, %edx\n" /* line 175 */
-        "xorl %edi, %edi\n"
-        ".Lfe1788_000e1822:\n"
-        "addl $1, %edi\n" /* line 170 */
-        "cmpl $4, %edi\n"
-        "je .Lfe1788_000e183b\n"
-        "movl 4(%edx), %eax\n" /* line 172 */
-        "addl $4, %edx\n"
-        "cmpl %eax, %esi\n"
-        "jne .Lfe1788_000e1822\n"
-        ".Lfe1788_000e1834:\n"
-        "movl $0, (%ecx, %edi, 4)\n" /* line 174 */
-        ".Lfe1788_000e183b:\n"
-        "subl $0x200, 0xc949b0\n" /* line 178 */
-        "movl 8(%esi), %eax\n" /* line 179 */
-        "movswl 2(%eax), %eax\n"
-        "subl %eax, 0xc949b4\n"
-        "movb $0, 0xe(%ebx)\n" /* line 181 */
-        "jmp .Lfe1788_000e17ba\n"
-        ".Lfe1788_000e185b:\n"
-        "movl $0xc438, 8(%esp)\n" /* line 758 */
-        "movl $0, 4(%esp)\n"
-        "movl $s_cache, (%esp)\n"
-        "calll memset\n"
-        "movl $0xc949a8, 0xc949a8\n" /* line 760 */
-        "movl $0xc949a8, 0xc949ac\n" /* line 761 */
-        "xorl %ecx, %ecx\n"
-        "movl $s_cache, %edx\n"
-        "movl $0xc94980, %eax\n"
-        ".Lfe1788_000e1897:\n"
-        "movl %eax, 0xc400(%edx)\n" /* line 765 */
-        "movl %eax, 0xc404(%edx)\n" /* line 766 */
-        "addl $1, %ecx\n" /* line 763 */
-        "addl $8, %eax\n"
-        "addl $8, %edx\n"
-        "cmpl $5, %ecx\n"
-        "jne .Lfe1788_000e1897\n"
-        "xorl %ebx, %ebx\n"
-        "movl $0xc88600, %ecx\n"
-        ".Lfe1788_000e18b8:\n"
-        "leal 8(%ecx), %eax\n" /* line 770 */
-        "movl $0xc94980, 8(%ecx)\n" /* line 125 */
-        "movl 0xc94984, %edx\n" /* line 126 */
-        "movl %edx, 0xc(%ecx)\n"
-        "movl %eax, 0xc94984\n" /* line 127 */
-        "movl 0xc(%ecx), %edx\n" /* line 128 */
-        "movl %eax, (%edx)\n"
-        "addl $1, %ebx\n" /* line 769 */
-        "addl $0x188, %ecx\n"
-        "cmpl $0x80, %ebx\n"
-        "jne .Lfe1788_000e18b8\n"
-        ".Lfe1788_000e18e6:\n"
-        "addl $0x1c, %esp\n" /* line 830 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfe1788_000e18ee:\n"
-        "movl $3, (%esp)\n" /* line 185 */
-        "movl $1, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl $s_cache, %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "movl $3, (%esp)\n" /* line 186 */
-        "movl $2, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl $s_cache, %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "leal 0x88(%ebx), %esi\n"
-        "jmp .Lfe1788_000e17ba\n"
-        ".Lfe1788_000e1929:\n"
-        "xorl %edi, %edi\n" /* line 173 */
-        "jmp .Lfe1788_000e1834\n"
-    );
+    static_model_tree_t *tree;
+    static_model_node_list_t *freenode;
+    GfxStaticModelSurfaceCached *leaf;
+    GfxStaticSurface *surface;
+    static_model_tree_list_t *node;
+    int lodLevel;
+    int i;
+
+    tree = (static_model_tree_t *)s_cache.usedlist.next;
+    if (!tree)
+        return;
+
+    while ((int)tree != (int)&s_cache.usedlist) {
+        freenode = &tree->leafs[0].freenode;
+        leaf = &tree->leafs[0].surf;
+
+        if (tree->nodes[0].usedVerts == 0) {
+            /* Leaf not allocated, unlink freenode from its freelist */
+            ((static_model_node_list_t *)freenode->next)->prev = freenode->prev;
+            ((static_model_node_list_t *)freenode->prev)->next = freenode->next;
+        } else {
+            tree->nodes[0].usedVerts = 0;
+
+            if (tree->nodes[0].inuse == 0) {
+                /* No children allocated, recursively free child nodes */
+                SMC_FreeCachedSurface_r(&s_cache, (void *)tree, 1, 3);
+                SMC_FreeCachedSurface_r(&s_cache, (void *)tree, 2, 3);
+                freenode = &tree->leafs[0].freenode;
+            } else {
+                /* Has children: clear the surface's cached LOD pointer */
+                surface = leaf->surface;
+                lodLevel = 0;
+                if (surface->cachedLods[0] != leaf) {
+                    for (lodLevel = 1; lodLevel < 4; lodLevel++) {
+                        if (surface->cachedLods[lodLevel] == leaf)
+                            break;
+                    }
+                }
+                if (lodLevel < 4) {
+                    surface->cachedLods[lodLevel] = NULL;
+                }
+
+                s_cache.stats.allocatedVerts -= 0x200;
+                s_cache.stats.usedVerts -= leaf->xsurf->vertCount;
+                tree->nodes[0].inuse = 0;
+            }
+        }
+
+        /* Remove tree from usedlist */
+        node = (static_model_tree_list_t *)s_cache.usedlist.next;
+        ((static_model_tree_list_t *)node->next)->prev = node->prev;
+        ((static_model_tree_list_t *)node->prev)->next = node->next;
+
+        /* Insert tree's leaf[0] freenode into freelist[0] */
+        freenode->prev = (int)&s_cache.freelist[0];
+        freenode->next = s_cache.freelist[0].next;
+        s_cache.freelist[0].next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+
+        tree = (static_model_tree_t *)s_cache.usedlist.next;
+    }
+
+    /* Reinitialize cache */
+    memset(&s_cache, 0, sizeof(s_cache));
+
+    s_cache.usedlist.prev = (int)&s_cache.usedlist;
+    s_cache.usedlist.next = (int)&s_cache.usedlist;
+
+    for (i = 0; i < 5; i++) {
+        s_cache.freelist[i].prev = (int)&s_cache.freelist[i];
+        s_cache.freelist[i].next = (int)&s_cache.freelist[i];
+    }
+
+    for (i = 0; i < 128; i++) {
+        freenode = &s_cache.trees[i].leafs[0].freenode;
+        freenode->prev = (int)&s_cache.freelist[0];
+        freenode->next = s_cache.freelist[0].next;
+        s_cache.freelist[0].next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+    }
 }
 
 /* line 810 */
-__attribute__((naked))
 void R_ShutdownStaticModelCache(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 810 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc949ac, %ebx\n" /* line 791 */
-        "testl %ebx, %ebx\n"
-        "jne .Lfe1930_000e1996\n"
-        "jmp .Lfe1930_000e1a92\n"
-        ".Lfe1930_000e1948:\n"
-        "leal 0x88(%ebx), %esi\n" /* line 158 */
-        "movl 4(%esi), %eax\n" /* line 134 */
-        "movl 0x88(%ebx), %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl 0x88(%ebx), %edx\n" /* line 135 */
-        "movl %eax, 4(%edx)\n"
-        ".Lfe1930_000e1962:\n"
-        "movl 0xc949ac, %eax\n" /* line 802 */
-        "movl 4(%eax), %ecx\n" /* line 134 */
-        "movl (%eax), %edx\n"
-        "movl %edx, (%ecx)\n"
-        "movl (%eax), %eax\n" /* line 135 */
-        "movl %ecx, 4(%eax)\n"
-        "movl $0xc94980, 0x88(%ebx)\n" /* line 125 */
-        "movl 0xc94984, %eax\n" /* line 126 */
-        "movl %eax, 4(%esi)\n"
-        "movl %esi, 0xc94984\n" /* line 127 */
-        "movl 4(%esi), %eax\n" /* line 128 */
-        "movl %esi, (%eax)\n"
-        "movl 0xc949ac, %ebx\n" /* line 797 */
-        ".Lfe1930_000e1996:\n"
-        "cmpl $0xc949a8, %ebx\n"
-        "je .Lfe1930_000e1a03\n"
-        "cmpw $0, 0xc(%ebx)\n" /* line 155 */
-        "je .Lfe1930_000e1948\n"
-        "movw $0, 0xc(%ebx)\n" /* line 162 */
-        "cmpb $0, 0xe(%ebx)\n" /* line 164 */
-        "je .Lfe1930_000e1ad4\n"
-        "leal 0x88(%ebx), %esi\n" /* line 167 */
-        "movl 0xc(%esi), %ecx\n" /* line 168 */
-        "cmpl %esi, (%ecx)\n" /* line 172 */
-        "je .Lfe1930_000e1b0f\n"
-        "movl %ecx, %edx\n" /* line 175 */
-        "xorl %edi, %edi\n"
-        ".Lfe1930_000e19ca:\n"
-        "addl $1, %edi\n" /* line 170 */
-        "cmpl $4, %edi\n"
-        "je .Lfe1930_000e19e3\n"
-        "movl 4(%edx), %eax\n" /* line 172 */
-        "addl $4, %edx\n"
-        "cmpl %eax, %esi\n"
-        "jne .Lfe1930_000e19ca\n"
-        ".Lfe1930_000e19dc:\n"
-        "movl $0, (%ecx, %edi, 4)\n" /* line 174 */
-        ".Lfe1930_000e19e3:\n"
-        "subl $0x200, 0xc949b0\n" /* line 178 */
-        "movl 8(%esi), %eax\n" /* line 179 */
-        "movswl 2(%eax), %eax\n"
-        "subl %eax, 0xc949b4\n"
-        "movb $0, 0xe(%ebx)\n" /* line 181 */
-        "jmp .Lfe1930_000e1962\n"
-        ".Lfe1930_000e1a03:\n"
-        "movl $0xc438, 8(%esp)\n" /* line 758 */
-        "movl $0, 4(%esp)\n"
-        "movl $s_cache, (%esp)\n"
-        "calll memset\n"
-        "movl $0xc949a8, 0xc949a8\n" /* line 760 */
-        "movl $0xc949a8, 0xc949ac\n" /* line 761 */
-        "xorl %ecx, %ecx\n"
-        "movl $s_cache, %edx\n"
-        "movl $0xc94980, %eax\n"
-        ".Lfe1930_000e1a3f:\n"
-        "movl %eax, 0xc400(%edx)\n" /* line 765 */
-        "movl %eax, 0xc404(%edx)\n" /* line 766 */
-        "addl $1, %ecx\n" /* line 763 */
-        "addl $8, %eax\n"
-        "addl $8, %edx\n"
-        "cmpl $5, %ecx\n"
-        "jne .Lfe1930_000e1a3f\n"
-        "xorl %ebx, %ebx\n"
-        "movl $0xc88600, %ecx\n"
-        "movl 0xc94984, %edx\n"
-        "jmp .Lfe1930_000e1a6a\n"
-        ".Lfe1930_000e1a68:\n"
-        "movl %eax, %edx\n"
-        ".Lfe1930_000e1a6a:\n"
-        "leal 8(%ecx), %eax\n" /* line 770 */
-        "movl $0xc94980, 8(%ecx)\n" /* line 125 */
-        "movl %edx, 0xc(%ecx)\n" /* line 126 */
-        "movl %eax, 0xc94984\n" /* line 127 */
-        "movl 0xc(%ecx), %edx\n" /* line 128 */
-        "movl %eax, (%edx)\n"
-        "addl $1, %ebx\n" /* line 769 */
-        "addl $0x188, %ecx\n"
-        "cmpl $0x80, %ebx\n"
-        "jne .Lfe1930_000e1a68\n"
-        ".Lfe1930_000e1a92:\n"
-        "movl 0x195eed0, %ebx\n" /* line 813 */
-        "movl 0x2dc4(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfe1930_000e1acc\n"
-        "movl 0x195f0e0, %edi\n"
-        "movl %ebx, %esi\n"
-        "jmp .Lfe1930_000e1aae\n"
-        ".Lfe1930_000e1aac:\n"
-        "movl %esi, %ebx\n" /* line 814 */
-        ".Lfe1930_000e1aae:\n"
-        "movl 0x2dc4(%ebx), %eax\n"
-        "movl (%eax), %edx\n"
-        "movl %eax, (%esp)\n"
-        "calll *8(%edx)\n"
-        "movl $0, 0x2dc4(%ebx)\n"
-        "movl (%edi), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfe1930_000e1aac\n"
-        ".Lfe1930_000e1acc:\n"
-        "addl $0x1c, %esp\n" /* line 815 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfe1930_000e1ad4:\n"
-        "movl $3, (%esp)\n" /* line 185 */
-        "movl $1, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl $s_cache, %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "movl $3, (%esp)\n" /* line 186 */
-        "movl $2, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl $s_cache, %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "leal 0x88(%ebx), %esi\n"
-        "jmp .Lfe1930_000e1962\n"
-        ".Lfe1930_000e1b0f:\n"
-        "xorl %edi, %edi\n" /* line 173 */
-        "jmp .Lfe1930_000e19dc\n"
-    );
+    static_model_tree_t *tree;
+    static_model_node_list_t *freenode;
+    GfxStaticModelSurfaceCached *leaf;
+    GfxStaticSurface *surface;
+    static_model_tree_list_t *node;
+    int lodLevel;
+    int i;
+    void *vb;
+    void **vtable;
+
+    tree = (static_model_tree_t *)s_cache.usedlist.next;
+    if (!tree)
+        goto release_vb;
+
+    while ((int)tree != (int)&s_cache.usedlist) {
+        freenode = &tree->leafs[0].freenode;
+        leaf = &tree->leafs[0].surf;
+
+        if (tree->nodes[0].usedVerts == 0) {
+            /* Leaf not allocated, unlink freenode from its freelist */
+            ((static_model_node_list_t *)freenode->next)->prev = freenode->prev;
+            ((static_model_node_list_t *)freenode->prev)->next = freenode->next;
+        } else {
+            tree->nodes[0].usedVerts = 0;
+
+            if (tree->nodes[0].inuse == 0) {
+                /* No children allocated, recursively free child nodes */
+                SMC_FreeCachedSurface_r(&s_cache, (void *)tree, 1, 3);
+                SMC_FreeCachedSurface_r(&s_cache, (void *)tree, 2, 3);
+                freenode = &tree->leafs[0].freenode;
+            } else {
+                /* Has children: clear the surface's cached LOD pointer */
+                surface = leaf->surface;
+                lodLevel = 0;
+                if (surface->cachedLods[0] != leaf) {
+                    for (lodLevel = 1; lodLevel < 4; lodLevel++) {
+                        if (surface->cachedLods[lodLevel] == leaf)
+                            break;
+                    }
+                }
+                if (lodLevel < 4) {
+                    surface->cachedLods[lodLevel] = NULL;
+                }
+
+                s_cache.stats.allocatedVerts -= 0x200;
+                s_cache.stats.usedVerts -= leaf->xsurf->vertCount;
+                tree->nodes[0].inuse = 0;
+            }
+        }
+
+        /* Remove tree from usedlist */
+        node = (static_model_tree_list_t *)s_cache.usedlist.next;
+        ((static_model_tree_list_t *)node->next)->prev = node->prev;
+        ((static_model_tree_list_t *)node->prev)->next = node->next;
+
+        /* Insert tree's leaf[0] freenode into freelist[0] */
+        freenode->prev = (int)&s_cache.freelist[0];
+        freenode->next = s_cache.freelist[0].next;
+        s_cache.freelist[0].next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+
+        tree = (static_model_tree_t *)s_cache.usedlist.next;
+    }
+
+    /* Reinitialize cache */
+    memset(&s_cache, 0, sizeof(s_cache));
+
+    s_cache.usedlist.prev = (int)&s_cache.usedlist;
+    s_cache.usedlist.next = (int)&s_cache.usedlist;
+
+    for (i = 0; i < 5; i++) {
+        s_cache.freelist[i].prev = (int)&s_cache.freelist[i];
+        s_cache.freelist[i].next = (int)&s_cache.freelist[i];
+    }
+
+    for (i = 0; i < 128; i++) {
+        freenode = &s_cache.trees[i].leafs[0].freenode;
+        freenode->prev = (int)&s_cache.freelist[0];
+        freenode->next = s_cache.freelist[0].next;
+        s_cache.freelist[0].next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+    }
+
+release_vb:
+    /* Release the smodel cache vertex buffer */
+    vb = *(void **)(g_dx + 0x2dc4);
+    if (vb) {
+        do {
+            vb = *(void **)(g_dx + 0x2dc4);
+            vtable = *(void ***)vb;
+            ((int (__attribute__((stdcall)) *)(void *))vtable[8 / 4])(vb);
+            *(void **)(g_dx + 0x2dc4) = NULL;
+        } while (*g_dxIter != 0);
+    }
 }
 
 /* line 220 */
-static __attribute__((naked))
+static __attribute__((regparm(2)))
 Bool SMC_GetFreeBlockOfSize(static_model_cache_t *cache, int listIndex)
 {
-    __asm__ __volatile__ (
-        ".Lfe1b16_000e1b16:\n"
-        "pushl %ebp\n" /* line 220 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %edx, -0x20(%ebp)\n"
-        /* { scope 1 */
-        "testl %edx, %edx\n" /* line 232 */
-        "jne .Lfe1b16_000e1bb7\n"
-        "movl 0xc428(%eax), %ebx\n" /* line 197 */
-        "movl 0x195eef4, %eax\n" /* line 203 */
-        "movl (%eax), %eax\n"
-        "movl (%eax), %eax\n"
-        "subl 8(%ebx), %eax\n"
-        "cmpl $2, %eax\n"
-        "jle .Lfe1b16_000e1c6f\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        "cmpw $0, 0xc(%ebx)\n" /* line 155 */
-        "je .Lfe1b16_000e1c7c\n"
-        "movw $0, 0xc(%ebx)\n" /* line 162 */
-        "cmpb $0, 0xe(%ebx)\n" /* line 164 */
-        "je .Lfe1b16_000e1cfc\n"
-        "leal 0x88(%ebx), %ecx\n" /* line 167 */
-        "movl 0xc(%ecx), %esi\n" /* line 168 */
-        "cmpl %ecx, (%esi)\n" /* line 172 */
-        "je .Lfe1b16_000e1d33\n"
-        "movl %esi, %edx\n" /* line 175 */
-        "xorl %edi, %edi\n" /* lodLevel */
-        ".Lfe1b16_000e1b78:\n"
-        "addl $1, %edi\n" /* line 170 | lodLevel */
-        "cmpl $4, %edi\n" /* lodLevel */
-        "je .Lfe1b16_000e1b91\n"
-        "movl 4(%edx), %eax\n" /* line 172 */
-        "addl $4, %edx\n"
-        "cmpl %ecx, %eax\n"
-        "jne .Lfe1b16_000e1b78\n"
-        ".Lfe1b16_000e1b8a:\n"
-        "movl $0, (%esi, %edi, 4)\n" /* line 174 */
-        ".Lfe1b16_000e1b91:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 178 */
-        "subl $0x200, 0xc430(%eax)\n"
-        "movl 8(%ecx), %eax\n" /* line 179 */
-        "movswl 2(%eax), %eax\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "subl %eax, 0xc434(%edx)\n"
-        "movb $0, 0xe(%ebx)\n" /* line 181 */
-        "jmp .Lfe1b16_000e1c96\n"
-        ".Lfe1b16_000e1bb7:\n"
-        "movl %edx, %ebx\n"
-        /* } scope */
-        /* } scope */
-        "subl $1, %ebx\n" /* line 235 | tree */
-        "movl -0x1c(%ebp), %edx\n"
-        "leal 0xc400(%edx, %ebx, 8), %eax\n"
-        "cmpl %eax, 0xc404(%edx, %ebx, 8)\n"
-        "je .Lfe1b16_000e1ce7\n"
-        "movl %edx, %eax\n"
-        ".Lfe1b16_000e1bd5:\n"
-        "movl 0xc404(%eax, %ebx, 8), %esi\n" /* line 241 | block */
-        "movl 4(%esi), %edx\n" /* line 134 */
-        "movl (%esi), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl (%esi), %eax\n" /* line 135 */
-        "movl %edx, 4(%eax)\n"
-        "movl %esi, %edx\n" /* line 253 | block */
-        "subl -0x1c(%ebp), %edx\n"
-        "movl $0x5397829d, %eax\n"
-        "mull %edx\n"
-        "shrl $7, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "leal (%edx, %eax, 8), %edi\n" /* tree */
-        "cmpl $1, -0x20(%ebp)\n" /* line 254 */
-        "je .Lfe1b16_000e1cc8\n"
-        ".Lfe1b16_000e1c0f:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 267 */
-        "leal 0xc400(%edx, %eax, 8), %ebx\n" /* list */
-        /* { scope 2 */
-        "movl %ebx, (%esi)\n" /* line 125 */
-        "movl 4(%ebx), %eax\n" /* line 126 */
-        "movl %eax, 4(%esi)\n"
-        "movl %esi, 4(%ebx)\n" /* line 127 */
-        "movl 4(%esi), %eax\n" /* line 128 */
-        "movl %esi, (%eax)\n"
-        /* } scope */
-        "leal 0x88(%edi), %eax\n" /* line 270 | tree */
-        "movl %esi, %edx\n" /* block */
-        "subl %eax, %edx\n"
-        "shrl $4, %edx\n"
-        "movl $4, %ecx\n"
-        "subl -0x20(%ebp), %ecx\n"
-        "movl $1, %eax\n"
-        "shll %cl, %eax\n"
-        "addl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "leal 0x80(%edx, %edi), %edx\n"
-        "leal 8(%edx), %eax\n"
-        "movl %ebx, 8(%edx)\n" /* line 125 */
-        "movl %esi, 4(%eax)\n" /* line 126 */
-        "movl %eax, 4(%ebx)\n" /* line 127 */
-        "movl 4(%eax), %edx\n" /* line 128 */
-        "movl %eax, (%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        ".Lfe1b16_000e1c67:\n"
-        "addl $0x2c, %esp\n" /* line 274 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe1b16_000e1c6f:\n"
-        "xorl %eax, %eax\n" /* line 203 */
-        "movzbl %al, %eax\n" /* line 233 */
-        /* } scope */
-        ".Lfe1b16_000e1c74:\n"
-        "addl $0x2c, %esp\n" /* line 274 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfe1b16_000e1c7c:\n"
-        "leal 0x88(%ebx), %ecx\n" /* line 158 */
-        "movl 4(%ecx), %eax\n" /* line 134 */
-        "movl 0x88(%ebx), %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl 0x88(%ebx), %edx\n" /* line 135 */
-        "movl %eax, 4(%edx)\n"
-        /* } scope */
-        /* } scope */
-        ".Lfe1b16_000e1c96:\n"
-        "movl 4(%ebx), %edx\n" /* line 134 */
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl (%ebx), %eax\n" /* line 135 */
-        "movl %edx, 4(%eax)\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 210 | list */
-        "addl $0xc400, %eax\n" /* list */
-        /* { scope 2 */
-        "movl %eax, 0x88(%ebx)\n" /* line 125 */
-        "movl 4(%eax), %edx\n" /* line 126 */
-        "movl %edx, 4(%ecx)\n"
-        "movl %ecx, 4(%eax)\n" /* line 127 */
-        "movl 4(%ecx), %eax\n" /* line 128 */
-        "movl %ecx, (%eax)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "movzbl %al, %eax\n" /* line 233 */
-        "jmp .Lfe1b16_000e1c74\n"
-        ".Lfe1b16_000e1cc8:\n"
-        "movl %edx, %eax\n" /* line 255 | list */
-        "addl $0xc428, %eax\n" /* list */
-        /* { scope 2 */
-        "movl %eax, (%edi)\n" /* line 125 */
-        "movl 4(%eax), %edx\n" /* line 126 */
-        "movl %edx, 4(%edi)\n"
-        "movl %edi, 4(%eax)\n" /* line 127 */
-        "movl 4(%edi), %eax\n" /* line 128 */
-        "movl %edi, (%eax)\n"
-        "movl -0x1c(%ebp), %edx\n"
-        "jmp .Lfe1b16_000e1c0f\n"
-        ".Lfe1b16_000e1ce7:\n"
-        "movl %edx, %eax\n"
-        /* } scope */
-        "movl %ebx, %edx\n" /* line 237 | tree */
-        "calll SMC_GetFreeBlockOfSize\n"
-        "testb %al, %al\n"
-        "je .Lfe1b16_000e1d3a\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "jmp .Lfe1b16_000e1bd5\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfe1b16_000e1cfc:\n"
-        "movl $3, (%esp)\n" /* line 185 */
-        "movl $1, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "movl $3, (%esp)\n" /* line 186 */
-        "movl $2, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "leal 0x88(%ebx), %ecx\n"
-        "jmp .Lfe1b16_000e1c96\n"
-        ".Lfe1b16_000e1d33:\n"
-        "xorl %edi, %edi\n" /* line 173 | lodLevel */
-        "jmp .Lfe1b16_000e1b8a\n"
-        /* } scope */
-        /* } scope */
-        ".Lfe1b16_000e1d3a:\n"
-        "xorl %eax, %eax\n" /* line 237 */
-        "jmp .Lfe1b16_000e1c67\n"
-    );
+    static_model_tree_t *tree;
+    static_model_node_list_t *block;
+    static_model_node_list_t *freenode;
+    static_model_node_list_t *buddyFreenode;
+    static_model_node_list_t *list;
+    GfxStaticModelSurfaceCached *leaf;
+    GfxStaticSurface *surface;
+    int parentListIndex;
+    int treeIndex;
+    int leafIndex, buddyLeafIndex;
+    int lodLevel;
+
+    if (listIndex == 0) {
+        /* Evict LRU tree from usedlist */
+        tree = (static_model_tree_t *)cache->usedlist.prev;
+
+        /* Check if tree was used recently enough */
+        if ((*gfxBuf)->frameCount - tree->frameCount <= 2)
+            return (Bool)0;
+
+        freenode = &tree->leafs[0].freenode;
+        leaf = &tree->leafs[0].surf;
+
+        if (tree->nodes[0].usedVerts == 0) {
+            /* Leaf not allocated, unlink freenode from its freelist */
+            ((static_model_node_list_t *)freenode->next)->prev = freenode->prev;
+            ((static_model_node_list_t *)freenode->prev)->next = freenode->next;
+        } else {
+            tree->nodes[0].usedVerts = 0;
+
+            if (tree->nodes[0].inuse == 0) {
+                /* No children, recursively free child nodes */
+                SMC_FreeCachedSurface_r(cache, (void *)tree, 1, 3);
+                SMC_FreeCachedSurface_r(cache, (void *)tree, 2, 3);
+                freenode = &tree->leafs[0].freenode;
+            } else {
+                /* Has children: clear parent surface pointer */
+                surface = leaf->surface;
+                lodLevel = 0;
+                if (surface->cachedLods[0] != leaf) {
+                    for (lodLevel = 1; lodLevel < 4; lodLevel++) {
+                        if (surface->cachedLods[lodLevel] == leaf)
+                            break;
+                    }
+                }
+                if (lodLevel < 4) {
+                    surface->cachedLods[lodLevel] = NULL;
+                }
+
+                cache->stats.allocatedVerts -= 0x200;
+                cache->stats.usedVerts -= leaf->xsurf->vertCount;
+                tree->nodes[0].inuse = 0;
+            }
+        }
+
+        /* Unlink tree from usedlist */
+        ((static_model_tree_list_t *)tree->usedlist.next)->prev = tree->usedlist.prev;
+        ((static_model_tree_list_t *)tree->usedlist.prev)->next = tree->usedlist.next;
+
+        /* Insert leaf freenode into freelist[0] */
+        list = &cache->freelist[0];
+        freenode->prev = (int)list;
+        freenode->next = list->next;
+        list->next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+
+        return (Bool)1;
+    }
+
+    /* listIndex > 0: split a larger block */
+    parentListIndex = listIndex - 1;
+
+    /* Check if parent freelist has blocks */
+    if (cache->freelist[parentListIndex].next == (int)&cache->freelist[parentListIndex]) {
+        /* Parent freelist empty, recurse */
+        if (!SMC_GetFreeBlockOfSize(cache, parentListIndex))
+            return 0;
+    }
+
+    /* Take block from parent freelist */
+    block = (static_model_node_list_t *)cache->freelist[parentListIndex].next;
+
+    /* Unlink block from parent freelist */
+    ((static_model_node_list_t *)block->next)->prev = block->prev;
+    ((static_model_node_list_t *)block->prev)->next = block->next;
+
+    /* Compute tree index from block address */
+    treeIndex = ((unsigned int)((char *)block - (char *)cache)) / sizeof(static_model_tree_t);
+    tree = &cache->trees[treeIndex];
+
+    /* If listIndex == 1, insert tree into usedlist */
+    if (listIndex == 1) {
+        tree->usedlist.prev = (int)&cache->usedlist;
+        tree->usedlist.next = cache->usedlist.next;
+        cache->usedlist.next = (int)&tree->usedlist;
+        ((static_model_tree_list_t *)tree->usedlist.next)->prev = (int)&tree->usedlist;
+    }
+
+    /* Insert block into freelist[listIndex] (first half) */
+    list = &cache->freelist[listIndex];
+    block->prev = (int)list;
+    block->next = list->next;
+    list->next = (int)block;
+    ((static_model_node_list_t *)block->next)->prev = (int)block;
+
+    /* Compute buddy block (second half) and insert into freelist[listIndex] */
+    leafIndex = ((char *)block - (char *)&tree->leafs[0]) / 16;
+    buddyLeafIndex = leafIndex + (1 << (4 - listIndex));
+    buddyFreenode = &tree->leafs[buddyLeafIndex].freenode;
+
+    buddyFreenode->prev = (int)list;
+    buddyFreenode->next = (int)block;
+    list->next = (int)buddyFreenode;
+    ((static_model_node_list_t *)buddyFreenode->next)->prev = (int)buddyFreenode;
+
+    return 1;
 }
 
 /* line 661 */
-__attribute__((naked))
 GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *staticSurf, const XSurface *xsurf, int smodelIndex, const Material *material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 661 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        /* { scope 1: index, nodeIndex */
-        "movl 0x195eed0, %eax\n" /* line 675 */
-        "cmpb $0, 0x2d3c(%eax)\n"
-        "je .Lfe1d42_000e1d6b\n"
-        /* { scope 2 */
-        ".Lfe1d42_000e1d59:\n"
-        "movl $0, -0x30(%ebp)\n" /* line 650 | cached */
-        /* } scope */
-        /* } scope */
-        ".Lfe1d42_000e1d60:\n"
-        "movl -0x30(%ebp), %eax\n" /* line 710 | cached */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: index, nodeIndex */
-        ".Lfe1d42_000e1d6b:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 679 | xsurf */
-        "movzwl 2(%edx), %eax\n"
-        "cmpw $0x200, %ax\n"
-        "jg .Lfe1d42_000e1d59\n"
-        "cwtl\n" /* line 683 */
-        "cmpl $0x20, %eax\n"
-        "jg .Lfe1d42_000e1f0d\n"
-        "movl $5, %edi\n" /* bitCount */
-        "movl $0x20, -0x34(%ebp)\n"
-        "movl $4, %ebx\n" /* twoDstIndices */
-        /* { scope 2 */
-        ".Lfe1d42_000e1d93:\n"
-        "leal 0xc94980(, %ebx, 8), %eax\n" /* line 291 */
-        "cmpl %eax, 0xc94984(, %ebx, 8)\n"
-        "je .Lfe1d42_000e1f32\n"
-        ".Lfe1d42_000e1da7:\n"
-        "movl 0xc94984(, %ebx, 8), %ecx\n" /* line 299 */
-        /* { scope 3 */
-        "movl 4(%ecx), %edx\n" /* line 134 */
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl (%ecx), %eax\n" /* line 135 */
-        "movl %edx, 4(%eax)\n"
-        /* } scope */
-        "movl %ecx, %edx\n" /* line 304 */
-        "subl $s_cache, %edx\n"
-        "movl $0x5397829d, %eax\n"
-        "mull %edx\n"
-        "shrl $7, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 309 */
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "shll $3, %eax\n"
-        "leal s_cache(%eax), %esi\n" /* tree */
-        "testl %ebx, %ebx\n" /* line 310 */
-        "jne .Lfe1d42_000e1dfe\n"
-        "movl $0xc949a8, s_cache(%eax)\n" /* line 125 */
-        "movl 0xc949ac, %eax\n" /* line 126 */
-        "movl %eax, 4(%esi)\n"
-        "movl %esi, 0xc949ac\n" /* line 127 */
-        "movl 4(%esi), %eax\n" /* line 128 */
-        "movl %esi, (%eax)\n"
-        ".Lfe1d42_000e1dfe:\n"
-        "leal 0x88(%esi), %eax\n" /* line 314 | tree */
-        "subl %eax, %ecx\n"
-        "shrl $4, %ecx\n"
-        "movl %ecx, -0x2c(%ebp)\n" /* index */
-        "movl %ecx, %eax\n" /* line 323 */
-        "addl $0x10, %eax\n"
-        "movl $4, %ecx\n"
-        "subl %ebx, %ecx\n"
-        "sarl %cl, %eax\n"
-        "subl $1, %eax\n"
-        "movl %eax, -0x3c(%ebp)\n" /* nodeIndex */
-        "movb $1, 0xe(%esi, %eax, 4)\n" /* line 325 | tree */
-        "testl %eax, %eax\n" /* line 327 */
-        "js .Lfe1d42_000e1e49\n"
-        "movl $1, %eax\n"
-        "movl %eax, %ebx\n"
-        "movl %edi, %ecx\n"
-        "shll %cl, %ebx\n"
-        "movl -0x3c(%ebp), %eax\n" /* nodeIndex */
-        ".Lfe1d42_000e1e37:\n"
-        "addw %bx, 0xc(%esi, %eax, 4)\n" /* line 329 | tree */
-        "movl -0x3c(%ebp), %eax\n" /* line 330 | nodeIndex */
-        "subl $1, %eax\n"
-        "sarl $1, %eax\n" /* line 327 */
-        "movl %eax, -0x3c(%ebp)\n" /* nodeIndex */
-        "jns .Lfe1d42_000e1e37\n"
-        ".Lfe1d42_000e1e49:\n"
-        "movl -0x2c(%ebp), %ebx\n" /* line 333 | index */
-        "shll $4, %ebx\n"
-        "leal 0x80(%ebx, %esi), %ebx\n"
-        "leal 8(%ebx), %ecx\n"
-        "movl %ecx, -0x30(%ebp)\n" /* cached */
-        "shll $4, %edx\n" /* line 334 */
-        "addl -0x2c(%ebp), %edx\n" /* index */
-        "shll $5, %edx\n"
-        "movl %edx, 8(%ebx)\n"
-        /* } scope */
-        "movl -0x34(%ebp), %eax\n" /* line 692 */
-        "addl %eax, 0xc949b0\n"
-        "movl 0xc(%ebp), %edx\n" /* line 693 | xsurf */
-        "movswl 2(%edx), %eax\n"
-        "addl %eax, 0xc949b4\n"
-        "movl 8(%ebp), %eax\n" /* line 695 | staticSurf */
-        "movl %eax, 0xc(%ecx)\n"
-        "movl %edx, 8(%ecx)\n" /* line 696 */
-        "movl 0x10(%ebp), %edx\n" /* line 697 | smodelIndex */
-        "movl %edx, 4(%ecx)\n"
-        "movl %ecx, -0x24(%ebp)\n" /* line 700 | skinSmodelCmd */
-        "movl %edx, -0x20(%ebp)\n" /* line 701 */
-        "movl 0x14(%ebp), %ecx\n" /* line 703 | material */
-        "movl %ecx, -0x1c(%ebp)\n"
-        "leal -0x24(%ebp), %eax\n" /* line 705 | skinSmodelCmd */
-        "movl %eax, 4(%esp)\n"
-        "movl $5, (%esp)\n"
-        "calll R_AddFrontendCmd\n"
-        /* { scope 2 */
-        "movl -0x30(%ebp), %eax\n" /* line 638 | cached */
-        "movl 8(%eax), %ecx\n"
-        "movl 8(%ebx), %eax\n" /* line 639 | twoDstIndices */
-        "movl %eax, %edi\n" /* twoBaseOffsets */
-        "shll $0x10, %edi\n" /* twoBaseOffsets */
-        "orl %eax, %edi\n" /* twoBaseOffsets */
-        "movl 8(%ecx), %esi\n" /* line 640 | twoSrcIndices */
-        "leal (%eax, %eax, 2), %eax\n" /* line 644 */
-        "movl 0x195eed0, %edx\n"
-        "movl 0x2dc8(%edx), %edx\n"
-        "leal (%edx, %eax, 4), %ebx\n" /* twoDstIndices */
-        "movzwl 4(%ecx), %edx\n" /* line 646 */
-        "movl %edx, %eax\n"
-        "shrw $0xf, %ax\n"
-        "addl %edx, %eax\n"
-        "sarw $1, %ax\n"
-        "movswl %ax, %ecx\n"
-        "xorl %edx, %edx\n"
-        ".Lfe1d42_000e1ee5:\n"
-        "movl %edi, %eax\n" /* line 652 | twoBaseOffsets */
-        "addl (%esi), %eax\n" /* twoSrcIndices */
-        "movl %eax, (%ebx)\n" /* twoDstIndices */
-        "movl %edi, %eax\n" /* line 653 | twoBaseOffsets */
-        "addl 4(%esi), %eax\n" /* twoSrcIndices */
-        "movl %eax, 4(%ebx)\n" /* twoDstIndices */
-        "movl %edi, %eax\n" /* line 654 | twoBaseOffsets */
-        "addl 8(%esi), %eax\n" /* twoSrcIndices */
-        "movl %eax, 8(%ebx)\n" /* twoDstIndices */
-        "addl $0xc, %ebx\n" /* twoDstIndices */
-        "addl $0xc, %esi\n" /* twoSrcIndices */
-        "addl $1, %edx\n"
-        "cmpl %edx, %ecx\n" /* line 650 */
-        "jne .Lfe1d42_000e1ee5\n"
-        "jmp .Lfe1d42_000e1d60\n"
-        /* } scope */
-        ".Lfe1d42_000e1f0d:\n"
-        "movl $5, %edi\n" /* line 683 | bitCount */
-        ".Lfe1d42_000e1f12:\n"
-        "addl $1, %edi\n" /* line 684 | bitCount */
-        "movl $1, -0x34(%ebp)\n" /* line 683 */
-        "movl %edi, %ecx\n" /* bitCount */
-        "shll %cl, -0x34(%ebp)\n"
-        "cmpl -0x34(%ebp), %eax\n"
-        "jg .Lfe1d42_000e1f12\n"
-        "movl $9, %ebx\n" /* twoDstIndices */
-        "subl %edi, %ebx\n" /* bitCount, twoDstIndices */
-        "jmp .Lfe1d42_000e1d93\n"
-        /* { scope 2 */
-        ".Lfe1d42_000e1f32:\n"
-        "movl %ebx, %edx\n" /* line 294 */
-        "movl $s_cache, %eax\n"
-        "calll SMC_GetFreeBlockOfSize\n"
-        "testb %al, %al\n"
-        "jne .Lfe1d42_000e1da7\n"
-        "jmp .Lfe1d42_000e1d59\n"
-    );
+    GfxStaticModelSurfaceCached *cached;
+    static_model_tree_t *tree;
+    static_model_node_list_t *block;
+    int bitCount, blockSize, listIndex;
+    int vertCount;
+    int treeIndex, leafIndex, nodeIndex;
+    int vertAlloc;
+    int baseVertIndex;
+    unsigned int twoBaseOffsets;
+    int *twoSrcIndices;
+    int *twoDstIndices;
+    int numTriPairs;
+    int i;
+    SkinStaticModelCachedCmd skinCmd;
+
+    /* Check if device is lost */
+    if (g_dx[0x2d3c] != 0)
+        return NULL;
+
+    /* Check vertex count limit */
+    vertCount = xsurf->vertCount;
+    if (vertCount > 0x200)
+        return NULL;
+
+    /* Determine block size and freelist index */
+    if (vertCount <= 0x20) {
+        bitCount = 5;
+        blockSize = 0x20;
+        listIndex = 4;
+    } else {
+        bitCount = 5;
+        do {
+            bitCount++;
+            blockSize = 1 << bitCount;
+        } while (vertCount > blockSize);
+        listIndex = 9 - bitCount;
+    }
+
+    /* Try to get a free block */
+    if (s_cache.freelist[listIndex].next == (int)&s_cache.freelist[listIndex]) {
+        if (!SMC_GetFreeBlockOfSize(&s_cache, listIndex))
+            return NULL;
+    }
+
+    /* Take block from the end of the freelist */
+    block = (static_model_node_list_t *)s_cache.freelist[listIndex].next;
+
+    /* Unlink block from freelist */
+    ((static_model_node_list_t *)block->next)->prev = block->prev;
+    ((static_model_node_list_t *)block->prev)->next = block->next;
+
+    /* Compute tree index from block address */
+    treeIndex = ((unsigned int)((char *)block - (char *)&s_cache)) / sizeof(static_model_tree_t);
+    tree = &s_cache.trees[treeIndex];
+
+    /* If listIndex == 0 (whole tree block), insert tree into usedlist */
+    if (listIndex == 0) {
+        tree->usedlist.prev = (int)&s_cache.usedlist;
+        tree->usedlist.next = s_cache.usedlist.next;
+        s_cache.usedlist.next = (int)&tree->usedlist;
+        ((static_model_tree_list_t *)tree->usedlist.next)->prev = (int)&tree->usedlist;
+    }
+
+    /* Compute leaf index within tree */
+    leafIndex = ((char *)block - (char *)&tree->leafs[0]) / 16;
+
+    /* Compute node index in the binary tree */
+    nodeIndex = ((leafIndex + 16) >> (4 - listIndex)) - 1;
+
+    /* Mark node as in-use */
+    tree->nodes[nodeIndex].inuse = 1;
+
+    /* Propagate usedVerts up the tree */
+    vertAlloc = 1 << bitCount;
+    while (nodeIndex >= 0) {
+        tree->nodes[nodeIndex].usedVerts += vertAlloc;
+        nodeIndex = (nodeIndex - 1) >> 1;
+    }
+
+    /* Set up the cached surface */
+    cached = &tree->leafs[leafIndex].surf;
+    baseVertIndex = (treeIndex * 16 + leafIndex) * 32;
+    cached->baseVertIndex = baseVertIndex;
+
+    /* Update stats */
+    s_cache.stats.allocatedVerts += blockSize;
+    s_cache.stats.usedVerts += xsurf->vertCount;
+
+    /* Fill in cached surface fields */
+    cached->surface = staticSurf;
+    cached->xsurf = xsurf;
+    cached->smodelIndex = smodelIndex;
+
+    /* Submit skinning command */
+    skinCmd.cached = cached;
+    skinCmd.smodelIndex = smodelIndex;
+    skinCmd.material = material;
+    R_AddFrontendCmd(5, &skinCmd);
+
+    /* Copy and offset indices */
+    twoBaseOffsets = (baseVertIndex << 16) | (baseVertIndex & 0xFFFF);
+    twoSrcIndices = (int *)xsurf->triIndices;
+    twoDstIndices = (int *)(*(int *)(g_dx + 0x2dc8) + baseVertIndex * 12);
+    numTriPairs = (short)((xsurf->triCount + (((unsigned short)xsurf->triCount) >> 15)) >> 1);
+
+    for (i = 0; i < numTriPairs; i++) {
+        twoDstIndices[0] = twoBaseOffsets + twoSrcIndices[0];
+        twoDstIndices[1] = twoBaseOffsets + twoSrcIndices[1];
+        twoDstIndices[2] = twoBaseOffsets + twoSrcIndices[2];
+        twoDstIndices += 3;
+        twoSrcIndices += 3;
+    }
+
+    return cached;
 }
 
 /* line 787 */
-__attribute__((naked))
 void R_FlushStaticModelCache(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 787 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc949ac, %ebx\n" /* line 791 */
-        "testl %ebx, %ebx\n"
-        "jne .Lfe1f4c_000e1fb2\n"
-        "jmp .Lfe1f4c_000e20aa\n"
-        /* { scope 1 */
-        ".Lfe1f4c_000e1f64:\n"
-        "leal 0x88(%ebx), %esi\n" /* line 158 */
-        "movl 4(%esi), %eax\n" /* line 134 */
-        "movl 0x88(%ebx), %edx\n"
-        "movl %edx, (%eax)\n"
-        "movl 0x88(%ebx), %edx\n" /* line 135 */
-        "movl %eax, 4(%edx)\n"
-        /* } scope */
-        ".Lfe1f4c_000e1f7e:\n"
-        "movl 0xc949ac, %eax\n" /* line 802 | node */
-        /* { scope 1 */
-        "movl 4(%eax), %ecx\n" /* line 134 */
-        "movl (%eax), %edx\n"
-        "movl %edx, (%ecx)\n"
-        "movl (%eax), %eax\n" /* line 135 */
-        "movl %ecx, 4(%eax)\n"
-        /* } scope */
-        "movl $0xc94980, 0x88(%ebx)\n" /* line 125 */
-        "movl 0xc94984, %eax\n" /* line 126 */
-        "movl %eax, 4(%esi)\n"
-        "movl %esi, 0xc94984\n" /* line 127 */
-        "movl 4(%esi), %eax\n" /* line 128 */
-        "movl %esi, (%eax)\n"
-        "movl 0xc949ac, %ebx\n" /* line 797 */
-        ".Lfe1f4c_000e1fb2:\n"
-        "cmpl $0xc949a8, %ebx\n"
-        "je .Lfe1f4c_000e201f\n"
-        /* { scope 1 */
-        "cmpw $0, 0xc(%ebx)\n" /* line 155 */
-        "je .Lfe1f4c_000e1f64\n"
-        "movw $0, 0xc(%ebx)\n" /* line 162 */
-        "cmpb $0, 0xe(%ebx)\n" /* line 164 */
-        "je .Lfe1f4c_000e20b2\n"
-        "leal 0x88(%ebx), %esi\n" /* line 167 */
-        "movl 0xc(%esi), %ecx\n" /* line 168 */
-        "cmpl %esi, (%ecx)\n" /* line 172 */
-        "je .Lfe1f4c_000e20ed\n"
-        "movl %ecx, %edx\n" /* line 175 */
-        "xorl %edi, %edi\n" /* lodLevel */
-        ".Lfe1f4c_000e1fe6:\n"
-        "addl $1, %edi\n" /* line 170 | lodLevel */
-        "cmpl $4, %edi\n" /* lodLevel */
-        "je .Lfe1f4c_000e1fff\n"
-        "movl 4(%edx), %eax\n" /* line 172 */
-        "addl $4, %edx\n"
-        "cmpl %eax, %esi\n"
-        "jne .Lfe1f4c_000e1fe6\n"
-        ".Lfe1f4c_000e1ff8:\n"
-        "movl $0, (%ecx, %edi, 4)\n" /* line 174 */
-        ".Lfe1f4c_000e1fff:\n"
-        "subl $0x200, 0xc949b0\n" /* line 178 */
-        "movl 8(%esi), %eax\n" /* line 179 */
-        "movswl 2(%eax), %eax\n"
-        "subl %eax, 0xc949b4\n"
-        "movb $0, 0xe(%ebx)\n" /* line 181 */
-        "jmp .Lfe1f4c_000e1f7e\n"
-        /* } scope */
-        ".Lfe1f4c_000e201f:\n"
-        "movl $0xc438, 8(%esp)\n" /* line 758 */
-        "movl $0, 4(%esp)\n"
-        "movl $s_cache, (%esp)\n"
-        "calll memset\n"
-        "movl $0xc949a8, 0xc949a8\n" /* line 760 */
-        "movl $0xc949a8, 0xc949ac\n" /* line 761 */
-        "xorl %ecx, %ecx\n"
-        "movl $s_cache, %edx\n"
-        "movl $0xc94980, %eax\n"
-        ".Lfe1f4c_000e205b:\n"
-        "movl %eax, 0xc400(%edx)\n" /* line 765 */
-        "movl %eax, 0xc404(%edx)\n" /* line 766 */
-        "addl $1, %ecx\n" /* line 763 */
-        "addl $8, %eax\n"
-        "addl $8, %edx\n"
-        "cmpl $5, %ecx\n"
-        "jne .Lfe1f4c_000e205b\n"
-        "xorl %ebx, %ebx\n"
-        "movl $0xc88600, %ecx\n"
-        ".Lfe1f4c_000e207c:\n"
-        "leal 8(%ecx), %eax\n" /* line 770 */
-        "movl $0xc94980, 8(%ecx)\n" /* line 125 */
-        "movl 0xc94984, %edx\n" /* line 126 */
-        "movl %edx, 0xc(%ecx)\n"
-        "movl %eax, 0xc94984\n" /* line 127 */
-        "movl 0xc(%ecx), %edx\n" /* line 128 */
-        "movl %eax, (%edx)\n"
-        "addl $1, %ebx\n" /* line 769 */
-        "addl $0x188, %ecx\n"
-        "cmpl $0x80, %ebx\n"
-        "jne .Lfe1f4c_000e207c\n"
-        ".Lfe1f4c_000e20aa:\n"
-        "addl $0x1c, %esp\n" /* line 806 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfe1f4c_000e20b2:\n"
-        "movl $3, (%esp)\n" /* line 185 */
-        "movl $1, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl $s_cache, %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "movl $3, (%esp)\n" /* line 186 */
-        "movl $2, %ecx\n"
-        "movl %ebx, %edx\n"
-        "movl $s_cache, %eax\n"
-        "calll SMC_FreeCachedSurface_r\n"
-        "leal 0x88(%ebx), %esi\n"
-        "jmp .Lfe1f4c_000e1f7e\n"
-        ".Lfe1f4c_000e20ed:\n"
-        "xorl %edi, %edi\n" /* line 173 | lodLevel */
-        "jmp .Lfe1f4c_000e1ff8\n"
-    );
+    static_model_tree_t *tree;
+    static_model_node_list_t *freenode;
+    GfxStaticModelSurfaceCached *leaf;
+    GfxStaticSurface *surface;
+    static_model_tree_list_t *node;
+    int lodLevel;
+    int i;
+
+    tree = (static_model_tree_t *)s_cache.usedlist.next;
+    if (!tree)
+        return;
+
+    while ((int)tree != (int)&s_cache.usedlist) {
+        freenode = &tree->leafs[0].freenode;
+        leaf = &tree->leafs[0].surf;
+
+        if (tree->nodes[0].usedVerts == 0) {
+            /* Leaf not allocated, unlink freenode from its freelist */
+            ((static_model_node_list_t *)freenode->next)->prev = freenode->prev;
+            ((static_model_node_list_t *)freenode->prev)->next = freenode->next;
+        } else {
+            tree->nodes[0].usedVerts = 0;
+
+            if (tree->nodes[0].inuse == 0) {
+                /* No children allocated, recursively free child nodes */
+                SMC_FreeCachedSurface_r(&s_cache, (void *)tree, 1, 3);
+                SMC_FreeCachedSurface_r(&s_cache, (void *)tree, 2, 3);
+                freenode = &tree->leafs[0].freenode;
+            } else {
+                /* Has children: clear the surface's cached LOD pointer */
+                surface = leaf->surface;
+                lodLevel = 0;
+                if (surface->cachedLods[0] != leaf) {
+                    for (lodLevel = 1; lodLevel < 4; lodLevel++) {
+                        if (surface->cachedLods[lodLevel] == leaf)
+                            break;
+                    }
+                }
+                if (lodLevel < 4) {
+                    surface->cachedLods[lodLevel] = NULL;
+                }
+
+                s_cache.stats.allocatedVerts -= 0x200;
+                s_cache.stats.usedVerts -= (short)leaf->xsurf->vertCount;
+                tree->nodes[0].inuse = 0;
+            }
+        }
+
+        /* Remove tree from usedlist (unlink s_cache.usedlist.next) */
+        node = (static_model_tree_list_t *)s_cache.usedlist.next;
+        ((static_model_tree_list_t *)node->next)->prev = node->prev;
+        ((static_model_tree_list_t *)node->prev)->next = node->next;
+
+        /* Insert tree's leaf[0] freenode into freelist[0] */
+        freenode->prev = (int)&s_cache.freelist[0];
+        freenode->next = s_cache.freelist[0].next;
+        s_cache.freelist[0].next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+
+        /* Re-read next tree from usedlist */
+        tree = (static_model_tree_t *)s_cache.usedlist.next;
+    }
+
+    /* Reinitialize cache */
+    memset(&s_cache, 0, sizeof(s_cache));
+
+    s_cache.usedlist.prev = (int)&s_cache.usedlist;
+    s_cache.usedlist.next = (int)&s_cache.usedlist;
+
+    for (i = 0; i < 5; i++) {
+        s_cache.freelist[i].prev = (int)&s_cache.freelist[i];
+        s_cache.freelist[i].next = (int)&s_cache.freelist[i];
+    }
+
+    for (i = 0; i < 128; i++) {
+        freenode = &s_cache.trees[i].leafs[0].freenode;
+        freenode->prev = (int)&s_cache.freelist[0];
+        freenode->next = s_cache.freelist[0].next;
+        s_cache.freelist[0].next = (int)freenode;
+        ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
+    }
 }
 

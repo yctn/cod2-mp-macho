@@ -13,11 +13,29 @@
 extern struct GfxScene scene; /* 0x0 */
 static int warnCount; /* 0x7f1dcc */
 static int warnCount_007f1dd0; /* 0x7f1dd0 */
-static int warnCount_007f1dd0; /* 0x7f1dd0 */
-static int warnCount_007f1dd0; /* 0x7f1dd0 */
 static GfxViewParms lockPvsViewParms; /* 0x7f1c80 */
 static surfaceType_t s_entitySurface; /* 0x311088 */
 static byte s_XModelSurfaceSize[8]; /* 0x311080 */
+
+extern GfxBackEndData **gfxBuf;        /* 0x195eef4 */
+extern r_global_permanent_t *rgp;      /* 0x195eebc */
+extern r_globals_t *rg;                /* 0x195eec8 */
+extern refimport_t *ri;                /* 0x195eee0 */
+extern const dvar_t **r_dlightLimit;   /* 0x195eeac */
+extern void **g_dxCaps;                /* 0x195eec0 */
+extern const float *colorWhite;        /* 0x195ed2c */
+extern const dvar_t **fx_sort_ptr;     /* 0x195ed68 */
+extern const dvar_t **com_statmon_ptr; /* 0x195ed14 */
+
+void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent);
+void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent);
+void R_ClearDpvsScene(void);
+void R_DrawModel(int entIndex);
+void R_AddScaledDebugString(const char *pos, const char *color, const char *origin, const char *str, int unused);
+int XSurfaceGetNumTris(XSurface *xsurf);
+int XSurfaceGetNumVerts(XSurface *xsurf);
+const char *XModelGetName(void *model);
+const char *DObjGetModel(void *dobj, int lod);
 
 static int R_CompareDumpSceneEntities(const void *e0, const void *e1);
 void R_UpdateGfxEntityBounds(GfxEntity *ent);
@@ -39,180 +57,59 @@ int R_AddStaticModelToScene(int smodelIndex);
 GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, const struct centity_s *cent);
 
 /* line 121 */
-static __attribute__((naked))
-int R_CompareDumpSceneEntities(const void *e0, const void *e1)
+static int R_CompareDumpSceneEntities(const void *e0, const void *e1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 121 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 128 | e0 */
-        "movl (%eax), %ecx\n"
-        "movl 0xc(%ebp), %eax\n" /* line 129 | e1 */
-        "movl (%eax), %ebx\n"
-        "movl 0x195eef4, %eax\n" /* line 130 */
-        "movl (%eax), %edx\n"
-        "leal (, %ecx, 8), %eax\n"
-        "subl %ecx, %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 0xa0010(%edx, %eax, 4), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        "leal (, %ebx, 8), %eax\n" /* line 131 */
-        "subl %ebx, %eax\n"
-        "leal (%ebx, %eax, 4), %eax\n"
-        "leal 0xa0010(%edx, %eax, 4), %esi\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 133 */
-        "movl (%eax), %edx\n"
-        "movl %edx, %eax\n" /* line 134 */
-        "subl (%esi), %eax\n"
-        "jne .Lfc54f0_000c5585\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 137 */
-        "leal (%ecx, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %ecx\n"
-        "leal (%ebx, %ebx, 2), %eax\n" /* line 138 */
-        "leal (%ebx, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %edi\n"
-        "cmpl $2, %edx\n" /* line 139 */
-        "jle .Lfc54f0_000c558d\n"
-        "cmpl $3, %edx\n"
-        "je .Lfc54f0_000c55a0\n"
-        ".Lfc54f0_000c5562:\n"
-        "movl -0x1c(%ebp), %eax\n" /* line 149 */
-        "movl 0x54(%eax), %edx\n"
-        "subl 0x54(%esi), %edx\n"
-        "sarl $2, %edx\n"
-        "movl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "subl %edx, %eax\n"
-        "movl %eax, %edx\n"
-        "shll $8, %edx\n"
-        "addl %edx, %eax\n"
-        "movl %eax, %edx\n"
-        "shll $0x10, %edx\n"
-        "addl %edx, %eax\n"
-        "negl %eax\n"
-        /* } scope */
-        ".Lfc54f0_000c5585:\n"
-        "addl $0x2c, %esp\n" /* line 151 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc54f0_000c558d:\n"
-        "cmpl $1, %edx\n" /* line 139 */
-        "jl .Lfc54f0_000c55ab\n"
-        "movl 4(%ecx), %eax\n" /* line 145 */
-        "subl 4(%edi), %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 151 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc54f0_000c55a0:\n"
-        "movl 4(%ecx), %eax\n" /* line 147 */
-        "subl 4(%edi), %eax\n"
-        "sarl $5, %eax\n"
-        "jmp .Lfc54f0_000c5585\n"
-        ".Lfc54f0_000c55ab:\n"
-        "testl %edx, %edx\n" /* line 139 */
-        "jne .Lfc54f0_000c5562\n"
-        "movl $0, 4(%esp)\n" /* line 142 */
-        "movl 4(%ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll DObjGetModel\n"
-        "movl %eax, %ebx\n"
-        "movl $0, 4(%esp)\n"
-        "movl 4(%edi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll DObjGetModel\n"
-        "subl %eax, %ebx\n"
-        "movl %ebx, %eax\n"
-        "jmp .Lfc54f0_000c5585\n"
-    );
+    int index0, index1;
+    GfxEntity *ent0, *ent1;
+    GfxSceneEntity *sceneEnt0, *sceneEnt1;
+    int type;
+    int diff;
+
+    index0 = *(const int *)e0;
+    index1 = *(const int *)e1;
+    ent0 = &(*gfxBuf)->entities[index0];
+    ent1 = &(*gfxBuf)->entities[index1];
+
+    type = ent0->reType;
+    if (type != (int)ent1->reType)
+        return type - (int)ent1->reType;
+
+    sceneEnt0 = &scene.sceneEnts[index0];
+    sceneEnt1 = &scene.sceneEnts[index1];
+
+    switch (type) {
+    case 0:
+        return (int)DObjGetModel((void *)sceneEnt0->u.obj, 0) - (int)DObjGetModel((void *)sceneEnt1->u.obj, 0);
+    case 1:
+    case 2:
+        return (int)((byte *)sceneEnt0->u.data - (byte *)sceneEnt1->u.data);
+    case 3:
+        return ((int)((byte *)sceneEnt0->u.data - (byte *)sceneEnt1->u.data)) >> 5;
+    default:
+        diff = ((int)((byte *)ent0->customMaterial - (byte *)ent1->customMaterial)) >> 2;
+        return -(diff * 0x0F0F0F0F);
+    }
 }
 
 /* line 354 */
-__attribute__((naked))
 void R_UpdateGfxEntityBounds(GfxEntity *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 354 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* ent */
-        "movl %ecx, 4(%esp)\n" /* line 365 */
-        "subl 0x1155010, %ecx\n"
-        "sarl $2, %ecx\n"
-        "movl %ecx, %edx\n"
-        "shll $7, %edx\n"
-        "subl %ecx, %edx\n"
-        "leal (%ecx, %edx, 8), %edx\n"
-        "movl %edx, %eax\n"
-        "shll $0xe, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %ecx, %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 2), %edx\n"
-        "leal (%eax, %edx, 4), %edx\n"
-        "leal 0x11555c4(, %edx, 4), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll R_UpdateXModelBounds\n"
-        "leave\n" /* line 366 */
-        "retl\n"
-    );
+    int entIndex;
+
+    entIndex = ent - scene.def.entities;
+    R_UpdateXModelBounds(&scene.sceneEnts[entIndex], ent);
 }
 
 /* line 369 */
-__attribute__((naked))
 void R_SkinGfxEntity(GfxEntity *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 369 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* ent */
-        /* { scope 1 */
-        "movl %esi, %ecx\n" /* line 378 | ent */
-        "subl 0x1155010, %ecx\n"
-        "sarl $2, %ecx\n"
-        "movl %ecx, %edx\n"
-        "shll $7, %edx\n"
-        "subl %ecx, %edx\n"
-        "leal (%ecx, %edx, 8), %edx\n"
-        "movl %edx, %eax\n"
-        "shll $0xe, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %ecx, %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (%eax, %eax, 2), %ebx\n" /* sceneEnt */
-        "leal (%eax, %ebx, 4), %ebx\n" /* sceneEnt */
-        "leal 0x11555c4(, %ebx, 4), %ebx\n" /* sceneEnt */
-        "movl %esi, 4(%esp)\n" /* line 380 | ent */
-        "movl %ebx, (%esp)\n" /* sceneEnt */
-        "calll R_UpdateXModelBounds\n"
-        "movl %esi, 4(%esp)\n" /* line 381 | ent */
-        "movl %ebx, (%esp)\n" /* sceneEnt */
-        "calll R_SkinSceneDObj\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 382 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int entIndex;
+    GfxSceneEntity *sceneEnt;
+
+    entIndex = ent - scene.def.entities;
+    sceneEnt = &scene.sceneEnts[entIndex];
+    R_UpdateXModelBounds(sceneEnt, ent);
+    R_SkinSceneDObj(sceneEnt, ent);
 }
 
 /* line 608 */
@@ -241,93 +138,49 @@ void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *ma
 }
 
 /* line 1374 */
-__attribute__((naked))
 void R_ClearScene(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1374 */
-        "movl %esp, %ebp\n"
-        "addl $1, scene\n" /* line 1384 */
-        "movl $0, 0x1155014\n" /* line 1394 */
-        "movl $0, 0x11555b8\n" /* line 1396 */
-        "movl 0x195eef4, %eax\n" /* line 1397 */
-        "movl (%eax), %ecx\n"
-        "movl 4(%ecx), %eax\n"
-        "leal 8(%ecx, %eax, 8), %eax\n"
-        "movl %eax, 0x11555bc\n"
-        "movl $0, 0x11555c0\n" /* line 1399 */
-        "movl $0, 0x115500c\n" /* line 1401 */
-        "movl 0xa000c(%ecx), %edx\n" /* line 1402 */
-        "leal (, %edx, 8), %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal 0xa0010(%ecx, %eax, 4), %eax\n"
-        "movl %eax, 0x1155010\n"
-        "movl $0, 0x116f55c\n" /* line 1404 */
-        "popl %ebp\n" /* line 1407 */
-        "jmp R_ClearDpvsScene\n" /* line 1406 */
-    );
+    GfxBackEndData *buf;
+
+    scene.viewCount++;
+    scene.dlightCount = 0;
+    scene.drawSurfCount = 0;
+    buf = *gfxBuf;
+    scene.drawSurfs = &buf->drawSurfs[buf->drawSurfCount];
+    scene.polyCount = 0;
+    scene.def.entityCount = 0;
+    scene.def.entities = &buf->entities[buf->entityCount];
+    scene.sceneEntMaterialCount = 0;
+    R_ClearDpvsScene();
 }
 
 /* line 492 */
-__attribute__((naked))
 void R_AddLightToScene(const vec_t *org, float radius, float r, float g, float b)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 492 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %esi\n" /* org */
-        "movss 0xc(%ebp), %xmm0\n" /* radius */
-        /* { scope 1 */
-        "movl 0x195eec8, %eax\n" /* line 497 */
-        "cmpb $0, (%eax)\n"
-        "je .Lfc579a_000c583b\n"
-        "movl 0x195eebc, %ebx\n" /* line 501 */
-        "movl 0x109c(%ebx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lfc579a_000c583b\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 507 | 0.0f */
-        "jp .Lfc579a_000c57d0\n"
-        "jbe .Lfc579a_000c583b\n"
-        ".Lfc579a_000c57d0:\n"
-        "movl 0x1155014, %edx\n" /* line 509 */
-        "movl 0x195eeac, %eax\n"
-        "movl (%eax), %eax\n"
-        "cmpl 8(%eax), %edx\n"
-        "jge .Lfc579a_000c583b\n"
-        "leal (%edx, %edx, 4), %eax\n" /* line 512 */
-        "leal (%edx, %eax, 2), %eax\n"
-        "leal 0x1155010(, %eax, 4), %eax\n"
-        "leal 8(%eax), %ecx\n"
-        "addl $1, %edx\n" /* line 513 */
-        "movl %edx, 0x1155014\n"
-        "movl 0x1028(%ebx), %edx\n" /* line 515 */
-        "movl %edx, 8(%eax)\n"
-        "leal 0xc(%eax), %ebx\n" /* line 516 | to */
-        /* { scope 2 */
-        "movl (%esi), %edx\n" /* line 199 */
-        "movl %edx, 0xc(%eax)\n"
-        "movl 4(%esi), %eax\n" /* line 200 */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%esi), %eax\n" /* line 201 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        "movss %xmm0, 0x10(%ecx)\n" /* line 517 */
-        "movss 0x10(%ebp), %xmm0\n" /* line 519 | r */
-        "movss %xmm0, 0x14(%ecx)\n"
-        "movss 0x14(%ebp), %xmm0\n" /* line 520 | g */
-        "movss %xmm0, 0x18(%ecx)\n"
-        "movss 0x18(%ebp), %xmm0\n" /* line 521 | b */
-        "movss %xmm0, 0x1c(%ecx)\n"
-        /* } scope */
-        ".Lfc579a_000c583b:\n"
-        "popl %ebx\n" /* line 522 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxLight *light;
+    int dlightCount;
+
+    if (!rg->registered)
+        return;
+    if (!rgp->world)
+        return;
+    if (!(radius > 0.0f))
+        return;
+
+    dlightCount = scene.dlightCount;
+    if (dlightCount >= (*r_dlightLimit)->current.integer)
+        return;
+
+    light = &scene.dlights[dlightCount];
+    scene.dlightCount = dlightCount + 1;
+    light->def = rgp->dlightDef;
+    light->position[0] = org[0];
+    light->position[1] = org[1];
+    light->position[2] = org[2];
+    light->position[3] = radius;
+    light->color[0] = r;
+    light->color[1] = g;
+    light->color[2] = b;
 }
 
 /* line 424 */
@@ -730,326 +583,148 @@ DP4 oPos.z," */
 }
 
 /* line 883 */
-__attribute__((naked))
 void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 883 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* sceneEnt */
-        /* { scope 1 */
-        "movl $5, 0xc(%edx)\n" /* line 892 */
-        "movl 0x195eefc, %eax\n" /* line 894 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc5d2c_000c5e2f\n"
-        "movl 4(%edx), %edx\n" /* line 897 */
-        "movl %edx, -0x1c(%ebp)\n" /* bmodel */
-        "movl 0x1c(%edx), %eax\n" /* line 900 */
-        "movl 0x18(%edx), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "jle .Lfc5d2c_000c5e2f\n"
-        "leal (%eax, %eax, 2), %eax\n"
-        "leal (, %eax, 4), %ebx\n"
-        "movl $0, -0x18(%ebp)\n" /* count */
-        "movl 0xc(%ebp), %eax\n" /* entIndex */
-        "shll $0x13, %eax\n"
-        "subl $0x7ffffffe, %eax\n"
-        "movl %eax, -0x10(%ebp)\n"
-        "movl 0xc(%ebp), %eax\n" /* entIndex */
-        "shll $4, %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "jmp .Lfc5d2c_000c5dcd\n"
-        /* { scope 2 */
-        /* { scope 3: drawSurf */
-        /* { scope 4 */
-        ".Lfc5d2c_000c5d8e:\n"
-        "addl -0x20(%ebp), %edx\n" /* line 676 */
-        "movzwl 0xa(%esi), %eax\n" /* line 677 */
-        "shll $0x15, %eax\n"
-        "addl %eax, %edx\n"
-        "shll $0x10, %ecx\n" /* line 678 */
-        "leal (%edx, %ecx), %eax\n"
-        ".Lfc5d2c_000c5da0:\n"
-        "movl -0x14(%ebp), %edx\n" /* line 680 | drawSurf */
-        "movl %eax, (%edx)\n"
-        "movl %edi, 4(%edx)\n" /* line 681 */
-        "addl $1, 0x11555b8\n" /* line 685 */
-        "movl 0x195eef4, %edx\n" /* line 686 */
-        "movl (%edx), %eax\n"
-        "addl $1, 4(%eax)\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfc5d2c_000c5dbb:\n"
-        "addl $1, -0x18(%ebp)\n" /* line 900 | count */
-        "addl $0xc, %ebx\n"
-        "movl -0x18(%ebp), %edx\n" /* count */
-        "movl -0x1c(%ebp), %eax\n" /* bmodel */
-        "cmpl %edx, 0x18(%eax)\n"
-        "jle .Lfc5d2c_000c5e2f\n"
-        ".Lfc5d2c_000c5dcd:\n"
-        "movl 0x195eebc, %edx\n" /* line 901 */
-        "movl 0x109c(%edx), %eax\n" /* surf */
-        "movl 0x14(%eax), %edx\n"
-        "leal (%ebx, %edx), %eax\n" /* surf */
-        /* { scope 2 */
-        "movzwl 4(%eax), %ecx\n" /* line 698 | lmapIndex */
-        "movl (%eax), %esi\n" /* material */
-        "movl 8(%eax), %edi\n" /* surface */
-        /* { scope 3: drawSurf */
-        /* { scope 4 */
-        "movl 0x195eef4, %eax\n" /* line 655 */
-        "movl (%eax), %edx\n"
-        "movl 4(%edx), %eax\n"
-        "cmpl $0xffff, %eax\n"
-        "jg .Lfc5d2c_000c5dbb\n"
-        "leal 8(%edx, %eax, 8), %edx\n" /* line 660 */
-        "movl %edx, -0x14(%ebp)\n" /* drawSurf */
-        "movl (%edi), %edx\n" /* line 663 */
-        "cmpl $2, %edx\n" /* line 667 */
-        "jne .Lfc5d2c_000c5d8e\n"
-        "movl 0x195ed68, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc5d2c_000c5d8e\n"
-        "movzwl 0xa(%esi), %eax\n" /* line 671 */
-        "shll $9, %eax\n"
-        "addl -0x10(%ebp), %eax\n"
-        "shll $4, %ecx\n" /* line 672 */
-        "addl %ecx, %eax\n"
-        "jmp .Lfc5d2c_000c5da0\n"
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        /* } scope */
-        ".Lfc5d2c_000c5e2f:\n"
-        "addl $0x18, %esp\n" /* line 902 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const GfxBrushModel *bmodel;
+    GfxBackEndData *buf;
+    GfxDrawSurf *drawSurf;
+    GfxSurface *surf;
+    const Material *material;
+    const surfaceType_t *surface;
+    int lmapIndex;
+    int surfType;
+    unsigned int sortValue;
+    int count;
+    int dvarVal;
+
+    sceneEnt->cullState = 5;
+
+    dvarVal = (*(const dvar_t **)0x195eefc)->current.integer;
+    if (!dvarVal)
+        return;
+
+    bmodel = sceneEnt->u.bmodel;
+    if (bmodel->surfaceCount <= 0)
+        return;
+
+    for (count = 0; count < bmodel->surfaceCount; count++) {
+        surf = &rgp->world->surfaces[bmodel->startSurfIndex + count];
+        lmapIndex = surf->lightmapIndex;
+        material = surf->material;
+        surface = surf->data;
+
+        buf = *gfxBuf;
+        if (buf->drawSurfCount > 0xffff)
+            continue;
+
+        drawSurf = &buf->drawSurfs[buf->drawSurfCount];
+        surfType = *surface;
+
+        if (surfType == 2 && (*fx_sort_ptr)->current.integer) {
+            sortValue = (material->info.sortedIndex << 9) + ((entIndex << 19) + 0x80000002) + (lmapIndex << 4);
+        } else {
+            sortValue = surfType + (entIndex << 4) + (material->info.sortedIndex << 21) + (lmapIndex << 16);
+        }
+
+        drawSurf->sort = sortValue;
+        drawSurf->surface = surface;
+        scene.drawSurfCount++;
+        (*gfxBuf)->drawSurfCount++;
+    }
 }
 
 /* line 447 */
-__attribute__((naked))
 void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCount, const GfxWorldVertex *verts)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 447 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* materialHandle */
-        "movl 0xc(%ebp), %ebx\n" /* lmapIndex */
-        "movl 0x10(%ebp), %esi\n" /* vertCount */
-        "movw %bx, -0x22(%ebp)\n" /* lmapIndex */
-        "movl %esi, %ecx\n" /* vertCount */
-        /* { scope 1 */
-        "movl 0x195eec8, %eax\n" /* line 458 */
-        "cmpb $0, (%eax)\n"
-        "je .Lfc5e38_000c5f85\n"
-        "testl %edi, %edi\n" /* line 465 | materialHandle */
-        "je .Lfc5e38_000c5f95\n"
-        ".Lfc5e38_000c5e66:\n"
-        "movl 0x195eef4, %eax\n" /* line 468 */
-        "movl (%eax), %edx\n"
-        "movzwl %cx, %ecx\n"
-        "movl %ecx, -0x20(%ebp)\n"
-        "movl %ecx, %eax\n"
-        "addl 0x18fc74(%edx), %eax\n"
-        "cmpl $0x2000, %eax\n"
-        "jg .Lfc5e38_000c5f85\n"
-        "movl 0x187c70(%edx), %eax\n"
-        "cmpl $0x7ff, %eax\n"
-        "jg .Lfc5e38_000c5f85\n"
-        "shll $4, %eax\n" /* line 471 */
-        "leal 0x187c70(%eax, %edx), %eax\n"
-        "movl %eax, -0x28(%ebp)\n"
-        "addl $4, %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* poly */
-        "movl -0x28(%ebp), %edx\n" /* line 472 */
-        "movl $1, 4(%edx)\n"
-        "movl %edi, 4(%eax)\n" /* line 473 | materialHandle */
-        "movw %bx, 8(%eax)\n" /* line 474 */
-        "movw %si, 0xa(%eax)\n" /* line 475 */
-        "movl 0x195eef4, %eax\n" /* line 476 */
-        "movl (%eax), %ecx\n"
-        "movl 0x18fc74(%ecx), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "leal 0x18fc70(%edx, %eax, 4), %eax\n"
-        "leal 8(%ecx, %eax), %ecx\n"
-        "movl -0x1c(%ebp), %edx\n" /* poly */
-        "movl %ecx, 0xc(%edx)\n"
-        "movl -0x20(%ebp), %eax\n" /* line 479 */
-        "shll $6, %eax\n"
-        "movl -0x20(%ebp), %edx\n"
-        "leal (%eax, %edx, 4), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* verts */
-        "movl %eax, 4(%esp)\n"
-        "movl %ecx, (%esp)\n"
-        "calll memcpy\n"
-        "movl 0x11555c0, %eax\n" /* line 482 */
-        "andl $0x800007ff, %eax\n"
-        "js .Lfc5e38_000c5fa5\n"
-        ".Lfc5e38_000c5f11:\n"
-        "leal 0x800(%eax), %ecx\n"
-        "movzwl -0x22(%ebp), %ebx\n" /* line 484 | lmapIndex */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0x195eef4, %eax\n" /* line 655 */
-        "movl (%eax), %edx\n"
-        "movl 4(%edx), %eax\n"
-        "cmpl $0xffff, %eax\n"
-        "jg .Lfc5e38_000c5f8d\n"
-        "leal 8(%edx, %eax, 8), %esi\n" /* line 660 | drawSurf */
-        "movl -0x28(%ebp), %eax\n" /* line 663 */
-        "movl 4(%eax), %edx\n"
-        "cmpl $2, %edx\n" /* line 667 */
-        "je .Lfc5e38_000c5fb5\n"
-        ".Lfc5e38_000c5f3b:\n"
-        "shll $4, %ecx\n" /* line 676 */
-        "addl %ecx, %edx\n"
-        "movzwl 0xa(%edi), %eax\n" /* line 677 | materialHandle */
-        "shll $0x15, %eax\n"
-        "addl %eax, %edx\n"
-        "shll $0x10, %ebx\n" /* line 678 | lmapIndex */
-        "leal (%edx, %ebx), %eax\n"
-        ".Lfc5e38_000c5f4f:\n"
-        "movl %eax, (%esi)\n" /* line 680 | drawSurf */
-        "movl -0x1c(%ebp), %edx\n" /* line 681 | poly */
-        "movl %edx, 4(%esi)\n" /* drawSurf */
-        "addl $1, 0x11555b8\n" /* line 685 */
-        "movl 0x195eef4, %edx\n" /* line 686 */
-        "movl (%edx), %eax\n"
-        "addl $1, 4(%eax)\n"
-        /* } scope */
-        /* } scope */
-        ".Lfc5e38_000c5f6a:\n"
-        "movl (%edx), %eax\n" /* line 486 */
-        "addl $1, 0x187c70(%eax)\n"
-        "movl (%edx), %eax\n" /* line 487 */
-        "movl -0x20(%ebp), %edx\n"
-        "addl %edx, 0x18fc74(%eax)\n"
-        "addl $1, 0x11555c0\n" /* line 488 */
-        /* } scope */
-        ".Lfc5e38_000c5f85:\n"
-        "addl $0x2c, %esp\n" /* line 489 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfc5e38_000c5f8d:\n"
-        "movl 0x195eef4, %edx\n"
-        "jmp .Lfc5e38_000c5f6a\n"
-        /* { scope 1 */
-        ".Lfc5e38_000c5f95:\n"
-        "movl 0x195eebc, %eax\n" /* line 466 */
-        "movl 0x102c(%eax), %edi\n" /* materialHandle */
-        "jmp .Lfc5e38_000c5e66\n"
-        ".Lfc5e38_000c5fa5:\n"
-        "subl $1, %eax\n" /* line 482 */
-        "orl $0xfffff800, %eax\n"
-        "addl $1, %eax\n"
-        "jmp .Lfc5e38_000c5f11\n"
-        /* { scope 2 */
-        /* { scope 3 */
-        ".Lfc5e38_000c5fb5:\n"
-        "movl 0x195ed68, %eax\n" /* line 667 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc5e38_000c5f3b\n"
-        "shll $0x13, %ecx\n" /* line 670 */
-        "movzwl 0xa(%edi), %eax\n" /* line 671 | materialHandle */
-        "shll $9, %eax\n"
-        "leal -0x7ffffffe(%ecx, %eax), %eax\n"
-        "shll $4, %ebx\n" /* line 672 | lmapIndex */
-        "addl %ebx, %eax\n" /* lmapIndex */
-        "jmp .Lfc5e38_000c5f4f\n"
-    );
+    GfxBackEndData *buf;
+    srfPoly_t *poly;
+    GfxDrawSurf *drawSurf;
+    GfxWorldVertex *destVerts;
+    unsigned int sortValue;
+    int entIndex;
+    int surfType;
+    int vc;
+
+    if (!rg->registered)
+        return;
+
+    if (!materialHandle)
+        materialHandle = rgp->defaultMaterial;
+
+    buf = *gfxBuf;
+    vc = (unsigned short)vertCount;
+
+    if (vc + buf->polyVertCount > 0x2000)
+        return;
+    if (buf->polyCount > 0x7ff)
+        return;
+
+    poly = &buf->polys[buf->polyCount];
+    poly->surfaceType = 1;
+    poly->material = materialHandle;
+    poly->lmapIndex = (unsigned short)lmapIndex;
+    poly->vertCount = (unsigned short)vertCount;
+
+    destVerts = &buf->polyVerts[buf->polyVertCount];
+    poly->verts = destVerts;
+    memcpy(destVerts, verts, vc * sizeof(GfxWorldVertex));
+
+    entIndex = (scene.polyCount & 0x7FF) + 0x800;
+
+    buf = *gfxBuf;
+    if (buf->drawSurfCount <= 0xffff) {
+        drawSurf = &buf->drawSurfs[buf->drawSurfCount];
+        surfType = poly->surfaceType;
+
+        if (surfType == 2 && (*fx_sort_ptr)->current.integer) {
+            sortValue = (entIndex << 19) | (materialHandle->info.sortedIndex << 9) | 0x80000002 | (lmapIndex << 4);
+        } else {
+            sortValue = surfType + (entIndex << 4) + (materialHandle->info.sortedIndex << 21) + (lmapIndex << 16);
+        }
+
+        drawSurf->sort = sortValue;
+        drawSurf->surface = (const surfaceType_t *)poly;
+        scene.drawSurfCount++;
+        (*gfxBuf)->drawSurfCount++;
+    }
+
+    (*gfxBuf)->polyCount++;
+    (*gfxBuf)->polyVertCount += vc;
+    scene.polyCount++;
 }
 
 /* line 696 */
-__attribute__((naked))
 void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 696 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %eax\n" /* surf */
-        "movl 0xc(%ebp), %ecx\n" /* entIndex */
-        "movzwl 4(%eax), %ebx\n" /* line 698 | lmapIndex */
-        "movl (%eax), %edi\n" /* material */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, -0x10(%ebp)\n" /* surface */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl 0x195eef4, %eax\n" /* line 655 */
-        "movl (%eax), %edx\n"
-        "movl 4(%edx), %eax\n"
-        "cmpl $0xffff, %eax\n"
-        "jg .Lfc5fe4_000c604d\n"
-        "leal 8(%edx, %eax, 8), %esi\n" /* line 660 | drawSurf */
-        "movl -0x10(%ebp), %eax\n" /* line 663 | surface */
-        "movl (%eax), %edx\n"
-        "cmpl $2, %edx\n" /* line 667 */
-        "je .Lfc5fe4_000c6055\n"
-        ".Lfc5fe4_000c601e:\n"
-        "shll $4, %ecx\n" /* line 676 */
-        "addl %ecx, %edx\n"
-        "movzwl 0xa(%edi), %eax\n" /* line 677 */
-        "shll $0x15, %eax\n"
-        "addl %eax, %edx\n"
-        "shll $0x10, %ebx\n" /* line 678 */
-        "leal (%edx, %ebx), %eax\n"
-        ".Lfc5fe4_000c6032:\n"
-        "movl %eax, (%esi)\n" /* line 680 | drawSurf */
-        "movl -0x10(%ebp), %edx\n" /* line 681 | surface */
-        "movl %edx, 4(%esi)\n" /* drawSurf */
-        "addl $1, 0x11555b8\n" /* line 685 */
-        "movl 0x195eef4, %edx\n" /* line 686 */
-        "movl (%edx), %eax\n"
-        "addl $1, 4(%eax)\n"
-        /* } scope */
-        /* } scope */
-        ".Lfc5fe4_000c604d:\n"
-        "addl $4, %esp\n" /* line 699 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lfc5fe4_000c6055:\n"
-        "movl 0x195ed68, %eax\n" /* line 667 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lfc5fe4_000c601e\n"
-        "shll $0x13, %ecx\n" /* line 670 */
-        "movzwl 0xa(%edi), %eax\n" /* line 671 */
-        "shll $9, %eax\n"
-        "leal -0x7ffffffe(%ecx, %eax), %eax\n"
-        "shll $4, %ebx\n" /* line 672 */
-        "addl %ebx, %eax\n"
-        "jmp .Lfc5fe4_000c6032\n"
-    );
+    GfxBackEndData *buf;
+    GfxDrawSurf *drawSurf;
+    const Material *material;
+    const surfaceType_t *surface;
+    unsigned int sortValue;
+    int lmapIndex;
+    int surfType;
+
+    lmapIndex = surf->lightmapIndex;
+    material = surf->material;
+    surface = surf->data;
+
+    buf = *gfxBuf;
+    if (buf->drawSurfCount > 0xffff)
+        return;
+
+    drawSurf = &buf->drawSurfs[buf->drawSurfCount];
+    surfType = *surface;
+
+    if (surfType == 2 && (*fx_sort_ptr)->current.integer) {
+        sortValue = (entIndex << 19) | (material->info.sortedIndex << 9) | 0x80000002 | (lmapIndex << 4);
+    } else {
+        sortValue = surfType + (entIndex << 4) + (material->info.sortedIndex << 21) + (lmapIndex << 16);
+    }
+
+    drawSurf->sort = sortValue;
+    drawSurf->surface = surface;
+    scene.drawSurfCount++;
+    (*gfxBuf)->drawSurfCount++;
 }
 
 /* line 1410 */

@@ -8,6 +8,27 @@
  *   #include "PC/universal/com_math.h"
  */
 
+/* External function declarations for C-converted functions */
+extern void Com_DPrintf(const char *fmt, ...);
+extern void SND_StopSounds(int);
+extern void SND_EndRawSamples(void);
+extern void Sys_EndStreamedFile(fileHandle_t);
+extern void Sys_BeginStreamedFile(fileHandle_t, int);
+extern void Sys_StreamedRead(void *, int, int, fileHandle_t);
+extern void FS_FCloseFile(fileHandle_t);
+extern int FS_FOpenFileRead(const char *, fileHandle_t *, int);
+extern char *va(const char *fmt, ...);
+extern void Cbuf_ExecuteText(int, const char *);
+extern void Dvar_SetString(void *, const char *);
+extern void UI_SetActiveMenu(int);
+extern int CL_ScaledMilliseconds(void);
+extern char *Cmd_Argv(int);
+extern void CL_StopLogo(void);
+extern void SND_FadeAllSounds(float, int);
+extern void CL_LookupColor(int, float *);
+extern float floorf(float);
+extern float ceilf(float);
+
 static Boolean sAspyrIntroPlayed; /* 0x7eefe0 */
 static long int ROQ_YY_tab[256]; /* 0x745be0 */
 static long int ROQ_UB_tab[256]; /* 0x746be0 */
@@ -148,328 +169,118 @@ inflate_blocks_statef recurseQuad(long int startX, long int startY, long int xOf
 }
 
 /* line 1561 */
-static __attribute__((naked))
-inflate_blocks_statef RoQShutdown(void)
+static inflate_blocks_statef RoQShutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1561 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl currentHandle, %eax\n" /* line 1563 */
-        "leal (%eax, %eax, 2), %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "addl %ecx, %edx\n"
-        "leal (%edx, %eax), %eax\n"
-        "movl 0x4f3ac4(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lfb1bf6_000b1c2b\n"
-        "movl $0x4f3a30, %ebx\n" /* line 1568 */
-        "movl 0x4f3a3c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfb1bf6_000b1c31\n"
-        ".Lfb1bf6_000b1c2b:\n"
-        "addl $0x14, %esp\n" /* line 1637 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfb1bf6_000b1c31:\n"
-        "movl $0x21e9b0, (%esp)\n" /* line 1572 */
-        "calll Com_DPrintf\n"
-        "movl currentHandle, %ecx\n" /* line 1573 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "movl $0, 0xc(%eax, %ebx)\n"
-        "movl 0x4f3a34(%eax), %eax\n" /* line 1575 */
-        "testl %eax, %eax\n"
-        "jne .Lfb1bf6_000b1dd4\n"
-        ".Lfb1bf6_000b1c68:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 1580 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "movl 0x4f3a38(%eax, %ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfb1bf6_000b1d88\n"
-        ".Lfb1bf6_000b1c84:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 1587 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%eax, %ecx), %ecx\n"
-        "movl 0x4f3a24(%ecx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfb1bf6_000b1d28\n"
-        "movl 0x195ee8c, %eax\n" /* line 1589 */
-        "movl (%eax), %edx\n"
-        "movl 0x4f3ac8(%ecx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl $0xffffffff, CL_handle\n" /* line 1591 */
-        "movl (%edx), %eax\n" /* line 1596 */
-        "testl %eax, %eax\n"
-        "jne .Lfb1bf6_000b1d7a\n"
-        "movl 0x195ee88, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %ebx\n"
-        "cmpb $0, (%ebx)\n"
-        "je .Lfb1bf6_000b1d7a\n"
-        /* { scope 1 */
-        "cmpb $0, sAspyrIntroPlayed\n" /* line 1604 */
-        "je .Lfb1bf6_000b1de4\n"
-        ".Lfb1bf6_000b1ce5:\n"
-        "movl %ebx, 4(%esp)\n" /* line 1612 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
-" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 1613 */
-        "movl 0x195ee88, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetString\n"
-        ".Lfb1bf6_000b1d1c:\n"
-        "movl $1, (%esp)\n" /* line 1619 */
-        "calll UI_SetActiveMenu\n"
-        /* } scope */
-        ".Lfb1bf6_000b1d28:\n"
-        "movl 0x195eca8, %eax\n" /* line 1632 */
-        "movl 0x148(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfb1bf6_000b1d39\n"
-        "calll *%eax\n" /* line 1633 */
-        ".Lfb1bf6_000b1d39:\n"
-        "movl currentHandle, %eax\n" /* line 1635 */
-        "leal (%eax, %eax, 2), %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "addl %ecx, %edx\n"
-        "leal cinTable(%edx, %eax), %edx\n"
-        "movl $0x1cc, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memset\n"
-        "movl $0xffffffff, currentHandle\n" /* line 1636 */
-        "addl $0x14, %esp\n" /* line 1637 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfb1bf6_000b1d7a:\n"
-        "movl $0, (%esp)\n" /* line 1623 */
-        "calll UI_SetActiveMenu\n"
-        "jmp .Lfb1bf6_000b1d28\n"
-        ".Lfb1bf6_000b1d88:\n"
-        "movl %eax, (%esp)\n" /* line 1582 */
-        "calll Sys_EndStreamedFile\n"
-        "movl currentHandle, %ecx\n" /* line 1583 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "movl 0x4f3a38(%eax, %ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl currentHandle, %ecx\n" /* line 1584 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "movl $0, 8(%eax, %ebx)\n"
-        "jmp .Lfb1bf6_000b1c84\n"
-        ".Lfb1bf6_000b1dd4:\n"
-        "calll SND_EndRawSamples\n" /* line 1577 */
-        "movl currentHandle, %ecx\n"
-        "jmp .Lfb1bf6_000b1c68\n"
-        /* { scope 1 */
-        ".Lfb1bf6_000b1de4:\n"
-        "movl $0x21e9c4, 4(%esp)\n" /* line 1604 */
-        "movl %ebx, (%esp)\n"
-        "calll strstr\n"
-        "testl %eax, %eax\n"
-        "je .Lfb1bf6_000b1ce5\n"
-        "movl $0x21e9cc, 4(%esp)\n" /* line 1606 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
-" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Cbuf_ExecuteText\n"
-        "movb $1, sAspyrIntroPlayed\n" /* line 1608 */
-        "jmp .Lfb1bf6_000b1d1c\n"
-    );
+    int h;
+    int *clcState;
+    char *nextMapStr;
+    void (*rendererCallback)(void);
+
+    h = currentHandle;
+    if (cinTable[h].buf && cinTable[h].status != FMV_IDLE) {
+        Com_DPrintf("finished cinematic\n");
+        cinTable[currentHandle].status = FMV_IDLE;
+
+        if (cinTable[currentHandle].sound) {
+            SND_EndRawSamples();
+        }
+
+        if (cinTable[currentHandle].iFile) {
+            Sys_EndStreamedFile(cinTable[currentHandle].iFile);
+            FS_FCloseFile(cinTable[currentHandle].iFile);
+            cinTable[currentHandle].iFile = 0;
+        }
+
+        if (cinTable[currentHandle].alterGameState) {
+            clcState = *(int **)*(int *)0x195ee8c;
+            *clcState = cinTable[currentHandle].previousGameState;
+            CL_handle = -1;
+            if (*clcState == 0) {
+                nextMapStr = *(char **)((char *)**(void ***)0x195ee88 + 8);
+                if (*nextMapStr != '\0') {
+                    if (!sAspyrIntroPlayed) {
+                        if (strstr(nextMapStr, "IW_logo")) {
+                            Cbuf_ExecuteText(2, va("%s\n", "cinematic aspyr_intro"));
+                            sAspyrIntroPlayed = 1;
+                        } else {
+                            Cbuf_ExecuteText(2, va("%s\n", nextMapStr));
+                            Dvar_SetString(**(void ***)0x195ee88, "");
+                        }
+                    } else {
+                        Cbuf_ExecuteText(2, va("%s\n", nextMapStr));
+                        Dvar_SetString(**(void ***)0x195ee88, "");
+                    }
+                    UI_SetActiveMenu(1);
+                } else {
+                    UI_SetActiveMenu(0);
+                }
+            } else {
+                UI_SetActiveMenu(0);
+            }
+        }
+
+        rendererCallback = *(void (**)(void))((char *)*(void **)0x195eca8 + 0x148);
+        if (rendererCallback) {
+            rendererCallback();
+        }
+
+        memset(&cinTable[currentHandle], 0, sizeof(cin_cache));
+        currentHandle = -1;
+    }
 }
 
 /* line 1645 */
-__attribute__((naked))
 e_status ROQ_StopCinematicFromHandle(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1645 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %ecx\n" /* handle */
-        "cmpl $0xf, %ecx\n" /* line 1648 */
-        "ja .Lfb1e2c_000b1ec3\n"
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "cmpl $2, 0x4f3a3c(%eax)\n"
-        "je .Lfb1e2c_000b1ec3\n"
-        "movl %ecx, currentHandle\n" /* line 1650 */
-        "addl $cinTable, %eax\n" /* line 1652 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21e9e4, (%esp)\n" /* "trFMV::stop(), closing %s
-" */
-        "calll Com_DPrintf\n"
-        "movl currentHandle, %ecx\n" /* line 1654 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%eax, %ecx), %edx\n"
-        "movl 0x4f3ac4(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfb1e2c_000b1ec3\n"
-        "movl 0x4f3a24(%edx), %eax\n" /* line 1659 */
-        "testl %eax, %eax\n"
-        "jne .Lfb1e2c_000b1eca\n"
-        ".Lfb1e2c_000b1e9b:\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 1666 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "movl $0x4f3a30, %edx\n"
-        "movl $2, 0xc(%eax, %edx)\n"
-        "calll RoQShutdown\n" /* line 1667 */
-        "movl $2, %eax\n"
-        "leave\n" /* line 1670 */
-        "retl\n"
-        ".Lfb1e2c_000b1ec3:\n"
-        "movl $2, %eax\n" /* line 1669 */
-        "leave\n" /* line 1670 */
-        "retl\n"
-        ".Lfb1e2c_000b1eca:\n"
-        "movl 0x195ee8c, %eax\n" /* line 1661 */
-        "movl (%eax), %eax\n"
-        "cmpl $1, (%eax)\n"
-        "je .Lfb1e2c_000b1e9b\n"
-        "movl 0x4f3a3c(%edx), %eax\n" /* line 1663 */
-        "leave\n" /* line 1670 */
-        "retl\n"
-    );
+    if ((unsigned int)handle > 0xf || cinTable[handle].status == FMV_EOF) {
+        return FMV_EOF;
+    }
+    currentHandle = handle;
+    Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
+    if (!cinTable[currentHandle].buf) {
+        return FMV_EOF;
+    }
+    if (cinTable[currentHandle].alterGameState) {
+        if (**(int **)(*(int *)0x195ee8c) != 1) {
+            return cinTable[currentHandle].status;
+        }
+    }
+    cinTable[currentHandle].status = FMV_EOF;
+    RoQShutdown();
+    return FMV_EOF;
 }
 
 /* line 1877 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_SetExtentsFromHandle(int handle, int x, int y, int w, int h)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1877 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* handle */
-        "cmpl $0xf, %ecx\n" /* line 1879 */
-        "ja .Lfb1ede_000b1f31\n"
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%eax, %ecx), %edx\n"
-        "cmpl $2, 0x4f3a3c(%edx)\n"
-        "je .Lfb1ede_000b1f31\n"
-        "movl $0x4f3a00, %eax\n" /* line 1881 */
-        "movl 0xc(%ebp), %ecx\n" /* x */
-        "movl %ecx, 8(%edx, %eax)\n"
-        "movl 0x10(%ebp), %ecx\n" /* line 1882 | y */
-        "movl %ecx, 0xc(%edx, %eax)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 1883 | w */
-        "movl %eax, 0x4f3a10(%edx)\n"
-        "movl 0x18(%ebp), %ecx\n" /* line 1884 | h */
-        "movl %ecx, 0x4f3a14(%edx)\n"
-        "movl $1, 0x4f3a20(%edx)\n" /* line 1885 */
-        ".Lfb1ede_000b1f31:\n"
-        "popl %ebp\n" /* line 1886 */
-        "retl\n"
-    );
+    if ((unsigned int)handle <= 0xf && cinTable[handle].status != FMV_EOF) {
+        cinTable[handle].xpos = x;
+        cinTable[handle].ypos = y;
+        cinTable[handle].width = w;
+        cinTable[handle].height = h;
+        cinTable[handle].dirty = 1;
+    }
 }
 
 /* line 2115 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_UploadCinematicFromHandle(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2115 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* handle */
-        "cmpl $0xf, %ecx\n" /* line 2117 */
-        "ja .Lfb1f36_000b1f89\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 2119 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "movl 0x4f3ac4(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lfb1f36_000b1f89\n"
-        "movl 0x4f3ac0(%eax), %edx\n" /* line 2123 */
-        "testl %edx, %edx\n"
-        "jle .Lfb1f36_000b1f97\n"
-        ".Lfb1f36_000b1f64:\n"
-        "movl 0x195ee84, %eax\n" /* line 2142 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfb1f36_000b1f89\n"
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "cmpl $1, 0x4f3ac0(%eax)\n"
-        "je .Lfb1f36_000b1f8b\n"
-        ".Lfb1f36_000b1f89:\n"
-        "popl %ebp\n" /* line 2145 */
-        "retl\n"
-        ".Lfb1f36_000b1f8b:\n"
-        "movl $0, 0x4f3ac0(%eax)\n" /* line 2143 */
-        "popl %ebp\n" /* line 2145 */
-        "retl\n"
-        ".Lfb1f36_000b1f97:\n"
-        "cmpl $0, 0x4f3a20(%eax)\n" /* line 2123 */
-        "je .Lfb1f36_000b1f64\n"
-        "testl %edx, %edx\n" /* line 2125 */
-        "je .Lfb1f36_000b1fb5\n"
-        "addl $1, %edx\n" /* line 2131 */
-        "je .Lfb1f36_000b1fc1\n"
-        "movl $0, 0x4f3a20(%eax)\n" /* line 2137 */
-        "jmp .Lfb1f36_000b1f64\n"
-        ".Lfb1f36_000b1fb5:\n"
-        "movl $0xffffffff, 0x4f3ac0(%eax)\n" /* line 2127 */
-        "jmp .Lfb1f36_000b1f64\n"
-        ".Lfb1f36_000b1fc1:\n"
-        "movl $0xfffffffe, 0x4f3ac0(%eax)\n" /* line 2133 */
-        "jmp .Lfb1f36_000b1f64\n"
-    );
+    if ((unsigned int)handle <= 0xf && cinTable[handle].buf) {
+        if (cinTable[handle].playonwalls <= 0 && cinTable[handle].dirty) {
+            if (cinTable[handle].playonwalls == 0) {
+                cinTable[handle].playonwalls = -1;
+            } else if (cinTable[handle].playonwalls == -1) {
+                cinTable[handle].playonwalls = -2;
+            } else {
+                cinTable[handle].dirty = 0;
+            }
+        }
+        if (!*(byte *)((*(char **)0x195ee84)[0] + 8)) {
+            if (cinTable[handle].playonwalls == 1) {
+                cinTable[handle].playonwalls = 0;
+            }
+        }
+    }
 }
 
 /* line 587 */
@@ -1446,481 +1257,179 @@ int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
 }
 
 /* line 1994 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_DrawCinematicFromHandle(int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1994 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xac, %esp\n"
-        "movl 8(%ebp), %esi\n" /* handle */
-        /* { scope 1 */
-        "cmpl $0xf, %esi\n" /* line 2006 | handle */
-        "ja .Lfb2c9c_000b2f07\n"
-        "leal (%esi, %esi, 2), %eax\n" /* handle */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %esi, %eax\n" /* handle */
-        "cmpl $2, 0x4f3a3c(%eax)\n"
-        "je .Lfb2c9c_000b2f07\n"
-        "movl 0x4f3ac4(%eax), %edx\n" /* line 2009 */
-        "movl %edx, -0x34(%ebp)\n" /* buf */
-        "testl %edx, %edx\n" /* line 2010 */
-        "je .Lfb2c9c_000b2f07\n"
-        "cvtsi2ssl 0x4f3a10(%eax), %xmm2\n" /* line 2015 */
-        "cvtsi2ssl 0x4f3a14(%eax), %xmm0\n"
-        "divss %xmm0, %xmm2\n"
-        "leal -0x28(%ebp), %eax\n" /* line 2017 | clearColor */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x30, (%esp)\n"
-        "movss %xmm2, -0x88(%ebp)\n"
-        "calll CL_LookupColor\n"
-        "movl 0x195ecac, %edi\n" /* line 1911 */
-        "movss 0x2a0a74(%edi), %xmm1\n"
-        "movss -0x88(%ebp), %xmm2\n"
-        "ucomiss %xmm1, %xmm2\n"
-        "jne .Lfb2c9c_000b2f12\n"
-        "jp .Lfb2c9c_000b2f12\n"
-        "movl 0x2a0a64(%edi), %edx\n" /* line 1915 */
-        "movl %edx, -0x3c(%ebp)\n" /* w */
-        "movl 0x2a0a68(%edi), %edi\n" /* line 1916 */
-        "movl %edi, -0x38(%ebp)\n" /* h */
-        "movl $0, -0x44(%ebp)\n" /* x */
-        "movl $0, -0x40(%ebp)\n" /* y */
-        ".Lfb2c9c_000b2d55:\n"
-        "movl $0, 0xc(%esp)\n" /* line 2021 */
-        "xorl %edi, %edi\n"
-        "movl %edi, 8(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* clearColor */
-        "movl %eax, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "movl 0x195eca8, %edx\n"
-        "calll *0xc8(%edx)\n"
-        "leal (%esi, %esi, 2), %ebx\n" /* line 2023 | handle */
-        "leal (%ebx, %ebx, 8), %ebx\n"
-        "movl %ebx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %eax, %ebx\n"
-        "addl %esi, %ebx\n" /* handle */
-        "movl 0x4f3a20(%ebx), %eax\n"
-        "movl %eax, 0x20(%esp)\n"
-        "movl %esi, 0x1c(%esp)\n" /* handle */
-        "movl -0x34(%ebp), %eax\n" /* buf */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x4f3a04(%ebx), %eax\n"
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x4f3a00(%ebx), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl -0x38(%ebp), %edx\n" /* h */
-        "movl %edx, 0xc(%esp)\n"
-        "movl -0x3c(%ebp), %eax\n" /* w */
-        "movl %eax, 8(%esp)\n"
-        "movl -0x40(%ebp), %edx\n" /* y */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x44(%ebp), %eax\n" /* x */
-        "movl %eax, (%esp)\n"
-        "movl 0x195eca8, %edx\n"
-        "calll *0x9c(%edx)\n"
-        "movl $0, 0x4f3a20(%ebx)\n" /* line 2024 */
-        "movl 0x4f3a30(%ebx), %eax\n" /* line 2026 */
-        "testl %eax, %eax\n"
-        "je .Lfb2c9c_000b2f07\n"
-        /* { scope 2 */
-        "movl 0x195ecac, %ebx\n" /* line 1974 */
-        "cvtsi2ssl 0x2a0a68(%ebx), %xmm0\n"
-        "divss 0x2ed840, %xmm0\n" /* 480.0f */
-        "mulss 0x2ed844, %xmm0\n" /* 105.0f */
-        /* { scope 3 */
-        "movss %xmm0, (%esp)\n" /* line 458 */
-        "movss %xmm0, -0x78(%ebp)\n"
-        "calll ceilf\n"
-        "fstps -0x58(%ebp)\n"
-        "cvttss2si -0x58(%ebp), %esi\n"
-        /* } scope */
-        "cvtsi2ssl -0x44(%ebp), %xmm1\n" /* line 1979 | x */
-        "movss %xmm1, -0x30(%ebp)\n"
-        "cvtsi2ssl -0x3c(%ebp), %xmm1\n" /* line 1981 | w */
-        "movss %xmm1, -0x2c(%ebp)\n"
-        "movl 0x2a0a58(%ebx), %eax\n" /* line 1956 */
-        "movl %eax, 0x24(%esp)\n"
-        "leal -0x28(%ebp), %eax\n" /* clearColor */
-        "movl %eax, 0x20(%esp)\n"
-        "movl %edi, 0x1c(%esp)\n"
-        "movl %edi, 0x18(%esp)\n"
-        "movl %edi, 0x14(%esp)\n"
-        "movl %edi, 0x10(%esp)\n"
-        "movss -0x78(%ebp), %xmm0\n" /* line 443 */
-        "movss %xmm0, (%esp)\n"
-        "calll floorf\n"
-        "fstps -0x5c(%ebp)\n"
-        "cvttss2si -0x5c(%ebp), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "cvtsi2ssl -0x40(%ebp), %xmm0\n" /* y */
-        "movss %xmm0, 4(%esp)\n"
-        "movss -0x30(%ebp), %xmm1\n"
-        "movss %xmm1, (%esp)\n"
-        "movl 0x195eca8, %eax\n"
-        "calll *0x94(%eax)\n"
-        "movl 0x2a0a58(%ebx), %eax\n" /* line 1956 */
-        "movl %eax, 0x24(%esp)\n"
-        "leal -0x28(%ebp), %edx\n" /* clearColor */
-        "movl %edx, 0x20(%esp)\n"
-        "movl %edi, 0x1c(%esp)\n"
-        "movl %edi, 0x18(%esp)\n"
-        "movl %edi, 0x14(%esp)\n"
-        "movl %edi, 0x10(%esp)\n"
-        "cvtsi2ssl %esi, %xmm0\n"
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x2c(%ebp), %xmm0\n"
-        "movss %xmm0, 8(%esp)\n"
-        "movl -0x40(%ebp), %eax\n" /* y */
-        "addl -0x38(%ebp), %eax\n" /* h */
-        "subl %esi, %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, 4(%esp)\n"
-        "movss -0x30(%ebp), %xmm1\n"
-        "movss %xmm1, (%esp)\n"
-        "movl 0x195eca8, %eax\n"
-        "calll *0x94(%eax)\n"
-        /* } scope */
-        /* } scope */
-        ".Lfb2c9c_000b2f07:\n"
-        "addl $0xac, %esp\n" /* line 2028 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfb2c9c_000b2f12:\n"
-        "ucomiss %xmm1, %xmm2\n" /* line 1920 */
-        "ja .Lfb2c9c_000b2f82\n"
-        "movl 0x2a0a64(%edi), %ebx\n" /* line 1935 */
-        "cvtsi2ssl %ebx, %xmm0\n"
-        "divss %xmm1, %xmm2\n" /* line 1937 */
-        "mulss %xmm0, %xmm2\n"
-        "subss %xmm2, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n" /* line 443 */
-        "movss %xmm0, -0x78(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x50(%ebp)\n"
-        "cvttss2si -0x50(%ebp), %edx\n"
-        "movl %edx, -0x44(%ebp)\n" /* x */
-        "movss -0x78(%ebp), %xmm0\n" /* line 458 */
-        "movss %xmm0, (%esp)\n"
-        "calll ceilf\n"
-        "fstps -0x54(%ebp)\n"
-        "cvttss2si -0x54(%ebp), %eax\n"
-        "addl %eax, %eax\n"
-        "subl %eax, %ebx\n"
-        "movl %ebx, -0x3c(%ebp)\n" /* w */
-        "movl 0x2a0a68(%edi), %edi\n" /* line 1944 */
-        "movl %edi, -0x38(%ebp)\n" /* h */
-        "movl $0, -0x40(%ebp)\n" /* y */
-        "jmp .Lfb2c9c_000b2d55\n"
-        ".Lfb2c9c_000b2f82:\n"
-        "movl 0x2a0a68(%edi), %ebx\n" /* line 1922 */
-        "cvtsi2ssl %ebx, %xmm0\n"
-        "divss %xmm2, %xmm1\n" /* line 1924 */
-        "mulss %xmm0, %xmm1\n"
-        "subss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, (%esp)\n" /* line 443 */
-        "movss %xmm0, -0x78(%ebp)\n"
-        "calll floorf\n"
-        "fstps -0x48(%ebp)\n"
-        "cvttss2si -0x48(%ebp), %eax\n"
-        "movl %eax, -0x40(%ebp)\n" /* y */
-        "movl 0x2a0a64(%edi), %edi\n" /* line 1930 */
-        "movl %edi, -0x3c(%ebp)\n" /* w */
-        "movss -0x78(%ebp), %xmm0\n" /* line 458 */
-        "movss %xmm0, (%esp)\n"
-        "calll ceilf\n"
-        "fstps -0x4c(%ebp)\n"
-        "cvttss2si -0x4c(%ebp), %eax\n"
-        "addl %eax, %eax\n"
-        "subl %eax, %ebx\n"
-        "movl %ebx, -0x38(%ebp)\n" /* h */
-        "movl $0, -0x44(%ebp)\n" /* x */
-        "jmp .Lfb2c9c_000b2d55\n"
-    );
+    byte *buf;
+    float aspect;
+    float clearColor[3];
+    int x, y, w, h;
+    char *cls;
+    char *re;
+    float screenAspect;
+    int screenW, screenH;
+    float barSize;
+    int barSizeCeil;
+    float xf, wf;
+    int material;
+
+    if ((unsigned int)handle > 0xf || cinTable[handle].status == FMV_EOF) {
+        goto done;
+    }
+    buf = cinTable[handle].buf;
+    if (!buf) {
+        goto done;
+    }
+
+    aspect = (float)cinTable[handle].width / (float)cinTable[handle].height;
+    CL_LookupColor(0x30, clearColor);
+
+    cls = *(char **)0x195ecac;
+    screenAspect = *(float *)(cls + 0x2a0a74);
+
+    if (aspect == screenAspect) {
+        /* aspect matches screen exactly */
+        w = *(int *)(cls + 0x2a0a64);
+        h = *(int *)(cls + 0x2a0a68);
+        x = 0;
+        y = 0;
+    } else if (aspect > screenAspect) {
+        /* wider than screen: pillarbox (bars on top/bottom) */
+        h = *(int *)(cls + 0x2a0a68);
+        barSize = ((float)h - screenAspect / aspect * (float)h) * 0.5f;
+        y = (int)floorf(barSize);
+        barSizeCeil = (int)ceilf(barSize);
+        h = h - barSizeCeil * 2;
+        w = *(int *)(cls + 0x2a0a64);
+        x = 0;
+    } else {
+        /* taller than screen: letterbox (bars on sides) */
+        w = *(int *)(cls + 0x2a0a64);
+        barSize = ((float)w - aspect / screenAspect * (float)w) * 0.5f;
+        x = (int)floorf(barSize);
+        barSizeCeil = (int)ceilf(barSize);
+        w = w - barSizeCeil * 2;
+        h = *(int *)(cls + 0x2a0a68);
+        y = 0;
+    }
+
+    /* draw clear/background */
+    re = *(char **)0x195eca8;
+    ((void (*)(int, float *, int, int))*(void **)(re + 0xc8))(1, clearColor, 0, 0);
+
+    /* draw cinematic image */
+    ((void (*)(int, int, int, int, int, int, byte *, int, int))*(void **)(re + 0x9c))(
+        x, y, w, h, cinTable[handle].CIN_WIDTH, cinTable[handle].CIN_HEIGHT,
+        buf, handle, cinTable[handle].dirty);
+    cinTable[handle].dirty = 0;
+
+    if (cinTable[handle].letterBox) {
+        /* draw letterbox bars */
+        cls = *(char **)0x195ecac;
+        barSize = (float)*(int *)(cls + 0x2a0a68) / 480.0f * 105.0f;
+        barSizeCeil = (int)ceilf(barSize);
+        xf = (float)x;
+        wf = (float)w;
+        material = *(int *)(cls + 0x2a0a58);
+
+        re = *(char **)0x195eca8;
+        ((void (*)(float, float, float, float, int, int, int, int, float *, int))*(void **)(re + 0x94))(
+            xf, (float)y, wf, (float)(int)floorf(barSize),
+            0, 0, 0, 0, clearColor, material);
+        ((void (*)(float, float, float, float, int, int, int, int, float *, int))*(void **)(re + 0x94))(
+            xf, (float)(y + h - barSizeCeil), wf, (float)barSizeCeil,
+            0, 0, 0, 0, clearColor, material);
+    }
+done:
+    ;
 }
 
 /* line 2086 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_DrawCinematic(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2086 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl CL_handle, %eax\n" /* line 2088 */
-        "cmpl $0xf, %eax\n"
-        "jbe .Lfb2fee_000b3000\n"
-        "leave\n" /* line 2092 */
-        "retl\n"
-        ".Lfb2fee_000b3000:\n"
-        "movl %eax, (%esp)\n" /* line 2090 */
-        "calll ROQ_DrawCinematicFromHandle\n"
-        "leave\n" /* line 2092 */
-        "retl\n"
-    );
+    if ((unsigned int)CL_handle <= 0xf) {
+        ROQ_DrawCinematicFromHandle(CL_handle);
+    }
 }
 
 /* line 1327 */
-static __attribute__((naked))
-inflate_blocks_statef RoQReset(void)
+static inflate_blocks_statef RoQReset(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1327 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl currentHandle, %ecx\n" /* line 1330 */
-        "testl %ecx, %ecx\n"
-        "js .Lfb300a_000b31df\n"
-        "movl $0x4f3a30, %edi\n" /* line 1333 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "movl 0x4f3a38(%eax, %ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Sys_EndStreamedFile\n"
-        "movl currentHandle, %ecx\n" /* line 1336 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "movl 0x4f3a38(%eax, %ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl currentHandle, %ecx\n" /* line 1337 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "movl $0, 8(%eax, %edi)\n"
-        "movl $1, 8(%esp)\n" /* line 1340 */
-        "leal 0x4f3a38(%eax), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "addl $cinTable, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll FS_FOpenFileRead\n"
-        "movl $0x10000, 4(%esp)\n" /* line 1342 */
-        "movl currentHandle, %ecx\n"
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "movl 0x4f3a38(%eax, %ecx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Sys_BeginStreamedFile\n"
-        "movl currentHandle, %ecx\n" /* line 1343 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "movl 0x4f3a38(%eax, %ecx), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $1, 8(%esp)\n"
-        "movl $0x10, 4(%esp)\n"
-        "movl $0x6f55c0, (%esp)\n"
-        "calll Sys_StreamedRead\n"
-        "movl currentHandle, %ebx\n" /* line 1533 */
-        "calll CL_ScaledMilliseconds\n"
-        "movl $0x4f3a40, %esi\n"
-        "leal (%ebx, %ebx, 2), %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "addl %ecx, %edx\n"
-        "movl %eax, 0x4f3a40(%edx, %ebx)\n"
-        "movl currentHandle, %edx\n" /* line 1534 */
-        "leal (%edx, %edx, 2), %ecx\n"
-        "leal (%ecx, %ecx, 8), %ecx\n"
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "addl %eax, %ecx\n"
-        "addl %edx, %ecx\n"
-        "movl 0x4f3a40(%ecx), %eax\n"
-        "movl %eax, 8(%ecx, %esi)\n"
-        "movl %eax, 4(%ecx, %esi)\n" /* line 1535 */
-        "movl $0x18, 0x4f3a50(%ecx)\n" /* line 1537 */
-        "movzbl 0x6f55c6, %ebx\n" /* line 1540 */
-        "movzbl 0x6f55c7, %eax\n"
-        "shll $8, %eax\n"
-        "movl $0x1e, %edx\n" /* line 1543 */
-        "addl %eax, %ebx\n"
-        "cmovnel %ebx, %edx\n"
-        "movl %edx, 0x4f3abc(%ecx)\n"
-        "movl $0xffffffff, 0x4f3a60(%ecx)\n" /* line 1545 */
-        "movzbl 0x6f55c8, %edx\n" /* line 1547 */
-        "movzbl 0x6f55c9, %eax\n"
-        "shll $8, %eax\n"
-        "addl %eax, %edx\n"
-        "movl %edx, 0x4f3a68(%ecx)\n"
-        "movzbl 0x6f55ca, %ebx\n" /* line 1548 */
-        "movzbl 0x6f55cc, %eax\n"
-        "shll $8, %eax\n"
-        "movzbl 0x6f55cb, %edx\n"
-        "addl %edx, %eax\n"
-        "shll $8, %eax\n"
-        "addl %eax, %ebx\n"
-        "movl %ebx, 0x4f3a58(%ecx)\n"
-        "movzbl 0x6f55ce, %edx\n" /* line 1549 */
-        "movzbl 0x6f55cf, %eax\n"
-        "shll $8, %eax\n"
-        "addl %eax, %edx\n"
-        "movl %edx, 0x4f3aa8(%ecx)\n"
-        "movl $5, 0xc(%ecx, %edi)\n" /* line 1345 */
-        ".Lfb300a_000b31df:\n"
-        "addl $0x1c, %esp\n" /* line 1346 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int h;
+    int fps;
+    unsigned int t;
+
+    h = currentHandle;
+    if (h >= 0) {
+        Sys_EndStreamedFile(cinTable[h].iFile);
+        FS_FCloseFile(cinTable[h].iFile);
+        cinTable[currentHandle].iFile = 0;
+        FS_FOpenFileRead(cinTable[currentHandle].fileName, &cinTable[currentHandle].iFile, 1);
+        Sys_BeginStreamedFile(cinTable[currentHandle].iFile, 0x10000);
+        Sys_StreamedRead(cin.file, 0x10, 1, cinTable[currentHandle].iFile);
+
+        t = CL_ScaledMilliseconds();
+        cinTable[currentHandle].startTime = t;
+        cinTable[currentHandle].lastTime = t;
+        cinTable[currentHandle].lastFrameTime = t;
+        cinTable[currentHandle].RoQPlayed = 0x18;
+
+        fps = cin.file[6] | (cin.file[7] << 8);
+        if (fps == 0) {
+            fps = 30;
+        }
+        cinTable[currentHandle].roqFPS = fps;
+        cinTable[currentHandle].numQuads = -1;
+        cinTable[currentHandle].roq_id = cin.file[8] | (cin.file[9] << 8);
+        cinTable[currentHandle].RoQFrameSize = cin.file[10] | (cin.file[11] << 8) | (cin.file[12] << 16);
+        cinTable[currentHandle].roq_flags = cin.file[14] | (cin.file[15] << 8);
+        cinTable[currentHandle].status = FMV_LOOPED;
+    }
 }
 
 /* line 130 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_CloseAllVideos(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 130 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "xorl %ebx, %ebx\n"
-        "movl $cinTable, %esi\n"
-        "xorl %edi, %edi\n"
-        /* { scope 1 */
-        ".Lfb31e8_000b31fa:\n"
-        "cmpb $0, (%esi)\n" /* line 136 */
-        "je .Lfb31e8_000b3260\n"
-        "cmpl $0xf, %ebx\n" /* line 1648 | i */
-        "ja .Lfb31e8_000b3260\n"
-        "cmpl $2, 0x13c(%esi)\n"
-        "je .Lfb31e8_000b3260\n"
-        "movl %ebx, currentHandle\n" /* line 1650 | i */
-        "leal cinTable(%edi, %ebx), %eax\n" /* line 1652 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21e9e4, (%esp)\n" /* "trFMV::stop(), closing %s
-" */
-        "calll Com_DPrintf\n"
-        "movl currentHandle, %ecx\n" /* line 1654 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%eax, %ecx), %edx\n"
-        "movl 0x4f3ac4(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfb31e8_000b3260\n"
-        "movl 0x4f3a24(%edx), %eax\n" /* line 1659 */
-        "testl %eax, %eax\n"
-        "je .Lfb31e8_000b327c\n"
-        "movl 0x195ee8c, %eax\n" /* line 1661 */
-        "movl (%eax), %eax\n"
-        "cmpl $1, (%eax)\n"
-        "je .Lfb31e8_000b327c\n"
-        ".Lfb31e8_000b3260:\n"
-        "addl $1, %ebx\n" /* line 134 | i */
-        "addl $0x1cb, %edi\n"
-        "addl $0x1cc, %esi\n"
-        "cmpl $0x10, %ebx\n" /* i */
-        "jne .Lfb31e8_000b31fa\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 141 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfb31e8_000b327c:\n"
-        "movl $2, 0x4f3a3c(%edx)\n" /* line 1666 */
-        "calll RoQShutdown\n" /* line 1667 */
-        "jmp .Lfb31e8_000b3260\n"
-    );
+    int i;
+
+    for (i = 0; i < 16; i++) {
+        if (cinTable[i].fileName[0] == '\0') {
+            continue;
+        }
+        if (cinTable[i].status == FMV_EOF) {
+            continue;
+        }
+        currentHandle = i;
+        Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
+        if (!cinTable[currentHandle].buf) {
+            continue;
+        }
+        if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)0x195ee8c) == 1) {
+            cinTable[currentHandle].status = FMV_EOF;
+            RoQShutdown();
+        }
+    }
 }
 
 /* line 2104 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_StopCinematic(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2104 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl CL_handle, %ecx\n" /* line 2106 */
-        "cmpl $0xf, %ecx\n"
-        "ja .Lfb328e_000b3334\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 1648 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "cmpl $2, 0x4f3a3c(%eax)\n"
-        "je .Lfb328e_000b331e\n"
-        "movl %ecx, currentHandle\n" /* line 1650 */
-        "addl $cinTable, %eax\n" /* line 1652 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21e9e4, (%esp)\n" /* "trFMV::stop(), closing %s
-" */
-        "calll Com_DPrintf\n"
-        "movl currentHandle, %ecx\n" /* line 1654 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%eax, %ecx), %edx\n"
-        "movl 0x4f3ac4(%edx), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lfb328e_000b331e\n"
-        "movl 0x4f3a24(%edx), %eax\n" /* line 1659 */
-        "testl %eax, %eax\n"
-        "je .Lfb328e_000b330c\n"
-        "movl 0x195ee8c, %eax\n" /* line 1661 */
-        "movl (%eax), %eax\n"
-        "cmpl $1, (%eax)\n"
-        "jne .Lfb328e_000b331e\n"
-        ".Lfb328e_000b330c:\n"
-        "movl $0x4f3a30, %eax\n" /* line 1666 */
-        "movl $2, 0xc(%edx, %eax)\n"
-        "calll RoQShutdown\n" /* line 1667 */
-        ".Lfb328e_000b331e:\n"
-        "movl $0, (%esp)\n" /* line 2109 */
-        "calll SND_StopSounds\n"
-        "movl $0xffffffff, CL_handle\n" /* line 2110 */
-        ".Lfb328e_000b3334:\n"
-        "leave\n" /* line 2112 */
-        "retl\n"
-    );
+    int h;
+
+    h = CL_handle;
+    if ((unsigned int)h <= 0xf) {
+        if (cinTable[h].status != FMV_EOF) {
+            currentHandle = h;
+            Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
+            if (cinTable[currentHandle].buf) {
+                if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)0x195ee8c) == 1) {
+                    cinTable[currentHandle].status = FMV_EOF;
+                    RoQShutdown();
+                }
+            }
+        }
+        SND_StopSounds(0);
+        CL_handle = -1;
+    }
 }
 
 /* line 1681 */
@@ -5067,196 +4576,84 @@ e_status ROQ_RunCinematicFromHandle(int handle)
 }
 
 /* line 2095 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_RunCinematic(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2095 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl CL_handle, %eax\n" /* line 2097 */
-        "cmpl $0xf, %eax\n"
-        "jbe .Lfb63d6_000b63e8\n"
-        "leave\n" /* line 2101 */
-        "retl\n"
-        ".Lfb63d6_000b63e8:\n"
-        "movl %eax, (%esp)\n" /* line 2099 */
-        "calll ROQ_RunCinematicFromHandle\n"
-        "leave\n" /* line 2101 */
-        "retl\n"
-    );
+    if ((unsigned int)CL_handle <= 0xf) {
+        ROQ_RunCinematicFromHandle(CL_handle);
+    }
 }
 
 /* line 2031 */
-__attribute__((naked))
 inflate_blocks_statef ROQ_PlayCinematic_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2031 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x24, %esp\n"
-        /* { scope 1 */
-        "movl $0x21ead8, (%esp)\n" /* line 2037 */
-        "calll Com_DPrintf\n"
-        "movl 0x195ee8c, %eax\n" /* line 2038 */
-        "movl (%eax), %ebx\n" /* arg */
-        "movl (%ebx), %eax\n" /* arg */
-        "cmpl $1, %eax\n"
-        "je .Lfb63f2_000b6559\n"
-        "cmpl $2, %eax\n" /* line 2040 */
-        "je .Lfb63f2_000b662c\n"
-        ".Lfb63f2_000b6420:\n"
-        "movl $1, (%esp)\n" /* line 2043 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* arg */
-        "movl $2, (%esp)\n" /* line 2044 */
-        "calll Cmd_Argv\n"
-        "testl %eax, %eax\n" /* line 2046 */
-        "je .Lfb63f2_000b6614\n"
-        ".Lfb63f2_000b6442:\n"
-        "movzbl (%eax), %eax\n"
-        "cmpb $0x31, %al\n"
-        "je .Lfb63f2_000b6620\n"
-        "cmpb $0x32, %al\n" /* line 2050 */
-        "jne .Lfb63f2_000b6636\n"
-        "movl $3, %edx\n"
-        "movl $3, %eax\n"
-        ".Lfb63f2_000b645f:\n"
-        "testb $0x20, %al\n" /* line 2059 */
-        "je .Lfb63f2_000b6523\n"
-        "movl %edx, 0x14(%esp)\n" /* line 2061 */
-        "movl $0x10e, 0x10(%esp)\n"
-        "movl $0x280, 0xc(%esp)\n"
-        "movl $0x69, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arg */
-        "calll ROQ_PlayCinematic\n"
-        "movl %eax, CL_handle\n"
-        ".Lfb63f2_000b6498:\n"
-        "movl CL_handle, %ecx\n" /* line 2068 */
-        "testl %ecx, %ecx\n"
-        "js .Lfb63f2_000b651d\n"
-        "movl $0, (%esp)\n" /* line 2070 */
-        "calll SND_StopSounds\n"
-        "movl $0, 4(%esp)\n" /* line 2072 */
-        "movl $0x3f800000, (%esp)\n"
-        "calll SND_FadeAllSounds\n"
-        "jmp .Lfb63f2_000b64ec\n"
-        ".Lfb63f2_000b64c4:\n"
-        "movl currentHandle, %eax\n" /* line 2074 */
-        "leal (%eax, %eax, 2), %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "addl %ecx, %edx\n"
-        "leal (%edx, %eax), %eax\n"
-        "movl 0x4f3ac4(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfb63f2_000b651d\n"
-        ".Lfb63f2_000b64e3:\n"
-        "cmpl $1, 0x4f3a3c(%eax)\n"
-        "jne .Lfb63f2_000b651d\n"
-        ".Lfb63f2_000b64ec:\n"
-        "movl CL_handle, %eax\n" /* line 2097 */
-        "cmpl $0xf, %eax\n"
-        "ja .Lfb63f2_000b64c4\n"
-        "movl %eax, (%esp)\n" /* line 2099 */
-        "calll ROQ_RunCinematicFromHandle\n"
-        "movl currentHandle, %eax\n" /* line 2074 */
-        "leal (%eax, %eax, 2), %edx\n"
-        "leal (%edx, %edx, 8), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "addl %ecx, %edx\n"
-        "leal (%edx, %eax), %eax\n"
-        "movl 0x4f3ac4(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lfb63f2_000b64e3\n"
-        /* } scope */
-        ".Lfb63f2_000b651d:\n"
-        "addl $0x24, %esp\n" /* line 2083 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfb63f2_000b6523:\n"
-        "movl %edx, 0x14(%esp)\n" /* line 2065 */
-        "movl $0x1e0, 0x10(%esp)\n"
-        "movl $0x280, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* arg */
-        "calll ROQ_PlayCinematic\n"
-        "movl %eax, CL_handle\n"
-        "jmp .Lfb63f2_000b6498\n"
-        ".Lfb63f2_000b6559:\n"
-        "movl CL_handle, %ecx\n" /* line 2106 */
-        "cmpl $0xf, %ecx\n"
-        "ja .Lfb63f2_000b6420\n"
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 1648 */
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "addl %ecx, %eax\n"
-        "cmpl $2, 0x4f3a3c(%eax)\n"
-        "je .Lfb63f2_000b65dc\n"
-        "movl %ecx, currentHandle\n" /* line 1650 */
-        "addl $cinTable, %eax\n" /* line 1652 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21e9e4, (%esp)\n" /* "trFMV::stop(), closing %s
-" */
-        "calll Com_DPrintf\n"
-        "movl currentHandle, %ecx\n" /* line 1654 */
-        "leal (%ecx, %ecx, 2), %eax\n"
-        "leal (%eax, %eax, 8), %eax\n"
-        "movl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%eax, %ecx), %edx\n"
-        "movl 0x4f3ac4(%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfb63f2_000b65dc\n"
-        "movl 0x4f3a24(%edx), %eax\n" /* line 1659 */
-        "testl %eax, %eax\n"
-        "je .Lfb63f2_000b65ca\n"
-        "cmpl $1, (%ebx)\n" /* line 1661 */
-        "jne .Lfb63f2_000b65dc\n"
-        ".Lfb63f2_000b65ca:\n"
-        "movl $0x4f3a30, %eax\n" /* line 1666 */
-        "movl $2, 0xc(%edx, %eax)\n"
-        "calll RoQShutdown\n" /* line 1667 */
-        ".Lfb63f2_000b65dc:\n"
-        "movl $0, (%esp)\n" /* line 2109 */
-        "calll SND_StopSounds\n"
-        "movl $0xffffffff, CL_handle\n" /* line 2110 */
-        "movl $1, (%esp)\n" /* line 2043 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* arg */
-        "movl $2, (%esp)\n" /* line 2044 */
-        "calll Cmd_Argv\n"
-        "testl %eax, %eax\n" /* line 2046 */
-        "jne .Lfb63f2_000b6442\n"
-        ".Lfb63f2_000b6614:\n"
-        "movl $1, %edx\n"
-        "movb $1, %al\n"
-        "jmp .Lfb63f2_000b645f\n"
-        ".Lfb63f2_000b6620:\n"
-        "movl $5, %edx\n" /* line 2050 */
-        ".Lfb63f2_000b6625:\n"
-        "movl %edx, %eax\n" /* line 2054 */
-        "jmp .Lfb63f2_000b645f\n"
-        ".Lfb63f2_000b662c:\n"
-        "calll CL_StopLogo\n" /* line 2041 */
-        "jmp .Lfb63f2_000b6420\n"
-        ".Lfb63f2_000b6636:\n"
-        "movl $1, %edx\n" /* line 2050 */
-        "cmpb $0x33, %al\n" /* line 2054 */
-        "jne .Lfb63f2_000b6625\n"
-        "movl $0x21, %edx\n" /* line 2056 */
-        "movl $0x21, %eax\n"
-        "jmp .Lfb63f2_000b645f\n"
-    );
+    int argc;
+    char *arg;
+    char *argv2;
+    int systemBits;
+    int h;
+
+    Com_DPrintf("CL_PlayCinematic_f\n");
+    argc = **(int **)*(int *)0x195ee8c;
+
+    if (argc == 1) {
+        /* inlined ROQ_StopCinematic */
+        h = CL_handle;
+        if ((unsigned int)h <= 0xf) {
+            if (cinTable[h].status != FMV_EOF) {
+                currentHandle = h;
+                Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
+                if (cinTable[currentHandle].buf) {
+                    if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)0x195ee8c) == 1) {
+                        cinTable[currentHandle].status = FMV_EOF;
+                        RoQShutdown();
+                    }
+                }
+            }
+            SND_StopSounds(0);
+            CL_handle = -1;
+        }
+    } else if (argc == 2) {
+        CL_StopLogo();
+    }
+
+    arg = Cmd_Argv(1);
+    argv2 = Cmd_Argv(2);
+    if (!argv2) {
+        systemBits = 1;
+    } else {
+        switch (argv2[0]) {
+        case '1':
+            systemBits = 5;
+            break;
+        case '2':
+            systemBits = 3;
+            break;
+        case '3':
+            systemBits = 0x21;
+            break;
+        default:
+            systemBits = 1;
+            break;
+        }
+    }
+
+    if (systemBits & 0x20) {
+        CL_handle = ROQ_PlayCinematic(arg, 0, 0x69, 0x280, 0x10e, systemBits);
+    } else {
+        CL_handle = ROQ_PlayCinematic(arg, 0, 0, 0x280, 0x1e0, systemBits);
+    }
+
+    if (CL_handle >= 0) {
+        SND_StopSounds(0);
+        SND_FadeAllSounds(1.0f, 0);
+        do {
+            if ((unsigned int)CL_handle <= 0xf) {
+                ROQ_RunCinematicFromHandle(CL_handle);
+            }
+            if (cinTable[currentHandle].buf) {
+                break;
+            }
+        } while (cinTable[currentHandle].status == FMV_PLAY);
+    }
 }
 
