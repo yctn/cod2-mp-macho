@@ -18,16 +18,32 @@ static dvar_t dvarPool[1280]; /* dvarPool */
 static dvar_t * dvarHashTable[256]; /* dvarHashTable */
 static float dvarVectorPool[12]; /* dvarVectorPool */
 static int dvarVectorIndex; /* dvarVectorIndex */
+/* Dvar type enumeration (from switch analysis, 0-8) */
+enum {
+    DVAR_TYPE_BOOL = 0,
+    DVAR_TYPE_FLOAT = 1,
+    DVAR_TYPE_VEC2 = 2,
+    DVAR_TYPE_VEC3 = 3,
+    DVAR_TYPE_VEC4 = 4,
+    DVAR_TYPE_INT = 5,
+    DVAR_TYPE_ENUM = 6,
+    DVAR_TYPE_STRING = 7,
+    DVAR_TYPE_COLOR = 8,
+    DVAR_TYPE_COUNT = 9
+};
 static const char dvarDigitStrings[10][2]; /* dvarDigitStrings */
 static const char * dvarOnOffStrings[2]; /* dvarOnOffStrings */
 static Bool isDvarSystemActive; /* isDvarSystemActive */
 static Bool isLoadingAutoExecGlobalFlag; /* isLoadingAutoExecGlobalFlag */
 
+extern char *va(const char *format, ...);
+
 void Dvar_SetInAutoExec(int inAutoExec);
 Bool Dvar_IsSystemActive(void);
 Bool Dvar_IsValidName(const char *dvarName);
 const char * Dvar_EnumToString(const dvar_t *dvar);
-static const char * Dvar_ValueToString(void);
+const char * Dvar_ValueToString(void);
+static const char *Dvar_ValueToString_impl(const dvar_t *dvar, DvarValue value);
 const char * Dvar_DisplayableValue(const dvar_t *dvar);
 const char * Dvar_DisplayableResetValue(const dvar_t *dvar);
 const char * Dvar_DisplayableLatchedValue(const dvar_t *dvar);
@@ -189,172 +205,72 @@ const char * Dvar_EnumToString(const dvar_t *dvar)
     return ((const char **)*(void **)((byte *)dvar + 0x18))[*(int *)((byte *)dvar + 8)];
 }
 
-/* line 290 */
-static __attribute__((naked))
+/* C implementation of Dvar_ValueToString
+ * Original used register CC: dvar in %eax, value (raw bits) in %edx.
+ * Converted to standard args. Naked wrapper below preserves register CC ABI
+ * for other naked callers within this file. */
+static const char *Dvar_ValueToString_impl(const dvar_t *dvar, DvarValue value)
+{
+    switch (dvar->type) {
+    case DVAR_TYPE_BOOL:
+        return value.enabled ? "1" : "0";
+    case DVAR_TYPE_FLOAT:
+        return va("%g", value.value);
+    case DVAR_TYPE_VEC2:
+        return va("%g %g", value.vector[0], value.vector[1]);
+    case DVAR_TYPE_VEC3:
+        return va("%g %g %g", value.vector[0], value.vector[1], value.vector[2]);
+    case DVAR_TYPE_VEC4:
+        return va("%g %g %g %g", value.vector[0], value.vector[1], value.vector[2], value.vector[3]);
+    case DVAR_TYPE_INT:
+        return va("%i", value.integer);
+    case DVAR_TYPE_ENUM:
+        if (dvar->domain.enumeration.stringCount) {
+            return dvar->domain.enumeration.strings[value.integer];
+        }
+        return "";
+    case DVAR_TYPE_STRING:
+        return va("%s", value.string);
+    case DVAR_TYPE_COLOR:
+        return va("%g %g %g %g",
+            (float)value.color[0] * (1.0f / 255.0f),
+            (float)value.color[1] * (1.0f / 255.0f),
+            (float)value.color[2] * (1.0f / 255.0f),
+            (float)value.color[3] * (1.0f / 255.0f));
+    default:
+        return "";
+    }
+}
+
+/* Register CC wrapper: dvar in %eax, value in %edx, returns in %eax */
+__attribute__((naked))
 const char * Dvar_ValueToString(void)
 {
     __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 290 */
-        "movl %esp, %ebp\n"
-        "subl $0x48, %esp\n"
-        "movzbl 6(%eax), %ecx\n" /* line 292 | dvar */
-        "cmpl $8, %ecx\n"
-        "ja .Lf5140e_0005142f\n"
-        "jmpl *dvarDigitStrings+20(, %ecx, 4)\n"
-        "movl 0x14(%eax), %ecx\n" /* line 317 | dvar */
-        "testl %ecx, %ecx\n"
-        "jne .Lf5140e_000515a6\n"
-        ".Lf5140e_0005142f:\n"
-        "movl $str_002157b8, %ecx\n"
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "movl $str_002162ac, %ecx\n" /* line 295 */
-        "testb %dl, %dl\n" /* value */
-        "movl $str_0021952c, %eax\n" /* dvar */
-        "cmovel %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "movl %edx, %eax\n" /* line 313 | value, dvar */
-        "shrl $0x18, %eax\n" /* dvar */
-        "cvtsi2ssl %eax, %xmm0\n" /* dvar */
-        "movss lit4_002ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0x1c(%esp)\n"
-        "movl %edx, %eax\n" /* value, dvar */
-        "shrl $0x10, %eax\n" /* dvar */
-        "movzbl %al, %eax\n" /* dvar */
-        "cvtsi2ssl %eax, %xmm0\n" /* dvar */
-        "mulss %xmm1, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0x14(%esp)\n"
-        "movzbl %dh, %eax\n" /* value, dvar */
-        "cvtsi2ssl %eax, %xmm0\n" /* dvar */
-        "mulss %xmm1, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 0xc(%esp)\n"
-        "movzbl %dl, %eax\n" /* value, dvar */
-        "cvtsi2ssl %eax, %xmm0\n" /* dvar */
-        "mulss %xmm1, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_00219544, (%esp)\n" /* "%g %g %g %g" */
-        "calll va\n"
-        "movl %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "movl %edx, 4(%esp)\n" /* line 323 | value */
-        "movl $str_00216058, (%esp)\n" /* "%s" */
-        "calll va\n"
-        "movl %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "movl %edx, 4(%esp)\n" /* line 298 | value */
-        "movl $str_0021785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "cvtss2sd 0xc(%edx), %xmm0\n" /* line 310 | value */
-        "movsd %xmm0, 0x1c(%esp)\n"
-        "cvtss2sd 8(%edx), %xmm0\n" /* value */
-        "movsd %xmm0, 0x14(%esp)\n"
-        "cvtss2sd 4(%edx), %xmm0\n" /* value */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "cvtss2sd (%edx), %xmm0\n" /* value */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_00219544, (%esp)\n" /* "%g %g %g %g" */
-        "calll va\n"
-        "movl %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "cvtss2sd 8(%edx), %xmm0\n" /* line 307 | value */
-        "movsd %xmm0, 0x14(%esp)\n"
-        "cvtss2sd 4(%edx), %xmm0\n" /* value */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "cvtss2sd (%edx), %xmm0\n" /* value */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_00219538, (%esp)\n" /* "%g %g %g" */
-        "calll va\n"
-        "movl %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "cvtss2sd 4(%edx), %xmm0\n" /* line 304 | value */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "cvtss2sd (%edx), %xmm0\n" /* value */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_00219530, (%esp)\n" /* "%g %g" */
-        "calll va\n"
-        "movl %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        "movl %edx, -0xc(%ebp)\n" /* line 301 | value */
-        "movss -0xc(%ebp), %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $str_00217c20, (%esp)\n" /* "%g" */
-        "calll va\n"
-        "movl %eax, %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
-        "retl\n"
-        ".Lf5140e_000515a6:\n"
-        "movl 0x18(%eax), %eax\n" /* line 319 | dvar */
-        "movl (%eax, %edx, 4), %ecx\n" /* dvar */
-        "movl %ecx, %eax\n" /* line 330 | dvar */
-        "leave\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "calll Dvar_ValueToString_impl\n"
+        "addl $8, %esp\n"
         "retl\n"
     );
 }
 
 /* line 496 */
-__attribute__((naked))
 const char * Dvar_DisplayableValue(const dvar_t *dvar)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 496 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl 8(%eax), %edx\n" /* line 506 */
-        "popl %ebp\n" /* line 513 */
-        "jmp Dvar_ValueToString\n" /* line 506 */
-    );
+    return Dvar_ValueToString_impl(dvar, dvar->current);
 }
 
 /* line 516 */
-__attribute__((naked))
 const char * Dvar_DisplayableResetValue(const dvar_t *dvar)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 516 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl 0x10(%eax), %edx\n" /* line 526 */
-        "popl %ebp\n" /* line 533 */
-        "jmp Dvar_ValueToString\n" /* line 526 */
-    );
+    return Dvar_ValueToString_impl(dvar, dvar->reset);
 }
 
 /* line 536 */
-__attribute__((naked))
 const char * Dvar_DisplayableLatchedValue(const dvar_t *dvar)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 536 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl 0xc(%eax), %edx\n" /* line 546 */
-        "popl %ebp\n" /* line 553 */
-        "jmp Dvar_ValueToString\n" /* line 546 */
-    );
+    return Dvar_ValueToString_impl(dvar, dvar->latched);
 }
 
 /* line 838 */
@@ -3837,7 +3753,25 @@ void Dvar_SetVariant(DvarValue value, DvarSetSource source)
         "movzbl -0x41c(%ebp), %eax\n" /* line 648 */
         "cmpl $8, %eax\n"
         "ja .Lf538a6_00053940\n"
-        "jmpl *dvarDigitStrings+220(, %eax, 4)\n"
+        /* Replaced jump table with explicit comparisons */
+        "cmpl $0, %eax\n"
+        "je .Lf538a6_00053a0e\n" /* bool: always valid */
+        "cmpl $1, %eax\n"
+        "je .Lf538a6_dv_float\n" /* float */
+        "cmpl $2, %eax\n"
+        "je .Lf538a6_dv_vec2\n" /* vec2 */
+        "cmpl $3, %eax\n"
+        "je .Lf538a6_dv_vec3\n" /* vec3 */
+        "cmpl $4, %eax\n"
+        "je .Lf538a6_dv_vec4\n" /* vec4 */
+        "cmpl $5, %eax\n"
+        "je .Lf538a6_dv_int\n" /* int */
+        "cmpl $6, %eax\n"
+        "je .Lf538a6_dv_enum\n" /* enum */
+        "cmpl $8, %eax\n"
+        "je .Lf538a6_00053a0e\n" /* color: always valid */
+        "jmp .Lf538a6_00053a0e\n" /* string/default: always valid */
+        ".Lf538a6_dv_float:\n"
         "movss -0x430(%ebp), %xmm0\n" /* line 663 */
         "movl %ecx, -0x42c(%ebp)\n"
         "movss -0x42c(%ebp), %xmm1\n"
@@ -3882,6 +3816,7 @@ void Dvar_SetVariant(DvarValue value, DvarSetSource source)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf538a6_dv_vec2:\n" /* vec2 validation */
         "movl %ebx, -0x42c(%ebp)\n" /* line 673 */
         "movss -0x42c(%ebp), %xmm0\n"
         "movaps %xmm0, %xmm2\n" /* max */
@@ -3968,6 +3903,7 @@ void Dvar_SetVariant(DvarValue value, DvarSetSource source)
 " */
         "calll Com_Printf\n"
         "jmp .Lf538a6_000539a9\n"
+        ".Lf538a6_dv_enum:\n" /* enum validation */
         "movl -0x430(%ebp), %eax\n" /* line 670 */
         "testl %eax, %eax\n"
         "js .Lf538a6_00053be8\n"
@@ -3976,6 +3912,7 @@ void Dvar_SetVariant(DvarValue value, DvarSetSource source)
         ".Lf538a6_00053afc:\n"
         "movl $1, %eax\n"
         "jmp .Lf538a6_00053a06\n"
+        ".Lf538a6_dv_vec3:\n" /* vec3 validation */
         "movl %ebx, -0x42c(%ebp)\n" /* line 676 */
         "movss -0x42c(%ebp), %xmm0\n"
         "movaps %xmm0, %xmm2\n" /* max */
@@ -3996,11 +3933,13 @@ void Dvar_SetVariant(DvarValue value, DvarSetSource source)
         "jne .Lf538a6_00053b2d\n"
         "jmp .Lf538a6_00053a01\n"
         /* } scope */
+        ".Lf538a6_dv_int:\n" /* int validation */
         "cmpl %ecx, -0x430(%ebp)\n" /* line 656 */
         "jl .Lf538a6_00053940\n"
         "cmpl %ebx, -0x430(%ebp)\n" /* line 658 */
         "jg .Lf538a6_00053940\n"
         "jmp .Lf538a6_00053a0e\n"
+        ".Lf538a6_dv_vec4:\n" /* vec4 validation */
         "movl %ebx, -0x42c(%ebp)\n" /* line 679 */
         "movss -0x42c(%ebp), %xmm0\n"
         "movaps %xmm0, %xmm2\n" /* max */
