@@ -16,6 +16,9 @@ static int materialGlobals; /* 0xc85b80 */
 static const stream_source_info_t s_streamSourceInfo[4][7]; /* 0x2f25e0 */
 static const stream_dest_info_t s_streamDestInfo[12]; /* 0x2f2634 */
 
+extern int R_HashAssetName(const char *name);
+extern int stricmp(const char *s1, const char *s2);
+
 void * Material_Alloc(int size);
 const float * Material_RegisterLiteral(const vec_t *literal);
 static Bool Material_Compare(const Material *mtl0, const Material *mtl1);
@@ -24,13 +27,13 @@ void Material_SetTechniqueSet(const char *name, MaterialTechniqueSet *techniqueS
 void Material_SetStateMap(const char *name, MaterialStateMap *stateMap);
 void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion, MaterialShader *mtlShader);
 Bool Material_IsDefault(const Material *material);
-Bool R_IsMaterialRefractive(_ValueType handle);
+Bool R_IsMaterialRefractive(MaterialHandle handle);
 void Material_FinishLoading(void);
 void Material_ReleaseAll(void);
 void Material_UpdatePicmipAll(void);
 int Material_LoadFile(const char *filename, fileHandle_t *file);
 const char * R_GetMaterialName(_ValueType handle);
-int R_GetMaterialSubimageCount(_ValueType handle);
+int R_GetMaterialSubimageCount(MaterialHandle handle);
 void Material_Sort(void);
 const char * Material_RegisterString(const char *string);
 MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *routingData, int streamCount, Bool *existing);
@@ -52,17 +55,9 @@ void ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_(void); /* void std_
 void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(void); /* void std___introsort_loop<Material**, int, unsigned char (*)(Material const*, Material const*)> */
 
 /* line 218 */
-__attribute__((naked))
 void * Material_Alloc(int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 218 */
-        "movl %esp, %ebp\n"
-        "movl 0x195eee0, %eax\n" /* line 221 */
-        "movl 0xc(%eax), %ecx\n"
-        "popl %ebp\n" /* line 225 */
-        "jmpl *%ecx\n" /* line 221 */
-    );
+    return ((void *(*)(int))(*(void **)(*(int *)0x195eee0 + 0xc)))(size);
 }
 
 /* line 314 */
@@ -165,38 +160,15 @@ const float * Material_RegisterLiteral(const vec_t *literal)
 }
 
 /* line 529 */
-static __attribute__((naked))
-Bool Material_Compare(const Material *mtl0, const Material *mtl1)
+static Bool Material_Compare(const Material *mtl0, const Material *mtl1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 529 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* mtl0 */
-        "movl 0xc(%ebp), %ecx\n" /* mtl1 */
-        /* { scope 1 */
-        "movzbl 0xd(%ebx), %edx\n" /* line 536 | mtl0 */
-        "movzbl 0xd(%ecx), %eax\n"
-        "subl %eax, %edx\n" /* line 537 */
-        "movl %edx, %eax\n"
-        "jne .Lfd31d2_000d31f2\n"
-        "movl 0x38(%ebx), %eax\n" /* line 540 | mtl0 */
-        "subl 0x38(%ecx), %eax\n" /* line 541 */
-        "je .Lfd31d2_000d31f8\n"
-        ".Lfd31d2_000d31f2:\n"
-        "shrl $0x1f, %eax\n" /* line 542 */
-        /* } scope */
-        "popl %ebx\n" /* line 545 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd31d2_000d31f8:\n"
-        "xorl %eax, %eax\n" /* line 541 */
-        /* } scope */
-        "popl %ebx\n" /* line 545 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int diff = (int)mtl0->info.sortKey - (int)mtl1->info.sortKey;
+    if (diff != 0)
+        return (unsigned int)diff >> 31;
+    diff = (int)((unsigned int)mtl0->techniqueSet - (unsigned int)mtl1->techniqueSet);
+    if (diff == 0)
+        return 0;
+    return (unsigned int)diff >> 31;
 }
 
 /* line 581 */
@@ -419,65 +391,30 @@ void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, i
 }
 
 /* line 981 */
-__attribute__((naked))
 Bool Material_IsDefault(const Material *material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 981 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* material */
-        "movl 0x195eebc, %eax\n" /* line 986 */
-        "movl 0x102c(%eax), %edx\n"
-        "movl 0x3c(%ecx), %eax\n"
-        "cmpl 0x3c(%edx), %eax\n"
-        "je .Lfd3400_000d341d\n"
-        ".Lfd3400_000d3419:\n"
-        "xorl %eax, %eax\n" /* line 990 */
-        "popl %ebp\n" /* line 993 */
-        "retl\n"
-        ".Lfd3400_000d341d:\n"
-        "movl 0x40(%ecx), %eax\n" /* line 988 */
-        "cmpl 0x40(%edx), %eax\n"
-        "jne .Lfd3400_000d3419\n"
-        "movl 0x38(%ecx), %eax\n" /* line 990 */
-        "cmpl 0x38(%edx), %eax\n"
-        "jne .Lfd3400_000d3419\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n" /* line 993 */
-        "retl\n"
-    );
+    const Material *defaultMtl = *(const Material **)(*(int *)0x195eebc + 0x102c);
+    if (material->textures != defaultMtl->textures)
+        return 0;
+    if (material->constants != defaultMtl->constants)
+        return 0;
+    if (material->techniqueSet != defaultMtl->techniqueSet)
+        return 0;
+    return 1;
 }
 
 /* line 1278 */
-__attribute__((naked))
-Bool R_IsMaterialRefractive(_ValueType handle)
+Bool R_IsMaterialRefractive(MaterialHandle handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1278 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 0x195eec0, %eax\n" /* line 1290 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lfd3436_000d3460\n"
-        "movl 8(%ebp), %edx\n" /* line 1294 | handle */
-        "movl 0x38(%edx), %eax\n"
-        "movl 0x58(%eax), %eax\n"
-        "testl %eax, %eax\n" /* line 1295 */
-        "je .Lfd3436_000d3460\n"
-        "testb $1, 4(%eax)\n"
-        "je .Lfd3436_000d3460\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 1299 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd3436_000d3460:\n"
-        "xorl %eax, %eax\n" /* line 1295 */
-        /* } scope */
-        "popl %ebp\n" /* line 1299 */
-        "retl\n"
-    );
+    if (*(int *)((byte *)(*(void **)(*(int *)0x195eec0)) + 8) == 2)
+        return 0;
+    MaterialTechniqueSet *ts = handle->techniqueSet;
+    MaterialTechnique *tech = ts->techniques[21];
+    if (!tech)
+        return 0;
+    if (!(tech->flags & 1))
+        return 0;
+    return 1;
 }
 
 /* line 1366 */
@@ -646,10 +583,9 @@ const char * R_GetMaterialName(_ValueType handle)
 }
 
 /* line 1268 */
-int R_GetMaterialSubimageCount(_ValueType handle)
+int R_GetMaterialSubimageCount(MaterialHandle handle)
 {
-    byte *p = (byte *)(*(int *)&handle);
-    return (unsigned char)p[0xf] * (unsigned char)p[0xe];
+    return handle->info.textureAtlasColumnCount * handle->info.textureAtlasRowCount;
 }
 
 /* line 876 */
@@ -984,222 +920,59 @@ MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *rout
 }
 
 /* line 699 */
-__attribute__((naked))
 MaterialStateMap * Material_FindStateMap(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 699 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* name */
-        /* { scope 1 */
-        "movl %edi, (%esp)\n" /* line 684 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n"
-        "andl $0x1f, %ebx\n"
-        "movl 0xc87f94(, %ebx, 4), %esi\n" /* line 685 */
-        "testl %esi, %esi\n"
-        "je .Lfd38ce_000d3915\n"
-        ".Lfd38ce_000d38f2:\n"
-        "movl %edi, 4(%esp)\n" /* line 687 */
-        "movl (%esi), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd38ce_000d391f\n"
-        "addl $1, %ebx\n" /* line 692 */
-        "andl $0x1f, %ebx\n"
-        "movl 0xc87f94(, %ebx, 4), %esi\n" /* line 685 */
-        "testl %esi, %esi\n"
-        "jne .Lfd38ce_000d38f2\n"
-        ".Lfd38ce_000d3915:\n"
-        "xorl %eax, %eax\n" /* line 703 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 706 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd38ce_000d391f:\n"
-        "movl %esi, %eax\n" /* line 705 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 706 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int hash = R_HashAssetName(name) & 0x1f;
+    MaterialStateMap *entry = ((MaterialStateMap **)0xc87f94)[hash];
+    while (entry) {
+        if (strcmp(entry->name, name) == 0)
+            return entry;
+        hash = (hash + 1) & 0x1f;
+        entry = ((MaterialStateMap **)0xc87f94)[hash];
+    }
+    return NULL;
 }
 
 /* line 636 */
-__attribute__((naked))
 MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 636 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* name */
-        /* { scope 1 */
-        "movl %esi, (%esp)\n" /* line 621 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n"
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc85e88(, %ebx, 4), %eax\n" /* line 622 */
-        "testl %eax, %eax\n"
-        "je .Lfd392a_000d3976\n"
-        ".Lfd392a_000d3950:\n"
-        "movl %esi, 4(%esp)\n" /* line 624 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd392a_000d397f\n"
-        "addl $1, %ebx\n" /* line 629 */
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc85e88(, %ebx, 4), %eax\n" /* line 622 */
-        "testl %eax, %eax\n"
-        "jne .Lfd392a_000d3950\n"
-        ".Lfd392a_000d3976:\n"
-        "xorl %eax, %eax\n" /* line 641 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 644 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd392a_000d397f:\n"
-        "movl 0xc85e88(, %ebx, 4), %eax\n" /* line 643 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 644 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int hash = R_HashAssetName(name) & 0x3ff;
+    MaterialTechniqueSet *entry = ((MaterialTechniqueSet **)0xc85e88)[hash];
+    while (entry) {
+        if (stricmp(entry->name, name) == 0)
+            return entry;
+        hash = (hash + 1) & 0x3ff;
+        entry = ((MaterialTechniqueSet **)0xc85e88)[hash];
+    }
+    return NULL;
 }
 
 /* line 569 */
-__attribute__((naked))
 MaterialTechnique * Material_FindTechnique(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 569 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* name */
-        /* { scope 1 */
-        "movl %esi, (%esp)\n" /* line 554 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n"
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc86e8c(, %ebx, 4), %eax\n" /* line 555 */
-        "testl %eax, %eax\n"
-        "je .Lfd398e_000d39da\n"
-        ".Lfd398e_000d39b4:\n"
-        "movl %esi, 4(%esp)\n" /* line 557 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd398e_000d39e3\n"
-        "addl $1, %ebx\n" /* line 562 */
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc86e8c(, %ebx, 4), %eax\n" /* line 555 */
-        "testl %eax, %eax\n"
-        "jne .Lfd398e_000d39b4\n"
-        ".Lfd398e_000d39da:\n"
-        "xorl %eax, %eax\n" /* line 575 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 578 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd398e_000d39e3:\n"
-        "movl 0xc86e8c(, %ebx, 4), %eax\n" /* line 577 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 578 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int hash = R_HashAssetName(name) & 0x3ff;
+    MaterialTechnique *entry = ((MaterialTechnique **)0xc86e8c)[hash];
+    while (entry) {
+        if (stricmp(entry->name, name) == 0)
+            return entry;
+        hash = (hash + 1) & 0x3ff;
+        entry = ((MaterialTechnique **)0xc86e8c)[hash];
+    }
+    return NULL;
 }
 
 /* line 780 */
-__attribute__((naked))
 MaterialShader * Material_FindShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 780 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* shaderType */
-        /* { scope 1 */
-        /* { scope 2 */
-        "movl 8(%ebp), %eax\n" /* line 748 | shaderName */
-        "movl %eax, (%esp)\n"
-        "calll R_HashAssetName\n"
-        /* } scope */
-        "leal (%edi, %edi, 2), %edx\n" /* line 762 */
-        "shll $5, %edx\n"
-        "addl %edi, %edx\n"
-        "addl %edx, %eax\n"
-        "addl 0x10(%ebp), %eax\n" /* shaderVersion */
-        "movzbl %al, %esi\n"
-        "movl 0xc8811c(, %esi, 4), %ebx\n" /* line 763 */
-        "testl %ebx, %ebx\n"
-        "jne .Lfd39f2_000d3a37\n"
-        "jmp .Lfd39f2_000d3a61\n"
-        ".Lfd39f2_000d3a26:\n"
-        "leal 1(%esi), %eax\n" /* line 773 */
-        "movzbl %al, %esi\n"
-        "movl 0xc8811c(, %esi, 4), %ebx\n" /* line 763 */
-        "testl %ebx, %ebx\n"
-        "je .Lfd39f2_000d3a61\n"
-        ".Lfd39f2_000d3a37:\n"
-        "movzbl 0xa(%ebx), %eax\n" /* line 766 */
-        "cmpl %eax, %edi\n"
-        "jne .Lfd39f2_000d3a26\n"
-        "movzbl 0xb(%ebx), %eax\n"
-        "cmpl %eax, 0x10(%ebp)\n" /* shaderVersion */
-        "jne .Lfd39f2_000d3a26\n"
-        "movl 8(%ebp), %eax\n" /* shaderName */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd39f2_000d3a26\n"
-        "movl %ebx, %eax\n" /* line 789 */
-        "jmp .Lfd39f2_000d3a63\n"
-        ".Lfd39f2_000d3a61:\n"
-        "xorl %eax, %eax\n" /* line 786 */
-        /* } scope */
-        ".Lfd39f2_000d3a63:\n"
-        "addl $0x1c, %esp\n" /* line 790 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int hash = (R_HashAssetName(shaderName) + shaderType * 97 + shaderVersion) & 0xff;
+    MaterialShader *entry = ((MaterialShader **)0xc8811c)[hash];
+    while (entry) {
+        if (entry->shaderType == shaderType && entry->shaderVersion == shaderVersion && strcmp(entry->name, shaderName) == 0)
+            return entry;
+        hash = (hash + 1) & 0xff;
+        entry = ((MaterialShader **)0xc8811c)[hash];
+    }
+    return NULL;
 }
 
 /* line 1437 */

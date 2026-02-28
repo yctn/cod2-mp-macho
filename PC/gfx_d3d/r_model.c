@@ -28,6 +28,7 @@ extern void DB_EnumXAssets(int type, void (*func)(XAssetHeader, void *), void *d
 extern int XModelBad(union XAssetHeader header);
 extern void XModelUnoptimize(union XAssetHeader header);
 extern void XModelOptimize(union XAssetHeader header);
+extern void DObjSetModel(struct DObj_s *obj, void *model);
 static const int boxVerts[24][3]; /* 0x2f24c0 */
 
 static void * Hunk_AllocXModelPrecache(int size);
@@ -172,42 +173,16 @@ void R_UnlockSkinnedCache(void)
 }
 
 /* line 2246 */
-__attribute__((naked))
 struct DObj_s * R_GetGfxEntityDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2246 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %edx\n" /* sceneEnt */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 2252 | ent */
-        "movl (%eax), %ebx\n" /* obj */
-        "testl %ebx, %ebx\n" /* obj */
-        "jne .Lfd016c_000d018a\n"
-        "movl 4(%edx), %ebx\n" /* line 2253 | obj */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 2261 | obj */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd016c_000d018a:\n"
-        "movl 0x195eec8, %eax\n" /* line 2258 */
-        "movl 0x3110(%eax), %ebx\n" /* obj */
-        "movl 4(%edx), %eax\n" /* line 2259 */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* obj */
-        "calll DObjSetModel\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 2261 | obj */
-        "addl $0x14, %esp\n"
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    struct DObj_s *obj = *(struct DObj_s **)ent;
+    if (!obj) {
+        obj = *(struct DObj_s **)((byte *)sceneEnt + 4);
+    } else {
+        obj = *(struct DObj_s **)(*(int *)0x195eec8 + 0x3110);
+        DObjSetModel(obj, *(void **)((byte *)sceneEnt + 4));
+    }
+    return obj;
 }
 
 /* line 2877 */
@@ -482,48 +457,19 @@ void R_GetRigidTransform(const DObjSkelMat *bone, const vec_t *origin, vec3_t *a
 }
 
 /* line 230 */
-__attribute__((naked))
 void R_ModelBounds(GfxBrushModel *bmodel, vec_t *mins, vec_t *maxs)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 230 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* bmodel */
-        "movl 0xc(%ebp), %edx\n" /* mins */
-        "movl 0x10(%ebp), %ebx\n" /* maxs */
-        "testl %ecx, %ecx\n" /* line 232 */
-        "je .Lfd05b6_000d05ee\n"
-        "movl (%ecx), %eax\n" /* line 199 */
-        "movl %eax, (%edx)\n"
-        "movl 4(%ecx), %eax\n" /* line 200 */
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ecx), %eax\n" /* line 201 */
-        "movl %eax, 8(%edx)\n"
-        "leal 0xc(%ecx), %edx\n"
-        /* { scope 1 */
-        "movl 0xc(%ecx), %eax\n" /* line 199 */
-        "movl %eax, (%ebx)\n"
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ebx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 241 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd05b6_000d05ee:\n"
-        "xorl %eax, %eax\n" /* line 183 */
-        "movl %eax, (%edx)\n"
-        "movl %eax, 4(%edx)\n" /* line 184 */
-        "movl %eax, 8(%edx)\n" /* line 185 */
-        "movl %eax, (%ebx)\n" /* line 183 */
-        "movl %eax, 4(%ebx)\n" /* line 184 */
-        "movl %eax, 8(%ebx)\n" /* line 185 */
-        "popl %ebx\n" /* line 241 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (bmodel) {
+        mins[0] = bmodel->bounds[0][0];
+        mins[1] = bmodel->bounds[0][1];
+        mins[2] = bmodel->bounds[0][2];
+        maxs[0] = bmodel->bounds[1][0];
+        maxs[1] = bmodel->bounds[1][1];
+        maxs[2] = bmodel->bounds[1][2];
+    } else {
+        mins[0] = mins[1] = mins[2] = 0;
+        maxs[0] = maxs[1] = maxs[2] = 0;
+    }
 }
 
 /* line 556 */
@@ -593,29 +539,11 @@ void R_ShutdownModels(void)
 }
 
 /* line 211 */
-__attribute__((naked))
 void R_FinishLoadingModels(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 211 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195f0e8, %eax\n" /* line 2951 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd06c2_000d06d8\n"
-        "leave\n" /* line 214 */
-        "retl\n"
-        ".Lfd06c2_000d06d8:\n"
-        "movl $1, 0xc(%esp)\n" /* line 2952 */
-        "movl $0, 8(%esp)\n"
-        "movl $R_OptimizeModel, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll DB_EnumXAssets\n"
-        "leave\n" /* line 214 */
-        "retl\n"
-    );
+    if (*(int *)((byte *)(*(void **)(*(int *)0x195f0e8)) + 8) == 0)
+        return;
+    DB_EnumXAssets(1, R_OptimizeModel, 0, 1);
 }
 
 /* line 2838 */

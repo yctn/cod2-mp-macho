@@ -216,81 +216,28 @@ void R_SkinGfxEntity(GfxEntity *ent)
 }
 
 /* line 608 */
-__attribute__((naked))
 void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *material, int *lmapIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 608 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* sortValue */
-        "movl 0x14(%ebp), %ebx\n" /* lmapIndex */
-        /* { scope 1 */
-        "testl %ecx, %ecx\n" /* line 79 */
-        "js .Lfc5682_000c56da\n"
-        "movl %ecx, %edx\n" /* line 82 */
-        "shrl $4, %edx\n"
-        "andl $0xfff, %edx\n"
-        "cmpl $0x800, %edx\n" /* line 84 */
-        "movl $0x7fe, %eax\n"
-        "cmovgel %eax, %edx\n"
-        /* } scope */
-        "movl 0xc(%ebp), %eax\n" /* line 610 | entIndex */
-        "movl %edx, (%eax)\n"
-        /* { scope 1 */
-        "testl %ecx, %ecx\n" /* line 98 */
-        "js .Lfc5682_000c56fc\n"
-        ".Lfc5682_000c56b2:\n"
-        "movl %ecx, %edx\n" /* line 101 */
-        "shrl $0x15, %edx\n"
-        "andl $0x3ff, %edx\n"
-        /* } scope */
-        "movl 0x195eebc, %eax\n" /* line 611 */
-        "movl 8(%eax, %edx, 4), %edx\n"
-        "movl 0x10(%ebp), %eax\n" /* material */
-        "movl %edx, (%eax)\n"
-        "testl %ecx, %ecx\n" /* line 613 */
-        "js .Lfc5682_000c5719\n"
-        ".Lfc5682_000c56cf:\n"
-        "shrl $0x10, %ecx\n" /* line 616 */
-        "andl $0x1f, %ecx\n"
-        "movl %ecx, (%ebx)\n" /* lmapIndex */
-        "popl %ebx\n" /* line 617 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc5682_000c56da:\n"
-        "movl %ecx, %edx\n" /* line 80 */
-        "shrl $0x13, %edx\n"
-        "andl $0xfff, %edx\n"
-        "cmpl $0x800, %edx\n" /* line 84 */
-        "movl $0x7fe, %eax\n"
-        "cmovgel %eax, %edx\n"
-        /* } scope */
-        "movl 0xc(%ebp), %eax\n" /* line 610 | entIndex */
-        "movl %edx, (%eax)\n"
-        /* { scope 1 */
-        "testl %ecx, %ecx\n" /* line 98 */
-        "jns .Lfc5682_000c56b2\n"
-        ".Lfc5682_000c56fc:\n"
-        "movl %ecx, %edx\n" /* line 99 */
-        "shrl $9, %edx\n"
-        "andl $0x3ff, %edx\n"
-        /* } scope */
-        "movl 0x195eebc, %eax\n" /* line 611 */
-        "movl 8(%eax, %edx, 4), %edx\n"
-        "movl 0x10(%ebp), %eax\n" /* material */
-        "movl %edx, (%eax)\n"
-        "testl %ecx, %ecx\n" /* line 613 */
-        "jns .Lfc5682_000c56cf\n"
-        ".Lfc5682_000c5719:\n"
-        "shrl $4, %ecx\n" /* line 614 */
-        "andl $0x1f, %ecx\n"
-        "movl %ecx, (%ebx)\n" /* lmapIndex */
-        "popl %ebx\n" /* line 617 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int ent, matIndex;
+    int *base = *(int **)0x195eebc;
+
+    if ((int)sortValue >= 0) {
+        ent = (sortValue >> 4) & 0xfff;
+        if (ent >= 0x800)
+            ent = 0x7fe;
+        *entIndex = ent;
+        matIndex = (sortValue >> 21) & 0x3ff;
+        *material = (const Material *)*(void **)((byte *)base + 8 + matIndex * 4);
+        *lmapIndex = (sortValue >> 16) & 0x1f;
+    } else {
+        ent = (sortValue >> 19) & 0xfff;
+        if (ent >= 0x800)
+            ent = 0x7fe;
+        *entIndex = ent;
+        matIndex = (sortValue >> 9) & 0x3ff;
+        *material = (const Material *)*(void **)((byte *)base + 8 + matIndex * 4);
+        *lmapIndex = (sortValue >> 4) & 0x1f;
+    }
 }
 
 /* line 1374 */

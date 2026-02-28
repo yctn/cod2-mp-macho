@@ -27,21 +27,10 @@ GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *static
 void R_FlushStaticModelCache(void);
 
 /* line 781 */
-__attribute__((naked))
 void R_InitStaticModelIndexCache(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 781 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0xc0000, (%esp)\n" /* line 783 */
-        "movl 0x195eee0, %eax\n"
-        "calll *0xc(%eax)\n"
-        "movl 0x195eed0, %edx\n"
-        "movl %eax, 0x2dc8(%edx)\n"
-        "leave\n" /* line 784 */
-        "retl\n"
-    );
+    void *mem = ((void *(*)(int))(*(void **)(*(int *)0x195eee0 + 0xc)))(0xc0000);
+    *(void **)(*(int *)0x195eed0 + 0x2dc8) = mem;
 }
 
 /* line 819 */

@@ -565,33 +565,13 @@ void R_SetPicmip(void)
 }
 
 /* line 1301 */
-static __attribute__((naked))
-int imagecompare(GfxImage *image1, GfxImage *image2)
+static int imagecompare(GfxImage *image1, GfxImage *image2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1301 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* image1 */
-        "movl 0xc(%ebp), %ecx\n" /* image2 */
-        "movzbl 0xc(%ecx), %eax\n" /* line 1304 */
-        "cmpb %al, 0xc(%edx)\n"
-        "ja .Lfe782c_000e7855\n"
-        "jb .Lfe782c_000e784e\n" /* line 1306 */
-        "movl 0x10(%edx), %eax\n" /* line 1309 */
-        "cmpl 0x10(%ecx), %eax\n"
-        "setl %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 1310 */
-        "retl\n"
-        ".Lfe782c_000e784e:\n"
-        "movl $1, %eax\n" /* line 1306 */
-        "popl %ebp\n" /* line 1310 */
-        "retl\n"
-        ".Lfe782c_000e7855:\n"
-        "xorl %eax, %eax\n" /* line 1304 */
-        "popl %ebp\n" /* line 1310 */
-        "retl\n"
-    );
+    if (image1->track > image2->track)
+        return 0;
+    if (image1->track < image2->track)
+        return 1;
+    return image1->cardMemory.platform[0] < image2->cardMemory.platform[0];
 }
 
 /* line 1507 */

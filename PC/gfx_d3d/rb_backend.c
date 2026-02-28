@@ -25,6 +25,7 @@ static const void (*RB_RenderCommandTable[34])(); /* 0x330340 */
 
 extern FontHandle R_RegisterFont(const char *fontName, int imageTrack);
 extern void RB_TouchAllImages(void);
+extern int ColorIndex(int c);
 
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 static void RB_GotoCmd(GfxRenderCommandExecState *execState);
@@ -313,69 +314,21 @@ void RB_RegisterBackendAssets(void)
 }
 
 /* line 2828 */
-__attribute__((naked))
 void RB_LookupColor(int c, byte *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2828 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 0xc(%ebp), %esi\n" /* color */
-        "movzbl 8(%ebp), %ebx\n" /* c */
-        /* { scope 1 */
-        "movzbl %bl, %eax\n" /* line 2843 | c */
-        "movl %eax, (%esp)\n"
-        "calll ColorIndex\n"
-        "movzbl %al, %eax\n"
-        "cmpl $7, %eax\n" /* line 2844 */
-        "ja .Lfd4c1e_000d4c50\n"
-        "movl color_table(, %eax, 4), %eax\n" /* line 2846 */
-        "movl %eax, (%esi)\n" /* color */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 2864 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4c1e_000d4c50:\n"
-        "cmpb $0x38, %bl\n" /* line 2850 | c */
-        "je .Lfd4c1e_000d4c70\n"
-        "cmpb $0x39, %bl\n" /* c */
-        "je .Lfd4c1e_000d4c7e\n"
-        "movb $0xff, 2(%esi)\n" /* line 655 */
-        "movb $0xff, 1(%esi)\n" /* line 656 */
-        "movb $0xff, (%esi)\n" /* line 657 */
-        "movb $0xff, 3(%esi)\n" /* line 658 */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 2864 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4c1e_000d4c70:\n"
-        "movl 0x11e1ac4, %eax\n" /* line 606 */
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 2864 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4c1e_000d4c7e:\n"
-        "movl 0x11e1ac0, %eax\n" /* line 606 */
-        "movl %eax, (%esi)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 2864 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int idx = ColorIndex((byte)c);
+    if (idx <= 7) {
+        *(unsigned int *)color = ((const unsigned int *)color_table)[idx];
+    } else if ((byte)c == '8') {
+        *(unsigned int *)color = *(unsigned int *)0x11e1ac4;
+    } else if ((byte)c == '9') {
+        *(unsigned int *)color = *(unsigned int *)0x11e1ac0;
+    } else {
+        color[0] = 0xff;
+        color[1] = 0xff;
+        color[2] = 0xff;
+        color[3] = 0xff;
+    }
 }
 
 /* line 587 */

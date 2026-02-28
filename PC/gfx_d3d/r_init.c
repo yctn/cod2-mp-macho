@@ -38,7 +38,7 @@ void R_FatalInitError(const char *msg);
 const char * R_ErrorDescription(HRESULT hr);
 static void R_CreateParticleCloudBuffer(void);
 static void R_ReleaseForShutdownOrReset(void);
-static Bool R_DisplayModeLess(const D3DDISPLAYMODE *mode0, const D3DDISPLAYMODE *mode1);
+static Bool R_DisplayModeLess(const _D3DDISPLAYMODE *mode0, const _D3DDISPLAYMODE *mode1);
 static HRESULT R_CreateDevice(HWND hwnd, DWORD behavior);
 void R_UpdateGpuSyncType(void);
 void R_EndRegistration(void);
@@ -384,37 +384,17 @@ void R_ReleaseForShutdownOrReset(void)
 }
 
 /* line 968 */
-static __attribute__((naked))
-Bool R_DisplayModeLess(const D3DDISPLAYMODE *mode0, const D3DDISPLAYMODE *mode1)
+static Bool R_DisplayModeLess(const _D3DDISPLAYMODE *mode0, const _D3DDISPLAYMODE *mode1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 968 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* mode0 */
-        "movl 0xc(%ebp), %ecx\n" /* mode1 */
-        "movl (%ecx), %eax\n" /* line 970 */
-        "cmpl %eax, (%edx)\n"
-        "ja .Lfcaf26_000caf56\n"
-        "jb .Lfcaf26_000caf4f\n" /* line 972 */
-        "movl 4(%ecx), %eax\n" /* line 975 */
-        "cmpl %eax, 4(%edx)\n"
-        "ja .Lfcaf26_000caf56\n"
-        "jb .Lfcaf26_000caf4f\n" /* line 977 */
-        "movl 8(%edx), %eax\n" /* line 980 */
-        "cmpl 8(%ecx), %eax\n"
-        "setb %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 981 */
-        "retl\n"
-        ".Lfcaf26_000caf4f:\n"
-        "movl $1, %eax\n" /* line 980 */
-        "popl %ebp\n" /* line 981 */
-        "retl\n"
-        ".Lfcaf26_000caf56:\n"
-        "xorl %eax, %eax\n" /* line 980 */
-        "popl %ebp\n" /* line 981 */
-        "retl\n"
-    );
+    if (mode0->Width > mode1->Width)
+        return 0;
+    if (mode0->Width < mode1->Width)
+        return 1;
+    if (mode0->Height > mode1->Height)
+        return 0;
+    if (mode0->Height < mode1->Height)
+        return 1;
+    return mode0->RefreshRate < mode1->RefreshRate;
 }
 
 /* line 1107 */
