@@ -37,6 +37,8 @@ static const dvar_t *hud_healthOverlay_phaseThree_pulseDuration; /* 0xf2f10c */
 static const dvar_t *hud_healthOverlay_phaseEnd_toAlpha; /* 0xf2f104 */
 static const dvar_t *hud_healthOverlay_phaseEnd_pulseDuration; /* 0xf2f100 */
 
+extern const char *va(const char *fmt, ...);
+
 void CG_AntiBurnInHUD_RegisterDvars(void);
 Bool CG_AreHudMenusHidden(void);
 float CG_CalcPlayerHealth(void);
@@ -317,25 +319,15 @@ float CG_CalcPlayerHealth(void)
 }
 
 /* line 1002 */
-__attribute__((naked))
 void CG_ResetLowHealthOverlay(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1002 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f584, %eax\n" /* line 1004 */
-        "movl (%eax), %edx\n"
-        "movb $0, 0x2be20(%edx)\n"
-        "movl hud_healthOverlay_phaseEnd_toAlpha, %eax\n" /* line 1005 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x2be10(%edx)\n"
-        "movl $0, 0x2be18(%edx)\n" /* line 1006 */
-        "movl $0, 0x2be1c(%edx)\n" /* line 1007 */
-        "movl $0, 0x2be2c(%edx)\n" /* line 1008 */
-        "movl $0x3f800000, 0x2be28(%edx)\n" /* line 1009 */
-        "popl %ebp\n" /* line 1010 */
-        "retl\n"
-    );
+    byte *cg = *(byte **)(*(int *)0x195f584);
+    *(byte *)(cg + 0x2be20) = 0;
+    *(float *)(cg + 0x2be10) = *(float *)((byte *)hud_healthOverlay_phaseEnd_toAlpha + 8);
+    *(int *)(cg + 0x2be18) = 0;
+    *(int *)(cg + 0x2be1c) = 0;
+    *(int *)(cg + 0x2be2c) = 0;
+    *(float *)(cg + 0x2be28) = 1.0f;
 }
 
 /* line 1036 */
@@ -1107,32 +1099,12 @@ void CG_DrawScore(float scale, vec_t *color, MaterialHandle material, int textSt
 }
 
 /* line 1722 */
-__attribute__((naked))
 const char * CG_GetKillerText(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1722 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 1726 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 0x2b54c(%eax)\n"
-        "jne .Lf18907c_00189099\n"
-        "movl $0x2157b8, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1731 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf18907c_00189099:\n"
-        "addl $0x2b54c, %eax\n" /* line 1728 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2afb50, (%esp)\n" /* "Fragged by %s" */
-        "calll va\n"
-        /* } scope */
-        "leave\n" /* line 1731 */
-        "retl\n"
-    );
+    byte *cg = *(byte **)(*(int *)0x195f584);
+    if (!*(byte *)(cg + 0x2b54c))
+        return "";
+    return va("Fragged by %s", (const char *)(cg + 0x2b54c));
 }
 
 /* line 1768 */

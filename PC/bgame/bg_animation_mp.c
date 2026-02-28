@@ -111,21 +111,13 @@ void BG_AnimParseError(const char *msg)
     );
 }
 
+void BG_LoadWeaponStrings(void);
+
 /* line 568 */
-__attribute__((naked))
 void BG_InitWeaponStrings(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 568 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x400, 8(%esp)\n" /* line 570 */
-        "movl $0, 4(%esp)\n"
-        "movl $weaponStrings, (%esp)\n"
-        "calll memset\n"
-        "leave\n" /* line 572 */
-        "jmp BG_LoadWeaponStrings\n" /* line 571 */
-    );
+    memset(weaponStrings, 0, 0x400);
+    BG_LoadWeaponStrings();
 }
 
 /* line 1827 */

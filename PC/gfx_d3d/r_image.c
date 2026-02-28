@@ -16,6 +16,7 @@ static const char * g_imageProgNames[12]; /* 0x311200 */
 static const char * imageTypeName[10]; /* 0x3111c0 */
 
 static void R_AddImageToList(union XAssetHeader header, void *data);
+extern void DB_EnumXAssets(int type, void (*func)(union XAssetHeader, void *), void *data, int overrides);
 void R_GetImageList(ImageList *imageList);
 int R_GetMinSpecImageMemory(void);
 void R_ResetImageAllocations(void);
@@ -59,23 +60,10 @@ static void R_AddImageToList(union XAssetHeader header, void *data)
 }
 
 /* line 194 */
-__attribute__((naked))
 void R_GetImageList(ImageList *imageList)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 194 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* imageList */
-        "movl $0, (%eax)\n" /* line 197 */
-        "movl $1, 0xc(%esp)\n" /* line 198 */
-        "movl %eax, 8(%esp)\n"
-        "movl $R_AddImageToList, 4(%esp)\n"
-        "movl $3, (%esp)\n"
-        "calll DB_EnumXAssets\n"
-        "leave\n" /* line 199 */
-        "retl\n"
-    );
+    *(int *)imageList = 0;
+    DB_EnumXAssets(3, R_AddImageToList, imageList, 1);
 }
 
 /* line 255 */

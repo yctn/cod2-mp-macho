@@ -8129,21 +8129,12 @@ unsigned int Scr_GetConstStringIncludeNull(unsigned int index)
     );
 }
 
+const char * SL_ConvertToString(unsigned int stringValue);
+
 /* line 4563 */
-__attribute__((naked))
 const char * Scr_GetString(unsigned int index)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4563 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 4565 | index */
-        "movl %eax, (%esp)\n"
-        "calll Scr_GetConstString\n"
-        "movl %eax, 8(%ebp)\n" /* index */
-        "leave\n" /* line 4566 */
-        "jmp SL_ConvertToString\n" /* line 4565 */
-    );
+    return SL_ConvertToString(Scr_GetConstString(index));
 }
 
 /* line 4523 */

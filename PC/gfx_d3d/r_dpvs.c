@@ -160,23 +160,9 @@ void R_ClearDpvsScene(void)
 }
 
 /* line 2357 */
-__attribute__((naked))
 void R_SetCullDist(float dist)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2357 */
-        "movl %esp, %ebp\n"
-        "movss 8(%ebp), %xmm0\n" /* dist */
-        "pxor %xmm1, %xmm1\n" /* line 2359 */
-        "movaps %xmm0, %xmm2\n" /* line 2360 */
-        "cmpnless %xmm1, %xmm0\n"
-        "andps %xmm0, %xmm2\n"
-        "andnps %xmm1, %xmm0\n"
-        "orps %xmm2, %xmm0\n"
-        "movss %xmm0, dpvsConfig\n"
-        "popl %ebp\n" /* line 2363 */
-        "retl\n"
-    );
+    *(float *)&dpvsConfig = dist > 0.0f ? dist : 0.0f;
 }
 
 /* line 1273 */

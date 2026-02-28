@@ -13,6 +13,8 @@
 
 extern void G_FreeEntity(gentity_t *ent);
 extern void G_SetOrigin(gentity_t *ent, const vec_t *origin);
+extern qboolean G_SpawnString(const char *key, const char *defaultString, const char **out);
+extern void Com_Error(int code, const char *fmt, ...);
 
 static turretInfo_t turretInfo[32]; /* 0xfe7800 */
 
@@ -1268,34 +1270,15 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
 }
 
 /* line 1098 */
-__attribute__((naked))
 void SP_turret(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1098 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "leal -0xc(%ebp), %eax\n" /* line 1102 | weaponinfoname */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2b5978, (%esp)\n" /* "weaponinfo" */
-        "calll G_SpawnString\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1babc4_001babfd\n"
-        "movl $0x2b5984, 4(%esp)\n" /* line 1103 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf1babc4_001babfd:\n"
-        "movl -0xc(%ebp), %eax\n" /* line 1105 | weaponinfoname */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* self */
-        "movl %eax, (%esp)\n"
-        "calll G_SpawnTurret\n"
-        /* } scope */
-        "leave\n" /* line 1106 */
-        "retl\n"
-    );
+    const char *weaponinfoname;
+
+    if (!G_SpawnString("weaponinfo", "", &weaponinfoname))
+    {
+        Com_Error(1, "no weaponinfo specified for turret");
+    }
+    G_SpawnTurret(self, weaponinfoname);
 }
 
 /* line 577 */

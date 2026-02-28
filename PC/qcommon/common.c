@@ -19,6 +19,7 @@ extern void CM_Shutdown(void);
 extern void SND_ShutdownChannels(void);
 extern void Hunk_Clear(void);
 extern void Scr_Shutdown(void);
+extern int Cmd_Argc(void);
 
 extern const dvar_t *com_statmon; /* 0x0 */
 extern const dvar_t *com_viewlog; /* 0x0 */
@@ -120,29 +121,14 @@ void Com_Init_Try_Block_Function(char *commandLine);
 void Com_Init(char *commandLine);
 
 /* line 302 */
-__attribute__((naked))
 void Com_BeginRedirect(char *buffer, int buffersize, void (*flush)())
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 302 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* buffer */
-        "movl 0xc(%ebp), %edx\n" /* buffersize */
-        "movl 0x10(%ebp), %ecx\n" /* flush */
-        "testl %eax, %eax\n" /* line 304 */
-        "je .Lf2e920_0002e94c\n"
-        "testl %edx, %edx\n"
-        "je .Lf2e920_0002e94c\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf2e920_0002e94c\n"
-        "movl %eax, rd_buffer\n" /* line 306 */
-        "movl %edx, rd_buffersize\n" /* line 307 */
-        "movl %ecx, rd_flush\n" /* line 308 */
-        "movb $0, (%eax)\n" /* line 310 */
-        ".Lf2e920_0002e94c:\n"
-        "popl %ebp\n" /* line 311 */
-        "retl\n"
-    );
+    if (!buffer || !buffersize || !flush)
+        return;
+    rd_buffer = buffer;
+    rd_buffersize = buffersize;
+    rd_flush = flush;
+    *buffer = 0;
 }
 
 /* line 314 */
@@ -906,28 +892,12 @@ void Com_ShutdownEvents(void)
 }
 
 /* line 1837 */
-static __attribute__((naked))
-void Com_Error_f(void)
+static void Com_Error_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1837 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "calll Cmd_Argc\n" /* line 1839 */
-        "subl $1, %eax\n"
-        "jle .Lf2f226_0002f24c\n"
-        "movl $0x216120, 4(%esp)\n" /* line 1841 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "leave\n" /* line 1847 */
-        "retl\n"
-        ".Lf2f226_0002f24c:\n"
-        "movl $0x216134, 4(%esp)\n" /* line 1845 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        "leave\n" /* line 1847 */
-        "retl\n"
-    );
+    if (Cmd_Argc() - 1 > 0)
+        Com_Error(1, "Testing drop error");
+    else
+        Com_Error(0, "Testing fatal error");
 }
 
 /* line 1891 */
@@ -1506,28 +1476,12 @@ void Com_WriteConfig_f(void)
 }
 
 /* line 3082 */
-__attribute__((naked))
 float Com_GetTimescaleForSnd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3082 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        "movl com_fixedtime, %eax\n" /* line 3084 */
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf2f806_0002f826\n"
-        "cvtsi2ssl %eax, %xmm0\n" /* line 3085 */
-        "movss %xmm0, -4(%ebp)\n"
-        "flds -4(%ebp)\n"
-        "leave\n" /* line 3088 */
-        "retl\n"
-        ".Lf2f806_0002f826:\n"
-        "movl com_timescale, %eax\n" /* line 3087 */
-        "flds 8(%eax)\n"
-        "leave\n" /* line 3088 */
-        "retl\n"
-    );
+    int fixedtime = *(int *)((byte *)com_fixedtime + 8);
+    if (fixedtime)
+        return (float)fixedtime;
+    return *(float *)((byte *)com_timescale + 8);
 }
 
 /* line 3779 */

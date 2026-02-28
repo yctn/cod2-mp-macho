@@ -13,6 +13,11 @@ extern void SV_MasterGameCompleteStatus(void);
 extern void Scr_DumpScriptThreads(void);
 extern void MT_DumpTree(void);
 extern void Cmd_AddCommand(const char *cmd_name, void (*function)(void));
+extern void Cmd_SetAutoComplete(const char *cmd_name, const char *dir, const char *ext);
+extern int SV_Cmd_Argc(void);
+extern const char *SV_Cmd_Argv(int arg);
+extern void SV_BanClient(void *cl);
+extern void SV_UnbanClient(const char *name);
 
 static qboolean initialized; /* 0xf00780 */
 
@@ -556,112 +561,55 @@ int SV_KickClient_f(void)
 }
 
 /* line 581 */
-static __attribute__((naked))
-short int SV_Ban_f(void)
+static short int SV_Ban_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 581 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 586 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1702a0_001702c1\n"
-        "movl $0x2ac468, (%esp)\n" /* line 588 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf1702a0_001702bf:\n"
-        "leave\n" /* line 603 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1702a0_001702c1:\n"
-        "calll SV_Cmd_Argc\n" /* line 592 */
-        "cmpl $2, %eax\n"
-        "je .Lf1702a0_001702d9\n"
-        "movl $0x2ac500, (%esp)\n" /* line 594 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "leave\n" /* line 603 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1702a0_001702d9:\n"
-        "calll SV_GetPlayerByName\n" /* line 598 */
-        "testl %eax, %eax\n" /* line 599 */
-        "je .Lf1702a0_001702bf\n"
-        "movl %eax, (%esp)\n" /* line 602 */
-        "calll SV_BanClient\n"
-        /* } scope */
-        "leave\n" /* line 603 */
-        "retl\n"
-    );
+    void *cl;
+    if (!*(byte *)((byte *)(*(void **)(*(void **)0x195ecbc)) + 8))
+    {
+        Com_Printf("Server is not running.\n");
+        return 0;
+    }
+    if (SV_Cmd_Argc() != 2)
+    {
+        Com_Printf("Usage: banUser <player name>\n");
+        return 0;
+    }
+    cl = (void *)SV_GetPlayerByName();
+    if (cl)
+        SV_BanClient(cl);
+    return 0;
 }
 
 /* line 614 */
-static __attribute__((naked))
-short int SV_BanNum_f(void)
+static short int SV_BanNum_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 614 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 619 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1702ec_0017030d\n"
-        "movl $0x2ac468, (%esp)\n" /* line 621 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf1702ec_0017030b:\n"
-        "leave\n" /* line 636 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1702ec_0017030d:\n"
-        "calll SV_Cmd_Argc\n" /* line 625 */
-        "cmpl $2, %eax\n"
-        "je .Lf1702ec_00170325\n"
-        "movl $0x2ac520, (%esp)\n" /* line 627 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "leave\n" /* line 636 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1702ec_00170325:\n"
-        "calll SV_GetPlayerByNum\n" /* line 631 */
-        "testl %eax, %eax\n" /* line 632 */
-        "je .Lf1702ec_0017030b\n"
-        "movl %eax, (%esp)\n" /* line 635 */
-        "calll SV_BanClient\n"
-        /* } scope */
-        "leave\n" /* line 636 */
-        "retl\n"
-    );
+    void *cl;
+    if (!*(byte *)((byte *)(*(void **)(*(void **)0x195ecbc)) + 8))
+    {
+        Com_Printf("Server is not running.\n");
+        return 0;
+    }
+    if (SV_Cmd_Argc() != 2)
+    {
+        Com_Printf("Usage: banClient <client number>\n");
+        return 0;
+    }
+    cl = (void *)SV_GetPlayerByNum();
+    if (cl)
+        SV_BanClient(cl);
+    return 0;
 }
 
 /* line 644 */
-static __attribute__((naked))
-short int SV_Unban_f(void)
+static short int SV_Unban_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 644 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "calll SV_Cmd_Argc\n" /* line 646 */
-        "cmpl $2, %eax\n"
-        "je .Lf170338_00170356\n"
-        "movl $0x2ac544, (%esp)\n" /* line 648 */
-        "calll Com_Printf\n"
-        "leave\n" /* line 653 */
-        "retl\n"
-        ".Lf170338_00170356:\n"
-        "movl $1, (%esp)\n" /* line 652 */
-        "calll SV_Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll SV_UnbanClient\n"
-        "leave\n" /* line 653 */
-        "retl\n"
-    );
+    if (SV_Cmd_Argc() != 2)
+    {
+        Com_Printf("Usage: unbanUser <player name>\n");
+        return 0;
+    }
+    SV_UnbanClient(SV_Cmd_Argv(1));
+    return 0;
 }
 
 /* line 662 */
@@ -1090,58 +1038,26 @@ static short int SV_Systeminfo_f(void)
 }
 
 /* line 889 */
-static __attribute__((naked))
-short int SV_DumpUser_f(void)
+static short int SV_DumpUser_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 889 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 894 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lf1708b4_001708da\n"
-        "movl $0x2ac468, (%esp)\n" /* line 896 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf1708b4_001708d4:\n"
-        "addl $0x14, %esp\n" /* line 915 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1708b4_001708da:\n"
-        "calll SV_Cmd_Argc\n" /* line 900 */
-        "cmpl $2, %eax\n"
-        "je .Lf1708b4_001708f6\n"
-        "movl $0x2ac6c0, (%esp)\n" /* line 902 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 915 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1708b4_001708f6:\n"
-        "calll SV_GetPlayerByName\n" /* line 906 */
-        "movl %eax, %ebx\n" /* cl */
-        "testl %eax, %eax\n" /* line 907 */
-        "je .Lf1708b4_001708d4\n"
-        "movl $0x2ac6d8, (%esp)\n" /* line 912 */
-        "calll Com_Printf\n"
-        "movl $0x2ac6e4, (%esp)\n" /* line 913 */
-        "calll Com_Printf\n"
-        "leal 0xc(%ebx), %eax\n" /* line 914 | cl */
-        "movl %eax, (%esp)\n"
-        "calll Info_Print\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 915 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cl;
+    if (!*(byte *)((byte *)(*(void **)(*(void **)0x195ecbc)) + 8))
+    {
+        Com_Printf("Server is not running.\n");
+        return 0;
+    }
+    if (SV_Cmd_Argc() != 2)
+    {
+        Com_Printf("Usage: dumpuser <player name>\n");
+        return 0;
+    }
+    cl = (byte *)SV_GetPlayerByName();
+    if (!cl)
+        return 0;
+    Com_Printf("userinfo\n");
+    Com_Printf("--------\n");
+    Info_Print((const char *)(cl + 0xc));
+    return 0;
 }
 
 /* line 923 */
@@ -1273,116 +1189,41 @@ short int SV_Map_f(void)
 }
 
 /* line 1041 */
-__attribute__((naked))
 short int SV_AddOperatorCommands(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1041 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl initialized, %eax\n" /* line 1045 */
-        "testl %eax, %eax\n"
-        "je .Lf170a8c_00170a9d\n"
-        /* } scope */
-        "leave\n" /* line 1093 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf170a8c_00170a9d:\n"
-        "movl $1, initialized\n" /* line 1048 */
-        "movl $SV_Heartbeat_f, 4(%esp)\n" /* line 1050 */
-        "movl $0x2ac764, (%esp)\n" /* "heartbeat" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Drop_f, 4(%esp)\n" /* line 1051 */
-        "movl $0x2ac770, (%esp)\n" /* "onlykick" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Ban_f, 4(%esp)\n" /* line 1052 */
-        "movl $0x2ac77c, (%esp)\n" /* "banUser" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_BanNum_f, 4(%esp)\n" /* line 1053 */
-        "movl $0x2ac784, (%esp)\n" /* "banClient" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_TempBan_f, 4(%esp)\n" /* line 1054 */
-        "movl $0x2ac790, (%esp)\n" /* "kick" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_TempBan_f, 4(%esp)\n" /* line 1055 */
-        "movl $0x2ac798, (%esp)\n" /* "tempBanUser" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_TempBanNum_f, 4(%esp)\n" /* line 1056 */
-        "movl $0x2ac7a4, (%esp)\n" /* "tempBanClient" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Unban_f, 4(%esp)\n" /* line 1057 */
-        "movl $0x2ac7b4, (%esp)\n" /* "unbanUser" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_DropNum_f, 4(%esp)\n" /* line 1058 */
-        "movl $0x2ac7c0, (%esp)\n" /* "clientkick" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Status_f, 4(%esp)\n" /* line 1059 */
-        "movl $0x2ac7cc, (%esp)\n" /* "status" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Serverinfo_f, 4(%esp)\n" /* line 1060 */
-        "movl $0x2ac7d4, (%esp)\n" /* "serverinfo" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Systeminfo_f, 4(%esp)\n" /* line 1061 */
-        "movl $0x2ac7e0, (%esp)\n" /* "systeminfo" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_DumpUser_f, 4(%esp)\n" /* line 1062 */
-        "movl $0x2ac7ec, (%esp)\n" /* "dumpuser" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_MapRestart_f, 4(%esp)\n" /* line 1063 */
-        "movl $0x2a74bc, (%esp)\n" /* "map_restart" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_FastRestart_f, 4(%esp)\n" /* line 1064 */
-        "movl $0x2ac7f8, (%esp)\n" /* "fast_restart" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Map_f, 4(%esp)\n" /* line 1065 */
-        "movl $0x2ac808, (%esp)\n" /* "map" */
-        "calll Cmd_AddCommand\n"
-        "movl $0x216da0, 8(%esp)\n" /* line 1066 */
-        "movl $0x2ac80c, 4(%esp)\n" /* "maps/mp" */
-        "movl $0x2ac808, (%esp)\n" /* "map" */
-        "calll Cmd_SetAutoComplete\n"
-        "movl $SV_MapRotate_f, 4(%esp)\n" /* line 1067 */
-        "movl $0x2ac814, (%esp)\n" /* "map_rotate" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_GameCompleteStatus_f, 4(%esp)\n" /* line 1068 */
-        "movl $0x2ac820, (%esp)\n" /* "gameCompleteStatus" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_Map_f, 4(%esp)\n" /* line 1070 */
-        "movl $0x2ac75c, (%esp)\n" /* "devmap" */
-        "calll Cmd_AddCommand\n"
-        "movl $0x216da0, 8(%esp)\n" /* line 1071 */
-        "movl $0x2ac80c, 4(%esp)\n" /* "maps/mp" */
-        "movl $0x2ac75c, (%esp)\n" /* "devmap" */
-        "calll Cmd_SetAutoComplete\n"
-        "movl $SV_KillServer_f, 4(%esp)\n" /* line 1073 */
-        "movl $0x2ac834, (%esp)\n" /* "killserver" */
-        "calll Cmd_AddCommand\n"
-        "movl 0x195ec98, %eax\n" /* line 1074 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf170a8c_00170ca7\n"
-        ".Lf170a8c_00170c7d:\n"
-        "movl $SV_ScriptUsage_f, 4(%esp)\n" /* line 1077 */
-        "movl $0x2ac840, (%esp)\n" /* "scriptUsage" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_StringUsage_f, 4(%esp)\n" /* line 1087 */
-        "movl $0x2ac84c, (%esp)\n" /* "stringUsage" */
-        "calll Cmd_AddCommand\n"
-        /* } scope */
-        "leave\n" /* line 1093 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf170a8c_00170ca7:\n"
-        "movl $SV_ConSay_f, 4(%esp)\n" /* line 1113 */
-        "movl $0x2ac704, (%esp)\n" /* "say" */
-        "calll Cmd_AddCommand\n"
-        "movl $SV_ConTell_f, 4(%esp)\n" /* line 1114 */
-        "movl $0x2ac708, (%esp)\n" /* "tell" */
-        "calll Cmd_AddCommand\n"
-        "jmp .Lf170a8c_00170c7d\n"
-    );
+    if (initialized)
+        return 0;
+    initialized = 1;
+    Cmd_AddCommand("heartbeat", (void (*)(void))SV_Heartbeat_f);
+    Cmd_AddCommand("onlykick", (void (*)(void))SV_Drop_f);
+    Cmd_AddCommand("banUser", (void (*)(void))SV_Ban_f);
+    Cmd_AddCommand("banClient", (void (*)(void))SV_BanNum_f);
+    Cmd_AddCommand("kick", (void (*)(void))SV_TempBan_f);
+    Cmd_AddCommand("tempBanUser", (void (*)(void))SV_TempBan_f);
+    Cmd_AddCommand("tempBanClient", (void (*)(void))SV_TempBanNum_f);
+    Cmd_AddCommand("unbanUser", (void (*)(void))SV_Unban_f);
+    Cmd_AddCommand("clientkick", (void (*)(void))SV_DropNum_f);
+    Cmd_AddCommand("status", (void (*)(void))SV_Status_f);
+    Cmd_AddCommand("serverinfo", (void (*)(void))SV_Serverinfo_f);
+    Cmd_AddCommand("systeminfo", (void (*)(void))SV_Systeminfo_f);
+    Cmd_AddCommand("dumpuser", (void (*)(void))SV_DumpUser_f);
+    Cmd_AddCommand("map_restart", (void (*)(void))SV_MapRestart_f);
+    Cmd_AddCommand("fast_restart", (void (*)(void))SV_FastRestart_f);
+    Cmd_AddCommand("map", (void (*)(void))SV_Map_f);
+    Cmd_SetAutoComplete("map", "maps/mp", "d3dbsp");
+    Cmd_AddCommand("map_rotate", (void (*)(void))SV_MapRotate_f);
+    Cmd_AddCommand("gameCompleteStatus", (void (*)(void))SV_GameCompleteStatus_f);
+    Cmd_AddCommand("devmap", (void (*)(void))SV_Map_f);
+    Cmd_SetAutoComplete("devmap", "maps/mp", "d3dbsp");
+    Cmd_AddCommand("killserver", (void (*)(void))SV_KillServer_f);
+    if (*(int *)((byte *)(*(void **)(*(void **)0x195ec98)) + 8))
+    {
+        Cmd_AddCommand("say", (void (*)(void))SV_ConSay_f);
+        Cmd_AddCommand("tell", (void (*)(void))SV_ConTell_f);
+    }
+    Cmd_AddCommand("scriptUsage", (void (*)(void))SV_ScriptUsage_f);
+    Cmd_AddCommand("stringUsage", (void (*)(void))SV_StringUsage_f);
+    return 0;
 }
 
 /* line 487 */

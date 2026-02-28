@@ -20,6 +20,12 @@ extern void Com_SetRecommended(int);
 extern void Sys_StartProcess(const char *exeName, int doexit);
 extern void UI_SetActiveMenu(int menu);
 extern void Sys_ShowIP(void);
+extern void Com_Error(int code, const char *fmt, ...);
+extern void FS_FCloseFile(int f);
+extern void MSG_WriteReliableCommandToBuffer(const char *cmd, char *buf, int bufSize);
+extern void FS_Write(const void *buffer, int len, int f);
+extern void CL_ShutdownCGame(void);
+extern void CL_ShutdownUI(void);
 
 extern refexport_t re; /* 0x0 */
 extern const clientActive_t * cl; /* 0x0 */
@@ -220,35 +226,16 @@ const char * CL_GetUsernameForLocalClient(int controllerIndex)
 }
 
 /* line 645 */
-__attribute__((naked))
 void CL_AddReliableCommand(const char *cmd)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 645 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x14c1550, %eax\n" /* line 651 */
-        "subl 0x14c1554, %eax\n"
-        "addl $-0x80, %eax\n"
-        "jle .Lf147800_0014782a\n"
-        "movl $0x2a8a5c, 4(%esp)\n" /* line 653 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf147800_0014782a:\n"
-        "movl clc, %eax\n" /* line 655 */
-        "addl $1, 0x130(%eax)\n"
-        "movl $0x400, 8(%esp)\n" /* line 657 */
-        "movl 0x130(%eax), %edx\n"
-        "andl $0x7f, %edx\n"
-        "shll $0xa, %edx\n"
-        "leal 0x138(%edx, %eax), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cmd */
-        "movl %eax, (%esp)\n"
-        "calll MSG_WriteReliableCommandToBuffer\n"
-        "leave\n" /* line 658 */
-        "retl\n"
-    );
+    int index;
+    if (*(int *)0x14c1550 - *(int *)0x14c1554 - 128 > 0)
+    {
+        Com_Error(1, "CL_AddReliableCommand: too many commands");
+    }
+    *(int *)((byte *)clc + 0x130) += 1;
+    index = *(int *)((byte *)clc + 0x130) & 0x7f;
+    MSG_WriteReliableCommandToBuffer(cmd, (char *)((byte *)clc + 0x138 + index * 0x400), 0x400);
 }
 
 /* line 700 */
@@ -305,28 +292,14 @@ void CL_StopRecord_f(void)
 }
 
 /* line 1161 */
-__attribute__((naked))
 void CL_ShutdownDemo(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1161 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x1501bd0, %eax\n" /* line 1163 */
-        "testl %eax, %eax\n"
-        "jne .Lf1478fe_0014790f\n"
-        "leave\n" /* line 1170 */
-        "retl\n"
-        ".Lf1478fe_0014790f:\n"
-        "movl %eax, (%esp)\n" /* line 1166 */
-        "calll FS_FCloseFile\n"
-        "movl clc, %eax\n" /* line 1167 */
-        "movl $0, 0x407b0(%eax)\n"
-        "movl $0, 0x407a0(%eax)\n" /* line 1168 */
-        "movl $0, 0x4079c(%eax)\n" /* line 1169 */
-        "leave\n" /* line 1170 */
-        "retl\n"
-    );
+    if (!*(int *)0x1501bd0)
+        return;
+    FS_FCloseFile(*(int *)0x1501bd0);
+    *(int *)((byte *)clc + 0x407b0) = 0;
+    *(int *)((byte *)clc + 0x407a0) = 0;
+    *(int *)((byte *)clc + 0x4079c) = 0;
 }
 
 /* line 1272 */
@@ -2882,28 +2855,16 @@ void CL_Record_f(void)
 }
 
 /* line 1100 */
-__attribute__((naked))
 void CL_ShutdownHunkUsers(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1100 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "movl 0x1220964, %ecx\n" /* line 1108 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf149e6e_00149e80\n"
-        "leave\n" /* line 1131 */
-        "retl\n"
-        ".Lf149e6e_00149e80:\n"
-        "calll CL_ShutdownCGame\n" /* line 1115 */
-        "calll CL_ShutdownUI\n" /* line 1118 */
-        "movl $0, 0x14c13b8\n" /* line 3267 */
-        "movl $0, 0x14c13bc\n" /* line 3268 */
-        "movl $0, 0x14c13c0\n" /* line 3269 */
-        "movl $0, 0x1220964\n" /* line 1130 */
-        "leave\n" /* line 1131 */
-        "retl\n"
-    );
+    if (!*(int *)0x1220964)
+        return;
+    CL_ShutdownCGame();
+    CL_ShutdownUI();
+    *(int *)0x14c13b8 = 0;
+    *(int *)0x14c13bc = 0;
+    *(int *)0x14c13c0 = 0;
+    *(int *)0x1220964 = 0;
 }
 
 /* line 2705 */

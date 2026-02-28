@@ -20,6 +20,11 @@ static char * netsrcString[2]; /* 0x312044 */
 static int net_iProfilingOn; /* 0xedad90 */
 static loopback_t loopbacks[2]; /* 0xecfd80 */
 
+extern void Com_Printf(const char *fmt, ...);
+extern void SV_Netchan_PrintProfileStats(int bDumpRecvStats);
+extern void CL_Netchan_PrintProfileStats(int bDumpRecvStats);
+extern qboolean Sys_GetPacket(netadr_t *net_from, msg_t *net_message);
+
 void NetProf_PrepProfiling(netProfileInfo_t * *pProf);
 void NetProf_AddPacket(netProfileStream_t *pProfStream, int iSize, qboolean bFragment);
 void NetProf_UpdateStatistics(netProfileStream_t *pStream);
@@ -349,59 +354,32 @@ void NetProf_UpdateStatistics(netProfileStream_t *pStream)
 }
 
 /* line 390 */
-__attribute__((naked))
 void Net_DumpProfile_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 390 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl net_iProfilingOn, %eax\n" /* line 392 */
-        "testl %eax, %eax\n"
-        "je .Lf157b94_00157bc4\n"
-        "subl $1, %eax\n" /* line 399 */
-        "je .Lf157b94_00157bb6\n"
-        "movl $1, (%esp)\n" /* line 406 */
-        "calll SV_Netchan_PrintProfileStats\n"
-        "leave\n" /* line 408 */
-        "retl\n"
-        ".Lf157b94_00157bb6:\n"
-        "movl $1, (%esp)\n" /* line 401 */
-        "calll CL_Netchan_PrintProfileStats\n"
-        "leave\n" /* line 408 */
-        "retl\n"
-        ".Lf157b94_00157bc4:\n"
-        "movl $0x2ab074, (%esp)\n" /* line 394 */
-        "calll Com_Printf\n"
-        "leave\n" /* line 408 */
-        "retl\n"
-    );
+    if (net_iProfilingOn == 0)
+    {
+        Com_Printf("Network profiling is not on. Set net_profile to turn on network profiling\n");
+        return;
+    }
+    if (net_iProfilingOn == 1)
+    {
+        CL_Netchan_PrintProfileStats(1);
+        return;
+    }
+    SV_Netchan_PrintProfileStats(1);
 }
 
 /* line 419 */
-__attribute__((naked))
 void Net_DisplayProfile(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 419 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl net_iProfilingOn, %eax\n" /* line 421 */
-        "testl %eax, %eax\n"
-        "je .Lf157bd2_00157bf2\n"
-        "subl $1, %eax\n" /* line 424 */
-        "je .Lf157bd2_00157bf4\n"
-        "movl $0, (%esp)\n" /* line 427 */
-        "calll SV_Netchan_PrintProfileStats\n"
-        ".Lf157bd2_00157bf2:\n"
-        "leave\n" /* line 428 */
-        "retl\n"
-        ".Lf157bd2_00157bf4:\n"
-        "movl $0, (%esp)\n" /* line 425 */
-        "calll CL_Netchan_PrintProfileStats\n"
-        "leave\n" /* line 428 */
-        "retl\n"
-    );
+    if (net_iProfilingOn == 0)
+        return;
+    if (net_iProfilingOn == 1)
+    {
+        CL_Netchan_PrintProfileStats(0);
+        return;
+    }
+    SV_Netchan_PrintProfileStats(0);
 }
 
 /* line 837 */
@@ -594,38 +572,17 @@ int NET_CompareAdrSigned(netadr_t *a, netadr_t *b)
 }
 
 /* line 1293 */
-__attribute__((naked))
 qboolean NET_IsLocalAddress(netadr_t adr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1293 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* adr */
-        "cmpl $2, %eax\n" /* line 1295 */
-        "je .Lf157e50_00157e5f\n"
-        "testl %eax, %eax\n"
-        "jne .Lf157e50_00157e66\n"
-        ".Lf157e50_00157e5f:\n"
-        "movl $1, %eax\n"
-        "popl %ebp\n" /* line 1296 */
-        "retl\n"
-        ".Lf157e50_00157e66:\n"
-        "xorl %eax, %eax\n" /* line 1295 */
-        "popl %ebp\n" /* line 1296 */
-        "retl\n"
-    );
+    if (adr.type == 2 || adr.type == 0)
+        return 1;
+    return 0;
 }
 
 /* line 1308 */
-__attribute__((naked))
 qboolean NET_GetPacket(netadr_t *net_from, msg_t *net_message)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1308 */
-        "movl %esp, %ebp\n"
-        "popl %ebp\n" /* line 1321 */
-        "jmp Sys_GetPacket\n" /* line 1318 */
-    );
+    return Sys_GetPacket(net_from, net_message);
 }
 
 /* line 126 */

@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdlib.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/q_shared.h"
@@ -19,6 +20,58 @@ extern void Scr_AddEntity(void *ent);
 extern void Scr_AddUndefined(void);
 extern int SV_AddTestClient(void);
 extern void SV_EnableArchivedSnapshot(int enable);
+extern void Scr_Error(const char *msg);
+extern const char *va(const char *fmt, ...);
+extern const char *Scr_GetString(unsigned int index);
+extern int Scr_GetType(unsigned int index);
+extern int Scr_GetPointerType(unsigned int index);
+extern gentity_t *Scr_GetEntity(unsigned int index);
+extern const char *Dvar_GetVariantString(const char *dvarName);
+extern void Scr_AddFloat(float value);
+extern void Scr_AddBool(int value);
+extern unsigned int Scr_GetAnim(unsigned int index, int treeIndex);
+extern void *Scr_GetAnims(unsigned int treeIndex);
+extern int XAnimIsPrimitive(void *anims, unsigned int animIndex);
+extern float XAnimGetLength(void *anims, unsigned int animIndex);
+extern void Scr_ParamError(unsigned int index, const char *msg);
+extern unsigned int Scr_GetConstString(unsigned int index);
+extern int XAnimNotetrackExists(void *anims, unsigned int animIndex, unsigned int notetrack);
+extern int Com_FindSoundAlias(const char *name);
+extern int G_GetWeaponIndexForName(const char *name);
+extern void *BG_GetWeaponDef(int weaponIndex);
+extern int I_stricmp(const char *s1, const char *s2);
+extern void Com_Printf(const char *fmt, ...);
+extern float Scr_GetFloat(unsigned int index);
+extern float flrand(float min, float max);
+extern int irand(int min, int max);
+extern double sin(double x);
+extern double cos(double x);
+extern unsigned int Scr_ExecThread(unsigned int handle, int paramCount);
+extern void Scr_FreeThread(unsigned int threadId);
+extern unsigned int Scr_ExecEntThread(gentity_t *ent, unsigned int handle, int paramCount);
+extern void SV_GameSendServerCommand(int clientnum, int type, const char *text);
+extern void Scr_Notify(gentity_t *ent, unsigned int stringValue, int paramCount);
+extern void *SV_XModelGet(const char *name);
+extern int XModelNumBones(void *model);
+extern int G_ModelIndex(const char *name);
+extern void Scr_RemoveClassMap(int classnum);
+extern float atanf(float x);
+extern float acosf(float x);
+extern int Scr_GetTypeName(int index);
+extern void Scr_GetVector(unsigned int index, float *out);
+extern float Vec3Distance(float *a, float *b);
+extern float Vec3DistanceSq(float *a, float *b);
+extern void vectoangles(float *vec, float *angles);
+extern void Scr_AddVector(float *vec);
+extern void AngleVectors(float *angles, float *forward, float *right, float *up);
+extern int G_ShellShockIndex(const char *name);
+extern int G_ShaderIndex(const char *name);
+extern int G_LocalizedStringIndex(const char *name);
+extern const char *Scr_GetIString(unsigned int index);
+extern int Scr_GetNumParam(void);
+extern void SV_GetConfigstring(int index, char *buffer, int bufferSize);
+extern int G_EffectIndex(const char *name);
+extern const char *SL_ConvertToString(unsigned int stringValue);
 extern BuiltinFunctionDef functions[144]; /* 0x0 */
 static BuiltinMethodDef methods[59]; /* 0x3138c0 */
 
@@ -258,57 +311,24 @@ unsigned int GScr_AllocString(const char *s)
 }
 
 /* line 57 */
-__attribute__((naked))
 unsigned int Scr_LoadLevel(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 57 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl g_scr_data, %eax\n" /* line 61 */
-        "testl %eax, %eax\n"
-        "jne .Lf1953b0_001953c1\n"
-        /* } scope */
-        "leave\n" /* line 65 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1953b0_001953c1:\n"
-        "movl $0, 4(%esp)\n" /* line 63 */
-        "movl %eax, (%esp)\n"
-        "calll Scr_ExecThread\n"
-        "movzwl %ax, %eax\n" /* line 64 */
-        "movl %eax, (%esp)\n"
-        "calll Scr_FreeThread\n"
-        /* } scope */
-        "leave\n" /* line 65 */
-        "retl\n"
-    );
+    if (*(unsigned int *)&g_scr_data)
+    {
+        Scr_FreeThread(Scr_ExecThread(*(unsigned int *)&g_scr_data, 0) & 0xFFFF);
+    }
+    return 0;
 }
 
 /* line 152 */
-__attribute__((naked))
 unsigned int GScr_FreeScripts(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 152 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "xorl %ebx, %ebx\n"
-        /* { scope 1 */
-        ".Lf1953de_001953e7:\n"
-        "movl %ebx, (%esp)\n" /* line 157 | classnum */
-        "calll Scr_RemoveClassMap\n"
-        "addl $1, %ebx\n" /* line 156 | classnum */
-        "cmpl $4, %ebx\n" /* classnum */
-        "jne .Lf1953de_001953e7\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 158 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int classnum;
+    for (classnum = 0; classnum < 4; classnum++)
+    {
+        Scr_RemoveClassMap(classnum);
+    }
+    return 0;
 }
 
 /* line 208 */
@@ -394,245 +414,86 @@ unsigned int print(void)
 }
 
 /* line 623 */
-static __attribute__((naked))
-unsigned int assertCmd(void)
+static unsigned int assertCmd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 623 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 625 */
-        "calll Scr_GetInt\n"
-        "testl %eax, %eax\n"
-        "je .Lf19549e_001954b6\n"
-        "leave\n" /* line 628 */
-        "retl\n"
-        ".Lf19549e_001954b6:\n"
-        "movl $0x2b1208, (%esp)\n" /* line 627 */
-        "calll Scr_Error\n"
-        "leave\n" /* line 628 */
-        "retl\n"
-    );
+    if (!Scr_GetInt(0))
+        Scr_Error("assert fail");
+    return 0;
 }
 
 /* line 637 */
-static __attribute__((naked))
-unsigned int assertexCmd(void)
+static unsigned int assertexCmd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 637 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 639 */
-        "calll Scr_GetInt\n"
-        "testl %eax, %eax\n"
-        "je .Lf1954c4_001954dc\n"
-        "leave\n" /* line 642 */
-        "retl\n"
-        ".Lf1954c4_001954dc:\n"
-        "movl $1, (%esp)\n" /* line 641 */
-        "calll Scr_GetString\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b1214, (%esp)\n" /* "assert fail: %s" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
-        "leave\n" /* line 642 */
-        "retl\n"
-    );
+    if (!Scr_GetInt(0))
+        Scr_Error(va("assert fail: %s", Scr_GetString(1)));
+    return 0;
 }
 
 /* line 651 */
-static __attribute__((naked))
-unsigned int assertmsgCmd(void)
+static unsigned int assertmsgCmd(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 651 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 653 */
-        "calll Scr_GetString\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b1214, (%esp)\n" /* "assert fail: %s" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
-        "leave\n" /* line 654 */
-        "retl\n"
-    );
+    Scr_Error(va("assert fail: %s", Scr_GetString(0)));
+    return 0;
 }
 
 /* line 663 */
-static __attribute__((naked))
-unsigned int GScr_IsDefined(void)
+static unsigned int GScr_IsDefined(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 663 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 667 */
-        "calll Scr_GetType\n"
-        "cmpl $1, %eax\n" /* line 669 */
-        "je .Lf19552e_00195557\n"
-        "testl %eax, %eax\n" /* line 678 */
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 679 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19552e_00195557:\n"
-        "movl $0, (%esp)\n" /* line 671 */
-        "calll Scr_GetPointerType\n"
-        "cmpl $0x16, %eax\n" /* line 673 */
-        "jg .Lf19552e_0019557c\n"
-        "cmpl $0x14, %eax\n"
-        "je .Lf19552e_0019557c\n"
-        "movl $1, %eax\n"
-        "movl %eax, (%esp)\n" /* line 678 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 679 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19552e_0019557c:\n"
-        "xorl %eax, %eax\n" /* line 673 */
-        "movl %eax, (%esp)\n" /* line 678 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 679 */
-        "retl\n"
-    );
+    int type = Scr_GetType(0);
+
+    if (type == 1) {
+        int ptype = Scr_GetPointerType(0);
+        if (ptype > 0x16 || ptype == 0x14) {
+            Scr_AddInt(0);
+        } else {
+            Scr_AddInt(1);
+        }
+    } else {
+        Scr_AddInt(type != 0);
+    }
+    return 0;
 }
 
 /* line 688 */
-static __attribute__((naked))
-unsigned int GScr_IsString(void)
+static unsigned int GScr_IsString(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 688 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 690 */
-        "calll Scr_GetType\n"
-        "cmpl $2, %eax\n"
-        "sete %al\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 691 */
-        "retl\n"
-    );
+    Scr_AddInt(Scr_GetType(0) == 2);
+    return 0;
 }
 
 /* line 700 */
-static __attribute__((naked))
-unsigned int GScr_IsAlive(void)
+static unsigned int GScr_IsAlive(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 700 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 702 */
-        "calll Scr_GetType\n"
-        "subl $1, %eax\n"
-        "je .Lf1955ae_001955d3\n"
-        /* { scope 1 */
-        ".Lf1955ae_001955c5:\n"
-        "movl $0, (%esp)\n" /* line 719 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 722 */
-        "retl\n"
-        ".Lf1955ae_001955d3:\n"
-        "movl $0, (%esp)\n" /* line 708 */
-        "calll Scr_GetPointerType\n"
-        "cmpl $0x15, %eax\n"
-        "jne .Lf1955ae_001955c5\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 714 */
-        "calll Scr_GetEntity\n"
-        "movl 0x194(%eax), %eax\n" /* line 716 */
-        "testl %eax, %eax\n"
-        "jle .Lf1955ae_001955c5\n"
-        "movl $1, (%esp)\n" /* line 717 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 722 */
-        "retl\n"
-    );
+    if (Scr_GetType(0) == 1 && Scr_GetPointerType(0) == 0x15) {
+        gentity_t *ent = Scr_GetEntity(0);
+        if (*(int *)((byte *)ent + 0x194) > 0) {
+            Scr_AddInt(1);
+            return 0;
+        }
+    }
+    Scr_AddInt(0);
+    return 0;
 }
 
 /* line 730 */
-static __attribute__((naked))
-unsigned int GScr_GetDvar(void)
+static unsigned int GScr_GetDvar(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 730 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 735 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n" /* line 736 */
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, (%esp)\n" /* line 737 */
-        "calll Scr_AddString\n"
-        /* } scope */
-        "leave\n" /* line 738 */
-        "retl\n"
-    );
+    Scr_AddString(Dvar_GetVariantString(Scr_GetString(0)));
+    return 0;
 }
 
 /* line 746 */
-static __attribute__((naked))
-unsigned int GScr_GetDvarInt(void)
+static unsigned int GScr_GetDvarInt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 746 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 751 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n" /* line 752 */
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, (%esp)\n" /* line 753 */
-        "calll atoi\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 754 */
-        "retl\n"
-    );
+    Scr_AddInt(atoi(Dvar_GetVariantString(Scr_GetString(0))));
+    return 0;
 }
 
 /* line 762 */
-static __attribute__((naked))
-unsigned int GScr_GetDvarFloat(void)
+static unsigned int GScr_GetDvarFloat(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 762 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 767 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n" /* line 768 */
-        "calll Dvar_GetVariantString\n"
-        "movl %eax, (%esp)\n" /* line 769 */
-        "calll atof\n"
-        "fstpl -0x10(%ebp)\n"
-        "cvtsd2ss -0x10(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "leave\n" /* line 770 */
-        "retl\n"
-    );
+    Scr_AddFloat((float)atof(Dvar_GetVariantString(Scr_GetString(0))));
+    return 0;
 }
 
 /* line 836 */
@@ -643,226 +504,76 @@ static unsigned int GScr_GetTime(void)
 }
 
 /* line 847 */
-static __attribute__((naked))
-unsigned int Scr_GetEntByNum(void)
+static unsigned int Scr_GetEntByNum(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 847 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 852 */
-        "calll Scr_GetInt\n"
-        "cmpl $0x3ff, %eax\n" /* line 853 */
-        "ja .Lf1956aa_001956e1\n"
-        "leal (%eax, %eax, 4), %eax\n" /* line 855 */
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
-        "cmpb $0, 0xfc(%edx)\n" /* line 856 */
-        "jne .Lf1956aa_001956e3\n"
-        /* } scope */
-        ".Lf1956aa_001956e1:\n"
-        "leave\n" /* line 859 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1956aa_001956e3:\n"
-        "movl %edx, (%esp)\n" /* line 858 */
-        "calll Scr_AddEntity\n"
-        /* } scope */
-        "leave\n" /* line 859 */
-        "retl\n"
-    );
+    unsigned int num = Scr_GetInt(0);
+    gentity_t *ent;
+
+    if (num > 0x3ff)
+        return 0;
+    ent = (gentity_t *)((byte *)*(void **)0x195f688 + num * 560);
+    if (*(byte *)((byte *)ent + 0xfc))
+        Scr_AddEntity(ent);
+    return 0;
 }
 
 /* line 867 */
-static __attribute__((naked))
-unsigned int Scr_GetWeaponModel(void)
+static unsigned int Scr_GetWeaponModel(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 867 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 872 */
-        "calll Scr_GetString\n"
-        "movl %eax, %ebx\n" /* pszWeaponName */
-        "movl %eax, (%esp)\n" /* line 873 */
-        "calll G_GetWeaponIndexForName\n"
-        "testl %eax, %eax\n" /* line 874 */
-        "jne .Lf1956ee_00195754\n"
-        "cmpb $0, (%ebx)\n" /* line 876 | pszWeaponName */
-        "jne .Lf1956ee_00195726\n"
-        ".Lf1956ee_00195714:\n"
-        "movl $0x2157b8, (%esp)\n" /* line 878 */
-        "calll Scr_AddString\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 882 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1956ee_00195726:\n"
-        "movl $0x218298, 4(%esp)\n" /* line 876 */
-        "movl %ebx, (%esp)\n" /* pszWeaponName */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1956ee_00195714\n"
-        "movl %ebx, 4(%esp)\n" /* line 877 | pszWeaponName */
-        "movl $0x2b1224, (%esp)\n" /* "unknown weapon '%s' in getWeaponModel
-" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Com_Printf\n"
-        "jmp .Lf1956ee_00195714\n"
-        ".Lf1956ee_00195754:\n"
-        "movl %eax, (%esp)\n" /* line 881 */
-        "calll BG_GetWeaponDef\n"
-        "movl 0x1b4(%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddString\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 882 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *pszWeaponName = Scr_GetString(0);
+    int weaponIndex = G_GetWeaponIndexForName(pszWeaponName);
+
+    if (weaponIndex) {
+        Scr_AddString(*(const char **)((byte *)BG_GetWeaponDef(weaponIndex) + 0x1b4));
+    } else {
+        if (pszWeaponName[0] && I_stricmp(pszWeaponName, "none") != 0) {
+            Com_Printf(va("unknown weapon '%s' in getWeaponModel\n", pszWeaponName));
+        }
+        Scr_AddString("");
+    }
+    return 0;
 }
 
 /* line 916 */
-static __attribute__((naked))
-unsigned int GScr_GetAnimLength(void)
+static unsigned int GScr_GetAnimLength(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 916 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl $0, 4(%esp)\n" /* line 921 */
-        "movl $0, (%esp)\n"
-        "calll Scr_GetAnim\n"
-        "movl %eax, %ebx\n"
-        "shrl $0x10, %eax\n" /* line 922 */
-        "movl %eax, (%esp)\n"
-        "calll Scr_GetAnims\n"
-        "movl %eax, %esi\n" /* anims */
-        "movzwl %bx, %ebx\n" /* line 923 */
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll XAnimIsPrimitive\n"
-        "testb %al, %al\n"
-        "jne .Lf195770_001957c2\n"
-        "movl $0x2b124c, 4(%esp)\n" /* line 924 */
-        "movl $0, (%esp)\n"
-        "calll Scr_ParamError\n"
-        ".Lf195770_001957c2:\n"
-        "movl %ebx, 4(%esp)\n" /* line 925 */
-        "movl %esi, (%esp)\n" /* anims */
-        "calll XAnimGetLength\n"
-        "fstps (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 926 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    unsigned int anim = Scr_GetAnim(0, 0);
+    void *anims = Scr_GetAnims(anim >> 16);
+    unsigned int animIndex = anim & 0xffff;
+
+    if (!XAnimIsPrimitive(anims, animIndex))
+        Scr_ParamError(0, (const char *)0x2b124c);
+    Scr_AddFloat(XAnimGetLength(anims, animIndex));
+    return 0;
 }
 
 /* line 934 */
-static __attribute__((naked))
-unsigned int GScr_AnimHasNotetrack(void)
+static unsigned int GScr_AnimHasNotetrack(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 934 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl $0, 4(%esp)\n" /* line 939 */
-        "movl $0, (%esp)\n"
-        "calll Scr_GetAnim\n"
-        "movl %eax, %ebx\n"
-        "shrl $0x10, %ebx\n"
-        "movl %eax, %edi\n"
-        "movl $1, (%esp)\n" /* line 940 */
-        "calll Scr_GetConstString\n"
-        "movl %eax, %esi\n"
-        "movzwl %bx, %ebx\n" /* line 941 */
-        "movl %ebx, (%esp)\n"
-        "calll Scr_GetAnims\n"
-        "movzwl %si, %edx\n"
-        "movl %edx, 8(%esp)\n"
-        "movzwl %di, %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll XAnimNotetrackExists\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddBool\n"
-        "addl $0x1c, %esp\n" /* line 942 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    unsigned int anim = Scr_GetAnim(0, 0);
+    unsigned int treeIndex = anim >> 16;
+    unsigned int animIndex = anim & 0xffff;
+    unsigned int notetrack = Scr_GetConstString(1);
+    void *anims = Scr_GetAnims(treeIndex);
+
+    Scr_AddBool(XAnimNotetrackExists(anims, animIndex, notetrack));
+    return 0;
 }
 
 /* line 1031 */
-static __attribute__((naked))
-unsigned int GScr_PrecacheTurret(void)
+static unsigned int GScr_PrecacheTurret(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1031 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f6a0, %eax\n" /* line 1035 */
-        "movl 0x1c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf195844_00195862\n"
-        "movl $0x2b1280, (%esp)\n" /* line 1036 */
-        "calll Scr_Error\n"
-        ".Lf195844_00195862:\n"
-        "movl $0, (%esp)\n" /* line 1038 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n" /* line 1039 */
-        "calll G_GetWeaponIndexForName\n"
-        /* } scope */
-        "leave\n" /* line 1040 */
-        "retl\n"
-    );
+    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+        Scr_Error("PrecacheTurret must be called before any wait statements in the gametype or level script");
+    G_GetWeaponIndexForName(Scr_GetString(0));
+    return 0;
 }
 
 /* line 1411 */
-static __attribute__((naked))
-unsigned int ScrCmd_SoundExists(void)
+static unsigned int ScrCmd_SoundExists(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1411 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 1415 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n" /* line 1416 */
-        "calll Com_FindSoundAlias\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddBool\n"
-        /* } scope */
-        "leave\n" /* line 1417 */
-        "retl\n"
-    );
+    Scr_AddBool(Com_FindSoundAlias(Scr_GetString(0)) != 0);
+    return 0;
 }
 
 /* line 1543 */
@@ -2113,153 +1824,58 @@ unsigned int Scr_RandomInt(void)
 }
 
 /* line 2960 */
-static __attribute__((naked))
-unsigned int Scr_RandomFloat(void)
+static unsigned int Scr_RandomFloat(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2960 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 2962 */
-        "calll Scr_GetFloat\n"
-        "fstps 4(%esp)\n" /* line 2964 */
-        "movl $0, (%esp)\n"
-        "calll flrand\n"
-        "fstps (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "leave\n" /* line 2965 */
-        "retl\n"
-    );
+    float max = Scr_GetFloat(0);
+
+    Scr_AddFloat(flrand(0, max));
+    return 0;
 }
 
 /* line 2973 */
-static __attribute__((naked))
-unsigned int Scr_RandomIntRange(void)
+static unsigned int Scr_RandomIntRange(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2973 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 2975 */
-        "calll Scr_GetInt\n"
-        "movl %eax, %esi\n" /* iMin */
-        "movl $1, (%esp)\n" /* line 2976 */
-        "calll Scr_GetInt\n"
-        "movl %eax, %ebx\n" /* iMax */
-        "cmpl %eax, %esi\n" /* line 2978 | iMin */
-        "jl .Lf196582_001965ca\n"
-        "movl %eax, 8(%esp)\n" /* line 2980 */
-        "movl %esi, 4(%esp)\n" /* iMin */
-        "movl $0x2b15d4, (%esp)\n" /* "RandomIntRange parms: %d %d " */
-        "calll Com_Printf\n"
-        "movl $0x2b15f4, (%esp)\n" /* line 2981 */
-        "calll Scr_Error\n"
-        ".Lf196582_001965ca:\n"
-        "movl %ebx, 4(%esp)\n" /* line 2983 | iMax */
-        "movl %esi, (%esp)\n" /* iMin */
-        "calll irand\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 2984 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int iMin = Scr_GetInt(0);
+    int iMax = Scr_GetInt(1);
+
+    if (iMin >= iMax) {
+        Com_Printf("RandomIntRange parms: %d %d ", iMin, iMax);
+        Scr_Error("RandomIntRange's second parameter must be greater than the first parameter");
+    }
+    Scr_AddInt(irand(iMin, iMax));
+    return 0;
 }
 
 /* line 2992 */
-static __attribute__((naked))
-unsigned int Scr_RandomFloatRange(void)
+static unsigned int Scr_RandomFloatRange(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2992 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 2994 */
-        "calll Scr_GetFloat\n"
-        "fstps -0x10(%ebp)\n" /* fMin */
-        "movl $1, (%esp)\n" /* line 2995 */
-        "calll Scr_GetFloat\n"
-        "fstps -0xc(%ebp)\n" /* fMax */
-        "movss -0x10(%ebp), %xmm0\n" /* line 2997 | fMin */
-        "ucomiss -0xc(%ebp), %xmm0\n" /* fMax */
-        "jb .Lf1965e6_00196643\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n" /* line 2999 | fMax */
-        "movsd %xmm0, 0xc(%esp)\n"
-        "cvtss2sd -0x10(%ebp), %xmm0\n" /* fMin */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b1624, (%esp)\n" /* "Scr_RandomFloatRange parms: %d %d " */
-        "calll Com_Printf\n"
-        "movl $0x2b1648, (%esp)\n" /* line 3000 */
-        "calll Scr_Error\n"
-        ".Lf1965e6_00196643:\n"
-        "movss -0xc(%ebp), %xmm0\n" /* line 3002 | fMax */
-        "movss %xmm0, 4(%esp)\n"
-        "movss -0x10(%ebp), %xmm0\n" /* fMin */
-        "movss %xmm0, (%esp)\n"
-        "calll flrand\n"
-        "fstps (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "leave\n" /* line 3003 */
-        "retl\n"
-    );
+    float fMin = Scr_GetFloat(0);
+    float fMax = Scr_GetFloat(1);
+
+    if (fMin >= fMax) {
+        Com_Printf("Scr_RandomFloatRange parms: %d %d ", (double)fMin, (double)fMax);
+        Scr_Error("RandomFloatRange's second parameter must be greater than the first parameter");
+    }
+    Scr_AddFloat(flrand(fMin, fMax));
+    return 0;
 }
 
 /* line 3011 */
-static __attribute__((naked))
-unsigned int GScr_sin(void)
+static unsigned int GScr_sin(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3011 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl $0, (%esp)\n" /* line 3013 */
-        "calll Scr_GetFloat\n"
-        "fstps -0xc(%ebp)\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
-        "movsd %xmm0, (%esp)\n"
-        "calll sin\n"
-        "fstpl -0x18(%ebp)\n"
-        "cvtsd2ss -0x18(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        "leave\n" /* line 3014 */
-        "retl\n"
-    );
+    float val = Scr_GetFloat(0);
+
+    Scr_AddFloat((float)sin((double)val * 0.017453292519943295));
+    return 0;
 }
 
 /* line 3022 */
-static __attribute__((naked))
-unsigned int GScr_cos(void)
+static unsigned int GScr_cos(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3022 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl $0, (%esp)\n" /* line 3024 */
-        "calll Scr_GetFloat\n"
-        "fstps -0xc(%ebp)\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
-        "movsd %xmm0, (%esp)\n"
-        "calll cos\n"
-        "fstpl -0x18(%ebp)\n"
-        "cvtsd2ss -0x18(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        "leave\n" /* line 3025 */
-        "retl\n"
-    );
+    float val = Scr_GetFloat(0);
+
+    Scr_AddFloat((float)cos((double)val * 0.017453292519943295));
+    return 0;
 }
 
 /* line 3033 */
@@ -2352,453 +1968,147 @@ unsigned int GScr_asin(void)
 }
 
 /* line 3065 */
-static __attribute__((naked))
-unsigned int GScr_acos(void)
+static unsigned int GScr_acos(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3065 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 3069 */
-        "calll Scr_GetFloat\n"
-        "fstps -0xc(%ebp)\n" /* x */
-        "movss -0xc(%ebp), %xmm0\n" /* line 3070 | x */
-        "ucomiss 0x2ed5dc, %xmm0\n" /* -1.0f */
-        "jp .Lf1967f6_0019681b\n"
-        "jb .Lf1967f6_00196824\n"
-        ".Lf1967f6_0019681b:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "jbe .Lf1967f6_00196843\n"
-        ".Lf1967f6_00196824:\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n" /* line 3071 | x */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b167c, (%esp)\n" /* "%g out of range" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
-        ".Lf1967f6_00196843:\n"
-        "movss -0xc(%ebp), %xmm0\n" /* line 3072 | x */
-        "movss %xmm0, (%esp)\n"
-        "calll acosf\n"
-        "fstps -0x10(%ebp)\n"
-        "cvtss2sd -0x10(%ebp), %xmm0\n"
-        "mulsd 0x307c40, %xmm0\n" /* 57.29577951308232 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "leave\n" /* line 3073 */
-        "retl\n"
-    );
+    float x = Scr_GetFloat(0);
+    if (x < -1.0f || x > 1.0f)
+    {
+        Scr_Error(va("%g out of range", (double)x));
+    }
+    Scr_AddFloat((float)((double)acosf(x) * 57.29577951308232));
+    return 0;
 }
 
 /* line 3081 */
-static __attribute__((naked))
-unsigned int GScr_atan(void)
+static unsigned int GScr_atan(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3081 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl $0, (%esp)\n" /* line 3083 */
-        "calll Scr_GetFloat\n"
-        "fstps (%esp)\n"
-        "calll atanf\n"
-        "fstps -0xc(%ebp)\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n"
-        "mulsd 0x307c40, %xmm0\n" /* 57.29577951308232 */
-        "cvtsd2ss %xmm0, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        "leave\n" /* line 3084 */
-        "retl\n"
-    );
+    float val = Scr_GetFloat(0);
+    Scr_AddFloat((float)((double)atanf(val) * 57.29577951308232));
+    return 0;
 }
 
 /* line 3092 */
-static __attribute__((naked))
-unsigned int GScr_CastInt(void)
+static unsigned int GScr_CastInt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3092 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl $0, (%esp)\n" /* line 3094 */
-        "calll Scr_GetType\n"
-        "cmpl $5, %eax\n"
-        "je .Lf1968ac_001968fb\n"
-        "cmpl $6, %eax\n"
-        "je .Lf1968ac_00196919\n"
-        "cmpl $2, %eax\n"
-        "je .Lf1968ac_0019692f\n"
-        "movl $0, (%esp)\n" /* line 3109 */
-        "calll Scr_GetTypeName\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2b168c, (%esp)\n" /* "cannot cast %s to int" */
-        "calll va\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_ParamError\n"
-        "leave\n" /* line 3110 */
-        "retl\n"
-        ".Lf1968ac_001968fb:\n"
-        "movl $0, (%esp)\n" /* line 3101 */
-        "calll Scr_GetFloat\n"
-        "fstps -0xc(%ebp)\n"
-        "cvttss2si -0xc(%ebp), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 3110 */
-        "retl\n"
-        ".Lf1968ac_00196919:\n"
-        "movl $0, (%esp)\n" /* line 3097 */
-        "calll Scr_GetInt\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 3110 */
-        "retl\n"
-        ".Lf1968ac_0019692f:\n"
-        "movl $0, (%esp)\n" /* line 3105 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        "leave\n" /* line 3110 */
-        "retl\n"
-    );
+    int type = Scr_GetType(0);
+    switch (type)
+    {
+    case 5:
+        Scr_AddInt((int)Scr_GetFloat(0));
+        break;
+    case 6:
+        Scr_AddInt(Scr_GetInt(0));
+        break;
+    case 2:
+        Scr_AddInt(atoi(Scr_GetString(0)));
+        break;
+    default:
+        Scr_ParamError(0, va("cannot cast %s to int", (const char *)Scr_GetTypeName(0)));
+        break;
+    }
+    return 0;
 }
 
 /* line 3120 */
-static __attribute__((naked))
-unsigned int Scr_Distance(void)
+static unsigned int Scr_Distance(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3120 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %esi\n" /* line 3125 | v0 */
-        "movl %esi, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "leal -0x20(%ebp), %ebx\n" /* line 3126 | v1 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movl %ebx, 4(%esp)\n" /* line 3127 */
-        "movl %esi, (%esp)\n"
-        "calll Vec3Distance\n"
-        "fstps (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 3128 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float v0[3], v1[3];
+    Scr_GetVector(0, v0);
+    Scr_GetVector(1, v1);
+    Scr_AddFloat(Vec3Distance(v0, v1));
+    return 0;
 }
 
 /* line 3136 */
-static __attribute__((naked))
-unsigned int Scr_DistanceSquared(void)
+static unsigned int Scr_DistanceSquared(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3136 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %esi\n" /* line 3141 | v0 */
-        "movl %esi, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "leal -0x20(%ebp), %ebx\n" /* line 3142 | v1 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movl %ebx, 4(%esp)\n" /* line 3143 */
-        "movl %esi, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 3144 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float v0[3], v1[3];
+    Scr_GetVector(0, v0);
+    Scr_GetVector(1, v1);
+    Scr_AddFloat(Vec3DistanceSq(v0, v1));
+    return 0;
 }
 
 /* line 3166 */
-static __attribute__((naked))
-unsigned int Scr_LengthSquared(void)
+static unsigned int Scr_LengthSquared(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3166 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %eax\n" /* line 3170 | v */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movss -0x14(%ebp), %xmm0\n" /* line 316 | v */
-        "movss -0x10(%ebp), %xmm1\n"
-        "movss -0xc(%ebp), %xmm2\n"
-        "mulss %xmm0, %xmm0\n" /* line 3171 */
-        "mulss %xmm1, %xmm1\n"
-        "addss %xmm1, %xmm0\n"
-        "mulss %xmm2, %xmm2\n"
-        "addss %xmm2, %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "leave\n" /* line 3172 */
-        "retl\n"
-    );
+    float v[3];
+    Scr_GetVector(0, v);
+    Scr_AddFloat(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    return 0;
 }
 
 /* line 3180 */
-static __attribute__((naked))
-unsigned int Scr_Closer(void)
+static unsigned int Scr_Closer(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3180 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        /* { scope 1 */
-        "leal -0x24(%ebp), %ebx\n" /* line 3188 | vRef */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "leal -0x30(%ebp), %esi\n" /* line 3189 | vA */
-        "movl %esi, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "leal -0x3c(%ebp), %edi\n" /* line 3190 | vB */
-        "movl %edi, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movl %ebx, 4(%esp)\n" /* line 3192 */
-        "movl %esi, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps -0x50(%ebp)\n" /* fDistASqrd */
-        "movl %ebx, 4(%esp)\n" /* line 3193 */
-        "movl %edi, (%esp)\n"
-        "calll Vec3DistanceSq\n"
-        "fstps -0x4c(%ebp)\n" /* fDistBSqrd */
-        "movss -0x4c(%ebp), %xmm0\n" /* line 3195 | fDistBSqrd */
-        "xorl %eax, %eax\n"
-        "ucomiss -0x50(%ebp), %xmm0\n" /* fDistASqrd */
-        "seta %al\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "addl $0x5c, %esp\n" /* line 3196 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float vRef[3], vA[3], vB[3];
+    float fDistASqrd, fDistBSqrd;
+    Scr_GetVector(0, vRef);
+    Scr_GetVector(1, vA);
+    Scr_GetVector(2, vB);
+    fDistASqrd = Vec3DistanceSq(vA, vRef);
+    fDistBSqrd = Vec3DistanceSq(vB, vRef);
+    Scr_AddInt(fDistBSqrd > fDistASqrd);
+    return 0;
 }
 
 /* line 3204 */
-static __attribute__((naked))
-unsigned int Scr_VectorDot(void)
+static unsigned int Scr_VectorDot(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3204 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %eax\n" /* line 3209 | a */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "leal -0x20(%ebp), %eax\n" /* line 3210 | b */
-        "movl %eax, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movss -0x14(%ebp), %xmm1\n" /* line 3211 | a */
-        "mulss -0x20(%ebp), %xmm1\n" /* b */
-        "movss -0x10(%ebp), %xmm0\n"
-        "mulss -0x1c(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss -0xc(%ebp), %xmm0\n"
-        "mulss -0x18(%ebp), %xmm0\n"
-        "addss %xmm0, %xmm1\n"
-        "movss %xmm1, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "leave\n" /* line 3212 */
-        "retl\n"
-    );
+    float a[3], b[3];
+    Scr_GetVector(0, a);
+    Scr_GetVector(1, b);
+    Scr_AddFloat(a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
+    return 0;
 }
 
 /* line 3237 */
-static __attribute__((naked))
-unsigned int Scr_VectorToAngles(void)
+static unsigned int Scr_VectorToAngles(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3237 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %esi\n" /* line 3242 | vec */
-        "movl %esi, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "leal -0x20(%ebp), %ebx\n" /* line 3244 | angles */
-        "movl %ebx, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll vectoangles\n"
-        "movl %ebx, (%esp)\n" /* line 3245 */
-        "calll Scr_AddVector\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 3246 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float vec[3], angles[3];
+    Scr_GetVector(0, vec);
+    vectoangles(vec, angles);
+    Scr_AddVector(angles);
+    return 0;
 }
 
 /* line 3254 */
-static __attribute__((naked))
-unsigned int Scr_AnglesToUp(void)
+static unsigned int Scr_AnglesToUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3254 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %esi\n" /* line 3259 | angles */
-        "movl %esi, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "leal -0x20(%ebp), %ebx\n" /* line 3260 | up */
-        "movl %ebx, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll AngleVectors\n"
-        "movl %ebx, (%esp)\n" /* line 3261 */
-        "calll Scr_AddVector\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 3262 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float angles[3], up[3];
+    Scr_GetVector(0, angles);
+    AngleVectors(angles, 0, 0, up);
+    Scr_AddVector(up);
+    return 0;
 }
 
 /* line 3270 */
-static __attribute__((naked))
-unsigned int Scr_AnglesToRight(void)
+static unsigned int Scr_AnglesToRight(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3270 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %esi\n" /* line 3275 | angles */
-        "movl %esi, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movl $0, 0xc(%esp)\n" /* line 3276 */
-        "leal -0x20(%ebp), %ebx\n" /* right */
-        "movl %ebx, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll AngleVectors\n"
-        "movl %ebx, (%esp)\n" /* line 3277 */
-        "calll Scr_AddVector\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 3278 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float angles[3], right[3];
+    Scr_GetVector(0, angles);
+    AngleVectors(angles, 0, right, 0);
+    Scr_AddVector(right);
+    return 0;
 }
 
 /* line 3286 */
-static __attribute__((naked))
-unsigned int Scr_AnglesToForward(void)
+static unsigned int Scr_AnglesToForward(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3286 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %esi\n" /* line 3291 | angles */
-        "movl %esi, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movl $0, 0xc(%esp)\n" /* line 3292 */
-        "movl $0, 8(%esp)\n"
-        "leal -0x20(%ebp), %ebx\n" /* forward */
-        "movl %ebx, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll AngleVectors\n"
-        "movl %ebx, (%esp)\n" /* line 3293 */
-        "calll Scr_AddVector\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 3294 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float angles[3], forward[3];
+    Scr_GetVector(0, angles);
+    AngleVectors(angles, forward, 0, 0);
+    Scr_AddVector(forward);
+    return 0;
 }
 
 /* line 3302 */
-static __attribute__((naked))
-unsigned int Scr_IsSubStr(void)
+static unsigned int Scr_IsSubStr(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3302 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl $1, (%esp)\n" /* line 3304 */
-        "calll Scr_GetString\n"
-        "movl %eax, %ebx\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetString\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll strstr\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddBool\n"
-        "addl $0x14, %esp\n" /* line 3305 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *sub = Scr_GetString(1);
+    const char *s = Scr_GetString(0);
+    Scr_AddBool(strstr(s, sub) != 0);
+    return 0;
 }
 
 /* line 3315 */
@@ -3010,26 +2320,10 @@ unsigned int Scr_StrTok(void)
 }
 
 /* line 3445 */
-static __attribute__((naked))
-unsigned int Scr_MusicPlay(void)
+static unsigned int Scr_MusicPlay(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3445 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, (%esp)\n" /* line 3447 */
-        "calll Scr_GetString\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x6f, 4(%esp)\n"
-        "movl $0x2b16b4, (%esp)\n" /* "%c %s" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $1, 4(%esp)\n"
-        "movl $0xffffffff, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        "leave\n" /* line 3448 */
-        "retl\n"
-    );
+    SV_GameSendServerCommand(-1, 1, va("%c %s", 'o', Scr_GetString(0)));
+    return 0;
 }
 
 /* line 3485 */
@@ -3076,51 +2370,21 @@ unsigned int Scr_SoundFade(void)
 }
 
 /* line 3506 */
-static __attribute__((naked))
-unsigned int Scr_PrecacheModel(void)
+static unsigned int Scr_PrecacheModel(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3506 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195f6a0, %eax\n" /* line 3508 */
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf196f5c_00196f7a\n"
-        "movl $0x2b16c8, (%esp)\n" /* line 3509 */
-        "calll Scr_Error\n"
-        ".Lf196f5c_00196f7a:\n"
-        "movl $0, (%esp)\n" /* line 3511 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n"
-        "calll G_ModelIndex\n"
-        "leave\n" /* line 3512 */
-        "retl\n"
-    );
+    if (!*(int *)(*(byte **)0x195f6a0 + 0x1c))
+        Scr_Error("precacheModel must be called before any wait statements in the gametype or level script\n");
+    G_ModelIndex(Scr_GetString(0));
+    return 0;
 }
 
 /* line 3520 */
-static __attribute__((naked))
-unsigned int Scr_PrecacheShellShock(void)
+static unsigned int Scr_PrecacheShellShock(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3520 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195f6a0, %eax\n" /* line 3522 */
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf196f90_00196fae\n"
-        "movl $0x2b1724, (%esp)\n" /* line 3523 */
-        "calll Scr_Error\n"
-        ".Lf196f90_00196fae:\n"
-        "movl $0, (%esp)\n" /* line 3525 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n"
-        "calll G_ShellShockIndex\n"
-        "leave\n" /* line 3526 */
-        "retl\n"
-    );
+    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+        Scr_Error("PrecacheShellShock must be called before any wait statements in the gametype or level script");
+    G_ShellShockIndex(Scr_GetString(0));
+    return 0;
 }
 
 /* line 3534 */
@@ -3195,78 +2459,28 @@ unsigned int Scr_PrecacheItem(void)
 }
 
 /* line 3558 */
-static __attribute__((naked))
-unsigned int Scr_PrecacheShader(void)
+static unsigned int Scr_PrecacheShader(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3558 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f6a0, %eax\n" /* line 3562 */
-        "movl 0x1c(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "je .Lf197080_001970c8\n"
-        ".Lf197080_00197093:\n"
-        "movl $0, (%esp)\n" /* line 3565 */
-        "calll Scr_GetString\n"
-        "movl %eax, %ebx\n" /* shaderName */
-        "cmpb $0, (%eax)\n" /* line 3566 */
-        "jne .Lf197080_001970ba\n"
-        "movl $0x2b184c, 4(%esp)\n" /* line 3567 */
-        "movl $0, (%esp)\n"
-        "calll Scr_ParamError\n"
-        ".Lf197080_001970ba:\n"
-        "movl %ebx, (%esp)\n" /* line 3569 | shaderName */
-        "calll G_ShaderIndex\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 3570 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf197080_001970c8:\n"
-        "movl $0x2b17f0, (%esp)\n" /* line 3563 */
-        "calll Scr_Error\n"
-        "jmp .Lf197080_00197093\n"
-    );
+    const char *shaderName;
+    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+        Scr_Error("PrecacheShader must be called before any wait statements in the gametype or level script");
+    shaderName = Scr_GetString(0);
+    if (!shaderName[0])
+        Scr_ParamError(0, "shader name can't be empty");
+    G_ShaderIndex(shaderName);
+    return 0;
 }
 
 /* line 3578 */
-static __attribute__((naked))
-unsigned int Scr_PrecacheString(void)
+static unsigned int Scr_PrecacheString(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3578 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f6a0, %eax\n" /* line 3582 */
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1970d6_00197105\n"
-        ".Lf1970d6_001970e8:\n"
-        "movl $0, (%esp)\n" /* line 3585 */
-        "calll Scr_GetIString\n"
-        "cmpb $0, (%eax)\n" /* line 3586 */
-        "jne .Lf1970d6_001970fb\n"
-        /* } scope */
-        "leave\n" /* line 3588 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1970d6_001970fb:\n"
-        "movl %eax, (%esp)\n" /* line 3587 */
-        "calll G_LocalizedStringIndex\n"
-        /* } scope */
-        "leave\n" /* line 3588 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1970d6_00197105:\n"
-        "movl $0x2b1868, (%esp)\n" /* line 3583 */
-        "calll Scr_Error\n"
-        "jmp .Lf1970d6_001970e8\n"
-    );
+    const char *s;
+    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+        Scr_Error("PrecacheString must be called before any wait statements in the gametype or level script");
+    s = Scr_GetIString(0);
+    if (s[0])
+        G_LocalizedStringIndex(s);
+    return 0;
 }
 
 /* line 3596 */
@@ -3506,75 +2720,23 @@ unsigned int GScr_GetAngleDelta(void)
 }
 
 /* line 3827 */
-static __attribute__((naked))
-unsigned int GScr_GetNorthYaw(void)
+static unsigned int GScr_GetNorthYaw(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3827 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x44, %esp\n"
-        /* { scope 1 */
-        "movl $0x20, 8(%esp)\n" /* line 3831 */
-        "leal -0x28(%ebp), %ebx\n" /* northYawString */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0xb, (%esp)\n"
-        "calll SV_GetConfigstring\n"
-        "movl %ebx, (%esp)\n" /* line 3832 */
-        "calll atof\n"
-        "fstpl -0x30(%ebp)\n"
-        "cvtsd2ss -0x30(%ebp), %xmm0\n"
-        "movss %xmm0, (%esp)\n"
-        "calll Scr_AddFloat\n"
-        /* } scope */
-        "addl $0x44, %esp\n" /* line 3833 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char northYawString[32];
+    SV_GetConfigstring(11, northYawString, 32);
+    Scr_AddFloat((float)atof(northYawString));
+    return 0;
 }
 
 /* line 3839 */
-static __attribute__((naked))
-unsigned int Scr_LoadFX(void)
+static unsigned int Scr_LoadFX(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3839 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 3844 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n" /* line 3846 */
-        "calll G_EffectIndex\n"
-        "movl %eax, %ebx\n" /* id */
-        "testl %eax, %eax\n" /* line 3847 */
-        "jne .Lf19747c_001974a9\n"
-        "movl 0x195f6a0, %eax\n"
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf19747c_001974b7\n"
-        ".Lf19747c_001974a9:\n"
-        "movl %ebx, (%esp)\n" /* line 3849 | id */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 3850 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19747c_001974b7:\n"
-        "movl $0x2b190c, (%esp)\n" /* line 3848 */
-        "calll Scr_Error\n"
-        "movl %ebx, (%esp)\n" /* line 3849 | id */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 3850 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int id;
+    id = G_EffectIndex(Scr_GetString(0));
+    if (!id && !*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+        Scr_Error("loadfx must be called before any wait statements in the gametype or level script");
+    Scr_AddInt(id);
+    return 0;
 }
 
 /* line 3941 */
@@ -4408,26 +3570,10 @@ unsigned int GScr_GetTeamPlayersAlive(void)
 }
 
 /* line 4408 */
-__attribute__((naked))
 unsigned int GScr_GetNumParts(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4408 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 4412 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n"
-        "calll SV_XModelGet\n"
-        "movl %eax, (%esp)\n" /* line 4413 */
-        "calll XModelNumBones\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 4414 */
-        "retl\n"
-    );
+    Scr_AddInt(XModelNumBones(SV_XModelGet(Scr_GetString(0))));
+    return 0;
 }
 
 /* line 4422 */
@@ -6203,95 +5349,35 @@ const char * Scr_GetGameTypeNameForScript(const char *pszGameTypeScript)
 }
 
 /* line 6341 */
-__attribute__((naked))
 unsigned int Scr_LoadGameType(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 6341 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, 4(%esp)\n" /* line 6346 */
-        "movl 0x17dda88, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_ExecThread\n"
-        "movzwl %ax, %eax\n" /* line 6347 */
-        "movl %eax, (%esp)\n"
-        "calll Scr_FreeThread\n"
-        /* } scope */
-        "leave\n" /* line 6348 */
-        "retl\n"
-    );
+    unsigned int threadId = Scr_ExecThread(*(unsigned int *)0x17dda88, 0);
+    Scr_FreeThread(threadId & 0xffff);
+    return 0;
 }
 
 /* line 6356 */
-__attribute__((naked))
 unsigned int Scr_StartupGameType(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 6356 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, 4(%esp)\n" /* line 6360 */
-        "movl 0x17dda8c, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_ExecThread\n"
-        "movzwl %ax, %eax\n" /* line 6361 */
-        "movl %eax, (%esp)\n"
-        "calll Scr_FreeThread\n"
-        /* } scope */
-        "leave\n" /* line 6362 */
-        "retl\n"
-    );
+    unsigned int threadId = Scr_ExecThread(*(unsigned int *)0x17dda8c, 0);
+    Scr_FreeThread(threadId & 0xffff);
+    return 0;
 }
 
 /* line 6370 */
-__attribute__((naked))
 unsigned int Scr_PlayerConnect(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 6370 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, 8(%esp)\n" /* line 6374 */
-        "movl 0x17dda90, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* self */
-        "movl %eax, (%esp)\n"
-        "calll Scr_ExecEntThread\n"
-        "movzwl %ax, %eax\n" /* line 6375 */
-        "movl %eax, 8(%ebp)\n" /* self */
-        /* } scope */
-        "leave\n" /* line 6376 */
-        /* { scope 1 */
-        "jmp Scr_FreeThread\n" /* line 6375 */
-    );
+    unsigned int threadId = Scr_ExecEntThread(self, *(unsigned int *)0x17dda90, 0);
+    Scr_FreeThread(threadId & 0xffff);
+    return 0;
 }
 
 /* line 6384 */
-__attribute__((naked))
 unsigned int Scr_PlayerDisconnect(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 6384 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, 8(%esp)\n" /* line 6388 */
-        "movl 0x17dda94, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* self */
-        "movl %eax, (%esp)\n"
-        "calll Scr_ExecEntThread\n"
-        "movzwl %ax, %eax\n" /* line 6389 */
-        "movl %eax, 8(%ebp)\n" /* self */
-        /* } scope */
-        "leave\n" /* line 6390 */
-        /* { scope 1 */
-        "jmp Scr_FreeThread\n" /* line 6389 */
-    );
+    unsigned int threadId = Scr_ExecEntThread(self, *(unsigned int *)0x17dda94, 0);
+    Scr_FreeThread(threadId & 0xffff);
+    return 0;
 }
 
 /* line 6454 */
@@ -6330,26 +5416,11 @@ unsigned int Scr_VoteCalled(gentity_t *self, char *command, char *param1, char *
 }
 
 /* line 6469 */
-__attribute__((naked))
 unsigned int Scr_PlayerVote(gentity_t *self, char *option)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 6469 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 6472 | option */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddString\n"
-        "movl $1, 8(%esp)\n" /* line 6473 */
-        "movl 0x195f5bc, %eax\n"
-        "movzwl 0x80(%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* self */
-        "movl %eax, (%esp)\n"
-        "calll Scr_Notify\n"
-        "leave\n" /* line 6474 */
-        "retl\n"
-    );
+    Scr_AddString(option);
+    Scr_Notify(self, *(unsigned short *)(*(byte **)0x195f5bc + 0x80), 1);
+    return 0;
 }
 
 /* line 533 */

@@ -202,63 +202,31 @@ unsigned int CG_CalculateFPS(void)
 }
 
 /* line 639 */
-__attribute__((naked))
 unsigned int CG_AddLagometerFrameInfo(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 639 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 0x195f584, %eax\n" /* line 643 */
-        "movl (%eax), %ecx\n"
-        "movl 0x195b380, %edx\n" /* line 644 */
-        "movl %edx, %ebx\n"
-        "andl $0x7f, %ebx\n"
-        "movl 0x25bb0(%ecx), %eax\n"
-        "subl 0x1c(%ecx), %eax\n"
-        "movl %eax, lagometer(, %ebx, 4)\n"
-        "addl $1, %edx\n" /* line 645 */
-        "movl %edx, 0x195b380\n"
-        "popl %ebx\n" /* line 646 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cg = *(byte **)(*(int *)0x195f584);
+    int index = *(int *)0x195b380;
+    lagometer.frameSamples[index & 0x7f] = *(int *)(cg + 0x25bb0) - *(int *)(cg + 0x1c);
+    *(int *)0x195b380 = index + 1;
+    return 0;
 }
 
 /* line 657 */
-__attribute__((naked))
 unsigned int CG_AddLagometerSnapshotInfo(snapshot_t *snap)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 657 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* snap */
-        "testl %ebx, %ebx\n" /* line 660 | snap */
-        "je .Lf1cb22a_001cb25f\n"
-        "movl 0x195b784, %edx\n" /* line 668 */
-        "movl %edx, %ecx\n"
-        "andl $0x7f, %ecx\n"
-        "movl 4(%ebx), %eax\n" /* snap */
-        "movl %eax, 0x195b584(, %ecx, 4)\n"
-        "movl (%ebx), %eax\n" /* line 669 | snap */
-        "movl %eax, 0x195b384(, %ecx, 4)\n"
-        "addl $1, %edx\n" /* line 670 */
-        "movl %edx, 0x195b784\n"
-        "popl %ebx\n" /* line 671 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1cb22a_001cb25f:\n"
-        "movl 0x195b784, %eax\n" /* line 662 */
-        "movl %eax, %edx\n"
-        "andl $0x7f, %edx\n"
-        "movl $0xffffffff, 0x195b584(, %edx, 4)\n"
-        "addl $1, %eax\n" /* line 663 */
-        "movl %eax, 0x195b784\n"
-        "popl %ebx\n" /* line 671 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int index;
+    if (!snap)
+    {
+        index = *(int *)0x195b784;
+        ((int *)0x195b584)[index & 0x7f] = -1;
+        *(int *)0x195b784 = index + 1;
+        return 0;
+    }
+    index = *(int *)0x195b784;
+    ((int *)0x195b584)[index & 0x7f] = *(int *)((byte *)snap + 4);
+    ((int *)0x195b384)[index & 0x7f] = *(int *)snap;
+    *(int *)0x195b784 = index + 1;
+    return 0;
 }
 
 /* line 679 */

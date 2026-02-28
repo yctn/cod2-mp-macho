@@ -13,6 +13,7 @@
  */
 
 extern int XModelGetLodForDist(XModel *model, float dist);
+extern void SL_RemoveRefToStringOfLen(unsigned int stringValue, int len);
 
 static unsigned int g_empty; /* 0x4e9580 */
 
@@ -85,26 +86,12 @@ void DObjInit(void)
 }
 
 /* line 37 */
-__attribute__((naked))
 void DObjShutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 37 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl g_empty, %eax\n" /* line 39 */
-        "testl %eax, %eax\n"
-        "jne .Lf74584_00074595\n"
-        "leave\n" /* line 44 */
-        "retl\n"
-        ".Lf74584_00074595:\n"
-        "movl $0x11, 4(%esp)\n" /* line 41 */
-        "movl %eax, (%esp)\n"
-        "calll SL_RemoveRefToStringOfLen\n"
-        "movl $0, g_empty\n" /* line 42 */
-        "leave\n" /* line 44 */
-        "retl\n"
-    );
+    if (!g_empty)
+        return;
+    SL_RemoveRefToStringOfLen(g_empty, 0x11);
+    g_empty = 0;
 }
 
 /* line 52 */
@@ -120,24 +107,10 @@ Bool DObjIgnoreCollision(const DObj *obj, int modelIndex)
 }
 
 /* line 580 */
-__attribute__((naked))
 int DObjSkelIsBoneUpToDate(DObj *obj, int boneIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 580 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %ecx\n" /* boneIndex */
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl 4(%eax), %edx\n"
-        "movl %ecx, %eax\n" /* boneIndex, obj */
-        "sarl $5, %eax\n" /* obj */
-        "andl $0x1f, %ecx\n" /* boneIndex */
-        "movl 0x20(%edx, %eax, 4), %eax\n" /* obj */
-        "sarl %cl, %eax\n" /* boneIndex, obj */
-        "andl $1, %eax\n" /* obj */
-        "popl %ebp\n" /* line 590 */
-        "retl\n"
-    );
+    int *skel = *(int **)((byte *)obj + 4);
+    return (*(int *)((byte *)skel + 0x20 + (boneIndex >> 5) * 4) >> (boneIndex & 0x1f)) & 1;
 }
 
 /* line 598 */
@@ -227,27 +200,14 @@ int DObjGetAllocSkelSize(const DObj *obj)
 }
 
 /* line 1236 */
-__attribute__((naked))
 qboolean DObjSkelExists(const DObj *obj, int timeStamp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1236 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* obj */
-        "movl 0xc(%ebp), %eax\n" /* line 1238 | timeStamp */
-        "cmpl %eax, 8(%edx)\n"
-        "je .Lf746ae_000746c7\n"
-        "movl $0, 4(%edx)\n" /* line 1240 */
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 1242 */
-        "retl\n"
-        ".Lf746ae_000746c7:\n"
-        "xorl %eax, %eax\n" /* line 1239 */
-        "cmpl $0, 4(%edx)\n"
-        "setne %al\n"
-        "popl %ebp\n" /* line 1242 */
-        "retl\n"
-    );
+    if (*(int *)((byte *)obj + 8) != timeStamp)
+    {
+        *(int *)((byte *)obj + 4) = 0;
+        return 0;
+    }
+    return *(int *)((byte *)obj + 4) != 0;
 }
 
 /* line 1261 */

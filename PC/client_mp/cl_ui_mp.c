@@ -9,6 +9,13 @@ extern int CL_ServerStatus(char *serverAddress, char *serverStatus, int maxLen);
 extern int SND_PlayLocalSoundAlias(snd_alias_list_t *aliasList, int channel);
 extern int SND_PlayLocalSoundAliasByName(const char *aliasname, int channel);
 extern void Com_LoadSoundAliases(const char *zone, const char *spec, int flags);
+extern qboolean UI_CheckExecKey(int key);
+extern void CL_SwitchToLocalClient(int localClientNum);
+extern void UI_Init(void);
+extern void UI_Component_Init(void);
+extern const char *Key_KeynumToString(int keynum, int translate);
+extern const char *Key_GetBinding(int keynum);
+extern void I_strncpyz(char *dest, const char *src, int destsize);
 
 void GetClientState(uiClientState_t *state);
 void LAN_ResetPings(int source);
@@ -135,38 +142,16 @@ MAD r1.xyz, v0, -r1, c23" */
 }
 
 /* line 82 */
-__attribute__((naked))
 int LAN_GetServerCount(int source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 82 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* source */
-        "cmpl $1, %eax\n" /* line 84 */
-        "je .Lf17f0e6_0017f10b\n"
-        "cmpl $2, %eax\n"
-        "je .Lf17f0e6_0017f118\n"
-        "testl %eax, %eax\n"
-        "jne .Lf17f0e6_0017f107\n"
-        "movl 0x195ecac, %eax\n" /* line 87 */
-        "movl 0x138(%eax), %eax\n"
-        "popl %ebp\n" /* line 98 */
-        "retl\n"
-        ".Lf17f0e6_0017f107:\n"
-        "xorl %eax, %eax\n" /* line 84 */
-        "popl %ebp\n" /* line 98 */
-        "retl\n"
-        ".Lf17f0e6_0017f10b:\n"
-        "movl 0x195ecac, %eax\n" /* line 90 */
-        "movl 0x4540(%eax), %eax\n"
-        "popl %ebp\n" /* line 98 */
-        "retl\n"
-        ".Lf17f0e6_0017f118:\n"
-        "movl 0x195ecac, %eax\n" /* line 94 */
-        "movl 0x29c644(%eax), %eax\n"
-        "popl %ebp\n" /* line 98 */
-        "retl\n"
-    );
+    byte *base = *(byte **)0x195ecac;
+    if (source == 0)
+        return *(int *)(base + 0x138);
+    if (source == 1)
+        return *(int *)(base + 0x4540);
+    if (source == 2)
+        return *(int *)(base + 0x29c644);
+    return 0;
 }
 
 /* line 106 */
@@ -653,69 +638,21 @@ int LAN_GetServerStatus(char *serverAddress, char *serverStatus, int maxLen)
 }
 
 /* line 550 */
-__attribute__((naked))
 void Key_KeynumToStringBuf(int keynum, char *buf, int buflen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 550 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 0xc(%ebp), %esi\n" /* buf */
-        "movl 0x10(%ebp), %ebx\n" /* buflen */
-        "movl $1, 4(%esp)\n" /* line 552 */
-        "movl 8(%ebp), %eax\n" /* keynum */
-        "movl %eax, (%esp)\n"
-        "calll Key_KeynumToString\n"
-        "movl %ebx, 0x10(%ebp)\n" /* buflen */
-        "movl %eax, 0xc(%ebp)\n" /* buf */
-        "movl %esi, 8(%ebp)\n" /* buf, keynum */
-        "addl $0x10, %esp\n" /* line 553 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp I_strncpyz\n" /* line 552 */
-    );
+    I_strncpyz(buf, Key_KeynumToString(keynum, 1), buflen);
 }
 
 /* line 561 */
-__attribute__((naked))
 void Key_GetBindingBuf(int keynum, char *buf, int buflen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 561 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 0xc(%ebp), %esi\n" /* buf */
-        "movl 0x10(%ebp), %ebx\n" /* buflen */
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 565 | keynum */
-        "movl %eax, (%esp)\n"
-        "calll Key_GetBinding\n"
-        "testl %eax, %eax\n" /* line 566 */
-        "je .Lf17f742_0017f773\n"
-        "movl %ebx, 0x10(%ebp)\n" /* line 568 | buflen */
-        "movl %eax, 0xc(%ebp)\n" /* buf */
-        "movl %esi, 8(%ebp)\n" /* buf, keynum */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 574 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp I_strncpyz\n" /* line 568 */
-        ".Lf17f742_0017f773:\n"
-        "movb $0, (%esi)\n" /* line 572 | buf */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 574 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *binding = Key_GetBinding(keynum);
+    if (binding)
+    {
+        I_strncpyz(buf, binding, buflen);
+        return;
+    }
+    *buf = 0;
 }
 
 /* line 582 */
@@ -725,31 +662,16 @@ int Key_GetCatcher(void)
 }
 
 /* line 593 */
-__attribute__((naked))
 void Key_SetCatcher(int catcher)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 593 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* catcher */
-        "movl 0x195ee78, %ecx\n" /* line 596 */
-        "movl (%ecx), %eax\n"
-        "testb $1, 4(%eax)\n"
-        "je .Lf17f78e_0017f7b6\n"
-        "orl $1, %edx\n" /* line 597 */
-        "movl %edx, 4(%eax)\n"
-        ".Lf17f78e_0017f7a8:\n"
-        "movl (%ecx), %eax\n" /* line 601 */
-        "testb $8, 4(%eax)\n"
-        "jne .Lf17f78e_0017f7b4\n"
-        "movb $0, 8(%eax)\n" /* line 602 */
-        ".Lf17f78e_0017f7b4:\n"
-        "popl %ebp\n" /* line 603 */
-        "retl\n"
-        ".Lf17f78e_0017f7b6:\n"
-        "movl %edx, 4(%eax)\n" /* line 599 */
-        "jmp .Lf17f78e_0017f7a8\n"
-    );
+    byte *ptr = *(byte **)(*(int *)0x195ee78);
+    if (*(int *)(ptr + 4) & 1)
+        *(int *)(ptr + 4) = catcher | 1;
+    else
+        *(int *)(ptr + 4) = catcher;
+    ptr = *(byte **)(*(int *)0x195ee78);
+    if (!(*(int *)(ptr + 4) & 8))
+        *(byte *)(ptr + 8) = 0;
 }
 
 /* line 611 */
@@ -951,43 +873,21 @@ qboolean CL_ShutdownUI(void)
 }
 
 /* line 935 */
-__attribute__((naked))
 void CL_InitUI(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 935 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195ecac, %eax\n" /* line 939 */
-        "movl $1, 0x110(%eax)\n"
-        "movl $0, (%esp)\n" /* line 945 */
-        "calll CL_SwitchToLocalClient\n"
-        "calll UI_Init\n" /* line 948 */
-        "movl $0, (%esp)\n" /* line 951 */
-        "calll CL_SwitchToLocalClient\n"
-        "leave\n" /* line 954 */
-        "jmp UI_Component_Init\n" /* line 953 */
-    );
+    *(int *)(*(byte **)0x195ecac + 0x110) = 1;
+    CL_SwitchToLocalClient(0);
+    UI_Init();
+    CL_SwitchToLocalClient(0);
+    UI_Component_Init();
 }
 
 /* line 963 */
-__attribute__((naked))
 qboolean UI_checkKeyExec(int key)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 963 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ecac, %eax\n" /* line 965 */
-        "movl 0x110(%eax), %ecx\n"
-        "testl %ecx, %ecx\n"
-        "jne .Lf17f9ee_0017fa04\n"
-        "xorl %eax, %eax\n" /* line 969 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf17f9ee_0017fa04:\n"
-        "popl %ebp\n"
-        "jmp UI_CheckExecKey\n" /* line 966 */
-    );
+    if (!*(int *)(*(byte **)0x195ecac + 0x110))
+        return 0;
+    return UI_CheckExecKey(key);
 }
 
 /* line 979 */

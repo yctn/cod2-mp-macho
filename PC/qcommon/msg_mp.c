@@ -146,39 +146,20 @@ void MSG_WriteBits(msg_t *msg, int value, int bits)
 }
 
 /* line 835 */
-__attribute__((naked))
 void MSG_WriteBit0(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 835 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* msg */
-        "movl 0xc(%edx), %ecx\n" /* line 839 */
-        "cmpl 8(%edx), %ecx\n"
-        "jl .Lf171bfe_00171c14\n"
-        "movl $1, (%edx)\n" /* line 841 */
-        "popl %ebp\n" /* line 853 */
-        "retl\n"
-        ".Lf171bfe_00171c14:\n"
-        "movl 0x14(%edx), %eax\n" /* line 846 */
-        "testb $7, %al\n"
-        "je .Lf171bfe_00171c23\n"
-        "addl $1, %eax\n" /* line 852 */
-        "movl %eax, 0x14(%edx)\n"
-        ".Lf171bfe_00171c21:\n"
-        "popl %ebp\n" /* line 853 */
-        "retl\n"
-        ".Lf171bfe_00171c23:\n"
-        "leal (, %ecx, 8), %eax\n" /* line 848 */
-        "movl %eax, 0x14(%edx)\n"
-        "movl 4(%edx), %eax\n" /* line 849 */
-        "movb $0, (%eax, %ecx)\n"
-        "addl $1, 0xc(%edx)\n" /* line 850 */
-        "movl 0x14(%edx), %eax\n"
-        "addl $1, %eax\n" /* line 852 */
-        "movl %eax, 0x14(%edx)\n"
-        "jmp .Lf171bfe_00171c21\n"
-    );
+    if (msg->cursize >= msg->maxsize)
+    {
+        msg->overflowed = 1;
+        return;
+    }
+    if (!(msg->bit & 7))
+    {
+        msg->bit = msg->cursize * 8;
+        msg->data[msg->cursize] = 0;
+        msg->cursize++;
+    }
+    msg->bit++;
 }
 
 /* line 856 */
@@ -473,30 +454,15 @@ int MSG_ReadBitsCompress(byte *from, byte *to, int size)
 }
 
 /* line 990 */
-__attribute__((naked))
 void MSG_WriteByte(msg_t *msg, int c)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 990 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* msg */
-        "movl 0xc(%edx), %ecx\n" /* line 992 */
-        "cmpl 8(%edx), %ecx\n"
-        "jge .Lf171e72_00171e92\n"
-        "movl 4(%edx), %eax\n" /* line 994 */
-        "movzbl 0xc(%ebp), %ebx\n" /* c */
-        "movb %bl, (%eax, %ecx)\n"
-        "addl $1, 0xc(%edx)\n" /* line 995 */
-        "popl %ebx\n" /* line 1000 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf171e72_00171e92:\n"
-        "movl $1, (%edx)\n" /* line 999 */
-        "popl %ebx\n" /* line 1000 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (msg->cursize >= msg->maxsize)
+    {
+        msg->overflowed = 1;
+        return;
+    }
+    msg->data[msg->cursize] = (byte)c;
+    msg->cursize++;
 }
 
 /* line 1003 */
@@ -576,67 +542,31 @@ int MSG_ReadByte(msg_t *msg)
 }
 
 /* line 1148 */
-__attribute__((naked))
 int MSG_ReadShort(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1148 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* msg */
-        /* { scope 1 */
-        "movl 0x10(%edx), %ebx\n" /* line 1153 */
-        "leal 2(%ebx), %ecx\n"
-        "cmpl 0xc(%edx), %ecx\n" /* line 1154 */
-        "jg .Lf171f14_00171f33\n"
-        "movl 4(%edx), %eax\n" /* line 1156 */
-        "movswl (%eax, %ebx), %eax\n"
-        "movl %ecx, 0x10(%edx)\n" /* line 1157 */
-        /* } scope */
-        "popl %ebx\n" /* line 1162 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171f14_00171f33:\n"
-        "movl $1, (%edx)\n" /* line 1160 */
-        "movl $0xffffffff, %eax\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1162 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int readcount = msg->readcount;
+    int next = readcount + 2;
+    if (next > msg->cursize)
+    {
+        msg->overflowed = 1;
+        return -1;
+    }
+    msg->readcount = next;
+    return *(short *)(msg->data + readcount);
 }
 
 /* line 1165 */
-__attribute__((naked))
 int MSG_ReadLong(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1165 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* msg */
-        /* { scope 1 */
-        "movl 0x10(%edx), %ebx\n" /* line 1170 */
-        "leal 4(%ebx), %ecx\n"
-        "cmpl 0xc(%edx), %ecx\n" /* line 1171 */
-        "jg .Lf171f42_00171f60\n"
-        "movl 4(%edx), %eax\n" /* line 1173 */
-        "movl (%eax, %ebx), %eax\n"
-        "movl %ecx, 0x10(%edx)\n" /* line 1174 */
-        /* } scope */
-        "popl %ebx\n" /* line 1179 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171f42_00171f60:\n"
-        "movl $1, (%edx)\n" /* line 1177 */
-        "movl $0xffffffff, %eax\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1179 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int readcount = msg->readcount;
+    int next = readcount + 4;
+    if (next > msg->cursize)
+    {
+        msg->overflowed = 1;
+        return -1;
+    }
+    msg->readcount = next;
+    return *(int *)(msg->data + readcount);
 }
 
 /* line 1289 */

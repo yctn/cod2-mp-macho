@@ -195,25 +195,13 @@ Bool PM_IsBinocularsADS(const playerState_t *ps)
     return (unsigned int)val <= 1;
 }
 
+extern void PM_AddEvent(playerState_t *ps, int newEvent);
+
 /* line 1482 */
-__attribute__((naked))
 void PM_ExitAimDownSight(playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1482 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* ps */
-        "movl $0x95, 4(%esp)\n" /* line 1484 */
-        "movl %ebx, (%esp)\n" /* ps */
-        "calll PM_AddEvent\n"
-        "andl $0xffffffbf, 0xc(%ebx)\n" /* line 1485 | ps */
-        "addl $0x14, %esp\n" /* line 1486 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    PM_AddEvent(ps, 0x95);
+    *(int *)((byte *)ps + 0xc) &= ~0x40;
 }
 
 /* line 4071 */
@@ -956,24 +944,14 @@ int PM_WeaponAmmoAvailable(playerState_t *ps)
 }
 
 /* line 1758 */
-__attribute__((naked))
 int BG_WeaponAmmo(const playerState_t *ps, int weapon)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1758 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* ps */
-        "movl 0xc(%ebp), %eax\n" /* line 521 | weapon */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n"
-        "movl 0x1c8(%eax), %edx\n"
-        "movl 0x1d0(%eax), %ecx\n"
-        "movl 0x144(%ebx, %edx, 4), %eax\n"
-        "addl 0x344(%ebx, %ecx, 4), %eax\n"
-        "popl %ebx\n" /* line 1767 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    void *weapDef = *(void **)((byte *)&bg_weaponDefs + weapon * 4);
+    int ammoIndex = *(int *)((byte *)weapDef + 0x1c8);
+    int clipIndex = *(int *)((byte *)weapDef + 0x1d0);
+
+    return *(int *)((byte *)ps + 0x144 + ammoIndex * 4) +
+           *(int *)((byte *)ps + 0x344 + clipIndex * 4);
 }
 
 /* line 1050 */

@@ -37,27 +37,9 @@ unsigned int SL_GetStringForVector(const float *v);
 unsigned int Scr_CreateCanonicalFilename(const char *filename);
 
 /* line 206 */
-__attribute__((naked))
 unsigned int SL_ConvertFromString(const char *str)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 206 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* str */
-        "subl $4, %edx\n"
-        "movl 0x195ecc4, %eax\n"
-        "subl (%eax), %edx\n"
-        "movl %edx, %eax\n"
-        "js .Lf434d8_000434f1\n"
-        "sarl $3, %eax\n"
-        "popl %ebp\n" /* line 210 */
-        "retl\n"
-        ".Lf434d8_000434f1:\n"
-        "addl $7, %eax\n" /* line 206 */
-        "sarl $3, %eax\n"
-        "popl %ebp\n" /* line 210 */
-        "retl\n"
-    );
+    return (int)((byte *)str - 4 - *(byte **)*(void **)0x195ecc4) >> 3;
 }
 
 /* line 299 */
@@ -67,59 +49,26 @@ unsigned int SL_Shutdown(void)
 }
 
 /* line 151 */
-__attribute__((naked))
 const char * SL_ConvertToString(unsigned int stringValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 151 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* stringValue */
-        "testl %edx, %edx\n" /* line 156 */
-        "je .Lf43506_0004351d\n"
-        "movl 0x195ecc4, %eax\n"
-        "movl (%eax), %eax\n"
-        "leal 4(%eax, %edx, 8), %eax\n"
-        "popl %ebp\n" /* line 157 */
-        "retl\n"
-        ".Lf43506_0004351d:\n"
-        "xorl %eax, %eax\n" /* line 156 */
-        "popl %ebp\n" /* line 157 */
-        "retl\n"
-    );
+    if (!stringValue)
+        return 0;
+    return (const char *)(*(byte **)*(void **)0x195ecc4 + stringValue * 8 + 4);
 }
 
 /* line 759 */
-__attribute__((naked))
 unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 759 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 0xc(%ebp), %ebx\n" /* user */
-        /* { scope 1 */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
-        "movl (%eax), %edx\n"
-        "movl 8(%ebp), %eax\n" /* stringValue */
-        "leal (%edx, %eax, 8), %ecx\n"
-        "movzbl 1(%ecx), %edx\n" /* line 767 */
-        "movzbl %dl, %eax\n"
-        "testl %ebx, %eax\n" /* user */
-        "je .Lf43522_00043549\n"
-        "subw $1, 2(%ecx)\n" /* line 785 */
-        /* } scope */
-        "popl %ebx\n" /* line 799 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf43522_00043549:\n"
-        "orb %bl, %dl\n" /* line 795 | user */
-        "movb %dl, 1(%ecx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 799 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *entry = *(byte **)*(void **)0x195ecc4 + stringValue * 8;
+    if (entry[1] & user)
+    {
+        *(unsigned short *)(entry + 2) -= 1;
+    }
+    else
+    {
+        entry[1] |= (byte)user;
+    }
+    return 0;
 }
 
 /* line 810 */

@@ -21,10 +21,10 @@ JCOEF Var_Init(void);
 unsigned int Scr_GetNumScriptVars(void);
 unsigned int GetVariableKeyObject(unsigned int id);
 JCOEF AddRefToObject(unsigned int id);
-JCOEF Scr_SetThreadNotifyName(unsigned int startLocalId, unsigned int stringValue);
+void Scr_SetThreadNotifyName(unsigned int startLocalId, unsigned int stringValue);
 short unsigned int Scr_GetThreadNotifyName(unsigned int startLocalId);
-JCOEF Scr_SetThreadWaitTime(unsigned int startLocalId, unsigned int waitTime);
-JCOEF Scr_ClearWaitTime(unsigned int startLocalId);
+void Scr_SetThreadWaitTime(unsigned int startLocalId, unsigned int waitTime);
+void Scr_ClearWaitTime(unsigned int startLocalId);
 unsigned int Scr_GetThreadWaitTime(unsigned int startLocalId);
 unsigned int GetParentLocalId(unsigned int threadId);
 unsigned int GetSafeParentLocalId(unsigned int threadId);
@@ -36,7 +36,7 @@ unsigned int Scr_GetSelf(unsigned int threadId);
 JCOEF RemoveRefToVector(const float *vectorValue);
 Bool IsValidArrayIndex(unsigned int unsignedValue);
 unsigned int GetInternalVariableIndex(unsigned int unsignedValue);
-JCOEF SetNewVariableValue(unsigned int id, VariableValue *value);
+void SetNewVariableValue(unsigned int id, VariableValue *value);
 unsigned int Scr_EvalVariableObject(unsigned int id);
 unsigned int GetArraySize(unsigned int id);
 unsigned int FindPrevSibling(unsigned int id);
@@ -299,27 +299,12 @@ JCOEF AddRefToObject(unsigned int id)
 }
 
 /* line 1279 */
-__attribute__((naked))
-JCOEF Scr_SetThreadNotifyName(unsigned int startLocalId, unsigned int stringValue)
+void Scr_SetThreadNotifyName(unsigned int startLocalId, unsigned int stringValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1279 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* startLocalId */
-        "movl 0xc(%ebp), %ecx\n" /* stringValue */
-        /* { scope 1 */
-        "shll $4, %eax\n" /* line 1283 */
-        "addl $scrVarGlob, %eax\n"
-        "movl 8(%eax), %edx\n" /* line 1288 */
-        "andl $0xe0, %edx\n"
-        "orl $0x10, %edx\n" /* line 1289 */
-        "shll $8, %ecx\n" /* line 1290 */
-        "orl %edx, %ecx\n"
-        "movl %ecx, 8(%eax)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 1291 */
-        "retl\n"
-    );
+    byte *entry = (byte *)&scrVarGlob + startLocalId * 16;
+    unsigned int val = *(unsigned int *)(entry + 8);
+    val = (val & 0xe0) | 0x10;
+    *(unsigned int *)(entry + 8) = val | (stringValue << 8);
 }
 
 /* line 1352 */
@@ -329,50 +314,18 @@ short unsigned int Scr_GetThreadNotifyName(unsigned int startLocalId)
 }
 
 /* line 1360 */
-__attribute__((naked))
-JCOEF Scr_SetThreadWaitTime(unsigned int startLocalId, unsigned int waitTime)
+void Scr_SetThreadWaitTime(unsigned int startLocalId, unsigned int waitTime)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1360 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* startLocalId */
-        "movl 0xc(%ebp), %ecx\n" /* waitTime */
-        /* { scope 1 */
-        "shll $4, %edx\n" /* line 1364 */
-        "leal scrVarGlob(%edx), %ebx\n" /* entryValue */
-        "movl 8(%ebx), %eax\n" /* line 1369 | entryValue */
-        "andl $0xe0, %eax\n"
-        "orl $0x11, %eax\n" /* line 1370 */
-        "movl %eax, 8(%ebx)\n" /* entryValue */
-        "shll $8, %ecx\n" /* line 1371 */
-        "orl %ecx, 0x104cf08(%edx)\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1372 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *entry = (byte *)&scrVarGlob + startLocalId * 16;
+    *(unsigned int *)(entry + 8) = (*(unsigned int *)(entry + 8) & 0xe0) | 0x11;
+    *(unsigned int *)(0x104cf08 + startLocalId * 16) |= (waitTime << 8);
 }
 
 /* line 1375 */
-__attribute__((naked))
-JCOEF Scr_ClearWaitTime(unsigned int startLocalId)
+void Scr_ClearWaitTime(unsigned int startLocalId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1375 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* startLocalId */
-        /* { scope 1 */
-        "shll $4, %edx\n" /* line 1379 */
-        "addl $scrVarGlob, %edx\n"
-        "movl 8(%edx), %eax\n" /* line 1383 */
-        "andl $0xffffffe0, %eax\n"
-        "orl $0xf, %eax\n"
-        "movl %eax, 8(%edx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 1384 */
-        "retl\n"
-    );
+    int *p = (int *)((byte *)&scrVarGlob + startLocalId * 16 + 8);
+    *p = (*p & 0xffffffe0) | 0xf;
 }
 
 /* line 1387 */
@@ -524,26 +477,11 @@ unsigned int GetInternalVariableIndex(unsigned int unsignedValue)
 }
 
 /* line 2422 */
-__attribute__((naked))
-JCOEF SetNewVariableValue(unsigned int id, VariableValue *value)
+void SetNewVariableValue(unsigned int id, VariableValue *value)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2422 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* id */
-        "movl 0xc(%ebp), %ecx\n" /* value */
-        /* { scope 1 */
-        "shll $4, %edx\n" /* line 2428 */
-        "addl $scrVarGlob, %edx\n"
-        "movl 8(%edx), %eax\n" /* line 2437 */
-        "orl 4(%ecx), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl (%ecx), %eax\n" /* line 2438 */
-        "movl %eax, 4(%edx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 2439 */
-        "retl\n"
-    );
+    byte *entry = (byte *)&scrVarGlob + id * 16;
+    *(int *)(entry + 8) |= *(int *)((byte *)value + 4);
+    *(int *)(entry + 4) = *(int *)value;
 }
 
 /* line 2529 */
@@ -724,29 +662,15 @@ unsigned int Scr_FindField(const char *name, int *type)
 }
 
 /* line 4676 */
-__attribute__((naked))
 int Scr_GetClassnumForCharId(int charId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4676 */
-        "movl %esp, %ebp\n"
-        "movzbl 8(%ebp), %ecx\n" /* charId */
-        "xorl %eax, %eax\n"
-        "movl $g_classMap, %edx\n"
-        /* { scope 1 */
-        ".Lf8902a_00089038:\n"
-        "cmpb %cl, 4(%edx)\n" /* line 4682 */
-        "je .Lf8902a_0008904d\n"
-        "addl $1, %eax\n" /* line 4680 */
-        "addl $0xc, %edx\n"
-        "cmpl $4, %eax\n"
-        "jne .Lf8902a_00089038\n"
-        "movl $0xffffffff, %eax\n"
-        /* } scope */
-        ".Lf8902a_0008904d:\n"
-        "popl %ebp\n" /* line 4686 */
-        "retl\n"
-    );
+    int i;
+    for (i = 0; i < 4; i++)
+    {
+        if (*(byte *)((byte *)&g_classMap + i * 12 + 4) == (byte)charId)
+            return i;
+    }
+    return -1;
 }
 
 /* line 1321 */

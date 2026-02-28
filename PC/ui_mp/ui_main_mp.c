@@ -68,6 +68,9 @@ static int ui_serverFilterType; /* 0xec7104 */
 extern void Menus_CloseAll(uiInfo_t *info);
 extern qboolean Menus_AnyFullScreenVisible(uiInfo_t *info);
 extern void LAN_SaveServersToCache(void);
+extern void Menus_OpenByName(uiInfo_t *info, const char *name);
+extern void Menus_CloseByName(uiInfo_t *info, const char *name);
+extern const char *Cmd_Args(int startIndex);
 
 void UI_AssetCache(void);
 void UI_DrawSides(float x, float y, float w, float h, int horzAlign, int vertAlign, float size, const vec_t *color);
@@ -2256,41 +2259,15 @@ void UI_Pause(qboolean b)
 }
 
 /* line 4124 */
-__attribute__((naked))
 void UI_OpenMenu_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4124 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, (%esp)\n" /* line 4127 */
-        "calll Cmd_Args\n"
-        "movl %eax, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_OpenByName\n"
-        "leave\n" /* line 4128 */
-        "retl\n"
-    );
+    Menus_OpenByName(uiInfo, Cmd_Args(1));
 }
 
 /* line 4136 */
-__attribute__((naked))
 void UI_CloseMenu_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4136 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $1, (%esp)\n" /* line 4139 */
-        "calll Cmd_Args\n"
-        "movl %eax, 4(%esp)\n"
-        "movl uiInfo, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Menus_CloseByName\n"
-        "leave\n" /* line 4140 */
-        "retl\n"
-    );
+    Menus_CloseByName(uiInfo, Cmd_Args(1));
 }
 
 /* line 4148 */

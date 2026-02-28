@@ -137,72 +137,32 @@ void PM_AddTouchEnt(pmove_t *pm, int entityNum)
     );
 }
 
+void BG_AddPredictableEventToPlayerstate(int newEvent, int eventParm, playerState_t *ps);
+
 /* line 283 */
-__attribute__((naked))
 void PM_AddEvent(playerState_t *ps, int newEvent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 283 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 285 | ps */
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* newEvent */
-        "movl %eax, (%esp)\n"
-        "calll BG_AddPredictableEventToPlayerstate\n"
-        "leave\n" /* line 286 */
-        "retl\n"
-    );
+    BG_AddPredictableEventToPlayerstate(newEvent, 0, ps);
 }
 
 /* line 348 */
-__attribute__((naked))
 int PM_GetEffectiveStance(playerState_t *ps)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 348 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 350 | ps */
-        "movl 0xf4(%eax), %eax\n"
-        "cmpl $0x28, %eax\n"
-        "je .Lf6be36_0006be52\n"
-        "cmpl $0xb, %eax\n" /* line 353 */
-        "sete %al\n"
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 357 */
-        "retl\n"
-        ".Lf6be36_0006be52:\n"
-        "movb $2, %al\n" /* line 350 */
-        "popl %ebp\n" /* line 357 */
-        "retl\n"
-    );
+    int val = *(int *)((byte *)ps + 0xf4);
+
+    if (val == 0x28)
+        return 2;
+    return val == 0xb;
 }
 
 /* line 816 */
-__attribute__((naked))
 int PM_GroundSurfaceType(pml_t *pml)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 816 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 822 | pml */
-        "movl 0x48(%eax), %eax\n"
-        "testb $0x20, %ah\n"
-        "jne .Lf6be56_0006be6e\n"
-        "andl $0x1f00000, %eax\n" /* line 825 */
-        "shrl $0x14, %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 829 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf6be56_0006be6e:\n"
-        "xorl %eax, %eax\n" /* line 822 */
-        /* } scope */
-        "popl %ebp\n" /* line 829 */
-        "retl\n"
-    );
+    int val = *(int *)((byte *)pml + 0x48);
+
+    if (val & 0x2000)
+        return 0;
+    return (val & 0x1f00000) >> 20;
 }
 
 /* line 1803 */

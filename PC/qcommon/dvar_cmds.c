@@ -4,6 +4,16 @@
 #include "common_types.h"
 #include "imports.h"
 
+extern int Cmd_Argc(void);
+extern const char *Cmd_Argv(int arg);
+extern void Com_Printf(const char *fmt, ...);
+extern void Dvar_AddFlags(void *dvar, int flags);
+extern void *Dvar_FindVar(const char *name);
+extern const char *Dvar_DisplayableValue(void *dvar);
+extern void Dvar_SetCommand(const char *name, const char *value);
+extern void Dvar_Reset(void *dvar, int source);
+extern void Cmd_AddCommand(const char *name, void (*func)(void));
+
 static char info1[1024]; /* 0x497f00 */
 static char info2[8192]; /* 0x495f00 */
 
@@ -517,37 +527,15 @@ void Dvar_Toggle_f(void)
 }
 
 /* line 258 */
-__attribute__((naked))
 void Dvar_TogglePrint_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 258 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "calll Dvar_ToggleInternal\n" /* line 264 */
-        "testb %al, %al\n"
-        "je .Lf50642_00050684\n"
-        "movl $1, (%esp)\n" /* line 268 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n"
-        "movl %eax, (%esp)\n" /* line 270 */
-        "calll Dvar_FindVar\n"
-        "movl %eax, (%esp)\n" /* line 272 */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, 8(%esp)\n" /* line 274 */
-        "movl %ebx, 4(%esp)\n"
-        "movl $0x219140, (%esp)\n" /* "%s toggled to %s
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf50642_00050684:\n"
-        "addl $0x14, %esp\n" /* line 275 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    const char *dvarName;
+    void *dvar;
+    if (!Dvar_ToggleInternal())
+        return;
+    dvarName = Cmd_Argv(1);
+    dvar = Dvar_FindVar(dvarName);
+    Com_Printf("%s toggled to %s\n", dvarName, Dvar_DisplayableValue(dvar));
 }
 
 /* line 287 */
@@ -885,200 +873,82 @@ void Dvar_RegisterFloat_f(void)
 }
 
 /* line 425 */
-__attribute__((naked))
 void Dvar_SetU_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 425 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 429 */
-        "cmpl $2, %eax\n"
-        "jg .Lf50a2e_00050a4c\n"
-        "movl $0x219284, (%esp)\n" /* line 431 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf50a2e_00050a4a:\n"
-        "leave\n" /* line 441 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50a2e_00050a4c:\n"
-        "calll Dvar_Set_f\n" /* line 434 */
-        "movl $1, (%esp)\n" /* line 435 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 436 */
-        "je .Lf50a2e_00050a4a\n"
-        "movl $2, 4(%esp)\n" /* line 440 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_AddFlags\n"
-        /* } scope */
-        "leave\n" /* line 441 */
-        "retl\n"
-    );
+    void *dvar;
+    if (Cmd_Argc() <= 2)
+    {
+        Com_Printf("USAGE: setu <variable> <value>\n");
+        return;
+    }
+    Dvar_Set_f();
+    dvar = Dvar_FindVar(Cmd_Argv(1));
+    if (dvar)
+        Dvar_AddFlags(dvar, 2);
 }
 
 /* line 453 */
-__attribute__((naked))
 void Dvar_SetS_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 453 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 457 */
-        "cmpl $2, %eax\n"
-        "jg .Lf50a7c_00050a9a\n"
-        "movl $0x2192a4, (%esp)\n" /* line 459 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf50a7c_00050a98:\n"
-        "leave\n" /* line 468 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50a7c_00050a9a:\n"
-        "calll Dvar_Set_f\n" /* line 462 */
-        "movl $1, (%esp)\n" /* line 463 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 464 */
-        "je .Lf50a7c_00050a98\n"
-        "movl $4, 4(%esp)\n" /* line 467 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_AddFlags\n"
-        /* } scope */
-        "leave\n" /* line 468 */
-        "retl\n"
-    );
+    void *dvar;
+    if (Cmd_Argc() <= 2)
+    {
+        Com_Printf("USAGE: sets <variable> <value>\n");
+        return;
+    }
+    Dvar_Set_f();
+    dvar = Dvar_FindVar(Cmd_Argv(1));
+    if (dvar)
+        Dvar_AddFlags(dvar, 4);
 }
 
 /* line 478 */
-__attribute__((naked))
 void Dvar_SetA_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 478 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 482 */
-        "cmpl $2, %eax\n"
-        "jg .Lf50aca_00050ae8\n"
-        "movl $0x2192c4, (%esp)\n" /* line 484 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf50aca_00050ae6:\n"
-        "leave\n" /* line 493 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50aca_00050ae8:\n"
-        "calll Dvar_Set_f\n" /* line 487 */
-        "movl $1, (%esp)\n" /* line 488 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 489 */
-        "je .Lf50aca_00050ae6\n"
-        "movl $1, 4(%esp)\n" /* line 492 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_AddFlags\n"
-        /* } scope */
-        "leave\n" /* line 493 */
-        "retl\n"
-    );
+    void *dvar;
+    if (Cmd_Argc() <= 2)
+    {
+        Com_Printf("USAGE: seta <variable> <value>\n");
+        return;
+    }
+    Dvar_Set_f();
+    dvar = Dvar_FindVar(Cmd_Argv(1));
+    if (dvar)
+        Dvar_AddFlags(dvar, 1);
 }
 
 /* line 501 */
-__attribute__((naked))
 void Dvar_SetFromDvar_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 501 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 505 */
-        "cmpl $3, %eax\n"
-        "je .Lf50b18_00050b3b\n"
-        "movl $0x2192e4, (%esp)\n" /* line 507 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf50b18_00050b35:\n"
-        "addl $0x14, %esp\n" /* line 519 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50b18_00050b3b:\n"
-        "movl $2, (%esp)\n" /* line 511 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 512 */
-        "je .Lf50b18_00050b7b\n"
-        "movl %eax, (%esp)\n" /* line 518 */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, %ebx\n"
-        "movl $1, (%esp)\n"
-        "calll Cmd_Argv\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetCommand\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 519 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50b18_00050b7b:\n"
-        "movl $2, (%esp)\n" /* line 514 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0x219314, (%esp)\n" /* "dvar '%s' doesn't exist
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf50b18_00050b35\n"
-    );
+    void *dvar;
+    const char *value;
+    if (Cmd_Argc() != 3)
+    {
+        Com_Printf("USAGE: setfromdvar <dest_dvar> <source_dvar>\n");
+        return;
+    }
+    dvar = Dvar_FindVar(Cmd_Argv(2));
+    if (!dvar)
+    {
+        Com_Printf("dvar '%s' doesn't exist\n", Cmd_Argv(2));
+        return;
+    }
+    value = Dvar_DisplayableValue(dvar);
+    Dvar_SetCommand(Cmd_Argv(1), value);
 }
 
 /* line 527 */
-__attribute__((naked))
 void Dvar_Reset_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 527 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 531 */
-        "cmpl $2, %eax\n"
-        "je .Lf50b9a_00050bb8\n"
-        "movl $0x219330, (%esp)\n" /* line 533 */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf50b9a_00050bb6:\n"
-        "leave\n" /* line 542 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50b9a_00050bb8:\n"
-        "movl $1, (%esp)\n" /* line 537 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 538 */
-        "je .Lf50b9a_00050bb6\n"
-        "movl $1, 4(%esp)\n" /* line 541 */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_Reset\n"
-        /* } scope */
-        "leave\n" /* line 542 */
-        "retl\n"
-    );
+    void *dvar;
+    if (Cmd_Argc() != 2)
+    {
+        Com_Printf("USAGE: reset <variable>\n");
+        return;
+    }
+    dvar = Dvar_FindVar(Cmd_Argv(1));
+    if (dvar)
+        Dvar_Reset(dvar, 1);
 }
 
 /* line 553 */
@@ -1658,54 +1528,20 @@ char * Dvar_InfoString_Big(int bit)
 }
 
 /* line 837 */
-__attribute__((naked))
 void Dvar_AddCommands(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 837 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $Dvar_Toggle_f, 4(%esp)\n" /* line 839 */
-        "movl $0x215d3c, (%esp)\n" /* "toggle" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_TogglePrint_f, 4(%esp)\n" /* line 840 */
-        "movl $0x2194bc, (%esp)\n" /* "togglep" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_Set_f, 4(%esp)\n" /* line 841 */
-        "movl $0x2160dc, (%esp)\n" /* "set" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_SetS_f, 4(%esp)\n" /* line 842 */
-        "movl $0x2194c4, (%esp)\n" /* "sets" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_SetA_f, 4(%esp)\n" /* line 843 */
-        "movl $0x2160e0, (%esp)\n" /* "seta" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_SetFromDvar_f, 4(%esp)\n" /* line 844 */
-        "movl $0x2194cc, (%esp)\n" /* "setfromdvar" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_Reset_f, 4(%esp)\n" /* line 845 */
-        "movl $0x2194d8, (%esp)\n" /* "reset" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_List_f, 4(%esp)\n" /* line 846 */
-        "movl $0x2194e0, (%esp)\n" /* "dvarlist" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_Dump_f, 4(%esp)\n" /* line 847 */
-        "movl $0x2194ec, (%esp)\n" /* "dvardump" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_RegisterBool_f, 4(%esp)\n" /* line 849 */
-        "movl $0x2194f8, (%esp)\n" /* "dvar_bool" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_RegisterInt_f, 4(%esp)\n" /* line 850 */
-        "movl $0x219504, (%esp)\n" /* "dvar_int" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_RegisterFloat_f, 4(%esp)\n" /* line 851 */
-        "movl $0x219510, (%esp)\n" /* "dvar_float" */
-        "calll Cmd_AddCommand\n"
-        "movl $Dvar_SetU_f, 4(%esp)\n" /* line 853 */
-        "movl $0x21951c, (%esp)\n" /* "setu" */
-        "calll Cmd_AddCommand\n"
-        "leave\n" /* line 857 */
-        "retl\n"
-    );
+    Cmd_AddCommand("toggle", Dvar_Toggle_f);
+    Cmd_AddCommand("togglep", Dvar_TogglePrint_f);
+    Cmd_AddCommand("set", Dvar_Set_f);
+    Cmd_AddCommand("sets", Dvar_SetS_f);
+    Cmd_AddCommand("seta", Dvar_SetA_f);
+    Cmd_AddCommand("setfromdvar", Dvar_SetFromDvar_f);
+    Cmd_AddCommand("reset", Dvar_Reset_f);
+    Cmd_AddCommand("dvarlist", Dvar_List_f);
+    Cmd_AddCommand("dvardump", Dvar_Dump_f);
+    Cmd_AddCommand("dvar_bool", Dvar_RegisterBool_f);
+    Cmd_AddCommand("dvar_int", Dvar_RegisterInt_f);
+    Cmd_AddCommand("dvar_float", Dvar_RegisterFloat_f);
+    Cmd_AddCommand("setu", Dvar_SetU_f);
 }
 

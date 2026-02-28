@@ -17,6 +17,11 @@ static const char * g_he_horzalign[8]; /* 0x3144a0 */
 static const char * g_he_vertalign[8]; /* 0x314480 */
 static const BuiltinMethodDef methods[18]; /* 0x333420 */
 
+extern void Scr_AddFloat(float value);
+extern float Scr_GetFloat(unsigned int index);
+extern void Scr_Error(const char *msg);
+extern const char *va(const char *fmt, ...);
+
 static void HudElem_SetEnumString(const char * *names, int nameCount);
 static void HudElem_SetLocalizedString(game_hudelem_t *hud, int offset);
 static void HudElem_SetBoolean(game_hudelem_t *hud, int offset);
@@ -255,59 +260,19 @@ void HudElem_GetColor(game_hudelem_t *hud, int offset)
 }
 
 /* line 427 */
-static __attribute__((naked))
-void HudElem_GetAlpha(game_hudelem_t *hud, int offset)
+static void HudElem_GetAlpha(game_hudelem_t *hud, int offset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 427 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* line 431 | hud */
-        "movzbl 0x23(%eax), %eax\n"
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
-        "movss %xmm0, 8(%ebp)\n" /* hud */
-        "popl %ebp\n" /* line 432 */
-        "jmp Scr_AddFloat\n" /* line 431 */
-    );
+    Scr_AddFloat((float)*(unsigned char *)((byte *)hud + 0x23) * (1.0f / 255.0f));
 }
 
 /* line 440 */
-static __attribute__((naked))
-void HudElem_SetFontScale(game_hudelem_t *hud, int offset)
+static void HudElem_SetFontScale(game_hudelem_t *hud, int offset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 440 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 446 */
-        "calll Scr_GetFloat\n"
-        "fstps -0xc(%ebp)\n" /* scale */
-        "movss -0xc(%ebp), %xmm0\n" /* line 447 | scale */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
-        "jbe .Lf1b0bd6_001b0c03\n"
-        ".Lf1b0bd6_001b0bf9:\n"
-        "movl 8(%ebp), %eax\n" /* line 449 | hud */
-        "movss %xmm0, 0x10(%eax)\n"
-        /* } scope */
-        "leave\n" /* line 450 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1b0bd6_001b0c03:\n"
-        "jp .Lf1b0bd6_001b0bf9\n" /* line 447 */
-        "cvtss2sd %xmm0, %xmm0\n" /* line 448 */
-        "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b4d98, (%esp)\n" /* "font scale was %g; should be > 0" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
-        "movss -0xc(%ebp), %xmm0\n" /* scale */
-        "movl 8(%ebp), %eax\n" /* line 449 | hud */
-        "movss %xmm0, 0x10(%eax)\n"
-        /* } scope */
-        "leave\n" /* line 450 */
-        "retl\n"
-    );
+    float scale = Scr_GetFloat(0);
+
+    if (scale <= 0.0f)
+        Scr_Error(va("font scale was %g; should be > 0", (double)scale));
+    *(float *)((byte *)hud + 0x10) = scale;
 }
 
 /* line 458 */

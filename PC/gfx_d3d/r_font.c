@@ -301,23 +301,9 @@ int R_ShutdownFonts(void)
 }
 
 /* line 152 */
-__attribute__((naked))
 float R_NormalizedTextScale(FontHandle font, float scale)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 152 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        "movss 0x2ed6b8, %xmm0\n" /* 48.0f */
-        "mulss 0xc(%ebp), %xmm0\n" /* scale */
-        "movl 8(%ebp), %eax\n" /* font */
-        "cvtsi2ssl 4(%eax), %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "movss %xmm0, -4(%ebp)\n" /* line 157 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-    );
+    return 48.0f * scale / (float)*(int *)((byte *)font + 4);
 }
 
 /* line 202 */

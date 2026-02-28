@@ -1337,43 +1337,22 @@ void Con_PageUp(void)
 }
 
 /* line 2016 */
-__attribute__((naked))
 void Con_PageDown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2016 */
-        "movl %esp, %ebp\n"
-        "movl 0xefb20c, %edx\n" /* line 2018 */
-        "addl $2, %edx\n"
-        "movl %edx, 0xefb20c\n"
-        "movl 0xefb204, %eax\n" /* line 2019 */
-        "cmpl %eax, %edx\n" /* line 2020 */
-        "cmovlel 0xefb20c, %eax\n"
-        "movl %eax, 0xefb20c\n"
-        "popl %ebp\n" /* line 2021 */
-        "retl\n"
-    );
+    *(int *)0xefb20c += 2;
+    if (*(int *)0xefb20c > *(int *)0xefb204)
+        *(int *)0xefb20c = *(int *)0xefb204;
 }
 
 /* line 2024 */
-__attribute__((naked))
 void Con_Top(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2024 */
-        "movl %esp, %ebp\n"
-        "movl 0xefb218, %eax\n" /* line 2026 */
-        "movl %eax, 0xefb20c\n"
-        "movl 0xefb204, %edx\n" /* line 2027 */
-        "subl %eax, %edx\n"
-        "cmpl %eax, %edx\n"
-        "jl .Lf15c55c_0015c57d\n"
-        "leal 1(%edx), %eax\n" /* line 2028 */
-        "movl %eax, 0xefb20c\n"
-        ".Lf15c55c_0015c57d:\n"
-        "popl %ebp\n" /* line 2029 */
-        "retl\n"
-    );
+    int top = *(int *)0xefb218;
+    int current = *(int *)0xefb204;
+
+    *(int *)0xefb20c = top;
+    if (current - top >= top)
+        *(int *)0xefb20c = current - top + 1;
 }
 
 /* line 2060 */
@@ -3549,25 +3528,10 @@ void CL_ConsolePrint(print_msg_type_t type, const char *txt, int duration, int l
 }
 
 /* line 949 */
-__attribute__((naked))
 void CL_ConsoleFixPosition(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 949 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 0xc(%esp)\n" /* line 951 */
-        "movl $0, 8(%esp)\n"
-        "movl $0x2160e8, 4(%esp)\n" /* "
-" */
-        "movl $0, (%esp)\n"
-        "calll CL_ConsolePrint\n"
-        "movl 0xefb204, %eax\n" /* line 952 */
-        "subl $1, %eax\n"
-        "movl %eax, 0xefb20c\n"
-        "leave\n" /* line 953 */
-        "retl\n"
-    );
+    CL_ConsolePrint(0, "\n", 0, 0);
+    *(int *)0xefb20c = *(int *)0xefb204 - 1;
 }
 
 /* line 1363 */

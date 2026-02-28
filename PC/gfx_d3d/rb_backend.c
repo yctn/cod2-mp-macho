@@ -321,24 +321,16 @@ void RB_EndFrame(void)
     );
 }
 
+void RB_InitSceneViewport(void);
+
 /* line 4215 */
-__attribute__((naked))
 void RB_InitBackendGlobalStructs(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4215 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0x36e90, 8(%esp)\n" /* line 4217 */
-        "movl $0, 4(%esp)\n"
-        "movl $backEnd, (%esp)\n"
-        "calll memset\n"
-        "movl $3, 0x11e1a48\n" /* line 4219 */
-        "movl $0xe, 0x11e4484\n" /* line 4220 */
-        "movl $0xe, 0x11e4488\n" /* line 4221 */
-        "leave\n" /* line 4231 */
-        "jmp RB_InitSceneViewport\n" /* line 4223 */
-    );
+    memset(&backEnd, 0, 0x36e90);
+    *(int *)0x11e1a48 = 3;
+    *(int *)0x11e4484 = 0xe;
+    *(int *)0x11e4488 = 0xe;
+    RB_InitSceneViewport();
 }
 
 /* line 4234 */

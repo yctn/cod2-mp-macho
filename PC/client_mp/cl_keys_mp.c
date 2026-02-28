@@ -5,6 +5,7 @@
 #include "imports.h"
 
 extern void ReplaceStringInternal(char **dest, const char *src);
+extern void Cmd_AddCommand(const char *name, void (*func)(void));
 
 extern PlayerKeyState playerKeys[1]; /* 0x0 */
 extern field_t *chatField; /* 0x0 */
@@ -740,28 +741,12 @@ char * Key_GetBinding(int keynum)
 }
 
 /* line 1611 */
-__attribute__((naked))
 void CL_InitKeyCommands(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1611 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $Key_Bind_f, 4(%esp)\n" /* line 1614 */
-        "movl $0x2a6ed0, (%esp)\n" /* "bind" */
-        "calll Cmd_AddCommand\n"
-        "movl $Key_Unbind_f, 4(%esp)\n" /* line 1615 */
-        "movl $0x2a6ed8, (%esp)\n" /* "unbind" */
-        "calll Cmd_AddCommand\n"
-        "movl $Key_Unbindall_f, 4(%esp)\n" /* line 1616 */
-        "movl $0x2a6ee0, (%esp)\n" /* "unbindall" */
-        "calll Cmd_AddCommand\n"
-        "movl $Key_Bindlist_f, 4(%esp)\n" /* line 1617 */
-        "movl $0x2a6eec, (%esp)\n" /* "bindlist" */
-        "calll Cmd_AddCommand\n"
-        "leave\n" /* line 1618 */
-        "retl\n"
-    );
+    Cmd_AddCommand("bind", Key_Bind_f);
+    Cmd_AddCommand("unbind", Key_Unbind_f);
+    Cmd_AddCommand("unbindall", Key_Unbindall_f);
+    Cmd_AddCommand("bindlist", Key_Bindlist_f);
 }
 
 /* line 2046 */

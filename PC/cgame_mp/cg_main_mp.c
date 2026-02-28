@@ -12,6 +12,8 @@
 extern struct XModel * CL_RegisterModel(const char *name);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void * Hunk_AllocInternal(int size);
+extern void CL_ConsolePrint(int channel, const char *msg, int duration, int width);
+extern void Cmd_ArgvBuffer(int arg, char *buffer, int bufferLength);
 
 extern const centity_t * cg_entities; /* 0x0 */
 extern const weaponInfo_t * cg_weapons; /* 0x0 */
@@ -251,87 +253,30 @@ void CG_GetEntityOrientation(int entnum, vec_t *origin_out, vec3_t *axis_out)
 }
 
 /* line 727 */
-__attribute__((naked))
 int CG_CrosshairPlayer(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 727 */
-        "movl %esp, %ebp\n"
-        "movl 0xdbee50, %eax\n" /* line 729 */
-        "addl $0x3e8, %eax\n"
-        "cmpl %eax, 0xdb8c30\n"
-        "jg .Lf143cb2_00143cce\n"
-        "movl 0xdbee4c, %eax\n" /* line 733 */
-        "popl %ebp\n" /* line 734 */
-        "retl\n"
-        ".Lf143cb2_00143cce:\n"
-        "movl $0xffffffff, %eax\n" /* line 729 */
-        "popl %ebp\n" /* line 734 */
-        "retl\n"
-    );
+    if (*(int *)0xdb8c30 > *(int *)0xdbee50 + 0x3e8)
+        return -1;
+    return *(int *)0xdbee4c;
 }
 
 /* line 737 */
-__attribute__((naked))
 void CG_GameMessage(const char *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 737 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl cg_gameMessageWidth, %eax\n" /* line 739 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* msg */
-        "movl %eax, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll CL_ConsolePrint\n"
-        "leave\n" /* line 740 */
-        "retl\n"
-    );
+    CL_ConsolePrint(1, msg, 0, *(int *)(*(int *)&cg_gameMessageWidth + 8));
 }
 
 /* line 743 */
-__attribute__((naked))
 void CG_BoldGameMessage(const char *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 743 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl cg_gameBoldMessageWidth, %eax\n" /* line 745 */
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* msg */
-        "movl %eax, 4(%esp)\n"
-        "movl $2, (%esp)\n"
-        "calll CL_ConsolePrint\n"
-        "leave\n" /* line 746 */
-        "retl\n"
-    );
+    CL_ConsolePrint(2, msg, 0, *(int *)(*(int *)&cg_gameBoldMessageWidth + 8));
 }
 
 /* line 754 */
-__attribute__((naked))
 const char * CG_Argv(int arg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 754 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0x400, 8(%esp)\n" /* line 758 */
-        "movl $buffer, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* arg */
-        "movl %eax, (%esp)\n"
-        "calll Cmd_ArgvBuffer\n"
-        /* } scope */
-        "movl $buffer, %eax\n" /* line 761 */
-        "leave\n"
-        "retl\n"
-    );
+    Cmd_ArgvBuffer(arg, (char *)&buffer, 0x400);
+    return (const char *)&buffer;
 }
 
 /* line 862 */

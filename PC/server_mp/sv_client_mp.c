@@ -8,6 +8,9 @@ static int botport; /* 0xf13100 */
 static ucmd_t ucmds[12]; /* 0x312ca0 */
 
 extern float FX_GetServerVisibility(const vec_t *start, const vec_t *end);
+extern void Com_DPrintf(const char *fmt, ...);
+extern const char *SV_Cmd_Argv(int arg);
+extern int atoi(const char *s);
 
 void SV_AuthorizeRequest(struct netadr_t from, int challenge);
 static qboolean SV_IsBannedGuid(void);
@@ -1033,27 +1036,13 @@ void SV_FreeClientScriptPers(void)
 }
 
 /* line 898 */
-__attribute__((naked))
 void SV_DelayDropClient(client_t *drop, const char *reason)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 898 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* drop */
-        "cmpl $1, (%eax)\n" /* line 904 */
-        "je .Lf17b942_0017b954\n"
-        "movl 8(%eax), %edx\n" /* line 910 */
-        "testl %edx, %edx\n"
-        "je .Lf17b942_0017b956\n"
-        ".Lf17b942_0017b954:\n"
-        "popl %ebp\n" /* line 913 */
-        "retl\n"
-        ".Lf17b942_0017b956:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 912 | reason */
-        "movl %edx, 8(%eax)\n"
-        "popl %ebp\n" /* line 913 */
-        "retl\n"
-    );
+    if (*(int *)drop == 1)
+        return;
+    if (*(int *)((byte *)drop + 8))
+        return;
+    *(const char **)((byte *)drop + 8) = reason;
 }
 
 /* line 927 */
@@ -1320,53 +1309,18 @@ void SV_ClientEnterWorld(client_t *client, const dvar_t * (*cmd)[4])
 }
 
 /* line 1106 */
-__attribute__((naked))
 void SV_DoneDownload_f(client_t *cl)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1106 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* cl */
-        "leal 0x20c48(%ebx), %eax\n" /* line 1108 | cl */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x2ae230, (%esp)\n" /* "clientDownload: %s Done
-" */
-        "calll Com_DPrintf\n"
-        "movl %ebx, 8(%ebp)\n" /* line 1110 | cl */
-        "addl $0x14, %esp\n" /* line 1111 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp SV_SendClientGameState\n" /* line 1110 */
-    );
+    Com_DPrintf("clientDownload: %s Done\n", (const char *)((byte *)cl + 0x20c48));
+    SV_SendClientGameState(cl);
 }
 
 /* line 1122 */
-__attribute__((naked))
 void SV_RetransmitDownload_f(client_t *cl)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1122 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* cl */
-        /* { scope 1 */
-        "movl $1, (%esp)\n" /* line 1124 */
-        "calll SV_Cmd_Argv\n"
-        "movl %eax, (%esp)\n" /* block */
-        "calll atoi\n"
-        "cmpl 0x20cb4(%ebx), %eax\n" /* line 1127 | cl */
-        "jne .Lf17bd16_0017bd42\n"
-        "movl %eax, 0x20cbc(%ebx)\n" /* line 1129 | cl */
-        /* } scope */
-        ".Lf17bd16_0017bd42:\n"
-        "addl $0x14, %esp\n" /* line 1131 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int block = atoi(SV_Cmd_Argv(1));
+    if (block == *(int *)((byte *)cl + 0x20cb4))
+        *(int *)((byte *)cl + 0x20cbc) = block;
 }
 
 /* line 1196 */

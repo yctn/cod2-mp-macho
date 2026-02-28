@@ -182,26 +182,11 @@ Bool Dvar_IsValidName(const char *dvarName)
 }
 
 /* line 247 */
-__attribute__((naked))
 const char * Dvar_EnumToString(const dvar_t *dvar)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 247 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* dvar */
-        "movl 0x14(%eax), %edx\n" /* line 254 */
-        "testl %edx, %edx\n"
-        "je .Lf513ee_00051406\n"
-        "movl 8(%eax), %edx\n" /* line 256 */
-        "movl 0x18(%eax), %eax\n"
-        "movl (%eax, %edx, 4), %eax\n"
-        "popl %ebp\n" /* line 257 */
-        "retl\n"
-        ".Lf513ee_00051406:\n"
-        "movl $0x2157b8, %eax\n" /* line 254 */
-        "popl %ebp\n" /* line 257 */
-        "retl\n"
-    );
+    if (!*(int *)((byte *)dvar + 0x14))
+        return "";
+    return ((const char **)*(void **)((byte *)dvar + 0x18))[*(int *)((byte *)dvar + 8)];
 }
 
 /* line 290 */
@@ -7816,21 +7801,8 @@ void Dvar_SetCommand(const char *dvarName, const char *string)
 }
 
 /* line 2292 */
-__attribute__((naked))
 void Dvar_SetFromStringByName(const char *dvarName, const char *string)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2292 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $0, 8(%esp)\n" /* line 2294 */
-        "movl 0xc(%ebp), %eax\n" /* string */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* dvarName */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetFromStringByNameFromSource\n"
-        "leave\n" /* line 2295 */
-        "retl\n"
-    );
+    Dvar_SetFromStringByNameFromSource(dvarName, string, 0);
 }
 
