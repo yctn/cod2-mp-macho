@@ -15,7 +15,8 @@ int speex_decode(float *state, SpeexBits *bits, float *out);
 int speex_decoder_ctl(float *state, int request, float *ptr);
 int nb_mode_query(const float *mode, int request, float *ptr);
 int wb_mode_query(const float *mode, int request, float *ptr);
-int speex_encode_int(float *state, const SpeexMode (*in)[4], SpeexBits *bits);
+int speex_encode_int(float *state, const short *in, SpeexBits *bits);
+extern void speex_warning_int(const char *msg, int val);
 
 /* line 50 */
 float * speex_encoder_init(const SpeexMode *mode)
@@ -72,160 +73,72 @@ int speex_decoder_ctl(float *state, int request, float *ptr)
 }
 
 /* line 187 */
-__attribute__((naked))
 int nb_mode_query(const float *mode, int request, float *ptr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 187 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* request */
-        "testl %eax, %eax\n" /* line 191 */
-        "je .Lf1e8648_001e8671\n"
-        "cmpl $1, %eax\n"
-        "je .Lf1e8648_001e867f\n"
-        "movl %eax, 4(%esp)\n" /* line 205 */
-        "movl $0x2b8f2c, (%esp)\n" /* "Unknown nb_mode_query request: " */
-        "calll speex_warning_int\n"
-        "movl $0xffffffff, %eax\n"
-        "leave\n" /* line 209 */
-        "retl\n"
-        ".Lf1e8648_001e8671:\n"
-        "movl 8(%ebp), %edx\n" /* line 194 | mode */
-        "movl (%edx), %eax\n"
-        "movl 0x10(%ebp), %edx\n" /* ptr */
-        "movl %eax, (%edx)\n"
-        "xorl %eax, %eax\n"
-        "leave\n" /* line 209 */
-        "retl\n"
-        ".Lf1e8648_001e867f:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 197 | ptr */
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1e8648_001e8690\n"
-        "movl $5, (%edx)\n" /* line 198 */
-        "leave\n" /* line 209 */
-        "retl\n"
-        ".Lf1e8648_001e8690:\n"
-        "movl 8(%ebp), %edx\n" /* line 199 | mode */
-        "movl 0x24(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e8648_001e86a7\n"
-        "movl 0x40(%eax), %eax\n" /* line 202 */
-        "movl 0x10(%ebp), %edx\n" /* ptr */
-        "movl %eax, (%edx)\n"
-        "xorl %eax, %eax\n"
-        "leave\n" /* line 209 */
-        "retl\n"
-        ".Lf1e8648_001e86a7:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 200 | ptr */
-        "movl $0xffffffff, (%eax)\n"
-        "xorl %eax, %eax\n"
-        "leave\n" /* line 209 */
-        "retl\n"
-    );
+    switch (request) {
+    case 0:
+        *(int *)ptr = *(int *)mode;
+        return 0;
+    case 1:
+        if (*(int *)ptr == 0) {
+            *(int *)ptr = 5;
+            return 0;
+        }
+        {
+            void *submodePtr = *(void **)((byte *)mode + 0x24 + *(int *)ptr * 4);
+            if (submodePtr) {
+                *(int *)ptr = *(int *)((byte *)submodePtr + 0x40);
+            } else {
+                *(int *)ptr = -1;
+            }
+        }
+        return 0;
+    default:
+        speex_warning_int("Unknown nb_mode_query request: ", request);
+        return -1;
+    }
 }
 
 /* line 211 */
-__attribute__((naked))
 int wb_mode_query(const float *mode, int request, float *ptr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 211 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* request */
-        "testl %eax, %eax\n" /* line 215 */
-        "je .Lf1e86b4_001e86dd\n"
-        "cmpl $1, %eax\n"
-        "je .Lf1e86b4_001e86ee\n"
-        "movl %eax, 4(%esp)\n" /* line 229 */
-        "movl $0x2b8f4c, (%esp)\n" /* "Unknown wb_mode_query request: " */
-        "calll speex_warning_int\n"
-        "movl $0xffffffff, %eax\n"
-        "leave\n" /* line 233 */
-        "retl\n"
-        ".Lf1e86b4_001e86dd:\n"
-        "movl 8(%ebp), %edx\n" /* line 218 | mode */
-        "movl 4(%edx), %eax\n"
-        "addl %eax, %eax\n"
-        "movl 0x10(%ebp), %edx\n" /* ptr */
-        "movl %eax, (%edx)\n"
-        "xorl %eax, %eax\n"
-        "leave\n" /* line 233 */
-        "retl\n"
-        ".Lf1e86b4_001e86ee:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 221 | ptr */
-        "movl (%edx), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1e86b4_001e86ff\n"
-        "movl $4, (%edx)\n" /* line 222 */
-        "leave\n" /* line 233 */
-        "retl\n"
-        ".Lf1e86b4_001e86ff:\n"
-        "movl 8(%ebp), %edx\n" /* line 223 | mode */
-        "movl 0x28(%edx, %eax, 4), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1e86b4_001e8716\n"
-        "movl 0x40(%eax), %eax\n" /* line 226 */
-        "movl 0x10(%ebp), %edx\n" /* ptr */
-        "movl %eax, (%edx)\n"
-        "xorl %eax, %eax\n"
-        "leave\n" /* line 233 */
-        "retl\n"
-        ".Lf1e86b4_001e8716:\n"
-        "movl 0x10(%ebp), %eax\n" /* line 224 | ptr */
-        "movl $0xffffffff, (%eax)\n"
-        "xorl %eax, %eax\n"
-        "leave\n" /* line 233 */
-        "retl\n"
-    );
+    switch (request) {
+    case 0:
+        *(int *)ptr = *(int *)((byte *)mode + 4) * 2;
+        return 0;
+    case 1:
+        if (*(int *)ptr == 0) {
+            *(int *)ptr = 4;
+            return 0;
+        }
+        {
+            void *submodePtr = *(void **)((byte *)mode + 0x28 + *(int *)ptr * 4);
+            if (submodePtr) {
+                *(int *)ptr = *(int *)((byte *)submodePtr + 0x40);
+            } else {
+                *(int *)ptr = -1;
+            }
+        }
+        return 0;
+    default:
+        speex_warning_int("Unknown wb_mode_query request: ", request);
+        return -1;
+    }
 }
 
 /* line 136 */
-__attribute__((naked))
-int speex_encode_int(float *state, const SpeexMode (*in)[4], SpeexBits *bits)
+int speex_encode_int(float *state, const short *in, SpeexBits *bits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 136 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0xa20, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* state */
-        "movl 0xc(%ebp), %esi\n" /* in */
-        /* { scope 1 */
-        "movl (%ebx), %edx\n" /* line 177 | state */
-        "leal -0xc(%ebp), %eax\n" /* N */
-        "movl %eax, 8(%esp)\n"
-        "movl $3, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* state */
-        "calll *0x2c(%edx)\n"
-        "movl -0xc(%ebp), %ecx\n" /* line 142 | N */
-        "testl %ecx, %ecx\n"
-        "jle .Lf1e8726_001e876f\n"
-        "xorl %edx, %edx\n"
-        ".Lf1e8726_001e8757:\n"
-        "movswl (%esi, %edx, 2), %eax\n" /* line 143 | in */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss %xmm0, -0xa0c(%ebp, %edx, 4)\n"
-        "addl $1, %edx\n" /* line 142 */
-        "cmpl %edx, %ecx\n"
-        "jne .Lf1e8726_001e8757\n"
-        ".Lf1e8726_001e876f:\n"
-        "movl (%ebx), %edx\n" /* line 144 | state */
-        "movl 0x10(%ebp), %eax\n" /* bits */
-        "movl %eax, 8(%esp)\n"
-        "leal -0xa0c(%ebp), %eax\n" /* float_in */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* state */
-        "calll *0x1c(%edx)\n"
-        /* } scope */
-        "addl $0xa20, %esp\n" /* line 145 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float float_in[640];
+    int N;
+    int i;
+
+    speex_encoder_ctl(state, 3, (float *)&N);
+
+    for (i = 0; i < N; i++) {
+        float_in[i] = (float)in[i];
+    }
+
+    return speex_encode_native(state, (spx_word16_t *)float_in, bits);
 }
 

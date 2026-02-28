@@ -48,7 +48,7 @@ static inflate_blocks_statef RoQShutdown(void);
 e_status ROQ_StopCinematicFromHandle(int handle);
 inflate_blocks_statef ROQ_SetExtentsFromHandle(int handle, int x, int y, int w, int h);
 inflate_blocks_statef ROQ_UploadCinematicFromHandle(int handle);
-static inflate_blocks_statef blitVQQuad32fs(byte * *status, unsigned char *data);
+static void blitVQQuad32fs(byte * *status, unsigned char *data);
 int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBits);
 inflate_blocks_statef ROQ_DrawCinematicFromHandle(int handle);
 inflate_blocks_statef ROQ_DrawCinematic(void);
@@ -221,7 +221,7 @@ inflate_blocks_statef ROQ_UploadCinematicFromHandle(int handle)
 }
 
 /* line 587 */
-static inflate_blocks_statef blitVQQuad32fs(byte * *status, unsigned char *data)
+static void blitVQQuad32fs(byte * *status, unsigned char *data)
 {
     long int stride;
     long int twoRows;
@@ -516,8 +516,8 @@ int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
     }
 
     if (handle >= 0) {
-        cinTable[handle].VQ0 = blitVQQuad32fs;
-        cinTable[handle].VQ1 = blitVQQuad32fs;
+        cinTable[handle].VQ0 = (void *)blitVQQuad32fs;
+        cinTable[handle].VQ1 = (void *)blitVQQuad32fs;
         cinTable[handle].samplesPerPixel = 4;
 
         for (i = 0; i < 256; i++) {

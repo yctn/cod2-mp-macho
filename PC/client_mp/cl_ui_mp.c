@@ -19,6 +19,9 @@ extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern const dvar_t * Dvar_RegisterString(const char *dvarName, const char *value, unsigned int flags);
 extern void Com_WriteCDKey(void);
 extern void Com_PumpMessageLoop(void);
+extern void Info_SetValueForKey(char *s, const char *key, const char *value);
+extern char * va(const char *format, ...);
+extern const char * NET_AdrToString(netadr_t adr);
 extern void Com_UnloadSoundAliases(int zone);
 extern void UI_Shutdown(void);
 
@@ -113,243 +116,61 @@ qboolean LAN_WaitServerResponse(int source)
 }
 
 /* line 124 */
-__attribute__((naked))
 void LAN_GetServerInfo(int source, int n, char *buf, int buflen)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 124 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x42c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* source */
-        "movl 0xc(%ebp), %edx\n" /* n */
-        "movl 0x10(%ebp), %edi\n" /* buf */
-        /* { scope 1 */
-        "movb $0, -0x424(%ebp)\n" /* line 129 | info */
-        "cmpl $1, %eax\n" /* line 131 */
-        "je .Lf17f140_0017f4b6\n"
-        "cmpl $2, %eax\n"
-        "je .Lf17f140_0017f4e5\n"
-        "testl %eax, %eax\n"
-        "je .Lf17f140_0017f184\n"
-        ".Lf17f140_0017f172:\n"
-        "testl %edi, %edi\n" /* line 187 | buf */
-        "je .Lf17f140_0017f179\n"
-        "movb $0, (%edi)\n" /* line 189 | buf */
-        /* } scope */
-        ".Lf17f140_0017f179:\n"
-        "addl $0x42c, %esp\n" /* line 192 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f140_0017f184:\n"
-        "cmpl $0x7f, %edx\n" /* line 134 */
-        "ja .Lf17f140_0017f172\n"
-        "movl %edx, %eax\n" /* line 136 */
-        "shll $7, %eax\n"
-        "leal 0x130(%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "leal 0xc(%eax), %esi\n" /* server */
-        ".Lf17f140_0017f19e:\n"
-        "testl %esi, %esi\n" /* line 156 | server */
-        "je .Lf17f140_0017f172\n"
-        "testl %edi, %edi\n" /* buf */
-        "je .Lf17f140_0017f179\n"
-        "movb $0, (%edi)\n" /* line 158 | buf */
-        "leal 0x20(%esi), %eax\n" /* line 159 | server */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa89c, 4(%esp)\n" /* "hostname" */
-        "leal -0x424(%ebp), %ebx\n" /* info */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "leal 0x40(%esi), %eax\n" /* line 160 | server */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2a7124, 4(%esp)\n" /* "mapname" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0xd(%esi), %eax\n" /* line 161 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2a8a54, 4(%esp)\n" /* "clients" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0xe(%esi), %eax\n" /* line 162 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2a70dc, 4(%esp)\n" /* "sv_maxclients" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movswl 0x1e(%esi), %eax\n" /* line 163 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2a90f4, 4(%esp)\n" /* "ping" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movswl 0x1a(%esi), %eax\n" /* line 164 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2ab8c8, 4(%esp)\n" /* "minping" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movswl 0x1c(%esi), %eax\n" /* line 165 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2ab8d0, 4(%esp)\n" /* "maxping" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "leal 0x60(%esi), %eax\n" /* line 166 | server */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa890, 4(%esp)\n" /* "game" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "leal 0x78(%esi), %eax\n" /* line 167 | server */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa884, 4(%esp)\n" /* "gametype" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0xc(%esi), %eax\n" /* line 168 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2ab8c0, 4(%esp)\n" /* "nettype" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movl (%esi), %ecx\n" /* line 170 | server */
-        "movl %ecx, -0x24(%ebp)\n"
-        "movl 4(%esi), %edx\n" /* server */
-        "movl %edx, -0x20(%ebp)\n"
-        "movl 8(%esi), %eax\n" /* server */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl %ecx, (%esp)\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "calll NET_AdrToString\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa858, 4(%esp)\n" /* "addr" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0x10(%esi), %eax\n" /* line 172 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2a718c, 4(%esp)\n" /* "sv_allowAnonymous" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movsbl 0x15(%esi), %eax\n" /* line 173 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2ab4e0, 4(%esp)\n" /* "con_disabled" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0x11(%esi), %eax\n" /* line 174 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2a9af0, 4(%esp)\n" /* "pswrd" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0x12(%esi), %eax\n" /* line 175 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa870, 4(%esp)\n" /* "pure" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movsbl 0x13(%esi), %eax\n" /* line 176 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa87c, 4(%esp)\n" /* "ff" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movsbl 0x14(%esi), %eax\n" /* line 177 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa880, 4(%esp)\n" /* "kc" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0x16(%esi), %eax\n" /* line 178 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2aa878, 4(%esp)\n" /* "hw" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0x17(%esi), %eax\n" /* line 179 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x2a9cf4, 4(%esp)\n" /* "mod" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movzbl 0x18(%esi), %eax\n" /* line 181 | server */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0x21ec00, 4(%esp)\n" /* "voice" */
-        "movl %ebx, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movl 0x14(%ebp), %eax\n" /* line 183 | buflen */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* buf */
-        "calll I_strncpyz\n"
-        /* } scope */
-        "addl $0x42c, %esp\n" /* line 192 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f140_0017f4b6:\n"
-        "testl %edx, %edx\n" /* line 141 */
-        "js .Lf17f140_0017f172\n"
-        "movl 0x195ecac, %ecx\n"
-        "cmpl 0x4540(%ecx), %edx\n"
-        "jge .Lf17f140_0017f172\n"
-        "movl %edx, %eax\n" /* line 143 */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %edx, 8), %eax\n"
-        "leal 4(%eax, %ecx), %esi\n" /* server */
-        "jmp .Lf17f140_0017f19e\n"
-        ".Lf17f140_0017f4e5:\n"
-        "cmpl $0x7f, %edx\n" /* line 149 */
-        "ja .Lf17f140_0017f172\n"
-        "movl %edx, %eax\n" /* line 151 */
-        "shll $7, %eax\n"
-        "leal 0x29c640(%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "leal 8(%eax), %esi\n" /* server */
-        "jmp .Lf17f140_0017f19e\n"
-    );
+    char info[1024];
+    byte *base = *(byte **)0x195ecac;
+    byte *server = NULL;
+
+    info[0] = '\0';
+
+    if (source == 0) {
+        if ((unsigned)n > 0x7f) goto fail;
+        server = base + n * 0x88 + 0x13c;
+    } else if (source == 1) {
+        if (n < 0 || n >= *(int *)(base + 0x4540)) goto fail;
+        server = base + n * 0x88 + 0x4544;
+    } else if (source == 2) {
+        if ((unsigned)n > 0x7f) goto fail;
+        server = base + n * 0x88 + 0x29c648;
+    } else {
+        goto fail;
+    }
+
+    if (!server) goto fail;
+    if (!buf) return;
+
+    *buf = '\0';
+    Info_SetValueForKey(info, "hostname", (char *)(server + 0x20));
+    Info_SetValueForKey(info, "mapname", (char *)(server + 0x40));
+    Info_SetValueForKey(info, "clients", va("%i", (int)*(byte *)(server + 0xd)));
+    Info_SetValueForKey(info, "sv_maxclients", va("%i", (int)*(byte *)(server + 0xe)));
+    Info_SetValueForKey(info, "ping", va("%i", (int)*(short *)(server + 0x1e)));
+    Info_SetValueForKey(info, "minping", va("%i", (int)*(short *)(server + 0x1a)));
+    Info_SetValueForKey(info, "maxping", va("%i", (int)*(short *)(server + 0x1c)));
+    Info_SetValueForKey(info, "game", (char *)(server + 0x60));
+    Info_SetValueForKey(info, "gametype", (char *)(server + 0x78));
+    Info_SetValueForKey(info, "nettype", va("%i", (int)*(byte *)(server + 0xc)));
+    {
+        netadr_t adr;
+        memcpy(&adr, server, 12);
+        Info_SetValueForKey(info, "addr", NET_AdrToString(adr));
+    }
+    Info_SetValueForKey(info, "sv_allowAnonymous", va("%i", (int)*(byte *)(server + 0x10)));
+    Info_SetValueForKey(info, "con_disabled", va("%i", (int)*(signed char *)(server + 0x15)));
+    Info_SetValueForKey(info, "pswrd", va("%i", (int)*(byte *)(server + 0x11)));
+    Info_SetValueForKey(info, "pure", va("%i", (int)*(byte *)(server + 0x12)));
+    Info_SetValueForKey(info, "ff", va("%i", (int)*(signed char *)(server + 0x13)));
+    Info_SetValueForKey(info, "kc", va("%i", (int)*(signed char *)(server + 0x14)));
+    Info_SetValueForKey(info, "hw", va("%i", (int)*(byte *)(server + 0x16)));
+    Info_SetValueForKey(info, "mod", va("%i", (int)*(byte *)(server + 0x17)));
+    Info_SetValueForKey(info, "voice", va("%i", (int)*(byte *)(server + 0x18)));
+    I_strncpyz(buf, info, buflen);
+    return;
+
+fail:
+    if (buf)
+        *buf = '\0';
 }
 
 /* line 200 */
@@ -380,111 +201,46 @@ int LAN_GetServerPing(int source, int n)
 }
 
 /* line 419 */
-__attribute__((naked))
 void LAN_MarkServerDirty(int source, int n, qboolean dirty)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 419 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* source */
-        "movl 0xc(%ebp), %esi\n" /* n */
-        "calll Com_PumpMessageLoop\n" /* line 421 */
-        "cmpl $-1, %esi\n" /* line 423 | n */
-        "je .Lf17f58a_0017f5d2\n"
-        "cmpl $1, %ebx\n" /* line 456 | count */
-        "je .Lf17f58a_0017f609\n"
-        "cmpl $2, %ebx\n" /* count */
-        "je .Lf17f58a_0017f632\n"
-        "testl %ebx, %ebx\n" /* count */
-        "jne .Lf17f58a_0017f5ce\n"
-        "cmpl $0x7f, %esi\n" /* line 459 | n */
-        "ja .Lf17f58a_0017f5ce\n"
-        "movl %esi, %eax\n" /* line 461 | n */
-        "shll $7, %eax\n"
-        "leal (%eax, %esi, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "movzbl 0x10(%ebp), %edx\n" /* dirty */
-        "movb %dl, 0x14b(%eax)\n"
-        ".Lf17f58a_0017f5ce:\n"
-        "popl %ebx\n" /* line 482 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f58a_0017f5d2:\n"
-        "cmpl $1, %ebx\n" /* line 428 | count */
-        "je .Lf17f58a_0017f664\n"
-        "cmpl $2, %ebx\n" /* count */
-        "je .Lf17f58a_0017f653\n"
-        "testl %ebx, %ebx\n" /* count */
-        "jne .Lf17f58a_0017f5ce\n"
-        "movl 0x195ecac, %eax\n"
-        "addl $0x13c, %eax\n"
-        "movb $0x80, %bl\n" /* count */
-        ".Lf17f58a_0017f5f0:\n"
-        "movzbl 0x10(%ebp), %ecx\n" /* line 447 | dirty */
-        "xorl %edx, %edx\n"
-        ".Lf17f58a_0017f5f6:\n"
-        "movb %cl, 0xf(%eax)\n" /* line 449 */
-        "addl $1, %edx\n" /* line 447 */
-        "addl $0x88, %eax\n"
-        "cmpl %ebx, %edx\n" /* count */
-        "jne .Lf17f58a_0017f5f6\n"
-        /* } scope */
-        "popl %ebx\n" /* line 482 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf17f58a_0017f609:\n"
-        "testl %esi, %esi\n" /* line 466 | n */
-        "js .Lf17f58a_0017f5ce\n"
-        "movl 0x195ecac, %edx\n"
-        "cmpl 0x4540(%edx), %esi\n" /* n */
-        "jge .Lf17f58a_0017f5ce\n"
-        "movl %esi, %eax\n" /* line 468 | n */
-        "shll $7, %eax\n"
-        "leal (%eax, %esi, 8), %eax\n"
-        "movzbl 0x10(%ebp), %ecx\n" /* dirty */
-        "movb %cl, 0x4553(%eax, %edx)\n"
-        "popl %ebx\n" /* line 482 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf17f58a_0017f632:\n"
-        "cmpl $0x7f, %esi\n" /* line 474 | n */
-        "ja .Lf17f58a_0017f5ce\n"
-        "movl %esi, %eax\n" /* line 476 | n */
-        "shll $7, %eax\n"
-        "leal (%eax, %esi, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "movzbl 0x10(%ebp), %edx\n" /* dirty */
-        "movb %dl, 0x29c657(%eax)\n"
-        "popl %ebx\n" /* line 482 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf17f58a_0017f653:\n"
-        "movl $0x80, %ebx\n" /* count */
-        "movl 0x195ecac, %eax\n"
-        "addl $0x29c648, %eax\n" /* "1.xyz, r0, c0.x;
-MUL    r0, r1, v0;
-MAD r1.xyz, v0, -r1, c23" */
-        "jmp .Lf17f58a_0017f5f0\n"
-        /* { scope 1 */
-        ".Lf17f58a_0017f664:\n"
-        "movl 0x195ecac, %eax\n" /* line 436 */
-        "movl 0x4540(%eax), %ebx\n" /* count */
-        "addl $0x4544, %eax\n"
-        "testl %ebx, %ebx\n" /* line 447 | count */
-        "jg .Lf17f58a_0017f5f0\n"
-        /* } scope */
-        "popl %ebx\n" /* line 482 */
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *base = *(byte **)0x195ecac;
+    int count;
+    byte *ptr;
+    int i;
+
+    Com_PumpMessageLoop();
+
+    if (n == -1) {
+        /* Mark all servers dirty */
+        if (source == 0) {
+            count = 0x80;
+            ptr = base + 0x13c;
+        } else if (source == 1) {
+            count = *(int *)(base + 0x4540);
+            ptr = base + 0x4544;
+            if (count <= 0) return;
+        } else if (source == 2) {
+            count = 0x80;
+            ptr = base + 0x29c648;
+        } else {
+            return;
+        }
+        for (i = 0; i < count; i++) {
+            *(byte *)(ptr + 0xf) = (byte)dirty;
+            ptr += 0x88;
+        }
+    } else {
+        if (source == 0) {
+            if ((unsigned)n > 0x7f) return;
+            *(byte *)(base + n * 0x88 + 0x14b) = (byte)dirty;
+        } else if (source == 1) {
+            if (n < 0 || n >= *(int *)(base + 0x4540)) return;
+            *(byte *)(base + n * 0x88 + 0x4553) = (byte)dirty;
+        } else if (source == 2) {
+            if ((unsigned)n > 0x7f) return;
+            *(byte *)(base + n * 0x88 + 0x29c657) = (byte)dirty;
+        }
+    }
 }
 
 /* line 490 */
@@ -590,78 +346,37 @@ void CLUI_SetCDKey(char *buf, char *buf2)
 }
 
 /* line 647 */
-__attribute__((naked))
 qboolean GetClientname(int index, char *buf, int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 647 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 652 | buf */
-        "movb $0, (%eax)\n"
-        "movl 0x195ee78, %eax\n" /* line 654 */
-        "movl (%eax), %ebx\n"
-        "movl 0x18(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf17f858_0017f8f1\n"
-        "movl 0x26e0(%ebx), %esi\n" /* line 657 */
-        "testl %esi, %esi\n"
-        "jle .Lf17f858_0017f8f1\n"
-        "movl 0x26e8(%ebx), %edi\n" /* line 659 */
-        "movl %edi, %edx\n"
-        "andl $0x7ff, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "leal 0x14b0e0(%ebx, %eax, 4), %eax\n"
-        "movl 8(%ebp), %edx\n" /* line 661 | index */
-        "cmpl (%eax), %edx\n"
-        "je .Lf17f858_0017f8cb\n"
-        "xorl %ecx, %ecx\n" /* line 664 */
-        ".Lf17f858_0017f8a5:\n"
-        "addl $1, %ecx\n" /* line 657 */
-        "cmpl %esi, %ecx\n"
-        "je .Lf17f858_0017f8f1\n"
-        "leal (%edi, %ecx), %edx\n" /* line 659 */
-        "andl $0x7ff, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n"
-        "shll $3, %eax\n"
-        "subl %edx, %eax\n"
-        "leal 0x14b0e0(%ebx, %eax, 4), %eax\n"
-        "movl 8(%ebp), %edx\n" /* line 661 | index */
-        "cmpl (%eax), %edx\n"
-        "jne .Lf17f858_0017f8a5\n"
-        ".Lf17f858_0017f8cb:\n"
-        "movl 0x10(%ebp), %edx\n" /* line 663 | size */
-        "movl %edx, 8(%esp)\n"
-        "addl $0x3c, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* buf */
-        "movl %eax, (%esp)\n"
-        "calll strncpy\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 669 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f858_0017f8f1:\n"
-        "xorl %eax, %eax\n" /* line 657 */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 669 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cl;
+    int count;
+    int start;
+    int i;
+
+    *buf = '\0';
+
+    cl = *(byte **)*(int *)0x195ee78;
+    if (!*(int *)(cl + 0x18))
+        return 0;
+
+    count = *(int *)(cl + 0x26e0);
+    if (count <= 0)
+        return 0;
+
+    start = *(int *)(cl + 0x26e8);
+
+    for (i = 0; i < count; i++) {
+        int slot = (start + i) & 0x7ff;
+        int entryOffset = (slot * 24 - slot) * 4;
+        byte *entry = cl + 0x14b0e0 + entryOffset;
+
+        if (*(int *)entry == index) {
+            strncpy(buf, (char *)(entry + 0x3c), size);
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 /* line 851 */
