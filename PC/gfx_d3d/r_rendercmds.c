@@ -19,7 +19,7 @@ static GfxCmdArray *s_cmdList; /* 0x7f1e00 */
 static struct GfxDebugFrameGlob s_debugFrameGlob; /* 0x7f1e80 */
 
 void R_ShutdownBackendData(void);
-static void R_ProcessFrontendCmdInternal(void);
+static __attribute__((regparm(3))) void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread);
 void R_AddFrontendCmd(int type, void *data);
 void R_SyncRenderThread(void);
 GfxViewParms * R_AllocViewParms(void);
@@ -66,8 +66,8 @@ void R_ShutdownBackendData(void)
 }
 
 /* line 253 */
-static __attribute__((naked))
-void R_ProcessFrontendCmdInternal(void)
+static __attribute__((naked)) __attribute__((regparm(3)))
+void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 253 */
@@ -112,18 +112,9 @@ void R_ProcessFrontendCmdInternal(void)
 }
 
 /* line 512 */
-__attribute__((naked))
 void R_AddFrontendCmd(int type, void *data)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 512 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* type */
-        "movl 0xc(%ebp), %edx\n" /* data */
-        "xorl %ecx, %ecx\n" /* line 589 */
-        "popl %ebp\n" /* line 591 */
-        "jmp R_ProcessFrontendCmdInternal\n" /* line 589 */
-    );
+    R_ProcessFrontendCmdInternal(type, data, 0);
 }
 
 /* line 626 */
@@ -489,67 +480,27 @@ void R_BeginFrame(void)
 }
 
 /* line 594 */
-__attribute__((naked))
 void R_UpdateEffectsBolt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 594 */
-        "movl %esp, %ebp\n"
-        "xorl %ecx, %ecx\n" /* line 589 */
-        "movl $g_dummyBuf, %edx\n"
-        "movl $4, %eax\n"
-        "popl %ebp\n" /* line 601 */
-        "jmp R_ProcessFrontendCmdInternal\n" /* line 589 */
-    );
+    R_ProcessFrontendCmdInternal(4, g_dummyBuf, 0);
 }
 
 /* line 604 */
-__attribute__((naked))
 void R_UpdateEffectsNonBolt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 604 */
-        "movl %esp, %ebp\n"
-        "xorl %ecx, %ecx\n" /* line 589 */
-        "movl $g_dummyBuf, %edx\n"
-        "movl $3, %eax\n"
-        "popl %ebp\n" /* line 611 */
-        "jmp R_ProcessFrontendCmdInternal\n" /* line 589 */
-    );
+    R_ProcessFrontendCmdInternal(3, g_dummyBuf, 0);
 }
 
 /* line 614 */
-__attribute__((naked))
 void R_UpdateXModelBoundsDelayed(GfxEntity *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 614 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "xorl %ecx, %ecx\n" /* line 589 */
-        "leal 8(%ebp), %edx\n" /* ent */
-        "xorl %eax, %eax\n"
-        "calll R_ProcessFrontendCmdInternal\n"
-        "leave\n" /* line 617 */
-        "retl\n"
-    );
+    R_ProcessFrontendCmdInternal(0, &ent, 0);
 }
 
 /* line 620 */
-__attribute__((naked))
 void R_SkinGfxEntityDelayed(GfxEntity *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 620 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "xorl %ecx, %ecx\n" /* line 589 */
-        "leal 8(%ebp), %edx\n" /* ent */
-        "movl $1, %eax\n"
-        "calll R_ProcessFrontendCmdInternal\n"
-        "leave\n" /* line 623 */
-        "retl\n"
-    );
+    R_ProcessFrontendCmdInternal(1, &ent, 0);
 }
 
 /* line 135 */

@@ -657,27 +657,11 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
 }
 
 /* line 1059 */
-__attribute__((naked))
 D3DMATRIX * RB_GetActiveWorldMatrix(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1059 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 0x195f0c8, %ebx\n"
-        "movl 0x2e80(%ebx), %edx\n"
-        "movl %edx, %ecx\n"
-        "shll $4, %ecx\n"
-        "movl %edx, %eax\n"
-        "shll $7, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %edx, %eax\n"
-        "shll $5, %eax\n"
-        "leal 0x4f0(%eax, %ebx), %eax\n"
-        "popl %ebx\n" /* line 1062 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *base = *(byte **)0x195f0c8;
+    int index = *(int *)(base + 0x2e80);
+    return (D3DMATRIX *)(base + 0x4f0 + index * 3552);
 }
 
 /* line 1065 */
@@ -2220,129 +2204,37 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
 }
 
 /* line 1777 */
-__attribute__((naked))
 void RB_BindDefaultImages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1777 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "xorl %ebx, %ebx\n"
-        "movl $dxState, %esi\n"
-        "movl 0x195eebc, %edi\n"
-        /* { scope 1 */
-        ".Lfcebe0_000cebf6:\n"
-        "movl 0x1008(%edi), %eax\n" /* line 1783 */
-        "movl %eax, 8(%esp)\n"
-        "movzbl 0x20e4(%esi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* samplerIndex */
-        "calll RB_SetSampler\n"
-        "addl $1, %ebx\n" /* line 1782 | samplerIndex */
-        "addl $1, %esi\n"
-        "cmpl $0x10, %ebx\n" /* samplerIndex */
-        "jne .Lfcebe0_000cebf6\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1784 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    void *defaultImage = *(void **)(*(byte **)0x195eebc + 0x1008);
+
+    for (int i = 0; i < 16; i++) {
+        RB_SetSampler(i, *((byte *)&dxState + 0x20e4 + i), defaultImage);
+    }
 }
 
 /* line 1030 */
-__attribute__((naked))
 void RB_UnbindAllImages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1030 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl 0x195eed0, %eax\n" /* line 1035 */
-        "cmpb $0, 0x2d3c(%eax)\n"
-        "jne .Lfcec26_000cec47\n"
-        "movl 0x195eeec, %eax\n" /* line 1039 */
-        "movl 0x1c(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jg .Lfcec26_000cec4d\n"
-        /* } scope */
-        ".Lfcec26_000cec47:\n"
-        "addl $0x14, %esp\n" /* line 1041 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcec26_000cec4d:\n"
-        "xorl %ebx, %ebx\n" /* line 1039 | samplerIndex */
-        ".Lfcec26_000cec4f:\n"
-        "movl $0, 8(%esp)\n" /* line 1040 */
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* samplerIndex */
-        "calll RB_SetSampler\n"
-        "addl $1, %ebx\n" /* line 1039 | samplerIndex */
-        "movl 0x195eeec, %eax\n"
-        "cmpl 0x1c(%eax), %ebx\n" /* samplerIndex */
-        "jl .Lfcec26_000cec4f\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1041 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (*(byte *)(*(byte **)0x195eed0 + 0x2d3c))
+        return;
+
+    int count = *(int *)(*(byte **)0x195eeec + 0x1c);
+    for (int i = 0; i < count; i++) {
+        RB_SetSampler(i, 0, NULL);
+    }
 }
 
 /* line 1020 */
-__attribute__((naked))
 void RB_UnbindImage(const GfxImage *image)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1020 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* image */
-        /* { scope 1 */
-        "movl 0x195eeec, %eax\n" /* line 1024 */
-        "movl 0x1c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jle .Lfcec7a_000cecaf\n"
-        "xorl %esi, %esi\n" /* samplerIndex */
-        "movl $dxState, %ebx\n"
-        "movl %eax, -0x1c(%ebp)\n"
-        ".Lfcec7a_000cec9c:\n"
-        "cmpl %edi, 0x20f4(%ebx)\n" /* line 1025 | image */
-        "je .Lfcec7a_000cecb7\n"
-        ".Lfcec7a_000ceca4:\n"
-        "addl $1, %esi\n" /* line 1024 | samplerIndex */
-        "addl $4, %ebx\n"
-        "cmpl %esi, 0x1c(%eax)\n" /* samplerIndex */
-        "jg .Lfcec7a_000cec9c\n"
-        /* } scope */
-        ".Lfcec7a_000cecaf:\n"
-        "addl $0x2c, %esp\n" /* line 1027 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfcec7a_000cecb7:\n"
-        "movl $0, 8(%esp)\n" /* line 1026 */
-        "movl $0, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* samplerIndex */
-        "calll RB_SetSampler\n"
-        "movl -0x1c(%ebp), %eax\n"
-        "jmp .Lfcec7a_000ceca4\n"
-    );
+    int count = *(int *)(*(byte **)0x195eeec + 0x1c);
+
+    for (int i = 0; i < count; i++) {
+        if (*(const GfxImage **)((byte *)&dxState + 0x20f4 + i * 4) == image) {
+            RB_SetSampler(i, 0, NULL);
+        }
+    }
 }
 
 /* line 1514 */

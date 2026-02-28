@@ -16,6 +16,9 @@ static struct DpvsScene dpvsScene; /* 0xc96f00 */
 static int dpvsGlob; /* 0xc96e20 */
 static vec4_t standardFrustumSidePlanes[4]; /* 0x2f2b20 */
 
+extern void R_UpdateXModelBounds(void *sceneEnt, void *ent);
+extern void R_SkinSceneEnt(void *sceneEnt, void *ent);
+extern void R_AddXModelSurfaces(int entIndex);
 void R_DrawModel(int entIndex);
 float R_GetFarPlaneDist(void);
 void R_ClearDpvsScene(void);
@@ -35,128 +38,52 @@ static void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, co
 void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex);
 
 /* line 1145 */
-__attribute__((naked))
 void R_DrawModel(int entIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1145 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* entIndex */
-        /* { scope 1 */
-        "cmpb $0, 0xc96e87\n" /* line 1150 */
-        "jne .Lfeec74_000eec91\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1167 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfeec74_000eec91:\n"
-        "leal (%edi, %edi, 2), %esi\n" /* line 1153 | entIndex, sceneEnt */
-        "leal (%edi, %esi, 4), %esi\n" /* entIndex, sceneEnt */
-        "movl 0x195f0f4, %eax\n"
-        "leal 0x5c4(%eax, %esi, 4), %esi\n" /* sceneEnt */
-        "leal (, %edi, 8), %ebx\n" /* line 1156 | ent */
-        "subl %edi, %ebx\n" /* entIndex, ent */
-        "leal (%edi, %ebx, 4), %ebx\n" /* entIndex, ent */
-        "movl 0x10(%eax), %eax\n"
-        "leal (%eax, %ebx, 4), %ebx\n" /* ent */
-        "movl %ebx, 4(%esp)\n" /* line 1161 | ent */
-        "movl %esi, (%esp)\n" /* sceneEnt */
-        "calll R_UpdateXModelBounds\n"
-        "movl %ebx, 4(%esp)\n" /* line 1163 | ent */
-        "movl %esi, (%esp)\n" /* sceneEnt */
-        "calll R_SkinSceneEnt\n"
-        "movl $5, 0xc(%esi)\n" /* line 1164 | sceneEnt */
-        "movl %edi, 8(%ebp)\n" /* line 1166 | entIndex */
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 1167 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp R_AddXModelSurfaces\n" /* line 1166 */
-    );
+    if (!*(byte *)0xc96e87)
+        return;
+
+    byte *base = *(byte **)0x195f0f4;
+    byte *sceneEnt = base + 0x5c4 + entIndex * 52;
+    byte *ent = *(byte **)(base + 0x10) + entIndex * 116;
+
+    R_UpdateXModelBounds(sceneEnt, ent);
+    R_SkinSceneEnt(sceneEnt, ent);
+    *(int *)(sceneEnt + 0xc) = 5;
+    R_AddXModelSurfaces(entIndex);
 }
 
 /* line 2343 */
-__attribute__((naked))
 float R_GetFarPlaneDist(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2343 */
-        "movl %esp, %ebp\n"
-        "subl $4, %esp\n"
-        /* { scope 1 */
-        "movl 0x195f1c4, %eax\n" /* line 2347 */
-        "movl (%eax), %eax\n"
-        "movss 8(%eax), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 2348 | 0.0f */
-        "jne .Lfeece4_000eed10\n"
-        "jp .Lfeece4_000eed10\n"
-        "movl 0x195eec8, %eax\n"
-        "movl 0x150c(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lfeece4_000eed26\n"
-        ".Lfeece4_000eed10:\n"
-        "movss dpvsConfig, %xmm0\n" /* line 2350 */
-        "maxss %xmm1, %xmm0\n"
-        /* } scope */
-        "movss %xmm0, -4(%ebp)\n" /* line 2354 */
-        "flds -4(%ebp)\n"
-        "leave\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfeece4_000eed26:\n"
-        "cmpb $0, 0x14c8(%eax)\n" /* line 2348 */
-        "je .Lfeece4_000eed10\n"
-        "cmpl $1, 0x14ac(%eax)\n"
-        "jne .Lfeece4_000eed10\n"
-        "movss 0x14c0(%eax), %xmm1\n" /* line 2349 */
-        "jmp .Lfeece4_000eed10\n"
-    );
+    float farPlaneDist = *(float *)(*(int *)(*(int *)0x195f1c4) + 8);
+
+    if (farPlaneDist == 0.0f) {
+        byte *scene = *(byte **)0x195eec8;
+        if (*(int *)(scene + 0x150c) && *(byte *)(scene + 0x14c8) && *(int *)(scene + 0x14ac) == 1) {
+            farPlaneDist = *(float *)(scene + 0x14c0);
+        }
+    }
+
+    float cullDist = *(float *)&dpvsConfig;
+    return cullDist > farPlaneDist ? cullDist : farPlaneDist;
 }
 
 /* line 2262 */
-__attribute__((naked))
 void R_ClearDpvsScene(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2262 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl $0, 0xcb6f00\n" /* line 2266 */
-        "movl 0x195eebc, %ebx\n" /* line 2268 */
-        "movl 0x109c(%ebx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfeed42_000eed90\n"
-        "movl 0xfc(%eax), %ecx\n" /* line 2270 */
-        "testl %ecx, %ecx\n"
-        "jle .Lfeed42_000eed90\n"
-        "xorl %ecx, %ecx\n"
-        "xorl %edx, %edx\n"
-        ".Lfeed42_000eed6e:\n"
-        "movl 0x100(%eax), %eax\n" /* line 2271 */
-        "movl $0, 0x38(%eax, %edx)\n"
-        "addl $1, %ecx\n" /* line 2270 */
-        "movl 0x109c(%ebx), %eax\n"
-        "addl $0x3c, %edx\n"
-        "cmpl %ecx, 0xfc(%eax)\n"
-        "jg .Lfeed42_000eed6e\n"
-        /* } scope */
-        ".Lfeed42_000eed90:\n"
-        "popl %ebx\n" /* line 2273 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    *(int *)0xcb6f00 = 0;
+
+    byte *globals = *(byte **)0x195eebc;
+    byte *world = *(byte **)(globals + 0x109c);
+    if (!world)
+        return;
+
+    int cellCount = *(int *)(world + 0xfc);
+    byte *cells = *(byte **)(world + 0x100);
+    for (int i = 0; i < cellCount; i++) {
+        *(int *)(cells + i * 0x3c + 0x38) = 0;
+    }
 }
 
 /* line 2357 */

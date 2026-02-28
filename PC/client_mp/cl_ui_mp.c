@@ -64,58 +64,31 @@ void GetClientState(uiClientState_t *state)
 }
 
 /* line 41 */
-__attribute__((naked))
 void LAN_ResetPings(int source)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 41 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* source */
-        /* { scope 1 */
-        "cmpl $1, %eax\n" /* line 48 */
-        "je .Lf17f084_0017f0bf\n"
-        "cmpl $2, %eax\n"
-        "je .Lf17f084_0017f0d5\n"
-        "testl %eax, %eax\n"
-        "je .Lf17f084_0017f09a\n"
-        /* } scope */
-        "popl %ebp\n" /* line 74 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f084_0017f09a:\n"
-        "movl $0x80, %ecx\n" /* line 48 */
-        "movl 0x195ecac, %eax\n"
-        "addl $0x13c, %eax\n"
-        ".Lf17f084_0017f0a9:\n"
-        "xorl %edx, %edx\n" /* line 69 */
-        ".Lf17f084_0017f0ab:\n"
-        "movw $0xffff, 0x1e(%eax)\n" /* line 71 */
-        "addl $1, %edx\n" /* line 69 */
-        "addl $0x88, %eax\n"
-        "cmpl %ecx, %edx\n"
-        "jne .Lf17f084_0017f0ab\n"
-        /* } scope */
-        "popl %ebp\n" /* line 74 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f084_0017f0bf:\n"
-        "movl 0x195ecac, %eax\n" /* line 57 */
-        "movl 0x4540(%eax), %ecx\n"
-        "addl $0x4544, %eax\n"
-        "testl %ecx, %ecx\n" /* line 69 */
-        "jg .Lf17f084_0017f0a9\n"
-        /* } scope */
-        "popl %ebp\n" /* line 74 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f084_0017f0d5:\n"
-        "movl 0x195ecac, %eax\n"
-        "addl $0x29c648, %eax\n" /* "1.xyz, r0, c0.x;
-MUL    r0, r1, v0;
-MAD r1.xyz, v0, -r1, c23" */
-        "movl $0x80, %ecx\n"
-        "jmp .Lf17f084_0017f0a9\n"
-    );
+    byte *base = *(byte **)0x195ecac;
+    byte *server;
+    int count;
+
+    if (source == 0) {
+        count = 128;
+        server = base + 0x13c;
+    } else if (source == 1) {
+        count = *(int *)(base + 0x4540);
+        server = base + 0x4544;
+        if (count <= 0)
+            return;
+    } else if (source == 2) {
+        count = 128;
+        server = base + 0x29c648;
+    } else {
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        *(short *)(server + 0x1e) = -1;
+        server += 0x88;
+    }
 }
 
 /* line 82 */
@@ -380,64 +353,30 @@ void LAN_GetServerInfo(int source, int n, char *buf, int buflen)
 }
 
 /* line 200 */
-__attribute__((naked))
 int LAN_GetServerPing(int source, int n)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 200 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* source */
-        "movl 0xc(%ebp), %edx\n" /* n */
-        /* { scope 1 */
-        "cmpl $1, %eax\n" /* line 204 */
-        "je .Lf17f508_0017f543\n"
-        "cmpl $2, %eax\n"
-        "je .Lf17f508_0017f54e\n"
-        "testl %eax, %eax\n"
-        "jne .Lf17f508_0017f547\n"
-        "cmpl $0x7f, %edx\n" /* line 207 */
-        "ja .Lf17f508_0017f547\n"
-        "movl %edx, %eax\n" /* line 209 */
-        "shll $7, %eax\n"
-        "leal 0x130(%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "addl $0xc, %eax\n"
-        ".Lf17f508_0017f539:\n"
-        "testl %eax, %eax\n" /* line 229 */
-        "je .Lf17f508_0017f547\n"
-        "movswl 0x1e(%eax), %eax\n" /* line 231 */
-        /* } scope */
-        "popl %ebp\n" /* line 234 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f508_0017f543:\n"
-        "testl %edx, %edx\n" /* line 214 */
-        "jns .Lf17f508_0017f56a\n"
-        ".Lf17f508_0017f547:\n"
-        "movl $0xffffffff, %eax\n" /* line 231 */
-        /* } scope */
-        "popl %ebp\n" /* line 234 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17f508_0017f54e:\n"
-        "cmpl $0x7f, %edx\n" /* line 222 */
-        "ja .Lf17f508_0017f547\n"
-        "movl %edx, %eax\n" /* line 224 */
-        "shll $7, %eax\n"
-        "leal 0x29c640(%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "addl $8, %eax\n"
-        "jmp .Lf17f508_0017f539\n"
-        ".Lf17f508_0017f56a:\n"
-        "movl 0x195ecac, %ecx\n" /* line 214 */
-        "cmpl 0x4540(%ecx), %edx\n"
-        "jge .Lf17f508_0017f547\n"
-        "movl %edx, %eax\n" /* line 216 */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %edx, 8), %eax\n"
-        "leal 4(%eax, %ecx), %eax\n"
-        "jmp .Lf17f508_0017f539\n"
-    );
+    byte *base = *(byte **)0x195ecac;
+    byte *server;
+
+    if (source == 0) {
+        if ((unsigned)n > 0x7f)
+            return -1;
+        server = base + n * 0x88 + 0x13c;
+    } else if (source == 1) {
+        if (n < 0 || n >= *(int *)(base + 0x4540))
+            return -1;
+        server = base + n * 0x88 + 0x4544;
+    } else if (source == 2) {
+        if ((unsigned)n > 0x7f)
+            return -1;
+        server = base + n * 0x88 + 0x29c648;
+    } else {
+        return -1;
+    }
+
+    if (!server)
+        return -1;
+    return *(short *)(server + 0x1e);
 }
 
 /* line 419 */
@@ -549,57 +488,24 @@ MAD r1.xyz, v0, -r1, c23" */
 }
 
 /* line 490 */
-__attribute__((naked))
 int LAN_ServerIsDirty(int source, int n)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 490 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* source */
-        "movl 0xc(%ebp), %edx\n" /* n */
-        "cmpl $1, %eax\n" /* line 492 */
-        "je .Lf17f680_0017f6b7\n"
-        "cmpl $2, %eax\n"
-        "je .Lf17f680_0017f6db\n"
-        "testl %eax, %eax\n"
-        "je .Lf17f680_0017f69b\n"
-        ".Lf17f680_0017f697:\n"
-        "xorl %eax, %eax\n" /* line 512 */
-        "popl %ebp\n" /* line 518 */
-        "retl\n"
-        ".Lf17f680_0017f69b:\n"
-        "cmpl $0x7f, %edx\n" /* line 495 */
-        "ja .Lf17f680_0017f697\n"
-        "movl %edx, %eax\n" /* line 497 */
-        "shll $7, %eax\n"
-        "leal (%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "movzbl 0x14b(%eax), %eax\n"
-        "popl %ebp\n" /* line 518 */
-        "retl\n"
-        ".Lf17f680_0017f6b7:\n"
-        "testl %edx, %edx\n" /* line 502 */
-        "js .Lf17f680_0017f697\n"
-        "movl 0x195ecac, %ecx\n"
-        "cmpl 0x4540(%ecx), %edx\n"
-        "jge .Lf17f680_0017f697\n"
-        "movl %edx, %eax\n" /* line 504 */
-        "shll $7, %eax\n"
-        "leal (%eax, %edx, 8), %eax\n"
-        "movzbl 0x4553(%eax, %ecx), %eax\n"
-        "popl %ebp\n" /* line 518 */
-        "retl\n"
-        ".Lf17f680_0017f6db:\n"
-        "cmpl $0x7f, %edx\n" /* line 510 */
-        "ja .Lf17f680_0017f697\n"
-        "movl %edx, %eax\n" /* line 512 */
-        "shll $7, %eax\n"
-        "leal (%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
-        "movzbl 0x29c657(%eax), %eax\n"
-        "popl %ebp\n" /* line 518 */
-        "retl\n"
-    );
+    byte *base = *(byte **)0x195ecac;
+
+    if (source == 0) {
+        if ((unsigned)n > 0x7f)
+            return 0;
+        return *(byte *)(base + n * 0x88 + 0x14b);
+    } else if (source == 1) {
+        if (n < 0 || n >= *(int *)(base + 0x4540))
+            return 0;
+        return *(byte *)(base + n * 0x88 + 0x4553);
+    } else if (source == 2) {
+        if ((unsigned)n > 0x7f)
+            return 0;
+        return *(byte *)(base + n * 0x88 + 0x29c657);
+    }
+    return 0;
 }
 
 /* line 526 */

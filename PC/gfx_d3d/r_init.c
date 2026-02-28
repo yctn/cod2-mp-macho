@@ -60,36 +60,14 @@ void ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_(void); /* vo
 void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void); /* void std___introsort_loop<_D3DDISPLAYMODE*, int, unsigned char (*)(_D3DDISPLAYMODE const&, _D3DDISPLAYMODE const&)> */
 
 /* line 123 */
-__attribute__((naked))
 void R_FatalInitError(const char *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 123 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* msg */
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl %ebx, 8(%esp)\n" /* line 128 | msg */
-        "movl $0x2239f0, 4(%esp)\n" /* "
-%s
-" */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl 0x1180708, %ecx\n" /* line 131 */
-        "addl $0x14, %esp\n" /* line 137 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 131 */
-    );
+    void (*printFunc)(int, const char *, ...) = *(void (**)(int, const char *, ...))&ri;
+    printFunc(0, (const char *)0x2238dc);
+    printFunc(0, (const char *)0x223938);
+    printFunc(0, (const char *)0x223994);
+    printFunc(0, "\n%s\n", msg);
+    ((void (*)(void))*(void **)0x1180708)();
 }
 
 /* line 169 */
@@ -461,28 +439,13 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
 }
 
 /* line 1256 */
-__attribute__((naked))
 void R_UpdateGpuSyncType(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1256 */
-        "movl %esp, %ebp\n"
-        "movl 0x195ef50, %eax\n" /* line 1258 */
-        "movl (%eax), %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "jne .Lfcaffa_000cb01b\n"
-        "movl 0x195ef20, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "movl %eax, 0x11804c0\n"
-        "popl %ebp\n" /* line 1259 */
-        "retl\n"
-        ".Lfcaffa_000cb01b:\n"
-        "xorl %eax, %eax\n" /* line 1258 */
-        "movl %eax, 0x11804c0\n"
-        "popl %ebp\n" /* line 1259 */
-        "retl\n"
-    );
+    if (*(byte *)(*(int *)(*(int *)0x195ef50) + 8)) {
+        *(int *)0x11804c0 = 0;
+    } else {
+        *(int *)0x11804c0 = *(int *)(*(int *)(*(int *)0x195ef20) + 8);
+    }
 }
 
 /* line 2011 */
@@ -870,34 +833,12 @@ static void R_InitSystems(void)
 }
 
 /* line 140 */
-__attribute__((naked))
 void R_FatalLockError(HRESULT hr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 140 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* hr */
-        "movl $0x223a4c, 4(%esp)\n" /* line 142 */
-        "movl $0, (%esp)\n"
-        "calll *ri\n"
-        "movl ri, %esi\n" /* line 143 */
-        "movl %ebx, (%esp)\n" /* line 177 | hr */
-        "calll DXGetErrorDescription9A\n"
-        "movl %eax, 8(%esp)\n" /* line 143 */
-        "movl $0x223aa4, 4(%esp)\n" /* "********** error information:  %s
-" */
-        "movl $0, (%esp)\n"
-        "calll *%esi\n"
-        "movl 0x1180708, %ecx\n" /* line 146 */
-        "addl $0x10, %esp\n" /* line 152 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmpl *%ecx\n" /* line 146 */
-    );
+    void (*printFunc)(int, const char *, ...) = *(void (**)(int, const char *, ...))&ri;
+    printFunc(0, (const char *)0x223a4c);
+    printFunc(0, "********** error information:  %s\n", DXGetErrorDescription9A(hr));
+    ((void (*)(void))*(void **)0x1180708)();
 }
 
 /* line 1920 */

@@ -18,6 +18,7 @@ static const stream_dest_info_t s_streamDestInfo[12]; /* 0x2f2634 */
 
 extern int R_HashAssetName(const char *name);
 extern int stricmp(const char *s1, const char *s2);
+extern void R_Error(int errorLevel, const char *msg, ...);
 extern r_global_permanent_t *rgp; /* 0x195eebc */
 
 void * Material_Alloc(int size);
@@ -173,222 +174,74 @@ static Bool Material_Compare(const Material *mtl0, const Material *mtl1)
 }
 
 /* line 581 */
-__attribute__((naked))
 void Material_SetTechnique(const char *name, MaterialTechnique *technique)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 581 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* name */
-        /* { scope 1 */
-        "cmpl $0x3ff, 0xc86e88\n" /* line 585 */
-        "je .Lfd31fe_000d3270\n"
-        ".Lfd31fe_000d3215:\n"
-        "movl %esi, (%esp)\n" /* line 554 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n"
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc86e8c(, %ebx, 4), %eax\n" /* line 555 */
-        "testl %eax, %eax\n"
-        "je .Lfd31fe_000d3256\n"
-        ".Lfd31fe_000d3230:\n"
-        "movl %esi, 4(%esp)\n" /* line 557 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd31fe_000d3256\n"
-        "addl $1, %ebx\n" /* line 562 */
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc86e8c(, %ebx, 4), %eax\n" /* line 555 */
-        "testl %eax, %eax\n"
-        "jne .Lfd31fe_000d3230\n"
-        ".Lfd31fe_000d3256:\n"
-        "addl $1, 0xc86e88\n" /* line 589 */
-        "movl 0xc(%ebp), %edx\n" /* line 590 | technique */
-        "movl $0xc86e80, %eax\n"
-        "movl %edx, 0xc(%eax, %ebx, 4)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 591 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd31fe_000d3270:\n"
-        "movl $0x3ff, 8(%esp)\n" /* line 586 */
-        "movl $0x224358, 4(%esp)\n" /* "More than %i techniques in use" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfd31fe_000d3215\n"
-    );
+    if (*(int *)0xc86e88 == 0x3ff) {
+        R_Error(1, "More than %i techniques in use", 0x3ff);
+    }
+
+    int hash = R_HashAssetName(name) & 0x3ff;
+
+    while (*(void **)(0xc86e8c + hash * 4) != NULL) {
+        if (stricmp(*(char **)(0xc86e8c + hash * 4), name) == 0)
+            break;
+        hash = (hash + 1) & 0x3ff;
+    }
+
+    (*(int *)0xc86e88)++;
+    *(MaterialTechnique **)(0xc86e8c + hash * 4) = technique;
 }
 
 /* line 647 */
-__attribute__((naked))
 void Material_SetTechniqueSet(const char *name, MaterialTechniqueSet *techniqueSet)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 647 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* name */
-        /* { scope 1 */
-        "movl %esi, (%esp)\n" /* line 621 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n"
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc85e88(, %ebx, 4), %eax\n" /* line 622 */
-        "testl %eax, %eax\n"
-        "je .Lfd328e_000d32da\n"
-        ".Lfd328e_000d32b4:\n"
-        "movl %esi, 4(%esp)\n" /* line 624 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd328e_000d32da\n"
-        "addl $1, %ebx\n" /* line 629 */
-        "andl $0x3ff, %ebx\n"
-        "movl 0xc85e88(, %ebx, 4), %eax\n" /* line 622 */
-        "testl %eax, %eax\n"
-        "jne .Lfd328e_000d32b4\n"
-        ".Lfd328e_000d32da:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 654 | techniqueSet */
-        "movl $0xc85e80, %eax\n"
-        "movl %edx, 8(%eax, %ebx, 4)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 655 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int hash = R_HashAssetName(name) & 0x3ff;
+
+    while (*(void **)(0xc85e88 + hash * 4) != NULL) {
+        if (stricmp(*(char **)(0xc85e88 + hash * 4), name) == 0)
+            break;
+        hash = (hash + 1) & 0x3ff;
+    }
+
+    *(MaterialTechniqueSet **)(0xc85e88 + hash * 4) = techniqueSet;
 }
 
 /* line 709 */
-__attribute__((naked))
 void Material_SetStateMap(const char *name, MaterialStateMap *stateMap)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 709 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* name */
-        /* { scope 1 */
-        "movl %esi, (%esp)\n" /* line 684 */
-        "calll R_HashAssetName\n"
-        "movl %eax, %ebx\n"
-        "andl $0x1f, %ebx\n"
-        "movl 0xc87f94(, %ebx, 4), %eax\n" /* line 685 */
-        "testl %eax, %eax\n"
-        "je .Lfd32ee_000d3334\n"
-        ".Lfd32ee_000d3311:\n"
-        "movl %esi, 4(%esp)\n" /* line 687 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "je .Lfd32ee_000d3334\n"
-        "addl $1, %ebx\n" /* line 692 */
-        "andl $0x1f, %ebx\n"
-        "movl 0xc87f94(, %ebx, 4), %eax\n" /* line 685 */
-        "testl %eax, %eax\n"
-        "jne .Lfd32ee_000d3311\n"
-        ".Lfd32ee_000d3334:\n"
-        "movl 0xc(%ebp), %edx\n" /* line 714 | stateMap */
-        "movl $0xc87f90, %eax\n"
-        "movl %edx, 4(%eax, %ebx, 4)\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 715 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int hash = R_HashAssetName(name) & 0x1f;
+
+    while (*(void **)(0xc87f94 + hash * 4) != NULL) {
+        if (strcmp(*(char **)(0xc87f94 + hash * 4), name) == 0)
+            break;
+        hash = (hash + 1) & 0x1f;
+    }
+
+    *(MaterialStateMap **)(0xc87f94 + hash * 4) = stateMap;
 }
 
 /* line 793 */
-__attribute__((naked))
 void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion, MaterialShader *mtlShader)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 793 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc(%ebp), %esi\n" /* shaderType */
-        "movl 0x10(%ebp), %edi\n" /* shaderVersion */
-        /* { scope 1 */
-        "movl 0xc88118, %eax\n" /* line 797 */
-        "addl $1, %eax\n"
-        "movl %eax, 0xc88118\n"
-        "cmpl $0x100, %eax\n" /* line 798 */
-        "je .Lfd3348_000d33dd\n"
-        /* { scope 2 */
-        ".Lfd3348_000d336b:\n"
-        "movl 8(%ebp), %eax\n" /* line 748 | shaderName */
-        "movl %eax, (%esp)\n"
-        "calll R_HashAssetName\n"
-        /* } scope */
-        "leal (%esi, %esi, 2), %edx\n" /* line 762 */
-        "shll $5, %edx\n"
-        "addl %esi, %edx\n"
-        "addl %edx, %eax\n"
-        "leal (%edi, %eax), %eax\n"
-        "movzbl %al, %ebx\n"
-        "movl 0xc8811c(, %ebx, 4), %edx\n" /* line 763 */
-        "testl %edx, %edx\n"
-        "jne .Lfd3348_000d33a4\n"
-        "jmp .Lfd3348_000d33c9\n"
-        ".Lfd3348_000d3393:\n"
-        "leal 1(%ebx), %eax\n" /* line 773 */
-        "movzbl %al, %ebx\n"
-        "movl 0xc8811c(, %ebx, 4), %edx\n" /* line 763 */
-        "testl %edx, %edx\n"
-        "je .Lfd3348_000d33c9\n"
-        ".Lfd3348_000d33a4:\n"
-        "movzbl 0xa(%edx), %eax\n" /* line 766 */
-        "cmpl %eax, %esi\n"
-        "jne .Lfd3348_000d3393\n"
-        "movzbl 0xb(%edx), %eax\n"
-        "cmpl %eax, %edi\n"
-        "jne .Lfd3348_000d3393\n"
-        "movl 8(%ebp), %eax\n" /* shaderName */
-        "movl %eax, 4(%esp)\n"
-        "movl (%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd3348_000d3393\n"
-        ".Lfd3348_000d33c9:\n"
-        "movl 0x14(%ebp), %edx\n" /* line 802 | mtlShader */
-        "movl $0xc88110, %eax\n"
-        "movl %edx, 0xc(%eax, %ebx, 4)\n"
-        /* } scope */
-        "addl $0x1c, %esp\n" /* line 803 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd3348_000d33dd:\n"
-        "movl $0xff, 8(%esp)\n" /* line 799 */
-        "movl $0x224378, 4(%esp)\n" /* "More than %i unique pixel and vertex shaders" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfd3348_000d336b\n"
-    );
+    (*(int *)0xc88118)++;
+    if (*(int *)0xc88118 == 0x100) {
+        R_Error(1, "More than %i unique pixel and vertex shaders", 0xff);
+    }
+
+    int hash = R_HashAssetName(shaderName);
+    hash = ((int)shaderType * 97 + shaderVersion + hash) & 0xff;
+
+    void *entry = *(void **)(0xc8811c + hash * 4);
+    while (entry != NULL) {
+        if (*(byte *)((byte *)entry + 0xa) == (byte)shaderType &&
+            *(byte *)((byte *)entry + 0xb) == (byte)shaderVersion &&
+            strcmp(*(char **)entry, shaderName) == 0)
+            break;
+        hash = (hash + 1) & 0xff;
+        entry = *(void **)(0xc8811c + hash * 4);
+    }
+
+    *(MaterialShader **)(0xc8811c + hash * 4) = mtlShader;
 }
 
 /* line 981 */

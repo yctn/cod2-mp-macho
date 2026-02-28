@@ -38,6 +38,10 @@ static char szIwdLanguageName[2][64]; /* 0x33ce20 */
 static int iString; /* 0x33ce00 */
 extern void Hunk_FreeTempMemory(void *buf);
 extern float FS_DisplayPath(qboolean bLanguageCull);
+extern int SEH_GetCurrentLanguage(void);
+extern const char *Dvar_GetString(const char *name);
+extern const char *va(const char *fmt, ...);
+extern void Z_FreeInternal(void *ptr);
 
 static qboolean bLanguagesListed; /* 0x33cea0 */
 
@@ -122,75 +126,29 @@ int FS_LoadStack(void)
 }
 
 /* line 415 */
-__attribute__((naked))
 qboolean FS_UseSearchPath(const searchpath_t *pSearch)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 415 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %edx\n" /* pSearch */
-        "movl 0xc(%edx), %eax\n" /* line 417 */
-        "testl %eax, %eax\n"
-        "je .Lf32dec_00032e1c\n"
-        "movl fs_ignoreLocalized, %eax\n"
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf32dec_00032e10\n"
-        ".Lf32dec_00032e08:\n"
-        "xorl %eax, %eax\n" /* line 422 */
-        "addl $4, %esp\n" /* line 426 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf32dec_00032e10:\n"
-        "movl 0x10(%edx), %ebx\n" /* line 422 */
-        "calll SEH_GetCurrentLanguage\n"
-        "cmpl %eax, %ebx\n"
-        "jne .Lf32dec_00032e08\n"
-        ".Lf32dec_00032e1c:\n"
-        "movl $1, %eax\n" /* line 417 */
-        "addl $4, %esp\n" /* line 426 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!*(int *)((byte *)pSearch + 0xc))
+        return 1;
+
+    if (*(byte *)((byte *)fs_ignoreLocalized + 8))
+        return 0;
+
+    if (*(int *)((byte *)pSearch + 0x10) != SEH_GetCurrentLanguage())
+        return 0;
+
+    return 1;
 }
 
 /* line 436 */
-__attribute__((naked))
 qboolean FS_LanguageHasAssets(int iLanguage)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 436 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* iLanguage */
-        /* { scope 1 */
-        "movl fs_searchpaths, %eax\n" /* line 440 */
-        "testl %eax, %eax\n"
-        "je .Lf32e28_00032e49\n"
-        ".Lf32e28_00032e37:\n"
-        "movl 0xc(%eax), %ecx\n" /* line 442 */
-        "testl %ecx, %ecx\n"
-        "je .Lf32e28_00032e43\n"
-        "cmpl %edx, 0x10(%eax)\n"
-        "je .Lf32e28_00032e4d\n"
-        ".Lf32e28_00032e43:\n"
-        "movl (%eax), %eax\n" /* line 440 */
-        "testl %eax, %eax\n"
-        "jne .Lf32e28_00032e37\n"
-        ".Lf32e28_00032e49:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 447 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf32e28_00032e4d:\n"
-        "movl $1, %eax\n" /* line 440 */
-        /* } scope */
-        "popl %ebp\n" /* line 447 */
-        "retl\n"
-    );
+    searchpath_t *sp;
+    for (sp = fs_searchpaths; sp; sp = *(searchpath_t **)sp) {
+        if (*(int *)((byte *)sp + 0xc) && *(int *)((byte *)sp + 0x10) == iLanguage)
+            return 1;
+    }
+    return 0;
 }
 
 /* line 459 */
@@ -795,32 +753,12 @@ float FS_ClearIwdReferences(void)
 }
 
 /* line 4057 */
-__attribute__((naked))
 const char * GetBspExtension(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4057 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0x216d8c, (%esp)\n" /* line 4064 */
-        "calll Dvar_GetString\n"
-        "cmpb $0, (%eax)\n" /* line 4066 */
-        "je .Lf333f0_00033419\n"
-        "movl %eax, 4(%esp)\n" /* line 4067 */
-        "movl $0x216d98, (%esp)\n" /* "%sbsp" */
-        "calll va\n"
-        /* } scope */
-        "leave\n" /* line 4071 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf333f0_00033419:\n"
-        "movl $0x216da0, (%esp)\n" /* line 4069 */
-        "calll va\n"
-        /* } scope */
-        "leave\n" /* line 4071 */
-        "retl\n"
-    );
+    const char *ext = Dvar_GetString((const char *)0x216d8c);
+    if (*ext)
+        return va("%sbsp", ext);
+    return va((const char *)0x216da0);
 }
 
 /* line 2180 */
@@ -831,43 +769,17 @@ float FS_FreeFile(float *buffer)
 }
 
 /* line 2829 */
-__attribute__((naked))
-float FS_FreeFileList(const char * *list, int allocTrackType)
+float FS_FreeFileList(const char **list, int allocTrackType)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2829 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* list */
-        "testl %esi, %esi\n" /* line 2835 | list */
-        "je .Lf33438_0003346f\n"
-        "movl (%esi), %eax\n" /* line 2840 | list */
-        "testl %eax, %eax\n"
-        "je .Lf33438_00033461\n"
-        "movl %esi, %ebx\n" /* list */
-        ".Lf33438_0003344f:\n"
-        "movl %eax, (%esp)\n" /* line 2842 */
-        "calll Z_FreeInternal\n"
-        "movl 4(%ebx), %eax\n" /* line 2840 */
-        "addl $4, %ebx\n"
-        "testl %eax, %eax\n"
-        "jne .Lf33438_0003344f\n"
-        ".Lf33438_00033461:\n"
-        "movl %esi, 8(%ebp)\n" /* line 2845 | list */
-        "addl $0x10, %esp\n" /* line 2846 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "jmp Z_FreeInternal\n" /* line 2845 */
-        ".Lf33438_0003346f:\n"
-        "addl $0x10, %esp\n" /* line 2846 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!list)
+        return 0;
+
+    const char **p;
+    for (p = list; *p; p++) {
+        Z_FreeInternal((void *)*p);
+    }
+    Z_FreeInternal((void *)list);
+    return 0;
 }
 
 /* line 572 */
