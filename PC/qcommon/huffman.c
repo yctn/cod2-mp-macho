@@ -37,7 +37,7 @@
 #define NYT         256
 #define INTERNAL_NODE 257
 
-static int bloc; /* 0xf2f600 */
+static int bloc; /* bloc */
 
 extern void Com_Memset(void *dest, int val, int count);
 

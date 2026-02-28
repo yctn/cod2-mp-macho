@@ -9,9 +9,9 @@
  */
 
 /* External globals (pointer-to-pointer indirections from binary) */
-extern char **cg_glob;    /* 0x195f584 -- pointer to cg_t base */
-extern char **cg_globUI;  /* 0x195ecb4 -- pointer to cg_t base (UI/alternate) */
-extern char **cg_globSnap; /* 0x195f950 -- pointer to snap/cgs base */
+extern char **cg_glob;    /* imp_cg -- pointer to cg_t base */
+extern char **cg_globUI;  /* imp_legacyHacks -- pointer to cg_t base (UI/alternate) */
+extern char **cg_globSnap; /* imp_cg_hudDamageIconTime -- pointer to snap/cgs base */
 
 /* External function declarations */
 extern void AngleVectors(const vec_t *angles, vec_t *forward, vec_t *right, vec_t *up);

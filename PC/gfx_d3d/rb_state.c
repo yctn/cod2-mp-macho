@@ -12,21 +12,21 @@
  */
 
 extern struct DxState dxState; /* 0x0 */
-static const DxTextureStageEnums texStageEnums; /* 0x2f249c */
-static const DxTextureStageEnums texStageEnums_002f24ac; /* 0x2f24ac */
-static const DxTextureStageEnums texStageEnums_002f24ac; /* 0x2f24ac */
-static const byte defaultSamplerStateTable[5]; /* 0x2f22a0 */
-static const DWORD s_blendTable[13]; /* 0x2f2440 */
-static const DWORD s_blendOpTable[6]; /* 0x2f2474 */
-static const DWORD s_cullTable[4]; /* 0x2f248c */
-static const D3DTEXTUREFILTERTYPE s_filterTable[4]; /* 0x2f2290 */
-static const DWORD s_stencilOpTable[8]; /* 0x2f23e0 */
-static const DWORD s_stencilFuncTable[8]; /* 0x2f23a0 */
-static const DxStencilDecode s_stencilOpDecode[6]; /* 0x2f2400 */
-static const DxStencilDecode s_stencilFuncDecode[2]; /* 0x2f23c0 */
-static const DxTextureOpDecode s_textureOpTable[23]; /* 0x2f22c0 */
-static const DWORD s_textureArgTable[7]; /* 0x2f2378 */
-static const GfxViewportBehavior s_viewportBehaviorForRenderTarget[12]; /* 0x2f2260 */
+static const DxTextureStageEnums texStageEnums; /* texStageEnums */
+static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
+static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
+static const byte defaultSamplerStateTable[5]; /* defaultSamplerStateTable */
+static const DWORD s_blendTable[13]; /* s_blendTable */
+static const DWORD s_blendOpTable[6]; /* s_blendOpTable */
+static const DWORD s_cullTable[4]; /* s_cullTable */
+static const D3DTEXTUREFILTERTYPE s_filterTable[4]; /* s_filterTable */
+static const DWORD s_stencilOpTable[8]; /* s_stencilOpTable */
+static const DWORD s_stencilFuncTable[8]; /* s_stencilFuncTable */
+static const DxStencilDecode s_stencilOpDecode[6]; /* s_stencilOpDecode */
+static const DxStencilDecode s_stencilFuncDecode[2]; /* s_stencilFuncDecode */
+static const DxTextureOpDecode s_textureOpTable[23]; /* s_textureOpTable */
+static const DWORD s_textureArgTable[7]; /* s_textureArgTable */
+static const GfxViewportBehavior s_viewportBehaviorForRenderTarget[12]; /* s_viewportBehaviorForRenderTarget */
 
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
@@ -79,11 +79,11 @@ void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %edi\n" /* ib */
-        "movl 0x1186ccc, %eax\n" /* line 1809 */
-        "movl %eax, 0x1186cdc\n"
-        "movl %edi, 0x1186ccc\n" /* line 1810 | ib */
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl dxState+8396, %eax\n" /* line 1809 */
+        "movl %eax, dxState+8412\n"
+        "movl %edi, dxState+8396\n" /* line 1810 | ib */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfcd0f0_000cd118:\n"
         "movl 8(%esi), %eax\n" /* line 1811 */
         "movl (%eax), %edx\n"
@@ -93,7 +93,7 @@ void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib)
         "movl (%ebx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcd0f0_000cd118\n"
-        "movl $0, 0x1186cdc\n" /* line 1812 */
+        "movl $0, dxState+8412\n" /* line 1812 */
         "addl $0x1c, %esp\n" /* line 1813 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -115,19 +115,19 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* streamIndex */
-        "movl $0x1186cd0, %eax\n" /* line 1820 */
+        "movl $dxState+8400, %eax\n" /* line 1820 */
         "leal (%ebx, %ebx, 2), %edx\n" /* streamIndex */
         "shll $2, %edx\n"
-        "movl 0x1186cd0(%edx), %ecx\n"
-        "movl %ecx, 0x1186ce0\n"
+        "movl dxState+8400(%edx), %ecx\n"
+        "movl %ecx, dxState+8416\n"
         "movl 0xc(%ebp), %ecx\n" /* line 1821 | vb */
-        "movl %ecx, 0x1186cd0(%edx)\n"
+        "movl %ecx, dxState+8400(%edx)\n"
         "movl 0x10(%ebp), %ecx\n" /* line 1822 | vertexOffset */
         "movl %ecx, 4(%edx, %eax)\n"
         "movl 0x14(%ebp), %ecx\n" /* line 1823 | vertexStride */
         "movl %ecx, 8(%edx, %eax)\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd142_000cd188:\n"
         "movl 8(%edi), %eax\n" /* line 1824 */
         "movl (%eax), %edx\n"
@@ -143,7 +143,7 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
         "movl (%esi), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfcd142_000cd188\n"
-        "movl $0, 0x1186ce0\n" /* line 1825 */
+        "movl $0, dxState+8416\n" /* line 1825 */
         "addl $0x2c, %esp\n" /* line 1826 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -156,8 +156,8 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 /* line 899 */
 void RB_DecideDefaultSamplerState(void)
 {
-    int idx = *(int *)((byte *)*(void **)*(void **)0x195f0dc + 8);
-    *((byte *)*(void **)0x195f0c8 + 0x4be) = defaultSamplerStateTable[idx];
+    int idx = *(int *)((byte *)*(void **)*(void **)imp_r_textureMode + 8);
+    *((byte *)*(void **)imp_backEnd + 0x4be) = defaultSamplerStateTable[idx];
 }
 
 /* line 907 */
@@ -171,10 +171,10 @@ void RB_SetAnisotropy(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
-        "movl 0x195f0c4, %eax\n" /* line 912 */
+        "movl imp_r_anisotropy, %eax\n" /* line 912 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         "movl %eax, 0x2d6c(%edx)\n"
         "movl 0x2d70(%edx), %ecx\n" /* line 913 */
         "cmpl %ecx, %eax\n"
@@ -188,14 +188,14 @@ void RB_SetAnisotropy(void)
         "movl $1, %eax\n" /* line 154 */
         "cmpl %ebx, %eax\n"
         "cmovnsl %eax, %ebx\n"
-        "movl 0x195eeec, %eax\n" /* line 919 */
+        "movl imp_vidConfig, %eax\n" /* line 919 */
         "movl 0x1c(%eax), %esi\n" /* samplerIndex */
         "testl %esi, %esi\n" /* samplerIndex */
         "jle .Lfcd1ea_000cd27d\n"
         "xorl %esi, %esi\n" /* samplerIndex */
         "jmp .Lfcd1ea_000cd247\n"
         ".Lfcd1ea_000cd241:\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         ".Lfcd1ea_000cd247:\n"
         "movl 8(%edx), %eax\n" /* line 920 */
         "movl (%eax), %edx\n"
@@ -204,12 +204,12 @@ void RB_SetAnisotropy(void)
         "movl %esi, 4(%esp)\n" /* samplerIndex */
         "movl %eax, (%esp)\n"
         "calll *0x114(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfcd1ea_000cd241\n"
         "addl $1, %esi\n" /* line 919 | samplerIndex */
-        "movl 0x195eeec, %eax\n"
+        "movl imp_vidConfig, %eax\n"
         "cmpl 0x1c(%eax), %esi\n" /* samplerIndex */
         "jl .Lfcd1ea_000cd241\n"
         /* } scope */
@@ -240,14 +240,14 @@ void RB_SetAlphaAntiAliasingState(int stateBits0)
         "je .Lfcd290_000cd2d2\n"
         "xorl %ebx, %ebx\n" /* aaAlphaFormat */
         ".Lfcd290_000cd2a2:\n"
-        "movl 0x195eed0, %eax\n" /* line 450 */
+        "movl imp_dx, %eax\n" /* line 450 */
         "movl 8(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* aaAlphaFormat */
         "movl $0xb5, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xe4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcd290_000cd2a2\n"
@@ -258,7 +258,7 @@ void RB_SetAlphaAntiAliasingState(int stateBits0)
         "retl\n"
         /* { scope 1 */
         ".Lfcd290_000cd2d2:\n"
-        "movl 0x195f0d0, %eax\n" /* line 446 */
+        "movl imp_r_aaAlpha, %eax\n" /* line 446 */
         "movl (%eax), %eax\n"
         "movl $0x41415353, %ebx\n" /* aaAlphaFormat */
         "cmpl $2, 8(%eax)\n"
@@ -325,7 +325,7 @@ void RB_ChangeTextureStageState(int texStageBits, int *activeTexStageBits)
         "andb $0x10, %dl\n"
         "cmovnel %eax, %ebx\n"
         ".Lfcd2ec_000cd387:\n"
-        "movl 0x195eed0, %edx\n" /* line 809 */
+        "movl imp_dx, %edx\n" /* line 809 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %ecx\n"
         "movl %ebx, 0xc(%esp)\n" /* texArg */
@@ -334,7 +334,7 @@ void RB_ChangeTextureStageState(int texStageBits, int *activeTexStageBits)
         "movl %edi, 4(%esp)\n" /* stageIndex */
         "movl %eax, (%esp)\n"
         "calll *0x10c(%ecx)\n"
-        "movl 0x195f0e0, %ecx\n"
+        "movl imp_alwaysfails, %ecx\n"
         "movl (%ecx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcd2ec_000cd387\n"
@@ -358,7 +358,7 @@ void RB_ChangeTextureStageState(int texStageBits, int *activeTexStageBits)
         "retl\n"
         /* { scope 1 */
         ".Lfcd2ec_000cd3df:\n"
-        "movl 0x195eed0, %ecx\n" /* line 795 */
+        "movl imp_dx, %ecx\n" /* line 795 */
         "movl 8(%ecx), %edx\n"
         "movl (%edx), %ecx\n"
         "movl -0x28(%ebp), %esi\n" /* texOp */
@@ -369,7 +369,7 @@ void RB_ChangeTextureStageState(int texStageBits, int *activeTexStageBits)
         "movl %edi, 4(%esp)\n" /* stageIndex */
         "movl %edx, (%esp)\n"
         "calll *0x10c(%ecx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcd2ec_000cd3df\n"
@@ -402,7 +402,7 @@ void RB_ChangeAlphaStageState(int stageIndex, int texStageBits)
         "movl 8(%ebp), %eax\n" /* stageIndex */
         "movl 0xc(%ebp), %ecx\n" /* texStageBits */
         /* { scope 1 */
-        "movl $0x1186c74, 8(%ebp)\n" /* line 847 | stageIndex */
+        "movl $dxState+8308, 8(%ebp)\n" /* line 847 | stageIndex */
         "movl $texStageEnums, %edx\n"
         /* } scope */
         "popl %ebp\n" /* line 848 */
@@ -421,7 +421,7 @@ void RB_ChangeColorStageState(int stageIndex, int texStageBits)
         "movl 8(%ebp), %eax\n" /* stageIndex */
         "movl 0xc(%ebp), %ecx\n" /* texStageBits */
         /* { scope 1 */
-        "movl $0x1186c54, 8(%ebp)\n" /* line 833 | stageIndex */
+        "movl $dxState+8276, 8(%ebp)\n" /* line 833 | stageIndex */
         "movl $texStageEnums, %edx\n"
         /* } scope */
         "popl %ebp\n" /* line 834 */
@@ -442,11 +442,11 @@ void RB_SetSamplerConstantDx7(unsigned int color)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* color */
-        "cmpl %ebx, 0x1186d4c\n" /* line 853 | color */
+        "cmpl %ebx, dxState+8524\n" /* line 853 | color */
         "je .Lfcd47c_000cd4c2\n"
-        "movl %ebx, 0x1186d4c\n" /* line 855 | color */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl %ebx, dxState+8524\n" /* line 855 | color */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd47c_000cd4a2:\n"
         "movl 8(%edi), %eax\n" /* line 856 */
         "movl (%eax), %edx\n"
@@ -485,8 +485,8 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "cmpb $1, %al\n" /* line 867 */
         "je .Lfcd4ca_000cd577\n"
         "jae .Lfcd4ca_000cd55d\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd4ca_000cd4f3:\n"
         "movl 8(%edi), %eax\n" /* line 870 */
         "movl (%eax), %edx\n"
@@ -498,8 +498,8 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "movl (%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcd4ca_000cd4f3\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd4ca_000cd523:\n"
         "movl 8(%edi), %eax\n" /* line 871 */
         "movl (%eax), %edx\n"
@@ -512,7 +512,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "testl %eax, %eax\n"
         "jne .Lfcd4ca_000cd523\n"
         "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, 0x1186c95(%ebx)\n" /* samplerIndex */
+        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 895 */
         "popl %ebx\n"
@@ -525,7 +525,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "cmpb $2, %al\n" /* line 867 */
         "je .Lfcd4ca_000cd647\n"
         "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, 0x1186c95(%ebx)\n" /* samplerIndex */
+        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 895 */
         "popl %ebx\n"
@@ -537,7 +537,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         ".Lfcd4ca_000cd577:\n"
         "leal -0x58(%ebp), %edx\n" /* line 876 | transform */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195f0c8, %eax\n"
+        "movl imp_backEnd, %eax\n"
         "movl 0x3c8(%eax), %eax\n"
         "addl $0x48, %eax\n"
         "movl %eax, (%esp)\n"
@@ -546,8 +546,8 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "movl %eax, -0x28(%ebp)\n"
         "movl %eax, -0x24(%ebp)\n" /* line 878 */
         "movl %eax, -0x20(%ebp)\n" /* line 879 */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd4ca_000cd5ab:\n"
         "movl 8(%edi), %eax\n" /* line 880 */
         "movl (%eax), %edx\n"
@@ -559,8 +559,8 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "movl (%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcd4ca_000cd5ab\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd4ca_000cd5df:\n"
         "movl 8(%edi), %eax\n" /* line 881 */
         "movl (%eax), %edx\n"
@@ -573,9 +573,9 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "testl %eax, %eax\n"
         "jne .Lfcd4ca_000cd5df\n"
         "leal 0x10(%ebx), %esi\n" /* samplerIndex */
-        "movl 0x195f0e0, %edi\n"
+        "movl imp_alwaysfails, %edi\n"
         ".Lfcd4ca_000cd610:\n"
-        "movl 0x195eed0, %ecx\n" /* line 882 */
+        "movl imp_dx, %ecx\n" /* line 882 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %edx\n"
         "leal -0x58(%ebp), %ecx\n" /* transform */
@@ -587,7 +587,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "testl %ecx, %ecx\n"
         "jne .Lfcd4ca_000cd610\n"
         "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, 0x1186c95(%ebx)\n" /* samplerIndex */
+        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 895 */
         "popl %ebx\n"
@@ -600,12 +600,12 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "leal -0x58(%ebp), %eax\n" /* line 886 | transform */
         "movl %eax, (%esp)\n"
         "calll MatrixIdentity44\n"
-        "movl 0x195f0c8, %eax\n" /* line 887 */
+        "movl imp_backEnd, %eax\n" /* line 887 */
         "movl 0x4dc(%eax), %eax\n"
         "xorl $0x80000000, %eax\n"
         "movl %eax, -0x34(%ebp)\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd4ca_000cd671:\n"
         "movl 8(%edi), %eax\n" /* line 888 */
         "movl (%eax), %edx\n"
@@ -617,8 +617,8 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "movl (%esi), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfcd4ca_000cd671\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcd4ca_000cd6a1:\n"
         "movl 8(%edi), %eax\n" /* line 889 */
         "movl (%eax), %edx\n"
@@ -631,9 +631,9 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "testl %eax, %eax\n"
         "jne .Lfcd4ca_000cd6a1\n"
         "leal 0x10(%ebx), %esi\n" /* samplerIndex */
-        "movl 0x195f0e0, %edi\n"
+        "movl imp_alwaysfails, %edi\n"
         ".Lfcd4ca_000cd6d2:\n"
-        "movl 0x195eed0, %edx\n" /* line 890 */
+        "movl imp_dx, %edx\n" /* line 890 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "leal -0x58(%ebp), %ecx\n" /* transform */
@@ -645,7 +645,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
         "testl %eax, %eax\n"
         "jne .Lfcd4ca_000cd6d2\n"
         "movzbl -0x59(%ebp), %eax\n" /* line 894 | genTexCoords */
-        "movb %al, 0x1186c95(%ebx)\n" /* samplerIndex */
+        "movb %al, dxState+8341(%ebx)\n" /* samplerIndex */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 895 */
         "popl %ebx\n"
@@ -659,7 +659,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
 /* line 1059 */
 D3DMATRIX * RB_GetActiveWorldMatrix(void)
 {
-    byte *base = *(byte **)0x195f0c8;
+    byte *base = *(byte **)imp_backEnd;
     int index = *(int *)(base + 0x2e80);
     return (D3DMATRIX *)(base + 0x4f0 + index * 3552);
 }
@@ -676,7 +676,7 @@ void RB_ChangedWorldMatrix(float worldScale)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f0c8, %ebx\n" /* line 1071 */
+        "movl imp_backEnd, %ebx\n" /* line 1071 */
         "movl 0x2e80(%ebx), %edx\n"
         "movl %edx, %ecx\n"
         "shll $4, %ecx\n"
@@ -728,7 +728,7 @@ void RB_ChangedWorldMatrix(float worldScale)
         "movb $0, 0xcc1(%edx)\n" /* line 1122 */
         "movb $0, 0xcc2(%edx)\n" /* line 1123 */
         "movb $0, 0xcc3(%edx)\n" /* line 1124 */
-        "movl 0x195eec0, %eax\n" /* line 1127 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1127 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfcd736_000cd895\n"
@@ -741,8 +741,8 @@ void RB_ChangedWorldMatrix(float worldScale)
         "retl\n"
         ".Lfcd736_000cd895:\n"
         "leal 0x10(%edx), %ebx\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         /* { scope 1 */
         ".Lfcd736_000cd8a4:\n"
         "movl 8(%edi), %eax\n" /* line 1128 */
@@ -777,7 +777,7 @@ void RB_SetViewMatrix(const D3DMATRIX *matrix)
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %esi\n" /* matrix */
         /* { scope 1 */
-        "movl 0x195f0c8, %ebx\n" /* line 1139 */
+        "movl imp_backEnd, %ebx\n" /* line 1139 */
         "movl 0x2e80(%ebx), %edx\n"
         "movl %edx, %ecx\n"
         "shll $4, %ecx\n"
@@ -847,7 +847,7 @@ void RB_SetViewMatrix(const D3DMATRIX *matrix)
         "movb $0, 0x991(%eax)\n" /* line 1175 */
         "movb $0, 0x992(%eax)\n" /* line 1176 */
         "movb $0, 0x993(%eax)\n" /* line 1177 */
-        "movl 0x195eec0, %eax\n" /* line 1180 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1180 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfcd8cc_000cda64\n"
@@ -859,8 +859,8 @@ void RB_SetViewMatrix(const D3DMATRIX *matrix)
         "popl %ebp\n"
         "retl\n"
         ".Lfcd8cc_000cda64:\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %ebx\n"
         /* { scope 1 */
         ".Lfcd8cc_000cda70:\n"
         "movl 8(%edi), %eax\n" /* line 1181 */
@@ -894,7 +894,7 @@ void RB_SetViewMatrixForWDx7(float w)
         "pushl %ebx\n"
         "subl $0x5c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f0c8, %eax\n" /* line 1191 */
+        "movl imp_backEnd, %eax\n" /* line 1191 */
         "movl 0x3c8(%eax), %eax\n"
         "movl 0x48(%eax), %edx\n"
         "movl %edx, -0x58(%ebp)\n" /* transform */
@@ -929,8 +929,8 @@ void RB_SetViewMatrixForWDx7(float w)
         "movl 8(%ebp), %eax\n" /* line 1196 | w */
         "movl %eax, -0x1c(%ebp)\n"
         "leal -0x58(%ebp), %edi\n" /* transform */
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfcda98_000cdb1e:\n"
         "movl 8(%esi), %eax\n" /* line 1197 */
         "movl (%eax), %edx\n"
@@ -963,7 +963,7 @@ void RB_SetDepthHackNearClip(float nearClip)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* nearClip */
-        "movl 0x195f0c8, %esi\n" /* line 1259 */
+        "movl imp_backEnd, %esi\n" /* line 1259 */
         "movl 0x2e80(%esi), %edx\n"
         "movl %edx, %ecx\n"
         "shll $4, %ecx\n"
@@ -1003,7 +1003,7 @@ void RB_SetDepthHackNearClip(float nearClip)
         "movb $0, 0x991(%edx)\n" /* line 1231 */
         "movb $0, 0x992(%edx)\n" /* line 1232 */
         "movb $0, 0x993(%edx)\n" /* line 1233 */
-        "movl 0x195eec0, %eax\n" /* line 1236 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1236 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfcdb46_000cdc3b\n"
@@ -1015,8 +1015,8 @@ void RB_SetDepthHackNearClip(float nearClip)
         "retl\n"
         ".Lfcdb46_000cdc3b:\n"
         "leal 0x340(%edx), %ebx\n" /* nearClip */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcdb46_000cdc4d:\n"
         "movl 8(%edi), %eax\n" /* line 1237 */
         "movl (%eax), %edx\n"
@@ -1044,7 +1044,7 @@ void RB_SetShadowLookupMatrix(const D3DMATRIX *matrix)
         "pushl %ebp\n" /* line 1264 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* matrix */
-        "movl 0x195f0c8, %eax\n" /* line 1266 */
+        "movl imp_backEnd, %eax\n" /* line 1266 */
         "movl (%edx), %ecx\n"
         "movl %ecx, 0x36e48(%eax)\n"
         "movl 4(%edx), %ecx\n"
@@ -1100,7 +1100,7 @@ void RB_SetMatricesForView(const GfxViewParms *viewParms)
         "movl 8(%ebp), %esi\n" /* viewParms */
         /* { scope 1 */
         /* { scope 2 */
-        "movl 0x195f0c8, %ebx\n" /* line 1360 */
+        "movl imp_backEnd, %ebx\n" /* line 1360 */
         "movl 0x2e80(%ebx), %edx\n"
         "movl %edx, %ecx\n"
         "shll $4, %ecx\n"
@@ -1276,7 +1276,7 @@ void RB_SetMatricesForView(const GfxViewParms *viewParms)
         "movb $0, 0x991(%eax)\n" /* line 1421 */
         "movb $0, 0x992(%eax)\n" /* line 1422 */
         "movb $0, 0x993(%eax)\n" /* line 1423 */
-        "movl 0x195eec0, %eax\n" /* line 1426 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1426 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfcdd2e_000ce12b\n"
@@ -1289,10 +1289,10 @@ void RB_SetMatricesForView(const GfxViewParms *viewParms)
         "retl\n"
         ".Lfcdd2e_000ce12b:\n"
         "leal 0x48(%esi), %ebx\n" /* viewParms */
-        "movl 0x195f0e0, %edi\n"
+        "movl imp_alwaysfails, %edi\n"
         /* { scope 1 */
         ".Lfcdd2e_000ce134:\n"
-        "movl 0x195eed0, %edx\n" /* line 1428 */
+        "movl imp_dx, %edx\n" /* line 1428 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n"
@@ -1303,8 +1303,8 @@ void RB_SetMatricesForView(const GfxViewParms *viewParms)
         "testl %eax, %eax\n"
         "jne .Lfcdd2e_000ce134\n"
         "leal 0x88(%esi), %ebx\n" /* viewParms */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* viewParms */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* viewParms */
         ".Lfcdd2e_000ce16c:\n"
         "movl 8(%edi), %eax\n" /* line 1429 */
         "movl (%eax), %edx\n"
@@ -1334,7 +1334,7 @@ void RB_PushMatrixStack(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195f0c8, %ebx\n" /* line 1439 */
+        "movl imp_backEnd, %ebx\n" /* line 1439 */
         "movl 0x2e80(%ebx), %edx\n"
         "movl %edx, %ecx\n"
         "shll $4, %ecx\n"
@@ -1369,9 +1369,9 @@ void RB_PopMatrixStack(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
-        "movl 0x195f0c8, %edi\n" /* line 1448 */
+        "movl imp_backEnd, %edi\n" /* line 1448 */
         "subl $1, 0x2e80(%edi)\n"
-        "movl 0x195eec0, %eax\n" /* line 1451 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1451 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfce1e6_000ce211\n"
@@ -1387,7 +1387,7 @@ void RB_PopMatrixStack(void)
         ".Lfce1e6_000ce216:\n"
         "movl -0x1c(%ebp), %edi\n"
         ".Lfce1e6_000ce219:\n"
-        "movl 0x195eed0, %eax\n" /* line 1453 */
+        "movl imp_dx, %eax\n" /* line 1453 */
         "movl 8(%eax), %ebx\n"
         "movl (%ebx), %esi\n"
         "movl 0x2e80(%edi), %edx\n"
@@ -1403,13 +1403,13 @@ void RB_PopMatrixStack(void)
         "movl $0x100, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
         "calll *0xb0(%esi)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce1e6_000ce216\n"
-        "movl 0x195f0c8, %edi\n"
+        "movl imp_backEnd, %edi\n"
         ".Lfce1e6_000ce267:\n"
-        "movl 0x195eed0, %eax\n" /* line 1454 */
+        "movl imp_dx, %eax\n" /* line 1454 */
         "movl 8(%eax), %ebx\n"
         "movl (%ebx), %esi\n"
         "movl 0x2e80(%edi), %edx\n"
@@ -1425,13 +1425,13 @@ void RB_PopMatrixStack(void)
         "movl $2, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
         "calll *0xb0(%esi)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce1e6_000ce267\n"
-        "movl 0x195f0c8, %edi\n"
+        "movl imp_backEnd, %edi\n"
         ".Lfce1e6_000ce2b5:\n"
-        "movl 0x195eed0, %eax\n" /* line 1455 */
+        "movl imp_dx, %eax\n" /* line 1455 */
         "movl 8(%eax), %ebx\n"
         "movl (%ebx), %esi\n"
         "movl 0x2e80(%edi), %edx\n"
@@ -1447,7 +1447,7 @@ void RB_PopMatrixStack(void)
         "movl $3, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
         "calll *0xb0(%esi)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce1e6_000ce2b5\n"
@@ -1463,8 +1463,8 @@ void RB_PopMatrixStack(void)
 /* line 1472 */
 void RB_InitSceneViewport(void)
 {
-    void *ecx = *(void **)0x195f0c8;
-    void *edx = *(void **)0x195eeec;
+    void *ecx = *(void **)imp_backEnd;
+    void *edx = *(void **)imp_vidConfig;
     *(int *)((byte *)ecx + 0x3e8) = *(int *)edx;
     *(int *)((byte *)ecx + 0x3ec) = *(int *)((byte *)edx + 4);
 }
@@ -1477,9 +1477,9 @@ Bool RB_GetViewport(GfxViewport *outViewport)
         "pushl %ebp\n" /* line 1480 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %ecx\n" /* outViewport */
-        "cmpl $1, 0x1186ca4\n" /* line 1487 */
+        "cmpl $1, dxState+8356\n" /* line 1487 */
         "je .Lfce328_000ce367\n"
-        "movl 0x195f0c8, %edx\n" /* line 1507 */
+        "movl imp_backEnd, %edx\n" /* line 1507 */
         "movl 0x3e0(%edx), %eax\n"
         "movl %eax, (%ecx)\n"
         "movl 0x3e4(%edx), %eax\n"
@@ -1494,9 +1494,9 @@ Bool RB_GetViewport(GfxViewport *outViewport)
         ".Lfce328_000ce367:\n"
         "movl $0, (%ecx)\n" /* line 1489 */
         "movl $0, 4(%ecx)\n" /* line 1490 */
-        "movl 0x1186c9c, %eax\n" /* line 1491 */
+        "movl dxState+8348, %eax\n" /* line 1491 */
         "movl %eax, 8(%ecx)\n"
-        "movl 0x1186ca0, %eax\n" /* line 1492 */
+        "movl dxState+8352, %eax\n" /* line 1492 */
         "movl %eax, 0xc(%ecx)\n"
         "movl $1, %eax\n" /* line 1511 */
         "popl %ebp\n"
@@ -1516,21 +1516,21 @@ void RB_SetDepthRange(float nearValue, float farValue)
         "subl $0x10, %esp\n"
         "movss 8(%ebp), %xmm0\n" /* nearValue */
         "movss 0xc(%ebp), %xmm1\n" /* farValue */
-        "ucomiss 0x1186cc0, %xmm0\n" /* line 1601 */
+        "ucomiss dxState+8384, %xmm0\n" /* line 1601 */
         "jne .Lfce38c_000ce3b4\n"
         "jp .Lfce38c_000ce3b4\n"
-        "ucomiss 0x1186cc4, %xmm1\n"
+        "ucomiss dxState+8388, %xmm1\n"
         "jp .Lfce38c_000ce3b4\n"
         "je .Lfce38c_000ce3ec\n"
         ".Lfce38c_000ce3b4:\n"
-        "movss %xmm0, 0x1186cc0\n" /* line 1604 */
-        "movss %xmm1, 0x1186cc4\n" /* line 1605 */
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movss %xmm0, dxState+8384\n" /* line 1604 */
+        "movss %xmm1, dxState+8388\n" /* line 1605 */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfce38c_000ce3d0:\n"
         "movl 8(%esi), %eax\n" /* line 1606 */
         "movl (%eax), %edx\n"
-        "movl $0x1186cb0, 4(%esp)\n"
+        "movl $dxState+8368, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xbc(%edx)\n"
         "movl (%ebx), %eax\n"
@@ -1557,22 +1557,22 @@ void RB_SetViewport(const GfxViewport *viewport)
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %edx\n" /* viewport */
         "movl (%edx), %ecx\n" /* line 1619 */
-        "cmpl 0x1186cb0, %ecx\n"
+        "cmpl dxState+8368, %ecx\n"
         "je .Lfce3f4_000ce456\n"
         ".Lfce3f4_000ce409:\n"
-        "movl %ecx, 0x1186cb0\n" /* line 1621 */
+        "movl %ecx, dxState+8368\n" /* line 1621 */
         "movl 4(%edx), %eax\n" /* line 1622 */
-        "movl %eax, 0x1186cb4\n"
+        "movl %eax, dxState+8372\n"
         "movl 8(%edx), %eax\n" /* line 1623 */
-        "movl %eax, 0x1186cb8\n"
+        "movl %eax, dxState+8376\n"
         "movl 0xc(%edx), %eax\n" /* line 1624 */
-        "movl %eax, 0x1186cbc\n"
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl %eax, dxState+8380\n"
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfce3f4_000ce433:\n"
         "movl 8(%esi), %eax\n" /* line 1625 */
         "movl (%eax), %edx\n"
-        "movl $0x1186cb0, 4(%esp)\n"
+        "movl $dxState+8368, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xbc(%edx)\n"
         "movl (%ebx), %edx\n"
@@ -1586,13 +1586,13 @@ void RB_SetViewport(const GfxViewport *viewport)
         "retl\n"
         ".Lfce3f4_000ce456:\n"
         "movl 4(%edx), %eax\n" /* line 1619 */
-        "cmpl 0x1186cb4, %eax\n"
+        "cmpl dxState+8372, %eax\n"
         "jne .Lfce3f4_000ce409\n"
         "movl 8(%edx), %eax\n"
-        "cmpl 0x1186cb8, %eax\n"
+        "cmpl dxState+8376, %eax\n"
         "jne .Lfce3f4_000ce409\n"
         "movl 0xc(%edx), %eax\n"
-        "cmpl 0x1186cbc, %eax\n"
+        "cmpl dxState+8380, %eax\n"
         "jne .Lfce3f4_000ce409\n"
         "jmp .Lfce3f4_000ce44f\n"
     );
@@ -1606,26 +1606,26 @@ void RB_ReleaseVertexDecl(void)
         "pushl %ebp\n" /* line 1770 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl 0x1186d40, %eax\n" /* line 272 */
+        "movl dxState+8512, %eax\n" /* line 272 */
         "testl %eax, %eax\n"
         "je .Lfce47c_000ce4c7\n"
         ".Lfce47c_000ce48b:\n"
-        "movl 0x195eed0, %eax\n" /* line 275 */
+        "movl imp_dx, %eax\n" /* line 275 */
         "movl 8(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x164(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce47c_000ce48b\n"
-        "movl $0, 0x1186d44\n" /* line 276 */
-        "movl $0, 0x1186d40\n" /* line 277 */
+        "movl $0, dxState+8516\n" /* line 276 */
+        "movl $0, dxState+8512\n" /* line 277 */
         "leave\n" /* line 1774 */
         "retl\n"
         ".Lfce47c_000ce4c7:\n"
-        "movl 0x1186d44, %eax\n" /* line 272 */
+        "movl dxState+8516, %eax\n" /* line 272 */
         "testl %eax, %eax\n"
         "jne .Lfce47c_000ce48b\n"
         "leave\n" /* line 1774 */
@@ -1646,7 +1646,7 @@ void RB_ChangeState_1(int stateBits1)
         "subl $0x3c, %esp\n"
         /* { scope 1 */
         "movl 8(%ebp), %eax\n" /* line 640 | stateBits1 */
-        "xorl 0x1186c0c, %eax\n"
+        "xorl dxState+8204, %eax\n"
         "movl %eax, -0x2c(%ebp)\n" /* changedBits */
         "je .Lfce4d2_000ce710\n"
         "testb $1, %al\n" /* line 650 */
@@ -1660,7 +1660,7 @@ void RB_ChangeState_1(int stateBits1)
         ".Lfce4d2_000ce507:\n"
         "testl %ebx, %ebx\n" /* line 655 | function */
         "je .Lfce4d2_000ce51a\n"
-        "movl 0x1186c0c, %eax\n" /* line 658 */
+        "movl dxState+8204, %eax\n" /* line 658 */
         "andl $0xc, %eax\n"
         "orl %eax, 8(%ebp)\n" /* stateBits1 */
         "andl $0xfffffff3, -0x2c(%ebp)\n" /* line 659 | changedBits */
@@ -1676,14 +1676,14 @@ void RB_ChangeState_1(int stateBits1)
         "setne %bl\n" /* function */
         "leal 3(%ebx, %ebx, 4), %ebx\n" /* function */
         ".Lfce4d2_000ce53b:\n"
-        "movl 0x195eed0, %eax\n" /* line 678 */
+        "movl imp_dx, %eax\n" /* line 678 */
         "movl 8(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* function */
         "movl $0x17, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xe4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce4d2_000ce53b\n"
@@ -1694,21 +1694,21 @@ void RB_ChangeState_1(int stateBits1)
         "andl $0x30, %eax\n"
         "sarl $4, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movl 0x195f0cc, %eax\n"
+        "movl imp_r_polygonOffsetBias, %eax\n"
         "movl (%eax), %eax\n"
         "movaps %xmm1, %xmm0\n"
         "mulss 8(%eax), %xmm0\n"
-        "mulss 0x2ed854, %xmm0\n" /* 1.52587890625e-05f */
+        "mulss lit4_002ed854, %xmm0\n" /* 1.52587890625e-05f */
         "movss %xmm0, -0x20(%ebp)\n" /* bias */
-        "movl 0x195eed0, %edx\n" /* line 684 */
+        "movl imp_dx, %edx\n" /* line 684 */
         "cmpb $0, 0x2d7a(%edx)\n"
         "je .Lfce4d2_000ce7cd\n"
-        "movl 0x195f0e4, %eax\n" /* line 686 */
+        "movl imp_r_polygonOffsetScale, %eax\n" /* line 686 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm1\n"
         "movss %xmm1, -0x1c(%ebp)\n" /* scale */
         "leal -0x1c(%ebp), %edi\n" /* scale */
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_alwaysfails, %esi\n"
         "movl %edx, %ebx\n" /* function */
         "jmp .Lfce4d2_000ce5cb\n"
         ".Lfce4d2_000ce5c9:\n"
@@ -1724,12 +1724,12 @@ void RB_ChangeState_1(int stateBits1)
         "movl (%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce4d2_000ce5c9\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         ".Lfce4d2_000ce5f3:\n"
         "leal -0x20(%ebp), %ebx\n" /* line 691 | bias, function */
         "jmp .Lfce4d2_000ce5fe\n"
         ".Lfce4d2_000ce5f8:\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         ".Lfce4d2_000ce5fe:\n"
         "movl 8(%edx), %edx\n" /* line 693 */
         "movl (%edx), %ecx\n"
@@ -1738,7 +1738,7 @@ void RB_ChangeState_1(int stateBits1)
         "movl $0xc3, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *0xe4(%ecx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce4d2_000ce5f8\n"
@@ -1768,20 +1768,20 @@ void RB_ChangeState_1(int stateBits1)
         "movl s_stencilOpTable(, %eax, 4), %esi\n"
         "movl 4(%edi), %ebx\n" /* function */
         ".Lfce4d2_000ce678:\n"
-        "movl 0x195eed0, %edx\n" /* line 738 */
+        "movl imp_dx, %edx\n" /* line 738 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %esi, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* function */
         "movl %eax, (%esp)\n"
         "calll *0xe4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfce4d2_000ce678\n"
         ".Lfce4d2_000ce69f:\n"
         "addl $8, %edi\n"
-        "cmpl $0x2f2430, %edi\n" /* line 732 */
+        "cmpl $s_stencilOpDecode+48, %edi\n" /* line 732 */
         "jne .Lfce4d2_000ce65b\n"
         ".Lfce4d2_000ce6aa:\n"
         "testl $0xe00e0000, -0x2c(%ebp)\n" /* line 743 | changedBits */
@@ -1799,25 +1799,25 @@ void RB_ChangeState_1(int stateBits1)
         "movl s_stencilFuncTable(, %eax, 4), %esi\n"
         "movl 4(%edi), %ebx\n" /* function */
         ".Lfce4d2_000ce6d5:\n"
-        "movl 0x195eed0, %edx\n" /* line 751 */
+        "movl imp_dx, %edx\n" /* line 751 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %esi, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* function */
         "movl %eax, (%esp)\n"
         "calll *0xe4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfce4d2_000ce6d5\n"
         ".Lfce4d2_000ce6fc:\n"
         "addl $8, %edi\n"
-        "movl $0x2f23d0, %edx\n" /* line 745 */
+        "movl $s_stencilFuncDecode+16, %edx\n" /* line 745 */
         "cmpl %edi, %edx\n"
         "jne .Lfce4d2_000ce6b8\n"
         ".Lfce4d2_000ce708:\n"
         "movl 8(%ebp), %eax\n" /* line 756 | stateBits1 */
-        "movl %eax, 0x1186c0c\n"
+        "movl %eax, dxState+8204\n"
         /* } scope */
         ".Lfce4d2_000ce710:\n"
         "addl $0x3c, %esp\n" /* line 757 */
@@ -1831,8 +1831,8 @@ void RB_ChangeState_1(int stateBits1)
         "movl 8(%ebp), %ebx\n" /* line 653 | stateBits1, function */
         "shrl $1, %ebx\n" /* function */
         "andl $1, %ebx\n" /* function */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfce4d2_000ce72c:\n"
         "movl 8(%edi), %eax\n" /* line 654 */
         "movl (%eax), %ecx\n"
@@ -1849,8 +1849,8 @@ void RB_ChangeState_1(int stateBits1)
         ".Lfce4d2_000ce756:\n"
         "movl 8(%ebp), %ebx\n" /* line 650 | stateBits1, function */
         "andl $1, %ebx\n" /* function */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfce4d2_000ce768:\n"
         "movl 8(%edi), %eax\n" /* line 651 */
         "movl (%eax), %edx\n"
@@ -1868,7 +1868,7 @@ void RB_ChangeState_1(int stateBits1)
         "cmpb $0, -0x2c(%ebp)\n" /* line 717 | changedBits */
         "js .Lfce4d2_000ce80d\n"
         ".Lfce4d2_000ce79a:\n"
-        "movl 0x1186c0c, %eax\n" /* line 719 */
+        "movl dxState+8204, %eax\n" /* line 719 */
         "andl $0xfff00000, %eax\n"
         "orl %eax, 8(%ebp)\n" /* stateBits1 */
         "andl $0xfffff, -0x2c(%ebp)\n" /* line 720 | changedBits */
@@ -1877,7 +1877,7 @@ void RB_ChangeState_1(int stateBits1)
         "testb $0x40, -0x2c(%ebp)\n" /* line 703 | changedBits */
         "jne .Lfce4d2_000ce7db\n"
         ".Lfce4d2_000ce7b9:\n"
-        "movl 0x1186c0c, %eax\n" /* line 705 */
+        "movl dxState+8204, %eax\n" /* line 705 */
         "andl $0xffffff80, %eax\n"
         "orl %eax, 8(%ebp)\n" /* stateBits1 */
         "andl $0x7f, -0x2c(%ebp)\n" /* line 706 | changedBits */
@@ -1887,8 +1887,8 @@ void RB_ChangeState_1(int stateBits1)
         "movss %xmm0, -0x20(%ebp)\n" /* bias */
         "jmp .Lfce4d2_000ce5f3\n"
         ".Lfce4d2_000ce7db:\n"
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n" /* function */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n" /* function */
         ".Lfce4d2_000ce7e7:\n"
         "movl 8(%esi), %eax\n" /* line 704 */
         "movl (%eax), %edx\n"
@@ -1901,8 +1901,8 @@ void RB_ChangeState_1(int stateBits1)
         "jne .Lfce4d2_000ce7e7\n"
         "jmp .Lfce4d2_000ce7b9\n"
         ".Lfce4d2_000ce80d:\n"
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n" /* function */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n" /* function */
         ".Lfce4d2_000ce819:\n"
         "movl 8(%esi), %eax\n" /* line 718 */
         "movl (%eax), %edx\n"
@@ -1915,8 +1915,8 @@ void RB_ChangeState_1(int stateBits1)
         "jne .Lfce4d2_000ce819\n"
         "jmp .Lfce4d2_000ce79a\n"
         ".Lfce4d2_000ce842:\n"
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n" /* function */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n" /* function */
         ".Lfce4d2_000ce84e:\n"
         "movl 8(%esi), %eax\n" /* line 713 */
         "movl (%eax), %edx\n"
@@ -1929,8 +1929,8 @@ void RB_ChangeState_1(int stateBits1)
         "jne .Lfce4d2_000ce84e\n"
         "jmp .Lfce4d2_000ce64d\n"
         ".Lfce4d2_000ce877:\n"
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n" /* function */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n" /* function */
         ".Lfce4d2_000ce883:\n"
         "movl 8(%esi), %eax\n" /* line 699 */
         "movl (%eax), %edx\n"
@@ -1964,12 +1964,12 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "movb %al, -0x38(%ebp)\n" /* samplerState */
         /* { scope 1 */
         "movl 8(%ebp), %edx\n" /* line 954 | samplerIndex */
-        "cmpl %ebx, 0x1186cf4(, %edx, 4)\n" /* address */
+        "cmpl %ebx, dxState+8436(, %edx, 4)\n" /* address */
         "je .Lfce8b6_000ce917\n"
         "testl %ebx, %ebx\n" /* line 957 | address */
         "je .Lfce8b6_000ceb57\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* magFilter */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* magFilter */
         ".Lfce8b6_000ce8e9:\n"
         "movl 8(%edi), %eax\n" /* line 961 */
         "movl (%eax), %ecx\n"
@@ -1983,7 +1983,7 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "testl %eax, %eax\n"
         "jne .Lfce8b6_000ce8e9\n"
         ".Lfce8b6_000ce90b:\n"
-        "movl $0x1186cf0, %eax\n" /* line 967 */
+        "movl $dxState+8432, %eax\n" /* line 967 */
         "movl 8(%ebp), %edx\n" /* samplerIndex */
         "movl %ebx, 4(%eax, %edx, 4)\n" /* address */
         ".Lfce8b6_000ce917:\n"
@@ -1993,7 +1993,7 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "je .Lfce8b6_000cea54\n"
         ".Lfce8b6_000ce929:\n"
         "movl 8(%ebp), %eax\n" /* line 974 | samplerIndex */
-        "movzbl 0x1186ce4(%eax), %edx\n"
+        "movzbl dxState+8420(%eax), %edx\n"
         "movzbl -0x38(%ebp), %ecx\n" /* line 975 | samplerState */
         "xorb %dl, %cl\n"
         "movb %cl, -0x1d(%ebp)\n" /* diffSamplerState */
@@ -2018,9 +2018,9 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         ".Lfce8b6_000ce981:\n"
         "cmpl %ebx, %edx\n" /* line 981 | address */
         "je .Lfce8b6_000ce9b8\n"
-        "movl 0x195f0e0, %edi\n"
+        "movl imp_alwaysfails, %edi\n"
         ".Lfce8b6_000ce98b:\n"
-        "movl 0x195eed0, %edx\n" /* line 982 */
+        "movl imp_dx, %edx\n" /* line 982 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 0xc(%esp)\n" /* address */
@@ -2035,8 +2035,8 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         ".Lfce8b6_000ce9b8:\n"
         "cmpl %esi, -0x1c(%ebp)\n" /* line 983 | magFilter, magFilterPrev */
         "je .Lfce8b6_000ce9f0\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %ebx\n" /* address */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %ebx\n" /* address */
         ".Lfce8b6_000ce9c9:\n"
         "movl 8(%edi), %eax\n" /* line 984 */
         "movl (%eax), %edx\n"
@@ -2055,8 +2055,8 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "movzbl -0x38(%ebp), %eax\n" /* line 989 | samplerState */
         "andl $0xc, %eax\n"
         "movl s_filterTable(%eax), %ebx\n" /* address */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* magFilter */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* magFilter */
         ".Lfce8b6_000cea0f:\n"
         "movl 8(%edi), %eax\n" /* line 991 */
         "movl (%eax), %edx\n"
@@ -2073,7 +2073,7 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "testb $0x70, -0x28(%ebp)\n" /* line 994 */
         "jne .Lfce8b6_000cea68\n"
         ".Lfce8b6_000cea3c:\n"
-        "movl $0x1186ce0, %eax\n" /* line 1013 */
+        "movl $dxState+8416, %eax\n" /* line 1013 */
         "movzbl -0x38(%ebp), %edx\n" /* samplerState */
         "movl 8(%ebp), %ecx\n" /* samplerIndex */
         "movb %dl, 4(%ecx, %eax)\n"
@@ -2087,7 +2087,7 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "retl\n"
         /* { scope 1 */
         ".Lfce8b6_000cea54:\n"
-        "movl 0x195f0c8, %eax\n" /* line 973 */
+        "movl imp_backEnd, %eax\n" /* line 973 */
         "movzbl 0x4be(%eax), %ecx\n"
         "orb %cl, -0x38(%ebp)\n" /* samplerState */
         "jmp .Lfce8b6_000ce929\n"
@@ -2102,8 +2102,8 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "sbbl %ebx, %ebx\n" /* address */
         "andl $0xfffffffe, %ebx\n" /* address */
         "addl $3, %ebx\n" /* address */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* magFilter */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* magFilter */
         ".Lfce8b6_000cea91:\n"
         "movl 8(%edi), %eax\n" /* line 999 */
         "movl (%eax), %edx\n"
@@ -2125,8 +2125,8 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "sbbl %ebx, %ebx\n" /* address */
         "andl $0xfffffffe, %ebx\n" /* address */
         "addl $3, %ebx\n" /* address */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* magFilter */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* magFilter */
         ".Lfce8b6_000ceadc:\n"
         "movl 8(%edi), %eax\n" /* line 1004 */
         "movl (%eax), %edx\n"
@@ -2148,8 +2148,8 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "sbbl %ebx, %ebx\n" /* address */
         "andl $0xfffffffe, %ebx\n" /* address */
         "addl $3, %ebx\n" /* address */
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* magFilter */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* magFilter */
         ".Lfce8b6_000ceb2b:\n"
         "movl 8(%edi), %eax\n" /* line 1009 */
         "movl (%eax), %edx\n"
@@ -2164,8 +2164,8 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "jne .Lfce8b6_000ceb2b\n"
         "jmp .Lfce8b6_000cea3c\n"
         ".Lfce8b6_000ceb57:\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* magFilter */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* magFilter */
         ".Lfce8b6_000ceb63:\n"
         "movl 8(%edi), %eax\n" /* line 965 */
         "movl (%eax), %edx\n"
@@ -2179,14 +2179,14 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
         "jne .Lfce8b6_000ceb63\n"
         "jmp .Lfce8b6_000ce90b\n"
         ".Lfce8b6_000ceb8b:\n"
-        "movl 0x195eed0, %eax\n" /* line 935 */
+        "movl imp_dx, %eax\n" /* line 935 */
         "movl 0x2d6c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfce8b6_000cebce\n"
         "movl $2, -0x1c(%ebp)\n" /* magFilterPrev */
         "jmp .Lfce8b6_000ce981\n"
         ".Lfce8b6_000ceba6:\n"
-        "movl 0x195eed0, %eax\n"
+        "movl imp_dx, %eax\n"
         "movl 0x2d6c(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "je .Lfce8b6_000cebbf\n"
@@ -2206,7 +2206,7 @@ void RB_SetSampler(int samplerIndex, int samplerState, GfxImage *image)
 /* line 1777 */
 void RB_BindDefaultImages(void)
 {
-    void *defaultImage = *(void **)(*(byte **)0x195eebc + 0x1008);
+    void *defaultImage = *(void **)(*(byte **)imp_rgp + 0x1008);
 
     for (int i = 0; i < 16; i++) {
         RB_SetSampler(i, *((byte *)&dxState + 0x20e4 + i), defaultImage);
@@ -2216,10 +2216,10 @@ void RB_BindDefaultImages(void)
 /* line 1030 */
 void RB_UnbindAllImages(void)
 {
-    if (*(byte *)(*(byte **)0x195eed0 + 0x2d3c))
+    if (*(byte *)(*(byte **)imp_dx + 0x2d3c))
         return;
 
-    int count = *(int *)(*(byte **)0x195eeec + 0x1c);
+    int count = *(int *)(*(byte **)imp_vidConfig + 0x1c);
     for (int i = 0; i < count; i++) {
         RB_SetSampler(i, 0, NULL);
     }
@@ -2228,7 +2228,7 @@ void RB_UnbindAllImages(void)
 /* line 1020 */
 void RB_UnbindImage(const GfxImage *image)
 {
-    int count = *(int *)(*(byte **)0x195eeec + 0x1c);
+    int count = *(int *)(*(byte **)imp_vidConfig + 0x1c);
 
     for (int i = 0; i < count; i++) {
         if (*(const GfxImage **)((byte *)&dxState + 0x20f4 + i * 4) == image) {
@@ -2248,19 +2248,19 @@ void RB_UpdateViewportConstants(void)
         "pushl %ebx\n"
         "subl $0x90, %esp\n"
         /* { scope 1 */
-        "movl 0x195f0c8, %eax\n" /* line 1524 */
+        "movl imp_backEnd, %eax\n" /* line 1524 */
         "movb $0, 0x4bd(%eax)\n"
         "movb $1, 0x4bc(%eax)\n" /* line 1525 */
-        "movl 0x1186c9c, %ebx\n" /* line 1529 */
+        "movl dxState+8348, %ebx\n" /* line 1529 */
         "cvtsi2ssl %ebx, %xmm2\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm0, %xmm6\n"
         "divss %xmm2, %xmm6\n"
-        "movl 0x1186ca0, %esi\n" /* line 1530 */
+        "movl dxState+8352, %esi\n" /* line 1530 */
         "cvtsi2ssl %esi, %xmm1\n"
         "movaps %xmm0, %xmm4\n"
         "divss %xmm1, %xmm4\n"
-        "cmpl $1, 0x1186ca4\n" /* line 1487 */
+        "cmpl $1, dxState+8356\n" /* line 1487 */
         "je .Lfcecd4_000cef37\n"
         "movl 0x3ec(%eax), %esi\n" /* line 1507 */
         "movl 0x3e8(%eax), %ebx\n"
@@ -2272,7 +2272,7 @@ void RB_UpdateViewportConstants(void)
         "movaps %xmm6, %xmm0\n" /* line 86 */
         "mulss %xmm2, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss -0x24(%ebp), %xmm7\n"
         "mulss %xmm0, %xmm7\n"
         "movss %xmm7, -0x24(%ebp)\n"
@@ -2312,14 +2312,14 @@ void RB_UpdateViewportConstants(void)
         "movss -0x48(%ebp), %xmm1\n"
         "movss -0x58(%ebp), %xmm2\n"
         "ja .Lfcecd4_000ceeef\n"
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         /* } scope */
         /* { scope 2 */
         ".Lfcecd4_000cee12:\n"
         "cmpl $1, %esi\n"
         "ja .Lfcecd4_000cef15\n"
         ".Lfcecd4_000cee1b:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         /* } scope */
         ".Lfcecd4_000cee23:\n"
         "movaps %xmm2, %xmm0\n" /* line 1571 */
@@ -2330,7 +2330,7 @@ void RB_UpdateViewportConstants(void)
         "movss %xmm7, -0x2c(%ebp)\n" /* verticalScale */
         "movss %xmm4, 0x10(%esp)\n" /* line 1583 */
         "movss %xmm6, 0xc(%esp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "subss %xmm0, %xmm1\n"
         "divss %xmm3, %xmm1\n"
         "movss %xmm1, 8(%esp)\n"
@@ -2457,7 +2457,7 @@ void RB_InitImages(void)
         "subl $0x1c, %esp\n"
         "xorl %ebx, %ebx\n"
         "movl $dxState, %esi\n"
-        "movl 0x195eebc, %edi\n"
+        "movl imp_rgp, %edi\n"
         ".Lfcef96_000cefac:\n"
         "movl 0x1008(%edi), %eax\n" /* line 1783 */
         "movl %eax, 8(%esp)\n"
@@ -2490,7 +2490,7 @@ void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %esi\n" /* newTargetId */
-        "movl 0x1186c98, %eax\n" /* line 1664 */
+        "movl dxState+8344, %eax\n" /* line 1664 */
         "cmpl %esi, %eax\n" /* newTargetId */
         "je .Lfcefdc_000cf20c\n"
         "cmpl $4, %esi\n" /* line 1685 | newTargetId */
@@ -2498,17 +2498,17 @@ void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
         ".Lfcefdc_000ceffe:\n"
         "xorl %edx, %edx\n"
         ".Lfcefdc_000cf000:\n"
-        "movl 0x195f0d4, %eax\n"
+        "movl imp_g_InhibitCopy, %eax\n"
         "movb %dl, (%eax)\n"
-        "movl %esi, 0x1186c98\n" /* line 1687 | newTargetId */
-        "movl 0x195eed0, %ebx\n" /* line 1688 */
+        "movl %esi, dxState+8344\n" /* line 1687 | newTargetId */
+        "movl imp_dx, %ebx\n" /* line 1688 */
         "leal (%esi, %esi, 4), %eax\n" /* newTargetId */
         "movl 0x2c30(%ebx, %eax, 4), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
         "testl %eax, %eax\n"
         "je .Lfcefdc_000cf05a\n"
         /* { scope 1 */
-        "movl 0x195eeec, %eax\n" /* line 1024 */
+        "movl imp_vidConfig, %eax\n" /* line 1024 */
         "movl 0x1c(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jle .Lfcefdc_000cf05a\n"
@@ -2525,7 +2525,7 @@ void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
         "cmpl 0x1c(%eax), %edi\n" /* samplerIndex */
         "jl .Lfcefdc_000cf03a\n"
         ".Lfcefdc_000cf054:\n"
-        "movl 0x195eed0, %ebx\n"
+        "movl imp_dx, %ebx\n"
         /* } scope */
         ".Lfcefdc_000cf05a:\n"
         "movl 8(%ebx), %edx\n" /* line 1694 */
@@ -2537,12 +2537,12 @@ void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
         "movl $0, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *0x94(%ecx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %edi\n" /* samplerIndex */
         "testl %edi, %edi\n" /* samplerIndex */
         "jne .Lfcefdc_000cf054\n"
         "movl 0x2c34(%ebx), %eax\n" /* line 1695 */
-        "movl %eax, 0x1186ca8\n"
+        "movl %eax, dxState+8360\n"
         "testl %esi, %esi\n" /* line 1698 | newTargetId */
         "je .Lfcefdc_000cf1ef\n"
         "cmpl $4, %esi\n" /* line 1703 | newTargetId */
@@ -2559,26 +2559,26 @@ void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
         "je .Lfcefdc_000cf1b2\n"
         ".Lfcefdc_000cf0d4:\n"
         "cmpl $4, %esi\n" /* line 1728 | newTargetId */
-        "movl 0x195f0d8, %eax\n"
+        "movl imp_g_RenderToShadowCookie, %eax\n"
         "sete (%eax)\n"
-        "movl 0x1186c98, %eax\n" /* line 1731 */
+        "movl dxState+8344, %eax\n" /* line 1731 */
         "movl s_viewportBehaviorForRenderTarget(, %eax, 4), %eax\n"
-        "movl %eax, 0x1186ca4\n"
-        "movl 0x195eed0, %ebx\n" /* line 1732 */
+        "movl %eax, dxState+8356\n"
+        "movl imp_dx, %ebx\n" /* line 1732 */
         "leal (%esi, %esi, 4), %eax\n" /* newTargetId */
         "leal (, %eax, 4), %esi\n" /* newTargetId */
         "leal (%esi, %ebx), %edx\n" /* newTargetId */
         "movl 0x2c3c(%edx), %ecx\n"
-        "movl %ecx, 0x1186c9c\n"
+        "movl %ecx, dxState+8348\n"
         "movl 0x2c40(%edx), %eax\n" /* line 1733 */
-        "movl %eax, 0x1186ca0\n"
-        "movl $0, 0x1186cb0\n" /* line 1738 */
-        "movl $0, 0x1186cb4\n" /* line 1739 */
-        "movl %ecx, 0x1186cb8\n" /* line 1740 */
-        "movl %eax, 0x1186cbc\n" /* line 1741 */
-        "movl $0, 0x1186cc0\n" /* line 1742 */
-        "movl $0x3f800000, 0x1186cc4\n" /* line 1743 */
-        "movl 0x1186cac, %eax\n" /* line 1746 */
+        "movl %eax, dxState+8352\n"
+        "movl $0, dxState+8368\n" /* line 1738 */
+        "movl $0, dxState+8372\n" /* line 1739 */
+        "movl %ecx, dxState+8376\n" /* line 1740 */
+        "movl %eax, dxState+8380\n" /* line 1741 */
+        "movl $0, dxState+8384\n" /* line 1742 */
+        "movl $0x3f800000, dxState+8388\n" /* line 1743 */
+        "movl dxState+8364, %eax\n" /* line 1746 */
         "cmpl 0x2c38(%edx), %eax\n"
         "je .Lfcefdc_000cf193\n"
         "movl %esi, %edi\n" /* newTargetId, samplerIndex */
@@ -2594,12 +2594,12 @@ void RB_SetRenderTarget(GfxRenderTargetId newTargetId)
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x9c(%ecx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfcefdc_000cf160\n"
         "movl 0x2c38(%ebx), %eax\n" /* line 1749 */
-        "movl %eax, 0x1186cac\n"
+        "movl %eax, dxState+8364\n"
         ".Lfcefdc_000cf193:\n"
         "addl $0x2c, %esp\n" /* line 1753 */
         "popl %ebx\n"
@@ -2659,16 +2659,16 @@ void RB_ClearAllStreamSources(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x20, %esp\n"
-        "movl 0x1186cd0, %eax\n" /* line 220 */
+        "movl dxState+8400, %eax\n" /* line 220 */
         "testl %eax, %eax\n"
         "je .Lfcf232_000cf2b7\n"
         ".Lfcf232_000cf243:\n"
-        "movl %eax, 0x1186ce0\n" /* line 1820 */
-        "movl $0, 0x1186cd0\n" /* line 1821 */
-        "movl $0, 0x1186cd4\n" /* line 1822 */
-        "movl $0, 0x1186cd8\n" /* line 1823 */
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl %eax, dxState+8416\n" /* line 1820 */
+        "movl $0, dxState+8400\n" /* line 1821 */
+        "movl $0, dxState+8404\n" /* line 1822 */
+        "movl $0, dxState+8408\n" /* line 1823 */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfcf232_000cf272:\n"
         "movl 8(%esi), %eax\n" /* line 1824 */
         "movl (%eax), %edx\n"
@@ -2681,7 +2681,7 @@ void RB_ClearAllStreamSources(void)
         "movl (%ebx), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfcf232_000cf272\n"
-        "movl $0, 0x1186ce0\n" /* line 1825 */
+        "movl $0, dxState+8416\n" /* line 1825 */
         ".Lfcf232_000cf2b0:\n"
         "addl $0x20, %esp\n" /* line 1835 */
         "popl %ebx\n"
@@ -2689,10 +2689,10 @@ void RB_ClearAllStreamSources(void)
         "popl %ebp\n"
         "retl\n"
         ".Lfcf232_000cf2b7:\n"
-        "movl 0x1186cd4, %esi\n" /* line 220 */
+        "movl dxState+8404, %esi\n" /* line 220 */
         "testl %esi, %esi\n"
         "jne .Lfcf232_000cf243\n"
-        "movl 0x1186cd8, %ebx\n"
+        "movl dxState+8408, %ebx\n"
         "testl %ebx, %ebx\n"
         "je .Lfcf232_000cf2b0\n"
         "jmp .Lfcf232_000cf243\n"
@@ -2712,12 +2712,12 @@ void RB_ChangeState_0(int stateBits0)
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edi\n" /* stateBits0 */
         /* { scope 1 */
-        "movl 0x1186c08, %eax\n" /* line 470 */
+        "movl dxState+8200, %eax\n" /* line 470 */
         "xorl %edi, %eax\n" /* stateBits0 */
         "movl %eax, -0x24(%ebp)\n" /* changedBits */
         "jne .Lfcf2d0_000cf2fb\n"
         "movl %edi, %eax\n" /* line 472 | stateBits0 */
-        "xorl 0x1186c00, %eax\n"
+        "xorl dxState+8192, %eax\n"
         "testl $0x7000700, %eax\n"
         "je .Lfcf2d0_000cf65a\n"
         ".Lfcf2d0_000cf2fb:\n"
@@ -2741,19 +2741,19 @@ void RB_ChangeState_0(int stateBits0)
         "movl $7, %esi\n" /* function */
         "movb $0x80, -0x1d(%ebp)\n" /* ref */
         ".Lfcf2d0_000cf34b:\n"
-        "movl 0x195eed0, %ebx\n" /* line 509 | disableSeparateAlphaBlend */
+        "movl imp_dx, %ebx\n" /* line 509 | disableSeparateAlphaBlend */
         "movl 8(%ebx), %eax\n" /* disableSeparateAlphaBlend */
         "movl (%eax), %edx\n"
         "movl %esi, 8(%esp)\n" /* function */
         "movl $0x19, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xe4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfcf2d0_000cf34b\n"
         "movzbl -0x1d(%ebp), %ecx\n" /* line 510 | ref */
-        "cmpb %cl, 0x1186d48\n"
+        "cmpb %cl, dxState+8520\n"
         "je .Lfcf2d0_000cf3bd\n"
         "movzbl %cl, %edx\n"
         "movl %edx, -0x1c(%ebp)\n"
@@ -2774,7 +2774,7 @@ void RB_ChangeState_0(int stateBits0)
         "testl %eax, %eax\n"
         "jne .Lfcf2d0_000cf390\n"
         "movzbl -0x1d(%ebp), %eax\n" /* line 513 | ref */
-        "movb %al, 0x1186d48\n"
+        "movb %al, dxState+8520\n"
         ".Lfcf2d0_000cf3bd:\n"
         "testl $0x18000000, -0x24(%ebp)\n" /* line 517 | changedBits */
         "jne .Lfcf2d0_000cf662\n"
@@ -2790,13 +2790,13 @@ void RB_ChangeState_0(int stateBits0)
         ".Lfcf2d0_000cf3ee:\n"
         "testl $0x700, %edi\n" /* line 538 | stateBits0 */
         "sete %bl\n" /* disableSeparateAlphaBlend */
-        "testl $0x700, 0x1186c00\n" /* line 540 */
+        "testl $0x700, dxState+8192\n" /* line 540 */
         "sete %al\n"
         "cmpb %al, %bl\n" /* disableSeparateAlphaBlend */
         "je .Lfcf2d0_000cf43c\n"
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf40e:\n"
-        "movl 0x195eed0, %ecx\n" /* line 541 */
+        "movl imp_dx, %ecx\n" /* line 541 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %ecx\n"
         "movl %ebx, %edx\n" /* disableSeparateAlphaBlend */
@@ -2813,7 +2813,7 @@ void RB_ChangeState_0(int stateBits0)
         "testb %bl, %bl\n" /* line 543 | disableSeparateAlphaBlend */
         "je .Lfcf2d0_000cf7a9\n"
         "andl $0xfffff800, %edi\n" /* line 545 | stateBits0 */
-        "movl 0x1186c08, %eax\n" /* line 546 */
+        "movl dxState+8200, %eax\n" /* line 546 */
         "andl $0x7ff, %eax\n"
         "orl %eax, %edi\n" /* stateBits0 */
         "andl $0xfffff800, -0x24(%ebp)\n" /* line 547 | changedBits */
@@ -2825,9 +2825,9 @@ void RB_ChangeState_0(int stateBits0)
         "movl %edi, %eax\n" /* stateBits0 */
         "andl $0xf, %eax\n"
         "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf47b:\n"
-        "movl 0x195eed0, %ecx\n" /* line 561 */
+        "movl imp_dx, %ecx\n" /* line 561 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -2844,9 +2844,9 @@ void RB_ChangeState_0(int stateBits0)
         "sarl $4, %eax\n"
         "andl $0xf, %eax\n"
         "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf4bc:\n"
-        "movl 0x195eed0, %edx\n" /* line 568 */
+        "movl imp_dx, %edx\n" /* line 568 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -2859,13 +2859,13 @@ void RB_ChangeState_0(int stateBits0)
         ".Lfcf2d0_000cf4e2:\n"
         "testl $0x7000000, %edi\n" /* line 572 | stateBits0 */
         "sete %bl\n" /* disableSeparateAlphaBlend */
-        "testl $0x7000000, 0x1186c00\n" /* line 574 */
+        "testl $0x7000000, dxState+8192\n" /* line 574 */
         "sete %al\n"
         "cmpb %al, %bl\n" /* disableSeparateAlphaBlend */
         "je .Lfcf2d0_000cf530\n"
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf502:\n"
-        "movl 0x195eed0, %ecx\n" /* line 575 */
+        "movl imp_dx, %ecx\n" /* line 575 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %ecx\n"
         "movl %ebx, %edx\n" /* disableSeparateAlphaBlend */
@@ -2882,12 +2882,12 @@ void RB_ChangeState_0(int stateBits0)
         "testb %bl, %bl\n" /* line 577 | disableSeparateAlphaBlend */
         "je .Lfcf2d0_000cf7f6\n"
         "andl $0xf800ffff, %edi\n" /* line 579 | stateBits0 */
-        "movl 0x1186c08, %eax\n" /* line 580 */
+        "movl dxState+8200, %eax\n" /* line 580 */
         "andl $0x7ff0000, %eax\n"
         "orl %eax, %edi\n" /* stateBits0 */
         "andl $0xf800ffff, -0x24(%ebp)\n" /* line 581 | changedBits */
         ".Lfcf2d0_000cf551:\n"
-        "testl $0xff0000, -0x24(%ebp)\n" /* line 589 | changedBits */
+        "testl $cg_eachClientLocalEntities+21120, -0x24(%ebp)\n" /* line 589 | changedBits */
         "je .Lfcf2d0_000cf5e6\n"
         "testl $0xf0000, -0x24(%ebp)\n" /* line 591 | changedBits */
         "je .Lfcf2d0_000cf5a2\n"
@@ -2895,9 +2895,9 @@ void RB_ChangeState_0(int stateBits0)
         "sarl $0x10, %eax\n"
         "andl $0xf, %eax\n"
         "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf57c:\n"
-        "movl 0x195eed0, %ecx\n" /* line 595 */
+        "movl imp_dx, %ecx\n" /* line 595 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -2908,15 +2908,15 @@ void RB_ChangeState_0(int stateBits0)
         "testl %eax, %eax\n"
         "jne .Lfcf2d0_000cf57c\n"
         ".Lfcf2d0_000cf5a2:\n"
-        "testl $0xf00000, -0x24(%ebp)\n" /* line 598 | changedBits */
+        "testl $con+151040, -0x24(%ebp)\n" /* line 598 | changedBits */
         "je .Lfcf2d0_000cf5e6\n"
         "movl %edi, %eax\n" /* stateBits0 */
         "sarl $0x14, %eax\n"
         "andl $0xf, %eax\n"
         "movl s_blendTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf5c0:\n"
-        "movl 0x195eed0, %edx\n" /* line 602 */
+        "movl imp_dx, %edx\n" /* line 602 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -2930,10 +2930,10 @@ void RB_ChangeState_0(int stateBits0)
         "testl $0x40000000, -0x24(%ebp)\n" /* line 607 | changedBits */
         "jne .Lfcf2d0_000cf843\n"
         ".Lfcf2d0_000cf5f3:\n"
-        "movl 0x195eed0, %edx\n" /* line 615 */
+        "movl imp_dx, %edx\n" /* line 615 */
         "cmpb $0, 0x2d7e(%edx)\n"
         "je .Lfcf2d0_000cf654\n"
-        "movl 0x195f0d0, %eax\n"
+        "movl imp_r_aaAlpha, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2946,7 +2946,7 @@ void RB_ChangeState_0(int stateBits0)
         "xorl %ebx, %ebx\n" /* aaAlphaFormat */
         "jmp .Lfcf2d0_000cf62f\n"
         ".Lfcf2d0_000cf629:\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         ".Lfcf2d0_000cf62f:\n"
         "movl 8(%edx), %eax\n" /* line 450 */
         "movl (%eax), %edx\n"
@@ -2954,13 +2954,13 @@ void RB_ChangeState_0(int stateBits0)
         "movl $0xb5, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xe4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcf2d0_000cf629\n"
         /* } scope */
         ".Lfcf2d0_000cf654:\n"
-        "movl %edi, 0x1186c08\n" /* line 622 | stateBits0 */
+        "movl %edi, dxState+8200\n" /* line 622 | stateBits0 */
         /* } scope */
         ".Lfcf2d0_000cf65a:\n"
         "addl $0x2c, %esp\n" /* line 623 */
@@ -2984,9 +2984,9 @@ void RB_ChangeState_0(int stateBits0)
         "notl %eax\n"
         "andl $8, %eax\n"
         "orl %eax, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf68c:\n"
-        "movl 0x195eed0, %edx\n" /* line 521 */
+        "movl imp_dx, %edx\n" /* line 521 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -3002,9 +3002,9 @@ void RB_ChangeState_0(int stateBits0)
         "movl %edi, %ebx\n" /* stateBits0, disableSeparateAlphaBlend */
         "shrl $0x1d, %ebx\n" /* disableSeparateAlphaBlend */
         "andl $1, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf6cd:\n"
-        "movl 0x195eed0, %ecx\n" /* line 526 */
+        "movl imp_dx, %ecx\n" /* line 526 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -3021,9 +3021,9 @@ void RB_ChangeState_0(int stateBits0)
         "andl $0xc000, %eax\n"
         "sarl $0xe, %eax\n"
         "movl s_cullTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf716:\n"
-        "movl 0x195eed0, %edx\n" /* line 532 */
+        "movl imp_dx, %edx\n" /* line 532 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -3039,8 +3039,8 @@ void RB_ChangeState_0(int stateBits0)
         ".Lfcf2d0_000cf747:\n"
         "testl %edi, %edi\n" /* line 622 | stateBits0 */
         "js .Lfcf2d0_000cf8eb\n"
-        "movl 0x195eed0, %esi\n" /* function */
-        "movl 0x195f0e0, %ebx\n" /* disableSeparateAlphaBlend */
+        "movl imp_dx, %esi\n" /* function */
+        "movl imp_alwaysfails, %ebx\n" /* disableSeparateAlphaBlend */
         ".Lfcf2d0_000cf75b:\n"
         "movl 8(%esi), %eax\n" /* line 536 | function */
         "movl (%eax), %edx\n"
@@ -3053,7 +3053,7 @@ void RB_ChangeState_0(int stateBits0)
         "jne .Lfcf2d0_000cf75b\n"
         "jmp .Lfcf2d0_000cf3ee\n"
         ".Lfcf2d0_000cf784:\n"
-        "movl 0x1186c08, %eax\n" /* line 486 */
+        "movl dxState+8200, %eax\n" /* line 486 */
         "andl $0x3000, %eax\n"
         "orl %eax, %edi\n" /* stateBits0 */
         "andl $0xffffcfff, -0x24(%ebp)\n" /* line 487 | changedBits */
@@ -3067,9 +3067,9 @@ void RB_ChangeState_0(int stateBits0)
         "sarl $8, %eax\n"
         "andl $7, %eax\n"
         "movl s_blendOpTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf7cb:\n"
-        "movl 0x195eed0, %edx\n" /* line 552 */
+        "movl imp_dx, %edx\n" /* line 552 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -3087,9 +3087,9 @@ void RB_ChangeState_0(int stateBits0)
         "sarl $0x18, %eax\n"
         "andl $7, %eax\n"
         "movl s_blendOpTable(, %eax, 4), %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf818:\n"
-        "movl 0x195eed0, %edx\n" /* line 586 */
+        "movl imp_dx, %edx\n" /* line 586 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -3104,9 +3104,9 @@ void RB_ChangeState_0(int stateBits0)
         "movl %edi, %ebx\n" /* line 607 | stateBits0, disableSeparateAlphaBlend */
         "shrl $0x1e, %ebx\n" /* disableSeparateAlphaBlend */
         "andl $1, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf851:\n"
-        "movl 0x195eed0, %ecx\n" /* line 610 */
+        "movl imp_dx, %ecx\n" /* line 610 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n" /* disableSeparateAlphaBlend */
@@ -3121,9 +3121,9 @@ void RB_ChangeState_0(int stateBits0)
         "movl %edi, %ebx\n" /* line 481 | stateBits0, disableSeparateAlphaBlend */
         "shrl $0xb, %ebx\n" /* disableSeparateAlphaBlend */
         "andl $1, %ebx\n" /* disableSeparateAlphaBlend */
-        "movl 0x195f0e0, %esi\n" /* function */
+        "movl imp_alwaysfails, %esi\n" /* function */
         ".Lfcf2d0_000cf88a:\n"
-        "movl 0x195eed0, %edx\n" /* line 482 */
+        "movl imp_dx, %edx\n" /* line 482 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %ecx\n"
         "movl %ebx, %edx\n" /* disableSeparateAlphaBlend */
@@ -3153,14 +3153,14 @@ void RB_ChangeState_0(int stateBits0)
         "jmp .Lfcf2d0_000cf62f\n"
         /* } scope */
         ".Lfcf2d0_000cf8eb:\n"
-        "movl 0x195eed0, %eax\n" /* line 536 */
+        "movl imp_dx, %eax\n" /* line 536 */
         "movl 8(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl $2, 8(%esp)\n"
         "movl $8, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xe4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcf2d0_000cf8eb\n"
@@ -3180,7 +3180,7 @@ void RB_SetProjectionMatrix(const D3DMATRIX *matrix)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %ecx\n" /* matrix */
-        "movl 0x195f0c8, %ebx\n" /* line 1249 */
+        "movl imp_backEnd, %ebx\n" /* line 1249 */
         "movl 0x2e80(%ebx), %edx\n"
         "movl %edx, %esi\n"
         "shll $4, %esi\n"
@@ -3251,7 +3251,7 @@ void RB_SetProjectionMatrix(const D3DMATRIX *matrix)
         "movb $0, 0x991(%edx)\n" /* line 1231 */
         "movb $0, 0x992(%edx)\n" /* line 1232 */
         "movb $0, 0x993(%edx)\n" /* line 1233 */
-        "movl 0x195eec0, %eax\n" /* line 1236 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1236 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfcf91e_000cfaaa\n"
@@ -3263,8 +3263,8 @@ void RB_SetProjectionMatrix(const D3DMATRIX *matrix)
         "retl\n"
         ".Lfcf91e_000cfaaa:\n"
         "leal 0x340(%edx), %ebx\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfcf91e_000cfabc:\n"
         "movl 8(%edi), %eax\n" /* line 1237 */
         "movl (%eax), %edx\n"
@@ -3294,28 +3294,28 @@ void RB_UpdateViewport(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
-        "movl 0x195f0c8, %eax\n" /* line 1635 */
+        "movl imp_backEnd, %eax\n" /* line 1635 */
         "movb $0, 0x4bc(%eax)\n"
-        "cmpl $1, 0x1186ca4\n" /* line 1487 */
+        "cmpl $1, dxState+8356\n" /* line 1487 */
         "je .Lfcfae4_000cfb6e\n"
         "movl 0x3ec(%eax), %ebx\n" /* line 1507 */
         "movl 0x3e8(%eax), %edx\n"
         "movl 0x3e0(%eax), %ecx\n"
         "movl 0x3e4(%eax), %eax\n"
-        "movb $0, 0x1186cc8\n" /* line 1641 */
-        "cmpl %ecx, 0x1186cb0\n" /* line 1619 */
+        "movb $0, dxState+8392\n" /* line 1641 */
+        "cmpl %ecx, dxState+8368\n" /* line 1619 */
         "je .Lfcfae4_000cfb8d\n"
         ".Lfcfae4_000cfb28:\n"
-        "movl %ecx, 0x1186cb0\n" /* line 1621 */
-        "movl %eax, 0x1186cb4\n" /* line 1622 */
-        "movl %edx, 0x1186cb8\n" /* line 1623 */
-        "movl %ebx, 0x1186cbc\n" /* line 1624 */
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl %ecx, dxState+8368\n" /* line 1621 */
+        "movl %eax, dxState+8372\n" /* line 1622 */
+        "movl %edx, dxState+8376\n" /* line 1623 */
+        "movl %ebx, dxState+8380\n" /* line 1624 */
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfcfae4_000cfb4b:\n"
         "movl 8(%esi), %eax\n" /* line 1625 */
         "movl (%eax), %edx\n"
-        "movl $0x1186cb0, 4(%esp)\n"
+        "movl $dxState+8368, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xbc(%edx)\n"
         "movl (%ebx), %eax\n"
@@ -3328,19 +3328,19 @@ void RB_UpdateViewport(void)
         "popl %ebp\n"
         "retl\n"
         ".Lfcfae4_000cfb6e:\n"
-        "movl 0x1186c9c, %edx\n" /* line 1491 */
-        "movl 0x1186ca0, %ebx\n" /* line 1492 */
+        "movl dxState+8348, %edx\n" /* line 1491 */
+        "movl dxState+8352, %ebx\n" /* line 1492 */
         "xorl %ecx, %ecx\n"
         "xorl %eax, %eax\n"
-        "movb $0, 0x1186cc8\n" /* line 1641 */
-        "cmpl %ecx, 0x1186cb0\n" /* line 1619 */
+        "movb $0, dxState+8392\n" /* line 1641 */
+        "cmpl %ecx, dxState+8368\n" /* line 1619 */
         "jne .Lfcfae4_000cfb28\n"
         ".Lfcfae4_000cfb8d:\n"
-        "cmpl %eax, 0x1186cb4\n"
+        "cmpl %eax, dxState+8372\n"
         "jne .Lfcfae4_000cfb28\n"
-        "cmpl 0x1186cb8, %edx\n"
+        "cmpl dxState+8376, %edx\n"
         "jne .Lfcfae4_000cfb28\n"
-        "cmpl 0x1186cbc, %ebx\n"
+        "cmpl dxState+8380, %ebx\n"
         "jne .Lfcfae4_000cfb28\n"
         "jmp .Lfcfae4_000cfb67\n"
     );
@@ -3360,16 +3360,16 @@ void RB_SetInitialState(void)
         "movl $0, 4(%esp)\n"
         "movl $dxState, (%esp)\n"
         "calll memset\n"
-        "movl 0x195f0c8, %esi\n" /* line 903 */
-        "movl 0x195f0dc, %eax\n"
+        "movl imp_backEnd, %esi\n" /* line 903 */
+        "movl imp_r_textureMode, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movzbl defaultSamplerStateTable(%eax), %eax\n"
         "movb %al, 0x4be(%esi)\n"
-        "movl 0x195f0c4, %eax\n" /* line 912 */
+        "movl imp_r_anisotropy, %eax\n" /* line 912 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         "movl %eax, 0x2d6c(%edx)\n"
         "movl 0x2d70(%edx), %ecx\n" /* line 913 */
         "cmpl %ecx, %eax\n"
@@ -3383,14 +3383,14 @@ void RB_SetInitialState(void)
         "movl $1, %eax\n" /* line 154 */
         "cmpl %ebx, %eax\n"
         "cmovnsl %eax, %ebx\n"
-        "movl 0x195eeec, %eax\n" /* line 919 */
+        "movl imp_vidConfig, %eax\n" /* line 919 */
         "movl 0x1c(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jle .Lfcfba8_000cfc7e\n"
         "xorl %esi, %esi\n"
         "jmp .Lfcfba8_000cfc42\n"
         ".Lfcfba8_000cfc3c:\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         ".Lfcfba8_000cfc42:\n"
         "movl 8(%edx), %eax\n" /* line 920 */
         "movl (%eax), %edx\n"
@@ -3399,40 +3399,40 @@ void RB_SetInitialState(void)
         "movl %esi, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x114(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcfba8_000cfc3c\n"
         "addl $1, %esi\n" /* line 919 */
-        "movl 0x195eeec, %eax\n"
+        "movl imp_vidConfig, %eax\n"
         "cmpl %esi, 0x1c(%eax)\n"
         "jg .Lfcfba8_000cfc3c\n"
-        "movl 0x195f0c8, %esi\n"
+        "movl imp_backEnd, %esi\n"
         ".Lfcfba8_000cfc7e:\n"
-        "movl $0xe00e0007, 0x1186c0c\n" /* line 270 */
-        "movl $0x19128912, 0x1186c08\n" /* line 278 */
-        "movl $0xe00e0007, 0x1186c04\n" /* line 270 */
-        "movl $0x18128812, 0x1186c00\n" /* line 286 */
-        "movl $0, 0x1186c10\n" /* line 367 */
+        "movl $0xe00e0007, dxState+8204\n" /* line 270 */
+        "movl $0x19128912, dxState+8200\n" /* line 278 */
+        "movl $0xe00e0007, dxState+8196\n" /* line 270 */
+        "movl $0x18128812, dxState+8192\n" /* line 286 */
+        "movl $0, dxState+8208\n" /* line 367 */
         "movl $0, 0x3e0(%esi)\n" /* line 369 */
         "movl $0, 0x3e4(%esi)\n" /* line 370 */
         "movl (%eax), %edx\n" /* line 371 */
         "movl %edx, 0x3e8(%esi)\n"
         "movl 4(%eax), %eax\n" /* line 372 */
         "movl %eax, 0x3ec(%esi)\n"
-        "movl $0, 0x1186cb0\n" /* line 373 */
-        "movl $0, 0x1186cb4\n" /* line 374 */
-        "movl %edx, 0x1186cb8\n" /* line 375 */
-        "movl %eax, 0x1186cbc\n" /* line 376 */
-        "movl $0, 0x1186cc0\n" /* line 377 */
+        "movl $0, dxState+8368\n" /* line 373 */
+        "movl $0, dxState+8372\n" /* line 374 */
+        "movl %edx, dxState+8376\n" /* line 375 */
+        "movl %eax, dxState+8380\n" /* line 376 */
+        "movl $0, dxState+8384\n" /* line 377 */
         "movl $0x3f800000, %ebx\n" /* line 378 */
-        "movl %ebx, 0x1186cc4\n"
-        "movl $0xe, 0x1186c98\n" /* line 390 */
+        "movl %ebx, dxState+8388\n"
+        "movl $0xe, dxState+8344\n" /* line 390 */
         "movl $0, (%esp)\n" /* line 391 */
         "calll RB_SetRenderTarget\n"
-        "movb $0, 0x1186cc8\n" /* line 393 */
-        "movl %ebx, 0x1186d64\n" /* line 299 */
-        "movl %ebx, 0x1186d68\n" /* line 300 */
+        "movb $0, dxState+8392\n" /* line 393 */
+        "movl %ebx, dxState+8548\n" /* line 299 */
+        "movl %ebx, dxState+8552\n" /* line 300 */
         "movl $dxState, %eax\n"
         ".Lfcfba8_000cfd37:\n"
         "movl $0, 0x2014(%eax)\n" /* line 304 */
@@ -3440,9 +3440,9 @@ void RB_SetInitialState(void)
         "movl $0, 0x2054(%eax)\n" /* line 306 */
         "movl $0, 0x2074(%eax)\n" /* line 307 */
         "addl $4, %eax\n"
-        "cmpl $0x1184c20, %eax\n" /* line 302 */
+        "cmpl $dxState+32, %eax\n" /* line 302 */
         "jne .Lfcfba8_000cfd37\n"
-        "movl 0x195eed0, %ebx\n" /* line 309 */
+        "movl imp_dx, %ebx\n" /* line 309 */
         "movl 8(%ebx), %eax\n"
         "movl (%eax), %edx\n"
         "movl $0, 8(%esp)\n"
@@ -3480,8 +3480,8 @@ void RB_SetInitialState(void)
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *0xc4(%ecx)\n"
-        "movb $0, 0x1186c94\n" /* line 333 */
-        "movw $0, 0x1186c95\n" /* line 334 */
+        "movb $0, dxState+8340\n" /* line 333 */
+        "movw $0, dxState+8341\n" /* line 334 */
         "movl $dxState, %eax\n"
         "movl $dxState, %edx\n"
         ".Lfcfba8_000cfe18:\n"
@@ -3489,17 +3489,17 @@ void RB_SetInitialState(void)
         "movb $1, 0x20e4(%edx)\n" /* line 410 */
         "addl $4, %eax\n"
         "addl $1, %edx\n"
-        "cmpl $0x1184c40, %eax\n" /* line 407 */
+        "cmpl $dxState+64, %eax\n" /* line 407 */
         "jne .Lfcfba8_000cfe18\n"
-        "movl $1, 0x1186d34\n" /* line 412 */
-        "movl $0xffffffff, 0x1186d4c\n" /* line 418 */
+        "movl $1, dxState+8500\n" /* line 412 */
+        "movl $0xffffffff, dxState+8524\n" /* line 418 */
         "movl $__mh_execute_header, 8(%esp)\n" /* line 422 */
         "movl $0xff, 4(%esp)\n"
         "movl $dxState, (%esp)\n"
         "calll memset\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 423 */
         "movl $0xff, 4(%esp)\n"
-        "movl $0x1185c00, (%esp)\n"
+        "movl $dxState+4096, (%esp)\n"
         "calll memset\n"
         "addl $0x60, %esp\n" /* line 434 */
         "popl %ebx\n"
@@ -3530,7 +3530,7 @@ void RB_SetWorldMatrixForEntity(const GfxEntity *re)
         "movl %eax, 8(%esp)\n"
         "leal 0x3c(%esi), %eax\n" /* re */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f0c8, %ebx\n"
+        "movl imp_backEnd, %ebx\n"
         "movl 0x2e80(%ebx), %edx\n"
         "movl %edx, %ecx\n"
         "shll $4, %ecx\n"
@@ -3594,7 +3594,7 @@ void RB_SetWorldMatrixForEntity(const GfxEntity *re)
         "movb $0, 0xcc1(%edx)\n" /* line 1122 */
         "movb $0, 0xcc2(%edx)\n" /* line 1123 */
         "movb $0, 0xcc3(%edx)\n" /* line 1124 */
-        "movl 0x195eec0, %eax\n" /* line 1127 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1127 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfcfe98_000d0035\n"
@@ -3607,8 +3607,8 @@ void RB_SetWorldMatrixForEntity(const GfxEntity *re)
         "retl\n"
         ".Lfcfe98_000d0035:\n"
         "leal 0x10(%edx), %ebx\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* re */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* re */
         /* { scope 1 */
         ".Lfcfe98_000d0044:\n"
         "movl 8(%edi), %eax\n" /* line 1128 */

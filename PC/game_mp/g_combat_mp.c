@@ -43,18 +43,18 @@ extern unsigned char bulletPriorityMap[19]; /* 0x0 */
 extern unsigned char riflePriorityMap[19]; /* 0x0 */
 extern char * modNames[15]; /* 0x0 */
 extern float g_fHitLocDamageMult[19]; /* 0x0 */
-static const char * g_HitLocNames[19]; /* 0x3145e0 */
-static scr_string_t g_HitLocConstNames[19]; /* 0xfe8080 */
+static const char * g_HitLocNames[19]; /* g_HitLocNames */
+static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
 
-extern byte *g_entities_ptr; /* 0x195f688 - g_entities base */
-extern byte *level_ptr; /* 0x195f6a0 */
-extern byte *g_clients_ptr; /* 0x195f6b4 */
-extern byte *g_debug_damage_ptr; /* 0x195f748 */
-extern byte *g_scr_data_ptr; /* 0x195f5bc */
+extern byte *g_entities_ptr; /* imp_g_entities - g_entities base */
+extern byte *level_ptr; /* imp_level */
+extern byte *g_clients_ptr; /* imp_entityHandlers */
+extern byte *g_debug_damage_ptr; /* imp_g_debugDamage */
+extern byte *g_scr_data_ptr; /* imp_scr_const */
 extern int g_sNextDmgTableId; /* 0x195b048 */
-extern int g_time; /* 0x195f68c */
-extern byte *g_time_ptr; /* 0x195edb4 */
-extern int g_phys_world; /* 0x195ed4c */
+extern int g_time; /* imp_level_bgs */
+extern byte *g_time_ptr; /* imp_bgs */
+extern int g_phys_world; /* imp_vec3_origin */
 
 /* line 99 */
 static void G_HitLocStrcpy(byte *pMember, const char *pszKeyValue)

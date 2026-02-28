@@ -19,11 +19,11 @@
  */
 
 /* External globals (pointers-to-pointers) */
-extern char **cg_glob;           /* 0x195f584 — pointer to cg_t base */
-extern char **cg_entities_glob;  /* 0x195f5cc — pointer to centity array base */
-extern char **cgs_glob;          /* 0x195f5c4 — pointer to cgs_t base */
-extern char **cg_dvar1;          /* 0x195f788 */
-extern char **cg_dvar2;          /* 0x195f78c */
+extern char **cg_glob;           /* imp_cg — pointer to cg_t base */
+extern char **cg_entities_glob;  /* imp_cg_entities — pointer to centity array base */
+extern char **cgs_glob;          /* imp_cgs — pointer to cgs_t base */
+extern char **cg_dvar1;          /* imp_cg_nopredict */
+extern char **cg_dvar2;          /* imp_cg_synchronousClients */
 
 /* External function declarations */
 extern void BG_EvaluateTrajectory(void *traj, int time, float *result);
@@ -324,7 +324,7 @@ static void CG_ResetEntity(char *cent)
                 char *modelDst = corpseInfo;
                 for (attachIndex = 0; attachIndex < 6; attachIndex++)
                 {
-                    if (I_stricmp(tagSrc, (const char *)0x2b7f68) == 0)
+                    if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
                     {
                         *(char *)(modelDst + 0x80) = 0;   /* attachModelNames[i][0] = 0 */
                         *(char *)(modelDst + 0x200) = 0;   /* attachTagNames[i][0] = 0 */
@@ -374,7 +374,7 @@ static void CG_ResetEntity(char *cent)
                         char *modelDst = corpseInfo;
                         for (attachIndex = 0; attachIndex < 6; attachIndex++)
                         {
-                            if (I_stricmp(tagSrc, (const char *)0x2b7f68) == 0)
+                            if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
                             {
                                 *(char *)(modelDst + 0x80) = 0;
                                 *(char *)(modelDst + 0x200) = 0;
@@ -421,7 +421,7 @@ static void CG_ClearClientInfos_Inline(char *dest, char *src, char *tagBase, int
 
     for (attachIndex = 0; attachIndex < 6; attachIndex++)
     {
-        if (I_stricmp(tagSrc, (const char *)0x2b7f68) == 0)
+        if (I_stricmp(tagSrc, (const char *)str_002b7f68) == 0)
         {
             *(char *)(dst + 0x80) = 0;
             *(char *)(dst + 0x200) = 0;
@@ -614,8 +614,8 @@ void CG_SetNextSnap(snapshot_t *snap_param)
                         if (*(char *)(ci + CI_NAME) != 0)
                         {
                             /* line 383 */
-                            const char *translated = UI_SafeTranslateString((const char *)0x2b7f74);
-                            const char *msg = va((const char *)0x2b7f88, ciName, translated, clName);
+                            const char *translated = UI_SafeTranslateString((const char *)str_002b7f74);
+                            const char *msg = va((const char *)str_002b7f88, ciName, translated, clName);
                             CG_GameMessage(msg);
                         }
 
@@ -1131,7 +1131,7 @@ void CG_ProcessSnapshots(void)
     if (n < *(int *)(cg + CG_LATESTSNAPSHOTNUM))
     {
         /* line 590-593: error */
-        Com_Error(1, (const char *)0x2b7f94);
+        Com_Error(1, (const char *)str_002b7f94);
     }
     *(int *)(cg + CG_LATESTSNAPSHOTNUM) = n;
 
@@ -1230,7 +1230,7 @@ void CG_ProcessSnapshots(void)
                 /* line 661: check that snap time hasn't gone backwards */
                 if (*(int *)(snap + SNAP_SERVERTIME) < *(int *)(oldNextSnap + SNAP_SERVERTIME))
                 {
-                    Com_Error(1, (const char *)0x2b8000);
+                    Com_Error(1, (const char *)str_002b8000);
                 }
             }
 

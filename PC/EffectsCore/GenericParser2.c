@@ -8,7 +8,7 @@
  *   #include "PC/EffectsCore/GenericParser2.h"
  */
 
-static char token[1024]; /* 0x4ed380 */
+static char token[1024]; /* token */
 
 static char * GetToken(Bool readUntilEOL);
 const char * GPValue_GetTopValue(const GPValue * _this);
@@ -207,7 +207,7 @@ char * GetToken(Bool readUntilEOL)
         "movl %eax, -0x1c(%ebp)\n"
         "cmpl %edx, %esi\n" /* line 138 | length */
         "je .Lfabf10_000ac02e\n"
-        "leal 0x4ed37f(%esi), %eax\n" /* length */
+        "leal mantle_check_radius+103(%esi), %eax\n" /* length */
         "subl -0x24(%ebp), %eax\n"
         "movzbl (%eax, %ecx), %eax\n"
         "addl $1, %edx\n"
@@ -246,7 +246,7 @@ char * GetToken(Bool readUntilEOL)
         "movl -0x1c(%ebp), %esi\n" /* line 158 | length */
         "subl $1, %esi\n" /* length */
         "movl %esi, 8(%esp)\n" /* line 159 | length */
-        "movl $0x4ed381, 4(%esp)\n"
+        "movl $token+1, 4(%esp)\n"
         "movl $token, (%esp)\n"
         "calll memmove\n"
         "testl %esi, %esi\n" /* line 161 | length */
@@ -494,7 +494,7 @@ my_upsampler GenericParser2_GenericParser2(const GenericParser2 * _this)
         "pushl %ebp\n" /* line 818 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x21e4f8, (%eax)\n" /* line 243 */
+        "movl $str_0021e4f8, (%eax)\n" /* line 243 */
         "movl $0, 4(%eax)\n"
         "movl $0, 8(%eax)\n"
         "movl $0, 0xc(%eax)\n"
@@ -932,7 +932,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         "cmpb $0, (%eax)\n" /* line 693 */
         "je .Lfac784_000ac92a\n"
         ".Lfac784_000ac7ad:\n"
-        "movl $0x21e508, 4(%esp)\n" /* line 704 */
+        "movl $str_0021e508, 4(%esp)\n" /* line 704 */
         "movl %eax, (%esp)\n"
         "calll strcmpi\n"
         "testl %eax, %eax\n"
@@ -947,7 +947,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         "movl 0xc(%ebp), %eax\n" /* dataPtr */
         "calll GetToken\n"
         "movl %eax, %ebx\n" /* token */
-        "movl $0x21e50c, 4(%esp)\n" /* line 713 */
+        "movl $str_0021e50c, 4(%esp)\n" /* line 713 */
         "movl %eax, (%esp)\n"
         "calll strcmpi\n"
         "testl %eax, %eax\n"
@@ -979,7 +979,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         "retl\n"
         /* { scope 1 */
         ".Lfac784_000ac852:\n"
-        "movl $0x21e510, 4(%esp)\n" /* line 722 */
+        "movl $str_0021e510, 4(%esp)\n" /* line 722 */
         "movl %ebx, (%esp)\n" /* token */
         "calll strcmpi\n"
         "testl %eax, %eax\n"
@@ -995,7 +995,7 @@ Bool GPGroup_Parse(const GPGroup * _this, char * *dataPtr, TextPool * *textPool)
         "jmp .Lfac784_000ac8d5\n"
         /* { scope 2 */
         ".Lfac784_000ac88f:\n"
-        "movl $0x21e504, 4(%esp)\n" /* line 379 */
+        "movl $str_0021e504, 4(%esp)\n" /* line 379 */
         "movl %eax, (%esp)\n"
         "calll strcmpi\n"
         "testl %eax, %eax\n"

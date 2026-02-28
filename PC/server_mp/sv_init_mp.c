@@ -12,55 +12,55 @@
 
 extern int sv_serverId_value; /* 0x0 */
 
-extern byte *sv_ptr;               /* 0x195ee80 - server_t */
-extern byte *svs_ptr;              /* 0x195f284 - serverStatic_t */
-extern byte *sv_maxclients_dvar;   /* 0x195f290 */
-extern byte *sv_gametype_dvar;     /* 0x195f29c */
-extern byte *sv_dedicated_dvar;    /* 0x195ec98 */
-extern byte *sv_running_dvar;      /* 0x195ecbc */
-extern byte *sv_serverid_dvar;     /* 0x195f294 */
-extern byte *sv_expectedHunkUsage_dvar; /* 0x195f2fc */
-extern byte *sv_mapname_dvar;      /* 0x195f300 */
-extern byte *sv_privateClients_dvar;/* 0x195f2c0 */
-extern byte *sv_hostname_dvar;     /* 0x195f2b8 */
-extern byte *sv_maxRate_dvar;      /* 0x195f268 */
-extern byte *sv_minPing_dvar;      /* 0x195f2e8 */
-extern byte *sv_maxPing_dvar;      /* 0x195f298 */
-extern byte *sv_floodProtect_dvar; /* 0x195f2dc */
-extern byte *sv_allowAnonymous_dvar;/* 0x195f26c */
-extern byte *sv_showCommands_dvar; /* 0x195f2cc */
-extern byte *sv_disableClientConsole_dvar; /* 0x195f264 */
-extern byte *sv_voice_dvar;        /* 0x195f2a4 */
-extern byte *sv_voiceQuality_dvar; /* 0x195f2d0 */
-extern byte *sv_cheats_dvar;       /* 0x195ef54 */
-extern byte *sv_pure_dvar;         /* 0x195f2e0 */
-extern byte *sv_iwds_dvar;         /* 0x195f28c */
-extern byte *sv_iwdNames_dvar;     /* 0x195f270 */
-extern byte *sv_referencedIwds_dvar;/* 0x195f2d4 */
-extern byte *sv_referencedIwdNames_dvar; /* 0x195f2c4 */
-extern byte *rcon_password_dvar;   /* 0x195f2f4 */
-extern byte *sv_privatePassword_dvar; /* 0x195f280 */
-extern byte *sv_fps_dvar;          /* 0x195f2f8 */
-extern byte *sv_timeout_dvar;      /* 0x195f2e4 */
-extern byte *sv_zombietime_dvar;   /* 0x195f2c8 */
-extern byte *sv_allowDownload_dvar;/* 0x195f2b4 */
-extern byte *sv_reconnectlimit_dvar; /* 0x195f2a0 */
-extern byte *sv_padPackets_dvar;   /* 0x195f2b0 */
-extern byte *sv_allowedClan1_dvar; /* 0x195f27c */
-extern byte *sv_allowedClan2_dvar; /* 0x195f274 */
-extern byte *sv_packet_info_dvar;  /* 0x195f2a8 */
-extern byte *sv_showAverageBPS_dvar; /* 0x195f288 */
-extern byte *sv_kickBanTime_dvar;  /* 0x195f2f0 */
-extern byte *sv_mapRotation_dvar;  /* 0x195f2ec */
-extern byte *sv_mapRotationCurrent_dvar; /* 0x195f2ac */
-extern byte *sv_debugRate_dvar;    /* 0x195f2bc */
-extern byte *sv_debugReliableCmds_dvar; /* 0x195f278 */
-extern byte *nextmap_dvar;         /* 0x195ee88 */
-extern byte *com_dvarflags_ptr;    /* 0x195ec9c */
-extern byte *com_checksumFeed_dvar; /* 0x195f2d8 */
-extern byte *com_errorEntered_ptr; /* 0x195edb4 */
-extern byte *sv_dedicated_dvar2;   /* 0x195ec98 */
-extern byte *sv_com_dvarDump_ptr;  /* 0x195ed18 */
+extern byte *sv_ptr;               /* imp_sv - server_t */
+extern byte *svs_ptr;              /* imp_svs - serverStatic_t */
+extern byte *sv_maxclients_dvar;   /* imp_sv_maxclients */
+extern byte *sv_gametype_dvar;     /* imp_sv_gametype */
+extern byte *sv_dedicated_dvar;    /* imp_com_dedicated */
+extern byte *sv_running_dvar;      /* imp_com_sv_running */
+extern byte *sv_serverid_dvar;     /* imp_sv_serverid */
+extern byte *sv_expectedHunkUsage_dvar; /* imp_com_expectedHunkUsage */
+extern byte *sv_mapname_dvar;      /* imp_sv_mapname */
+extern byte *sv_privateClients_dvar;/* imp_sv_privateClients */
+extern byte *sv_hostname_dvar;     /* imp_sv_hostname */
+extern byte *sv_maxRate_dvar;      /* imp_sv_maxRate */
+extern byte *sv_minPing_dvar;      /* imp_sv_minPing */
+extern byte *sv_maxPing_dvar;      /* imp_sv_maxPing */
+extern byte *sv_floodProtect_dvar; /* imp_sv_floodProtect */
+extern byte *sv_allowAnonymous_dvar;/* imp_sv_allowAnonymous */
+extern byte *sv_showCommands_dvar; /* imp_sv_showCommands */
+extern byte *sv_disableClientConsole_dvar; /* imp_sv_disableClientConsole */
+extern byte *sv_voice_dvar;        /* imp_sv_voice */
+extern byte *sv_voiceQuality_dvar; /* imp_sv_voiceQuality */
+extern byte *sv_cheats_dvar;       /* imp_sv_cheats */
+extern byte *sv_pure_dvar;         /* imp_sv_pure */
+extern byte *sv_iwds_dvar;         /* imp_sv_iwds */
+extern byte *sv_iwdNames_dvar;     /* imp_sv_iwdNames */
+extern byte *sv_referencedIwds_dvar;/* imp_sv_referencedIwds */
+extern byte *sv_referencedIwdNames_dvar; /* imp_sv_referencedIwdNames */
+extern byte *rcon_password_dvar;   /* imp_rcon_password */
+extern byte *sv_privatePassword_dvar; /* imp_sv_privatePassword */
+extern byte *sv_fps_dvar;          /* imp_sv_fps */
+extern byte *sv_timeout_dvar;      /* imp_sv_timeout */
+extern byte *sv_zombietime_dvar;   /* imp_sv_zombietime */
+extern byte *sv_allowDownload_dvar;/* imp_sv_allowDownload */
+extern byte *sv_reconnectlimit_dvar; /* imp_sv_reconnectlimit */
+extern byte *sv_padPackets_dvar;   /* imp_sv_padPackets */
+extern byte *sv_allowedClan1_dvar; /* imp_sv_allowedClan1 */
+extern byte *sv_allowedClan2_dvar; /* imp_sv_allowedClan2 */
+extern byte *sv_packet_info_dvar;  /* imp_sv_packet_info */
+extern byte *sv_showAverageBPS_dvar; /* imp_sv_showAverageBPS */
+extern byte *sv_kickBanTime_dvar;  /* imp_sv_kickBanTime */
+extern byte *sv_mapRotation_dvar;  /* imp_sv_mapRotation */
+extern byte *sv_mapRotationCurrent_dvar; /* imp_sv_mapRotationCurrent */
+extern byte *sv_debugRate_dvar;    /* imp_sv_debugRate */
+extern byte *sv_debugReliableCmds_dvar; /* imp_sv_debugReliableCmds */
+extern byte *nextmap_dvar;         /* imp_nextmap */
+extern byte *com_dvarflags_ptr;    /* imp_dvar_modifiedFlags */
+extern byte *com_checksumFeed_dvar; /* imp_com_frameTime */
+extern byte *com_errorEntered_ptr; /* imp_bgs */
+extern byte *sv_dedicated_dvar2;   /* imp_com_dedicated */
+extern byte *sv_com_dvarDump_ptr;  /* imp_cl_paused */
 
 extern void Com_Error(int code, const char *fmt, ...);
 extern void Com_Printf(const char *fmt, ...);

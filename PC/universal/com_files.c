@@ -34,8 +34,8 @@ extern const dvar_t *fs_useOldAssets; /* 0x0 */
 extern const dvar_t *fs_ignoreLocalized; /* 0x0 */
 extern char lastValidBase[256]; /* 0x0 */
 extern char lastValidGame[256]; /* 0x0 */
-static char szIwdLanguageName[2][64]; /* 0x33ce20 */
-static int iString; /* 0x33ce00 */
+static char szIwdLanguageName[2][64]; /* szIwdLanguageName */
+static int iString; /* iString */
 extern void Hunk_FreeTempMemory(void *buf);
 extern float FS_DisplayPath(qboolean bLanguageCull);
 extern int SEH_GetCurrentLanguage(void);
@@ -43,7 +43,7 @@ extern const char *Dvar_GetString(const char *name);
 extern const char *va(const char *fmt, ...);
 extern void Z_FreeInternal(void *ptr);
 
-static qboolean bLanguagesListed; /* 0x33cea0 */
+static qboolean bLanguagesListed; /* bLanguagesListed */
 
 qboolean FS_Initialized(void);
 float FS_CheckFileSystemStarted(void);
@@ -292,18 +292,18 @@ fileHandle_t FS_HandleForFile(qboolean streamThread)
         /* { scope 1 */
         ".Lf32ed8_00032f5e:\n"
         "movl $1, %ebx\n" /* line 514 */
-        "movl $0xff8378, %esi\n" /* first */
+        "movl $fsh+312, %esi\n" /* first */
         ".Lf32ed8_00032f68:\n"
         "movl %esi, 8(%esp)\n" /* line 524 | first */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x216c70, (%esp)\n" /* "FILE %2i: '%s'
+        "movl $str_00216c70, (%esp)\n" /* "FILE %2i: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 523 */
         "addl $0x11c, %esi\n" /* first */
         "cmpl $0x4a, %ebx\n"
         "jne .Lf32ed8_00032f68\n"
-        "movl $0x216c80, 4(%esp)\n" /* line 526 */
+        "movl $str_00216c80, 4(%esp)\n" /* line 526 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl $0xffffffff, %ebx\n"
@@ -336,14 +336,14 @@ qboolean FS_CreatePath(char *OSPath)
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* OSPath */
         /* { scope 1 */
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %ebx, (%esp)\n" /* OSPath */
         "calll strstr\n"
         "testl %eax, %eax\n"
         "je .Lf32fc6_00033001\n"
         ".Lf32fc6_00032fe5:\n"
         "movl %ebx, 4(%esp)\n" /* line 717 | OSPath */
-        "movl $0x216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
+        "movl $str_00216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
 " */
         "calll Com_Printf\n"
         "movl $1, %eax\n"
@@ -356,7 +356,7 @@ qboolean FS_CreatePath(char *OSPath)
         "retl\n"
         /* { scope 1 */
         ".Lf32fc6_00033001:\n"
-        "movl $0x215bf8, 4(%esp)\n" /* line 715 */
+        "movl $str_00215bf8, 4(%esp)\n" /* line 715 */
         "movl %ebx, (%esp)\n" /* OSPath */
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -481,7 +481,7 @@ qboolean FS_PureIgnoresExtension(const char *extension)
         "leal 1(%ebx), %eax\n" /* line 1227 | extension */
         "cmpb $0x2e, (%ebx)\n" /* extension */
         "cmovel %eax, %ebx\n" /* extension */
-        "movl $0x216cd4, 4(%esp)\n" /* line 1229 */
+        "movl $str_00216cd4, 4(%esp)\n" /* line 1229 */
         "movl %ebx, (%esp)\n" /* extension */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -494,22 +494,22 @@ qboolean FS_PureIgnoresExtension(const char *extension)
         "popl %ebp\n"
         "retl\n"
         ".Lf330e4_00033116:\n"
-        "movl $0x216cd8, 4(%esp)\n" /* line 1231 */
+        "movl $str_00216cd8, 4(%esp)\n" /* line 1231 */
         "movl %ebx, (%esp)\n" /* extension */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf330e4_0003310b\n"
-        "movl $0x216ce0, 4(%esp)\n" /* line 1235 */
+        "movl $str_00216ce0, 4(%esp)\n" /* line 1235 */
         "movl %ebx, (%esp)\n" /* extension */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf330e4_0003310b\n"
-        "movl $0x216ce4, 4(%esp)\n" /* line 1237 */
+        "movl $str_00216ce4, 4(%esp)\n" /* line 1237 */
         "movl %ebx, (%esp)\n" /* extension */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf330e4_0003310b\n"
-        "movl $0x216ce8, 4(%esp)\n" /* line 1241 */
+        "movl $str_00216ce8, 4(%esp)\n" /* line 1241 */
         "movl %ebx, (%esp)\n" /* extension */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -659,34 +659,34 @@ Bool FS_RegisterDvars(void)
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x216d08, (%esp)\n" /* "fs_debug" */
+        "movl $str_00216d08, (%esp)\n" /* "fs_debug" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, fs_debug\n"
         "movl $0x1010, 8(%esp)\n" /* line 3556 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216d14, (%esp)\n" /* "fs_copyfiles" */
+        "movl $str_00216d14, (%esp)\n" /* "fs_copyfiles" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, fs_copyfiles\n"
         "calll Sys_DefaultCDPath\n" /* line 3560 */
         "movl $0x1010, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x216d24, (%esp)\n" /* "fs_cdpath" */
+        "movl $str_00216d24, (%esp)\n" /* "fs_cdpath" */
         "calll Dvar_RegisterString\n"
         "movl %eax, fs_cdpath\n"
         "calll Sys_DefaultInstallPath\n" /* line 3564 */
         "movl $0x1010, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x216d30, (%esp)\n" /* "fs_basepath" */
+        "movl $str_00216d30, (%esp)\n" /* "fs_basepath" */
         "calll Dvar_RegisterString\n"
         "movl %eax, fs_basepath\n"
         "movl $0x1010, 8(%esp)\n" /* line 3568 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x216d3c, (%esp)\n" /* "fs_basegame" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_00216d3c, (%esp)\n" /* "fs_basegame" */
         "calll Dvar_RegisterString\n"
         "movl %eax, fs_basegame\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 3572 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216d48, (%esp)\n" /* "fs_useOldAssets" */
+        "movl $str_00216d48, (%esp)\n" /* "fs_useOldAssets" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, fs_useOldAssets\n"
         "calll Sys_DefaultHomePath\n" /* line 3575 */
@@ -700,22 +700,22 @@ Bool FS_RegisterDvars(void)
         ".Lf33246_00033347:\n"
         "movl $0x1010, 8(%esp)\n" /* line 3580 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216d58, (%esp)\n" /* "fs_homepath" */
+        "movl $str_00216d58, (%esp)\n" /* "fs_homepath" */
         "calll Dvar_RegisterString\n"
         "movl %eax, fs_homepath\n"
         "movl $0x101c, 8(%esp)\n" /* line 3584 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x216d64, (%esp)\n" /* "fs_game" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_00216d64, (%esp)\n" /* "fs_game" */
         "calll Dvar_RegisterString\n"
         "movl %eax, fs_gameDirVar\n"
         "movl $0x1010, 8(%esp)\n" /* line 3589 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216d6c, (%esp)\n" /* "fs_restrict" */
+        "movl $str_00216d6c, (%esp)\n" /* "fs_restrict" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, fs_restrict\n"
         "movl $0x10a0, 8(%esp)\n" /* line 3594 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216d78, (%esp)\n" /* "fs_ignoreLocalized" */
+        "movl $str_00216d78, (%esp)\n" /* "fs_ignoreLocalized" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, fs_ignoreLocalized\n"
         "movl $1, %eax\n"
@@ -755,10 +755,10 @@ float FS_ClearIwdReferences(void)
 /* line 4057 */
 const char * GetBspExtension(void)
 {
-    const char *ext = Dvar_GetString((const char *)0x216d8c);
+    const char *ext = Dvar_GetString((const char *)str_00216d8c);
     if (*ext)
         return va("%sbsp", ext);
-    return va((const char *)0x216da0);
+    return va((const char *)str_00216da0);
 }
 
 /* line 2180 */
@@ -799,7 +799,7 @@ int FS_filelength(fileHandle_t f)
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
         "shll $2, %eax\n"
-        "movl 0xff8254(%eax), %edx\n"
+        "movl fsh+20(%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf33476_000334a8\n"
         "movl fsh(%eax), %eax\n" /* line 589 */
@@ -849,17 +849,17 @@ float FS_FCloseFile(fileHandle_t h)
         "shll $3, %eax\n"
         "subl %esi, %eax\n" /* h */
         "leal (, %eax, 4), %ebx\n"
-        "movl 0xff8258(%ebx), %eax\n"
+        "movl fsh+24(%ebx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf334f2_00033594\n"
         ".Lf334f2_00033516:\n"
-        "movl 0xff8254(%ebx), %eax\n" /* line 898 */
+        "movl fsh+20(%ebx), %eax\n" /* line 898 */
         "testl %eax, %eax\n"
         "je .Lf334f2_0003355d\n"
         "movl fsh(%ebx), %eax\n" /* line 900 */
         "movl %eax, (%esp)\n"
         "calll unzCloseCurrentFile\n"
-        "movl 0xff8244(%ebx), %ecx\n" /* line 902 */
+        "movl fsh+4(%ebx), %ecx\n" /* line 902 */
         "testl %ecx, %ecx\n"
         "jne .Lf334f2_000335a1\n"
         ".Lf334f2_00033538:\n"
@@ -979,15 +979,15 @@ float FS_Shutdown(qboolean closemfp)
         /* } scope */
         ".Lf335d4_00033683:\n"
         "movl $0, fs_searchpaths\n" /* line 3522 */
-        "movl $0x216da8, (%esp)\n" /* line 3525 */
+        "movl $str_00216da8, (%esp)\n" /* line 3525 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x216db0, (%esp)\n" /* line 3526 */
+        "movl $str_00216db0, (%esp)\n" /* line 3526 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x216dbc, (%esp)\n" /* line 3527 */
+        "movl $str_00216dbc, (%esp)\n" /* line 3527 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x216dc0, (%esp)\n" /* line 3528 */
+        "movl $str_00216dc0, (%esp)\n" /* line 3528 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x216dc8, 8(%ebp)\n" /* line 3529 | closemfp */
+        "movl $str_00216dc8, 8(%ebp)\n" /* line 3529 | closemfp */
         /* } scope */
         "addl $0x10, %esp\n" /* line 3536 */
         "popl %ebx\n"
@@ -1020,7 +1020,7 @@ int FS_Read(float *buffer, int len, fileHandle_t h)
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
         "shll $2, %eax\n"
-        "movl 0xff8254(%eax), %ebx\n"
+        "movl fsh+20(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
         "je .Lf336d0_0003371c\n"
         "movl -0x28(%ebp), %edx\n" /* line 1844 | len */
@@ -1093,7 +1093,7 @@ int FS_Read(float *buffer, int len, fileHandle_t h)
         "jne .Lf336d0_00033763\n"
         "cmpl $0xc, -0x24(%ebp)\n" /* line 1876 */
         "jbe .Lf336d0_000337b5\n"
-        "movl $0x216dd4, 4(%esp)\n" /* line 1879 */
+        "movl $str_00216dd4, 4(%esp)\n" /* line 1879 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf336d0_00033763\n"
@@ -1135,7 +1135,7 @@ int FS_Write(const float *buffer, int len, fileHandle_t h)
         "leal (%edi, %edi, 8), %eax\n" /* line 1936 | h */
         "shll $3, %eax\n"
         "subl %edi, %eax\n" /* h */
-        "movl 0xff8248(, %eax, 4), %esi\n" /* buf */
+        "movl fsh+8(, %eax, 4), %esi\n" /* buf */
         "testl %esi, %esi\n" /* buf */
         "jne .Lf337c0_0003380e\n"
         /* } scope */
@@ -1217,10 +1217,10 @@ int FS_Seek(fileHandle_t f, long int offset, int origin)
         "shll $3, %eax\n"
         "subl %edi, %eax\n" /* f */
         "leal (, %eax, 4), %ebx\n"
-        "movl 0xff8258(%ebx), %eax\n"
+        "movl fsh+24(%ebx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf3387a_00033966\n"
-        "movl 0xff8254(%ebx), %eax\n" /* line 1990 */
+        "movl fsh+20(%ebx), %eax\n" /* line 1990 */
         "testl %eax, %eax\n"
         "je .Lf3387a_0003399b\n"
         ".Lf3387a_000338ba:\n"
@@ -1285,14 +1285,14 @@ int FS_Seek(fileHandle_t f, long int offset, int origin)
         "retl\n"
         /* { scope 1 */
         ".Lf3387a_00033966:\n"
-        "movl $0, 0xff8258(%ebx)\n" /* line 1984 */
+        "movl $0, fsh+24(%ebx)\n" /* line 1984 */
         "movl %esi, 8(%esp)\n" /* line 1985 | origin */
         "movl -0x20(%ebp), %edx\n" /* offset */
         "movl %edx, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* f */
         "calll Sys_StreamSeek\n"
-        "movl $1, 0xff8258(%ebx)\n" /* line 1986 */
-        "movl 0xff8254(%ebx), %eax\n" /* line 1990 */
+        "movl $1, fsh+24(%ebx)\n" /* line 1986 */
+        "movl fsh+20(%ebx), %eax\n" /* line 1990 */
         "testl %eax, %eax\n"
         "jne .Lf3387a_000338ba\n"
         /* { scope 2 */
@@ -1308,7 +1308,7 @@ int FS_Seek(fileHandle_t f, long int offset, int origin)
         "jmp .Lf3387a_00033a35\n"
         /* } scope */
         ".Lf3387a_000339be:\n"
-        "movl 0xff8250(%ebx), %eax\n" /* line 2027 */
+        "movl fsh+16(%ebx), %eax\n" /* line 2027 */
         "movl %eax, 4(%esp)\n"
         "movl fsh(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1321,7 +1321,7 @@ int FS_Seek(fileHandle_t f, long int offset, int origin)
         "addl -0x20(%ebp), %eax\n" /* offset */
         "jmp .Lf3387a_00033931\n"
         ".Lf3387a_000339f4:\n"
-        "movl 0xff8250(%ebx), %eax\n" /* line 1995 */
+        "movl fsh+16(%ebx), %eax\n" /* line 1995 */
         "movl %eax, 4(%esp)\n"
         "movl fsh(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1362,7 +1362,7 @@ int FS_Seek(fileHandle_t f, long int offset, int origin)
         "jmp FS_FileSeek\n" /* line 2087 */
         /* } scope */
         ".Lf3387a_00033a4d:\n"
-        "movl 0xff8250(%ebx), %eax\n" /* line 2013 */
+        "movl fsh+16(%ebx), %eax\n" /* line 2013 */
         "movl %eax, 4(%esp)\n"
         "movl fsh(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1386,7 +1386,7 @@ int FS_Seek(fileHandle_t f, long int offset, int origin)
         "jmp .Lf3387a_00033a35\n"
         /* } scope */
         ".Lf3387a_00033a95:\n"
-        "movl 0xff8250(%ebx), %eax\n" /* line 2041 */
+        "movl fsh+16(%ebx), %eax\n" /* line 2041 */
         "movl %eax, 4(%esp)\n"
         "movl fsh(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1410,7 +1410,7 @@ int FS_FTell(fileHandle_t f)
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
         "shll $2, %eax\n"
-        "movl 0xff8254(%eax), %edx\n"
+        "movl fsh+20(%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf33ac0_00033aea\n"
         "movl fsh(%eax), %eax\n" /* line 4040 */
@@ -1620,7 +1620,7 @@ float FS_BuildOSPath_Internal(const char *base, const char *game, const char *qp
         "movl $fs_gamedir, -0x28(%ebp)\n" /* line 663 */
         "jmp .Lf33bde_00033bfc\n"
         ".Lf33bde_00033c5a:\n"
-        "movl $0x216dec, 4(%esp)\n" /* line 677 */
+        "movl $str_00216dec, 4(%esp)\n" /* line 677 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         ".Lf33bde_00033c6e:\n"
@@ -1717,7 +1717,7 @@ qboolean FS_FileExists(const char *file)
         "movl %ebx, (%esp)\n"
         "movl $fs_gamedir, %edx\n"
         "calll FS_BuildOSPath_Internal\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 825 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 825 */
         "movl %ebx, (%esp)\n"
         "calll FS_FileOpen\n"
         "testl %eax, %eax\n" /* line 826 */
@@ -1773,7 +1773,7 @@ const char * FS_ShortOSFilePath(const char *filename)
         "movl 8(%ebp), %ecx\n" /* filename */
         "movl %ebx, %edx\n"
         "calll FS_BuildOSPath_Internal\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 1727 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 1727 */
         "movl %edi, (%esp)\n"
         "calll FS_FileOpen\n"
         "testl %eax, %eax\n" /* line 1728 */
@@ -1783,7 +1783,7 @@ const char * FS_ShortOSFilePath(const char *filename)
         "movl 8(%ebp), %eax\n" /* line 1731 | filename */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x216e18, (%esp)\n" /* "%s/%s" */
+        "movl $str_00216e18, (%esp)\n" /* "%s/%s" */
         "calll va\n"
         /* } scope */
         "addl $0x11c, %esp\n" /* line 1735 */
@@ -1871,7 +1871,7 @@ int FS_GetFileOsPath(const char *filename, char *ospath)
         "movl %ecx, (%esp)\n"
         "movl %edi, %ecx\n"
         "calll FS_BuildOSPath_Internal\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 2265 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 2265 */
         "movl 0xc(%ebp), %eax\n" /* ospath */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -1906,14 +1906,14 @@ float FS_DisplayPath(qboolean bLanguageCull)
         "movl %eax, (%esp)\n" /* line 3014 */
         "calll SEH_GetLanguageName\n"
         "movl %eax, 4(%esp)\n" /* line 3015 */
-        "movl $0x216e20, (%esp)\n" /* "Current language: %s
+        "movl $str_00216e20, (%esp)\n" /* "Current language: %s
 " */
         "calll Com_Printf\n"
         "movl fs_ignoreLocalized, %eax\n" /* line 3018 */
         "cmpb $0, 8(%eax)\n"
         "jne .Lf33eee_000340c8\n"
         ".Lf33eee_00033f23:\n"
-        "movl $0x216e60, (%esp)\n" /* line 3020 */
+        "movl $str_00216e60, (%esp)\n" /* line 3020 */
         "calll Com_Printf\n"
         "movl fs_searchpaths, %esi\n" /* line 3021 | s */
         "testl %esi, %esi\n" /* s */
@@ -1941,7 +1941,7 @@ float FS_DisplayPath(qboolean bLanguageCull)
         "movl 0x30c(%edx), %eax\n" /* line 3028 */
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x216e78, (%esp)\n" /* "%s (%i files)
+        "movl $str_00216e78, (%esp)\n" /* "%s (%i files)
 " */
         "calll Com_Printf\n"
         "movl 0xc(%esi), %eax\n" /* line 3030 | s */
@@ -1971,24 +1971,24 @@ float FS_DisplayPath(qboolean bLanguageCull)
         /* } scope */
         /* } scope */
         ".Lf33eee_00033fcf:\n"
-        "movl $0x216eb0, (%esp)\n" /* line 3040 */
+        "movl $str_00216eb0, (%esp)\n" /* line 3040 */
         "calll Com_Printf\n"
         "movl (%esi), %esi\n" /* line 3021 | s */
         "testl %esi, %esi\n" /* s */
         "jne .Lf33eee_00033f5e\n"
         ".Lf33eee_00033fe5:\n"
-        "movl $0x216efc, (%esp)\n" /* line 3055 */
+        "movl $str_00216efc, (%esp)\n" /* line 3055 */
         "calll Com_Printf\n"
         "movl $1, %ebx\n" /* i */
         "movl $fsh, %esi\n" /* s */
-        "movl $0xff8378, %edi\n"
+        "movl $fsh+312, %edi\n"
         ".Lf33eee_00034000:\n"
         "movl 0x11c(%esi), %eax\n" /* line 3058 | s */
         "testl %eax, %eax\n"
         "je .Lf33eee_0003401e\n"
         "movl %edi, 8(%esp)\n" /* line 3059 */
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x216f0c, (%esp)\n" /* "handle %i: %s
+        "movl $str_00216f0c, (%esp)\n" /* "handle %i: %s
 " */
         "calll Com_Printf\n"
         ".Lf33eee_0003401e:\n"
@@ -2006,7 +2006,7 @@ float FS_DisplayPath(qboolean bLanguageCull)
         "retl\n"
         /* { scope 1 */
         ".Lf33eee_0003403a:\n"
-        "movl $0x216f1c, (%esp)\n" /* line 3038 */
+        "movl $str_00216f1c, (%esp)\n" /* line 3038 */
         "calll Com_Printf\n"
         "jmp .Lf33eee_00033f54\n"
         ".Lf33eee_0003404b:\n"
@@ -2014,7 +2014,7 @@ float FS_DisplayPath(qboolean bLanguageCull)
         "movl %eax, (%esp)\n"
         "calll SEH_GetLanguageName\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x216e88, (%esp)\n" /* "    localized assets iwd file for %s
+        "movl $str_00216e88, (%esp)\n" /* "    localized assets iwd file for %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf33eee_00033f95\n"
@@ -2023,7 +2023,7 @@ float FS_DisplayPath(qboolean bLanguageCull)
         "leal 0x100(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x216ec8, (%esp)\n" /* "%s/%s
+        "movl $str_00216ec8, (%esp)\n" /* "%s/%s
 " */
         "calll Com_Printf\n"
         "movl 0xc(%esi), %eax\n" /* line 3048 | s */
@@ -2033,7 +2033,7 @@ float FS_DisplayPath(qboolean bLanguageCull)
         "movl %eax, (%esp)\n"
         "calll SEH_GetLanguageName\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x216ed0, (%esp)\n" /* "    localized assets game folder for %s
+        "movl $str_00216ed0, (%esp)\n" /* "    localized assets game folder for %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf33eee_00033f54\n"
@@ -2044,7 +2044,7 @@ float FS_DisplayPath(qboolean bLanguageCull)
         "jne .Lf33eee_00033f54\n"
         "jmp .Lf33eee_00033f65\n"
         ".Lf33eee_000340c8:\n"
-        "movl $0x216e38, (%esp)\n" /* line 3019 */
+        "movl $str_00216e38, (%esp)\n" /* line 3019 */
         "calll Com_Printf\n"
         "jmp .Lf33eee_00033f23\n"
     );
@@ -2105,7 +2105,7 @@ float FS_Printf(fileHandle_t h, const char *fmt)
         "leal (%esi, %esi, 8), %eax\n" /* line 1936 */
         "shll $3, %eax\n"
         "subl %esi, %eax\n"
-        "movl 0xff8248(, %eax, 4), %edx\n"
+        "movl fsh+8(, %eax, 4), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf34102_00034184\n"
         /* } scope */
@@ -2177,7 +2177,7 @@ const char * * FS_ListFilteredFiles(searchpath_t *searchPath, const char *path, 
         "je .Lf341ec_00034867\n"
         "movl 0x10(%ebp), %edi\n" /* line 2537 | extension */
         "testl %edi, %edi\n"
-        "movl $0x2157b8, %eax\n"
+        "movl $str_002157b8, %eax\n"
         "cmovnel 0x10(%ebp), %eax\n" /* extension */
         "movl %eax, 0x10(%ebp)\n" /* extension */
         "movl $0x100, %ecx\n" /* line 2542 */
@@ -2200,7 +2200,7 @@ const char * * FS_ListFilteredFiles(searchpath_t *searchPath, const char *path, 
         "retl\n"
         /* { scope 1: zpathLen, netpath, numSysFiles, sysFiles */
         ".Lf341ec_00034242:\n"
-        "movl $0x216f38, 4(%esp)\n" /* line 2548 */
+        "movl $str_00216f38, 4(%esp)\n" /* line 2548 */
         "movl 0x10(%ebp), %eax\n" /* extension */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -2793,7 +2793,7 @@ int FS_GetFileList(const char *path, const char *extension, FsListBehavior behav
         /* { scope 1 */
         "movb $0, (%esi)\n" /* line 2860 | listbuf */
         "movl $0, -0x1c(%ebp)\n" /* line 2861 | fileCount */
-        "movl $0x216f5c, 4(%esp)\n" /* line 2865 */
+        "movl $str_00216f5c, 4(%esp)\n" /* line 2865 */
         "movl %ebx, (%esp)\n" /* path */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3091,7 +3091,7 @@ fileHandle_t FS_OpenFileOverwrite(const char *qpath)
         "calll SetFileAttributesA\n"
         /* { scope 2 */
         ".Lf34c8e_00034ce4:\n"
-        "movl $0x216fec, 4(%esp)\n" /* line 933 */
+        "movl $str_00216fec, 4(%esp)\n" /* line 933 */
         "movl %ebx, (%esp)\n" /* i */
         "calll FS_FileOpen\n"
         "movl %eax, %edi\n" /* fp */
@@ -3116,15 +3116,15 @@ fileHandle_t FS_OpenFileOverwrite(const char *qpath)
         "shll $3, %ebx\n" /* i */
         "subl %esi, %ebx\n" /* f, i */
         "shll $2, %ebx\n" /* i */
-        "movl $0, 0xff8254(%ebx)\n" /* i */
+        "movl $0, fsh+20(%ebx)\n" /* i */
         "movl %edi, fsh(%ebx)\n" /* line 941 | fp, i */
         "movl $0x100, 8(%esp)\n" /* line 942 */
         "movl 8(%ebp), %eax\n" /* qpath */
         "movl %eax, 4(%esp)\n"
-        "leal 0xff825c(%ebx), %eax\n" /* i */
+        "leal fsh+28(%ebx), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0, 0xff8248(%ebx)\n" /* line 943 | i */
+        "movl $0, fsh+8(%ebx)\n" /* line 943 | i */
         /* } scope */
         /* } scope */
         ".Lf34c8e_00034d60:\n"
@@ -3138,7 +3138,7 @@ fileHandle_t FS_OpenFileOverwrite(const char *qpath)
         /* { scope 1 */
         ".Lf34c8e_00034d6d:\n"
         "movl %ebx, 4(%esp)\n" /* line 2292 | i */
-        "movl $0x216fd0, (%esp)\n" /* "FS_FOpenFileOverWrite: %s
+        "movl $str_00216fd0, (%esp)\n" /* "FS_FOpenFileOverWrite: %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf34c8e_00034cc7\n"
@@ -3146,18 +3146,18 @@ fileHandle_t FS_OpenFileOverwrite(const char *qpath)
         /* { scope 3 */
         ".Lf34c8e_00034d82:\n"
         "movl $1, %ebx\n" /* line 514 | i */
-        "movl $0xff8378, %esi\n"
+        "movl $fsh+312, %esi\n"
         ".Lf34c8e_00034d8c:\n"
         "movl %esi, 8(%esp)\n" /* line 524 */
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x216c70, (%esp)\n" /* "FILE %2i: '%s'
+        "movl $str_00216c70, (%esp)\n" /* "FILE %2i: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 523 | i */
         "addl $0x11c, %esi\n"
         "cmpl $0x4a, %ebx\n" /* i */
         "jne .Lf34c8e_00034d8c\n"
-        "movl $0x216c80, 4(%esp)\n" /* line 526 */
+        "movl $str_00216c80, 4(%esp)\n" /* line 526 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl $0xffffffff, %esi\n"
@@ -3167,7 +3167,7 @@ fileHandle_t FS_OpenFileOverwrite(const char *qpath)
         ".Lf34c8e_00034dcc:\n"
         "movl 8(%ebp), %eax\n" /* line 2287 | qpath */
         "movl %eax, 8(%esp)\n"
-        "movl $0x216f68, 4(%esp)\n" /* "FS_FOpenFileOverWrite: Failed to open %s for writing.  It ei" */
+        "movl $str_00216f68, 4(%esp)\n" /* "FS_FOpenFileOverWrite: Failed to open %s for writing.  It ei" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "xorl %esi, %esi\n" /* f */
@@ -3206,14 +3206,14 @@ int iwdsort(const float *a, const float *b)
         "movl (%eax), %eax\n"
         "movl %eax, -0x24(%ebp)\n" /* bb */
         "movl $0xa, 8(%esp)\n" /* line 3129 */
-        "movl $0x216ff0, 4(%esp)\n" /* "          " */
+        "movl $str_00216ff0, 4(%esp)\n" /* "          " */
         "movl -0x28(%ebp), %eax\n" /* aa */
         "movl %eax, (%esp)\n"
         "calll I_strncmp\n"
         "testl %eax, %eax\n"
         "jne .Lf34dfe_00034e59\n"
         "movl $0xa, 8(%esp)\n"
-        "movl $0x216ff0, 4(%esp)\n" /* "          " */
+        "movl $str_00216ff0, 4(%esp)\n" /* "          " */
         "movl -0x24(%ebp), %eax\n" /* bb */
         "movl %eax, (%esp)\n"
         "calll I_strncmp\n"
@@ -3334,13 +3334,13 @@ int iwdsort(const float *a, const float *b)
         ".Lf34dfe_00034f53:\n"
         "shll $6, %ebx\n" /* line 3118 | c1 */
         "addl $szIwdLanguageName, %ebx\n" /* c1 */
-        "movl $0x21699c, 4(%esp)\n" /* line 3137 */
+        "movl $str_0021699c, 4(%esp)\n" /* line 3137 */
         "movl -0x20(%ebp), %eax\n" /* pszLanguageA */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf34dfe_000350d6\n"
-        "movl $0x21699c, 4(%esp)\n" /* line 3143 */
+        "movl $str_0021699c, 4(%esp)\n" /* line 3143 */
         "movl %ebx, (%esp)\n" /* pszLanguageB */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3460,7 +3460,7 @@ int iwdsort(const float *a, const float *b)
         "jmp .Lf34dfe_00034f16\n"
         /* } scope */
         ".Lf34dfe_000350d6:\n"
-        "movl $0x21699c, 4(%esp)\n" /* line 3140 */
+        "movl $str_0021699c, 4(%esp)\n" /* line 3140 */
         "movl %ebx, (%esp)\n" /* pszLanguageB */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3488,7 +3488,7 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "movl $0, 4(%esp)\n" /* line 697 */
         "leal -0x178(%ebp), %eax\n" /* iwdfile */
         "movl %eax, (%esp)\n"
-        "movl $0x2157b8, %ecx\n"
+        "movl $str_002157b8, %ecx\n"
         "movl 0xc(%ebp), %edx\n" /* pszGameFolder */
         "movl 8(%ebp), %eax\n" /* path */
         "calll FS_BuildOSPath_Internal\n"
@@ -3503,7 +3503,7 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "leal -0x1c(%ebp), %eax\n" /* numfiles */
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x216ffc, 4(%esp)\n" /* "iwd" */
+        "movl $str_00216ffc, 4(%esp)\n" /* "iwd" */
         "leal -0x178(%ebp), %edx\n" /* iwdfile */
         "movl %edx, (%esp)\n"
         "calll Sys_ListFiles\n"
@@ -3584,7 +3584,7 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "movl -0x12b8(%ebp), %ecx\n"
         ".Lf350f8_0003527f:\n"
         "movl $0xa, 8(%esp)\n" /* line 3229 */
-        "movl $0x216ff0, 4(%esp)\n" /* "          " */
+        "movl $str_00216ff0, 4(%esp)\n" /* "          " */
         "movl -4(%ecx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strncmp\n"
@@ -3627,7 +3627,7 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "movl %eax, 8(%esp)\n"
         "movl 8(%ebp), %edx\n" /* path */
         "movl %edx, 4(%esp)\n"
-        "movl $0x217048, (%esp)\n" /* "WARNING: Localized assets iwd file %s/%s/%s has invalid name" */
+        "movl $str_00217048, (%esp)\n" /* "WARNING: Localized assets iwd file %s/%s/%s has invalid name" */
         "calll Com_Printf\n"
         "jmp .Lf350f8_0003525c\n"
         /* { scope 2: buildBuffer, uf, gi, filename_inzip, ... */
@@ -3965,7 +3965,7 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "shll $2, %ebx\n" /* i */
         "jmp .Lf350f8_0003547c\n"
         ".Lf350f8_0003580a:\n"
-        "movl $0x217198, 4(%esp)\n" /* line 2384 */
+        "movl $str_00217198, 4(%esp)\n" /* line 2384 */
         "leal -4(%ebx, %eax), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -4030,7 +4030,7 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "movl -4(%edx, %ebx, 4), %eax\n"
         "movl %eax, -4(%esi)\n" /* iwd */
         "movl $0xa, 8(%esp)\n" /* line 3220 */
-        "movl $0x21703c, 4(%esp)\n" /* "localized_" */
+        "movl $str_0021703c, 4(%esp)\n" /* "localized_" */
         "movl %eax, (%esp)\n"
         "calll I_strncmp\n"
         "testl %eax, %eax\n"
@@ -4047,7 +4047,7 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "movl %ecx, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* path */
         "movl %eax, 4(%esp)\n"
-        "movl $0x217000, (%esp)\n" /* "WARNING: Exceeded max number of iwd files in %s/%s (%1/%1)
+        "movl $str_00217000, (%esp)\n" /* "WARNING: Exceeded max number of iwd files in %s/%s (%1/%1)
 " */
         "calll Com_Printf\n"
         "movl $0x400, -0x1c(%ebp)\n" /* line 3212 | numfiles */
@@ -4061,20 +4061,20 @@ float FS_AddIwdFilesForGameDirectory(const char *path, const char *pszGameFolder
         "movl %eax, 8(%esp)\n"
         "movl 8(%ebp), %edx\n" /* path */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2170dc, (%esp)\n" /* "WARNING: Localized assets iwd file %s/%s/%s has invalid name" */
+        "movl $str_002170dc, (%esp)\n" /* "WARNING: Localized assets iwd file %s/%s/%s has invalid name" */
         "calll Com_Printf\n"
         "movl bLanguagesListed, %eax\n" /* line 3257 */
         "testl %eax, %eax\n"
         "jne .Lf350f8_0003525c\n"
         /* { scope 2: buildBuffer, uf, gi, filename_inzip, ... */
-        "movl $0x217174, (%esp)\n" /* line 3261 */
+        "movl $str_00217174, (%esp)\n" /* line 3261 */
         "calll Com_Printf\n"
         "xorl %ebx, %ebx\n" /* iSuppLang */
         ".Lf350f8_0003599e:\n"
         "movl %ebx, (%esp)\n" /* line 3264 | iSuppLang */
         "calll SEH_GetLanguageName\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x217190, (%esp)\n" /* "    %s
+        "movl $str_00217190, (%esp)\n" /* "    %s
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 3263 | iSuppLang */
@@ -4119,7 +4119,7 @@ float FS_AddGameDirectory(int iLanguage)
         "calll SEH_GetLanguageName\n"
         "movl %eax, 0x10(%esp)\n" /* line 3323 */
         "movl %edi, 0xc(%esp)\n" /* search */
-        "movl $0x216e18, 8(%esp)\n" /* "%s/%s" */
+        "movl $str_00216e18, 8(%esp)\n" /* "%s/%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x58(%ebp), %edi\n" /* szGameFolder, search */
         "movl %edi, (%esp)\n" /* search */
@@ -4153,15 +4153,15 @@ float FS_AddGameDirectory(int iLanguage)
         "movl 0xc(%edi), %edx\n" /* line 3337 | search */
         "cmpl %edx, %esi\n" /* bLanguageDirectory */
         "je .Lf359ea_00035aae\n"
-        "movl $0x2171a0, %eax\n" /* line 3338 */
+        "movl $str_002171a0, %eax\n" /* line 3338 */
         "testl %edx, %edx\n"
-        "movl $0x2171ac, %edx\n" /* "non-localized" */
+        "movl $str_002171ac, %edx\n" /* "non-localized" */
         "cmovel %edx, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "leal -0x58(%ebp), %eax\n" /* szGameFolder */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* path */
-        "movl $0x2171bc, (%esp)\n" /* "WARNING: game folder %s/%s added as both localized & non-loc" */
+        "movl $str_002171bc, (%esp)\n" /* "WARNING: game folder %s/%s added as both localized & non-loc" */
         "calll Com_Printf\n"
         ".Lf359ea_00035aae:\n"
         "movl 0xc(%edi), %esi\n" /* line 3341 | search, bLanguageDirectory */
@@ -4173,7 +4173,7 @@ float FS_AddGameDirectory(int iLanguage)
         "leal -0x58(%ebp), %edi\n" /* line 3342 | szGameFolder, search */
         "movl %edi, 8(%esp)\n" /* search */
         "movl %ebx, 4(%esp)\n" /* path */
-        "movl $0x217214, (%esp)\n" /* "WARNING: game golder %s/%s re-added as localized folder with" */
+        "movl $str_00217214, (%esp)\n" /* "WARNING: game golder %s/%s re-added as localized folder with" */
         "calll Com_Printf\n"
         "jmp .Lf359ea_00035bc0\n"
         ".Lf359ea_00035ae1:\n"
@@ -4183,7 +4183,7 @@ float FS_AddGameDirectory(int iLanguage)
         "movl $0, 4(%esp)\n" /* line 697 */
         "leal -0x158(%ebp), %eax\n" /* ospath */
         "movl %eax, (%esp)\n"
-        "movl $0x2157b8, %ecx\n"
+        "movl $str_002157b8, %ecx\n"
         "leal -0x58(%ebp), %edx\n" /* szGameFolder */
         "movl %ebx, %eax\n"
         "calll FS_BuildOSPath_Internal\n"
@@ -4292,7 +4292,7 @@ float FS_CopyFile(char *fromOSPath, char *toOSPath)
         "subl $0x2c, %esp\n"
         "movl 0xc(%ebp), %esi\n" /* toOSPath */
         /* { scope 1 */
-        "movl $0x215b98, 4(%esp)\n" /* line 755 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 755 */
         "movl 8(%ebp), %eax\n" /* fromOSPath */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -4320,21 +4320,21 @@ float FS_CopyFile(char *fromOSPath, char *toOSPath)
         "calll FS_FileRead\n"
         "cmpl %eax, %edi\n" /* len */
         "je .Lf35c1a_00035cb8\n"
-        "movl $0x217268, 4(%esp)\n" /* line 768 */
+        "movl $str_00217268, 4(%esp)\n" /* line 768 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         ".Lf35c1a_00035cb8:\n"
         "movl %ebx, (%esp)\n" /* line 769 | f */
         "calll FS_FileClose\n"
         /* { scope 2 */
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %esi, (%esp)\n"
         "calll strstr\n"
         "testl %eax, %eax\n"
         "je .Lf35c1a_00035cfe\n"
         ".Lf35c1a_00035cd4:\n"
         "movl %esi, 4(%esp)\n" /* line 717 */
-        "movl $0x216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
+        "movl $str_00216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -4360,7 +4360,7 @@ float FS_CopyFile(char *fromOSPath, char *toOSPath)
         /* { scope 1 */
         /* { scope 2 */
         ".Lf35c1a_00035cfe:\n"
-        "movl $0x215bf8, 4(%esp)\n" /* line 715 */
+        "movl $str_00215bf8, 4(%esp)\n" /* line 715 */
         "movl %esi, (%esp)\n"
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -4386,7 +4386,7 @@ float FS_CopyFile(char *fromOSPath, char *toOSPath)
         "jmp .Lf35c1a_00035d21\n"
         /* } scope */
         ".Lf35c1a_00035d40:\n"
-        "movl $0x216fec, 4(%esp)\n" /* line 777 */
+        "movl $str_00216fec, 4(%esp)\n" /* line 777 */
         "movl %esi, (%esp)\n" /* toOSPath */
         "calll FS_FileOpen\n"
         "movl %eax, %ebx\n" /* f */
@@ -4400,7 +4400,7 @@ float FS_CopyFile(char *fromOSPath, char *toOSPath)
         "calll FS_FileWrite\n"
         "cmpl %eax, %edi\n" /* len */
         "je .Lf35c1a_00035d89\n"
-        "movl $0x217288, 4(%esp)\n" /* line 784 */
+        "movl $str_00217288, 4(%esp)\n" /* line 784 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         ".Lf35c1a_00035d89:\n"
@@ -4469,7 +4469,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "shll $3, %eax\n"
         "subl %esi, %eax\n" /* zfi */
         "movl -0x34c(%ebp), %ebx\n" /* c2 */
-        "movl %ebx, 0xff8244(, %eax, 4)\n" /* c2 */
+        "movl %ebx, fsh+4(, %eax, 4)\n" /* c2 */
         "movl fs_searchpaths, %eax\n" /* line 1431 */
         "movl %eax, -0x31c(%ebp)\n"
         "testl %eax, %eax\n"
@@ -4622,7 +4622,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "calll FS_BuildOSPath_Internal\n"
         "movl -0x348(%ebp), %ecx\n" /* line 1554 */
         "movl (%ecx), %ebx\n" /* c2 */
-        "movl $0x215b98, 4(%esp)\n" /* "rb" */
+        "movl $str_00215b98, 4(%esp)\n" /* "rb" */
         "leal -0x218(%ebp), %eax\n" /* netpath */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -4649,7 +4649,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "leal (%edx, %edx, 8), %eax\n"
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
-        "leal 0xff825c(, %eax, 4), %eax\n"
+        "leal fsh+28(, %eax, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
         "movl -0x348(%ebp), %ecx\n" /* line 1568 */
@@ -4657,7 +4657,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "leal (%edx, %edx, 8), %eax\n"
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
-        "movl $0, 0xff8254(, %eax, 4)\n"
+        "movl $0, fsh+20(, %eax, 4)\n"
         "movl fs_debug, %eax\n" /* line 1569 */
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -4669,7 +4669,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "movl %esi, 8(%esp)\n" /* s1 */
         "leal -0x118(%ebp), %ebx\n" /* sanitizedName, c2 */
         "movl %ebx, 4(%esp)\n" /* c2 */
-        "movl $0x217318, (%esp)\n" /* "FS_FOpenFileRead: %s (found in '%s/%s')
+        "movl $str_00217318, (%esp)\n" /* "FS_FOpenFileRead: %s (found in '%s/%s')
 " */
         "calll Com_Printf\n"
         ".Lf35d96_000360fa:\n"
@@ -4733,7 +4733,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "leal (%edx, %edx, 8), %eax\n"
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
-        "leal 0xff825c(, %eax, 4), %eax\n"
+        "leal fsh+28(, %eax, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
         "movl -0x348(%ebp), %ecx\n" /* line 1495 */
@@ -4742,7 +4742,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
         "movl -0x33c(%ebp), %ebx\n" /* iwd, c2 */
-        "movl %ebx, 0xff8254(, %eax, 4)\n" /* c2 */
+        "movl %ebx, fsh+20(, %eax, 4)\n" /* c2 */
         "movl (%ecx), %edx\n" /* line 1496 */
         "leal (%edx, %edx, 8), %eax\n"
         "shll $3, %eax\n"
@@ -4778,7 +4778,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "subl %edx, %eax\n"
         "movl -0x320(%ebp), %ecx\n"
         "movl (%ecx), %edx\n"
-        "movl %edx, 0xff8250(, %eax, 4)\n"
+        "movl %edx, fsh+16(, %eax, 4)\n"
         "movl fs_debug, %eax\n" /* line 1509 */
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -4823,7 +4823,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "je .Lf35d96_00036333\n"
         "movl -0x330(%ebp), %ebx\n" /* line 1597 | impureIwd, c2 */
         "movl %ebx, 4(%esp)\n" /* c2 */
-        "movl $0x217354, (%esp)\n" /* "EXE_UNPURECLIENTDETECTED
+        "movl $str_00217354, (%esp)\n" /* "EXE_UNPURECLIENTDETECTED
 %s" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -4889,18 +4889,18 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         /* { scope 2 */
         ".Lf35d96_000363cf:\n"
         "movl $1, %ebx\n" /* line 514 | first */
-        "movl $0xff8378, %edi\n" /* count */
+        "movl $fsh+312, %edi\n" /* count */
         ".Lf35d96_000363d9:\n"
         "movl %edi, 8(%esp)\n" /* line 524 | count */
         "movl %ebx, 4(%esp)\n" /* first */
-        "movl $0x216c70, (%esp)\n" /* "FILE %2i: '%s'
+        "movl $str_00216c70, (%esp)\n" /* "FILE %2i: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 523 | first */
         "addl $0x11c, %edi\n" /* count */
         "cmpl $0x4a, %ebx\n" /* first */
         "jne .Lf35d96_000363d9\n"
-        "movl $0x216c80, 4(%esp)\n" /* line 526 */
+        "movl $str_00216c80, 4(%esp)\n" /* line 526 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl $0xffffffff, %esi\n" /* hash */
@@ -4914,7 +4914,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "movl %ebx, 8(%esp)\n" /* c2 */
         "leal -0x118(%ebp), %eax\n" /* sanitizedName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2172f0, (%esp)\n" /* "FS_FOpenFileRead: %s (found in '%s')
+        "movl $str_002172f0, (%esp)\n" /* "FS_FOpenFileRead: %s (found in '%s')
 " */
         "calll Com_Printf\n"
         "jmp .Lf35d96_000362a5\n"
@@ -4929,7 +4929,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "movl %ebx, (%esp)\n" /* c2 */
         "leal -0x118(%ebp), %ecx\n" /* sanitizedName */
         "calll FS_BuildOSPath_Internal\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 1538 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 1538 */
         "movl %ebx, (%esp)\n" /* c2 */
         "calll FS_FileOpen\n"
         "testl %eax, %eax\n" /* line 1539 */
@@ -4964,7 +4964,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "jne .Lf35d96_000368ec\n"
         "movl -0x33c(%ebp), %ebx\n" /* line 1487 | iwd, c2 */
         "movl %ebx, 8(%esp)\n" /* c2 */
-        "movl $0x2172dc, 4(%esp)\n" /* "Couldn't reopen %s" */
+        "movl $str_002172dc, 4(%esp)\n" /* "Couldn't reopen %s" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x348(%ebp), %eax\n"
@@ -4972,14 +4972,14 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "jmp .Lf35d96_000361bc\n"
         /* { scope 2 */
         ".Lf35d96_00036530:\n"
-        "movl $0x2172a8, -0x318(%ebp)\n" /* line 1323 | extensions */
-        "movl $0x2172b0, -0x314(%ebp)\n" /* ".txt" */
-        "movl $0x216330, -0x310(%ebp)\n" /* ".cfg" */
-        "movl $0x2172b8, -0x30c(%ebp)\n" /* ".levelshots" */
-        "movl $0x2172c4, -0x308(%ebp)\n" /* ".menu" */
-        "movl $0x2172cc, -0x304(%ebp)\n" /* ".arena" */
-        "movl $0x2172d4, -0x300(%ebp)\n" /* ".str" */
-        "movl $0x2157b8, -0x2fc(%ebp)\n"
+        "movl $str_002172a8, -0x318(%ebp)\n" /* line 1323 | extensions */
+        "movl $str_002172b0, -0x314(%ebp)\n" /* ".txt" */
+        "movl $str_00216330, -0x310(%ebp)\n" /* ".cfg" */
+        "movl $str_002172b8, -0x30c(%ebp)\n" /* ".levelshots" */
+        "movl $str_002172c4, -0x308(%ebp)\n" /* ".menu" */
+        "movl $str_002172cc, -0x304(%ebp)\n" /* ".arena" */
+        "movl $str_002172d4, -0x300(%ebp)\n" /* ".str" */
+        "movl $str_002157b8, -0x2fc(%ebp)\n"
         "cld\n" /* line 896 */
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
@@ -4987,8 +4987,8 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "repne scasb %es:(%edi), %al\n" /* count */
         "notl %ecx\n"
         "leal -1(%ecx), %eax\n"
-        "movl $0x2172a8, %edx\n" /* line 1329 */
-        "cmpb $0, 0x2172a8\n" /* ".hlsl" */
+        "movl $str_002172a8, %edx\n" /* line 1329 */
+        "cmpb $0, str_002172a8\n" /* ".hlsl" */
         "jne .Lf35d96_000365fe\n"
         /* } scope */
         ".Lf35d96_000365a3:\n"
@@ -4998,7 +4998,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         ".Lf35d96_000365b5:\n"
         "movl -0x344(%ebp), %edx\n" /* line 1587 */
         "movl %edx, 4(%esp)\n"
-        "movl $0x217344, (%esp)\n" /* "Can't find %s
+        "movl $str_00217344, (%esp)\n" /* "Can't find %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf35d96_000362f7\n"
@@ -5158,7 +5158,7 @@ int FS_FOpenFileRead_Internal(const char *filename, fileHandle_t *file, qboolean
         "movl %ebx, (%esp)\n" /* c2 */
         "leal -0x118(%ebp), %ecx\n" /* sanitizedName */
         "calll FS_BuildOSPath_Internal\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 1411 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 1411 */
         "movl %ebx, (%esp)\n" /* c2 */
         "calll FS_FileOpen\n"
         "testl %eax, %eax\n" /* line 1412 */
@@ -5460,7 +5460,7 @@ int FS_ReadFile(const char *qpath, float * *buffer)
         "retl\n"
         /* { scope 1 */
         ".Lf36a2a_00036ada:\n"
-        "movl $0x217374, 4(%esp)\n" /* line 2124 */
+        "movl $str_00217374, 4(%esp)\n" /* line 2124 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         /* { scope 2 */
@@ -5520,14 +5520,14 @@ fileHandle_t FS_FOpenFileWrite(const char *filename)
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf36b5c_00036bcd\n"
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %ebx, (%esp)\n" /* i */
         "calll strstr\n"
         "testl %eax, %eax\n"
         "je .Lf36b5c_00036bf1\n"
         ".Lf36b5c_00036bae:\n"
         "movl %ebx, 4(%esp)\n" /* line 717 | i */
-        "movl $0x216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
+        "movl $str_00216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
 " */
         "calll Com_Printf\n"
         "xorl %esi, %esi\n"
@@ -5543,16 +5543,16 @@ fileHandle_t FS_FOpenFileWrite(const char *filename)
         /* { scope 1 */
         ".Lf36b5c_00036bcd:\n"
         "movl %ebx, 4(%esp)\n" /* line 967 | i */
-        "movl $0x217394, (%esp)\n" /* "FS_FOpenFileWrite: %s
+        "movl $str_00217394, (%esp)\n" /* "FS_FOpenFileWrite: %s
 " */
         "calll Com_Printf\n"
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %ebx, (%esp)\n" /* i */
         "calll strstr\n"
         "testl %eax, %eax\n"
         "jne .Lf36b5c_00036bae\n"
         ".Lf36b5c_00036bf1:\n"
-        "movl $0x215bf8, 4(%esp)\n" /* "::" */
+        "movl $str_00215bf8, 4(%esp)\n" /* "::" */
         "movl %ebx, (%esp)\n" /* i */
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -5577,7 +5577,7 @@ fileHandle_t FS_FOpenFileWrite(const char *filename)
         "jmp .Lf36b5c_00036c14\n"
         /* { scope 2 */
         ".Lf36b5c_00036c35:\n"
-        "movl $0x216fec, 4(%esp)\n" /* line 933 */
+        "movl $str_00216fec, 4(%esp)\n" /* line 933 */
         "movl %ebx, (%esp)\n" /* i */
         "calll FS_FileOpen\n"
         "movl %eax, %edi\n" /* fp */
@@ -5604,31 +5604,31 @@ fileHandle_t FS_FOpenFileWrite(const char *filename)
         "shll $3, %ebx\n" /* i */
         "subl %esi, %ebx\n" /* f, i */
         "shll $2, %ebx\n" /* i */
-        "movl $0, 0xff8254(%ebx)\n" /* i */
+        "movl $0, fsh+20(%ebx)\n" /* i */
         "movl %edi, fsh(%ebx)\n" /* line 941 | fp, i */
         "movl $0x100, 8(%esp)\n" /* line 942 */
         "movl 8(%ebp), %eax\n" /* filename */
         "movl %eax, 4(%esp)\n"
-        "leal 0xff825c(%ebx), %eax\n" /* i */
+        "leal fsh+28(%ebx), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0, 0xff8248(%ebx)\n" /* line 943 | i */
+        "movl $0, fsh+8(%ebx)\n" /* line 943 | i */
         "jmp .Lf36b5c_00036bc0\n"
         /* { scope 3 */
         ".Lf36b5c_00036cb6:\n"
         "movl $1, %ebx\n" /* line 514 | i */
-        "movl $0xff8378, %esi\n"
+        "movl $fsh+312, %esi\n"
         ".Lf36b5c_00036cc0:\n"
         "movl %esi, 8(%esp)\n" /* line 524 */
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x216c70, (%esp)\n" /* "FILE %2i: '%s'
+        "movl $str_00216c70, (%esp)\n" /* "FILE %2i: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 523 | i */
         "addl $0x11c, %esi\n"
         "cmpl $0x4a, %ebx\n" /* i */
         "jne .Lf36b5c_00036cc0\n"
-        "movl $0x216c80, 4(%esp)\n" /* line 526 */
+        "movl $str_00216c80, 4(%esp)\n" /* line 526 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl $0xffffffff, %esi\n"
@@ -5672,7 +5672,7 @@ qboolean FS_WriteFile(const char *qpath, const float *buffer, int size)
         "leal (%esi, %esi, 8), %eax\n" /* line 1936 */
         "shll $3, %eax\n"
         "subl %esi, %eax\n"
-        "movl 0xff8248(, %eax, 4), %ebx\n"
+        "movl fsh+8(, %eax, 4), %ebx\n"
         "testl %ebx, %ebx\n"
         "jne .Lf36d08_00036e32\n"
         ".Lf36d08_00036d5f:\n"
@@ -5744,7 +5744,7 @@ qboolean FS_WriteFile(const char *qpath, const float *buffer, int size)
         ".Lf36d08_00036e12:\n"
         "movl 8(%ebp), %eax\n" /* line 2214 | qpath */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2173ac, (%esp)\n" /* "Failed to open %s
+        "movl $str_002173ac, (%esp)\n" /* "Failed to open %s
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -5805,7 +5805,7 @@ fileHandle_t FS_FOpenTextFileWrite(const char *filename)
         "leal (%esi, %esi, 8), %eax\n" /* line 999 | h */
         "shll $3, %eax\n"
         "subl %esi, %eax\n" /* h */
-        "movl $0, 0xff8254(, %eax, 4)\n"
+        "movl $0, fsh+20(, %eax, 4)\n"
         "movl fs_homepath, %eax\n" /* line 697 */
         "movl 8(%eax), %eax\n"
         "movl $0, 4(%esp)\n"
@@ -5818,14 +5818,14 @@ fileHandle_t FS_FOpenTextFileWrite(const char *filename)
         "movl 8(%eax), %edi\n"
         "testl %edi, %edi\n"
         "jne .Lf36e56_00036efe\n"
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %ebx, (%esp)\n" /* i */
         "calll strstr\n"
         "testl %eax, %eax\n"
         "je .Lf36e56_00036f22\n"
         ".Lf36e56_00036edf:\n"
         "movl %ebx, 4(%esp)\n" /* line 717 | i */
-        "movl $0x216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
+        "movl $str_00216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
 " */
         "calll Com_Printf\n"
         "xorl %esi, %esi\n"
@@ -5841,16 +5841,16 @@ fileHandle_t FS_FOpenTextFileWrite(const char *filename)
         /* { scope 1 */
         ".Lf36e56_00036efe:\n"
         "movl %ebx, 4(%esp)\n" /* line 1004 | i */
-        "movl $0x217394, (%esp)\n" /* "FS_FOpenFileWrite: %s
+        "movl $str_00217394, (%esp)\n" /* "FS_FOpenFileWrite: %s
 " */
         "calll Com_Printf\n"
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %ebx, (%esp)\n" /* i */
         "calll strstr\n"
         "testl %eax, %eax\n"
         "jne .Lf36e56_00036edf\n"
         ".Lf36e56_00036f22:\n"
-        "movl $0x215bf8, 4(%esp)\n" /* "::" */
+        "movl $str_00215bf8, 4(%esp)\n" /* "::" */
         "movl %ebx, (%esp)\n" /* i */
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -5876,25 +5876,25 @@ fileHandle_t FS_FOpenTextFileWrite(const char *filename)
         /* { scope 2 */
         ".Lf36e56_00036f66:\n"
         "movl $1, %ebx\n" /* line 514 | i */
-        "movl $0xff8378, %esi\n"
+        "movl $fsh+312, %esi\n"
         ".Lf36e56_00036f70:\n"
         "movl %esi, 8(%esp)\n" /* line 524 */
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x216c70, (%esp)\n" /* "FILE %2i: '%s'
+        "movl $str_00216c70, (%esp)\n" /* "FILE %2i: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 523 | i */
         "addl $0x11c, %esi\n"
         "cmpl $0x4a, %ebx\n" /* i */
         "jne .Lf36e56_00036f70\n"
-        "movl $0x216c80, 4(%esp)\n" /* line 526 */
+        "movl $str_00216c80, 4(%esp)\n" /* line 526 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl $0xffffffff, %esi\n"
         "jmp .Lf36e56_00036e86\n"
         /* } scope */
         ".Lf36e56_00036fb0:\n"
-        "movl $0x2173c0, 4(%esp)\n" /* line 1015 */
+        "movl $str_002173c0, 4(%esp)\n" /* line 1015 */
         "movl %ebx, (%esp)\n" /* i */
         "calll FS_FileOpen\n"
         "leal (%esi, %esi, 8), %ebx\n" /* line 1018 | h, i */
@@ -5905,10 +5905,10 @@ fileHandle_t FS_FOpenTextFileWrite(const char *filename)
         "movl $0x100, 8(%esp)\n" /* line 1020 */
         "movl 8(%ebp), %eax\n" /* filename */
         "movl %eax, 4(%esp)\n"
-        "leal 0xff825c(%ebx), %eax\n" /* i */
+        "leal fsh+28(%ebx), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0, 0xff8248(%ebx)\n" /* line 1022 | i */
+        "movl $0, fsh+8(%ebx)\n" /* line 1022 | i */
         "movl fsh(%ebx), %ebx\n" /* line 1023 | i */
         "testl %ebx, %ebx\n" /* i */
         "jne .Lf36e56_00036ef1\n"
@@ -5949,10 +5949,10 @@ fileHandle_t FS_FOpenFileAppend(const char *filename)
         "shll $3, %eax\n"
         "subl %ebx, %eax\n" /* h */
         "shll $2, %eax\n"
-        "movl $0, 0xff8254(%eax)\n"
+        "movl $0, fsh+20(%eax)\n"
         "movl $0x100, 8(%esp)\n" /* line 1051 */
         "movl %edi, 4(%esp)\n" /* filename */
-        "addl $0xff825c, %eax\n"
+        "addl $fsh+28, %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
         "movl fs_homepath, %eax\n" /* line 697 */
@@ -5967,14 +5967,14 @@ fileHandle_t FS_FOpenFileAppend(const char *filename)
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf3700e_000370d3\n"
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %esi, (%esp)\n"
         "calll strstr\n"
         "testl %eax, %eax\n"
         "je .Lf3700e_000370f7\n"
         ".Lf3700e_000370b4:\n"
         "movl %esi, 4(%esp)\n" /* line 717 */
-        "movl $0x216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
+        "movl $str_00216ca4, (%esp)\n" /* "WARNING: refusing to create relative path "%s"
 " */
         "calll Com_Printf\n"
         "xorl %ebx, %ebx\n" /* i */
@@ -5990,16 +5990,16 @@ fileHandle_t FS_FOpenFileAppend(const char *filename)
         /* { scope 1 */
         ".Lf3700e_000370d3:\n"
         "movl %esi, 4(%esp)\n" /* line 1056 */
-        "movl $0x2173c4, (%esp)\n" /* "FS_FOpenFileAppend: %s
+        "movl $str_002173c4, (%esp)\n" /* "FS_FOpenFileAppend: %s
 " */
         "calll Com_Printf\n"
-        "movl $0x216ca0, 4(%esp)\n" /* line 715 */
+        "movl $str_00216ca0, 4(%esp)\n" /* line 715 */
         "movl %esi, (%esp)\n"
         "calll strstr\n"
         "testl %eax, %eax\n"
         "jne .Lf3700e_000370b4\n"
         ".Lf3700e_000370f7:\n"
-        "movl $0x215bf8, 4(%esp)\n" /* "::" */
+        "movl $str_00215bf8, 4(%esp)\n" /* "::" */
         "movl %esi, (%esp)\n"
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -6025,25 +6025,25 @@ fileHandle_t FS_FOpenFileAppend(const char *filename)
         /* { scope 2 */
         ".Lf3700e_0003713b:\n"
         "movb $1, %bl\n" /* line 514 | i */
-        "movl $0xff8378, %esi\n"
+        "movl $fsh+312, %esi\n"
         ".Lf3700e_00037142:\n"
         "movl %esi, 8(%esp)\n" /* line 524 */
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x216c70, (%esp)\n" /* "FILE %2i: '%s'
+        "movl $str_00216c70, (%esp)\n" /* "FILE %2i: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 523 | i */
         "addl $0x11c, %esi\n"
         "cmpl $0x4a, %ebx\n" /* i */
         "jne .Lf3700e_00037142\n"
-        "movl $0x216c80, 4(%esp)\n" /* line 526 */
+        "movl $str_00216c80, 4(%esp)\n" /* line 526 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl $0xffffffff, %ebx\n" /* i */
         "jmp .Lf3700e_00037041\n"
         /* } scope */
         ".Lf3700e_00037182:\n"
-        "movl $0x2173dc, 4(%esp)\n" /* line 1064 */
+        "movl $str_002173dc, 4(%esp)\n" /* line 1064 */
         "movl %esi, (%esp)\n"
         "calll FS_FileOpen\n"
         "leal (%ebx, %ebx, 8), %edx\n" /* line 1067 | h */
@@ -6051,7 +6051,7 @@ fileHandle_t FS_FOpenFileAppend(const char *filename)
         "subl %ebx, %edx\n" /* h */
         "shll $2, %edx\n"
         "movl %eax, fsh(%edx)\n"
-        "movl $0, 0xff8248(%edx)\n" /* line 1068 */
+        "movl $0, fsh+8(%edx)\n" /* line 1068 */
         "testl %eax, %eax\n" /* line 1069 */
         "jne .Lf3700e_000370c6\n"
         "xorl %ebx, %ebx\n" /* line 721 | i */
@@ -6080,7 +6080,7 @@ int FS_FOpenFileByMode(const char *qpath, fileHandle_t *f, fsMode_t mode)
         "cmpl $3, %eax\n"
         "je .Lf371bc_000372d4\n"
         ".Lf371bc_000371e7:\n"
-        "movl $0x2173e0, 4(%esp)\n" /* line 4007 */
+        "movl $str_002173e0, 4(%esp)\n" /* line 4007 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl $0x1b39, %ecx\n"
@@ -6095,18 +6095,18 @@ int FS_FOpenFileByMode(const char *qpath, fileHandle_t *f, fsMode_t mode)
         "leal (%edx, %edx, 8), %eax\n" /* line 4016 */
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
-        "movl %ecx, 0xff824c(, %eax, 4)\n"
+        "movl %ecx, fsh+12(, %eax, 4)\n"
         "movl (%ebx), %edx\n" /* line 4017 | f */
         "leal (%edx, %edx, 8), %eax\n"
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
-        "movl $0, 0xff8258(, %eax, 4)\n"
+        "movl $0, fsh+24(, %eax, 4)\n"
         "movl (%ebx), %edx\n" /* f */
         ".Lf371bc_00037232:\n"
         "leal (%edx, %edx, 8), %eax\n" /* line 4019 */
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
-        "movl %esi, 0xff8248(, %eax, 4)\n" /* sync */
+        "movl %esi, fsh+8(, %eax, 4)\n" /* sync */
         /* } scope */
         ".Lf371bc_00037241:\n"
         "movl %ecx, %eax\n" /* line 4023 */
@@ -6196,7 +6196,7 @@ float FS_Startup(const char *gameName)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edi\n" /* gameName */
-        "movl $0x2173fc, (%esp)\n" /* line 3611 */
+        "movl $str_002173fc, (%esp)\n" /* line 3611 */
         "calll Com_Printf\n"
         "calll FS_RegisterDvars\n" /* line 3613 */
         "movl fs_useOldAssets, %eax\n" /* line 3617 */
@@ -6248,11 +6248,11 @@ float FS_Startup(const char *gameName)
         "movl fs_gameDirVar, %eax\n" /* line 3709 */
         "movl %eax, (%esp)\n"
         "calll Dvar_ClearModified\n"
-        "movl $0x21742c, (%esp)\n" /* line 3711 */
+        "movl $str_0021742c, (%esp)\n" /* line 3711 */
         "calll Com_Printf\n"
         "movl fs_packFiles, %eax\n" /* line 3717 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x217444, (%esp)\n" /* "%d files in iwd files
+        "movl $str_00217444, (%esp)\n" /* "%d files in iwd files
 " */
         "calll Com_Printf\n"
         "addl $0x2c, %esp\n" /* line 3718 */
@@ -6262,7 +6262,7 @@ float FS_Startup(const char *gameName)
         "popl %ebp\n"
         "retl\n"
         ".Lf3730a_00037402:\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 3686 */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 3686 */
         "movl %edi, (%esp)\n" /* gameName */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -6362,7 +6362,7 @@ float FS_Startup(const char *gameName)
         /* } scope */
         /* } scope */
         ".Lf3730a_0003752a:\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 3675 */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 3675 */
         "movl %edi, (%esp)\n" /* gameName */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -6527,7 +6527,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_00037710:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x21741c, %edx\n" /* "devraw_shared" */
+        "movl $str_0021741c, %edx\n" /* "devraw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6535,7 +6535,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_00037710\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x21741c, %edx\n" /* "devraw_shared" */
+        "movl $str_0021741c, %edx\n" /* "devraw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6547,7 +6547,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_0003774e:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f54, %edx\n" /* "devraw" */
+        "movl $str_00216f54, %edx\n" /* "devraw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6555,7 +6555,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_0003774e\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f54, %edx\n" /* "devraw" */
+        "movl $str_00216f54, %edx\n" /* "devraw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6568,7 +6568,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_0003778c:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f48, %edx\n" /* "raw_shared" */
+        "movl $str_00216f48, %edx\n" /* "raw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6576,7 +6576,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_0003778c\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f48, %edx\n" /* "raw_shared" */
+        "movl $str_00216f48, %edx\n" /* "raw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6589,7 +6589,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_000377ca:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f44, %edx\n" /* "raw" */
+        "movl $str_00216f44, %edx\n" /* "raw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6597,7 +6597,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_000377ca\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f44, %edx\n" /* "raw" */
+        "movl $str_00216f44, %edx\n" /* "raw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6630,7 +6630,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_0003783d:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x21741c, %edx\n" /* "devraw_shared" */
+        "movl $str_0021741c, %edx\n" /* "devraw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6638,7 +6638,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_0003783d\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x21741c, %edx\n" /* "devraw_shared" */
+        "movl $str_0021741c, %edx\n" /* "devraw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6650,7 +6650,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_0003787b:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f54, %edx\n" /* "devraw" */
+        "movl $str_00216f54, %edx\n" /* "devraw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6658,7 +6658,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_0003787b\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f54, %edx\n" /* "devraw" */
+        "movl $str_00216f54, %edx\n" /* "devraw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6671,7 +6671,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_000378b9:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f48, %edx\n" /* "raw_shared" */
+        "movl $str_00216f48, %edx\n" /* "raw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6679,7 +6679,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_000378b9\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f48, %edx\n" /* "raw_shared" */
+        "movl $str_00216f48, %edx\n" /* "raw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6692,7 +6692,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_000378f7:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f44, %edx\n" /* "raw" */
+        "movl $str_00216f44, %edx\n" /* "raw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6700,7 +6700,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_000378f7\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f44, %edx\n" /* "raw" */
+        "movl $str_00216f44, %edx\n" /* "raw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "jmp .Lf3730a_00037376\n"
@@ -6712,7 +6712,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_00037932:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x21741c, %edx\n" /* "devraw_shared" */
+        "movl $str_0021741c, %edx\n" /* "devraw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6720,7 +6720,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_00037932\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x21741c, %edx\n" /* "devraw_shared" */
+        "movl $str_0021741c, %edx\n" /* "devraw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6732,7 +6732,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_00037970:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f54, %edx\n" /* "devraw" */
+        "movl $str_00216f54, %edx\n" /* "devraw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6740,7 +6740,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_00037970\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f54, %edx\n" /* "devraw" */
+        "movl $str_00216f54, %edx\n" /* "devraw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6753,7 +6753,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_000379ae:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f48, %edx\n" /* "raw_shared" */
+        "movl $str_00216f48, %edx\n" /* "raw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6761,7 +6761,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_000379ae\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f48, %edx\n" /* "raw_shared" */
+        "movl $str_00216f48, %edx\n" /* "raw_shared" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6774,7 +6774,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_000379ec:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x216f44, %edx\n" /* "raw" */
+        "movl $str_00216f44, %edx\n" /* "raw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6782,7 +6782,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_000379ec\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x216f44, %edx\n" /* "raw" */
+        "movl $str_00216f44, %edx\n" /* "raw" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "jmp .Lf3730a_00037365\n"
@@ -6794,7 +6794,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_00037a27:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x217414, %edx\n" /* "tempcod" */
+        "movl $str_00217414, %edx\n" /* "tempcod" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6802,7 +6802,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_00037a27\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x217414, %edx\n" /* "tempcod" */
+        "movl $str_00217414, %edx\n" /* "tempcod" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "jmp .Lf3730a_00037354\n"
@@ -6813,7 +6813,7 @@ float FS_Startup(const char *gameName)
         ".Lf3730a_00037a62:\n"
         "movl %ebx, (%esp)\n" /* line 3402 | i */
         "movl $1, %ecx\n"
-        "movl $0x217414, %edx\n" /* "tempcod" */
+        "movl $str_00217414, %edx\n" /* "tempcod" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         "subl $1, %ebx\n" /* line 3401 | i */
@@ -6821,7 +6821,7 @@ float FS_Startup(const char *gameName)
         "jne .Lf3730a_00037a62\n"
         "movl $0, (%esp)\n" /* line 3406 */
         "xorl %ecx, %ecx\n"
-        "movl $0x217414, %edx\n" /* "tempcod" */
+        "movl $str_00217414, %edx\n" /* "tempcod" */
         "movl %esi, %eax\n"
         "calll FS_AddGameDirectory\n"
         /* } scope */
@@ -6860,13 +6860,13 @@ float FS_Restart(int checksumFeed)
         "testl %eax, %eax\n"
         "jne .Lf37aaa_00037acf\n"
         ".Lf37aaa_00037ae3:\n"
-        "movl $0x216f3c, (%esp)\n" /* line 3843 */
+        "movl $str_00216f3c, (%esp)\n" /* line 3843 */
         "calll FS_Startup\n"
         "calll SEH_Init_StringEd\n" /* line 3849 */
         "calll SEH_UpdateLanguageInfo\n" /* line 3850 */
         "calll FS_SetRestrictions\n" /* line 3858 */
         "movl $0, 4(%esp)\n" /* line 3868 */
-        "movl $0x21745c, (%esp)\n" /* "default_mp.cfg" */
+        "movl $str_0021745c, (%esp)\n" /* "default_mp.cfg" */
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n"
         "jle .Lf37aaa_00037ba3\n"
@@ -6899,8 +6899,8 @@ float FS_Restart(int checksumFeed)
         "calll Com_SafeMode\n" /* line 3895 */
         "testl %eax, %eax\n"
         "jne .Lf37aaa_00037b36\n"
-        "movl $0x216300, 4(%esp)\n" /* line 3897 */
-        "movl $0x2166d0, (%esp)\n" /* "exec %s
+        "movl $str_00216300, 4(%esp)\n" /* line 3897 */
+        "movl $str_002166d0, (%esp)\n" /* "exec %s
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -6910,14 +6910,14 @@ float FS_Restart(int checksumFeed)
         "cmpb $0, lastValidBase\n" /* line 3872 */
         "jne .Lf37aaa_00037bcd\n"
         ".Lf37aaa_00037bac:\n"
-        "movl $0x21745c, 8(%esp)\n" /* line 3887 */
-        "movl $0x217484, 4(%esp)\n" /* "Couldn't load %s.  Make sure Call of Duty is run from the co" */
+        "movl $str_0021745c, 8(%esp)\n" /* line 3887 */
+        "movl $str_00217484, 4(%esp)\n" /* "Couldn't load %s.  Make sure Call of Duty is run from the co" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf37aaa_00037b1a\n"
         ".Lf37aaa_00037bcd:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 3875 */
-        "movl $0x2157b8, (%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n" /* line 3875 */
+        "movl $str_002157b8, (%esp)\n"
         "calll FS_PureServerSetLoadedIwds\n"
         "movl $lastValidBase, 4(%esp)\n" /* line 3877 */
         "movl fs_basepath, %eax\n"
@@ -6935,7 +6935,7 @@ float FS_Restart(int checksumFeed)
         "calll Dvar_SetBool\n"
         "movl %ebx, (%esp)\n" /* line 3884 | checksumFeed */
         "calll FS_Restart\n"
-        "movl $0x21746c, 4(%esp)\n" /* line 3885 */
+        "movl $str_0021746c, 4(%esp)\n" /* line 3885 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf37aaa_00037bac\n"
@@ -6950,7 +6950,7 @@ qboolean FS_ConditionalRestart(int checksumFeed)
         "pushl %ebp\n" /* line 3916 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl 0x195ecbc, %eax\n" /* line 3919 */
+        "movl imp_com_sv_running, %eax\n" /* line 3919 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf37c50_00037c9a\n"
@@ -6987,28 +6987,28 @@ float FS_InitFilesystem(void)
         "pushl %ebp\n" /* line 3747 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl $0x216d24, (%esp)\n" /* line 3754 */
+        "movl $str_00216d24, (%esp)\n" /* line 3754 */
         "calll Com_StartupVariable\n"
-        "movl $0x216d30, (%esp)\n" /* line 3755 */
+        "movl $str_00216d30, (%esp)\n" /* line 3755 */
         "calll Com_StartupVariable\n"
-        "movl $0x216d58, (%esp)\n" /* line 3756 */
+        "movl $str_00216d58, (%esp)\n" /* line 3756 */
         "calll Com_StartupVariable\n"
-        "movl $0x216d64, (%esp)\n" /* line 3757 */
+        "movl $str_00216d64, (%esp)\n" /* line 3757 */
         "calll Com_StartupVariable\n"
-        "movl $0x216d14, (%esp)\n" /* line 3758 */
+        "movl $str_00216d14, (%esp)\n" /* line 3758 */
         "calll Com_StartupVariable\n"
-        "movl $0x216d6c, (%esp)\n" /* line 3760 */
+        "movl $str_00216d6c, (%esp)\n" /* line 3760 */
         "calll Com_StartupVariable\n"
-        "movl $0x216a14, (%esp)\n" /* line 3763 */
+        "movl $str_00216a14, (%esp)\n" /* line 3763 */
         "calll Com_StartupVariable\n"
         "calll SEH_InitLanguage\n" /* line 3765 */
-        "movl $0x216f3c, (%esp)\n" /* line 3770 */
+        "movl $str_00216f3c, (%esp)\n" /* line 3770 */
         "calll FS_Startup\n"
         "calll SEH_Init_StringEd\n" /* line 3774 */
         "calll SEH_UpdateLanguageInfo\n" /* line 3775 */
         "calll FS_SetRestrictions\n" /* line 3781 */
         "movl $0, 4(%esp)\n" /* line 3789 */
-        "movl $0x21745c, (%esp)\n" /* "default_mp.cfg" */
+        "movl $str_0021745c, (%esp)\n" /* "default_mp.cfg" */
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n"
         "jle .Lf37c9e_00037d72\n"
@@ -7028,8 +7028,8 @@ float FS_InitFilesystem(void)
         "leave\n" /* line 3796 */
         "retl\n"
         ".Lf37c9e_00037d72:\n"
-        "movl $0x21745c, 8(%esp)\n" /* line 3790 */
-        "movl $0x217484, 4(%esp)\n" /* "Couldn't load %s.  Make sure Call of Duty is run from the co" */
+        "movl $str_0021745c, 8(%esp)\n" /* line 3790 */
+        "movl $str_00217484, 4(%esp)\n" /* "Couldn't load %s.  Make sure Call of Duty is run from the co" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf37c9e_00037d30\n"

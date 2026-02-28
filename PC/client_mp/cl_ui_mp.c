@@ -55,9 +55,9 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2);
 /* line 23 */
 void GetClientState(uiClientState_t *state)
 {
-    byte *cls = *(byte **)0x195ee8c;
-    byte *clc = *(byte **)0x195ecac;
-    byte *cl = *(byte **)0x195ee78;
+    byte *cls = *(byte **)imp_clc;
+    byte *clc = *(byte **)imp_cls;
+    byte *cl = *(byte **)imp_cl;
 
     *(int *)((byte *)state + 4) = *(int *)(cls + 0x24);
     *(int *)state = *(int *)cls;
@@ -69,7 +69,7 @@ void GetClientState(uiClientState_t *state)
 /* line 41 */
 void LAN_ResetPings(int source)
 {
-    byte *base = *(byte **)0x195ecac;
+    byte *base = *(byte **)imp_cls;
     byte *server;
     int count;
 
@@ -97,7 +97,7 @@ void LAN_ResetPings(int source)
 /* line 82 */
 int LAN_GetServerCount(int source)
 {
-    byte *base = *(byte **)0x195ecac;
+    byte *base = *(byte **)imp_cls;
     if (source == 0)
         return *(int *)(base + 0x138);
     if (source == 1)
@@ -112,14 +112,14 @@ qboolean LAN_WaitServerResponse(int source)
 {
     if (source != 1)
         return 0;
-    return *(int *)(*(byte **)0x195ecac + 0x453c);
+    return *(int *)(*(byte **)imp_cls + 0x453c);
 }
 
 /* line 124 */
 void LAN_GetServerInfo(int source, int n, char *buf, int buflen)
 {
     char info[1024];
-    byte *base = *(byte **)0x195ecac;
+    byte *base = *(byte **)imp_cls;
     byte *server = NULL;
 
     info[0] = '\0';
@@ -176,7 +176,7 @@ fail:
 /* line 200 */
 int LAN_GetServerPing(int source, int n)
 {
-    byte *base = *(byte **)0x195ecac;
+    byte *base = *(byte **)imp_cls;
     byte *server;
 
     if (source == 0) {
@@ -203,7 +203,7 @@ int LAN_GetServerPing(int source, int n)
 /* line 419 */
 void LAN_MarkServerDirty(int source, int n, qboolean dirty)
 {
-    byte *base = *(byte **)0x195ecac;
+    byte *base = *(byte **)imp_cls;
     int count;
     byte *ptr;
     int i;
@@ -246,7 +246,7 @@ void LAN_MarkServerDirty(int source, int n, qboolean dirty)
 /* line 490 */
 int LAN_ServerIsDirty(int source, int n)
 {
-    byte *base = *(byte **)0x195ecac;
+    byte *base = *(byte **)imp_cls;
 
     if (source == 0) {
         if ((unsigned)n > 0x7f)
@@ -297,18 +297,18 @@ void Key_GetBindingBuf(int keynum, char *buf, int buflen)
 /* line 582 */
 int Key_GetCatcher(void)
 {
-    return *(int *)(*(int *)(*(int *)0x195ee78) + 4);
+    return *(int *)(*(int *)(*(int *)imp_cl) + 4);
 }
 
 /* line 593 */
 void Key_SetCatcher(int catcher)
 {
-    byte *ptr = *(byte **)(*(int *)0x195ee78);
+    byte *ptr = *(byte **)(*(int *)imp_cl);
     if (*(int *)(ptr + 4) & 1)
         *(int *)(ptr + 4) = catcher | 1;
     else
         *(int *)(ptr + 4) = catcher;
-    ptr = *(byte **)(*(int *)0x195ee78);
+    ptr = *(byte **)(*(int *)imp_cl);
     if (!(*(int *)(ptr + 4) & 8))
         *(byte *)(ptr + 8) = 0;
 }
@@ -319,13 +319,13 @@ void CLUI_GetCDKey(char *buf, int buflen, char *buf2, int buf2len)
     char *cdkey;
     char *cdkey2;
 
-    Dvar_RegisterString((const char *)0x216d64, (const char *)0x2157b8, 0x101c); /* "fs_game" */
+    Dvar_RegisterString((const char *)str_00216d64, (const char *)str_002157b8, 0x101c); /* "fs_game" */
 
-    cdkey = *(char **)0x195f4e4;
+    cdkey = *(char **)imp_cl_cdkey;
     memcpy(buf, cdkey, 16);
     buf[16] = '\0';
 
-    cdkey2 = *(char **)0x195f314;
+    cdkey2 = *(char **)imp_cl_cdkeychecksum;
     memcpy(buf2, cdkey2, 4);
     buf2[4] = '\0';
 }
@@ -333,8 +333,8 @@ void CLUI_GetCDKey(char *buf, int buflen, char *buf2, int buf2len)
 /* line 631 */
 void CLUI_SetCDKey(char *buf, char *buf2)
 {
-    char *cdkey = *(char **)0x195f4e4;
-    char *cdkey2 = *(char **)0x195f314;
+    char *cdkey = *(char **)imp_cl_cdkey;
+    char *cdkey2 = *(char **)imp_cl_cdkeychecksum;
 
     memcpy(cdkey, buf, 16);
     cdkey[16] = '\0';
@@ -355,7 +355,7 @@ qboolean GetClientname(int index, char *buf, int size)
 
     *buf = '\0';
 
-    cl = *(byte **)*(int *)0x195ee78;
+    cl = *(byte **)*(int *)imp_cl;
     if (!*(int *)(cl + 0x18))
         return 0;
 
@@ -394,13 +394,13 @@ int UI_PlayLocalSoundAliasByName(const char *aliasname)
 /* line 884 */
 qboolean UI_ClientIsInGame(void)
 {
-    return *(int *)(*(int *)(*(int *)0x195ee8c)) == 8;
+    return *(int *)(*(int *)(*(int *)imp_clc)) == 8;
 }
 
 /* line 899 */
 qboolean CL_ShutdownUI(void)
 {
-    byte *clc = *(byte **)0x195ecac;
+    byte *clc = *(byte **)imp_cls;
     byte *cl;
 
     if (!*(int *)(clc + 0x110))
@@ -408,7 +408,7 @@ qboolean CL_ShutdownUI(void)
 
     Com_UnloadSoundAliases(0);
 
-    cl = *(byte **)*(int *)0x195ee78;
+    cl = *(byte **)*(int *)imp_cl;
     *(int *)(cl + 4) &= ~8;
     *(byte *)(cl + 8) = 0;
 
@@ -423,7 +423,7 @@ qboolean CL_ShutdownUI(void)
 /* line 935 */
 void CL_InitUI(void)
 {
-    *(int *)(*(byte **)0x195ecac + 0x110) = 1;
+    *(int *)(*(byte **)imp_cls + 0x110) = 1;
     CL_SwitchToLocalClient(0);
     UI_Init();
     CL_SwitchToLocalClient(0);
@@ -433,7 +433,7 @@ void CL_InitUI(void)
 /* line 963 */
 qboolean UI_checkKeyExec(int key)
 {
-    if (!*(int *)(*(byte **)0x195ecac + 0x110))
+    if (!*(int *)(*(byte **)imp_cls + 0x110))
         return 0;
     return UI_CheckExecKey(key);
 }
@@ -606,7 +606,7 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "movl %ecx, %eax\n" /* line 249 */
         "shll $7, %eax\n"
         "leal 0x130(%eax, %ecx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
+        "addl imp_cls, %eax\n"
         "leal 0xc(%eax), %ebx\n"
         "jmp .Lf17fb24_0017fba5\n"
         ".Lf17fb24_0017fb84:\n"
@@ -615,7 +615,7 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "movl %edx, %eax\n" /* line 249 */
         "shll $7, %eax\n"
         "leal 0x130(%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
+        "addl imp_cls, %eax\n"
         "leal 0xc(%eax), %esi\n"
         "cmpl $0x7f, %ecx\n" /* line 247 */
         "jbe .Lf17fb24_0017fb6d\n"
@@ -629,11 +629,11 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "cmpl $9, 0xc(%ebp)\n" /* line 333 | sortKey */
         "ja .Lf17fb24_0017fc33\n"
         "movl 0xc(%ebp), %eax\n" /* sortKey */
-        "jmpl *0x302ca0(, %eax, 4)\n"
+        "jmpl *g_color_table+384(, %eax, 4)\n"
         ".Lf17fb24_0017fbc5:\n"
         "testl %edx, %edx\n" /* line 254 */
         "js .Lf17fb24_0017fbdb\n"
-        "movl 0x195ecac, %ebx\n"
+        "movl imp_cls, %ebx\n"
         "cmpl 0x4540(%ebx), %edx\n"
         "jl .Lf17fb24_0017fc6d\n"
         ".Lf17fb24_0017fbdb:\n"
@@ -641,7 +641,7 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         ".Lf17fb24_0017fbdd:\n"
         "testl %ecx, %ecx\n" /* line 254 */
         "js .Lf17fb24_0017fba3\n"
-        "movl 0x195ecac, %edx\n"
+        "movl imp_cls, %edx\n"
         "cmpl 0x4540(%edx), %ecx\n"
         "jge .Lf17fb24_0017fba3\n"
         "movl %ecx, %eax\n" /* line 256 */
@@ -698,8 +698,8 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "ja .Lf17fb24_0017fba3\n"
         "movl %ecx, %eax\n" /* line 264 */
         "shll $7, %eax\n"
-        "leal 0x29c640(%eax, %ecx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
+        "leal str_0029c494+428(%eax, %ecx, 8), %eax\n"
+        "addl imp_cls, %eax\n"
         "leal 8(%eax), %ebx\n"
         "jmp .Lf17fb24_0017fba5\n"
         ".Lf17fb24_0017fc6d:\n"
@@ -711,8 +711,8 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         ".Lf17fb24_0017fc82:\n"
         "movl %edx, %eax\n" /* line 264 */
         "shll $7, %eax\n"
-        "leal 0x29c640(%eax, %edx, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
+        "leal str_0029c494+428(%eax, %edx, 8), %eax\n"
+        "addl imp_cls, %eax\n"
         "leal 8(%eax), %esi\n"
         "jmp .Lf17fb24_0017fc4a\n"
         ".Lf17fb24_0017fc99:\n"

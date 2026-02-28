@@ -8,7 +8,7 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-static const BuiltinMethodDef methods[59]; /* 0x333880 */
+static const BuiltinMethodDef methods[59]; /* methods */
 
 void PlayerCmd_takeWeapon(struct scr_entref_t entref);
 void PlayerCmd_takeAllWeapons(scr_entref_t entref);
@@ -94,7 +94,7 @@ void PlayerCmd_takeWeapon(struct scr_entref_t entref)
         "leal (, %eax, 8), %edi\n" /* pSelf */
         "subl %eax, %edi\n" /* pSelf */
         "shll $4, %edi\n" /* pSelf */
-        "addl 0x195f688, %edi\n" /* pSelf */
+        "addl imp_g_entities, %edi\n" /* pSelf */
         "movl 0x158(%edi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bda10_001bdabe\n"
@@ -125,13 +125,13 @@ void PlayerCmd_takeWeapon(struct scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bda10_001bdaae:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 74 */
+        "movl $str_002b21c8, (%esp)\n" /* line 74 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n" /* pSelf */
         "jmp .Lf1bda10_001bda4c\n"
         ".Lf1bda10_001bdabe:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -161,7 +161,7 @@ void PlayerCmd_takeAllWeapons(scr_entref_t entref)
         "leal (, %eax, 8), %edi\n" /* pSelf */
         "subl %eax, %edi\n" /* pSelf */
         "shll $4, %edi\n" /* pSelf */
-        "addl 0x195f688, %edi\n" /* pSelf */
+        "addl imp_g_entities, %edi\n" /* pSelf */
         "movl 0x158(%edi), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1bdadc_001bdb97\n"
@@ -197,13 +197,13 @@ void PlayerCmd_takeAllWeapons(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bdadc_001bdb87:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 97 */
+        "movl $str_002b21c8, (%esp)\n" /* line 97 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n" /* pSelf */
         "jmp .Lf1bdadc_001bdb18\n"
         ".Lf1bdadc_001bdb97:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -232,7 +232,7 @@ void PlayerCmd_setAngles(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %ebx\n" /* pSelf */
         "testl %ebx, %ebx\n"
         "je .Lf1bdbb4_001bdc45\n"
@@ -251,7 +251,7 @@ void PlayerCmd_setAngles(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bdbb4_001bdc11:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 442 */
+        "movl $str_002b21c8, (%esp)\n" /* line 442 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "leal -0x14(%ebp), %ebx\n" /* line 444 | angles */
@@ -270,7 +270,7 @@ void PlayerCmd_setAngles(scr_entref_t entref)
         /* { scope 1 */
         ".Lf1bdbb4_001bdc45:\n"
         "movl %edx, 4(%esp)\n" /* line 442 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -310,7 +310,7 @@ void PlayerCmd_getAngles(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bdc84_001bdcf8\n"
@@ -324,7 +324,7 @@ void PlayerCmd_getAngles(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddVector\n" /* line 459 */
         ".Lf1bdc84_001bdcd2:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 457 */
+        "movl $str_002b21c8, (%esp)\n" /* line 457 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 459 | pSelf */
@@ -338,7 +338,7 @@ void PlayerCmd_getAngles(scr_entref_t entref)
         "jmp Scr_AddVector\n" /* line 459 */
         ".Lf1bdc84_001bdcf8:\n"
         "movl %edx, 4(%esp)\n" /* line 457 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -374,7 +374,7 @@ void PlayerCmd_useButtonPressed(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bdd28_001bdda6\n"
@@ -400,13 +400,13 @@ void PlayerCmd_useButtonPressed(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 475 */
         ".Lf1bdd28_001bdd96:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 470 */
+        "movl $str_002b21c8, (%esp)\n" /* line 470 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1bdd28_001bdd5e\n"
         ".Lf1bdd28_001bdda6:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -434,7 +434,7 @@ void PlayerCmd_attackButtonPressed(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bddc0_001bde3e\n"
@@ -460,13 +460,13 @@ void PlayerCmd_attackButtonPressed(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 491 */
         ".Lf1bddc0_001bde2e:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 486 */
+        "movl $str_002b21c8, (%esp)\n" /* line 486 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1bddc0_001bddf6\n"
         ".Lf1bddc0_001bde3e:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -494,7 +494,7 @@ void PlayerCmd_meleeButtonPressed(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bde58_001bded6\n"
@@ -520,13 +520,13 @@ void PlayerCmd_meleeButtonPressed(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 507 */
         ".Lf1bde58_001bdec6:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 502 */
+        "movl $str_002b21c8, (%esp)\n" /* line 502 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1bde58_001bde8e\n"
         ".Lf1bde58_001bded6:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -554,7 +554,7 @@ void PlayerCmd_playerADS(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bdef0_001bdf66\n"
@@ -568,7 +568,7 @@ void PlayerCmd_playerADS(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddFloat\n" /* line 520 */
         ".Lf1bdef0_001bdf3f:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 518 */
+        "movl $str_002b21c8, (%esp)\n" /* line 518 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 520 | pSelf */
@@ -582,7 +582,7 @@ void PlayerCmd_playerADS(scr_entref_t entref)
         "jmp Scr_AddFloat\n" /* line 520 */
         ".Lf1bdef0_001bdf66:\n"
         "movl %edx, 4(%esp)\n" /* line 518 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -618,7 +618,7 @@ void PlayerCmd_isOnGround(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bdf98_001be01c\n"
@@ -635,7 +635,7 @@ void PlayerCmd_isOnGround(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 534 */
         ".Lf1bdf98_001bdfee:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 531 */
+        "movl $str_002b21c8, (%esp)\n" /* line 531 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 533 | pSelf */
@@ -651,7 +651,7 @@ void PlayerCmd_isOnGround(scr_entref_t entref)
         "jmp Scr_AddInt\n" /* line 536 */
         ".Lf1bdf98_001be01c:\n"
         "movl %edx, 4(%esp)\n" /* line 531 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -679,15 +679,15 @@ void PlayerCmd_pingPlayer(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1be036_001be0ae\n"
         ".Lf1be036_001be06c:\n"
         "movl 0x158(%ebx), %eax\n" /* line 549 | pSelf */
-        "orl $0x400000, 0xa0(%eax)\n"
+        "orl $scrMemTreeGlob+39168, 0xa0(%eax)\n"
         "movl 0x158(%ebx), %edx\n" /* line 550 | pSelf */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl 0x1ec(%eax), %eax\n"
         "addl $0xbb8, %eax\n"
         "movl %eax, 0x283c(%edx)\n"
@@ -698,13 +698,13 @@ void PlayerCmd_pingPlayer(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1be036_001be09e:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 547 */
+        "movl $str_002b21c8, (%esp)\n" /* line 547 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1be036_001be06c\n"
         ".Lf1be036_001be0ae:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -733,7 +733,7 @@ void PlayerCmd_SetViewmodel(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %ebx\n" /* pSelf, modelName */
         "testl %ebx, %ebx\n" /* modelName */
         "je .Lf1be0c8_001be155\n"
@@ -746,7 +746,7 @@ void PlayerCmd_SetViewmodel(scr_entref_t entref)
         "cmpb $0, (%eax)\n"
         "jne .Lf1be0c8_001be12a\n"
         ".Lf1be0c8_001be116:\n"
-        "movl $0x2b5df0, 4(%esp)\n" /* line 568 */
+        "movl $str_002b5df0, 4(%esp)\n" /* line 568 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf1be0c8_001be12a:\n"
@@ -762,13 +762,13 @@ void PlayerCmd_SetViewmodel(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1be0c8_001be145:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 564 */
+        "movl $str_002b21c8, (%esp)\n" /* line 564 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1be0c8_001be0ff\n"
         ".Lf1be0c8_001be155:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -796,7 +796,7 @@ void PlayerCmd_GetViewmodel(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1be170_001be1f6\n"
@@ -812,7 +812,7 @@ void PlayerCmd_GetViewmodel(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddString\n" /* line 589 */
         ".Lf1be170_001be1c7:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 586 */
+        "movl $str_002b21c8, (%esp)\n" /* line 586 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 588 | pSelf */
@@ -828,7 +828,7 @@ void PlayerCmd_GetViewmodel(scr_entref_t entref)
         "jmp Scr_AddString\n" /* line 589 */
         ".Lf1be170_001be1f6:\n"
         "movl %edx, 4(%esp)\n" /* line 586 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -866,7 +866,7 @@ void PlayerCmd_showScoreboard(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1be230_001be28e\n"
@@ -878,7 +878,7 @@ void PlayerCmd_showScoreboard(scr_entref_t entref)
         /* { scope 1 */
         "jmp Cmd_Score_f\n" /* line 602 */
         ".Lf1be230_001be273:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 600 */
+        "movl $str_002b21c8, (%esp)\n" /* line 600 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl %ebx, 8(%ebp)\n" /* line 602 | pSelf, entref */
@@ -890,7 +890,7 @@ void PlayerCmd_showScoreboard(scr_entref_t entref)
         "jmp Cmd_Score_f\n" /* line 602 */
         ".Lf1be230_001be28e:\n"
         "movl %edx, 4(%esp)\n" /* line 600 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -925,7 +925,7 @@ void PlayerCmd_setSpawnWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1be2b4_001be34a\n"
@@ -954,13 +954,13 @@ void PlayerCmd_setSpawnWeapon(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1be2b4_001be33a:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 616 */
+        "movl $str_002b21c8, (%esp)\n" /* line 616 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1be2b4_001be2eb\n"
         ".Lf1be2b4_001be34a:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -990,7 +990,7 @@ void PlayerCmd_dropItem(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1be364_001be44d\n"
@@ -1043,17 +1043,17 @@ void PlayerCmd_dropItem(scr_entref_t entref)
         /* { scope 1 */
         "jmp GScr_AddEntity\n" /* line 668 */
         ".Lf1be364_001be42c:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 643 */
+        "movl $str_002b21c8, (%esp)\n" /* line 643 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1be364_001be3a4\n"
         ".Lf1be364_001be43f:\n"
-        "movl 0x195f5bc, %eax\n" /* line 655 */
+        "movl imp_scr_const, %eax\n" /* line 655 */
         "movzwl 0xa6(%eax), %eax\n"
         "jmp .Lf1be364_001be3d6\n"
         ".Lf1be364_001be44d:\n"
         "movl %edx, 4(%esp)\n" /* line 643 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1081,7 +1081,7 @@ void PlayerCmd_Suicide(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1be46a_001be51b\n"
@@ -1107,13 +1107,13 @@ void PlayerCmd_Suicide(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1be46a_001be50b:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 900 */
+        "movl $str_002b21c8, (%esp)\n" /* line 900 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1be46a_001be4a4\n"
         ".Lf1be46a_001be51b:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1142,7 +1142,7 @@ void PlayerCmd_OpenMenu(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1be538_001be606\n"
@@ -1160,7 +1160,7 @@ void PlayerCmd_OpenMenu(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 928 */
         ".Lf1be538_001be594:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 917 */
+        "movl $str_002b21c8, (%esp)\n" /* line 917 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 920 | pSelf */
@@ -1173,7 +1173,7 @@ void PlayerCmd_OpenMenu(scr_entref_t entref)
         "calll GScr_GetScriptMenuIndex\n"
         "movl %eax, 8(%esp)\n" /* line 924 */
         "movl $0x74, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
+        "movl $str_002b1d38, (%esp)\n" /* "%c %i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -1190,7 +1190,7 @@ void PlayerCmd_OpenMenu(scr_entref_t entref)
         "jmp Scr_AddInt\n" /* line 928 */
         ".Lf1be538_001be606:\n"
         "movl %edx, 4(%esp)\n" /* line 917 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1219,7 +1219,7 @@ void PlayerCmd_OpenMenuNoMouse(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1be624_001be6f2\n"
@@ -1237,7 +1237,7 @@ void PlayerCmd_OpenMenuNoMouse(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 953 */
         ".Lf1be624_001be680:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 941 */
+        "movl $str_002b21c8, (%esp)\n" /* line 941 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 944 | pSelf */
@@ -1250,7 +1250,7 @@ void PlayerCmd_OpenMenuNoMouse(scr_entref_t entref)
         "calll GScr_GetScriptMenuIndex\n"
         "movl %eax, 8(%esp)\n" /* line 949 */
         "movl $0x74, 4(%esp)\n"
-        "movl $0x2b5e14, (%esp)\n" /* "%c %i 1" */
+        "movl $str_002b5e14, (%esp)\n" /* "%c %i 1" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -1267,7 +1267,7 @@ void PlayerCmd_OpenMenuNoMouse(scr_entref_t entref)
         "jmp Scr_AddInt\n" /* line 953 */
         ".Lf1be624_001be6f2:\n"
         "movl %edx, 4(%esp)\n" /* line 941 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1294,13 +1294,13 @@ void PlayerCmd_CloseMenu(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1be710_001be785\n"
         ".Lf1be710_001be746:\n"
         "movl $0x75, 4(%esp)\n" /* line 966 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -1311,13 +1311,13 @@ void PlayerCmd_CloseMenu(scr_entref_t entref)
         "popl %ebp\n"
         "retl\n"
         ".Lf1be710_001be774:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 964 */
+        "movl $str_002b21c8, (%esp)\n" /* line 964 */
         "calll Scr_ObjectError\n"
         "movzwl %bx, %ebx\n"
         "jmp .Lf1be710_001be746\n"
         ".Lf1be710_001be785:\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1344,13 +1344,13 @@ void PlayerCmd_CloseInGameMenu(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1be7a0_001be815\n"
         ".Lf1be7a0_001be7d6:\n"
         "movl $0x4b, 4(%esp)\n" /* line 979 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -1361,13 +1361,13 @@ void PlayerCmd_CloseInGameMenu(scr_entref_t entref)
         "popl %ebp\n"
         "retl\n"
         ".Lf1be7a0_001be804:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 977 */
+        "movl $str_002b21c8, (%esp)\n" /* line 977 */
         "calll Scr_ObjectError\n"
         "movzwl %bx, %ebx\n"
         "jmp .Lf1be7a0_001be7d6\n"
         ".Lf1be7a0_001be815:\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1397,7 +1397,7 @@ void PlayerCmd_SetWeaponSlotWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1be830_001beac6\n"
@@ -1416,7 +1416,7 @@ void PlayerCmd_SetWeaponSlotWeapon(scr_entref_t entref)
         "movl $1, (%esp)\n" /* line 1044 */
         "calll Scr_GetString\n"
         "movl %eax, %edi\n" /* bSwapToSecondPrimary */
-        "movl $0x218298, 4(%esp)\n" /* line 1045 */
+        "movl $str_00218298, 4(%esp)\n" /* line 1045 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1485,7 +1485,7 @@ void PlayerCmd_SetWeaponSlotWeapon(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1be830_001be998:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1037 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1037 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1be830_001be870\n"
@@ -1522,7 +1522,7 @@ void PlayerCmd_SetWeaponSlotWeapon(scr_entref_t entref)
         "movl %ebx, 0xc(%esp)\n" /* hadWeapon */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* bSwapToSecondPrimary */
-        "movl $0x2b5e7c, (%esp)\n" /* "Weapon %s goes in the %s weaponslot, not the %s weaponslot." */
+        "movl $str_002b5e7c, (%esp)\n" /* "Weapon %s goes in the %s weaponslot, not the %s weaponslot." */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -1532,7 +1532,7 @@ void PlayerCmd_SetWeaponSlotWeapon(scr_entref_t entref)
         "movl %ebx, (%esp)\n" /* line 1042 | hadWeapon */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
+        "movl $str_002b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -1552,7 +1552,7 @@ void PlayerCmd_SetWeaponSlotWeapon(scr_entref_t entref)
         "jmp .Lf1be830_001be8ce\n"
         ".Lf1be830_001bea9e:\n"
         "movl %edi, 4(%esp)\n" /* line 1054 | bSwapToSecondPrimary */
-        "movl $0x2b5e68, (%esp)\n" /* "Unknown weapon %s." */
+        "movl $str_002b5e68, (%esp)\n" /* "Unknown weapon %s." */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -1561,7 +1561,7 @@ void PlayerCmd_SetWeaponSlotWeapon(scr_entref_t entref)
         "jmp .Lf1be830_001be9cf\n"
         ".Lf1be830_001beac6:\n"
         "movl %edx, 4(%esp)\n" /* line 1037 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1591,7 +1591,7 @@ void PlayerCmd_SetWeaponSlotAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1beae4_001bec45\n"
@@ -1657,14 +1657,14 @@ void PlayerCmd_SetWeaponSlotAmmo(scr_entref_t entref)
         "movl %ebx, (%esp)\n" /* line 1156 | iAmmoIndex */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
+        "movl $str_002b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         "jmp .Lf1beae4_001beb49\n"
         ".Lf1beae4_001bebf4:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1151 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1151 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1beae4_001beb24\n"
@@ -1695,7 +1695,7 @@ void PlayerCmd_SetWeaponSlotAmmo(scr_entref_t entref)
         /* { scope 1 */
         ".Lf1beae4_001bec45:\n"
         "movl %edx, 4(%esp)\n" /* line 1151 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1745,7 +1745,7 @@ void PlayerCmd_GetWeaponSlotClipAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %edi\n" /* pSelf, iWeapSlot */
         "testl %edi, %edi\n" /* iWeapSlot */
         "je .Lf1bec9e_001bedbb\n"
@@ -1797,7 +1797,7 @@ void PlayerCmd_GetWeaponSlotClipAmmo(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 1232 */
         ".Lf1bec9e_001bed65:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1205 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1205 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1bec9e_001becde\n"
@@ -1805,7 +1805,7 @@ void PlayerCmd_GetWeaponSlotClipAmmo(scr_entref_t entref)
         "movl %esi, (%esp)\n" /* line 1216 */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
+        "movl $str_002b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -1818,7 +1818,7 @@ void PlayerCmd_GetWeaponSlotClipAmmo(scr_entref_t entref)
         "jmp .Lf1bec9e_001bed3b\n"
         ".Lf1bec9e_001bedbb:\n"
         "movl %edx, 4(%esp)\n" /* line 1205 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1848,7 +1848,7 @@ void PlayerCmd_SetWeaponSlotClipAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bedd8_001beef8\n"
@@ -1910,14 +1910,14 @@ void PlayerCmd_SetWeaponSlotClipAmmo(scr_entref_t entref)
         "movl %esi, (%esp)\n" /* line 1254 | iSetClipAmmo */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
+        "movl $str_002b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         "jmp .Lf1bedd8_001bee3d\n"
         ".Lf1bedd8_001beed9:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1249 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1249 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1bedd8_001bee18\n"
@@ -1928,7 +1928,7 @@ void PlayerCmd_SetWeaponSlotClipAmmo(scr_entref_t entref)
         "jmp .Lf1bedd8_001bee97\n"
         ".Lf1bedd8_001beef8:\n"
         "movl %edx, 4(%esp)\n" /* line 1249 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -1958,7 +1958,7 @@ void PlayerCmd_SetWeaponClipAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bef16_001befe9\n"
@@ -2008,7 +2008,7 @@ void PlayerCmd_SetWeaponClipAmmo(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bef16_001befca:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1290 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1290 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1bef16_001bef56\n"
@@ -2019,7 +2019,7 @@ void PlayerCmd_SetWeaponClipAmmo(scr_entref_t entref)
         "jmp .Lf1bef16_001befb5\n"
         ".Lf1bef16_001befe9:\n"
         "movl %edx, 4(%esp)\n" /* line 1290 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2046,12 +2046,12 @@ void iclientprintln(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1bf006_001bf097\n"
         "movl $0x66, 4(%esp)\n" /* line 1327 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
@@ -2061,11 +2061,11 @@ void iclientprintln(scr_entref_t entref)
         "popl %ebp\n"
         "retl\n"
         ".Lf1bf006_001bf062:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1325 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1325 */
         "calll Scr_ObjectError\n"
         "movzwl %bx, %ebx\n"
         "movl $0x66, 4(%esp)\n" /* line 1327 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
@@ -2076,12 +2076,12 @@ void iclientprintln(scr_entref_t entref)
         "retl\n"
         ".Lf1bf006_001bf097:\n"
         "movl %ebx, 4(%esp)\n" /* line 1325 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
         "movl $0x66, 4(%esp)\n" /* line 1327 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
@@ -2112,12 +2112,12 @@ void iclientprintlnbold(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1bf0d6_001bf167\n"
         "movl $0x67, 4(%esp)\n" /* line 1341 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
@@ -2127,11 +2127,11 @@ void iclientprintlnbold(scr_entref_t entref)
         "popl %ebp\n"
         "retl\n"
         ".Lf1bf0d6_001bf132:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1339 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1339 */
         "calll Scr_ObjectError\n"
         "movzwl %bx, %ebx\n"
         "movl $0x67, 4(%esp)\n" /* line 1341 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
@@ -2142,12 +2142,12 @@ void iclientprintlnbold(scr_entref_t entref)
         "retl\n"
         ".Lf1bf0d6_001bf167:\n"
         "movl %ebx, 4(%esp)\n" /* line 1339 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
         "movl $0x67, 4(%esp)\n" /* line 1341 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
@@ -2181,7 +2181,7 @@ void PlayerCmd_spawn(scr_entref_t entref)
         "leal (, %eax, 8), %edi\n" /* pSelf */
         "subl %eax, %edi\n" /* pSelf */
         "shll $4, %edi\n" /* pSelf */
-        "addl 0x195f688, %edi\n" /* pSelf */
+        "addl imp_g_entities, %edi\n" /* pSelf */
         "movl 0x158(%edi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bf1a6_001bf22c\n"
@@ -2207,13 +2207,13 @@ void PlayerCmd_spawn(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bf1a6_001bf21c:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1355 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1355 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n" /* pSelf */
         "jmp .Lf1bf1a6_001bf1de\n"
         ".Lf1bf1a6_001bf22c:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2241,7 +2241,7 @@ void PlayerCmd_setEnterTime(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bf246_001bf2c6\n"
@@ -2256,7 +2256,7 @@ void PlayerCmd_setEnterTime(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bf246_001bf29a:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1370 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1370 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ebx\n" /* line 1372 | pSelf */
@@ -2271,7 +2271,7 @@ void PlayerCmd_setEnterTime(scr_entref_t entref)
         /* { scope 1 */
         ".Lf1bf246_001bf2c6:\n"
         "movl %edx, 4(%esp)\n" /* line 1370 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2317,7 +2317,7 @@ void PlayerCmd_SetClientDvar(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf1bf31c_001bf4de\n"
@@ -2341,7 +2341,7 @@ void PlayerCmd_SetClientDvar(scr_entref_t entref)
         "jne .Lf1bf31c_001bf3d8\n"
         "movl -0x820(%ebp), %eax\n" /* line 1511 | pszDvar */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b27f8, (%esp)\n" /* "Dvar %s has an invalid dvar name" */
+        "movl $str_002b27f8, (%esp)\n" /* "Dvar %s has an invalid dvar name" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -2381,7 +2381,7 @@ void PlayerCmd_SetClientDvar(scr_entref_t entref)
         "movl -0x820(%ebp), %eax\n" /* pszDvar */
         "movl %eax, 8(%esp)\n"
         "movl $0x76, 4(%esp)\n"
-        "movl $0x2b5ecc, (%esp)\n" /* "%c %s "%s"" */
+        "movl $str_002b5ecc, (%esp)\n" /* "%c %s "%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -2397,7 +2397,7 @@ void PlayerCmd_SetClientDvar(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bf31c_001bf472:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1495 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1495 */
         "calll Scr_ObjectError\n"
         "movl $0, (%esp)\n" /* line 1497 */
         "calll Scr_GetString\n"
@@ -2411,7 +2411,7 @@ void PlayerCmd_SetClientDvar(scr_entref_t entref)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* szString */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b5eb8, 8(%esp)\n" /* "Client Dvar Value" */
+        "movl $str_002b5eb8, 8(%esp)\n" /* "Client Dvar Value" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -2420,7 +2420,7 @@ void PlayerCmd_SetClientDvar(scr_entref_t entref)
         "jmp .Lf1bf31c_001bf39d\n"
         ".Lf1bf31c_001bf4de:\n"
         "movl %ecx, 4(%esp)\n" /* line 1495 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2448,18 +2448,18 @@ void PlayerCmd_IsTalking(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1bf4fc_001bf58b\n"
         ".Lf1bf4fc_001bf532:\n"
         "movl 0x158(%ebx), %edx\n" /* line 1540 | pSelf */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl 0x1ec(%eax), %eax\n"
         "subl 0x2808(%edx), %eax\n" /* line 1541 */
         "movl %eax, %edx\n"
         "js .Lf1bf4fc_001bf559\n"
-        "movl 0x195f744, %eax\n"
+        "movl imp_g_voiceChatTalkingDuration, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl 8(%eax), %edx\n"
         "jl .Lf1bf4fc_001bf57a\n"
@@ -2472,7 +2472,7 @@ void PlayerCmd_IsTalking(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 1544 */
         ".Lf1bf4fc_001bf56a:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1538 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1538 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1bf4fc_001bf532\n"
@@ -2486,7 +2486,7 @@ void PlayerCmd_IsTalking(scr_entref_t entref)
         "jmp Scr_AddInt\n" /* line 1542 */
         ".Lf1bf4fc_001bf58b:\n"
         "movl %edx, 4(%esp)\n" /* line 1538 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2514,7 +2514,7 @@ void PlayerCmd_FreezeControls(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bf5a6_001bf626\n"
@@ -2529,7 +2529,7 @@ void PlayerCmd_FreezeControls(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bf5a6_001bf5fa:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1555 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1555 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ebx\n" /* line 1556 | pSelf */
@@ -2544,7 +2544,7 @@ void PlayerCmd_FreezeControls(scr_entref_t entref)
         /* { scope 1 */
         ".Lf1bf5a6_001bf626:\n"
         "movl %edx, 4(%esp)\n" /* line 1555 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2580,7 +2580,7 @@ void PlayerCmd_DisableWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bf65c_001bf6c6\n"
@@ -2593,7 +2593,7 @@ void PlayerCmd_DisableWeapon(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bf65c_001bf6a5:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1567 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1567 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 1568 | pSelf */
@@ -2606,7 +2606,7 @@ void PlayerCmd_DisableWeapon(scr_entref_t entref)
         /* { scope 1 */
         ".Lf1bf65c_001bf6c6:\n"
         "movl %edx, 4(%esp)\n" /* line 1567 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2640,7 +2640,7 @@ void PlayerCmd_EnableWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bf6f2_001bf75c\n"
@@ -2653,7 +2653,7 @@ void PlayerCmd_EnableWeapon(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bf6f2_001bf73b:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1579 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1579 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* line 1580 | pSelf */
@@ -2666,7 +2666,7 @@ void PlayerCmd_EnableWeapon(scr_entref_t entref)
         /* { scope 1 */
         ".Lf1bf6f2_001bf75c:\n"
         "movl %edx, 4(%esp)\n" /* line 1579 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2701,7 +2701,7 @@ void PlayerCmd_SetReverb(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1bf788_001bf94c\n"
@@ -2727,7 +2727,7 @@ void PlayerCmd_SetReverb(scr_entref_t entref)
         "cmpl $2, %eax\n" /* line 1603 */
         "je .Lf1bf788_001bf924\n"
         ".Lf1bf788_001bf806:\n"
-        "movl $0x2b5f3c, 8(%ebp)\n" /* line 1629 | entref */
+        "movl $str_002b5f3c, 8(%ebp)\n" /* line 1629 | entref */
         /* } scope */
         "addl $0x60, %esp\n" /* line 1632 */
         "popl %ebx\n"
@@ -2736,7 +2736,7 @@ void PlayerCmd_SetReverb(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 1629 */
         ".Lf1bf788_001bf818:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1598 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1598 */
         "calll Scr_ObjectError\n"
         "calll Scr_GetNumParam\n" /* line 1603 */
         "cmpl $3, %eax\n"
@@ -2744,7 +2744,7 @@ void PlayerCmd_SetReverb(scr_entref_t entref)
         ".Lf1bf788_001bf82e:\n"
         "pxor %xmm0, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n" /* fadetime */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, -0x28(%ebp)\n" /* wetlevel */
         ".Lf1bf788_001bf844:\n"
         "movl $2, (%esp)\n" /* line 1612 */
@@ -2762,12 +2762,12 @@ void PlayerCmd_SetReverb(scr_entref_t entref)
         "movl %eax, %ebx\n" /* pszReverb */
         "movl $0, (%esp)\n" /* line 1616 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 1619 */
+        "movl imp_scr_const, %edx\n" /* line 1619 */
         "cmpw 0x82(%edx), %ax\n"
         "je .Lf1bf788_001bf8af\n"
         "cmpw 0x84(%edx), %ax\n" /* line 1621 */
         "je .Lf1bf788_001bf90f\n"
-        "movl $0x2b5ed8, (%esp)\n" /* line 1624 */
+        "movl $str_002b5ed8, (%esp)\n" /* line 1624 */
         "calll Scr_Error\n"
         ".Lf1bf788_001bf8af:\n"
         "movl $1, %eax\n"
@@ -2781,7 +2781,7 @@ void PlayerCmd_SetReverb(scr_entref_t entref)
         "movl %ebx, 0xc(%esp)\n" /* pszReverb */
         "movl %eax, 8(%esp)\n"
         "movl $0x72, 4(%esp)\n"
-        "movl $0x2b5f28, (%esp)\n" /* "%c %i "%s" %g %g %g" */
+        "movl $str_002b5f28, (%esp)\n" /* "%c %i "%s" %g %g %g" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -2805,14 +2805,14 @@ void PlayerCmd_SetReverb(scr_entref_t entref)
         ".Lf1bf788_001bf924:\n"
         "pxor %xmm0, %xmm0\n"
         "movsd %xmm0, -0x20(%ebp)\n"
-        "movsd 0x307ce0, %xmm0\n" /* 0.5 */
+        "movsd lit8_00307ce0, %xmm0\n" /* 0.5 */
         "movsd %xmm0, -0x18(%ebp)\n"
-        "movsd 0x307c10, %xmm0\n" /* 1.0 */
+        "movsd lit8_00307c10, %xmm0\n" /* 1.0 */
         "movsd %xmm0, -0x10(%ebp)\n"
         "jmp .Lf1bf788_001bf871\n"
         ".Lf1bf788_001bf94c:\n"
         "movl %ecx, 4(%esp)\n" /* line 1598 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2840,7 +2840,7 @@ void PlayerCmd_DeactivateReverb(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1bf96a_001bfa81\n"
@@ -2851,7 +2851,7 @@ void PlayerCmd_DeactivateReverb(scr_entref_t entref)
         ".Lf1bf96a_001bf9ae:\n"
         "cmpl $2, %eax\n"
         "je .Lf1bf96a_001bfa5c\n"
-        "movl $0x2b60ac, 8(%ebp)\n" /* line 1668 | entref */
+        "movl $str_002b60ac, 8(%ebp)\n" /* line 1668 | entref */
         /* } scope */
         "addl $0x34, %esp\n" /* line 1671 */
         "popl %ebx\n"
@@ -2859,7 +2859,7 @@ void PlayerCmd_DeactivateReverb(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 1668 */
         ".Lf1bf96a_001bf9c8:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1646 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1646 */
         "calll Scr_ObjectError\n"
         "calll Scr_GetNumParam\n" /* line 1649 */
         "cmpl $1, %eax\n"
@@ -2870,12 +2870,12 @@ void PlayerCmd_DeactivateReverb(scr_entref_t entref)
         ".Lf1bf96a_001bf9e7:\n"
         "movl $0, (%esp)\n" /* line 1655 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 1658 */
+        "movl imp_scr_const, %edx\n" /* line 1658 */
         "cmpw 0x82(%edx), %ax\n"
         "je .Lf1bf96a_001bfa17\n"
         "cmpw 0x84(%edx), %ax\n" /* line 1660 */
         "je .Lf1bf96a_001bfa7a\n"
-        "movl $0x2b5ed8, (%esp)\n" /* line 1663 */
+        "movl $str_002b5ed8, (%esp)\n" /* line 1663 */
         "calll Scr_Error\n"
         ".Lf1bf96a_001bfa17:\n"
         "movl $1, %eax\n"
@@ -2884,7 +2884,7 @@ void PlayerCmd_DeactivateReverb(scr_entref_t entref)
         "movsd %xmm0, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x44, 4(%esp)\n"
-        "movl $0x2b5f28, (%esp)\n" /* "%c %i "%s" %g %g %g" */
+        "movl $str_002b5f28, (%esp)\n" /* "%c %i "%s" %g %g %g" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -2909,7 +2909,7 @@ void PlayerCmd_DeactivateReverb(scr_entref_t entref)
         "jmp .Lf1bf96a_001bfa1c\n"
         ".Lf1bf96a_001bfa81:\n"
         "movl %ecx, 4(%esp)\n" /* line 1646 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -2938,7 +2938,7 @@ void PlayerCmd_SetChannelVolumes(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1bfa9e_001bfc06\n"
@@ -2949,7 +2949,7 @@ void PlayerCmd_SetChannelVolumes(scr_entref_t entref)
         ".Lf1bfa9e_001bfae3:\n"
         "cmpl $3, %eax\n"
         "je .Lf1bfa9e_001bfbda\n"
-        "movl $0x2b6218, 8(%ebp)\n" /* line 1712 | entref */
+        "movl $str_002b6218, 8(%ebp)\n" /* line 1712 | entref */
         /* } scope */
         "addl $0x30, %esp\n" /* line 1715 */
         "popl %ebx\n"
@@ -2958,7 +2958,7 @@ void PlayerCmd_SetChannelVolumes(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 1712 */
         ".Lf1bfa9e_001bfafe:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1686 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1686 */
         "calll Scr_ObjectError\n"
         "calll Scr_GetNumParam\n" /* line 1689 */
         "cmpl $2, %eax\n"
@@ -2978,14 +2978,14 @@ void PlayerCmd_SetChannelVolumes(scr_entref_t entref)
         "movl %eax, %ebx\n" /* shockIndex */
         "movl $0, (%esp)\n" /* line 1697 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 1700 */
+        "movl imp_scr_const, %edx\n" /* line 1700 */
         "cmpw 0x86(%edx), %ax\n"
         "je .Lf1bfa9e_001bfb90\n"
         "cmpw 0x88(%edx), %ax\n" /* line 1702 */
         "je .Lf1bfa9e_001bfbff\n"
         "cmpw 0x8a(%edx), %ax\n" /* line 1704 */
         "je .Lf1bfa9e_001bfbf8\n"
-        "movl $0x2b6198, (%esp)\n" /* line 1707 */
+        "movl $str_002b6198, (%esp)\n" /* line 1707 */
         "calll Scr_Error\n"
         ".Lf1bfa9e_001bfb90:\n"
         "movl $1, %eax\n"
@@ -2995,7 +2995,7 @@ void PlayerCmd_SetChannelVolumes(scr_entref_t entref)
         "movl %ebx, 0xc(%esp)\n" /* shockIndex */
         "movl %eax, 8(%esp)\n"
         "movl $0x45, 4(%esp)\n"
-        "movl $0x2b620c, (%esp)\n" /* "%c %i %i %g" */
+        "movl $str_002b620c, (%esp)\n" /* "%c %i %i %g" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -3024,7 +3024,7 @@ void PlayerCmd_SetChannelVolumes(scr_entref_t entref)
         "jmp .Lf1bfa9e_001bfb95\n"
         ".Lf1bfa9e_001bfc06:\n"
         "movl %ecx, 4(%esp)\n" /* line 1686 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3052,7 +3052,7 @@ void PlayerCmd_DeactivateChannelVolumes(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf1bfc24_001bfd4b\n"
@@ -3063,7 +3063,7 @@ void PlayerCmd_DeactivateChannelVolumes(scr_entref_t entref)
         ".Lf1bfc24_001bfc68:\n"
         "cmpl $2, %eax\n"
         "je .Lf1bfc24_001bfd1f\n"
-        "movl $0x2b62ec, 8(%ebp)\n" /* line 1753 | entref */
+        "movl $str_002b62ec, 8(%ebp)\n" /* line 1753 | entref */
         /* } scope */
         "addl $0x34, %esp\n" /* line 1756 */
         "popl %ebx\n"
@@ -3071,7 +3071,7 @@ void PlayerCmd_DeactivateChannelVolumes(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 1753 */
         ".Lf1bfc24_001bfc82:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1729 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1729 */
         "calll Scr_ObjectError\n"
         "calll Scr_GetNumParam\n" /* line 1732 */
         "cmpl $1, %eax\n"
@@ -3082,14 +3082,14 @@ void PlayerCmd_DeactivateChannelVolumes(scr_entref_t entref)
         ".Lf1bfc24_001bfca1:\n"
         "movl $0, (%esp)\n" /* line 1738 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 1741 */
+        "movl imp_scr_const, %edx\n" /* line 1741 */
         "cmpw 0x86(%edx), %ax\n"
         "je .Lf1bfc24_001bfcda\n"
         "cmpw 0x88(%edx), %ax\n" /* line 1743 */
         "je .Lf1bfc24_001bfd44\n"
         "cmpw 0x8a(%edx), %ax\n" /* line 1745 */
         "je .Lf1bfc24_001bfd3d\n"
-        "movl $0x2b6198, (%esp)\n" /* line 1748 */
+        "movl $str_002b6198, (%esp)\n" /* line 1748 */
         "calll Scr_Error\n"
         ".Lf1bfc24_001bfcda:\n"
         "movl $1, %eax\n"
@@ -3098,7 +3098,7 @@ void PlayerCmd_DeactivateChannelVolumes(scr_entref_t entref)
         "movsd %xmm0, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x46, 4(%esp)\n"
-        "movl $0x2b5f28, (%esp)\n" /* "%c %i "%s" %g %g %g" */
+        "movl $str_002b5f28, (%esp)\n" /* "%c %i "%s" %g %g %g" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -3126,7 +3126,7 @@ void PlayerCmd_DeactivateChannelVolumes(scr_entref_t entref)
         "jmp .Lf1bfc24_001bfcdf\n"
         ".Lf1bfc24_001bfd4b:\n"
         "movl %ecx, 4(%esp)\n" /* line 1729 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3154,7 +3154,7 @@ void ScrCmd_IsLookingAt(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1bfd68_001bfddb\n"
@@ -3174,13 +3174,13 @@ void ScrCmd_IsLookingAt(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 1767 */
         ".Lf1bfd68_001bfdcb:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1766 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1766 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1bfd68_001bfd9e\n"
         ".Lf1bfd68_001bfddb:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3208,7 +3208,7 @@ void ScrCmd_PlayLocalSound(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1bfdf6_001bfe86\n"
@@ -3220,7 +3220,7 @@ void ScrCmd_PlayLocalSound(scr_entref_t entref)
         "movzbl %al, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x73, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
+        "movl $str_002b1d38, (%esp)\n" /* "%c %i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -3233,13 +3233,13 @@ void ScrCmd_PlayLocalSound(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bfdf6_001bfe75:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1780 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1780 */
         "calll Scr_ObjectError\n"
         "movzwl %bx, %ebx\n"
         "jmp .Lf1bfdf6_001bfe2c\n"
         ".Lf1bfdf6_001bfe86:\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3268,7 +3268,7 @@ void PlayerCmd_SayAll(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bfea0_001bff53\n"
@@ -3278,7 +3278,7 @@ void PlayerCmd_SayAll(scr_entref_t entref)
         "leal -0x408(%ebp), %ebx\n" /* szString */
         "leal -0x407(%ebp), %edx\n"
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2b6404, 8(%esp)\n" /* "Client Chat Message" */
+        "movl $str_002b6404, 8(%esp)\n" /* "Client Chat Message" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -3297,13 +3297,13 @@ void PlayerCmd_SayAll(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bfea0_001bff43:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1796 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1796 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1bfea0_001bfede\n"
         ".Lf1bfea0_001bff53:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3332,7 +3332,7 @@ void PlayerCmd_SayTeam(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1bff70_001c0023\n"
@@ -3342,7 +3342,7 @@ void PlayerCmd_SayTeam(scr_entref_t entref)
         "leal -0x408(%ebp), %ebx\n" /* szString */
         "leal -0x407(%ebp), %edx\n"
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2b6404, 8(%esp)\n" /* "Client Chat Message" */
+        "movl $str_002b6404, 8(%esp)\n" /* "Client Chat Message" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -3361,13 +3361,13 @@ void PlayerCmd_SayTeam(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1bff70_001c0013:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1814 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1814 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1bff70_001bffae\n"
         ".Lf1bff70_001c0023:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3396,14 +3396,14 @@ void PlayerCmd_AllowSpectateTeam(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c0040_001c0153\n"
         ".Lf1c0040_001c007f:\n"
         "movl $0, (%esp)\n" /* line 1836 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 1839 */
+        "movl imp_scr_const, %edx\n" /* line 1839 */
         "cmpw 4(%edx), %ax\n"
         "je .Lf1c0040_001c0114\n"
         ".Lf1c0040_001c0097:\n"
@@ -3413,7 +3413,7 @@ void PlayerCmd_AllowSpectateTeam(scr_entref_t entref)
         "je .Lf1c0040_001c014c\n"
         "cmpw 0x7c(%edx), %ax\n" /* line 1845 */
         "je .Lf1c0040_001c0145\n"
-        "movl $0x2b6418, 4(%esp)\n" /* line 1848 */
+        "movl $str_002b6418, 4(%esp)\n" /* line 1848 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         "xorl %esi, %esi\n" /* teamBit */
@@ -3432,12 +3432,12 @@ void PlayerCmd_AllowSpectateTeam(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1c0040_001c00ee:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1834 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1834 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl $0, (%esp)\n" /* line 1836 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 1839 */
+        "movl imp_scr_const, %edx\n" /* line 1839 */
         "cmpw 4(%edx), %ax\n"
         "jne .Lf1c0040_001c0097\n"
         ".Lf1c0040_001c0114:\n"
@@ -3469,7 +3469,7 @@ void PlayerCmd_AllowSpectateTeam(scr_entref_t entref)
         "jmp .Lf1c0040_001c0119\n"
         ".Lf1c0040_001c0153:\n"
         "movl %edx, 4(%esp)\n" /* line 1834 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3496,7 +3496,7 @@ void PlayerCmd_GetGuid(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1c0170_001c01e1\n"
@@ -3504,7 +3504,7 @@ void PlayerCmd_GetGuid(scr_entref_t entref)
         "calll Scr_GetNumParam\n" /* line 1868 */
         "testl %eax, %eax\n"
         "je .Lf1c0170_001c01bb\n"
-        "movl $0x2b6450, (%esp)\n" /* line 1869 */
+        "movl $str_002b6450, (%esp)\n" /* line 1869 */
         "calll Scr_Error\n"
         ".Lf1c0170_001c01bb:\n"
         "movl %ebx, (%esp)\n" /* line 1871 */
@@ -3515,13 +3515,13 @@ void PlayerCmd_GetGuid(scr_entref_t entref)
         "popl %ebp\n"
         "jmp Scr_AddInt\n" /* line 1871 */
         ".Lf1c0170_001c01d0:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1866 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1866 */
         "calll Scr_ObjectError\n"
         "movzwl %bx, %ebx\n"
         "jmp .Lf1c0170_001c01a6\n"
         ".Lf1c0170_001c01e1:\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3566,7 +3566,7 @@ BuiltinMethod Player_GetMethod(const char * *pName)
         "movl methods(%edi), %eax\n" /* line 1961 */
         "movl 8(%ebp), %edx\n" /* pName */
         "movl %eax, (%edx)\n"
-        "movl 0x333884(%edi), %eax\n" /* line 1962 */
+        "movl methods+4(%edi), %eax\n" /* line 1962 */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1966 */
         "popl %ebx\n"
@@ -3609,7 +3609,7 @@ void PlayerCmd_giveWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %edi\n" /* pSelf */
         "subl %eax, %edi\n" /* pSelf */
         "shll $4, %edi\n" /* pSelf */
-        "addl 0x195f688, %edi\n" /* pSelf */
+        "addl imp_g_entities, %edi\n" /* pSelf */
         "movl 0x158(%edi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c0260_001c0428\n"
@@ -3669,19 +3669,19 @@ void PlayerCmd_giveWeapon(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1c0260_001c0346:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 38 */
+        "movl $str_002b21c8, (%esp)\n" /* line 38 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n" /* pSelf */
         "jmp .Lf1c0260_001c02a0\n"
         ".Lf1c0260_001c0359:\n"
         "movl $1, 8(%esp)\n" /* line 55 */
         "movl $0x49, 4(%esp)\n"
-        "movl $0x2b2ba8, (%esp)\n" /* "%c "%i"" */
+        "movl $str_002b2ba8, (%esp)\n" /* "%c "%i"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %edi, %eax\n" /* pSelf */
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -3714,7 +3714,7 @@ void PlayerCmd_giveWeapon(scr_entref_t entref)
         "movl 0x158(%edi), %eax\n" /* pSelf */
         "addl $0x2784, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b6468, (%esp)\n" /* "Cannot give %s weapon %s without having an empty weapon slot" */
+        "movl $str_002b6468, (%esp)\n" /* "Cannot give %s weapon %s without having an empty weapon slot" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -3722,7 +3722,7 @@ void PlayerCmd_giveWeapon(scr_entref_t entref)
         "jmp .Lf1c0260_001c02f3\n"
         ".Lf1c0260_001c0428:\n"
         "movl %edx, 4(%esp)\n" /* line 38 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3750,7 +3750,7 @@ void PlayerCmd_hasWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1c0446_001c04e3\n"
@@ -3787,13 +3787,13 @@ void PlayerCmd_hasWeapon(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddBool\n" /* line 206 */
         ".Lf1c0446_001c04d3:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 200 */
+        "movl $str_002b21c8, (%esp)\n" /* line 200 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1c0446_001c047c\n"
         ".Lf1c0446_001c04e3:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3823,7 +3823,7 @@ void PlayerCmd_switchToWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %esi\n" /* pSelf, iWeaponIndex */
         "testl %esi, %esi\n" /* iWeaponIndex */
         "je .Lf1c0500_001c0601\n"
@@ -3870,7 +3870,7 @@ void PlayerCmd_switchToWeapon(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddBool\n" /* line 236 */
         ".Lf1c0500_001c05b2:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 222 */
+        "movl $str_002b21c8, (%esp)\n" /* line 222 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl $0, (%esp)\n" /* line 224 */
@@ -3883,7 +3883,7 @@ void PlayerCmd_switchToWeapon(scr_entref_t entref)
         "jne .Lf1c0500_001c055f\n"
         ".Lf1c0500_001c05dc:\n"
         "movl %edi, 4(%esp)\n" /* line 227 | pszWeaponName */
-        "movl $0x2b64cc, (%esp)\n" /* "unknown weapon '%s'" */
+        "movl $str_002b64cc, (%esp)\n" /* "unknown weapon '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -3891,7 +3891,7 @@ void PlayerCmd_switchToWeapon(scr_entref_t entref)
         "jmp .Lf1c0500_001c055f\n"
         ".Lf1c0500_001c0601:\n"
         "movl %edx, 4(%esp)\n" /* line 222 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -3921,7 +3921,7 @@ void PlayerCmd_switchToOffhand(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %edi\n" /* pSelf, pszWeaponName */
         "testl %edi, %edi\n" /* pszWeaponName */
         "je .Lf1c061e_001c071f\n"
@@ -3968,7 +3968,7 @@ void PlayerCmd_switchToOffhand(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddBool\n" /* line 264 */
         ".Lf1c061e_001c06d0:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 250 */
+        "movl $str_002b21c8, (%esp)\n" /* line 250 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "movl $0, (%esp)\n" /* line 252 */
@@ -3981,7 +3981,7 @@ void PlayerCmd_switchToOffhand(scr_entref_t entref)
         "jne .Lf1c061e_001c067d\n"
         ".Lf1c061e_001c06fa:\n"
         "movl %edi, 4(%esp)\n" /* line 255 | pszWeaponName */
-        "movl $0x2b64cc, (%esp)\n" /* "unknown weapon '%s'" */
+        "movl $str_002b64cc, (%esp)\n" /* "unknown weapon '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -3989,7 +3989,7 @@ void PlayerCmd_switchToOffhand(scr_entref_t entref)
         "jmp .Lf1c061e_001c067d\n"
         ".Lf1c061e_001c071f:\n"
         "movl %edx, 4(%esp)\n" /* line 250 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -4018,7 +4018,7 @@ void PlayerCmd_giveStartAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c073c_001c080c\n"
@@ -4067,13 +4067,13 @@ void PlayerCmd_giveStartAmmo(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1c073c_001c07f9:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 280 */
+        "movl $str_002b21c8, (%esp)\n" /* line 280 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1c073c_001c077b\n"
         ".Lf1c073c_001c080c:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -4103,7 +4103,7 @@ void PlayerCmd_giveMaxAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c082a_001c0909\n"
@@ -4158,13 +4158,13 @@ void PlayerCmd_giveMaxAmmo(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1c082a_001c08f6:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 308 */
+        "movl $str_002b21c8, (%esp)\n" /* line 308 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1c082a_001c086a\n"
         ".Lf1c082a_001c0909:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -4193,7 +4193,7 @@ void PlayerCmd_getFractionStartAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c0926_001c0a0b\n"
@@ -4244,7 +4244,7 @@ void PlayerCmd_getFractionStartAmmo(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddFloat\n" /* line 348 */
         ".Lf1c0926_001c09ef:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 336 */
+        "movl $str_002b21c8, (%esp)\n" /* line 336 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1c0926_001c0965\n"
@@ -4253,7 +4253,7 @@ void PlayerCmd_getFractionStartAmmo(scr_entref_t entref)
         "jmp .Lf1c0926_001c09e4\n"
         ".Lf1c0926_001c0a0b:\n"
         "movl %edx, 4(%esp)\n" /* line 336 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -4282,7 +4282,7 @@ void PlayerCmd_getFractionMaxAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n" /* pSelf */
         "subl %eax, %esi\n" /* pSelf */
         "shll $4, %esi\n" /* pSelf */
-        "addl 0x195f688, %esi\n" /* pSelf */
+        "addl imp_g_entities, %esi\n" /* pSelf */
         "movl 0x158(%esi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c0a28_001c0b1f\n"
@@ -4338,7 +4338,7 @@ void PlayerCmd_getFractionMaxAmmo(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddFloat\n" /* line 387 */
         ".Lf1c0a28_001c0b03:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 375 */
+        "movl $str_002b21c8, (%esp)\n" /* line 375 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n" /* pSelf */
         "jmp .Lf1c0a28_001c0a67\n"
@@ -4347,7 +4347,7 @@ void PlayerCmd_getFractionMaxAmmo(scr_entref_t entref)
         "jmp .Lf1c0a28_001c0af8\n"
         ".Lf1c0a28_001c0b1f:\n"
         "movl %edx, 4(%esp)\n" /* line 375 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -4375,7 +4375,7 @@ void PlayerCmd_setOrigin(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c0b3c_001c0c3c\n"
@@ -4397,7 +4397,7 @@ void PlayerCmd_setOrigin(scr_entref_t entref)
         "movl %eax, 8(%ecx)\n"
         /* } scope */
         "movl 0x158(%ebx), %eax\n" /* line 418 | pSelf */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "addss 0x1c(%eax), %xmm0\n"
         "movss %xmm0, 0x1c(%eax)\n"
         "movl 0x158(%ebx), %eax\n" /* line 421 | pSelf */
@@ -4428,13 +4428,13 @@ void PlayerCmd_setOrigin(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf1c0b3c_001c0c29:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 411 */
+        "movl $str_002b21c8, (%esp)\n" /* line 411 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1c0b3c_001c0b7a\n"
         ".Lf1c0b3c_001c0c3c:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -4464,7 +4464,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "leal (, %eax, 8), %edi\n" /* pSelf */
         "subl %eax, %edi\n" /* pSelf */
         "shll $4, %edi\n" /* pSelf */
-        "addl 0x195f688, %edi\n" /* pSelf */
+        "addl imp_g_entities, %edi\n" /* pSelf */
         "movl 0x158(%edi), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c0c5a_001c1353\n"
@@ -4479,7 +4479,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "testl %eax, %eax\n"
         "jne .Lf1c0c5a_001c1022\n"
         ".Lf1c0c5a_001c0cc7:\n"
-        "movl 0x195f688, %eax\n" /* line 716 */
+        "movl imp_g_entities, %eax\n" /* line 716 */
         "addl $0x8bba0, %eax\n"
         "movl %eax, -0x70(%ebp)\n" /* inflictor */
         ".Lf1c0c5a_001c0cd4:\n"
@@ -4488,7 +4488,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "testl %eax, %eax\n"
         "jne .Lf1c0c5a_001c0ff9\n"
         ".Lf1c0c5a_001c0ce8:\n"
-        "movl 0x195f688, %edx\n" /* line 718 */
+        "movl imp_g_entities, %edx\n" /* line 718 */
         "addl $0x8bba0, %edx\n"
         "movl %edx, -0x6c(%ebp)\n" /* attacker */
         ".Lf1c0c5a_001c0cf7:\n"
@@ -4576,12 +4576,12 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "testl %edx, %edx\n"
         "cmovlel %eax, %esi\n" /* damage */
         ".Lf1c0c5a_001c0e3c:\n"
-        "movl 0x195edc8, %eax\n" /* line 832 */
+        "movl imp_player_dmgtimer_maxTime, %eax\n" /* line 832 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x4c(%ebp)\n" /* max_damage_time */
         "movl 0x158(%edi), %edx\n" /* line 837 | pSelf */
-        "movl 0x195f73c, %eax\n"
+        "movl imp_player_dmgtimer_timePerPoint, %eax\n"
         "movl (%eax), %eax\n"
         "cvtsi2ssl %esi, %xmm0\n" /* damage */
         "mulss 8(%eax), %xmm0\n"
@@ -4599,7 +4599,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "movl %eax, 0x98(%ebx)\n" /* to */
         "movl 0x158(%edi), %edx\n" /* line 845 | pSelf */
         "movss 0xec(%edx), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 847 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 847 | 0.0f */
         "jb .Lf1c0c5a_001c1144\n"
         ".Lf1c0c5a_001c0eb2:\n"
         "cvtsi2ssl 0x98(%edx), %xmm0\n" /* line 850 */
@@ -4623,7 +4623,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "movl %esi, (%esp)\n" /* line 865 | damage */
         "calll Scr_AddInt\n"
         "movl $2, 8(%esp)\n" /* line 866 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* pSelf */
@@ -4634,7 +4634,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "movzbl 0x166(%edi), %eax\n" /* line 883 | pSelf */
         "leal (%eax, %eax, 4), %eax\n"
         "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
+        "addl imp_entityHandlers, %eax\n"
         "movl 0x14(%eax), %ecx\n"
         "testl %ecx, %ecx\n" /* line 884 */
         "je .Lf1c0c5a_001c0f89\n"
@@ -4672,7 +4672,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "movl %eax, -0x34(%ebp)\n" /* line 185 */
         "jmp .Lf1c0c5a_001c0db2\n"
         ".Lf1c0c5a_001c0fb0:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 709 */
+        "movl $str_002b21c8, (%esp)\n" /* line 709 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n" /* pSelf */
         "jmp .Lf1c0c5a_001c0c9d\n"
@@ -4713,7 +4713,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "movl 0xc(%ebx), %edx\n" /* tent */
         "testb $1, %dl\n"
         "je .Lf1c0c5a_001c1341\n"
-        "movss 0x2ed9ac, %xmm1\n" /* 0.019999999552965164f */
+        "movss lit4_002ed9ac, %xmm1\n" /* 0.019999999552965164f */
         ".Lf1c0c5a_001c1065:\n"
         "cvtsi2ssl %esi, %xmm0\n" /* line 754 | damage */
         "mulss %xmm0, %xmm1\n"
@@ -4724,11 +4724,11 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         ".Lf1c0c5a_001c107f:\n"
         "testl $0x300, 0xa0(%ebx)\n" /* line 760 | tent */
         "jne .Lf1c0c5a_001c0dc6\n"
-        "movl 0x195f740, %eax\n" /* line 764 */
+        "movl imp_g_knockback, %eax\n" /* line 764 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl %edx, %xmm0\n" /* scale */
         "mulss 8(%eax), %xmm0\n" /* scale */
-        "divss 0x2ed9b0, %xmm0\n" /* 250.0f, scale */
+        "divss lit4_002ed9b0, %xmm0\n" /* 250.0f, scale */
         /* { scope 2 */
         "movaps %xmm0, %xmm1\n" /* line 273 */
         "mulss -0x38(%ebp), %xmm1\n"
@@ -4764,11 +4764,11 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "movl $0, 0x98(%eax)\n"
         "movl 0x158(%edi), %edx\n" /* line 845 | pSelf */
         "movss 0xec(%edx), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 847 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 847 | 0.0f */
         "jae .Lf1c0c5a_001c0eb2\n"
         ".Lf1c0c5a_001c1144:\n"
         "jp .Lf1c0c5a_001c0eb2\n"
-        "addss 0x2ed638, %xmm1\n" /* line 848 | 360.0f */
+        "addss lit4_002ed638, %xmm1\n" /* line 848 | 360.0f */
         "jmp .Lf1c0c5a_001c0eb2\n"
         ".Lf1c0c5a_001c1157:\n"
         "movl -0x58(%ebp), %eax\n" /* line 786 | iWeapon */
@@ -4847,7 +4847,7 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         "movzbl 0x166(%edi), %eax\n" /* line 873 | pSelf */
         "leal (%eax, %eax, 4), %eax\n"
         "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
+        "addl imp_entityHandlers, %eax\n"
         "movl 0x18(%eax), %edx\n"
         "testl %edx, %edx\n" /* line 874 */
         "je .Lf1c0c5a_001c12e3\n"
@@ -4894,17 +4894,17 @@ void PlayerCmd_finishPlayerDamage(scr_entref_t entref)
         ".Lf1c0c5a_001c1341:\n"
         "andb $2, %dl\n" /* line 752 */
         "jne .Lf1c0c5a_001c1370\n"
-        "movss 0x2ed6f4, %xmm1\n" /* 0.30000001192092896f */
+        "movss lit4_002ed6f4, %xmm1\n" /* 0.30000001192092896f */
         "jmp .Lf1c0c5a_001c1065\n"
         ".Lf1c0c5a_001c1353:\n"
         "movl %edx, 4(%esp)\n" /* line 709 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
         "jmp .Lf1c0c5a_001c0c9d\n"
         ".Lf1c0c5a_001c1370:\n"
-        "movss 0x2ed764, %xmm1\n" /* line 752 | 0.15000000596046448f */
+        "movss lit4_002ed764, %xmm1\n" /* line 752 | 0.15000000596046448f */
         "jmp .Lf1c0c5a_001c1065\n"
         ".Lf1c0c5a_001c137d:\n"
         "movl 0x174(%edi), %eax\n" /* pSelf */
@@ -4940,7 +4940,7 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         "subl %eax, %ecx\n"
         "shll $4, %ecx\n"
         "movl %ecx, -0x1c(%ebp)\n" /* pSelf */
-        "movl 0x195f688, %ebx\n" /* corpseInfo */
+        "movl imp_g_entities, %ebx\n" /* corpseInfo */
         "addl %ebx, %ecx\n" /* corpseInfo */
         "movl %ecx, -0x1c(%ebp)\n" /* pSelf */
         "movl 0x158(%ecx), %eax\n"
@@ -4976,7 +4976,7 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         "movl %edi, (%esp)\n" /* body */
         "calll G_SetAngle\n"
         "movl $5, 0xc(%edi)\n" /* line 1424 | body */
-        "movl 0x195f6a0, %eax\n" /* line 1425 */
+        "movl imp_level, %eax\n" /* line 1425 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x10(%edi)\n" /* body */
         "leal 0x24(%edi), %ecx\n" /* line 1426 | body, to */
@@ -5001,7 +5001,7 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         "movl %eax, -0x20(%ebp)\n" /* tree */
         "movl %edi, %edx\n" /* body */
         "movl $2, %ecx\n"
-        "movl 0x195f738, %ebx\n" /* corpseInfo */
+        "movl imp_g_clonePlayerMaxVelocity, %ebx\n" /* corpseInfo */
         ".Lf1c139c_001c14bb:\n"
         "movl (%ebx), %eax\n" /* line 1438 | corpseInfo */
         "movss 8(%eax), %xmm1\n"
@@ -5013,7 +5013,7 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         "addl $4, %edx\n"
         "subl $1, %ecx\n" /* line 1436 */
         "jne .Lf1c139c_001c14bb\n"
-        "movl 0x195f6a0, %edx\n" /* line 1443 */
+        "movl imp_level, %edx\n" /* line 1443 */
         "movl 0x1ec(%edx), %eax\n"
         "movl %eax, 0x1a8(%edi)\n" /* body */
         "calll G_GetFreePlayerCorpseIndex\n" /* line 1444 */
@@ -5021,12 +5021,12 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
         "addl %eax, %edx\n"
-        "movl 0x195f6d0, %eax\n"
+        "movl imp_g_scr_data, %eax\n"
         "leal 0x10b0(%eax, %edx, 8), %esi\n"
         "leal 8(%esi), %ebx\n" /* corpseInfo */
         "movl (%edi), %eax\n" /* line 1446 | body */
         "movl %eax, 4(%ebx)\n" /* corpseInfo */
-        "movl 0x195f6a0, %ecx\n" /* line 1447 */
+        "movl imp_level, %ecx\n" /* line 1447 */
         "movl 0x1ec(%ecx), %eax\n"
         "movl %eax, 8(%ebx)\n" /* corpseInfo */
         "movb $1, 0x4c4(%ebx)\n" /* line 1448 | corpseInfo */
@@ -5039,7 +5039,7 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         "shll $4, %eax\n"
         "subl %ecx, %eax\n"
         "leal (%edx, %eax, 2), %eax\n"
-        "movl 0x195f68c, %edx\n"
+        "movl imp_level_bgs, %edx\n"
         "leal 0xb3bfc(%edx, %eax, 8), %eax\n"
         "movl $0x4b8, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
@@ -5106,7 +5106,7 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         "movl $0x4002000, 0x11c(%edi)\n" /* line 1467 | body */
         "movl %edi, (%esp)\n" /* line 1468 | body */
         "calll SV_LinkEntity\n"
-        "movl 0x195f6a0, %ecx\n" /* line 1470 */
+        "movl imp_level, %ecx\n" /* line 1470 */
         "movl 0x1ec(%ecx), %ecx\n"
         "addl %ecx, -0x28(%ebp)\n" /* deathAnimDuration */
         "movl -0x28(%ebp), %ebx\n" /* deathAnimDuration, corpseInfo */
@@ -5122,13 +5122,13 @@ void PlayerCmd_ClonePlayer(scr_entref_t entref)
         /* { scope 1 */
         "jmp GScr_AddEntity\n" /* line 1473 */
         ".Lf1c139c_001c167e:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1408 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1408 */
         "calll Scr_ObjectError\n"
         "movl $0, -0x1c(%ebp)\n" /* pSelf */
         "jmp .Lf1c139c_001c13e4\n"
         ".Lf1c139c_001c1696:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -5156,7 +5156,7 @@ void PlayerCmd_getCurrentWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %ecx\n" /* pSelf */
         "testl %ecx, %ecx\n"
         "je .Lf1c16b4_001c173c\n"
@@ -5179,7 +5179,7 @@ void PlayerCmd_getCurrentWeapon(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddString\n" /* line 152 */
         ".Lf1c16b4_001c171b:\n"
-        "movl $0x218298, 8(%ebp)\n" /* line 156 | entref */
+        "movl $str_00218298, 8(%ebp)\n" /* line 156 | entref */
         /* } scope */
         "addl $0x14, %esp\n" /* line 158 */
         "popl %ebx\n"
@@ -5187,13 +5187,13 @@ void PlayerCmd_getCurrentWeapon(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddString\n" /* line 156 */
         ".Lf1c16b4_001c172c:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 139 */
+        "movl $str_002b21c8, (%esp)\n" /* line 139 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1c16b4_001c16ea\n"
         ".Lf1c16b4_001c173c:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -5221,7 +5221,7 @@ void PlayerCmd_getCurrentOffhand(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c1756_001c17de\n"
@@ -5244,7 +5244,7 @@ void PlayerCmd_getCurrentOffhand(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddString\n" /* line 181 */
         ".Lf1c1756_001c17bd:\n"
-        "movl $0x218298, 8(%ebp)\n" /* line 185 | entref */
+        "movl $str_00218298, 8(%ebp)\n" /* line 185 | entref */
         /* } scope */
         "addl $0x14, %esp\n" /* line 187 */
         "popl %ebx\n"
@@ -5252,13 +5252,13 @@ void PlayerCmd_getCurrentOffhand(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddString\n" /* line 185 */
         ".Lf1c1756_001c17ce:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 170 */
+        "movl $str_002b21c8, (%esp)\n" /* line 170 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1c1756_001c178c\n"
         ".Lf1c1756_001c17de:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -5288,7 +5288,7 @@ void PlayerCmd_GetWeaponSlotWeapon(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c17f8_001c1909\n"
@@ -5326,7 +5326,7 @@ void PlayerCmd_GetWeaponSlotWeapon(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddString\n" /* line 1016 */
         ".Lf1c17f8_001c189b:\n"
-        "movl 0x195f5bc, %eax\n" /* line 1011 */
+        "movl imp_scr_const, %eax\n" /* line 1011 */
         "movzwl 0x74(%eax), %eax\n"
         "movl %eax, 8(%ebp)\n" /* entref */
         /* } scope */
@@ -5338,7 +5338,7 @@ void PlayerCmd_GetWeaponSlotWeapon(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddConstString\n" /* line 1011 */
         ".Lf1c17f8_001c18b3:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 995 */
+        "movl $str_002b21c8, (%esp)\n" /* line 995 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1c17f8_001c1838\n"
@@ -5346,7 +5346,7 @@ void PlayerCmd_GetWeaponSlotWeapon(scr_entref_t entref)
         "movl %esi, (%esp)\n" /* line 1006 */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
+        "movl $str_002b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -5359,7 +5359,7 @@ void PlayerCmd_GetWeaponSlotWeapon(scr_entref_t entref)
         "jmp .Lf1c17f8_001c189b\n"
         ".Lf1c17f8_001c1909:\n"
         "movl %edx, 4(%esp)\n" /* line 995 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -5389,7 +5389,7 @@ void PlayerCmd_GetWeaponSlotAmmo(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n" /* pSelf */
         "subl %eax, %ebx\n" /* pSelf */
         "shll $4, %ebx\n" /* pSelf */
-        "addl 0x195f688, %ebx\n" /* pSelf */
+        "addl imp_g_entities, %ebx\n" /* pSelf */
         "movl 0x158(%ebx), %eax\n" /* pSelf */
         "testl %eax, %eax\n"
         "je .Lf1c1926_001c1a6c\n"
@@ -5442,7 +5442,7 @@ void PlayerCmd_GetWeaponSlotAmmo(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 1133 */
         ".Lf1c1926_001c19f3:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 1105 */
+        "movl $str_002b21c8, (%esp)\n" /* line 1105 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n" /* pSelf */
         "jmp .Lf1c1926_001c1966\n"
@@ -5450,7 +5450,7 @@ void PlayerCmd_GetWeaponSlotAmmo(scr_entref_t entref)
         "movl %esi, (%esp)\n" /* line 1116 | iWeapIndex */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
+        "movl $str_002b5e1c, (%esp)\n" /* "Unknown weaponslot name %s. Valid weaponslots are "primary" " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -5477,7 +5477,7 @@ void PlayerCmd_GetWeaponSlotAmmo(scr_entref_t entref)
         "jmp Scr_AddInt\n" /* line 1133 */
         ".Lf1c1926_001c1a6c:\n"
         "movl %edx, 4(%esp)\n" /* line 1105 */
-        "movl $0x2b5dd4, (%esp)\n" /* "entity %i is not a player" */
+        "movl $str_002b5dd4, (%esp)\n" /* "entity %i is not a player" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"

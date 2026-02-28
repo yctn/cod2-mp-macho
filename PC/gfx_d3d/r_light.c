@@ -5,12 +5,12 @@
 #include "imports.h"
 
 extern struct lightGlob_type lightGlob; /* 0x0 */
-extern refimport_t *ri;                 /* 0x195eee0 */
-extern r_global_permanent_t *rgp;       /* 0x195eebc */
-extern r_globals_t *rg;                 /* 0x195eec8 */
-extern GfxScene *gfxScene;             /* 0x195f0f4 */
-extern const dvar_t *r_dlightLimit;    /* 0x195eeac */
-extern GfxBackEndData **gfxBuf;        /* 0x195eef4 */
+extern refimport_t *ri;                 /* imp_ri */
+extern r_global_permanent_t *rgp;       /* imp_rgp */
+extern r_globals_t *rg;                 /* imp_rg */
+extern GfxScene *gfxScene;             /* imp_scene */
+extern const dvar_t *r_dlightLimit;    /* imp_r_dlightLimit */
+extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
 
 extern GfxLightDef *R_LoadLightDef(const char *name);
 extern void R_Error(int level, const char *fmt, ...);

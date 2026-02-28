@@ -44,8 +44,8 @@ extern int SV_SvEntityForGentity(const gentity_t *gEnt);
  *   #include "PC/universal/com_math.h"
  */
 
-static vec3_t actorLocationalMins; /* 0x31454c */
-static vec3_t actorLocationalMaxs; /* 0x314540 */
+static vec3_t actorLocationalMins; /* actorLocationalMins */
+static vec3_t actorLocationalMaxs; /* actorLocationalMaxs */
 
 clipHandle_t SV_ClipHandleForEntity(const gentity_t *ent);
 int SV_UnlinkEntity(gentity_t *gEnt);
@@ -119,7 +119,7 @@ int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_
         "subss 4(%esi), %xmm0\n" /* mins */
         "addss 8(%ebx), %xmm0\n" /* maxs */
         "subss 8(%esi), %xmm0\n" /* mins */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jne .Lf1bbf5c_001bc03f\n"
         "jp .Lf1bbf5c_001bc03f\n"
         /* { scope 1 */
@@ -172,13 +172,13 @@ int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_
         "movss (%eax), %xmm6\n" /* line 250 */
         "movaps %xmm6, %xmm4\n"
         "subss (%ecx), %xmm4\n"
-        "mulss 0x2ed5d8, %xmm2\n" /* line 272 | 0.5f */
-        "mulss 0x2ed5d8, %xmm3\n" /* line 273 | 0.5f */
-        "mulss 0x2ed5d8, %xmm4\n" /* line 274 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm2\n" /* line 272 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm3\n" /* line 273 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm4\n" /* line 274 | 0.5f */
         "movss %xmm2, -0x54(%ebp)\n" /* line 199 */
         "movss %xmm3, -0x50(%ebp)\n" /* line 200 */
         "movss %xmm4, -0x4c(%ebp)\n" /* line 201 */
-        "movss 0x303280, %xmm0\n" /* line 272 */
+        "movss sign+384, %xmm0\n" /* line 272 */
         "movaps %xmm2, %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x60(%ebp)\n" /* clip */
@@ -187,7 +187,7 @@ int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_
         "movss %xmm1, -0x5c(%ebp)\n"
         "xorps %xmm4, %xmm0\n" /* line 274 */
         "movss %xmm0, -0x58(%ebp)\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 872 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 872 | 1.0f */
         "addss %xmm0, %xmm2\n"
         "movss %xmm2, -0x48(%ebp)\n"
         "addss %xmm0, %xmm3\n" /* line 873 */
@@ -198,9 +198,9 @@ int SV_SightTrace(int *hitNum, const vec_t *start, const vec_t *mins, const vec_
         "addss (%esi), %xmm1\n"
         "addss (%edx), %xmm5\n" /* line 241 */
         "addss (%ecx), %xmm6\n" /* line 242 */
-        "mulss 0x2ed5d8, %xmm1\n" /* line 272 | 0.5f */
-        "mulss 0x2ed5d8, %xmm5\n" /* line 273 | 0.5f */
-        "mulss 0x2ed5d8, %xmm6\n" /* line 274 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* line 272 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm5\n" /* line 273 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm6\n" /* line 274 | 0.5f */
         "movaps %xmm1, %xmm0\n" /* line 240 */
         "movl 0xc(%ebp), %ebx\n" /* start */
         "addss (%ebx), %xmm0\n"
@@ -258,7 +258,7 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
         "movl 8(%ebp), %eax\n" /* results */
         "movl %eax, (%esp)\n"
         "calll CM_BoxTrace\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 621 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 621 | 1.0f */
         "movl 8(%ebp), %edx\n" /* results */
         "ucomiss (%edx), %xmm0\n"
         "sete %al\n"
@@ -393,14 +393,14 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
         "movaps %xmm6, %xmm4\n"
         "movl -0x7c(%ebp), %edx\n"
         "subss (%edx), %xmm4\n"
-        "movss 0x2ed5d8, %xmm7\n" /* line 272 | 0.5f */
+        "movss lit4_002ed5d8, %xmm7\n" /* line 272 | 0.5f */
         "mulss %xmm7, %xmm2\n"
         "mulss %xmm7, %xmm3\n" /* line 273 */
         "mulss %xmm7, %xmm4\n" /* line 274 */
         "movss %xmm2, -0x60(%ebp)\n" /* line 199 */
         "movss %xmm3, -0x5c(%ebp)\n" /* line 200 */
         "movss %xmm4, -0x58(%ebp)\n" /* line 201 */
-        "movss 0x303290, %xmm0\n" /* line 272 */
+        "movss sign+400, %xmm0\n" /* line 272 */
         "movaps %xmm2, %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x6c(%ebp)\n" /* clip */
@@ -409,7 +409,7 @@ int SV_Trace(trace_t *results, const vec_t *start, const vec_t *mins, const vec_
         "movss %xmm1, -0x68(%ebp)\n"
         "xorps %xmm4, %xmm0\n" /* line 274 */
         "movss %xmm0, -0x64(%ebp)\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 695 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 695 | 1.0f */
         "addss %xmm0, %xmm2\n"
         "movss %xmm2, -0x54(%ebp)\n"
         "addss %xmm0, %xmm3\n" /* line 696 */
@@ -513,7 +513,7 @@ qboolean SV_TracePassed(const vec_t *start, const vec_t *mins, const vec_t *maxs
         "subss 4(%esi), %xmm0\n" /* mins */
         "addss 8(%ebx), %xmm0\n" /* maxs */
         "subss 8(%esi), %xmm0\n" /* mins */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jne .Lf1bc4a6_001bc592\n"
         "jp .Lf1bc4a6_001bc592\n"
         /* { scope 1 */
@@ -570,13 +570,13 @@ qboolean SV_TracePassed(const vec_t *start, const vec_t *mins, const vec_t *maxs
         "movss (%eax), %xmm6\n" /* line 250 */
         "movaps %xmm6, %xmm4\n"
         "subss (%ecx), %xmm4\n"
-        "mulss 0x2ed5d8, %xmm2\n" /* line 272 | 0.5f */
-        "mulss 0x2ed5d8, %xmm3\n" /* line 273 | 0.5f */
-        "mulss 0x2ed5d8, %xmm4\n" /* line 274 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm2\n" /* line 272 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm3\n" /* line 273 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm4\n" /* line 274 | 0.5f */
         "movss %xmm2, -0x54(%ebp)\n" /* line 199 */
         "movss %xmm3, -0x50(%ebp)\n" /* line 200 */
         "movss %xmm4, -0x4c(%ebp)\n" /* line 201 */
-        "movss 0x3032a0, %xmm0\n" /* line 272 */
+        "movss sign+416, %xmm0\n" /* line 272 */
         "movaps %xmm2, %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x60(%ebp)\n" /* clip */
@@ -585,7 +585,7 @@ qboolean SV_TracePassed(const vec_t *start, const vec_t *mins, const vec_t *maxs
         "movss %xmm1, -0x5c(%ebp)\n"
         "xorps %xmm4, %xmm0\n" /* line 274 */
         "movss %xmm0, -0x58(%ebp)\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 789 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 789 | 1.0f */
         "addss %xmm0, %xmm2\n"
         "movss %xmm2, -0x48(%ebp)\n"
         "addss %xmm0, %xmm3\n" /* line 790 */
@@ -596,9 +596,9 @@ qboolean SV_TracePassed(const vec_t *start, const vec_t *mins, const vec_t *maxs
         "addss (%esi), %xmm1\n"
         "addss (%edx), %xmm5\n" /* line 241 */
         "addss (%ecx), %xmm6\n" /* line 242 */
-        "mulss 0x2ed5d8, %xmm1\n" /* line 272 | 0.5f */
-        "mulss 0x2ed5d8, %xmm5\n" /* line 273 | 0.5f */
-        "mulss 0x2ed5d8, %xmm6\n" /* line 274 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* line 272 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm5\n" /* line 273 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm6\n" /* line 274 | 0.5f */
         "movaps %xmm1, %xmm0\n" /* line 240 */
         "movl 8(%ebp), %ebx\n" /* start */
         "addss (%ebx), %xmm0\n"
@@ -661,7 +661,7 @@ int SV_LinkEntity(gentity_t *gEnt)
         "movl %eax, -0x23c(%ebp)\n" /* ent */
         "cmpb $0, 0xf1(%edi)\n" /* line 103 | gEnt */
         "je .Lf1bc6e8_001bc9e3\n"
-        "movl $0xffffff, 0x9c(%edi)\n" /* line 105 | gEnt */
+        "movl $g_effectVisArray+4351, 0x9c(%edi)\n" /* line 105 | gEnt */
         ".Lf1bc6e8_001bc71c:\n"
         "leal 0x144(%edi), %eax\n" /* line 138 | gEnt */
         "movl %eax, -0x240(%ebp)\n" /* angles */
@@ -672,7 +672,7 @@ int SV_LinkEntity(gentity_t *gEnt)
         /* { scope 2 */
         ".Lf1bc6e8_001bc73f:\n"
         "movss -4(%ebx), %xmm0\n" /* line 428 | clipHandle */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x24c(%ebp)\n"
@@ -681,7 +681,7 @@ int SV_LinkEntity(gentity_t *gEnt)
         "movaps %xmm1, %xmm0\n" /* line 69 | delta */
         "subss -4(%ebx), %xmm0\n" /* delta */
         "mulss %xmm0, %xmm0\n" /* line 71 */
-        "movss 0x2ed66c, %xmm2\n" /* 1.0000001111620804e-06f */
+        "movss lit4_002ed66c, %xmm2\n" /* 1.0000001111620804e-06f */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bc6e8_001bc786\n"
         "movss %xmm1, -4(%ebx)\n" /* line 72 */
@@ -764,7 +764,7 @@ int SV_LinkEntity(gentity_t *gEnt)
         /* } scope */
         ".Lf1bc6e8_001bc8c7:\n"
         "movss 0x120(%edi), %xmm0\n" /* line 184 | gEnt */
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 0x120(%edi)\n" /* gEnt */
         "movss 0x124(%edi), %xmm0\n" /* line 185 | gEnt */
@@ -836,7 +836,7 @@ int SV_LinkEntity(gentity_t *gEnt)
         "movl $0xff, %eax\n"
         "cmovgel %eax, %edx\n"
         ".Lf1bc6e8_001bca1c:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 117 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 117 | 1.0f */
         "subss 0x10c(%edi), %xmm0\n" /* gEnt */
         "cvttss2si %xmm0, %eax\n"
         "testl %eax, %eax\n" /* line 118 */
@@ -845,14 +845,14 @@ int SV_LinkEntity(gentity_t *gEnt)
         "jle .Lf1bc6e8_001bccc5\n"
         "movl $0xff00, %ecx\n"
         ".Lf1bc6e8_001bca48:\n"
-        "movss 0x2ed830, %xmm0\n" /* line 124 | 32.0f */
+        "movss lit4_002ed830, %xmm0\n" /* line 124 | 32.0f */
         "addss 0x118(%edi), %xmm0\n" /* gEnt */
         "cvttss2si %xmm0, %eax\n"
         "testl %eax, %eax\n" /* line 125 */
         "jle .Lf1bc6e8_001bcd3a\n"
         "cmpl $0xff, %eax\n" /* line 127 */
         "jle .Lf1bc6e8_001bccbd\n"
-        "movl $0xff0000, %eax\n"
+        "movl $cg_eachClientLocalEntities+21120, %eax\n"
         ".Lf1bc6e8_001bca74:\n"
         "orl %ecx, %eax\n" /* line 130 */
         "orl %eax, %edx\n"
@@ -905,11 +905,11 @@ int SV_LinkEntity(gentity_t *gEnt)
         "movss %xmm0, -0x28(%ebp)\n" /* absmin */
         "movss 4(%ecx), %xmm1\n" /* line 59 */
         "movaps %xmm1, %xmm0\n"
-        "addss 0x314550, %xmm0\n"
+        "addss actorLocationalMins+4, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n"
         "addss actorLocationalMaxs, %xmm2\n" /* line 58 */
         "movss %xmm2, -0x34(%ebp)\n" /* absmax */
-        "addss 0x314544, %xmm1\n" /* line 59 */
+        "addss actorLocationalMaxs+4, %xmm1\n" /* line 59 */
         "movss %xmm1, -0x30(%ebp)\n"
         "leal -0x34(%ebp), %edi\n" /* absmax */
         "leal -0x28(%ebp), %esi\n" /* absmin */
@@ -1057,7 +1057,7 @@ int SV_ClipMoveToEntity(const moveclip_t *clip, svEntity_t *check, trace_t *trac
         "movl 8(%ebp), %edi\n" /* clip */
         "movl 0xc(%ebp), %edx\n" /* check */
         /* { scope 1 */
-        "movl 0x195ee80, %eax\n" /* line 283 */
+        "movl imp_sv, %eax\n" /* line 283 */
         "addl $0x2418, %eax\n"
         "subl %eax, %edx\n"
         "sarl $2, %edx\n"
@@ -1169,7 +1169,7 @@ int SV_ClipMoveToEntity(const moveclip_t *clip, svEntity_t *check, trace_t *trac
         "retl\n"
         /* { scope 1 */
         ".Lf1bcd4e_001bcee0:\n"
-        "movl 0x195ed4c, %eax\n" /* line 312 */
+        "movl imp_vec3_origin, %eax\n" /* line 312 */
         "jmp .Lf1bcd4e_001bce82\n"
         ".Lf1bcd4e_001bcee7:\n"
         "movl 0x11c(%ebx), %eax\n" /* line 33 */
@@ -1197,7 +1197,7 @@ int SV_PointTraceToEntity(const pointtrace_t *clip, svEntity_t *check, trace_t *
         "subl $0xcc, %esp\n"
         "movl 8(%ebp), %edi\n" /* clip */
         /* { scope 1 */
-        "movl 0x195ee80, %eax\n" /* line 345 */
+        "movl imp_sv, %eax\n" /* line 345 */
         "addl $0x2418, %eax\n"
         "movl 0xc(%ebp), %edx\n" /* check */
         "subl %eax, %edx\n"
@@ -1266,7 +1266,7 @@ int SV_PointTraceToEntity(const pointtrace_t *clip, svEntity_t *check, trace_t *
         "leal 0x144(%esi), %eax\n" /* line 426 | touch */
         "cmpb $0, 0xf1(%esi)\n" /* line 428 | touch */
         "jne .Lf1bcf10_001bd23d\n"
-        "movl 0x195ed4c, %edx\n"
+        "movl imp_vec3_origin, %edx\n"
         "movl %edx, %eax\n"
         ".Lf1bcf10_001bcffa:\n"
         "movl 0x10(%ebp), %ebx\n" /* line 431 | trace, obj */
@@ -1327,16 +1327,16 @@ int SV_PointTraceToEntity(const pointtrace_t *clip, svEntity_t *check, trace_t *
         "addss actorLocationalMins, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n" /* absmin */
         "movaps %xmm2, %xmm0\n" /* line 241 */
-        "addss 0x314550, %xmm0\n"
+        "addss actorLocationalMins+4, %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n"
         "movaps %xmm3, %xmm0\n" /* line 242 */
-        "addss 0x314554, %xmm0\n"
+        "addss actorLocationalMins+8, %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
         "addss actorLocationalMaxs, %xmm1\n" /* line 240 */
         "movss %xmm1, -0x30(%ebp)\n" /* absmax */
-        "addss 0x314544, %xmm2\n" /* line 241 */
+        "addss actorLocationalMaxs+4, %xmm2\n" /* line 241 */
         "movss %xmm2, -0x2c(%ebp)\n"
-        "addss 0x314548, %xmm3\n" /* line 242 */
+        "addss actorLocationalMaxs+8, %xmm3\n" /* line 242 */
         "movss %xmm3, -0x28(%ebp)\n"
         ".Lf1bcf10_001bd133:\n"
         "movl 0x10(%ebp), %edx\n" /* line 386 | trace */
@@ -1410,7 +1410,7 @@ int SV_PointTraceToEntity(const pointtrace_t *clip, svEntity_t *check, trace_t *
         "movl 0x2c(%edi), %ecx\n" /* clip */
         "jmp .Lf1bcf10_001bcf8d\n"
         ".Lf1bcf10_001bd23d:\n"
-        "movl 0x195ed4c, %edx\n"
+        "movl imp_vec3_origin, %edx\n"
         "jmp .Lf1bcf10_001bcffa\n"
         ".Lf1bcf10_001bd248:\n"
         "movl 0x2c(%edi), %eax\n" /* line 368 | clip */
@@ -1492,7 +1492,7 @@ int SV_ClipSightToEntity(const sightclip_t *clip, svEntity_t *check)
         "movl 8(%ebp), %edi\n" /* clip */
         "movl 0xc(%ebp), %edx\n" /* check */
         /* { scope 1 */
-        "movl 0x195ee80, %eax\n" /* line 461 */
+        "movl imp_sv, %eax\n" /* line 461 */
         "addl $0x2418, %eax\n"
         "subl %eax, %edx\n"
         "sarl $2, %edx\n"
@@ -1538,7 +1538,7 @@ int SV_ClipSightToEntity(const sightclip_t *clip, svEntity_t *check)
         "leal 0x144(%ebx), %eax\n" /* line 489 | touch */
         "cmpb $0, 0xf1(%ebx)\n" /* line 491 | touch */
         "jne .Lf1bd33e_001bd3e9\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         ".Lf1bd33e_001bd3e9:\n"
         "movl %eax, 0x20(%esp)\n" /* line 494 */
         "leal 0x138(%ebx), %eax\n" /* touch */
@@ -1597,7 +1597,7 @@ int SV_PointSightTraceToEntity(const sightpointtrace_t *clip, svEntity_t *check)
         "movl 8(%ebp), %esi\n" /* clip */
         "movl 0xc(%ebp), %edx\n" /* check */
         /* { scope 1 */
-        "movl 0x195ee80, %eax\n" /* line 523 */
+        "movl imp_sv, %eax\n" /* line 523 */
         "addl $0x2418, %eax\n"
         "subl %eax, %edx\n"
         "sarl $2, %edx\n"
@@ -1646,7 +1646,7 @@ int SV_PointSightTraceToEntity(const sightpointtrace_t *clip, svEntity_t *check)
         "leal 0x144(%edi), %eax\n" /* line 583 | touch */
         "cmpb $0, 0xf1(%edi)\n" /* line 585 | touch */
         "jne .Lf1bd45c_001bd567\n"
-        "movl 0x195ed4c, %edx\n"
+        "movl imp_vec3_origin, %edx\n"
         "movl %edx, %eax\n"
         ".Lf1bd45c_001bd51a:\n"
         "movl %eax, 0x20(%esp)\n" /* line 588 */
@@ -1675,7 +1675,7 @@ int SV_PointSightTraceToEntity(const sightpointtrace_t *clip, svEntity_t *check)
         "popl %ebp\n"
         "retl\n"
         ".Lf1bd45c_001bd567:\n"
-        "movl 0x195ed4c, %edx\n"
+        "movl imp_vec3_origin, %edx\n"
         "jmp .Lf1bd45c_001bd51a\n"
         /* { scope 1 */
         ".Lf1bd45c_001bd56f:\n"
@@ -1786,7 +1786,7 @@ int SV_PointSightTraceToEntity(const sightpointtrace_t *clip, svEntity_t *check)
         "movl -0xbc(%ebp), %eax\n" /* obj */
         "movl %eax, (%esp)\n"
         "calll DObjGeomTraceline\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 575 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 575 | 1.0f */
         "ucomiss -0x60(%ebp), %xmm0\n" /* objTrace */
         "jbe .Lf1bd45c_001bd55a\n"
         ".Lf1bd45c_001bd742:\n"
@@ -1827,7 +1827,7 @@ int SV_SightTraceToEntity(const vec_t *start, const vec_t *mins, const vec_t *ma
         "je .Lf1bd776_001bd8d0\n"
         "movl $1, %edx\n"
         "leal -0x24(%ebp), %esi\n" /* boxmins */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         ".Lf1bd776_001bd7ae:\n"
         "leal (, %edx, 4), %eax\n" /* line 896 | entityNum */
         "movl 0x14(%ebp), %ecx\n" /* line 927 | end */
@@ -1873,7 +1873,7 @@ int SV_SightTraceToEntity(const vec_t *start, const vec_t *mins, const vec_t *ma
         "leal 0x144(%ebx), %edx\n" /* line 945 | ent */
         "cmpb $0, 0xf1(%ebx)\n" /* line 947 | ent */
         "jne .Lf1bd776_001bd88d\n"
-        "movl 0x195ed4c, %edx\n"
+        "movl imp_vec3_origin, %edx\n"
         ".Lf1bd776_001bd88d:\n"
         "movl %edx, 0x20(%esp)\n" /* line 950 */
         "movl %ecx, 0x1c(%esp)\n"

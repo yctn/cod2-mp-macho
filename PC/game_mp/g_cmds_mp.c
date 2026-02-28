@@ -9,8 +9,8 @@
  *   #include "PC/universal/q_shared.h"
  */
 
-static char line[1024]; /* 0xf31780 */
-static char * gc_orders[7]; /* 0x313c80 */
+static char line[1024]; /* line */
+static char * gc_orders[7]; /* gc_orders */
 
 void DeathmatchScoreboardMessage(gentity_t *ent);
 void Cmd_Score_f(gentity_t *ent);
@@ -44,7 +44,7 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
         "subl $0x9bc, %esp\n"
         /* { scope 1 */
         "movb $0, -0x990(%ebp)\n" /* line 25 | string */
-        "movl 0x195f6a0, %edi\n" /* line 30 | cl */
+        "movl imp_level, %edi\n" /* line 30 | cl */
         "movl 0x218(%edi), %eax\n" /* cl */
         "movl %eax, -0x99c(%ebp)\n" /* numSorted */
         "cmpl $0x40, %eax\n" /* line 31 */
@@ -68,7 +68,7 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
         "movl %eax, 0x10(%esp)\n"
         "movl (%ebx), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3600, 8(%esp)\n" /* " %i %i %i %i %i" */
+        "movl $str_002b3600, 8(%esp)\n" /* " %i %i %i %i %i" */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %eax\n" /* entry */
         "movl %eax, (%esp)\n"
@@ -96,7 +96,7 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
         "cmpl %eax, -0x99c(%ebp)\n" /* numSorted */
         "je .Lf1a2c34_001a2e00\n"
         "movl %edi, -0x9a4(%ebp)\n" /* cl, stringlength */
-        "movl 0x195f6a0, %edi\n" /* cl */
+        "movl imp_level, %edi\n" /* cl */
         ".Lf1a2c34_001a2d40:\n"
         "leal 0x21c(%esi), %ebx\n" /* line 13 */
         /* { scope 2 */
@@ -130,11 +130,11 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
         "movl -0x9a0(%ebp), %eax\n" /* i */
         "movl %eax, 8(%esp)\n"
         "movl $0x62, 4(%esp)\n"
-        "movl $0x2b3610, (%esp)\n" /* "%c %i %i %i%s" */
+        "movl $str_002b3610, (%esp)\n" /* "%c %i %i %i%s" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "subl %eax, 8(%ebp)\n" /* ent */
         "sarl $4, 8(%ebp)\n" /* ent */
         "imull $0x8af8af8b, 8(%ebp), %eax\n" /* ent */
@@ -151,10 +151,10 @@ void DeathmatchScoreboardMessage(gentity_t *ent)
         ".Lf1a2c34_001a2e00:\n"
         "movl -0x99c(%ebp), %eax\n" /* line 34 | numSorted */
         "movl %eax, -0x9a0(%ebp)\n" /* i */
-        "movl 0x195f6a0, %edi\n" /* cl */
+        "movl imp_level, %edi\n" /* cl */
         "jmp .Lf1a2c34_001a2d92\n"
         ".Lf1a2c34_001a2e17:\n"
-        "movl 0x195f6a0, %edi\n" /* cl */
+        "movl imp_level, %edi\n" /* cl */
         "jmp .Lf1a2c34_001a2d92\n"
     );
 }
@@ -175,7 +175,7 @@ qboolean CheatsOk(gentity_t *ent)
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* ent */
-        "movl 0x195f708, %eax\n" /* line 79 */
+        "movl imp_g_cheats, %eax\n" /* line 79 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a2e2c_001a2e58\n"
@@ -189,12 +189,12 @@ qboolean CheatsOk(gentity_t *ent)
         "retl\n"
         ".Lf1a2e2c_001a2e58:\n"
         "movl $0x65, 4(%esp)\n" /* line 81 */
-        "movl $0x2b3620, (%esp)\n" /* "%c "GAME_CHEATSNOTENABLED"" */
+        "movl $str_002b3620, (%esp)\n" /* "%c "GAME_CHEATSNOTENABLED"" */
         ".Lf1a2e2c_001a2e67:\n"
         "calll va\n" /* line 86 */
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "subl 0x195f688, %ebx\n" /* ent */
+        "subl imp_g_entities, %ebx\n" /* ent */
         "sarl $4, %ebx\n" /* ent */
         "imull $0x8af8af8b, %ebx, %eax\n" /* ent */
         "movl %eax, (%esp)\n"
@@ -206,7 +206,7 @@ qboolean CheatsOk(gentity_t *ent)
         "retl\n"
         ".Lf1a2e2c_001a2e97:\n"
         "movl $0x65, 4(%esp)\n" /* line 86 */
-        "movl $0x2b363c, (%esp)\n" /* "%c "GAME_MUSTBEALIVECOMMAND"" */
+        "movl $str_002b363c, (%esp)\n" /* "%c "GAME_MUSTBEALIVECOMMAND"" */
         "jmp .Lf1a2e2c_001a2e67\n"
     );
 }
@@ -305,7 +305,7 @@ void G_setfog(const char *fogstring)
         "movl %ebx, 4(%esp)\n" /* line 232 | fogstring */
         "movl $0xc, (%esp)\n"
         "calll SV_SetConfigstring\n"
-        "movl 0x195f6a0, %esi\n" /* line 235 */
+        "movl imp_level, %esi\n" /* line 235 */
         "movl $0x7f7fffff, %eax\n"
         "movl %eax, 0x1dd8(%esi)\n"
         "movl %eax, 0x1ddc(%esi)\n" /* line 236 */
@@ -323,7 +323,7 @@ void G_setfog(const char *fogstring)
         "movl %eax, 0xc(%esp)\n"
         "leal -0xc(%ebp), %eax\n" /* fNear */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b365c, 4(%esp)\n" /* "%f %f %f %f %f %f %d" */
+        "movl $str_002b365c, 4(%esp)\n" /* "%f %f %f %f %f %f %d" */
         "movl %ebx, (%esp)\n" /* fogstring */
         "calll sscanf\n"
         "cmpl $7, %eax\n"
@@ -338,7 +338,7 @@ void G_setfog(const char *fogstring)
         /* { scope 1 */
         ".Lf1a2f98_001a3017:\n"
         "movss -0x14(%ebp), %xmm0\n" /* line 239 | fDensity */
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jb .Lf1a2f98_001a3010\n"
         "movss -0xc(%ebp), %xmm1\n" /* line 241 | fNear */
         "movss -0x10(%ebp), %xmm0\n" /* fFar */
@@ -374,7 +374,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir)
         "cmpl $-1, %edi\n" /* dir */
         "je .Lf1a3054_001a3085\n"
         "movl %edi, 8(%esp)\n" /* line 741 | dir */
-        "movl $0x2b3724, 4(%esp)\n" /* "Cmd_FollowCycle_f: bad dir %i" */
+        "movl $str_002b3724, 4(%esp)\n" /* "Cmd_FollowCycle_f: bad dir %i" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf1a3054_001a3085:\n"
@@ -423,7 +423,7 @@ qboolean Cmd_FollowCycle_f(gentity_t *ent, int dir)
         "movl 0x158(%eax), %edx\n"
         ".Lf1a3054_001a30f8:\n"
         "addl %edi, %ebx\n" /* line 759 | dir */
-        "movl 0x195f6a0, %eax\n" /* line 760 */
+        "movl imp_level, %eax\n" /* line 760 */
         "movl 0x1e4(%eax), %eax\n"
         "cmpl %eax, %ebx\n"
         "jge .Lf1a3054_001a30c2\n"
@@ -470,15 +470,15 @@ void Cmd_CallVote_f(gentity_t *ent)
         "subl $0x37c, %esp\n"
         "movl 8(%ebp), %esi\n" /* ent */
         /* { scope 1: kicknum */
-        "movl 0x195f700, %eax\n" /* line 1067 */
+        "movl imp_g_allowVote, %eax\n" /* line 1067 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a3178_001a3288\n"
-        "movl 0x195f70c, %eax\n" /* line 1073 */
+        "movl imp_g_oldVoting, %eax\n" /* line 1073 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a3178_001a31d8\n"
-        "movl 0x195f6a0, %eax\n" /* line 1075 */
+        "movl imp_level, %eax\n" /* line 1075 */
         "movl 0xb1c(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf1a3178_001a3299\n"
@@ -510,12 +510,12 @@ void Cmd_CallVote_f(gentity_t *ent)
         "je .Lf1a3178_001a32bb\n"
         ".Lf1a3178_001a3246:\n"
         "movl $0x65, 4(%esp)\n" /* line 1101 */
-        "movl $0x2b37c8, (%esp)\n" /* "%c "GAME_INVALIDVOTESTRING"" */
+        "movl $str_002b37c8, (%esp)\n" /* "%c "GAME_INVALIDVOTESTRING"" */
         ".Lf1a3178_001a3255:\n"
         "calll va\n" /* line 1077 */
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "subl 0x195f688, %esi\n" /* ent */
+        "subl imp_g_entities, %esi\n" /* ent */
         "sarl $4, %esi\n" /* ent */
         "imull $0x8af8af8b, %esi, %eax\n" /* ent */
         "movl %eax, (%esp)\n"
@@ -531,15 +531,15 @@ void Cmd_CallVote_f(gentity_t *ent)
         /* { scope 1: kicknum */
         ".Lf1a3178_001a3288:\n"
         "movl $0x65, 4(%esp)\n" /* line 1069 */
-        "movl $0x2b3750, (%esp)\n" /* "%c "GAME_VOTINGNOTENABLED"" */
+        "movl $str_002b3750, (%esp)\n" /* "%c "GAME_VOTINGNOTENABLED"" */
         "jmp .Lf1a3178_001a3255\n"
         ".Lf1a3178_001a3299:\n"
         "movl $0x65, 4(%esp)\n" /* line 1077 */
-        "movl $0x2b376c, (%esp)\n" /* "%c "GAME_VOTEALREADYINPROGRESS"" */
+        "movl $str_002b376c, (%esp)\n" /* "%c "GAME_VOTEALREADYINPROGRESS"" */
         "jmp .Lf1a3178_001a3255\n"
         ".Lf1a3178_001a32aa:\n"
         "movl $0x65, 4(%esp)\n" /* line 1083 */
-        "movl $0x2b378c, (%esp)\n" /* "%c "GAME_MAXVOTESCALLED"" */
+        "movl $str_002b378c, (%esp)\n" /* "%c "GAME_MAXVOTESCALLED"" */
         "jmp .Lf1a3178_001a3255\n"
         ".Lf1a3178_001a32bb:\n"
         "movl $0x3b, 4(%esp)\n" /* line 1099 */
@@ -553,22 +553,22 @@ void Cmd_CallVote_f(gentity_t *ent)
         "calll strchr\n"
         "testl %eax, %eax\n"
         "jne .Lf1a3178_001a3246\n"
-        "movl 0x195f70c, %eax\n" /* line 1105 */
+        "movl imp_g_oldVoting, %eax\n" /* line 1105 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a3178_001a342d\n"
-        "movl $0x2a74bc, 4(%esp)\n" /* line 1107 */
+        "movl $str_002a74bc, 4(%esp)\n" /* line 1107 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1a3178_001a348e\n"
         ".Lf1a3178_001a331a:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1142 */
+        "movl imp_level, %eax\n" /* line 1142 */
         "movl 0xb20(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf1a3178_001a35b2\n"
         ".Lf1a3178_001a332d:\n"
-        "movl $0x2b37e4, 4(%esp)\n" /* line 1148 */
+        "movl $str_002b37e4, 4(%esp)\n" /* line 1148 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -579,7 +579,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "calll Scr_IsValidGameType\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a347a\n"
-        "movl 0x195f6a8, %eax\n" /* line 1157 */
+        "movl imp_g_gametype, %eax\n" /* line 1157 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -600,8 +600,8 @@ void Cmd_CallVote_f(gentity_t *ent)
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a37bd\n"
         "movl $0x1044, 8(%esp)\n" /* line 1166 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2a7124, (%esp)\n" /* "mapname" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_002a7124, (%esp)\n" /* "mapname" */
         "calll Dvar_RegisterString\n"
         "movl 8(%eax), %eax\n" /* line 1167 */
         "movl %eax, 4(%esp)\n"
@@ -616,12 +616,12 @@ void Cmd_CallVote_f(gentity_t *ent)
         "testb %bl, %bl\n"
         "jne .Lf1a3178_001a3895\n"
         "movl $0x65, 4(%esp)\n" /* line 1172 */
-        "movl $0x2b3900, (%esp)\n" /* "%c "GAME_TYPEMAP_NOCHANGE"" */
+        "movl $str_002b3900, (%esp)\n" /* "%c "GAME_TYPEMAP_NOCHANGE"" */
         "jmp .Lf1a3178_001a3255\n"
         /* } scope */
         ".Lf1a3178_001a3419:\n"
         "movl $0x65, 4(%esp)\n" /* line 1089 */
-        "movl $0x2b37a8, (%esp)\n" /* "%c "GAME_NOSPECTATORCALLVOTE"" */
+        "movl $str_002b37a8, (%esp)\n" /* "%c "GAME_NOSPECTATORCALLVOTE"" */
         "jmp .Lf1a3178_001a3255\n"
         ".Lf1a3178_001a342d:\n"
         "movl %edi, 0xc(%esp)\n" /* line 1293 | i */
@@ -632,7 +632,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "calll Scr_VoteCalled\n"
         "jmp .Lf1a3178_001a327d\n"
         ".Lf1a3178_001a344c:\n"
-        "movl $0x2a7100, 4(%esp)\n" /* line 1194 */
+        "movl $str_002a7100, 4(%esp)\n" /* line 1194 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -644,53 +644,53 @@ void Cmd_CallVote_f(gentity_t *ent)
         "jne .Lf1a3178_001a37d1\n"
         ".Lf1a3178_001a347a:\n"
         "movl $0x65, 4(%esp)\n" /* line 1198 */
-        "movl $0x2b38bc, (%esp)\n" /* "%c "GAME_INVALIDGAMETYPE"" */
+        "movl $str_002b38bc, (%esp)\n" /* "%c "GAME_INVALIDGAMETYPE"" */
         "jmp .Lf1a3178_001a3255\n"
         ".Lf1a3178_001a348e:\n"
-        "movl $0x2ac814, 4(%esp)\n" /* line 1110 */
+        "movl $str_002ac814, 4(%esp)\n" /* line 1110 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
-        "movl $0x2b37e4, 4(%esp)\n" /* line 1113 */
+        "movl $str_002b37e4, 4(%esp)\n" /* line 1113 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
-        "movl $0x2ac808, 4(%esp)\n" /* line 1116 */
+        "movl $str_002ac808, 4(%esp)\n" /* line 1116 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
-        "movl $0x2a7100, 4(%esp)\n" /* line 1119 */
+        "movl $str_002a7100, 4(%esp)\n" /* line 1119 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
-        "movl $0x2ac790, 4(%esp)\n" /* line 1122 */
+        "movl $str_002ac790, 4(%esp)\n" /* line 1122 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
-        "movl $0x2ac7c0, 4(%esp)\n" /* line 1125 */
+        "movl $str_002ac7c0, 4(%esp)\n" /* line 1125 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
-        "movl $0x2ac798, 4(%esp)\n" /* line 1128 */
+        "movl $str_002ac798, 4(%esp)\n" /* line 1128 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
-        "movl $0x2ac7a4, 4(%esp)\n" /* line 1131 */
+        "movl $str_002ac7a4, 4(%esp)\n" /* line 1131 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a331a\n"
         "movl $0x65, 4(%esp)\n" /* line 1136 */
-        "movl $0x2b37c8, (%esp)\n" /* "%c "GAME_INVALIDVOTESTRING"" */
+        "movl $str_002b37c8, (%esp)\n" /* "%c "GAME_INVALIDVOTESTRING"" */
         "calll va\n"
-        "subl 0x195f688, %esi\n" /* ent */
+        "subl imp_g_entities, %esi\n" /* ent */
         "sarl $4, %esi\n" /* ent */
         "imull $0x8af8af8b, %esi, %ebx\n" /* ent */
         "movl %eax, 8(%esp)\n"
@@ -698,7 +698,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl %ebx, (%esp)\n"
         "calll SV_GameSendServerCommand\n"
         "movl $0x65, 4(%esp)\n" /* line 1137 */
-        "movl $0x2b37ec, (%esp)\n" /* "%c "GAME_VOTECOMMANDSARE map_restart, map_rotate, map <mapn" */
+        "movl $str_002b37ec, (%esp)\n" /* "%c "GAME_VOTECOMMANDSARE map_restart, map_rotate, map <mapn" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -709,7 +709,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl $0, 0xb20(%eax)\n" /* line 1144 */
         "addl $0x31c, %eax\n" /* line 1145 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -717,22 +717,22 @@ void Cmd_CallVote_f(gentity_t *ent)
         "calll Cbuf_ExecuteText\n"
         "jmp .Lf1a3178_001a332d\n"
         ".Lf1a3178_001a35e6:\n"
-        "movl $0x2a74bc, 4(%esp)\n" /* line 1205 */
+        "movl $str_002a74bc, 4(%esp)\n" /* line 1205 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1a3178_001a3772\n"
-        "movl $0x2ac7f8, 8(%esp)\n" /* line 1207 */
+        "movl $str_002ac7f8, 8(%esp)\n" /* line 1207 */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x31c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
-        "movl $0x2b39bc, 8(%esp)\n" /* line 1208 */
+        "movl $str_002b39bc, 8(%esp)\n" /* line 1208 */
         /* { scope 2 */
         ".Lf1a3178_001a3628:\n"
         "movl $0x400, 4(%esp)\n" /* line 1191 */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x71c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
@@ -742,13 +742,13 @@ void Cmd_CallVote_f(gentity_t *ent)
         "addl $0x2784, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x65, 4(%esp)\n"
-        "movl $0x2b3a24, (%esp)\n" /* "%c "GAME_CALLEDAVOTE%s"" */
+        "movl $str_002b3a24, (%esp)\n" /* "%c "GAME_CALLEDAVOTE%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl $0xffffffff, (%esp)\n"
         "calll SV_GameSendServerCommand\n"
-        "movl 0x195f6a0, %ebx\n" /* line 1278 */
+        "movl imp_level, %ebx\n" /* line 1278 */
         "movl 0x1ec(%ebx), %eax\n"
         "addl $0x7530, %eax\n"
         "movl %eax, 0xb1c(%ebx)\n"
@@ -772,7 +772,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "orl $0x100000, 0xa0(%eax)\n"
         "movl 0xb1c(%ebx), %eax\n" /* line 1286 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0xf, (%esp)\n"
@@ -783,45 +783,45 @@ void Cmd_CallVote_f(gentity_t *ent)
         "calll SV_SetConfigstring\n"
         "movl 0xb24(%ebx), %eax\n" /* line 1288 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x11, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl 0xb28(%ebx), %eax\n" /* line 1289 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x12, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "jmp .Lf1a3178_001a327d\n"
         ".Lf1a3178_001a3772:\n"
-        "movl $0x2ac814, 4(%esp)\n" /* line 1210 */
+        "movl $str_002ac814, 4(%esp)\n" /* line 1210 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1a3178_001a3820\n"
         "movl %ebx, 0xc(%esp)\n" /* line 1212 */
-        "movl $0x216058, 8(%esp)\n" /* "%s" */
+        "movl $str_00216058, 8(%esp)\n" /* "%s" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x31c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
-        "movl $0x2b39d4, 8(%esp)\n" /* line 1213 */
+        "movl $str_002b39d4, 8(%esp)\n" /* line 1213 */
         "jmp .Lf1a3178_001a3628\n"
         ".Lf1a3178_001a37bd:\n"
         "movl $0x65, 4(%esp)\n" /* line 1219 */
-        "movl $0x2b38d8, (%esp)\n" /* "%c "the server doesn't have that map"" */
+        "movl $str_002b38d8, (%esp)\n" /* "%c "the server doesn't have that map"" */
         "jmp .Lf1a3178_001a3255\n"
         ".Lf1a3178_001a37d1:\n"
         "leal -0x258(%ebp), %eax\n" /* line 1202 | arg2 */
         "movl %eax, 0x10(%esp)\n"
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b39a8, 8(%esp)\n" /* "%s %s; map_restart" */
+        "movl $str_002b39a8, 8(%esp)\n" /* "%s %s; map_restart" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x31c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
@@ -829,10 +829,10 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl %edx, (%esp)\n"
         "calll Scr_GetGameTypeNameForScript\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3990, 8(%esp)\n" /* "GAME_VOTE_GAMETYPE%s" */
+        "movl $str_002b3990, 8(%esp)\n" /* "GAME_VOTE_GAMETYPE%s" */
         "jmp .Lf1a3178_001a3628\n"
         ".Lf1a3178_001a3820:\n"
-        "movl $0x2ac808, 4(%esp)\n" /* line 1215 */
+        "movl $str_002ac808, 4(%esp)\n" /* line 1215 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -845,22 +845,22 @@ void Cmd_CallVote_f(gentity_t *ent)
         "leal -0x258(%ebp), %edx\n" /* line 1222 | arg2 */
         "movl %edx, 0x10(%esp)\n"
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2ae9f4, 8(%esp)\n" /* "%s %s" */
+        "movl $str_002ae9f4, 8(%esp)\n" /* "%s %s" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x31c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
         "leal -0x258(%ebp), %eax\n" /* line 1223 | arg2 */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3960, 8(%esp)\n" /* "GAME_VOTE_MAP%s" */
+        "movl $str_002b3960, 8(%esp)\n" /* "GAME_VOTE_MAP%s" */
         "jmp .Lf1a3178_001a3628\n"
         /* { scope 2 */
         ".Lf1a3178_001a3895:\n"
         "movl %edi, 0xc(%esp)\n" /* line 1181 */
-        "movl $0x2b3a40, 8(%esp)\n" /* "map %s" */
+        "movl $str_002b3a40, 8(%esp)\n" /* "map %s" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x31c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
@@ -872,9 +872,9 @@ void Cmd_CallVote_f(gentity_t *ent)
         "calll Scr_GetGameTypeNameForScript\n"
         "movl %edi, 0x10(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3934, 8(%esp)\n" /* "GAME_VOTE_GAMETYPE%s - GAME_VOTE_MAP%s" */
+        "movl $str_002b3934, 8(%esp)\n" /* "GAME_VOTE_GAMETYPE%s - GAME_VOTE_MAP%s" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x71c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
@@ -885,28 +885,28 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl %edi, 0x10(%esp)\n" /* line 1179 */
         "leal -0x258(%ebp), %edx\n" /* arg2 */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2b391c, 8(%esp)\n" /* "g_gametype %s; map %s" */
+        "movl $str_002b391c, 8(%esp)\n" /* "g_gametype %s; map %s" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x31c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
         "jmp .Lf1a3178_001a38bb\n"
         /* } scope */
         ".Lf1a3178_001a3947:\n"
-        "movl $0x2ac790, 4(%esp)\n" /* line 1225 */
+        "movl $str_002ac790, 4(%esp)\n" /* line 1225 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a3973\n"
-        "movl $0x2ac7c0, 4(%esp)\n" /* "clientkick" */
+        "movl $str_002ac7c0, 4(%esp)\n" /* "clientkick" */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1a3178_001a3b6a\n"
         /* { scope 2 */
         ".Lf1a3178_001a3973:\n"
-        "movl $0x2ac790, 4(%esp)\n" /* line 1230 */
+        "movl $str_002ac790, 4(%esp)\n" /* line 1230 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -923,7 +923,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "je .Lf1a3178_001a3b9f\n"
         ".Lf1a3178_001a39ad:\n"
         "movl %ebx, %eax\n" /* line 1234 */
-        "movl 0x195f6a0, %edx\n"
+        "movl imp_level, %edx\n"
         "addl (%edx), %eax\n"
         "cmpl $2, 0x26c4(%eax)\n"
         "jne .Lf1a3178_001a399b\n"
@@ -947,7 +947,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl %eax, -0x35c(%ebp)\n" /* kicknum */
         "jmp .Lf1a3178_001a399b\n"
         ".Lf1a3178_001a3a0f:\n"
-        "movl $0x2ac798, 4(%esp)\n" /* line 1230 */
+        "movl $str_002ac798, 4(%esp)\n" /* line 1230 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -970,17 +970,17 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl -0x35c(%ebp), %edx\n" /* kicknum */
         "leal (%edx, %eax, 8), %eax\n"
         "leal (, %eax, 4), %edi\n" /* i */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl (%eax), %edx\n"
         "leal (%edi, %edx), %eax\n" /* i */
         "cmpl $2, 0x26c4(%eax)\n"
         "je .Lf1a3178_001a3aae\n"
         ".Lf1a3178_001a3a7e:\n"
         "movl $0x65, 4(%esp)\n" /* line 1262 */
-        "movl $0x2b39e8, (%esp)\n" /* "%c "GAME_CLIENTNOTONSERVER"" */
+        "movl $str_002b39e8, (%esp)\n" /* "%c "GAME_CLIENTNOTONSERVER"" */
         "jmp .Lf1a3178_001a3255\n"
         ".Lf1a3178_001a3a92:\n"
-        "movl $0x21952c, 4(%esp)\n" /* line 1247 */
+        "movl $str_0021952c, 4(%esp)\n" /* line 1247 */
         "leal -0x258(%ebp), %edx\n" /* arg2 */
         "movl %edx, (%esp)\n"
         "calll I_stricmp\n"
@@ -1002,14 +1002,14 @@ void Cmd_CallVote_f(gentity_t *ent)
         "je .Lf1a3178_001a3c1c\n"
         "cmpb $0x54, %al\n"
         "je .Lf1a3178_001a3c1c\n"
-        "movl $0x2ac7c0, %eax\n" /* "clientkick" */
+        "movl $str_002ac7c0, %eax\n" /* "clientkick" */
         ".Lf1a3178_001a3aee:\n"
         "movl -0x35c(%ebp), %edx\n" /* kicknum */
         "movl %edx, 0x10(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3a04, 8(%esp)\n" /* "%s "%d"" */
+        "movl $str_002b3a04, 8(%esp)\n" /* "%s "%d"" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         "leal 0x31c(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
@@ -1018,7 +1018,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl %eax, 0x10(%esp)\n"
         "movl -0x35c(%ebp), %eax\n" /* kicknum */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3a0c, 8(%esp)\n" /* "GAME_VOTE_KICK(%i)%s" */
+        "movl $str_002b3a0c, 8(%esp)\n" /* "GAME_VOTE_KICK(%i)%s" */
         "movl $0x400, 4(%esp)\n"
         "addl $0x71c, %ebx\n"
         "movl %ebx, (%esp)\n"
@@ -1028,16 +1028,16 @@ void Cmd_CallVote_f(gentity_t *ent)
         /* { scope 2 */
         ".Lf1a3178_001a3b59:\n"
         "movl %edi, 0xc(%esp)\n" /* line 1186 */
-        "movl $0x2b3960, 8(%esp)\n" /* "GAME_VOTE_MAP%s" */
+        "movl $str_002b3960, 8(%esp)\n" /* "GAME_VOTE_MAP%s" */
         "jmp .Lf1a3178_001a3628\n"
         /* } scope */
         ".Lf1a3178_001a3b6a:\n"
-        "movl $0x2ac798, 4(%esp)\n" /* line 1225 */
+        "movl $str_002ac798, 4(%esp)\n" /* line 1225 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a3178_001a3973\n"
-        "movl $0x2ac7a4, 4(%esp)\n" /* "tempBanClient" */
+        "movl $str_002ac7a4, 4(%esp)\n" /* "tempBanClient" */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1061,9 +1061,9 @@ void Cmd_CallVote_f(gentity_t *ent)
         ".Lf1a3178_001a3bd1:\n"
         "leal -0x258(%ebp), %edx\n" /* line 1190 | arg2 */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2b3974, 8(%esp)\n" /* "g_gametype %s; map_restart" */
+        "movl $str_002b3974, 8(%esp)\n" /* "g_gametype %s; map_restart" */
         "movl $0x400, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x31c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
@@ -1071,12 +1071,12 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl %eax, (%esp)\n"
         "calll Scr_GetGameTypeNameForScript\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3990, 8(%esp)\n" /* "GAME_VOTE_GAMETYPE%s" */
+        "movl $str_002b3990, 8(%esp)\n" /* "GAME_VOTE_GAMETYPE%s" */
         "jmp .Lf1a3178_001a3628\n"
         /* } scope */
         /* { scope 2 */
         ".Lf1a3178_001a3c1c:\n"
-        "movl $0x2ac7a4, %eax\n" /* line 1266 */
+        "movl $str_002ac7a4, %eax\n" /* line 1266 */
         "jmp .Lf1a3178_001a3aee\n"
     );
 }
@@ -1092,11 +1092,11 @@ void Cmd_Vote_f(gentity_t *ent)
         "subl $0x54, %esp\n"
         "movl 8(%ebp), %ebx\n" /* ent */
         /* { scope 1 */
-        "movl 0x195f70c, %eax\n" /* line 1306 */
+        "movl imp_g_oldVoting, %eax\n" /* line 1306 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a3c26_001a3cb9\n"
-        "movl 0x195f6a0, %eax\n" /* line 1308 */
+        "movl imp_level, %eax\n" /* line 1308 */
         "movl 0xb1c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1a3c26_001a3d39\n"
@@ -1106,12 +1106,12 @@ void Cmd_Vote_f(gentity_t *ent)
         "cmpl $3, 0x274c(%eax)\n" /* line 1318 */
         "je .Lf1a3c26_001a3de7\n"
         "movl $0x65, 4(%esp)\n" /* line 1324 */
-        "movl $0x2b3a9c, (%esp)\n" /* "%c "GAME_VOTECAST"" */
+        "movl $str_002b3a9c, (%esp)\n" /* "%c "GAME_VOTECAST"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %ebx, %eax\n" /* ent */
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -1131,16 +1131,16 @@ void Cmd_Vote_f(gentity_t *ent)
         "je .Lf1a3c26_001a3d76\n"
         "cmpb $0x31, %al\n"
         "je .Lf1a3c26_001a3d76\n"
-        "movl 0x195f70c, %eax\n" /* line 1345 */
+        "movl imp_g_oldVoting, %eax\n" /* line 1345 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a3c26_001a3dfb\n"
-        "movl 0x195f6a0, %eax\n" /* line 1347 */
+        "movl imp_level, %eax\n" /* line 1347 */
         "movl 0xb28(%eax), %edx\n"
         "addl $1, %edx\n"
         "movl %edx, 0xb28(%eax)\n"
         "movl %edx, 4(%esp)\n" /* line 1348 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x12, (%esp)\n"
@@ -1148,12 +1148,12 @@ void Cmd_Vote_f(gentity_t *ent)
         "jmp .Lf1a3c26_001a3d70\n"
         ".Lf1a3c26_001a3d39:\n"
         "movl $0x65, 4(%esp)\n" /* line 1310 */
-        "movl $0x2b3a48, (%esp)\n" /* "%c "GAME_NOVOTEINPROGRESS"" */
+        "movl $str_002b3a48, (%esp)\n" /* "%c "GAME_NOVOTEINPROGRESS"" */
         ".Lf1a3c26_001a3d48:\n"
         "calll va\n" /* line 1315 */
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "subl 0x195f688, %ebx\n" /* ent */
+        "subl imp_g_entities, %ebx\n" /* ent */
         "sarl $4, %ebx\n" /* ent */
         "imull $0x8af8af8b, %ebx, %eax\n" /* ent */
         "movl %eax, (%esp)\n"
@@ -1166,11 +1166,11 @@ void Cmd_Vote_f(gentity_t *ent)
         "retl\n"
         /* { scope 1 */
         ".Lf1a3c26_001a3d76:\n"
-        "movl 0x195f70c, %eax\n" /* line 1333 */
+        "movl imp_g_oldVoting, %eax\n" /* line 1333 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1a3c26_001a3d99\n"
-        "movl $0x2b3ab0, 4(%esp)\n" /* line 1340 */
+        "movl $str_002b3ab0, 4(%esp)\n" /* line 1340 */
         "movl %ebx, (%esp)\n" /* ent */
         "calll Scr_PlayerVote\n"
         /* } scope */
@@ -1180,12 +1180,12 @@ void Cmd_Vote_f(gentity_t *ent)
         "retl\n"
         /* { scope 1 */
         ".Lf1a3c26_001a3d99:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1335 */
+        "movl imp_level, %eax\n" /* line 1335 */
         "movl 0xb24(%eax), %edx\n"
         "addl $1, %edx\n"
         "movl %edx, 0xb24(%eax)\n"
         "movl %edx, 4(%esp)\n" /* line 1336 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x11, (%esp)\n"
@@ -1198,14 +1198,14 @@ void Cmd_Vote_f(gentity_t *ent)
         /* { scope 1 */
         ".Lf1a3c26_001a3dd3:\n"
         "movl $0x65, 4(%esp)\n" /* line 1315 */
-        "movl $0x2b3a64, (%esp)\n" /* "%c "GAME_VOTEALREADYCAST"" */
+        "movl $str_002b3a64, (%esp)\n" /* "%c "GAME_VOTEALREADYCAST"" */
         "jmp .Lf1a3c26_001a3d48\n"
         ".Lf1a3c26_001a3de7:\n"
         "movl $0x65, 4(%esp)\n" /* line 1320 */
-        "movl $0x2b3a80, (%esp)\n" /* "%c "GAME_NOSPECTATORVOTE"" */
+        "movl $str_002b3a80, (%esp)\n" /* "%c "GAME_NOSPECTATORVOTE"" */
         "jmp .Lf1a3c26_001a3d48\n"
         ".Lf1a3c26_001a3dfb:\n"
-        "movl $0x2b3ab4, 4(%esp)\n" /* line 1352 */
+        "movl $str_002b3ab4, 4(%esp)\n" /* line 1352 */
         "movl %ebx, (%esp)\n" /* ent */
         "calll Scr_PlayerVote\n"
         "jmp .Lf1a3c26_001a3d70\n"
@@ -1225,17 +1225,17 @@ void Cmd_SetViewpos_f(gentity_t *ent)
         "subl $0x44c, %esp\n"
         "movl 8(%ebp), %esi\n" /* ent */
         /* { scope 1 */
-        "movl 0x195f708, %eax\n" /* line 1375 */
+        "movl imp_g_cheats, %eax\n" /* line 1375 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1a3e10_001a3e6e\n"
         "movl $0x65, 4(%esp)\n" /* line 1377 */
-        "movl $0x2b3620, (%esp)\n" /* "%c "GAME_CHEATSNOTENABLED"" */
+        "movl $str_002b3620, (%esp)\n" /* "%c "GAME_CHEATSNOTENABLED"" */
         ".Lf1a3e10_001a3e3b:\n"
         "calll va\n" /* line 1382 */
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "subl 0x195f688, %esi\n" /* ent */
+        "subl imp_g_entities, %esi\n" /* ent */
         "sarl $4, %esi\n" /* ent */
         "imull $0x8af8af8b, %esi, %eax\n" /* ent */
         "movl %eax, (%esp)\n"
@@ -1253,7 +1253,7 @@ void Cmd_SetViewpos_f(gentity_t *ent)
         "cmpl $5, %eax\n"
         "je .Lf1a3e10_001a3e89\n"
         "movl $0x65, 4(%esp)\n" /* line 1382 */
-        "movl $0x2b3ab8, (%esp)\n" /* "%c "GAME_USAGE: setviewpos x y z yaw"" */
+        "movl $str_002b3ab8, (%esp)\n" /* "%c "GAME_USAGE: setviewpos x y z yaw"" */
         "jmp .Lf1a3e10_001a3e3b\n"
         ".Lf1a3e10_001a3e89:\n"
         "xorl %eax, %eax\n" /* line 183 */
@@ -1328,7 +1328,7 @@ void Cmd_MenuResponse_f(gentity_t *pEnt)
         "movl %esi, (%esp)\n" /* line 1452 */
         "calll Scr_AddString\n"
         "movl $2, 8(%esp)\n" /* line 1453 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x70(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* pEnt */
@@ -1351,7 +1351,7 @@ void Cmd_MenuResponse_f(gentity_t *pEnt)
         "movl %ebx, (%esp)\n" /* line 1436 */
         "calll atoi\n"
         "movl %eax, %ebx\n"
-        "movl $0x2a8d30, (%esp)\n" /* "sv_serverId" */
+        "movl $str_002a8d30, (%esp)\n" /* "sv_serverId" */
         "calll Dvar_GetInt\n"
         "cmpl %eax, %ebx\n"
         "jne .Lf1a3f40_001a3fa2\n"
@@ -1421,7 +1421,7 @@ void G_SayTo(int color, const char *name, const char *message)
         "cmpl $1, %ecx\n" /* line 832 */
         "je .Lf1a404e_001a4133\n"
         ".Lf1a404e_001a40a0:\n"
-        "movl 0x195f6fc, %eax\n" /* line 838 */
+        "movl imp_g_deadChat, %eax\n" /* line 838 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1a404e_001a40cd\n"
@@ -1446,11 +1446,11 @@ void G_SayTo(int color, const char *name, const char *message)
         "movl -0x20(%ebp), %edx\n" /* name */
         "movl %edx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b3af4, (%esp)\n" /* "%c "%s%c%c%s"" */
+        "movl $str_002b3af4, (%esp)\n" /* "%c "%s%c%c%s"" */
         "calll va\n"
         "movl %eax, 0x10(%ebp)\n" /* message */
         "movl $0, 0xc(%ebp)\n" /* name */
-        "subl 0x195f688, %ebx\n" /* other */
+        "subl imp_g_entities, %ebx\n" /* other */
         "sarl $4, %ebx\n" /* other */
         "imull $0x8af8af8b, %ebx, %eax\n" /* other */
         "movl %eax, 8(%ebp)\n" /* color */
@@ -1505,7 +1505,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "je .Lf1a414c_001a4419\n"
         "cmpl $2, %eax\n"
         "je .Lf1a414c_001a445e\n"
-        "movl $0x2157b8, %ecx\n"
+        "movl $str_002157b8, %ecx\n"
         "cmpl $3, %eax\n" /* line 881 */
         "je .Lf1a414c_001a44b9\n"
         "movl 0x26a8(%edx), %esi\n" /* line 883 | j */
@@ -1513,7 +1513,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "je .Lf1a414c_001a42c4\n"
         ".Lf1a414c_001a41cc:\n"
         "movl %ecx, 0xc(%esp)\n" /* line 884 */
-        "movl $0x2b3b20, 8(%esp)\n" /* "%s(GAME_DEAD)" */
+        "movl $str_002b3b20, 8(%esp)\n" /* "%s(GAME_DEAD)" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x98(%ebp), %eax\n" /* szStateString */
         "movl %eax, (%esp)\n"
@@ -1533,14 +1533,14 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "movl %edi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* pszTeamString */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b3b34, (%esp)\n" /* "say;%d;%d;%s;%s
+        "movl $str_002b3b34, (%esp)\n" /* "say;%d;%d;%s;%s
 " */
         "calll G_LogPrintf\n"
-        "movl $0x2b3b48, 0x14(%esp)\n" /* line 893 */
+        "movl $str_002b3b48, 0x14(%esp)\n" /* line 893 */
         "movl %edi, 0x10(%esp)\n"
         "leal -0x98(%ebp), %eax\n" /* szStateString */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3b4c, 8(%esp)\n" /* "%s%s%s: " */
+        "movl $str_002b3b4c, 8(%esp)\n" /* "%s%s%s: " */
         "movl $0x80, 4(%esp)\n"
         "leal -0x118(%ebp), %edx\n" /* name */
         "movl %edx, (%esp)\n"
@@ -1577,7 +1577,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         /* { scope 1 */
         ".Lf1a414c_001a42c4:\n"
         "movl %ecx, 0xc(%esp)\n" /* line 886 */
-        "movl $0x21cdd0, 8(%esp)\n" /* "%s" */
+        "movl $str_0021cdd0, 8(%esp)\n" /* "%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x98(%ebp), %edx\n" /* szStateString */
         "movl %edx, (%esp)\n"
@@ -1587,9 +1587,9 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         ".Lf1a414c_001a42f0:\n"
         "movl 8(%ebp), %edx\n" /* line 898 | ent */
         "movl 0x158(%edx), %eax\n"
-        "movl $0x2b3b58, %ebx\n" /* pszTeamString */
+        "movl $str_002b3b58, %ebx\n" /* pszTeamString */
         "cmpl $1, 0x274c(%eax)\n"
-        "movl $0x2b3b64, %eax\n" /* "GAME_ALLIES" */
+        "movl $str_002b3b64, %eax\n" /* "GAME_ALLIES" */
         "cmovnel %eax, %ebx\n" /* pszTeamString */
         "movl (%edx), %esi\n" /* line 903 | j */
         "movl %esi, (%esp)\n" /* j */
@@ -1599,15 +1599,15 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "movl %edi, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* j */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b3b70, (%esp)\n" /* "sayteam;%d;%d;%s;%s
+        "movl $str_002b3b70, (%esp)\n" /* "sayteam;%d;%d;%s;%s
 " */
         "calll G_LogPrintf\n"
-        "movl $0x2b3b48, 0x18(%esp)\n" /* line 904 */
+        "movl $str_002b3b48, 0x18(%esp)\n" /* line 904 */
         "movl %edi, 0x14(%esp)\n"
         "movl %ebx, 0x10(%esp)\n" /* pszTeamString */
         "leal -0x98(%ebp), %eax\n" /* szStateString */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3b88, 8(%esp)\n" /* "%s(%s)%s%s: " */
+        "movl $str_002b3b88, 8(%esp)\n" /* "%s(%s)%s%s: " */
         "movl $0x80, 4(%esp)\n"
         "leal -0x118(%ebp), %edx\n" /* name */
         "movl %edx, (%esp)\n"
@@ -1623,19 +1623,19 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "testl %ebx, %ebx\n" /* pszTeamString */
         "jne .Lf1a414c_001a4294\n"
         ".Lf1a414c_001a43a0:\n"
-        "movl 0x195f704, %eax\n" /* line 922 */
+        "movl imp_g_dedicated, %eax\n" /* line 922 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf1a414c_001a44e8\n"
         ".Lf1a414c_001a43b2:\n"
-        "movl 0x195f6a0, %eax\n" /* line 926 */
+        "movl imp_level, %eax\n" /* line 926 */
         "movl 0x1e4(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jle .Lf1a414c_001a42b9\n"
         "xorl %esi, %esi\n" /* j */
         "movl %eax, -0x1c0(%ebp)\n"
-        "movl 0x195f688, %ebx\n" /* pszTeamString */
+        "movl imp_g_entities, %ebx\n" /* pszTeamString */
         ".Lf1a414c_001a43d3:\n"
         "movl %edi, 8(%esp)\n" /* line 929 */
         "leal -0x118(%ebp), %eax\n" /* name */
@@ -1660,7 +1660,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "retl\n"
         /* { scope 1 */
         ".Lf1a414c_001a4419:\n"
-        "movl $0x2b3b04, %ecx\n" /* line 866 */
+        "movl $str_002b3b04, %ecx\n" /* line 866 */
         "movl 0x26a8(%edx), %esi\n" /* line 883 | j */
         "testl %esi, %esi\n" /* j */
         "je .Lf1a414c_001a42c4\n"
@@ -1676,17 +1676,17 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "movl $0, 0x10(%ebp)\n" /* mode */
         "jmp .Lf1a414c_001a416b\n"
         ".Lf1a414c_001a445e:\n"
-        "movl $0x2b3b08, %ecx\n" /* line 866 */
+        "movl $str_002b3b08, %ecx\n" /* line 866 */
         "movl 0x26a8(%edx), %esi\n" /* line 883 | j */
         "testl %esi, %esi\n" /* j */
         "je .Lf1a414c_001a42c4\n"
         "jmp .Lf1a414c_001a41cc\n"
         ".Lf1a414c_001a4476:\n"
-        "movl $0x2b3b48, 0x14(%esp)\n" /* line 908 */
+        "movl $str_002b3b48, 0x14(%esp)\n" /* line 908 */
         "movl %edi, 0x10(%esp)\n"
         "leal -0x98(%ebp), %eax\n" /* szStateString */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3b98, 8(%esp)\n" /* "%s[%s]%s: " */
+        "movl $str_002b3b98, 8(%esp)\n" /* "%s[%s]%s: " */
         "movl $0x80, 4(%esp)\n"
         "leal -0x118(%ebp), %edx\n" /* name */
         "movl %edx, (%esp)\n"
@@ -1694,7 +1694,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "movl $0x33, -0x1bc(%ebp)\n" /* color */
         "jmp .Lf1a414c_001a426c\n"
         ".Lf1a414c_001a44b9:\n"
-        "movl $0x2b3b0c, 8(%esp)\n" /* line 882 */
+        "movl $str_002b3b0c, 8(%esp)\n" /* line 882 */
         "movl $0x40, 4(%esp)\n"
         "leal -0x98(%ebp), %edx\n" /* szStateString */
         "movl %edx, (%esp)\n"
@@ -1707,7 +1707,7 @@ void G_Say(gentity_t *ent, gentity_t *target, int mode, const char *chatText)
         "movl %edi, 8(%esp)\n" /* line 923 */
         "leal -0x118(%ebp), %edx\n" /* name */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b3ba4, (%esp)\n" /* "%s%s
+        "movl $str_002b3ba4, (%esp)\n" /* "%s%s
 " */
         "calll Com_Printf\n"
         "jmp .Lf1a414c_001a43b2\n"
@@ -1760,7 +1760,7 @@ void Cmd_GameCommand_f(gentity_t *ent)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
+        "addl imp_g_entities, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* ent */
         "movl %eax, (%esp)\n"
@@ -1819,9 +1819,9 @@ void StopFollowing(gentity_t *ent)
         "movl 8(%edx), %eax\n" /* line 201 */
         "movl %eax, -0x1c(%ebp)\n"
         /* } scope */
-        "addss 0x2ed908, %xmm0\n" /* line 692 | 15.0f */
+        "addss lit4_002ed908, %xmm0\n" /* line 692 | 15.0f */
         "movss %xmm0, -0x24(%ebp)\n" /* vAngles */
-        "movss 0x2ed998, %xmm1\n" /* line 288 | -40.0f */
+        "movss lit4_002ed998, %xmm1\n" /* line 288 | -40.0f */
         "movss -0x3c(%ebp), %xmm0\n" /* vForward */
         "mulss %xmm1, %xmm0\n"
         "addss -0x30(%ebp), %xmm0\n" /* vPos */
@@ -1833,7 +1833,7 @@ void StopFollowing(gentity_t *ent)
         "mulss -0x34(%ebp), %xmm1\n" /* line 290 */
         "addss -0x28(%ebp), %xmm1\n"
         "movss %xmm1, -0x4c(%ebp)\n"
-        "movss 0x2ed6b4, %xmm1\n" /* line 288 | 10.0f */
+        "movss lit4_002ed6b4, %xmm1\n" /* line 288 | 10.0f */
         "movss -0x48(%ebp), %xmm0\n" /* vUp */
         "mulss %xmm1, %xmm0\n"
         "addss -0x54(%ebp), %xmm0\n" /* vEnd */
@@ -1853,7 +1853,7 @@ void StopFollowing(gentity_t *ent)
         "movl %eax, -0x6c(%ebp)\n" /* vMaxs */
         "movl %eax, -0x68(%ebp)\n" /* line 192 */
         "movl %eax, -0x64(%ebp)\n" /* line 193 */
-        "movl $0x810011, 0x18(%esp)\n" /* line 700 */
+        "movl $s_debugFrameGlob+123281, 0x18(%esp)\n" /* line 700 */
         "movl $0x3ff, 0x14(%esp)\n"
         "leal -0x54(%ebp), %eax\n" /* vEnd */
         "movl %eax, 0x10(%esp)\n"
@@ -1887,7 +1887,7 @@ void StopFollowing(gentity_t *ent)
         "movss %xmm1, -0x28(%ebp)\n"
         /* } scope */
         "movl %edi, %eax\n" /* line 703 | ent */
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "movl %eax, 0xcc(%esi)\n" /* client */
@@ -1977,7 +1977,7 @@ void Cmd_Give_f(gentity_t *ent)
         /* } scope */
         "cmpb $0, line\n" /* line 287 */
         "je .Lf1a4828_001a4843\n"
-        "movl $0x22540c, 4(%esp)\n" /* line 290 */
+        "movl $str_0022540c, 4(%esp)\n" /* line 290 */
         "movl $line, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1995,7 +1995,7 @@ void Cmd_Give_f(gentity_t *ent)
         "je .Lf1a4828_001a4843\n"
         /* { scope 2 */
         ".Lf1a4828_001a48f3:\n"
-        "movl 0x195f6a0, %eax\n" /* line 310 */
+        "movl imp_level, %eax\n" /* line 310 */
         "movl $1, 0x1c(%eax)\n"
         "movl 8(%ebp), %edx\n" /* line 312 | ent */
         "movl 0x158(%edx), %eax\n"
@@ -2063,7 +2063,7 @@ void Cmd_Give_f(gentity_t *ent)
         /* } scope */
         ".Lf1a4828_001a49d3:\n"
         "movl $6, 8(%esp)\n" /* line 295 */
-        "movl $0x2b33c4, 4(%esp)\n" /* "health" */
+        "movl $str_002b33c4, 4(%esp)\n" /* "health" */
         "movl $line, (%esp)\n"
         "calll I_strnicmp\n"
         "testl %eax, %eax\n"
@@ -2080,7 +2080,7 @@ void Cmd_Give_f(gentity_t *ent)
         "addl $1, %edi\n" /* line 339 | i */
         "jmp .Lf1a4828_001a496d\n"
         ".Lf1a4828_001a4a1b:\n"
-        "movl 0x195f6a0, %eax\n" /* line 342 */
+        "movl imp_level, %eax\n" /* line 342 */
         "movl $0, 0x1c(%eax)\n"
         "testl %esi, %esi\n" /* line 343 | give_all */
         "je .Lf1a4828_001a4843\n"
@@ -2099,7 +2099,7 @@ void Cmd_Give_f(gentity_t *ent)
         "je .Lf1a4828_001a4843\n"
         ".Lf1a4828_001a4a5c:\n"
         "movl $7, 8(%esp)\n" /* line 365 */
-        "movl $0x2b3bbc, 4(%esp)\n" /* "allammo" */
+        "movl $str_002b3bbc, 4(%esp)\n" /* "allammo" */
         "movl $line, (%esp)\n"
         "calll I_strnicmp\n"
         "testl %eax, %eax\n"
@@ -2131,7 +2131,7 @@ void Cmd_Give_f(gentity_t *ent)
         "movl %eax, %esi\n" /* give_all */
         "testl %eax, %eax\n" /* line 378 */
         "je .Lf1a4828_001a4843\n"
-        "movl 0x195f6a0, %edi\n" /* line 381 | i */
+        "movl imp_level, %edi\n" /* line 381 | i */
         "movl $1, 0x1c(%edi)\n" /* i */
         "calll G_Spawn\n" /* line 382 */
         "movl %eax, %ebx\n" /* maxCurrentWeapon */
@@ -2266,7 +2266,7 @@ void Cmd_Give_f(gentity_t *ent)
         "calll Add_Ammo\n"
         "jmp .Lf1a4828_001a4a54\n"
         ".Lf1a4828_001a4cf0:\n"
-        "movl $0x2b3bac, 4(%esp)\n" /* line 306 */
+        "movl $str_002b3bac, 4(%esp)\n" /* line 306 */
         "movl $line, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -2295,7 +2295,7 @@ void Cmd_Give_f(gentity_t *ent)
         "jmp .Lf1a4828_001a4b6f\n"
         ".Lf1a4828_001a4d53:\n"
         "movl $4, 8(%esp)\n" /* line 346 */
-        "movl $0x2b3bb4, 4(%esp)\n" /* "ammo" */
+        "movl $str_002b3bb4, 4(%esp)\n" /* "ammo" */
         "movl $line, (%esp)\n"
         "calll I_strnicmp\n"
         "testl %eax, %eax\n"
@@ -2359,7 +2359,7 @@ void Cmd_Take_f(gentity_t *ent)
         /* } scope */
         "cmpb $0, line\n" /* line 416 */
         "je .Lf1a4d82_001a4d9d\n"
-        "movl $0x22540c, 4(%esp)\n" /* line 419 */
+        "movl $str_0022540c, 4(%esp)\n" /* line 419 */
         "movl $line, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -2428,7 +2428,7 @@ void Cmd_Take_f(gentity_t *ent)
         "je .Lf1a4d82_001a4d9d\n"
         ".Lf1a4d82_001a4f28:\n"
         "movl $7, 8(%esp)\n" /* line 493 */
-        "movl $0x2b3bbc, 4(%esp)\n" /* "allammo" */
+        "movl $str_002b3bbc, 4(%esp)\n" /* "allammo" */
         "movl $line, (%esp)\n"
         "calll I_strnicmp\n"
         "testl %eax, %eax\n"
@@ -2494,7 +2494,7 @@ void Cmd_Take_f(gentity_t *ent)
         "jmp .Lf1a4d82_001a4f66\n"
         ".Lf1a4d82_001a506f:\n"
         "movl $6, 8(%esp)\n" /* line 424 */
-        "movl $0x2b33c4, 4(%esp)\n" /* "health" */
+        "movl $str_002b33c4, 4(%esp)\n" /* "health" */
         "movl $line, (%esp)\n"
         "calll I_strnicmp\n"
         "testl %eax, %eax\n"
@@ -2645,7 +2645,7 @@ void Cmd_Take_f(gentity_t *ent)
         "movl $0, 0x344(%ebx, %eax, 4)\n"
         "jmp .Lf1a4d82_001a4f1a\n"
         ".Lf1a4d82_001a52ff:\n"
-        "movl $0x2b3bac, 4(%esp)\n" /* line 439 */
+        "movl $str_002b3bac, 4(%esp)\n" /* line 439 */
         "movl $line, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -2656,7 +2656,7 @@ void Cmd_Take_f(gentity_t *ent)
         "movl $0, 0xd4(%eax)\n" /* line 452 */
         "movl $0, 4(%esp)\n" /* line 453 */
         "movl %edx, %eax\n"
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -2687,7 +2687,7 @@ void Cmd_Take_f(gentity_t *ent)
         "jmp .Lf1a4d82_001a4e5c\n"
         ".Lf1a4d82_001a53b9:\n"
         "movl $4, 8(%esp)\n" /* line 460 */
-        "movl $0x2b3bb4, 4(%esp)\n" /* "ammo" */
+        "movl $str_002b3bb4, 4(%esp)\n" /* "ammo" */
         "movl $line, (%esp)\n"
         "calll I_strnicmp\n"
         "testl %eax, %eax\n"
@@ -2714,7 +2714,7 @@ void ClientCommand(int clientNum)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $4, %eax\n"
-        "movl 0x195f688, %edi\n"
+        "movl imp_g_entities, %edi\n"
         "addl %edi, %eax\n"
         "movl %eax, -0x3330(%ebp)\n" /* ent */
         "movl 0x158(%eax), %eax\n" /* line 1474 */
@@ -2725,7 +2725,7 @@ void ClientCommand(int clientNum)
         "movl %ebx, 4(%esp)\n" /* len */
         "movl $0, (%esp)\n"
         "calll SV_Cmd_ArgvBuffer\n"
-        "movl $0x2ac704, 4(%esp)\n" /* line 1481 */
+        "movl $str_002ac704, 4(%esp)\n" /* line 1481 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -2759,12 +2759,12 @@ void ClientCommand(int clientNum)
         "retl\n"
         /* { scope 1: c, len, arg, target, ... */
         ".Lf1a53ec_001a54be:\n"
-        "movl $0x2b3bc4, 4(%esp)\n" /* line 1486 */
+        "movl $str_002b3bc4, 4(%esp)\n" /* line 1486 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1a53ec_001a569c\n"
-        "movl $0x2ac708, 4(%esp)\n" /* line 1493 */
+        "movl $str_002ac708, 4(%esp)\n" /* line 1493 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -2783,7 +2783,7 @@ void ClientCommand(int clientNum)
         "movl %eax, %edx\n"
         "testl %eax, %eax\n" /* line 982 */
         "js .Lf1a53ec_001a54b3\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "cmpl 0x1e4(%eax), %edx\n"
         "jge .Lf1a53ec_001a54b3\n"
         "leal (%edx, %edx, 4), %edx\n" /* line 987 */
@@ -2846,7 +2846,7 @@ void ClientCommand(int clientNum)
         "movl %edi, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* clientnum */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b3bd0, (%esp)\n" /* "tell;%d;%d;%s;%d;%d;%s;%s
+        "movl $str_002b3bd0, (%esp)\n" /* "tell;%d;%d;%s;%d;%d;%s;%s
 " */
         "calll G_LogPrintf\n"
         "movl $line, 0xc(%esp)\n" /* line 1002 */
@@ -2893,7 +2893,7 @@ void ClientCommand(int clientNum)
         "retl\n"
         /* { scope 1: c, len, arg, target, ... */
         ".Lf1a53ec_001a5706:\n"
-        "movl $0x2b3bec, 4(%esp)\n" /* line 1498 */
+        "movl $str_002b3bec, 4(%esp)\n" /* line 1498 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -2902,7 +2902,7 @@ void ClientCommand(int clientNum)
         "movl 0x158(%edx), %eax\n"
         "cmpl $5, 4(%eax)\n"
         "je .Lf1a53ec_001a54b3\n"
-        "movl $0x2b3bf4, 4(%esp)\n" /* line 1511 */
+        "movl $str_002b3bf4, 4(%esp)\n" /* line 1511 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3000,7 +3000,7 @@ void ClientCommand(int clientNum)
         "calll DeathmatchScoreboardMessage\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a58c4:\n"
-        "movl $0x2b3bf8, 4(%esp)\n" /* line 1513 */
+        "movl $str_002b3bf8, 4(%esp)\n" /* line 1513 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3010,7 +3010,7 @@ void ClientCommand(int clientNum)
         "calll Cmd_Give_f\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a58eb:\n"
-        "movl $0x2b3c00, 4(%esp)\n" /* line 1515 */
+        "movl $str_002b3c00, 4(%esp)\n" /* line 1515 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3067,7 +3067,7 @@ void ClientCommand(int clientNum)
         /* } scope */
         /* } scope */
         ".Lf1a53ec_001a59c1:\n"
-        "movl $0x2b3c08, 4(%esp)\n" /* line 1517 */
+        "movl $str_002b3c08, 4(%esp)\n" /* line 1517 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3081,15 +3081,15 @@ void ClientCommand(int clientNum)
         "movl 0x174(%eax), %edx\n"
         "xorl $1, %edx\n"
         "movl %edx, 0x174(%eax)\n"
-        "movl $0x2b3674, %eax\n" /* line 531 */
+        "movl $str_002b3674, %eax\n" /* line 531 */
         "andb $1, %dl\n"
-        "movl $0x2b3684, %edx\n" /* "GAME_GODMODE_OFF" */
+        "movl $str_002b3684, %edx\n" /* "GAME_GODMODE_OFF" */
         ".Lf1a53ec_001a5a11:\n"
         "cmovel %edx, %eax\n" /* line 546 */
         ".Lf1a53ec_001a5a14:\n"
         "movl %eax, 8(%esp)\n" /* line 548 */
         "movl $0x65, 4(%esp)\n"
-        "movl $0x2a737c, (%esp)\n" /* "%c "%s"" */
+        "movl $str_002a737c, (%esp)\n" /* "%c "%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -3100,7 +3100,7 @@ void ClientCommand(int clientNum)
         "calll SV_GameSendServerCommand\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5a5c:\n"
-        "movl $0x2b3c0c, 4(%esp)\n" /* line 1519 */
+        "movl $str_002b3c0c, 4(%esp)\n" /* line 1519 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3114,12 +3114,12 @@ void ClientCommand(int clientNum)
         "movl 0x174(%ecx), %edx\n"
         "xorl $2, %edx\n"
         "movl %edx, 0x174(%ecx)\n"
-        "movl $0x2b3698, %eax\n" /* line 546 */
+        "movl $str_002b3698, %eax\n" /* line 546 */
         "andb $2, %dl\n"
-        "movl $0x2b36b0, %edx\n" /* "GAME_DEMI_GODMODE_OFF" */
+        "movl $str_002b36b0, %edx\n" /* "GAME_DEMI_GODMODE_OFF" */
         "jmp .Lf1a53ec_001a5a11\n"
         ".Lf1a53ec_001a5aad:\n"
-        "movl $0x2b3c14, 4(%esp)\n" /* line 1521 */
+        "movl $str_002b3c14, 4(%esp)\n" /* line 1521 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3133,13 +3133,13 @@ void ClientCommand(int clientNum)
         "movl 0x174(%ecx), %edx\n"
         "xorl $4, %edx\n"
         "movl %edx, 0x174(%ecx)\n"
-        "movl $0x2b36c8, %eax\n" /* line 571 */
+        "movl $str_002b36c8, %eax\n" /* line 571 */
         "andb $4, %dl\n"
-        "movl $0x2b36dc, %edx\n" /* "GAME_NOTARGETON" */
+        "movl $str_002b36dc, %edx\n" /* "GAME_NOTARGETON" */
         "cmovnel %edx, %eax\n"
         "jmp .Lf1a53ec_001a5a14\n"
         ".Lf1a53ec_001a5b01:\n"
-        "movl $0x2b3c20, 4(%esp)\n" /* line 1523 */
+        "movl $str_002b3c20, 4(%esp)\n" /* line 1523 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3152,9 +3152,9 @@ void ClientCommand(int clientNum)
         "movl -0x3330(%ebp), %edx\n" /* line 596 | ent */
         "movl 0x158(%edx), %ebx\n" /* len */
         "movl 0x27ac(%ebx), %ecx\n" /* len */
-        "movl $0x2b36ec, %edx\n" /* "GAME_NOCLIPOFF" */
+        "movl $str_002b36ec, %edx\n" /* "GAME_NOCLIPOFF" */
         "testl %ecx, %ecx\n"
-        "movl $0x2b36fc, %eax\n" /* "GAME_NOCLIPON" */
+        "movl $str_002b36fc, %eax\n" /* "GAME_NOCLIPON" */
         "cmovel %eax, %edx\n"
         "sete %al\n" /* line 604 */
         "movzbl %al, %eax\n"
@@ -3162,12 +3162,12 @@ void ClientCommand(int clientNum)
         ".Lf1a53ec_001a5b5c:\n"
         "movl %edx, 8(%esp)\n" /* line 636 */
         "movl $0x65, 4(%esp)\n"
-        "movl $0x2a737c, (%esp)\n" /* "%c "%s"" */
+        "movl $str_002a737c, (%esp)\n" /* "%c "%s"" */
         ".Lf1a53ec_001a5b6f:\n"
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl 0x195f688, %ecx\n"
+        "movl imp_g_entities, %ecx\n"
         "subl %ecx, -0x3330(%ebp)\n" /* ent */
         "sarl $4, -0x3330(%ebp)\n" /* ent */
         "imull $0x8af8af8b, -0x3330(%ebp), %eax\n" /* ent */
@@ -3175,7 +3175,7 @@ void ClientCommand(int clientNum)
         "calll SV_GameSendServerCommand\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5baa:\n"
-        "movl $0x2b3c28, 4(%esp)\n" /* line 1525 */
+        "movl $str_002b3c28, 4(%esp)\n" /* line 1525 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3188,16 +3188,16 @@ void ClientCommand(int clientNum)
         "movl -0x3330(%ebp), %edx\n" /* line 626 | ent */
         "movl 0x158(%edx), %ebx\n" /* len */
         "movl 0x27b0(%ebx), %ecx\n" /* len */
-        "movl $0x2b370c, %edx\n" /* "GAME_UFOOFF" */
+        "movl $str_002b370c, %edx\n" /* "GAME_UFOOFF" */
         "testl %ecx, %ecx\n"
-        "movl $0x2b3718, %eax\n" /* "GAME_UFOON" */
+        "movl $str_002b3718, %eax\n" /* "GAME_UFOON" */
         "cmovel %eax, %edx\n"
         "sete %al\n" /* line 634 */
         "movzbl %al, %eax\n"
         "movl %eax, 0x27b0(%ebx)\n" /* len */
         "jmp .Lf1a53ec_001a5b5c\n"
         ".Lf1a53ec_001a5c06:\n"
-        "movl $0x2b3c2c, 4(%esp)\n" /* line 1527 */
+        "movl $str_002b3c2c, 4(%esp)\n" /* line 1527 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3222,7 +3222,7 @@ void ClientCommand(int clientNum)
         "calll player_die\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5c94:\n"
-        "movl $0x2b3c34, 4(%esp)\n" /* line 1529 */
+        "movl $str_002b3c34, 4(%esp)\n" /* line 1529 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3240,7 +3240,7 @@ void ClientCommand(int clientNum)
         "movl %eax, %ebx\n" /* len */
         "cmovnsl %esi, %ebx\n" /* clientnum, len */
         "movl %ebx, %esi\n" /* len, clientnum */
-        "movl 0x195f6a0, %edi\n"
+        "movl imp_level, %edi\n"
         ".Lf1a53ec_001a5ce8:\n"
         "addl $1, %ebx\n" /* line 759 | len */
         "movl 0x1e4(%edi), %eax\n" /* line 760 */
@@ -3266,7 +3266,7 @@ void ClientCommand(int clientNum)
         "jmp .Lf1a53ec_001a54b3\n"
         /* } scope */
         ".Lf1a53ec_001a5d3d:\n"
-        "movl $0x2b3c40, 4(%esp)\n" /* line 1531 */
+        "movl $str_002b3c40, 4(%esp)\n" /* line 1531 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3284,7 +3284,7 @@ void ClientCommand(int clientNum)
         "movl %eax, %ebx\n" /* len */
         "cmovnsl %esi, %ebx\n" /* clientnum, len */
         "movl %ebx, %esi\n" /* len, clientnum */
-        "movl 0x195f6a0, %edi\n"
+        "movl imp_level, %edi\n"
         ".Lf1a53ec_001a5d91:\n"
         "subl $1, %ebx\n" /* line 759 | len */
         "movl 0x1e4(%edi), %eax\n" /* line 760 */
@@ -3354,7 +3354,7 @@ void ClientCommand(int clientNum)
         "jmp .Lf1a53ec_001a5da4\n"
         /* } scope */
         ".Lf1a53ec_001a5e98:\n"
-        "movl $0x2b3c4c, 4(%esp)\n" /* line 1533 */
+        "movl $str_002b3c4c, 4(%esp)\n" /* line 1533 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3365,11 +3365,11 @@ void ClientCommand(int clientNum)
         "calll vtos\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x65, 4(%esp)\n"
-        "movl $0x2b3744, (%esp)\n" /* "%c "%s
+        "movl $str_002b3744, (%esp)\n" /* "%c "%s
 "" */
         "jmp .Lf1a53ec_001a5b6f\n"
         ".Lf1a53ec_001a5ed7:\n"
-        "movl $0x2b3c54, 4(%esp)\n" /* line 1535 */
+        "movl $str_002b3c54, 4(%esp)\n" /* line 1535 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3379,7 +3379,7 @@ void ClientCommand(int clientNum)
         "calll Cmd_CallVote_f\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5efe:\n"
-        "movl $0x2b3c60, 4(%esp)\n" /* line 1537 */
+        "movl $str_002b3c60, 4(%esp)\n" /* line 1537 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3389,7 +3389,7 @@ void ClientCommand(int clientNum)
         "calll Cmd_Vote_f\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5f25:\n"
-        "movl $0x2b3c68, 4(%esp)\n" /* line 1539 */
+        "movl $str_002b3c68, 4(%esp)\n" /* line 1539 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3399,7 +3399,7 @@ void ClientCommand(int clientNum)
         "calll Cmd_GameCommand_f\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5f4c:\n"
-        "movl $0x2b3c6c, 4(%esp)\n" /* line 1541 */
+        "movl $str_002b3c6c, 4(%esp)\n" /* line 1541 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3409,24 +3409,24 @@ void ClientCommand(int clientNum)
         "calll Cmd_SetViewpos_f\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5f73:\n"
-        "movl $0x2b3c78, 4(%esp)\n" /* line 1543 */
+        "movl $str_002b3c78, 4(%esp)\n" /* line 1543 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1a53ec_001a5fb5\n"
-        "movl 0x195f708, %eax\n" /* line 1409 */
+        "movl imp_g_cheats, %eax\n" /* line 1409 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a53ec_001a54b3\n"
-        "movl 0x195f6a0, %eax\n" /* line 1412 */
+        "movl imp_level, %eax\n" /* line 1412 */
         "movl 0xc(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b3ae0, (%esp)\n" /* "entity count = %i
+        "movl $str_002b3ae0, (%esp)\n" /* "entity count = %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf1a53ec_001a54b3\n"
         ".Lf1a53ec_001a5fb5:\n"
-        "movl $0x2b3c84, 4(%esp)\n" /* line 1545 */
+        "movl $str_002b3c84, 4(%esp)\n" /* line 1545 */
         "movl %ebx, (%esp)\n" /* len */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3436,7 +3436,7 @@ void ClientCommand(int clientNum)
         ".Lf1a53ec_001a5fd3:\n"
         "movl %ebx, 8(%esp)\n" /* line 1548 | len */
         "movl $0x65, 4(%esp)\n"
-        "movl $0x2b3c94, (%esp)\n" /* "%c "GAME_UNKNOWNCLIENTCOMMAND%s"" */
+        "movl $str_002b3c94, (%esp)\n" /* "%c "GAME_UNKNOWNCLIENTCOMMAND%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"

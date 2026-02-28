@@ -10,10 +10,10 @@ extern void G_GetPlayerViewDirection(gentity_t *ent, vec3_t forward, vec3_t righ
 extern void G_TraceCapsule(trace_t *trace, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int passEntityNum, int contentMask);
 extern int G_IsPlaying(gentity_t *ent);
 
-extern byte *g_entities_ptr; /* 0x195f688 */
-extern byte *level_ptr;      /* 0x195f6a0 */
-extern byte *sv_maxclients;  /* 0x195f6c0 */
-extern vec3_t *trace_mins;   /* 0x195ed4c */
+extern byte *g_entities_ptr; /* imp_g_entities */
+extern byte *level_ptr;      /* imp_level */
+extern byte *sv_maxclients;  /* imp_g_maxclients */
+extern vec3_t *trace_mins;   /* imp_vec3_origin */
 
 qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2);
 short int TeamplayInfoMessage(gentity_t *ent);

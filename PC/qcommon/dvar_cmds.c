@@ -14,8 +14,8 @@ extern void Dvar_SetCommand(const char *name, const char *value);
 extern void Dvar_Reset(void *dvar, int source);
 extern void Cmd_AddCommand(const char *name, void (*func)(void));
 
-static char info1[1024]; /* 0x497f00 */
-static char info2[8192]; /* 0x495f00 */
+static char info1[1024]; /* info1 */
+static char info2[8192]; /* info2 */
 
 void Dvar_ForEach(void (*callback)());
 static void Dvar_GetCombinedString(void);
@@ -54,7 +54,7 @@ void Dvar_ForEach(void (*callback)())
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* callback */
         /* { scope 1 */
-        "movl 0x195ed28, %eax\n" /* line 50 */
+        "movl imp_sortedDvars, %eax\n" /* line 50 */
         "movl (%eax), %ebx\n" /* dvar */
         "testl %ebx, %ebx\n" /* dvar */
         "je .Lf500f8_0005011c\n"
@@ -129,7 +129,7 @@ void Dvar_GetCombinedString(void)
         "calll I_strncat\n"
         "cmpl -0x20(%ebp), %ebx\n" /* line 70 | i */
         "je .Lf50124_000501b6\n"
-        "movl $0x217914, 8(%esp)\n" /* line 71 */
+        "movl $str_00217914, 8(%esp)\n" /* line 71 */
         "movl $__mh_execute_header, 4(%esp)\n"
         "movl %esi, (%esp)\n" /* combined */
         "calll I_strncat\n"
@@ -195,7 +195,7 @@ qboolean Dvar_Command(void)
         "movl %eax, 8(%esp)\n"
         "movl (%esi), %eax\n" /* dvar */
         "movl %eax, 4(%esp)\n"
-        "movl $0x219078, (%esp)\n" /* ""%s" is: "%s^7" default: "%s^7"
+        "movl $str_00219078, (%esp)\n" /* ""%s" is: "%s^7" default: "%s^7"
 " */
         "calll Com_Printf\n"
         "movl %esi, (%esp)\n" /* line 98 | dvar */
@@ -231,7 +231,7 @@ qboolean Dvar_Command(void)
         "movl %esi, (%esp)\n" /* line 99 | dvar */
         "calll Dvar_DisplayableLatchedValue\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21909c, (%esp)\n" /* "latched: "%s"
+        "movl $str_0021909c, (%esp)\n" /* "latched: "%s"
 " */
         "calll Com_Printf\n"
         "jmp .Lf501c6_0005026a\n"
@@ -335,7 +335,7 @@ Bool Dvar_ToggleInternal(void)
         "movl $0, (%esp)\n" /* line 188 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2190ac, (%esp)\n" /* "USAGE: %s <variable> <optional value sequence>
+        "movl $str_002190ac, (%esp)\n" /* "USAGE: %s <variable> <optional value sequence>
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -348,11 +348,11 @@ Bool Dvar_ToggleInternal(void)
         "retl\n"
         /* { scope 1 */
         ".Lf502ba_000503cc:\n"
-        "jmpl *0x2f0220(, %eax, 4)\n" /* line 115 */
+        "jmpl *__ZZN16CStringEdPackage9ParseLineEPKchE5C.208+1056(, %eax, 4)\n" /* line 115 */
         ".Lf502ba_000503d3:\n"
         "movl -0x20(%ebp), %eax\n" /* line 198 | dvarName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2190dc, (%esp)\n" /* "toggle failed: dvar '%s' not found.
+        "movl $str_002190dc, (%esp)\n" /* "toggle failed: dvar '%s' not found.
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -399,7 +399,7 @@ Bool Dvar_ToggleInternal(void)
         "ucomiss %xmm1, %xmm2\n"
         "jb .Lf502ba_00050529\n"
         "movss 0x18(%edi), %xmm0\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jb .Lf502ba_00050529\n"
         "ucomiss 8(%edi), %xmm2\n" /* line 141 */
         "jp .Lf502ba_0005047e\n"
@@ -434,7 +434,7 @@ Bool Dvar_ToggleInternal(void)
         "jmp .Lf502ba_0005039e\n"
         "movl (%edi), %eax\n" /* line 160 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x219104, (%esp)\n" /* "'toggle' with no arguments makes no sense for dvar '%s'
+        "movl $str_00219104, (%esp)\n" /* "'toggle' with no arguments makes no sense for dvar '%s'
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -551,7 +551,7 @@ void Dvar_Set_f(void)
         "calll Cmd_Argc\n" /* line 293 */
         "cmpl $2, %eax\n" /* line 294 */
         "jg .Lf5068a_000506b3\n"
-        "movl $0x219154, (%esp)\n" /* line 296 */
+        "movl $str_00219154, (%esp)\n" /* line 296 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x1014, %esp\n" /* line 309 */
@@ -585,7 +585,7 @@ void Dvar_Set_f(void)
         "movl $1, (%esp)\n" /* line 303 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x219174, (%esp)\n" /* "invalid variable name: %s
+        "movl $str_00219174, (%esp)\n" /* "invalid variable name: %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -613,7 +613,7 @@ void Dvar_RegisterBool_f(void)
         "movl $0, (%esp)\n" /* line 322 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x219190, (%esp)\n" /* "USAGE: %s <name> <default>
+        "movl $str_00219190, (%esp)\n" /* "USAGE: %s <name> <default>
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -647,7 +647,7 @@ void Dvar_RegisterBool_f(void)
         ".Lf50724_0005079b:\n"
         "movl (%eax), %eax\n" /* line 336 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2191ac, (%esp)\n" /* "dvar '%s' is not a boolean dvar
+        "movl $str_002191ac, (%esp)\n" /* "dvar '%s' is not a boolean dvar
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -689,7 +689,7 @@ void Dvar_RegisterInt_f(void)
         "movl $0, (%esp)\n" /* line 352 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2191d0, (%esp)\n" /* "USAGE: %s <name> <default> <min> <max>
+        "movl $str_002191d0, (%esp)\n" /* "USAGE: %s <name> <default> <min> <max>
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -736,7 +736,7 @@ void Dvar_RegisterInt_f(void)
         "jbe .Lf507d8_00050807\n"
         "movl (%edx), %eax\n" /* line 374 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21922c, (%esp)\n" /* "dvar '%s' is not an integer dvar
+        "movl $str_0021922c, (%esp)\n" /* "dvar '%s' is not an integer dvar
 " */
         "calll Com_Printf\n"
         "jmp .Lf507d8_00050807\n"
@@ -744,7 +744,7 @@ void Dvar_RegisterInt_f(void)
         "movl %eax, 0xc(%esp)\n" /* line 362 */
         "movl %esi, 8(%esp)\n" /* min */
         "movl %edi, 4(%esp)\n" /* dvarName */
-        "movl $0x2191f8, (%esp)\n" /* "dvar %s: min %i should not be greater than max %i
+        "movl $str_002191f8, (%esp)\n" /* "dvar %s: min %i should not be greater than max %i
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -786,7 +786,7 @@ void Dvar_RegisterFloat_f(void)
         "movl $0, (%esp)\n" /* line 390 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2191d0, (%esp)\n" /* "USAGE: %s <name> <default> <min> <max>
+        "movl $str_002191d0, (%esp)\n" /* "USAGE: %s <name> <default> <min> <max>
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -836,7 +836,7 @@ void Dvar_RegisterFloat_f(void)
         ".Lf508e2_000509af:\n"
         "movl (%eax), %eax\n" /* line 412 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21922c, (%esp)\n" /* "dvar '%s' is not an integer dvar
+        "movl $str_0021922c, (%esp)\n" /* "dvar '%s' is not an integer dvar
 " */
         "calll Com_Printf\n"
         "jmp .Lf508e2_0005090f\n"
@@ -846,7 +846,7 @@ void Dvar_RegisterFloat_f(void)
         "cvtss2sd -0x10(%ebp), %xmm0\n" /* min */
         "movsd %xmm0, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* dvarName */
-        "movl $0x219250, (%esp)\n" /* "dvar %s: min %g should not be greater than max %g
+        "movl $str_00219250, (%esp)\n" /* "dvar %s: min %g should not be greater than max %g
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -961,7 +961,7 @@ void Dvar_WriteVariables(fileHandle_t f)
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         /* { scope 1 */
-        "movl 0x195ed28, %eax\n" /* line 557 */
+        "movl imp_sortedDvars, %eax\n" /* line 557 */
         "movl (%eax), %ebx\n" /* dvar */
         "testl %ebx, %ebx\n" /* dvar */
         "jne .Lf50be2_00050bfd\n"
@@ -971,7 +971,7 @@ void Dvar_WriteVariables(fileHandle_t f)
         "testl %ebx, %ebx\n" /* dvar */
         "je .Lf50be2_00050c45\n"
         ".Lf50be2_00050bfd:\n"
-        "movl $0x21934c, 4(%esp)\n" /* line 559 */
+        "movl $str_0021934c, 4(%esp)\n" /* line 559 */
         "movl (%ebx), %eax\n" /* dvar */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -984,7 +984,7 @@ void Dvar_WriteVariables(fileHandle_t f)
         "movl %eax, 0xc(%esp)\n"
         "movl (%ebx), %eax\n" /* dvar */
         "movl %eax, 8(%esp)\n"
-        "movl $0x219358, 4(%esp)\n" /* "seta %s "%s"
+        "movl $str_00219358, 4(%esp)\n" /* "seta %s "%s"
 " */
         "movl 8(%ebp), %eax\n" /* f */
         "movl %eax, (%esp)\n"
@@ -1011,7 +1011,7 @@ void Dvar_WriteDefaults(fileHandle_t f)
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         /* { scope 1 */
-        "movl 0x195ed28, %eax\n" /* line 583 */
+        "movl imp_sortedDvars, %eax\n" /* line 583 */
         "movl (%eax), %ebx\n" /* dvar */
         "testl %ebx, %ebx\n" /* dvar */
         "jne .Lf50c4c_00050c67\n"
@@ -1021,7 +1021,7 @@ void Dvar_WriteDefaults(fileHandle_t f)
         "testl %ebx, %ebx\n" /* dvar */
         "je .Lf50c4c_00050cb4\n"
         ".Lf50c4c_00050c67:\n"
-        "movl $0x21934c, 4(%esp)\n" /* line 585 */
+        "movl $str_0021934c, 4(%esp)\n" /* line 585 */
         "movl (%ebx), %eax\n" /* dvar */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -1035,7 +1035,7 @@ void Dvar_WriteDefaults(fileHandle_t f)
         "movl %eax, 0xc(%esp)\n"
         "movl (%ebx), %eax\n" /* dvar */
         "movl %eax, 8(%esp)\n"
-        "movl $0x219368, 4(%esp)\n" /* "set %s "%s"
+        "movl $str_00219368, 4(%esp)\n" /* "set %s "%s"
 " */
         "movl 8(%ebp), %eax\n" /* f */
         "movl %eax, (%esp)\n"
@@ -1070,43 +1070,43 @@ void Dvar_List_f(void)
         "calll Cmd_Argv\n"
         "movl %eax, %esi\n" /* match */
         ".Lf50cba_00050cde:\n"
-        "movl 0x195ed28, %eax\n" /* line 613 */
+        "movl imp_sortedDvars, %eax\n" /* line 613 */
         "movl (%eax), %ebx\n" /* dvar */
         "testl %ebx, %ebx\n" /* dvar */
         "jne .Lf50cba_00050dab\n"
         "jmp .Lf50cba_00050e6d\n"
         ".Lf50cba_00050cf2:\n"
-        "movl $0x219378, (%esp)\n" /* line 623 */
+        "movl $str_00219378, (%esp)\n" /* line 623 */
         "calll Com_Printf\n"
         "testb $2, 4(%ebx)\n" /* line 627 | dvar */
         "je .Lf50cba_00050dee\n"
         ".Lf50cba_00050d08:\n"
-        "movl $0x21937c, (%esp)\n" /* line 628 */
+        "movl $str_0021937c, (%esp)\n" /* line 628 */
         "calll Com_Printf\n"
         "testb $0x40, 4(%ebx)\n" /* line 632 | dvar */
         "je .Lf50cba_00050e04\n"
         ".Lf50cba_00050d1e:\n"
-        "movl $0x219380, (%esp)\n" /* line 633 */
+        "movl $str_00219380, (%esp)\n" /* line 633 */
         "calll Com_Printf\n"
         "testb $0x10, 4(%ebx)\n" /* line 636 | dvar */
         "je .Lf50cba_00050e1a\n"
         ".Lf50cba_00050d34:\n"
-        "movl $0x219384, (%esp)\n" /* line 637 */
+        "movl $str_00219384, (%esp)\n" /* line 637 */
         "calll Com_Printf\n"
         "testb $1, 4(%ebx)\n" /* line 640 | dvar */
         "je .Lf50cba_00050e30\n"
         ".Lf50cba_00050d4a:\n"
-        "movl $0x219388, (%esp)\n" /* line 641 */
+        "movl $str_00219388, (%esp)\n" /* line 641 */
         "calll Com_Printf\n"
         "testb $0x20, 4(%ebx)\n" /* line 644 | dvar */
         "je .Lf50cba_00050e46\n"
         ".Lf50cba_00050d60:\n"
-        "movl $0x21938c, (%esp)\n" /* line 645 */
+        "movl $str_0021938c, (%esp)\n" /* line 645 */
         "calll Com_Printf\n"
         "cmpb $0, 4(%ebx)\n" /* line 648 | dvar */
         "jns .Lf50cba_00050e5c\n"
         ".Lf50cba_00050d76:\n"
-        "movl $0x219390, (%esp)\n" /* line 649 */
+        "movl $str_00219390, (%esp)\n" /* line 649 */
         "calll Com_Printf\n"
         ".Lf50cba_00050d82:\n"
         "movl %ebx, (%esp)\n" /* line 653 | dvar */
@@ -1114,7 +1114,7 @@ void Dvar_List_f(void)
         "movl %eax, 8(%esp)\n"
         "movl (%ebx), %eax\n" /* dvar */
         "movl %eax, 4(%esp)\n"
-        "movl $0x219394, (%esp)\n" /* " %s "%s"
+        "movl $str_00219394, (%esp)\n" /* " %s "%s"
 " */
         "calll Com_Printf\n"
         ".Lf50cba_00050da0:\n"
@@ -1135,44 +1135,44 @@ void Dvar_List_f(void)
         "movzwl 4(%ebx), %eax\n" /* line 619 | dvar */
         "testl $0x404, %eax\n"
         "jne .Lf50cba_00050cf2\n"
-        "movl $0x217914, (%esp)\n" /* line 625 */
+        "movl $str_00217914, (%esp)\n" /* line 625 */
         "calll Com_Printf\n"
         "testb $2, 4(%ebx)\n" /* line 627 | dvar */
         "jne .Lf50cba_00050d08\n"
         ".Lf50cba_00050dee:\n"
-        "movl $0x217914, (%esp)\n" /* line 631 */
+        "movl $str_00217914, (%esp)\n" /* line 631 */
         "calll Com_Printf\n"
         "testb $0x40, 4(%ebx)\n" /* line 632 | dvar */
         "jne .Lf50cba_00050d1e\n"
         ".Lf50cba_00050e04:\n"
-        "movl $0x217914, (%esp)\n" /* line 635 */
+        "movl $str_00217914, (%esp)\n" /* line 635 */
         "calll Com_Printf\n"
         "testb $0x10, 4(%ebx)\n" /* line 636 | dvar */
         "jne .Lf50cba_00050d34\n"
         ".Lf50cba_00050e1a:\n"
-        "movl $0x217914, (%esp)\n" /* line 639 */
+        "movl $str_00217914, (%esp)\n" /* line 639 */
         "calll Com_Printf\n"
         "testb $1, 4(%ebx)\n" /* line 640 | dvar */
         "jne .Lf50cba_00050d4a\n"
         ".Lf50cba_00050e30:\n"
-        "movl $0x217914, (%esp)\n" /* line 643 */
+        "movl $str_00217914, (%esp)\n" /* line 643 */
         "calll Com_Printf\n"
         "testb $0x20, 4(%ebx)\n" /* line 644 | dvar */
         "jne .Lf50cba_00050d60\n"
         ".Lf50cba_00050e46:\n"
-        "movl $0x217914, (%esp)\n" /* line 647 */
+        "movl $str_00217914, (%esp)\n" /* line 647 */
         "calll Com_Printf\n"
         "cmpb $0, 4(%ebx)\n" /* line 648 | dvar */
         "js .Lf50cba_00050d76\n"
         ".Lf50cba_00050e5c:\n"
-        "movl $0x217914, (%esp)\n" /* line 651 */
+        "movl $str_00217914, (%esp)\n" /* line 651 */
         "calll Com_Printf\n"
         "jmp .Lf50cba_00050d82\n"
         ".Lf50cba_00050e6d:\n"
-        "movl 0x195ed24, %eax\n" /* line 656 */
+        "movl imp_dvarCount, %eax\n" /* line 656 */
         "movl (%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2193a0, (%esp)\n" /* "
+        "movl $str_002193a0, (%esp)\n" /* "
 %i total dvars
 " */
         "calll Com_Printf\n"
@@ -1211,7 +1211,7 @@ void Com_DvarDump(print_msg_type_t type)
         "movl 8(%ebp), %esi\n" /* line 707 | type */
         "testl %esi, %esi\n"
         "jne .Lf50e92_00050edf\n"
-        "movl 0x195ed20, %eax\n" /* line 709 */
+        "movl imp_com_logfile, %eax\n" /* line 709 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf50e92_00050fd3\n"
@@ -1219,11 +1219,11 @@ void Com_DvarDump(print_msg_type_t type)
         "testl %ebx, %ebx\n" /* var */
         "je .Lf50e92_00050fd3\n"
         ".Lf50e92_00050edf:\n"
-        "movl $0x2193b4, 4(%esp)\n" /* line 714 */
+        "movl $str_002193b4, 4(%esp)\n" /* line 714 */
         "movl 8(%ebp), %eax\n" /* type */
         "movl %eax, (%esp)\n"
         "calll Com_PrintMessage\n"
-        "movl 0x195ed28, %eax\n" /* line 715 */
+        "movl imp_sortedDvars, %eax\n" /* line 715 */
         "movl (%eax), %ebx\n" /* var */
         "testl %ebx, %ebx\n" /* var */
         "je .Lf50e92_000510ed\n"
@@ -1245,7 +1245,7 @@ void Com_DvarDump(print_msg_type_t type)
         "movl %eax, 0x10(%esp)\n"
         "movl (%ebx), %eax\n" /* var */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x219408, 8(%esp)\n" /* "      %s "%s" -- latched "%s"
+        "movl $str_00219408, 8(%esp)\n" /* "      %s "%s" -- latched "%s"
 " */
         "movl $0x2000, 4(%esp)\n"
         "leal -0x2018(%ebp), %eax\n" /* message */
@@ -1262,11 +1262,11 @@ void Com_DvarDump(print_msg_type_t type)
         "testl %ebx, %ebx\n" /* var */
         "jne .Lf50e92_00050f11\n"
         ".Lf50e92_00050f7e:\n"
-        "movl 0x195ed24, %eax\n" /* line 727 */
+        "movl imp_dvarCount, %eax\n" /* line 727 */
         "movl (%eax), %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl %edi, 0xc(%esp)\n" /* i */
-        "movl $0x219438, 8(%esp)\n" /* "
+        "movl $str_00219438, 8(%esp)\n" /* "
 %i total dvars
 %i dvar indexes
 " */
@@ -1279,7 +1279,7 @@ void Com_DvarDump(print_msg_type_t type)
         "movl 8(%ebp), %eax\n" /* type */
         "movl %eax, (%esp)\n"
         "calll Com_PrintMessage\n"
-        "movl $0x21945c, 4(%esp)\n" /* line 729 */
+        "movl $str_0021945c, 4(%esp)\n" /* line 729 */
         "movl 8(%ebp), %eax\n" /* type */
         "movl %eax, (%esp)\n"
         "calll Com_PrintMessage\n"
@@ -1306,7 +1306,7 @@ void Com_DvarDump(print_msg_type_t type)
         "movl %eax, 0x10(%esp)\n"
         "movl (%ebx), %eax\n" /* var */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x219408, 8(%esp)\n" /* "      %s "%s" -- latched "%s"
+        "movl $str_00219408, 8(%esp)\n" /* "      %s "%s" -- latched "%s"
 " */
         "movl $0x2000, 4(%esp)\n"
         "leal -0x2018(%ebp), %eax\n" /* message */
@@ -1339,7 +1339,7 @@ void Com_DvarDump(print_msg_type_t type)
         "movl %eax, 0x10(%esp)\n"
         "movl (%ebx), %eax\n" /* var */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x219428, 8(%esp)\n" /* "      %s "%s"
+        "movl $str_00219428, 8(%esp)\n" /* "      %s "%s"
 " */
         "movl $0x2000, 4(%esp)\n"
         "leal -0x2018(%ebp), %eax\n" /* message */
@@ -1352,7 +1352,7 @@ void Com_DvarDump(print_msg_type_t type)
         "movl %eax, 0x10(%esp)\n"
         "movl (%ebx), %eax\n" /* var */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x219428, 8(%esp)\n" /* "      %s "%s"
+        "movl $str_00219428, 8(%esp)\n" /* "      %s "%s"
 " */
         "movl $0x2000, 4(%esp)\n"
         "leal -0x2018(%ebp), %eax\n" /* message */
@@ -1388,7 +1388,7 @@ void SV_SetConfig(int start, int max, int bit)
         "movl 0xc(%ebp), %edi\n" /* max */
         "movl 0x10(%ebp), %esi\n" /* bit */
         /* { scope 1 */
-        "movl 0x195ed28, %eax\n" /* line 755 */
+        "movl imp_sortedDvars, %eax\n" /* line 755 */
         "movl (%eax), %ebx\n" /* dvar */
         "testl %ebx, %ebx\n" /* dvar */
         "jne .Lf51108_0005112b\n"
@@ -1437,7 +1437,7 @@ char * Dvar_InfoString(int bit)
         "movl 8(%ebp), %esi\n" /* bit */
         /* { scope 1 */
         "movb $0, info1\n" /* line 778 */
-        "movl 0x195ed28, %eax\n" /* line 780 */
+        "movl imp_sortedDvars, %eax\n" /* line 780 */
         "movl (%eax), %ebx\n" /* var */
         "testl %ebx, %ebx\n" /* var */
         "jne .Lf51164_0005118a\n"
@@ -1466,7 +1466,7 @@ char * Dvar_InfoString(int bit)
         "movl $0, (%esp)\n" /* line 796 */
         "calll CL_GetUsernameForLocalClient\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2194b4, 4(%esp)\n" /* "name" */
+        "movl $str_002194b4, 4(%esp)\n" /* "name" */
         "movl $info1, (%esp)\n"
         "calll Info_SetValueForKey\n"
         /* } scope */
@@ -1493,7 +1493,7 @@ char * Dvar_InfoString_Big(int bit)
         "movl 8(%ebp), %esi\n" /* bit */
         /* { scope 1 */
         "movb $0, info2\n" /* line 819 */
-        "movl 0x195ed28, %eax\n" /* line 821 */
+        "movl imp_sortedDvars, %eax\n" /* line 821 */
         "movl (%eax), %ebx\n" /* var */
         "testl %ebx, %ebx\n" /* var */
         "jne .Lf511ec_00051212\n"

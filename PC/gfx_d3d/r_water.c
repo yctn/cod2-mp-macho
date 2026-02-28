@@ -10,15 +10,15 @@ extern float floorf(float x);
  *   #include "PC/universal/com_math.h"
  */
 
-static struct WaterGlob waterGlob; /* 0xcb7000 */
+static struct WaterGlob waterGlob; /* waterGlob */
 
 /* Extern globals */
-extern void **g_viewParms;          /* 0x195f188 */
-extern void **g_dxCaps;             /* 0x195eec0 */
-extern r_globals_t *rg;             /* 0x195eec8 */
-extern r_backEndGlobals_t *backEnd; /* 0x195f0c8 */
-extern void **g_unknown_195f22c;    /* 0x195f22c - upload lock flag */
-extern void **g_unknown_195f230;    /* 0x195f230 - water enabled check */
+extern void **g_viewParms;          /* imp_backEndData */
+extern void **g_dxCaps;             /* imp_r_rendererInUse */
+extern r_globals_t *rg;             /* imp_rg */
+extern r_backEndGlobals_t *backEnd; /* imp_backEnd */
+extern void **g_unknown_195f22c;    /* imp_g_WarmOff - upload lock flag */
+extern void **g_unknown_195f230;    /* imp_r_drawWater - water enabled check */
 
 /* Extern functions */
 extern void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel, const byte *src);

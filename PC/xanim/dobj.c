@@ -16,7 +16,7 @@ extern int XModelGetLodForDist(XModel *model, float dist);
 extern void SL_RemoveRefToStringOfLen(unsigned int stringValue, int len);
 extern unsigned int SL_GetStringOfLen(void *duplicatePartBits, int user, int len, int flag);
 
-static unsigned int g_empty; /* 0x4e9580 */
+static unsigned int g_empty; /* g_empty */
 
 void DObjInit(void);
 void DObjShutdown(void);
@@ -367,7 +367,7 @@ const char * DObjGetSurfaceName(DObj *obj, int modelIndex, int subMatIndex, int 
         "testw %ax, %ax\n" /* line 1530 */
         "jne .Lf7485e_0007488a\n"
         /* } scope */
-        "movl $0x217dc0, %eax\n" /* line 1531 */
+        "movl $str_00217dc0, %eax\n" /* line 1531 */
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
@@ -897,7 +897,7 @@ int DObjGetSurfaces(const DObj *obj, DSurface *surfaces, int *partBits, char *lo
         "jmp .Lf74b72_00074cab\n"
         ".Lf74b72_00074cf0:\n"
         "movl $0x40, 4(%esp)\n" /* line 1583 */
-        "movl $0x21bfd8, (%esp)\n" /* "ERROR: models with more than %i total surfaces
+        "movl $str_0021bfd8, (%esp)\n" /* "ERROR: models with more than %i total surfaces
 " */
         "calll Com_Printf\n"
         "movl %ebx, -0x2c(%ebp)\n"
@@ -925,7 +925,7 @@ int DObjGetSurfaces(const DObj *obj, DSurface *surfaces, int *partBits, char *lo
         "movl %ebx, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21c008, (%esp)\n" /* "  model '%s' lod %i has %i surfaces
+        "movl $str_0021c008, (%esp)\n" /* "  model '%s' lod %i has %i surfaces
 " */
         "calll Com_Printf\n"
         "addl $1, -0x30(%ebp)\n" /* line 1584 | modelIndex */
@@ -933,7 +933,7 @@ int DObjGetSurfaces(const DObj *obj, DSurface *surfaces, int *partBits, char *lo
         "movl -0x30(%ebp), %eax\n" /* modelIndex */
         "cmpl %eax, -0x54(%ebp)\n" /* numModels */
         "jne .Lf74b72_00074d12\n"
-        "movl $0x21c030, 4(%esp)\n" /* line 1589 */
+        "movl $str_0021c030, 4(%esp)\n" /* line 1589 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf74b72_00074c1b\n"
@@ -1147,7 +1147,7 @@ void DObjCreateDuplicateParts(const DObj *obj)
         "movl %ebx, 0xc(%esp)\n" /* parentIndex */
         "movl %esi, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21c060, (%esp)\n" /* "WARNING: Attempting to meld model, but root part '%s' of mod" */
+        "movl $str_0021c060, (%esp)\n" /* "WARNING: Attempting to meld model, but root part '%s' of mod" */
         "calll Com_Printf\n"
         "movl -0x498(%ebp), %edx\n" /* model */
         "jmp .Lf74de0_00074e5d\n"
@@ -1549,7 +1549,7 @@ void DObjSetLocalTagInternal(const DObj *obj, const vec_t *trans, const vec_t *a
         "testl %esi, %esi\n" /* line 2275 | angles */
         "je .Lf7543e_000755c8\n"
         "cvtss2sd 4(%esi), %xmm0\n" /* line 2277 | angles */
-        "mulsd 0x307c68, %xmm0\n" /* 0.008726646259971648 */
+        "mulsd lit8_00307c68, %xmm0\n" /* 0.008726646259971648 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n" /* radians */
         /* { scope 2 */
@@ -1562,7 +1562,7 @@ void DObjSetLocalTagInternal(const DObj *obj, const vec_t *trans, const vec_t *a
         "fstps -0x2c(%ebp)\n"
         /* } scope */
         "cvtss2sd (%esi), %xmm0\n" /* line 2278 | angles */
-        "mulsd 0x307c68, %xmm0\n" /* 0.008726646259971648 */
+        "mulsd lit8_00307c68, %xmm0\n" /* 0.008726646259971648 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n" /* radians */
         /* { scope 2 */
@@ -1575,7 +1575,7 @@ void DObjSetLocalTagInternal(const DObj *obj, const vec_t *trans, const vec_t *a
         "fstps -0x34(%ebp)\n"
         /* } scope */
         "cvtss2sd 8(%esi), %xmm0\n" /* line 2279 | angles */
-        "mulsd 0x307c68, %xmm0\n" /* 0.008726646259971648 */
+        "mulsd lit8_00307c68, %xmm0\n" /* 0.008726646259971648 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n" /* radians */
         /* { scope 2 */
@@ -1591,7 +1591,7 @@ void DObjSetLocalTagInternal(const DObj *obj, const vec_t *trans, const vec_t *a
         "movss -0x4c(%ebp), %xmm3\n"
         /* } scope */
         "movss -0x30(%ebp), %xmm2\n" /* line 2281 */
-        "xorps 0x2f0980, %xmm2\n"
+        "xorps CorrectSolidDeltas+640, %xmm2\n"
         "mulss -0x28(%ebp), %xmm2\n"
         "movss -0x30(%ebp), %xmm7\n" /* line 2282 */
         "mulss -0x2c(%ebp), %xmm7\n"
@@ -1811,7 +1811,7 @@ qboolean DObjSetControlTagAngles(const DObj *obj, int *partBits, unsigned int ta
         "movl %esi, 0xc(%esp)\n" /* line 2316 | boneIndex */
         "movl 0x14(%ebp), %eax\n" /* angles */
         "movl %eax, 8(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %ecx, (%esp)\n"
         "calll DObjSetLocalTagInternal\n"
@@ -1836,7 +1836,7 @@ void DObjDumpInfo(const DObj *obj)
         /* { scope 1: numModels, numModels, index, numModels */
         "testl %eax, %eax\n" /* line 73 */
         "je .Lf7573e_00075a5d\n"
-        "movl $0x21c0e4, (%esp)\n" /* line 79 */
+        "movl $str_0021c0e4, (%esp)\n" /* line 79 */
         "calll Com_Printf\n"
         "movl -0x48(%ebp), %edx\n" /* line 80 | obj */
         "movzbl 0x18(%edx), %edx\n"
@@ -1844,7 +1844,7 @@ void DObjDumpInfo(const DObj *obj)
         "testl %edx, %edx\n" /* line 83 */
         "jg .Lf7573e_00075a19\n"
         ".Lf7573e_00075773:\n"
-        "movl $0x21c0fc, (%esp)\n" /* line 89 */
+        "movl $str_0021c0fc, (%esp)\n" /* line 89 */
         "calll Com_Printf\n"
         "movl -0x48(%ebp), %edx\n" /* line 90 | obj */
         "movzbl 0x19(%edx), %edx\n"
@@ -1894,7 +1894,7 @@ void DObjDumpInfo(const DObj *obj)
         "movl %eax, 8(%esp)\n" /* line 92 */
         "movl -0x40(%ebp), %eax\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21c108, (%esp)\n" /* "Bone %d: '%s'
+        "movl $str_0021c108, (%esp)\n" /* "Bone %d: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, -0x40(%ebp)\n" /* line 91 | i */
@@ -1905,7 +1905,7 @@ void DObjDumpInfo(const DObj *obj)
         "movl -0x48(%ebp), %eax\n" /* line 94 | obj */
         "cmpw $0, 0x10(%eax)\n"
         "je .Lf7573e_000759db\n"
-        "movl $0x21c118, (%esp)\n" /* line 96 */
+        "movl $str_0021c118, (%esp)\n" /* line 96 */
         "calll Com_Printf\n"
         "movl -0x48(%ebp), %edx\n" /* line 97 | obj */
         "movzwl 0x10(%edx), %eax\n"
@@ -2014,7 +2014,7 @@ void DObjDumpInfo(const DObj *obj)
         "movzbl (%edx), %eax\n"
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21c12c, (%esp)\n" /* "%d ('%s') -> %d ('%s')
+        "movl $str_0021c12c, (%esp)\n" /* "%d ('%s') -> %d ('%s')
 " */
         "calll Com_Printf\n"
         "addl $2, -0x4c(%ebp)\n"
@@ -2052,10 +2052,10 @@ void DObjDumpInfo(const DObj *obj)
         "jmp .Lf7573e_0007594f\n"
         /* } scope */
         ".Lf7573e_000759db:\n"
-        "movl $0x21c144, (%esp)\n" /* line 111 */
+        "movl $str_0021c144, (%esp)\n" /* line 111 */
         "calll Com_Printf\n"
         ".Lf7573e_000759e7:\n"
-        "movl $0x2160e8, 8(%ebp)\n" /* line 114 | obj */
+        "movl $str_002160e8, 8(%ebp)\n" /* line 114 | obj */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 115 */
         "popl %ebx\n"
@@ -2090,7 +2090,7 @@ void DObjDumpInfo(const DObj *obj)
         "movl %eax, 8(%esp)\n"
         "movl -0x34(%ebp), %eax\n" /* boneIndex */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21c0f0, (%esp)\n" /* "%d: '%s'
+        "movl $str_0021c0f0, (%esp)\n" /* "%d: '%s'
 " */
         "calll Com_Printf\n"
         "movl (%ebx), %eax\n" /* line 83 | model */
@@ -2102,7 +2102,7 @@ void DObjDumpInfo(const DObj *obj)
         "jne .Lf7573e_00075a25\n"
         "jmp .Lf7573e_00075773\n"
         ".Lf7573e_00075a5d:\n"
-        "movl $0x21c0d8, 8(%ebp)\n" /* line 75 | obj */
+        "movl $str_0021c0d8, 8(%ebp)\n" /* line 75 | obj */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 115 */
         "popl %ebx\n"
@@ -2267,7 +2267,7 @@ void DObjCreate(void * (*dobjModels)(), unsigned int numModels, XAnimTree_s *tre
         "movl %eax, 8(%esp)\n"
         "movl -0x54(%ebp), %ecx\n" /* boneName */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x21c15c, (%esp)\n" /* "WARNING: Part '%s' not found in model '%s' or any of its des" */
+        "movl $str_0021c15c, (%esp)\n" /* "WARNING: Part '%s' not found in model '%s' or any of its des" */
         "calll Com_Printf\n"
         "jmp .Lf75a70_00075b59\n"
         /* { scope 2 */
@@ -2337,7 +2337,7 @@ void DObjCreate(void * (*dobjModels)(), unsigned int numModels, XAnimTree_s *tre
         "movl 0x1c(%ecx), %eax\n"
         "movl 0x88(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21c1a4, 4(%esp)\n" /* "dobj for xmodel '%s' has more than %d bones" */
+        "movl $str_0021c1a4, 4(%esp)\n" /* "dobj for xmodel '%s' has more than %d bones" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movzbl -0x4c(%ebp), %eax\n" /* newNumModels */
@@ -2582,7 +2582,7 @@ void DObjCalcSkel(const DObj *obj, int *partBits)
         "jp .Lf75d9a_00076123\n"
         "je .Lf75d9a_00076495\n"
         ".Lf75d9a_00076123:\n"
-        "movss 0x2ed62c, %xmm0\n" /* line 151 | 2.0f */
+        "movss lit4_002ed62c, %xmm0\n" /* line 151 | 2.0f */
         "divss %xmm3, %xmm0\n"
         "movss %xmm0, 0x1c(%edi)\n"
         "movl $0x3f800000, -0xb0(%ebp)\n"
@@ -2905,7 +2905,7 @@ void DObjCalcSkel(const DObj *obj, int *partBits)
         "jp .Lf75d9a_00076746\n"
         "je .Lf75d9a_00076d30\n"
         ".Lf75d9a_00076746:\n"
-        "movss 0x2ed62c, %xmm0\n" /* line 151 | 2.0f */
+        "movss lit4_002ed62c, %xmm0\n" /* line 151 | 2.0f */
         "divss %xmm3, %xmm0\n"
         "movss %xmm0, 0xc(%esi)\n"
         "movl $0x3f800000, -0xb0(%ebp)\n"
@@ -3085,7 +3085,7 @@ void DObjCalcSkel(const DObj *obj, int *partBits)
         "movl -0x4c(%ebp), %ebx\n" /* bFinished */
         "addl %ebx, %edx\n" /* bFinished */
         "movl %edx, -0xa8(%ebp)\n"
-        "movss 0x2ed62c, %xmm4\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm4\n" /* 2.0f */
         "jmp .Lf75d9a_00076a9b\n"
         /* { scope 2: xx, yy, yz, yw */
         ".Lf75d9a_00076a3f:\n"
@@ -3352,7 +3352,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "addl $0x30, %eax\n" /* line 1828 */
         "movl %eax, -0x238(%ebp)\n" /* boneMatrix */
         "je .Lf76d80_00077836\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1834 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1834 | 1.0f */
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, -0x248(%ebp)\n" /* invL2 */
         "movzwl 0x10(%edx), %eax\n" /* line 1842 */
@@ -3486,7 +3486,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "movss -0x1d0(%ebp), %xmm0\n" /* yy */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, -0x270(%ebp)\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss -0x270(%ebp), %xmm0\n"
         "mulss %xmm4, %xmm0\n"
         "movss %xmm0, -0x180(%ebp)\n"
@@ -3505,7 +3505,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "addss -0x1d8(%ebp), %xmm2\n" /* line 399 | xy */
         "mulss %xmm4, %xmm2\n"
         "addss -0x1dc(%ebp), %xmm1\n" /* xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm1, %xmm0\n"
         "mulss %xmm6, %xmm0\n"
         "addss %xmm2, %xmm0\n"
@@ -3526,7 +3526,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "addss %xmm3, %xmm5\n"
         "movss -0x1dc(%ebp), %xmm2\n" /* xx */
         "addss -0x1d0(%ebp), %xmm2\n" /* yy */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "mulss %xmm7, %xmm0\n"
         "addss %xmm0, %xmm5\n"
@@ -3554,9 +3554,9 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "movss -0x190(%ebp), %xmm0\n"
         "mulss %xmm4, %xmm0\n"
         "addss %xmm0, %xmm3\n"
-        "xorps 0x2f0990, %xmm3\n"
+        "xorps CorrectSolidDeltas+656, %xmm3\n"
         "mulss -0x248(%ebp), %xmm3\n" /* invL2 */
-        "movss 0x2ed5d0, %xmm2\n" /* line 1916 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 1916 | 1.0f */
         "ucomiss %xmm3, %xmm2\n"
         "ja .Lf76d80_000779e5\n"
         "movl 0x10(%ebp), %eax\n" /* line 248 | end */
@@ -3625,7 +3625,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         /* } scope */
         "movss -0x1b8(%ebp), %xmm0\n" /* line 1747 | yy */
         "addss %xmm4, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "mulss %xmm6, %xmm1\n"
         "movaps %xmm3, %xmm0\n"
@@ -3640,7 +3640,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "subss %xmm2, %xmm3\n" /* line 1748 */
         "mulss %xmm6, %xmm3\n"
         "addss -0x1c0(%ebp), %xmm4\n" /* xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm4, %xmm0\n"
         "mulss -0x178(%ebp), %xmm0\n"
         "addss %xmm0, %xmm3\n"
@@ -3659,7 +3659,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "addss %xmm1, %xmm6\n"
         "movss -0x1c0(%ebp), %xmm2\n" /* xx */
         "addss -0x1b8(%ebp), %xmm2\n" /* yy */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "mulss -0x17c(%ebp), %xmm0\n"
         "addss %xmm0, %xmm6\n"
@@ -3713,7 +3713,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         /* } scope */
         "movss -0x1a8(%ebp), %xmm0\n" /* line 1747 | yy */
         "addss %xmm5, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "mulss %xmm4, %xmm1\n"
         "movaps %xmm3, %xmm0\n"
@@ -3728,7 +3728,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "subss %xmm2, %xmm3\n" /* line 1748 */
         "mulss %xmm4, %xmm3\n"
         "addss -0x1b0(%ebp), %xmm5\n" /* xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm5, %xmm0\n"
         "mulss %xmm7, %xmm0\n"
         "addss %xmm0, %xmm3\n"
@@ -3746,7 +3746,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "addss %xmm7, %xmm4\n"
         "movss -0x1b0(%ebp), %xmm2\n" /* xx */
         "addss -0x1a8(%ebp), %xmm2\n" /* yy */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "mulss -0x174(%ebp), %xmm0\n"
         "addss %xmm0, %xmm4\n"
@@ -3760,7 +3760,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "pxor %xmm4, %xmm4\n"
         "movl $1, %esi\n" /* bStartSolid */
         "movb $1, -0x229(%ebp)\n" /* bEndSolid */
-        "movss 0x2ed5dc, %xmm7\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm7\n" /* -1.0f */
         "movaps %xmm7, %xmm3\n"
         "pxor %xmm6, %xmm6\n"
         ".Lf76d80_000776ec:\n"
@@ -3797,12 +3797,12 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "addl $1, %edx\n" /* line 1965 */
         "cmpl $3, %edx\n"
         "jne .Lf76d80_000776ee\n"
-        "ucomiss 0x2ed5d0, %xmm3\n" /* line 2001 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm3\n" /* line 2001 | 1.0f */
         "jp .Lf76d80_00077772\n"
         "je .Lf76d80_00077782\n"
         ".Lf76d80_00077772:\n"
         "addl $0xc, %ecx\n" /* line 2004 */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "jmp .Lf76d80_000776ec\n"
         ".Lf76d80_00077782:\n"
         "movl %esi, %eax\n" /* line 2007 | bStartSolid */
@@ -4017,7 +4017,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "movss %xmm1, -0x26c(%ebp)\n" /* zw */
         "movss -0x194(%ebp), %xmm0\n" /* line 320 | yy */
         "addss %xmm3, %xmm0\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x54(%ebp)\n" /* axis */
@@ -4097,7 +4097,7 @@ void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityM
         "jmp .Lf76d80_00077856\n"
         ".Lf76d80_00077c1c:\n"
         "movss -0x190(%ebp), %xmm0\n" /* line 45 */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "pxor %xmm3, %xmm3\n"
         "movaps %xmm7, %xmm1\n"
         "cmpnltss %xmm3, %xmm0\n"

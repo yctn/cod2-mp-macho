@@ -32,10 +32,10 @@ extern const dvar_t *r_sunglare_fadeout; /* 0x0 */
 extern const char * s_sundvars[21]; /* 0x0 */
 extern const dvar_t *r_sun_fx_position; /* 0x0 */
 
-extern refimport_t *ri;                 /* 0x195eee0 */
-extern r_global_permanent_t *rgp;       /* 0x195eebc */
-extern const dvar_t **sv_cheats_ptr;    /* 0x195ef54 */
-extern unsigned char *r_sunFlareState;  /* 0x195f088 */
+extern refimport_t *ri;                 /* imp_ri */
+extern r_global_permanent_t *rgp;       /* imp_rgp */
+extern const dvar_t **sv_cheats_ptr;    /* imp_sv_cheats */
+extern unsigned char *r_sunFlareState;  /* imp_sunFlareArray */
 
 extern MaterialHandle Material_RegisterHandle(const char *name, int lightmapIndex, int imageTrack);
 extern void R_LoadSunThroughDvars(const char *sunName, sunflare_t *sun);

@@ -175,7 +175,7 @@ void ScriptError(script_t *script, char *str)
         "movl 0x5c(%esi), %eax\n" /* script */
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* script */
-        "movl $0x2220ac, (%esp)\n" /* "^1Error: file %s, line %d: %s
+        "movl $str_002220ac, (%esp)\n" /* "^1Error: file %s, line %d: %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -215,7 +215,7 @@ void ScriptWarning(script_t *script, char *str)
         "movl 0x5c(%esi), %eax\n" /* script */
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* script */
-        "movl $0x2220cc, (%esp)\n" /* "^3Warning: file %s, line %d: %s
+        "movl $str_002220cc, (%esp)\n" /* "^3Warning: file %s, line %d: %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -250,7 +250,7 @@ int PS_ReadEscapeCharacter(script_t *script, char *ch)
         "subl $0x22, %eax\n"
         "cmpl $0x56, %eax\n"
         "ja .Lfc2d10_000c2d3d\n"
-        "jmpl *0x2f20a0(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+6560(, %eax, 4)\n"
         ".Lfc2d10_000c2d3d:\n"
         "leal -0x30(%ecx), %eax\n" /* line 415 */
         "cmpb $9, %al\n"
@@ -298,7 +298,7 @@ int PS_ReadEscapeCharacter(script_t *script, char *ch)
         "cmpl $0xff, %ebx\n" /* line 427 | val */
         "jle .Lfc2d10_000c2d7c\n"
         ".Lfc2d10_000c2da6:\n"
-        "movl $0x222938, 4(%esp)\n" /* line 429 */
+        "movl $str_00222938, 4(%esp)\n" /* line 429 */
         "movl %esi, (%esp)\n" /* script */
         "calll ScriptWarning\n"
         "movl $0xffffffff, %ecx\n"
@@ -317,7 +317,7 @@ int PS_ReadEscapeCharacter(script_t *script, char *ch)
         "retl\n"
         /* { scope 1 */
         ".Lfc2d10_000c2dd6:\n"
-        "movl $0x22295c, 4(%esp)\n" /* line 416 */
+        "movl $str_0022295c, 4(%esp)\n" /* line 416 */
         "movl %esi, (%esp)\n" /* script */
         "calll ScriptError\n"
         "movl 0x44(%esi), %edx\n" /* script */
@@ -415,7 +415,7 @@ void NumberValue(char *string, int subtype, long unsigned int *intvalue, long do
         "jmp .Lfc2ec4_000c2f30\n"
         ".Lfc2ec4_000c2f07:\n"
         "fldt (%edi)\n" /* line 603 | floatvalue */
-        "fmuls 0x2ed6b4\n" /* 10.0f */
+        "fmuls lit4_002ed6b4\n" /* 10.0f */
         "movsbl (%ecx), %eax\n"
         "subl $0x30, %eax\n"
         "pushl %eax\n"
@@ -539,7 +539,7 @@ void NumberValue(char *string, int subtype, long unsigned int *intvalue, long do
         "testl %ebx, %ebx\n" /* line 591 | dotfound */
         "jne .Lfc2ec4_000c3002\n"
         "addl $1, %ecx\n" /* line 594 */
-        "flds 0x2ed6b4\n" /* 10.0f */
+        "flds lit4_002ed6b4\n" /* 10.0f */
         "movb $0x64, %bl\n" /* dotfound */
         "jmp .Lfc2ec4_000c2f4c\n"
         ".Lfc2ec4_000c301e:\n"
@@ -795,7 +795,7 @@ int PS_ReadNumber(script_t *script, token_t *token)
         "jmp .Lfc308e_000c3143\n"
         ".Lfc308e_000c32f3:\n"
         "movl $0x400, 8(%esp)\n" /* line 723 */
-        "movl $0x2229ec, 4(%esp)\n" /* "number longer than MAX_TOKEN = %d" */
+        "movl $str_002229ec, 4(%esp)\n" /* "number longer than MAX_TOKEN = %d" */
         "movl %edi, (%esp)\n" /* script */
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
@@ -822,14 +822,14 @@ int PS_ReadNumber(script_t *script, token_t *token)
         "cmpl $0x400, %esi\n" /* line 696 | len */
         "jne .Lfc308e_000c3326\n"
         "movl $0x400, 8(%esp)\n" /* line 698 */
-        "movl $0x2229c0, 4(%esp)\n" /* "binary number longer than MAX_TOKEN = %d" */
+        "movl $str_002229c0, 4(%esp)\n" /* "binary number longer than MAX_TOKEN = %d" */
         "movl %edi, (%esp)\n" /* script */
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
         "jmp .Lfc308e_000c31b9\n"
         ".Lfc308e_000c336f:\n"
         "movl $0x400, 8(%esp)\n" /* line 679 */
-        "movl $0x222990, 4(%esp)\n" /* "hexadecimal number longer than MAX_TOKEN = %d" */
+        "movl $str_00222990, 4(%esp)\n" /* "hexadecimal number longer than MAX_TOKEN = %d" */
         "movl %edi, (%esp)\n" /* script */
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
@@ -904,7 +904,7 @@ script_t * LoadScriptFile(const char *filename)
         "movl 8(%ebp), %edi\n" /* filename */
         /* { scope 1 */
         "movl %edi, 0xc(%esp)\n" /* line 1379 | filename */
-        "movl $0x216058, 8(%esp)\n" /* "%s" */
+        "movl $str_00216058, 8(%esp)\n" /* "%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x5c(%ebp), %ebx\n" /* pathname, script */
         "movl %ebx, (%esp)\n" /* script */
@@ -1026,7 +1026,7 @@ int PS_ReadString(script_t *script, token_t *token, int quote)
         "cmpl $0x3fd, -0x24(%ebp)\n" /* line 472 | len */
         "jle .Lfc350c_000c3547\n"
         "movl $0x400, 8(%esp)\n" /* line 474 */
-        "movl $0x222a3c, 4(%esp)\n" /* "string longer than MAX_TOKEN = %d" */
+        "movl $str_00222a3c, 4(%esp)\n" /* "string longer than MAX_TOKEN = %d" */
         "movl %edi, (%esp)\n" /* script */
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
@@ -1164,7 +1164,7 @@ int PS_ReadString(script_t *script, token_t *token, int quote)
         "movl -0x24(%ebp), %eax\n" /* len */
         "movb $0, (%ebx, %eax)\n"
         "movl %ebx, 8(%esp)\n" /* line 527 */
-        "movl $0x222a78, 4(%esp)\n" /* "newline inside string %s" */
+        "movl $str_00222a78, 4(%esp)\n" /* "newline inside string %s" */
         "movl %edi, (%esp)\n" /* script */
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
@@ -1173,7 +1173,7 @@ int PS_ReadString(script_t *script, token_t *token, int quote)
         "movl 0xc(%ebp), %edx\n" /* line 520 | token */
         "movl -0x24(%ebp), %ecx\n" /* len */
         "movb $0, (%edx, %ecx)\n"
-        "movl $0x222a60, 4(%esp)\n" /* line 521 */
+        "movl $str_00222a60, 4(%esp)\n" /* line 521 */
         "movl %edi, (%esp)\n" /* script */
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
@@ -1480,7 +1480,7 @@ int PS_ReadToken(script_t *script, token_t *token)
         "jmp .Lfc375a_000c3a3d\n"
         ".Lfc375a_000c3a7f:\n"
         "movl $0x400, 8(%esp)\n" /* line 560 */
-        "movl $0x222970, 4(%esp)\n" /* "name longer than MAX_TOKEN = %d" */
+        "movl $str_00222970, 4(%esp)\n" /* "name longer than MAX_TOKEN = %d" */
         "movl %ebx, (%esp)\n"
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
@@ -1505,7 +1505,7 @@ int PS_ReadToken(script_t *script, token_t *token)
         "movl $0x27, 8(%esp)\n" /* line 914 */
         "jmp .Lfc375a_000c3aa6\n"
         ".Lfc375a_000c3ad2:\n"
-        "movl $0x222a94, 4(%esp)\n" /* line 937 */
+        "movl $str_00222a94, 4(%esp)\n" /* line 937 */
         "movl %ebx, (%esp)\n" /* script */
         "calll ScriptError\n"
         "xorl %eax, %eax\n"
@@ -1513,7 +1513,7 @@ int PS_ReadToken(script_t *script, token_t *token)
         /* { scope 1 */
         ".Lfc375a_000c3ae9:\n"
         "movl $0x400, 8(%esp)\n" /* line 857 */
-        "movl $0x222a10, 4(%esp)\n" /* "primitive token longer than MAX_TOKEN = %d" */
+        "movl $str_00222a10, 4(%esp)\n" /* "primitive token longer than MAX_TOKEN = %d" */
         "movl %ebx, (%esp)\n"
         "calll ScriptError\n"
         "xorl %eax, %eax\n"

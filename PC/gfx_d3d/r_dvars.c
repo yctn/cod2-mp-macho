@@ -138,26 +138,26 @@ extern const dvar_t *vid_ypos; /* 0x0 */
 extern const dvar_t *developer; /* 0x0 */
 extern const dvar_t *sys_SSE; /* 0x0 */
 extern const dvar_t *r_sse_skinning; /* 0x0 */
-static const char * s_technologyNames[4]; /* 0x3110b4 */
-static const char * s_aspectRatioNames[5]; /* 0x3110a0 */
-static const char * s_aaAlphaNames[4]; /* 0x3110ec */
-static const char * textureModeNames[6]; /* 0x311158 */
-static const char * xdebugNames[5]; /* 0x3110fc */
-static const char * gpuSyncNames[5]; /* 0x31112c */
-static const char * colorMapNames[4]; /* 0x31111c */
-static const char * normalMapNames[3]; /* 0x311110 */
-static const char * fbColorDebugNames[4]; /* 0x3110dc */
-static const char * debugShaderNames[6]; /* 0x311140 */
-static const char * r_forceLodNames[6]; /* 0x3110c4 */
+static const char * s_technologyNames[4]; /* s_technologyNames */
+static const char * s_aspectRatioNames[5]; /* s_aspectRatioNames */
+static const char * s_aaAlphaNames[4]; /* s_aaAlphaNames */
+static const char * textureModeNames[6]; /* textureModeNames */
+static const char * xdebugNames[5]; /* xdebugNames */
+static const char * gpuSyncNames[5]; /* gpuSyncNames */
+static const char * colorMapNames[4]; /* colorMapNames */
+static const char * normalMapNames[3]; /* normalMapNames */
+static const char * fbColorDebugNames[4]; /* fbColorDebugNames */
+static const char * debugShaderNames[6]; /* debugShaderNames */
+static const char * r_forceLodNames[6]; /* r_forceLodNames */
 
 /* Extern declarations for functions and globals used */
 extern int R_RegisterSunDvars(void);
-extern refimport_t *ri; /* 0x195eee0 */
+extern refimport_t *ri; /* imp_ri */
 
 /* Indirect dvar pointer targets (import segment pointers) */
-extern const dvar_t **fx_sort_ptr; /* 0x195ed68 */
-extern const dvar_t **sv_cheats_ptr; /* 0x195ef54 */
-extern const dvar_t **com_statmon_ptr; /* 0x195ed14 */
+extern const dvar_t **fx_sort_ptr; /* imp_fx_sort */
+extern const dvar_t **sv_cheats_ptr; /* imp_sv_cheats */
+extern const dvar_t **com_statmon_ptr; /* imp_com_statmon */
 
 /* __mh_execute_header is the Mach-O header base (0x1000) used as max for vid pos dvars */
 extern int __mh_execute_header;

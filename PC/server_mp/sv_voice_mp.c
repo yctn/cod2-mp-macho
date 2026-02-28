@@ -19,8 +19,8 @@ extern void NET_OutOfBandVoiceData(netsrc_t sock, netadr_t adr, byte *data, int 
 extern void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket);
 extern void Com_Printf(const char *msg, ...);
 
-extern byte *svs_ptr;        /* 0x195f284 */
-extern byte *sv_voice_dvar;  /* 0x195f2a4 */
+extern byte *svs_ptr;        /* imp_svs */
+extern byte *sv_voice_dvar;  /* imp_sv_voice */
 
 void SV_SendClientVoiceData(client_t *client);
 Bool SV_ClientWantsVoiceData(int clientNum);

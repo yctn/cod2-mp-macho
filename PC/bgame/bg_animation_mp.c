@@ -11,32 +11,32 @@
  */
 
 extern bgs_t *bgs; /* 0x0 */
-static animScriptData_t *globalScriptData; /* 0xf16788 */
-static char *globalFilename; /* 0x313110 */
-static int numDefines[9]; /* 0xf13ba0 */
-static char defineStrings[10000]; /* 0xf13be0 */
-static int defineStringsOffset; /* 0xf13b88 */
-static animStringItem_t defineStr[9][16]; /* 0xf16300 */
-static int defineBits[9][16][2]; /* 0xf13300 */
-static scriptAnimMoveTypes_t parseMovetype; /* 0xf13b84 */
-static int parseEvent; /* 0xf13b80 */
-static loadAnim_t *g_pLoadAnims; /* 0xf16784 */
-static int *g_piNumLoadAnims; /* 0xf16780 */
-static char input[100000]; /* 0xf167a0 */
-static qboolean bScriptFileLoaded; /* 0xf2ee40 */
-static animStringItem_t weaponStrings[128]; /* 0xf13780 */
-static animStringItem_t animStateStr[5]; /* 0x312f20 */
-static animStringItem_t animMoveTypesStr[42]; /* 0x312dc0 */
-static animStringItem_t animEventTypesStr[20]; /* 0x312d20 */
-static animStringItem_t animBodyPartsStr[5]; /* 0x313140 */
-static animStringItem_t animConditionMountedStr[3]; /* 0x312ff8 */
-static animStringItem_t animWeaponClassStr[11]; /* 0x313020 */
-static animStringItem_t animWeaponPositionStr[3]; /* 0x312fe0 */
-static animStringItem_t animStrafeStateStr[4]; /* 0x312fc0 */
-static animStringItem_t animConditionsStr[10]; /* 0x313080 */
-static animConditionTable_t animConditionsTable[9]; /* 0x312f60 */
-static void *(*controller_names[6])(); /* 0x313114 */
-static animStringItem_t animParseModesStr[6]; /* 0x3130e0 */
+static animScriptData_t *globalScriptData; /* globalScriptData */
+static char *globalFilename; /* globalFilename */
+static int numDefines[9]; /* numDefines */
+static char defineStrings[10000]; /* defineStrings */
+static int defineStringsOffset; /* defineStringsOffset */
+static animStringItem_t defineStr[9][16]; /* defineStr */
+static int defineBits[9][16][2]; /* defineBits */
+static scriptAnimMoveTypes_t parseMovetype; /* parseMovetype */
+static int parseEvent; /* parseEvent */
+static loadAnim_t *g_pLoadAnims; /* g_pLoadAnims */
+static int *g_piNumLoadAnims; /* g_piNumLoadAnims */
+static char input[100000]; /* input */
+static qboolean bScriptFileLoaded; /* bScriptFileLoaded */
+static animStringItem_t weaponStrings[128]; /* weaponStrings */
+static animStringItem_t animStateStr[5]; /* animStateStr */
+static animStringItem_t animMoveTypesStr[42]; /* animMoveTypesStr */
+static animStringItem_t animEventTypesStr[20]; /* animEventTypesStr */
+static animStringItem_t animBodyPartsStr[5]; /* animBodyPartsStr */
+static animStringItem_t animConditionMountedStr[3]; /* animConditionMountedStr */
+static animStringItem_t animWeaponClassStr[11]; /* animWeaponClassStr */
+static animStringItem_t animWeaponPositionStr[3]; /* animWeaponPositionStr */
+static animStringItem_t animStrafeStateStr[4]; /* animStrafeStateStr */
+static animStringItem_t animConditionsStr[10]; /* animConditionsStr */
+static animConditionTable_t animConditionsTable[9]; /* animConditionsTable */
+static void *(*controller_names[6])(); /* controller_names */
+static animStringItem_t animParseModesStr[6]; /* animParseModesStr */
 
 void BG_AnimParseError(const char *msg);
 void BG_InitWeaponStrings(void);
@@ -89,7 +89,7 @@ void BG_AnimParseError(const char *msg)
         "movl globalFilename, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
-        "movl $0x2aee88, 4(%esp)\n" /* "%s: (%s, line %i)" */
+        "movl $str_002aee88, 4(%esp)\n" /* "%s: (%s, line %i)" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
@@ -100,7 +100,7 @@ void BG_AnimParseError(const char *msg)
         /* { scope 1 */
         ".Lf17fde8_0017fe58:\n"
         "movl %ebx, 8(%esp)\n" /* line 394 */
-        "movl $0x21cdd0, 4(%esp)\n" /* "%s" */
+        "movl $str_0021cdd0, 4(%esp)\n" /* "%s" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
@@ -285,9 +285,9 @@ void BG_SwingAngles(float destination, float clampTolerance, float speed)
         "fstps -0x3c(%ebp)\n"
         "movss -0x3c(%ebp), %xmm2\n"
         "movaps %xmm2, %xmm1\n" /* line 54 */
-        "andps 0x302cf0, %xmm1\n"
-        "mulss 0x2ed72c, %xmm1\n" /* line 2763 | 0.05000000074505806f */
-        "movss 0x2ed5d8, %xmm0\n" /* line 2764 | 0.5f */
+        "andps g_color_table+464, %xmm1\n"
+        "mulss lit4_002ed72c, %xmm1\n" /* line 2763 | 0.05000000074505806f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 2764 | 0.5f */
         "maxss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"
         "pxor %xmm0, %xmm0\n" /* line 2768 */
@@ -318,7 +318,7 @@ void BG_SwingAngles(float destination, float clampTolerance, float speed)
         "ucomiss -0x18(%ebp), %xmm0\n"
         "ja .Lf180024_001801a8\n"
         "movss -0x18(%ebp), %xmm0\n" /* line 2803 */
-        "xorps 0x302ce0, %xmm0\n"
+        "xorps g_color_table+448, %xmm0\n"
         "ucomiss -0x10(%ebp), %xmm0\n"
         "jbe .Lf180024_00180156\n"
         "movss -0x14(%ebp), %xmm0\n" /* line 2805 */
@@ -348,7 +348,7 @@ void BG_SwingAngles(float destination, float clampTolerance, float speed)
         "movl $1, (%ebx)\n" /* line 2792 | swinging */
         "jmp .Lf180024_001800fb\n"
         ".Lf180024_00180193:\n"
-        "xorps 0x302ce0, %xmm0\n" /* line 2748 */
+        "xorps g_color_table+448, %xmm0\n" /* line 2748 */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf180024_0018007e\n"
         "jmp .Lf180024_00180078\n"
@@ -539,7 +539,7 @@ void BG_LerpOffset(vec_t *offset_goal, float maxOffsetChange, vec_t *offset)
         "movaps %xmm4, %xmm0\n"
         "mulss %xmm4, %xmm0\n"
         "addss %xmm0, %xmm2\n"
-        "ucomiss 0x2ed5e8, %xmm2\n" /* line 3334 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 3334 | 0.0f */
         "jp .Lf1803a2_001803f6\n"
         "je .Lf1803a2_00180452\n"
         /* { scope 2 */
@@ -551,16 +551,16 @@ void BG_LerpOffset(vec_t *offset_goal, float maxOffsetChange, vec_t *offset)
         "subl %edx, %eax\n"
         "movl %eax, -0xc(%ebp)\n" /* i */
         "movss -0xc(%ebp), %xmm1\n" /* line 72 | i */
-        "mulss 0x2ed5d8, %xmm2\n" /* line 73 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm2\n" /* line 73 | 0.5f */
         "mulss %xmm1, %xmm2\n"
         "mulss %xmm1, %xmm2\n"
-        "movss 0x2ed600, %xmm0\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm0\n" /* 1.5f */
         "subss %xmm2, %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x10(%ebp)\n" /* y */
         /* } scope */
         "mulss 0xc(%ebp), %xmm0\n" /* line 3337 | maxOffsetChange */
-        "ucomiss 0x2ed5d0, %xmm0\n" /* line 3338 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* line 3338 | 1.0f */
         "jb .Lf1803a2_00180458\n"
         ".Lf1803a2_00180442:\n"
         "movss %xmm6, (%ecx)\n" /* line 199 */
@@ -706,7 +706,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         "movl 0x7c(%edi), %ebx\n" /* line 2291 | weaponDef, bitNum */
         "movl 0xcc(%esi), %ecx\n" /* ps, client */
         /* { scope 2 */
-        "movl 0x312f68, %eax\n" /* line 2172 */
+        "movl animConditionsTable+8, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf18051a_001806f1\n"
         ".Lf18051a_001805c0:\n"
@@ -739,7 +739,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         ".Lf18051a_00180621:\n"
         "movl 0xcc(%esi), %ecx\n" /* line 2294 | ps, client */
         /* { scope 2 */
-        "movl 0x312f98, %edi\n" /* line 2172 */
+        "movl animConditionsTable+56, %edi\n" /* line 2172 */
         "testl %edi, %edi\n"
         "je .Lf18051a_001808d6\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2187 */
@@ -756,7 +756,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         ".Lf18051a_00180665:\n"
         "movl 0xcc(%esi), %ecx\n" /* line 2302 | ps, client */
         /* { scope 2 */
-        "movl 0x312f70, %eax\n" /* line 2172 */
+        "movl animConditionsTable+16, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf18051a_001809c0\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -789,7 +789,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         "movl 0x7c(%edi), %ebx\n" /* line 2291 | weaponDef, bitNum */
         "movl 0xcc(%esi), %ecx\n" /* ps, client */
         /* { scope 2 */
-        "movl 0x312f68, %eax\n" /* line 2172 */
+        "movl animConditionsTable+8, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "je .Lf18051a_001805c0\n"
         ".Lf18051a_001806f1:\n"
@@ -807,7 +807,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         ".Lf18051a_0018071a:\n"
         "movl 0xcc(%esi), %ecx\n" /* line 2296 | ps, client */
         /* { scope 2 */
-        "movl 0x312f98, %ebx\n" /* line 2172 */
+        "movl animConditionsTable+56, %ebx\n" /* line 2172 */
         "testl %ebx, %ebx\n"
         "jne .Lf18051a_001808b1\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -831,7 +831,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         ".Lf18051a_00180780:\n"
         "movl 0xcc(%esi), %ecx\n" /* line 2300 | ps, client */
         /* { scope 2 */
-        "movl 0x312f70, %edx\n" /* line 2172 */
+        "movl animConditionsTable+16, %edx\n" /* line 2172 */
         "testl %edx, %edx\n"
         "jne .Lf18051a_0018099b\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -852,11 +852,11 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         ".Lf18051a_001807d6:\n"
         "movss 0xe8(%esi), %xmm0\n" /* line 2305 | ps */
         "xorl %ebx, %ebx\n" /* bitNum */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "seta %bl\n" /* bitNum */
         "movl 0xcc(%esi), %ecx\n" /* ps, client */
         /* { scope 2 */
-        "movl 0x312f80, %eax\n" /* line 2172 */
+        "movl animConditionsTable+32, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf18051a_0018097a\n"
         "leal (%ecx, %ecx, 4), %eax\n" /* line 2179 */
@@ -885,7 +885,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         "je .Lf18051a_0018091d\n"
         "movl 0xcc(%esi), %ecx\n" /* line 2308 | ps, client */
         /* { scope 2 */
-        "movl 0x312f90, %eax\n" /* line 2172 */
+        "movl animConditionsTable+48, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf18051a_001809e5\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -944,7 +944,7 @@ void BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
         ".Lf18051a_0018091d:\n"
         "movl 0xcc(%esi), %ecx\n" /* line 2310 | ps, client */
         /* { scope 2 */
-        "movl 0x312f90, %eax\n" /* line 2172 */
+        "movl animConditionsTable+48, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf18051a_00180a0d\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -1105,9 +1105,9 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "fstps -0x16c(%ebp)\n"
         "movss -0x16c(%ebp), %xmm2\n"
         "movaps %xmm2, %xmm3\n" /* line 3160 */
-        "mulss 0x2ed910, %xmm3\n" /* 50.0f */
+        "mulss lit4_002ed910, %xmm3\n" /* 50.0f */
         "movaps %xmm3, %xmm0\n"
-        "mulss 0x2ed914, %xmm0\n" /* 0.925000011920929f */
+        "mulss lit4_002ed914, %xmm0\n" /* 0.925000011920929f */
         "movss %xmm0, -0x28(%ebp)\n"
         "movss %xmm0, -0x34(%ebp)\n" /* line 3161 */
         "pxor %xmm0, %xmm0\n" /* line 3163 */
@@ -1128,21 +1128,21 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "jp .Lf180a36_001812e0\n"
         "jne .Lf180a36_001812e0\n"
         ".Lf180a36_00180b60:\n"
-        "mulss 0x2ed934, %xmm3\n" /* line 3250 | 0.07500000298023224f */
+        "mulss lit4_002ed934, %xmm3\n" /* line 3250 | 0.07500000298023224f */
         "addss -0x1c(%ebp), %xmm3\n"
         "movss %xmm3, -0x1c(%ebp)\n"
         "movss -0x30(%ebp), %xmm1\n" /* line 3252 | vTorsoAngles */
-        "movss 0x2ed724, %xmm7\n" /* 0.20000000298023224f */
+        "movss lit4_002ed724, %xmm7\n" /* 0.20000000298023224f */
         "movaps %xmm1, %xmm0\n"
         "mulss %xmm7, %xmm0\n"
         "movss %xmm0, -0x84(%ebp)\n" /* angles */
         "movss -0x2c(%ebp), %xmm2\n" /* line 3253 */
-        "movss 0x2ed71c, %xmm4\n" /* 0.4000000059604645f */
+        "movss lit4_002ed71c, %xmm4\n" /* 0.4000000059604645f */
         "movaps %xmm2, %xmm0\n"
         "mulss %xmm4, %xmm0\n"
         "movss %xmm0, -0x80(%ebp)\n"
         "movss -0x28(%ebp), %xmm3\n" /* line 3254 */
-        "movss 0x2ed5d8, %xmm5\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm5\n" /* 0.5f */
         "movaps %xmm3, %xmm0\n"
         "mulss %xmm5, %xmm0\n"
         "movss %xmm0, -0x7c(%ebp)\n"
@@ -1155,7 +1155,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "jp .Lf180a36_00181175\n"
         "jne .Lf180a36_00181175\n"
         ".Lf180a36_00180bee:\n"
-        "movss 0x2ed6f4, %xmm6\n" /* line 3259 | 0.30000001192092896f */
+        "movss lit4_002ed6f4, %xmm6\n" /* line 3259 | 0.30000001192092896f */
         "movaps %xmm1, %xmm0\n"
         "mulss %xmm6, %xmm0\n"
         "movss %xmm0, -0x78(%ebp)\n"
@@ -1168,7 +1168,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "movss %xmm5, -0x6c(%ebp)\n"
         "mulss %xmm7, %xmm2\n" /* line 3264 */
         "movss %xmm2, -0x68(%ebp)\n"
-        "mulss 0x2ed938, %xmm3\n" /* line 3265 | -0.6000000238418579f */
+        "mulss lit4_002ed938, %xmm3\n" /* line 3265 | -0.6000000238418579f */
         "movss %xmm3, -0x64(%ebp)\n"
         "movl $0, -0xf0(%ebp)\n"
         ".Lf180a36_00180c40:\n"
@@ -1180,12 +1180,12 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "mulss %xmm0, %xmm6\n"
         "movss %xmm6, -0x5c(%ebp)\n"
         "movl $0, -0x58(%ebp)\n" /* line 3270 */
-        "movss 0x2ed6ac, %xmm2\n" /* line 3272 | 0.699999988079071f */
+        "movss lit4_002ed6ac, %xmm2\n" /* line 3272 | 0.699999988079071f */
         "mulss %xmm2, %xmm1\n"
         "movss %xmm1, -0x54(%ebp)\n"
         "mulss %xmm2, %xmm0\n" /* line 3273 */
         "movss %xmm0, -0x50(%ebp)\n"
-        "movss 0x2ed61c, %xmm0\n" /* line 3274 | -0.30000001192092896f */
+        "movss lit4_002ed61c, %xmm0\n" /* line 3274 | -0.30000001192092896f */
         "mulss -0x34(%ebp), %xmm0\n"
         "movss %xmm0, -0x4c(%ebp)\n"
         "movl $0, -0x48(%ebp)\n" /* line 183 */
@@ -1235,11 +1235,11 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         ".Lf180a36_00180d52:\n"
         "cvtsi2ssl 0x18(%ebp), %xmm4\n" /* line 3365 | frametime */
         "movaps %xmm4, %xmm3\n"
-        "mulss 0x2ed77c, %xmm3\n" /* 0.36000001430511475f */
+        "mulss lit4_002ed77c, %xmm3\n" /* 0.36000001430511475f */
         "movl $0, -0x108(%ebp)\n" /* i */
         "movl $controller_names, %edi\n"
         "movaps %xmm3, %xmm5\n"
-        "xorps 0x302d00, %xmm5\n"
+        "xorps g_color_table+480, %xmm5\n"
         "movss %xmm5, -0x110(%ebp)\n"
         "movl 0x14(%ebp), %ebx\n" /* ci, i */
         "addl $0x3fc, %ebx\n" /* i */
@@ -1290,7 +1290,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "addl $0x444, %esi\n" /* angles */
         "movl $1, %edx\n"
         "movaps %xmm3, %xmm5\n"
-        "xorps 0x302d00, %xmm5\n"
+        "xorps g_color_table+480, %xmm5\n"
         /* { scope 2: radians */
         /* { scope 3 */
         ".Lf180a36_00180e45:\n"
@@ -1313,14 +1313,14 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "movl 0x14(%ebp), %ebx\n" /* line 3373 | ci, i */
         "addl $0x450, %ebx\n" /* i */
         "movl %ebx, 8(%esp)\n" /* i */
-        "mulss 0x2ed7d0, %xmm4\n" /* 0.10000000149011612f */
+        "mulss lit4_002ed7d0, %xmm4\n" /* 0.10000000149011612f */
         "movss %xmm4, 4(%esp)\n"
         "leal -0x90(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll BG_LerpOffset\n"
         "movl %esi, 0x10(%esp)\n" /* line 3374 | angles */
         "movl %ebx, 0xc(%esp)\n" /* i */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0xa2(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl 0x10(%ebp), %ebx\n" /* partBits, i */
@@ -1346,7 +1346,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "jbe .Lf180a36_00181312\n"
         ".Lf180a36_00180ef4:\n"
         "movaps %xmm2, %xmm5\n" /* line 3175 */
-        "mulss 0x2ed918, %xmm5\n" /* -2.5f */
+        "mulss lit4_002ed918, %xmm5\n" /* -2.5f */
         "addss %xmm5, %xmm1\n"
         "movss %xmm1, -0xf4(%ebp)\n"
         "testl $0x20000, %eax\n" /* line 3182 */
@@ -1376,7 +1376,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "addss 0xe8(%esi), %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n" /* tag_origin_angles */
         "cvtss2sd -0x2c(%ebp), %xmm0\n" /* line 3194 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0xf8(%ebp)\n" /* radians */
         /* { scope 3 */
@@ -1391,16 +1391,16 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "movss %xmm1, -0x138(%ebp)\n"
         "calll cosf\n"
         "fstps -0x10c(%ebp)\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "subss -0x10c(%ebp), %xmm3\n"
         "movaps %xmm3, %xmm6\n" /* line 3195 */
-        "mulss 0x2ed924, %xmm6\n" /* -24.0f */
+        "mulss lit4_002ed924, %xmm6\n" /* -24.0f */
         "pxor %xmm0, %xmm0\n"
         "addss %xmm6, %xmm0\n"
         "movss %xmm0, -0xf0(%ebp)\n"
         "movss -0x138(%ebp), %xmm1\n" /* line 3196 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed928, %xmm0\n" /* -12.0f */
+        "mulss lit4_002ed928, %xmm0\n" /* -12.0f */
         "addss -0xf4(%ebp), %xmm0\n"
         "movss %xmm0, -0xf4(%ebp)\n"
         "movss -0x148(%ebp), %xmm2\n" /* line 3198 */
@@ -1408,18 +1408,18 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "pxor %xmm5, %xmm5\n"
         "ucomiss %xmm5, %xmm1\n"
         "jbe .Lf180a36_0018105c\n"
-        "xorps 0x302d00, %xmm2\n" /* line 3199 */
+        "xorps g_color_table+480, %xmm2\n" /* line 3199 */
         "mulss %xmm2, %xmm3\n"
-        "mulss 0x2ed6a8, %xmm3\n" /* 16.0f */
+        "mulss lit4_002ed6a8, %xmm3\n" /* 16.0f */
         "addss %xmm0, %xmm3\n"
         "movss %xmm3, -0xf4(%ebp)\n"
         ".Lf180a36_0018105c:\n"
         "movl $0, -0x84(%ebp)\n" /* line 3201 | angles */
         "movss -0x28(%ebp), %xmm3\n" /* line 3202 */
         "movaps %xmm3, %xmm0\n"
-        "mulss 0x2ed92c, %xmm0\n" /* -1.2000000476837158f */
+        "mulss lit4_002ed92c, %xmm0\n" /* -1.2000000476837158f */
         "movss %xmm0, -0x80(%ebp)\n"
-        "movss 0x2ed6f4, %xmm6\n" /* line 3203 | 0.30000001192092896f */
+        "movss lit4_002ed6f4, %xmm6\n" /* line 3203 | 0.30000001192092896f */
         "movaps %xmm3, %xmm0\n"
         "mulss %xmm6, %xmm0\n"
         "movss %xmm0, -0x7c(%ebp)\n"
@@ -1435,16 +1435,16 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "movl $0, -0x78(%ebp)\n" /* line 3208 */
         "movss -0x2c(%ebp), %xmm1\n" /* line 3209 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed7d0, %xmm0\n" /* 0.10000000149011612f */
+        "mulss lit4_002ed7d0, %xmm0\n" /* 0.10000000149011612f */
         "movaps %xmm3, %xmm2\n"
-        "mulss 0x2ed930, %xmm2\n" /* -0.20000000298023224f */
+        "mulss lit4_002ed930, %xmm2\n" /* -0.20000000298023224f */
         "addss %xmm2, %xmm0\n"
         "movss %xmm0, -0x74(%ebp)\n"
-        "mulss 0x2ed724, %xmm3\n" /* line 3210 | 0.20000000298023224f */
+        "mulss lit4_002ed724, %xmm3\n" /* line 3210 | 0.20000000298023224f */
         "movss %xmm3, -0x70(%ebp)\n"
         "movl -0x30(%ebp), %eax\n" /* line 3212 | vTorsoAngles */
         "movl %eax, -0x6c(%ebp)\n"
-        "mulss 0x2ed7f0, %xmm1\n" /* line 3213 | 0.800000011920929f */
+        "mulss lit4_002ed7f0, %xmm1\n" /* line 3213 | 0.800000011920929f */
         "addss -0x28(%ebp), %xmm1\n"
         "movss %xmm1, -0x68(%ebp)\n"
         "movss %xmm2, -0x64(%ebp)\n" /* line 3214 */
@@ -1463,7 +1463,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "movss -0x128(%ebp), %xmm0\n" /* line 3146 */
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lf180a36_00181332\n"
-        "mulss 0x2ed5d8, %xmm1\n" /* line 3147 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* line 3147 | 0.5f */
         "movss %xmm1, -0x30(%ebp)\n" /* vTorsoAngles */
         "jmp .Lf180a36_00180aac\n"
         ".Lf180a36_00181175:\n"
@@ -1477,12 +1477,12 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "movss -0x104(%ebp), %xmm5\n"
         "addss -0xfc(%ebp), %xmm5\n"
         "movss %xmm5, -0x84(%ebp)\n" /* angles */
-        "movss 0x2ed5d8, %xmm5\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm5\n" /* 0.5f */
         "movss -0x28(%ebp), %xmm3\n"
         "movss -0x2c(%ebp), %xmm2\n"
-        "movss 0x2ed724, %xmm7\n" /* 0.20000000298023224f */
+        "movss lit4_002ed724, %xmm7\n" /* 0.20000000298023224f */
         "movss -0x30(%ebp), %xmm1\n" /* vTorsoAngles */
-        "movss 0x2ed71c, %xmm4\n" /* 0.4000000059604645f */
+        "movss lit4_002ed71c, %xmm4\n" /* 0.4000000059604645f */
         "jmp .Lf180a36_00180bee\n"
         /* } scope */
         /* { scope 2: radians */
@@ -1525,7 +1525,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "addss -0x100(%ebp), %xmm6\n"
         "movss %xmm6, -0x84(%ebp)\n" /* angles */
         "movss -0x28(%ebp), %xmm3\n"
-        "movss 0x2ed6f4, %xmm6\n" /* 0.30000001192092896f */
+        "movss lit4_002ed6f4, %xmm6\n" /* 0.30000001192092896f */
         "jmp .Lf180a36_001810bd\n"
         ".Lf180a36_00181279:\n"
         "movl $0x60, 8(%esp)\n" /* line 3120 */
@@ -1535,7 +1535,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "calll memset\n"
         "jmp .Lf180a36_00180d52\n"
         ".Lf180a36_0018129c:\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 3189 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 3189 | 0.5f */
         "mulss -0x34(%ebp), %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "jmp .Lf180a36_00180f6f\n"
@@ -1544,7 +1544,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "ucomiss %xmm1, %xmm2\n"
         "ja .Lf180a36_00180ef4\n"
         "movaps %xmm2, %xmm6\n" /* line 3177 */
-        "mulss 0x2ed920, %xmm6\n" /* -5.0f */
+        "mulss lit4_002ed920, %xmm6\n" /* -5.0f */
         "pxor %xmm0, %xmm0\n"
         "addss %xmm6, %xmm0\n"
         "movss %xmm0, -0xf4(%ebp)\n"
@@ -1555,7 +1555,7 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "ucomiss %xmm0, %xmm2\n" /* line 3222 */
         "ja .Lf180a36_00180b60\n"
         ".Lf180a36_001812ed:\n"
-        "movss 0x2ed7f8, %xmm0\n" /* line 3242 | 1.25f */
+        "movss lit4_002ed7f8, %xmm0\n" /* line 3242 | 1.25f */
         "movss -0x28(%ebp), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x28(%ebp)\n"
@@ -1564,13 +1564,13 @@ void BG_Player_DoControllers(const struct DObj_s *pDObj, const entityState_t *es
         "jmp .Lf180a36_00180b60\n"
         ".Lf180a36_00181312:\n"
         "movaps %xmm2, %xmm6\n" /* line 3170 */
-        "mulss 0x2ed91c, %xmm6\n" /* -12.5f */
+        "mulss lit4_002ed91c, %xmm6\n" /* -12.5f */
         "pxor %xmm0, %xmm0\n"
         "addss %xmm6, %xmm0\n"
         "movss %xmm0, -0xf4(%ebp)\n"
         "jmp .Lf180a36_00180b3a\n"
         ".Lf180a36_00181332:\n"
-        "mulss 0x2ed604, %xmm1\n" /* line 3149 | 0.25f */
+        "mulss lit4_002ed604, %xmm1\n" /* line 3149 | 0.25f */
         "movss %xmm1, -0x30(%ebp)\n" /* vTorsoAngles */
         "jmp .Lf180a36_00180aac\n"
     );
@@ -1680,7 +1680,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "andb $0xfd, %bh\n" /* animIndex */
         ".Lf181346_0018147b:\n"
         "cvtsi2ssl 0x18(%esi), %xmm0\n" /* line 2513 */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* animIndex */
         "movl -0x28(%ebp), %edx\n" /* pAnimTree */
@@ -1715,7 +1715,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl $0x3f800000, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "cvtsi2ssl 0x18(%esi), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x20(%ebp), %ecx\n" /* animNum */
@@ -1752,7 +1752,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movss 0x24(%esi), %xmm1\n" /* line 54 */
         "movl 8(%ebp), %edi\n" /* es */
         "subss 0x20(%edi), %xmm1\n"
-        "andps 0x302d10, %xmm1\n"
+        "andps g_color_table+496, %xmm1\n"
         "leal 0x18(%edi), %ecx\n"
         "movl %ecx, -0x64(%ebp)\n"
         "leal 0x1c(%esi), %edi\n"
@@ -1760,7 +1760,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl 0xb3be0(%eax), %eax\n" /* line 2627 */
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "divss %xmm0, %xmm1\n"
         "divss 0x44(%ebx), %xmm1\n" /* anim */
         "movss %xmm1, 0x28(%esi)\n" /* lf */
@@ -1775,10 +1775,10 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl 8(%ecx), %eax\n" /* line 201 */
         "movl %eax, 8(%edi)\n"
         "movss 0x28(%esi), %xmm0\n" /* line 2634 | lf */
-        "ucomiss 0x2ed7d0, %xmm0\n" /* 0.10000000149011612f */
+        "ucomiss lit4_002ed7d0, %xmm0\n" /* 0.10000000149011612f */
         "jae .Lf181346_00181c64\n"
         "jp .Lf181346_00181c64\n"
-        "ucomiss 0x2ed738, %xmm0\n" /* line 2637 | 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm0\n" /* line 2637 | 0.009999999776482582f */
         "jae .Lf181346_00181cb6\n"
         "jp .Lf181346_00181cb6\n"
         "cmpb $0, -0x49(%ebp)\n"
@@ -1948,7 +1948,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl $0x3f800000, %ebx\n" /* animIndex */
         "movl %ebx, 0x10(%esp)\n" /* animIndex */
         "cvtsi2ssl 0x18(%esi), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl bgs, %eax\n"
@@ -1962,7 +1962,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl $0, 0x14(%esp)\n"
         "movl %ebx, 0x10(%esp)\n" /* animIndex */
         "cvtsi2ssl 0x18(%esi), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* animIndex */
         "movl bgs, %eax\n"
@@ -1984,7 +1984,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         ".Lf181346_001818ad:\n"
         "movl %ecx, 0xc(%esp)\n" /* line 2431 */
         "movl %edx, 8(%esp)\n"
-        "movl $0x2aeefc, 4(%esp)\n" /* "Player animation index out of range (%i): %i" */
+        "movl $str_002aeefc, 4(%esp)\n" /* "Player animation index out of range (%i): %i" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl bgs, %eax\n"
@@ -2014,7 +2014,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl $0x3f800000, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "cvtsi2ssl 0x18(%esi), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x20(%ebp), %edx\n" /* animNum */
@@ -2049,7 +2049,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "testb %al, %al\n"
         "jne .Lf181346_00181cc2\n"
         "movl $0x3e8, %edx\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         ".Lf181346_001819d2:\n"
         "movl bgs, %eax\n" /* line 2505 */
         "movl 0xb3bdc(%eax), %eax\n"
@@ -2060,7 +2060,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "divss %xmm0, %xmm1\n"
         "movl -0x50(%ebp), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm0\n"
-        "mulss 0x2ed77c, %xmm0\n" /* 0.36000001430511475f */
+        "mulss lit4_002ed77c, %xmm0\n" /* 0.36000001430511475f */
         "addss %xmm0, %xmm1\n"
         "cvttss2si %xmm1, %eax\n" /* line 2506 */
         "cvtsi2ssl %eax, %xmm0\n"
@@ -2098,7 +2098,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl $0x3f800000, %ebx\n" /* animIndex */
         "movl %ebx, 0x10(%esp)\n" /* animIndex */
         "cvtsi2ssl 0x18(%esi), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* animIndex */
         "movl bgs, %eax\n"
@@ -2114,7 +2114,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl $0, 0x14(%esp)\n"
         "movl %ebx, 0x10(%esp)\n" /* animIndex */
         "cvtsi2ssl 0x18(%esi), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl $0x3c23d70a, 8(%esp)\n"
         "movl bgs, %eax\n"
@@ -2125,14 +2125,14 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "calll XAnimSetCompleteGoalWeight\n"
         "jmp .Lf181346_0018153a\n"
         ".Lf181346_00181b18:\n"
-        "movl $0x2aeecc, 4(%esp)\n" /* line 2268 */
+        "movl $str_002aeecc, 4(%esp)\n" /* line 2268 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl globalScriptData, %ecx\n"
         "jmp .Lf181346_00181728\n"
         /* { scope 3 */
         ".Lf181346_00181b37:\n"
-        "movl $0x2aeecc, 4(%esp)\n" /* "BG_GetAnimationForIndex: index out of bounds" */
+        "movl $str_002aeecc, 4(%esp)\n" /* "BG_GetAnimationForIndex: index out of bounds" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl globalScriptData, %ecx\n"
@@ -2140,7 +2140,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         /* } scope */
         /* { scope 3 */
         ".Lf181346_00181b56:\n"
-        "movl $0x2aeecc, 4(%esp)\n" /* "BG_GetAnimationForIndex: index out of bounds" */
+        "movl $str_002aeecc, 4(%esp)\n" /* "BG_GetAnimationForIndex: index out of bounds" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl globalScriptData, %ecx\n"
@@ -2148,7 +2148,7 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "jmp .Lf181346_001816cd\n"
         /* } scope */
         ".Lf181346_00181b78:\n"
-        "movl $0x2aeecc, 4(%esp)\n" /* "BG_GetAnimationForIndex: index out of bounds" */
+        "movl $str_002aeecc, 4(%esp)\n" /* "BG_GetAnimationForIndex: index out of bounds" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl globalScriptData, %ecx\n"
@@ -2214,19 +2214,19 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "jmp .Lf181346_00181405\n"
         /* } scope */
         ".Lf181346_00181c64:\n"
-        "ucomiss 0x2ed62c, %xmm0\n" /* line 2642 | 2.0f */
+        "ucomiss lit4_002ed62c, %xmm0\n" /* line 2642 | 2.0f */
         "jbe .Lf181346_001817c3\n"
         "testb $2, 0x50(%ebx)\n" /* line 2644 | anim */
         "jne .Lf181346_00181d3e\n"
         "movss 0x44(%ebx), %xmm1\n" /* line 2647 | anim */
-        "ucomiss 0x2ed93c, %xmm1\n" /* 150.0f */
+        "ucomiss lit4_002ed93c, %xmm1\n" /* 150.0f */
         "jbe .Lf181346_00181d57\n"
         "movl $0x40000000, 0x28(%esi)\n" /* line 2649 | lf */
         "jmp .Lf181346_001817c3\n"
         /* { scope 2: index, animNum */
         ".Lf181346_00181c99:\n"
         "movl %ebx, 8(%esp)\n" /* line 2529 | animIndex */
-        "movl $0x2aef2c, 4(%esp)\n" /* "death animation '%s' is looping" */
+        "movl $str_002aef2c, 4(%esp)\n" /* "death animation '%s' is looping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf181346_00181911\n"
@@ -2272,23 +2272,23 @@ void BG_RunLerpFrameRate(clientInfo_t *ci, entityState_t *es)
         "movl -0x64(%ebp), %ecx\n" /* newAnimation */
         "jmp .Lf181346_0018159b\n"
         ".Lf181346_00181d3e:\n"
-        "ucomiss 0x2ed608, %xmm0\n" /* line 2664 | 4.0f */
+        "ucomiss lit4_002ed608, %xmm0\n" /* line 2664 | 4.0f */
         "jbe .Lf181346_001817c3\n"
         "movl $0x40800000, 0x28(%esi)\n" /* line 2666 | lf */
         "jmp .Lf181346_001817c3\n"
         ".Lf181346_00181d57:\n"
-        "ucomiss 0x2ed694, %xmm1\n" /* line 2651 | 20.0f */
+        "ucomiss lit4_002ed694, %xmm1\n" /* line 2651 | 20.0f */
         "jae .Lf181346_00181d7b\n"
         "jp .Lf181346_00181d7b\n"
-        "ucomiss 0x2ed720, %xmm0\n" /* line 2653 | 3.0f */
+        "ucomiss lit4_002ed720, %xmm0\n" /* line 2653 | 3.0f */
         "jbe .Lf181346_001817c3\n"
         "movl $0x40400000, 0x28(%esi)\n" /* line 2654 | lf */
         "jmp .Lf181346_001817c3\n"
         /* { scope 2: index, animNum */
         ".Lf181346_00181d7b:\n"
-        "subss 0x2ed694, %xmm1\n" /* line 2658 | 20.0f, fScaleMax */
-        "divss 0x2ed940, %xmm1\n" /* -130.0f, fScaleMax */
-        "addss 0x2ed720, %xmm1\n" /* 3.0f, fScaleMax */
+        "subss lit4_002ed694, %xmm1\n" /* line 2658 | 20.0f, fScaleMax */
+        "divss lit4_002ed940, %xmm1\n" /* -130.0f, fScaleMax */
+        "addss lit4_002ed720, %xmm1\n" /* 3.0f, fScaleMax */
         "ucomiss %xmm1, %xmm0\n" /* line 2660 */
         "jbe .Lf181346_001817c3\n"
         "movss %xmm1, 0x28(%esi)\n" /* line 2661 | lf */
@@ -2349,7 +2349,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         ".Lf181da6_00181e5f:\n"
         "movss -0x1c(%ebp), %xmm4\n"
         "movaps %xmm4, %xmm0\n"
-        "movss 0x2ed5f8, %xmm2\n" /* 90.0f */
+        "movss lit4_002ed5f8, %xmm2\n" /* 90.0f */
         "pxor %xmm1, %xmm1\n"
         ".Lf181da6_00181e73:\n"
         "movl -0x38(%ebp), %edx\n" /* line 2942 | ci */
@@ -2357,7 +2357,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl -0x38(%ebp), %ecx\n" /* ci */
         "addl $0x3b0, %ecx\n"
         "movl %ecx, -0x44(%ebp)\n"
-        "movl 0x195f600, %ebx\n" /* bitNum */
+        "movl imp_bg_swingSpeed, %ebx\n" /* bitNum */
         "movl (%ebx), %ecx\n" /* bitNum */
         "movl -0x44(%ebp), %eax\n"
         "movss 8(%ecx), %xmm3\n"
@@ -2406,8 +2406,8 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "addl $0x3bc, %edx\n"
         "movl -0x38(%ebp), %eax\n" /* ci */
         "addl $0x3b8, %eax\n"
-        "movss 0x2ed764, %xmm3\n" /* 0.15000000596046448f */
-        "movss 0x2ed6ec, %xmm2\n" /* 45.0f */
+        "movss lit4_002ed764, %xmm3\n" /* 0.15000000596046448f */
+        "movss lit4_002ed6ec, %xmm2\n" /* 45.0f */
         "calll BG_SwingAngles\n"
         /* } scope */
         /* { scope 2 */
@@ -2452,7 +2452,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl -0x34(%ebp), %eax\n" /* es */
         "movl 0x90(%eax), %ecx\n" /* client */
         /* { scope 3 */
-        "movl 0x312f68, %eax\n" /* line 2172 */
+        "movl animConditionsTable+8, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf181da6_001826d3\n"
         "leal (%ecx, %ecx, 4), %eax\n" /* line 2179 */
@@ -2485,7 +2485,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         ".Lf181da6_00182062:\n"
         "movl 0x90(%eax), %ecx\n" /* line 3040 | client */
         /* { scope 3 */
-        "movl 0x312f98, %eax\n" /* line 2172 */
+        "movl animConditionsTable+56, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf181da6_001828df\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2509,7 +2509,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "je .Lf181da6_0018261d\n"
         "movl 0x90(%ecx), %ecx\n" /* line 3046 | client */
         /* { scope 3 */
-        "movl 0x312f70, %eax\n" /* line 2172 */
+        "movl animConditionsTable+16, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf181da6_00182904\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2531,12 +2531,12 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl -0x38(%ebp), %ecx\n" /* line 3051 | ci, client */
         "movss 0x3e8(%ecx), %xmm0\n"
         "xorl %ebx, %ebx\n" /* bitNum */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "seta %bl\n" /* bitNum */
         "movl -0x34(%ebp), %eax\n" /* es */
         "movl 0x90(%eax), %ecx\n" /* client */
         /* { scope 3 */
-        "movl 0x312f80, %esi\n" /* line 2172 */
+        "movl animConditionsTable+32, %esi\n" /* line 2172 */
         "testl %esi, %esi\n"
         "jne .Lf181da6_00182756\n"
         "leal (%ecx, %ecx, 4), %eax\n" /* line 2179 */
@@ -2565,7 +2565,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "je .Lf181da6_00182678\n"
         "movl 0x90(%eax), %ecx\n" /* line 3054 | client */
         /* { scope 3 */
-        "movl 0x312f88, %ebx\n" /* line 2172 */
+        "movl animConditionsTable+40, %ebx\n" /* line 2172 */
         "testl %ebx, %ebx\n"
         "jne .Lf181da6_0018285f\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2589,7 +2589,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "je .Lf181da6_001825c3\n"
         "movl 0x90(%ecx), %ecx\n" /* line 3059 | client */
         /* { scope 3 */
-        "movl 0x312f90, %eax\n" /* line 2172 */
+        "movl animConditionsTable+48, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf181da6_001827f5\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2651,7 +2651,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl -0x34(%ebp), %eax\n" /* line 3079 | es */
         "movl 0x90(%eax), %ecx\n" /* client */
         /* { scope 3 */
-        "movl 0x312fa0, %eax\n" /* line 2172 */
+        "movl animConditionsTable+64, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf181da6_0018281a\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2748,8 +2748,8 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl (%ebx), %ecx\n" /* bitNum */
         "movl -0x40(%ebp), %eax\n"
         "movss 8(%ecx), %xmm3\n"
-        "movss 0x2ed93c, %xmm2\n" /* 150.0f */
-        "movss 0x2ed73c, %xmm1\n" /* 40.0f */
+        "movss lit4_002ed93c, %xmm2\n" /* 150.0f */
+        "movss lit4_002ed73c, %xmm1\n" /* 40.0f */
         "movaps %xmm4, %xmm0\n"
         "calll BG_SwingAngles\n"
         "movl -0x34(%ebp), %eax\n" /* line 2977 | es */
@@ -2784,7 +2784,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl -0x34(%ebp), %eax\n" /* line 3081 | es */
         "movl 0x90(%eax), %ecx\n" /* client */
         /* { scope 3 */
-        "movl 0x312fa0, %eax\n" /* line 2172 */
+        "movl animConditionsTable+64, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "je .Lf181da6_0018294e\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2187 */
@@ -2809,7 +2809,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "calll XAnimGetWeight\n"
         "fstps -0x2c(%ebp)\n"
         "movss -0x2c(%ebp), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jne .Lf181da6_00182347\n"
         "jp .Lf181da6_00182347\n"
         "movl -0x40(%ebp), %eax\n" /* line 2709 */
@@ -2827,7 +2827,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "calll XAnimGetWeight\n"
         "fstps -0x28(%ebp)\n"
         "movss -0x28(%ebp), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jne .Lf181da6_00182355\n"
         "jp .Lf181da6_00182355\n"
         "movl -0x44(%ebp), %eax\n" /* line 2709 */
@@ -2839,7 +2839,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         ".Lf181da6_001825c3:\n"
         "movl 0x90(%ecx), %ecx\n" /* line 3061 | client */
         /* { scope 3 */
-        "movl 0x312f90, %eax\n" /* line 2172 */
+        "movl animConditionsTable+48, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf181da6_00182929\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2861,7 +2861,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         ".Lf181da6_0018261d:\n"
         "movl 0x90(%ecx), %ecx\n" /* line 3048 | client */
         /* { scope 3 */
-        "movl 0x312f70, %edi\n" /* line 2172 */
+        "movl animConditionsTable+16, %edi\n" /* line 2172 */
         "testl %edi, %edi\n"
         "jne .Lf181da6_001828ba\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2883,7 +2883,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         ".Lf181da6_00182678:\n"
         "movl 0x90(%eax), %ecx\n" /* line 3056 | client */
         /* { scope 3 */
-        "movl 0x312f88, %edx\n" /* line 2172 */
+        "movl animConditionsTable+40, %edx\n" /* line 2172 */
         "testl %edx, %edx\n"
         "jne .Lf181da6_001827d0\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2919,7 +2919,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         ".Lf181da6_001826fc:\n"
         "movl 0x90(%eax), %ecx\n" /* line 3042 | client */
         /* { scope 3 */
-        "movl 0x312f98, %eax\n" /* line 2172 */
+        "movl animConditionsTable+56, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf181da6_0018283a\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2179 */
@@ -2974,7 +2974,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl -0x40(%ebp), %eax\n"
         ".Lf181da6_001827b2:\n"
         "movss 8(%ecx), %xmm3\n" /* line 2969 */
-        "movss 0x2ed93c, %xmm2\n" /* 150.0f */
+        "movss lit4_002ed93c, %xmm2\n" /* 150.0f */
         "pxor %xmm1, %xmm1\n"
         "movaps %xmm4, %xmm0\n"
         "calll BG_SwingAngles\n"
@@ -3044,7 +3044,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl -0x34(%ebp), %eax\n" /* line 3083 | es */
         "movl 0x90(%eax), %ecx\n" /* client */
         /* { scope 3 */
-        "movl 0x312fa0, %eax\n" /* line 2172 */
+        "movl animConditionsTable+64, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "je .Lf181da6_00182a32\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 2187 */
@@ -3139,20 +3139,20 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "andl $0x40000, %edx\n" /* line 2929 */
         "jne .Lf181da6_00182ad7\n"
         "movss -0x30(%ebp), %xmm0\n" /* line 2932 | moveDir */
-        "mulss 0x2ed6f4, %xmm0\n" /* 0.30000001192092896f */
+        "mulss lit4_002ed6f4, %xmm0\n" /* 0.30000001192092896f */
         "addss -0x1c(%ebp), %xmm0\n"
         "movss -0x20(%ebp), %xmm4\n"
-        "movss 0x2ed5f8, %xmm2\n" /* 90.0f */
+        "movss lit4_002ed5f8, %xmm2\n" /* 90.0f */
         "pxor %xmm1, %xmm1\n"
         "jmp .Lf181da6_00181e73\n"
         ".Lf181da6_00182a03:\n"
         "cmpl $0x4000, %edx\n" /* line 3003 */
         "je .Lf181da6_00181f3b\n"
         "movss -0x24(%ebp), %xmm0\n" /* line 3007 */
-        "ucomiss 0x2ed64c, %xmm0\n" /* 180.0f */
+        "ucomiss lit4_002ed64c, %xmm0\n" /* 180.0f */
         "ja .Lf181da6_00182b61\n"
         ".Lf181da6_00182a21:\n"
-        "mulss 0x2ed944, %xmm0\n" /* line 3008 | 0.6000000238418579f */
+        "mulss lit4_002ed944, %xmm0\n" /* line 3008 | 0.6000000238418579f */
         "pxor %xmm1, %xmm1\n"
         "jmp .Lf181da6_00181f42\n"
         /* } scope */
@@ -3196,7 +3196,7 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl (%ebx), %ecx\n" /* bitNum */
         "movl -0x40(%ebp), %eax\n"
         "movss 8(%ecx), %xmm3\n"
-        "movss 0x2ed93c, %xmm2\n" /* 150.0f */
+        "movss lit4_002ed93c, %xmm2\n" /* 150.0f */
         "pxor %xmm1, %xmm1\n"
         "movss -0x1c(%ebp), %xmm0\n"
         "calll BG_SwingAngles\n"
@@ -3204,13 +3204,13 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         ".Lf181da6_00182ad7:\n"
         "movss -0x20(%ebp), %xmm4\n" /* line 2929 */
         "movss -0x1c(%ebp), %xmm0\n"
-        "movss 0x2ed5f8, %xmm2\n" /* 90.0f */
+        "movss lit4_002ed5f8, %xmm2\n" /* 90.0f */
         "pxor %xmm1, %xmm1\n"
         "jmp .Lf181da6_00181e73\n"
         ".Lf181da6_00182af2:\n"
         "movl -0x38(%ebp), %eax\n" /* line 2200 | ci */
         "movl 0x48c(%eax), %ebx\n" /* bitNum */
-        "movl 0x312f90, %ecx\n" /* line 2203 */
+        "movl animConditionsTable+48, %ecx\n" /* line 2203 */
         "testl %ecx, %ecx\n"
         "jne .Lf181da6_00182b37\n"
         "movl %eax, %esi\n"
@@ -3240,12 +3240,12 @@ void BG_PlayerAnimation(const struct DObj_s *pDObj, entityState_t *es, clientInf
         "movl 8(%ecx), %edx\n"
         "jmp .Lf181da6_00181e2c\n"
         ".Lf181da6_00182b61:\n"
-        "subss 0x2ed638, %xmm0\n" /* line 3008 | 360.0f */
+        "subss lit4_002ed638, %xmm0\n" /* line 3008 | 360.0f */
         "jmp .Lf181da6_00182a21\n"
         ".Lf181da6_00182b6e:\n"
         "movss -0x20(%ebp), %xmm4\n" /* line 2926 */
         "movss -0x1c(%ebp), %xmm0\n"
-        "movss 0x2ed6ec, %xmm2\n" /* 45.0f */
+        "movss lit4_002ed6ec, %xmm2\n" /* 45.0f */
         "pxor %xmm1, %xmm1\n"
         "jmp .Lf181da6_00181e73\n"
     );
@@ -3313,7 +3313,7 @@ int BG_AnimationIndexForString(const char *string, const char *string_1)
         "movl %ebx, 8(%esp)\n" /* pAnim */
         "movl 8(%ebp), %edx\n" /* string */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2aef88, (%esp)\n" /* "multiplayer" */
+        "movl $str_002aef88, (%esp)\n" /* "multiplayer" */
         "calll Scr_FindAnim\n"
         "movl 8(%ebp), %eax\n" /* line 448 | string */
         "movl %eax, 4(%esp)\n"
@@ -3462,7 +3462,7 @@ int BG_IndexForString(const char *token, animStringItem_t *strings, qboolean all
         ".Lf182d4e_00182e85:\n"
         "movl 8(%ebp), %eax\n" /* line 514 | token */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2aef94, (%esp)\n" /* "BG_IndexForString: unknown token '%s'" */
+        "movl $str_002aef94, (%esp)\n" /* "BG_IndexForString: unknown token '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf182d4e_00182dfa\n"
     );
@@ -3501,13 +3501,13 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "je .Lf182e9e_00182f33\n"
         "xorl %esi, %esi\n" /* endFlag */
         ".Lf182e9e_00182eea:\n"
-        "movl $0x21f88c, 4(%esp)\n" /* line 788 */
+        "movl $str_0021f88c, 4(%esp)\n" /* line 788 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "movl $1, %eax\n"
         "cmovel %eax, %esi\n" /* endFlag */
-        "movl $0x218298, 4(%esp)\n" /* line 793 */
+        "movl $str_00218298, 4(%esp)\n" /* line 793 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3530,7 +3530,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "movl $1, %esi\n" /* line 784 | endFlag */
         "jmp .Lf182e9e_00182eea\n"
         ".Lf182e9e_00182f45:\n"
-        "movl $0x2aefbc, 4(%esp)\n" /* line 799 */
+        "movl $str_002aefbc, 4(%esp)\n" /* line 799 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3547,16 +3547,16 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "retl\n"
         /* { scope 1 */
         ".Lf182e9e_00182f67:\n"
-        "movl $0x2aed3c, 4(%esp)\n" /* line 806 */
+        "movl $str_002aed3c, 4(%esp)\n" /* line 806 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
-        "movl $0x2aefc4, %eax\n" /* "MINUS" */
+        "movl $str_002aefc4, %eax\n" /* "MINUS" */
         "cmovel %eax, %ebx\n" /* token */
         "testl %esi, %esi\n" /* line 811 | endFlag */
         "je .Lf182e9e_001830f5\n"
         ".Lf182e9e_00182f89:\n"
-        "movl $0x2aefcc, 4(%esp)\n" /* line 827 */
+        "movl $str_002aefcc, 4(%esp)\n" /* line 827 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3566,7 +3566,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "jne .Lf182e9e_00182fdf\n"
         "testl %esi, %esi\n" /* line 832 | endFlag */
         "jne .Lf182e9e_00183048\n"
-        "movl $0x2aefc4, 4(%esp)\n" /* line 839 */
+        "movl $str_002aefc4, 4(%esp)\n" /* line 839 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3575,10 +3575,10 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "jmp .Lf182e9e_00182ed2\n"
         ".Lf182e9e_00182fcf:\n"
         "movl %ebx, 4(%esp)\n" /* line 844 | token */
-        "movl $0x2af004, (%esp)\n" /* "BG_ParseConditionBits: unexpected '%s'" */
+        "movl $str_002af004, (%esp)\n" /* "BG_ParseConditionBits: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         ".Lf182e9e_00182fdf:\n"
-        "movl $0x22540c, 4(%esp)\n" /* line 847 */
+        "movl $str_0022540c, 4(%esp)\n" /* line 847 */
         "leal -0x60(%ebp), %edi\n" /* currentString */
         "movl %edi, (%esp)\n"
         "calll I_stricmp\n"
@@ -3600,7 +3600,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "andl %eax, 4(%edx)\n"
         ".Lf182e9e_00183021:\n"
         "movb $0, -0x60(%ebp)\n" /* line 889 | currentString */
-        "movl $0x2aefc4, 4(%esp)\n" /* line 891 */
+        "movl $str_002aefc4, 4(%esp)\n" /* line 891 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3609,9 +3609,9 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "movl %eax, -0x6c(%ebp)\n" /* minus */
         "jmp .Lf182e9e_00182f1e\n"
         ".Lf182e9e_00183048:\n"
-        "movl $0x2aefd0, (%esp)\n" /* line 834 */
+        "movl $str_002aefd0, (%esp)\n" /* line 834 */
         "calll BG_AnimParseError\n"
-        "movl $0x22540c, 4(%esp)\n" /* line 847 */
+        "movl $str_0022540c, 4(%esp)\n" /* line 847 */
         "leal -0x60(%ebp), %edi\n" /* currentString */
         "movl %edi, (%esp)\n"
         "calll I_stricmp\n"
@@ -3634,7 +3634,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "addl %edx, %eax\n"
         "movl defineBits(, %eax, 8), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* tempBits */
-        "movl 0xf13304(, %eax, 8), %eax\n" /* line 864 */
+        "movl defineBits+4(, %eax, 8), %eax\n" /* line 864 */
         "movl %eax, -0x1c(%ebp)\n"
         "jmp .Lf182e9e_00183004\n"
         ".Lf182e9e_001830b8:\n"
@@ -3647,7 +3647,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "movl %eax, 4(%edi)\n"
         "jmp .Lf182e9e_00183021\n"
         ".Lf182e9e_001830d0:\n"
-        "movl $0x2aefc4, 4(%esp)\n" /* line 827 */
+        "movl $str_002aefc4, 4(%esp)\n" /* line 827 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3656,7 +3656,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "je .Lf182e9e_00182ed2\n"
         "jmp .Lf182e9e_00182fa1\n"
         ".Lf182e9e_001830f5:\n"
-        "movl $0x2aefcc, 4(%esp)\n" /* line 811 */
+        "movl $str_002aefcc, 4(%esp)\n" /* line 811 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3665,7 +3665,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "xorl %esi, %esi\n" /* line 824 | endFlag */
         "jmp .Lf182e9e_00182f89\n"
         ".Lf182e9e_00183110:\n"
-        "movl $0x2aefc4, 4(%esp)\n" /* line 811 */
+        "movl $str_002aefc4, 4(%esp)\n" /* line 811 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3705,7 +3705,7 @@ void BG_ParseConditionBits(const char * *text_pp, animStringItem_t *stringTable,
         "orl %eax, -0x20(%ebp, %edx, 4)\n"
         "jmp .Lf182e9e_00183004\n"
         ".Lf182e9e_00183192:\n"
-        "movl $0x217914, 8(%esp)\n" /* line 822 */
+        "movl $str_00217914, 8(%esp)\n" /* line 822 */
         "movl $0x40, 4(%esp)\n"
         "leal -0x60(%ebp), %eax\n" /* currentString */
         "movl %eax, (%esp)\n"
@@ -3760,7 +3760,7 @@ qboolean BG_ParseConditions(const char * *text_pp)
         "je .Lf1831ba_001832e8\n"
         "cmpb $0, (%eax)\n"
         "je .Lf1831ba_001832e8\n"
-        "movl $0x220284, 4(%esp)\n" /* line 923 */
+        "movl $str_00220284, 4(%esp)\n" /* line 923 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3773,7 +3773,7 @@ qboolean BG_ParseConditions(const char * *text_pp)
         "movl animConditionsTable(, %eax, 8), %eax\n" /* line 928 */
         "testl %eax, %eax\n"
         "jne .Lf1831ba_001831d8\n"
-        "movl 0x312f64(, %esi, 8), %edx\n" /* line 931 */
+        "movl animConditionsTable+4(, %esi, 8), %edx\n" /* line 931 */
         "leal -0x20(%ebp), %eax\n" /* conditionValue */
         "movl %eax, (%esp)\n"
         "movl %esi, %ecx\n" /* conditionIndex */
@@ -3781,7 +3781,7 @@ qboolean BG_ParseConditions(const char * *text_pp)
         "calll BG_ParseConditionBits\n"
         "jmp .Lf1831ba_001831e1\n"
         ".Lf1831ba_00183280:\n"
-        "movl 0x312f64(, %esi, 8), %eax\n" /* line 935 */
+        "movl animConditionsTable+4(, %esi, 8), %eax\n" /* line 935 */
         "testl %eax, %eax\n"
         "je .Lf1831ba_00183336\n"
         "movl -0x30(%ebp), %edx\n" /* line 937 */
@@ -3804,7 +3804,7 @@ qboolean BG_ParseConditions(const char * *text_pp)
         "je .Lf1831ba_0018332f\n"
         ".Lf1831ba_001832c2:\n"
         "movl $0, 8(%esp)\n" /* line 947 */
-        "movl 0x312f64(, %esi, 8), %eax\n"
+        "movl animConditionsTable+4(, %esi, 8), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl -0x2c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
@@ -3815,7 +3815,7 @@ qboolean BG_ParseConditions(const char * *text_pp)
         "movl (%ebx), %eax\n" /* line 970 | scriptItem */
         "testl %eax, %eax\n"
         "jne .Lf1831ba_001832fa\n"
-        "movl $0x2af06c, (%esp)\n" /* line 972 */
+        "movl $str_002af06c, (%esp)\n" /* line 972 */
         "calll BG_AnimParseError\n"
         /* } scope */
         ".Lf1831ba_001832fa:\n"
@@ -3828,7 +3828,7 @@ qboolean BG_ParseConditions(const char * *text_pp)
         "retl\n"
         /* { scope 1 */
         ".Lf1831ba_00183307:\n"
-        "movl $0x2af02c, (%esp)\n" /* line 940 */
+        "movl $str_002af02c, (%esp)\n" /* line 940 */
         "calll BG_AnimParseError\n"
         "cld\n" /* line 943 */
         "xorl %eax, %eax\n"
@@ -3873,7 +3873,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         ".Lf183342_0018336e:\n"
         "cmpb $0, (%ebx)\n" /* token */
         "je .Lf183342_0018357f\n"
-        "movl $0x21e508, 4(%esp)\n" /* line 1000 */
+        "movl $str_0021e508, 4(%esp)\n" /* line 1000 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3915,7 +3915,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         "cmpb $0, (%eax)\n"
         "jne .Lf183342_00183413\n"
         ".Lf183342_00183407:\n"
-        "movl $0x2af0d4, (%esp)\n" /* line 1023 */
+        "movl $str_002af0d4, (%esp)\n" /* line 1023 */
         "calll BG_AnimParseError\n"
         ".Lf183342_00183413:\n"
         "movl %ebx, (%esp)\n" /* line 1024 | token */
@@ -3943,7 +3943,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         ".Lf183342_00183459:\n"
         "cmpb $0, (%eax)\n"
         "je .Lf183342_001834b6\n"
-        "movl $0x2acec8, 4(%esp)\n" /* line 1091 */
+        "movl $str_002acec8, 4(%esp)\n" /* line 1091 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3956,7 +3956,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         "cmpb $0, (%eax)\n"
         "jne .Lf183342_00183495\n"
         ".Lf183342_00183489:\n"
-        "movl $0x2af0fc, (%esp)\n" /* line 1098 */
+        "movl $str_002af0fc, (%esp)\n" /* line 1098 */
         "calll BG_AnimParseError\n"
         ".Lf183342_00183495:\n"
         "movl %ebx, (%esp)\n" /* line 1099 | token */
@@ -3989,7 +3989,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         ".Lf183342_001834e8:\n"
         "cmpb $0, (%eax)\n"
         "je .Lf183342_00183566\n"
-        "movl $0x2af1bc, 4(%esp)\n" /* line 1151 */
+        "movl $str_002af1bc, 4(%esp)\n" /* line 1151 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4002,15 +4002,15 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         "cmpb $0, (%eax)\n"
         "jne .Lf183342_00183524\n"
         ".Lf183342_00183518:\n"
-        "movl $0x2af1c4, (%esp)\n" /* line 1155 */
+        "movl $str_002af1c4, (%esp)\n" /* line 1155 */
         "calll BG_AnimParseError\n"
         ".Lf183342_00183524:\n"
-        "movl $0x228dec, 4(%esp)\n" /* line 1157 */
+        "movl $str_00228dec, 4(%esp)\n" /* line 1157 */
         "movl %ebx, (%esp)\n" /* token */
         "calll strstr\n"
         "testl %eax, %eax\n"
         "je .Lf183342_00183544\n"
-        "movl $0x2af1e8, (%esp)\n" /* line 1158 */
+        "movl $str_002af1e8, (%esp)\n" /* line 1158 */
         "calll BG_AnimParseError\n"
         ".Lf183342_00183544:\n"
         "movl %ebx, (%esp)\n" /* line 1159 | token */
@@ -4040,7 +4040,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         "retl\n"
         /* { scope 1 */
         ".Lf183342_00183587:\n"
-        "movl $0x2af128, 4(%esp)\n" /* line 1101 */
+        "movl $str_002af128, 4(%esp)\n" /* line 1101 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4053,16 +4053,16 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         "movl -0x20(%ebp), %edx\n" /* command */
         "cmpw $3, (%edx, %eax, 2)\n"
         "je .Lf183342_0018344b\n"
-        "movl $0x2af134, (%esp)\n" /* line 1110 */
+        "movl $str_002af134, (%esp)\n" /* line 1110 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183342_0018344b\n"
         ".Lf183342_001835ca:\n"
         "movl %ebx, 4(%esp)\n" /* line 1164 | token */
-        "movl $0x2af228, (%esp)\n" /* "BG_ParseCommands: unknown parameter '%s'" */
+        "movl $str_002af228, (%esp)\n" /* "BG_ParseCommands: unknown parameter '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183342_001834da\n"
         ".Lf183342_001835df:\n"
-        "movl $0x2af184, 4(%esp)\n" /* line 1112 */
+        "movl $str_002af184, 4(%esp)\n" /* line 1112 */
         "movl %ebx, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4075,7 +4075,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         "cmpb $0, (%eax)\n"
         "jne .Lf183342_00183616\n"
         ".Lf183342_0018360a:\n"
-        "movl $0x2af190, (%esp)\n" /* line 1119 */
+        "movl $str_002af190, (%esp)\n" /* line 1119 */
         "calll BG_AnimParseError\n"
         ".Lf183342_00183616:\n"
         "movl g_pLoadAnims, %eax\n" /* line 1121 */
@@ -4112,7 +4112,7 @@ void BG_ParseCommands(const char * *input, animScriptItem_t *scriptItem, animScr
         "jmp .Lf183342_001834da\n"
         ".Lf183342_0018367e:\n"
         "movl $8, 4(%esp)\n" /* line 1012 */
-        "movl $0x2af094, (%esp)\n" /* "BG_ParseCommands: exceeded maximum number of animations (%i)" */
+        "movl $str_002af094, (%esp)\n" /* "BG_ParseCommands: exceeded maximum number of animations (%i)" */
         "calll BG_AnimParseError\n"
         "movl 0xc(%ebp), %edx\n" /* scriptItem */
         "movl 0xc(%ebp), %ecx\n" /* scriptItem */
@@ -4331,7 +4331,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "cmpl $4, %eax\n" /* line 1275 */
         "jne .Lf183890_0018393c\n"
         "movl $input, -0x1c(%ebp)\n" /* line 1280 | text_p */
-        "movl $0x221c74, (%esp)\n" /* line 1281 */
+        "movl $str_00221c74, (%esp)\n" /* line 1281 */
         "calll Com_BeginParseSession\n"
         "movl $0, -0x138(%ebp)\n" /* currentScriptItem */
         "movl $0, -0x140(%ebp)\n" /* parseMode */
@@ -4371,7 +4371,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "movl -0x134(%ebp), %eax\n" /* line 1289 | indentLevel */
         "testl %eax, %eax\n"
         "je .Lf183890_00183a06\n"
-        "movl $0x2af280, (%esp)\n" /* line 1290 */
+        "movl $str_002af280, (%esp)\n" /* line 1290 */
         "calll BG_AnimParseError\n"
         ".Lf183890_00183a06:\n"
         "movl $0, globalFilename\n" /* line 1553 */
@@ -4386,15 +4386,15 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         /* { scope 1 */
         ".Lf183890_00183a20:\n"
         "movl %esi, 4(%esp)\n" /* line 1299 | token */
-        "movl $0x2af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
+        "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_001839c5\n"
         ".Lf183890_00183a32:\n"
         "cmpl $4, -0x140(%ebp)\n" /* line 1307 | parseMode */
         "ja .Lf183890_00183987\n"
         "movl -0x140(%ebp), %ecx\n" /* parseMode */
-        "jmpl *0x302d20(, %ecx, 4)\n"
-        "movl $0x2160dc, 4(%esp)\n" /* line 1311 */
+        "jmpl *g_color_table+512(, %ecx, 4)\n"
+        "movl $str_002160dc, 4(%esp)\n" /* line 1311 */
         "movl %esi, (%esp)\n" /* token */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4486,14 +4486,14 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "testl %eax, %eax\n" /* line 1334 */
         "je .Lf183890_00184013\n"
         ".Lf183890_00183b99:\n"
-        "movl $0x222904, 4(%esp)\n" /* line 1336 */
+        "movl $str_00222904, 4(%esp)\n" /* line 1336 */
         "movl %ebx, (%esp)\n" /* iLen */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf183890_00183f13\n"
         ".Lf183890_00183bb1:\n"
         "movl -0x130(%ebp), %ecx\n" /* line 1340 | defineType */
-        "movl 0x312f64(, %ecx, 8), %edx\n"
+        "movl animConditionsTable+4(, %ecx, 8), %edx\n"
         "addl numDefines(, %ecx, 4), %esi\n" /* fname */
         "leal defineBits(, %esi, 8), %eax\n"
         "movl %eax, (%esp)\n"
@@ -4502,7 +4502,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "movl -0x130(%ebp), %esi\n" /* line 1341 | defineType, fname */
         "addl $1, numDefines(, %esi, 4)\n"
         "jmp .Lf183890_00183987\n"
-        "movl $0x21e50c, 4(%esp)\n" /* line 1348 */
+        "movl $str_0021e50c, 4(%esp)\n" /* line 1348 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4516,10 +4516,10 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "jns .Lf183890_00183c62\n"
         ".Lf183890_00183c1d:\n"
         "movl %esi, 4(%esp)\n" /* line 1455 | fname */
-        "movl $0x2af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
+        "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183c62\n"
-        "movl $0x21e50c, 4(%esp)\n" /* line 1449 */
+        "movl $str_0021e50c, 4(%esp)\n" /* line 1449 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4562,24 +4562,24 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "jmp .Lf183890_001838b4\n"
         ".Lf183890_00183cde:\n"
         "movl %esi, 4(%esp)\n" /* line 1453 | fname */
-        "movl $0x2af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
+        "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183c54\n"
         ".Lf183890_00183cf3:\n"
         "movl %esi, 4(%esp)\n" /* line 1352 | fname */
-        "movl $0x2af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
+        "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183c0f\n"
         ".Lf183890_00183d08:\n"
-        "movl $0x2af350, (%esp)\n" /* line 1326 */
+        "movl $str_002af350, (%esp)\n" /* line 1326 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183acd\n"
         ".Lf183890_00183d19:\n"
-        "movl $0x2af2dc, (%esp)\n" /* line 1316 */
+        "movl $str_002af2dc, (%esp)\n" /* line 1316 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183a82\n"
         ".Lf183890_00183d2a:\n"
-        "movl $0x21e508, 4(%esp)\n" /* line 1358 */
+        "movl $str_0021e508, 4(%esp)\n" /* line 1358 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4594,7 +4594,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "movl $0xffffffff, -0x2c(%ebp, %edx, 4)\n"
         "jmp .Lf183890_00183987\n"
         ".Lf183890_00183d76:\n"
-        "movl $0x21e508, 4(%esp)\n" /* line 1459 */
+        "movl $str_0021e508, 4(%esp)\n" /* line 1459 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -4611,7 +4611,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         ".Lf183890_00183dc2:\n"
         "movl globalFilename, %eax\n" /* line 1240 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2af254, 4(%esp)\n" /* "Couldn't load player animation script %s
+        "movl $str_002af254, 4(%esp)\n" /* "Couldn't load player animation script %s
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -4639,12 +4639,12 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         /* } scope */
         ".Lf183890_00183e18:\n"
         "movl %esi, 4(%esp)\n" /* line 1363 | fname */
-        "movl $0x2af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
+        "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183d63\n"
         ".Lf183890_00183e2d:\n"
         "movl %esi, 4(%esp)\n" /* line 1464 | fname */
-        "movl $0x2af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
+        "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183daf\n"
         ".Lf183890_00183e42:\n"
@@ -4656,7 +4656,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "js .Lf183890_00184287\n"
         ".Lf183890_00183e5b:\n"
         "movl %esi, 4(%esp)\n" /* line 1548 | fname */
-        "movl $0x2af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
+        "movl $str_002af2b4, (%esp)\n" /* "BG_AnimParseAnimScript: unexpected '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183987\n"
         ".Lf183890_00183e70:\n"
@@ -4690,26 +4690,26 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         ".Lf183890_00183ef1:\n"
         "movl globalFilename, %eax\n" /* line 1238 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2af254, 4(%esp)\n" /* "Couldn't load player animation script %s
+        "movl $str_002af254, 4(%esp)\n" /* "Couldn't load player animation script %s
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf183890_00183c94\n"
         ".Lf183890_00183f13:\n"
         "movl %ebx, 4(%esp)\n" /* line 1337 | iLen */
-        "movl $0x2af3c4, (%esp)\n" /* "BG_AnimParseAnimScript: expected '=', found '%s'" */
+        "movl $str_002af3c4, (%esp)\n" /* "BG_AnimParseAnimScript: expected '=', found '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183bb1\n"
         /* { scope 2 */
         ".Lf183890_00183f28:\n"
-        "movl $0x2aee9c, (%esp)\n" /* line 533 */
+        "movl $str_002aee9c, (%esp)\n" /* line 533 */
         "calll BG_AnimParseError\n"
         "movl defineStringsOffset, %eax\n"
         "jmp .Lf183890_00183b01\n"
         /* } scope */
         ".Lf183890_00183f3e:\n"
         "movl %ebx, 4(%esp)\n" /* line 1321 | iLen */
-        "movl $0x2af314, (%esp)\n" /* "BG_AnimParseAnimScript: can not make a define of type '%s'" */
+        "movl $str_002af314, (%esp)\n" /* "BG_AnimParseAnimScript: can not make a define of type '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183aaf\n"
         ".Lf183890_00183f53:\n"
@@ -4744,7 +4744,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "calll I_strncmp\n"
         "testl %eax, %eax\n"
         "je .Lf183890_00183fc3\n"
-        "movl $0x2af480, (%esp)\n" /* line 1541 */
+        "movl $str_002af480, (%esp)\n" /* line 1541 */
         "calll BG_AnimParseError\n"
         ".Lf183890_00183fc3:\n"
         "movl -0x148(%ebp), %ecx\n" /* line 1543 */
@@ -4764,7 +4764,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "jne .Lf183890_00183e5b\n"
         "jmp .Lf183890_00183f6d\n"
         ".Lf183890_00184013:\n"
-        "movl $0x2af38c, (%esp)\n" /* line 1335 */
+        "movl $str_002af38c, (%esp)\n" /* line 1335 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00183b99\n"
         ".Lf183890_00184024:\n"
@@ -4904,7 +4904,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "calll I_strncmp\n"
         "testl %eax, %eax\n"
         "je .Lf183890_00184234\n"
-        "movl $0x2af480, (%esp)\n" /* line 1410 */
+        "movl $str_002af480, (%esp)\n" /* line 1410 */
         "calll BG_AnimParseError\n"
         ".Lf183890_00184234:\n"
         "leal -0x120(%ebp), %ebx\n" /* line 1412 | tempScriptItem, iLen */
@@ -4921,16 +4921,16 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "jle .Lf183890_001840b7\n"
         ".Lf183890_0018426e:\n"
         "movl $0x80, 4(%esp)\n" /* line 1522 */
-        "movl $0x2af4a8, (%esp)\n" /* "BG_AnimParseAnimScript: exceeded maximum items per script (%" */
+        "movl $str_002af4a8, (%esp)\n" /* "BG_AnimParseAnimScript: exceeded maximum items per script (%" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_001840b7\n"
         ".Lf183890_00184287:\n"
-        "movl $0x2af3f8, 4(%esp)\n" /* line 1371 */
+        "movl $str_002af3f8, 4(%esp)\n" /* line 1371 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf183890_001842a7\n"
-        "movl $0x2af400, (%esp)\n" /* line 1372 */
+        "movl $str_002af400, (%esp)\n" /* line 1372 */
         "calll BG_AnimParseError\n"
         ".Lf183890_001842a7:\n"
         "leal -0x1c(%ebp), %ecx\n" /* line 1375 | text_p */
@@ -4950,13 +4950,13 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "calll Com_Parse\n"
         "testl %eax, %eax\n" /* line 1382 */
         "je .Lf183890_001842fa\n"
-        "movl $0x21e50c, 4(%esp)\n" /* "{" */
+        "movl $str_0021e50c, 4(%esp)\n" /* "{" */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf183890_00184315\n"
         ".Lf183890_001842fa:\n"
-        "movl $0x2af458, (%esp)\n" /* line 1383 */
+        "movl $str_002af458, (%esp)\n" /* line 1383 */
         "calll BG_AnimParseError\n"
         "movl $1, -0x134(%ebp)\n" /* indentLevel */
         "jmp .Lf183890_00183987\n"
@@ -4964,7 +4964,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "movl $1, -0x134(%ebp)\n" /* line 1281 | indentLevel */
         "jmp .Lf183890_00183987\n"
         ".Lf183890_00184324:\n"
-        "movl $0x2af524, 4(%esp)\n" /* line 1474 */
+        "movl $str_002af524, 4(%esp)\n" /* line 1474 */
         "movl %esi, (%esp)\n" /* fname */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -5010,36 +5010,36 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "calll Com_Parse\n"
         "testl %eax, %eax\n" /* line 1493 */
         "je .Lf183890_001843e7\n"
-        "movl $0x21e50c, 4(%esp)\n" /* "{" */
+        "movl $str_0021e50c, 4(%esp)\n" /* "{" */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf183890_001843f3\n"
         ".Lf183890_001843e7:\n"
-        "movl $0x2af458, (%esp)\n" /* line 1494 */
+        "movl $str_002af458, (%esp)\n" /* line 1494 */
         "calll BG_AnimParseError\n"
         ".Lf183890_001843f3:\n"
         "movl $1, -0x134(%ebp)\n" /* indentLevel */
         "jmp .Lf183890_00183ece\n"
         ".Lf183890_00184402:\n"
         "movl %esi, 4(%esp)\n" /* line 1475 | fname */
-        "movl $0x2af530, (%esp)\n" /* "BG_AnimParseAnimScript: expected 'statechange', got '%s'" */
+        "movl $str_002af530, (%esp)\n" /* "BG_AnimParseAnimScript: expected 'statechange', got '%s'" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_0018433c\n"
         ".Lf183890_00184417:\n"
-        "movl $0x2af56c, (%esp)\n" /* line 1486 */
+        "movl $str_002af56c, (%esp)\n" /* line 1486 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00184380\n"
         ".Lf183890_00184428:\n"
-        "movl $0x2af56c, (%esp)\n" /* line 1480 */
+        "movl $str_002af56c, (%esp)\n" /* line 1480 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_00184351\n"
         ".Lf183890_00184439:\n"
-        "movl $0x2af42c, (%esp)\n" /* line 1377 */
+        "movl $str_002af42c, (%esp)\n" /* line 1377 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_001842bc\n"
         ".Lf183890_0018444a:\n"
-        "movl $0x2af480, (%esp)\n" /* line 1516 */
+        "movl $str_002af480, (%esp)\n" /* line 1516 */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_0018407d\n"
         ".Lf183890_0018445b:\n"
@@ -5059,7 +5059,7 @@ void BG_AnimParseAnimScript(animScriptData_t *scriptData)
         "jmp .Lf183890_001841a6\n"
         ".Lf183890_00184493:\n"
         "movl $0x800, 4(%esp)\n" /* line 1525 */
-        "movl $0x2af4e8, (%esp)\n" /* "BG_AnimParseAnimScript: exceeded maximum global items (%i)" */
+        "movl $str_002af4e8, (%esp)\n" /* "BG_AnimParseAnimScript: exceeded maximum global items (%i)" */
         "calll BG_AnimParseError\n"
         "jmp .Lf183890_001840cd\n"
     );
@@ -5143,32 +5143,32 @@ void BG_LoadAnim(playerState_t *ps, char *animName, animBodyPart_t bodyPart, qbo
         "movl %edx, 0xc(%esp)\n"
         "addl $0xb3bcc, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21df18, 4(%esp)\n" /* "root" */
-        "movl $0x2aef88, (%esp)\n" /* "multiplayer" */
+        "movl $str_0021df18, 4(%esp)\n" /* "root" */
+        "movl $str_002aef88, (%esp)\n" /* "multiplayer" */
         "calll Scr_FindAnim\n"
         "movl bgs, %eax\n" /* line 3495 */
         "movl 0xb3be8(%eax), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "addl $0xb3bd0, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2af59c, 4(%esp)\n" /* "torso" */
-        "movl $0x2aef88, (%esp)\n" /* "multiplayer" */
+        "movl $str_002af59c, 4(%esp)\n" /* "torso" */
+        "movl $str_002aef88, (%esp)\n" /* "multiplayer" */
         "calll Scr_FindAnim\n"
         "movl bgs, %eax\n" /* line 3496 */
         "movl 0xb3be8(%eax), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "addl $0xb3bd4, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2af5a4, 4(%esp)\n" /* "legs" */
-        "movl $0x2aef88, (%esp)\n" /* "multiplayer" */
+        "movl $str_002af5a4, 4(%esp)\n" /* "legs" */
+        "movl $str_002aef88, (%esp)\n" /* "multiplayer" */
         "calll Scr_FindAnim\n"
         "movl bgs, %eax\n" /* line 3497 */
         "movl 0xb3be8(%eax), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "addl $0xb3bd8, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2af5ac, 4(%esp)\n" /* "turning" */
-        "movl $0x2aef88, (%esp)\n" /* "multiplayer" */
+        "movl $str_002af5ac, 4(%esp)\n" /* "turning" */
+        "movl $str_002aef88, (%esp)\n" /* "multiplayer" */
         "calll Scr_FindAnim\n"
         "leal -0x1c(%ebp), %ecx\n" /* line 3559 | iNumPlayerAnims */
         "movl %ebx, %edx\n" /* duration */
@@ -5181,7 +5181,7 @@ void BG_LoadAnim(playerState_t *ps, char *animName, animBodyPart_t bodyPart, qbo
         "movl %eax, (%esp)\n"
         "calll Scr_PrecacheAnimTrees\n"
         "movl bgs, %esi\n" /* line 3529 | bodyPart */
-        "movl $0x2aef88, (%esp)\n" /* line 3510 */
+        "movl $str_002aef88, (%esp)\n" /* line 3510 */
         "calll Scr_FindAnimTree\n"
         "movl %eax, %ebx\n" /* duration */
         "testl %eax, %eax\n" /* line 3511 */
@@ -6087,7 +6087,7 @@ int BG_AnimScriptAnimation(playerState_t *ps, aistateEnum_t state, scriptAnimMov
         "movl 0x70(%edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf185286_00185298\n"
-        "movl 0x312f78, %eax\n" /* line 2172 */
+        "movl animConditionsTable+24, %eax\n" /* line 2172 */
         "testl %eax, %eax\n"
         "jne .Lf185286_00185470\n"
         "movl -0x30(%ebp), %ecx\n" /* line 2179 | client */

@@ -19,7 +19,7 @@ extern const char *SV_Cmd_Argv(int arg);
 extern void SV_BanClient(void *cl);
 extern void SV_UnbanClient(const char *name);
 
-static qboolean initialized; /* 0xf00780 */
+static qboolean initialized; /* initialized */
 
 static client_t * SV_GetPlayerByName(void);
 static client_t * SV_GetPlayerByNum(void);
@@ -65,7 +65,7 @@ client_t * SV_GetPlayerByName(void)
         "pushl %ebx\n"
         "subl $0x6c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 42 */
+        "movl imp_com_sv_running, %eax\n" /* line 42 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf16fd38_0016fd5a\n"
@@ -88,9 +88,9 @@ client_t * SV_GetPlayerByName(void)
         "movl $1, (%esp)\n" /* line 53 */
         "calll SV_Cmd_Argv\n"
         "movl %eax, -0x5c(%ebp)\n" /* s */
-        "movl 0x195f284, %eax\n" /* line 56 */
+        "movl imp_svs, %eax\n" /* line 56 */
         "movl 0xc(%eax), %edi\n" /* cl */
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -141,12 +141,12 @@ client_t * SV_GetPlayerByName(void)
         ".Lf16fd38_0016fe2b:\n"
         "movl -0x5c(%ebp), %eax\n" /* line 75 | s */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac3fc, (%esp)\n" /* "Player %s is not on the server
+        "movl $str_002ac3fc, (%esp)\n" /* "Player %s is not on the server
 " */
         "calll Com_Printf\n"
         "jmp .Lf16fd38_0016fd4e\n"
         ".Lf16fd38_0016fe43:\n"
-        "movl $0x2ac3e4, (%esp)\n" /* line 49 */
+        "movl $str_002ac3e4, (%esp)\n" /* line 49 */
         "calll Com_Printf\n"
         "xorl %edi, %edi\n" /* cl */
         "jmp .Lf16fd38_0016fd50\n"
@@ -162,7 +162,7 @@ client_t * SV_GetPlayerByNum(void)
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 96 */
+        "movl imp_com_sv_running, %eax\n" /* line 96 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf16fe56_0016fe6d\n"
@@ -196,7 +196,7 @@ client_t * SV_GetPlayerByNum(void)
         "jbe .Lf16fe56_0016fe98\n"
         ".Lf16fe56_0016fea9:\n"
         "movl %ecx, 4(%esp)\n" /* line 113 */
-        "movl $0x2ac41c, (%esp)\n" /* "Bad slot number: %s
+        "movl $str_002ac41c, (%esp)\n" /* "Bad slot number: %s
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -210,7 +210,7 @@ client_t * SV_GetPlayerByNum(void)
         "movl %eax, %ecx\n"
         "testl %eax, %eax\n" /* line 118 */
         "js .Lf16fe56_0016ff1b\n"
-        "movl 0x195f290, %eax\n"
+        "movl imp_sv_maxclients, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl 8(%eax), %ecx\n"
         "jge .Lf16fe56_0016ff1b\n"
@@ -222,27 +222,27 @@ client_t * SV_GetPlayerByNum(void)
         "addl %ecx, %eax\n"
         "leal (, %eax, 4), %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl 0xc(%eax), %eax\n"
         "leal (%eax, %edx, 4), %eax\n"
         "movl (%eax), %edx\n" /* line 125 */
         "testl %edx, %edx\n"
         "jne .Lf16fe56_0016fe6b\n"
         "movl %ecx, 4(%esp)\n" /* line 127 */
-        "movl $0x2ac44c, (%esp)\n" /* "Client %i is not active
+        "movl $str_002ac44c, (%esp)\n" /* "Client %i is not active
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
         "jmp .Lf16fe56_0016fe6b\n"
         ".Lf16fe56_0016ff1b:\n"
         "movl %ecx, 4(%esp)\n" /* line 120 */
-        "movl $0x2ac434, (%esp)\n" /* "Bad client slot: %i
+        "movl $str_002ac434, (%esp)\n" /* "Bad client slot: %i
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n" /* line 127 */
         "jmp .Lf16fe56_0016fe6b\n"
         ".Lf16fe56_0016ff32:\n"
-        "movl $0x2ac3e4, (%esp)\n" /* line 103 */
+        "movl $str_002ac3e4, (%esp)\n" /* line 103 */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -270,11 +270,11 @@ short int SV_MapRestart(void)
         "subl $0x6c, %esp\n"
         "movl %eax, %edi\n" /* fast_restart */
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 233 */
+        "movl imp_com_sv_running, %eax\n" /* line 233 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf16ff4c_0016ff78\n"
-        "movl $0x2ac468, (%esp)\n" /* line 235 */
+        "movl $str_002ac468, (%esp)\n" /* line 235 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf16ff4c_0016ff70:\n"
@@ -288,24 +288,24 @@ short int SV_MapRestart(void)
         ".Lf16ff4c_0016ff78:\n"
         "calll SV_SetGametype\n" /* line 239 */
         "movl $0x40, 8(%esp)\n" /* line 240 */
-        "movl 0x195f29c, %esi\n" /* i */
+        "movl imp_sv_gametype, %esi\n" /* i */
         "movl (%esi), %eax\n" /* i */
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ee80, %ebx\n" /* client */
+        "movl imp_sv, %ebx\n" /* client */
         "addl $0x5f4f4, %ebx\n" /* client */
         "movl %ebx, (%esp)\n" /* client */
         "calll I_strncpyz\n"
         "calll G_GetSavePersist\n" /* line 242 */
         "movl %eax, -0x5c(%ebp)\n" /* savepersist */
-        "movl 0x195f290, %eax\n" /* line 245 */
+        "movl imp_sv_maxclients, %eax\n" /* line 245 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "je .Lf16ff4c_00170004\n"
         ".Lf16ff4c_0016ffbd:\n"
         "movl $0, (%esp)\n" /* line 247 */
         "calll G_SetSavePersist\n"
-        "movl $0x2a7124, (%esp)\n" /* line 250 */
+        "movl $str_002a7124, (%esp)\n" /* line 250 */
         "calll Dvar_GetString\n"
         "movl $0x40, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
@@ -334,16 +334,16 @@ short int SV_MapRestart(void)
         "jne .Lf16ff4c_0016ffbd\n"
         "testl %edi, %edi\n" /* fast_restart */
         "je .Lf16ff4c_0016ffbd\n"
-        "movl 0x195f2d8, %esi\n" /* line 257 | i */
-        "movl 0x195ee80, %edx\n"
+        "movl imp_com_frameTime, %esi\n" /* line 257 | i */
+        "movl imp_sv, %edx\n"
         "movl 8(%edx), %eax\n"
         "cmpl (%esi), %eax\n" /* i */
         "je .Lf16ff4c_0016ff70\n"
         "calll SV_InitDvar\n" /* line 260 */
         "calll SV_InitArchivedSnapshot\n" /* line 262 */
-        "movl 0x195f284, %ebx\n" /* line 266 | client */
+        "movl imp_svs, %ebx\n" /* line 266 | client */
         "xorl $4, 8(%ebx)\n" /* client */
-        "movl 0x195f5dc, %ecx\n" /* line 269 */
+        "movl imp_sv_serverId_value, %ecx\n" /* line 269 */
         "movl (%ecx), %eax\n"
         "movl %eax, %edx\n"
         "andl $0xf0, %edx\n"
@@ -352,12 +352,12 @@ short int SV_MapRestart(void)
         "addl %eax, %edx\n"
         "movl %edx, (%ecx)\n"
         "movl %edx, 4(%esp)\n" /* line 270 */
-        "movl 0x195f294, %eax\n"
+        "movl imp_sv_serverid, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetInt\n"
         "movl (%esi), %eax\n" /* line 271 | i */
-        "movl 0x195ee80, %edx\n"
+        "movl imp_sv, %edx\n"
         "movl %eax, 8(%edx)\n"
         "movl $1, (%edx)\n" /* line 276 */
         "movl $1, 4(%edx)\n" /* line 277 */
@@ -370,7 +370,7 @@ short int SV_MapRestart(void)
         "calll SV_RunFrame\n" /* line 289 */
         "subl $1, %esi\n" /* line 286 | i */
         "jne .Lf16ff4c_0017009d\n"
-        "movl 0x195f290, %edx\n" /* line 293 */
+        "movl imp_sv_maxclients, %edx\n" /* line 293 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -383,10 +383,10 @@ short int SV_MapRestart(void)
         "movl %ebx, (%esp)\n" /* client */
         "calll SV_DropClient\n"
         "movl %esi, 4(%esp)\n" /* line 313 | i */
-        "movl $0x2ac480, (%esp)\n" /* "SV_MapRestart_f: dropped client %i - denied!
+        "movl $str_002ac480, (%esp)\n" /* "SV_MapRestart_f: dropped client %i - denied!
 " */
         "calll Com_Printf\n"
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         ".Lf16ff4c_001700e6:\n"
         "addl $1, %esi\n" /* line 293 | i */
         "addl $0x78f0c, %edi\n" /* fast_restart */
@@ -394,7 +394,7 @@ short int SV_MapRestart(void)
         "cmpl 8(%eax), %esi\n" /* i */
         "jge .Lf16ff4c_0017015d\n"
         ".Lf16ff4c_001700f6:\n"
-        "movl 0x195f284, %eax\n" /* line 295 */
+        "movl imp_svs, %eax\n" /* line 295 */
         "movl %edi, %ebx\n" /* fast_restart, client */
         "addl 0xc(%eax), %ebx\n" /* client */
         "cmpl $1, (%ebx)\n" /* line 298 | client */
@@ -404,7 +404,7 @@ short int SV_MapRestart(void)
         "andl $0xffffffd4, %eax\n"
         "addl $0x6e, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -418,10 +418,10 @@ short int SV_MapRestart(void)
         "jne .Lf16ff4c_001700c4\n"
         "cmpl $4, (%ebx)\n" /* line 317 | client */
         "je .Lf16ff4c_00170174\n"
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "jmp .Lf16ff4c_001700e6\n"
         ".Lf16ff4c_0017015d:\n"
-        "movl 0x195ee80, %eax\n" /* line 323 */
+        "movl imp_sv, %eax\n" /* line 323 */
         "movl $2, (%eax)\n"
         "movl $0, 4(%eax)\n" /* line 324 */
         "jmp .Lf16ff4c_0016ff70\n"
@@ -430,7 +430,7 @@ short int SV_MapRestart(void)
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* client */
         "calll SV_ClientEnterWorld\n"
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "jmp .Lf16ff4c_001700e6\n"
     );
 }
@@ -475,11 +475,11 @@ int SV_KickClient_f(void)
         "movl %eax, %ebx\n" /* playerName */
         "movl %edx, %edi\n" /* maxPlayerNameLen */
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 532 */
+        "movl imp_com_sv_running, %eax\n" /* line 532 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1701ac_001701de\n"
-        "movl $0x2ac468, (%esp)\n" /* line 534 */
+        "movl $str_002ac468, (%esp)\n" /* line 534 */
         "calll Com_Printf\n"
         "xorl %ebx, %ebx\n" /* playerName */
         /* } scope */
@@ -499,7 +499,7 @@ int SV_KickClient_f(void)
         "movl $0, (%esp)\n" /* line 540 */
         "calll SV_Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac4b0, (%esp)\n" /* "Usage: %s <client number>
+        "movl $str_002ac4b0, (%esp)\n" /* "Usage: %s <client number>
 " */
         "calll Com_Printf\n"
         "xorl %ebx, %ebx\n" /* playerName */
@@ -531,10 +531,10 @@ int SV_KickClient_f(void)
         "calll I_CleanStr\n"
         ".Lf1701ac_00170246:\n"
         "movl 0x765ec(%esi), %ebx\n" /* line 476 | guid */
-        "movl $0x2ac4ec, 4(%esp)\n" /* line 478 */
+        "movl $str_002ac4ec, 4(%esp)\n" /* line 478 */
         "movl %esi, (%esp)\n"
         "calll SV_DropClient\n"
-        "movl 0x195f284, %eax\n" /* line 479 */
+        "movl imp_svs, %eax\n" /* line 479 */
         "movl 4(%eax), %eax\n"
         "movl %eax, 0x20d10(%esi)\n"
         /* } scope */
@@ -550,7 +550,7 @@ int SV_KickClient_f(void)
         /* { scope 2 */
         ".Lf1701ac_00170274:\n"
         "movl $0x65, 0xc(%esp)\n" /* line 467 */
-        "movl $0x2ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
+        "movl $str_002ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll SV_SendServerCommand\n"
@@ -564,7 +564,7 @@ int SV_KickClient_f(void)
 static short int SV_Ban_f(void)
 {
     void *cl;
-    if (!*(byte *)((byte *)(*(void **)(*(void **)0x195ecbc)) + 8))
+    if (!*(byte *)((byte *)(*(void **)(*(void **)imp_com_sv_running)) + 8))
     {
         Com_Printf("Server is not running.\n");
         return 0;
@@ -584,7 +584,7 @@ static short int SV_Ban_f(void)
 static short int SV_BanNum_f(void)
 {
     void *cl;
-    if (!*(byte *)((byte *)(*(void **)(*(void **)0x195ecbc)) + 8))
+    if (!*(byte *)((byte *)(*(void **)(*(void **)imp_com_sv_running)) + 8))
     {
         Com_Printf("Server is not running.\n");
         return 0;
@@ -648,7 +648,7 @@ short int SV_TempBanNum_f(void)
         "je .Lf17037e_001703b7\n"
         "movl %eax, 8(%esp)\n" /* line 683 */
         "movl %esi, 4(%esp)\n"
-        "movl $0x2ac560, (%esp)\n" /* "%s (guid %i) was kicked for cheating
+        "movl $str_002ac560, (%esp)\n" /* "%s (guid %i) was kicked for cheating
 " */
         "calll Com_Printf\n"
         "movl %ebx, (%esp)\n" /* line 684 | guid */
@@ -675,11 +675,11 @@ short int SV_Status_f(void)
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 705 */
+        "movl imp_com_sv_running, %eax\n" /* line 705 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1703be_001703e8\n"
-        "movl $0x2ac468, (%esp)\n" /* line 707 */
+        "movl $str_002ac468, (%esp)\n" /* line 707 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x3c, %esp\n" /* line 757 */
@@ -690,21 +690,21 @@ short int SV_Status_f(void)
         "retl\n"
         /* { scope 1 */
         ".Lf1703be_001703e8:\n"
-        "movl 0x195f300, %eax\n" /* line 711 */
+        "movl imp_sv_mapname, %eax\n" /* line 711 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac588, (%esp)\n" /* "map: %s
+        "movl $str_002ac588, (%esp)\n" /* "map: %s
 " */
         "calll Com_Printf\n"
-        "movl $0x2ac594, (%esp)\n" /* line 713 */
+        "movl $str_002ac594, (%esp)\n" /* line 713 */
         "calll Com_Printf\n"
-        "movl $0x2ac5e4, (%esp)\n" /* line 714 */
+        "movl $str_002ac5e4, (%esp)\n" /* line 714 */
         "calll Com_Printf\n"
-        "movl 0x195f284, %ecx\n" /* line 715 */
+        "movl imp_svs, %ecx\n" /* line 715 */
         "movl 0xc(%ecx), %eax\n"
         "movl %eax, -0x2c(%ebp)\n" /* cl */
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %esi\n"
         "testl %esi, %esi\n"
@@ -729,7 +729,7 @@ short int SV_Status_f(void)
         "je .Lf1703be_00170451\n"
         "movl -0x30(%ebp), %edx\n" /* line 719 | i */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2ac638, (%esp)\n" /* "%3i " */
+        "movl $str_002ac638, (%esp)\n" /* "%3i " */
         "calll Com_Printf\n"
         "movl -0x30(%ebp), %ecx\n" /* line 720 | i */
         "movl %ecx, (%esp)\n"
@@ -742,7 +742,7 @@ short int SV_Status_f(void)
         "movl %eax, (%esp)\n"
         "calll G_GetClientScore\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac640, (%esp)\n" /* "%5i " */
+        "movl $str_002ac640, (%esp)\n" /* "%5i " */
         "calll Com_Printf\n"
         "movl -0x20c48(%esi), %eax\n" /* line 723 */
         "cmpl $2, %eax\n"
@@ -754,15 +754,15 @@ short int SV_Status_f(void)
         "movl $0x270f, %edx\n"
         "cmovgel %edx, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac658, (%esp)\n" /* "%4i " */
+        "movl $str_002ac658, (%esp)\n" /* "%4i " */
         "calll Com_Printf\n"
         ".Lf1703be_001704fd:\n"
         "movl 0x559a4(%esi), %eax\n" /* line 733 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac660, (%esp)\n" /* "%6i " */
+        "movl $str_002ac660, (%esp)\n" /* "%6i " */
         "calll Com_Printf\n"
         "movl %esi, 4(%esp)\n" /* line 735 */
-        "movl $0x2ac668, (%esp)\n" /* "%s^7" */
+        "movl $str_002ac668, (%esp)\n" /* "%s^7" */
         "calll Com_Printf\n"
         "movl %esi, (%esp)\n" /* line 736 */
         "calll I_DrawStrlen\n"
@@ -775,7 +775,7 @@ short int SV_Status_f(void)
         "movl 4(%ecx), %eax\n"
         "subl 0xc8(%esi), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac670, (%esp)\n" /* "%7i " */
+        "movl $str_002ac670, (%esp)\n" /* "%7i " */
         "calll Com_Printf\n"
         "movl 0x4d97c(%esi), %ecx\n" /* line 742 */
         "movl %ecx, -0x24(%ebp)\n"
@@ -789,7 +789,7 @@ short int SV_Status_f(void)
         "calll NET_AdrToString\n"
         "movl %eax, %edi\n" /* s */
         "movl %eax, 4(%esp)\n" /* line 743 */
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll Com_Printf\n"
         "cld\n" /* line 744 */
         "movl $0xffffffff, %ecx\n"
@@ -803,13 +803,13 @@ short int SV_Status_f(void)
         ".Lf1703be_001705ae:\n"
         "movl 0x4d988(%esi), %eax\n" /* line 749 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac678, (%esp)\n" /* "%5i" */
+        "movl $str_002ac678, (%esp)\n" /* "%5i" */
         "calll Com_Printf\n"
         "movl 0x4d960(%esi), %eax\n" /* line 752 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac67c, (%esp)\n" /* " %5i" */
+        "movl $str_002ac67c, (%esp)\n" /* " %5i" */
         "calll Com_Printf\n"
-        "movl $0x2160e8, (%esp)\n" /* line 754 */
+        "movl $str_002160e8, (%esp)\n" /* line 754 */
         "calll Com_Printf\n"
         "movl -0x38(%ebp), %edx\n"
         "addl $1, -0x30(%ebp)\n" /* line 715 | i */
@@ -820,7 +820,7 @@ short int SV_Status_f(void)
         "cmpl 8(%eax), %ecx\n"
         "jl .Lf1703be_00170470\n"
         ".Lf1703be_00170608:\n"
-        "movl $0x2160e8, (%esp)\n" /* line 756 */
+        "movl $str_002160e8, (%esp)\n" /* line 756 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x3c, %esp\n" /* line 757 */
@@ -833,7 +833,7 @@ short int SV_Status_f(void)
         ".Lf1703be_0017061c:\n"
         "xorl %edi, %edi\n" /* line 737 | s */
         ".Lf1703be_0017061e:\n"
-        "movl $0x217914, (%esp)\n" /* line 738 */
+        "movl $str_00217914, (%esp)\n" /* line 738 */
         "calll Com_Printf\n"
         "addl $1, %edi\n" /* line 737 | s */
         "cmpl %edi, %ebx\n" /* s, l */
@@ -842,18 +842,18 @@ short int SV_Status_f(void)
         ".Lf1703be_00170636:\n"
         "xorl %edi, %edi\n" /* line 745 | s */
         ".Lf1703be_00170638:\n"
-        "movl $0x217914, (%esp)\n" /* line 746 */
+        "movl $str_00217914, (%esp)\n" /* line 746 */
         "calll Com_Printf\n"
         "addl $1, %edi\n" /* line 745 | s */
         "cmpl %edi, %ebx\n" /* s, l */
         "jne .Lf1703be_00170638\n"
         "jmp .Lf1703be_001705ae\n"
         ".Lf1703be_00170650:\n"
-        "movl $0x2ac650, (%esp)\n" /* line 726 */
+        "movl $str_002ac650, (%esp)\n" /* line 726 */
         "calll Com_Printf\n"
         "jmp .Lf1703be_001704fd\n"
         ".Lf1703be_00170661:\n"
-        "movl $0x2ac648, (%esp)\n" /* line 724 */
+        "movl $str_002ac648, (%esp)\n" /* line 724 */
         "calll Com_Printf\n"
         "jmp .Lf1703be_001704fd\n"
     );
@@ -870,11 +870,11 @@ short int SV_ConSay_f(void)
         "pushl %ebx\n"
         "subl $0x420, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 771 */
+        "movl imp_com_sv_running, %eax\n" /* line 771 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf170672_001706a0\n"
-        "movl $0x2ac468, (%esp)\n" /* line 773 */
+        "movl $str_002ac468, (%esp)\n" /* line 773 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf170672_00170696:\n"
@@ -904,7 +904,7 @@ short int SV_ConSay_f(void)
         "calll I_strncat\n"
         "movl %ebx, 0x10(%esp)\n" /* line 793 */
         "movl $0x68, 0xc(%esp)\n"
-        "movl $0x2ac684, 8(%esp)\n" /* "%c "%s"" */
+        "movl $str_002ac684, 8(%esp)\n" /* "%c "%s"" */
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll SV_SendServerCommand\n"
@@ -940,11 +940,11 @@ short int SV_ConTell_f(void)
         "pushl %ebx\n"
         "subl $0x42c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 810 */
+        "movl imp_com_sv_running, %eax\n" /* line 810 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf17073e_0017076e\n"
-        "movl $0x2ac468, (%esp)\n" /* line 812 */
+        "movl $str_002ac468, (%esp)\n" /* line 812 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf17073e_00170763:\n"
@@ -966,7 +966,7 @@ short int SV_ConTell_f(void)
         "movl %eax, %ecx\n"
         "testl %eax, %eax\n" /* line 820 */
         "js .Lf17073e_00170763\n"
-        "movl 0x195f290, %eax\n"
+        "movl imp_sv_maxclients, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl 8(%eax), %ecx\n"
         "jge .Lf17073e_00170763\n"
@@ -978,7 +978,7 @@ short int SV_ConTell_f(void)
         "addl %ecx, %eax\n"
         "leal (, %eax, 4), %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl 0xc(%eax), %eax\n"
         "leal (%eax, %edx, 4), %ebx\n" /* cl */
         "cmpl $4, (%ebx)\n" /* line 823 | cl */
@@ -999,7 +999,7 @@ short int SV_ConTell_f(void)
         "calll I_strncat\n"
         "movl %esi, 0x10(%esp)\n" /* line 837 */
         "movl $0x68, 0xc(%esp)\n"
-        "movl $0x2ac684, 8(%esp)\n" /* "%c "%s"" */
+        "movl $str_002ac684, 8(%esp)\n" /* "%c "%s"" */
         "movl $0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* cl */
         "calll SV_SendServerCommand\n"
@@ -1020,7 +1020,7 @@ short int SV_ConTell_f(void)
 /* line 848 */
 short int SV_Heartbeat_f(void)
 {
-    *(int *)(*(int *)0x195f284 + 0x54) = (int)0x80000000;
+    *(int *)(*(int *)imp_svs + 0x54) = (int)0x80000000;
 }
 
 /* line 861 */
@@ -1041,7 +1041,7 @@ static short int SV_Systeminfo_f(void)
 static short int SV_DumpUser_f(void)
 {
     byte *cl;
-    if (!*(byte *)((byte *)(*(void **)(*(void **)0x195ecbc)) + 8))
+    if (!*(byte *)((byte *)(*(void **)(*(void **)imp_com_sv_running)) + 8))
     {
         Com_Printf("Server is not running.\n");
         return 0;
@@ -1124,7 +1124,7 @@ short int SV_Map_f(void)
         "calll Com_HasPlayerProfile\n" /* line 166 */
         "testb %al, %al\n"
         "jne .Lf170992_001709d0\n"
-        "movl $0x2ac710, (%esp)\n" /* line 168 */
+        "movl $str_002ac710, (%esp)\n" /* line 168 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x50, %esp\n" /* line 205 */
@@ -1146,7 +1146,7 @@ short int SV_Map_f(void)
         "calll GetBspExtension\n" /* line 186 */
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n"
-        "movl $0x2a74ac, (%esp)\n" /* "maps/mp/%s.%s" */
+        "movl $str_002a74ac, (%esp)\n" /* "maps/mp/%s.%s" */
         "calll va\n"
         "movl %eax, %ebx\n" /* map */
         "movl $0, 4(%esp)\n" /* line 191 */
@@ -1156,7 +1156,7 @@ short int SV_Map_f(void)
         "je .Lf170992_00170a76\n"
         "movl $0, (%esp)\n" /* line 198 */
         "calll SV_Cmd_Argv\n"
-        "movl $0x2ac75c, 4(%esp)\n" /* line 199 */
+        "movl $str_002ac75c, 4(%esp)\n" /* line 199 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "movl %eax, %ebx\n" /* map */
@@ -1168,7 +1168,7 @@ short int SV_Map_f(void)
         "testl %ebx, %ebx\n" /* map */
         "sete %al\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ef54, %eax\n"
+        "movl imp_sv_cheats, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetBool\n"
@@ -1181,7 +1181,7 @@ short int SV_Map_f(void)
         /* { scope 1 */
         ".Lf170992_00170a76:\n"
         "movl %ebx, 4(%esp)\n" /* line 193 | map */
-        "movl $0x2ac748, (%esp)\n" /* "Can't find map %s
+        "movl $str_002ac748, (%esp)\n" /* "Can't find map %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf170992_001709ad\n"
@@ -1216,7 +1216,7 @@ short int SV_AddOperatorCommands(void)
     Cmd_AddCommand("devmap", (void (*)(void))SV_Map_f);
     Cmd_SetAutoComplete("devmap", "maps/mp", "d3dbsp");
     Cmd_AddCommand("killserver", (void (*)(void))SV_KillServer_f);
-    if (*(int *)((byte *)(*(void **)(*(void **)0x195ec98)) + 8))
+    if (*(int *)((byte *)(*(void **)(*(void **)imp_com_dedicated)) + 8))
     {
         Cmd_AddCommand("say", (void (*)(void))SV_ConSay_f);
         Cmd_AddCommand("tell", (void (*)(void))SV_ConTell_f);
@@ -1240,11 +1240,11 @@ int SV_KickUser_f(void)
         "movl %eax, %ebx\n" /* playerName */
         "movl %edx, %edi\n" /* maxPlayerNameLen */
         /* { scope 1 */
-        "movl 0x195ecbc, %eax\n" /* line 493 */
+        "movl imp_com_sv_running, %eax\n" /* line 493 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf170cd2_00170d04\n"
-        "movl $0x2ac468, (%esp)\n" /* line 495 */
+        "movl $str_002ac468, (%esp)\n" /* line 495 */
         "calll Com_Printf\n"
         "xorl %ebx, %ebx\n" /* cl */
         /* } scope */
@@ -1265,7 +1265,7 @@ int SV_KickUser_f(void)
         "calll SV_Cmd_Argv\n"
         "movl %eax, 8(%esp)\n" /* line 502 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac858, (%esp)\n" /* "Usage: %s <player name>
+        "movl $str_002ac858, (%esp)\n" /* "Usage: %s <player name>
 %s all = kick everyone
 " */
         "calll Com_Printf\n"
@@ -1298,10 +1298,10 @@ int SV_KickUser_f(void)
         "calll I_CleanStr\n"
         ".Lf170cd2_00170d74:\n"
         "movl 0x765ec(%esi), %ebx\n" /* line 476 | guid */
-        "movl $0x2ac4ec, 4(%esp)\n" /* line 478 */
+        "movl $str_002ac4ec, 4(%esp)\n" /* line 478 */
         "movl %esi, (%esp)\n"
         "calll SV_DropClient\n"
-        "movl 0x195f284, %eax\n" /* line 479 */
+        "movl imp_svs, %eax\n" /* line 479 */
         "movl 4(%eax), %eax\n"
         "movl %eax, 0x20d10(%esi)\n"
         /* } scope */
@@ -1317,7 +1317,7 @@ int SV_KickUser_f(void)
         /* { scope 2 */
         ".Lf170cd2_00170da2:\n"
         "movl $0x65, 0xc(%esp)\n" /* line 467 */
-        "movl $0x2ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
+        "movl $str_002ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll SV_SendServerCommand\n"
@@ -1327,14 +1327,14 @@ int SV_KickUser_f(void)
         ".Lf170cd2_00170dcd:\n"
         "movl $1, (%esp)\n" /* line 509 */
         "calll SV_Cmd_Argv\n"
-        "movl $0x22540c, 4(%esp)\n" /* "all" */
+        "movl $str_0022540c, 4(%esp)\n" /* "all" */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf170cd2_00170e77\n"
-        "movl 0x195f284, %edx\n" /* line 511 */
+        "movl imp_svs, %edx\n" /* line 511 */
         "movl 0xc(%edx), %ebx\n" /* cl */
-        "movl 0x195f290, %ecx\n"
+        "movl imp_sv_maxclients, %ecx\n"
         "movl (%ecx), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1342,12 +1342,12 @@ int SV_KickUser_f(void)
         "movl %edx, %edi\n" /* maxPlayerNameLen */
         "jmp .Lf170cd2_00170e3c\n"
         ".Lf170cd2_00170e0d:\n"
-        "movl $0x2ac4ec, 4(%esp)\n" /* line 478 */
+        "movl $str_002ac4ec, 4(%esp)\n" /* line 478 */
         "movl %ebx, (%esp)\n" /* guid */
         "calll SV_DropClient\n"
         "movl 4(%edi), %eax\n" /* line 479 */
         "movl %eax, 0x20d10(%ebx)\n" /* guid */
-        "movl 0x195f290, %ecx\n"
+        "movl imp_sv_maxclients, %ecx\n"
         ".Lf170cd2_00170e2c:\n"
         "addl $1, %esi\n" /* line 511 | clientNum */
         "addl $0x78f0c, %ebx\n" /* cl */
@@ -1361,11 +1361,11 @@ int SV_KickUser_f(void)
         "cmpl $2, 0x6e5c4(%ebx)\n" /* line 465 | guid */
         "jne .Lf170cd2_00170e0d\n"
         "movl $0x65, 0xc(%esp)\n" /* line 467 */
-        "movl $0x2ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
+        "movl $str_002ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll SV_SendServerCommand\n"
-        "movl 0x195f290, %ecx\n"
+        "movl imp_sv_maxclients, %ecx\n"
         "jmp .Lf170cd2_00170e2c\n"
         /* { scope 2 */
         ".Lf170cd2_00170e77:\n"
@@ -1394,7 +1394,7 @@ short int SV_TempBan_f(void)
         "je .Lf170e7e_00170eb7\n"
         "movl %eax, 8(%esp)\n" /* line 567 */
         "movl %esi, 4(%esp)\n"
-        "movl $0x2ac560, (%esp)\n" /* "%s (guid %i) was kicked for cheating
+        "movl $str_002ac560, (%esp)\n" /* "%s (guid %i) was kicked for cheating
 " */
         "calll Com_Printf\n"
         "movl %ebx, (%esp)\n" /* line 568 | guid */
@@ -1437,21 +1437,21 @@ short int SV_MapRotate_f(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl $0x2ac888, (%esp)\n" /* line 391 */
+        "movl $str_002ac888, (%esp)\n" /* line 391 */
         "calll Com_Printf\n"
-        "movl 0x195f2ec, %ebx\n" /* line 392 | token */
+        "movl imp_sv_mapRotation, %ebx\n" /* line 392 | token */
         "movl (%ebx), %eax\n" /* token */
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac898, (%esp)\n" /* ""sv_mapRotation" is:"%s"
+        "movl $str_002ac898, (%esp)\n" /* ""sv_mapRotation" is:"%s"
 
 " */
         "calll Com_Printf\n"
-        "movl 0x195f2ac, %esi\n" /* line 393 */
+        "movl imp_sv_mapRotationCurrent, %esi\n" /* line 393 */
         "movl (%esi), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac8b4, (%esp)\n" /* ""sv_mapRotationCurrent" is:"%s"
+        "movl $str_002ac8b4, (%esp)\n" /* ""sv_mapRotationCurrent" is:"%s"
 
 " */
         "calll Com_Printf\n"
@@ -1475,12 +1475,12 @@ short int SV_MapRotate_f(void)
         "testl %ebx, %ebx\n" /* line 399 | token */
         "je .Lf170ed0_001710b1\n"
         ".Lf170ed0_00170f5a:\n"
-        "movl $0x2aa884, 4(%esp)\n" /* line 414 */
+        "movl $str_002aa884, 4(%esp)\n" /* line 414 */
         "movl %ebx, (%esp)\n" /* token */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf170ed0_00171032\n"
-        "movl 0x195f2ac, %esi\n" /* line 365 */
+        "movl imp_sv_mapRotationCurrent, %esi\n" /* line 365 */
         "movl (%esi), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -1497,21 +1497,21 @@ short int SV_MapRotate_f(void)
         "testl %ebx, %ebx\n" /* line 417 | token */
         "je .Lf170ed0_00171101\n"
         "movl %ebx, 4(%esp)\n" /* line 423 | token */
-        "movl $0x2ac970, (%esp)\n" /* "Setting g_gametype: %s.
+        "movl $str_002ac970, (%esp)\n" /* "Setting g_gametype: %s.
 " */
         "calll Com_Printf\n"
-        "movl 0x195ecbc, %eax\n" /* line 424 */
+        "movl imp_com_sv_running, %eax\n" /* line 424 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf170ed0_00171070\n"
         ".Lf170ed0_00170fcc:\n"
         "movl %ebx, 4(%esp)\n" /* line 428 | token */
-        "movl 0x195f29c, %eax\n"
+        "movl imp_sv_gametype, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
         ".Lf170ed0_00170fdf:\n"
-        "movl 0x195f2ac, %esi\n" /* line 365 */
+        "movl imp_sv_mapRotationCurrent, %esi\n" /* line 365 */
         ".Lf170ed0_00170fe5:\n"
         "movl (%esi), %eax\n"
         "movl 8(%eax), %eax\n"
@@ -1529,7 +1529,7 @@ short int SV_MapRotate_f(void)
         "testl %ebx, %ebx\n" /* line 407 | token */
         "jne .Lf170ed0_00170f5a\n"
         ".Lf170ed0_00171014:\n"
-        "movl $0x2ac8d8, (%esp)\n" /* line 409 */
+        "movl $str_002ac8d8, (%esp)\n" /* line 409 */
         "calll Com_Printf\n"
         "movl $1, %eax\n" /* line 348 */
         "calll SV_MapRestart\n"
@@ -1543,25 +1543,25 @@ short int SV_MapRotate_f(void)
         "retl\n"
         /* { scope 1 */
         ".Lf170ed0_00171032:\n"
-        "movl $0x2ac808, 4(%esp)\n" /* line 430 */
+        "movl $str_002ac808, 4(%esp)\n" /* line 430 */
         "movl %ebx, (%esp)\n" /* token */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf170ed0_0017111c\n"
         "movl %ebx, 4(%esp)\n" /* line 445 | token */
-        "movl $0x2ac9f0, (%esp)\n" /* "Unknown keyword '%s' in sv_mapRotation.
+        "movl $str_002ac9f0, (%esp)\n" /* "Unknown keyword '%s' in sv_mapRotation.
 " */
         "calll Com_Printf\n"
         "jmp .Lf170ed0_00170fdf\n"
         ".Lf170ed0_0017105c:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 369 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 369 */
         "movl (%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
         "jmp .Lf170ed0_00171014\n"
         ".Lf170ed0_00171070:\n"
         "movl %ebx, 4(%esp)\n" /* line 424 | token */
-        "movl 0x195f29c, %eax\n"
+        "movl imp_sv_gametype, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1572,16 +1572,16 @@ short int SV_MapRotate_f(void)
         "calll G_SetSavePersist\n"
         "jmp .Lf170ed0_00170fcc\n"
         ".Lf170ed0_0017109f:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 369 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 369 */
         "movl (%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
         ".Lf170ed0_001710b1:\n"
-        "movl 0x195f2ec, %eax\n" /* line 401 */
+        "movl imp_sv_mapRotation, %eax\n" /* line 401 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f2ac, %esi\n"
+        "movl imp_sv_mapRotationCurrent, %esi\n"
         "movl (%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
@@ -1596,18 +1596,18 @@ short int SV_MapRotate_f(void)
         "movl 8(%edx), %eax\n"
         "jmp .Lf170ed0_00170f29\n"
         ".Lf170ed0_001710ef:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 369 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 369 */
         "movl (%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
         ".Lf170ed0_00171101:\n"
-        "movl $0x2ac914, (%esp)\n" /* line 419 */
+        "movl $str_002ac914, (%esp)\n" /* line 419 */
         "calll Com_Printf\n"
         "movl $1, %eax\n" /* line 348 */
         "calll SV_MapRestart\n"
         "jmp .Lf170ed0_0017102a\n"
         ".Lf170ed0_0017111c:\n"
-        "movl 0x195f2ac, %esi\n" /* line 365 */
+        "movl imp_sv_mapRotationCurrent, %esi\n" /* line 365 */
         "movl (%esi), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -1624,11 +1624,11 @@ short int SV_MapRotate_f(void)
         "testl %ebx, %ebx\n" /* line 433 | token */
         "je .Lf170ed0_00171194\n"
         "movl %ebx, 4(%esp)\n" /* line 439 | token */
-        "movl $0x2ac9dc, (%esp)\n" /* "Setting map: %s.
+        "movl $str_002ac9dc, (%esp)\n" /* "Setting map: %s.
 " */
         "calll Com_Printf\n"
         "movl %ebx, 4(%esp)\n" /* line 440 | token */
-        "movl $0x2ab5ac, (%esp)\n" /* "map %s
+        "movl $str_002ab5ac, (%esp)\n" /* "map %s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -1636,12 +1636,12 @@ short int SV_MapRotate_f(void)
         "calll Cbuf_ExecuteText\n"
         "jmp .Lf170ed0_0017102a\n"
         ".Lf170ed0_00171182:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 369 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 369 */
         "movl (%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
         ".Lf170ed0_00171194:\n"
-        "movl $0x2ac98c, (%esp)\n" /* line 435 */
+        "movl $str_002ac98c, (%esp)\n" /* line 435 */
         "calll Com_Printf\n"
         "movl $1, %eax\n" /* line 348 */
         "calll SV_MapRestart\n"

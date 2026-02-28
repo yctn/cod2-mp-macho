@@ -20,13 +20,13 @@ extern char *ConcatArgs(int start);
 extern void SV_GameSendServerCommand(int clientNum, int type, const char *text);
 extern void Cbuf_ExecuteText(int exec_when, const char *text);
 
-extern byte *g_entities_ptr; /* 0x195f688 */
-extern byte *level_ptr;      /* 0x195f6a0 */
-extern byte *g_banIPs_dvar;  /* 0x195f76c */
-extern byte *g_cheats_dvar;  /* 0x195f704 */
+extern byte *g_entities_ptr; /* imp_g_entities */
+extern byte *level_ptr;      /* imp_level */
+extern byte *g_banIPs_dvar;  /* imp_g_banIPs */
+extern byte *g_cheats_dvar;  /* imp_g_dedicated */
 
-static ipFilter_t ipFilters[1024]; /* 0xfe8120 */
-static int numIPFilters; /* 0xfe8100 */
+static ipFilter_t ipFilters[1024]; /* ipFilters */
+static int numIPFilters; /* numIPFilters */
 
 static qboolean StringToFilter(const char *s, ipFilter_t *f);
 static void UpdateIPBans(void);

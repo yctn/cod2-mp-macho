@@ -101,7 +101,7 @@ Bool PrimitiveTemplate_ParseGroupFlags(const PrimitiveTemplate * _this, const ch
         "movl %eax, 0xc(%esp)\n"
         "leal -0x98(%ebp), %eax\n" /* flag */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21a198, 4(%esp)\n" /* "%s %s %s %s" */
+        "movl $str_0021a198, 4(%esp)\n" /* "%s %s %s %s" */
         "movl 0xc(%ebp), %eax\n" /* val */
         "movl %eax, (%esp)\n"
         "calll sscanf\n"
@@ -382,7 +382,7 @@ void PrimitiveTemplate_ParseChannelCurve(const PrimitiveTemplate * _this, GPValu
         "leal 4(%esi), %eax\n" /* line 1609 */
         "movl %eax, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n"
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl (%ebx), %eax\n" /* list */
         "movl %eax, (%esp)\n"
         "calll sscanf\n"
@@ -483,7 +483,7 @@ Bool PrimitiveTemplate_ParseImpactFxStrings(const PrimitiveTemplate * _this, GPV
         "calll MediaHandles_AddEffect\n"
         "jmp .Lf5e554_0005e59a\n"
         ".Lf5e554_0005e5da:\n"
-        "movl $0x21a1d0, (%esp)\n" /* line 1354 */
+        "movl $str_0021a1d0, (%esp)\n" /* line 1354 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -495,7 +495,7 @@ Bool PrimitiveTemplate_ParseImpactFxStrings(const PrimitiveTemplate * _this, GPV
         "retl\n"
         /* { scope 1 */
         ".Lf5e554_0005e5f0:\n"
-        "movl $0x21a1fc, (%esp)\n" /* line 1361 */
+        "movl $str_0021a1fc, (%esp)\n" /* line 1361 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5e554_0005e5a9\n"
@@ -565,7 +565,7 @@ Bool PrimitiveTemplate_ParseDeathFxStrings(const PrimitiveTemplate * _this, GPVa
         "calll MediaHandles_AddEffect\n"
         "jmp .Lf5e600_0005e646\n"
         ".Lf5e600_0005e686:\n"
-        "movl $0x21a240, (%esp)\n" /* line 1416 */
+        "movl $str_0021a240, (%esp)\n" /* line 1416 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -577,7 +577,7 @@ Bool PrimitiveTemplate_ParseDeathFxStrings(const PrimitiveTemplate * _this, GPVa
         "retl\n"
         /* { scope 1 */
         ".Lf5e600_0005e69c:\n"
-        "movl $0x21a26c, (%esp)\n" /* line 1423 */
+        "movl $str_0021a26c, (%esp)\n" /* line 1423 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5e600_0005e655\n"
@@ -647,7 +647,7 @@ Bool PrimitiveTemplate_ParseEmitterFxStrings(const PrimitiveTemplate * _this, GP
         "calll MediaHandles_AddEffect\n"
         "jmp .Lf5e6ac_0005e6f5\n"
         ".Lf5e6ac_0005e738:\n"
-        "movl $0x21a2b0, (%esp)\n" /* line 1478 */
+        "movl $str_0021a2b0, (%esp)\n" /* line 1478 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -659,7 +659,7 @@ Bool PrimitiveTemplate_ParseEmitterFxStrings(const PrimitiveTemplate * _this, GP
         "retl\n"
         /* { scope 1 */
         ".Lf5e6ac_0005e74e:\n"
-        "movl $0x21a2dc, (%esp)\n" /* line 1485 */
+        "movl $str_0021a2dc, (%esp)\n" /* line 1485 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5e6ac_0005e704\n"
@@ -734,7 +734,7 @@ Bool PrimitiveTemplate_ParsePlayFxStrings(const PrimitiveTemplate * _this, GPVal
         "retl\n"
         /* { scope 1 */
         ".Lf5e75e_0005e7ea:\n"
-        "movl $0x21a324, (%esp)\n" /* line 1540 */
+        "movl $str_0021a324, (%esp)\n" /* line 1540 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -745,7 +745,7 @@ Bool PrimitiveTemplate_ParsePlayFxStrings(const PrimitiveTemplate * _this, GPVal
         "retl\n"
         /* { scope 1 */
         ".Lf5e75e_0005e7ff:\n"
-        "movl $0x21a348, (%esp)\n" /* line 1547 */
+        "movl $str_0021a348, (%esp)\n" /* line 1547 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5e75e_0005e7ab\n"
@@ -797,7 +797,7 @@ void PrimitiveTemplate_ParseChannelRgbCurve(const PrimitiveTemplate * _this, GPV
         "leal 4(%ebx), %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
-        "movl $0x21a38c, 4(%esp)\n" /* "%f %f %f %f" */
+        "movl $str_0021a38c, 4(%esp)\n" /* "%f %f %f %f" */
         "movl (%esi), %eax\n" /* list */
         "movl %eax, (%esp)\n"
         "calll sscanf\n"
@@ -853,9 +853,9 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "movl 0x18(%ebp), %esi\n" /* channelId */
         "movl 0x1c(%ebp), %edi\n" /* graphScale */
         /* { scope 1 */
-        "divss 0x2ed694, %xmm1\n" /* line 653 | 20.0f */
-        "mulss 0x2ed698, %xmm1\n" /* 0.0006500000017695129f */
-        "movss 0x2ed5d0, %xmm0\n" /* line 184 | 1.0f */
+        "divss lit4_002ed694, %xmm1\n" /* line 653 | 20.0f */
+        "mulss lit4_002ed698, %xmm1\n" /* 0.0006500000017695129f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 184 | 1.0f */
         "movaps %xmm1, %xmm3\n"
         "subss %xmm0, %xmm3\n"
         "pxor %xmm4, %xmm4\n"
@@ -869,7 +869,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "ucomiss %xmm3, %xmm4\n"
         "ja .Lf5e8d6_0005ea34\n"
         "xorl %ecx, %ecx\n"
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         "jmp .Lf5e8d6_0005e962\n"
         ".Lf5e8d6_0005e94b:\n"
         "movaps %xmm7, %xmm0\n" /* line 648 */
@@ -917,7 +917,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "ucomiss %xmm3, %xmm4\n" /* line 644 */
         "ja .Lf5e8d6_0005eac9\n"
         "xorl %ecx, %ecx\n"
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         ".Lf5e8d6_0005e9f9:\n"
         "leal (, %ecx, 8), %edx\n" /* line 626 */
         "cvtsi2ssl %ecx, %xmm0\n" /* line 636 */
@@ -934,7 +934,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "jmp .Lf5e8d6_0005e994\n"
         ".Lf5e8d6_0005ea34:\n"
         "xorl %ecx, %ecx\n" /* line 657 */
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         ".Lf5e8d6_0005ea3e:\n"
         "leal (, %ecx, 8), %edx\n" /* line 626 */
         "cvtsi2ssl %ecx, %xmm0\n" /* line 636 */
@@ -954,7 +954,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "ucomiss %xmm3, %xmm4\n" /* line 657 */
         "ja .Lf5e8d6_0005ebda\n"
         "xorl %edx, %edx\n"
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         ".Lf5e8d6_0005ea8d:\n"
         "leal (, %edx, 8), %eax\n" /* line 626 */
         "cvtsi2ssl %edx, %xmm0\n" /* line 636 */
@@ -972,7 +972,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "jmp .Lf5e8d6_0005e994\n"
         ".Lf5e8d6_0005eac9:\n"
         "xorl %ecx, %ecx\n" /* line 657 */
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         ".Lf5e8d6_0005ead3:\n"
         "leal (, %ecx, 8), %edx\n" /* line 626 */
         "cvtsi2ssl %ecx, %xmm0\n" /* line 636 */
@@ -991,7 +991,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "ucomiss %xmm3, %xmm4\n" /* line 644 */
         "ja .Lf5e8d6_0005eb6c\n"
         "xorl %edx, %edx\n"
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         ".Lf5e8d6_0005eb19:\n"
         "leal (, %edx, 8), %eax\n" /* line 626 */
         "cvtsi2ssl %edx, %xmm0\n" /* line 636 */
@@ -1015,7 +1015,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "jmp .Lf5e8d6_0005eb4b\n"
         ".Lf5e8d6_0005eb6c:\n"
         "xorl %edx, %edx\n" /* line 184 */
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         "movaps %xmm0, %xmm2\n"
         "subss %xmm1, %xmm2\n"
         ".Lf5e8d6_0005eb7d:\n"
@@ -1041,7 +1041,7 @@ void PrimitiveTemplate_CreateBackCompatibleRotationDeltaCurve(const PrimitiveTem
         "jmp .Lf5e8d6_0005eabc\n"
         ".Lf5e8d6_0005ebda:\n"
         "xorl %edx, %edx\n" /* line 669 */
-        "movss 0x2ed69c, %xmm3\n" /* 19.0f */
+        "movss lit4_002ed69c, %xmm3\n" /* 19.0f */
         "movaps %xmm0, %xmm2\n"
         "subss %xmm1, %xmm2\n"
         ".Lf5e8d6_0005ebeb:\n"
@@ -1150,7 +1150,7 @@ Bool PrimitiveTemplate_ParseMaterials(const PrimitiveTemplate * _this, GPValue *
         "retl\n"
         /* { scope 1 */
         ".Lf5ec68_0005ed18:\n"
-        "movl $0x21a3ac, (%esp)\n" /* line 1248 */
+        "movl $str_0021a3ac, (%esp)\n" /* line 1248 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5ec68_0005ec7e\n"
@@ -1215,7 +1215,7 @@ Bool PrimitiveTemplate_ParseFlags(const PrimitiveTemplate * _this, const char *l
         ".Lf5ed2c_0005ed8a:\n"
         "movl -0x24(%ebp), %edx\n" /* line 875 | flag */
         "movl %edx, 8(%esp)\n"
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "movl %eax, (%esp)\n"
         "calll sscanf\n"
         "subl $1, %eax\n"
@@ -1310,7 +1310,7 @@ Bool PrimitiveTemplate_ParseModels(const PrimitiveTemplate * _this, GPValue *grp
         /* } scope */
         ".Lf5ee34_0005ee67:\n"
         "movl %ebx, 4(%esp)\n" /* line 1275 | val */
-        "movl $0x21a3ec, (%esp)\n" /* "PrimitiveTemplate::ParseModels, could not register model '%s" */
+        "movl $str_0021a3ec, (%esp)\n" /* "PrimitiveTemplate::ParseModels, could not register model '%s" */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -1374,7 +1374,7 @@ Bool PrimitiveTemplate_ParseModels(const PrimitiveTemplate * _this, GPValue *grp
         "movl $1, %eax\n"
         "jmp .Lf5ee34_0005ee79\n"
         ".Lf5ee34_0005eef2:\n"
-        "movl $0x21a42c, (%esp)\n" /* line 1292 */
+        "movl $str_0021a42c, (%esp)\n" /* line 1292 */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5ee34_0005ee79\n"
@@ -1397,7 +1397,7 @@ Bool PrimitiveTemplate_ParseRotationDelta(const PrimitiveTemplate * _this, const
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0xc(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl 0xc(%ebp), %eax\n" /* val, v */
         "movl %eax, (%esp)\n" /* v */
         "calll sscanf\n"
@@ -1530,12 +1530,12 @@ Bool PrimitiveTemplate_ParseChannel(const PrimitiveTemplate * _this, BackCompati
         "movl %esi, (%esp)\n" /* line 1646 | pairs */
         "calll GPValue_GetTopValue\n"
         "movl %eax, %edi\n" /* val */
-        "movl $0x21a468, 4(%esp)\n" /* line 1648 */
+        "movl $str_0021a468, 4(%esp)\n" /* line 1648 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5f038_0005f084\n"
-        "movl $0x21a470, 4(%esp)\n" /* line 1655 */
+        "movl $str_0021a470, 4(%esp)\n" /* line 1655 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -1575,7 +1575,7 @@ Bool PrimitiveTemplate_ParseVelocity(const PrimitiveTemplate * _this, const char
         "leal -0x2c(%ebp), %eax\n" /* v */
         "movl %eax, 0xc(%esp)\n" /* v */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl 0xc(%ebp), %eax\n" /* val, v */
         "movl %eax, (%esp)\n" /* v */
         "calll sscanf\n"
@@ -1936,7 +1936,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
         "leal -0x1c(%ebp), %eax\n" /* v */
         "movl %eax, 0xc(%esp)\n" /* v */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl 0xc(%ebp), %eax\n" /* val, v */
         "movl %eax, (%esp)\n" /* v */
         "calll sscanf\n"
@@ -2008,7 +2008,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
         "andps %xmm2, %xmm3\n"
         "andnps %xmm1, %xmm2\n"
         "orps %xmm3, %xmm2\n"
-        "movss 0x2ed658, %xmm1\n" /* line 942 | 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm1\n" /* line 942 | 0.0010000000474974513f */
         "movss -0x3c(%ebp), %xmm0\n" /* maxScale */
         "mulss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
@@ -2043,7 +2043,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
         "movss %xmm1, -0x2c(%ebp)\n" /* line 701 */
         "movl $0x3f800000, -0x28(%ebp)\n" /* line 702 */
         "mulss -0x3c(%ebp), %xmm0\n" /* line 703 | maxScale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x24(%ebp)\n"
         "ucomiss %xmm1, %xmm2\n" /* line 705 */
         "jne .Lf5f9ac_0005fe98\n"
@@ -2067,7 +2067,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
         "movss %xmm1, -0x2c(%ebp)\n" /* line 701 */
         "movl $0x3f800000, -0x28(%ebp)\n" /* line 702 */
         "mulss -0x3c(%ebp), %xmm0\n" /* line 703 | maxScale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x24(%ebp)\n"
         "ucomiss %xmm1, %xmm2\n" /* line 705 */
         "jne .Lf5f9ac_0005fe8a\n"
@@ -2108,7 +2108,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
         "movss %xmm1, -0x2c(%ebp)\n" /* line 701 */
         "movl $0x3f800000, -0x28(%ebp)\n" /* line 702 */
         "mulss -0x3c(%ebp), %xmm0\n" /* line 703 | maxScale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x24(%ebp)\n"
         "ucomiss %xmm1, %xmm2\n" /* line 705 */
         "jne .Lf5f9ac_0005fec2\n"
@@ -2132,7 +2132,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
         "movss %xmm1, -0x2c(%ebp)\n" /* line 701 */
         "movl %eax, -0x28(%ebp)\n" /* line 702 */
         "mulss -0x3c(%ebp), %xmm0\n" /* line 703 | maxScale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x24(%ebp)\n"
         "movss -0x58(%ebp), %xmm2\n" /* line 705 */
         "ucomiss %xmm1, %xmm2\n"
@@ -2157,7 +2157,7 @@ Bool PrimitiveTemplate_ParseAcceleration(const PrimitiveTemplate * _this, const 
         "movss %xmm1, -0x2c(%ebp)\n" /* line 701 */
         "movl %eax, -0x28(%ebp)\n" /* line 702 */
         "mulss -0x3c(%ebp), %xmm0\n" /* line 703 | maxScale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x24(%ebp)\n"
         "movss -0x58(%ebp), %xmm2\n" /* line 705 */
         "ucomiss %xmm1, %xmm2\n"
@@ -2319,7 +2319,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %edi, (%esp)\n" /* line 1717 | pairs */
         "calll GPValue_GetTopValue\n"
         "movl %eax, %esi\n" /* val */
-        "movl $0x21a4c4, 4(%esp)\n" /* line 1719 */
+        "movl $str_0021a4c4, 4(%esp)\n" /* line 1719 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2330,7 +2330,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x20(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -2375,12 +2375,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         ".Lf5fee0_00060031:\n"
         "movl 8(%ebp), %eax\n" /* line 1949 | this */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21a708, (%esp)\n" /* "^1FX bounding box width or depth is larger than height for e" */
+        "movl $str_0021a708, (%esp)\n" /* "^1FX bounding box width or depth is larger than height for e" */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5fee0_000600fa\n"
         ".Lf5fee0_0006004b:\n"
-        "movl $0x21a4cc, 4(%esp)\n" /* line 1724 */
+        "movl $str_0021a4cc, 4(%esp)\n" /* line 1724 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2403,7 +2403,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jbe .Lf5fee0_0005ffe5\n"
         "jmp .Lf5fee0_00060147\n"
         ".Lf5fee0_000600a2:\n"
-        "movl $0x21a624, 4(%esp)\n" /* line 1905 */
+        "movl $str_0021a624, 4(%esp)\n" /* line 1905 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2414,7 +2414,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "cvtsd2ss -0x50(%ebp), %xmm0\n"
         "movl 8(%ebp), %ecx\n" /* this */
         "movss %xmm0, 0x294(%ecx)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 1907 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 1907 | 0.0f */
         "jae .Lf5fee0_00060076\n"
         "jp .Lf5fee0_00060076\n"
         ".Lf5fee0_000600e0:\n"
@@ -2422,7 +2422,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "je .Lf5fee0_0005ffc9\n"
         ".Lf5fee0_000600e8:\n"
         "movl %ebx, 4(%esp)\n" /* line 2092 | key */
-        "movl $0x21a6ac, (%esp)\n" /* "^1FX Error while parsing key '%s'
+        "movl $str_0021a6ac, (%esp)\n" /* "^1FX Error while parsing key '%s'
 " */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
@@ -2436,12 +2436,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "retl\n"
         /* { scope 1: min, max, channelId, min, ... */
         ".Lf5fee0_00060102:\n"
-        "movl $0x21a4d4, 4(%esp)\n" /* line 1724 */
+        "movl $str_0021a4d4, 4(%esp)\n" /* line 1724 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060063\n"
-        "movl $0x21a880, 4(%esp)\n" /* line 1729 */
+        "movl $str_0021a880, 4(%esp)\n" /* line 1729 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2458,7 +2458,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %edx, %ecx\n"
         ".Lf5fee0_00060149:\n"
         "movl %ecx, 4(%esp)\n" /* line 1943 */
-        "movl $0x21a6d0, (%esp)\n" /* "^1FX bounding box mins / maxs invalid for effect '%s'
+        "movl $str_0021a6d0, (%esp)\n" /* "^1FX bounding box mins / maxs invalid for effect '%s'
 " */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
@@ -2482,12 +2482,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060173:\n"
-        "movl $0x21593c, 4(%esp)\n" /* line 1729 */
+        "movl $str_0021593c, 4(%esp)\n" /* line 1729 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_0006012e\n"
-        "movl $0x21a888, 4(%esp)\n" /* line 1734 */
+        "movl $str_0021a888, 4(%esp)\n" /* line 1734 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2528,7 +2528,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl -0x3c(%ebp), %eax\n" /* this */
         "movss 4(%eax), %xmm0\n"
         "subss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
@@ -2554,12 +2554,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_000601f0\n"
         /* } scope */
         ".Lf5fee0_00060261:\n"
-        "movl $0x21a754, 4(%esp)\n" /* line 1965 */
+        "movl $str_0021a754, 4(%esp)\n" /* line 1965 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_0006028d\n"
-        "movl $0x21a75c, 4(%esp)\n" /* "rgbRand" */
+        "movl $str_0021a75c, 4(%esp)\n" /* "rgbRand" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2582,7 +2582,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "je .Lf5fee0_000601c9\n"
         ".Lf5fee0_000602c0:\n"
         "movl (%esi), %ebx\n" /* line 49 */
-        "movl $0x21a750, 4(%esp)\n" /* line 1960 */
+        "movl $str_0021a750, 4(%esp)\n" /* line 1960 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2608,7 +2608,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_000600fa\n"
         /* } scope */
         ".Lf5fee0_00060313:\n"
-        "movl $0x21a8d8, 4(%esp)\n" /* line 1970 */
+        "movl $str_0021a8d8, 4(%esp)\n" /* line 1970 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2628,7 +2628,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_000600e8\n"
         "jmp .Lf5fee0_000601c9\n"
         ".Lf5fee0_0006035a:\n"
-        "movl $0x21a4dc, 4(%esp)\n" /* line 1739 */
+        "movl $str_0021a4dc, 4(%esp)\n" /* line 1739 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2641,7 +2641,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_0006038a:\n"
-        "movl $0x21a764, 4(%esp)\n" /* line 1975 */
+        "movl $str_0021a764, 4(%esp)\n" /* line 1975 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2649,7 +2649,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $3, 0xc(%esp)\n" /* line 1977 */
         "jmp .Lf5fee0_000602de\n"
         ".Lf5fee0_000603ab:\n"
-        "movl $0x21a4e4, 4(%esp)\n" /* line 1744 */
+        "movl $str_0021a4e4, 4(%esp)\n" /* line 1744 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2662,12 +2662,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_000603db:\n"
-        "movl $0x21a770, 4(%esp)\n" /* line 1980 */
+        "movl $str_0021a770, 4(%esp)\n" /* line 1980 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060403\n"
-        "movl $0x21a778, 4(%esp)\n" /* "width" */
+        "movl $str_0021a778, 4(%esp)\n" /* "width" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2676,7 +2676,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $4, 0xc(%esp)\n" /* line 1982 */
         "jmp .Lf5fee0_00060295\n"
         ".Lf5fee0_00060410:\n"
-        "movl $0x21a4ec, 4(%esp)\n" /* line 1749 */
+        "movl $str_0021a4ec, 4(%esp)\n" /* line 1749 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2689,7 +2689,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_00060440:\n"
-        "movl $0x21a8e0, 4(%esp)\n" /* line 1985 */
+        "movl $str_0021a8e0, 4(%esp)\n" /* line 1985 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2697,7 +2697,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $5, 0xc(%esp)\n" /* line 1987 */
         "jmp .Lf5fee0_0006032f\n"
         ".Lf5fee0_00060465:\n"
-        "movl $0x21a4f4, 4(%esp)\n" /* line 1754 */
+        "movl $str_0021a4f4, 4(%esp)\n" /* line 1754 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2708,7 +2708,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x1c(%ebp), %eax\n" /* max, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -2729,7 +2729,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_000604be:\n"
-        "movl $0x21a4fc, 4(%esp)\n" /* line 1759 */
+        "movl $str_0021a4fc, 4(%esp)\n" /* line 1759 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2742,12 +2742,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movss %xmm0, 0x64(%ecx)\n"
         "jmp .Lf5fee0_00060076\n"
         ".Lf5fee0_000604ef:\n"
-        "movl $0x21a780, 4(%esp)\n" /* line 1990 */
+        "movl $str_0021a780, 4(%esp)\n" /* line 1990 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_0006051b\n"
-        "movl $0x21a788, 4(%esp)\n" /* "width2" */
+        "movl $str_0021a788, 4(%esp)\n" /* "width2" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2756,7 +2756,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $6, 0xc(%esp)\n" /* line 1992 */
         "jmp .Lf5fee0_000602de\n"
         ".Lf5fee0_00060528:\n"
-        "movl $0x21a508, 4(%esp)\n" /* line 1764 */
+        "movl $str_0021a508, 4(%esp)\n" /* line 1764 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2767,7 +2767,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x20(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -2788,7 +2788,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_00060076\n"
         /* } scope */
         ".Lf5fee0_00060592:\n"
-        "movl $0x21a514, 4(%esp)\n" /* line 1769 */
+        "movl $str_0021a514, 4(%esp)\n" /* line 1769 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2799,7 +2799,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x1c(%ebp), %eax\n" /* max, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -2820,12 +2820,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_000605eb:\n"
-        "movl $0x21a51c, 4(%esp)\n" /* line 1774 */
+        "movl $str_0021a51c, 4(%esp)\n" /* line 1774 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060617\n"
-        "movl $0x21a524, 4(%esp)\n" /* "intensity" */
+        "movl $str_0021a524, 4(%esp)\n" /* "intensity" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2837,7 +2837,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x20(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -2852,11 +2852,11 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movss -0x1c(%ebp), %xmm1\n" /* max */
         "ucomiss %xmm1, %xmm2\n"
         "ja .Lf5fee0_000600e0\n"
-        "ucomiss 0x2ed5e8, %xmm2\n" /* line 502 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 502 | 0.0f */
         "jp .Lf5fee0_0006066a\n"
         "jb .Lf5fee0_000600e0\n"
         ".Lf5fee0_0006066a:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 504 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 504 | 1.0f */
         "ucomiss %xmm3, %xmm2\n"
         "ja .Lf5fee0_000600e0\n"
         "pxor %xmm0, %xmm0\n" /* line 506 */
@@ -2871,7 +2871,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_00060076\n"
         /* } scope */
         ".Lf5fee0_000606b0:\n"
-        "movl $0x21a8ec, 4(%esp)\n" /* line 1995 */
+        "movl $str_0021a8ec, 4(%esp)\n" /* line 1995 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2879,7 +2879,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $7, 0xc(%esp)\n" /* line 1997 */
         "jmp .Lf5fee0_00060295\n"
         ".Lf5fee0_000606d5:\n"
-        "movl $0x21a894, 4(%esp)\n" /* line 1779 */
+        "movl $str_0021a894, 4(%esp)\n" /* line 1779 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2895,7 +2895,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %edx, 0x10(%esp)\n"
         "movl %ecx, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "cmpl $2, %eax\n" /* line 338 */
@@ -2920,12 +2920,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_00060076\n"
         /* } scope */
         ".Lf5fee0_00060766:\n"
-        "movl $0x21a790, 4(%esp)\n" /* line 2000 */
+        "movl $str_0021a790, 4(%esp)\n" /* line 2000 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060792\n"
-        "movl $0x21a588, 4(%esp)\n" /* "height" */
+        "movl $str_0021a588, 4(%esp)\n" /* "height" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2934,7 +2934,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $8, 0xc(%esp)\n" /* line 2002 */
         "jmp .Lf5fee0_0006032f\n"
         ".Lf5fee0_0006079f:\n"
-        "movl $0x21a530, 4(%esp)\n" /* line 1784 */
+        "movl $str_0021a530, 4(%esp)\n" /* line 1784 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2950,7 +2950,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %edx, 0x10(%esp)\n"
         "movl %ecx, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "cmpl $2, %eax\n" /* line 338 */
@@ -2975,7 +2975,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_00060076\n"
         /* } scope */
         ".Lf5fee0_00060830:\n"
-        "movl $0x21a8f8, 4(%esp)\n" /* line 2005 */
+        "movl $str_0021a8f8, 4(%esp)\n" /* line 2005 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2983,12 +2983,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $9, 0xc(%esp)\n" /* line 2007 */
         "jmp .Lf5fee0_000602de\n"
         ".Lf5fee0_00060855:\n"
-        "movl $0x21a534, 4(%esp)\n" /* line 1789 */
+        "movl $str_0021a534, 4(%esp)\n" /* line 1789 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060881\n"
-        "movl $0x21a53c, 4(%esp)\n" /* "angles" */
+        "movl $str_0021a53c, 4(%esp)\n" /* "angles" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3008,7 +3008,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "leal -0x28(%ebp), %eax\n" /* v */
         "movl %eax, 0xc(%esp)\n" /* v */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "cmpl $2, %eax\n" /* line 338 */
@@ -3049,7 +3049,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_0006092b:\n"
-        "movl $0x21a5a4, 4(%esp)\n" /* line 2010 */
+        "movl $str_0021a5a4, 4(%esp)\n" /* line 2010 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3057,7 +3057,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0xa, 0xc(%esp)\n" /* line 2012 */
         "jmp .Lf5fee0_00060295\n"
         ".Lf5fee0_00060950:\n"
-        "movl $0x21a898, 4(%esp)\n" /* line 1794 */
+        "movl $str_0021a898, 4(%esp)\n" /* line 1794 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3076,7 +3076,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "leal -0x34(%ebp), %eax\n" /* v */
         "movl %eax, 0xc(%esp)\n" /* v */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "cmpl $2, %eax\n" /* line 338 */
@@ -3117,12 +3117,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060a12:\n"
-        "movl $0x21a544, 4(%esp)\n" /* line 1799 */
+        "movl $str_0021a544, 4(%esp)\n" /* line 1799 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060a3a\n"
-        "movl $0x21a550, 4(%esp)\n" /* "vel" */
+        "movl $str_0021a550, 4(%esp)\n" /* "vel" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3136,7 +3136,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_00060a56:\n"
-        "movl $0x21a798, 4(%esp)\n" /* line 2015 */
+        "movl $str_0021a798, 4(%esp)\n" /* line 2015 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3144,7 +3144,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0xb, 0xc(%esp)\n" /* line 2017 */
         "jmp .Lf5fee0_0006032f\n"
         ".Lf5fee0_00060a77:\n"
-        "movl $0x21a8a4, 4(%esp)\n" /* line 1804 */
+        "movl $str_0021a8a4, 4(%esp)\n" /* line 1804 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3158,7 +3158,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_00060aa7:\n"
-        "movl $0x21a7ac, 4(%esp)\n" /* line 2020 */
+        "movl $str_0021a7ac, 4(%esp)\n" /* line 2020 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3166,12 +3166,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0xc, 0xc(%esp)\n" /* line 2022 */
         "jmp .Lf5fee0_000602de\n"
         ".Lf5fee0_00060acc:\n"
-        "movl $0x21a554, 4(%esp)\n" /* line 1804 */
+        "movl $str_0021a554, 4(%esp)\n" /* line 1804 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060a8b\n"
-        "movl $0x21a8b4, 4(%esp)\n" /* line 1809 */
+        "movl $str_0021a8b4, 4(%esp)\n" /* line 1809 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3182,7 +3182,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x20(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -3203,7 +3203,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060b3f:\n"
-        "movl $0x21a55c, 4(%esp)\n" /* line 1814 */
+        "movl $str_0021a55c, 4(%esp)\n" /* line 1814 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3214,7 +3214,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x1c(%ebp), %eax\n" /* max, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -3235,7 +3235,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060b9e:\n"
-        "movl $0x21a564, 4(%esp)\n" /* line 1819 */
+        "movl $str_0021a564, 4(%esp)\n" /* line 1819 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3246,7 +3246,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x1c(%ebp), %eax\n" /* max, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -3267,7 +3267,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060bfd:\n"
-        "movl $0x21a570, 4(%esp)\n" /* line 1824 */
+        "movl $str_0021a570, 4(%esp)\n" /* line 1824 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3286,7 +3286,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "leal -0x34(%ebp), %eax\n" /* v */
         "movl %eax, 0xc(%esp)\n" /* v */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "cmpl $2, %eax\n" /* line 338 */
@@ -3327,7 +3327,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060cbf:\n"
-        "movl $0x21a578, 4(%esp)\n" /* line 1829 */
+        "movl $str_0021a578, 4(%esp)\n" /* line 1829 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3346,7 +3346,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "leal -0x28(%ebp), %eax\n" /* v */
         "movl %eax, 0xc(%esp)\n" /* v */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
+        "movl $str_0021a398, 4(%esp)\n" /* "%f %f %f   %f %f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "cmpl $2, %eax\n" /* line 338 */
@@ -3387,7 +3387,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060d81:\n"
-        "movl $0x21a580, 4(%esp)\n" /* line 1834 */
+        "movl $str_0021a580, 4(%esp)\n" /* line 1834 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3398,7 +3398,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x20(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -3419,7 +3419,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060de0:\n"
-        "movl $0x21a588, 4(%esp)\n" /* line 1839 */
+        "movl $str_0021a588, 4(%esp)\n" /* line 1839 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3430,7 +3430,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x1c(%ebp), %eax\n" /* max, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -3451,7 +3451,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060e3f:\n"
-        "movl $0x21a590, 4(%esp)\n" /* line 1844 */
+        "movl $str_0021a590, 4(%esp)\n" /* line 1844 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3462,7 +3462,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x20(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -3483,7 +3483,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060e9e:\n"
-        "movl $0x21a598, 4(%esp)\n" /* line 1849 */
+        "movl $str_0021a598, 4(%esp)\n" /* line 1849 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3494,7 +3494,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl %eax, 0xc(%esp)\n" /* v */
         "leal -0x20(%ebp), %eax\n" /* min, v */
         "movl %eax, 8(%esp)\n" /* v */
-        "movl $0x21a190, 4(%esp)\n" /* "%f %f" */
+        "movl $str_0021a190, 4(%esp)\n" /* "%f %f" */
         "movl %esi, (%esp)\n" /* channelId */
         "calll sscanf\n"
         "testl %eax, %eax\n" /* line 313 */
@@ -3515,7 +3515,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         /* } scope */
         ".Lf5fee0_00060efd:\n"
-        "movl $0x21a5a4, 4(%esp)\n" /* line 1854 */
+        "movl $str_0021a5a4, 4(%esp)\n" /* line 1854 */
         "movl %ebx, (%esp)\n" /* key */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -3528,7 +3528,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_00060f2d:\n"
-        "movl $0x21a7b8, 4(%esp)\n" /* line 2025 */
+        "movl $str_0021a7b8, 4(%esp)\n" /* line 2025 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3536,12 +3536,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0xd, 0xc(%esp)\n" /* line 2027 */
         "jmp .Lf5fee0_00060295\n"
         ".Lf5fee0_00060f4e:\n"
-        "movl $0x21a498, 4(%esp)\n" /* line 1859 */
+        "movl $str_0021a498, 4(%esp)\n" /* line 1859 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060f76\n"
-        "movl $0x21a490, 4(%esp)\n" /* "flag" */
+        "movl $str_0021a490, 4(%esp)\n" /* "flag" */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3557,7 +3557,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_00060fa2:\n"
-        "movl $0x21a7c4, 4(%esp)\n" /* line 2030 */
+        "movl $str_0021a7c4, 4(%esp)\n" /* line 2030 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3565,7 +3565,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0xe, 0xc(%esp)\n" /* line 2032 */
         "jmp .Lf5fee0_0006032f\n"
         ".Lf5fee0_00060fc3:\n"
-        "movl $0x21a8bc, 4(%esp)\n" /* line 1864 */
+        "movl $str_0021a8bc, 4(%esp)\n" /* line 1864 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3581,7 +3581,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jne .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_00061003:\n"
-        "movl $0x21a7d0, 4(%esp)\n" /* line 2035 */
+        "movl $str_0021a7d0, 4(%esp)\n" /* line 2035 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3589,12 +3589,12 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0xf, 0xc(%esp)\n" /* line 2037 */
         "jmp .Lf5fee0_000602de\n"
         ".Lf5fee0_00061024:\n"
-        "movl $0x21a5b4, 4(%esp)\n" /* line 1864 */
+        "movl $str_0021a5b4, 4(%esp)\n" /* line 1864 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf5fee0_00060fd7\n"
-        "movl $0x21a8c8, 4(%esp)\n" /* line 1869 */
+        "movl $str_0021a8c8, 4(%esp)\n" /* line 1869 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3606,7 +3606,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "setne 0x9c(%eax)\n"
         "jmp .Lf5fee0_00060076\n"
         ".Lf5fee0_00061065:\n"
-        "movl $0x21a7e0, 4(%esp)\n" /* line 2040 */
+        "movl $str_0021a7e0, 4(%esp)\n" /* line 2040 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3614,7 +3614,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x10, 0xc(%esp)\n" /* line 2042 */
         "jmp .Lf5fee0_00060295\n"
         ".Lf5fee0_00061086:\n"
-        "movl $0x21a5c0, 4(%esp)\n" /* line 1873 */
+        "movl $str_0021a5c0, 4(%esp)\n" /* line 1873 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3626,7 +3626,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "setne 0x9d(%edx)\n"
         "jmp .Lf5fee0_00060076\n"
         ".Lf5fee0_000610b3:\n"
-        "movl $0x21a7f0, 4(%esp)\n" /* line 2045 */
+        "movl $str_0021a7f0, 4(%esp)\n" /* line 2045 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3634,7 +3634,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x11, 0xc(%esp)\n" /* line 2047 */
         "jmp .Lf5fee0_0006032f\n"
         ".Lf5fee0_000610d4:\n"
-        "movl $0x2194b4, 4(%esp)\n" /* line 1877 */
+        "movl $str_002194b4, 4(%esp)\n" /* line 1877 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3648,7 +3648,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "calll I_strncpyz\n"
         "jmp .Lf5fee0_00060076\n"
         ".Lf5fee0_0006110c:\n"
-        "movl $0x21a800, 4(%esp)\n" /* line 2050 */
+        "movl $str_0021a800, 4(%esp)\n" /* line 2050 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3656,7 +3656,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x12, 0xc(%esp)\n" /* line 2052 */
         "jmp .Lf5fee0_000602de\n"
         ".Lf5fee0_0006112d:\n"
-        "movl $0x21a5cc, 4(%esp)\n" /* line 1885 */
+        "movl $str_0021a5cc, 4(%esp)\n" /* line 1885 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3669,7 +3669,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "calll I_strncpyz\n"
         "jmp .Lf5fee0_00060076\n"
         ".Lf5fee0_00061160:\n"
-        "movl $0x21a80c, 4(%esp)\n" /* line 2055 */
+        "movl $str_0021a80c, 4(%esp)\n" /* line 2055 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3677,7 +3677,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x13, 0xc(%esp)\n" /* line 2057 */
         "jmp .Lf5fee0_00060295\n"
         ".Lf5fee0_00061181:\n"
-        "movl $0x21a5dc, 4(%esp)\n" /* line 1890 */
+        "movl $str_0021a5dc, 4(%esp)\n" /* line 1890 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3692,7 +3692,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_00060076\n"
         /* } scope */
         ".Lf5fee0_000611b4:\n"
-        "movl $0x21a818, 4(%esp)\n" /* line 2060 */
+        "movl $str_0021a818, 4(%esp)\n" /* line 2060 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3700,7 +3700,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x14, 0xc(%esp)\n" /* line 2062 */
         "jmp .Lf5fee0_0006032f\n"
         ".Lf5fee0_000611d5:\n"
-        "movl $0x21a5f4, 4(%esp)\n" /* line 1895 */
+        "movl $str_0021a5f4, 4(%esp)\n" /* line 1895 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3713,7 +3713,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jg .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_00061207:\n"
-        "movl $0x21a824, 4(%esp)\n" /* line 2065 */
+        "movl $str_0021a824, 4(%esp)\n" /* line 2065 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3721,7 +3721,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x15, 0xc(%esp)\n" /* line 2067 */
         "jmp .Lf5fee0_000602de\n"
         ".Lf5fee0_00061228:\n"
-        "movl $0x21a60c, 4(%esp)\n" /* line 1900 */
+        "movl $str_0021a60c, 4(%esp)\n" /* line 1900 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3736,7 +3736,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jmp .Lf5fee0_00060076\n"
         /* } scope */
         ".Lf5fee0_0006125f:\n"
-        "movl $0x21a834, 4(%esp)\n" /* line 2070 */
+        "movl $str_0021a834, 4(%esp)\n" /* line 2070 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3744,7 +3744,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x16, 0xc(%esp)\n" /* line 2072 */
         "jmp .Lf5fee0_00060295\n"
         ".Lf5fee0_00061280:\n"
-        "movl $0x21a844, 4(%esp)\n" /* line 2075 */
+        "movl $str_0021a844, 4(%esp)\n" /* line 2075 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3752,7 +3752,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "movl $0x17, 0xc(%esp)\n" /* line 2077 */
         "jmp .Lf5fee0_0006032f\n"
         ".Lf5fee0_000612a1:\n"
-        "movl $0x21a63c, 4(%esp)\n" /* line 1910 */
+        "movl $str_0021a63c, 4(%esp)\n" /* line 1910 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3768,13 +3768,13 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         ".Lf5fee0_000612d4:\n"
         "movl %ebx, 4(%esp)\n" /* line 2082 | key */
-        "movl $0x21a854, (%esp)\n" /* "Unknown group key parsing a particle: %s
+        "movl $str_0021a854, (%esp)\n" /* "Unknown group key parsing a particle: %s
 " */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"
         "jmp .Lf5fee0_000600fa\n"
         ".Lf5fee0_000612eb:\n"
-        "movl $0x21a650, 4(%esp)\n" /* line 1915 */
+        "movl $str_0021a650, 4(%esp)\n" /* line 1915 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3787,7 +3787,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "jns .Lf5fee0_00060076\n"
         "jmp .Lf5fee0_000600e0\n"
         ".Lf5fee0_0006131d:\n"
-        "movl $0x21a664, 4(%esp)\n" /* line 1920 */
+        "movl $str_0021a664, 4(%esp)\n" /* line 1920 */
         "movl %ebx, (%esp)\n" /* key */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -3797,7 +3797,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         "calll atof\n"
         "fstpl -0x48(%ebp)\n"
         "cvtsd2ss -0x48(%ebp), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 1086 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 1086 | 0.0f */
         "jp .Lf5fee0_00061350\n"
         "jb .Lf5fee0_000600e0\n"
         ".Lf5fee0_00061350:\n"
@@ -3807,7 +3807,7 @@ Bool PrimitiveTemplate_ParsePrimitiveInternal(const PrimitiveTemplate * _this, B
         /* } scope */
         ".Lf5fee0_00061360:\n"
         "movl %ebx, 4(%esp)\n" /* line 1927 | key */
-        "movl $0x21a67c, (%esp)\n" /* "Unknown key parsing an effect primitive: %s
+        "movl $str_0021a67c, (%esp)\n" /* "Unknown key parsing an effect primitive: %s
 " */
         "calll FX_Print\n"
         "xorl %eax, %eax\n"

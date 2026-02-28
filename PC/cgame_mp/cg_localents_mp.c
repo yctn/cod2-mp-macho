@@ -18,7 +18,7 @@ extern localEntity_t * cg_eachClientFreeLocalEntities[1]; /* 0x0 */
 extern localEntity_t *cg_localEntities; /* 0x0 */
 extern localEntity_t *cg_activeLocalEntities; /* 0x0 */
 extern localEntity_t *cg_freeLocalEntities; /* 0x0 */
-static cg_eachClientLocalEntities_t cg_eachClientLocalEntities; /* 0xfead80 */
+static cg_eachClientLocalEntities_t cg_eachClientLocalEntities; /* cg_eachClientLocalEntities */
 
 void CG_InitLocalEntities(void);
 void CG_AddMovingTracer(localEntity_t *le);
@@ -79,7 +79,7 @@ void CG_AddMovingTracer(localEntity_t *le)
     float dist;
 
     /* Evaluate the trajectory to get current position */
-    time = *(int *)((char *)(*(int *)0x195f584) + 0x25bb0);
+    time = *(int *)((char *)(*(int *)imp_cg) + 0x25bb0);
     BG_EvaluateTrajectory(&le->pos, time, start);
 
     /* Get normalized direction from trDelta */
@@ -93,7 +93,7 @@ void CG_AddMovingTracer(localEntity_t *le)
     /* dist = min(tracerClipDist - dot, cg_tracerSpeed) */
     dist = le->tracerClipDist - dot;
     {
-        float tracerLen = *(float *)((char *)(*(int *)0x195f948) + 8);
+        float tracerLen = *(float *)((char *)(*(int *)imp_cg_tracerLength) + 8);
         if (dist > tracerLen) {
             dist = tracerLen;
         }
@@ -181,7 +181,7 @@ void CG_AddLocalEntities(void)
     while (le != cg_activeLocalEntities) {
         next = (localEntity_t *)(le->prev);
 
-        time = *(int *)((char *)(*(int *)0x195f584) + 0x25bb0);
+        time = *(int *)((char *)(*(int *)imp_cg) + 0x25bb0);
 
         if (time >= le->endTime || time < le->pos.trTime) {
             /* Entity has expired or time is before trajectory start - free it */

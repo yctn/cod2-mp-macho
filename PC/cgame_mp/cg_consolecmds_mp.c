@@ -26,11 +26,11 @@ extern void CL_AddCgameCommand(const char *cmdName);
 extern void CL_Popup(const char *name);
 extern const char * UI_SafeTranslateString(const char *key);
 
-extern byte *cg_viewscreen_ptr; /* 0x195f84c */
-extern byte *cgs_ptr;           /* 0x195f584 */
-extern byte *cg_ptr;            /* 0x195f5c4 */
+extern byte *cg_viewscreen_ptr; /* imp_cg_viewsize */
+extern byte *cgs_ptr;           /* imp_cg */
+extern byte *cg_ptr;            /* imp_cgs */
 
-static const consoleCommand_t commandsList[21]; /* 0x333bc0 */
+static const consoleCommand_t commandsList[21]; /* commandsList */
 
 void CG_TargetCommand_f(void);
 static void CG_SizeUp_f(void);

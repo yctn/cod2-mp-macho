@@ -45,10 +45,10 @@ extern void Hunk_ClearToMark(int mark);
 extern int Hunk_SetMark(void);
 extern void Hunk_ConvertTempToPermLowInternal(void);
 
-extern byte *scrCompPub_ptr;    /* 0x195ee58 */
-extern byte *scrCompGlob_ptr;   /* 0x195ee5c */
-extern byte *scrAnimPub_ptr;    /* 0x195ee54 */
-extern byte *scrParserPub_ptr;  /* 0x195ee64 */
+extern byte *scrCompPub_ptr;    /* imp_scrVarPub */
+extern byte *scrCompGlob_ptr;   /* imp_scrCompilePub */
+extern byte *scrAnimPub_ptr;    /* imp_scrAnimPub */
+extern byte *scrParserPub_ptr;  /* imp_scrParserPub */
 
 int Scr_IsInOpcodeMemory(const char *pos);
 Bool Scr_IsIdentifier(const char *token);

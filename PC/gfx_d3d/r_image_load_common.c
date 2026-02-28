@@ -11,8 +11,8 @@ extern void Image_Create3DTexture(GfxImage *image, int width, int height, int de
 extern void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWORD usage, D3DFORMAT imageFormat, D3DPOOL memPool);
 extern void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int width, int height, int depth);
 
-extern int *g_dxIter;   /* 0x195f0e0 - pointer to device lost indicator */
-extern byte *g_dx;       /* 0x195eed0 - DxGlobals pointer */
+extern int *g_dxIter;   /* imp_alwaysfails - pointer to device lost indicator */
+extern byte *g_dx;       /* imp_dx - DxGlobals pointer */
 
 /* Vtable indices for D3D9 texture interfaces (i386 32-bit) */
 #define VTABLE_LOCKRECT    19  /* 0x4C / 4 */

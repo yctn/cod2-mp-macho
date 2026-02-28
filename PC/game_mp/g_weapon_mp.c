@@ -10,7 +10,7 @@
  *   #include "PC/universal/q_shared.h"
  */
 
-static vec2_t traceOffsets[5]; /* 0x3032e0 */
+static vec2_t traceOffsets[5]; /* traceOffsets */
 
 /* Math functions */
 extern float floorf(float x);
@@ -25,7 +25,7 @@ extern qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2);
 
 /* External globals */
 extern struct level_locals_t level;
-extern void *bg_weaponInfoMem; /* 0x195f75c - weapon info memory ptr */
+extern void *bg_weaponInfoMem; /* imp___Z16G_RegisterWeaponi - weapon info memory ptr */
 
 /* Entity/client field access macros */
 #define ENT_TAKEDAMAGE(e)    ((e)->takedamage)
@@ -116,13 +116,13 @@ void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms 
         "movl 0x10(%ebp), %edi\n" /* wp */
         /* { scope 1: r */
         "cvtss2sd 0xc(%ebp), %xmm0\n" /* line 652 | spread */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "movsd %xmm0, (%esp)\n"
         "calll tan\n"
         "fstpl -0x50(%ebp)\n"
         "cvtsd2ss -0x50(%ebp), %xmm0\n"
         "movss %xmm0, -0x44(%ebp)\n" /* fAimOffset */
-        "movss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "mulss -0x44(%ebp), %xmm0\n" /* fAimOffset */
         "movss %xmm0, -0x44(%ebp)\n" /* fAimOffset */
         /* { scope 2 */
@@ -133,9 +133,9 @@ void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms 
         "calll randomf\n"
         "fstps -0x40(%ebp)\n" /* r */
         "movss -0x68(%ebp), %xmm0\n" /* line 205 */
-        "mulss 0x2ed638, %xmm0\n" /* 360.0f */
+        "mulss lit4_002ed638, %xmm0\n" /* 360.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x3c(%ebp)\n"
         /* } scope */
@@ -154,12 +154,12 @@ void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms 
         "mulss -0x40(%ebp), %xmm2\n" /* r */
         "mulss -0x44(%ebp), %xmm2\n" /* fAimOffset */
         "movss (%edi), %xmm0\n" /* line 272 */
-        "mulss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "mulss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "movss %xmm0, -0x24(%ebp)\n" /* dir */
         "movss 4(%edi), %xmm0\n" /* line 273 */
-        "mulss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "mulss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "movss %xmm0, -0x20(%ebp)\n"
-        "movss 0x2ed6a8, %xmm0\n" /* line 274 | 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* line 274 | 16.0f */
         "mulss 8(%edi), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
         "leal 0xc(%edi), %eax\n"
@@ -214,7 +214,7 @@ void Weapon_RocketLauncher_Fire(gentity_s (*ent)[16], float spread, weaponParms 
         "je .Lf1c58e6_001c5acf\n"
         "leal 0x20(%edx), %eax\n" /* line 668 | result */
         /* { scope 2 */
-        "movss 0x2eda00, %xmm1\n" /* line 288 | -64.0f */
+        "movss lit4_002eda00, %xmm1\n" /* line 288 | -64.0f */
         "movss (%edi), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss 0x20(%edx), %xmm0\n"
@@ -393,7 +393,7 @@ Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range,
         "movl 0xc(%ebp), %ebx\n" /* wp */
         /* { scope 1 */
         "movss 0x18(%ebp), %xmm0\n" /* line 51 | width */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "ja .Lf1c5c72_001c5c9c\n"
         "jp .Lf1c5c72_001c5c9c\n"
         "pxor %xmm0, %xmm0\n"
@@ -402,7 +402,7 @@ Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range,
         ".Lf1c5c72_001c5c9c:\n"
         "movl $5, -0x38(%ebp)\n" /* numTraces */
         ".Lf1c5c72_001c5ca3:\n"
-        "movl 0x195f734, %eax\n"
+        "movl imp_bulletPriorityMap, %eax\n"
         "movl %eax, -0x34(%ebp)\n"
         "movl 0x24(%ebp), %edx\n" /* endPos */
         "addl $4, %edx\n"
@@ -423,7 +423,7 @@ Bool Melee_Trace(gentity_s (*ent)[16], weaponParms *wp, int damage, float range,
         "movl 0x20(%ebp), %edx\n" /* line 83 | trace */
         "testb $0x10, 0x10(%edx)\n"
         "jne .Lf1c5c72_001c5cf8\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 87 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 87 | 1.0f */
         "ucomiss (%edx), %xmm0\n"
         "jne .Lf1c5c72_001c5e9b\n"
         "jp .Lf1c5c72_001c5e9b\n"
@@ -594,7 +594,7 @@ void Weapon_Melee(gentity_s (*ent)[16], weaponParms *wp, float range, float widt
         "leal (, %eax, 8), %esi\n" /* traceEnt */
         "subl %eax, %esi\n" /* traceEnt */
         "shll $4, %esi\n" /* traceEnt */
-        "addl 0x195f688, %esi\n" /* traceEnt */
+        "addl imp_g_entities, %esi\n" /* traceEnt */
         "movl 0x158(%esi), %edx\n" /* line 129 | traceEnt */
         "testl %edx, %edx\n"
         "je .Lf1c5ea8_001c5ffc\n"
@@ -705,15 +705,15 @@ void FireWeaponMelee(gentity_s (*ent)[16])
         "movl %ebx, 4(%esp)\n"
         "movl %esi, (%esp)\n" /* ent */
         "calll G_GetPlayerViewDirection\n"
-        "movl 0x195f758, %eax\n" /* line 833 */
+        "movl imp_player_meleeHeight, %eax\n" /* line 833 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x10(%esp)\n"
-        "movl 0x195f764, %eax\n"
+        "movl imp_player_meleeWidth, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl 0x195f768, %eax\n"
+        "movl imp_player_meleeRange, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -766,7 +766,7 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "testl %ecx, %ecx\n" /* line 425 */
         "je .Lf1c60b6_001c6424\n"
         ".Lf1c60b6_001c611b:\n"
-        "movl 0x195f760, %eax\n"
+        "movl imp_riflePriorityMap, %eax\n"
         ".Lf1c60b6_001c6120:\n"
         "movl %eax, 0x14(%esp)\n"
         "movl $0x2802831, 0x10(%esp)\n"
@@ -824,7 +824,7 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "leal (, %eax, 8), %esi\n" /* traceEnt */
         "subl %eax, %esi\n" /* traceEnt */
         "shll $4, %esi\n" /* traceEnt */
-        "addl 0x195f688, %esi\n" /* traceEnt */
+        "addl imp_g_entities, %esi\n" /* traceEnt */
         /* { scope 2 */
         "movss (%edi), %xmm0\n" /* line 248 */
         "subss (%ebx), %xmm0\n"
@@ -851,7 +851,7 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "movaps %xmm4, %xmm1\n"
         "mulss -0x28(%ebp), %xmm1\n"
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed628, %xmm0\n" /* -2.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* -2.0f */
         "mulss %xmm0, %xmm3\n" /* line 288 */
         "addss %xmm3, %xmm5\n"
         "movss %xmm5, -0x30(%ebp)\n" /* reflect */
@@ -898,7 +898,7 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "movl 0x1ec(%eax), %edx\n" /* line 274 */
         /* } scope */
         ".Lf1c60b6_001c6320:\n"
-        "movl 0x195f6a0, %eax\n" /* line 529 */
+        "movl imp_level, %eax\n" /* line 529 */
         "movl 0x1ec(%eax), %eax\n"
         "subl 0x18(%ebp), %eax\n" /* gametime */
         "movl %eax, 0x24(%esp)\n"
@@ -926,7 +926,7 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "je .Lf1c60b6_001c63ee\n"
         "testb $0x20, -0x70(%ebp)\n" /* line 535 | dflags */
         "je .Lf1c60b6_001c63ee\n"
-        "movl $0x2ab4f0, (%esp)\n" /* line 537 */
+        "movl $str_002ab4f0, (%esp)\n" /* line 537 */
         "calll Dvar_GetInt\n"
         "testl %eax, %eax\n"
         "jne .Lf1c60b6_001c63ad\n"
@@ -938,7 +938,7 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "jne .Lf1c60b6_001c63ee\n"
         ".Lf1c60b6_001c63ad:\n"
         "movss -0x80(%ebp), %xmm0\n" /* line 540 */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, -0x80(%ebp)\n"
         "movl 0x18(%ebp), %eax\n" /* gametime */
         "movl %eax, 0x10(%esp)\n"
@@ -975,10 +975,10 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "testl %ecx, %ecx\n" /* line 425 */
         "jne .Lf1c60b6_001c611b\n"
         ".Lf1c60b6_001c6424:\n"
-        "movl 0x195f734, %eax\n"
+        "movl imp_bulletPriorityMap, %eax\n"
         "jmp .Lf1c60b6_001c6120\n"
         ".Lf1c60b6_001c642e:\n"
-        "movl $0x2b6990, (%esp)\n" /* line 408 */
+        "movl $str_002b6990, (%esp)\n" /* line 408 */
         "calll Com_DPrintf\n"
         /* } scope */
         "addl $0xac, %esp\n" /* line 545 */
@@ -1016,9 +1016,9 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "movss -0x48(%ebp), %xmm0\n"
         "mulss -0x28(%ebp), %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "xorps 0x303310, %xmm1\n"
+        "xorps traceOffsets+48, %xmm1\n"
         "pxor %xmm2, %xmm2\n" /* line 502 */
-        "ucomiss 0x2ed610, %xmm1\n" /* 0.125f */
+        "ucomiss lit4_002ed610, %xmm1\n" /* 0.125f */
         "jae .Lf1c60b6_001c6590\n"
         ".Lf1c60b6_001c64c6:\n"
         "mulss %xmm2, %xmm3\n" /* line 288 */
@@ -1061,14 +1061,14 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         "ucomiss %xmm1, %xmm2\n"
         "jbe .Lf1c60b6_001c6631\n"
         "subss %xmm0, %xmm2\n" /* line 271 */
-        "ucomiss 0x2ed5e8, %xmm2\n" /* line 272 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 272 | 0.0f */
         "jne .Lf1c60b6_001c6557\n"
         "jnp .Lf1c60b6_001c631a\n"
         ".Lf1c60b6_001c6557:\n"
         "subss %xmm0, %xmm1\n" /* line 278 */
         "divss %xmm2, %xmm1\n"
         "cvtsi2ssl 0x1ec(%eax), %xmm2\n" /* line 283 */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "cvtsi2ssl 0x590(%eax), %xmm0\n"
@@ -1079,13 +1079,13 @@ void Bullet_Fire_Extended(const gentity_t *source, gentity_s (*attacker)[16], ve
         /* } scope */
         /* { scope 2 */
         ".Lf1c60b6_001c6590:\n"
-        "movss 0x2ed604, %xmm2\n" /* line 502 | 0.25f */
+        "movss lit4_002ed604, %xmm2\n" /* line 502 | 0.25f */
         "divss %xmm1, %xmm2\n"
         "jmp .Lf1c60b6_001c64c6\n"
         /* } scope */
         /* { scope 2 */
         ".Lf1c60b6_001c65a1:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 473 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 473 | 1.0f */
         "ucomiss -0x54(%ebp), %xmm0\n" /* tr */
         "jbe .Lf1c60b6_001c62aa\n"
         "movl 0x10(%ebp), %edx\n" /* line 482 | wp */
@@ -1145,15 +1145,15 @@ void G_SetupWeaponDef(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl $0x21742c, (%esp)\n" /* line 941 */
+        "movl $str_0021742c, (%esp)\n" /* line 941 */
         "calll Com_DPrintf\n"
-        "movl $0x2b69cc, (%esp)\n" /* line 942 */
+        "movl $str_002b69cc, (%esp)\n" /* line 942 */
         "calll Com_DPrintf\n"
-        "movl 0x195f308, %eax\n" /* line 944 */
+        "movl imp_bg_iNumWeapons, %eax\n" /* line 944 */
         "movl (%eax), %ebx\n"
         "testl %ebx, %ebx\n"
         "je .Lf1c6644_001c6680\n"
-        "movl $0x21742c, (%esp)\n" /* line 954 */
+        "movl $str_0021742c, (%esp)\n" /* line 954 */
         "calll Com_DPrintf\n"
         "addl $0x14, %esp\n" /* line 955 */
         "popl %ebx\n"
@@ -1163,26 +1163,26 @@ void G_SetupWeaponDef(void)
         "calll SV_SetWeaponInfoMemory\n" /* line 946 */
         "calll ClearRegisteredItems\n" /* line 947 */
         "calll BG_ClearWeaponDef\n" /* line 948 */
-        "movl 0x195f75c, %ebx\n" /* line 950 */
+        "movl imp___Z16G_RegisterWeaponi, %ebx\n" /* line 950 */
         "movl %ebx, (%esp)\n"
         "calll BG_FillInAmmoItems\n"
-        "movl 0x195f6a0, %eax\n" /* line 965 */
+        "movl imp_level, %eax\n" /* line 965 */
         "movl 0x1c(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "je .Lf1c6644_001c66cb\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x21ca4c, (%esp)\n" /* "defaultweapon_mp" */
+        "movl $str_0021ca4c, (%esp)\n" /* "defaultweapon_mp" */
         "calll BG_GetWeaponIndexForName\n"
-        "movl $0x21742c, (%esp)\n" /* line 954 */
+        "movl $str_0021742c, (%esp)\n" /* line 954 */
         "calll Com_DPrintf\n"
         "addl $0x14, %esp\n" /* line 955 */
         "popl %ebx\n"
         "popl %ebp\n"
         "retl\n"
         ".Lf1c6644_001c66cb:\n"
-        "movl $0x21ca4c, (%esp)\n" /* line 965 */
+        "movl $str_0021ca4c, (%esp)\n" /* line 965 */
         "calll BG_FindWeaponIndexForName\n"
-        "movl $0x21742c, (%esp)\n" /* line 954 */
+        "movl $str_0021742c, (%esp)\n" /* line 954 */
         "calll Com_DPrintf\n"
         "addl $0x14, %esp\n" /* line 955 */
         "popl %ebx\n"
@@ -1205,7 +1205,7 @@ void Bullet_Endpos(float spread, vec_t *end, const weaponParms *wp, float maxRan
         "movl 0x10(%ebp), %esi\n" /* wp */
         /* { scope 1: r */
         "cvtss2sd 8(%ebp), %xmm0\n" /* line 228 | spread */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "movsd %xmm0, (%esp)\n"
         "calll tan\n"
         "fstpl -0x20(%ebp)\n"
@@ -1220,9 +1220,9 @@ void Bullet_Endpos(float spread, vec_t *end, const weaponParms *wp, float maxRan
         "calll randomf\n"
         "fstps -0x10(%ebp)\n" /* r */
         "movss -0x38(%ebp), %xmm0\n" /* line 205 */
-        "mulss 0x2ed638, %xmm0\n" /* 360.0f */
+        "mulss lit4_002ed638, %xmm0\n" /* 360.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0xc(%ebp)\n"
         /* } scope */
@@ -1307,7 +1307,7 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "subl $0x3ac, %esp\n"
         /* { scope 1: client, clientPosition, start */
         /* { scope 2 */
-        "movl 0x195f6e0, %eax\n" /* line 305 */
+        "movl imp_g_antilag, %eax\n" /* line 305 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1c6854_001c6a2a\n"
@@ -1334,17 +1334,17 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "movl %edi, 8(%esp)\n" /* client */
         "movl $0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* shotIndex */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movl 8(%ebp), %edx\n" /* attacker */
         "movl 0x14(%ebp), %eax\n" /* weaponEnt */
         "calll Bullet_Fire_Extended\n"
         /* { scope 2 */
         ".Lf1c6854_001c68dc:\n"
-        "movl 0x195f6e0, %eax\n" /* line 355 */
+        "movl imp_g_antilag, %eax\n" /* line 355 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1c6854_001c6981\n"
-        "movl 0x195f6a0, %ebx\n" /* line 358 */
+        "movl imp_level, %ebx\n" /* line 358 */
         "movl 0x1e4(%ebx), %esi\n"
         "testl %esi, %esi\n"
         "jle .Lf1c6854_001c6981\n"
@@ -1361,7 +1361,7 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "movl 0x195f688, %esi\n"
+        "movl imp_g_entities, %esi\n"
         "leal (%ebx, %esi), %eax\n"
         "movl %eax, -0x390(%ebp)\n"
         "movl %eax, (%esp)\n"
@@ -1379,7 +1379,7 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "movl -0x390(%ebp), %edx\n" /* line 368 */
         "movl %edx, (%esp)\n"
         "calll SV_LinkEntity\n"
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         "addl $1, %edi\n" /* line 358 | client */
         "cmpl 0x1e4(%ebx), %edi\n" /* client */
         "jl .Lf1c6854_001c6910\n"
@@ -1429,7 +1429,7 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %esi, (%esp)\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movl %edi, %ecx\n" /* client */
         "movl 8(%ebp), %edx\n" /* attacker */
         "movl 0x14(%ebp), %eax\n" /* weaponEnt */
@@ -1448,10 +1448,10 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "leal -0x37c(%ebp), %eax\n" /* antilagClients */
         "movl %eax, (%esp)\n"
         "calll memset\n"
-        "movl 0x195f6a0, %ebx\n" /* line 311 */
+        "movl imp_level, %ebx\n" /* line 311 */
         "movl 0x1ec(%ebx), %ecx\n"
         "subl 0x18(%ebp), %ecx\n" /* gametime */
-        "movl 0x195f2f8, %eax\n"
+        "movl imp_sv_fps, %eax\n"
         "movl (%eax), %esi\n"
         "movl $0x3e8, %eax\n"
         "cltd\n"
@@ -1487,14 +1487,14 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "calll SV_GetClientPositionAtTime\n"
         "testb %al, %al\n"
         "jne .Lf1c6854_001c6af9\n"
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         "jmp .Lf1c6854_001c6a93\n"
         ".Lf1c6854_001c6af9:\n"
         "leal (%edi, %edi, 4), %eax\n" /* line 326 */
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "movl 0x195f688, %ecx\n"
+        "movl imp_g_entities, %ecx\n"
         "leal 0x130(%ebx, %ecx), %esi\n"
         "leal 8(%esi), %eax\n"
         "movl %eax, -0x398(%ebp)\n"
@@ -1520,7 +1520,7 @@ void Bullet_Fire(gentity_s (*attacker)[16], float spread, weaponParms *wp, genti
         "calll SV_LinkEntity\n"
         "movl -0x394(%ebp), %eax\n" /* line 340 | client */
         "movb $1, -0x7c(%ebp, %eax)\n"
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         "jmp .Lf1c6854_001c6a93\n"
     );
 }
@@ -1588,7 +1588,7 @@ void FireWeaponAntiLag(gentity_s (*ent)[16], int gametime)
         "movl %edx, (%esp)\n"
         "calll BG_GetSpreadForWeapon\n"
         "movl 0x158(%ebx), %eax\n" /* line 762 | ent */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ucomiss 0xdc(%eax), %xmm0\n"
         "jne .Lf1c6b7a_001c6cc0\n"
         "jp .Lf1c6b7a_001c6cc0\n"
@@ -1609,7 +1609,7 @@ void FireWeaponAntiLag(gentity_s (*ent)[16], int gametime)
         "movl (%eax), %eax\n" /* line 782 */
         "movl %eax, 0xc(%esp)\n"
         "movl %edx, 8(%esp)\n"
-        "movl $0x2b69e4, 4(%esp)\n" /* "Unknown weapon type %i for %s
+        "movl $str_002b69e4, 4(%esp)\n" /* "Unknown weapon type %i for %s
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -1741,7 +1741,7 @@ qboolean G_GivePlayerWeapon(playerState_t *pPS, int iWeaponIndex)
         ".Lf1c6d42_001c6dec:\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x43, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
+        "movl $str_002b1d38, (%esp)\n" /* "%c %i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"

@@ -8,57 +8,57 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static int mtlLoadGlob; /* 0xce7080 */
-static const Bool g_useTechnique[34]; /* 0x2f3040 */
-static const CodeSamplerSource s_lightSamplers[2]; /* 0x331440 */
-static const CodeSamplerSource s_lightmapSamplers[7]; /* 0x331480 */
-static const CodeSamplerSource s_lightGridSamplers[2]; /* 0x331400 */
-static const CodeSamplerSource s_codeSamplers[18]; /* 0x331280 */
-static const CodeSamplerSource s_defaultCodeSamplers[15]; /* 0x332040 */
-static const CodeConstantSource s_lightConsts[5]; /* 0x331d20 */
-static const CodeConstantSource s_cameraConsts[5]; /* 0x331e00 */
-static const CodeConstantSource s_nearPlaneConsts[4]; /* 0x331da0 */
-static const CodeConstantSource s_lightGridConsts[4]; /* 0x331cc0 */
-static const CodeConstantSource s_codeConsts[79]; /* 0x331680 */
-static const CodeConstantSource s_defaultCodeConsts[22]; /* 0x331e80 */
-static const MtlStateMapBitName s_alphaTestBitNames[5]; /* 0x331080 */
-static const MtlStateMapBitName s_blendOpRgbBitNames[7]; /* 0x331020 */
-static const MtlStateMapBitName s_srcBlendRgbBitNames[13]; /* 0x330fa0 */
-static const MtlStateMapBitName s_dstBlendRgbBitNames[13]; /* 0x330f20 */
-static const MtlStateMapBitName s_blendOpAlphaBitNames[7]; /* 0x330ea0 */
-static const MtlStateMapBitName s_srcBlendAlphaBitNames[13]; /* 0x330e20 */
-static const MtlStateMapBitName s_dstBlendAlphaBitNames[13]; /* 0x330da0 */
-static const MtlStateMapBitName s_cullFaceBitNames[4]; /* 0x330d40 */
-static const MtlStateMapBitName s_depthTestBitNames[5]; /* 0x330ce0 */
-static const MtlStateMapBitName s_depthWriteBitNames[3]; /* 0x330ca0 */
-static const MtlStateMapBitName s_colorWriteRgbBitNames[3]; /* 0x330c68 */
-static const MtlStateMapBitName s_colorWriteAlphaBitNames[3]; /* 0x330c50 */
-static const MtlStateMapBitName s_fogBitNames[3]; /* 0x330c00 */
-static const MtlStateMapBitName s_polygonOffsetBitNames[4]; /* 0x330bc0 */
-static const MtlStateMapBitName s_wireframeBitNames[3]; /* 0x3307c0 */
-static const MtlStateMapBitName s_stencilBitNames[4]; /* 0x330b80 */
-static const MtlStateMapBitName s_stencilOpFrontPassBitNames[9]; /* 0x330ac0 */
-static const MtlStateMapBitName s_stencilOpFrontFailBitNames[9]; /* 0x330a60 */
-static const MtlStateMapBitName s_stencilOpFrontZFailBitNames[9]; /* 0x330a00 */
-static const MtlStateMapBitName s_stencilFuncFrontBitNames[9]; /* 0x330b20 */
-static const MtlStateMapBitName s_stencilOpBackPassBitNames[9]; /* 0x330940 */
-static const MtlStateMapBitName s_stencilOpBackFailBitNames[9]; /* 0x3308e0 */
-static const MtlStateMapBitName s_stencilOpBackZFailBitNames[9]; /* 0x330880 */
-static const MtlStateMapBitName s_stencilFuncBackBitNames[9]; /* 0x3309a0 */
-static const MtlStateMapBitGroup s_stateMapSrcBitGroup[24]; /* 0x3310c0 */
-static const MtlStateMapBitGroup s_stateMapDstAlphaTestBitGroup[2]; /* 0x331060 */
-static const MtlStateMapBitGroup s_stateMapDstBlendFuncRgbBitGroup[4]; /* 0x330ee0 */
-static const MtlStateMapBitGroup s_stateMapDstBlendFuncAlphaBitGroup[4]; /* 0x330d60 */
-static const MtlStateMapBitGroup s_stateMapDstCullFaceBitGroup[2]; /* 0x330d20 */
-static const MtlStateMapBitGroup s_stateMapDstDepthTestBitGroup[2]; /* 0x330cc0 */
-static const MtlStateMapBitGroup s_stateMapDstDepthWriteBitGroup[2]; /* 0x330c80 */
-static const MtlStateMapBitGroup s_stateMapDstColorWriteBitGroup[3]; /* 0x330c20 */
-static const MtlStateMapBitGroup s_stateMapDstFogBitGroup[2]; /* 0x330be0 */
-static const MtlStateMapBitGroup s_stateMapDstPolygonOffsetBitGroup[2]; /* 0x330ba0 */
-static const MtlStateMapBitGroup s_stateMapDstWireframeBitGroup[2]; /* 0x3307a0 */
-static const MtlStateMapBitGroup s_stateMapDstStencilBitGroup[10]; /* 0x3307e0 */
-static const MtlTextureFunctionDx7 s_textureFuncsDx7[21]; /* 0x331520 */
-static const PassOptionDx7 s_passOptionsDx7[5]; /* 0x331240 */
+static int mtlLoadGlob; /* mtlLoadGlob */
+static const Bool g_useTechnique[34]; /* g_useTechnique */
+static const CodeSamplerSource s_lightSamplers[2]; /* s_lightSamplers */
+static const CodeSamplerSource s_lightmapSamplers[7]; /* s_lightmapSamplers */
+static const CodeSamplerSource s_lightGridSamplers[2]; /* s_lightGridSamplers */
+static const CodeSamplerSource s_codeSamplers[18]; /* s_codeSamplers */
+static const CodeSamplerSource s_defaultCodeSamplers[15]; /* s_defaultCodeSamplers */
+static const CodeConstantSource s_lightConsts[5]; /* s_lightConsts */
+static const CodeConstantSource s_cameraConsts[5]; /* s_cameraConsts */
+static const CodeConstantSource s_nearPlaneConsts[4]; /* s_nearPlaneConsts */
+static const CodeConstantSource s_lightGridConsts[4]; /* s_lightGridConsts */
+static const CodeConstantSource s_codeConsts[79]; /* s_codeConsts */
+static const CodeConstantSource s_defaultCodeConsts[22]; /* s_defaultCodeConsts */
+static const MtlStateMapBitName s_alphaTestBitNames[5]; /* s_alphaTestBitNames */
+static const MtlStateMapBitName s_blendOpRgbBitNames[7]; /* s_blendOpRgbBitNames */
+static const MtlStateMapBitName s_srcBlendRgbBitNames[13]; /* s_srcBlendRgbBitNames */
+static const MtlStateMapBitName s_dstBlendRgbBitNames[13]; /* s_dstBlendRgbBitNames */
+static const MtlStateMapBitName s_blendOpAlphaBitNames[7]; /* s_blendOpAlphaBitNames */
+static const MtlStateMapBitName s_srcBlendAlphaBitNames[13]; /* s_srcBlendAlphaBitNames */
+static const MtlStateMapBitName s_dstBlendAlphaBitNames[13]; /* s_dstBlendAlphaBitNames */
+static const MtlStateMapBitName s_cullFaceBitNames[4]; /* s_cullFaceBitNames */
+static const MtlStateMapBitName s_depthTestBitNames[5]; /* s_depthTestBitNames */
+static const MtlStateMapBitName s_depthWriteBitNames[3]; /* s_depthWriteBitNames */
+static const MtlStateMapBitName s_colorWriteRgbBitNames[3]; /* s_colorWriteRgbBitNames */
+static const MtlStateMapBitName s_colorWriteAlphaBitNames[3]; /* s_colorWriteAlphaBitNames */
+static const MtlStateMapBitName s_fogBitNames[3]; /* s_fogBitNames */
+static const MtlStateMapBitName s_polygonOffsetBitNames[4]; /* s_polygonOffsetBitNames */
+static const MtlStateMapBitName s_wireframeBitNames[3]; /* s_wireframeBitNames */
+static const MtlStateMapBitName s_stencilBitNames[4]; /* s_stencilBitNames */
+static const MtlStateMapBitName s_stencilOpFrontPassBitNames[9]; /* s_stencilOpFrontPassBitNames */
+static const MtlStateMapBitName s_stencilOpFrontFailBitNames[9]; /* s_stencilOpFrontFailBitNames */
+static const MtlStateMapBitName s_stencilOpFrontZFailBitNames[9]; /* s_stencilOpFrontZFailBitNames */
+static const MtlStateMapBitName s_stencilFuncFrontBitNames[9]; /* s_stencilFuncFrontBitNames */
+static const MtlStateMapBitName s_stencilOpBackPassBitNames[9]; /* s_stencilOpBackPassBitNames */
+static const MtlStateMapBitName s_stencilOpBackFailBitNames[9]; /* s_stencilOpBackFailBitNames */
+static const MtlStateMapBitName s_stencilOpBackZFailBitNames[9]; /* s_stencilOpBackZFailBitNames */
+static const MtlStateMapBitName s_stencilFuncBackBitNames[9]; /* s_stencilFuncBackBitNames */
+static const MtlStateMapBitGroup s_stateMapSrcBitGroup[24]; /* s_stateMapSrcBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstAlphaTestBitGroup[2]; /* s_stateMapDstAlphaTestBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstBlendFuncRgbBitGroup[4]; /* s_stateMapDstBlendFuncRgbBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstBlendFuncAlphaBitGroup[4]; /* s_stateMapDstBlendFuncAlphaBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstCullFaceBitGroup[2]; /* s_stateMapDstCullFaceBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstDepthTestBitGroup[2]; /* s_stateMapDstDepthTestBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstDepthWriteBitGroup[2]; /* s_stateMapDstDepthWriteBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstColorWriteBitGroup[3]; /* s_stateMapDstColorWriteBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstFogBitGroup[2]; /* s_stateMapDstFogBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstPolygonOffsetBitGroup[2]; /* s_stateMapDstPolygonOffsetBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstWireframeBitGroup[2]; /* s_stateMapDstWireframeBitGroup */
+static const MtlStateMapBitGroup s_stateMapDstStencilBitGroup[10]; /* s_stateMapDstStencilBitGroup */
+static const MtlTextureFunctionDx7 s_textureFuncsDx7[21]; /* s_textureFuncsDx7 */
+static const PassOptionDx7 s_passOptionsDx7[5]; /* s_passOptionsDx7 */
 
 HRESULT IncludeClass_Close(const IncludeClass * _this, LPCVOID data);
 static Bool Material_ValidatePassArguments(const MaterialObj *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args);
@@ -161,7 +161,7 @@ Bool Material_ValidatePassArguments(const MaterialObj *material, const char *tec
         "movl -0x20(%ebp), %edx\n"
         "movl (%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x227e8c, (%esp)\n" /* "material '%s' using technique '%s' from techniqueSet '%s' do" */
+        "movl $str_00227e8c, (%esp)\n" /* "material '%s' using technique '%s' from techniqueSet '%s' do" */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -204,7 +204,7 @@ Bool Material_ValidatePassArguments(const MaterialObj *material, const char *tec
         "movl -0x20(%ebp), %edx\n"
         "movl (%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x227ee8, (%esp)\n" /* "material '%s' using technique '%s' from techniqueSet '%s' do" */
+        "movl $str_00227ee8, (%esp)\n" /* "material '%s' using technique '%s' from techniqueSet '%s' do" */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -234,7 +234,7 @@ void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, 
         /* { scope 1 */
         "movl %eax, 0x10(%esp)\n" /* line 3561 */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x227f44, 8(%esp)\n" /* "materials/shaders/%s%s" */
+        "movl $str_00227f44, 8(%esp)\n" /* "materials/shaders/%s%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x5c(%ebp), %ebx\n" /* filepath */
         "movl %ebx, (%esp)\n"
@@ -268,7 +268,7 @@ void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, 
         "movl %eax, 0xc(%esp)\n"
         "movl -0x70(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x215f50, 4(%esp)\n" /* "%s%s" */
+        "movl $str_00215f50, 4(%esp)\n" /* "%s%s" */
         "movl %ebx, (%esp)\n"
         "calll sprintf\n"
         "addl %eax, %ebx\n" /* line 3569 */
@@ -319,7 +319,7 @@ HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeTy
         ".Lf101b34_00101b48:\n"
         "movl 0x10(%ebp), %edx\n" /* line 901 | filename */
         "movl %edx, 4(%esp)\n"
-        "movl $0x227f5c, (%esp)\n" /* "lib/%s" */
+        "movl $str_00227f5c, (%esp)\n" /* "lib/%s" */
         "calll va\n"
         "movl %eax, -0x20(%ebp)\n" /* filename */
         /* { scope 1: bot */
@@ -354,7 +354,7 @@ HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeTy
         "sarl $1, %ebx\n" /* mid */
         "leal (%ebx, %ebx, 2), %eax\n" /* line 880 | mid */
         "leal (, %eax, 4), %edi\n"
-        "movl 0xce7084, %eax\n"
+        "movl mtlLoadGlob+4, %eax\n"
         "movl (%eax, %edi), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl -0x20(%ebp), %ecx\n" /* filename */
@@ -383,7 +383,7 @@ HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeTy
         "sarl $1, %ebx\n" /* mid */
         "leal (%ebx, %ebx, 2), %eax\n" /* line 880 | mid */
         "leal (, %eax, 4), %edi\n"
-        "movl 0xce7084, %eax\n"
+        "movl mtlLoadGlob+4, %eax\n"
         "movl (%eax, %edi), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* filename */
@@ -396,7 +396,7 @@ HRESULT IncludeClass_Open(const IncludeClass * _this, D3DXINCLUDE_TYPE IncludeTy
         "jmp .Lf101b34_00101bcd\n"
         ".Lf101b34_00101c0a:\n"
         "movl %edi, %eax\n" /* line 883 */
-        "addl 0xce7084, %eax\n"
+        "addl mtlLoadGlob+4, %eax\n"
         "movl 8(%eax), %edx\n"
         "movl 0x1c(%ebp), %ecx\n" /* byteCount */
         "movl %edx, (%ecx)\n"
@@ -430,16 +430,16 @@ void Material_PreLoadAllShaderText(void)
         "leal -0x1c(%ebp), %eax\n" /* fileCountRoot */
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x227f64, 4(%esp)\n" /* "hlsl" */
-        "movl $0x227f6c, (%esp)\n" /* "materials/shaders/" */
+        "movl $str_00227f64, 4(%esp)\n" /* "hlsl" */
+        "movl $str_00227f6c, (%esp)\n" /* "materials/shaders/" */
         "calll FS_ListFiles\n"
         "movl %eax, -0x50(%ebp)\n" /* shaderListRoot */
         "movl $0x14, 0x10(%esp)\n" /* line 3603 */
         "leal -0x20(%ebp), %eax\n" /* fileCountLib */
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x227f64, 4(%esp)\n" /* "hlsl" */
-        "movl $0x227f80, (%esp)\n" /* "materials/shaders/lib/" */
+        "movl $str_00227f64, 4(%esp)\n" /* "hlsl" */
+        "movl $str_00227f80, (%esp)\n" /* "materials/shaders/lib/" */
         "calll FS_ListFiles\n"
         "movl %eax, -0x4c(%ebp)\n" /* shaderListLib */
         "movl -0x1c(%ebp), %eax\n" /* line 3605 | fileCountRoot */
@@ -450,7 +450,7 @@ void Material_PreLoadAllShaderText(void)
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
         "movl %eax, -0x5c(%ebp)\n"
-        "movl %eax, 0xce7084\n"
+        "movl %eax, mtlLoadGlob+4\n"
         "movl -0x1c(%ebp), %edi\n" /* line 3607 | fileCountRoot, __last */
         /* { scope 2: __last, __val, __val */
         "testl %edi, %edi\n" /* line 3584 | __last */
@@ -813,13 +813,13 @@ void Material_PreLoadAllShaderText(void)
         "movl -0x4c(%ebp), %edx\n" /* line 3585 | shaderListLib */
         "movl (%edx, %esi, 4), %eax\n"
         "movl %ebx, %ecx\n"
-        "movl $0x227f98, %edx\n" /* "lib/" */
+        "movl $str_00227f98, %edx\n" /* "lib/" */
         "calll Material_PreLoadSingleShaderText\n"
         "addl $1, %esi\n" /* line 3584 | fileIndex */
         "addl $0xc, %ebx\n"
         "cmpl %esi, %edi\n" /* fileIndex, __last */
         "jne .Lf101c2c_0010200d\n"
-        "movl 0xce7084, %ebx\n"
+        "movl mtlLoadGlob+4, %ebx\n"
         "movl %ebx, -0x5c(%ebp)\n"
         "movl %ebx, %edx\n"
         "jmp .Lf101c2c_00101cd5\n"
@@ -833,14 +833,14 @@ void Material_PreLoadAllShaderText(void)
         "movl -0x50(%ebp), %edx\n" /* line 3585 | shaderListRoot */
         "movl (%edx, %esi, 4), %eax\n"
         "movl %ebx, %ecx\n"
-        "movl $0x2157b8, %edx\n"
+        "movl $str_002157b8, %edx\n"
         "calll Material_PreLoadSingleShaderText\n"
         "addl $1, %esi\n" /* line 3584 | fileIndex */
         "addl $0xc, %ebx\n"
         "cmpl %esi, %edi\n" /* fileIndex, __last */
         "jne .Lf101c2c_0010203d\n"
         "movl -0x1c(%ebp), %edi\n" /* fileCountRoot, __last */
-        "movl 0xce7084, %ebx\n"
+        "movl mtlLoadGlob+4, %ebx\n"
         "jmp .Lf101c2c_00101cbf\n"
         /* } scope */
         /* { scope 2: __last, __val, __val */
@@ -871,7 +871,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "movl %ecx, -0x2c(%ebp)\n"
         /* { scope 1: arrayStride */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1771 */
@@ -916,7 +916,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         ".Lf102076_001020ef:\n"
         "movl -0x20(%ebp), %eax\n" /* line 1841 | token */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2280b0, (%esp)\n" /* "unknown constant source '%s'
+        "movl $str_002280b0, (%esp)\n" /* "unknown constant source '%s'
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -944,7 +944,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         /* { scope 2 */
         /* { scope 3 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "movl -0x24(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -961,13 +961,13 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         ".Lf102076_00102169:\n"
         "leal -1(%ebx), %eax\n" /* line 1563 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228030, (%esp)\n" /* "array index must be in range [0, %i]
+        "movl $str_00228030, (%esp)\n" /* "array index must be in range [0, %i]
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102076_001020a4\n"
         ".Lf102076_00102181:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl -0x24(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1012,7 +1012,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "cmpb $0x5b, %dl\n" /* line 1821 */
         "je .Lf102076_001022ca\n"
         "movl %eax, 4(%esp)\n" /* line 1836 */
-        "movl $0x228084, (%esp)\n" /* "expected ';' or '[', found '%s' instead
+        "movl $str_00228084, (%esp)\n" /* "expected ';' or '[', found '%s' instead
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -1063,7 +1063,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "subl $1, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x227fe0, (%esp)\n" /* "index %i is not in the range [0, %i]
+        "movl $str_00227fe0, (%esp)\n" /* "index %i is not in the range [0, %i]
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102076_001020a4\n"
@@ -1080,7 +1080,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "movb %al, 6(%edx)\n"
         "movb $1, 7(%edx)\n" /* line 1831 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl -0x24(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1094,7 +1094,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "movl %edx, 8(%esp)\n"
         "movl (%esi), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x227fa0, (%esp)\n" /* "code constant '%s' has only %i members, but %i were requeste" */
+        "movl $str_00227fa0, (%esp)\n" /* "code constant '%s' has only %i members, but %i were requeste" */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102076_001020a4\n"
         /* } scope */
@@ -1115,7 +1115,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "cmpb $1, 5(%eax)\n"
         "jbe .Lf102076_001023d5\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21f88c, 4(%esp)\n" /* "," */
+        "movl $str_0021f88c, 4(%esp)\n" /* "," */
         "movl -0x24(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1132,14 +1132,14 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         "je .Lf102076_001023d5\n"
         "movl %eax, 8(%esp)\n" /* line 1751 */
         "movl %edx, 4(%esp)\n"
-        "movl $0x228008, (%esp)\n" /* "ending index %i should be %i instead
+        "movl $str_00228008, (%esp)\n" /* "ending index %i should be %i instead
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102076_001020a4\n"
         /* } scope */
         ".Lf102076_001023be:\n"
         "movl %eax, 4(%esp)\n" /* line 1827 */
-        "movl $0x228058, (%esp)\n" /* "row index %i should be in the range [0, 3]
+        "movl $str_00228058, (%esp)\n" /* "row index %i should be in the range [0, 3]
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -1147,7 +1147,7 @@ Bool Material_ParseCodeConstantSource_r(const char * *text, ShaderConstantRoutin
         /* { scope 2 */
         ".Lf102076_001023d5:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl -0x24(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1175,7 +1175,7 @@ Bool Material_ParseVector(int elemCount)
         "movl %ecx, %edi\n" /* vector */
         /* { scope 1 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x2221e8, 4(%esp)\n" /* "(" */
+        "movl $str_002221e8, 4(%esp)\n" /* "(" */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1674 */
@@ -1200,7 +1200,7 @@ Bool Material_ParseVector(int elemCount)
         "je .Lf102400_0010247a\n"
         ".Lf102400_0010244b:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21f88c, 4(%esp)\n" /* "," */
+        "movl $str_0021f88c, 4(%esp)\n" /* "," */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1683 */
@@ -1213,7 +1213,7 @@ Bool Material_ParseVector(int elemCount)
         "jne .Lf102400_0010244b\n"
         ".Lf102400_0010247a:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222224, 4(%esp)\n" /* ")" */
+        "movl $str_00222224, 4(%esp)\n" /* ")" */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1686 */
@@ -1244,7 +1244,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl %edx, -0x34(%ebp)\n"
         "movl %ecx, %esi\n" /* texStateName */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x2280d0, 4(%esp)\n" /* "stage" */
+        "movl $str_002280d0, 4(%esp)\n" /* "stage" */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 976 */
@@ -1261,7 +1261,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         /* { scope 1: argCount */
         ".Lf1024a2_001024d8:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 958 */
@@ -1271,7 +1271,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "testb %al, %al\n" /* line 2661 */
         "je .Lf1024a2_001024ce\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2663 */
@@ -1283,7 +1283,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "testl %eax, %eax\n" /* line 2665 */
         "je .Lf1024a2_001024ce\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222904, 4(%esp)\n" /* "=" */
+        "movl $str_00222904, 4(%esp)\n" /* "=" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2667 */
@@ -1312,16 +1312,16 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl %edi, %edx\n" /* line 2594 | fnIndex */
         "shll $4, %edx\n"
         "movl 8(%ebp), %ecx\n" /* validTest */
-        "testl %ecx, 0x33152c(%edx)\n"
+        "testl %ecx, s_textureFuncsDx7+12(%edx)\n"
         "jne .Lf1024a2_00102661\n"
-        "movl $0x21a8d8, %eax\n" /* line 2596 */
+        "movl $str_0021a8d8, %eax\n" /* line 2596 */
         "subl $1, %ecx\n"
-        "movl $0x2278dc, %edx\n" /* "color" */
+        "movl $str_002278dc, %edx\n" /* "color" */
         "cmovnel %edx, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x30(%ebp), %eax\n" /* token */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2280f8, (%esp)\n" /* "%s is only valid for %s" */
+        "movl $str_002280f8, (%esp)\n" /* "%s is only valid for %s" */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1024a2_001024ce\n"
         /* } scope */
@@ -1334,14 +1334,14 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl %eax, 8(%esp)\n" /* line 964 */
         "movl -0x34(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2280d8, (%esp)\n" /* "expected %i, found %i instead
+        "movl $str_002280d8, (%esp)\n" /* "expected %i, found %i instead
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
         "jmp .Lf1024a2_001024f8\n"
         ".Lf1024a2_001025f1:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n"
@@ -1352,20 +1352,20 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         ".Lf1024a2_00102613:\n"
         "movl -0x30(%ebp), %eax\n" /* line 2606 | token */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2281bc, (%esp)\n" /* "expected a texture function, found '%s' instead.
+        "movl $str_002281bc, (%esp)\n" /* "expected a texture function, found '%s' instead.
 " */
         "calll Com_ScriptWarning\n"
         "movl -0x30(%ebp), %edx\n" /* line 2607 | token */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2281f0, (%esp)\n" /* "Valid texture functions:.
+        "movl $str_002281f0, (%esp)\n" /* "Valid texture functions:.
 " */
         "calll Com_Printf\n"
         "movl $s_textureFuncsDx7, %esi\n" /* matchIndex */
-        "movl $0x331670, %ebx\n"
+        "movl $s_textureFuncsDx7+336, %ebx\n"
         ".Lf1024a2_00102643:\n"
         "movl (%esi), %eax\n" /* line 2609 | matchIndex */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2182fc, (%esp)\n" /* "  %s
+        "movl $str_002182fc, (%esp)\n" /* "  %s
 " */
         "calll Com_Printf\n"
         "addl $0x10, %esi\n" /* matchIndex */
@@ -1373,15 +1373,15 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "jne .Lf1024a2_00102643\n"
         "jmp .Lf1024a2_001024ce\n"
         ".Lf1024a2_00102661:\n"
-        "movl 0x331524(%edx), %eax\n" /* line 2599 */
+        "movl s_textureFuncsDx7+4(%edx), %eax\n" /* line 2599 */
         "movl 0xc(%ebp), %ecx\n" /* texStageBits */
         "movl %eax, (%ecx)\n"
-        "movl 0x331528(%edx), %edx\n" /* line 2600 */
+        "movl s_textureFuncsDx7+8(%edx), %edx\n" /* line 2600 */
         "movl %edx, -0x2c(%ebp)\n" /* argCount */
         /* { scope 2: argIndex, texArg */
         /* { scope 3: token */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x2221e8, 4(%esp)\n" /* "(" */
+        "movl $str_002221e8, 4(%esp)\n" /* "(" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2561 */
@@ -1401,7 +1401,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl $0xb, %ecx\n" /* line 2506 */
         "cld\n"
         "movl %eax, %esi\n"
-        "movl $0x228110, %edi\n" /* "complement" */
+        "movl $str_00228110, %edi\n" /* "complement" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lf1024a2_001026e0\n"
@@ -1419,7 +1419,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl $0xb, %ecx\n" /* line 2506 */
         "cld\n"
         "movl %eax, %esi\n"
-        "movl $0x228110, %edi\n" /* "complement" */
+        "movl $str_00228110, %edi\n" /* "complement" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lf1024a2_00102713\n"
@@ -1433,7 +1433,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl $0xf, %ecx\n" /* line 2508 */
         "cld\n"
         "movl -0x20(%ebp), %esi\n" /* token */
-        "movl $0x22811c, %edi\n" /* "alphaReplicate" */
+        "movl $str_0022811c, %edi\n" /* "alphaReplicate" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lf1024a2_00102738\n"
@@ -1449,7 +1449,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl $7, %ecx\n" /* line 2514 */
         "cld\n"
         "movl -0x20(%ebp), %esi\n" /* token */
-        "movl $0x22812c, %edi\n" /* "vertex" */
+        "movl $str_0022812c, %edi\n" /* "vertex" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lf1024a2_00102766\n"
@@ -1460,13 +1460,13 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "testl %eax, %eax\n"
         "jne .Lf1024a2_001027e1\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2516 */
         "je .Lf1024a2_001024ce\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x2278dc, 4(%esp)\n" /* "color" */
+        "movl $str_002278dc, 4(%esp)\n" /* "color" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2518 */
@@ -1490,7 +1490,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "jmp .Lf1024a2_001026ae\n"
         /* { scope 4 */
         ".Lf1024a2_001027e1:\n"
-        "movl $0x228134, %edi\n" /* line 2524 */
+        "movl $str_00228134, %edi\n" /* line 2524 */
         "movl $8, %ecx\n"
         "cld\n"
         "movl -0x20(%ebp), %esi\n" /* token */
@@ -1505,7 +1505,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "jne .Lf1024a2_0010289c\n"
         /* { scope 5 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 958 */
@@ -1517,7 +1517,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl %eax, 8(%esp)\n" /* line 964 */
         "movl -0x34(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2280d8, (%esp)\n" /* "expected %i, found %i instead
+        "movl $str_002280d8, (%esp)\n" /* "expected %i, found %i instead
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1024a2_001024ce\n"
@@ -1525,7 +1525,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         /* } scope */
         ".Lf1024a2_00102857:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222224, 4(%esp)\n" /* ")" */
+        "movl $str_00222224, 4(%esp)\n" /* ")" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         /* } scope */
@@ -1534,7 +1534,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "je .Lf1024a2_001024ce\n"
         /* } scope */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2671 */
@@ -1546,7 +1546,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         /* { scope 3: token */
         /* { scope 4 */
         ".Lf1024a2_0010289c:\n"
-        "movl $0x2280d0, %edi\n" /* line 2532 */
+        "movl $str_002280d0, %edi\n" /* line 2532 */
         "movl $6, %ecx\n"
         "cld\n"
         "movl -0x20(%ebp), %esi\n" /* token */
@@ -1562,13 +1562,13 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "movl -0x34(%ebp), %edi\n" /* line 2534 */
         "testl %edi, %edi\n"
         "jne .Lf1024a2_00102906\n"
-        "movl $0x22813c, (%esp)\n" /* line 2536 */
+        "movl $str_0022813c, (%esp)\n" /* line 2536 */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1024a2_001024ce\n"
         /* } scope */
         ".Lf1024a2_001028dd:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21f88c, 4(%esp)\n" /* "," */
+        "movl $str_0021f88c, 4(%esp)\n" /* "," */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2568 */
@@ -1582,7 +1582,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         /* { scope 5 */
         /* { scope 6 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 958 */
@@ -1593,14 +1593,14 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         "je .Lf1024a2_001029a8\n"
         "movl %eax, 8(%esp)\n" /* line 964 */
         "movl %esi, 4(%esp)\n"
-        "movl $0x2280d8, (%esp)\n" /* "expected %i, found %i instead
+        "movl $str_002280d8, (%esp)\n" /* "expected %i, found %i instead
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1024a2_001024ce\n"
         /* } scope */
         /* } scope */
         ".Lf1024a2_00102951:\n"
-        "movl $0x228188, %edi\n" /* line 2545 */
+        "movl $str_00228188, %edi\n" /* line 2545 */
         "movl $9, %ecx\n"
         "cld\n"
         "movl -0x20(%ebp), %esi\n" /* token, matchIndex */
@@ -1618,7 +1618,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         /* { scope 5 */
         ".Lf1024a2_0010297f:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         /* } scope */
@@ -1630,7 +1630,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         /* { scope 6 */
         ".Lf1024a2_001029a8:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl %ebx, (%esp)\n"
         "calll Com_MatchToken\n"
         /* } scope */
@@ -1642,7 +1642,7 @@ Bool Material_LoadPassTextureStateDx7(int samplerIndex, MtlTextureFunctionValidD
         ".Lf1024a2_001029d1:\n"
         "movl -0x20(%ebp), %edx\n" /* line 2551 | token */
         "movl %edx, 4(%esp)\n"
-        "movl $0x228194, (%esp)\n" /* "unknown texture function argument '%s'
+        "movl $str_00228194, (%esp)\n" /* "unknown texture function argument '%s'
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1024a2_001024ce\n"
@@ -1666,7 +1666,7 @@ Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamp
         "movl %ecx, -0x2c(%ebp)\n"
         /* { scope 1: arrayStride */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1583 */
@@ -1711,7 +1711,7 @@ Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamp
         ".Lf1029ea_00102a63:\n"
         "movl -0x20(%ebp), %eax\n" /* line 1605 | token */
         "movl %eax, 4(%esp)\n"
-        "movl $0x22820c, (%esp)\n" /* "unknown sampler source '%s'
+        "movl $str_0022820c, (%esp)\n" /* "unknown sampler source '%s'
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -1747,7 +1747,7 @@ Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamp
         /* { scope 2 */
         /* { scope 3 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "movl -0x24(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1764,7 +1764,7 @@ Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamp
         ".Lf1029ea_00102aee:\n"
         "leal -1(%ebx), %eax\n" /* line 1563 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228030, (%esp)\n" /* "array index must be in range [0, %i]
+        "movl $str_00228030, (%esp)\n" /* "array index must be in range [0, %i]
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1029ea_00102a18\n"
@@ -1782,7 +1782,7 @@ Bool Material_CodeSamplerSource_r(const char * *text, int offset, const CodeSamp
         /* { scope 3 */
         ".Lf1029ea_00102b1f:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl -0x24(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1813,7 +1813,7 @@ Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg
         "movl %eax, (%esp)\n" /* line 1614 */
         "calll Com_Parse\n"
         "movl %eax, -0x2c(%ebp)\n" /* token */
-        "movl $0x22822c, %edi\n" /* line 1615 */
+        "movl $str_0022822c, %edi\n" /* line 1615 */
         "movl $8, %ebx\n"
         "cld\n"
         "movl %eax, %esi\n"
@@ -1844,7 +1844,7 @@ Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg
         "retl\n"
         /* { scope 1 */
         ".Lf102b4e_00102bb1:\n"
-        "movl $0x228234, %edi\n" /* line 1621 */
+        "movl $str_00228234, %edi\n" /* line 1621 */
         "movl $9, %ebx\n"
         "cld\n"
         "movl -0x2c(%ebp), %esi\n" /* token */
@@ -1860,7 +1860,7 @@ Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg
         "je .Lf102b4e_00102bf5\n"
         "movl -0x2c(%ebp), %ecx\n" /* line 1631 | token */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x228240, (%esp)\n" /* "expected 'sampler' or 'material', found '%s' instead
+        "movl $str_00228240, (%esp)\n" /* "expected 'sampler' or 'material', found '%s' instead
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -1874,7 +1874,7 @@ Bool Material_ParseSamplerSource(const char * *text, MaterialShaderArgument *arg
         /* { scope 1 */
         ".Lf102b4e_00102bf5:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl -0x1c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1957,7 +1957,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl %ecx, (%esp)\n"
         "calll memset\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e50c, 4(%esp)\n" /* "{" */
+        "movl $str_0021e50c, 4(%esp)\n" /* "{" */
         "movl -0x178(%ebp), %edi\n"
         "movl %edi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -1984,14 +1984,14 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl 0xc(%ebp), %edi\n" /* line 2338 | args, name */
         "movl $0, (%edi)\n" /* name */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e50c, 4(%esp)\n" /* "{" */
+        "movl $str_0021e50c, 4(%esp)\n" /* "{" */
         "movl -0x178(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2339 */
         "je .Lf102c46_00102d1c\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e508, 4(%esp)\n" /* "}" */
+        "movl $str_0021e508, 4(%esp)\n" /* "}" */
         "movl -0x178(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2007,7 +2007,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "calll R_ErrorDescription\n"
         "movl %ebx, 8(%esp)\n" /* success */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228278, (%esp)\n" /* "Couldn't get the constant table: %s (%08x)
+        "movl $str_00228278, (%esp)\n" /* "Couldn't get the constant table: %s (%08x)
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -2056,23 +2056,23 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl -0x15c(%ebp), %edx\n" /* line 1549 | shaderName */
         "movl %edx, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
-        "movl $0x2282bc, (%esp)\n" /* "*WARNING*: constant '%s' is not used by shader '%s'
+        "movl $str_002282bc, (%esp)\n" /* "*WARNING*: constant '%s' is not used by shader '%s'
 " */
         "calll printf\n"
         /* } scope */
         ".Lf102c46_00102e40:\n"
-        "movl $0x2282f4, (%esp)\n" /* line 2084 */
+        "movl $str_002282f4, (%esp)\n" /* line 2084 */
         "calll Com_SetScriptWarningPrefix\n"
         "movl -0x15c(%ebp), %ecx\n" /* line 2085 | shaderName */
         "movl %ecx, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* name */
-        "movl $0x228300, (%esp)\n" /* "'%s' is not defined by %s
+        "movl $str_00228300, (%esp)\n" /* "'%s' is not defined by %s
 " */
         "calll Com_ScriptWarning\n"
-        "movl $0x22831c, (%esp)\n" /* line 2086 */
+        "movl $str_0022831c, (%esp)\n" /* line 2086 */
         "calll Com_SetScriptWarningPrefix\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222904, 4(%esp)\n" /* "=" */
+        "movl $str_00222904, 4(%esp)\n" /* "=" */
         "movl -0x178(%ebp), %edi\n"
         "movl %edi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2106,7 +2106,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movb $1, -0x27(%ebp)\n" /* line 1997 */
         ".Lf102c46_00102f01:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222904, 4(%esp)\n" /* "=" */
+        "movl $str_00222904, 4(%esp)\n" /* "=" */
         "movl -0x178(%ebp), %edi\n"
         "movl %edi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2122,7 +2122,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "je .Lf102c46_001032ca\n"
         ".Lf102c46_00102f43:\n"
         "movl %edx, 4(%esp)\n" /* line 2015 */
-        "movl $0x2284a0, (%esp)\n" /* "unknown constant type '%i'
+        "movl $str_002284a0, (%esp)\n" /* "unknown constant type '%i'
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102c46_00102d1c\n"
@@ -2139,7 +2139,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "testb %al, %al\n" /* line 2102 */
         "je .Lf102c46_00102d1c\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "movl -0x178(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2152,7 +2152,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "addl $1, -0x168(%ebp)\n" /* line 2115 | usedCount */
         "jmp .Lf102c46_00102dbe\n"
         ".Lf102c46_00102fbc:\n"
-        "movl $0x2282a4, (%esp)\n" /* line 2075 */
+        "movl $str_002282a4, (%esp)\n" /* line 2075 */
         "calll Com_ScriptWarning\n"
         "xorl %ebx, %ebx\n" /* sourceIndex */
         "jmp .Lf102c46_00102d1e\n"
@@ -2223,7 +2223,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl s_defaultCodeSamplers, %edx\n" /* line 1644 */
         "testl %edx, %edx\n"
         "je .Lf102c46_00103206\n"
-        "movl $0x332054, %ebx\n"
+        "movl $s_defaultCodeSamplers+20, %ebx\n"
         "xorl %esi, %esi\n" /* sourceIndex */
         "movl $s_defaultCodeSamplers, %eax\n"
         "xorl %edi, %edi\n"
@@ -2250,7 +2250,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "testl %eax, %eax\n"
         "jne .Lf102c46_001030f1\n"
         "leal (%edi, %edi, 4), %eax\n" /* line 1653 */
-        "movl 0x332044(, %eax, 4), %eax\n"
+        "movl s_defaultCodeSamplers+4(, %eax, 4), %eax\n"
         "movl -0x16c(%ebp), %ecx\n"
         "movl %eax, 4(%ecx)\n"
         ".Lf102c46_0010313c:\n"
@@ -2289,7 +2289,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl s_codeConsts, %eax\n" /* line 1895 */
         "testl %eax, %eax\n"
         "je .Lf102c46_001031d3\n"
-        "movl $0x331694, %ebx\n" /* sourceIndex */
+        "movl $s_codeConsts+20, %ebx\n" /* sourceIndex */
         "xorl %esi, %esi\n" /* sourceIndex */
         "xorl %edi, %edi\n"
         "movl $s_codeConsts, %edx\n"
@@ -2311,7 +2311,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl s_defaultCodeConsts, %edx\n"
         "testl %edx, %edx\n"
         "je .Lf102c46_00103206\n"
-        "movl $0x331e94, %edi\n"
+        "movl $s_defaultCodeConsts+20, %edi\n"
         "xorl %ebx, %ebx\n" /* sourceIndex */
         "xorl %esi, %esi\n" /* sourceIndex */
         "movl $s_defaultCodeConsts, %eax\n"
@@ -2340,7 +2340,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "je .Lf102c46_00102d84\n"
         "movl -0x15c(%ebp), %eax\n" /* line 2138 | shaderName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2284bc, (%esp)\n" /* "Undefined shader constant(s) in %s
+        "movl $str_002284bc, (%esp)\n" /* "Undefined shader constant(s) in %s
 " */
         "calll Com_ScriptWarning\n"
         "movl -0x170(%ebp), %ecx\n" /* line 2139 | constantTable */
@@ -2361,7 +2361,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl -0x170(%ebp), %eax\n" /* line 2142 | constantTable */
         "addl (%ebx), %eax\n" /* sourceIndex */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2182fc, (%esp)\n" /* "  %s
+        "movl $str_002182fc, (%esp)\n" /* "  %s
 " */
         "calll Com_Printf\n"
         "movl -0x170(%ebp), %edi\n" /* constantTable, name */
@@ -2383,7 +2383,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         ".Lf102c46_001032ad:\n"
         "subl -0x168(%ebp), %edx\n" /* line 2144 | usedCount */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2284e0, (%esp)\n" /* "%i constant(s) were undefined
+        "movl $str_002284e0, (%esp)\n" /* "%i constant(s) were undefined
 " */
         "calll Com_Printf\n"
         "xorl %ebx, %ebx\n" /* sourceIndex */
@@ -2401,7 +2401,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl %eax, -0x38(%ebp)\n" /* line 1697 */
         "movl %eax, -0x34(%ebp)\n" /* line 1698 */
         "movl $0x3f800000, -0x30(%ebp)\n" /* line 1699 */
-        "movl $0x2283f4, %ebx\n" /* line 1701 */
+        "movl $str_002283f4, %ebx\n" /* line 1701 */
         "movl $7, -0x180(%ebp)\n"
         "cld\n"
         "movl -0x1a0(%ebp), %esi\n" /* token, sourceIndex */
@@ -2424,7 +2424,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         ".Lf102c46_00103337:\n"
         "cmpb $1, -0x27(%ebp)\n" /* line 1854 */
         "jbe .Lf102c46_0010353b\n"
-        "movl $0x228414, (%esp)\n" /* line 1856 */
+        "movl $str_00228414, (%esp)\n" /* line 1856 */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
         "jmp .Lf102c46_00102f72\n"
@@ -2443,7 +2443,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "subl $1, %eax\n" /* line 1955 */
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x228368, (%esp)\n" /* "row index '%i' is not in the range [0, %i]
+        "movl $str_00228368, (%esp)\n" /* "row index '%i' is not in the range [0, %i]
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102c46_00102d1c\n"
@@ -2451,7 +2451,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         /* { scope 4: token */
         /* { scope 5 */
         ".Lf102c46_0010338f:\n"
-        "movl $0x2283fc, %ebx\n" /* line 1703 */
+        "movl $str_002283fc, %ebx\n" /* line 1703 */
         "movl $7, -0x184(%ebp)\n"
         "cld\n"
         "movl -0x1a0(%ebp), %esi\n" /* token, sourceIndex */
@@ -2490,7 +2490,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "cmpb $0x2c, %dl\n" /* line 1965 */
         "je .Lf102c46_00103564\n"
         "movl %eax, 4(%esp)\n" /* line 1967 */
-        "movl $0x228394, (%esp)\n" /* "expected ',' or ']', found '%s' instead
+        "movl $str_00228394, (%esp)\n" /* "expected ',' or ']', found '%s' instead
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102c46_00102d1c\n"
@@ -2500,7 +2500,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl -0x15c(%ebp), %eax\n" /* line 2094 | shaderName */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* name */
-        "movl $0x228328, (%esp)\n" /* "shader constant '%s' defined more than once for shader '%s'
+        "movl $str_00228328, (%esp)\n" /* "shader constant '%s' defined more than once for shader '%s'
 " */
         "calll Com_ScriptWarning\n"
         "xorl %ebx, %ebx\n" /* sourceIndex */
@@ -2514,7 +2514,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "testl %eax, %eax\n"
         "jne .Lf102c46_001031c3\n"
         "leal (%edi, %edi, 4), %eax\n" /* line 1902 */
-        "movzbl 0x331684(, %eax, 4), %ecx\n"
+        "movzbl s_codeConsts+4(, %eax, 4), %ecx\n"
         "cmpl $0xba, %ecx\n" /* line 1903 */
         "jg .Lf102c46_001034c2\n"
         "movl -0x16c(%ebp), %eax\n" /* line 1905 */
@@ -2534,7 +2534,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "testl %eax, %eax\n"
         "jne .Lf102c46_001031f6\n"
         "leal (%esi, %esi, 4), %eax\n" /* line 1902 | sourceIndex */
-        "movzbl 0x331e84(, %eax, 4), %ecx\n"
+        "movzbl s_defaultCodeConsts+4(, %eax, 4), %ecx\n"
         "cmpl $0xba, %ecx\n" /* line 1903 */
         "jle .Lf102c46_001035ff\n"
         ".Lf102c46_001034c2:\n"
@@ -2555,7 +2555,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         /* { scope 4: token */
         /* { scope 5 */
         ".Lf102c46_001034ee:\n"
-        "movl $0x228404, %ebx\n" /* line 1705 */
+        "movl $str_00228404, %ebx\n" /* line 1705 */
         "movl $7, -0x188(%ebp)\n"
         "cld\n"
         "movl -0x1a0(%ebp), %esi\n" /* token, sourceIndex */
@@ -2608,7 +2608,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "movl %eax, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* sourceIndex */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x2283c0, (%esp)\n" /* "end row index '%i' is not in the range [%i, %i]
+        "movl $str_002283c0, (%esp)\n" /* "end row index '%i' is not in the range [%i, %i]
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf102c46_00102d1c\n"
@@ -2616,7 +2616,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         /* { scope 4: token */
         /* { scope 5 */
         ".Lf102c46_001035b6:\n"
-        "movl $0x22840c, %ebx\n" /* line 1707 */
+        "movl $str_0022840c, %ebx\n" /* line 1707 */
         "movl $7, -0x18c(%ebp)\n"
         "cld\n"
         "movl -0x1a0(%ebp), %esi\n" /* token, sourceIndex */
@@ -2651,7 +2651,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         /* { scope 3: literal */
         /* { scope 4: token */
         ".Lf102c46_00103619:\n"
-        "movl $0x228188, %ebx\n" /* line 1864 */
+        "movl $str_00228188, %ebx\n" /* line 1864 */
         "movl $9, -0x190(%ebp)\n"
         "cld\n"
         "movl -0x1a0(%ebp), %esi\n" /* token, sourceIndex */
@@ -2683,7 +2683,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "addb $1, %al\n"
         "movb %al, -0x27(%ebp)\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "movl -0x178(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2696,7 +2696,7 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "jmp .Lf102c46_00103592\n"
         /* { scope 4: token */
         ".Lf102c46_001036b4:\n"
-        "movl $0x228234, %ebx\n" /* line 1870 */
+        "movl $str_00228234, %ebx\n" /* line 1870 */
         "movl $9, -0x194(%ebp)\n"
         "cld\n"
         "movl -0x1a0(%ebp), %esi\n" /* token, sourceIndex */
@@ -2713,21 +2713,21 @@ Bool Material_SetPassShaderArguments(const char * *text, short unsigned int *tec
         "jne .Lf102c46_00103701\n"
         "cmpb $1, -0x27(%ebp)\n" /* line 1872 */
         "jbe .Lf102c46_0010371e\n"
-        "movl $0x228454, (%esp)\n" /* line 1874 */
+        "movl $str_00228454, (%esp)\n" /* line 1874 */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
         "jmp .Lf102c46_00102f72\n"
         ".Lf102c46_00103701:\n"
         "movl -0x1a0(%ebp), %eax\n" /* line 1885 | token */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228240, (%esp)\n" /* "expected 'sampler' or 'material', found '%s' instead
+        "movl $str_00228240, (%esp)\n" /* "expected 'sampler' or 'material', found '%s' instead
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
         "jmp .Lf102c46_00102f72\n"
         ".Lf102c46_0010371e:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl -0x178(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2792,7 +2792,7 @@ MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialS
         /* { scope 1: bitNames */
         ".Lf103778_001037c3:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e870, 4(%esp)\n" /* "==" */
+        "movl $str_0021e870, 4(%esp)\n" /* "==" */
         "movl -0x28(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2811,7 +2811,7 @@ MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialS
         ".Lf103778_001037ef:\n"
         "movl %edi, %eax\n" /* line 1013 | sourceIndex */
         "shll $4, %eax\n"
-        "movl 0x3310c4(%eax), %eax\n"
+        "movl s_stateMapSrcBitGroup+4(%eax), %eax\n"
         "movl %eax, -0x24(%ebp)\n" /* bitNames */
         /* { scope 2: token */
         /* { scope 3 */
@@ -2826,7 +2826,7 @@ MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialS
         ".Lf103778_00103814:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 995 | token */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228500, (%esp)\n" /* "%s is not a valid state value
+        "movl $str_00228500, (%esp)\n" /* "%s is not a valid state value
 " */
         "calll Com_ScriptWarning\n"
         "movl $2, %eax\n"
@@ -2871,7 +2871,7 @@ MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialS
         "je .Lf103778_001037e2\n"
         "movl %edi, %eax\n" /* line 1020 | sourceIndex */
         "shll $4, %eax\n"
-        "movl 0x3310c8(%eax), %ecx\n"
+        "movl s_stateMapSrcBitGroup+8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf103778_001038c0\n"
         "leal s_stateMapSrcBitGroup(%eax), %edx\n"
@@ -2886,7 +2886,7 @@ MtlParseSuccess Material_ParseRuleSetConditionTest(const char * *text, MaterialS
         "leal (%ecx, %edi, 4), %eax\n" /* line 1022 */
         "movl -0x2c(%ebp), %esi\n" /* token */
         "movl (%esi, %ecx, 4), %edx\n" /* token */
-        "orl 0x3310c8(, %eax, 4), %edx\n"
+        "orl s_stateMapSrcBitGroup+8(, %eax, 4), %edx\n"
         "movl %edx, (%esi, %ecx, 4)\n" /* token */
         "movl 8(%esi, %ecx, 4), %eax\n" /* line 1023 | token */
         "orl 4(%ebx), %eax\n" /* bitName */
@@ -2935,7 +2935,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         /* { scope 1: rule, rule */
         ".Lf1038c4_00103907:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e50c, 4(%esp)\n" /* "{" */
+        "movl $str_0021e50c, 4(%esp)\n" /* "{" */
         "movl -0x205c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -2961,7 +2961,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "movl %ecx, -0x2050(%ebp)\n" /* rule */
         /* { scope 2 */
         /* { scope 3: bitNames */
-        "movl $0x220284, %edi\n" /* line 1044 | token */
+        "movl $str_00220284, %edi\n" /* line 1044 | token */
         "movl $8, %ecx\n"
         "cld\n"
         "movl %eax, %esi\n"
@@ -2994,7 +2994,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "movl %edx, -0x204c(%ebp)\n" /* rule */
         /* { scope 2 */
         /* { scope 3: bitNames */
-        "movl $0x2285f8, %edi\n" /* line 1083 | token */
+        "movl $str_002285f8, %edi\n" /* line 1083 | token */
         "movl $0xc, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* bitName */
@@ -3008,7 +3008,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "testl %eax, %eax\n"
         "jne .Lf1038c4_00103b8d\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "movl -0x205c(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -3031,7 +3031,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         /* { scope 3: bitNames */
         ".Lf1038c4_00103a7b:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222928, 4(%esp)\n" /* ":" */
+        "movl $str_00222928, 4(%esp)\n" /* ":" */
         "movl -0x205c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -3048,7 +3048,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "movl $0x100, 8(%esp)\n" /* line 1202 */
         "movl -0x2060(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x228604, (%esp)\n" /* "state %s has more than %i rules
+        "movl $str_00228604, (%esp)\n" /* "state %s has more than %i rules
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -3063,7 +3063,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "movl $2, %ebx\n" /* line 1054 | valueIndex */
         "cld\n"
         "movl %eax, %esi\n"
-        "movl $0x222928, %edi\n" /* token */
+        "movl $str_00222928, %edi\n" /* token */
         "movl %ebx, %ecx\n" /* valueIndex */
         "repe cmpsb %es:(%edi), (%esi)\n" /* token */
         "movl $0, %eax\n"
@@ -3074,7 +3074,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         ".Lf1038c4_00103b1a:\n"
         "testl %eax, %eax\n"
         "je .Lf1038c4_00103aa1\n"
-        "movl $0x216c3c, %edi\n" /* line 1056 | token */
+        "movl $str_00216c3c, %edi\n" /* line 1056 | token */
         "movb $3, %bl\n" /* valueIndex */
         "movl -0x206c(%ebp), %esi\n"
         "movl %ebx, %ecx\n" /* valueIndex */
@@ -3098,7 +3098,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "je .Lf1038c4_00103ae4\n"
         "subl $1, %eax\n" /* line 1062 */
         "jne .Lf1038c4_001038fa\n"
-        "movl $0x228584, (%esp)\n" /* line 1063 */
+        "movl $str_00228584, (%esp)\n" /* line 1063 */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
         "jmp .Lf1038c4_001038fc\n"
@@ -3144,7 +3144,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "jne .Lf1038c4_00103be3\n"
         ".Lf1038c4_00103c05:\n"
         "movl %edi, 4(%esp)\n" /* line 995 | token */
-        "movl $0x228500, (%esp)\n" /* "%s is not a valid state value
+        "movl $str_00228500, (%esp)\n" /* "%s is not a valid state value
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1038c4_001038fa\n"
@@ -3214,7 +3214,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "testl %ebx, %ebx\n" /* bitName */
         "je .Lf1038c4_00103e1b\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21f88c, 4(%esp)\n" /* "," */
+        "movl $str_0021f88c, 4(%esp)\n" /* "," */
         "movl -0x205c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -3237,7 +3237,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         ".Lf1038c4_00103d17:\n"
         "movl -0x206c(%ebp), %edx\n" /* line 1066 */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2285ac, (%esp)\n" /* "expected ':' or '&&', found '%s'
+        "movl $str_002285ac, (%esp)\n" /* "expected ':' or '&&', found '%s'
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -3253,7 +3253,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         "je .Lf1038c4_00103da3\n"
         "movl -0x2060(%ebp), %edx\n" /* line 1170 */
         "movl %edx, 4(%esp)\n"
-        "movl $0x228568, (%esp)\n" /* "missing value for state %s
+        "movl $str_00228568, (%esp)\n" /* "missing value for state %s
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -3261,7 +3261,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         ".Lf1038c4_00103d69:\n"
         "movl -0x2060(%ebp), %ecx\n" /* line 1188 */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x2285d0, (%esp)\n" /* "missing rule condition for state %s
+        "movl $str_002285d0, (%esp)\n" /* "missing rule condition for state %s
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -3269,7 +3269,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         ".Lf1038c4_00103d86:\n"
         "movl -0x2060(%ebp), %eax\n" /* line 1165 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228520, (%esp)\n" /* "no entries for state %s: you may want to do 'default: passth" */
+        "movl $str_00228520, (%esp)\n" /* "no entries for state %s: you may want to do 'default: passth" */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
         "jmp .Lf1038c4_001038fc\n"
@@ -3316,7 +3316,7 @@ Bool Material_ParseRuleSet(const char * *text, const char *ruleSetName, const Mt
         /* { scope 3: bitNames */
         ".Lf1038c4_00103e1b:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "movl -0x205c(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -3341,7 +3341,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "movl %edx, -0x80(%ebp)\n"
         /* { scope 1 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x228628, 4(%esp)\n" /* "stateMap" */
+        "movl $str_00228628, 4(%esp)\n" /* "stateMap" */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1375 */
@@ -3379,7 +3379,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "testl %edi, %edi\n" /* line 1384 | stateMap */
         "je .Lf103e44_00103e71\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1386 */
@@ -3394,7 +3394,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "retl\n"
         /* { scope 1 */
         ".Lf103e44_00103ed9:\n"
-        "movl $0x228634, (%esp)\n" /* line 1380 */
+        "movl $str_00228634, (%esp)\n" /* line 1380 */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -3410,7 +3410,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         ".Lf103e44_00103ef2:\n"
         "movl -0x7c(%ebp), %edx\n" /* line 1327 | token */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x228650, 8(%esp)\n" /* "materials/statemaps/%s.sm" */
+        "movl $str_00228650, 8(%esp)\n" /* "materials/statemaps/%s.sm" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x60(%ebp), %ebx\n" /* filename */
         "movl %ebx, (%esp)\n"
@@ -3425,7 +3425,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "movl %eax, -0x20(%ebp)\n" /* text */
         "movl %ebx, (%esp)\n" /* line 1336 */
         "calll Com_BeginParseSession\n"
-        "movl $0x22831c, (%esp)\n" /* line 1337 */
+        "movl $str_0022831c, (%esp)\n" /* line 1337 */
         "calll Com_SetScriptWarningPrefix\n"
         "movl $0, (%esp)\n" /* line 1338 */
         "calll Com_SetSpaceDelimited\n"
@@ -3450,7 +3450,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 4(%edi), %eax\n" /* line 1278 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstAlphaTestBitGroup, %ecx\n"
-        "movl $0x226ca8, %edx\n" /* "alphaTest" */
+        "movl $str_00226ca8, %edx\n" /* "alphaTest" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3475,7 +3475,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 8(%edi), %eax\n" /* line 1281 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstBlendFuncRgbBitGroup, %ecx\n"
-        "movl $0x22868c, %edx\n" /* "blendFunc" */
+        "movl $str_0022868c, %edx\n" /* "blendFunc" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3484,7 +3484,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "movl %eax, -0x78(%ebp)\n" /* ruleSet */
         /* { scope 4: ruleIndex */
         /* { scope 5 */
-        "movl 0x195eed0, %eax\n" /* line 1213 */
+        "movl imp_dx, %eax\n" /* line 1213 */
         "cmpb $0, 0x2d7c(%eax)\n"
         "je .Lf103e44_00104189\n"
         /* } scope */
@@ -3493,14 +3493,14 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0xc(%edi), %eax\n" /* line 1285 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstBlendFuncAlphaBitGroup, %ecx\n"
-        "movl $0x228698, %edx\n" /* "separateAlphaBlendFunc" */
+        "movl $str_00228698, %edx\n" /* "separateAlphaBlendFunc" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
         "je .Lf103e44_00103fa3\n"
         "movl 0xc(%edi), %ecx\n"
         /* { scope 4: ruleIndex */
-        "movl 0x195eed0, %eax\n" /* line 1240 */
+        "movl imp_dx, %eax\n" /* line 1240 */
         "cmpb $0, 0x2d7d(%eax)\n"
         "jne .Lf103e44_001041e6\n"
         "movl $1, (%ecx)\n" /* line 1242 */
@@ -3518,7 +3518,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x10(%edi), %eax\n" /* line 1289 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstCullFaceBitGroup, %ecx\n"
-        "movl $0x226bc0, %edx\n" /* "cullFace" */
+        "movl $str_00226bc0, %edx\n" /* "cullFace" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3526,7 +3526,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x14(%edi), %eax\n" /* line 1292 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstDepthTestBitGroup, %ecx\n"
-        "movl $0x226bb4, %edx\n" /* "depthTest" */
+        "movl $str_00226bb4, %edx\n" /* "depthTest" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3534,7 +3534,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x18(%edi), %eax\n" /* line 1295 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstDepthWriteBitGroup, %ecx\n"
-        "movl $0x226ba8, %edx\n" /* "depthWrite" */
+        "movl $str_00226ba8, %edx\n" /* "depthWrite" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3542,7 +3542,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x1c(%edi), %eax\n" /* line 1298 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstColorWriteBitGroup, %ecx\n"
-        "movl $0x226b9c, %edx\n" /* "colorWrite" */
+        "movl $str_00226b9c, %edx\n" /* "colorWrite" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3550,7 +3550,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x20(%edi), %eax\n" /* line 1301 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstFogBitGroup, %ecx\n"
-        "movl $0x226b98, %edx\n" /* "fog" */
+        "movl $str_00226b98, %edx\n" /* "fog" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3558,7 +3558,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x24(%edi), %eax\n" /* line 1304 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstPolygonOffsetBitGroup, %ecx\n"
-        "movl $0x226b84, %edx\n" /* "polygonOffset" */
+        "movl $str_00226b84, %edx\n" /* "polygonOffset" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3566,7 +3566,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x28(%edi), %eax\n" /* line 1307 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstStencilBitGroup, %ecx\n"
-        "movl $0x226ad4, %edx\n" /* "stencil" */
+        "movl $str_00226ad4, %edx\n" /* "stencil" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3574,7 +3574,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "leal 0x2c(%edi), %eax\n" /* line 1310 */
         "movl %eax, (%esp)\n"
         "movl $s_stateMapDstWireframeBitGroup, %ecx\n"
-        "movl $0x226ab8, %edx\n" /* "wireframe" */
+        "movl $str_00226ab8, %edx\n" /* "wireframe" */
         "leal -0x20(%ebp), %eax\n" /* text */
         "calll Material_ParseRuleSet\n"
         "testb %al, %al\n"
@@ -3582,7 +3582,7 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "jmp .Lf103e44_00103fa3\n"
         ".Lf103e44_00104174:\n"
         "movl %ebx, 4(%esp)\n" /* line 1331 */
-        "movl $0x22866c, (%esp)\n" /* "Couldn't open statemap '%s'
+        "movl $str_0022866c, (%esp)\n" /* "Couldn't open statemap '%s'
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf103e44_00103ea5\n"
@@ -3639,13 +3639,13 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "movl 0x14(%edx), %edx\n" /* line 1263 */
         "movl %edx, %eax\n"
         "andl $0x7000000, %eax\n"
-        "cmpl $0x1000000, %eax\n"
+        "cmpl $g_effectVisArray+4352, %eax\n"
         "jbe .Lf103e44_00104245\n"
         "orl $0x7ff0000, %ebx\n" /* line 1266 */
         "movl -0x6c(%ebp), %eax\n"
         "movl %ebx, 0x1c(%eax)\n"
         "andl $0xf800ffff, %edx\n" /* line 1270 */
-        "orl $0x1110000, %edx\n"
+        "orl $scrVarGlob+798976, %edx\n"
         "movl %edx, 0x14(%eax)\n"
         ".Lf103e44_00104245:\n"
         "addl $1, -0x70(%ebp)\n" /* line 1258 | ruleIndex */
@@ -3675,8 +3675,8 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "calll Com_ParseFloat\n"
         "fstps -0xcc(%ebp)\n"
         "movss -0xcc(%ebp), %xmm0\n"
-        "mulss 0x2ed6b4, %xmm0\n" /* line 428 | 10.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed6b4, %xmm0\n" /* line 428 | 10.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc8(%ebp)\n"
@@ -3713,9 +3713,9 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         /* { scope 2: filename, file, fileSize, target, ... */
         /* { scope 3: filename */
         ".Lf10425a_00104304:\n"
-        "movl $0x330788, -0x44(%ebp)\n" /* line 861 | include */
-        "movl $0x2286b0, -0x68(%ebp)\n" /* line 2177 | defines */
-        "movl $0x2157b8, -0x64(%ebp)\n"
+        "movl $__ZTV12IncludeClass+8, -0x44(%ebp)\n" /* line 861 | include */
+        "movl $str_002286b0, -0x68(%ebp)\n" /* line 2177 | defines */
+        "movl $str_002157b8, -0x64(%ebp)\n"
         "movl $0, -0x60(%ebp)\n"
         "movl $0, -0x5c(%ebp)\n"
         "movl -0xc4(%ebp), %ebx\n" /* line 2179 | mid */
@@ -3734,16 +3734,16 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "subl %eax, %ecx\n"
         "movl %ecx, 0x10(%esp)\n"
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2286b4, 8(%esp)\n" /* "vs_%i_%i" */
+        "movl $str_002286b4, 8(%esp)\n" /* "vs_%i_%i" */
         "movl $0x10, 4(%esp)\n"
         "leal -0x58(%ebp), %eax\n" /* target */
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
-        "movl $0x2286c0, -0xb8(%ebp)\n" /* entryPoint */
+        "movl $str_002286c0, -0xb8(%ebp)\n" /* entryPoint */
         ".Lf10425a_0010438a:\n"
         "movl -0xb4(%ebp), %edx\n" /* line 2191 | filename */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2286dc, 8(%esp)\n" /* "materials/shaders/%s" */
+        "movl $str_002286dc, 8(%esp)\n" /* "materials/shaders/%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0xa8(%ebp), %ecx\n" /* filename */
         "movl %ecx, (%esp)\n"
@@ -3758,7 +3758,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         ".Lf10425a_001043bd:\n"
         "leal -0xa8(%ebp), %edx\n" /* line 2194 | filename */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2286f4, (%esp)\n" /* "Shader '%s' wasn't preloaded
+        "movl $str_002286f4, (%esp)\n" /* "Shader '%s' wasn't preloaded
 " */
         "calll Com_ScriptWarning\n"
         "xorl %edi, %edi\n" /* top */
@@ -3789,12 +3789,12 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "subl %eax, %ecx\n"
         "movl %ecx, 0x10(%esp)\n"
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2286c8, 8(%esp)\n" /* "ps_%i_%i" */
+        "movl $str_002286c8, 8(%esp)\n" /* "ps_%i_%i" */
         "movl $0x10, 4(%esp)\n"
         "leal -0x58(%ebp), %eax\n" /* target */
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
-        "movl $0x2286d4, -0xb8(%ebp)\n" /* entryPoint */
+        "movl $str_002286d4, -0xb8(%ebp)\n" /* entryPoint */
         "jmp .Lf10425a_0010438a\n"
         /* { scope 4: bot */
         /* { scope 5 */
@@ -3814,7 +3814,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "leal (%ebx, %ebx, 2), %eax\n" /* line 880 | mid */
         "leal (, %eax, 4), %esi\n"
         "movl %esi, %eax\n"
-        "addl 0xce7084, %eax\n"
+        "addl mtlLoadGlob+4, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl -0xb4(%ebp), %eax\n" /* filename */
@@ -3827,7 +3827,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "jmp .Lf10425a_00104451\n"
         ".Lf10425a_00104499:\n"
         "movl %esi, %eax\n" /* line 883 */
-        "addl 0xce7084, %eax\n"
+        "addl mtlLoadGlob+4, %eax\n"
         "movl 8(%eax), %ecx\n"
         "movl %ecx, -0xbc(%ebp)\n" /* fileSize */
         "movl 4(%eax), %eax\n" /* line 884 */
@@ -3846,14 +3846,14 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "jne .Lf10425a_0010474e\n"
         "leal -0x21(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x228714, 4(%esp)\n" /* ".vs" */
+        "movl $str_00228714, 4(%esp)\n" /* ".vs" */
         "leal -0x34(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         ".Lf10425a_001044f4:\n"
         "leal -0x1f(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2172a8, 4(%esp)\n" /* ".hlsl" */
+        "movl $str_002172a8, 4(%esp)\n" /* ".hlsl" */
         "leal -0x30(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3863,7 +3863,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "movl -0xc(%eax), %ebx\n"
         "leal -0x1d(%ebp), %eax\n" /* line 2202 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2172a8, 4(%esp)\n" /* ".hlsl" */
+        "movl $str_002172a8, 4(%esp)\n" /* ".hlsl" */
         "leal -0x2c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3928,7 +3928,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "movl %eax, 8(%esp)\n"
         "leal -0xa8(%ebp), %ecx\n" /* filename */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x22871c, (%esp)\n" /* "compiler message(s) for %s:
+        "movl $str_0022871c, (%esp)\n" /* "compiler message(s) for %s:
 %s
 " */
         "calll Com_Printf\n"
@@ -3987,7 +3987,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "movb %dl, 0xb(%edi)\n" /* top */
         "cmpb $0, -0xc4(%ebp)\n" /* line 2256 */
         "jne .Lf10425a_0010476d\n"
-        "movl 0x195eed0, %eax\n" /* line 2258 */
+        "movl imp_dx, %eax\n" /* line 2258 */
         "movl 8(%eax), %ecx\n"
         "movl (%ecx), %eax\n"
         "movl 0x16c(%eax), %ebx\n" /* mid */
@@ -4027,13 +4027,13 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         ".Lf10425a_0010474e:\n"
         "leal -0x19(%ebp), %eax\n" /* line 2202 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x228718, 4(%esp)\n" /* ".ps" */
+        "movl $str_00228718, 4(%esp)\n" /* ".ps" */
         "leal -0x34(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "jmp .Lf10425a_001044f4\n"
         ".Lf10425a_0010476d:\n"
-        "movl 0x195eed0, %eax\n" /* line 2263 */
+        "movl imp_dx, %eax\n" /* line 2263 */
         "movl 8(%eax), %ecx\n"
         "movl (%ecx), %eax\n"
         "movl 0x1a8(%eax), %ebx\n" /* mid */
@@ -4041,7 +4041,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         ".Lf10425a_00104782:\n"
         "leal -0xa8(%ebp), %edx\n" /* line 2227 | filename */
         "movl %edx, 4(%esp)\n"
-        "movl $0x228758, (%esp)\n" /* "%s compilation failed - NULL shader
+        "movl $str_00228758, (%esp)\n" /* "%s compilation failed - NULL shader
 " */
         "calll Com_ScriptWarning\n"
         "xorl %edi, %edi\n" /* line 472 */
@@ -4056,7 +4056,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "movl %eax, 8(%esp)\n"
         "leal -0xa8(%ebp), %edx\n" /* filename */
         "movl %edx, 4(%esp)\n"
-        "movl $0x228780, (%esp)\n" /* "shader creation failed for %s %s %s: %s
+        "movl $str_00228780, (%esp)\n" /* "shader creation failed for %s %s %s: %s
 " */
         "calll Com_ScriptWarning\n"
         "xorl %edi, %edi\n" /* line 472 */
@@ -4067,7 +4067,7 @@ MaterialShader * Material_LoadPassShader(MaterialShaderType shaderType)
         "movl %eax, 8(%esp)\n"
         "leal -0xa8(%ebp), %eax\n" /* filename */
         "movl %eax, 4(%esp)\n"
-        "movl $0x22873c, (%esp)\n" /* "%s compilation failed - %s
+        "movl $str_0022873c, (%esp)\n" /* "%s compilation failed - %s
 " */
         "calll Com_ScriptWarning\n"
         "xorl %edi, %edi\n" /* line 472 */
@@ -4282,7 +4282,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl -0x300(%ebp), %edx\n" /* line 3358 | techniqueSet */
         "movl (%edx), %edi\n" /* techniqueSetName */
         /* { scope 2: filename, file, text, techType, ... */
-        "movl 0x195eec0, %eax\n" /* line 3335 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 3335 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lf1049de_00104a77\n"
@@ -4341,11 +4341,11 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "jne .Lf1049de_00104a5a\n"
         /* { scope 3: passIndex, techniqueNames, name, filename, ... */
         ".Lf1049de_00104b3d:\n"
-        "movl 0x195eec0, %eax\n" /* line 3139 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 3139 */
         "movl (%eax), %eax\n"
-        "movl $0x2287ac, %edx\n" /* "materials_dx7/techniquesets/%s.techset" */
+        "movl $str_002287ac, %edx\n" /* "materials_dx7/techniquesets/%s.techset" */
         "cmpl $2, 8(%eax)\n"
-        "movl $0x2287d4, %eax\n" /* "materials/techniquesets/%s.techset" */
+        "movl $str_002287d4, %eax\n" /* "materials/techniquesets/%s.techset" */
         "cmovnel %eax, %edx\n"
         "movl -0x304(%ebp), %esi\n" /* line 3163 | techniqueSet, usingTechnique */
         "movl %esi, 0xc(%esp)\n" /* usingTechnique */
@@ -4383,7 +4383,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl %eax, -0x20(%ebp)\n" /* text */
         "movl %esi, (%esp)\n" /* line 3177 | usingTechnique */
         "calll Com_BeginParseSession\n"
-        "movl $0x22831c, (%esp)\n" /* line 3178 */
+        "movl $str_0022831c, (%esp)\n" /* line 3178 */
         "calll Com_SetScriptWarningPrefix\n"
         "movl $0, (%esp)\n" /* line 3179 */
         "calll Com_SetSpaceDelimited\n"
@@ -4427,7 +4427,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "jne .Lf1049de_00104c75\n"
         ".Lf1049de_00104c91:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "leal -0x20(%ebp), %esi\n" /* text */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -4530,7 +4530,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "leal 8(%esi), %ebx\n" /* line 3040 | stageIndex, image */
         "movl %eax, %edx\n" /* semantic */
         /* { scope 2: filename, file, text, techType, ... */
-        "movl 0x195eec0, %eax\n" /* line 2981 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 2981 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lf1049de_00104dec\n"
@@ -4651,7 +4651,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "addl $1, %edx\n" /* line 3206 */
         "movl %edx, -0x2fc(%ebp)\n" /* techTypeCount */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222928, 4(%esp)\n" /* ":" */
+        "movl $str_00222928, 4(%esp)\n" /* ":" */
         "leal -0x20(%ebp), %ecx\n" /* text */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -4682,7 +4682,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "jmp .Lf1049de_00104f4a\n"
         /* } scope */
         ".Lf1049de_00104ff0:\n"
-        "movl 0x195eec0, %eax\n" /* line 3054 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 3054 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lf1049de_00105444\n"
@@ -4690,7 +4690,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 5: existing, dest, routing, insertIndex */
         "movl -0x2f4(%ebp), %esi\n" /* line 2798 | name, stageIndex */
         "movl %esi, 0xc(%esp)\n" /* stageIndex */
-        "movl $0x2289b4, 8(%esp)\n" /* "materials/techniques/%s.tech" */
+        "movl $str_002289b4, 8(%esp)\n" /* "materials/techniques/%s.tech" */
         "movl $0x40, 4(%esp)\n"
         "leal -0xd0(%ebp), %ebx\n" /* setup, error */
         "movl %ebx, (%esp)\n" /* error */
@@ -4705,7 +4705,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl %eax, -0x28(%ebp)\n" /* text */
         "movl %ebx, (%esp)\n" /* line 2807 | error */
         "calll Com_BeginParseSession\n"
-        "movl $0x22831c, (%esp)\n" /* line 2808 */
+        "movl $str_0022831c, (%esp)\n" /* line 2808 */
         "calll Com_SetScriptWarningPrefix\n"
         "movl $0, (%esp)\n" /* line 2809 */
         "calll Com_SetSpaceDelimited\n"
@@ -4740,7 +4740,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl $7, %ecx\n" /* line 1489 */
         "cld\n"
         "movl %eax, %esi\n"
-        "movl $0x22812c, %edi\n" /* source */
+        "movl $str_0022812c, %edi\n" /* source */
         "repe cmpsb %es:(%edi), (%esi)\n" /* source */
         "movl $0, %ebx\n" /* token */
         "je .Lf1049de_0010510c\n"
@@ -4751,7 +4751,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testl %ebx, %ebx\n" /* token */
         "jne .Lf1049de_00105c02\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "leal -0x28(%ebp), %ecx\n" /* text */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -4766,7 +4766,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl $9, %ecx\n" /* line 1404 */
         "cld\n"
         "movl %eax, %esi\n"
-        "movl $0x2278d0, %edi\n" /* "position" */
+        "movl $str_002278d0, %edi\n" /* "position" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lf1049de_00105164\n"
@@ -4781,21 +4781,21 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* } scope */
         ".Lf1049de_00105173:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222904, 4(%esp)\n" /* "=" */
+        "movl $str_00222904, 4(%esp)\n" /* "=" */
         "leal -0x28(%ebp), %ecx\n" /* text */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1504 */
         "je .Lf1049de_0010530e\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x228a20, 4(%esp)\n" /* "code" */
+        "movl $str_00228a20, 4(%esp)\n" /* "code" */
         "leal -0x28(%ebp), %esi\n" /* text */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1506 */
         "je .Lf1049de_0010530e\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 1508 */
@@ -4808,7 +4808,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl $9, %ecx\n" /* line 1438 */
         "cld\n"
         "movl %eax, %esi\n"
-        "movl $0x2278d0, %edi\n" /* "position" */
+        "movl $str_002278d0, %edi\n" /* "position" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lf1049de_00105203\n"
@@ -4823,7 +4823,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* } scope */
         ".Lf1049de_0010520d:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "leal -0x28(%ebp), %edx\n" /* text */
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -4882,7 +4882,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "cmpl $0x10, -0x2cc(%ebp)\n"
         "jne .Lf1049de_001050e1\n"
         "movl $0x10, 4(%esp)\n" /* line 1527 */
-        "movl $0x228a58, (%esp)\n" /* "More than %i vertex mappings
+        "movl $str_00228a58, (%esp)\n" /* "More than %i vertex mappings
 " */
         "calll Com_ScriptWarning\n"
         /* } scope */
@@ -4949,7 +4949,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_001053de:\n"
-        "movl $0x222fb0, %edi\n" /* line 1409 */
+        "movl $str_00222fb0, %edi\n" /* line 1409 */
         "movl $7, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -4969,7 +4969,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_00105412:\n"
-        "movl $0x222fb0, %edi\n" /* line 1443 */
+        "movl $str_00222fb0, %edi\n" /* line 1443 */
         "movl $7, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -4993,7 +4993,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_00105444:\n"
         "movl -0x2f4(%ebp), %ecx\n" /* line 2877 | name */
         "movl %ecx, 0xc(%esp)\n"
-        "movl $0x228868, 8(%esp)\n" /* "materials_dx7/techniques/%s.tech" */
+        "movl $str_00228868, 8(%esp)\n" /* "materials_dx7/techniques/%s.tech" */
         "movl $0x40, 4(%esp)\n"
         "leal -0xd0(%ebp), %ebx\n" /* setup, error */
         "movl %ebx, (%esp)\n" /* error */
@@ -5008,7 +5008,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl %eax, -0x24(%ebp)\n" /* file */
         "movl %ebx, (%esp)\n" /* line 2886 | error */
         "calll Com_BeginParseSession\n"
-        "movl $0x22831c, (%esp)\n" /* line 2887 */
+        "movl $str_0022831c, (%esp)\n" /* line 2887 */
         "calll Com_SetScriptWarningPrefix\n"
         "movl $0, (%esp)\n" /* line 2888 */
         "calll Com_SetSpaceDelimited\n"
@@ -5072,7 +5072,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 5: existing, dest, routing, insertIndex */
         /* { scope 6 */
         ".Lf1049de_0010558a:\n"
-        "movl 0x331244(, %edx, 8), %eax\n" /* line 2414 */
+        "movl s_passOptionsDx7+4(, %edx, 8), %eax\n" /* line 2414 */
         "movl -0x324(%ebp), %esi\n"
         "movb $0, (%esi, %eax)\n"
         "addl $1, %edx\n" /* line 2424 */
@@ -5112,7 +5112,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 5: existing, dest, routing, insertIndex */
         ".Lf1049de_00105600:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x228134, 4(%esp)\n" /* "texture" */
+        "movl $str_00228134, 4(%esp)\n" /* "texture" */
         "leal -0x24(%ebp), %esi\n" /* file */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5131,7 +5131,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "leal -0x24(%ebp), %esi\n" /* line 2620 | file, optionIter */
         "movl %esi, (%esp)\n" /* optionIter */
         "calll Com_Parse\n"
-        "movl $0x2288cc, %edi\n" /* line 2621 | token */
+        "movl $str_002288cc, %edi\n" /* line 2621 | token */
         "movl $9, %ecx\n"
         "cld\n"
         "movl %eax, %esi\n" /* optionIter */
@@ -5154,7 +5154,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "leal -0x24(%ebp), %eax\n" /* line 2717 | file */
         "movl %eax, (%esp)\n"
         "calll Com_Parse\n"
-        "movl $0x228134, %edi\n" /* line 2718 | token */
+        "movl $str_00228134, %edi\n" /* line 2718 | token */
         "movl $8, %ecx\n"
         "cld\n"
         "movl %eax, %esi\n" /* token */
@@ -5192,7 +5192,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl $0, 0xc(%edi)\n" /* line 2677 | token */
         "movl %eax, 4(%esp)\n" /* line 2678 */
         "movl $1, (%esp)\n"
-        "movl $0x21a750, %ecx\n" /* "rgb" */
+        "movl $str_0021a750, %ecx\n" /* "rgb" */
         "movl -0x2e0(%ebp), %edx\n"
         "leal -0x24(%ebp), %eax\n" /* file */
         "calll Material_LoadPassTextureStateDx7\n"
@@ -5201,7 +5201,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl $0, 0x2c(%edi)\n" /* line 2681 | token */
         "movl %ebx, 4(%esp)\n" /* line 2682 | token */
         "movl $2, (%esp)\n"
-        "movl $0x228950, %ecx\n" /* "a" */
+        "movl $str_00228950, %ecx\n" /* "a" */
         "movl -0x2e0(%ebp), %edx\n"
         "leal -0x24(%ebp), %eax\n" /* file */
         "calll Material_LoadPassTextureStateDx7\n"
@@ -5236,7 +5236,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* } scope */
         ".Lf1049de_001057d8:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e508, 4(%esp)\n" /* "}" */
+        "movl $str_0021e508, 4(%esp)\n" /* "}" */
         "leal -0x24(%ebp), %ecx\n" /* file */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5265,7 +5265,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 6 */
         ".Lf1049de_00105855:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 958 */
@@ -5275,7 +5275,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testb %al, %al\n" /* line 2486 */
         "je .Lf1049de_00105623\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222904, 4(%esp)\n" /* "=" */
+        "movl $str_00222904, 4(%esp)\n" /* "=" */
         "leal -0x24(%ebp), %eax\n" /* file */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5287,7 +5287,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testb %al, %al\n"
         "je .Lf1049de_00105623\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "leal -0x24(%ebp), %edx\n" /* file */
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5302,7 +5302,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_001058db:\n"
-        "movl $0x2278dc, %edi\n" /* line 1414 */
+        "movl $str_002278dc, %edi\n" /* line 1414 */
         "movl $6, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -5316,7 +5316,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testl %edx, %edx\n"
         "jne .Lf1049de_00105a02\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "leal -0x28(%ebp), %eax\n" /* text */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5333,12 +5333,12 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_0010593c:\n"
         "movl $1, 8(%esp)\n" /* line 1396 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2289d4, (%esp)\n" /* "index '%i' is not in the range [0, %i]
+        "movl $str_002289d4, (%esp)\n" /* "index '%i' is not in the range [0, %i]
 " */
         "calll Com_ScriptWarning\n"
         ".Lf1049de_00105954:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "leal -0x28(%ebp), %ecx\n" /* text */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5355,7 +5355,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_00105990:\n"
-        "movl $0x228a28, %edi\n" /* line 1448 */
+        "movl $str_00228a28, %edi\n" /* line 1448 */
         "movl $8, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -5377,7 +5377,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* } scope */
         ".Lf1049de_001059c2:\n"
         "movl %esi, 4(%esp)\n" /* line 3167 | usingTechnique */
-        "movl $0x2287f8, (%esp)\n" /* "^1ERROR: Couldn't open techniqueSet '%s'
+        "movl $str_002287f8, (%esp)\n" /* "^1ERROR: Couldn't open techniqueSet '%s'
 " */
         "calll Com_Printf\n"
         "movl -0x300(%ebp), %esi\n" /* techniqueSet, usingTechnique */
@@ -5385,7 +5385,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_001059dd:\n"
         "movl -0x2f4(%ebp), %edx\n" /* line 3217 | name */
         "movl %edx, 4(%esp)\n"
-        "movl $0x228848, (%esp)\n" /* "Unknown technique type '%s'
+        "movl $str_00228848, (%esp)\n" /* "Unknown technique type '%s'
 " */
         "calll Com_ScriptWarning\n"
         "movl $0, -0x300(%ebp)\n" /* techniqueSet */
@@ -5396,7 +5396,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_00105a02:\n"
-        "movl $0x2288cc, %edi\n" /* line 1421 */
+        "movl $str_002288cc, %edi\n" /* line 1421 */
         "movl $9, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -5410,7 +5410,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testl %edx, %edx\n"
         "jne .Lf1049de_00105aa5\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "leal -0x28(%ebp), %esi\n" /* text */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5426,12 +5426,12 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_00105a5c:\n"
         "movl $7, 8(%esp)\n" /* line 1396 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2289d4, (%esp)\n" /* "index '%i' is not in the range [0, %i]
+        "movl $str_002289d4, (%esp)\n" /* "index '%i' is not in the range [0, %i]
 " */
         "calll Com_ScriptWarning\n"
         ".Lf1049de_00105a74:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "leal -0x28(%ebp), %edx\n" /* text */
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5442,7 +5442,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "jmp .Lf1049de_00105173\n"
         ".Lf1049de_00105aa5:\n"
         "movl %ebx, 4(%esp)\n" /* line 1429 | index */
-        "movl $0x2289fc, (%esp)\n" /* "unknown stream destination '%s'
+        "movl $str_002289fc, (%esp)\n" /* "unknown stream destination '%s'
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1049de_0010530e\n"
@@ -5451,7 +5451,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_00105aba:\n"
-        "movl $0x228a30, %edi\n" /* line 1453 */
+        "movl $str_00228a30, %edi\n" /* line 1453 */
         "movl $9, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -5474,13 +5474,13 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_00105aec:\n"
         "movl -0x2f4(%ebp), %eax\n" /* line 3200 | name */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228848, (%esp)\n" /* "Unknown technique type '%s'
+        "movl $str_00228848, (%esp)\n" /* "Unknown technique type '%s'
 " */
         "calll Com_ScriptWarning\n"
         "movl $0, -0x300(%ebp)\n" /* techniqueSet */
         "jmp .Lf1049de_00104fa5\n"
         ".Lf1049de_00105b11:\n"
-        "movl $0x228824, (%esp)\n" /* line 3193 */
+        "movl $str_00228824, (%esp)\n" /* line 3193 */
         "calll Com_ScriptWarning\n"
         "movl $0, -0x300(%ebp)\n" /* techniqueSet */
         "jmp .Lf1049de_00104fa5\n"
@@ -5489,7 +5489,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 6 */
         ".Lf1049de_00105b2c:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x2221e8, 4(%esp)\n" /* "(" */
+        "movl $str_002221e8, 4(%esp)\n" /* "(" */
         "leal -0x24(%ebp), %edx\n" /* file */
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5500,20 +5500,20 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "jmp .Lf1049de_001055df\n"
         ".Lf1049de_00105b55:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222224, 4(%esp)\n" /* ")" */
+        "movl $str_00222224, 4(%esp)\n" /* ")" */
         "leal -0x24(%ebp), %ecx\n" /* file */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2400 */
         "je .Lf1049de_00105b4b\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "leal -0x24(%ebp), %eax\n" /* file */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2402 */
         "je .Lf1049de_00105b4b\n"
-        "movl 0x331244(, %esi, 8), %eax\n" /* line 2414 */
+        "movl s_passOptionsDx7+4(, %esi, 8), %eax\n" /* line 2414 */
         "movl -0x324(%ebp), %edx\n"
         "movb $1, (%edx, %eax)\n"
         "jmp .Lf1049de_001055a3\n"
@@ -5524,7 +5524,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         ".Lf1049de_00105ba9:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "leal -0x24(%ebp), %eax\n" /* file */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5538,7 +5538,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl %eax, 8(%esp)\n" /* line 964 */
         "movl -0x2dc(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x2280d8, (%esp)\n" /* "expected %i, found %i instead
+        "movl $str_002280d8, (%esp)\n" /* "expected %i, found %i instead
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1049de_00105501\n"
@@ -5570,7 +5570,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 6 */
         ".Lf1049de_00105c3f:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x228a78, 4(%esp)\n" /* "vertexShader" */
+        "movl $str_00228a78, 4(%esp)\n" /* "vertexShader" */
         "leal -0x28(%ebp), %ecx\n" /* text */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5597,7 +5597,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "je .Lf1049de_0010530e\n"
         /* { scope 6 */
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x228a88, 4(%esp)\n" /* "pixelShader" */
+        "movl $str_00228a88, 4(%esp)\n" /* "pixelShader" */
         "leal -0x28(%ebp), %eax\n" /* text */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5622,7 +5622,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testb %al, %al\n" /* line 2387 */
         "je .Lf1049de_0010530e\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e508, 4(%esp)\n" /* "}" */
+        "movl $str_0021e508, 4(%esp)\n" /* "}" */
         "leal -0x28(%ebp), %edx\n" /* text */
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5639,7 +5639,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "jmp .Lf1049de_00105313\n"
         ".Lf1049de_00105d4f:\n"
         "movl %eax, 4(%esp)\n" /* line 2820 */
-        "movl $0x2288ac, (%esp)\n" /* "expected '{' but found '%s'
+        "movl $str_002288ac, (%esp)\n" /* "expected '{' but found '%s'
 " */
         "calll Com_ScriptWarning\n"
         "movl $1, %ebx\n" /* error */
@@ -5648,7 +5648,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_00105d69:\n"
-        "movl $0x2278dc, %edi\n" /* line 1458 */
+        "movl $str_002278dc, %edi\n" /* line 1458 */
         "movl $6, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -5668,7 +5668,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* } scope */
         ".Lf1049de_00105d9b:\n"
         "movl %ebx, 4(%esp)\n" /* line 2802 | error */
-        "movl $0x22888c, (%esp)\n" /* "Couldn't open technique '%s'
+        "movl $str_0022888c, (%esp)\n" /* "Couldn't open technique '%s'
 " */
         "calll Com_ScriptWarning\n"
         "movl $0, -0x300(%ebp)\n" /* techniqueSet */
@@ -5676,7 +5676,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_00105dba:\n"
         "movl -0x2f4(%ebp), %esi\n" /* line 2842 | name, stageIndex */
         "movl %esi, 4(%esp)\n" /* stageIndex */
-        "movl $0x228954, (%esp)\n" /* "Technique '%s' has no passes.  The technique should be left " */
+        "movl $str_00228954, (%esp)\n" /* "Technique '%s' has no passes.  The technique should be left " */
         "calll Com_ScriptWarning\n"
         "movl $0, -0x300(%ebp)\n" /* techniqueSet */
         "jmp .Lf1049de_00104fa5\n"
@@ -5694,7 +5694,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl %eax, 8(%esp)\n" /* line 964 */
         "movl -0x2dc(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x2280d8, (%esp)\n" /* "expected %i, found %i instead
+        "movl $str_002280d8, (%esp)\n" /* "expected %i, found %i instead
 " */
         "calll Com_ScriptWarning\n"
         "xorl %eax, %eax\n"
@@ -5703,7 +5703,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* } scope */
         ".Lf1049de_00105e17:\n"
         "movl %eax, 4(%esp)\n" /* line 2898 */
-        "movl $0x2288ac, (%esp)\n" /* "expected '{' but found '%s'
+        "movl $str_002288ac, (%esp)\n" /* "expected '{' but found '%s'
 " */
         "calll Com_ScriptWarning\n"
         "movl $1, %ebx\n" /* error */
@@ -5715,7 +5715,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         /* { scope 8 */
         ".Lf1049de_00105e31:\n"
-        "movl $0x2288cc, %edi\n" /* line 1463 */
+        "movl $str_002288cc, %edi\n" /* line 1463 */
         "movl $9, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* index */
@@ -5729,7 +5729,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testl %edx, %edx\n"
         "jne .Lf1049de_00105ed1\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e510, 4(%esp)\n" /* "[" */
+        "movl $str_0021e510, 4(%esp)\n" /* "[" */
         "leal -0x28(%ebp), %ecx\n" /* text */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5746,12 +5746,12 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_00105e8e:\n"
         "movl $1, 8(%esp)\n" /* line 1396 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2289d4, (%esp)\n" /* "index '%i' is not in the range [0, %i]
+        "movl $str_002289d4, (%esp)\n" /* "index '%i' is not in the range [0, %i]
 " */
         "calll Com_ScriptWarning\n"
         ".Lf1049de_00105ea6:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "leal -0x28(%ebp), %eax\n" /* text */
         "movl %eax, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5761,7 +5761,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "jmp .Lf1049de_0010520d\n"
         ".Lf1049de_00105ed1:\n"
         "movl %ebx, 4(%esp)\n" /* line 1471 | index */
-        "movl $0x228a3c, (%esp)\n" /* "unknown stream source '%s'
+        "movl $str_00228a3c, (%esp)\n" /* "unknown stream source '%s'
 " */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1049de_0010530e\n"
@@ -5775,7 +5775,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 6 */
         ".Lf1049de_00105ee6:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "leal -0x24(%ebp), %esi\n" /* file */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5787,7 +5787,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_00105f0b:\n"
         "movl -0x2f4(%ebp), %ecx\n" /* line 2920 | name */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x228954, (%esp)\n" /* "Technique '%s' has no passes.  The technique should be left " */
+        "movl $str_00228954, (%esp)\n" /* "Technique '%s' has no passes.  The technique should be left " */
         "calll Com_ScriptWarning\n"
         "movl $0, -0x300(%ebp)\n" /* techniqueSet */
         "jmp .Lf1049de_00104fa5\n"
@@ -5796,7 +5796,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         /* { scope 7 */
         ".Lf1049de_00105f30:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x21e504, 4(%esp)\n" /* "]" */
+        "movl $str_0021e504, 4(%esp)\n" /* "]" */
         "leal -0x24(%ebp), %esi\n" /* file */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5804,7 +5804,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "testl %eax, %eax\n" /* line 2627 */
         "je .Lf1049de_00105501\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222904, 4(%esp)\n" /* "=" */
+        "movl $str_00222904, 4(%esp)\n" /* "=" */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2629 */
@@ -5812,7 +5812,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movl %esi, (%esp)\n" /* line 2632 | optionIter */
         "calll Com_Parse\n"
         "movl %eax, -0x32c(%ebp)\n"
-        "movl $0x2288d8, %edi\n" /* line 2633 | token */
+        "movl $str_002288d8, %edi\n" /* line 2633 | token */
         "movl $0x10, %ebx\n" /* token */
         "cld\n"
         "movl %eax, %esi\n" /* optionIter */
@@ -5830,21 +5830,21 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "movb $1, 9(%esi)\n" /* optionIter */
         ".Lf1049de_00105fb1:\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x2221e8, 4(%esp)\n" /* "(" */
+        "movl $str_002221e8, 4(%esp)\n" /* "(" */
         "leal -0x24(%ebp), %edx\n" /* file */
         "movl %edx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2648 */
         "je .Lf1049de_00105501\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222224, 4(%esp)\n" /* ")" */
+        "movl $str_00222224, 4(%esp)\n" /* ")" */
         "leal -0x24(%ebp), %ecx\n" /* file */
         "movl %ecx, (%esp)\n"
         "calll Com_MatchToken\n"
         "testl %eax, %eax\n" /* line 2650 */
         "je .Lf1049de_00105501\n"
         "movl $1, 8(%esp)\n" /* line 947 */
-        "movl $0x222924, 4(%esp)\n" /* ";" */
+        "movl $str_00222924, 4(%esp)\n" /* ";" */
         "leal -0x24(%ebp), %esi\n" /* file */
         "movl %esi, (%esp)\n"
         "calll Com_MatchToken\n"
@@ -5852,7 +5852,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         "je .Lf1049de_00105501\n"
         "jmp .Lf1049de_0010567b\n"
         ".Lf1049de_0010601f:\n"
-        "movl $0x2288e8, %edi\n" /* line 2637 | token */
+        "movl $str_002288e8, %edi\n" /* line 2637 | token */
         "movl $0xa, %ebx\n" /* token */
         "cld\n"
         "movl -0x32c(%ebp), %esi\n" /* optionIter */
@@ -5872,7 +5872,7 @@ Bool Material_FinishLoadingInstance(MaterialObj *material, int imageTrack)
         ".Lf1049de_00106058:\n"
         "movl -0x32c(%ebp), %eax\n" /* line 2643 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2288f4, (%esp)\n" /* "expected 'genEyeDirCoords', 'genEyeFacingDotCoords', or 'tex" */
+        "movl $str_002288f4, (%esp)\n" /* "expected 'genEyeDirCoords', 'genEyeFacingDotCoords', or 'tex" */
         "calll Com_ScriptWarning\n"
         "jmp .Lf1049de_00105501\n"
     );
@@ -5927,7 +5927,7 @@ Material * Material_Load(const char *name, int imageTrack)
         "movl %eax, (%esp)\n"
         "calll FS_FCloseFile\n"
         "movl %esi, 4(%esp)\n" /* line 3497 | name */
-        "movl $0x228abc, (%esp)\n" /* "^1ERROR: material '%s' has zero length
+        "movl $str_00228abc, (%esp)\n" /* "^1ERROR: material '%s' has zero length
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -5952,7 +5952,7 @@ Material * Material_Load(const char *name, int imageTrack)
         "cmpb $0x24, (%esi)\n" /* line 3489 | name */
         "je .Lf106074_001060fa\n"
         "movl %esi, 4(%esp)\n" /* line 3490 | name */
-        "movl $0x228a94, (%esp)\n" /* "^1ERROR: Couldn't find material '%s'
+        "movl $str_00228a94, (%esp)\n" /* "^1ERROR: Couldn't find material '%s'
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"

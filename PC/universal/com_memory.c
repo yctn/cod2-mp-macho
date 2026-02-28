@@ -25,15 +25,15 @@ extern dvar_t *Dvar_RegisterInt(const char *dvarName, int value, int min, int ma
 extern int Sys_Milliseconds(void);
 
 extern const dvar_t *com_dedicated; /* 0x0 */
-static fileData_t * com_fileDataHashTable[1024]; /* 0x3bcfa0 */
-static fileData_t *com_hunkData; /* 0x3bcf98 */
-static int g_largeLocalPos; /* 0x33cf00 */
-static byte g_largeLocalBuf[524288]; /* 0x33cf80 */
-static struct hunkUsed_t hunk_low; /* 0x3bcf88 */
-static hunkUsed_t hunk_high; /* 0x3bcf80 */
-static byte *s_hunkData; /* 0x3bcf90 */
-static byte *s_origHunkData; /* 0x3bdfa0 */
-static int s_hunkTotal; /* 0x3bcf94 */
+static fileData_t * com_fileDataHashTable[1024]; /* com_fileDataHashTable */
+static fileData_t *com_hunkData; /* com_hunkData */
+static int g_largeLocalPos; /* g_largeLocalPos */
+static byte g_largeLocalBuf[524288]; /* g_largeLocalBuf */
+static struct hunkUsed_t hunk_low; /* hunk_low */
+static hunkUsed_t hunk_high; /* hunk_high */
+static byte *s_hunkData; /* s_hunkData */
+static byte *s_origHunkData; /* s_origHunkData */
+static int s_hunkTotal; /* s_hunkTotal */
 
 /* forward declarations */
 static void Hunk_ClearData(void);

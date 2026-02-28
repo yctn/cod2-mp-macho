@@ -9,19 +9,19 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-static int startOffset; /* 0x3131e4 */
-static int endOffset; /* 0x3131e0 */
+static int startOffset; /* startOffset */
+static int endOffset; /* endOffset */
 
 /* Global pointers accessed by absolute address */
-extern byte *svs_ptr;              /* 0x195f284 - serverStatic_t */
-extern byte *sv_ptr;               /* 0x195ee80 - server_t */
-extern byte *sv_showcommands_dvar; /* 0x195f278 */
-extern byte *sv_maxclients_dvar;   /* 0x195f290 */
-extern byte *sv_minPingRate_dvar;  /* 0x195f268 */
-extern byte *sv_padPackets_dvar;   /* 0x195f2b0 */
-extern byte *sv_showAverageBPS_dvar; /* 0x195f288 */
-extern byte *showpackets_dvar;     /* 0x195f2bc */
-extern byte *sv_maxRate_dvar;      /* 0x195f2f8 */
+extern byte *svs_ptr;              /* imp_svs - serverStatic_t */
+extern byte *sv_ptr;               /* imp_sv - server_t */
+extern byte *sv_showcommands_dvar; /* imp_sv_debugReliableCmds */
+extern byte *sv_maxclients_dvar;   /* imp_sv_maxclients */
+extern byte *sv_minPingRate_dvar;  /* imp_sv_maxRate */
+extern byte *sv_padPackets_dvar;   /* imp_sv_padPackets */
+extern byte *sv_showAverageBPS_dvar; /* imp_sv_showAverageBPS */
+extern byte *showpackets_dvar;     /* imp_sv_debugRate */
+extern byte *sv_maxRate_dvar;      /* imp_sv_fps */
 extern int __mh_execute_header;
 
 /* client_t field offsets */
@@ -451,7 +451,7 @@ void SV_ArchiveSnapshot(void)
         "movl %edx, (%esp)\n"
         "calll LargeLocal_GetBuf\n"
         "movl %eax, %edx\n"
-        "movl 0x195ee80, %eax\n" /* line 1800 */
+        "movl imp_sv, %eax\n" /* line 1800 */
         "cmpl $2, (%eax)\n"
         "je .Lf192a4c_00192a98\n"
         ".Lf192a4c_00192a82:\n"
@@ -467,7 +467,7 @@ void SV_ArchiveSnapshot(void)
         "retl\n"
         /* { scope 1 */
         ".Lf192a4c_00192a98:\n"
-        "movl 0x195f284, %edi\n" /* line 1803 | c */
+        "movl imp_svs, %edi\n" /* line 1803 | c */
         "movl 0x28(%edi), %eax\n" /* c */
         "testl %eax, %eax\n"
         "je .Lf192a4c_00192a82\n"
@@ -481,7 +481,7 @@ void SV_ArchiveSnapshot(void)
         "subl $0x200, %esi\n" /* oldindex */
         "movl $0, %eax\n"
         "cmovsl %eax, %esi\n" /* oldindex */
-        "movl 0x195f2f8, %eax\n" /* line 1820 */
+        "movl imp_sv_fps, %eax\n" /* line 1820 */
         "movl (%eax), %eax\n"
         "movl 0x2c(%edi), %ebx\n" /* c, newnum */
         "subl 8(%eax), %ebx\n" /* newnum */
@@ -518,7 +518,7 @@ void SV_ArchiveSnapshot(void)
         "leal -0x34(%ebp), %ecx\n" /* line 1944 | msg */
         "movl %ecx, (%esp)\n"
         "calll MSG_WriteBit1\n"
-        "movl 0x195f284, %ebx\n" /* line 1945 | newnum */
+        "movl imp_svs, %ebx\n" /* line 1945 | newnum */
         "movl 4(%ebx), %eax\n" /* newnum */
         "movl %eax, 4(%esp)\n"
         "leal -0x34(%ebp), %eax\n" /* msg */
@@ -546,7 +546,7 @@ void SV_ArchiveSnapshot(void)
         "movl 4(%ebx), %eax\n" /* line 1956 | newnum */
         "movl %eax, 4(%edx)\n"
         "movl 0xc(%ebx), %edi\n" /* line 1958 | newnum, c */
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -629,7 +629,7 @@ void SV_ArchiveSnapshot(void)
         "cmpl $0x7ffffffd, %eax\n" /* line 1980 */
         "jle .Lf192a4c_00192c15\n"
         ".Lf192a4c_00192cf8:\n"
-        "movl $0x2b0440, 4(%esp)\n" /* line 1981 */
+        "movl $str_002b0440, 4(%esp)\n" /* line 1981 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf192a4c_00192c15\n"
@@ -637,12 +637,12 @@ void SV_ArchiveSnapshot(void)
         "leal -0x34(%ebp), %eax\n" /* line 1985 | msg */
         "movl %eax, (%esp)\n"
         "calll MSG_WriteBit0\n"
-        "movl 0x195ee80, %eax\n" /* line 1987 */
+        "movl imp_sv, %eax\n" /* line 1987 */
         "movl 0x5f424(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jg .Lf192a4c_00192ea9\n"
         ".Lf192a4c_00192d2f:\n"
-        "movl 0x195f284, %eax\n" /* line 2026 */
+        "movl imp_svs, %eax\n" /* line 2026 */
         "movl 0x44(%eax), %edx\n"
         "addl $1, %edx\n"
         "movl %edx, 0x44(%eax)\n"
@@ -657,7 +657,7 @@ void SV_ArchiveSnapshot(void)
         "movl -0x34(%ebp), %ebx\n" /* line 2034 | msg, newnum */
         "testl %ebx, %ebx\n" /* newnum */
         "jne .Lf192a4c_00192e7f\n"
-        "movl 0x195f284, %edi\n" /* line 2041 | c */
+        "movl imp_svs, %edi\n" /* line 2041 | c */
         "movl 0x2c(%edi), %ecx\n" /* c */
         "movl $0x1b4e81b5, %edx\n"
         "movl %ecx, %eax\n"
@@ -700,13 +700,13 @@ void SV_ArchiveSnapshot(void)
         "movl %ebx, (%esp)\n" /* newnum */
         "calll memcpy\n"
         ".Lf192a4c_00192df0:\n"
-        "movl 0x195f284, %eax\n" /* line 2062 */
+        "movl imp_svs, %eax\n" /* line 2062 */
         "movl 0x2c(%eax), %edx\n"
         "addl $1, %edx\n"
         "movl %edx, 0x2c(%eax)\n"
         "cmpl $0x7ffffffd, %edx\n" /* line 2064 */
         "jle .Lf192a4c_00192e1a\n"
-        "movl $0x2b0520, 4(%esp)\n" /* line 2065 */
+        "movl $str_002b0520, 4(%esp)\n" /* line 2065 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         ".Lf192a4c_00192e1a:\n"
@@ -745,11 +745,11 @@ void SV_ArchiveSnapshot(void)
         "calll memcpy\n"
         "jmp .Lf192a4c_00192df0\n"
         ".Lf192a4c_00192e7f:\n"
-        "movl $0x2b04b8, (%esp)\n" /* line 2037 */
+        "movl $str_002b04b8, (%esp)\n" /* line 2037 */
         "calll Com_DPrintf\n"
         "jmp .Lf192a4c_00192a82\n"
         ".Lf192a4c_00192e90:\n"
-        "movl $0x2b0490, 4(%esp)\n" /* line 2029 */
+        "movl $str_002b0490, 4(%esp)\n" /* line 2029 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf192a4c_00192d49\n"
@@ -761,7 +761,7 @@ void SV_ArchiveSnapshot(void)
         "je .Lf192a4c_0019303f\n"
         ".Lf192a4c_00192eba:\n"
         "addl $1, %edi\n" /* line 1987 | c */
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "cmpl 0x5f424(%eax), %edi\n" /* c */
         "jge .Lf192a4c_00192d2f\n"
         ".Lf192a4c_00192ece:\n"
@@ -774,7 +774,7 @@ void SV_ArchiveSnapshot(void)
         "testl %esi, %esi\n" /* oldindex */
         "je .Lf192a4c_00192ead\n"
         ".Lf192a4c_00192eeb:\n"
-        "movl 0x195f284, %ecx\n" /* line 2005 */
+        "movl imp_svs, %ecx\n" /* line 2005 */
         "movl 0x3c(%ecx), %edx\n"
         "andl $0x80003fff, %edx\n"
         "js .Lf192a4c_0019306b\n"
@@ -828,13 +828,13 @@ void SV_ArchiveSnapshot(void)
         "movl %eax, %edx\n"
         "shll $5, %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "leal 0x241c(%eax, %edx, 4), %edx\n"
         "movl %edx, 4(%esp)\n"
         "leal -0x34(%ebp), %eax\n" /* msg */
         "movl %eax, (%esp)\n"
         "calll MSG_WriteDeltaArchivedEntity\n"
-        "movl 0x195f284, %edx\n" /* line 2018 */
+        "movl imp_svs, %edx\n" /* line 2018 */
         "movl 0x3c(%edx), %eax\n"
         "addl $1, %eax\n"
         "movl %eax, 0x3c(%edx)\n"
@@ -845,12 +845,12 @@ void SV_ArchiveSnapshot(void)
         "addl $1, 8(%ecx)\n"
         "jmp .Lf192a4c_00192eba\n"
         ".Lf192a4c_00192ffc:\n"
-        "movl $0x2b0468, 4(%esp)\n" /* line 2022 */
+        "movl $str_002b0468, 4(%esp)\n" /* line 2022 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf192a4c_00192fed\n"
         ".Lf192a4c_00193012:\n"
-        "movl $0x2b04f8, 4(%esp)\n" /* line 2049 */
+        "movl $str_002b04f8, 4(%esp)\n" /* line 2049 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x28(%ebp), %edx\n"
@@ -875,7 +875,7 @@ void SV_ArchiveSnapshot(void)
         "subl $1, %edx\n" /* line 2005 */
         "orl $0xffffc000, %edx\n"
         "addl $1, %edx\n"
-        "movl 0x195f284, %ecx\n"
+        "movl imp_svs, %ecx\n"
         "jmp .Lf192a4c_00192f00\n"
         ".Lf192a4c_00193082:\n"
         "subl $1, %ebx\n" /* line 2044 | newnum */
@@ -883,7 +883,7 @@ void SV_ArchiveSnapshot(void)
         "addl $1, %ebx\n" /* newnum */
         "jmp .Lf192a4c_00192dbc\n"
         ".Lf192a4c_00193093:\n"
-        "movl 0x195f284, %ebx\n" /* line 1829 | newnum */
+        "movl imp_svs, %ebx\n" /* line 1829 | newnum */
         "movl 0x3c(%ebx), %eax\n" /* newnum */
         "subl $0x4000, %eax\n"
         "cmpl %eax, 0xc(%edi)\n" /* c */
@@ -905,7 +905,7 @@ void SV_ArchiveSnapshot(void)
         "leal -0x34(%ebp), %ecx\n" /* msg */
         "movl %ecx, (%esp)\n"
         "calll MSG_WriteLong\n"
-        "movl 0x195f290, %eax\n" /* line 1838 */
+        "movl imp_sv_maxclients, %eax\n" /* line 1838 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x2808(%ebp)\n" /* to_num_clients */
@@ -932,7 +932,7 @@ void SV_ArchiveSnapshot(void)
         "subl %edx, %eax\n"
         "shll $5, %eax\n"
         "addl %edx, %eax\n"
-        "movl 0x195f284, %ecx\n"
+        "movl imp_svs, %ecx\n"
         "movl 0x4c(%ecx), %edx\n"
         "leal (%edx, %eax, 8), %eax\n"
         "movl %eax, -0x280c(%ebp)\n" /* cachedClient */
@@ -947,7 +947,7 @@ void SV_ArchiveSnapshot(void)
         "cmpl -0x2808(%ebp), %ebx\n" /* line 1843 | to_num_clients, newnum */
         "jge .Lf192a4c_00193118\n"
         ".Lf192a4c_00193173:\n"
-        "movl 0x195f284, %edx\n" /* line 1847 */
+        "movl imp_svs, %edx\n" /* line 1847 */
         "movl 0xc(%edx), %ecx\n"
         "leal (%ebx, %ebx, 4), %eax\n" /* newnum */
         "movl %eax, %edx\n"
@@ -1043,7 +1043,7 @@ void SV_ArchiveSnapshot(void)
         "leal -0x34(%ebp), %eax\n" /* line 1909 | msg */
         "movl %eax, (%esp)\n"
         "calll MSG_WriteBit0\n"
-        "movl 0x195ee80, %eax\n" /* line 1911 */
+        "movl imp_sv, %eax\n" /* line 1911 */
         "movl 0x5f424(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jle .Lf192a4c_00192d49\n"
@@ -1054,7 +1054,7 @@ void SV_ArchiveSnapshot(void)
         "je .Lf192a4c_001933e9\n"
         ".Lf192a4c_00193304:\n"
         "addl $1, %esi\n" /* line 1911 | oldindex */
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "cmpl %esi, 0x5f424(%eax)\n" /* oldindex */
         "jle .Lf192a4c_00192d49\n"
         ".Lf192a4c_00193318:\n"
@@ -1109,7 +1109,7 @@ void SV_ArchiveSnapshot(void)
         "movl %eax, %edx\n"
         "shll $5, %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "leal 0x241c(%eax, %edx, 4), %edx\n"
         "movl %edx, 4(%esp)\n"
         "leal -0x34(%ebp), %edx\n" /* msg */
@@ -1523,7 +1523,7 @@ void SV_SendClientSnapshot(client_t *client)
         "addl $0x20c48, %edx\n"
         "movl %edx, -0x12fc(%ebp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b064c, (%esp)\n" /* "WARNING: msg overflowed for %s, trying to recover
+        "movl $str_002b064c, (%esp)\n" /* "WARNING: msg overflowed for %s, trying to recover
 " */
         "calll Com_Printf\n"
         "movl 8(%ebp), %ecx\n" /* line 1741 | client */
@@ -1586,7 +1586,7 @@ void SV_SendClientSnapshot(client_t *client)
         "leal -0x50(%ebp), %ecx\n" /* msg */
         "movl %ecx, (%esp)\n"
         "calll MSG_WriteByte\n"
-        "movl 0x195f284, %edi\n" /* line 409 | newindex */
+        "movl imp_svs, %edi\n" /* line 409 | newindex */
         "movl 4(%edi), %eax\n" /* newindex */
         "movl %eax, 4(%esp)\n"
         "leal -0x50(%ebp), %eax\n" /* msg */
@@ -1655,7 +1655,7 @@ void SV_SendClientSnapshot(client_t *client)
         "cmpl %edx, -0x128c(%ebp)\n" /* line 173 | newindex */
         "jge .Lf193c24_00193f17\n"
         ".Lf193c24_00193ebf:\n"
-        "movl 0x195f284, %esi\n" /* line 181 */
+        "movl imp_svs, %esi\n" /* line 181 */
         "movl -0x128c(%ebp), %eax\n" /* newindex */
         "addl -0x12a0(%ebp), %eax\n" /* to_first_entity */
         "cltd\n"
@@ -1684,7 +1684,7 @@ void SV_SendClientSnapshot(client_t *client)
         "cmpl %ecx, -0x1294(%ebp)\n" /* from_num_entities */
         "jle .Lf193c24_00194001\n"
         "movl $0x270f, %ecx\n"
-        "movl 0x195f284, %esi\n"
+        "movl imp_svs, %esi\n"
         ".Lf193c24_00193f34:\n"
         "movl -0x1298(%ebp), %eax\n" /* line 191 | from_first_entity */
         "addl -0x1290(%ebp), %eax\n" /* oldindex */
@@ -1717,7 +1717,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %eax, %edx\n"
         "shll $5, %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "leal 0x241c(%eax, %edx, 4), %edx\n"
         "movl %edx, 4(%esp)\n"
         "leal -0x50(%ebp), %ecx\n" /* msg */
@@ -1760,7 +1760,7 @@ void SV_SendClientSnapshot(client_t *client)
         "cmpl -0x1284(%ebp), %edi\n" /* line 281 | to_num_clients, newindex */
         "jge .Lf193c24_001940d2\n"
         ".Lf193c24_00194060:\n"
-        "movl 0x195f284, %esi\n" /* line 289 */
+        "movl imp_svs, %esi\n" /* line 289 */
         "movl -0x1288(%ebp), %ecx\n" /* to_first_client */
         "leal (%edi, %ecx), %eax\n" /* newindex */
         "cltd\n"
@@ -1794,7 +1794,7 @@ void SV_SendClientSnapshot(client_t *client)
         "cmpl %ebx, -0x127c(%ebp)\n" /* oldindex, from_num_clients */
         "jle .Lf193c24_0019416e\n"
         "movl $0x270f, %ecx\n"
-        "movl 0x195f284, %esi\n"
+        "movl imp_svs, %esi\n"
         ".Lf193c24_001940e9:\n"
         "movl -0x1280(%ebp), %eax\n" /* line 299 | from_first_client */
         "addl %ebx, %eax\n" /* oldindex */
@@ -1837,7 +1837,7 @@ void SV_SendClientSnapshot(client_t *client)
         "calll MSG_WriteBit0\n"
         /* } scope */
         /* } scope */
-        "movl 0x195f2b0, %eax\n" /* line 467 */
+        "movl imp_sv_padPackets, %eax\n" /* line 467 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1870,12 +1870,12 @@ void SV_SendClientSnapshot(client_t *client)
         "je .Lf193c24_00193c6b\n"
         "cmpl $1, (%ebx)\n" /* state */
         "je .Lf193c24_00193c6b\n"
-        "movl 0x195f284, %edi\n" /* line 1429 | i */
+        "movl imp_svs, %edi\n" /* line 1429 | i */
         "movl 0x18(%edi), %eax\n" /* i */
         "movl %eax, 0x26b0(%esi)\n" /* frame */
         "movl 0x1c(%edi), %eax\n" /* line 1430 | i */
         "movl %eax, 0x26b4(%esi)\n" /* frame */
-        "movl 0x195ee80, %eax\n" /* line 1435 */
+        "movl imp_sv, %eax\n" /* line 1435 */
         "cmpl $2, (%eax)\n"
         "jne .Lf193c24_00193c6b\n"
         "movl %ebx, %eax\n" /* line 1441 | state */
@@ -1894,7 +1894,7 @@ void SV_SendClientSnapshot(client_t *client)
         "jle .Lf193c24_00194938\n"
         "movl 0x2c(%edi), %eax\n" /* line 1129 | i */
         "movl %eax, -0x12e4(%ebp)\n"
-        "movl 0x195f2f8, %eax\n"
+        "movl imp_sv_fps, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x12e0(%ebp)\n"
@@ -1943,7 +1943,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl -0x12f0(%ebp), %ebx\n" /* line 1446 | cachedFrame, state */
         "testl %ebx, %ebx\n" /* state */
         "je .Lf193c24_00194c2a\n"
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl 4(%eax), %eax\n"
         "movl %eax, -0x12ec(%ebp)\n" /* deltaTime */
         "movl -0x12f0(%ebp), %ebx\n" /* cachedFrame, state */
@@ -1962,7 +1962,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %edx, -0x12c4(%ebp)\n" /* clientNum */
         "cmpl $0x3ff, %edx\n" /* line 1452 */
         "jbe .Lf193c24_00194372\n"
-        "movl $0x2b0584, 4(%esp)\n" /* line 1454 */
+        "movl $str_002b0584, 4(%esp)\n" /* line 1454 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf193c24_00194372:\n"
@@ -2011,7 +2011,7 @@ void SV_SendClientSnapshot(client_t *client)
         "fstps -0x12ac(%ebp)\n" /* fogOpaqueDistSqrd */
         "movss -0x12ac(%ebp), %xmm0\n" /* line 765 | fogOpaqueDistSqrd */
         "movaps %xmm0, %xmm1\n"
-        "cmpneqss 0x2ed684, %xmm0\n" /* 3.4028234663852886e+38f */
+        "cmpneqss lit4_002ed684, %xmm0\n" /* 3.4028234663852886e+38f */
         "andps %xmm1, %xmm0\n"
         "movss %xmm0, -0x12ac(%ebp)\n" /* fogOpaqueDistSqrd */
         "movl -0x12bc(%ebp), %eax\n" /* line 772 | from_num_entities */
@@ -2031,7 +2031,7 @@ void SV_SendClientSnapshot(client_t *client)
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x195f284, %ecx\n"
+        "movl imp_svs, %ecx\n"
         "movl 0x48(%ecx), %edx\n"
         "leal (%edx, %eax, 4), %edx\n"
         "movl -0x126c(%ebp), %ebx\n" /* line 782 | num_leafs */
@@ -2077,7 +2077,7 @@ void SV_SendClientSnapshot(client_t *client)
         ".Lf193c24_00194543:\n"
         "movl -0x12fc(%ebp), %eax\n" /* line 1756 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b0680, (%esp)\n" /* "WARNING: client disconnected for msg overflow: %s
+        "movl $str_002b0680, (%esp)\n" /* "WARNING: client disconnected for msg overflow: %s
 " */
         "calll Com_Printf\n"
         "movl 8(%ebp), %edx\n" /* line 1757 | client */
@@ -2088,13 +2088,13 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %edx, -0x34(%ebp)\n"
         "movl 0x6e5cc(%ebx), %eax\n" /* state */
         "movl %eax, -0x30(%ebp)\n"
-        "movl $0x228e90, 0x10(%esp)\n" /* "disconnect" */
+        "movl $str_00228e90, 0x10(%esp)\n" /* "disconnect" */
         "movl %ecx, 4(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
         "movl $1, (%esp)\n"
         "calll NET_OutOfBandPrint\n"
-        "movl $0x2b06b4, 4(%esp)\n" /* line 1758 */
+        "movl $str_002b06b4, 4(%esp)\n" /* line 1758 */
         "movl %ebx, (%esp)\n" /* state */
         "calll SV_DropClient\n"
         "jmp .Lf193c24_00193d21\n"
@@ -2114,7 +2114,7 @@ void SV_SendClientSnapshot(client_t *client)
         "addl %edx, %eax\n"
         "movl 8(%ebp), %edx\n" /* client */
         "leal 0x20d24(%edx, %eax, 4), %ebx\n" /* i */
-        "movl 0x195f284, %edx\n" /* line 397 */
+        "movl imp_svs, %edx\n" /* line 397 */
         "movl 0x18(%edx), %eax\n"
         "subl 0x10(%edx), %eax\n"
         "cmpl %eax, 0x26b0(%ebx)\n" /* i */
@@ -2122,7 +2122,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl 8(%ebp), %eax\n" /* line 399 | client */
         "addl $0x20c48, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b061c, (%esp)\n" /* "%s: Delta request from out of date entities.
+        "movl $str_002b061c, (%esp)\n" /* "%s: Delta request from out of date entities.
 " */
         "calll Com_DPrintf\n"
         "jmp .Lf193c24_00193d9b\n"
@@ -2133,13 +2133,13 @@ void SV_SendClientSnapshot(client_t *client)
         ".Lf193c24_00194610:\n"
         "movl -0x12fc(%ebp), %ebx\n" /* line 557 | i */
         "movl %ebx, 8(%esp)\n" /* i */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b03d4, (%esp)\n" /* "-- Unacknowledged Server Commands for client %i:%s --
+        "movl $str_002b03d4, (%esp)\n" /* "-- Unacknowledged Server Commands for client %i:%s --
 " */
         "calll Com_Printf\n"
         "movl 8(%ebp), %ecx\n" /* line 559 | client */
@@ -2148,7 +2148,7 @@ void SV_SendClientSnapshot(client_t *client)
         "cmpl GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE(%ecx), %ebx\n" /* i */
         "jle .Lf193c24_001946d7\n"
         ".Lf193c24_00194655:\n"
-        "movl $0x2b040c, (%esp)\n" /* line 562 */
+        "movl $str_002b040c, (%esp)\n" /* line 562 */
         "calll Com_Printf\n"
         /* } scope */
         "movl $0x20000, 8(%esp)\n" /* line 1746 */
@@ -2197,7 +2197,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl 0x80c(%eax, %ecx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x2ab3fc, (%esp)\n" /* "cmd %5d: %8d: %s
+        "movl $str_002ab3fc, (%esp)\n" /* "cmd %5d: %8d: %s
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 559 | i */
@@ -2259,7 +2259,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %eax, (%esp)\n"
         "calll MSG_WriteByte\n"
         "addl $1, %ebx\n" /* line 467 | i */
-        "movl 0x195f2b0, %eax\n"
+        "movl imp_sv_padPackets, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl 8(%eax), %ebx\n" /* i */
         "jl .Lf193c24_001947a8\n"
@@ -2300,7 +2300,7 @@ void SV_SendClientSnapshot(client_t *client)
         "testl %eax, %eax\n"
         "jle .Lf193c24_00193c6b\n"
         "xorl %edi, %edi\n" /* i */
-        "movl 0x195f284, %ebx\n" /* state */
+        "movl imp_svs, %ebx\n" /* state */
         "movl -0x12f0(%ebp), %ecx\n" /* cachedFrame */
         "jmp .Lf193c24_00194883\n"
         ".Lf193c24_00194868:\n"
@@ -2344,7 +2344,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %eax, 0x1c(%ebx)\n" /* state */
         "cmpl $0x7ffffffd, %eax\n" /* line 1557 */
         "jle .Lf193c24_00194868\n"
-        "movl $0x2b05cc, 4(%esp)\n" /* line 1559 */
+        "movl $str_002b05cc, 4(%esp)\n" /* line 1559 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf193c24_00194868\n"
@@ -2360,7 +2360,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %ecx, %eax\n" /* line 386 */
         "addl $0x20c48, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b05f0, (%esp)\n" /* "%s: Delta request from out of date packet.
+        "movl $str_002b05f0, (%esp)\n" /* "%s: Delta request from out of date packet.
 " */
         "calll Com_DPrintf\n"
         "jmp .Lf193c24_00193d9b\n"
@@ -2388,19 +2388,19 @@ void SV_SendClientSnapshot(client_t *client)
         "fstps -0x12cc(%ebp)\n" /* fogOpaqueDistSqrd */
         "movss -0x12cc(%ebp), %xmm0\n" /* line 648 | fogOpaqueDistSqrd */
         "movaps %xmm0, %xmm1\n"
-        "cmpneqss 0x2ed684, %xmm0\n" /* 3.4028234663852886e+38f */
+        "cmpneqss lit4_002ed684, %xmm0\n" /* 3.4028234663852886e+38f */
         "andps %xmm1, %xmm0\n"
         "movss %xmm0, -0x12cc(%ebp)\n" /* fogOpaqueDistSqrd */
-        "movl 0x195ee80, %eax\n" /* line 651 */
+        "movl imp_sv, %eax\n" /* line 651 */
         "movl 0x5f424(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jg .Lf193c24_00194c86\n"
         /* } scope */
         ".Lf193c24_001949a9:\n"
-        "movl 0x195f284, %edx\n" /* line 1488 */
+        "movl imp_svs, %edx\n" /* line 1488 */
         "movl 0xc(%edx), %ecx\n"
         "movl %ecx, -0x12f4(%ebp)\n" /* client */
-        "movl 0x195f290, %ecx\n"
+        "movl imp_sv_maxclients, %ecx\n"
         "movl (%ecx), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2409,7 +2409,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %edx, %edi\n" /* i */
         "jmp .Lf193c24_00194a01\n"
         ".Lf193c24_001949d9:\n"
-        "movl 0x195f290, %ecx\n"
+        "movl imp_sv_maxclients, %ecx\n"
         ".Lf193c24_001949df:\n"
         "addl $1, -0x1260(%ebp)\n"
         "addl $0x78f0c, -0x12f4(%ebp)\n" /* client */
@@ -2446,14 +2446,14 @@ void SV_SendClientSnapshot(client_t *client)
         "jg .Lf193c24_00194c6d\n"
         ".Lf193c24_00194a61:\n"
         "addl $1, 0x26ac(%esi)\n" /* line 1512 | frame */
-        "movl 0x195f290, %ecx\n"
+        "movl imp_sv_maxclients, %ecx\n"
         "jmp .Lf193c24_001949df\n"
         ".Lf193c24_00194a73:\n"
         "movl -0x1264(%ebp), %eax\n" /* line 1520 */
         "testl %eax, %eax\n"
         "jle .Lf193c24_00194847\n"
         "movl $0, -0x125c(%ebp)\n"
-        "movl 0x195f284, %edi\n" /* i */
+        "movl imp_svs, %edi\n" /* i */
         "jmp .Lf193c24_00194ab3\n"
         ".Lf193c24_00194a93:\n"
         "addl $1, 0x26a8(%esi)\n" /* line 1542 | frame */
@@ -2518,7 +2518,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %eax, 0x18(%edi)\n" /* i */
         "cmpl $0x7ffffffd, %eax\n" /* line 1538 */
         "jle .Lf193c24_00194a93\n"
-        "movl $0x2b05a8, 4(%esp)\n" /* line 1540 */
+        "movl $str_002b05a8, 4(%esp)\n" /* line 1540 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf193c24_00194a93\n"
@@ -2549,7 +2549,7 @@ void SV_SendClientSnapshot(client_t *client)
         "jg .Lf193c24_00194fb0\n"
         ".Lf193c24_00194bde:\n"
         "movss -0x12ac(%ebp), %xmm0\n" /* line 821 | fogOpaqueDistSqrd */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf193c24_00194f7e\n"
         "jne .Lf193c24_00194f7e\n"
         /* { scope 6 */
@@ -2586,7 +2586,7 @@ void SV_SendClientSnapshot(client_t *client)
         "jmp .Lf193c24_001942c3\n"
         /* } scope */
         ".Lf193c24_00194c6d:\n"
-        "movl $0x2b05cc, 4(%esp)\n" /* line 1510 */
+        "movl $str_002b05cc, 4(%esp)\n" /* line 1510 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf193c24_00194a61\n"
@@ -2597,7 +2597,7 @@ void SV_SendClientSnapshot(client_t *client)
         "jmp .Lf193c24_00194cf2\n"
         ".Lf193c24_00194c9c:\n"
         "jl .Lf193c24_00194cac\n" /* line 675 */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "cmpl 4(%eax), %edx\n"
         "js .Lf193c24_0019500d\n"
         ".Lf193c24_00194cac:\n"
@@ -2610,7 +2610,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %ebx, -0x1270(%ebp)\n" /* i */
         ".Lf193c24_00194cd4:\n"
         "addl $1, -0x12c8(%ebp)\n" /* line 651 | entnum */
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "movl -0x12c8(%ebp), %ebx\n" /* entnum, i */
         "cmpl %ebx, 0x5f424(%eax)\n" /* i */
         "jle .Lf193c24_00194e55\n"
@@ -2684,7 +2684,7 @@ void SV_SendClientSnapshot(client_t *client)
         "je .Lf193c24_00194dcd\n"
         ".Lf193c24_00194e09:\n"
         "movss -0x12cc(%ebp), %xmm0\n" /* line 722 | fogOpaqueDistSqrd */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf193c24_00194f42\n"
         "jne .Lf193c24_00194f42\n"
         /* { scope 5: e */
@@ -2704,7 +2704,7 @@ void SV_SendClientSnapshot(client_t *client)
         "testl %eax, %eax\n"
         "jle .Lf193c24_001949a9\n"
         "xorl %edi, %edi\n" /* i */
-        "movl 0x195f284, %ebx\n" /* state */
+        "movl imp_svs, %ebx\n" /* state */
         "jmp .Lf193c24_00194e83\n"
         ".Lf193c24_00194e6d:\n"
         "addl $1, 0x26a8(%esi)\n" /* line 1484 | frame */
@@ -2735,7 +2735,7 @@ void SV_SendClientSnapshot(client_t *client)
         "movl %eax, 0x18(%ebx)\n" /* state */
         "cmpl $0x7ffffffd, %eax\n" /* line 1480 */
         "jle .Lf193c24_00194e6d\n"
-        "movl $0x2b05a8, 4(%esp)\n" /* line 1482 */
+        "movl $str_002b05a8, 4(%esp)\n" /* line 1482 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf193c24_00194e6d\n"

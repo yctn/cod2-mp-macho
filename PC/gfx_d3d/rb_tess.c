@@ -75,14 +75,14 @@ void RB_TessParticleCloud(const GfxEntity *re)
     IDirect3DVertexBuffer9 *vb;
 
     /* Check DX level - particle clouds not supported in DX7 */
-    dxCaps = *(char **)0x195eec0;
+    dxCaps = *(char **)imp_r_rendererInUse;
     dxCaps = *(char **)dxCaps;
     if (*(int *)(dxCaps + 8) == 2) {
         return;
     }
 
     /* Flush if surface has existing data */
-    tess = *(char **)0x195f160;
+    tess = *(char **)imp_tess;
     if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
         RB_EndSurface();
     }
@@ -116,7 +116,7 @@ void RB_TessParticleCloud(const GfxEntity *re)
         scaledWorldUp[2] = worldUp[2] * scale;
 
         /* Copy camera view axis (3x3 matrix at backEnd->viewParms+0x48) */
-        backEnd = *(char **)0x195f0c8;
+        backEnd = *(char **)imp_backEnd;
         camAxis = (float *)(*(char **)(backEnd + 0x3c8) + 0x48);
         localViewAxis[0] = camAxis[0];
         localViewAxis[1] = camAxis[1];
@@ -168,7 +168,7 @@ void RB_TessParticleCloud(const GfxEntity *re)
     }
 
     /* Store viewAxis to backEnd+0x310 */
-    backEnd = *(char **)0x195f0c8;
+    backEnd = *(char **)imp_backEnd;
     *(float *)(backEnd + 0x310) = viewAxis[0];
     *(float *)(backEnd + 0x314) = viewAxis[1];
     *(float *)(backEnd + 0x318) = viewAxis[2];
@@ -181,9 +181,9 @@ void RB_TessParticleCloud(const GfxEntity *re)
     *(float *)(backEnd + 0x30c) = (float)re->materialRGBA[3] * oneOver255;
 
     /* Set up index and vertex buffers from DxGlobals */
-    dxGlobals = *(char **)0x195eed0;
+    dxGlobals = *(char **)imp_dx;
     ib = *(IDirect3DIndexBuffer9 **)(dxGlobals + 0x2dbc);
-    backEndData = *(char **)0x195f138;
+    backEndData = *(char **)imp_dxState;
     if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
         RB_ChangeIndices(ib);
     }
@@ -213,7 +213,7 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
     float *boneAxis;
     char *entity;
 
-    tess = *(char **)0x195f160;
+    tess = *(char **)imp_tess;
 
     /* Flush if surface has existing data */
     if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
@@ -232,14 +232,14 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
 
     /* Change index buffer if needed */
     ib = xsurf->indexBuffer;
-    backEndData = *(char **)0x195f138;
+    backEndData = *(char **)imp_dxState;
     if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
         RB_ChangeIndices(ib);
     }
 
     /* Determine vertex stride based on DX level */
     vb = xsurf->surfRigid.vb;
-    dxCaps = *(char **)0x195eec0;
+    dxCaps = *(char **)imp_r_rendererInUse;
     dxCaps = *(char **)dxCaps;
     if (*(int *)(dxCaps + 8) == 2) {
         vertexStride = 0x24;
@@ -257,7 +257,7 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
     /* Push matrix and set up world transform from boneAxis */
     RB_PushMatrixStack();
 
-    entity = *(char **)((byte *)*(void **)0x195f0c8 + 0x440);
+    entity = *(char **)((byte *)*(void **)imp_backEnd + 0x440);
     boneAxis = (float *)((byte *)surfType + 8);
 
     worldMatrix = RB_GetActiveWorldMatrix();
@@ -307,7 +307,7 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         "movss %xmm2, -0x34(%ebp)\n"
         "movss %xmm3, -0x38(%ebp)\n"
         /* { scope 1 */
-        "movl 0x195f160, %edx\n" /* line 344 */
+        "movl imp_tess, %edx\n" /* line 344 */
         "movl 0x5a7d4(%edx), %eax\n"
         "addl $4, %eax\n"
         "cmpl $0x154a, %eax\n"
@@ -316,7 +316,7 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         "addl $6, %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lffe872_000fe929\n"
-        "movl 0x195f160, %esi\n"
+        "movl imp_tess, %esi\n"
         ".Lffe872_000fe8c7:\n"
         "movl 0x5a7cc(%esi), %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
@@ -335,14 +335,14 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         "movl 0x5a7e0(%esi), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lffe872_000febb3\n"
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %ebx, 0x5a7cc(%eax)\n"
         "movl %eax, %edx\n"
         "movl %eax, %esi\n"
         "jmp .Lffe872_000fe935\n"
         ".Lffe872_000fe929:\n"
-        "movl 0x195f160, %edx\n"
-        "movl 0x195f160, %esi\n"
+        "movl imp_tess, %edx\n"
+        "movl imp_tess, %esi\n"
         ".Lffe872_000fe935:\n"
         "movl 0x5a7d4(%edx), %ebx\n" /* line 216 */
         "movl %ebx, %edx\n"
@@ -350,22 +350,22 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         "movl 0x5a7b0(%esi), %eax\n"
         "movw %bx, (%eax, %ecx, 2)\n"
         "leal 1(%ebx), %esi\n" /* line 218 */
-        "movl 0x195f160, %eax\n"
+        "movl imp_tess, %eax\n"
         "movl 0x5a7d0(%eax), %ecx\n"
         "movl 0x5a7b0(%eax), %eax\n"
         "movw %si, 2(%eax, %ecx, 2)\n"
         "leal 3(%edx), %ebx\n" /* line 219 */
-        "movl 0x195f160, %eax\n"
+        "movl imp_tess, %eax\n"
         "movl 0x5a7d0(%eax), %ecx\n"
         "movl 0x5a7b0(%eax), %eax\n"
         "movl %eax, -0x4c(%ebp)\n"
         "movw %bx, 4(%eax, %ecx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 220 */
+        "movl imp_tess, %eax\n" /* line 220 */
         "movl 0x5a7d0(%eax), %ecx\n"
         "movl 0x5a7b0(%eax), %eax\n"
         "movl %eax, -0x50(%ebp)\n"
         "movw %bx, 6(%eax, %ecx, 2)\n"
-        "movl 0x195f160, %ebx\n" /* line 221 */
+        "movl imp_tess, %ebx\n" /* line 221 */
         "movl 0x5a7d0(%ebx), %ecx\n"
         "movl 0x5a7b0(%ebx), %eax\n"
         "movw %si, 8(%eax, %ecx, 2)\n"
@@ -434,11 +434,11 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         "movss %xmm2, 4(%ebx)\n"
         "addss 8(%edi), %xmm1\n" /* line 242 | origin */
         "movss %xmm1, 8(%ebx)\n"
-        "movl 0x195f0c8, %eax\n" /* line 232 */
+        "movl imp_backEnd, %eax\n" /* line 232 */
         "movl 0x3c8(%eax), %eax\n"
         "leal 0xc(%eax), %ecx\n" /* from */
         /* { scope 2 */
-        "movss 0x2f2fd0, %xmm0\n" /* line 216 */
+        "movss faceAxis+112, %xmm0\n" /* line 216 */
         "movss 0xc(%eax), %xmm3\n"
         "xorps %xmm0, %xmm3\n"
         "movss 4(%ecx), %xmm2\n" /* line 217 */
@@ -489,7 +489,7 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         "movl %eax, 0x18(%edx)\n"
         "movl %eax, 0x18(%esi)\n" /* line 245 */
         "movl %eax, 0x18(%ebx)\n" /* line 246 */
-        "movl 0x195f160, %ebx\n" /* line 248 */
+        "movl imp_tess, %ebx\n" /* line 248 */
         "addl $4, 0x5a7d4(%ebx)\n"
         "addl $6, 0x5a7d0(%ebx)\n" /* line 249 */
         /* } scope */
@@ -502,7 +502,7 @@ void RB_AddQuadStampDx7(const vec_t *left, const vec_t *up, const int nativeColo
         /* { scope 1 */
         ".Lffe872_000febb3:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %ebx, 0x5a7cc(%eax)\n"
         "movl %eax, %edx\n"
         "movl %eax, %esi\n"
@@ -532,7 +532,7 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         "movss %xmm2, -0x3c(%ebp)\n"
         "movss %xmm3, -0x40(%ebp)\n"
         /* { scope 1 */
-        "movl 0x195f160, %edx\n" /* line 344 */
+        "movl imp_tess, %edx\n" /* line 344 */
         "movl 0x5a7d4(%edx), %eax\n"
         "addl $4, %eax\n"
         "cmpl $0x154a, %eax\n"
@@ -541,11 +541,11 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         "addl $6, %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lffebd4_000fec91\n"
-        "movl 0x195f160, %ecx\n"
+        "movl imp_tess, %ecx\n"
         ".Lffebd4_000fec29:\n"
         "movl 0x5a7cc(%ecx), %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x195f160, %esi\n" /* line 331 */
+        "movl imp_tess, %esi\n" /* line 331 */
         "movl 0x5a7c4(%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl 0x5a7c0(%esi), %eax\n"
@@ -561,14 +561,14 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         "movl 0x5a7e0(%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lffebd4_000ff00d\n"
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %ebx, 0x5a7cc(%eax)\n"
         "movl %eax, %edx\n"
         "movl %eax, %esi\n"
         "jmp .Lffebd4_000fec9d\n"
         ".Lffebd4_000fec91:\n"
-        "movl 0x195f160, %edx\n"
-        "movl 0x195f160, %esi\n"
+        "movl imp_tess, %edx\n"
+        "movl imp_tess, %esi\n"
         ".Lffebd4_000fec9d:\n"
         "movl 0x5a7d4(%edx), %ebx\n" /* line 151 */
         "movl %ebx, %edx\n"
@@ -576,22 +576,22 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         "movl 0x5a7b0(%esi), %eax\n"
         "movw %bx, (%eax, %ecx, 2)\n"
         "leal 1(%ebx), %esi\n" /* line 153 */
-        "movl 0x195f160, %eax\n"
+        "movl imp_tess, %eax\n"
         "movl 0x5a7d0(%eax), %ecx\n"
         "movl 0x5a7b0(%eax), %eax\n"
         "movw %si, 2(%eax, %ecx, 2)\n"
         "leal 3(%edx), %ebx\n" /* line 154 */
-        "movl 0x195f160, %eax\n"
+        "movl imp_tess, %eax\n"
         "movl 0x5a7d0(%eax), %ecx\n"
         "movl 0x5a7b0(%eax), %eax\n"
         "movl %eax, -0x50(%ebp)\n"
         "movw %bx, 4(%eax, %ecx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 155 */
+        "movl imp_tess, %eax\n" /* line 155 */
         "movl 0x5a7d0(%eax), %ecx\n"
         "movl 0x5a7b0(%eax), %eax\n"
         "movl %eax, -0x54(%ebp)\n"
         "movw %bx, 6(%eax, %ecx, 2)\n"
-        "movl 0x195f160, %ebx\n" /* line 156 */
+        "movl imp_tess, %ebx\n" /* line 156 */
         "movl 0x5a7d0(%ebx), %ecx\n"
         "movl 0x5a7b0(%ebx), %eax\n"
         "movw %si, 8(%eax, %ecx, 2)\n"
@@ -668,11 +668,11 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         "movl %eax, 0xc(%esi)\n"
         "movl %eax, 0xc(%ecx)\n" /* line 168 */
         "movl %eax, 0xc(%ebx)\n" /* line 169 */
-        "movl 0x195f0c8, %eax\n" /* line 171 */
+        "movl imp_backEnd, %eax\n" /* line 171 */
         "movl 0x3c8(%eax), %eax\n"
         "leal 0xc(%eax), %ecx\n" /* from */
         /* { scope 2 */
-        "movss 0x2f2fe0, %xmm0\n" /* line 216 */
+        "movss faceAxis+128, %xmm0\n" /* line 216 */
         "movss 0xc(%eax), %xmm3\n"
         "xorps %xmm0, %xmm3\n"
         "movss 4(%ecx), %xmm2\n" /* line 217 */
@@ -784,7 +784,7 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         "movl %eax, 0x1c(%ecx)\n"
         "movl -0x20(%ebp), %ebx\n" /* line 197 */
         "movl %eax, 0x1c(%ebx)\n"
-        "movl 0x195f160, %esi\n" /* line 199 */
+        "movl imp_tess, %esi\n" /* line 199 */
         "addl $4, 0x5a7d4(%esi)\n"
         "addl $6, 0x5a7d0(%esi)\n" /* line 200 */
         /* } scope */
@@ -797,7 +797,7 @@ void RB_AddQuadStamp(const vec_t *left, const vec_t *up, const int nativeColor, 
         /* { scope 1 */
         ".Lffebd4_000ff00d:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %ebx, 0x5a7cc(%eax)\n"
         "movl %eax, %edx\n"
         "movl %eax, %esi\n"
@@ -841,7 +841,7 @@ void RB_BuildSprite(void)
         ".Lfff02e_000ff073:\n"
         "jp .Lfff02e_000ff19c\n"
         "movss (%esi), %xmm1\n" /* line 324 | worldRadius, scale */
-        "movl 0x195f0c8, %eax\n"
+        "movl imp_backEnd, %eax\n"
         "movl 0x3c8(%eax), %eax\n"
         "leal 0x18(%eax), %edx\n" /* v */
         /* { scope 2 */
@@ -884,7 +884,7 @@ void RB_BuildSprite(void)
         "subl $1, %eax\n"
         "je .Lfff02e_000ff2dd\n"
         "cvtsi2ssl %edx, %xmm1\n" /* line 283 */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm0, %xmm2\n"
         "divss %xmm1, %xmm2\n"
         "cvtsi2ssl %ecx, %xmm1\n" /* line 284 */
@@ -902,7 +902,7 @@ void RB_BuildSprite(void)
         "addss %xmm1, %xmm3\n"
         /* } scope */
         ".Lfff02e_000ff14d:\n"
-        "movl 0x195eec0, %eax\n" /* line 352 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 352 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfff02e_000ff2be\n"
@@ -931,7 +931,7 @@ void RB_BuildSprite(void)
         "je .Lfff02e_000ff073\n"
         ".Lfff02e_000ff19c:\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 329 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x4c(%ebp)\n" /* angle */
         "movss %xmm0, (%esp)\n" /* line 485 */
@@ -946,7 +946,7 @@ void RB_BuildSprite(void)
         "movss -0x6c(%ebp), %xmm2\n"
         "movaps %xmm2, %xmm1\n" /* line 332 | scale */
         "mulss (%esi), %xmm1\n" /* worldRadius, scale */
-        "movl 0x195f0c8, %eax\n"
+        "movl imp_backEnd, %eax\n"
         "movl 0x3c8(%eax), %eax\n"
         /* { scope 2 */
         "movaps %xmm1, %xmm0\n" /* line 272 */
@@ -960,7 +960,7 @@ void RB_BuildSprite(void)
         /* } scope */
         "movss -0x68(%ebp), %xmm3\n" /* line 333 */
         "movaps %xmm3, %xmm1\n" /* scale */
-        "xorps 0x2f2ff0, %xmm1\n" /* scale */
+        "xorps faceAxis+144, %xmm1\n" /* scale */
         "mulss (%esi), %xmm1\n" /* worldRadius, scale */
         /* { scope 2 */
         "movaps %xmm1, %xmm0\n" /* line 288 */
@@ -1019,7 +1019,7 @@ void RB_BuildSprite(void)
         /* { scope 1 */
         /* { scope 2 */
         ".Lfff02e_000ff2dd:\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 271 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 271 | 1.0f */
         "movaps %xmm2, %xmm3\n"
         "pxor %xmm4, %xmm4\n"
         "movaps %xmm4, %xmm1\n"
@@ -1046,7 +1046,7 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
         "movss %xmm2, -0x8c(%ebp)\n"
         "movss %xmm3, -0x90(%ebp)\n"
         /* { scope 1 */
-        "movl 0x195f0c8, %eax\n" /* line 888 | b */
+        "movl imp_backEnd, %eax\n" /* line 888 | b */
         "movl 0x3c8(%eax), %eax\n" /* b */
         /* { scope 2 */
         "movss (%edi), %xmm0\n" /* line 248 */
@@ -1117,7 +1117,7 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
         "movl %ebx, 4(%esp)\n" /* vbase */
         "movl %esi, (%esp)\n"
         "calll Vec3Cross\n"
-        "movl 0x195f160, %edx\n" /* line 344 */
+        "movl imp_tess, %edx\n" /* line 344 */
         "movl 0x5a7d4(%edx), %eax\n"
         "addl $4, %eax\n"
         "cmpl $0x154a, %eax\n"
@@ -1126,11 +1126,11 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
         "addl $6, %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfff2f4_000ff71e\n"
-        "movl 0x195f160, %ecx\n"
+        "movl imp_tess, %ecx\n"
         ".Lfff2f4_000ff47c:\n"
         "movl 0x5a7cc(%ecx), %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x195f160, %esi\n" /* line 331 */
+        "movl imp_tess, %esi\n" /* line 331 */
         "movl 0x5a7c4(%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl 0x5a7c0(%esi), %eax\n"
@@ -1147,7 +1147,7 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
         "testl %eax, %eax\n"
         "jne .Lfff2f4_000ff729\n"
         ".Lfff2f4_000ff4d7:\n"
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %ebx, 0x5a7cc(%eax)\n"
         "movl %eax, %edx\n"
         ".Lfff2f4_000ff4e4:\n"
@@ -1257,14 +1257,14 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
         "movl %edx, 0x18(%ecx)\n"
         "movl %edx, 0x18(%esi)\n" /* line 919 */
         "movl %edx, 0x18(%ebx)\n" /* line 920 | vbase */
-        "movl 0x195f160, %esi\n" /* line 922 */
+        "movl imp_tess, %esi\n" /* line 922 */
         "movl 0x5a7d4(%esi), %ecx\n"
         "movl %ecx, %ebx\n" /* vbase */
         "movl 0x5a7d0(%esi), %edx\n" /* line 923 */
         "movl 0x5a7b0(%esi), %eax\n"
         "movw %cx, (%eax, %edx, 2)\n"
         "leal 1(%ecx), %esi\n" /* line 924 */
-        "movl 0x195f160, %edi\n" /* start */
+        "movl imp_tess, %edi\n" /* start */
         "movl 0x5a7d0(%edi), %edx\n" /* start */
         "movl 0x5a7b0(%edi), %eax\n" /* start */
         "movw %si, 2(%eax, %edx, 2)\n"
@@ -1292,7 +1292,7 @@ void RB_AddLineDx7(const vec_t *end, float width, D3DCOLOR nativeColor, float s0
         "popl %ebp\n"
         "retl\n"
         ".Lfff2f4_000ff71e:\n"
-        "movl 0x195f160, %edx\n"
+        "movl imp_tess, %edx\n"
         "jmp .Lfff2f4_000ff4e4\n"
         /* { scope 1 */
         ".Lfff2f4_000ff729:\n"
@@ -1323,7 +1323,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "movss %xmm2, -0x8c(%ebp)\n"
         "movss %xmm3, -0x90(%ebp)\n"
         /* { scope 1 */
-        "movl 0x195f0c8, %eax\n" /* line 814 | b */
+        "movl imp_backEnd, %eax\n" /* line 814 | b */
         "movl 0x3c8(%eax), %eax\n" /* b */
         /* { scope 2 */
         "movss (%edi), %xmm0\n" /* line 248 */
@@ -1394,7 +1394,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "movl %ebx, 4(%esp)\n" /* vbase */
         "movl %esi, (%esp)\n"
         "calll Vec3Cross\n"
-        "movl 0x195f160, %edx\n" /* line 344 */
+        "movl imp_tess, %edx\n" /* line 344 */
         "movl 0x5a7d4(%edx), %eax\n"
         "addl $4, %eax\n"
         "cmpl $0x154a, %eax\n"
@@ -1403,11 +1403,11 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "addl $6, %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfff73a_000ffc54\n"
-        "movl 0x195f160, %ecx\n"
+        "movl imp_tess, %ecx\n"
         ".Lfff73a_000ff8c2:\n"
         "movl 0x5a7cc(%ecx), %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x195f160, %esi\n" /* line 331 */
+        "movl imp_tess, %esi\n" /* line 331 */
         "movl 0x5a7c4(%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl 0x5a7c0(%esi), %eax\n"
@@ -1424,7 +1424,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "testl %eax, %eax\n"
         "jne .Lfff73a_000ffc5f\n"
         ".Lfff73a_000ff91d:\n"
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %ebx, 0x5a7cc(%eax)\n"
         "movl %eax, %ecx\n"
         ".Lfff73a_000ff92a:\n"
@@ -1611,7 +1611,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "movl %eax, 0x1c(%edi)\n" /* line 858 | start */
         "movl %eax, 0x1c(%esi)\n" /* line 859 */
         "movl %eax, 0x1c(%ebx)\n" /* line 860 | vbase */
-        "movl 0x195f160, %edx\n" /* line 862 */
+        "movl imp_tess, %edx\n" /* line 862 */
         "movl 0x5a7d4(%edx), %ecx\n"
         "movl %ecx, %ebx\n" /* vbase */
         "movl %edx, %esi\n" /* line 863 */
@@ -1619,7 +1619,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "movl 0x5a7b0(%esi), %eax\n"
         "movw %cx, (%eax, %edx, 2)\n"
         "leal 1(%ecx), %esi\n" /* line 864 */
-        "movl 0x195f160, %edi\n" /* start */
+        "movl imp_tess, %edi\n" /* start */
         "movl 0x5a7d0(%edi), %edx\n" /* start */
         "movl 0x5a7b0(%edi), %eax\n" /* start */
         "movw %si, 2(%eax, %edx, 2)\n"
@@ -1647,7 +1647,7 @@ void RB_AddLine(const vec_t *end, float width, D3DCOLOR nativeColor, float s0, f
         "popl %ebp\n"
         "retl\n"
         ".Lfff73a_000ffc54:\n"
-        "movl 0x195f160, %ecx\n"
+        "movl imp_tess, %ecx\n"
         "jmp .Lfff73a_000ff92a\n"
         /* { scope 1 */
         ".Lfff73a_000ffc5f:\n"
@@ -1677,7 +1677,7 @@ void RB_TessEntity(const GfxEntity *re)
         "subl $4, %eax\n"
         "cmpl $5, %eax\n"
         "ja .Lfffc70_000ffe08\n"
-        "jmpl *0x2f3010(, %eax, 4)\n"
+        "jmpl *faceAxis+176(, %eax, 4)\n"
         "testb $0x20, 5(%edi)\n" /* line 514 */
         "jne .Lfffc70_00100586\n"
         /* { scope 1: from, screenOffset, b, a, ... */
@@ -1697,7 +1697,7 @@ void RB_TessEntity(const GfxEntity *re)
         "leal 0x3c(%edi), %edx\n" /* line 493 */
         /* { scope 2: worldOffset */
         /* { scope 3 */
-        "movl 0x195f0c8, %eax\n" /* line 368 */
+        "movl imp_backEnd, %eax\n" /* line 368 */
         "movl 0x3c8(%eax), %ecx\n"
         "leal 0xc8(%ecx), %ebx\n"
         "movss 0x3c(%edi), %xmm2\n" /* line 371 */
@@ -1714,7 +1714,7 @@ void RB_TessEntity(const GfxEntity *re)
         "jae .Lfffc70_000ffe08\n"
         "leal 0x18(%ecx), %eax\n" /* line 445 | dir */
         "movaps %xmm3, %xmm0\n" /* scale */
-        "xorps 0x2f3000, %xmm0\n" /* scale */
+        "xorps faceAxis+160, %xmm0\n" /* scale */
         /* { scope 3 */
         "movaps %xmm0, %xmm5\n" /* line 288 */
         "mulss 0x18(%ecx), %xmm5\n"
@@ -1756,7 +1756,7 @@ void RB_TessEntity(const GfxEntity *re)
         "cmpl $2, %edx\n"
         "jne .Lfffc70_000ffd77\n"
         /* } scope */
-        "movss 0x2ed5d0, %xmm0\n" /* line 449 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 449 | 1.0f, scale */
         "divss %xmm2, %xmm0\n" /* scale */
         /* { scope 3 */
         "movaps %xmm0, %xmm1\n" /* line 86 */
@@ -1765,7 +1765,7 @@ void RB_TessEntity(const GfxEntity *re)
         "mulss -0x20(%ebp), %xmm0\n" /* line 87 */
         "movss %xmm0, -0x20(%ebp)\n"
         /* } scope */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         /* } scope */
         "ucomiss %xmm0, %xmm6\n" /* line 499 */
         "jbe .Lfffc70_000ffdfe\n"
@@ -1791,7 +1791,7 @@ void RB_TessEntity(const GfxEntity *re)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        "movl 0x195eec0, %eax\n" /* line 1173 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1173 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfffc70_00100996\n"
@@ -1803,7 +1803,7 @@ void RB_TessEntity(const GfxEntity *re)
         /* { scope 2: worldOffset */
         "movss 0x3c(%edi), %xmm2\n" /* line 256 */
         "addss 0x48(%edi), %xmm2\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "mulss %xmm3, %xmm2\n"
         "leal 0x40(%edi), %eax\n" /* line 257 */
         "movl %eax, -0x74(%ebp)\n"
@@ -1820,7 +1820,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addss 0x50(%edi), %xmm0\n"
         "mulss %xmm3, %xmm0\n"
         /* } scope */
-        "movl 0x195f0c8, %ebx\n" /* line 248 */
+        "movl imp_backEnd, %ebx\n" /* line 248 */
         "subss 0x3cc(%ebx), %xmm2\n"
         "movss %xmm2, -0x48(%ebp)\n" /* midpoint */
         "subss 0x3d0(%ebx), %xmm1\n" /* line 249 */
@@ -1835,9 +1835,9 @@ void RB_TessEntity(const GfxEntity *re)
         "movss -0xfc(%ebp), %xmm0\n"
         "mulss 0x3d8(%ebx), %xmm0\n" /* line 428 */
         "addss 0x3dc(%ebx), %xmm0\n"
-        "mulss 0x2ed890, %xmm0\n" /* -0.0009765625f */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "mulss 0x2ed830, %xmm0\n" /* 32.0f */
+        "mulss lit4_002ed890, %xmm0\n" /* -0.0009765625f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
+        "mulss lit4_002ed830, %xmm0\n" /* 32.0f */
         "movss -0xf8(%ebp), %xmm3\n"
         "addss %xmm3, %xmm0\n"
         "movss %xmm0, (%esp)\n"
@@ -1848,11 +1848,11 @@ void RB_TessEntity(const GfxEntity *re)
         "jg .Lfffc70_00100644\n"
         "movl $0x30, %esi\n"
         "movl $0x10, -0x60(%ebp)\n"
-        "movss 0x2ed740, %xmm0\n" /* 8.0f */
+        "movss lit4_002ed740, %xmm0\n" /* 8.0f */
         "movss %xmm0, -0x5c(%ebp)\n"
         "movl -0x60(%ebp), %edx\n"
         ".Lfffc70_000fff39:\n"
-        "movl 0x195f160, %ebx\n" /* line 344 */
+        "movl imp_tess, %ebx\n" /* line 344 */
         "movl 0x5a7d4(%ebx), %eax\n"
         "leal 2(%edx, %eax), %eax\n"
         "cmpl $0x154a, %eax\n"
@@ -1879,7 +1879,7 @@ void RB_TessEntity(const GfxEntity *re)
         "testl %ebx, %ebx\n"
         "jne .Lfffc70_00100668\n"
         ".Lfffc70_000fffaf:\n"
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %esi, 0x5a7cc(%eax)\n"
         ".Lfffc70_000fffba:\n"
         "movl -0x78(%ebp), %ecx\n" /* line 248 | a */
@@ -1907,7 +1907,7 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
         "calll MakeNormalVectors\n"
-        "movl 0x195f160, %ebx\n" /* line 623 */
+        "movl imp_tess, %ebx\n" /* line 623 */
         "movl 0x5a7d4(%ebx), %eax\n"
         "shll $6, %eax\n"
         "addl %ebx, %eax\n"
@@ -1926,14 +1926,14 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, -0xd0(%ebp)\n" /* mtlColor */
         "movzbl 3(%edx), %eax\n" /* line 658 */
         "shll $0x18, %eax\n"
-        "andl $0xffffff, -0xd0(%ebp)\n" /* mtlColor */
+        "andl $g_effectVisArray+4351, -0xd0(%ebp)\n" /* mtlColor */
         "orl %eax, -0xd0(%ebp)\n" /* mtlColor */
         /* } scope */
-        "movss 0x2ed5d0, %xmm0\n" /* line 627 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 627 | 1.0f */
         "divss -0x5c(%ebp), %xmm0\n"
         "movss %xmm0, -0x8c(%ebp)\n" /* sDelta */
         "cvtss2sd %xmm0, %xmm0\n" /* line 631 */
-        "mulsd 0x307c98, %xmm0\n" /* 6.283185307179586 */
+        "mulsd lit8_00307c98, %xmm0\n" /* 6.283185307179586 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x64(%ebp)\n" /* radians */
         /* { scope 2: worldOffset */
@@ -1983,12 +1983,12 @@ void RB_TessEntity(const GfxEntity *re)
         "movl $0x3f800000, 0x20(%ecx)\n" /* line 673 */
         "movl $0, 0x24(%ecx)\n" /* line 674 */
         "movl %ebx, 0x1c(%ecx)\n" /* line 675 */
-        "movl 0x195f160, %ecx\n" /* line 677 */
+        "movl imp_tess, %ecx\n" /* line 677 */
         "movl 0x5a7d4(%ecx), %ecx\n"
         "addl %ecx, -0x60(%ebp)\n"
         "movl -0x60(%ebp), %eax\n"
         "addl $2, %eax\n"
-        "movl 0x195f160, %ebx\n"
+        "movl imp_tess, %ebx\n"
         "movl %eax, 0x5a7d4(%ebx)\n"
         "jmp .Lfffc70_000ffe08\n"
         /* } scope */
@@ -2002,7 +2002,7 @@ void RB_TessEntity(const GfxEntity *re)
         "orl %eax, %ebx\n" /* color */
         "movzbl 0x5a(%edi), %eax\n" /* line 1133 */
         "shll $0x18, %eax\n"
-        "andl $0xffffff, %ebx\n" /* color */
+        "andl $g_effectVisArray+4351, %ebx\n" /* color */
         "orl %eax, %ebx\n" /* color */
         /* { scope 2: worldOffset */
         "movl 0x54(%edi), %eax\n" /* line 207 */
@@ -2013,7 +2013,7 @@ void RB_TessEntity(const GfxEntity *re)
         "subl $1, %eax\n"
         "je .Lfffc70_0010097f\n"
         "cvtsi2ssl %edx, %xmm1\n" /* line 283 */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm0, %xmm2\n"
         "divss %xmm1, %xmm2\n"
         "cvtsi2ssl %ecx, %xmm1\n" /* line 284 */
@@ -2032,7 +2032,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addss %xmm4, %xmm5\n"
         /* } scope */
         ".Lfffc70_001001f8:\n"
-        "movl 0x195eec0, %eax\n" /* line 1141 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1141 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfffc70_00100960\n"
@@ -2101,7 +2101,7 @@ void RB_TessEntity(const GfxEntity *re)
         "subl $1, %eax\n"
         "je .Lfffc70_00100d68\n"
         "cvtsi2ssl %edx, %xmm1\n" /* line 283 */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm0, %xmm2\n"
         "divss %xmm1, %xmm2\n"
         "cvtsi2ssl %ecx, %xmm1\n" /* line 284 */
@@ -2119,7 +2119,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addss %xmm1, %xmm3\n"
         /* } scope */
         ".Lfffc70_0010034e:\n"
-        "movl 0x195eec0, %eax\n" /* line 569 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 569 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfffc70_00100d4e\n"
@@ -2161,18 +2161,18 @@ void RB_TessEntity(const GfxEntity *re)
         "orl %eax, %ecx\n"
         "movzbl 0x5a(%edi), %eax\n" /* line 954 */
         "shll $0x18, %eax\n"
-        "andl $0xffffff, %ecx\n"
+        "andl $g_effectVisArray+4351, %ecx\n"
         "orl %eax, %ecx\n"
-        "movl 0x195eec0, %eax\n" /* line 960 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 960 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfffc70_00100d1a\n"
-        "movl 0x195f23c, %eax\n" /* line 966 */
+        "movl imp_r_railCoreWidth, %eax\n" /* line 966 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c4, %xmm1\n" /* 0.00390625f */
+        "mulss lit4_002ed5c4, %xmm1\n" /* 0.00390625f */
         "movss %xmm1, (%esp)\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "pxor %xmm2, %xmm2\n"
         "movaps %xmm2, %xmm1\n"
         "movl %ebx, %eax\n" /* b */
@@ -2189,7 +2189,7 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, (%esp)\n"
         "calll MakeNormalVectors\n"
         "cvtss2sd 0x6c(%edi), %xmm0\n" /* line 548 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0xbc(%ebp)\n" /* radians */
         /* { scope 2: worldOffset */
@@ -2218,7 +2218,7 @@ void RB_TessEntity(const GfxEntity *re)
         /* } scope */
         "movss -0xf8(%ebp), %xmm3\n" /* line 552 */
         "movaps %xmm3, %xmm1\n" /* scale */
-        "xorps 0x2f3000, %xmm1\n" /* scale */
+        "xorps faceAxis+160, %xmm1\n" /* scale */
         "mulss -0xc4(%ebp), %xmm1\n" /* scale */
         /* { scope 2: worldOffset */
         "movaps %xmm1, %xmm0\n" /* line 288 */
@@ -2268,7 +2268,7 @@ void RB_TessEntity(const GfxEntity *re)
         /* { scope 3 */
         /* { scope 4 */
         /* { scope 5 */
-        "movl 0x195f0c8, %eax\n" /* line 368 */
+        "movl imp_backEnd, %eax\n" /* line 368 */
         "movl 0x3c8(%eax), %ecx\n"
         "leal 0xc8(%ecx), %eax\n"
         "movss 0x3c(%edi), %xmm2\n" /* line 371 */
@@ -2282,7 +2282,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addss 0x3c(%eax), %xmm2\n"
         /* } scope */
         /* } scope */
-        "ucomiss 0x2ed5e8, %xmm2\n" /* line 406 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 406 | 0.0f */
         "jp .Lfffc70_001005d9\n"
         "jbe .Lfffc70_000ffe08\n"
         ".Lfffc70_001005d9:\n"
@@ -2338,7 +2338,7 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %ebx, -0x4c(%ebp)\n" /* color */
         "pxor %xmm2, %xmm2\n"
         "movaps %xmm2, %xmm4\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movl $0, -0x88(%ebp)\n" /* segmentX2 */
         "jmp .Lfffc70_001006a6\n"
         ".Lfffc70_001006a3:\n"
@@ -2437,7 +2437,7 @@ void RB_TessEntity(const GfxEntity *re)
         "mulss -0x84(%ebp), %xmm2\n" /* sinAngleDelta */
         "subss %xmm2, %xmm3\n"
         "movl -0x88(%ebp), %ecx\n" /* segmentX2 */
-        "movl 0x195f160, %eax\n" /* line 656 */
+        "movl imp_tess, %eax\n" /* line 656 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "movl 0x5a7b0(%eax), %edx\n"
         "movl %edx, -0x120(%ebp)\n"
@@ -2445,7 +2445,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl %ecx, %edx\n"
         "movl -0x120(%ebp), %eax\n"
         "movw %dx, (%eax, %ebx, 2)\n"
-        "movl 0x195f160, %edx\n" /* line 657 */
+        "movl imp_tess, %edx\n" /* line 657 */
         "movl 0x5a7d0(%edx), %ebx\n"
         "movl 0x5a7b0(%edx), %eax\n"
         "movl %eax, -0x124(%ebp)\n"
@@ -2455,7 +2455,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $1, %eax\n"
         "movl -0x124(%ebp), %edx\n"
         "movw %ax, 2(%edx, %ebx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 658 */
+        "movl imp_tess, %eax\n" /* line 658 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "movl 0x5a7b0(%eax), %edx\n"
         "movl %edx, -0x128(%ebp)\n"
@@ -2465,7 +2465,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $3, %eax\n"
         "movl -0x128(%ebp), %edx\n"
         "movw %ax, 4(%edx, %ebx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 659 */
+        "movl imp_tess, %eax\n" /* line 659 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "addl $3, %ebx\n"
         "movl %ebx, 0x5a7d0(%eax)\n"
@@ -2477,7 +2477,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $3, %eax\n"
         "movl -0x12c(%ebp), %edx\n"
         "movw %ax, (%edx, %ebx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 662 */
+        "movl imp_tess, %eax\n" /* line 662 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "movl 0x5a7b0(%eax), %edx\n"
         "movl %edx, -0x130(%ebp)\n"
@@ -2487,7 +2487,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $2, %eax\n"
         "movl -0x130(%ebp), %edx\n"
         "movw %ax, 2(%edx, %ebx, 2)\n"
-        "movl 0x195f160, %ebx\n" /* line 663 */
+        "movl imp_tess, %ebx\n" /* line 663 */
         "movl 0x5a7d0(%ebx), %edx\n"
         "movl 0x5a7b0(%ebx), %eax\n"
         "addw 0x5a7d4(%ebx), %cx\n"
@@ -2513,7 +2513,7 @@ void RB_TessEntity(const GfxEntity *re)
         "jmp .Lfffc70_000ffe08\n"
         /* { scope 2: worldOffset */
         ".Lfffc70_0010097f:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 271 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 271 | 1.0f */
         "movaps %xmm3, %xmm5\n"
         "pxor %xmm1, %xmm1\n"
         "movaps %xmm1, %xmm4\n"
@@ -2529,7 +2529,7 @@ void RB_TessEntity(const GfxEntity *re)
         /* { scope 2: worldOffset */
         "movss 0x3c(%edi), %xmm2\n" /* line 256 */
         "addss 0x48(%edi), %xmm2\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "mulss %xmm3, %xmm2\n"
         "leal 0x40(%edi), %ecx\n" /* line 257 */
         "movl %ecx, -0xa0(%ebp)\n"
@@ -2546,7 +2546,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addss 0x50(%edi), %xmm0\n"
         "mulss %xmm3, %xmm0\n"
         /* } scope */
-        "movl 0x195f0c8, %ebx\n" /* line 248 */
+        "movl imp_backEnd, %ebx\n" /* line 248 */
         "subss 0x3cc(%ebx), %xmm2\n"
         "movss %xmm2, -0x24(%ebp)\n" /* screenOffset */
         "subss 0x3d0(%ebx), %xmm1\n" /* line 249 */
@@ -2561,9 +2561,9 @@ void RB_TessEntity(const GfxEntity *re)
         "movss -0xfc(%ebp), %xmm0\n"
         "mulss 0x3d8(%ebx), %xmm0\n" /* line 428 */
         "addss 0x3dc(%ebx), %xmm0\n"
-        "mulss 0x2ed890, %xmm0\n" /* -0.0009765625f */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "mulss 0x2ed830, %xmm0\n" /* 32.0f */
+        "mulss lit4_002ed890, %xmm0\n" /* -0.0009765625f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
+        "mulss lit4_002ed830, %xmm0\n" /* 32.0f */
         "movss -0xf8(%ebp), %xmm3\n"
         "addss %xmm3, %xmm0\n"
         "movss %xmm0, (%esp)\n"
@@ -2574,11 +2574,11 @@ void RB_TessEntity(const GfxEntity *re)
         "jg .Lfffc70_00100d99\n"
         "movl $0x30, %esi\n"
         "movl $0x10, -0x58(%ebp)\n"
-        "movss 0x2ed740, %xmm0\n" /* 8.0f */
+        "movss lit4_002ed740, %xmm0\n" /* 8.0f */
         "movss %xmm0, -0x54(%ebp)\n"
         "movl -0x58(%ebp), %edx\n"
         ".Lfffc70_00100abd:\n"
-        "movl 0x195f160, %ebx\n" /* line 344 */
+        "movl imp_tess, %ebx\n" /* line 344 */
         "movl 0x5a7d4(%ebx), %eax\n"
         "leal 2(%edx, %eax), %eax\n"
         "cmpl $0x154a, %eax\n"
@@ -2605,7 +2605,7 @@ void RB_TessEntity(const GfxEntity *re)
         "testl %eax, %eax\n"
         "jne .Lfffc70_00100d10\n"
         ".Lfffc70_00100b33:\n"
-        "movl 0x195f160, %eax\n" /* line 313 */
+        "movl imp_tess, %eax\n" /* line 313 */
         "movl %esi, 0x5a7cc(%eax)\n"
         ".Lfffc70_00100b3e:\n"
         "movl -0xa4(%ebp), %ecx\n" /* line 248 | a */
@@ -2633,7 +2633,7 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
         "calll MakeNormalVectors\n"
-        "movl 0x195f160, %ebx\n" /* line 721 */
+        "movl imp_tess, %ebx\n" /* line 721 */
         "movl 0x5a7d4(%ebx), %eax\n"
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -2652,14 +2652,14 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, -0xcc(%ebp)\n" /* mtlColor */
         "movzbl 3(%edx), %eax\n" /* line 658 */
         "shll $0x18, %eax\n"
-        "andl $0xffffff, -0xcc(%ebp)\n" /* mtlColor */
+        "andl $g_effectVisArray+4351, -0xcc(%ebp)\n" /* mtlColor */
         "orl %eax, -0xcc(%ebp)\n" /* mtlColor */
         /* } scope */
-        "movss 0x2ed5d0, %xmm0\n" /* line 725 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 725 | 1.0f */
         "divss -0x54(%ebp), %xmm0\n"
         "movss %xmm0, -0xb8(%ebp)\n" /* sDelta */
         "cvtss2sd %xmm0, %xmm0\n" /* line 729 */
-        "mulsd 0x307c98, %xmm0\n" /* 6.283185307179586 */
+        "mulsd lit8_00307c98, %xmm0\n" /* 6.283185307179586 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x90(%ebp)\n" /* radians */
         /* { scope 2: worldOffset */
@@ -2707,12 +2707,12 @@ void RB_TessEntity(const GfxEntity *re)
         "movl $0, 0x20(%ecx)\n" /* line 770 */
         "movl -0xcc(%ebp), %eax\n" /* line 771 | mtlColor */
         "movl %eax, 0x18(%ecx)\n"
-        "movl 0x195f160, %edx\n" /* line 773 */
+        "movl imp_tess, %edx\n" /* line 773 */
         "movl 0x5a7d4(%edx), %edx\n"
         "addl %edx, -0x58(%ebp)\n"
         "movl -0x58(%ebp), %eax\n"
         "addl $2, %eax\n"
-        "movl 0x195f160, %ecx\n"
+        "movl imp_tess, %ecx\n"
         "movl %eax, 0x5a7d4(%ecx)\n"
         "jmp .Lfffc70_000ffe08\n"
         ".Lfffc70_00100d10:\n"
@@ -2721,12 +2721,12 @@ void RB_TessEntity(const GfxEntity *re)
         /* } scope */
         /* { scope 1: from, screenOffset, b, a, ... */
         ".Lfffc70_00100d1a:\n"
-        "movl 0x195f23c, %eax\n" /* line 962 */
+        "movl imp_r_railCoreWidth, %eax\n" /* line 962 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c4, %xmm1\n" /* 0.00390625f */
+        "mulss lit4_002ed5c4, %xmm1\n" /* 0.00390625f */
         "movss %xmm1, (%esp)\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "pxor %xmm2, %xmm2\n"
         "movaps %xmm2, %xmm1\n"
         "movl %ebx, %eax\n" /* b */
@@ -2745,7 +2745,7 @@ void RB_TessEntity(const GfxEntity *re)
         "jmp .Lfffc70_000ffe08\n"
         /* { scope 2: worldOffset */
         ".Lfffc70_00100d68:\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 271 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 271 | 1.0f */
         "movaps %xmm2, %xmm3\n"
         "pxor %xmm4, %xmm4\n"
         "movaps %xmm4, %xmm1\n"
@@ -2778,7 +2778,7 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, -0x50(%ebp)\n"
         "pxor %xmm2, %xmm2\n"
         "movaps %xmm2, %xmm4\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movl $0, -0xb4(%ebp)\n" /* segmentX2 */
         "jmp .Lfffc70_00100de9\n"
         ".Lfffc70_00100de6:\n"
@@ -2870,7 +2870,7 @@ void RB_TessEntity(const GfxEntity *re)
         "mulss -0xb0(%ebp), %xmm2\n" /* sinAngleDelta */
         "subss %xmm2, %xmm3\n"
         "movl -0xb4(%ebp), %ecx\n" /* segmentX2 */
-        "movl 0x195f160, %eax\n" /* line 752 */
+        "movl imp_tess, %eax\n" /* line 752 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "movl 0x5a7b0(%eax), %edx\n"
         "movl %edx, -0x10c(%ebp)\n"
@@ -2878,7 +2878,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl %ecx, %edx\n"
         "movl -0x10c(%ebp), %eax\n"
         "movw %dx, (%eax, %ebx, 2)\n"
-        "movl 0x195f160, %edx\n" /* line 753 */
+        "movl imp_tess, %edx\n" /* line 753 */
         "movl 0x5a7d0(%edx), %ebx\n"
         "movl 0x5a7b0(%edx), %eax\n"
         "movl %eax, -0x110(%ebp)\n"
@@ -2888,7 +2888,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $1, %eax\n"
         "movl -0x110(%ebp), %edx\n"
         "movw %ax, 2(%edx, %ebx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 754 */
+        "movl imp_tess, %eax\n" /* line 754 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "movl 0x5a7b0(%eax), %edx\n"
         "movl %edx, -0x114(%ebp)\n"
@@ -2898,7 +2898,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $3, %eax\n"
         "movl -0x114(%ebp), %edx\n"
         "movw %ax, 4(%edx, %ebx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 755 */
+        "movl imp_tess, %eax\n" /* line 755 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "addl $3, %ebx\n"
         "movl %ebx, 0x5a7d0(%eax)\n"
@@ -2910,7 +2910,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $3, %eax\n"
         "movl -0x118(%ebp), %edx\n"
         "movw %ax, (%edx, %ebx, 2)\n"
-        "movl 0x195f160, %eax\n" /* line 758 */
+        "movl imp_tess, %eax\n" /* line 758 */
         "movl 0x5a7d0(%eax), %ebx\n"
         "movl 0x5a7b0(%eax), %edx\n"
         "movl %edx, -0x11c(%ebp)\n"
@@ -2920,7 +2920,7 @@ void RB_TessEntity(const GfxEntity *re)
         "addl $2, %eax\n"
         "movl -0x11c(%ebp), %edx\n"
         "movw %ax, 2(%edx, %ebx, 2)\n"
-        "movl 0x195f160, %ebx\n" /* line 759 */
+        "movl imp_tess, %ebx\n" /* line 759 */
         "movl 0x5a7d0(%ebx), %edx\n"
         "movl 0x5a7b0(%ebx), %eax\n"
         "addw 0x5a7d4(%ebx), %cx\n"
@@ -2948,7 +2948,7 @@ void RB_TessEntity(const GfxEntity *re)
 /* line 1193 */
 void RB_TessBackEndEntity(const surfaceType_t *surfType)
 {
-    RB_TessEntity((const GfxEntity *)*(void **)((byte *)*(void **)0x195f0c8 + 0x440));
+    RB_TessEntity((const GfxEntity *)*(void **)((byte *)*(void **)imp_backEnd + 0x440));
 }
 
 /* line 75 */
@@ -2966,14 +2966,14 @@ void RB_TessPoly(const surfaceType_t *surfType)
     char *dest;
     unsigned short *indices;
 
-    tess = *(char **)0x195f160;
+    tess = *(char **)imp_tess;
 
     /* Check if sorted index matches (poly mode = 1) */
     if (*(int *)(tess + 0x5a7cc) != 1) {
         if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
             RB_EndSurface();
         }
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         *(int *)(tess + 0x5a7cc) = 1;
     }
 
@@ -2985,24 +2985,24 @@ void RB_TessPoly(const surfaceType_t *surfType)
         indexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
         sortedIndex = *(int *)(tess + 0x5a7cc);
         RB_EndSurface();
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         RB_BeginSurface(
             *(const Material **)(tess + 0x5a7bc),
             *(MaterialTechniqueType *)(tess + 0x5a7c0),
             *(int *)(tess + 0x5a7c4));
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
             if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                 RB_EndSurface();
             }
-            tess = *(char **)0x195f160;
+            tess = *(char **)imp_tess;
             *(int *)(tess + 0x5a7cc) = sortedIndex;
             vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
         }
     }
 
     /* Check DX level for vertex copy method */
-    dxCaps = *(char **)0x195eec0;
+    dxCaps = *(char **)imp_r_rendererInUse;
     dxCaps = *(char **)dxCaps;
 
     if (*(int *)(dxCaps + 8) == 2) {
@@ -3010,7 +3010,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
         src = *(char **)((byte *)surfType + 0xc);
         for (i = 0; i < vertCount; i++) {
             char *srcVert = src + i * 0x44;
-            tess = *(char **)0x195f160;
+            tess = *(char **)imp_tess;
             vertBase = *(int *)(tess + 0x5a7d4);
             dest = tess + (vertBase + i) * 32;
 
@@ -3032,7 +3032,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
         }
     } else {
         /* DX9 mode: memcpy with stride 68 (0x44) */
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         vertBase = *(int *)(tess + 0x5a7d4);
         dest = tess + vertBase * 68;
         src = *(char **)((byte *)surfType + 0xc);
@@ -3042,7 +3042,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
     /* Generate triangle fan indices */
     triCount = vertCount - 2;
     if (triCount > 0) {
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         for (i = 0; i < triCount; i++) {
             int idxOff = *(int *)(tess + 0x5a7d0);
             indices = (unsigned short *)(*(char **)(tess + 0x5a7b0) + idxOff * 2);
@@ -3057,7 +3057,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
 
     /* Update vertex count */
     vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
-    tess = *(char **)0x195f160;
+    tess = *(char **)imp_tess;
     *(int *)(tess + 0x5a7d4) += vertCount;
 }
 
@@ -3074,7 +3074,7 @@ void RB_TessStaticModelCached(const surfaceType_t *surfType)
     /* surfType[1] is a pointer (XSurface*), triCount is signed short at offset 4 */
     triIndexCount = (int)(*(short *)((byte *)*(void **)((byte *)surfType + 4) + 4)) * 3;
 
-    tess = *(char **)0x195f160;
+    tess = *(char **)imp_tess;
 
     /* RB_CheckOverflow for cached triangles */
     if (triIndexCount + *(int *)(tess + 0x5a7e0) > 0x100000) {
@@ -3084,11 +3084,11 @@ void RB_TessStaticModelCached(const surfaceType_t *surfType)
             *(const Material **)(tess + 0x5a7bc),
             *(MaterialTechniqueType *)(tess + 0x5a7c0),
             *(int *)(tess + 0x5a7c4));
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
             if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                 RB_EndSurface();
-                tess = *(char **)0x195f160;
+                tess = *(char **)imp_tess;
             }
             *(int *)(tess + 0x5a7cc) = sortedIndex;
         }
@@ -3105,7 +3105,7 @@ void RB_TessStaticModelCached(const surfaceType_t *surfType)
     *(int *)(tess + 0x5a7e0) = baseVertIndex + triIndexCount;
 
     /* Copy cached triangle data from DxGlobals static model cache */
-    src = *(char **)(*(char **)0x195eed0 + 0x2dc8) + *(int *)(*(void **)((byte *)surfType + 8)) * 12;
+    src = *(char **)(*(char **)imp_dx + 0x2dc8) + *(int *)(*(void **)((byte *)surfType + 8)) * 12;
     Com_Memcpy(dest, src, triIndexCount * 2);
 }
 
@@ -3131,7 +3131,7 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
     /* Check if skinnedCachedOffset >= 0 (hardware skinning path) */
     if (skinSurf->skinnedCachedOffset >= 0) {
         /* Hardware skinning path: use pre-computed buffers */
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
 
         /* Flush if surface has existing data */
         if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
@@ -3139,7 +3139,7 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         }
 
         /* Determine vertex stride based on DX level */
-        dxCaps = *(char **)0x195eec0;
+        dxCaps = *(char **)imp_r_rendererInUse;
         dxCaps = *(char **)dxCaps;
         isDx7 = (*(int *)(dxCaps + 8) == 2);
         vertexStride = isDx7 ? 0x24 : 0x40;
@@ -3152,13 +3152,13 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         args.primCount = (int)xsurf->triCount;
 
         /* Change index buffer if needed */
-        backEndData = *(char **)0x195f138;
+        backEndData = *(char **)imp_dxState;
         if (xsurf->indexBuffer != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
             RB_ChangeIndices(xsurf->indexBuffer);
         }
 
         /* Get skinned vertex buffer from viewParms */
-        vb = *(IDirect3DVertexBuffer9 **)((byte *)*(void **)(*(char **)0x195f188) + 0x217c78 + 8);
+        vb = *(IDirect3DVertexBuffer9 **)((byte *)*(void **)(*(char **)imp_backEndData) + 0x217c78 + 8);
 
         /* Change stream source if needed */
         if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||
@@ -3174,22 +3174,22 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         triIndexCount = XSurfaceGetNumTris(xsurf) * 3;
 
         /* RB_CheckOverflow */
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         if (vertexCount + *(int *)(tess + 0x5a7d4) > 0x154a ||
             triIndexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
             sortedIndex = *(int *)(tess + 0x5a7cc);
             RB_EndSurface();
-            tess = *(char **)0x195f160;
+            tess = *(char **)imp_tess;
             RB_BeginSurface(
                 *(const Material **)(tess + 0x5a7bc),
                 *(MaterialTechniqueType *)(tess + 0x5a7c0),
                 *(int *)(tess + 0x5a7c4));
-            tess = *(char **)0x195f160;
+            tess = *(char **)imp_tess;
             if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
                 if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                     RB_EndSurface();
                 }
-                tess = *(char **)0x195f160;
+                tess = *(char **)imp_tess;
                 *(int *)(tess + 0x5a7cc) = sortedIndex;
             }
         }
@@ -3198,24 +3198,24 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         if (*(int *)(tess + 0x5a7d0) & 1) {
             sortedIndex = *(int *)(tess + 0x5a7cc);
             RB_EndSurface();
-            tess = *(char **)0x195f160;
+            tess = *(char **)imp_tess;
             RB_BeginSurface(
                 *(const Material **)(tess + 0x5a7bc),
                 *(MaterialTechniqueType *)(tess + 0x5a7c0),
                 *(int *)(tess + 0x5a7c4));
-            tess = *(char **)0x195f160;
+            tess = *(char **)imp_tess;
             if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
                 if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                     RB_EndSurface();
                 }
-                tess = *(char **)0x195f160;
+                tess = *(char **)imp_tess;
                 *(int *)(tess + 0x5a7cc) = sortedIndex;
             }
         }
 
         /* Copy vertex data into tess buffer */
         vertBase = *(unsigned short *)(tess + 0x5a7d4);
-        dxCaps = *(char **)0x195eec0;
+        dxCaps = *(char **)imp_r_rendererInUse;
         dxCaps = *(char **)dxCaps;
 
         if (*(int *)(dxCaps + 8) == 2) {
@@ -3227,7 +3227,7 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         }
 
         /* Update vertex count */
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         *(int *)(tess + 0x5a7d4) += vertexCount;
 
         /* Copy triangle indices with vertex offset */
@@ -3247,7 +3247,7 @@ void RB_TessTriangles(const surfaceType_t *surfType)
     int sortedIndex;
     srfTriangles_t *tri = (srfTriangles_t *)surfType;
 
-    tess = *(char **)0x195f160;
+    tess = *(char **)imp_tess;
 
     /* Check if we need to flush existing cached data due to buffer mismatch */
     if (*(int *)(tess + 0x5a7e0) != 0) {
@@ -3264,7 +3264,7 @@ void RB_TessTriangles(const surfaceType_t *surfType)
                 if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                     RB_EndSurface();
                 }
-                tess = *(char **)0x195f160;
+                tess = *(char **)imp_tess;
                 *(int *)(tess + 0x5a7cc) = sortedIndex;
             }
         }
@@ -3278,11 +3278,11 @@ void RB_TessTriangles(const surfaceType_t *surfType)
             *(const Material **)(tess + 0x5a7bc),
             *(MaterialTechniqueType *)(tess + 0x5a7c0),
             *(int *)(tess + 0x5a7c4));
-        tess = *(char **)0x195f160;
+        tess = *(char **)imp_tess;
         if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
             if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                 RB_EndSurface();
-                tess = *(char **)0x195f160;
+                tess = *(char **)imp_tess;
             }
             *(int *)(tess + 0x5a7cc) = sortedIndex;
         }

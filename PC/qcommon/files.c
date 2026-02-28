@@ -4,14 +4,14 @@
 #include "common_types.h"
 #include "imports.h"
 
-static char buf[1024]; /* 0x482a80 */
-static char basename[64]; /* 0x482e80 */
-static char info2[8192]; /* 0x480a80 */
-static char info3[8192]; /* 0x47ea80 */
-static char info4[8192]; /* 0x47ca80 */
-static char info5[8192]; /* 0x47aa80 */
-static char info6[8192]; /* 0x476a80 */
-static char info8[8192]; /* 0x478a80 */
+static char buf[1024]; /* buf */
+static char basename[64]; /* basename */
+static char info2[8192]; /* info2 */
+static char info3[8192]; /* info3 */
+static char info4[8192]; /* info4 */
+static char info5[8192]; /* info5 */
+static char info6[8192]; /* info6 */
+static char info8[8192]; /* info8 */
 
 fileHandle_t FS_SV_FOpenFileWrite(const char *filename);
 int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp);
@@ -50,10 +50,10 @@ fileHandle_t FS_SV_FOpenFileWrite(const char *filename)
         "calll FS_CheckFileSystemStarted\n" /* line 99 */
         "leal -0x118(%ebp), %esi\n" /* line 101 | ospath */
         "movl %esi, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* filename */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed00, %eax\n"
+        "movl imp_fs_homepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -74,9 +74,9 @@ fileHandle_t FS_SV_FOpenFileWrite(const char *filename)
         "shll $2, %eax\n"
         "movl %eax, -0x11c(%ebp)\n"
         "movl %eax, %ebx\n"
-        "addl 0x195eccc, %ebx\n"
+        "addl imp_fsh, %ebx\n"
         "movl $0, 0x14(%ebx)\n"
-        "movl 0x195ecf4, %eax\n" /* line 107 */
+        "movl imp_fs_debug, %eax\n" /* line 107 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -99,10 +99,10 @@ fileHandle_t FS_SV_FOpenFileWrite(const char *filename)
         /* { scope 1 */
         ".Lf46cbc_00046d65:\n"
         "movl %esi, 4(%esp)\n" /* line 113 */
-        "movl $0x217dec, (%esp)\n" /* "writing to: %s
+        "movl $str_00217dec, (%esp)\n" /* "writing to: %s
 " */
         "calll Com_DPrintf\n"
-        "movl $0x216fec, 4(%esp)\n" /* line 114 */
+        "movl $str_00216fec, 4(%esp)\n" /* line 114 */
         "movl %esi, (%esp)\n"
         "calll FS_FileOpen\n"
         "movl %eax, (%ebx)\n"
@@ -110,7 +110,7 @@ fileHandle_t FS_SV_FOpenFileWrite(const char *filename)
         "movl 8(%ebp), %edx\n" /* filename */
         "movl %edx, 4(%esp)\n"
         "movl -0x11c(%ebp), %ecx\n"
-        "movl 0x195eccc, %edx\n"
+        "movl imp_fsh, %edx\n"
         "leal 0x1c(%ecx, %edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
@@ -129,7 +129,7 @@ fileHandle_t FS_SV_FOpenFileWrite(const char *filename)
         /* { scope 1 */
         ".Lf46cbc_00046dc8:\n"
         "movl %esi, 4(%esp)\n" /* line 108 */
-        "movl $0x217dd0, (%esp)\n" /* "FS_SV_FOpenFileWrite: %s
+        "movl $str_00217dd0, (%esp)\n" /* "FS_SV_FOpenFileWrite: %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf46cbc_00046d4a\n"
@@ -152,7 +152,7 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         "movl $0, (%esp)\n" /* line 141 */
         "calll FS_HandleForFile\n"
         "movl %eax, %esi\n" /* f */
-        "movl 0x195eccc, %edx\n" /* line 142 */
+        "movl imp_fsh, %edx\n" /* line 142 */
         "leal (%eax, %eax, 8), %eax\n"
         "shll $3, %eax\n"
         "subl %esi, %eax\n" /* f */
@@ -167,10 +167,10 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         "calll I_strncpyz\n"
         "leal -0x118(%ebp), %eax\n" /* line 147 | ospath */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl 8(%ebp), %edx\n" /* filename */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ed00, %ecx\n"
+        "movl imp_fs_homepath, %ecx\n"
         "movl (%ecx), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -182,13 +182,13 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movb $0, -0x11a(%ecx, %ebp)\n"
-        "movl 0x195ecf4, %edx\n" /* line 151 */
+        "movl imp_fs_debug, %edx\n" /* line 151 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf46dde_00046ed4\n"
         ".Lf46dde_00046e88:\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 154 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 154 */
         "leal -0x118(%ebp), %eax\n" /* ospath */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -224,16 +224,16 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         ".Lf46dde_00046ed4:\n"
         "leal -0x118(%ebp), %ecx\n" /* line 152 | ospath */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x217dfc, (%esp)\n" /* "FS_SV_FOpenFileRead (fs_homepath): %s
+        "movl $str_00217dfc, (%esp)\n" /* "FS_SV_FOpenFileRead (fs_homepath): %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf46dde_00046e88\n"
         ".Lf46dde_00046eec:\n"
-        "movl 0x195ecc8, %edi\n" /* line 159 */
+        "movl imp_fs_basepath, %edi\n" /* line 159 */
         "movl (%edi), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed00, %edx\n"
+        "movl imp_fs_homepath, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -245,16 +245,16 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         "shll $3, %eax\n"
         "subl %esi, %eax\n" /* f */
         "leal (, %eax, 4), %ebx\n"
-        "movl 0x195eccc, %edx\n"
+        "movl imp_fsh, %edx\n"
         "movl (%ebx, %edx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf46dde_00046eab\n"
         "leal -0x118(%ebp), %ecx\n" /* line 181 | ospath */
         "movl %ecx, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* filename */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed08, %eax\n"
+        "movl imp_fs_cdpath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -266,17 +266,17 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movb $0, -0x11a(%ecx, %ebp)\n"
-        "movl 0x195ecf4, %eax\n" /* line 184 */
+        "movl imp_fs_debug, %eax\n" /* line 184 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edi\n"
         "testl %edi, %edi\n"
         "jne .Lf46dde_0004705c\n"
         ".Lf46dde_00046f8d:\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 187 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 187 */
         "leal -0x118(%ebp), %ecx\n" /* ospath */
         "movl %ecx, (%esp)\n"
         "calll FS_FileOpen\n"
-        "movl 0x195eccc, %edx\n"
+        "movl imp_fsh, %edx\n"
         "movl %eax, (%ebx, %edx)\n"
         "leal (%ebx, %edx), %eax\n" /* line 188 */
         "movl $0, 8(%eax)\n"
@@ -288,7 +288,7 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         ".Lf46dde_00046fc7:\n"
         "leal -0x118(%ebp), %ecx\n" /* line 162 | ospath */
         "movl %ecx, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* filename */
         "movl %eax, 4(%esp)\n"
         "movl (%edi), %eax\n"
@@ -302,13 +302,13 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movb $0, -0x11a(%ecx, %ebp)\n"
-        "movl 0x195ecf4, %edx\n" /* line 165 */
+        "movl imp_fs_debug, %edx\n" /* line 165 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf46dde_00047044\n"
         ".Lf46dde_00047016:\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 168 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 168 */
         "leal -0x118(%ebp), %eax\n" /* ospath */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -321,14 +321,14 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         ".Lf46dde_00047044:\n"
         "leal -0x118(%ebp), %ecx\n" /* line 166 | ospath */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x217e24, (%esp)\n" /* "FS_SV_FOpenFileRead (fs_basepath): %s
+        "movl $str_00217e24, (%esp)\n" /* "FS_SV_FOpenFileRead (fs_basepath): %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf46dde_00047016\n"
         ".Lf46dde_0004705c:\n"
         "leal -0x118(%ebp), %edx\n" /* line 185 | ospath */
         "movl %edx, 4(%esp)\n"
-        "movl $0x217e4c, (%esp)\n" /* "FS_SV_FOpenFileRead (fs_cdpath) : %s
+        "movl $str_00217e4c, (%esp)\n" /* "FS_SV_FOpenFileRead (fs_cdpath) : %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf46dde_00046f8d\n"
@@ -350,17 +350,17 @@ double FS_SV_Rename(const char *from, const char *to)
         "calll FS_CheckFileSystemStarted\n" /* line 217 */
         "leal -0x118(%ebp), %eax\n" /* line 219 | from_ospath */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* from */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed00, %ebx\n"
+        "movl imp_fs_homepath, %ebx\n"
         "movl (%ebx), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FS_BuildOSPath\n"
         "leal -0x218(%ebp), %esi\n" /* line 220 | to_ospath */
         "movl %esi, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl 0xc(%ebp), %eax\n" /* to */
         "movl %eax, 4(%esp)\n"
         "movl (%ebx), %eax\n"
@@ -380,7 +380,7 @@ double FS_SV_Rename(const char *from, const char *to)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movb $0, -0x21a(%ecx, %ebp)\n"
-        "movl 0x195ecf4, %eax\n" /* line 224 */
+        "movl imp_fs_debug, %eax\n" /* line 224 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -412,7 +412,7 @@ double FS_SV_Rename(const char *from, const char *to)
         "movl %esi, 8(%esp)\n" /* line 225 */
         "leal -0x118(%ebp), %eax\n" /* from_ospath */
         "movl %eax, 4(%esp)\n"
-        "movl $0x217e74, (%esp)\n" /* "FS_SV_Rename: %s --> %s
+        "movl $str_00217e74, (%esp)\n" /* "FS_SV_Rename: %s --> %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf47078_00047115\n"
@@ -493,7 +493,7 @@ double FS_Dir_f(void)
         "cmpl $3, %eax\n"
         "jle .Lf471d8_00047207\n"
         ".Lf471d8_000471f4:\n"
-        "movl $0x217e90, (%esp)\n" /* line 617 */
+        "movl $str_00217e90, (%esp)\n" /* line 617 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x30, %esp\n" /* line 642 */
@@ -515,10 +515,10 @@ double FS_Dir_f(void)
         ".Lf471d8_0004722d:\n"
         "movl %esi, 8(%esp)\n" /* line 632 | dirnames */
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x217eb4, (%esp)\n" /* "Directory of %s %s
+        "movl $str_00217eb4, (%esp)\n" /* "Directory of %s %s
 " */
         "calll Com_Printf\n"
-        "movl $0x217ec8, (%esp)\n" /* line 633 */
+        "movl $str_00217ec8, (%esp)\n" /* line 633 */
         "calll Com_Printf\n"
         "movl $0xa, 0x10(%esp)\n" /* line 635 */
         "leal -0xc(%ebp), %eax\n" /* ndirs */
@@ -546,14 +546,14 @@ double FS_Dir_f(void)
         "movl $1, (%esp)\n" /* line 623 */
         "calll Cmd_Argv\n"
         "movl %eax, %ebx\n" /* i */
-        "movl $0x2157b8, %esi\n" /* dirnames */
+        "movl $str_002157b8, %esi\n" /* dirnames */
         "jmp .Lf471d8_0004722d\n"
         ".Lf471d8_000472a5:\n"
         "xorl %ebx, %ebx\n" /* line 637 | i */
         ".Lf471d8_000472a7:\n"
         "movl (%esi, %ebx, 4), %eax\n" /* line 639 | dirnames */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 637 | i */
@@ -581,16 +581,16 @@ double FS_NewDir_f(void)
         "movl $1, (%esp)\n" /* line 664 */
         "calll Cmd_Argv\n"
         "movl %eax, %ebx\n" /* filter */
-        "movl $0x217ec8, (%esp)\n" /* line 666 */
+        "movl $str_00217ec8, (%esp)\n" /* line 666 */
         "calll Com_Printf\n"
         "movl $0xa, 0x18(%esp)\n" /* line 668 */
         "leal -0x1c(%ebp), %eax\n" /* ndirs */
         "movl %eax, 0x14(%esp)\n"
         "movl $0, 0x10(%esp)\n"
         "movl %ebx, 0xc(%esp)\n" /* filter */
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl 0x195ece4, %eax\n"
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl imp_fs_searchpaths, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FS_ListFilteredFiles\n"
@@ -604,7 +604,7 @@ double FS_NewDir_f(void)
         "jg .Lf472c4_0004736f\n"
         ".Lf472c4_00047347:\n"
         "movl %edx, 4(%esp)\n" /* line 677 */
-        "movl $0x217f10, (%esp)\n" /* "%d files listed
+        "movl $str_00217f10, (%esp)\n" /* "%d files listed
 " */
         "calll Com_Printf\n"
         "movl $0xa, 4(%esp)\n" /* line 678 */
@@ -627,7 +627,7 @@ double FS_NewDir_f(void)
         "calll FS_ConvertPath\n"
         "movl -4(%ebx), %eax\n" /* line 675 | filter */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         "movl %esi, %eax\n"
@@ -638,9 +638,9 @@ double FS_NewDir_f(void)
         "jg .Lf472c4_00047377\n"
         "jmp .Lf472c4_00047347\n"
         ".Lf472c4_000473a6:\n"
-        "movl $0x217edc, (%esp)\n" /* line 659 */
+        "movl $str_00217edc, (%esp)\n" /* line 659 */
         "calll Com_Printf\n"
-        "movl $0x217ef4, (%esp)\n" /* line 660 */
+        "movl $str_00217ef4, (%esp)\n" /* line 660 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x3c, %esp\n" /* line 679 */
@@ -663,7 +663,7 @@ double FS_TouchFile_f(void)
         "calll Cmd_Argc\n" /* line 692 */
         "cmpl $2, %eax\n"
         "je .Lf473c6_000473e4\n"
-        "movl $0x217f24, (%esp)\n" /* line 694 */
+        "movl $str_00217f24, (%esp)\n" /* line 694 */
         "calll Com_Printf\n"
         "leave\n" /* line 698 */
         "retl\n"
@@ -700,7 +700,7 @@ qboolean FS_iwIwd(char *iwd, char *base)
         ".Lf473fa_00047415:\n"
         "movl %ebx, 8(%esp)\n" /* line 719 | i */
         "movl %edi, 4(%esp)\n" /* base */
-        "movl $0x217f40, (%esp)\n" /* "%s/iw_%02d" */
+        "movl $str_00217f40, (%esp)\n" /* "%s/iw_%02d" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n" /* iwd */
@@ -718,7 +718,7 @@ qboolean FS_iwIwd(char *iwd, char *base)
         "retl\n"
         /* { scope 1 */
         ".Lf473fa_00047446:\n"
-        "movl $0x21703c, 4(%esp)\n" /* line 724 */
+        "movl $str_0021703c, 4(%esp)\n" /* line 724 */
         "movl %esi, (%esp)\n" /* iwd */
         "calll strstr\n"
         "movl %eax, %ebx\n" /* i */
@@ -732,7 +732,7 @@ qboolean FS_iwIwd(char *iwd, char *base)
         "subl %esi, %eax\n" /* iwd */
         "movb $0, -0x4e(%ebp, %eax)\n"
         "movl %edi, 4(%esp)\n" /* line 730 | base */
-        "movl $0x217f4c, (%esp)\n" /* "%s/localized_" */
+        "movl $str_00217f4c, (%esp)\n" /* "%s/localized_" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "leal -0x58(%ebp), %eax\n" /* szFile */
@@ -767,7 +767,7 @@ qboolean FS_iwIwd(char *iwd, char *base)
         "je .Lf473fa_00047497\n"
         ".Lf473fa_000474ca:\n"
         "movl %ebx, 4(%esp)\n" /* line 736 | i */
-        "movl $0x217f5c, (%esp)\n" /* "_iw%02d" */
+        "movl $str_00217f5c, (%esp)\n" /* "_iw%02d" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "leal -0x58(%ebp), %eax\n" /* szFile */
@@ -787,22 +787,22 @@ double FS_AddCommands(void)
         "pushl %ebp\n" /* line 875 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl 0x195ed04, %eax\n" /* line 877 */
+        "movl imp___Z9FS_Path_fv, %eax\n" /* line 877 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216da8, (%esp)\n" /* "path" */
+        "movl $str_00216da8, (%esp)\n" /* "path" */
         "calll Cmd_AddCommand\n"
-        "movl 0x195ecf0, %eax\n" /* line 878 */
+        "movl imp___Z13FS_FullPath_fv, %eax\n" /* line 878 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216db0, (%esp)\n" /* "fullpath" */
+        "movl $str_00216db0, (%esp)\n" /* "fullpath" */
         "calll Cmd_AddCommand\n"
         "movl $FS_Dir_f, 4(%esp)\n" /* line 879 */
-        "movl $0x216dbc, (%esp)\n" /* "dir" */
+        "movl $str_00216dbc, (%esp)\n" /* "dir" */
         "calll Cmd_AddCommand\n"
         "movl $FS_NewDir_f, 4(%esp)\n" /* line 880 */
-        "movl $0x216dc0, (%esp)\n" /* "fdir" */
+        "movl $str_00216dc0, (%esp)\n" /* "fdir" */
         "calll Cmd_AddCommand\n"
         "movl $FS_TouchFile_f, 4(%esp)\n" /* line 881 */
-        "movl $0x216dc8, (%esp)\n" /* "touchFile" */
+        "movl $str_00216dc8, (%esp)\n" /* "touchFile" */
         "calll Cmd_AddCommand\n"
         "leave\n" /* line 882 */
         "retl\n"
@@ -818,7 +818,7 @@ double FS_SetRestrictions(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195ece8, %eax\n" /* line 901 */
+        "movl imp_fs_restrict, %eax\n" /* line 901 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf47560_0004757a\n"
@@ -831,14 +831,14 @@ double FS_SetRestrictions(void)
         "movl $1, 4(%esp)\n" /* line 906 */
         "movl %eax, (%esp)\n"
         "calll Dvar_SetBool\n"
-        "movl $0x217f64, (%esp)\n" /* line 908 */
+        "movl $str_00217f64, (%esp)\n" /* line 908 */
         "calll Com_Printf\n"
         "movl $0, (%esp)\n" /* line 911 */
         "calll FS_Shutdown\n"
-        "movl $0x217f88, (%esp)\n" /* line 914 */
+        "movl $str_00217f88, (%esp)\n" /* line 914 */
         "calll FS_Startup\n"
         /* { scope 1 */
-        "movl 0x195ece4, %eax\n" /* line 923 */
+        "movl imp_fs_searchpaths, %eax\n" /* line 923 */
         "movl (%eax), %ebx\n" /* path */
         "testl %ebx, %ebx\n" /* path */
         "je .Lf47560_00047574\n"
@@ -854,7 +854,7 @@ double FS_SetRestrictions(void)
         "cmpl $0xb1f595f5, %eax\n"
         "je .Lf47560_000475f1\n"
         "movl %eax, 8(%esp)\n" /* line 932 */
-        "movl $0x217f94, 4(%esp)\n" /* "Corrupted iw0.iwd: %u" */
+        "movl $str_00217f94, 4(%esp)\n" /* "Corrupted iw0.iwd: %u" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         ".Lf47560_000475f1:\n"
@@ -880,7 +880,7 @@ const char * FS_LoadedIwdChecksums(void)
         "subl $0x14, %esp\n"
         /* { scope 1 */
         "movb $0, info2\n" /* line 955 */
-        "movl 0x195ece4, %eax\n" /* line 957 */
+        "movl imp_fs_searchpaths, %eax\n" /* line 957 */
         "movl (%eax), %ebx\n" /* search */
         "testl %ebx, %ebx\n" /* search */
         "jne .Lf475fe_0004761f\n"
@@ -898,7 +898,7 @@ const char * FS_LoadedIwdChecksums(void)
         "jne .Lf475fe_00047619\n"
         "movl 0x304(%eax), %eax\n" /* line 967 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x217fac, (%esp)\n" /* "%i " */
+        "movl $str_00217fac, (%esp)\n" /* "%i " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x2000, 4(%esp)\n"
@@ -928,7 +928,7 @@ const char * FS_LoadedIwdNames(void)
         "subl $0x14, %esp\n"
         /* { scope 1 */
         "movb $0, info3\n" /* line 986 */
-        "movl 0x195ece4, %eax\n" /* line 988 */
+        "movl imp_fs_searchpaths, %eax\n" /* line 988 */
         "movl (%eax), %ebx\n" /* search */
         "testl %ebx, %ebx\n" /* search */
         "jne .Lf4766c_000476ad\n"
@@ -953,7 +953,7 @@ const char * FS_LoadedIwdNames(void)
         "jne .Lf4766c_000476a7\n"
         "cmpb $0, info3\n" /* line 998 */
         "je .Lf4766c_00047687\n"
-        "movl $0x217914, 8(%esp)\n" /* line 999 */
+        "movl $str_00217914, 8(%esp)\n" /* line 999 */
         "movl $0x2000, 4(%esp)\n"
         "movl $info3, (%esp)\n"
         "calll I_strncat\n"
@@ -979,7 +979,7 @@ const char * FS_LoadedIwdPureChecksums(void)
         "subl $0x14, %esp\n"
         /* { scope 1 */
         "movb $0, info4\n" /* line 1021 */
-        "movl 0x195ece4, %eax\n" /* line 1023 */
+        "movl imp_fs_searchpaths, %eax\n" /* line 1023 */
         "movl (%eax), %ebx\n" /* search */
         "testl %ebx, %ebx\n" /* search */
         "jne .Lf476ee_0004770f\n"
@@ -997,7 +997,7 @@ const char * FS_LoadedIwdPureChecksums(void)
         "jne .Lf476ee_00047709\n"
         "movl 0x308(%eax), %eax\n" /* line 1033 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x217fac, (%esp)\n" /* "%i " */
+        "movl $str_00217fac, (%esp)\n" /* "%i " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x2000, 4(%esp)\n"
@@ -1027,7 +1027,7 @@ const char * FS_ReferencedIwdChecksums(void)
         "subl $0x14, %esp\n"
         /* { scope 1 */
         "movb $0, info5\n" /* line 1052 */
-        "movl 0x195ece4, %eax\n" /* line 1054 */
+        "movl imp_fs_searchpaths, %eax\n" /* line 1054 */
         "movl (%eax), %ebx\n" /* search */
         "testl %ebx, %ebx\n" /* search */
         "je .Lf4775c_000477dd\n"
@@ -1038,7 +1038,7 @@ const char * FS_ReferencedIwdChecksums(void)
         "cmpb $0, 0x310(%eax)\n" /* line 1060 */
         "jne .Lf4775c_000477a9\n"
         "movl $4, 8(%esp)\n"
-        "movl $0x216f3c, 4(%esp)\n" /* "main" */
+        "movl $str_00216f3c, 4(%esp)\n" /* "main" */
         "addl $0x200, %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strnicmp\n"
@@ -1048,7 +1048,7 @@ const char * FS_ReferencedIwdChecksums(void)
         ".Lf4775c_000477a9:\n"
         "movl 0x304(%eax), %eax\n" /* line 1061 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x217fac, (%esp)\n" /* "%i " */
+        "movl $str_00217fac, (%esp)\n" /* "%i " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x2000, 4(%esp)\n"
@@ -1079,7 +1079,7 @@ const char * FS_ReferencedIwdNames(void)
         "subl $0x14, %esp\n"
         /* { scope 1 */
         "movb $0, info8\n" /* line 1080 */
-        "movl 0x195ece4, %eax\n" /* line 1084 */
+        "movl imp_fs_searchpaths, %eax\n" /* line 1084 */
         "movl (%eax), %ebx\n" /* search */
         "testl %ebx, %ebx\n" /* search */
         "jne .Lf477e8_00047875\n"
@@ -1094,7 +1094,7 @@ const char * FS_ReferencedIwdNames(void)
         "movl $0x2000, 4(%esp)\n"
         "movl $info8, (%esp)\n"
         "calll I_strncat\n"
-        "movl $0x216f38, 8(%esp)\n" /* line 1096 */
+        "movl $str_00216f38, 8(%esp)\n" /* line 1096 */
         "movl $0x2000, 4(%esp)\n"
         "movl $info8, (%esp)\n"
         "calll I_strncat\n"
@@ -1115,7 +1115,7 @@ const char * FS_ReferencedIwdNames(void)
         "cmpb $0, 0x310(%eax)\n" /* line 1090 */
         "jne .Lf477e8_00047806\n"
         "movl $4, 8(%esp)\n"
-        "movl $0x216f3c, 4(%esp)\n" /* "main" */
+        "movl $str_00216f3c, 4(%esp)\n" /* "main" */
         "addl $0x200, %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strnicmp\n"
@@ -1133,7 +1133,7 @@ const char * FS_ReferencedIwdNames(void)
         "retl\n"
         /* { scope 1 */
         ".Lf477e8_000478bb:\n"
-        "movl $0x217914, 8(%esp)\n" /* line 1093 */
+        "movl $str_00217914, 8(%esp)\n" /* line 1093 */
         "movl $0x2000, 4(%esp)\n"
         "movl $info8, (%esp)\n"
         "calll I_strncat\n"
@@ -1154,7 +1154,7 @@ const char * FS_ReferencedIwdPureChecksums(void)
         "subl $0x1c, %esp\n"
         /* { scope 1 */
         "movb $0, info6\n" /* line 1124 */
-        "movl 0x195ecd0, %eax\n" /* line 1125 */
+        "movl imp_fs_checksumFeed, %eax\n" /* line 1125 */
         "movl (%eax), %esi\n"
         "movl $0xffffffff, %edx\n" /* line 1131 */
         "movl $info6, %edi\n" /* numIwds */
@@ -1168,18 +1168,18 @@ const char * FS_ReferencedIwdPureChecksums(void)
         "movl %edx, %ecx\n"
         "repne scasb %es:(%edi), %al\n" /* numIwds */
         "notl %ecx\n"
-        "movb $0, 0x476a81(%ecx)\n"
+        "movb $0, info6+1(%ecx)\n"
         "movl $info6, %edi\n" /* line 1133 | numIwds */
         "movl %edx, %ecx\n"
         "repne scasb %es:(%edi), %al\n" /* numIwds */
         "notl %ecx\n"
-        "movb $0x40, 0x476a7f(%ecx)\n"
+        "movb $0x40, scrMemTreeGlob+525183(%ecx)\n"
         "movl $info6, %edi\n" /* line 1134 | numIwds */
         "movl %edx, %ecx\n"
         "repne scasb %es:(%edi), %al\n" /* numIwds */
         "notl %ecx\n"
-        "movb $0x20, 0x476a7f(%ecx)\n"
-        "movl 0x195ece4, %eax\n" /* line 1136 */
+        "movb $0x20, scrMemTreeGlob+525183(%ecx)\n"
+        "movl imp_fs_searchpaths, %eax\n" /* line 1136 */
         "movl (%eax), %ebx\n" /* search */
         "testl %ebx, %ebx\n" /* search */
         "je .Lf478dc_00047a1d\n"
@@ -1200,7 +1200,7 @@ const char * FS_ReferencedIwdPureChecksums(void)
         "je .Lf478dc_00047956\n"
         "movl 0x308(%eax), %eax\n" /* line 1149 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x217fac, (%esp)\n" /* "%i " */
+        "movl $str_00217fac, (%esp)\n" /* "%i " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x2000, 4(%esp)\n"
@@ -1213,12 +1213,12 @@ const char * FS_ReferencedIwdPureChecksums(void)
         "testl %ebx, %ebx\n" /* search */
         "jne .Lf478dc_0004795c\n"
         ".Lf478dc_000479b3:\n"
-        "movl 0x195ece0, %eax\n" /* line 1155 */
+        "movl imp_fs_fakeChkSum, %eax\n" /* line 1155 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf478dc_000479e6\n"
         "movl %eax, 4(%esp)\n" /* line 1156 */
-        "movl $0x217fac, (%esp)\n" /* "%i " */
+        "movl $str_00217fac, (%esp)\n" /* "%i " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x2000, 4(%esp)\n"
@@ -1227,7 +1227,7 @@ const char * FS_ReferencedIwdPureChecksums(void)
         ".Lf478dc_000479e6:\n"
         "xorl %esi, %edi\n" /* line 1160 | numIwds */
         "movl %edi, 4(%esp)\n" /* numIwds */
-        "movl $0x217fac, (%esp)\n" /* "%i " */
+        "movl $str_00217fac, (%esp)\n" /* "%i " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x2000, 4(%esp)\n"
@@ -1302,11 +1302,11 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
         ".Lf47a22_00047abf:\n"
         "cmpl %edi, -0x2024(%ebp)\n" /* line 1544 | d, c */
         "je .Lf47a22_00047adb\n"
-        "movl $0x217fb0, 4(%esp)\n" /* line 1545 */
+        "movl $str_00217fb0, 4(%esp)\n" /* line 1545 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf47a22_00047adb:\n"
-        "movl 0x195ecd4, %ecx\n" /* line 1548 */
+        "movl imp_fs_numServerIwds, %ecx\n" /* line 1548 */
         "movl -0x2024(%ebp), %eax\n" /* c */
         "cmpl (%ecx), %eax\n"
         "je .Lf47a22_00047b9b\n"
@@ -1314,7 +1314,7 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
         "movl $8, (%esp)\n" /* line 1568 */
         "calll SND_StopSounds\n"
         "calll FS_ShutdownServerIwdNames\n" /* line 1571 */
-        "movl 0x195ecd4, %ebx\n" /* line 1573 | i */
+        "movl imp_fs_numServerIwds, %ebx\n" /* line 1573 | i */
         "movl -0x2024(%ebp), %ecx\n" /* c */
         "movl %ecx, (%ebx)\n" /* i */
         "testl %ecx, %ecx\n" /* line 1574 */
@@ -1338,14 +1338,14 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
         "jle .Lf47a22_00047a7d\n"
         "jmp .Lf47a22_00047a59\n"
         ".Lf47a22_00047b39:\n"
-        "movl $0x217fc8, (%esp)\n" /* line 1576 */
+        "movl $str_00217fc8, (%esp)\n" /* line 1576 */
         "calll Com_DPrintf\n"
         "movl (%ebx), %eax\n" /* line 1577 | i */
         "shll $2, %eax\n"
         "movl %eax, 8(%esp)\n"
         "leal -0x1018(%ebp), %eax\n" /* serverIwds */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ecfc, %eax\n"
+        "movl imp_fs_serverIwds, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_Memcpy\n"
         "movl (%ebx), %eax\n" /* line 1578 | i */
@@ -1353,10 +1353,10 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
         "movl %eax, 8(%esp)\n"
         "leal -0x2018(%ebp), %eax\n" /* serverIwdNames */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ecdc, %eax\n"
+        "movl imp_fs_serverIwdNames, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_Memcpy\n"
-        "movl 0x195ece0, %eax\n" /* line 1579 */
+        "movl imp_fs_fakeChkSum, %eax\n" /* line 1579 */
         "movl $0, (%eax)\n"
         /* } scope */
         "addl $0x202c, %esp\n" /* line 1581 */
@@ -1376,8 +1376,8 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
         "testl %esi, %esi\n" /* j */
         "jle .Lf47a22_00047aef\n"
         "xorl %esi, %esi\n" /* j */
-        "movl 0x195ecfc, %ebx\n" /* i */
-        "movl 0x195ecdc, %eax\n"
+        "movl imp_fs_serverIwds, %ebx\n" /* i */
+        "movl imp_fs_serverIwdNames, %eax\n"
         "movl %eax, -0x2020(%ebp)\n"
         "jmp .Lf47a22_00047be3\n"
         ".Lf47a22_00047bce:\n"
@@ -1400,7 +1400,7 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf47a22_00047c49\n"
-        "movl 0x195ecd4, %ecx\n"
+        "movl imp_fs_numServerIwds, %ecx\n"
         "jmp .Lf47a22_00047bce\n"
         ".Lf47a22_00047c1e:\n"
         "testl %edi, %edi\n" /* line 1560 | d */
@@ -1426,7 +1426,7 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
         "movl -0x201c(%ebp), %eax\n"
         "cmpl %eax, -0x2024(%ebp)\n" /* c */
         "je .Lf47a22_00047c1e\n"
-        "movl 0x195ecd4, %ecx\n"
+        "movl imp_fs_numServerIwds, %ecx\n"
         "jmp .Lf47a22_00047baf\n"
     );
 }
@@ -1465,7 +1465,7 @@ double FS_PureServerSetReferencedIwds(const char *iwdSums, const char *iwdNames)
         "testl %edi, %edi\n" /* line 1631 | c */
         "jne .Lf47c6a_00047cbd\n"
         ".Lf47c6a_00047cae:\n"
-        "movl 0x195ecf8, %eax\n" /* line 1635 */
+        "movl imp_fs_numServerReferencedIwds, %eax\n" /* line 1635 */
         "movl %edi, (%eax)\n" /* c */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1636 */
@@ -1476,10 +1476,10 @@ double FS_PureServerSetReferencedIwds(const char *iwdSums, const char *iwdNames)
         "retl\n"
         /* { scope 1 */
         ".Lf47c6a_00047cbd:\n"
-        "movl $0x217fb0, 4(%esp)\n" /* line 1632 */
+        "movl $str_00217fb0, 4(%esp)\n" /* line 1632 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x195ecf8, %eax\n" /* line 1635 */
+        "movl imp_fs_numServerReferencedIwds, %eax\n" /* line 1635 */
         "movl %edi, (%eax)\n" /* c */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1636 */
@@ -1491,7 +1491,7 @@ double FS_PureServerSetReferencedIwds(const char *iwdSums, const char *iwdNames)
         /* { scope 1 */
         ".Lf47c6a_00047ce0:\n"
         "xorl %ebx, %ebx\n" /* line 1607 | i */
-        "movl 0x195ecec, %esi\n" /* d */
+        "movl imp_fs_serverReferencedIwds, %esi\n" /* d */
         ".Lf47c6a_00047ce8:\n"
         "movl %ebx, (%esp)\n" /* line 1609 | i */
         "calll Cmd_Argv\n"
@@ -1513,14 +1513,14 @@ double FS_PureServerSetReferencedIwds(const char *iwdSums, const char *iwdNames)
         "cmovgel %eax, %esi\n" /* d */
         "cmpl %esi, %edi\n" /* line 1621 | d, c */
         "je .Lf47c6a_00047d3a\n"
-        "movl $0x217fb0, 4(%esp)\n" /* line 1622 */
+        "movl $str_00217fb0, 4(%esp)\n" /* line 1622 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf47c6a_00047d3a:\n"
         "testl %esi, %esi\n" /* line 1624 | d */
         "jle .Lf47c6a_00047cae\n"
         "xorl %ebx, %ebx\n" /* i */
-        "movl 0x195ecd8, %edx\n"
+        "movl imp_fs_serverReferencedIwdNames, %edx\n"
         "movl %edx, -0x1c(%ebp)\n"
         ".Lf47c6a_00047d4d:\n"
         "movl %ebx, (%esp)\n" /* line 1626 | i */
@@ -1551,7 +1551,7 @@ const char * FS_GetMapBaseName(const char *mapname)
         "subl $0x1c, %esp\n"
         /* { scope 1 */
         "movl $8, 8(%esp)\n" /* line 1652 */
-        "movl $0x217fe8, 4(%esp)\n" /* "maps/mp/" */
+        "movl $str_00217fe8, 4(%esp)\n" /* "maps/mp/" */
         "movl 8(%ebp), %eax\n" /* mapname */
         "movl %eax, (%esp)\n"
         "calll I_strnicmp\n"
@@ -1568,7 +1568,7 @@ const char * FS_GetMapBaseName(const char *mapname)
         "movl %ecx, %esi\n"
         "notl %esi\n"
         "leal -1(%esi), %ebx\n" /* len */
-        "movl $0x217ff4, 4(%esp)\n" /* line 1655 */
+        "movl $str_00217ff4, 4(%esp)\n" /* line 1655 */
         "leal -3(%edx, %ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1628,7 +1628,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         "movl %ebx, 0xc(%esp)\n" /* pFiles2 */
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl 0x195ed00, %eax\n"
+        "movl imp_fs_homepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1638,13 +1638,13 @@ int FS_GetModList(char *listbuf, int bufsize)
         "movl %ebx, 0xc(%esp)\n" /* pFiles2 */
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl 0x195ecc8, %eax\n"
+        "movl imp_fs_basepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Sys_ListFiles\n"
         "movl %eax, %esi\n" /* pFiles1 */
-        "movl 0x195ed08, %eax\n" /* line 486 */
+        "movl imp_fs_cdpath, %eax\n" /* line 486 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1793,7 +1793,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         ".Lf47e28_00048027:\n"
         "movl $0, -0x234(%ebp)\n" /* line 511 | bDrop */
         "movl $1, 8(%esp)\n" /* line 516 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl -0x238(%ebp), %ecx\n" /* name */
         "movl %ecx, (%esp)\n"
         "calll I_strnicmp\n"
@@ -1815,7 +1815,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         "testl %ebx, %ebx\n" /* pFiles2 */
         "jne .Lf47e28_00048053\n"
         "movl $1, 8(%esp)\n" /* line 516 */
-        "movl $0x217ff8, 4(%esp)\n" /* "." */
+        "movl $str_00217ff8, 4(%esp)\n" /* "." */
         "movl -0x238(%ebp), %ecx\n" /* name */
         "movl %ecx, (%esp)\n"
         "calll I_strnicmp\n"
@@ -1824,10 +1824,10 @@ int FS_GetModList(char *listbuf, int bufsize)
         ".Lf47e28_000480b6:\n"
         "leal -0x124(%ebp), %eax\n" /* line 523 | path */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl -0x238(%ebp), %edx\n" /* name */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ecc8, %eax\n"
+        "movl imp_fs_basepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1837,7 +1837,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         "leal -0x1c(%ebp), %ecx\n" /* nIwds */
         "movl %ecx, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x216ffc, 4(%esp)\n" /* "iwd" */
+        "movl $str_00216ffc, 4(%esp)\n" /* "iwd" */
         "leal -0x124(%ebp), %eax\n" /* path */
         "movl %eax, (%esp)\n"
         "calll Sys_ListFiles\n"
@@ -1859,7 +1859,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         "leal -0x224(%ebp), %edx\n" /* descPath */
         "movl %edx, (%esp)\n"
         "calll strcpy\n"
-        "movl $0x217ffc, 8(%esp)\n" /* line 552 */
+        "movl $str_00217ffc, 8(%esp)\n" /* line 552 */
         "movl $0x100, 4(%esp)\n"
         "leal -0x224(%ebp), %ecx\n" /* descPath */
         "movl %ecx, (%esp)\n"
@@ -1875,7 +1875,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         "testl %eax, %eax\n"
         "jne .Lf47e28_00048377\n"
         ".Lf47e28_0004819d:\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 568 */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 568 */
         "movl -0x238(%ebp), %eax\n" /* name */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -2025,10 +2025,10 @@ int FS_GetModList(char *listbuf, int bufsize)
         ".Lf47e28_000483dd:\n"
         "leal -0x124(%ebp), %edx\n" /* line 531 | path */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl -0x238(%ebp), %ecx\n" /* name */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ed08, %eax\n"
+        "movl imp_fs_cdpath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2038,7 +2038,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         "leal -0x1c(%ebp), %eax\n" /* nIwds */
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x216ffc, 4(%esp)\n" /* "iwd" */
+        "movl $str_00216ffc, 4(%esp)\n" /* "iwd" */
         "leal -0x124(%ebp), %edx\n" /* path */
         "movl %edx, (%esp)\n"
         "calll Sys_ListFiles\n"
@@ -2049,10 +2049,10 @@ int FS_GetModList(char *listbuf, int bufsize)
         "jg .Lf47e28_0004812b\n"
         "leal -0x124(%ebp), %ecx\n" /* line 540 | path */
         "movl %ecx, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl -0x238(%ebp), %eax\n" /* name */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed00, %eax\n"
+        "movl imp_fs_homepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2062,7 +2062,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         "leal -0x1c(%ebp), %edx\n" /* nIwds */
         "movl %edx, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x216ffc, 4(%esp)\n" /* "iwd" */
+        "movl $str_00216ffc, 4(%esp)\n" /* "iwd" */
         "leal -0x124(%ebp), %ecx\n" /* path */
         "movl %ecx, (%esp)\n"
         "calll Sys_ListFiles\n"
@@ -2087,7 +2087,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "pushl %ebx\n"
         "subl $0x13c, %esp\n"
         /* { scope 1: testpath */
-        "movl 0x195ecf8, %eax\n" /* line 778 */
+        "movl imp_fs_numServerReferencedIwds, %eax\n" /* line 778 */
         "movl (%eax), %esi\n"
         "testl %esi, %esi\n"
         "je .Lf484cc_000484f7\n"
@@ -2111,7 +2111,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         /* { scope 1: testpath */
         ".Lf484cc_00048504:\n"
         "movl %eax, 4(%esp)\n" /* line 847 */
-        "movl $0x218054, (%esp)\n" /* "Need iwds: %s
+        "movl $str_00218054, (%esp)\n" /* "Need iwds: %s
 " */
         "calll Com_Printf\n"
         "movl $1, %eax\n"
@@ -2125,16 +2125,16 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         /* { scope 1: testpath */
         ".Lf484cc_00048524:\n"
         "movl $0, -0x11c(%ebp)\n" /* line 783 | i */
-        "movl 0x195ecd8, %ebx\n"
-        "movl 0x195ecec, %esi\n"
+        "movl imp_fs_serverReferencedIwdNames, %ebx\n"
+        "movl imp_fs_serverReferencedIwds, %esi\n"
         ".Lf484cc_0004853a:\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 790 */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 790 */
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FS_iwIwd\n"
         "testl %eax, %eax\n"
         "jne .Lf484cc_00048672\n"
-        "movl 0x195ece4, %eax\n" /* line 793 */
+        "movl imp_fs_searchpaths, %eax\n" /* line 793 */
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf484cc_0004857a\n"
@@ -2164,7 +2164,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "movl 8(%ebp), %edx\n" /* needediwds */
         "movl %edx, (%esp)\n"
         "calll I_strncat\n"
-        "movl $0x217198, 8(%esp)\n" /* line 834 */
+        "movl $str_00217198, 8(%esp)\n" /* line 834 */
         "movl 0xc(%ebp), %eax\n" /* len */
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %edx\n" /* needediwds */
@@ -2172,14 +2172,14 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "calll I_strncat\n"
         "movl (%ebx), %eax\n" /* line 836 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x218014, (%esp)\n" /* "%s.iwd" */
+        "movl $str_00218014, (%esp)\n" /* "%s.iwd" */
         "calll va\n"
         /* { scope 2 */
         "leal -0x118(%ebp), %edx\n" /* line 75 | testpath */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed00, %eax\n"
+        "movl imp_fs_homepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2191,7 +2191,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movb $0, -0x11a(%ecx, %ebp)\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 78 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 78 */
         "leal -0x118(%ebp), %edx\n" /* testpath */
         "movl %edx, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -2200,14 +2200,14 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "movl %eax, (%esp)\n" /* line 81 */
         "calll FS_FileClose\n"
         /* } scope */
-        "movl $0x218028, 8(%esp)\n" /* line 838 */
+        "movl $str_00218028, 8(%esp)\n" /* line 838 */
         "movl 0xc(%ebp), %eax\n" /* len */
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %edx\n" /* needediwds */
         "movl %edx, (%esp)\n"
         "calll I_strncat\n"
         ".Lf484cc_00048658:\n"
-        "movl $0x2160e8, 8(%esp)\n" /* line 840 */
+        "movl $str_002160e8, 8(%esp)\n" /* line 840 */
         "movl 0xc(%ebp), %eax\n" /* len */
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %edx\n" /* needediwds */
@@ -2217,7 +2217,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "addl $1, -0x11c(%ebp)\n" /* line 783 | i */
         "addl $4, %ebx\n"
         "addl $4, %esi\n"
-        "movl 0x195ecf8, %eax\n"
+        "movl imp_fs_numServerReferencedIwds, %eax\n"
         "movl -0x11c(%ebp), %edx\n" /* i */
         "cmpl (%eax), %edx\n"
         "jl .Lf484cc_0004853a\n"
@@ -2227,7 +2227,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "je .Lf484cc_000484f7\n"
         "jmp .Lf484cc_00048504\n"
         ".Lf484cc_000486a3:\n"
-        "movl $0x218010, 8(%esp)\n" /* line 809 */
+        "movl $str_00218010, 8(%esp)\n" /* line 809 */
         "movl 0xc(%ebp), %eax\n" /* len */
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %edx\n" /* needediwds */
@@ -2240,13 +2240,13 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "movl 8(%ebp), %edx\n" /* needediwds */
         "movl %edx, (%esp)\n"
         "calll I_strncat\n"
-        "movl $0x217198, 8(%esp)\n" /* line 811 */
+        "movl $str_00217198, 8(%esp)\n" /* line 811 */
         "movl 0xc(%ebp), %eax\n" /* len */
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %edx\n" /* needediwds */
         "movl %edx, (%esp)\n"
         "calll I_strncat\n"
-        "movl $0x218010, 8(%esp)\n" /* line 814 */
+        "movl $str_00218010, 8(%esp)\n" /* line 814 */
         "movl 0xc(%ebp), %eax\n" /* len */
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %edx\n" /* needediwds */
@@ -2254,14 +2254,14 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "calll I_strncat\n"
         "movl (%ebx), %eax\n" /* line 816 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x218014, (%esp)\n" /* "%s.iwd" */
+        "movl $str_00218014, (%esp)\n" /* "%s.iwd" */
         "calll va\n"
         /* { scope 2 */
         "leal -0x118(%ebp), %edx\n" /* line 75 | testpath */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed00, %eax\n"
+        "movl imp_fs_homepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2273,7 +2273,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movb $0, -0x11a(%ecx, %ebp)\n"
-        "movl $0x215b98, 4(%esp)\n" /* line 78 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 78 */
         "leal -0x118(%ebp), %edx\n" /* testpath */
         "movl %edx, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -2287,7 +2287,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "movl %eax, 0x10(%esp)\n"
         "movl (%ebx), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x21801c, 8(%esp)\n" /* "%s.%08x.iwd" */
+        "movl $str_0021801c, 8(%esp)\n" /* "%s.%08x.iwd" */
         "movl $0x100, 4(%esp)\n"
         "leal -0x118(%ebp), %eax\n" /* testpath */
         "movl %eax, (%esp)\n"
@@ -2304,7 +2304,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "addl $1, -0x11c(%ebp)\n" /* line 783 | i */
         "addl $4, %ebx\n"
         "addl $4, %esi\n"
-        "movl 0x195ecf8, %eax\n"
+        "movl imp_fs_numServerReferencedIwds, %eax\n"
         "movl -0x11c(%ebp), %edx\n" /* i */
         "cmpl (%eax), %edx\n"
         "jl .Lf484cc_0004853a\n"
@@ -2317,7 +2317,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
         "movl 8(%ebp), %edx\n" /* needediwds */
         "movl %edx, (%esp)\n"
         "calll I_strncat\n"
-        "movl $0x217198, 8(%esp)\n" /* line 828 */
+        "movl $str_00217198, 8(%esp)\n" /* line 828 */
         "jmp .Lf484cc_000487b3\n"
     );
 }

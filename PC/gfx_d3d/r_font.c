@@ -15,10 +15,10 @@ extern void R_AddCmdDrawTextWithCursor(const char *text, int maxChars, FontHandl
 extern void R_AddCmdDrawStretchPic(float x, float y, float w, float h, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material);
 extern unsigned char ColorIndex(int c);
 extern MaterialHandle Material_RegisterHandle(const char *name, int lightmapIndex, int imageTrack);
-extern refimport_t *ri; /* 0x195eee0 */
+extern refimport_t *ri; /* imp_ri */
 
-static int registeredFontCount; /* 0xc96d00 */
-static Font * registeredFont[16]; /* 0xc96d20 */
+static int registeredFontCount; /* registeredFontCount */
+static Font * registeredFont[16]; /* registeredFont */
 
 const Glyph * R_GetCharacterGlyph(FontHandle font, unsigned int letter);
 FontHandle R_RegisterFont(const char *fontName, int imageTrack);
@@ -82,13 +82,13 @@ FontHandle R_RegisterFont(const char *fontName, int imageTrack)
     }
 
     if (registeredFontCount > 15) {
-        R_Error(1, (const char *)0x225884);
+        R_Error(1, (const char *)str_00225884);
         return 0;
     }
 
     font = R_LoadFont(fontName, imageTrack);
     if (!font) {
-        R_Error(1, (const char *)0x2258b8, fontName);
+        R_Error(1, (const char *)str_002258b8, fontName);
     }
 
     registeredFont[registeredFontCount] = font;
@@ -106,7 +106,7 @@ int R_DuplicateFont(FontHandle fontCopy, const char *name)
     char *nameCopy;
     const char *oldName;
     typedef void *(*AllocFunc)(int);
-    AllocFunc alloc = *(AllocFunc *)((byte *)*(int *)0x195eee0 + 0xc);
+    AllocFunc alloc = *(AllocFunc *)((byte *)*(int *)imp_ri + 0xc);
 
     for (fontIndex = 0; fontIndex < registeredFontCount; fontIndex++) {
         existing = registeredFont[fontIndex];
@@ -120,7 +120,7 @@ int R_DuplicateFont(FontHandle fontCopy, const char *name)
     }
 
     if (registeredFontCount > 15) {
-        return R_Error(1, (const char *)0x2258e8);
+        return R_Error(1, (const char *)str_002258e8);
     }
 
     newFont = alloc(0x14);
@@ -318,7 +318,7 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "testl %eax, %eax\n"
         "jne .Lfed016_000ed101\n"
         "xorl %ebx, %ebx\n" /* i */
-        "movss 0x2ed878, %xmm1\n" /* 0.03125f */
+        "movss lit4_002ed878, %xmm1\n" /* 0.03125f */
         ".Lfed016_000ed06b:\n"
         "movzwl (%edi, %ebx, 2), %eax\n" /* line 326 | string */
         "movzbl %al, %edx\n" /* line 327 */
@@ -364,7 +364,7 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "addl $1, %ebx\n" /* line 359 | i */
         "movzbl %dl, %eax\n" /* line 361 */
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x218(%eax)\n"
         "movl $7, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -384,7 +384,7 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         /* { scope 1 */
         ".Lfed016_000ed101:\n"
         "xorl %ebx, %ebx\n" /* line 324 | i */
-        "movss 0x2ed878, %xmm1\n" /* 0.03125f */
+        "movss lit4_002ed878, %xmm1\n" /* 0.03125f */
         ".Lfed016_000ed10b:\n"
         "movzwl (%edi, %ebx, 2), %eax\n" /* line 326 | string */
         "movzbl %al, %edx\n" /* line 327 */
@@ -434,7 +434,7 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "subl $0xd, %eax\n"
         "cmpl $6, %eax\n"
         "ja .Lfed016_000ed1c5\n"
-        "jmpl *0x2f2a80(, %eax, 4)\n"
+        "jmpl *gridBasisDirs+128(, %eax, 4)\n"
         ".Lfed016_000ed196:\n"
         "xorl %ebx, %ebx\n" /* line 324 | i */
         ".Lfed016_000ed198:\n"
@@ -444,9 +444,9 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "subl $0xd, %eax\n"
         "cmpl $6, %eax\n"
         "ja .Lfed016_000ed1fa\n"
-        "jmpl *0x2f2a9c(, %eax, 4)\n"
+        "jmpl *gridBasisDirs+156(, %eax, 4)\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 337 */
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %eax\n" /* color */
         "movss %xmm0, 4(%eax)\n"
         ".Lfed016_000ed1c5:\n"
@@ -455,12 +455,12 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "jl .Lfed016_000ed17d\n"
         "jmp .Lfed016_000ed088\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 341 */
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %edx\n" /* color */
         "movss %xmm0, 8(%edx)\n"
         "jmp .Lfed016_000ed1c5\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 333 */
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %eax\n" /* color */
         "movss %xmm0, (%eax)\n"
         ".Lfed016_000ed1fa:\n"
@@ -469,45 +469,45 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "jl .Lfed016_000ed198\n"
         "jmp .Lfed016_000ed088\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 337 */
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %edx\n" /* color */
         "movss %xmm0, 4(%edx)\n"
         "jmp .Lfed016_000ed1fa\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 341 */
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %eax\n" /* color */
         "movss %xmm0, 8(%eax)\n"
         "jmp .Lfed016_000ed1fa\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 345 */
-        "mulss 0x2ed878, %xmm0\n" /* 0.03125f */
+        "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "mulss (%ecx), %xmm0\n" /* iconWidth */
         "movss %xmm0, (%ecx)\n" /* iconWidth */
         "jmp .Lfed016_000ed1fa\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 349 */
-        "mulss 0x2ed878, %xmm0\n" /* 0.03125f */
+        "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "mulss (%ecx), %xmm0\n" /* iconWidth */
         "movss %xmm0, (%ecx)\n" /* iconWidth */
         "movl 0x14(%ebp), %edx\n" /* line 351 | iconHorzFlip */
         "movb $1, (%edx)\n"
         "jmp .Lfed016_000ed1fa\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 355 */
-        "mulss 0x2ed878, %xmm0\n" /* 0.03125f */
+        "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "movl 8(%ebp), %eax\n" /* iconHeight */
         "mulss (%eax), %xmm0\n"
         "movss %xmm0, (%eax)\n"
         "jmp .Lfed016_000ed1fa\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 333 */
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %edx\n" /* color */
         "movss %xmm0, (%edx)\n"
         "jmp .Lfed016_000ed1c5\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 349 */
-        "mulss 0x2ed878, %xmm0\n" /* 0.03125f */
+        "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "mulss (%ecx), %xmm0\n" /* iconWidth */
         "movss %xmm0, (%ecx)\n" /* iconWidth */
         "jmp .Lfed016_000ed1c5\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 355 */
-        "mulss 0x2ed878, %xmm0\n" /* 0.03125f */
+        "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "movl 8(%ebp), %eax\n" /* iconHeight */
         "mulss (%eax), %xmm0\n"
         "movss %xmm0, (%eax)\n"

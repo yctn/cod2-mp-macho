@@ -22,9 +22,9 @@ extern long int SVC_Status(netadr_t from);
 extern long int SVC_GameCompleteStatus(netadr_t from);
 
 /* Global pointers accessed by absolute address in the original binary */
-extern byte *svs_ptr;                /* 0x195f284 - pointer to serverStatic_t */
-extern const dvar_t **sv_dedicated_dvar; /* 0x195ec98 */
-extern const dvar_t **rcon_password_dvar; /* 0x195f2f4 */
+extern byte *svs_ptr;                /* imp_svs - pointer to serverStatic_t */
+extern const dvar_t **sv_dedicated_dvar; /* imp_com_dedicated */
+extern const dvar_t **rcon_password_dvar; /* imp_rcon_password */
 
 /* serverStatic_t field offsets */
 #define SVS_TIME_OFF              0x4
@@ -32,8 +32,8 @@ extern const dvar_t **rcon_password_dvar; /* 0x195f2f4 */
 #define SVS_NEXTSTATUSRESPTIME_OFF 0x58
 #define SVS_REDIRECTADDR_OFF      0xa05c
 
-static int lasttime; /* 0xf31680 */
-static netadr_t adr; /* 0xf31684 */
+static int lasttime; /* lasttime */
+static netadr_t adr; /* adr */
 
 void SV_FlushRedirect(char *outputbuf);
 void SVC_RemoteCommand(struct netadr_t from, msg_t *msg);

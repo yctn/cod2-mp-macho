@@ -34,7 +34,7 @@ int CM_TransformedBoxSightTrace(int hitNum, const vec_t *start, const vec_t *end
 /* line 79 */
 cmodel_t * CM_ClipHandleToModel(clipHandle_t handle)
 {
-    char *cm = *(char **)0x195eda4;
+    char *cm = *(char **)imp_cm;
     if (handle < *(int *)(cm + 0x74)) {
         return (cmodel_t *)(*(char **)(cm + 0x78) + handle * 72);
     }
@@ -121,7 +121,7 @@ int CM_TestInLeafBrushNode_r(void)
         "movzwl (%eax, %ecx, 2), %eax\n"
         "leal (%eax, %eax, 2), %ecx\n"
         "shll $4, %ecx\n"
-        "movl 0x195eda4, %eax\n"
+        "movl imp_cm, %eax\n"
         "addl 0x80(%eax), %ecx\n"
         "testl %edx, 0xc(%ecx)\n" /* line 274 */
         "je .Lf62e1c_0006304a\n"
@@ -166,7 +166,7 @@ int CM_TestInLeafBrushNode_r(void)
         "addss %xmm0, %xmm1\n"
         "movss -0x24(%ebp), %xmm0\n"
         "mulss 8(%eax), %xmm0\n"
-        "movss 0x2f04c0, %xmm3\n"
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+192, %xmm3\n"
         "andps %xmm3, %xmm0\n"
         "movaps %xmm7, %xmm2\n"
         "addss 0xc(%eax), %xmm2\n"
@@ -243,8 +243,8 @@ int CM_SightTraceThroughBrush(cbrush_t *brush)
         /* { scope 1 */
         "pxor %xmm7, %xmm7\n" /* line 1563 */
         "movaps %xmm7, %xmm5\n"
-        "movss 0x2ed5d0, %xmm6\n" /* 1.0f */
-        "movss 0x2ed5dc, %xmm4\n" /* -1.0f */
+        "movss lit4_002ed5d0, %xmm6\n" /* 1.0f */
+        "movss lit4_002ed5dc, %xmm4\n" /* -1.0f */
         "xorl %edi, %edi\n" /* index */
         "movl %edx, %esi\n" /* i */
         "addl $0x10, %esi\n" /* i */
@@ -284,7 +284,7 @@ int CM_SightTraceThroughBrush(cbrush_t *brush)
         "jne .Lf63066_0006315d\n"
         "movl %esi, %edx\n" /* line 1601 | i */
         "movw $1, %di\n" /* index */
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         "jmp .Lf63066_00063092\n"
         ".Lf63066_00063119:\n"
         "pxor %xmm0, %xmm0\n" /* line 1589 */
@@ -333,7 +333,7 @@ int CM_SightTraceThroughBrush(cbrush_t *brush)
         "movss 8(%eax), %xmm3\n"
         "movss %xmm3, -0x10(%ebp)\n"
         "xorl %edx, %edx\n"
-        "movss 0x2f04d0, %xmm5\n"
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+208, %xmm5\n"
         "jmp .Lf63066_00063210\n"
         /* } scope */
         ".Lf63066_000631d2:\n"
@@ -410,7 +410,7 @@ int CM_SightTraceThroughBrush(cbrush_t *brush)
         "movl %eax, %ecx\n"
         /* { scope 1 */
         ".Lf63066_000632ca:\n"
-        "movl 0x195eda4, %eax\n" /* line 1655 */
+        "movl imp_cm, %eax\n" /* line 1655 */
         "subl 0x80(%eax), %ecx\n"
         "sarl $4, %ecx\n"
         "leal (%ecx, %ecx, 4), %eax\n"
@@ -481,7 +481,7 @@ int CM_SightTraceThroughLeafBrushNode_r(const vec_t *p2)
         "subss %xmm1, %xmm2\n"
         "movss (%edi, %eax, 4), %xmm0\n" /* line 1720 | k */
         "subss %xmm1, %xmm0\n"
-        "movss 0x2ed610, %xmm3\n" /* line 1721 | 0.125f */
+        "movss lit4_002ed610, %xmm3\n" /* line 1721 | 0.125f */
         "addss 0x5c(%esi, %eax, 4), %xmm3\n" /* tw */
         "subss 0xc(%ebx), %xmm3\n" /* node */
         "movaps %xmm2, %xmm1\n" /* line 45 */
@@ -505,7 +505,7 @@ int CM_SightTraceThroughLeafBrushNode_r(const vec_t *p2)
         /* } scope */
         "ucomiss %xmm3, %xmm0\n" /* line 1725 */
         "jb .Lf63302_000633f3\n"
-        "xorps 0x2f04e0, %xmm3\n" /* line 1727 */
+        "xorps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+224, %xmm3\n" /* line 1727 */
         "ucomiss %xmm1, %xmm3\n"
         "jae .Lf63302_000633e9\n"
         "movzwl 0x10(%ebx), %eax\n" /* line 1730 | node */
@@ -526,7 +526,7 @@ int CM_SightTraceThroughLeafBrushNode_r(const vec_t *p2)
         "retl\n"
         /* { scope 1 */
         ".Lf63302_000633f3:\n"
-        "movss 0x2f04e0, %xmm4\n" /* line 1734 */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+224, %xmm4\n" /* line 1734 */
         "movaps %xmm3, %xmm0\n"
         "xorps %xmm4, %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
@@ -537,11 +537,11 @@ int CM_SightTraceThroughLeafBrushNode_r(const vec_t *p2)
         "jmp .Lf63302_00063323\n"
         ".Lf63302_00063415:\n"
         "movaps %xmm5, %xmm1\n" /* line 54 */
-        "andps 0x2f04f0, %xmm1\n"
-        "ucomiss 0x2ed6a0, %xmm1\n" /* line 1743 | 4.76837158203125e-07f */
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+240, %xmm1\n"
+        "ucomiss lit4_002ed6a0, %xmm1\n" /* line 1743 | 4.76837158203125e-07f */
         "ja .Lf63302_0006354e\n"
         "movaps %xmm6, %xmm4\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm7\n"
         "movl $0, -0x3c(%ebp)\n" /* side */
         "movaps %xmm6, %xmm0\n"
@@ -621,7 +621,7 @@ int CM_SightTraceThroughLeafBrushNode_r(const vec_t *p2)
         "andnps %xmm2, %xmm7\n"
         "orps %xmm4, %xmm7\n"
         "movaps %xmm7, %xmm0\n"
-        "movss 0x2ed5d0, %xmm7\n" /* line 1746 | 1.0f */
+        "movss lit4_002ed5d0, %xmm7\n" /* line 1746 | 1.0f */
         "movaps %xmm7, %xmm2\n"
         "divss %xmm1, %xmm2\n"
         "movaps %xmm2, %xmm1\n"
@@ -654,7 +654,7 @@ int CM_SightTraceThroughLeafBrushNode_r(const vec_t *p2)
         "movzwl (%eax, %edi, 2), %eax\n"
         "leal (%eax, %eax, 2), %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195eda4, %eax\n"
+        "movl imp_cm, %eax\n"
         "addl 0x80(%eax), %edx\n"
         "testl %ecx, 0xc(%edx)\n" /* line 1703 | p1_ */
         "je .Lf63302_000635b9\n"
@@ -747,12 +747,12 @@ int CM_SightTraceThroughLeaf(trace_t *trace)
         "movzwl (%esi), %eax\n" /* leaf */
         "addl %ebx, %eax\n" /* k */
         "shll $5, %eax\n"
-        "movl 0x195eda4, %edx\n"
+        "movl imp_cm, %edx\n"
         "addl 0x70(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* tw */
         "calll CM_SightTraceThroughAabbTree\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1829 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1829 | 1.0f */
         "movl -0x3c(%ebp), %eax\n"
         "ucomiss (%eax), %xmm0\n"
         "jne .Lf635fc_0006372f\n"
@@ -766,7 +766,7 @@ int CM_SightTraceThroughLeaf(trace_t *trace)
         ".Lf635fc_00063706:\n"
         "movl 0x24(%esi), %edx\n" /* line 1798 */
         "leal (%edx, %edx, 4), %edx\n"
-        "movl 0x195eda4, %eax\n"
+        "movl imp_cm, %eax\n"
         "movl 0x30(%eax), %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "leal 0xc(%edi), %eax\n"
@@ -779,7 +779,7 @@ int CM_SightTraceThroughLeaf(trace_t *trace)
         "je .Lf635fc_000636b3\n"
         "jmp .Lf635fc_00063629\n"
         ".Lf635fc_0006372f:\n"
-        "movl 0x195eda4, %edx\n" /* line 1832 */
+        "movl imp_cm, %edx\n" /* line 1832 */
         "movzwl 0x7c(%edx), %eax\n"
         "movzwl (%esi), %edx\n" /* leaf */
         "addl %edx, %eax\n"
@@ -834,7 +834,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "subss %xmm1, %xmm2\n"
         "movss (%esi, %eax, 4), %xmm0\n" /* line 754 | p2 */
         "subss %xmm1, %xmm0\n"
-        "movss 0x2ed610, %xmm3\n" /* line 755 | 0.125f */
+        "movss lit4_002ed610, %xmm3\n" /* line 755 | 0.125f */
         "addss 0x5c(%edi, %eax, 4), %xmm3\n" /* tw */
         "subss 0xc(%ebx), %xmm3\n" /* node */
         "movaps %xmm2, %xmm1\n" /* line 45 */
@@ -858,7 +858,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         /* } scope */
         "ucomiss %xmm0, %xmm3\n" /* line 759 */
         "ja .Lf63748_00063842\n"
-        "xorps 0x2f0510, %xmm3\n" /* line 761 */
+        "xorps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+272, %xmm3\n" /* line 761 */
         "ucomiss %xmm3, %xmm1\n"
         "jbe .Lf63748_00063837\n"
         "movzwl 0x10(%ebx), %eax\n" /* line 764 | node */
@@ -877,7 +877,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "retl\n"
         /* { scope 1: enterFrac, allsolid, leadside, bounds, ... */
         ".Lf63748_00063842:\n"
-        "movss 0x2f0510, %xmm5\n" /* line 768 */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+272, %xmm5\n" /* line 768 */
         "movaps %xmm3, %xmm0\n"
         "xorps %xmm5, %xmm0\n"
         "ucomiss %xmm0, %xmm1\n"
@@ -893,12 +893,12 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "ucomiss %xmm6, %xmm0\n"
         "jbe .Lf63748_00063837\n"
         "movaps %xmm4, %xmm0\n" /* line 54 */
-        "andps 0x2f0500, %xmm0\n"
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+256, %xmm0\n"
         "movss %xmm0, -0xdc(%ebp)\n" /* absDiff */
-        "ucomiss 0x2ed6a0, %xmm0\n" /* line 780 | 4.76837158203125e-07f */
+        "ucomiss lit4_002ed6a0, %xmm0\n" /* line 780 | 4.76837158203125e-07f */
         "ja .Lf63748_000639ef\n"
         "movaps %xmm7, %xmm5\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "xorl %eax, %eax\n"
         "movaps %xmm7, %xmm0\n"
         "movl $1, -0x60(%ebp)\n"
@@ -988,7 +988,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "andnps %xmm2, %xmm5\n"
         "orps %xmm0, %xmm5\n"
         "movss %xmm5, -0xcc(%ebp)\n" /* t */
-        "movss 0x2ed5d0, %xmm1\n" /* line 783 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 783 | 1.0f */
         "divss -0xdc(%ebp), %xmm1\n" /* absDiff */
         "subss %xmm3, %xmm5\n" /* line 784 */
         "mulss %xmm1, %xmm5\n"
@@ -998,11 +998,11 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "xorl %eax, %eax\n" /* line 96 */
         "ucomiss %xmm4, %xmm7\n"
         "setbe %al\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movl $1, -0x60(%ebp)\n"
         "subl %eax, -0x60(%ebp)\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "jmp .Lf63748_000638ae\n"
         ".Lf63748_00063a64:\n"
         "cmpw $0, 2(%ebx)\n" /* line 737 | node */
@@ -1014,7 +1014,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "movzwl (%eax, %ecx, 2), %eax\n"
         "leal (%eax, %eax, 2), %eax\n"
         "shll $4, %eax\n"
-        "movl 0x195eda4, %esi\n" /* p2 */
+        "movl imp_cm, %esi\n" /* p2 */
         "movl 0x80(%esi), %esi\n" /* p2 */
         "addl %esi, %eax\n" /* p2 */
         "movl %eax, -0x5c(%ebp)\n"
@@ -1029,7 +1029,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "movss %xmm7, -0x8c(%ebp)\n" /* enterFrac */
         "movl $1, -0x88(%ebp)\n" /* allsolid */
         "movl $0, -0x84(%ebp)\n" /* leadside */
-        "movss 0x2ed5dc, %xmm4\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm4\n" /* -1.0f */
         "movl $0, -0x7c(%ebp)\n" /* index */
         "movl %edx, %ecx\n"
         "addl $0x10, %ecx\n"
@@ -1056,7 +1056,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "subss %xmm1, %xmm3\n"
         "ucomiss %xmm7, %xmm2\n" /* line 547 */
         "jbe .Lf63748_00063c1d\n"
-        "movss 0x2ed610, %xmm1\n" /* line 45 | 0.125f */
+        "movss lit4_002ed610, %xmm1\n" /* line 45 | 0.125f */
         "movaps %xmm1, %xmm0\n"
         "subss %xmm2, %xmm0\n"
         "movaps %xmm2, %xmm5\n"
@@ -1102,7 +1102,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "movl -0x9c(%ebp), %eax\n" /* line 595 */
         "movl %eax, -0x80(%ebp)\n" /* bounds */
         "movl $1, -0x7c(%ebp)\n" /* index */
-        "movss 0x2ed5d0, %xmm4\n" /* line 535 | 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* line 535 | 1.0f */
         "movl -0x5c(%ebp), %esi\n" /* i */
         "jmp .Lf63748_00063aee\n"
         ".Lf63748_00063c11:\n"
@@ -1152,7 +1152,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         /* } scope */
         "movl -0x84(%ebp), %edx\n" /* line 693 | leadside */
         "movl 4(%edx), %eax\n"
-        "movl 0x195eda4, %ecx\n"
+        "movl imp_cm, %ecx\n"
         "movl 0x10(%ecx), %edx\n"
         "leal (%eax, %eax, 8), %eax\n"
         "movl 0x40(%edx, %eax, 8), %eax\n"
@@ -1222,7 +1222,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "movl (%edx), %eax\n" /* line 605 */
         "movss -0x94(%ebp), %xmm3\n" /* line 613 */
         "mulss 8(%eax), %xmm3\n"
-        "andps 0x2f0500, %xmm3\n"
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+256, %xmm3\n"
         "movss -0x90(%ebp), %xmm0\n"
         "addss 0xc(%eax), %xmm0\n"
         "addss %xmm0, %xmm3\n"
@@ -1245,7 +1245,7 @@ int CM_TraceThroughLeafBrushNode_r(const vec_t *p2, trace_t *trace)
         "subss %xmm3, %xmm4\n"
         "ucomiss %xmm7, %xmm5\n" /* line 622 */
         "jbe .Lf63748_00063e9f\n"
-        "movss 0x2ed610, %xmm1\n" /* line 45 | 0.125f */
+        "movss lit4_002ed610, %xmm1\n" /* line 45 | 0.125f */
         "movaps %xmm1, %xmm0\n"
         "subss %xmm5, %xmm0\n"
         "movaps %xmm5, %xmm2\n"
@@ -1327,7 +1327,7 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "movl %eax, -0x28(%ebp)\n"
         "testl %edx, %edx\n" /* line 2077 */
         "js .Lf63f0c_00064223\n"
-        "movl 0x195eda4, %ecx\n" /* p1_ */
+        "movl imp_cm, %ecx\n" /* p1_ */
         "jmp .Lf63f0c_00063f9c\n"
         ".Lf63f0c_00063f3c:\n"
         "movzbl %al, %eax\n" /* line 2090 */
@@ -1336,7 +1336,7 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "subss %xmm0, %xmm5\n"
         "movss (%esi, %eax, 4), %xmm3\n" /* line 2091 | p2 */
         "subss %xmm0, %xmm3\n"
-        "movss 0x2ed610, %xmm6\n" /* line 2092 | 0.125f */
+        "movss lit4_002ed610, %xmm6\n" /* line 2092 | 0.125f */
         "movl -0x3c(%ebp), %edx\n"
         "addss 0x5c(%edx, %eax, 4), %xmm6\n"
         ".Lf63f0c_00063f68:\n"
@@ -1388,7 +1388,7 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "movl 0x84(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf63f0c_00064098\n"
-        "movss 0x2ed610, %xmm6\n" /* 0.125f */
+        "movss lit4_002ed610, %xmm6\n" /* 0.125f */
         "movaps %xmm3, %xmm4\n" /* line 166 | comparand */
         "subss %xmm5, %xmm4\n" /* comparand */
         /* { scope 2 */
@@ -1410,7 +1410,7 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "andps %xmm0, %xmm2\n"
         "andnps %xmm5, %xmm0\n"
         "orps %xmm2, %xmm0\n"
-        "movss 0x2f0520, %xmm2\n" /* line 2111 */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+288, %xmm2\n" /* line 2111 */
         "movaps %xmm6, %xmm1\n"
         "xorps %xmm2, %xmm1\n"
         "ucomiss %xmm0, %xmm1\n"
@@ -1438,15 +1438,15 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "retl\n"
         /* { scope 1 */
         ".Lf63f0c_00064098:\n"
-        "movss 0x2ed6a4, %xmm6\n" /* line 2098 | 2048.0f */
+        "movss lit4_002ed6a4, %xmm6\n" /* line 2098 | 2048.0f */
         "jmp .Lf63f0c_00063f68\n"
         ".Lf63f0c_000640a5:\n"
         "movaps %xmm4, %xmm0\n" /* line 54 */
-        "andps 0x2f0530, %xmm0\n"
-        "ucomiss 0x2ed6a0, %xmm0\n" /* line 2120 | 4.76837158203125e-07f */
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+304, %xmm0\n"
+        "ucomiss lit4_002ed6a0, %xmm0\n" /* line 2120 | 4.76837158203125e-07f */
         "ja .Lf63f0c_000641d6\n"
         "movaps %xmm7, %xmm3\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm5\n"
         "xorl %edi, %edi\n" /* side */
         "movaps %xmm7, %xmm0\n"
@@ -1511,7 +1511,7 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "movss %xmm1, -0x28(%ebp)\n"
         "xorl $1, %edi\n" /* line 2155 | side */
         "movswl 4(%ebx, %edi, 2), %edx\n" /* node */
-        "movl 0x195eda4, %ecx\n" /* p1_ */
+        "movl imp_cm, %ecx\n" /* p1_ */
         "jmp .Lf63f0c_00063f94\n"
         ".Lf63f0c_000641d6:\n"
         "movaps %xmm5, %xmm1\n" /* line 2122 */
@@ -1519,7 +1519,7 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "ucomiss %xmm4, %xmm7\n" /* line 45 */
         "ja .Lf63f0c_0006421e\n"
         ".Lf63f0c_000641e1:\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 2123 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 2123 | 1.0f */
         "movaps %xmm5, %xmm2\n"
         "divss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n"
@@ -1539,7 +1539,7 @@ int CM_SightTraceThroughTree(const traceWork_t *tw, const vec_t *p2, trace_t *tr
         "movaps %xmm5, %xmm1\n" /* line 45 */
         "jmp .Lf63f0c_000641e1\n"
         ".Lf63f0c_00064223:\n"
-        "movl 0x195eda4, %ecx\n"
+        "movl imp_cm, %ecx\n"
         "movl %edx, %eax\n" /* line 2078 */
         "notl %eax\n"
         "leal (%eax, %eax, 4), %edx\n"
@@ -1633,7 +1633,7 @@ Bool CM_TraceThroughLeafBrushNode(void)
         "leal -0x40(%ebp), %ecx\n" /* line 842 | start */
         "movl 0x24(%esi), %edx\n" /* leaf */
         "leal (%edx, %edx, 4), %edx\n"
-        "movl 0x195eda4, %eax\n"
+        "movl imp_cm, %eax\n"
         "movl 0x30(%eax), %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "movl %edi, 4(%esp)\n" /* trace */
@@ -1738,12 +1738,12 @@ qboolean CM_TraceSphereThroughSphere(const vec_t *vStationary, trace_t *trace)
         "movss -0x8c(%ebp), %xmm1\n"
         "movss -0x68(%ebp), %xmm4\n" /* line 936 */
         "movaps %xmm4, %xmm2\n"
-        "xorps 0x2f0540, %xmm2\n"
+        "xorps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+320, %xmm2\n"
         "movss -0x58(%ebp), %xmm0\n" /* line 81 */
         "sqrtss %xmm0, %xmm0\n"
         "subss %xmm0, %xmm2\n"
         "divss -0x3c(%ebp), %xmm2\n" /* fA */
-        "mulss 0x2ed610, %xmm1\n" /* 0.125f */
+        "mulss lit4_002ed610, %xmm1\n" /* 0.125f */
         "divss %xmm4, %xmm1\n"
         "addss %xmm1, %xmm2\n"
         "movl 0xc(%ebp), %eax\n" /* line 937 | trace */
@@ -1886,12 +1886,12 @@ qboolean CM_SightTraceSphereThroughSphere(const vec_t *vStationary, trace_t *tra
         "fstps -0x2c(%ebp)\n" /* fDeltaLen */
         "movss -0x58(%ebp), %xmm5\n" /* line 1880 */
         "movaps %xmm5, %xmm0\n" /* radius */
-        "xorps 0x2f0550, %xmm0\n" /* radius */
+        "xorps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+336, %xmm0\n" /* radius */
         "movss -0x48(%ebp), %xmm1\n" /* line 81 */
         "sqrtss %xmm1, %xmm1\n"
         "subss %xmm1, %xmm0\n"
         "divss -0x30(%ebp), %xmm0\n" /* fA */
-        "mulss 0x2ed610, %xmm5\n" /* 0.125f */
+        "mulss lit4_002ed610, %xmm5\n" /* 0.125f */
         "divss -0x2c(%ebp), %xmm5\n" /* fDeltaLen */
         "addss %xmm5, %xmm0\n"
         "movl 0xc(%ebp), %eax\n" /* trace */
@@ -1996,7 +1996,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "movl %eax, -0x2c(%ebp)\n"
         "testl %edx, %edx\n" /* line 1154 */
         "js .Lf646f8_00064a94\n"
-        "movl 0x195eda4, %ecx\n" /* p1_ */
+        "movl imp_cm, %ecx\n" /* p1_ */
         "jmp .Lf646f8_0006478a\n"
         ".Lf646f8_0006472d:\n"
         "movzbl %al, %eax\n" /* line 1170 */
@@ -2005,7 +2005,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "subss %xmm0, %xmm5\n"
         "movss (%esi, %eax, 4), %xmm3\n" /* line 1171 | leaf */
         "subss %xmm0, %xmm3\n"
-        "movss 0x2ed610, %xmm6\n" /* line 1172 | 0.125f */
+        "movss lit4_002ed610, %xmm6\n" /* line 1172 | 0.125f */
         "addss 0x5c(%edi, %eax, 4), %xmm6\n" /* tw */
         ".Lf646f8_00064756:\n"
         "movaps %xmm3, %xmm4\n" /* line 166 | comparand */
@@ -2055,7 +2055,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "movl 0x84(%edi), %eax\n" /* line 1178 | tw */
         "testl %eax, %eax\n"
         "je .Lf646f8_000648bb\n"
-        "movss 0x2ed610, %xmm6\n" /* 0.125f */
+        "movss lit4_002ed610, %xmm6\n" /* 0.125f */
         "movaps %xmm3, %xmm4\n" /* line 166 | comparand */
         "subss %xmm5, %xmm4\n" /* comparand */
         /* { scope 2 */
@@ -2078,7 +2078,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "andps %xmm0, %xmm1\n"
         "andnps %xmm5, %xmm0\n"
         "orps %xmm1, %xmm0\n"
-        "movss 0x2f0560, %xmm2\n" /* line 1191 */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+352, %xmm2\n" /* line 1191 */
         "movaps %xmm6, %xmm1\n"
         "xorps %xmm2, %xmm1\n"
         "ucomiss %xmm1, %xmm0\n"
@@ -2126,7 +2126,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "retl\n"
         /* { scope 1 */
         ".Lf646f8_000648bb:\n"
-        "movss 0x2ed6a4, %xmm6\n" /* line 1178 | 2048.0f */
+        "movss lit4_002ed6a4, %xmm6\n" /* line 1178 | 2048.0f */
         "jmp .Lf646f8_00064756\n"
         ".Lf646f8_000648c8:\n"
         "movss -0x2c(%ebp), %xmm3\n" /* line 1197 */
@@ -2135,11 +2135,11 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "ucomiss %xmm3, %xmm0\n"
         "jbe .Lf646f8_000648b3\n"
         "movaps %xmm4, %xmm0\n" /* line 54 */
-        "andps 0x2f0570, %xmm0\n"
-        "ucomiss 0x2ed6a0, %xmm0\n" /* line 1203 | 4.76837158203125e-07f */
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+368, %xmm0\n"
+        "ucomiss lit4_002ed6a0, %xmm0\n" /* line 1203 | 4.76837158203125e-07f */
         "ja .Lf646f8_00064a39\n"
         "pxor %xmm5, %xmm5\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm7\n"
         "xorl %eax, %eax\n"
         "pxor %xmm0, %xmm0\n"
@@ -2214,7 +2214,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "movss %xmm1, -0x2c(%ebp)\n"
         "movl -0x3c(%ebp), %eax\n" /* line 1238 */
         "movswl 4(%ebx, %eax, 2), %edx\n" /* node */
-        "movl 0x195eda4, %ecx\n" /* p1_ */
+        "movl imp_cm, %ecx\n" /* p1_ */
         "jmp .Lf646f8_00064782\n"
         ".Lf646f8_00064a39:\n"
         "movaps %xmm5, %xmm1\n" /* line 1205 */
@@ -2223,7 +2223,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "ucomiss %xmm4, %xmm2\n"
         "ja .Lf646f8_00064b13\n"
         ".Lf646f8_00064a4c:\n"
-        "movss 0x2ed5d0, %xmm7\n" /* line 1206 | 1.0f */
+        "movss lit4_002ed5d0, %xmm7\n" /* line 1206 | 1.0f */
         "movaps %xmm7, %xmm2\n"
         "divss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n"
@@ -2244,7 +2244,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "movl %edx, -0x3c(%ebp)\n"
         "jmp .Lf646f8_0006490c\n"
         ".Lf646f8_00064a94:\n"
-        "movl 0x195eda4, %ecx\n"
+        "movl imp_cm, %ecx\n"
         "jmp .Lf646f8_00064864\n"
         /* { scope 2 */
         /* { scope 3 */
@@ -2267,7 +2267,7 @@ int CM_TraceThroughTree(const vec_t *p2, trace_t *trace)
         "movzwl (%esi), %eax\n"
         "leal (%ebx, %eax), %eax\n" /* k */
         "shll $5, %eax\n"
-        "movl 0x195eda4, %edx\n"
+        "movl imp_cm, %edx\n"
         "addl 0x70(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n"
@@ -2302,7 +2302,7 @@ int CM_ContentsOfModel(clipHandle_t handle)
         "subl $0x18, %esp\n"
         "movl 8(%ebp), %eax\n" /* handle */
         /* { scope 1 */
-        "movl 0x195eda4, %ecx\n" /* line 85 */
+        "movl imp_cm, %ecx\n" /* line 85 */
         "cmpl 0x74(%ecx), %eax\n"
         "jge .Lf64b1c_00064b41\n"
         "leal (%eax, %eax, 8), %edx\n" /* line 86 */
@@ -2336,7 +2336,7 @@ float CM_RadiusOfModel(clipHandle_t handle)
         "subl $0x18, %esp\n"
         "movl 8(%ebp), %eax\n" /* handle */
         /* { scope 1 */
-        "movl 0x195eda4, %ecx\n" /* line 85 */
+        "movl imp_cm, %ecx\n" /* line 85 */
         "cmpl 0x74(%ecx), %eax\n"
         "jge .Lf64b58_00064b7a\n"
         "leal (%eax, %eax, 8), %edx\n" /* line 86 */
@@ -2374,7 +2374,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movl %ecx, %esi\n" /* end */
         /* { scope 1: box_model, leafs, ll, offset, ... */
         /* { scope 2: radius, fStationaryHalfHeight */
-        "movl 0x195eda4, %eax\n" /* line 85 */
+        "movl imp_cm, %eax\n" /* line 85 */
         "movl 0x10(%ebp), %edx\n" /* model */
         "cmpl 0x74(%eax), %edx\n"
         "jge .Lf64b8e_00065291\n"
@@ -2387,8 +2387,8 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movl 0x14(%ebp), %eax\n" /* line 1285 | brushmask */
         "movl %eax, -0xfc(%ebp)\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
-        "movss 0x2f0580, %xmm2\n"
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+384, %xmm2\n"
         "movl $4, %edx\n"
         "leal -0x12c(%ebp), %eax\n"
         ".Lf64b8e_00064bed:\n"
@@ -2481,7 +2481,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "mulss %xmm1, %xmm2\n"
         "mulss -0x11c(%ebp), %xmm3\n"
         "mulss -0x118(%ebp), %xmm3\n"
-        "mulss 0x2ed6a8, %xmm3\n" /* 16.0f */
+        "mulss lit4_002ed6a8, %xmm3\n" /* 16.0f */
         "mulss -0x14c(%ebp), %xmm3\n"
         "xorl %eax, %eax\n"
         "ucomiss %xmm2, %xmm3\n"
@@ -2543,7 +2543,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "addss -0x118(%ebp), %xmm1\n" /* line 242 */
         "movss %xmm1, -0xa0(%ebp)\n"
         "movl %ecx, %eax\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "leal -0xb8(%ebp), %edx\n"
         ".Lf64b8e_00064ef6:\n"
         "movss 0x10(%eax), %xmm0\n" /* line 453 */
@@ -2575,7 +2575,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movl -0x117c(%ebp, %edi, 4), %eax\n" /* line 475 */
         "leal (%eax, %eax, 4), %edx\n"
         "leal (%eax, %edx, 2), %edx\n"
-        "movl 0x195eda4, %ecx\n"
+        "movl imp_cm, %ecx\n"
         "movl 0x28(%ecx), %eax\n"
         "leal (%eax, %edx, 4), %esi\n" /* leaf */
         "movl -0xfc(%ebp), %edx\n" /* line 339 */
@@ -2600,7 +2600,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "jne .Lf64b8e_00064fac\n"
         "movl 0x24(%esi), %edx\n" /* line 327 */
         "leal (%edx, %edx, 4), %edx\n"
-        "movl 0x195eda4, %ecx\n"
+        "movl imp_cm, %ecx\n"
         "movl 0x30(%ecx), %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "movl -0x11b8(%ebp), %ecx\n"
@@ -2699,7 +2699,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movzwl (%esi), %eax\n" /* leaf */
         "leal (%ebx, %eax), %eax\n" /* k */
         "shll $5, %eax\n"
-        "movl 0x195eda4, %edx\n"
+        "movl imp_cm, %edx\n"
         "addl 0x70(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "leal -0x17c(%ebp), %eax\n" /* tw */
@@ -2749,7 +2749,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "jne .Lf64b8e_000651de\n"
         "movl 0x24(%esi), %edx\n" /* line 327 */
         "leal (%edx, %edx, 4), %edx\n"
-        "movl 0x195eda4, %eax\n"
+        "movl imp_cm, %eax\n"
         "movl 0x30(%eax), %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "movl -0x11b8(%ebp), %ecx\n"
@@ -2837,7 +2837,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movss %xmm1, -0x119c(%ebp)\n"
         "movl -0xc8(%ebp), %eax\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "leal -0x78(%ebp), %esi\n" /* offset, leaf */
         "leal -0x117c(%ebp), %ebx\n" /* leafs, i */
         "movl $4, %edx\n"
@@ -2954,7 +2954,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "je .Lf64b8e_00065031\n"
         /* { scope 2: radius, fStationaryHalfHeight */
         "movl -0xc8(%ebp), %ecx\n" /* line 1045 */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss 0xc(%ecx), %xmm1\n"
         "addss %xmm2, %xmm1\n"
         "movss -0x114(%ebp), %xmm0\n"
@@ -3009,7 +3009,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movss %xmm1, -0x58(%ebp)\n"
         "movl %ecx, %eax\n"
         "movl $1, %ebx\n" /* k */
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "leal -0xc4(%ebp), %ecx\n" /* ll */
         "leal -0x6c(%ebp), %esi\n" /* offset, leaf */
         "movl $4, %edx\n"
@@ -3196,7 +3196,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movss -0x118(%ebp), %xmm1\n" /* line 976 */
         "subss %xmm4, %xmm1\n"
         "addss -0x11a0(%ebp), %xmm1\n" /* fStationaryHalfHeight */
-        "andps 0x2f0580, %xmm6\n" /* line 978 */
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+384, %xmm6\n" /* line 978 */
         "ucomiss %xmm1, %xmm6\n"
         "ja .Lf64b8e_0006586d\n"
         "movl -0x11b8(%ebp), %eax\n" /* line 981 */
@@ -3224,7 +3224,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "movss -0x168(%ebp), %xmm0\n" /* line 250 */
         "subss -0x11a8(%ebp), %xmm0\n"
         "movss %xmm0, -0x70(%ebp)\n"
-        "andps 0x2f0580, %xmm0\n" /* line 989 */
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+384, %xmm0\n" /* line 989 */
         "movss -0x11e8(%ebp), %xmm1\n"
         "ucomiss %xmm0, %xmm1\n"
         "jb .Lf64b8e_00065031\n"
@@ -3253,11 +3253,11 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "calll Vec3NormalizeTo\n"
         "fstps -0x121c(%ebp)\n"
         "movss -0x121c(%ebp), %xmm2\n"
-        "mulss 0x2ed610, %xmm2\n" /* line 1009 | 0.125f */
+        "mulss lit4_002ed610, %xmm2\n" /* line 1009 | 0.125f */
         "movss -0x11f8(%ebp), %xmm3\n"
         "divss %xmm3, %xmm2\n"
         "movaps %xmm3, %xmm1\n" /* line 1010 */
-        "xorps 0x2f0590, %xmm1\n"
+        "xorps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+400, %xmm1\n"
         "movss -0x11d8(%ebp), %xmm0\n" /* line 81 */
         "sqrtss %xmm0, %xmm0\n"
         "subss %xmm0, %xmm1\n"
@@ -3278,7 +3278,7 @@ int CM_Trace(trace_t *results, const vec_t *mins, const vec_t *maxs, clipHandle_
         "mulss -0x150(%ebp), %xmm0\n"
         "addss -0x174(%ebp), %xmm0\n"
         "subss -0x11a8(%ebp), %xmm0\n"
-        "andps 0x2f0580, %xmm0\n"
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+384, %xmm0\n"
         "ucomiss -0x11a0(%ebp), %xmm0\n" /* fStationaryHalfHeight */
         "ja .Lf64b8e_0006586d\n"
         /* { scope 5 */
@@ -3360,7 +3360,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "movl 0x14(%ebp), %esi\n" /* mins */
         /* { scope 1: box_model, top, bottom, starttop, ... */
         /* { scope 2: radius, fStationaryHalfHeight */
-        "movl 0x195eda4, %eax\n" /* line 85 */
+        "movl imp_cm, %eax\n" /* line 85 */
         "movl 0x1c(%ebp), %edx\n" /* model */
         "cmpl 0x74(%eax), %edx\n"
         "jge .Lf65c86_00066373\n"
@@ -3376,8 +3376,8 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "movl 0x20(%ebp), %eax\n" /* line 2188 | brushmask */
         "movl %eax, -0xf8(%ebp)\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
-        "movss 0x2f05a0, %xmm2\n"
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+416, %xmm2\n"
         "movl $4, %edx\n"
         "leal -0x128(%ebp), %eax\n"
         ".Lf65c86_00065cf9:\n"
@@ -3471,7 +3471,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "movaps %xmm3, %xmm0\n"
         "mulss -0x118(%ebp), %xmm0\n"
         "mulss -0x114(%ebp), %xmm0\n"
-        "mulss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "mulss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "mulss -0x148(%ebp), %xmm0\n"
         "xorl %eax, %eax\n"
         "ucomiss %xmm2, %xmm0\n"
@@ -3479,7 +3479,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "movl %eax, -0xf0(%ebp)\n"
         "addss -0x118(%ebp), %xmm3\n" /* line 2255 */
         "addss -0x114(%ebp), %xmm3\n"
-        "ucomiss 0x2ed5e8, %xmm3\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm3\n" /* 0.0f */
         "sete %al\n"
         "setnp %dl\n"
         "andb %dl, %al\n"
@@ -3536,7 +3536,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "jle .Lf65c86_00065fe4\n"
         "movl 8(%ebp), %edx\n" /* line 2288 | oldHitNum */
         "subl $1, %edx\n"
-        "movl 0x195eda4, %ecx\n" /* line 2289 */
+        "movl imp_cm, %ecx\n" /* line 2289 */
         "movzwl 0x7c(%ecx), %eax\n"
         "cmpl %eax, %edx\n"
         "jl .Lf65c86_0006638d\n"
@@ -3572,7 +3572,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "testl %eax, -0xf8(%ebp)\n"
         "je .Lf65c86_00066366\n"
         /* { scope 2: radius, fStationaryHalfHeight */
-        "movss 0x2ed5d0, %xmm2\n" /* line 1959 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 1959 | 1.0f */
         "movss 0xc(%ecx), %xmm1\n"
         "addss %xmm2, %xmm1\n"
         "movss -0x110(%ebp), %xmm0\n"
@@ -3629,7 +3629,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "movss %xmm1, -0x28(%ebp)\n"
         "movl %ecx, %eax\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "leal -0x3c(%ebp), %esi\n" /* offset */
         "leal -0x9c(%ebp), %ebx\n" /* symetricSize */
         "movl $4, %edx\n"
@@ -3767,7 +3767,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "movss -0x114(%ebp), %xmm0\n" /* line 1914 */
         "subss %xmm6, %xmm0\n"
         "addss -0x184(%ebp), %xmm0\n" /* fStationaryHalfHeight */
-        "andps 0x2f05a0, %xmm5\n"
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+416, %xmm5\n"
         "xorl %eax, %eax\n"
         "ucomiss %xmm0, %xmm5\n"
         "seta %al\n"
@@ -3814,10 +3814,10 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "fstps -0x17c(%ebp)\n" /* fDeltaLen */
         "movss -0x1b8(%ebp), %xmm0\n" /* line 1930 */
         "movaps %xmm0, %xmm2\n"
-        "mulss 0x2ed610, %xmm2\n" /* 0.125f */
+        "mulss lit4_002ed610, %xmm2\n" /* 0.125f */
         "divss -0x17c(%ebp), %xmm2\n" /* fDeltaLen */
         "movaps %xmm0, %xmm1\n" /* line 1931 */
-        "xorps 0x2f05b0, %xmm1\n"
+        "xorps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+432, %xmm1\n"
         "movss -0x1c8(%ebp), %xmm3\n" /* line 81 */
         "sqrtss %xmm3, %xmm0\n"
         "subss %xmm0, %xmm1\n"
@@ -3832,7 +3832,7 @@ int CM_BoxSightTrace(int oldHitNum, const vec_t *start, const vec_t *end, const 
         "mulss -0x14c(%ebp), %xmm1\n"
         "addss -0x170(%ebp), %xmm1\n"
         "subss -0x18c(%ebp), %xmm1\n"
-        "andps 0x2f05a0, %xmm1\n"
+        "andps __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+416, %xmm1\n"
         "xorl %eax, %eax\n"
         "ucomiss %xmm0, %xmm1\n"
         "seta %al\n"
@@ -3896,7 +3896,7 @@ int CM_TransformedBoxTrace(trace_t *results, const vec_t *start, const vec_t *en
         "movl 0x18(%ebp), %ebx\n" /* maxs */
         "movl 0x24(%ebp), %ecx\n" /* origin */
         "movl $1, %edx\n"
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "movl $4, %eax\n" /* model */
         /* { scope 1 */
         ".Lf665b4_000665db:\n"
@@ -3955,7 +3955,7 @@ int CM_TransformedBoxTrace(trace_t *results, const vec_t *start, const vec_t *en
         "movl 0x28(%ebp), %edx\n" /* angles */
         "movl %edx, (%esp)\n"
         "calll AngleVectors\n"
-        "movss 0x2f05c0, %xmm0\n" /* line 224 */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+448, %xmm0\n" /* line 224 */
         "movss -0x60(%ebp), %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x60(%ebp)\n"
@@ -4157,7 +4157,7 @@ int CM_TransformedBoxSightTrace(int hitNum, const vec_t *start, const vec_t *end
         "movl 0x18(%ebp), %ebx\n" /* maxs */
         "movl 0x24(%ebp), %ecx\n" /* origin */
         "movl $1, %edx\n"
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "leal -0x48(%ebp), %esi\n" /* symetricSize */
         "movl $4, %eax\n" /* model */
         /* { scope 1 */
@@ -4226,7 +4226,7 @@ int CM_TransformedBoxSightTrace(int hitNum, const vec_t *start, const vec_t *end
         "movl %ecx, 4(%esp)\n"
         "movl %edi, (%esp)\n"
         "calll AngleVectors\n"
-        "movss 0x2f05d0, %xmm0\n" /* line 224 */
+        "movss __ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+464, %xmm0\n" /* line 224 */
         "movss -0x60(%ebp), %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x60(%ebp)\n"

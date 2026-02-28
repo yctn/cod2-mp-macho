@@ -29,10 +29,10 @@ extern void Com_Error(int code, const char *fmt, ...);
 extern void AddPointToBounds(vec_t *point, vec_t *mins, vec_t *maxs);
 extern int CM_AreaEntities(vec_t *mins, vec_t *maxs, int *list, int maxCount, int mask);
 
-extern byte *level_ptr;         /* 0x195f6a0 */
-extern byte *g_scr_data_ptr;    /* 0x195f5bc */
-extern byte *g_entities_ptr;    /* 0x195f688 */
-extern byte *g_trace_zero_ptr;  /* 0x195ed4c */
+extern byte *level_ptr;         /* imp_level */
+extern byte *g_scr_data_ptr;    /* imp_scr_const */
+extern byte *g_entities_ptr;    /* imp_g_entities */
+extern byte *g_trace_zero_ptr;  /* imp_vec3_origin */
 
 #define ENTITY_STRIDE 560
 

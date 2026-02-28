@@ -18,10 +18,10 @@ extern struct materialCommands_t tess; /* 0x0 */
 extern struct r_backEndGlobals_t backEnd; /* 0x0 */
 extern const GfxBackEndData *backEndData; /* 0x0 */
 extern GLuint g_FenceID; /* 0x0 */
-static const byte color_table[8][4]; /* 0x2f2660 */
-static const Bool refEntIsInWorldSpace[10]; /* 0x2f2690 */
-static const void (*rb_tessTable[8])(); /* 0x3303e0 */
-static const void (*RB_RenderCommandTable[34])(); /* 0x330340 */
+static const byte color_table[8][4]; /* color_table */
+static const Bool refEntIsInWorldSpace[10]; /* refEntIsInWorldSpace */
+static const void (*rb_tessTable[8])(); /* rb_tessTable */
+static const void (*RB_RenderCommandTable[34])(); /* RB_RenderCommandTable */
 
 extern FontHandle R_RegisterFont(const char *fontName, int imageTrack);
 extern void RB_TouchAllImages(void);
@@ -136,7 +136,7 @@ void RB_SetGammaRamp(const GfxGammaRamp *gammaTable)
         "addl $2, %edx\n"
         "cmpl %ebx, %edx\n" /* line 1759 */
         "jne .Lfd49d0_000d49ec\n"
-        "movl 0x195eed0, %eax\n" /* line 1771 */
+        "movl imp_dx, %eax\n" /* line 1771 */
         "movl 8(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl %esi, 0xc(%esp)\n"
@@ -174,7 +174,7 @@ qboolean RB_IsGpuFenceFinished(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
-        "movl 0x195eed0, %esi\n" /* line 3309 */
+        "movl imp_dx, %esi\n" /* line 3309 */
         "cmpb $0, 0x2d68(%esi)\n"
         "jne .Lfd4a5a_000d4a7d\n"
         ".Lfd4a5a_000d4a71:\n"
@@ -215,7 +215,7 @@ qboolean RB_IsGpuFenceFinished(void)
 /* line 3214 */
 void RB_GpuWaited(int ticks)
 {
-    *(int *)((byte *)*(void **)0x195eed0 + 0x2d64) = ticks;
+    *(int *)((byte *)*(void **)imp_dx + 0x2d64) = ticks;
 }
 
 /* line 3710 */
@@ -229,7 +229,7 @@ void RB_EndFrame(void)
         "pushl %ebx\n"
         "subl $0x20, %esp\n"
         /* { scope 1 */
-        "movl 0x195eed0, %ebx\n" /* line 3736 */
+        "movl imp_dx, %ebx\n" /* line 3736 */
         "movl 8(%ebx), %eax\n"
         "movl (%eax), %edx\n"
         "movl $0, 0x10(%esp)\n"
@@ -241,23 +241,23 @@ void RB_EndFrame(void)
         "testl %eax, %eax\n" /* line 3741 */
         "js .Lfd4ad4_000d4b7d\n"
         ".Lfd4ad4_000d4b11:\n"
-        "movl 0x195eed0, %eax\n" /* line 3755 */
+        "movl imp_dx, %eax\n" /* line 3755 */
         "movl 0x2d8c(%eax), %eax\n"
         "movl $0, (%eax)\n"
-        "movb $0, 0x11e1abd\n" /* line 3762 */
-        "movl 0x195efa8, %eax\n" /* line 3769 */
+        "movb $0, backEnd+1213\n" /* line 3762 */
+        "movl imp_r_gamma, %eax\n" /* line 3769 */
         "movl (%eax), %edx\n"
         "cmpb $0, 7(%edx)\n"
         "jne .Lfd4ad4_000d4b43\n"
-        "movl 0x195f108, %eax\n"
+        "movl imp_r_ignoreHwGamma, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "je .Lfd4ad4_000d4b6b\n"
         ".Lfd4ad4_000d4b43:\n"
-        "movl 0x195eee0, %esi\n" /* line 3771 */
+        "movl imp_ri, %esi\n" /* line 3771 */
         "movl %edx, (%esp)\n"
         "calll *0x88(%esi)\n"
-        "movl 0x195f108, %ebx\n" /* line 3772 */
+        "movl imp_r_ignoreHwGamma, %ebx\n" /* line 3772 */
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll *0x88(%esi)\n"
@@ -284,7 +284,7 @@ void RB_EndFrame(void)
         "movl %eax, (%esp)\n" /* line 3745 */
         "calll R_ErrorDescription\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x22459c, 4(%esp)\n" /* "Direct3DDevice9::Present failed: %s
+        "movl $str_0022459c, 4(%esp)\n" /* "Direct3DDevice9::Present failed: %s
 " */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
@@ -373,11 +373,11 @@ void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
         "movl (%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* cmd */
         "movl 4(%eax), %edx\n" /* line 1346 */
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "cmpl 0x2154(%eax), %edx\n"
         "je .Lfd4cb0_000d4d89\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %ebx\n"
         "jmp .Lfd4cb0_000d4ce9\n"
         ".Lfd4cb0_000d4ce3:\n"
         "movl -0x1c(%ebp), %ecx\n" /* cmd */
@@ -401,7 +401,7 @@ void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
         "jne .Lfd4cb0_000d4ce3\n"
         "movl -0x1c(%ebp), %ecx\n" /* line 1356 | cmd */
         "movl 4(%ecx), %edx\n"
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "movl %edx, 0x2154(%eax)\n"
         "movl %ecx, %esi\n" /* planeIndex */
         ".Lfd4cb0_000d4d30:\n"
@@ -410,10 +410,10 @@ void RB_SetClipPlanesCmd(GfxRenderCommandExecState *execState)
         "jle .Lfd4cb0_000d4d74\n"
         "movl %esi, %ebx\n" /* planeIndex */
         "xorl %esi, %esi\n" /* planeIndex */
-        "movl 0x195f0e0, %edi\n"
+        "movl imp_alwaysfails, %edi\n"
         "addl $8, %ebx\n"
         ".Lfd4cb0_000d4d44:\n"
-        "movl 0x195eed0, %edx\n" /* line 1360 */
+        "movl imp_dx, %edx\n" /* line 1360 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %ebx, 8(%esp)\n"
@@ -476,7 +476,7 @@ void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
         "movl %eax, -0x40(%ebp)\n" /* x */
         /* { scope 2: rawSurf, lockedRect, dstRect, newline, ... */
         /* { scope 3 */
-        "movl 0x195eed0, %eax\n" /* line 781 */
+        "movl imp_dx, %eax\n" /* line 781 */
         "movl 8(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl $0, 0x20(%esp)\n"
@@ -494,7 +494,7 @@ void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
         "testl %eax, %eax\n" /* line 785 */
         "js .Lfd4d8e_000d4efb\n"
         "leal -0x28(%ebp), %esi\n" /* lockedRect, rowIndex */
-        "movl 0x195f0e0, %ebx\n" /* dest */
+        "movl imp_alwaysfails, %ebx\n" /* dest */
         ".Lfd4d8e_000d4e1e:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 788 | rawSurf */
         "movl (%eax), %edx\n"
@@ -536,7 +536,7 @@ void RB_StretchRawCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *0x48(%ecx)\n"
-        "movl 0x195eed0, %edx\n" /* line 832 */
+        "movl imp_dx, %edx\n" /* line 832 */
         "movl 8(%edx), %ecx\n"
         "movl (%ecx), %ebx\n" /* dest */
         "movl $2, 0x14(%esp)\n"
@@ -651,7 +651,7 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
         "cmovnel %eax, %edi\n" /* clearFlags */
         "movl $0, -0x28(%ebp)\n" /* line 1390 | viewport */
         "movl $0, -0x24(%ebp)\n" /* line 1391 */
-        "movl 0x195f138, %edx\n" /* line 1392 */
+        "movl imp_dxState, %edx\n" /* line 1392 */
         "movl 0x209c(%edx), %eax\n"
         "movl %eax, -0x20(%ebp)\n"
         "movl 0x20a0(%edx), %eax\n" /* line 1393 */
@@ -659,10 +659,10 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
         "leal -0x28(%ebp), %eax\n" /* line 1394 | viewport */
         "movl %eax, (%esp)\n"
         "calll RB_SetViewport\n"
-        "movb $1, 0x11e1abc\n" /* line 1395 */
+        "movb $1, backEnd+1212\n" /* line 1395 */
         "movss (%ebx), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x38(%ebp)\n"
@@ -679,8 +679,8 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
         "movzbl %al, %eax\n" /* line 1404 */
         "movl %eax, -0x30(%ebp)\n" /* r */
         "movss 4(%ebx), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x3c(%ebp)\n"
@@ -696,8 +696,8 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
         ".Lfd4f66_000d5055:\n"
         "movzbl %al, %esi\n" /* line 1405 | g */
         "movss 8(%ebx), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x40(%ebp)\n"
@@ -713,9 +713,9 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
         ".Lfd4f66_000d5093:\n"
         "movzbl %al, %eax\n" /* line 1406 */
         "movl %eax, -0x2c(%ebp)\n" /* b */
-        "movss 0x2ed5d4, %xmm0\n" /* line 428 | 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
         "mulss 0xc(%ebx), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x44(%ebp)\n"
@@ -738,7 +738,7 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
         "orl -0x2c(%ebp), %ebx\n" /* b, color */
         "movzbl -0x31(%ebp), %esi\n" /* stencil, g */
         ".Lfd4f66_000d50ec:\n"
-        "movl 0x195eed0, %edx\n" /* line 1412 */
+        "movl imp_dx, %edx\n" /* line 1412 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "movl %esi, 0x18(%esp)\n" /* g */
@@ -750,7 +750,7 @@ void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stenc
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xac(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd4f66_000d50ec\n"
@@ -846,32 +846,32 @@ void RB_UpdateColorInternal(void)
         "movl %eax, %ebx\n" /* floatColor */
         "movl %edx, %esi\n" /* color */
         "movss (%eax), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc(%ebp)\n"
         "cvttss2si -0xc(%ebp), %eax\n"
         "movb %al, (%esi)\n"
         "movss 4(%ebx), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x10(%ebp)\n"
         "cvttss2si -0x10(%ebp), %eax\n"
         "movb %al, 1(%esi)\n"
         "movss 8(%ebx), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x14(%ebp)\n"
         "cvttss2si -0x14(%ebp), %eax\n"
         "movb %al, 2(%esi)\n"
-        "movss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "mulss 0xc(%ebx), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x18(%ebp)\n"
@@ -896,9 +896,9 @@ void RB_UpdateColor(const vec_t *color_allies, const vec_t *color_axis)
         "subl $4, %esp\n"
         "movl 8(%ebp), %eax\n" /* color_allies */
         "movl 0xc(%ebp), %ebx\n" /* color_axis */
-        "movl $0x11e1ac4, %edx\n" /* line 2899 */
+        "movl $backEnd+1220, %edx\n" /* line 2899 */
         "calll RB_UpdateColorInternal\n"
-        "movl $0x11e1ac0, %edx\n" /* line 2900 */
+        "movl $backEnd+1216, %edx\n" /* line 2900 */
         "movl %ebx, %eax\n" /* color_axis */
         "addl $4, %esp\n" /* line 2901 */
         "popl %ebx\n"
@@ -919,7 +919,7 @@ void RB_AdaptiveGpuSyncWait(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195eed0, %ebx\n" /* line 3226 */
+        "movl imp_dx, %ebx\n" /* line 3226 */
         "cmpl $3, 0x2c20(%ebx)\n"
         "je .Lfd52a6_000d52d1\n"
         "movl %ebx, %edi\n"
@@ -1019,11 +1019,11 @@ void RB_AdaptiveGpuSyncWait(void)
         "cmpl $0x7fffffff, -0x28(%ebp)\n" /* waitedTime */
         "ja .Lfd52a6_000d52c9\n"
         ".Lfd52a6_000d53bb:\n"
-        "movl 0x195eed0, %ebx\n"
+        "movl imp_dx, %ebx\n"
         "jmp .Lfd52a6_000d52fa\n"
         ".Lfd52a6_000d53c6:\n"
         "movb $0, 0x2d68(%ebx)\n" /* line 3319 */
-        "movl 0x195eed0, %ebx\n"
+        "movl imp_dx, %ebx\n"
         "jmp .Lfd52a6_000d5303\n"
         ".Lfd52a6_000d53d8:\n"
         "movl $g_FenceID, 4(%esp)\n" /* line 3169 */
@@ -1043,7 +1043,7 @@ void RB_AdaptiveGpuSyncTarget(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
-        "movl 0x195eed0, %ebx\n" /* line 3309 */
+        "movl imp_dx, %ebx\n" /* line 3309 */
         "cmpb $0, 0x2d68(%ebx)\n"
         "jne .Lfd53ee_000d5427\n"
         ".Lfd53ee_000d5405:\n"
@@ -1095,8 +1095,8 @@ void RB_EndBenchmarkGpu(void)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl %eax, %edi\n" /* time */
-        "movl 0x195eed0, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %esi\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfd5464_000d547b:\n"
         "movl 8(%esi), %eax\n" /* line 3366 */
         "movl (%eax), %edx\n"
@@ -1106,7 +1106,7 @@ void RB_EndBenchmarkGpu(void)
         "testl %eax, %eax\n"
         "jne .Lfd5464_000d547b\n"
         "movb $0, 0x2d3d(%esi)\n" /* line 3367 */
-        "movl 0x195eed0, %esi\n"
+        "movl imp_dx, %esi\n"
         ".Lfd5464_000d549c:\n"
         "cmpb $0, 0x2d68(%esi)\n" /* line 3309 */
         "jne .Lfd5464_000d54ec\n"
@@ -1117,7 +1117,7 @@ void RB_EndBenchmarkGpu(void)
         "movl g_FenceID, %eax\n" /* line 3203 */
         "movl %eax, (%esp)\n"
         "calll glSetFenceAPPLE\n"
-        "movl 0x195eed0, %esi\n" /* line 3206 */
+        "movl imp_dx, %esi\n" /* line 3206 */
         "movb $1, 0x2d68(%esi)\n"
         ".Lfd5464_000d54d3:\n"
         "cmpb $0, 0x2d68(%esi)\n" /* line 3309 */
@@ -1154,7 +1154,7 @@ void RB_EndBenchmarkGpu(void)
         ".Lfd5464_000d5525:\n"
         "testb %bl, %bl\n" /* line 3317 */
         "jne .Lfd5464_000d5531\n"
-        "movl 0x195eed0, %esi\n"
+        "movl imp_dx, %esi\n"
         "jmp .Lfd5464_000d54d3\n"
         ".Lfd5464_000d5531:\n"
         "movb $0, 0x2d68(%esi)\n" /* line 3319 */
@@ -1191,7 +1191,7 @@ void RB_BeginBenchmarkGpu(void)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl %eax, %edi\n" /* time */
-        "movl 0x195eed0, %esi\n"
+        "movl imp_dx, %esi\n"
         ".Lfd5574_000d5585:\n"
         "cmpb $0, 0x2d68(%esi)\n" /* line 3309 */
         "jne .Lfd5574_000d5603\n"
@@ -1202,7 +1202,7 @@ void RB_BeginBenchmarkGpu(void)
         "movl g_FenceID, %eax\n" /* line 3203 */
         "movl %eax, (%esp)\n"
         "calll glSetFenceAPPLE\n"
-        "movl 0x195eed0, %ebx\n" /* line 3206 */
+        "movl imp_dx, %ebx\n" /* line 3206 */
         "movb $1, 0x2d68(%ebx)\n"
         ".Lfd5574_000d55bc:\n"
         "cmpb $0, 0x2d68(%ebx)\n" /* line 3309 */
@@ -1210,17 +1210,17 @@ void RB_BeginBenchmarkGpu(void)
         ".Lfd5574_000d55c5:\n"
         "movl %edi, (%esp)\n" /* line 3355 | time */
         "calll QueryPerformanceCounter\n"
-        "movl 0x195eed0, %ebx\n" /* line 3358 */
+        "movl imp_dx, %ebx\n" /* line 3358 */
         "movb $1, 0x2d3d(%ebx)\n"
         "jmp .Lfd5574_000d55e2\n"
         ".Lfd5574_000d55dc:\n"
-        "movl 0x195eed0, %ebx\n"
+        "movl imp_dx, %ebx\n"
         ".Lfd5574_000d55e2:\n"
         "movl 8(%ebx), %eax\n" /* line 3359 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *0xa4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd5574_000d55dc\n"
@@ -1256,7 +1256,7 @@ void RB_BeginBenchmarkGpu(void)
         "movl %esi, %eax\n" /* line 3317 */
         "testb %al, %al\n"
         "jne .Lfd5574_000d5656\n"
-        "movl 0x195eed0, %ebx\n"
+        "movl imp_dx, %ebx\n"
         "jmp .Lfd5574_000d55bc\n"
         ".Lfd5574_000d5656:\n"
         "movb $0, 0x2d68(%ebx)\n" /* line 3319 */
@@ -1285,62 +1285,62 @@ void RB_Set3D(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
-        "movl 0x11e15d0, %edx\n" /* line 261 */
+        "movl tess+370640, %edx\n" /* line 261 */
         "testl %edx, %edx\n"
         "jne .Lfd568e_000d56a9\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd568e_000d56ae\n"
         ".Lfd568e_000d56a9:\n"
         "calll RB_EndSurface\n" /* line 262 */
         ".Lfd568e_000d56ae:\n"
-        "movb $0, 0x11e1abd\n" /* line 332 */
+        "movb $0, backEnd+1213\n" /* line 332 */
         "calll RB_GetActiveWorldMatrix\n" /* line 333 */
         "movl %eax, (%esp)\n" /* line 334 */
         "calll MatrixIdentity44\n"
         "movl $0x3f800000, %esi\n" /* line 335 */
         "movl %esi, (%esp)\n"
         "calll RB_ChangedWorldMatrix\n"
-        "movl 0x11e19c8, %eax\n" /* line 336 */
+        "movl backEnd+968, %eax\n" /* line 336 */
         "movl %eax, (%esp)\n"
         "calll RB_SetMatricesForView\n"
-        "movl 0x11e19c8, %edx\n" /* line 338 */
+        "movl backEnd+968, %edx\n" /* line 338 */
         "movl 8(%edx), %ebx\n"
         "movl 4(%edx), %ecx\n"
         /* { scope 2 */
         "movl (%edx), %eax\n" /* line 447 */
-        "movl %eax, 0x11e16b0\n"
-        "movl %ecx, 0x11e16b4\n" /* line 448 */
-        "movl %ebx, 0x11e16b8\n" /* line 449 */
-        "movl %esi, 0x11e16bc\n" /* line 450 */
+        "movl %eax, backEnd+176\n"
+        "movl %ecx, backEnd+180\n" /* line 448 */
+        "movl %ebx, backEnd+184\n" /* line 449 */
+        "movl %esi, backEnd+188\n" /* line 450 */
         /* } scope */
         "movl 0x14(%edx), %ebx\n" /* line 339 */
         "movl 0x10(%edx), %ecx\n"
         /* { scope 2 */
         "movl 0xc(%edx), %eax\n" /* line 447 */
-        "movl %eax, 0x11e16c0\n"
-        "movl %ecx, 0x11e16c4\n" /* line 448 */
-        "movl %ebx, 0x11e16c8\n" /* line 449 */
+        "movl %eax, backEnd+192\n"
+        "movl %ecx, backEnd+196\n" /* line 448 */
+        "movl %ebx, backEnd+200\n" /* line 449 */
         "xorl %ebx, %ebx\n" /* line 450 */
-        "movl %ebx, 0x11e16cc\n"
+        "movl %ebx, backEnd+204\n"
         /* } scope */
         "movl 0x20(%edx), %esi\n" /* line 340 */
         "movl 0x1c(%edx), %ecx\n"
         /* { scope 2 */
         "movl 0x18(%edx), %eax\n" /* line 447 */
-        "movl %eax, 0x11e16d0\n"
-        "movl %ecx, 0x11e16d4\n" /* line 448 */
-        "movl %esi, 0x11e16d8\n" /* line 449 */
-        "movl %ebx, 0x11e16dc\n" /* line 450 */
+        "movl %eax, backEnd+208\n"
+        "movl %ecx, backEnd+212\n" /* line 448 */
+        "movl %esi, backEnd+216\n" /* line 449 */
+        "movl %ebx, backEnd+220\n" /* line 450 */
         /* } scope */
         "movl 0x2c(%edx), %esi\n" /* line 341 */
         "movl 0x28(%edx), %ecx\n"
         /* { scope 2 */
         "movl 0x24(%edx), %eax\n" /* line 447 */
-        "movl %eax, 0x11e16e0\n"
-        "movl %ecx, 0x11e16e4\n" /* line 448 */
-        "movl %esi, 0x11e16e8\n" /* line 449 */
-        "movl %ebx, 0x11e16ec\n" /* line 450 */
+        "movl %eax, backEnd+224\n"
+        "movl %ecx, backEnd+228\n" /* line 448 */
+        "movl %esi, backEnd+232\n" /* line 449 */
+        "movl %ebx, backEnd+236\n" /* line 450 */
         /* } scope */
         /* } scope */
         "addl $0x10, %esp\n" /* line 342 */
@@ -1363,10 +1363,10 @@ void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %esi\n" /* execState */
         /* { scope 1 */
         "movl (%esi), %ebx\n" /* line 2467 | execState, cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd576a_000d5787\n"
-        "movl 0x11e15e0, %ecx\n"
+        "movl tess+370656, %ecx\n"
         "testl %ecx, %ecx\n"
         "je .Lfd576a_000d578c\n"
         ".Lfd576a_000d5787:\n"
@@ -1375,13 +1375,13 @@ void RB_SetMaterialColorCmd(GfxRenderCommandExecState *execState)
         "leal 4(%ebx), %edx\n" /* line 2469 | cmd */
         /* { scope 2 */
         "movl 4(%ebx), %eax\n" /* line 456 */
-        "movl %eax, 0x11e17b0\n"
+        "movl %eax, backEnd+432\n"
         "movl 4(%edx), %eax\n" /* line 457 */
-        "movl %eax, 0x11e17b4\n"
+        "movl %eax, backEnd+436\n"
         "movl 8(%edx), %eax\n" /* line 458 */
-        "movl %eax, 0x11e17b8\n"
+        "movl %eax, backEnd+440\n"
         "movl 0xc(%edx), %eax\n" /* line 459 */
-        "movl %eax, 0x11e17bc\n"
+        "movl %eax, backEnd+444\n"
         /* } scope */
         "movl (%esi), %edx\n" /* line 169 */
         "movzwl 2(%edx), %eax\n"
@@ -1409,10 +1409,10 @@ void RB_SetLightPropertiesCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %edi\n" /* execState */
         /* { scope 1 */
         "movl (%edi), %esi\n" /* line 2479 | execState, cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd57be_000d57de\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd57be_000d57e3\n"
         ".Lfd57be_000d57de:\n"
@@ -1470,7 +1470,7 @@ void RB_SetLightPropertiesCmd(GfxRenderCommandExecState *execState)
         "movl %edx, %ecx\n"
         "shll $6, %ecx\n"
         "movl 0x48(%esi), %eax\n" /* cmd */
-        "movl %eax, 0x11e44d0(%ecx, %edx, 4)\n"
+        "movl %eax, backEnd+11984(%ecx, %edx, 4)\n"
         "movl 4(%esi), %eax\n" /* line 2490 | cmd */
         "movl %eax, %edx\n"
         "shll $6, %edx\n"
@@ -1587,19 +1587,19 @@ void RB_SetStencilRefValueCmd(GfxRenderCommandExecState *execState)
         /* { scope 1 */
         "movl 8(%ebp), %eax\n" /* line 1285 | execState */
         "movl (%eax), %ebx\n" /* cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd59d2_000d5a57\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd59d2_000d5a57\n"
         ".Lfd59d2_000d59f2:\n"
-        "movl 0x195f138, %eax\n" /* line 1288 */
+        "movl imp_dxState, %eax\n" /* line 1288 */
         "movl 0x2010(%eax), %eax\n"
         "cmpl 4(%ebx), %eax\n" /* cmd */
         "je .Lfd59d2_000d5a3f\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfd59d2_000d5a0e:\n"
         "movl 8(%edi), %eax\n" /* line 1290 */
         "movl (%eax), %ecx\n"
@@ -1612,7 +1612,7 @@ void RB_SetStencilRefValueCmd(GfxRenderCommandExecState *execState)
         "testl %eax, %eax\n"
         "jne .Lfd59d2_000d5a0e\n"
         "movl 4(%ebx), %edx\n" /* line 1291 | cmd */
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "movl %edx, 0x2010(%eax)\n"
         ".Lfd59d2_000d5a3f:\n"
         "movl 8(%ebp), %eax\n" /* line 169 | execState */
@@ -1647,10 +1647,10 @@ void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState)
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* execState */
         /* { scope 1 */
-        "movl 0x11e15d0, %ecx\n" /* line 261 */
+        "movl tess+370640, %ecx\n" /* line 261 */
         "testl %ecx, %ecx\n"
         "jne .Lfd5a5e_000d5a7d\n"
-        "movl 0x11e15e0, %edx\n"
+        "movl tess+370656, %edx\n"
         "testl %edx, %edx\n"
         "je .Lfd5a5e_000d5a82\n"
         ".Lfd5a5e_000d5a7d:\n"
@@ -1660,23 +1660,23 @@ void RB_SetShadowCookieCmd(GfxRenderCommandExecState *execState)
         "leal 4(%ebx), %eax\n" /* line 1267 | cmd */
         "movl %eax, (%esp)\n"
         "calll RB_SetShadowLookupMatrix\n"
-        "movl 0x195eed0, %eax\n" /* line 1269 */
+        "movl imp_dx, %eax\n" /* line 1269 */
         "cvtsi2ssl 0x2c8c(%eax), %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1274 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1274 | 1.0f */
         "divss %xmm0, %xmm1\n"
         /* { scope 2 */
-        "movss %xmm0, 0x11e18c0\n" /* line 447 */
-        "movss %xmm0, 0x11e18c4\n" /* line 448 */
-        "movss %xmm1, 0x11e18c8\n" /* line 449 */
-        "movss %xmm1, 0x11e18cc\n" /* line 450 */
+        "movss %xmm0, backEnd+704\n" /* line 447 */
+        "movss %xmm0, backEnd+708\n" /* line 448 */
+        "movss %xmm1, backEnd+712\n" /* line 449 */
+        "movss %xmm1, backEnd+716\n" /* line 450 */
         /* } scope */
         "movl 0x44(%ebx), %edx\n" /* line 1275 | cmd */
         /* { scope 2 */
         "xorl %eax, %eax\n" /* line 447 */
-        "movl %eax, 0x11e18d0\n"
-        "movl %eax, 0x11e18d4\n" /* line 448 */
-        "movl %eax, 0x11e18d8\n" /* line 449 */
-        "movl %edx, 0x11e18dc\n" /* line 450 */
+        "movl %eax, backEnd+720\n"
+        "movl %eax, backEnd+724\n" /* line 448 */
+        "movl %eax, backEnd+728\n" /* line 449 */
+        "movl %edx, backEnd+732\n" /* line 450 */
         /* } scope */
         "movl (%esi), %edx\n" /* line 169 */
         "movzwl 2(%edx), %eax\n"
@@ -1703,90 +1703,90 @@ void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %esi\n" /* execState */
         /* { scope 1 */
         "movl (%esi), %ebx\n" /* line 2765 | execState, cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd5af4_000d5ddd\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd5af4_000d5ddd\n"
         ".Lfd5af4_000d5b18:\n"
         "movl 0x2c(%ebx), %eax\n" /* line 2769 | cmd */
-        "movl %eax, 0x11e19b4\n"
+        "movl %eax, backEnd+948\n"
         "movl 4(%ebx), %eax\n" /* line 2771 | cmd */
-        "movl %eax, 0x11e19b8\n"
+        "movl %eax, backEnd+952\n"
         "movl 8(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19bc\n"
+        "movl %eax, backEnd+956\n"
         "movl 0xc(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19c0\n"
+        "movl %eax, backEnd+960\n"
         "movl 0x10(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19c4\n"
+        "movl %eax, backEnd+964\n"
         "movl 0x14(%ebx), %edx\n" /* line 2772 | cmd */
-        "movl %edx, 0x11e19c8\n"
+        "movl %edx, backEnd+968\n"
         "movl 0x18(%ebx), %eax\n" /* line 2773 | cmd */
-        "movl %eax, 0x11e19cc\n"
+        "movl %eax, backEnd+972\n"
         "movl 0x1c(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19d0\n"
+        "movl %eax, backEnd+976\n"
         "movl 0x20(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19d4\n"
+        "movl %eax, backEnd+980\n"
         "movl 0x24(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19d8\n"
+        "movl %eax, backEnd+984\n"
         "movl 0x28(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19dc\n"
+        "movl %eax, backEnd+988\n"
         "movl 0x30(%edx), %eax\n" /* line 2775 */
-        "movl %eax, 0x11e19e0\n"
+        "movl %eax, backEnd+992\n"
         "movl 0x34(%edx), %eax\n" /* line 2776 */
-        "movl %eax, 0x11e19e4\n"
+        "movl %eax, backEnd+996\n"
         "movl 0x38(%edx), %eax\n" /* line 2777 */
-        "movl %eax, 0x11e19e8\n"
+        "movl %eax, backEnd+1000\n"
         "movl 0x3c(%edx), %eax\n" /* line 2778 */
-        "movl %eax, 0x11e19ec\n"
+        "movl %eax, backEnd+1004\n"
         "movl 0xc8(%edx), %eax\n" /* line 2780 */
-        "movl %eax, 0x11e19f0\n"
+        "movl %eax, backEnd+1008\n"
         "movl 0xcc(%edx), %eax\n"
-        "movl %eax, 0x11e19f4\n"
+        "movl %eax, backEnd+1012\n"
         "movl 0xd0(%edx), %eax\n"
-        "movl %eax, 0x11e19f8\n"
+        "movl %eax, backEnd+1016\n"
         "movl 0xd4(%edx), %eax\n"
-        "movl %eax, 0x11e19fc\n"
+        "movl %eax, backEnd+1020\n"
         "movl 0xd8(%edx), %eax\n"
-        "movl %eax, 0x11e1a00\n"
+        "movl %eax, backEnd+1024\n"
         "movl 0xdc(%edx), %eax\n"
-        "movl %eax, 0x11e1a04\n"
+        "movl %eax, backEnd+1028\n"
         "movl 0xe0(%edx), %eax\n"
-        "movl %eax, 0x11e1a08\n"
+        "movl %eax, backEnd+1032\n"
         "movl 0xe4(%edx), %eax\n"
-        "movl %eax, 0x11e1a0c\n"
+        "movl %eax, backEnd+1036\n"
         "movl 0xe8(%edx), %eax\n"
-        "movl %eax, 0x11e1a10\n"
+        "movl %eax, backEnd+1040\n"
         "movl 0xec(%edx), %eax\n"
-        "movl %eax, 0x11e1a14\n"
+        "movl %eax, backEnd+1044\n"
         "movl 0xf0(%edx), %eax\n"
-        "movl %eax, 0x11e1a18\n"
+        "movl %eax, backEnd+1048\n"
         "movl 0xf4(%edx), %eax\n"
-        "movl %eax, 0x11e1a1c\n"
+        "movl %eax, backEnd+1052\n"
         "movl 0xf8(%edx), %eax\n"
-        "movl %eax, 0x11e1a20\n"
+        "movl %eax, backEnd+1056\n"
         "movl 0xfc(%edx), %eax\n"
-        "movl %eax, 0x11e1a24\n"
+        "movl %eax, backEnd+1060\n"
         "movl 0x100(%edx), %eax\n"
-        "movl %eax, 0x11e1a28\n"
+        "movl %eax, backEnd+1064\n"
         "movl 0x104(%edx), %eax\n"
-        "movl %eax, 0x11e1a2c\n"
-        "movl $0, 0x11e1a30\n" /* line 2781 */
-        "movl $1, 0x11e1a34\n" /* line 2782 */
-        "movl 0x195eeec, %edx\n" /* line 2783 */
+        "movl %eax, backEnd+1068\n"
+        "movl $0, backEnd+1072\n" /* line 2781 */
+        "movl $1, backEnd+1076\n" /* line 2782 */
+        "movl imp_vidConfig, %edx\n" /* line 2783 */
         "movl (%edx), %eax\n"
-        "movl %eax, 0x11e1a38\n"
+        "movl %eax, backEnd+1080\n"
         "movl 4(%edx), %eax\n" /* line 2784 */
-        "movl %eax, 0x11e1a3c\n"
-        "movl 0x195f138, %eax\n" /* line 2797 */
+        "movl %eax, backEnd+1084\n"
+        "movl imp_dxState, %eax\n" /* line 2797 */
         "movl 0x20a4(%eax), %ebx\n" /* cmd */
         "testl %ebx, %ebx\n" /* cmd */
         "je .Lfd5af4_000d5e31\n"
         ".Lfd5af4_000d5c7d:\n"
-        "movl 0x11e19c8, %eax\n" /* line 2732 */
+        "movl backEnd+968, %eax\n" /* line 2732 */
         "leal 0x108(%eax), %ebx\n"
-        "movss 0x2ed5d0, %xmm6\n" /* line 2740 | 1.0f */
+        "movss lit4_002ed5d0, %xmm6\n" /* line 2740 | 1.0f */
         "movaps %xmm6, %xmm2\n"
         "divss 0x3c(%ebx), %xmm2\n"
         "movaps %xmm2, %xmm3\n" /* line 2741 */
@@ -1798,13 +1798,13 @@ void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
         "movaps %xmm2, %xmm0\n" /* line 447 */
         "mulss 0x30(%ebx), %xmm0\n"
         "subss (%eax), %xmm0\n"
-        "movss %xmm0, 0x11e16f0\n"
-        "movss %xmm1, 0x11e16f4\n" /* line 448 */
-        "movss %xmm3, 0x11e16f8\n" /* line 449 */
-        "movl $0, 0x11e16fc\n" /* line 450 */
+        "movss %xmm0, backEnd+240\n"
+        "movss %xmm1, backEnd+244\n" /* line 448 */
+        "movss %xmm3, backEnd+248\n" /* line 449 */
+        "movl $0, backEnd+252\n" /* line 450 */
         "movaps %xmm2, %xmm5\n" /* line 2745 */
         "addss %xmm2, %xmm5\n"
-        "movl 0x11e1a38, %edx\n" /* line 2750 */
+        "movl backEnd+1080, %edx\n" /* line 2750 */
         "cvtsi2ssl %edx, %xmm0\n"
         "cmpl $1, %edx\n" /* line 144 */
         "ja .Lfd5af4_000d5de7\n"
@@ -1814,7 +1814,7 @@ void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
         "movaps %xmm6, %xmm1\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "movl 0x11e1a3c, %edx\n" /* line 2751 */
+        "movl backEnd+1084, %edx\n" /* line 2751 */
         "cvtsi2ssl %edx, %xmm3\n"
         "cmpl $1, %edx\n" /* line 144 */
         "jbe .Lfd5af4_000d5e29\n"
@@ -1838,24 +1838,24 @@ void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
         "movaps %xmm0, %xmm1\n"
         "mulss 4(%ebx), %xmm1\n"
         "mulss (%ebx), %xmm0\n" /* line 447 */
-        "movss %xmm0, 0x11e1700\n"
-        "movss %xmm1, 0x11e1704\n" /* line 448 */
-        "movss %xmm2, 0x11e1708\n" /* line 449 */
-        "movl $0, 0x11e170c\n" /* line 450 */
+        "movss %xmm0, backEnd+256\n"
+        "movss %xmm1, backEnd+260\n" /* line 448 */
+        "movss %xmm2, backEnd+264\n" /* line 449 */
+        "movl $0, backEnd+268\n" /* line 450 */
         "divss %xmm4, %xmm3\n" /* line 2753 */
         "movaps %xmm6, %xmm0\n"
         "divss %xmm3, %xmm0\n"
-        "xorps 0x2f2680, %xmm5\n"
+        "xorps color_table+32, %xmm5\n"
         "mulss %xmm5, %xmm0\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 0x18(%ebx), %xmm2\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 0x14(%ebx), %xmm1\n"
         "mulss 0x10(%ebx), %xmm0\n" /* line 447 */
-        "movss %xmm0, 0x11e1710\n"
-        "movss %xmm1, 0x11e1714\n" /* line 448 */
-        "movss %xmm2, 0x11e1718\n" /* line 449 */
-        "movl $0, 0x11e171c\n" /* line 450 */
+        "movss %xmm0, backEnd+272\n"
+        "movss %xmm1, backEnd+276\n" /* line 448 */
+        "movss %xmm2, backEnd+280\n" /* line 449 */
+        "movl $0, backEnd+284\n" /* line 450 */
         "calll RB_Set3D\n" /* line 2801 */
         "movl (%esi), %edx\n" /* line 169 */
         "movzwl 2(%edx), %eax\n"
@@ -1887,7 +1887,7 @@ void RB_BeginViewCmd(GfxRenderCommandExecState *execState)
         "movaps %xmm6, %xmm1\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "movl 0x11e1a3c, %edx\n" /* line 2751 */
+        "movl backEnd+1084, %edx\n" /* line 2751 */
         "cvtsi2ssl %edx, %xmm3\n"
         "cmpl $1, %edx\n" /* line 144 */
         "ja .Lfd5af4_000d5d1e\n"
@@ -1942,24 +1942,24 @@ void RB_SetViewportCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %esi\n" /* execState */
         /* { scope 1 */
         "movl (%esi), %ebx\n" /* line 2811 | execState, cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd5e92_000d5eae\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd5e92_000d5eb3\n"
         ".Lfd5e92_000d5eae:\n"
         "calll RB_EndSurface\n" /* line 262 */
         ".Lfd5e92_000d5eb3:\n"
         "movl 4(%ebx), %eax\n" /* line 2820 | cmd */
-        "movl %eax, 0x11e19e0\n"
+        "movl %eax, backEnd+992\n"
         "movl 8(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19e4\n"
+        "movl %eax, backEnd+996\n"
         "movl 0xc(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19e8\n"
+        "movl %eax, backEnd+1000\n"
         "movl 0x10(%ebx), %eax\n" /* cmd */
-        "movl %eax, 0x11e19ec\n"
-        "movb $1, 0x11e1abc\n" /* line 2821 */
+        "movl %eax, backEnd+1004\n"
+        "movb $1, backEnd+1212\n" /* line 2821 */
         "calll RB_UpdateViewportConstants\n" /* line 2822 */
         "movl (%esi), %edx\n" /* line 169 */
         "movzwl 2(%edx), %eax\n"
@@ -1986,10 +1986,10 @@ void RB_SetRenderTargetCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %esi\n" /* execState */
         /* { scope 1 */
         "movl (%esi), %ebx\n" /* line 2505 | execState, cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd5eee_000d5f0d\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd5eee_000d5f12\n"
         ".Lfd5eee_000d5f0d:\n"
@@ -2023,8 +2023,8 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "pushl %ebx\n"
         "subl $0x6c, %esp\n"
         /* { scope 1: radians, w, z */
-        "movl $0x11e1a48, 0x11e1a40\n" /* line 995 */
-        "movl $0, 0x11e1a44\n" /* line 996 */
+        "movl $backEnd+1096, backEnd+1088\n" /* line 995 */
+        "movl $0, backEnd+1092\n" /* line 996 */
         "movl 0x14(%ebp), %edi\n" /* line 1002 | order, drawSurf */
         "testl %edi, %edi\n" /* drawSurf */
         "jne .Lfd5f2e_000d61aa\n"
@@ -2037,10 +2037,10 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "movb $1, -0x5a(%ebp)\n" /* isWorldSpaceEntPrev */
         "movl $0, -0x54(%ebp)\n" /* depthRange */
         ".Lfd5f2e_000d5f74:\n"
-        "movl 0x11e15d0, %ebx\n" /* line 261 */
+        "movl tess+370640, %ebx\n" /* line 261 */
         "testl %ebx, %ebx\n"
         "jne .Lfd5f2e_000d5fb6\n"
-        "movl 0x11e15e0, %ecx\n"
+        "movl tess+370656, %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfd5f2e_000d5fb6\n"
         "movl -0x54(%ebp), %edx\n" /* line 1158 | depthRange */
@@ -2051,8 +2051,8 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "jne .Lfd5f2e_000d5f9a\n"
         "calll RB_PopMatrixStack\n" /* line 1166 */
         ".Lfd5f2e_000d5f9a:\n"
-        "movl $0, 0x11e1a40\n" /* line 1169 */
-        "movl $0, 0x11e1a44\n" /* line 1170 */
+        "movl $0, backEnd+1088\n" /* line 1169 */
+        "movl $0, backEnd+1092\n" /* line 1170 */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 1173 */
         "popl %ebx\n"
@@ -2072,7 +2072,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "calll RB_SetDepthRange\n"
         "cmpl $8, -0x54(%ebp)\n" /* line 1161 | depthRange */
         "jne .Lfd5f2e_000d5f8f\n"
-        "movl 0x11e19c8, %eax\n" /* line 1162 */
+        "movl backEnd+968, %eax\n" /* line 1162 */
         "movl 0xc0(%eax), %eax\n"
         "xorl $0x80000000, %eax\n"
         "movl %eax, (%esp)\n"
@@ -2092,7 +2092,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "movl $0xffffffff, -0x48(%ebp)\n" /* prevSort */
         "pxor %xmm0, %xmm0\n"
         "movss %xmm0, -0x44(%ebp)\n" /* materialTime */
-        "movss 0x2ed684, %xmm0\n" /* 3.4028234663852886e+38f */
+        "movss lit4_002ed684, %xmm0\n" /* 3.4028234663852886e+38f */
         "movss %xmm0, -0x40(%ebp)\n" /* materialTimePrev */
         "movl $0, -0x4c(%ebp)\n" /* iteration */
         "movl $0, -0x54(%ebp)\n" /* depthRange */
@@ -2118,7 +2118,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "cmpl $6, 0x10(%ebp)\n" /* line 881 | techType */
         "je .Lfd5f2e_000d6168\n"
         ".Lfd5f2e_000d6093:\n"
-        "movl 0x195f124, %eax\n" /* line 892 */
+        "movl imp_r_depthPrepassModels, %eax\n" /* line 892 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd5f2e_000d60ad\n"
@@ -2137,7 +2137,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         /* } scope */
         ".Lfd5f2e_000d60bf:\n"
         "movl -0x1c(%ebp), %esi\n" /* line 1032 | material */
-        "movl 0x195f104, %eax\n" /* line 917 */
+        "movl imp_r_drawDecals, %eax\n" /* line 917 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd5f2e_000d60d5\n"
@@ -2180,7 +2180,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "leal (, %edx, 8), %eax\n" /* line 899 */
         "subl %edx, %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x11e19c4, %edx\n"
+        "movl backEnd+964, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "cmpl $2, (%eax)\n" /* line 900 */
         "jg .Lfd5f2e_000d60ad\n"
@@ -2199,7 +2199,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "leal (, %edx, 8), %eax\n" /* line 887 */
         "subl %edx, %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x11e19c4, %edx\n"
+        "movl backEnd+964, %edx\n"
         "cmpl $2, (%edx, %eax, 4)\n"
         "je .Lfd5f2e_000d61be\n"
         ".Lfd5f2e_000d6199:\n"
@@ -2237,7 +2237,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "leal (, %ecx, 8), %eax\n"
         "subl %ecx, %eax\n"
         "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x11e19c4, %edx\n"
+        "movl backEnd+964, %edx\n"
         "movl (%edx, %eax, 4), %eax\n"
         "cmpb $0, refEntIsInWorldSpace(%eax)\n"
         "jne .Lfd5f2e_000d6589\n"
@@ -2250,17 +2250,17 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "leal (, %ecx, 8), %eax\n" /* line 1052 */
         "subl %ecx, %eax\n"
         "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x11e19c4, %edx\n"
+        "movl backEnd+964, %edx\n"
         "movss 0x5c(%edx, %eax, 4), %xmm0\n"
         "movss %xmm0, -0x44(%ebp)\n" /* materialTime */
         ".Lfd5f2e_000d623e:\n"
         "cmpl %esi, -0x64(%ebp)\n" /* line 1055 | materialPrev */
         "je .Lfd5f2e_000d64df\n"
         ".Lfd5f2e_000d6247:\n"
-        "movl 0x11e15d0, %edx\n" /* line 261 */
+        "movl tess+370640, %edx\n" /* line 261 */
         "testl %edx, %edx\n"
         "jne .Lfd5f2e_000d625a\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd5f2e_000d6262\n"
         ".Lfd5f2e_000d625a:\n"
@@ -2295,12 +2295,12 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "leal (, %ecx, 8), %eax\n" /* line 1088 */
         "subl %ecx, %eax\n"
         "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x11e19c4, %edx\n"
+        "movl backEnd+964, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl %eax, 0x11e1a40\n"
+        "movl %eax, backEnd+1088\n"
         "cmpl $1, (%eax)\n" /* line 1089 */
         "jle .Lfd5f2e_000d6467\n"
-        "movl $0, 0x11e1a44\n" /* line 1092 */
+        "movl $0, backEnd+1092\n" /* line 1092 */
         ".Lfd5f2e_000d62f4:\n"
         "cmpb $0, -0x5b(%ebp)\n" /* line 1095 | isWorldSpaceEnt */
         "je .Lfd5f2e_000d6339\n"
@@ -2326,43 +2326,43 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "je .Lfd5f2e_000d6344\n"
         "calll RB_PushMatrixStack\n" /* line 1109 */
         ".Lfd5f2e_000d6344:\n"
-        "movl 0x11e1a40, %eax\n" /* line 1110 */
+        "movl backEnd+1088, %eax\n" /* line 1110 */
         "movl %eax, (%esp)\n"
         "calll RB_SetWorldMatrixForEntity\n"
-        "movl 0x11e1a40, %eax\n" /* line 1113 */
+        "movl backEnd+1088, %eax\n" /* line 1113 */
         "movl 4(%eax), %eax\n"
         "andl $0x18, %eax\n"
         "movl %eax, -0x54(%ebp)\n" /* depthRange */
         "cmpl %eax, -0x50(%ebp)\n" /* line 1114 | depthRangePrev */
         "je .Lfd5f2e_000d6327\n"
-        "movl 0x11e15d0, %eax\n" /* line 1116 */
+        "movl tess+370640, %eax\n" /* line 1116 */
         "testl %eax, %eax\n"
         "jne .Lfd5f2e_000d6376\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd5f2e_000d63c5\n"
         ".Lfd5f2e_000d6376:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfd5f2e_000d63c5\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd5f2e_000d63ba\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd5f2e_000d63bf\n"
         ".Lfd5f2e_000d63ba:\n"
         "calll RB_EndSurface\n" /* line 262 */
         ".Lfd5f2e_000d63bf:\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
+        "movl %ebx, tess+370636\n" /* line 313 */
         ".Lfd5f2e_000d63c5:\n"
         "cmpl $8, -0x54(%ebp)\n" /* line 1122 | depthRange */
         "je .Lfd5f2e_000d641b\n"
@@ -2390,7 +2390,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "calll RB_SetDepthRange\n"
         "jmp .Lfd5f2e_000d63e8\n"
         ".Lfd5f2e_000d641b:\n"
-        "movl 0x11e19c8, %eax\n" /* line 1129 */
+        "movl backEnd+968, %eax\n" /* line 1129 */
         "movl 0x148(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_SetDepthHackNearClip\n"
@@ -2399,7 +2399,7 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "calll RB_SetDepthRange\n"
         "jmp .Lfd5f2e_000d63e8\n"
         ".Lfd5f2e_000d6444:\n"
-        "movl 0x11e19c8, %eax\n" /* line 1139 */
+        "movl backEnd+968, %eax\n" /* line 1139 */
         "movl 0xc0(%eax), %eax\n"
         "xorl $0x80000000, %eax\n"
         "movl %eax, (%esp)\n"
@@ -2410,15 +2410,15 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         ".Lfd5f2e_000d6467:\n"
         "leal (%ecx, %ecx, 2), %eax\n" /* line 1090 */
         "leal (%ecx, %eax, 4), %eax\n"
-        "leal 0x11e4518(, %eax, 8), %eax\n"
-        "movl %eax, 0x11e1a44\n"
+        "leal backEnd+12056(, %eax, 8), %eax\n"
+        "movl %eax, backEnd+1092\n"
         "jmp .Lfd5f2e_000d62f4\n"
         ".Lfd5f2e_000d647e:\n"
-        "movl $0x11e1a48, 0x11e1a40\n" /* line 1080 */
-        "movl $0, 0x11e1a44\n" /* line 1081 */
+        "movl $backEnd+1096, backEnd+1088\n" /* line 1080 */
+        "movl $0, backEnd+1092\n" /* line 1081 */
         "jmp .Lfd5f2e_000d62f4\n"
         ".Lfd5f2e_000d6497:\n"
-        "movss 0x11e19bc, %xmm0\n" /* line 1059 */
+        "movss backEnd+956, %xmm0\n" /* line 1059 */
         "subss -0x44(%ebp), %xmm0\n" /* materialTime */
         "movss %xmm0, -0x34(%ebp)\n" /* w */
         "movss %xmm0, (%esp)\n" /* line 861 */
@@ -2427,11 +2427,11 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "movss -0x34(%ebp), %xmm0\n" /* w */
         "subss -0x68(%ebp), %xmm0\n"
         "movss %xmm0, -0x30(%ebp)\n" /* z */
-        "movl 0x195eec0, %eax\n" /* line 864 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 864 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfd5f2e_000d6518\n"
-        "movss %xmm0, 0x11e1adc\n" /* line 866 */
+        "movss %xmm0, backEnd+1244\n" /* line 866 */
         "jmp .Lfd5f2e_000d6277\n"
         ".Lfd5f2e_000d64df:\n"
         "movl -0x60(%ebp), %eax\n" /* line 1055 | lightmapPrev */
@@ -2448,23 +2448,23 @@ void RB_RenderDrawSurfList(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTe
         "jmp .Lfd5f2e_000d6247\n"
         ".Lfd5f2e_000d6518:\n"
         "cvtss2sd -0x30(%ebp), %xmm0\n" /* line 871 | z */
-        "mulsd 0x307c98, %xmm0\n" /* 6.283185307179586 */
+        "mulsd lit8_00307c98, %xmm0\n" /* 6.283185307179586 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x38(%ebp)\n" /* radians */
         /* { scope 2 */
         "movss %xmm0, (%esp)\n" /* line 486 */
         "calll cosf\n"
-        "fstps 0x11e1624\n"
+        "fstps backEnd+36\n"
         /* } scope */
         /* { scope 2 */
         "movss -0x38(%ebp), %xmm0\n" /* line 485 | radians */
         "movss %xmm0, (%esp)\n"
         "calll sinf\n"
-        "fstps 0x11e1620\n"
+        "fstps backEnd+32\n"
         "movss -0x30(%ebp), %xmm0\n" /* line 449 | z */
-        "movss %xmm0, 0x11e1628\n"
+        "movss %xmm0, backEnd+40\n"
         "movss -0x34(%ebp), %xmm0\n" /* line 450 | w */
-        "movss %xmm0, 0x11e162c\n"
+        "movss %xmm0, backEnd+44\n"
         "jmp .Lfd5f2e_000d6277\n"
         /* } scope */
         ".Lfd5f2e_000d6572:\n"
@@ -2498,19 +2498,19 @@ void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState)
         "movzwl 2(%ebx), %eax\n" /* line 169 */
         "addl %ebx, %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd65a0_000d660c\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd65a0_000d660c\n"
-        "cmpb $0, 0x11e1abd\n" /* line 1230 */
+        "cmpb $0, backEnd+1213\n" /* line 1230 */
         "jne .Lfd65a0_000d661a\n"
         ".Lfd65a0_000d65cf:\n"
-        "cmpb $0, 0x11e1abc\n" /* line 1233 */
+        "cmpb $0, backEnd+1212\n" /* line 1233 */
         "jne .Lfd65a0_000d6628\n"
         ".Lfd65a0_000d65d8:\n"
-        "movl 0x195f138, %eax\n" /* line 1235 */
+        "movl imp_dxState, %eax\n" /* line 1235 */
         "cmpb $0, 0x20c8(%eax)\n"
         "jne .Lfd65a0_000d6606\n"
         "movl 4(%ebx), %eax\n" /* line 1238 | cmd */
@@ -2531,11 +2531,11 @@ void RB_DrawSurfsCmd(GfxRenderCommandExecState *execState)
         /* { scope 1 */
         ".Lfd65a0_000d660c:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "cmpb $0, 0x11e1abd\n" /* line 1230 */
+        "cmpb $0, backEnd+1213\n" /* line 1230 */
         "je .Lfd65a0_000d65cf\n"
         ".Lfd65a0_000d661a:\n"
         "calll RB_Set3D\n" /* line 1231 */
-        "cmpb $0, 0x11e1abc\n" /* line 1233 */
+        "cmpb $0, backEnd+1212\n" /* line 1233 */
         "je .Lfd65a0_000d65d8\n"
         ".Lfd65a0_000d6628:\n"
         "calll RB_UpdateViewport\n" /* line 1234 */
@@ -2556,10 +2556,10 @@ void RB_DrawSunPostEffectsCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %esi\n" /* execState */
         /* { scope 1 */
         "movl (%esi), %ebx\n" /* line 1995 | execState, cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd6630_000d664f\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd6630_000d6654\n"
         ".Lfd6630_000d664f:\n"
@@ -2593,13 +2593,13 @@ void RB_Set2D(void)
         "pushl %ebx\n"
         "subl $0x1bc, %esp\n"
         /* { scope 1 */
-        "movl 0x11e15d0, %ebx\n" /* line 261 */
+        "movl tess+370640, %ebx\n" /* line 261 */
         "testl %ebx, %ebx\n"
         "jne .Lfd6670_000d66b1\n"
-        "movl 0x11e15e0, %ecx\n"
+        "movl tess+370656, %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfd6670_000d66b1\n"
-        "movb $1, 0x11e1abd\n" /* line 212 */
+        "movb $1, backEnd+1213\n" /* line 212 */
         "leal -0x28(%ebp), %eax\n" /* line 214 | viewport */
         "movl %eax, (%esp)\n"
         "calll RB_GetViewport\n"
@@ -2616,7 +2616,7 @@ void RB_Set2D(void)
         /* { scope 1 */
         ".Lfd6670_000d66b1:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "movb $1, 0x11e1abd\n" /* line 212 */
+        "movb $1, backEnd+1213\n" /* line 212 */
         "leal -0x28(%ebp), %eax\n" /* line 214 | viewport */
         "movl %eax, (%esp)\n"
         "calll RB_GetViewport\n"
@@ -2624,7 +2624,7 @@ void RB_Set2D(void)
         "je .Lfd6670_000d66a6\n"
         ".Lfd6670_000d66cc:\n"
         "cvtsi2ssl -0x20(%ebp), %xmm0\n" /* line 218 */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm1\n"
         "divss %xmm0, %xmm1\n"
         "cvtsi2ssl -0x1c(%ebp), %xmm0\n" /* line 219 */
@@ -2638,7 +2638,7 @@ void RB_Set2D(void)
         "rep stosl %eax, %es:(%edi)\n"
         "addss %xmm1, %xmm1\n" /* line 222 */
         "movss %xmm1, -0xa8(%ebp)\n" /* transform */
-        "mulss 0x2ed628, %xmm0\n" /* line 223 | -2.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* line 223 | -2.0f */
         "movss %xmm0, -0x94(%ebp)\n"
         "movl $0xbf800000, -0x78(%ebp)\n" /* line 231 */
         "movss %xmm2, -0x74(%ebp)\n" /* line 232 */
@@ -2647,7 +2647,7 @@ void RB_Set2D(void)
         "leal -0x68(%ebp), %eax\n" /* line 249 | identity */
         "movl %eax, (%esp)\n"
         "calll MatrixIdentity44\n"
-        "movl 0x11e4480, %edx\n" /* line 251 */
+        "movl backEnd+11904, %edx\n" /* line 251 */
         "movl %edx, %ecx\n"
         "shll $4, %ecx\n"
         "movl %edx, %eax\n"
@@ -2655,7 +2655,7 @@ void RB_Set2D(void)
         "subl %ecx, %eax\n"
         "subl %edx, %eax\n"
         "shll $5, %eax\n"
-        "leal 0x11e1ae0(%eax), %esi\n" /* activeMatrices */
+        "leal backEnd+1248(%eax), %esi\n" /* activeMatrices */
         "movl -0xa8(%ebp), %eax\n" /* line 252 | transform */
         "movl %eax, 0x340(%esi)\n" /* activeMatrices */
         "movl -0xa4(%ebp), %eax\n"
@@ -2855,7 +2855,7 @@ void RB_Set2D(void)
         "movl %eax, -0xf0(%ebp)\n"
         "movl 0x37c(%esi), %eax\n" /* activeMatrices */
         "movl %eax, -0xec(%ebp)\n"
-        "movss 0x2f26a0, %xmm1\n" /* line 270 */
+        "movss refEntIsInWorldSpace+16, %xmm1\n" /* line 270 */
         "movss -0xe0(%ebp), %xmm0\n"
         "xorps %xmm1, %xmm0\n"
         "movss %xmm0, -0xe0(%ebp)\n"
@@ -2904,29 +2904,29 @@ void RB_Set2D(void)
         "movl %ecx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll memcpy\n"
-        "movl 0x195eec0, %eax\n" /* line 284 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 284 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd6670_000d6ccf\n"
         ".Lfd6670_000d6c68:\n"
         "xorl %eax, %eax\n" /* line 447 */
-        "movl %eax, 0x11e16b0\n"
-        "movl %eax, 0x11e16b4\n" /* line 448 */
+        "movl %eax, backEnd+176\n"
+        "movl %eax, backEnd+180\n" /* line 448 */
         "movl $0x3f800000, %edx\n" /* line 449 */
-        "movl %edx, 0x11e16b8\n"
-        "movl %edx, 0x11e16bc\n" /* line 450 */
-        "movl %eax, 0x11e16c0\n" /* line 447 */
-        "movl %eax, 0x11e16c4\n" /* line 448 */
-        "movl %edx, 0x11e16c8\n" /* line 449 */
-        "movl %eax, 0x11e16cc\n" /* line 450 */
-        "movl %edx, 0x11e16d0\n" /* line 447 */
-        "movl %eax, 0x11e16d4\n" /* line 448 */
-        "movl %eax, 0x11e16d8\n" /* line 449 */
-        "movl %eax, 0x11e16dc\n" /* line 450 */
-        "movl %eax, 0x11e16e0\n" /* line 447 */
-        "movl %edx, 0x11e16e4\n" /* line 448 */
-        "movl %eax, 0x11e16e8\n" /* line 449 */
-        "movl %eax, 0x11e16ec\n" /* line 450 */
+        "movl %edx, backEnd+184\n"
+        "movl %edx, backEnd+188\n" /* line 450 */
+        "movl %eax, backEnd+192\n" /* line 447 */
+        "movl %eax, backEnd+196\n" /* line 448 */
+        "movl %edx, backEnd+200\n" /* line 449 */
+        "movl %eax, backEnd+204\n" /* line 450 */
+        "movl %edx, backEnd+208\n" /* line 447 */
+        "movl %eax, backEnd+212\n" /* line 448 */
+        "movl %eax, backEnd+216\n" /* line 449 */
+        "movl %eax, backEnd+220\n" /* line 450 */
+        "movl %eax, backEnd+224\n" /* line 447 */
+        "movl %edx, backEnd+228\n" /* line 448 */
+        "movl %eax, backEnd+232\n" /* line 449 */
+        "movl %eax, backEnd+236\n" /* line 450 */
         /* } scope */
         "addl $0x1bc, %esp\n" /* line 296 */
         "popl %ebx\n"
@@ -2935,8 +2935,8 @@ void RB_Set2D(void)
         "popl %ebp\n"
         "retl\n"
         ".Lfd6670_000d6ccf:\n"
-        "movl 0x195eed0, %esi\n" /* activeMatrices */
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %esi\n" /* activeMatrices */
+        "movl imp_alwaysfails, %ebx\n"
         /* { scope 1 */
         ".Lfd6670_000d6cdb:\n"
         "movl 8(%esi), %eax\n" /* line 286 | activeMatrices */
@@ -2949,8 +2949,8 @@ void RB_Set2D(void)
         "movl (%ebx), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfd6670_000d6cdb\n"
-        "movl 0x195eed0, %esi\n" /* activeMatrices */
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %esi\n" /* activeMatrices */
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfd6670_000d6d0a:\n"
         "movl 8(%esi), %eax\n" /* line 287 | activeMatrices */
         "movl (%eax), %edx\n"
@@ -2962,8 +2962,8 @@ void RB_Set2D(void)
         "movl (%ebx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd6670_000d6d0a\n"
-        "movl 0x195eed0, %esi\n" /* activeMatrices */
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %esi\n" /* activeMatrices */
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfd6670_000d6d39:\n"
         "movl 8(%esi), %eax\n" /* line 288 | activeMatrices */
         "movl (%eax), %edx\n"
@@ -3017,24 +3017,24 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "movl 8(%eax), %esi\n" /* techType */
         "movl 4(%eax), %ebx\n" /* stOffset */
         /* { scope 2 */
-        "movl 0x11e15d0, %edx\n" /* line 261 */
+        "movl tess+370640, %edx\n" /* line 261 */
         "testl %edx, %edx\n"
         "jne .Lfd6d64_000d7067\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd6d64_000d7067\n"
-        "cmpb $0, 0x11e1abd\n" /* line 2368 */
+        "cmpb $0, backEnd+1213\n" /* line 2368 */
         "jne .Lfd6d64_000d7079\n"
         /* { scope 3: z, y, x */
         ".Lfd6d64_000d6de1:\n"
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfd6d64_000d708a\n"
         ".Lfd6d64_000d6ded:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd6d64_000d70a3\n"
         ".Lfd6d64_000d6dfa:\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd6d64_000d70a3\n"
         ".Lfd6d64_000d6e07:\n"
@@ -3044,13 +3044,13 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "calll RB_BeginSurface\n"
         /* } scope */
         ".Lfd6d64_000d6e1b:\n"
-        "movl 0x11e15d4, %edx\n" /* line 344 */
+        "movl tess+370644, %edx\n" /* line 344 */
         "movl -0x50(%ebp), %eax\n"
         "addl %edx, %eax\n"
         "cmpl $0x154a, %eax\n"
         "jg .Lfd6d64_000d70ad\n"
         "movl -0x4c(%ebp), %eax\n"
-        "addl 0x11e15d0, %eax\n"
+        "addl tess+370640, %eax\n"
         "cmpl $0x100000, %eax\n"
         "jg .Lfd6d64_000d70ad\n"
         ".Lfd6d64_000d6e45:\n"
@@ -3060,23 +3060,23 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "xorl %ebx, %ebx\n" /* material */
         "jmp .Lfd6d64_000d6e56\n"
         ".Lfd6d64_000d6e50:\n"
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         ".Lfd6d64_000d6e56:\n"
         "movl %ebx, %ecx\n" /* line 2376 | material */
-        "addl 0x11e15d0, %ecx\n"
+        "addl tess+370640, %ecx\n"
         "addw (%edi, %ebx, 2), %dx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ecx, 2)\n"
         "addl $1, %ebx\n" /* line 2375 | material */
         "cmpl %ebx, -0x4c(%ebp)\n" /* material */
         "jne .Lfd6d64_000d6e50\n"
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         ".Lfd6d64_000d6e79:\n"
         "movl -0x50(%ebp), %esi\n" /* line 2378 | techType */
         "testl %esi, %esi\n" /* techType */
         "jle .Lfd6d64_000d703a\n"
         /* { scope 3: z, y, x */
-        "movl 0x195eec0, %eax\n" /* line 414 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 414 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x38(%ebp)\n"
         "movl -0x40(%ebp), %esi\n" /* color */
@@ -3109,7 +3109,7 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "movl -0x28(%ebp), %ebx\n" /* line 606 | v */
         "movl (%ebx), %eax\n" /* v */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 427 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
@@ -3118,7 +3118,7 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "movss -0x30(%ebp), %xmm0\n" /* line 31 | y */
         "movss %xmm0, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 428 */
+        "addl $tess+48, %edx\n" /* line 428 */
         "leal 4(%edx), %ebx\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, %esi\n" /* line 191 */
@@ -3143,7 +3143,7 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "cmpl %eax, -0x50(%ebp)\n"
         "je .Lfd6d64_000d7034\n"
         ".Lfd6d64_000d6f5e:\n"
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         "movl -0x24(%ebp), %ebx\n" /* material */
         ".Lfd6d64_000d6f67:\n"
         "movss 4(%ebx), %xmm0\n" /* line 2379 | material */
@@ -3186,7 +3186,7 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x28(%ebp), %ecx\n"
         "movl (%ecx), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 419 */
         "movss -0x2c(%ebp), %xmm0\n" /* line 30 | x */
         "movss %xmm0, 0xc(%eax)\n"
@@ -3202,13 +3202,13 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "cmpl %eax, -0x50(%ebp)\n"
         "jne .Lfd6d64_000d6f5e\n"
         ".Lfd6d64_000d7034:\n"
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         ".Lfd6d64_000d703a:\n"
         "movl -0x4c(%ebp), %ecx\n" /* line 2381 */
-        "addl %ecx, 0x11e15d0\n"
+        "addl %ecx, tess+370640\n"
         "movl -0x50(%ebp), %eax\n" /* line 2382 */
         "addl %edx, %eax\n"
-        "movl %eax, 0x11e15d4\n"
+        "movl %eax, tess+370644\n"
         "calll RB_EndSurface\n" /* line 2384 */
         /* } scope */
         "movl 8(%ebp), %ebx\n" /* line 169 | execState */
@@ -3227,17 +3227,17 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         /* { scope 2 */
         ".Lfd6d64_000d7067:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "cmpb $0, 0x11e1abd\n" /* line 2368 */
+        "cmpb $0, backEnd+1213\n" /* line 2368 */
         "je .Lfd6d64_000d6de1\n"
         ".Lfd6d64_000d7079:\n"
         "calll RB_Set3D\n" /* line 2369 */
         /* { scope 3: z, y, x */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "jne .Lfd6d64_000d6ded\n"
         ".Lfd6d64_000d708a:\n"
-        "cmpl 0x11e15c0, %esi\n"
+        "cmpl tess+370624, %esi\n"
         "je .Lfd6d64_000d6e1b\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "je .Lfd6d64_000d6dfa\n"
         ".Lfd6d64_000d70a3:\n"
@@ -3245,33 +3245,33 @@ void RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
         "jmp .Lfd6d64_000d6e07\n"
         /* } scope */
         ".Lfd6d64_000d70ad:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfd6d64_000d7118\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd6d64_000d7102\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd6d64_000d7102\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %edx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %edx\n"
         "jmp .Lfd6d64_000d6e45\n"
         ".Lfd6d64_000d7102:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %edx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %edx\n"
         "jmp .Lfd6d64_000d6e45\n"
         ".Lfd6d64_000d7118:\n"
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         "jmp .Lfd6d64_000d6e45\n"
     );
 }
@@ -3287,21 +3287,21 @@ void RB_SaveScreenCmd(GfxRenderCommandExecState *execState)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
-        "movl 0x11e15d0, %edi\n" /* line 261 */
+        "movl tess+370640, %edi\n" /* line 261 */
         "testl %edi, %edi\n"
         "jne .Lfd7124_000d71ec\n"
-        "movl 0x11e15e0, %esi\n"
+        "movl tess+370656, %esi\n"
         "testl %esi, %esi\n"
         "jne .Lfd7124_000d71ec\n"
         /* { scope 1 */
         ".Lfd7124_000d7149:\n"
-        "movl 0x195eed0, %ebx\n" /* line 563 */
+        "movl imp_dx, %ebx\n" /* line 563 */
         "movl 0x2cbc(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Image_GetSurface\n"
         "movl %eax, %esi\n" /* imageSurface */
         "movl %ebx, -0x1c(%ebp)\n"
-        "movl 0x195f0e0, %edi\n"
+        "movl imp_alwaysfails, %edi\n"
         "movl %ebx, %edx\n"
         "jmp .Lfd7124_000d716f\n"
         ".Lfd7124_000d716c:\n"
@@ -3313,7 +3313,7 @@ void RB_SaveScreenCmd(GfxRenderCommandExecState *execState)
         "movl $0, 0x10(%esp)\n"
         "movl %esi, 0xc(%esp)\n" /* imageSurface */
         "movl $0, 8(%esp)\n"
-        "movl 0x195f138, %ebx\n"
+        "movl imp_dxState, %ebx\n"
         "movl 0x20a8(%ebx), %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
@@ -3321,7 +3321,7 @@ void RB_SaveScreenCmd(GfxRenderCommandExecState *execState)
         "movl (%edi), %ebx\n"
         "testl %ebx, %ebx\n"
         "jne .Lfd7124_000d716c\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfd7124_000d71b5:\n"
         "movl (%esi), %eax\n" /* line 568 | imageSurface */
         "movl %esi, (%esp)\n" /* imageSurface */
@@ -3330,8 +3330,8 @@ void RB_SaveScreenCmd(GfxRenderCommandExecState *execState)
         "testl %ecx, %ecx\n"
         "jne .Lfd7124_000d71b5\n"
         /* } scope */
-        "movl 0x11e19b8, %edx\n" /* line 2068 */
-        "movl 0x195eebc, %eax\n"
+        "movl backEnd+952, %edx\n" /* line 2068 */
+        "movl imp_rgp, %eax\n"
         "movl %edx, 0x10e0(%eax)\n"
         "movl 8(%ebp), %eax\n" /* line 169 | execState */
         "movl (%eax), %edx\n"
@@ -3362,26 +3362,26 @@ void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd71f6_000d730a\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd71f6_000d730a\n"
         ".Lfd71f6_000d7219:\n"
-        "movl $0xe, 0x11e4484\n" /* line 2042 */
-        "movl 0x195f150, %eax\n" /* line 2043 */
+        "movl $0xe, backEnd+11908\n" /* line 2042 */
+        "movl imp_r_distortion, %eax\n" /* line 2043 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd71f6_000d726e\n"
-        "movl 0x195eec0, %eax\n" /* line 1795 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1795 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd71f6_000d72f2\n"
-        "movl 0x195eed0, %eax\n" /* line 1798 */
+        "movl imp_dx, %eax\n" /* line 1798 */
         "cmpb $0, 0x2d7d(%eax)\n"
         "je .Lfd71f6_000d72f2\n"
-        "movl 0x195f10c, %eax\n" /* line 1801 */
+        "movl imp_r_glow, %eax\n" /* line 1801 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd71f6_000d7314\n"
@@ -3392,13 +3392,13 @@ void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
         "je .Lfd71f6_000d72f2\n"
         /* { scope 1 */
         ".Lfd71f6_000d726e:\n"
-        "movl 0x195eed0, %ebx\n" /* line 563 */
+        "movl imp_dx, %ebx\n" /* line 563 */
         "movl 0x2c44(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Image_GetSurface\n"
         "movl %eax, %esi\n" /* imageSurface */
         "movl %ebx, -0x1c(%ebp)\n"
-        "movl 0x195f0e0, %edi\n"
+        "movl imp_alwaysfails, %edi\n"
         "movl %ebx, %edx\n"
         "jmp .Lfd71f6_000d7294\n"
         ".Lfd71f6_000d7291:\n"
@@ -3410,7 +3410,7 @@ void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
         "movl $0, 0x10(%esp)\n"
         "movl %esi, 0xc(%esp)\n" /* imageSurface */
         "movl $0, 8(%esp)\n"
-        "movl 0x195f138, %ebx\n"
+        "movl imp_dxState, %ebx\n"
         "movl 0x20a8(%ebx), %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
@@ -3418,7 +3418,7 @@ void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
         "movl (%edi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd71f6_000d7291\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfd71f6_000d72da:\n"
         "movl (%esi), %eax\n" /* line 568 | imageSurface */
         "movl %esi, (%esp)\n" /* imageSurface */
@@ -3427,7 +3427,7 @@ void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
         "testl %eax, %eax\n"
         "jne .Lfd71f6_000d72da\n"
         /* } scope */
-        "movl $1, 0x11e4484\n" /* line 2054 */
+        "movl $1, backEnd+11908\n" /* line 2054 */
         ".Lfd71f6_000d72f2:\n"
         "movl 8(%ebp), %eax\n" /* line 169 | execState */
         "movl (%eax), %edx\n"
@@ -3445,7 +3445,7 @@ void RB_ApplyEarlyPostEffectsCmd(GfxRenderCommandExecState *execState)
         "calll RB_EndSurface\n" /* line 262 */
         "jmp .Lfd71f6_000d7219\n"
         ".Lfd71f6_000d7314:\n"
-        "movl 0x195ef04, %eax\n" /* line 1801 */
+        "movl imp_r_fullbright, %eax\n" /* line 1801 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd71f6_000d7264\n"
@@ -3468,17 +3468,17 @@ void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %edi\n" /* execState */
         /* { scope 1 */
         "movl (%edi), %esi\n" /* line 723 | execState, cmd */
-        "cmpb $0, 0x11e1abd\n" /* line 725 */
+        "cmpb $0, backEnd+1213\n" /* line 725 */
         "jne .Lfd7330_000d7417\n"
         "movl 4(%esi), %ebx\n" /* line 726 | cmd */
         /* { scope 2 */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfd7330_000d742b\n"
         ".Lfd7330_000d735d:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd7330_000d740d\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd7330_000d740d\n"
         ".Lfd7330_000d7377:\n"
@@ -3539,10 +3539,10 @@ void RB_DrawSpriteCmd(GfxRenderCommandExecState *execState)
         "calll RB_Set3D\n" /* line 726 */
         "movl 4(%esi), %ebx\n" /* cmd */
         /* { scope 2 */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "jne .Lfd7330_000d735d\n"
         ".Lfd7330_000d742b:\n"
-        "cmpl $3, 0x11e15c0\n"
+        "cmpl $3, tess+370624\n"
         "jne .Lfd7330_000d735d\n"
         "jmp .Lfd7330_000d738f\n"
     );
@@ -3559,17 +3559,17 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x4c, %esp\n"
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x1038(%eax), %ebx\n"
         /* { scope 1 */
         /* { scope 2: from */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfd743e_000d7ab9\n"
         ".Lfd743e_000d745e:\n"
-        "movl 0x11e15d0, %edi\n" /* line 261 */
+        "movl tess+370640, %edi\n" /* line 261 */
         "testl %edi, %edi\n"
         "jne .Lfd743e_000d7499\n"
-        "movl 0x11e15e0, %esi\n"
+        "movl tess+370656, %esi\n"
         "testl %esi, %esi\n"
         "jne .Lfd743e_000d7499\n"
         ".Lfd743e_000d7472:\n"
@@ -3628,7 +3628,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         /* } scope */
         /* { scope 3 */
         "movl -0x10(%edi), %eax\n" /* line 606 */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         /* } scope */
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
@@ -3636,7 +3636,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "movl %esi, tess(%eax)\n" /* line 30 */
         "movl %esi, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl %ebx, 4(%edx)\n" /* line 191 */
@@ -3657,10 +3657,10 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "subss -0x1c(%ebp), %xmm1\n"
         "movss (%eax), %xmm0\n"
         "subss -0x20(%ebp), %xmm0\n" /* delta */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ebx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ebx\n" /* line 370 */
         "movl (%ebx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd743e_000d7a62\n"
@@ -3680,14 +3680,14 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "movl $0x3f800000, 8(%eax)\n" /* line 193 */
         /* } scope */
         "movl (%edi), %eax\n" /* line 606 */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -3708,10 +3708,10 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "addss -0x1c(%ebp), %xmm1\n"
         "movss (%eax), %xmm0\n"
         "addss -0x20(%ebp), %xmm0\n" /* delta */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ebx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ebx\n" /* line 370 */
         "movl (%ebx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd743e_000d7a0b\n"
@@ -3731,14 +3731,14 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "movl $0x3f800000, 8(%eax)\n" /* line 193 */
         /* } scope */
         "movl (%edi), %eax\n" /* line 606 */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -3759,10 +3759,10 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "addss -0x1c(%ebp), %xmm1\n"
         "movss -0x1c(%edi), %xmm0\n"
         "addss -0x20(%ebp), %xmm0\n" /* delta */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ebx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ebx\n" /* line 370 */
         "movl (%ebx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd743e_000d79b1\n"
@@ -3783,14 +3783,14 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         /* } scope */
         "movl -0x34(%ebp), %ebx\n" /* line 606 | from */
         "movl (%ebx), %eax\n"
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -3805,7 +3805,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         /* } scope */
         /* } scope */
         ".Lfd743e_000d779d:\n"
-        "addl $4, 0x11e15d4\n" /* line 2259 */
+        "addl $4, tess+370644\n" /* line 2259 */
         "addl $1, -0x38(%ebp)\n" /* line 2235 | lineIndex */
         "addl $0x20, -0x30(%ebp)\n"
         "addl $0x20, %edi\n"
@@ -3827,71 +3827,71 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "movl %eax, (%esp)\n"
         "calll Vec2Normalize\n"
         "fstp %st(0)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 2243 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 2243 | 0.5f */
         "movss -0x20(%ebp), %xmm1\n" /* delta */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x20(%ebp)\n" /* delta */
         "mulss -0x1c(%ebp), %xmm0\n" /* line 2244 */
         "movss %xmm0, -0x1c(%ebp)\n"
-        "movl 0x11e15d4, %edx\n" /* line 344 */
+        "movl tess+370644, %edx\n" /* line 344 */
         "leal 4(%edx), %eax\n"
         "cmpl $0x154a, %eax\n"
         "jg .Lfd743e_000d7832\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370640, %ecx\n"
         "leal 6(%ecx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfd743e_000d7892\n"
         ".Lfd743e_000d7832:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfd743e_000d7886\n"
-        "movl 0x11e15d0, %ecx\n" /* line 261 */
+        "movl tess+370640, %ecx\n" /* line 261 */
         "testl %ecx, %ecx\n"
         "jne .Lfd743e_000d79a7\n"
-        "movl 0x11e15e0, %edx\n"
+        "movl tess+370656, %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfd743e_000d79a7\n"
         ".Lfd743e_000d7880:\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
+        "movl %ebx, tess+370636\n" /* line 313 */
         ".Lfd743e_000d7886:\n"
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         ".Lfd743e_000d7892:\n"
         "addl $1, %edx\n" /* line 2247 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ecx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2248 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2248 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 2(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2249 */
+        "movzwl tess+370644, %ecx\n" /* line 2249 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 4(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2250 */
+        "movzwl tess+370644, %ecx\n" /* line 2250 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 6(%eax, %edx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2251 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2251 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 8(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2252 */
+        "movzwl tess+370644, %ecx\n" /* line 2252 */
         "addl $3, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 0xa(%eax, %edx, 2)\n"
-        "addl $6, 0x11e15d0\n" /* line 2253 */
+        "addl $6, tess+370640\n" /* line 2253 */
         "addl $0xc, %esi\n" /* line 2255 */
         "movl %esi, -0x34(%ebp)\n" /* from */
         "movl -0x30(%ebp), %ecx\n" /* line 2226 */
@@ -3902,9 +3902,9 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "subss -0x1c(%ebp), %xmm1\n"
         "movss -0x1c(%edi), %xmm0\n"
         "subss -0x20(%ebp), %xmm0\n" /* delta */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ebx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ebx\n" /* line 370 */
         "movl (%ebx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfd743e_000d74c2\n"
@@ -3925,7 +3925,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x10(%edi), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movl %esi, 0xc(%eax)\n" /* line 30 */
         "movl %esi, 0x10(%eax)\n" /* line 31 */
@@ -3953,7 +3953,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x34(%ebp), %ecx\n" /* from */
         "movl (%ecx), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
@@ -3977,7 +3977,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl (%edi), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
@@ -4001,7 +4001,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl (%edi), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
@@ -4009,7 +4009,7 @@ void RB_DrawLines2D(int count, int width, const GfxPointVertex *verts)
         /* } scope */
         /* { scope 2: from */
         ".Lfd743e_000d7ab9:\n"
-        "cmpl $3, 0x11e15c0\n" /* line 300 */
+        "cmpl $3, tess+370624\n" /* line 300 */
         "jne .Lfd743e_000d745e\n"
         "jmp .Lfd743e_000d748a\n"
     );
@@ -4031,10 +4031,10 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl 0xc(%ebp), %eax\n" /* line 207 | font */
         "movl 0xc(%eax), %eax\n"
         "movl %eax, -0x78(%ebp)\n" /* material */
-        "movl 0x11e19c8, %eax\n" /* line 3079 */
+        "movl backEnd+968, %eax\n" /* line 3079 */
         "movl %eax, (%esp)\n"
         "calll RB_SetMatricesForView\n"
-        "movss 0x2ed63c, %xmm1\n" /* line 288 | -0.5f */
+        "movss lit4_002ed63c, %xmm1\n" /* line 288 | -0.5f */
         "movl 0x14(%ebp), %edx\n" /* xPixelStep */
         "movss (%edx), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
@@ -4097,60 +4097,60 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl %ecx, (%esp)\n"
         "calll RB_BeginSurface\n"
         ".Lfd7acc_000d7bd4:\n"
-        "movl 0x11e15d4, %edx\n" /* line 344 */
+        "movl tess+370644, %edx\n" /* line 344 */
         "leal 4(%edx), %eax\n"
         "cmpl $0x154a, %eax\n"
         "jg .Lfd7acc_000d7bf4\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370640, %ecx\n"
         "leal 6(%ecx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfd7acc_000d7c53\n"
         ".Lfd7acc_000d7bf4:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfd7acc_000d82d4\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd7acc_000d7c3c\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd7acc_000d7c41\n"
         ".Lfd7acc_000d7c3c:\n"
         "calll RB_EndSurface\n" /* line 262 */
         ".Lfd7acc_000d7c41:\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         ".Lfd7acc_000d7c53:\n"
         "movl %edx, %ebx\n" /* line 3042 | x */
         "movzwl %cx, %edx\n" /* line 3043 */
         "leal 4(%ebx), %eax\n" /* line 3045 | x */
-        "movl %eax, 0x11e15d4\n"
+        "movl %eax, tess+370644\n"
         "leal 6(%ecx), %eax\n" /* line 3046 */
-        "movl %eax, 0x11e15d0\n"
+        "movl %eax, tess+370640\n"
         "addl %edx, %edx\n" /* line 3048 */
         "leal 3(%ebx), %ecx\n" /* x */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, (%eax, %edx)\n"
-        "movl 0x11e15b0, %eax\n" /* line 3049 */
+        "movl tess+370608, %eax\n" /* line 3049 */
         "movw %bx, 2(%eax, %edx)\n" /* x */
         "leal 2(%ebx), %ecx\n" /* line 3050 | x */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 4(%edx, %eax)\n"
-        "movl 0x11e15b0, %eax\n" /* line 3051 */
+        "movl tess+370608, %eax\n" /* line 3051 */
         "movw %cx, 6(%edx, %eax)\n"
-        "movl 0x11e15b0, %eax\n" /* line 3052 */
+        "movl tess+370608, %eax\n" /* line 3052 */
         "movw %bx, 8(%edx, %eax)\n" /* x */
         "leal 1(%ebx), %ecx\n" /* line 3053 | x */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 0xa(%edx, %eax)\n"
         "movl 0x1c(%ebp), %eax\n" /* line 3055 | color */
         "movl %eax, -0x1c(%ebp)\n" /* unpackedColor */
@@ -4161,7 +4161,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movzwl %bx, %esi\n" /* x, vertCount */
         "movl %esi, -0x64(%ebp)\n" /* vertCount, vertIndex */
         /* { scope 3: y, x */
-        "movl 0x195eec0, %edx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %edx\n" /* line 370 */
         "movl (%edx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd7acc_000d8256\n"
@@ -4188,7 +4188,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         /* } scope */
         "movl -0x1c(%ebp), %ecx\n" /* line 606 | unpackedColor */
         "movl %ecx, -0x7c(%ebp)\n"
-        "movl %ecx, 0x1186e0c(%eax)\n"
+        "movl %ecx, tess+12(%eax)\n"
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
@@ -4197,7 +4197,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movss -0x60(%ebp), %xmm1\n" /* line 31 | y */
         "movss %xmm1, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl %ebx, 4(%edx)\n" /* line 191 */
@@ -4223,7 +4223,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl -0x64(%ebp), %edx\n" /* vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 3: y, x */
-        "movl 0x195eec0, %ecx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 370 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd7acc_000d8204\n"
@@ -4243,14 +4243,14 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl -0x7c(%ebp), %ecx\n" /* line 606 */
-        "movl %ecx, 0x1186e0c(%eax)\n"
+        "movl %ecx, tess+12(%eax)\n"
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl %ebx, tess(%eax)\n" /* line 30 */
         "movl %esi, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -4273,7 +4273,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl -0x64(%ebp), %edx\n" /* vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 3: y, x */
-        "movl 0x195eec0, %ecx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 370 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd7acc_000d81b2\n"
@@ -4293,14 +4293,14 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl -0x7c(%ebp), %ecx\n" /* line 606 */
-        "movl %ecx, 0x1186e0c(%eax)\n"
+        "movl %ecx, tess+12(%eax)\n"
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl %ebx, tess(%eax)\n" /* line 30 */
         "movl %esi, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -4326,7 +4326,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl -0x64(%ebp), %edx\n" /* vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 3: y, x */
-        "movl 0x195eec0, %ecx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 370 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd7acc_000d8160\n"
@@ -4346,14 +4346,14 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl -0x7c(%ebp), %ecx\n" /* line 606 */
-        "movl %ecx, 0x1186e0c(%eax)\n"
+        "movl %ecx, tess+12(%eax)\n"
         "leal 0x20(%edx), %eax\n" /* line 383 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl %ebx, tess(%eax)\n" /* line 30 */
         "movl %esi, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 384 */
+        "addl $tess+48, %edx\n" /* line 384 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -4394,7 +4394,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "movl $0, 4(%esp)\n" /* line 3085 */
         "leal 8(%ebp), %eax\n" /* text */
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x118(%eax)\n"
         "movl %eax, 4(%esp)\n" /* line 3088 */
         "movl 0xc(%ebp), %edx\n" /* font */
@@ -4465,13 +4465,13 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         /* } scope */
         /* { scope 2: vertIndex */
         "movl -0x78(%ebp), %edx\n" /* line 300 | material */
-        "cmpl 0x11e15bc, %edx\n"
+        "cmpl tess+370620, %edx\n"
         "je .Lfd7acc_000d82c2\n"
         ".Lfd7acc_000d813c:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd7acc_000d7bb4\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd7acc_000d7bb9\n"
         "calll RB_EndSurface\n" /* line 262 */
@@ -4494,7 +4494,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x7c(%ebp), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movl %ebx, 0xc(%eax)\n" /* line 30 */
         "movl %esi, 0x10(%eax)\n" /* line 31 */
@@ -4518,7 +4518,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x7c(%ebp), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movl %ebx, 0xc(%eax)\n" /* line 30 */
         "movl %esi, 0x10(%eax)\n" /* line 31 */
@@ -4542,7 +4542,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x7c(%ebp), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movl %ebx, 0xc(%eax)\n" /* line 30 */
         "movl %esi, 0x10(%eax)\n" /* line 31 */
@@ -4571,7 +4571,7 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x1c(%ebp), %edx\n" /* unpackedColor */
         "movl %edx, -0x7c(%ebp)\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 375 */
         "movss -0x5c(%ebp), %xmm0\n" /* line 30 | x */
         "movss %xmm0, 0xc(%eax)\n"
@@ -4580,12 +4580,12 @@ void RB_DrawTextInSpace(const char *text, FontHandle font, const vec_t *org, con
         "jmp .Lfd7acc_000d7d75\n"
         /* } scope */
         ".Lfd7acc_000d82c2:\n"
-        "cmpl $3, 0x11e15c0\n" /* line 300 */
+        "cmpl $3, tess+370624\n" /* line 300 */
         "jne .Lfd7acc_000d813c\n"
         "jmp .Lfd7acc_000d7bd4\n"
         ".Lfd7acc_000d82d4:\n"
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         "jmp .Lfd7acc_000d7c53\n"
     );
 }
@@ -4679,20 +4679,20 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "calll RB_SetViewMatrix\n"
         "movl %ebx, (%esp)\n" /* line 3443 | iterationCount */
         "calll RB_SetProjectionMatrix\n"
-        "movl $0x11e1a48, 0x11e1a40\n" /* line 3445 */
-        "movl $0, 0x11e1a44\n" /* line 3446 */
-        "movl $0x3f800000, 0x11e1650\n" /* line 447 */
-        "movl $0x3f800000, 0x11e1654\n" /* line 448 */
-        "movl $0x3f800000, 0x11e1658\n" /* line 449 */
-        "movl $0x3f800000, 0x11e165c\n" /* line 450 */
-        "movl %edi, 0x11e1630\n" /* line 447 */
-        "movl %edi, 0x11e1634\n" /* line 448 */
-        "movl %edi, 0x11e1638\n" /* line 449 */
-        "movl $0x3f800000, 0x11e163c\n" /* line 450 */
-        "movl %edi, 0x11e16b0\n" /* line 447 */
-        "movl %edi, 0x11e16b4\n" /* line 448 */
-        "movl %edi, 0x11e16b8\n" /* line 449 */
-        "movl $0x3f800000, 0x11e16bc\n" /* line 450 */
+        "movl $backEnd+1096, backEnd+1088\n" /* line 3445 */
+        "movl $0, backEnd+1092\n" /* line 3446 */
+        "movl $0x3f800000, backEnd+80\n" /* line 447 */
+        "movl $0x3f800000, backEnd+84\n" /* line 448 */
+        "movl $0x3f800000, backEnd+88\n" /* line 449 */
+        "movl $0x3f800000, backEnd+92\n" /* line 450 */
+        "movl %edi, backEnd+48\n" /* line 447 */
+        "movl %edi, backEnd+52\n" /* line 448 */
+        "movl %edi, backEnd+56\n" /* line 449 */
+        "movl $0x3f800000, backEnd+60\n" /* line 450 */
+        "movl %edi, backEnd+176\n" /* line 447 */
+        "movl %edi, backEnd+180\n" /* line 448 */
+        "movl %edi, backEnd+184\n" /* line 449 */
+        "movl $0x3f800000, backEnd+188\n" /* line 450 */
         "movl $0, 8(%esp)\n" /* line 3452 */
         "movl -0xf0(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -4718,29 +4718,29 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "movaps %xmm5, %xmm0\n"
         "addss -0x58(%ebp), %xmm0\n"
         "addss -0x4c(%ebp), %xmm0\n"
-        "movl 0x195eec0, %ebx\n" /* line 370 */
+        "movl imp_r_rendererInUse, %ebx\n" /* line 370 */
         "movl (%ebx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd8330_000d88aa\n"
         /* { scope 2 */
         "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, 0x1186e04\n" /* line 448 */
-        "movss %xmm2, 0x1186e08\n" /* line 449 */
-        "movl $0x3f800000, 0x1186e0c\n" /* line 450 */
+        "movss %xmm1, tess+4\n" /* line 448 */
+        "movss %xmm2, tess+8\n" /* line 449 */
+        "movl $0x3f800000, tess+12\n" /* line 450 */
         /* } scope */
-        "movl %edi, 0x1186e10\n" /* line 191 */
-        "movl %edi, 0x1186e14\n" /* line 192 */
-        "movl $0x3f800000, 0x1186e18\n" /* line 193 */
+        "movl %edi, tess+16\n" /* line 191 */
+        "movl %edi, tess+20\n" /* line 192 */
+        "movl $0x3f800000, tess+24\n" /* line 193 */
         "leal -0x1c(%ebp), %ecx\n" /* line 606 | white */
-        "movl $0xffffffff, 0x1186e1c\n"
-        "movl %edi, 0x1186e20\n" /* line 30 */
-        "movl %edi, 0x1186e24\n" /* line 31 */
-        "movl $0x3f800000, 0x1186e34\n" /* line 191 */
-        "movl %edi, 0x1186e38\n" /* line 192 */
-        "movl %edi, 0x1186e3c\n" /* line 193 */
-        "movl %edi, 0x1186e28\n" /* line 191 */
-        "movl $0x3f800000, 0x1186e2c\n" /* line 192 */
-        "movl %edi, 0x1186e30\n" /* line 193 */
+        "movl $0xffffffff, tess+28\n"
+        "movl %edi, tess+32\n" /* line 30 */
+        "movl %edi, tess+36\n" /* line 31 */
+        "movl $0x3f800000, tess+52\n" /* line 191 */
+        "movl %edi, tess+56\n" /* line 192 */
+        "movl %edi, tess+60\n" /* line 193 */
+        "movl %edi, tess+40\n" /* line 191 */
+        "movl $0x3f800000, tess+44\n" /* line 192 */
+        "movl %edi, tess+48\n" /* line 193 */
         ".Lfd8330_000d856a:\n"
         "movaps %xmm3, %xmm2\n" /* line 3459 */
         "subss -0x50(%ebp), %xmm2\n"
@@ -4756,25 +4756,25 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "je .Lfd8330_000d89a0\n"
         /* { scope 2 */
         "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, 0x1186e04\n" /* line 448 */
-        "movss %xmm2, 0x1186e08\n" /* line 449 */
+        "movss %xmm1, tess+4\n" /* line 448 */
+        "movss %xmm2, tess+8\n" /* line 449 */
         "movl $0x3f800000, %edx\n" /* line 450 */
-        "movl %edx, 0x1186e0c\n"
+        "movl %edx, tess+12\n"
         /* } scope */
         "xorl %eax, %eax\n" /* line 191 */
-        "movl %eax, 0x1186e10\n"
-        "movl %eax, 0x1186e14\n" /* line 192 */
-        "movl %edx, 0x1186e18\n" /* line 193 */
+        "movl %eax, tess+16\n"
+        "movl %eax, tess+20\n" /* line 192 */
+        "movl %edx, tess+24\n" /* line 193 */
         "movl (%ecx), %ecx\n" /* line 606 */
-        "movl %ecx, 0x1186e1c\n"
-        "movl %edx, 0x1186e20\n" /* line 30 */
-        "movl %eax, 0x1186e24\n" /* line 31 */
-        "movl %edx, 0x1186e34\n" /* line 191 */
-        "movl %eax, 0x1186e38\n" /* line 192 */
-        "movl %eax, 0x1186e3c\n" /* line 193 */
-        "movl %eax, 0x1186e28\n" /* line 191 */
-        "movl %edx, 0x1186e2c\n" /* line 192 */
-        "movl %eax, 0x1186e30\n" /* line 193 */
+        "movl %ecx, tess+28\n"
+        "movl %edx, tess+32\n" /* line 30 */
+        "movl %eax, tess+36\n" /* line 31 */
+        "movl %edx, tess+52\n" /* line 191 */
+        "movl %eax, tess+56\n" /* line 192 */
+        "movl %eax, tess+60\n" /* line 193 */
+        "movl %eax, tess+40\n" /* line 191 */
+        "movl %edx, tess+44\n" /* line 192 */
+        "movl %eax, tess+48\n" /* line 193 */
         ".Lfd8330_000d8605:\n"
         "movaps %xmm3, %xmm2\n" /* line 3460 */
         "subss -0x50(%ebp), %xmm2\n"
@@ -4790,22 +4790,22 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "je .Lfd8330_000d894b\n"
         /* { scope 2 */
         "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, 0x1186e04\n" /* line 448 */
-        "movss %xmm2, 0x1186e08\n" /* line 449 */
-        "movl $0x3f800000, 0x1186e0c\n" /* line 450 */
+        "movss %xmm1, tess+4\n" /* line 448 */
+        "movss %xmm2, tess+8\n" /* line 449 */
+        "movl $0x3f800000, tess+12\n" /* line 450 */
         /* } scope */
-        "movl $0, 0x1186e10\n" /* line 191 */
-        "movl $0, 0x1186e14\n" /* line 192 */
-        "movl $0x3f800000, 0x1186e18\n" /* line 193 */
-        "movl %ecx, 0x1186e1c\n" /* line 606 */
-        "movl $0x3f800000, 0x1186e20\n" /* line 30 */
-        "movl $0x3f800000, 0x1186e24\n" /* line 31 */
-        "movl $0x3f800000, 0x1186e34\n" /* line 191 */
-        "movl $0, 0x1186e38\n" /* line 192 */
-        "movl $0, 0x1186e3c\n" /* line 193 */
-        "movl $0, 0x1186e28\n" /* line 191 */
-        "movl $0x3f800000, 0x1186e2c\n" /* line 192 */
-        "movl $0, 0x1186e30\n" /* line 193 */
+        "movl $0, tess+16\n" /* line 191 */
+        "movl $0, tess+20\n" /* line 192 */
+        "movl $0x3f800000, tess+24\n" /* line 193 */
+        "movl %ecx, tess+28\n" /* line 606 */
+        "movl $0x3f800000, tess+32\n" /* line 30 */
+        "movl $0x3f800000, tess+36\n" /* line 31 */
+        "movl $0x3f800000, tess+52\n" /* line 191 */
+        "movl $0, tess+56\n" /* line 192 */
+        "movl $0, tess+60\n" /* line 193 */
+        "movl $0, tess+40\n" /* line 191 */
+        "movl $0x3f800000, tess+44\n" /* line 192 */
+        "movl $0, tess+48\n" /* line 193 */
         ".Lfd8330_000d86ce:\n"
         "movaps %xmm3, %xmm2\n" /* line 3461 */
         "addss -0x50(%ebp), %xmm2\n"
@@ -4821,53 +4821,53 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "je .Lfd8330_000d88f6\n"
         /* { scope 2 */
         "movss %xmm0, tess\n" /* line 447 */
-        "movss %xmm1, 0x1186e04\n" /* line 448 */
-        "movss %xmm2, 0x1186e08\n" /* line 449 */
-        "movl $0x3f800000, 0x1186e0c\n" /* line 450 */
+        "movss %xmm1, tess+4\n" /* line 448 */
+        "movss %xmm2, tess+8\n" /* line 449 */
+        "movl $0x3f800000, tess+12\n" /* line 450 */
         /* } scope */
-        "movl $0, 0x1186e10\n" /* line 191 */
-        "movl $0, 0x1186e14\n" /* line 192 */
-        "movl $0x3f800000, 0x1186e18\n" /* line 193 */
-        "movl %ecx, 0x1186e1c\n" /* line 606 */
-        "movl $0, 0x1186e20\n" /* line 30 */
-        "movl $0x3f800000, 0x1186e24\n" /* line 31 */
-        "movl $0x3f800000, 0x1186e34\n" /* line 191 */
-        "movl $0, 0x1186e38\n" /* line 192 */
-        "movl $0, 0x1186e3c\n" /* line 193 */
-        "movl $0, 0x1186e28\n" /* line 191 */
-        "movl $0x3f800000, 0x1186e2c\n" /* line 192 */
-        "movl $0, 0x1186e30\n" /* line 193 */
+        "movl $0, tess+16\n" /* line 191 */
+        "movl $0, tess+20\n" /* line 192 */
+        "movl $0x3f800000, tess+24\n" /* line 193 */
+        "movl %ecx, tess+28\n" /* line 606 */
+        "movl $0, tess+32\n" /* line 30 */
+        "movl $0x3f800000, tess+36\n" /* line 31 */
+        "movl $0x3f800000, tess+52\n" /* line 191 */
+        "movl $0, tess+56\n" /* line 192 */
+        "movl $0, tess+60\n" /* line 193 */
+        "movl $0, tess+40\n" /* line 191 */
+        "movl $0x3f800000, tess+44\n" /* line 192 */
+        "movl $0, tess+48\n" /* line 193 */
         ".Lfd8330_000d8797:\n"
-        "movl $4, 0x11e15d4\n" /* line 3462 */
-        "movl 0x195f134, %eax\n" /* line 3464 */
+        "movl $4, tess+370644\n" /* line 3462 */
+        "movl imp_r_testFill, %eax\n" /* line 3464 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* iterationCount */
         "testl %ebx, %ebx\n" /* line 3465 | iterationCount */
         "jle .Lfd8330_000d8836\n"
         "xorl %ecx, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
+        "movl tess+370640, %edx\n"
         ".Lfd8330_000d87bb:\n"
-        "movl 0x11e15b0, %eax\n" /* line 3467 */
+        "movl tess+370608, %eax\n" /* line 3467 */
         "movw $3, (%eax, %edx, 2)\n"
-        "movl 0x11e15d0, %edx\n" /* line 3468 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 3468 */
+        "movl tess+370608, %eax\n"
         "movw $0, 2(%eax, %edx, 2)\n"
-        "movl 0x11e15d0, %edx\n" /* line 3469 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 3469 */
+        "movl tess+370608, %eax\n"
         "movw $2, 4(%eax, %edx, 2)\n"
-        "movl 0x11e15d0, %edx\n" /* line 3470 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 3470 */
+        "movl tess+370608, %eax\n"
         "movw $2, 6(%eax, %edx, 2)\n"
-        "movl 0x11e15d0, %edx\n" /* line 3471 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 3471 */
+        "movl tess+370608, %eax\n"
         "movw $0, 8(%eax, %edx, 2)\n"
-        "movl 0x11e15d0, %edx\n" /* line 3472 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 3472 */
+        "movl tess+370608, %eax\n"
         "movw $1, 0xa(%eax, %edx, 2)\n"
-        "movl 0x11e15d0, %eax\n" /* line 3473 */
+        "movl tess+370640, %eax\n" /* line 3473 */
         "addl $6, %eax\n"
         "movl %eax, %edx\n"
-        "movl %eax, 0x11e15d0\n"
+        "movl %eax, tess+370640\n"
         "addl $1, %ecx\n" /* line 3465 */
         "cmpl %ecx, %ebx\n" /* iterationCount */
         "jne .Lfd8330_000d87bb\n"
@@ -4896,7 +4896,7 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         "fstpl -0xf8(%ebp)\n"
         "divsd -0xf8(%ebp), %xmm0\n"
         "divsd %xmm0, %xmm1\n"
-        "divsd 0x307cd8, %xmm1\n" /* 60.0 */
+        "divsd lit8_00307cd8, %xmm1\n" /* 60.0 */
         /* } scope */
         /* } scope */
         "cvtsd2ss %xmm1, %xmm0\n" /* line 3485 */
@@ -4909,51 +4909,51 @@ float RB_TestFillPass3D(const Material *material, MaterialTechniqueType techType
         /* { scope 1: frequency */
         ".Lfd8330_000d88aa:\n"
         "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, 0x1186e04\n" /* line 192 */
-        "movss %xmm2, 0x1186e08\n" /* line 193 */
-        "movl %edi, 0x1186e0c\n" /* line 191 */
-        "movl %edi, 0x1186e10\n" /* line 192 */
-        "movl $0x3f800000, 0x1186e14\n" /* line 193 */
+        "movss %xmm1, tess+4\n" /* line 192 */
+        "movss %xmm2, tess+8\n" /* line 193 */
+        "movl %edi, tess+12\n" /* line 191 */
+        "movl %edi, tess+16\n" /* line 192 */
+        "movl $0x3f800000, tess+20\n" /* line 193 */
         "leal -0x1c(%ebp), %ecx\n" /* line 606 | white */
-        "movl $0xffffffff, 0x1186e18\n"
-        "movl %edi, 0x1186e1c\n" /* line 30 */
-        "movl %edi, 0x1186e20\n" /* line 31 */
+        "movl $0xffffffff, tess+24\n"
+        "movl %edi, tess+28\n" /* line 30 */
+        "movl %edi, tess+32\n" /* line 31 */
         "jmp .Lfd8330_000d856a\n"
         ".Lfd8330_000d88f6:\n"
         "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, 0x1186e04\n" /* line 192 */
-        "movss %xmm2, 0x1186e08\n" /* line 193 */
-        "movl $0, 0x1186e0c\n" /* line 191 */
-        "movl $0, 0x1186e10\n" /* line 192 */
-        "movl $0x3f800000, 0x1186e14\n" /* line 193 */
-        "movl %ecx, 0x1186e18\n" /* line 606 */
-        "movl $0, 0x1186e1c\n" /* line 30 */
-        "movl $0x3f800000, 0x1186e20\n" /* line 31 */
+        "movss %xmm1, tess+4\n" /* line 192 */
+        "movss %xmm2, tess+8\n" /* line 193 */
+        "movl $0, tess+12\n" /* line 191 */
+        "movl $0, tess+16\n" /* line 192 */
+        "movl $0x3f800000, tess+20\n" /* line 193 */
+        "movl %ecx, tess+24\n" /* line 606 */
+        "movl $0, tess+28\n" /* line 30 */
+        "movl $0x3f800000, tess+32\n" /* line 31 */
         "jmp .Lfd8330_000d8797\n"
         ".Lfd8330_000d894b:\n"
         "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, 0x1186e04\n" /* line 192 */
-        "movss %xmm2, 0x1186e08\n" /* line 193 */
-        "movl $0, 0x1186e0c\n" /* line 191 */
-        "movl $0, 0x1186e10\n" /* line 192 */
-        "movl $0x3f800000, 0x1186e14\n" /* line 193 */
-        "movl %ecx, 0x1186e18\n" /* line 606 */
-        "movl $0x3f800000, 0x1186e1c\n" /* line 30 */
-        "movl $0x3f800000, 0x1186e20\n" /* line 31 */
+        "movss %xmm1, tess+4\n" /* line 192 */
+        "movss %xmm2, tess+8\n" /* line 193 */
+        "movl $0, tess+12\n" /* line 191 */
+        "movl $0, tess+16\n" /* line 192 */
+        "movl $0x3f800000, tess+20\n" /* line 193 */
+        "movl %ecx, tess+24\n" /* line 606 */
+        "movl $0x3f800000, tess+28\n" /* line 30 */
+        "movl $0x3f800000, tess+32\n" /* line 31 */
         "jmp .Lfd8330_000d86ce\n"
         ".Lfd8330_000d89a0:\n"
         "movss %xmm0, tess\n" /* line 191 */
-        "movss %xmm1, 0x1186e04\n" /* line 192 */
-        "movss %xmm2, 0x1186e08\n" /* line 193 */
+        "movss %xmm1, tess+4\n" /* line 192 */
+        "movss %xmm2, tess+8\n" /* line 193 */
         "xorl %eax, %eax\n" /* line 191 */
-        "movl %eax, 0x1186e0c\n"
-        "movl %eax, 0x1186e10\n" /* line 192 */
+        "movl %eax, tess+12\n"
+        "movl %eax, tess+16\n" /* line 192 */
         "movl $0x3f800000, %edx\n" /* line 193 */
-        "movl %edx, 0x1186e14\n"
+        "movl %edx, tess+20\n"
         "movl (%ecx), %ecx\n" /* line 606 */
-        "movl %ecx, 0x1186e18\n"
-        "movl %edx, 0x1186e1c\n" /* line 30 */
-        "movl %eax, 0x1186e20\n" /* line 31 */
+        "movl %ecx, tess+24\n"
+        "movl %edx, tess+28\n" /* line 30 */
+        "movl %eax, tess+32\n" /* line 31 */
         "jmp .Lfd8330_000d8605\n"
     );
 }
@@ -4971,15 +4971,15 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* material */
         /* { scope 1 */
-        "cmpb $0, 0x11e1abd\n" /* line 437 */
+        "cmpb $0, backEnd+1213\n" /* line 437 */
         "je .Lfd89e8_000d8e4e\n"
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfd89e8_000d8e5f\n"
         ".Lfd89e8_000d8a0d:\n"
-        "movl 0x11e15d0, %ecx\n" /* line 261 */
+        "movl tess+370640, %ecx\n" /* line 261 */
         "testl %ecx, %ecx\n"
         "jne .Lfd89e8_000d8e28\n"
-        "movl 0x11e15e0, %edx\n"
+        "movl tess+370656, %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfd89e8_000d8e28\n"
         ".Lfd89e8_000d8a29:\n"
@@ -4988,39 +4988,39 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl %ebx, (%esp)\n"
         "calll RB_BeginSurface\n"
         ".Lfd89e8_000d8a41:\n"
-        "movl 0x11e15d4, %esi\n" /* line 344 */
+        "movl tess+370644, %esi\n" /* line 344 */
         "leal 4(%esi), %eax\n"
         "cmpl $0x154a, %eax\n"
         "jg .Lfd89e8_000d8dc9\n"
-        "movl 0x11e15d0, %ebx\n"
+        "movl tess+370640, %ebx\n"
         "leal 6(%ebx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jg .Lfd89e8_000d8dc9\n"
         ".Lfd89e8_000d8a69:\n"
         "movl %esi, %ecx\n" /* line 448 */
         "leal 3(%ecx), %edx\n" /* line 449 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ebx, 2)\n"
-        "movl 0x11e15d0, %edx\n" /* line 450 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 450 */
+        "movl tess+370608, %eax\n"
         "movw %si, 2(%eax, %edx, 2)\n"
         "leal 2(%ecx), %ebx\n" /* line 451 | material */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %bx, 4(%eax, %edx, 2)\n" /* material */
-        "movl 0x11e15d0, %edx\n" /* line 452 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 452 */
+        "movl tess+370608, %eax\n"
         "movw %bx, 6(%eax, %edx, 2)\n" /* material */
-        "movl 0x11e15d0, %edx\n" /* line 453 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n" /* line 453 */
+        "movl tess+370608, %eax\n"
         "movw %si, 8(%eax, %edx, 2)\n"
         "addl $1, %ecx\n" /* line 454 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 0xa(%eax, %edx, 2)\n"
-        "movl 0x11e15d4, %edx\n" /* line 456 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 456 | vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %eax\n" /* line 348 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 348 */
         "movl (%eax), %edi\n"
         "cmpl $2, 8(%edi)\n"
         "je .Lfd89e8_000d8fa9\n"
@@ -5044,7 +5044,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl %ebx, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %eax\n" /* line 360 | color */
-        "movl %eax, 0x1186e1c(%edx)\n"
+        "movl %eax, tess+28(%edx)\n"
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -5053,7 +5053,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movss 0x20(%ebp), %xmm1\n" /* line 31 | t0 */
         "movss %xmm1, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl %ebx, 4(%edx)\n" /* line 191 */
@@ -5070,7 +5070,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ".Lfd89e8_000d8b6d:\n"
         "movss 0xc(%ebp), %xmm0\n" /* line 457 | x */
         "addss 0x14(%ebp), %xmm0\n" /* w */
-        "movl 0x11e15d4, %eax\n" /* vertIndex */
+        "movl tess+370644, %eax\n" /* vertIndex */
         "addl $1, %eax\n" /* vertIndex */
         /* { scope 2 */
         "cmpl $2, 8(%edi)\n" /* line 348 */
@@ -5093,7 +5093,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %eax\n" /* line 360 | color */
-        "movl %eax, 0x1186e1c(%edx)\n"
+        "movl %eax, tess+28(%edx)\n"
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -5102,7 +5102,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movss 0x20(%ebp), %xmm1\n" /* line 31 | t0 */
         "movss %xmm1, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -5119,7 +5119,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         ".Lfd89e8_000d8c34:\n"
         "movss 0x10(%ebp), %xmm1\n" /* line 458 | y */
         "addss 0x18(%ebp), %xmm1\n" /* h */
-        "movl 0x11e15d4, %eax\n" /* vertIndex */
+        "movl tess+370644, %eax\n" /* vertIndex */
         "addl $2, %eax\n" /* vertIndex */
         /* { scope 2 */
         "cmpl $2, 8(%edi)\n" /* line 348 */
@@ -5141,7 +5141,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %eax\n" /* line 360 | color */
-        "movl %eax, 0x1186e1c(%edx)\n"
+        "movl %eax, tess+28(%edx)\n"
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -5150,7 +5150,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movss 0x28(%ebp), %xmm0\n" /* line 31 | t1 */
         "movss %xmm0, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -5165,7 +5165,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         /* } scope */
         /* } scope */
         ".Lfd89e8_000d8cf6:\n"
-        "movl 0x11e15d4, %eax\n" /* line 459 | vertIndex */
+        "movl tess+370644, %eax\n" /* line 459 | vertIndex */
         "addl $3, %eax\n" /* vertIndex */
         /* { scope 2 */
         "cmpl $2, 8(%edi)\n" /* line 348 */
@@ -5188,7 +5188,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %eax\n" /* line 360 | color */
-        "movl %eax, 0x1186e1c(%edx)\n"
+        "movl %eax, tess+28(%edx)\n"
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -5197,7 +5197,7 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movss 0x28(%ebp), %xmm1\n" /* line 31 | t1 */
         "movss %xmm1, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -5211,8 +5211,8 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0, 8(%eax)\n" /* line 193 */
         /* } scope */
         /* } scope */
-        "addl $4, 0x11e15d4\n" /* line 461 */
-        "addl $6, 0x11e15d0\n" /* line 462 */
+        "addl $4, tess+370644\n" /* line 461 */
+        "addl $6, tess+370640\n" /* line 462 */
         /* } scope */
         "addl $0x1c, %esp\n" /* line 463 */
         "popl %ebx\n"
@@ -5222,42 +5222,42 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "retl\n"
         /* { scope 1 */
         ".Lfd89e8_000d8dc9:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfd89e8_000d9008\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd89e8_000d8e32\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd89e8_000d8e32\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %esi\n"
-        "movl 0x11e15d0, %ebx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %esi\n"
+        "movl tess+370640, %ebx\n"
         "jmp .Lfd89e8_000d8a69\n"
         ".Lfd89e8_000d8e28:\n"
         "calll RB_EndSurface\n" /* line 262 */
         "jmp .Lfd89e8_000d8a29\n"
         ".Lfd89e8_000d8e32:\n"
         "calll RB_EndSurface\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %esi\n"
-        "movl 0x11e15d0, %ebx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %esi\n"
+        "movl tess+370640, %ebx\n"
         "jmp .Lfd89e8_000d8a69\n"
         ".Lfd89e8_000d8e4e:\n"
         "calll RB_Set2D\n" /* line 439 */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "jne .Lfd89e8_000d8a0d\n"
         ".Lfd89e8_000d8e5f:\n"
-        "cmpl $3, 0x11e15c0\n"
+        "cmpl $3, tess+370624\n"
         "jne .Lfd89e8_000d8a0d\n"
         "jmp .Lfd89e8_000d8a41\n"
         /* { scope 2 */
@@ -5278,15 +5278,15 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %edx\n" /* line 352 | color */
-        "movl %edx, 0x1186e18(%eax)\n"
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %edx, tess+24(%eax)\n"
+        "addl $tess+16, %eax\n" /* line 353 */
         "movss 0x1c(%ebp), %xmm0\n" /* line 30 | s0 */
         "movss %xmm0, 0xc(%eax)\n"
         "movss 0x28(%ebp), %xmm1\n" /* line 31 | t1 */
         "movss %xmm1, 0x10(%eax)\n"
         /* } scope */
-        "addl $4, 0x11e15d4\n" /* line 461 */
-        "addl $6, 0x11e15d0\n" /* line 462 */
+        "addl $4, tess+370644\n" /* line 461 */
+        "addl $6, tess+370640\n" /* line 462 */
         /* } scope */
         "addl $0x1c, %esp\n" /* line 463 */
         "popl %ebx\n"
@@ -5312,8 +5312,8 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %edx\n" /* line 352 | color */
-        "movl %edx, 0x1186e18(%eax)\n"
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %edx, tess+24(%eax)\n"
+        "addl $tess+16, %eax\n" /* line 353 */
         "movss 0x24(%ebp), %xmm0\n" /* line 30 | s1 */
         "movss %xmm0, 0xc(%eax)\n"
         "movss 0x28(%ebp), %xmm0\n" /* line 31 | t1 */
@@ -5338,8 +5338,8 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %edx\n" /* line 352 | color */
-        "movl %edx, 0x1186e18(%eax)\n"
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %edx, tess+24(%eax)\n"
+        "addl $tess+16, %eax\n" /* line 353 */
         "movss 0x24(%ebp), %xmm1\n" /* line 30 | s1 */
         "movss %xmm1, 0xc(%eax)\n"
         "movss 0x20(%ebp), %xmm1\n" /* line 31 | t0 */
@@ -5366,16 +5366,16 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl 0x2c(%ebp), %edx\n" /* line 352 | color */
-        "movl %edx, 0x1186e18(%eax)\n"
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %edx, tess+24(%eax)\n"
+        "addl $tess+16, %eax\n" /* line 353 */
         "movss 0x1c(%ebp), %xmm0\n" /* line 30 | s0 */
         "movss %xmm0, 0xc(%eax)\n"
         "movss 0x20(%ebp), %xmm1\n" /* line 31 | t0 */
         "movss %xmm1, 0x10(%eax)\n"
         "jmp .Lfd89e8_000d8b6d\n"
         ".Lfd89e8_000d9008:\n"
-        "movl 0x11e15d4, %esi\n"
-        "movl 0x11e15d0, %ebx\n"
+        "movl tess+370644, %esi\n"
+        "movl tess+370640, %ebx\n"
         "jmp .Lfd89e8_000d8a69\n"
     );
 }
@@ -5530,11 +5530,11 @@ void RB_ExecuteRenderCommands(const void *data)
         "subl $0x4c, %esp\n"
         /* { scope 1 */
         "movl $0, backEndData\n" /* line 3926 */
-        "movl 0x195f130, %eax\n" /* line 3928 */
+        "movl imp_g_disableRendering, %eax\n" /* line 3928 */
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfd9182_000d9535\n"
-        "movl 0x195eed0, %esi\n" /* line 3932 */
+        "movl imp_dx, %esi\n" /* line 3932 */
         "cmpb $0, 0x2d3c(%esi)\n"
         "je .Lfd9182_000d956f\n"
         ".Lfd9182_000d91b7:\n"
@@ -5544,32 +5544,32 @@ void RB_ExecuteRenderCommands(const void *data)
         "jne .Lfd9182_000d9547\n"
         "movl 8(%ebp), %edx\n" /* line 3951 | data */
         "movl %edx, backEndData\n"
-        "movl 0x195f0dc, %eax\n" /* line 3854 */
+        "movl imp_r_textureMode, %eax\n" /* line 3854 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "jne .Lfd9182_000d99cd\n"
         ".Lfd9182_000d91e2:\n"
-        "movl 0x195f0c4, %eax\n" /* line 3860 */
+        "movl imp_r_anisotropy, %eax\n" /* line 3860 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "jne .Lfd9182_000d99f1\n"
         ".Lfd9182_000d91f3:\n"
-        "movl 0x195f158, %ebx\n" /* line 3866 */
+        "movl imp_r_cosinePowerMapShift, %ebx\n" /* line 3866 */
         "movl (%ebx), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "jne .Lfd9182_000d9a16\n"
         ".Lfd9182_000d9205:\n"
-        "movl 0x195f11c, %ebx\n" /* line 3872 */
+        "movl imp_r_outdoorFeather, %ebx\n" /* line 3872 */
         "movl (%ebx), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "jne .Lfd9182_000d9a43\n"
         ".Lfd9182_000d9217:\n"
-        "movl 0x195f0d0, %eax\n" /* line 3879 */
+        "movl imp_r_aaAlpha, %eax\n" /* line 3879 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "jne .Lfd9182_000d9a7b\n"
         ".Lfd9182_000d9228:\n"
-        "movl 0x195eed0, %esi\n" /* line 3686 */
+        "movl imp_dx, %esi\n" /* line 3686 */
         "movl 0x2c20(%esi), %eax\n"
         "cmpl $3, %eax\n"
         "je .Lfd9182_000d9aae\n"
@@ -5579,50 +5579,50 @@ void RB_ExecuteRenderCommands(const void *data)
         "movb $1, 0x2d3d(%esi)\n" /* line 3699 */
         "jmp .Lfd9182_000d9255\n"
         ".Lfd9182_000d924f:\n"
-        "movl 0x195eed0, %esi\n"
+        "movl imp_dx, %esi\n"
         ".Lfd9182_000d9255:\n"
         "movl 8(%esi), %eax\n" /* line 3700 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *0xa4(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfd9182_000d924f\n"
-        "addl $1, 0x11e19b0\n" /* line 3706 */
+        "addl $1, backEnd+944\n" /* line 3706 */
         "movl %edi, %ecx\n" /* line 3958 | needToTouchImages */
         "testb %cl, %cl\n"
         "jne .Lfd9182_000d9bee\n"
         ".Lfd9182_000d927f:\n"
-        "movl 0x195f12c, %eax\n" /* line 3962 */
+        "movl imp_r_skipBackEnd, %eax\n" /* line 3962 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd9182_000d9594\n"
         "movl backEndData, %edx\n" /* line 3970 */
-        "leal 0x219d0c(%edx), %eax\n"
+        "leal str_00219d0c(%edx), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* execState */
         "movl $0, -0x24(%ebp)\n" /* line 3971 */
-        "movzwl 0x219d0c(%edx), %eax\n" /* line 3980 */
+        "movzwl str_00219d0c(%edx), %eax\n" /* line 3980 */
         "testw %ax, %ax\n"
         "jne .Lfd9182_000d9c52\n"
         ".Lfd9182_000d92b6:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd9182_000d953d\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd9182_000d953d\n"
         ".Lfd9182_000d92d0:\n"
-        "movl 0x11e19c8, %edx\n" /* line 4008 */
+        "movl backEnd+968, %edx\n" /* line 4008 */
         "testl %edx, %edx\n"
         "je .Lfd9182_000d92ec\n"
-        "movl 0x195f0f0, %eax\n"
+        "movl imp_developer, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd9182_000d9bf8\n"
         ".Lfd9182_000d92ec:\n"
-        "movl 0x195f138, %eax\n" /* line 212 */
+        "movl imp_dxState, %eax\n" /* line 212 */
         "movl 0x20cc(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd9182_000d9307\n"
@@ -5630,8 +5630,8 @@ void RB_ExecuteRenderCommands(const void *data)
         "calll RB_ChangeIndices\n"
         ".Lfd9182_000d9307:\n"
         "calll RB_ClearAllStreamSources\n" /* line 4014 */
-        "movl 0x195eed0, %edi\n" /* needToTouchImages */
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_dx, %edi\n" /* needToTouchImages */
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfd9182_000d9318:\n"
         "movl 8(%edi), %eax\n" /* line 4015 | needToTouchImages */
         "movl (%eax), %edx\n"
@@ -5641,77 +5641,77 @@ void RB_ExecuteRenderCommands(const void *data)
         "testl %eax, %eax\n"
         "jne .Lfd9182_000d9318\n"
         "movb $0, 0x2d3d(%edi)\n" /* line 4016 | needToTouchImages */
-        "movl 0x195f134, %edx\n" /* line 4018 */
+        "movl imp_r_testFill, %edx\n" /* line 4018 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %esi\n"
         "testl %esi, %esi\n"
         "jle .Lfd9182_000d9398\n"
-        "movl 0x195f100, %eax\n" /* line 3491 */
+        "movl imp_r_testFillEnable, %eax\n" /* line 3491 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd9182_000d95f4\n"
-        "movl 0x195eee0, %ebx\n" /* line 3493 */
-        "movl $0x2245d8, 4(%esp)\n" /* "Fill testing uses extra textures and materials, so it is usu" */
+        "movl imp_ri, %ebx\n" /* line 3493 */
+        "movl $str_002245d8, 4(%esp)\n" /* "Fill testing uses extra textures and materials, so it is usu" */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
-        "movl $0x224628, 4(%esp)\n" /* line 3494 */
+        "movl $str_00224628, 4(%esp)\n" /* line 3494 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         ".Lfd9182_000d937b:\n"
         "movl $0, 4(%esp)\n" /* line 4021 */
-        "movl 0x195f134, %eax\n"
+        "movl imp_r_testFill, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x98(%eax)\n"
         ".Lfd9182_000d9398:\n"
-        "movl 0x195f140, %esi\n" /* line 4024 */
+        "movl imp_r_testTransform, %esi\n" /* line 4024 */
         "movl (%esi), %eax\n"
         "movl 8(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
         "jle .Lfd9182_000d94df\n"
-        "movl 0x195eebc, %eax\n" /* line 3641 */
+        "movl imp_rgp, %eax\n" /* line 3641 */
         "movl 0x1038(%eax), %eax\n"
         "movl $0x552, %edx\n"
         "pxor %xmm1, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3642 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3642 | 60.0f */
         "movss %xmm0, -0x2c(%ebp)\n"
-        "movl 0x195eee0, %ebx\n" /* line 3656 */
-        "movl $0x224674, 4(%esp)\n" /* "-----------------------------------------------
+        "movl imp_ri, %ebx\n" /* line 3656 */
+        "movl $str_00224674, 4(%esp)\n" /* "-----------------------------------------------
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 3657 */
         "movl $0, 0xc(%esp)\n"
-        "movl $0x224980, 4(%esp)\n" /* "static vertex data    %8.0f verts/sec @ 60Hz
+        "movl $str_00224980, 4(%esp)\n" /* "static vertex data    %8.0f verts/sec @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 3658 */
         "movl $0, 0xc(%esp)\n"
-        "movl $0x2249b0, 4(%esp)\n" /* "static vertex data    %8.0f tris/sec @ 60Hz
+        "movl $str_002249b0, 4(%esp)\n" /* "static vertex data    %8.0f tris/sec @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 3659 */
         "movl $0, 0xc(%esp)\n"
-        "movl $0x2249e0, 4(%esp)\n" /* "skinned vertex data   %8.0f verts/sec @ 60Hz
+        "movl $str_002249e0, 4(%esp)\n" /* "skinned vertex data   %8.0f verts/sec @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 3660 */
         "movl $0, 0xc(%esp)\n"
-        "movl $0x224a10, 4(%esp)\n" /* "skinned vertex data   %8.0f tris/sec @ 60Hz
+        "movl $str_00224a10, 4(%esp)\n" /* "skinned vertex data   %8.0f tris/sec @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movss -0x2c(%ebp), %xmm0\n" /* line 3661 */
-        "mulss 0x2ed608, %xmm0\n" /* 4.0f */
+        "mulss lit4_002ed608, %xmm0\n" /* 4.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224a40, 4(%esp)\n" /* "dynamic vertex data   %8.0f verts/sec @ 60Hz
+        "movl $str_00224a40, 4(%esp)\n" /* "dynamic vertex data   %8.0f verts/sec @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
@@ -5719,11 +5719,11 @@ void RB_ExecuteRenderCommands(const void *data)
         "addss %xmm0, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224a70, 4(%esp)\n" /* "dynamic vertex data   %8.0f tris/sec @ 60Hz
+        "movl $str_00224a70, 4(%esp)\n" /* "dynamic vertex data   %8.0f tris/sec @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
-        "movl $0x224674, 4(%esp)\n" /* line 3663 */
+        "movl $str_00224674, 4(%esp)\n" /* line 3663 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl $0, 4(%esp)\n" /* line 4027 */
@@ -5731,7 +5731,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl %eax, (%esp)\n"
         "calll *0x98(%ebx)\n"
         ".Lfd9182_000d94df:\n"
-        "movl 0x195eed0, %esi\n" /* line 4031 */
+        "movl imp_dx, %esi\n" /* line 4031 */
         "movl 0x2c20(%esi), %eax\n"
         "cmpl $3, %eax\n"
         "je .Lfd9182_000d9c72\n"
@@ -5748,7 +5748,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl g_FenceID, %eax\n" /* line 3203 */
         "movl %eax, (%esp)\n"
         "calll glSetFenceAPPLE\n"
-        "movl 0x195eed0, %eax\n" /* line 3206 */
+        "movl imp_dx, %eax\n" /* line 3206 */
         "movb $1, 0x2d68(%eax)\n"
         /* } scope */
         ".Lfd9182_000d9535:\n"
@@ -5768,7 +5768,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "je .Lfd9182_000d9535\n"
         "movl 8(%ebp), %edx\n" /* line 3951 | data */
         "movl %edx, backEndData\n"
-        "movl 0x195f0dc, %eax\n" /* line 3854 */
+        "movl imp_r_textureMode, %eax\n" /* line 3854 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "je .Lfd9182_000d91e2\n"
@@ -5784,10 +5784,10 @@ void RB_ExecuteRenderCommands(const void *data)
         "movb $1, 0x2d3c(%esi)\n" /* line 3936 */
         "jmp .Lfd9182_000d91b7\n"
         ".Lfd9182_000d9594:\n"
-        "cmpb $0, 0x11e1abc\n" /* line 3994 */
+        "cmpb $0, backEnd+1212\n" /* line 3994 */
         "jne .Lfd9182_000d9c48\n"
         ".Lfd9182_000d95a1:\n"
-        "movl 0x195eed0, %eax\n" /* line 3996 */
+        "movl imp_dx, %eax\n" /* line 3996 */
         "movl 8(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl $0, 0x18(%esp)\n"
@@ -5798,260 +5798,260 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0xac(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd9182_000d95a1\n"
         "jmp .Lfd9182_000d92b6\n"
         ".Lfd9182_000d95f4:\n"
-        "movl $0x224674, 4(%esp)\n" /* line 3498 */
+        "movl $str_00224674, 4(%esp)\n" /* line 3498 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %ecx\n"
+        "movl imp_ri, %ecx\n"
         "calll *(%ecx)\n"
-        "movl 0x195eee0, %eax\n" /* line 3499 */
+        "movl imp_ri, %eax\n" /* line 3499 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195f138, %esi\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_dxState, %esi\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x105c(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3499 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3499 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2246a8, 4(%esp)\n" /* "normal fill                 %4.1f overdraw @ 60Hz
+        "movl $str_002246a8, 4(%esp)\n" /* "normal fill                 %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3500 */
+        "movl imp_ri, %eax\n" /* line 3500 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x1060(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3500 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3500 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2246dc, 4(%esp)\n" /* "alpha blend fill            %4.1f overdraw @ 60Hz
+        "movl $str_002246dc, 4(%esp)\n" /* "alpha blend fill            %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3501 */
+        "movl imp_ri, %eax\n" /* line 3501 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x1064(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3501 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3501 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224710, 4(%esp)\n" /* "alpha test pass fill        %4.1f overdraw @ 60Hz
+        "movl $str_00224710, 4(%esp)\n" /* "alpha test pass fill        %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3502 */
+        "movl imp_ri, %eax\n" /* line 3502 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x1068(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3502 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3502 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224744, 4(%esp)\n" /* "alpha test fail fill        %4.1f overdraw @ 60Hz
+        "movl $str_00224744, 4(%esp)\n" /* "alpha test fail fill        %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3503 */
+        "movl imp_ri, %eax\n" /* line 3503 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x106c(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3503 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3503 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224778, 4(%esp)\n" /* "additive fill               %4.1f overdraw @ 60Hz
+        "movl $str_00224778, 4(%esp)\n" /* "additive fill               %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3504 */
+        "movl imp_ri, %eax\n" /* line 3504 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x1070(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3504 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3504 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2247ac, 4(%esp)\n" /* "depth only fill             %4.1f overdraw @ 60Hz
+        "movl $str_002247ac, 4(%esp)\n" /* "depth only fill             %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3505 */
+        "movl imp_ri, %eax\n" /* line 3505 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x1074(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3505 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3505 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2247e0, 4(%esp)\n" /* "1-sided stencil keep fill   %4.1f overdraw @ 60Hz
+        "movl $str_002247e0, 4(%esp)\n" /* "1-sided stencil keep fill   %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3506 */
+        "movl imp_ri, %eax\n" /* line 3506 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x1078(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3506 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3506 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224814, 4(%esp)\n" /* "1-sided stencil reject fill %4.1f overdraw @ 60Hz
+        "movl $str_00224814, 4(%esp)\n" /* "1-sided stencil reject fill %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
         "cmpb $0, 0x2d78(%edi)\n" /* line 3507 */
         "jne .Lfd9182_000d9b3d\n"
         ".Lfd9182_000d98ce:\n"
-        "movl 0x195eee0, %eax\n" /* line 3512 */
+        "movl imp_ri, %eax\n" /* line 3512 */
         "movl (%eax), %ebx\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x1084(%edx), %eax\n"
         "movl $0x12, %edx\n"
         "calll RB_TestFillPass3D\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2248b0, 4(%esp)\n" /* "phong point bump fill       %4.1f overdraw @ 60Hz
+        "movl $str_002248b0, 4(%esp)\n" /* "phong point bump fill       %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %ecx\n" /* line 3513 */
+        "movl imp_ri, %ecx\n" /* line 3513 */
         "movl (%ecx), %ebx\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x1088(%edx), %eax\n"
         "movl $0x12, %edx\n"
         "calll RB_TestFillPass3D\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2248e4, 4(%esp)\n" /* "phong point bump+spec fill  %4.1f overdraw @ 60Hz
+        "movl $str_002248e4, 4(%esp)\n" /* "phong point bump+spec fill  %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %ecx\n" /* line 3514 */
+        "movl imp_ri, %ecx\n" /* line 3514 */
         "movl (%ecx), %ebx\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x1084(%edx), %eax\n"
         "movl $9, %edx\n"
         "calll RB_TestFillPass3D\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224918, 4(%esp)\n" /* "phong dir bump fill         %4.1f overdraw @ 60Hz
+        "movl $str_00224918, 4(%esp)\n" /* "phong dir bump fill         %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %ecx\n" /* line 3515 */
+        "movl imp_ri, %ecx\n" /* line 3515 */
         "movl (%ecx), %ebx\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x1088(%edx), %eax\n"
         "movl $9, %edx\n"
         "calll RB_TestFillPass3D\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x22494c, 4(%esp)\n" /* "phong dir bump+spec fill    %4.1f overdraw @ 60Hz
+        "movl $str_0022494c, 4(%esp)\n" /* "phong dir bump+spec fill    %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl $0x224674, 4(%esp)\n" /* line 3516 */
+        "movl $str_00224674, 4(%esp)\n" /* line 3516 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %ecx\n"
+        "movl imp_ri, %ecx\n"
         "calll *(%ecx)\n"
         "jmp .Lfd9182_000d937b\n"
         ".Lfd9182_000d99cd:\n"
         "movl %eax, (%esp)\n" /* line 3856 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "calll RB_DecideDefaultSamplerState\n" /* line 3857 */
-        "movl 0x195f0c4, %eax\n" /* line 3860 */
+        "movl imp_r_anisotropy, %eax\n" /* line 3860 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "je .Lfd9182_000d91f3\n"
         ".Lfd9182_000d99f1:\n"
         "movl %eax, (%esp)\n" /* line 3862 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "calll RB_SetAnisotropy\n" /* line 3863 */
-        "movl 0x195f158, %ebx\n" /* line 3866 */
+        "movl imp_r_cosinePowerMapShift, %ebx\n" /* line 3866 */
         "movl (%ebx), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "je .Lfd9182_000d9205\n"
         ".Lfd9182_000d9a16:\n"
         "movl %eax, (%esp)\n" /* line 3868 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl (%ebx), %eax\n" /* line 3869 */
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Image_RebuildCosinePowerMap\n"
-        "movl 0x195f11c, %ebx\n" /* line 3872 */
+        "movl imp_r_outdoorFeather, %ebx\n" /* line 3872 */
         "movl (%ebx), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "je .Lfd9182_000d9217\n"
         ".Lfd9182_000d9a43:\n"
         "movl %eax, (%esp)\n" /* line 3874 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl (%ebx), %eax\n" /* line 3847 */
         "movl 8(%eax), %eax\n"
-        "movl %eax, 0x11e1920\n" /* line 447 */
-        "movl %eax, 0x11e1924\n" /* line 448 */
-        "movl %eax, 0x11e1928\n" /* line 449 */
-        "movl %eax, 0x11e192c\n" /* line 450 */
-        "movl 0x195f0d0, %eax\n" /* line 3879 */
+        "movl %eax, backEnd+800\n" /* line 447 */
+        "movl %eax, backEnd+804\n" /* line 448 */
+        "movl %eax, backEnd+808\n" /* line 449 */
+        "movl %eax, backEnd+812\n" /* line 450 */
+        "movl imp_r_aaAlpha, %eax\n" /* line 3879 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "je .Lfd9182_000d9228\n"
         ".Lfd9182_000d9a7b:\n"
         "movl %eax, (%esp)\n" /* line 3881 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "cmpb $0, 0x2d7e(%esi)\n" /* line 3882 */
         "je .Lfd9182_000d9228\n"
-        "movl 0x195f138, %eax\n" /* line 3883 */
+        "movl imp_dxState, %eax\n" /* line 3883 */
         "movl 0x2008(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_SetAlphaAntiAliasingState\n"
@@ -6072,7 +6072,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "rdtsc\n" /* line 33 */
         "movl %eax, -0x30(%ebp)\n" /* line 3285 */
         ".Lfd9182_000d9ae2:\n"
-        "movl 0x195eed0, %esi\n" /* line 3309 */
+        "movl imp_dx, %esi\n" /* line 3309 */
         "cmpb $0, 0x2d68(%esi)\n"
         "jne .Lfd9182_000d9d2d\n"
         ".Lfd9182_000d9af5:\n"
@@ -6099,37 +6099,37 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl %edi, %esi\n"
         "jmp .Lfd9182_000d94fb\n"
         ".Lfd9182_000d9b3d:\n"
-        "movl 0x195eee0, %eax\n" /* line 3509 */
+        "movl imp_ri, %eax\n" /* line 3509 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x107c(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3509 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3509 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224848, 4(%esp)\n" /* "2-sided stencil keep fill   %4.1f overdraw @ 60Hz
+        "movl $str_00224848, 4(%esp)\n" /* "2-sided stencil keep fill   %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 3510 */
+        "movl imp_ri, %eax\n" /* line 3510 */
         "movl (%eax), %ebx\n"
-        "movl 0x195f134, %edx\n" /* line 3411 */
+        "movl imp_r_testFill, %edx\n" /* line 3411 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195eebc, %ecx\n"
+        "movl imp_rgp, %ecx\n"
         "movl 0x1080(%ecx), %eax\n"
         "cvtsi2ssl 0x20a0(%esi), %xmm1\n"
         "cvtsi2ssl 0x209c(%esi), %xmm0\n"
         "calll RB_BenchmarkRepeatedCalls\n"
-        "divss 0x2ed7c8, %xmm0\n" /* line 3510 | 60.0f */
+        "divss lit4_002ed7c8, %xmm0\n" /* line 3510 | 60.0f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x22487c, 4(%esp)\n" /* "2-sided stencil reject fill %4.1f overdraw @ 60Hz
+        "movl $str_0022487c, 4(%esp)\n" /* "2-sided stencil reject fill %4.1f overdraw @ 60Hz
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
@@ -6153,7 +6153,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl g_FenceID, %eax\n" /* line 3203 */
         "movl %eax, (%esp)\n"
         "calll glSetFenceAPPLE\n"
-        "movl 0x195eed0, %esi\n" /* line 3206 */
+        "movl imp_dx, %esi\n" /* line 3206 */
         "movb $1, 0x2d68(%esi)\n"
         "jmp .Lfd9182_000d9246\n"
         ".Lfd9182_000d9c48:\n"
@@ -6263,7 +6263,7 @@ void RB_DrawFullScreenColoredQuad(const Material *material, float s0, float t0, 
         "movl %eax, 0x18(%esp)\n"
         "movl 0xc(%ebp), %eax\n" /* s0 */
         "movl %eax, 0x14(%esp)\n"
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "cvtsi2ssl 0x20a0(%eax), %xmm0\n"
         "movss %xmm0, 0x10(%esp)\n"
         "cvtsi2ssl 0x209c(%eax), %xmm0\n"
@@ -6302,7 +6302,7 @@ void RB_DrawFullScreenColoredQuadCmd(GfxRenderCommandExecState *execState)
         "movl %eax, 0x18(%esp)\n"
         "movl 8(%edx), %eax\n"
         "movl %eax, 0x14(%esp)\n"
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "cvtsi2ssl 0x20a0(%eax), %xmm0\n"
         "movss %xmm0, 0x10(%esp)\n"
         "cvtsi2ssl 0x209c(%eax), %xmm0\n"
@@ -6339,17 +6339,17 @@ void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %edi\n" /* execState */
         /* { scope 1 */
         "movl (%edi), %ebx\n" /* line 2082 | execState, cmd */
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfd9e64_000d9eba\n"
-        "movl 0x11e15e0, %esi\n"
+        "movl tess+370656, %esi\n"
         "testl %esi, %esi\n"
         "jne .Lfd9e64_000d9eba\n"
-        "cmpb $0, 0x11e1abd\n" /* line 2088 */
+        "cmpb $0, backEnd+1213\n" /* line 2088 */
         "je .Lfd9e64_000d9ec8\n"
         ".Lfd9e64_000d9e8e:\n"
-        "movl 0x195eebc, %esi\n" /* line 2094 | material */
-        "movl 0x11e19b8, %eax\n"
+        "movl imp_rgp, %esi\n" /* line 2094 | material */
+        "movl backEnd+952, %eax\n"
         "subl 0x10e0(%esi), %eax\n" /* line 2095 | material */
         "js .Lfd9e64_000d9ea8\n"
         "movl 4(%ebx), %edx\n" /* cmd */
@@ -6370,7 +6370,7 @@ void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
         /* { scope 1 */
         ".Lfd9e64_000d9eba:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "cmpb $0, 0x11e1abd\n" /* line 2088 */
+        "cmpb $0, backEnd+1213\n" /* line 2088 */
         "jne .Lfd9e64_000d9e8e\n"
         ".Lfd9e64_000d9ec8:\n"
         "calll RB_Set2D\n" /* line 2090 */
@@ -6386,11 +6386,11 @@ void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
         "calll pow\n"
         "fstpl -0x38(%ebp)\n"
         "cvtsd2ss -0x38(%ebp), %xmm0\n"
-        "ucomiss 0x2ed858, %xmm0\n" /* line 2098 | 0.9900000095367432f */
+        "ucomiss lit4_002ed858, %xmm0\n" /* line 2098 | 0.9900000095367432f */
         "jbe .Lfd9e64_000da034\n"
-        "movss 0x2ed85c, %xmm0\n" /* 252.4499969482422f */
+        "movss lit4_002ed85c, %xmm0\n" /* 252.4499969482422f */
         ".Lfd9e64_000d9f16:\n"
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x3c(%ebp)\n"
@@ -6399,14 +6399,14 @@ void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
         "movb $0xff, -0x1b(%ebp)\n" /* line 2110 */
         "movb $0xff, -0x1a(%ebp)\n" /* line 2111 */
         "movb $0xff, -0x19(%ebp)\n" /* line 2112 */
-        "movl 0x195eed0, %eax\n" /* line 360 */
+        "movl imp_dx, %eax\n" /* line 360 */
         "movl 0x2cbc(%eax), %eax\n"
-        "movl %eax, 0x11e448c\n"
+        "movl %eax, backEnd+11916\n"
         "movl -0x1c(%ebp), %eax\n" /* line 2118 | color */
         "movl %eax, -0x2c(%ebp)\n" /* color */
         "movl 0x10d0(%esi), %esi\n" /* material */
         /* { scope 2: color */
-        "movl 0x195f138, %eax\n" /* line 491 */
+        "movl imp_dxState, %eax\n" /* line 491 */
         "movl 0x209c(%eax), %edx\n"
         "cvtsi2ssl %edx, %xmm3\n"
         "movl 0x20a0(%eax), %ebx\n" /* line 492 */
@@ -6414,7 +6414,7 @@ void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
         /* { scope 3 */
         "cmpl $1, %edx\n" /* line 144 */
         "ja .Lfd9e64_000da012\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         /* } scope */
         ".Lfd9e64_000d9f85:\n"
         "movaps %xmm3, %xmm1\n" /* line 494 */
@@ -6422,7 +6422,7 @@ void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
         /* { scope 3 */
         "cmpl $1, %ebx\n" /* line 144 */
         "ja .Lfd9e64_000d9ff3\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         /* } scope */
         /* { scope 3 */
         ".Lfd9e64_000d9f99:\n"
@@ -6491,7 +6491,7 @@ void RB_BlendSavedScreenCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* } scope */
         ".Lfd9e64_000da034:\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* line 2098 | 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* line 2098 | 255.0f */
         "jmp .Lfd9e64_000d9f16\n"
         /* { scope 2: color */
         /* { scope 3 */
@@ -6544,13 +6544,13 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         "pushl %ebx\n"
         "subl $0x7c, %esp\n"
         /* { scope 1: screenWidth, screenHeight, screenWidth, screenHeight */
-        "movl 0x11e15d0, %ecx\n" /* line 261 */
+        "movl tess+370640, %ecx\n" /* line 261 */
         "testl %ecx, %ecx\n"
         "jne .Lfda094_000da0d7\n"
-        "movl 0x11e15e0, %edx\n"
+        "movl tess+370656, %edx\n"
         "testl %edx, %edx\n"
         "jne .Lfda094_000da0d7\n"
-        "movl 0x195f110, %eax\n" /* line 1880 */
+        "movl imp_sc_blur, %eax\n" /* line 1880 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -6572,17 +6572,17 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         /* { scope 1: screenWidth, screenHeight, screenWidth, screenHeight */
         ".Lfda094_000da0d7:\n"
         "calll RB_EndSurface\n" /* line 262 */
-        "movl 0x195f110, %eax\n" /* line 1880 */
+        "movl imp_sc_blur, %eax\n" /* line 1880 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jle .Lfda094_000da0bf\n"
         ".Lfda094_000da0ea:\n"
         "movl $0, -0x2c(%ebp)\n" /* blurIter */
-        "movl 0x195f138, %edi\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_dxState, %edi\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl %eax, -0x30(%ebp)\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         "movl %edx, -0x34(%ebp)\n"
         "movl %edi, -0x38(%ebp)\n"
         "movl %eax, -0x3c(%ebp)\n"
@@ -6600,7 +6600,7 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         "calll Image_GetSurface\n"
         "movl %eax, %ebx\n" /* imageSurface */
         ".Lfda094_000da13d:\n"
-        "movl 0x195eed0, %edx\n" /* line 566 */
+        "movl imp_dx, %edx\n" /* line 566 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %ecx\n"
         "movl $2, 0x14(%esp)\n"
@@ -6619,13 +6619,13 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         "movl (%ebx), %eax\n" /* line 568 | imageSurface */
         "movl %ebx, (%esp)\n" /* imageSurface */
         "calll *8(%eax)\n"
-        "movl 0x195f0e0, %edx\n"
+        "movl imp_alwaysfails, %edx\n"
         "movl (%edx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfda094_000da180\n"
         /* } scope */
         /* { scope 3 */
-        "movl %esi, 0x11e448c\n" /* line 360 */
+        "movl %esi, backEnd+11916\n" /* line 360 */
         /* } scope */
         "movl $0xa, 0x28(%esp)\n" /* line 1863 */
         "movl $0xffffffff, 0x24(%esp)\n"
@@ -6636,14 +6636,14 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         "movl %eax, 0x18(%esp)\n"
         "movl %eax, 0x14(%esp)\n"
         "movss -0x24(%ebp), %xmm0\n" /* screenHeight */
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 0x10(%esp)\n"
         "movss -0x28(%ebp), %xmm0\n" /* screenWidth */
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl $0x3f800000, 8(%esp)\n"
         "movl $0x3f800000, 4(%esp)\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x1054(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_DrawStretchPic\n"
@@ -6654,7 +6654,7 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         "movss %xmm0, -0x20(%ebp)\n" /* screenWidth */
         "cvtsi2ssl 0x20a0(%edi), %xmm0\n" /* line 1851 */
         "movss %xmm0, -0x1c(%ebp)\n" /* screenHeight */
-        "movl 0x195eed0, %eax\n" /* line 1854 */
+        "movl imp_dx, %eax\n" /* line 1854 */
         "movl 0x2c94(%eax), %eax\n"
         "movl %eax, -0x4c(%ebp)\n" /* image */
         /* { scope 3 */
@@ -6689,7 +6689,7 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* { scope 3 */
         "movl -0x4c(%ebp), %esi\n" /* line 360 | image */
-        "movl %esi, 0x11e448c\n"
+        "movl %esi, backEnd+11916\n"
         /* } scope */
         "movl $0xa, 0x28(%esp)\n" /* line 1863 */
         "movl $0xffffffff, 0x24(%esp)\n"
@@ -6700,26 +6700,26 @@ void RB_BlurShadowCookieCmd(GfxRenderCommandExecState *execState)
         "movl %eax, 0x18(%esp)\n"
         "movl %eax, 0x14(%esp)\n"
         "movss -0x1c(%ebp), %xmm0\n" /* screenHeight */
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 0x10(%esp)\n"
         "movss -0x20(%ebp), %xmm0\n" /* screenWidth */
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl $0x3f800000, 8(%esp)\n"
         "movl $0x3f800000, 4(%esp)\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x1054(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_DrawStretchPic\n"
         "calll RB_EndSurface\n" /* line 1864 */
         /* } scope */
         "addl $1, -0x2c(%ebp)\n" /* line 1880 | blurIter */
-        "movl 0x195f110, %eax\n"
+        "movl imp_sc_blur, %eax\n"
         "movl (%eax), %eax\n"
         "movl -0x2c(%ebp), %esi\n" /* blurIter, image */
         "cmpl 8(%eax), %esi\n" /* image */
         "jge .Lfda094_000da0bf\n"
-        "movl 0x195eed0, %eax\n"
+        "movl imp_dx, %eax\n"
         "jmp .Lfda094_000da113\n"
     );
 }
@@ -6750,7 +6750,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movl -0x64(%ebp), %edx\n" /* line 207 */
         "movl 0xc(%edx), %edx\n"
         "movl %edx, -0x4c(%ebp)\n" /* material */
-        "movss 0x2ed63c, %xmm2\n" /* line 2948 | -0.5f */
+        "movss lit4_002ed63c, %xmm2\n" /* line 2948 | -0.5f */
         "movss -0x68(%ebp), %xmm3\n"
         "mulss %xmm2, %xmm3\n"
         "addss %xmm3, %xmm0\n" /* x */
@@ -6775,7 +6775,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movl $0, 4(%esp)\n" /* line 2956 */
         "leal -0x2c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %edx\n"
+        "movl imp_ri, %edx\n"
         "calll *0x118(%edx)\n"
         "cmpl $0x5e, %eax\n" /* line 2959 */
         "je .Lfda33c_000da5a6\n"
@@ -6834,7 +6834,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movss %xmm0, -0x88(%ebp)\n"
         "movss %xmm1, -0x98(%ebp)\n"
         "calll RB_DrawStretchPic\n"
-        "movss 0x2ed604, %xmm2\n" /* line 2870 | 0.25f */
+        "movss lit4_002ed604, %xmm2\n" /* line 2870 | 0.25f */
         "addss -0x3c(%ebp), %xmm2\n"
         "movss %xmm2, -0x48(%ebp)\n"
         "movl $8, 0x28(%esp)\n"
@@ -6851,7 +6851,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movss %xmm1, 0x10(%esp)\n"
         "movss -0x88(%ebp), %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "movss 0x2ed604, %xmm3\n" /* 0.25f */
+        "movss lit4_002ed604, %xmm3\n" /* 0.25f */
         "addss -0x40(%ebp), %xmm3\n"
         "movss %xmm3, 8(%esp)\n"
         "movss %xmm2, 4(%esp)\n"
@@ -6922,7 +6922,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "orl %eax, %edi\n" /* newColor */
         "movzbl -0x1a(%ebp), %eax\n" /* line 2975 */
         "shll $0x18, %eax\n"
-        "andl $0xffffff, %edi\n" /* newColor */
+        "andl $g_effectVisArray+4351, %edi\n" /* newColor */
         "orl %eax, %edi\n" /* newColor */
         ".Lfda33c_000da630:\n"
         "movl -0x2c(%ebp), %eax\n" /* line 2986 */
@@ -6941,7 +6941,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movl -0x2c(%ebp), %eax\n"
         "jmp .Lfda33c_000da3bc\n"
         ".Lfda33c_000da66b:\n"
-        "movss 0x2ed62c, %xmm2\n" /* line 3006 | 2.0f */
+        "movss lit4_002ed62c, %xmm2\n" /* line 3006 | 2.0f */
         ".Lfda33c_000da673:\n"
         "movzbl 6(%esi), %eax\n" /* line 3009 | glyph */
         "cvtsi2ssl %eax, %xmm3\n" /* h */
@@ -6994,7 +6994,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movss %xmm3, 0x10(%esp)\n"
         "movss -0x88(%ebp), %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "movss 0x2ed604, %xmm0\n" /* 0.25f */
+        "movss lit4_002ed604, %xmm0\n" /* 0.25f */
         "movss -0x98(%ebp), %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, 8(%esp)\n"
@@ -7014,7 +7014,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movl -0x2c(%ebp), %eax\n"
         "jmp .Lfda33c_000da3bc\n"
         ".Lfda33c_000da7bb:\n"
-        "movl 0x195eee0, %ecx\n" /* line 2880 */
+        "movl imp_ri, %ecx\n" /* line 2880 */
         "calll *8(%ecx)\n"
         "leal 0xff(%eax), %edx\n"
         "cmpl $-1, %eax\n"
@@ -7074,7 +7074,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movss -0x98(%ebp), %xmm1\n"
         "movss %xmm1, 0xc(%esp)\n"
         "movss -0x88(%ebp), %xmm0\n"
-        "addss 0x2ed604, %xmm0\n" /* 0.25f */
+        "addss lit4_002ed604, %xmm0\n" /* 0.25f */
         "movss %xmm0, 8(%esp)\n"
         "movss -0x48(%ebp), %xmm0\n"
         "movss %xmm0, 4(%esp)\n"
@@ -7084,7 +7084,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "jmp .Lfda33c_000da564\n"
         /* } scope */
         ".Lfda33c_000da8f7:\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 3006 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 3006 | 1.0f */
         "jmp .Lfda33c_000da673\n"
         ".Lfda33c_000da904:\n"
         "movss -0x30(%ebp), %xmm0\n" /* line 3022 */
@@ -7092,7 +7092,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movss %xmm0, -0x44(%ebp)\n" /* x */
         "movzbl -0x6d(%ebp), %ebx\n" /* cursor */
         /* { scope 2: x */
-        "movl 0x195eee0, %eax\n" /* line 2880 */
+        "movl imp_ri, %eax\n" /* line 2880 */
         "calll *8(%eax)\n"
         "leal 0xff(%eax), %edx\n"
         "cmpl $-1, %eax\n"
@@ -7151,7 +7151,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "movss %xmm2, 0x10(%esp)\n"
         "movss -0x88(%ebp), %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "movss 0x2ed604, %xmm0\n" /* 0.25f */
+        "movss lit4_002ed604, %xmm0\n" /* 0.25f */
         "movss -0x98(%ebp), %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, 8(%esp)\n"
@@ -7238,36 +7238,36 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* { scope 1: blurRadius */
         "movl 8(%ebp), %eax\n" /* line 2011 | execState */
         "movl (%eax), %ebx\n" /* cmd */
-        "movl 0x11e15d0, %edx\n" /* line 261 */
+        "movl tess+370640, %edx\n" /* line 261 */
         "testl %edx, %edx\n"
         "jne .Lfdaace_000dadb3\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfdaace_000dadb3\n"
         ".Lfdaace_000daafa:\n"
-        "movl 0x195f138, %eax\n" /* line 2014 */
+        "movl imp_dxState, %eax\n" /* line 2014 */
         "movl 0x2098(%eax), %eax\n"
         "movl %eax, -0x6c(%ebp)\n" /* frameBufferTarget */
-        "movl $0xe, 0x11e4488\n" /* line 2016 */
+        "movl $0xe, backEnd+11912\n" /* line 2016 */
         "movss 4(%ebx), %xmm0\n" /* line 2022 | cmd */
         "movss %xmm0, -0x68(%ebp)\n" /* blurRadius */
-        "movl 0x195eec0, %eax\n" /* line 1795 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1795 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "cmpl $2, %edx\n"
         "je .Lfdaace_000dab3d\n"
-        "movl 0x195eed0, %eax\n" /* line 1798 */
+        "movl imp_dx, %eax\n" /* line 1798 */
         "cmpb $0, 0x2d7d(%eax)\n"
         "jne .Lfdaace_000dadbd\n"
         ".Lfdaace_000dab3d:\n"
-        "movl 0x195f148, %eax\n" /* line 1921 */
+        "movl imp_r_showFbColorDebug, %eax\n" /* line 1921 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdaace_000dab6c\n"
         /* { scope 2 */
         "cmpl $2, %edx\n" /* line 1780 */
         "je .Lfdaace_000dad53\n"
-        "movl 0x195f114, %eax\n" /* line 1784 */
+        "movl imp_r_blur, %eax\n" /* line 1784 */
         "movl (%eax), %eax\n"
         "pxor %xmm1, %xmm1\n"
         "movss 8(%eax), %xmm0\n"
@@ -7276,13 +7276,13 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* { scope 2 */
         ".Lfdaace_000dab6c:\n"
-        "movl 0x195eed0, %ebx\n" /* line 563 */
+        "movl imp_dx, %ebx\n" /* line 563 */
         "movl 0x2c58(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Image_GetSurface\n"
         "movl %eax, %esi\n" /* imageSurface */
         "movl %ebx, -0xbc(%ebp)\n"
-        "movl 0x195f0e0, %edi\n" /* material */
+        "movl imp_alwaysfails, %edi\n" /* material */
         "movl %ebx, %edx\n"
         "jmp .Lfdaace_000dab98\n"
         ".Lfdaace_000dab92:\n"
@@ -7294,7 +7294,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movl $0, 0x10(%esp)\n"
         "movl %esi, 0xc(%esp)\n" /* imageSurface */
         "movl $0, 8(%esp)\n"
-        "movl 0x195f138, %ebx\n"
+        "movl imp_dxState, %ebx\n"
         "movl 0x20a8(%ebx), %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
@@ -7302,7 +7302,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movl (%edi), %eax\n" /* material */
         "testl %eax, %eax\n"
         "jne .Lfdaace_000dab92\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfdaace_000dabde:\n"
         "movl (%esi), %eax\n" /* line 568 | imageSurface */
         "movl %esi, (%esp)\n" /* imageSurface */
@@ -7311,12 +7311,12 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "testl %eax, %eax\n"
         "jne .Lfdaace_000dabde\n"
         /* } scope */
-        "movl $2, 0x11e4488\n" /* line 1946 */
-        "movl 0x195eec0, %edx\n" /* line 1795 */
+        "movl $2, backEnd+11912\n" /* line 1946 */
+        "movl imp_r_rendererInUse, %edx\n" /* line 1795 */
         "movl (%edx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdaace_000dac18\n"
-        "movl 0x195eed0, %eax\n" /* line 1798 */
+        "movl imp_dx, %eax\n" /* line 1798 */
         "cmpb $0, 0x2d7d(%eax)\n"
         "jne .Lfdaace_000daddd\n"
         ".Lfdaace_000dac16:\n"
@@ -7324,7 +7324,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         ".Lfdaace_000dac18:\n"
         "cmpl $2, 8(%eax)\n" /* line 1780 */
         "je .Lfdaace_000dad53\n"
-        "movl 0x195f114, %eax\n" /* line 1784 */
+        "movl imp_r_blur, %eax\n" /* line 1784 */
         "movl (%eax), %eax\n"
         "pxor %xmm1, %xmm1\n"
         "movss 8(%eax), %xmm0\n"
@@ -7332,7 +7332,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "jbe .Lfdaace_000db22b\n"
         "movss -0x68(%ebp), %xmm1\n" /* blurRadius */
         ".Lfdaace_000dac40:\n"
-        "movl 0x195f114, %eax\n" /* line 1896 */
+        "movl imp_r_blur, %eax\n" /* line 1896 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "mulss %xmm0, %xmm0\n" /* line 1899 */
@@ -7356,13 +7356,13 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "calll RB_GaussianFilterImage\n"
         "movl $0, (%esp)\n" /* line 1742 */
         "calll RB_SetRenderTarget\n"
-        "movl 0x195eed0, %eax\n" /* line 360 */
+        "movl imp_dx, %eax\n" /* line 360 */
         "movl 0x2cd0(%eax), %eax\n"
-        "movl %eax, 0x11e448c\n"
-        "movl 0x195eebc, %eax\n" /* line 1744 */
+        "movl %eax, backEnd+11916\n"
+        "movl imp_rgp, %eax\n" /* line 1744 */
         "movl 0x10ac(%eax), %edi\n" /* material */
         /* { scope 4 */
-        "movl 0x195f138, %eax\n" /* line 491 */
+        "movl imp_dxState, %eax\n" /* line 491 */
         "movl 0x209c(%eax), %edx\n"
         "cvtsi2ssl %edx, %xmm3\n"
         "movl 0x20a0(%eax), %ebx\n" /* line 492 */
@@ -7370,7 +7370,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* { scope 5 */
         "cmpl $1, %edx\n" /* line 144 */
         "ja .Lfdaace_000db1cb\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         /* } scope */
         ".Lfdaace_000dacf1:\n"
         "movaps %xmm3, %xmm1\n" /* line 494 */
@@ -7378,7 +7378,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* { scope 5 */
         "cmpl $1, %ebx\n" /* line 144 */
         "ja .Lfdaace_000db1a1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         /* } scope */
         /* { scope 5 */
         ".Lfdaace_000dad09:\n"
@@ -7406,18 +7406,18 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movl -0x6c(%ebp), %eax\n" /* line 2026 | frameBufferTarget */
         "movl %eax, (%esp)\n"
         "calll RB_SetRenderTarget\n"
-        "movl 0x195f148, %eax\n" /* line 1811 */
+        "movl imp_r_showFbColorDebug, %eax\n" /* line 1811 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "cmpl $1, %edx\n"
         "je .Lfdaace_000db2de\n"
-        "movl 0x195eec0, %eax\n" /* line 1818 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1818 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdaace_000dad98\n"
         "cmpl $2, %edx\n" /* line 1822 */
         "je .Lfdaace_000db52d\n"
-        "movl 0x195f120, %eax\n" /* line 1836 */
+        "movl imp_sc_showDebug, %eax\n" /* line 1836 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfdaace_000db052\n"
@@ -7440,7 +7440,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "calll RB_EndSurface\n" /* line 262 */
         "jmp .Lfdaace_000daafa\n"
         ".Lfdaace_000dadbd:\n"
-        "movl 0x195f10c, %eax\n" /* line 1801 */
+        "movl imp_r_glow, %eax\n" /* line 1801 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfdaace_000db1f5\n"
@@ -7451,7 +7451,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "jne .Lfdaace_000dab6c\n"
         "jmp .Lfdaace_000dab3d\n"
         ".Lfdaace_000daddd:\n"
-        "movl 0x195f10c, %eax\n" /* line 1801 */
+        "movl imp_r_glow, %eax\n" /* line 1801 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfdaace_000db210\n"
@@ -7460,27 +7460,27 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         ".Lfdaace_000dadf0:\n"
         "testl %eax, %eax\n" /* line 1966 */
         "je .Lfdaace_000dac16\n"
-        "movl 0x195f128, %eax\n" /* line 1709 */
+        "movl imp_r_glowBloomCutoff, %eax\n" /* line 1709 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
-        "movl 0x195f14c, %eax\n" /* line 1711 */
+        "movl imp_r_glowBloomDesaturation, %eax\n" /* line 1711 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
-        "movss %xmm1, 0x11e1800\n" /* line 447 */
-        "movss 0x2ed5d0, %xmm0\n" /* line 448 | 1.0f */
+        "movss %xmm1, backEnd+512\n" /* line 447 */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 448 | 1.0f */
         "movaps %xmm0, %xmm2\n"
         "subss %xmm1, %xmm2\n"
         "divss %xmm2, %xmm0\n"
-        "movss %xmm0, 0x11e1804\n"
+        "movss %xmm0, backEnd+516\n"
         "pxor %xmm2, %xmm2\n" /* line 449 */
-        "movss %xmm2, 0x11e1808\n"
-        "movl %eax, 0x11e180c\n" /* line 450 */
+        "movss %xmm2, backEnd+520\n"
+        "movl %eax, backEnd+524\n" /* line 450 */
         "xorl %edx, %edx\n"
         "leal -0x20(%ebp), %edi\n"
-        "movl 0x195f144, %esi\n"
-        "movl 0x195f118, %eax\n"
+        "movl imp_r_glowBloomIntensity, %esi\n"
+        "movl imp_r_glowSkyBleedIntensity, %eax\n"
         "movl %eax, -0x78(%ebp)\n"
-        "movl 0x195f154, %ebx\n"
+        "movl imp_r_glowRadius, %ebx\n"
         ".Lfdaace_000dae5b:\n"
         "leal (%edx, %edi), %ecx\n" /* line 2004 */
         "movl $0, (%ecx)\n" /* line 1681 */
@@ -7510,44 +7510,44 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movss %xmm1, -0x1c(%ebp)\n" /* line 1693 */
         "movl $1, %eax\n"
         ".Lfdaace_000daeb8:\n"
-        "movl %eax, 0x11e1acc\n" /* line 1715 */
-        "movl 0x195f13c, %eax\n" /* line 1716 */
+        "movl %eax, backEnd+1228\n" /* line 1715 */
+        "movl imp_g_TotalFilterPasses, %eax\n" /* line 1716 */
         "movl $0, (%eax)\n"
         "movl %edi, (%esp)\n" /* line 1717 | material */
         "calll RB_GlowFilterImage\n"
         "movl $0, (%esp)\n" /* line 1969 */
         "calll RB_SetRenderTarget\n"
-        "movl 0x11e1acc, %esi\n" /* line 1659 | imageSurface */
-        "movl 0x11e1ad0, %eax\n" /* line 1660 */
+        "movl backEnd+1228, %esi\n" /* line 1659 | imageSurface */
+        "movl backEnd+1232, %eax\n" /* line 1660 */
         "testl %eax, %eax\n"
         "jle .Lfdaace_000db4dc\n"
         "movl $0, -0x64(%ebp)\n"
         "movl $backEnd, %edi\n" /* material */
         "jmp .Lfdaace_000daff6\n"
         ".Lfdaace_000daf00:\n"
-        "movl 0x195eebc, %ecx\n" /* line 1637 */
+        "movl imp_rgp, %ecx\n" /* line 1637 */
         "movl 0x10d8(%ecx), %ecx\n"
         "movl %ecx, -0x60(%ebp)\n"
         ".Lfdaace_000daf0f:\n"
-        "movss %xmm0, 0x11e1810\n" /* line 447 */
-        "movl $0, 0x11e1814\n" /* line 448 */
-        "movl $0, 0x11e1818\n" /* line 449 */
-        "movl %eax, 0x11e181c\n" /* line 450 */
-        "movl %edx, 0x11e448c\n" /* line 360 */
-        "movl 0x195f138, %eax\n" /* line 491 */
+        "movss %xmm0, backEnd+528\n" /* line 447 */
+        "movl $0, backEnd+532\n" /* line 448 */
+        "movl $0, backEnd+536\n" /* line 449 */
+        "movl %eax, backEnd+540\n" /* line 450 */
+        "movl %edx, backEnd+11916\n" /* line 360 */
+        "movl imp_dxState, %eax\n" /* line 491 */
         "movl 0x209c(%eax), %edx\n"
         "cvtsi2ssl %edx, %xmm3\n"
         "movl 0x20a0(%eax), %ebx\n" /* line 492 */
         "cvtsi2ssl %ebx, %xmm2\n"
         "cmpl $1, %edx\n" /* line 144 */
         "ja .Lfdaace_000db27e\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         ".Lfdaace_000daf60:\n"
         "movaps %xmm3, %xmm1\n" /* line 494 */
         "divss %xmm0, %xmm1\n"
         "cmpl $1, %ebx\n" /* line 144 */
         "ja .Lfdaace_000db254\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         ".Lfdaace_000daf78:\n"
         "movl $0xa, 0x28(%esp)\n" /* line 473 */
         "movl $0xffffffff, 0x24(%esp)\n"
@@ -7571,55 +7571,55 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "addl $1, -0x64(%ebp)\n" /* line 1660 */
         "addl $4, %edi\n" /* material */
         "movl -0x64(%ebp), %edx\n"
-        "cmpl 0x11e1ad0, %edx\n"
+        "cmpl backEnd+1232, %edx\n"
         "jge .Lfdaace_000db4dc\n"
         ".Lfdaace_000daff6:\n"
         "movl 0x4d4(%edi), %edx\n" /* line 1662 | material */
-        "movl 0x195eebc, %ecx\n" /* line 1632 */
+        "movl imp_rgp, %ecx\n" /* line 1632 */
         "movl 0x109c(%ecx), %eax\n"
         "movl 0x20(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfdaace_000db4f3\n"
-        "movl 0x195f118, %eax\n"
+        "movl imp_r_glowSkyBleedIntensity, %eax\n"
         "movl (%eax, %esi, 4), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "pxor %xmm2, %xmm2\n"
         ".Lfdaace_000db024:\n"
-        "movl 0x195f144, %eax\n" /* line 1633 */
+        "movl imp_r_glowBloomIntensity, %eax\n" /* line 1633 */
         "movl (%eax, %esi, 4), %eax\n"
         "movl 8(%eax), %eax\n"
         "ucomiss %xmm2, %xmm0\n" /* line 1634 */
         "jne .Lfdaace_000daf00\n"
         "jp .Lfdaace_000daf00\n"
-        "movl 0x195eebc, %ebx\n" /* line 1635 */
+        "movl imp_rgp, %ebx\n" /* line 1635 */
         "movl 0x10dc(%ebx), %ebx\n"
         "movl %ebx, -0x60(%ebp)\n"
         "jmp .Lfdaace_000daf0f\n"
         ".Lfdaace_000db052:\n"
-        "movl 0x195f138, %eax\n" /* line 1596 */
+        "movl imp_dxState, %eax\n" /* line 1596 */
         "cvtsi2ssl 0x209c(%eax), %xmm1\n"
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "mulss %xmm2, %xmm1\n"
         "cvtsi2ssl 0x20a0(%eax), %xmm0\n" /* line 1597 */
         "mulss %xmm2, %xmm0\n"
-        "movl 0x11e17b0, %ebx\n" /* line 456 */
-        "movl 0x11e17b4, %esi\n" /* line 457 */
-        "movl 0x11e17b8, %edi\n" /* line 458 */
-        "movss 0x11e17bc, %xmm4\n" /* line 459 */
+        "movl backEnd+432, %ebx\n" /* line 456 */
+        "movl backEnd+436, %esi\n" /* line 457 */
+        "movl backEnd+440, %edi\n" /* line 458 */
+        "movss backEnd+444, %xmm4\n" /* line 459 */
         "movss %xmm4, -0x30(%ebp)\n"
         "movl $0, (%esp)\n" /* line 1603 */
         "movss %xmm0, -0x98(%ebp)\n"
         "movss %xmm1, -0xa8(%ebp)\n"
         "movss %xmm2, -0xb8(%ebp)\n"
         "calll RB_SetRenderTarget\n"
-        "movl 0x195eed0, %eax\n" /* line 360 */
+        "movl imp_dx, %eax\n" /* line 360 */
         "movl 0x2c6c(%eax), %eax\n"
-        "movl %eax, 0x11e448c\n"
+        "movl %eax, backEnd+11916\n"
         "movl $0x3eaa7efa, %eax\n" /* line 447 */
-        "movl %eax, 0x11e17b0\n"
-        "movl $0x3eab020c, 0x11e17b4\n" /* line 448 */
-        "movl %eax, 0x11e17b8\n" /* line 449 */
-        "movl $0, 0x11e17bc\n" /* line 450 */
+        "movl %eax, backEnd+432\n"
+        "movl $0x3eab020c, backEnd+436\n" /* line 448 */
+        "movl %eax, backEnd+440\n" /* line 449 */
+        "movl $0, backEnd+444\n" /* line 450 */
         "movl $0xa, 0x28(%esp)\n" /* line 1614 */
         "movl $0xffffffff, 0x24(%esp)\n"
         "movl $0x3f400000, %eax\n"
@@ -7637,16 +7637,16 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movss %xmm0, 8(%esp)\n"
         "mulss %xmm2, %xmm1\n"
         "movss %xmm1, 4(%esp)\n"
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x108c(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_DrawStretchPic\n"
         "calll RB_EndSurface\n" /* line 1615 */
-        "movl %ebx, 0x11e17b0\n" /* line 456 */
-        "movl %esi, 0x11e17b4\n" /* line 457 */
-        "movl %edi, 0x11e17b8\n" /* line 458 */
+        "movl %ebx, backEnd+432\n" /* line 456 */
+        "movl %esi, backEnd+436\n" /* line 457 */
+        "movl %edi, backEnd+440\n" /* line 458 */
         "movss -0x30(%ebp), %xmm0\n" /* line 459 */
-        "movss %xmm0, 0x11e17bc\n"
+        "movss %xmm0, backEnd+444\n"
         "movl 8(%ebp), %eax\n" /* line 169 | execState */
         "movl (%eax), %edx\n"
         "movzwl 2(%edx), %eax\n"
@@ -7700,14 +7700,14 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* } scope */
         ".Lfdaace_000db1f5:\n"
-        "movl 0x195ef04, %eax\n" /* line 1801 */
+        "movl imp_r_fullbright, %eax\n" /* line 1801 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfdaace_000dadce\n"
         "movl $1, %eax\n"
         "jmp .Lfdaace_000dadd0\n"
         ".Lfdaace_000db210:\n"
-        "movl 0x195ef04, %eax\n"
+        "movl imp_r_fullbright, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfdaace_000dadee\n"
@@ -7758,8 +7758,8 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* { scope 3 */
         ".Lfdaace_000db2a8:\n"
         "divss %xmm2, %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x7c(%ebp)\n"
@@ -7772,10 +7772,10 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* } scope */
         ".Lfdaace_000db2de:\n"
-        "movl 0x195f138, %eax\n" /* line 1529 */
+        "movl imp_dxState, %eax\n" /* line 1529 */
         "cvtsi2ssl 0x209c(%eax), %xmm0\n"
         "movss %xmm0, -0x5c(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss -0x5c(%ebp), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x5c(%ebp)\n"
@@ -7785,7 +7785,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "mulss %xmm0, %xmm1\n" /* line 1531 */
         "movss %xmm1, -0x54(%ebp)\n"
         "mulss %xmm2, %xmm0\n" /* line 1532 */
-        "orl $0xff0000, %ebx\n" /* line 655 */
+        "orl $cg_eachClientLocalEntities+21120, %ebx\n" /* line 655 */
         "movb $0, %bh\n" /* line 656 */
         "xorb %bl, %bl\n" /* line 657 */
         "orl $0xff000000, %ebx\n" /* line 658 */
@@ -7801,7 +7801,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movss %xmm1, 0xc(%esp)\n"
         "movss %xmm0, 8(%esp)\n"
         "movss %xmm1, 4(%esp)\n"
-        "movl 0x195eebc, %edi\n" /* material */
+        "movl imp_rgp, %edi\n" /* material */
         "movl 0x1090(%edi), %eax\n" /* material */
         "movl %eax, (%esp)\n"
         "movss %xmm0, -0x98(%ebp)\n"
@@ -7883,8 +7883,8 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "retl\n"
         /* { scope 1: blurRadius */
         ".Lfdaace_000db4dc:\n"
-        "movl $0, 0x11e1ad0\n" /* line 1668 */
-        "movl 0x195eec0, %edx\n"
+        "movl $0, backEnd+1232\n" /* line 1668 */
+        "movl imp_r_rendererInUse, %edx\n"
         "movl (%edx), %eax\n"
         "jmp .Lfdaace_000dac18\n"
         ".Lfdaace_000db4f3:\n"
@@ -7906,39 +7906,39 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "addss %xmm0, %xmm0\n"
         "jmp .Lfdaace_000daf60\n"
         ".Lfdaace_000db52d:\n"
-        "movl 0x195f138, %eax\n" /* line 1484 */
+        "movl imp_dxState, %eax\n" /* line 1484 */
         "cvtsi2ssl 0x209c(%eax), %xmm1\n"
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "mulss %xmm1, %xmm2\n"
         "movss %xmm2, -0x50(%ebp)\n"
         "cvtsi2ssl 0x20a0(%eax), %xmm3\n" /* line 1485 */
-        "movss 0x2ed5d8, %xmm4\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm4\n" /* 0.5f */
         "mulss %xmm3, %xmm4\n"
         "movss %xmm4, -0x4c(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 1486 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 1486 | 0.5f */
         "mulss %xmm2, %xmm0\n"
         "movss %xmm0, -0x48(%ebp)\n"
-        "movss 0x2ed5d8, %xmm1\n" /* line 1487 | 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* line 1487 | 0.5f */
         "mulss %xmm4, %xmm1\n"
         "movss %xmm1, -0x44(%ebp)\n"
-        "movss 0x11e17b0, %xmm2\n" /* line 456 */
+        "movss backEnd+432, %xmm2\n" /* line 456 */
         "movss %xmm2, -0x34(%ebp)\n"
-        "movss 0x11e17b4, %xmm3\n" /* line 457 */
+        "movss backEnd+436, %xmm3\n" /* line 457 */
         "movss %xmm3, -0x38(%ebp)\n"
-        "movss 0x11e17b8, %xmm4\n" /* line 458 */
+        "movss backEnd+440, %xmm4\n" /* line 458 */
         "movss %xmm4, -0x3c(%ebp)\n"
-        "movss 0x11e17bc, %xmm0\n" /* line 459 */
+        "movss backEnd+444, %xmm0\n" /* line 459 */
         "movss %xmm0, -0x40(%ebp)\n"
-        "movl 0x195eed0, %eax\n" /* line 360 */
+        "movl imp_dx, %eax\n" /* line 360 */
         "movl 0x2c6c(%eax), %eax\n"
-        "movl %eax, 0x11e448c\n"
+        "movl %eax, backEnd+11916\n"
         "movl $0, (%esp)\n" /* line 1492 */
         "calll RB_SetRenderTarget\n"
-        "movl $0x3f800000, 0x11e17b0\n" /* line 447 */
+        "movl $0x3f800000, backEnd+432\n" /* line 447 */
         "xorl %ebx, %ebx\n" /* line 448 */
-        "movl %ebx, 0x11e17b4\n"
-        "movl %ebx, 0x11e17b8\n" /* line 449 */
-        "movl %ebx, 0x11e17bc\n" /* line 450 */
+        "movl %ebx, backEnd+436\n"
+        "movl %ebx, backEnd+440\n" /* line 449 */
+        "movl %ebx, backEnd+444\n" /* line 450 */
         "movl $0xa, 0x28(%esp)\n" /* line 1502 */
         "movl $0xffffffff, 0x24(%esp)\n"
         "movl $0x3f000000, 0x20(%esp)\n"
@@ -7952,15 +7952,15 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movss %xmm2, 0xc(%esp)\n"
         "movss %xmm1, 8(%esp)\n"
         "movss %xmm2, 4(%esp)\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x108c(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_DrawStretchPic\n"
         "calll RB_EndSurface\n" /* line 1503 */
-        "movl %ebx, 0x11e17b0\n" /* line 447 */
-        "movl $0x3f800000, 0x11e17b4\n" /* line 448 */
-        "movl %ebx, 0x11e17b8\n" /* line 449 */
-        "movl %ebx, 0x11e17bc\n" /* line 450 */
+        "movl %ebx, backEnd+432\n" /* line 447 */
+        "movl $0x3f800000, backEnd+436\n" /* line 448 */
+        "movl %ebx, backEnd+440\n" /* line 449 */
+        "movl %ebx, backEnd+444\n" /* line 450 */
         "movl $0xa, 0x28(%esp)\n" /* line 1506 */
         "movl $0xffffffff, 0x24(%esp)\n"
         "movl $0x3f000000, 0x20(%esp)\n"
@@ -7975,15 +7975,15 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movss %xmm0, 8(%esp)\n"
         "movss -0x50(%ebp), %xmm2\n"
         "movss %xmm2, 4(%esp)\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x108c(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_DrawStretchPic\n"
         "calll RB_EndSurface\n" /* line 1507 */
-        "movl %ebx, 0x11e17b0\n" /* line 447 */
-        "movl %ebx, 0x11e17b4\n" /* line 448 */
-        "movl $0x3f800000, 0x11e17b8\n" /* line 449 */
-        "movl %ebx, 0x11e17bc\n" /* line 450 */
+        "movl %ebx, backEnd+432\n" /* line 447 */
+        "movl %ebx, backEnd+436\n" /* line 448 */
+        "movl $0x3f800000, backEnd+440\n" /* line 449 */
+        "movl %ebx, backEnd+444\n" /* line 450 */
         "movl $0xa, 0x28(%esp)\n" /* line 1510 */
         "movl $0xffffffff, 0x24(%esp)\n"
         "movl %esi, 0x20(%esp)\n" /* imageSurface */
@@ -7997,15 +7997,15 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movss -0x4c(%ebp), %xmm2\n"
         "movss %xmm2, 8(%esp)\n"
         "movss %xmm1, 4(%esp)\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x108c(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_DrawStretchPic\n"
         "calll RB_EndSurface\n" /* line 1511 */
-        "movl %ebx, 0x11e17b0\n" /* line 447 */
-        "movl %ebx, 0x11e17b4\n" /* line 448 */
-        "movl %ebx, 0x11e17b8\n" /* line 449 */
-        "movl $0x3f800000, 0x11e17bc\n" /* line 450 */
+        "movl %ebx, backEnd+432\n" /* line 447 */
+        "movl %ebx, backEnd+436\n" /* line 448 */
+        "movl %ebx, backEnd+440\n" /* line 449 */
+        "movl $0x3f800000, backEnd+444\n" /* line 450 */
         "movl $0xa, 0x28(%esp)\n" /* line 1514 */
         "movl $0xffffffff, 0x24(%esp)\n"
         "movl %esi, 0x20(%esp)\n" /* imageSurface */
@@ -8020,19 +8020,19 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "movss %xmm2, 8(%esp)\n"
         "movss -0x50(%ebp), %xmm3\n"
         "movss %xmm3, 4(%esp)\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x108c(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_DrawStretchPic\n"
         "calll RB_EndSurface\n" /* line 1515 */
         "movss -0x34(%ebp), %xmm0\n" /* line 456 */
-        "movss %xmm0, 0x11e17b0\n"
+        "movss %xmm0, backEnd+432\n"
         "movss -0x38(%ebp), %xmm1\n" /* line 457 */
-        "movss %xmm1, 0x11e17b4\n"
+        "movss %xmm1, backEnd+436\n"
         "movss -0x3c(%ebp), %xmm2\n" /* line 458 */
-        "movss %xmm2, 0x11e17b8\n"
+        "movss %xmm2, backEnd+440\n"
         "movss -0x40(%ebp), %xmm3\n" /* line 459 */
-        "movss %xmm3, 0x11e17bc\n"
+        "movss %xmm3, backEnd+444\n"
         "movl 8(%ebp), %eax\n" /* line 169 | execState */
         "movl (%eax), %edx\n"
         "movzwl 2(%edx), %eax\n"
@@ -8078,7 +8078,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* } scope */
         ".Lfdaace_000db87f:\n"
-        "movl 0x195eebc, %eax\n" /* line 1682 */
+        "movl imp_rgp, %eax\n" /* line 1682 */
         "movl 0x109c(%eax), %eax\n"
         "movl %eax, -0xcc(%ebp)\n"
         "movl 0x20(%eax), %eax\n"
@@ -8146,17 +8146,17 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         /* { scope 1: radians, vertIndex */
         "movl 8(%ebp), %eax\n" /* line 634 | execState */
         "movl (%eax), %edi\n" /* cmd */
-        "cmpb $0, 0x11e1abd\n" /* line 636 */
+        "cmpb $0, backEnd+1213\n" /* line 636 */
         "je .Lfdb912_000dbe65\n"
         "movl 4(%edi), %ebx\n" /* line 642 | cmd, material */
         /* { scope 2: y, x, y, y, ... */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfdb912_000dbe79\n"
         ".Lfdb912_000db93c:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfdb912_000dbe4e\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfdb912_000dbe4e\n"
         ".Lfdb912_000db956:\n"
@@ -8166,37 +8166,37 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "calll RB_BeginSurface\n"
         /* } scope */
         ".Lfdb912_000db96e:\n"
-        "movl 0x11e15d4, %ecx\n" /* line 344 */
+        "movl tess+370644, %ecx\n" /* line 344 */
         "leal 4(%ecx), %eax\n"
         "cmpl $0x154a, %eax\n"
         "jg .Lfdb912_000dbdf1\n"
-        "movl 0x11e15d0, %edx\n"
+        "movl tess+370640, %edx\n"
         "leal 6(%edx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jg .Lfdb912_000dbdf1\n"
         ".Lfdb912_000db996:\n"
         "movl %ecx, %ebx\n" /* line 646 | material */
         "leal 4(%ecx), %eax\n" /* line 649 */
-        "movl %eax, 0x11e15d4\n"
+        "movl %eax, tess+370644\n"
         "leal 6(%edx), %eax\n" /* line 650 */
-        "movl %eax, 0x11e15d0\n"
+        "movl %eax, tess+370640\n"
         "leal (%edx, %edx), %ecx\n" /* line 652 */
         "leal 3(%ebx), %edx\n" /* material */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ecx)\n"
-        "movl 0x11e15b0, %eax\n" /* line 653 */
+        "movl tess+370608, %eax\n" /* line 653 */
         "movw %bx, 2(%eax, %ecx)\n" /* material */
         "leal 2(%ebx), %edx\n" /* line 654 | material */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, 4(%ecx, %eax)\n"
-        "movl 0x11e15b0, %eax\n" /* line 655 */
+        "movl tess+370608, %eax\n" /* line 655 */
         "movw %dx, 6(%ecx, %eax)\n"
-        "movl 0x11e15b0, %eax\n" /* line 656 */
+        "movl tess+370608, %eax\n" /* line 656 */
         "movw %bx, 8(%ecx, %eax)\n" /* material */
         "leal 1(%ebx), %edx\n" /* line 657 | material */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, 0xa(%ecx, %eax)\n"
-        "movss 0x2ed5d8, %xmm1\n" /* line 659 | 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* line 659 | 0.5f */
         "movss 0x10(%edi), %xmm0\n" /* cmd */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x3c(%ebp)\n" /* halfWidth */
@@ -8207,7 +8207,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "addss 0xc(%edi), %xmm2\n" /* cmd */
         "movss %xmm2, -0x40(%ebp)\n" /* midY */
         "cvtss2sd 0x2c(%edi), %xmm0\n" /* line 663 | cmd */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x38(%ebp)\n" /* radians */
         /* { scope 2: y, x, y, y, ... */
@@ -8227,7 +8227,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "mulss -0x50(%ebp), %xmm5\n"
         "movss -0x68(%ebp), %xmm1\n" /* line 666 */
         "movaps %xmm1, %xmm4\n"
-        "xorps 0x2f26b0, %xmm4\n"
+        "xorps refEntIsInWorldSpace+32, %xmm4\n"
         "mulss -0x50(%ebp), %xmm4\n"
         "mulss %xmm1, %xmm0\n" /* line 667 */
         "movl 0x28(%edi), %eax\n" /* line 669 | cmd */
@@ -8248,7 +8248,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movzwl %bx, %esi\n" /* material, vertCount */
         "movl %esi, -0x34(%ebp)\n" /* vertCount, vertIndex */
         /* { scope 2: y, x, y, y, ... */
-        "movl 0x195eec0, %eax\n" /* line 348 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 348 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x30(%ebp)\n"
         "cmpl $2, 8(%eax)\n"
@@ -8272,7 +8272,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl %ebx, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl -0x4c(%ebp), %eax\n" /* line 360 */
-        "movl %eax, 0x1186e1c(%edx)\n"
+        "movl %eax, tess+28(%edx)\n"
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -8281,7 +8281,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movss -0x2c(%ebp), %xmm2\n" /* line 31 | y */
         "movss %xmm2, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl %ebx, 4(%edx)\n" /* line 191 */
@@ -8330,7 +8330,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %ebx, 0x1186e1c(%edx)\n" /* line 360 */
+        "movl %ebx, tess+28(%edx)\n" /* line 360 */
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -8338,7 +8338,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movss -0x24(%ebp), %xmm2\n" /* line 31 | y */
         "movss %xmm2, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -8382,7 +8382,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %ebx, 0x1186e1c(%edx)\n" /* line 360 */
+        "movl %ebx, tess+28(%edx)\n" /* line 360 */
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -8390,7 +8390,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movss -0x20(%ebp), %xmm2\n" /* line 31 | y */
         "movss %xmm2, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -8434,7 +8434,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %ebx, 0x1186e1c(%edx)\n" /* line 360 */
+        "movl %ebx, tess+28(%edx)\n" /* line 360 */
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
@@ -8442,7 +8442,7 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movss -0x1c(%ebp), %xmm1\n" /* line 31 | y */
         "movss %xmm1, 4(%ecx)\n"
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -8471,27 +8471,27 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "retl\n"
         /* { scope 1: radians, vertIndex */
         ".Lfdb912_000dbdf1:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfdb912_000dbe3d\n"
-        "movl 0x11e15d0, %esi\n" /* line 261 */
+        "movl tess+370640, %esi\n" /* line 261 */
         "testl %esi, %esi\n"
         "jne .Lfdb912_000dbe58\n"
-        "movl 0x11e15e0, %ecx\n"
+        "movl tess+370656, %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfdb912_000dbe58\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
+        "movl %ebx, tess+370636\n" /* line 313 */
         ".Lfdb912_000dbe3d:\n"
-        "movl 0x11e15d4, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
+        "movl tess+370644, %ecx\n"
+        "movl tess+370640, %edx\n"
         "jmp .Lfdb912_000db996\n"
         /* { scope 2: y, x, y, y, ... */
         ".Lfdb912_000dbe4e:\n"
@@ -8500,16 +8500,16 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         ".Lfdb912_000dbe58:\n"
         "calll RB_EndSurface\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
+        "movl %ebx, tess+370636\n" /* line 313 */
         "jmp .Lfdb912_000dbe3d\n"
         ".Lfdb912_000dbe65:\n"
         "calll RB_Set2D\n" /* line 638 */
         "movl 4(%edi), %ebx\n" /* line 642 | cmd, material */
         /* { scope 2: y, x, y, y, ... */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "jne .Lfdb912_000db93c\n"
         ".Lfdb912_000dbe79:\n"
-        "cmpl $3, 0x11e15c0\n"
+        "cmpl $3, tess+370624\n"
         "jne .Lfdb912_000db93c\n"
         "jmp .Lfdb912_000db96e\n"
         /* } scope */
@@ -8529,8 +8529,8 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %ebx, 0x1186e18(%eax)\n" /* line 352 */
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %ebx, tess+24(%eax)\n" /* line 352 */
+        "addl $tess+16, %eax\n" /* line 353 */
         "movl %esi, 0xc(%eax)\n" /* line 30 */
         "movss -0x1c(%ebp), %xmm0\n" /* line 31 | y */
         "movss %xmm0, 0x10(%eax)\n"
@@ -8565,8 +8565,8 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %ebx, 0x1186e18(%eax)\n" /* line 352 */
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %ebx, tess+24(%eax)\n" /* line 352 */
+        "addl $tess+16, %eax\n" /* line 353 */
         "movl %esi, 0xc(%eax)\n" /* line 30 */
         "movss -0x20(%ebp), %xmm1\n" /* line 31 | y */
         "movss %xmm1, 0x10(%eax)\n"
@@ -8588,8 +8588,8 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %ebx, 0x1186e18(%eax)\n" /* line 352 */
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %ebx, tess+24(%eax)\n" /* line 352 */
+        "addl $tess+16, %eax\n" /* line 353 */
         "movl %esi, 0xc(%eax)\n" /* line 30 */
         "movss -0x24(%ebp), %xmm2\n" /* line 31 | y */
         "movss %xmm2, 0x10(%eax)\n"
@@ -8613,8 +8613,8 @@ void RB_StretchPicRotateCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl -0x4c(%ebp), %edx\n" /* line 352 */
-        "movl %edx, 0x1186e18(%eax)\n"
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %edx, tess+24(%eax)\n"
+        "addl $tess+16, %eax\n" /* line 353 */
         "movss -0x28(%ebp), %xmm1\n" /* line 30 | x */
         "movss %xmm1, 0xc(%eax)\n"
         "movss -0x2c(%ebp), %xmm2\n" /* line 31 | y */
@@ -8637,17 +8637,17 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         /* { scope 1: vertIndex */
         "movl 8(%ebp), %eax\n" /* line 684 | execState */
         "movl (%eax), %edi\n" /* cmd */
-        "cmpb $0, 0x11e1abd\n" /* line 686 */
+        "cmpb $0, backEnd+1213\n" /* line 686 */
         "je .Lfdbff2_000dc422\n"
         "movl 4(%edi), %ebx\n" /* line 692 | cmd, material */
         /* { scope 2 */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfdbff2_000dc436\n"
         ".Lfdbff2_000dc01c:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfdbff2_000dc3fc\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfdbff2_000dc3fc\n"
         ".Lfdbff2_000dc036:\n"
@@ -8657,11 +8657,11 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "calll RB_BeginSurface\n"
         /* } scope */
         ".Lfdbff2_000dc04e:\n"
-        "movl 0x11e15d4, %ecx\n" /* line 344 */
+        "movl tess+370644, %ecx\n" /* line 344 */
         "leal 4(%ecx), %eax\n"
         "cmpl $0x154a, %eax\n"
         "jg .Lfdbff2_000dc39d\n"
-        "movl 0x11e15d0, %edx\n"
+        "movl tess+370640, %edx\n"
         "leal 6(%edx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jg .Lfdbff2_000dc39d\n"
@@ -8669,24 +8669,24 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl %ecx, %ebx\n" /* line 696 | material */
         "movl %ecx, %esi\n" /* vertCount */
         "leal 4(%ecx), %eax\n" /* line 699 */
-        "movl %eax, 0x11e15d4\n"
+        "movl %eax, tess+370644\n"
         "leal 6(%edx), %eax\n" /* line 700 */
-        "movl %eax, 0x11e15d0\n"
+        "movl %eax, tess+370640\n"
         "leal (%edx, %edx), %ecx\n" /* line 702 */
         "leal 3(%ebx), %edx\n" /* material */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ecx)\n"
-        "movl 0x11e15b0, %eax\n" /* line 703 */
+        "movl tess+370608, %eax\n" /* line 703 */
         "movw %bx, 2(%eax, %ecx)\n" /* material */
         "leal 2(%ebx), %edx\n" /* line 704 | material */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, 4(%ecx, %eax)\n"
-        "movl 0x11e15b0, %eax\n" /* line 705 */
+        "movl tess+370608, %eax\n" /* line 705 */
         "movw %dx, 6(%ecx, %eax)\n"
-        "movl 0x11e15b0, %eax\n" /* line 706 */
+        "movl tess+370608, %eax\n" /* line 706 */
         "movw %bx, 8(%ecx, %eax)\n" /* material */
         "leal 1(%ebx), %edx\n" /* line 707 | material */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, 0xa(%ecx, %eax)\n"
         "movl 0x28(%edi), %edx\n" /* line 709 | cmd */
         "movl %edx, -0x24(%ebp)\n"
@@ -8695,7 +8695,7 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movzwl %si, %esi\n" /* vertCount */
         "movl %esi, -0x20(%ebp)\n" /* vertCount, vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %eax\n" /* line 348 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 348 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
         "cmpl $2, 8(%eax)\n"
@@ -8719,14 +8719,14 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl %ebx, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl -0x24(%ebp), %eax\n" /* line 360 */
-        "movl %eax, 0x1186e1c(%edx)\n"
+        "movl %eax, tess+28(%edx)\n"
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl %esi, tess(%eax)\n" /* line 30 */
         "movl %esi, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl %ebx, 4(%edx)\n" /* line 191 */
@@ -8766,14 +8766,14 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %esi, 0x1186e1c(%edx)\n" /* line 360 */
+        "movl %esi, tess+28(%edx)\n" /* line 360 */
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -8813,14 +8813,14 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %esi, 0x1186e1c(%edx)\n" /* line 360 */
+        "movl %esi, tess+28(%edx)\n" /* line 360 */
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -8860,14 +8860,14 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %esi, 0x1186e1c(%edx)\n" /* line 360 */
+        "movl %esi, tess+28(%edx)\n" /* line 360 */
         "leal 0x20(%edx), %eax\n" /* line 361 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 362 */
+        "addl $tess+48, %edx\n" /* line 362 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -8896,26 +8896,26 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "retl\n"
         /* { scope 1: vertIndex */
         ".Lfdbff2_000dc39d:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfdbff2_000dc594\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfdbff2_000dc406\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfdbff2_000dc406\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %ecx\n"
+        "movl tess+370640, %edx\n"
         "jmp .Lfdbff2_000dc076\n"
         /* { scope 2 */
         ".Lfdbff2_000dc3fc:\n"
@@ -8924,18 +8924,18 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         ".Lfdbff2_000dc406:\n"
         "calll RB_EndSurface\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %ecx\n"
+        "movl tess+370640, %edx\n"
         "jmp .Lfdbff2_000dc076\n"
         ".Lfdbff2_000dc422:\n"
         "calll RB_Set2D\n" /* line 688 */
         "movl 4(%edi), %ebx\n" /* line 692 | cmd, material */
         /* { scope 2 */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "jne .Lfdbff2_000dc01c\n"
         ".Lfdbff2_000dc436:\n"
-        "cmpl $3, 0x11e15c0\n"
+        "cmpl $3, tess+370624\n"
         "jne .Lfdbff2_000dc01c\n"
         "jmp .Lfdbff2_000dc04e\n"
         /* } scope */
@@ -8955,8 +8955,8 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %esi, 0x1186e18(%eax)\n" /* line 352 */
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %esi, tess+24(%eax)\n" /* line 352 */
+        "addl $tess+16, %eax\n" /* line 353 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
         /* } scope */
@@ -8990,8 +8990,8 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %esi, 0x1186e18(%eax)\n" /* line 352 */
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %esi, tess+24(%eax)\n" /* line 352 */
+        "addl $tess+16, %eax\n" /* line 353 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
         "jmp .Lfdbff2_000dc2d0\n"
@@ -9012,8 +9012,8 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %esi, 0x1186e18(%eax)\n" /* line 352 */
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %esi, tess+24(%eax)\n" /* line 352 */
+        "addl $tess+16, %eax\n" /* line 353 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
         "jmp .Lfdbff2_000dc21b\n"
@@ -9036,14 +9036,14 @@ void RB_DrawQuadPicCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "movl -0x24(%ebp), %edx\n" /* line 352 */
-        "movl %edx, 0x1186e18(%eax)\n"
-        "addl $0x1186e10, %eax\n" /* line 353 */
+        "movl %edx, tess+24(%eax)\n"
+        "addl $tess+16, %eax\n" /* line 353 */
         "movl %esi, 0xc(%eax)\n" /* line 30 */
         "movl %esi, 0x10(%eax)\n" /* line 31 */
         "jmp .Lfdbff2_000dc166\n"
         ".Lfdbff2_000dc594:\n"
-        "movl 0x11e15d4, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
+        "movl tess+370644, %ecx\n"
+        "movl tess+370640, %edx\n"
         "jmp .Lfdbff2_000dc076\n"
     );
 }
@@ -9061,17 +9061,17 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "subl $0x11c, %esp\n"
         "movzbl 0x14(%ebp), %eax\n" /* depthTest */
         "movb %al, -0xc9(%ebp)\n" /* depthTest */
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x1044(%eax), %ebx\n" /* from */
         /* { scope 1 */
         /* { scope 2: from */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfdc5a6_000dd1ca\n"
         ".Lfdc5a6_000dc5d3:\n"
-        "movl 0x11e15d0, %edi\n" /* line 261 */
+        "movl tess+370640, %edi\n" /* line 261 */
         "testl %edi, %edi\n"
         "jne .Lfdc5a6_000dc6cd\n"
-        "movl 0x11e15e0, %esi\n"
+        "movl tess+370656, %esi\n"
         "testl %esi, %esi\n"
         "jne .Lfdc5a6_000dc6cd\n"
         ".Lfdc5a6_000dc5ef:\n"
@@ -9083,7 +9083,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         ".Lfdc5a6_000dc607:\n"
         "cmpb $0, -0xc9(%ebp)\n" /* line 2288 | depthTest */
         "jne .Lfdc5a6_000dc627\n"
-        "movl 0x195eebc, %eax\n" /* line 2289 */
+        "movl imp_rgp, %eax\n" /* line 2289 */
         "movl 0x1044(%eax), %edx\n" /* mtl */
         /* { scope 2: from */
         "movl 0x30(%edx), %eax\n" /* line 2269 */
@@ -9099,11 +9099,11 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "calll RB_SetProjectionMatrix\n"
         "movl %ebx, (%esp)\n" /* line 2295 | material */
         "calll RB_SetViewMatrix\n"
-        "movl 0x11e19c8, %edx\n" /* line 2297 */
+        "movl backEnd+968, %edx\n" /* line 2297 */
         "leal 0xc8(%edx), %ecx\n"
         "movl %ecx, -0xb8(%ebp)\n" /* transform */
         "cvtsi2ssl 0xc(%ebp), %xmm1\n" /* line 2299 | width */
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "cvtsi2ssl 0x209c(%eax), %xmm0\n"
         "movaps %xmm1, %xmm2\n"
         "divss %xmm0, %xmm2\n"
@@ -9116,12 +9116,12 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "jg .Lfdc5a6_000dc6d7\n"
         ".Lfdc5a6_000dc690:\n"
         "calll RB_EndSurface\n" /* line 2338 */
-        "movl 0x11e19c8, %eax\n" /* line 2340 */
+        "movl backEnd+968, %eax\n" /* line 2340 */
         "movl %eax, (%esp)\n"
         "calll RB_SetMatricesForView\n"
         "cmpb $0, -0xc9(%ebp)\n" /* line 2342 | depthTest */
         "jne .Lfdc5a6_000dc6c2\n"
-        "movl 0x195eebc, %eax\n" /* line 2343 */
+        "movl imp_rgp, %eax\n" /* line 2343 */
         "movl 0x1044(%eax), %edx\n" /* mtl */
         /* { scope 2: from */
         "movl 0x30(%edx), %eax\n" /* line 2269 */
@@ -9179,7 +9179,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         /* { scope 3 */
         "movl -0xa8(%ebp), %eax\n" /* line 606 */
         "movl 0xc(%eax), %eax\n"
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         /* } scope */
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
@@ -9187,7 +9187,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "movl %esi, tess(%eax)\n" /* line 30 */
         "movl %esi, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl %ebx, 4(%edx)\n" /* line 191 */
@@ -9207,10 +9207,10 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "subss -0x24(%ebp), %xmm1\n"
         "movss -0x9c(%ebp), %xmm0\n"
         "subss -0x28(%ebp), %xmm0\n"
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdc5a6_000dd15c\n"
@@ -9232,7 +9232,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         /* } scope */
         /* { scope 3 */
         "movl 0xc(%edi), %eax\n" /* line 606 */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         /* } scope */
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
@@ -9240,7 +9240,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -9259,10 +9259,10 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "addss -0x24(%ebp), %xmm1\n"
         "movss -0x9c(%ebp), %xmm0\n"
         "addss -0x28(%ebp), %xmm0\n"
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdc5a6_000dd0ef\n"
@@ -9283,14 +9283,14 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "movl $0x3f800000, 8(%eax)\n" /* line 193 */
         /* } scope */
         "movl (%ebx), %eax\n" /* line 606 | from */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -9309,10 +9309,10 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "addss -0x2c(%ebp), %xmm1\n"
         "movss -0x8c(%ebp), %xmm0\n"
         "addss -0x30(%ebp), %xmm0\n" /* offset */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdc5a6_000dd070\n"
@@ -9335,14 +9335,14 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         /* } scope */
         "movl -0xac(%ebp), %ebx\n" /* line 606 | from */
         "movl (%ebx), %eax\n" /* from */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -9357,7 +9357,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         /* } scope */
         /* } scope */
         ".Lfdc5a6_000dca2f:\n"
-        "addl $4, 0x11e15d4\n" /* line 2336 */
+        "addl $4, tess+370644\n" /* line 2336 */
         "addl $1, -0xbc(%ebp)\n" /* line 2301 | lineIndex */
         "addl $0x20, -0x7c(%ebp)\n"
         "addl $0x20, %edi\n"
@@ -9543,32 +9543,32 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "movaps %xmm5, %xmm0\n" /* line 87 */
         "mulss -0x1c(%ebp), %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n"
-        "movl 0x11e15d4, %edx\n" /* line 344 */
+        "movl tess+370644, %edx\n" /* line 344 */
         "leal 4(%edx), %eax\n"
         "cmpl $0x154a, %eax\n"
         "jg .Lfdc5a6_000dceb2\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370640, %ecx\n"
         "leal 6(%ecx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfdc5a6_000dcf2f\n"
         ".Lfdc5a6_000dceb2:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "movss %xmm5, -0x108(%ebp)\n" /* line 329 */
         "calll RB_EndSurface\n"
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "movss -0x108(%ebp), %xmm5\n"
         "je .Lfdc5a6_000dcf23\n"
-        "movl 0x11e15d0, %ecx\n" /* line 261 */
+        "movl tess+370640, %ecx\n" /* line 261 */
         "testl %ecx, %ecx\n"
         "jne .Lfdc5a6_000dcf08\n"
-        "movl 0x11e15e0, %edx\n"
+        "movl tess+370656, %edx\n"
         "testl %edx, %edx\n"
         "je .Lfdc5a6_000dcf1d\n"
         ".Lfdc5a6_000dcf08:\n"
@@ -9576,38 +9576,38 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "calll RB_EndSurface\n"
         "movss -0x108(%ebp), %xmm5\n"
         ".Lfdc5a6_000dcf1d:\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
+        "movl %ebx, tess+370636\n" /* line 313 */
         ".Lfdc5a6_000dcf23:\n"
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         ".Lfdc5a6_000dcf2f:\n"
         "addl $3, %edx\n" /* line 2324 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ecx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2325 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2325 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 2(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2326 */
+        "movzwl tess+370644, %ecx\n" /* line 2326 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 4(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2327 */
+        "movzwl tess+370644, %ecx\n" /* line 2327 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 6(%eax, %edx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2328 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2328 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 8(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2329 */
+        "movzwl tess+370644, %ecx\n" /* line 2329 */
         "addl $1, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 0xa(%eax, %edx, 2)\n"
-        "addl $6, 0x11e15d0\n" /* line 2330 */
+        "addl $6, tess+370640\n" /* line 2330 */
         "movl -0xa8(%ebp), %ecx\n" /* line 2332 */
         "addl $0xc, %ecx\n"
         "movl %ecx, -0xac(%ebp)\n" /* from */
@@ -9615,9 +9615,9 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "subss -0x2c(%ebp), %xmm1\n"
         "movss -0x8c(%ebp), %xmm0\n"
         "subss -0x30(%ebp), %xmm0\n" /* offset */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         /* { scope 2: from */
-        "movl 0x195eec0, %ebx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ebx\n" /* line 392 */
         "movl (%ebx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdc5a6_000dc710\n"
@@ -9643,7 +9643,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "addl $0x10, %edx\n" /* line 606 */
         "movl -0xa8(%ebp), %ecx\n"
         "movl 0xc(%ecx), %eax\n"
-        "movl %eax, 0x1186e08(%edx)\n"
+        "movl %eax, tess+8(%edx)\n"
         "addl $tess, %edx\n" /* line 397 */
         "movl %esi, 0xc(%edx)\n" /* line 30 */
         "movl %esi, 0x10(%edx)\n" /* line 31 */
@@ -9672,7 +9672,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0xac(%ebp), %ecx\n" /* from */
         "movl (%ecx), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
@@ -9700,7 +9700,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl (%ebx), %edx\n" /* from */
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
@@ -9728,7 +9728,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl 0xc(%edi), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
@@ -9736,7 +9736,7 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
         /* } scope */
         /* { scope 2: from */
         ".Lfdc5a6_000dd1ca:\n"
-        "cmpl $3, 0x11e15c0\n" /* line 300 */
+        "cmpl $3, tess+370624\n" /* line 300 */
         "jne .Lfdc5a6_000dc5d3\n"
         "jmp .Lfdc5a6_000dc607\n"
     );
@@ -9754,7 +9754,7 @@ void RB_DrawLinesCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %ebx\n" /* execState */
         /* { scope 1 */
         "movl (%ebx), %edx\n" /* line 2351 | execState */
-        "cmpb $0, 0x11e1abd\n" /* line 2353 */
+        "cmpb $0, backEnd+1213\n" /* line 2353 */
         "je .Lfdd1dc_000dd21c\n"
         "leal 8(%edx), %eax\n" /* line 2354 */
         "movl %eax, 8(%esp)\n"
@@ -9809,16 +9809,16 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %eax\n" /* line 1306 | execState */
         "movl (%eax), %eax\n"
         "movl %eax, -0x34(%ebp)\n" /* cmd */
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x1034(%eax), %ebx\n"
         /* { scope 2 */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfdd250_000dd8d0\n"
         ".Lfdd250_000dd278:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfdd250_000dd6e5\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfdd250_000dd6e5\n"
         ".Lfdd250_000dd292:\n"
@@ -9835,36 +9835,36 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "jle .Lfdd250_000dd6be\n"
         "movl %edx, -0x2c(%ebp)\n"
         "movl $0, -0x30(%ebp)\n" /* planeIndex */
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         ".Lfdd250_000dd2cf:\n"
         "leal 4(%edx), %eax\n" /* line 344 */
         "cmpl $0x154a, %eax\n"
         "jg .Lfdd250_000dd2e8\n"
-        "movl 0x11e15d0, %eax\n"
+        "movl tess+370640, %eax\n"
         "addl $6, %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfdd250_000dd344\n"
         ".Lfdd250_000dd2e8:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "je .Lfdd250_000dd8c5\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfdd250_000dd6db\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfdd250_000dd6db\n"
         ".Lfdd250_000dd338:\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %edx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %edx\n"
         ".Lfdd250_000dd344:\n"
         "movl -0x2c(%ebp), %ecx\n" /* line 1316 */
         "movss 0xc(%ecx), %xmm1\n"
@@ -9872,8 +9872,8 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl -0x34(%ebp), %eax\n" /* cmd */
         "subss 4(%eax), %xmm2\n"
         "movaps %xmm1, %xmm3\n" /* line 1318 */
-        "xorps 0x2f26c0, %xmm3\n"
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "xorps refEntIsInWorldSpace+48, %xmm3\n"
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd250_000dd6ef\n"
@@ -9895,14 +9895,14 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl %ebx, 8(%ecx)\n"
         /* } scope */
         "movl -0x1c(%ebp), %edi\n" /* line 606 | white */
-        "movl %edi, 0x1186e0c(%eax)\n"
+        "movl %edi, tess+12(%eax)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 2 */
         "movl %esi, tess(%eax)\n" /* line 30 */
         "movl %esi, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 2 */
         "movl %ebx, 4(%edx)\n" /* line 191 */
@@ -9915,10 +9915,10 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl %ebx, 4(%eax)\n" /* line 192 */
         "movl %esi, 8(%eax)\n" /* line 193 */
         /* } scope */
-        "movl 0x11e15d4, %edx\n" /* line 1319 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 1319 | vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd250_000dd75f\n"
@@ -9938,14 +9938,14 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %edi, 0x1186e0c(%eax)\n" /* line 606 */
+        "movl %edi, tess+12(%eax)\n" /* line 606 */
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -9959,10 +9959,10 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0, 8(%eax)\n" /* line 193 */
         /* } scope */
         /* } scope */
-        "movl 0x11e15d4, %edx\n" /* line 1320 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 1320 | vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd250_000dd7e1\n"
@@ -9982,14 +9982,14 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %edi, 0x1186e0c(%eax)\n" /* line 606 */
+        "movl %edi, tess+12(%eax)\n" /* line 606 */
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10003,10 +10003,10 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0, 8(%eax)\n" /* line 193 */
         /* } scope */
         /* } scope */
-        "movl 0x11e15d4, %edx\n" /* line 1321 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 1321 | vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd250_000dd85c\n"
@@ -10026,14 +10026,14 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
-        "movl %edi, 0x1186e0c(%eax)\n" /* line 606 */
+        "movl %edi, tess+12(%eax)\n" /* line 606 */
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 3 */
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 3 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10048,39 +10048,39 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* } scope */
         ".Lfdd250_000dd5fe:\n"
-        "movl 0x11e15d4, %ecx\n" /* line 1323 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 1323 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, (%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 1324 */
+        "movzwl tess+370644, %ecx\n" /* line 1324 */
         "addl $1, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 2(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 1325 */
+        "movzwl tess+370644, %ecx\n" /* line 1325 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 4(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 1326 */
+        "movzwl tess+370644, %ecx\n" /* line 1326 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 6(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 1327 */
+        "movzwl tess+370644, %ecx\n" /* line 1327 */
         "addl $3, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 8(%eax, %edx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 1328 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 1328 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 0xa(%eax, %edx, 2)\n"
-        "movl 0x11e15d4, %eax\n" /* line 1330 */
+        "movl tess+370644, %eax\n" /* line 1330 */
         "addl $4, %eax\n"
         "movl %eax, %edx\n"
-        "movl %eax, 0x11e15d4\n"
-        "addl $6, 0x11e15d0\n" /* line 1331 */
+        "movl %eax, tess+370644\n"
+        "addl $6, tess+370640\n" /* line 1331 */
         "addl $1, -0x30(%ebp)\n" /* line 1312 | planeIndex */
         "addl $4, -0x2c(%ebp)\n"
         "movl -0x30(%ebp), %ecx\n" /* planeIndex */
@@ -10133,14 +10133,14 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x1c(%ebp), %edi\n" /* white */
-        "movl %edi, 0x1186e08(%eax)\n"
+        "movl %edi, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl %esi, 0xc(%eax)\n" /* line 30 */
         "movl %esi, 0x10(%eax)\n" /* line 31 */
-        "movl 0x11e15d4, %edx\n" /* line 1319 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 1319 | vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdd250_000dd403\n"
@@ -10166,15 +10166,15 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
-        "movl %edi, 0x1186e08(%eax)\n"
+        "movl %edi, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
         /* } scope */
-        "movl 0x11e15d4, %edx\n" /* line 1320 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 1320 | vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdd250_000dd4b5\n"
@@ -10198,15 +10198,15 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
-        "movl %edi, 0x1186e08(%eax)\n"
+        "movl %edi, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
         /* } scope */
-        "movl 0x11e15d4, %edx\n" /* line 1321 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 1321 | vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 2 */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdd250_000dd567\n"
@@ -10231,18 +10231,18 @@ void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
-        "movl %edi, 0x1186e08(%eax)\n"
+        "movl %edi, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
         "jmp .Lfdd250_000dd5fe\n"
         ".Lfdd250_000dd8c5:\n"
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         "jmp .Lfdd250_000dd344\n"
         /* } scope */
         /* { scope 2 */
         ".Lfdd250_000dd8d0:\n"
-        "cmpl $3, 0x11e15c0\n" /* line 300 */
+        "cmpl $3, tess+370624\n" /* line 300 */
         "jne .Lfdd250_000dd278\n"
         "jmp .Lfdd250_000dd2aa\n"
     );
@@ -10263,19 +10263,19 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl 8(%ebp), %eax\n" /* line 2215 | execState */
         "movl (%eax), %eax\n"
         "movl %eax, -0x98(%ebp)\n" /* cmd */
-        "cmpb $0, 0x11e1abd\n" /* line 2217 */
+        "cmpb $0, backEnd+1213\n" /* line 2217 */
         "je .Lfdd8e2_000dde4e\n"
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x1038(%eax), %ebx\n" /* material */
         /* { scope 2 */
         /* { scope 3: from */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfdd8e2_000de88e\n"
         ".Lfdd8e2_000dd91d:\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfdd8e2_000de6c9\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfdd8e2_000de6c9\n"
         ".Lfdd8e2_000dd937:\n"
@@ -10288,7 +10288,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl -0x98(%ebp), %edx\n" /* line 2134 | cmd */
         "movswl 6(%edx), %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, -0x8c(%ebp)\n" /* size */
         "addl $8, %edx\n" /* line 2135 */
         "movl %edx, -0x90(%ebp)\n" /* v */
@@ -10296,67 +10296,67 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "cmpw $0, 4(%eax)\n"
         "jle .Lfdd8e2_000dde36\n"
         "movl $0, -0x94(%ebp)\n" /* pointIndex */
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         "movl %eax, %ebx\n" /* material */
         "addl $0xc, %ebx\n" /* material */
         ".Lfdd8e2_000dd99c:\n"
         "leal 4(%edx), %eax\n" /* line 344 */
         "cmpl $0x154a, %eax\n"
         "jg .Lfdd8e2_000dd9b6\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370640, %ecx\n"
         "leal 6(%ecx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfdd8e2_000dda19\n"
         ".Lfdd8e2_000dd9b6:\n"
-        "movl 0x11e15cc, %esi\n" /* line 327 */
+        "movl tess+370636, %esi\n" /* line 327 */
         "calll RB_EndSurface\n" /* line 329 */
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %esi\n" /* line 310 */
+        "cmpl tess+370636, %esi\n" /* line 310 */
         "je .Lfdd8e2_000de86c\n"
-        "movl 0x11e15d0, %eax\n" /* line 261 */
+        "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
         "jne .Lfdd8e2_000de6b5\n"
-        "movl 0x11e15e0, %edi\n"
+        "movl tess+370656, %edi\n"
         "testl %edi, %edi\n"
         "jne .Lfdd8e2_000de6b5\n"
         ".Lfdd8e2_000dda07:\n"
-        "movl %esi, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl %esi, tess+370636\n" /* line 313 */
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         ".Lfdd8e2_000dda19:\n"
         "addl $1, %edx\n" /* line 2138 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ecx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2139 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2139 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 2(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2140 */
+        "movzwl tess+370644, %ecx\n" /* line 2140 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 4(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2141 */
+        "movzwl tess+370644, %ecx\n" /* line 2141 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 6(%eax, %edx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2142 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2142 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 8(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2143 */
+        "movzwl tess+370644, %ecx\n" /* line 2143 */
         "addl $3, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 0xa(%eax, %edx, 2)\n"
-        "addl $6, 0x11e15d0\n" /* line 2144 */
+        "addl $6, tess+370640\n" /* line 2144 */
         "movl -0x90(%ebp), %edx\n" /* line 2146 | v, vertIndex */
         "addl $0xc, %edx\n" /* vertIndex */
         "movl %edx, -0x88(%ebp)\n" /* vertIndex, from */
@@ -10367,9 +10367,9 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "subss -0x8c(%ebp), %xmm1\n" /* size */
         "movss -4(%ebx), %xmm0\n" /* material */
         "subss -0x8c(%ebp), %xmm0\n" /* size */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd8e2_000de7ea\n"
@@ -10391,7 +10391,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* { scope 4 */
         "movl 8(%ebx), %eax\n" /* line 606 | from */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         /* } scope */
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
@@ -10399,7 +10399,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl %esi, 4(%edx)\n" /* line 191 */
@@ -10419,10 +10419,10 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "addss (%ebx), %xmm1\n" /* material */
         "movss -4(%ebx), %xmm0\n" /* material */
         "subss -0x8c(%ebp), %xmm0\n" /* size */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd8e2_000de78d\n"
@@ -10443,14 +10443,14 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "movl -0x88(%ebp), %esi\n" /* line 606 | from */
         "movl (%esi), %eax\n"
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10470,10 +10470,10 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "addss (%ebx), %xmm1\n" /* material */
         "movss -0x8c(%ebp), %xmm0\n" /* size */
         "addss -4(%ebx), %xmm0\n" /* material */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd8e2_000de730\n"
@@ -10494,14 +10494,14 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "movl -0x88(%ebp), %esi\n" /* line 606 | from */
         "movl (%esi), %eax\n"
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10521,10 +10521,10 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "subss -0x8c(%ebp), %xmm0\n" /* size */
         "movss -0x8c(%ebp), %xmm1\n" /* size */
         "addss -4(%ebx), %xmm1\n" /* material */
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd8e2_000de6d3\n"
@@ -10545,14 +10545,14 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "movl -0x88(%ebp), %esi\n" /* line 606 | from */
         "movl (%esi), %eax\n"
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10567,9 +10567,9 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* } scope */
         ".Lfdd8e2_000dde00:\n"
-        "movl 0x11e15d4, %edx\n" /* line 2150 */
+        "movl tess+370644, %edx\n" /* line 2150 */
         "addl $4, %edx\n"
-        "movl %edx, 0x11e15d4\n"
+        "movl %edx, tess+370644\n"
         "addl $1, -0x94(%ebp)\n" /* line 2135 | pointIndex */
         "addl $0x10, -0x90(%ebp)\n" /* v */
         "addl $0x10, %ebx\n" /* material */
@@ -10594,18 +10594,18 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* { scope 1: pointIndex, v, size, identity, ... */
         /* { scope 2 */
         ".Lfdd8e2_000dde4e:\n"
-        "movl 0x195eebc, %eax\n" /* line 2135 */
+        "movl imp_rgp, %eax\n" /* line 2135 */
         "movl 0x1040(%eax), %ebx\n" /* material */
         /* } scope */
         /* { scope 2 */
         /* { scope 3: from */
-        "cmpl 0x11e15bc, %ebx\n" /* line 300 */
+        "cmpl tess+370620, %ebx\n" /* line 300 */
         "je .Lfdd8e2_000de8a0\n"
         ".Lfdd8e2_000dde65:\n"
-        "movl 0x11e15d0, %esi\n" /* line 261 */
+        "movl tess+370640, %esi\n" /* line 261 */
         "testl %esi, %esi\n"
         "jne .Lfdd8e2_000de6bf\n"
-        "movl 0x11e15e0, %ecx\n"
+        "movl tess+370656, %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfdd8e2_000de6bf\n"
         ".Lfdd8e2_000dde81:\n"
@@ -10622,13 +10622,13 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "calll RB_SetProjectionMatrix\n"
         "movl %ebx, (%esp)\n" /* line 2173 | material */
         "calll RB_SetViewMatrix\n"
-        "movl 0x11e19c8, %edx\n" /* line 2175 */
+        "movl backEnd+968, %edx\n" /* line 2175 */
         "leal 0xc8(%edx), %esi\n"
         "movl %esi, -0x80(%ebp)\n" /* transform */
         "movl -0x98(%ebp), %ecx\n" /* line 2177 | cmd */
         "movswl 6(%ecx), %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "cvtsi2ssl 0x209c(%eax), %xmm0\n"
         "movaps %xmm1, %xmm2\n"
         "divss %xmm0, %xmm2\n"
@@ -10647,7 +10647,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "addl $0xf8, %edx\n"
         "movl %edx, -0x5c(%ebp)\n"
         "movl $0, -0x84(%ebp)\n" /* pointIndex */
-        "movl 0x11e15d4, %edx\n"
+        "movl tess+370644, %edx\n"
         "jmp .Lfdd8e2_000de233\n"
         /* { scope 3: from */
         ".Lfdd8e2_000ddf3b:\n"
@@ -10669,7 +10669,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* { scope 4 */
         "movl 0xc(%edi), %eax\n" /* line 606 */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         /* } scope */
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
@@ -10677,7 +10677,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl %esi, 4(%edx)\n" /* line 191 */
@@ -10693,10 +10693,10 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "movss -0x74(%ebp), %xmm1\n" /* line 2200 */
         "addss -0x6c(%ebp), %xmm1\n"
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd8e2_000de544\n"
@@ -10717,14 +10717,14 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%eax)\n" /* line 193 */
         /* } scope */
         "movl (%ebx), %eax\n" /* line 606 | from */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl $0, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10740,10 +10740,10 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "movss -0x70(%ebp), %xmm3\n" /* line 2201 */
         "addss -0x68(%ebp), %xmm3\n"
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd8e2_000de5cf\n"
@@ -10764,14 +10764,14 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%eax)\n" /* line 193 */
         /* } scope */
         "movl (%ebx), %eax\n" /* line 606 | from */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0x3f800000, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10785,10 +10785,10 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl $0, 8(%eax)\n" /* line 193 */
         /* } scope */
         /* } scope */
-        "movl 0x11e15d4, %edx\n" /* line 2202 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 2202 | vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfdd8e2_000de650\n"
@@ -10809,14 +10809,14 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movl $0x3f800000, 8(%eax)\n" /* line 193 */
         /* } scope */
         "movl (%ebx), %eax\n" /* line 606 | from */
-        "movl %eax, 0x1186e0c(%ecx)\n"
+        "movl %eax, tess+12(%ecx)\n"
         "leal 0x20(%edx), %eax\n" /* line 405 */
         "leal tess(%eax), %ecx\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, tess(%eax)\n" /* line 30 */
         "movl $0, 4(%ecx)\n" /* line 31 */
         /* } scope */
-        "addl $0x1186e30, %edx\n" /* line 406 */
+        "addl $tess+48, %edx\n" /* line 406 */
         "leal 4(%edx), %eax\n" /* v */
         /* { scope 4 */
         "movl $0x3f800000, 4(%edx)\n" /* line 191 */
@@ -10831,10 +10831,10 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         /* } scope */
         ".Lfdd8e2_000de1fe:\n"
-        "movl 0x11e15d4, %eax\n" /* line 2203 */
+        "movl tess+370644, %eax\n" /* line 2203 */
         "addl $4, %eax\n"
         "movl %eax, %edx\n"
-        "movl %eax, 0x11e15d4\n"
+        "movl %eax, tess+370644\n"
         "addl $1, -0x84(%ebp)\n" /* line 2179 | pointIndex */
         "addl $0x10, %edi\n" /* v */
         "movl -0x98(%ebp), %ecx\n" /* cmd */
@@ -10904,35 +10904,35 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "mulss %xmm4, %xmm1\n"
         "movss %xmm1, -0x6c(%ebp)\n"
         "movaps %xmm4, %xmm0\n" /* line 2188 */
-        "mulss 0x2ed670, %xmm0\n" /* -0.0010000000474974513f */
+        "mulss lit4_002ed670, %xmm0\n" /* -0.0010000000474974513f */
         "addss %xmm0, %xmm5\n"
         "leal 4(%edx), %eax\n" /* line 344 */
         "cmpl $0x154a, %eax\n"
         "jg .Lfdd8e2_000de358\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370640, %ecx\n"
         "leal 6(%ecx), %eax\n"
         "cmpl $0x100000, %eax\n"
         "jle .Lfdd8e2_000de3f8\n"
         ".Lfdd8e2_000de358:\n"
-        "movl 0x11e15cc, %ebx\n" /* line 327 */
+        "movl tess+370636, %ebx\n" /* line 327 */
         "movss %xmm4, -0xa8(%ebp)\n" /* line 329 */
         "movss %xmm5, -0xb8(%ebp)\n"
         "calll RB_EndSurface\n"
-        "movl 0x11e15c4, %eax\n" /* line 331 */
+        "movl tess+370628, %eax\n" /* line 331 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x11e15c0, %eax\n"
+        "movl tess+370624, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x11e15bc, %eax\n"
+        "movl tess+370620, %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_BeginSurface\n"
-        "cmpl 0x11e15cc, %ebx\n" /* line 310 */
+        "cmpl tess+370636, %ebx\n" /* line 310 */
         "movss -0xa8(%ebp), %xmm4\n"
         "movss -0xb8(%ebp), %xmm5\n"
         "je .Lfdd8e2_000de87d\n"
-        "movl 0x11e15d0, %edx\n" /* line 261 */
+        "movl tess+370640, %edx\n" /* line 261 */
         "testl %edx, %edx\n"
         "jne .Lfdd8e2_000de3c1\n"
-        "movl 0x11e15e0, %eax\n"
+        "movl tess+370656, %eax\n"
         "testl %eax, %eax\n"
         "je .Lfdd8e2_000de3e6\n"
         ".Lfdd8e2_000de3c1:\n"
@@ -10942,45 +10942,45 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "movss -0xb8(%ebp), %xmm5\n"
         "movss -0xa8(%ebp), %xmm4\n"
         ".Lfdd8e2_000de3e6:\n"
-        "movl %ebx, 0x11e15cc\n" /* line 313 */
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl %ebx, tess+370636\n" /* line 313 */
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         ".Lfdd8e2_000de3f8:\n"
         "addl $3, %edx\n" /* line 2191 */
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370608, %eax\n"
         "movw %dx, (%eax, %ecx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2192 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2192 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 2(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2193 */
+        "movzwl tess+370644, %ecx\n" /* line 2193 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 4(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2194 */
+        "movzwl tess+370644, %ecx\n" /* line 2194 */
         "addl $2, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 6(%eax, %edx, 2)\n"
-        "movl 0x11e15d4, %ecx\n" /* line 2195 */
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370644, %ecx\n" /* line 2195 */
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 8(%eax, %edx, 2)\n"
-        "movzwl 0x11e15d4, %ecx\n" /* line 2196 */
+        "movzwl tess+370644, %ecx\n" /* line 2196 */
         "addl $1, %ecx\n"
-        "movl 0x11e15d0, %edx\n"
-        "movl 0x11e15b0, %eax\n"
+        "movl tess+370640, %edx\n"
+        "movl tess+370608, %eax\n"
         "movw %cx, 0xa(%eax, %edx, 2)\n"
-        "addl $6, 0x11e15d0\n" /* line 2197 */
+        "addl $6, tess+370640\n" /* line 2197 */
         "leal 0xc(%edi), %ebx\n" /* line 2199 | v, material */
         "movss -0x74(%ebp), %xmm6\n"
         "subss -0x6c(%ebp), %xmm6\n"
         "movss -0x70(%ebp), %xmm2\n"
         "subss -0x68(%ebp), %xmm2\n"
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdd8e2_000ddf3b\n"
@@ -11006,17 +11006,17 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "addl $0x10, %edx\n" /* line 606 */
         "movl 0xc(%edi), %eax\n"
-        "movl %eax, 0x1186e08(%edx)\n"
+        "movl %eax, tess+8(%edx)\n"
         "addl $tess, %edx\n" /* line 397 */
         "movl $0, 0xc(%edx)\n" /* line 30 */
         "movl $0, 0x10(%edx)\n" /* line 31 */
         /* } scope */
         "movss -0x74(%ebp), %xmm1\n" /* line 2200 */
         "addss -0x6c(%ebp), %xmm1\n"
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $1, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdd8e2_000ddff3\n"
@@ -11042,17 +11042,17 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl (%ebx), %edx\n" /* from */
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
         /* } scope */
         "movss -0x70(%ebp), %xmm3\n" /* line 2201 */
         "addss -0x68(%ebp), %xmm3\n"
-        "movl 0x11e15d4, %edx\n" /* vertIndex */
+        "movl tess+370644, %edx\n" /* vertIndex */
         "addl $2, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %ecx\n" /* line 392 */
+        "movl imp_r_rendererInUse, %ecx\n" /* line 392 */
         "movl (%ecx), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdd8e2_000de0b1\n"
@@ -11078,15 +11078,15 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl (%ebx), %edx\n" /* from */
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
         /* } scope */
-        "movl 0x11e15d4, %edx\n" /* line 2202 | vertIndex */
+        "movl tess+370644, %edx\n" /* line 2202 | vertIndex */
         "addl $3, %edx\n" /* vertIndex */
         /* { scope 3: from */
-        "movl 0x195eec0, %esi\n" /* line 392 */
+        "movl imp_r_rendererInUse, %esi\n" /* line 392 */
         "movl (%esi), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lfdd8e2_000de165\n"
@@ -11110,7 +11110,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl (%ebx), %edx\n" /* from */
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
@@ -11154,7 +11154,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x88(%ebp), %ecx\n" /* from */
         "movl (%ecx), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
@@ -11179,7 +11179,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x88(%ebp), %ecx\n" /* from */
         "movl (%ecx), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0x3f800000, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
@@ -11204,7 +11204,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "addl $0x10, %eax\n" /* line 606 */
         "movl -0x88(%ebp), %ecx\n" /* from */
         "movl (%ecx), %edx\n"
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0x3f800000, 0x10(%eax)\n" /* line 31 */
@@ -11228,7 +11228,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* } scope */
         "addl $0x10, %eax\n" /* line 606 */
         "movl 8(%ebx), %edx\n" /* from */
-        "movl %edx, 0x1186e08(%eax)\n"
+        "movl %edx, tess+8(%eax)\n"
         "addl $tess, %eax\n" /* line 397 */
         "movl $0, 0xc(%eax)\n" /* line 30 */
         "movl $0, 0x10(%eax)\n" /* line 31 */
@@ -11238,7 +11238,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* { scope 2 */
         ".Lfdd8e2_000de842:\n"
         "calll RB_EndSurface\n" /* line 2205 */
-        "movl 0x11e19c8, %eax\n" /* line 2207 */
+        "movl backEnd+968, %eax\n" /* line 2207 */
         "movl %eax, (%esp)\n"
         "calll RB_SetMatricesForView\n"
         /* } scope */
@@ -11255,18 +11255,18 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "popl %ebp\n"
         "retl\n"
         ".Lfdd8e2_000de86c:\n"
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         "jmp .Lfdd8e2_000dda19\n"
         ".Lfdd8e2_000de87d:\n"
-        "movl 0x11e15d4, %edx\n"
-        "movl 0x11e15d0, %ecx\n"
+        "movl tess+370644, %edx\n"
+        "movl tess+370640, %ecx\n"
         "jmp .Lfdd8e2_000de3f8\n"
         /* { scope 1: pointIndex, v, size, identity, ... */
         /* { scope 2 */
         /* { scope 3: from */
         ".Lfdd8e2_000de88e:\n"
-        "cmpl $3, 0x11e15c0\n" /* line 300 */
+        "cmpl $3, tess+370624\n" /* line 300 */
         "jne .Lfdd8e2_000dd91d\n"
         "jmp .Lfdd8e2_000dd94f\n"
         /* } scope */
@@ -11274,7 +11274,7 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         /* { scope 2 */
         /* { scope 3: from */
         ".Lfdd8e2_000de8a0:\n"
-        "cmpl $3, 0x11e15c0\n"
+        "cmpl $3, tess+370624\n"
         "jne .Lfdd8e2_000dde65\n"
         "jmp .Lfdd8e2_000dde99\n"
     );

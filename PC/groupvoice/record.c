@@ -26,9 +26,9 @@ extern void CL_VoiceTransmit(void);
 extern void Client_SendVoiceData(int size, void *data);
 extern void Com_Printf(const char *msg, ...);
 
-extern byte *encode_vol_ptr;       /* 0x195f990 */
-extern byte *voice_scale_ptr;      /* 0x195f98c */
-extern byte *record_callback_ptr;  /* 0x195f994 */
+extern byte *encode_vol_ptr;       /* imp_voice_current_voicelevel */
+extern byte *voice_scale_ptr;      /* imp_voice_current_scaler */
+extern byte *record_callback_ptr;  /* imp_current_audioCallback */
 
 int Record_Start(recordingSample_t *sample);
 int Record_Stop(recordingSample_t *sample);

@@ -9,17 +9,17 @@
  *   #include "PC/gfx_d3d/r_material.h"
  */
 
-static const D3DVERTEXELEMENT9 declEnd; /* 0x2f264c */
-static const BuiltInMaterialTable s_builtInMaterials[28]; /* 0x330260 */
-static const BuiltInMaterialTable s_fillTestMaterials[12]; /* 0x330200 */
-static int materialGlobals; /* 0xc85b80 */
-static const stream_source_info_t s_streamSourceInfo[4][7]; /* 0x2f25e0 */
-static const stream_dest_info_t s_streamDestInfo[12]; /* 0x2f2634 */
+static const D3DVERTEXELEMENT9 declEnd; /* declEnd */
+static const BuiltInMaterialTable s_builtInMaterials[28]; /* s_builtInMaterials */
+static const BuiltInMaterialTable s_fillTestMaterials[12]; /* s_fillTestMaterials */
+static int materialGlobals; /* materialGlobals */
+static const stream_source_info_t s_streamSourceInfo[4][7]; /* s_streamSourceInfo */
+static const stream_dest_info_t s_streamDestInfo[12]; /* s_streamDestInfo */
 
 extern int R_HashAssetName(const char *name);
 extern int stricmp(const char *s1, const char *s2);
 extern void R_Error(int errorLevel, const char *msg, ...);
-extern r_global_permanent_t *rgp; /* 0x195eebc */
+extern r_global_permanent_t *rgp; /* imp_rgp */
 
 void * Material_Alloc(int size);
 const float * Material_RegisterLiteral(const vec_t *literal);
@@ -59,7 +59,7 @@ void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(void); /* void 
 /* line 218 */
 void * Material_Alloc(int size)
 {
-    return ((void *(*)(int))(*(void **)(*(int *)0x195eee0 + 0xc)))(size);
+    return ((void *(*)(int))(*(void **)(*(int *)imp_ri + 0xc)))(size);
 }
 
 /* line 314 */
@@ -177,7 +177,7 @@ void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, i
 /* line 981 */
 Bool Material_IsDefault(const Material *material)
 {
-    const Material *defaultMtl = *(const Material **)(*(int *)0x195eebc + 0x102c);
+    const Material *defaultMtl = *(const Material **)(*(int *)imp_rgp + 0x102c);
     if (material->textures != defaultMtl->textures)
         return 0;
     if (material->constants != defaultMtl->constants)
@@ -190,7 +190,7 @@ Bool Material_IsDefault(const Material *material)
 /* line 1278 */
 Bool R_IsMaterialRefractive(MaterialHandle handle)
 {
-    if (*(int *)((byte *)(*(void **)(*(int *)0x195eec0)) + 8) == 2)
+    if (*(int *)((byte *)(*(void **)(*(int *)imp_r_rendererInUse)) + 8) == 2)
         return 0;
     MaterialTechniqueSet *ts = handle->techniqueSet;
     MaterialTechnique *tech = ts->techniques[21];
@@ -218,7 +218,7 @@ void Material_ReleaseAll(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "calll RB_ReleaseVertexDecl\n" /* line 1381 */
-        "movl $0xc85b84, -0x1c(%ebp)\n"
+        "movl $materialGlobals+4, -0x1c(%ebp)\n"
         ".Lfd346a_000d347f:\n"
         "movl -0x1c(%ebp), %esi\n"
         "movl $4, %edi\n"
@@ -233,7 +233,7 @@ void Material_ReleaseAll(void)
         "movl %eax, (%esp)\n"
         "calll *8(%edx)\n"
         "movl $0, (%ebx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd346a_000d3491\n"
@@ -242,7 +242,7 @@ void Material_ReleaseAll(void)
         "subl $1, %edi\n" /* line 1387 */
         "jne .Lfd346a_000d3487\n"
         "addl $0x18, -0x1c(%ebp)\n" /* line 1393 */
-        "cmpl $0xc85e84, -0x1c(%ebp)\n" /* line 1385 */
+        "cmpl $materialGlobals+772, -0x1c(%ebp)\n" /* line 1385 */
         "jne .Lfd346a_000d347f\n"
         "movl $materialGlobals, %ebx\n"
         ".Lfd346a_000d34c6:\n"
@@ -255,7 +255,7 @@ void Material_ReleaseAll(void)
         "calll *8(%edx)\n"
         ".Lfd346a_000d34db:\n"
         "addl $4, %ebx\n"
-        "cmpl $0xc85f80, %ebx\n" /* line 836 */
+        "cmpl $materialGlobals+1024, %ebx\n" /* line 836 */
         "jne .Lfd346a_000d34c6\n"
         "addl $0x2c, %esp\n" /* line 1476 */
         "popl %ebx\n"
@@ -279,7 +279,7 @@ void Material_UpdatePicmipAll(void)
         "subl $0x2c, %esp\n"
         /* { scope 1 */
         "calll R_SetPicmip\n" /* line 1545 */
-        "movl 0x195eec8, %eax\n"
+        "movl imp_rg, %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
         "movl %eax, %ecx\n"
         "movl %eax, -0x20(%ebp)\n"
@@ -341,7 +341,7 @@ int Material_LoadFile(const char *filename, fileHandle_t *file)
         /* { scope 1 */
         "movl 8(%ebp), %eax\n" /* line 1592 | filename */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2243a8, 8(%esp)\n" /* "materials/%s" */
+        "movl $str_002243a8, 8(%esp)\n" /* "materials/%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x48(%ebp), %ebx\n" /* fullFilename */
         "movl %ebx, (%esp)\n"
@@ -350,7 +350,7 @@ int Material_LoadFile(const char *filename, fileHandle_t *file)
         "movl 0xc(%ebp), %eax\n" /* file */
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x130(%eax)\n"
         /* } scope */
         "addl $0x54, %esp\n" /* line 1594 */
@@ -384,7 +384,7 @@ void Material_Sort(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195eebc, %ebx\n" /* line 884 */
+        "movl imp_rgp, %ebx\n" /* line 884 */
         "movl 4(%ebx), %eax\n"
         "leal 8(%ebx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
@@ -461,7 +461,7 @@ void Material_Sort(void)
         "movl -0x1c(%ebp), %edi\n"
         "jmp .Lfd35d0_000d365e\n"
         ".Lfd35d0_000d36a0:\n"
-        "movl 0x195eebc, %ebx\n"
+        "movl imp_rgp, %ebx\n"
         /* } scope */
         /* } scope */
         /* } scope */
@@ -491,7 +491,7 @@ void Material_Sort(void)
         "movl $Material_Compare, 8(%esp)\n" /* line 2240 */
         "movl -0x24(%ebp), %eax\n" /* __last */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eebc, %ebx\n" /* __last */
+        "movl imp_rgp, %ebx\n" /* __last */
         "leal 8(%ebx), %eax\n" /* __last */
         "movl %eax, (%esp)\n"
         "calll ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_\n"
@@ -521,7 +521,7 @@ const char * Material_RegisterString(const char *string)
         "calll R_HashString\n"
         "movl %eax, %esi\n" /* hashIndex */
         "andl $0x3f, %esi\n" /* hashIndex */
-        "movl 0xc88018(, %esi, 4), %ebx\n" /* line 345 */
+        "movl materialGlobals+9368(, %esi, 4), %ebx\n" /* line 345 */
         "testl %ebx, %ebx\n"
         "je .Lfd36f4_000d373c\n"
         ".Lfd36f4_000d3718:\n"
@@ -533,13 +533,13 @@ const char * Material_RegisterString(const char *string)
         "je .Lfd36f4_000d3792\n"
         "addl $1, %esi\n" /* line 350 | hashIndex */
         "andl $0x3f, %esi\n" /* hashIndex */
-        "movl 0xc88018(, %esi, 4), %ebx\n" /* line 345 */
+        "movl materialGlobals+9368(, %esi, 4), %ebx\n" /* line 345 */
         "testl %ebx, %ebx\n"
         "jne .Lfd36f4_000d3718\n"
         ".Lfd36f4_000d373c:\n"
-        "movl 0xc88014, %eax\n" /* line 353 */
+        "movl materialGlobals+9364, %eax\n" /* line 353 */
         "addl $1, %eax\n"
-        "movl %eax, 0xc88014\n"
+        "movl %eax, materialGlobals+9364\n"
         "cmpl $0x40, %eax\n" /* line 354 */
         "je .Lfd36f4_000d379c\n"
         ".Lfd36f4_000d374e:\n"
@@ -551,7 +551,7 @@ const char * Material_RegisterString(const char *string)
         "movl %ecx, %ebx\n"
         "notl %ebx\n"
         "movl %ebx, (%esp)\n" /* line 221 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0xc(%eax)\n"
         "movl %eax, %edi\n"
         "movl %ebx, 8(%esp)\n" /* line 359 */
@@ -559,7 +559,7 @@ const char * Material_RegisterString(const char *string)
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n"
         "calll memcpy\n"
-        "movl $0xc88010, %eax\n" /* line 361 */
+        "movl $materialGlobals+9360, %eax\n" /* line 361 */
         "movl %edi, 8(%eax, %esi, 4)\n"
         "movl %edi, %eax\n" /* line 362 */
         /* } scope */
@@ -582,7 +582,7 @@ const char * Material_RegisterString(const char *string)
         /* { scope 1 */
         ".Lfd36f4_000d379c:\n"
         "movl $0x3f, 8(%esp)\n" /* line 355 */
-        "movl $0x2243b8, 4(%esp)\n" /* "More than %i string identifiers used by shaders" */
+        "movl $str_002243b8, 4(%esp)\n" /* "More than %i string identifiers used by shaders" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfd36f4_000d374e\n"
@@ -631,7 +631,7 @@ MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *rout
         "addl $1, materialGlobals\n" /* line 513 */
         "movl -0x1c(%ebp), %esi\n" /* line 221 */
         "movl %esi, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0xc(%eax)\n"
         "movl %eax, %ebx\n"
         "movl %esi, 8(%esp)\n" /* line 516 */
@@ -696,7 +696,7 @@ MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *rout
         /* } scope */
         ".Lfd37ba_000d38ad:\n"
         "movl $0x1f, 8(%esp)\n" /* line 512 */
-        "movl $0x2243e8, 4(%esp)\n" /* "More than %i vertex declarations in use" */
+        "movl $str_002243e8, 4(%esp)\n" /* "More than %i vertex declarations in use" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfd37ba_000d3809\n"
@@ -771,7 +771,7 @@ void Material_Shutdown(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "calll RB_ReleaseVertexDecl\n" /* line 1381 */
-        "movl $0xc85b84, -0x1c(%ebp)\n"
+        "movl $materialGlobals+4, -0x1c(%ebp)\n"
         ".Lfd3a6c_000d3a81:\n"
         "movl -0x1c(%ebp), %esi\n"
         "xorl %edi, %edi\n"
@@ -786,7 +786,7 @@ void Material_Shutdown(void)
         "movl %eax, (%esp)\n"
         "calll *8(%edx)\n"
         "movl $0, (%ebx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfd3a6c_000d3a90\n"
@@ -796,11 +796,11 @@ void Material_Shutdown(void)
         "cmpl $4, %edi\n"
         "jne .Lfd3a6c_000d3a86\n"
         "addl $0x18, -0x1c(%ebp)\n" /* line 1393 */
-        "cmpl $0xc85e84, -0x1c(%ebp)\n" /* line 1385 */
+        "cmpl $materialGlobals+772, -0x1c(%ebp)\n" /* line 1385 */
         "jne .Lfd3a6c_000d3a81\n"
         "movl $0x300, 8(%esp)\n" /* line 1420 */
         "movl $0, 4(%esp)\n"
-        "movl $0xc85b84, (%esp)\n"
+        "movl $materialGlobals+4, (%esp)\n"
         "calll memset\n"
         "movl $0, materialGlobals\n" /* line 1421 */
         "movl $materialGlobals, %ebx\n"
@@ -814,7 +814,7 @@ void Material_Shutdown(void)
         "calll *8(%edx)\n"
         ".Lfd3a6c_000d3b03:\n"
         "addl $4, %ebx\n"
-        "cmpl $0xc85f80, %ebx\n" /* line 836 */
+        "cmpl $materialGlobals+1024, %ebx\n" /* line 836 */
         "jne .Lfd3a6c_000d3aee\n"
         "movl $materialGlobals, %eax\n"
         ".Lfd3a6c_000d3b13:\n"
@@ -822,7 +822,7 @@ void Material_Shutdown(void)
         "addl $4, %eax\n"
         "cmpl %eax, %ebx\n" /* line 864 */
         "jne .Lfd3a6c_000d3b13\n"
-        "movl $0, 0xc87e8c\n" /* line 334 */
+        "movl $0, materialGlobals+8972\n" /* line 334 */
         "movl $materialGlobals, %eax\n"
         ".Lfd3a6c_000d3b33:\n"
         "movl 0x2498(%eax), %edx\n" /* line 372 */
@@ -831,7 +831,7 @@ void Material_Shutdown(void)
         "movl $0, 0x2498(%eax)\n" /* line 377 */
         ".Lfd3a6c_000d3b47:\n"
         "addl $4, %eax\n"
-        "cmpl $0xc85c80, %eax\n" /* line 370 */
+        "cmpl $materialGlobals+256, %eax\n" /* line 370 */
         "jne .Lfd3a6c_000d3b33\n"
         "movl $materialGlobals, %eax\n"
         ".Lfd3a6c_000d3b56:\n"
@@ -841,10 +841,10 @@ void Material_Shutdown(void)
         "movl $0, 0x2414(%eax)\n" /* line 739 */
         ".Lfd3a6c_000d3b6a:\n"
         "addl $4, %eax\n"
-        "cmpl $0xc85c00, %eax\n" /* line 734 */
+        "cmpl $materialGlobals+128, %eax\n" /* line 734 */
         "jne .Lfd3a6c_000d3b56\n"
         "movl $materialGlobals, %eax\n"
-        "movl $0xc86b80, %ecx\n"
+        "movl $materialGlobals+4096, %ecx\n"
         ".Lfd3a6c_000d3b7e:\n"
         "movl 0x130c(%eax), %esi\n" /* line 608 */
         "testl %esi, %esi\n"
@@ -852,7 +852,7 @@ void Material_Shutdown(void)
         "movl $0, 0x130c(%eax)\n" /* line 611 */
         ".Lfd3a6c_000d3b92:\n"
         "addl $4, %eax\n"
-        "movl $0xc86b80, %edx\n" /* line 1437 */
+        "movl $materialGlobals+4096, %edx\n" /* line 1437 */
         "cmpl %eax, %ecx\n" /* line 606 */
         "jne .Lfd3a6c_000d3b7e\n"
         "movl $materialGlobals, %eax\n"
@@ -869,13 +869,13 @@ void Material_Shutdown(void)
         "movl $0, 4(%esp)\n"
         "movl $materialGlobals, (%esp)\n"
         "calll memset\n"
-        "movl 0x195eec8, %eax\n" /* line 1464 */
+        "movl imp_rg, %eax\n" /* line 1464 */
         "addl $0x28, %eax\n"
         "movl $__mh_execute_header, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll memset\n"
-        "movl 0x195eebc, %eax\n" /* line 1465 */
+        "movl imp_rgp, %eax\n" /* line 1465 */
         "movl $0, 4(%eax)\n"
         "addl $0x2c, %esp\n" /* line 1466 */
         "popl %ebx\n"
@@ -900,7 +900,7 @@ _ValueType R_RegisterRawImage(const char *name, int baseImageFlags, int imageTra
         /* { scope 1 */
         "cmpb $0, (%esi)\n" /* line 1141 | name */
         "jne .Lfd3c0e_000d3c32\n"
-        "movl 0x195eebc, %eax\n" /* line 1142 */
+        "movl imp_rgp, %eax\n" /* line 1142 */
         "movl 0x102c(%eax), %edx\n"
         /* } scope */
         ".Lfd3c0e_000d3c29:\n"
@@ -912,7 +912,7 @@ _ValueType R_RegisterRawImage(const char *name, int baseImageFlags, int imageTra
         "retl\n"
         /* { scope 1 */
         ".Lfd3c0e_000d3c32:\n"
-        "movl 0x195eebc, %ebx\n" /* line 1081 */
+        "movl imp_rgp, %ebx\n" /* line 1081 */
         "movl 0x1030(%ebx), %edx\n"
         "movl 0x102c(%ebx), %ecx\n" /* line 986 */
         "movl 0x3c(%edx), %eax\n"
@@ -971,9 +971,9 @@ void Material_ReloadAll(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x87c, %esp\n"
-        "movl $0xc85b84, -0x85c(%ebp)\n"
-        "movl $0xc85b88, -0x83c(%ebp)\n"
-        "movl 0x195eed0, %eax\n"
+        "movl $materialGlobals+4, -0x85c(%ebp)\n"
+        "movl $materialGlobals+8, -0x83c(%ebp)\n"
+        "movl imp_dx, %eax\n"
         "movl %eax, -0x864(%ebp)\n"
         ".Lfd3ca8_000d3cd3:\n"
         "movl -0x83c(%ebp), %edx\n"
@@ -1094,11 +1094,11 @@ void Material_ReloadAll(void)
         "movl -0x830(%ebp), %ecx\n"
         ".Lfd3ca8_000d3edb:\n"
         "movl declEnd, %eax\n" /* line 472 */
-        "movl 0x2f2650, %edx\n"
+        "movl declEnd+4, %edx\n"
         "movl %eax, -0x81c(%ebp, %ecx, 8)\n"
         "movl %edx, -0x818(%ebp, %ecx, 8)\n"
         ".Lfd3ca8_000d3ef4:\n"
-        "movl 0x195eed0, %ebx\n" /* line 474 */
+        "movl imp_dx, %ebx\n" /* line 474 */
         "movl 8(%ebx), %eax\n"
         "movl (%eax), %edx\n"
         "leal -0x1c(%ebp), %ecx\n"
@@ -1107,7 +1107,7 @@ void Material_ReloadAll(void)
         "movl %ebx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x158(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd3ca8_000d3ef4\n"
@@ -1123,7 +1123,7 @@ void Material_ReloadAll(void)
         ".Lfd3ca8_000d3f4d:\n"
         "addl $0x18, -0x85c(%ebp)\n" /* line 1410 */
         "addl $0x18, -0x83c(%ebp)\n"
-        "cmpl $0xc85e84, -0x85c(%ebp)\n" /* line 1406 */
+        "cmpl $materialGlobals+772, -0x85c(%ebp)\n" /* line 1406 */
         "jne .Lfd3ca8_000d3cd3\n"
         "movl $materialGlobals, -0x84c(%ebp)\n"
         "jmp .Lfd3ca8_000d3fb7\n"
@@ -1142,7 +1142,7 @@ void Material_ReloadAll(void)
         "js .Lfd3ca8_000d3ff5\n"
         ".Lfd3ca8_000d3f9f:\n"
         "addl $4, -0x84c(%ebp)\n" /* line 828 */
-        "movl $0xc85f80, %edx\n" /* line 849 */
+        "movl $materialGlobals+1024, %edx\n" /* line 849 */
         "cmpl -0x84c(%ebp), %edx\n"
         "je .Lfd3ca8_000d403c\n"
         ".Lfd3ca8_000d3fb7:\n"
@@ -1165,7 +1165,7 @@ void Material_ReloadAll(void)
         "testl %edi, %edi\n" /* line 827 */
         "jns .Lfd3ca8_000d3f9f\n"
         ".Lfd3ca8_000d3ff5:\n"
-        "movl 0x195eee0, %eax\n" /* line 828 */
+        "movl imp_ri, %eax\n" /* line 828 */
         "movl 4(%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll R_ErrorDescription\n"
@@ -1173,11 +1173,11 @@ void Material_ReloadAll(void)
         "movl %eax, 0xc(%esp)\n"
         "movl (%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x224410, 4(%esp)\n" /* "Couldn't reload shader '%s' when recovering from a lost devi" */
+        "movl $str_00224410, 4(%esp)\n" /* "Couldn't reload shader '%s' when recovering from a lost devi" */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
         "addl $4, -0x84c(%ebp)\n"
-        "movl $0xc85f80, %edx\n" /* line 849 */
+        "movl $materialGlobals+1024, %edx\n" /* line 849 */
         "cmpl -0x84c(%ebp), %edx\n"
         "jne .Lfd3ca8_000d3fb7\n"
         ".Lfd3ca8_000d403c:\n"
@@ -1310,12 +1310,12 @@ void Load_BuildVertexDecl(MaterialVertexDeclaration * *mtlVertDecl)
         "jmp .Lfd404e_000d416a\n"
         ".Lfd404e_000d422b:\n"
         "movl declEnd, %eax\n" /* line 472 */
-        "movl 0x2f2650, %edx\n"
+        "movl declEnd+4, %edx\n"
         "movl -0x83c(%ebp), %ecx\n" /* elemIndexInsert */
         "movl %eax, -0x81c(%ebp, %ecx, 8)\n"
         "movl %edx, -0x818(%ebp, %ecx, 8)\n"
         ".Lfd404e_000d424a:\n"
-        "movl 0x195eed0, %edx\n" /* line 474 */
+        "movl imp_dx, %edx\n" /* line 474 */
         "movl 8(%edx), %eax\n"
         "movl (%eax), %edx\n"
         "leal -0x1c(%ebp), %ecx\n" /* decl */
@@ -1324,7 +1324,7 @@ void Load_BuildVertexDecl(MaterialVertexDeclaration * *mtlVertDecl)
         "movl %ecx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x158(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd404e_000d424a\n"
@@ -1368,11 +1368,11 @@ void R_Cmd_ReloadMaterialTextures(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195eee0, %ebx\n" /* line 1565 | hashIndex */
+        "movl imp_ri, %ebx\n" /* line 1565 | hashIndex */
         "calll *0x100(%ebx)\n" /* hashIndex */
         "cmpl $2, %eax\n"
         "je .Lfd42b6_000d42e9\n"
-        "movl $0x224460, 4(%esp)\n" /* line 1567 */
+        "movl $str_00224460, 4(%esp)\n" /* line 1567 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* hashIndex */
         /* } scope */
@@ -1404,16 +1404,16 @@ void R_Cmd_ReloadMaterialTextures(void)
         ".Lfd42b6_000d4319:\n"
         "andw $0x3ff, %bx\n" /* line 1004 */
         "movzwl %bx, %esi\n" /* line 1005 */
-        "movl 0x195eec8, %edx\n"
+        "movl imp_rg, %edx\n"
         "movl 0x28(%edx, %esi, 4), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd42b6_000d4304\n"
         /* } scope */
         ".Lfd42b6_000d432f:\n"
-        "movl 0x195eee0, %eax\n" /* line 1578 */
+        "movl imp_ri, %eax\n" /* line 1578 */
         "movl (%eax), %ebx\n" /* hashIndex */
         "movl %edi, 4(%esp)\n" /* name */
-        "movl $0x224490, (%esp)\n" /* "ReloadMaterialTextures: Material '%s' is not currently loade" */
+        "movl $str_00224490, (%esp)\n" /* "ReloadMaterialTextures: Material '%s' is not currently loade" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -1428,7 +1428,7 @@ void R_Cmd_ReloadMaterialTextures(void)
         /* { scope 1 */
         /* { scope 2 */
         ".Lfd42b6_000d435b:\n"
-        "movl 0x195eec8, %eax\n" /* line 1111 */
+        "movl imp_rg, %eax\n" /* line 1111 */
         "movl 0x28(%eax, %esi, 4), %esi\n"
         "movl %esi, -0x1c(%ebp)\n" /* material */
         /* } scope */
@@ -1508,7 +1508,7 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
         "movl %eax, %edi\n" /* line 1004 | hashIndex */
         "andw $0x3ff, %di\n" /* hashIndex */
         "movzwl %di, %esi\n" /* line 1005 | hashIndex */
-        "movl 0x195eec8, %ebx\n" /* nameBackup */
+        "movl imp_rg, %ebx\n" /* nameBackup */
         "movl 0x28(%ebx, %esi, 4), %eax\n" /* nameBackup */
         "testl %eax, %eax\n"
         "je .Lfd43e6_000d443e\n"
@@ -1536,7 +1536,7 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
         "notl %ebx\n" /* nameBackup */
         "leal 0x44(%ebx), %eax\n" /* line 946 | nameBackup */
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0xc(%eax)\n"
         "movl %eax, %edi\n" /* hashIndex */
         "movl $0x44, 8(%esp)\n" /* line 951 */
@@ -1551,14 +1551,14 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll memcpy\n"
-        "movl 0x195eebc, %ecx\n" /* line 907 */
+        "movl imp_rgp, %ecx\n" /* line 907 */
         "movl $1, (%ecx)\n"
         "movw %si, 8(%edi)\n" /* line 910 */
         "movl 4(%ecx), %eax\n" /* line 911 */
         "movw %ax, 0xa(%edi)\n"
         "movl 4(%ecx), %eax\n" /* line 912 */
         "movl %edi, 8(%ecx, %eax, 4)\n"
-        "movl 0x195eec8, %edx\n" /* line 913 */
+        "movl imp_rg, %edx\n" /* line 913 */
         "movl %edi, 0x28(%edx, %esi, 4)\n"
         "addl $1, %eax\n" /* line 914 */
         "movl %eax, 4(%ecx)\n"
@@ -1582,7 +1582,7 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
         "movl %edi, (%esp)\n" /* hashIndex */
         "calll memcpy\n"
         "movl %ebx, (%edi)\n" /* line 937 | nameBackup, hashIndex */
-        "movl 0x195eebc, %eax\n" /* line 939 */
+        "movl imp_rgp, %eax\n" /* line 939 */
         "movl $1, (%eax)\n"
         /* } scope */
         "movl %edi, %eax\n" /* line 961 | hashIndex */
@@ -1595,7 +1595,7 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
         /* { scope 1 */
         ".Lfd43e6_000d4501:\n"
         "movl $0x400, 8(%esp)\n" /* line 916 */
-        "movl $0x2244d0, 4(%esp)\n" /* "Too many unique materials (%i or more)
+        "movl $str_002244d0, 4(%esp)\n" /* "Too many unique materials (%i or more)
 " */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
@@ -1630,7 +1630,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
         "movl %eax, %ebx\n" /* line 1004 */
         "andw $0x3ff, %bx\n"
         "movzwl %bx, %esi\n" /* line 1005 */
-        "movl 0x195eec8, %edx\n"
+        "movl imp_rg, %edx\n"
         "movl 0x28(%edx, %esi, 4), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd4528_000d4585\n"
@@ -1644,7 +1644,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
         "addl $1, %ebx\n" /* line 1013 */
         "andw $0x3ff, %bx\n" /* line 1004 */
         "movzwl %bx, %esi\n" /* line 1005 */
-        "movl 0x195eec8, %edx\n"
+        "movl imp_rg, %edx\n"
         "movl 0x28(%edx, %esi, 4), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd4528_000d455a\n"
@@ -1656,14 +1656,14 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
         "movl %eax, %ebx\n" /* hashIndex */
         "testl %eax, %eax\n" /* line 1033 */
         "je .Lfd4528_000d4613\n"
-        "movl 0x195eebc, %ecx\n" /* line 907 */
+        "movl imp_rgp, %ecx\n" /* line 907 */
         "movl $1, (%ecx)\n"
         "movw %si, 8(%eax)\n" /* line 910 */
         "movl 4(%ecx), %eax\n" /* line 911 */
         "movw %ax, 0xa(%ebx)\n"
         "movl 4(%ecx), %eax\n" /* line 912 */
         "movl %ebx, 8(%ecx, %eax, 4)\n"
-        "movl 0x195eec8, %edx\n" /* line 913 */
+        "movl imp_rg, %edx\n" /* line 913 */
         "movl %ebx, 0x28(%edx, %esi, 4)\n"
         "addl $1, %eax\n" /* line 914 */
         "movl %eax, 4(%ecx)\n"
@@ -1679,7 +1679,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
         "retl\n"
         /* { scope 1 */
         ".Lfd4528_000d45d9:\n"
-        "movl 0x195eec8, %edx\n" /* line 1030 */
+        "movl imp_rg, %edx\n" /* line 1030 */
         "movl 0x28(%edx, %esi, 4), %ebx\n" /* hashIndex */
         /* } scope */
         "movl %ebx, %eax\n" /* line 1038 | hashIndex */
@@ -1692,7 +1692,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
         /* { scope 1 */
         ".Lfd4528_000d45ed:\n"
         "movl $0x400, 8(%esp)\n" /* line 916 */
-        "movl $0x2244d0, 4(%esp)\n" /* "Too many unique materials (%i or more)
+        "movl $str_002244d0, 4(%esp)\n" /* "Too many unique materials (%i or more)
 " */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
@@ -1706,13 +1706,13 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
         "retl\n"
         /* { scope 1 */
         ".Lfd4528_000d4613:\n"
-        "movl 0x195eebc, %ebx\n" /* line 968 */
+        "movl imp_rgp, %ebx\n" /* line 968 */
         "movl 0x102c(%ebx), %esi\n"
         "testl %esi, %esi\n"
         "je .Lfd4528_000d464b\n"
         ".Lfd4528_000d4623:\n"
         "movl %edi, 4(%esp)\n" /* line 974 */
-        "movl $0x22451c, (%esp)\n" /* "^3WARNING: Could not find material '%s'
+        "movl $str_0022451c, (%esp)\n" /* "^3WARNING: Could not find material '%s'
 " */
         "calll Com_Printf\n"
         "movl %edi, 0xc(%ebp)\n" /* line 975 | imageTrack */
@@ -1727,7 +1727,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
         /* { scope 1 */
         "jmp Material_Duplicate\n" /* line 975 */
         ".Lfd4528_000d464b:\n"
-        "movl $0x2244f8, 4(%esp)\n" /* line 971 */
+        "movl $str_002244f8, 4(%esp)\n" /* line 971 */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfd4528_000d4623\n"
@@ -1758,8 +1758,8 @@ void Material_Init(void)
         "movl $materialGlobals, (%esp)\n"
         "calll memset\n"
         "calll Material_PreLoadAllShaderText\n" /* line 1349 */
-        "movl $0x330264, %esi\n"
-        "movl $0x330344, %edi\n"
+        "movl $s_builtInMaterials+4, %esi\n"
+        "movl $RB_RenderCommandTable+4, %edi\n"
         "jmp .Lfd4686_000d46c3\n"
         ".Lfd4686_000d46bc:\n"
         "addl $8, %esi\n" /* line 1325 */
@@ -1778,23 +1778,23 @@ void Material_Init(void)
         "jne .Lfd4686_000d46bc\n"
         "movl -4(%esi), %eax\n" /* line 1325 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224548, 4(%esp)\n" /* "Could not find material '%s'" */
+        "movl $str_00224548, 4(%esp)\n" /* "Could not find material '%s'" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "addl $8, %esi\n"
         "cmpl %esi, %edi\n" /* line 1320 */
         "jne .Lfd4686_000d46c3\n"
         ".Lfd4686_000d4704:\n"
-        "movl 0x195f100, %eax\n" /* line 1353 */
+        "movl imp_r_testFillEnable, %eax\n" /* line 1353 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd4686_000d47cf\n"
         ".Lfd4686_000d4715:\n"
         "movl $0, 4(%esp)\n" /* line 1062 */
-        "movl $0x224568, (%esp)\n" /* "$raw" */
+        "movl $str_00224568, (%esp)\n" /* "$raw" */
         "calll Material_Register\n"
         "movl %eax, %edx\n"
-        "movl 0x195eebc, %esi\n"
+        "movl imp_rgp, %esi\n"
         "movl %eax, 0x1030(%esi)\n"
         "movl 0x102c(%esi), %ecx\n" /* line 986 */
         "movl 0x3c(%eax), %eax\n"
@@ -1803,11 +1803,11 @@ void Material_Init(void)
         ".Lfd4686_000d4745:\n"
         "cmpw $1, 0x34(%edx)\n" /* line 1066 */
         "je .Lfd4686_000d47ab\n"
-        "movl $0x224570, 4(%esp)\n" /* line 1068 */
+        "movl $str_00224570, 4(%esp)\n" /* line 1068 */
         "movl $3, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
-        "movl 0x195eebc, %esi\n" /* line 1069 */
+        "movl imp_rgp, %esi\n" /* line 1069 */
         "movl 0x102c(%esi), %eax\n"
         "movl %eax, 0x1030(%esi)\n"
         "movl %eax, %ecx\n"
@@ -1850,8 +1850,8 @@ void Material_Init(void)
         "movl 0x1030(%esi), %edx\n"
         "jmp .Lfd4686_000d4782\n"
         ".Lfd4686_000d47cf:\n"
-        "movl $0x330204, %esi\n" /* line 1353 */
-        "movl $0x330264, %edi\n"
+        "movl $s_fillTestMaterials+4, %esi\n" /* line 1353 */
+        "movl $s_builtInMaterials+4, %edi\n"
         "jmp .Lfd4686_000d47e6\n"
         ".Lfd4686_000d47db:\n"
         "addl $8, %esi\n" /* line 1325 */
@@ -1870,7 +1870,7 @@ void Material_Init(void)
         "jne .Lfd4686_000d47db\n"
         "movl -4(%esi), %eax\n" /* line 1325 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224548, 4(%esp)\n" /* "Could not find material '%s'" */
+        "movl $str_00224548, 4(%esp)\n" /* "Could not find material '%s'" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfd4686_000d47db\n"

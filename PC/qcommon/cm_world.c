@@ -9,7 +9,7 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-static struct cm_world_t cm_world; /* 0x4ed880 */
+static struct cm_world_t cm_world; /* cm_world */
 
 void CM_UnlinkEntity(svEntity_t *ent);
 static void CM_AreaEntities_r(void);
@@ -49,14 +49,14 @@ void CM_UnlinkEntity(svEntity_t *ent)
         "movl %eax, %edx\n"
         "movzwl %bx, %eax\n" /* line 465 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "movw $0, (%edx)\n" /* line 466 */
         "movzwl 8(%edi), %eax\n" /* line 470 | node */
         "leal (%eax, %eax, 2), %eax\n"
         "movl %eax, %edx\n"
         "shll $5, %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195ee80, %esi\n" /* contents */
+        "movl imp_sv, %esi\n" /* contents */
         "movl %esi, -0x1c(%ebp)\n" /* contents */
         "leal 0x22a4(%esi, %edx, 4), %ecx\n" /* contents */
         "cmpl %ecx, 8(%ebp)\n" /* ent */
@@ -89,12 +89,12 @@ void CM_UnlinkEntity(svEntity_t *ent)
         "movzwl 0x12(%edi), %edx\n" /* line 492 | node */
         "testw %dx, %dx\n"
         "je .Lfafba0_000afc74\n"
-        "movzwl 0x4ed89a, %eax\n" /* line 500 */
+        "movzwl cm_world+26, %eax\n" /* line 500 */
         "movw %ax, 0x12(%edi)\n" /* node */
-        "movw %bx, 0x4ed89a\n" /* line 501 | nodeIndex */
+        "movw %bx, cm_world+26\n" /* line 501 | nodeIndex */
         "movzwl %dx, %eax\n" /* line 503 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "cmpw 0x14(%edi), %bx\n" /* line 505 | node, nodeIndex */
         "je .Lfafba0_000afd06\n"
         "movw $0, 0x16(%edi)\n" /* line 512 | node */
@@ -108,8 +108,8 @@ void CM_UnlinkEntity(svEntity_t *ent)
         "leal (%edx, %edx, 2), %edx\n"
         "movzwl 0x16(%edi), %eax\n" /* node */
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x4ed8a0(, %edx, 8), %esi\n" /* contents */
-        "orl 0x4ed8a0(, %eax, 8), %esi\n" /* contents */
+        "movl cm_world+32(, %edx, 8), %esi\n" /* contents */
+        "orl cm_world+32(, %eax, 8), %esi\n" /* contents */
         "movzwl 8(%edi), %eax\n" /* line 521 | node */
         "testw %ax, %ax\n"
         "je .Lfafba0_000afce8\n"
@@ -118,7 +118,7 @@ void CM_UnlinkEntity(svEntity_t *ent)
         "movl %eax, %edx\n"
         "shll $5, %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "leal 0x22a4(%eax, %edx, 4), %ebx\n" /* nodeIndex */
         "jmp .Lfafba0_000afcd1\n"
         ".Lfafba0_000afcb4:\n"
@@ -128,7 +128,7 @@ void CM_UnlinkEntity(svEntity_t *ent)
         "shll $5, %eax\n"
         "subl %edx, %eax\n"
         "leal 0x229c(, %eax, 4), %eax\n"
-        "addl 0x195ee80, %eax\n"
+        "addl imp_sv, %eax\n"
         "leal 8(%eax), %ebx\n" /* nodeIndex */
         ".Lfafba0_000afcd1:\n"
         "movl %ebx, (%esp)\n" /* line 525 | nodeIndex */
@@ -144,7 +144,7 @@ void CM_UnlinkEntity(svEntity_t *ent)
         "je .Lfafba0_000afd13\n"
         "movzwl %ax, %eax\n" /* line 536 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "jmp .Lfafba0_000afc74\n"
         ".Lfafba0_000afd06:\n"
         "movw $0, 0x14(%edi)\n" /* line 507 | node */
@@ -182,7 +182,7 @@ void CM_AreaEntities_r(void)
         /* { scope 1 */
         "movzwl %ax, %eax\n" /* line 934 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %ebx\n" /* node */
+        "leal cm_world+28(, %eax, 8), %ebx\n" /* node */
         "movl 4(%ebx), %eax\n" /* line 935 | node */
         "testl %eax, 0x18(%edx)\n"
         "je .Lfafd28_000afd75\n"
@@ -220,7 +220,7 @@ void CM_AreaEntities_r(void)
         /* { scope 1 */
         "jmp CM_AreaEntities_r\n" /* line 962 */
         ".Lfafd28_000afd8f:\n"
-        "movl 0x195ee80, %edx\n"
+        "movl imp_sv, %edx\n"
         "movl %edx, -0x24(%ebp)\n"
         "movl %edx, %ecx\n"
         "addl $0x2418, %ecx\n"
@@ -302,7 +302,7 @@ void CM_AreaEntities_r(void)
         "jbe .Lfafd28_000afd75\n"
         "jmp .Lfafd28_000afd7d\n"
         ".Lfafd28_000afeb7:\n"
-        "movl $0x21e994, (%esp)\n" /* line 950 */
+        "movl $str_0021e994, (%esp)\n" /* line 950 */
         "calll Com_DPrintf\n"
         "jmp .Lfafd28_000afd75\n"
     );
@@ -355,7 +355,7 @@ int CM_PointSightTraceToEntities_r(const vec_t *p2)
         /* { scope 1 */
         "movzwl %dx, %edx\n" /* line 1523 | nodeIndex */
         "leal (%edx, %edx, 2), %edx\n" /* nodeIndex */
-        "leal 0x4ed89c(, %edx, 8), %ebx\n" /* node */
+        "leal cm_world+28(, %edx, 8), %ebx\n" /* node */
         "movl 4(%ebx), %eax\n" /* line 1524 | node */
         "testl %eax, 0x20(%esi)\n" /* clip */
         "je .Lfaff06_000aff9e\n"
@@ -411,7 +411,7 @@ int CM_PointSightTraceToEntities_r(const vec_t *p2)
         "shll $5, %eax\n"
         "subl %edx, %eax\n" /* nodeIndex */
         "leal 0x229c(, %eax, 4), %eax\n"
-        "addl 0x195ee80, %eax\n"
+        "addl imp_sv, %eax\n"
         "leal 8(%eax), %ebx\n" /* node */
         "movl %ebx, 4(%esp)\n" /* line 1559 | node */
         "movl %esi, (%esp)\n" /* clip */
@@ -538,7 +538,7 @@ qboolean CM_PointTraceStaticModelsComplete_r(const vec_t *p2)
         ".Lfb00a0_000b0123:\n"
         "movzwl %dx, %eax\n" /* line 1113 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0xc(%eax), %edx\n" /* nodeIndex */
         "movl %edx, -0x3c(%ebp)\n" /* nodeIndex, node */
         "movl 0xc(%eax), %eax\n" /* line 1114 */
@@ -576,7 +576,7 @@ qboolean CM_PointTraceStaticModelsComplete_r(const vec_t *p2)
         "movzwl %ax, %eax\n" /* line 1119 */
         "leal (%eax, %eax, 4), %ebx\n" /* side */
         "shll $4, %ebx\n" /* side */
-        "movl 0x195eda4, %ecx\n" /* p1_ */
+        "movl imp_cm, %ecx\n" /* p1_ */
         "addl 8(%ecx), %ebx\n" /* p1_, side */
         "leal -0x50(%ebx), %esi\n" /* side, check */
         "movl 4(%esi), %eax\n" /* line 1120 | check */
@@ -632,7 +632,7 @@ qboolean CM_PointTraceStaticModelsComplete_r(const vec_t *p2)
         "movl %eax, -0x28(%ebp)\n"
         "movzwl %dx, %eax\n" /* line 1113 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0xc(%eax), %edx\n" /* nodeIndex */
         "movl %edx, -0x3c(%ebp)\n" /* nodeIndex, node */
         "movl 0xc(%eax), %eax\n" /* line 1114 */
@@ -726,7 +726,7 @@ int CM_ClipSightTraceToEntities_r(const vec_t *p2)
         ".Lfb02fc_000b0318:\n"
         "movzwl %dx, %eax\n" /* line 1333 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %esi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %esi\n" /* node */
         "movl 4(%esi), %eax\n" /* line 1334 | node */
         "testl %eax, 0x44(%edi)\n" /* clip */
         "je .Lfb02fc_000b0398\n"
@@ -759,7 +759,7 @@ int CM_ClipSightTraceToEntities_r(const vec_t *p2)
         "movzwl 0x14(%esi), %edx\n" /* line 1351 | node, nodeIndex */
         "movzwl %dx, %eax\n" /* line 1333 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %esi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %esi\n" /* node */
         "movl 4(%esi), %eax\n" /* line 1334 | node */
         "testl %eax, 0x44(%edi)\n" /* clip */
         "jne .Lfb02fc_000b032d\n"
@@ -785,7 +785,7 @@ int CM_ClipSightTraceToEntities_r(const vec_t *p2)
         "shll $5, %eax\n"
         "subl %edx, %eax\n" /* nodeIndex */
         "leal 0x229c(, %eax, 4), %eax\n"
-        "addl 0x195ee80, %eax\n"
+        "addl imp_sv, %eax\n"
         "leal 8(%eax), %ebx\n" /* check */
         "movl %ebx, 4(%esp)\n" /* line 1340 | check */
         "movl %edi, (%esp)\n" /* clip */
@@ -808,7 +808,7 @@ int CM_ClipSightTraceToEntities_r(const vec_t *p2)
         "andps %xmm0, %xmm7\n"
         "andnps %xmm2, %xmm0\n"
         "orps %xmm7, %xmm0\n"
-        "movss 0x2f1c60, %xmm3\n" /* line 1355 */
+        "movss CorrectSolidDeltas+5472, %xmm3\n" /* line 1355 */
         "movaps %xmm4, %xmm1\n"
         "xorps %xmm3, %xmm1\n"
         "ucomiss %xmm0, %xmm1\n"
@@ -820,7 +820,7 @@ int CM_ClipSightTraceToEntities_r(const vec_t *p2)
         "jne .Lfb02fc_000b0536\n"
         "jp .Lfb02fc_000b0536\n"
         "movaps %xmm6, %xmm3\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm7\n"
         "xorl %ebx, %ebx\n" /* check */
         "movaps %xmm6, %xmm0\n"
@@ -889,7 +889,7 @@ int CM_ClipSightTraceToEntities_r(const vec_t *p2)
         "jmp .Lfb02fc_000b0318\n"
         ".Lfb02fc_000b0536:\n"
         "movaps %xmm5, %xmm1\n" /* line 54 */
-        "andps 0x2f1c70, %xmm1\n"
+        "andps CorrectSolidDeltas+5488, %xmm1\n"
         "movaps %xmm2, %xmm0\n" /* line 1366 */
         "xorps %xmm3, %xmm0\n"
         "movaps %xmm5, %xmm3\n" /* line 45 */
@@ -899,7 +899,7 @@ int CM_ClipSightTraceToEntities_r(const vec_t *p2)
         "andnps %xmm2, %xmm3\n"
         "orps %xmm7, %xmm3\n"
         "movaps %xmm3, %xmm0\n"
-        "movss 0x2ed5d0, %xmm7\n" /* line 1367 | 1.0f */
+        "movss lit4_002ed5d0, %xmm7\n" /* line 1367 | 1.0f */
         "movaps %xmm7, %xmm2\n"
         "divss %xmm1, %xmm2\n"
         "movaps %xmm2, %xmm1\n"
@@ -962,7 +962,7 @@ void CM_PointTraceStaticModels_r(locTraceWork_t *tw, const vec_t *p2, trace_t *t
         ".Lfb05b0_000b05dc:\n"
         "movzwl %dx, %eax\n" /* line 1017 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0xc(%eax), %edi\n" /* node */
         "movl 0xc(%eax), %eax\n" /* line 1018 */
         "movl -0x3c(%ebp), %edx\n" /* nodeIndex */
@@ -1000,7 +1000,7 @@ void CM_PointTraceStaticModels_r(locTraceWork_t *tw, const vec_t *p2, trace_t *t
         "movzwl 0x14(%edi, %eax, 2), %edx\n" /* node, nodeIndex */
         "movzwl %dx, %eax\n" /* line 1017 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0xc(%eax), %edi\n" /* node */
         "movl 0xc(%eax), %eax\n" /* line 1018 */
         "movl -0x3c(%ebp), %edx\n" /* nodeIndex */
@@ -1048,7 +1048,7 @@ void CM_PointTraceStaticModels_r(locTraceWork_t *tw, const vec_t *p2, trace_t *t
         "movzwl %ax, %eax\n" /* line 1023 */
         "leal (%eax, %eax, 4), %ebx\n" /* side */
         "shll $4, %ebx\n" /* side */
-        "movl 0x195eda4, %eax\n"
+        "movl imp_cm, %eax\n"
         "addl 8(%eax), %ebx\n" /* side */
         "leal -0x50(%ebx), %esi\n" /* side, check */
         "movl 4(%esi), %eax\n" /* line 1024 | check */
@@ -1204,7 +1204,7 @@ void CM_PointTraceToEntities_r(const vec_t *p2, trace_t *trace)
         ".Lfb087e_000b08a0:\n"
         "movzwl %dx, %eax\n" /* line 1440 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %esi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %esi\n" /* node */
         "movl 4(%esi), %eax\n" /* line 1441 | node */
         "testl %eax, 0x2c(%edi)\n" /* clip */
         "je .Lfb087e_000b0932\n"
@@ -1240,7 +1240,7 @@ void CM_PointTraceToEntities_r(const vec_t *p2, trace_t *trace)
         "movzwl 0x14(%esi, %edx, 2), %edx\n" /* node, nodeIndex */
         "movzwl %dx, %eax\n" /* line 1440 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %esi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %esi\n" /* node */
         "movl 4(%esi), %eax\n" /* line 1441 | node */
         "testl %eax, 0x2c(%edi)\n" /* clip */
         "jne .Lfb087e_000b08b5\n"
@@ -1260,7 +1260,7 @@ void CM_PointTraceToEntities_r(const vec_t *p2, trace_t *trace)
         "shll $5, %ebx\n" /* check */
         "subl %eax, %ebx\n" /* check */
         "leal 0x229c(, %ebx, 4), %ebx\n" /* check */
-        "addl 0x195ee80, %ebx\n" /* check */
+        "addl imp_sv, %ebx\n" /* check */
         "addl $8, %ebx\n" /* check */
         "movl 0xc(%ebp), %eax\n" /* line 1447 | trace */
         "movl %eax, 8(%esp)\n"
@@ -1398,7 +1398,7 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         ".Lfb0aa4_000b0ac6:\n"
         "movzwl %dx, %eax\n" /* line 1208 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %esi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %esi\n" /* node */
         "movl 0x50(%edi), %ecx\n" /* line 1209 | clip, p1 */
         "testl %ecx, 4(%esi)\n" /* p1, node */
         "je .Lfb0aa4_000b0b4a\n"
@@ -1431,7 +1431,7 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         "movzwl 0x14(%esi), %edx\n" /* line 1226 | node, nodeIndex */
         "movzwl %dx, %eax\n" /* line 1208 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %esi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %esi\n" /* node */
         "movl 0x50(%edi), %ecx\n" /* line 1209 | clip, p1 */
         "testl %ecx, 4(%esi)\n" /* p1, node */
         "jne .Lfb0aa4_000b0adb\n"
@@ -1462,7 +1462,7 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         "shll $5, %eax\n"
         "subl %edx, %eax\n" /* nodeIndex */
         "leal 0x229c(, %eax, 4), %eax\n"
-        "addl 0x195ee80, %eax\n"
+        "addl imp_sv, %eax\n"
         "leal 8(%eax), %ebx\n" /* check */
         "testl %ecx, 0x160(%ebx)\n" /* line 1215 | p1, check */
         "je .Lfb0aa4_000b0b65\n"
@@ -1475,7 +1475,7 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         "andps %xmm0, %xmm4\n"
         "andnps %xmm2, %xmm0\n"
         "orps %xmm4, %xmm0\n"
-        "movss 0x2f1c80, %xmm4\n" /* line 1230 */
+        "movss CorrectSolidDeltas+5504, %xmm4\n" /* line 1230 */
         "movaps %xmm3, %xmm1\n"
         "xorps %xmm4, %xmm1\n"
         "ucomiss %xmm0, %xmm1\n"
@@ -1491,7 +1491,7 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         "jne .Lfb0aa4_000b0d34\n"
         "jp .Lfb0aa4_000b0d34\n"
         "movaps %xmm6, %xmm4\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "xorl %eax, %eax\n"
         "movaps %xmm6, %xmm0\n"
         "movl $1, %ebx\n" /* check */
@@ -1570,7 +1570,7 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         "jmp .Lfb0aa4_000b0ac6\n"
         ".Lfb0aa4_000b0d34:\n"
         "movaps %xmm5, %xmm0\n" /* line 54 */
-        "andps 0x2f1c90, %xmm0\n"
+        "andps CorrectSolidDeltas+5520, %xmm0\n"
         "movss %xmm0, -0x5c(%ebp)\n" /* absDiff */
         "movaps %xmm2, %xmm0\n" /* line 1244 */
         "xorps %xmm4, %xmm0\n"
@@ -1581,7 +1581,7 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         "andnps %xmm2, %xmm1\n"
         "orps %xmm4, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1245 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1245 | 1.0f */
         "divss -0x5c(%ebp), %xmm1\n" /* absDiff */
         "movaps %xmm0, %xmm4\n" /* line 1246 */
         "subss %xmm3, %xmm4\n"
@@ -1592,11 +1592,11 @@ void CM_ClipMoveToEntities_r(const vec_t *p2, trace_t *trace)
         "xorl %eax, %eax\n" /* line 96 */
         "ucomiss %xmm5, %xmm6\n"
         "setbe %al\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movl $1, %ebx\n"
         "subl %eax, %ebx\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "jmp .Lfb0aa4_000b0c08\n"
     );
 }
@@ -1663,11 +1663,11 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "movl %ecx, -0x58(%ebp)\n"
         "movw %ax, -0x4e(%ebp)\n"
         /* { scope 1: size, nodeIndex */
-        "cmpb $0, 0x4ed898\n" /* line 607 */
+        "cmpb $0, cm_world+24\n" /* line 607 */
         "jne .Lfb0e0c_000b0fc9\n"
         "movzwl %ax, %eax\n" /* line 610 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %eax\n"
+        "leal cm_world+28(, %eax, 8), %eax\n"
         "movl %eax, -0x30(%ebp)\n" /* node */
         "movzwl 0x10(%eax), %eax\n" /* line 612 */
         "movl %eax, -0x40(%ebp)\n" /* axis */
@@ -1678,7 +1678,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "testw %di, %di\n" /* line 618 | modelnum */
         "je .Lfb0e0c_000b0f14\n"
         "movl $0, -0x38(%ebp)\n" /* prevEnt */
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "movl %eax, -0x5c(%ebp)\n"
         ".Lfb0e0c_000b0e6c:\n"
         "movzwl %di, %eax\n" /* line 620 | modelnum */
@@ -1698,7 +1698,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "testw %ax, %ax\n" /* line 624 */
         "jne .Lfb0e0c_000b1216\n"
         /* { scope 2 */
-        "movzwl 0x4ed89a, %edx\n" /* line 107 */
+        "movzwl cm_world+26, %edx\n" /* line 107 */
         "testw %dx, %dx\n" /* line 108 */
         "je .Lfb0e0c_000b0efe\n"
         "movl -0x58(%ebp), %eax\n" /* line 65 */
@@ -1715,7 +1715,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "ucomiss %xmm1, %xmm0\n"
         "setae %bl\n" /* axis */
         "movzwl %bx, %ecx\n" /* line 113 | axis */
-        "movss 0x2ed828, %xmm0\n" /* 512.0f */
+        "movss lit4_002ed828, %xmm0\n" /* 512.0f */
         "ucomiss -0x20(%ebp, %ecx, 4), %xmm0\n"
         "jb .Lfb0e0c_000b1366\n"
         ".Lfb0e0c_000b0efe:\n"
@@ -1734,7 +1734,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "je .Lfb0e0c_000b0fc9\n"
         "movl $0, -0x34(%ebp)\n" /* prevStaticModel */
         ".Lfb0e0c_000b0f28:\n"
-        "movl 0x195eda4, %eax\n" /* line 672 */
+        "movl imp_cm, %eax\n" /* line 672 */
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x4c(%ebp)\n"
         "movzwl %di, %eax\n" /* modelnum */
@@ -1752,7 +1752,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "testw %ax, %ax\n" /* line 676 */
         "jne .Lfb0e0c_000b10a4\n"
         /* { scope 2 */
-        "movzwl 0x4ed89a, %edx\n" /* line 107 */
+        "movzwl cm_world+26, %edx\n" /* line 107 */
         "testw %dx, %dx\n" /* line 108 */
         "je .Lfb0e0c_000b0fb7\n"
         "movl -0x58(%ebp), %eax\n" /* line 65 */
@@ -1769,7 +1769,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "ucomiss %xmm1, %xmm0\n"
         "setae %bl\n" /* axis */
         "movzwl %bx, %ecx\n" /* line 113 | axis */
-        "movss 0x2ed828, %xmm0\n" /* 512.0f */
+        "movss lit4_002ed828, %xmm0\n" /* 512.0f */
         "ucomiss -0x20(%ebp, %ecx, 4), %xmm0\n"
         "jb .Lfb0e0c_000b1307\n"
         ".Lfb0e0c_000b0fb7:\n"
@@ -1801,7 +1801,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "testw %ax, %ax\n" /* line 688 */
         "jne .Lfb0e0c_000b10a4\n"
         /* { scope 2 */
-        "movzwl 0x4ed89a, %edx\n" /* line 107 */
+        "movzwl cm_world+26, %edx\n" /* line 107 */
         "testw %dx, %dx\n" /* line 108 */
         "je .Lfb0e0c_000b0fb7\n"
         "movl -0x58(%ebp), %eax\n" /* line 65 */
@@ -1818,20 +1818,20 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "ucomiss %xmm1, %xmm0\n"
         "setae %bl\n" /* axis */
         "movzwl %bx, %ecx\n" /* line 113 | axis */
-        "movss 0x2ed828, %xmm0\n" /* 512.0f */
+        "movss lit4_002ed828, %xmm0\n" /* 512.0f */
         "ucomiss -0x20(%ebp, %ecx, 4), %xmm0\n"
         "jae .Lfb0e0c_000b0fb7\n"
         "movzwl %dx, %esi\n" /* line 116 */
         "leal (%esi, %esi, 2), %edx\n"
-        "leal 0x4ed89c(, %edx, 8), %edx\n"
+        "leal cm_world+28(, %edx, 8), %edx\n"
         "movzwl 0x12(%edx), %eax\n" /* line 125 */
-        "movw %ax, 0x4ed89a\n"
+        "movw %ax, cm_world+26\n"
         "movw %bx, 0x10(%edx)\n" /* line 127 | axis */
         "movl -0x58(%ebp), %eax\n" /* line 128 */
         "movss (%eax, %ecx, 4), %xmm0\n"
         "movl -0x54(%ebp), %eax\n"
         "addss (%eax, %ecx, 4), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0xc(%edx)\n"
         /* } scope */
         "testw %si, %si\n" /* line 691 */
@@ -1841,7 +1841,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "movzwl %si, %esi\n" /* line 694 */
         "leal (%esi, %esi, 2), %eax\n"
         "movzwl -0x4e(%ebp), %edx\n"
-        "movw %dx, 0x4ed8ae(, %eax, 8)\n"
+        "movw %dx, cm_world+46(, %eax, 8)\n"
         "jmp .Lfb0e0c_000b10a7\n"
         ".Lfb0e0c_000b10a4:\n"
         "movzwl %ax, %esi\n" /* line 702 */
@@ -1861,7 +1861,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "addl %edx, %eax\n"
         "leal (%ecx, %eax, 4), %ecx\n"
         "leal (%esi, %esi, 2), %eax\n" /* line 577 */
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0x16(%eax), %ebx\n" /* prevStaticModel */
         "movzwl 0x16(%eax), %edx\n" /* line 579 */
         "leal -1(%edx), %eax\n"
@@ -1885,13 +1885,13 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         /* } scope */
         "leal (%esi, %esi, 2), %esi\n" /* line 711 */
         "shll $3, %esi\n"
-        "movl 0x4ed89c(%esi), %ebx\n" /* prevStaticModel */
+        "movl cm_world+28(%esi), %ebx\n" /* prevStaticModel */
         "movl -0x44(%ebp), %edx\n" /* staticModel */
         "movl 4(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll XModelGetContents\n"
         "orl %eax, %ebx\n" /* prevStaticModel */
-        "movl %ebx, 0x4ed89c(%esi)\n" /* prevStaticModel */
+        "movl %ebx, cm_world+28(%esi)\n" /* prevStaticModel */
         "movl -0x34(%ebp), %ecx\n" /* line 713 | prevStaticModel */
         "testl %ecx, %ecx\n"
         "je .Lfb0e0c_000b12ef\n"
@@ -1907,7 +1907,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "testw %ax, %ax\n" /* line 636 */
         "jne .Lfb0e0c_000b1216\n"
         /* { scope 2 */
-        "movzwl 0x4ed89a, %edx\n" /* line 107 */
+        "movzwl cm_world+26, %edx\n" /* line 107 */
         "testw %dx, %dx\n" /* line 108 */
         "je .Lfb0e0c_000b0efe\n"
         "movl -0x58(%ebp), %eax\n" /* line 65 */
@@ -1924,20 +1924,20 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "ucomiss %xmm1, %xmm0\n"
         "setae %bl\n" /* axis */
         "movzwl %bx, %ecx\n" /* line 113 | axis */
-        "movss 0x2ed828, %xmm0\n" /* 512.0f */
+        "movss lit4_002ed828, %xmm0\n" /* 512.0f */
         "ucomiss -0x20(%ebp, %ecx, 4), %xmm0\n"
         "jae .Lfb0e0c_000b0efe\n"
         "movzwl %dx, %esi\n" /* line 116 */
         "leal (%esi, %esi, 2), %edx\n"
-        "leal 0x4ed89c(, %edx, 8), %edx\n"
+        "leal cm_world+28(, %edx, 8), %edx\n"
         "movzwl 0x12(%edx), %eax\n" /* line 125 */
-        "movw %ax, 0x4ed89a\n"
+        "movw %ax, cm_world+26\n"
         "movw %bx, 0x10(%edx)\n" /* line 127 | axis */
         "movl -0x58(%ebp), %eax\n" /* line 128 */
         "movss (%eax, %ecx, 4), %xmm0\n"
         "movl -0x54(%ebp), %eax\n"
         "addss (%eax, %ecx, 4), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0xc(%edx)\n"
         /* } scope */
         "testw %si, %si\n" /* line 639 */
@@ -1947,7 +1947,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "movzwl %si, %esi\n" /* line 642 */
         "leal (%esi, %esi, 2), %eax\n"
         "movzwl -0x4e(%ebp), %edx\n"
-        "movw %dx, 0x4ed8ae(, %eax, 8)\n"
+        "movw %dx, cm_world+46(, %eax, 8)\n"
         "jmp .Lfb0e0c_000b1219\n"
         ".Lfb0e0c_000b1216:\n"
         "movzwl %ax, %esi\n" /* line 650 */
@@ -1975,7 +1975,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "leal (%edx, %eax, 4), %ebx\n" /* entnum */
         "movw %si, -0x2a(%ebp)\n" /* line 553 | nodeIndex */
         "leal (%esi, %esi, 2), %eax\n"
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0x14(%eax), %ecx\n"
         "movzwl 0x14(%eax), %edx\n" /* line 555 */
         "leal -1(%edx), %eax\n"
@@ -2006,11 +2006,11 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         /* } scope */
         "leal (%esi, %esi, 2), %esi\n" /* line 659 */
         "shll $3, %esi\n"
-        "movl 0x4ed8a0(%esi), %ebx\n" /* prevStaticModel */
+        "movl cm_world+32(%esi), %ebx\n" /* prevStaticModel */
         "movl %edx, (%esp)\n"
         "calll SV_GEntityForSvEntity\n"
         "orl 0x11c(%eax), %ebx\n" /* prevStaticModel */
-        "movl %ebx, 0x4ed8a0(%esi)\n" /* prevStaticModel */
+        "movl %ebx, cm_world+32(%esi)\n" /* prevStaticModel */
         "movl -0x38(%ebp), %ebx\n" /* line 661 | prevEnt, prevStaticModel */
         "testl %ebx, %ebx\n" /* prevStaticModel */
         "je .Lfb0e0c_000b12fb\n"
@@ -2038,15 +2038,15 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         ".Lfb0e0c_000b1307:\n"
         "movzwl %dx, %esi\n" /* line 116 */
         "leal (%esi, %esi, 2), %edx\n"
-        "leal 0x4ed89c(, %edx, 8), %edx\n"
+        "leal cm_world+28(, %edx, 8), %edx\n"
         "movzwl 0x12(%edx), %eax\n" /* line 125 */
-        "movw %ax, 0x4ed89a\n"
+        "movw %ax, cm_world+26\n"
         "movw %bx, 0x10(%edx)\n" /* line 127 | axis */
         "movl -0x58(%ebp), %eax\n" /* line 128 */
         "movss (%eax, %ecx, 4), %xmm0\n"
         "movl -0x54(%ebp), %eax\n"
         "addss (%eax, %ecx, 4), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0xc(%edx)\n"
         /* } scope */
         "testw %si, %si\n" /* line 679 */
@@ -2056,21 +2056,21 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "movzwl %si, %esi\n" /* line 682 */
         "leal (%esi, %esi, 2), %eax\n"
         "movzwl -0x4e(%ebp), %edx\n"
-        "movw %dx, 0x4ed8ae(, %eax, 8)\n"
+        "movw %dx, cm_world+46(, %eax, 8)\n"
         "jmp .Lfb0e0c_000b10a7\n"
         /* { scope 2 */
         ".Lfb0e0c_000b1366:\n"
         "movzwl %dx, %esi\n" /* line 116 */
         "leal (%esi, %esi, 2), %edx\n"
-        "leal 0x4ed89c(, %edx, 8), %edx\n"
+        "leal cm_world+28(, %edx, 8), %edx\n"
         "movzwl 0x12(%edx), %eax\n" /* line 125 */
-        "movw %ax, 0x4ed89a\n"
+        "movw %ax, cm_world+26\n"
         "movw %bx, 0x10(%edx)\n" /* line 127 | axis */
         "movl -0x58(%ebp), %eax\n" /* line 128 */
         "movss (%eax, %ecx, 4), %xmm0\n"
         "movl -0x54(%ebp), %eax\n"
         "addss (%eax, %ecx, 4), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0xc(%edx)\n"
         /* } scope */
         "testw %si, %si\n" /* line 627 */
@@ -2080,7 +2080,7 @@ void CM_SortNode(short unsigned int nodeIndex, vec_t *mins, vec_t *maxs)
         "movzwl %si, %esi\n" /* line 630 */
         "leal (%esi, %esi, 2), %eax\n"
         "movzwl -0x4e(%ebp), %edx\n"
-        "movw %dx, 0x4ed8ae(, %eax, 8)\n"
+        "movw %dx, cm_world+46(, %eax, 8)\n"
         "jmp .Lfb0e0c_000b1219\n"
     );
 }
@@ -2100,11 +2100,11 @@ void CM_LinkWorld(void)
         "movl $0, 4(%esp)\n"
         "movl $cm_world, (%esp)\n"
         "calll memset\n"
-        "movl $0x4ed88c, 8(%esp)\n" /* line 150 */
+        "movl $cm_world+12, 8(%esp)\n" /* line 150 */
         "movl $cm_world, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll CM_ModelBounds\n"
-        "movw $2, 0x4ed89a\n" /* line 154 */
+        "movw $2, cm_world+26\n" /* line 154 */
         "movl $3, %eax\n"
         "movl $cm_world, %edx\n"
         ".Lfb13c6_000b141a:\n"
@@ -2113,21 +2113,21 @@ void CM_LinkWorld(void)
         "addl $0x18, %edx\n"
         "cmpl $0x400, %eax\n" /* line 155 */
         "jne .Lfb13c6_000b141a\n"
-        "movw $0, 0x4f3896\n" /* line 157 */
-        "movss 0x4ed88c, %xmm1\n" /* line 160 */
+        "movw $0, cm_world+24598\n" /* line 157 */
+        "movss cm_world+12, %xmm1\n" /* line 160 */
         "subss cm_world, %xmm1\n"
-        "movss 0x4ed890, %xmm0\n"
-        "subss 0x4ed884, %xmm0\n"
+        "movss cm_world+16, %xmm0\n"
+        "subss cm_world+4, %xmm0\n"
         "xorl %eax, %eax\n"
         "ucomiss %xmm1, %xmm0\n"
         "setae %al\n"
-        "movw %ax, 0x4ed8c4\n"
+        "movw %ax, cm_world+68\n"
         "movzwl %ax, %eax\n" /* line 161 */
-        "movss 0x4ed88c(, %eax, 4), %xmm0\n"
+        "movss cm_world+12(, %eax, 4), %xmm0\n"
         "addss cm_world(, %eax, 4), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss %xmm0, 0x4ed8c0\n"
-        "movl 0x195eda4, %eax\n" /* line 889 */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
+        "movss %xmm0, cm_world+64\n"
+        "movl imp_cm, %eax\n" /* line 889 */
         "movl 8(%eax), %esi\n"
         "movl 4(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -2162,22 +2162,22 @@ void CM_LinkWorld(void)
         "movl %eax, %ecx\n"
         "movl cm_world, %eax\n" /* line 37 */
         "movl %eax, -0x20(%ebp)\n"
-        "movl 0x4ed884, %eax\n" /* line 38 */
+        "movl cm_world+4, %eax\n" /* line 38 */
         "movl %eax, -0x1c(%ebp)\n"
-        "movl 0x4ed88c, %eax\n" /* line 37 */
+        "movl cm_world+12, %eax\n" /* line 37 */
         "movl %eax, -0x28(%ebp)\n"
-        "movl 0x4ed890, %eax\n" /* line 38 */
+        "movl cm_world+16, %eax\n" /* line 38 */
         "movl %eax, -0x24(%ebp)\n"
         "movl $1, %eax\n"
-        "movl $0x4ed890, %edi\n"
+        "movl $cm_world+16, %edi\n"
         ".Lfb13c6_000b1502:\n"
         "movzwl %ax, %ebx\n" /* line 841 */
         "leal (%ebx, %ebx, 2), %eax\n"
         "shll $3, %eax\n"
         "movl %ecx, %edx\n"
-        "orl 0x4ed89c(%eax), %edx\n"
+        "orl cm_world+28(%eax), %edx\n"
         "movl %edx, 0xc(%eax, %edi)\n"
-        "addl $0x4ed89c, %eax\n" /* line 843 */
+        "addl $cm_world+28, %eax\n" /* line 843 */
         "movzwl 0x10(%eax), %edx\n" /* line 844 */
         "movss 0xc(%eax), %xmm1\n" /* line 845 */
         "movss 0x38(%esi, %edx, 4), %xmm0\n" /* line 847 */
@@ -2203,7 +2203,7 @@ void CM_LinkWorld(void)
         "addl %edx, %eax\n"
         "leal (%ecx, %eax, 4), %ecx\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 577 */
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0x16(%eax), %edi\n"
         "movzwl 0x16(%eax), %edx\n" /* line 579 */
         "leal -1(%edx), %eax\n"
@@ -2265,7 +2265,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "je .Lfb15d6_000b1829\n"
         "movzwl %bx, %eax\n" /* line 465 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "movl 8(%ebp), %edx\n" /* line 466 | ent */
         "movw $0, (%edx)\n"
         "movzwl 8(%edi), %eax\n" /* line 470 | node */
@@ -2273,7 +2273,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "movl %eax, %edx\n"
         "shll $5, %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195ee80, %esi\n" /* nodeIndex */
+        "movl imp_sv, %esi\n" /* nodeIndex */
         "movl %esi, -0x34(%ebp)\n" /* nodeIndex */
         "leal 0x22a4(%esi, %edx, 4), %ecx\n" /* nodeIndex */
         "cmpl %ecx, 8(%ebp)\n" /* ent */
@@ -2306,12 +2306,12 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "movzwl 0x12(%edi), %edx\n" /* line 492 | node */
         "testw %dx, %dx\n"
         "je .Lfb15d6_000b16c5\n"
-        "movzwl 0x4ed89a, %eax\n" /* line 500 */
+        "movzwl cm_world+26, %eax\n" /* line 500 */
         "movw %ax, 0x12(%edi)\n" /* node */
-        "movw %bx, 0x4ed89a\n" /* line 501 | nodeIndex */
+        "movw %bx, cm_world+26\n" /* line 501 | nodeIndex */
         "movzwl %dx, %eax\n" /* line 503 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "cmpw 0x14(%edi), %bx\n" /* line 505 | node, nodeIndex */
         "je .Lfb15d6_000b1a6f\n"
         "movw $0, 0x16(%edi)\n" /* line 512 | node */
@@ -2325,8 +2325,8 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "leal (%edx, %edx, 2), %edx\n"
         "movzwl 0x16(%edi), %eax\n" /* node */
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x4ed8a0(, %edx, 8), %esi\n" /* nodeIndex */
-        "orl 0x4ed8a0(, %eax, 8), %esi\n" /* nodeIndex */
+        "movl cm_world+32(, %edx, 8), %esi\n" /* nodeIndex */
+        "orl cm_world+32(, %eax, 8), %esi\n" /* nodeIndex */
         "movzwl 8(%edi), %eax\n" /* line 521 | node */
         "testw %ax, %ax\n"
         "je .Lfb15d6_000b1739\n"
@@ -2335,7 +2335,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "movl %eax, %edx\n"
         "shll $5, %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "leal 0x22a4(%eax, %edx, 4), %ebx\n" /* nodeIndex */
         "jmp .Lfb15d6_000b1722\n"
         ".Lfb15d6_000b1705:\n"
@@ -2345,7 +2345,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "shll $5, %eax\n"
         "subl %edx, %eax\n"
         "leal 0x229c(, %eax, 4), %eax\n"
-        "addl 0x195ee80, %eax\n"
+        "addl imp_sv, %eax\n"
         "leal 8(%eax), %ebx\n" /* nodeIndex */
         ".Lfb15d6_000b1722:\n"
         "movl %ebx, (%esp)\n" /* line 525 | nodeIndex */
@@ -2361,13 +2361,13 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "je .Lfb15d6_000b1829\n"
         "movzwl %ax, %eax\n" /* line 536 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "jmp .Lfb15d6_000b16c5\n"
         /* } scope */
         /* { scope 2 */
         /* { scope 3 */
         ".Lfb15d6_000b175b:\n"
-        "movl 0x195ee80, %esi\n" /* line 552 | entnum */
+        "movl imp_sv, %esi\n" /* line 552 | entnum */
         "movl %esi, -0x34(%ebp)\n" /* entnum */
         "leal 0x2418(%esi), %eax\n" /* entnum */
         "movl 8(%ebp), %edx\n" /* ent */
@@ -2387,7 +2387,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "leal (%edx, %eax, 4), %esi\n" /* entnum */
         "movl %ebx, %edi\n" /* line 553 | nodeIndex, node */
         "leal (%ebx, %ebx, 2), %eax\n" /* nodeIndex */
-        "leal 0x4ed890(, %eax, 8), %eax\n"
+        "leal cm_world+16(, %eax, 8), %eax\n"
         "leal 0x14(%eax), %ecx\n"
         "movzwl 0x14(%eax), %edx\n" /* line 555 */
         "leal -1(%edx), %eax\n"
@@ -2446,17 +2446,17 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "movl %edx, %ebx\n" /* nodeIndex */
         "notl %ebx\n" /* nodeIndex */
         "movl %ebx, -0x30(%ebp)\n" /* nodeIndex */
-        "movl 0x195ee80, %esi\n" /* entnum */
+        "movl imp_sv, %esi\n" /* entnum */
         "movl %esi, -0x38(%ebp)\n" /* entnum */
         /* { scope 1 */
         ".Lfb15d6_000b1841:\n"
         "movl cm_world, %eax\n" /* line 37 */
         "movl %eax, -0x20(%ebp)\n" /* mins */
-        "movl 0x4ed884, %eax\n" /* line 38 */
+        "movl cm_world+4, %eax\n" /* line 38 */
         "movl %eax, -0x1c(%ebp)\n"
-        "movl 0x4ed88c, %eax\n" /* line 37 */
+        "movl cm_world+12, %eax\n" /* line 37 */
         "movl %eax, -0x28(%ebp)\n" /* maxs */
-        "movl 0x4ed890, %eax\n" /* line 38 */
+        "movl cm_world+16, %eax\n" /* line 38 */
         "movl %eax, -0x24(%ebp)\n"
         "movl $1, %edi\n"
         ".Lfb15d6_000b1866:\n"
@@ -2464,9 +2464,9 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "leal (%ebx, %ebx, 2), %eax\n" /* nodeIndex */
         "shll $3, %eax\n"
         "movl -0x2c(%ebp), %edx\n" /* contents */
-        "orl 0x4ed8a0(%eax), %edx\n"
-        "movl %edx, 0x4ed8a0(%eax)\n"
-        "addl $0x4ed89c, %eax\n" /* line 758 */
+        "orl cm_world+32(%eax), %edx\n"
+        "movl %edx, cm_world+32(%eax)\n"
+        "addl $cm_world+28, %eax\n" /* line 758 */
         "movzwl 0x10(%eax), %edx\n" /* line 759 */
         "movss 0xc(%eax), %xmm1\n" /* line 760 */
         "leal (, %edx, 4), %ecx\n" /* line 762 */
@@ -2499,7 +2499,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         ".Lfb15d6_000b18e6:\n"
         "movzwl %si, %eax\n" /* line 465 | nodeIndex */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "movl 8(%ebp), %ebx\n" /* line 466 | ent, nodeIndex */
         "movw $0, (%ebx)\n" /* nodeIndex */
         "movzwl 8(%edi), %eax\n" /* line 470 | node */
@@ -2541,12 +2541,12 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "movzwl 0x12(%edi), %edx\n" /* line 492 | node */
         "testw %dx, %dx\n"
         "je .Lfb15d6_000b19a2\n"
-        "movzwl 0x4ed89a, %eax\n" /* line 500 */
+        "movzwl cm_world+26, %eax\n" /* line 500 */
         "movw %ax, 0x12(%edi)\n" /* node */
-        "movw %si, 0x4ed89a\n" /* line 501 | nodeIndex */
+        "movw %si, cm_world+26\n" /* line 501 | nodeIndex */
         "movzwl %dx, %eax\n" /* line 503 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "cmpw 0x14(%edi), %si\n" /* line 505 | node, nodeIndex */
         "je .Lfb15d6_000b1a41\n"
         "movw $0, 0x16(%edi)\n" /* line 512 | node */
@@ -2560,8 +2560,8 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "leal (%edx, %edx, 2), %edx\n"
         "movzwl 0x16(%edi), %eax\n" /* node */
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x4ed8a0(, %edx, 8), %esi\n" /* nodeIndex */
-        "orl 0x4ed8a0(, %eax, 8), %esi\n" /* nodeIndex */
+        "movl cm_world+32(, %edx, 8), %esi\n" /* nodeIndex */
+        "orl cm_world+32(, %eax, 8), %esi\n" /* nodeIndex */
         "movzwl 8(%edi), %eax\n" /* line 521 | node */
         "testw %ax, %ax\n"
         "je .Lfb15d6_000b19fb\n"
@@ -2572,7 +2572,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "shll $5, %eax\n"
         "subl %edx, %eax\n"
         "leal 0x229c(, %eax, 4), %eax\n"
-        "addl 0x195ee80, %eax\n"
+        "addl imp_sv, %eax\n"
         "leal 8(%eax), %ebx\n" /* nodeIndex */
         "movl %ebx, (%esp)\n" /* line 525 | nodeIndex */
         "calll SV_GEntityForSvEntity\n"
@@ -2587,7 +2587,7 @@ void CM_LinkEntity(svEntity_t *ent, vec_t *absmin, vec_t *absmax, clipHandle_t c
         "je .Lfb15d6_000b1841\n"
         "movzwl %ax, %eax\n" /* line 536 */
         "leal (%eax, %eax, 2), %eax\n"
-        "leal 0x4ed89c(, %eax, 8), %edi\n" /* node */
+        "leal cm_world+28(, %eax, 8), %edi\n" /* node */
         "jmp .Lfb15d6_000b19a2\n"
         /* } scope */
         ".Lfb15d6_000b1a1a:\n"

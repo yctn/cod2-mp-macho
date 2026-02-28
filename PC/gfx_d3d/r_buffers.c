@@ -4,8 +4,8 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern void **g_dx;       /* 0x195eed0 - DxGlobals pointer */
-extern int *g_dxIter;     /* 0x195f0e0 - device lost indicator */
+extern void **g_dx;       /* imp_dx - DxGlobals pointer */
+extern int *g_dxIter;     /* imp_alwaysfails - device lost indicator */
 
 extern const char *va(const char *fmt, ...);
 extern void R_FatalInitError(const char *msg);

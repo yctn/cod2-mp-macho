@@ -14,16 +14,16 @@
 
 extern qboolean scr_initialized; /* 0x0 */
 extern Bool updateScreenCalled; /* 0x0 */
-static const char * szShotName[6]; /* 0x312604 */
+static const char * szShotName[6]; /* szShotName */
 
 /* Global pointers */
-extern byte *re_ptr_195eca8;     /* 0x195eca8 - renderer export function table */
-extern byte *cls_ptr_195ecac;    /* 0x195ecac - pointer to clientStatic_t */
-extern byte *dvar_ptr_195ee78;   /* 0x195ee78 - dvar pointer (cl_paused/sv_running) */
-extern byte *clc_ptr_195ee8c;    /* 0x195ee8c - client connection pointer */
-extern byte *ptr_195eea4;        /* 0x195eea4 - loading/rendering guard */
-extern byte *ptr_195f58c;        /* 0x195f58c - material handle */
-extern byte *ptr_195f5e0;        /* 0x195f5e0 - net profile struct */
+extern byte *re_ptr_195eca8;     /* imp_re - renderer export function table */
+extern byte *cls_ptr_195ecac;    /* imp_cls - pointer to clientStatic_t */
+extern byte *dvar_ptr_195ee78;   /* imp_cl - dvar pointer (cl_paused/sv_running) */
+extern byte *clc_ptr_195ee8c;    /* imp_clc - client connection pointer */
+extern byte *ptr_195eea4;        /* imp_com_errorEntered - loading/rendering guard */
+extern byte *ptr_195f58c;        /* imp_colorBlack - material handle */
+extern byte *ptr_195f5e0;        /* imp_net_showprofile - net profile struct */
 
 /* Renderer function table call helpers */
 typedef void (*re_void_func)(void);

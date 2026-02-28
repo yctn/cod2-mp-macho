@@ -5,8 +5,8 @@
 #include "imports.h"
 
 extern struct scrAnimPub_t scrAnimPub; /* 0x0 */
-static struct scrAnimGlob_t scrAnimGlob; /* 0x4ed000 */
-static const char * propertyNames[3]; /* 0x30aa80 */
+static struct scrAnimGlob_t scrAnimGlob; /* scrAnimGlob */
+static const char * propertyNames[3]; /* propertyNames */
 
 extern void * Hunk_AllocAlignInternal(int size, int align);
 
@@ -175,7 +175,7 @@ void ConnectScriptToAnim(int index, unsigned int name, int treeIndex)
         "calll SL_ConvertToString\n"
         "movl %ebx, 0xc(%esp)\n" /* filename */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21dd88, 4(%esp)\n" /* "duplicate animation '%s' in 'animtrees/%s.atr'" */
+        "movl $str_0021dd88, 4(%esp)\n" /* "duplicate animation '%s' in 'animtrees/%s.atr'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf9c43a_0009c473\n"
@@ -218,7 +218,7 @@ int Scr_CreateAnimationTree(unsigned int names, struct XAnim_s *anims, unsigned 
         ".Lf9c4de_0009c51b:\n"
         "xorl %ebx, %ebx\n" /* name */
         ".Lf9c4de_0009c51d:\n"
-        "movl 0x195ee58, %eax\n" /* line 439 */
+        "movl imp_scrVarPub, %eax\n" /* line 439 */
         "movl 0x3c(%eax), %edx\n"
         "movl %edx, %eax\n"
         "shll $5, %eax\n"
@@ -236,7 +236,7 @@ int Scr_CreateAnimationTree(unsigned int names, struct XAnim_s *anims, unsigned 
         "shll $5, %eax\n"
         "subl %ecx, %eax\n"
         "leal (%ebx, %eax), %eax\n" /* name */
-        "movl 0x195ee58, %edx\n"
+        "movl imp_scrVarPub, %edx\n"
         "movl %eax, 0x3c(%edx)\n"
         "movl %ebx, 0x14(%esp)\n" /* line 440 | name */
         "movl %esi, 0x10(%esp)\n" /* size */
@@ -290,7 +290,7 @@ int Scr_CreateAnimationTree(unsigned int names, struct XAnim_s *anims, unsigned 
         "jmp .Lf9c4de_0009c51d\n"
         ".Lf9c4de_0009c5e4:\n"
         "movl 8(%ebp), %edi\n" /* line 445 | childIndex, parentNode */
-        "movl 0x195ee58, %edx\n"
+        "movl imp_scrVarPub, %edx\n"
         "movl %edx, -0x28(%ebp)\n"
         "jmp .Lf9c4de_0009c600\n"
         ".Lf9c4de_0009c5f2:\n"
@@ -446,12 +446,12 @@ unsigned int Scr_UsingTreeInternal(int *index)
         "movl %eax, (%esp)\n" /* line 539 | filename */
         "calll GetObjectA\n"
         "movl %eax, -0x1c(%ebp)\n" /* filename, fileId */
-        "movl 0x114e42c(, %esi, 4), %edx\n" /* line 541 */
+        "movl scrAnimPub+1036(, %esi, 4), %edx\n" /* line 541 */
         "addl $1, %edx\n"
-        "movl %edx, 0x114e42c(, %esi, 4)\n"
+        "movl %edx, scrAnimPub+1036(, %esi, 4)\n"
         "shll $7, %esi\n" /* line 543 | user */
         "leal (%esi, %edx), %eax\n" /* user, filename */
-        "movw %bx, 0x4ed008(%eax, %eax)\n" /* id, filename */
+        "movw %bx, scrAnimGlob+8(%eax, %eax)\n" /* id, filename */
         "movl -0x24(%ebp), %eax\n" /* line 545 | filename */
         "movl %edx, (%eax)\n" /* filename */
         ".Lf9c724_0009c799:\n"
@@ -482,8 +482,8 @@ unsigned int Scr_UsingTreeInternal(int *index)
         "movl $0, (%eax)\n" /* filename */
         "movl %esi, %eax\n" /* line 552 | user, filename */
         "shll $8, %eax\n" /* filename */
-        "leal 0x4ed008(%eax), %edi\n" /* filename, using_xanim_lookup */
-        "movl 0x114e42c(, %esi, 4), %ecx\n" /* line 553 */
+        "leal scrAnimGlob+8(%eax), %edi\n" /* filename, using_xanim_lookup */
+        "movl scrAnimPub+1036(, %esi, 4), %ecx\n" /* line 553 */
         "testl %ecx, %ecx\n"
         "jle .Lf9c724_0009c799\n"
         "movzwl 2(%edi), %eax\n" /* line 555 | using_xanim_lookup, filename */
@@ -524,7 +524,7 @@ void Scr_UsingTree(const char *filename, unsigned int sourcePos)
         "calll Scr_IsIdentifier\n"
         "testb %al, %al\n"
         "jne .Lf9c828_0009c857\n"
-        "movl $0x21ddb8, 0xc(%ebp)\n" /* line 577 | sourcePos */
+        "movl $str_0021ddb8, 0xc(%ebp)\n" /* line 577 | sourcePos */
         "movl %esi, 8(%ebp)\n" /* sourcePos, filename */
         "addl $0x10, %esp\n" /* line 582 */
         "popl %ebx\n"
@@ -533,10 +533,10 @@ void Scr_UsingTree(const char *filename, unsigned int sourcePos)
         "jmp CompileError\n" /* line 577 */
         ".Lf9c828_0009c857:\n"
         "movl $1, %ecx\n" /* line 581 */
-        "movl $0x114e434, %edx\n"
+        "movl $scrAnimPub+1044, %edx\n"
         "movl %ebx, %eax\n" /* filename */
         "calll Scr_UsingTreeInternal\n"
-        "movl %eax, 0x114e028\n"
+        "movl %eax, scrAnimPub+8\n"
         "addl $0x10, %esp\n" /* line 582 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -681,10 +681,10 @@ void Scr_EmitAnimation(char *pos, unsigned int animName, unsigned int sourcePos)
         "pushl %ebx\n"
         "subl $0x20, %esp\n"
         "movl 8(%ebp), %esi\n" /* pos */
-        "movl 0x114e028, %ebx\n" /* line 166 */
+        "movl scrAnimPub+8, %ebx\n" /* line 166 */
         "testl %ebx, %ebx\n"
         "jne .Lf9c982_0009c9b1\n"
-        "movl $0x21d930, 4(%esp)\n" /* line 168 */
+        "movl $str_0021d930, 4(%esp)\n" /* line 168 */
         "movl 0x10(%ebp), %eax\n" /* sourcePos */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -760,10 +760,10 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "movl $0, -0x34(%ebp)\n" /* flags */
         "movb $0, -0x2d(%ebp)\n" /* bIgnore */
         ".Lf9ca0e_0009ca4e:\n"
-        "movl $0x4ed004, (%esp)\n" /* line 199 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 199 */
         "calll Com_Parse\n"
         "movl %eax, %esi\n" /* currentAnimArray */
-        "movl 0x4ed004, %ebx\n" /* line 200 | animName */
+        "movl scrAnimGlob+4, %ebx\n" /* line 200 | animName */
         "testl %ebx, %ebx\n" /* animName */
         "je .Lf9ca0e_0009cb0b\n"
         ".Lf9ca0e_0009ca6a:\n"
@@ -796,17 +796,17 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "je .Lf9ca0e_0009cb2e\n"
         ".Lf9ca0e_0009cad1:\n"
         "movb $0, -0x2d(%ebp)\n" /* bIgnore */
-        "movl $0x4ed004, (%esp)\n" /* line 220 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 220 */
         "calll Com_ParseOnLine\n"
         "movl %eax, %esi\n" /* currentAnimArray */
         "cmpb $0, (%eax)\n" /* line 221 */
         "jne .Lf9ca0e_0009cb65\n"
         ".Lf9ca0e_0009cae8:\n"
         "movl $0, -0x34(%ebp)\n" /* line 190 | flags */
-        "movl $0x4ed004, (%esp)\n" /* line 199 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 199 */
         "calll Com_Parse\n"
         "movl %eax, %esi\n" /* currentAnimArray */
-        "movl 0x4ed004, %ebx\n" /* line 200 | animName */
+        "movl scrAnimGlob+4, %ebx\n" /* line 200 | animName */
         "testl %ebx, %ebx\n" /* animName */
         "jne .Lf9ca0e_0009ca6a\n"
         /* { scope 2 */
@@ -837,11 +837,11 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll FindVariable\n"
         "testl %eax, %eax\n"
         "jne .Lf9ca0e_0009cad1\n"
-        "movl 0x4ed208, %ecx\n"
+        "movl scrAnimGlob+520, %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf9ca0e_0009cad1\n"
         "movb $1, -0x2d(%ebp)\n" /* bIgnore */
-        "movl $0x4ed004, (%esp)\n" /* line 220 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 220 */
         "calll Com_ParseOnLine\n"
         "movl %eax, %esi\n" /* currentAnimArray */
         "cmpb $0, (%eax)\n" /* line 221 */
@@ -861,7 +861,7 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "movl $0, -0x34(%ebp)\n" /* line 72 | flags */
         /* } scope */
         ".Lf9ca0e_0009cb8f:\n"
-        "movl $0x4ed004, (%esp)\n" /* line 103 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 103 */
         "calll Com_ParseOnLine\n"
         "movl %eax, %edi\n"
         "cmpb $0, (%eax)\n" /* line 104 */
@@ -884,18 +884,18 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de10, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de10, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
-        "movl $0x4ed004, (%esp)\n" /* line 103 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 103 */
         "calll Com_ParseOnLine\n"
         "movl %eax, %edi\n"
         "cmpb $0, (%eax)\n" /* line 104 */
         "jne .Lf9ca0e_0009cba2\n"
         ".Lf9ca0e_0009cc07:\n"
-        "movl $0x4ed004, (%esp)\n" /* line 231 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 231 */
         "calll Com_Parse\n"
         "movl %eax, %esi\n" /* currentAnimArray */
         "cmpb $0x7b, (%eax)\n" /* line 232 */
@@ -912,8 +912,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de04, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de04, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -923,7 +923,7 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "cmpb $0, 1(%esi)\n" /* line 238 | currentAnimArray */
         "jne .Lf9ca0e_0009cec2\n"
         ".Lf9ca0e_0009cc70:\n"
-        "movl $0x4ed004, (%esp)\n" /* line 241 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 241 */
         "calll Com_ParseOnLine\n"
         "cmpb $0, (%eax)\n"
         "jne .Lf9ca0e_0009ce93\n"
@@ -991,8 +991,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21dea4, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021dea4, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1015,8 +1015,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21ddcc, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021ddcc, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1034,8 +1034,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de04, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de04, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1055,8 +1055,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de28, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de28, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1067,8 +1067,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de7c, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de7c, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1079,8 +1079,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de60, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de60, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1091,8 +1091,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de04, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de04, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1106,8 +1106,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21dde0, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021dde0, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1124,7 +1124,7 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "jne .Lf9ca0e_0009cb24\n"
         "cmpb $0, -0x42(%ebp)\n" /* line 289 | bLoop */
         "je .Lf9ca0e_0009cfc5\n"
-        "movl $0x217a74, %eax\n" /* "void_loop" */
+        "movl $str_00217a74, %eax\n" /* "void_loop" */
         ".Lf9ca0e_0009cf50:\n"
         "movl $4, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -1150,7 +1150,7 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "cmpb $0, 1(%esi)\n" /* line 270 | currentAnimArray */
         "jne .Lf9ca0e_0009cffd\n"
         ".Lf9ca0e_0009cf91:\n"
-        "movl $0x4ed004, (%esp)\n" /* line 273 */
+        "movl $scrAnimGlob+4, (%esp)\n" /* line 273 */
         "calll Com_ParseOnLine\n"
         "cmpb $0, (%eax)\n"
         "jne .Lf9ca0e_0009cfcc\n"
@@ -1165,15 +1165,15 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll RemoveVariable\n"
         "jmp .Lf9ca0e_0009cb1a\n"
         ".Lf9ca0e_0009cfc5:\n"
-        "movl $0x217870, %eax\n" /* line 289 */
+        "movl $str_00217870, %eax\n" /* line 289 */
         "jmp .Lf9ca0e_0009cf50\n"
         /* { scope 2 */
         ".Lf9ca0e_0009cfcc:\n"
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21debc, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021debc, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1185,8 +1185,8 @@ Bool AnimTreeParseInternal(unsigned int parentNode, unsigned int names, Bool bIn
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de04, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de04, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"
@@ -1210,7 +1210,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "shll $7, %eax\n"
         "movl 8(%ebp), %edx\n" /* index */
         "leal (%eax, %edx), %esi\n" /* animId */
-        "movzwl 0x4ed008(%esi, %esi), %ebx\n" /* animId, id */
+        "movzwl scrAnimGlob+8(%esi, %esi), %ebx\n" /* animId, id */
         "movl %ebx, (%esp)\n" /* line 638 | id */
         "calll GetVariableName\n"
         "movzwl %ax, %eax\n"
@@ -1238,7 +1238,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "calll FindVariable\n"
         "testl %eax, %eax\n" /* line 649 */
         "jne .Lf9d02c_0009d0b4\n"
-        "movl $0, 0x114e02c(, %esi, 4)\n" /* line 651 */
+        "movl $0, scrAnimPub+12(, %esi, 4)\n" /* line 651 */
         /* } scope */
         "addl $0x9c, %esp\n" /* line 695 */
         "popl %ebx\n"
@@ -1253,18 +1253,18 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "movl %eax, -0x6c(%ebp)\n"
         "calll Scr_AllocArray\n" /* line 658 */
         "movl %eax, %edi\n" /* value */
-        "movl %eax, 0x114e024\n"
+        "movl %eax, scrAnimPub+4\n"
         "movl -0x84(%ebp), %edx\n" /* line 660 | filenameId */
         "movl %edx, (%esp)\n"
         "calll SL_ConvertToString\n"
         /* { scope 2: extFilename, oldFilename, oldSourceBuf */
         /* { scope 3 */
         "movl %eax, 8(%esp)\n" /* line 594 */
-        "movl $0x21ded8, 4(%esp)\n" /* "animtrees/%s.atr" */
+        "movl $str_0021ded8, 4(%esp)\n" /* "animtrees/%s.atr" */
         "leal -0x60(%ebp), %esi\n" /* extFilename, animId */
         "movl %esi, (%esp)\n" /* animId */
         "calll sprintf\n"
-        "movl 0x195ee64, %eax\n" /* line 596 */
+        "movl imp_scrParserPub, %eax\n" /* line 596 */
         "movl 0xc(%eax), %eax\n"
         "movl %eax, -0x78(%ebp)\n" /* oldSourceBuf */
         "movl $1, 0xc(%esp)\n" /* line 597 */
@@ -1275,14 +1275,14 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "movl %eax, %ebx\n" /* sourceBuffer */
         "testl %eax, %eax\n" /* line 598 */
         "je .Lf9d02c_0009d390\n"
-        "movl 0x195ee64, %edx\n" /* line 601 */
+        "movl imp_scrParserPub, %edx\n" /* line 601 */
         "movl 8(%edx), %edx\n"
         "movl %edx, -0x7c(%ebp)\n" /* oldFilename */
-        "movl 0x195ee64, %eax\n" /* line 602 */
+        "movl imp_scrParserPub, %eax\n" /* line 602 */
         "movl %esi, 8(%eax)\n" /* animId */
-        "movl $0x21deec, (%esp)\n" /* line 302 */
+        "movl $str_0021deec, (%esp)\n" /* line 302 */
         "calll Com_BeginParseSession\n"
-        "movl %ebx, 0x4ed004\n" /* line 304 | pos */
+        "movl %ebx, scrAnimGlob+4\n" /* line 304 | pos */
         "movl %ebx, scrAnimGlob\n" /* pos */
         "movl $0, 4(%esp)\n" /* line 305 */
         "movl $0, (%esp)\n"
@@ -1295,7 +1295,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         ".Lf9d02c_0009d177:\n"
         "calll Com_EndParseSession\n" /* line 308 */
         "movl -0x7c(%ebp), %eax\n" /* line 605 | oldFilename */
-        "movl 0x195ee64, %edx\n"
+        "movl imp_scrParserPub, %edx\n"
         "movl %eax, 8(%edx)\n"
         "movl -0x78(%ebp), %eax\n" /* line 606 | oldSourceBuf */
         "movl %eax, 0xc(%edx)\n"
@@ -1307,7 +1307,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "testl %eax, %eax\n" /* line 660 | filename */
         "je .Lf9d02c_0009d390\n"
         ".Lf9d02c_0009d1a3:\n"
-        "movl 0x114e024, %eax\n" /* line 666 */
+        "movl scrAnimPub+4, %eax\n" /* line 666 */
         "calll Scr_GetAnimTreeSize\n"
         "movl %eax, %ebx\n" /* id */
         "movl -0x84(%ebp), %eax\n" /* line 669 | filenameId */
@@ -1321,7 +1321,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "movl %eax, -0x70(%ebp)\n"
         "movl $4, 8(%esp)\n" /* line 671 */
         "movl $0, 4(%esp)\n"
-        "movl $0x21df18, (%esp)\n" /* "root" */
+        "movl $str_0021df18, (%esp)\n" /* "root" */
         "calll SL_GetString_\n"
         "movl %eax, %ebx\n" /* id */
         "movl 8(%ebp), %eax\n" /* line 672 | index */
@@ -1333,18 +1333,18 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "calll ConnectScriptToAnim\n"
         "movl %ebx, (%esp)\n" /* line 673 | id */
         "calll SL_RemoveRefToString\n"
-        "movl 0x114e024, %eax\n" /* line 676 */
+        "movl scrAnimPub+4, %eax\n" /* line 676 */
         "calll Scr_PrecacheAnimationTree\n"
         "movl 8(%ebp), %edx\n" /* line 679 | index */
         "movl %edx, 0x10(%esp)\n"
         "movl -0x84(%ebp), %eax\n" /* filenameId */
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x21df18, 4(%esp)\n" /* "root" */
+        "movl $str_0021df18, 4(%esp)\n" /* "root" */
         "movl $1, (%esp)\n"
         "movl -0x70(%ebp), %ecx\n"
         "movl -0x6c(%ebp), %edx\n"
-        "movl 0x114e024, %eax\n"
+        "movl scrAnimPub+4, %eax\n"
         "calll Scr_CreateAnimationTree\n"
         /* { scope 2: extFilename, oldFilename, oldSourceBuf */
         "movl -0x6c(%ebp), %edx\n" /* line 479 */
@@ -1359,10 +1359,10 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "movl -0x80(%ebp), %eax\n" /* fileId */
         "movl %eax, (%esp)\n"
         "calll RemoveVariable\n"
-        "movl 0x114e024, %eax\n" /* line 685 */
+        "movl scrAnimPub+4, %eax\n" /* line 685 */
         "movl %eax, (%esp)\n"
         "calll RemoveRefToObject\n"
-        "movl $0, 0x114e024\n" /* line 686 */
+        "movl $0, scrAnimPub+4\n" /* line 686 */
         "movl $7, -0x1c(%ebp)\n" /* line 688 */
         "movl -0x70(%ebp), %edx\n" /* line 689 */
         "movl %edx, -0x20(%ebp)\n" /* tempValue */
@@ -1381,7 +1381,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "movl 0x10(%ebp), %eax\n" /* user */
         "addl 8(%ebp), %eax\n" /* index */
         "movl -0x70(%ebp), %edx\n"
-        "movl %edx, 0x114e02c(, %eax, 4)\n"
+        "movl %edx, scrAnimPub+12(, %eax, 4)\n"
         /* } scope */
         "addl $0x9c, %esp\n" /* line 695 */
         "popl %ebx\n"
@@ -1393,7 +1393,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         /* { scope 2: extFilename, oldFilename, oldSourceBuf */
         ".Lf9d02c_0009d2ed:\n"
         "movl %ebx, 8(%esp)\n" /* line 490 | msg */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "movl (%edi), %eax\n" /* value */
         "movl %eax, (%esp)\n"
         "calll CompileError2\n"
@@ -1422,7 +1422,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "calll SL_ConvertToString\n"
         "movl %ebx, 8(%esp)\n" /* msg */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21df20, (%esp)\n" /* "animation '%s' not defined in anim tree '%s'" */
+        "movl $str_0021df20, (%esp)\n" /* "animation '%s' not defined in anim tree '%s'" */
         "calll va\n"
         "movl %eax, %ebx\n" /* msg */
         "movl (%edi), %eax\n" /* line 489 | value */
@@ -1431,7 +1431,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "testl %eax, %eax\n"
         "jne .Lf9d02c_0009d2ed\n"
         "movl %ebx, 8(%esp)\n" /* line 492 | msg */
-        "movl $0x21cdd0, 4(%esp)\n" /* "%s" */
+        "movl $str_0021cdd0, 4(%esp)\n" /* "%s" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf9d02c_0009d303\n"
@@ -1441,7 +1441,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "movl %edx, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21df00, (%esp)\n" /* "unknown anim tree '%s'" */
+        "movl $str_0021df00, (%esp)\n" /* "unknown anim tree '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -1454,8 +1454,8 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user)
         "calll Com_GetLastTokenPos\n" /* line 70 */
         "movl %eax, %ebx\n" /* pos */
         "calll Com_EndParseSession\n" /* line 71 */
-        "movl $0x21de04, 8(%esp)\n" /* line 72 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_0021de04, 8(%esp)\n" /* line 72 */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "subl scrAnimGlob, %ebx\n" /* pos */
         "movl %ebx, (%esp)\n" /* pos */
         "calll CompileError\n"

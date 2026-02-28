@@ -63,7 +63,7 @@ extern const dvar_t *g_TeamColor_Allies; /* 0x0 */
 extern const dvar_t *g_TeamColor_Axis; /* 0x0 */
 extern const dvar_t *g_voteAbstainWeight; /* 0x0 */
 extern const dvar_t *g_dumpAnims; /* 0x0 */
-static gclient_t g_clients[64]; /* 0xf3ca00 */
+static gclient_t g_clients[64]; /* g_clients */
 
 /* Extern functions needed for C conversions */
 extern void Com_ServerDObjCreate(DObjModel_s *models, int numModels, struct XAnimTree_s *tree, int handle, clientInfo_t *ci);
@@ -322,23 +322,23 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl 8(%ebp), %ebx\n" /* levelTime */
         "movl 0xc(%ebp), %esi\n" /* randomSeed */
         /* { scope 1: serverinfo */
-        "movl $0x2b449c, (%esp)\n" /* line 770 */
+        "movl $str_002b449c, (%esp)\n" /* line 770 */
         "calll Com_Printf\n"
-        "movl $0x2b44c4, 4(%esp)\n" /* line 771 */
-        "movl $0x2b44d4, (%esp)\n" /* "gamename: %s\n" */
+        "movl $str_002b44c4, 4(%esp)\n" /* line 771 */
+        "movl $str_002b44d4, (%esp)\n" /* "gamename: %s\n" */
         "calll Com_Printf\n"
-        "movl $0x2b44e4, 4(%esp)\n" /* line 772 */
-        "movl $0x2b44f0, (%esp)\n" /* "gamedate: %s\n" */
+        "movl $str_002b44e4, 4(%esp)\n" /* line 772 */
+        "movl $str_002b44f0, (%esp)\n" /* "gamedate: %s\n" */
         "calll Com_Printf\n"
         "calll Swap_Init\n" /* line 774 */
         "movl $0x3624, 8(%esp)\n" /* line 776 */
         "movl $0, 4(%esp)\n"
         "movl $level, (%esp)\n"
         "calll memset\n"
-        "movl $1, 0x193449c\n" /* line 778 */
-        "movl %ebx, 0x193466c\n" /* line 779 | i */
-        "movl %ebx, 0x1934678\n" /* line 780 | i */
-        "movl $0xffffffff, 0x1937a84\n" /* line 781 */
+        "movl $1, level+28\n" /* line 778 */
+        "movl %ebx, level+492\n" /* line 779 | i */
+        "movl %ebx, level+504\n" /* line 780 | i */
+        "movl $0xffffffff, level+13828\n" /* line 781 */
         "movl %esi, (%esp)\n" /* line 783 | randomSeed */
         "calll srand\n"
         "movl %esi, (%esp)\n" /* line 784 | randomSeed */
@@ -352,13 +352,13 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "je .Lf1abbfa_001abf7c\n"
         ".Lf1abbfa_001abcac:\n"
         "calll G_ProcessIPBans\n" /* line 791 */
-        "movl 0x195f718, %eax\n" /* line 793 */
-        "movl %eax, 0x192166c\n"
-        "movl $G_CreateDObj, 0x1921670\n" /* line 794 */
-        "movl 0x195f710, %eax\n" /* line 795 */
-        "movl %eax, 0x1921674\n"
-        "movl $Hunk_AllocXAnimServer, 0x1921678\n" /* line 796 */
-        "movl $1, 0x1921668\n" /* line 797 */
+        "movl imp___Z12SV_XModelGetPKc, %eax\n" /* line 793 */
+        "movl %eax, level_bgs+736236\n"
+        "movl $G_CreateDObj, level_bgs+736240\n" /* line 794 */
+        "movl imp___Z22Com_SafeServerDObjFreei, %eax\n" /* line 795 */
+        "movl %eax, level_bgs+736244\n"
+        "movl $Hunk_AllocXAnimServer, level_bgs+736248\n" /* line 796 */
+        "movl $1, level_bgs+736232\n" /* line 797 */
         "movl g_log, %eax\n" /* line 799 */
         "movl 8(%eax), %edx\n"
         "cmpb $0, (%edx)\n"
@@ -367,20 +367,20 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "cmpb $0, 8(%eax)\n"
         "je .Lf1abbfa_001ac810\n"
         "movl $3, 8(%esp)\n" /* line 802 */
-        "movl $0x1934498, 4(%esp)\n"
+        "movl $level+24, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll FS_FOpenFileByMode\n"
         ".Lf1abbfa_001abd05:\n"
-        "movl $0x2b4500, (%esp)\n" /* line 808 */
+        "movl $str_002b4500, (%esp)\n" /* line 808 */
         "calll G_LogPrintf\n"
-        "movl $0x2b4898, (%esp)\n" /* line 809 */
+        "movl $str_002b4898, (%esp)\n" /* line 809 */
         "calll G_LogPrintf\n"
-        "movl $0x193446c, 8(%esp)\n" /* line 812 */
+        "movl $level_bgs+813548, 8(%esp)\n" /* line 812 */
         "movl $0x400, 4(%esp)\n"
-        "movl $0x2b4510, (%esp)\n" /* "sv_mapname" */
+        "movl $str_002b450c+4, (%esp)\n" /* "sv_mapname" */
         "calll SV_GetServerinfo\n"
-        "movl $0x193446c, 4(%esp)\n" /* line 813 */
-        "movl $0x2b451c, (%esp)\n"
+        "movl $level_bgs+813548, 4(%esp)\n" /* line 813 */
+        "movl $str_002b4518+4, (%esp)\n"
         "calll G_LogPrintf\n"
         ".Lf1abbfa_001abd40:\n"
         "movl $g_entities, 0xc(%esp)\n" /* line 815 */
@@ -392,21 +392,21 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $0x400, 4(%esp)\n"
         "movl $g_entities, (%esp)\n"
         "calll G_SpawnEntitiesFromString\n"
-        "movl $0, 0x193449c\n" /* line 818 */
-        "movl 0x193448c, %eax\n" /* line 820 */
+        "movl $0, level+28\n" /* line 818 */
+        "movl level+12, %eax\n" /* line 820 */
         "movl %eax, 0xc(%esp)\n"
-        "movl 0x1934490, %edx\n"
+        "movl level+16, %edx\n"
         "movl %edx, 8(%esp)\n"
-        "movl $0x2b452c, 4(%esp)\n" /* "%i+%i entity slots, %i+%i client slots\n" */
-        "movl 0x1934664, %eax\n"
+        "movl $str_002b4528+4, 4(%esp)\n" /* "%i+%i entity slots, %i+%i client slots\n" */
+        "movl level+484, %eax\n"
         "movl %eax, 0x10(%esp)\n"
-        "movl $0x2b4558, (%esp)\n" /* line 820 */
+        "movl $str_002b4550+8, (%esp)\n" /* line 820 */
         "calll Com_Printf\n"
         ".Lf1abbfa_001abda0:\n"
         "movl g_gametype, %ebx\n" /* line 822 */
         "movl 8(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b4580, (%esp)\n" /* "gametype: %s\n" */
+        "movl $str_002b457c+4, (%esp)\n" /* "gametype: %s\n" */
         "calll G_LogPrintf\n"
         "calll G_InitTurrets\n" /* line 824 */
         "calll SV_GetBrushModelCount\n" /* line 825 */
@@ -468,8 +468,8 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "cmpl 8(%esi), %ebx\n"
         "jl .Lf1abbfa_001ac0d0\n"
         ".Lf1abbfa_001ac7c8:\n"
-        "movl $0x1934688, %edi\n" /* line 855 */
-        "movl $0, 0x1934688\n"
+        "movl $level+520, %edi\n" /* line 855 */
+        "movl $0, level+520\n"
         "movl g_dedicated, %edx\n"
         "movl 8(%edx), %eax\n"
         "testl %eax, %eax\n"
@@ -479,13 +479,13 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "cmpb $0, (%edx)\n"
         "je .Lf1abbfa_001ac7f1\n"
         "movl %edx, 8(%esp)\n" /* line 863 */
-        "movl $0x2b458c, 4(%esp)\n" /* "password: %s\n" */
+        "movl $str_002b457c+16, 4(%esp)\n" /* "password: %s\n" */
         "leal -0x818(%ebp), %eax\n" /* info */
         "movl %eax, (%esp)\n"
         "calll Com_sprintf\n"
         ".Lf1abbfa_001ac7f1:\n"
         "calll CalculateRanks\n" /* line 865 */
-        "movl $0, 0x193449c\n" /* line 866 */
+        "movl $0, level+28\n" /* line 866 */
         /* } scope */
         "addl $0x82c, %esp\n" /* line 867 */
         "popl %ebx\n"
@@ -495,14 +495,14 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "retl\n"
         ".Lf1abbfa_001ac810:\n"
         "movl $1, 8(%esp)\n" /* line 804 */
-        "movl $0x1934498, 4(%esp)\n"
+        "movl $level+24, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll FS_FOpenFileByMode\n"
         "jmp .Lf1abbfa_001abd05\n"
         ".Lf1abbfa_001abf7c:\n"
         "movl g_gametype, %eax\n" /* line 831 */
         "movl 8(%eax), %esi\n"
-        "movl $0x2b45a4, 4(%esp)\n" /* line 170 */
+        "movl $str_002b45a0+4, 4(%esp)\n" /* line 170 */
         "movl %esi, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -513,7 +513,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $0, (%edi)\n" /* line 191 */
         "jmp .Lf1abbfa_001abcac\n"
         ".Lf1abbfa_001abfb0:\n"
-        "movl $0x2b45a8, 4(%esp)\n" /* line 174 */
+        "movl $str_002b45a0+8, 4(%esp)\n" /* line 174 */
         "movl %esi, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -522,7 +522,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $1, 8(%edi)\n"
         "jmp .Lf1abbfa_001abfa8\n"
         ".Lf1abbfa_001abfe0:\n"
-        "movl $0x2b45ac, 4(%esp)\n" /* line 178 */
+        "movl $str_002b45a0+12, 4(%esp)\n" /* line 178 */
         "movl %esi, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -531,7 +531,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $1, 8(%edi)\n"
         "jmp .Lf1abbfa_001abfa8\n"
         ".Lf1abbfa_001ac010:\n"
-        "movl $0x2b45b0, 4(%esp)\n" /* line 182 */
+        "movl $str_002b45b0, 4(%esp)\n" /* line 182 */
         "movl %esi, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -540,7 +540,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $1, 8(%edi)\n"
         "jmp .Lf1abbfa_001abfa8\n"
         ".Lf1abbfa_001ac040:\n"
-        "movl $0x2b45b4, 4(%esp)\n" /* line 186 */
+        "movl $str_002b45b0+4, 4(%esp)\n" /* line 186 */
         "movl %esi, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -553,14 +553,14 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b45b8, (%esp)\n" /* "g_gametype" */
+        "movl $str_002b45b0+8, (%esp)\n" /* "g_gametype" */
         "calll Dvar_RegisterString\n"
         "movl %eax, g_gametype\n"
         "movl $0x1040, 0x10(%esp)\n" /* line 113 */
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x21675c, (%esp)\n" /* "dedicated" */
+        "movl $str_0021675c, (%esp)\n" /* "dedicated" */
         "calll Dvar_RegisterInt\n"
         ".Lf1abbfa_001ac124:\n"
         "movl %eax, g_dedicated\n"
@@ -568,371 +568,371 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b45c4, (%esp)\n" /* "sv_cheats" */
+        "movl $str_002b45c0+4, (%esp)\n" /* "sv_cheats" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_cheats\n"
         "movl $0x1040, 0x10(%esp)\n" /* line 115 */
         "movl $0x40, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b45d0, (%esp)\n" /* "sv_maxclients" */
+        "movl $str_002b45c8+8, (%esp)\n" /* "sv_maxclients" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_maxclients\n"
         "movl $0x1040, 0x10(%esp)\n" /* line 118 */
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b45e0, (%esp)\n" /* "g_password" */
+        "movl $str_002b45c8+24, (%esp)\n" /* "g_password" */
         "calll Dvar_RegisterString\n"
         "movl %eax, g_password\n"
         "movl $0x800, 0x10(%esp)\n" /* line 119 */
         "movl $0x320, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x320, 4(%esp)\n"
-        "movl $0x2b45ec, (%esp)\n" /* "g_gravity" */
+        "movl $str_002b45e4+8, (%esp)\n" /* "g_gravity" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_gravity\n"
         "movl $0x800, 0x10(%esp)\n" /* line 120 */
         "movl $0xc8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0xbe, 4(%esp)\n"
-        "movl $0x2b45f8, (%esp)\n" /* "g_speed" */
+        "movl $str_002b45f8, (%esp)\n" /* "g_speed" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_speed\n"
         "movl $0x800, 0x10(%esp)\n" /* line 121 */
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x3e8, 4(%esp)\n"
-        "movl $0x2b4600, (%esp)\n" /* "g_knockback" */
+        "movl $str_002b45f8+8, (%esp)\n" /* "g_knockback" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_knockback\n"
         "movl $0, 0x10(%esp)\n" /* line 122 */
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b460c, (%esp)\n" /* "g_useholdtime" */
+        "movl $str_002b460c, (%esp)\n" /* "g_useholdtime" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_useholdtime\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b461c, (%esp)\n"
+        "movl $str_002b460c+16, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_useholdspawndelay\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4634, (%esp)\n"
+        "movl $str_002b4620+20, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_inactivity\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4640, (%esp)\n"
+        "movl $str_002b463c+4, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_debugDamage\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4650, (%esp)\n"
+        "movl $str_002b464c+4, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_debugBullets\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4660, (%esp)\n"
+        "movl $str_002b465c+4, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_weaponAmmoPools\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0x10, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x10, 4(%esp)\n"
-        "movl $0x2b4674, (%esp)\n"
+        "movl $str_002b466c+8, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_maxDroppedWeapons\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b468c, (%esp)\n"
+        "movl $str_002b4688+4, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_synchronousClients\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b46a4, (%esp)\n"
+        "movl $str_002b4694+16, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_motd\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2b46ac, (%esp)\n"
+        "movl $str_002b4694+24, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_allowVote\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b46b8, (%esp)\n"
+        "movl $str_002b46b0+8, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_dropForwardSpeed\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b46d0, (%esp)\n"
+        "movl $str_002b46c0+16, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_dropUpSpeedBase\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b46e4, (%esp)\n"
+        "movl $str_002b46d8+12, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_dropUpSpeedRand\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b46f8, (%esp)\n"
+        "movl $str_002b46e8+16, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_clonePlayerMaxVelocity\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4714, (%esp)\n"
+        "movl $str_002b4708+12, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, voice_localEcho\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4724, (%esp)\n"
+        "movl $str_002b471c+8, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, voice_global\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4730, (%esp)\n"
+        "movl $str_002b4730, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, voice_deadChat\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b473c, (%esp)\n"
+        "movl $str_002b4730+12, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_voiceChatTalkingDuration\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4758, (%esp)\n"
+        "movl $str_002b474c+12, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_deadChat\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4764, (%esp)\n"
+        "movl $str_002b4760+4, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_banIPs\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2b4770, (%esp)\n"
+        "movl $str_002b4770, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_smoothClients\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4780, (%esp)\n"
+        "movl $str_002b4780, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_NoScriptSpam\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4790, (%esp)\n"
+        "movl $str_002b478c+4, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_debugLocDamage\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b47a4, (%esp)\n"
+        "movl $str_002b47a0+4, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_friendlyfireDist\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b47bc, (%esp)\n"
+        "movl $str_002b47b4+8, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_friendlyNameDist\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b47d4, (%esp)\n"
+        "movl $str_002b47c8+12, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, player_meleeRange\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b47e4, (%esp)\n"
+        "movl $str_002b47dc+8, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, player_meleeWidth\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b47f4, (%esp)\n"
+        "movl $str_002b47f0+4, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, player_meleeHeight\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2b4808, (%esp)\n"
+        "movl $str_002b4804+4, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_antilag\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2b4814, (%esp)\n"
+        "movl $str_002b4804+16, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_oldVoting\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4820, (%esp)\n"
+        "movl $str_002b4818+8, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_playerCollisionEjectSpeed\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4840, (%esp)\n"
+        "movl $str_002b4838+8, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_mantleBlockTimeBuffer\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b485c, (%esp)\n"
+        "movl $str_002b485c, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_log\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4864, (%esp)\n"
+        "movl $str_002b485c+8, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_logSync\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4870, (%esp)\n"
+        "movl $str_002b485c+20, (%esp)\n"
         "calll Dvar_RegisterBool\n"
         "movl %eax, g_listEntity\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b487c, (%esp)\n"
+        "movl $str_002b4874+8, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_ScoresBanner_Allies\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4858, (%esp)\n"
+        "movl $str_002b4848+16, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_ScoresBanner_Axis\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b488c, (%esp)\n"
+        "movl $str_002b4874+24, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_ScoresBanner_None\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b48a0, (%esp)\n"
+        "movl $str_002b4898+8, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_ScoresBanner_Spectators\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b48b8, (%esp)\n"
+        "movl $str_002b4898+32, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_TeamName_Allies\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b48c8, (%esp)\n"
+        "movl $str_002b4898+48, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_TeamName_Axis\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b48d4, (%esp)\n"
+        "movl $str_002b4898+60, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_TeamColor_Allies\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b48e0, (%esp)\n"
+        "movl $str_002b48d8+8, (%esp)\n"
         "calll Dvar_RegisterString\n"
         "movl %eax, g_TeamColor_Axis\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b48ec, (%esp)\n"
+        "movl $str_002b48e8+4, (%esp)\n"
         "calll Dvar_RegisterFloat\n"
         "movl %eax, g_voteAbstainWeight\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0xffffffff, 4(%esp)\n"
-        "movl $0x2b48fc, (%esp)\n"
+        "movl $str_002b48e8+20, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_dumpAnims\n"
-        "movl $0x1934688, %edi\n"
+        "movl $level+520, %edi\n"
         "movl $0x800, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2b4908, (%esp)\n"
+        "movl $str_002b4900+8, (%esp)\n"
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_ScoresBanner_Allies\n"
         "jmp .Lf1abbfa_001abda0\n"
         ".Lf1abbfa_001ac918:\n"
-        "movl $0xffffffff, 0x1934498\n" /* line 807 */
-        "movl $0x2b48e8, (%esp)\n" /* line 820 */
+        "movl $0xffffffff, level+24\n" /* line 807 */
+        "movl $str_002b48e8, (%esp)\n" /* line 820 */
         "calll Com_Printf\n"
         "jmp .Lf1abbfa_001abd40\n"
         ".Lf1abbfa_001ac929:\n"
@@ -940,7 +940,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x21675c, (%esp)\n" /* "dedicated" */
+        "movl $str_0021675c, (%esp)\n" /* "dedicated" */
         "calll Dvar_RegisterInt\n"
         "jmp .Lf1abbfa_001ac124\n"
     );
@@ -956,23 +956,23 @@ int CheckVote(void)
         "pushl %ebx\n"
         "subl $0x24, %esp\n"
         /* { scope 1 */
-        "movl 0x1934fa0, %eax\n" /* line 1209 */
+        "movl level+2848, %eax\n" /* line 1209 */
         "testl %eax, %eax\n"
         "je .Lf1ac95a_001ac976\n"
-        "cmpl 0x193466c, %eax\n"
+        "cmpl level+492, %eax\n"
         "jl .Lf1ac95a_001aca91\n"
         ".Lf1ac95a_001ac976:\n"
-        "movl 0x1934f9c, %eax\n" /* line 1214 */
+        "movl level+2844, %eax\n" /* line 1214 */
         "testl %eax, %eax\n"
         "je .Lf1ac95a_001aca25\n"
-        "cmpl %eax, 0x193466c\n" /* line 1218 */
+        "cmpl %eax, level+492\n" /* line 1218 */
         "js .Lf1ac95a_001aca2b\n"
-        "movl 0x1934fa4, %ebx\n" /* line 1220 */
-        "movl 0x1934fa8, %edx\n"
+        "movl level+2852, %ebx\n" /* line 1220 */
+        "movl level+2856, %edx\n"
         "cvtsi2sdl %edx, %xmm0\n" /* line 1224 */
         "movsd %xmm0, -0x10(%ebp)\n"
         "leal (%ebx, %edx), %edx\n" /* line 1222 */
-        "movl 0x1934fac, %eax\n"
+        "movl level+2860, %eax\n"
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "movl g_voteAbstainWeight, %eax\n"
@@ -987,15 +987,15 @@ int CheckVote(void)
         "jg .Lf1ac95a_001aca51\n"
         ".Lf1ac95a_001ac9db:\n"
         "movl $0x65, 4(%esp)\n" /* line 1248 */
-        "movl $0x2b4918, (%esp)\n" /* "%c "GAME_VOTEFAILED"" */
+        "movl $str_002b4918, (%esp)\n" /* "%c "GAME_VOTEFAILED"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl $0xffffffff, (%esp)\n"
         "calll SV_GameSendServerCommand\n"
         ".Lf1ac95a_001aca07:\n"
-        "movl $0, 0x1934f9c\n" /* line 1256 */
-        "movl $0x2157b8, 4(%esp)\n" /* line 1257 */
+        "movl $0, level+2844\n" /* line 1256 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 1257 */
         "movl $0xf, (%esp)\n"
         "calll SV_SetConfigstring\n"
         /* } scope */
@@ -1006,34 +1006,34 @@ int CheckVote(void)
         "retl\n"
         /* { scope 1 */
         ".Lf1ac95a_001aca2b:\n"
-        "movl 0x1934fac, %edx\n" /* line 1238 */
+        "movl level+2860, %edx\n" /* line 1238 */
         "movl %edx, %eax\n"
         "shrl $0x1f, %eax\n"
         "addl %edx, %eax\n"
         "sarl $1, %eax\n"
         "addl $1, %eax\n"
-        "cmpl 0x1934fa4, %eax\n" /* line 1239 */
+        "cmpl level+2852, %eax\n" /* line 1239 */
         "jle .Lf1ac95a_001aca51\n"
         "subl %eax, %edx\n" /* line 1245 */
-        "cmpl %edx, 0x1934fa8\n"
+        "cmpl %edx, level+2856\n"
         "jle .Lf1ac95a_001aca25\n"
         "jmp .Lf1ac95a_001ac9db\n"
         ".Lf1ac95a_001aca51:\n"
         "movl $0x65, 4(%esp)\n" /* line 1242 */
-        "movl $0x2b4900, (%esp)\n" /* "%c "GAME_VOTEPASSED"" */
+        "movl $str_002b4900, (%esp)\n" /* "%c "GAME_VOTEPASSED"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl $0xffffffff, (%esp)\n"
         "calll SV_GameSendServerCommand\n"
-        "movl 0x193466c, %eax\n" /* line 1243 */
+        "movl level+492, %eax\n" /* line 1243 */
         "addl $0xbb8, %eax\n"
-        "movl %eax, 0x1934fa0\n"
+        "movl %eax, level+2848\n"
         "jmp .Lf1ac95a_001aca07\n"
         ".Lf1ac95a_001aca91:\n"
-        "movl $0, 0x1934fa0\n" /* line 1211 */
-        "movl $0x193479c, 4(%esp)\n" /* line 1212 */
-        "movl $0x215bbc, (%esp)\n" /* "%s\n" */
+        "movl $0, level+2848\n" /* line 1211 */
+        "movl $level+796, 4(%esp)\n" /* line 1212 */
+        "movl $str_00215bbc, (%esp)\n" /* "%s\n" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $2, (%esp)\n"
@@ -1110,15 +1110,15 @@ int G_ShutdownGame(qboolean freeScripts)
     int i;
     char *ptr;
 
-    Com_Printf((const char *)0x2b4950);
+    Com_Printf((const char *)str_002b4950);
 
     if (*(int *)0x1934498) {
-        G_LogPrintf((const char *)0x2b4968);
-        G_LogPrintf((const char *)0x2b4898);
+        G_LogPrintf((const char *)str_002b4968);
+        G_LogPrintf((const char *)str_002b4898);
         FS_FCloseFile(*(int *)0x1934498);
     }
 
-    *(int *)*(int *)0x195edb4 = 0;
+    *(int *)*(int *)imp_bgs = 0;
 
     for (i = 0; i < *(int *)0x193448c; i++) {
         if (*(char *)((char *)&g_entities[i] + 0xfc))
@@ -1157,7 +1157,7 @@ int G_ShutdownGame(qboolean freeScripts)
 
         /* Free XAnimTrees in clients (stride 0x4c8) */
         {
-            char *clients_base = (char *)*(int *)0x195f6d0;
+            char *clients_base = (char *)*(int *)imp_g_scr_data;
             char *clients_end = clients_base + 0x2640;
             for (ptr = clients_base; ptr != clients_end; ptr += 0x4c8) {
                 struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0x10b8);
@@ -1195,7 +1195,7 @@ int G_RunFrameForEntity(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl %eax, %ebx\n" /* ent */
-        "movl 0x1934668, %eax\n" /* line 1388 */
+        "movl level+488, %eax\n" /* line 1388 */
         "cmpl %eax, 0x188(%ebx)\n" /* ent */
         "je .Lf1aceea_001acf98\n"
         "movl %eax, 0x188(%ebx)\n" /* line 1390 | ent */
@@ -1205,7 +1205,7 @@ int G_RunFrameForEntity(void)
         ".Lf1aceea_001acf19:\n"
         "cmpl $0x10000, 8(%ebx)\n" /* line 1411 | ent */
         "je .Lf1aceea_001acf9f\n"
-        "movl 0x193466c, %eax\n"
+        "movl level+492, %eax\n"
         ".Lf1aceea_001acf27:\n"
         "subl 0x178(%ebx), %eax\n" /* line 1421 | ent */
         "cmpl $0x12c, %eax\n"
@@ -1243,7 +1243,7 @@ int G_RunFrameForEntity(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf1aceea_001acf9f:\n"
-        "movl 0x193466c, %eax\n" /* line 1413 */
+        "movl level+492, %eax\n" /* line 1413 */
         "cmpl 0x58(%ebx), %eax\n" /* ent */
         "jle .Lf1aceea_001acf27\n"
         ".Lf1aceea_001acfad:\n"
@@ -1281,7 +1281,7 @@ int G_RunFrameForEntity(void)
         /* } scope */
         /* { scope 1 */
         ".Lf1aceea_001ad00b:\n"
-        "cmpl 0x193466c, %eax\n" /* line 1334 */
+        "cmpl level+492, %eax\n" /* line 1334 */
         "jg .Lf1aceea_001acf98\n"
         "movl $0, 0x190(%ebx)\n" /* line 1339 */
         "movzbl 0x166(%ebx), %eax\n" /* line 1340 */
@@ -1302,7 +1302,7 @@ int G_RunFrameForEntity(void)
         "jmp .Lf1aceea_001acf98\n"
         /* { scope 1 */
         ".Lf1aceea_001ad052:\n"
-        "movl $0x2b4930, 4(%esp)\n" /* line 1343 */
+        "movl $str_002b4930, 4(%esp)\n" /* line 1343 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl %ebx, (%esp)\n" /* line 1345 */
@@ -1348,19 +1348,19 @@ int G_RunFrame(int levelTime)
         "subl $0x43c, %esp\n"
         "movl 8(%ebp), %eax\n" /* levelTime */
         /* { scope 1 */
-        "addl $1, 0x1934668\n" /* line 1518 */
-        "movl 0x193466c, %edx\n" /* line 1519 */
-        "movl %edx, 0x1934670\n"
-        "movl %eax, 0x193466c\n" /* line 1520 */
+        "addl $1, level+488\n" /* line 1518 */
+        "movl level+492, %edx\n" /* line 1519 */
+        "movl %edx, level+496\n"
+        "movl %eax, level+492\n" /* line 1520 */
         "movl %eax, %ecx\n" /* line 1521 */
         "subl %edx, %ecx\n"
-        "movl %ecx, 0x1934674\n"
-        "movl %eax, 0x192165c\n" /* line 1523 */
-        "movl %eax, 0x1921660\n" /* line 1524 */
-        "movl %ecx, 0x1921664\n" /* line 1525 */
-        "movl 0x195edb4, %eax\n" /* line 1528 */
+        "movl %ecx, level+500\n"
+        "movl %eax, level_bgs+736220\n" /* line 1523 */
+        "movl %eax, level_bgs+736224\n" /* line 1524 */
+        "movl %ecx, level_bgs+736228\n" /* line 1525 */
+        "movl imp_bgs, %eax\n" /* line 1528 */
         "movl $level_bgs, (%eax)\n"
-        "movl 0x193448c, %eax\n" /* line 1535 */
+        "movl level+12, %eax\n" /* line 1535 */
         "testl %eax, %eax\n"
         "jle .Lf1ad0b4_001ad15b\n"
         "movl $g_entities, %ebx\n" /* trigger_info */
@@ -1369,19 +1369,19 @@ int G_RunFrame(int levelTime)
         ".Lf1ad0b4_001ad112:\n"
         "addl $1, %esi\n" /* i */
         "addl $0x230, %ebx\n" /* trigger_info */
-        "cmpl 0x193448c, %esi\n" /* i */
+        "cmpl level+12, %esi\n" /* i */
         "jge .Lf1ad0b4_001ad15b\n"
         ".Lf1ad0b4_001ad123:\n"
         "cmpb $0, 0xfc(%ebx)\n" /* line 1537 | trigger_info */
         "je .Lf1ad0b4_001ad112\n"
-        "cvtsi2ssl 0x1934674, %xmm0\n" /* line 1538 */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "cvtsi2ssl level+500, %xmm0\n" /* line 1538 */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* trigger_info */
         "calll SV_DObjInitServerTime\n"
         "addl $1, %esi\n" /* line 1535 | i */
         "addl $0x230, %ebx\n" /* trigger_info */
-        "cmpl 0x193448c, %esi\n" /* i */
+        "cmpl level+12, %esi\n" /* i */
         "jl .Lf1ad0b4_001ad123\n"
         ".Lf1ad0b4_001ad15b:\n"
         "leal -0x418(%ebp), %eax\n" /* line 1543 | entIndex */
@@ -1389,43 +1389,43 @@ int G_RunFrame(int levelTime)
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll memset\n"
-        "movl 0x1937a68, %eax\n" /* line 1550 */
+        "movl level+13800, %eax\n" /* line 1550 */
         "leal (%eax, %eax, 2), %eax\n"
         "shll $2, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x1936268, 4(%esp)\n"
-        "movl $0x1936e68, (%esp)\n"
+        "movl $level+7656, 4(%esp)\n"
+        "movl $level+10728, (%esp)\n"
         "calll Com_Memcpy\n"
-        "movl 0x1937a68, %eax\n" /* line 1551 */
-        "movl %eax, 0x1937a6c\n"
-        "movl $0, 0x1937a68\n" /* line 1552 */
+        "movl level+13800, %eax\n" /* line 1551 */
+        "movl %eax, level+13804\n"
+        "movl $0, level+13800\n" /* line 1552 */
         "movb $0, -0x429(%ebp)\n" /* index */
         ".Lf1ad0b4_001ad1b7:\n"
         "addb $1, -0x429(%ebp)\n" /* line 1557 | index */
-        "movl 0x1937a6c, %eax\n" /* line 1558 */
+        "movl level+13804, %eax\n" /* line 1558 */
         "testl %eax, %eax\n"
         "jle .Lf1ad0b4_001ad602\n"
         "xorl %edi, %edi\n"
         "movl $0, -0x430(%ebp)\n" /* bMoreTriggered */
-        "movl $0x1936e60, %esi\n" /* i */
+        "movl $level+10720, %esi\n" /* i */
         "jmp .Lf1ad0b4_001ad223\n"
         ".Lf1ad0b4_001ad1de:\n"
-        "movl 0x1937a6c, %eax\n" /* line 1580 */
+        "movl level+13804, %eax\n" /* line 1580 */
         "subl $1, %eax\n"
-        "movl %eax, 0x1937a6c\n"
+        "movl %eax, level+13804\n"
         "subl $1, %edi\n" /* line 1581 */
         "subl $0xc, %esi\n" /* i */
         "leal (%eax, %eax, 2), %eax\n" /* line 1582 */
         "shll $2, %eax\n"
-        "movl 0x1936e68(%eax), %edx\n"
+        "movl level+10728(%eax), %edx\n"
         "movl %edx, (%ebx)\n" /* trigger_info */
-        "movl 0x1936e6c(%eax), %edx\n"
+        "movl level+10732(%eax), %edx\n"
         "movl %edx, 4(%ebx)\n" /* trigger_info */
-        "movl 0x1936e70(%eax), %eax\n"
+        "movl level+10736(%eax), %eax\n"
         "movl %eax, 8(%ebx)\n" /* trigger_info */
         "addl $1, %edi\n" /* line 1558 */
         "addl $0xc, %esi\n" /* i */
-        "cmpl 0x1937a6c, %edi\n"
+        "cmpl level+13804, %edi\n"
         "jge .Lf1ad0b4_001ad2a8\n"
         ".Lf1ad0b4_001ad223:\n"
         "leal 8(%esi), %ebx\n" /* line 1560 | i, trigger_info */
@@ -1454,7 +1454,7 @@ int G_RunFrame(int levelTime)
         "movl $1, -0x430(%ebp)\n" /* bMoreTriggered */
         "addl $1, %edi\n" /* line 1558 */
         "addl $0xc, %esi\n" /* i */
-        "cmpl 0x1937a6c, %edi\n"
+        "cmpl level+13804, %edi\n"
         "jl .Lf1ad0b4_001ad223\n"
         ".Lf1ad0b4_001ad2a8:\n"
         "calll Scr_RunCurrentThreads\n" /* line 1585 */
@@ -1462,18 +1462,18 @@ int G_RunFrame(int levelTime)
         "testl %eax, %eax\n"
         "jne .Lf1ad0b4_001ad1b7\n"
         ".Lf1ad0b4_001ad2bb:\n"
-        "movl 0x193448c, %eax\n" /* line 1593 */
+        "movl level+12, %eax\n" /* line 1593 */
         "testl %eax, %eax\n"
         "jle .Lf1ad0b4_001ad33e\n"
         "movl $g_entities, %edi\n"
         "xorl %esi, %esi\n" /* i */
-        "movl $0x17e1b7c, %ebx\n" /* trigger_info */
+        "movl $g_entities+252, %ebx\n" /* trigger_info */
         "jmp .Lf1ad0b4_001ad2e9\n"
         ".Lf1ad0b4_001ad2d2:\n"
         "addl $1, %esi\n" /* i */
         "addl $0x230, %edi\n"
         "addl $0x230, %ebx\n" /* trigger_info */
-        "cmpl 0x193448c, %esi\n" /* i */
+        "cmpl level+12, %esi\n" /* i */
         "jge .Lf1ad0b4_001ad33e\n"
         ".Lf1ad0b4_001ad2e9:\n"
         "cmpb $0, (%ebx)\n" /* line 1373 */
@@ -1497,16 +1497,16 @@ int G_RunFrame(int levelTime)
         "addl $1, %esi\n" /* line 1593 | i */
         "addl $0x230, %edi\n"
         "addl $0x230, %ebx\n" /* trigger_info */
-        "cmpl 0x193448c, %esi\n" /* i */
+        "cmpl level+12, %esi\n" /* i */
         "jl .Lf1ad0b4_001ad2e9\n"
         ".Lf1ad0b4_001ad33e:\n"
         "calll Scr_IncTime\n" /* line 1598 */
-        "movl $0, 0x1937a84\n" /* line 1607 */
-        "movl 0x193448c, %eax\n"
+        "movl $0, level+13828\n" /* line 1607 */
+        "movl level+12, %eax\n"
         "testl %eax, %eax\n"
         "jle .Lf1ad0b4_001ad39e\n"
         "movl $g_entities, %esi\n" /* i */
-        "movl $0x17e1b7c, %ebx\n" /* trigger_info */
+        "movl $g_entities+252, %ebx\n" /* trigger_info */
         ".Lf1ad0b4_001ad360:\n"
         "cmpb $0, (%ebx)\n" /* line 1609 | trigger_info */
         "je .Lf1ad0b4_001ad37d\n"
@@ -1519,30 +1519,30 @@ int G_RunFrame(int levelTime)
         "movl %esi, %eax\n" /* line 1621 | i */
         "calll G_RunFrameForEntity\n"
         ".Lf1ad0b4_001ad37d:\n"
-        "movl 0x1937a84, %eax\n" /* line 1607 */
+        "movl level+13828, %eax\n" /* line 1607 */
         "addl $1, %eax\n"
-        "movl %eax, 0x1937a84\n"
+        "movl %eax, level+13828\n"
         "addl $0x230, %esi\n" /* i */
         "addl $0x230, %ebx\n" /* trigger_info */
-        "cmpl 0x193448c, %eax\n"
+        "cmpl level+12, %eax\n"
         "jl .Lf1ad0b4_001ad360\n"
         ".Lf1ad0b4_001ad39e:\n"
-        "movl $0xffffffff, 0x1937a84\n" /* line 1623 */
-        "movl 0x1934664, %eax\n" /* line 1275 */
+        "movl $0xffffffff, level+13828\n" /* line 1623 */
+        "movl level+484, %eax\n" /* line 1275 */
         "testl %eax, %eax\n"
         "jle .Lf1ad0b4_001ad4aa\n"
         "movl $0, -0x428(%ebp)\n"
         "movl $0, -0x424(%ebp)\n"
         ".Lf1ad0b4_001ad3c9:\n"
         "movl -0x424(%ebp), %eax\n" /* line 1277 */
-        "addl 0x1934484, %eax\n"
+        "addl level+4, %eax\n"
         "cmpb $0, 0xfc(%eax)\n" /* line 1278 */
         "je .Lf1ad0b4_001ad487\n"
         "movl 0x158(%eax), %eax\n" /* line 1281 */
         "movl 0x274c(%eax), %edi\n" /* line 1282 */
         "movl %eax, %ecx\n"
-        "movl $0x19344a4, %ebx\n"
-        "movl $0x1934664, %esi\n"
+        "movl $level+36, %ebx\n"
+        "movl $level+484, %esi\n"
         "jmp .Lf1ad0b4_001ad414\n"
         ".Lf1ad0b4_001ad3fc:\n"
         "cmpl %eax, %edi\n" /* line 1287 */
@@ -1562,20 +1562,20 @@ int G_RunFrame(int levelTime)
         "jne .Lf1ad0b4_001ad3fc\n"
         ".Lf1ad0b4_001ad421:\n"
         "movl %ebx, %edx\n" /* line 1290 */
-        "subl $0x19344a4, %edx\n"
-        "movl 0x19344a4(%edx), %eax\n"
+        "subl $level+36, %edx\n"
+        "movl level+36(%edx), %eax\n"
         "movl %eax, 0x5e4(%ecx)\n"
-        "movl 0x19344a8(%edx), %eax\n"
+        "movl level+40(%edx), %eax\n"
         "movl %eax, 0x5e8(%ecx)\n"
-        "movl 0x19344ac(%edx), %eax\n"
+        "movl level+44(%edx), %eax\n"
         "movl %eax, 0x5ec(%ecx)\n"
-        "movl 0x19344b0(%edx), %eax\n"
+        "movl level+48(%edx), %eax\n"
         "movl %eax, 0x5f0(%ecx)\n"
-        "movl 0x19344b4(%edx), %eax\n"
+        "movl level+52(%edx), %eax\n"
         "movl %eax, 0x5f4(%ecx)\n"
-        "movl 0x19344b8(%edx), %eax\n"
+        "movl level+56(%edx), %eax\n"
         "movl %eax, 0x5f8(%ecx)\n"
-        "movl 0x19344bc(%edx), %eax\n"
+        "movl level+60(%edx), %eax\n"
         "movl %eax, 0x5fc(%ecx)\n"
         "addl $0x1c, %ebx\n"
         "addl $0x1c, %ecx\n"
@@ -1585,10 +1585,10 @@ int G_RunFrame(int levelTime)
         "addl $1, -0x428(%ebp)\n" /* line 1275 */
         "addl $0x230, -0x424(%ebp)\n"
         "movl -0x428(%ebp), %eax\n"
-        "cmpl 0x1934664, %eax\n"
+        "cmpl level+484, %eax\n"
         "jl .Lf1ad0b4_001ad3c9\n"
         ".Lf1ad0b4_001ad4aa:\n"
-        "movl 0x1934664, %edi\n" /* line 1306 */
+        "movl level+484, %edi\n" /* line 1306 */
         "testl %edi, %edi\n"
         "jle .Lf1ad0b4_001ad509\n"
         "xorl %esi, %esi\n"
@@ -1597,11 +1597,11 @@ int G_RunFrame(int levelTime)
         ".Lf1ad0b4_001ad4ba:\n"
         "addl $1, %esi\n"
         "addl $0x230, %ebx\n"
-        "cmpl 0x1934664, %esi\n"
+        "cmpl level+484, %esi\n"
         "jge .Lf1ad0b4_001ad509\n"
         ".Lf1ad0b4_001ad4cb:\n"
         "movl %ebx, %edx\n" /* line 1308 */
-        "addl 0x1934484, %edx\n"
+        "addl level+4, %edx\n"
         "cmpb $0, 0xfc(%edx)\n" /* line 1309 */
         "je .Lf1ad0b4_001ad4ba\n"
         "movl $3, 8(%esp)\n" /* line 1312 */
@@ -1612,10 +1612,10 @@ int G_RunFrame(int levelTime)
         "calll HudElem_UpdateClient\n"
         "addl $1, %esi\n" /* line 1306 */
         "addl $0x230, %ebx\n"
-        "cmpl 0x1934664, %esi\n"
+        "cmpl level+484, %esi\n"
         "jl .Lf1ad0b4_001ad4cb\n"
         ".Lf1ad0b4_001ad509:\n"
-        "movl 0x1934664, %esi\n" /* line 1638 | i */
+        "movl level+484, %esi\n" /* line 1638 | i */
         "testl %esi, %esi\n" /* i */
         "jle .Lf1ad0b4_001ad54f\n"
         "movl $g_entities, %esi\n" /* i */
@@ -1624,7 +1624,7 @@ int G_RunFrame(int levelTime)
         ".Lf1ad0b4_001ad51c:\n"
         "addl $1, %ebx\n" /* trigger_info */
         "addl $0x230, %esi\n" /* i */
-        "cmpl 0x1934664, %ebx\n" /* trigger_info */
+        "cmpl level+484, %ebx\n" /* trigger_info */
         "jge .Lf1ad0b4_001ad54f\n"
         ".Lf1ad0b4_001ad52d:\n"
         "cmpb $0, 0xfc(%esi)\n" /* line 1640 | i */
@@ -1633,7 +1633,7 @@ int G_RunFrame(int levelTime)
         "calll ClientEndFrame\n"
         "addl $1, %ebx\n" /* line 1638 | trigger_info */
         "addl $0x230, %esi\n" /* i */
-        "cmpl 0x1934664, %ebx\n" /* trigger_info */
+        "cmpl level+484, %ebx\n" /* trigger_info */
         "jl .Lf1ad0b4_001ad52d\n"
         ".Lf1ad0b4_001ad54f:\n"
         "calll CheckTeamStatus\n" /* line 1648 */
@@ -1641,24 +1641,24 @@ int G_RunFrame(int levelTime)
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1ad0b4_001ad6a2\n"
         ".Lf1ad0b4_001ad563:\n"
-        "movl 0x1934690, %ebx\n" /* line 995 */
+        "movl level+528, %ebx\n" /* line 995 */
         "testl %ebx, %ebx\n"
         "je .Lf1ad0b4_001ad584\n"
-        "movl 0x1934664, %eax\n" /* line 1000 */
+        "movl level+484, %eax\n" /* line 1000 */
         "testl %eax, %eax\n"
         "jg .Lf1ad0b4_001ad65b\n"
         ".Lf1ad0b4_001ad57a:\n"
-        "movl $0, 0x1934690\n" /* line 1010 */
+        "movl $0, level+528\n" /* line 1010 */
         ".Lf1ad0b4_001ad584:\n"
         "movl g_listEntity, %eax\n" /* line 1655 */
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1ad0b4_001ad6c0\n"
         ".Lf1ad0b4_001ad593:\n"
-        "movl 0x1937a7c, %ecx\n" /* line 1662 */
+        "movl level+13820, %ecx\n" /* line 1662 */
         "testl %ecx, %ecx\n"
         "jne .Lf1ad0b4_001ad6b6\n"
         ".Lf1ad0b4_001ad5a1:\n"
-        "movl 0x1937a80, %edx\n" /* line 1665 */
+        "movl level+13824, %edx\n" /* line 1665 */
         "testl %edx, %edx\n"
         "jne .Lf1ad0b4_001ad6ac\n"
         ".Lf1ad0b4_001ad5af:\n"
@@ -1666,7 +1666,7 @@ int G_RunFrame(int levelTime)
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "js .Lf1ad0b4_001ad5ec\n"
-        "movl $0x2b4944, (%esp)\n" /* line 1359 */
+        "movl $str_002b4944, (%esp)\n" /* line 1359 */
         "calll Com_Printf\n"
         "movl g_dumpAnims, %eax\n" /* line 1360 */
         "movl 8(%eax), %edx\n"
@@ -1674,11 +1674,11 @@ int G_RunFrame(int levelTime)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $4, %eax\n"
-        "addl 0x1934484, %eax\n"
+        "addl level+4, %eax\n"
         "movl %eax, (%esp)\n"
         "calll SV_DObjDisplayAnim\n"
         ".Lf1ad0b4_001ad5ec:\n"
-        "movl 0x195edb4, %eax\n" /* line 1670 */
+        "movl imp_bgs, %eax\n" /* line 1670 */
         "movl $0, (%eax)\n"
         /* } scope */
         "addl $0x43c, %esp\n" /* line 1673 */
@@ -1700,7 +1700,7 @@ int G_RunFrame(int levelTime)
         "movl %edx, (%esp)\n" /* line 1576 */
         "calll Scr_AddEntity\n"
         "movl $1, 8(%esp)\n" /* line 1577 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x54(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl -0x41c(%ebp), %edx\n"
@@ -1716,7 +1716,7 @@ int G_RunFrame(int levelTime)
         "addl $1, %esi\n"
         "addl $0x28a4, %ebx\n"
         "addl $0x230, %edi\n"
-        "cmpl 0x1934664, %esi\n"
+        "cmpl level+484, %esi\n"
         "jge .Lf1ad0b4_001ad57a\n"
         ".Lf1ad0b4_001ad681:\n"
         "movl %ebx, %eax\n" /* line 1002 */
@@ -1746,7 +1746,7 @@ int G_RunFrame(int levelTime)
         "calll SL_ConvertToString\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* trigger_info */
-        "movl $0x2a8b40, (%esp)\n" /* "%4i: %s\n" */
+        "movl $str_002a8b40, (%esp)\n" /* "%4i: %s\n" */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 1657 | trigger_info */
         "addl $0x230, %esi\n" /* i */

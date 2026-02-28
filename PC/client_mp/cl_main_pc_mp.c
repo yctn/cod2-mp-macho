@@ -9,11 +9,11 @@
  */
 
 extern serverStatus_t cl_serverStatusList[16]; /* 0x0 */
-static Bool s_playerMute[64]; /* 0xf00680 */
+static Bool s_playerMute[64]; /* s_playerMute */
 extern int NET_CompareAdrSigned(const int *a, const int *b);
 extern void qsort(void *base, unsigned int nmemb, unsigned int size, int (*compar)(const void *, const void *));
 
-static int rconGlob; /* 0xf006c0 */
+static int rconGlob; /* rconGlob */
 
 static int CL_CompareAdrSigned(const int *a, const int *b);
 int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping);
@@ -57,13 +57,13 @@ int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping)
         "je .Lf15f6ea_0015f927\n"
         "testl %esi, %esi\n" /* line 160 | info */
         "je .Lf15f6ea_0015f920\n"
-        "movl $0x2a8a54, 4(%esp)\n" /* line 162 */
+        "movl $str_002a8a54, 4(%esp)\n" /* line 162 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0xd(%ebx)\n" /* server */
-        "movl $0x2aa89c, 4(%esp)\n" /* line 163 */
+        "movl $str_002aa89c, 4(%esp)\n" /* line 163 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl $0x20, 8(%esp)\n"
@@ -71,7 +71,7 @@ int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping)
         "leal 0x20(%ebx), %eax\n" /* server */
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2a7124, 4(%esp)\n" /* line 164 */
+        "movl $str_002a7124, 4(%esp)\n" /* line 164 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl $0x20, 8(%esp)\n"
@@ -79,13 +79,13 @@ int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping)
         "leal 0x40(%ebx), %eax\n" /* server */
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2a70dc, 4(%esp)\n" /* line 165 */
+        "movl $str_002a70dc, 4(%esp)\n" /* line 165 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0xe(%ebx)\n" /* server */
-        "movl $0x2aa890, 4(%esp)\n" /* line 166 */
+        "movl $str_002aa890, 4(%esp)\n" /* line 166 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl $0x18, 8(%esp)\n"
@@ -93,7 +93,7 @@ int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping)
         "leal 0x60(%ebx), %eax\n" /* server */
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2aa884, 4(%esp)\n" /* line 167 */
+        "movl $str_002aa884, 4(%esp)\n" /* line 167 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl $0x10, 8(%esp)\n"
@@ -101,73 +101,73 @@ int CL_SetServerInfo(serverInfo_t *server, const char *info, int ping)
         "leal 0x78(%ebx), %eax\n" /* server */
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab8c0, 4(%esp)\n" /* line 168 */
+        "movl $str_002ab8c0, 4(%esp)\n" /* line 168 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0xc(%ebx)\n" /* server */
-        "movl $0x2ab8c8, 4(%esp)\n" /* line 169 */
+        "movl $str_002ab8c8, 4(%esp)\n" /* line 169 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movw %ax, 0x1a(%ebx)\n" /* server */
-        "movl $0x2ab8d0, 4(%esp)\n" /* line 170 */
+        "movl $str_002ab8d0, 4(%esp)\n" /* line 170 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movw %ax, 0x1c(%ebx)\n" /* server */
-        "movl $0x2a718c, 4(%esp)\n" /* line 171 */
+        "movl $str_002a718c, 4(%esp)\n" /* line 171 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x10(%ebx)\n" /* server */
-        "movl $0x2ab4e0, 4(%esp)\n" /* line 172 */
+        "movl $str_002ab4e0, 4(%esp)\n" /* line 172 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x15(%ebx)\n" /* server */
-        "movl $0x2a9af0, 4(%esp)\n" /* line 173 */
+        "movl $str_002a9af0, 4(%esp)\n" /* line 173 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x11(%ebx)\n" /* server */
-        "movl $0x2aa870, 4(%esp)\n" /* line 174 */
+        "movl $str_002aa870, 4(%esp)\n" /* line 174 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x12(%ebx)\n" /* server */
-        "movl $0x2aa87c, 4(%esp)\n" /* line 175 */
+        "movl $str_002aa87c, 4(%esp)\n" /* line 175 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x13(%ebx)\n" /* server */
-        "movl $0x2aa880, 4(%esp)\n" /* line 176 */
+        "movl $str_002aa880, 4(%esp)\n" /* line 176 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x14(%ebx)\n" /* server */
-        "movl $0x2aa878, 4(%esp)\n" /* line 177 */
+        "movl $str_002aa878, 4(%esp)\n" /* line 177 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x16(%ebx)\n" /* server */
-        "movl $0x2a9cf4, 4(%esp)\n" /* line 178 */
+        "movl $str_002a9cf4, 4(%esp)\n" /* line 178 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movb %al, 0x17(%ebx)\n" /* server */
-        "movl $0x21ec00, 4(%esp)\n" /* line 180 */
+        "movl $str_0021ec00, 4(%esp)\n" /* line 180 */
         "movl %esi, (%esp)\n" /* info */
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
@@ -199,7 +199,7 @@ int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
         /* { scope 1 */
         "calll Com_PumpMessageLoop\n" /* line 101 */
         "movl $0, -0x4c(%ebp)\n"
-        "movl 0x195ecac, %eax\n"
+        "movl imp_cls, %eax\n"
         "movl %eax, -0x54(%ebp)\n"
         "addl $0x13c, %eax\n"
         "movl %eax, -0x68(%ebp)\n"
@@ -246,13 +246,13 @@ int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
         "cmpl $0x80, -0x4c(%ebp)\n"
         "jne .Lf15f92e_0015f974\n"
         ".Lf15f92e_0015f9fc:\n"
-        "movl 0x195ecac, %ecx\n" /* line 112 */
+        "movl imp_cls, %ecx\n" /* line 112 */
         "movl 0x4540(%ecx), %esi\n" /* high */
         "testl %esi, %esi\n" /* line 113 | high */
         "jg .Lf15f92e_0015fac4\n"
         ".Lf15f92e_0015fa10:\n"
         "movl $0, -0x50(%ebp)\n"
-        "leal 0x29c648(%ecx), %eax\n"
+        "leal str_0029c494+436(%ecx), %eax\n"
         "movl %eax, -0x58(%ebp)\n"
         "movl %eax, -0x64(%ebp)\n"
         "movl %eax, %edx\n"
@@ -318,7 +318,7 @@ int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
         "cmpl %esi, -0x5c(%ebp)\n" /* line 113 | high, low */
         "jge .Lf15f92e_0015fb1c\n"
         ".Lf15f92e_0015fada:\n"
-        "movl 0x195ecac, %ecx\n"
+        "movl imp_cls, %ecx\n"
         ".Lf15f92e_0015fae0:\n"
         "movl -0x5c(%ebp), %edx\n" /* line 115 | low */
         "addl %esi, %edx\n" /* high */
@@ -341,7 +341,7 @@ int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
         "cmpl %esi, -0x5c(%ebp)\n" /* line 113 | high, low */
         "jl .Lf15f92e_0015fada\n"
         ".Lf15f92e_0015fb1c:\n"
-        "movl 0x195ecac, %ecx\n"
+        "movl imp_cls, %ecx\n"
         "jmp .Lf15f92e_0015fa10\n"
         ".Lf15f92e_0015fb27:\n"
         "subl $1, %edi\n" /* line 130 | i */
@@ -349,7 +349,7 @@ int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
         "movl %edi, %eax\n" /* i */
         "shll $7, %eax\n"
         "leal 0x4540(%eax, %edi, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
+        "addl imp_cls, %eax\n"
         "addl $4, %eax\n"
         "movl %eax, 4(%esp)\n"
         "leal 8(%ebp), %eax\n" /* from */
@@ -359,7 +359,7 @@ int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
         "je .Lf15f92e_0015fb27\n"
         ".Lf15f92e_0015fb54:\n"
         "leal 1(%edi), %esi\n" /* line 134 | i, high */
-        "movl 0x195ecac, %edx\n"
+        "movl imp_cls, %edx\n"
         "movl %edx, -0x60(%ebp)\n"
         "movl %esi, %eax\n" /* high */
         "shll $7, %eax\n"
@@ -417,13 +417,13 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "movl %edi, (%esp)\n"
         "calll MSG_ReadString\n"
         "movl %eax, -0x488(%ebp)\n" /* infoString */
-        "movl $0x2a7118, 4(%esp)\n" /* line 204 */
+        "movl $str_002a7118, 4(%esp)\n" /* line 204 */
         "movl %eax, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movl %eax, %ebx\n" /* prot */
-        "movl $0x2aa7ec, (%esp)\n" /* line 205 */
+        "movl $str_002aa7ec, (%esp)\n" /* line 205 */
         "calll Dvar_GetString\n"
         "cmpb $0, (%eax)\n" /* line 206 */
         "jne .Lf15fbbe_0016008d\n"
@@ -433,7 +433,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "je .Lf15fbbe_0015fc6f\n"
         "movl -0x488(%ebp), %eax\n" /* line 208 | infoString */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab8d8, (%esp)\n" /* "Different protocol info packet: %s
+        "movl $str_002ab8d8, (%esp)\n" /* "Different protocol info packet: %s
 " */
         "calll Com_DPrintf\n"
         /* } scope */
@@ -447,7 +447,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         /* { scope 1 */
         ".Lf15fbbe_0015fc6f:\n"
         "xorl %esi, %esi\n" /* line 209 | i */
-        "movl 0x195f5b8, %ebx\n" /* prot */
+        "movl imp_cl_pinglist, %ebx\n" /* prot */
         "addl $8, %ebx\n" /* prot */
         "jmp .Lf15fbbe_0015fc8e\n"
         ".Lf15fbbe_0015fc7c:\n"
@@ -490,7 +490,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "calll NET_CompareAdr\n"
         "testl %eax, %eax\n"
         "je .Lf15fbbe_0015fc7c\n"
-        "movl 0x195f5b8, %edi\n" /* line 218 */
+        "movl imp_cl_pinglist, %edi\n" /* line 218 */
         "movl %esi, %ebx\n" /* i, prot */
         "shll $6, %ebx\n" /* prot */
         "addl %esi, %ebx\n" /* i, prot */
@@ -523,7 +523,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "movl %eax, 8(%esp)\n"
         "movl 0x10(%esi), %eax\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab8fc, (%esp)\n" /* "ping time %dms from %s
+        "movl $str_002ab8fc, (%esp)\n" /* "ping time %dms from %s
 " */
         "calll Com_DPrintf\n"
         "leal 0x14(%ebx, %edi), %ebx\n" /* line 222 | prot */
@@ -538,10 +538,10 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "setbe %al\n"
         "movzbl %al, %eax\n"
         "movl %eax, 4(%esp)\n" /* line 247 */
-        "movl $0x215a64, (%esp)\n" /* "%d" */
+        "movl $str_00215a64, (%esp)\n" /* "%d" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2ab8c0, 4(%esp)\n" /* "nettype" */
+        "movl $str_002ab8c0, 4(%esp)\n" /* "nettype" */
         "movl %ebx, (%esp)\n" /* prot */
         "calll Info_SetValueForKey\n"
         "movl 0x10(%esi), %eax\n" /* line 248 | i */
@@ -567,8 +567,8 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "calll CL_SetServerInfoByAddress\n"
         "jmp .Lf15fbbe_0015fc64\n"
         ".Lf15fbbe_0015fe56:\n"
-        "movl 0x195ecac, %eax\n" /* line 255 */
-        "movl 0x2a0a48(%eax), %edx\n"
+        "movl imp_cls, %eax\n" /* line 255 */
+        "movl str_002a0938+272(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf15fbbe_0015fc64\n"
         "xorl %esi, %esi\n" /* line 257 | i */
@@ -611,7 +611,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         ".Lf15fbbe_0015ff08:\n"
         "cmpw $0, 0x144(%ebx)\n" /* line 263 | prot */
         "jne .Lf15fbbe_0015fe72\n"
-        "movl 0x195ecac, %edx\n" /* line 282 */
+        "movl imp_cls, %edx\n" /* line 282 */
         "leal 1(%esi), %eax\n" /* i */
         "movl %eax, 0x138(%edx)\n"
         "movl %esi, %eax\n" /* line 283 | i */
@@ -689,7 +689,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "calll NET_AdrToString\n"
         "movl %ebx, 8(%esp)\n" /* prot */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab944, (%esp)\n" /* "%s: %s" */
+        "movl $str_002ab944, (%esp)\n" /* "%s: %s" */
         "calll Com_Printf\n"
         "jmp .Lf15fbbe_0015fc64\n"
         ".Lf15fbbe_0016008d:\n"
@@ -697,7 +697,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "calll atoi\n"
         "jmp .Lf15fbbe_0015fc4a\n"
         ".Lf15fbbe_0016009a:\n"
-        "movl $0x2ab914, (%esp)\n" /* line 277 */
+        "movl $str_002ab914, (%esp)\n" /* line 277 */
         "calll Com_DPrintf\n"
         "jmp .Lf15fbbe_0015fc64\n"
     );
@@ -739,7 +739,7 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
         "cmpl $0x11, %ecx\n" /* line 403 */
         "jne .Lf1600ac_001600c1\n"
         "movl %edx, 8(%esp)\n" /* line 416 */
-        "movl $0x228f18, 4(%esp)\n" /* "%04x" */
+        "movl $str_00228f18, 4(%esp)\n" /* "%04x" */
         "leal -0xd(%ebp), %ebx\n" /* chs, key */
         "movl %ebx, (%esp)\n" /* key */
         "calll sprintf\n"
@@ -773,7 +773,7 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
 /* line 432 */
 int CL_SortGlobalServers(void)
 {
-    byte *base = *(byte **)0x195ecac;
+    byte *base = *(byte **)imp_cls;
     int count = *(int *)(base + 0x4540);
     qsort(base + 0x4544, count, 0x88, (int (*)(const void *, const void *))CL_CompareAdrSigned);
     return 0;
@@ -804,7 +804,7 @@ int CL_Rcon_f(void)
         "movl $1, (%esp)\n" /* line 765 */
         "calll Cmd_Argv\n"
         "movl %eax, %ebx\n" /* cmd */
-        "movl $0x2ab970, 4(%esp)\n" /* line 766 */
+        "movl $str_002ab970, 4(%esp)\n" /* line 766 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -812,7 +812,7 @@ int CL_Rcon_f(void)
         "calll Cmd_Argc\n" /* line 689 */
         "cmpl $3, %eax\n"
         "je .Lf160184_001603e2\n"
-        "movl $0x2ab978, (%esp)\n" /* line 691 */
+        "movl $str_002ab978, (%esp)\n" /* line 691 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf160184_001601d6:\n"
@@ -824,7 +824,7 @@ int CL_Rcon_f(void)
         "retl\n"
         /* { scope 1 */
         ".Lf160184_001601e1:\n"
-        "movl $0x2ab9c8, 4(%esp)\n" /* line 771 */
+        "movl $str_002ab9c8, 4(%esp)\n" /* line 771 */
         "movl %ebx, (%esp)\n" /* cmd */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -841,7 +841,7 @@ int CL_Rcon_f(void)
         "retl\n"
         /* { scope 1 */
         ".Lf160184_00160210:\n"
-        "movl $0x2ab94c, (%esp)\n" /* line 761 */
+        "movl $str_002ab94c, (%esp)\n" /* line 761 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x45c, %esp\n" /* line 827 */
@@ -852,11 +852,11 @@ int CL_Rcon_f(void)
         "retl\n"
         /* { scope 1 */
         ".Lf160184_00160227:\n"
-        "movl $0x2ab9d0, (%esp)\n" /* line 711 */
+        "movl $str_002ab9d0, (%esp)\n" /* line 711 */
         "calll Com_Printf\n"
         "jmp .Lf160184_001601d6\n"
         ".Lf160184_00160235:\n"
-        "movl $0x2ab9e0, 4(%esp)\n" /* line 776 */
+        "movl $str_002ab9e0, 4(%esp)\n" /* line 776 */
         "movl %ebx, (%esp)\n" /* cmd */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -873,7 +873,7 @@ int CL_Rcon_f(void)
         "movl $4, 8(%esp)\n"
         "leal -0x424(%ebp), %esi\n" /* message */
         "movl %esi, 4(%esp)\n"
-        "movl $0x2aba5c, (%esp)\n" /* "rcon " */
+        "movl $str_002aba5c, (%esp)\n" /* "rcon " */
         "calll Com_AddToString\n"
         "movl $0, 0x10(%esp)\n" /* line 796 */
         "movl $0x400, 0xc(%esp)\n"
@@ -889,7 +889,7 @@ int CL_Rcon_f(void)
         "movl $0x400, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* cmd */
         "movl %esi, 4(%esp)\n"
-        "movl $0x217914, (%esp)\n" /* " " */
+        "movl $str_00217914, (%esp)\n" /* " " */
         "calll Com_AddToString\n"
         "movl %eax, %ebx\n" /* cmd */
         "movl %edi, (%esp)\n" /* line 801 | i */
@@ -909,7 +909,7 @@ int CL_Rcon_f(void)
         "cmpl $0x400, %ebx\n" /* line 803 | cmd */
         "je .Lf160184_001604e3\n"
         "movb $0, -0x424(%ebp, %ebx)\n" /* line 808 */
-        "movl 0x195ee8c, %eax\n" /* line 810 */
+        "movl imp_clc, %eax\n" /* line 810 */
         "movl (%eax), %eax\n"
         "cmpl $4, (%eax)\n"
         "jle .Lf160184_00160464\n"
@@ -960,7 +960,7 @@ int CL_Rcon_f(void)
         "cmpl $0x17, %eax\n" /* line 697 */
         "jbe .Lf160184_0016041f\n"
         "movl $0x18, 4(%esp)\n" /* line 699 */
-        "movl $0x2ab998, (%esp)\n" /* "rcon password must be %i characters or less
+        "movl $str_002ab998, (%esp)\n" /* "rcon password must be %i characters or less
 " */
         "calll Com_Printf\n"
         "jmp .Lf160184_001601d6\n"
@@ -971,56 +971,56 @@ int CL_Rcon_f(void)
         "calll memcpy\n"
         "jmp .Lf160184_001601d6\n"
         ".Lf160184_00160438:\n"
-        "movl $0x2aba18, (%esp)\n" /* line 784 */
+        "movl $str_002aba18, (%esp)\n" /* line 784 */
         "calll Com_Printf\n"
         "jmp .Lf160184_001601d6\n"
         ".Lf160184_00160449:\n"
         "calll Cmd_Argc\n" /* line 723 */
         "cmpl $3, %eax\n"
         "je .Lf160184_001604a7\n"
-        "movl $0x2ab9e8, (%esp)\n" /* line 725 */
+        "movl $str_002ab9e8, (%esp)\n" /* line 725 */
         "calll Com_Printf\n"
         "jmp .Lf160184_001601d6\n"
         ".Lf160184_00160464:\n"
-        "movl 0xf006d8, %eax\n" /* line 814 */
+        "movl rconGlob+24, %eax\n" /* line 814 */
         "cmpl $1, %eax\n"
         "je .Lf160184_0016050d\n"
-        "movzwl 0xf006e0, %edx\n" /* line 816 */
+        "movzwl rconGlob+32, %edx\n" /* line 816 */
         "movw %dx, -0x42a(%ebp)\n"
-        "movzbl 0xf006df, %edi\n" /* i */
-        "movzbl 0xf006de, %ebx\n" /* cmd */
-        "movzbl 0xf006dd, %ecx\n"
-        "movzbl 0xf006dc, %edx\n"
+        "movzbl rconGlob+31, %edi\n" /* i */
+        "movzbl rconGlob+30, %ebx\n" /* cmd */
+        "movzbl rconGlob+29, %ecx\n"
+        "movzbl rconGlob+28, %edx\n"
         "movb %dl, -0x439(%ebp)\n"
         "jmp .Lf160184_0016038e\n"
         ".Lf160184_001604a7:\n"
         "movl $2, (%esp)\n" /* line 729 */
         "calll Cmd_Argv\n"
-        "movl $0xf006d8, 4(%esp)\n" /* line 730 */
+        "movl $rconGlob+24, 4(%esp)\n" /* line 730 */
         "movl %eax, (%esp)\n"
         "calll NET_StringToAdr\n"
         "testl %eax, %eax\n"
         "je .Lf160184_001604fc\n"
-        "cmpw $0, 0xf006e0\n" /* line 737 */
+        "cmpw $0, rconGlob+32\n" /* line 737 */
         "jne .Lf160184_001601d6\n"
-        "movw $0x2071, 0xf006e0\n" /* line 738 */
+        "movw $0x2071, rconGlob+32\n" /* line 738 */
         "jmp .Lf160184_001601d6\n"
         ".Lf160184_001604e3:\n"
         "movl $0x3ff, 4(%esp)\n" /* line 805 */
-        "movl $0x2aba64, (%esp)\n" /* "rcon commands are limited to %i characters
+        "movl $str_002aba64, (%esp)\n" /* "rcon commands are limited to %i characters
 " */
         "calll Com_Printf\n"
         "jmp .Lf160184_001601d6\n"
         ".Lf160184_001604fc:\n"
-        "movl $0x2aba04, (%esp)\n" /* line 732 */
+        "movl $str_002aba04, (%esp)\n" /* line 732 */
         "calll Com_Printf\n"
         "jmp .Lf160184_001601d6\n"
         ".Lf160184_0016050d:\n"
-        "movl $0x2aba90, (%esp)\n" /* line 820 */
+        "movl $str_002aba90, (%esp)\n" /* line 820 */
         "calll Com_Printf\n"
-        "movl $0x2abacc, (%esp)\n" /* line 821 */
+        "movl $str_002abacc, (%esp)\n" /* line 821 */
         "calll Com_Printf\n"
-        "movl $0x2abaf0, (%esp)\n" /* line 822 */
+        "movl $str_002abaf0, (%esp)\n" /* line 822 */
         "calll Com_Printf\n"
         "jmp .Lf160184_001601d6\n"
     );
@@ -1105,7 +1105,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "calll MSG_ReadStringLine\n"
         "movl %eax, %edi\n"
         "movl %eax, 0xc(%esp)\n" /* line 1121 */
-        "movl $0x216058, 8(%esp)\n" /* "%s" */
+        "movl $str_00216058, 8(%esp)\n" /* "%s" */
         "movl $0x2000, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll Com_sprintf\n"
@@ -1120,7 +1120,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "subl $1, %ecx\n"
-        "movl $0x222630, 8(%esp)\n" /* line 1159 */
+        "movl $str_00222630, 8(%esp)\n" /* line 1159 */
         "movl $0x2000, %eax\n"
         "subl %ecx, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -1145,7 +1145,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "subl $1, %ecx\n"
-        "movl $0x222630, 8(%esp)\n" /* line 1187 */
+        "movl $str_00222630, 8(%esp)\n" /* line 1187 */
         "movl $0x2000, %eax\n"
         "subl %ecx, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -1180,7 +1180,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "retl\n"
         /* { scope 1 */
         ".Lf160536_0016077c:\n"
-        "movl $0x2abb28, (%esp)\n" /* line 1125 */
+        "movl $str_002abb28, (%esp)\n" /* line 1125 */
         "calll Com_Printf\n"
         "movzbl (%edi), %eax\n"
         ".Lf160536_0016078b:\n"
@@ -1211,7 +1211,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "testl %eax, %eax\n"
         "je .Lf160536_00160819\n"
         "movl %ebx, 4(%esp)\n" /* line 1148 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         ".Lf160536_001607ea:\n"
@@ -1232,7 +1232,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "jmp .Lf160536_0016078b\n"
         ".Lf160536_00160819:\n"
         "movl %ebx, 4(%esp)\n" /* line 1152 */
-        "movl $0x2abb3c, (%esp)\n" /* "%-24s" */
+        "movl $str_002abb3c, (%esp)\n" /* "%-24s" */
         "calll Com_Printf\n"
         "jmp .Lf160536_001607ea\n"
         ".Lf160536_0016082b:\n"
@@ -1255,7 +1255,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "notl %ecx\n"
         "subl $1, %ecx\n"
         "movl %ebx, 0xc(%esp)\n" /* line 1170 */
-        "movl $0x2a6fb8, 8(%esp)\n" /* "\%s" */
+        "movl $str_002a6fb8, 8(%esp)\n" /* "\%s" */
         "movl $0x2000, %eax\n"
         "subl %ecx, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -1271,7 +1271,7 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "movl %eax, 0xc(%esp)\n"
         "leal -0x1c(%ebp), %eax\n" /* score */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2abb6c, 4(%esp)\n" /* "%d %d" */
+        "movl $str_002abb6c, 4(%esp)\n" /* "%d %d" */
         "movl %ebx, (%esp)\n"
         "calll sscanf\n"
         "movl $0x20, 4(%esp)\n" /* line 1176 */
@@ -1294,17 +1294,17 @@ int CL_ServerStatusResponse(netadr_t from, msg_t *msg)
         "movl %eax, 8(%esp)\n"
         "movl -0x44c(%ebp), %ebx\n" /* i */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2abb7c, (%esp)\n" /* "%-2d   %-3d    %-3d   %s
+        "movl $str_002abb7c, (%esp)\n" /* "%-2d   %-3d    %-3d   %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf160536_00160837\n"
         ".Lf160536_00160918:\n"
-        "movl $0x2abb74, %eax\n" /* line 1180 */
+        "movl $str_002abb74, %eax\n" /* line 1180 */
         "jmp .Lf160536_001608eb\n"
         ".Lf160536_0016091f:\n"
-        "movl $0x2abb44, (%esp)\n" /* line 1163 */
+        "movl $str_002abb44, (%esp)\n" /* line 1163 */
         "calll Com_Printf\n"
-        "movl $0x2abb50, (%esp)\n" /* line 1164 */
+        "movl $str_002abb50, (%esp)\n" /* line 1164 */
         "calll Com_Printf\n"
         "jmp .Lf160536_001606b1\n"
     );
@@ -1331,7 +1331,7 @@ int CL_MutePlayer(int clientIndex)
         "testb %al, %al\n" /* line 1339 */
         "je .Lf16094c_0016098b\n"
         "movl %edx, 4(%esp)\n" /* line 1340 */
-        "movl $0x2abb98, (%esp)\n" /* "muteplayer %i" */
+        "movl $str_002abb98, (%esp)\n" /* "muteplayer %i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $2, (%esp)\n"
@@ -1340,7 +1340,7 @@ int CL_MutePlayer(int clientIndex)
         "retl\n"
         ".Lf16094c_0016098b:\n"
         "movl %edx, 4(%esp)\n" /* line 1342 */
-        "movl $0x2abba8, (%esp)\n" /* "unmuteplayer %i" */
+        "movl $str_002abba8, (%esp)\n" /* "unmuteplayer %i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $2, (%esp)\n"
@@ -1377,7 +1377,7 @@ int CL_GlobalServers_f(void)
         "calll Cmd_Argc\n" /* line 631 */
         "cmpl $2, %eax\n"
         "jle .Lf1609e2_00160b68\n"
-        "movl 0x195ecac, %ebx\n" /* line 637 | buffptr */
+        "movl imp_cls, %ebx\n" /* line 637 | buffptr */
         "movl 0x4540(%ebx), %eax\n" /* buffptr */
         "testl %eax, %eax\n"
         "jle .Lf1609e2_00160a3b\n"
@@ -1396,21 +1396,21 @@ int CL_GlobalServers_f(void)
         "cmpl 0x4540(%ebx), %edi\n" /* buffptr, i */
         "jl .Lf1609e2_00160a0e\n"
         ".Lf1609e2_00160a3b:\n"
-        "movl $0x2abbf4, (%esp)\n" /* line 645 */
+        "movl $str_002abbf4, (%esp)\n" /* line 645 */
         "calll Com_Printf\n"
         "leal -0x30(%ebp), %eax\n" /* line 649 | to */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a9298, (%esp)\n" /* "cod2master.activision.com" */
+        "movl $str_002a9298, (%esp)\n" /* "cod2master.activision.com" */
         "calll NET_StringToAdr\n"
-        "movl 0x195ecac, %eax\n" /* line 650 */
+        "movl imp_cls, %eax\n" /* line 650 */
         "movl $1, 0x453c(%eax)\n"
-        "movl $1, 0x2a0a48(%eax)\n" /* line 651 */
+        "movl $1, str_002a0938+272(%eax)\n" /* line 651 */
         "movl $4, -0x30(%ebp)\n" /* line 653 | to */
         "movw $0xe650, -0x28(%ebp)\n" /* line 654 */
         "movl $2, (%esp)\n" /* line 656 */
         "calll Cmd_Argv\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2abc1c, 4(%esp)\n" /* "getservers %s" */
+        "movl $str_002abc1c, 4(%esp)\n" /* "getservers %s" */
         "leal -0x430(%ebp), %eax\n" /* command */
         "movl %eax, (%esp)\n"
         "calll sprintf\n"
@@ -1425,7 +1425,7 @@ int CL_GlobalServers_f(void)
         "movl %eax, %esi\n" /* count */
         "cmpl $3, %eax\n" /* line 661 */
         "jg .Lf1609e2_00160b28\n"
-        "movl $0x216d6c, (%esp)\n" /* line 665 */
+        "movl $str_00216d6c, (%esp)\n" /* line 665 */
         "calll Dvar_GetBool\n"
         "testb %al, %al\n"
         "jne .Lf1609e2_00160b1a\n"
@@ -1461,20 +1461,20 @@ int CL_GlobalServers_f(void)
         "movl %edi, (%esp)\n" /* line 662 | i */
         "calll Cmd_Argv\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2abc2c, 4(%esp)\n" /* " %s" */
+        "movl $str_002abc2c, 4(%esp)\n" /* " %s" */
         "movl %ebx, (%esp)\n" /* buffptr */
         "calll sprintf\n"
         "addl %eax, %ebx\n" /* buffptr */
         "addl $1, %edi\n" /* line 661 | i */
         "cmpl %edi, %esi\n" /* i, count */
         "jne .Lf1609e2_00160b2d\n"
-        "movl $0x216d6c, (%esp)\n" /* line 665 */
+        "movl $str_00216d6c, (%esp)\n" /* line 665 */
         "calll Dvar_GetBool\n"
         "testb %al, %al\n"
         "je .Lf1609e2_00160adb\n"
         "jmp .Lf1609e2_00160b1a\n"
         ".Lf1609e2_00160b68:\n"
-        "movl $0x2abbb8, (%esp)\n" /* line 633 */
+        "movl $str_002abbb8, (%esp)\n" /* line 633 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x44c, %esp\n" /* line 671 */
@@ -1500,9 +1500,9 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "movl 0x14(%ebp), %ebx\n" /* msg */
         /* { scope 1: adr */
         "calll Com_PumpMessageLoop\n" /* line 529 */
-        "movl $0x2abc30, (%esp)\n" /* line 531 */
+        "movl $str_002abc30, (%esp)\n" /* line 531 */
         "calll Com_Printf\n"
-        "movl 0x195ecac, %eax\n" /* line 533 */
+        "movl imp_cls, %eax\n" /* line 533 */
         "movl $0, 0x453c(%eax)\n"
         "movl 4(%ebx), %esi\n" /* line 537 | msg, buffptr */
         "movl %esi, %edi\n" /* line 538 | buffptr, buffend */
@@ -1567,7 +1567,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "movl %eax, 8(%esp)\n"
         "movl -0x63c(%ebp), %ecx\n" /* numservers */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x2abc4c, (%esp)\n" /* "server: %d ip: %d.%d.%d.%d:%d
+        "movl $str_002abc4c, (%esp)\n" /* "server: %d ip: %d.%d.%d.%d:%d
 " */
         "calll Com_DPrintf\n"
         "addl $1, -0x63c(%ebp)\n" /* line 573 | numservers */
@@ -1581,7 +1581,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "cmpl %ebx, %edi\n" /* msg, buffend */
         "ja .Lf160b80_00160bde\n"
         ".Lf160b80_00160cdc:\n"
-        "movl 0x195ecac, %eax\n" /* line 586 */
+        "movl imp_cls, %eax\n" /* line 586 */
         "movl %eax, -0x64c(%ebp)\n"
         "movl 0x4540(%eax), %edx\n"
         "movl %edx, -0x640(%ebp)\n" /* count */
@@ -1669,7 +1669,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "cmpl -0x638(%ebp), %esi\n" /* line 476 | low, high */
         "jle .Lf160b80_00160ed6\n"
         ".Lf160b80_00160e83:\n"
-        "movl 0x195ecac, %eax\n"
+        "movl imp_cls, %eax\n"
         "movl %eax, -0x64c(%ebp)\n"
         ".Lf160b80_00160e8e:\n"
         "movl -0x638(%ebp), %edx\n" /* line 478 | low */
@@ -1694,7 +1694,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "cmpl -0x638(%ebp), %esi\n" /* line 476 | low, high */
         "jg .Lf160b80_00160e83\n"
         ".Lf160b80_00160ed6:\n"
-        "movl 0x195ecac, %edx\n"
+        "movl imp_cls, %edx\n"
         "movl %edx, -0x64c(%ebp)\n"
         "jmp .Lf160b80_00160d20\n"
         /* } scope */
@@ -1720,7 +1720,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "movl %ecx, 8(%esp)\n"
         "movl -0x63c(%ebp), %eax\n" /* numservers */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2abc6c, (%esp)\n" /* "%d servers parsed (total %d)
+        "movl $str_002abc6c, (%esp)\n" /* "%d servers parsed (total %d)
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -1739,7 +1739,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "movl %edi, %eax\n" /* i */
         "shll $7, %eax\n"
         "leal 0x4540(%eax, %edi, 8), %eax\n"
-        "addl 0x195ecac, %eax\n"
+        "addl imp_cls, %eax\n"
         "addl $4, %eax\n"
         "movl %eax, 4(%esp)\n"
         "leal -0x24(%ebp), %eax\n" /* adr */
@@ -1749,7 +1749,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "je .Lf160b80_00160f60\n"
         ".Lf160b80_00160f8d:\n"
         "addl $1, %edi\n" /* line 497 | i */
-        "movl 0x195ecac, %edx\n"
+        "movl imp_cls, %edx\n"
         "movl %edx, -0x64c(%ebp)\n"
         "movl %edi, %eax\n" /* i */
         "shll $7, %eax\n"
@@ -1797,7 +1797,7 @@ int CL_ServersResponsePacket(netadr_t from, msg_t *msg)
         "calll NET_CompareAdrSigned\n"
         "testl %eax, %eax\n"
         "je .Lf160b80_00160fb8\n"
-        "movl 0x195ecac, %edx\n"
+        "movl imp_cls, %edx\n"
         "movl %edx, -0x64c(%ebp)\n"
         "jmp .Lf160b80_00160dbc\n"
     );
@@ -1818,7 +1818,7 @@ int CL_Ping_f(void)
         "calll Cmd_Argc\n" /* line 904 */
         "cmpl $2, %eax\n"
         "je .Lf16106e_00161095\n"
-        "movl $0x2abc8c, (%esp)\n" /* line 906 */
+        "movl $str_002abc8c, (%esp)\n" /* line 906 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf16106e_0016108d:\n"
@@ -1843,7 +1843,7 @@ int CL_Ping_f(void)
         "je .Lf16106e_0016108d\n"
         "calll Sys_Milliseconds\n" /* line 846 */
         "movl %eax, %edi\n"
-        "movl 0x195f5b8, %ebx\n"
+        "movl imp_cl_pinglist, %ebx\n"
         "movl %ebx, -0x4c(%ebp)\n"
         "leal 8(%ebx), %edx\n"
         "leal 0x4140(%ebx), %esi\n"
@@ -1897,7 +1897,7 @@ int CL_Ping_f(void)
         "movl %edx, -0x20(%ebp)\n"
         "movl -0x34(%ebp), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
-        "movl $0x2a9420, 0x10(%esp)\n" /* "getinfo xxx" */
+        "movl $str_002a9420, 0x10(%esp)\n" /* "getinfo xxx" */
         "movl %ecx, 4(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
@@ -1945,7 +1945,7 @@ int CL_Connect_f(void)
         "calll Cmd_Argc\n" /* line 317 */
         "cmpl $2, %eax\n"
         "je .Lf1611d2_001611f9\n"
-        "movl $0x2abca4, (%esp)\n" /* line 319 */
+        "movl $str_002abca4, (%esp)\n" /* line 319 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf1611d2_001611f1:\n"
@@ -1959,18 +1959,18 @@ int CL_Connect_f(void)
         ".Lf1611d2_001611f9:\n"
         "movl $0, (%esp)\n" /* line 323 */
         "calll SND_StopSounds\n"
-        "movl 0x195ee8c, %eax\n" /* line 326 */
+        "movl imp_clc, %eax\n" /* line 326 */
         "movl (%eax), %eax\n"
         "movb $0, 0x28(%eax)\n"
         "movl $1, (%esp)\n" /* line 328 */
         "calll Cmd_Argv\n"
         "movl %eax, %ebx\n" /* server */
-        "movl 0x195ecbc, %eax\n" /* line 330 */
+        "movl imp_com_sv_running, %eax\n" /* line 330 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1611d2_0016140a\n"
         ".Lf1611d2_0016122f:\n"
-        "movl 0x195ecb4, %edx\n"
+        "movl imp_legacyHacks, %edx\n"
         ".Lf1611d2_00161235:\n"
         "movl (%edx), %eax\n" /* line 336 */
         "movb $0, 0x5c(%eax)\n"
@@ -1982,11 +1982,11 @@ int CL_Connect_f(void)
         "calll Con_Close\n" /* line 342 */
         "movl $0x100, 8(%esp)\n" /* line 344 */
         "movl %ebx, 4(%esp)\n" /* server */
-        "movl 0x195ecac, %esi\n"
+        "movl imp_cls, %esi\n"
         "addl $8, %esi\n"
         "movl %esi, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl 0x195ee8c, %eax\n" /* line 346 */
+        "movl imp_clc, %eax\n" /* line 346 */
         "movl (%eax), %ebx\n" /* server */
         "leal 0x14(%ebx), %eax\n" /* server */
         "movl %eax, 4(%esp)\n"
@@ -2010,7 +2010,7 @@ int CL_Connect_f(void)
         "movzbl 0x18(%ebx), %eax\n" /* server */
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n"
-        "movl $0x2a92e0, (%esp)\n" /* "%s resolved to %i.%i.%i.%i:%i
+        "movl $str_002a92e0, (%esp)\n" /* "%s resolved to %i.%i.%i.%i:%i
 " */
         "calll Com_Printf\n"
         "movl 0x14(%ebx), %ecx\n" /* line 359 | server */
@@ -2026,7 +2026,7 @@ int CL_Connect_f(void)
         "testl %eax, %eax\n"
         "jne .Lf1611d2_00161372\n"
         "xorl %edx, %edx\n"
-        "movl 0x195f4e4, %ecx\n"
+        "movl imp_cl_cdkey, %ecx\n"
         "leal 0x10(%ecx), %ebx\n" /* server */
         /* { scope 2 */
         ".Lf1611d2_0016130e:\n"
@@ -2050,12 +2050,12 @@ int CL_Connect_f(void)
         "cmpl %ebx, %ecx\n" /* line 403 | server */
         "jne .Lf1611d2_0016130e\n"
         "movl %edx, 8(%esp)\n" /* line 416 */
-        "movl $0x228f18, 4(%esp)\n" /* "%04x" */
+        "movl $str_00228f18, 4(%esp)\n" /* "%04x" */
         "leal -0x1d(%ebp), %ebx\n" /* chs, server */
         "movl %ebx, (%esp)\n" /* server */
         "calll sprintf\n"
         "movl $4, 8(%esp)\n" /* line 418 */
-        "movl 0x195f314, %eax\n"
+        "movl imp_cl_cdkeychecksum, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* server */
         "calll I_strnicmp\n"
@@ -2063,7 +2063,7 @@ int CL_Connect_f(void)
         "jne .Lf1611d2_0016145b\n"
         /* } scope */
         ".Lf1611d2_00161372:\n"
-        "movl 0x195ee8c, %esi\n" /* line 366 */
+        "movl imp_clc, %esi\n" /* line 366 */
         "movl (%esi), %ebx\n" /* server */
         "movl 0x14(%ebx), %ecx\n" /* server */
         "movl %ecx, -0x2c(%ebp)\n"
@@ -2080,13 +2080,13 @@ int CL_Connect_f(void)
         "movl $4, (%ebx)\n" /* line 367 | server */
         "movl (%esi), %edx\n"
         ".Lf1611d2_001613ac:\n"
-        "movl 0x195ee78, %eax\n" /* line 371 */
+        "movl imp_cl, %eax\n" /* line 371 */
         "movl (%eax), %eax\n"
         "movl $0, 4(%eax)\n"
         "movb $0, 8(%eax)\n" /* line 372 */
         "movl $0xfffe7961, 0x20(%edx)\n" /* line 373 */
         "movl $0, 0x24(%edx)\n" /* line 374 */
-        "movl 0x195f368, %eax\n" /* line 377 */
+        "movl imp_g_qport, %eax\n" /* line 377 */
         "movl (%eax), %eax\n"
         "movl %eax, 4(%edx)\n"
         "calll UI_CloseAll\n" /* line 380 */
@@ -2103,12 +2103,12 @@ int CL_Connect_f(void)
         "movw $0x2071, 0x1c(%ebx)\n" /* line 354 | server */
         "jmp .Lf1611d2_001612a0\n"
         ".Lf1611d2_001613f3:\n"
-        "movl $0x2abcc0, (%esp)\n" /* line 348 */
+        "movl $str_002abcc0, (%esp)\n" /* line 348 */
         "calll Com_Printf\n"
         "movl $0, (%ebx)\n" /* line 349 | server */
         "jmp .Lf1611d2_001611f1\n"
         ".Lf1611d2_0016140a:\n"
-        "movl $0x2a8ab8, %edi\n" /* line 330 */
+        "movl $str_002a8ab8, %edi\n" /* line 330 */
         "movl $0xa, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* server */
@@ -2121,18 +2121,18 @@ int CL_Connect_f(void)
         ".Lf1611d2_0016142a:\n"
         "testl %edx, %edx\n"
         "jne .Lf1611d2_0016122f\n"
-        "movl 0x195ecb4, %edx\n" /* line 333 */
+        "movl imp_legacyHacks, %edx\n" /* line 333 */
         "movl (%edx), %eax\n"
         "movb $1, 0xdd(%eax)\n"
         "jmp .Lf1611d2_00161235\n"
         ".Lf1611d2_00161446:\n"
-        "movl 0x195ee8c, %edx\n" /* line 369 */
+        "movl imp_clc, %edx\n" /* line 369 */
         "movl (%edx), %eax\n"
         "movl $3, (%eax)\n"
         "movl %eax, %edx\n"
         "jmp .Lf1611d2_001613ac\n"
         ".Lf1611d2_0016145b:\n"
-        "movl $0x2a9280, 4(%esp)\n" /* line 361 */
+        "movl $str_002a9280, 4(%esp)\n" /* line 361 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1611d2_001611f1\n"
@@ -2235,11 +2235,11 @@ int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
         "movl %esi, %eax\n" /* i */
         "shll $0xd, %eax\n"
         "leal (%edx, %eax), %eax\n"
-        "movl 0x170c5b0(%eax), %ebx\n" /* oldestTime */
+        "movl cl_serverStatusList+8208(%eax), %ebx\n" /* oldestTime */
         "cmpl $-1, %esi\n" /* i */
         "je .Lf161474_0016157d\n"
         /* } scope */
-        "leal 0x170c5c0(%eax), %edx\n" /* line 1042 */
+        "leal cl_serverStatusList+8224(%eax), %edx\n" /* line 1042 */
         "movl %esi, %ecx\n" /* i */
         /* { scope 2 */
         ".Lf161474_001615b3:\n"
@@ -2304,7 +2304,7 @@ int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
         "movl -0x64(%ebp), %eax\n"
         "movl %eax, -0x34(%ebp)\n"
         ".Lf161474_001616ae:\n"
-        "movl $0x2ab528, 0x10(%esp)\n" /* "getstatus" */
+        "movl $str_002ab528, 0x10(%esp)\n" /* "getstatus" */
         "movl %ecx, 4(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
@@ -2328,7 +2328,7 @@ int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
         /* { scope 1 */
         ".Lf161474_001616ef:\n"
         "movl $cl_serverStatusList, %eax\n" /* line 987 */
-        "movl $0x172a7a0, %edx\n"
+        "movl $cl_serverStatusList+131584, %edx\n"
         ".Lf161474_001616f9:\n"
         "movw $0, 0x2008(%eax)\n" /* line 991 */
         "movl $1, 0x201c(%eax)\n" /* line 992 */
@@ -2343,7 +2343,7 @@ int CL_ServerStatus(char *serverAddress, char *serverStatusString, int maxLen)
         "je .Lf161474_001617a5\n"
         "movl 0x2010(%edi), %ebx\n" /* line 1021 | oldestTime */
         "calll Sys_Milliseconds\n"
-        "movl 0x195f5b4, %edx\n"
+        "movl imp_cl_serverStatusResendTime, %edx\n"
         "movl (%edx), %edx\n"
         "subl 8(%edx), %eax\n"
         "cmpl %eax, %ebx\n" /* oldestTime */
@@ -2404,14 +2404,14 @@ int CL_ServerStatus_f(void)
         "calll Cmd_Argc\n" /* line 1061 */
         "cmpl $2, %eax\n"
         "je .Lf1617da_001619a7\n"
-        "movl 0x195ee8c, %eax\n" /* line 1063 */
+        "movl imp_clc, %eax\n" /* line 1063 */
         "movl (%eax), %eax\n"
         "cmpl $8, (%eax)\n"
         "je .Lf1617da_00161838\n"
         ".Lf1617da_00161818:\n"
-        "movl $0x2a8b24, (%esp)\n" /* line 1065 */
+        "movl $str_002a8b24, (%esp)\n" /* line 1065 */
         "calll Com_Printf\n"
-        "movl $0x2abcd4, (%esp)\n" /* line 1066 */
+        "movl $str_002abcd4, (%esp)\n" /* line 1066 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf1617da_00161830:\n"
@@ -2426,7 +2426,7 @@ int CL_ServerStatus_f(void)
         "movl 0x407a0(%eax), %eax\n" /* line 1063 */
         "testl %eax, %eax\n"
         "jne .Lf1617da_00161818\n"
-        "movl 0x195ecac, %eax\n"
+        "movl imp_cls, %eax\n"
         "addl $8, %eax\n"
         ".Lf1617da_0016184a:\n"
         "movl %ebx, 4(%esp)\n" /* line 1076 */
@@ -2440,7 +2440,7 @@ int CL_ServerStatus_f(void)
         "movl %edx, -0x38(%ebp)\n"
         "movl -0x40(%ebp), %eax\n"
         "movl %eax, -0x34(%ebp)\n"
-        "movl $0x2ab528, 0x10(%esp)\n" /* "getstatus" */
+        "movl $str_002ab528, 0x10(%esp)\n" /* "getstatus" */
         "movl %ecx, 4(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
@@ -2513,11 +2513,11 @@ int CL_ServerStatus_f(void)
         "movl %ebx, %eax\n"
         "shll $0xd, %eax\n"
         "leal (%edx, %eax), %eax\n"
-        "movl 0x170c5b0(%eax), %esi\n" /* oldestTime */
+        "movl cl_serverStatusList+8208(%eax), %esi\n" /* oldestTime */
         "cmpl $-1, %ebx\n"
         "je .Lf1617da_00161a20\n"
         /* } scope */
-        "leal 0x170c5c0(%eax), %edx\n" /* line 1086 */
+        "leal cl_serverStatusList+8224(%eax), %edx\n" /* line 1086 */
         "movl %ebx, %ecx\n"
         /* { scope 2 */
         ".Lf1617da_0016198b:\n"

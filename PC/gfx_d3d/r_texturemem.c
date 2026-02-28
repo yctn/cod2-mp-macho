@@ -6,8 +6,8 @@
 
 extern void MacDisplay_GetVideoMemoryInfo(int *vidMemMB, int *totalVidMem);
 
-extern char *d3d_context; /* 0x195eed0 — D3D device wrapper */
-extern refimport_t *ri; /* 0x195eee0 */
+extern char *d3d_context; /* imp_dx — D3D device wrapper */
+extern refimport_t *ri; /* imp_ri */
 
 unsigned int R_AvailableTextureMemory(void)
 {

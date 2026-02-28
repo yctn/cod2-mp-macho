@@ -43,18 +43,18 @@ extern DObjAnimMat *CG_DObjGetLocalTagMatrix(const centity_t *cent, void *obj, u
 extern const char *CL_GetConfigString(int index);
 extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
 
-extern byte *cgs_ptr;           /* 0x195f584 */
-extern byte *cg_ptr;            /* 0x195f5c4 */
-extern byte *cg_entities_ptr;   /* 0x195f5cc */
-extern byte *cg_tags_ptr;       /* 0x195f5bc */
-extern byte *cg_debug_ptr;      /* 0x195f970 */
-extern byte *cg_sprite_ptr;     /* 0x195f96c */
-extern byte *cg_sprite2_ptr;    /* 0x195f968 */
-extern byte *cg_sprite3_ptr;    /* 0x195f978 */
-extern byte *cg_sprite4_ptr;    /* 0x195f974 */
-extern byte *cg_sprite5_ptr;    /* 0x195f97c */
-extern byte *cg_sprite6_ptr;    /* 0x195f980 */
-extern byte *cg_pmove_mins;    /* 0x195ed4c */
+extern byte *cgs_ptr;           /* imp_cg */
+extern byte *cg_ptr;            /* imp_cgs */
+extern byte *cg_entities_ptr;   /* imp_cg_entities */
+extern byte *cg_tags_ptr;       /* imp_scr_const */
+extern byte *cg_debug_ptr;      /* imp_cg_debugPosition */
+extern byte *cg_sprite_ptr;     /* imp_cg_headIconMinScreenRadius */
+extern byte *cg_sprite2_ptr;    /* imp_cg_voiceIconSize */
+extern byte *cg_sprite3_ptr;    /* imp_cg_scriptIconSize */
+extern byte *cg_sprite4_ptr;    /* imp_cg_constantSizeHeadIcons */
+extern byte *cg_sprite5_ptr;    /* imp_cg_youInKillCamSize */
+extern byte *cg_sprite6_ptr;    /* imp_cg_connectionIconSize */
+extern byte *cg_pmove_mins;    /* imp_vec3_origin */
 
 void CG_UpdatePlayerDObj(centity_t *cent);
 void CG_ResetPlayerEntity(centity_t *cent);

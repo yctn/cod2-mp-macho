@@ -15,9 +15,9 @@ extern const char *Com_Parse(const char **buf);
 extern int strcmp(const char *s1, const char *s2);
 extern char *va(const char *fmt, ...);
 
-static char *localization; /* 0x4e9600 */
+static char *localization; /* localization */
 static char *localized_strings; /* 0x4e9604 */
-static char language_buffer[4096]; /* 0x4e9620 */
+static char language_buffer[4096]; /* language_buffer */
 
 language_t Win_InitLocalization(void)
 {

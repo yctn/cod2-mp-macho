@@ -10,7 +10,7 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static int smodelLoadGlob; /* 0xce7100 */
+static int smodelLoadGlob; /* smodelLoadGlob */
 
 static int CompareStaticModels(const int *smodel0, const int *smodel1);
 int R_ScaleStaticModelLighting(float directLightScale, float indirectLightScale, float *sunVisibility, vec4_t *colorForDir);
@@ -60,7 +60,7 @@ int R_GetStaticModelLightingFromGrid(const GfxWorld *world, GfxStaticModelInstan
         /* { scope 2 */
         "movss 0x14(%eax), %xmm0\n" /* line 256 */
         "addss 0x20(%eax), %xmm0\n"
-        "movss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x14(%ebp)\n" /* lightingOrigin */
         "movss 4(%edx), %xmm0\n" /* line 257 */
@@ -100,7 +100,7 @@ int R_PrepareStaticModelLightingCache(GfxWorld *world, int smodelCount)
         "subl $0x10, %esp\n"
         "movl 0xc(%ebp), %esi\n" /* smodelCount */
         /* { scope 1 */
-        "movl 0x195eec0, %eax\n" /* line 570 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 570 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lf1072e6_001073c2\n"
@@ -109,7 +109,7 @@ int R_PrepareStaticModelLightingCache(GfxWorld *world, int smodelCount)
         "jg .Lf1072e6_001073a7\n"
         "movl $1, %ecx\n"
         ".Lf1072e6_0010731a:\n"
-        "movl %ecx, 0xce7104\n" /* line 582 */
+        "movl %ecx, smodelLoadGlob+4\n" /* line 582 */
         "movl %ecx, %edx\n" /* line 583 */
         "imull smodelLoadGlob, %edx\n"
         "leal (%esi, %esi), %eax\n" /* smodelCount */
@@ -117,25 +117,25 @@ int R_PrepareStaticModelLightingCache(GfxWorld *world, int smodelCount)
         "jl .Lf1072e6_0010733a\n"
         "leal 1(%ecx), %eax\n" /* line 584 */
         "sarl $1, %eax\n"
-        "movl %eax, 0xce7104\n"
+        "movl %eax, smodelLoadGlob+4\n"
         ".Lf1072e6_0010733a:\n"
         "movl smodelLoadGlob, %ebx\n" /* line 586 | lightingImageSize */
         "leal (%ebx, %ebx), %eax\n" /* lightingImageSize */
         "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movaps %xmm1, %xmm2\n"
         "divss %xmm0, %xmm2\n"
-        "movss %xmm2, 0xce7108\n"
-        "movl 0xce7104, %eax\n" /* line 587 */
+        "movss %xmm2, smodelLoadGlob+8\n"
+        "movl smodelLoadGlob+4, %eax\n" /* line 587 */
         "addl %eax, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "divss %xmm0, %xmm1\n"
-        "movss %xmm1, 0xce710c\n"
-        "imull 0xce7104, %ebx\n" /* line 590 | lightingImageSize */
+        "movss %xmm1, smodelLoadGlob+12\n"
+        "imull smodelLoadGlob+4, %ebx\n" /* line 590 | lightingImageSize */
         "shll $5, %ebx\n" /* lightingImageSize */
         "movl %ebx, (%esp)\n" /* line 591 | lightingImageSize */
         "calll Hunk_AllocateTempMemoryInternal\n"
-        "movl %eax, 0xce7110\n"
+        "movl %eax, smodelLoadGlob+16\n"
         "movl %ebx, 8(%esp)\n" /* line 592 | lightingImageSize */
         "movl $0x80, 4(%esp)\n"
         "movl %eax, (%esp)\n"
@@ -158,7 +158,7 @@ int R_PrepareStaticModelLightingCache(GfxWorld *world, int smodelCount)
         "movl %ecx, smodelLoadGlob\n"
         "jmp .Lf1072e6_0010731a\n"
         ".Lf1072e6_001073c2:\n"
-        "movl 0x195eee0, %ebx\n" /* line 572 | lightingImageSize */
+        "movl imp_ri, %ebx\n" /* line 572 | lightingImageSize */
         "leal (%esi, %esi, 2), %eax\n" /* smodelCount */
         "shll $5, %eax\n"
         "movl %eax, (%esp)\n"
@@ -245,7 +245,7 @@ Bool R_ValidateStaticModel(struct XModel *model)
         "movl %ebx, 0xc(%esp)\n" /* surfIndex */
         "movl %edi, 8(%esp)\n" /* lodIndex */
         "movl %eax, 4(%esp)\n"
-        "movl $0x228ae4, (%esp)\n" /* "^1ERROR: model '%s' is not a valid static model, since lod %" */
+        "movl $str_00228ae4, (%esp)\n" /* "^1ERROR: model '%s' is not a valid static model, since lod %" */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -621,43 +621,43 @@ int R_FinishStaticModelLightingCache(GfxWorld *world)
         "pushl %ebx\n"
         "subl $0x24, %esp\n"
         "movl 8(%ebp), %ebx\n" /* world */
-        "movl 0x195eec0, %eax\n" /* line 602 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 602 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lf107826_0010790d\n"
         "movl $4, 0xc(%esp)\n" /* line 609 */
         "movl $1, 8(%esp)\n"
         "movl $2, 4(%esp)\n"
-        "movl $0x228b80, (%esp)\n" /* "*smodel_lighting" */
+        "movl $str_00228b80, (%esp)\n" /* "*smodel_lighting" */
         "calll Image_Alloc\n"
         "movl %eax, 0x10c(%ebx)\n" /* world */
         "movl $0x15, 0x14(%esp)\n" /* line 614 */
         "movl $2, 0x10(%esp)\n"
-        "movl 0xce7104, %edx\n"
+        "movl smodelLoadGlob+4, %edx\n"
         "addl %edx, %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl smodelLoadGlob, %edx\n"
         "addl %edx, %edx\n"
         "movl %edx, 8(%esp)\n"
-        "movl 0xce7110, %edx\n"
+        "movl smodelLoadGlob+16, %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll Image_Generate3D\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 616 | 0.5f */
-        "movss 0xce710c, %xmm1\n" /* y */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 616 | 0.5f */
+        "movss smodelLoadGlob+12, %xmm1\n" /* y */
         "mulss %xmm0, %xmm1\n" /* y */
         "leal 0x110(%ebx), %eax\n" /* world, v */
         /* { scope 1 */
-        "mulss 0xce7108, %xmm0\n" /* line 191 */
+        "mulss smodelLoadGlob+8, %xmm0\n" /* line 191 */
         "movss %xmm0, 0x110(%ebx)\n"
         "movss %xmm1, 4(%eax)\n" /* line 192 */
         "movl $0x3e800000, 8(%eax)\n" /* line 193 */
         /* } scope */
         "movl $0, smodelLoadGlob\n" /* line 618 */
-        "movl $0, 0xce7104\n"
-        "movl $0, 0xce7108\n"
-        "movl $0, 0xce710c\n"
-        "movl $0, 0xce7110\n"
+        "movl $0, smodelLoadGlob+4\n"
+        "movl $0, smodelLoadGlob+8\n"
+        "movl $0, smodelLoadGlob+12\n"
+        "movl $0, smodelLoadGlob+16\n"
         ".Lf107826_0010790d:\n"
         "addl $0x24, %esp\n" /* line 619 */
         "popl %ebx\n"
@@ -842,7 +842,7 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
         "movss %xmm1, -0x7c(%ebp)\n" /* zw */
         "movss -0x2c(%ebp), %xmm0\n" /* line 364 | yy */
         "addss %xmm2, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, (%ecx)\n"
         "movss -0x7c(%ebp), %xmm0\n" /* line 365 | zw */
@@ -855,7 +855,7 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
         "subss -0x7c(%ebp), %xmm4\n" /* line 369 | zw */
         "movss %xmm4, 0x10(%ecx)\n"
         "addss -0x30(%ebp), %xmm2\n" /* line 370 | xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, 0x14(%ecx)\n"
         "movaps %xmm3, %xmm0\n" /* line 371 */
@@ -869,7 +869,7 @@ int R_CreateStaticModel(GfxWorld *world, struct XModel *model, const vec_t *orig
         "movss -0x30(%ebp), %xmm0\n" /* line 376 | xx */
         "addss -0x2c(%ebp), %xmm0\n" /* yy */
         "movss %xmm0, -0x30(%ebp)\n" /* xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss -0x30(%ebp), %xmm0\n" /* xx */
         "movss %xmm0, 0x28(%ecx)\n"
         "movl $0, 0x2c(%ecx)\n" /* line 377 */
@@ -1054,7 +1054,7 @@ int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *sm
         /* { scope 1: comparand */
         "movl 0xf4(%esi), %ebx\n" /* line 479 | world, smodelIndex */
         "subl $1, %ebx\n" /* smodelIndex */
-        "movl 0x195eec0, %eax\n" /* line 483 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 483 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lf107db6_00108084\n"
@@ -1072,10 +1072,10 @@ int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *sm
         "movl -0x50(%ebp), %eax\n" /* x0 */
         "addl $2, %eax\n"
         "movl %eax, -0x34(%ebp)\n"
-        "movss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "mulss 0x10(%ebp), %xmm0\n" /* sunVisibility */
         "movss %xmm0, -0x30(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss -0x30(%ebp), %xmm0\n"
         "movss %xmm0, -0x30(%ebp)\n"
         "movl $0, -0x54(%ebp)\n" /* cornerIndex */
@@ -1105,14 +1105,14 @@ int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *sm
         "cmpl $2, -0x44(%ebp)\n" /* z */
         "jne .Lf107db6_00107e49\n"
         "cvtsi2ssl -0x50(%ebp), %xmm0\n" /* line 527 | x0 */
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "addss %xmm1, %xmm0\n"
-        "mulss 0xce7108, %xmm0\n"
+        "mulss smodelLoadGlob+8, %xmm0\n"
         "movl 0xc(%ebp), %eax\n" /* smodelInst */
         "movss %xmm0, 0x54(%eax)\n"
         "cvtsi2ssl -0x4c(%ebp), %xmm0\n" /* line 528 | y0 */
         "addss %xmm1, %xmm0\n"
-        "mulss 0xce710c, %xmm0\n"
+        "mulss smodelLoadGlob+12, %xmm0\n"
         "movss %xmm0, 0x58(%eax)\n"
         "movl $0x3f000000, 0x5c(%eax)\n" /* line 529 */
         /* } scope */
@@ -1152,17 +1152,17 @@ int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *sm
         "movl -0x6c(%ebp), %edx\n"
         "movss (%edx, %eax), %xmm1\n"
         "movl -0x44(%ebp), %eax\n" /* line 504 | z */
-        "imull 0xce7104, %eax\n"
+        "imull smodelLoadGlob+4, %eax\n"
         "leal (%edi, %eax, 2), %eax\n" /* y */
         "imull smodelLoadGlob, %eax\n"
         "movl -0x48(%ebp), %edx\n" /* x */
         "leal (%edx, %eax, 2), %eax\n"
-        "movl 0xce7110, %edx\n"
+        "movl smodelLoadGlob+16, %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* smodelIndex */
         "movl -0x24(%ebp), %eax\n" /* line 428 */
         "movss (%eax), %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x88(%ebp)\n"
         "calll floorf\n"
@@ -1178,8 +1178,8 @@ int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *sm
         "movb %dl, -0x2a(%ebp)\n"
         /* } scope */
         ".Lf107db6_00107f8c:\n"
-        "mulss 0x2ed5d4, %xmm1\n" /* line 428 | 255.0f */
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm1\n" /* line 428 | 255.0f */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss %xmm1, (%esp)\n"
         "calll floorf\n"
         "fstps -0x5c(%ebp)\n"
@@ -1193,10 +1193,10 @@ int R_CacheStaticModelLighting(const GfxWorld *world, GfxStaticModelInstance *sm
         "movb %dl, -0x29(%ebp)\n"
         /* } scope */
         ".Lf107db6_00107fc3:\n"
-        "movss 0x2ed5d4, %xmm0\n" /* line 428 | 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
         "mulss -0x3c(%ebp), %xmm0\n"
         "movss %xmm0, -0x3c(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss -0x3c(%ebp), %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
@@ -1401,7 +1401,7 @@ int R_SortGfxAabbTree(GfxWorld *world, GfxAabbTree *tree)
         "movss -0x1c(%ebp), %xmm4\n" /* line 242 */
         "movss -0x28(%ebp), %xmm0\n"
         "movss %xmm0, -0x74(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 272 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 272 | 0.5f */
         "mulss %xmm0, %xmm2\n"
         "mulss %xmm0, %xmm5\n" /* line 273 */
         "movl 0x24(%edi), %eax\n" /* line 149 | tree */

@@ -16,19 +16,19 @@ extern float sqrtf(float x);
  */
 
 /* External globals (pointer-to-pointer indirections from binary) */
-extern byte **cg_glob;              /* 0x195f584 — pointer to cg_t base */
-extern byte **cgs_glob;             /* 0x195f5c4 — pointer to cgs_t base */
-extern byte **cg_entities_glob;     /* 0x195f5cc — pointer to centity array base */
+extern byte **cg_glob;              /* imp_cg — pointer to cg_t base */
+extern byte **cgs_glob;             /* imp_cgs — pointer to cgs_t base */
+extern byte **cg_entities_glob;     /* imp_cg_entities — pointer to centity array base */
 
 /* Dvar pointers (each is a pointer to a dvar_t*) */
-extern const dvar_t **dvar_compassSize;              /* 0x195f640 */
-extern const dvar_t **dvar_compassMinRange;          /* 0x195f644 */
-extern const dvar_t **dvar_compassMinSaturation;     /* 0x195f650 */
-extern const dvar_t **dvar_compassMaxRange;          /* 0x195f654 */
-extern const dvar_t **dvar_compassClampDist;         /* 0x195f660 */
-extern const dvar_t **dvar_compassClampSaturation;   /* 0x195f664 */
-extern const dvar_t **dvar_compassPingFadeTime;      /* 0x195f674 */
-extern const dvar_t **dvar_compassFade;              /* 0x195f678 */
+extern const dvar_t **dvar_compassSize;              /* imp_cg_hudCompassSize */
+extern const dvar_t **dvar_compassMinRange;          /* imp_cg_hudCompassMinRange */
+extern const dvar_t **dvar_compassMinSaturation;     /* imp_cg_hudCompassMinRadius */
+extern const dvar_t **dvar_compassMaxRange;          /* imp_cg_hudCompassMaxRange */
+extern const dvar_t **dvar_compassClampDist;         /* imp_cg_hudObjectiveMaxRange */
+extern const dvar_t **dvar_compassClampSaturation;   /* imp_cg_hudObjectiveMinAlpha */
+extern const dvar_t **dvar_compassPingFadeTime;      /* imp_cg_hudCompassSoundPingFadeTime */
+extern const dvar_t **dvar_compassFade;              /* imp_hud_fade_compass */
 
 /* External function declarations */
 extern float CG_FadeHudMenu(const dvar_t *fadeDvar, int displayStartTime, int duration);

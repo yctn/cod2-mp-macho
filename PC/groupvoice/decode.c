@@ -15,15 +15,15 @@ extern int speex_decode(void *state, SpeexBits *bits, float *out);
 extern void Com_Printf(const char *fmt, ...);
 
 /* Speex codec mode pointers (narrowband, wideband, ultra-wideband) */
-extern const void *speex_nb_mode_ptr;   /* 0x195f99c */
-extern const void *speex_wb_mode_ptr;   /* 0x195f998 */
-extern const void *speex_uwb_mode_ptr;  /* 0x195f9a4 */
-extern int *speex_quality_ptr;          /* 0x195f9a0 */
+extern const void *speex_nb_mode_ptr;   /* imp_speex_nb_mode */
+extern const void *speex_wb_mode_ptr;   /* imp_speex_wb_mode */
+extern const void *speex_uwb_mode_ptr;  /* imp_speex_uwb_mode */
+extern int *speex_quality_ptr;          /* imp_g_encoder_samplerate */
 
 extern void *g_decoder; /* 0x0 */
 extern int g_current_decode_bandwidth_setting; /* 0x0 */
 extern int g_decode_frame_size; /* 0x0 */
-static SpeexBits decodeBits; /* 0xff2100 */
+static SpeexBits decodeBits; /* decodeBits */
 
 Bool Decode_Init(int bandwidthEnum)
 {

@@ -5,10 +5,10 @@
 #include "imports.h"
 #include <string.h>
 
-extern UI_Component_data_t UI_Component_g; /* 0x195af20 */
-extern byte *ui_globals_195ecac;  /* 0x195ecac */
-extern byte *ui_vtable_195eca8;   /* 0x195eca8 */
-extern byte *ui_maxclients_195ecc0; /* 0x195ecc0 */
+extern UI_Component_data_t UI_Component_g; /* __ZN12UI_Component1gE */
+extern byte *ui_globals_195ecac;  /* imp_cls */
+extern byte *ui_vtable_195eca8;   /* imp_re */
+extern byte *ui_maxclients_195ecc0; /* imp_com_developer */
 
 inflate_huft UI_Component_Init(void);
 

@@ -26,10 +26,10 @@ extern const char *UI_SafeTranslateString(const char *ref);
 extern void UI_DrawText(const char *text, int maxChars, void *font, float x, float y, int horzAlign, int vertAlign, float scale, const float *color, int style);
 
 /* External globals */
-extern char **cg_glob;           /* 0x195f584 — pointer to cg_t base */
-extern char **cg_globUI;         /* 0x195ecb4 — pointer to cg_t base (UI side) */
-extern const float *scrPlace;    /* 0x195ed2c — screen placement */
-extern char *loadingMessage;     /* 0x195f958 — loading message string */
+extern char **cg_glob;           /* imp_cg — pointer to cg_t base */
+extern char **cg_globUI;         /* imp_legacyHacks — pointer to cg_t base (UI side) */
+extern const float *scrPlace;    /* imp_colorWhite — screen placement */
+extern char *loadingMessage;     /* imp_g_waitingForServer — loading message string */
 
 /* cg_t field offsets */
 #define CG_LOADING_STRING    0x2a5fc  /* char[1024] — loading string buffer */

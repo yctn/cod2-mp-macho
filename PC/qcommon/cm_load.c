@@ -26,7 +26,7 @@ extern void *Hunk_AllocateTempMemoryHighInternal(int size);
 extern void Hunk_ClearTempMemory(void);
 extern void Hunk_ClearTempMemoryHigh(void);
 
-extern byte *cm_phys_ptr; /* 0x195ee1c */
+extern byte *cm_phys_ptr; /* imp_g_traceThreadInfo */
 
 extern struct clipMap_t cm; /* 0x0 */
 

@@ -7,8 +7,8 @@
 extern DWORD GetCurrentThreadId(void);
 extern void Com_InitThreadData(int index);
 
-static void *g_threadValues[5]; /* 0x334f00 */
-static DWORD threadId[1]; /* 0x334f14 */
+static void *g_threadValues[5]; /* g_threadValues */
+static DWORD threadId[1]; /* threadId */
 
 void Sys_InitMainThread(void)
 {

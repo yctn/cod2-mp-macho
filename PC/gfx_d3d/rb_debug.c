@@ -9,12 +9,12 @@
  *   #include "PC/gfx_d3d/rb_backend.h"
  */
 
-extern refimport_t *ri;                 /* 0x195eee0 */
-extern r_global_permanent_t *rgp;       /* 0x195eebc */
-extern void **g_dxCaps;                 /* 0x195eec0 */
-extern r_backEndGlobals_t *backEnd;     /* 0x195f0c8 */
-extern void **g_drawSurf;              /* 0x195f160 */
-extern void **g_viewParms;             /* 0x195f188 */
+extern refimport_t *ri;                 /* imp_ri */
+extern r_global_permanent_t *rgp;       /* imp_rgp */
+extern void **g_dxCaps;                 /* imp_r_rendererInUse */
+extern r_backEndGlobals_t *backEnd;     /* imp_backEnd */
+extern void **g_drawSurf;              /* imp_tess */
+extern void **g_viewParms;             /* imp_backEndData */
 
 extern double R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
 extern void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depthTest);

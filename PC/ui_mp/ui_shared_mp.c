@@ -16,16 +16,16 @@ extern qboolean g_editingField; /* 0x0 */
 extern itemDef_t *g_editItem; /* 0x0 */
 extern commandDef_t commandList[28]; /* 0x0 */
 extern int scriptCommandCount; /* 0x0 */
-static rectDef_t rect; /* 0xf00744 */
-static qboolean inHandleKey; /* 0xf0075c */
-static scrollInfo_t scrollInfo; /* 0xf00720 */
-static void (*captureFunc)(); /* 0xf00708 */
-static void *captureData; /* 0xf00704 */
-static itemDef_t *itemCapture; /* 0xf0070c */
-static itemDef_t *g_bindItem; /* 0xf00710 */
-static qboolean debugMode; /* 0xf00700 */
-static int lastListBoxClickTime; /* 0xf00740 */
-static bind_t g_bindings[56]; /* 0x3121a0 */
+static rectDef_t rect; /* rect */
+static qboolean inHandleKey; /* inHandleKey */
+static scrollInfo_t scrollInfo; /* scrollInfo */
+static void (*captureFunc)(); /* captureFunc */
+static void *captureData; /* captureData */
+static itemDef_t *itemCapture; /* itemCapture */
+static itemDef_t *g_bindItem; /* g_bindItem */
+static qboolean debugMode; /* debugMode */
+static int lastListBoxClickTime; /* lastListBoxClickTime */
+static bind_t g_bindings[56]; /* g_bindings */
 
 void LerpColor(vec_t *a, vec_t *b, vec_t *c, float t);
 qboolean String_Parse(const char * *p, char *out, int len);
@@ -146,7 +146,7 @@ void LerpColor(vec_t *a, vec_t *b, vec_t *c, float t)
         "movss 0x14(%ebp), %xmm3\n" /* t */
         "movl $1, %edx\n"
         "pxor %xmm2, %xmm2\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         ".Lf163b08_00163b2c:\n"
         "leal (, %edx, 4), %eax\n"
         "movss -4(%esi, %eax), %xmm0\n" /* line 94 | a */
@@ -243,22 +243,22 @@ qboolean String_Parse(const char * *p, char *out, int len)
         /* { scope 1 */
         /* { scope 2 */
         ".Lf163b7c_00163bf8:\n"
-        "movl $0x216a48, (%esp)\n" /* line 149 */
+        "movl $str_00216a48, (%esp)\n" /* line 149 */
         "calll Dvar_GetBool\n"
         "testb %al, %al\n"
         "je .Lf163b7c_00163b9c\n"
-        "movl $0x216a58, (%esp)\n" /* line 151 */
+        "movl $str_00216a58, (%esp)\n" /* line 151 */
         "calll Dvar_GetBool\n"
         "testb %al, %al\n"
         "je .Lf163b7c_00163c35\n"
         "movl %esi, 8(%esp)\n" /* line 152 | token */
-        "movl $0x2ac1b4, 4(%esp)\n" /* "Could not translate menu string reference %s" */
+        "movl $str_002ac1b4, 4(%esp)\n" /* "Could not translate menu string reference %s" */
         "movl $6, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf163b7c_00163b9c\n"
         ".Lf163b7c_00163c35:\n"
         "movl %esi, 4(%esp)\n" /* line 154 | token */
-        "movl $0x2ac1e4, (%esp)\n" /* "^3WARNING: Could not translate menu string reference %s
+        "movl $str_002ac1e4, (%esp)\n" /* "^3WARNING: Could not translate menu string reference %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf163b7c_00163b9c\n"
@@ -548,7 +548,7 @@ void Script_SetColor(displayContextDef_t *dc, itemDef_t *item, const char * *arg
         "retl\n"
         /* { scope 1 */
         ".Lf163eee_00163f26:\n"
-        "movl $0x2ac220, 4(%esp)\n" /* line 516 */
+        "movl $str_002ac220, 4(%esp)\n" /* line 516 */
         "movl %ebx, (%esp)\n" /* out */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -585,12 +585,12 @@ void Script_SetColor(displayContextDef_t *dc, itemDef_t *item, const char * *arg
         "retl\n"
         /* { scope 1 */
         ".Lf163eee_00163f8d:\n"
-        "movl $0x2ac22c, 4(%esp)\n" /* line 521 */
+        "movl $str_002ac22c, 4(%esp)\n" /* line 521 */
         "movl %ebx, (%esp)\n" /* out */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf163eee_00163fc4\n"
-        "movl $0x2ac238, 4(%esp)\n" /* line 526 */
+        "movl $str_002ac238, 4(%esp)\n" /* line 526 */
         "movl %ebx, (%esp)\n" /* out */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1026,7 +1026,7 @@ void Script_ExecNow(displayContextDef_t *dc, itemDef_t *item, const char * *args
         "testl %eax, %eax\n"
         "je .Lf164376_001643c1\n"
         "movl %ebx, 4(%esp)\n" /* line 1114 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -1095,7 +1095,7 @@ void Script_ConditionalExecHandler(int execWhen, Bool (*shouldExec)())
         "je .Lf1643ca_001643fc\n"
         "leal -0xc18(%ebp), %eax\n" /* line 1141 | command */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -1173,8 +1173,8 @@ Bool Script_ExecIfFloatsEqual(const char *dvarValue, const char *testValue)
         "subsd -0x10(%ebp), %xmm0\n"
         "movsd %xmm0, -0x18(%ebp)\n"
         "cvtsd2ss %xmm0, %xmm0\n"
-        "andps 0x302a40, %xmm0\n"
-        "movss 0x2ed900, %xmm1\n" /* 9.999999747378752e-06f */
+        "andps boxVerts+352, %xmm0\n"
+        "movss lit4_002ed900, %xmm1\n" /* 9.999999747378752e-06f */
         "xorl %eax, %eax\n"
         "ucomiss %xmm0, %xmm1\n"
         "seta %al\n"
@@ -1321,7 +1321,7 @@ void Script_ScriptMenuResponse(displayContextDef_t *dc, itemDef_t *item, const c
         "subl $0x41c, %esp\n"
         "movl 0xc(%ebp), %esi\n" /* item */
         /* { scope 1 */
-        "movl 0x195ecb4, %eax\n" /* line 1239 */
+        "movl imp_legacyHacks, %eax\n" /* line 1239 */
         "movl (%eax), %eax\n"
         "cmpb $0, 0x4ed(%eax)\n"
         "jne .Lf1645fc_00164626\n"
@@ -1364,12 +1364,12 @@ void Script_ScriptMenuResponse(displayContextDef_t *dc, itemDef_t *item, const c
         "testl %eax, %eax\n"
         "jne .Lf1645fc_0016464b\n"
         ".Lf1645fc_00164682:\n"
-        "movl $0x2a8d30, (%esp)\n" /* line 1263 */
+        "movl $str_002a8d30, (%esp)\n" /* line 1263 */
         "calll Dvar_GetInt\n"
         "movl %edi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* iIndex */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a8d3c, (%esp)\n" /* "cmd mr %i %i %s
+        "movl $str_002a8d3c, (%esp)\n" /* "cmd mr %i %i %s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -1475,7 +1475,7 @@ void Item_RunScript(displayContextDef_t *dc, itemDef_t *item, const char *s)
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* dc */
         "movl %eax, (%esp)\n"
-        "calll *0x3120a4(, %esi, 8)\n"
+        "calll *commandList+4(, %esi, 8)\n"
         "jmp .Lf1646c8_0016472a\n"
     );
 }
@@ -1560,7 +1560,7 @@ void Controls_SetConfig(qboolean restart)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl $0x3121ac, %ebx\n"
+        "movl $g_bindings+12, %ebx\n"
         ".Lf16487a_00164886:\n"
         "movl (%ebx), %edx\n" /* line 4357 */
         "cmpl $-1, %edx\n"
@@ -1578,9 +1578,9 @@ void Controls_SetConfig(qboolean restart)
         "calll Key_SetBinding\n"
         ".Lf16487a_001648b3:\n"
         "addl $0x14, %ebx\n"
-        "cmpl $0x31260c, %ebx\n" /* line 4355 */
+        "cmpl $szShotName+8, %ebx\n" /* line 4355 */
         "jne .Lf16487a_00164886\n"
-        "movl $0x2ac244, 4(%esp)\n" /* line 4371 */
+        "movl $str_002ac244, 4(%esp)\n" /* line 4371 */
         "movl $2, (%esp)\n"
         "calll Cbuf_ExecuteText\n"
         "addl $0x14, %esp\n" /* line 4373 */
@@ -1631,7 +1631,7 @@ void BindingFromName(const char *dvar, char *nameBind)
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1648fa_00164911\n"
-        "movl 0x3121ac(%edi), %eax\n" /* line 4432 */
+        "movl g_bindings+12(%edi), %eax\n" /* line 4432 */
         "cmpl $-1, %eax\n" /* line 4433 */
         "je .Lf1648fa_00164a2c\n"
         "movl $0x20, 8(%esp)\n" /* line 4436 */
@@ -1647,7 +1647,7 @@ void BindingFromName(const char *dvar, char *nameBind)
         "movl 0xc(%ebp), %edx\n" /* nameBind */
         "movl %edx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl 0x3121b0(%edi), %eax\n" /* line 4439 */
+        "movl g_bindings+16(%edi), %eax\n" /* line 4439 */
         "cmpl $-1, %eax\n" /* line 4440 */
         "je .Lf1648fa_00164a4f\n"
         "movl $0x20, 8(%esp)\n" /* line 4442 */
@@ -1663,10 +1663,10 @@ void BindingFromName(const char *dvar, char *nameBind)
         "leal -0x98(%ebp), %edx\n" /* nameBind2 */
         "movl %edx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ac250, (%esp)\n" /* line 4444 */
+        "movl $str_002ac250, (%esp)\n" /* line 4444 */
         "calll UI_SafeTranslateString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac258, (%esp)\n" /* " %s " */
+        "movl $str_002ac258, (%esp)\n" /* " %s " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x80, 4(%esp)\n"
@@ -1688,7 +1688,7 @@ void BindingFromName(const char *dvar, char *nameBind)
         "retl\n"
         /* { scope 1 */
         ".Lf1648fa_00164a2c:\n"
-        "movl $0x2a79c4, (%esp)\n" /* line 4456 */
+        "movl $str_002a79c4, (%esp)\n" /* line 4456 */
         "calll UI_SafeTranslateString\n"
         "movl $0x80, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
@@ -1719,7 +1719,7 @@ qboolean GetCommandHasBinding(const char *command)
         "subl $0x1c, %esp\n"
         "xorl %esi, %esi\n"
         "movl $g_bindings, %ebx\n"
-        "movl $0x3121ac, %edi\n"
+        "movl $g_bindings+12, %edi\n"
         "jmp .Lf164a5a_00164a7f\n"
         /* { scope 1 */
         ".Lf164a5a_00164a71:\n"
@@ -1795,7 +1795,7 @@ int GetKeyBindings(const char *command, char (*bindings)[128])
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf164aae_00164ad8\n"
-        "movl 0x3121ac(%edi), %eax\n" /* line 4524 */
+        "movl g_bindings+12(%edi), %eax\n" /* line 4524 */
         "cmpl $-1, %eax\n" /* line 4525 */
         "je .Lf164aae_00164b4c\n"
         "movl $0x80, 8(%esp)\n" /* line 4528 */
@@ -1803,7 +1803,7 @@ int GetKeyBindings(const char *command, char (*bindings)[128])
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll Key_KeynumToStringBuf\n"
-        "movl 0x3121b0(%edi), %eax\n" /* line 4531 */
+        "movl g_bindings+16(%edi), %eax\n" /* line 4531 */
         "cmpl $-1, %eax\n" /* line 4532 */
         "je .Lf164aae_00164b6d\n"
         "movl $0x80, 8(%esp)\n" /* line 4534 */
@@ -1824,7 +1824,7 @@ int GetKeyBindings(const char *command, char (*bindings)[128])
         "movl 0xc(%ebp), %eax\n" /* line 4548 | bindings */
         "movl $0x5f59454b, (%eax)\n"
         "movl $0x4f424e55, 4(%eax)\n"
-        "movl $0x444e55, 8(%eax)\n"
+        "movl $scrMemTreeGlob+321365, 8(%eax)\n"
         "xorl %eax, %eax\n"
         /* } scope */
         ".Lf164aae_00164b65:\n"
@@ -1873,10 +1873,10 @@ int GetKeyBindingLocalizedString(const char *command, char *keys)
         ".Lf164b74_00164bc6:\n"
         "cmpl $1, %esi\n" /* line 4605 | bindCount */
         "jle .Lf164b74_00164c52\n"
-        "movl $0x2ac250, (%esp)\n" /* line 4607 */
+        "movl $str_002ac250, (%esp)\n" /* line 4607 */
         "calll UI_SafeTranslateString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac258, (%esp)\n" /* " %s " */
+        "movl $str_002ac258, (%esp)\n" /* " %s " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x100, 4(%esp)\n"
@@ -1901,7 +1901,7 @@ int GetKeyBindingLocalizedString(const char *command, char *keys)
         "retl\n"
         /* { scope 1 */
         ".Lf164b74_00164c32:\n"
-        "movl $0x2a79c4, (%esp)\n" /* line 4617 */
+        "movl $str_002a79c4, (%esp)\n" /* line 4617 */
         "calll UI_SafeTranslateString\n"
         "movl $0x100, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
@@ -1985,7 +1985,7 @@ void UI_AddMenuList(displayContextDef_t *dc, MenuList *menuList)
         "cmpl $0x7f, 0x22c(%edi)\n" /* line 5827 */
         "jle .Lf164ca6_00164cc6\n"
         "movl $0x80, 8(%esp)\n" /* line 5828 */
-        "movl $0x2ac260, 4(%esp)\n" /* "UI_AddMenu: Maximum number of menus %d exceeded." */
+        "movl $str_002ac260, 4(%esp)\n" /* "UI_AddMenu: Maximum number of menus %d exceeded." */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0x22c(%edi), %eax\n" /* line 5838 */
@@ -2079,7 +2079,7 @@ float Item_Slider_ThumbPosition(itemDef_t *item)
         "je .Lf164dae_00164e6a\n"
         "movss 0x210(%ebx), %xmm3\n" /* line 1610 | item */
         "addss 0x218(%ebx), %xmm3\n" /* item */
-        "addss 0x2ed740, %xmm3\n" /* 8.0f */
+        "addss lit4_002ed740, %xmm3\n" /* 8.0f */
         ".Lf164dae_00164df1:\n"
         "movl 0x2c0(%ebx), %eax\n" /* line 1623 | item */
         "movl %eax, (%esp)\n"
@@ -2097,9 +2097,9 @@ float Item_Slider_ThumbPosition(itemDef_t *item)
         "subss %xmm2, %xmm1\n" /* line 1630 */
         "subss %xmm2, %xmm0\n" /* line 1631 */
         "divss %xmm0, %xmm1\n"
-        "mulss 0x2ed904, %xmm1\n" /* line 1633 | 84.0f */
-        "addss 0x2ed6d4, %xmm1\n" /* 5.0f */
-        "addss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "mulss lit4_002ed904, %xmm1\n" /* line 1633 | 84.0f */
+        "addss lit4_002ed6d4, %xmm1\n" /* 5.0f */
+        "addss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "addss %xmm3, %xmm1\n"
         /* } scope */
         ".Lf164dae_00164e4a:\n"
@@ -2386,11 +2386,11 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
         "testb $0x20, 0xe6(%ebx)\n" /* line 1524 | item */
         "je .Lf165044_001650cd\n"
         "movss 8(%ebx), %xmm0\n" /* line 1526 | item */
-        "subss 0x2ed830, %xmm0\n" /* 32.0f */
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "testl %eax, %eax\n" /* line 1527 */
         "jle .Lf165044_0016512e\n"
-        "movss 0x2ed6a8, %xmm2\n" /* line 1529 | 16.0f */
+        "movss lit4_002ed6a8, %xmm2\n" /* line 1529 | 16.0f */
         "movaps %xmm0, %xmm1\n"
         "subss %xmm2, %xmm1\n"
         "cvtsi2ssl %eax, %xmm0\n"
@@ -2398,7 +2398,7 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
         ".Lf165044_001650a6:\n"
         "cvtsi2ssl (%esi), %xmm0\n" /* line 1536 | listPtr */
         "mulss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "addss (%ebx), %xmm0\n" /* item */
         "addss %xmm2, %xmm0\n"
         "addss %xmm0, %xmm1\n"
@@ -2412,11 +2412,11 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
         /* { scope 1 */
         ".Lf165044_001650cd:\n"
         "movss 0xc(%ebx), %xmm0\n" /* line 1540 | item */
-        "subss 0x2ed830, %xmm0\n" /* 32.0f */
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "testl %eax, %eax\n" /* line 1541 */
         "jle .Lf165044_0016513f\n"
-        "movss 0x2ed6a8, %xmm2\n" /* line 1543 | 16.0f */
+        "movss lit4_002ed6a8, %xmm2\n" /* line 1543 | 16.0f */
         "movaps %xmm0, %xmm1\n"
         "subss %xmm2, %xmm1\n"
         "cvtsi2ssl %eax, %xmm0\n"
@@ -2424,7 +2424,7 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
         ".Lf165044_001650fd:\n"
         "cvtsi2ssl (%esi), %xmm0\n" /* line 1550 | listPtr */
         "mulss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "addss 4(%ebx), %xmm0\n" /* item */
         "addss %xmm2, %xmm0\n"
         "addss %xmm0, %xmm1\n"
@@ -2447,11 +2447,11 @@ int Item_ListBox_ThumbPosition(itemDef_t *item)
         /* { scope 1 */
         ".Lf165044_0016512e:\n"
         "pxor %xmm1, %xmm1\n" /* line 1527 */
-        "movss 0x2ed6a8, %xmm2\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm2\n" /* 16.0f */
         "jmp .Lf165044_001650a6\n"
         ".Lf165044_0016513f:\n"
         "pxor %xmm1, %xmm1\n" /* line 1541 */
-        "movss 0x2ed6a8, %xmm2\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm2\n" /* 16.0f */
         "jmp .Lf165044_001650fd\n"
     );
 }
@@ -2482,12 +2482,12 @@ int Item_ListBox_ThumbDrawPosition(displayContextDef_t *dc, itemDef_t *item)
         "movss (%eax), %xmm1\n" /* line 1565 */
         "movaps %xmm1, %xmm0\n" /* line 1566 */
         "addss 8(%eax), %xmm0\n"
-        "subss 0x2ed830, %xmm0\n" /* 32.0f */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "cvttss2si %xmm0, %ebx\n" /* max */
         "movl 0xc(%ecx), %ecx\n" /* line 1567 */
-        "addss 0x2ed6a8, %xmm1\n" /* line 1580 | 16.0f */
+        "addss lit4_002ed6a8, %xmm1\n" /* line 1580 | 16.0f */
         "addss %xmm2, %xmm1\n"
         "cvttss2si %xmm1, %eax\n"
         "addl $8, %eax\n"
@@ -2507,12 +2507,12 @@ int Item_ListBox_ThumbDrawPosition(displayContextDef_t *dc, itemDef_t *item)
         "movss 4(%eax), %xmm1\n" /* line 1578 */
         "movaps %xmm1, %xmm0\n" /* line 1579 */
         "addss 0xc(%eax), %xmm0\n"
-        "subss 0x2ed830, %xmm0\n" /* 32.0f */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "subss lit4_002ed830, %xmm0\n" /* 32.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "cvttss2si %xmm0, %ebx\n" /* max */
         "movl 0x10(%ecx), %ecx\n" /* line 1580 */
-        "addss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "addss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "addss %xmm2, %xmm1\n"
         "cvttss2si %xmm1, %eax\n"
         "addl $8, %eax\n"
@@ -2552,7 +2552,7 @@ void Scroll_Slider_SetThumbPos(void)
         "je .Lf16520a_00165360\n"
         "movss 0x210(%ebx), %xmm1\n" /* line 2930 | item */
         "addss 0x218(%ebx), %xmm1\n" /* item */
-        "addss 0x2ed740, %xmm1\n" /* 8.0f */
+        "addss lit4_002ed740, %xmm1\n" /* 8.0f */
         ".Lf16520a_0016524f:\n"
         "cvtsi2ssl 0xc(%edi), %xmm0\n" /* line 2937 | dc */
         "movss %xmm0, -0x1c(%ebp)\n" /* cursorx */
@@ -2562,8 +2562,8 @@ void Scroll_Slider_SetThumbPos(void)
         "movss %xmm1, -0x48(%ebp)\n"
         "calll CalcScreenX\n"
         "movss -0x48(%ebp), %xmm1\n" /* line 2940 */
-        "addss 0x2ed6d4, %xmm1\n" /* 5.0f */
-        "addss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "addss lit4_002ed6d4, %xmm1\n" /* 5.0f */
+        "addss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movss %xmm1, -0x20(%ebp)\n" /* usableStart */
         "movl $0x42a80000, -0x24(%ebp)\n" /* line 2941 | usableWidth */
         "pxor %xmm4, %xmm4\n" /* line 2942 */
@@ -2609,7 +2609,7 @@ void Scroll_Slider_SetThumbPos(void)
         "addss %xmm1, %xmm2\n" /* line 2950 */
         "cvtss2sd %xmm2, %xmm2\n"
         "movsd %xmm2, 4(%esp)\n"
-        "movl $0x217c20, (%esp)\n" /* "%g" */
+        "movl $str_00217c20, (%esp)\n" /* "%g" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl 0x2c0(%ebx), %eax\n" /* item */
@@ -3089,7 +3089,7 @@ void Item_Text_AutoWrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *co
         "calll UI_TextWidth\n"
         "movl %eax, -0x450(%ebp)\n" /* textWidth */
         "movss 8(%esi), %xmm0\n" /* line 3847 | item */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf165850_001658d8\n"
         "je .Lf165850_001658e5\n"
         ".Lf165850_001658d8:\n"
@@ -3454,7 +3454,7 @@ void Item_Text_Wrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *color)
         "movss -0x428(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss -0x420(%ebp), %xmm0\n"
         "jmp .Lf165c56_00165d8b\n"
         ".Lf165c56_00165edd:\n"
@@ -3493,7 +3493,7 @@ void Item_Text_Wrapped_Paint(itemDef_t *item, const char *textPtr, vec_t *color)
         "movss -0x42c(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss -0x424(%ebp), %xmm0\n"
         "jmp .Lf165c56_00165d00\n"
         ".Lf165c56_00165fa9:\n"
@@ -3551,7 +3551,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "je .Lf166004_001667c0\n"
         "movl 0xc(%ebp), %eax\n" /* line 4946 | item */
         "movss 0xc(%eax), %xmm0\n"
-        "movss 0x2ed62c, %xmm2\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm2\n" /* 2.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "movl -0x78(%ebp), %eax\n" /* line 4947 | listPtr */
@@ -3559,7 +3559,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "je .Lf166004_001669ca\n"
         ".Lf166004_00166089:\n"
         "movl %eax, %edx\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4980 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4980 | 1.0f */
         "movl 0xc(%ebp), %eax\n" /* item */
         "movss (%eax), %xmm1\n"
         "addss %xmm0, %xmm1\n"
@@ -3572,12 +3572,12 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "jle .Lf166004_00166302\n"
         "movl %edx, -0x60(%ebp)\n"
         "movaps %xmm1, %xmm0\n"
-        "addss 0x2ed608, %xmm0\n" /* 4.0f */
+        "addss lit4_002ed608, %xmm0\n" /* 4.0f */
         "movss %xmm0, -0xa0(%ebp)\n"
-        "movss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, -0xa4(%ebp)\n"
-        "addss 0x2ed62c, %xmm1\n" /* 2.0f */
+        "addss lit4_002ed62c, %xmm1\n" /* 2.0f */
         "movss %xmm1, -0xa8(%ebp)\n"
         /* { scope 2 */
         ".Lf166004_001660f5:\n"
@@ -3601,7 +3601,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss %xmm0, 0xc(%esp)\n"
         "movss %xmm0, 8(%esp)\n"
         "movss -0x58(%ebp), %xmm0\n"
-        "addss 0x2ed720, %xmm0\n" /* 3.0f */
+        "addss lit4_002ed720, %xmm0\n" /* 3.0f */
         "movss %xmm0, 4(%esp)\n"
         "cvtsi2ssl 0x44(%edi), %xmm0\n"
         "addss -0xa8(%ebp), %xmm0\n"
@@ -3720,16 +3720,16 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         ".Lf166004_0016630d:\n"
         "movl %eax, %edx\n"
         /* { scope 1: text */
-        "movss 0x2ed5d0, %xmm0\n" /* line 4863 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4863 | 1.0f */
         "addss (%eax), %xmm0\n"
         "movss %xmm0, -0x3c(%ebp)\n"
         "movss 4(%eax), %xmm1\n" /* line 4864 */
         "movss %xmm1, -0x4c(%ebp)\n"
         "addss 0xc(%eax), %xmm1\n"
-        "subss 0x2ed6a8, %xmm1\n" /* 16.0f */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movss %xmm1, -0x4c(%ebp)\n"
-        "movl 0x195f5d8, %esi\n" /* line 4865 */
+        "movl imp_sharedUiInfo, %esi\n" /* line 4865 */
         "movl 8(%esi), %eax\n"
         "movl %eax, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -3743,11 +3743,11 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss %xmm0, (%esp)\n"
         "calll UI_DrawHandlePic\n"
         "movss -0x3c(%ebp), %xmm0\n" /* line 4866 */
-        "addss 0x2ed908, %xmm0\n" /* 15.0f */
+        "addss lit4_002ed908, %xmm0\n" /* 15.0f */
         "movss %xmm0, -0x38(%ebp)\n"
         "movl 0xc(%ebp), %eax\n" /* line 4867 | item */
         "movss 8(%eax), %xmm1\n"
-        "subss 0x2ed830, %xmm1\n" /* 32.0f */
+        "subss lit4_002ed830, %xmm1\n" /* 32.0f */
         "movl 0x10(%esi), %eax\n" /* line 4868 */
         "movl %eax, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -3758,7 +3758,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 0x10(%esp)\n"
         "movl $0x41800000, 0xc(%esp)\n"
         "movaps %xmm1, %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 8(%esp)\n"
         "movss -0x4c(%ebp), %xmm0\n"
         "movss %xmm0, 4(%esp)\n"
@@ -3767,7 +3767,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss %xmm1, -0xc8(%ebp)\n"
         "calll UI_DrawHandlePic\n"
         "movss -0xc8(%ebp), %xmm1\n" /* line 4869 */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "addss -0x38(%ebp), %xmm1\n"
         "movl 0xc(%esi), %eax\n" /* line 4870 */
         "movl %eax, 0x1c(%esp)\n"
@@ -3791,8 +3791,8 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll Item_ListBox_ThumbDrawPosition\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0xc8(%ebp), %xmm1\n" /* line 4873 */
-        "subss 0x2ed6a8, %xmm1\n" /* 16.0f */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "minss %xmm0, %xmm1\n"
         "movl 0x14(%esi), %eax\n" /* line 4877 */
         "movl %eax, 0x1c(%esp)\n"
@@ -3816,18 +3816,18 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl 0xc(%ebp), %eax\n" /* line 4880 | item */
         "movss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x80(%ebp)\n" /* size */
-        "movss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss -0x80(%ebp), %xmm1\n" /* size */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x80(%ebp)\n" /* size */
         "movl -0x78(%ebp), %eax\n" /* line 4883 | listPtr */
         "cmpl $1, 0x3c(%eax)\n"
         "jne .Lf166004_00166302\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 4886 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 4886 | 1.0f */
         "movl 0xc(%ebp), %edx\n" /* item */
         "addss (%edx), %xmm1\n"
         "movss %xmm1, -0x88(%ebp)\n" /* x */
-        "movss 0x2ed5d0, %xmm1\n" /* line 4887 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 4887 | 1.0f */
         "addss 4(%edx), %xmm1\n"
         "movss %xmm1, -0x48(%ebp)\n"
         "movl (%eax), %eax\n" /* line 120 */
@@ -3872,16 +3872,16 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 0x10(%esp)\n"
         "movl -0x78(%ebp), %eax\n" /* listPtr */
         "movss 0x38(%eax), %xmm0\n"
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 0xc(%esp)\n"
         "movss 0x34(%eax), %xmm0\n"
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 8(%esp)\n"
         "movss -0x48(%ebp), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 4(%esp)\n"
         "movss -0x88(%ebp), %xmm0\n" /* x */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, (%esp)\n"
         "calll UI_DrawHandlePic\n"
         ".Lf166004_00166633:\n"
@@ -3899,10 +3899,10 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 0x10(%esp)\n"
         "movl -0x78(%ebp), %eax\n" /* listPtr */
         "movss 0x38(%eax), %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 0xc(%esp)\n"
         "movss 0x34(%eax), %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 8(%esp)\n"
         "movss -0x48(%ebp), %xmm0\n"
         "movss %xmm0, 4(%esp)\n"
@@ -3924,11 +3924,11 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 0xc(%esp)\n"
         "movl 0xc(%ebp), %eax\n" /* item */
         "movss 8(%eax), %xmm0\n"
-        "subss 0x2ed6a8, %xmm0\n" /* 16.0f */
-        "subss 0x2ed608, %xmm0\n" /* 4.0f */
+        "subss lit4_002ed6a8, %xmm0\n" /* 16.0f */
+        "subss lit4_002ed608, %xmm0\n" /* 4.0f */
         "movss %xmm0, 8(%esp)\n"
         "movss -0x58(%ebp), %xmm0\n"
-        "addss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "addss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 4(%esp)\n"
         "movss -0xa4(%ebp), %xmm0\n"
         "movss %xmm0, (%esp)\n"
@@ -3957,14 +3957,14 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 0x10(%esp)\n"
         "movl -0x78(%ebp), %eax\n" /* listPtr */
         "movss 0x38(%eax), %xmm0\n"
-        "movss 0x2ed608, %xmm1\n" /* 4.0f */
+        "movss lit4_002ed608, %xmm1\n" /* 4.0f */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
         "movss 0x34(%eax), %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 8(%esp)\n"
         "movss -0x58(%ebp), %xmm0\n"
-        "addss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "addss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 4(%esp)\n"
         "movss -0xa4(%ebp), %xmm0\n"
         "movss %xmm0, (%esp)\n"
@@ -3976,13 +3976,13 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss (%eax), %xmm0\n"
         "movss %xmm0, -0x40(%ebp)\n"
         "addss 8(%eax), %xmm0\n"
-        "subss 0x2ed6a8, %xmm0\n" /* 16.0f */
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed6a8, %xmm0\n" /* 16.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x40(%ebp)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 4927 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 4927 | 1.0f */
         "addss 4(%eax), %xmm1\n"
         "movss %xmm1, -0x54(%ebp)\n"
-        "movl 0x195f5d8, %esi\n" /* line 4928 */
+        "movl imp_sharedUiInfo, %esi\n" /* line 4928 */
         "movl (%esi), %eax\n"
         "movl %eax, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -3997,7 +3997,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss %xmm0, (%esp)\n"
         "calll UI_DrawHandlePic\n"
         "movss -0x54(%ebp), %xmm0\n" /* line 4929 */
-        "addss 0x2ed908, %xmm0\n" /* 15.0f */
+        "addss lit4_002ed908, %xmm0\n" /* 15.0f */
         "movss %xmm0, -0x50(%ebp)\n"
         "movl -0x78(%ebp), %edx\n" /* line 4931 | listPtr */
         "movl (%edx), %eax\n"
@@ -4006,7 +4006,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll ListBox_SetEndPos\n"
         "movl 0xc(%ebp), %eax\n" /* line 4932 | item */
         "movss 0xc(%eax), %xmm1\n"
-        "subss 0x2ed830, %xmm1\n" /* 32.0f */
+        "subss lit4_002ed830, %xmm1\n" /* 32.0f */
         "movl 0x10(%esi), %eax\n" /* line 4933 */
         "movl %eax, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -4016,7 +4016,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl 0x10(%edx), %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movaps %xmm1, %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl $0x41800000, 8(%esp)\n"
         "movss -0x50(%ebp), %xmm0\n"
@@ -4026,7 +4026,7 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss %xmm1, -0xc8(%ebp)\n"
         "calll UI_DrawHandlePic\n"
         "movss -0xc8(%ebp), %xmm1\n" /* line 4934 */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "addss -0x50(%ebp), %xmm1\n"
         "movl 4(%esi), %eax\n" /* line 4935 */
         "movl %eax, 0x1c(%esp)\n"
@@ -4050,8 +4050,8 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll Item_ListBox_ThumbDrawPosition\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0xc8(%ebp), %xmm1\n" /* line 4938 */
-        "subss 0x2ed6a8, %xmm1\n" /* 16.0f */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "minss %xmm0, %xmm1\n"
         "movl 0x14(%esi), %eax\n" /* line 4942 */
         "movl %eax, 0x1c(%esp)\n"
@@ -4069,14 +4069,14 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll UI_DrawHandlePic\n"
         "movl 0xc(%ebp), %eax\n" /* line 4946 | item */
         "movss 0xc(%eax), %xmm0\n"
-        "movss 0x2ed62c, %xmm2\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm2\n" /* 2.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "movl -0x78(%ebp), %eax\n" /* line 4947 | listPtr */
         "cmpl $1, 0x3c(%eax)\n"
         "jne .Lf166004_00166089\n"
         ".Lf166004_001669ca:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4950 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4950 | 1.0f */
         "movl 0xc(%ebp), %edx\n" /* item */
         "movss (%edx), %xmm1\n"
         "addss %xmm0, %xmm1\n"
@@ -4128,13 +4128,13 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 0x10(%esp)\n"
         "movl -0x78(%ebp), %eax\n" /* listPtr */
         "movss 0x38(%eax), %xmm0\n"
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 0xc(%esp)\n"
         "movss 0x34(%eax), %xmm0\n"
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, 8(%esp)\n"
         "movss -0x84(%ebp), %xmm0\n" /* y */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 4(%esp)\n"
         "movss -0x9c(%ebp), %xmm0\n"
         "movss %xmm0, (%esp)\n"
@@ -4154,10 +4154,10 @@ void Item_ListBox_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 0x10(%esp)\n"
         "movl -0x78(%ebp), %eax\n" /* listPtr */
         "movss 0x38(%eax), %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 0xc(%esp)\n"
         "movss 0x34(%eax), %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 8(%esp)\n"
         "movss -0x84(%ebp), %xmm0\n" /* y */
         "movss %xmm0, 4(%esp)\n"
@@ -4303,7 +4303,7 @@ void Script_SetItemColor(displayContextDef_t *dc, itemDef_t *item, const char * 
         "movl %eax, %esi\n" /* item2 */
         "testl %eax, %eax\n" /* line 602 */
         "je .Lf166c62_00166d6d\n"
-        "movl $0x2ac220, 4(%esp)\n" /* line 605 */
+        "movl $str_002ac220, 4(%esp)\n" /* line 605 */
         "leal -0x82c(%ebp), %eax\n" /* name */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -4328,13 +4328,13 @@ void Script_SetItemColor(displayContextDef_t *dc, itemDef_t *item, const char * 
         "jne .Lf166c62_00166d0c\n"
         "jmp .Lf166c62_00166c8f\n"
         ".Lf166c62_00166d7d:\n"
-        "movl $0x2ac22c, 4(%esp)\n" /* line 609 */
+        "movl $str_002ac22c, 4(%esp)\n" /* line 609 */
         "leal -0x82c(%ebp), %edx\n" /* name */
         "movl %edx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf166c62_00166db9\n"
-        "movl $0x2ac238, 4(%esp)\n" /* line 614 */
+        "movl $str_002ac238, 4(%esp)\n" /* line 614 */
         "leal -0x82c(%ebp), %eax\n" /* name */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -4391,7 +4391,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movss -0x20(%ebp), %xmm1\n" /* line 235 */
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, -0x20(%ebp)\n"
-        "addss 0x2ed5d0, %xmm0\n" /* line 236 | 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* line 236 | 1.0f */
         "movss -0x24(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x24(%ebp)\n"
@@ -4401,7 +4401,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "cmpl $7, %eax\n" /* line 240 */
         "ja .Lf166dd2_00166ef2\n"
         ".Lf166dd2_00166e83:\n"
-        "jmpl *0x302a50(, %eax, 4)\n"
+        "jmpl *boxVerts+368(, %eax, 4)\n"
         ".Lf166dd2_00166e8a:\n"
         "cmpl $4, 0xd0(%ebx)\n" /* line 303 | w */
         "je .Lf166dd2_00166fb2\n"
@@ -4494,7 +4494,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "jmp .Lf166dd2_00166e12\n"
         ".Lf166dd2_00166fb2:\n"
         "movss 0x1ec(%ebx), %xmm0\n" /* line 305 | w */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf166dd2_00167224\n"
         "movl $0x3f800000, -0x18(%ebp)\n" /* line 308 | color */
         "movl $0x3f000000, %eax\n" /* line 309 */
@@ -4554,7 +4554,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movss 0x1e8(%ebx), %xmm0\n" /* line 186 */
         "subss 0x10(%ebp), %xmm0\n" /* fadeAmount */
         "movss %xmm0, 0x1e8(%ebx)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 187 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 187 | 0.0f */
         "ja .Lf166dd2_001670d3\n"
         "jp .Lf166dd2_001670d3\n"
         "andl $0xffffffeb, %edx\n" /* line 189 */
@@ -5010,7 +5010,7 @@ void Script_Exec(displayContextDef_t *dc, itemDef_t *item, const char * *args)
         "testl %eax, %eax\n"
         "je .Lf167602_0016764d\n"
         "movl %ebx, 4(%esp)\n" /* line 1114 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -5786,7 +5786,7 @@ void Item_TextColor(displayContextDef_t *dc, itemDef_t *item, vec4_t *newColor)
         ".Lf167d76_00167e53:\n"
         "andb $1, %dh\n"
         "jne .Lf167d76_00167df0\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 3805 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 3805 | 0.800000011920929f */
         "movss 0x1cc(%ebx), %xmm1\n" /* item */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x28(%ebp)\n" /* lowLight */
@@ -5810,13 +5810,13 @@ void Item_TextColor(displayContextDef_t *dc, itemDef_t *item, vec4_t *newColor)
         "calll sinf\n"
         "fstps -0x2c(%ebp)\n"
         "movss -0x2c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "leal 0x1cc(%ebx), %ecx\n" /* item, a */
         "movl $1, %edx\n"
         "pxor %xmm4, %xmm4\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         ".Lf167d76_00167ef0:\n"
         "leal (, %edx, 4), %eax\n" /* line 3785 */
         /* { scope 2 */
@@ -5869,7 +5869,7 @@ void Item_TextColor(displayContextDef_t *dc, itemDef_t *item, vec4_t *newColor)
         "movl %eax, 0xc(%edi)\n" /* newColor */
         "jmp .Lf167d76_00167e3b\n"
         ".Lf167d76_00167fb0:\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 3797 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 3797 | 0.800000011920929f */
         "movss 0x25c(%esi), %xmm1\n" /* parent */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x28(%ebp)\n" /* lowLight */
@@ -5895,13 +5895,13 @@ void Item_TextColor(displayContextDef_t *dc, itemDef_t *item, vec4_t *newColor)
         "calll sinf\n"
         "fstps -0x2c(%ebp)\n"
         "movss -0x2c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "leal 0x25c(%esi), %ecx\n" /* parent, a */
         "movl $1, %edx\n"
         "pxor %xmm4, %xmm4\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         ".Lf167d76_0016804e:\n"
         "leal (, %edx, 4), %eax\n" /* line 3785 */
         /* { scope 2 */
@@ -5928,7 +5928,7 @@ void Item_TextColor(displayContextDef_t *dc, itemDef_t *item, vec4_t *newColor)
         "movss 0x1d8(%ebx), %xmm0\n" /* line 186 */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 0x1d8(%ebx)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 187 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 187 | 0.0f */
         "ja .Lf167d76_00167dc9\n"
         "jp .Lf167d76_00167dc9\n"
         "andl $0xffffffeb, %edx\n" /* line 189 */
@@ -5995,9 +5995,9 @@ void Item_Text_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %esi, (%esp)\n" /* item */
         "calll Item_SetTextExtents\n"
         "movl 0xe4(%esi), %eax\n" /* line 3999 | item */
-        "testl $0x400000, %eax\n"
+        "testl $scrMemTreeGlob+39168, %eax\n"
         "jne .Lf1680e2_00168289\n"
-        "testl $0x800000, %eax\n" /* line 4003 */
+        "testl $s_debugFrameGlob+57728, %eax\n" /* line 4003 */
         "jne .Lf1680e2_0016821e\n"
         "movl 0x290(%esi), %eax\n" /* line 4011 | item */
         "movl %eax, -0x44c(%ebp)\n"
@@ -6160,7 +6160,7 @@ void Item_TextField_Paint(displayContextDef_t *dc, itemDef_t *item)
         ".Lf1682a8_00168391:\n"
         "cmpb $0, (%eax)\n"
         "je .Lf1682a8_001685cd\n"
-        "movss 0x2ed740, %xmm0\n" /* 8.0f */
+        "movss lit4_002ed740, %xmm0\n" /* 8.0f */
         ".Lf1682a8_001683a2:\n"
         "movl 0xc(%ebp), %ecx\n" /* line 99 | item */
         "addl $0x210, %ecx\n"
@@ -6230,7 +6230,7 @@ void Item_TextField_Paint(displayContextDef_t *dc, itemDef_t *item)
         ".Lf1682a8_001684b6:\n"
         "testl $2, %esi\n" /* line 4057 */
         "je .Lf1682a8_001685dd\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 4059 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 4059 | 0.800000011920929f */
         "movss 0x25c(%ebx), %xmm1\n" /* parent */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x40(%ebp)\n" /* lowLight */
@@ -6256,7 +6256,7 @@ void Item_TextField_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll sinf\n"
         "fstps -0x47c(%ebp)\n"
         "movss -0x47c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "addl $0x25c, %ebx\n" /* parent */
@@ -6264,7 +6264,7 @@ void Item_TextField_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl $1, %edx\n"
         "leal -0x40(%ebp), %ebx\n" /* lowLight, parent */
         "pxor %xmm3, %xmm3\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         /* { scope 2 */
         ".Lf1682a8_0016856f:\n"
         "movl -0x480(%ebp), %ecx\n" /* line 94 | a */
@@ -6402,7 +6402,7 @@ void Item_YesNo_Paint(displayContextDef_t *dc, itemDef_t *item)
         "je .Lf16870e_0016886a\n"
         "testb $2, %al\n" /* line 4101 */
         "je .Lf16870e_00168867\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 4103 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 4103 | 0.800000011920929f */
         "movss 0x25c(%ebx), %xmm1\n" /* parent */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x38(%ebp)\n" /* lowLight */
@@ -6428,13 +6428,13 @@ void Item_YesNo_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll sinf\n"
         "fstps -0x8c(%ebp)\n"
         "movss -0x8c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "leal 0x25c(%ebx), %ecx\n" /* parent, a */
         "movl $1, %edx\n"
         "leal -0x38(%ebp), %ebx\n" /* lowLight, parent */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movss -0x88(%ebp), %xmm4\n"
         /* { scope 2 */
         ".Lf16870e_0016881e:\n"
@@ -6477,7 +6477,7 @@ void Item_YesNo_Paint(displayContextDef_t *dc, itemDef_t *item)
         "jp .Lf16870e_0016889e\n"
         "je .Lf16870e_00168979\n"
         ".Lf16870e_0016889e:\n"
-        "movl $0x2ac294, (%esp)\n" /* line 4115 */
+        "movl $str_002ac294, (%esp)\n" /* line 4115 */
         "calll UI_SafeTranslateString\n"
         "movl %eax, -0x48(%ebp)\n" /* yesNoStr */
         "movl 0xc(%ebp), %edi\n" /* line 99 | item */
@@ -6501,7 +6501,7 @@ void Item_YesNo_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss %xmm0, -0x44(%ebp)\n"
         "movss 0x210(%edx), %xmm0\n"
         "addss 8(%edi), %xmm0\n" /* textRect */
-        "addss 0x2ed740, %xmm0\n" /* 8.0f */
+        "addss lit4_002ed740, %xmm0\n" /* 8.0f */
         "movl %ebx, 4(%esp)\n" /* line 3711 */
         "movl 0x27c(%edx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -6533,7 +6533,7 @@ void Item_YesNo_Paint(displayContextDef_t *dc, itemDef_t *item)
         "retl\n"
         /* { scope 1 */
         ".Lf16870e_00168979:\n"
-        "movl $0x2ac29c, (%esp)\n" /* line 4117 */
+        "movl $str_002ac29c, (%esp)\n" /* line 4117 */
         "calll UI_SafeTranslateString\n" /* line 4115 */
         "movl %eax, -0x48(%ebp)\n" /* yesNoStr */
         "movl 0xc(%ebp), %edi\n" /* line 99 | item */
@@ -6622,7 +6622,7 @@ void Item_Slider_Paint(displayContextDef_t *dc, itemDef_t *item)
         "je .Lf168a54_00168b82\n"
         "testb $2, %al\n" /* line 4634 */
         "je .Lf168a54_00168b82\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 4636 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 4636 | 0.800000011920929f */
         "movss 0x25c(%ebx), %xmm1\n" /* parent */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x38(%ebp)\n" /* lowLight */
@@ -6648,7 +6648,7 @@ void Item_Slider_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll sinf\n"
         "fstps -0x4c(%ebp)\n"
         "movss -0x4c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "leal 0x25c(%ebx), %ecx\n" /* parent, a */
@@ -6656,7 +6656,7 @@ void Item_Slider_Paint(displayContextDef_t *dc, itemDef_t *item)
         "leal -0x38(%ebp), %ebx\n" /* lowLight, parent */
         "leal -0x28(%ebp), %edi\n" /* newColor */
         "pxor %xmm3, %xmm3\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         /* { scope 2 */
         ".Lf168a54_00168b3c:\n"
         "movss -4(%ecx, %edx, 4), %xmm0\n" /* line 94 */
@@ -6701,9 +6701,9 @@ void Item_Slider_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll Item_Text_Paint\n"
         "movss 0x210(%esi), %xmm0\n" /* line 4653 | item */
         "addss 0x218(%esi), %xmm0\n" /* item */
-        "addss 0x2ed740, %xmm0\n" /* 8.0f */
+        "addss lit4_002ed740, %xmm0\n" /* 8.0f */
         ".Lf168a54_00168be5:\n"
-        "movl 0x195f5d8, %ebx\n" /* line 4659 | parent */
+        "movl imp_sharedUiInfo, %ebx\n" /* line 4659 | parent */
         "movl 0x18(%ebx), %eax\n" /* parent */
         "movl %eax, 0x1c(%esp)\n"
         "movl %edi, 0x18(%esp)\n"
@@ -6731,9 +6731,9 @@ void Item_Slider_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl $0x41a00000, 0xc(%esp)\n"
         "movl $0x41200000, 8(%esp)\n"
         "movss -0x3c(%ebp), %xmm1\n" /* y */
-        "subss 0x2ed62c, %xmm1\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm1\n" /* 2.0f */
         "movss %xmm1, 4(%esp)\n"
-        "subss 0x2ed6d4, %xmm0\n" /* 5.0f */
+        "subss lit4_002ed6d4, %xmm0\n" /* 5.0f */
         "movss %xmm0, (%esp)\n"
         "calll UI_DrawHandlePic\n"
         /* } scope */
@@ -6833,7 +6833,7 @@ void Item_Bind_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss %xmm0, -0xc0(%ebp)\n"
         "movss 0x210(%eax), %xmm0\n"
         "addss 8(%ecx), %xmm0\n"
-        "addss 0x2ed740, %xmm0\n" /* 8.0f */
+        "addss lit4_002ed740, %xmm0\n" /* 8.0f */
         "movl %ebx, 4(%esp)\n" /* line 3711 */
         "movl 0x27c(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -6880,7 +6880,7 @@ void Item_Bind_Paint(displayContextDef_t *dc, itemDef_t *item)
         "je .Lf168ca4_0016904a\n"
         "cmpl g_bindItem, %ecx\n" /* line 4685 */
         "je .Lf168ca4_00169052\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 4694 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 4694 | 0.800000011920929f */
         "movss 0x25c(%ebx), %xmm1\n" /* parent */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x38(%ebp)\n" /* lowLight */
@@ -6908,13 +6908,13 @@ void Item_Bind_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll sinf\n"
         "fstps -0xfc(%ebp)\n"
         "movss -0xfc(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "leal 0x25c(%ebx), %ecx\n" /* parent, a */
         "movl $1, %edx\n"
         "leal -0x38(%ebp), %ebx\n" /* lowLight, parent */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movss -0xf8(%ebp), %xmm4\n"
         /* { scope 2 */
         ".Lf168ca4_00168f2e:\n"
@@ -6974,7 +6974,7 @@ void Item_Bind_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, 8(%esp)\n"
         "movl -0xc8(%ebp), %eax\n" /* maxChars */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac2a4, (%esp)\n" /* "FIXME" */
+        "movl $str_002ac2a4, (%esp)\n" /* "FIXME" */
         "calll UI_DrawText\n" /* line 4713 */
         /* } scope */
         "addl $0x12c, %esp\n" /* line 4719 */
@@ -7126,7 +7126,7 @@ void Item_OwnerDraw_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss 0x210(%ecx), %xmm0\n"
         "movl -0x3c(%ebp), %ebx\n" /* textRect */
         "addss 8(%ebx), %xmm0\n"
-        "addss 0x2ed740, %xmm0\n" /* 8.0f */
+        "addss lit4_002ed740, %xmm0\n" /* 8.0f */
         "movss %xmm0, (%esp)\n"
         "calll UI_OwnerDraw\n"
         /* } scope */
@@ -7152,7 +7152,7 @@ void Item_OwnerDraw_Paint(displayContextDef_t *dc, itemDef_t *item)
         ".Lf169070_00169288:\n"
         "andb $1, %dh\n"
         "jne .Lf169070_00169151\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 5073 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 5073 | 0.800000011920929f */
         "movl 0xc(%ebp), %edx\n" /* item */
         "movss 0x1cc(%edx), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
@@ -7177,12 +7177,12 @@ void Item_OwnerDraw_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll sinf\n"
         "fstps -0x4c(%ebp)\n"
         "movss -0x4c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "movl $1, %edx\n"
         "pxor %xmm4, %xmm4\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         /* { scope 2 */
         ".Lf169070_00169326:\n"
         "movss -4(%ebx, %edx, 4), %xmm0\n" /* line 94 */
@@ -7319,7 +7319,7 @@ void Item_OwnerDraw_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movss 0x1d8(%ebx), %xmm0\n" /* line 186 */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 0x1d8(%ebx)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 187 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 187 | 0.0f */
         "ja .Lf169070_001690fe\n"
         "jp .Lf169070_001690fe\n"
         "andl $0xffffffeb, %edx\n" /* line 189 */
@@ -7338,7 +7338,7 @@ void Item_OwnerDraw_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl 0xc(%ebp), %eax\n" /* item */
         "jmp .Lf169070_00169163\n"
         ".Lf169070_00169570:\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 5065 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 5065 | 0.800000011920929f */
         "movss 0x25c(%esi), %xmm1\n" /* parent */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x38(%ebp)\n" /* lowLight */
@@ -7363,13 +7363,13 @@ void Item_OwnerDraw_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll sinf\n"
         "fstps -0x4c(%ebp)\n"
         "movss -0x4c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "leal 0x25c(%esi), %ecx\n" /* parent, a */
         "movl $1, %edx\n"
         "pxor %xmm4, %xmm4\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         /* { scope 2 */
         ".Lf169070_0016960b:\n"
         "movss -4(%ecx, %edx, 4), %xmm0\n" /* line 94 */
@@ -7428,7 +7428,7 @@ void Item_List_Paint(itemDef_t *item, const char *text)
         "je .Lf169674_00169782\n"
         "movl 0x29c(%edx), %eax\n" /* line 4143 */
         "leal 0x25c(%eax), %ebx\n"
-        "movss 0x2ed7f0, %xmm0\n" /* line 519 | 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm0\n" /* line 519 | 0.800000011920929f */
         "movss 0x25c(%eax), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x38(%ebp)\n" /* lowLight */
@@ -7453,13 +7453,13 @@ void Item_List_Paint(itemDef_t *item, const char *text)
         "calll sinf\n"
         "fstps -0x7c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm2\n" /* t */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm2\n" /* t */
         "addss %xmm0, %xmm2\n" /* t */
         "movl $1, %edx\n"
         "leal -0x38(%ebp), %ecx\n" /* lowLight */
         "pxor %xmm3, %xmm3\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         /* { scope 2 */
         ".Lf169674_00169739:\n"
         "movss -4(%ebx, %edx, 4), %xmm0\n" /* line 94 */
@@ -7520,7 +7520,7 @@ void Item_List_Paint(itemDef_t *item, const char *text)
         "movss %xmm0, -0x44(%ebp)\n"
         "movss 0x210(%edx), %xmm0\n"
         "addss 8(%edi), %xmm0\n" /* textRect */
-        "addss 0x2ed740, %xmm0\n" /* 8.0f */
+        "addss lit4_002ed740, %xmm0\n" /* 8.0f */
         "movl %ebx, 4(%esp)\n" /* line 3711 */
         "movl 0x27c(%edx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -7713,7 +7713,7 @@ qboolean Item_Slider_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key
         "movss 4(%eax), %xmm0\n" /* line 3048 */
         "movss %xmm0, -0x2c(%ebp)\n" /* step */
         "subss (%eax), %xmm0\n"
-        "mulss 0x2ed72c, %xmm0\n" /* 0.05000000074505806f */
+        "mulss lit4_002ed72c, %xmm0\n" /* 0.05000000074505806f */
         "movss %xmm0, -0x2c(%ebp)\n" /* step */
         "movl 0x2c0(%ebx), %eax\n" /* line 3049 | item */
         "movl %eax, (%esp)\n"
@@ -7737,7 +7737,7 @@ qboolean Item_Slider_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key
         ".Lf16993a_00169ad5:\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 3061 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x217c20, (%esp)\n" /* "%g" */
+        "movl $str_00217c20, (%esp)\n" /* "%g" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl 0x2c0(%ebx), %eax\n" /* item */
@@ -7872,7 +7872,7 @@ qboolean Item_YesNo_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key)
         "sete %al\n"
         "movzbl %al, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl 0x2c0(%esi), %eax\n" /* item */
@@ -7900,7 +7900,7 @@ qboolean Item_SetFocus(displayContextDef_t *dc, itemDef_t *item, float x, float 
         "pushl %ebx\n"
         "subl $0x5c, %esp\n"
         /* { scope 1: compareRect, compareX, compareY */
-        "movl 0x195f5d8, %eax\n" /* line 1362 */
+        "movl imp_sharedUiInfo, %eax\n" /* line 1362 */
         "movl 0x40(%eax), %eax\n"
         "movl %eax, -0x40(%ebp)\n" /* sound */
         "movl 0xc(%ebp), %eax\n" /* line 1370 | item */
@@ -8379,7 +8379,7 @@ void Script_SetFocusByDvar(displayContextDef_t *dc, itemDef_t *item, const char 
         "retl\n"
         /* { scope 1 */
         ".Lf16a254_0016a31e:\n"
-        "movl $0x2ac2ac, 4(%esp)\n" /* line 1085 */
+        "movl $str_002ac2ac, 4(%esp)\n" /* line 1085 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf16a254_0016a2c3\n"
@@ -8438,7 +8438,7 @@ void Script_SetFocus(displayContextDef_t *dc, itemDef_t *item, const char * *arg
         ".Lf16a334_0016a3b5:\n"
         "leal -0x418(%ebp), %eax\n" /* line 1048 | name */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac2e4, (%esp)\n" /* "setFocus: could not find widget named '%s'
+        "movl $str_002ac2e4, (%esp)\n" /* "setFocus: could not find widget named '%s'
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -8495,7 +8495,7 @@ void Script_SetFocus(displayContextDef_t *dc, itemDef_t *item, const char * *arg
         ".Lf16a334_0016a464:\n"
         "leal -0x418(%ebp), %eax\n" /* line 1055 | name */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac310, (%esp)\n" /* "setFocus: error focusing widget '%s' (widget was found but c" */
+        "movl $str_002ac310, (%esp)\n" /* "setFocus: error focusing widget '%s' (widget was found but c" */
         "calll Com_Printf\n"
         "jmp .Lf16a334_0016a3cb\n"
     );
@@ -8529,7 +8529,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         "movss %xmm0, -0x44(%ebp)\n"
         "addss 8(%ebx), %xmm0\n" /* item */
         "movss %xmm0, -0x44(%ebp)\n"
-        "movss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "movss -0x44(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x44(%ebp)\n"
@@ -8573,7 +8573,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         ".Lf16a482_0016a57c:\n"
         "movss 4(%ebx), %xmm0\n" /* line 1721 | item */
         "addss 0xc(%ebx), %xmm0\n" /* item */
-        "movss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "subss %xmm1, %xmm0\n"
         /* { scope 2 */
         "movss -0x44(%ebp), %xmm2\n" /* line 417 */
@@ -8657,7 +8657,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         "jae .Lf16a482_0016ac74\n"
         /* } scope */
         ".Lf16a482_0016a6d9:\n"
-        "movss 0x2ed6a8, %xmm0\n" /* line 1732 | 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* line 1732 | 16.0f */
         "movss 4(%ebx), %xmm1\n" /* item */
         "addss %xmm0, %xmm1\n"
         /* { scope 2 */
@@ -8699,7 +8699,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         ".Lf16a482_0016a781:\n"
         "movss 4(%ebx), %xmm1\n" /* line 1739 | item */
         "addss 0xc(%ebx), %xmm1\n" /* item */
-        "movss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "subss %xmm0, %xmm1\n"
         /* { scope 2 */
         "movss -0x44(%ebp), %xmm2\n" /* line 417 */
@@ -8757,7 +8757,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         "movss %xmm0, -0x3c(%ebp)\n"
         "addss 0xc(%ebx), %xmm0\n" /* item */
         "movss %xmm0, -0x3c(%ebp)\n"
-        "movss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "movss -0x3c(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x3c(%ebp)\n"
@@ -8802,7 +8802,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         ".Lf16a482_0016a8ff:\n"
         "movss (%ebx), %xmm0\n" /* line 417 */
         "addss 8(%ebx), %xmm0\n"
-        "movss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, -0x38(%ebp)\n" /* compareRect */
         "movss -0x3c(%ebp), %xmm0\n" /* line 418 */
@@ -8885,7 +8885,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         "jae .Lf16a482_0016ac8c\n"
         /* } scope */
         ".Lf16a482_0016aa5b:\n"
-        "movss 0x2ed6a8, %xmm1\n" /* line 1699 | 16.0f */
+        "movss lit4_002ed6a8, %xmm1\n" /* line 1699 | 16.0f */
         "movss (%ebx), %xmm0\n" /* item */
         "addss %xmm1, %xmm0\n"
         /* { scope 2 */
@@ -8934,7 +8934,7 @@ int Item_ListBox_OverLB(itemDef_t *item, float x, float y)
         ".Lf16a482_0016ab1b:\n"
         "movss (%ebx), %xmm0\n" /* line 1706 | item */
         "addss 8(%ebx), %xmm0\n" /* item */
-        "movss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "subss %xmm1, %xmm0\n"
         /* { scope 2 */
         "movss -0x40(%ebp), %xmm2\n" /* line 417 */
@@ -9118,7 +9118,7 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
         "movss 4(%ebx), %xmm2\n" /* line 1793 | item */
         "movss %xmm2, -0x44(%ebp)\n"
         "movss 8(%ebx), %xmm1\n" /* line 1794 | item */
-        "subss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "cvtsi2ssl 0x20(%esi), %xmm2\n" /* line 1795 | listPtr */
         "movss 0xc(%ebx), %xmm0\n" /* item */
         "subss %xmm2, %xmm0\n"
@@ -9169,7 +9169,7 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
         "jb .Lf16acbc_0016ad38\n"
         /* } scope */
         "movss 0x10(%ebp), %xmm0\n" /* line 1798 | y */
-        "subss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "subss -0x44(%ebp), %xmm0\n"
         "movss %xmm0, 0x10(%ebp)\n" /* y */
         "divss 0x38(%esi), %xmm0\n" /* listPtr */
@@ -9192,7 +9192,7 @@ void Item_ListBox_MouseEnter(itemDef_t *item, float x, float y)
         "movss %xmm0, -0x3c(%ebp)\n"
         "movl 4(%ebx), %eax\n" /* line 1772 | item */
         "movss 0xc(%ebx), %xmm1\n" /* line 1773 | item */
-        "subss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "cvtsi2ssl 0x20(%esi), %xmm2\n" /* line 1774 | listPtr */
         "movss 8(%ebx), %xmm0\n" /* item */
         "subss %xmm2, %xmm0\n"
@@ -9827,7 +9827,7 @@ qboolean Item_ListBox_HandleKey(displayContextDef_t *dc, itemDef_t *item, int ke
         "andb $4, %bh\n" /* line 2125 | flags */
         "jne .Lf16b224_0016b569\n"
         "movss 0x2d8(%esi), %xmm0\n" /* line 2136 | item */
-        "ucomiss 0x2ed6c8, %xmm0\n" /* 18.0f */
+        "ucomiss lit4_002ed6c8, %xmm0\n" /* 18.0f */
         "je .Lf16b224_0016ba27\n"
         ".Lf16b224_0016b764:\n"
         "movl 8(%ebp), %eax\n" /* line 2148 | dc */
@@ -10126,23 +10126,23 @@ void Scroll_ListBox_ThumbFunc(displayContextDef_t *dc, void *p)
         "jp .Lf16bab8_0016bb34\n"
         "je .Lf16bab8_0016bb1f\n"
         ".Lf16bab8_0016bb34:\n"
-        "movss 0x2ed6a8, %xmm0\n" /* line 2848 | 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* line 2848 | 16.0f */
         "addss (%eax), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movss 8(%eax), %xmm1\n" /* line 2851 */
-        "subss 0x2ed830, %xmm1\n" /* 32.0f */
-        "subss 0x2ed62c, %xmm1\n" /* 2.0f */
+        "subss lit4_002ed830, %xmm1\n" /* 32.0f */
+        "subss lit4_002ed62c, %xmm1\n" /* 2.0f */
         "movl %eax, (%esp)\n" /* line 2852 */
         "movss %xmm1, -0x38(%ebp)\n"
         "calll Item_ListBox_MaxScroll\n"
         "cvtsi2ssl 0xc(%edi), %xmm0\n" /* line 2854 | dc */
         "subss -0x1c(%ebp), %xmm0\n"
-        "subss 0x2ed740, %xmm0\n" /* 8.0f */
+        "subss lit4_002ed740, %xmm0\n" /* 8.0f */
         "cvtsi2ssl %eax, %xmm2\n"
         "mulss %xmm2, %xmm0\n"
         "movss -0x38(%ebp), %xmm1\n"
-        "subss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "divss %xmm1, %xmm0\n"
         "cvttss2si %xmm0, %edx\n"
         "testl %edx, %edx\n" /* line 2855 */
@@ -10173,23 +10173,23 @@ void Scroll_ListBox_ThumbFunc(displayContextDef_t *dc, void *p)
         "movl 4(%edi), %eax\n" /* dc */
         "jmp .Lf16bab8_0016bb04\n"
         ".Lf16bab8_0016bc02:\n"
-        "movss 0x2ed6a8, %xmm0\n" /* line 2870 | 16.0f */
+        "movss lit4_002ed6a8, %xmm0\n" /* line 2870 | 16.0f */
         "addss 4(%eax), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x20(%ebp)\n"
         "movss 0xc(%eax), %xmm1\n" /* line 2871 */
-        "subss 0x2ed830, %xmm1\n" /* 32.0f */
-        "subss 0x2ed62c, %xmm1\n" /* 2.0f */
+        "subss lit4_002ed830, %xmm1\n" /* 32.0f */
+        "subss lit4_002ed62c, %xmm1\n" /* 2.0f */
         "movl %eax, (%esp)\n" /* line 2873 */
         "movss %xmm1, -0x38(%ebp)\n"
         "calll Item_ListBox_MaxScroll\n"
         "cvtsi2ssl 0x10(%edi), %xmm0\n" /* line 2875 | dc */
         "subss -0x20(%ebp), %xmm0\n"
-        "subss 0x2ed740, %xmm0\n" /* 8.0f */
+        "subss lit4_002ed740, %xmm0\n" /* 8.0f */
         "cvtsi2ssl %eax, %xmm2\n"
         "mulss %xmm2, %xmm0\n"
         "movss -0x38(%ebp), %xmm1\n"
-        "subss 0x2ed6a8, %xmm1\n" /* 16.0f */
+        "subss lit4_002ed6a8, %xmm1\n" /* 16.0f */
         "divss %xmm1, %xmm0\n"
         "cvttss2si %xmm0, %edx\n"
         "testl %edx, %edx\n" /* line 2876 */
@@ -10359,28 +10359,28 @@ qboolean Item_Bind_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, 
         "je .Lf16bd06_0016c015\n"
         "leal (%edi, %edi, 4), %eax\n" /* line 4810 | name */
         "shll $2, %eax\n"
-        "movl 0x3121ac(%eax), %edx\n"
+        "movl g_bindings+12(%eax), %edx\n"
         "cmpl $-1, %edx\n"
         "je .Lf16bd06_0016c000\n"
         "cmpl %esi, %edx\n" /* line 4814 | key */
         "je .Lf16bd06_0016be27\n"
-        "cmpl $-1, 0x3121b0(%eax)\n"
+        "cmpl $-1, g_bindings+16(%eax)\n"
         "je .Lf16bd06_0016c072\n"
         ".Lf16bd06_0016be27:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 4820 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 4820 */
         "movl %edx, (%esp)\n"
         "calll Key_SetBinding\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 4821 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 4821 */
         "leal (%edi, %edi, 4), %ebx\n" /* name */
         "shll $2, %ebx\n"
-        "movl 0x3121b0(%ebx), %eax\n"
+        "movl g_bindings+16(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Key_SetBinding\n"
-        "movl %esi, 0x3121ac(%ebx)\n" /* line 4822 | key */
-        "movl $0xffffffff, 0x3121b0(%ebx)\n" /* line 4823 */
+        "movl %esi, g_bindings+12(%ebx)\n" /* line 4822 | key */
+        "movl $0xffffffff, g_bindings+16(%ebx)\n" /* line 4823 */
         ".Lf16bd06_0016be63:\n"
-        "movl $0x3121ac, %ebx\n"
-        "movl $0x31260c, %esi\n" /* key */
+        "movl $g_bindings+12, %ebx\n"
+        "movl $szShotName+8, %esi\n" /* key */
         ".Lf16bd06_0016be6d:\n"
         "movl (%ebx), %edx\n" /* line 4357 */
         "cmpl $-1, %edx\n"
@@ -10400,7 +10400,7 @@ qboolean Item_Bind_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, 
         "addl $0x14, %ebx\n"
         "cmpl %ebx, %esi\n" /* line 4355 */
         "jne .Lf16bd06_0016be6d\n"
-        "movl $0x2ac244, 4(%esp)\n" /* line 4371 */
+        "movl $str_002ac244, 4(%esp)\n" /* line 4371 */
         "movl $2, (%esp)\n"
         "calll Cbuf_ExecuteText\n"
         ".Lf16bd06_0016beb5:\n"
@@ -10517,7 +10517,7 @@ qboolean Item_Bind_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, 
         "movl $0xffffffff, %esi\n" /* key */
         "jmp .Lf16bd06_0016bdb8\n"
         ".Lf16bd06_0016c000:\n"
-        "movl %esi, 0x3121ac(%eax)\n" /* line 4812 | key */
+        "movl %esi, g_bindings+12(%eax)\n" /* line 4812 | key */
         "jmp .Lf16bd06_0016be63\n"
         ".Lf16bd06_0016c00b:\n"
         "movl $0x7f, %esi\n" /* line 4778 | key */
@@ -10525,24 +10525,24 @@ qboolean Item_Bind_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, 
         ".Lf16bd06_0016c015:\n"
         "leal (%edi, %edi, 4), %eax\n" /* line 4799 | name */
         "leal (, %eax, 4), %ebx\n"
-        "movl 0x3121ac(%ebx), %eax\n"
+        "movl g_bindings+12(%ebx), %eax\n"
         "cmpl $-1, %eax\n"
         "je .Lf16bd06_0016c044\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 4801 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 4801 */
         "movl %eax, (%esp)\n"
         "calll Key_SetBinding\n"
-        "movl $0xffffffff, 0x3121ac(%ebx)\n" /* line 4802 */
+        "movl $0xffffffff, g_bindings+12(%ebx)\n" /* line 4802 */
         ".Lf16bd06_0016c044:\n"
-        "movl 0x3121b0(%ebx), %eax\n" /* line 4804 */
+        "movl g_bindings+16(%ebx), %eax\n" /* line 4804 */
         "cmpl $-1, %eax\n"
         "je .Lf16bd06_0016be63\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 4806 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 4806 */
         "movl %eax, (%esp)\n"
         "calll Key_SetBinding\n"
-        "movl $0xffffffff, 0x3121b0(%ebx)\n" /* line 4807 */
+        "movl $0xffffffff, g_bindings+16(%ebx)\n" /* line 4807 */
         "jmp .Lf16bd06_0016be63\n"
         ".Lf16bd06_0016c072:\n"
-        "movl %esi, 0x3121b0(%eax)\n" /* line 4816 | key */
+        "movl %esi, g_bindings+16(%eax)\n" /* line 4816 | key */
         "jmp .Lf16bd06_0016be63\n"
     );
 }
@@ -10584,7 +10584,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "popl %ebp\n"
         "retl\n"
         ".Lf16c07e_0016c0d6:\n"
-        "jmpl *0x302a70(, %eax, 4)\n" /* line 3087 */
+        "jmpl *boxVerts+400(, %eax, 4)\n" /* line 3087 */
         ".Lf16c07e_0016c0dd:\n"
         "testl %edi, %edi\n" /* line 3080 | down */
         "je .Lf16c07e_0016c0c9\n"
@@ -10608,13 +10608,13 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "fstps -0x6c(%ebp)\n"
         "movss -0x6c(%ebp), %xmm0\n"
         "movss 4(%esi), %xmm1\n" /* line 1645 */
-        "subss 0x2ed62c, %xmm1\n" /* 2.0f */
+        "subss lit4_002ed62c, %xmm1\n" /* 2.0f */
         "movl 0x10(%esi), %eax\n" /* line 1648 */
         "movl %eax, -0x40(%ebp)\n"
         "movl 0x14(%esi), %ebx\n" /* line 1649 */
         /* { scope 2: compareRect, compareX, compareY */
         /* { scope 3 */
-        "subss 0x2ed6d4, %xmm0\n" /* line 417 | 5.0f */
+        "subss lit4_002ed6d4, %xmm0\n" /* line 417 | 5.0f */
         "movss %xmm0, -0x38(%ebp)\n" /* compareRect */
         "movss %xmm1, -0x34(%ebp)\n" /* line 418 */
         "movl $0x41200000, -0x30(%ebp)\n" /* line 419 */
@@ -10664,15 +10664,15 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "testl %eax, %eax\n" /* line 3005 */
         "je .Lf16c07e_0016c0bb\n"
         "movl 0x10(%ebp), %ecx\n" /* line 3007 | key */
-        "movl %ecx, 0xf0072c\n"
-        "movl %esi, 0xf00738\n" /* line 3008 */
+        "movl %ecx, scrollInfo+12\n"
+        "movl %esi, scrollInfo+24\n" /* line 3008 */
         "movl 8(%ebp), %eax\n" /* line 3009 | dc */
         "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "movss %xmm0, 0xf00730\n"
+        "movss %xmm0, scrollInfo+16\n"
         "cvtsi2ssl 0x10(%eax), %xmm0\n" /* line 3010 */
-        "movss %xmm0, 0xf00734\n"
-        "movl $0xf00720, captureData\n" /* line 3011 */
-        "movl $0x16536a, captureFunc\n" /* line 3012 */
+        "movss %xmm0, scrollInfo+20\n"
+        "movl $scrollInfo, captureData\n" /* line 3011 */
+        "movl $Scroll_Slider_ThumbFunc, captureFunc\n" /* line 3012 */
         "movl %esi, itemCapture\n" /* line 3013 */
         "jmp .Lf16c07e_0016c0bb\n"
         /* } scope */
@@ -10755,7 +10755,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "cmpl %edx, %ebx\n" /* line 2515 */
         "je .Lf16c07e_0016c0c9\n"
         "movl %edx, 4(%esp)\n" /* line 2518 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "jmp .Lf16c07e_0016c4aa\n"
         /* } scope */
@@ -10862,16 +10862,16 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "movl %eax, scrollInfo\n"
         "movl 4(%ecx), %eax\n" /* line 2981 */
         "addl $0x96, %eax\n"
-        "movl %eax, 0xf00724\n"
-        "movl $0x1f4, 0xf00728\n" /* line 2982 */
+        "movl %eax, scrollInfo+4\n"
+        "movl $0x1f4, scrollInfo+8\n" /* line 2982 */
         "movl 0x10(%ebp), %eax\n" /* line 2983 | key */
-        "movl %eax, 0xf0072c\n"
+        "movl %eax, scrollInfo+12\n"
         "shrl $8, %edx\n" /* line 2984 */
         "andl $1, %edx\n"
-        "movl %edx, 0xf0073c\n"
-        "movl %esi, 0xf00738\n" /* line 2985 */
-        "movl $0xf00720, captureData\n" /* line 2986 */
-        "movl $0x16bc9c, captureFunc\n" /* line 2987 */
+        "movl %edx, scrollInfo+28\n"
+        "movl %esi, scrollInfo+24\n" /* line 2985 */
+        "movl $scrollInfo, captureData\n" /* line 2986 */
+        "movl $Scroll_ListBox_AutoFunc, captureFunc\n" /* line 2987 */
         "movl %esi, itemCapture\n" /* line 2988 */
         "jmp .Lf16c07e_0016c0bb\n"
         /* } scope */
@@ -10951,15 +10951,15 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "andb $4, %dh\n" /* line 2990 */
         "je .Lf16c07e_0016c0bb\n"
         "movl 0x10(%ebp), %ecx\n" /* line 2992 | key */
-        "movl %ecx, 0xf0072c\n"
-        "movl %esi, 0xf00738\n" /* line 2993 */
+        "movl %ecx, scrollInfo+12\n"
+        "movl %esi, scrollInfo+24\n" /* line 2993 */
         "movl 8(%ebp), %eax\n" /* line 2994 | dc */
         "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "movss %xmm0, 0xf00730\n"
+        "movss %xmm0, scrollInfo+16\n"
         "cvtsi2ssl 0x10(%eax), %xmm0\n" /* line 2995 */
-        "movss %xmm0, 0xf00734\n"
-        "movl $0xf00720, captureData\n" /* line 2996 */
-        "movl $0x16bab8, captureFunc\n" /* line 2997 */
+        "movss %xmm0, scrollInfo+20\n"
+        "movl $scrollInfo, captureData\n" /* line 2996 */
+        "movl $Scroll_ListBox_ThumbFunc, captureFunc\n" /* line 2997 */
         "movl %esi, itemCapture\n" /* line 2998 */
         "jmp .Lf16c07e_0016c0bb\n"
         /* } scope */
@@ -11089,7 +11089,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         ".Lf16c07e_0016c82b:\n"
         "cvtss2sd 0x100(%eax, %edx, 4), %xmm0\n" /* line 2494 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x217c20, (%esp)\n" /* "%g" */
+        "movl $str_00217c20, (%esp)\n" /* "%g" */
         "calll va\n"
         "jmp .Lf16c07e_0016c4aa\n"
         /* { scope 2: compareRect, compareX, compareY */
@@ -11301,31 +11301,31 @@ qboolean Menu_HandleMouseMove(displayContextDef_t *dc, menuDef_t *menu, float x,
         "movl 0x210(%ebx), %eax\n" /* line 3387 */
         "movl %eax, rect\n"
         "movl 0x214(%ebx), %eax\n"
-        "movl %eax, 0xf00748\n"
+        "movl %eax, rect+4\n"
         "movl 0x218(%ebx), %eax\n"
-        "movl %eax, 0xf0074c\n"
+        "movl %eax, rect+8\n"
         "movl 0x21c(%ebx), %eax\n"
-        "movl %eax, 0xf00750\n"
+        "movl %eax, rect+12\n"
         "movl 0x220(%ebx), %eax\n"
-        "movl %eax, 0xf00754\n"
+        "movl %eax, rect+16\n"
         "movl 0x224(%ebx), %eax\n"
-        "movl %eax, 0xf00758\n"
+        "movl %eax, rect+20\n"
         "pxor %xmm0, %xmm0\n" /* line 3388 */
-        "ucomiss 0xf0074c, %xmm0\n"
+        "ucomiss rect+8, %xmm0\n"
         "jp .Lf16c8fe_0016cb2c\n"
         "je .Lf16c8fe_0016ce86\n"
         ".Lf16c8fe_0016cb2c:\n"
-        "movss 0xf00748, %xmm0\n" /* line 3390 */
-        "subss 0xf00750, %xmm0\n"
-        "movss %xmm0, 0xf00748\n"
+        "movss rect+4, %xmm0\n" /* line 3390 */
+        "subss rect+12, %xmm0\n"
+        "movss %xmm0, rect+4\n"
         /* { scope 2 */
         ".Lf16c8fe_0016cb44:\n"
         "movl rect, %eax\n" /* line 417 */
         "movl %eax, -0x38(%ebp)\n" /* compareRect */
         "movss %xmm0, -0x34(%ebp)\n" /* line 418 */
-        "movl 0xf0074c, %eax\n" /* line 419 */
+        "movl rect+8, %eax\n" /* line 419 */
         "movl %eax, -0x30(%ebp)\n"
-        "movl 0xf00750, %eax\n" /* line 420 */
+        "movl rect+12, %eax\n" /* line 420 */
         "movl %eax, -0x2c(%ebp)\n"
         "movss 0x10(%ebp), %xmm0\n" /* line 422 | x */
         "movss %xmm0, -0x20(%ebp)\n" /* compareY */
@@ -11339,9 +11339,9 @@ qboolean Menu_HandleMouseMove(displayContextDef_t *dc, menuDef_t *menu, float x,
         "leal -0x1c(%ebp), %edx\n" /* compareX */
         "movl %edx, (%esp)\n"
         "calll CalcScreenY\n"
-        "movl 0xf00758, %eax\n" /* line 428 */
+        "movl rect+20, %eax\n" /* line 428 */
         "movl %eax, 0x14(%esp)\n"
-        "movl 0xf00754, %eax\n"
+        "movl rect+16, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "leal -0x2c(%ebp), %edi\n"
         "movl %edi, 0xc(%esp)\n"
@@ -11549,7 +11549,7 @@ qboolean Menu_HandleMouseMove(displayContextDef_t *dc, menuDef_t *menu, float x,
         "movl $1, %eax\n" /* line 5566 */
         "jmp .Lf16c8fe_0016c928\n"
         ".Lf16c8fe_0016ce86:\n"
-        "movss 0xf00748, %xmm0\n"
+        "movss rect+4, %xmm0\n"
         "jmp .Lf16c8fe_0016cb44\n"
     );
 }
@@ -11896,7 +11896,7 @@ void Menus_Open(displayContextDef_t *dc, menuDef_t *menu)
         "cmpl $0x10, 0x270(%edx)\n" /* line 730 */
         "jne .Lf16cfe2_0016d08a\n"
         ".Lf16cfe2_0016d2ab:\n"
-        "movl $0x2ac364, 4(%esp)\n" /* line 731 */
+        "movl $str_002ac364, 4(%esp)\n" /* line 731 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 8(%ebp), %ecx\n" /* dc */
@@ -12251,7 +12251,7 @@ itemDef_t * Menu_SetNextCursorItem(displayContextDef_t *dc, menuDef_t *menu)
         "movl 0x220(%ebx), %edx\n" /* line 53 */
         "movl 0x27c(%ebx), %eax\n"
         "movl (%eax, %edx, 4), %eax\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 3215 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 3215 | 1.0f */
         "movss 4(%eax), %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, 0xc(%esp)\n"
@@ -12382,7 +12382,7 @@ itemDef_t * Menu_SetPrevCursorItem(displayContextDef_t *dc, menuDef_t *menu)
         "movl 0x220(%ebx), %edx\n" /* line 53 */
         "movl 0x27c(%ebx), %eax\n"
         "movl (%eax, %edx, 4), %eax\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 3167 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 3167 | 1.0f */
         "movss 4(%eax), %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, 0xc(%esp)\n"
@@ -13154,7 +13154,7 @@ void Menu_HandleKey(displayContextDef_t *dc, menuDef_t *menu, int key, qboolean 
         "je .Lf16debe_0016e183\n"
         "jmp .Lf16debe_0016dfb8\n"
         ".Lf16debe_0016e22b:\n"
-        "movl $0x2167f8, (%esp)\n" /* line 3565 */
+        "movl $str_002167f8, (%esp)\n" /* line 3565 */
         "calll Dvar_GetInt\n"
         "testl %eax, %eax\n"
         "je .Lf16debe_0016dfb8\n"
@@ -13264,32 +13264,32 @@ void Menu_HandleKey(displayContextDef_t *dc, menuDef_t *menu, int key, qboolean 
         "movl 0x210(%edx), %eax\n"
         "movl %eax, rect\n"
         "movl 0x214(%edx), %eax\n"
-        "movl %eax, 0xf00748\n"
+        "movl %eax, rect+4\n"
         "movl 0x218(%edx), %eax\n"
-        "movl %eax, 0xf0074c\n"
+        "movl %eax, rect+8\n"
         "movl 0x21c(%edx), %eax\n"
-        "movl %eax, 0xf00750\n"
+        "movl %eax, rect+12\n"
         "movl 0x220(%edx), %eax\n"
-        "movl %eax, 0xf00754\n"
+        "movl %eax, rect+16\n"
         "movl 0x224(%edx), %eax\n"
-        "movl %eax, 0xf00758\n"
+        "movl %eax, rect+20\n"
         "pxor %xmm0, %xmm0\n" /* line 3388 */
-        "ucomiss 0xf0074c, %xmm0\n"
+        "ucomiss rect+8, %xmm0\n"
         "jp .Lf16debe_0016e472\n"
         "je .Lf16debe_0016e75f\n"
         ".Lf16debe_0016e472:\n"
-        "movss 0xf00748, %xmm0\n" /* line 3390 */
-        "subss 0xf00750, %xmm0\n"
-        "movss %xmm0, 0xf00748\n"
+        "movss rect+4, %xmm0\n" /* line 3390 */
+        "subss rect+12, %xmm0\n"
+        "movss %xmm0, rect+4\n"
         /* { scope 2: compareRect, compareX, compareY */
         /* { scope 3 */
         ".Lf16debe_0016e48a:\n"
         "movl rect, %eax\n" /* line 417 */
         "movl %eax, -0x314(%ebp)\n" /* compareRect */
         "movss %xmm0, -0x310(%ebp)\n" /* line 418 */
-        "movl 0xf0074c, %eax\n" /* line 419 */
+        "movl rect+8, %eax\n" /* line 419 */
         "movl %eax, -0x30c(%ebp)\n"
-        "movl 0xf00750, %eax\n" /* line 420 */
+        "movl rect+12, %eax\n" /* line 420 */
         "movl %eax, -0x308(%ebp)\n"
         "movss %xmm1, -0x20(%ebp)\n" /* line 422 | compareY */
         "movss %xmm2, -0x1c(%ebp)\n" /* line 423 | compareX */
@@ -13301,9 +13301,9 @@ void Menu_HandleKey(displayContextDef_t *dc, menuDef_t *menu, int key, qboolean 
         "leal -0x1c(%ebp), %eax\n" /* compareX */
         "movl %eax, (%esp)\n"
         "calll CalcScreenY\n"
-        "movl 0xf00758, %eax\n" /* line 428 */
+        "movl rect+20, %eax\n" /* line 428 */
         "movl %eax, 0x14(%esp)\n"
-        "movl 0xf00754, %eax\n"
+        "movl rect+16, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "leal -0x314(%ebp), %edx\n" /* compareRect */
         "leal -0x308(%ebp), %eax\n"
@@ -13435,16 +13435,16 @@ void Menu_HandleKey(displayContextDef_t *dc, menuDef_t *menu, int key, qboolean 
         "jmp .Lf16debe_0016dfb8\n"
         /* } scope */
         ".Lf16debe_0016e732:\n"
-        "movl $0x2167f8, (%esp)\n" /* line 3570 */
+        "movl $str_002167f8, (%esp)\n" /* line 3570 */
         "calll Dvar_GetInt\n"
         "testl %eax, %eax\n"
         "je .Lf16debe_0016dfb8\n"
-        "movl $0x2ac37c, 4(%esp)\n" /* line 3571 */
+        "movl $str_002ac37c, 4(%esp)\n" /* line 3571 */
         "movl $2, (%esp)\n"
         "calll Cbuf_ExecuteText\n"
         "jmp .Lf16debe_0016dfb8\n"
         ".Lf16debe_0016e75f:\n"
-        "movss 0xf00748, %xmm0\n"
+        "movss rect+4, %xmm0\n"
         "jmp .Lf16debe_0016e48a\n"
     );
 }
@@ -13608,7 +13608,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "cmpl $0x12, 0x270(%ecx)\n" /* line 5332 */
         "ja .Lf16e76c_0016e833\n"
         "movl 0x270(%ecx), %eax\n"
-        "jmpl *0x302a94(, %eax, 4)\n"
+        "jmpl *boxVerts+436(, %eax, 4)\n"
         /* { scope 2: enumDvar, enumString */
         ".Lf16e76c_0016e98b:\n"
         "addl 0x1b8(%ebx), %eax\n" /* line 5156 | done */
@@ -13656,23 +13656,23 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl 0x210(%edx), %eax\n"
         "movl %eax, rect\n"
         "movl 0x214(%edx), %eax\n"
-        "movl %eax, 0xf00748\n"
+        "movl %eax, rect+4\n"
         "movl 0x218(%edx), %eax\n"
-        "movl %eax, 0xf0074c\n"
+        "movl %eax, rect+8\n"
         "movl 0x21c(%edx), %eax\n"
-        "movl %eax, 0xf00750\n"
+        "movl %eax, rect+12\n"
         "movl 0x220(%edx), %eax\n"
-        "movl %eax, 0xf00754\n"
+        "movl %eax, rect+16\n"
         "movl 0x224(%edx), %eax\n"
-        "movl %eax, 0xf00758\n"
+        "movl %eax, rect+20\n"
         "pxor %xmm0, %xmm0\n" /* line 3388 */
-        "ucomiss 0xf0074c, %xmm0\n"
+        "ucomiss rect+8, %xmm0\n"
         "jp .Lf16e76c_0016ea6e\n"
         "je .Lf16e76c_0016eda6\n"
         ".Lf16e76c_0016ea6e:\n"
-        "movss 0xf00748, %xmm0\n" /* line 3390 */
-        "subss 0xf00750, %xmm0\n"
-        "movss %xmm0, 0xf00748\n"
+        "movss rect+4, %xmm0\n" /* line 3390 */
+        "subss rect+12, %xmm0\n"
+        "movss %xmm0, rect+4\n"
         ".Lf16e76c_0016ea86:\n"
         "movl $0x3f800000, %edx\n" /* line 5323 */
         "movl %edx, -0x1c(%ebp)\n"
@@ -13682,13 +13682,13 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "leal -0x28(%ebp), %eax\n" /* line 5325 | color */
         "movl %eax, 0x1c(%esp)\n"
         "movl %edx, 0x18(%esp)\n"
-        "movl 0xf00758, %eax\n"
+        "movl rect+20, %eax\n"
         "movl %eax, 0x14(%esp)\n"
-        "movl 0xf00754, %eax\n"
+        "movl rect+16, %eax\n"
         "movl %eax, 0x10(%esp)\n"
-        "movl 0xf00750, %eax\n"
+        "movl rect+12, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl 0xf0074c, %eax\n"
+        "movl rect+8, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movss %xmm0, 4(%esp)\n"
         "movl rect, %eax\n"
@@ -13717,7 +13717,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "addl $0x60, %ebx\n"
         "movl 0xc(%ebp), %edi\n" /* line 67 | item */
         "addl $0xf8, %edi\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 5136 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 5136 | 0.5f */
         "movss 8(%ebx), %xmm1\n" /* enumDvar */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x68(%ebp)\n" /* w */
@@ -13877,7 +13877,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "addl $1, %ebx\n" /* line 5203 | done */
         "jmp .Lf16e76c_0016ecb4\n"
         ".Lf16e76c_0016eda6:\n"
-        "movss 0xf00748, %xmm0\n"
+        "movss rect+4, %xmm0\n"
         "jmp .Lf16e76c_0016ea86\n"
         ".Lf16e76c_0016edb3:\n"
         "subss 8(%ecx), %xmm0\n" /* line 5233 */
@@ -13949,7 +13949,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %eax, %ebx\n" /* enumDvar */
         "cmpb $6, 6(%eax)\n" /* line 2440 */
         "je .Lf16e76c_0016effa\n"
-        "movl $0x2ac3c8, %ecx\n" /* "<not an enum dvar>" */
+        "movl $str_002ac3c8, %ecx\n" /* "<not an enum dvar>" */
         /* } scope */
         ".Lf16e76c_0016eed0:\n"
         "movl 0xc(%ebp), %edx\n" /* line 4176 | item */
@@ -13977,7 +13977,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         /* } scope */
         /* { scope 2: enumDvar, enumString */
         ".Lf16e76c_0016ef21:\n"
-        "movl $0x2157b8, %ecx\n" /* line 2443 */
+        "movl $str_002157b8, %ecx\n" /* line 2443 */
         "jmp .Lf16e76c_0016eed0\n"
         /* } scope */
         "movl 0xc(%ebp), %ebx\n" /* line 5358 | item, done */
@@ -14010,7 +14010,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "jl .Lf16e76c_0016ef5a\n"
         /* } scope */
         /* { scope 2: enumDvar, enumString */
-        "movl $0x2157b8, %ecx\n" /* line 2443 */
+        "movl $str_002157b8, %ecx\n" /* line 2443 */
         "jmp .Lf16e76c_0016eed0\n"
         ".Lf16e76c_0016ef8f:\n"
         "movl 0xe8(%ecx), %eax\n"
@@ -14038,12 +14038,12 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         /* } scope */
         /* { scope 2: enumDvar, enumString */
         ".Lf16e76c_0016efe6:\n"
-        "movl $0x2ac3b0, %ecx\n" /* line 2436 */
+        "movl $str_002ac3b0, %ecx\n" /* line 2436 */
         "jmp .Lf16e76c_0016eed0\n"
         /* } scope */
         /* { scope 2: enumDvar, enumString */
         ".Lf16e76c_0016eff0:\n"
-        "movl $0x2ac388, %ecx\n" /* line 2379 */
+        "movl $str_002ac388, %ecx\n" /* line 2379 */
         "jmp .Lf16e76c_0016eed0\n"
         /* } scope */
         /* { scope 2: enumDvar, enumString */
@@ -14162,7 +14162,7 @@ void Menu_Paint(displayContextDef_t *dc, menuDef_t *menu, qboolean forcePaint)
         "calll UI_PlayLocalSoundAliasByName\n"
         ".Lf16f0da_0016f11e:\n"
         "movss 0x240(%esi), %xmm1\n" /* line 5610 | menu */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jp .Lf16f0da_0016f358\n"
         "jne .Lf16f0da_0016f358\n"
         "testl %ebx, %ebx\n" /* line 5613 | i */
@@ -14349,7 +14349,7 @@ void Menu_Paint(displayContextDef_t *dc, menuDef_t *menu, qboolean forcePaint)
         "jmp .Lf16f0da_0016f2eb\n"
         /* } scope */
         ".Lf16f0da_0016f38e:\n"
-        "movl $0x2ac364, 4(%esp)\n" /* line 731 */
+        "movl $str_002ac364, 4(%esp)\n" /* line 731 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 8(%ebp), %edx\n" /* dc */
@@ -14469,7 +14469,7 @@ void Menu_PaintAll(displayContextDef_t *dc)
         "movl 8(%ebp), %eax\n" /* line 5704 | dc */
         "cvtss2sd 0x24(%eax), %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2ac3dc, (%esp)\n" /* "fps: %f" */
+        "movl $str_002ac3dc, (%esp)\n" /* "fps: %f" */
         "calll va\n"
         "movl $0, 0x24(%esp)\n"
         "leal -0x28(%ebp), %edx\n" /* color */
@@ -14726,23 +14726,23 @@ void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qbo
         "movl 0x210(%edx), %eax\n" /* line 3387 */
         "movl %eax, rect\n"
         "movl 0x214(%edx), %eax\n"
-        "movl %eax, 0xf00748\n"
+        "movl %eax, rect+4\n"
         "movl 0x218(%edx), %eax\n"
-        "movl %eax, 0xf0074c\n"
+        "movl %eax, rect+8\n"
         "movl 0x21c(%edx), %eax\n"
-        "movl %eax, 0xf00750\n"
+        "movl %eax, rect+12\n"
         "movl 0x220(%edx), %eax\n"
-        "movl %eax, 0xf00754\n"
+        "movl %eax, rect+16\n"
         "movl 0x224(%edx), %eax\n"
-        "movl %eax, 0xf00758\n"
+        "movl %eax, rect+20\n"
         "pxor %xmm0, %xmm0\n" /* line 3388 */
-        "ucomiss 0xf0074c, %xmm0\n"
+        "ucomiss rect+8, %xmm0\n"
         "jp .Lf16f5ce_0016f92f\n"
         "je .Lf16f5ce_0016fd29\n"
         ".Lf16f5ce_0016f92f:\n"
-        "movss 0xf00748, %xmm0\n" /* line 3390 */
-        "subss 0xf00750, %xmm0\n"
-        "movss %xmm0, 0xf00748\n"
+        "movss rect+4, %xmm0\n" /* line 3390 */
+        "subss rect+12, %xmm0\n"
+        "movss %xmm0, rect+4\n"
         /* } scope */
         /* { scope 4: compareRect, compareX, compareY */
         /* { scope 5 */
@@ -14750,9 +14750,9 @@ void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qbo
         "movl rect, %eax\n" /* line 417 */
         "movl %eax, -0x314(%ebp)\n" /* compareRect */
         "movss %xmm0, -0x310(%ebp)\n" /* line 418 */
-        "movl 0xf0074c, %eax\n" /* line 419 */
+        "movl rect+8, %eax\n" /* line 419 */
         "movl %eax, -0x30c(%ebp)\n"
-        "movl 0xf00750, %eax\n" /* line 420 */
+        "movl rect+12, %eax\n" /* line 420 */
         "movl %eax, -0x308(%ebp)\n"
         "movss -0x32c(%ebp), %xmm0\n" /* line 422 | x */
         "movss %xmm0, -0x20(%ebp)\n" /* compareX */
@@ -14766,9 +14766,9 @@ void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qbo
         "leal -0x1c(%ebp), %edx\n" /* compareY */
         "movl %edx, (%esp)\n"
         "calll CalcScreenY\n"
-        "movl 0xf00758, %eax\n" /* line 428 */
+        "movl rect+20, %eax\n" /* line 428 */
         "movl %eax, 0x14(%esp)\n"
-        "movl 0xf00754, %eax\n"
+        "movl rect+16, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "leal -0x308(%ebp), %ecx\n"
         "movl %ecx, 0xc(%esp)\n"
@@ -15014,7 +15014,7 @@ void Menus_HandleOOBClick(displayContextDef_t *dc, menuDef_t *menu, int key, qbo
         "movl %edx, %eax\n"
         "jmp .Lf16f5ce_0016fb24\n"
         ".Lf16f5ce_0016fd29:\n"
-        "movss 0xf00748, %xmm0\n"
+        "movss rect+4, %xmm0\n"
         "jmp .Lf16f5ce_0016f947\n"
     );
 }

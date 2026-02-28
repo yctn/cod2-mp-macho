@@ -12,8 +12,8 @@ extern struct Material * CL_RegisterMaterialNoMip(const char *name, int imageTra
 extern const char * Dvar_GetString(const char *dvarName);
 extern void Dvar_GetUnpackedColorByName(const char *dvarName, vec_t *color);
 
-static int lastLeadTeam; /* 0x314640 */
-static const listColumnInfo_t columnInfo[6]; /* 0x333b60 */
+static int lastLeadTeam; /* lastLeadTeam */
+static const listColumnInfo_t columnInfo[6]; /* columnInfo */
 
 qboolean CG_ScoreboardDisplayed(void);
 float CG_ScrollScoreboardUp(void);
@@ -29,16 +29,16 @@ qboolean CG_DrawScoreboard(void);
 /* line 1392 */
 qboolean CG_ScoreboardDisplayed(void)
 {
-    return *(int *)(*(int *)0x195f584 + 0x2b534);
+    return *(int *)(*(int *)imp_cg + 0x2b534);
 }
 
 /* line 1404 */
 float CG_ScrollScoreboardUp(void)
 {
-    int *cg = (int *)*(int *)0x195f584;
+    int *cg = (int *)*(int *)imp_cg;
     int scrollOffset = *(int *)((byte *)cg + 0x2b53c);
     if (scrollOffset > 0) {
-        scrollOffset -= *(int *)(*(int *)0x195f754 + 8);
+        scrollOffset -= *(int *)(*(int *)imp_cg_scoreboardScrollStep + 8);
         *(int *)((byte *)cg + 0x2b53c) = scrollOffset;
         if (scrollOffset < 0)
             *(int *)((byte *)cg + 0x2b53c) = 0;
@@ -49,10 +49,10 @@ float CG_ScrollScoreboardUp(void)
 /* line 1415 */
 float CG_ScrollScoreboardDown(void)
 {
-    int *cg = (int *)*(int *)0x195f584;
+    int *cg = (int *)*(int *)imp_cg;
     if (*(int *)((byte *)cg + 0x2b540) != 0) {
         int scrollOffset = *(int *)((byte *)cg + 0x2b53c);
-        scrollOffset += *(int *)(*(int *)0x195f754 + 8);
+        scrollOffset += *(int *)(*(int *)imp_cg_scoreboardScrollStep + 8);
         *(int *)((byte *)cg + 0x2b53c) = scrollOffset;
         int maxScroll = *(int *)((byte *)cg + 0x2af00) - 1;
         if (scrollOffset > maxScroll)
@@ -64,22 +64,22 @@ float CG_ScrollScoreboardDown(void)
 /* line 1427 */
 float CG_RegisterScoreboardGraphics(void)
 {
-    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)0x226ec8, 7); /* "black" */
-    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
-    CL_RegisterMaterialNoMip((const char *)0x226ec8, 7); /* "black" */
-    CL_RegisterMaterialNoMip((const char *)0x2b6834, 7); /* "hudscoreboardscroll_uparrow" */
-    CL_RegisterMaterialNoMip((const char *)0x2b6850, 7); /* "hudscoreboardscroll_upkey" */
-    CL_RegisterMaterialNoMip((const char *)0x2b686c, 7); /* "hudscoreboardscroll_downarrow" */
-    CL_RegisterMaterialNoMip((const char *)0x2b688c, 7); /* "hudscoreboardscroll_downkey" */
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b4730), 7);
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b46e8), 7);
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b46c0), 7);
-    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b4708), 7);
-    CL_RegisterMaterialNoMip((const char *)0x2aa96c, 7); /* "voice_on" */
-    CL_RegisterMaterialNoMip((const char *)0x2b68a8, 7); /* "voice_off" */
+    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)str_00226ec8, 7); /* "black" */
+    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)str_00224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)str_00226ec8, 7); /* "black" */
+    CL_RegisterMaterialNoMip((const char *)str_002b6834, 7); /* "hudscoreboardscroll_uparrow" */
+    CL_RegisterMaterialNoMip((const char *)str_002b6850, 7); /* "hudscoreboardscroll_upkey" */
+    CL_RegisterMaterialNoMip((const char *)str_002b686c, 7); /* "hudscoreboardscroll_downarrow" */
+    CL_RegisterMaterialNoMip((const char *)str_002b688c, 7); /* "hudscoreboardscroll_downkey" */
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b4730), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b46e8), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b46c0), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)str_002b4708), 7);
+    CL_RegisterMaterialNoMip((const char *)str_002aa96c, 7); /* "voice_on" */
+    CL_RegisterMaterialNoMip((const char *)str_002b68a8, 7); /* "voice_off" */
     return 0;
 }
 
@@ -111,9 +111,9 @@ float CG_DrawScoreboard_GetTeamColor(int team, vec_t *color)
     float savedAlpha = color[3];
 
     if (team == 1) {
-        Dvar_GetUnpackedColorByName((const char *)0x2addd4, color); /* "g_TeamColor_Axis" */
+        Dvar_GetUnpackedColorByName((const char *)str_002addd4, color); /* "g_TeamColor_Axis" */
     } else if (team == 2) {
-        Dvar_GetUnpackedColorByName((const char *)0x2addc0, color); /* "g_TeamColor_Allies" */
+        Dvar_GetUnpackedColorByName((const char *)str_002addc0, color); /* "g_TeamColor_Allies" */
     } else {
         color[0] = 1.0f;
         color[1] = 1.0f;
@@ -141,7 +141,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "movss %xmm1, -0x60(%ebp)\n"
         "movl %ecx, %esi\n" /* highlight */
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 821 */
+        "movl imp_cg, %eax\n" /* line 821 */
         "movl (%eax), %ebx\n"
         "movl 0x2b540(%ebx), %eax\n"
         "testl %eax, %eax\n"
@@ -150,10 +150,10 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "movl (%edx), %eax\n"
         "cmpl 0x2b53c(%ebx), %eax\n"
         "jl .Lf1c2fda_001c31bb\n"
-        "movss 0x2ed79c, %xmm0\n" /* line 832 | 12.0f */
+        "movss lit4_002ed79c, %xmm0\n" /* line 832 | 12.0f */
         "addss -0x58(%ebp), %xmm0\n"
         "movss %xmm0, -0x40(%ebp)\n"
-        "ucomiss 0x2ed9bc, %xmm0\n" /* 432.0f */
+        "ucomiss lit4_002ed9bc, %xmm0\n" /* 432.0f */
         "ja .Lf1c2fda_001c31d0\n"
         "addl $1, %eax\n" /* line 838 */
         "movl 0xc(%ebp), %edx\n" /* piDrawLine */
@@ -188,7 +188,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "movl $0, (%esp)\n"
         "calll UI_GetFontHandle\n"
         "movl %eax, -0x48(%ebp)\n" /* listFont */
-        "movss 0x2ed9c0, %xmm0\n" /* 129.0f */
+        "movss lit4_002ed9c0, %xmm0\n" /* 129.0f */
         "movss %xmm0, -0x50(%ebp)\n" /* x */
         "movl $columnInfo, %edi\n"
         "jmp .Lf1c2fda_001c3119\n"
@@ -287,15 +287,15 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "cmpl $4, %eax\n"
         "je .Lf1c2fda_001c33ef\n"
         ".Lf1c2fda_001c31fc:\n"
-        "movl $0x2157b8, %esi\n" /* line 1092 | string */
+        "movl $str_002157b8, %esi\n" /* line 1092 | string */
         "jmp .Lf1c2fda_001c30ed\n"
         ".Lf1c2fda_001c3206:\n"
-        "movss 0x2ed9c4, %xmm0\n" /* line 1102 | 0.2199999988079071f */
+        "movss lit4_002ed9c4, %xmm0\n" /* line 1102 | 0.2199999988079071f */
         "movss %xmm0, -0x44(%ebp)\n" /* adjustedScale */
         "jmp .Lf1c2fda_001c322a\n"
         ".Lf1c2fda_001c3215:\n"
         "movss -0x44(%ebp), %xmm1\n" /* line 1107 | adjustedScale */
-        "subss 0x2ed9ac, %xmm1\n" /* 0.019999999552965164f */
+        "subss lit4_002ed9ac, %xmm1\n" /* 0.019999999552965164f */
         "movss %xmm1, -0x44(%ebp)\n" /* adjustedScale */
         "movaps %xmm1, %xmm0\n"
         ".Lf1c2fda_001c322a:\n"
@@ -311,7 +311,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "cvtsi2ssl %eax, %xmm0\n"
         "ucomiss -0x3c(%ebp), %xmm0\n"
         "ja .Lf1c2fda_001c3215\n"
-        "movss 0x2ed7e0, %xmm0\n" /* line 1110 | 0.1599999964237213f */
+        "movss lit4_002ed7e0, %xmm0\n" /* line 1110 | 0.1599999964237213f */
         "xorl %ebx, %ebx\n" /* adjustedStyle */
         "ucomiss -0x44(%ebp), %xmm0\n" /* adjustedScale */
         "setbe %bl\n" /* adjustedStyle */
@@ -334,7 +334,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "movl $0, 0x18(%esp)\n"
         "movl $0, 0x14(%esp)\n"
         "movss -0x58(%ebp), %xmm0\n"
-        "addss 0x2ed9c8, %xmm0\n" /* 10.079999923706055f */
+        "addss lit4_002ed9c8, %xmm0\n" /* 10.079999923706055f */
         "movss %xmm0, 0x10(%esp)\n"
         "addss -0x50(%ebp), %xmm1\n" /* x */
         "movss %xmm1, 0xc(%esp)\n"
@@ -350,7 +350,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "je .Lf1c2fda_001c31fc\n"
         "movl 4(%eax), %eax\n" /* line 1089 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, %esi\n" /* string */
         "jmp .Lf1c2fda_001c30ed\n"
@@ -362,7 +362,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "testb %al, %al\n"
         "je .Lf1c2fda_001c33bf\n"
         "movl $7, 4(%esp)\n" /* line 1046 */
-        "movl $0x2b68a8, (%esp)\n" /* "voice_off" */
+        "movl $str_002b68a8, (%esp)\n" /* "voice_off" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, %edx\n"
         ".Lf1c2fda_001c3352:\n"
@@ -396,7 +396,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "testb %al, %al\n"
         "je .Lf1c2fda_001c30f6\n"
         "movl $7, 4(%esp)\n" /* line 1058 */
-        "movl $0x2aa96c, (%esp)\n" /* "voice_on" */
+        "movl $str_002aa96c, (%esp)\n" /* "voice_on" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, %edx\n"
         "jmp .Lf1c2fda_001c3352\n"
@@ -404,13 +404,13 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "movl -0x5c(%ebp), %ecx\n" /* line 1096 */
         "movl 8(%ecx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, %esi\n" /* string */
         "jmp .Lf1c2fda_001c30ed\n"
         ".Lf1c2fda_001c340c:\n"
         "movl $7, 4(%esp)\n" /* line 1002 */
-        "movl $0x226ec8, (%esp)\n" /* "black" */
+        "movl $str_00226ec8, (%esp)\n" /* "black" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl -0x54(%ebp), %ecx\n" /* line 199 */
         "movl (%ecx), %edx\n"
@@ -419,7 +419,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "movl %edx, -0x24(%ebp)\n"
         "movl 8(%ecx), %edx\n" /* line 201 */
         "movl %edx, -0x20(%ebp)\n"
-        "movss 0x2ed764, %xmm0\n" /* line 1004 | 0.15000000596046448f */
+        "movss lit4_002ed764, %xmm0\n" /* line 1004 | 0.15000000596046448f */
         ".Lf1c2fda_001c343c:\n"
         "mulss 0xc(%ecx), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
@@ -442,7 +442,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         ".Lf1c2fda_001c349a:\n"
         "movss -0x60(%ebp), %xmm0\n" /* line 1032 */
         "mulss 4(%edi), %xmm0\n"
-        "subss 0x2ed8c0, %xmm0\n" /* 13.0f */
+        "subss lit4_002ed8c0, %xmm0\n" /* 13.0f */
         "jmp .Lf1c2fda_001c3138\n"
         ".Lf1c2fda_001c34b1:\n"
         "movl -0x5c(%ebp), %ecx\n" /* line 1092 */
@@ -450,7 +450,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "je .Lf1c2fda_001c31fc\n"
         "movl 0xc(%ecx), %eax\n" /* line 1093 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, %esi\n" /* string */
         "jmp .Lf1c2fda_001c30ed\n"
@@ -472,7 +472,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "jmp .Lf1c2fda_001c3282\n"
         ".Lf1c2fda_001c351a:\n"
         "movl $7, 4(%esp)\n" /* line 992 */
-        "movl $0x224184, (%esp)\n" /* "white" */
+        "movl $str_00224184, (%esp)\n" /* "white" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl -0x54(%ebp), %ecx\n" /* line 199 */
         "movl (%ecx), %edx\n"
@@ -481,7 +481,7 @@ float CG_DrawClientScore(vec_t *color, float y, score_t *score, float listWidth,
         "movl %edx, -0x24(%ebp)\n"
         "movl 8(%ecx), %edx\n" /* line 201 */
         "movl %edx, -0x20(%ebp)\n"
-        "movss 0x2ed724, %xmm0\n" /* line 994 | 0.20000000298023224f */
+        "movss lit4_002ed724, %xmm0\n" /* line 994 | 0.20000000298023224f */
         "jmp .Lf1c2fda_001c343c\n"
     );
 }
@@ -503,11 +503,11 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "movss %xmm2, -0x44(%ebp)\n"
         "movl %edx, %esi\n" /* team */
         /* { scope 1 */
-        "movl 0x195f750, %eax\n" /* line 881 */
+        "movl imp_cg_scoreboardBannerHeight, %eax\n" /* line 881 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm0\n" /* fLineHeight */
         /* { scope 2 */
-        "movl 0x195f584, %eax\n" /* line 821 */
+        "movl imp_cg, %eax\n" /* line 821 */
         "movl (%eax), %edx\n"
         "movl 0x2b540(%edx), %eax\n"
         "testl %eax, %eax\n"
@@ -516,7 +516,7 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "cmpl 0x2b53c(%edx), %eax\n"
         "jl .Lf1c3550_001c3754\n"
         "addss -0x3c(%ebp), %xmm0\n" /* line 832 */
-        "ucomiss 0x2ed9bc, %xmm0\n" /* 432.0f */
+        "ucomiss lit4_002ed9bc, %xmm0\n" /* 432.0f */
         "ja .Lf1c3550_001c3766\n"
         "addl $1, %eax\n" /* line 838 */
         "movl %eax, (%ecx)\n"
@@ -531,11 +531,11 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "cmpl $1, %eax\n" /* line 888 */
         "je .Lf1c3550_001c37f2\n"
         "movl %eax, 4(%esp)\n" /* line 891 */
-        "movl $0x2b68e0, (%esp)\n" /* "CGAME_SB_PLAYERS%i" */
+        "movl $str_002b68e0, (%esp)\n" /* "CGAME_SB_PLAYERS%i" */
         ".Lf1c3550_001c35e1:\n"
         "calll va\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x2b68c8, 4(%esp)\n" /* "scoreboard banner text" */
+        "movl $str_002b68c8, 4(%esp)\n" /* "scoreboard banner text" */
         "movl %eax, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl %eax, %ebx\n" /* playersString */
@@ -545,7 +545,7 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "je .Lf1c3550_001c392e\n"
         "testl %esi, %esi\n" /* team */
         "jne .Lf1c3550_001c377d\n"
-        "movl $0x2b4708, (%esp)\n" /* line 896 */
+        "movl $str_002b4708, (%esp)\n" /* line 896 */
         "calll Dvar_GetString\n"
         "movl %eax, %edi\n" /* bannerFont */
         "movl %ebx, -0x34(%ebp)\n" /* playersString, displayString */
@@ -589,10 +589,10 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "movl $0x3ea3d70a, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
         "movl $0, 0x14(%esp)\n"
-        "movl 0x195f750, %eax\n"
+        "movl imp_cg_scoreboardBannerHeight, %eax\n"
         "movl (%eax), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm0\n"
-        "mulss 0x2ed9cc, %xmm0\n" /* 0.8399999737739563f */
+        "mulss lit4_002ed9cc, %xmm0\n" /* 0.8399999737739563f */
         "addss -0x3c(%ebp), %xmm0\n"
         "movss %xmm0, 0x10(%esp)\n"
         "movl $0x43050000, 0xc(%esp)\n"
@@ -652,44 +652,44 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "retl\n"
         /* { scope 1 */
         ".Lf1c3550_001c377d:\n"
-        "movl $0x2b4730, (%esp)\n" /* line 911 */
+        "movl $str_002b4730, (%esp)\n" /* line 911 */
         "calll Dvar_GetString\n"
         "movl %eax, %edi\n" /* bannerFont */
         "movl $0, 8(%esp)\n" /* line 912 */
-        "movl $0x2b68f4, 4(%esp)\n" /* "scoreboard team name" */
-        "movl $0x2b690c, (%esp)\n" /* "CGAME_SPECTATORS" */
+        "movl $str_002b68f4, 4(%esp)\n" /* "scoreboard team name" */
+        "movl $str_002b690c, (%esp)\n" /* "CGAME_SPECTATORS" */
         ".Lf1c3550_001c37a2:\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl %ebx, 8(%esp)\n" /* playersString */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2aa8a8, (%esp)\n" /* "%s (%s)" */
+        "movl $str_002aa8a8, (%esp)\n" /* "%s (%s)" */
         "calll va\n"
         "movl %eax, -0x34(%ebp)\n" /* displayString */
         "jmp .Lf1c3550_001c362b\n"
         ".Lf1c3550_001c37c3:\n"
-        "movl $0x2b46e8, (%esp)\n" /* line 900 */
+        "movl $str_002b46e8, (%esp)\n" /* line 900 */
         "calll Dvar_GetString\n"
         "movl %eax, %edi\n" /* bannerFont */
-        "movl $0x2b4760, (%esp)\n" /* line 901 */
+        "movl $str_002b4760, (%esp)\n" /* line 901 */
         "calll Dvar_GetString\n"
         "movl $0, 8(%esp)\n" /* line 902 */
-        "movl $0x2b68f4, 4(%esp)\n" /* "scoreboard team name" */
+        "movl $str_002b68f4, 4(%esp)\n" /* "scoreboard team name" */
         "movl %eax, (%esp)\n"
         "jmp .Lf1c3550_001c37a2\n"
         ".Lf1c3550_001c37f2:\n"
         "movl $1, 4(%esp)\n" /* line 889 */
-        "movl $0x2b68b4, (%esp)\n" /* "CGAME_SB_PLAYER%i" */
+        "movl $str_002b68b4, (%esp)\n" /* "CGAME_SB_PLAYER%i" */
         "jmp .Lf1c3550_001c35e1\n"
         /* { scope 2 */
         ".Lf1c3550_001c3806:\n"
         "leal -0x28(%ebp), %eax\n" /* line 851 | teamColor */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2addd4, (%esp)\n" /* "g_TeamColor_Axis" */
+        "movl $str_002addd4, (%esp)\n" /* "g_TeamColor_Axis" */
         "calll Dvar_GetUnpackedColorByName\n"
         "jmp .Lf1c3550_001c36bc\n"
         /* } scope */
         ".Lf1c3550_001c381e:\n"
-        "movss 0x2ed9c0, %xmm0\n" /* line 926 | 129.0f */
+        "movss lit4_002ed9c0, %xmm0\n" /* line 926 | 129.0f */
         "movss %xmm0, -0x38(%ebp)\n" /* x */
         "movl $columnInfo, %ebx\n" /* playersString */
         "jmp .Lf1c3550_001c385e\n"
@@ -708,12 +708,12 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "movl (%ebx), %eax\n" /* line 934 | playersString */
         "cmpl $2, %eax\n"
         "jne .Lf1c3550_001c3832\n"
-        "movl 0x195f584, %edx\n" /* line 937 */
+        "movl imp_cg, %edx\n" /* line 937 */
         "movl (%edx), %eax\n"
         "movl 0x2af04(%eax, %esi, 4), %eax\n"
         ".Lf1c3550_001c3874:\n"
         "movl %eax, 4(%esp)\n" /* line 941 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, -0x2c(%ebp)\n"
         "pxor %xmm1, %xmm1\n" /* line 942 */
@@ -726,10 +726,10 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "movl $0x3ea3d70a, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
         "movl $0, 0x14(%esp)\n"
-        "movl 0x195f750, %eax\n"
+        "movl imp_cg_scoreboardBannerHeight, %eax\n"
         "movl (%eax), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm0\n"
-        "mulss 0x2ed9cc, %xmm0\n" /* 0.8399999737739563f */
+        "mulss lit4_002ed9cc, %xmm0\n" /* 0.8399999737739563f */
         "addss -0x3c(%ebp), %xmm0\n"
         "movss %xmm0, 0x10(%esp)\n"
         "addss -0x38(%ebp), %xmm1\n" /* x */
@@ -741,7 +741,7 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         "calll UI_DrawText\n"
         "jmp .Lf1c3550_001c383b\n"
         ".Lf1c3550_001c3902:\n"
-        "movl 0x195f584, %edx\n" /* line 939 */
+        "movl imp_cg, %edx\n" /* line 939 */
         "movl (%edx), %eax\n"
         "movl 0x2af14(%eax, %esi, 4), %eax\n"
         "jmp .Lf1c3550_001c3874\n"
@@ -749,18 +749,18 @@ float CG_DrawScoreboard_ListBanner(float y, float w, float h)
         ".Lf1c3550_001c3916:\n"
         "leal -0x28(%ebp), %edx\n" /* line 854 | teamColor */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2addc0, (%esp)\n" /* "g_TeamColor_Allies" */
+        "movl $str_002addc0, (%esp)\n" /* "g_TeamColor_Allies" */
         "calll Dvar_GetUnpackedColorByName\n"
         "jmp .Lf1c3550_001c36bc\n"
         /* } scope */
         ".Lf1c3550_001c392e:\n"
-        "movl $0x2b46c0, (%esp)\n" /* line 905 */
+        "movl $str_002b46c0, (%esp)\n" /* line 905 */
         "calll Dvar_GetString\n"
         "movl %eax, %edi\n" /* bannerFont */
-        "movl $0x2b474c, (%esp)\n" /* line 906 */
+        "movl $str_002b474c, (%esp)\n" /* line 906 */
         "calll Dvar_GetString\n"
         "movl $0, 8(%esp)\n" /* line 907 */
-        "movl $0x2b68f4, 4(%esp)\n" /* "scoreboard team name" */
+        "movl $str_002b68f4, 4(%esp)\n" /* "scoreboard team name" */
         "movl %eax, (%esp)\n"
         "jmp .Lf1c3550_001c37a2\n"
         ".Lf1c3550_001c3960:\n"
@@ -791,7 +791,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "pushl %ebx\n"
         "subl $0x21c, %esp\n"
         /* { scope 1: y, x, highlight, teamColor, ... */
-        "movl 0x195f584, %eax\n" /* line 1262 */
+        "movl imp_cg, %eax\n" /* line 1262 */
         "movl %eax, -0x1a4(%ebp)\n"
         "movl (%eax), %esi\n" /* score */
         "movl $0, 0x2b540(%esi)\n" /* score */
@@ -806,7 +806,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         /* { scope 3 */
         "cmpb $0, 0x2a9fc(%esi)\n" /* line 630 */
         "jne .Lf1c399e_001c3fc6\n"
-        "movss 0x2ed9d0, %xmm2\n" /* 52.0f */
+        "movss lit4_002ed9d0, %xmm2\n" /* 52.0f */
         "movl -0x1a4(%ebp), %eax\n"
         /* } scope */
         /* } scope */
@@ -820,12 +820,12 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "testl %eax, %eax\n"
         "je .Lf1c399e_001c3f9a\n"
         ".Lf1c399e_001c3a14:\n"
-        "movl 0x195f750, %ecx\n" /* line 785 */
+        "movl imp_cg_scoreboardBannerHeight, %ecx\n" /* line 785 */
         "movl (%ecx), %eax\n"
         "movl 8(%eax), %eax\n"
         "leal 8(%eax, %eax), %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "addss 0x2ed6b4, %xmm1\n" /* 10.0f */
+        "addss lit4_002ed6b4, %xmm1\n" /* 10.0f */
         "movl $2, -0x19c(%ebp)\n" /* totalLines */
         ".Lf1c399e_001c3a39:\n"
         "movl 0x2af24(%edx), %eax\n" /* line 789 */
@@ -852,7 +852,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "testl %edx, %edx\n"
         "jle .Lf1c399e_001c3aa1\n"
         "xorl %eax, %eax\n"
-        "movss 0x2ed79c, %xmm0\n" /* 12.0f */
+        "movss lit4_002ed79c, %xmm0\n" /* 12.0f */
         ".Lf1c399e_001c3a8f:\n"
         "addss %xmm0, %xmm1\n" /* line 804 */
         "addl $1, -0x19c(%ebp)\n" /* line 805 | totalLines */
@@ -861,28 +861,28 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "jne .Lf1c399e_001c3a8f\n"
         /* } scope */
         ".Lf1c399e_001c3aa1:\n"
-        "movss 0x2ed9bc, %xmm0\n" /* line 1272 | 432.0f */
+        "movss lit4_002ed9bc, %xmm0\n" /* line 1272 | 432.0f */
         "subss %xmm2, %xmm0\n"
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lf1c399e_001c3e6c\n"
         "movl $1, -0x18c(%ebp)\n" /* drawScrollBar */
-        "movss 0x2ed9d8, %xmm0\n" /* 374.0f */
+        "movss lit4_002ed9d8, %xmm0\n" /* 374.0f */
         "movss %xmm0, -0x194(%ebp)\n" /* listWidth */
         ".Lf1c399e_001c3ad0:\n"
         "movl (%ecx), %eax\n" /* line 1281 */
         "cvtsi2ssl 8(%eax), %xmm0\n"
-        "divss 0x2ed67c, %xmm0\n" /* 0.75f */
+        "divss lit4_002ed67c, %xmm0\n" /* 0.75f */
         "movss %xmm0, -0x198(%ebp)\n" /* h */
-        "addss 0x2ed608, %xmm2\n" /* line 1283 | 4.0f */
+        "addss lit4_002ed608, %xmm2\n" /* line 1283 | 4.0f */
         "movss %xmm2, -0x15c(%ebp)\n"
         /* { scope 2: borderColor, objectiveFont, hudElemString, highlight, ... */
         "movl $0x3e99999a, 4(%esp)\n" /* line 750 */
         "movl $0, (%esp)\n"
         "calll UI_GetFontHandle\n"
         "movl %eax, %edi\n" /* font */
-        "movss 0x2ed9c0, %xmm1\n" /* 129.0f */
+        "movss lit4_002ed9c0, %xmm1\n" /* 129.0f */
         "movss %xmm1, -0x180(%ebp)\n" /* x */
-        "movl $0x333b68, %ebx\n" /* textStart */
+        "movl $columnInfo+8, %ebx\n" /* textStart */
         "jmp .Lf1c399e_001c3b50\n"
         ".Lf1c399e_001c3b24:\n"
         "movss -0x194(%ebp), %xmm0\n" /* line 767 | listWidth */
@@ -890,7 +890,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "addss -0x180(%ebp), %xmm0\n" /* x */
         "movss %xmm0, -0x180(%ebp)\n" /* x */
         "addl $0x10, %ebx\n" /* textStart */
-        "cmpl $0x333bc8, %ebx\n" /* line 754 | textStart */
+        "cmpl $commandsList+8, %ebx\n" /* line 754 | textStart */
         "je .Lf1c399e_001c3bd3\n"
         ".Lf1c399e_001c3b50:\n"
         "movl (%ebx), %eax\n" /* line 756 | textStart */
@@ -910,7 +910,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl $0, 0x18(%esp)\n"
         "movl $0, 0x14(%esp)\n"
         "movss -0x15c(%ebp), %xmm0\n"
-        "addss 0x2ed9e0, %xmm0\n" /* 11.75999927520752f */
+        "addss lit4_002ed9e0, %xmm0\n" /* 11.75999927520752f */
         "movss %xmm0, 0x10(%esp)\n"
         "addss -0x180(%ebp), %xmm1\n" /* x */
         "movss %xmm1, 0xc(%esp)\n"
@@ -921,11 +921,11 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "jmp .Lf1c399e_001c3b24\n"
         ".Lf1c399e_001c3bd3:\n"
         "movss -0x15c(%ebp), %xmm1\n" /* line 770 */
-        "addss 0x2ed9e4, %xmm1\n" /* 14.0f */
+        "addss lit4_002ed9e4, %xmm1\n" /* 14.0f */
         "movss %xmm1, -0x158(%ebp)\n"
         /* } scope */
         "movl $0, -0x1c(%ebp)\n" /* line 1287 | drawLine */
-        "movl 0x195f584, %eax\n" /* line 1291 */
+        "movl imp_cg, %eax\n" /* line 1291 */
         "movl %eax, -0x1a4(%ebp)\n"
         "movl (%eax), %edx\n"
         "movl 0x2af28(%edx), %eax\n"
@@ -963,7 +963,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c3c93:\n"
         "movl -0x20(%ebp), %eax\n" /* line 1140 */
         "movl %eax, -0x30(%ebp)\n"
-        "movl 0x195f584, %edx\n" /* line 1144 */
+        "movl imp_cg, %edx\n" /* line 1144 */
         "movl %edx, -0x1a4(%ebp)\n"
         "movl (%edx), %ebx\n" /* textStart */
         "leal 0x2af34(%ebx), %esi\n" /* textStart, score */
@@ -1007,7 +1007,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movss -0x198(%ebp), %xmm2\n" /* h */
         "movss -0x194(%ebp), %xmm1\n" /* listWidth */
         "movss -0x150(%ebp), %xmm0\n"
-        "addss 0x2ed608, %xmm0\n" /* 4.0f */
+        "addss lit4_002ed608, %xmm0\n" /* 4.0f */
         "leal -0x2c(%ebp), %eax\n" /* color */
         "calll CG_DrawScoreboard_ListBanner\n"
         "movss %xmm0, -0x154(%ebp)\n"
@@ -1023,7 +1023,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c3d88:\n"
         "movl -0x20(%ebp), %eax\n" /* line 1140 */
         "movl %eax, -0x30(%ebp)\n"
-        "movl 0x195f584, %edx\n" /* line 1144 */
+        "movl imp_cg, %edx\n" /* line 1144 */
         "movl %edx, -0x1a4(%ebp)\n"
         "movl (%edx), %ebx\n" /* textStart */
         "leal 0x2af34(%ebx), %esi\n" /* textStart, score */
@@ -1057,7 +1057,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         /* } scope */
         ".Lf1c399e_001c3dfd:\n"
         "movss -0x154(%ebp), %xmm0\n" /* line 1314 */
-        "addss 0x2ed608, %xmm0\n" /* 4.0f */
+        "addss lit4_002ed608, %xmm0\n" /* 4.0f */
         /* } scope */
         "movl -0x1a4(%ebp), %edx\n" /* line 1317 */
         "movl (%edx), %ebx\n" /* textStart */
@@ -1077,7 +1077,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "jne .Lf1c399e_001c4162\n"
         "movl -0x19c(%ebp), %edx\n" /* totalLines */
         ".Lf1c399e_001c3e49:\n"
-        "movl 0x195f584, %eax\n" /* line 1335 */
+        "movl imp_cg, %eax\n" /* line 1335 */
         "movl (%eax), %eax\n"
         "subl $1, %edx\n"
         "cmpl %edx, 0x2b53c(%eax)\n"
@@ -1094,7 +1094,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         /* { scope 1: y, x, highlight, teamColor, ... */
         ".Lf1c399e_001c3e6c:\n"
         "movl $0, -0x18c(%ebp)\n" /* line 1272 | drawScrollBar */
-        "movss 0x2ed9dc, %xmm1\n" /* 382.0f */
+        "movss lit4_002ed9dc, %xmm1\n" /* 382.0f */
         "movss %xmm1, -0x194(%ebp)\n" /* listWidth */
         "jmp .Lf1c399e_001c3ad0\n"
         /* { scope 2: borderColor, objectiveFont, hudElemString, highlight, ... */
@@ -1137,7 +1137,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c3f1a:\n"
         "addl $1, %edi\n" /* i */
         "addl $0x18, %esi\n" /* score */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl %eax, -0x1a4(%ebp)\n"
         "movl (%eax), %ebx\n" /* textStart */
         "cmpl %edi, 0x2af00(%ebx)\n" /* i, textStart */
@@ -1171,9 +1171,9 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         /* } scope */
         /* { scope 2: borderColor, objectiveFont, hudElemString, highlight, ... */
         ".Lf1c399e_001c3f9a:\n"
-        "movss 0x2ed6b4, %xmm1\n" /* line 783 | 10.0f */
+        "movss lit4_002ed6b4, %xmm1\n" /* line 783 | 10.0f */
         "movl $0, -0x19c(%ebp)\n" /* totalLines */
-        "movl 0x195f750, %ecx\n"
+        "movl imp_cg_scoreboardBannerHeight, %ecx\n"
         "jmp .Lf1c399e_001c3a39\n"
         /* } scope */
         /* { scope 2: borderColor, objectiveFont, hudElemString, highlight, ... */
@@ -1192,13 +1192,13 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %eax, -0x184(%ebp)\n" /* objectiveFont */
         "leal -0x13c(%ebp), %ebx\n" /* line 637 | hudElemString, textStart */
         "movl %ebx, 8(%esp)\n" /* textStart */
-        "movl $0x2b6920, 4(%esp)\n" /* "scoreboard objective info" */
+        "movl $str_002b6920, 4(%esp)\n" /* "scoreboard objective info" */
         "leal 0x2a9fc(%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
         "movl $0, -0x160(%ebp)\n"
         "movl %ebx, %edi\n" /* textStart */
-        "movss 0x2ed9d4, %xmm1\n" /* 56.0f */
+        "movss lit4_002ed9d4, %xmm1\n" /* 56.0f */
         "movss %xmm1, -0x188(%ebp)\n" /* y */
         ".Lf1c399e_001c401c:\n"
         "movl %ebx, %esi\n" /* textStart */
@@ -1231,7 +1231,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %edi, (%esp)\n"
         "calll UI_TextWidth\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "ucomiss 0x2ed9d8, %xmm0\n" /* 374.0f */
+        "ucomiss lit4_002ed9d8, %xmm0\n" /* 374.0f */
         "ja .Lf1c399e_001c40ba\n"
         "cmpb $0x20, (%ebx)\n" /* line 703 | textStart */
         "jne .Lf1c399e_001c401c\n"
@@ -1255,7 +1255,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl $0, 0x18(%esp)\n"
         "movl $0, 0x14(%esp)\n"
         "movss -0x188(%ebp), %xmm0\n" /* y */
-        "addss 0x2ed9c8, %xmm0\n" /* 10.079999923706055f */
+        "addss lit4_002ed9c8, %xmm0\n" /* 10.079999923706055f */
         "movss %xmm0, 0x10(%esp)\n"
         "movl $0x43010000, 0xc(%esp)\n"
         "movl -0x184(%ebp), %eax\n" /* objectiveFont */
@@ -1273,7 +1273,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "addl $1, %edi\n"
         ".Lf1c399e_001c4134:\n"
         "movss -0x188(%ebp), %xmm0\n" /* line 699 | y */
-        "addss 0x2ed79c, %xmm0\n" /* 12.0f */
+        "addss lit4_002ed79c, %xmm0\n" /* 12.0f */
         "movss %xmm0, -0x188(%ebp)\n" /* y */
         "movl %edi, %esi\n"
         "jmp .Lf1c399e_001c409b\n"
@@ -1296,14 +1296,14 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl -0x24(%ebp), %eax\n" /* line 201 */
         "movl %eax, -0x34(%ebp)\n"
         "movl $7, 4(%esp)\n" /* line 1181 */
-        "movl $0x226ec8, (%esp)\n" /* "black" */
+        "movl $str_00226ec8, (%esp)\n" /* "black" */
         "calll CL_RegisterMaterialNoMip\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 1182 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 1182 | 0.5f */
         "mulss -0x20(%ebp), %xmm0\n"
         "movss %xmm0, -0x30(%ebp)\n"
-        "movss 0x2ed9bc, %xmm0\n" /* line 1186 | 432.0f */
+        "movss lit4_002ed9bc, %xmm0\n" /* line 1186 | 432.0f */
         "subss -0x158(%ebp), %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movl %eax, 0x1c(%esp)\n" /* line 1187 */
         "leal -0x3c(%ebp), %edi\n" /* borderColor, i */
         "movl %edi, 0x18(%esp)\n" /* i */
@@ -1316,12 +1316,12 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl $0x43fc8000, (%esp)\n"
         "movss %xmm0, -0x1c8(%ebp)\n"
         "calll UI_DrawHandlePic\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 1191 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 1191 | 1.0f */
         "addss -0x158(%ebp), %xmm2\n"
         "movss -0x1c8(%ebp), %xmm0\n" /* line 1192 */
         "movaps %xmm0, %xmm3\n"
-        "subss 0x2ed62c, %xmm3\n" /* 2.0f */
-        "movl 0x195f584, %eax\n" /* line 1194 */
+        "subss lit4_002ed62c, %xmm3\n" /* 2.0f */
+        "movl imp_cg, %eax\n" /* line 1194 */
         "movl (%eax), %eax\n"
         "movl 0x2b53c(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1339,11 +1339,11 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "mulss %xmm0, %xmm3\n"
         ".Lf1c399e_001c4268:\n"
         "movl $7, 4(%esp)\n" /* line 1200 */
-        "movl $0x224184, (%esp)\n" /* "white" */
+        "movl $str_00224184, (%esp)\n" /* "white" */
         "movss %xmm2, -0x1d8(%ebp)\n"
         "movss %xmm3, -0x1e8(%ebp)\n"
         "calll CL_RegisterMaterialNoMip\n"
-        "movss 0x2ed604, %xmm0\n" /* line 1201 | 0.25f */
+        "movss lit4_002ed604, %xmm0\n" /* line 1201 | 0.25f */
         "mulss -0x20(%ebp), %xmm0\n"
         "movss %xmm0, -0x30(%ebp)\n"
         "movl %eax, 0x1c(%esp)\n" /* line 1202 */
@@ -1359,13 +1359,13 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "calll UI_DrawHandlePic\n"
         "movl -0x20(%ebp), %eax\n" /* line 1204 */
         "movl %eax, -0x30(%ebp)\n"
-        "movl 0x195f584, %eax\n" /* line 1206 */
+        "movl imp_cg, %eax\n" /* line 1206 */
         "movl (%eax), %eax\n"
         "movl 0x2b53c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jle .Lf1c399e_001c43a7\n"
         "movl $7, 4(%esp)\n" /* line 1208 */
-        "movl $0x2b6834, (%esp)\n" /* "hudscoreboardscroll_uparrow" */
+        "movl $str_002b6834, (%esp)\n" /* "hudscoreboardscroll_uparrow" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, 0x1c(%esp)\n" /* line 1213 */
         "movl %edi, 0x18(%esp)\n" /* i */
@@ -1380,7 +1380,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %esi, (%esp)\n" /* score */
         "calll UI_DrawHandlePic\n"
         "movl $7, 4(%esp)\n" /* line 1216 */
-        "movl $0x2b6850, (%esp)\n" /* "hudscoreboardscroll_upkey" */
+        "movl $str_002b6850, (%esp)\n" /* "hudscoreboardscroll_upkey" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, 0x1c(%esp)\n" /* line 1221 */
         "movl %edi, 0x18(%esp)\n" /* i */
@@ -1389,7 +1389,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %ebx, 0xc(%esp)\n" /* textStart */
         "movl %ebx, 8(%esp)\n" /* textStart */
         "movss -0x158(%ebp), %xmm1\n"
-        "addss 0x2ed6c8, %xmm1\n" /* 18.0f */
+        "addss lit4_002ed6c8, %xmm1\n" /* 18.0f */
         "movss %xmm1, 4(%esp)\n"
         "movl %esi, (%esp)\n" /* score */
         "calll UI_DrawHandlePic\n"
@@ -1425,7 +1425,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c4416:\n"
         "addl $1, %edi\n" /* i */
         "addl $0x18, %esi\n" /* score */
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "movl (%edx), %ebx\n" /* textStart */
         "cmpl %edi, 0x2af00(%ebx)\n" /* i, textStart */
         "jle .Lf1c399e_001c3e35\n"
@@ -1465,7 +1465,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl $0, 0x18(%esp)\n"
         "movl $0, 0x14(%esp)\n"
         "movss -0x188(%ebp), %xmm0\n" /* y */
-        "addss 0x2ed9c8, %xmm0\n" /* 10.079999923706055f */
+        "addss lit4_002ed9c8, %xmm0\n" /* 10.079999923706055f */
         "movss %xmm0, 0x10(%esp)\n"
         "movl $0x43010000, 0xc(%esp)\n"
         "movl -0x184(%ebp), %edx\n" /* objectiveFont */
@@ -1500,10 +1500,10 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         /* { scope 2: borderColor, objectiveFont, hudElemString, highlight, ... */
         /* { scope 3 */
         ".Lf1c399e_001c454d:\n"
-        "addss 0x2ed62c, %xmm1\n" /* line 707 | 2.0f */
+        "addss lit4_002ed62c, %xmm1\n" /* line 707 | 2.0f */
         "movss %xmm1, -0x168(%ebp)\n"
         "movl $7, 4(%esp)\n" /* line 713 */
-        "movl $0x224184, (%esp)\n" /* "white" */
+        "movl $str_00224184, (%esp)\n" /* "white" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl -0x2c(%ebp), %edx\n" /* line 199 | color */
         "movl %edx, -0x3c(%ebp)\n" /* borderColor */
@@ -1511,7 +1511,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %edx, -0x38(%ebp)\n"
         "movl -0x24(%ebp), %edx\n" /* line 201 */
         "movl %edx, -0x34(%ebp)\n"
-        "movss 0x2ed7d0, %xmm0\n" /* line 715 | 0.10000000149011612f */
+        "movss lit4_002ed7d0, %xmm0\n" /* line 715 | 0.10000000149011612f */
         "mulss -0x20(%ebp), %xmm0\n"
         "movss %xmm0, -0x30(%ebp)\n"
         "movl %eax, 0x1c(%esp)\n" /* line 716 */
@@ -1529,7 +1529,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %ebx, -0x1ec(%ebp)\n" /* line 717 | textStart */
         "movss -0x1ec(%ebp), %xmm2\n"
         "addss -0x168(%ebp), %xmm2\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl %eax, -0x1a4(%ebp)\n"
         "jmp .Lf1c399e_001c39fa\n"
         /* } scope */
@@ -1579,7 +1579,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c46c3:\n"
         "leal -0x3c(%ebp), %eax\n" /* line 851 | borderColor */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2addd4, (%esp)\n" /* "g_TeamColor_Axis" */
+        "movl $str_002addd4, (%esp)\n" /* "g_TeamColor_Axis" */
         "calll Dvar_GetUnpackedColorByName\n"
         "jmp .Lf1c399e_001c3d88\n"
         /* } scope */
@@ -1587,7 +1587,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c46db:\n"
         "leal -0x3c(%ebp), %eax\n" /* borderColor */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2addd4, (%esp)\n" /* "g_TeamColor_Axis" */
+        "movl $str_002addd4, (%esp)\n" /* "g_TeamColor_Axis" */
         "calll Dvar_GetUnpackedColorByName\n"
         "jmp .Lf1c399e_001c3c93\n"
         /* } scope */
@@ -1609,12 +1609,12 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "addss %xmm0, %xmm2\n"
         "jmp .Lf1c399e_001c423e\n"
         ".Lf1c399e_001c4733:\n"
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "movl %edx, -0x1a4(%ebp)\n"
         /* } scope */
         /* } scope */
         ".Lf1c399e_001c473f:\n"
-        "addss 0x2ed608, %xmm0\n" /* line 1321 | 4.0f */
+        "addss lit4_002ed608, %xmm0\n" /* line 1321 | 4.0f */
         "movl -0x1a4(%ebp), %eax\n"
         "jmp .Lf1c399e_001c3e25\n"
         /* { scope 2: borderColor, objectiveFont, hudElemString, highlight, ... */
@@ -1622,7 +1622,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c4752:\n"
         "leal -0x3c(%ebp), %eax\n" /* line 854 | borderColor */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2addc0, (%esp)\n" /* "g_TeamColor_Allies" */
+        "movl $str_002addc0, (%esp)\n" /* "g_TeamColor_Allies" */
         "calll Dvar_GetUnpackedColorByName\n"
         "jmp .Lf1c399e_001c3d88\n"
         /* } scope */
@@ -1630,7 +1630,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         ".Lf1c399e_001c476a:\n"
         "leal -0x3c(%ebp), %eax\n" /* borderColor */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2addc0, (%esp)\n" /* "g_TeamColor_Allies" */
+        "movl $str_002addc0, (%esp)\n" /* "g_TeamColor_Allies" */
         "calll Dvar_GetUnpackedColorByName\n"
         "jmp .Lf1c399e_001c3c93\n"
         /* } scope */
@@ -1639,7 +1639,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         /* { scope 3 */
         ".Lf1c399e_001c4782:\n"
         "movl $7, 4(%esp)\n" /* line 1227 */
-        "movl $0x2b686c, (%esp)\n" /* "hudscoreboardscroll_downarrow" */
+        "movl $str_002b686c, (%esp)\n" /* "hudscoreboardscroll_downarrow" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, 0x1c(%esp)\n" /* line 1232 */
         "movl %edi, 0x18(%esp)\n" /* i */
@@ -1653,7 +1653,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %esi, (%esp)\n" /* score */
         "calll UI_DrawHandlePic\n"
         "movl $7, 4(%esp)\n" /* line 1235 */
-        "movl $0x2b688c, (%esp)\n" /* "hudscoreboardscroll_downkey" */
+        "movl $str_002b688c, (%esp)\n" /* "hudscoreboardscroll_downkey" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, 0x1c(%esp)\n" /* line 1240 */
         "movl %edi, 0x18(%esp)\n" /* i */
@@ -1684,7 +1684,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl $0, 0x18(%esp)\n"
         "movl $0, 0x14(%esp)\n"
         "movss -0x188(%ebp), %xmm0\n" /* y */
-        "addss 0x2ed9c8, %xmm0\n" /* 10.079999923706055f */
+        "addss lit4_002ed9c8, %xmm0\n" /* 10.079999923706055f */
         "movss %xmm0, 0x10(%esp)\n"
         "movl $0x43010000, 0xc(%esp)\n"
         "movl -0x184(%ebp), %edx\n" /* objectiveFont */
@@ -1694,7 +1694,7 @@ float CG_DrawScoreboard_ScoresList(float alpha)
         "movl %edi, (%esp)\n"
         "calll UI_DrawText\n"
         "movss -0x188(%ebp), %xmm0\n" /* line 668 | y */
-        "addss 0x2ed79c, %xmm0\n" /* 12.0f */
+        "addss lit4_002ed79c, %xmm0\n" /* 12.0f */
         "movss %xmm0, -0x188(%ebp)\n" /* y */
         "movaps %xmm0, %xmm1\n"
         "jmp .Lf1c399e_001c454d\n"
@@ -1713,21 +1713,21 @@ qboolean CG_DrawScoreboard(void)
         "pushl %ebx\n"
         "subl $0xec, %esp\n"
         /* { scope 1: color, material, borderLines, gameType, ... */
-        "movl 0x195f74c, %eax\n" /* line 1352 */
+        "movl imp_cg_paused, %eax\n" /* line 1352 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* mapLen */
         "testl %ebx, %ebx\n" /* mapLen */
         "jne .Lf1c48ac_001c503b\n"
-        "movl 0x195f584, %esi\n" /* line 1395 | footerFont */
+        "movl imp_cg, %esi\n" /* line 1395 | footerFont */
         "movl (%esi), %ebx\n" /* footerFont, mapLen */
         "movl 0x2b534(%ebx), %ecx\n" /* line 1355 | mapLen */
         "testl %ecx, %ecx\n"
         "je .Lf1c48ac_001c4faf\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0xb4(%ebp)\n" /* fade */
-        "movss 0x2ed7f0, %xmm1\n" /* 0.800000011920929f */
+        "movss lit4_002ed7f0, %xmm1\n" /* 0.800000011920929f */
         "movss %xmm1, -0x90(%ebp)\n"
-        "movss 0x2ed7d0, %xmm0\n" /* 0.10000000149011612f */
+        "movss lit4_002ed7d0, %xmm0\n" /* 0.10000000149011612f */
         "movss %xmm0, -0x8c(%ebp)\n"
         "movl (%esi), %edx\n" /* line 1378 | footerFont */
         "movl 0x25bb0(%edx), %ecx\n"
@@ -1737,7 +1737,7 @@ qboolean CG_DrawScoreboard(void)
         "jl .Lf1c48ac_001c5024\n"
         /* { scope 2: color, fontScale, mapBuffer, map */
         ".Lf1c48ac_001c492b:\n"
-        "movl 0x195f58c, %edx\n" /* line 199 */
+        "movl imp_colorBlack, %edx\n" /* line 199 */
         "movl (%edx), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* color */
         "movl 4(%edx), %eax\n" /* line 200 */
@@ -1747,7 +1747,7 @@ qboolean CG_DrawScoreboard(void)
         "movss -0x90(%ebp), %xmm1\n" /* line 435 */
         "movss %xmm1, -0x1c(%ebp)\n"
         "movl $7, 4(%esp)\n" /* line 437 */
-        "movl $0x224184, (%esp)\n" /* "white" */
+        "movl $str_00224184, (%esp)\n" /* "white" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, 0x1c(%esp)\n" /* line 440 */
         "leal -0x28(%ebp), %eax\n" /* color */
@@ -1761,7 +1761,7 @@ qboolean CG_DrawScoreboard(void)
         "calll UI_DrawHandlePic\n"
         /* } scope */
         /* { scope 2: color, fontScale, mapBuffer, map */
-        "movl 0x195ed2c, %edx\n" /* line 199 */
+        "movl imp_colorWhite, %edx\n" /* line 199 */
         "movl (%edx), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* color */
         "movl 4(%edx), %eax\n" /* line 200 */
@@ -1771,7 +1771,7 @@ qboolean CG_DrawScoreboard(void)
         "movss -0x8c(%ebp), %xmm0\n" /* line 465 */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl $7, 4(%esp)\n" /* line 467 */
-        "movl $0x224184, (%esp)\n" /* "white" */
+        "movl $str_00224184, (%esp)\n" /* "white" */
         "calll CL_RegisterMaterialNoMip\n"
         "movl %eax, -0xb0(%ebp)\n" /* material */
         "leal -0x88(%ebp), %eax\n" /* line 469 | borderLines */
@@ -1782,19 +1782,19 @@ qboolean CG_DrawScoreboard(void)
         "jg .Lf1c48ac_001c50dc\n"
         /* } scope */
         ".Lf1c48ac_001c49f8:\n"
-        "movl 0x195f5c4, %eax\n" /* line 605 */
+        "movl imp_cgs, %eax\n" /* line 605 */
         "movl (%eax), %eax\n"
         "movl %eax, -0xb8(%ebp)\n"
         "addl $0x5ea4, %eax\n"
         "movl %eax, (%esp)\n"
         "calll UI_GetGameTypeDisplayName\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x2b693c, 4(%esp)\n" /* "scoreboard gametype display" */
+        "movl $str_002b693c, 4(%esp)\n" /* "scoreboard gametype display" */
         "movl %eax, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl %eax, -0xac(%ebp)\n" /* gameType */
         /* { scope 2: color, fontScale, mapBuffer, map */
-        "movl 0x195ed2c, %eax\n" /* line 199 */
+        "movl imp_colorWhite, %eax\n" /* line 199 */
         "movss (%eax), %xmm0\n"
         "movss %xmm0, -0xbc(%ebp)\n"
         "movss %xmm0, -0x28(%ebp)\n" /* color */
@@ -1822,8 +1822,8 @@ qboolean CG_DrawScoreboard(void)
         "movl $0x18, %edx\n"
         "subl %eax, %edx\n"
         "cvtsi2ssl %edx, %xmm0\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
-        "addss 0x2ed9ec, %xmm0\n" /* 51.0f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
+        "addss lit4_002ed9ec, %xmm0\n" /* 51.0f */
         "movss %xmm0, 0x10(%esp)\n"
         "movl $0x43010000, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* headerFont */
@@ -1856,7 +1856,7 @@ qboolean CG_DrawScoreboard(void)
         "je .Lf1c48ac_001c5081\n"
         ".Lf1c48ac_001c4b61:\n"
         "movl $4, 8(%esp)\n" /* line 528 */
-        "movl $0x2b6958, 4(%esp)\n" /* "maps" */
+        "movl $str_002b6958, 4(%esp)\n" /* "maps" */
         "leal -0x88(%ebp), %eax\n" /* borderLines */
         "movl %eax, (%esp)\n"
         "calll I_strnicmp\n"
@@ -1872,7 +1872,7 @@ qboolean CG_DrawScoreboard(void)
         "movl %edx, -0xa4(%ebp)\n" /* map */
         ".Lf1c48ac_001c4ba6:\n"
         "movl $2, 8(%esp)\n" /* line 530 */
-        "movl $0x21cc10, 4(%esp)\n" /* "mp" */
+        "movl $str_0021cc10, 4(%esp)\n" /* "mp" */
         "movl %edx, (%esp)\n"
         "calll I_strnicmp\n"
         "testl %eax, %eax\n"
@@ -1884,7 +1884,7 @@ qboolean CG_DrawScoreboard(void)
         "cmpb $0x5c, %al\n"
         "je .Lf1c48ac_001c5075\n"
         ".Lf1c48ac_001c4bdc:\n"
-        "movss 0x2ed9e8, %xmm0\n" /* line 531 | 0.4099999964237213f */
+        "movss lit4_002ed9e8, %xmm0\n" /* line 531 | 0.4099999964237213f */
         "movss %xmm0, -0xa8(%ebp)\n" /* fontScale */
         "movl $0xe, %edi\n" /* numLines */
         "movaps %xmm0, %xmm1\n"
@@ -1913,11 +1913,11 @@ qboolean CG_DrawScoreboard(void)
         "calll UI_TextWidth\n"
         "leal 4(%ebx, %eax), %eax\n" /* mapLen */
         "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed9f0, %xmm1\n" /* 386.0f */
+        "movss lit4_002ed9f0, %xmm1\n" /* 386.0f */
         "ucomiss %xmm0, %xmm1\n"
         "jae .Lf1c48ac_001c5048\n"
         "movss -0xa8(%ebp), %xmm0\n" /* line 539 | fontScale */
-        "subss 0x2ed9f4, %xmm0\n" /* 0.02500000037252903f */
+        "subss lit4_002ed9f4, %xmm0\n" /* 0.02500000037252903f */
         "movss %xmm0, -0xa8(%ebp)\n" /* fontScale */
         "subl $1, %edi\n" /* line 534 | numLines */
         "jne .Lf1c48ac_001c4bf6\n"
@@ -1944,12 +1944,12 @@ qboolean CG_DrawScoreboard(void)
         "movl $0x18, %edx\n"
         "subl %eax, %edx\n"
         "cvtsi2ssl %edx, %xmm0\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
-        "addss 0x2ed9ec, %xmm0\n" /* 51.0f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
+        "addss lit4_002ed9ec, %xmm0\n" /* 51.0f */
         "movss %xmm0, 0x10(%esp)\n"
         "leal 4(%ebx), %eax\n" /* mapLen */
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed9f8, %xmm0\n" /* 511.0f */
+        "movss lit4_002ed9f8, %xmm0\n" /* 511.0f */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* headerFont */
@@ -1960,7 +1960,7 @@ qboolean CG_DrawScoreboard(void)
         /* } scope */
         /* } scope */
         /* { scope 2: color, fontScale, mapBuffer, map */
-        "movl 0x195ed2c, %edx\n" /* line 199 */
+        "movl imp_colorWhite, %edx\n" /* line 199 */
         "movl (%edx), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* color */
         "movl 4(%edx), %eax\n" /* line 200 */
@@ -1969,19 +1969,19 @@ qboolean CG_DrawScoreboard(void)
         "movl %eax, -0x20(%ebp)\n"
         "movss -0xb4(%ebp), %xmm0\n" /* line 567 | fade */
         "movss %xmm0, -0x1c(%ebp)\n"
-        "movl 0x195f5c4, %eax\n" /* line 570 */
+        "movl imp_cgs, %eax\n" /* line 570 */
         "movl (%eax), %eax\n"
         "addl $0x5ec4, %eax\n"
         "movl %eax, -0x98(%ebp)\n" /* serverName */
         "calll CL_GetServerIPAddress\n" /* line 571 */
         "movl %eax, -0x94(%ebp)\n" /* serverIP */
-        "movl $0x2b6960, 4(%esp)\n" /* line 572 */
+        "movl $str_002b6960, 4(%esp)\n" /* line 572 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1c48ac_001c5130\n"
         ".Lf1c48ac_001c4dae:\n"
-        "movss 0x2ed724, %xmm1\n" /* line 573 | 0.20000000298023224f */
+        "movss lit4_002ed724, %xmm1\n" /* line 573 | 0.20000000298023224f */
         "movss %xmm1, -0x9c(%ebp)\n" /* fontScale */
         "movl $0xd, %edi\n" /* numLines */
         "movaps %xmm1, %xmm0\n"
@@ -2007,11 +2007,11 @@ qboolean CG_DrawScoreboard(void)
         "calll UI_TextWidth\n"
         "leal 4(%ebx, %eax), %eax\n" /* mapLen */
         "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed9f0, %xmm1\n" /* 386.0f */
+        "movss lit4_002ed9f0, %xmm1\n" /* 386.0f */
         "ucomiss %xmm0, %xmm1\n"
         "jae .Lf1c48ac_001c5055\n"
         "movss -0x9c(%ebp), %xmm0\n" /* line 580 | fontScale */
-        "subss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "subss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "movss %xmm0, -0x9c(%ebp)\n" /* fontScale */
         "subl $1, %edi\n" /* line 575 | numLines */
         "jne .Lf1c48ac_001c4dc6\n"
@@ -2023,8 +2023,8 @@ qboolean CG_DrawScoreboard(void)
         "movl $0xe, %edx\n"
         "subl %eax, %edx\n"
         "cvtsi2ssl %edx, %xmm0\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
-        "addss 0x2ed9fc, %xmm0\n" /* 447.0f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
+        "addss lit4_002ed9fc, %xmm0\n" /* 447.0f */
         "movss %xmm0, -0xa0(%ebp)\n" /* y */
         "movl $3, 0x24(%esp)\n" /* line 586 */
         "leal -0x28(%ebp), %eax\n" /* color */
@@ -2059,7 +2059,7 @@ qboolean CG_DrawScoreboard(void)
         "movss %xmm1, 0x10(%esp)\n"
         "addl $4, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed9f8, %xmm0\n" /* 511.0f */
+        "movss lit4_002ed9f8, %xmm0\n" /* 511.0f */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* footerFont */
@@ -2091,10 +2091,10 @@ qboolean CG_DrawScoreboard(void)
         "je .Lf1c48ac_001c5147\n"
         "movss (%eax), %xmm1\n" /* line 1374 */
         "movss %xmm1, -0xb4(%ebp)\n" /* fade */
-        "mulss 0x2ed7f0, %xmm1\n" /* 0.800000011920929f */
+        "mulss lit4_002ed7f0, %xmm1\n" /* 0.800000011920929f */
         "movss %xmm1, -0x90(%ebp)\n"
         "movss -0xb4(%ebp), %xmm0\n" /* fade */
-        "mulss 0x2ed7d0, %xmm0\n" /* 0.10000000149011612f */
+        "mulss lit4_002ed7d0, %xmm0\n" /* 0.10000000149011612f */
         "movss %xmm0, -0x8c(%ebp)\n"
         "movl (%esi), %edx\n" /* line 1378 | footerFont */
         "movl 0x25bb0(%edx), %ecx\n"
@@ -2104,7 +2104,7 @@ qboolean CG_DrawScoreboard(void)
         "jge .Lf1c48ac_001c492b\n"
         ".Lf1c48ac_001c5024:\n"
         "movl %ecx, 0x2aefc(%edx)\n" /* line 1381 */
-        "movl $0x2b3bec, (%esp)\n" /* line 1382 */
+        "movl $str_002b3bec, (%esp)\n" /* line 1382 */
         "calll CL_AddReliableCommand\n"
         "jmp .Lf1c48ac_001c492b\n"
         ".Lf1c48ac_001c503b:\n"
@@ -2146,7 +2146,7 @@ qboolean CG_DrawScoreboard(void)
         "notl %ecx\n"
         "leal -1(%ecx), %ebx\n" /* mapLen */
         "movl $3, 8(%esp)\n" /* line 524 */
-        "movl $0x217ff4, 4(%esp)\n" /* "bsp" */
+        "movl $str_00217ff4, 4(%esp)\n" /* "bsp" */
         "leal -0x8b(%ebp, %ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strnicmp\n"
@@ -2184,7 +2184,7 @@ qboolean CG_DrawScoreboard(void)
         /* } scope */
         /* { scope 2: color, fontScale, mapBuffer, map */
         ".Lf1c48ac_001c5130:\n"
-        "movl $0x2b696c, (%esp)\n" /* line 573 */
+        "movl $str_002b696c, (%esp)\n" /* line 573 */
         "calll UI_SafeTranslateString\n"
         "movl %eax, -0x94(%ebp)\n" /* serverIP */
         "jmp .Lf1c48ac_001c4dae\n"

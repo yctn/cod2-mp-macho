@@ -4,7 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 
-static ShadowCookieGlob shadowCookieGlob; /* 0xcb6f80 */
+static ShadowCookieGlob shadowCookieGlob; /* shadowCookieGlob */
 
 void R_ResetShadowCookies(void)
 {

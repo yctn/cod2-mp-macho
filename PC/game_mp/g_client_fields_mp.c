@@ -24,14 +24,14 @@ extern int GScr_GetStatusIconIndex(const char *name);
 extern int GScr_GetHeadIconIndex(const char *name);
 extern void SV_GetConfigstring(int index, char *buf, int bufSize);
 
-extern byte *g_scr_data_ptr; /* 0x195f5bc - direct pointer to scr data */
-extern byte *level_ptr;      /* 0x195f6a0 - points to level struct */
-extern byte *g_entities_ptr; /* 0x195f688 - points to entity array */
+extern byte *g_scr_data_ptr; /* imp_scr_const - direct pointer to scr data */
+extern byte *level_ptr;      /* imp_level - points to level struct */
+extern byte *g_entities_ptr; /* imp_g_entities - points to entity array */
 
 #define CLIENT_STRIDE sizeof(gclient_s)
 #define ENTITY_STRIDE sizeof(gentity_s)
 
-static const client_fields_t fields[14]; /* 0x333760 */
+static const client_fields_t fields[14]; /* fields */
 
 static void ClientScr_ReadOnly(gclient_t *pSelf, const client_fields_s *pField);
 static void ClientScr_SetSessionTeam(gclient_t *pSelf, const client_fields_s *pField);

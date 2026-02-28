@@ -54,7 +54,7 @@ int R_FinishLoadingAabbTrees_r(void)
         "jne .Lfe29ce_000e2a14\n"
         "movl 0x1c(%ebx), %eax\n" /* line 1409 | tree */
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x12185b4, %edx\n"
+        "movl s_world+20, %edx\n"
         "leal (%edx, %eax, 4), %esi\n" /* surf */
         "movl 0x18(%ebx), %eax\n" /* tree */
         "testl %eax, %eax\n"
@@ -72,7 +72,7 @@ int R_FinishLoadingAabbTrees_r(void)
         ".Lfe29ce_000e2a14:\n"
         "leal (%edi, %edi, 2), %eax\n" /* line 1417 | totalTreesUsed */
         "shll $4, %eax\n"
-        "addl 0x1218594, %eax\n"
+        "addl rgl+16, %eax\n"
         "movl %eax, 0x2c(%ebx)\n" /* tree */
         "movl 0x28(%ebx), %eax\n" /* line 1419 | tree */
         "addl %eax, %edi\n" /* totalTreesUsed */
@@ -220,7 +220,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "leal -0x1018(%ebp), %edi\n" /* value */
         "movl %edi, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x224bdc, 4(%esp)\n" /* line 1165 */
+        "movl $str_00224bdc, 4(%esp)\n" /* line 1165 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -230,17 +230,17 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "fstpl -0x1030(%ebp)\n"
         "cvtsd2ss -0x1030(%ebp), %xmm0\n"
         "movss %xmm0, 0x40(%esi)\n" /* params */
-        "ucomiss 0x2ed62c, %xmm0\n" /* line 1168 | 2.0f */
+        "ucomiss lit4_002ed62c, %xmm0\n" /* line 1168 | 2.0f */
         "jbe .Lfe2abc_000e2acb\n"
         "movl %edi, 4(%esp)\n" /* line 1170 */
-        "movl $0x224be4, (%esp)\n" /* "^3WARNING: ambient too big, assuming it uses the old 0-255 s" */
+        "movl $str_00224be4, (%esp)\n" /* "^3WARNING: ambient too big, assuming it uses the old 0-255 s" */
         "calll Com_Printf\n"
-        "movss 0x2ed86c, %xmm0\n" /* line 1172 | 0.01568627543747425f */
+        "movss lit4_002ed86c, %xmm0\n" /* line 1172 | 0.01568627543747425f */
         "mulss 0x40(%esi), %xmm0\n" /* params */
         "movss %xmm0, 0x40(%esi)\n" /* params */
         "jmp .Lfe2abc_000e2acb\n"
         ".Lfe2abc_000e2bec:\n"
-        "movl $0x224c58, 4(%esp)\n" /* line 1177 */
+        "movl $str_00224c58, 4(%esp)\n" /* line 1177 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -258,12 +258,12 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         ".Lfe2abc_000e2c18:\n"
         "movl %eax, 0xc(%esp)\n" /* line 1217 */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %edi, (%esp)\n"
         "calll sscanf\n"
         "jmp .Lfe2abc_000e2acb\n"
         ".Lfe2abc_000e2c35:\n"
-        "movl $0x224c60, 4(%esp)\n" /* line 1185 */
+        "movl $str_00224c60, 4(%esp)\n" /* line 1185 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -275,17 +275,17 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "movss %xmm0, 0x50(%esi)\n" /* params */
         "jmp .Lfe2abc_000e2acb\n"
         ".Lfe2abc_000e2c69:\n"
-        "movl $0x224c70, 4(%esp)\n" /* line 1191 */
+        "movl $str_00224c70, 4(%esp)\n" /* line 1191 */
         "movl %ebx, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lfe2abc_000e2cc9\n"
-        "movl $0x224c7c, 4(%esp)\n" /* line 1199 */
+        "movl $str_00224c7c, 4(%esp)\n" /* line 1199 */
         "movl %ebx, (%esp)\n" /* v */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lfe2abc_000e2d0c\n"
-        "movl $0x224c8c, 4(%esp)\n" /* line 1208 */
+        "movl $str_00224c8c, 4(%esp)\n" /* line 1208 */
         "movl %ebx, (%esp)\n" /* v */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -309,7 +309,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "leal 0x5c(%esi), %eax\n" /* params */
         "movl %eax, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* v */
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %edi, (%esp)\n"
         "calll sscanf\n"
         "movl %ebx, 4(%esp)\n" /* line 1195 | v */
@@ -330,7 +330,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "leal 0x68(%esi), %eax\n" /* params */
         "movl %eax, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* v */
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %edi, (%esp)\n"
         "calll sscanf\n"
         "movl %ebx, 4(%esp)\n" /* line 1203 | v */
@@ -340,7 +340,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "movb $1, 0x70(%esi)\n" /* line 1204 | params */
         "jmp .Lfe2abc_000e2acb\n"
         ".Lfe2abc_000e2d53:\n"
-        "movl $0x224c98, 4(%esp)\n" /* line 1214 */
+        "movl $str_00224c98, 4(%esp)\n" /* line 1214 */
         "movl %ebx, (%esp)\n" /* v */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -357,7 +357,7 @@ const char * R_ParseSunLight(SunLightParseParams *params, const char *text)
         "leal 0x78(%esi), %eax\n" /* params */
         "jmp .Lfe2abc_000e2c18\n"
         ".Lfe2abc_000e2d84:\n"
-        "movl $0x2194b4, 4(%esp)\n" /* line 1222 */
+        "movl $str_002194b4, 4(%esp)\n" /* line 1222 */
         "movl %ebx, (%esp)\n" /* v */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -402,7 +402,7 @@ snd_alias_list_t R_InterpretSunLightParseParamsIntoLights(SunLightParseParams *s
         ".Lfe2db6_000e2e05:\n"
         "movss 0x54(%ebx), %xmm0\n" /* line 1934 | sunParse, scale */
         "subss 0x40(%ebx), %xmm0\n" /* sunParse, scale */
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss 0x50(%ebx), %xmm1\n" /* sunParse */
         "mulss %xmm1, %xmm0\n" /* scale */
         "leal 0x58(%ebx), %eax\n" /* sunParse, v */
@@ -493,7 +493,7 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "subl $1, %edx\n" /* line 918 */
         "jg .Lfe2ece_000e3082\n"
         ".Lfe2ece_000e2ee9:\n"
-        "movl $0x224ca8, %ecx\n" /* "0 0 0" */
+        "movl $str_00224ca8, %ecx\n" /* "0 0 0" */
         "xorl %ebx, %ebx\n"
         /* } scope */
         ".Lfe2ece_000e2ef0:\n"
@@ -507,7 +507,7 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "leal -0x20(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %edx, 8(%esp)\n"
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %ecx, (%esp)\n"
         "calll sscanf\n"
         /* } scope */
@@ -525,7 +525,7 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "movl -0x34(%ebp), %eax\n"
         "addl %esi, %eax\n"
         "movl %eax, -0x30(%ebp)\n"
-        "movl $0x21593c, 4(%esp)\n" /* line 920 */
+        "movl $str_0021593c, 4(%esp)\n" /* line 920 */
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -546,12 +546,12 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "movsd %xmm0, 0x10(%esp)\n"
         "cvtss2sd -0x24(%ebp), %xmm0\n" /* tempOrigin */
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224cd8, 4(%esp)\n" /* "R_LoadMiscModel: no model specified in misc_model at (%.0f " */
+        "movl $str_00224cd8, 4(%esp)\n" /* "R_LoadMiscModel: no model specified in misc_model at (%.0f " */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         ".Lfe2ece_000e2fa5:\n"
         "movl $0xe, 8(%esp)\n" /* line 1016 */
-        "movl $0x224d20, 4(%esp)\n" /* "xmodel/shadow_" */
+        "movl $str_00224d20, 4(%esp)\n" /* "xmodel/shadow_" */
         "movl %esi, (%esp)\n" /* modelName */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
@@ -585,10 +585,10 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "cvtss2sd -0x24(%ebp), %xmm0\n" /* tempOrigin */
         "movsd %xmm0, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* modelName */
-        "movl $0x224d30, (%esp)\n" /* "^1bad static model '%s' at (%.0f %.0f %.0f)
+        "movl $str_00224d30, (%esp)\n" /* "^1bad static model '%s' at (%.0f %.0f %.0f)
 " */
         "calll Com_Printf\n"
-        "movl $0x224d60, (%esp)\n" /* line 1024 */
+        "movl $str_00224d60, (%esp)\n" /* line 1024 */
         "calll R_RegisterModel\n"
         "movl %eax, %ebx\n" /* tempModel */
         ".Lfe2ece_000e3028:\n"
@@ -618,7 +618,7 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "movl $1, %eax\n"
         "jmp .Lfe2ece_000e2fc3\n"
         ".Lfe2ece_000e3069:\n"
-        "movl $0x224cb0, 4(%esp)\n" /* line 1011 */
+        "movl $str_00224cb0, 4(%esp)\n" /* line 1011 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe2ece_000e2f28\n"
@@ -640,7 +640,7 @@ Bool R_IsValidStaticModel(char * (*spawnVars)[2], int spawnVarCount, struct XMod
         "movl -0x34(%ebp), %eax\n"
         "addl %esi, %eax\n"
         "movl %eax, -0x2c(%ebp)\n"
-        "movl $0x21a570, 4(%esp)\n" /* line 920 */
+        "movl $str_0021a570, 4(%esp)\n" /* line 920 */
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -931,7 +931,7 @@ snd_alias_list_t R_LoadEntities(void)
         ".Lfe3344_000e33a6:\n"
         "cmpb $0x7b, (%eax)\n"
         "jne .Lfe3344_000e3520\n"
-        "movl $0x2157b8, -0x2c8(%ebp)\n" /* line 1286 | spawnVars */
+        "movl $str_002157b8, -0x2c8(%ebp)\n" /* line 1286 | spawnVars */
         "movl $1, -0x324(%ebp)\n" /* spawnVarCount */
         "xorl %ebx, %ebx\n" /* charsUsed */
         "jmp .Lfe3344_000e3467\n"
@@ -989,7 +989,7 @@ snd_alias_list_t R_LoadEntities(void)
         "je .Lfe3344_000e34b4\n"
         "cmpb $0x7d, %al\n"
         "je .Lfe3344_000e34b4\n"
-        "movl $0x21c208, %edi\n" /* line 1295 | i */
+        "movl $str_0021c208, %edi\n" /* line 1295 | i */
         "movl $0xa, %ecx\n"
         "cld\n"
         "movl %edx, %esi\n" /* spawnVarIndex */
@@ -1009,7 +1009,7 @@ snd_alias_list_t R_LoadEntities(void)
         "cmpb $0, (%eax)\n"
         "je .Lfe3344_000e369c\n"
         ".Lfe3344_000e34c3:\n"
-        "movl $0x21c214, 4(%esp)\n" /* line 1322 */
+        "movl $str_0021c214, 4(%esp)\n" /* line 1322 */
         "movl -0x2c4(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1035,8 +1035,8 @@ snd_alias_list_t R_LoadEntities(void)
         "shll $5, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x1218698\n"
-        "movl $0, 0x1218694\n" /* line 1330 */
+        "movl %eax, s_world+248\n"
+        "movl $0, s_world+244\n" /* line 1330 */
         "movl -0x328(%ebp), %edi\n" /* line 1332 | smodelCount, i */
         "movl %edi, 4(%esp)\n" /* i */
         "movl $s_world, (%esp)\n"
@@ -1050,7 +1050,7 @@ snd_alias_list_t R_LoadEntities(void)
         "cmpb $0x7b, (%eax)\n" /* line 1341 */
         "jne .Lfe3344_000e3951\n"
         ".Lfe3344_000e3576:\n"
-        "movl $0x2157b8, -0x2c8(%ebp)\n" /* line 1344 | spawnVars */
+        "movl $str_002157b8, -0x2c8(%ebp)\n" /* line 1344 | spawnVars */
         "movl $1, -0x2d4(%ebp)\n"
         "xorl %ebx, %ebx\n" /* charsUsed */
         "jmp .Lfe3344_000e362e\n"
@@ -1108,7 +1108,7 @@ snd_alias_list_t R_LoadEntities(void)
         "je .Lfe3344_000e36b5\n"
         "cmpb $0x7d, %al\n"
         "je .Lfe3344_000e36b5\n"
-        "movl $0x21c208, %edi\n" /* line 1353 | i */
+        "movl $str_0021c208, %edi\n" /* line 1353 | i */
         "movl $0xa, %ecx\n"
         "cld\n"
         "movl %edx, %esi\n" /* spawnVarIndex */
@@ -1125,13 +1125,13 @@ snd_alias_list_t R_LoadEntities(void)
         "jmp .Lfe3344_000e35af\n"
         ".Lfe3344_000e367b:\n"
         "movl $0x40, 8(%esp)\n" /* line 1302 */
-        "movl $0x224d7c, 4(%esp)\n" /* "R_LoadEntities: MAX_SPAWN_VARS (%i) reached
+        "movl $str_00224d7c, 4(%esp)\n" /* "R_LoadEntities: MAX_SPAWN_VARS (%i) reached
 " */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3344_000e33d7\n"
         ".Lfe3344_000e369c:\n"
-        "movl $0x224dac, 4(%esp)\n" /* line 1320 */
+        "movl $str_00224dac, 4(%esp)\n" /* line 1320 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3344_000e34c3\n"
@@ -1140,7 +1140,7 @@ snd_alias_list_t R_LoadEntities(void)
         "cmpb $0, (%eax)\n"
         "je .Lfe3344_000e399b\n"
         ".Lfe3344_000e36c4:\n"
-        "movl $0x21c214, 4(%esp)\n" /* line 1380 */
+        "movl $str_0021c214, 4(%esp)\n" /* line 1380 */
         "movl -0x2c4(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1155,14 +1155,14 @@ snd_alias_list_t R_LoadEntities(void)
         "calll R_IsValidStaticModel\n"
         "testb %al, %al\n"
         "je .Lfe3344_000e3562\n"
-        "movl 0x1218694, %eax\n" /* line 1074 */
+        "movl s_world+244, %eax\n" /* line 1074 */
         "leal (%eax, %eax, 2), %edi\n" /* i */
         "shll $5, %edi\n" /* i */
-        "movl 0x1218698, %edx\n"
+        "movl s_world+248, %edx\n"
         "addl %edx, %edi\n" /* i */
         "movl %edi, -0x318(%ebp)\n" /* i, smodelInst */
         "addl $1, %eax\n" /* line 1075 */
-        "movl %eax, 0x1218694\n"
+        "movl %eax, s_world+244\n"
         /* { scope 3 */
         /* { scope 4 */
         "cmpl $1, -0x2d4(%ebp)\n" /* line 918 */
@@ -1172,7 +1172,7 @@ snd_alias_list_t R_LoadEntities(void)
         /* { scope 3 */
         /* { scope 4 */
         ".Lfe3344_000e3732:\n"
-        "movl $0x224ca8, %edx\n" /* "0 0 0" */
+        "movl $str_00224ca8, %edx\n" /* "0 0 0" */
         /* } scope */
         ".Lfe3344_000e3737:\n"
         "movl $0, -0x48(%ebp)\n" /* line 183 | angles */
@@ -1184,7 +1184,7 @@ snd_alias_list_t R_LoadEntities(void)
         "movl %eax, 0xc(%esp)\n"
         "leal -0x48(%ebp), %eax\n" /* angles */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %edx, (%esp)\n"
         "calll sscanf\n"
         /* } scope */
@@ -1193,7 +1193,7 @@ snd_alias_list_t R_LoadEntities(void)
         "cmpl $1, -0x2d4(%ebp)\n" /* line 918 */
         "jg .Lfe3344_000e3ca8\n"
         ".Lfe3344_000e377e:\n"
-        "movl $0x224ddc, %ecx\n" /* "1 1 1" */
+        "movl $str_00224ddc, %ecx\n" /* "1 1 1" */
         "xorl %ebx, %ebx\n"
         /* } scope */
         ".Lfe3344_000e3785:\n"
@@ -1206,7 +1206,7 @@ snd_alias_list_t R_LoadEntities(void)
         "leal -0x2c(%ebp), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %ecx, (%esp)\n"
         "calll sscanf\n"
         /* } scope */
@@ -1219,7 +1219,7 @@ snd_alias_list_t R_LoadEntities(void)
         "jg .Lfe3344_000e3b66\n"
         /* } scope */
         ".Lfe3344_000e37d0:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 936 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 936 | 1.0f */
         /* } scope */
         /* } scope */
         ".Lfe3344_000e37d8:\n"
@@ -1251,7 +1251,7 @@ snd_alias_list_t R_LoadEntities(void)
         "jg .Lfe3344_000e3d0e\n"
         ".Lfe3344_000e3840:\n"
         "xorl %esi, %esi\n" /* i */
-        "movl $0x224dec, %edx\n" /* "FF000000" */
+        "movl $str_00224dec, %edx\n" /* "FF000000" */
         /* } scope */
         ".Lfe3344_000e3847:\n"
         "leal -0x5c(%ebp), %eax\n" /* line 979 */
@@ -1262,17 +1262,17 @@ snd_alias_list_t R_LoadEntities(void)
         "movl %eax, 0xc(%esp)\n"
         "leal -0x68(%ebp), %eax\n" /* valueInt */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224df8, 4(%esp)\n" /* "%02x%02x%02x%02x" */
+        "movl $str_00224df8, 4(%esp)\n" /* "%02x%02x%02x%02x" */
         "movl %edx, (%esp)\n"
         "calll sscanf\n"
         "cmpl $4, %eax\n" /* line 981 */
         "je .Lfe3344_000e388c\n"
-        "movl $0x224e0c, 4(%esp)\n" /* line 982 */
+        "movl $str_00224e0c, 4(%esp)\n" /* line 982 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         ".Lfe3344_000e388c:\n"
         "movl $1, %ebx\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* 255.0f */
         ".Lfe3344_000e3899:\n"
         "leal (, %ebx, 4), %ecx\n" /* line 985 */
         "movl -0x6c(%ebp, %ecx), %edx\n"
@@ -1287,7 +1287,7 @@ snd_alias_list_t R_LoadEntities(void)
         "jne .Lfe3344_000e3899\n"
         /* } scope */
         "movl %esi, %edx\n" /* line 1099 | success */
-        "movl 0x195f164, %eax\n" /* line 1102 */
+        "movl imp_r_showGroundLit, %eax\n" /* line 1102 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfe3344_000e39ca\n"
@@ -1324,7 +1324,7 @@ snd_alias_list_t R_LoadEntities(void)
         ".Lfe3344_000e3951:\n"
         "movl $s_world, (%esp)\n" /* line 1388 */
         "calll R_FinishStaticModelLightingCache\n"
-        "movl 0x121869c, %eax\n" /* line 1248 */
+        "movl s_world+252, %eax\n" /* line 1248 */
         "testl %eax, %eax\n"
         "jg .Lfe3344_000e3d74\n"
         ".Lfe3344_000e396a:\n"
@@ -1339,13 +1339,13 @@ snd_alias_list_t R_LoadEntities(void)
         /* { scope 1: model, origin, angles, scale, ... */
         ".Lfe3344_000e397a:\n"
         "movl $0x40, 8(%esp)\n" /* line 1360 */
-        "movl $0x224d7c, 4(%esp)\n" /* "R_LoadEntities: MAX_SPAWN_VARS (%i) reached
+        "movl $str_00224d7c, 4(%esp)\n" /* "R_LoadEntities: MAX_SPAWN_VARS (%i) reached
 " */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3344_000e359e\n"
         ".Lfe3344_000e399b:\n"
-        "movl $0x224dac, 4(%esp)\n" /* line 1378 */
+        "movl $str_00224dac, 4(%esp)\n" /* line 1378 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3344_000e36c4\n"
@@ -1379,7 +1379,7 @@ snd_alias_list_t R_LoadEntities(void)
         ".Lfe3344_000e3a02:\n"
         "cmpl $1, -0x2d4(%ebp)\n" /* line 918 */
         "jg .Lfe3344_000e3bb4\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x314(%ebp)\n" /* directLightScale */
         /* } scope */
         /* } scope */
@@ -1411,7 +1411,7 @@ snd_alias_list_t R_LoadEntities(void)
         "leal -0x2c8(%ebp), %eax\n" /* spawnVars, load */
         "addl %ebx, %eax\n" /* load */
         "movl %eax, -0x2d8(%ebp)\n" /* load */
-        "movl $0x21a534, 4(%esp)\n" /* line 920 */
+        "movl $str_0021a534, 4(%esp)\n" /* line 920 */
         "movl (%edi), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1433,7 +1433,7 @@ snd_alias_list_t R_LoadEntities(void)
         "movl %eax, -0x2dc(%ebp)\n"
         /* { scope 3 */
         /* { scope 4 */
-        "movl $0x21a53c, 4(%esp)\n" /* line 920 */
+        "movl $str_0021a53c, 4(%esp)\n" /* line 920 */
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1452,7 +1452,7 @@ snd_alias_list_t R_LoadEntities(void)
         "movl %eax, -0x2dc(%ebp)\n"
         /* { scope 3 */
         /* { scope 4 */
-        "movl $0x21a53c, 4(%esp)\n" /* line 920 */
+        "movl $str_0021a53c, 4(%esp)\n" /* line 920 */
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1494,7 +1494,7 @@ snd_alias_list_t R_LoadEntities(void)
         /* { scope 3 */
         /* { scope 4 */
         /* { scope 5 */
-        "movl $0x21c254, 4(%esp)\n" /* line 920 */
+        "movl $str_0021c254, 4(%esp)\n" /* line 920 */
         "movl (%edi), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1519,7 +1519,7 @@ snd_alias_list_t R_LoadEntities(void)
         "leal -0x2c8(%ebp), %eax\n" /* spawnVars, load */
         "addl %ebx, %eax\n" /* load */
         "movl %eax, -0x2ec(%ebp)\n" /* load */
-        "movl $0x224e30, 4(%esp)\n" /* line 920 */
+        "movl $str_00224e30, 4(%esp)\n" /* line 920 */
         "movl (%edi), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1533,7 +1533,7 @@ snd_alias_list_t R_LoadEntities(void)
         /* } scope */
         /* } scope */
         ".Lfe3344_000e3bfd:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1118 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1118 | 1.0f */
         "movss %xmm0, -0x314(%ebp)\n" /* directLightScale */
         ".Lfe3344_000e3c0d:\n"
         "leal -0x2c0(%ebp), %ebx\n"
@@ -1545,7 +1545,7 @@ snd_alias_list_t R_LoadEntities(void)
         "movl %eax, -0x2f0(%ebp)\n"
         /* { scope 3 */
         /* { scope 4 */
-        "movl $0x224e70, 4(%esp)\n" /* line 920 */
+        "movl $str_00224e70, 4(%esp)\n" /* line 920 */
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1559,7 +1559,7 @@ snd_alias_list_t R_LoadEntities(void)
         /* } scope */
         /* } scope */
         ".Lfe3344_000e3c56:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1122 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1122 | 1.0f */
         "jmp .Lfe3344_000e3a1f\n"
         /* { scope 3 */
         /* { scope 4 */
@@ -1599,7 +1599,7 @@ snd_alias_list_t R_LoadEntities(void)
         "leal -0x2c8(%ebp), %edx\n" /* line 1256 | spawnVars */
         "addl %ebx, %edx\n"
         "movl %edx, -0x2e0(%ebp)\n"
-        "movl $0x21c244, 4(%esp)\n" /* line 920 */
+        "movl $str_0021c244, 4(%esp)\n" /* line 920 */
         "movl (%edi), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1630,7 +1630,7 @@ snd_alias_list_t R_LoadEntities(void)
         "leal -0x2c8(%ebp), %eax\n" /* line 1256 | spawnVars, load */
         "addl %ebx, %eax\n" /* load */
         "movl %eax, -0x2e8(%ebp)\n" /* load */
-        "movl $0x224de4, 4(%esp)\n" /* line 920 */
+        "movl $str_00224de4, 4(%esp)\n" /* line 920 */
         "movl (%edi), %eax\n" /* i */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1649,28 +1649,28 @@ snd_alias_list_t R_LoadEntities(void)
         "xorl %esi, %esi\n" /* line 1248 | success */
         "xorl %ebx, %ebx\n"
         ".Lfe3344_000e3d78:\n"
-        "movl 0x12186a0, %eax\n" /* line 1249 */
+        "movl s_world+256, %eax\n" /* line 1249 */
         "movl 0x1c(%eax, %ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AllocStaticModels\n"
         "addl $1, %esi\n" /* line 1248 | success */
         "addl $0x3c, %ebx\n"
-        "cmpl 0x121869c, %esi\n" /* success */
+        "cmpl s_world+252, %esi\n" /* success */
         "jl .Lfe3344_000e3d78\n"
-        "movl 0x121869c, %edi\n" /* line 1251 | i */
+        "movl s_world+252, %edi\n" /* line 1251 | i */
         "testl %edi, %edi\n" /* i */
         "jle .Lfe3344_000e396a\n"
         "xorl %esi, %esi\n" /* success */
         "xorl %ebx, %ebx\n"
         ".Lfe3344_000e3da9:\n"
-        "movl 0x12186a0, %eax\n" /* line 1252 */
+        "movl s_world+256, %eax\n" /* line 1252 */
         "movl 0x1c(%eax, %ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $s_world, (%esp)\n"
         "calll R_SortGfxAabbTree\n"
         "addl $1, %esi\n" /* line 1251 | success */
         "addl $0x3c, %ebx\n"
-        "cmpl 0x121869c, %esi\n" /* success */
+        "cmpl s_world+252, %esi\n" /* success */
         "jl .Lfe3344_000e3da9\n"
         "calll Hunk_ClearTempMemory\n" /* line 1392 */
         /* } scope */
@@ -1731,7 +1731,7 @@ snd_alias_list_t R_LoadEntities(void)
         "pxor %xmm1, %xmm1\n" /* line 1121 */
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lfe3344_000e3a1f\n"
-        "movl $0x224e84, 4(%esp)\n" /* line 1122 */
+        "movl $str_00224e84, 4(%esp)\n" /* line 1122 */
         "movl $1, (%esp)\n"
         "movss %xmm0, -0x348(%ebp)\n"
         "calll R_Error\n"
@@ -1754,7 +1754,7 @@ snd_alias_list_t R_LoadEntities(void)
         "pxor %xmm1, %xmm1\n" /* line 1117 */
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lfe3344_000e3c0d\n"
-        "movl $0x224e44, 4(%esp)\n" /* line 1118 */
+        "movl $str_00224e44, 4(%esp)\n" /* line 1118 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3344_000e3c0d\n"
@@ -1801,7 +1801,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         ".Lfe3f00_000e3f57:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -1839,7 +1839,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         ".Lfe3f00_000e3fd1:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -1851,13 +1851,13 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         "addl %ecx, -0x24(%ebp)\n" /* inLeaf */
         "movl -0x20(%ebp), %eax\n" /* line 1761 | nodeCount */
         "addl -0x1c(%ebp), %eax\n" /* leafCount */
-        "movl %eax, 0x12185a8\n"
+        "movl %eax, s_world+8\n"
         "leal (%eax, %eax, 2), %eax\n" /* line 1762 */
         "shll $3, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
         "movl %eax, %ebx\n"
-        "movl %eax, 0x12185ac\n" /* line 1764 */
+        "movl %eax, s_world+12\n" /* line 1764 */
         "movl -0x20(%ebp), %esi\n" /* line 1767 | nodeCount, load */
         "testl %esi, %esi\n" /* load */
         "jg .Lfe3f00_000e40b9\n"
@@ -1879,7 +1879,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         "cmpl %edx, -0x1c(%ebp)\n" /* leafCount */
         "jne .Lfe3f00_000e4036\n"
         ".Lfe3f00_000e4052:\n"
-        "movl 0x12185ac, %ebx\n" /* line 1789 | node */
+        "movl s_world+12, %ebx\n" /* line 1789 | node */
         /* { scope 2 */
         "movl $0, 4(%ebx)\n" /* line 1729 */
         "cmpl $-1, (%ebx)\n" /* line 1730 */
@@ -1898,7 +1898,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         ".Lfe3f00_000e4070:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "cmpl $3, 4(%edi)\n" /* line 49 | lump */
@@ -1906,7 +1906,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         ".Lfe3f00_000e4097:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3f00_000e3f2f\n"
@@ -1916,7 +1916,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         "jmp .Lfe3f00_000e40f3\n"
         ".Lfe3f00_000e40c2:\n"
         "leal (%eax, %eax, 2), %eax\n" /* line 1776 */
-        "movl 0x12185ac, %edx\n"
+        "movl s_world+12, %edx\n"
         "leal (%edx, %eax, 8), %eax\n"
         "movl %eax, 0x10(%ecx)\n"
         ".Lfe3f00_000e40d1:\n"
@@ -1947,7 +1947,7 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         "movl -0x20(%ebp), %edx\n" /* line 1778 | nodeCount */
         "subl %eax, %edx\n"
         "leal (%edx, %edx, 2), %eax\n"
-        "movl 0x12185ac, %edx\n"
+        "movl s_world+12, %edx\n"
         "leal -0x18(%edx, %eax, 8), %eax\n"
         "movl %eax, 0x10(%ecx)\n"
         "jmp .Lfe3f00_000e40d1\n"
@@ -1955,14 +1955,14 @@ snd_alias_list_t R_LoadNodesAndLeafs(void)
         ".Lfe3f00_000e4131:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3f00_000e3fa9\n"
         ".Lfe3f00_000e4153:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe3f00_000e3f9f\n"
@@ -2031,7 +2031,7 @@ snd_alias_list_t R_LoadPortals(void)
         ".Lfe41ae_000e41fe:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2050,7 +2050,7 @@ snd_alias_list_t R_LoadPortals(void)
         "testl %ecx, %ecx\n"
         "jg .Lfe41ae_000e42f4\n"
         ".Lfe41ae_000e4248:\n"
-        "movl 0x121869c, %eax\n" /* line 1563 */
+        "movl s_world+252, %eax\n" /* line 1563 */
         "testl %eax, %eax\n"
         "jle .Lfe41ae_000e4290\n"
         "xorl %ebx, %ebx\n" /* in */
@@ -2061,11 +2061,11 @@ snd_alias_list_t R_LoadPortals(void)
         "movl %edx, 0x24(%eax)\n"
         "addl $1, %ebx\n" /* line 1563 | in */
         "addl $0x3c, %ecx\n"
-        "cmpl 0x121869c, %ebx\n" /* in */
+        "cmpl s_world+252, %ebx\n" /* in */
         "jge .Lfe41ae_000e4290\n"
         ".Lfe41ae_000e426a:\n"
         "movl %ecx, %eax\n" /* line 1564 */
-        "addl 0x12186a0, %eax\n"
+        "addl s_world+256, %eax\n"
         "movl 0x20(%eax), %edi\n" /* load */
         "testl %edi, %edi\n" /* load */
         "je .Lfe41ae_000e4257\n"
@@ -2074,7 +2074,7 @@ snd_alias_list_t R_LoadPortals(void)
         "movl %edx, 0x24(%eax)\n"
         "addl $1, %ebx\n" /* line 1563 | in */
         "addl $0x3c, %ecx\n"
-        "cmpl 0x121869c, %ebx\n" /* in */
+        "cmpl s_world+252, %ebx\n" /* in */
         "jl .Lfe41ae_000e426a\n"
         /* } scope */
         ".Lfe41ae_000e4290:\n"
@@ -2089,7 +2089,7 @@ snd_alias_list_t R_LoadPortals(void)
         ".Lfe41ae_000e4298:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "cmpl $3, 4(%esi)\n" /* line 49 | lump */
@@ -2097,7 +2097,7 @@ snd_alias_list_t R_LoadPortals(void)
         ".Lfe41ae_000e42bf:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0xc8(%ebx), %edx\n" /* line 52 */
@@ -2156,12 +2156,12 @@ snd_alias_list_t R_LoadPortals(void)
         "leal (, %eax, 4), %edx\n"
         "shll $6, %eax\n"
         "subl %edx, %eax\n"
-        "addl 0x12186a0, %eax\n"
+        "addl s_world+256, %eax\n"
         "movl %eax, 0x1c(%edi)\n" /* load */
         "movl -0x1c(%ebp), %edx\n" /* line 1555 */
         "movl 8(%edx), %eax\n"
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x1218590, %edx\n"
+        "movl rgl+12, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, 0x20(%edi)\n" /* load */
         "movl -0x1c(%ebp), %edx\n" /* line 1556 */
@@ -2230,7 +2230,7 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         ".Lfe43f4_000e4451:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2245,8 +2245,8 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         "subl %edx, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x12186a0\n" /* line 1475 */
-        "movl %edi, 0x121869c\n" /* line 1476 | cellCount */
+        "movl %eax, s_world+256\n" /* line 1475 */
+        "movl %edi, s_world+252\n" /* line 1476 | cellCount */
         "testl %edi, %edi\n" /* line 1478 | cellCount */
         "jle .Lfe43f4_000e4596\n"
         "movl %eax, %ecx\n"
@@ -2296,7 +2296,7 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         "movl 0x18(%ebx), %eax\n" /* line 1488 | in */
         "leal (%eax, %eax, 2), %eax\n"
         "shll $4, %eax\n"
-        "addl 0x1218594, %eax\n"
+        "addl rgl+16, %eax\n"
         "movl %eax, 0x1c(%ecx)\n"
         "movl 0x1c(%ebx), %eax\n" /* line 1490 | in */
         "movl %eax, %edx\n"
@@ -2309,7 +2309,7 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         "testl %esi, %esi\n" /* line 1494 | occluderCount */
         "je .Lfe43f4_000e44b0\n"
         "movl 0x24(%ebx), %edx\n" /* in */
-        "movl 0x1218588, %eax\n"
+        "movl rgl+4, %eax\n"
         "leal (%eax, %edx, 4), %eax\n"
         "movl %eax, 0x2c(%ecx)\n"
         "movl %esi, 0x28(%ecx)\n" /* line 1495 | occluderCount */
@@ -2340,7 +2340,7 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         ".Lfe43f4_000e459e:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "cmpl $3, 4(%esi)\n" /* line 49 | lump */
@@ -2348,7 +2348,7 @@ snd_alias_list_t R_LoadCells(GfxBspLoad *load)
         ".Lfe43f4_000e45c5:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe43f4_000e4427\n"
@@ -2395,7 +2395,7 @@ snd_alias_list_t R_LoadAabbTrees(void)
         ".Lfe45e8_000e463d:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2407,8 +2407,8 @@ snd_alias_list_t R_LoadAabbTrees(void)
         "shll $4, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x1218594\n" /* line 1444 */
-        "movl %esi, 0x1218598\n" /* line 1445 | aabbTreeCount */
+        "movl %eax, rgl+16\n" /* line 1444 */
+        "movl %esi, rgl+20\n" /* line 1445 | aabbTreeCount */
         "testl %esi, %esi\n" /* line 1447 | aabbTreeCount */
         "jle .Lfe45e8_000e46e4\n"
         "movl %ebx, %ecx\n" /* in */
@@ -2446,7 +2446,7 @@ snd_alias_list_t R_LoadAabbTrees(void)
         "leal 1(%eax), %edx\n" /* line 1457 */
         "leal (%eax, %eax, 2), %eax\n"
         "shll $4, %eax\n"
-        "addl 0x1218594, %eax\n"
+        "addl rgl+16, %eax\n"
         "calll R_FinishLoadingAabbTrees_r\n"
         "cmpl %eax, %esi\n" /* line 1456 | aabbTreeCount */
         "jg .Lfe45e8_000e46cc\n"
@@ -2463,7 +2463,7 @@ snd_alias_list_t R_LoadAabbTrees(void)
         ".Lfe45e8_000e46ec:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "cmpl $3, 4(%esi)\n" /* line 49 | lump */
@@ -2471,7 +2471,7 @@ snd_alias_list_t R_LoadAabbTrees(void)
         ".Lfe45e8_000e4713:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe45e8_000e4617\n"
@@ -2518,7 +2518,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e478d:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2560,7 +2560,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e4819:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2601,7 +2601,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e48a2:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2617,7 +2617,7 @@ snd_alias_list_t R_LoadOccluders(void)
         "calll Hunk_AllocInternal\n"
         "movl %eax, -0x2c(%ebp)\n" /* edges */
         "movl -0x3c(%ebp), %ecx\n" /* line 1659 | occluders */
-        "movl %ecx, 0x121858c\n"
+        "movl %ecx, rgl+8\n"
         "movl -0x44(%ebp), %ebx\n" /* line 1666 | occluderCount */
         "testl %ebx, %ebx\n"
         "jle .Lfe4736_000e4ae1\n"
@@ -2646,7 +2646,7 @@ snd_alias_list_t R_LoadOccluders(void)
         "movl -0x28(%ebp), %ecx\n" /* line 1681 */
         "movl 0xc(%ecx), %eax\n"
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x1218590, %edx\n"
+        "movl rgl+12, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, 8(%esi)\n" /* load */
         "movswl 0x10(%ecx), %eax\n" /* line 1683 */
@@ -2791,7 +2791,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e4ae9:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "cmpl $3, 4(%edi)\n" /* line 49 | lump */
@@ -2799,7 +2799,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e4b10:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4736_000e4765\n"
@@ -2808,7 +2808,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e4b32:\n"
         "movl s_world, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0xa8(%ebx), %edx\n" /* line 52 */
@@ -2821,7 +2821,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e4b67:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4736_000e4874\n"
@@ -2830,7 +2830,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e4b89:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0xa0(%ebx), %edx\n" /* line 52 */
@@ -2843,7 +2843,7 @@ snd_alias_list_t R_LoadOccluders(void)
         ".Lfe4736_000e4bbe:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4736_000e47eb\n"
@@ -2890,7 +2890,7 @@ snd_alias_list_t R_LoadPortalVerts(void)
         ".Lfe4be0_000e4c35:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2902,7 +2902,7 @@ snd_alias_list_t R_LoadPortalVerts(void)
         "shll $2, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x1218590\n" /* line 1519 */
+        "movl %eax, rgl+12\n" /* line 1519 */
         "testl %ebx, %ebx\n" /* line 1521 | vertCount */
         "jle .Lfe4be0_000e4ca9\n"
         "leal -0x1c(%ebp), %edi\n" /* load */
@@ -2940,7 +2940,7 @@ snd_alias_list_t R_LoadPortalVerts(void)
         ".Lfe4be0_000e4cb1:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "cmpl $3, 4(%esi)\n" /* line 49 | lump */
@@ -2948,7 +2948,7 @@ snd_alias_list_t R_LoadPortalVerts(void)
         ".Lfe4be0_000e4cd8:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4be0_000e4c0f\n"
@@ -2993,7 +2993,7 @@ snd_alias_list_t R_LoadCullGroups(void)
         ".Lfe4cfa_000e4d41:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -3005,9 +3005,9 @@ snd_alias_list_t R_LoadCullGroups(void)
         "shll $5, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x1218690\n" /* line 1583 */
+        "movl %eax, s_world+240\n" /* line 1583 */
         "movl -0x30(%ebp), %edx\n" /* line 1584 */
-        "movl %edx, 0x121868c\n"
+        "movl %edx, s_world+236\n"
         "testl %edx, %edx\n" /* line 1586 */
         "jle .Lfe4cfa_000e4de3\n"
         "movl %eax, %edi\n" /* load */
@@ -3059,7 +3059,7 @@ snd_alias_list_t R_LoadCullGroups(void)
         ".Lfe4cfa_000e4df0:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "cmpl $3, 4(%esi)\n" /* line 49 | lump */
@@ -3067,7 +3067,7 @@ snd_alias_list_t R_LoadCullGroups(void)
         ".Lfe4cfa_000e4e17:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0x58(%ebx), %edx\n" /* line 52 */
@@ -3119,7 +3119,7 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         ".Lfe4e4a_000e4e98:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -3164,7 +3164,7 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         ".Lfe4e4a_000e4f17:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -3179,14 +3179,14 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         "movl 0x4c(%eax), %ecx\n"
         "addl %ecx, %edx\n"
         "movl %edx, -0x68(%ebp)\n" /* vertsDisk */
-        "movl %edi, 0x12185c8\n" /* line 684 | vertCount */
+        "movl %edi, s_world+40\n" /* line 684 | vertCount */
         "movl %edi, %eax\n" /* line 688 | vertCount */
         "shll $6, %eax\n"
         "leal (%eax, %edi, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
         "movl %eax, -0x50(%ebp)\n" /* vertsMem */
-        "movl %eax, 0x12185cc\n" /* line 689 */
+        "movl %eax, s_world+44\n" /* line 689 */
         "movl $0, (%esp)\n" /* line 704 */
         "calll CColorConverter_GetColorConverter\n"
         "movl %eax, -0x48(%ebp)\n" /* c */
@@ -3218,7 +3218,7 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         ".Lfe4e4a_000e4fbb:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -3231,12 +3231,12 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         "addl %ecx, %edx\n"
         "movl %edx, -0x64(%ebp)\n" /* indices */
         "movl -0x78(%ebp), %eax\n" /* line 778 */
-        "movl %eax, 0x12185b0\n"
+        "movl %eax, s_world+16\n"
         "leal (%eax, %eax, 2), %eax\n" /* line 779 */
         "shll $2, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x12185b4\n"
+        "movl %eax, s_world+20\n"
         "movl -0x78(%ebp), %ebx\n" /* line 783 | indexSize */
         "testl %ebx, %ebx\n" /* indexSize */
         "jg .Lfe4e4a_000e51d7\n"
@@ -3251,34 +3251,34 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
         "movl %eax, -0x54(%ebp)\n" /* tris */
-        "movl $0, 0x12185b8\n" /* line 793 */
+        "movl $0, s_world+24\n" /* line 793 */
         "movl -0x78(%ebp), %ecx\n" /* line 794 */
         "testl %ecx, %ecx\n"
         "jg .Lfe4e4a_000e51f9\n"
         "movl $0, -0x5c(%ebp)\n" /* skyMaterial */
         ".Lfe4e4a_000e504e:\n"
-        "movl 0x12185b8, %eax\n" /* line 846 */
+        "movl s_world+24, %eax\n" /* line 846 */
         "testl %eax, %eax\n"
         "jne .Lfe4e4a_000e5166\n"
-        "movl $0, 0x12185c0\n" /* line 849 */
-        "movl $0, 0x12185bc\n" /* line 850 */
+        "movl $0, s_world+32\n" /* line 849 */
+        "movl $0, s_world+28\n" /* line 850 */
         /* { scope 2: surfTris, indexIndex */
         ".Lfe4e4a_000e506f:\n"
         "xorl %eax, %eax\n" /* line 191 */
-        "movl %eax, 0x12186dc\n"
-        "movl %eax, 0x12186e0\n" /* line 192 */
-        "movl %eax, 0x12186e4\n" /* line 193 */
-        "movl %eax, 0x12186e8\n" /* line 191 */
-        "movl %eax, 0x12186ec\n" /* line 192 */
-        "movl %eax, 0x12186f0\n" /* line 193 */
-        "movl 0x12185b0, %esi\n" /* line 566 | surf */
+        "movl %eax, s_world+316\n"
+        "movl %eax, s_world+320\n" /* line 192 */
+        "movl %eax, s_world+324\n" /* line 193 */
+        "movl %eax, s_world+328\n" /* line 191 */
+        "movl %eax, s_world+332\n" /* line 192 */
+        "movl %eax, s_world+336\n" /* line 193 */
+        "movl s_world+16, %esi\n" /* line 566 | surf */
         "testl %esi, %esi\n" /* surf */
         "jle .Lfe4e4a_000e5100\n"
         "xorl %edi, %edi\n" /* initiallySet */
         "xorl %esi, %esi\n" /* surf */
         "xorl %ebx, %ebx\n" /* surfIndex */
         ".Lfe4e4a_000e509f:\n"
-        "movl 0x12185b4, %eax\n" /* line 568 */
+        "movl s_world+20, %eax\n" /* line 568 */
         "movl 8(%ebx, %eax), %ecx\n" /* surfIndex */
         "movl %edi, %eax\n" /* line 570 | initiallySet */
         "testb %al, %al\n"
@@ -3300,20 +3300,20 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         ".Lfe4e4a_000e50e5:\n"
         "addl $4, %eax\n"
         "addl $4, %edx\n"
-        "cmpl $0x12185ac, %eax\n" /* line 577 */
+        "cmpl $s_world+12, %eax\n" /* line 577 */
         "jne .Lfe4e4a_000e50b5\n"
         "addl $1, %esi\n" /* line 566 | surf */
         "addl $0xc, %ebx\n" /* surfIndex */
-        "cmpl 0x12185b0, %esi\n" /* surf */
+        "cmpl s_world+16, %esi\n" /* surf */
         "jl .Lfe4e4a_000e509f\n"
         /* } scope */
         ".Lfe4e4a_000e5100:\n"
-        "movl 0x12185c8, %eax\n" /* line 871 */
+        "movl s_world+40, %eax\n" /* line 871 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x12185cc, %eax\n"
+        "movl s_world+44, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_CreateWorldVertexBuffer\n"
-        "movl %eax, 0x12185d0\n"
+        "movl %eax, s_world+48\n"
         /* } scope */
         "addl $0xbc, %esp\n" /* line 882 */
         "popl %ebx\n"
@@ -3326,18 +3326,18 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         ".Lfe4e4a_000e5126:\n"
         "leal 4(%ecx), %edx\n" /* line 572 */
         "movl 4(%ecx), %eax\n"
-        "movl %eax, 0x12186dc\n"
+        "movl %eax, s_world+316\n"
         "movl 4(%edx), %eax\n"
-        "movl %eax, 0x12186e0\n"
+        "movl %eax, s_world+320\n"
         "movl 8(%edx), %eax\n"
-        "movl %eax, 0x12186e4\n"
+        "movl %eax, s_world+324\n"
         "leal 0x10(%ecx), %edx\n" /* line 573 */
         "movl 0x10(%ecx), %eax\n"
-        "movl %eax, 0x12186e8\n"
+        "movl %eax, s_world+328\n"
         "movl 4(%edx), %eax\n"
-        "movl %eax, 0x12186ec\n"
+        "movl %eax, s_world+332\n"
         "movl 8(%edx), %eax\n"
-        "movl %eax, 0x12186f0\n"
+        "movl %eax, s_world+336\n"
         "movl $1, %edi\n" /* initiallySet */
         "jmp .Lfe4e4a_000e50ae\n"
         /* } scope */
@@ -3348,12 +3348,12 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         "jne .Lfe4e4a_000e56f3\n"
         /* } scope */
         ".Lfe4e4a_000e5174:\n"
-        "movl 0x12185b8, %eax\n" /* line 856 */
+        "movl s_world+24, %eax\n" /* line 856 */
         "shll $2, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x12185bc\n"
-        "movl $0, 0x12185b8\n" /* line 857 */
+        "movl %eax, s_world+28\n"
+        "movl $0, s_world+24\n" /* line 857 */
         "movl -0x78(%ebp), %edi\n" /* line 858 | merge */
         "testl %edi, %edi\n" /* merge */
         "jle .Lfe4e4a_000e506f\n"
@@ -3366,14 +3366,14 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         "cmpl %ebx, -0x78(%ebp)\n" /* indexSize */
         "je .Lfe4e4a_000e506f\n"
         ".Lfe4e4a_000e51b3:\n"
-        "movl 0x12185b4, %eax\n" /* line 860 */
+        "movl s_world+20, %eax\n" /* line 860 */
         "movl -0x5c(%ebp), %edx\n" /* skyMaterial */
         "cmpl (%ecx, %eax), %edx\n"
         "jne .Lfe4e4a_000e51a4\n"
-        "movl 0x12185b8, %edx\n" /* line 862 */
-        "movl 0x12185bc, %eax\n"
+        "movl s_world+24, %edx\n" /* line 862 */
+        "movl s_world+28, %eax\n"
         "movl %ebx, (%eax, %edx, 4)\n" /* indexSize */
-        "addl $1, 0x12185b8\n" /* line 863 */
+        "addl $1, s_world+24\n" /* line 863 */
         "jmp .Lfe4e4a_000e51a4\n"
         ".Lfe4e4a_000e51d7:\n"
         "movl -0x6c(%ebp), %edx\n" /* line 783 | diskSurfaces */
@@ -3412,7 +3412,7 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         ".Lfe4e4a_000e5235:\n"
         "movl -0x30(%ebp), %edx\n" /* line 822 */
         "movw %ax, 6(%edx)\n"
-        "movl 0x12185b4, %eax\n" /* line 823 */
+        "movl s_world+20, %eax\n" /* line 823 */
         "movl -0x54(%ebp), %edx\n" /* tris */
         "movl -0x34(%ebp), %ecx\n"
         "movl %edx, 8(%ecx, %eax)\n"
@@ -3420,7 +3420,7 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         "leal (%ecx, %ecx, 4), %eax\n"
         "movl -0x74(%ebp), %ecx\n"
         "movzwl 0x14(%ecx, %eax, 4), %edx\n"
-        "movl 0x12185b4, %eax\n"
+        "movl s_world+20, %eax\n"
         "movl -0x34(%ebp), %ecx\n"
         "movw %dx, 4(%ecx, %eax)\n"
         "movl -0x80(%ebp), %edx\n" /* line 834 */
@@ -3441,12 +3441,12 @@ snd_alias_list_t R_LoadSurfaces(GfxBspLoad *load)
         "movl %eax, 0xc(%esp)\n"
         "movl (%ecx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x224f14, 4(%esp)\n" /* "map has at least two different skies: %s and %s
+        "movl $str_00224f14, 4(%esp)\n" /* "map has at least two different skies: %s and %s
 Only one sky" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lfe4e4a_000e52af:\n"
-        "addl $1, 0x12185b8\n" /* line 842 */
+        "addl $1, s_world+24\n" /* line 842 */
         "movl -0x58(%ebp), %ecx\n" /* material */
         "movl %ecx, -0x5c(%ebp)\n" /* skyMaterial */
         ".Lfe4e4a_000e52bc:\n"
@@ -3512,11 +3512,11 @@ Only one sky" */
         "movl %eax, (%esp)\n"
         "calll Material_Register\n"
         "movl %eax, -0x58(%ebp)\n" /* material */
-        "movl 0x12185b4, %eax\n" /* line 821 */
+        "movl s_world+20, %eax\n" /* line 821 */
         "movl -0x58(%ebp), %ecx\n" /* material */
         "movl -0x34(%ebp), %edx\n"
         "movl %ecx, (%edx, %eax)\n"
-        "movl 0x12185b4, %eax\n" /* line 822 */
+        "movl s_world+20, %eax\n" /* line 822 */
         "addl %eax, %edx\n"
         "movl %edx, -0x30(%ebp)\n"
         "movl (%edx), %esi\n" /* material */
@@ -3558,7 +3558,7 @@ Only one sky" */
         "movl $0x800, 0xc(%esp)\n" /* line 548 */
         "movl (%esi), %eax\n" /* lump */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224ee8, 4(%esp)\n" /* "Material %s has more than %i sort groups
+        "movl $str_00224ee8, 4(%esp)\n" /* "Material %s has more than %i sort groups
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -3623,14 +3623,14 @@ Only one sky" */
         ".Lfe4e4a_000e54c6:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4e4a_000e4fa5\n"
         ".Lfe4e4a_000e54e8:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4e4a_000e4f9b\n"
@@ -3736,7 +3736,7 @@ Only one sky" */
         ".Lfe4e4a_000e5610:\n"
         "movl s_world, %eax\n" /* line 682 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224ecc, 4(%esp)\n" /* "LoadMap: no vertices in %s" */
+        "movl $str_00224ecc, 4(%esp)\n" /* "LoadMap: no vertices in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4e4a_000e4f3c\n"
@@ -3744,14 +3744,14 @@ Only one sky" */
         ".Lfe4e4a_000e5632:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4e4a_000e4ef1\n"
         ".Lfe4e4a_000e5654:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4e4a_000e4ee7\n"
@@ -3759,7 +3759,7 @@ Only one sky" */
         ".Lfe4e4a_000e5676:\n"
         "movl s_world, %eax\n" /* line 678 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224eb0, 4(%esp)\n" /* "LoadMap: no surfaces in %s" */
+        "movl $str_00224eb0, 4(%esp)\n" /* "LoadMap: no surfaces in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl -0x74(%ebp), %ecx\n"
@@ -3770,7 +3770,7 @@ Only one sky" */
         ".Lfe4e4a_000e569f:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0x40(%ebx), %edx\n" /* line 52 */
@@ -3783,7 +3783,7 @@ Only one sky" */
         ".Lfe4e4a_000e56d1:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe4e4a_000e4e70\n"
@@ -3796,7 +3796,7 @@ Only one sky" */
         ".Lfe4e4a_000e56fa:\n"
         "movl %ebx, %edi\n" /* line 625 | surfIndex, texdef */
         "addl 0x3c(%edx), %edi\n" /* texdef */
-        "movl $0x224f68, 4(%esp)\n" /* line 626 */
+        "movl $str_00224f68, 4(%esp)\n" /* line 626 */
         "movl (%edi), %eax\n" /* texdef */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -3822,15 +3822,15 @@ Only one sky" */
         "movl 8(%edi), %eax\n" /* texdef */
         "movl 0x20(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x224f74, 4(%esp)\n" /* "colorMap '%s' for sky material '%s' is not a cubemap
+        "movl $str_00224f74, 4(%esp)\n" /* "colorMap '%s' for sky material '%s' is not a cubemap
 " */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 8(%edi), %eax\n" /* texdef */
         ".Lfe4e4a_000e5763:\n"
-        "movl %eax, 0x12185c0\n" /* line 634 */
+        "movl %eax, s_world+32\n" /* line 634 */
         "movzbl 4(%edi), %eax\n" /* line 635 | texdef */
-        "movb %al, 0x12185c4\n"
+        "movb %al, s_world+36\n"
         "jmp .Lfe4e4a_000e5174\n"
     );
 }
@@ -3856,7 +3856,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "xorl %eax, %eax\n"
         "movl $rgl, %edi\n" /* out */
         "rep stosl %eax, %es:(%edi)\n" /* out */
-        "movl $0x12186f4, 4(%esp)\n" /* line 1812 */
+        "movl $s_world+340, 4(%esp)\n" /* line 1812 */
         "leal -0x538(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_GetBsp\n"
@@ -3896,18 +3896,18 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "notl %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x12185a4\n"
+        "movl %eax, s_world+4\n"
         "leal -0xbb(%ebp), %edx\n" /* line 1823 | baseName */
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll strcpy\n"
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x224fac, 8(%esp)\n" /* "materials" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_00224fac, 8(%esp)\n" /* "materials" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         /* { scope 2: coupling, used, usedCount, wideCount, ... */
@@ -3939,7 +3939,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e58de:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -3949,38 +3949,38 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "addl 4(%esi), %eax\n" /* mtlLump */
         "movl %eax, -0x534(%ebp)\n"
         /* } scope */
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x224fd8, 8(%esp)\n" /* "sun settings" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_00224fd8, 8(%esp)\n" /* "sun settings" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "movl -0x53c(%ebp), %eax\n" /* line 1239 */
         "movl -0x540(%ebp), %edx\n" /* load */
         "addl 0x134(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x12185d4, (%esp)\n"
+        "movl $s_world+52, (%esp)\n"
         "calll R_ParseSunLight\n"
-        "movl $0x1218654, 4(%esp)\n" /* line 1240 */
-        "movl $0x12185d4, (%esp)\n"
+        "movl $s_world+180, 4(%esp)\n" /* line 1240 */
+        "movl $s_world+52, (%esp)\n"
         "calll R_InterpretSunLightParseParamsIntoLights\n"
-        "movl $0x224fe8, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_00224fe8, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         /* { scope 2: coupling, used, usedCount, wideCount, ... */
-        "movss 0x1218668, %xmm0\n" /* line 199 */
+        "movss s_world+200, %xmm0\n" /* line 199 */
         "movss %xmm0, -0x1488(%ebp)\n"
-        "movss 0x121866c, %xmm2\n" /* line 200 */
+        "movss s_world+204, %xmm2\n" /* line 200 */
         "movss %xmm2, -0x148c(%ebp)\n"
-        "movss 0x1218670, %xmm0\n" /* line 201 */
+        "movss s_world+208, %xmm0\n" /* line 201 */
         "movss %xmm0, -0x1490(%ebp)\n"
         "movw $0x1f, -0x2c0(%ebp)\n" /* line 353 */
         "xorl %eax, %eax\n" /* line 30 */
@@ -4015,7 +4015,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e5a46:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         ".Lfe5778_000e5a63:\n"
@@ -4050,7 +4050,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e5abe:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -4066,7 +4066,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "je .Lfe5778_000e5b1c\n"
         "movl s_world, %eax\n" /* line 105 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         ".Lfe5778_000e5b1c:\n"
@@ -4197,7 +4197,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "rep stosl %eax, %es:(%edi)\n"
         "stosw %ax, %es:(%edi)\n"
         "stosb %al, %es:(%edi)\n"
-        "movl 0x195f168, %eax\n" /* line 173 */
+        "movl imp_r_optimizeLightmaps, %eax\n" /* line 173 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfe5778_000e6a4a\n"
@@ -4440,22 +4440,22 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movl %edi, 8(%esp)\n" /* line 266 */
         "movl -0x14e4(%ebp), %eax\n" /* newLmapCount */
         "movl %eax, 4(%esp)\n"
-        "movl $0x224ff4, (%esp)\n" /* "%i merged lightmaps from %i original lightmaps
+        "movl $str_00224ff4, (%esp)\n" /* "%i merged lightmaps from %i original lightmaps
 " */
         "calll Com_Printf\n"
         /* } scope */
         "testl %edi, %edi\n" /* line 358 | lmapSubIndex */
         "jne .Lfe5778_000e67e5\n"
-        "movl $0, 0x12186a4\n" /* line 360 */
+        "movl $0, s_world+260\n" /* line 360 */
         /* } scope */
         ".Lfe5778_000e60e8:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x225040, 8(%esp)\n" /* "lightgrid coefficients" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_00225040, 8(%esp)\n" /* "lightgrid coefficients" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         /* { scope 2: coupling, used, usedCount, wideCount, ... */
@@ -4487,16 +4487,16 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e6165:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
         ".Lfe5778_000e6182:\n"
-        "movl %ebx, 0x12186c4\n" /* line 460 | srcImage */
+        "movl %ebx, s_world+292\n" /* line 460 | srcImage */
         "movl (%esi), %eax\n" /* line 461 | gridColorLump */
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x12186c8\n"
+        "movl %eax, s_world+296\n"
         "movl (%esi), %edx\n" /* line 462 | gridColorLump */
         "movl %edx, 8(%esp)\n"
         "movl -0x53c(%ebp), %edx\n"
@@ -4505,13 +4505,13 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movl %eax, (%esp)\n"
         "calll Com_Memcpy\n"
         /* } scope */
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x225058, 8(%esp)\n" /* "lightgrid hash" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_00225058, 8(%esp)\n" /* "lightgrid hash" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         /* { scope 2: coupling, used, usedCount, wideCount, ... */
@@ -4539,19 +4539,19 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e622c:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         ".Lfe5778_000e6249:\n"
-        "movl %ebx, 0x12186bc\n" /* line 477 | ptIndex */
+        "movl %ebx, s_world+284\n" /* line 477 | ptIndex */
         "movl (%esi), %eax\n" /* line 478 | gridPointsLump */
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
         "movl %eax, %ecx\n"
-        "movl %eax, 0x12186c0\n"
+        "movl %eax, s_world+288\n"
         "movl -0x53c(%ebp), %edx\n" /* line 480 */
         "addl 4(%esi), %edx\n" /* gridPointsLump */
-        "movl 0x12186bc, %edi\n" /* line 482 | srcWidth */
+        "movl s_world+284, %edi\n" /* line 482 | srcWidth */
         "testl %edi, %edi\n" /* srcWidth */
         "jle .Lfe5778_000e62a0\n"
         "xorl %ebx, %ebx\n" /* ptIndex */
@@ -4567,37 +4567,37 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "addl $1, %ebx\n" /* line 482 | ptIndex */
         "addl $8, %edx\n"
         "addl $8, %ecx\n"
-        "cmpl %ebx, 0x12186bc\n" /* ptIndex */
+        "cmpl %ebx, s_world+284\n" /* ptIndex */
         "jg .Lfe5778_000e6275\n"
         /* } scope */
         ".Lfe5778_000e62a0:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x225068, 8(%esp)\n" /* "surfaces" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_00225068, 8(%esp)\n" /* "surfaces" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1849 | load */
         "calll R_LoadSurfaces\n"
-        "movl $0x225074, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_00225074, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1854 | load */
         "calll R_LoadCullGroups\n"
-        "movl $0x225080, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_00225080, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         /* { scope 2: coupling, used, usedCount, wideCount, ... */
@@ -4626,7 +4626,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e638c:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -4638,7 +4638,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
         "movl %eax, %ecx\n"
-        "movl %eax, 0x1218588\n" /* line 1613 */
+        "movl %eax, rgl+4\n" /* line 1613 */
         "testl %esi, %esi\n" /* line 1617 | in */
         "jle .Lfe5778_000e63e1\n"
         "xorl %edx, %edx\n"
@@ -4650,33 +4650,33 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "jne .Lfe5778_000e63d4\n"
         /* } scope */
         ".Lfe5778_000e63e1:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x225094, 8(%esp)\n" /* "portal vertices" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_00225094, 8(%esp)\n" /* "portal vertices" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1861 | load */
         "calll R_LoadPortalVerts\n"
-        "movl $0x2250a4, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_002250a4, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1863 | load */
         "calll R_LoadOccluders\n"
-        "movl $0x2250b0, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_002250b0, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         /* { scope 2: coupling, used, usedCount, wideCount, ... */
@@ -4704,7 +4704,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e64cd:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -4723,7 +4723,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e6518:\n"
         "movswl (%ebx, %ecx, 2), %eax\n" /* line 1723 | in */
         "leal (%eax, %eax, 8), %eax\n"
-        "movl 0x121858c, %edx\n"
+        "movl rgl+8, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, (%edi, %ecx, 4)\n" /* out */
         "addl $1, %ecx\n" /* line 1722 */
@@ -4731,53 +4731,53 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "jne .Lfe5778_000e6518\n"
         /* } scope */
         ".Lfe5778_000e6532:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x2250c4, 8(%esp)\n" /* "AABB trees" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_002250c4, 8(%esp)\n" /* "AABB trees" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1867 | load */
         "calll R_LoadAabbTrees\n"
-        "movl $0x2250d0, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_002250d0, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1869 | load */
         "calll R_LoadCells\n"
-        "movl $0x2250d8, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_002250d8, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1871 | load */
         "calll R_LoadPortals\n"
-        "movl $0x2250e0, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_002250e0, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1873 | load */
         "calll R_LoadNodesAndLeafs\n"
-        "movl $0x2250f0, 8(%esp)\n" /* line 1796 */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl $str_002250f0, 8(%esp)\n" /* line 1796 */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         /* { scope 2: coupling, used, usedCount, wideCount, ... */
@@ -4809,7 +4809,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e66a0:\n"
         "movl s_world, %eax\n" /* line 54 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
+        "movl $str_00224bbc, 4(%esp)\n" /* "LoadMap: funny lump size in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -4822,9 +4822,9 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movl %eax, (%esp)\n"
         "calll Hunk_AllocInternal\n"
         "movl %eax, %edi\n" /* out */
-        "movl %eax, 0x12186d8\n" /* line 897 */
+        "movl %eax, s_world+312\n" /* line 897 */
         "movl -0x1494(%ebp), %ecx\n" /* line 898 | modelCount */
-        "movl %ecx, 0x12186d4\n"
+        "movl %ecx, s_world+308\n"
         "testl %ecx, %ecx\n" /* line 900 */
         "jle .Lfe5778_000e6760\n"
         "movl $0, -0x1498(%ebp)\n" /* modelIndex */
@@ -4860,13 +4860,13 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "jne .Lfe5778_000e6701\n"
         /* } scope */
         ".Lfe5778_000e6760:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1796 | in */
-        "movl $0x2250fc, 8(%esp)\n" /* "entities" */
-        "movl $0x224fb8, 4(%esp)\n" /* "Loading %s...
+        "movl imp_ri, %ebx\n" /* line 1796 | in */
+        "movl $str_002250fc, 8(%esp)\n" /* "entities" */
+        "movl $str_00224fb8, 4(%esp)\n" /* "Loading %s...
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n" /* in */
-        "movl $0x224fc8, 4(%esp)\n" /* line 1797 */
+        "movl $str_00224fc8, 4(%esp)\n" /* line 1797 */
         "movl $0, (%esp)\n"
         "calll *0x108(%ebx)\n" /* in */
         "leal -0x540(%ebp), %eax\n" /* line 1883 | load */
@@ -4876,7 +4876,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "xorl %eax, %eax\n"
         "movl $rgl, %edi\n" /* out */
         "rep stosl %eax, %es:(%edi)\n" /* out */
-        "movl $0x1218700, 4(%esp)\n" /* line 1889 */
+        "movl $s_world+352, 4(%esp)\n" /* line 1889 */
         "movl 8(%ebp), %edx\n" /* name */
         "movl %edx, (%esp)\n"
         "calll R_LoadSun\n"
@@ -4943,7 +4943,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "je .Lfe5778_000e721e\n"
         "movl $0x200, (%esp)\n" /* line 388 */
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x12186a8\n"
+        "movl %eax, s_world+264\n"
         "movl -0x14d0(%ebp), %eax\n" /* line 390 | origLmapCount */
         "testl %eax, %eax\n"
         "jle .Lfe5778_000e6a9b\n"
@@ -5034,7 +5034,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "jmp .Lfe5778_000e69ae\n"
         /* { scope 3: triSurfs, materialIndex, lmapIndex, lmapVertCount, ... */
         ".Lfe5778_000e6a4a:\n"
-        "movl 0x195eeec, %eax\n" /* line 175 */
+        "movl imp_vidConfig, %eax\n" /* line 175 */
         "movl 0x18(%eax), %eax\n"
         "leal 0x3ff(%eax), %edx\n"
         "cmpl $-1, %eax\n"
@@ -5059,7 +5059,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e6a9b:\n"
         "xorl %eax, %eax\n" /* line 390 */
         ".Lfe5778_000e6a9d:\n"
-        "movl %eax, 0x12186a4\n" /* line 446 */
+        "movl %eax, s_world+260\n" /* line 446 */
         "movl -0x3c(%ebp), %eax\n" /* line 448 | image */
         "movl %eax, (%esp)\n"
         "calll Hunk_FreeTempMemory\n"
@@ -5073,7 +5073,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movw %cx, 4(%edx)\n"
         "movl -0x1538(%ebp), %edi\n" /* line 413 | srcWidth */
         "cvtsi2ssl -0x2ac(%ebp, %edi, 8), %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm0, %xmm2\n"
         "divss %xmm1, %xmm2\n"
         "movss %xmm2, 0x10(%edx)\n"
@@ -5121,7 +5121,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         /* } scope */
         /* } scope */
         ".Lfe5778_000e6bc0:\n"
-        "movl 0x195eec0, %eax\n" /* line 420 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 420 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfe5778_000e6cff\n"
@@ -5132,11 +5132,11 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "xorl %esi, %esi\n" /* dstImage */
         "movl %ecx, %ebx\n" /* srcImage */
         ".Lfe5778_000e6be6:\n"
-        "addl 0x12186a8, %ebx\n" /* line 434 | srcImage */
+        "addl s_world+264, %ebx\n" /* line 434 | srcImage */
         "movl %edi, 8(%esp)\n" /* srcWidth */
         "movl -0x1538(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x225030, (%esp)\n" /* "*lightmap%i_%i" */
+        "movl $str_00225030, (%esp)\n" /* "*lightmap%i_%i" */
         "calll va\n"
         "movl $4, 0xc(%esp)\n"
         "movl $1, 8(%esp)\n"
@@ -5159,7 +5159,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movl -0x3c(%esi, %ebp), %eax\n" /* dstImage */
         "movl %eax, 4(%esp)\n"
         "movl %esi, %eax\n" /* dstImage */
-        "addl 0x12186a8, %eax\n"
+        "addl s_world+264, %eax\n"
         "movl -0x1480(%ebp), %ecx\n"
         "movl (%eax, %ecx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -5178,7 +5178,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movl %edi, 8(%esp)\n" /* srcWidth */
         "movl -0x14b4(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x12186a8, %eax\n"
+        "movl s_world+264, %eax\n"
         "movl -0x1510(%ebp), %edx\n"
         "movl (%edx, %eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -5197,10 +5197,10 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "shll $4, %edx\n"
         "movl %edx, -0x1510(%ebp)\n"
         "movl %edx, %ebx\n" /* srcImage */
-        "addl 0x12186a8, %ebx\n" /* srcImage */
+        "addl s_world+264, %ebx\n" /* srcImage */
         "movl -0x1538(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x225024, (%esp)\n" /* "*lightmap%i" */
+        "movl $str_00225024, (%esp)\n" /* "*lightmap%i" */
         "calll va\n"
         "movl $4, 0xc(%esp)\n"
         "movl $1, 8(%esp)\n"
@@ -5261,8 +5261,8 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movss -0x1488(%ebp), %xmm1\n"
         "mulss -0x14a0(%ebp), %xmm1\n" /* sun */
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x1528(%ebp)\n"
@@ -5276,8 +5276,8 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movss -0x148c(%ebp), %xmm1\n"
         "mulss -0x14a0(%ebp), %xmm1\n" /* sun */
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x152c(%ebp)\n"
@@ -5288,8 +5288,8 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "movss -0x14a0(%ebp), %xmm1\n" /* sun */
         "mulss -0x1490(%ebp), %xmm1\n"
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x1530(%ebp)\n"
@@ -5339,7 +5339,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e6fbb:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0x40(%ebx), %edx\n" /* line 52 | count */
@@ -5352,7 +5352,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e6fed:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e5a1b\n"
@@ -5364,7 +5364,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e700f:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e58ba\n"
@@ -5377,7 +5377,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e7031:\n"
         "movl s_world, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0x10(%ebx), %edx\n" /* line 52 | count */
@@ -5385,12 +5385,12 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "testl %edx, %edx\n"
         "jns .Lfe5778_000e5aac\n"
         ".Lfe5778_000e705b:\n"
-        "leal 0x3fffff(%edx), %eax\n"
+        "leal scrMemTreeGlob+39167(%edx), %eax\n"
         "jmp .Lfe5778_000e5aac\n"
         ".Lfe5778_000e7066:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e5a95\n"
@@ -5403,7 +5403,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e7088:\n"
         "movl s_world, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e58b0\n"
@@ -5414,14 +5414,14 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e70aa:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e6675\n"
         ".Lfe5778_000e70cc:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e666b\n"
@@ -5432,14 +5432,14 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e70ee:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e64b2\n"
         ".Lfe5778_000e7110:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e64a8\n"
@@ -5450,7 +5450,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e7132:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0x60(%ebx), %edx\n" /* line 52 | count */
@@ -5463,7 +5463,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e7164:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e6361\n"
@@ -5473,7 +5473,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e7186:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "movl 0x18(%ebx), %edx\n" /* line 52 | count */
@@ -5486,7 +5486,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e71b8:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e6201\n"
@@ -5496,14 +5496,14 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         ".Lfe5778_000e71da:\n"
         "movl s_world, %eax\n" /* line 50 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
+        "movl $str_00224b98, 4(%esp)\n" /* "LoadMap: funny lump offset in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e6141\n"
         ".Lfe5778_000e71fc:\n"
         "movl s_world, %eax\n" /* line 48 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
+        "movl $str_00224b68, 4(%esp)\n" /* "LoadMap: lump extends past end of file in %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe5778_000e6137\n"
@@ -5518,7 +5518,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "calll memset\n"
         "movl $0x200, (%esp)\n" /* line 388 */
         "calll Hunk_AllocInternal\n"
-        "movl %eax, 0x12186a8\n"
+        "movl %eax, s_world+264\n"
         "movl -0x14d0(%ebp), %eax\n" /* line 390 | origLmapCount */
         "testl %eax, %eax\n"
         "jle .Lfe5778_000e6a9b\n"

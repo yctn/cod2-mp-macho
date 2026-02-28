@@ -5,7 +5,7 @@
 #include "imports.h"
 
 extern struct scrMemTreePub_t scrMemTreePub; /* 0x0 */
-static struct scrMemTreeGlob_t scrMemTreeGlob; /* 0x3f6700 */
+static struct scrMemTreeGlob_t scrMemTreeGlob; /* scrMemTreeGlob */
 
 extern byte * Z_VirtualAllocInternal(int size);
 
@@ -67,12 +67,12 @@ unsigned int MT_AddMemoryNode(int newNode)
         "movl %esi, %eax\n"
         "movzbl %al, %ebx\n"
         "movzbl -0xf(%ebp), %edi\n" /* line 276 */
-        "movzbl 0x476800(%ebx), %eax\n" /* line 278 */
-        "movzbl 0x476800(%edi), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%ebx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%edi), %edx\n"
         "addl %edx, %eax\n"
         "movl %ecx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ebx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ebx), %ecx\n" /* line 280 */
         "movl %esi, %eax\n" /* line 281 */
         "testb %al, %al\n"
         "je .Lf44942_00044a9c\n"
@@ -108,16 +108,16 @@ unsigned int MT_AddMemoryNode(int newNode)
         "movl %esi, %edx\n"
         "movzbl %dl, %ebx\n"
         "movzbl -0xf(%ebp), %edi\n" /* line 276 */
-        "movzbl 0x476800(%ebx), %eax\n" /* line 278 */
-        "movzbl 0x476800(%edi), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%ebx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%edi), %edx\n"
         "addl %edx, %eax\n"
         "movl %ecx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ebx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ebx), %ecx\n" /* line 280 */
         "movl %esi, %eax\n" /* line 281 */
         "testb %al, %al\n"
         "jne .Lf44942_00044a33\n"
-        "movzbl 0x476700(%edi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%edi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         /* } scope */
         /* } scope */
@@ -132,7 +132,7 @@ unsigned int MT_AddMemoryNode(int newNode)
         "cmpl %eax, -0x34(%ebp)\n"
         "jl .Lf44942_000449ce\n"
         "movl -0x30(%ebp), %esi\n" /* line 354 | node */
-        "leal 0x3f6702(, %esi, 8), %esi\n"
+        "leal scrMemTreeGlob+2(, %esi, 8), %esi\n"
         "movl %esi, -0x20(%ebp)\n"
         "movl -0x24(%ebp), %eax\n" /* line 355 | level */
         "addl %eax, -0x28(%ebp)\n" /* nodeNum */
@@ -152,7 +152,7 @@ unsigned int MT_AddMemoryNode(int newNode)
         "movw %ax, (%esi)\n"
         "movl -0x34(%ebp), %edx\n" /* line 362 | size */
         "movw $0, scrMemTreeGlob(, %edx, 8)\n"
-        "movw $0, 0x3f6702(, %edx, 8)\n" /* line 363 */
+        "movw $0, scrMemTreeGlob+2(, %edx, 8)\n" /* line 363 */
         /* } scope */
         ".Lf44942_00044a94:\n"
         "addl $0x28, %esp\n" /* line 364 */
@@ -165,7 +165,7 @@ unsigned int MT_AddMemoryNode(int newNode)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf44942_00044a9c:\n"
-        "movzbl 0x476700(%edi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%edi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         "jmp .Lf44942_000449b1\n"
         /* } scope */
@@ -176,10 +176,10 @@ unsigned int MT_AddMemoryNode(int newNode)
         "movw %si, (%ecx)\n"
         "movl -0x30(%ebp), %ecx\n" /* line 322 | node */
         "movl scrMemTreeGlob(, %ecx, 8), %eax\n"
-        "movl 0x3f6704(, %ecx, 8), %edx\n" /* size */
+        "movl scrMemTreeGlob+4(, %ecx, 8), %edx\n" /* size */
         "movl -0x34(%ebp), %esi\n"
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n"
-        "movl %edx, 0x3f6704(, %esi, 8)\n" /* size */
+        "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n" /* size */
         "testl %ecx, %ecx\n" /* line 324 */
         "jne .Lf44942_00044b27\n"
         "jmp .Lf44942_00044a94\n"
@@ -195,10 +195,10 @@ unsigned int MT_AddMemoryNode(int newNode)
         "movl -0x30(%ebp), %edx\n" /* line 321 | node, size */
         "movw %dx, (%eax)\n" /* size */
         "movl scrMemTreeGlob(, %ebx, 8), %eax\n" /* line 322 */
-        "movl 0x3f6704(, %ebx, 8), %edx\n" /* size */
+        "movl scrMemTreeGlob+4(, %ebx, 8), %edx\n" /* size */
         "movl -0x30(%ebp), %esi\n" /* node */
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n"
-        "movl %edx, 0x3f6704(, %esi, 8)\n" /* size */
+        "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n" /* size */
         "testw %cx, %cx\n" /* line 324 */
         "je .Lf44942_00044a94\n"
         "movl %esi, -0x34(%ebp)\n" /* line 314 */
@@ -209,7 +209,7 @@ unsigned int MT_AddMemoryNode(int newNode)
         "cmpl %ecx, -0x30(%ebp)\n" /* node */
         "jl .Lf44942_00044adb\n"
         "movl -0x34(%ebp), %ecx\n" /* line 336 */
-        "leal 0x3f6702(, %ecx, 8), %eax\n"
+        "leal scrMemTreeGlob+2(, %ecx, 8), %eax\n"
         "movl -0x24(%ebp), %esi\n" /* line 337 | level */
         "addl %esi, -0x28(%ebp)\n" /* nodeNum */
         "jmp .Lf44942_00044aed\n"
@@ -226,7 +226,7 @@ unsigned int MT_Init(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         /* { scope 1 */
-        "movl $0x3f6700, scrMemTreePub\n" /* line 525 */
+        "movl $scrMemTreeGlob, scrMemTreePub\n" /* line 525 */
         "xorl %eax, %eax\n"
         "xorl %ebx, %ebx\n" /* i */
         "movl $scrMemTreeGlob, %esi\n"
@@ -292,14 +292,14 @@ unsigned int MT_Init(void)
         "jne .Lf44b44_00044b8b\n"
         ".Lf44b44_00044bf5:\n"
         "movl $scrMemTreeGlob, %eax\n"
-        "movl $0x3f6722, %edx\n"
+        "movl $scrMemTreeGlob+34, %edx\n"
         ".Lf44b44_00044bff:\n"
         "movw $0, 0x80300(%eax)\n" /* line 530 */
         "addl $2, %eax\n"
         "cmpl %eax, %edx\n" /* line 529 */
         "jne .Lf44b44_00044bff\n"
         "movw $0, scrMemTreeGlob\n" /* line 532 */
-        "movw $0, 0x3f6702\n" /* line 533 */
+        "movw $0, scrMemTreeGlob+2\n" /* line 533 */
         "xorl %ebx, %ebx\n" /* i */
         "movl $1, %esi\n"
         ".Lf44b44_00044c28:\n"
@@ -311,8 +311,8 @@ unsigned int MT_Init(void)
         "addl $1, %ebx\n" /* line 536 | i */
         "cmpl $0x10, %ebx\n" /* i */
         "jne .Lf44b44_00044c28\n"
-        "movl $0, 0x476a24\n" /* line 539 */
-        "movl $0, 0x476a28\n" /* line 540 */
+        "movl $0, scrMemTreeGlob+525092\n" /* line 539 */
+        "movl $0, scrMemTreeGlob+525096\n" /* line 540 */
         /* } scope */
         "popl %ebx\n" /* line 546 */
         "popl %esi\n"
@@ -564,7 +564,7 @@ unsigned int MT_DumpTree(void)
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         /* { scope 1 */
-        "movl $0x217c60, (%esp)\n" /* line 188 */
+        "movl $str_00217c60, (%esp)\n" /* line 188 */
         "calll Com_Printf\n"
         "xorl %edi, %edi\n" /* size */
         "movl $scrMemTreeGlob, -0x1c(%ebp)\n"
@@ -584,7 +584,7 @@ unsigned int MT_DumpTree(void)
         "movl %eax, 0xc(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* size */
-        "movl $0x217c84, (%esp)\n" /* "%d subtree has %d * %d = %d free buckets
+        "movl $str_00217c84, (%esp)\n" /* "%d subtree has %d * %d = %d free buckets
 " */
         "calll Com_Printf\n"
         "addl $1, %edi\n" /* line 192 | size */
@@ -614,24 +614,24 @@ unsigned int MT_DumpTree(void)
         /* } scope */
         /* } scope */
         ".Lf44e72_00044f09:\n"
-        "movl $0x217c60, (%esp)\n" /* line 200 */
+        "movl $str_00217c60, (%esp)\n" /* line 200 */
         "calll Com_Printf\n"
-        "movl $0x217c60, (%esp)\n" /* line 207 */
+        "movl $str_00217c60, (%esp)\n" /* line 207 */
         "calll Com_Printf\n"
-        "movl 0x476a24, %eax\n" /* line 209 */
+        "movl scrMemTreeGlob+525092, %eax\n" /* line 209 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x476a28, %eax\n"
+        "movl scrMemTreeGlob+525096, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x217cb0, (%esp)\n" /* "total memory alloc buckets: %d (%d instances)
+        "movl $str_00217cb0, (%esp)\n" /* "total memory alloc buckets: %d (%d instances)
 " */
         "calll Com_Printf\n"
         "movl $0xffff, %eax\n" /* line 210 */
-        "subl 0x476a28, %eax\n"
+        "subl scrMemTreeGlob+525096, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x217ce0, (%esp)\n" /* "total memory free buckets: %d
+        "movl $str_00217ce0, (%esp)\n" /* "total memory free buckets: %d
 " */
         "calll Com_Printf\n"
-        "movl $0x217c60, (%esp)\n" /* line 212 */
+        "movl $str_00217c60, (%esp)\n" /* line 212 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x3c, %esp\n" /* line 215 */
@@ -667,7 +667,7 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "subl $1, %eax\n"
         "cmpl $0xff, %eax\n" /* line 570 */
         "jg .Lf44f6e_00044fe7\n"
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "movl %eax, -0x58(%ebp)\n" /* size */
         /* } scope */
         "cmpl $0x10, -0x58(%ebp)\n" /* line 594 | size */
@@ -675,11 +675,11 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         ".Lf44f6e_00044fb1:\n"
         "calll MT_DumpTree\n" /* line 552 */
         "movl %ebx, 8(%esp)\n" /* line 553 */
-        "movl $0x217d8c, 4(%esp)\n" /* "MT_AllocIndex" */
-        "movl $0x217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
+        "movl $str_00217d8c, 4(%esp)\n" /* "MT_AllocIndex" */
+        "movl $str_00217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
 " */
         "calll Com_Printf\n"
-        "movl $0x217d60, (%esp)\n" /* line 554 */
+        "movl $str_00217d60, (%esp)\n" /* line 554 */
         "calll Scr_TerminalError\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -693,7 +693,7 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         /* { scope 2: num */
         ".Lf44f6e_00044fe7:\n"
         "sarl $8, %eax\n" /* line 570 */
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x58(%ebp)\n" /* size */
         /* } scope */
@@ -701,7 +701,7 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "jg .Lf44f6e_00044fb1\n"
         ".Lf44f6e_00044ffd:\n"
         "movl -0x58(%ebp), %edx\n" /* line 596 | size */
-        "movzwl 0x476a00(%edx, %edx), %eax\n"
+        "movzwl scrMemTreeGlob+525056(%edx, %edx), %eax\n"
         "movzwl %ax, %ecx\n"
         "movl %ecx, -0x5c(%ebp)\n" /* nodeNum */
         "testw %ax, %ax\n" /* line 597 */
@@ -711,12 +711,12 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movl %edx, %ebx\n" /* numBytes */
         /* { scope 2: num */
         ".Lf44f6e_0004501c:\n"
-        "leal 0x476a00(%ebx, %ebx), %ebx\n" /* line 468 */
+        "leal scrMemTreeGlob+525056(%ebx, %ebx), %ebx\n" /* line 468 */
         "movl %ebx, -0x50(%ebp)\n" /* parentNode */
         "movl -0x54(%ebp), %edx\n" /* line 471 | newSize */
-        "movzwl 0x476a00(%edx, %edx), %eax\n"
+        "movzwl scrMemTreeGlob+525056(%edx, %edx), %eax\n"
         "movl scrMemTreeGlob(, %eax, 8), %ecx\n"
-        "movl 0x3f6704(, %eax, 8), %ebx\n"
+        "movl scrMemTreeGlob+4(, %eax, 8), %ebx\n"
         "movl %ecx, -0x68(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0x64(%ebp)\n"
         "movl %ebx, -0x30(%ebp)\n"
@@ -732,7 +732,7 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movw %si, (%eax)\n" /* oldNode */
         "cmpw $0, -0x48(%ebp)\n" /* line 479 */
         "je .Lf44f6e_000451cc\n"
-        "leal 0x3f6702(, %esi, 8), %edx\n" /* line 482 */
+        "leal scrMemTreeGlob+2(, %esi, 8), %edx\n" /* line 482 */
         "movl %edx, -0x50(%ebp)\n" /* parentNode */
         ".Lf44f6e_00045079:\n"
         "movl -0x30(%ebp), %ebx\n" /* line 512 */
@@ -745,7 +745,7 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movl -0x68(%ebp), %eax\n" /* oldNodeValue */
         "movl -0x64(%ebp), %edx\n"
         "movl scrMemTreeGlob(, %esi, 8), %ecx\n" /* line 513 */
-        "movl 0x3f6704(, %esi, 8), %ebx\n"
+        "movl scrMemTreeGlob+4(, %esi, 8), %ebx\n"
         "movl %ecx, -0x68(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0x64(%ebp)\n"
         "movl %ebx, -0x30(%ebp)\n"
@@ -754,7 +754,7 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movl -0x68(%ebp), %ebx\n" /* oldNodeValue */
         "movw %bx, -0x32(%ebp)\n"
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n" /* line 514 */
-        "movl %edx, 0x3f6704(, %esi, 8)\n"
+        "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n"
         ".Lf44f6e_000450cd:\n"
         "cmpw $0, -0x32(%ebp)\n" /* line 474 */
         "je .Lf44f6e_00045058\n"
@@ -776,15 +776,15 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movl %ebx, -0x1c(%ebp)\n" /* num */
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %edi\n" /* line 276 */
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
-        "movzbl 0x476800(%edi), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%edi), %edx\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf44f6e_00045133\n"
-        "movzbl 0x476700(%edi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%edi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         ".Lf44f6e_00045133:\n"
         "movl $1, -0x6c(%ebp)\n" /* line 283 */
@@ -803,18 +803,18 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %eax\n" /* line 276 */
         "movl %eax, -0x2c(%ebp)\n"
-        "movzbl 0x476800(%ecx), %edx\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%ecx), %edx\n" /* line 278 */
         "movl %edx, -0x7c(%ebp)\n"
-        "movzbl 0x476800(%eax), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%eax), %edx\n"
         "movl -0x7c(%ebp), %eax\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf44f6e_00045192\n"
         "movl -0x2c(%ebp), %ebx\n" /* line 282 */
-        "movzbl 0x476700(%ebx), %eax\n"
+        "movzbl scrMemTreeGlob+524288(%ebx), %eax\n"
         "addl %eax, %ecx\n"
         /* } scope */
         /* } scope */
@@ -826,7 +826,7 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "jge .Lf44f6e_000451b7\n"
         "movl -0x50(%ebp), %ebx\n" /* line 499 | parentNode */
         "movw %di, (%ebx)\n"
-        "leal 0x3f6702(, %edi, 8), %eax\n" /* line 500 */
+        "leal scrMemTreeGlob+2(, %edi, 8), %eax\n" /* line 500 */
         "movl %eax, -0x50(%ebp)\n" /* parentNode */
         "movl %edi, %esi\n" /* oldNode */
         "jmp .Lf44f6e_00045079\n"
@@ -857,11 +857,11 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "cmpl %esi, %ebx\n" /* line 600 | oldNode, numBytes */
         "jne .Lf44f6e_000451de\n"
         ".Lf44f6e_000451f5:\n"
-        "addl $1, 0x476a24\n" /* line 607 */
+        "addl $1, scrMemTreeGlob+525092\n" /* line 607 */
         "movl $1, %eax\n" /* line 608 */
         "movzbl -0x58(%ebp), %ecx\n" /* size */
         "shll %cl, %eax\n"
-        "addl %eax, 0x476a28\n"
+        "addl %eax, scrMemTreeGlob+525096\n"
         "movzwl -0x5c(%ebp), %eax\n" /* line 623 | nodeNum */
         /* } scope */
         "addl $0x8c, %esp\n" /* line 633 */
@@ -875,23 +875,23 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         ".Lf44f6e_0004521c:\n"
         "calll MT_DumpTree\n" /* line 552 */
         "movl %ebx, 8(%esp)\n" /* line 553 */
-        "movl $0x217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
-        "movl $0x217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
+        "movl $str_00217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
+        "movl $str_00217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
 " */
         "calll Com_Printf\n"
-        "movl $0x217d60, (%esp)\n" /* line 554 */
+        "movl $str_00217d60, (%esp)\n" /* line 554 */
         "calll Scr_TerminalError\n"
         "movl $0, -0x58(%ebp)\n" /* size */
         /* } scope */
         "movl -0x58(%ebp), %edx\n" /* line 596 | size */
-        "movzwl 0x476a00(%edx, %edx), %eax\n"
+        "movzwl scrMemTreeGlob+525056(%edx, %edx), %eax\n"
         "movzwl %ax, %ecx\n"
         "movl %ecx, -0x5c(%ebp)\n" /* nodeNum */
         "testw %ax, %ax\n" /* line 597 */
         "jne .Lf44f6e_00045017\n"
         ".Lf44f6e_00045266:\n"
         "movl %edx, %eax\n"
-        "leal 0x476a00(%edx, %edx), %edx\n" /* line 598 */
+        "leal scrMemTreeGlob+525056(%edx, %edx), %edx\n" /* line 598 */
         "movl %eax, -0x54(%ebp)\n" /* newSize */
         ".Lf44f6e_00045272:\n"
         "addl $1, -0x54(%ebp)\n" /* line 594 | newSize */
@@ -956,13 +956,13 @@ unsigned int MT_ForceAllocIndex(byte *allocBits, unsigned int nodeNum, int numBy
         "subl $1, %eax\n"
         "cmpl $0xff, %eax\n" /* line 570 */
         "jg .Lf452c6_0004533f\n"
-        "movzbl 0x476900(%eax), %ecx\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %ecx\n"
         "movl $1, %eax\n"
         "shll %cl, %eax\n"
         /* } scope */
         ".Lf452c6_00045303:\n"
-        "addl $1, 0x476a24\n" /* line 778 */
-        "addl %eax, 0x476a28\n" /* line 780 */
+        "addl $1, scrMemTreeGlob+525092\n" /* line 778 */
+        "addl %eax, scrMemTreeGlob+525096\n" /* line 780 */
         "testl %eax, %eax\n" /* line 789 */
         "je .Lf452c6_00045337\n"
         "movl 0xc(%ebp), %edx\n" /* nodeNum */
@@ -989,7 +989,7 @@ unsigned int MT_ForceAllocIndex(byte *allocBits, unsigned int nodeNum, int numBy
         /* { scope 1 */
         ".Lf452c6_0004533f:\n"
         "sarl $8, %eax\n" /* line 570 */
-        "movzbl 0x476900(%eax), %ecx\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %ecx\n"
         "addl $8, %ecx\n"
         "movl $1, %eax\n"
         "shll %cl, %eax\n"
@@ -997,11 +997,11 @@ unsigned int MT_ForceAllocIndex(byte *allocBits, unsigned int nodeNum, int numBy
         ".Lf452c6_00045355:\n"
         "calll MT_DumpTree\n" /* line 552 */
         "movl %ebx, 8(%esp)\n" /* line 553 */
-        "movl $0x217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
-        "movl $0x217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
+        "movl $str_00217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
+        "movl $str_00217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
 " */
         "calll Com_Printf\n"
-        "movl $0x217d60, (%esp)\n" /* line 554 */
+        "movl $str_00217d60, (%esp)\n" /* line 554 */
         "calll Scr_TerminalError\n"
         "movl $1, %eax\n"
         "jmp .Lf452c6_00045303\n"
@@ -1034,7 +1034,7 @@ int MT_Realloc(int oldNumBytes, int newNumbytes)
         "subl $1, %eax\n"
         "cmpl $0xff, %eax\n" /* line 570 */
         "jg .Lf45390_000453ff\n"
-        "movzbl 0x476900(%eax), %ebx\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %ebx\n"
         /* } scope */
         /* { scope 1 */
         ".Lf45390_000453c9:\n"
@@ -1049,7 +1049,7 @@ int MT_Realloc(int oldNumBytes, int newNumbytes)
         "subl $1, %eax\n"
         "cmpl $0xff, %eax\n" /* line 570 */
         "jg .Lf45390_0004544e\n"
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "cmpl %eax, %ebx\n" /* line 554 */
         "setge %al\n"
         "movzbl %al, %eax\n"
@@ -1062,7 +1062,7 @@ int MT_Realloc(int oldNumBytes, int newNumbytes)
         /* { scope 1 */
         ".Lf45390_000453ff:\n"
         "sarl $8, %eax\n" /* line 570 */
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "leal 8(%eax), %ebx\n"
         /* } scope */
         /* { scope 1 */
@@ -1071,11 +1071,11 @@ int MT_Realloc(int oldNumBytes, int newNumbytes)
         ".Lf45390_00045414:\n"
         "calll MT_DumpTree\n" /* line 552 */
         "movl %esi, 8(%esp)\n" /* line 553 */
-        "movl $0x217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
-        "movl $0x217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
+        "movl $str_00217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
+        "movl $str_00217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
 " */
         "calll Com_Printf\n"
-        "movl $0x217d60, (%esp)\n" /* line 554 */
+        "movl $str_00217d60, (%esp)\n" /* line 554 */
         "calll Scr_TerminalError\n"
         "xorl %eax, %eax\n"
         "cmpl %eax, %ebx\n"
@@ -1090,7 +1090,7 @@ int MT_Realloc(int oldNumBytes, int newNumbytes)
         /* { scope 1 */
         ".Lf45390_0004544e:\n"
         "sarl $8, %eax\n" /* line 570 */
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "addl $8, %eax\n"
         "cmpl %eax, %ebx\n" /* line 554 */
         "setge %al\n"
@@ -1105,11 +1105,11 @@ int MT_Realloc(int oldNumBytes, int newNumbytes)
         ".Lf45390_0004546a:\n"
         "calll MT_DumpTree\n" /* line 552 */
         "movl %ebx, 8(%esp)\n" /* line 553 */
-        "movl $0x217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
-        "movl $0x217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
+        "movl $str_00217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
+        "movl $str_00217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
 " */
         "calll Com_Printf\n"
-        "movl $0x217d60, (%esp)\n" /* line 554 */
+        "movl $str_00217d60, (%esp)\n" /* line 554 */
         "calll Scr_TerminalError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf45390_000453c9\n"
@@ -1153,16 +1153,16 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "subl $1, %eax\n"
         "cmpl $0xff, %eax\n" /* line 570 */
         "jg .Lf454aa_00045590\n"
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "movl %eax, -0x54(%ebp)\n" /* size */
         "movl $1, -0x58(%ebp)\n" /* lowBit */
         "movl %eax, %ecx\n"
         "shll %cl, -0x58(%ebp)\n" /* lowBit */
         /* } scope */
         ".Lf454aa_000454ff:\n"
-        "subl $1, 0x476a24\n" /* line 648 */
+        "subl $1, scrMemTreeGlob+525092\n" /* line 648 */
         "movl -0x58(%ebp), %ebx\n" /* line 649 | lowBit, nodeNum */
-        "subl %ebx, 0x476a28\n" /* nodeNum */
+        "subl %ebx, scrMemTreeGlob+525096\n" /* nodeNum */
         "cmpl $0x10, -0x54(%ebp)\n" /* line 665 | size */
         "je .Lf454aa_000455c6\n"
         ".Lf454aa_00045519:\n"
@@ -1203,7 +1203,7 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "sarl $1, %esi\n" /* line 439 | level */
         "cmpl %edx, %ebx\n" /* line 440 | nodeNum */
         "jg .Lf454aa_00045559\n"
-        "leal 0x3f6702(, %ecx, 8), %ecx\n" /* line 447 */
+        "leal scrMemTreeGlob+2(, %ecx, 8), %ecx\n" /* line 447 */
         "movl %ecx, -0x50(%ebp)\n" /* parentNode */
         "addl %esi, %ebx\n" /* line 448 | level, nodeNum */
         "jmp .Lf454aa_00045565\n"
@@ -1212,16 +1212,16 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         /* { scope 3: parentNode, prevScore, oldNodeValue */
         ".Lf454aa_00045590:\n"
         "sarl $8, %eax\n" /* line 570 */
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x54(%ebp)\n" /* size */
         "movl $1, -0x58(%ebp)\n" /* lowBit */
         "movl %eax, %ecx\n"
         "shll %cl, -0x58(%ebp)\n" /* lowBit */
         /* } scope */
-        "subl $1, 0x476a24\n" /* line 648 */
+        "subl $1, scrMemTreeGlob+525092\n" /* line 648 */
         "movl -0x58(%ebp), %ebx\n" /* line 649 | lowBit, nodeNum */
-        "subl %ebx, 0x476a28\n" /* nodeNum */
+        "subl %ebx, scrMemTreeGlob+525096\n" /* nodeNum */
         "cmpl $0x10, -0x54(%ebp)\n" /* line 665 | size */
         "jne .Lf454aa_00045519\n"
         ".Lf454aa_000455c6:\n"
@@ -1242,11 +1242,11 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         ".Lf454aa_000455d9:\n"
         "calll MT_DumpTree\n" /* line 552 */
         "movl %ebx, 8(%esp)\n" /* line 553 | nodeNum */
-        "movl $0x217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
-        "movl $0x217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
+        "movl $str_00217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
+        "movl $str_00217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
 " */
         "calll Com_Printf\n"
-        "movl $0x217d60, (%esp)\n" /* line 554 */
+        "movl $str_00217d60, (%esp)\n" /* line 554 */
         "calll Scr_TerminalError\n"
         "movl $0, -0x54(%ebp)\n" /* size */
         "movl $1, -0x58(%ebp)\n" /* lowBit */
@@ -1256,7 +1256,7 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         /* { scope 4: num */
         ".Lf454aa_00045615:\n"
         "movl scrMemTreeGlob(, %edx, 8), %ecx\n" /* line 390 */
-        "movl 0x3f6704(, %edx, 8), %ebx\n" /* nodeNum */
+        "movl scrMemTreeGlob+4(, %edx, 8), %ebx\n" /* nodeNum */
         "movl %ecx, -0x60(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0x5c(%ebp)\n" /* nodeNum */
         "movl %ebx, -0x30(%ebp)\n" /* nodeNum */
@@ -1272,7 +1272,7 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "movw %si, (%eax)\n" /* level */
         "cmpw $0, -0x48(%ebp)\n" /* line 397 */
         "je .Lf454aa_000457b3\n"
-        "leal 0x3f6702(, %esi, 8), %ecx\n" /* line 400 */
+        "leal scrMemTreeGlob+2(, %esi, 8), %ecx\n" /* line 400 */
         "movl %ecx, -0x50(%ebp)\n" /* parentNode */
         ".Lf454aa_0004565d:\n"
         "movl -0x30(%ebp), %eax\n" /* line 430 */
@@ -1285,7 +1285,7 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "movl -0x60(%ebp), %eax\n" /* oldNodeValue */
         "movl -0x5c(%ebp), %edx\n"
         "movl scrMemTreeGlob(, %esi, 8), %ecx\n" /* line 431 */
-        "movl 0x3f6704(, %esi, 8), %ebx\n" /* nodeNum */
+        "movl scrMemTreeGlob+4(, %esi, 8), %ebx\n" /* nodeNum */
         "movl %ecx, -0x60(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0x5c(%ebp)\n" /* nodeNum */
         "movl %ebx, -0x30(%ebp)\n" /* nodeNum */
@@ -1294,7 +1294,7 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "movl -0x60(%ebp), %ebx\n" /* oldNodeValue, nodeNum */
         "movw %bx, -0x32(%ebp)\n" /* nodeNum */
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n" /* line 432 */
-        "movl %edx, 0x3f6704(, %esi, 8)\n"
+        "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n"
         ".Lf454aa_000456b1:\n"
         "cmpw $0, -0x32(%ebp)\n" /* line 393 */
         "je .Lf454aa_0004563c\n"
@@ -1316,15 +1316,15 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "movl %ebx, -0x1c(%ebp)\n" /* num */
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %edi\n" /* line 276 */
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
-        "movzbl 0x476800(%edi), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%edi), %edx\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf454aa_00045717\n"
-        "movzbl 0x476700(%edi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%edi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         ".Lf454aa_00045717:\n"
         "movl $1, -0x64(%ebp)\n" /* line 283 */
@@ -1343,19 +1343,19 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %eax\n" /* line 276 */
         "movl %eax, -0x2c(%ebp)\n"
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
         "movl %eax, -0x6c(%ebp)\n"
         "movl -0x2c(%ebp), %eax\n"
-        "movzbl 0x476800(%eax), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%eax), %edx\n"
         "movl -0x6c(%ebp), %eax\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf454aa_00045779\n"
         "movl -0x2c(%ebp), %ebx\n" /* line 282 */
-        "movzbl 0x476700(%ebx), %eax\n"
+        "movzbl scrMemTreeGlob+524288(%ebx), %eax\n"
         "addl %eax, %ecx\n"
         /* } scope */
         /* } scope */
@@ -1367,7 +1367,7 @@ unsigned int MT_Free(unsigned int *p, int numBytes)
         "jge .Lf454aa_0004579e\n"
         "movl -0x50(%ebp), %ebx\n" /* line 417 | parentNode, nodeNum */
         "movw %di, (%ebx)\n" /* nodeNum */
-        "leal 0x3f6702(, %edi, 8), %eax\n" /* line 418 */
+        "leal scrMemTreeGlob+2(, %edi, 8), %eax\n" /* line 418 */
         "movl %eax, -0x50(%ebp)\n" /* parentNode */
         "movl %edi, %esi\n" /* level */
         "jmp .Lf454aa_0004565d\n"
@@ -1422,16 +1422,16 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "subl $1, %eax\n"
         "cmpl $0xff, %eax\n" /* line 570 */
         "jg .Lf457e8_000458c4\n"
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "movl %eax, -0x54(%ebp)\n" /* size */
         "movl $1, -0x58(%ebp)\n" /* lowBit */
         "movl %eax, %ecx\n"
         "shll %cl, -0x58(%ebp)\n" /* lowBit */
         /* } scope */
         ".Lf457e8_00045832:\n"
-        "subl $1, 0x476a24\n" /* line 648 */
+        "subl $1, scrMemTreeGlob+525092\n" /* line 648 */
         "movl -0x58(%ebp), %ebx\n" /* line 649 | lowBit, numBytes */
-        "subl %ebx, 0x476a28\n" /* numBytes */
+        "subl %ebx, scrMemTreeGlob+525096\n" /* numBytes */
         "cmpl $0x10, -0x54(%ebp)\n" /* line 665 | size */
         "je .Lf457e8_000458fa\n"
         ".Lf457e8_0004584c:\n"
@@ -1471,7 +1471,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "sarl $1, %esi\n" /* line 439 | level */
         "cmpl %edx, %ebx\n" /* line 440 | nodeNum */
         "jg .Lf457e8_0004588d\n"
-        "leal 0x3f6702(, %ecx, 8), %ecx\n" /* line 447 */
+        "leal scrMemTreeGlob+2(, %ecx, 8), %ecx\n" /* line 447 */
         "movl %ecx, -0x50(%ebp)\n" /* parentNode */
         "addl %esi, %ebx\n" /* line 448 | level, nodeNum */
         "jmp .Lf457e8_00045899\n"
@@ -1480,16 +1480,16 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         /* { scope 2: parentNode, prevScore, oldNodeValue */
         ".Lf457e8_000458c4:\n"
         "sarl $8, %eax\n" /* line 570 */
-        "movzbl 0x476900(%eax), %eax\n"
+        "movzbl scrMemTreeGlob+524800(%eax), %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x54(%ebp)\n" /* size */
         "movl $1, -0x58(%ebp)\n" /* lowBit */
         "movl %eax, %ecx\n"
         "shll %cl, -0x58(%ebp)\n" /* lowBit */
         /* } scope */
-        "subl $1, 0x476a24\n" /* line 648 */
+        "subl $1, scrMemTreeGlob+525092\n" /* line 648 */
         "movl -0x58(%ebp), %ebx\n" /* line 649 | lowBit, numBytes */
-        "subl %ebx, 0x476a28\n" /* numBytes */
+        "subl %ebx, scrMemTreeGlob+525096\n" /* numBytes */
         "cmpl $0x10, -0x54(%ebp)\n" /* line 665 | size */
         "jne .Lf457e8_0004584c\n"
         ".Lf457e8_000458fa:\n"
@@ -1508,11 +1508,11 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         ".Lf457e8_0004590d:\n"
         "calll MT_DumpTree\n" /* line 552 */
         "movl %ebx, 8(%esp)\n" /* line 553 | nodeNum */
-        "movl $0x217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
-        "movl $0x217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
+        "movl $str_00217d00, 4(%esp)\n" /* "MT_GetSize: max allocation exceeded" */
+        "movl $str_00217d24, (%esp)\n" /* "%s: failed memory allocation of %d bytes for script usage
 " */
         "calll Com_Printf\n"
-        "movl $0x217d60, (%esp)\n" /* line 554 */
+        "movl $str_00217d60, (%esp)\n" /* line 554 */
         "calll Scr_TerminalError\n"
         "movl $0, -0x54(%ebp)\n" /* size */
         "movl $1, -0x58(%ebp)\n" /* lowBit */
@@ -1522,7 +1522,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         /* { scope 3: num */
         ".Lf457e8_00045949:\n"
         "movl scrMemTreeGlob(, %edx, 8), %ecx\n" /* line 390 */
-        "movl 0x3f6704(, %edx, 8), %ebx\n" /* nodeNum */
+        "movl scrMemTreeGlob+4(, %edx, 8), %ebx\n" /* nodeNum */
         "movl %ecx, -0x60(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0x5c(%ebp)\n" /* nodeNum */
         "movl %ebx, -0x30(%ebp)\n" /* nodeNum */
@@ -1538,7 +1538,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movw %si, (%eax)\n" /* level */
         "cmpw $0, -0x48(%ebp)\n" /* line 397 */
         "je .Lf457e8_00045ae7\n"
-        "leal 0x3f6702(, %esi, 8), %ecx\n" /* line 400 */
+        "leal scrMemTreeGlob+2(, %esi, 8), %ecx\n" /* line 400 */
         "movl %ecx, -0x50(%ebp)\n" /* parentNode */
         ".Lf457e8_00045991:\n"
         "movl -0x30(%ebp), %eax\n" /* line 430 */
@@ -1551,7 +1551,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movl -0x60(%ebp), %eax\n" /* oldNodeValue */
         "movl -0x5c(%ebp), %edx\n"
         "movl scrMemTreeGlob(, %esi, 8), %ecx\n" /* line 431 */
-        "movl 0x3f6704(, %esi, 8), %ebx\n" /* nodeNum */
+        "movl scrMemTreeGlob+4(, %esi, 8), %ebx\n" /* nodeNum */
         "movl %ecx, -0x60(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0x5c(%ebp)\n" /* nodeNum */
         "movl %ebx, -0x30(%ebp)\n" /* nodeNum */
@@ -1560,7 +1560,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movl -0x60(%ebp), %ebx\n" /* oldNodeValue, nodeNum */
         "movw %bx, -0x32(%ebp)\n" /* nodeNum */
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n" /* line 432 */
-        "movl %edx, 0x3f6704(, %esi, 8)\n"
+        "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n"
         ".Lf457e8_000459e5:\n"
         "cmpw $0, -0x32(%ebp)\n" /* line 393 */
         "je .Lf457e8_00045970\n"
@@ -1582,15 +1582,15 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movl %ebx, -0x1c(%ebp)\n" /* num */
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %edi\n" /* line 276 */
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
-        "movzbl 0x476800(%edi), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%edi), %edx\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf457e8_00045a4b\n"
-        "movzbl 0x476700(%edi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%edi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         ".Lf457e8_00045a4b:\n"
         "movl $1, -0x64(%ebp)\n" /* line 283 */
@@ -1609,19 +1609,19 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %eax\n" /* line 276 */
         "movl %eax, -0x2c(%ebp)\n"
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
         "movl %eax, -0x6c(%ebp)\n"
         "movl -0x2c(%ebp), %eax\n"
-        "movzbl 0x476800(%eax), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%eax), %edx\n"
         "movl -0x6c(%ebp), %eax\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf457e8_00045aad\n"
         "movl -0x2c(%ebp), %ebx\n" /* line 282 */
-        "movzbl 0x476700(%ebx), %eax\n"
+        "movzbl scrMemTreeGlob+524288(%ebx), %eax\n"
         "addl %eax, %ecx\n"
         /* } scope */
         /* } scope */
@@ -1633,7 +1633,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "jge .Lf457e8_00045ad2\n"
         "movl -0x50(%ebp), %ebx\n" /* line 417 | parentNode, nodeNum */
         "movw %di, (%ebx)\n" /* nodeNum */
-        "leal 0x3f6702(, %edi, 8), %eax\n" /* line 418 */
+        "leal scrMemTreeGlob+2(, %edi, 8), %eax\n" /* line 418 */
         "movl %eax, -0x50(%ebp)\n" /* parentNode */
         "movl %edi, %esi\n" /* level */
         "jmp .Lf457e8_00045991\n"
@@ -1728,7 +1728,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "sarl $1, %ebx\n" /* line 439 | level */
         "cmpl -0x2c(%ebp), %ecx\n" /* line 440 */
         "jg .Lf45b1a_00045bad\n"
-        "leal 0x3f6702(, %edx, 8), %edx\n" /* line 447 */
+        "leal scrMemTreeGlob+2(, %edx, 8), %edx\n" /* line 447 */
         "movl %edx, -0x90(%ebp)\n" /* parentNode */
         "addl %ebx, %ecx\n" /* line 448 | level */
         "movzwl (%edx), %eax\n" /* line 450 */
@@ -1774,7 +1774,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         ".Lf45b1a_00045c50:\n"
         "movl -0x2c(%ebp), %edx\n" /* line 390 */
         "movl scrMemTreeGlob(, %edx, 8), %eax\n"
-        "movl 0x3f6704(, %edx, 8), %edx\n"
+        "movl scrMemTreeGlob+4(, %edx, 8), %edx\n"
         "movl %eax, -0xa8(%ebp)\n" /* oldNodeValue */
         "movl %edx, -0xa4(%ebp)\n"
         "movl %edx, -0x60(%ebp)\n"
@@ -1790,7 +1790,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movw %si, (%ebx)\n" /* level */
         "cmpw $0, -0x78(%ebp)\n" /* line 397 */
         "je .Lf45b1a_00045e49\n"
-        "leal 0x3f6702(, %esi, 8), %eax\n" /* line 400 */
+        "leal scrMemTreeGlob+2(, %esi, 8), %eax\n" /* line 400 */
         "movl %eax, -0x90(%ebp)\n" /* parentNode */
         ".Lf45b1a_00045cad:\n"
         "movl -0x60(%ebp), %ecx\n" /* line 430 */
@@ -1803,7 +1803,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movl -0xa8(%ebp), %eax\n" /* oldNodeValue */
         "movl -0xa4(%ebp), %edx\n"
         "movl scrMemTreeGlob(, %esi, 8), %ecx\n" /* line 431 */
-        "movl 0x3f6704(, %esi, 8), %ebx\n" /* level */
+        "movl scrMemTreeGlob+4(, %esi, 8), %ebx\n" /* level */
         "movl %ecx, -0xa8(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0xa4(%ebp)\n" /* level */
         "movl %ebx, -0x60(%ebp)\n" /* level */
@@ -1812,7 +1812,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movl -0xa8(%ebp), %ebx\n" /* oldNodeValue, level */
         "movw %bx, -0x62(%ebp)\n" /* level */
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n" /* line 432 */
-        "movl %edx, 0x3f6704(, %esi, 8)\n"
+        "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n"
         ".Lf45b1a_00045d1c:\n"
         "cmpw $0, -0x62(%ebp)\n" /* line 393 */
         "je .Lf45b1a_00045c86\n"
@@ -1834,15 +1834,15 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movl %ebx, -0x1c(%ebp)\n" /* num */
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %edi\n" /* line 276 */
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
-        "movzbl 0x476800(%edi), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%edi), %edx\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf45b1a_00045d8f\n"
-        "movzbl 0x476700(%edi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%edi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         ".Lf45b1a_00045d8f:\n"
         "movl $1, -0xb4(%ebp)\n" /* line 283 */
@@ -1861,18 +1861,18 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %eax\n" /* line 276 */
         "movl %eax, -0x5c(%ebp)\n"
-        "movzbl 0x476800(%ecx), %edx\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%ecx), %edx\n" /* line 278 */
         "movl %edx, -0xbc(%ebp)\n"
-        "movzbl 0x476800(%eax), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%eax), %edx\n"
         "movl -0xbc(%ebp), %eax\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf45b1a_00045dfa\n"
         "movl -0x5c(%ebp), %ebx\n" /* line 282 */
-        "movzbl 0x476700(%ebx), %eax\n"
+        "movzbl scrMemTreeGlob+524288(%ebx), %eax\n"
         "addl %eax, %ecx\n"
         /* } scope */
         /* } scope */
@@ -1884,7 +1884,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "jge .Lf45b1a_00045e2e\n"
         "movl -0x90(%ebp), %ebx\n" /* line 417 | parentNode, level */
         "movw %di, (%ebx)\n" /* level */
-        "leal 0x3f6702(, %edi, 8), %esi\n" /* line 418 | level */
+        "leal scrMemTreeGlob+2(, %edi, 8), %esi\n" /* line 418 | level */
         "movl %esi, -0x90(%ebp)\n" /* level, parentNode */
         "movl %edi, %esi\n" /* level */
         "jmp .Lf45b1a_00045cad\n"
@@ -1948,7 +1948,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "sarl $1, %esi\n" /* line 439 | level */
         "cmpl %edx, %ebx\n" /* line 440 | level */
         "jg .Lf45b1a_00045ed3\n"
-        "leal 0x3f6702(, %ecx, 8), %ecx\n" /* line 447 */
+        "leal scrMemTreeGlob+2(, %ecx, 8), %ecx\n" /* line 447 */
         "movl %ecx, -0x80(%ebp)\n" /* parentNode */
         "addl %esi, %ebx\n" /* line 448 | level */
         "movzwl (%ecx), %eax\n" /* line 450 */
@@ -1960,7 +1960,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "jmp .Lf45b1a_00045c1b\n"
         ".Lf45b1a_00045f1a:\n"
         "movl scrMemTreeGlob(, %edx, 8), %ecx\n" /* line 390 */
-        "movl 0x3f6704(, %edx, 8), %ebx\n" /* level */
+        "movl scrMemTreeGlob+4(, %edx, 8), %ebx\n" /* level */
         "movl %ecx, -0xb0(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0xac(%ebp)\n" /* level */
         "movl %ebx, -0x38(%ebp)\n" /* level */
@@ -1978,7 +1978,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "cmpw $0, -0x58(%ebp)\n" /* line 397 */
         "je .Lf45b1a_0004611f\n"
         "movl -0x84(%ebp), %edx\n" /* line 400 | oldNode */
-        "leal 0x3f6702(, %edx, 8), %edx\n"
+        "leal scrMemTreeGlob+2(, %edx, 8), %edx\n"
         "movl %edx, -0x80(%ebp)\n" /* parentNode */
         ".Lf45b1a_00045f7a:\n"
         "movl -0x38(%ebp), %ebx\n" /* line 430 | level */
@@ -1992,7 +1992,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movl -0xac(%ebp), %edx\n"
         "movl -0x84(%ebp), %ebx\n" /* line 431 | oldNode, level */
         "movl scrMemTreeGlob(, %ebx, 8), %ecx\n"
-        "movl 0x3f6704(, %ebx, 8), %ebx\n" /* level */
+        "movl scrMemTreeGlob+4(, %ebx, 8), %ebx\n" /* level */
         "movl %ecx, -0xb0(%ebp)\n" /* oldNodeValue */
         "movl %ebx, -0xac(%ebp)\n" /* level */
         "movl %ebx, -0x38(%ebp)\n" /* level */
@@ -2002,7 +2002,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movw %si, -0x3a(%ebp)\n" /* level */
         "movl -0x84(%ebp), %ecx\n" /* line 432 | oldNode */
         "movl %eax, scrMemTreeGlob(, %ecx, 8)\n"
-        "movl %edx, 0x3f6704(, %ecx, 8)\n"
+        "movl %edx, scrMemTreeGlob+4(, %ecx, 8)\n"
         ".Lf45b1a_00045ff5:\n"
         "cmpw $0, -0x3a(%ebp)\n" /* line 393 */
         "je .Lf45b1a_00045f4d\n"
@@ -2027,15 +2027,15 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movl %ebx, -0x1c(%ebp)\n" /* num */
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %edi\n" /* line 276 */
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
-        "movzbl 0x476800(%edi), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%edi), %edx\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf45b1a_00046074\n"
-        "movzbl 0x476700(%edi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%edi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         ".Lf45b1a_00046074:\n"
         "movl $1, -0xb8(%ebp)\n" /* line 283 */
@@ -2054,16 +2054,16 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "movzbl -0x1c(%ebp), %ecx\n" /* line 275 | num */
         "movzbl -0x1b(%ebp), %edx\n" /* line 276 */
         "movl %edx, -0x34(%ebp)\n"
-        "movzbl 0x476800(%ecx), %eax\n" /* line 278 */
+        "movzbl scrMemTreeGlob+524544(%ecx), %eax\n" /* line 278 */
         "movl %edx, %esi\n"
-        "movzbl 0x476800(%edx), %edx\n"
+        "movzbl scrMemTreeGlob+524544(%edx), %edx\n"
         "addl %edx, %eax\n"
         "movl %ebx, %edx\n"
         "subl %eax, %edx\n"
-        "movzbl 0x476700(%ecx), %ecx\n" /* line 280 */
+        "movzbl scrMemTreeGlob+524288(%ecx), %ecx\n" /* line 280 */
         "cmpb $0, -0x1c(%ebp)\n" /* line 281 | num */
         "jne .Lf45b1a_000460cf\n"
-        "movzbl 0x476700(%esi), %eax\n" /* line 282 */
+        "movzbl scrMemTreeGlob+524288(%esi), %eax\n" /* line 282 */
         "addl %eax, %ecx\n"
         /* } scope */
         /* } scope */
@@ -2075,7 +2075,7 @@ unsigned int MT_FinishForceAlloc(byte *allocBits)
         "jge .Lf45b1a_000460fe\n"
         "movl -0x80(%ebp), %ebx\n" /* line 417 | parentNode, level */
         "movw %di, (%ebx)\n" /* level */
-        "leal 0x3f6702(, %edi, 8), %esi\n" /* line 418 | level */
+        "leal scrMemTreeGlob+2(, %edi, 8), %esi\n" /* line 418 | level */
         "movl %esi, -0x80(%ebp)\n" /* level, parentNode */
         "movl %edi, -0x84(%ebp)\n" /* oldNode */
         "jmp .Lf45b1a_00045f7a\n"

@@ -7,7 +7,7 @@
 extern int timeGetTime(void);
 
 extern int sys_timeBase; /* 0x0 */
-static qboolean initialized; /* 0x4ed800 */
+static qboolean initialized; /* initialized */
 
 int Sys_Milliseconds(void)
 {

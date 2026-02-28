@@ -33,8 +33,8 @@ extern void mixerSetMicrophoneMute(int mute);
 extern int Sys_Milliseconds(void);
 extern int Decode_Sample(void *inData, int inSize, void *outData, int maxOutSize);
 
-extern byte *voice_freq_ptr;      /* 0x195f984 */
-extern byte *voice_maxframe_ptr;  /* 0x195f988 */
+extern byte *voice_freq_ptr;      /* imp_g_current_bandwidth_setting */
+extern byte *voice_maxframe_ptr;  /* imp_g_frame_size */
 
 extern const dvar_t *winvoice_mic_mute; /* 0x0 */
 extern const dvar_t *winvoice_mic_reclevel; /* 0x0 */
@@ -48,12 +48,12 @@ extern float voice_current_scaler; /* 0x0 */
 extern int g_voice_initialized; /* 0x0 */
 extern float levelSamples[6]; /* 0x0 */
 extern int sampleCount; /* 0x0 */
-static int count; /* 0xff20a4 */
-static Bool recording; /* 0xff1e84 */
-static Bool playing; /* 0xff20a0 */
-static recordingSample_t *currentRecordingSample; /* 0xff1e80 */
-static short unsigned int * (*s_clientSamples[64])[4]; /* 0xff1fa0 */
-static int s_clientTalkTime[64]; /* 0xff1ea0 */
+static int count; /* count */
+static Bool recording; /* recording */
+static Bool playing; /* playing */
+static recordingSample_t *currentRecordingSample; /* currentRecordingSample */
+static short unsigned int * (*s_clientSamples[64])[4]; /* s_clientSamples */
+static int s_clientTalkTime[64]; /* s_clientTalkTime */
 
 Bool Voice_Init(void);
 float Voice_GetVoiceLevel(void);

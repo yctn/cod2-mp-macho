@@ -11,7 +11,7 @@
 extern void DObjUpdateClientInfo(struct DObj_s *obj, float timescale);
 extern void * MT_Alloc(int size, int type);
 
-static const int boxVerts[24][3]; /* 0x3028e0 */
+static const int boxVerts[24][3]; /* boxVerts */
 
 struct XAnim_s * CG_GetMG42Anims(centity_t *cent);
 static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits);
@@ -58,20 +58,20 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
         "movl %eax, (%esp)\n"
         "calll BG_GetWeaponDef\n"
         "movl %eax, %esi\n" /* weapDef */
-        "movl 0x195f5d4, %eax\n" /* line 261 */
+        "movl imp___Z21Hunk_AllocXAnimClienti, %eax\n" /* line 261 */
         "movl %eax, 8(%esp)\n"
         "movl $3, 4(%esp)\n"
-        "movl $0x2abcf4, (%esp)\n" /* "MG42" */
+        "movl $str_002abcf4, (%esp)\n" /* "MG42" */
         "calll XAnimCreateAnims\n"
         "movl %eax, %ebx\n" /* pAnims */
         "movl $0, 0x14(%esp)\n" /* line 265 */
         "movl $2, 0x10(%esp)\n"
         "movl $1, 0xc(%esp)\n"
-        "movl $0x21df18, 8(%esp)\n" /* "root" */
+        "movl $str_0021df18, 8(%esp)\n" /* "root" */
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll XAnimBlend\n"
-        "movl 0x195f5c0, %edi\n" /* line 269 */
+        "movl imp___Z23Hunk_AllocXAnimPrecachei, %edi\n" /* line 269 */
         "movl %edi, 4(%esp)\n"
         "movl 0x18(%esi), %eax\n" /* weapDef */
         "movl %eax, (%esp)\n"
@@ -117,7 +117,7 @@ long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits)
         /* { scope 1 */
         "movl %eax, %edi\n" /* line 298 | s1 */
         "addl $0xf0, %edi\n" /* s1 */
-        "movl 0x195f584, %eax\n" /* line 301 */
+        "movl imp_cg, %eax\n" /* line 301 */
         "movl (%eax), %esi\n"
         "leal 0x25bc4(%esi), %ebx\n" /* ps */
         "movl -0x30(%ebp), %edx\n" /* line 303 */
@@ -135,7 +135,7 @@ long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits)
         "je .Lf161b64_00161d31\n"
         ".Lf161b64_00161bc7:\n"
         "movl 0x68(%edi), %edx\n" /* line 314 | s1 */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %ebx\n" /* ps */
         "movl 0x25ba8(%ebx), %eax\n" /* ps */
         "movl %eax, 8(%esp)\n"
@@ -154,7 +154,7 @@ long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits)
         ".Lf161b64_00161c0d:\n"
         "leal -0x24(%ebp), %esi\n" /* line 319 | angles */
         "movl %esi, 0xc(%esp)\n"
-        "movl 0x195f5bc, %ebx\n" /* ps */
+        "movl imp_scr_const, %ebx\n" /* ps */
         "movzwl 0x9e(%ebx), %eax\n" /* ps */
         "movl %eax, 8(%esp)\n"
         "movl -0x34(%ebp), %ecx\n"
@@ -171,7 +171,7 @@ long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits)
         "movl %ecx, (%esp)\n"
         "calll DObjSetControlTagAngles\n"
         "movl 0x70(%edi), %edx\n" /* line 322 | s1 */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %edi\n" /* s1 */
         "movl 0x25ba8(%edi), %eax\n" /* s1 */
         "movl %eax, 8(%esp)\n"
@@ -257,7 +257,7 @@ long unsigned int CG_SetFrameInterpolation(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 569 */
+        "movl imp_cg, %eax\n" /* line 569 */
         "movl (%eax), %ecx\n"
         "movl 0x20(%ecx), %eax\n"
         "movl 8(%eax), %edx\n"
@@ -341,20 +341,20 @@ long unsigned int CG_ProcessClientNoteTracks(int clientNum)
         "addl -0x1c(%ebp), %eax\n" /* noteList */
         "cmpl $1, 4(%eax)\n"
         "jne .Lf161dd4_00161e19\n"
-        "movl $0x2abcfc, 4(%esp)\n" /* line 604 */
+        "movl $str_002abcfc, 4(%esp)\n" /* line 604 */
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf161dd4_00161e65\n"
         "movl %edi, %eax\n" /* line 606 | clientNum */
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "addl (%edx), %eax\n"
         "movl $1, 0xe0d08(%eax)\n"
         "movl $1, 0xe0d0c(%eax)\n" /* line 607 */
         "jmp .Lf161dd4_00161e19\n"
         ".Lf161dd4_00161e65:\n"
-        "movl $0x2abd14, 4(%esp)\n" /* line 609 */
+        "movl $str_002abd14, 4(%esp)\n" /* line 609 */
         "movl -0x1c(%ebp), %eax\n" /* noteList */
         "movl (%ebx, %eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -362,7 +362,7 @@ long unsigned int CG_ProcessClientNoteTracks(int clientNum)
         "testl %eax, %eax\n"
         "jne .Lf161dd4_00161e19\n"
         "movl %edi, %eax\n" /* line 611 | clientNum */
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "addl (%edx), %eax\n"
         "movl $0, 0xe0d08(%eax)\n"
         "movl $1, 0xe0d0c(%eax)\n" /* line 612 */
@@ -373,7 +373,7 @@ long unsigned int CG_ProcessClientNoteTracks(int clientNum)
 /* line 686 */
 long unsigned int CG_DObjUpdateInfo(struct DObj_s *obj)
 {
-    float timescale = (float)(*(int *)(*(int *)0x195f584 + 0x25bac)) * 0.001f;
+    float timescale = (float)(*(int *)(*(int *)imp_cg + 0x25bac)) * 0.001f;
     DObjUpdateClientInfo(obj, timescale);
     return 0;
 }
@@ -446,7 +446,7 @@ long unsigned int CG_SoundBlend(centity_t *cent)
         "movl %eax, 0xc(%esp)\n"
         "movss 0xd4(%ebx), %xmm0\n" /* ns */
         "subss %xmm1, %xmm0\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "mulss 0x25ba8(%eax), %xmm0\n"
         "addss %xmm0, %xmm1\n"
@@ -552,7 +552,7 @@ long unsigned int CG_InterpolateEntityPosition(void)
         "subl $0x4c, %esp\n"
         "movl %eax, %edi\n" /* cent */
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 1018 */
+        "movl imp_cg, %eax\n" /* line 1018 */
         "movl (%eax), %esi\n"
         "movss 0x25ba8(%esi), %xmm0\n"
         "movss %xmm0, -0x40(%ebp)\n" /* f */
@@ -724,7 +724,7 @@ qboolean CG_DObjGetViewModelTagPos(struct DObj_s *obj, unsigned int tagName, vec
         "je .Lf1622a2_0016234f\n"
         "leal -0x58(%ebp), %esi\n" /* line 805 | ent_axis, obj */
         "movl %esi, 4(%esp)\n" /* obj */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %ebx\n"
         "leal 0x2c0c8(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -830,7 +830,7 @@ long unsigned int CG_DObjCalcBoneGeneric(int handle, int localClientNum, int bon
         "shll $4, %eax\n"
         "addl %ebx, %eax\n" /* handle */
         "leal (%ebx, %eax, 8), %eax\n" /* handle */
-        "movl 0x195f5cc, %edx\n"
+        "movl imp_cg_entities, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %ecx\n"
         "movl 0xf4(%ecx), %eax\n" /* line 1228 */
@@ -861,7 +861,7 @@ long unsigned int CG_DObjCalcBoneGeneric(int handle, int localClientNum, int bon
         "movl %eax, (%esp)\n"
         "calll Com_GetClientDObj\n"
         "movl %eax, -0x2c(%ebp)\n" /* obj */
-        "movl 0x195f584, %eax\n" /* line 1210 */
+        "movl imp_cg, %eax\n" /* line 1210 */
         "movl (%eax), %ebx\n"
         "movl 0x90(%edi), %edx\n" /* es */
         "leal (%edx, %edx, 4), %ecx\n"
@@ -923,7 +923,7 @@ long unsigned int CG_AdjustPositionForMover(const vec_t *in, int moverNum, int f
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "leal (%edx, %eax, 8), %eax\n"
-        "movl 0x195f5cc, %edx\n"
+        "movl imp_cg_entities, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* cent */
         "cmpl $6, 0xf4(%ebx)\n" /* line 530 | cent */
@@ -1025,7 +1025,7 @@ long unsigned int CG_CalcEntityLerpPositions(centity_t *cent)
         "leal 0x1ec(%esi), %eax\n" /* line 1076 | cent */
         "movl %eax, -0x1c(%ebp)\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %ebx\n" /* ci */
         "movl 0x25bb0(%ebx), %eax\n" /* ci */
         "movl %eax, 4(%esp)\n"
@@ -1045,7 +1045,7 @@ long unsigned int CG_CalcEntityLerpPositions(centity_t *cent)
         "cmpl $2, %eax\n" /* line 1090 */
         "je .Lf1625f8_00162740\n"
         ".Lf1625f8_00162675:\n"
-        "movl 0x195f584, %eax\n" /* line 1105 */
+        "movl imp_cg, %eax\n" /* line 1105 */
         "movl (%eax), %edx\n"
         "leal 0x2826c(%edx), %eax\n"
         "cmpl %eax, %esi\n" /* cent */
@@ -1121,7 +1121,7 @@ long unsigned int CG_CalcEntityLerpPositions(centity_t *cent)
         "shll $4, %eax\n"
         "subl %ecx, %eax\n"
         "leal (%edx, %eax, 2), %eax\n"
-        "movl 0x195f5c4, %edx\n"
+        "movl imp_cgs, %edx\n"
         "movl (%edx), %edx\n"
         "leal -0x6bf0(%edx, %eax, 8), %eax\n"
         "leal 4(%eax), %ebx\n" /* ci */
@@ -1149,7 +1149,7 @@ long unsigned int CG_EntityEffects(centity_t *cent)
         "movl 0x174(%esi), %ebx\n" /* line 203 | cent */
         "testl %ebx, %ebx\n"
         "je .Lf162788_001627d7\n"
-        "cmpl $0xffffff, 0x18c(%esi)\n" /* line 205 | cent */
+        "cmpl $g_effectVisArray+4351, 0x18c(%esi)\n" /* line 205 | cent */
         "je .Lf162788_0016284c\n"
         "leal 0x24e(%ebx), %eax\n" /* line 216 */
         "movl %eax, (%esp)\n"
@@ -1168,7 +1168,7 @@ long unsigned int CG_EntityEffects(centity_t *cent)
         "sarl $0x10, %eax\n"
         "andl $0xff, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* 255.0f */
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x10(%esp)\n"
         "movzbl %dh, %eax\n"
@@ -1196,7 +1196,7 @@ long unsigned int CG_EntityEffects(centity_t *cent)
         "leal 0x1ec(%esi), %ecx\n" /* line 205 | cent */
         "movl 0x17c(%esi), %eax\n" /* cent */
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x195f5c4, %edx\n"
+        "movl imp_cgs, %edx\n"
         "movl (%edx), %edx\n"
         "leal 0x8180(%edx, %eax, 4), %eax\n"
         "leal 8(%eax), %edx\n"
@@ -1281,7 +1281,7 @@ struct DObj_s * CG_PreProcess_GetDObj(int iEntType)
         "leal (, %eax, 4), %ebx\n"
         "xorl %edx, %edx\n"
         ".Lf1628ca_0016293e:\n"
-        "movl 0x195f5cc, %eax\n" /* line 1175 */
+        "movl imp_cg_entities, %eax\n" /* line 1175 */
         "movl (%eax), %eax\n"
         "movl %edx, 0x21c(%eax, %ebx)\n"
         "movl %edi, -0x24(%ebp)\n" /* line 1177 | model, dobjModel */
@@ -1319,7 +1319,7 @@ struct DObj_s * CG_PreProcess_GetDObj(int iEntType)
         "addl %esi, %eax\n"
         "leal (%esi, %eax, 8), %eax\n"
         "leal (, %eax, 4), %ebx\n"
-        "movl 0x195f5cc, %eax\n"
+        "movl imp_cg_entities, %eax\n"
         "movl (%eax), %edx\n"
         "leal (%ebx, %edx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1415,7 +1415,7 @@ long unsigned int CG_DObjCalcPose(const centity_t *cent, const struct DObj_s *ob
         "movl %eax, (%esp)\n"
         "calll Com_GetClientDObj\n"
         "movl %eax, -0x2c(%ebp)\n" /* obj */
-        "movl 0x195f584, %eax\n" /* line 1210 */
+        "movl imp_cg, %eax\n" /* line 1210 */
         "movl (%eax), %ebx\n"
         "movl -0x30(%ebp), %eax\n" /* es */
         "movl 0x90(%eax), %edx\n"
@@ -1515,7 +1515,7 @@ long unsigned int CG_DObjCalcBone(const centity_t *cent, struct DObj_s *obj, int
         "movl %eax, (%esp)\n"
         "calll Com_GetClientDObj\n"
         "movl %eax, -0x2c(%ebp)\n" /* obj */
-        "movl 0x195f584, %eax\n" /* line 1210 */
+        "movl imp_cg, %eax\n" /* line 1210 */
         "movl (%eax), %ebx\n"
         "movl 0x90(%esi), %edx\n" /* es */
         "leal (%edx, %edx, 4), %ecx\n"
@@ -1698,7 +1698,7 @@ long unsigned int CG_General(centity_t *cent)
         "retl\n"
         /* { scope 1 */
         ".Lf162d0c_00162d32:\n"
-        "movl 0x195f5c4, %eax\n" /* line 81 */
+        "movl imp_cgs, %eax\n" /* line 81 */
         "movl (%eax), %edx\n"
         "movl 0x8c(%ebx), %eax\n" /* s1 */
         "movl 0x63c0(%edx, %eax, 4), %ecx\n"
@@ -1734,7 +1734,7 @@ long unsigned int CG_General(centity_t *cent)
         "testb $4, 0xf9(%esi)\n" /* line 50 */
         "je .Lf162d0c_00162ea2\n"
         "leal 0x204(%esi), %ecx\n" /* line 52 */
-        "movl 0x195ed4c, %eax\n" /* line 310 */
+        "movl imp_vec3_origin, %eax\n" /* line 310 */
         "movss 0x204(%esi), %xmm0\n" /* cent */
         "ucomiss (%eax), %xmm0\n"
         "jp .Lf162d0c_00162e01\n"
@@ -1836,7 +1836,7 @@ long unsigned int CG_Item(centity_t *cent)
         /* { scope 1 */
         "leal 0xf0(%edi), %esi\n" /* line 152 | cent, obj */
         "movl 0x8c(%esi), %edx\n" /* line 155 | obj */
-        "movl 0x195edac, %eax\n"
+        "movl imp_bg_numItems, %eax\n"
         "cmpl (%eax), %edx\n"
         "jge .Lf162f08_00163029\n"
         ".Lf162f08_00162f30:\n"
@@ -1845,11 +1845,11 @@ long unsigned int CG_Item(centity_t *cent)
         "movl 0x8c(%esi), %ecx\n" /* line 162 | obj */
         "leal (%ecx, %ecx, 4), %eax\n"
         "leal (%ecx, %eax, 2), %eax\n"
-        "movl 0x195eda8, %edx\n"
+        "movl imp_bg_itemlist, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, -0x9c(%ebp)\n" /* item */
         "leal (%ecx, %ecx, 8), %edx\n" /* line 163 */
-        "movl 0x195f5d0, %eax\n"
+        "movl imp_cg_items, %eax\n"
         "movl (%eax), %eax\n"
         "leal (%eax, %edx, 4), %ebx\n" /* itemInfo */
         "movl (%ebx), %eax\n" /* line 164 | itemInfo */
@@ -1921,7 +1921,7 @@ long unsigned int CG_Item(centity_t *cent)
         /* { scope 1 */
         ".Lf162f08_00163029:\n"
         "movl %edx, 8(%esp)\n" /* line 156 */
-        "movl $0x2abd2c, 4(%esp)\n" /* "Bad item index %i on entity" */
+        "movl $str_002abd2c, 4(%esp)\n" /* "Bad item index %i on entity" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf162f08_00162f30\n"
@@ -1942,7 +1942,7 @@ long unsigned int CG_Item(centity_t *cent)
         "movl 0x14(%edx), %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x2abd4c, 4(%esp)\n" /* "No XModel loaded for item index %i (%s)" */
+        "movl $str_002abd4c, 4(%esp)\n" /* "No XModel loaded for item index %i (%s)" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf162f08_00162f77\n"
@@ -1965,7 +1965,7 @@ long unsigned int CG_Missile(centity_t *cent)
         "addl $0xf0, %esi\n" /* obj */
         "testb $0x20, 8(%esi)\n" /* line 396 | obj */
         "jne .Lf163092_001630bf\n"
-        "movl 0x195f584, %eax\n" /* line 400 */
+        "movl imp_cg, %eax\n" /* line 400 */
         "movl (%eax), %edx\n"
         "movl 0x54(%esi), %eax\n" /* obj */
         "cmpl 0x25bb0(%edx), %eax\n"
@@ -1989,7 +1989,7 @@ long unsigned int CG_Missile(centity_t *cent)
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, -0x9c(%ebp)\n" /* weapInfo */
@@ -2027,7 +2027,7 @@ long unsigned int CG_Missile(centity_t *cent)
         ".Lf163092_0016317a:\n"
         "movl -0x9c(%ebp), %ecx\n" /* line 433 | weapInfo */
         "movss 0x148(%ecx), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf163092_001632c9\n"
         "jne .Lf163092_001632c9\n"
         ".Lf163092_0016319b:\n"
@@ -2081,7 +2081,7 @@ long unsigned int CG_Missile(centity_t *cent)
         ".Lf163092_00163263:\n"
         "movl 0xf0(%ebx), %edx\n" /* line 423 */
         "movl %edx, -0x20(%ebp)\n" /* bolt */
-        "movl 0x195f5bc, %eax\n" /* line 424 */
+        "movl imp_scr_const, %eax\n" /* line 424 */
         "movzwl 0xa2(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
@@ -2182,9 +2182,9 @@ long unsigned int CG_ScriptMover(centity_t *cent)
         "movl %eax, (%esp)\n"
         "calll AnglesToAxis\n"
         "movl $0x40, -0x88(%ebp)\n" /* line 475 */
-        "cmpl $0xffffff, 0x9c(%ebx)\n" /* line 477 | s1 */
+        "cmpl $g_effectVisArray+4351, 0x9c(%ebx)\n" /* line 477 | s1 */
         "je .Lf16332a_001634f8\n"
-        "movl 0x195f5c4, %eax\n" /* line 479 */
+        "movl imp_cgs, %eax\n" /* line 479 */
         "movl (%eax), %edx\n"
         "movl 0x8c(%ebx), %eax\n" /* s1 */
         "movl 0x63c0(%edx, %eax, 4), %ecx\n"
@@ -2198,7 +2198,7 @@ long unsigned int CG_ScriptMover(centity_t *cent)
         "testb $4, 0xf9(%esi)\n" /* line 50 */
         "je .Lf16332a_001634e2\n"
         "leal 0x204(%esi), %ecx\n" /* line 52 */
-        "movl 0x195ed4c, %eax\n" /* line 310 */
+        "movl imp_vec3_origin, %eax\n" /* line 310 */
         "movss 0x204(%esi), %xmm0\n"
         "ucomiss (%eax), %xmm0\n"
         "jp .Lf16332a_0016343d\n"
@@ -2259,7 +2259,7 @@ long unsigned int CG_ScriptMover(centity_t *cent)
         /* } scope */
         ".Lf16332a_001634f8:\n"
         "movl $3, -0x8c(%ebp)\n" /* line 493 | ent */
-        "movl 0x195f5c4, %eax\n" /* line 500 */
+        "movl imp_cgs, %eax\n" /* line 500 */
         "movl (%eax), %edx\n"
         "movl 0x8c(%ebx), %eax\n" /* s1 */
         "movl 0x718c(%edx, %eax, 4), %eax\n"
@@ -2321,9 +2321,9 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "movl 0xf4(%esi), %eax\n" /* line 1366 | cent */
         "cmpl $9, %eax\n"
         "ja .Lf16358c_00163692\n"
-        "jmpl *0x302a10(, %eax, 4)\n"
+        "jmpl *boxVerts+304(, %eax, 4)\n"
         /* { scope 1 */
-        "movl 0x195f584, %edi\n" /* line 950 | fx */
+        "movl imp_cg, %edi\n" /* line 950 | fx */
         "movl (%edi), %ebx\n" /* fx, s1 */
         "movl 0x25bb0(%ebx), %eax\n" /* s1 */
         "movl 0x210(%esi), %edx\n"
@@ -2332,7 +2332,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "movl %eax, 0x210(%esi)\n" /* line 965 */
         ".Lf16358c_001635db:\n"
         "movss 0x158(%esi), %xmm0\n" /* line 968 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 969 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 969 | 0.0f */
         "jp .Lf16358c_0016382e\n"
         "jne .Lf16358c_0016382e\n"
         ".Lf16358c_001635f6:\n"
@@ -2340,7 +2340,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "leal -1(%edx), %eax\n" /* line 973 */
         "cmpl $0x3e, %eax\n"
         "ja .Lf16358c_00163877\n"
-        "movl 0x195f5c4, %eax\n" /* line 978 */
+        "movl imp_cgs, %eax\n" /* line 978 */
         "movl (%eax), %eax\n"
         "movl 0x67c0(%eax, %edx, 4), %edi\n" /* fx */
         "leal 0x14c(%esi), %eax\n" /* line 980 */
@@ -2353,7 +2353,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "addss %xmm1, %xmm0\n"
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf16358c_0016365d\n"
         "je .Lf16358c_00163959\n"
         ".Lf16358c_0016365d:\n"
@@ -2376,7 +2376,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "retl\n"
         ".Lf16358c_00163692:\n"
         "movl %eax, 8(%esp)\n" /* line 1369 */
-        "movl $0x2abd78, 4(%esp)\n" /* "Bad entity type: %i
+        "movl $str_002abd78, 4(%esp)\n" /* "Bad entity type: %i
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -2393,7 +2393,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "leal 0xf0(%esi), %ebx\n" /* line 353 | s1 */
         "testb $0x20, 8(%ebx)\n" /* line 356 | s1 */
         "jne .Lf16358c_00163687\n"
-        "movl 0x195f5c4, %eax\n" /* line 359 */
+        "movl imp_cgs, %eax\n" /* line 359 */
         "movl (%eax), %edx\n"
         "movl 0x8c(%ebx), %eax\n" /* s1 */
         "movl 0x63c0(%edx, %eax, 4), %ecx\n"
@@ -2419,7 +2419,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         /* } scope */
         "movl %ecx, -0x84(%ebp)\n" /* line 199 */
         "movl %edx, -0x80(%ebp)\n" /* line 200 */
-        "addss 0x2ed830, %xmm0\n" /* line 368 | 32.0f */
+        "addss lit4_002ed830, %xmm0\n" /* line 368 | 32.0f */
         "movss %xmm0, -0x7c(%ebp)\n"
         "movl $0x80, -0x88(%ebp)\n" /* line 369 */
         "leal -0x78(%ebp), %eax\n" /* line 371 */
@@ -2495,7 +2495,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "jmp .Lf16358c_00163687\n"
         ".Lf16358c_00163877:\n"
         "movl %edx, 4(%esp)\n" /* line 975 */
-        "movl $0x2abd90, (%esp)\n" /* "ERROR: CG_PlayFx called with invalid effect id %i
+        "movl $str_002abd90, (%esp)\n" /* "ERROR: CG_PlayFx called with invalid effect id %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf16358c_00163687\n"
@@ -2513,7 +2513,7 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "movss 0x154(%esi), %xmm0\n"
         "mulss -0x84(%ebp), %xmm0\n"
         "addss %xmm0, %xmm1\n" /* scale */
-        "xorps 0x302a00, %xmm1\n" /* scale */
+        "xorps boxVerts+288, %xmm1\n" /* scale */
         /* { scope 2 */
         "movaps %xmm1, %xmm0\n" /* line 288 */
         "mulss 0x14c(%esi), %xmm0\n"
@@ -2567,7 +2567,7 @@ long unsigned int CG_AddPacketEntities(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %edi\n" /* line 638 */
+        "movl imp_cg, %edi\n" /* line 638 */
         "movl (%edi), %ebx\n" /* num */
         "xorl %esi, %esi\n"
         "movl %esi, 0x2c5a0(%ebx)\n" /* num */
@@ -2581,7 +2581,7 @@ long unsigned int CG_AddPacketEntities(void)
         "subl %eax, %edx\n"
         "shll $3, %edx\n"
         "cvtsi2ssl %edx, %xmm0\n"
-        "divss 0x2ed8f8, %xmm0\n" /* 4095.0f */
+        "divss lit4_002ed8f8, %xmm0\n" /* 4095.0f */
         "movss %xmm0, 0x284e4(%ebx)\n" /* num */
         "movl %esi, 0x284e8(%ebx)\n" /* line 643 | num */
         "movl %esi, 0x28510(%ebx)\n" /* line 645 | num */
@@ -2593,7 +2593,7 @@ long unsigned int CG_AddPacketEntities(void)
         "subl %eax, %edx\n"
         "shll $3, %edx\n"
         "cvtsi2ssl %edx, %xmm0\n"
-        "mulss 0x2ed8fc, %xmm0\n" /* 0.00048828125f */
+        "mulss lit4_002ed8fc, %xmm0\n" /* 0.00048828125f */
         "movss %xmm0, 0x28514(%ebx)\n" /* num */
         "movl %esi, 0x28518(%ebx)\n" /* line 647 | num */
         "movl %esi, 0x28540(%ebx)\n" /* line 649 | num */
@@ -2604,7 +2604,7 @@ long unsigned int CG_AddPacketEntities(void)
         "subl %ecx, %eax\n"
         "shll $3, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed60c, %xmm0\n" /* 0.0009765625f */
+        "mulss lit4_002ed60c, %xmm0\n" /* 0.0009765625f */
         "movss %xmm0, 0x28544(%ebx)\n" /* num */
         "movl %esi, 0x28548(%ebx)\n" /* line 651 | num */
         "leal 0x284ec(%ebx), %eax\n" /* line 653 | num */
@@ -2646,7 +2646,7 @@ long unsigned int CG_AddPacketEntities(void)
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "leal (%edx, %eax, 8), %eax\n"
-        "movl 0x195f5cc, %ecx\n"
+        "movl imp_cg_entities, %ecx\n"
         "movl (%ecx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "cmpl $9, 0xf4(%eax)\n" /* line 671 */

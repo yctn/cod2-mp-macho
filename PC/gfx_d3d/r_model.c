@@ -10,19 +10,19 @@
  *   #include "PC/xanim/xanim_public.h"
  */
 
-static int warnCount; /* 0xc85b00 */
-static int warnCount_00c85b04; /* 0xc85b04 */
-static int warnCount_00c85b04; /* 0xc85b04 */
-static int warnCount_00c85b04; /* 0xc85b04 */
-static int warnCount_00c85b08; /* 0xc85b08 */
-static int warnCount_00c85b08; /* 0xc85b08 */
-static int warnCount_00c85b08; /* 0xc85b08 */
-static int warnCount_00c85b0c; /* 0xc85b0c */
-static int warnCount_00c85b0c; /* 0xc85b0c */
-static int warnCount_00c85b0c; /* 0xc85b0c */
-static int warnCount_00c85b10; /* 0xc85b10 */
-static int warnCount_00c85b10; /* 0xc85b10 */
-static int warnCount_00c85b10; /* 0xc85b10 */
+static int warnCount; /* warnCount */
+static int warnCount_00c85b04; /* warnCount */
+static int warnCount_00c85b04; /* warnCount */
+static int warnCount_00c85b04; /* warnCount */
+static int warnCount_00c85b08; /* warnCount */
+static int warnCount_00c85b08; /* warnCount */
+static int warnCount_00c85b08; /* warnCount */
+static int warnCount_00c85b0c; /* warnCount */
+static int warnCount_00c85b0c; /* warnCount */
+static int warnCount_00c85b0c; /* warnCount */
+static int warnCount_00c85b10; /* warnCount */
+static int warnCount_00c85b10; /* warnCount */
+static int warnCount_00c85b10; /* warnCount */
 extern void * Hunk_AllocInternal(int size);
 extern void DB_EnumXAssets(int type, void (*func)(XAssetHeader, void *), void *data, qboolean overrides);
 extern int XModelBad(union XAssetHeader header);
@@ -35,8 +35,8 @@ extern struct XModel * DObjGetModel(const struct DObj_s *obj, int modelIndex);
 extern const struct trXSkin_t * XModelGetSkins(const struct XModel *model);
 extern struct XModel * XModelPrecache(const char *name, Alloc_t Alloc, Alloc_t AllocColl);
 extern Bool R_ValidXModelName(const char *name);
-extern refimport_t *ri; /* 0x195eee0 */
-static const int boxVerts[24][3]; /* 0x2f24c0 */
+extern refimport_t *ri; /* imp_ri */
+static const int boxVerts[24][3]; /* boxVerts */
 
 static void * Hunk_AllocXModelPrecache(int size);
 static void * Hunk_AllocXModelPrecacheColl(int size);
@@ -97,20 +97,20 @@ struct XModel * R_RegisterModel(const char *name)
 /* line 200 */
 GfxBrushModel * R_RegisterInlineModel(int modelIndex)
 {
-    int *world = *(int **)(*(int *)0x195eebc + 0x109c);
+    int *world = *(int **)(*(int *)imp_rgp + 0x109c);
     return (GfxBrushModel *)(*(int *)((byte *)world + 0x138) + modelIndex * 32);
 }
 
 /* line 218 */
 void R_SetIgnorePrecacheErrors(qboolean ignore)
 {
-    *(byte *)(*(int *)0x195eec8 + 2) = (ignore != 0);
+    *(byte *)(*(int *)imp_rg + 2) = (ignore != 0);
 }
 
 /* line 224 */
 qboolean R_GetIgnorePrecacheErrors(void)
 {
-    return *(byte *)(*(int *)0x195eec8 + 2) != 0;
+    return *(byte *)(*(int *)imp_rg + 2) != 0;
 }
 
 /* line 587 */
@@ -124,16 +124,16 @@ void R_UnlockSkinnedCache(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
-        "movl 0x195eed0, %eax\n" /* line 591 */
+        "movl imp_dx, %eax\n" /* line 591 */
         "movl 0x2dc0(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "je .Lfd0120_000d0165\n"
         "movl $0, 0x2dc0(%eax)\n" /* line 593 */
-        "movl 0x195eef4, %eax\n" /* line 1005 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 1005 */
         "movl (%eax), %eax\n"
-        "movl 0x217c78(%eax), %eax\n"
+        "movl str_00217c60+24(%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* vb */
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lfd0120_000d0157:\n"
         "movl (%ebx), %eax\n" /* line 599 | vb */
         "movl %ebx, (%esp)\n" /* vb */
@@ -158,7 +158,7 @@ struct DObj_s * R_GetGfxEntityDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
     if (!obj) {
         obj = *(struct DObj_s **)((byte *)sceneEnt + 4);
     } else {
-        obj = *(struct DObj_s **)(*(int *)0x195eec8 + 0x3110);
+        obj = *(struct DObj_s **)(*(int *)imp_rg + 0x3110);
         DObjSetModel(obj, *(void **)((byte *)sceneEnt + 4));
     }
     return obj;
@@ -198,7 +198,7 @@ static void R_ReleaseModel(union XAssetHeader header, void *data)
 /* line 2949 */
 void R_OptimizeAllModels(void)
 {
-    if (!*(int *)((char *)(*(void **)0x195f0e8) + 8))
+    if (!*(int *)((char *)(*(void **)imp_r_optimizeXModels) + 8))
         return;
     DB_EnumXAssets(1, R_OptimizeModel, 0, 1);
 }
@@ -421,11 +421,11 @@ void R_LockSkinnedCache(GfxLockType lockType)
         "pushl %ebx\n"
         "subl $0x20, %esp\n"
         /* { scope 1 */
-        "movl 0x195eef4, %eax\n" /* line 1005 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 1005 */
         "movl (%eax), %eax\n"
-        "movl 0x217c78(%eax), %eax\n"
+        "movl str_00217c60+24(%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* vb */
-        "movl 0x195eed0, %esi\n" /* line 569 */
+        "movl imp_dx, %esi\n" /* line 569 */
         "movl 0x2c20(%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfd0604_000d0633\n"
@@ -479,7 +479,7 @@ void R_ShutdownModels(void)
 /* line 211 */
 void R_FinishLoadingModels(void)
 {
-    if (*(int *)((byte *)(*(void **)(*(int *)0x195f0e8)) + 8) == 0)
+    if (*(int *)((byte *)(*(void **)(*(int *)imp_r_optimizeXModels)) + 8) == 0)
         return;
     DB_EnumXAssets(1, R_OptimizeModel, 0, 1);
 }
@@ -531,7 +531,7 @@ int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lod
         "movss 0x38(%edi), %xmm0\n" /* line 276 | ent */
         "movss %xmm0, -0x1c(%ebp)\n" /* scale */
         /* { scope 2 */
-        "movl 0x195eec8, %ebx\n" /* line 249 */
+        "movl imp_rg, %ebx\n" /* line 249 */
         "leal 0x317c(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "leal 0x3c(%edi), %eax\n"
@@ -542,7 +542,7 @@ int R_GetSurfaceData(long unsigned int (*surfaces)[32], int *partBits, char *lod
         "mulss 0x3188(%ebx), %xmm0\n" /* line 250 */
         "addss 0x318c(%ebx), %xmm0\n"
         "movss -0x1c(%ebp), %xmm1\n" /* line 251 | scale */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jp .Lfd07c6_000d085a\n"
         "jne .Lfd07c6_000d085a\n"
         /* } scope */
@@ -672,7 +672,7 @@ void R_XModelDebugBoxes(void)
         "je .Lfd08b6_000d0b02\n"
         "movl -0x388(%ebp), %edx\n" /* line 338 | boneIndex */
         "movl -0x370(%ebp, %edx, 4), %ebx\n" /* boneInfo */
-        "movl $0x2f24cc, -0x380(%ebp)\n" /* line 299 */
+        "movl $boxVerts+12, -0x380(%ebp)\n" /* line 299 */
         "movl $boxVerts, %edi\n" /* obj */
         ".Lfd08b6_000d09a8:\n"
         "movl (%edi), %eax\n" /* line 343 | obj */
@@ -752,9 +752,9 @@ void R_XModelDebugBoxes(void)
         "movl %edx, 8(%esp)\n"
         "leal -0x2c(%ebp), %eax\n" /* start */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -867,7 +867,7 @@ void R_XModelDebugAxes(void)
         "leal -0x2c(%ebp), %edx\n" /* line 412 | vec */
         "movl %edx, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* obj */
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, (%esp)\n"
         "calll MatrixTransformVectorQuatTrans\n"
         "leal -0x38(%ebp), %eax\n" /* line 413 | start */
@@ -914,9 +914,9 @@ void R_XModelDebugAxes(void)
         "movl %edx, 8(%esp)\n"
         "leal -0x38(%ebp), %eax\n" /* start */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -990,7 +990,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "calll DObjBad\n"
         "testl %eax, %eax\n"
         "je .Lfd0d64_000d0e26\n"
-        "movl 0x195f0f0, %eax\n" /* line 2785 */
+        "movl imp_developer, %eax\n" /* line 2785 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %esi\n" /* boneMatrix */
         "testl %esi, %esi\n" /* boneMatrix */
@@ -1048,7 +1048,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "movl $2, 0xc(%edi)\n" /* line 2744 */
         "jmp .Lfd0d64_000d0d7b\n"
         ".Lfd0d64_000d0e7a:\n"
-        "movl 0x195eec8, %eax\n" /* line 2258 */
+        "movl imp_rg, %eax\n" /* line 2258 */
         "movl 0x3110(%eax), %ebx\n"
         "movl 4(%edi), %eax\n" /* line 2259 */
         "movl %eax, 4(%esp)\n"
@@ -1125,7 +1125,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "mulss %xmm0, %xmm1\n" /* line 318 */
         "movss -0x384(%ebp), %xmm0\n" /* line 320 | yy */
         "addss %xmm2, %xmm0\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "subss %xmm0, %xmm3\n"
         "movaps %xmm3, %xmm0\n"
         "movss %xmm3, -0x6c(%ebp)\n" /* boneAxis */
@@ -1140,7 +1140,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "subss %xmm1, %xmm6\n" /* line 324 */
         "movss %xmm6, -0x60(%ebp)\n"
         "addss -0x388(%ebp), %xmm2\n" /* line 325 | xx */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "subss %xmm2, %xmm3\n"
         "movss %xmm3, -0x5c(%ebp)\n"
         "movss -0x380(%ebp), %xmm1\n" /* line 326 | yz */
@@ -1154,7 +1154,7 @@ void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "movss %xmm5, -0x50(%ebp)\n"
         "movss -0x388(%ebp), %xmm1\n" /* line 330 | xx */
         "addss -0x384(%ebp), %xmm1\n" /* yy */
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         "subss %xmm1, %xmm4\n"
         "movss %xmm4, -0x4c(%ebp)\n"
         /* } scope */
@@ -1408,7 +1408,7 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "retl\n"
         /* { scope 1 */
         ".Lfd1326_000d13ba:\n"
-        "movl 0x195ef14, %eax\n" /* line 1884 */
+        "movl imp_r_skinCache, %eax\n" /* line 1884 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfd1326_000d14ad\n"
@@ -1422,25 +1422,25 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "movl %eax, %ecx\n" /* vertCount */
         /* { scope 2 */
         /* { scope 3 */
-        "movl 0x195eed0, %eax\n" /* line 614 */
+        "movl imp_dx, %eax\n" /* line 614 */
         "movl 0x2dc0(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfd1326_000d146a\n"
-        "movl 0x195eec0, %eax\n" /* line 1067 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1067 */
         "movl (%eax), %eax\n"
         "movl $0x24, %edx\n"
         "cmpl $2, 8(%eax)\n"
         "movl $0x40, %eax\n"
         "cmovnel %eax, %edx\n"
-        "movl 0x195eef4, %edi\n" /* line 620 */
+        "movl imp_frontEndDataOut, %edi\n" /* line 620 */
         "movl (%edi), %eax\n"
-        "movl 0x217c78(%eax), %eax\n"
+        "movl str_00217c60+24(%eax), %eax\n"
         "imull %ecx, %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll InterlockedExchangeAdd\n"
         "movl (%edi), %ecx\n" /* line 621 */
-        "movl 0x217c78(%ecx), %edx\n"
+        "movl str_00217c60+24(%ecx), %edx\n"
         "movl 4(%edx), %ebx\n"
         "cmpl %ebx, (%edx)\n"
         "jle .Lfd1326_000d146f\n"
@@ -1451,9 +1451,9 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "cmpl warnCount, %eax\n"
         "je .Lfd1326_000d146a\n"
         "movl %eax, warnCount\n" /* line 629 */
-        "movl $0x223f60, 4(%esp)\n" /* line 630 */
+        "movl $str_00223f60, 4(%esp)\n" /* line 630 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         ".Lfd1326_000d146a:\n"
         "movl $0xffffffff, %eax\n"
@@ -1464,10 +1464,10 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "movl %eax, 8(%edx)\n"
         "testl %eax, %eax\n" /* line 1890 */
         "js .Lfd1326_000d14ad\n"
-        "movl 0x195eef4, %eax\n" /* line 1891 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 1891 */
         "movl (%eax), %eax\n"
-        "movl 0x217c78(%eax), %edx\n"
-        "movl 0x195eed0, %eax\n" /* line 1895 */
+        "movl str_00217c60+24(%eax), %edx\n"
+        "movl imp_dx, %eax\n" /* line 1895 */
         "movl 0x2dc0(%eax), %eax\n"
         "addl (%edx), %eax\n"
         "testl %eax, %eax\n"
@@ -1483,27 +1483,27 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "movl $0xffffffff, 8(%eax)\n"
         "movl %esi, (%esp)\n" /* line 1898 | xsurf */
         "calll XSurfaceGetNumVerts\n"
-        "movl 0x195eec0, %edx\n" /* line 1067 */
+        "movl imp_r_rendererInUse, %edx\n" /* line 1067 */
         "movl (%edx), %edx\n"
         "movl $0x24, %ecx\n"
         "cmpl $2, 8(%edx)\n"
         "movl $0x40, %edx\n"
         "cmovnel %edx, %ecx\n"
         "imull %eax, %ecx\n" /* line 1898 */
-        "movl 0x195eed0, %ebx\n" /* line 1900 | skins */
+        "movl imp_dx, %ebx\n" /* line 1900 | skins */
         "movl 0x2dd4(%ebx), %edx\n" /* skins */
         "leal (%ecx, %edx), %eax\n"
         "cmpl $0xa00000, %eax\n"
         "jle .Lfd1326_000d1528\n"
-        "movl 0x195eef4, %eax\n" /* line 1902 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 1902 */
         "movl (%eax), %eax\n"
         "movl (%eax), %eax\n"
         "cmpl warnCount, %eax\n"
         "je .Lfd1326_000d13b0\n"
         "movl %eax, warnCount\n" /* line 1904 */
-        "movl $0x223fa0, 4(%esp)\n" /* line 1905 */
+        "movl $str_00223fa0, 4(%esp)\n" /* line 1905 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "xorl %eax, %eax\n"
         "jmp .Lfd1326_000d13a8\n"
@@ -1516,7 +1516,7 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "movl 0xc(%edx), %eax\n"
         "movl %ecx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x24(%eax)\n"
         "jmp .Lfd1326_000d1497\n"
         /* { scope 2 */
@@ -1581,7 +1581,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "calll DObjBad\n"
         "testl %eax, %eax\n"
         "je .Lfd1568_000d15e7\n"
-        "movl 0x195f0f0, %eax\n" /* line 2513 */
+        "movl imp_developer, %eax\n" /* line 2513 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -1609,7 +1609,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "movl %eax, -0xfc0(%ebp)\n" /* boneMatrix */
         "testl %eax, %eax\n" /* line 2536 */
         "je .Lfd1568_000d15de\n"
-        "movl 0x195f0f4, %eax\n" /* line 2544 */
+        "movl imp_scene, %eax\n" /* line 2544 */
         "addl $0x1a55c, %eax\n"
         "movl -0xfc8(%ebp), %edx\n" /* surfaceCount */
         "movl %edx, 4(%esp)\n"
@@ -1620,17 +1620,17 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "addl %edx, %eax\n"
         "cmpl $__mh_execute_header, %eax\n"
         "jbe .Lfd1568_000d16bf\n"
-        "movl 0x195f0f4, %eax\n" /* line 2548 */
+        "movl imp_scene, %eax\n" /* line 2548 */
         "movl $__mh_execute_header, 0x1a55c(%eax)\n"
-        "movl 0x195eef4, %eax\n" /* line 2549 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 2549 */
         "movl (%eax), %eax\n"
         "movl (%eax), %eax\n"
         "cmpl warnCount, %eax\n"
         "je .Lfd1568_000d15de\n"
         "movl %eax, warnCount\n" /* line 2551 */
-        "movl $0x223fd4, 4(%esp)\n" /* line 2552 */
+        "movl $str_00223fd4, 4(%esp)\n" /* line 2552 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfd1568_000d15de\n"
         ".Lfd1568_000d16a2:\n"
@@ -1644,7 +1644,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "calll R_XModelDebugAxes\n"
         "jmp .Lfd1568_000d15de\n"
         ".Lfd1568_000d16bf:\n"
-        "movl 0x195f0f4, %eax\n" /* line 2560 */
+        "movl imp_scene, %eax\n" /* line 2560 */
         "leal 0x1a560(%eax, %edx, 4), %eax\n"
         "movl %eax, 0x2c(%ebx)\n" /* sceneEnt */
         "movl -0xfc8(%ebp), %eax\n" /* line 2563 | surfaceCount */
@@ -1678,7 +1678,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         ".Lfd1568_000d174b:\n"
         "leal -0xfac(%ebp), %edx\n" /* line 2577 | surfBuf */
         "subl %edx, %edi\n" /* size */
-        "movl 0x195eef4, %ecx\n" /* line 2578 */
+        "movl imp_frontEndDataOut, %ecx\n" /* line 2578 */
         "movl (%ecx), %eax\n"
         "addl $0x80008, %eax\n"
         "movl %edi, 4(%esp)\n" /* size */
@@ -1688,7 +1688,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "leal (%edi, %eax), %eax\n" /* line 2580 | size */
         "cmpl $0x20000, %eax\n"
         "jbe .Lfd1568_000d17c2\n"
-        "movl 0x195eef4, %edx\n" /* line 2582 */
+        "movl imp_frontEndDataOut, %edx\n" /* line 2582 */
         "movl (%edx), %eax\n"
         "movl $0x20000, 0x80008(%eax)\n"
         "movl (%edx), %eax\n" /* line 2583 */
@@ -1696,16 +1696,16 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "cmpl warnCount, %eax\n"
         "je .Lfd1568_000d15de\n"
         "movl %eax, warnCount\n" /* line 2585 */
-        "movl $0x224008, 4(%esp)\n" /* line 2586 */
+        "movl $str_00224008, 4(%esp)\n" /* line 2586 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfd1568_000d15de\n"
         ".Lfd1568_000d17ba:\n"
         "leal -0xfac(%ebp), %edi\n" /* line 2574 | surfBuf, size */
         "jmp .Lfd1568_000d174b\n"
         ".Lfd1568_000d17c2:\n"
-        "movl 0x195eef4, %ecx\n" /* line 2594 */
+        "movl imp_frontEndDataOut, %ecx\n" /* line 2594 */
         "movl (%ecx), %eax\n"
         "addl $0x8000c, %eax\n"
         "addl %edx, %eax\n"
@@ -1717,7 +1717,7 @@ void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
         "calll memcpy\n"
         "movl -0xfc8(%ebp), %ecx\n" /* line 2599 | surfaceCount */
         "movl %ecx, 0x10(%ebx)\n" /* sceneEnt */
-        "movl 0x195f0f8, %edi\n" /* line 2601 | size */
+        "movl imp_r_xdebug, %edi\n" /* line 2601 | size */
         "movl (%edi), %eax\n" /* size */
         "movl 8(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -1861,7 +1861,7 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "retl\n"
         /* { scope 1 */
         ".Lfd193e_000d19ac:\n"
-        "movl 0x195f0ec, %eax\n" /* line 1979 */
+        "movl imp_r_smc_enable, %eax\n" /* line 1979 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfd193e_000d1982\n"
@@ -1869,12 +1869,12 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "calll XSurfaceGetBoneOffset\n"
         "addl $1, %eax\n"
         "je .Lfd193e_000d1982\n"
-        "movl 0x195eec0, %eax\n" /* line 1981 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1981 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfd193e_000d1a38\n"
         ".Lfd193e_000d19d3:\n"
-        "movl 0x195eec8, %eax\n" /* line 1988 */
+        "movl imp_rg, %eax\n" /* line 1988 */
         "movl 0x3194(%eax), %eax\n"
         "movl 0x1c(%ebp), %edx\n" /* surfaceIndex */
         "shll $4, %edx\n"
@@ -1923,7 +1923,7 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "je .Lfd193e_000d1982\n"
         "jmp .Lfd193e_000d19d3\n"
         ".Lfd193e_000d1a60:\n"
-        "movl 0x195ef14, %eax\n" /* line 2033 */
+        "movl imp_r_skinCache, %eax\n" /* line 2033 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfd193e_000d1b53\n"
@@ -1936,25 +1936,25 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "movl %eax, %ecx\n" /* vertCount */
         /* { scope 2 */
         /* { scope 3 */
-        "movl 0x195eed0, %eax\n" /* line 614 */
+        "movl imp_dx, %eax\n" /* line 614 */
         "movl 0x2dc0(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
         "je .Lfd193e_000d1b0d\n"
-        "movl 0x195eec0, %eax\n" /* line 1067 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1067 */
         "movl (%eax), %eax\n"
         "movl $0x24, %edx\n"
         "cmpl $2, 8(%eax)\n"
         "movl $0x40, %eax\n"
         "cmovnel %eax, %edx\n"
-        "movl 0x195eef4, %ebx\n" /* line 620 */
+        "movl imp_frontEndDataOut, %ebx\n" /* line 620 */
         "movl (%ebx), %eax\n"
-        "movl 0x217c78(%eax), %eax\n"
+        "movl str_00217c60+24(%eax), %eax\n"
         "imull %ecx, %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll InterlockedExchangeAdd\n"
         "movl (%ebx), %ebx\n" /* line 621 */
-        "movl 0x217c78(%ebx), %edx\n"
+        "movl str_00217c60+24(%ebx), %edx\n"
         "movl 4(%edx), %ecx\n"
         "cmpl %ecx, (%edx)\n"
         "jle .Lfd193e_000d1b12\n"
@@ -1965,9 +1965,9 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "cmpl warnCount, %eax\n"
         "je .Lfd193e_000d1b0d\n"
         "movl %eax, warnCount\n" /* line 629 */
-        "movl $0x223f60, 4(%esp)\n" /* line 630 */
+        "movl $str_00223f60, 4(%esp)\n" /* line 630 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         ".Lfd193e_000d1b0d:\n"
         "movl $0xffffffff, %eax\n"
@@ -1977,10 +1977,10 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "movl %eax, 8(%esi)\n" /* line 2038 | surfPos */
         "testl %eax, %eax\n" /* line 2039 */
         "js .Lfd193e_000d1b53\n"
-        "movl 0x195eef4, %eax\n" /* line 2040 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 2040 */
         "movl (%eax), %eax\n"
-        "movl 0x217c78(%eax), %edx\n"
-        "movl 0x195eed0, %eax\n" /* line 2044 */
+        "movl str_00217c60+24(%eax), %edx\n"
+        "movl imp_dx, %eax\n" /* line 2044 */
         "movl 0x2dc0(%eax), %eax\n"
         "addl (%edx), %eax\n"
         "testl %eax, %eax\n"
@@ -1996,27 +1996,27 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "movl $0xffffffff, 8(%esi)\n" /* line 2046 | surfPos */
         "movl %edi, (%esp)\n" /* line 2047 | xsurf */
         "calll XSurfaceGetNumVerts\n"
-        "movl 0x195eec0, %edx\n" /* line 1067 */
+        "movl imp_r_rendererInUse, %edx\n" /* line 1067 */
         "movl (%edx), %edx\n"
         "movl $0x24, %ecx\n"
         "cmpl $2, 8(%edx)\n"
         "movl $0x40, %edx\n"
         "cmovnel %edx, %ecx\n"
         "imull %eax, %ecx\n" /* line 2047 */
-        "movl 0x195eed0, %ebx\n" /* line 2049 | material */
+        "movl imp_dx, %ebx\n" /* line 2049 | material */
         "movl 0x2dd4(%ebx), %edx\n" /* material */
         "leal (%ecx, %edx), %eax\n"
         "cmpl $0xa00000, %eax\n"
         "jle .Lfd193e_000d1bf8\n"
-        "movl 0x195eef4, %eax\n" /* line 2051 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 2051 */
         "movl (%eax), %eax\n"
         "movl (%eax), %eax\n"
         "cmpl warnCount, %eax\n"
         "je .Lfd193e_000d1a2e\n"
         "movl %eax, warnCount\n" /* line 2053 */
-        "movl $0x223fa0, 4(%esp)\n" /* line 2054 */
+        "movl $str_00223fa0, 4(%esp)\n" /* line 2054 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "xorl %eax, %eax\n"
         "jmp .Lfd193e_000d19a4\n"
@@ -2040,7 +2040,7 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "movl 0xc(%esi), %eax\n" /* line 2061 | surfPos */
         "movl %ecx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x24(%eax)\n"
         "jmp .Lfd193e_000d1b37\n"
         /* { scope 2 */
@@ -2049,7 +2049,7 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "movl %eax, 4(%esp)\n" /* line 625 */
         "movl %edx, (%esp)\n"
         "calll InterlockedExchange\n"
-        "movl 0x195eef4, %ecx\n"
+        "movl imp_frontEndDataOut, %ecx\n"
         "movl (%ecx), %ebx\n"
         "jmp .Lfd193e_000d1ae8\n"
     );
@@ -2106,7 +2106,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "calll XModelBad\n"
         "testl %eax, %eax\n"
         "je .Lfd1c38_000d1cb7\n"
-        "movl 0x195f0f0, %eax\n" /* line 2325 */
+        "movl imp_developer, %eax\n" /* line 2325 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -2124,7 +2124,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "movl %eax, %edx\n"
         "addl $0x3c, %edx\n"
         /* { scope 2 */
-        "movl 0x195eec8, %ebx\n" /* line 249 */
+        "movl imp_rg, %ebx\n" /* line 249 */
         "leal 0x317c(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
@@ -2134,7 +2134,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "mulss 0x3188(%ebx), %xmm0\n" /* line 250 */
         "addss 0x318c(%ebx), %xmm0\n"
         "movss -0xebc(%ebp), %xmm1\n" /* line 251 | scale */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jp .Lfd1c38_000d1e1f\n"
         "jne .Lfd1c38_000d1e1f\n"
         /* } scope */
@@ -2154,7 +2154,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "movl %edi, (%esp)\n" /* model */
         "calll XModelGetSurfaces\n"
         "movl %eax, -0xecc(%ebp)\n" /* surfaceCount */
-        "movl 0x195f0f4, %eax\n" /* line 2358 */
+        "movl imp_scene, %eax\n" /* line 2358 */
         "addl $0x1a55c, %eax\n"
         "movl -0xecc(%ebp), %edx\n" /* surfaceCount */
         "movl %edx, 4(%esp)\n"
@@ -2165,22 +2165,22 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "addl %edx, %eax\n"
         "cmpl $__mh_execute_header, %eax\n"
         "jbe .Lfd1c38_000d1e28\n"
-        "movl 0x195f0f4, %eax\n" /* line 2362 */
+        "movl imp_scene, %eax\n" /* line 2362 */
         "movl $__mh_execute_header, 0x1a55c(%eax)\n"
-        "movl 0x195eef4, %eax\n" /* line 2363 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 2363 */
         "movl (%eax), %eax\n"
         "movl (%eax), %eax\n"
         "cmpl warnCount, %eax\n"
         "je .Lfd1c38_000d1cae\n"
         "movl %eax, warnCount\n" /* line 2365 */
-        "movl $0x223fd4, 4(%esp)\n" /* line 2366 */
+        "movl $str_00223fd4, 4(%esp)\n" /* line 2366 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfd1c38_000d1cae\n"
         ".Lfd1c38_000d1de2:\n"
         "movl %edi, 4(%esp)\n" /* line 2328 | model */
-        "movl 0x195eec8, %ebx\n" /* size */
+        "movl imp_rg, %ebx\n" /* size */
         "movl 0x3110(%ebx), %eax\n" /* size */
         "movl %eax, (%esp)\n"
         "calll DObjSetModel\n"
@@ -2199,7 +2199,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "jmp .Lfd1c38_000d1d2b\n"
         /* } scope */
         ".Lfd1c38_000d1e28:\n"
-        "movl 0x195f0f4, %eax\n" /* line 2374 */
+        "movl imp_scene, %eax\n" /* line 2374 */
         "leal 0x1a560(%eax, %edx, 4), %eax\n"
         "movl %eax, 0x2c(%esi)\n" /* sceneEnt */
         "movl $0, -0x1c(%ebp)\n" /* line 2376 | needSkinningSurf */
@@ -2240,7 +2240,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         ".Lfd1c38_000d1ec0:\n"
         "leal -0xeb0(%ebp), %ecx\n" /* line 2392 | surfBuf */
         "subl %ecx, %ebx\n" /* size */
-        "movl 0x195eef4, %edx\n" /* line 2393 */
+        "movl imp_frontEndDataOut, %edx\n" /* line 2393 */
         "movl (%edx), %eax\n"
         "addl $0x80008, %eax\n"
         "movl %ebx, 4(%esp)\n" /* size */
@@ -2250,7 +2250,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "leal (%ebx, %eax), %eax\n" /* line 2395 | size */
         "cmpl $0x20000, %eax\n"
         "jbe .Lfd1c38_000d1f3f\n"
-        "movl 0x195eef4, %ecx\n" /* line 2397 */
+        "movl imp_frontEndDataOut, %ecx\n" /* line 2397 */
         "movl (%ecx), %eax\n"
         "movl $0x20000, 0x80008(%eax)\n"
         "movl (%ecx), %eax\n" /* line 2398 */
@@ -2258,9 +2258,9 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "cmpl warnCount, %eax\n"
         "je .Lfd1c38_000d1cae\n"
         "movl %eax, warnCount\n" /* line 2400 */
-        "movl $0x224008, 4(%esp)\n" /* line 2401 */
+        "movl $str_00224008, 4(%esp)\n" /* line 2401 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfd1c38_000d1cae\n"
         ".Lfd1c38_000d1f2f:\n"
@@ -2269,7 +2269,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "movl %edx, %ebx\n" /* size */
         "jmp .Lfd1c38_000d1ec0\n"
         ".Lfd1c38_000d1f3f:\n"
-        "movl 0x195eef4, %ecx\n" /* line 2409 */
+        "movl imp_frontEndDataOut, %ecx\n" /* line 2409 */
         "movl (%ecx), %eax\n"
         "addl $0x8000c, %eax\n"
         "addl %edx, %eax\n"
@@ -2281,7 +2281,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "calll memcpy\n"
         "movl -0xecc(%ebp), %ecx\n" /* line 2414 | surfaceCount */
         "movl %ecx, 0x10(%esi)\n" /* sceneEnt */
-        "movl 0x195f0f8, %edx\n" /* line 2416 */
+        "movl imp_r_xdebug, %edx\n" /* line 2416 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2334,13 +2334,13 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "jmp .Lfd1c38_000d1cae\n"
         ".Lfd1c38_000d2043:\n"
         "movl %edi, 4(%esp)\n" /* line 2419 | model */
-        "movl 0x195eec8, %ebx\n" /* size */
+        "movl imp_rg, %ebx\n" /* size */
         "movl 0x3110(%ebx), %eax\n" /* size */
         "movl %eax, (%esp)\n"
         "calll DObjSetModel\n"
         "movl 0x3110(%ebx), %ebx\n" /* size */
         /* { scope 2 */
-        "movl 0x195f0f8, %ecx\n" /* line 428 */
+        "movl imp_r_xdebug, %ecx\n" /* line 428 */
         "movl (%ecx), %eax\n"
         "testb $1, 8(%eax)\n"
         "jne .Lfd1c38_000d208a\n"
@@ -2357,7 +2357,7 @@ void R_SkinXModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex)
         "movl 0xc(%ebp), %edx\n" /* ent */
         "movl %esi, %eax\n"
         "calll R_XModelDebugBoxes\n"
-        "movl 0x195f0f8, %edx\n"
+        "movl imp_r_xdebug, %edx\n"
         "movl (%edx), %eax\n"
         "jmp .Lfd1c38_000d206f\n"
         ".Lfd1c38_000d20a0:\n"
@@ -2427,14 +2427,14 @@ void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix)
         "movl 8(%eax), %edx\n" /* line 1763 | skinnedSurf */
         "testl %edx, %edx\n"
         "js .Lfd2146_000d260f\n"
-        "movl 0x195eed0, %eax\n" /* line 1766 | skinnedSurf */
+        "movl imp_dx, %eax\n" /* line 1766 | skinnedSurf */
         "movl %edx, %ebx\n" /* skinVerticesOut */
         "addl 0x2dc0(%eax), %ebx\n" /* skinnedSurf, skinVerticesOut */
         ".Lfd2146_000d2173:\n"
         "movl %edi, (%esp)\n" /* line 1773 | xsurf */
         "calll XSurfaceGetBoneOffset\n"
         "movl %eax, -0xb0(%ebp)\n" /* skinnedSurf, boneOffset */
-        "movl 0x195eec0, %eax\n" /* line 1776 | skinnedSurf */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1776 | skinnedSurf */
         "movl (%eax), %eax\n" /* skinnedSurf */
         "cmpl $2, 8(%eax)\n" /* skinnedSurf */
         "je .Lfd2146_000d246b\n"
@@ -2845,13 +2845,13 @@ void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix)
         "je .Lfd2146_000d2647\n"
         "movzbl 0x3d(%ebx), %eax\n" /* matrixValues */
         "cvtsi2ssl %eax, %xmm0\n" /* matrixValues */
-        "mulss 0x2ed5c4, %xmm0\n" /* 0.00390625f */
+        "mulss lit4_002ed5c4, %xmm0\n" /* 0.00390625f */
         "shufps $0, %xmm0, %xmm0\n"
         "mulps -0x68(%ebp), %xmm0\n" /* __A */
         "movaps %xmm0, -0x68(%ebp)\n" /* __A */
         "leal 0x40(%ebx), %ecx\n"
         "xorl %ebx, %ebx\n"
-        "movss 0x2ed854, %xmm5\n" /* 1.52587890625e-05f */
+        "movss lit4_002ed854, %xmm5\n" /* 1.52587890625e-05f */
         ".Lfd2146_000d27cd:\n"
         "movswl 0xc(%ecx), %edx\n" /* mat */
         "addl -0xb4(%ebp), %edx\n" /* mat */
@@ -2972,12 +2972,12 @@ void R_SkinXSurfaceSkinned(const DObjSkelMat *boneMatrix)
         "je .Lfd2146_000d285f\n"
         "movzbl 0x3d(%esi), %eax\n" /* line 1196 | vertex */
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5c4, %xmm0\n" /* 0.00390625f */
+        "mulss lit4_002ed5c4, %xmm0\n" /* 0.00390625f */
         "shufps $0, %xmm0, %xmm0\n"
         "mulps %xmm0, %xmm6\n"
         "leal 0x40(%esi), %ecx\n" /* line 1198 | vertex */
         "xorl %esi, %esi\n" /* vertex */
-        "movss 0x2ed854, %xmm5\n" /* 1.52587890625e-05f */
+        "movss lit4_002ed854, %xmm5\n" /* 1.52587890625e-05f */
         ".Lfd2146_000d2970:\n"
         "movswl 0xc(%ecx), %edx\n" /* line 1202 */
         "addl -0xb4(%ebp), %edx\n"
@@ -3023,7 +3023,7 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
         /* { scope 1: boneCount, refEnt */
         "leal (%eax, %eax, 4), %eax\n" /* line 2234 */
         "shll $0xd, %eax\n"
-        "movl 0x195f0fc, %edx\n"
+        "movl imp_g_skinBuffers, %edx\n"
         "addl %edx, %eax\n"
         "movl %eax, -0x34(%ebp)\n" /* matArray */
         /* { scope 2: boneMatrix */
@@ -3079,7 +3079,7 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
         "movss %xmm1, -0x3c(%ebp)\n" /* zw */
         "movss -0x28(%ebp), %xmm0\n" /* line 364 | yy */
         "addss %xmm2, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, (%ebx)\n"
         "movss -0x3c(%ebp), %xmm0\n" /* line 365 | zw */
@@ -3092,7 +3092,7 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
         "subss -0x3c(%ebp), %xmm4\n" /* line 369 | zw */
         "movss %xmm4, 0x10(%ebx)\n"
         "addss -0x2c(%ebp), %xmm2\n" /* line 370 | xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, 0x14(%ebx)\n"
         "movaps %xmm3, %xmm0\n" /* line 371 */
@@ -3106,7 +3106,7 @@ void R_SkinXModelCmd(SkinXModelCmd *skinCmd, int context)
         "movss -0x2c(%ebp), %xmm0\n" /* line 376 | xx */
         "addss -0x28(%ebp), %xmm0\n" /* yy */
         "movss %xmm0, -0x2c(%ebp)\n" /* xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss -0x2c(%ebp), %xmm0\n" /* xx */
         "movss %xmm0, 0x28(%ebx)\n"
         "movl $0, 0x2c(%ebx)\n" /* line 377 */
@@ -3266,7 +3266,7 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
         "movss %xmm1, -0x7c(%ebp)\n" /* zw */
         "movss -0x70(%ebp), %xmm0\n" /* line 364 | yy */
         "addss %xmm2, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x68(%ebp)\n" /* buf */
         "movss -0x7c(%ebp), %xmm0\n" /* line 365 | zw */
@@ -3280,7 +3280,7 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
         "subss -0x7c(%ebp), %xmm5\n" /* line 369 | zw */
         "movss %xmm5, -0x58(%ebp)\n"
         "addss -0x74(%ebp), %xmm2\n" /* line 370 | xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, -0x54(%ebp)\n"
         "movaps %xmm3, %xmm0\n" /* line 371 */
@@ -3294,7 +3294,7 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
         "movss -0x74(%ebp), %xmm0\n" /* line 376 | xx */
         "addss -0x70(%ebp), %xmm0\n" /* yy */
         "movss %xmm0, -0x74(%ebp)\n" /* xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss -0x74(%ebp), %xmm0\n" /* xx */
         "movss %xmm0, -0x40(%ebp)\n"
         "movl %eax, -0x3c(%ebp)\n" /* line 377 */

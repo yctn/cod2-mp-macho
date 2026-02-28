@@ -30,9 +30,9 @@ extern void R_EndDrawGroupLoop(int section, int viewIndex);
 extern void R_EndDrawGroupSection(int section);
 extern void R_IssueDrawGroups(void);
 
-static vec2_t cornerTexCoords[4]; /* 0x2f2240 */
-static const r_index_t quadIndices[6]; /* 0x2f2220 */
-static refexport_t re; /* 0xc85980 */
+static vec2_t cornerTexCoords[4]; /* cornerTexCoords */
+static const r_index_t quadIndices[6]; /* quadIndices */
+static refexport_t re; /* re */
 
 void R_FatalInitError(const char *msg);
 const char * R_ErrorDescription(HRESULT hr);
@@ -63,9 +63,9 @@ void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void); /
 void R_FatalInitError(const char *msg)
 {
     void (*printFunc)(int, const char *, ...) = *(void (**)(int, const char *, ...))&ri;
-    printFunc(0, (const char *)0x2238dc);
-    printFunc(0, (const char *)0x223938);
-    printFunc(0, (const char *)0x223994);
+    printFunc(0, (const char *)str_002238dc);
+    printFunc(0, (const char *)str_00223938);
+    printFunc(0, (const char *)str_00223994);
     printFunc(0, "\n%s\n", msg);
     ((void (*)(void))*(void **)0x1180708)();
 }
@@ -89,11 +89,11 @@ void R_CreateParticleCloudBuffer(void)
         "subl $0x6c, %esp\n"
         /* { scope 1 */
         "movl $0x14000, 4(%esp)\n" /* line 649 */
-        "movl $0x1180658, (%esp)\n"
+        "movl $dx+11704, (%esp)\n"
         "calll R_AllocStaticVertexBuffer\n"
         "movl %eax, %ebx\n" /* particleVertsIter */
         "movl $0x3000, 4(%esp)\n" /* line 650 */
-        "movl $0x118065c, (%esp)\n"
+        "movl $dx+11708, (%esp)\n"
         "calll R_AllocStaticIndexBuffer\n"
         "movl %eax, -0x20(%ebp)\n"
         "movl %ebx, -0x1c(%ebp)\n" /* particleVertsIter */
@@ -120,25 +120,25 @@ void R_CreateParticleCloudBuffer(void)
         "movl %edi, %ebx\n" /* particleVertsIter */
         "calll rand\n" /* line 665 */
         "cvtsi2ssl %eax, %xmm3\n"
-        "mulss 0x2ed630, %xmm3\n" /* 4.656612873077393e-10f */
+        "mulss lit4_002ed630, %xmm3\n" /* 4.656612873077393e-10f */
         "addss -0x38(%ebp), %xmm3\n"
-        "mulss 0x2ed604, %xmm3\n" /* 0.25f */
-        "subss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "mulss lit4_002ed604, %xmm3\n" /* 0.25f */
+        "subss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movss %xmm3, -0x68(%ebp)\n" /* line 666 */
         "calll rand\n"
         "cvtsi2ssl %eax, %xmm2\n"
-        "mulss 0x2ed630, %xmm2\n" /* 4.656612873077393e-10f */
+        "mulss lit4_002ed630, %xmm2\n" /* 4.656612873077393e-10f */
         "addss -0x34(%ebp), %xmm2\n"
-        "mulss 0x2ed604, %xmm2\n" /* 0.25f */
-        "subss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "mulss lit4_002ed604, %xmm2\n" /* 0.25f */
+        "subss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss %xmm2, -0x58(%ebp)\n" /* line 667 */
         "calll rand\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "mulss 0x2ed630, %xmm1\n" /* 4.656612873077393e-10f */
+        "mulss lit4_002ed630, %xmm1\n" /* 4.656612873077393e-10f */
         "cvtsi2ssl -0x3c(%ebp), %xmm0\n" /* zIter */
         "addss %xmm0, %xmm1\n"
-        "mulss 0x2ed610, %xmm1\n" /* 0.125f */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "mulss lit4_002ed610, %xmm1\n" /* 0.125f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "xorl %ecx, %ecx\n"
         "xorl %edx, %edx\n"
         "movss -0x68(%ebp), %xmm3\n"
@@ -149,7 +149,7 @@ void R_CreateParticleCloudBuffer(void)
         "movss %xmm1, 8(%ebx)\n" /* line 201 */
         "movl cornerTexCoords(%edx), %eax\n" /* line 37 */
         "movl %eax, 0xc(%ebx)\n"
-        "movl 0x2f2244(%edx), %eax\n" /* line 38 */
+        "movl cornerTexCoords+4(%edx), %eax\n" /* line 38 */
         "movl %eax, 0x10(%ebx)\n"
         "addl $0x14, %ebx\n" /* line 673 | particleVertsIter */
         "addl $1, %ecx\n" /* line 669 */
@@ -166,7 +166,7 @@ void R_CreateParticleCloudBuffer(void)
         "movw %ax, (%esi)\n" /* particleIndicesIter */
         "addl $2, %esi\n" /* line 680 | particleIndicesIter */
         "addl $2, %edx\n"
-        "movl $0x2f222c, %eax\n" /* line 676 */
+        "movl $quadIndices+12, %eax\n" /* line 676 */
         "cmpl %edx, %eax\n"
         "jne .Lfcab7e_000caccf\n"
         "addl $1, -0x3c(%ebp)\n" /* line 660 | zIter */
@@ -191,10 +191,10 @@ void R_CreateParticleCloudBuffer(void)
         "addl $0x2800, -0x1c(%ebp)\n"
         "cmpl $8, -0x44(%ebp)\n" /* xIter */
         "jne .Lfcab7e_000cabbe\n"
-        "movl 0x118065c, %eax\n" /* line 687 */
+        "movl dx+11708, %eax\n" /* line 687 */
         "movl %eax, (%esp)\n"
         "calll R_FinishStaticIndexBuffer\n"
-        "movl 0x1180658, %eax\n" /* line 688 */
+        "movl dx+11704, %eax\n" /* line 688 */
         "movl %eax, (%esp)\n"
         "calll R_FinishStaticVertexBuffer\n"
         /* } scope */
@@ -219,40 +219,40 @@ void R_ReleaseForShutdownOrReset(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x11805e8, %edx\n" /* line 936 */
+        "movl dx+11592, %edx\n" /* line 936 */
         "testl %edx, %edx\n"
         "jg .Lfcad62_000caef3\n"
         ".Lfcad62_000cad79:\n"
         "calll R_ShutdownRenderTargets\n" /* line 943 */
         "calll R_ShutdownStaticModelCache\n" /* line 945 */
-        "movl 0x1180628, %eax\n" /* line 722 */
+        "movl dx+11656, %eax\n" /* line 722 */
         "testl %eax, %eax\n"
         "je .Lfcad62_000cadac\n"
         ".Lfcad62_000cad8c:\n"
-        "movl 0x1180628, %eax\n" /* line 723 */
+        "movl dx+11656, %eax\n" /* line 723 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *8(%edx)\n"
-        "movl $0, 0x1180628\n"
+        "movl $0, dx+11656\n"
         "movl alwaysfails, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcad62_000cad8c\n"
         ".Lfcad62_000cadac:\n"
-        "movl 0x1180650, %eax\n" /* line 729 */
+        "movl dx+11696, %eax\n" /* line 729 */
         "testl %eax, %eax\n"
         "je .Lfcad62_000cadd5\n"
         ".Lfcad62_000cadb5:\n"
-        "movl 0x1180650, %eax\n" /* line 730 */
+        "movl dx+11696, %eax\n" /* line 730 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *8(%edx)\n"
-        "movl $0, 0x1180650\n"
+        "movl $0, dx+11696\n"
         "movl alwaysfails, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcad62_000cadb5\n"
         ".Lfcad62_000cadd5:\n"
         "movl $dx, %esi\n"
-        "movl $0x117d8b8, %edi\n"
+        "movl $dx+24, %edi\n"
         ".Lfcad62_000caddf:\n"
         "leal 0x2d98(%esi), %ebx\n" /* line 930 */
         "movl 0x2d98(%esi), %eax\n" /* line 736 */
@@ -271,37 +271,37 @@ void R_ReleaseForShutdownOrReset(void)
         "addl $0xc, %esi\n"
         "cmpl %esi, %edi\n" /* line 734 */
         "jne .Lfcad62_000caddf\n"
-        "movl 0x1180670, %eax\n" /* line 740 */
+        "movl dx+11728, %eax\n" /* line 740 */
         "testl %eax, %eax\n"
         "je .Lfcad62_000cae35\n"
         "movl %eax, (%esp)\n" /* line 742 */
-        "calll *0x11806ec\n"
-        "movl $0, 0x1180670\n" /* line 743 */
-        "movl $0, 0x1180674\n" /* line 744 */
+        "calll *ri+44\n"
+        "movl $0, dx+11728\n" /* line 743 */
+        "movl $0, dx+11732\n" /* line 744 */
         ".Lfcad62_000cae35:\n"
-        "movl 0x1180658, %eax\n" /* line 702 */
+        "movl dx+11704, %eax\n" /* line 702 */
         "testl %eax, %eax\n"
         "je .Lfcad62_000cae50\n"
         "movl %eax, (%esp)\n" /* line 704 */
         "calll R_FreeStaticVertexBuffer\n"
-        "movl $0, 0x1180658\n" /* line 705 */
+        "movl $0, dx+11704\n" /* line 705 */
         ".Lfcad62_000cae50:\n"
-        "movl 0x118065c, %eax\n" /* line 708 */
+        "movl dx+11708, %eax\n" /* line 708 */
         "testl %eax, %eax\n"
         "je .Lfcad62_000cae6b\n"
         "movl %eax, (%esp)\n" /* line 710 */
         "calll R_FreeStaticIndexBuffer\n"
-        "movl $0, 0x118065c\n" /* line 711 */
+        "movl $0, dx+11708\n" /* line 711 */
         ".Lfcad62_000cae6b:\n"
-        "movl 0x11805fc, %ebx\n" /* line 952 */
+        "movl dx+11612, %ebx\n" /* line 952 */
         "testl %ebx, %ebx\n"
         "je .Lfcad62_000cae96\n"
         ".Lfcad62_000cae75:\n"
-        "movl 0x11805fc, %eax\n" /* line 953 */
+        "movl dx+11612, %eax\n" /* line 953 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *8(%edx)\n"
-        "movl $0, 0x11805fc\n"
+        "movl $0, dx+11612\n"
         "movl alwaysfails, %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfcad62_000cae75\n"
@@ -310,7 +310,7 @@ void R_ReleaseForShutdownOrReset(void)
         "movl $0, -0x20(%ebp)\n"
         ".Lfcad62_000caea4:\n"
         "movl -0x20(%ebp), %esi\n" /* windowIndex */
-        "addl 0x195f088, %esi\n" /* windowIndex */
+        "addl imp_sunFlareArray, %esi\n" /* windowIndex */
         "movl $2, %edi\n"
         ".Lfcad62_000caeb2:\n"
         "leal 0x24(%esi), %ebx\n" /* line 930 */
@@ -355,7 +355,7 @@ void R_ReleaseForShutdownOrReset(void)
         /* } scope */
         "addl $1, %esi\n" /* line 936 | windowIndex */
         "addl $0x10, %ebx\n"
-        "cmpl 0x11805e8, %esi\n" /* windowIndex */
+        "cmpl dx+11592, %esi\n" /* windowIndex */
         "jl .Lfcad62_000caefa\n"
         "jmp .Lfcad62_000cad79\n"
     );
@@ -391,7 +391,7 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
         "movl %ecx, %edi\n" /* d3dpp */
         /* { scope 1 */
         ".Lfcaf5a_000caf6b:\n"
-        "movl $0x2239f8, 4(%esp)\n" /* line 1113 */
+        "movl $str_002239f8, 4(%esp)\n" /* line 1113 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "xorl %esi, %esi\n" /* attempt */
@@ -403,16 +403,16 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
         "cmpl $0x14, %esi\n" /* line 1115 | attempt */
         "je .Lfcaf5a_000cafe1\n"
         ".Lfcaf5a_000caf98:\n"
-        "movl 0x117d8a4, %eax\n" /* line 1117 */
+        "movl dx+4, %eax\n" /* line 1117 */
         "movl (%eax), %ecx\n"
-        "movl $0x117d8a8, 0x18(%esp)\n"
+        "movl $dx+8, 0x18(%esp)\n"
         "movl %edi, 0x14(%esp)\n" /* d3dpp */
         "movl -0x20(%ebp), %edx\n"
         "movl %edx, 0x10(%esp)\n"
         "movl -0x1c(%ebp), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl $1, 8(%esp)\n"
-        "movl 0x117d8ac, %edx\n"
+        "movl dx+12, %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x40(%ecx)\n"
@@ -430,10 +430,10 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
         "retl\n"
         /* { scope 1 */
         ".Lfcaf5a_000cafe1:\n"
-        "movl 0x117d8ac, %ecx\n" /* line 1124 */
+        "movl dx+12, %ecx\n" /* line 1124 */
         "testl %ecx, %ecx\n"
         "je .Lfcaf5a_000cafd7\n"
-        "movl $0, 0x117d8ac\n" /* line 1126 */
+        "movl $0, dx+12\n" /* line 1126 */
         "jmp .Lfcaf5a_000caf6b\n"
     );
 }
@@ -441,10 +441,10 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
 /* line 1256 */
 void R_UpdateGpuSyncType(void)
 {
-    if (*(byte *)(*(int *)(*(int *)0x195ef50) + 8)) {
+    if (*(byte *)(*(int *)(*(int *)imp_r_multiGpu) + 8)) {
         *(int *)0x11804c0 = 0;
     } else {
-        *(int *)0x11804c0 = *(int *)(*(int *)(*(int *)0x195ef20) + 8);
+        *(int *)0x11804c0 = *(int *)(*(int *)(*(int *)imp_r_gpuSync) + 8);
     }
 }
 
@@ -494,175 +494,175 @@ refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp)
         "calll memset\n"
         "cmpl $0x3b, 8(%ebp)\n" /* line 2107 | apiVersion */
         "jne .Lfcb074_000cb42f\n"
-        "movl $0xcb66e, re\n" /* line 2115 */
-        "movl $R_BeginRegistration, 0xc85984\n" /* line 2117 */
-        "movl 0x195f040, %eax\n" /* line 2118 */
-        "movl %eax, 0xc85988\n"
-        "movl 0x195f070, %eax\n" /* line 2119 */
-        "movl %eax, 0xc8598c\n"
-        "movl 0x195ef58, %eax\n" /* line 2124 */
-        "movl %eax, 0xc859b0\n"
-        "movl 0x195ef68, %eax\n" /* line 2133 */
-        "movl %eax, 0xc85990\n"
-        "movl 0x195ef84, %eax\n" /* line 2134 */
-        "movl %eax, 0xc85994\n"
-        "movl 0x195f0bc, %eax\n" /* line 2135 */
-        "movl %eax, 0xc85998\n"
-        "movl 0x195f06c, %eax\n" /* line 2136 */
-        "movl %eax, 0xc8599c\n"
-        "movl 0x195efb8, %eax\n" /* line 2137 */
-        "movl %eax, 0xc859a0\n"
-        "movl 0x195f0a0, %eax\n" /* line 2139 */
-        "movl %eax, 0xc859a4\n"
-        "movl 0x195f064, %eax\n" /* line 2141 */
-        "movl %eax, 0xc859a8\n"
-        "movl 0x195efc4, %eax\n" /* line 2142 */
-        "movl %eax, 0xc859ac\n"
-        "movl $R_EndRegistration, 0xc859c4\n" /* line 2143 */
-        "movl 0x195f078, %eax\n" /* line 2144 */
-        "movl %eax, 0xc859b4\n"
-        "movl 0x195efbc, %eax\n" /* line 2145 */
-        "movl %eax, 0xc859b8\n"
-        "movl 0x195f098, %eax\n" /* line 2146 */
-        "movl %eax, 0xc859bc\n"
-        "movl 0x195f014, %eax\n" /* line 2147 */
-        "movl %eax, 0xc859c0\n"
-        "movl 0x195f0b4, %eax\n" /* line 2149 */
-        "movl %eax, 0xc85a28\n"
-        "movl 0x195f04c, %eax\n" /* line 2150 */
-        "movl %eax, 0xc85a2c\n"
-        "movl 0x195ef70, %eax\n" /* line 2152 */
-        "movl %eax, 0xc85a30\n"
-        "movl 0x195ef78, %eax\n" /* line 2153 */
-        "movl %eax, 0xc85a34\n"
-        "movl $R_EndView, 0xc85a38\n" /* line 2155 */
-        "movl $R_DoneRenderingViews, 0xc85a3c\n" /* line 2156 */
-        "movl 0x195f00c, %eax\n" /* line 2158 */
-        "movl %eax, 0xc85a40\n"
-        "movl 0x195f020, %eax\n" /* line 2159 */
-        "movl %eax, 0xc85a44\n"
-        "movl 0x195ef60, %eax\n" /* line 2160 */
-        "movl %eax, 0xc85a48\n"
-        "movl 0x195f0a4, %eax\n" /* line 2161 */
-        "movl %eax, 0xc85a4c\n"
-        "movl 0x195f07c, %eax\n" /* line 2163 */
-        "movl %eax, 0xc85a50\n"
-        "movl 0x195f02c, %eax\n" /* line 2164 */
-        "movl %eax, 0xc85a54\n"
-        "movl 0x195f05c, %eax\n" /* line 2166 */
-        "movl %eax, 0xc859c8\n"
-        "movl 0x195efd0, %eax\n" /* line 2177 */
-        "movl %eax, 0xc859cc\n"
-        "movl 0x195eff0, %eax\n" /* line 2178 */
-        "movl %eax, 0xc859d0\n"
-        "movl 0x195efa0, %eax\n" /* line 2179 */
-        "movl %eax, 0xc859d4\n"
-        "movl 0x195f084, %eax\n" /* line 2180 */
-        "movl %eax, 0xc859d8\n"
-        "movl 0x195efec, %eax\n" /* line 2181 */
-        "movl %eax, 0xc859dc\n"
-        "movl 0x195ef90, %eax\n" /* line 2182 */
-        "movl %eax, 0xc859e0\n"
-        "movl 0x195f0ac, %eax\n" /* line 2183 */
-        "movl %eax, 0xc859e4\n"
-        "movl 0x195efd4, %eax\n" /* line 2184 */
-        "movl %eax, 0xc859e8\n"
-        "movl 0x195f080, %eax\n" /* line 2185 */
-        "movl %eax, 0xc859ec\n"
-        "movl 0x195efcc, %eax\n" /* line 2186 */
-        "movl %eax, 0xc859f0\n"
-        "movl 0x195efe8, %eax\n" /* line 2187 */
-        "movl %eax, 0xc859f4\n"
-        "movl 0x195f018, %eax\n" /* line 2188 */
-        "movl %eax, 0xc859f8\n"
-        "movl 0x195ef64, %eax\n" /* line 2190 */
-        "movl %eax, 0xc859fc\n"
-        "movl 0x195f044, %eax\n" /* line 2192 */
-        "movl %eax, 0xc85a00\n"
-        "movl 0x195efc0, %eax\n" /* line 2193 */
-        "movl %eax, 0xc85a04\n"
-        "movl 0x195f01c, %eax\n" /* line 2194 */
-        "movl %eax, 0xc85a08\n"
-        "movl 0x195efc8, %eax\n" /* line 2196 */
-        "movl %eax, 0xc85a0c\n"
-        "movl 0x195f08c, %eax\n" /* line 2198 */
-        "movl %eax, 0xc85a14\n"
-        "movl 0x195f004, %eax\n" /* line 2199 */
-        "movl %eax, 0xc85a18\n"
-        "movl 0x195f09c, %eax\n" /* line 2200 */
-        "movl %eax, 0xc85a1c\n"
-        "movl 0x195f038, %eax\n" /* line 2201 */
-        "movl %eax, 0xc85a20\n"
-        "movl 0x195efa4, %eax\n" /* line 2202 */
-        "movl %eax, 0xc85a24\n"
-        "movl 0x195effc, %eax\n" /* line 2204 */
-        "movl %eax, 0xc85a10\n"
-        "movl 0x195f0c0, %eax\n" /* line 2206 */
-        "movl %eax, 0xc85a60\n"
-        "movl 0x195ef74, %eax\n" /* line 2207 */
-        "movl %eax, 0xc85a64\n"
-        "movl 0x195f074, %eax\n" /* line 2208 */
-        "movl %eax, 0xc85a68\n"
-        "movl 0x195efe0, %eax\n" /* line 2210 */
-        "movl %eax, 0xc85a6c\n"
-        "movl 0x195f090, %eax\n" /* line 2211 */
-        "movl %eax, 0xc85a70\n"
-        "movl 0x195efdc, %eax\n" /* line 2212 */
-        "movl %eax, 0xc85a74\n"
-        "movl 0x195efb0, %eax\n" /* line 2213 */
-        "movl %eax, 0xc85a78\n"
-        "movl 0x195f048, %eax\n" /* line 2215 */
-        "movl %eax, 0xc85a7c\n"
-        "movl 0x195ef80, %eax\n" /* line 2216 */
-        "movl %eax, 0xc85a80\n"
-        "movl 0x195eff4, %eax\n" /* line 2217 */
-        "movl %eax, 0xc85a84\n"
-        "movl 0x195f068, %eax\n" /* line 2218 */
-        "movl %eax, 0xc85a88\n"
-        "movl $R_TrackStatistics, 0xc85a58\n" /* line 2220 */
-        "movl 0x195efac, %eax\n" /* line 2221 */
-        "movl %eax, 0xc85a5c\n"
-        "movl 0x195f060, %eax\n" /* line 2223 */
-        "movl %eax, 0xc85a8c\n"
-        "movl 0x195efd8, %eax\n" /* line 2224 */
-        "movl %eax, 0xc85a90\n"
-        "movl 0x195ef7c, %eax\n" /* line 2225 */
-        "movl %eax, 0xc85a94\n"
-        "movl 0x195efe4, %eax\n" /* line 2226 */
-        "movl %eax, 0xc85a98\n"
-        "movl 0x195f030, %eax\n" /* line 2227 */
-        "movl %eax, 0xc85a9c\n"
-        "movl 0x195f008, %eax\n" /* line 2228 */
-        "movl %eax, 0xc85aa0\n"
-        "movl 0x195f0b8, %eax\n" /* line 2229 */
-        "movl %eax, 0xc85aa4\n"
-        "movl 0x195f054, %eax\n" /* line 2230 */
-        "movl %eax, 0xc85aa8\n"
-        "movl 0x195f010, %eax\n" /* line 2231 */
-        "movl %eax, 0xc85aac\n"
-        "movl 0x195f03c, %eax\n" /* line 2233 */
-        "movl %eax, 0xc85ab0\n"
-        "movl 0x195eff8, %eax\n" /* line 2234 */
-        "movl %eax, 0xc85ab4\n"
-        "movl 0x195f034, %eax\n" /* line 2237 */
-        "movl %eax, 0xc85ab8\n"
-        "movl 0x195ef6c, %eax\n" /* line 2287 */
-        "movl %eax, 0xc85abc\n"
-        "movl 0x195efb4, %eax\n" /* line 2288 */
-        "movl %eax, 0xc85ac0\n"
-        "movb $1, 0xc85ac4\n" /* line 2318 */
-        "movl 0x195ef9c, %eax\n" /* line 2321 */
-        "movl %eax, 0xc85ac8\n"
-        "movl 0x195ef94, %eax\n" /* line 2322 */
-        "movl %eax, 0xc85acc\n"
-        "movl 0x195ef98, %eax\n" /* line 2330 */
-        "movl %eax, 0xc85ad0\n"
-        "movl 0x195ef8c, %eax\n" /* line 2331 */
-        "movl %eax, 0xc85ad4\n"
-        "movl 0x195f0b0, %eax\n" /* line 2332 */
-        "movl %eax, 0xc85ad8\n"
-        "movl 0x195ef5c, %eax\n" /* line 2334 */
-        "movl %eax, 0xc85adc\n"
+        "movl $R_Shutdown, re\n" /* line 2115 */
+        "movl $R_BeginRegistration, re+4\n" /* line 2117 */
+        "movl imp___Z15R_RegisterModelPKc, %eax\n" /* line 2118 */
+        "movl %eax, re+8\n"
+        "movl imp___Z21R_RegisterInlineModeli, %eax\n" /* line 2119 */
+        "movl %eax, re+12\n"
+        "movl imp___Z23R_GetMinSpecImageMemoryv, %eax\n" /* line 2124 */
+        "movl %eax, re+48\n"
+        "movl imp___Z23Material_RegisterHandlePKcii, %eax\n" /* line 2133 */
+        "movl %eax, re+16\n"
+        "movl imp___Z18R_RegisterRawImagePKcii, %eax\n" /* line 2134 */
+        "movl %eax, re+20\n"
+        "movl imp___Z18Material_IsDefaultPK8Material, %eax\n" /* line 2135 */
+        "movl %eax, re+24\n"
+        "movl imp___Z11R_LoadWorldPKcPi, %eax\n" /* line 2136 */
+        "movl %eax, re+28\n"
+        "movl imp___Z16R_GetWorldBoundsPfS_, %eax\n" /* line 2137 */
+        "movl %eax, re+32\n"
+        "movl imp___Z21R_FinishLoadingModelsv, %eax\n" /* line 2139 */
+        "movl %eax, re+36\n"
+        "movl imp___Z25R_SetIgnorePrecacheErrorsi, %eax\n" /* line 2141 */
+        "movl %eax, re+40\n"
+        "movl imp___Z25R_GetIgnorePrecacheErrorsv, %eax\n" /* line 2142 */
+        "movl %eax, re+44\n"
+        "movl $R_EndRegistration, re+68\n" /* line 2143 */
+        "movl imp___Z17R_GetMaterialNameP8Material, %eax\n" /* line 2144 */
+        "movl %eax, re+52\n"
+        "movl imp___Z26R_GetMaterialSubimageCountP8Material, %eax\n" /* line 2145 */
+        "movl %eax, re+56\n"
+        "movl imp___Z22R_IsMaterialRefractiveP8Material, %eax\n" /* line 2146 */
+        "movl %eax, re+60\n"
+        "movl imp___Z17R_GetFarPlaneDistv, %eax\n" /* line 2147 */
+        "movl %eax, re+64\n"
+        "movl imp___Z12R_BeginFramev, %eax\n" /* line 2149 */
+        "movl %eax, re+168\n"
+        "movl imp___Z10R_EndFramev, %eax\n" /* line 2150 */
+        "movl %eax, re+172\n"
+        "movl imp___Z17R_BeginDebugFramev, %eax\n" /* line 2152 */
+        "movl %eax, re+176\n"
+        "movl imp___Z15R_EndDebugFramev, %eax\n" /* line 2153 */
+        "movl %eax, re+180\n"
+        "movl $R_EndView, re+184\n" /* line 2155 */
+        "movl $R_DoneRenderingViews, re+188\n" /* line 2156 */
+        "movl imp___Z18R_AddCmdSaveScreenv, %eax\n" /* line 2158 */
+        "movl %eax, re+192\n"
+        "movl imp___Z24R_AddCmdBlendSavedScreeni, %eax\n" /* line 2159 */
+        "movl %eax, re+196\n"
+        "movl imp___Z19R_AddCmdClearScreeniPKffh, %eax\n" /* line 2160 */
+        "movl %eax, re+200\n"
+        "movl imp___Z19R_AddCmdSetViewportiiii, %eax\n" /* line 2161 */
+        "movl %eax, re+204\n"
+        "movl imp___Z15R_MarkFragmentsPA3_KfPS_S1_fiP14GfxWorldVertexiP15GfxMarkFragmentP8Material, %eax\n" /* line 2163 */
+        "movl %eax, re+208\n"
+        "movl imp___Z13R_ModelBoundsP13GfxBrushModelPfS1_, %eax\n" /* line 2164 */
+        "movl %eax, re+212\n"
+        "movl imp___Z12R_ClearScenev, %eax\n" /* line 2166 */
+        "movl %eax, re+72\n"
+        "movl imp___Z21R_DefaultVertexFramesiP14GfxWorldVertex, %eax\n" /* line 2177 */
+        "movl %eax, re+76\n"
+        "movl imp___Z16R_AddPolyToSceneP8MaterialttPK14GfxWorldVertex, %eax\n" /* line 2178 */
+        "movl %eax, re+80\n"
+        "movl imp___Z17R_AddLightToScenePKfffff, %eax\n" /* line 2179 */
+        "movl %eax, re+84\n"
+        "movl imp___Z30R_InterpretSunLightParseParamsP19SunLightParseParams, %eax\n" /* line 2180 */
+        "movl %eax, re+88\n"
+        "movl imp___Z26R_ResetSunLightParseParamsv, %eax\n" /* line 2181 */
+        "movl %eax, re+92\n"
+        "movl imp___Z13R_SetCullDistf, %eax\n" /* line 2182 */
+        "movl %eax, re+96\n"
+        "movl imp___Z8R_SetFogiffhhhf, %eax\n" /* line 2183 */
+        "movl %eax, re+100\n"
+        "movl imp___Z11R_SwitchFogiii, %eax\n" /* line 2184 */
+        "movl %eax, re+104\n"
+        "movl imp___Z17R_ArchiveFogStateP10MemoryFile, %eax\n" /* line 2185 */
+        "movl %eax, re+108\n"
+        "movl imp___Z11R_ClearFogsv, %eax\n" /* line 2186 */
+        "movl %eax, re+112\n"
+        "movl imp___Z21R_SetSunLightOverridePKf, %eax\n" /* line 2187 */
+        "movl %eax, re+116\n"
+        "movl imp___Z23R_ResetSunLightOverridev, %eax\n" /* line 2188 */
+        "movl %eax, re+120\n"
+        "movl imp___Z13R_RenderScenePK8refdef_s, %eax\n" /* line 2190 */
+        "movl %eax, re+124\n"
+        "movl imp___Z21R_BeginDelayedDrawingv, %eax\n" /* line 2192 */
+        "movl %eax, re+128\n"
+        "movl imp___Z19R_EndDelayedDrawingi, %eax\n" /* line 2193 */
+        "movl %eax, re+132\n"
+        "movl imp___Z21R_IssueDelayedDrawingi, %eax\n" /* line 2194 */
+        "movl %eax, re+136\n"
+        "movl imp___Z13R_ClearFlaresv, %eax\n" /* line 2196 */
+        "movl %eax, re+140\n"
+        "movl imp___Z22R_AddCmdDrawStretchPicffffffffPKfP8Material, %eax\n" /* line 2198 */
+        "movl %eax, re+148\n"
+        "movl imp___Z28R_AddCmdDrawStretchPicRotatefffffffffPKfP8Material, %eax\n" /* line 2199 */
+        "movl %eax, re+152\n"
+        "movl imp___Z22R_AddCmdDrawStretchRawiiiiiiPKhii, %eax\n" /* line 2200 */
+        "movl %eax, re+156\n"
+        "movl imp___Z19R_AddCmdDrawQuadPicPA2_KfPS_P8Material, %eax\n" /* line 2201 */
+        "movl %eax, re+160\n"
+        "movl imp___Z18R_AddCmdDrawSpriteP8MaterialPKhPKfffi, %eax\n" /* line 2202 */
+        "movl %eax, re+164\n"
+        "movl imp___Z24R_AddCmdSetMaterialColorPKf, %eax\n" /* line 2204 */
+        "movl %eax, re+144\n"
+        "movl imp___Z14R_RegisterFontPKci, %eax\n" /* line 2206 */
+        "movl %eax, re+224\n"
+        "movl imp___Z23R_ResetImageAllocationsv, %eax\n" /* line 2207 */
+        "movl %eax, re+228\n"
+        "movl imp___Z22R_FreeImageAllocationsv, %eax\n" /* line 2208 */
+        "movl %eax, re+232\n"
+        "movl imp___Z18R_BeginCubemapShotii, %eax\n" /* line 2210 */
+        "movl %eax, re+236\n"
+        "movl imp___Z16R_EndCubemapShot11CubemapShot, %eax\n" /* line 2211 */
+        "movl %eax, re+240\n"
+        "movl imp___Z17R_SaveCubemapShotPKc11CubemapShotff, %eax\n" /* line 2212 */
+        "movl %eax, re+244\n"
+        "movl imp___Z26R_LightingFromCubemapShotsPKf, %eax\n" /* line 2213 */
+        "movl %eax, re+248\n"
+        "movl imp___Z20R_LocateDebugStringsP15trDebugString_tii, %eax\n" /* line 2215 */
+        "movl %eax, re+252\n"
+        "movl imp___Z18R_LocateDebugLinesP13trDebugLine_tii, %eax\n" /* line 2216 */
+        "movl %eax, re+256\n"
+        "movl imp___Z10R_AddPlumePKfiS0_i, %eax\n" /* line 2217 */
+        "movl %eax, re+260\n"
+        "movl imp___Z15R_ShutdownDebugv, %eax\n" /* line 2218 */
+        "movl %eax, re+264\n"
+        "movl $R_TrackStatistics, re+216\n" /* line 2220 */
+        "movl imp___Z14R_PickMaterialPKfS0_PcS1_S1_i, %eax\n" /* line 2221 */
+        "movl %eax, re+220\n"
+        "movl imp___Z14RB_UpdateColorPKfS0_, %eax\n" /* line 2223 */
+        "movl %eax, re+268\n"
+        "movl imp___Z21R_NormalizedTextScaleP6Font_sf, %eax\n" /* line 2224 */
+        "movl %eax, re+272\n"
+        "movl imp___Z11R_TextWidthPKciP6Font_s, %eax\n" /* line 2225 */
+        "movl %eax, re+276\n"
+        "movl imp___Z12R_TextHeightP6Font_s, %eax\n" /* line 2226 */
+        "movl %eax, re+280\n"
+        "movl imp___Z10R_DrawTextPKciP6Font_sffffPKfi, %eax\n" /* line 2227 */
+        "movl %eax, re+284\n"
+        "movl imp___Z23R_AddCmdDrawTextInSpacePKcP6Font_sPKfS4_S4_S4_, %eax\n" /* line 2228 */
+        "movl %eax, re+288\n"
+        "movl imp___Z18R_ConsoleTextWidthPKsiP6Font_s, %eax\n" /* line 2229 */
+        "movl %eax, re+292\n"
+        "movl imp___Z17R_DrawConsoleTextPKsiP6Font_sffffPKfi, %eax\n" /* line 2230 */
+        "movl %eax, re+296\n"
+        "movl imp___Z26R_AddCmdDrawTextWithCursorPKciP6Font_sffffPKfiic, %eax\n" /* line 2231 */
+        "movl %eax, re+300\n"
+        "movl imp___Z22R_DObjGetSurfMaterialsP6DObj_siPP8Material, %eax\n" /* line 2233 */
+        "movl %eax, re+304\n"
+        "movl imp___Z21R_DObjReplaceMaterialP6DObj_siiP8Material, %eax\n" /* line 2234 */
+        "movl %eax, re+308\n"
+        "movl imp___Z15R_ParseSunLightP19SunLightParseParamsPKc, %eax\n" /* line 2237 */
+        "movl %eax, re+312\n"
+        "movl imp___Z18Material_DuplicateP8MaterialPKc, %eax\n" /* line 2287 */
+        "movl %eax, re+316\n"
+        "movl imp___Z15R_DuplicateFontP6Font_sPKc, %eax\n" /* line 2288 */
+        "movl %eax, re+320\n"
+        "movb $1, re+324\n" /* line 2318 */
+        "movl imp___Z18R_SyncRenderThreadv, %eax\n" /* line 2321 */
+        "movl %eax, re+328\n"
+        "movl imp___Z21R_AbortRenderCommandsv, %eax\n" /* line 2322 */
+        "movl %eax, re+332\n"
+        "movl imp___Z21RB_IsGpuFenceFinishedv, %eax\n" /* line 2330 */
+        "movl %eax, re+336\n"
+        "movl imp___Z22RB_AdaptiveGpuSyncWaitv, %eax\n" /* line 2331 */
+        "movl %eax, re+340\n"
+        "movl imp___Z12RB_GpuWaitedi, %eax\n" /* line 2332 */
+        "movl %eax, re+344\n"
+        "movl imp___Z14R_SetLodOriginPK8refdef_s, %eax\n" /* line 2334 */
+        "movl %eax, re+348\n"
         "movl $re, %eax\n"
         /* } scope */
         "leave\n" /* line 2338 */
@@ -672,7 +672,7 @@ refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp)
         "movl 8(%ebp), %eax\n" /* line 2109 | apiVersion */
         "movl %eax, 0xc(%esp)\n"
         "movl $0x3b, 8(%esp)\n"
-        "movl $0x223a18, 4(%esp)\n" /* "Mismatched REF_API_VERSION: expected %i, got %i
+        "movl $str_00223a18, 4(%esp)\n" /* "Mismatched REF_API_VERSION: expected %i, got %i
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
@@ -697,13 +697,13 @@ void R_Error(errorParm_t errorLevel, const char *msg)
         "testb %al, %al\n"
         "jne .Lfcb458_000cb4d7\n"
         ".Lfcb458_000cb46b:\n"
-        "cmpb $0, 0x11805dd\n" /* line 2471 */
+        "cmpb $0, dx+11581\n" /* line 2471 */
         "je .Lfcb458_000cb48b\n"
-        "movl 0x117d8a8, %eax\n" /* line 2473 */
+        "movl dx+8, %eax\n" /* line 2473 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *0xa8(%edx)\n"
-        "movb $0, 0x11805dd\n" /* line 2474 */
+        "movb $0, dx+11581\n" /* line 2474 */
         ".Lfcb458_000cb48b:\n"
         "leal 0x10(%ebp), %eax\n" /* line 2477 */
         "movl %eax, -0xc(%ebp)\n" /* vargs */
@@ -716,10 +716,10 @@ void R_Error(errorParm_t errorLevel, const char *msg)
         "calll vsnprintf\n"
         "movb $0, -0xd(%ebp)\n" /* line 2479 */
         "movl %ebx, 8(%esp)\n" /* line 2482 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "movl 8(%ebp), %eax\n" /* errorLevel */
         "movl %eax, (%esp)\n"
-        "calll *0x11806c4\n"
+        "calll *ri+4\n"
         /* } scope */
         "addl $0x424, %esp\n" /* line 2483 */
         "popl %ebx\n"
@@ -746,9 +746,9 @@ void R_GammaCorrect(byte *buffer, int bufSize)
         "movl 8(%ebp), %edi\n" /* buffer */
         /* { scope 1 */
         /* { scope 2 */
-        "movl 0x195efa8, %eax\n" /* line 768 */
+        "movl imp_r_gamma, %eax\n" /* line 768 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movaps %xmm1, %xmm0\n"
         "divss 8(%eax), %xmm0\n"
         "xorl %ebx, %ebx\n"
@@ -797,7 +797,7 @@ void R_GammaCorrect(byte *buffer, int bufSize)
         /* { scope 2 */
         ".Lfcb4e0_000cb56d:\n"
         "cvtsi2ssl %ebx, %xmm0\n" /* line 779 */
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "movsd -0x220(%ebp), %xmm1\n"
         "movsd %xmm1, 8(%esp)\n"
         "cvtss2sd %xmm0, %xmm0\n"
@@ -805,8 +805,8 @@ void R_GammaCorrect(byte *buffer, int bufSize)
         "calll pow\n"
         "fstpl -0x228(%ebp)\n"
         "cvtsd2ss -0x228(%ebp), %xmm0\n"
-        "mulss 0x2ed84c, %xmm0\n" /* 65535.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed84c, %xmm0\n" /* 65535.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x22c(%ebp)\n"
@@ -836,7 +836,7 @@ static void R_InitSystems(void)
 void R_FatalLockError(HRESULT hr)
 {
     void (*printFunc)(int, const char *, ...) = *(void (**)(int, const char *, ...))&ri;
-    printFunc(0, (const char *)0x223a4c);
+    printFunc(0, (const char *)str_00223a4c);
     printFunc(0, "********** error information:  %s\n", DXGetErrorDescription9A(hr));
     ((void (*)(void))*(void **)0x1180708)();
 }
@@ -852,10 +852,10 @@ void R_Shutdown(qboolean destroyWindow)
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* destroyWindow */
         "movb $0, rg\n" /* line 1923 */
-        "movl 0x117d8a8, %eax\n" /* line 1908 */
+        "movl dx+8, %eax\n" /* line 1908 */
         "testl %eax, %eax\n"
         "je .Lfcb66e_000cb695\n"
-        "cmpb $0, 0x11805dc\n" /* line 1912 */
+        "cmpb $0, dx+11580\n" /* line 1912 */
         "je .Lfcb66e_000cb776\n"
         ".Lfcb66e_000cb695:\n"
         "calll R_ShutdownBackendData\n" /* line 1935 */
@@ -867,7 +867,7 @@ void R_Shutdown(qboolean destroyWindow)
         "calll R_ShutdownModels\n" /* line 1942 */
         "calll Material_Shutdown\n" /* line 1943 */
         "calll R_ShutdownImages\n" /* line 1944 */
-        "movl $0, 0x1184b9c\n" /* line 1953 */
+        "movl $0, rgp+4252\n" /* line 1953 */
         "calll R_UnlockSkinnedCache\n" /* line 1957 */
         "calll R_FlushStaticModelCache\n" /* line 1961 */
         "testl %ebx, %ebx\n" /* line 1964 | destroyWindow */
@@ -878,41 +878,41 @@ void R_Shutdown(qboolean destroyWindow)
         "jmp R_UnregisterCmds\n" /* line 1972 */
         ".Lfcb66e_000cb6e4:\n"
         "calll R_ReleaseForShutdownOrReset\n" /* line 1741 */
-        "movl 0x11805e8, %eax\n" /* line 1743 */
+        "movl dx+11592, %eax\n" /* line 1743 */
         "testl %eax, %eax\n"
         "je .Lfcb66e_000cb713\n"
-        "movl $0x11805e0, %edx\n"
+        "movl $dx+11584, %edx\n"
         ".Lfcb66e_000cb6f7:\n"
         "subl $1, %eax\n" /* line 1745 */
-        "movl %eax, 0x11805e8\n"
+        "movl %eax, dx+11592\n"
         "shll $4, %eax\n" /* line 1754 */
         "movl $0, 0xc(%eax, %edx)\n"
-        "movl 0x11805e8, %eax\n" /* line 1743 */
+        "movl dx+11592, %eax\n" /* line 1743 */
         "testl %eax, %eax\n"
         "jne .Lfcb66e_000cb6f7\n"
         ".Lfcb66e_000cb713:\n"
-        "movl 0x117d8a8, %eax\n" /* line 1757 */
+        "movl dx+8, %eax\n" /* line 1757 */
         "testl %eax, %eax\n"
         "je .Lfcb66e_000cb73c\n"
         ".Lfcb66e_000cb71c:\n"
-        "movl 0x117d8a8, %eax\n" /* line 1758 */
+        "movl dx+8, %eax\n" /* line 1758 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *8(%edx)\n"
-        "movl $0, 0x117d8a8\n"
+        "movl $0, dx+8\n"
         "movl alwaysfails, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfcb66e_000cb71c\n"
         ".Lfcb66e_000cb73c:\n"
-        "movl 0x117d8a4, %ebx\n" /* line 1760 */
+        "movl dx+4, %ebx\n" /* line 1760 */
         "testl %ebx, %ebx\n"
         "je .Lfcb66e_000cb767\n"
         ".Lfcb66e_000cb746:\n"
-        "movl 0x117d8a4, %eax\n" /* line 1761 */
+        "movl dx+4, %eax\n" /* line 1761 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *8(%edx)\n"
-        "movl $0, 0x117d8a4\n"
+        "movl $0, dx+4\n"
         "movl alwaysfails, %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfcb66e_000cb746\n"
@@ -938,12 +938,12 @@ void R_SetColorMappings(void)
         "pushl %ebx\n"
         "subl $0x234, %esp\n"
         /* { scope 1 */
-        "cmpb $0, 0x11806a8\n" /* line 793 */
+        "cmpb $0, vidConfig+40\n" /* line 793 */
         "je .Lfcb780_000cb7e7\n"
         /* { scope 2 */
-        "movl 0x195efa8, %eax\n" /* line 768 */
+        "movl imp_r_gamma, %eax\n" /* line 768 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movaps %xmm1, %xmm0\n"
         "divss 8(%eax), %xmm0\n"
         "xorl %ebx, %ebx\n"
@@ -975,7 +975,7 @@ void R_SetColorMappings(void)
         /* { scope 2 */
         ".Lfcb780_000cb7f0:\n"
         "cvtsi2ssl %ebx, %xmm0\n" /* line 779 */
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "movsd -0x210(%ebp), %xmm1\n"
         "movsd %xmm1, 8(%esp)\n"
         "cvtss2sd %xmm0, %xmm0\n"
@@ -983,8 +983,8 @@ void R_SetColorMappings(void)
         "calll pow\n"
         "fstpl -0x218(%ebp)\n"
         "cvtsd2ss -0x218(%ebp), %xmm0\n"
-        "mulss 0x2ed84c, %xmm0\n" /* 65535.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed84c, %xmm0\n" /* 65535.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x21c(%ebp)\n"
@@ -1009,29 +1009,29 @@ Bool R_CreateForInitOrReset(void)
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         /* { scope 1 */
-        "movl $0x223ac8, 4(%esp)\n" /* line 879 */
+        "movl $str_00223ac8, 4(%esp)\n" /* line 879 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "calll R_InitRenderTargets\n" /* line 880 */
-        "movl $0x223ae8, 4(%esp)\n" /* line 882 */
+        "movl $str_00223ae8, 4(%esp)\n" /* line 882 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "calll R_InitStaticModelCache\n" /* line 883 */
-        "movl $0x223b0c, 4(%esp)\n" /* line 885 */
+        "movl $str_00223b0c, 4(%esp)\n" /* line 885 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl 0x195eec0, %eax\n" /* line 1067 | d3dpp */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1067 | d3dpp */
         "movl (%eax), %eax\n" /* d3dpp */
         "movl $0x120000, %ebx\n" /* viewIndex */
         "cmpl $2, 8(%eax)\n" /* d3dpp */
         "movl $0x200000, %eax\n" /* d3dpp */
         "cmovnel %eax, %ebx\n" /* d3dpp, viewIndex */
-        "movl $0, 0x1180648\n" /* line 538 */
-        "movl %ebx, 0x118064c\n" /* line 539 */
-        "movl 0x117d8a8, %eax\n" /* line 552 */
+        "movl $0, dx+11688\n" /* line 538 */
+        "movl %ebx, dx+11692\n" /* line 539 */
+        "movl dx+8, %eax\n" /* line 552 */
         "movl (%eax), %edx\n"
         "movl $0, 0x18(%esp)\n"
-        "movl $0x1180650, 0x14(%esp)\n"
+        "movl $dx+11696, 0x14(%esp)\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0x208, 8(%esp)\n"
@@ -1041,20 +1041,20 @@ Bool R_CreateForInitOrReset(void)
         "testl %eax, %eax\n" /* line 553 */
         "js .Lfcb866_000cbb37\n"
         ".Lfcb866_000cb921:\n"
-        "movl $0x1180648, 0x1180654\n" /* line 593 */
+        "movl $dx+11688, dx+11700\n" /* line 593 */
         "movl $0, -0x1c(%ebp)\n"
         "movl $0x2d90, %esi\n"
-        "movl $0x1180638, %edi\n"
+        "movl $dx+11672, %edi\n"
         ".Lfcb866_000cb93c:\n"
-        "movl 0x195eec0, %eax\n" /* line 1067 | d3dpp */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1067 | d3dpp */
         "movl (%eax), %eax\n" /* d3dpp */
-        "movl $0x480000, %ebx\n" /* viewIndex */
+        "movl $info3+5504, %ebx\n" /* viewIndex */
         "cmpl $2, 8(%eax)\n" /* d3dpp */
-        "movl $0x800000, %eax\n" /* d3dpp */
+        "movl $s_debugFrameGlob+57728, %eax\n" /* d3dpp */
         "cmovnel %eax, %ebx\n" /* d3dpp, viewIndex */
         "movl $0, dx(%esi)\n" /* line 538 */
-        "movl %ebx, 0x117d8a4(%esi)\n" /* line 539 */
-        "movl 0x117d8a8, %eax\n" /* line 552 */
+        "movl %ebx, dx+4(%esi)\n" /* line 539 */
+        "movl dx+8, %eax\n" /* line 552 */
         "movl (%eax), %edx\n"
         "movl $0, 0x18(%esp)\n"
         "movl %edi, 0x14(%esp)\n"
@@ -1072,12 +1072,12 @@ Bool R_CreateForInitOrReset(void)
         "addl $0xc, %edi\n"
         "cmpl $2, -0x1c(%ebp)\n"
         "jne .Lfcb866_000cb93c\n"
-        "movl $0, 0x1180620\n" /* line 563 */
-        "movl $0x200000, 0x1180624\n" /* line 564 */
-        "movl 0x117d8a8, %eax\n" /* line 577 */
+        "movl $0, dx+11648\n" /* line 563 */
+        "movl $0x200000, dx+11652\n" /* line 564 */
+        "movl dx+8, %eax\n" /* line 577 */
         "movl (%eax), %edx\n"
         "movl $0, 0x18(%esp)\n"
-        "movl $0x1180628, 0x14(%esp)\n"
+        "movl $dx+11656, 0x14(%esp)\n"
         "movl $0, 0x10(%esp)\n"
         "movl $0x65, 0xc(%esp)\n"
         "movl $0x208, 8(%esp)\n"
@@ -1087,21 +1087,21 @@ Bool R_CreateForInitOrReset(void)
         "testl %eax, %eax\n" /* line 578 */
         "js .Lfcb866_000cbbb8\n"
         ".Lfcb866_000cba0a:\n"
-        "movl $0x1180620, 0x118062c\n" /* line 601 */
+        "movl $dx+11648, dx+11660\n" /* line 601 */
         "movl $0xa00000, (%esp)\n" /* line 606 */
-        "calll *0x11806e0\n"
-        "movl %eax, 0x1180670\n"
-        "movl $0x223b98, 4(%esp)\n" /* line 887 */
+        "calll *ri+32\n"
+        "movl %eax, dx+11728\n"
+        "movl $str_00223b98, 4(%esp)\n" /* line 887 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "calll R_CreateParticleCloudBuffer\n" /* line 888 */
-        "movl $0x223bc0, 4(%esp)\n" /* line 890 */
+        "movl $str_00223bc0, 4(%esp)\n" /* line 890 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movb $0, 0x1180608\n" /* line 893 */
-        "movl $0, 0x11805fc\n" /* line 899 */
+        "movb $0, dx+11624\n" /* line 893 */
+        "movl $0, dx+11612\n" /* line 899 */
         "xorl %ebx, %ebx\n" /* viewIndex */
-        "movl 0x195f088, %esi\n"
+        "movl imp_sunFlareArray, %esi\n"
         "xorl %ecx, %ecx\n"
         ".Lfcb866_000cba70:\n"
         "leal (%ecx, %esi), %eax\n" /* d3dpp */
@@ -1115,7 +1115,7 @@ Bool R_CreateForInitOrReset(void)
         "addl $0x30, %ecx\n"
         "cmpl $4, %ebx\n" /* viewIndex */
         "jne .Lfcb866_000cba70\n"
-        "movl $0x223be0, 4(%esp)\n" /* line 923 */
+        "movl $str_00223be0, 4(%esp)\n" /* line 923 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "calll RB_SetInitialState\n" /* line 924 */
@@ -1133,75 +1133,75 @@ Bool R_CreateForInitOrReset(void)
         "calll DXGetErrorDescription9A\n"
         "movl %eax, 8(%esp)\n" /* line 554 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
+        "movl $str_00223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
         "calll va\n"
         "movl %eax, %ebx\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         "jmp .Lfcb866_000cb9a1\n"
         ".Lfcb866_000cbb37:\n"
         "movl %eax, (%esp)\n" /* line 177 */
         "calll DXGetErrorDescription9A\n"
         "movl %eax, 8(%esp)\n" /* line 554 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
+        "movl $str_00223b30, (%esp)\n" /* "Couldn't create a %i-byte dynamic vertex buffer: %s" */
         "calll va\n"
         "movl %eax, %ebx\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         "jmp .Lfcb866_000cb921\n"
         ".Lfcb866_000cbbb8:\n"
         "movl %eax, (%esp)\n" /* line 177 */
         "calll DXGetErrorDescription9A\n"
         "movl %eax, 8(%esp)\n" /* line 579 */
         "movl $0x200000, 4(%esp)\n"
-        "movl $0x223b64, (%esp)\n" /* "Couldn't create a %i-byte dynamic index buffer: %s" */
+        "movl $str_00223b64, (%esp)\n" /* "Couldn't create a %i-byte dynamic index buffer: %s" */
         "calll va\n"
         "movl %eax, %ebx\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         "jmp .Lfcb866_000cba0a\n"
     );
 }
@@ -1217,7 +1217,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0xddc, %esp\n"
-        "movl $0x223bfc, 4(%esp)\n" /* line 1861 */
+        "movl $str_00223bfc, 4(%esp)\n" /* line 1861 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "calll Swap_Init\n" /* line 1869 */
@@ -1235,7 +1235,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "calll RB_DecideDefaultSamplerState\n" /* line 1803 */
         "calll R_InitBackendData\n" /* line 1874 */
         "calll R_InitDrawGroups\n" /* line 1876 */
-        "movl 0x117d8a8, %esi\n" /* line 1568 */
+        "movl dx+8, %esi\n" /* line 1568 */
         "testl %esi, %esi\n"
         "je .Lfcbc3e_000cbdf9\n"
         "calll R_InitSystems\n" /* line 1571 */
@@ -1245,9 +1245,9 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl $rg, %edi\n"
         ".Lfcbc3e_000cbcd9:\n"
         "cvtsi2ssl %ebx, %xmm0\n" /* line 1812 */
-        "mulss 0x2ed850, %xmm0\n" /* 0.3515625f */
+        "mulss lit4_002ed850, %xmm0\n" /* 0.3515625f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "movsd %xmm0, (%esp)\n"
         "calll sin\n"
         "fstpl -0xdb8(%ebp)\n"
@@ -1257,44 +1257,44 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "addl $4, %edi\n"
         "cmpl $0x400, %ebx\n"
         "jne .Lfcbc3e_000cbcd9\n"
-        "movl $0x1182e10, 4(%esp)\n" /* line 1818 */
-        "movl $0x1183610, (%esp)\n"
+        "movl $rg+9488, 4(%esp)\n" /* line 1818 */
+        "movl $rg+11536, (%esp)\n"
         "calll FFT_Init\n"
         "movl $0, -0x170(%ebp)\n" /* line 1834 */
         "movl $0, -0x16c(%ebp)\n" /* line 1835 */
         "movl $0, -0x168(%ebp)\n" /* line 1836 */
         "movl $0, 0x10(%esp)\n" /* line 1838 */
-        "movl $0x1183a14, 0xc(%esp)\n"
+        "movl $rg+12564, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
         "leal -0x170(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
-        "calll *0x118089c\n"
-        "movl $0x1183a14, 0x1183a10\n" /* line 1839 */
+        "calll *ri+476\n"
+        "movl $rg+12564, rg+12560\n" /* line 1839 */
         "calll RB_CalcSunSpriteSamples\n" /* line 1896 */
-        "movl %eax, 0x11804cc\n"
+        "movl %eax, dx+11308\n"
         "movl vidConfig, %eax\n" /* line 2007 */
         "movl 8(%ebp), %edx\n" /* vidConfigOut */
         "movl %eax, (%edx)\n"
-        "movl 0x1180684, %eax\n"
+        "movl vidConfig+4, %eax\n"
         "movl %eax, 4(%edx)\n"
-        "movl 0x1180688, %eax\n"
+        "movl vidConfig+8, %eax\n"
         "movl %eax, 8(%edx)\n"
-        "movl 0x118068c, %eax\n"
+        "movl vidConfig+12, %eax\n"
         "movl %eax, 0xc(%edx)\n"
-        "movl 0x1180690, %eax\n"
+        "movl vidConfig+16, %eax\n"
         "movl %eax, 0x10(%edx)\n"
-        "movl 0x1180694, %eax\n"
+        "movl vidConfig+20, %eax\n"
         "movl %eax, 0x14(%edx)\n"
-        "movl 0x1180698, %eax\n"
+        "movl vidConfig+24, %eax\n"
         "movl %eax, 0x18(%edx)\n"
-        "movl 0x118069c, %eax\n"
+        "movl vidConfig+28, %eax\n"
         "movl %eax, 0x1c(%edx)\n"
-        "movl 0x11806a0, %eax\n"
+        "movl vidConfig+32, %eax\n"
         "movl %eax, 0x20(%edx)\n"
-        "movl 0x11806a4, %eax\n"
+        "movl vidConfig+36, %eax\n"
         "movl %eax, 0x24(%edx)\n"
-        "movl 0x11806a8, %eax\n"
+        "movl vidConfig+40, %eax\n"
         "movl %eax, 0x28(%edx)\n"
         "addl $0xddc, %esp\n" /* line 2008 */
         "popl %ebx\n"
@@ -1303,11 +1303,11 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "popl %ebp\n"
         "retl\n"
         ".Lfcbc3e_000cbdf9:\n"
-        "movl 0x117d8a4, %ebx\n" /* line 1228 */
+        "movl dx+4, %ebx\n" /* line 1228 */
         "testl %ebx, %ebx\n"
         "je .Lfcbc3e_000ccd37\n"
         ".Lfcbc3e_000cbe07:\n"
-        "movl $0, 0x117d8ac\n" /* line 1245 */
+        "movl $0, dx+12\n" /* line 1245 */
         "xorl %edi, %edi\n"
         "jmp .Lfcbc3e_000cbe2d\n"
         ".Lfcbc3e_000cbe15:\n"
@@ -1317,7 +1317,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "cmpl $0x14, %edi\n" /* line 406 */
         "je .Lfcbc3e_000ccafb\n"
         ".Lfcbc3e_000cbe2d:\n"
-        "movl 0x117d8a4, %eax\n" /* line 408 */
+        "movl dx+4, %eax\n" /* line 408 */
         "movl (%eax), %edx\n"
         "leal -0x170(%ebp), %ecx\n"
         "movl %ecx, 0xc(%esp)\n"
@@ -1334,7 +1334,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %edx, 0xc(%esp)\n"
         "movzbl %ah, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x223c74, 4(%esp)\n" /* "Pixel shader version is %i.%i
+        "movl $str_00223c74, 4(%esp)\n" /* "Pixel shader version is %i.%i
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
@@ -1343,7 +1343,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %edx, 0xc(%esp)\n"
         "movzbl %ah, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x223c94, 4(%esp)\n" /* "Vertex shader version is %i.%i
+        "movl $str_00223c94, 4(%esp)\n" /* "Vertex shader version is %i.%i
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
@@ -1351,7 +1351,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %ebx, (%esp)\n"
         "calll R_CheckDxCaps\n"
         "movl %eax, %edx\n"
-        "movl 0x195f050, %eax\n" /* line 464 */
+        "movl imp_r_rendererPreference, %eax\n" /* line 464 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -1360,73 +1360,73 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "sarl %cl, %edx\n"
         "andb $1, %dl\n"
         "jne .Lfcbc3e_000ccb82\n"
-        "movl $0x223cb4, %eax\n" /* line 428 */
+        "movl $str_00223cb4, %eax\n" /* line 428 */
         "subl $1, %edi\n"
-        "movl $0x223cc0, %edx\n" /* "Direct3D 7" */
+        "movl $str_00223cc0, %edx\n" /* "Direct3D 7" */
         "cmovnel %edx, %eax\n"
         "movl %eax, 0xc(%esp)\n" /* line 473 */
-        "movl $0x223cc0, 8(%esp)\n" /* "Direct3D 7" */
-        "movl $0x223d0c, 4(%esp)\n" /* "Using %s code path because the requested %s code path is una" */
+        "movl $str_00223cc0, 8(%esp)\n" /* "Direct3D 7" */
+        "movl $str_00223d0c, 4(%esp)\n" /* "Using %s code path because the requested %s code path is una" */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl $2, %ecx\n"
         ".Lfcbc3e_000cbf11:\n"
         "movl %ecx, 4(%esp)\n" /* line 480 */
-        "movl 0x195eec0, %eax\n"
+        "movl imp_r_rendererInUse, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
-        "calll *0x1180758\n"
+        "calll *ri+152\n"
         "movl -0x114(%ebp), %eax\n" /* line 512 */
         "movl -0x118(%ebp), %edx\n"
         "cmpl %edx, %eax\n" /* line 154 */
         "cmovnsl %edx, %eax\n"
-        "movl %eax, 0x1180698\n" /* line 512 */
+        "movl %eax, vidConfig+24\n" /* line 512 */
         "movl -0xd8(%ebp), %eax\n" /* line 513 */
-        "movl %eax, 0x118069c\n"
+        "movl %eax, vidConfig+28\n"
         "movl -0xdc(%ebp), %eax\n" /* line 514 */
-        "movl %eax, 0x11806a0\n"
+        "movl %eax, vidConfig+32\n"
         "movl -0xd0(%ebp), %eax\n" /* line 515 */
-        "movl %eax, 0x11806a4\n"
+        "movl %eax, vidConfig+36\n"
         "movl -0x164(%ebp), %eax\n" /* line 516 */
         "shrl $0x11, %eax\n"
         "andl $1, %eax\n"
-        "movb %al, 0x11806a8\n"
+        "movb %al, vidConfig+40\n"
         "movl -0xcc(%ebp), %eax\n" /* line 520 */
         "movl %eax, %ebx\n" /* line 154 */
         "subl $6, %ebx\n"
         "movl $6, %edx\n"
         "cmovnsl %edx, %eax\n"
-        "movl %eax, 0x1180614\n" /* line 520 */
+        "movl %eax, dx+11636\n" /* line 520 */
         "movl -0x104(%ebp), %eax\n" /* line 521 */
-        "movl %eax, 0x1180610\n"
+        "movl %eax, dx+11632\n"
         "movl -0xe8(%ebp), %edx\n" /* line 522 */
         "movl %edx, %eax\n"
         "shrl $8, %eax\n"
         "andl $1, %eax\n"
-        "movb %al, 0x1180618\n"
+        "movb %al, dx+11640\n"
         "andl $0xc0, %edx\n" /* line 523 */
         "cmpl $0xc0, %edx\n"
-        "sete 0x1180619\n"
+        "sete dx+11641\n"
         "movl -0x14c(%ebp), %eax\n" /* line 524 */
         "shrl $0x19, %eax\n"
         "andl $1, %eax\n"
-        "movb %al, 0x118061a\n"
+        "movb %al, dx+11642\n"
         "movzwl -0x132(%ebp), %eax\n" /* line 525 */
         "andl $1, %eax\n"
-        "movb %al, 0x118061b\n"
+        "movb %al, dx+11643\n"
         "movl -0x150(%ebp), %eax\n" /* line 526 */
         "shrl $0xb, %eax\n"
         "movl %eax, %edx\n"
         "andl $1, %edx\n"
-        "movb %dl, 0x118061c\n"
+        "movb %dl, dx+11644\n"
         "shrl $6, %eax\n" /* line 527 */
         "andl $1, %eax\n"
-        "movb %al, 0x118061d\n"
-        "movl 0x195f094, %eax\n" /* line 490 */
+        "movb %al, dx+11645\n"
+        "movl imp_r_aaSamples, %eax\n" /* line 490 */
         "movl (%eax), %eax\n"
         "cmpl $1, 8(%eax)\n"
         "je .Lfcbc3e_000cc04c\n"
-        "movl 0x117d8a4, %eax\n" /* line 494 */
+        "movl dx+4, %eax\n" /* line 494 */
         "movl (%eax), %edx\n"
         "movl $0x41415353, 0x18(%esp)\n"
         "movl $1, 0x14(%esp)\n"
@@ -1441,32 +1441,32 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         ".Lfcbc3e_000cc04c:\n"
         "xorl %eax, %eax\n"
         ".Lfcbc3e_000cc04e:\n"
-        "movb %al, 0x118061e\n" /* line 530 */
-        "movl 0x117d8ac, %edi\n" /* line 1248 */
+        "movb %al, dx+11646\n" /* line 530 */
+        "movl dx+12, %edi\n" /* line 1248 */
         "movl %edi, -0xda8(%ebp)\n"
-        "movl 0x117d8a4, %eax\n" /* line 1040 */
+        "movl dx+4, %eax\n" /* line 1040 */
         "movl (%eax), %edx\n"
         "movl $0x16, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x18(%edx)\n"
         "movl %eax, %edi\n"
-        "movl $0, 0x117d8b4\n" /* line 1041 */
+        "movl $0, dx+20\n" /* line 1041 */
         "testl %eax, %eax\n" /* line 1042 */
         "je .Lfcbc3e_000cc104\n"
         "xorl %esi, %esi\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lfcbc3e_000cc09d\n"
         ".Lfcbc3e_000cc08f:\n"
-        "movl 0x117d8b4, %eax\n"
+        "movl dx+20, %eax\n"
         "movl %eax, %ebx\n"
         "cmpl $0xff, %eax\n"
         "ja .Lfcbc3e_000cc109\n"
         ".Lfcbc3e_000cc09d:\n"
-        "movl 0x117d8a4, %edx\n" /* line 1044 */
+        "movl dx+4, %edx\n" /* line 1044 */
         "movl (%edx), %ecx\n"
         "shll $4, %ebx\n"
-        "leal 0x117d8b8(%ebx), %eax\n"
+        "leal dx+24(%ebx), %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl %esi, 0xc(%esp)\n"
         "movl $0x16, 8(%esp)\n"
@@ -1476,31 +1476,31 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "calll *0x1c(%ecx)\n"
         "testl %eax, %eax\n" /* line 1045 */
         "js .Lfcbc3e_000cc0fd\n"
-        "movl 0x117d8b4, %eax\n" /* line 1047 */
+        "movl dx+20, %eax\n" /* line 1047 */
         "movl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x117d8c0(%edx), %ecx\n"
+        "movl dx+32(%edx), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfcbc3e_000cc0f5\n"
-        "movl $0x3c, 0x117d8c0(%edx)\n" /* line 1048 */
-        "movl 0x117d8b4, %eax\n"
+        "movl $0x3c, dx+32(%edx)\n" /* line 1048 */
+        "movl dx+20, %eax\n"
         ".Lfcbc3e_000cc0f5:\n"
         "addl $1, %eax\n" /* line 1049 */
-        "movl %eax, 0x117d8b4\n"
+        "movl %eax, dx+20\n"
         ".Lfcbc3e_000cc0fd:\n"
         "addl $1, %esi\n" /* line 1042 */
         "cmpl %esi, %edi\n"
         "jne .Lfcbc3e_000cc08f\n"
         ".Lfcbc3e_000cc104:\n"
-        "movl 0x117d8b4, %eax\n"
+        "movl dx+20, %eax\n"
         ".Lfcbc3e_000cc109:\n"
         "shll $4, %eax\n" /* line 1052 */
-        "addl $0x117d8b8, %eax\n"
+        "addl $dx+24, %eax\n"
         "movl %eax, -0xd98(%ebp)\n"
-        "cmpl $0x117d8b8, %eax\n" /* line 2604 */
+        "cmpl $dx+24, %eax\n" /* line 2604 */
         "je .Lfcbc3e_000cc254\n"
         "movl %eax, %ebx\n" /* line 2606 */
-        "subl $0x117d8b8, %ebx\n"
+        "subl $dx+24, %ebx\n"
         "movl %ebx, %eax\n"
         "sarl $4, %eax\n"
         "cmpl $1, %eax\n" /* line 2253 */
@@ -1517,18 +1517,18 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %eax, 8(%esp)\n"
         "movl -0xd98(%ebp), %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x117d8b8, (%esp)\n"
+        "movl $dx+24, (%esp)\n"
         "calll ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_\n"
         "cmpl $0x10f, %ebx\n" /* line 2233 */
         "jle .Lfcbc3e_000ccca5\n"
         "movl $R_DisplayModeLess, 8(%esp)\n" /* line 2235 */
-        "movl $0x117d9b8, 4(%esp)\n"
-        "movl $0x117d8b8, (%esp)\n"
+        "movl $dx+280, 4(%esp)\n"
+        "movl $dx+24, (%esp)\n"
         "calll ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_\n"
-        "cmpl $0x117d9b8, -0xd98(%ebp)\n" /* line 2200 */
+        "cmpl $dx+280, -0xd98(%ebp)\n" /* line 2200 */
         "je .Lfcbc3e_000cc254\n"
-        "movl $0x117d9b8, -0xd94(%ebp)\n"
-        "movl $0x117d9c4, %esi\n"
+        "movl $dx+280, -0xd94(%ebp)\n"
+        "movl $dx+292, %esi\n"
         ".Lfcbc3e_000cc1b0:\n"
         "movl -4(%esi), %edx\n" /* line 2201 */
         "movl -8(%esi), %ecx\n"
@@ -1574,7 +1574,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "cmpl %ebx, -0xd98(%ebp)\n"
         "jne .Lfcbc3e_000cc1b0\n"
         ".Lfcbc3e_000cc254:\n"
-        "movl 0x117d8b4, %esi\n" /* line 1055 */
+        "movl dx+20, %esi\n" /* line 1055 */
         "testl %esi, %esi\n"
         "jne .Lfcbc3e_000cc95c\n"
         "movl $0, -0xda4(%ebp)\n"
@@ -1582,41 +1582,41 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         ".Lfcbc3e_000cc276:\n"
         "movl $0x1e0, 8(%esp)\n" /* line 1063 */
         "movl $0x280, 4(%esp)\n"
-        "movl $0x223da0, (%esp)\n" /* "No valid resolutions of %i x %i or above found" */
+        "movl $str_00223da0, (%esp)\n" /* "No valid resolutions of %i x %i or above found" */
         "calll va\n"
         "movl %eax, %ebx\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         ".Lfcbc3e_000cc2f2:\n"
         "movl -0xda4(%ebp), %eax\n" /* line 1066 */
         "testl %eax, %eax\n"
         "jg .Lfcbc3e_000ccbe8\n"
-        "movl $0x117f0c0, -0xd9c(%ebp)\n"
+        "movl $dx+6176, -0xd9c(%ebp)\n"
         "xorl %esi, %esi\n"
         "movl $0, -0xda4(%ebp)\n"
         ".Lfcbc3e_000cc316:\n"
         "movl -0xda4(%ebp), %ecx\n" /* line 1073 */
-        "movl $0, 0x117e8b8(, %ecx, 4)\n"
+        "movl $0, dx+4120(, %ecx, 4)\n"
         "movl $0x2021, 0xc(%esp)\n" /* line 1074 */
         "movl %esi, 8(%esp)\n"
-        "movl $0x117e8b8, 4(%esp)\n"
-        "movl $0x223dd8, (%esp)\n" /* "r_mode" */
-        "calll *0x1180728\n"
-        "movl 0x195f0a8, %edx\n"
+        "movl $dx+4120, 4(%esp)\n"
+        "movl $str_00223dd8, (%esp)\n" /* "r_mode" */
+        "calll *ri+104\n"
+        "movl imp_r_mode, %edx\n"
         "movl %eax, (%edx)\n"
         "movl -0xda0(%ebp), %eax\n" /* line 1077 */
         "testl %eax, %eax\n"
@@ -1625,33 +1625,33 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl $0, -0xda0(%ebp)\n"
         ".Lfcbc3e_000cc36a:\n"
         "movl -0xda0(%ebp), %ebx\n" /* line 1084 */
-        "movl $0, 0x117ecbc(, %ebx, 4)\n"
+        "movl $0, dx+5148(, %ebx, 4)\n"
         "movl $0x2021, 0xc(%esp)\n" /* line 1085 */
         "movl %edi, 8(%esp)\n"
-        "movl $0x117ecbc, 4(%esp)\n"
-        "movl $0x223de8, (%esp)\n" /* "r_displayRefresh" */
-        "calll *0x1180728\n"
-        "movl 0x195f024, %edx\n"
+        "movl $dx+5148, 4(%esp)\n"
+        "movl $str_00223de8, (%esp)\n" /* "r_displayRefresh" */
+        "calll *ri+104\n"
+        "movl imp_r_displayRefresh, %edx\n"
         "movl %eax, (%edx)\n"
         ".Lfcbc3e_000cc3a4:\n"
-        "movl 0x195f0a8, %eax\n" /* line 1495 */
+        "movl imp_r_mode, %eax\n" /* line 1495 */
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
-        "calll *0x11807b0\n"
+        "calll *ri+240\n"
         "leal -0x28(%ebp), %edi\n" /* line 1496 */
         "movl %edi, 0xc(%esp)\n"
         "leal -0x2c(%ebp), %edx\n"
         "movl %edx, 8(%esp)\n"
-        "movl $0x223dd0, 4(%esp)\n" /* "%ix%i" */
+        "movl $str_00223dd0, 4(%esp)\n" /* "%ix%i" */
         "movl %eax, (%esp)\n"
         "calll sscanf\n"
-        "movl 0x195f024, %eax\n" /* line 1498 */
+        "movl imp_r_displayRefresh, %eax\n" /* line 1498 */
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
-        "calll *0x11807b0\n"
+        "calll *ri+240\n"
         "leal -0x1c(%ebp), %ecx\n" /* line 1499 */
         "movl %ecx, 8(%esp)\n"
-        "movl $0x223de0, 4(%esp)\n" /* "%i Hz" */
+        "movl $str_00223de0, 4(%esp)\n" /* "%i Hz" */
         "movl %eax, (%esp)\n"
         "calll sscanf\n"
         "movl -0x1c(%ebp), %ebx\n" /* line 1500 */
@@ -1659,39 +1659,39 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl -0x28(%ebp), %edi\n"
         "movl %edi, -0xd8c(%ebp)\n"
         "movl -0x2c(%ebp), %edi\n"
-        "movl 0x117d8b4, %ebx\n" /* line 1451 */
+        "movl dx+20, %ebx\n" /* line 1451 */
         "subl $1, %ebx\n"
         "jns .Lfcbc3e_000cc6c0\n"
         "xorl %esi, %esi\n"
         ".Lfcbc3e_000cc41f:\n"
         "movl %ebx, %eax\n" /* line 1475 */
         "shll $4, %eax\n"
-        "cmpl 0x117d8b8(%eax), %edi\n"
+        "cmpl dx+24(%eax), %edi\n"
         "je .Lfcbc3e_000cc83b\n"
         ".Lfcbc3e_000cc430:\n"
         "shll $4, %esi\n" /* line 1478 */
-        "movl 0x117d8c0(%esi), %esi\n"
+        "movl dx+32(%esi), %esi\n"
         "movl %esi, -0xd90(%ebp)\n"
         "movl %esi, %ecx\n"
         ".Lfcbc3e_000cc441:\n"
         "movl %ecx, -0x3c(%ebp)\n" /* line 1500 */
-        "movl 0x195f028, %eax\n" /* line 1502 */
+        "movl imp_vid_xpos, %eax\n" /* line 1502 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x34(%ebp)\n"
-        "movl 0x195ef88, %eax\n" /* line 1503 */
+        "movl imp_vid_ypos, %eax\n" /* line 1503 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x30(%ebp)\n"
         "movb $1, -0x38(%ebp)\n" /* line 1505 */
         "movl $0, -0x40(%ebp)\n" /* line 1509 */
-        "movl 0x195f094, %eax\n" /* line 1511 */
+        "movl imp_r_aaSamples, %eax\n" /* line 1511 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x20(%ebp)\n"
         "calll MacDisplay_GetMainWindow\n" /* line 1374 */
         "movl %eax, -0x40(%ebp)\n"
-        "movl $0x223dfc, 4(%esp)\n" /* line 1376 */
+        "movl $str_00223dfc, 4(%esp)\n" /* line 1376 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl -0x40(%ebp), %ebx\n" /* line 1274 */
@@ -1705,8 +1705,8 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "negl %eax\n"
         "leal -1(%eax, %ebx), %esi\n"
         ".Lfcbc3e_000cc4b1:\n"
-        "movl %ebx, 0x11804c4\n" /* line 215 */
-        "movl 0x117d8a4, %edx\n" /* line 216 */
+        "movl %ebx, dx+11300\n" /* line 215 */
+        "movl dx+4, %edx\n" /* line 216 */
         "movl (%edx), %ecx\n"
         "leal -0x1c(%ebp), %edi\n"
         "movl %edi, 0x18(%esp)\n"
@@ -1727,8 +1727,8 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "jne .Lfcbc3e_000cc4b1\n"
         "movl -0x40(%ebp), %edx\n"
         ".Lfcbc3e_000cc507:\n"
-        "movl $0, 0x11804c4\n" /* line 225 */
-        "movl $0, 0x11804c8\n" /* line 226 */
+        "movl $0, dx+11300\n" /* line 225 */
+        "movl $0, dx+11304\n" /* line 226 */
         ".Lfcbc3e_000cc51b:\n"
         "cld\n" /* line 246 */
         "movl $0xe, %ecx\n"
@@ -1741,14 +1741,14 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %eax, -0x16c(%ebp)\n"
         "movl $0x15, -0x168(%ebp)\n" /* line 249 */
         "movl $1, -0x164(%ebp)\n" /* line 250 */
-        "movl 0x11804c4, %eax\n" /* line 251 */
+        "movl dx+11300, %eax\n" /* line 251 */
         "movl %eax, -0x160(%ebp)\n"
-        "movl 0x11804c8, %eax\n" /* line 252 */
+        "movl dx+11304, %eax\n" /* line 252 */
         "movl %eax, -0x15c(%ebp)\n"
         "movl $1, -0x158(%ebp)\n" /* line 253 */
         "movl $0, -0x14c(%ebp)\n" /* line 254 */
         "movl $0x4b, -0x148(%ebp)\n" /* line 255 */
-        "movl 0x195f058, %eax\n" /* line 276 */
+        "movl imp_r_swapInterval, %eax\n" /* line 276 */
         "movl (%eax), %eax\n"
         "cmpb $1, 8(%eax)\n"
         "sbbl %eax, %eax\n"
@@ -1769,24 +1769,24 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "testl %eax, %eax\n" /* line 1304 */
         "js .Lfcbc3e_000cc746\n"
         ".Lfcbc3e_000cc5eb:\n"
-        "movb $0, 0x11805dc\n" /* line 1313 */
-        "movl 0x195ef50, %eax\n" /* line 1258 */
+        "movb $0, dx+11580\n" /* line 1313 */
+        "movl imp_r_multiGpu, %eax\n" /* line 1258 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfcbc3e_000cc82c\n"
         "xorl %eax, %eax\n"
         ".Lfcbc3e_000cc605:\n"
-        "movl %eax, 0x11804c0\n"
+        "movl %eax, dx+11296\n"
         "movl -0x2c(%ebp), %eax\n" /* line 347 */
         "movl %eax, vidConfig\n"
         "movl -0x28(%ebp), %eax\n" /* line 348 */
-        "movl %eax, 0x1180684\n"
+        "movl %eax, vidConfig+4\n"
         "movl -0x3c(%ebp), %eax\n" /* line 351 */
-        "movl %eax, 0x1180688\n"
+        "movl %eax, vidConfig+8\n"
         "movzbl -0x38(%ebp), %edx\n" /* line 352 */
         "movzbl %dl, %eax\n"
-        "movl %eax, 0x118068c\n"
-        "movl 0x195f000, %eax\n" /* line 355 */
+        "movl %eax, vidConfig+12\n"
+        "movl imp_r_aspectRatio, %eax\n" /* line 355 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "cmpl $1, %eax\n"
@@ -1797,18 +1797,18 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "cmpl $3, %eax\n"
         "je .Lfcbc3e_000cc93e\n"
         ".Lfcbc3e_000cc659:\n"
-        "cvtsi2ssl 0x1180684, %xmm0\n" /* line 393 */
-        "mulss 0x1180690, %xmm0\n"
+        "cvtsi2ssl vidConfig+4, %xmm0\n" /* line 393 */
+        "mulss vidConfig+16, %xmm0\n"
         "cvtsi2ssl vidConfig, %xmm1\n"
         "divss %xmm1, %xmm0\n"
-        "movss %xmm0, 0x1180694\n"
+        "movss %xmm0, vidConfig+20\n"
         "calll RB_InitSceneViewport\n" /* line 1321 */
         "leal -0x40(%ebp), %edx\n" /* line 1323 */
         "leal -0x170(%ebp), %eax\n"
         "calll R_CreateForInitOrReset\n"
         "testb %al, %al\n"
         "jne .Lfcbc3e_000cc860\n"
-        "movl 0x195f094, %eax\n" /* line 1541 */
+        "movl imp_r_aaSamples, %eax\n" /* line 1541 */
         "movl (%eax), %edx\n"
         "movl 8(%edx), %eax\n"
         "cmpl $1, %eax\n"
@@ -1817,7 +1817,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "subl $1, %eax\n" /* line 1555 */
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
-        "calll *0x1180758\n"
+        "calll *ri+152\n"
         "jmp .Lfcbc3e_000cc3a4\n"
         ".Lfcbc3e_000cc6c0:\n"
         "xorl %esi, %esi\n" /* line 1451 */
@@ -1835,13 +1835,13 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "sarl $1, %ecx\n"
         "movl %ecx, %edx\n" /* line 1455 */
         "shll $4, %edx\n"
-        "movl 0x117d8b8(%edx), %eax\n"
+        "movl dx+24(%edx), %eax\n"
         "subl %edi, %eax\n" /* line 1456 */
         "jne .Lfcbc3e_000cc70b\n"
-        "movl 0x117d8bc(%edx), %eax\n" /* line 1458 */
+        "movl dx+28(%edx), %eax\n" /* line 1458 */
         "subl -0xd8c(%ebp), %eax\n" /* line 1459 */
         "jne .Lfcbc3e_000cc70b\n"
-        "movl 0x117d8c0(%edx), %eax\n" /* line 1461 */
+        "movl dx+32(%edx), %eax\n" /* line 1461 */
         "subl -0xd90(%ebp), %eax\n" /* line 1462 */
         "je .Lfcbc3e_000cccc8\n"
         ".Lfcbc3e_000cc70b:\n"
@@ -1863,95 +1863,95 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %eax, (%esp)\n" /* line 177 */
         "calll DXGetErrorDescription9A\n"
         "movl %eax, 8(%esp)\n" /* line 1306 */
-        "movl $0x223e20, 4(%esp)\n" /* "Couldn't create a Direct3D device: %s
+        "movl $str_00223e20, 4(%esp)\n" /* "Couldn't create a Direct3D device: %s
 " */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
-        "movl 0x195f094, %eax\n" /* line 1541 */
+        "movl imp_r_aaSamples, %eax\n" /* line 1541 */
         "movl (%eax), %edx\n"
         "movl 8(%edx), %eax\n"
         "cmpl $1, %eax\n"
         "jg .Lfcbc3e_000cc6ab\n"
         ".Lfcbc3e_000cc77c:\n"
-        "movl 0x195f024, %eax\n" /* line 1547 */
+        "movl imp_r_displayRefresh, %eax\n" /* line 1547 */
         "movl (%eax), %edx\n"
         "movl 8(%edx), %eax\n"
         "testl %eax, %eax\n"
         "jle .Lfcbc3e_000cc797\n"
-        "cmpl $0x3c, 0x1180688\n"
+        "cmpl $0x3c, vidConfig+8\n"
         "jg .Lfcbc3e_000cc6ab\n"
         ".Lfcbc3e_000cc797:\n"
-        "movl 0x195f0a8, %eax\n" /* line 1553 */
+        "movl imp_r_mode, %eax\n" /* line 1553 */
         "movl (%eax), %edx\n"
         "movl 8(%edx), %eax\n"
         "testl %eax, %eax\n"
         "jle .Lfcbc3e_000cc7c5\n"
         "cmpl $0x280, vidConfig\n"
         "jg .Lfcbc3e_000cc6ab\n"
-        "cmpl $0x1e0, 0x1180684\n"
+        "cmpl $0x1e0, vidConfig+4\n"
         "jg .Lfcbc3e_000cc6ab\n"
         ".Lfcbc3e_000cc7c5:\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223e48, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_00223e48, 8(%esp)\n" /* line 128 */
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         "jmp .Lfcbc3e_000cc3a4\n"
         ".Lfcbc3e_000cc82c:\n"
-        "movl 0x195ef20, %eax\n" /* line 1258 */
+        "movl imp_r_gpuSync, %eax\n" /* line 1258 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "jmp .Lfcbc3e_000cc605\n"
         ".Lfcbc3e_000cc83b:\n"
         "movl -0xd8c(%ebp), %edx\n" /* line 1475 */
-        "cmpl %edx, 0x117d8bc(%eax)\n"
+        "cmpl %edx, dx+28(%eax)\n"
         "jne .Lfcbc3e_000cc430\n"
-        "movl 0x117d8c0(%eax), %eax\n" /* line 1476 */
+        "movl dx+32(%eax), %eax\n" /* line 1476 */
         "movl %eax, -0xd90(%ebp)\n"
         "movl %eax, %ecx\n"
         "jmp .Lfcbc3e_000cc441\n"
         ".Lfcbc3e_000cc860:\n"
-        "movl 0x195efa8, %eax\n" /* line 755 */
+        "movl imp_r_gamma, %eax\n" /* line 755 */
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
-        "calll *0x118074c\n"
+        "calll *ri+140\n"
         "calll R_InitSystems\n" /* line 1349 */
-        "movl 0x11805e8, %eax\n" /* line 863 */
-        "movl $0x11805e0, %ecx\n"
+        "movl dx+11592, %eax\n" /* line 863 */
+        "movl $dx+11584, %ecx\n"
         "shll $4, %eax\n"
         "movl -0x40(%ebp), %edx\n"
         "movl %edx, 0xc(%eax, %ecx)\n"
-        "movl 0x11805e8, %eax\n" /* line 864 */
+        "movl dx+11592, %eax\n" /* line 864 */
         "shll $4, %eax\n"
         "movl -0x2c(%ebp), %edx\n"
         "movl %edx, 0x14(%eax, %ecx)\n"
-        "movl 0x11805e8, %eax\n" /* line 865 */
+        "movl dx+11592, %eax\n" /* line 865 */
         "shll $4, %eax\n"
         "movl -0x28(%ebp), %edx\n"
         "movl %edx, 0x18(%eax, %ecx)\n"
-        "addl $1, 0x11805e8\n" /* line 866 */
-        "calll *0x1180710\n" /* line 1433 */
-        "movl $0, 0x11805e4\n" /* line 1434 */
+        "addl $1, dx+11592\n" /* line 866 */
+        "calll *ri+80\n" /* line 1433 */
+        "movl $0, dx+11588\n" /* line 1434 */
         "jmp .Lfcbc3e_000cbccd\n"
         ".Lfcbc3e_000cc8c3:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 219 */
         "subl $1, %eax\n"
-        "movl %eax, 0x11804c8\n"
+        "movl %eax, dx+11304\n"
         "movl -0x40(%ebp), %edx\n"
         "jmp .Lfcbc3e_000cc51b\n"
         ".Lfcbc3e_000cc8d6:\n"
-        "movl $0x3faaaaab, 0x1180690\n" /* line 368 */
+        "movl $0x3faaaaab, vidConfig+16\n" /* line 368 */
         "jmp .Lfcbc3e_000cc659\n"
         ".Lfcbc3e_000cc8e5:\n"
         "testl %eax, %eax\n" /* line 355 */
@@ -1960,13 +1960,13 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "jne .Lfcbc3e_000ccd7f\n"
         ".Lfcbc3e_000cc8f5:\n"
         "movl vidConfig, %ebx\n" /* line 324 */
-        "movl 0x1180684, %eax\n" /* line 325 */
+        "movl vidConfig+4, %eax\n" /* line 325 */
         ".Lfcbc3e_000cc900:\n"
         "cvtsi2ssl %eax, %xmm0\n" /* line 428 */
-        "mulss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "mulss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "cvtsi2ssl %ebx, %xmm1\n"
         "divss %xmm1, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xdac(%ebp)\n"
@@ -1976,10 +1976,10 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "cmpl $9, %eax\n" /* line 362 */
         "jg .Lfcbc3e_000cc8d6\n"
         ".Lfcbc3e_000cc93e:\n"
-        "movl $0x3fe38e39, 0x1180690\n" /* line 371 */
+        "movl $0x3fe38e39, vidConfig+16\n" /* line 371 */
         "jmp .Lfcbc3e_000cc659\n"
         ".Lfcbc3e_000cc94d:\n"
-        "movl $0x3fcccccd, 0x1180690\n" /* line 374 */
+        "movl $0x3fcccccd, vidConfig+16\n" /* line 374 */
         "jmp .Lfcbc3e_000cc659\n"
         ".Lfcbc3e_000cc95c:\n"
         "movl $0, -0xd7c(%ebp)\n" /* line 1055 */
@@ -2030,7 +2030,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "addl $1, -0xd7c(%ebp)\n" /* line 1055 */
         "addl $0x10, -0xd80(%ebp)\n"
         "movl -0xd7c(%ebp), %eax\n"
-        "cmpl %eax, 0x117d8b4\n"
+        "cmpl %eax, dx+20\n"
         "ja .Lfcbc3e_000cc990\n"
         ".Lfcbc3e_000cca3d:\n"
         "movl -0xda4(%ebp), %eax\n" /* line 1062 */
@@ -2046,7 +2046,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "addl $1, -0xd7c(%ebp)\n" /* line 1055 */
         "addl $0x10, -0xd80(%ebp)\n"
         "movl -0xd7c(%ebp), %eax\n"
-        "cmpl %eax, 0x117d8b4\n"
+        "cmpl %eax, dx+20\n"
         "ja .Lfcbc3e_000cc990\n"
         "jmp .Lfcbc3e_000cca3d\n"
         ".Lfcbc3e_000cca89:\n"
@@ -2086,25 +2086,25 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %ebx, (%esp)\n" /* line 177 */
         "calll DXGetErrorDescription9A\n"
         "movl %eax, 4(%esp)\n" /* line 415 */
-        "movl $0x223c58, (%esp)\n" /* "GetDeviceCaps failed: %s" */
+        "movl $str_00223c58, (%esp)\n" /* "GetDeviceCaps failed: %s" */
         "calll va\n"
         "movl %eax, %ebx\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         "jmp .Lfcbc3e_000cbe5a\n"
         ".Lfcbc3e_000ccb78:\n"
         "movl $1, %eax\n" /* line 494 */
@@ -2112,28 +2112,28 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         ".Lfcbc3e_000ccb82:\n"
         "movl ri, %ebx\n" /* line 469 */
         "movl %eax, (%esp)\n"
-        "calll *0x11807b0\n"
-        "movl $0x223cb4, %ecx\n" /* line 428 */
+        "calll *ri+240\n"
+        "movl $str_00223cb4, %ecx\n" /* line 428 */
         "cmpl $1, %edi\n"
-        "movl $0x223cc0, %edx\n" /* "Direct3D 7" */
+        "movl $str_00223cc0, %edx\n" /* "Direct3D 7" */
         "cmovnel %edx, %ecx\n"
         "movl %eax, 0xc(%esp)\n" /* line 469 */
         "movl %ecx, 8(%esp)\n"
-        "movl $0x223ccc, 4(%esp)\n" /* "Using %s code path because r_rendererPreference is set to %s" */
+        "movl $str_00223ccc, 4(%esp)\n" /* "Using %s code path because r_rendererPreference is set to %s" */
         "movl $0, (%esp)\n"
         "calll *%ebx\n"
         "movl %edi, %ecx\n"
         "jmp .Lfcbc3e_000cbf11\n"
         ".Lfcbc3e_000ccbc1:\n"
-        "movl $0x223cc0, 8(%esp)\n" /* line 478 */
-        "movl $0x223d54, 4(%esp)\n" /* "Using %s code path because it is the best available path on " */
+        "movl $str_00223cc0, 8(%esp)\n" /* line 478 */
+        "movl $str_00223d54, 4(%esp)\n" /* "Using %s code path because it is the best available path on " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl $2, %ecx\n"
         "jmp .Lfcbc3e_000cbf11\n"
         ".Lfcbc3e_000ccbe8:\n"
         "xorl %edi, %edi\n" /* line 1066 */
-        "movl $0x117f0c0, -0xd9c(%ebp)\n"
+        "movl $dx+6176, -0xd9c(%ebp)\n"
         "xorl %esi, %esi\n"
         "movl $dx, -0xd84(%ebp)\n"
         "xorl %ebx, %ebx\n"
@@ -2145,7 +2145,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %eax, 0xc(%esp)\n"
         "movl -0xd70(%ebx, %ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x223dd0, 4(%esp)\n" /* "%ix%i" */
+        "movl $str_00223dd0, 4(%esp)\n" /* "%ix%i" */
         "movl %ecx, (%esp)\n"
         "calll sprintf\n"
         "movl -0xd9c(%ebp), %edx\n"
@@ -2176,7 +2176,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl $R_DisplayModeLess, 8(%esp)\n" /* line 2240 */
         "movl -0xd98(%ebp), %edi\n"
         "movl %edi, 4(%esp)\n"
-        "movl $0x117d8b8, (%esp)\n"
+        "movl $dx+24, (%esp)\n"
         "calll ZSt16__insertion_sortIP15_D3DDISPLAYMODEPFhRKS0_S3_EEvT_S6_T0_\n"
         "jmp .Lfcbc3e_000cc254\n"
         ".Lfcbc3e_000cccc8:\n"
@@ -2191,7 +2191,7 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "movl %eax, 0x141c(%esi)\n" /* line 1079 */
         "movl -0x570(%ebp, %ebx, 4), %eax\n" /* line 1080 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x223de0, 4(%esp)\n" /* "%i Hz" */
+        "movl $str_00223de0, 4(%esp)\n" /* "%i Hz" */
         "movl -0xd9c(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll sprintf\n"
@@ -2206,15 +2206,15 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "jne .Lfcbc3e_000ccce2\n"
         "jmp .Lfcbc3e_000cc36a\n"
         ".Lfcbc3e_000ccd37:\n"
-        "movl $0x223c10, 4(%esp)\n" /* line 1230 */
+        "movl $str_00223c10, 4(%esp)\n" /* line 1230 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl $0x20, (%esp)\n" /* line 1231 */
         "calll Direct3DCreate9\n"
-        "movl %eax, 0x117d8a4\n"
+        "movl %eax, dx+4\n"
         "testl %eax, %eax\n" /* line 1232 */
         "jne .Lfcbc3e_000cbe07\n"
-        "movl $0x223c34, 4(%esp)\n" /* line 1234 */
+        "movl $str_00223c34, 4(%esp)\n" /* line 1234 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "jmp .Lfcbc3e_000cc3a4\n"
@@ -2246,7 +2246,7 @@ Bool R_RecoverLostDevice(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x8c, %esp\n"
-        "movl 0x117d8a8, %eax\n" /* line 2400 */
+        "movl dx+8, %eax\n" /* line 2400 */
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *0xc(%edx)\n"
@@ -2260,31 +2260,31 @@ Bool R_RecoverLostDevice(void)
         "popl %ebp\n"
         "retl\n"
         ".Lfccdba_000ccde7:\n"
-        "movl $0x223e68, 4(%esp)\n" /* line 2421 */
+        "movl $str_00223e68, 4(%esp)\n" /* line 2421 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "calll R_ReleaseAllModels\n" /* line 2424 */
         "calll R_ReleaseLostImages\n" /* line 2426 */
         "calll Material_ReleaseAll\n" /* line 2427 */
-        "movl 0x1184b9c, %eax\n" /* line 2434 */
+        "movl rgp+4252, %eax\n" /* line 2434 */
         "testl %eax, %eax\n"
         "je .Lfccdba_000cce19\n"
         "calll R_ReleaseWorld\n" /* line 2435 */
         ".Lfccdba_000cce19:\n"
-        "movl 0x11805ec, %eax\n" /* line 2351 */
+        "movl dx+11596, %eax\n" /* line 2351 */
         "movl %eax, -0x40(%ebp)\n"
         "movl $0, -0x34(%ebp)\n" /* line 2352 */
         "movl $0, -0x30(%ebp)\n" /* line 2353 */
-        "movl 0x11805f4, %eax\n" /* line 2354 */
+        "movl dx+11604, %eax\n" /* line 2354 */
         "movl %eax, -0x2c(%ebp)\n"
-        "movl 0x11805f8, %eax\n" /* line 2355 */
+        "movl dx+11608, %eax\n" /* line 2355 */
         "movl %eax, -0x28(%ebp)\n"
-        "movl 0x1180688, %eax\n" /* line 2356 */
+        "movl vidConfig+8, %eax\n" /* line 2356 */
         "movl %eax, -0x3c(%ebp)\n"
-        "movl 0x118068c, %eax\n" /* line 2357 */
+        "movl vidConfig+12, %eax\n" /* line 2357 */
         "testl %eax, %eax\n"
         "setne -0x38(%ebp)\n"
-        "movl 0x195f094, %eax\n" /* line 2358 */
+        "movl imp_r_aaSamples, %eax\n" /* line 2358 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x20(%ebp)\n"
@@ -2296,8 +2296,8 @@ Bool R_RecoverLostDevice(void)
         "negl %eax\n"
         "leal -1(%eax, %ebx), %edi\n"
         ".Lfccdba_000cce72:\n"
-        "movl %ebx, 0x11804c4\n" /* line 215 */
-        "movl 0x117d8a4, %edx\n" /* line 216 */
+        "movl %ebx, dx+11300\n" /* line 215 */
+        "movl dx+4, %edx\n" /* line 216 */
         "movl (%edx), %ecx\n"
         "movl %esi, 0x18(%esp)\n"
         "movl %ebx, 0x14(%esp)\n"
@@ -2316,8 +2316,8 @@ Bool R_RecoverLostDevice(void)
         "cmpl %ebx, %edi\n" /* line 213 */
         "jne .Lfccdba_000cce72\n"
         ".Lfccdba_000ccec2:\n"
-        "movl $0, 0x11804c4\n" /* line 225 */
-        "movl $0, 0x11804c8\n" /* line 226 */
+        "movl $0, dx+11300\n" /* line 225 */
+        "movl $0, dx+11304\n" /* line 226 */
         ".Lfccdba_000cced6:\n"
         "leal -0x78(%ebp), %esi\n" /* line 246 */
         "cld\n"
@@ -2331,14 +2331,14 @@ Bool R_RecoverLostDevice(void)
         "movl %eax, -0x74(%ebp)\n"
         "movl $0x15, -0x70(%ebp)\n" /* line 249 */
         "movl $1, -0x6c(%ebp)\n" /* line 250 */
-        "movl 0x11804c4, %eax\n" /* line 251 */
+        "movl dx+11300, %eax\n" /* line 251 */
         "movl %eax, -0x68(%ebp)\n"
-        "movl 0x11804c8, %eax\n" /* line 252 */
+        "movl dx+11304, %eax\n" /* line 252 */
         "movl %eax, -0x64(%ebp)\n"
         "movl $1, -0x60(%ebp)\n" /* line 253 */
         "movl $0, -0x54(%ebp)\n" /* line 254 */
         "movl $0x4b, -0x50(%ebp)\n" /* line 255 */
-        "movl 0x195f058, %eax\n" /* line 276 */
+        "movl imp_r_swapInterval, %eax\n" /* line 276 */
         "movl (%eax), %eax\n"
         "cmpb $1, 8(%eax)\n"
         "sbbl %eax, %eax\n"
@@ -2355,7 +2355,7 @@ Bool R_RecoverLostDevice(void)
         "movl %eax, -0x48(%ebp)\n"
         ".Lfccdba_000ccf60:\n"
         "calll R_ReleaseForShutdownOrReset\n" /* line 2362 */
-        "movl 0x117d8a8, %eax\n" /* line 2364 */
+        "movl dx+8, %eax\n" /* line 2364 */
         "movl (%eax), %edx\n"
         "movl %esi, 4(%esp)\n"
         "movl %eax, (%esp)\n"
@@ -2364,14 +2364,14 @@ Bool R_RecoverLostDevice(void)
         "testl %eax, %eax\n" /* line 2366 */
         "js .Lfccdba_000cd06c\n"
         ".Lfccdba_000ccf80:\n"
-        "movb $0, 0x11805dc\n" /* line 2368 */
+        "movb $0, dx+11580\n" /* line 2368 */
         "leal -0x40(%ebp), %edx\n" /* line 2370 */
         "movl %esi, %eax\n"
         "calll R_CreateForInitOrReset\n"
         "testb %al, %al\n"
         "je .Lfccdba_000ccff5\n"
         ".Lfccdba_000ccf95:\n"
-        "movl 0x1184b9c, %edi\n" /* line 2441 */
+        "movl rgp+4252, %edi\n" /* line 2441 */
         "testl %edi, %edi\n"
         "je .Lfccdba_000ccfa4\n"
         "calll R_ReloadWorld\n" /* line 2442 */
@@ -2380,8 +2380,8 @@ Bool R_RecoverLostDevice(void)
         "calll R_ReloadLostImages\n" /* line 2450 */
         "calll R_OptimizeAllModels\n" /* line 2451 */
         "calll RB_CalcSunSpriteSamples\n" /* line 2454 */
-        "movl %eax, 0x11804cc\n"
-        "movl $0x223f10, 4(%esp)\n" /* line 2457 */
+        "movl %eax, dx+11308\n"
+        "movl $str_00223f10, 4(%esp)\n" /* line 2457 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl $1, %eax\n"
@@ -2396,52 +2396,52 @@ Bool R_RecoverLostDevice(void)
         "movl $0, -0x48(%ebp)\n" /* line 288 */
         "jmp .Lfccdba_000ccf60\n"
         ".Lfccdba_000ccff5:\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223edc, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_00223edc, 8(%esp)\n" /* line 128 */
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         "jmp .Lfccdba_000ccf95\n"
         ".Lfccdba_000cd05c:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 219 */
         "subl $1, %eax\n"
-        "movl %eax, 0x11804c8\n"
+        "movl %eax, dx+11304\n"
         "jmp .Lfccdba_000cced6\n"
         ".Lfccdba_000cd06c:\n"
         "movl %eax, (%esp)\n" /* line 177 */
         "calll DXGetErrorDescription9A\n"
         "movl %eax, 8(%esp)\n" /* line 2367 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x223e84, (%esp)\n" /* "Couldn't reset a lost Direct3D device - IDirect3DDevice9::Re" */
+        "movl $str_00223e84, (%esp)\n" /* "Couldn't reset a lost Direct3D device - IDirect3DDevice9::Re" */
         "calll va\n"
         "movl %eax, %ebx\n"
-        "movl $0x2238dc, 4(%esp)\n" /* line 125 */
+        "movl $str_002238dc, 4(%esp)\n" /* line 125 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223938, 4(%esp)\n" /* line 126 */
+        "movl $str_00223938, 4(%esp)\n" /* line 126 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "movl $0x223994, 4(%esp)\n" /* line 127 */
+        "movl $str_00223994, 4(%esp)\n" /* line 127 */
         "movl $0, (%esp)\n"
         "calll *ri\n"
         "movl %ebx, 8(%esp)\n" /* line 128 */
-        "movl $0x2239f0, 4(%esp)\n" /* "
+        "movl $str_002239f0, 4(%esp)\n" /* "
 %s
 " */
         "movl $0, (%esp)\n"
         "calll *ri\n"
-        "calll *0x1180708\n" /* line 131 */
+        "calll *ri+72\n" /* line 131 */
         "jmp .Lfccdba_000ccf80\n"
     );
 }

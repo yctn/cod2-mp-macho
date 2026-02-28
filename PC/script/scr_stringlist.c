@@ -8,7 +8,7 @@
  *   #include "PC/universal/q_shared.h"
  */
 
-static struct scrStringGlob_t scrStringGlob; /* 0x3e6680 */
+static struct scrStringGlob_t scrStringGlob; /* scrStringGlob */
 
 unsigned int SL_ConvertFromString(const char *str);
 unsigned int SL_Shutdown(void);
@@ -39,7 +39,7 @@ unsigned int Scr_CreateCanonicalFilename(const char *filename);
 /* line 206 */
 unsigned int SL_ConvertFromString(const char *str)
 {
-    return (int)((byte *)str - 4 - *(byte **)*(void **)0x195ecc4) >> 3;
+    return (int)((byte *)str - 4 - *(byte **)*(void **)imp_scrMemTreePub) >> 3;
 }
 
 /* line 299 */
@@ -53,13 +53,13 @@ const char * SL_ConvertToString(unsigned int stringValue)
 {
     if (!stringValue)
         return 0;
-    return (const char *)(*(byte **)*(void **)0x195ecc4 + stringValue * 8 + 4);
+    return (const char *)(*(byte **)*(void **)imp_scrMemTreePub + stringValue * 8 + 4);
 }
 
 /* line 759 */
 unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 {
-    byte *entry = *(byte **)*(void **)0x195ecc4 + stringValue * 8;
+    byte *entry = *(byte **)*(void **)imp_scrMemTreePub + stringValue * 8;
     if (entry[1] & user)
     {
         *(unsigned short *)(entry + 2) -= 1;
@@ -74,7 +74,7 @@ unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 /* line 810 */
 unsigned int SL_AddRefToString(unsigned int stringValue)
 {
-    byte *base = *(byte **)*(void **)0x195ecc4;
+    byte *base = *(byte **)*(void **)imp_scrMemTreePub;
     *(unsigned short *)(base + stringValue * 8 + 2) += 1;
 }
 
@@ -90,7 +90,7 @@ unsigned int SL_RemoveRefToStringOfLen(unsigned int stringValue, unsigned int le
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "movl 8(%ebp), %ecx\n" /* stringValue */
         "leal (%eax, %ecx, 8), %edx\n"
@@ -162,7 +162,7 @@ unsigned int SL_RemoveRefToStringOfLen(unsigned int stringValue, unsigned int le
         "movzwl scrStringGlob, %eax\n" /* line 919 */
         "movw %ax, (%edi)\n" /* line 921 | newEntry */
         "movw $0, 2(%edi)\n" /* line 922 | newEntry */
-        "movw %cx, 0x3e6682(, %eax, 4)\n" /* line 924 */
+        "movw %cx, scrStringGlob+2(, %eax, 4)\n" /* line 924 */
         "movw %cx, scrStringGlob\n" /* line 925 */
         /* } scope */
         /* } scope */
@@ -223,7 +223,7 @@ unsigned int SL_RemoveRefToStringOfLen(unsigned int stringValue, unsigned int le
         "movw %ax, scrStringGlob(%edx)\n"
         "movzwl 2(%ebx), %eax\n" /* line 889 | hash */
         "movw %ax, 2(%edi)\n" /* newEntry */
-        "movl %edi, 0x3f6684\n" /* line 890 | newEntry */
+        "movl %edi, scrStringGlob+65540\n" /* line 890 | newEntry */
         "movl %ebx, %edi\n" /* hash, newEntry */
         "jmp .Lf43568_0004365d\n"
         ".Lf43568_0004370c:\n"
@@ -240,7 +240,7 @@ int SL_GetStringLen(unsigned int stringValue)
         "pushl %ebp\n" /* line 190 */
         "movl %esp, %ebp\n"
         /* { scope 1 */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %edx\n"
         "movl 8(%ebp), %eax\n" /* stringValue */
         "leal (%edx, %eax, 8), %edx\n"
@@ -369,7 +369,7 @@ unsigned int SL_FindStringOfLen(const char *str, unsigned int len)
         ".Lf43752_00043838:\n"
         "movzwl 2(%edx), %ecx\n" /* line 338 */
         "movl %ecx, -0x14(%ebp)\n" /* stringValue */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x10(%ebp)\n"
         "leal (%eax, %ecx, 8), %eax\n"
@@ -668,7 +668,7 @@ unsigned int SL_GetStringOfLen(const char *str, unsigned int user, unsigned int 
         "movw %ax, scrStringGlob(%ecx)\n"
         "movl -0x38(%ebp), %edx\n" /* line 644 | entry */
         "movzwl 2(%edx), %eax\n"
-        "movw %ax, 0x3e6682(%ecx)\n"
+        "movw %ax, scrStringGlob+2(%ecx)\n"
         "movl %edx, %ecx\n"
         ".Lf43a06_00043b6f:\n"
         "movl -0x30(%ebp), %eax\n" /* line 648 | hash */
@@ -677,7 +677,7 @@ unsigned int SL_GetStringOfLen(const char *str, unsigned int user, unsigned int 
         ".Lf43a06_00043b79:\n"
         "movl -0x38(%ebp), %eax\n" /* line 652 | entry */
         "movw %si, 2(%eax)\n" /* stringValue */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "leal (%eax, %esi, 8), %ebx\n"
         "leal 4(%ebx), %eax\n" /* line 655 | refStr */
@@ -727,11 +727,11 @@ unsigned int SL_GetStringOfLen(const char *str, unsigned int user, unsigned int 
         "andw $0xc000, %ax\n"
         "orl %edx, %eax\n"
         "movw %ax, scrStringGlob(, %ecx, 4)\n"
-        "movw %cx, 0x3e6682(, %edx, 4)\n" /* line 609 */
+        "movw %cx, scrStringGlob+2(, %edx, 4)\n" /* line 609 */
         "movl -0x38(%ebp), %ecx\n" /* entry */
         "jmp .Lf43a06_00043b6f\n"
         ".Lf43a06_00043c21:\n"
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x28(%ebp)\n"
         "movzwl 2(%edx), %eax\n"
@@ -850,19 +850,19 @@ unsigned int SL_GetStringOfLen(const char *str, unsigned int user, unsigned int 
         "movl -0x38(%ebp), %edx\n" /* entry */
         "movw %ax, (%edx)\n"
         "movzwl 2(%edx), %eax\n" /* line 597 */
-        "movw %ax, 0x3e6682(%ecx)\n"
+        "movw %ax, scrStringGlob+2(%ecx)\n"
         "jmp .Lf43a06_00043b79\n"
         ".Lf43a06_00043dcb:\n"
         "calll Scr_DumpScriptThreads\n" /* line 578 */
         "calll Scr_DumpScriptVariables\n" /* line 579 */
-        "movl $0x217bd0, 4(%esp)\n" /* line 581 */
+        "movl $str_00217bd0, 4(%esp)\n" /* line 581 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf43a06_00043d54\n"
         ".Lf43a06_00043dee:\n"
         "calll Scr_DumpScriptThreads\n" /* line 626 */
         "calll Scr_DumpScriptVariables\n" /* line 627 */
-        "movl $0x217bd0, 4(%esp)\n" /* line 629 */
+        "movl $str_00217bd0, 4(%esp)\n" /* line 629 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf43a06_00043aff\n"
@@ -958,7 +958,7 @@ unsigned int SL_GetLowercaseString_(const char *str, unsigned int user, int type
         "jmp .Lf43e70_00043e9b\n"
         ".Lf43e70_00043ee8:\n"
         "movl %esi, 8(%esp)\n" /* line 707 */
-        "movl $0x217bfc, 4(%esp)\n" /* "max string length exceeded: "%s"" */
+        "movl $str_00217bfc, 4(%esp)\n" /* "max string length exceeded: "%s"" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "xorl %eax, %eax\n"
@@ -1014,7 +1014,7 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "movl 8(%ebp), %edx\n" /* stringValue */
         "leal (%eax, %edx, 8), %ebx\n"
@@ -1098,7 +1098,7 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
         "movzwl scrStringGlob, %eax\n" /* line 919 */
         "movw %ax, (%edi)\n" /* line 921 | newEntry */
         "movw $0, 2(%edi)\n" /* line 922 | newEntry */
-        "movw %bx, 0x3e6682(, %eax, 4)\n" /* line 924 | newIndex */
+        "movw %bx, scrStringGlob+2(, %eax, 4)\n" /* line 924 | newIndex */
         "movw %bx, scrStringGlob\n" /* line 925 | newIndex */
         /* } scope */
         /* } scope */
@@ -1170,7 +1170,7 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
         "movw %ax, scrStringGlob(%edx)\n"
         "movzwl 2(%ecx), %eax\n" /* line 889 */
         "movw %ax, 2(%edi)\n" /* newEntry */
-        "movl %edi, 0x3f6684\n" /* line 890 | newEntry */
+        "movl %edi, scrStringGlob+65540\n" /* line 890 | newEntry */
         "movl %esi, %ebx\n" /* newIndex */
         "movl %ecx, %edi\n" /* newEntry */
         "jmp .Lf43f48_0004405b\n"
@@ -1204,7 +1204,7 @@ unsigned int SL_ShutdownSystem(unsigned int user)
         "testw $0xc000, scrStringGlob(%eax)\n" /* line 1111 */
         "je .Lf4413c_000441a9\n"
         "movzwl 2(%ebx), %eax\n" /* line 139 */
-        "movl 0x195ecc4, %ecx\n"
+        "movl imp_scrMemTreePub, %ecx\n"
         "movl (%ecx), %edx\n"
         "leal (%edx, %eax, 8), %ecx\n"
         "movzbl 1(%ecx), %edx\n" /* line 1115 */
@@ -1213,11 +1213,11 @@ unsigned int SL_ShutdownSystem(unsigned int user)
         "je .Lf4413c_000441a9\n"
         "andl %edi, %edx\n" /* line 1118 */
         "movb %dl, 1(%ecx)\n"
-        "movl $0, 0x3f6684\n" /* line 1119 */
+        "movl $0, scrStringGlob+65540\n" /* line 1119 */
         "movzwl 2(%ebx), %eax\n" /* line 1120 | entry */
         "movl %eax, (%esp)\n"
         "calll SL_RemoveRefToString\n"
-        "movl 0x3f6684, %eax\n" /* line 1108 */
+        "movl scrStringGlob+65540, %eax\n" /* line 1108 */
         "testl %eax, %eax\n"
         "jne .Lf4413c_00044152\n"
         ".Lf4413c_000441a9:\n"
@@ -1248,7 +1248,7 @@ unsigned int Scr_SetString(scr_string_t *to, unsigned int from)
         "movl 0xc(%ebp), %ebx\n" /* from */
         "testl %ebx, %ebx\n" /* line 1042 | from */
         "je .Lf441bc_000441db\n"
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "addw $1, 2(%eax, %ebx, 8)\n" /* line 832 */
         ".Lf441bc_000441db:\n"
@@ -1281,7 +1281,7 @@ unsigned int SL_ConvertToLowercase(unsigned int stringValue, unsigned int user, 
         "subl $0x202c, %esp\n"
         "movl 8(%ebp), %edi\n" /* stringValue */
         /* { scope 1 */
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "leal (%eax, %edi, 8), %ebx\n"
         /* { scope 2 */
@@ -1371,7 +1371,7 @@ unsigned int Scr_ShutdownGameStrings(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl $1, %ebx\n" /* hash */
-        "movl 0x195ecc4, %esi\n"
+        "movl imp_scrMemTreePub, %esi\n"
         /* { scope 1 */
         ".Lf442cc_000442df:\n"
         "leal (, %ebx, 4), %eax\n" /* line 1110 */
@@ -1386,11 +1386,11 @@ unsigned int Scr_ShutdownGameStrings(void)
         "je .Lf442cc_0004432c\n"
         "andb $0xfe, %al\n" /* line 1118 */
         "movb %al, 1(%edx)\n"
-        "movl $0, 0x3f6684\n" /* line 1119 */
+        "movl $0, scrStringGlob+65540\n" /* line 1119 */
         "movzwl 2(%ecx), %eax\n" /* line 1120 */
         "movl %eax, (%esp)\n"
         "calll SL_RemoveRefToString\n"
-        "movl 0x3f6684, %eax\n" /* line 1108 */
+        "movl scrStringGlob+65540, %eax\n" /* line 1108 */
         "testl %eax, %eax\n"
         "jne .Lf442cc_000442df\n"
         ".Lf442cc_0004432c:\n"
@@ -1417,14 +1417,14 @@ unsigned int SL_Init(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x4c, %esp\n"
-        "cmpb $0, 0x3f6680\n" /* line 289 */
+        "cmpb $0, scrStringGlob+65536\n" /* line 289 */
         "je .Lf4433e_0004461b\n"
         "movl $1, -0x1c(%ebp)\n"
         "jmp .Lf4433e_00044375\n"
         ".Lf4433e_0004435d:\n"
         "movw $1, 2(%edi)\n" /* line 962 */
         "movb $4, 1(%edi)\n" /* line 963 */
-        "movl 0x3f6684, %ecx\n" /* line 1189 */
+        "movl scrStringGlob+65540, %ecx\n" /* line 1189 */
         "testl %ecx, %ecx\n"
         "je .Lf4433e_000444b3\n"
         ".Lf4433e_00044375:\n"
@@ -1433,10 +1433,10 @@ unsigned int SL_Init(void)
         "leal scrStringGlob(%eax), %edx\n"
         "testw $0xc000, scrStringGlob(%eax)\n" /* line 1192 */
         "je .Lf4433e_000444b3\n"
-        "movl $0, 0x3f6684\n" /* line 1195 */
+        "movl $0, scrStringGlob+65540\n" /* line 1195 */
         "movzwl 2(%edx), %edx\n" /* line 1196 */
         "movl %edx, -0x28(%ebp)\n"
-        "movl 0x195ecc4, %eax\n" /* line 139 */
+        "movl imp_scrMemTreePub, %eax\n" /* line 139 */
         "movl (%eax), %eax\n"
         "leal (%eax, %edx, 8), %edi\n"
         "testb $4, 1(%edi)\n" /* line 960 */
@@ -1503,7 +1503,7 @@ unsigned int SL_Init(void)
         "movw $0, 2(%edi)\n" /* line 922 */
         "movw %cx, 2(%esi, %eax, 4)\n" /* line 924 */
         "movw %cx, scrStringGlob\n" /* line 925 */
-        "movl 0x3f6684, %ecx\n" /* line 1189 */
+        "movl scrStringGlob+65540, %ecx\n" /* line 1189 */
         "testl %ecx, %ecx\n"
         "jne .Lf4433e_00044375\n"
         ".Lf4433e_000444b3:\n"
@@ -1539,10 +1539,10 @@ unsigned int SL_Init(void)
         ".Lf4433e_00044513:\n"
         "testw $0xc000, scrStringGlob(%ebx)\n" /* line 1206 */
         "je .Lf4433e_00044501\n"
-        "movzwl 0x3e6682(%ebx), %edx\n" /* line 1209 */
+        "movzwl scrStringGlob+2(%ebx), %edx\n" /* line 1209 */
         "movzwl %dx, %ecx\n"
         "movl %ecx, -0x24(%ebp)\n"
-        "movl 0x195ecc4, %ecx\n" /* line 139 */
+        "movl imp_scrMemTreePub, %ecx\n" /* line 139 */
         "movl (%ecx), %eax\n"
         "movl -0x24(%ebp), %ecx\n"
         "leal (%eax, %ecx, 8), %eax\n"
@@ -1588,7 +1588,7 @@ unsigned int SL_Init(void)
         "movzwl 2(%edi), %eax\n" /* line 889 */
         "movl -0x20(%ebp), %edx\n"
         "movw %ax, 2(%edx)\n"
-        "movl %edx, 0x3f6684\n" /* line 890 */
+        "movl %edx, scrStringGlob+65540\n" /* line 890 */
         "movl $scrStringGlob, %esi\n"
         "jmp .Lf4433e_00044489\n"
         ".Lf4433e_000445ca:\n"
@@ -1638,12 +1638,12 @@ unsigned int SL_Init(void)
         ".Lf4433e_0004463e:\n"
         "movw $0, scrStringGlob(%ebx)\n" /* line 266 */
         "orw %cx, scrStringGlob(, %edx, 4)\n" /* line 267 */
-        "movw %dx, 0x3e6682(%ebx)\n" /* line 268 */
+        "movw %dx, scrStringGlob+2(%ebx)\n" /* line 268 */
         "leal 1(%ecx), %eax\n" /* line 262 */
         "cmpl $0x4000, %eax\n"
         "jne .Lf4433e_00044637\n"
-        "movw %cx, 0x3e6682\n" /* line 273 */
-        "movb $1, 0x3f6680\n" /* line 279 */
+        "movw %cx, scrStringGlob+2\n" /* line 273 */
+        "movb $1, scrStringGlob+65536\n" /* line 279 */
         ".Lf4433e_0004466e:\n"
         "addl $0x4c, %esp\n" /* line 296 */
         "popl %ebx\n"
@@ -1729,7 +1729,7 @@ unsigned int SL_GetStringForFloat(float f)
         /* { scope 1 */
         "cvtss2sd 8(%ebp), %xmm0\n" /* line 1071 | f */
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x217c20, 4(%esp)\n" /* "%g" */
+        "movl $str_00217c20, 4(%esp)\n" /* "%g" */
         "leal -0x88(%ebp), %ebx\n" /* tempString */
         "movl %ebx, (%esp)\n"
         "calll sprintf\n"
@@ -1766,7 +1766,7 @@ unsigned int SL_GetStringForInt(int i)
         /* { scope 1 */
         "movl 8(%ebp), %eax\n" /* line 1080 | i */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21785c, 4(%esp)\n" /* "%i" */
+        "movl $str_0021785c, 4(%esp)\n" /* "%i" */
         "leal -0x88(%ebp), %ebx\n" /* tempString */
         "movl %ebx, (%esp)\n"
         "calll sprintf\n"
@@ -1808,7 +1808,7 @@ unsigned int SL_GetStringForVector(const float *v)
         "movsd %xmm0, 0x10(%esp)\n"
         "cvtss2sd (%eax), %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x217c24, 4(%esp)\n" /* "(%g, %g, %g)" */
+        "movl $str_00217c24, 4(%esp)\n" /* "(%g, %g, %g)" */
         "leal -0x88(%ebp), %ebx\n" /* tempString */
         "movl %ebx, (%esp)\n"
         "calll sprintf\n"
@@ -1912,7 +1912,7 @@ unsigned int Scr_CreateCanonicalFilename(const char *filename)
         ".Lf4482c_000448ed:\n"
         "movl $0, 0xc(%esp)\n" /* line 1246 */
         "movl %ebx, 8(%esp)\n"
-        "movl $0x217c34, 4(%esp)\n" /* "Filename '%s' exceeds maximum length of %d" */
+        "movl $str_00217c34, 4(%esp)\n" /* "Filename '%s' exceeds maximum length of %d" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf4482c_000448d1\n"

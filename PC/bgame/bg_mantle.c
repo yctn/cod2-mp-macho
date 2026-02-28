@@ -12,15 +12,15 @@ static inline float fabsf_local(float x) { return x < 0 ? -x : x; }
  *   #include "PC/universal/com_math.h"
  */
 
-static const dvar_t *mantle_enable; /* 0x4ed300 */
-static const dvar_t *mantle_debug; /* 0x4ed30c */
-static const dvar_t *mantle_check_range; /* 0x4ed314 */
-static const dvar_t *mantle_check_radius; /* 0x4ed318 */
-static const dvar_t *mantle_check_angle; /* 0x4ed310 */
-static const dvar_t *mantle_view_yawcap; /* 0x4ed304 */
-static MantleAnimTransition s_mantleTrans[7]; /* 0x30aaa0 */
-static char * s_mantleAnimNames[11]; /* 0x30ab00 */
-static char (*s_mantleAnims)[64]; /* 0x4ed308 */
+static const dvar_t *mantle_enable; /* mantle_enable */
+static const dvar_t *mantle_debug; /* mantle_debug */
+static const dvar_t *mantle_check_range; /* mantle_check_range */
+static const dvar_t *mantle_check_radius; /* mantle_check_radius */
+static const dvar_t *mantle_check_angle; /* mantle_check_angle */
+static const dvar_t *mantle_view_yawcap; /* mantle_view_yawcap */
+static MantleAnimTransition s_mantleTrans[7]; /* s_mantleTrans */
+static char * s_mantleAnimNames[11]; /* s_mantleAnimNames */
+static char (*s_mantleAnims)[64]; /* s_mantleAnims */
 
 extern const dvar_t *Dvar_RegisterBool(const char *name, int value, int flags);
 extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);

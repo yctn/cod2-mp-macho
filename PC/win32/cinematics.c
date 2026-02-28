@@ -29,19 +29,19 @@ extern void CL_LookupColor(int, float *);
 extern float floorf(float);
 extern float ceilf(float);
 
-static Boolean sAspyrIntroPlayed; /* 0x7eefe0 */
-static long int ROQ_YY_tab[256]; /* 0x745be0 */
-static long int ROQ_UB_tab[256]; /* 0x746be0 */
-static long int ROQ_UG_tab[256]; /* 0x7463e0 */
-static long int ROQ_VG_tab[256]; /* 0x745fe0 */
-static long int ROQ_VR_tab[256]; /* 0x7467e0 */
-static short unsigned int vq2[16384]; /* 0x746fe0 */
-static short unsigned int vq4[65536]; /* 0x74efe0 */
-static short unsigned int vq8[262144]; /* 0x76efe0 */
-static struct cinematics_t cin; /* 0x4f55c0 */
-static cin_cache cinTable[16]; /* 0x4f3900 */
-static int currentHandle; /* 0x30f584 */
-static int CL_handle; /* 0x30f580 */
+static Boolean sAspyrIntroPlayed; /* sAspyrIntroPlayed */
+static long int ROQ_YY_tab[256]; /* ROQ_YY_tab */
+static long int ROQ_UB_tab[256]; /* ROQ_UB_tab */
+static long int ROQ_UG_tab[256]; /* ROQ_UG_tab */
+static long int ROQ_VG_tab[256]; /* ROQ_VG_tab */
+static long int ROQ_VR_tab[256]; /* ROQ_VR_tab */
+static short unsigned int vq2[16384]; /* vq2 */
+static short unsigned int vq4[65536]; /* vq4 */
+static short unsigned int vq8[262144]; /* vq8 */
+static struct cinematics_t cin; /* cin */
+static cin_cache cinTable[16]; /* cinTable */
+static int currentHandle; /* currentHandle */
+static int CL_handle; /* CL_handle */
 
 static inflate_blocks_statef recurseQuad(long int startX, long int startY, long int quadSize, long int xOff, long int yOff);
 static inflate_blocks_statef RoQShutdown(void);
@@ -129,11 +129,11 @@ static inflate_blocks_statef RoQShutdown(void)
         }
 
         if (cinTable[currentHandle].alterGameState) {
-            clcState = *(int **)*(int *)0x195ee8c;
+            clcState = *(int **)*(int *)imp_clc;
             *clcState = cinTable[currentHandle].previousGameState;
             CL_handle = -1;
             if (*clcState == 0) {
-                nextMapStr = *(char **)((char *)**(void ***)0x195ee88 + 8);
+                nextMapStr = *(char **)((char *)**(void ***)imp_nextmap + 8);
                 if (*nextMapStr != '\0') {
                     if (!sAspyrIntroPlayed) {
                         if (strstr(nextMapStr, "IW_logo")) {
@@ -141,11 +141,11 @@ static inflate_blocks_statef RoQShutdown(void)
                             sAspyrIntroPlayed = 1;
                         } else {
                             Cbuf_ExecuteText(2, va("%s\n", nextMapStr));
-                            Dvar_SetString(**(void ***)0x195ee88, "");
+                            Dvar_SetString(**(void ***)imp_nextmap, "");
                         }
                     } else {
                         Cbuf_ExecuteText(2, va("%s\n", nextMapStr));
-                        Dvar_SetString(**(void ***)0x195ee88, "");
+                        Dvar_SetString(**(void ***)imp_nextmap, "");
                     }
                     UI_SetActiveMenu(1);
                 } else {
@@ -156,7 +156,7 @@ static inflate_blocks_statef RoQShutdown(void)
             }
         }
 
-        rendererCallback = *(void (**)(void))((char *)*(void **)0x195eca8 + 0x148);
+        rendererCallback = *(void (**)(void))((char *)*(void **)imp_re + 0x148);
         if (rendererCallback) {
             rendererCallback();
         }
@@ -178,7 +178,7 @@ e_status ROQ_StopCinematicFromHandle(int handle)
         return FMV_EOF;
     }
     if (cinTable[currentHandle].alterGameState) {
-        if (**(int **)(*(int *)0x195ee8c) != 1) {
+        if (**(int **)(*(int *)imp_clc) != 1) {
             return cinTable[currentHandle].status;
         }
     }
@@ -212,7 +212,7 @@ inflate_blocks_statef ROQ_UploadCinematicFromHandle(int handle)
                 cinTable[handle].dirty = 0;
             }
         }
-        if (!*(byte *)((*(char **)0x195ee84)[0] + 8)) {
+        if (!*(byte *)((*(char **)imp_cl_inGameVideo)[0] + 8)) {
             if (cinTable[handle].playonwalls == 1) {
                 cinTable[handle].playonwalls = 0;
             }
@@ -508,11 +508,11 @@ int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
     cinTable[handle].sound = 0;
 
     if (cinTable[handle].alterGameState) {
-        if (*(int *)(*(char **)0x195ecac + 0x110)) {
+        if (*(int *)(*(char **)imp_cls + 0x110)) {
             UI_SetActiveMenu(0);
         }
     } else {
-        cinTable[handle].playonwalls = *(byte *)((*(char **)0x195ee84)[8]) != 0;
+        cinTable[handle].playonwalls = *(byte *)((*(char **)imp_cl_inGameVideo)[8]) != 0;
     }
 
     if (handle >= 0) {
@@ -571,7 +571,7 @@ int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
     Com_DPrintf("trFMV::play(), playing %s\n", arg);
 
     if (cinTable[currentHandle].alterGameState) {
-        int *clcState = *(int **)*(int *)0x195ee8c;
+        int *clcState = *(int **)*(int *)imp_clc;
         cinTable[currentHandle].previousGameState = (connstate_t)*clcState;
         *clcState = 1;
     }
@@ -609,7 +609,7 @@ inflate_blocks_statef ROQ_DrawCinematicFromHandle(int handle)
     aspect = (float)cinTable[handle].width / (float)cinTable[handle].height;
     CL_LookupColor(0x30, clearColor);
 
-    cls = *(char **)0x195ecac;
+    cls = *(char **)imp_cls;
     screenAspect = *(float *)(cls + 0x2a0a74);
 
     if (aspect == screenAspect) {
@@ -639,7 +639,7 @@ inflate_blocks_statef ROQ_DrawCinematicFromHandle(int handle)
     }
 
     /* draw clear/background */
-    re = *(char **)0x195eca8;
+    re = *(char **)imp_re;
     ((void (*)(int, float *, int, int))*(void **)(re + 0xc8))(1, clearColor, 0, 0);
 
     /* draw cinematic image */
@@ -650,14 +650,14 @@ inflate_blocks_statef ROQ_DrawCinematicFromHandle(int handle)
 
     if (cinTable[handle].letterBox) {
         /* draw letterbox bars */
-        cls = *(char **)0x195ecac;
+        cls = *(char **)imp_cls;
         barSize = (float)*(int *)(cls + 0x2a0a68) / 480.0f * 105.0f;
         barSizeCeil = (int)ceilf(barSize);
         xf = (float)x;
         wf = (float)w;
         material = *(int *)(cls + 0x2a0a58);
 
-        re = *(char **)0x195eca8;
+        re = *(char **)imp_re;
         ((void (*)(float, float, float, float, int, int, int, int, float *, int))*(void **)(re + 0x94))(
             xf, (float)y, wf, (float)(int)floorf(barSize),
             0, 0, 0, 0, clearColor, material);
@@ -729,7 +729,7 @@ inflate_blocks_statef ROQ_CloseAllVideos(void)
         if (!cinTable[currentHandle].buf) {
             continue;
         }
-        if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)0x195ee8c) == 1) {
+        if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)imp_clc) == 1) {
             cinTable[currentHandle].status = FMV_EOF;
             RoQShutdown();
         }
@@ -747,7 +747,7 @@ inflate_blocks_statef ROQ_StopCinematic(void)
             currentHandle = h;
             Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
             if (cinTable[currentHandle].buf) {
-                if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)0x195ee8c) == 1) {
+                if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)imp_clc) == 1) {
                     cinTable[currentHandle].status = FMV_EOF;
                     RoQShutdown();
                 }
@@ -788,7 +788,7 @@ e_status ROQ_RunCinematicFromHandle(int handle)
     currentHandle = handle;
 
     if (cinTable[handle].alterGameState) {
-        if (**(int **)(*(int *)0x195ee8c) != 1) {
+        if (**(int **)(*(int *)imp_clc) != 1) {
             return cinTable[handle].status;
         }
     }
@@ -936,7 +936,7 @@ parse_roq:
         {
             /* Render callback */
             {
-                void (*rendererCb)(void) = *(void (**)(void))((char *)*(void **)0x195eca8 + 0x148);
+                void (*rendererCb)(void) = *(void (**)(void))((char *)*(void **)imp_re + 0x148);
                 if (rendererCb) rendererCb();
             }
             h = currentHandle;
@@ -1327,7 +1327,7 @@ inflate_blocks_statef ROQ_PlayCinematic_f(void)
     int h;
 
     Com_DPrintf("CL_PlayCinematic_f\n");
-    argc = **(int **)*(int *)0x195ee8c;
+    argc = **(int **)*(int *)imp_clc;
 
     if (argc == 1) {
         /* inlined ROQ_StopCinematic */
@@ -1337,7 +1337,7 @@ inflate_blocks_statef ROQ_PlayCinematic_f(void)
                 currentHandle = h;
                 Com_DPrintf("trFMV::stop(), closing %s\n", cinTable[currentHandle].fileName);
                 if (cinTable[currentHandle].buf) {
-                    if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)0x195ee8c) == 1) {
+                    if (!cinTable[currentHandle].alterGameState || **(int **)(*(int *)imp_clc) == 1) {
                         cinTable[currentHandle].status = FMV_EOF;
                         RoQShutdown();
                     }

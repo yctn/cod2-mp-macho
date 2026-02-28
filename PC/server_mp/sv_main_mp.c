@@ -48,7 +48,7 @@ extern const dvar_t *sv_allowedClan2; /* 0x0 */
 extern const dvar_t *sv_mapRotation; /* 0x0 */
 extern const dvar_t *sv_mapRotationCurrent; /* 0x0 */
 extern const dvar_t *sv_disableClientConsole; /* 0x0 */
-static char string_00edae00[1024]; /* 0xedae00 */
+static char string_00edae00[1024]; /* string */
 
 long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd);
 long int SV_VoicePacket(netadr_t from, msg_t *msg);
@@ -183,7 +183,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "leal -0x43(%edi), %eax\n" /* line 219 */
         "cmpl $0x33, %eax\n"
         "ja .Lf1593ae_0015948c\n"
-        "jmpl *0x3027a0(, %eax, 4)\n"
+        "jmpl *yy_ec+2752(, %eax, 4)\n"
         ".Lf1593ae_00159507:\n"
         "movl %eax, %edx\n"
         /* } scope */
@@ -211,7 +211,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "movl %ecx, (%esp)\n"
         "calll MSG_WriteReliableCommandToBuffer\n"
         "addl 8(%ebp), %ebx\n" /* line 330 | client, i */
-        "movl 0x1700484, %eax\n"
+        "movl svs+4, %eax\n"
         "movl %eax, 0x80c(%ebx)\n" /* i */
         "movl %esi, 0x810(%ebx)\n" /* line 331 | to, i */
         /* } scope */
@@ -230,7 +230,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "jmp .Lf1593ae_00159509\n"
         /* { scope 1 */
         ".Lf1593ae_0015957d:\n"
-        "movl $0x2ab3d4, (%esp)\n" /* line 315 */
+        "movl $str_002ab3d4, (%esp)\n" /* line 315 */
         "calll Com_Printf\n"
         "movl 8(%ebp), %eax\n" /* line 316 | client */
         "movl 0x20810(%eax), %ebx\n" /* i */
@@ -240,10 +240,10 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         ".Lf1593ae_001595a1:\n"
         "movl 0x10(%ebp), %eax\n" /* line 320 | cmd */
         "movl %eax, 0xc(%esp)\n"
-        "movl 0x1700484, %eax\n"
+        "movl svs+4, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x2ab3fc, (%esp)\n" /* "cmd %5d: %8d: %s
+        "movl $str_002ab3fc, (%esp)\n" /* "cmd %5d: %8d: %s
 " */
         "calll Com_Printf\n"
         "movl 8(%ebp), %edx\n" /* line 321 | client */
@@ -254,17 +254,17 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "movl %edx, -0x20(%ebp)\n"
         "movl 0x6e5cc(%ebx), %eax\n" /* i */
         "movl %eax, -0x1c(%ebp)\n"
-        "movl $0x228e90, 0x10(%esp)\n" /* "disconnect" */
+        "movl $str_00228e90, 0x10(%esp)\n" /* "disconnect" */
         "movl %ecx, 4(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
         "movl $1, (%esp)\n"
         "calll NET_OutOfBandPrint\n"
-        "movl $0x2ab410, 4(%esp)\n" /* line 322 */
+        "movl $str_002ab410, 4(%esp)\n" /* line 322 */
         "movl %ebx, (%esp)\n" /* i */
         "calll SV_DelayDropClient\n"
         "movl $0x77, 4(%esp)\n" /* line 326 */
-        "movl $0x2ab42c, (%esp)\n" /* "%c "EXE_SERVERCOMMANDOVERFLOW"" */
+        "movl $str_002ab42c, (%esp)\n" /* "%c "EXE_SERVERCOMMANDOVERFLOW"" */
         "calll va\n"
         "movl %eax, 0x10(%ebp)\n" /* cmd */
         "movl $1, %esi\n" /* to */
@@ -382,7 +382,7 @@ long int SV_AddServerCommand(client_t *client, svscmd_type type, const char *cmd
         "movl 0x80c(%eax, %ecx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* i */
-        "movl $0x2ab3fc, (%esp)\n" /* "cmd %5d: %8d: %s
+        "movl $str_002ab3fc, (%esp)\n" /* "cmd %5d: %8d: %s
 " */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 316 | i */
@@ -427,7 +427,7 @@ long int SV_VoicePacket(netadr_t from, msg_t *msg)
         "movl %eax, (%esp)\n"
         "calll MSG_ReadShort\n"
         "movl %eax, -0x44(%ebp)\n" /* qport */
-        "movl 0x170048c, %ebx\n" /* line 400 | cl */
+        "movl svs+12, %ebx\n" /* line 400 | cl */
         "movl sv_maxclients, %eax\n"
         "movl 8(%eax), %esi\n" /* i */
         "testl %esi, %esi\n" /* i */
@@ -492,13 +492,13 @@ long int SV_VoicePacket(netadr_t from, msg_t *msg)
         ".Lf1597b6_001598b5:\n"
         "cmpw %di, 0x6e5cc(%ebx)\n" /* line 422 | cl */
         "je .Lf1597b6_001598d1\n"
-        "movl $0x2ab44c, (%esp)\n" /* line 424 */
+        "movl $str_002ab44c, (%esp)\n" /* line 424 */
         "calll Com_Printf\n"
         "movw %di, 0x6e5cc(%ebx)\n" /* line 425 | cl */
         ".Lf1597b6_001598d1:\n"
         "cmpl $1, (%ebx)\n" /* line 432 | cl */
         "je .Lf1597b6_00159896\n"
-        "movl 0x1700484, %eax\n" /* line 434 */
+        "movl svs+4, %eax\n" /* line 434 */
         "movl %eax, 0x20d10(%ebx)\n" /* cl */
         "cmpl $3, (%ebx)\n" /* line 435 | cl */
         "jg .Lf1597b6_001598ff\n"
@@ -559,11 +559,11 @@ long int SVC_Status(netadr_t from)
         "movl $1, (%esp)\n" /* line 488 */
         "calll SV_Cmd_Argv\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a9338, 4(%esp)\n" /* "challenge" */
+        "movl $str_002a9338, 4(%esp)\n" /* "challenge" */
         "leal -0x2828(%ebp), %edx\n" /* infostring */
         "movl %edx, (%esp)\n"
         "calll Info_SetValueForKey\n"
-        "movl $0x216d6c, (%esp)\n" /* line 491 */
+        "movl $str_00216d6c, (%esp)\n" /* line 491 */
         "calll Dvar_GetBool\n"
         "testb %al, %al\n"
         "jne .Lf159918_00159c54\n"
@@ -584,7 +584,7 @@ long int SVC_Status(netadr_t from)
         "movl %esi, 0x14(%esp)\n" /* count */
         "movl %edi, 0x10(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2ab484, 8(%esp)\n" /* "%i %i "%s"
+        "movl $str_002ab484, 8(%esp)\n" /* "%i %i "%s"
 " */
         "movl $0x400, 4(%esp)\n"
         "leal -0x428(%ebp), %eax\n" /* player */
@@ -616,7 +616,7 @@ long int SVC_Status(netadr_t from)
         "jle .Lf159918_00159b02\n"
         ".Lf159918_00159aac:\n"
         "movl -0x482c(%ebp), %ebx\n" /* line 504 | cl */
-        "addl 0x170048c, %ebx\n" /* cl */
+        "addl svs+12, %ebx\n" /* cl */
         "cmpl $1, (%ebx)\n" /* line 505 | cl */
         "jle .Lf159918_00159a90\n"
         "movl -0x4840(%ebp), %edx\n" /* line 507 | i */
@@ -624,31 +624,31 @@ long int SVC_Status(netadr_t from)
         "calll SV_GameClientNum\n"
         "leal 0x20c48(%ebx), %esi\n" /* line 508 | cl, count */
         "movl 0x6e5a4(%ebx), %edi\n" /* cl */
-        "movl 0x195f594, %eax\n"
+        "movl imp_gameInitialized, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf159918_00159a17\n"
-        "subl 0x170048c, %ebx\n" /* cl */
+        "subl svs+12, %ebx\n" /* cl */
         "sarl $2, %ebx\n" /* cl */
         "imull $0x3789a4eb, %ebx, %eax\n" /* cl */
         "movl %eax, (%esp)\n"
         "calll G_GetClientScore\n"
         "jmp .Lf159918_00159a19\n"
         ".Lf159918_00159b02:\n"
-        "movl $0x2ab490, (%esp)\n" /* line 519 */
+        "movl $str_002ab490, (%esp)\n" /* line 519 */
         "calll Dvar_GetString\n"
         "testl %eax, %eax\n" /* line 520 */
         "je .Lf159918_00159b1b\n"
         "cmpb $0, (%eax)\n"
         "jne .Lf159918_00159cab\n"
         ".Lf159918_00159b1b:\n"
-        "movl $0x21952c, 8(%esp)\n" /* line 523 */
-        "movl $0x2a9af0, 4(%esp)\n" /* "pswrd" */
+        "movl $str_0021952c, 8(%esp)\n" /* line 523 */
+        "movl $str_002a9af0, 4(%esp)\n" /* "pswrd" */
         "leal -0x2828(%ebp), %edx\n" /* infostring */
         "movl %edx, (%esp)\n"
         "calll Info_SetValueForKey\n"
         ".Lf159918_00159b39:\n"
-        "movl $0x216d64, (%esp)\n" /* line 526 */
+        "movl $str_00216d64, (%esp)\n" /* line 526 */
         "calll Dvar_GetString\n"
         "movl %eax, %edx\n"
         "movl sv_pure, %eax\n" /* line 527 */
@@ -662,10 +662,10 @@ long int SVC_Status(netadr_t from)
         "movl $1, %eax\n" /* line 538 */
         ".Lf159918_00159b68:\n"
         "movl %eax, 4(%esp)\n" /* line 548 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a9cf4, 4(%esp)\n" /* "mod" */
+        "movl $str_002a9cf4, 4(%esp)\n" /* "mod" */
         "leal -0x2828(%ebp), %eax\n" /* infostring */
         "movl %eax, (%esp)\n"
         "calll Info_SetValueForKey\n"
@@ -673,7 +673,7 @@ long int SVC_Status(netadr_t from)
         "movl %edx, 0x10(%esp)\n"
         "leal -0x2828(%ebp), %eax\n" /* infostring */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2ab49c, 8(%esp)\n" /* "statusResponse
+        "movl $str_002ab49c, 8(%esp)\n" /* "statusResponse
 %s
 %s" */
         "movl $0x2000, 4(%esp)\n"
@@ -712,7 +712,7 @@ long int SVC_Status(netadr_t from)
         "retl\n"
         /* { scope 1: keywords */
         ".Lf159918_00159c38:\n"
-        "movl $0x2a7220, (%esp)\n" /* line 533 */
+        "movl $str_002a7220, (%esp)\n" /* line 533 */
         "calll Dvar_GetString\n"
         "cmpb $0, (%eax)\n" /* line 534 */
         "jne .Lf159918_00159cce\n"
@@ -721,26 +721,26 @@ long int SVC_Status(netadr_t from)
         "jmp .Lf159918_00159b68\n"
         /* { scope 2 */
         ".Lf159918_00159c54:\n"
-        "movl $0x2a710c, 4(%esp)\n" /* line 495 */
+        "movl $str_002a710c, 4(%esp)\n" /* line 495 */
         "leal -0x2828(%ebp), %eax\n" /* infostring */
         "movl %eax, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2ab47c, 8(%esp)\n" /* "demo %s" */
+        "movl $str_002ab47c, 8(%esp)\n" /* "demo %s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0x828(%ebp), %ebx\n" /* keywords, cl */
         "movl %ebx, (%esp)\n" /* cl */
         "calll Com_sprintf\n"
         "movl %ebx, 8(%esp)\n" /* line 496 | cl */
-        "movl $0x2a710c, 4(%esp)\n" /* "sv_keywords" */
+        "movl $str_002a710c, 4(%esp)\n" /* "sv_keywords" */
         "leal -0x2828(%ebp), %edx\n" /* infostring */
         "movl %edx, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "jmp .Lf159918_001599db\n"
         /* } scope */
         ".Lf159918_00159cab:\n"
-        "movl $0x2162ac, 8(%esp)\n" /* line 521 */
-        "movl $0x2a9af0, 4(%esp)\n" /* "pswrd" */
+        "movl $str_002162ac, 8(%esp)\n" /* line 521 */
+        "movl $str_002a9af0, 4(%esp)\n" /* "pswrd" */
         "leal -0x2828(%ebp), %eax\n" /* infostring */
         "movl %eax, (%esp)\n"
         "calll Info_SetValueForKey\n"
@@ -756,7 +756,7 @@ long int SVC_Status(netadr_t from)
         ".Lf159918_00159ce7:\n"
         "movl %ebx, (%esp)\n" /* line 540 | cl */
         "calll SV_Cmd_Argv\n"
-        "movl $0x216f3c, 4(%esp)\n" /* "main" */
+        "movl $str_00216f3c, 4(%esp)\n" /* "main" */
         "movl %eax, (%esp)\n"
         "calll FS_iwIwd\n"
         "testl %eax, %eax\n"
@@ -816,11 +816,11 @@ long int SVC_GameCompleteStatus(netadr_t from)
         "movl $1, (%esp)\n" /* line 579 */
         "calll SV_Cmd_Argv\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a9338, 4(%esp)\n" /* "challenge" */
+        "movl $str_002a9338, 4(%esp)\n" /* "challenge" */
         "leal -0x828(%ebp), %edx\n" /* infostring */
         "movl %edx, (%esp)\n"
         "calll Info_SetValueForKey\n"
-        "movl $0x216d6c, (%esp)\n" /* line 582 */
+        "movl $str_00216d6c, (%esp)\n" /* line 582 */
         "calll Dvar_GetBool\n"
         "testb %al, %al\n"
         "jne .Lf159d2a_00159f91\n"
@@ -836,7 +836,7 @@ long int SVC_GameCompleteStatus(netadr_t from)
         "movl $0, -0xc2c(%ebp)\n"
         ".Lf159d2a_00159e24:\n"
         "movl -0xc2c(%ebp), %ebx\n" /* line 595 | cl */
-        "addl 0x170048c, %ebx\n" /* cl */
+        "addl svs+12, %ebx\n" /* cl */
         "cmpl $1, (%ebx)\n" /* line 596 | cl */
         "jle .Lf159d2a_00159edd\n"
         "movl -0xc40(%ebp), %edx\n" /* line 598 | i */
@@ -844,7 +844,7 @@ long int SVC_GameCompleteStatus(netadr_t from)
         "calll SV_GameClientNum\n"
         "leal 0x20c48(%ebx), %esi\n" /* line 599 | cl */
         "movl 0x6e5a4(%ebx), %edi\n" /* cl */
-        "subl 0x170048c, %ebx\n" /* cl */
+        "subl svs+12, %ebx\n" /* cl */
         "sarl $2, %ebx\n" /* cl */
         "imull $0x3789a4eb, %ebx, %eax\n" /* cl */
         "movl %eax, (%esp)\n"
@@ -852,7 +852,7 @@ long int SVC_GameCompleteStatus(netadr_t from)
         "movl %esi, 0x14(%esp)\n"
         "movl %edi, 0x10(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2ab484, 8(%esp)\n" /* "%i %i "%s"
+        "movl $str_002ab484, 8(%esp)\n" /* "%i %i "%s"
 " */
         "movl $0x400, 4(%esp)\n"
         "leal -0x428(%ebp), %eax\n" /* player */
@@ -887,7 +887,7 @@ long int SVC_GameCompleteStatus(netadr_t from)
         "movl %eax, 8(%esp)\n"
         "leal -0x828(%ebp), %edx\n" /* infostring */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2ab4b4, (%esp)\n" /* "gameCompleteStatus
+        "movl $str_002ab4b4, (%esp)\n" /* "gameCompleteStatus
 %s
 %s" */
         "calll va\n"
@@ -924,18 +924,18 @@ long int SVC_GameCompleteStatus(netadr_t from)
         /* { scope 1: keywords */
         /* { scope 2 */
         ".Lf159d2a_00159f91:\n"
-        "movl $0x2a710c, 4(%esp)\n" /* line 586 */
+        "movl $str_002a710c, 4(%esp)\n" /* line 586 */
         "leal -0x828(%ebp), %eax\n" /* infostring */
         "movl %eax, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2ab47c, 8(%esp)\n" /* "demo %s" */
+        "movl $str_002ab47c, 8(%esp)\n" /* "demo %s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0xc28(%ebp), %ebx\n" /* keywords, cl */
         "movl %ebx, (%esp)\n" /* cl */
         "calll Com_sprintf\n"
         "movl %ebx, 8(%esp)\n" /* line 587 | cl */
-        "movl $0x2a710c, 4(%esp)\n" /* "sv_keywords" */
+        "movl $str_002a710c, 4(%esp)\n" /* "sv_keywords" */
         "leal -0x828(%ebp), %edx\n" /* infostring */
         "movl %edx, (%esp)\n"
         "calll Info_SetValueForKey\n"
@@ -990,27 +990,27 @@ long int SVC_Info(netadr_t from)
         "movl $1, (%esp)\n" /* line 681 */
         "calll SV_Cmd_Argv\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a9338, 4(%esp)\n" /* "challenge" */
+        "movl $str_002a9338, 4(%esp)\n" /* "challenge" */
         "leal -0x424(%ebp), %esi\n" /* infostring */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl $0x73, 4(%esp)\n" /* line 683 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a7118, 4(%esp)\n" /* "protocol" */
+        "movl $str_002a7118, 4(%esp)\n" /* "protocol" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_hostname, %eax\n" /* line 684 */
         "movl 8(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2aa89c, 4(%esp)\n" /* "hostname" */
+        "movl $str_002aa89c, 4(%esp)\n" /* "hostname" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_mapname, %eax\n" /* line 685 */
         "movl 8(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a7124, 4(%esp)\n" /* "mapname" */
+        "movl $str_002a7124, 4(%esp)\n" /* "mapname" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "testl %ebx, %ebx\n" /* line 687 | gamedir */
@@ -1025,23 +1025,23 @@ long int SVC_Info(netadr_t from)
         "testl %edx, %edx\n" /* line 691 */
         "jle .Lf159ffe_0015a13b\n"
         "movl %edx, 4(%esp)\n" /* line 692 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a70dc, 4(%esp)\n" /* "sv_maxclients" */
+        "movl $str_002a70dc, 4(%esp)\n" /* "sv_maxclients" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         ".Lf159ffe_0015a13b:\n"
         "movl sv_gametype, %eax\n" /* line 694 */
         "movl 8(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2aa884, 4(%esp)\n" /* "gametype" */
+        "movl $str_002aa884, 4(%esp)\n" /* "gametype" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_pure, %eax\n" /* line 697 */
         "cmpb $0, 8(%eax)\n"
         "jne .Lf159ffe_0015a352\n"
-        "movl 0x195ecd4, %eax\n"
+        "movl imp_fs_numServerIwds, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf159ffe_0015a352\n"
@@ -1055,7 +1055,7 @@ long int SVC_Info(netadr_t from)
         "testl %eax, %eax\n"
         "jne .Lf159ffe_0015a3ae\n"
         ".Lf159ffe_0015a195:\n"
-        "movl $0x216d64, (%esp)\n" /* line 707 */
+        "movl $str_00216d64, (%esp)\n" /* line 707 */
         "calll Dvar_GetString\n"
         "movl %eax, %ebx\n" /* gamedir */
         "cmpb $0, (%eax)\n" /* line 708 */
@@ -1071,24 +1071,24 @@ long int SVC_Info(netadr_t from)
         "testb %al, %al\n"
         "jne .Lf159ffe_0015a446\n"
         ".Lf159ffe_0015a1ce:\n"
-        "movl $0x2ab490, (%esp)\n" /* line 717 */
+        "movl $str_002ab490, (%esp)\n" /* line 717 */
         "calll Dvar_GetString\n"
         "testl %eax, %eax\n" /* line 718 */
         "je .Lf159ffe_0015a1e7\n"
         "cmpb $0, (%eax)\n"
         "jne .Lf159ffe_0015a578\n"
         ".Lf159ffe_0015a1e7:\n"
-        "movl $0x2ab4f0, (%esp)\n" /* line 721 */
+        "movl $str_002ab4f0, (%esp)\n" /* line 721 */
         "calll Dvar_GetInt\n"
         "testl %eax, %eax\n" /* line 722 */
         "jne .Lf159ffe_0015a519\n"
         ".Lf159ffe_0015a1fb:\n"
-        "movl $0x2a9d04, (%esp)\n" /* line 725 */
+        "movl $str_002a9d04, (%esp)\n" /* line 725 */
         "calll Dvar_GetInt\n"
         "testl %eax, %eax\n" /* line 726 */
         "jne .Lf159ffe_0015a4f0\n"
         ".Lf159ffe_0015a20f:\n"
-        "movl 0x195ec98, %eax\n" /* line 730 */
+        "movl imp_com_dedicated, %eax\n" /* line 730 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf159ffe_0015a225\n"
@@ -1098,10 +1098,10 @@ long int SVC_Info(netadr_t from)
         ".Lf159ffe_0015a225:\n"
         "movl $5, 4(%esp)\n" /* line 732 */
         ".Lf159ffe_0015a22d:\n"
-        "movl $0x21785c, (%esp)\n" /* line 736 */
+        "movl $str_0021785c, (%esp)\n" /* line 736 */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2aa878, 4(%esp)\n" /* "hw" */
+        "movl $str_002aa878, 4(%esp)\n" /* "hw" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_pure, %eax\n" /* line 763 */
@@ -1113,23 +1113,23 @@ long int SVC_Info(netadr_t from)
         "movl $1, %eax\n" /* line 774 */
         ".Lf159ffe_0015a266:\n"
         "movl %eax, 4(%esp)\n" /* line 785 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a9cf4, 4(%esp)\n" /* "mod" */
+        "movl $str_002a9cf4, 4(%esp)\n" /* "mod" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_voice, %eax\n" /* line 789 */
         "movzbl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21ec00, 4(%esp)\n" /* "voice" */
+        "movl $str_0021ec00, 4(%esp)\n" /* "voice" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl $0x400, 8(%esp)\n" /* line 825 */
-        "movl $0x2ab504, 4(%esp)\n" /* "infoResponse
+        "movl $str_002ab504, 4(%esp)\n" /* "infoResponse
 " */
         "leal -0x824(%ebp), %ebx\n" /* response, gamedir */
         "movl %ebx, (%esp)\n" /* gamedir */
@@ -1167,8 +1167,8 @@ long int SVC_Info(netadr_t from)
         "retl\n"
         /* { scope 1 */
         ".Lf159ffe_0015a352:\n"
-        "movl $0x2162ac, 8(%esp)\n" /* line 698 */
-        "movl $0x2aa870, 4(%esp)\n" /* "pure" */
+        "movl $str_002162ac, 8(%esp)\n" /* line 698 */
+        "movl $str_002aa870, 4(%esp)\n" /* "pure" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_minPing, %eax\n" /* line 701 */
@@ -1177,10 +1177,10 @@ long int SVC_Info(netadr_t from)
         "je .Lf159ffe_0015a185\n"
         ".Lf159ffe_0015a37a:\n"
         "movl %eax, 4(%esp)\n" /* line 702 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2ab4d0, 4(%esp)\n" /* "minPing" */
+        "movl $str_002ab4d0, 4(%esp)\n" /* "minPing" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_maxPing, %eax\n" /* line 704 */
@@ -1189,20 +1189,20 @@ long int SVC_Info(netadr_t from)
         "je .Lf159ffe_0015a195\n"
         ".Lf159ffe_0015a3ae:\n"
         "movl %eax, 4(%esp)\n" /* line 705 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2ab4d8, 4(%esp)\n" /* "maxPing" */
+        "movl $str_002ab4d8, 4(%esp)\n" /* "maxPing" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
-        "movl $0x216d64, (%esp)\n" /* line 707 */
+        "movl $str_00216d64, (%esp)\n" /* line 707 */
         "calll Dvar_GetString\n"
         "movl %eax, %ebx\n" /* gamedir */
         "cmpb $0, (%eax)\n" /* line 708 */
         "je .Lf159ffe_0015a1ac\n"
         ".Lf159ffe_0015a3e9:\n"
         "movl %eax, 8(%esp)\n" /* line 709 */
-        "movl $0x2aa890, 4(%esp)\n" /* "game" */
+        "movl $str_002aa890, 4(%esp)\n" /* "game" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_allowAnonymous, %eax\n" /* line 711 */
@@ -1212,10 +1212,10 @@ long int SVC_Info(netadr_t from)
         ".Lf159ffe_0015a40e:\n"
         "movzbl %al, %eax\n" /* line 712 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a718c, 4(%esp)\n" /* "sv_allowAnonymous" */
+        "movl $str_002a718c, 4(%esp)\n" /* "sv_allowAnonymous" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl sv_disableClientConsole, %eax\n" /* line 714 */
@@ -1225,10 +1225,10 @@ long int SVC_Info(netadr_t from)
         ".Lf159ffe_0015a446:\n"
         "movzbl %al, %eax\n" /* line 715 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2ab4e0, 4(%esp)\n" /* "con_disabled" */
+        "movl $str_002ab4e0, 4(%esp)\n" /* "con_disabled" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "jmp .Lf159ffe_0015a1ce\n"
@@ -1241,7 +1241,7 @@ long int SVC_Info(netadr_t from)
         "addl %ecx, %eax\n"
         "leal (, %eax, 4), %edx\n"
         "subl %eax, %edx\n"
-        "movl 0x170048c, %eax\n"
+        "movl svs+12, %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "movl %edi, %ebx\n" /* count, gamedir */
         ".Lf159ffe_0015a494:\n"
@@ -1254,7 +1254,7 @@ long int SVC_Info(netadr_t from)
         "jg .Lf159ffe_0015a494\n"
         "jmp .Lf159ffe_0015a069\n"
         ".Lf159ffe_0015a4af:\n"
-        "movl 0x170048c, %edx\n" /* line 659 */
+        "movl svs+12, %edx\n" /* line 659 */
         "xorl %ebx, %ebx\n" /* gamedir */
         "xorl %edi, %edi\n" /* count */
         ".Lf159ffe_0015a4b9:\n"
@@ -1267,7 +1267,7 @@ long int SVC_Info(netadr_t from)
         "jne .Lf159ffe_0015a4b9\n"
         "jmp .Lf159ffe_0015a057\n"
         ".Lf159ffe_0015a4d4:\n"
-        "movl $0x2a7220, (%esp)\n" /* line 769 */
+        "movl $str_002a7220, (%esp)\n" /* line 769 */
         "calll Dvar_GetString\n"
         "cmpb $0, (%eax)\n" /* line 770 */
         "jne .Lf159ffe_0015a595\n"
@@ -1276,28 +1276,28 @@ long int SVC_Info(netadr_t from)
         "jmp .Lf159ffe_0015a266\n"
         ".Lf159ffe_0015a4f0:\n"
         "movl %eax, 4(%esp)\n" /* line 727 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2aa880, 4(%esp)\n" /* "kc" */
+        "movl $str_002aa880, 4(%esp)\n" /* "kc" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "jmp .Lf159ffe_0015a20f\n"
         ".Lf159ffe_0015a519:\n"
         "movl %eax, 4(%esp)\n" /* line 723 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2aa87c, 4(%esp)\n" /* "ff" */
+        "movl $str_002aa87c, 4(%esp)\n" /* "ff" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "jmp .Lf159ffe_0015a1fb\n"
         ".Lf159ffe_0015a542:\n"
         "movl %ebx, 4(%esp)\n" /* line 688 | gamedir */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a8a54, 4(%esp)\n" /* "clients" */
+        "movl $str_002a8a54, 4(%esp)\n" /* "clients" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "jmp .Lf159ffe_0015a0fe\n"
@@ -1305,8 +1305,8 @@ long int SVC_Info(netadr_t from)
         "movl $2, 4(%esp)\n" /* line 736 */
         "jmp .Lf159ffe_0015a22d\n"
         ".Lf159ffe_0015a578:\n"
-        "movl $0x2162ac, 8(%esp)\n" /* line 719 */
-        "movl $0x2a9af0, 4(%esp)\n" /* "pswrd" */
+        "movl $str_002162ac, 8(%esp)\n" /* line 719 */
+        "movl $str_002a9af0, 4(%esp)\n" /* "pswrd" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "jmp .Lf159ffe_0015a1e7\n"
@@ -1321,7 +1321,7 @@ long int SVC_Info(netadr_t from)
         ".Lf159ffe_0015a5ae:\n"
         "movl %ebx, (%esp)\n" /* line 776 | gamedir */
         "calll SV_Cmd_Argv\n"
-        "movl $0x216f3c, 4(%esp)\n" /* "main" */
+        "movl $str_00216f3c, 4(%esp)\n" /* "main" */
         "movl %eax, (%esp)\n"
         "calll FS_iwIwd\n"
         "testl %eax, %eax\n"
@@ -1376,7 +1376,7 @@ long int SV_ConnectionlessPacket(netadr_t from, msg_t *msg)
         "cmpb $0, 8(%eax)\n"
         "jne .Lf15a5dc_0015a783\n"
         ".Lf15a5dc_0015a659:\n"
-        "movl $0x2a9440, 4(%esp)\n" /* line 919 */
+        "movl $str_002a9440, 4(%esp)\n" /* line 919 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1407,17 +1407,17 @@ long int SV_ConnectionlessPacket(netadr_t from, msg_t *msg)
         /* { scope 1 */
         "jmp SV_VoicePacket\n" /* line 922 */
         ".Lf15a5dc_0015a6b5:\n"
-        "movl $0x2ab528, 4(%esp)\n" /* line 928 */
+        "movl $str_002ab528, 4(%esp)\n" /* line 928 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf15a5dc_0015a73e\n"
-        "movl $0x2ab534, 4(%esp)\n" /* line 932 */
+        "movl $str_002ab534, 4(%esp)\n" /* line 932 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf15a5dc_0015a7d9\n"
-        "movl $0x2a9328, 4(%esp)\n" /* line 947 */
+        "movl $str_002a9328, 4(%esp)\n" /* line 947 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1491,7 +1491,7 @@ long int SV_ConnectionlessPacket(netadr_t from, msg_t *msg)
         "calll NET_AdrToString\n"
         "movl %ebx, 8(%esp)\n" /* c */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab514, (%esp)\n" /* "SV packet %s : %s
+        "movl $str_002ab514, (%esp)\n" /* "SV packet %s : %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf15a5dc_0015a659\n"
@@ -1521,12 +1521,12 @@ long int SV_ConnectionlessPacket(netadr_t from, msg_t *msg)
         /* { scope 1 */
         "jmp SVC_Info\n" /* line 945 */
         ".Lf15a5dc_0015a81e:\n"
-        "movl $0x2a90c0, 4(%esp)\n" /* line 951 */
+        "movl $str_002a90c0, 4(%esp)\n" /* line 951 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf15a5dc_0015a88f\n"
-        "movl $0x2ab53c, 4(%esp)\n" /* line 956 */
+        "movl $str_002ab53c, 4(%esp)\n" /* line 956 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1581,7 +1581,7 @@ long int SV_ConnectionlessPacket(netadr_t from, msg_t *msg)
         /* { scope 1 */
         "jmp SV_DirectConnect\n" /* line 953 */
         ".Lf15a5dc_0015a8d4:\n"
-        "movl $0x2a6fbc, 4(%esp)\n" /* line 962 */
+        "movl $str_002a6fbc, 4(%esp)\n" /* line 962 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1612,7 +1612,7 @@ long int SV_ConnectionlessPacket(netadr_t from, msg_t *msg)
         /* { scope 1 */
         "jmp SVC_RemoteCommand\n" /* line 964 */
         ".Lf15a5dc_0015a930:\n"
-        "movl $0x228e90, 4(%esp)\n" /* line 975 */
+        "movl $str_00228e90, 4(%esp)\n" /* line 975 */
         "movl %ebx, (%esp)\n" /* c */
         "calll I_stricmp\n"
         /* } scope */
@@ -1669,7 +1669,7 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
         "calll MSG_ReadShort\n"
         "andl $0xffff, %eax\n"
         "movl %eax, -0x54(%ebp)\n" /* qport */
-        "movl 0x170048c, %ebx\n" /* line 1041 | cl */
+        "movl svs+12, %ebx\n" /* line 1041 | cl */
         "movl sv_maxclients, %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -1734,7 +1734,7 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
         "movl %edi, -0x24(%ebp)\n"
         "movzwl -0x4e(%ebp), %ecx\n"
         "movw %cx, -0x1c(%ebp)\n"
-        "movl $0x228e90, 0x10(%esp)\n" /* "disconnect" */
+        "movl $str_00228e90, 0x10(%esp)\n" /* "disconnect" */
         "movl %edi, 4(%esp)\n"
         "movl -0x20(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -1781,7 +1781,7 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
         "movzwl -0x4e(%ebp), %ecx\n" /* line 1063 */
         "cmpw %cx, 0x6e5cc(%ebx)\n" /* cl */
         "je .Lf15a94c_0015ab42\n"
-        "movl $0x2ab44c, (%esp)\n" /* line 1065 */
+        "movl $str_002ab44c, (%esp)\n" /* line 1065 */
         "calll Com_Printf\n"
         "movzwl -0x4e(%ebp), %eax\n" /* line 1066 */
         "movw %ax, 0x6e5cc(%ebx)\n" /* cl */
@@ -1827,13 +1827,13 @@ long int SV_PacketEvent(netadr_t from, msg_t *msg)
         "calll SV_Netchan_Decode\n"
         "cmpl $1, (%ebx)\n" /* line 1105 | cl */
         "je .Lf15a94c_0015aad1\n"
-        "movl 0x1700484, %eax\n" /* line 1107 */
+        "movl svs+4, %eax\n" /* line 1107 */
         "movl %eax, 0x20d10(%ebx)\n" /* cl */
         "movl -0x58(%ebp), %eax\n" /* line 1108 | msg */
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* cl */
         "calll SV_ExecuteClientMessage\n"
-        "movl 0x195edb4, %eax\n" /* line 1109 */
+        "movl imp_bgs, %eax\n" /* line 1109 */
         "movl $0, (%eax)\n"
         "jmp .Lf15a94c_0015aad1\n"
     );
@@ -1878,7 +1878,7 @@ long int SV_BotUserMove(client_t *cl)
         "movl %esi, %edi\n"
         "rep stosl %eax, %es:(%edi)\n"
         "movl %ebx, %eax\n" /* line 1364 | cl */
-        "subl 0x170048c, %eax\n"
+        "subl svs+12, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -1886,7 +1886,7 @@ long int SV_BotUserMove(client_t *cl)
         "movl 0xd4(%eax), %eax\n"
         "movb %al, -0x2c(%ebp)\n"
         "movl %ebx, %eax\n" /* line 1367 | cl */
-        "subl 0x170048c, %eax\n"
+        "subl svs+12, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -1913,20 +1913,20 @@ long int SV_BotUserMove(client_t *cl)
         "calll randomf\n" /* line 1369 */
         "fstps -0x5c(%ebp)\n"
         "movss -0x5c(%ebp), %xmm0\n"
-        "ucomiss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "jae .Lf15ac4a_0015aced\n"
         "jp .Lf15ac4a_0015aced\n"
         "orl $1, -0x30(%ebp)\n" /* line 1370 */
         ".Lf15ac4a_0015aced:\n"
         "calll randomf\n" /* line 1371 */
         "fstps -0x58(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "ucomiss -0x58(%ebp), %xmm0\n"
         "ja .Lf15ac4a_0015adbe\n"
         "calll randomf\n" /* line 1374 */
         "fstps -0x54(%ebp)\n"
         "movss -0x54(%ebp), %xmm0\n"
-        "ucomiss 0x2ed8ec, %xmm0\n" /* 0.33000001311302185f */
+        "ucomiss lit4_002ed8ec, %xmm0\n" /* 0.33000001311302185f */
         "jae .Lf15ac4a_0015addc\n"
         ".Lf15ac4a_0015ad21:\n"
         "jp .Lf15ac4a_0015addc\n"
@@ -1935,7 +1935,7 @@ long int SV_BotUserMove(client_t *cl)
         "calll randomf\n" /* line 1379 */
         "fstps -0x4c(%ebp)\n"
         "movss -0x4c(%ebp), %xmm0\n"
-        "ucomiss 0x2ed8ec, %xmm0\n" /* 0.33000001311302185f */
+        "ucomiss lit4_002ed8ec, %xmm0\n" /* 0.33000001311302185f */
         "jae .Lf15ac4a_0015ae4c\n"
         "jp .Lf15ac4a_0015ae4c\n"
         "movb $0x7f, -0x1b(%ebp)\n" /* line 1380 */
@@ -1943,24 +1943,24 @@ long int SV_BotUserMove(client_t *cl)
         "calll randomf\n" /* line 1384 */
         "fstps -0x44(%ebp)\n"
         "movss -0x44(%ebp), %xmm0\n"
-        "ucomiss 0x2ed8ec, %xmm0\n" /* 0.33000001311302185f */
+        "ucomiss lit4_002ed8ec, %xmm0\n" /* 0.33000001311302185f */
         "jb .Lf15ac4a_0015ae25\n"
         ".Lf15ac4a_0015ad69:\n"
         "calll randomf\n" /* line 1386 */
         "fstps -0x40(%ebp)\n"
-        "movss 0x2ed8ec, %xmm0\n" /* 0.33000001311302185f */
+        "movss lit4_002ed8ec, %xmm0\n" /* 0.33000001311302185f */
         "ucomiss -0x40(%ebp), %xmm0\n"
         "ja .Lf15ac4a_0015ae04\n"
         ".Lf15ac4a_0015ad83:\n"
         "calll randomf\n" /* line 1388 */
         "fstps -0x3c(%ebp)\n"
-        "movss 0x2ed8ec, %xmm0\n" /* 0.33000001311302185f */
+        "movss lit4_002ed8ec, %xmm0\n" /* 0.33000001311302185f */
         "ucomiss -0x3c(%ebp), %xmm0\n"
         "jbe .Lf15ac4a_0015acae\n"
         "calll crandom\n" /* line 1389 */
         "fstps -0x6c(%ebp)\n"
         "movss -0x6c(%ebp), %xmm0\n"
-        "mulss 0x2ed638, %xmm0\n" /* 360.0f */
+        "mulss lit4_002ed638, %xmm0\n" /* 360.0f */
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, -0x20(%ebp)\n"
         "jmp .Lf15ac4a_0015acae\n"
@@ -1969,13 +1969,13 @@ long int SV_BotUserMove(client_t *cl)
         "calll randomf\n" /* line 1374 */
         "fstps -0x54(%ebp)\n"
         "movss -0x54(%ebp), %xmm0\n"
-        "ucomiss 0x2ed8ec, %xmm0\n" /* 0.33000001311302185f */
+        "ucomiss lit4_002ed8ec, %xmm0\n" /* 0.33000001311302185f */
         "jb .Lf15ac4a_0015ad21\n"
         ".Lf15ac4a_0015addc:\n"
         "calll randomf\n" /* line 1376 */
         "fstps -0x50(%ebp)\n"
         "movl $0xffffff81, %eax\n" /* line 1377 */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "ucomiss -0x50(%ebp), %xmm0\n"
         "movzbl -0x1c(%ebp), %edx\n"
         "cmovbel %edx, %eax\n"
@@ -1985,7 +1985,7 @@ long int SV_BotUserMove(client_t *cl)
         "calll crandom\n" /* line 1387 */
         "fstps -0x6c(%ebp)\n"
         "movss -0x6c(%ebp), %xmm0\n"
-        "mulss 0x2ed638, %xmm0\n" /* 360.0f */
+        "mulss lit4_002ed638, %xmm0\n" /* 360.0f */
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, -0x24(%ebp)\n"
         "jmp .Lf15ac4a_0015ad83\n"
@@ -1994,7 +1994,7 @@ long int SV_BotUserMove(client_t *cl)
         "calll crandom\n" /* line 1385 */
         "fstps -0x6c(%ebp)\n"
         "movss -0x6c(%ebp), %xmm0\n"
-        "mulss 0x2ed638, %xmm0\n" /* 360.0f */
+        "mulss lit4_002ed638, %xmm0\n" /* 360.0f */
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, -0x28(%ebp)\n"
         "jmp .Lf15ac4a_0015ad69\n"
@@ -2002,7 +2002,7 @@ long int SV_BotUserMove(client_t *cl)
         "calll randomf\n" /* line 1381 */
         "fstps -0x48(%ebp)\n"
         "movl $0xffffff81, %edx\n" /* line 1382 */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "ucomiss -0x48(%ebp), %xmm0\n"
         "movzbl -0x1b(%ebp), %eax\n"
         "cmovbel %eax, %edx\n"
@@ -2061,13 +2061,13 @@ long int SV_SendServerCommand(client_t *cl, svscmd_type type, const char *fmt)
         "retl\n"
         /* { scope 1 */
         ".Lf15ae74_0015aef2:\n"
-        "movl 0x195ec98, %eax\n" /* line 362 */
+        "movl imp_com_dedicated, %eax\n" /* line 362 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf15ae74_0015af65\n"
         ".Lf15ae74_0015af00:\n"
-        "movl 0x170048c, %ebx\n" /* line 368 | client */
+        "movl svs+12, %ebx\n" /* line 368 | client */
         "movl sv_maxclients, %eax\n"
         "movl 8(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -2106,7 +2106,7 @@ long int SV_SendServerCommand(client_t *cl, svscmd_type type, const char *fmt)
         "retl\n"
         /* { scope 1 */
         ".Lf15ae74_0015af65:\n"
-        "movl $0x2a9590, %ebx\n" /* line 362 | client */
+        "movl $str_002a9590, %ebx\n" /* line 362 | client */
         "movl $5, %ecx\n"
         "cld\n"
         "movl -0x2c(%ebp), %esi\n" /* j */
@@ -2141,7 +2141,7 @@ long int SV_SendServerCommand(client_t *cl, svscmd_type type, const char *fmt)
         "jmp .Lf15ae74_0015af95\n"
         ".Lf15ae74_0015afbe:\n"
         "movb $0x5c, string(%ebx)\n" /* line 141 | l */
-        "movb $0x6e, 0xedae01(%ebx)\n" /* line 142 | l */
+        "movb $0x6e, string+1(%ebx)\n" /* line 142 | l */
         "addl $2, %ebx\n" /* l */
         "addl $1, %ecx\n" /* line 155 */
         "jmp .Lf15ae74_0015af95\n"
@@ -2149,7 +2149,7 @@ long int SV_SendServerCommand(client_t *cl, svscmd_type type, const char *fmt)
         "movb $0, string(%ebx)\n" /* line 157 | l */
         /* } scope */
         "movl $string, 4(%esp)\n" /* line 364 */
-        "movl $0x2ab580, (%esp)\n" /* "broadcast: %s
+        "movl $str_002ab580, (%esp)\n" /* "broadcast: %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf15ae74_0015af00\n"
@@ -2174,20 +2174,20 @@ long int SV_Frame(int msec)
         "pushl %ebx\n"
         "subl $0x7c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ecb4, %ebx\n" /* line 1446 */
+        "movl imp_legacyHacks, %ebx\n" /* line 1446 */
         "movl (%ebx), %eax\n"
         "cmpb $0, 0xdd(%eax)\n"
         "jne .Lf15b00a_0015b20c\n"
-        "movl 0x195ecbc, %eax\n" /* line 1456 */
+        "movl imp_com_sv_running, %eax\n" /* line 1456 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf15b00a_0015b204\n"
-        "movl 0x195ed18, %eax\n" /* line 1289 */
+        "movl imp_cl_paused, %eax\n" /* line 1289 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edi\n"
         "testl %edi, %edi\n"
         "je .Lf15b00a_0015b097\n"
-        "movl 0x170048c, %edx\n" /* line 1296 */
+        "movl svs+12, %edx\n" /* line 1296 */
         "movl sv_maxclients, %eax\n"
         "movl 8(%eax), %esi\n"
         "testl %esi, %esi\n"
@@ -2205,7 +2205,7 @@ long int SV_Frame(int msec)
         "subl $1, %ecx\n" /* line 1304 */
         "jle .Lf15b00a_0015b22a\n"
         "movl $0, 4(%esp)\n" /* line 1307 */
-        "movl 0x195f564, %eax\n"
+        "movl imp_sv_paused, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetInt\n"
@@ -2217,31 +2217,31 @@ long int SV_Frame(int msec)
         "idivl 8(%ecx)\n"
         "movl %eax, -0x68(%ebp)\n"
         "movl 8(%ebp), %eax\n" /* line 1483 | msec */
-        "addl 0x16a0f10, %eax\n"
-        "movl %eax, 0x16a0f10\n"
+        "addl sv+16, %eax\n"
+        "movl %eax, sv+16\n"
         "cmpl %eax, -0x68(%ebp)\n" /* line 1485 */
         "jg .Lf15b00a_0015b204\n"
-        "cmpl $0x70000000, 0x1700484\n" /* line 1500 */
+        "cmpl $0x70000000, svs+4\n" /* line 1500 */
         "jg .Lf15b00a_0015b1c1\n"
         "movl $0x7ffffffe, %edx\n" /* line 1511 */
         "movl %edx, %eax\n"
-        "subl 0x1700490, %eax\n"
-        "cmpl %eax, 0x1700498\n"
+        "subl svs+16, %eax\n"
+        "cmpl %eax, svs+24\n"
         "jge .Lf15b00a_0015b274\n"
-        "cmpl $0x7fffbffd, 0x17004bc\n" /* line 1521 */
+        "cmpl $0x7fffbffd, svs+60\n" /* line 1521 */
         "jg .Lf15b00a_0015b29f\n"
-        "cmpl $0x7fffeffd, 0x17004c0\n" /* line 1531 */
+        "cmpl $0x7fffeffd, svs+64\n" /* line 1531 */
         "jg .Lf15b00a_0015b2ca\n"
-        "cmpl $0x7ffffb4d, 0x17004ac\n" /* line 1541 */
+        "cmpl $0x7ffffb4d, svs+44\n" /* line 1541 */
         "jg .Lf15b00a_0015b249\n"
-        "cmpl $0x7dfffffd, 0x17004b8\n" /* line 1551 */
+        "cmpl $0x7dfffffd, svs+56\n" /* line 1551 */
         "jg .Lf15b00a_0015b4d0\n"
-        "cmpl $0x7ffffdfd, 0x17004c4\n" /* line 1561 */
+        "cmpl $0x7ffffdfd, svs+68\n" /* line 1561 */
         "jg .Lf15b00a_0015b4fb\n"
-        "subl 0x1700494, %edx\n" /* line 1571 */
-        "cmpl %edx, 0x170049c\n"
+        "subl svs+20, %edx\n" /* line 1571 */
+        "cmpl %edx, svs+28\n"
         "jge .Lf15b00a_0015b526\n"
-        "movl 0x195ec9c, %ebx\n" /* line 1581 */
+        "movl imp_dvar_modifiedFlags, %ebx\n" /* line 1581 */
         "movl (%ebx), %eax\n"
         "testl $0x404, %eax\n"
         "jne .Lf15b00a_0015b5a0\n"
@@ -2253,7 +2253,7 @@ long int SV_Frame(int msec)
         "jne .Lf15b00a_0015b551\n"
         ".Lf15b00a_0015b171:\n"
         "calll SV_ResetSkeletonCache\n" /* line 1411 */
-        "movl 0x170048c, %ebx\n" /* line 1413 */
+        "movl svs+12, %ebx\n" /* line 1413 */
         "movl sv_maxclients, %eax\n"
         "movl 8(%eax), %esi\n"
         "testl %esi, %esi\n"
@@ -2284,11 +2284,11 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab590, (%esp)\n" /* line 1503 */
+        "movl $str_002ab590, (%esp)\n" /* line 1503 */
         ".Lf15b00a_0015b1e7:\n"
         "calll Com_Shutdown\n" /* line 1514 */
         "movl %ebx, 4(%esp)\n" /* line 1516 */
-        "movl $0x2ab5ac, (%esp)\n" /* "map %s
+        "movl $str_002ab5ac, (%esp)\n" /* "map %s
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -2318,7 +2318,7 @@ long int SV_Frame(int msec)
         /* { scope 1 */
         ".Lf15b00a_0015b22a:\n"
         "movl $1, 4(%esp)\n" /* line 1311 */
-        "movl 0x195f564, %eax\n"
+        "movl imp_sv_paused, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetInt\n"
@@ -2338,7 +2338,7 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab644, (%esp)\n" /* line 1544 */
+        "movl $str_002ab644, (%esp)\n" /* line 1544 */
         "jmp .Lf15b00a_0015b1e7\n"
         ".Lf15b00a_0015b274:\n"
         "movl $0x40, 8(%esp)\n" /* line 1513 */
@@ -2348,7 +2348,7 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab5b4, (%esp)\n" /* line 1514 */
+        "movl $str_002ab5b4, (%esp)\n" /* line 1514 */
         "jmp .Lf15b00a_0015b1e7\n"
         ".Lf15b00a_0015b29f:\n"
         "movl $0x40, 8(%esp)\n" /* line 1523 */
@@ -2358,7 +2358,7 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab5e0, (%esp)\n" /* line 1524 */
+        "movl $str_002ab5e0, (%esp)\n" /* line 1524 */
         "jmp .Lf15b00a_0015b1e7\n"
         ".Lf15b00a_0015b2ca:\n"
         "movl $0x40, 8(%esp)\n" /* line 1533 */
@@ -2368,7 +2368,7 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab614, (%esp)\n" /* line 1534 */
+        "movl $str_002ab614, (%esp)\n" /* line 1534 */
         "jmp .Lf15b00a_0015b1e7\n"
         ".Lf15b00a_0015b2f5:\n"
         "movl 8(%eax), %eax\n" /* line 1135 */
@@ -2388,7 +2388,7 @@ long int SV_Frame(int msec)
         "jge .Lf15b00a_0015b3af\n"
         ".Lf15b00a_0015b332:\n"
         "movl -0x5c(%ebp), %edi\n" /* line 1137 */
-        "addl 0x170048c, %edi\n"
+        "addl svs+12, %edi\n"
         "cmpl $4, (%edi)\n" /* line 1145 */
         "jne .Lf15b00a_0015b310\n"
         "movl 0x20c44(%edi), %eax\n" /* line 1150 */
@@ -2425,20 +2425,20 @@ long int SV_Frame(int msec)
         "calll SV_ArchiveSnapshot\n" /* line 1630 */
         ".Lf15b00a_0015b3af:\n"
         "movl -0x68(%ebp), %eax\n" /* line 1608 */
-        "subl %eax, 0x16a0f10\n"
-        "addl %eax, 0x1700484\n" /* line 1609 */
+        "subl %eax, sv+16\n"
+        "addl %eax, svs+4\n" /* line 1609 */
         "movl $1, (%esp)\n" /* line 1613 */
         "calll CL_FlushDebugData\n"
         "calll SV_ResetSkeletonCache\n" /* line 1333 */
-        "movl 0x1700484, %eax\n" /* line 1335 */
+        "movl svs+4, %eax\n" /* line 1335 */
         "movl %eax, (%esp)\n"
         "calll G_RunFrame\n"
         "movl $0, (%esp)\n" /* line 1621 */
         "calll Scr_SetLoading\n"
         "movl -0x68(%ebp), %edx\n" /* line 1627 */
-        "cmpl 0x16a0f10, %edx\n"
+        "cmpl sv+16, %edx\n"
         "jle .Lf15b00a_0015b3aa\n"
-        "movl 0x1700484, %edx\n" /* line 1218 */
+        "movl svs+4, %edx\n" /* line 1218 */
         "movl sv_timeout, %eax\n"
         "movl 8(%eax), %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
@@ -2456,7 +2456,7 @@ long int SV_Frame(int msec)
         "movl %edx, %ecx\n"
         "subl %eax, %ecx\n"
         "movl %ecx, -0x60(%ebp)\n"
-        "movl 0x170048c, %ebx\n" /* line 1221 */
+        "movl svs+12, %ebx\n" /* line 1221 */
         "movl sv_maxclients, %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2478,7 +2478,7 @@ long int SV_Frame(int msec)
         "movl sv_maxclients, %eax\n"
         "cmpl 8(%eax), %esi\n"
         "jge .Lf15b00a_0015b4b5\n"
-        "movl 0x1700484, %edx\n"
+        "movl svs+4, %edx\n"
         ".Lf15b00a_0015b47d:\n"
         "cmpl %edx, 0x20d10(%ebx)\n" /* line 1224 */
         "jle .Lf15b00a_0015b48b\n"
@@ -2498,7 +2498,7 @@ long int SV_Frame(int msec)
         ".Lf15b00a_0015b4b5:\n"
         "calll SV_SendClientMessages\n" /* line 1639 */
         "calll SV_ArchiveSnapshot\n" /* line 1640 */
-        "movl $0x2ab708, (%esp)\n" /* line 1643 */
+        "movl $str_002ab708, (%esp)\n" /* line 1643 */
         "calll SV_MasterHeartbeat\n"
         "jmp .Lf15b00a_0015b204\n"
         ".Lf15b00a_0015b4d0:\n"
@@ -2509,7 +2509,7 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab678, (%esp)\n" /* line 1554 */
+        "movl $str_002ab678, (%esp)\n" /* line 1554 */
         "jmp .Lf15b00a_0015b1e7\n"
         ".Lf15b00a_0015b4fb:\n"
         "movl $0x40, 8(%esp)\n" /* line 1563 */
@@ -2519,7 +2519,7 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab6ac, (%esp)\n" /* line 1564 */
+        "movl $str_002ab6ac, (%esp)\n" /* line 1564 */
         "jmp .Lf15b00a_0015b1e7\n"
         ".Lf15b00a_0015b526:\n"
         "movl $0x40, 8(%esp)\n" /* line 1573 */
@@ -2529,7 +2529,7 @@ long int SV_Frame(int msec)
         "leal -0x58(%ebp), %ebx\n" /* mapname */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2ab6dc, (%esp)\n" /* line 1574 */
+        "movl $str_002ab6dc, (%esp)\n" /* line 1574 */
         "jmp .Lf15b00a_0015b1e7\n"
         ".Lf15b00a_0015b551:\n"
         "movl $0x100, 8(%esp)\n" /* line 1594 */
@@ -2561,13 +2561,13 @@ long int SV_Frame(int msec)
         ".Lf15b00a_0015b5ca:\n"
         "leal 0x20c48(%ebx), %eax\n" /* line 1238 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab548, (%esp)\n" /* "Going from CS_ZOMBIE to CS_FREE for %s
+        "movl $str_002ab548, (%esp)\n" /* "Going from CS_ZOMBIE to CS_FREE for %s
 " */
         "calll Com_DPrintf\n"
         "movl $0, (%ebx)\n" /* line 1239 */
         "jmp .Lf15b00a_0015b464\n"
         ".Lf15b00a_0015b5eb:\n"
-        "movl $0x2ab570, 4(%esp)\n" /* line 1259 */
+        "movl $str_002ab570, 4(%esp)\n" /* line 1259 */
         "movl %ebx, (%esp)\n"
         "calll SV_DropClient\n"
         "movl $0, (%ebx)\n" /* line 1260 */

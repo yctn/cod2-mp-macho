@@ -8,8 +8,8 @@ extern int XModelGetNumLods(struct XModel *xmodel);
 extern int XModelGetSurfaces(struct XModel *xmodel, void *xsurfs, int lodIndex, void *partBits);
 extern void *Hunk_AllocAlignInternal(int size, int alignment);
 
-extern r_globals_t *rg; /* 0x195eec8 */
-extern r_global_permanent_t *rgp; /* 0x195eebc */
+extern r_globals_t *rg; /* imp_rg */
+extern r_global_permanent_t *rgp; /* imp_rgp */
 
 long unsigned int R_InitStaticModelDynamicData(int smodelIndex)
 {

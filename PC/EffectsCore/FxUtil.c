@@ -37,11 +37,11 @@ extern int effectActiveCount; /* 0x0 */
 extern int effectBlockSightCount; /* 0x0 */
 extern FxHelper theFxHelpers[1]; /* 0x0 */
 extern qboolean fxInitialized[1]; /* 0x0 */
-static effectClusterArray_t effectClusterArray; /* 0x4a7600 */
-static effectListArray_t effectListArrayBolt; /* 0x4a5980 */
-static effectListArray_t effectListArrayNonBolt; /* 0x4a3d00 */
-static SortedEffect visibleEffectsNonBolt[1800]; /* 0x4b1ec0 */
-static SortedEffect visibleEffectsBolt[1800]; /* 0x4ae680 */
+static effectClusterArray_t effectClusterArray; /* effectClusterArray */
+static effectListArray_t effectListArrayBolt; /* effectListArrayBolt */
+static effectListArray_t effectListArrayNonBolt; /* effectListArrayNonBolt */
+static SortedEffect visibleEffectsNonBolt[1800]; /* visibleEffectsNonBolt */
+static SortedEffect visibleEffectsBolt[1800]; /* visibleEffectsBolt */
 
 extern Bool FxHelper_IsMaterialRefractive(FxHelper *helper, MaterialHandle material);
 extern void FxHelper_FxHelper(FxHelper *helper);
@@ -196,7 +196,7 @@ int FX_GetCluster(const vec_t *origin)
         "movl %edi, (%esp)\n" /* origin */
         "calll Vec3DistanceSq\n"
         "fstps -0x1c(%ebp)\n" /* distSq */
-        "movss 0x2ed688, %xmm0\n" /* line 130 | 131072.0f */
+        "movss lit4_002ed688, %xmm0\n" /* line 130 | 131072.0f */
         "ucomiss -0x1c(%ebp), %xmm0\n" /* distSq */
         "jbe .Lf59564_000595ca\n"
         "addl effectClusters, %ebx\n" /* line 132 */
@@ -223,7 +223,7 @@ void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, 
         "movl 0x94(%esi), %eax\n" /* line 1420 | primTemp */
         "testb $8, %al\n"
         "je .Lf5960a_00059767\n"
-        "movss 0x2ed68c, %xmm0\n" /* line 288 | 16384.0f */
+        "movss lit4_002ed68c, %xmm0\n" /* line 288 | 16384.0f */
         "movl 0x18(%ebp), %edx\n" /* ax */
         "movss (%edx), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
@@ -252,7 +252,7 @@ void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, 
         "movl $0xffffffff, 0x18(%esp)\n"
         "leal -0x24(%ebp), %eax\n" /* temp */
         "movl %eax, 0x14(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %edi, 8(%esp)\n" /* org */
@@ -295,7 +295,7 @@ void FX_CalcOrigin2(const PrimitiveTemplate *primTemp, vec_t *org, vec_t *org2, 
         "movl %edx, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* org2 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_PlayEffect\n"
@@ -542,7 +542,7 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
         "movss %xmm1, -0x8c(%ebp)\n" /* zw */
         "movss -0x7c(%ebp), %xmm0\n" /* line 320 | yy */
         "addss %xmm3, %xmm0\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x48(%ebp)\n" /* tagAxis */
@@ -585,10 +585,10 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
         "addl $0x10, %ebx\n" /* mtx */
         "movl %ebx, (%esp)\n" /* mtx */
         "calll MatrixTransformVector43\n"
-        "movl 0x195ed74, %eax\n" /* line 322 */
+        "movl imp_fx_debugBolt, %eax\n" /* line 322 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jne .Lf59998_00059bc0\n"
         "jp .Lf59998_00059bc0\n"
         /* { scope 2 */
@@ -643,13 +643,13 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
         "movl $0, 0x14(%esp)\n" /* line 327 */
         "movl $0, 0x10(%esp)\n"
         "movl $1, 0xc(%esp)\n"
-        "movl 0x195ed58, %eax\n"
+        "movl imp_colorRed, %eax\n"
         "movl %eax, 8(%esp)\n"
         "leal -0x24(%ebp), %ebx\n" /* end, mtx */
         "movl %ebx, 4(%esp)\n" /* mtx */
         "movl %edx, (%esp)\n"
         "calll CL_AddDebugLine\n"
-        "movl 0x195ed74, %esi\n" /* line 328 | obj */
+        "movl imp_fx_debugBolt, %esi\n" /* line 328 | obj */
         "movl (%esi), %eax\n" /* obj, dir */
         "movss 8(%eax), %xmm1\n" /* scale */
         "movl 0xc(%ebp), %eax\n" /* orient, dir */
@@ -671,7 +671,7 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
         "movl $0, 0x14(%esp)\n" /* line 329 */
         "movl $0, 0x10(%esp)\n"
         "movl $1, 0xc(%esp)\n"
-        "movl 0x195ed60, %eax\n"
+        "movl imp_colorGreen, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* mtx */
         "movl %edx, (%esp)\n"
@@ -697,7 +697,7 @@ Bool FX_GetBoneOrientation(const FxBoltInfo *bolt, orientation_t *orient)
         "movl $0, 0x14(%esp)\n" /* line 331 */
         "movl $0, 0x10(%esp)\n"
         "movl $1, 0xc(%esp)\n"
-        "movl 0x195ed78, %eax\n"
+        "movl imp_colorBlue, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* mtx */
         "movl %edx, (%esp)\n"
@@ -719,11 +719,11 @@ void FX_AddScheduledEffects(const vec_t *start, const vec_t *end)
         "pushl %ebx\n"
         "subl $0x6c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ed80, %eax\n" /* line 2166 */
+        "movl imp_fx_enable, %eax\n" /* line 2166 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf59d14_00059db2\n"
-        "movl 0x195ed48, %edx\n" /* line 2172 */
+        "movl imp_theFxScheduler, %edx\n" /* line 2172 */
         "movl (%edx), %eax\n"
         "leal 4(%eax), %esi\n" /* prevNext */
         "movl 4(%eax), %ebx\n" /* line 2173 | scheduled */
@@ -894,13 +894,13 @@ float FX_GetServerVisibility(const vec_t *start, const vec_t *end)
         "movl %eax, (%esp)\n"
         "calll Vec3Normalize\n"
         "fstps -0x4c(%ebp)\n" /* len */
-        "movl 0x195ed50, %eax\n" /* line 667 */
+        "movl imp_fx_visMinTraceDist, %eax\n" /* line 667 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss -0x4c(%ebp), %xmm0\n" /* len */
         "ja .Lf59e2e_00059e47\n"
         "movss -0x4c(%ebp), %xmm0\n" /* line 677 | len */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, -0x48(%ebp)\n" /* halfLen */
         "movl g_effectVisArrayCount, %ecx\n" /* line 681 */
         "testl %ecx, %ecx\n"
@@ -923,19 +923,19 @@ float FX_GetServerVisibility(const vec_t *start, const vec_t *end)
         "movss g_effectVisArray(%ebx), %xmm1\n"
         "subss %xmm5, %xmm1\n"
         "mulss %xmm3, %xmm1\n"
-        "movss 0xffef04(%ebx), %xmm0\n"
+        "movss g_effectVisArray+4(%ebx), %xmm0\n"
         "movl -0x40(%ebp), %eax\n"
         "subss (%eax), %xmm0\n"
         "mulss %xmm2, %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "movss 0xffef08(%ebx), %xmm0\n"
+        "movss g_effectVisArray+8(%ebx), %xmm0\n"
         "movl -0x3c(%ebp), %eax\n"
         "subss (%eax), %xmm0\n"
         "mulss %xmm4, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n" /* line 689 */
         "subss -0x48(%ebp), %xmm0\n" /* halfLen */
-        "andps 0x2f03a0, %xmm0\n"
+        "andps dvarDigitStrings+320, %xmm0\n"
         "ucomiss -0x48(%ebp), %xmm0\n" /* halfLen */
         "ja .Lf59e2e_00059ecc\n"
         "mulss %xmm1, %xmm3\n" /* line 288 */
@@ -956,12 +956,12 @@ float FX_GetServerVisibility(const vec_t *start, const vec_t *end)
         "calll Vec3DistanceSq\n"
         "fstps -0x44(%ebp)\n" /* distSq */
         "movss -0x44(%ebp), %xmm0\n" /* line 696 | distSq */
-        "ucomiss 0xffef0c(%ebx), %xmm0\n"
+        "ucomiss g_effectVisArray+12(%ebx), %xmm0\n"
         "flds -0x68(%ebp)\n"
         "jae .Lf59e2e_00059ecc\n"
         "fstps -0x6c(%ebp)\n" /* line 699 */
         "movss -0x6c(%ebp), %xmm0\n"
-        "mulss 0xffef10(%ebx), %xmm0\n"
+        "mulss g_effectVisArray+16(%ebx), %xmm0\n"
         "movss %xmm0, -0x6c(%ebp)\n"
         "flds -0x6c(%ebp)\n"
         "jmp .Lf59e2e_00059ecc\n"
@@ -1144,7 +1144,7 @@ void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
         "jp .Lf59fbe_0005a274\n"
         "je .Lf59fbe_0005a079\n"
         ".Lf59fbe_0005a274:\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 1380 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 1380 | 1.0f */
         "movaps %xmm2, %xmm1\n"
         "divss %xmm0, %xmm1\n" /* scale */
         "movaps %xmm1, %xmm0\n" /* scale */
@@ -1157,8 +1157,8 @@ void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
         "mulss -0x1c(%ebp), %xmm0\n" /* line 274 */
         "movss %xmm0, 8(%eax)\n"
         /* } scope */
-        "andps 0x2f03b0, %xmm0\n" /* line 1383 */
-        "ucomiss 0x2ed690, %xmm0\n" /* 0.9990000128746033f */
+        "andps dvarDigitStrings+336, %xmm0\n" /* line 1383 */
+        "ucomiss lit4_002ed690, %xmm0\n" /* 0.9990000128746033f */
         "jb .Lf59fbe_0005a2c8\n"
         "movl $0, -0x3c(%ebp)\n" /* line 191 | up */
         "movss %xmm2, -0x38(%ebp)\n" /* line 192 */
@@ -1187,7 +1187,7 @@ void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
         "calll flrand\n"
         "fstps -0x68(%ebp)\n"
         "cvtss2sd -0x68(%ebp), %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x5c(%ebp)\n" /* x */
         "movss %xmm0, (%esp)\n" /* line 485 */
@@ -1202,7 +1202,7 @@ void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
         "calll flrand\n"
         "fstps -0x64(%ebp)\n"
         "cvtss2sd -0x64(%ebp), %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x58(%ebp)\n" /* y */
         "movss %xmm0, (%esp)\n" /* line 485 */
@@ -1256,7 +1256,7 @@ void FX_CalcOriginAndAxis(vec_t *orgOut, vec3_t *ax)
         "jp .Lf59fbe_0005a461\n"
         "je .Lf59fbe_0005a079\n"
         ".Lf59fbe_0005a461:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1352 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1352 | 1.0f, scale */
         "divss %xmm1, %xmm0\n" /* scale */
         /* { scope 2 */
         "mulss %xmm0, %xmm3\n" /* line 272 */
@@ -1565,7 +1565,7 @@ void FX_AddFxRunner(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         "movl $0, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* line 1954 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_PlayEffect\n"
@@ -1585,7 +1585,7 @@ void FX_AddFxRunner(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         "movl %edi, 0xc(%esp)\n" /* ax */
         "movl %esi, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_PlayEffect\n"
@@ -1623,7 +1623,7 @@ void FX_AddDecal(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         "movl %ebx, 8(%esp)\n"
         "movl 4(%edi), %eax\n" /* prim */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_CreateDecalEffect\n"
@@ -1649,7 +1649,7 @@ void FX_DrawAll(void)
         "pushl %ebx\n"
         "subl $0x548c, %esp\n"
         /* { scope 1: effectCount */
-        "movl 0x195ed54, %eax\n" /* line 1220 */
+        "movl imp_fx_camera_valid, %eax\n" /* line 1220 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf5a8bc_0005a8eb\n"
@@ -1673,7 +1673,7 @@ void FX_DrawAll(void)
         ".Lf5a8bc_0005a911:\n"
         "movl effectListBolt, %eax\n" /* line 1158 */
         "movl (%eax, %edx), %esi\n" /* clusterId */
-        "movl 0x195ed44, %edx\n" /* line 1162 */
+        "movl imp_fx_cull, %edx\n" /* line 1162 */
         "movl (%edx), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5a8bc_0005a933\n"
@@ -1691,7 +1691,7 @@ void FX_DrawAll(void)
         "leal 0x7c(%esi), %eax\n" /* clusterId */
         "movl %eax, (%esp)\n"
         "calll Vec3DistanceSq\n"
-        "fstps 0x4ae684(, %ebx, 8)\n"
+        "fstps visibleEffectsBolt+4(, %ebx, 8)\n"
         "addl $1, visibleEffectCountBolt\n" /* line 1171 */
         ".Lf5a8bc_0005a965:\n"
         "addl $1, %edi\n" /* line 1156 */
@@ -1712,7 +1712,7 @@ void FX_DrawAll(void)
         "movl (%esi), %eax\n" /* line 1257 | clusterId */
         "movl 4(%esi), %edx\n" /* clusterId */
         "movl %eax, visibleEffectsNonBolt(, %ecx, 8)\n"
-        "movl %edx, 0x4b1ec4(, %ecx, 8)\n"
+        "movl %edx, visibleEffectsNonBolt+4(, %ecx, 8)\n"
         "addl $1, %ecx\n" /* line 1258 */
         "addl $1, %ebx\n" /* line 1255 | effectIndex */
         "addl $8, %esi\n" /* clusterId */
@@ -1725,7 +1725,7 @@ void FX_DrawAll(void)
         "testl %eax, %eax\n"
         "jne .Lf5a8bc_0005aafa\n"
         ".Lf5a8bc_0005a9d6:\n"
-        "movl 0x195ed68, %eax\n" /* line 1266 */
+        "movl imp_fx_sort, %eax\n" /* line 1266 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5a8bc_0005aa83\n"
@@ -1767,7 +1767,7 @@ void FX_DrawAll(void)
         /* } scope */
         /* } scope */
         ".Lf5a8bc_0005aa83:\n"
-        "movl 0x195ed7c, %eax\n" /* line 1275 */
+        "movl imp_fx_draw, %eax\n" /* line 1275 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5a8bc_0005aa9e\n"
@@ -1775,25 +1775,25 @@ void FX_DrawAll(void)
         "testl %ecx, %ecx\n"
         "jg .Lf5a8bc_0005abf6\n"
         ".Lf5a8bc_0005aa9e:\n"
-        "movl 0x195ed6c, %eax\n" /* line 1293 */
+        "movl imp_fx_debug, %eax\n" /* line 1293 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5a8bc_0005aaef\n"
         "movl effectActiveCount, %eax\n" /* line 1295 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x219d0c, (%esp)\n" /* "Active    FX: %i
+        "movl $str_00219d0c, (%esp)\n" /* "Active    FX: %i
 " */
         "calll FX_Print\n"
         "movl visibleEffectCountNonBolt, %eax\n" /* line 1296 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x219d20, (%esp)\n" /* "Drawn     FX: %i
+        "movl $str_00219d20, (%esp)\n" /* "Drawn     FX: %i
 " */
         "calll FX_Print\n"
-        "movl 0x195ed48, %eax\n" /* line 1297 */
+        "movl imp_theFxScheduler, %eax\n" /* line 1297 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x219d34, (%esp)\n" /* "Scheduled FX: %i
+        "movl $str_00219d34, (%esp)\n" /* "Scheduled FX: %i
 " */
         "calll FX_Print\n"
         /* } scope */
@@ -1855,7 +1855,7 @@ void FX_DrawAll(void)
         ".Lf5a8bc_0005ab8a:\n"
         "movl effectListNonBolt, %eax\n" /* line 1226 */
         "movl (%eax, %edx), %esi\n" /* clusterId */
-        "movl 0x195ed44, %edx\n" /* line 1230 */
+        "movl imp_fx_cull, %edx\n" /* line 1230 */
         "movl (%edx), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5a8bc_0005abac\n"
@@ -1873,7 +1873,7 @@ void FX_DrawAll(void)
         "leal 0x7c(%esi), %eax\n" /* clusterId */
         "movl %eax, (%esp)\n"
         "calll Vec3DistanceSq\n"
-        "fstps 0x4b1ec4(, %ebx, 8)\n"
+        "fstps visibleEffectsNonBolt+4(, %ebx, 8)\n"
         "addl $1, visibleEffectCountNonBolt\n" /* line 1239 */
         ".Lf5a8bc_0005abde:\n"
         "addl $1, %edi\n" /* line 1224 */
@@ -1958,7 +1958,7 @@ void FX_SetMaterialAndSequenceParams(const int killTime, int indexInBatch)
         "testl %edx, %edx\n"
         "jne .Lf5ac64_0005ad3d\n"
         "movss 0x294(%esi), %xmm1\n" /* line 1609 | primTemp */
-        "divss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "divss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         ".Lf5ac64_0005acd7:\n"
         "movl %eax, 0x108(%ebx)\n" /* line 386 */
         "movss %xmm1, 0x10c(%ebx)\n" /* line 387 */
@@ -2197,7 +2197,7 @@ Bool FX_AddPrimitive(EffectPrimitive *prim, const vec_t *origin)
         "movl %edx, (%esp)\n"
         "calll Vec3DistanceSq\n"
         "fstps -0x1c(%ebp)\n" /* distSq */
-        "movss 0x2ed688, %xmm0\n" /* line 130 | 131072.0f */
+        "movss lit4_002ed688, %xmm0\n" /* line 130 | 131072.0f */
         "ucomiss -0x1c(%ebp), %xmm0\n" /* distSq */
         "jbe .Lf5ad92_0005af8c\n"
         "addl effectClusters, %ebx\n" /* line 132 */
@@ -2216,7 +2216,7 @@ Bool FX_AddPrimitive(EffectPrimitive *prim, const vec_t *origin)
         "movl %eax, -0x24(%ebp)\n" /* item */
         "jmp .Lf5ad92_0005ade0\n"
         ".Lf5ad92_0005b004:\n"
-        "movl 0x195ed14, %eax\n" /* line 444 */
+        "movl imp_com_statmon, %eax\n" /* line 444 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf5ad92_0005b04a\n"
@@ -2250,7 +2250,7 @@ Bool FX_AddPrimitive(EffectPrimitive *prim, const vec_t *origin)
         "jmp .Lf5ad92_0005aef3\n"
         /* } scope */
         ".Lf5ad92_0005b04a:\n"
-        "movl $0x219d48, 8(%esp)\n" /* line 445 */
+        "movl $str_00219d48, 8(%esp)\n" /* line 445 */
         "movl $0xbb8, 4(%esp)\n"
         "movl $3, (%esp)\n"
         "calll StatMon_Warning\n"
@@ -2316,7 +2316,7 @@ void FX_AddCloud(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         "testl %eax, %eax\n"
         "jle .Lf5b06e_0005b16c\n"
         "cvtsi2ssl 0x14(%ebp), %xmm1\n" /* line 1474 | lateTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "leal -0x20(%ebp), %eax\n" /* line 1476 | velSum */
         "movl %eax, 8(%esp)\n"
         "movl 0x14(%ebp), %eax\n" /* lateTime */
@@ -2413,7 +2413,7 @@ void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         ".Lf5b1d4_0005b20d:\n"
         "movl %ebx, (%esp)\n" /* line 281 | ptr */
         "calll Light_Light\n"
-        "movl 0x195ed70, %eax\n"
+        "movl imp___ZTV5Flash, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* ptr */
         "movl %esi, %ecx\n" /* line 2076 | origin */
@@ -3029,7 +3029,7 @@ void FX_AddParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, cons
         "testl %esi, %esi\n"
         "jle .Lf5b7f6_0005b8f2\n"
         "cvtsi2ssl 0x14(%ebp), %xmm1\n" /* line 1474 | lateTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "leal -0x20(%ebp), %eax\n" /* line 1476 | velSum */
         "movl %eax, 8(%esp)\n"
         "movl 0x14(%ebp), %eax\n" /* lateTime */
@@ -3149,7 +3149,7 @@ void FX_AddTail(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const in
         "testl %eax, %eax\n"
         "jle .Lf5b934_0005bab9\n"
         "cvtsi2ssl 0x14(%ebp), %xmm1\n" /* line 1474 | lateTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "leal -0x30(%ebp), %eax\n" /* line 1476 | velSum */
         "movl %eax, 8(%esp)\n"
         "movl 0x14(%ebp), %eax\n" /* lateTime */
@@ -3286,7 +3286,7 @@ void FX_AddEmitter(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const
         "testl %eax, %eax\n"
         "jle .Lf5bada_0005bbc7\n"
         "cvtsi2ssl 0x14(%ebp), %xmm1\n" /* line 1474 | lateTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "leal -0x48(%ebp), %eax\n" /* line 1476 | velSum */
         "movl %eax, 8(%esp)\n"
         "movl 0x14(%ebp), %eax\n" /* lateTime */
@@ -3552,7 +3552,7 @@ void FX_AddOrientedParticle(EffectPrimitive *prim, vec3_t *ax, const vec_t *orig
         "testl %eax, %eax\n"
         "jle .Lf5be64_0005bf61\n"
         "cvtsi2ssl 0x14(%ebp), %xmm1\n" /* line 1474 | lateTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "leal -0x48(%ebp), %eax\n" /* line 1476 | velSum */
         "movl %eax, 8(%esp)\n"
         "movl 0x14(%ebp), %eax\n" /* lateTime */
@@ -3666,7 +3666,7 @@ void FX_UpdateScheduledEffectsNonBolt(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
-        "movl 0x195ed80, %eax\n" /* line 2237 */
+        "movl imp_fx_enable, %eax\n" /* line 2237 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5c012_0005c165\n"
@@ -3723,7 +3723,7 @@ void FX_UpdateScheduledEffectsNonBolt(void)
         "jl .Lf5c012_0005c054\n"
         /* } scope */
         ".Lf5c012_0005c0d0:\n"
-        "movl 0x195ed54, %eax\n" /* line 1220 */
+        "movl imp_fx_camera_valid, %eax\n" /* line 1220 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf5c012_0005c165\n"
@@ -3739,7 +3739,7 @@ void FX_UpdateScheduledEffectsNonBolt(void)
         ".Lf5c012_0005c0fa:\n"
         "movl effectListNonBolt, %eax\n" /* line 1226 */
         "movl (%eax, %edx), %esi\n" /* swapCache */
-        "movl 0x195ed44, %edx\n" /* line 1230 */
+        "movl imp_fx_cull, %edx\n" /* line 1230 */
         "movl (%edx), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5c012_0005c11c\n"
@@ -3757,7 +3757,7 @@ void FX_UpdateScheduledEffectsNonBolt(void)
         "leal 0x7c(%esi), %eax\n" /* swapCache */
         "movl %eax, (%esp)\n"
         "calll Vec3DistanceSq\n"
-        "fstps 0x4b1ec4(, %ebx, 8)\n"
+        "fstps visibleEffectsNonBolt+4(, %ebx, 8)\n"
         "addl $1, visibleEffectCountNonBolt\n" /* line 1239 */
         ".Lf5c012_0005c14e:\n"
         "addl $1, %edi\n" /* line 1224 | index0 */
@@ -3798,7 +3798,7 @@ void FX_UpdateScheduledEffectsBolt(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
-        "movl 0x195ed80, %eax\n" /* line 2255 */
+        "movl imp_fx_enable, %eax\n" /* line 2255 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5c18c_0005c2ce\n"
@@ -3867,7 +3867,7 @@ void FX_UpdateScheduledEffectsBolt(void)
         ".Lf5c18c_0005c265:\n"
         "movl effectListBolt, %eax\n" /* line 1158 */
         "movl (%eax, %edx), %esi\n" /* swapCache */
-        "movl 0x195ed44, %edx\n" /* line 1162 */
+        "movl imp_fx_cull, %edx\n" /* line 1162 */
         "movl (%edx), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5c18c_0005c287\n"
@@ -3885,7 +3885,7 @@ void FX_UpdateScheduledEffectsBolt(void)
         "leal 0x7c(%esi), %eax\n" /* swapCache */
         "movl %eax, (%esp)\n"
         "calll Vec3DistanceSq\n"
-        "fstps 0x4ae684(, %ebx, 8)\n"
+        "fstps visibleEffectsBolt+4(, %ebx, 8)\n"
         "addl $1, visibleEffectCountBolt\n" /* line 1171 */
         ".Lf5c18c_0005c2b9:\n"
         "addl $1, %edi\n" /* line 1156 | index0 */
@@ -4358,7 +4358,7 @@ void FX_Rewind(int time)
         ".Lf5c510_0005c8a3:\n"
         "movl $0, 8(%esp)\n" /* line 808 */
         "movl $0, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_Clean\n"
@@ -4555,7 +4555,7 @@ void FX_DrawScheduledEffects(void)
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ed80, %eax\n" /* line 2275 */
+        "movl imp_fx_enable, %eax\n" /* line 2275 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf5cae6_0005d1af\n"
@@ -5123,7 +5123,7 @@ int FX_Restore(MemoryFile *memFile)
         "movl $0, effectActiveCount\n" /* line 234 */
         "movl $0, effectBlockSightCount\n" /* line 235 */
         "movl $0, effectClusterCount\n" /* line 236 */
-        "movl 0x195ed48, %ebx\n" /* line 244 | ptr */
+        "movl imp_theFxScheduler, %ebx\n" /* line 244 | ptr */
         "movl (%ebx), %eax\n" /* ptr */
         "testl %eax, %eax\n"
         "je .Lf5d1b8_0005d277\n"
@@ -5161,7 +5161,7 @@ int FX_Restore(MemoryFile *memFile)
         "movzbl %bl, %eax\n" /* line 902 | effect */
         "cmpl $0xc, %eax\n"
         "ja .Lf5d1b8_0005d2a8\n"
-        "jmpl *0x2f03c0(, %eax, 4)\n"
+        "jmpl *dvarDigitStrings+352(, %eax, 4)\n"
         /* { scope 2 */
         "movl $0x24c, (%esp)\n" /* line 24 */
         "calll __Znam\n"
@@ -5343,7 +5343,7 @@ int FX_Restore(MemoryFile *memFile)
         ".Lf5d1b8_0005d54f:\n"
         "movl %ebx, (%esp)\n" /* line 281 | ptr */
         "calll Light_Light\n"
-        "movl 0x195ed70, %eax\n"
+        "movl imp___ZTV5Flash, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* ptr */
         "jmp .Lf5d1b8_0005d31d\n"
@@ -5448,7 +5448,7 @@ int FX_Init(int rendererExists)
         "movl $0, effectActiveCount\n" /* line 234 */
         "movl $0, effectBlockSightCount\n" /* line 235 */
         "movl $0, effectClusterCount\n" /* line 236 */
-        "movl 0x195ed48, %ebx\n" /* line 244 */
+        "movl imp_theFxScheduler, %ebx\n" /* line 244 */
         "movl (%ebx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf5d5e2_0005d6fa\n"
@@ -5460,10 +5460,10 @@ int FX_Init(int rendererExists)
         "movl %eax, (%esp)\n"
         "calll Z_FreeInternal\n"
         "movl $0, (%ebx)\n" /* line 252 */
-        "movl 0x195ed64, %eax\n" /* line 253 */
+        "movl imp_fxSchedulers, %eax\n" /* line 253 */
         "movl $0, (%eax)\n"
         ".Lf5d5e2_0005d6fa:\n"
-        "movl 0x195ed5c, %eax\n" /* line 364 */
+        "movl imp_g_rendererExists, %eax\n" /* line 364 */
         "movl %esi, %edx\n" /* rendererExists */
         "movb %dl, (%eax)\n"
         "movl $0xc, (%esp)\n" /* line 89 */
@@ -5471,11 +5471,11 @@ int FX_Init(int rendererExists)
         "movl %eax, %esi\n"
         "movl %eax, (%esp)\n" /* line 367 */
         "calll FxScheduler_FxScheduler\n"
-        "movl 0x195ed48, %ebx\n"
+        "movl imp_theFxScheduler, %ebx\n"
         "movl %esi, (%ebx)\n" /* rendererExists */
         "calll FX_InitTemplates\n" /* line 369 */
         "movl (%ebx), %edx\n" /* line 371 */
-        "movl 0x195ed64, %eax\n"
+        "movl imp_fxSchedulers, %eax\n"
         "movl %edx, (%eax)\n"
         "movl theFxHelper, %eax\n" /* line 374 */
         "movl %eax, (%esp)\n"
@@ -5544,7 +5544,7 @@ void FX_Free(int bRemoveTemplates)
         "movl $0, effectActiveCount\n" /* line 234 */
         "movl $0, effectBlockSightCount\n" /* line 235 */
         "movl $0, effectClusterCount\n" /* line 236 */
-        "movl 0x195ed48, %ebx\n" /* line 244 */
+        "movl imp_theFxScheduler, %ebx\n" /* line 244 */
         "movl (%ebx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf5d75a_0005d817\n"
@@ -5568,7 +5568,7 @@ void FX_Free(int bRemoveTemplates)
         "movl %eax, (%esp)\n"
         "calll Z_FreeInternal\n"
         "movl $0, (%ebx)\n" /* line 252 */
-        "movl 0x195ed64, %eax\n" /* line 253 */
+        "movl imp_fxSchedulers, %eax\n" /* line 253 */
         "movl $0, (%eax)\n"
         "addl $0x10, %esp\n" /* line 254 */
         "popl %ebx\n"

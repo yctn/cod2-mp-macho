@@ -12,41 +12,41 @@ extern float floorf(float x);
  */
 
 /* extern globals */
-extern byte *_cg_p; /* 0x195f584 - pointer to cg_t* */
+extern byte *_cg_p; /* imp_cg - pointer to cg_t* */
 #define cg (*(byte **)_cg_p)
 
 /* dvar pointers - each is a dvar_t** (pointer to pointer to dvar_s) */
-extern byte *_dvar_shellshock_fadein;          /* 0x195f878 */
-extern byte *_dvar_shellshock_fadeout;         /* 0x195f89c */
-extern byte *_dvar_shellshock_screenblend;     /* 0x195f8b4 */
-extern byte *_dvar_shellshock_screentype;      /* 0x195f880 */
-extern byte *_dvar_shellshock_screenenabled;   /* 0x195f890 */
-extern byte *_dvar_shellshock_soundfadein;     /* 0x195f8a8 */
-extern byte *_dvar_shellshock_soundfadeout;    /* 0x195f898 */
-extern byte *_dvar_shellshock_loopfadein;      /* 0x195f8e4 */
-extern byte *_dvar_shellshock_loopfadeout;     /* 0x195f8c8 */
-extern byte *_dvar_shellshock_looptype;        /* 0x195f8b0 */
-extern byte *_dvar_shellshock_sounddrylevellooptype; /* 0x195f88c */
-extern byte *_dvar_shellshock_soundwetlevellooptype; /* 0x195f8e0 */
-extern byte *_dvar_shellshock_soundloopsilent; /* 0x195f8cc */
-extern byte *_dvar_shellshock_viewkickfadein;  /* 0x195f8b8 */
-extern byte *_dvar_shellshock_viewkickperiod;  /* 0x195f888 */
-extern byte *_dvar_shellshock_viewkickradius;  /* 0x195f8bc */
-extern byte *_dvar_shellshock_viewkickpitch;   /* 0x195f8c0 */
-extern byte *_dvar_shellshock_viewkickyaw;     /* 0x195f8c4 */
-extern byte *_dvar_shellshock_soundroomtype;   /* 0x195f894 */
-extern byte *_dvar_shellshock_sounddrylevel;   /* 0x195f8d0 */
-extern byte *_dvar_shellshock_soundwetlevel;   /* 0x195f8a0 */
-extern byte *_dvar_shellshock_soundmodenddelay;/* 0x195f8d8 */
-extern byte *_dvar_shellshock_soundendduration;/* 0x195f8a4 */
-extern byte *_dvar_shellshock_soundfade;       /* 0x195f884 */
-extern byte *_dvar_shellshock_mouseenable;     /* 0x195f8ac */
-extern byte *_dvar_shellshock_mousefadein;     /* 0x195f8d4 */
-extern byte *_dvar_shellshock_mouseturnrate;   /* 0x195f874 */
-extern byte *_dvar_shellshock_mousereducemax;  /* 0x195f87c */
-extern byte *_dvar_shellshock_mousesensitivity;/* 0x195f8dc */
+extern byte *_dvar_shellshock_fadein;          /* imp_cg_shock_screenBlendFadeTime */
+extern byte *_dvar_shellshock_fadeout;         /* imp_cg_shock_screenBlendTime */
+extern byte *_dvar_shellshock_screenblend;     /* imp_cg_shock_viewKickPeriod */
+extern byte *_dvar_shellshock_screentype;      /* imp_cg_shock_viewKickRadius */
+extern byte *_dvar_shellshock_screenenabled;   /* imp_cg_shock_sound */
+extern byte *_dvar_shellshock_soundfadein;     /* imp_cg_shock_soundFadeInTime */
+extern byte *_dvar_shellshock_soundfadeout;    /* imp_cg_shock_soundFadeOutTime */
+extern byte *_dvar_shellshock_loopfadein;      /* imp_cg_shock_soundLoopFadeTime */
+extern byte *_dvar_shellshock_loopfadeout;     /* imp_cg_shock_soundLoopEndDelay */
+extern byte *_dvar_shellshock_looptype;        /* imp_cg_shock_soundRoomType */
+extern byte *_dvar_shellshock_sounddrylevellooptype; /* imp_cg_shock_soundDryLevel */
+extern byte *_dvar_shellshock_soundwetlevellooptype; /* imp_cg_shock_soundWetLevel */
+extern byte *_dvar_shellshock_soundloopsilent; /* imp_cg_shock_soundModEndDelay */
+extern byte *_dvar_shellshock_viewkickfadein;  /* imp_cg_shock_volume_auto */
+extern byte *_dvar_shellshock_viewkickperiod;  /* imp_cg_shock_volume_auto2d */
+extern byte *_dvar_shellshock_viewkickradius;  /* imp_cg_shock_volume_menu */
+extern byte *_dvar_shellshock_viewkickpitch;   /* imp_cg_shock_volume_weapon */
+extern byte *_dvar_shellshock_viewkickyaw;     /* imp_cg_shock_volume_voice */
+extern byte *_dvar_shellshock_soundroomtype;   /* imp_cg_shock_volume_item */
+extern byte *_dvar_shellshock_sounddrylevel;   /* imp_cg_shock_volume_body */
+extern byte *_dvar_shellshock_soundwetlevel;   /* imp_cg_shock_volume_local */
+extern byte *_dvar_shellshock_soundmodenddelay;/* imp_cg_shock_volume_music */
+extern byte *_dvar_shellshock_soundendduration;/* imp_cg_shock_volume_announcer */
+extern byte *_dvar_shellshock_soundfade;       /* imp_cg_shock_volume_shellshock */
+extern byte *_dvar_shellshock_mouseenable;     /* imp_cg_shock_mouse */
+extern byte *_dvar_shellshock_mousefadein;     /* imp_cg_shock_mouse_fadeTime */
+extern byte *_dvar_shellshock_mouseturnrate;   /* imp_cg_shock_mouse_maxpitchspeed */
+extern byte *_dvar_shellshock_mousereducemax;  /* imp_cg_shock_mouse_maxyawspeed */
+extern byte *_dvar_shellshock_mousesensitivity;/* imp_cg_shock_mouse_sensitivityscale */
 
-extern int _snd_local_listener; /* 0x195ed4c */
+extern int _snd_local_listener; /* imp_vec3_origin */
 
 /* extern function declarations */
 extern float Vec3Normalize(vec3_t v);
@@ -104,8 +104,8 @@ static inline int float_seconds_to_ms(float val) {
     return (int)floorf(val * 1000.0f + 0.5f);
 }
 
-static const char * cg_shock_dvar_names[29]; /* 0x314a80 */
-static vec2_t cg_perturbations[131]; /* 0x303480 */
+static const char * cg_shock_dvar_names[29]; /* cg_shock_dvar_names */
+static vec2_t cg_perturbations[131]; /* cg_perturbations */
 
 void CG_PerturbCamera(void);
 qboolean CG_SaveShellShockDvars(const char *name);

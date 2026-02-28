@@ -10,5 +10,6 @@
 #include "imports/quicktime.h"
 #include "imports/libc.h"
 #include "imports/libstdcxx.h"
+#include "generated_syms.h"
 
 #endif /* IMPORTS_H */

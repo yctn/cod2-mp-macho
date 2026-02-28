@@ -61,11 +61,11 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "pushl %ebx\n"
         "subl $0x9c, %esp\n"
         /* { scope 1 */
-        "cmpb $0, 0x114f530\n" /* line 1002 */
+        "cmpb $0, g_sa+4240\n" /* line 1002 */
         "je .Lfad324_000ad575\n"
         ".Lfad324_000ad33d:\n"
         "movl $8, 8(%esp)\n" /* line 1014 */
-        "movl $0x217fe8, 4(%esp)\n" /* "maps/mp/" */
+        "movl $str_00217fe8, 4(%esp)\n" /* "maps/mp/" */
         "movl 8(%ebp), %eax\n" /* loadspec */
         "movl %eax, (%esp)\n"
         "calll strnicmp\n"
@@ -88,8 +88,8 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "leal -0x1c(%ebp), %eax\n" /* fileCount */
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x21e5ac, 4(%esp)\n" /* "csv" */
-        "movl $0x21e51c, (%esp)\n" /* "soundaliases" */
+        "movl $str_0021e5ac, 4(%esp)\n" /* "csv" */
+        "movl $str_0021e51c, (%esp)\n" /* "soundaliases" */
         "calll FS_ListFiles\n"
         "movl %eax, %esi\n" /* fileNames */
         "movl -0x1c(%ebp), %edx\n" /* line 1035 | fileCount */
@@ -103,11 +103,11 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "jg .Lfad324_000ad67c\n"
         ".Lfad324_000ad3d9:\n"
         "movl 0x10(%ebp), %edx\n" /* line 1053 | system */
-        "leal 0x114f4d8(, %edx, 8), %eax\n"
+        "leal g_sa+4152(, %edx, 8), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
-        "addl $0x114f4a8, %eax\n"
+        "addl $g_sa+4104, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Com_MakeSoundAliasesPermanent\n"
         "calll Hunk_ClearTempMemory\n" /* line 1057 */
@@ -123,18 +123,18 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "movb $1, g_sa(%edi)\n" /* mark */
         "cmpl $1, %edi\n" /* line 1085 | mark */
         "ja .Lfad324_000ad551\n"
-        "leal 0x114f4d8(, %edi, 8), %eax\n" /* line 1087 */
+        "leal g_sa+4152(, %edi, 8), %eax\n" /* line 1087 */
         "movl %eax, (%esp)\n"
         "calll Com_LoadSoundAliasSounds\n"
         "movl %eax, %edx\n"
         "testl %eax, %eax\n" /* line 1088 */
         "je .Lfad324_000ad551\n"
-        "movl 0x195ee7c, %eax\n"
+        "movl imp_snd_errorOnMissing, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfad324_000ad551\n"
         "movl %edx, 4(%esp)\n" /* line 1089 */
-        "movl $0x21e5fc, (%esp)\n" /* "%i sound file(s) are missing or in a bad format
+        "movl $str_0021e5fc, (%esp)\n" /* "%i sound file(s) are missing or in a bad format
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -146,7 +146,7 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "jmp .Lfad324_000ad551\n"
         ".Lfad324_000ad485:\n"
         "movl $5, 8(%esp)\n" /* line 1016 */
-        "movl $0x21e5a4, 4(%esp)\n" /* "maps/" */
+        "movl $str_0021e5a4, 4(%esp)\n" /* "maps/" */
         "movl 8(%ebp), %edi\n" /* loadspec, mark */
         "movl %edi, (%esp)\n" /* mark */
         "calll strnicmp\n"
@@ -163,31 +163,31 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "cmpl $1, 0x10(%ebp)\n" /* line 1028 | system */
         "jne .Lfad324_000ad38a\n"
         ".Lfad324_000ad4cf:\n"
-        "movl 0x195ecbc, %eax\n"
+        "movl imp_com_sv_running, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfad324_000ad38a\n"
-        "movl 0x114f4c8, %eax\n" /* line 1068 */
-        "movl %eax, 0x114f4b8\n"
-        "movl 0x114f4cc, %eax\n"
-        "movl %eax, 0x114f4bc\n"
-        "movl 0x114f4d0, %eax\n"
-        "movl %eax, 0x114f4c0\n"
-        "movl 0x114f4d4, %eax\n"
-        "movl %eax, 0x114f4c4\n"
-        "movl 0x114f4e8, %eax\n" /* line 1069 */
-        "movl 0x114f4ec, %edx\n"
-        "movl %eax, 0x114f4e0\n"
-        "movl %edx, 0x114f4e4\n"
+        "movl g_sa+4136, %eax\n" /* line 1068 */
+        "movl %eax, g_sa+4120\n"
+        "movl g_sa+4140, %eax\n"
+        "movl %eax, g_sa+4124\n"
+        "movl g_sa+4144, %eax\n"
+        "movl %eax, g_sa+4128\n"
+        "movl g_sa+4148, %eax\n"
+        "movl %eax, g_sa+4132\n"
+        "movl g_sa+4168, %eax\n" /* line 1069 */
+        "movl g_sa+4172, %edx\n"
+        "movl %eax, g_sa+4160\n"
+        "movl %edx, g_sa+4164\n"
         ".Lfad324_000ad51e:\n"
         "cmpw $0, g_sa\n" /* line 1075 */
         "jne .Lfad324_000ad420\n"
         "movl $Com_SoundList_f, 4(%esp)\n" /* line 1076 */
-        "movl $0x21e5f0, (%esp)\n" /* "snd_list" */
+        "movl $str_0021e5f0, (%esp)\n" /* "snd_list" */
         "calll Cmd_AddCommand\n"
         "jmp .Lfad324_000ad420\n"
         ".Lfad324_000ad545:\n"
-        "movl $0x21e5b0, (%esp)\n" /* line 1037 */
+        "movl $str_0021e5b0, (%esp)\n" /* line 1037 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lfad324_000ad551:\n"
@@ -209,16 +209,16 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         ".Lfad324_000ad575:\n"
         "movl $0x480, 8(%esp)\n" /* line 950 */
         "movl $0, 4(%esp)\n"
-        "movl $0x114f534, (%esp)\n"
+        "movl $g_sa+4244, (%esp)\n"
         "calll memset\n"
-        "movl $0x114f534, (%esp)\n" /* line 953 */
+        "movl $g_sa+4244, (%esp)\n" /* line 953 */
         "calll Com_InitDefaultSoundAliasVolumeFalloffCurve\n"
         "movl $0xa, 0x10(%esp)\n" /* line 955 */
         "leal -0x20(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x21e514, 4(%esp)\n" /* "vfcurve" */
-        "movl $0x21e51c, (%esp)\n" /* "soundaliases" */
+        "movl $str_0021e514, 4(%esp)\n" /* "vfcurve" */
+        "movl $str_0021e51c, (%esp)\n" /* "soundaliases" */
         "calll FS_ListFiles\n"
         "movl %eax, -0x70(%ebp)\n"
         "movl -0x20(%ebp), %eax\n" /* line 956 */
@@ -226,9 +226,9 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "jg .Lfad324_000ad6a4\n"
         ".Lfad324_000ad5d7:\n"
         "movl $0, -0x6c(%ebp)\n" /* line 957 */
-        "movl $0x114f534, -0x74(%ebp)\n"
+        "movl $g_sa+4244, -0x74(%ebp)\n"
         "movl -0x70(%ebp), %ebx\n"
-        "movl $0x114f9b4, %esi\n"
+        "movl $g_sa+5396, %esi\n"
         ".Lfad324_000ad5ed:\n"
         "movl -0x6c(%ebp), %edx\n" /* line 959 */
         "cmpl -0x20(%ebp), %edx\n"
@@ -258,7 +258,7 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "jne .Lfad324_000ad5ed\n"
         "movl -4(%ebx), %eax\n" /* line 964 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21e580, 4(%esp)\n" /* "Failed to load sndcurve file '%s'" */
+        "movl $str_0021e580, 4(%esp)\n" /* "Failed to load sndcurve file '%s'" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x6c(%ebp), %edx\n" /* line 959 */
@@ -269,7 +269,7 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         "movl -0x70(%ebp), %edi\n"
         "movl %edi, (%esp)\n"
         "calll FS_FreeFileList\n"
-        "movb $1, 0x114f530\n" /* line 968 */
+        "movb $1, g_sa+4240\n" /* line 968 */
         "jmp .Lfad324_000ad33d\n"
         ".Lfad324_000ad67c:\n"
         "xorl %ebx, %ebx\n" /* line 1047 | i */
@@ -288,7 +288,7 @@ J_COLOR_SPACE Com_LoadSoundAliases(const char *loadspec, const char *loadspecCur
         ".Lfad324_000ad6a4:\n"
         "movl $0xf, 0xc(%esp)\n" /* line 957 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21e52c, 4(%esp)\n" /* "Snd_Alias Curve initialization: '.vfcurve' file count (%d) " */
+        "movl $str_0021e52c, 4(%esp)\n" /* "Snd_Alias Curve initialization: '.vfcurve' file count (%d) " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfad324_000ad5d7\n"
@@ -308,7 +308,7 @@ SndCurve * Com_RegisterSoundAliasVolumeFalloffCurve(const char *filename, const 
         "subl $0x1c, %esp\n"
         "xorl %esi, %esi\n"
         "movl $g_sa, %ebx\n"
-        "movl $0x114f534, %edi\n"
+        "movl $g_sa+4244, %edi\n"
         /* { scope 1 */
         ".Lfad6ca_000ad6df:\n"
         "movl 0x1094(%ebx), %eax\n" /* line 1282 */
@@ -330,7 +330,7 @@ SndCurve * Com_RegisterSoundAliasVolumeFalloffCurve(const char *filename, const 
         "movl %eax, 0xc(%esp)\n"
         "movl 0xc(%ebp), %eax\n" /* sourceFile */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21e630, 4(%esp)\n" /* "Sound alias file %s: Volume Falloff Curve '%s' not found." */
+        "movl $str_0021e630, 4(%esp)\n" /* "Sound alias file %s: Volume Falloff Curve '%s' not found." */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "xorl %eax, %eax\n"
@@ -388,9 +388,9 @@ J_COLOR_SPACE Com_UnloadSoundAliasSounds(snd_alias_system_t system)
         "calll SND_StopSounds\n"
         "movl 8(%ebp), %eax\n" /* line 913 | system */
         "shll $4, %eax\n"
-        "movl 0x114f4ac(%eax), %edx\n"
+        "movl g_sa+4108(%eax), %edx\n"
         "movl %edx, -0x1c(%ebp)\n" /* aliases */
-        "movl 0x114f4b0(%eax), %ecx\n" /* line 914 */
+        "movl g_sa+4112(%eax), %ecx\n" /* line 914 */
         "testl %ecx, %ecx\n"
         "jle .Lfad75e_000ad81a\n"
         "movl %edx, -0x2c(%ebp)\n"
@@ -404,7 +404,7 @@ J_COLOR_SPACE Com_UnloadSoundAliasSounds(snd_alias_system_t system)
         "addl $1, %edi\n" /* line 914 | i */
         "addl $0x44, -0x2c(%ebp)\n"
         "movl -0x24(%ebp), %esi\n"
-        "cmpl %edi, 0x114f4b0(%esi)\n" /* i */
+        "cmpl %edi, g_sa+4112(%esi)\n" /* i */
         "jle .Lfad75e_000ad81a\n"
         ".Lfad75e_000ad7b3:\n"
         "movl -0x2c(%ebp), %esi\n"
@@ -447,7 +447,7 @@ J_COLOR_SPACE Com_UnloadSoundAliasSounds(snd_alias_system_t system)
         "addl $1, %edi\n" /* line 914 | i */
         "addl $0x44, -0x2c(%ebp)\n"
         "movl -0x24(%ebp), %esi\n"
-        "cmpl %edi, 0x114f4b0(%esi)\n" /* i */
+        "cmpl %edi, g_sa+4112(%esi)\n" /* i */
         "jg .Lfad75e_000ad7b3\n"
         /* } scope */
         ".Lfad75e_000ad81a:\n"
@@ -483,17 +483,17 @@ J_COLOR_SPACE Com_UnloadSoundAliases(snd_alias_system_t system)
         "movl %ebx, (%esp)\n" /* line 1115 | system */
         "calll Com_UnloadSoundAliasSounds\n"
         ".Lfad830_000ad850:\n"
-        "movl $0x114f4a0, %edx\n" /* line 1123 */
+        "movl $g_sa+4096, %edx\n" /* line 1123 */
         "movl %ebx, %eax\n" /* system */
         "shll $4, %eax\n"
-        "movl 0x114f4ac(%eax), %ecx\n"
+        "movl g_sa+4108(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "je .Lfad830_000ad890\n"
         "movl $0, 0xc(%eax, %edx)\n" /* line 1125 */
         "movl $0, 0x10(%eax, %edx)\n" /* line 1126 */
         "movl $__mh_execute_header, 8(%esp)\n" /* line 1132 */
         "movl $0, 4(%esp)\n"
-        "movl $0x114e4a8, (%esp)\n"
+        "movl $g_sa+8, (%esp)\n"
         "calll memset\n"
         ".Lfad830_000ad890:\n"
         "movb $0, g_sa(%ebx)\n" /* line 1139 | system */
@@ -507,7 +507,7 @@ J_COLOR_SPACE Com_UnloadSoundAliases(snd_alias_system_t system)
         ".Lfad830_000ad8a2:\n"
         "cmpw $0, g_sa\n" /* line 1141 */
         "jne .Lfad830_000ad89c\n"
-        "movl $0x21e5f0, 8(%ebp)\n" /* line 1142 | system */
+        "movl $str_0021e5f0, 8(%ebp)\n" /* line 1142 | system */
         "addl $0x14, %esp\n" /* line 1144 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -531,9 +531,9 @@ J_COLOR_SPACE Com_StreamedSoundList(void)
         "cmpb $0, g_sa(%eax)\n" /* line 613 | system */
         "je .Lfad8be_000ad978\n"
         "shll $4, %eax\n" /* line 616 | system */
-        "movl 0x114f4ac(%eax), %edx\n" /* system */
+        "movl g_sa+4108(%eax), %edx\n" /* system */
         "movl %edx, -0x1c(%ebp)\n" /* aliases */
-        "movl 0x114f4b0(%eax), %ebx\n" /* line 617 | system */
+        "movl g_sa+4112(%eax), %ebx\n" /* line 617 | system */
         "testl %ebx, %ebx\n"
         "jle .Lfad8be_000ad978\n"
         "movl %edx, %ebx\n"
@@ -544,7 +544,7 @@ J_COLOR_SPACE Com_StreamedSoundList(void)
         "addl $0x44, %ebx\n"
         "movl -0x20(%ebp), %eax\n" /* system */
         "shll $4, %eax\n" /* system */
-        "cmpl %edi, 0x114f4b0(%eax)\n" /* i, system */
+        "cmpl %edi, g_sa+4112(%eax)\n" /* i, system */
         "jle .Lfad8be_000ad978\n"
         ".Lfad8be_000ad90b:\n"
         "movl 0x2c(%ebx), %eax\n" /* line 619 | system */
@@ -581,14 +581,14 @@ J_COLOR_SPACE Com_StreamedSoundList(void)
         ".Lfad8be_000ad952:\n"
         "movl (%esi), %eax\n" /* line 628 | system */
         "movl %eax, 4(%esp)\n" /* system */
-        "movl $0x21e66c, (%esp)\n" /* "%-64s
+        "movl $str_0021e66c, (%esp)\n" /* "%-64s
 " */
         "calll Com_Printf\n"
         "addl $1, %edi\n" /* line 617 | i */
         "addl $0x44, %ebx\n"
         "movl -0x20(%ebp), %eax\n" /* system */
         "shll $4, %eax\n" /* system */
-        "cmpl %edi, 0x114f4b0(%eax)\n" /* i, system */
+        "cmpl %edi, g_sa+4112(%eax)\n" /* i, system */
         "jg .Lfad8be_000ad90b\n"
         /* } scope */
         ".Lfad8be_000ad978:\n"
@@ -606,7 +606,7 @@ J_COLOR_SPACE Com_StreamedSoundList(void)
         ".Lfad8be_000ad989:\n"
         "movl (%esi), %eax\n" /* line 630 | system */
         "movl %eax, 4(%esp)\n" /* system */
-        "movl $0x21e674, (%esp)\n" /* "%-64s FILE NOT FOUND
+        "movl $str_0021e674, (%esp)\n" /* "%-64s FILE NOT FOUND
 " */
         "calll Com_Printf\n"
         "jmp .Lfad8be_000ad8f7\n"
@@ -629,9 +629,9 @@ J_COLOR_SPACE Com_LoadedSoundList(void)
         "cmpb $0, g_sa(%eax)\n" /* line 571 */
         "je .Lfad9a0_000adac0\n"
         "shll $4, %eax\n" /* line 575 */
-        "movl 0x114f4ac(%eax), %edx\n"
+        "movl g_sa+4108(%eax), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* aliases */
-        "movl 0x114f4b0(%eax), %eax\n" /* line 576 */
+        "movl g_sa+4112(%eax), %eax\n" /* line 576 */
         "pxor %xmm0, %xmm0\n"
         "testl %eax, %eax\n"
         "jle .Lfad9a0_000adaa2\n"
@@ -644,7 +644,7 @@ J_COLOR_SPACE Com_LoadedSoundList(void)
         "addl $0x44, %ebx\n"
         "movl -0x24(%ebp), %eax\n"
         "shll $4, %eax\n"
-        "cmpl 0x114f4b0(%eax), %edi\n" /* i */
+        "cmpl g_sa+4112(%eax), %edi\n" /* i */
         "jge .Lfad9a0_000ada9d\n"
         ".Lfad9a0_000ad9fc:\n"
         "movl 0x2c(%ebx), %eax\n" /* line 578 */
@@ -685,28 +685,28 @@ J_COLOR_SPACE Com_LoadedSoundList(void)
         "calll SND_GetSoundFileSize\n"
         "addl %eax, -0x1c(%ebp)\n" /* line 589 | totalMem */
         "cvtsi2ssl %eax, %xmm0\n" /* line 590 */
-        "mulss 0x2ed60c, %xmm0\n" /* 0.0009765625f */
+        "mulss lit4_002ed60c, %xmm0\n" /* 0.0009765625f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
         "movl 0xc(%ebx), %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21e68c, (%esp)\n" /* "%-64s %7.1f KB
+        "movl $str_0021e68c, (%esp)\n" /* "%-64s %7.1f KB
 " */
         "calll Com_Printf\n"
         "addl $1, %edi\n" /* line 576 | i */
         "addl $0x44, %ebx\n"
         "movl -0x24(%ebp), %eax\n"
         "shll $4, %eax\n"
-        "cmpl 0x114f4b0(%eax), %edi\n" /* i */
+        "cmpl g_sa+4112(%eax), %edi\n" /* i */
         "jl .Lfad9a0_000ad9fc\n"
         ".Lfad9a0_000ada9d:\n"
         "cvtsi2ssl -0x1c(%ebp), %xmm0\n" /* totalMem */
         ".Lfad9a0_000adaa2:\n"
-        "mulss 0x2ed820, %xmm0\n" /* line 598 | 9.5367431640625e-07f */
+        "mulss lit4_002ed820, %xmm0\n" /* line 598 | 9.5367431640625e-07f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x21e6b4, (%esp)\n" /* "
+        "movl $str_0021e6b4, (%esp)\n" /* "
 total usage %7.3f MB
 " */
         "calll Com_Printf\n"
@@ -727,7 +727,7 @@ total usage %7.3f MB
         ".Lfad9a0_000adad6:\n"
         "movl (%esi), %eax\n" /* line 594 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21e69c, (%esp)\n" /* "%-64s FAILED TO LOAD
+        "movl $str_0021e69c, (%esp)\n" /* "%-64s FAILED TO LOAD
 " */
         "calll Com_Printf\n"
         "jmp .Lfad9a0_000ad9e4\n"
@@ -742,23 +742,23 @@ J_COLOR_SPACE Com_SoundList_f(void)
         "pushl %ebp\n" /* line 641 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl $0x21e6cc, (%esp)\n" /* line 643 */
+        "movl $str_0021e6cc, (%esp)\n" /* line 643 */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n" /* line 644 */
         "calll Com_StreamedSoundList\n"
-        "movl $0x21e718, (%esp)\n" /* line 646 */
+        "movl $str_0021e718, (%esp)\n" /* line 646 */
         "calll Com_Printf\n"
         "movl $1, %eax\n" /* line 647 */
         "calll Com_StreamedSoundList\n"
-        "movl $0x21e768, (%esp)\n" /* line 649 */
+        "movl $str_0021e768, (%esp)\n" /* line 649 */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n" /* line 650 */
         "calll Com_LoadedSoundList\n"
-        "movl $0x21e7b0, (%esp)\n" /* line 652 */
+        "movl $str_0021e7b0, (%esp)\n" /* line 652 */
         "calll Com_Printf\n"
         "movl $1, %eax\n" /* line 653 */
         "calll Com_LoadedSoundList\n"
-        "movl $0x2160e8, (%esp)\n" /* line 655 */
+        "movl $str_002160e8, (%esp)\n" /* line 655 */
         "calll Com_Printf\n"
         "leave\n" /* line 656 */
         "retl\n"
@@ -791,7 +791,7 @@ snd_alias_t * Com_PickSoundAliasFromList(snd_alias_list_t *aliasList)
         "movl %eax, %edi\n" /* pBestAlias */
         "movl %eax, %ebx\n"
         "xorl %esi, %esi\n" /* index */
-        "movss 0x2ed824, %xmm3\n" /* 32768.0f */
+        "movss lit4_002ed824, %xmm3\n" /* 32768.0f */
         "addl $1, %esi\n" /* line 1215 | index */
         "movl 8(%ebp), %edx\n" /* line 1216 | aliasList */
         "movl 8(%edx), %eax\n"
@@ -800,15 +800,15 @@ snd_alias_t * Com_PickSoundAliasFromList(snd_alias_list_t *aliasList)
         ".Lfadb54_000adb9c:\n"
         "addl $0x44, %ebx\n" /* line 1218 */
         "addss 0x24(%ecx), %xmm2\n" /* line 1219 */
-        "movl 0x114e4a4, %edx\n" /* line 1183 */
+        "movl g_sa+4, %edx\n" /* line 1183 */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal 0x269ec3(%edx, %eax, 4), %eax\n"
-        "movl %eax, 0x114e4a4\n"
+        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1221 */
         "andl $0x7fff, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
@@ -857,20 +857,20 @@ snd_alias_t * Com_PickSoundAliasFromList(snd_alias_list_t *aliasList)
         "cmpl 0x10(%ecx), %esi\n" /* line 1236 | index */
         "je .Lfadb54_000adc7b\n"
         "addss 0x34(%ecx), %xmm2\n" /* line 1238 */
-        "movl 0x114e4a4, %edx\n" /* line 1183 */
+        "movl g_sa+4, %edx\n" /* line 1183 */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal 0x269ec3(%edx, %eax, 4), %eax\n"
-        "movl %eax, 0x114e4a4\n"
+        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1240 */
         "andl $0x7fff, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
         "mulss %xmm2, %xmm1\n"
-        "movss 0x2ed824, %xmm0\n" /* 32768.0f */
+        "movss lit4_002ed824, %xmm0\n" /* 32768.0f */
         "mulss 0x34(%ecx), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "cmoval %ecx, %edi\n" /* pBestAlias */
@@ -929,7 +929,7 @@ snd_alias_list_t * Com_FindSoundAlias(const char *name)
         "xorl %eax, %eax\n"
         /* } scope */
         ".Lfadc9a_000adcbf:\n"
-        "movl 0x114e4a8(, %eax, 4), %ebx\n" /* line 704 | aliasList */
+        "movl g_sa+8(, %eax, 4), %ebx\n" /* line 704 | aliasList */
         "testl %ebx, %ebx\n" /* aliasList */
         "je .Lfadc9a_000adcaa\n"
         ".Lfadc9a_000adcca:\n"
@@ -990,7 +990,7 @@ Bool Com_AddAliasList(const char *name, snd_alias_list_t *aliasList)
         "xorl %esi, %esi\n"
         /* } scope */
         ".Lfadd22_000add37:\n"
-        "movl 0x114e4a8(, %esi, 4), %eax\n" /* line 817 */
+        "movl g_sa+8(, %esi, 4), %eax\n" /* line 817 */
         "movl %eax, %ebx\n" /* aliasListIter */
         "testl %eax, %eax\n"
         "je .Lfadd22_000add64\n"
@@ -1004,7 +1004,7 @@ Bool Com_AddAliasList(const char *name, snd_alias_list_t *aliasList)
         "movl 0xc(%ebx), %ebx\n" /* line 817 | aliasListIter */
         "testl %ebx, %ebx\n" /* aliasListIter */
         "jne .Lfadd22_000add44\n"
-        "movl 0x114e4a8(, %esi, 4), %eax\n"
+        "movl g_sa+8(, %esi, 4), %eax\n"
         ".Lfadd22_000add64:\n"
         "movl 0xc(%ebp), %edx\n" /* line 823 | aliasList */
         "movl %eax, 0xc(%edx)\n"
@@ -1078,7 +1078,7 @@ J_COLOR_SPACE Com_DuplicateSoundAlias(snd_alias_list_t *aliasCopy, const char *n
         "movl -0x1c(%ebp), %eax\n"
         /* } scope */
         ".Lfaddca_000addee:\n"
-        "movl 0x114e4a8(, %eax, 4), %ebx\n" /* line 843 | aliasList */
+        "movl g_sa+8(, %eax, 4), %ebx\n" /* line 843 | aliasList */
         "testl %ebx, %ebx\n" /* aliasList */
         "je .Lfaddca_000ade19\n"
         ".Lfaddca_000addf9:\n"
@@ -1119,7 +1119,7 @@ J_COLOR_SPACE Com_DuplicateSoundAlias(snd_alias_list_t *aliasCopy, const char *n
         "calll strcpy\n"
         "movl %esi, (%ebx)\n" /* line 858 | aliasList */
         "movl -0x1c(%ebp), %edx\n" /* line 860 */
-        "movl 0x114e4a8(, %edx, 4), %eax\n"
+        "movl g_sa+8(, %edx, 4), %eax\n"
         "movl %eax, 0xc(%ebx)\n" /* aliasList */
         "movl $g_sa, %eax\n" /* line 861 */
         "movl %ebx, 8(%eax, %edx, 4)\n" /* aliasList */
@@ -1203,7 +1203,7 @@ int SND_GetAliasOffset(const snd_alias_t *alias)
         /* } scope */
         /* } scope */
         ".Lfadeec_000adf07:\n"
-        "movl 0x114e4a8(, %eax, 4), %ebx\n" /* line 704 | iHash */
+        "movl g_sa+8(, %eax, 4), %ebx\n" /* line 704 | iHash */
         "testl %ebx, %ebx\n" /* iHash */
         "je .Lfadeec_000adf2b\n"
         ".Lfadeec_000adf12:\n"
@@ -1301,7 +1301,7 @@ snd_alias_t * SND_GetAliasWithOffset(const char *name, int offset)
         "xorl %eax, %eax\n"
         /* } scope */
         ".Lfadf9e_000adfbb:\n"
-        "movl 0x114e4a8(, %eax, 4), %ebx\n" /* line 704 | iHash */
+        "movl g_sa+8(, %eax, 4), %ebx\n" /* line 704 | iHash */
         "testl %ebx, %ebx\n" /* iHash */
         "je .Lfadf9e_000adfdf\n"
         ".Lfadf9e_000adfc6:\n"
@@ -1350,7 +1350,7 @@ snd_alias_t * SND_GetAliasWithOffset(const char *name, int offset)
         "movl 0xc(%ebp), %eax\n" /* line 798 | offset */
         "movl %eax, 0xc(%esp)\n"
         "movl %edi, 8(%esp)\n" /* name */
-        "movl $0x21e7fc, 4(%esp)\n" /* "SND_GetAliasWithOffset: could not find sound alias '%s' with" */
+        "movl $str_0021e7fc, 4(%esp)\n" /* "SND_GetAliasWithOffset: could not find sound alias '%s' with" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "xorl %esi, %esi\n"
@@ -1412,7 +1412,7 @@ snd_alias_t * Com_PickSoundAlias(const char *aliasname)
         "xorl %eax, %eax\n"
         /* } scope */
         ".Lfae082_000ae09b:\n"
-        "movl 0x114e4a8(, %eax, 4), %ebx\n" /* line 704 | iHash */
+        "movl g_sa+8(, %eax, 4), %ebx\n" /* line 704 | iHash */
         "testl %ebx, %ebx\n" /* iHash */
         "je .Lfae082_000ae0bf\n"
         ".Lfae082_000ae0a6:\n"
@@ -1482,20 +1482,20 @@ snd_alias_t * Com_PickSoundAlias(const char *aliasname)
         ".Lfae082_000ae134:\n"
         "addl $0x44, %edi\n" /* line 1218 */
         "addss 0x24(%ecx), %xmm2\n" /* line 1219 */
-        "movl 0x114e4a4, %edx\n" /* line 1183 */
+        "movl g_sa+4, %edx\n" /* line 1183 */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal 0x269ec3(%edx, %eax, 4), %eax\n"
-        "movl %eax, 0x114e4a4\n"
+        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1221 */
         "andl $0x7fff, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
         "mulss %xmm2, %xmm1\n"
-        "movss 0x2ed824, %xmm0\n" /* 32768.0f */
+        "movss lit4_002ed824, %xmm0\n" /* 32768.0f */
         "mulss 0x24(%ecx), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "movl -0x20(%ebp), %eax\n"
@@ -1545,20 +1545,20 @@ snd_alias_t * Com_PickSoundAlias(const char *aliasname)
         "cmpl 0x10(%eax), %esi\n" /* index */
         "je .Lfae082_000ae229\n"
         "addss 0x34(%eax), %xmm2\n" /* line 1238 */
-        "movl 0x114e4a4, %edx\n" /* line 1183 */
+        "movl g_sa+4, %edx\n" /* line 1183 */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal 0x269ec3(%edx, %eax, 4), %eax\n"
-        "movl %eax, 0x114e4a4\n"
+        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1240 */
         "andl $0x7fff, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
         "mulss %xmm2, %xmm1\n"
-        "movss 0x2ed824, %xmm0\n" /* 32768.0f */
+        "movss lit4_002ed824, %xmm0\n" /* 32768.0f */
         "movl -0x1c(%ebp), %edx\n"
         "mulss 0x34(%edx), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"

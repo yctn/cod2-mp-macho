@@ -137,7 +137,7 @@ void BG_RegisterDvars(void)
 /* line 463 */
 const gitem_t *BG_FindItemForWeapon(int weapon)
 {
-    char *base = *(char **)0x195eda8;
+    char *base = *(char **)imp_bg_itemlist;
     return (const gitem_t *)(base + weapon * 44);
 }
 
@@ -149,8 +149,8 @@ const gitem_t *G_FindItem(const char *pickupName)
     char *base;
     int weaponIndex;
 
-    count = **(int **)0x195edac;
-    base = *(char **)0x195eda8;
+    count = **(int **)imp_bg_numItems;
+    base = *(char **)imp_bg_itemlist;
 
     for (iIndex = 0x81; iIndex < count; iIndex++) {
         char *it = base + iIndex * 44;
@@ -327,7 +327,7 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
         "movzbl %dl, %eax\n"
         "leal (%eax, %eax, 2), %eax\n"
         "shll $2, %eax\n"
-        "movl 0x195edb0, %ecx\n"
+        "movl imp_pmoveHandlers, %ecx\n"
         "addl %ecx, %eax\n"
         "movl %eax, -0x24(%ebp)\n"
         "movl 8(%ebp), %eax\n" /* ps */
@@ -433,7 +433,7 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
         "movl 0xfc(%ebx), %ecx\n" /* snap */
         "testl %ecx, %ecx\n"
         "jne .Lf6a520_0006a971\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movl 8(%ebp), %edx\n" /* ps */
         ".Lf6a520_0006a846:\n"
         "movaps %xmm1, %xmm0\n" /* line 906 */
@@ -528,10 +528,10 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
         "cvtsi2ssl %edx, %xmm1\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "divss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 894 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 894 | 0.0f */
         "jb .Lf6a520_0006a9e4\n"
         ".Lf6a520_0006a9aa:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 896 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 896 | 1.0f */
         "minss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"
         ".Lf6a520_0006a9b9:\n"
@@ -542,7 +542,7 @@ void BG_PlayerStateToEntityState(playerState_t *ps, entityState_t *s, qboolean s
         "movl %eax, %edx\n"
         "jmp .Lf6a520_0006a846\n"
         ".Lf6a520_0006a9cd:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 899 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 899 | 1.0f */
         "subss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"
         "movl 8(%ebp), %edx\n" /* ps */
@@ -571,10 +571,10 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "movl (%ebx), %eax\n" /* line 691 | tr */
         "cmpl $8, %eax\n"
         "ja .Lf6a9ee_0006aa0d\n"
-        "jmpl *0x2f0690(, %eax, 4)\n"
+        "jmpl *singleClientEvents+48(, %eax, 4)\n"
         ".Lf6a9ee_0006aa0d:\n"
         "movl %eax, 0x10(%ebp)\n" /* line 739 | result */
-        "movl $0x21bdd8, 0xc(%ebp)\n" /* atTime */
+        "movl $str_0021bdd8, 0xc(%ebp)\n" /* atTime */
         "movl $1, 8(%ebp)\n" /* tr */
         /* } scope */
         "addl $0x20, %esp\n" /* line 744 */
@@ -622,12 +622,12 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "jg .Lf6a9ee_0006aa39\n"
         "subl %ecx, %edx\n" /* line 725 */
         "cvtsi2ssl %edx, %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "mulss %xmm0, %xmm0\n" /* line 727 */
         "jmp .Lf6a9ee_0006aaf5\n"
         "subl 4(%ebx), %edx\n" /* line 715 | tr */
         "cvtsi2ssl %edx, %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "leal 0x18(%ebx), %edx\n" /* line 716 | tr, from */
         /* { scope 2 */
         "movl 0x18(%ebx), %eax\n" /* line 199 */
@@ -635,7 +635,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "movl 4(%edx), %eax\n" /* line 200 */
         "movl %eax, 4(%esi)\n"
         /* } scope */
-        "mulss 0x2ed6b0, %xmm0\n" /* line 717 | -800.0f */
+        "mulss lit4_002ed6b0, %xmm0\n" /* line 717 | -800.0f */
         "addss 8(%edx), %xmm0\n"
         "movss %xmm0, 8(%esi)\n" /* result */
         "jmp .Lf6a9ee_0006aa43\n"
@@ -644,13 +644,13 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "cvtsi2ssl 8(%ebx), %xmm1\n" /* tr */
         "divss %xmm1, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
+        "mulsd lit8_00307c28, %xmm0\n" /* 3.141592653589793 */
         "addsd %xmm0, %xmm0\n"
         "movsd %xmm0, (%esp)\n"
         "calll cos\n"
         "fstpl -0x10(%ebp)\n"
         "cvtsd2ss -0x10(%ebp), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* line 703 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* line 703 | 0.5f */
         ".Lf6a9ee_0006aaf5:\n"
         "leal 0x18(%ebx), %eax\n" /* line 736 | tr, v */
         /* { scope 2 */
@@ -673,7 +673,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         ".Lf6a9ee_0006ab22:\n"
         "subl %ecx, %edx\n" /* line 735 */
         "cvtsi2ssl %edx, %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "jmp .Lf6a9ee_0006aaf5\n"
     );
 }
@@ -687,12 +687,12 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
     char *base;
 
     index = *(int *)((const char *)ent + 0x8c);
-    if (index <= 0 || index >= **(int **)0x195edac) {
-        Com_Error(ERR_DROP, va((const char *)0x21be08, index, *(int *)((const char *)ent + 4)));
+    if (index <= 0 || index >= **(int **)imp_bg_numItems) {
+        Com_Error(ERR_DROP, va((const char *)str_0021be08, index, *(int *)((const char *)ent + 4)));
         index = *(int *)((const char *)ent + 0x8c);
     }
 
-    base = *(char **)0x195eda8;
+    base = *(char **)imp_bg_itemlist;
 
     if (*(int *)((const char *)ent + 0x90) == *(int *)((const char *)ps + 0xcc)) {
         return 0;
@@ -702,7 +702,7 @@ qboolean BG_CanItemBeGrabbed(const entityState_t *ent, const playerState_t *ps, 
 
     switch (giType) {
         case 0:
-            Com_Error(ERR_DROP, (const char *)0x21be4c);
+            Com_Error(ERR_DROP, (const char *)str_0021be4c);
             return 0;
 
         case 1: /* IT_WEAPON */
@@ -757,10 +757,10 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         /* { scope 1: scale */
         "movzbl 0x34(%ebp), %eax\n" /* line 1019 | handler */
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x195edb0, %edx\n"
+        "movl imp_pmoveHandlers, %edx\n"
         "movl (%edx, %eax, 4), %edi\n" /* traceFunc */
         "movss 0x10(%ebp), %xmm1\n" /* line 1022 | fSize, y */
-        "xorps 0x2f06c0, %xmm1\n" /* y */
+        "xorps singleClientEvents+96, %xmm1\n" /* y */
         /* { scope 2 */
         "pxor %xmm2, %xmm2\n" /* line 193 */
         /* } scope */
@@ -789,7 +789,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "cmpl $1, 0x38(%ebp)\n" /* line 1027 | proneCheckType */
         "sbbl %esi, %esi\n" /* iTraceMask */
         "xorw %si, %si\n" /* iTraceMask */
-        "addl $0x820011, %esi\n" /* iTraceMask */
+        "addl $s_debugFrameGlob+188817, %esi\n" /* iTraceMask */
         "movl 0x28(%ebp), %eax\n" /* line 1035 | bAlreadyProne */
         "testl %eax, %eax\n"
         "je .Lf6ac9c_0006b150\n"
@@ -800,7 +800,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movl 0x30(%ebp), %ecx\n" /* vGroundNormal */
         "testl %ecx, %ecx\n"
         "je .Lf6ac9c_0006ad6d\n"
-        "movss 0x2ed6ac, %xmm0\n" /* 0.699999988079071f */
+        "movss lit4_002ed6ac, %xmm0\n" /* 0.699999988079071f */
         "movl 0x30(%ebp), %edx\n" /* vGroundNormal */
         "ucomiss 8(%edx), %xmm0\n"
         "ja .Lf6ac9c_0006b143\n"
@@ -815,7 +815,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "xorl %eax, %eax\n" /* line 191 */
         "movl %eax, -0x3c(%ebp)\n" /* vEnd */
         "movss 0x18(%ebp), %xmm0\n" /* line 192 | fYaw */
-        "subss 0x2ed64c, %xmm0\n" /* 180.0f */
+        "subss lit4_002ed64c, %xmm0\n" /* 180.0f */
         "movss %xmm0, -0x38(%ebp)\n"
         "movl %eax, -0x34(%ebp)\n" /* line 193 */
         "leal -0x24(%ebp), %eax\n" /* line 1060 | vUp */
@@ -828,7 +828,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movl %edx, (%esp)\n"
         "calll AngleVectors\n"
         "movss 0x14(%ebp), %xmm0\n" /* line 1063 | fHeight */
-        "subss 0x2ed5e0, %xmm0\n" /* 6.0f */
+        "subss lit4_002ed5e0, %xmm0\n" /* 6.0f */
         "movss %xmm0, -0xe8(%ebp)\n" /* fTraceHeight */
         "movl (%ebx), %eax\n" /* line 199 */
         "movl %eax, -0x30(%ebp)\n" /* vStart */
@@ -841,7 +841,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "addss -0x28(%ebp), %xmm0\n" /* line 1070 */
         "movss %xmm0, -0x28(%ebp)\n"
         "movss 0x3c(%ebp), %xmm0\n" /* line 1071 | prone_feet_dist */
-        "subss 0x2ed5e0, %xmm0\n" /* 6.0f */
+        "subss lit4_002ed5e0, %xmm0\n" /* 6.0f */
         "movss %xmm0, -0xd4(%ebp)\n" /* scale */
         /* { scope 2 */
         "mulss -0x6c(%ebp), %xmm0\n" /* line 288 | vForward */
@@ -871,7 +871,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movl %edx, (%esp)\n"
         "calll *%edi\n" /* traceFunc */
         "movss -0x9c(%ebp), %xmm5\n" /* line 1074 | trace */
-        "ucomiss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "jb .Lf6ac9c_0006b132\n"
         ".Lf6ac9c_0006ae9d:\n"
         "movss 0x3c(%ebp), %xmm7\n" /* line 1104 | prone_feet_dist */
@@ -893,16 +893,16 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "mulss %xmm5, %xmm3\n"
         "addss %xmm0, %xmm3\n"
         "movss -0x6c(%ebp), %xmm2\n" /* line 288 | vForward */
-        "mulss 0x2ed6b8, %xmm2\n" /* 48.0f */
+        "mulss lit4_002ed6b8, %xmm2\n" /* 48.0f */
         "addss (%ebx), %xmm2\n"
         "movss %xmm2, -0x30(%ebp)\n" /* vStart */
         "movss -0x68(%ebp), %xmm1\n" /* line 289 */
-        "mulss 0x2ed6b8, %xmm1\n" /* 48.0f */
+        "mulss lit4_002ed6b8, %xmm1\n" /* 48.0f */
         "movl -0xdc(%ebp), %eax\n"
         "addss (%eax), %xmm1\n"
         "movss %xmm1, -0x2c(%ebp)\n"
         "movss -0x64(%ebp), %xmm0\n" /* line 290 */
-        "mulss 0x2ed6b8, %xmm0\n" /* 48.0f */
+        "mulss lit4_002ed6b8, %xmm0\n" /* 48.0f */
         "movl -0xd8(%ebp), %edx\n"
         "addss (%edx), %xmm0\n"
         "movss %xmm0, -0x28(%ebp)\n"
@@ -912,9 +912,9 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movss %xmm2, -0x3c(%ebp)\n" /* line 199 | vEnd */
         "movss %xmm1, -0x38(%ebp)\n" /* line 200 */
         "movss 0x10(%ebp), %xmm1\n" /* line 1127 | fSize */
-        "mulss 0x2ed6c0, %xmm1\n" /* 2.5f */
+        "mulss lit4_002ed6c0, %xmm1\n" /* 2.5f */
         "addss -0xe8(%ebp), %xmm1\n" /* fTraceHeight */
-        "movss 0x2ed5e0, %xmm5\n" /* 6.0f */
+        "movss lit4_002ed5e0, %xmm5\n" /* 6.0f */
         "subss %xmm5, %xmm1\n"
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
@@ -945,11 +945,11 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movss -0x138(%ebp), %xmm5\n"
         "movss -0x148(%ebp), %xmm6\n"
         "movss -0x158(%ebp), %xmm7\n"
-        "ucomiss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "jp .Lf6ac9c_0006b02b\n"
         "je .Lf6ac9c_0006b0e7\n"
         ".Lf6ac9c_0006b02b:\n"
-        "movss 0x2ed6ac, %xmm0\n" /* line 1134 | 0.699999988079071f */
+        "movss lit4_002ed6ac, %xmm0\n" /* line 1134 | 0.699999988079071f */
         "ucomiss -0x90(%ebp), %xmm0\n"
         "ja .Lf6ac9c_0006b143\n"
         "mulss %xmm2, %xmm1\n" /* line 1138 */
@@ -980,7 +980,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "je .Lf6ac9c_0006b3d2\n"
         "subss %xmm1, %xmm7\n" /* line 1145 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed6c4, %xmm0\n" /* -0.75f */
+        "mulss lit4_002ed6c4, %xmm0\n" /* -0.75f */
         "ucomiss %xmm7, %xmm0\n"
         "jbe .Lf6ac9c_0006b247\n"
         ".Lf6ac9c_0006b0e7:\n"
@@ -1046,7 +1046,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movss %xmm0, -0x28(%ebp)\n"
         "movl %edx, -0x3c(%ebp)\n" /* line 199 | vEnd */
         "movl %eax, -0x38(%ebp)\n" /* line 200 */
-        "addss 0x2ed6b4, %xmm0\n" /* line 1042 | 10.0f */
+        "addss lit4_002ed6b4, %xmm0\n" /* line 1042 | 10.0f */
         "movss %xmm0, -0x34(%ebp)\n"
         "movl %esi, 0x18(%esp)\n" /* line 1043 | iTraceMask */
         "movl 8(%ebp), %eax\n" /* passEntityNum */
@@ -1068,14 +1068,14 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         ".Lf6ac9c_0006b1e1:\n"
         "movss -0xd4(%ebp), %xmm7\n" /* line 1081 | scale */
         "mulss %xmm5, %xmm7\n"
-        "addss 0x2ed5e0, %xmm7\n" /* 6.0f */
+        "addss lit4_002ed5e0, %xmm7\n" /* 6.0f */
         "movss 0x10(%ebp), %xmm0\n" /* line 1084 | fSize */
-        "addss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "addss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "ucomiss %xmm7, %xmm0\n"
         "ja .Lf6ac9c_0006b143\n"
         "movss -0xe8(%ebp), %xmm0\n" /* line 1088 | fTraceHeight */
-        "mulss 0x2ed6ac, %xmm0\n" /* 0.699999988079071f */
-        "movss 0x2ed6b8, %xmm2\n" /* 48.0f */
+        "mulss lit4_002ed6ac, %xmm0\n" /* 0.699999988079071f */
+        "movss lit4_002ed6b8, %xmm2\n" /* 48.0f */
         "addss %xmm0, %xmm2\n"
         "movss %xmm2, -0xf4(%ebp)\n"
         "ucomiss %xmm7, %xmm2\n"
@@ -1105,7 +1105,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "calll Vec3Normalize\n"
         "fstp %st(0)\n"
         "movss -0xd4(%ebp), %xmm1\n" /* line 1155 | scale */
-        "subss 0x2ed6b8, %xmm1\n" /* 48.0f, scale */
+        "subss lit4_002ed6b8, %xmm1\n" /* 48.0f, scale */
         /* { scope 2 */
         "movaps %xmm1, %xmm0\n" /* line 288 */
         "mulss -0x60(%ebp), %xmm0\n" /* vDelta */
@@ -1123,7 +1123,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "mulss -0x6c(%ebp), %xmm0\n" /* vForward */
         "addss (%ebx), %xmm0\n" /* vPos */
         "addss -0x3c(%ebp), %xmm0\n" /* vEnd */
-        "movss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x3c(%ebp)\n" /* vEnd */
         "movss -0xd4(%ebp), %xmm2\n" /* line 1157 | scale */
@@ -1150,7 +1150,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movl %edx, (%esp)\n"
         "calll *%edi\n" /* traceFunc */
         "movss -0x9c(%ebp), %xmm5\n" /* line 1161 | trace */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ucomiss %xmm5, %xmm0\n"
         "ja .Lf6ac9c_0006b8fd\n"
         ".Lf6ac9c_0006b390:\n"
@@ -1196,11 +1196,11 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movl %edx, (%esp)\n"
         "calll *%edi\n" /* traceFunc */
         "movss -0x9c(%ebp), %xmm1\n" /* line 1185 | trace */
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "jp .Lf6ac9c_0006b451\n"
         "je .Lf6ac9c_0006b0e7\n"
         ".Lf6ac9c_0006b451:\n"
-        "movss 0x2ed6ac, %xmm0\n" /* line 1188 | 0.699999988079071f */
+        "movss lit4_002ed6ac, %xmm0\n" /* line 1188 | 0.699999988079071f */
         "ucomiss -0x90(%ebp), %xmm0\n"
         "ja .Lf6ac9c_0006b143\n"
         "movss -0x30(%ebp), %xmm0\n" /* line 1203 | vStart */
@@ -1220,7 +1220,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "subss %xmm0, %xmm2\n"
         "mulss %xmm2, %xmm1\n"
         "addss %xmm1, %xmm0\n"
-        "subss 0x2ed5e0, %xmm0\n" /* line 1193 | 6.0f */
+        "subss lit4_002ed5e0, %xmm0\n" /* line 1193 | 6.0f */
         "movss %xmm0, -0xb4(%ebp)\n"
         "movss (%ebx), %xmm0\n" /* line 199 */
         "movss %xmm0, -0xbc(%ebp)\n"
@@ -1261,11 +1261,11 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "calll AngleSubtract\n"
         "fstps -0xec(%ebp)\n" /* fPitchDiff */
         "movss -0xec(%ebp), %xmm2\n" /* line 1207 | fPitchDiff */
-        "ucomiss 0x2ed6cc, %xmm2\n" /* -50.0f */
+        "ucomiss lit4_002ed6cc, %xmm2\n" /* -50.0f */
         "jp .Lf6ac9c_0006b5c5\n"
         "jb .Lf6ac9c_0006b8f1\n"
         ".Lf6ac9c_0006b5c5:\n"
-        "ucomiss 0x2ed6d0, %xmm2\n" /* 70.0f */
+        "ucomiss lit4_002ed6d0, %xmm2\n" /* 70.0f */
         "ja .Lf6ac9c_0006b8f1\n"
         "movb $1, -0xdd(%ebp)\n" /* success */
         ".Lf6ac9c_0006b5d9:\n"
@@ -1280,7 +1280,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movss %xmm0, -0x30(%ebp)\n" /* vStart */
         "movss -0xc0(%ebp), %xmm2\n" /* line 200 */
         "movss %xmm2, -0x2c(%ebp)\n"
-        "movss 0x2ed6d4, %xmm1\n" /* line 1218 | 5.0f */
+        "movss lit4_002ed6d4, %xmm1\n" /* line 1218 | 5.0f */
         "movss -0xc4(%ebp), %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, -0x28(%ebp)\n"
@@ -1307,7 +1307,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movss %xmm1, -0x108(%ebp)\n"
         "calll *%edi\n" /* traceFunc */
         "xorl %ebx, %ebx\n" /* line 1223 | vPos */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ucomiss -0x9c(%ebp), %xmm0\n" /* trace */
         "movzbl -0xdd(%ebp), %eax\n" /* success */
         "cmoval %ebx, %eax\n" /* vPos */
@@ -1339,7 +1339,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "leal -0x9c(%ebp), %edx\n" /* trace */
         "movl %edx, (%esp)\n"
         "calll *%edi\n" /* traceFunc */
-        "movss 0x2ed5d0, %xmm0\n" /* line 1231 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1231 | 1.0f */
         "ucomiss -0x9c(%ebp), %xmm0\n" /* trace */
         "movzbl -0xdd(%ebp), %eax\n" /* success */
         "cmoval %ebx, %eax\n" /* vPos */
@@ -1396,7 +1396,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movl $1, %eax\n" /* line 1261 */
         "jmp .Lf6ac9c_0006b145\n"
         ".Lf6ac9c_0006b82a:\n"
-        "movss 0x2ed6bc, %xmm1\n" /* line 1094 | 22.0f */
+        "movss lit4_002ed6bc, %xmm1\n" /* line 1094 | 22.0f */
         "addss -0x34(%ebp), %xmm1\n"
         "movss %xmm1, -0x34(%ebp)\n"
         "movss -0x3c(%ebp), %xmm0\n" /* line 248 | vEnd */
@@ -1428,12 +1428,12 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "movl %eax, (%esp)\n"
         "calll *%edi\n" /* traceFunc */
         "movss -0x9c(%ebp), %xmm5\n" /* line 1098 | trace */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ucomiss %xmm5, %xmm0\n"
         "jbe .Lf6ac9c_0006ae9d\n"
         "movss -0xb8(%ebp), %xmm7\n" /* line 1101 */
         "mulss %xmm5, %xmm7\n"
-        "addss 0x2ed5e0, %xmm7\n" /* 6.0f */
+        "addss lit4_002ed5e0, %xmm7\n" /* 6.0f */
         "movss -0xf4(%ebp), %xmm0\n" /* line 1104 */
         "ucomiss %xmm7, %xmm0\n"
         "jbe .Lf6ac9c_0006b238\n"
@@ -1460,7 +1460,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "subss %xmm0, %xmm1\n"
         "mulss %xmm1, %xmm5\n"
         "addss %xmm5, %xmm0\n"
-        "movss 0x2ed6c8, %xmm1\n" /* line 1164 | 18.0f */
+        "movss lit4_002ed6c8, %xmm1\n" /* line 1164 | 18.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, -0x28(%ebp)\n"
         "addss %xmm1, %xmm2\n" /* line 1165 */
@@ -1479,7 +1479,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "leal -0x9c(%ebp), %edx\n" /* trace */
         "movl %edx, (%esp)\n"
         "calll *%edi\n" /* traceFunc */
-        "movss 0x2ed5d0, %xmm0\n" /* line 1168 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1168 | 1.0f */
         "ucomiss -0x9c(%ebp), %xmm0\n" /* trace */
         "ja .Lf6ac9c_0006b0e7\n"
         "movss -0x9c(%ebp), %xmm5\n" /* trace */
@@ -1511,10 +1511,10 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "movl (%esi), %eax\n" /* line 606 | tr */
         "cmpl $8, %eax\n"
         "ja .Lf6b9ca_0006b9ea\n"
-        "jmpl *0x2f06d0(, %eax, 4)\n"
+        "jmpl *singleClientEvents+112(, %eax, 4)\n"
         ".Lf6b9ca_0006b9ea:\n"
         "movl %eax, 0x10(%ebp)\n" /* line 668 | result */
-        "movl $0x21be6c, 0xc(%ebp)\n" /* atTime */
+        "movl $str_0021be6c, 0xc(%ebp)\n" /* atTime */
         "movl $1, 8(%ebp)\n" /* tr */
         /* } scope */
         "addl $0x4c, %esp\n" /* line 673 */
@@ -1526,7 +1526,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "jmp Com_Error\n" /* line 668 */
         "subl 4(%esi), %ebx\n" /* line 614 | tr, atTime */
         "cvtsi2ssl %ebx, %xmm1\n" /* atTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         ".Lf6b9ca_0006ba16:\n"
         "leal 0x18(%esi), %eax\n" /* line 620 | tr, dir */
         "leal 0xc(%esi), %edx\n" /* tr, start */
@@ -1560,7 +1560,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "cmovgel %ebx, %eax\n" /* atTime */
         "subl %edx, %eax\n" /* line 657 */
         "cvtsi2ssl %eax, %xmm3\n"
-        "movss 0x2ed658, %xmm4\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm4\n" /* 0.0010000000474974513f */
         "mulss %xmm4, %xmm3\n"
         "leal 0x18(%esi), %eax\n" /* line 659 | tr, v */
         /* { scope 2 */
@@ -1594,7 +1594,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "addss 8(%eax), %xmm4\n"
         /* } scope */
         "movss -0x38(%ebp), %xmm1\n" /* line 665 | scale */
-        "mulss 0x2ed63c, %xmm1\n" /* -0.5f, scale */
+        "mulss lit4_002ed63c, %xmm1\n" /* -0.5f, scale */
         "mulss %xmm3, %xmm1\n" /* scale */
         "mulss %xmm3, %xmm1\n" /* scale */
         /* { scope 2 */
@@ -1620,7 +1620,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "cmovgl %eax, %ebx\n" /* atTime */
         "subl %edx, %ebx\n" /* line 644 | atTime */
         "cvtsi2ssl %ebx, %xmm3\n" /* atTime */
-        "movss 0x2ed658, %xmm4\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm4\n" /* 0.0010000000474974513f */
         "mulss %xmm4, %xmm3\n"
         "leal 0x18(%esi), %eax\n" /* line 646 | tr, v */
         /* { scope 2 */
@@ -1644,7 +1644,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "calll Vec3NormalizeTo\n"
         "fstp %st(0)\n"
         "movss -0x38(%ebp), %xmm1\n" /* line 650 | scale */
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f, scale */
+        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f, scale */
         "movss -0x48(%ebp), %xmm3\n"
         "mulss %xmm3, %xmm1\n" /* scale */
         "mulss %xmm3, %xmm1\n" /* scale */
@@ -1675,7 +1675,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         /* } scope */
         "subl 4(%esi), %ebx\n" /* line 635 | tr, atTime */
         "cvtsi2ssl %ebx, %xmm1\n" /* atTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "leal 0x18(%esi), %eax\n" /* line 636 | tr, dir */
         "leal 0xc(%esi), %edx\n" /* tr, start */
         /* { scope 2 */
@@ -1692,7 +1692,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "mulss 8(%eax), %xmm0\n"
         "addss 8(%edx), %xmm0\n"
         "movaps %xmm1, %xmm2\n"
-        "mulss 0x2ed6d8, %xmm2\n" /* -400.0f */
+        "mulss lit4_002ed6d8, %xmm2\n" /* -400.0f */
         "mulss %xmm2, %xmm1\n"
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 8(%edi)\n" /* result */
@@ -1702,7 +1702,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "cvtsi2ssl 8(%esi), %xmm1\n" /* tr */
         "divss %xmm1, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
+        "mulsd lit8_00307c28, %xmm0\n" /* 3.141592653589793 */
         "addsd %xmm0, %xmm0\n"
         "movsd %xmm0, (%esp)\n"
         "calll sin\n"
@@ -1716,7 +1716,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "cmovgl %eax, %ebx\n" /* atTime */
         "subl %edx, %ebx\n" /* line 627 | atTime */
         "cvtsi2ssl %ebx, %xmm1\n" /* atTime */
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "pxor %xmm0, %xmm0\n" /* line 628 */
         "maxss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"

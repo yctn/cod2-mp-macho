@@ -6,7 +6,7 @@
 
 extern const char *SL_ConvertToString(unsigned int stringValue);
 
-static TestLod g_testLods[4]; /* 0x7ef000 */
+static TestLod g_testLods[4]; /* g_testLods */
 
 const char * XModelGetName(const XModel *model);
 unsigned char XModelGetFlags(const XModel *model);

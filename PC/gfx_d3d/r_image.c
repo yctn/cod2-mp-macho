@@ -10,10 +10,10 @@
  */
 
 extern const char * g_platform_name[2]; /* 0x0 */
-static int imageGlobals; /* 0xc94bc0 */
-static GfxImage g_imageProgs[12]; /* 0xc94a00 */
-static const char * g_imageProgNames[12]; /* 0x311200 */
-static const char * imageTypeName[10]; /* 0x3111c0 */
+static int imageGlobals; /* imageGlobals */
+static GfxImage g_imageProgs[12]; /* g_imageProgs */
+static const char * g_imageProgNames[12]; /* g_imageProgNames */
+static const char * imageTypeName[10]; /* imageTypeName */
 
 static void R_AddImageToList(union XAssetHeader header, void *data);
 extern void DB_EnumXAssets(int type, void (*func)(union XAssetHeader, void *), void *data, int overrides);
@@ -101,7 +101,7 @@ void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCou
         "movw %dx, 0x1a(%edi)\n" /* line 656 | image */
         "movw $1, 0x1c(%edi)\n" /* line 657 | image */
         "movl $3, (%edi)\n" /* line 659 | image */
-        "movl 0x195eed0, %eax\n" /* line 661 */
+        "movl imp_dx, %eax\n" /* line 661 */
         "movl 8(%eax), %ebx\n" /* hr */
         "movl (%ebx), %esi\n" /* hr */
         "movl $0, 0x20(%esp)\n"
@@ -146,7 +146,7 @@ void Image_Create2DTexture(GfxImage *image, int width, int height, int mipmapCou
         "movl %eax, 0xc(%esp)\n"
         "movl 0x20(%edi), %eax\n" /* image */
         "movl %eax, 8(%esp)\n"
-        "movl $0x22520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
+        "movl $str_0022520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -179,7 +179,7 @@ void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, in
         "movw %cx, 0x1a(%eax)\n" /* line 677 */
         "movw %dx, 0x1c(%eax)\n" /* line 678 */
         "movl $4, (%eax)\n" /* line 680 */
-        "movl 0x195eed0, %eax\n" /* line 682 */
+        "movl imp_dx, %eax\n" /* line 682 */
         "movl 8(%eax), %esi\n"
         "movl (%esi), %edi\n"
         "movl $0, 0x24(%esp)\n"
@@ -230,7 +230,7 @@ void Image_Create3DTexture(GfxImage *image, int width, int height, int depth, in
         "movl %eax, 0xc(%esp)\n"
         "movl 0x20(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x225244, 4(%esp)\n" /* "Create3DTexture( %s, %i, %i, %i, %i, %i ) failed: %08x = %s" */
+        "movl $str_00225244, 4(%esp)\n" /* "Create3DTexture( %s, %i, %i, %i, %i, %i ) failed: %08x = %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -263,7 +263,7 @@ void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWOR
         "movw %ax, 0x1a(%esi)\n" /* line 698 | image */
         "movw $1, 0x1c(%esi)\n" /* line 699 | image */
         "movl $5, (%esi)\n" /* line 701 | image */
-        "movl 0x195eed0, %eax\n" /* line 703 */
+        "movl imp_dx, %eax\n" /* line 703 */
         "cmpb $0, 0x2d7b(%eax)\n"
         "jne .Lfe7472_000e7500\n"
         "movl $1, %edi\n" /* mipmapCount */
@@ -311,7 +311,7 @@ void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWOR
         "movl %eax, 0xc(%esp)\n"
         "movl 0x20(%esi), %eax\n" /* image */
         "movl %eax, 8(%esp)\n"
-        "movl $0x225280, 4(%esp)\n" /* "CreateCubeTexture ( %s, %i, %i, %i ) failed: %08x = %s" */
+        "movl $str_00225280, 4(%esp)\n" /* "CreateCubeTexture ( %s, %i, %i, %i ) failed: %08x = %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -351,7 +351,7 @@ void Image_PicmipForSemantic(int semantic, Picmip *picmip)
         "cmpb $2, %al\n" /* line 756 */
         "jne .Lfe754c_000e7564\n"
         ".Lfe754c_000e756f:\n"
-        "movl 0xc96bc0, %eax\n" /* line 769 */
+        "movl imageGlobals+8192, %eax\n" /* line 769 */
         "movb $2, 1(%ecx)\n" /* line 782 */
         "testl %eax, %eax\n" /* line 785 */
         "jns .Lfe754c_000e758f\n"
@@ -364,7 +364,7 @@ void Image_PicmipForSemantic(int semantic, Picmip *picmip)
         "retl\n"
         /* { scope 1 */
         ".Lfe754c_000e7582:\n"
-        "movl 0xc96bc4, %eax\n" /* line 773 */
+        "movl imageGlobals+8196, %eax\n" /* line 773 */
         ".Lfe754c_000e7587:\n"
         "movb $2, 1(%ecx)\n" /* line 782 */
         "testl %eax, %eax\n" /* line 785 */
@@ -376,7 +376,7 @@ void Image_PicmipForSemantic(int semantic, Picmip *picmip)
         "movb %dl, (%ecx)\n" /* line 790 */
         "jmp .Lfe754c_000e7580\n"
         ".Lfe754c_000e759e:\n"
-        "movl 0xc96bc8, %eax\n" /* line 777 */
+        "movl imageGlobals+8200, %eax\n" /* line 777 */
         "jmp .Lfe754c_000e7587\n"
     );
 }
@@ -394,7 +394,7 @@ IDirect3DSurface9 * Image_GetSurface(GfxImage *image)
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edi\n" /* image */
         "leal -0x1c(%ebp), %esi\n" /* surface */
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_alwaysfails, %ebx\n"
         /* { scope 1 */
         ".Lfe75a6_000e75bb:\n"
         "movl 4(%edi), %eax\n" /* line 1076 | image */
@@ -431,73 +431,73 @@ void R_SetPicmip(void)
         /* { scope 1 */
         "calll R_AvailableTextureMemory\n" /* line 1139 */
         "movl %eax, %edi\n" /* texMemInMegs */
-        "movl 0x195eee0, %ebx\n" /* line 1140 */
-        "movl $0x222ab4, (%esp)\n" /* "sys_sysMB" */
+        "movl imp_ri, %ebx\n" /* line 1140 */
+        "movl $str_00222ab4, (%esp)\n" /* "sys_sysMB" */
         "calll *0xe0(%ebx)\n"
         "movl %eax, %esi\n" /* sysMemInMegs */
-        "movl 0x195f178, %eax\n" /* line 1143 */
+        "movl imp_r_picmip_manual, %eax\n" /* line 1143 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfe75e4_000e779f\n"
-        "movl 0x195eec0, %eax\n" /* line 1151 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1151 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfe75e4_000e773c\n"
-        "movl $0x225308, 4(%esp)\n" /* line 1184 */
+        "movl $str_00225308, 4(%esp)\n" /* line 1184 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
-        "movl $2, 0xc96bc0\n" /* line 1225 */
-        "movl $2, 0xc96bc4\n" /* line 1226 */
-        "movl $2, 0xc96bc8\n" /* line 1227 */
+        "movl $2, imageGlobals+8192\n" /* line 1225 */
+        "movl $2, imageGlobals+8196\n" /* line 1226 */
+        "movl $2, imageGlobals+8200\n" /* line 1227 */
         "cmpl $0x17f, %esi\n" /* line 1230 | sysMemInMegs */
         "ja .Lfe75e4_000e77f6\n"
         "movl $2, %eax\n"
-        "cmpl %eax, 0xc96bc0\n" /* line 1239 */
+        "cmpl %eax, imageGlobals+8192\n" /* line 1239 */
         "jl .Lfe75e4_000e7790\n"
         ".Lfe75e4_000e7677:\n"
         "xorl %edx, %edx\n"
         ".Lfe75e4_000e7679:\n"
-        "cmpl %eax, 0xc96bc4\n" /* line 1244 */
+        "cmpl %eax, imageGlobals+8196\n" /* line 1244 */
         "jge .Lfe75e4_000e768b\n"
-        "movl %eax, 0xc96bc4\n" /* line 1246 */
+        "movl %eax, imageGlobals+8196\n" /* line 1246 */
         "movl $1, %edx\n"
         ".Lfe75e4_000e768b:\n"
-        "cmpl %eax, 0xc96bc8\n" /* line 1249 */
+        "cmpl %eax, imageGlobals+8200\n" /* line 1249 */
         "jge .Lfe75e4_000e77e3\n"
-        "movl %eax, 0xc96bc8\n" /* line 1251 */
+        "movl %eax, imageGlobals+8200\n" /* line 1251 */
         ".Lfe75e4_000e769c:\n"
         "movl %esi, 8(%esp)\n" /* line 1255 | sysMemInMegs */
-        "movl $0x225330, 4(%esp)\n" /* "Reducing texture detail based on total system memory of %i M" */
+        "movl $str_00225330, 4(%esp)\n" /* "Reducing texture detail based on total system memory of %i M" */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
-        "movl 0x195f170, %edx\n"
+        "movl imp_r_picmip, %edx\n"
         ".Lfe75e4_000e76bc:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1258 */
-        "movl 0xc96bc0, %eax\n"
+        "movl imp_ri, %ebx\n" /* line 1258 */
+        "movl imageGlobals+8192, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl (%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll *0x98(%ebx)\n"
-        "movl 0xc96bc4, %eax\n" /* line 1259 */
+        "movl imageGlobals+8196, %eax\n" /* line 1259 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f174, %eax\n"
+        "movl imp_r_picmip_bump, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll *0x98(%ebx)\n"
-        "movl 0xc96bc8, %eax\n" /* line 1260 */
+        "movl imageGlobals+8200, %eax\n" /* line 1260 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f16c, %eax\n"
+        "movl imp_r_picmip_spec, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll *0x98(%ebx)\n"
-        "movl 0xc96bc8, %eax\n" /* line 1262 */
+        "movl imageGlobals+8200, %eax\n" /* line 1262 */
         "movl %eax, 0x10(%esp)\n"
-        "movl 0xc96bc4, %eax\n"
+        "movl imageGlobals+8196, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl 0xc96bc0, %eax\n"
+        "movl imageGlobals+8192, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x225388, 4(%esp)\n" /* "Using picmip %i on most textures, %i on normal maps, and %i " */
+        "movl $str_00225388, 4(%esp)\n" /* "Using picmip %i on most textures, %i on normal maps, and %i " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         /* } scope */
@@ -509,47 +509,47 @@ void R_SetPicmip(void)
         "retl\n"
         /* { scope 1 */
         ".Lfe75e4_000e773c:\n"
-        "movl $0x2252d4, 4(%esp)\n" /* line 1153 */
+        "movl $str_002252d4, 4(%esp)\n" /* line 1153 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "cmpl $0x80, %edi\n" /* line 1163 | texMemInMegs */
         "jbe .Lfe75e4_000e7808\n"
-        "movl $1, 0xc96bc0\n" /* line 1166 */
-        "movl $1, 0xc96bc4\n" /* line 1167 */
-        "movl $1, 0xc96bc8\n" /* line 1168 */
+        "movl $1, imageGlobals+8192\n" /* line 1166 */
+        "movl $1, imageGlobals+8196\n" /* line 1167 */
+        "movl $1, imageGlobals+8200\n" /* line 1168 */
         ".Lfe75e4_000e7777:\n"
         "cmpl $0x17f, %esi\n" /* line 1176 | sysMemInMegs */
         "ja .Lfe75e4_000e77eb\n"
         "movl $1, %eax\n" /* line 1268 */
         ".Lfe75e4_000e7784:\n"
-        "cmpl %eax, 0xc96bc0\n" /* line 1239 */
+        "cmpl %eax, imageGlobals+8192\n" /* line 1239 */
         "jge .Lfe75e4_000e7677\n"
         ".Lfe75e4_000e7790:\n"
-        "movl %eax, 0xc96bc0\n" /* line 1241 */
+        "movl %eax, imageGlobals+8192\n" /* line 1241 */
         "movl $1, %edx\n"
         "jmp .Lfe75e4_000e7679\n"
         ".Lfe75e4_000e779f:\n"
-        "movl $0x2252b8, 4(%esp)\n" /* line 1145 */
+        "movl $str_002252b8, 4(%esp)\n" /* line 1145 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
-        "movl 0x195f170, %edx\n" /* line 1146 */
+        "movl imp_r_picmip, %edx\n" /* line 1146 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
-        "movl %eax, 0xc96bc0\n"
-        "movl 0x195f174, %eax\n" /* line 1147 */
+        "movl %eax, imageGlobals+8192\n"
+        "movl imp_r_picmip_bump, %eax\n" /* line 1147 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
-        "movl %eax, 0xc96bc4\n"
-        "movl 0x195f16c, %eax\n" /* line 1148 */
+        "movl %eax, imageGlobals+8196\n"
+        "movl imp_r_picmip_spec, %eax\n" /* line 1148 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
-        "movl %eax, 0xc96bc8\n"
+        "movl %eax, imageGlobals+8200\n"
         "jmp .Lfe75e4_000e76bc\n"
         ".Lfe75e4_000e77e3:\n"
         "testb %dl, %dl\n" /* line 1254 */
         "jne .Lfe75e4_000e769c\n"
         ".Lfe75e4_000e77eb:\n"
-        "movl 0x195f170, %edx\n"
+        "movl imp_r_picmip, %edx\n"
         "jmp .Lfe75e4_000e76bc\n"
         ".Lfe75e4_000e77f6:\n"
         "cmpl $0x1df, %esi\n" /* line 1232 | sysMemInMegs */
@@ -557,9 +557,9 @@ void R_SetPicmip(void)
         "movl $1, %eax\n" /* line 1268 */
         "jmp .Lfe75e4_000e7784\n"
         ".Lfe75e4_000e7808:\n"
-        "movl $2, 0xc96bc0\n" /* line 1172 */
-        "movl $2, 0xc96bc4\n" /* line 1173 */
-        "movl $2, 0xc96bc8\n" /* line 1174 */
+        "movl $2, imageGlobals+8192\n" /* line 1172 */
+        "movl $2, imageGlobals+8196\n" /* line 1173 */
+        "movl $2, imageGlobals+8200\n" /* line 1174 */
         "jmp .Lfe75e4_000e7777\n"
     );
 }
@@ -586,7 +586,7 @@ water_t * R_LoadWaterSetup(const water_t *water)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl 0x195eec8, %edi\n" /* line 1524 */
+        "movl imp_rg, %edi\n" /* line 1524 */
         "movl 0x1028(%edi), %edx\n"
         "testl %edx, %edx\n"
         "jg .Lfe785a_000e78a9\n"
@@ -616,7 +616,7 @@ water_t * R_LoadWaterSetup(const water_t *water)
         "xorl %ebx, %ebx\n" /* line 1524 | waterMapSetupIndex */
         "jmp .Lfe785a_000e78b3\n"
         ".Lfe785a_000e78ad:\n"
-        "movl 0x195eec8, %edi\n"
+        "movl imp_rg, %edi\n"
         ".Lfe785a_000e78b3:\n"
         "movl 8(%ebp), %eax\n" /* line 1526 | water */
         "movl %eax, 4(%esp)\n"
@@ -633,11 +633,11 @@ water_t * R_LoadWaterSetup(const water_t *water)
         "jl .Lfe785a_000e78ad\n"
         "cmpl $0x10, %ebx\n" /* line 1530 | waterMapSetupIndex */
         "je .Lfe785a_000e78ee\n"
-        "movl 0x195eec8, %edi\n"
+        "movl imp_rg, %edi\n"
         "jmp .Lfe785a_000e7875\n"
         ".Lfe785a_000e78ee:\n"
         "movl $0x10, 4(%esp)\n" /* line 1532 */
-        "movl $0x2253d8, (%esp)\n" /* "^1ERROR: map uses more than %i waterMap textures
+        "movl $str_002253d8, (%esp)\n" /* "^1ERROR: map uses more than %i waterMap textures
 " */
         "calll Com_Printf\n"
         "xorl %esi, %esi\n"
@@ -840,7 +840,7 @@ void Image_Release(GfxImage *image)
         "movl %eax, 0x200c(%ecx)\n"
         "addl $4, %ecx\n"
         "addl $4, %edx\n"
-        "cmpl $0xc94bc8, %ecx\n" /* line 287 */
+        "cmpl $imageGlobals+8, %ecx\n" /* line 287 */
         "jne .Lfe7a7a_000e7ad0\n"
         "jmp .Lfe7a7a_000e7a99\n"
     );
@@ -857,7 +857,7 @@ void R_ReloadLostImages(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl $imageGlobals, %ebx\n"
-        "movl $0xc96bc0, %esi\n"
+        "movl $imageGlobals+8192, %esi\n"
         "jmp .Lfe7af2_000e7b0d\n"
         /* { scope 1 */
         ".Lfe7af2_000e7b06:\n"
@@ -876,7 +876,7 @@ void R_ReloadLostImages(void)
         "jne .Lfe7af2_000e7b06\n"
         "cmpl $g_imageProgs, %eax\n" /* line 546 */
         "jb .Lfe7af2_000e7b55\n"
-        "cmpl $0xc94bb0, %eax\n"
+        "cmpl $g_imageProgs+432, %eax\n"
         "jae .Lfe7af2_000e7b55\n"
         "movl $1, %ecx\n"
         ".Lfe7af2_000e7b36:\n"
@@ -965,7 +965,7 @@ void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int w
         "addl $4, -0x1c(%ebp)\n" /* line 154 */
         "addl $4, %edi\n"
         "addl $1, %esi\n"
-        "movl $0xc94bc8, %edx\n" /* line 395 */
+        "movl $imageGlobals+8, %edx\n" /* line 395 */
         "cmpl -0x1c(%ebp), %edx\n"
         "jne .Lfe7b5a_000e7b79\n"
         /* } scope */
@@ -1014,7 +1014,7 @@ void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int w
         ".Lfe7b5a_000e7c72:\n"
         "addl $4, %esi\n"
         "addl $4, %ebx\n" /* heightUsed */
-        "movl $0xc94bc8, %ecx\n" /* line 395 */
+        "movl $imageGlobals+8, %ecx\n" /* line 395 */
         "cmpl %esi, %ecx\n"
         "je .Lfe7b5a_000e7c0a\n"
         "jmp .Lfe7b5a_000e7c2a\n"
@@ -1035,11 +1035,11 @@ void Image_TrackFullscreenTexture(GfxImage *image, int picmip, D3DFORMAT format)
         "movl $0, -0x1c(%ebp)\n" /* platform */
         /* { scope 1 */
         ".Lfe7c84_000e7c94:\n"
-        "movl 0x195eeec, %edx\n" /* line 343 */
+        "movl imp_vidConfig, %edx\n" /* line 343 */
         "movl (%edx), %ebx\n"
         "movl -0x1c(%ebp), %eax\n" /* platform */
         "shll $2, %eax\n"
-        "leal 0xc96bcc(%eax), %edi\n"
+        "leal imageGlobals+8204(%eax), %edi\n"
         "movl 8(%ebp), %ecx\n" /* image */
         "leal 0x10(%eax, %ecx), %esi\n"
         "cmpl $1, -0x1c(%ebp)\n" /* line 350 | platform */
@@ -1178,7 +1178,7 @@ GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTr
         "notl %ebx\n"
         "leal 0x24(%ebx), %eax\n" /* line 528 */
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0xc(%eax)\n"
         "movl %eax, %edi\n" /* image */
         "leal 0x24(%eax), %eax\n" /* line 533 */
@@ -1230,7 +1230,7 @@ void R_ImageList_f(void)
         "pushl %ebx\n"
         "subl $0x20fc, %esp\n"
         /* { scope 1 */
-        "movl 0x195eee0, %ebx\n" /* line 1336 */
+        "movl imp_ri, %ebx\n" /* line 1336 */
         "calll *0x100(%ebx)\n"
         "cmpl $2, %eax\n"
         "je .Lfe7e74_000e84e8\n"
@@ -1358,23 +1358,23 @@ void R_ImageList_f(void)
         "calll ZSt16__insertion_sortIPP8GfxImagePFiS1_S1_EEvT_S5_T0_\n"
         /* } scope */
         ".Lfe7e74_000e8053:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1362 */
-        "movl $0x225410, 4(%esp)\n" /* "
+        "movl imp_ri, %ebx\n" /* line 1362 */
+        "movl $str_00225410, 4(%esp)\n" /* "
 -if-- " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl $g_platform_name, %esi\n"
-        "movl $0x3111a8, %edi\n"
+        "movl $g_platform_name+8, %edi\n"
         ".Lfe7e74_000e8074:\n"
         "movl (%esi), %eax\n" /* line 1365 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "addl $4, %esi\n"
         "cmpl %esi, %edi\n" /* line 1364 */
         "jne .Lfe7e74_000e8074\n"
-        "movl $0x225418, 4(%esp)\n" /* line 1367 */
+        "movl $str_00225418, 4(%esp)\n" /* line 1367 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl -0x20b0(%ebp), %eax\n" /* line 1369 | imageList */
@@ -1423,23 +1423,23 @@ void R_ImageList_f(void)
         "je .Lfe7e74_000e856a\n"
         "cmpl $0x1c, %eax\n"
         "jne .Lfe7e74_000e8170\n"
-        "movl $0x225444, 4(%esp)\n" /* line 1413 */
+        "movl $str_00225444, 4(%esp)\n" /* line 1413 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e815a:\n"
-        "movl $0x22544c, 4(%esp)\n" /* line 1417 */
+        "movl $str_0022544c, 4(%esp)\n" /* line 1417 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         ".Lfe7e74_000e8170:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1452 */
+        "movl imp_ri, %ebx\n" /* line 1452 */
         "movl -0x20d4(%ebp), %edx\n" /* image */
         "movzbl 0xc(%edx), %eax\n"
         "movl imageTypeName(, %eax, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x22547c, 4(%esp)\n" /* "  %s" */
+        "movl $str_0022547c, 4(%esp)\n" /* "  %s" */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "cmpb $0, -0x20c9(%ebp)\n" /* listAllImages */
@@ -1449,15 +1449,15 @@ void R_ImageList_f(void)
         ".Lfe7e74_000e81b1:\n"
         "leal 0x10(%ebx), %edi\n" /* line 1318 */
         "cvtsi2ssl 0x10(%ebx), %xmm0\n" /* line 1457 */
-        "mulss 0x2ed60c, %xmm0\n" /* 0.0009765625f */
-        "movl 0x195eee0, %eax\n" /* line 1458 */
+        "mulss lit4_002ed60c, %xmm0\n" /* 0.0009765625f */
+        "movl imp_ri, %eax\n" /* line 1458 */
         "movl (%eax), %eax\n"
         "cvtss2sd %xmm0, %xmm1\n"
-        "ucomiss 0x2ed6b4, %xmm0\n" /* 10.0f */
+        "ucomiss lit4_002ed6b4, %xmm0\n" /* 10.0f */
         "jp .Lfe7e74_000e81db\n"
         "jb .Lfe7e74_000e8478\n"
         ".Lfe7e74_000e81db:\n"
-        "movl $0x22548c, %edx\n" /* line 1467 */
+        "movl $str_0022548c, %edx\n" /* line 1467 */
         ".Lfe7e74_000e81e0:\n"
         "movsd %xmm1, 8(%esp)\n" /* line 1458 */
         "movl %edx, 4(%esp)\n"
@@ -1485,24 +1485,24 @@ void R_ImageList_f(void)
         "movl -0x20d4(%ebp), %edx\n" /* line 1470 | image */
         "movl 0x20(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2182fc, 4(%esp)\n" /* "  %s
+        "movl $str_002182fc, 4(%esp)\n" /* "  %s
 " */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "addl $1, -0x20d8(%ebp)\n" /* line 1369 | i */
         "movl -0x20d8(%ebp), %ecx\n" /* i */
         "cmpl -0x20b0(%ebp), %ecx\n" /* imageList */
         "jl .Lfe7e74_000e80c1\n"
         ".Lfe7e74_000e8277:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1472 */
-        "movl $0x225494, 4(%esp)\n" /* " ---------
+        "movl imp_ri, %ebx\n" /* line 1472 */
+        "movl $str_00225494, 4(%esp)\n" /* " ---------
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl -0x20b0(%ebp), %eax\n" /* line 1473 | imageList */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2254a0, 4(%esp)\n" /* " %i total images
+        "movl $str_002254a0, 4(%esp)\n" /* " %i total images
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
@@ -1512,39 +1512,39 @@ void R_ImageList_f(void)
         "movl g_platform_name(%esi), %eax\n" /* line 1476 */
         "movl %eax, 0x10(%esp)\n"
         "cvtsi2ssl (%esi, %edi), %xmm0\n"
-        "mulss 0x2ed820, %xmm0\n" /* 9.5367431640625e-07f */
+        "mulss lit4_002ed820, %xmm0\n" /* 9.5367431640625e-07f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2254b4, 4(%esp)\n" /* " %5.1f MB %s total image size
+        "movl $str_002254b4, 4(%esp)\n" /* " %5.1f MB %s total image size
 " */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "addl $4, %esi\n"
         "cmpl $8, %esi\n" /* line 1475 */
         "jne .Lfe7e74_000e82ae\n"
-        "movl $0x2160e8, 4(%esp)\n" /* line 1479 */
+        "movl $str_002160e8, 4(%esp)\n" /* line 1479 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
-        "movl $0x2254d4, 4(%esp)\n" /* line 1481 */
+        "movl $str_002254d4, 4(%esp)\n" /* line 1481 */
         "movl $0, (%esp)\n"
         "calll *(%ebx)\n"
         "movl $g_platform_name, %ebx\n"
-        "movl 0x195eee0, %esi\n"
+        "movl imp_ri, %esi\n"
         ".Lfe7e74_000e8315:\n"
         "movl (%ebx), %eax\n" /* line 1484 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "movl $0, (%esp)\n"
         "calll *(%esi)\n"
         "addl $4, %ebx\n"
-        "cmpl $0x3111a8, %ebx\n" /* line 1483 */
+        "cmpl $g_platform_name+8, %ebx\n" /* line 1483 */
         "jne .Lfe7e74_000e8315\n"
-        "movl $0x2160e8, 4(%esp)\n" /* line 1486 */
+        "movl $str_002160e8, 4(%esp)\n" /* line 1486 */
         "movl $0, (%esp)\n"
         "calll *(%esi)\n"
         "xorl %edi, %edi\n"
         "movl $imageTypeName, -0x20bc(%ebp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "movl %eax, -0x20dc(%ebp)\n"
         "movl %eax, %ecx\n"
         "jmp .Lfe7e74_000e8369\n"
@@ -1554,34 +1554,34 @@ void R_ImageList_f(void)
         "movl -0x20bc(%ebp), %edx\n" /* line 1490 */
         "movl (%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2254dc, 4(%esp)\n" /* "%s:" */
+        "movl $str_002254dc, 4(%esp)\n" /* "%s:" */
         "movl $0, (%esp)\n"
         "calll *(%ecx)\n"
         "leal -0xac(%ebp, %edi, 8), %ebx\n"
         "movl $2, %esi\n"
         ".Lfe7e74_000e8392:\n"
         "cvtsi2ssl (%ebx), %xmm0\n" /* line 1493 */
-        "mulss 0x2ed820, %xmm0\n" /* 9.5367431640625e-07f */
+        "mulss lit4_002ed820, %xmm0\n" /* 9.5367431640625e-07f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x2254e0, 4(%esp)\n" /* "  %5.1f" */
+        "movl $str_002254e0, 4(%esp)\n" /* "  %5.1f" */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "addl $4, %ebx\n"
         "subl $1, %esi\n" /* line 1492 */
         "jne .Lfe7e74_000e8392\n"
-        "movl $0x2254e8, 4(%esp)\n" /* line 1495 */
+        "movl $str_002254e8, 4(%esp)\n" /* line 1495 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %edx\n"
+        "movl imp_ri, %edx\n"
         "calll *(%edx)\n"
         "addl $1, %edi\n" /* line 1488 */
         "addl $4, -0x20bc(%ebp)\n"
         "cmpl $0xa, %edi\n"
         "jne .Lfe7e74_000e8363\n"
-        "movl $0x2254f0, 4(%esp)\n" /* line 1499 */
+        "movl $str_002254f0, 4(%esp)\n" /* line 1499 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %ecx\n"
+        "movl imp_ri, %ecx\n"
         "calll *(%ecx)\n"
         /* } scope */
         "addl $0x20fc, %esp\n" /* line 1500 */
@@ -1599,9 +1599,9 @@ void R_ImageList_f(void)
         "je .Lfe7e74_000e854f\n"
         "cmpl $0x35545844, %eax\n"
         "jne .Lfe7e74_000e8170\n"
-        "movl $0x225464, 4(%esp)\n" /* line 1429 */
+        "movl $str_00225464, 4(%esp)\n" /* line 1429 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e8450:\n"
@@ -1617,7 +1617,7 @@ void R_ImageList_f(void)
         "movl -0x5c(%ebp), %eax\n" /* line 1384 | surfaceDesc */
         "jmp .Lfe7e74_000e811a\n"
         ".Lfe7e74_000e8478:\n"
-        "movl $0x225484, %edx\n" /* line 170 */
+        "movl $str_00225484, %edx\n" /* line 170 */
         "jmp .Lfe7e74_000e81e0\n"
         ".Lfe7e74_000e8482:\n"
         "addl %edx, -0x20(%ebp, %esi, 4)\n" /* line 1467 */
@@ -1637,23 +1637,23 @@ void R_ImageList_f(void)
         "je .Lfe7e74_000e8585\n"
         "cmpl $0x72, %eax\n"
         "jne .Lfe7e74_000e8170\n"
-        "movl $0x225474, 4(%esp)\n" /* line 1443 */
+        "movl $str_00225474, 4(%esp)\n" /* line 1443 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e84c4:\n"
         "cmpl $0x15, %eax\n" /* line 1398 */
         "jne .Lfe7e74_000e8170\n"
-        "movl $0x225434, 4(%esp)\n" /* line 1405 */
+        "movl $str_00225434, 4(%esp)\n" /* line 1405 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e84e8:\n"
         "movl $1, (%esp)\n" /* line 1338 */
         "calll *0x104(%ebx)\n"
-        "movl $0x22540c, 4(%esp)\n" /* "all" */
+        "movl $str_0022540c, 4(%esp)\n" /* "all" */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -1661,33 +1661,33 @@ void R_ImageList_f(void)
         "movb $1, -0x20c9(%ebp)\n" /* listAllImages */
         "jmp .Lfe7e74_000e7e9c\n"
         ".Lfe7e74_000e8519:\n"
-        "movl $0x225454, 4(%esp)\n" /* line 1421 */
+        "movl $str_00225454, 4(%esp)\n" /* line 1421 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e8534:\n"
-        "movl $0x22542c, 4(%esp)\n" /* line 1401 */
+        "movl $str_0022542c, 4(%esp)\n" /* line 1401 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e854f:\n"
-        "movl $0x22545c, 4(%esp)\n" /* line 1425 */
+        "movl $str_0022545c, 4(%esp)\n" /* line 1425 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e856a:\n"
-        "movl $0x22546c, 4(%esp)\n" /* line 1439 */
+        "movl $str_0022546c, 4(%esp)\n" /* line 1439 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e8585:\n"
-        "movl $0x22543c, 4(%esp)\n" /* line 1409 */
+        "movl $str_0022543c, 4(%esp)\n" /* line 1409 */
         "movl $0, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "jmp .Lfe7e74_000e8170\n"
         ".Lfe7e74_000e85a0:\n"
@@ -1696,12 +1696,12 @@ void R_ImageList_f(void)
         "leal -0x20(%ebp), %edi\n" /* total */
         ".Lfe7e74_000e85b3:\n"
         "cvtsi2ssl 0x10(%esi), %xmm1\n" /* line 1457 */
-        "mulss 0x2ed60c, %xmm1\n" /* 0.0009765625f */
+        "mulss lit4_002ed60c, %xmm1\n" /* 0.0009765625f */
         "movl (%ebx), %ecx\n" /* line 1458 */
-        "movl $0x225484, %edx\n" /* "%7.1f" */
-        "movss 0x2ed6b4, %xmm0\n" /* 10.0f */
+        "movl $str_00225484, %edx\n" /* "%7.1f" */
+        "movss lit4_002ed6b4, %xmm0\n" /* 10.0f */
         "ucomiss %xmm1, %xmm0\n"
-        "movl $0x22548c, %eax\n" /* "%7.0f" */
+        "movl $str_0022548c, %eax\n" /* "%7.0f" */
         "cmovbel %eax, %edx\n"
         "cvtss2sd %xmm1, %xmm1\n"
         "movsd %xmm1, 8(%esp)\n"
@@ -1789,7 +1789,7 @@ GfxImage * Image_Register(const char *imageName, int semantic, int imageTrack)
         "testl %eax, %eax\n" /* line 890 */
         "jne .Lfe862a_000e8689\n"
         "movl %edi, 8(%esp)\n" /* line 891 | imageName */
-        "movl $0x225554, 4(%esp)\n" /* "failed to load image '%s'" */
+        "movl $str_00225554, 4(%esp)\n" /* "failed to load image '%s'" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe862a_000e8689\n"
@@ -1797,7 +1797,7 @@ GfxImage * Image_Register(const char *imageName, int semantic, int imageTrack)
         ".Lfe862a_000e86ca:\n"
         "cmpl $g_imageProgs, %esi\n" /* line 546 */
         "jb .Lfe862a_000e867f\n"
-        "cmpl $0xc94bb0, %esi\n"
+        "cmpl $g_imageProgs+432, %esi\n"
         "jae .Lfe862a_000e867f\n"
         "movl $1, %eax\n"
         "jmp .Lfe862a_000e8681\n"
@@ -1816,51 +1816,51 @@ void R_InitImages(void)
         "calll R_SetPicmip\n" /* line 1282 */
         "movl $0, 8(%esp)\n" /* line 1096 */
         "movl $1, 4(%esp)\n"
-        "movl $0x225570, (%esp)\n" /* "$white" */
+        "movl $str_00225570, (%esp)\n" /* "$white" */
         "calll Image_Register\n"
-        "movl 0x195eebc, %ebx\n"
+        "movl imp_rgp, %ebx\n"
         "movl %eax, 0x1008(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 1099 */
         "movl $1, 4(%esp)\n"
-        "movl $0x225578, (%esp)\n" /* "$black" */
+        "movl $str_00225578, (%esp)\n" /* "$black" */
         "calll Image_Register\n"
         "movl %eax, 0x100c(%ebx)\n"
-        "movl 0x195eec0, %eax\n" /* line 1103 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1103 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfe86e2_000e887a\n"
         "movl $0, 8(%esp)\n" /* line 1111 */
         "movl $1, 4(%esp)\n"
-        "movl $0x22558c, (%esp)\n" /* "$identitynormalmap" */
+        "movl $str_0022558c, (%esp)\n" /* "$identitynormalmap" */
         "calll Image_Register\n"
         "movl %eax, 0x1010(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 1115 */
         "movl $1, 4(%esp)\n"
-        "movl $0x2255a0, (%esp)\n" /* "$specularity" */
+        "movl $str_002255a0, (%esp)\n" /* "$specularity" */
         "calll Image_Register\n"
         "movl %eax, 0x1014(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 1119 */
         "movl $1, 4(%esp)\n"
-        "movl $0x2255b0, (%esp)\n" /* "$lightgridweights0" */
+        "movl $str_002255b0, (%esp)\n" /* "$lightgridweights0" */
         "calll Image_Register\n"
         "movl %eax, 0x101c(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 1121 */
         "movl $1, 4(%esp)\n"
-        "movl $0x2255c4, (%esp)\n" /* "$lightgridweights1" */
+        "movl $str_002255c4, (%esp)\n" /* "$lightgridweights1" */
         "calll Image_Register\n"
         "movl %eax, 0x1020(%ebx)\n"
         "movl $0, 8(%esp)\n" /* line 1124 */
         "movl $1, 4(%esp)\n"
-        "movl $0x2255d8, (%esp)\n" /* "$lightmapweights" */
+        "movl $str_002255d8, (%esp)\n" /* "$lightmapweights" */
         "calll Image_Register\n"
         "movl %eax, 0x1018(%ebx)\n"
         ".Lfe86e2_000e87f3:\n"
         "calll RB_InitImages\n" /* line 1287 */
-        "movl 0x31122c, %eax\n" /* line 485 */
-        "movl %eax, 0xc94bac\n" /* line 486 */
-        "movb $4, 0xc94baa\n" /* line 489 */
-        "movb $0, 0xc94b96\n" /* line 490 */
-        "movb $0, 0xc94b98\n" /* line 495 */
+        "movl g_imageProgNames+44, %eax\n" /* line 485 */
+        "movl %eax, g_imageProgs+428\n" /* line 486 */
+        "movb $4, g_imageProgs+426\n" /* line 489 */
+        "movb $0, g_imageProgs+406\n" /* line 490 */
+        "movb $0, g_imageProgs+408\n" /* line 495 */
         "movl %eax, (%esp)\n" /* line 270 */
         "calll R_HashAssetName\n"
         "andl $0x7ff, %eax\n"
@@ -1874,12 +1874,12 @@ void R_InitImages(void)
         "testl %edx, %edx\n"
         "jne .Lfe86e2_000e882f\n"
         ".Lfe86e2_000e8842:\n"
-        "movl $0xc94b8c, imageGlobals(, %eax, 4)\n" /* line 499 */
-        "movl 0x195eebc, %eax\n" /* line 1084 */
-        "movl $0xc94b8c, 0x1098(%eax)\n"
+        "movl $g_imageProgs+396, imageGlobals(, %eax, 4)\n" /* line 499 */
+        "movl imp_rgp, %eax\n" /* line 1084 */
+        "movl $g_imageProgs+396, 0x1098(%eax)\n"
         "movb $0x32, 0x10e8(%eax)\n" /* line 1087 */
         "movb $0, 0x10e9(%eax)\n" /* line 1088 */
-        "movl $0xc94b8c, 0x10ec(%eax)\n" /* line 1089 */
+        "movl $g_imageProgs+396, 0x10ec(%eax)\n" /* line 1089 */
         "addl $0x14, %esp\n" /* line 1292 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -1887,7 +1887,7 @@ void R_InitImages(void)
         ".Lfe86e2_000e887a:\n"
         "movl $0, 8(%esp)\n" /* line 1105 */
         "movl $1, 4(%esp)\n"
-        "movl $0x225580, (%esp)\n" /* "$watercolor" */
+        "movl $str_00225580, (%esp)\n" /* "$watercolor" */
         "calll Image_Register\n"
         "movl %eax, 0x10a4(%ebx)\n"
         "jmp .Lfe86e2_000e87f3\n"
@@ -1914,7 +1914,7 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
         "movw %ax, 0x1a(%esi)\n" /* line 656 */
         "movw $1, 0x1c(%esi)\n" /* line 657 */
         "movl $3, (%esi)\n" /* line 659 */
-        "movl 0x195eed0, %eax\n" /* line 661 */
+        "movl imp_dx, %eax\n" /* line 661 */
         "movl 8(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl $0, 0x20(%esp)\n"
@@ -1965,7 +1965,7 @@ void Image_SetupRenderTarget(GfxImage *image, int width, int height, D3DFORMAT i
         "movl %eax, 0xc(%esp)\n"
         "movl 0x20(%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x22520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
+        "movl $str_0022520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe88a2_000e891c\n"
@@ -1992,7 +1992,7 @@ void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFo
         "movw %ax, 0x1a(%esi)\n" /* line 656 */
         "movw $1, 0x1c(%esi)\n" /* line 657 */
         "movl $3, (%esi)\n" /* line 659 */
-        "movl 0x195eed0, %eax\n" /* line 661 */
+        "movl imp_dx, %eax\n" /* line 661 */
         "movl 8(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl $0, 0x20(%esp)\n"
@@ -2043,7 +2043,7 @@ void Image_SetupSystem(GfxImage *image, int width, int height, D3DFORMAT imageFo
         "movl %eax, 0xc(%esp)\n"
         "movl 0x20(%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x22520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
+        "movl $str_0022520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe899a_000e8a14\n"
@@ -2062,16 +2062,16 @@ void Image_RebuildCosinePowerMap(float shift)
         "pushl %ebx\n"
         "subl $0x203c, %esp\n"
         /* { scope 1 */
-        "movl 0x195eec0, %eax\n" /* line 984 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 984 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfe8a92_000e8ba5\n"
-        "movl 0x195eebc, %ebx\n" /* line 1002 */
+        "movl imp_rgp, %ebx\n" /* line 1002 */
         "movl 0x1014(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RB_UnbindImage\n"
         "movl %ebx, %esi\n"
-        "movl 0x195f0e0, %ebx\n"
+        "movl imp_alwaysfails, %ebx\n"
         ".Lfe8a92_000e8acb:\n"
         "movl 0x1014(%esi), %eax\n" /* line 1008 */
         "movl 4(%eax), %eax\n"
@@ -2090,7 +2090,7 @@ void Image_RebuildCosinePowerMap(float shift)
         "movw $0x100, 0x1a(%ebx)\n" /* line 656 */
         "movw $1, 0x1c(%ebx)\n" /* line 657 */
         "movl $3, (%ebx)\n" /* line 659 */
-        "movl 0x195eed0, %eax\n" /* line 661 */
+        "movl imp_dx, %eax\n" /* line 661 */
         "movl 8(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl $0, 0x20(%esp)\n"
@@ -2146,7 +2146,7 @@ void Image_RebuildCosinePowerMap(float shift)
         "movl %eax, 0xc(%esp)\n"
         "movl 0x20(%ebx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x22520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
+        "movl $str_0022520c, 4(%esp)\n" /* "Create2DTexture( %s, %i, %i, %i, %i ) failed: %08x = %s" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfe8a92_000e8b62\n"
@@ -2170,7 +2170,7 @@ void R_ShutdownImages(void)
         "movl $imageGlobals, %esi\n"
         "jmp .Lfe8c02_000e8c5b\n"
         ".Lfe8c02_000e8c24:\n"
-        "cmpl $0xc94bb0, %ebx\n" /* line 546 */
+        "cmpl $g_imageProgs+432, %ebx\n" /* line 546 */
         "jae .Lfe8c02_000e8c69\n"
         "movl $1, %eax\n"
         "testl %eax, %eax\n" /* line 615 */
@@ -2182,7 +2182,7 @@ void R_ShutdownImages(void)
         "movl %eax, -0x201c(%ebp)\n" /* savedImageCount */
         ".Lfe8c02_000e8c4b:\n"
         "addl $4, %esi\n" /* line 312 */
-        "movl $0xc96bc0, %eax\n" /* line 610 */
+        "movl $imageGlobals+8192, %eax\n" /* line 610 */
         "cmpl %esi, %eax\n"
         "je .Lfe8c02_000e8ce3\n"
         ".Lfe8c02_000e8c5b:\n"
@@ -2206,7 +2206,7 @@ void R_ShutdownImages(void)
         ".Lfe8c02_000e8c84:\n"
         "movl %ebx, %edx\n" /* line 285 */
         "movl $imageGlobals, %ecx\n"
-        "movl $0xc94bc8, %edi\n"
+        "movl $imageGlobals+8, %edi\n"
         ".Lfe8c02_000e8c90:\n"
         "movl 0x200c(%ecx), %eax\n" /* line 288 */
         "subl 0x10(%edx), %eax\n"
@@ -2228,7 +2228,7 @@ void R_ShutdownImages(void)
         ".Lfe8c02_000e8ccd:\n"
         "movl $0, (%ebx)\n" /* line 312 */
         "addl $4, %esi\n"
-        "movl $0xc96bc0, %eax\n" /* line 610 */
+        "movl $imageGlobals+8192, %eax\n" /* line 610 */
         "cmpl %esi, %eax\n"
         "jne .Lfe8c02_000e8c5b\n"
         ".Lfe8c02_000e8ce3:\n"
@@ -2307,7 +2307,7 @@ void R_ReleaseLostImages(void)
         "movl %eax, 0x200c(%ecx)\n"
         "addl $4, %ecx\n"
         "addl $4, %edx\n"
-        "cmpl $0xc94bc8, %ecx\n" /* line 287 */
+        "cmpl $imageGlobals+8, %ecx\n" /* line 287 */
         "jne .Lfe8d60_000e8d95\n"
         ".Lfe8d60_000e8db2:\n"
         "movl 4(%ebx), %edx\n" /* line 292 */
@@ -2323,7 +2323,7 @@ void R_ReleaseLostImages(void)
         "movl $0, (%ebx)\n" /* line 312 */
         ".Lfe8d60_000e8ddc:\n"
         "addl $4, %esi\n"
-        "cmpl $0xc96bc0, %esi\n" /* line 921 */
+        "cmpl $imageGlobals+8192, %esi\n" /* line 921 */
         "jne .Lfe8d60_000e8d6d\n"
         "addl $0x10, %esp\n" /* line 932 */
         "popl %ebx\n"
@@ -2362,7 +2362,7 @@ void Image_UpdatePicmip(GfxImage *image)
         "movl %eax, 0x200c(%ecx)\n"
         "addl $4, %ecx\n"
         "addl $4, %edx\n"
-        "cmpl $0xc94bc8, %ecx\n" /* line 287 */
+        "cmpl $imageGlobals+8, %ecx\n" /* line 287 */
         "jne .Lfe8dee_000e8e1d\n"
         ".Lfe8dee_000e8e3a:\n"
         "movl 4(%ebx), %edx\n" /* line 292 */
@@ -2399,7 +2399,7 @@ void Image_UpdatePicmip(GfxImage *image)
         ".Lfe8dee_000e8e8f:\n"
         "movl 0x20(%ebx), %eax\n" /* line 1033 | image */
         "movl %eax, 8(%esp)\n"
-        "movl $0x225554, 4(%esp)\n" /* "failed to load image '%s'" */
+        "movl $str_00225554, 4(%esp)\n" /* "failed to load image '%s'" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         /* } scope */
@@ -2445,7 +2445,7 @@ void Image_Reload(GfxImage *image)
         "jne .Lfe8eb0_000e8f20\n"
         "movl 0x20(%ebx), %eax\n" /* line 1044 | image */
         "movl %eax, 8(%esp)\n"
-        "movl $0x225554, 4(%esp)\n" /* "failed to load image '%s'" */
+        "movl $str_00225554, 4(%esp)\n" /* "failed to load image '%s'" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         ".Lfe8eb0_000e8f20:\n"
@@ -2462,7 +2462,7 @@ void Image_Reload(GfxImage *image)
         "movl %eax, 0x200c(%ecx)\n"
         "addl $4, %ecx\n"
         "addl $4, %edx\n"
-        "cmpl $0xc94bc8, %ecx\n" /* line 287 */
+        "cmpl $imageGlobals+8, %ecx\n" /* line 287 */
         "jne .Lfe8eb0_000e8f2d\n"
         "jmp .Lfe8eb0_000e8ecf\n"
     );

@@ -54,18 +54,18 @@ extern int stricmp(const char *s1, const char *s2);
 
 /*
  * Indirect global pointers (absolute addresses from original binary).
- *   0x195f5c4 -> cgs_t* (game static state)
- *   0x195f584 -> cg_t* (main cgame state)
- *   0x195ecb4 -> cgame UI state
- *   0x195f7e4 -> dvar (cg_teamChatHeight)
- *   0x195f810 -> dvar (cg_teamChatTime)
- *   0x195f940 -> dvar (developer)
- *   0x195f860 -> dvar
- *   0x195f94c -> dvar (cl_paused)
+ *   imp_cgs -> cgs_t* (game static state)
+ *   imp_cg -> cg_t* (main cgame state)
+ *   imp_legacyHacks -> cgame UI state
+ *   imp_cg_chatHeight -> dvar (cg_teamChatHeight)
+ *   imp_cg_chatTime -> dvar (cg_teamChatTime)
+ *   imp_cg_showmiss -> dvar (developer)
+ *   imp_cg_thirdPerson -> dvar
+ *   imp_cg_teamChatsOnly -> dvar (cl_paused)
  */
-#define CGS_PTR      (*(char **)*(void **)0x195f5c4)
-#define CG_PTR       (*(char **)*(void **)0x195f584)
-#define CGUI_PTR     (*(char **)*(void **)0x195ecb4)
+#define CGS_PTR      (*(char **)*(void **)imp_cgs)
+#define CG_PTR       (*(char **)*(void **)imp_cg)
+#define CGUI_PTR     (*(char **)*(void **)imp_legacyHacks)
 
 void CG_ParseServerinfo(void);
 void CG_ParseCodinfo(void);
@@ -95,23 +95,23 @@ void CG_ParseServerinfo(void)
 
     info = CL_GetConfigString(0);
 
-    val = Info_ValueForKey(info, (const char *)0x2a714c);
+    val = Info_ValueForKey(info, (const char *)str_002a714c);
     cgs = CGS_PTR;
     strncpy(cgs + 0x5ec4, val, 0x100);
 
-    val = Info_ValueForKey(info, (const char *)0x2a7100);
+    val = Info_ValueForKey(info, (const char *)str_002a7100);
     strncpy(cgs + 0x5ea4, val, 0x20);
 
     if (*(int *)(cgs + 0x5ea0) == 0) {
-        Dvar_SetStringByName((const char *)0x2a7100, cgs + 0x5ea4);
+        Dvar_SetStringByName((const char *)str_002a7100, cgs + 0x5ea4);
     }
 
-    val = Info_ValueForKey(info, (const char *)0x2a70dc);
+    val = Info_ValueForKey(info, (const char *)str_002a70dc);
     *(int *)(cgs + 0x5fc4) = atoi(val);
 
-    mapname = Info_ValueForKey(info, (const char *)0x2a7124);
+    mapname = Info_ValueForKey(info, (const char *)str_002a7124);
     ext = GetBspExtension();
-    Com_sprintf(cgs + 0x5fc8, 0x40, (const char *)0x2a74ac, mapname, ext);
+    Com_sprintf(cgs + 0x5fc8, 0x40, (const char *)str_002a74ac, mapname, ext);
 }
 
 /* line 172 */
@@ -148,17 +148,17 @@ void CG_AddToTeamChat(void)
         "subl $0x10, %esp\n"
         "movl %eax, %esi\n" /* str */
         /* { scope 1 */
-        "movl 0x195f7e4, %eax\n" /* line 547 */
+        "movl imp_cg_chatHeight, %eax\n" /* line 547 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edi\n" /* chatHeight */
         "testl %edi, %edi\n" /* line 548 | chatHeight */
         "je .Lf1df89c_001dfa01\n"
-        "movl 0x195f810, %eax\n"
+        "movl imp_cg_chatTime, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jle .Lf1df89c_001dfa01\n"
-        "movl 0x195f5c4, %eax\n" /* line 557 */
+        "movl imp_cgs, %eax\n" /* line 557 */
         "movl (%eax), %ebx\n" /* len */
         "movl 0xba14(%ebx), %eax\n" /* len */
         "cltd\n"
@@ -207,14 +207,14 @@ void CG_AddToTeamChat(void)
         "subl %edx, %ecx\n" /* line 571 */
         ".Lf1df89c_001df950:\n"
         "movb $0, (%ecx)\n" /* line 573 */
-        "movl 0x195f5c4, %edx\n" /* line 575 */
+        "movl imp_cgs, %edx\n" /* line 575 */
         "movl (%edx), %ebx\n" /* len */
         "movl 0xba14(%ebx), %eax\n" /* len */
         "movl %eax, -0x18(%ebp)\n"
         "cltd\n"
         "idivl %edi\n" /* chatHeight */
         "movl %edx, %ecx\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %edx\n"
         "movl 0x25bb0(%edx), %edx\n"
         "movl %edx, 0xb9f4(%ebx, %ecx, 4)\n" /* len */
@@ -263,7 +263,7 @@ void CG_AddToTeamChat(void)
         "leal 2(%edx), %esi\n" /* str */
         "jmp .Lf1df89c_001df92d\n"
         ".Lf1df89c_001dfa01:\n"
-        "movl 0x195f5c4, %eax\n" /* line 551 */
+        "movl imp_cgs, %eax\n" /* line 551 */
         "movl (%eax), %eax\n"
         "movl $0, 0xba18(%eax)\n"
         "movl $0, 0xba14(%eax)\n"
@@ -281,14 +281,14 @@ void CG_AddToTeamChat(void)
         "jmp .Lf1df89c_001df91a\n"
         ".Lf1df89c_001dfa2c:\n"
         "movb $0, (%ecx)\n" /* line 600 */
-        "movl 0x195f5c4, %eax\n" /* line 602 */
+        "movl imp_cgs, %eax\n" /* line 602 */
         "movl (%eax), %ebx\n" /* len */
         "movl 0xba14(%ebx), %esi\n" /* len, str */
         "movl %esi, %eax\n" /* str */
         "cltd\n"
         "idivl %edi\n" /* chatHeight */
         "movl %edx, %ecx\n"
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "movl (%edx), %eax\n"
         "movl 0x25bb0(%eax), %eax\n"
         "movl %eax, 0xb9f4(%ebx, %ecx, 4)\n" /* len */
@@ -331,16 +331,16 @@ static void CG_OpenScriptMenu(void)
     menuIndex = atoi(CG_Argv(1));
 
     if ((unsigned int)menuIndex > 31) {
-        Com_Printf((const char *)0x2b8070, menuIndex);
-        Cbuf_AddText(va((const char *)0x2b80a4, menuIndex));
+        Com_Printf((const char *)str_002b8070, menuIndex);
+        Cbuf_AddText(va((const char *)str_002b80a4, menuIndex));
         return;
     }
 
     pszMenu = CL_GetConfigString(menuIndex + 0x4de);
 
     if (*pszMenu == '\0') {
-        Com_Printf((const char *)0x2b80b4, menuIndex);
-        Cbuf_AddText(va((const char *)0x2b80a4, menuIndex));
+        Com_Printf((const char *)str_002b80b4, menuIndex);
+        Cbuf_AddText(va((const char *)str_002b80a4, menuIndex));
         return;
     }
 
@@ -361,9 +361,9 @@ static void CG_OpenScriptMenu(void)
     *(int *)(cgui + 0x3e4) = menuIndex;
 
     if (noMouseControl) {
-        result = CL_Popup((const char *)0x2adc98);
+        result = CL_Popup((const char *)str_002adc98);
     } else {
-        result = CL_Popup((const char *)0x2adc84);
+        result = CL_Popup((const char *)str_002adc84);
     }
 
     if (result) {
@@ -379,7 +379,7 @@ static void CG_OpenScriptMenu(void)
         if (I_stricmp(pszMenu, cgui + 0x3e8) == 0) {
             return;
         }
-        Cbuf_AddText(va((const char *)0x2b80f0, *(int *)(cgui + 0x4e8)));
+        Cbuf_AddText(va((const char *)str_002b80f0, *(int *)(cgui + 0x4e8)));
     }
 
     /* Store as waiting menu */
@@ -407,9 +407,9 @@ void CG_CheckOpenWaitingScriptMenu(void)
 
     cgui = CGUI_PTR;
     if (*(unsigned char *)(cgui + 0x4ec)) {
-        result = CL_Popup((const char *)0x2adc98);
+        result = CL_Popup((const char *)str_002adc98);
     } else {
-        result = CL_Popup((const char *)0x2adc84);
+        result = CL_Popup((const char *)str_002adc84);
     }
 
     if (result) {
@@ -431,8 +431,8 @@ void CG_CloseScriptMenu(void)
 {
     char *cgui;
 
-    CL_ClosePopup((const char *)0x2adc84);
-    CL_ClosePopup((const char *)0x2adc98);
+    CL_ClosePopup((const char *)str_002adc84);
+    CL_ClosePopup((const char *)str_002adc98);
 
     cgui = CGUI_PTR;
     *(unsigned char *)(cgui + 0x1de) = 0;
@@ -457,10 +457,10 @@ void CG_MenuShowNotify(int menuToShow)
         /* { scope 1 */
         "cmpl $5, %eax\n" /* line 829 */
         "ja .Lf1dfd68_001dfddb\n"
-        "jmpl *0x3039c0(, %eax, 4)\n"
+        "jmpl *iSlotPreferenceOrder+256(, %eax, 4)\n"
         "movl $4, (%esp)\n" /* line 844 */
         "calll CG_MenuShowNotify\n"
-        "movl 0x195f584, %eax\n" /* line 846 */
+        "movl imp_cg, %eax\n" /* line 846 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "cmpl %edx, 0x2c5c8(%eax)\n"
@@ -469,8 +469,8 @@ void CG_MenuShowNotify(int menuToShow)
         "calll CL_GetLocalClientActiveCount\n" /* line 849 */
         "subl $1, %eax\n"
         "je .Lf1dfd68_001dff1f\n"
-        "movl $0x2b703c, 4(%esp)\n" /* line 852 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b703c, 4(%esp)\n" /* line 852 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         ".Lf1dfd68_001dfdc7:\n"
@@ -484,7 +484,7 @@ void CG_MenuShowNotify(int menuToShow)
         "leave\n" /* line 905 */
         "retl\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 832 */
+        "movl imp_cg, %eax\n" /* line 832 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "cmpl %edx, 0x2c5c4(%eax)\n"
@@ -493,23 +493,23 @@ void CG_MenuShowNotify(int menuToShow)
         "calll CL_GetLocalClientActiveCount\n" /* line 835 */
         "subl $1, %eax\n"
         "je .Lf1dfd68_001dff87\n"
-        "movl $0x2b7030, 4(%esp)\n" /* line 838 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7030, 4(%esp)\n" /* line 838 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
-        "movl 0x195f584, %eax\n" /* line 894 */
+        "movl imp_cg, %eax\n" /* line 894 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "cmpl %edx, 0x2b538(%eax)\n"
         "jge .Lf1dfd68_001dfddb\n"
         "movl %edx, 0x2b538(%eax)\n" /* line 896 */
-        "movl $0x2b7074, 4(%esp)\n" /* line 897 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7074, 4(%esp)\n" /* line 897 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
-        "movl 0x195f584, %eax\n" /* line 882 */
+        "movl imp_cg, %eax\n" /* line 882 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "cmpl %edx, 0x2c5d0(%eax)\n"
@@ -518,12 +518,12 @@ void CG_MenuShowNotify(int menuToShow)
         "calll CL_GetLocalClientActiveCount\n" /* line 885 */
         "subl $1, %eax\n"
         "je .Lf1dfd68_001dff53\n"
-        "movl $0x2b7064, 4(%esp)\n" /* line 888 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7064, 4(%esp)\n" /* line 888 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
-        "movl 0x195f584, %eax\n" /* line 870 */
+        "movl imp_cg, %eax\n" /* line 870 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "cmpl %edx, 0x2c5cc(%eax)\n"
@@ -532,12 +532,12 @@ void CG_MenuShowNotify(int menuToShow)
         "calll CL_GetLocalClientActiveCount\n" /* line 873 */
         "subl $1, %eax\n"
         "je .Lf1dfd68_001dff39\n"
-        "movl $0x2b704c, 4(%esp)\n" /* line 876 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b704c, 4(%esp)\n" /* line 876 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
-        "movl 0x195f584, %eax\n" /* line 858 */
+        "movl imp_cg, %eax\n" /* line 858 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "cmpl %edx, 0x2c5c0(%eax)\n"
@@ -546,38 +546,38 @@ void CG_MenuShowNotify(int menuToShow)
         "calll CL_GetLocalClientActiveCount\n" /* line 861 */
         "subl $1, %eax\n"
         "je .Lf1dfd68_001dff6d\n"
-        "movl $0x2a79e8, 4(%esp)\n" /* line 864 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002a79e8, 4(%esp)\n" /* line 864 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
         ".Lf1dfd68_001dff1f:\n"
-        "movl $0x2b5978, 4(%esp)\n" /* line 850 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b5978, 4(%esp)\n" /* line 850 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
         ".Lf1dfd68_001dff39:\n"
-        "movl $0x221984, 4(%esp)\n" /* line 874 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_00221984, 4(%esp)\n" /* line 874 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
         ".Lf1dfd68_001dff53:\n"
-        "movl $0x2b7058, 4(%esp)\n" /* line 886 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7058, 4(%esp)\n" /* line 886 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
         ".Lf1dfd68_001dff6d:\n"
-        "movl $0x2a79e0, 4(%esp)\n" /* line 862 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002a79e0, 4(%esp)\n" /* line 862 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
         ".Lf1dfd68_001dff87:\n"
-        "movl $0x2b7028, 4(%esp)\n" /* line 836 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7028, 4(%esp)\n" /* line 836 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
@@ -596,14 +596,14 @@ void CG_SetClientDvarFromServer(void)
         "subl $0x10, %esp\n"
         "movl %eax, %ebx\n" /* dvarname */
         "movl %edx, %esi\n" /* value */
-        "movl $0x2b8100, 4(%esp)\n" /* line 1167 */
+        "movl $str_002b8100, 4(%esp)\n" /* line 1167 */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1dffa2_001dffe9\n"
         "movl $0x400, 8(%esp)\n" /* line 1147 */
         "movl %esi, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "addl $0x2a9fc, %eax\n"
         "movl %eax, (%esp)\n"
@@ -614,12 +614,12 @@ void CG_SetClientDvarFromServer(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf1dffa2_001dffe9:\n"
-        "movl $0x2b8114, 4(%esp)\n" /* line 1169 */
+        "movl $str_002b8114, 4(%esp)\n" /* line 1169 */
         "movl %ebx, (%esp)\n" /* dvarname */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1dffa2_001e0024\n"
-        "movl $0x2b8120, 4(%esp)\n" /* line 1171 */
+        "movl $str_002b8120, 4(%esp)\n" /* line 1171 */
         "movl %ebx, (%esp)\n" /* dvarname */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -636,7 +636,7 @@ void CG_SetClientDvarFromServer(void)
         "movl %esi, (%esp)\n" /* line 1170 | value */
         "calll atoi\n"
         /* { scope 1 */
-        "movl 0x195f584, %edx\n" /* line 1154 */
+        "movl imp_cg, %edx\n" /* line 1154 */
         "movl (%edx), %edx\n"
         "movl %eax, 0x2bdc8(%edx)\n"
         /* } scope */
@@ -648,7 +648,7 @@ void CG_SetClientDvarFromServer(void)
         ".Lf1dffa2_001e0041:\n"
         "movl $0x100, 8(%esp)\n" /* line 1161 */
         "movl %esi, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "addl $0x2adfc, %eax\n"
         "movl %eax, (%esp)\n"
@@ -714,7 +714,7 @@ static void CG_DeactivateChannelVolCmd(void)
 
     argc = Cmd_Argc();
     if (argc != 3) {
-        Com_Printf((const char *)0x2b8134, argc);
+        Com_Printf((const char *)str_002b8134, argc);
         return;
     }
 
@@ -737,7 +737,7 @@ static void CG_SetChannelVolCmd(void)
 
     argc = Cmd_Argc();
     if (argc != 4) {
-        Com_Printf((const char *)0x2b817c, argc);
+        Com_Printf((const char *)str_002b817c, argc);
         return;
     }
 
@@ -760,7 +760,7 @@ static void CG_DeactivateReverbCmd(void)
 
     argc = Cmd_Argc();
     if (argc != 3) {
-        Com_Printf((const char *)0x2b81bc, argc);
+        Com_Printf((const char *)str_002b81bc, argc);
         return;
     }
 
@@ -792,7 +792,7 @@ void CG_SetConfigValues(void)
             continue;
         }
         if (!Load_ScriptMenu(str, 7)) {
-            Com_Error(ERR_DROP, (const char *)0x2b8200, str);
+            Com_Error(ERR_DROP, (const char *)str_002b8200, str);
         }
     }
 
@@ -823,8 +823,8 @@ void CG_MapRestart(qboolean savepersist)
     char *cgs;
     char *cgui;
 
-    if (*(int *)(*(char **)*(void **)0x195f940 + 8) != 0) {
-        Com_Printf((const char *)0x2b8228);
+    if (*(int *)(*(char **)*(void **)imp_cg_showmiss + 8) != 0) {
+        Com_Printf((const char *)str_002b8228);
     }
 
     cg = CG_PTR;
@@ -854,7 +854,7 @@ void CG_MapRestart(qboolean savepersist)
     *(int *)(cg + 0x2be68) = 0;
     *(int *)(cg + 0x2be6c) = 0;
 
-    Dvar_SetBool(*(void **)*(void **)0x195f860, 0);
+    Dvar_SetBool(*(void **)*(void **)imp_cg_thirdPerson, 0);
 
     cgui = CGUI_PTR;
     *(int *)(cgui + 8) = 0;
@@ -897,7 +897,7 @@ void CG_ServerCommand(void)
         "movsbl (%eax), %eax\n" /* line 1201 */
         "cmpl $0x76, %eax\n"
         "ja .Lf1e07d0_001e08ae\n"
-        "jmpl *0x3039d8(, %eax, 4)\n"
+        "jmpl *iSlotPreferenceOrder+280(, %eax, 4)\n"
         ".Lf1e07d0_001e07fb:\n"
         "cmpl $5, %ebx\n" /* line 470 */
         "je .Lf1e07d0_001e14b5\n"
@@ -933,7 +933,7 @@ void CG_ServerCommand(void)
         "movl %esi, %eax\n" /* line 513 */
         "shll $7, %eax\n"
         "leal 0x68c0(%eax, %esi, 4), %eax\n"
-        "movl 0x195f5c4, %edx\n"
+        "movl imp_cgs, %edx\n"
         "addl (%edx), %eax\n"
         "addl $4, %eax\n"
         "movl %eax, (%esp)\n"
@@ -951,7 +951,7 @@ void CG_ServerCommand(void)
         "movl $0, (%esp)\n" /* line 1357 */
         "calll CG_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b8350, (%esp)\n"
+        "movl $str_002b8350, (%esp)\n"
         "calll Com_Printf\n"
         "calll Cmd_Argc\n" /* line 1359 */
         "movl %eax, %esi\n" /* argc */
@@ -959,19 +959,19 @@ void CG_ServerCommand(void)
         "jle .Lf1e07d0_001e08a3\n"
         "leal -1(%eax), %eax\n" /* line 1362 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b8374, (%esp)\n"
+        "movl $str_002b8374, (%esp)\n"
         "calll Com_Printf\n"
         "movl $1, %ebx\n" /* weapIndex */
         ".Lf1e07d0_001e08ee:\n"
         "movl %ebx, (%esp)\n" /* line 1364 | weapIndex */
         "calll CG_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2abc2c, (%esp)\n"
+        "movl $str_002abc2c, (%esp)\n"
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 1363 | weapIndex */
         "cmpl %ebx, %esi\n" /* weapIndex, argc */
         "jne .Lf1e07d0_001e08ee\n"
-        "movl $0x2160e8, (%esp)\n" /* line 1365 */
+        "movl $str_002160e8, (%esp)\n" /* line 1365 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x30c, %esp\n" /* line 1369 */
@@ -985,7 +985,7 @@ void CG_ServerCommand(void)
         "calll CG_Argv\n"
         "leal -0x1b2(%ebp), %ebx\n"
         "movl %ebx, 8(%esp)\n"
-        "movl $0x2b8250, 4(%esp)\n"
+        "movl $str_002b8250, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
         "movl %ebx, (%esp)\n" /* line 1231 */
@@ -1018,7 +1018,7 @@ void CG_ServerCommand(void)
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         /* { scope 2 */
-        "movl 0x195f5c4, %edx\n" /* line 1008 */
+        "movl imp_cgs, %edx\n" /* line 1008 */
         "movl (%edx), %edx\n"
         "movl %eax, 0x63b8(%edx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
@@ -1028,7 +1028,7 @@ void CG_ServerCommand(void)
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         /* { scope 2 */
-        "movl 0x195f5c4, %edx\n" /* line 1008 */
+        "movl imp_cgs, %edx\n" /* line 1008 */
         "movl (%edx), %edx\n"
         "movl %eax, 0x63bc(%edx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
@@ -1078,7 +1078,7 @@ void CG_ServerCommand(void)
         "leal -0x8e(%ebx), %eax\n" /* line 456 */
         "cmpl $0xbf, %eax\n"
         "ja .Lf1e07d0_001e07fb\n"
-        "movl 0x195f5c4, %eax\n" /* line 178 */
+        "movl imp_cgs, %eax\n" /* line 178 */
         "movl (%eax), %eax\n"
         "movl 0x5ea0(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1102,7 +1102,7 @@ void CG_ServerCommand(void)
         "cmpb $0, (%eax)\n" /* line 184 */
         "jne .Lf1e07d0_001e0aee\n"
         "jmp .Lf1e07d0_001e08a3\n"
-        "movl 0x195f584, %esi\n" /* line 44 */
+        "movl imp_cg, %esi\n" /* line 44 */
         "movl (%esi), %ebx\n"
         "movl $1, (%esp)\n"
         "calll CG_Argv\n"
@@ -1146,7 +1146,7 @@ void CG_ServerCommand(void)
         "movl 0x2af00(%ebx), %ecx\n" /* line 60 */
         "testl %ecx, %ecx\n"
         "jg .Lf1e07d0_001e0fbe\n"
-        "movl 0x195f584, %esi\n"
+        "movl imp_cg, %esi\n"
         "movl (%esi), %ecx\n"
         ".Lf1e07d0_001e0c30:\n"
         "xorl %ebx, %ebx\n"
@@ -1170,7 +1170,7 @@ void CG_ServerCommand(void)
         "calll CG_Argv\n"
         "leal -0x1b2(%ebp), %ebx\n"
         "movl %ebx, 8(%esp)\n"
-        "movl $0x2b8238, 4(%esp)\n"
+        "movl $str_002b8238, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
         "movl %ebx, (%esp)\n" /* line 1217 */
@@ -1180,20 +1180,20 @@ void CG_ServerCommand(void)
         "calll CG_Argv\n"
         "leal -0x1b2(%ebp), %ebx\n"
         "movl %ebx, 8(%esp)\n"
-        "movl $0x2b8260, 4(%esp)\n"
+        "movl $str_002b8260, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
         "movl %ebx, (%esp)\n" /* line 1236 */
         "calll CG_BoldGameMessage\n"
         "jmp .Lf1e07d0_001e08a3\n"
-        "movl 0x195f94c, %eax\n" /* line 1240 */
+        "movl imp_cg_teamChatsOnly, %eax\n" /* line 1240 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1243 */
         "calll CG_Argv\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x2b8274, 4(%esp)\n"
+        "movl $str_002b8274, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl $0x96, 8(%esp)\n" /* line 1245 */
@@ -1227,13 +1227,13 @@ void CG_ServerCommand(void)
         "movl %ebx, %eax\n" /* line 1256 */
         "calll CG_AddToTeamChat\n"
         "movl %ebx, 4(%esp)\n" /* line 1257 */
-        "movl $0x215bbc, (%esp)\n"
+        "movl $str_00215bbc, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "movl $1, (%esp)\n" /* line 1252 */
         "calll CG_Argv\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x2b8284, 4(%esp)\n"
+        "movl $str_002b8284, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl $0x96, 8(%esp)\n" /* line 1254 */
@@ -1302,21 +1302,21 @@ void CG_ServerCommand(void)
         "cmpl $6, %eax\n" /* line 1027 */
         "je .Lf1e07d0_001e1167\n"
         "movl %eax, 4(%esp)\n" /* line 1029 */
-        "movl $0x2b8298, (%esp)\n"
+        "movl $str_002b8298, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
         "calll Cmd_Argc\n" /* line 1127 */
         "cmpl $2, %eax\n" /* line 1128 */
         "je .Lf1e07d0_001e1274\n"
         "movl %eax, 4(%esp)\n" /* line 1130 */
-        "movl $0x2b82d0, (%esp)\n"
+        "movl $str_002b82d0, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
-        "movl $0x2adc84, (%esp)\n" /* line 808 */
+        "movl $str_002adc84, (%esp)\n" /* line 808 */
         "calll CL_ClosePopup\n"
-        "movl $0x2adc98, (%esp)\n" /* line 809 */
+        "movl $str_002adc98, (%esp)\n" /* line 809 */
         "calll CL_ClosePopup\n"
-        "movl 0x195ecb4, %edx\n" /* line 812 */
+        "movl imp_legacyHacks, %edx\n" /* line 812 */
         "movl (%edx), %eax\n"
         "movb $0, 0x1de(%eax)\n"
         "movl (%edx), %eax\n" /* line 813 */
@@ -1393,7 +1393,7 @@ void CG_ServerCommand(void)
         "calll atoi\n"
         "movl -0x2f4(%ebp), %edx\n"
         "movl %eax, 0x2af34(%edx, %ebx)\n"
-        "movl 0x195f584, %eax\n" /* line 63 */
+        "movl imp_cg, %eax\n" /* line 63 */
         "movl (%eax), %esi\n"
         "leal 1(%edi), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1487,8 +1487,8 @@ void CG_ServerCommand(void)
         "calll CG_Argv\n"
         "movl %eax, %ebx\n"
         "cvtsd2ss -0x2c8(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5c8, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n"
+        "mulss lit4_002ed5c8, %xmm0\n"
+        "addss lit4_002ed5d8, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x2ec(%ebp)\n"
@@ -1521,7 +1521,7 @@ void CG_ServerCommand(void)
         "jbe .Lf1e07d0_001e12bb\n"
         "movl $0x100, 8(%esp)\n" /* line 1137 */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b8308, (%esp)\n"
+        "movl $str_002b8308, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e12b1:\n"
@@ -1561,14 +1561,14 @@ void CG_ServerCommand(void)
         "calll CG_NorthDirectionChanged\n" /* line 529 */
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e1337:\n"
-        "movl 0x195f5c4, %eax\n" /* line 508 */
+        "movl imp_cgs, %eax\n" /* line 508 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll FX_RegisterEffect\n"
         "movl %eax, 0x67c0(%ebx, %esi, 4)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e1352:\n"
-        "movl 0x195f5c4, %eax\n" /* line 504 */
+        "movl imp_cgs, %eax\n" /* line 504 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll CL_RegisterModel\n"
@@ -1616,55 +1616,55 @@ void CG_ServerCommand(void)
         ".Lf1e07d0_001e13e9:\n"
         "movb $0, -0x1b3(%ebp)\n" /* line 418 */
         "movl $0, 8(%esp)\n" /* line 420 */
-        "movl $0x2a79f4, 4(%esp)\n"
+        "movl $str_002a79f4, 4(%esp)\n"
         "leal -0x2b2(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl $0x100, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f5c4, %eax\n"
+        "movl imp_cgs, %eax\n"
         "movl (%eax), %eax\n"
         "addl $0x6094, %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strncpyz\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e1433:\n"
-        "movl 0x195f5c4, %eax\n" /* line 492 */
+        "movl imp_cgs, %eax\n" /* line 492 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll atoi\n"
         "movl %eax, 0x6090(%ebx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e144d:\n"
-        "movl 0x195f5c4, %eax\n" /* line 488 */
+        "movl imp_cgs, %eax\n" /* line 488 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll atoi\n"
         "movl %eax, 0x608c(%ebx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e1467:\n"
-        "movl 0x195f5c4, %eax\n" /* line 484 */
+        "movl imp_cgs, %eax\n" /* line 484 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll atoi\n"
         "movl %eax, 0x6088(%ebx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e1481:\n"
-        "movl 0x195f5c4, %eax\n" /* line 480 */
+        "movl imp_cgs, %eax\n" /* line 480 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll atoi\n"
         "movl %eax, 0x63b4(%ebx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e149b:\n"
-        "movl 0x195f5c4, %eax\n" /* line 476 */
+        "movl imp_cgs, %eax\n" /* line 476 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll atoi\n"
         "movl %eax, 0x63bc(%ebx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         ".Lf1e07d0_001e14b5:\n"
-        "movl 0x195f5c4, %eax\n" /* line 472 */
+        "movl imp_cgs, %eax\n" /* line 472 */
         "movl (%eax), %ebx\n"
         "movl %edi, (%esp)\n"
         "calll atoi\n"

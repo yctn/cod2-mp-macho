@@ -11,8 +11,8 @@
 
 extern vec3_t ejectBrassCasingOrigin; /* 0x0 */
 extern int removeMeWhenMPStopsCrashingInHere; /* 0x0 */
-static const int iSlotPreferenceOrder[2]; /* 0x3038c0 */
-static weapSlot_t (*s_barrelTags[4])[64]; /* 0x314b00 */
+static const int iSlotPreferenceOrder[2]; /* iSlotPreferenceOrder */
+static weapSlot_t (*s_barrelTags[4])[64]; /* s_barrelTags */
 
 static void CG_PlayADSAnim(void);
 int CG_WeaponDObjHandle(int weaponNum);
@@ -78,14 +78,14 @@ void CG_PlayADSAnim(void)
         "movl %edi, (%esp)\n" /* pAnimTree */
         "calll XAnimSetGoalWeight\n"
         ".Lf1d54ec_001d5573:\n"
-        "movl 0x195f584, %eax\n" /* line 78 | weaponNum */
+        "movl imp_cg, %eax\n" /* line 78 | weaponNum */
         "movl (%eax), %ebx\n" /* weaponNum */
         "movl 0x25ca0(%ebx), %eax\n" /* weaponNum */
         "movl %eax, 8(%esp)\n" /* weaponNum */
         "movl $0x15, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* pAnimTree */
         "calll XAnimSetTime\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 79 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 79 | 1.0f */
         "subss 0x25ca0(%ebx), %xmm0\n"
         "movss %xmm0, 8(%esp)\n"
         "movl $0x16, 4(%esp)\n"
@@ -149,7 +149,7 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
         "movl %eax, %esi\n" /* weapDef */
         "movl 4(%eax), %eax\n" /* line 374 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7a74, (%esp)\n" /* "WARNING: gun and/or hand model file for weapon [%s] could no" */
+        "movl $str_002b7a74, (%esp)\n" /* "WARNING: gun and/or hand model file for weapon [%s] could no" */
         "calll Com_Printf\n"
         "movl 0xc(%esi), %eax\n" /* line 377 | weapDef */
         "testl %eax, %eax\n"
@@ -157,14 +157,14 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
         "cmpb $0, (%eax)\n"
         "jne .Lf1d5648_001d56fa\n"
         ".Lf1d5648_001d5688:\n"
-        "movl $0x2b7adc, 4(%esp)\n" /* line 378 */
+        "movl $str_002b7adc, 4(%esp)\n" /* line 378 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0x10(%esi), %eax\n" /* weapDef */
         ".Lf1d5648_001d569f:\n"
         "movl %eax, 0xc(%esp)\n" /* line 381 */
-        "movl $0x2b7b28, 8(%esp)\n" /* "xmodel/" */
-        "movl $0x215f50, 4(%esp)\n" /* "%s%s" */
+        "movl $str_002b7b28, 8(%esp)\n" /* "xmodel/" */
+        "movl $str_00215f50, 4(%esp)\n" /* "%s%s" */
         "leal -0x58(%ebp), %ebx\n" /* modelFile, weaponNum */
         "movl %ebx, (%esp)\n" /* weaponNum */
         "calll sprintf\n"
@@ -173,8 +173,8 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
         "movl %eax, (%edi)\n" /* dobjModels */
         "movl 0xc(%esi), %eax\n" /* line 385 | weapDef */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b7b28, 8(%esp)\n" /* "xmodel/" */
-        "movl $0x215f50, 4(%esp)\n" /* "%s%s" */
+        "movl $str_002b7b28, 8(%esp)\n" /* "xmodel/" */
+        "movl $str_00215f50, 4(%esp)\n" /* "%s%s" */
         "movl %ebx, (%esp)\n" /* weaponNum */
         "calll sprintf\n"
         "movl %ebx, (%esp)\n" /* line 386 | weaponNum */
@@ -201,7 +201,7 @@ void CG_Weapons_SetToDefault(int weaponNum, weaponInfo_s (*dobjModels)[4])
 /* line 1246 */
 void CG_HoldBreathInit(void)
 {
-    byte *p = *(byte **)*(void **)0x195f584;
+    byte *p = *(byte **)*(void **)imp_cg;
     *(int *)(p + 0x2cd00) = -1;
     *(int *)(p + 0x2cd04) = 0;
     *(int *)(p + 0x2cd08) = 0;
@@ -263,7 +263,7 @@ void CG_SetupWeaponDef(void)
         "cmpl %ebx, %eax\n" /* i */
         "je .Lf1d573c_001d57e3\n"
         "movl %esi, 8(%esp)\n" /* line 2619 | name */
-        "movl $0x2b7b30, 4(%esp)\n" /* "Weapon index mismatch for '%s'" */
+        "movl $str_002b7b30, 4(%esp)\n" /* "Weapon index mismatch for '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf1d573c_001d57e3:\n"
@@ -311,7 +311,7 @@ void CG_SelectWeaponIndex(int weaponIndex)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* weaponIndex */
-        "movl 0x195f584, %edi\n" /* line 2682 */
+        "movl imp_cg, %edi\n" /* line 2682 */
         "movl (%edi), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "movl %edx, 0x2be54(%eax)\n"
@@ -370,7 +370,7 @@ qboolean CG_CalcMuzzlePoint(unsigned int flashTag)
         "movl %edx, %edi\n" /* muzzle */
         "movl %ecx, -0x1c(%ebp)\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 2457 */
+        "movl imp_cg, %eax\n" /* line 2457 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %edx\n"
         "testl $0xc00000, 0x18(%edx)\n"
@@ -382,7 +382,7 @@ qboolean CG_CalcMuzzlePoint(unsigned int flashTag)
         "shll $4, %eax\n"
         "addl %esi, %eax\n" /* entityNum */
         "leal (%esi, %eax, 8), %eax\n" /* entityNum */
-        "movl 0x195f5cc, %edx\n"
+        "movl imp_cg_entities, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* cent */
         "movl 0x220(%ebx), %eax\n" /* line 2465 | cent */
@@ -447,13 +447,13 @@ qboolean CG_CalcMuzzlePoint(unsigned int flashTag)
         "calll SL_ConvertToString\n"
         "movl %esi, 8(%esp)\n" /* entityNum */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7b50, (%esp)\n" /* "No %s in CG_CalcMuzzlePoint on entity %d.
+        "movl $str_002b7b50, (%esp)\n" /* "No %s in CG_CalcMuzzlePoint on entity %d.
 " */
         "calll Com_DPrintf\n"
         "movl 0xf8(%ebx), %eax\n" /* line 2475 | cent */
         "testb $8, %al\n"
         "je .Lf1d589e_001d59aa\n"
-        "movss 0x2ed7bc, %xmm0\n" /* line 2476 | 11.0f */
+        "movss lit4_002ed7bc, %xmm0\n" /* line 2476 | 11.0f */
         "addss 8(%edi), %xmm0\n" /* muzzle */
         "movss %xmm0, 8(%edi)\n" /* muzzle */
         "movl $1, %eax\n"
@@ -461,13 +461,13 @@ qboolean CG_CalcMuzzlePoint(unsigned int flashTag)
         ".Lf1d589e_001d59aa:\n"
         "testb $4, %al\n" /* line 2477 */
         "jne .Lf1d589e_001d59ca\n"
-        "movss 0x2ed7c8, %xmm0\n" /* line 2480 | 60.0f */
+        "movss lit4_002ed7c8, %xmm0\n" /* line 2480 | 60.0f */
         "addss 8(%edi), %xmm0\n" /* muzzle */
         "movss %xmm0, 8(%edi)\n" /* muzzle */
         "movl $1, %eax\n"
         "jmp .Lf1d589e_001d5939\n"
         ".Lf1d589e_001d59ca:\n"
-        "movss 0x2ed73c, %xmm0\n" /* line 2478 | 40.0f */
+        "movss lit4_002ed73c, %xmm0\n" /* line 2478 | 40.0f */
         "addss 8(%edi), %xmm0\n" /* muzzle */
         "movss %xmm0, 8(%edi)\n" /* muzzle */
         "movl $1, %eax\n"
@@ -486,7 +486,7 @@ void CG_EjectWeaponBrass(entityState_t *ent, int event)
         "pushl %ebx\n"
         "subl $0x20, %esp\n"
         "movl 8(%ebp), %esi\n" /* ent */
-        "movl 0x195f920, %eax\n" /* line 2110 */
+        "movl imp_cg_brass, %eax\n" /* line 2110 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1d59e6_001d5ac8\n"
@@ -503,7 +503,7 @@ void CG_EjectWeaponBrass(entityState_t *ent, int event)
         "leal (%ecx, %ecx, 2), %eax\n"
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* weapInfo */
         "movl 0x160(%ebx), %edx\n" /* line 2124 | weapInfo */
@@ -516,7 +516,7 @@ void CG_EjectWeaponBrass(entityState_t *ent, int event)
         "testl %eax, %eax\n"
         "je .Lf1d59e6_001d5ac8\n"
         /* { scope 2 */
-        "movl 0x195f584, %eax\n" /* line 2137 */
+        "movl imp_cg, %eax\n" /* line 2137 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %edx\n"
         "testl $0xc00000, 0x18(%edx)\n"
@@ -528,7 +528,7 @@ void CG_EjectWeaponBrass(entityState_t *ent, int event)
         "movl %eax, %edx\n"
         ".Lf1d59e6_001d5a81:\n"
         "movl %edx, -0x10(%ebp)\n" /* bolt */
-        "movl 0x195f5bc, %eax\n" /* line 2138 */
+        "movl imp_scr_const, %eax\n" /* line 2138 */
         "movzwl 0x94(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
@@ -553,7 +553,7 @@ void CG_EjectWeaponBrass(entityState_t *ent, int event)
         "retl\n"
         /* { scope 1: bolt */
         ".Lf1d59e6_001d5acf:\n"
-        "movl $0x2b7b7c, 4(%esp)\n" /* line 2119 */
+        "movl $str_002b7b7c, 4(%esp)\n" /* line 2119 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1d59e6_001d5ac8\n"
@@ -567,7 +567,7 @@ void CG_EjectWeaponBrass(entityState_t *ent, int event)
         /* } scope */
         /* { scope 2 */
         ".Lf1d59e6_001d5af1:\n"
-        "movl 0x195f584, %eax\n" /* line 2128 */
+        "movl imp_cg, %eax\n" /* line 2128 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %edx\n"
         "testl $0xc00000, 0x18(%edx)\n"
@@ -579,7 +579,7 @@ void CG_EjectWeaponBrass(entityState_t *ent, int event)
         "movl %eax, %edx\n"
         ".Lf1d59e6_001d5b10:\n"
         "movl %edx, -0x10(%ebp)\n" /* bolt */
-        "movl 0x195f5bc, %eax\n" /* line 2129 */
+        "movl imp_scr_const, %eax\n" /* line 2129 */
         "movzwl 0x94(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
@@ -634,7 +634,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "calll BG_GetNumWeapons\n" /* line 2175 */
         "cmpl %eax, %ebx\n" /* firesound */
         "jle .Lf1d5b68_001d5bb1\n"
-        "movl $0x2b7bb4, 4(%esp)\n" /* line 2177 */
+        "movl $str_002b7bb4, 4(%esp)\n" /* line 2177 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
@@ -650,14 +650,14 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "leal (%ecx, %ecx, 2), %eax\n"
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, -0x48(%ebp)\n" /* weapInfo */
         "movl %ecx, (%esp)\n" /* line 2182 */
         "calll BG_GetWeaponDef\n"
         "movb $1, 0x1e2(%edi)\n" /* line 2187 | cent */
-        "movl 0x195f584, %eax\n" /* line 2190 */
+        "movl imp_cg, %eax\n" /* line 2190 */
         "movl (%eax), %ecx\n"
         "movl 0x24(%ecx), %edx\n"
         "testl $0xc00000, 0x18(%edx)\n"
@@ -671,7 +671,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "movl 0xe0(%ecx), %edx\n" /* line 2208 */
         "testl %edx, %edx\n"
         "je .Lf1d5b68_001d5c2f\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "testl $0xc00000, 0x18(%eax)\n"
@@ -687,7 +687,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "je .Lf1d5b68_001d5cd6\n"
         "movl %ebx, -0x3c(%ebp)\n" /* weaponNum */
         ".Lf1d5b68_001d5c47:\n"
-        "movl 0x195f584, %edx\n" /* line 2220 */
+        "movl imp_cg, %edx\n" /* line 2220 */
         "movl (%edx), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "testl $0xc00000, 0x18(%eax)\n"
@@ -706,7 +706,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "je .Lf1d5b68_001d5e3e\n"
         "leal -0x2c(%ebp), %ebx\n" /* origin, weaponNum */
         "movl %ebx, 0xc(%esp)\n" /* weaponNum */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x8c(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
@@ -760,7 +760,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "movl %eax, -0x3c(%ebp)\n"
         "testl %eax, %eax\n"
         "je .Lf1d5b68_001d5d6a\n"
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "movl (%edx), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "testl $0xc00000, 0x18(%eax)\n"
@@ -773,7 +773,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "jne .Lf1d5b68_001d5c47\n"
         "jmp .Lf1d5b68_001d5c3c\n"
         ".Lf1d5b68_001d5d83:\n"
-        "movl 0x195f584, %eax\n" /* line 2196 */
+        "movl imp_cg, %eax\n" /* line 2196 */
         "movl (%eax), %eax\n"
         "movl 0x25bc0(%eax), %ebx\n" /* firesound */
         "testl %ebx, %ebx\n" /* firesound */
@@ -801,7 +801,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         /* { scope 3 */
         "testl %edx, %edx\n" /* line 1230 */
         "jne .Lf1d5b68_001d5e6d\n"
-        "movl 0x195f5c8, %eax\n"
+        "movl imp_cg_weapons, %eax\n"
         "movl (%eax), %edx\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* fx */
         "leal (%eax, %eax, 8), %eax\n"
@@ -832,7 +832,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         /* } scope */
         ".Lf1d5b68_001d5e41:\n"
         "movl %ebx, 8(%esp)\n" /* line 2230 | weaponNum */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         ".Lf1d5b68_001d5e4c:\n"
         "movl 0x25bb0(%eax), %eax\n"
@@ -847,7 +847,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         /* { scope 2: bolt */
         /* { scope 3 */
         ".Lf1d5b68_001d5e6d:\n"
-        "movl 0x195f5c8, %eax\n" /* line 1230 */
+        "movl imp_cg_weapons, %eax\n" /* line 1230 */
         "movl (%eax), %edx\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* fx */
         "leal (%eax, %eax, 8), %eax\n"
@@ -868,7 +868,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "je .Lf1d5b68_001d5ef2\n"
         "leal -0x2c(%ebp), %ebx\n" /* origin, weaponNum */
         "movl %ebx, 8(%esp)\n" /* weaponNum */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x8c(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
@@ -877,7 +877,7 @@ void CG_FireWeapon(centity_t *cent, int event, int barrel)
         "jne .Lf1d5b68_001d5cb4\n"
         ".Lf1d5b68_001d5ecc:\n"
         "movl %ebx, 8(%esp)\n" /* line 2224 | weaponNum */
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "movl (%edx), %eax\n"
         "jmp .Lf1d5b68_001d5e4c\n"
         ".Lf1d5b68_001d5edd:\n"
@@ -922,7 +922,7 @@ void CG_RegisterWeapon(int weaponNum)
         "leal (%eax, %eax, 2), %eax\n" /* line 424 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, -0x88(%ebp)\n" /* weapInfo */
@@ -944,12 +944,12 @@ void CG_RegisterWeapon(int weaponNum)
         "movl 8(%ebp), %edx\n" /* line 436 | weaponNum */
         "leal (%edx, %edx, 4), %eax\n"
         "leal (%edx, %eax, 2), %eax\n"
-        "movl 0x195eda8, %edx\n"
+        "movl imp_bg_itemlist, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, 0xac(%ecx)\n"
         "movl 8(%ebp), %ecx\n" /* line 438 | weaponNum */
         "leal (%ecx, %ecx, 8), %edx\n"
-        "movl 0x195f5d0, %eax\n"
+        "movl imp_cg_items, %eax\n"
         "movl (%eax), %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "movl %edx, -0x84(%ebp)\n" /* itemInfo */
@@ -968,12 +968,12 @@ void CG_RegisterWeapon(int weaponNum)
         ".Lf1d5ef8_001d5fea:\n"
         "movl $0, -0x2c(%ebp)\n" /* line 450 */
         "movl $0, -0x28(%ebp)\n" /* line 451 */
-        "movl $0x2b6e38, -0x20(%ebp)\n" /* line 452 */
+        "movl $str_002b6e38, -0x20(%ebp)\n" /* line 452 */
         "movl $0, -0x1c(%ebp)\n" /* line 453 */
         "movl 0x10(%edi), %eax\n" /* line 456 | weapDef */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b7b28, 8(%esp)\n" /* "xmodel/" */
-        "movl $0x215f50, 4(%esp)\n" /* "%s%s" */
+        "movl $str_002b7b28, 8(%esp)\n" /* "xmodel/" */
+        "movl $str_00215f50, 4(%esp)\n" /* "%s%s" */
         "leal -0x70(%ebp), %ebx\n" /* szModelFile, dobjHandle */
         "movl %ebx, (%esp)\n" /* dobjHandle */
         "calll sprintf\n"
@@ -982,8 +982,8 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, -0x30(%ebp)\n" /* dobjModels */
         "movl 0xc(%edi), %eax\n" /* line 460 | weapDef */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b7b28, 8(%esp)\n" /* "xmodel/" */
-        "movl $0x215f50, 4(%esp)\n" /* "%s%s" */
+        "movl $str_002b7b28, 8(%esp)\n" /* "xmodel/" */
+        "movl $str_00215f50, 4(%esp)\n" /* "%s%s" */
         "movl %ebx, (%esp)\n" /* dobjHandle */
         "calll sprintf\n"
         "movl %ebx, (%esp)\n" /* line 461 | dobjHandle */
@@ -1006,16 +1006,16 @@ void CG_RegisterWeapon(int weaponNum)
         "cmpb $0, (%eax)\n"
         "je .Lf1d5ef8_001d6b50\n"
         ".Lf1d5ef8_001d6097:\n"
-        "movl 0x195f5d4, %eax\n" /* line 471 */
+        "movl imp___Z21Hunk_AllocXAnimClienti, %eax\n" /* line 471 */
         "movl %eax, 8(%esp)\n"
         "movl $0x17, 4(%esp)\n"
-        "movl $0x2b7c54, (%esp)\n" /* "VIEWMODEL" */
+        "movl $str_002b7c54, (%esp)\n" /* "VIEWMODEL" */
         "calll XAnimCreateAnims\n"
         "movl %eax, -0x7c(%ebp)\n" /* pAnims */
         "movl $0, 0x14(%esp)\n" /* line 475 */
         "movl $0x16, 0x10(%esp)\n"
         "movl $1, 0xc(%esp)\n"
-        "movl $0x21df18, 8(%esp)\n" /* "root" */
+        "movl $str_0021df18, 8(%esp)\n" /* "root" */
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll XAnimBlend\n"
@@ -1023,7 +1023,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl $1, %esi\n" /* i */
         "jmp .Lf1d5ef8_001d6123\n"
         ".Lf1d5ef8_001d60f0:\n"
-        "movl 0x195f5c0, %edx\n" /* line 484 */
+        "movl imp___Z23Hunk_AllocXAnimPrecachei, %edx\n" /* line 484 */
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll XAnimPrecache\n"
@@ -1041,7 +1041,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl 0x18(%ebx), %eax\n" /* line 481 | dobjHandle */
         "cmpb $0, (%eax)\n"
         "jne .Lf1d5ef8_001d60f0\n"
-        "movl 0x195f5c0, %eax\n" /* line 492 */
+        "movl imp___Z23Hunk_AllocXAnimPrecachei, %eax\n" /* line 492 */
         "movl %eax, 4(%esp)\n"
         "movl 0x18(%edi), %eax\n" /* weapDef */
         "movl %eax, (%esp)\n"
@@ -1057,7 +1057,7 @@ void CG_RegisterWeapon(int weaponNum)
         "cmpl $0x17, %esi\n" /* i */
         "jne .Lf1d5ef8_001d6123\n"
         ".Lf1d5ef8_001d6160:\n"
-        "movl 0x195f5d4, %eax\n" /* line 499 */
+        "movl imp___Z21Hunk_AllocXAnimClienti, %eax\n" /* line 499 */
         "movl %eax, 4(%esp)\n"
         "movl -0x7c(%ebp), %ecx\n" /* pAnims */
         "movl %ecx, (%esp)\n"
@@ -1507,7 +1507,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl 0x1b8(%edi), %eax\n" /* line 680 | weapDef */
         "cmpb $0, (%eax)\n"
         "jne .Lf1d5ef8_001d6bcb\n"
-        "movl 0x195f5c4, %eax\n" /* line 688 */
+        "movl imp_cgs, %eax\n" /* line 688 */
         "movl (%eax), %edx\n"
         "movl 0xba4c(%edx), %eax\n"
         "movl 8(%ebp), %ecx\n" /* weaponNum */
@@ -1544,11 +1544,11 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 0xb8(%ecx)\n"
         "testl %eax, %eax\n" /* line 729 */
         "jne .Lf1d5ef8_001d5f10\n"
-        "movl 0x195f574, %eax\n" /* line 731 */
+        "movl imp_loc_warnings, %eax\n" /* line 731 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1d5ef8_001d6a15\n"
-        "movl 0x195f570, %eax\n" /* line 733 */
+        "movl imp_loc_warningsAsErrors, %eax\n" /* line 733 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1d5ef8_001d6e52\n"
@@ -1556,7 +1556,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 0xc(%esp)\n"
         "movl (%edi), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7e1c, 4(%esp)\n" /* "Weapon %s: Could not translate AI overlay description "%s"" */
+        "movl $str_002b7e1c, 4(%esp)\n" /* "Weapon %s: Could not translate AI overlay description "%s"" */
         "movl $6, (%esp)\n"
         "calll Com_Error\n"
         ".Lf1d5ef8_001d6a15:\n"
@@ -1588,7 +1588,7 @@ void CG_RegisterWeapon(int weaponNum)
         "testl %eax, %eax\n"
         "jne .Lf1d5ef8_001d65ad\n"
         "movl %edx, 4(%esp)\n" /* line 608 */
-        "movl $0x2b7c94, (%esp)\n" /* "WARNING: Weapon %s could not load world model
+        "movl $str_002b7c94, (%esp)\n" /* "WARNING: Weapon %s could not load world model
 " */
         "calll Com_Printf\n"
         "jmp .Lf1d5ef8_001d65ad\n"
@@ -1627,14 +1627,14 @@ void CG_RegisterWeapon(int weaponNum)
         ".Lf1d5ef8_001d6b30:\n"
         "movl 4(%edi), %eax\n" /* line 448 | weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7be8, 4(%esp)\n" /* "CG_RegisterWeapon: No hand model specified for [%s]" */
+        "movl $str_002b7be8, 4(%esp)\n" /* "CG_RegisterWeapon: No hand model specified for [%s]" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1d5ef8_001d5fea\n"
         ".Lf1d5ef8_001d6b50:\n"
         "movl 4(%edi), %eax\n" /* line 468 | weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7c20, 4(%esp)\n" /* "CG_RegisterWeapon: No idle anim specified for [%s]" */
+        "movl $str_002b7c20, 4(%esp)\n" /* "CG_RegisterWeapon: No idle anim specified for [%s]" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1d5ef8_001d6097\n"
@@ -1666,7 +1666,7 @@ void CG_RegisterWeapon(int weaponNum)
         "calll CL_RegisterMaterial\n"
         "movl -0x88(%ebp), %edx\n" /* weapInfo */
         "movl %eax, 0x138(%edx)\n"
-        "movl 0x195f5c4, %edx\n" /* line 683 */
+        "movl imp_cgs, %edx\n" /* line 683 */
         "movl (%edx), %edx\n"
         "movl 8(%ebp), %ecx\n" /* weaponNum */
         "movl %eax, 0xba54(%edx, %ecx, 4)\n"
@@ -1694,41 +1694,41 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 0xc(%esp)\n"
         "movl (%edi), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7d00, 4(%esp)\n" /* "Weapon %s does not specify a valid projectile model (%s)
+        "movl $str_002b7d00, 4(%esp)\n" /* "Weapon %s does not specify a valid projectile model (%s)
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1d5ef8_001d68e7\n"
         ".Lf1d5ef8_001d6c75:\n"
-        "movl $0x2b7cc4, (%esp)\n" /* line 642 */
+        "movl $str_002b7cc4, (%esp)\n" /* line 642 */
         "calll Com_FindSoundAlias\n"
         "movl -0x88(%ebp), %edx\n" /* weapInfo */
         "movl %eax, 0x118(%edx)\n"
         "jmp .Lf1d5ef8_001d67d4\n"
         ".Lf1d5ef8_001d6c92:\n"
-        "movl $0x2b7cd0, (%esp)\n" /* line 646 */
+        "movl $str_002b7cd0, (%esp)\n" /* line 646 */
         "calll Com_FindSoundAlias\n"
         "movl -0x88(%ebp), %ecx\n" /* weapInfo */
         "movl %eax, 0x120(%ecx)\n"
         "jmp .Lf1d5ef8_001d6810\n"
         ".Lf1d5ef8_001d6caf:\n"
-        "movl $0x2b7ce0, (%esp)\n" /* line 653 */
+        "movl $str_002b7ce0, (%esp)\n" /* line 653 */
         "calll Com_FindSoundAlias\n"
         "movl -0x84(%ebp), %edx\n" /* itemInfo */
         "movl %eax, 0x1c(%edx)\n"
         "jmp .Lf1d5ef8_001d6889\n"
         ".Lf1d5ef8_001d6cc9:\n"
-        "movl $0x2b7cec, (%esp)\n" /* line 656 */
+        "movl $str_002b7cec, (%esp)\n" /* line 656 */
         "calll Com_FindSoundAlias\n"
         "movl -0x84(%ebp), %edx\n" /* itemInfo */
         "movl %eax, 0x20(%edx)\n"
         "jmp .Lf1d5ef8_001d68a8\n"
         ".Lf1d5ef8_001d6ce3:\n"
-        "movl 0x195f574, %eax\n" /* line 705 */
+        "movl imp_loc_warnings, %eax\n" /* line 705 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1d5ef8_001d6d22\n"
-        "movl 0x195f570, %eax\n" /* line 707 */
+        "movl imp_loc_warningsAsErrors, %eax\n" /* line 707 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1d5ef8_001d6e8e\n"
@@ -1736,7 +1736,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 0xc(%esp)\n"
         "movl (%edi), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7d3c, 4(%esp)\n" /* "Weapon %s: Could not translate display name "%s"" */
+        "movl $str_002b7d3c, 4(%esp)\n" /* "Weapon %s: Could not translate display name "%s"" */
         "movl $6, (%esp)\n"
         "calll Com_Error\n"
         ".Lf1d5ef8_001d6d22:\n"
@@ -1745,11 +1745,11 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 0xb0(%edx)\n"
         "jmp .Lf1d5ef8_001d6998\n"
         ".Lf1d5ef8_001d6d36:\n"
-        "movl 0x195f574, %eax\n" /* line 718 */
+        "movl imp_loc_warnings, %eax\n" /* line 718 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1d5ef8_001d6d75\n"
-        "movl 0x195f570, %eax\n" /* line 720 */
+        "movl imp_loc_warningsAsErrors, %eax\n" /* line 720 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1d5ef8_001d6e70\n"
@@ -1757,7 +1757,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 0xc(%esp)\n"
         "movl (%edi), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7db0, 4(%esp)\n" /* "Weapon %s: Could not translate mode name "%s"" */
+        "movl $str_002b7db0, 4(%esp)\n" /* "Weapon %s: Could not translate mode name "%s"" */
         "movl $6, (%esp)\n"
         "calll Com_Error\n"
         ".Lf1d5ef8_001d6d75:\n"
@@ -1774,7 +1774,7 @@ void CG_RegisterWeapon(int weaponNum)
         "je .Lf1d5ef8_001d6475\n"
         "movl 0x68(%edi), %eax\n" /* line 571 | weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7c60, 4(%esp)\n" /* "CG_RegisterWeapon: ADS anim [%s] cannot be looping" */
+        "movl $str_002b7c60, 4(%esp)\n" /* "CG_RegisterWeapon: ADS anim [%s] cannot be looping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1d5ef8_001d6475\n"
@@ -1804,7 +1804,7 @@ void CG_RegisterWeapon(int weaponNum)
         "je .Lf1d5ef8_001d6481\n"
         "movl 0x6c(%edi), %eax\n" /* line 574 | weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b7c60, 4(%esp)\n" /* "CG_RegisterWeapon: ADS anim [%s] cannot be looping" */
+        "movl $str_002b7c60, 4(%esp)\n" /* "CG_RegisterWeapon: ADS anim [%s] cannot be looping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1d5ef8_001d6481\n"
@@ -1813,7 +1813,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 8(%esp)\n"
         "movl (%edi), %eax\n" /* weapDef */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7e58, (%esp)\n" /* "^3WARNING: Weapon %s: Could not translate AI overlay descrip" */
+        "movl $str_002b7e58, (%esp)\n" /* "^3WARNING: Weapon %s: Could not translate AI overlay descrip" */
         "calll Com_Printf\n"
         "jmp .Lf1d5ef8_001d6a15\n"
         ".Lf1d5ef8_001d6e70:\n"
@@ -1821,7 +1821,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 8(%esp)\n"
         "movl (%edi), %eax\n" /* weapDef */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7de0, (%esp)\n" /* "^3WARNING: Weapon %s: Could not translate mode name "%s"
+        "movl $str_002b7de0, (%esp)\n" /* "^3WARNING: Weapon %s: Could not translate mode name "%s"
 " */
         "calll Com_Printf\n"
         "jmp .Lf1d5ef8_001d6d75\n"
@@ -1830,7 +1830,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl %eax, 8(%esp)\n"
         "movl (%edi), %eax\n" /* weapDef */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7d70, (%esp)\n" /* "^3WARNING: Weapon %s: Could not translate display name "%s"
+        "movl $str_002b7d70, (%esp)\n" /* "^3WARNING: Weapon %s: Could not translate display name "%s"
 " */
         "calll Com_Printf\n"
         "jmp .Lf1d5ef8_001d6d22\n"
@@ -1851,7 +1851,7 @@ void CG_RegisterItemVisuals(int itemNum)
         "movl 8(%ebp), %ecx\n" /* itemNum */
         /* { scope 1 */
         "leal (%ecx, %ecx, 8), %eax\n" /* line 856 */
-        "movl 0x195f5d0, %edx\n"
+        "movl imp_cg_items, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %esi\n" /* itemInfo */
         "movl (%esi), %eax\n" /* line 857 | itemInfo */
@@ -1868,7 +1868,7 @@ void CG_RegisterItemVisuals(int itemNum)
         ".Lf1d6eac_001d6ed4:\n"
         "leal (%ecx, %ecx, 4), %eax\n" /* line 860 */
         "leal (%ecx, %eax, 2), %eax\n"
-        "movl 0x195eda8, %edx\n"
+        "movl imp_bg_itemlist, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
         "movl $0, (%esi)\n" /* line 862 | itemInfo */
@@ -1949,7 +1949,7 @@ void CG_RegisterItems(void)
         "leal -0x109(%ebp), %eax\n" /* items */
         "movl %eax, (%esp)\n"
         "calll strcpy\n"
-        "movl 0x195edac, %edx\n" /* line 900 */
+        "movl imp_bg_numItems, %edx\n" /* line 900 */
         "cmpl $1, (%edx)\n"
         "jle .Lf1d6f7e_001d7005\n"
         "movl $1, %ebx\n" /* i */
@@ -2024,7 +2024,7 @@ void CG_UpdateHandViewmodels(const char *handModel)
         "calll BG_GetNumWeapons\n"
         "cmpl %eax, %ebx\n" /* weaponIdx */
         "jg .Lf1d7014_001d718f\n"
-        "movl 0x195f5c8, %eax\n" /* line 828 */
+        "movl imp_cg_weapons, %eax\n" /* line 828 */
         "movl %edi, %esi\n" /* weapInfo */
         "addl (%eax), %esi\n" /* weapInfo */
         "leal 0x60(%esi), %eax\n" /* line 830 | weapInfo */
@@ -2056,7 +2056,7 @@ void CG_UpdateHandViewmodels(const char *handModel)
         "calll Com_SafeClientDObjFree\n"
         "movl $0, -0x2c(%ebp)\n" /* line 789 */
         "movl $0, -0x28(%ebp)\n" /* line 790 */
-        "movl $0x2b6e38, -0x20(%ebp)\n" /* line 791 */
+        "movl $str_002b6e38, -0x20(%ebp)\n" /* line 791 */
         "movl $0, -0x1c(%ebp)\n" /* line 792 */
         "movl 8(%ebp), %edx\n" /* line 795 | handModel */
         "movl %edx, (%esp)\n"
@@ -2065,8 +2065,8 @@ void CG_UpdateHandViewmodels(const char *handModel)
         "movl -0x84(%ebp), %ecx\n" /* line 798 | weapDef */
         "movl 0xc(%ecx), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b7b28, 8(%esp)\n" /* "xmodel/" */
-        "movl $0x215f50, 4(%esp)\n" /* "%s%s" */
+        "movl $str_002b7b28, 8(%esp)\n" /* "xmodel/" */
+        "movl $str_00215f50, 4(%esp)\n" /* "%s%s" */
         "leal -0x70(%ebp), %eax\n" /* modelFile */
         "movl %eax, (%esp)\n"
         "calll sprintf\n"
@@ -2168,7 +2168,7 @@ void CG_SpawnTracer(vec_t *pstart, vec_t *pend)
         "movl $0, 8(%eax)\n" /* line 2331 */
         "movss -0x38(%ebp), %xmm0\n" /* line 2332 | dist */
         "movss %xmm0, 0x44(%eax)\n"
-        "movl 0x195f584, %eax\n" /* line 2333 */
+        "movl imp_cg, %eax\n" /* line 2333 */
         "movl (%eax), %ebx\n"
         "movl 0x25bb0(%ebx), %edi\n"
         "movl 0x25bac(%ebx), %eax\n"
@@ -2179,9 +2179,9 @@ void CG_SpawnTracer(vec_t *pstart, vec_t *pend)
         "movl %edi, %edx\n"
         "subl %eax, %edx\n"
         "movss -0x38(%ebp), %xmm0\n" /* line 2334 | dist */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "movss %xmm0, -0x38(%ebp)\n" /* dist */
-        "movl 0x195f924, %ecx\n"
+        "movl imp_cg_tracerSpeed, %ecx\n"
         "movl (%ecx), %eax\n"
         "divss 8(%eax), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
@@ -2269,7 +2269,7 @@ void CG_WhizbySound(vec_t *vStart, vec_t *vEnd)
         "movaps %xmm5, %xmm0\n"
         "mulss -0xc(%ebp), %xmm0\n"
         "addss %xmm0, %xmm2\n"
-        "movl 0x195f584, %eax\n" /* line 2287 */
+        "movl imp_cg, %eax\n" /* line 2287 */
         "movl (%eax), %eax\n"
         "movss 0x28588(%eax), %xmm1\n" /* line 304 */
         "subss (%ebx), %xmm1\n"
@@ -2282,7 +2282,7 @@ void CG_WhizbySound(vec_t *vStart, vec_t *vEnd)
         "subss 8(%ebx), %xmm0\n"
         "mulss %xmm5, %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "movss 0x2ed78c, %xmm0\n" /* line 2291 | 64.0f */
+        "movss lit4_002ed78c, %xmm0\n" /* line 2291 | 64.0f */
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lf1d72f6_001d73c8\n"
         "addss %xmm1, %xmm0\n" /* line 2295 */
@@ -2320,9 +2320,9 @@ void CG_WhizbySound(vec_t *vStart, vec_t *vEnd)
         "mulss %xmm1, %xmm1\n"
         "addss %xmm1, %xmm0\n"
         "sqrtss %xmm0, %xmm0\n"
-        "ucomiss 0x2eda70, %xmm0\n" /* 140.0f */
+        "ucomiss lit4_002eda70, %xmm0\n" /* 140.0f */
         "ja .Lf1d72f6_001d73c8\n"
-        "movss 0x2eda74, %xmm0\n" /* line 288 | -16.0f */
+        "movss lit4_002eda74, %xmm0\n" /* line 288 | -16.0f */
         "mulss %xmm0, %xmm6\n"
         "addss %xmm6, %xmm4\n"
         "movss %xmm4, -0x2c(%ebp)\n" /* vProjPos */
@@ -2332,7 +2332,7 @@ void CG_WhizbySound(vec_t *vStart, vec_t *vEnd)
         "mulss %xmm0, %xmm5\n" /* line 290 */
         "addss -0x24(%ebp), %xmm5\n"
         "movss %xmm5, -0x24(%ebp)\n"
-        "movl 0x195f5c4, %eax\n" /* line 2307 */
+        "movl imp_cgs, %eax\n" /* line 2307 */
         "movl (%eax), %eax\n"
         "movl 0xc1ac(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -2366,7 +2366,7 @@ void CG_BulletHitClientEvent(int sourceEntityNum, vec_t *position, int surfType,
         "je .Lf1d74a4_001d757a\n"
         "cmpl $0xb7, %eax\n" /* line 2594 */
         "je .Lf1d74a4_001d7590\n"
-        "movl 0x195f5c4, %eax\n" /* line 2597 */
+        "movl imp_cgs, %eax\n" /* line 2597 */
         "movl (%eax), %eax\n"
         "movl 0x10(%ebp), %edx\n" /* surfType */
         "movl 0xbe00(%eax, %edx, 4), %eax\n"
@@ -2379,7 +2379,7 @@ void CG_BulletHitClientEvent(int sourceEntityNum, vec_t *position, int surfType,
         "movzwl (%eax), %ecx\n" /* flashTag */
         /* { scope 2: muzzle */
         /* { scope 3 */
-        "movl 0x195f904, %esi\n" /* line 2497 */
+        "movl imp_cg_tracerChance, %esi\n" /* line 2497 */
         "movl (%esi), %eax\n"
         "pxor %xmm0, %xmm0\n"
         "ucomiss 8(%eax), %xmm0\n"
@@ -2390,7 +2390,7 @@ void CG_BulletHitClientEvent(int sourceEntityNum, vec_t *position, int surfType,
         "calll CG_CalcMuzzlePoint\n"
         "testl %eax, %eax\n"
         "je .Lf1d74a4_001d7572\n"
-        "movl 0x195f584, %eax\n" /* line 2503 */
+        "movl imp_cg, %eax\n" /* line 2503 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "testl $0xc00000, 0x18(%eax)\n"
@@ -2402,7 +2402,7 @@ void CG_BulletHitClientEvent(int sourceEntityNum, vec_t *position, int surfType,
         "calll rand\n" /* line 2506 */
         "movl %eax, %edx\n"
         "movl (%esi), %eax\n" /* line 2508 */
-        "movss 0x2eda78, %xmm1\n" /* 2147483648.0f */
+        "movss lit4_002eda78, %xmm1\n" /* 2147483648.0f */
         "mulss 8(%eax), %xmm1\n"
         "testl %edx, %edx\n"
         "js .Lf1d74a4_001d75a6\n"
@@ -2429,13 +2429,13 @@ void CG_BulletHitClientEvent(int sourceEntityNum, vec_t *position, int surfType,
         "retl\n"
         /* { scope 1 */
         ".Lf1d74a4_001d757a:\n"
-        "movl 0x195f5c4, %eax\n" /* line 2593 */
+        "movl imp_cgs, %eax\n" /* line 2593 */
         "movl (%eax), %eax\n"
         "movl 0x10(%ebp), %edx\n" /* surfType */
         "movl 0xbda4(%eax, %edx, 4), %eax\n"
         "jmp .Lf1d74a4_001d74da\n"
         ".Lf1d74a4_001d7590:\n"
-        "movl 0x195f5c4, %eax\n" /* line 2595 */
+        "movl imp_cgs, %eax\n" /* line 2595 */
         "movl (%eax), %eax\n"
         "movl 0x10(%ebp), %edx\n" /* surfType */
         "movl 0xbe5c(%eax, %edx, 4), %eax\n"
@@ -2467,7 +2467,7 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "movl 8(%ebp), %edi\n" /* parent */
         "movl 0xc(%ebp), %esi\n" /* ps */
         /* { scope 1: ent_axis */
-        "movl 0x195f584, %eax\n" /* line 1364 */
+        "movl imp_cg, %eax\n" /* line 1364 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %edx\n"
         "testl $0xc00000, 0x18(%edx)\n"
@@ -2498,7 +2498,7 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "leal (%edx, %eax, 4), %eax\n"
         "shll $2, %eax\n"
         "movl %eax, -0xfc(%ebp)\n"
-        "movl 0x195f5c8, %eax\n"
+        "movl imp_cg_weapons, %eax\n"
         "movl -0xfc(%ebp), %ecx\n"
         "addl (%eax), %ecx\n"
         "movl %ecx, -0xf0(%ebp)\n" /* weapInfo */
@@ -2512,7 +2512,7 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "leal 0x14(%edi), %ecx\n" /* parent */
         "movl %ecx, -0x100(%ebp)\n"
         ".Lf1d75ba_001d7689:\n"
-        "movl 0x195f584, %eax\n" /* line 1428 */
+        "movl imp_cg, %eax\n" /* line 1428 */
         "movl (%eax), %ebx\n" /* iBoneIdx */
         "leal 0x2c0bc(%ebx), %edx\n" /* iBoneIdx, to */
         /* { scope 3 */
@@ -2532,7 +2532,7 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "movl %ebx, 4(%esp)\n" /* iBoneIdx */
         "movl %esi, (%esp)\n" /* pMtxArray */
         "calll AxisToAngles\n"
-        "movl 0x195f5bc, %eax\n" /* line 1435 */
+        "movl imp_scr_const, %eax\n" /* line 1435 */
         "movzwl 0x94(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl -0xf0(%ebp), %edx\n" /* weapInfo */
@@ -2588,7 +2588,7 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "movl %eax, (%esp)\n"
         "calll MatrixTransformVector43\n"
         ".Lf1d75ba_001d7788:\n"
-        "movl 0x195f584, %esi\n" /* line 1286 */
+        "movl imp_cg, %esi\n" /* line 1286 */
         "movl (%esi), %ebx\n" /* fx */
         "movl 0x2cd08(%ebx), %eax\n" /* fx */
         "testl %eax, %eax\n"
@@ -2603,10 +2603,10 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "js .Lf1d75ba_001d77fb\n"
         "addl 0x25bac(%ebx), %eax\n" /* line 1318 | fx */
         "movl %eax, 0x2cd00(%ebx)\n" /* fx */
-        "movl 0x195ee44, %eax\n" /* line 1322 */
+        "movl imp_player_breath_hold_time, %eax\n" /* line 1322 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "cvttss2si %xmm0, %eax\n"
         "cmpl 0x2cd00(%ebx), %eax\n" /* fx */
         "jl .Lf1d75ba_001d7ba8\n"
@@ -2624,11 +2624,11 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "ucomiss %xmm0, %xmm2\n" /* line 1264 */
         "je .Lf1d75ba_001d7b37\n"
         ".Lf1d75ba_001d782e:\n"
-        "movl 0x195f5c4, %eax\n" /* line 1266 */
+        "movl imp_cgs, %eax\n" /* line 1266 */
         "movl (%eax), %eax\n"
         "addl $0x7104, %eax\n"
         "movl $1, %edx\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "leal -0x44(%ebp), %ecx\n" /* bolt */
         ".Lf1d75ba_001d784a:\n"
         "movss 0x38(%eax), %xmm0\n" /* line 1273 */
@@ -2662,14 +2662,14 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "je .Lf1d75ba_001d796f\n"
         "movl s_barrelTags, %eax\n" /* line 1464 */
         "movzwl (%eax), %ecx\n" /* flashTag */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %esi\n" /* origin */
         "addl $0x2c0bc, %esi\n" /* origin */
         "movl -0xf4(%ebp), %edx\n" /* line 313 | weaponNum */
         "addl $0x400, %edx\n"
         /* { scope 2: bolt */
         /* { scope 3 */
-        "movl 0x195f5c8, %eax\n" /* line 1230 */
+        "movl imp_cg_weapons, %eax\n" /* line 1230 */
         "movl (%eax), %eax\n"
         "movl -0xfc(%ebp), %edi\n"
         "movl 0xc0(%edi, %eax), %ebx\n" /* fx */
@@ -2727,7 +2727,7 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "movl 0xf0(%eax), %edx\n" /* dobjHandle */
         /* { scope 2: bolt */
         /* { scope 3 */
-        "movl 0x195f5c8, %eax\n" /* line 1230 */
+        "movl imp_cg_weapons, %eax\n" /* line 1230 */
         "movl (%eax), %eax\n"
         "movl -0xfc(%ebp), %edi\n"
         "movl 0xc4(%edi, %eax), %ebx\n" /* fx */
@@ -2739,9 +2739,9 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         /* { scope 2: bolt */
         ".Lf1d75ba_001d79a7:\n"
         "cvtsi2ssl 0x25bac(%ebx), %xmm0\n" /* line 1291 | fx */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0xc(%esp)\n"
-        "movl 0x195f934, %eax\n"
+        "movl imp_player_breath_snd_lerp, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -2756,7 +2756,7 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "cmpl 0x2cd04(%ebx), %eax\n" /* line 1307 | fx */
         "jg .Lf1d75ba_001d7b56\n"
         ".Lf1d75ba_001d7a01:\n"
-        "movl 0x195f584, %esi\n" /* line 1312 */
+        "movl imp_cg, %esi\n" /* line 1312 */
         "movl (%esi), %edx\n"
         "movl 0x2cd00(%edx), %eax\n"
         "addl 0x25bac(%edx), %eax\n"
@@ -2828,27 +2828,27 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "calll SND_DeactivateChannelVolumes\n"
         "jmp .Lf1d75ba_001d7884\n"
         ".Lf1d75ba_001d7b56:\n"
-        "movl 0x195f5c4, %eax\n" /* line 1309 */
+        "movl imp_cgs, %eax\n" /* line 1309 */
         "movl (%eax), %eax\n"
         "movl 0xc1c0(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CG_PlayClientSoundAlias\n"
         "jmp .Lf1d75ba_001d7a01\n"
         ".Lf1d75ba_001d7b70:\n"
-        "movl 0x195f5c4, %eax\n" /* line 1328 */
+        "movl imp_cgs, %eax\n" /* line 1328 */
         "movl (%eax), %eax\n"
         "movl 0xc1c8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CG_PlayClientSoundAlias\n"
-        "movl 0x195f8fc, %eax\n" /* line 1329 */
+        "movl imp_player_breath_snd_delay, %eax\n" /* line 1329 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "mulss 8(%eax), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, 0x2cd08(%ebx)\n" /* fx */
         "jmp .Lf1d75ba_001d77fb\n"
         ".Lf1d75ba_001d7ba8:\n"
-        "movl 0x195f5c4, %eax\n" /* line 1324 */
+        "movl imp_cgs, %eax\n" /* line 1324 */
         "movl (%eax), %eax\n"
         "movl 0xc1cc(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2862,15 +2862,15 @@ void CG_AddPlayerWeapon(GfxEntity *parent, weapProjExposion_t (*ps)[8], centity_
         "movl $0, 0x2cd04(%ebx)\n" /* line 1304 | fx */
         "jmp .Lf1d75ba_001d7a01\n"
         ".Lf1d75ba_001d7be5:\n"
-        "movl 0x195f5c4, %eax\n" /* line 1299 */
+        "movl imp_cgs, %eax\n" /* line 1299 */
         "movl (%eax), %eax\n"
         "movl 0xc1c4(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CG_PlayClientSoundAlias\n"
         "movl %eax, 0x2cd04(%ebx)\n" /* fx */
-        "movl 0x195f8fc, %eax\n" /* line 1300 */
+        "movl imp_player_breath_snd_delay, %eax\n" /* line 1300 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "mulss 8(%eax), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, 0x2cd08(%ebx)\n" /* fx */
@@ -2896,7 +2896,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "je .Lf1d7c24_001d7c8f\n"
         "cmpl $5, %eax\n" /* line 1534 */
         "je .Lf1d7c24_001d7c8f\n"
-        "movl 0x195f584, %ebx\n" /* line 1538 | weapDef */
+        "movl imp_cg, %ebx\n" /* line 1538 | weapDef */
         "movl (%ebx), %eax\n" /* weapDef */
         "movl 0x25bc0(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -2904,7 +2904,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movl 0xc(%eax), %edx\n" /* line 1543 */
         "testl %edx, %edx\n"
         "jne .Lf1d7c24_001d7c6a\n"
-        "movl 0x195f7a4, %eax\n"
+        "movl imp_cg_drawGun, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1d7c24_001d86b1\n"
@@ -2948,12 +2948,12 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movl (%eax), %eax\n"
         "cmpl %eax, %edx\n"
         "jl .Lf1d7c24_001d8704\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movaps %xmm3, %xmm2\n"
-        "movss 0x2ed628, %xmm0\n" /* -2.0f */
+        "movss lit4_002ed628, %xmm0\n" /* -2.0f */
         ".Lf1d7c24_001d7d05:\n"
         "movaps %xmm0, %xmm1\n" /* line 952 */
-        "addss 0x2ed720, %xmm1\n" /* 3.0f */
+        "addss lit4_002ed720, %xmm1\n" /* 3.0f */
         "mulss %xmm2, %xmm1\n"
         "mulss %xmm2, %xmm1\n"
         "movss 0x300(%ecx), %xmm0\n"
@@ -2972,7 +2972,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll BG_CalculateWeaponPosition_Sway\n"
-        "movl 0x195f584, %eax\n" /* line 1203 */
+        "movl imp_cg, %eax\n" /* line 1203 */
         "movl (%eax), %ebx\n"
         "leal 0x25bc4(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2983,12 +2983,12 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "je .Lf1d7c24_001d7dba\n"
         "leal 0x28490(%ebx), %edx\n" /* line 1208 */
         "movss 0x25ca0(%ebx), %xmm0\n" /* line 1211 */
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jne .Lf1d7c24_001d8940\n"
         "jp .Lf1d7c24_001d8940\n"
         "movl $0, 4(%edx)\n" /* line 1212 */
         ".Lf1d7c24_001d7dab:\n"
-        "movl 0x195f584, %eax\n" /* line 1216 */
+        "movl imp_cg, %eax\n" /* line 1216 */
         "movl (%eax), %eax\n"
         "movl 0x25ca0(%eax), %eax\n"
         "movl %eax, (%edx)\n"
@@ -3003,13 +3003,13 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movss %xmm0, -0x138(%ebp)\n"
         "movss %xmm0, -0x134(%ebp)\n" /* line 184 */
         "movss %xmm0, -0x130(%ebp)\n" /* line 185 */
-        "movl 0x195f584, %ebx\n" /* line 1165 */
+        "movl imp_cg, %ebx\n" /* line 1165 */
         "movl (%ebx), %esi\n"
         "ucomiss 0x25c10(%esi), %xmm0\n"
         "jp .Lf1d7c24_001d7e0b\n"
         "je .Lf1d7c24_001d87b0\n"
         ".Lf1d7c24_001d7e0b:\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1167 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1167 | 1.0f */
         "ucomiss 0x25ca0(%esi), %xmm1\n"
         "ja .Lf1d7c24_001d8a46\n"
         "movl (%ebx), %ebx\n"
@@ -3028,13 +3028,13 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "andb $1, %cl\n"
         "movl %ecx, %esi\n"
         "je .Lf1d7c24_001d87b7\n"
-        "movl 0x195f8ec, %eax\n" /* line 990 */
+        "movl imp_cg_gun_move_minspeed, %eax\n" /* line 990 */
         "movl (%eax), %eax\n"
         "movl -0x17c(%ebp), %ecx\n" /* weapDef */
         "movss 0x19c(%ecx), %xmm1\n"
         "addss 8(%eax), %xmm1\n"
         ".Lf1d7c24_001d7e70:\n"
-        "movl 0x195f584, %ebx\n" /* line 998 */
+        "movl imp_cg, %ebx\n" /* line 998 */
         "movl (%ebx), %ecx\n"
         "movss 0x2bf1c(%ecx), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
@@ -3052,9 +3052,9 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "ucomiss %xmm0, %xmm6\n"
         "ja .Lf1d7c24_001d8a36\n"
         "movaps %xmm6, %xmm2\n"
-        "movss 0x2ed5dc, %xmm1\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm1\n" /* -1.0f */
         ".Lf1d7c24_001d7ecc:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm2, %xmm3\n"
         "cmpltss %xmm6, %xmm1\n"
         "andps %xmm1, %xmm3\n"
@@ -3081,19 +3081,19 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "mulss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x5c(%ebp)\n"
         /* } scope */
-        "movl 0x195f8f0, %eax\n" /* line 1011 */
+        "movl imp_cg_gun_move_f, %eax\n" /* line 1011 */
         "movl (%eax), %eax\n"
         "movaps %xmm2, %xmm0\n"
         "mulss 8(%eax), %xmm0\n"
         "addss -0x64(%ebp), %xmm0\n" /* targetPos */
         "movss %xmm0, -0x64(%ebp)\n" /* targetPos */
-        "movl 0x195f92c, %eax\n" /* line 1012 */
+        "movl imp_cg_gun_move_r, %eax\n" /* line 1012 */
         "movl (%eax), %eax\n"
         "movaps %xmm2, %xmm0\n"
         "mulss 8(%eax), %xmm0\n"
         "addss -0x60(%ebp), %xmm0\n"
         "movss %xmm0, -0x60(%ebp)\n"
-        "movl 0x195f90c, %eax\n" /* line 1013 */
+        "movl imp_cg_gun_move_u, %eax\n" /* line 1013 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm2\n"
         "addss -0x5c(%ebp), %xmm2\n"
@@ -3108,7 +3108,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "leal 0x28490(%ecx), %edi\n" /* line 1033 | pe */
         "movl %edi, %edx\n" /* pe */
         "movl $1, %ecx\n"
-        "movss 0x2ed658, %xmm7\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm7\n" /* 0.0010000000474974513f */
         ".Lf1d7c24_001d7fa2:\n"
         "leal 0x18(%edx), %esi\n" /* line 1518 */
         "movss 0x18(%edx), %xmm3\n" /* line 1037 */
@@ -3119,7 +3119,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         ".Lf1d7c24_001d7fbb:\n"
         "movl (%ebx), %eax\n" /* line 1039 */
         "movss 0x25cbc(%eax), %xmm0\n"
-        "ucomiss 0x2ed7bc, %xmm0\n" /* 11.0f */
+        "ucomiss lit4_002ed7bc, %xmm0\n" /* 11.0f */
         "jne .Lf1d7c24_001d874c\n"
         "jp .Lf1d7c24_001d874c\n"
         "cvtsi2ssl 0x25bac(%eax), %xmm4\n" /* line 1040 */
@@ -3129,7 +3129,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movaps %xmm2, %xmm0\n"
         "subss %xmm3, %xmm0\n"
         "mulss %xmm0, %xmm1\n"
-        "movl 0x195f908, %eax\n"
+        "movl imp_cg_gun_move_rate, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, -0x1cc(%ebp)\n"
         "movl -0x17c(%ebp), %eax\n" /* weapDef */
@@ -3142,7 +3142,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "jbe .Lf1d7c24_001d8728\n"
         "movaps %xmm4, %xmm0\n" /* line 1046 */
         "mulss %xmm5, %xmm0\n"
-        "mulss 0x2ed7d0, %xmm0\n" /* 0.10000000149011612f */
+        "mulss lit4_002ed7d0, %xmm0\n" /* 0.10000000149011612f */
         "maxss %xmm1, %xmm0\n"
         "addss %xmm3, %xmm0\n" /* line 1049 */
         "movss %xmm0, (%esi)\n"
@@ -3159,7 +3159,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "jp .Lf1d7c24_001d8070\n"
         "je .Lf1d7c24_001d87df\n"
         ".Lf1d7c24_001d8070:\n"
-        "ucomiss 0x2ed5d8, %xmm0\n" /* line 1068 | 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm0\n" /* line 1068 | 0.5f */
         "jp .Lf1d7c24_001d807f\n"
         "jb .Lf1d7c24_001d88da\n"
         ".Lf1d7c24_001d807f:\n"
@@ -3220,7 +3220,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "mulss -0x5c(%ebp), %xmm2\n" /* line 290 */
         "addss -0x130(%ebp), %xmm2\n"
         "movss -0x198(%ebp), %xmm1\n" /* line 1110 | scale */
-        "xorps 0x3038a0, %xmm1\n" /* scale */
+        "xorps cg_perturbations+1056, %xmm1\n" /* scale */
         /* { scope 4 */
         "movaps %xmm1, %xmm0\n" /* line 288 */
         "mulss -0x58(%ebp), %xmm0\n"
@@ -3250,16 +3250,16 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "subl 0x284dc(%ebx), %edx\n"
         "cmpl $0x95, %edx\n" /* line 1189 */
         "jg .Lf1d7c24_001d881d\n"
-        "movss 0x2ed604, %xmm0\n" /* line 1190 | 0.25f */
+        "movss lit4_002ed604, %xmm0\n" /* line 1190 | 0.25f */
         "mulss 0x284d8(%ebx), %xmm0\n"
         "cvtsi2ssl %edx, %xmm1\n"
         "mulss %xmm1, %xmm0\n"
-        "divss 0x2ed93c, %xmm0\n" /* 150.0f */
+        "divss lit4_002ed93c, %xmm0\n" /* 150.0f */
         "addss %xmm0, %xmm3\n"
         "movss %xmm3, -0x130(%ebp)\n"
         /* { scope 3 */
         ".Lf1d7c24_001d826e:\n"
-        "movl 0x195f584, %esi\n" /* line 1119 */
+        "movl imp_cg, %esi\n" /* line 1119 */
         "movl (%esi), %ebx\n"
         "leal 0x25bc4(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -3270,7 +3270,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "je .Lf1d7c24_001d8802\n"
         /* { scope 4 */
         "movss 0x25ca0(%ebx), %xmm1\n" /* line 1123 | fPosLerp */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 1126 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 1126 | 0.0f */
         "jp .Lf1d7c24_001d82ab\n"
         "je .Lf1d7c24_001d8913\n"
         ".Lf1d7c24_001d82ab:\n"
@@ -3291,7 +3291,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         /* } scope */
         /* } scope */
         ".Lf1d7c24_001d8301:\n"
-        "movl 0x195f8f4, %eax\n" /* line 1565 | dir */
+        "movl imp_cg_gun_x, %eax\n" /* line 1565 | dir */
         "movl (%eax), %eax\n" /* dir */
         "movss 8(%eax), %xmm1\n" /* scale */
         "leal 0x2c0c8(%ebx), %eax\n" /* weapDef, dir */
@@ -3308,7 +3308,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "addss -0x130(%ebp), %xmm1\n"
         "movss %xmm1, -0x130(%ebp)\n"
         /* } scope */
-        "movl 0x195f900, %eax\n" /* line 1566 | dir */
+        "movl imp_cg_gun_y, %eax\n" /* line 1566 | dir */
         "movl (%eax), %eax\n" /* dir */
         "movss 8(%eax), %xmm1\n" /* scale */
         "leal 0x2c0d4(%ebx), %eax\n" /* weapDef, dir */
@@ -3325,7 +3325,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "addss -0x130(%ebp), %xmm1\n"
         "movss %xmm1, -0x130(%ebp)\n"
         /* } scope */
-        "movl 0x195f914, %eax\n" /* line 1567 | dir */
+        "movl imp_cg_gun_z, %eax\n" /* line 1567 | dir */
         "movl (%eax), %eax\n" /* dir */
         "movss 8(%eax), %xmm1\n" /* scale */
         "leal 0x2c0e0(%ebx), %eax\n" /* weapDef, dir */
@@ -3354,7 +3354,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movl 0x2bf1c(%ebx), %eax\n" /* line 1574 | weapDef */
         "movl %eax, -0xfc(%ebp)\n"
         "cvtsi2ssl 0x25bac(%ebx), %xmm0\n" /* line 1575 | weapDef */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0xf8(%ebp)\n"
         "leal 0x284b4(%ebx), %edx\n" /* weapDef */
         /* { scope 2: weapDef, targetPos */
@@ -3379,7 +3379,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "subl %edx, %eax\n"
         ".Lf1d7c24_001d84b6:\n"
         "movl %eax, -0xe0(%ebp)\n"
-        "movl 0x195f584, %edx\n" /* line 1580 */
+        "movl imp_cg, %edx\n" /* line 1580 */
         "movl (%edx), %esi\n"
         "movl 0x2bf10(%esi), %eax\n"
         "movl %eax, -0xdc(%ebp)\n"
@@ -3449,7 +3449,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "testl %eax, %eax\n"
         "je .Lf1d7c24_001d89f5\n"
         ".Lf1d7c24_001d85dc:\n"
-        "movl 0x195f584, %ebx\n" /* line 1596 | weapDef */
+        "movl imp_cg, %ebx\n" /* line 1596 | weapDef */
         "movl (%ebx), %eax\n" /* weapDef */
         "movl 0x285c8(%eax), %edx\n"
         "movl %edx, 0x2c090(%eax)\n"
@@ -3521,15 +3521,15 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "cvtsi2ssl %eax, %xmm0\n"
         "divss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n"
-        "mulss 0x2ed628, %xmm0\n" /* -2.0f */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* -2.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "jmp .Lf1d7c24_001d7d05\n"
         /* { scope 2: weapDef, targetPos */
         /* { scope 3 */
         ".Lf1d7c24_001d8728:\n"
         "movaps %xmm4, %xmm0\n" /* line 1055 */
         "mulss %xmm5, %xmm0\n"
-        "mulss 0x2ed7d4, %xmm0\n" /* -0.10000000149011612f */
+        "mulss lit4_002ed7d4, %xmm0\n" /* -0.10000000149011612f */
         "minss %xmm1, %xmm0\n"
         "addss %xmm3, %xmm0\n" /* line 1058 */
         "maxss %xmm0, %xmm2\n" /* line 1060 */
@@ -3544,7 +3544,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movaps %xmm2, %xmm0\n"
         "subss %xmm3, %xmm0\n"
         "mulss %xmm0, %xmm1\n"
-        "movl 0x195f908, %eax\n"
+        "movl imp_cg_gun_move_rate, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, -0x1d0(%ebp)\n"
         "movl -0x17c(%ebp), %eax\n" /* weapDef */
@@ -3565,7 +3565,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         ".Lf1d7c24_001d87b7:\n"
         "testb $4, %dl\n" /* line 991 */
         "je .Lf1d7c24_001d895f\n"
-        "movl 0x195f8ec, %eax\n" /* line 992 */
+        "movl imp_cg_gun_move_minspeed, %eax\n" /* line 992 */
         "movl (%eax), %eax\n"
         "movl -0x17c(%ebp), %ecx\n" /* weapDef */
         "movss 0x198(%ecx), %xmm1\n"
@@ -3597,13 +3597,13 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         ".Lf1d7c24_001d881d:\n"
         "cmpl $0x1c1, %edx\n" /* line 1191 */
         "jg .Lf1d7c24_001d826e\n"
-        "movss 0x2ed604, %xmm0\n" /* line 1192 | 0.25f */
+        "movss lit4_002ed604, %xmm0\n" /* line 1192 | 0.25f */
         "mulss 0x284d8(%ebx), %xmm0\n"
         "movl $0x1c2, %eax\n"
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
         "mulss %xmm1, %xmm0\n"
-        "divss 0x2eda80, %xmm0\n" /* 300.0f */
+        "divss lit4_002eda80, %xmm0\n" /* 300.0f */
         "addss %xmm0, %xmm3\n"
         "movss %xmm3, -0x130(%ebp)\n"
         "jmp .Lf1d7c24_001d826e\n"
@@ -3626,22 +3626,22 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "addss 8(%eax), %xmm2\n"
         "movss %xmm2, -0x5c(%ebp)\n"
         /* } scope */
-        "movl 0x195f930, %eax\n" /* line 1028 */
+        "movl imp_cg_gun_ofs_f, %eax\n" /* line 1028 */
         "movl (%eax), %eax\n"
         "addss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x64(%ebp)\n" /* targetPos */
-        "movl 0x195f91c, %eax\n" /* line 1029 */
+        "movl imp_cg_gun_ofs_r, %eax\n" /* line 1029 */
         "movl (%eax), %eax\n"
         "addss 8(%eax), %xmm1\n"
         "movss %xmm1, -0x60(%ebp)\n"
-        "movl 0x195f8f8, %eax\n" /* line 1030 */
+        "movl imp_cg_gun_ofs_u, %eax\n" /* line 1030 */
         "movl (%eax), %eax\n"
         "addss 8(%eax), %xmm2\n"
         "movss %xmm2, -0x5c(%ebp)\n"
         "jmp .Lf1d7c24_001d7f8d\n"
         ".Lf1d7c24_001d88da:\n"
-        "mulss 0x2ed628, %xmm0\n" /* line 1070 | -2.0f */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* line 1070 | -2.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "leal 0x18(%edi), %eax\n" /* pe */
         /* { scope 4 */
         "movaps %xmm0, %xmm2\n" /* line 288 */
@@ -3659,7 +3659,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         /* { scope 4 */
         ".Lf1d7c24_001d8913:\n"
         "movl $0, 0x2c098(%ebx)\n" /* line 1134 */
-        "movl 0x195f584, %ebx\n" /* line 1135 */
+        "movl imp_cg, %ebx\n" /* line 1135 */
         "movl (%ebx), %eax\n"
         "movl $0, 0x2c09c(%eax)\n"
         "movl $0, 0x2c0a0(%eax)\n" /* line 1136 */
@@ -3669,7 +3669,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         /* } scope */
         /* } scope */
         ".Lf1d7c24_001d8940:\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 1213 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 1213 | 0.0f */
         "jne .Lf1d7c24_001d7dab\n"
         "jp .Lf1d7c24_001d7dab\n"
         "movl $1, 4(%edx)\n" /* line 1214 */
@@ -3677,7 +3677,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         /* { scope 2: weapDef, targetPos */
         /* { scope 3 */
         ".Lf1d7c24_001d895f:\n"
-        "movl 0x195f8ec, %eax\n" /* line 994 */
+        "movl imp_cg_gun_move_minspeed, %eax\n" /* line 994 */
         "movl (%eax), %eax\n"
         "movl -0x17c(%ebp), %ecx\n" /* weapDef */
         "movss 0x194(%ecx), %xmm1\n"
@@ -3686,7 +3686,7 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         /* } scope */
         /* } scope */
         ".Lf1d7c24_001d897e:\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 943 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 943 | 1.0f */
         "jmp .Lf1d7c24_001d7d2c\n"
         /* { scope 2: weapDef, targetPos */
         /* { scope 3 */
@@ -3734,14 +3734,14 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "movl %eax, (%esp)\n"
         "calll AngleNormalize360\n"
         "fstps 0x2c094(%esi)\n"
-        "movl 0x195f584, %ebx\n" /* weapDef */
+        "movl imp_cg, %ebx\n" /* weapDef */
         "movl (%ebx), %edx\n" /* weapDef */
         "jmp .Lf1d7c24_001d85fe\n"
         /* { scope 2: weapDef, targetPos */
         /* { scope 3 */
         ".Lf1d7c24_001d8a36:\n"
         "movaps %xmm2, %xmm1\n" /* line 45 */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "jmp .Lf1d7c24_001d7ecc\n"
         /* } scope */
         ".Lf1d7c24_001d8a46:\n"
@@ -3754,13 +3754,13 @@ void CG_AddViewWeapon(weapProjExposion_t (*ps)[8])
         "fstps -0x1bc(%ebp)\n"
         "movss -0x1bc(%ebp), %xmm2\n"
         "movaps %xmm2, %xmm0\n" /* line 1171 */
-        "mulss 0x2ed628, %xmm0\n" /* -2.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* -2.0f */
         "addss -0x2c(%ebp), %xmm0\n"
         "movss %xmm0, -0x2c(%ebp)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1173 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1173 | 1.0f */
         "subss 0x25ca0(%esi), %xmm1\n"
         "mulss %xmm2, %xmm1\n"
-        "mulss 0x2eda7c, %xmm1\n" /* 1.600000023841858f */
+        "mulss lit4_002eda7c, %xmm1\n" /* 1.600000023841858f */
         "movl $0, 0xc(%esp)\n" /* line 1175 */
         "leal -0x40(%ebp), %eax\n" /* right */
         "movl %eax, 8(%esp)\n"
@@ -3806,7 +3806,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "je .Lf1d8b20_001d8c56\n"
         "cmpl $0xb7, %eax\n" /* line 2544 */
         "je .Lf1d8b20_001d8c7a\n"
-        "movl 0x195f5c4, %ecx\n" /* line 2552 */
+        "movl imp_cgs, %ecx\n" /* line 2552 */
         "movl (%ecx), %eax\n"
         "movl 0xbe00(%eax, %edx, 4), %ecx\n"
         "movl 0xc200(%eax), %eax\n" /* line 2553 */
@@ -3814,7 +3814,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "movl 0x170(%eax, %edx, 4), %ebx\n" /* fxNormal */
         "movl 0x1cc(%eax, %edx, 4), %esi\n" /* line 2554 | fxReflect */
         ".Lf1d8b20_001d8b6e:\n"
-        "movl 0x195f93c, %eax\n" /* line 2559 */
+        "movl imp_cg_blood, %eax\n" /* line 2559 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1d8b20_001d8b84\n"
@@ -3845,7 +3845,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "movzwl (%eax), %ecx\n" /* flashTag */
         /* { scope 2: muzzle */
         /* { scope 3 */
-        "movl 0x195f904, %esi\n" /* line 2497 */
+        "movl imp_cg_tracerChance, %esi\n" /* line 2497 */
         "movl (%esi), %eax\n"
         "pxor %xmm0, %xmm0\n"
         "ucomiss 8(%eax), %xmm0\n"
@@ -3856,7 +3856,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "calll CG_CalcMuzzlePoint\n"
         "testl %eax, %eax\n"
         "je .Lf1d8b20_001d8c4e\n"
-        "movl 0x195f584, %eax\n" /* line 2503 */
+        "movl imp_cg, %eax\n" /* line 2503 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "testl $0xc00000, 0x18(%eax)\n"
@@ -3868,7 +3868,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "calll rand\n" /* line 2506 */
         "movl %eax, %edx\n"
         "movl (%esi), %eax\n" /* line 2508 */
-        "movss 0x2eda78, %xmm1\n" /* 2147483648.0f */
+        "movss lit4_002eda78, %xmm1\n" /* 2147483648.0f */
         "mulss 8(%eax), %xmm1\n"
         "testl %edx, %edx\n"
         "js .Lf1d8b20_001d8cba\n"
@@ -3895,7 +3895,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "retl\n"
         /* { scope 1 */
         ".Lf1d8b20_001d8c56:\n"
-        "movl 0x195f5c4, %ecx\n" /* line 2540 */
+        "movl imp_cgs, %ecx\n" /* line 2540 */
         "movl (%ecx), %eax\n"
         "movl 0xbda4(%eax, %edx, 4), %ecx\n"
         "movl 0xc200(%eax), %eax\n" /* line 2541 */
@@ -3904,7 +3904,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "movl 0x5c(%eax, %edx, 4), %esi\n" /* line 2542 | fxReflect */
         "jmp .Lf1d8b20_001d8b6e\n"
         ".Lf1d8b20_001d8c7a:\n"
-        "movl 0x195f5c4, %ecx\n" /* line 2546 */
+        "movl imp_cgs, %ecx\n" /* line 2546 */
         "movl (%ecx), %eax\n"
         "movl 0xbe5c(%eax, %edx, 4), %ecx\n"
         "movl 0xc200(%eax), %eax\n" /* line 2547 */
@@ -3913,7 +3913,7 @@ void CG_BulletHitEvent(int sourceEntityNum, vec_t *position, vec_t *normal, vec_
         "movl 0x114(%eax, %edx, 4), %esi\n" /* line 2548 | fxReflect */
         "jmp .Lf1d8b20_001d8b6e\n"
         ".Lf1d8b20_001d8ca5:\n"
-        "movl 0x195f5c4, %edx\n" /* line 2561 */
+        "movl imp_cgs, %edx\n" /* line 2561 */
         "movl (%edx), %eax\n"
         "movl 0xc204(%eax), %ebx\n" /* fxNormal */
         "xorl %esi, %esi\n" /* fxReflect */
@@ -3959,7 +3959,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         "movl %eax, -0x148(%ebp)\n"
         "movss 8(%esi), %xmm3\n"
         "subss 8(%edi), %xmm3\n"
-        "movl 0x195f584, %eax\n" /* line 2410 */
+        "movl imp_cg, %eax\n" /* line 2410 */
         "movl (%eax), %eax\n"
         "movaps %xmm2, %xmm1\n" /* line 304 */
         "mulss 0x285a0(%eax), %xmm1\n"
@@ -3982,7 +3982,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         "movss %xmm0, -0x20(%ebp)\n"
         "mulss 0x285a8(%eax), %xmm2\n" /* line 274 */
         "movss %xmm2, -0x1c(%ebp)\n"
-        "xorps 0x3038b0, %xmm1\n" /* line 2414 | scale */
+        "xorps cg_perturbations+1072, %xmm1\n" /* line 2414 | scale */
         /* { scope 2: tracerScaleDistRange */
         "movaps %xmm1, %xmm0\n" /* line 288 */
         "mulss 0x285ac(%eax), %xmm0\n"
@@ -4000,23 +4000,23 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         "movl %eax, (%esp)\n"
         "calll Vec3Normalize\n"
         "fstp %st(0)\n"
-        "movl 0x195f938, %eax\n" /* line 2417 */
+        "movl imp_cg_tracerWidth, %eax\n" /* line 2417 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x13c(%ebp)\n"
         /* { scope 2: tracerScaleDistRange */
-        "movl 0x195f918, %eax\n" /* line 2376 */
+        "movl imp_cg_tracerScale, %eax\n" /* line 2376 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm2\n"
-        "movl 0x195f910, %eax\n" /* line 2377 */
+        "movl imp_cg_tracerScaleMinDist, %eax\n" /* line 2377 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "movss %xmm1, -0x144(%ebp)\n" /* tracerScaleMinDist */
-        "movl 0x195f8e8, %eax\n" /* line 2378 */
+        "movl imp_cg_tracerScaleDistRange, %eax\n" /* line 2378 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x140(%ebp)\n" /* tracerScaleDistRange */
-        "ucomiss 0x2ed5d0, %xmm2\n" /* line 2380 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* line 2380 | 1.0f */
         "jne .Lf1d8cd0_001d9073\n"
         "jp .Lf1d8cd0_001d9073\n"
         "movss -0x13c(%ebp), %xmm6\n"
@@ -4045,7 +4045,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         "movl $0x3f800000, -0x110(%ebp)\n" /* line 30 */
         "movl $0x3f800000, -0x10c(%ebp)\n" /* line 31 */
         "movl $0xffffffff, -0x11c(%ebp)\n" /* line 2425 */
-        "movss 0x3038b0, %xmm2\n" /* line 2427 */
+        "movss cg_perturbations+1072, %xmm2\n" /* line 2427 */
         "xorps %xmm2, %xmm1\n" /* scale */
         /* { scope 2: tracerScaleDistRange */
         "movaps %xmm5, %xmm0\n" /* line 288 */
@@ -4112,7 +4112,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         "movl %ebx, 0xc(%esp)\n" /* line 2443 */
         "movl $4, 8(%esp)\n"
         "movl $0x1f, 4(%esp)\n"
-        "movl 0x195f5c4, %eax\n"
+        "movl imp_cgs, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0xba3c(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -4127,7 +4127,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         /* { scope 1: tracerScaleMinDist */
         /* { scope 2: tracerScaleDistRange */
         ".Lf1d8cd0_001d9073:\n"
-        "movl 0x195f584, %eax\n" /* line 2383 */
+        "movl imp_cg, %eax\n" /* line 2383 */
         "movl (%eax), %ebx\n"
         "addl $0x28588, %ebx\n"
         "movl %ebx, 4(%esp)\n"
@@ -4162,7 +4162,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         "movaps %xmm0, %xmm1\n" /* line 2352 */
         "divss -0x140(%ebp), %xmm1\n" /* tracerScaleDistRange */
         "mulss %xmm2, %xmm1\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 406 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 406 | 1.0f */
         "ucomiss %xmm1, %xmm5\n"
         "ja .Lf1d8cd0_001d9191\n"
         "ucomiss %xmm2, %xmm1\n" /* line 408 */
@@ -4192,7 +4192,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         "mulss %xmm2, %xmm1\n"
         "jmp .Lf1d8cd0_001d8e54\n"
         ".Lf1d8cd0_001d916d:\n"
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         /* { scope 3 */
         ".Lf1d8cd0_001d9175:\n"
         "movaps %xmm2, %xmm1\n" /* line 408 */
@@ -4200,7 +4200,7 @@ void CG_DrawTracer(vec_t *start, vec_t *finish)
         /* } scope */
         ".Lf1d8cd0_001d917a:\n"
         "movss -0x13c(%ebp), %xmm6\n" /* line 2392 */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "jmp .Lf1d8cd0_001d9132\n"
         /* { scope 3 */
         /* { scope 4 */
@@ -4232,7 +4232,7 @@ void CG_WeaponSlot_f(qboolean next, qboolean ignoreEmpty)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 1857 */
+        "movl imp_cg, %eax\n" /* line 1857 */
         "movl (%eax), %esi\n"
         "movl 0x24(%esi), %eax\n"
         "testl %eax, %eax\n"
@@ -4244,7 +4244,7 @@ void CG_WeaponSlot_f(qboolean next, qboolean ignoreEmpty)
         "movl 0x25bb0(%esi), %ecx\n" /* line 1867 */
         "movl %ecx, %eax\n"
         "subl 0x2be54(%esi), %eax\n"
-        "movl 0x195f928, %edx\n"
+        "movl imp_cg_weaponCycleDelay, %edx\n"
         "movl (%edx), %edx\n"
         "cmpl 8(%edx), %eax\n"
         "jge .Lf1d91a4_001d91ee\n"
@@ -4355,7 +4355,7 @@ qboolean CG_SelectFirstWeaponNotInSlot(qboolean bNext, qboolean bIgnoreEmpty)
         "calll BG_GetNumWeapons\n"
         "cmpl %esi, %eax\n" /* iWeaponIndex */
         "jl .Lf1d92a8_001d93c9\n"
-        "movl 0x195f584, %eax\n" /* line 1964 */
+        "movl imp_cg, %eax\n" /* line 1964 */
         "movl (%eax), %edx\n"
         "movl %esi, %eax\n" /* iWeaponIndex */
         "sarl $5, %eax\n"
@@ -4374,7 +4374,7 @@ qboolean CG_SelectFirstWeaponNotInSlot(qboolean bNext, qboolean bIgnoreEmpty)
         "jne .Lf1d92a8_001d92ca\n"
         "movl $0, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* iWeaponIndex */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "addl $0x25bc4, %eax\n"
         "movl %eax, (%esp)\n"
@@ -4389,7 +4389,7 @@ qboolean CG_SelectFirstWeaponNotInSlot(qboolean bNext, qboolean bIgnoreEmpty)
         "testl %edi, %edi\n"
         "je .Lf1d92a8_001d9378\n"
         "movl %esi, 4(%esp)\n" /* iWeaponIndex */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "addl $0x25bc4, %eax\n"
         "movl %eax, (%esp)\n"
@@ -4397,7 +4397,7 @@ qboolean CG_SelectFirstWeaponNotInSlot(qboolean bNext, qboolean bIgnoreEmpty)
         "testl %eax, %eax\n"
         "je .Lf1d92a8_001d92ca\n"
         ".Lf1d92a8_001d9378:\n"
-        "movl 0x195f584, %eax\n" /* line 2682 */
+        "movl imp_cg, %eax\n" /* line 2682 */
         "movl (%eax), %edi\n"
         "movl 0x25bb0(%edi), %eax\n"
         "movl %eax, 0x2be54(%edi)\n"
@@ -4457,7 +4457,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "movl 0xc(%ebp), %edx\n" /* bIgnoreEmpty */
         "movl %edx, -0x30(%ebp)\n" /* bIgnoreEmpty */
         /* { scope 1: step, step */
-        "movl 0x195f584, %esi\n" /* line 1997 | iWeaponIndex */
+        "movl imp_cg, %esi\n" /* line 1997 | iWeaponIndex */
         "movl (%esi), %eax\n" /* iWeaponIndex */
         "movl 0x24(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -4486,7 +4486,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "je .Lf1d93f0_001d996c\n"
         /* { scope 2 */
         "movl %eax, %ebx\n" /* line 1924 | slot */
-        "movl 0x195f584, %esi\n"
+        "movl imp_cg, %esi\n"
         /* } scope */
         ".Lf1d93f0_001d947d:\n"
         "movl -0x28(%ebp), %ecx\n" /* line 2024 | iStep */
@@ -4508,7 +4508,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "calll BG_WeaponAmmo\n"
         "testl %eax, %eax\n"
         "je .Lf1d93f0_001d947d\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "movl (%esi), %eax\n" /* iWeaponIndex */
         ".Lf1d93f0_001d94c9:\n"
         "movzbl 0x26118(%ebx, %eax), %ecx\n" /* line 2034 | weaponIndex */
@@ -4554,7 +4554,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "movl -0x30(%ebp), %eax\n" /* line 2083 | bIgnoreEmpty */
         "testl %eax, %eax\n"
         "je .Lf1d93f0_001d987a\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %esi\n" /* iWeaponIndex */
         "leal 0x25bc4(%esi), %edi\n" /* iWeaponIndex, iSlotLooped */
         "jmp .Lf1d93f0_001d9569\n"
@@ -4574,7 +4574,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "calll BG_WeaponAmmo\n"
         "testl %eax, %eax\n"
         "je .Lf1d93f0_001d955a\n"
-        "movl 0x195f584, %esi\n"
+        "movl imp_cg, %esi\n"
         ".Lf1d93f0_001d958e:\n"
         "movl (%esi), %eax\n" /* line 1926 */
         "movzbl 0x26118(%ebx, %eax), %ecx\n" /* weaponIndex */
@@ -4591,7 +4591,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "calll BG_GetWeaponDef\n"
         "cmpl 0x36c(%eax), %ebx\n" /* weaponIndex */
         "je .Lf1d93f0_001d995c\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         ".Lf1d93f0_001d95cf:\n"
         "xorl %edi, %edi\n" /* iSlotLooped */
         ".Lf1d93f0_001d95d1:\n"
@@ -4639,7 +4639,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "movl -0x30(%ebp), %eax\n" /* line 2032 | bIgnoreEmpty */
         "testl %eax, %eax\n"
         "je .Lf1d93f0_001d99c8\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "movl %esi, %edi\n" /* iWeaponIndex, iSlotLooped */
         "jmp .Lf1d93f0_001d9658\n"
         /* { scope 2 */
@@ -4705,7 +4705,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "calll BG_GetStackSlotForWeapon\n"
         "testl %eax, %eax\n" /* line 2020 */
         "jne .Lf1d93f0_001d946a\n"
-        "movl 0x195f584, %eax\n" /* line 2047 */
+        "movl imp_cg, %eax\n" /* line 2047 */
         "movl (%eax), %eax\n"
         "movl 0x2be50(%eax), %esi\n" /* iWeaponIndex */
         ".Lf1d93f0_001d973f:\n"
@@ -4722,7 +4722,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "leal 1(%edx), %esi\n" /* iWeaponIndex */
         "cmpl %esi, -0x24(%ebp)\n" /* line 2050 | iWeaponIndex, iWeaponLooped */
         "je .Lf1d93f0_001d9529\n"
-        "movl 0x195f584, %eax\n" /* line 2054 */
+        "movl imp_cg, %eax\n" /* line 2054 */
         "movl (%eax), %ebx\n" /* weaponIndex */
         "movl %esi, %eax\n" /* iWeaponIndex */
         "sarl $5, %eax\n"
@@ -4774,7 +4774,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         ".Lf1d93f0_001d9822:\n"
         "xorl %ebx, %ebx\n" /* weaponIndex */
         ".Lf1d93f0_001d9824:\n"
-        "movl 0x195f584, %eax\n" /* line 2689 */
+        "movl imp_cg, %eax\n" /* line 2689 */
         "movl (%eax), %eax\n"
         "movl %esi, 0x2be50(%eax)\n" /* iWeaponIndex */
         "movl $1, (%esp)\n" /* line 2690 */
@@ -4794,10 +4794,10 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "calll BG_GetWeaponDef\n"
         "cmpl 0x36c(%eax), %ebx\n" /* weaponIndex */
         "je .Lf1d93f0_001d9928\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d94f6\n"
         ".Lf1d93f0_001d987a:\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         /* } scope */
         /* { scope 2 */
         ".Lf1d93f0_001d9880:\n"
@@ -4815,10 +4815,10 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "movl -0x2c(%ebp), %edx\n" /* bNext */
         "movl %edx, (%esp)\n"
         "calll CG_SelectFirstWeaponNotInSlot\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d9690\n"
         ".Lf1d93f0_001d98b8:\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         /* { scope 2 */
         ".Lf1d93f0_001d98be:\n"
         "movl (%esi), %eax\n" /* line 1926 */
@@ -4842,21 +4842,21 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "movl %edi, %eax\n" /* line 2692 | iSlotLooped */
         "testb %al, %al\n"
         "je .Lf1d93f0_001d9938\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d9690\n"
         ".Lf1d93f0_001d9910:\n"
         "movl %eax, (%esp)\n" /* line 2687 */
         "calll BG_GetWeaponDef\n"
         "cmpl 0x36c(%eax), %ebx\n" /* weaponIndex */
         "je .Lf1d93f0_001d994f\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d98e9\n"
         /* } scope */
         /* } scope */
         /* { scope 2 */
         ".Lf1d93f0_001d9928:\n"
         "movl $1, %edi\n" /* iSlotLooped */
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d94f8\n"
         /* } scope */
         /* { scope 2 */
@@ -4864,11 +4864,11 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         ".Lf1d93f0_001d9938:\n"
         "movl $0, (%esp)\n" /* line 2693 */
         "calll CL_SetADS\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d9690\n"
         ".Lf1d93f0_001d994f:\n"
         "movl $1, %edi\n" /* line 2687 | iSlotLooped */
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d98eb\n"
         /* } scope */
         /* } scope */
@@ -4876,13 +4876,13 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         /* { scope 3 */
         ".Lf1d93f0_001d995c:\n"
         "movl $1, %edi\n" /* iSlotLooped */
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         "jmp .Lf1d93f0_001d95d1\n"
         /* } scope */
         /* } scope */
         ".Lf1d93f0_001d996c:\n"
         "movl %eax, %ebx\n" /* line 2020 | slot */
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         ".Lf1d93f0_001d9974:\n"
         "movl -0x28(%ebp), %ecx\n" /* line 2024 | iStep */
         "leal 1(%ecx, %ebx), %eax\n"
@@ -4908,7 +4908,7 @@ void CG_CycleWeap(qboolean bNext, qboolean bIgnoreEmpty)
         "movl $1, %ebx\n" /* weaponIndex */
         "jmp .Lf1d93f0_001d9824\n"
         ".Lf1d93f0_001d99c8:\n"
-        "movl 0x195f584, %esi\n" /* iWeaponIndex */
+        "movl imp_cg, %esi\n" /* iWeaponIndex */
         /* { scope 2 */
         ".Lf1d93f0_001d99ce:\n"
         "movl (%esi), %eax\n" /* line 1921 */
@@ -4934,7 +4934,7 @@ void CG_OutOfAmmoChange(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %esi\n" /* line 1786 */
+        "movl imp_cg, %esi\n" /* line 1786 */
         "movl (%esi), %eax\n"
         "movl 0x24(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -4947,7 +4947,7 @@ void CG_OutOfAmmoChange(void)
         "testl %eax, %eax\n"
         "jne .Lf1d99ee_001d9a99\n"
         ".Lf1d99ee_001d9a25:\n"
-        "movl 0x195f584, %edx\n" /* line 1813 */
+        "movl imp_cg, %edx\n" /* line 1813 */
         "movl (%edx), %ebx\n" /* iNewWeapon */
         "movl $1, 8(%esp)\n"
         "movl 0x25c98(%ebx), %eax\n" /* iNewWeapon */
@@ -4959,7 +4959,7 @@ void CG_OutOfAmmoChange(void)
         "je .Lf1d99ee_001d9a7d\n"
         "xorl %edi, %edi\n"
         "movl $iSlotPreferenceOrder, %esi\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl %eax, -0x20(%ebp)\n"
         /* { scope 2 */
         ".Lf1d99ee_001d9a60:\n"
@@ -5109,7 +5109,7 @@ void CG_PrevWeapon_f(void)
         "calll CG_ScoreboardDisplayed\n" /* line 1745 */
         "testl %eax, %eax\n"
         "jne .Lf1d9c04_001d9c53\n"
-        "movl 0x195f584, %eax\n" /* line 1751 */
+        "movl imp_cg, %eax\n" /* line 1751 */
         "movl (%eax), %ecx\n"
         "movl 0x24(%ecx), %eax\n"
         "testl %eax, %eax\n"
@@ -5121,7 +5121,7 @@ void CG_PrevWeapon_f(void)
         "movl 0x25bb0(%ecx), %ebx\n" /* line 1761 */
         "movl %ebx, %eax\n"
         "subl 0x2be54(%ecx), %eax\n"
-        "movl 0x195f928, %edx\n"
+        "movl imp_cg_weaponCycleDelay, %edx\n"
         "movl (%edx), %edx\n"
         "cmpl 8(%edx), %eax\n"
         "jge .Lf1d9c04_001d9c5d\n"
@@ -5159,7 +5159,7 @@ void CG_NextWeapon_f(void)
         "calll CG_ScoreboardDisplayed\n" /* line 1702 */
         "testl %eax, %eax\n"
         "jne .Lf1d9c7e_001d9ccd\n"
-        "movl 0x195f584, %eax\n" /* line 1708 */
+        "movl imp_cg, %eax\n" /* line 1708 */
         "movl (%eax), %ecx\n"
         "movl 0x24(%ecx), %eax\n"
         "testl %eax, %eax\n"
@@ -5171,7 +5171,7 @@ void CG_NextWeapon_f(void)
         "movl 0x25bb0(%ecx), %ebx\n" /* line 1718 */
         "movl %ebx, %eax\n"
         "subl 0x2be54(%ecx), %eax\n"
-        "movl 0x195f928, %edx\n"
+        "movl imp_cg_weaponCycleDelay, %edx\n"
         "movl (%edx), %edx\n"
         "cmpl 8(%edx), %eax\n"
         "jge .Lf1d9c7e_001d9cd7\n"
@@ -5256,7 +5256,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5302,7 +5302,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "movl 0x5d0(%edx), %eax\n"
         "andb $0xfd, %ah\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7ea0, (%esp)\n" /* "CG_WeaponRunXModelAnims: Unknown weapon animation %i
+        "movl $str_002b7ea0, (%esp)\n" /* "CG_WeaponRunXModelAnims: Unknown weapon animation %i
 " */
         "calll Com_Printf\n"
         ".Lf1d9cf8_001d9e69:\n"
@@ -5320,7 +5320,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "retl\n"
         /* { scope 1 */
         ".Lf1d9cf8_001d9e83:\n"
-        "jmpl *0x3038c8(, %eax, 4)\n" /* line 171 */
+        "jmpl *iSlotPreferenceOrder+8(, %eax, 4)\n" /* line 171 */
         ".Lf1d9cf8_001d9e8a:\n"
         "movl $1, %edx\n" /* line 149 */
         "jmp .Lf1d9cf8_001d9d45\n"
@@ -5361,7 +5361,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5404,7 +5404,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5447,7 +5447,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5490,7 +5490,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5533,7 +5533,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5576,7 +5576,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5619,7 +5619,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5662,7 +5662,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5705,7 +5705,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5748,7 +5748,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5791,7 +5791,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5834,7 +5834,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5877,7 +5877,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5920,7 +5920,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -5962,7 +5962,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -6004,7 +6004,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -6047,7 +6047,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -6089,7 +6089,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -6137,7 +6137,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -6179,7 +6179,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* weapInfo */
         "movl %edi, %ebx\n" /* weapInfo */
@@ -6242,7 +6242,7 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
         "cmpl %eax, -0x48(%ebp)\n" /* weaponNum */
         "jg .Lf1dad2a_001daeb0\n"
         ".Lf1dad2a_001dad5c:\n"
-        "movl 0x195f5c8, %eax\n" /* line 288 */
+        "movl imp_cg_weapons, %eax\n" /* line 288 */
         "movl -0x3c(%ebp), %edx\n"
         "addl (%eax), %edx\n"
         "movl %edx, -0x4c(%ebp)\n" /* weapInfo */
@@ -6376,7 +6376,7 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
         "leal (%ebx, %ebx, 2), %eax\n" /* line 1492 | weaponIndex */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n" /* weaponIndex */
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "movl %edx, -0x50(%ebp)\n"
         "leal (%edx, %eax, 4), %ebx\n" /* weaponIndex */
@@ -6384,10 +6384,10 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
         "movl 8(%ebp), %edx\n" /* ps */
         "movl %edx, (%esp)\n"
         "calll CG_WeaponRunXModelAnims\n"
-        "movl 0x195f584, %eax\n" /* line 1498 */
+        "movl imp_cg, %eax\n" /* line 1498 */
         "movl (%eax), %edi\n" /* pAnimTree */
         "cvtsi2ssl 0x25bac(%edi), %xmm0\n" /* pAnimTree */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 4(%esp)\n"
         "movl (%ebx), %eax\n" /* weaponIndex */
         "movl %eax, (%esp)\n"
@@ -6441,14 +6441,14 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
         "cmpl %esi, -0x40(%ebp)\n"
         "je .Lf1dad2a_001daeb0\n"
         ".Lf1dad2a_001db062:\n"
-        "movl $0x220658, 4(%esp)\n" /* line 108 */
+        "movl $str_00220658, 4(%esp)\n" /* line 108 */
         "movl -0x1c(%ebp), %eax\n"
         "movl (%eax, %ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf1dad2a_001db03e\n"
-        "movl $0x220668, 4(%esp)\n" /* line 110 */
+        "movl $str_00220668, 4(%esp)\n" /* line 110 */
         "movl -0x1c(%ebp), %eax\n"
         "movl (%eax, %ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -6469,7 +6469,7 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
         "calll DObjCalcSkel\n"
         "jmp .Lf1dad2a_001daff6\n"
         ".Lf1dad2a_001db0c2:\n"
-        "movl $0x220678, 4(%esp)\n" /* line 112 */
+        "movl $str_00220678, 4(%esp)\n" /* line 112 */
         "movl -0x1c(%ebp), %eax\n"
         "movl (%eax, %ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -6480,7 +6480,7 @@ void CG_UpdateViewWeaponAnim(weapProjExposion_t (*ps)[8])
         "movl 0x12c(%eax), %edi\n"
         "jmp .Lf1dad2a_001db047\n"
         ".Lf1dad2a_001db0ea:\n"
-        "movl $0x220688, 4(%esp)\n" /* line 114 */
+        "movl $str_00220688, 4(%esp)\n" /* line 114 */
         "movl -0x1c(%ebp), %eax\n"
         "movl (%eax, %ebx), %eax\n"
         "movl %eax, (%esp)\n"

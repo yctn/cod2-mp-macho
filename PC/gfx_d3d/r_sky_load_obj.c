@@ -15,7 +15,7 @@ extern void Com_Memset(void *dest, int val, int count);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 extern char *strchr(const char *s, int c);
 
-extern void *r_sundvar_table; /* 0x195f238 */
+extern void *r_sundvar_table; /* imp_s_sundvars */
 
 void R_LoadSunThroughDvars(const char *sunName, sunflare_t *sun)
 {

@@ -11,28 +11,28 @@ extern float floorf(float x);
  *   #include "PC/universal/com_math.h"
  */
 
-static vec3_t gridBasisDirs[8]; /* 0x2f2a00 */
-static int s_vc_log; /* 0xc96c80 */
+static vec3_t gridBasisDirs[8]; /* gridBasisDirs */
+static int s_vc_log; /* s_vc_log */
 
 /* Adjacent global: count of entries in s_vc_log */
 extern int s_vc_logCount; /* 0xc96c84 */
 
 /* Global pointers used in this file */
-extern r_global_permanent_t *rgp;       /* 0x195eebc */
-extern r_backEndGlobals_t *backEnd;     /* 0x195f0c8 */
-extern void **g_viewParms;              /* 0x195f188 */
-extern const dvar_t **r_lightGridSunDir;      /* 0x195f184 — pointer to sun direction floats */
-extern const dvar_t **r_lightGridContrast;    /* 0x195f18c */
-extern const dvar_t **r_lightGridEnableTweaks;/* 0x195f190 */
-extern const dvar_t **r_lightGridSpread;      /* 0x195f194 */
-extern const dvar_t **r_lightGridUseTweakedValues; /* 0x195f180 */
+extern r_global_permanent_t *rgp;       /* imp_rgp */
+extern r_backEndGlobals_t *backEnd;     /* imp_backEnd */
+extern void **g_viewParms;              /* imp_backEndData */
+extern const dvar_t **r_lightGridSunDir;      /* imp_vec3_colorintensity — pointer to sun direction floats */
+extern const dvar_t **r_lightGridContrast;    /* imp_r_vc_makelog */
+extern const dvar_t **r_lightGridEnableTweaks;/* imp_r_showLightGrid */
+extern const dvar_t **r_lightGridSpread;      /* imp_r_vc_showlog */
+extern const dvar_t **r_lightGridUseTweakedValues; /* imp_r_showMissingLightGrid */
 
 /* Color constants used in various places */
-extern const float *colorRed;       /* 0x195ed98 */
-extern const float *colorGreen;     /* 0x195ed60 */
-extern const float *colorYellow;    /* 0x195ed78 */
-extern const float *colorWhite;     /* 0x195ed2c */
-extern const float *vec3_origin;    /* 0x195ed4c */
+extern const float *colorRed;       /* imp_colorYellow */
+extern const float *colorGreen;     /* imp_colorGreen */
+extern const float *colorYellow;    /* imp_colorBlue */
+extern const float *colorWhite;     /* imp_colorWhite */
+extern const float *vec3_origin;    /* imp_vec3_origin */
 
 /* External function declarations */
 extern void Com_StripExtension(const char *src, char *dest);

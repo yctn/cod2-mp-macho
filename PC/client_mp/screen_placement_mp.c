@@ -9,9 +9,9 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static struct ScreenPlacementGlob spGlob; /* 0xf2f580 */
+static struct ScreenPlacementGlob spGlob; /* spGlob */
 
-extern byte *cls_ptr_195ecac; /* 0x195ecac - pointer to clientStatic_t */
+extern byte *cls_ptr_195ecac; /* imp_cls - pointer to clientStatic_t */
 
 /* vidConfig field offsets within clientStatic_t */
 #define CLS_VIDCONFIG_WIDTH(base) (*(int *)((base) + 0x2a0a64))

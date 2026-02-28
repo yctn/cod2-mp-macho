@@ -11,21 +11,21 @@
  */
 
 extern struct GfxScene scene; /* 0x0 */
-static int warnCount; /* 0x7f1dcc */
-static int warnCount_007f1dd0; /* 0x7f1dd0 */
-static GfxViewParms lockPvsViewParms; /* 0x7f1c80 */
-static surfaceType_t s_entitySurface; /* 0x311088 */
-static byte s_XModelSurfaceSize[8]; /* 0x311080 */
+static int warnCount; /* warnCount */
+static int warnCount_007f1dd0; /* warnCount */
+static GfxViewParms lockPvsViewParms; /* lockPvsViewParms */
+static surfaceType_t s_entitySurface; /* s_entitySurface */
+static byte s_XModelSurfaceSize[8]; /* s_XModelSurfaceSize */
 
-extern GfxBackEndData **gfxBuf;        /* 0x195eef4 */
-extern r_global_permanent_t *rgp;      /* 0x195eebc */
-extern r_globals_t *rg;                /* 0x195eec8 */
-extern refimport_t *ri;                /* 0x195eee0 */
-extern const dvar_t **r_dlightLimit;   /* 0x195eeac */
-extern void **g_dxCaps;                /* 0x195eec0 */
-extern const float *colorWhite;        /* 0x195ed2c */
-extern const dvar_t **fx_sort_ptr;     /* 0x195ed68 */
-extern const dvar_t **com_statmon_ptr; /* 0x195ed14 */
+extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
+extern r_global_permanent_t *rgp;      /* imp_rgp */
+extern r_globals_t *rg;                /* imp_rg */
+extern refimport_t *ri;                /* imp_ri */
+extern const dvar_t **r_dlightLimit;   /* imp_r_dlightLimit */
+extern void **g_dxCaps;                /* imp_r_rendererInUse */
+extern const float *colorWhite;        /* imp_colorWhite */
+extern const dvar_t **fx_sort_ptr;     /* imp_fx_sort */
+extern const dvar_t **com_statmon_ptr; /* imp_com_statmon */
 
 void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent);
 void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent);
@@ -116,7 +116,7 @@ void R_SkinGfxEntity(GfxEntity *ent)
 void R_DecomposeSort(unsigned int sortValue, int *entIndex, const Material * *material, int *lmapIndex)
 {
     int ent, matIndex;
-    int *base = *(int **)0x195eebc;
+    int *base = *(int **)imp_rgp;
 
     if ((int)sortValue >= 0) {
         ent = (sortValue >> 4) & 0xfff;
@@ -424,12 +424,12 @@ void R_AddXModelSurfaces(int entIndex)
         "movl 8(%ebp), %edx\n" /* line 915 | entIndex */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %edi\n" /* sceneEnt */
+        "leal scene+1476(, %eax, 4), %edi\n" /* sceneEnt */
         "movl %edx, %eax\n" /* line 918 */
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x1155010, %edx\n"
+        "movl scene+16, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* ent */
         "movl 0x30(%edi), %esi\n" /* line 923 | sceneEnt, modelSurf */
@@ -441,7 +441,7 @@ void R_AddXModelSurfaces(int entIndex)
         "movl $0, -0x24(%ebp)\n" /* totalVertCount */
         "jmp .Lfc5b38_000c5bb8\n"
         ".Lfc5b38_000c5b8c:\n"
-        "movl 0x195eed4, %eax\n" /* line 939 */
+        "movl imp_r_showVertCounts, %eax\n" /* line 939 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfc5b38_000c5c8d\n"
@@ -464,7 +464,7 @@ void R_AddXModelSurfaces(int entIndex)
         "cmpl $5, (%esi)\n" /* modelSurf */
         "cmovnel 8(%ebp), %ecx\n" /* entIndex */
         /* { scope 2 */
-        "movl 0x195eef4, %eax\n" /* line 655 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 655 */
         "movl (%eax), %edx\n"
         "movl 4(%edx), %eax\n"
         "cmpl $0xffff, %eax\n"
@@ -484,13 +484,13 @@ void R_AddXModelSurfaces(int entIndex)
         "movl -0x1c(%ebp), %edx\n" /* line 680 | drawSurf */
         "movl %eax, (%edx)\n"
         "movl %esi, 4(%edx)\n" /* line 681 */
-        "addl $1, 0x11555b8\n" /* line 685 */
-        "movl 0x195eef4, %ecx\n" /* line 686 */
+        "addl $1, scene+1464\n" /* line 685 */
+        "movl imp_frontEndDataOut, %ecx\n" /* line 686 */
         "movl (%ecx), %eax\n"
         "addl $1, 4(%eax)\n"
         /* } scope */
         ".Lfc5b38_000c5c22:\n"
-        "movl 0x195eeb0, %edx\n" /* line 937 */
+        "movl imp_r_showTriCounts, %edx\n" /* line 937 */
         "movl (%edx), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc5b38_000c5b8c\n"
@@ -503,15 +503,15 @@ void R_AddXModelSurfaces(int entIndex)
         "movl $0, -0x28(%ebp)\n" /* line 925 | totalTriCount */
         "movl $0, -0x24(%ebp)\n" /* totalVertCount */
         ".Lfc5b38_000c5c55:\n"
-        "movl 0x195eeb0, %ecx\n" /* line 945 */
+        "movl imp_r_showTriCounts, %ecx\n" /* line 945 */
         "movl (%ecx), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfc5b38_000c5d1c\n"
-        "movl 0x195eed4, %eax\n" /* line 947 */
+        "movl imp_r_showVertCounts, %eax\n" /* line 947 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfc5b38_000c5cc7\n"
-        "movl 0x195eedc, %eax\n" /* line 949 */
+        "movl imp_r_showSurfCounts, %eax\n" /* line 949 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfc5b38_000c5d25\n"
@@ -531,7 +531,7 @@ void R_AddXModelSurfaces(int entIndex)
         "jmp .Lfc5b38_000c5b9d\n"
         /* { scope 2 */
         ".Lfc5b38_000c5ca0:\n"
-        "movl 0x195ed68, %eax\n" /* line 667 */
+        "movl imp_fx_sort, %eax\n" /* line 667 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc5b38_000c5bf4\n"
@@ -545,20 +545,20 @@ void R_AddXModelSurfaces(int entIndex)
         "movl -0x24(%ebp), %edx\n" /* line 948 | totalVertCount */
         "movl %edx, 4(%esp)\n"
         ".Lfc5b38_000c5cce:\n"
-        "movl $0x21785c, (%esp)\n" /* line 950 */
+        "movl $str_0021785c, (%esp)\n" /* line 950 */
         "calll va\n"
         "movl %eax, 0x10(%esp)\n"
-        "movl 0x195eee8, %eax\n"
+        "movl imp_colorCyan, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl -0x20(%ebp), %eax\n" /* ent */
         "addl $0x3c, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x195eec8, %eax\n"
+        "movl imp_rg, %eax\n"
         "movl 0x3190(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -599,7 +599,7 @@ void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex)
 
     sceneEnt->cullState = 5;
 
-    dvarVal = (*(const dvar_t **)0x195eefc)->current.integer;
+    dvarVal = (*(const dvar_t **)imp_r_drawBModels)->current.integer;
     if (!dvarVal)
         return;
 
@@ -804,10 +804,10 @@ void R_SetViewParmsForScene(void)
         "pxor %xmm0, %xmm0\n"
         "ucomiss %xmm0, %xmm2\n"
         "ja .Lfc607a_000c6177\n"
-        "movl 0x195eecc, %eax\n" /* line 589 */
+        "movl imp_r_znear, %eax\n" /* line 589 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm2\n"
-        "movss 0x2ed738, %xmm1\n" /* line 45 | 0.009999999776482582f */
+        "movss lit4_002ed738, %xmm1\n" /* line 45 | 0.009999999776482582f */
         "movaps %xmm1, %xmm0\n"
         "subss %xmm2, %xmm0\n"
         "pxor %xmm4, %xmm4\n"
@@ -828,7 +828,7 @@ void R_SetViewParmsForScene(void)
         "movl -0x1c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll InfinitePerspectiveMatrix\n"
-        "movl 0x195eef8, %eax\n" /* line 597 */
+        "movl imp_r_znear_depthhack, %eax\n" /* line 597 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x148(%edi)\n"
@@ -864,31 +864,31 @@ void R_SetLodOrigin(const refdef_t *refdef)
         "pushl %ebx\n"
         "subl $0x20, %esp\n"
         "movl 8(%ebp), %esi\n" /* refdef */
-        "movl 0x195ef0c, %ebx\n" /* line 1453 */
+        "movl imp_r_lockPvs, %ebx\n" /* line 1453 */
         "movl (%ebx), %eax\n"
         "cmpb $0, 7(%eax)\n"
         "jne .Lfc61e6_000c6302\n"
         ".Lfc61e6_000c6203:\n"
         "cmpb $0, 8(%eax)\n" /* line 1459 */
         "je .Lfc61e6_000c6267\n"
-        "movl 0x195eec8, %ebx\n" /* line 199 */
+        "movl imp_rg, %ebx\n" /* line 199 */
         "movl lockPvsViewParms, %eax\n"
         "movl %eax, 0x317c(%ebx)\n"
-        "movl 0x7f1c84, %eax\n" /* line 200 */
+        "movl lockPvsViewParms+4, %eax\n" /* line 200 */
         "movl %eax, 0x3180(%ebx)\n"
-        "movl 0x7f1c88, %eax\n" /* line 201 */
+        "movl lockPvsViewParms+8, %eax\n" /* line 201 */
         "movl %eax, 0x3184(%ebx)\n"
         ".Lfc61e6_000c6230:\n"
-        "movl 0x195ef00, %eax\n" /* line 1464 */
+        "movl imp_r_lodScale, %eax\n" /* line 1464 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x3188(%ebx)\n"
-        "movl 0x195ef08, %eax\n" /* line 1465 */
+        "movl imp_r_lodBias, %eax\n" /* line 1465 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x318c(%ebx)\n"
         "movss 0x10(%esi), %xmm0\n" /* line 1466 | refdef */
-        "ucomiss 0x2ed7d8, %xmm0\n" /* 80.0f */
+        "ucomiss lit4_002ed7d8, %xmm0\n" /* 80.0f */
         "jp .Lfc61e6_000c628d\n"
         "jne .Lfc61e6_000c628d\n"
         "addl $0x20, %esp\n" /* line 1473 */
@@ -899,7 +899,7 @@ void R_SetLodOrigin(const refdef_t *refdef)
         ".Lfc61e6_000c6267:\n"
         "leal 0x18(%esi), %edx\n" /* line 1462 | refdef, from */
         /* { scope 1 */
-        "movl 0x195eec8, %ebx\n" /* line 199 */
+        "movl imp_rg, %ebx\n" /* line 199 */
         "movl 0x18(%esi), %eax\n"
         "movl %eax, 0x317c(%ebx)\n"
         "movl 4(%edx), %eax\n" /* line 200 */
@@ -910,9 +910,9 @@ void R_SetLodOrigin(const refdef_t *refdef)
         /* } scope */
         /* { scope 1 */
         ".Lfc61e6_000c628d:\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* line 1468 | 0.5f, invFovScale */
+        "mulss lit4_002ed5d8, %xmm0\n" /* line 1468 | 0.5f, invFovScale */
         "cvtss2sd %xmm0, %xmm0\n" /* invFovScale */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295, invFovScale */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295, invFovScale */
         "movsd %xmm0, (%esp)\n" /* invFovScale */
         "calll tan\n"
         "fstpl -0x10(%ebp)\n"
@@ -937,7 +937,7 @@ void R_SetLodOrigin(const refdef_t *refdef)
         "retl\n"
         ".Lfc61e6_000c6302:\n"
         "movl %eax, (%esp)\n" /* line 1455 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $lockPvsViewParms, %edx\n" /* line 1456 */
         "movl %esi, %eax\n" /* refdef */
@@ -957,7 +957,7 @@ void R_AddClearCommandsForFrameBuffer(void)
         "subl $0x28, %esp\n"
         "movl %eax, %edx\n" /* dynamicShadowType */
         /* { scope 1 */
-        "movl 0x195eed0, %eax\n" /* line 1038 */
+        "movl imp_dx, %eax\n" /* line 1038 */
         "movl 0x2c28(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfc6324_000c6344\n"
@@ -966,12 +966,12 @@ void R_AddClearCommandsForFrameBuffer(void)
         ".Lfc6324_000c6344:\n"
         "movl $7, %ecx\n"
         ".Lfc6324_000c6349:\n"
-        "movl 0x195eec8, %edx\n" /* line 1009 */
+        "movl imp_rg, %edx\n" /* line 1009 */
         "cmpb $0, 0x14c8(%edx)\n"
         "je .Lfc6324_000c63c4\n"
         "movzbl 0x14ba(%edx), %eax\n" /* line 741 */
         "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm1\n" /* 0.003921568859368563f */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x18(%ebp)\n" /* clearColor */
         "movzbl 0x14b9(%edx), %eax\n" /* line 742 */
@@ -994,13 +994,13 @@ void R_AddClearCommandsForFrameBuffer(void)
         "retl\n"
         /* { scope 1 */
         ".Lfc6324_000c63c4:\n"
-        "movl 0x195eec4, %eax\n" /* line 1025 */
+        "movl imp_r_clearColor, %eax\n" /* line 1025 */
         "movl (%eax), %eax\n"
         "leal 8(%eax), %edx\n" /* from */
         /* { scope 2 */
         "movzbl 8(%eax), %eax\n" /* line 705 */
         "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm1\n" /* 0.003921568859368563f */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x18(%ebp)\n" /* clearColor */
         "movzbl 1(%edx), %eax\n" /* line 706 */
@@ -1042,23 +1042,23 @@ void R_RenderScene(const refdef_t *refdef)
         "subl $0x2c7c, %esp\n"
         "movl 8(%ebp), %esi\n" /* refdef */
         /* { scope 1: pointLightPartitions */
-        "movl 0x195eec8, %ebx\n" /* line 1491 | drawSurfs */
+        "movl imp_rg, %ebx\n" /* line 1491 | drawSurfs */
         "cmpb $0, (%ebx)\n" /* drawSurfs */
         "je .Lfc643c_000c6a10\n"
-        "movl 0x195eed8, %eax\n" /* line 1501 */
+        "movl imp_r_norefresh, %eax\n" /* line 1501 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfc643c_000c6a10\n"
-        "movl 0x195eebc, %eax\n" /* line 1507 */
+        "movl imp_rgp, %eax\n" /* line 1507 */
         "movl 0x109c(%eax), %edi\n" /* drawSurfCount */
         "testl %edi, %edi\n" /* drawSurfCount */
         "je .Lfc643c_000c713b\n"
         ".Lfc643c_000c647e:\n"
         "movl 0x48(%esi), %eax\n" /* line 1510 | refdef */
-        "movl %eax, 0x1155004\n"
+        "movl %eax, scene+4\n"
         "cvtsi2ssl %eax, %xmm0\n" /* line 1511 */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
-        "movss %xmm0, 0x1155008\n"
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "movss %xmm0, scene+8\n"
         "leal 0x18(%esi), %edx\n" /* line 1513 | refdef, from */
         /* { scope 2: pointLightCount, viewIndex */
         "movl 0x18(%esi), %eax\n" /* line 199 */
@@ -1084,14 +1084,14 @@ void R_RenderScene(const refdef_t *refdef)
         "calll R_SetViewParmsForScene\n"
         "movss 0x50(%esi), %xmm0\n" /* line 1442 | light */
         "movss %xmm0, -0x2c30(%ebp)\n"
-        "movl 0x195eeec, %edx\n" /* line 1443 */
+        "movl imp_vidConfig, %edx\n" /* line 1443 */
         "movl 8(%esi), %eax\n" /* light */
         "cmpl (%edx), %eax\n"
         "je .Lfc643c_000c6f9c\n"
         ".Lfc643c_000c64f6:\n"
         "movb $0, -0x2c55(%ebp)\n"
         ".Lfc643c_000c64fd:\n"
-        "movl 0x195ef0c, %eax\n" /* line 1526 */
+        "movl imp_r_lockPvs, %eax\n" /* line 1526 */
         "movl (%eax), %eax\n"
         "movl $lockPvsViewParms, -0x2c5c(%ebp)\n" /* viewParmsDraw */
         "cmpb $0, 8(%eax)\n"
@@ -1099,8 +1099,8 @@ void R_RenderScene(const refdef_t *refdef)
         "cmovel -0x2c1c(%ebp), %eax\n"
         "movl %eax, -0x2c5c(%ebp)\n" /* viewParmsDraw */
         /* { scope 2: pointLightCount, viewIndex */
-        "movl 0x1155004, %ebx\n" /* line 536 */
-        "movl 0x195eec8, %ecx\n"
+        "movl scene+4, %ebx\n" /* line 536 */
+        "movl imp_rg, %ecx\n"
         "movl 0x14f4(%ecx), %edx\n"
         "cmpl %edx, %ebx\n"
         "jl .Lfc643c_000c6a31\n"
@@ -1123,24 +1123,24 @@ void R_RenderScene(const refdef_t *refdef)
         "movl 0x150c(%ecx), %ebx\n" /* line 575 */
         "testl %ebx, %ebx\n"
         "je .Lfc643c_000c6a1b\n"
-        "movl 0x195eef4, %eax\n" /* line 577 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 577 */
         "movl (%eax), %edx\n"
         "movl 0x14ac(%ecx), %eax\n"
-        "movl %eax, 0x219cec(%edx)\n"
+        "movl %eax, str_00219cd4+24(%edx)\n"
         "movl 0x14b0(%ecx), %eax\n"
-        "movl %eax, 0x219cf0(%edx)\n"
+        "movl %eax, str_00219cd4+28(%edx)\n"
         "movl 0x14b4(%ecx), %eax\n"
-        "movl %eax, 0x219cf4(%edx)\n"
+        "movl %eax, str_00219cd4+32(%edx)\n"
         "movl 0x14b8(%ecx), %eax\n"
-        "movl %eax, 0x219cf8(%edx)\n"
+        "movl %eax, str_00219cd4+36(%edx)\n"
         "movl 0x14bc(%ecx), %eax\n"
-        "movl %eax, 0x219cfc(%edx)\n"
+        "movl %eax, str_00219cd4+40(%edx)\n"
         "movl 0x14c0(%ecx), %eax\n"
-        "movl %eax, 0x219d00(%edx)\n"
+        "movl %eax, str_00219cd4+44(%edx)\n"
         "movl 0x14c4(%ecx), %eax\n"
-        "movl %eax, 0x219d04(%edx)\n"
+        "movl %eax, str_00219cd4+48(%edx)\n"
         "movl 0x14c8(%ecx), %eax\n"
-        "movl %eax, 0x219d08(%edx)\n"
+        "movl %eax, str_00219cd4+52(%edx)\n"
         /* } scope */
         ".Lfc643c_000c660d:\n"
         "movl 0x54(%esi), %esi\n" /* line 1532 | refdef */
@@ -1151,7 +1151,7 @@ void R_RenderScene(const refdef_t *refdef)
         "calll R_CellForPoint\n"
         "movl %eax, %edx\n"
         /* { scope 3: partitionIndex */
-        "movl 0x195eebc, %eax\n" /* line 956 */
+        "movl imp_rgp, %eax\n" /* line 956 */
         "movl 0x109c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfc643c_000c6651\n"
@@ -1166,18 +1166,18 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c6651:\n"
         "calll CG_AddMarks\n" /* line 1328 */
         "calll FX_DrawScheduledEffects\n" /* line 1329 */
-        "movl 0x11555b8, %eax\n" /* line 1331 */
+        "movl scene+1464, %eax\n" /* line 1331 */
         "movl %eax, -0x2c54(%ebp)\n"
-        "movl 0x11555bc, %edx\n" /* line 1332 */
+        "movl scene+1468, %edx\n" /* line 1332 */
         "movl %edx, -0x2c50(%ebp)\n"
         "movl %eax, 4(%esp)\n" /* line 878 */
         "movl %edx, (%esp)\n"
         "calll qsortDrawSurfs\n"
-        "movl 0x195eec0, %eax\n" /* line 1158 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1158 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfc643c_000c669d\n"
-        "movl 0x195eeac, %eax\n" /* line 1161 */
+        "movl imp_r_dlightLimit, %eax\n" /* line 1161 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1185,25 +1185,25 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c669d:\n"
         "movl $0, -0x2c4c(%ebp)\n" /* line 1341 | pointLightCount */
         ".Lfc643c_000c66a7:\n"
-        "movl 0x195ef04, %eax\n" /* line 1279 */
+        "movl imp_r_fullbright, %eax\n" /* line 1279 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfc643c_000c6ea1\n"
-        "movl 0x195eec0, %eax\n" /* line 1284 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1284 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfc643c_000c7080\n"
-        "movl 0x195eef0, %eax\n" /* line 1289 */
+        "movl imp_r_debugShader, %eax\n" /* line 1289 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfc643c_000c6aac\n"
-        "movl 0x195eec8, %eax\n" /* line 1215 */
+        "movl imp_rg, %eax\n" /* line 1215 */
         "addl $0x317c, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl -0x2c1c(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x1155004, 4(%esp)\n"
+        "movl $scene+4, 4(%esp)\n"
         "movl scene, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AddCmdBeginView\n"
@@ -1219,7 +1219,7 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %edx, (%esp)\n"
         "calll R_AddCmdDrawSurfs\n"
         ".Lfc643c_000c673b:\n"
-        "movl 0x195eee4, %eax\n" /* line 1353 */
+        "movl imp_r_showTris, %eax\n" /* line 1353 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1236,32 +1236,32 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c6771:\n"
         "calll R_UnlockSkinnedCache\n" /* line 1366 */
         /* } scope */
-        "movl 0x195eeb4, %eax\n" /* line 1536 */
+        "movl imp_r_debugEntCounts, %eax\n" /* line 1536 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lfc643c_000c6a10\n"
-        "cmpl 0x115500c, %edx\n"
+        "cmpl scene+12, %edx\n"
         "jge .Lfc643c_000c6a10\n"
         "movl $0, 4(%esp)\n" /* line 1538 */
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x98(%eax)\n"
-        "movl $0x222e04, -0xc18(%ebp)\n" /* line 188 | pointLightPartitions */
-        "movl $0x217dc8, -0xc14(%ebp)\n" /* "xmodel" */
-        "movl $0x222e0c, -0xc10(%ebp)\n" /* "smodel" */
-        "movl $0x222e14, -0xc0c(%ebp)\n" /* "bmodel" */
-        "movl $0x222e1c, -0xc08(%ebp)\n" /* "sprite" */
-        "movl $0x222e24, -0xc04(%ebp)\n" /* "rail core" */
-        "movl $0x219e5c, -0xc00(%ebp)\n" /* "cloud" */
-        "movl $0x222e30, -0xbfc(%ebp)\n" /* "oriented" */
-        "movl $0x219df4, -0xbf8(%ebp)\n" /* "line" */
-        "movl $0x219e04, -0xbf4(%ebp)\n" /* "cylinder" */
-        "movl 0x115500c, %eax\n" /* line 193 */
+        "movl $str_00222e04, -0xc18(%ebp)\n" /* line 188 | pointLightPartitions */
+        "movl $str_00217dc8, -0xc14(%ebp)\n" /* "xmodel" */
+        "movl $str_00222e0c, -0xc10(%ebp)\n" /* "smodel" */
+        "movl $str_00222e14, -0xc0c(%ebp)\n" /* "bmodel" */
+        "movl $str_00222e1c, -0xc08(%ebp)\n" /* "sprite" */
+        "movl $str_00222e24, -0xc04(%ebp)\n" /* "rail core" */
+        "movl $str_00219e5c, -0xc00(%ebp)\n" /* "cloud" */
+        "movl $str_00222e30, -0xbfc(%ebp)\n" /* "oriented" */
+        "movl $str_00219df4, -0xbf8(%ebp)\n" /* "line" */
+        "movl $str_00219e04, -0xbf4(%ebp)\n" /* "cylinder" */
+        "movl scene+12, %eax\n" /* line 193 */
         "testl %eax, %eax\n"
         "je .Lfc643c_000c7154\n"
         "xorl %eax, %eax\n"
-        "movl 0x115500c, %edx\n"
+        "movl scene+12, %edx\n"
         ".Lfc643c_000c6823:\n"
         "movl %eax, -0x2c10(%ebp, %eax, 4)\n" /* line 194 */
         "addl $1, %eax\n" /* line 193 */
@@ -1274,7 +1274,7 @@ void R_RenderScene(const refdef_t *refdef)
         "leal -0x2c10(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll qsort\n"
-        "movl 0x115500c, %eax\n" /* line 198 */
+        "movl scene+12, %eax\n" /* line 198 */
         "testl %eax, %eax\n"
         "je .Lfc643c_000c6a10\n"
         "movl $0, -0x2c38(%ebp)\n"
@@ -1283,9 +1283,9 @@ void R_RenderScene(const refdef_t *refdef)
         "movl -0x2c10(%ebp, %ecx, 4), %edx\n" /* line 200 */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %eax\n"
+        "leal scene+1476(, %eax, 4), %eax\n"
         "movl %eax, -0x2c40(%ebp)\n"
-        "movl 0x195eef4, %ebx\n" /* line 201 */
+        "movl imp_frontEndDataOut, %ebx\n" /* line 201 */
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
@@ -1294,7 +1294,7 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %eax, -0x2c3c(%ebp)\n"
         "addl $1, %ecx\n" /* line 158 */
         "movl %ecx, -0x2c34(%ebp)\n"
-        "cmpl 0x115500c, %ecx\n"
+        "cmpl scene+12, %ecx\n"
         "je .Lfc643c_000c6e66\n"
         "movl -0x2c38(%ebp), %eax\n"
         "leal -0x2c10(%ebp, %eax, 4), %eax\n"
@@ -1322,10 +1322,10 @@ void R_RenderScene(const refdef_t *refdef)
         "jne .Lfc643c_000c698e\n"
         "leal (%ecx, %ecx, 2), %eax\n" /* line 137 */
         "leal (%ecx, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %edx\n"
+        "leal scene+1476(, %eax, 4), %edx\n"
         "leal (%esi, %esi, 2), %eax\n" /* line 138 */
         "leal (%esi, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %esi\n"
+        "leal scene+1476(, %eax, 4), %esi\n"
         "cmpl $2, %edi\n" /* line 139 */
         "jg .Lfc643c_000c6e32\n"
         "cmpl $1, %edi\n"
@@ -1338,9 +1338,9 @@ void R_RenderScene(const refdef_t *refdef)
         "addl $1, -0x2c34(%ebp)\n" /* line 158 */
         "addl $4, -0x2c24(%ebp)\n"
         "movl -0x2c34(%ebp), %eax\n"
-        "cmpl 0x115500c, %eax\n"
+        "cmpl scene+12, %eax\n"
         "je .Lfc643c_000c6ff2\n"
-        "movl 0x195eef4, %ebx\n"
+        "movl imp_frontEndDataOut, %ebx\n"
         "movl -0x2c28(%ebp), %edx\n"
         "jmp .Lfc643c_000c68de\n"
         ".Lfc643c_000c698e:\n"
@@ -1352,7 +1352,7 @@ void R_RenderScene(const refdef_t *refdef)
         "movl -0xc18(%ebp, %eax, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x222e3c, (%esp)\n" /* "%3i: %-8s: " */
+        "movl $str_00222e3c, (%esp)\n" /* "%3i: %-8s: " */
         "calll Com_Printf\n"
         "movl -0x2c3c(%ebp), %ecx\n" /* line 204 */
         "movl (%ecx), %eax\n"
@@ -1366,13 +1366,13 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %eax, (%esp)\n"
         "calll XModelGetName\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         ".Lfc643c_000c69f8:\n"
         "addl %ebx, -0x2c38(%ebp)\n" /* line 198 */
         "movl -0x2c38(%ebp), %ecx\n"
-        "cmpl %ecx, 0x115500c\n"
+        "cmpl %ecx, scene+12\n"
         "jne .Lfc643c_000c6870\n"
         /* } scope */
         ".Lfc643c_000c6a10:\n"
@@ -1385,9 +1385,9 @@ void R_RenderScene(const refdef_t *refdef)
         /* { scope 1: pointLightPartitions */
         /* { scope 2: pointLightCount, viewIndex */
         ".Lfc643c_000c6a1b:\n"
-        "movl 0x195eef4, %eax\n" /* line 582 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 582 */
         "movl (%eax), %eax\n"
-        "movl $0, 0x219cec(%eax)\n"
+        "movl $0, str_00219cd4+24(%eax)\n"
         "jmp .Lfc643c_000c660d\n"
         ".Lfc643c_000c6a31:\n"
         "movl 0x14cc(%ecx), %eax\n" /* line 542 */
@@ -1422,12 +1422,12 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %ecx, 4(%esp)\n"
         "movl $2, (%esp)\n"
         "calll R_BeginDrawGroupLoop\n"
-        "movl 0x195eec8, %eax\n" /* line 1242 */
+        "movl imp_rg, %eax\n" /* line 1242 */
         "addl $0x317c, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl -0x2c1c(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x1155004, 4(%esp)\n"
+        "movl $scene+4, 4(%esp)\n"
         "movl scene, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AddCmdBeginView\n"
@@ -1463,12 +1463,12 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %edx, 4(%esp)\n"
         "movl $3, (%esp)\n"
         "calll R_BeginDrawGroupLoop\n"
-        "movl 0x195eec8, %eax\n" /* line 1258 */
+        "movl imp_rg, %eax\n" /* line 1258 */
         "addl $0x317c, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl -0x2c1c(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x1155004, 4(%esp)\n"
+        "movl $scene+4, 4(%esp)\n"
         "movl scene, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AddCmdBeginView\n"
@@ -1498,12 +1498,12 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %ecx, 4(%esp)\n"
         "movl $4, (%esp)\n"
         "calll R_BeginDrawGroupLoop\n"
-        "movl 0x195eec8, %eax\n" /* line 1269 */
+        "movl imp_rg, %eax\n" /* line 1269 */
         "addl $0x317c, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl -0x2c1c(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x1155004, 4(%esp)\n"
+        "movl $scene+4, 4(%esp)\n"
         "movl scene, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AddCmdBeginView\n"
@@ -1523,7 +1523,7 @@ void R_RenderScene(const refdef_t *refdef)
         "testl %eax, %eax\n" /* line 550 */
         "jle .Lfc643c_000c72f0\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         ".Lfc643c_000c6cb0:\n"
         "subl %edi, %ebx\n" /* line 553 */
         "cvtsi2ssl %ebx, %xmm2\n"
@@ -1608,7 +1608,7 @@ void R_RenderScene(const refdef_t *refdef)
         "movl (%eax), %eax\n"
         ".Lfc643c_000c6e1d:\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         "jmp .Lfc643c_000c69f8\n"
@@ -1636,14 +1636,14 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %eax, %edx\n"
         "jmp .Lfc643c_000c699a\n"
         ".Lfc643c_000c6e6f:\n"
-        "movl 0x195eebc, %eax\n" /* line 216 */
+        "movl imp_rgp, %eax\n" /* line 216 */
         "movl 0x109c(%eax), %edx\n"
         "movl -0x2c40(%ebp), %ecx\n"
         "movl 4(%ecx), %eax\n"
         "subl 0x138(%edx), %eax\n"
         "sarl $5, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x222e48, (%esp)\n" /* "*%i
+        "movl $str_00222e48, (%esp)\n" /* "*%i
 " */
         "calll Com_Printf\n"
         "jmp .Lfc643c_000c69f8\n"
@@ -1658,12 +1658,12 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %edx, 4(%esp)\n"
         "movl $3, (%esp)\n"
         "calll R_BeginDrawGroupLoop\n"
-        "movl 0x195eec8, %ebx\n" /* line 1194 | drawSurfs */
+        "movl imp_rg, %ebx\n" /* line 1194 | drawSurfs */
         "addl $0x317c, %ebx\n" /* drawSurfs */
         "movl %ebx, 0xc(%esp)\n" /* drawSurfs */
         "movl -0x2c1c(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x1155004, 4(%esp)\n"
+        "movl $scene+4, 4(%esp)\n"
         "movl scene, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AddCmdBeginView\n"
@@ -1694,7 +1694,7 @@ void R_RenderScene(const refdef_t *refdef)
         "movl %ebx, 0xc(%esp)\n" /* line 1208 | drawSurfs */
         "movl -0x2c1c(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x1155004, 4(%esp)\n"
+        "movl $scene+4, 4(%esp)\n"
         "movl scene, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AddCmdBeginView\n"
@@ -1721,7 +1721,7 @@ void R_RenderScene(const refdef_t *refdef)
         "sarl $5, %eax\n"
         "jmp .Lfc643c_000c6959\n"
         ".Lfc643c_000c6fe8:\n"
-        "movl $0x222e50, %eax\n" /* line 220 */
+        "movl $str_00222e50, %eax\n" /* line 220 */
         "jmp .Lfc643c_000c6e1d\n"
         ".Lfc643c_000c6ff2:\n"
         "movl %eax, %ebx\n"
@@ -1746,7 +1746,7 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c7038:\n"
         "movl $0, 0xc(%esp)\n" /* line 1356 */
         "movl $0x3f800000, 8(%esp)\n"
-        "movl 0x195ed2c, %eax\n"
+        "movl imp_colorWhite, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $6, (%esp)\n"
         "calll R_AddCmdClearScreen\n"
@@ -1764,12 +1764,12 @@ void R_RenderScene(const refdef_t *refdef)
         "calll R_AddCmdApplyEarlyPostEffects\n" /* line 1250 */
         "jmp .Lfc643c_000c6b78\n"
         ".Lfc643c_000c7080:\n"
-        "movl 0x195eec8, %eax\n" /* line 1171 */
+        "movl imp_rg, %eax\n" /* line 1171 */
         "addl $0x317c, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl -0x2c1c(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x1155004, 4(%esp)\n"
+        "movl $scene+4, 4(%esp)\n"
         "movl scene, %eax\n"
         "movl %eax, (%esp)\n"
         "calll R_AddCmdBeginView\n"
@@ -1777,7 +1777,7 @@ void R_RenderScene(const refdef_t *refdef)
         "calll R_AddCmdSetRenderTarget\n"
         "xorl %eax, %eax\n" /* line 1173 */
         "calll R_AddClearCommandsForFrameBuffer\n"
-        "movl 0x195eebc, %eax\n" /* line 1174 */
+        "movl imp_rgp, %eax\n" /* line 1174 */
         "movl 0x109c(%eax), %eax\n"
         "addl $0xb4, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -1802,7 +1802,7 @@ void R_RenderScene(const refdef_t *refdef)
         "jmp .Lfc643c_000c6723\n"
         /* } scope */
         ".Lfc643c_000c713b:\n"
-        "movl $0x222de4, 4(%esp)\n" /* line 1508 */
+        "movl $str_00222de4, 4(%esp)\n" /* line 1508 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfc643c_000c647e\n"
@@ -1811,7 +1811,7 @@ void R_RenderScene(const refdef_t *refdef)
         "jmp .Lfc643c_000c6831\n"
         /* { scope 2: pointLightCount, viewIndex */
         ".Lfc643c_000c715b:\n"
-        "movl 0x195eeec, %eax\n" /* line 1203 */
+        "movl imp_vidConfig, %eax\n" /* line 1203 */
         "movl 4(%eax), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl (%eax), %eax\n"
@@ -1823,7 +1823,7 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c7186:\n"
         "movl $0, (%esp)\n" /* line 1187 */
         "calll R_AddCmdSetRenderTarget\n"
-        "movl 0x195eeec, %eax\n" /* line 1189 */
+        "movl imp_vidConfig, %eax\n" /* line 1189 */
         "movl 4(%eax), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl (%eax), %eax\n"
@@ -1837,7 +1837,7 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c71c4:\n"
         "movl $0, (%esp)\n" /* line 1234 */
         "calll R_AddCmdSetRenderTarget\n"
-        "movl 0x195eeec, %edx\n" /* line 1236 */
+        "movl imp_vidConfig, %edx\n" /* line 1236 */
         "movl 4(%edx), %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl (%edx), %eax\n"
@@ -1847,7 +1847,7 @@ void R_RenderScene(const refdef_t *refdef)
         "calll R_AddCmdSetViewport\n"
         "xorl %eax, %eax\n" /* line 1057 */
         "calll R_AddClearCommandsForFrameBuffer\n"
-        "movl 0x195eebc, %eax\n" /* line 1238 */
+        "movl imp_rgp, %eax\n" /* line 1238 */
         "movl 0x109c(%eax), %eax\n"
         "addl $0xb4, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -1872,13 +1872,13 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c725a:\n"
         "movl (%edx), %esi\n" /* line 988 | light */
         "movl 4(%edx), %ebx\n" /* line 989 | drawSurfs */
-        "movl 0x11555bc, %eax\n"
+        "movl scene+1468, %eax\n"
         "leal (%eax, %ebx, 8), %ebx\n" /* drawSurfs */
         "movl 8(%edx), %edi\n" /* line 990 | drawSurfCount */
-        "movl 0x195eebc, %ecx\n" /* line 996 */
+        "movl imp_rgp, %ecx\n" /* line 996 */
         "movl 0x1048(%ecx), %eax\n"
         "movl %eax, 0x14(%esp)\n"
-        "movl 0x195ed2c, %eax\n"
+        "movl imp_colorWhite, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl $0x3f800000, 0xc(%esp)\n"
         "movl $0x3f800000, 8(%esp)\n"
@@ -1903,7 +1903,7 @@ void R_RenderScene(const refdef_t *refdef)
         /* } scope */
         /* { scope 2: pointLightCount, viewIndex */
         ".Lfc643c_000c72f0:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 550 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 550 | 1.0f */
         "movaps %xmm0, %xmm1\n"
         "jmp .Lfc643c_000c6cb0\n"
         /* } scope */
@@ -1934,32 +1934,32 @@ int R_AddStaticModelToScene(int smodelIndex)
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         /* { scope 1 */
-        "movl 0x195eeb8, %eax\n" /* line 235 */
+        "movl imp_r_drawEntities, %eax\n" /* line 235 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc7336_000c74cc\n"
-        "movl 0x115500c, %esi\n" /* line 241 */
+        "movl scene+12, %esi\n" /* line 241 */
         "cmpl $0x7fd, %esi\n"
         "ja .Lfc7336_000c7536\n"
-        "movl 0x195eef4, %eax\n" /* line 243 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 243 */
         "movl (%eax), %edx\n"
         "movl 0xa000c(%edx), %eax\n"
         "cmpl $0x1ff7, %eax\n"
         "ja .Lfc7336_000c74c2\n"
         "addl $1, %eax\n" /* line 249 */
         "movl %eax, 0xa000c(%edx)\n"
-        "addl $1, 0x115500c\n" /* line 250 */
+        "addl $1, scene+12\n" /* line 250 */
         "testl %esi, %esi\n" /* line 280 | entIndex */
         "js .Lfc7336_000c74cc\n"
         "leal (, %esi, 8), %eax\n" /* line 283 */
         "subl %esi, %eax\n" /* entIndex */
         "leal (%esi, %eax, 4), %eax\n" /* entIndex */
-        "movl 0x1155010, %edx\n"
+        "movl scene+16, %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* backEndRefEnt */
         "movl 8(%ebp), %eax\n" /* line 285 | smodelIndex */
         "leal (%eax, %eax, 2), %edi\n"
         "shll $5, %edi\n"
-        "movl 0x195eebc, %edx\n"
+        "movl imp_rgp, %edx\n"
         "movl 0x109c(%edx), %eax\n"
         "movl 0xf8(%eax), %eax\n"
         "addl %edi, %eax\n"
@@ -1990,7 +1990,7 @@ int R_AddStaticModelToScene(int smodelIndex)
         "movl -0x1c(%ebp), %edx\n" /* line 293 | smodelInst */
         "movl 0x50(%edx), %eax\n"
         "movl %eax, 0x38(%ebx)\n" /* backEndRefEnt */
-        "movl 0x195eec0, %eax\n" /* line 295 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 295 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfc7336_000c74db\n"
@@ -2009,7 +2009,7 @@ int R_AddStaticModelToScene(int smodelIndex)
         ".Lfc7336_000c7454:\n"
         "leal (%esi, %esi, 2), %edx\n" /* line 306 | entIndex */
         "leal (%esi, %edx, 4), %edx\n" /* entIndex */
-        "leal 0x11555c0(, %edx, 4), %edx\n"
+        "leal scene+1472(, %edx, 4), %edx\n"
         "leal 4(%edx), %ebx\n" /* backEndRefEnt */
         "cld\n" /* line 80 */
         "movl $0xd, %ecx\n"
@@ -2071,7 +2071,7 @@ int R_AddStaticModelToScene(int smodelIndex)
         "retl\n"
         /* { scope 1 */
         ".Lfc7336_000c74db:\n"
-        "movl 0x195eebc, %ecx\n" /* line 297 */
+        "movl imp_rgp, %ecx\n" /* line 297 */
         "movl 0x109c(%ecx), %edx\n"
         "movl %edi, %eax\n"
         "addl 0x12c(%edx), %eax\n"
@@ -2085,25 +2085,25 @@ int R_AddStaticModelToScene(int smodelIndex)
         ".Lfc7336_000c750c:\n"
         "movl %eax, warnCount\n" /* line 256 */
         "movl $0x1ff8, 8(%esp)\n" /* line 257 */
-        "movl $0x222d94, 4(%esp)\n" /* "too many visible models (more than %i)
+        "movl $str_00222d94, 4(%esp)\n" /* "too many visible models (more than %i)
 " */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "movl $0xffffffff, %esi\n"
         "jmp .Lfc7336_000c74d1\n"
         ".Lfc7336_000c7536:\n"
-        "movl 0x195eef4, %eax\n" /* line 263 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 263 */
         "movl (%eax), %eax\n"
         "movl (%eax), %eax\n"
         "cmpl warnCount, %eax\n"
         "je .Lfc7336_000c74cc\n"
         "movl %eax, warnCount\n" /* line 265 */
         "movl $0x7fe, 8(%esp)\n" /* line 266 */
-        "movl $0x222dbc, 4(%esp)\n" /* "too many scene entities (more than %i)
+        "movl $str_00222dbc, 4(%esp)\n" /* "too many scene entities (more than %i)
 " */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "movl $0xffffffff, %esi\n"
         "jmp .Lfc7336_000c74d1\n"
@@ -2125,7 +2125,7 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         /* { scope 1 */
         "cmpl $1, (%esi)\n" /* line 394 | refEnt */
         "jle .Lfc7574_000c77a3\n"
-        "movl 0x195ed14, %eax\n" /* line 399 */
+        "movl imp_com_statmon, %eax\n" /* line 399 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfc7574_000c76de\n"
@@ -2134,27 +2134,27 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         "cmpl $9, %eax\n"
         "ja .Lfc7574_000c7722\n"
         ".Lfc7574_000c75a5:\n"
-        "movl 0x195eef4, %eax\n" /* line 405 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 405 */
         "movl (%eax), %edx\n"
         "movl 0xa000c(%edx), %ecx\n"
         "cmpl $0x1ff7, %ecx\n"
         "ja .Lfc7574_000c76c4\n"
-        "movl 0x195eeb8, %eax\n" /* line 235 */
+        "movl imp_r_drawEntities, %eax\n" /* line 235 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc7574_000c76d2\n"
-        "movl 0x115500c, %ebx\n" /* line 241 */
+        "movl scene+12, %ebx\n" /* line 241 */
         "cmpl $0x7fd, %ebx\n"
         "ja .Lfc7574_000c773f\n"
         "leal 1(%ecx), %eax\n" /* line 249 */
         "movl %eax, 0xa000c(%edx)\n"
-        "addl $1, 0x115500c\n" /* line 250 */
+        "addl $1, scene+12\n" /* line 250 */
         "testl %ebx, %ebx\n" /* line 416 | backEndRefEnt */
         "js .Lfc7574_000c76d2\n"
         /* { scope 2: sceneEnt, sceneEnt */
         "leal (%ebx, %ebx, 2), %eax\n" /* line 100 */
         "leal (%ebx, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %eax\n"
+        "leal scene+1476(, %eax, 4), %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* sceneEnt */
         "leal (, %ebx, 8), %eax\n" /* line 101 */
         "subl %ebx, %eax\n"
@@ -2162,7 +2162,7 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         "shll $2, %eax\n"
         "movl %eax, -0x28(%ebp)\n"
         "movl %eax, %edi\n" /* backEndRefEnt */
-        "addl 0x1155010, %edi\n" /* backEndRefEnt */
+        "addl scene+16, %edi\n" /* backEndRefEnt */
         "movl $0x74, 8(%esp)\n" /* line 105 */
         "movl %esi, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* backEndRefEnt */
@@ -2185,7 +2185,7 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         "movl 0x54(%esi), %ecx\n"
         /* { scope 3 */
         /* { scope 4 */
-        "movl 0x195eef4, %edi\n" /* line 655 | backEndRefEnt */
+        "movl imp_frontEndDataOut, %edi\n" /* line 655 | backEndRefEnt */
         "movl (%edi), %edx\n" /* backEndRefEnt */
         "movl 4(%edx), %eax\n"
         "cmpl $0xffff, %eax\n"
@@ -2203,7 +2203,7 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         ".Lfc7574_000c769b:\n"
         "movl %eax, (%esi)\n" /* line 680 | drawSurf */
         "movl $s_entitySurface, 4(%esi)\n" /* line 681 | drawSurf */
-        "addl $1, 0x11555b8\n" /* line 685 */
+        "addl $1, scene+1464\n" /* line 685 */
         "movl (%edi), %eax\n" /* line 686 | backEndRefEnt */
         "addl $1, 4(%eax)\n"
         /* } scope */
@@ -2211,7 +2211,7 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         /* } scope */
         ".Lfc7574_000c76b1:\n"
         "movl -0x28(%ebp), %ebx\n" /* line 420 | backEndRefEnt */
-        "addl 0x1155010, %ebx\n" /* backEndRefEnt */
+        "addl scene+16, %ebx\n" /* backEndRefEnt */
         /* } scope */
         "movl %ebx, %eax\n" /* line 421 | backEndRefEnt */
         "addl $0x2c, %esp\n"
@@ -2238,21 +2238,21 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         "retl\n"
         /* { scope 1 */
         ".Lfc7574_000c76de:\n"
-        "movl 0x195eef4, %eax\n" /* line 399 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 399 */
         "movl (%eax), %eax\n"
         "cmpl $0x1cc4, 0xa000c(%eax)\n"
         "jbe .Lfc7574_000c759a\n"
-        "movl $0x222e58, 8(%esp)\n" /* line 400 */
+        "movl $str_00222e58, 8(%esp)\n" /* line 400 */
         "movl $0xbb8, 4(%esp)\n"
         "movl $5, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x124(%eax)\n"
         "movl (%esi), %eax\n" /* line 402 | refEnt */
         "cmpl $9, %eax\n"
         "jbe .Lfc7574_000c75a5\n"
         ".Lfc7574_000c7722:\n"
         "movl %eax, 8(%esp)\n" /* line 403 */
-        "movl $0x222e74, 4(%esp)\n" /* "R_AddRefEntityToScene: bad reType %i" */
+        "movl $str_00222e74, 4(%esp)\n" /* "R_AddRefEntityToScene: bad reType %i" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfc7574_000c75a5\n"
@@ -2263,18 +2263,18 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         ".Lfc7574_000c7749:\n"
         "movl %eax, warnCount\n" /* line 265 */
         "movl $0x7fe, 8(%esp)\n" /* line 266 */
-        "movl $0x222dbc, 4(%esp)\n" /* "too many scene entities (more than %i)
+        "movl $str_00222dbc, 4(%esp)\n" /* "too many scene entities (more than %i)
 " */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lfc7574_000c76d4\n"
         ".Lfc7574_000c7773:\n"
         "movl %eax, warnCount\n" /* line 409 */
-        "movl $0x222e9c, 4(%esp)\n" /* line 410 */
+        "movl $str_00222e9c, 4(%esp)\n" /* line 410 */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "xorl %ebx, %ebx\n" /* backEndRefEnt */
         "jmp .Lfc7574_000c76d4\n"
@@ -2287,35 +2287,35 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         /* } scope */
         /* { scope 2: sceneEnt, sceneEnt */
         ".Lfc7574_000c77a3:\n"
-        "movl 0x195eeb8, %eax\n" /* line 235 */
+        "movl imp_r_drawEntities, %eax\n" /* line 235 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc7574_000c76d2\n"
-        "movl 0x115500c, %eax\n" /* line 241 */
+        "movl scene+12, %eax\n" /* line 241 */
         "movl %eax, -0x24(%ebp)\n"
         "cmpl $0x7fd, %eax\n"
         "ja .Lfc7574_000c78db\n"
-        "movl 0x195eef4, %eax\n" /* line 243 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 243 */
         "movl (%eax), %edx\n"
         "movl 0xa000c(%edx), %eax\n"
         "cmpl $0x1ff7, %eax\n"
         "ja .Lfc7574_000c78a3\n"
         "addl $1, %eax\n" /* line 249 */
         "movl %eax, 0xa000c(%edx)\n"
-        "addl $1, 0x115500c\n" /* line 250 */
+        "addl $1, scene+12\n" /* line 250 */
         "movl -0x24(%ebp), %eax\n" /* line 331 */
         "testl %eax, %eax\n"
         "js .Lfc7574_000c76d2\n"
         "movl -0x24(%ebp), %edx\n" /* line 334 */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "leal 0x11555c4(, %eax, 4), %eax\n"
+        "leal scene+1476(, %eax, 4), %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* sceneEnt */
         "movl %edx, %eax\n" /* line 335 */
         "shll $3, %eax\n"
         "subl %edx, %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x1155010, %edx\n"
+        "movl scene+16, %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* backEndRefEnt */
         "movl $0x74, 8(%esp)\n" /* line 337 */
         "movl %esi, 4(%esp)\n"
@@ -2350,7 +2350,7 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         /* { scope 3 */
         /* { scope 4 */
         ".Lfc7574_000c787c:\n"
-        "movl 0x195ed68, %eax\n" /* line 667 */
+        "movl imp_fx_sort, %eax\n" /* line 667 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc7574_000c7688\n"
@@ -2369,15 +2369,15 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         "je .Lfc7574_000c76d2\n"
         "movl %eax, warnCount\n" /* line 256 */
         "movl $0x1ff8, 8(%esp)\n" /* line 257 */
-        "movl $0x222d94, 4(%esp)\n" /* "too many visible models (more than %i)
+        "movl $str_00222d94, 4(%esp)\n" /* "too many visible models (more than %i)
 " */
         "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lfc7574_000c76d4\n"
         ".Lfc7574_000c78db:\n"
-        "movl 0x195eef4, %eax\n" /* line 263 */
+        "movl imp_frontEndDataOut, %eax\n" /* line 263 */
         "movl (%eax), %eax\n"
         "movl (%eax), %eax\n"
         "cmpl warnCount, %eax\n"

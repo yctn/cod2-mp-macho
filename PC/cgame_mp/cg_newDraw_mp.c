@@ -20,22 +20,22 @@ extern const dvar_t *hud_health_startpulse_critical; /* 0x0 */
 extern const dvar_t *hud_health_pulserate_injured; /* 0x0 */
 extern const dvar_t *hud_health_pulserate_critical; /* 0x0 */
 extern const dvar_t *hud_deathQuoteFadeTime; /* 0x0 */
-static vec4_t color; /* 0x302d60 */
-static char szErrorString[1024]; /* 0xf2f140 */
-static const float pulseMags[4]; /* 0x302d70 */
-static vec4_t color_00302d80; /* 0x302d80 */
-static vec4_t color_00302d80; /* 0x302d80 */
-static const dvar_t *hud_fadeout_speed; /* 0xf2f128 */
-static const dvar_t *hud_enable; /* 0xf2f124 */
-static const dvar_t *hud_healthOverlay_regenPauseTime; /* 0xf2f108 */
-static const dvar_t *hud_healthOverlay_pulseStart; /* 0xf2f120 */
-static const dvar_t *hud_healthOverlay_phaseOne_pulseDuration; /* 0xf2f11c */
-static const dvar_t *hud_healthOverlay_phaseTwo_toAlphaMultiplier; /* 0xf2f118 */
-static const dvar_t *hud_healthOverlay_phaseTwo_pulseDuration; /* 0xf2f114 */
-static const dvar_t *hud_healthOverlay_phaseThree_toAlphaMultiplier; /* 0xf2f110 */
-static const dvar_t *hud_healthOverlay_phaseThree_pulseDuration; /* 0xf2f10c */
-static const dvar_t *hud_healthOverlay_phaseEnd_toAlpha; /* 0xf2f104 */
-static const dvar_t *hud_healthOverlay_phaseEnd_pulseDuration; /* 0xf2f100 */
+static vec4_t color; /* color */
+static char szErrorString[1024]; /* szErrorString */
+static const float pulseMags[4]; /* pulseMags */
+static vec4_t color_00302d80; /* color */
+static vec4_t color_00302d80; /* color */
+static const dvar_t *hud_fadeout_speed; /* hud_fadeout_speed */
+static const dvar_t *hud_enable; /* hud_enable */
+static const dvar_t *hud_healthOverlay_regenPauseTime; /* hud_healthOverlay_regenPauseTime */
+static const dvar_t *hud_healthOverlay_pulseStart; /* hud_healthOverlay_pulseStart */
+static const dvar_t *hud_healthOverlay_phaseOne_pulseDuration; /* hud_healthOverlay_phaseOne_pulseDuration */
+static const dvar_t *hud_healthOverlay_phaseTwo_toAlphaMultiplier; /* hud_healthOverlay_phaseTwo_toAlphaMultiplier */
+static const dvar_t *hud_healthOverlay_phaseTwo_pulseDuration; /* hud_healthOverlay_phaseTwo_pulseDuration */
+static const dvar_t *hud_healthOverlay_phaseThree_toAlphaMultiplier; /* hud_healthOverlay_phaseThree_toAlphaMultiplier */
+static const dvar_t *hud_healthOverlay_phaseThree_pulseDuration; /* hud_healthOverlay_phaseThree_pulseDuration */
+static const dvar_t *hud_healthOverlay_phaseEnd_toAlpha; /* hud_healthOverlay_phaseEnd_toAlpha */
+static const dvar_t *hud_healthOverlay_phaseEnd_pulseDuration; /* hud_healthOverlay_phaseEnd_pulseDuration */
 
 extern const char *va(const char *fmt, ...);
 
@@ -81,12 +81,12 @@ void CG_AntiBurnInHUD_RegisterDvars(void)
         "xorl %ebx, %ebx\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x3dcccccd, 4(%esp)\n"
-        "movl $0x2af7dc, (%esp)\n" /* "hud_fadeout_speed" */
+        "movl $str_002af7dc, (%esp)\n" /* "hud_fadeout_speed" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_fadeout_speed\n"
         "movl $0x1001, 8(%esp)\n" /* line 64 */
         "movl $1, 4(%esp)\n"
-        "movl $0x2a9028, (%esp)\n" /* "hud_enable" */
+        "movl $str_002a9028, (%esp)\n" /* "hud_enable" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, hud_enable\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 68 */
@@ -94,35 +94,35 @@ void CG_AntiBurnInHUD_RegisterDvars(void)
         "movl %esi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2af7f0, (%esp)\n" /* "hud_fade_ammodisplay" */
+        "movl $str_002af7f0, (%esp)\n" /* "hud_fade_ammodisplay" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_fade_ammodisplay\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 69 */
         "movl %esi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x40000000, 4(%esp)\n"
-        "movl $0x2af808, (%esp)\n" /* "hud_fade_healthbar" */
+        "movl $str_002af808, (%esp)\n" /* "hud_fade_healthbar" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_fade_healthbar\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 70 */
         "movl %esi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2af81c, (%esp)\n" /* "hud_fade_compass" */
+        "movl $str_002af81c, (%esp)\n" /* "hud_fade_compass" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_fade_compass\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 71 */
         "movl %esi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x3fd9999a, 4(%esp)\n"
-        "movl $0x2af830, (%esp)\n" /* "hud_fade_stance" */
+        "movl $str_002af830, (%esp)\n" /* "hud_fade_stance" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_fade_stance\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 72 */
         "movl %esi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2af840, (%esp)\n" /* "hud_fade_offhand" */
+        "movl $str_002af840, (%esp)\n" /* "hud_fade_offhand" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_fade_offhand\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 74 */
@@ -130,14 +130,14 @@ void CG_AntiBurnInHUD_RegisterDvars(void)
         "movl %esi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
-        "movl $0x2af854, (%esp)\n" /* "hud_health_startpulse_injured" */
+        "movl $str_002af854, (%esp)\n" /* "hud_health_startpulse_injured" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_health_startpulse_injured\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 75 */
         "movl %esi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x3ea8f5c3, 4(%esp)\n"
-        "movl $0x2af874, (%esp)\n" /* "hud_health_startpulse_critical" */
+        "movl $str_002af874, (%esp)\n" /* "hud_health_startpulse_critical" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_health_startpulse_critical\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 76 */
@@ -145,84 +145,84 @@ void CG_AntiBurnInHUD_RegisterDvars(void)
         "movl %esi, 0xc(%esp)\n"
         "movl $0x3dcccccd, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
-        "movl $0x2af894, (%esp)\n" /* "hud_health_pulserate_injured" */
+        "movl $str_002af894, (%esp)\n" /* "hud_health_pulserate_injured" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_health_pulserate_injured\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 77 */
         "movl %esi, 0xc(%esp)\n"
         "movl $0x3dcccccd, 8(%esp)\n"
         "movl $0x3f000000, 4(%esp)\n"
-        "movl $0x2af8b4, (%esp)\n" /* "hud_health_pulserate_critical" */
+        "movl $str_002af8b4, (%esp)\n" /* "hud_health_pulserate_critical" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_health_pulserate_critical\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 79 */
         "movl $0x186a0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x3e8, 4(%esp)\n"
-        "movl $0x2af8d4, (%esp)\n" /* "hud_deathQuoteFadeTime" */
+        "movl $str_002af8d4, (%esp)\n" /* "hud_deathQuoteFadeTime" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, hud_deathQuoteFadeTime\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 81 */
         "movl $0x2710, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x1388, 4(%esp)\n"
-        "movl $0x2af8ec, (%esp)\n" /* "hud_healthOverlay_regenPauseTime" */
+        "movl $str_002af8ec, (%esp)\n" /* "hud_healthOverlay_regenPauseTime" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, hud_healthOverlay_regenPauseTime\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 82 */
         "movl %edi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x3eb33333, 4(%esp)\n"
-        "movl $0x2af910, (%esp)\n" /* "hud_healthOverlay_pulseStart" */
+        "movl $str_002af910, (%esp)\n" /* "hud_healthOverlay_pulseStart" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_healthOverlay_pulseStart\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 83 */
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x96, 4(%esp)\n"
-        "movl $0x2af930, (%esp)\n" /* "hud_healthOverlay_phaseOne_pulseDuration" */
+        "movl $str_002af930, (%esp)\n" /* "hud_healthOverlay_phaseOne_pulseDuration" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, hud_healthOverlay_phaseOne_pulseDuration\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 85 */
         "movl %edi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x3f333333, 4(%esp)\n"
-        "movl $0x2af95c, (%esp)\n" /* "hud_healthOverlay_phaseTwo_toAlphaMultiplier" */
+        "movl $str_002af95c, (%esp)\n" /* "hud_healthOverlay_phaseTwo_toAlphaMultiplier" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_healthOverlay_phaseTwo_toAlphaMultiplier\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 86 */
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x140, 4(%esp)\n"
-        "movl $0x2af98c, (%esp)\n" /* "hud_healthOverlay_phaseTwo_pulseDuration" */
+        "movl $str_002af98c, (%esp)\n" /* "hud_healthOverlay_phaseTwo_pulseDuration" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, hud_healthOverlay_phaseTwo_pulseDuration\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 88 */
         "movl %edi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x3f19999a, 4(%esp)\n"
-        "movl $0x2af9b8, (%esp)\n" /* "hud_healthOverlay_phaseThree_toAlphaMultiplier" */
+        "movl $str_002af9b8, (%esp)\n" /* "hud_healthOverlay_phaseThree_toAlphaMultiplier" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_healthOverlay_phaseThree_toAlphaMultiplier\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 89 */
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x190, 4(%esp)\n"
-        "movl $0x2af9e8, (%esp)\n" /* "hud_healthOverlay_phaseThree_pulseDuration" */
+        "movl $str_002af9e8, (%esp)\n" /* "hud_healthOverlay_phaseThree_pulseDuration" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, hud_healthOverlay_phaseThree_pulseDuration\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 91 */
         "movl %edi, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2afa14, (%esp)\n" /* "hud_healthOverlay_phaseEnd_toAlpha" */
+        "movl $str_002afa14, (%esp)\n" /* "hud_healthOverlay_phaseEnd_toAlpha" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, hud_healthOverlay_phaseEnd_toAlpha\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 92 */
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x2bc, 4(%esp)\n"
-        "movl $0x2afa38, (%esp)\n" /* "hud_healthOverlay_phaseEnd_pulseDuration" */
+        "movl $str_002afa38, (%esp)\n" /* "hud_healthOverlay_phaseEnd_pulseDuration" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, hud_healthOverlay_phaseEnd_pulseDuration\n"
         "addl $0x2c, %esp\n" /* line 93 */
@@ -246,7 +246,7 @@ Bool CG_AreHudMenusHidden(void)
         "testb $8, %al\n"
         "jne .Lf188414_0018843f\n"
         ".Lf188414_00188423:\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x2bdc8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -277,7 +277,7 @@ float CG_CalcPlayerHealth(void)
         "movl %esp, %ebp\n"
         "subl $4, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 743 | ps */
+        "movl imp_cg, %eax\n" /* line 743 | ps */
         "movl (%eax), %eax\n" /* ps */
         "movl 0x24(%eax), %eax\n" /* ps */
         "addl $0xc, %eax\n" /* ps */
@@ -292,10 +292,10 @@ float CG_CalcPlayerHealth(void)
         "cvtsi2ssl %edx, %xmm1\n" /* line 748 */
         "cvtsi2ssl %ecx, %xmm0\n"
         "divss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 749 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 749 | 0.0f */
         "jb .Lf188450_001884ac\n"
         ".Lf188450_00188492:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 751 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 751 | 1.0f */
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lf188450_001884b2\n"
         "movaps %xmm0, %xmm1\n"
@@ -321,7 +321,7 @@ float CG_CalcPlayerHealth(void)
 /* line 1002 */
 void CG_ResetLowHealthOverlay(void)
 {
-    byte *cg = *(byte **)(*(int *)0x195f584);
+    byte *cg = *(byte **)(*(int *)imp_cg);
     *(byte *)(cg + 0x2be20) = 0;
     *(float *)(cg + 0x2be10) = *(float *)((byte *)hud_healthOverlay_phaseEnd_toAlpha + 8);
     *(int *)(cg + 0x2be18) = 0;
@@ -397,7 +397,7 @@ const char * CG_GetUseString(void)
         "pushl %ebx\n"
         "subl $0x110, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 1380 */
+        "movl imp_cg, %eax\n" /* line 1380 */
         "movl (%eax), %eax\n"
         "movl 0x2bdf4(%eax), %eax\n"
         "addl $0x4fe, %eax\n"
@@ -420,13 +420,13 @@ const char * CG_GetUseString(void)
         "je .Lf18856c_00188597\n"
         "leal -0x108(%ebp), %esi\n" /* line 1385 | binding */
         "movl %esi, 4(%esp)\n"
-        "movl $0x2ac020, (%esp)\n" /* "+activate" */
+        "movl $str_002ac020, (%esp)\n" /* "+activate" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n"
         "je .Lf18856c_001885f0\n"
         ".Lf18856c_001885c2:\n"
         "movl $0, 8(%esp)\n" /* line 1388 */
-        "movl $0x2afa6c, 4(%esp)\n" /* "Hint String" */
+        "movl $str_002afa6c, 4(%esp)\n" /* "Hint String" */
         "movl %ebx, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "movl %esi, 4(%esp)\n" /* line 1390 */
@@ -440,7 +440,7 @@ const char * CG_GetUseString(void)
         "retl\n"
         /* { scope 1 */
         ".Lf18856c_001885f0:\n"
-        "movl $0x2afa64, (%esp)\n" /* line 1386 */
+        "movl $str_002afa64, (%esp)\n" /* line 1386 */
         "calll UI_SafeTranslateString\n"
         "movl $0x100, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
@@ -466,19 +466,19 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "movss %xmm0, -0x240(%ebp)\n"
         "movl %ecx, -0x244(%ebp)\n"
         /* { scope 1 */
-        "movl 0x195f658, %eax\n" /* line 1426 */
+        "movl imp_cg_cursorHints, %eax\n" /* line 1426 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf188612_001887e2\n"
-        "movl 0x195f584, %ebx\n" /* line 1308 */
+        "movl imp_cg, %ebx\n" /* line 1308 */
         "movl (%ebx), %edx\n"
         "movl 0x25bc0(%edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf188612_001887ed\n"
         "movl %edx, %ebx\n"
         ".Lf188612_0018865e:\n"
-        "movl 0x195f5c4, %eax\n" /* line 1431 */
+        "movl imp_cgs, %eax\n" /* line 1431 */
         "movl (%eax), %edx\n"
         "movl 0x2bde8(%ebx), %eax\n"
         "movl 0xba44(%edx, %eax, 4), %eax\n"
@@ -495,7 +495,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "testl %eax, %eax\n" /* line 1437 */
         "je .Lf188612_00188996\n"
         "calll Controls_GetConfig\n" /* line 1443 */
-        "movl 0x195f658, %edi\n" /* line 1450 */
+        "movl imp_cg_cursorHints, %edi\n" /* line 1450 */
         "movl (%edi), %eax\n"
         "cmpl $3, 8(%eax)\n"
         "je .Lf188612_00188bd6\n"
@@ -505,7 +505,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "pxor %xmm0, %xmm0\n"
         "movss %xmm0, -0x22c(%ebp)\n" /* halfscale */
         "movss %xmm0, -0x230(%ebp)\n" /* scale */
-        "movl 0x195f584, %eax\n" /* line 1468 */
+        "movl imp_cg, %eax\n" /* line 1468 */
         "movl (%eax), %ecx\n"
         "movl 0x2bde8(%ecx), %edx\n"
         "leal -5(%edx), %eax\n"
@@ -518,7 +518,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "calll CG_GetUseString\n" /* line 1492 */
         ".Lf188612_0018870f:\n"
         "movl %eax, %ebx\n" /* line 1499 */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x228(%ebp)\n" /* widthScale */
         "pxor %xmm0, %xmm0\n"
         "movss %xmm0, -0x224(%ebp)\n" /* widthOfs */
@@ -552,7 +552,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "addss -0x22c(%ebp), %xmm1\n" /* halfscale */
         "movaps %xmm1, %xmm0\n"
         "addss -0x224(%ebp), %xmm0\n" /* widthOfs */
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "movss %xmm0, -0x22c(%ebp)\n" /* halfscale */
         "addss (%esi), %xmm0\n" /* rect */
         "movss %xmm0, (%esp)\n"
@@ -589,13 +589,13 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "shll $3, %edx\n"
         "subl %edx, %ebx\n"
         "cvtsi2ssl %ebx, %xmm0\n"
-        "divss 0x2ed798, %xmm0\n" /* 100.0f */
+        "divss lit4_002ed798, %xmm0\n" /* 100.0f */
         "movss %xmm0, -0x230(%ebp)\n" /* scale */
-        "movss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         ".Lf188612_0018884e:\n"
         "mulss -0x230(%ebp), %xmm1\n" /* line 1465 | scale */
         "movss %xmm1, -0x22c(%ebp)\n" /* halfscale */
-        "movl 0x195f584, %eax\n" /* line 1468 */
+        "movl imp_cg, %eax\n" /* line 1468 */
         "movl (%eax), %ecx\n"
         "movl 0x2bde8(%ecx), %edx\n"
         "leal -5(%edx), %eax\n"
@@ -608,14 +608,14 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "movl 0x344(%eax), %edi\n" /* line 1474 */
         "testl %edi, %edi\n"
         "jne .Lf188612_00188bac\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x228(%ebp)\n" /* widthScale */
         "pxor %xmm0, %xmm0\n"
         "movss %xmm0, -0x224(%ebp)\n" /* widthOfs */
         ".Lf188612_001888ac:\n"
         "cmpl $7, 0x7c(%eax)\n" /* line 1480 */
         "je .Lf188612_00188c4a\n"
-        "movl 0x195f584, %eax\n" /* line 1336 */
+        "movl imp_cg, %eax\n" /* line 1336 */
         "movl (%eax), %edi\n"
         "movl 0x2bde8(%edi), %ebx\n"
         "subl $4, %ebx\n"
@@ -624,7 +624,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "movl %eax, -0x21c(%ebp)\n"
         "leal -0x218(%ebp), %eax\n" /* line 1340 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac020, (%esp)\n" /* "+activate" */
+        "movl $str_002ac020, (%esp)\n" /* "+activate" */
         "calll GetKeyBindingLocalizedString\n"
         "movl %ebx, (%esp)\n" /* line 1344 */
         "calll BG_DoesWeaponNeedSlot\n"
@@ -647,13 +647,13 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "cmpl %eax, %ebx\n"
         "je .Lf188612_0018873a\n"
         ".Lf188612_0018894a:\n"
-        "movl $0x2afa94, (%esp)\n" /* line 1357 */
+        "movl $str_002afa94, (%esp)\n" /* line 1357 */
         "calll UI_SafeTranslateString\n"
         "jmp .Lf188612_00188c31\n"
         ".Lf188612_0018895b:\n"
         "movl 0x25bb0(%edx), %eax\n" /* line 1313 */
         "movl %eax, 0x2bdec(%edx)\n"
-        "movl 0x195f668, %eax\n" /* line 1314 */
+        "movl imp_cg_hintFadeTime, %eax\n" /* line 1314 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x2bdf0(%edx)\n"
@@ -676,22 +676,22 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         ".Lf188612_001889ab:\n"
         "cmpl $3, %edx\n" /* line 1494 */
         "je .Lf188612_00188c6b\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1502 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1502 | 1.0f */
         "movss %xmm0, -0x228(%ebp)\n" /* widthScale */
         "pxor %xmm0, %xmm0\n"
         "movss %xmm0, -0x224(%ebp)\n" /* widthOfs */
         "jmp .Lf188612_0018873a\n"
         ".Lf188612_001889d5:\n"
         "cvtsi2ssl 0x25bb0(%ebx), %xmm0\n" /* line 1463 */
-        "divss 0x2ed93c, %xmm0\n" /* 150.0f */
+        "divss lit4_002ed93c, %xmm0\n" /* 150.0f */
         "movss %xmm0, (%esp)\n"
         "calll sinf\n"
         "fstps -0x230(%ebp)\n" /* scale */
-        "movss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss -0x230(%ebp), %xmm0\n" /* scale */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed6b4, %xmm0\n" /* 10.0f */
+        "mulss lit4_002ed6b4, %xmm0\n" /* 10.0f */
         "movss %xmm0, -0x230(%ebp)\n" /* scale */
         "jmp .Lf188612_0018884e\n"
         ".Lf188612_00188a22:\n"
@@ -713,7 +713,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "mulss 8(%esi), %xmm2\n" /* rect */
         "addss -0x230(%ebp), %xmm2\n" /* scale */
         "addss -0x220(%ebp), %xmm2\n" /* length */
-        "movss 0x2ed63c, %xmm1\n" /* -0.5f */
+        "movss lit4_002ed63c, %xmm1\n" /* -0.5f */
         "mulss %xmm1, %xmm2\n"
         "movss 4(%esi), %xmm3\n" /* line 1508 | rect */
         "mulss 0xc(%esi), %xmm1\n" /* rect */
@@ -729,7 +729,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "movl 0x10(%esi), %edx\n" /* rect */
         "movl %edx, 0x14(%esp)\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss %xmm0, %xmm3\n"
         "movss %xmm3, 0x10(%esp)\n"
         "movss %xmm2, 0xc(%esp)\n"
@@ -765,20 +765,20 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "calll UI_DrawHandlePic\n"
         "jmp .Lf188612_001887e2\n"
         ".Lf188612_00188bac:\n"
-        "movss 0x2ed63c, %xmm0\n" /* line 1477 | -0.5f */
+        "movss lit4_002ed63c, %xmm0\n" /* line 1477 | -0.5f */
         "mulss 8(%esi), %xmm0\n" /* rect */
         "movss %xmm0, -0x224(%ebp)\n" /* widthOfs */
-        "movss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movss %xmm0, -0x228(%ebp)\n" /* widthScale */
         "jmp .Lf188612_001888ac\n"
         ".Lf188612_00188bd6:\n"
         "cvtsi2ssl 0x25bb0(%ebx), %xmm0\n" /* line 1451 */
-        "divss 0x2ed93c, %xmm0\n" /* 150.0f */
+        "divss lit4_002ed93c, %xmm0\n" /* 150.0f */
         "movss %xmm0, (%esp)\n"
         "calll sinf\n"
         "fstps -0x26c(%ebp)\n"
         "movss -0x26c(%ebp), %xmm0\n"
-        "movss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "movl -0x238(%ebp), %eax\n" /* color */
@@ -787,7 +787,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "movl (%edi), %eax\n"
         "jmp .Lf188612_001886c5\n"
         ".Lf188612_00188c25:\n"
-        "movl $0x2afa78, (%esp)\n" /* line 1361 */
+        "movl $str_002afa78, (%esp)\n" /* line 1361 */
         "calll UI_SafeTranslateString\n"
         ".Lf188612_00188c31:\n"
         "leal -0x218(%ebp), %edx\n" /* line 1364 */
@@ -797,7 +797,7 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         "movl %eax, %ebx\n"
         "jmp .Lf188612_0018872d\n"
         ".Lf188612_00188c4a:\n"
-        "movl 0x195f584, %eax\n" /* line 1482 */
+        "movl imp_cg, %eax\n" /* line 1482 */
         "movl (%eax), %eax\n"
         "movl 0x2bdf4(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
@@ -808,9 +808,9 @@ void CG_DrawCursorhint(struct Font_s *font, float fontscale, int textStyle)
         ".Lf188612_00188c6b:\n"
         "leal -0x118(%ebp), %ebx\n" /* line 1496 | binding */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2ac020, (%esp)\n" /* "+activate" */
+        "movl $str_002ac020, (%esp)\n" /* "+activate" */
         "calll GetKeyBindingLocalizedString\n"
-        "movl $0x2afaac, (%esp)\n" /* line 1498 */
+        "movl $str_002afaac, (%esp)\n" /* line 1498 */
         "calll UI_SafeTranslateString\n"
         "movl %ebx, 4(%esp)\n" /* line 1499 */
         "movl %eax, (%esp)\n"
@@ -835,11 +835,11 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         "subl $0x150, %esp\n"
         "movl 8(%ebp), %esi\n" /* rect */
         /* { scope 1 */
-        "movl 0x195f64c, %eax\n" /* line 1583 */
+        "movl imp_cg_drawMantleHint, %eax\n" /* line 1583 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf188cb0_00188cdb\n"
-        "movl 0x195f584, %eax\n" /* line 1588 */
+        "movl imp_cg, %eax\n" /* line 1588 */
         "movl (%eax), %eax\n"
         "testb $8, 0x2618c(%eax)\n"
         "jne .Lf188cb0_00188ce5\n"
@@ -855,12 +855,12 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         "calll Controls_GetConfig\n" /* line 1591 */
         "leal -0x108(%ebp), %ebx\n" /* line 1593 | binding */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2ac148, (%esp)\n" /* "+gostand" */
+        "movl $str_002ac148, (%esp)\n" /* "+gostand" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n"
         "je .Lf188cb0_00188e53\n"
         ".Lf188cb0_00188d08:\n"
-        "movl $0x2afac4, (%esp)\n" /* line 1596 */
+        "movl $str_002afac4, (%esp)\n" /* line 1596 */
         "calll UI_SafeTranslateString\n"
         "movl %ebx, 4(%esp)\n" /* line 1597 */
         "movl %eax, (%esp)\n"
@@ -882,7 +882,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         "calll UI_TextHeight\n"
         "movss -0x10c(%ebp), %xmm1\n" /* line 1602 | length */
         "addss 8(%esi), %xmm1\n" /* rect */
-        "mulss 0x2ed63c, %xmm1\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm1\n" /* -0.5f */
         "addss (%esi), %xmm1\n" /* rect */
         "movl 0x14(%ebp), %edx\n" /* line 1604 | textStyle */
         "movl %edx, 0x24(%esp)\n"
@@ -894,7 +894,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         "movl 0x10(%esi), %edx\n" /* rect */
         "movl %edx, 0x14(%esp)\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss 4(%esi), %xmm0\n" /* rect */
         "movss %xmm0, 0x10(%esp)\n"
         "movss %xmm1, 0xc(%esp)\n"
@@ -905,7 +905,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         "movss %xmm1, -0x128(%ebp)\n"
         "calll UI_DrawText\n"
         "movss 0xc(%esi), %xmm0\n" /* line 1607 | rect */
-        "movl 0x195f5c4, %eax\n" /* line 1608 */
+        "movl imp_cgs, %eax\n" /* line 1608 */
         "movl (%eax), %eax\n"
         "movl 0xbc78(%eax), %eax\n"
         "movl %eax, 0x1c(%esp)\n"
@@ -917,7 +917,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         "movss %xmm0, 0xc(%esp)\n"
         "movl 8(%esi), %eax\n" /* rect */
         "movl %eax, 8(%esp)\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "addss 4(%esi), %xmm0\n" /* rect */
         "movss %xmm0, 4(%esp)\n"
         "movss -0x128(%ebp), %xmm1\n"
@@ -933,7 +933,7 @@ void CG_DrawMantleHint(const rectDef_t *rect, struct Font_s *font, float fontsca
         /* { scope 1 */
         ".Lf188cb0_00188e53:\n"
         "movl %ebx, 4(%esp)\n" /* line 1594 */
-        "movl $0x2abf84, (%esp)\n" /* "+moveup" */
+        "movl $str_002abf84, (%esp)\n" /* "+moveup" */
         "calll GetKeyBindingLocalizedString\n"
         "jmp .Lf188cb0_00188d08\n"
     );
@@ -970,35 +970,35 @@ const char * CG_GetTranslatedLocationString(int iLocation)
         "retl\n"
         /* { scope 1 */
         ".Lf188e68_00188e9a:\n"
-        "movl $0x2afad4, %ebx\n" /* line 1622 | p */
+        "movl $str_002afad4, %ebx\n" /* line 1622 | p */
         "movl %ebx, (%esp)\n" /* line 1625 | p */
         "calll SEH_StringEd_GetString\n"
         "testl %eax, %eax\n" /* line 1626 */
         "jne .Lf188e68_00188e94\n"
         ".Lf188e68_00188eab:\n"
-        "movl 0x195f574, %eax\n" /* line 1628 */
+        "movl imp_loc_warnings, %eax\n" /* line 1628 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf188e68_00188f65\n"
-        "movl 0x195f570, %eax\n" /* line 1630 */
+        "movl imp_loc_warningsAsErrors, %eax\n" /* line 1630 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf188e68_00188f53\n"
         "movl %ebx, 8(%esp)\n" /* line 1631 | p */
-        "movl $0x2afae4, 4(%esp)\n" /* "Could not translate map location string "%s"" */
+        "movl $str_002afae4, 4(%esp)\n" /* "Could not translate map location string "%s"" */
         "movl $6, (%esp)\n"
         "calll Com_Error\n"
         ".Lf188e68_00188ee5:\n"
         "movl $0x4e55315e, szErrorString\n" /* line 1635 */
-        "movl $0x41434f4c, 0xf2f144\n"
-        "movl $0x455a494c, 0xf2f148\n"
-        "movl $0x375e2844, 0xf2f14c\n"
-        "movb $0, 0xf2f150\n"
+        "movl $0x41434f4c, szErrorString+4\n"
+        "movl $0x455a494c, szErrorString+8\n"
+        "movl $0x375e2844, szErrorString+12\n"
+        "movb $0, szErrorString+16\n"
         "movl %ebx, 8(%esp)\n" /* line 1636 | p */
         "movl $0x400, 4(%esp)\n"
         "movl $szErrorString, (%esp)\n"
         "calll I_strncat\n"
-        "movl $0x216b78, 8(%esp)\n" /* line 1637 */
+        "movl $str_00216b78, 8(%esp)\n" /* line 1637 */
         "movl $0x400, 4(%esp)\n"
         "movl $szErrorString, (%esp)\n"
         "calll I_strncat\n"
@@ -1011,7 +1011,7 @@ const char * CG_GetTranslatedLocationString(int iLocation)
         /* { scope 1 */
         ".Lf188e68_00188f53:\n"
         "movl %ebx, 4(%esp)\n" /* line 1633 | p */
-        "movl $0x2afb14, (%esp)\n" /* "^3WARNING: Could not translate map location string "%s"
+        "movl $str_002afb14, (%esp)\n" /* "^3WARNING: Could not translate map location string "%s"
 " */
         "calll Com_Printf\n"
         "jmp .Lf188e68_00188ee5\n"
@@ -1040,13 +1040,13 @@ void CG_DrawScore(float scale, vec_t *color, MaterialHandle material, int textSt
         "movl %ecx, %esi\n" /* font */
         "movss %xmm0, -0x2c(%ebp)\n"
         /* { scope 1 */
-        "movl 0x195f5c4, %edx\n" /* line 1670 */
+        "movl imp_cgs, %edx\n" /* line 1670 */
         "movl (%edx), %edx\n"
         "movl 0x63b8(%edx, %eax, 4), %eax\n"
         "cmpl $0xffffd8f1, %eax\n"
         "je .Lf188f88_0018905c\n"
         "movl %eax, 0xc(%esp)\n" /* line 1676 */
-        "movl $0x21785c, 8(%esp)\n" /* "%i" */
+        "movl $str_0021785c, 8(%esp)\n" /* "%i" */
         "movl $0x10, 4(%esp)\n"
         "leal -0x28(%ebp), %edi\n" /* num */
         "movl %edi, (%esp)\n"
@@ -1089,7 +1089,7 @@ void CG_DrawScore(float scale, vec_t *color, MaterialHandle material, int textSt
         "retl\n"
         /* { scope 1 */
         ".Lf188f88_0018905c:\n"
-        "movl $0x222900, 8(%esp)\n" /* line 1672 */
+        "movl $str_00222900, 8(%esp)\n" /* line 1672 */
         "movl $0x10, 4(%esp)\n"
         "leal -0x28(%ebp), %edi\n" /* num */
         "movl %edi, (%esp)\n"
@@ -1101,7 +1101,7 @@ void CG_DrawScore(float scale, vec_t *color, MaterialHandle material, int textSt
 /* line 1722 */
 const char * CG_GetKillerText(void)
 {
-    byte *cg = *(byte **)(*(int *)0x195f584);
+    byte *cg = *(byte **)(*(int *)imp_cg);
     if (!*(byte *)(cg + 0x2b54c))
         return "";
     return va("Fragged by %s", (const char *)(cg + 0x2b54c));
@@ -1110,7 +1110,7 @@ const char * CG_GetKillerText(void)
 /* line 1768 */
 const char * CG_GameTypeString(void)
 {
-    return (const char *)((byte *)*(void **)*(void **)0x195f5c4 + 0x5ea4);
+    return (const char *)((byte *)*(void **)*(void **)imp_cgs + 0x5ea4);
 }
 
 /* line 1926 */
@@ -1165,7 +1165,7 @@ void CG_PulseLowHealthOverlay(float healthRatio)
         "pushl %ebx\n"
         "movss 8(%ebp), %xmm1\n" /* healthRatio */
         /* { scope 1 */
-        "movl 0x195f584, %ecx\n" /* line 942 */
+        "movl imp_cg, %ecx\n" /* line 942 */
         "movl (%ecx), %edx\n"
         "movss 0x2be28(%edx), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
@@ -1204,7 +1204,7 @@ void CG_PulseLowHealthOverlay(float healthRatio)
         "testl %eax, %eax\n"
         "jne .Lf18911a_0018923c\n"
         "movss pulseMags(, %edi, 4), %xmm0\n" /* line 965 */
-        "movss 0x2ed5d0, %xmm2\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 45 | 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss %xmm2, %xmm1\n"
         "pxor %xmm3, %xmm3\n"
@@ -1265,7 +1265,7 @@ void CG_PulseLowHealthOverlay(float healthRatio)
         "movss pulseMags(, %edi, 4), %xmm0\n" /* line 970 */
         "movl hud_healthOverlay_phaseTwo_toAlphaMultiplier, %eax\n"
         "mulss 8(%eax), %xmm0\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 45 | 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss %xmm2, %xmm1\n"
         "pxor %xmm3, %xmm3\n"
@@ -1298,7 +1298,7 @@ void CG_PulseLowHealthOverlay(float healthRatio)
         "movss pulseMags(, %edi, 4), %xmm0\n" /* line 975 */
         "movl hud_healthOverlay_phaseThree_toAlphaMultiplier, %eax\n"
         "mulss 8(%eax), %xmm0\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 45 | 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss %xmm2, %xmm1\n"
         "pxor %xmm3, %xmm3\n"
@@ -1354,7 +1354,7 @@ void CG_ArchiveState(MemoryFile *memFile)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* memFile */
-        "movl 0x195f584, %eax\n" /* line 167 */
+        "movl imp_cg, %eax\n" /* line 167 */
         "movl (%eax), %esi\n"
         "leal 0x2c5c4(%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -1414,11 +1414,11 @@ void CG_DrawHoldBreathHint(const rectDef_t *rect, struct Font_s *font, float fon
         "pushl %ebx\n"
         "subl $0x144, %esp\n"
         /* { scope 1 */
-        "movl 0x195f63c, %eax\n" /* line 1534 */
+        "movl imp_cg_drawBreathHint, %eax\n" /* line 1534 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1894ae_001894d8\n"
-        "movl 0x195f584, %eax\n" /* line 1537 */
+        "movl imp_cg, %eax\n" /* line 1537 */
         "movl (%eax), %ebx\n" /* ps */
         "addl $0x25bc4, %ebx\n" /* ps */
         "testb $0x40, 0xd(%ebx)\n" /* line 1539 | ps */
@@ -1440,19 +1440,19 @@ void CG_DrawHoldBreathHint(const rectDef_t *rect, struct Font_s *font, float fon
         "je .Lf1894ae_001894d8\n"
         "cmpl $9, 0x7c(%eax)\n"
         "je .Lf1894ae_001894d8\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1547 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1547 | 1.0f */
         "ucomiss 0xdc(%ebx), %xmm0\n" /* ps */
         "jne .Lf1894ae_001894d8\n"
         "jp .Lf1894ae_001894d8\n"
         "calll Controls_GetConfig\n" /* line 1550 */
         "leal -0x108(%ebp), %ebx\n" /* line 1552 | binding, ps */
         "movl %ebx, 4(%esp)\n" /* ps */
-        "movl $0x2ac0d4, (%esp)\n" /* "+holdbreath" */
+        "movl $str_002ac0d4, (%esp)\n" /* "+holdbreath" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n"
         "je .Lf1894ae_00189612\n"
         ".Lf1894ae_00189537:\n"
-        "movl $0x2afb60, (%esp)\n" /* line 1558 */
+        "movl $str_002afb60, (%esp)\n" /* line 1558 */
         "calll UI_SafeTranslateString\n"
         "movl %ebx, 4(%esp)\n" /* line 1559 | ps */
         "movl %eax, (%esp)\n"
@@ -1481,7 +1481,7 @@ void CG_DrawHoldBreathHint(const rectDef_t *rect, struct Font_s *font, float fon
         "movl 4(%ecx), %edx\n"
         "movl %edx, 0x10(%esp)\n"
         "cvtsi2ssl %eax, %xmm0\n" /* line 428 */
-        "movss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, (%esp)\n"
@@ -1500,12 +1500,12 @@ void CG_DrawHoldBreathHint(const rectDef_t *rect, struct Font_s *font, float fon
         "jmp .Lf1894ae_001894d8\n"
         ".Lf1894ae_00189612:\n"
         "movl %ebx, 4(%esp)\n" /* line 1554 | ps */
-        "movl $0x2ac0e0, (%esp)\n" /* "+melee_breath" */
+        "movl $str_002ac0e0, (%esp)\n" /* "+melee_breath" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n"
         "jne .Lf1894ae_00189537\n"
         "movl %ebx, 4(%esp)\n" /* line 1555 | ps */
-        "movl $0x2ac0b8, (%esp)\n" /* "+breath_binoculars" */
+        "movl $str_002ac0b8, (%esp)\n" /* "+breath_binoculars" */
         "calll GetKeyBindingLocalizedString\n"
         "jmp .Lf1894ae_00189537\n"
     );
@@ -1524,7 +1524,7 @@ float CG_FadeHudMenu(const dvar_t *fadeDvar, int displayStartTime, int duration)
         "testb $8, %al\n"
         "jne .Lf189640_0018968f\n"
         ".Lf189640_0018964f:\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x2bdc8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1589,7 +1589,7 @@ Bool CG_CheckPlayerForLowAmmo(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %edi\n" /* line 176 */
+        "movl imp_cg, %edi\n" /* line 176 */
         "movl (%edi), %ebx\n" /* ammoIndex */
         "leal 0x25bc4(%ebx), %eax\n" /* ammoIndex */
         "movl %eax, -0x1c(%ebp)\n" /* ps */
@@ -1632,10 +1632,10 @@ Bool CG_CheckPlayerForLowAmmo(void)
         "calll BG_GetAmmoTypeMax\n"
         "cmpl $0x3e7, %eax\n" /* line 188 */
         "jle .Lf1896be_0018978f\n"
-        "movss 0x2ed94c, %xmm1\n" /* 999.0f */
+        "movss lit4_002ed94c, %xmm1\n" /* 999.0f */
         ".Lf1896be_00189744:\n"
         "cvtsi2ssl %esi, %xmm0\n" /* line 191 | curAmmo */
-        "mulss 0x2ed724, %xmm1\n" /* 0.20000000298023224f */
+        "mulss lit4_002ed724, %xmm1\n" /* 0.20000000298023224f */
         "ucomiss %xmm0, %xmm1\n"
         "jb .Lf1896be_001896fb\n"
         "movl $1, %eax\n"
@@ -1681,7 +1681,7 @@ Bool CG_CheckPlayerForLowClip(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %edi\n" /* line 207 */
+        "movl imp_cg, %edi\n" /* line 207 */
         "movl (%edi), %ebx\n" /* curClipVal */
         "leal 0x25bc4(%ebx), %eax\n" /* curClipVal */
         "movl %eax, -0x1c(%ebp)\n" /* ps */
@@ -1728,10 +1728,10 @@ Bool CG_CheckPlayerForLowClip(void)
         "calll BG_GetAmmoClipSize\n"
         "cmpl $0x3e7, %eax\n" /* line 223 */
         "jle .Lf18979e_00189883\n"
-        "movss 0x2ed94c, %xmm1\n" /* 999.0f */
+        "movss lit4_002ed94c, %xmm1\n" /* 999.0f */
         ".Lf18979e_00189838:\n"
         "cvtsi2ssl %ebx, %xmm0\n" /* line 226 | curClipVal */
-        "mulss 0x2ed8ec, %xmm1\n" /* 0.33000001311302185f */
+        "mulss lit4_002ed8ec, %xmm1\n" /* 0.33000001311302185f */
         "ucomiss %xmm0, %xmm1\n"
         "jb .Lf18979e_001897df\n"
         "movl $1, %eax\n"
@@ -1781,15 +1781,15 @@ void CG_DrawPlayerCompassBack(const rectDef_t *rect, MaterialHandle material, ve
         "addl $0xc, %eax\n"
         "movl %eax, -0x24(%ebp)\n"
         "movl hud_fade_compass, %esi\n"
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x28(%ebp)\n"
         "cvttss2si -0x28(%ebp), %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* duration */
-        "movl 0x195f584, %eax\n" /* line 1153 */
+        "movl imp_cg, %eax\n" /* line 1153 */
         "movl (%eax), %ebx\n"
         "movl 0x2c5c0(%ebx), %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* displayStartTime */
@@ -1837,20 +1837,20 @@ void CG_DrawPlayerCompassBack(const rectDef_t *rect, MaterialHandle material, ve
         "ucomiss 8(%esi), %xmm1\n"
         "jne .Lf189892_001899f8\n"
         "jp .Lf189892_001899f8\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf189892_00189919\n"
         /* } scope */
         /* } scope */
         ".Lf189892_00189951:\n"
         "movss 0xc(%edi), %xmm3\n" /* line 1115 */
-        "movl 0x195f640, %eax\n"
+        "movl imp_cg_hudCompassSize, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "movl 0xc(%ebp), %eax\n" /* line 1158 | material */
         "movl %eax, 0x2c(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* color */
         "movl %eax, 0x28(%esp)\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss %xmm2, 0x24(%esp)\n"
         "movss %xmm2, 0x20(%esp)\n"
         "movl $0, 0x1c(%esp)\n"
@@ -1914,15 +1914,15 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "subl $0x28c, %esp\n"
         /* { scope 1: duration, i, numHintLines, height, ... */
         "movl hud_fade_stance, %esi\n" /* line 571 | height */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x248(%ebp)\n"
         "cvttss2si -0x248(%ebp), %eax\n"
         "movl %eax, -0x238(%ebp)\n" /* duration */
-        "movl 0x195f584, %eax\n" /* line 571 */
+        "movl imp_cg, %eax\n" /* line 571 */
         "movl (%eax), %ebx\n" /* proneStr */
         "movl 0x2c5cc(%ebx), %edi\n" /* proneStr, displayStartTime */
         /* { scope 2: keyBinding */
@@ -1946,16 +1946,16 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "ucomiss 8(%esi), %xmm0\n"
         "jne .Lf189a28_00189e73\n"
         "jp .Lf189a28_00189e73\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x23c(%ebp)\n" /* fadeAlpha */
         /* } scope */
         /* } scope */
         ".Lf189a28_00189ad5:\n"
-        "movl 0x195f648, %esi\n" /* line 575 | height */
+        "movl imp_cg_hudStanceHintPrints, %esi\n" /* line 575 | height */
         "movl (%esi), %eax\n" /* height */
         "cmpb $0, 8(%eax)\n"
         "jne .Lf189a28_00189d25\n"
-        "movl 0x195f584, %ebx\n" /* line 576 | proneStr */
+        "movl imp_cg, %ebx\n" /* line 576 | proneStr */
         "movl (%ebx), %eax\n" /* proneStr */
         "movl $0, 0x2be38(%eax)\n"
         "movl %eax, %ecx\n"
@@ -1963,15 +1963,15 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movl 0x25bd0(%ecx), %eax\n" /* line 580 */
         "andl $3, %eax\n"
         "movl %eax, 0x2be34(%ecx)\n"
-        "movl 0x195f5c4, %eax\n" /* line 583 */
+        "movl imp_cgs, %eax\n" /* line 583 */
         "movl (%eax), %edx\n"
-        "movl 0x195f640, %eax\n"
+        "movl imp_cg_hudCompassSize, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x244(%ebp)\n" /* x */
         "mulss 0xc208(%edx), %xmm1\n"
-        "mulss 0x2ed6ac, %xmm1\n" /* 0.699999988079071f */
+        "mulss lit4_002ed6ac, %xmm1\n" /* 0.699999988079071f */
         "movss %xmm1, -0x244(%ebp)\n" /* x */
         "movl 8(%ebp), %eax\n" /* rect */
         "addss (%eax), %xmm1\n"
@@ -2012,12 +2012,12 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movl 8(%ebp), %eax\n" /* line 530 | rect */
         "movl 8(%eax), %edi\n" /* width */
         "movl 0xc(%eax), %esi\n" /* line 531 | height */
-        "movl 0x195f584, %eax\n" /* line 535 */
+        "movl imp_cg, %eax\n" /* line 535 */
         "movl (%eax), %eax\n"
         "movl 0x2be34(%eax), %eax\n"
         "testb $1, %al\n"
         "je .Lf189a28_00189e5d\n"
-        "movl 0x195f5c4, %eax\n" /* line 536 */
+        "movl imp_cgs, %eax\n" /* line 536 */
         "movl (%eax), %eax\n"
         "movl 0xbc60(%eax), %eax\n"
         ".Lf189a28_00189c02:\n"
@@ -2036,7 +2036,7 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movss -0x244(%ebp), %xmm1\n" /* x */
         "movss %xmm1, (%esp)\n"
         "calll UI_DrawHandlePic\n"
-        "movl 0x195f584, %eax\n" /* line 545 */
+        "movl imp_cg, %eax\n" /* line 545 */
         "movl (%eax), %ebx\n"
         "movl 0x2be38(%ebx), %eax\n"
         "addl $0x3e8, %eax\n"
@@ -2044,7 +2044,7 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "jle .Lf189a28_00189d01\n"
         "leal -0x40(%ebp), %eax\n" /* line 547 | drawColor */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f65c, %eax\n"
+        "movl imp_cg_hudStanceFlash, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_GetUnpackedColor\n"
@@ -2052,12 +2052,12 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "subl 0x25bb0(%ebx), %eax\n"
         "addl $0x3e8, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed5c8, %xmm0\n" /* 1000.0f */
-        "mulss 0x2ed7f0, %xmm0\n" /* 0.800000011920929f */
+        "divss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed7f0, %xmm0\n" /* 0.800000011920929f */
         "movss -0x23c(%ebp), %xmm1\n" /* line 550 | fadeAlpha */
         "minss %xmm0, %xmm1\n"
         "movss %xmm1, -0x34(%ebp)\n"
-        "movl 0x195f5c4, %eax\n" /* line 551 */
+        "movl imp_cgs, %eax\n" /* line 551 */
         "movl (%eax), %eax\n"
         "movl 0xbc64(%eax), %eax\n"
         "movl %eax, 0x1c(%esp)\n"
@@ -2098,7 +2098,7 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         /* } scope */
         /* } scope */
         ".Lf189a28_00189d25:\n"
-        "movl 0x195f584, %ebx\n" /* line 577 | proneStr */
+        "movl imp_cg, %ebx\n" /* line 577 | proneStr */
         "movl (%ebx), %edx\n" /* proneStr */
         "movl 0x25bd0(%edx), %eax\n"
         "andl $3, %eax\n"
@@ -2114,7 +2114,7 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "cmpl 0x25bb0(%edi), %eax\n" /* displayStartTime */
         "jle .Lf189a28_00189bab\n"
         ".Lf189a28_00189d69:\n"
-        "movl $0x2afb78, (%esp)\n" /* line 595 */
+        "movl $str_002afb78, (%esp)\n" /* line 595 */
         "calll UI_SafeTranslateString\n"
         "movl %eax, %ebx\n" /* proneStr */
         "movss 0x14(%ebp), %xmm0\n" /* line 596 | scale */
@@ -2128,15 +2128,15 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movl 0x2be30(%edi), %eax\n" /* line 599 | displayStartTime */
         "subl 0x25bb0(%edi), %eax\n" /* displayStartTime */
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed950, %xmm0\n" /* 1500.0f */
-        "mulss 0x2ed954, %xmm0\n" /* 540.0f */
+        "divss lit4_002ed950, %xmm0\n" /* 1500.0f */
+        "mulss lit4_002ed954, %xmm0\n" /* 540.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "movsd %xmm0, (%esp)\n"
         "calll sin\n"
         "fstpl -0x250(%ebp)\n"
         "cvtsd2ss -0x250(%ebp), %xmm0\n"
-        "andps 0x302d90, %xmm0\n"
+        "andps color+16, %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "movl 0x18(%ebp), %edx\n" /* line 600 | textStyle */
         "movl %edx, 0x24(%esp)\n"
@@ -2146,26 +2146,26 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movss %xmm0, 0x1c(%esp)\n"
         "movl $3, 0x18(%esp)\n"
         "movl $7, 0x14(%esp)\n"
-        "movl 0x195f670, %eax\n"
+        "movl imp_cg_hudProneY, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "cvtsi2ssl %esi, %xmm0\n" /* height */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "xorps 0x302da0, %xmm0\n"
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
+        "xorps color+32, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* font */
         "movl %eax, 8(%esp)\n"
         "movl $0x7fffffff, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* proneStr */
         "calll UI_DrawText\n"
-        "movl 0x195f648, %esi\n" /* height */
+        "movl imp_cg_hudStanceHintPrints, %esi\n" /* height */
         "jmp .Lf189a28_00189bab\n"
         /* { scope 2: keyBinding */
         ".Lf189a28_00189e5d:\n"
         "testb $2, %al\n" /* line 537 */
         "je .Lf189a28_00189ebe\n"
-        "movl 0x195f5c4, %eax\n" /* line 538 */
+        "movl imp_cgs, %eax\n" /* line 538 */
         "movl (%eax), %eax\n"
         "movl 0xbc5c(%eax), %eax\n"
         "jmp .Lf189a28_00189c02\n"
@@ -2184,15 +2184,15 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movss %xmm0, -0x23c(%ebp)\n" /* fadeAlpha */
         /* } scope */
         /* } scope */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 572 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 572 | 0.0f */
         "jp .Lf189a28_00189eb1\n"
         "je .Lf189a28_00189d01\n"
         ".Lf189a28_00189eb1:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf189a28_00189ad5\n"
         /* { scope 2: keyBinding */
         ".Lf189a28_00189ebe:\n"
-        "movl 0x195f5c4, %eax\n" /* line 540 */
+        "movl imp_cgs, %eax\n" /* line 540 */
         "movl (%eax), %eax\n"
         "movl 0xbc58(%eax), %eax\n"
         "jmp .Lf189a28_00189c02\n"
@@ -2214,9 +2214,9 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "leal -0x118(%ebp), %eax\n" /* proneCmds */
         "movl %eax, (%esp)\n"
         "calll memcpy\n"
-        "movl $0x2afb8c, -0x30(%ebp)\n" /* line 659 | hintTypeStrings */
-        "movl $0x2afba8, -0x2c(%ebp)\n" /* "PLATFORM_STANCEHINT_CROUCH" */
-        "movl $0x2afbc4, -0x28(%ebp)\n" /* "PLATFORM_STANCEHINT_PRONE" */
+        "movl $str_002afb8c, -0x30(%ebp)\n" /* line 659 | hintTypeStrings */
+        "movl $str_002afba8, -0x2c(%ebp)\n" /* "PLATFORM_STANCEHINT_CROUCH" */
+        "movl $str_002afbc4, -0x28(%ebp)\n" /* "PLATFORM_STANCEHINT_PRONE" */
         "calll Controls_GetConfig\n" /* line 661 */
         "movl 0x2be38(%edi), %edx\n" /* line 663 | displayStartTime */
         "movl 0x25bb0(%edi), %ecx\n" /* displayStartTime */
@@ -2235,7 +2235,7 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movl $0, -0x230(%ebp)\n" /* numHintLines */
         "movl $0, -0x234(%ebp)\n" /* i */
         "movl $0, -0x21c(%ebp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %edx\n"
         "movl %edx, -0x254(%ebp)\n"
         "movl %eax, -0x258(%ebp)\n"
@@ -2297,7 +2297,7 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "subl %ecx, %edx\n" /* line 666 */
         "leal 0xbb8(%edx), %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "divss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "movss %xmm0, -0x34(%ebp)\n"
         "jmp .Lf189a28_00189f65\n"
         ".Lf189a28_0018a0c0:\n"
@@ -2316,14 +2316,14 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movl -0x88(%eax, %ebp), %ebx\n" /* binding */
         "jmp .Lf189a28_00189ff4\n"
         ".Lf189a28_0018a0f1:\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 702 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 702 | 0.5f */
         "movl 8(%ebp), %eax\n" /* rect */
         "movss 0xc(%eax), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x228(%ebp)\n" /* y */
         "addss 4(%eax), %xmm1\n"
         "movss %xmm1, -0x228(%ebp)\n" /* y */
-        "movss 0x2ed600, %xmm1\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm1\n" /* 1.5f */
         "movss -0x228(%ebp), %xmm2\n" /* y */
         "subss %xmm1, %xmm2\n"
         "movss %xmm2, -0x228(%ebp)\n" /* y */
@@ -2380,7 +2380,7 @@ void CG_DrawPlayerStance(const rectDef_t *rect, vec_t *color, struct Font_s *fon
         "movl %eax, (%esp)\n"
         "calll UI_DrawText\n"
         "movss -0x22c(%ebp), %xmm0\n" /* line 727 | height */
-        "addss 0x2ed600, %xmm0\n" /* 1.5f */
+        "addss lit4_002ed600, %xmm0\n" /* 1.5f */
         "addss -0x228(%ebp), %xmm0\n" /* y */
         "movss %xmm0, -0x228(%ebp)\n" /* y */
         ".Lf189a28_0018a23a:\n"
@@ -2428,7 +2428,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "movss %xmm0, -0x25c(%ebp)\n"
         "movl %ecx, -0x260(%ebp)\n"
         /* { scope 1: duration */
-        "movl 0x195f584, %eax\n" /* line 277 */
+        "movl imp_cg, %eax\n" /* line 277 */
         "movl (%eax), %ebx\n" /* weap */
         "movl 0x25c98(%ebx), %eax\n" /* weap */
         "testl %eax, %eax\n"
@@ -2446,9 +2446,9 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "addl $0xc, %ecx\n" /* line 280 */
         "movl %ecx, -0x250(%ebp)\n"
         "movl hud_fade_ammodisplay, %esi\n" /* ammoVal */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n" /* ammoVal */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x264(%ebp)\n"
@@ -2484,7 +2484,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "jp .Lf18a2ac_0018a385\n"
         "je .Lf18a2ac_0018a2e3\n"
         ".Lf18a2ac_0018a385:\n"
-        "movl 0x195f584, %eax\n" /* line 284 */
+        "movl imp_cg, %eax\n" /* line 284 */
         "movl (%eax), %ebx\n" /* weap */
         "movl 0x24(%ebx), %ecx\n" /* weap */
         "movl 0xd8(%ecx), %eax\n"
@@ -2492,7 +2492,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "shll $4, %edx\n"
         "addl %eax, %edx\n"
         "leal (%eax, %edx, 8), %edx\n"
-        "movl 0x195f5cc, %eax\n"
+        "movl imp_cg_entities, %eax\n"
         "movl (%eax), %eax\n"
         "leal (%eax, %edx, 4), %edi\n" /* displayStartTime */
         "leal 0x25bc4(%ebx), %eax\n" /* line 285 | weap */
@@ -2536,7 +2536,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         ".Lf18a2ac_0018a437:\n"
         "cmpb $0, -0x241(%ebp)\n" /* line 332 | lowClip */
         "je .Lf18a2ac_0018a68e\n"
-        "movl 0x195f584, %ebx\n" /* line 334 | weap */
+        "movl imp_cg, %ebx\n" /* line 334 | weap */
         "movl (%ebx), %ecx\n" /* weap */
         "movl 0x2bdf8(%ecx), %eax\n"
         "movl 0x25bb0(%ecx), %edx\n"
@@ -2553,7 +2553,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "subl 0x25bb0(%eax), %edx\n"
         "addl $0x320, %edx\n"
         "cvtsi2ssl %edx, %xmm0\n"
-        "divss 0x2ed958, %xmm0\n" /* 800.0f */
+        "divss lit4_002ed958, %xmm0\n" /* 800.0f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl -0x250(%ebp), %edx\n" /* line 339 */
         "movss (%edx), %xmm1\n"
@@ -2589,7 +2589,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0x278(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "addss -0x23c(%ebp), %xmm1\n"
         "movss %xmm1, -0x23c(%ebp)\n"
         "movl 0xc(%ebp), %edx\n" /* line 366 | textStyle */
@@ -2658,7 +2658,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "ucomiss 8(%esi), %xmm1\n"
         "jne .Lf18a2ac_0018a9fd\n"
         "jp .Lf18a2ac_0018a9fd\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf18a2ac_0018a370\n"
         ".Lf18a2ac_0018a67c:\n"
         "calll CL_GetDisplayHUDWithKeycatchUI\n" /* line 101 */
@@ -2704,7 +2704,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0x278(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "addss -0x24c(%ebp), %xmm1\n"
         "movaps %xmm1, %xmm0\n"
         "jmp .Lf18a2ac_0018a609\n"
@@ -2784,7 +2784,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "movl -0x258(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x22290c, (%esp)\n" /* "|" */
+        "movl $str_0022290c, (%esp)\n" /* "|" */
         "movss %xmm1, -0x278(%ebp)\n"
         "movss %xmm2, -0x288(%ebp)\n"
         "calll UI_TextWidth\n"
@@ -2803,15 +2803,15 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0x278(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss -0x288(%ebp), %xmm2\n"
         "addss %xmm1, %xmm2\n"
-        "subss 0x2ed6d4, %xmm2\n" /* 5.0f */
+        "subss lit4_002ed6d4, %xmm2\n" /* 5.0f */
         "movss %xmm2, 0xc(%esp)\n"
         "movl -0x258(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x7fffffff, 4(%esp)\n"
-        "movl $0x22290c, (%esp)\n" /* "|" */
+        "movl $str_0022290c, (%esp)\n" /* "|" */
         "calll UI_DrawText\n"
         "jmp .Lf18a2ac_0018a2e3\n"
         ".Lf18a2ac_0018a95c:\n"
@@ -2824,7 +2824,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "jmp .Lf18a2ac_0018a4b3\n"
         ".Lf18a2ac_0018a978:\n"
         "movl %esi, 8(%esp)\n" /* line 328 | ammoVal */
-        "movl $0x2afbe4, 4(%esp)\n" /* "%3i" */
+        "movl $str_002afbe4, 4(%esp)\n" /* "%3i" */
         "leal -0x238(%ebp), %eax\n" /* ammoString */
         "movl %eax, (%esp)\n"
         "calll sprintf\n"
@@ -2833,7 +2833,7 @@ void CG_DrawPlayerAmmoValue(const rectDef_t *rect, struct Font_s *font, float sc
         "jmp .Lf18a2ac_0018a437\n"
         ".Lf18a2ac_0018a99e:\n"
         "movl %eax, 8(%esp)\n" /* line 322 */
-        "movl $0x2afbe0, 4(%esp)\n" /* "%2i" */
+        "movl $str_002afbe0, 4(%esp)\n" /* "%2i" */
         "leal -0x138(%ebp), %eax\n" /* clipString */
         "movl %eax, (%esp)\n"
         "calll sprintf\n"
@@ -2926,13 +2926,13 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "subl $5, %eax\n"
         "cmpl $0x68, %eax\n"
         "ja .Lf18aa9c_0018adab\n"
-        "jmpl *0x302db0(, %eax, 4)\n"
+        "jmpl *color+48(, %eax, 4)\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
-        "movl 0x195f66c, %eax\n" /* line 775 */
+        "movl imp_cg_drawHealth, %eax\n" /* line 775 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf18aa9c_0018adab\n"
-        "movl 0x195f584, %eax\n" /* line 743 */
+        "movl imp_cg, %eax\n" /* line 743 */
         "movl (%eax), %ebx\n" /* weapIndex */
         "movl 0x24(%ebx), %eax\n" /* weapIndex */
         "addl $0xc, %eax\n"
@@ -2947,10 +2947,10 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "cvtsi2ssl %edx, %xmm2\n" /* line 748 */
         "cvtsi2ssl %ecx, %xmm0\n"
         "divss %xmm0, %xmm2\n"
-        "ucomiss 0x2ed5e8, %xmm2\n" /* line 749 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 749 | 0.0f */
         "jb .Lf18aa9c_0018c1bf\n"
         ".Lf18aa9c_0018ab3f:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 751 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 751 | 1.0f */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf18aa9c_0018ab4f\n"
         "movaps %xmm0, %xmm2\n"
@@ -2959,9 +2959,9 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "addl $0xc, %eax\n"
         "movl %eax, -0xb8(%ebp)\n"
         "movl hud_fade_healthbar, %esi\n" /* ps */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n" /* weapInfo */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm2, -0x148(%ebp)\n"
         "calll floorf\n"
@@ -2975,7 +2975,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss -0x148(%ebp), %xmm2\n"
         "jne .Lf18aa9c_0018c269\n"
         ".Lf18aa9c_0018abb1:\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x2bdc8(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -2999,11 +2999,11 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jp .Lf18aa9c_0018abf7\n"
         "je .Lf18aa9c_0018adab\n"
         ".Lf18aa9c_0018abf7:\n"
-        "movl 0x195f584, %ebx\n" /* line 783 | displayStartTime */
+        "movl imp_cg, %ebx\n" /* line 783 | displayStartTime */
         "movl (%ebx), %eax\n" /* displayStartTime */
         "movl 0x24(%eax), %esi\n" /* ps */
         "addl $0xc, %esi\n" /* ps */
-        "movss 0x2ed5d0, %xmm4\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* line 45 | 1.0f */
         "movaps %xmm2, %xmm1\n"
         "subss %xmm4, %xmm1\n"
         "movaps %xmm4, %xmm0\n"
@@ -3026,7 +3026,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movaps %xmm2, %xmm3\n" /* line 791 */
         "mulss -0x4c(%ebp), %xmm3\n"
         "movl -0x48(%ebp), %edx\n" /* line 792 */
-        "ucomiss 0x2ed5d8, %xmm1\n" /* line 794 | 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm1\n" /* line 794 | 0.5f */
         "jbe .Lf18aa9c_0018c41d\n"
         "movaps %xmm4, %xmm0\n" /* line 796 */
         "subss %xmm1, %xmm0\n"
@@ -3057,7 +3057,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss %xmm2, -0x148(%ebp)\n"
         "calll CL_DrawStretchPic\n"
         "movss -0x148(%ebp), %xmm2\n"
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         ".Lf18aa9c_0018acf0:\n"
         "movl (%edx), %eax\n" /* line 808 */
         "movl 0xcc(%esi), %edx\n" /* ps */
@@ -3068,7 +3068,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss %xmm2, 0x2be08(%eax)\n" /* line 811 */
         "movl $1, 0x2be00(%eax)\n" /* line 812 */
         ".Lf18aa9c_0018ad1c:\n"
-        "movl 0x195f584, %ebx\n" /* line 838 | displayStartTime */
+        "movl imp_cg, %ebx\n" /* line 838 | displayStartTime */
         "movl (%ebx), %ecx\n" /* displayStartTime */
         "movss 0x2be08(%ecx), %xmm3\n"
         "ucomiss %xmm2, %xmm3\n"
@@ -3127,15 +3127,15 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawPlayerAmmoValue\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
-        "movl 0x195f584, %eax\n" /* line 240 */
+        "movl imp_cg, %eax\n" /* line 240 */
         "movl (%eax), %ebx\n"
         "movl 0x25c98(%ebx), %esi\n"
         "testl %esi, %esi\n"
         "je .Lf18aa9c_0018adab\n"
         "movl hud_fade_ammodisplay, %esi\n" /* line 243 */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n" /* weapInfo */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x108(%ebp)\n"
@@ -3213,7 +3213,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
         "movl 0x40(%ebp), %edi\n" /* line 466 | color, displayStartTime */
         "addl $0xc, %edi\n" /* displayStartTime */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %ebx\n" /* weapIndex */
         "movl 0x2be54(%ebx), %eax\n" /* weapIndex */
         "movl %eax, -0xfc(%ebp)\n" /* displayStartTime */
@@ -3245,7 +3245,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jp .Lf18aa9c_0018af6f\n"
         "je .Lf18aa9c_0018adab\n"
         ".Lf18aa9c_0018af6f:\n"
-        "movl 0x195f584, %ebx\n" /* line 159 */
+        "movl imp_cg, %ebx\n" /* line 159 */
         "movl (%ebx), %esi\n"
         "movl 0x2be50(%esi), %ebx\n"
         "testl %ebx, %ebx\n"
@@ -3263,13 +3263,13 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "testb $1, %al\n"
         "jne .Lf18aa9c_0018afb5\n"
         ".Lf18aa9c_0018afa7:\n"
-        "movl 0x195f584, %edi\n" /* line 161 */
+        "movl imp_cg, %edi\n" /* line 161 */
         "movl (%edi), %eax\n"
         "movl 0x25c98(%eax), %ebx\n"
         ".Lf18aa9c_0018afb5:\n"
         "testl %ebx, %ebx\n" /* line 471 | weapIndex */
         "je .Lf18aa9c_0018adab\n"
-        "movl 0x195f5c8, %eax\n" /* line 475 */
+        "movl imp_cg_weapons, %eax\n" /* line 475 */
         "movl (%eax), %edx\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* weapIndex */
         "leal (%eax, %eax, 8), %eax\n"
@@ -3286,15 +3286,15 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "addl $0xc, %edx\n"
         "movl %edx, -0xf8(%ebp)\n"
         "movl hud_fade_compass, %esi\n" /* h */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n" /* weapInfo */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x10c(%ebp)\n"
         "cvttss2si -0x10c(%ebp), %ebx\n" /* weapIndex */
         "movl %ebx, -0xec(%ebp)\n" /* weapIndex, duration */
-        "movl 0x195f584, %eax\n" /* line 1133 */
+        "movl imp_cg, %eax\n" /* line 1133 */
         "movl (%eax), %ebx\n" /* x */
         "movl 0x2c5c0(%ebx), %edi\n" /* x, displayStartTime */
         /* { scope 3 */
@@ -3327,11 +3327,11 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         ".Lf18aa9c_0018b086:\n"
         "movl -0x54(%ebp), %ebx\n" /* line 1114 | rect, displayStartTime */
         "movss -0x48(%ebp), %xmm1\n" /* line 1115 */
-        "movl 0x195f640, %eax\n"
+        "movl imp_cg_hudCompassSize, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "movss %xmm0, -0xe8(%ebp)\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "mulss %xmm1, %xmm0\n"
         "movss -0x50(%ebp), %xmm2\n"
         "subss %xmm0, %xmm2\n"
@@ -3345,7 +3345,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, 0x20(%esp)\n"
         "movl 0x40(%ebp), %edx\n" /* color */
         "movl %edx, 0x1c(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x2c5b0(%eax), %eax\n"
         "movl %eax, 0x18(%esp)\n"
@@ -3374,15 +3374,15 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
         "movl hud_fade_compass, %esi\n" /* line 1206 | objNum */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n" /* weapInfo */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x110(%ebp)\n"
         "cvttss2si -0x110(%ebp), %ebx\n" /* weapIndex */
         "movl %ebx, -0xc0(%ebp)\n" /* weapIndex, duration */
-        "movl 0x195f584, %eax\n" /* line 1206 */
+        "movl imp_cg, %eax\n" /* line 1206 */
         "movl (%eax), %ebx\n" /* x */
         "movl 0x2c5c0(%ebx), %edi\n" /* x, displayStartTime */
         /* { scope 3 */
@@ -3405,19 +3405,19 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "ucomiss 8(%esi), %xmm0\n"
         "jne .Lf18aa9c_0018c3b9\n"
         "jp .Lf18aa9c_0018c3b9\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movss %xmm1, -0xc8(%ebp)\n" /* fadeAlpha */
         /* } scope */
         /* } scope */
         ".Lf18aa9c_0018b209:\n"
         "calll CG_UpdateCompPointerOrientation\n" /* line 1210 */
-        "movl 0x195f640, %eax\n" /* line 1212 */
+        "movl imp_cg_hudCompassSize, %eax\n" /* line 1212 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "movaps %xmm1, %xmm2\n"
         "mulss -0x4c(%ebp), %xmm2\n"
         "movss %xmm2, -0xdc(%ebp)\n" /* centerX */
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "movss -0xdc(%ebp), %xmm3\n" /* centerX */
         "mulss %xmm2, %xmm3\n"
         "addss -0x54(%ebp), %xmm3\n" /* rect */
@@ -3425,12 +3425,12 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss -0x48(%ebp), %xmm0\n" /* line 1213 */
         "mulss %xmm1, %xmm2\n"
         "mulss %xmm0, %xmm2\n"
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "mulss %xmm1, %xmm0\n"
         "subss %xmm0, %xmm2\n"
         "addss -0x50(%ebp), %xmm2\n"
         "movss %xmm2, -0xd8(%ebp)\n" /* centerY */
-        "movl 0x195f584, %eax\n" /* line 1215 */
+        "movl imp_cg, %eax\n" /* line 1215 */
         "movl (%eax), %ebx\n" /* x */
         "movl 0x24(%ebx), %eax\n" /* x */
         "movl 0xd8(%eax), %edx\n"
@@ -3449,7 +3449,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "cmpl $0x10, %esi\n" /* objNum */
         "je .Lf18aa9c_0018adab\n"
         ".Lf18aa9c_0018b2b1:\n"
-        "movl 0x195f584, %edx\n" /* line 1220 */
+        "movl imp_cg, %edx\n" /* line 1220 */
         "movl (%edx), %ebx\n" /* x */
         "leal (, %esi, 4), %eax\n"
         "movl %esi, %edx\n" /* objNum */
@@ -3467,7 +3467,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "shll $4, %eax\n"
         "addl %ecx, %eax\n"
         "leal (%ecx, %eax, 8), %eax\n"
-        "movl 0x195f5cc, %edx\n"
+        "movl imp_cg_entities, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "leal 0x1ec(%eax), %edx\n"
@@ -3493,7 +3493,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll vectoyaw\n"
         "fstps -0x16c(%ebp)\n"
         "movss -0x16c(%ebp), %xmm0\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "subss 0x2c5b8(%eax), %xmm0\n"
         "movss %xmm0, (%esp)\n"
@@ -3514,19 +3514,19 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, -0x34(%ebp)\n"
         "movl 0xc(%ebx), %eax\n" /* line 459 | weapIndex */
         "movl %eax, -0x30(%ebp)\n"
-        "movl 0x195f654, %edx\n" /* line 1239 */
+        "movl imp_cg_hudCompassMaxRange, %edx\n" /* line 1239 */
         "movl (%edx), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "ucomiss %xmm2, %xmm1\n"
         "jb .Lf18aa9c_0018c242\n"
         "movl $0x3f800000, -0x30(%ebp)\n" /* line 1241 */
         ".Lf18aa9c_0018b3c6:\n"
-        "movl 0x195f644, %eax\n" /* line 1257 */
+        "movl imp_cg_hudCompassMinRange, %eax\n" /* line 1257 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss %xmm2, %xmm0\n"
         "jb .Lf18aa9c_0018c22a\n"
-        "movl 0x195f650, %eax\n" /* line 1259 */
+        "movl imp_cg_hudCompassMinRadius, %eax\n" /* line 1259 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* radiusScale */
@@ -3535,16 +3535,16 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_ApplyCompassPointerRadiusScale\n"
         "cvtss2sd -0xc4(%ebp), %xmm0\n" /* line 1277 | objYaw */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0xbc(%ebp)\n"
-        "movl 0x195f640, %eax\n" /* line 1170 */
+        "movl imp_cg_hudCompassSize, %eax\n" /* line 1170 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed6a8, %xmm5\n" /* 16.0f */
+        "movss lit4_002ed6a8, %xmm5\n" /* 16.0f */
         "movss %xmm5, -0xcc(%ebp)\n" /* w */
         "mulss 8(%eax), %xmm5\n"
         "movss %xmm5, -0xcc(%ebp)\n" /* w */
-        "mulss 0x2ed63c, %xmm5\n" /* line 1279 | -0.5f */
+        "mulss lit4_002ed63c, %xmm5\n" /* line 1279 | -0.5f */
         "movss %xmm5, -0xe4(%ebp)\n"
         "movss -0x1c(%ebp), %xmm0\n" /* radiusScale */
         "movss %xmm0, -0xe0(%ebp)\n"
@@ -3584,7 +3584,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         /* } scope */
         /* } scope */
         ".Lf18aa9c_0018b507:\n"
-        "movl 0x195f5c4, %eax\n" /* line 1072 */
+        "movl imp_cgs, %eax\n" /* line 1072 */
         "movl (%eax), %eax\n"
         "movl 0xbc68(%eax), %eax\n"
         /* } scope */
@@ -3648,20 +3648,20 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CL_DrawStretchPic\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
-        "movl 0x195f66c, %eax\n" /* line 864 */
+        "movl imp_cg_drawHealth, %eax\n" /* line 864 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf18aa9c_0018adab\n"
         "movl hud_fade_healthbar, %esi\n" /* line 867 | h */
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n" /* weapInfo */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x11c(%ebp)\n"
         "cvttss2si -0x11c(%ebp), %edi\n" /* displayStartTime */
         "movl %edi, -0xa4(%ebp)\n" /* displayStartTime, duration */
-        "movl 0x195f584, %eax\n" /* line 867 */
+        "movl imp_cg, %eax\n" /* line 867 */
         "movl (%eax), %ebx\n" /* displayStartTime */
         "movl 0x2c5c4(%ebx), %edi\n" /* displayStartTime */
         /* { scope 3 */
@@ -3684,7 +3684,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "ucomiss 8(%esi), %xmm3\n"
         "jne .Lf18aa9c_0018c558\n"
         "jp .Lf18aa9c_0018c558\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         "movss %xmm4, -0xa8(%ebp)\n" /* fadeAlpha */
         "movaps %xmm4, %xmm0\n"
         /* } scope */
@@ -3719,7 +3719,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss %xmm3, -0x158(%ebp)\n"
         "movss %xmm4, -0x168(%ebp)\n"
         "calll CL_DrawStretchPic\n"
-        "movl 0x195f584, %edx\n" /* line 743 */
+        "movl imp_cg, %edx\n" /* line 743 */
         "movl (%edx), %ebx\n" /* weapIndex */
         "movl 0x24(%ebx), %eax\n" /* weapIndex */
         "addl $0xc, %eax\n"
@@ -3750,10 +3750,10 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss 8(%eax), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf18aa9c_0018adab\n"
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "movl hud_health_pulserate_injured, %eax\n"
         "mulss 8(%eax), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x124(%ebp)\n"
@@ -3775,7 +3775,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl $0x3f63d70a, (%ebx)\n"
         "movl $0x3e3851ec, 4(%ebx)\n" /* line 192 */
         "movl $0x3c23d70a, 8(%ebx)\n" /* line 193 */
-        "movl 0x195f584, %eax\n" /* line 897 */
+        "movl imp_cg, %eax\n" /* line 897 */
         "movl (%eax), %edx\n"
         "movl %ecx, %eax\n"
         "addl 0x2bdfc(%edx), %eax\n"
@@ -3874,7 +3874,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl $2, 0x10(%esp)\n"
         "jmp .Lf18aa9c_0018b9a3\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
-        "movl 0x195f584, %eax\n" /* line 743 */
+        "movl imp_cg, %eax\n" /* line 743 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "addl $0xc, %eax\n"
@@ -3889,11 +3889,11 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "cvtsi2ssl %edx, %xmm1\n" /* line 748 */
         "cvtsi2ssl %ecx, %xmm0\n"
         "divss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 749 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 749 | 0.0f */
         "jp .Lf18aa9c_0018ba24\n"
         "jb .Lf18aa9c_0018adab\n"
         ".Lf18aa9c_0018ba24:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 751 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 751 | 1.0f */
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lf18aa9c_0018c6fe\n"
         "movaps %xmm0, %xmm1\n"
@@ -3902,7 +3902,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_PulseLowHealthOverlay\n"
         "movl 0x40(%ebp), %ebx\n" /* line 1025 | color, displayStartTime */
         "addl $0xc, %ebx\n" /* displayStartTime */
-        "movl 0x195f584, %eax\n" /* line 915 */
+        "movl imp_cg, %eax\n" /* line 915 */
         "movl (%eax), %edx\n"
         "movl 0x25bb0(%edx), %eax\n"
         "movl %eax, %ecx\n" /* line 916 */
@@ -3942,7 +3942,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, 0x14(%esp)\n"
         "jmp .Lf18aa9c_0018b5d3\n"
         /* } scope */
-        "movl 0x195f5c4, %eax\n" /* line 1758 */
+        "movl imp_cgs, %eax\n" /* line 1758 */
         "movl (%eax), %eax\n"
         "movl 0x63bc(%eax), %eax\n"
         "cmpl $0xffffd8f1, %eax\n"
@@ -3952,7 +3952,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss -0x54(%ebp), %xmm0\n" /* rect */
         "movss %xmm0, -0x9c(%ebp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2afbe0, (%esp)\n" /* "%2i" */
+        "movl $str_002afbe0, (%esp)\n" /* "%2i" */
         "calll va\n"
         "movl 0x48(%ebp), %edx\n" /* textStyle */
         "movl %edx, 0x24(%esp)\n"
@@ -4004,7 +4004,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
         "movl $0x2bc, 8(%esp)\n" /* line 392 */
         "movl $0x708, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %esi\n" /* weapInfo */
         "movl 0x2be54(%esi), %eax\n" /* weapInfo */
         "movl %eax, (%esp)\n"
@@ -4036,7 +4036,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "testb $1, %al\n"
         "jne .Lf18aa9c_0018bc71\n"
         ".Lf18aa9c_0018bc64:\n"
-        "movl 0x195f584, %eax\n" /* line 161 */
+        "movl imp_cg, %eax\n" /* line 161 */
         "movl (%eax), %eax\n"
         "movl 0x25c98(%eax), %ebx\n"
         ".Lf18aa9c_0018bc71:\n"
@@ -4045,7 +4045,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "leal (%ebx, %ebx, 2), %eax\n" /* line 403 | weapIndex */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n" /* weapIndex */
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %esi\n" /* weapInfo */
         "movl %ebx, (%esp)\n" /* line 405 | weapIndex */
@@ -4057,7 +4057,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, 8(%esp)\n"
         "movl 0xb0(%esi), %eax\n" /* weapInfo */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2afbe8, (%esp)\n" /* "%s / %s" */
+        "movl $str_002afbe8, (%esp)\n" /* "%s / %s" */
         "calll va\n"
         "movl %eax, %ebx\n" /* weapIndex */
         ".Lf18aa9c_0018bcc3:\n"
@@ -4086,7 +4086,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0x138(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
-        "subss 0x2ed8f0, %xmm1\n" /* 28.0f */
+        "subss lit4_002ed8f0, %xmm1\n" /* 28.0f */
         ".Lf18aa9c_0018bd3d:\n"
         "movss %xmm1, 0xc(%esp)\n"
         "movl 0x38(%ebp), %eax\n" /* font */
@@ -4097,7 +4097,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jmp .Lf18aa9c_0018adab\n"
         /* } scope */
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
-        "movl 0x195f584, %eax\n" /* line 432 */
+        "movl imp_cg, %eax\n" /* line 432 */
         "movl (%eax), %ebx\n" /* weapIndex */
         "movl 0x2be54(%ebx), %edi\n" /* weapIndex, displayStartTime */
         "movl hud_fade_ammodisplay, %esi\n" /* fadeDvar */
@@ -4135,7 +4135,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, -0x28(%ebp)\n"
         "movl 8(%edx), %eax\n" /* line 201 */
         "movl %eax, -0x24(%ebp)\n"
-        "movl 0x195f584, %ebx\n" /* line 159 */
+        "movl imp_cg, %ebx\n" /* line 159 */
         "movl (%ebx), %esi\n"
         "movl 0x2be50(%esi), %ebx\n"
         "testl %ebx, %ebx\n"
@@ -4153,7 +4153,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "testb $1, %al\n"
         "jne .Lf18aa9c_0018be13\n"
         ".Lf18aa9c_0018be05:\n"
-        "movl 0x195f584, %edi\n" /* line 161 */
+        "movl imp_cg, %edi\n" /* line 161 */
         "movl (%edi), %eax\n"
         "movl 0x25c98(%eax), %ebx\n"
         ".Lf18aa9c_0018be13:\n"
@@ -4162,7 +4162,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "leal (%ebx, %ebx, 2), %eax\n" /* line 442 | weapIndex */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n" /* weapIndex */
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %esi\n" /* fadeDvar */
         "movl %ebx, (%esp)\n" /* line 444 | weapIndex */
@@ -4174,7 +4174,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, 8(%esp)\n"
         "movl 0xb0(%esi), %eax\n" /* fadeDvar */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2afbe8, (%esp)\n" /* "%s / %s" */
+        "movl $str_002afbe8, (%esp)\n" /* "%s / %s" */
         "calll va\n"
         ".Lf18aa9c_0018be63:\n"
         "movss 0x3c(%ebp), %xmm0\n" /* line 451 | scale */
@@ -4185,8 +4185,8 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll UI_TextWidth\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "addss 0x2ed8f0, %xmm1\n" /* 28.0f */
-        "addss 0x2ed740, %xmm1\n" /* 8.0f */
+        "addss lit4_002ed8f0, %xmm1\n" /* 28.0f */
+        "addss lit4_002ed740, %xmm1\n" /* 8.0f */
         "movl 0x44(%ebp), %ebx\n" /* line 454 | material, weapIndex */
         "movl %ebx, 0x1c(%esp)\n" /* weapIndex */
         "leal -0x2c(%ebp), %eax\n" /* drawColor */
@@ -4207,7 +4207,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll UI_DrawHandlePic\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* } scope */
-        "movl 0x195f584, %eax\n" /* line 1688 */
+        "movl imp_cg, %eax\n" /* line 1688 */
         "movl (%eax), %ebx\n" /* x */
         "movl 0x24(%ebx), %eax\n" /* x */
         "movl 0xd8(%eax), %edx\n"
@@ -4248,7 +4248,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawScore\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
-        "movl 0x195f584, %eax\n" /* line 1657 */
+        "movl imp_cg, %eax\n" /* line 1657 */
         "movl (%eax), %ebx\n" /* x */
         "movl 0x24(%ebx), %eax\n" /* x */
         "movl 0xd8(%eax), %edx\n"
@@ -4294,13 +4294,13 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl $1, %eax\n"
         "calll CG_DrawScore\n"
         "jmp .Lf18aa9c_0018adab\n"
-        "movl 0x195f584, %eax\n" /* line 1740 */
+        "movl imp_cg, %eax\n" /* line 1740 */
         "movl (%eax), %eax\n"
         "cmpb $0, 0x2b54c(%eax)\n"
         "je .Lf18aa9c_0018adab\n"
         "addl $0x2b54c, %eax\n" /* line 1728 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2afb50, (%esp)\n" /* "Fragged by %s" */
+        "movl $str_002afb50, (%esp)\n" /* "Fragged by %s" */
         "calll va\n"
         "movl %eax, %ebx\n" /* x */
         "movss -0x54(%ebp), %xmm0\n" /* line 1746 | rect */
@@ -4330,10 +4330,10 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0x138(%ebp), %xmm1\n"
         "subss %xmm0, %xmm1\n"
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "addss -0x100(%ebp), %xmm1\n"
         "jmp .Lf18aa9c_0018bd3d\n"
-        "movl 0x195f5c4, %eax\n" /* line 1758 */
+        "movl imp_cgs, %eax\n" /* line 1758 */
         "movl (%eax), %eax\n"
         "movl 0x63b8(%eax), %eax\n"
         "cmpl $0xffffd8f1, %eax\n"
@@ -4343,7 +4343,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss -0x54(%ebp), %xmm0\n" /* rect */
         "movss %xmm0, -0xa0(%ebp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2afbe0, (%esp)\n" /* "%2i" */
+        "movl $str_002afbe0, (%esp)\n" /* "%2i" */
         "calll va\n"
         "movl 0x48(%ebp), %edx\n" /* textStyle */
         "movl %edx, 0x24(%esp)\n"
@@ -4374,7 +4374,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl 0x38(%ebp), %eax\n" /* font */
         "movl %eax, 8(%esp)\n"
         "movl $0x7fffffff, 4(%esp)\n"
-        "movl 0x195f5c4, %eax\n"
+        "movl imp_cgs, %eax\n"
         "movl (%eax), %eax\n"
         "addl $0x5ea4, %eax\n"
         "movl %eax, (%esp)\n"
@@ -4448,12 +4448,12 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl $0x3f800000, -0x1c(%ebp)\n" /* line 1263 | radiusScale */
         "jmp .Lf18aa9c_0018b3e8\n"
         ".Lf18aa9c_0018c242:\n"
-        "movl 0x195f660, %eax\n" /* line 1243 */
+        "movl imp_cg_hudObjectiveMaxRange, %eax\n" /* line 1243 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss %xmm0, %xmm2\n"
         "jb .Lf18aa9c_0018c2e8\n"
-        "movl 0x195f664, %eax\n" /* line 1245 */
+        "movl imp_cg_hudObjectiveMinAlpha, %eax\n" /* line 1245 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x30(%ebp)\n"
@@ -4495,9 +4495,9 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jp .Lf18aa9c_0018c4d5\n"
         "movaps %xmm3, %xmm2\n"
         ".Lf18aa9c_0018c2bf:\n"
-        "movl 0x195f650, %eax\n" /* line 1272 */
+        "movl imp_cg_hudCompassMinRadius, %eax\n" /* line 1272 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss 8(%eax), %xmm1\n"
         "mulss %xmm2, %xmm1\n"
@@ -4513,9 +4513,9 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jne .Lf18aa9c_0018c4e5\n"
         "jp .Lf18aa9c_0018c4e5\n"
         ".Lf18aa9c_0018c2ff:\n"
-        "movl 0x195f664, %eax\n" /* line 1254 */
+        "movl imp_cg_hudObjectiveMinAlpha, %eax\n" /* line 1254 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss 8(%eax), %xmm1\n"
         "mulss %xmm3, %xmm1\n"
@@ -4558,7 +4558,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "ucomiss 8(%esi), %xmm3\n"
         "jne .Lf18aa9c_0018c608\n"
         "jp .Lf18aa9c_0018c608\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf18aa9c_0018bda9\n"
         /* } scope */
         /* } scope */
@@ -4571,7 +4571,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "ucomiss 8(%esi), %xmm3\n"
         "jne .Lf18aa9c_0018c636\n"
         "jp .Lf18aa9c_0018c636\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf18aa9c_0018af60\n"
         /* } scope */
         /* } scope */
@@ -4584,7 +4584,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "ucomiss 8(%esi), %xmm3\n"
         "jne .Lf18aa9c_0018c5d8\n"
         "jp .Lf18aa9c_0018c5d8\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf18aa9c_0018b071\n"
         /* } scope */
         /* } scope */
@@ -4604,7 +4604,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss %xmm0, -0xc8(%ebp)\n" /* fadeAlpha */
         /* } scope */
         /* } scope */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 1207 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 1207 | 0.0f */
         "jp .Lf18aa9c_0018b209\n"
         "jne .Lf18aa9c_0018b209\n"
         "jmp .Lf18aa9c_0018adab\n"
@@ -4613,17 +4613,17 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         ".Lf18aa9c_0018c400:\n"
         "movl 0xb0(%esi), %eax\n" /* line 409 | weapInfo */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll va\n"
         "movl %eax, %ebx\n" /* weapIndex */
         "jmp .Lf18aa9c_0018bcc3\n"
         /* } scope */
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
         ".Lf18aa9c_0018c41d:\n"
-        "addss 0x2ed724, %xmm1\n" /* line 802 | 0.20000000298023224f */
+        "addss lit4_002ed724, %xmm1\n" /* line 802 | 0.20000000298023224f */
         "movl 0x40(%ebp), %edi\n" /* color, duration */
         "mulss 4(%edi), %xmm1\n" /* duration */
-        "addss 0x2ed6f4, %xmm1\n" /* 0.30000001192092896f */
+        "addss lit4_002ed6f4, %xmm1\n" /* 0.30000001192092896f */
         "movss %xmm1, 4(%edi)\n" /* duration */
         "jmp .Lf18aa9c_0018ac8a\n"
         /* { scope 3 */
@@ -4633,7 +4633,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "ucomiss 8(%esi), %xmm3\n"
         "jne .Lf18aa9c_0018c66a\n"
         "jp .Lf18aa9c_0018c66a\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf18aa9c_0018abe2\n"
         /* } scope */
         /* } scope */
@@ -4674,7 +4674,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         ".Lf18aa9c_0018c4ba:\n"
         "movl 0xb0(%esi), %eax\n" /* line 448 | fadeDvar */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll va\n"
         "jmp .Lf18aa9c_0018be63\n"
         /* } scope */
@@ -4717,7 +4717,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "ucomiss 8(%esi), %xmm3\n"
         "jne .Lf18aa9c_0018c6a4\n"
         "jp .Lf18aa9c_0018c6a4\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf18aa9c_0018ae67\n"
         /* } scope */
         /* } scope */
@@ -4742,7 +4742,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jp .Lf18aa9c_0018c596\n"
         "je .Lf18aa9c_0018adab\n"
         ".Lf18aa9c_0018c596:\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         "movss -0xa8(%ebp), %xmm0\n" /* fadeAlpha */
         "jmp .Lf18aa9c_0018b6b1\n"
         /* } scope */
@@ -4853,7 +4853,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
         ".Lf18aa9c_0018c6d4:\n"
         "cvtsi2ssl 0x25bac(%eax), %xmm0\n" /* line 824 */
-        "mulss 0x2ed95c, %xmm0\n" /* 0.0012000000569969416f */
+        "mulss lit4_002ed95c, %xmm0\n" /* 0.0012000000569969416f */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, 0x2be08(%eax)\n"
         "ucomiss %xmm1, %xmm2\n" /* line 825 */
@@ -4862,7 +4862,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         /* } scope */
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
         ".Lf18aa9c_0018c6fe:\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 1021 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 1021 | 0.0f */
         "jp .Lf18aa9c_0018ba38\n"
         "jne .Lf18aa9c_0018ba38\n"
         "jmp .Lf18aa9c_0018adab\n"
@@ -4874,10 +4874,10 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jne .Lf18aa9c_0018b7a7\n"
         "jmp .Lf18aa9c_0018adab\n"
         ".Lf18aa9c_0018c72a:\n"
-        "movss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "movl hud_health_pulserate_critical, %eax\n"
         "mulss 8(%eax), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x120(%ebp)\n"

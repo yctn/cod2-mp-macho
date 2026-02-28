@@ -16,12 +16,12 @@ extern void FxHelper_AdjustTime(void *helper, int time);
 extern void FxHelper_WarpTime(void *helper, int time);
 extern float FxScheduler_GetEffectLength(void *scheduler, EffectTemplate *fx);
 
-extern byte *fx_scheduler_ptr;  /* 0x195ed48 */
-extern byte *fx_helper_ptr;     /* 0x195ed88 */
-extern byte *fx_time_src1;      /* 0x195ed84 */
-extern byte *fx_time_dst1;      /* 0x195ed90 */
-extern byte *fx_time_src2;      /* 0x195ed8c */
-extern byte *fx_time_dst2;      /* 0x195ed94 */
+extern byte *fx_scheduler_ptr;  /* imp_theFxScheduler */
+extern byte *fx_helper_ptr;     /* imp_theFxHelper */
+extern byte *fx_time_src1;      /* imp_effectActiveCountBolt */
+extern byte *fx_time_dst1;      /* imp_privateEffectActiveCountBolt */
+extern byte *fx_time_src2;      /* imp_effectActiveCountNonBolt */
+extern byte *fx_time_dst2;      /* imp_privateEffectActiveCountNonBolt */
 
 int FX_GetBoneIndex(const int entNum, unsigned int bone);
 void FX_PlaySimpleEffect(EffectTemplate *fx, const vec_t *org);

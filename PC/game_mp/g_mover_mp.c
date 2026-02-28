@@ -73,9 +73,9 @@
 #define ENTITY_STRIDE sizeof(gentity_s)
 
 /* External globals (BSS/data pointers) */
-extern byte *level_ptr;         /* 0x195f6a0 */
-extern byte *g_entities_ptr;    /* 0x195f688 */
-extern byte *entityHandlers_ptr; /* 0x195f6b4 */
+extern byte *level_ptr;         /* imp_level */
+extern byte *g_entities_ptr;    /* imp_g_entities */
+extern byte *entityHandlers_ptr; /* imp_entityHandlers */
 
 /* level_ptr field access */
 #define LEVEL_TIME          (*(int *)(level_ptr + 0x1EC))
@@ -93,8 +93,8 @@ extern byte *entityHandlers_ptr; /* 0x195f6b4 */
 #define VectorCopy(a, b) ((b)[0]=(a)[0], (b)[1]=(a)[1], (b)[2]=(a)[2])
 
 extern char * hintStrings[6]; /* 0x0 */
-static pushed_t pushed[1024]; /* 0xfdf780 */
-static pushed_t *pushed_p; /* 0xfe7780 */
+static pushed_t pushed[1024]; /* pushed */
+static pushed_t *pushed_p; /* pushed_p */
 
 /* Forward declarations for extern functions */
 extern void SV_SetBrushModel(gentity_t *ent);

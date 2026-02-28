@@ -7,12 +7,12 @@
 extern int Sys_Milliseconds(void);
 extern void Com_Error(int code, const char *fmt, ...);
 
-static statmonitor_t stats[7]; /* 0x4ed7a0 */
-static int statCount; /* 0x4ed780 */
+static statmonitor_t stats[7]; /* stats */
+static int statCount; /* statCount */
 
-extern char **sm_dvar_ptr; /* 0x195ed14 */
-extern char *sm_mtl_init; /* 0x195ecac */
-extern int (**sm_mtl_vtable)(); /* 0x195eca8 */
+extern char **sm_dvar_ptr; /* imp_com_statmon */
+extern char *sm_mtl_init; /* imp_cls */
+extern int (**sm_mtl_vtable)(); /* imp_re */
 
 void StatMon_Warning(int type, int duration, const char *materialName)
 {

@@ -1,1201 +1,1201 @@
 /* Uninitialized global data (BSS) */
 #include "common_types.h"
 
-int sBuilderProcPtr; /* 0x00334700 */
-int sControlValidationUPP; /* 0x00334704 */
-unsigned char sControlKeyFilterUPP[120]; /* 0x00334708 */
-unsigned char sRectList[12]; /* 0x00334780 */
-unsigned char sDisplayList[12]; /* 0x0033478c */
-int sSwapCount; /* 0x00334798 */
-unsigned char sCaptureMedia[8]; /* 0x0033479c */
-int sMainWindow; /* 0x003347a4 */
-unsigned char sCaptureMovie[24]; /* 0x003347a8 */
-unsigned char sCaptureName[256]; /* 0x003347c0 */
-int sCaptureTrack; /* 0x003348c0 */
-int sCaptureRefNum; /* 0x003348c4 */
-int sDisplayID; /* 0x003348c8 */
-int sSystemGammaBlue; /* 0x003348cc */
-int sSystemGammaGreen; /* 0x003348d0 */
-int sSystemGammaRed; /* 0x003348d4 */
-int sInWindowMode; /* 0x003348d8 */
-int sScreenContext; /* 0x003348dc */
-int sDisplayRefreshRate; /* 0x003348e0 */
-int sDisplayDepth; /* 0x003348e4 */
-int sDisplayIndex; /* 0x003348e8 */
-int sFadeToken; /* 0x003348ec */
-int sInitialized; /* 0x003348f0 */
-unsigned char sDisplayRect[16]; /* 0x003348f4 */
-int sMainDisplayID; /* 0x00334904 */
-unsigned char sMainRect[120]; /* 0x00334908 */
-unsigned char sResult_00334980[2]; /* 0x00334980 */
-unsigned char sTested[1]; /* 0x00334982 */
-unsigned char hasAltiVec[1]; /* 0x00334983 */
-unsigned char hasAltiVecBeenDetermined[124]; /* 0x00334984 */
-int sDataFolderDirID; /* 0x00334a00 */
-int sExecutableDirID; /* 0x00334a04 */
-int sAppFolderDirID; /* 0x00334a08 */
-unsigned char sAppFolderVRefNum[20]; /* 0x00334a0c */
-unsigned char sAppBundleRef[96]; /* 0x00334a20 */
-unsigned char sSystemLock[128]; /* 0x00334a80 */
-int sResult_00334b00; /* 0x00334b00 */
-int sResult_00334b04; /* 0x00334b04 */
-int sResult_00334b08; /* 0x00334b08 */
-int sResult_00334b0c; /* 0x00334b0c */
-unsigned char sResult_00334b10[8]; /* 0x00334b10 */
-int sResult_00334b18; /* 0x00334b18 */
-int sResult_00334b1c; /* 0x00334b1c */
-int sResult_00334b20; /* 0x00334b20 */
-int sResult_00334b24; /* 0x00334b24 */
-int sResult_00334b28; /* 0x00334b28 */
-unsigned char sResult_00334b2c[84]; /* 0x00334b2c */
-unsigned char sGlobalMouse[128]; /* 0x00334b80 */
-unsigned char sCursorList[12]; /* 0x00334c00 */
-int sCurrentCursor; /* 0x00334c0c */
-int sSavedWinCursor; /* 0x00334c10 */
-unsigned char sTimerRef[108]; /* 0x00334c14 */
-unsigned char sCachedVKMap[128]; /* 0x00334c80 */
-int sATI4CompsConverterABGR; /* 0x00334d00 */
-int sATI4CompsConverterARGB; /* 0x00334d04 */
-int sStdConverterABGR; /* 0x00334d08 */
-unsigned char sStdConverterARGB[116]; /* 0x00334d0c */
-unsigned char sDirect3DInterface[128]; /* 0x00334d80 */
-unsigned char sPointScale[128]; /* 0x00334e00 */
-int sEventTargetRef; /* 0x00334e80 */
-unsigned char sSystemCursorVisible_00334e84[124]; /* 0x00334e84 */
-unsigned char g_threadValues[20]; /* 0x00334f00 */
-unsigned char threadId[108]; /* 0x00334f14 */
-unsigned char value1[16384]; /* 0x00334f80 */
-unsigned char g_com_error[96]; /* 0x00338f80 */
-unsigned char va_info[2052]; /* 0x00338fe0 */
-int LittleFloatWrite; /* 0x003397e4 */
-int LittleFloatRead; /* 0x003397e8 */
-int LittleLong64; /* 0x003397ec */
-int LittleLong; /* 0x003397f0 */
-int LittleShort; /* 0x003397f4 */
-unsigned char valueindex[8]; /* 0x003397f8 */
-int iWeaponInfoSource; /* 0x00339800 */
-int logfile; /* 0x00339804 */
-unsigned char errorcode[120]; /* 0x00339808 */
-unsigned char com_errorMessage[4096]; /* 0x00339880 */
-int com_lastFrameTime; /* 0x0033a880 */
-int com_codeTimeScale; /* 0x0033a884 */
-unsigned char com_fullyInitialized[120]; /* 0x0033a888 */
-unsigned char com_pushedEvents[6144]; /* 0x0033a900 */
-int com_pushedEventsTail; /* 0x0033c100 */
-int com_pushedEventsHead; /* 0x0033c104 */
-int com_safemode; /* 0x0033c108 */
-int rd_flush; /* 0x0033c10c */
-int rd_buffersize; /* 0x0033c110 */
-int rd_buffer; /* 0x0033c114 */
-int opening_qconsole; /* 0x0033c118 */
-int printedWarning; /* 0x0033c11c */
-int timeClientFrame; /* 0x0033c120 */
-int errorCount; /* 0x0033c124 */
-unsigned char lastErrorTime[88]; /* 0x0033c128 */
-unsigned char g_currentAsian[32]; /* 0x0033c180 */
-unsigned char szErrorString[1024]; /* 0x0033c1a0 */
-unsigned char szStrings[2048]; /* 0x0033c5a0 */
-unsigned char iCurrString[96]; /* 0x0033cda0 */
-unsigned char iString[32]; /* 0x0033ce00 */
-unsigned char szIwdLanguageName[128]; /* 0x0033ce20 */
-unsigned char bLanguagesListed[96]; /* 0x0033cea0 */
-unsigned char g_largeLocalPos[128]; /* 0x0033cf00 */
-unsigned char g_largeLocalBuf[524288]; /* 0x0033cf80 */
-unsigned char hunk_high[8]; /* 0x003bcf80 */
-unsigned char hunk_low[8]; /* 0x003bcf88 */
-int s_hunkData; /* 0x003bcf90 */
-int s_hunkTotal; /* 0x003bcf94 */
-unsigned char com_hunkData[8]; /* 0x003bcf98 */
-unsigned char com_fileDataHashTable[4096]; /* 0x003bcfa0 */
-unsigned char s_origHunkData[96]; /* 0x003bdfa0 */
-unsigned char g_xAnimInfo[163840]; /* 0x003be000 */
-unsigned char g_notifyListSize[32]; /* 0x003e6000 */
-unsigned char g_notifyList[1536]; /* 0x003e6020 */
-unsigned char g_end[5]; /* 0x003e6620 */
-unsigned char g_anim_developer[91]; /* 0x003e6625 */
-unsigned char scrStringGlob[65664]; /* 0x003e6680 */
-unsigned char scrMemTreeGlob[525184]; /* 0x003f6700 */
-unsigned char info6[8192]; /* 0x00476a80 */
-unsigned char info8[8192]; /* 0x00478a80 */
-unsigned char info5[8192]; /* 0x0047aa80 */
-unsigned char info4[8192]; /* 0x0047ca80 */
-unsigned char info3[8192]; /* 0x0047ea80 */
-unsigned char info2[8192]; /* 0x00480a80 */
-unsigned char buf_00482a80[1024]; /* 0x00482a80 */
-unsigned char basename[128]; /* 0x00482e80 */
-unsigned char sString[128]; /* 0x00482f00 */
-unsigned char sString_00482f80[64]; /* 0x00482f80 */
-unsigned char sTemp[64]; /* 0x00482fc0 */
-unsigned char cmd_functions[128]; /* 0x00483000 */
-unsigned char cmd_argv[2048]; /* 0x00483080 */
-unsigned char cmd_argc[128]; /* 0x00483880 */
-unsigned char cmd_tokenized[8704]; /* 0x00483900 */
-unsigned char cmd_args1[1024]; /* 0x00485b00 */
-unsigned char cmd_text_buf[65536]; /* 0x00485f00 */
-unsigned char info2_00495f00[8192]; /* 0x00495f00 */
-unsigned char info1[1024]; /* 0x00497f00 */
-unsigned char dvarHashTable[1024]; /* 0x00498300 */
-unsigned char dvarVectorPool[48]; /* 0x00498700 */
-int dvarVectorIndex; /* 0x00498730 */
-unsigned char dvar_cheats[12]; /* 0x00498734 */
-unsigned char dvarPool[46080]; /* 0x00498740 */
-unsigned char isDvarSystemActive[1]; /* 0x004a3b40 */
-unsigned char isLoadingAutoExecGlobalFlag[63]; /* 0x004a3b41 */
-unsigned char milesGlob[384]; /* 0x004a3b80 */
-unsigned char effectListArrayNonBolt[7296]; /* 0x004a3d00 */
-unsigned char effectListArrayBolt[7296]; /* 0x004a5980 */
-unsigned char effectClusterArray[28800]; /* 0x004a7600 */
-unsigned char visibleEffectsBolt[14400]; /* 0x004ae680 */
-unsigned char visibleEffectsNonBolt[14400]; /* 0x004b1ec0 */
-unsigned char effectTemplateArrayCount[32]; /* 0x004b5700 */
-unsigned char effectTemplateArray[1120]; /* 0x004b5720 */
-int g_bDObjInited; /* 0x004b5b80 */
-unsigned char com_lastDObjIndex[124]; /* 0x004b5b84 */
-unsigned char serverObjMap[2048]; /* 0x004b5c00 */
-unsigned char clientObjMap[2304]; /* 0x004b6400 */
-unsigned char objFreeCount[128]; /* 0x004b6d00 */
-unsigned char objAlloced[2048]; /* 0x004b6d80 */
-unsigned char objBuf[204800]; /* 0x004b7580 */
-unsigned char g_empty[128]; /* 0x004e9580 */
-unsigned char localization[32]; /* 0x004e9600 */
-unsigned char language_buffer[4192]; /* 0x004e9620 */
-int shouldQuitOnError; /* 0x004ea680 */
-unsigned char cml[124]; /* 0x004ea684 */
-unsigned char bg_iNumAmmoTypes[32]; /* 0x004ea700 */
-unsigned char bg_weapAmmoTypes[512]; /* 0x004ea720 */
-unsigned char bg_iNumSharedAmmoCaps[32]; /* 0x004ea920 */
-unsigned char bg_sharedAmmoCaps[512]; /* 0x004ea940 */
-unsigned char bg_iNumWeapClips[32]; /* 0x004eab40 */
-unsigned char bg_weapClips[544]; /* 0x004eab60 */
-unsigned char scrVmGlob[8320]; /* 0x004ead80 */
-unsigned char scrCompileGlob[512]; /* 0x004ece00 */
-unsigned char scrAnimGlob[640]; /* 0x004ed000 */
-int jump_height; /* 0x004ed280 */
-int jump_spreadAdd; /* 0x004ed284 */
-int jump_slowdownEnable; /* 0x004ed288 */
-int jump_ladderPushVel; /* 0x004ed28c */
-unsigned char jump_stepSize[112]; /* 0x004ed290 */
-int mantle_enable; /* 0x004ed300 */
-int mantle_view_yawcap; /* 0x004ed304 */
-int s_mantleAnims; /* 0x004ed308 */
-int mantle_debug; /* 0x004ed30c */
-int mantle_check_angle; /* 0x004ed310 */
-int mantle_check_range; /* 0x004ed314 */
-unsigned char mantle_check_radius[104]; /* 0x004ed318 */
-unsigned char token_004ed380[1024]; /* 0x004ed380 */
-unsigned char statCount[32]; /* 0x004ed780 */
-unsigned char stats[96]; /* 0x004ed7a0 */
-unsigned char initialized[128]; /* 0x004ed800 */
-unsigned char cm_world[24704]; /* 0x004ed880 */
-unsigned char cinTable[7360]; /* 0x004f3900 */
-unsigned char cin[2426400]; /* 0x004f55c0 */
-unsigned char ROQ_YY_tab[1024]; /* 0x00745be0 */
-unsigned char ROQ_VG_tab[1024]; /* 0x00745fe0 */
-unsigned char ROQ_UG_tab[1024]; /* 0x007463e0 */
-unsigned char ROQ_VR_tab[1024]; /* 0x007467e0 */
-unsigned char ROQ_UB_tab[1024]; /* 0x00746be0 */
-unsigned char vq2[32768]; /* 0x00746fe0 */
-unsigned char vq4[131072]; /* 0x0074efe0 */
-unsigned char vq8[524288]; /* 0x0076efe0 */
-unsigned char sAspyrIntroPlayed[32]; /* 0x007eefe0 */
-unsigned char g_testLods[128]; /* 0x007ef000 */
-unsigned char szReference[1024]; /* 0x007ef080 */
-unsigned char currentPos[128]; /* 0x007ef480 */
-unsigned char bg_defaultWeaponDefs[1568]; /* 0x007ef500 */
-unsigned char g_playerAnimTypeNames[256]; /* 0x007efb20 */
-unsigned char g_playerAnimTypeNamesCount[96]; /* 0x007efc20 */
-unsigned char sys_info[544]; /* 0x007efc80 */
-unsigned char eventQue[6144]; /* 0x007efea0 */
-int eventTail; /* 0x007f16a0 */
-int eventHead; /* 0x007f16a4 */
-int sys_configSum; /* 0x007f16a8 */
-int sys_gpu; /* 0x007f16ac */
-int sys_sysMB; /* 0x007f16b0 */
-unsigned char sys_cpuGHz[76]; /* 0x007f16b4 */
-int sConsoleEditText; /* 0x007f1700 */
-int sConsoleTextView; /* 0x007f1704 */
-int sConsoleData; /* 0x007f1708 */
-unsigned char sConsoleWindow[20]; /* 0x007f170c */
-unsigned char sReturnedText[512]; /* 0x007f1720 */
-unsigned char sConsoleText[512]; /* 0x007f1920 */
-unsigned char sTimerRef_007f1b20[96]; /* 0x007f1b20 */
-unsigned char cwd[256]; /* 0x007f1b80 */
-unsigned char lockPvsViewParms[332]; /* 0x007f1c80 */
-int warnCount; /* 0x007f1dcc */
-unsigned char warnCount_007f1dd0[48]; /* 0x007f1dd0 */
-unsigned char s_cmdList[128]; /* 0x007f1e00 */
-unsigned char s_debugFrameGlob[2399616]; /* 0x007f1e80 */
-unsigned char s_backEndData[2399596]; /* 0x00a3bc00 */
-unsigned char g_dummyBuf[20]; /* 0x00c8596c */
-unsigned char re[384]; /* 0x00c85980 */
-int warnCount_00c85b00; /* 0x00c85b00 */
-int warnCount_00c85b04; /* 0x00c85b04 */
-int warnCount_00c85b08; /* 0x00c85b08 */
-int warnCount_00c85b0c; /* 0x00c85b0c */
-unsigned char warnCount_00c85b10[112]; /* 0x00c85b10 */
-unsigned char materialGlobals[10752]; /* 0x00c85b80 */
-unsigned char s_cache[50304]; /* 0x00c88580 */
-unsigned char g_imageProgs[448]; /* 0x00c94a00 */
-unsigned char imageGlobals[8256]; /* 0x00c94bc0 */
-unsigned char cubeShotGlob[24]; /* 0x00c96c00 */
-unsigned char lastNumber[104]; /* 0x00c96c18 */
-unsigned char s_vc_log[128]; /* 0x00c96c80 */
-unsigned char registeredFontCount[32]; /* 0x00c96d00 */
-unsigned char registeredFont[96]; /* 0x00c96d20 */
-unsigned char debugGlobals[128]; /* 0x00c96d80 */
-unsigned char dpvsConfig[32]; /* 0x00c96e00 */
-unsigned char dpvsGlob[224]; /* 0x00c96e20 */
-unsigned char dpvsScene[131200]; /* 0x00c96f00 */
-unsigned char shadowCookieGlob[128]; /* 0x00cb6f80 */
-unsigned char waterGlob[196608]; /* 0x00cb7000 */
-unsigned char surfBoundsGlob[128]; /* 0x00ce7000 */
-unsigned char mtlLoadGlob[128]; /* 0x00ce7080 */
-unsigned char smodelLoadGlob[128]; /* 0x00ce7100 */
-unsigned char outdoorGlob[128]; /* 0x00ce7180 */
-unsigned char sOldButtonState[128]; /* 0x00ce7200 */
-int yaccResult; /* 0x00ce7280 */
-int yy_start; /* 0x00ce7284 */
-unsigned char yy_current_buffer[24]; /* 0x00ce7288 */
-unsigned char ch_buf[16388]; /* 0x00ce72a0 */
-int g_dummyVal; /* 0x00ceb2a4 */
-int g_parse_user; /* 0x00ceb2a8 */
-int g_sourcePos; /* 0x00ceb2ac */
-int g_out_pos; /* 0x00ceb2b0 */
-int yy_hold_char; /* 0x00ceb2b4 */
-int yy_c_buf_p; /* 0x00ceb2b8 */
-int yy_n_chars; /* 0x00ceb2bc */
-int yy_did_buffer_switch_on_eof; /* 0x00ceb2c0 */
-int yy_last_accepting_cpos; /* 0x00ceb2c4 */
-unsigned char yy_last_accepting_state[56]; /* 0x00ceb2c8 */
-int sSoundEngine; /* 0x00ceb300 */
-unsigned char sHighQualityEngine[124]; /* 0x00ceb304 */
-unsigned char comBspGlob[128]; /* 0x00ceb380 */
-unsigned char __ZGVZ16GetMacGameEnginevE13theGameEngine[32]; /* 0x00ceb400 */
-unsigned char theGameEngine[96]; /* 0x00ceb420 */
-unsigned char sDeviceName[128]; /* 0x00ceb480 */
-unsigned char sShaderPrograms[24]; /* 0x00ceb500 */
-unsigned char sInit[104]; /* 0x00ceb518 */
-unsigned char hasExactMatch[128]; /* 0x00ceb580 */
-unsigned char shortestMatch[1024]; /* 0x00ceb600 */
-int matchCount; /* 0x00ceba00 */
-int completionString; /* 0x00ceba04 */
-unsigned char tinystr[120]; /* 0x00ceba08 */
-unsigned char cg_itemsArray[9216]; /* 0x00ceba80 */
-unsigned char cg_weaponsArray[55808]; /* 0x00cede80 */
-unsigned char cg_entitiesArray[561152]; /* 0x00cfb880 */
-unsigned char cgsArray[59392]; /* 0x00d84880 */
-unsigned char cgArray[997788]; /* 0x00d93080 */
-unsigned char g_mapLoaded[1]; /* 0x00e86a1c */
-unsigned char g_ambientStarted[3]; /* 0x00e86a1d */
-unsigned char buffer_00e86a20[1120]; /* 0x00e86a20 */
-unsigned char input_viewSensitivity[32]; /* 0x00e86e80 */
-unsigned char szServerIPAddress[128]; /* 0x00e86ea0 */
-unsigned char recursive[96]; /* 0x00e86f20 */
-unsigned char g_sv_skel_memory_start[128]; /* 0x00e86f80 */
-unsigned char g_sv_skel_memory[262144]; /* 0x00e87000 */
-unsigned char warnCount_00ec7000[128]; /* 0x00ec7000 */
-unsigned char g_gametype[64]; /* 0x00ec7080 */
-unsigned char g_mapname[64]; /* 0x00ec70c0 */
-int g_ingameMenusLoaded; /* 0x00ec7100 */
-unsigned char ui_serverFilterType[28]; /* 0x00ec7104 */
-unsigned char menuBuf2[32768]; /* 0x00ec7120 */
-unsigned char errorString[1024]; /* 0x00ecf120 */
-unsigned char info[1024]; /* 0x00ecf520 */
-int bypassKeyClear; /* 0x00ecf920 */
-int numclean; /* 0x00ecf924 */
-unsigned char lastTime[24]; /* 0x00ecf928 */
-unsigned char clientBuff[32]; /* 0x00ecf940 */
-unsigned char info_00ecf960[1024]; /* 0x00ecf960 */
-int numTimeOuts; /* 0x00ecfd60 */
-int numFound; /* 0x00ecfd64 */
-unsigned char tleIndex[24]; /* 0x00ecfd68 */
-unsigned char loopbacks[45072]; /* 0x00ecfd80 */
-unsigned char net_iProfilingOn[16]; /* 0x00edad90 */
-unsigned char s[96]; /* 0x00edada0 */
-unsigned char string_00edae00[1024]; /* 0x00edae00 */
-unsigned char con[151588]; /* 0x00edb200 */
-int con_outputWindowColor; /* 0x00f00224 */
-int con_outputSliderColor; /* 0x00f00228 */
-int con_outputBarColor; /* 0x00f0022c */
-int con_inputHintBoxColor; /* 0x00f00230 */
-unsigned char con_inputBoxColor[12]; /* 0x00f00234 */
-unsigned char conDrawInputGlob[32]; /* 0x00f00240 */
-unsigned char hudMsgIconMaterials[1024]; /* 0x00f00260 */
-unsigned char registeredIconMaterialCount[32]; /* 0x00f00660 */
-unsigned char s_playerMute[64]; /* 0x00f00680 */
-unsigned char rconGlob[64]; /* 0x00f006c0 */
-int debugMode; /* 0x00f00700 */
-int captureData; /* 0x00f00704 */
-int captureFunc; /* 0x00f00708 */
-int itemCapture; /* 0x00f0070c */
-unsigned char g_bindItem[16]; /* 0x00f00710 */
-unsigned char scrollInfo[32]; /* 0x00f00720 */
-int lastListBoxClickTime; /* 0x00f00740 */
-unsigned char rect_00f00744[24]; /* 0x00f00744 */
-unsigned char inHandleKey[36]; /* 0x00f0075c */
-unsigned char initialized_00f00780[128]; /* 0x00f00780 */
-unsigned char msgInit[32]; /* 0x00f00800 */
-unsigned char msgHuff[57408]; /* 0x00f00820 */
-unsigned char string_00f0e860[1024]; /* 0x00f0e860 */
-unsigned char string_00f0ec60[8192]; /* 0x00f0ec60 */
-unsigned char string_00f10c60[1056]; /* 0x00f10c60 */
-unsigned char bigConfigString[8192]; /* 0x00f11080 */
-int warnCount_00f13080; /* 0x00f13080 */
-unsigned char warnCount_00f13084[124]; /* 0x00f13084 */
-unsigned char botport[128]; /* 0x00f13100 */
-unsigned char ui_arenaInfos[256]; /* 0x00f13180 */
-unsigned char ui_numArenas[128]; /* 0x00f13280 */
-unsigned char defineBits[1152]; /* 0x00f13300 */
-unsigned char weaponStrings[1024]; /* 0x00f13780 */
-int parseEvent; /* 0x00f13b80 */
-int parseMovetype; /* 0x00f13b84 */
-unsigned char defineStringsOffset[24]; /* 0x00f13b88 */
-unsigned char numDefines[64]; /* 0x00f13ba0 */
-unsigned char defineStrings[10016]; /* 0x00f13be0 */
-unsigned char defineStr[1152]; /* 0x00f16300 */
-int g_piNumLoadAnims; /* 0x00f16780 */
-int g_pLoadAnims; /* 0x00f16784 */
-unsigned char globalScriptData[24]; /* 0x00f16788 */
-unsigned char input[100000]; /* 0x00f167a0 */
-unsigned char bScriptFileLoaded[64]; /* 0x00f2ee40 */
-unsigned char playersKb[640]; /* 0x00f2ee80 */
-int hud_healthOverlay_phaseEnd_pulseDuration; /* 0x00f2f100 */
-int hud_healthOverlay_phaseEnd_toAlpha; /* 0x00f2f104 */
-int hud_healthOverlay_regenPauseTime; /* 0x00f2f108 */
-int hud_healthOverlay_phaseThree_pulseDuration; /* 0x00f2f10c */
-int hud_healthOverlay_phaseThree_toAlphaMultiplier; /* 0x00f2f110 */
-int hud_healthOverlay_phaseTwo_pulseDuration; /* 0x00f2f114 */
-int hud_healthOverlay_phaseTwo_toAlphaMultiplier; /* 0x00f2f118 */
-int hud_healthOverlay_phaseOne_pulseDuration; /* 0x00f2f11c */
-int hud_healthOverlay_pulseStart; /* 0x00f2f120 */
-int hud_enable; /* 0x00f2f124 */
-unsigned char hud_fadeout_speed[24]; /* 0x00f2f128 */
-unsigned char szErrorString_00f2f140[1088]; /* 0x00f2f140 */
-unsigned char spGlob[128]; /* 0x00f2f580 */
-unsigned char bloc[128]; /* 0x00f2f600 */
-unsigned char g_strHandle[8192]; /* 0x00f2f680 */
-int lasttime; /* 0x00f31680 */
-unsigned char adr[124]; /* 0x00f31684 */
-unsigned char color_00f31700[128]; /* 0x00f31700 */
-unsigned char line_00f31780[1024]; /* 0x00f31780 */
-unsigned char menuBuf[32768]; /* 0x00f31b80 */
-unsigned char g_load[1600]; /* 0x00f39b80 */
-unsigned char menuParseKeywordHash[2048]; /* 0x00f3a1c0 */
-unsigned char menuBuf1[4096]; /* 0x00f3a9c0 */
-unsigned char string_00f3b9c0[4160]; /* 0x00f3b9c0 */
-unsigned char g_clients[665856]; /* 0x00f3ca00 */
-int hud_flash_period_offhand; /* 0x00fdf300 */
-unsigned char hud_flash_time_offhand[124]; /* 0x00fdf304 */
-unsigned char cached_models[1024]; /* 0x00fdf380 */
-unsigned char pushed[32768]; /* 0x00fdf780 */
-unsigned char pushed_p[128]; /* 0x00fe7780 */
-unsigned char turretInfo[2176]; /* 0x00fe7800 */
-unsigned char g_HitLocConstNames[128]; /* 0x00fe8080 */
-unsigned char numIPFilters[32]; /* 0x00fe8100 */
-unsigned char ipFilters[8288]; /* 0x00fe8120 */
-unsigned char str_00fea180[256]; /* 0x00fea180 */
-unsigned char index_00fea280[128]; /* 0x00fea280 */
-unsigned char rendererStats[64]; /* 0x00fea300 */
-unsigned char fps_previousTimes[128]; /* 0x00fea340 */
-int fps_index; /* 0x00fea3c0 */
-unsigned char previous[60]; /* 0x00fea3c4 */
-unsigned char cg_pmove[248]; /* 0x00fea400 */
-unsigned char cg_numTriggerEntities[8]; /* 0x00fea4f8 */
-unsigned char cg_triggerEntities[1024]; /* 0x00fea500 */
-unsigned char cg_numSolidEntities[128]; /* 0x00fea900 */
-unsigned char cg_solidEntities[1024]; /* 0x00fea980 */
-unsigned char cg_eachClientLocalEntities[24064]; /* 0x00fead80 */
-int ip_socket; /* 0x00ff0b80 */
-unsigned char winsockInitialized[28]; /* 0x00ff0b84 */
-unsigned char winsockdata[400]; /* 0x00ff0ba0 */
-int net_socksPassword; /* 0x00ff0d30 */
-int net_socksUsername; /* 0x00ff0d34 */
-int net_socksPort; /* 0x00ff0d38 */
-int net_socksServer; /* 0x00ff0d3c */
-int net_socksEnabled; /* 0x00ff0d40 */
-int net_noipx; /* 0x00ff0d44 */
-int net_noudp; /* 0x00ff0d48 */
-int networkingEnabled; /* 0x00ff0d4c */
-int socks_socket; /* 0x00ff0d50 */
-unsigned char socksRelayAddr[16]; /* 0x00ff0d54 */
-unsigned char usingSocks[28]; /* 0x00ff0d64 */
-unsigned char localIP[64]; /* 0x00ff0d80 */
-unsigned char numIP[32]; /* 0x00ff0dc0 */
-unsigned char socksBuf[4096]; /* 0x00ff0de0 */
-unsigned char ipx_socket[32]; /* 0x00ff1de0 */
-unsigned char hackSize[128]; /* 0x00ff1e00 */
-int currentRecordingSample; /* 0x00ff1e80 */
-unsigned char recording[28]; /* 0x00ff1e84 */
-unsigned char s_clientTalkTime[256]; /* 0x00ff1ea0 */
-unsigned char s_clientSamples[256]; /* 0x00ff1fa0 */
-int playing_00ff20a0; /* 0x00ff20a0 */
-unsigned char count_00ff20a4[92]; /* 0x00ff20a4 */
-unsigned char decodeBits[128]; /* 0x00ff2100 */
-unsigned char encodeBits[36]; /* 0x00ff2180 */
-unsigned char g_encoder[92]; /* 0x00ff21a4 */
-int sAudioRecorder; /* 0x00ff2200 */
-unsigned char g_current_sample[28]; /* 0x00ff2204 */
-unsigned char s_recordingSamples[2340]; /* 0x00ff2220 */
-unsigned char s_recordingSamplePtr[60]; /* 0x00ff2b44 */
-unsigned char dsoundplay_initialized[128]; /* 0x00ff2b80 */
-int g_High; /* 0x00ff2c00 */
-int g_Low; /* 0x00ff2c04 */
-unsigned char g_special[120]; /* 0x00ff2c08 */
-unsigned char g_WarmOff[1]; /* 0x00ff2c80 */
-unsigned char g_NoTextureID[127]; /* 0x00ff2c81 */
-unsigned char __ZN6CFence15sUnusedFenceIDsE[128]; /* 0x00ff2d00 */
-unsigned char __ZN13CMemoryBuffer20sDelayedFreeRequestsE[128]; /* 0x00ff2d80 */
-unsigned char __ZN7COpenGL7sOpenGLE[4096]; /* 0x00ff2e00 */
-unsigned char g_ShadowCookieMemory[132]; /* 0x00ff3e00 */
-unsigned char g_traceThreadInfo[28]; /* 0x00ff3e84 */
-unsigned char com_consoleLines[128]; /* 0x00ff3ea0 */
-unsigned char com_numConsoleLines[8]; /* 0x00ff3f20 */
-int ui_errorTitle; /* 0x00ff3f28 */
-int ui_errorMessage; /* 0x00ff3f2c */
-int com_fixedConsolePosition; /* 0x00ff3f30 */
-int com_errorEntered; /* 0x00ff3f34 */
-int com_frameNumber; /* 0x00ff3f38 */
-int com_frameTime; /* 0x00ff3f3c */
-int com_animCheck; /* 0x00ff3f40 */
-int com_recommendedSet; /* 0x00ff3f44 */
-int sv_paused; /* 0x00ff3f48 */
-int com_expectedHunkUsage; /* 0x00ff3f4c */
-int nextmap; /* 0x00ff3f50 */
-int cl_paused; /* 0x00ff3f54 */
-int com_introPlayed; /* 0x00ff3f58 */
-int shortversion; /* 0x00ff3f5c */
-int version_00ff3f60; /* 0x00ff3f60 */
-int com_logfile; /* 0x00ff3f64 */
-int com_sv_running; /* 0x00ff3f68 */
-int com_maxfps; /* 0x00ff3f6c */
-int com_fixedtime; /* 0x00ff3f70 */
-int com_timescaleValue; /* 0x00ff3f74 */
-int com_timescale; /* 0x00ff3f78 */
-int com_statmon; /* 0x00ff3f7c */
-int com_developer_script; /* 0x00ff3f80 */
-int com_developer; /* 0x00ff3f84 */
-unsigned char com_viewlog[120]; /* 0x00ff3f88 */
-int loc_warningsAsErrors; /* 0x00ff4000 */
-int loc_warnings; /* 0x00ff4004 */
-int loc_translate; /* 0x00ff4008 */
-int loc_forceEnglish; /* 0x00ff400c */
-unsigned char loc_language[16]; /* 0x00ff4010 */
-unsigned char lastValidGame[256]; /* 0x00ff4020 */
-unsigned char lastValidBase[256]; /* 0x00ff4120 */
-unsigned char fs_serverReferencedIwdNames[4096]; /* 0x00ff4220 */
-unsigned char fs_serverReferencedIwds[4096]; /* 0x00ff5220 */
-unsigned char fs_numServerReferencedIwds[32]; /* 0x00ff6220 */
-unsigned char fs_serverIwdNames[4096]; /* 0x00ff6240 */
-unsigned char fs_serverIwds[4096]; /* 0x00ff7240 */
-unsigned char fsh[21016]; /* 0x00ff8240 */
-int fs_checksumFeed; /* 0x00ffd458 */
-int fs_fakeChkSum; /* 0x00ffd45c */
-int fs_ignoreLocalized; /* 0x00ffd460 */
-int fs_restrict; /* 0x00ffd464 */
-int fs_gameDirVar; /* 0x00ffd468 */
-int fs_copyfiles; /* 0x00ffd46c */
-int fs_cdpath; /* 0x00ffd470 */
-int fs_useOldAssets; /* 0x00ffd474 */
-int fs_basegame; /* 0x00ffd478 */
-int fs_basepath; /* 0x00ffd47c */
-int fs_homepath; /* 0x00ffd480 */
-unsigned char fs_debug[28]; /* 0x00ffd484 */
-unsigned char fs_gamedir[256]; /* 0x00ffd4a0 */
-int fs_loadStack; /* 0x00ffd5a0 */
-unsigned char com_fileAccessed[96]; /* 0x00ffd5a4 */
-unsigned char com_dedicated[128]; /* 0x00ffd604 */
-unsigned char scrMemTreePub[28]; /* 0x00ffd684 */
-unsigned char g_default[228]; /* 0x00ffd6a0 */
-int snd_touchStreamFilesOnLoad; /* 0x00ffd784 */
-int snd_enableReverb; /* 0x00ffd788 */
-int snd_enableStream; /* 0x00ffd78c */
-int snd_enable3D; /* 0x00ffd790 */
-int snd_enable2D; /* 0x00ffd794 */
-int snd_slaveFadeTime; /* 0x00ffd798 */
-int snd_volume; /* 0x00ffd79c */
-int snd_stereo; /* 0x00ffd7a0 */
-int snd_bits; /* 0x00ffd7a4 */
-int snd_khz; /* 0x00ffd7a8 */
-unsigned char snd_errorOnMissing[84]; /* 0x00ffd7ac */
-unsigned char g_snd[5124]; /* 0x00ffd800 */
-unsigned char cmd_texts[12]; /* 0x00ffec04 */
-unsigned char cmd_wait[116]; /* 0x00ffec10 */
-int dvarCount; /* 0x00ffec84 */
-int dvar_modifiedFlags; /* 0x00ffec88 */
-unsigned char sortedDvars[116]; /* 0x00ffec8c */
-int mss_q3fs; /* 0x00ffed00 */
-unsigned char mss_3d_provider[128]; /* 0x00ffed04 */
-int visibleEffectCountBolt; /* 0x00ffed84 */
-unsigned char visibleEffectCountNonBolt[24]; /* 0x00ffed88 */
-unsigned char theFxHelpers[252]; /* 0x00ffeda0 */
-int effectBlockSightCount; /* 0x00ffee9c */
-int cullEffectCountNonBolt; /* 0x00ffeea0 */
-int cullEffectCountBolt; /* 0x00ffeea4 */
-int initialEffectActiveCountNonBolt; /* 0x00ffeea8 */
-int initialEffectActiveCountBolt; /* 0x00ffeeac */
-int privateEffectActiveCountNonBolt; /* 0x00ffeeb0 */
-int privateEffectActiveCountBolt; /* 0x00ffeeb4 */
-int effectActiveCount; /* 0x00ffeeb8 */
-int effectActiveCountNonBolt; /* 0x00ffeebc */
-unsigned char effectActiveCountBolt[64]; /* 0x00ffeec0 */
-unsigned char g_effectVisArray[36000]; /* 0x00ffef00 */
-int g_effectVisArrayCount; /* 0x01007ba0 */
-int clusterSort; /* 0x01007ba4 */
-unsigned char effectClusterCount[92]; /* 0x01007ba8 */
-unsigned char fx_camera_valid[128]; /* 0x01007c04 */
-unsigned char fxSchedulers[128]; /* 0x01007c84 */
-int player_dmgtimer_flinchTime; /* 0x01007d04 */
-int player_dmgtimer_stumbleTime; /* 0x01007d08 */
-int player_dmgtimer_minScale; /* 0x01007d0c */
-int player_dmgtimer_maxTime; /* 0x01007d10 */
-int player_dmgtimer_timePerPoint; /* 0x01007d14 */
-int player_turnAnims; /* 0x01007d18 */
-int player_spectateSpeedScale; /* 0x01007d1c */
-int player_backSpeedScale; /* 0x01007d20 */
-int player_strafeSpeedScale; /* 0x01007d24 */
-int player_footstepsThreshhold; /* 0x01007d28 */
-int player_moveThreshhold; /* 0x01007d2c */
-int player_adsExitDelay; /* 0x01007d30 */
-int player_scopeExitOnDamage; /* 0x01007d34 */
-int player_toggleBinoculars; /* 0x01007d38 */
-int player_breath_snd_delay; /* 0x01007d3c */
-int player_breath_snd_lerp; /* 0x01007d40 */
-int player_breath_gasp_lerp; /* 0x01007d44 */
-int player_breath_hold_lerp; /* 0x01007d48 */
-int player_breath_gasp_scale; /* 0x01007d4c */
-int player_breath_fire_delay; /* 0x01007d50 */
-int player_breath_gasp_time; /* 0x01007d54 */
-int player_breath_hold_time; /* 0x01007d58 */
-int bg_aimSpreadMoveSpeedThreshold; /* 0x01007d5c */
-int bg_bobMax; /* 0x01007d60 */
-int bg_bobAmplitudeProne; /* 0x01007d64 */
-int bg_bobAmplitudeDucked; /* 0x01007d68 */
-int bg_bobAmplitudeStanding; /* 0x01007d6c */
-int bg_swingSpeed; /* 0x01007d70 */
-int friction; /* 0x01007d74 */
-int stopspeed; /* 0x01007d78 */
-int inertiaAngle; /* 0x01007d7c */
-int inertiaDebug; /* 0x01007d80 */
-int inertiaMax; /* 0x01007d84 */
-int bg_fallDamageMaxHeight; /* 0x01007d88 */
-int bg_fallDamageMinHeight; /* 0x01007d8c */
-int bg_foliagesnd_resetinterval; /* 0x01007d90 */
-int bg_foliagesnd_fastinterval; /* 0x01007d94 */
-int bg_foliagesnd_slowinterval; /* 0x01007d98 */
-int bg_foliagesnd_maxspeed; /* 0x01007d9c */
-int bg_foliagesnd_minspeed; /* 0x01007da0 */
-int bg_prone_yawcap; /* 0x01007da4 */
-int bg_ladder_yawcap; /* 0x01007da8 */
-int player_view_pitch_down; /* 0x01007dac */
-unsigned char player_view_pitch_up[112]; /* 0x01007db0 */
-unsigned char cm[384]; /* 0x01007e20 */
-unsigned char bg_weaponDefs[608]; /* 0x01007fa0 */
-unsigned char scrVmPub[17184]; /* 0x01008200 */
-unsigned char g_script_error_level[32]; /* 0x0100c520 */
-unsigned char g_script_error[2400]; /* 0x0100c540 */
-unsigned char scrVarPub[262240]; /* 0x0100cea0 */
-unsigned char scrVarGlob[1048608]; /* 0x0104cf00 */
-unsigned char scrCompilePub[4196]; /* 0x0114cf20 */
-unsigned char scrParserPub[28]; /* 0x0114df84 */
-unsigned char scrParserGlob[128]; /* 0x0114dfa0 */
-unsigned char scrAnimPub[1152]; /* 0x0114e020 */
-unsigned char g_sa[6500]; /* 0x0114e4a0 */
-unsigned char sys_timeBase[28]; /* 0x0114fe04 */
-unsigned char legacyHacksArray[1792]; /* 0x0114fe20 */
-unsigned char saLoadObjGlob[2272]; /* 0x01150520 */
-unsigned char giFilesFound[32]; /* 0x01150e00 */
-unsigned char sourceFiles[256]; /* 0x01150e20 */
-int globaldefines; /* 0x01150f20 */
-unsigned char numtokens[92]; /* 0x01150f24 */
-unsigned char g_wv[32]; /* 0x01150f80 */
-unsigned char sys_packetReceived[16480]; /* 0x01150fa0 */
-unsigned char scene[124292]; /* 0x01155000 */
-unsigned char frontEndDataOut[124]; /* 0x01173584 */
-unsigned char g_skinBuffers[40964]; /* 0x01173600 */
-int r_aspectRatio; /* 0x0117d604 */
-int r_rendererInUse; /* 0x0117d608 */
-int r_rendererPreference; /* 0x0117d60c */
-int r_displayRefresh; /* 0x0117d610 */
-int r_mode; /* 0x0117d614 */
-int r_monitor; /* 0x0117d618 */
-int r_fullscreen; /* 0x0117d61c */
-int r_sse_skinning; /* 0x0117d620 */
-int sys_SSE; /* 0x0117d624 */
-int developer; /* 0x0117d628 */
-int vid_ypos; /* 0x0117d62c */
-int vid_xpos; /* 0x0117d630 */
-int r_testFillEnable; /* 0x0117d634 */
-int r_testFill; /* 0x0117d638 */
-int r_testTransform; /* 0x0117d63c */
-int r_sun_from_dvars; /* 0x0117d640 */
-int r_outdoorFeather; /* 0x0117d644 */
-int r_outdoorDownBias; /* 0x0117d648 */
-int r_outdoorAwayBias; /* 0x0117d64c */
-int r_glowBloomDesaturation; /* 0x0117d650 */
-int r_glowBloomCutoff; /* 0x0117d654 */
-unsigned char r_glowBloomIntensity[8]; /* 0x0117d658 */
-unsigned char r_glowSkyBleedIntensity[8]; /* 0x0117d660 */
-unsigned char r_glowRadius[8]; /* 0x0117d668 */
-int r_glow; /* 0x0117d670 */
-int r_distortion; /* 0x0117d674 */
-int r_blur; /* 0x0117d678 */
-int sc_offscreenCasterLodScale; /* 0x0117d67c */
-int sc_offscreenCasterLodBias; /* 0x0117d680 */
-int sc_length; /* 0x0117d684 */
-int sc_shadowOutRate; /* 0x0117d688 */
-int sc_shadowInRate; /* 0x0117d68c */
-int sc_fadeRange; /* 0x0117d690 */
-int sc_wantCountMargin; /* 0x0117d694 */
-int sc_wantCount; /* 0x0117d698 */
-int sc_showDebug; /* 0x0117d69c */
-int sc_showOverlay; /* 0x0117d6a0 */
-int sc_debugReceiverCount; /* 0x0117d6a4 */
-int sc_debugCasterCount; /* 0x0117d6a8 */
-int sc_count; /* 0x0117d6ac */
-int sc_blur; /* 0x0117d6b0 */
-int sc_enable; /* 0x0117d6b4 */
-int r_forceLod; /* 0x0117d6b8 */
-int r_lowestLodDist; /* 0x0117d6bc */
-int r_lowLodDist; /* 0x0117d6c0 */
-int r_mediumLodDist; /* 0x0117d6c4 */
-int r_highLodDist; /* 0x0117d6c8 */
-int r_showGroundLit; /* 0x0117d6cc */
-int r_showFloatZDebug; /* 0x0117d6d0 */
-int r_showFbColorDebug; /* 0x0117d6d4 */
-int r_showSModelNames; /* 0x0117d6d8 */
-int r_showPortals; /* 0x0117d6dc */
-int r_portalMinClipArea; /* 0x0117d6e0 */
-int r_portalWalkLimit; /* 0x0117d6e4 */
-int r_singleCell; /* 0x0117d6e8 */
-int r_portalBevelsOnly; /* 0x0117d6ec */
-int r_portalBevels; /* 0x0117d6f0 */
-int r_portalFineCull; /* 0x0117d6f4 */
-int r_pvsStats; /* 0x0117d6f8 */
-int r_skipPvs; /* 0x0117d6fc */
-int r_lockPvs; /* 0x0117d700 */
-int r_depthPrepassModels; /* 0x0117d704 */
-int r_drawWater; /* 0x0117d708 */
-int r_drawPrimFloor; /* 0x0117d70c */
-int r_drawPrimCap; /* 0x0117d710 */
-unsigned char r_dlightLimit[8]; /* 0x0117d714 */
-int r_drawXModels; /* 0x0117d71c */
-int r_drawSModels; /* 0x0117d720 */
-int r_drawBModels; /* 0x0117d724 */
-int r_drawEntities; /* 0x0117d728 */
-int r_drawDecals; /* 0x0117d72c */
-int r_drawWorld; /* 0x0117d730 */
-int r_drawSun; /* 0x0117d734 */
-int r_clearColor2; /* 0x0117d738 */
-int r_clearColor; /* 0x0117d73c */
-int r_aaSamples; /* 0x0117d740 */
-int r_aaAlpha; /* 0x0117d744 */
-int r_swapInterval; /* 0x0117d748 */
-int r_norefresh; /* 0x0117d74c */
-int r_skipBackEnd; /* 0x0117d750 */
-int r_logFile; /* 0x0117d754 */
-int r_objectiveColorDx7Max; /* 0x0117d758 */
-int r_objectiveColorDx7Min; /* 0x0117d75c */
-int r_lightTweakSunDirection; /* 0x0117d760 */
-int r_lightTweakSunDiffuseColor; /* 0x0117d764 */
-int r_lightTweakSunColor; /* 0x0117d768 */
-int r_lightTweakAmbientColor; /* 0x0117d76c */
-int r_lightTweakSunLight; /* 0x0117d770 */
-int r_lightTweakDiffuseFraction; /* 0x0117d774 */
-int r_lightTweakAmbient; /* 0x0117d778 */
-int r_showMissingLightGrid; /* 0x0117d77c */
-int r_showLightGrid; /* 0x0117d780 */
-int r_vc_showlog; /* 0x0117d784 */
-int r_vc_makelog; /* 0x0117d788 */
-int r_railCoreWidth; /* 0x0117d78c */
-int r_xdebug; /* 0x0117d790 */
-int r_showVertCounts; /* 0x0117d794 */
-int r_showSurfCounts; /* 0x0117d798 */
-int r_showTriCounts; /* 0x0117d79c */
-int r_showTris; /* 0x0117d7a0 */
-int r_cosinePowerMapShift; /* 0x0117d7a4 */
-int r_specularColorScale; /* 0x0117d7a8 */
-int r_specularMap; /* 0x0117d7ac */
-int r_normalMap; /* 0x0117d7b0 */
-int r_colorMap; /* 0x0117d7b4 */
-int r_lightMap; /* 0x0117d7b8 */
-int r_picmip_spec; /* 0x0117d7bc */
-int r_picmip_bump; /* 0x0117d7c0 */
-int r_picmip; /* 0x0117d7c4 */
-int r_picmip_manual; /* 0x0117d7c8 */
-int r_polygonOffsetBias; /* 0x0117d7cc */
-int r_polygonOffsetScale; /* 0x0117d7d0 */
-int r_fog; /* 0x0117d7d4 */
-int r_zfar; /* 0x0117d7d8 */
-int r_znear_depthhack; /* 0x0117d7dc */
-int r_znear; /* 0x0117d7e0 */
-int r_lodBias; /* 0x0117d7e4 */
-int r_lodScale; /* 0x0117d7e8 */
-int r_smc_enable; /* 0x0117d7ec */
-int r_skinCache; /* 0x0117d7f0 */
-int r_multiGpu; /* 0x0117d7f4 */
-int r_gpuSync; /* 0x0117d7f8 */
-int r_optimizeXModels; /* 0x0117d7fc */
-int r_optimizeLightmaps; /* 0x0117d800 */
-int r_optimize; /* 0x0117d804 */
-int r_debugEntCounts; /* 0x0117d808 */
-int r_debugShader; /* 0x0117d80c */
-int r_fullbright; /* 0x0117d810 */
-int r_anisotropy; /* 0x0117d814 */
-int r_textureMode; /* 0x0117d818 */
-int r_ignoreHwGamma; /* 0x0117d81c */
-int r_gamma; /* 0x0117d820 */
-int r_overbrightBits; /* 0x0117d824 */
-unsigned char r_ignore[120]; /* 0x0117d828 */
-unsigned char dx[11744]; /* 0x0117d8a0 */
-unsigned char vidConfig[64]; /* 0x01180680 */
-unsigned char ri[576]; /* 0x011806c0 */
-unsigned char rg[12800]; /* 0x01180900 */
-unsigned char rgp[4336]; /* 0x01183b00 */
-unsigned char g_disableRendering[16]; /* 0x01184bf0 */
-unsigned char dxState[8580]; /* 0x01184c00 */
-unsigned char g_FenceID[124]; /* 0x01186d84 */
-unsigned char tess[370688]; /* 0x01186e00 */
-unsigned char backEnd[224912]; /* 0x011e1600 */
-unsigned char backEndData[16]; /* 0x01218490 */
-unsigned char sunFlareArray[228]; /* 0x012184a0 */
-unsigned char rgl[28]; /* 0x01218584 */
-unsigned char s_world[640]; /* 0x012185a0 */
-unsigned char lightGlob[352]; /* 0x01218820 */
-unsigned char delayedGroup[260]; /* 0x01218980 */
-int r_sun_fx_position; /* 0x01218a84 */
-int r_sunglare_fadeout; /* 0x01218a88 */
-int r_sunglare_fadein; /* 0x01218a8c */
-int r_sunglare_max_lighten; /* 0x01218a90 */
-int r_sunglare_max_angle; /* 0x01218a94 */
-int r_sunglare_min_angle; /* 0x01218a98 */
-int r_sunblind_fadeout; /* 0x01218a9c */
-int r_sunblind_fadein; /* 0x01218aa0 */
-int r_sunblind_max_darken; /* 0x01218aa4 */
-int r_sunblind_max_angle; /* 0x01218aa8 */
-int r_sunblind_min_angle; /* 0x01218aac */
-int r_sunflare_fadeout; /* 0x01218ab0 */
-int r_sunflare_fadein; /* 0x01218ab4 */
-int r_sunflare_max_alpha; /* 0x01218ab8 */
-int r_sunflare_max_angle; /* 0x01218abc */
-int r_sunflare_max_size; /* 0x01218ac0 */
-int r_sunflare_min_angle; /* 0x01218ac4 */
-int r_sunflare_min_size; /* 0x01218ac8 */
-int r_sunflare_shader; /* 0x01218acc */
-int r_sunsprite_size; /* 0x01218ad0 */
-unsigned char r_sunsprite_shader[44]; /* 0x01218ad4 */
-unsigned char in_mouse[128]; /* 0x01218b00 */
-int yytext; /* 0x01218b80 */
-int yyleng; /* 0x01218b84 */
-int yynerrs; /* 0x01218b88 */
-unsigned char yylval[8]; /* 0x01218b8c */
-unsigned char yychar[108]; /* 0x01218b94 */
-int ui_playerProfileAlreadyChosen; /* 0x01218c00 */
-unsigned char com_playerProfile[124]; /* 0x01218c04 */
-unsigned char __ZN10CVAOPacket14sGenericPacketE[688]; /* 0x01218c80 */
-unsigned char __ZN10CVAOPacket11sAllPacketsE[80]; /* 0x01218f30 */
-unsigned char __ZN12CStreamSound10sQTStreamsE[128]; /* 0x01218f80 */
-unsigned char playerKeys[3392]; /* 0x01219000 */
-unsigned char g_consoleField[280]; /* 0x01219d40 */
-int historyLine; /* 0x01219e58 */
-int nextHistoryLine; /* 0x01219e5c */
-unsigned char historyEditLines[8992]; /* 0x01219e60 */
-int cg_weaponrightbone; /* 0x0121c180 */
-int cg_weaponleftbone; /* 0x0121c184 */
-int cg_blood; /* 0x0121c188 */
-int cg_headIconMinScreenRadius; /* 0x0121c18c */
-int cg_constantSizeHeadIcons; /* 0x0121c190 */
-int cg_voiceIconSize; /* 0x0121c194 */
-int cg_connectionIconSize; /* 0x0121c198 */
-int cg_scriptIconSize; /* 0x0121c19c */
-int cg_youInKillCamSize; /* 0x0121c1a0 */
-int cg_shock_mouse_fadeTime; /* 0x0121c1a4 */
-int cg_shock_mouse_sensitivityscale; /* 0x0121c1a8 */
-int cg_shock_mouse_maxyawspeed; /* 0x0121c1ac */
-int cg_shock_mouse_maxpitchspeed; /* 0x0121c1b0 */
-int cg_shock_mouse; /* 0x0121c1b4 */
-int cg_shock_volume_shellshock; /* 0x0121c1b8 */
-int cg_shock_volume_announcer; /* 0x0121c1bc */
-int cg_shock_volume_music; /* 0x0121c1c0 */
-int cg_shock_volume_local; /* 0x0121c1c4 */
-int cg_shock_volume_body; /* 0x0121c1c8 */
-int cg_shock_volume_item; /* 0x0121c1cc */
-int cg_shock_volume_voice; /* 0x0121c1d0 */
-int cg_shock_volume_weapon; /* 0x0121c1d4 */
-int cg_shock_volume_menu; /* 0x0121c1d8 */
-int cg_shock_volume_auto2d; /* 0x0121c1dc */
-int cg_shock_volume_auto; /* 0x0121c1e0 */
-int cg_shock_soundModEndDelay; /* 0x0121c1e4 */
-int cg_shock_soundWetLevel; /* 0x0121c1e8 */
-int cg_shock_soundDryLevel; /* 0x0121c1ec */
-int cg_shock_soundRoomType; /* 0x0121c1f0 */
-int cg_shock_soundLoopEndDelay; /* 0x0121c1f4 */
-int cg_shock_soundLoopFadeTime; /* 0x0121c1f8 */
-int cg_shock_soundFadeOutTime; /* 0x0121c1fc */
-int cg_shock_soundFadeInTime; /* 0x0121c200 */
-int cg_shock_sound; /* 0x0121c204 */
-int cg_shock_viewKickRadius; /* 0x0121c208 */
-int cg_shock_viewKickPeriod; /* 0x0121c20c */
-int cg_shock_screenBlendFadeTime; /* 0x0121c210 */
-int cg_shock_screenBlendTime; /* 0x0121c214 */
-int cg_scoreboardItemHeight; /* 0x0121c218 */
-int cg_scoreboardBannerHeight; /* 0x0121c21c */
-int cg_scoreboardScrollStep; /* 0x0121c220 */
-int cg_drawGameMessages; /* 0x0121c224 */
-int cg_gameBoldMessageWidth; /* 0x0121c228 */
-int cg_gameMessageWidth; /* 0x0121c22c */
-int cg_subtitleCharHeight; /* 0x0121c230 */
-int cg_subtitlePosY; /* 0x0121c234 */
-int cg_subtitlePosX; /* 0x0121c238 */
-int cg_subtitleWidthWidescreen; /* 0x0121c23c */
-int cg_subtitleWidthStandard; /* 0x0121c240 */
-int cg_subtitleMinTime; /* 0x0121c244 */
-int cg_subtitles; /* 0x0121c248 */
-int cg_minicon; /* 0x0121c24c */
-int cg_developer; /* 0x0121c250 */
-int cg_dumpAnims; /* 0x0121c254 */
-int cg_descriptiveText; /* 0x0121c258 */
-int cg_voiceSpriteTime; /* 0x0121c25c */
-int cg_noTaunt; /* 0x0121c260 */
-int cg_predictItems; /* 0x0121c264 */
-int cg_paused; /* 0x0121c268 */
-int cg_chatHeight; /* 0x0121c26c */
-int cg_chatTime; /* 0x0121c270 */
-int cg_synchronousClients; /* 0x0121c274 */
-int cg_thirdPersonAngle; /* 0x0121c278 */
-int cg_thirdPersonRange; /* 0x0121c27c */
-int cg_thirdPerson; /* 0x0121c280 */
-int cg_fovMin; /* 0x0121c284 */
-int cg_fovScale; /* 0x0121c288 */
-int cg_fov; /* 0x0121c28c */
-int cg_tracerScaleDistRange; /* 0x0121c290 */
-int cg_tracerScaleMinDist; /* 0x0121c294 */
-int cg_tracerScale; /* 0x0121c298 */
-int cg_tracerSpeed; /* 0x0121c29c */
-int cg_tracerLength; /* 0x0121c2a0 */
-int cg_tracerWidth; /* 0x0121c2a4 */
-int cg_tracerChance; /* 0x0121c2a8 */
-int cg_gun_move_minspeed; /* 0x0121c2ac */
-int cg_gun_move_rate; /* 0x0121c2b0 */
-int cg_gun_ofs_u; /* 0x0121c2b4 */
-int cg_gun_ofs_r; /* 0x0121c2b8 */
-int cg_gun_ofs_f; /* 0x0121c2bc */
-int cg_gun_move_u; /* 0x0121c2c0 */
-int cg_gun_move_r; /* 0x0121c2c4 */
-int cg_gun_move_f; /* 0x0121c2c8 */
-int cg_gun_z; /* 0x0121c2cc */
-int cg_gun_y; /* 0x0121c2d0 */
-int cg_gun_x; /* 0x0121c2d4 */
-int cg_hintFadeTime; /* 0x0121c2d8 */
-int cg_cursorHints; /* 0x0121c2dc */
-int cg_drawGun; /* 0x0121c2e0 */
-int cg_viewsize; /* 0x0121c2e4 */
-int cg_brass; /* 0x0121c2e8 */
-int cg_marksLimit; /* 0x0121c2ec */
-int cg_marks; /* 0x0121c2f0 */
-int cg_footsteps; /* 0x0121c2f4 */
-int cg_showmiss; /* 0x0121c2f8 */
-int cg_nopredict; /* 0x0121c2fc */
-int cg_errorDecay; /* 0x0121c300 */
-int cg_debugEvents; /* 0x0121c304 */
-int cg_debugPosition; /* 0x0121c308 */
-int cg_drawMantleHint; /* 0x0121c30c */
-int cg_drawBreathHint; /* 0x0121c310 */
-int cg_drawHealth; /* 0x0121c314 */
-int cg_teamChatsOnly; /* 0x0121c318 */
-int cg_draw2D; /* 0x0121c31c */
-int cg_crosshairEnemyColor; /* 0x0121c320 */
-int cg_crosshairDynamic; /* 0x0121c324 */
-int cg_crosshairAlphaMin; /* 0x0121c328 */
-int cg_crosshairAlpha; /* 0x0121c32c */
-int cg_weaponCycleDelay; /* 0x0121c330 */
-int cg_drawLagometer; /* 0x0121c334 */
-int cg_hudProneY; /* 0x0121c338 */
-int cg_centerPrintY; /* 0x0121c33c */
-int cg_hudSayPosition; /* 0x0121c340 */
-int cg_hudChatPosition; /* 0x0121c344 */
-int cg_hudGrenadePointerPulseMin; /* 0x0121c348 */
-int cg_hudGrenadePointerPulseMax; /* 0x0121c34c */
-int cg_hudGrenadePointerPulseFreq; /* 0x0121c350 */
-int cg_hudGrenadePointerPivot; /* 0x0121c354 */
-int cg_hudGrenadePointerWidth; /* 0x0121c358 */
-int cg_hudGrenadePointerHeight; /* 0x0121c35c */
-int cg_hudGrenadeIconWidth; /* 0x0121c360 */
-int cg_hudGrenadeIconHeight; /* 0x0121c364 */
-int cg_hudGrenadeIconOffset; /* 0x0121c368 */
-int cg_hudGrenadeIconMaxHeight; /* 0x0121c36c */
-int cg_hudGrenadeIconMaxRange; /* 0x0121c370 */
-int cg_hudGrenadeIconInScope; /* 0x0121c374 */
-int cg_hudDamageIconInScope; /* 0x0121c378 */
-int cg_hudDamageIconTime; /* 0x0121c37c */
-int cg_hudDamageIconOffset; /* 0x0121c380 */
-int cg_hudDamageIconHeight; /* 0x0121c384 */
-int cg_hudDamageIconWidth; /* 0x0121c388 */
-int cg_hudStanceHintPrints; /* 0x0121c38c */
-int cg_hudStanceFlash; /* 0x0121c390 */
-int cg_hudObjectiveMinAlpha; /* 0x0121c394 */
-int cg_hudObjectiveMaxRange; /* 0x0121c398 */
-int cg_hudObjectiveMinHeight; /* 0x0121c39c */
-int cg_hudCompassSoundPingFadeTime; /* 0x0121c3a0 */
-int cg_hudCompassSpringyPointers; /* 0x0121c3a4 */
-int cg_hudCompassMinRadius; /* 0x0121c3a8 */
-int cg_hudCompassMinRange; /* 0x0121c3ac */
-int cg_hudCompassMaxRange; /* 0x0121c3b0 */
-int cg_hudCompassSize; /* 0x0121c3b4 */
-int cg_drawCrosshairNamesPosY; /* 0x0121c3b8 */
-int cg_drawCrosshairNamesPosX; /* 0x0121c3bc */
-int cg_drawCrosshairNames; /* 0x0121c3c0 */
-int cg_drawTurretCrosshair; /* 0x0121c3c4 */
-int cg_drawCrosshair; /* 0x0121c3c8 */
-int cg_drawSnapshot; /* 0x0121c3cc */
-int cg_drawScriptUsage; /* 0x0121c3d0 */
-int cg_drawSoundOverlay; /* 0x0121c3d4 */
-int cg_drawMaterial; /* 0x0121c3d8 */
-int cg_drawFPS; /* 0x0121c3dc */
-unsigned char cg_centertime[32]; /* 0x0121c3e0 */
-unsigned char cgDC[640]; /* 0x0121c400 */
-int old_com_frameTime; /* 0x0121c680 */
-unsigned char frame_msec[28]; /* 0x0121c684 */
-unsigned char re_0121c6a0[352]; /* 0x0121c6a0 */
-unsigned char cl_pinglist[16704]; /* 0x0121c800 */
-unsigned char g_waitingForServer[32]; /* 0x01220940 */
-unsigned char cls[2755264]; /* 0x01220960 */
-unsigned char clientConnections[296992]; /* 0x014c1420 */
-unsigned char clients[1547284]; /* 0x01509c40 */
-int cl_voice; /* 0x01683854 */
-int name_01683858; /* 0x01683858 */
-int nextdemo; /* 0x0168385c */
-int cl_ingame; /* 0x01683860 */
-int fx_profile; /* 0x01683864 */
-int fx_visMinTraceDist; /* 0x01683868 */
-int fx_count; /* 0x0168386c */
-int fx_freeze; /* 0x01683870 */
-int fx_debugBolt; /* 0x01683874 */
-int fx_debug; /* 0x01683878 */
-int fx_sort; /* 0x0168387c */
-int fx_cull; /* 0x01683880 */
-int fx_draw; /* 0x01683884 */
-int fx_enable; /* 0x01683888 */
-int cl_serverStatusResendTime; /* 0x0168388c */
-unsigned char cl_inGameVideo[8]; /* 0x01683890 */
-int cl_allowDownload; /* 0x01683898 */
-int cl_motdString; /* 0x0168389c */
-int cl_activeAction; /* 0x016838a0 */
-int m_filter; /* 0x016838a4 */
-int m_side; /* 0x016838a8 */
-int m_forward; /* 0x016838ac */
-int m_yaw; /* 0x016838b0 */
-int m_pitch; /* 0x016838b4 */
-int cl_showMouseRate; /* 0x016838b8 */
-int cl_mouseAccel; /* 0x016838bc */
-int cl_sensitivity; /* 0x016838c0 */
-int cl_freelook; /* 0x016838c4 */
-int cl_forceavidemo; /* 0x016838c8 */
-int cl_avidemo; /* 0x016838cc */
-int cl_showServerCommands; /* 0x016838d0 */
-int cl_showSend; /* 0x016838d4 */
-int cl_shownuments; /* 0x016838d8 */
-int cl_freezeDemo; /* 0x016838dc */
-int cl_showTimeDelta; /* 0x016838e0 */
-int cl_packetdup; /* 0x016838e4 */
-int cl_maxpackets; /* 0x016838e8 */
-int cl_connectTimeout; /* 0x016838ec */
-int cl_timeout; /* 0x016838f0 */
-int cl_noprint; /* 0x016838f4 */
-unsigned char cl_nodelta[8]; /* 0x016838f8 */
-unsigned char gameInitialized[128]; /* 0x01683900 */
-int ui_playerProfileNameNew; /* 0x01683980 */
-int ui_playerProfileSelected; /* 0x01683984 */
-int ui_playerProfileCount; /* 0x01683988 */
-int ui_serverStatusTimeOut; /* 0x0168398c */
-int ui_currentMap; /* 0x01683990 */
-int ui_browserKillcam; /* 0x01683994 */
-int ui_browserFriendlyfire; /* 0x01683998 */
-int ui_browserMod; /* 0x0168399c */
-int ui_browserShowDedicated; /* 0x016839a0 */
-int ui_browserShowPure; /* 0x016839a4 */
-int ui_browserShowNoPassword; /* 0x016839a8 */
-int ui_browserShowPassword; /* 0x016839ac */
-int ui_browserShowEmpty; /* 0x016839b0 */
-int ui_browserShowFull; /* 0x016839b4 */
-int ui_currentNetMap; /* 0x016839b8 */
-int ui_dedicated; /* 0x016839bc */
-int ui_joinGameType; /* 0x016839c0 */
-int ui_netGameTypeName; /* 0x016839c4 */
-int ui_netGameType; /* 0x016839c8 */
-unsigned char ui_netSource[8]; /* 0x016839cc */
-int ui_extraBigFont; /* 0x016839d4 */
-int ui_bigFont; /* 0x016839d8 */
-int ui_smallFont; /* 0x016839dc */
-unsigned char ui_gametype[32]; /* 0x016839e0 */
-unsigned char uiInfoArray[4288]; /* 0x01683a00 */
-unsigned char sharedUiInfo[115392]; /* 0x01684ac0 */
-int net_lanauthorize; /* 0x016a0d80 */
-int net_showprofile; /* 0x016a0d84 */
-int net_profile; /* 0x016a0d88 */
-int packetDebug; /* 0x016a0d8c */
-int showdrop; /* 0x016a0d90 */
-unsigned char showpackets[108]; /* 0x016a0d94 */
-int sv_allowedClan2; /* 0x016a0e00 */
-int sv_allowedClan1; /* 0x016a0e04 */
-int sv_referencedIwdNames; /* 0x016a0e08 */
-int sv_referencedIwds; /* 0x016a0e0c */
-int sv_iwdNames; /* 0x016a0e10 */
-int sv_iwds; /* 0x016a0e14 */
-int sv_voiceQuality; /* 0x016a0e18 */
-int sv_voice; /* 0x016a0e1c */
-int sv_disableClientConsole; /* 0x016a0e20 */
-int sv_kickBanTime; /* 0x016a0e24 */
-int sv_mapRotationCurrent; /* 0x016a0e28 */
-int sv_mapRotation; /* 0x016a0e2c */
-int sv_showAverageBPS; /* 0x016a0e30 */
-int sv_packet_info; /* 0x016a0e34 */
-int sv_showCommands; /* 0x016a0e38 */
-int sv_allowAnonymous; /* 0x016a0e3c */
-int sv_cheats; /* 0x016a0e40 */
-int sv_floodProtect; /* 0x016a0e44 */
-int sv_pure; /* 0x016a0e48 */
-int sv_debugReliableCmds; /* 0x016a0e4c */
-int sv_debugRate; /* 0x016a0e50 */
-int sv_gametype; /* 0x016a0e54 */
-int sv_maxPing; /* 0x016a0e58 */
-int sv_minPing; /* 0x016a0e5c */
-int sv_maxRate; /* 0x016a0e60 */
-int sv_serverid; /* 0x016a0e64 */
-int sv_mapname; /* 0x016a0e68 */
-int sv_padPackets; /* 0x016a0e6c */
-int sv_reconnectlimit; /* 0x016a0e70 */
-int sv_hostname; /* 0x016a0e74 */
-int sv_privateClients; /* 0x016a0e78 */
-int sv_maxclients; /* 0x016a0e7c */
-int sv_allowDownload; /* 0x016a0e80 */
-int sv_privatePassword; /* 0x016a0e84 */
-int rcon_password; /* 0x016a0e88 */
-int sv_zombietime; /* 0x016a0e8c */
-int sv_timeout; /* 0x016a0e90 */
-unsigned char sv_fps[108]; /* 0x016a0e94 */
-unsigned char sv[390528]; /* 0x016a0f00 */
-unsigned char svs[41216]; /* 0x01700480 */
-int con_restricted; /* 0x0170a580 */
-int con_miniconlines; /* 0x0170a584 */
-int con_minicontime; /* 0x0170a588 */
-int con_boldgamemessagetime; /* 0x0170a58c */
-unsigned char con_gamemessagetime[16]; /* 0x0170a590 */
-unsigned char cl_serverStatusList[131680]; /* 0x0170a5a0 */
-unsigned char scr_initialized[128]; /* 0x0172a800 */
-unsigned char markVerts[69632]; /* 0x0172a880 */
-unsigned char cg_markPolys[663552]; /* 0x0173b880 */
-unsigned char cg_freeMarkPolys[128]; /* 0x017dd880 */
-unsigned char buf_017dd900[128]; /* 0x017dd900 */
-int cl_bypassMouseInput; /* 0x017dd980 */
-int cl_talking; /* 0x017dd984 */
-int cl_anglespeedkey; /* 0x017dd988 */
-int cl_pitchspeed; /* 0x017dd98c */
-unsigned char cl_yawspeed[16]; /* 0x017dd990 */
-int cl_stanceHoldTime; /* 0x017dd9a0 */
-unsigned char cl_analog_attack_threshold[92]; /* 0x017dd9a4 */
-int hud_deathQuoteFadeTime; /* 0x017dda00 */
-int hud_health_pulserate_critical; /* 0x017dda04 */
-int hud_health_pulserate_injured; /* 0x017dda08 */
-int hud_health_startpulse_critical; /* 0x017dda0c */
-int hud_health_startpulse_injured; /* 0x017dda10 */
-int hud_fade_offhand; /* 0x017dda14 */
-int hud_fade_stance; /* 0x017dda18 */
-int hud_fade_compass; /* 0x017dda1c */
-int hud_fade_healthbar; /* 0x017dda20 */
-unsigned char hud_fade_ammodisplay[92]; /* 0x017dda24 */
-unsigned char g_scr_data[14080]; /* 0x017dda80 */
-unsigned char itemParseKeywordHash[2048]; /* 0x017e1180 */
-int g_dumpAnims; /* 0x017e1980 */
-int g_voteAbstainWeight; /* 0x017e1984 */
-int g_oldVoting; /* 0x017e1988 */
-int g_antilag; /* 0x017e198c */
-int player_meleeHeight; /* 0x017e1990 */
-int player_meleeWidth; /* 0x017e1994 */
-int player_meleeRange; /* 0x017e1998 */
-int g_friendlyNameDist; /* 0x017e199c */
-int g_friendlyfireDist; /* 0x017e19a0 */
-int g_debugLocDamage; /* 0x017e19a4 */
-int g_NoScriptSpam; /* 0x017e19a8 */
-int g_TeamColor_Axis; /* 0x017e19ac */
-int g_TeamColor_Allies; /* 0x017e19b0 */
-int g_TeamName_Axis; /* 0x017e19b4 */
-int g_TeamName_Allies; /* 0x017e19b8 */
-int g_ScoresBanner_Spectators; /* 0x017e19bc */
-int g_ScoresBanner_None; /* 0x017e19c0 */
-int g_ScoresBanner_Axis; /* 0x017e19c4 */
-int g_ScoresBanner_Allies; /* 0x017e19c8 */
-unsigned char g_smoothClients[8]; /* 0x017e19cc */
-int g_banIPs; /* 0x017e19d4 */
-int g_listEntity; /* 0x017e19d8 */
-unsigned char g_deadChat[8]; /* 0x017e19dc */
-int g_allowVote; /* 0x017e19e4 */
-int g_logSync; /* 0x017e19e8 */
-int g_log; /* 0x017e19ec */
-int g_voiceChatTalkingDuration; /* 0x017e19f0 */
-int voice_deadChat; /* 0x017e19f4 */
-int voice_global; /* 0x017e19f8 */
-int voice_localEcho; /* 0x017e19fc */
-int g_mantleBlockTimeBuffer; /* 0x017e1a00 */
-int g_clonePlayerMaxVelocity; /* 0x017e1a04 */
-int g_dropUpSpeedRand; /* 0x017e1a08 */
-int g_dropUpSpeedBase; /* 0x017e1a0c */
-int g_dropForwardSpeed; /* 0x017e1a10 */
-int g_playerCollisionEjectSpeed; /* 0x017e1a14 */
-int g_synchronousClients; /* 0x017e1a18 */
-int g_motd; /* 0x017e1a1c */
-int g_maxDroppedWeapons; /* 0x017e1a20 */
-int g_weaponAmmoPools; /* 0x017e1a24 */
-int g_debugBullets; /* 0x017e1a28 */
-int g_debugDamage; /* 0x017e1a2c */
-int g_inactivity; /* 0x017e1a30 */
-int g_useholdspawndelay; /* 0x017e1a34 */
-int g_useholdtime; /* 0x017e1a38 */
-int g_knockback; /* 0x017e1a3c */
-int g_cheats; /* 0x017e1a40 */
-int g_gravity; /* 0x017e1a44 */
-int g_speed; /* 0x017e1a48 */
-int g_dedicated; /* 0x017e1a4c */
-int g_maxclients; /* 0x017e1a50 */
-int g_password; /* 0x017e1a54 */
-unsigned char g_gametype_017e1a58[40]; /* 0x017e1a58 */
-unsigned char g_entities[573440]; /* 0x017e1a80 */
-unsigned char level_bgs[813568]; /* 0x0186da80 */
-unsigned char level[13952]; /* 0x01934480 */
-unsigned char itemRegistered[1024]; /* 0x01937b00 */
-unsigned char g_hudelems[143392]; /* 0x01937f00 */
-unsigned char __ZN12UI_Component1gE[224]; /* 0x0195af20 */
-unsigned char g_fHitLocDamageMult[128]; /* 0x0195b000 */
-unsigned char scr_const[256]; /* 0x0195b080 */
-unsigned char lagometer[1664]; /* 0x0195b180 */
-unsigned char cl_connectedToPureServer[128]; /* 0x0195b800 */
-int removeMeWhenMPStopsCrashingInHere; /* 0x0195b880 */
-unsigned char ejectBrassCasingOrigin[124]; /* 0x0195b884 */
-int cg_freeLocalEntities; /* 0x0195b900 */
-unsigned char cg_eachClientFreeLocalEntities[28]; /* 0x0195b904 */
-unsigned char cg_eachClientActiveLocalEntities[224]; /* 0x0195b920 */
-unsigned char levelSamples[24]; /* 0x0195ba00 */
-unsigned char voice_current_voicelevel[8]; /* 0x0195ba18 */
-unsigned char old_rec_source[256]; /* 0x0195ba20 */
-int mic_current_reclevel; /* 0x0195bb20 */
-int mic_old_reclevel; /* 0x0195bb24 */
-unsigned char winvoice_mic_scaler[8]; /* 0x0195bb28 */
-int winvoice_save_voice; /* 0x0195bb30 */
-int winvoice_mic_reclevel; /* 0x0195bb34 */
-unsigned char winvoice_mic_mute[72]; /* 0x0195bb38 */
-unsigned char partial_audio_buffer[1280]; /* 0x0195bb80 */
-unsigned char enc_buffer[4096]; /* 0x0195c080 */
-unsigned char g_decode_frame_size[128]; /* 0x0195d080 */
-unsigned char current_audioCallback[128]; /* 0x0195d100 */
-int catch_exception_raise; /* 0x0195d180 */
-int catch_exception_raise_state; /* 0x0195d184 */
-int catch_exception_raise_state_identity; /* 0x0195d188 */
-int clock_alarm_reply; /* 0x0195d18c */
-int do_mach_notify_dead_name; /* 0x0195d190 */
-int do_mach_notify_no_senders; /* 0x0195d194 */
-int do_mach_notify_port_deleted; /* 0x0195d198 */
-int do_mach_notify_send_once; /* 0x0195d19c */
-int do_seqnos_mach_notify_dead_name; /* 0x0195d1a0 */
-int do_seqnos_mach_notify_no_senders; /* 0x0195d1a4 */
-int do_seqnos_mach_notify_port_deleted; /* 0x0195d1a8 */
-int do_seqnos_mach_notify_send_once; /* 0x0195d1ac */
-int receive_samples; /* 0x0195d1b0 */
+int sBuilderProcPtr; /* sBuilderProcPtr */
+int sControlValidationUPP; /* sControlValidationUPP */
+unsigned char sControlKeyFilterUPP[120]; /* sControlKeyFilterUPP */
+unsigned char sRectList[12]; /* sRectList */
+unsigned char sDisplayList[12]; /* sDisplayList */
+int sSwapCount; /* sSwapCount */
+unsigned char sCaptureMedia[8]; /* sCaptureMedia */
+int sMainWindow; /* sMainWindow */
+unsigned char sCaptureMovie[24]; /* sCaptureMovie */
+unsigned char sCaptureName[256]; /* sCaptureName */
+int sCaptureTrack; /* sCaptureTrack */
+int sCaptureRefNum; /* sCaptureRefNum */
+int sDisplayID; /* sDisplayID */
+int sSystemGammaBlue; /* sSystemGammaBlue */
+int sSystemGammaGreen; /* sSystemGammaGreen */
+int sSystemGammaRed; /* sSystemGammaRed */
+int sInWindowMode; /* sInWindowMode */
+int sScreenContext; /* sScreenContext */
+int sDisplayRefreshRate; /* sDisplayRefreshRate */
+int sDisplayDepth; /* sDisplayDepth */
+int sDisplayIndex; /* sDisplayIndex */
+int sFadeToken; /* sFadeToken */
+int sInitialized; /* sInitialized */
+unsigned char sDisplayRect[16]; /* sDisplayRect */
+int sMainDisplayID; /* sMainDisplayID */
+unsigned char sMainRect[120]; /* sMainRect */
+unsigned char sResult_00334980[2]; /* sResult */
+unsigned char sTested[1]; /* sTested */
+unsigned char hasAltiVec[1]; /* hasAltiVec */
+unsigned char hasAltiVecBeenDetermined[124]; /* hasAltiVecBeenDetermined */
+int sDataFolderDirID; /* sDataFolderDirID */
+int sExecutableDirID; /* sExecutableDirID */
+int sAppFolderDirID; /* sAppFolderDirID */
+unsigned char sAppFolderVRefNum[20]; /* sAppFolderVRefNum */
+unsigned char sAppBundleRef[96]; /* sAppBundleRef */
+unsigned char sSystemLock[128]; /* sSystemLock */
+int sResult_00334b00; /* sResult */
+int sResult_00334b04; /* sResult */
+int sResult_00334b08; /* sResult */
+int sResult_00334b0c; /* sResult */
+unsigned char sResult_00334b10[8]; /* sResult */
+int sResult_00334b18; /* sResult */
+int sResult_00334b1c; /* sResult */
+int sResult_00334b20; /* sResult */
+int sResult_00334b24; /* sResult */
+int sResult_00334b28; /* sResult */
+unsigned char sResult_00334b2c[84]; /* sResult */
+unsigned char sGlobalMouse[128]; /* sGlobalMouse */
+unsigned char sCursorList[12]; /* sCursorList */
+int sCurrentCursor; /* sCurrentCursor */
+int sSavedWinCursor; /* sSavedWinCursor */
+unsigned char sTimerRef[108]; /* sTimerRef */
+unsigned char sCachedVKMap[128]; /* sCachedVKMap */
+int sATI4CompsConverterABGR; /* sATI4CompsConverterABGR */
+int sATI4CompsConverterARGB; /* sATI4CompsConverterARGB */
+int sStdConverterABGR; /* sStdConverterABGR */
+unsigned char sStdConverterARGB[116]; /* sStdConverterARGB */
+unsigned char sDirect3DInterface[128]; /* sDirect3DInterface */
+unsigned char sPointScale[128]; /* sPointScale */
+int sEventTargetRef; /* sEventTargetRef */
+unsigned char sSystemCursorVisible_00334e84[124]; /* sSystemCursorVisible */
+unsigned char g_threadValues[20]; /* g_threadValues */
+unsigned char threadId[108]; /* threadId */
+unsigned char value1[16384]; /* value1 */
+unsigned char g_com_error[96]; /* g_com_error */
+unsigned char va_info[2052]; /* va_info */
+int LittleFloatWrite; /* LittleFloatWrite */
+int LittleFloatRead; /* LittleFloatRead */
+int LittleLong64; /* LittleLong64 */
+int LittleLong; /* LittleLong */
+int LittleShort; /* LittleShort */
+unsigned char valueindex[8]; /* valueindex */
+int iWeaponInfoSource; /* iWeaponInfoSource */
+int logfile; /* logfile */
+unsigned char errorcode[120]; /* errorcode */
+unsigned char com_errorMessage[4096]; /* com_errorMessage */
+int com_lastFrameTime; /* com_lastFrameTime */
+int com_codeTimeScale; /* com_codeTimeScale */
+unsigned char com_fullyInitialized[120]; /* com_fullyInitialized */
+unsigned char com_pushedEvents[6144]; /* com_pushedEvents */
+int com_pushedEventsTail; /* com_pushedEventsTail */
+int com_pushedEventsHead; /* com_pushedEventsHead */
+int com_safemode; /* com_safemode */
+int rd_flush; /* rd_flush */
+int rd_buffersize; /* rd_buffersize */
+int rd_buffer; /* rd_buffer */
+int opening_qconsole; /* opening_qconsole */
+int printedWarning; /* printedWarning */
+int timeClientFrame; /* timeClientFrame */
+int errorCount; /* errorCount */
+unsigned char lastErrorTime[88]; /* lastErrorTime */
+unsigned char g_currentAsian[32]; /* g_currentAsian */
+unsigned char szErrorString[1024]; /* szErrorString */
+unsigned char szStrings[2048]; /* szStrings */
+unsigned char iCurrString[96]; /* iCurrString */
+unsigned char iString[32]; /* iString */
+unsigned char szIwdLanguageName[128]; /* szIwdLanguageName */
+unsigned char bLanguagesListed[96]; /* bLanguagesListed */
+unsigned char g_largeLocalPos[128]; /* g_largeLocalPos */
+unsigned char g_largeLocalBuf[524288]; /* g_largeLocalBuf */
+unsigned char hunk_high[8]; /* hunk_high */
+unsigned char hunk_low[8]; /* hunk_low */
+int s_hunkData; /* s_hunkData */
+int s_hunkTotal; /* s_hunkTotal */
+unsigned char com_hunkData[8]; /* com_hunkData */
+unsigned char com_fileDataHashTable[4096]; /* com_fileDataHashTable */
+unsigned char s_origHunkData[96]; /* s_origHunkData */
+unsigned char g_xAnimInfo[163840]; /* g_xAnimInfo */
+unsigned char g_notifyListSize[32]; /* g_notifyListSize */
+unsigned char g_notifyList[1536]; /* g_notifyList */
+unsigned char g_end[5]; /* g_end */
+unsigned char g_anim_developer[91]; /* g_anim_developer */
+unsigned char scrStringGlob[65664]; /* scrStringGlob */
+unsigned char scrMemTreeGlob[525184]; /* scrMemTreeGlob */
+unsigned char info6[8192]; /* info6 */
+unsigned char info8[8192]; /* info8 */
+unsigned char info5[8192]; /* info5 */
+unsigned char info4[8192]; /* info4 */
+unsigned char info3[8192]; /* info3 */
+unsigned char info2[8192]; /* info2 */
+unsigned char buf_00482a80[1024]; /* buf */
+unsigned char basename[128]; /* basename */
+unsigned char sString[128]; /* sString */
+unsigned char sString_00482f80[64]; /* sString */
+unsigned char sTemp[64]; /* sTemp */
+unsigned char cmd_functions[128]; /* cmd_functions */
+unsigned char cmd_argv[2048]; /* cmd_argv */
+unsigned char cmd_argc[128]; /* cmd_argc */
+unsigned char cmd_tokenized[8704]; /* cmd_tokenized */
+unsigned char cmd_args1[1024]; /* cmd_args1 */
+unsigned char cmd_text_buf[65536]; /* cmd_text_buf */
+unsigned char info2_00495f00[8192]; /* info2 */
+unsigned char info1[1024]; /* info1 */
+unsigned char dvarHashTable[1024]; /* dvarHashTable */
+unsigned char dvarVectorPool[48]; /* dvarVectorPool */
+int dvarVectorIndex; /* dvarVectorIndex */
+unsigned char dvar_cheats[12]; /* dvar_cheats */
+unsigned char dvarPool[46080]; /* dvarPool */
+unsigned char isDvarSystemActive[1]; /* isDvarSystemActive */
+unsigned char isLoadingAutoExecGlobalFlag[63]; /* isLoadingAutoExecGlobalFlag */
+unsigned char milesGlob[384]; /* milesGlob */
+unsigned char effectListArrayNonBolt[7296]; /* effectListArrayNonBolt */
+unsigned char effectListArrayBolt[7296]; /* effectListArrayBolt */
+unsigned char effectClusterArray[28800]; /* effectClusterArray */
+unsigned char visibleEffectsBolt[14400]; /* visibleEffectsBolt */
+unsigned char visibleEffectsNonBolt[14400]; /* visibleEffectsNonBolt */
+unsigned char effectTemplateArrayCount[32]; /* effectTemplateArrayCount */
+unsigned char effectTemplateArray[1120]; /* effectTemplateArray */
+int g_bDObjInited; /* g_bDObjInited */
+unsigned char com_lastDObjIndex[124]; /* com_lastDObjIndex */
+unsigned char serverObjMap[2048]; /* serverObjMap */
+unsigned char clientObjMap[2304]; /* clientObjMap */
+unsigned char objFreeCount[128]; /* objFreeCount */
+unsigned char objAlloced[2048]; /* objAlloced */
+unsigned char objBuf[204800]; /* objBuf */
+unsigned char g_empty[128]; /* g_empty */
+unsigned char localization[32]; /* localization */
+unsigned char language_buffer[4192]; /* language_buffer */
+int shouldQuitOnError; /* shouldQuitOnError */
+unsigned char cml[124]; /* cml */
+unsigned char bg_iNumAmmoTypes[32]; /* bg_iNumAmmoTypes */
+unsigned char bg_weapAmmoTypes[512]; /* bg_weapAmmoTypes */
+unsigned char bg_iNumSharedAmmoCaps[32]; /* bg_iNumSharedAmmoCaps */
+unsigned char bg_sharedAmmoCaps[512]; /* bg_sharedAmmoCaps */
+unsigned char bg_iNumWeapClips[32]; /* bg_iNumWeapClips */
+unsigned char bg_weapClips[544]; /* bg_weapClips */
+unsigned char scrVmGlob[8320]; /* scrVmGlob */
+unsigned char scrCompileGlob[512]; /* scrCompileGlob */
+unsigned char scrAnimGlob[640]; /* scrAnimGlob */
+int jump_height; /* jump_height */
+int jump_spreadAdd; /* jump_spreadAdd */
+int jump_slowdownEnable; /* jump_slowdownEnable */
+int jump_ladderPushVel; /* jump_ladderPushVel */
+unsigned char jump_stepSize[112]; /* jump_stepSize */
+int mantle_enable; /* mantle_enable */
+int mantle_view_yawcap; /* mantle_view_yawcap */
+int s_mantleAnims; /* s_mantleAnims */
+int mantle_debug; /* mantle_debug */
+int mantle_check_angle; /* mantle_check_angle */
+int mantle_check_range; /* mantle_check_range */
+unsigned char mantle_check_radius[104]; /* mantle_check_radius */
+unsigned char token_004ed380[1024]; /* token */
+unsigned char statCount[32]; /* statCount */
+unsigned char stats[96]; /* stats */
+unsigned char initialized[128]; /* initialized */
+unsigned char cm_world[24704]; /* cm_world */
+unsigned char cinTable[7360]; /* cinTable */
+unsigned char cin[2426400]; /* cin */
+unsigned char ROQ_YY_tab[1024]; /* ROQ_YY_tab */
+unsigned char ROQ_VG_tab[1024]; /* ROQ_VG_tab */
+unsigned char ROQ_UG_tab[1024]; /* ROQ_UG_tab */
+unsigned char ROQ_VR_tab[1024]; /* ROQ_VR_tab */
+unsigned char ROQ_UB_tab[1024]; /* ROQ_UB_tab */
+unsigned char vq2[32768]; /* vq2 */
+unsigned char vq4[131072]; /* vq4 */
+unsigned char vq8[524288]; /* vq8 */
+unsigned char sAspyrIntroPlayed[32]; /* sAspyrIntroPlayed */
+unsigned char g_testLods[128]; /* g_testLods */
+unsigned char szReference[1024]; /* szReference */
+unsigned char currentPos[128]; /* currentPos */
+unsigned char bg_defaultWeaponDefs[1568]; /* bg_defaultWeaponDefs */
+unsigned char g_playerAnimTypeNames[256]; /* g_playerAnimTypeNames */
+unsigned char g_playerAnimTypeNamesCount[96]; /* g_playerAnimTypeNamesCount */
+unsigned char sys_info[544]; /* sys_info */
+unsigned char eventQue[6144]; /* eventQue */
+int eventTail; /* eventTail */
+int eventHead; /* eventHead */
+int sys_configSum; /* sys_configSum */
+int sys_gpu; /* sys_gpu */
+int sys_sysMB; /* sys_sysMB */
+unsigned char sys_cpuGHz[76]; /* sys_cpuGHz */
+int sConsoleEditText; /* sConsoleEditText */
+int sConsoleTextView; /* sConsoleTextView */
+int sConsoleData; /* sConsoleData */
+unsigned char sConsoleWindow[20]; /* sConsoleWindow */
+unsigned char sReturnedText[512]; /* sReturnedText */
+unsigned char sConsoleText[512]; /* sConsoleText */
+unsigned char sTimerRef_007f1b20[96]; /* sTimerRef */
+unsigned char cwd[256]; /* cwd */
+unsigned char lockPvsViewParms[332]; /* lockPvsViewParms */
+int warnCount; /* warnCount */
+unsigned char warnCount_007f1dd0[48]; /* warnCount */
+unsigned char s_cmdList[128]; /* s_cmdList */
+unsigned char s_debugFrameGlob[2399616]; /* s_debugFrameGlob */
+unsigned char s_backEndData[2399596]; /* s_backEndData */
+unsigned char g_dummyBuf[20]; /* g_dummyBuf */
+unsigned char re[384]; /* re */
+int warnCount_00c85b00; /* warnCount */
+int warnCount_00c85b04; /* warnCount */
+int warnCount_00c85b08; /* warnCount */
+int warnCount_00c85b0c; /* warnCount */
+unsigned char warnCount_00c85b10[112]; /* warnCount */
+unsigned char materialGlobals[10752]; /* materialGlobals */
+unsigned char s_cache[50304]; /* s_cache */
+unsigned char g_imageProgs[448]; /* g_imageProgs */
+unsigned char imageGlobals[8256]; /* imageGlobals */
+unsigned char cubeShotGlob[24]; /* cubeShotGlob */
+unsigned char lastNumber[104]; /* lastNumber */
+unsigned char s_vc_log[128]; /* s_vc_log */
+unsigned char registeredFontCount[32]; /* registeredFontCount */
+unsigned char registeredFont[96]; /* registeredFont */
+unsigned char debugGlobals[128]; /* debugGlobals */
+unsigned char dpvsConfig[32]; /* dpvsConfig */
+unsigned char dpvsGlob[224]; /* dpvsGlob */
+unsigned char dpvsScene[131200]; /* dpvsScene */
+unsigned char shadowCookieGlob[128]; /* shadowCookieGlob */
+unsigned char waterGlob[196608]; /* waterGlob */
+unsigned char surfBoundsGlob[128]; /* surfBoundsGlob */
+unsigned char mtlLoadGlob[128]; /* mtlLoadGlob */
+unsigned char smodelLoadGlob[128]; /* smodelLoadGlob */
+unsigned char outdoorGlob[128]; /* outdoorGlob */
+unsigned char sOldButtonState[128]; /* sOldButtonState */
+int yaccResult; /* yaccResult */
+int yy_start; /* yy_start */
+unsigned char yy_current_buffer[24]; /* yy_current_buffer */
+unsigned char ch_buf[16388]; /* ch_buf */
+int g_dummyVal; /* g_dummyVal */
+int g_parse_user; /* g_parse_user */
+int g_sourcePos; /* g_sourcePos */
+int g_out_pos; /* g_out_pos */
+int yy_hold_char; /* yy_hold_char */
+int yy_c_buf_p; /* yy_c_buf_p */
+int yy_n_chars; /* yy_n_chars */
+int yy_did_buffer_switch_on_eof; /* yy_did_buffer_switch_on_eof */
+int yy_last_accepting_cpos; /* yy_last_accepting_cpos */
+unsigned char yy_last_accepting_state[56]; /* yy_last_accepting_state */
+int sSoundEngine; /* sSoundEngine */
+unsigned char sHighQualityEngine[124]; /* sHighQualityEngine */
+unsigned char comBspGlob[128]; /* comBspGlob */
+unsigned char __ZGVZ16GetMacGameEnginevE13theGameEngine[32]; /* __ZGVZ16GetMacGameEnginevE13theGameEngine */
+unsigned char theGameEngine[96]; /* theGameEngine */
+unsigned char sDeviceName[128]; /* sDeviceName */
+unsigned char sShaderPrograms[24]; /* sShaderPrograms */
+unsigned char sInit[104]; /* sInit */
+unsigned char hasExactMatch[128]; /* hasExactMatch */
+unsigned char shortestMatch[1024]; /* shortestMatch */
+int matchCount; /* matchCount */
+int completionString; /* completionString */
+unsigned char tinystr[120]; /* tinystr */
+unsigned char cg_itemsArray[9216]; /* cg_itemsArray */
+unsigned char cg_weaponsArray[55808]; /* cg_weaponsArray */
+unsigned char cg_entitiesArray[561152]; /* cg_entitiesArray */
+unsigned char cgsArray[59392]; /* cgsArray */
+unsigned char cgArray[997788]; /* cgArray */
+unsigned char g_mapLoaded[1]; /* g_mapLoaded */
+unsigned char g_ambientStarted[3]; /* g_ambientStarted */
+unsigned char buffer_00e86a20[1120]; /* buffer */
+unsigned char input_viewSensitivity[32]; /* input_viewSensitivity */
+unsigned char szServerIPAddress[128]; /* szServerIPAddress */
+unsigned char recursive[96]; /* recursive */
+unsigned char g_sv_skel_memory_start[128]; /* g_sv_skel_memory_start */
+unsigned char g_sv_skel_memory[262144]; /* g_sv_skel_memory */
+unsigned char warnCount_00ec7000[128]; /* warnCount */
+unsigned char g_gametype[64]; /* g_gametype */
+unsigned char g_mapname[64]; /* g_mapname */
+int g_ingameMenusLoaded; /* g_ingameMenusLoaded */
+unsigned char ui_serverFilterType[28]; /* ui_serverFilterType */
+unsigned char menuBuf2[32768]; /* menuBuf2 */
+unsigned char errorString[1024]; /* errorString */
+unsigned char info[1024]; /* info */
+int bypassKeyClear; /* bypassKeyClear */
+int numclean; /* numclean */
+unsigned char lastTime[24]; /* lastTime */
+unsigned char clientBuff[32]; /* clientBuff */
+unsigned char info_00ecf960[1024]; /* info */
+int numTimeOuts; /* numTimeOuts */
+int numFound; /* numFound */
+unsigned char tleIndex[24]; /* tleIndex */
+unsigned char loopbacks[45072]; /* loopbacks */
+unsigned char net_iProfilingOn[16]; /* net_iProfilingOn */
+unsigned char s[96]; /* s */
+unsigned char string_00edae00[1024]; /* string */
+unsigned char con[151588]; /* con */
+int con_outputWindowColor; /* con_outputWindowColor */
+int con_outputSliderColor; /* con_outputSliderColor */
+int con_outputBarColor; /* con_outputBarColor */
+int con_inputHintBoxColor; /* con_inputHintBoxColor */
+unsigned char con_inputBoxColor[12]; /* con_inputBoxColor */
+unsigned char conDrawInputGlob[32]; /* conDrawInputGlob */
+unsigned char hudMsgIconMaterials[1024]; /* hudMsgIconMaterials */
+unsigned char registeredIconMaterialCount[32]; /* registeredIconMaterialCount */
+unsigned char s_playerMute[64]; /* s_playerMute */
+unsigned char rconGlob[64]; /* rconGlob */
+int debugMode; /* debugMode */
+int captureData; /* captureData */
+int captureFunc; /* captureFunc */
+int itemCapture; /* itemCapture */
+unsigned char g_bindItem[16]; /* g_bindItem */
+unsigned char scrollInfo[32]; /* scrollInfo */
+int lastListBoxClickTime; /* lastListBoxClickTime */
+unsigned char rect_00f00744[24]; /* rect */
+unsigned char inHandleKey[36]; /* inHandleKey */
+unsigned char initialized_00f00780[128]; /* initialized */
+unsigned char msgInit[32]; /* msgInit */
+unsigned char msgHuff[57408]; /* msgHuff */
+unsigned char string_00f0e860[1024]; /* string */
+unsigned char string_00f0ec60[8192]; /* string */
+unsigned char string_00f10c60[1056]; /* string */
+unsigned char bigConfigString[8192]; /* bigConfigString */
+int warnCount_00f13080; /* warnCount */
+unsigned char warnCount_00f13084[124]; /* warnCount */
+unsigned char botport[128]; /* botport */
+unsigned char ui_arenaInfos[256]; /* ui_arenaInfos */
+unsigned char ui_numArenas[128]; /* ui_numArenas */
+unsigned char defineBits[1152]; /* defineBits */
+unsigned char weaponStrings[1024]; /* weaponStrings */
+int parseEvent; /* parseEvent */
+int parseMovetype; /* parseMovetype */
+unsigned char defineStringsOffset[24]; /* defineStringsOffset */
+unsigned char numDefines[64]; /* numDefines */
+unsigned char defineStrings[10016]; /* defineStrings */
+unsigned char defineStr[1152]; /* defineStr */
+int g_piNumLoadAnims; /* g_piNumLoadAnims */
+int g_pLoadAnims; /* g_pLoadAnims */
+unsigned char globalScriptData[24]; /* globalScriptData */
+unsigned char input[100000]; /* input */
+unsigned char bScriptFileLoaded[64]; /* bScriptFileLoaded */
+unsigned char playersKb[640]; /* playersKb */
+int hud_healthOverlay_phaseEnd_pulseDuration; /* hud_healthOverlay_phaseEnd_pulseDuration */
+int hud_healthOverlay_phaseEnd_toAlpha; /* hud_healthOverlay_phaseEnd_toAlpha */
+int hud_healthOverlay_regenPauseTime; /* hud_healthOverlay_regenPauseTime */
+int hud_healthOverlay_phaseThree_pulseDuration; /* hud_healthOverlay_phaseThree_pulseDuration */
+int hud_healthOverlay_phaseThree_toAlphaMultiplier; /* hud_healthOverlay_phaseThree_toAlphaMultiplier */
+int hud_healthOverlay_phaseTwo_pulseDuration; /* hud_healthOverlay_phaseTwo_pulseDuration */
+int hud_healthOverlay_phaseTwo_toAlphaMultiplier; /* hud_healthOverlay_phaseTwo_toAlphaMultiplier */
+int hud_healthOverlay_phaseOne_pulseDuration; /* hud_healthOverlay_phaseOne_pulseDuration */
+int hud_healthOverlay_pulseStart; /* hud_healthOverlay_pulseStart */
+int hud_enable; /* hud_enable */
+unsigned char hud_fadeout_speed[24]; /* hud_fadeout_speed */
+unsigned char szErrorString_00f2f140[1088]; /* szErrorString */
+unsigned char spGlob[128]; /* spGlob */
+unsigned char bloc[128]; /* bloc */
+unsigned char g_strHandle[8192]; /* g_strHandle */
+int lasttime; /* lasttime */
+unsigned char adr[124]; /* adr */
+unsigned char color_00f31700[128]; /* color */
+unsigned char line_00f31780[1024]; /* line */
+unsigned char menuBuf[32768]; /* menuBuf */
+unsigned char g_load[1600]; /* g_load */
+unsigned char menuParseKeywordHash[2048]; /* menuParseKeywordHash */
+unsigned char menuBuf1[4096]; /* menuBuf1 */
+unsigned char string_00f3b9c0[4160]; /* string */
+unsigned char g_clients[665856]; /* g_clients */
+int hud_flash_period_offhand; /* hud_flash_period_offhand */
+unsigned char hud_flash_time_offhand[124]; /* hud_flash_time_offhand */
+unsigned char cached_models[1024]; /* cached_models */
+unsigned char pushed[32768]; /* pushed */
+unsigned char pushed_p[128]; /* pushed_p */
+unsigned char turretInfo[2176]; /* turretInfo */
+unsigned char g_HitLocConstNames[128]; /* g_HitLocConstNames */
+unsigned char numIPFilters[32]; /* numIPFilters */
+unsigned char ipFilters[8288]; /* ipFilters */
+unsigned char str_00fea180[256]; /* str */
+unsigned char index_00fea280[128]; /* index */
+unsigned char rendererStats[64]; /* rendererStats */
+unsigned char fps_previousTimes[128]; /* fps_previousTimes */
+int fps_index; /* fps_index */
+unsigned char previous[60]; /* previous */
+unsigned char cg_pmove[248]; /* cg_pmove */
+unsigned char cg_numTriggerEntities[8]; /* cg_numTriggerEntities */
+unsigned char cg_triggerEntities[1024]; /* cg_triggerEntities */
+unsigned char cg_numSolidEntities[128]; /* cg_numSolidEntities */
+unsigned char cg_solidEntities[1024]; /* cg_solidEntities */
+unsigned char cg_eachClientLocalEntities[24064]; /* cg_eachClientLocalEntities */
+int ip_socket; /* ip_socket */
+unsigned char winsockInitialized[28]; /* winsockInitialized */
+unsigned char winsockdata[400]; /* winsockdata */
+int net_socksPassword; /* net_socksPassword */
+int net_socksUsername; /* net_socksUsername */
+int net_socksPort; /* net_socksPort */
+int net_socksServer; /* net_socksServer */
+int net_socksEnabled; /* net_socksEnabled */
+int net_noipx; /* net_noipx */
+int net_noudp; /* net_noudp */
+int networkingEnabled; /* networkingEnabled */
+int socks_socket; /* socks_socket */
+unsigned char socksRelayAddr[16]; /* socksRelayAddr */
+unsigned char usingSocks[28]; /* usingSocks */
+unsigned char localIP[64]; /* localIP */
+unsigned char numIP[32]; /* numIP */
+unsigned char socksBuf[4096]; /* socksBuf */
+unsigned char ipx_socket[32]; /* ipx_socket */
+unsigned char hackSize[128]; /* hackSize */
+int currentRecordingSample; /* currentRecordingSample */
+unsigned char recording[28]; /* recording */
+unsigned char s_clientTalkTime[256]; /* s_clientTalkTime */
+unsigned char s_clientSamples[256]; /* s_clientSamples */
+int playing_00ff20a0; /* playing */
+unsigned char count_00ff20a4[92]; /* count */
+unsigned char decodeBits[128]; /* decodeBits */
+unsigned char encodeBits[36]; /* encodeBits */
+unsigned char g_encoder[92]; /* g_encoder */
+int sAudioRecorder; /* sAudioRecorder */
+unsigned char g_current_sample[28]; /* g_current_sample */
+unsigned char s_recordingSamples[2340]; /* s_recordingSamples */
+unsigned char s_recordingSamplePtr[60]; /* s_recordingSamplePtr */
+unsigned char dsoundplay_initialized[128]; /* dsoundplay_initialized */
+int g_High; /* g_High */
+int g_Low; /* g_Low */
+unsigned char g_special[120]; /* g_special */
+unsigned char g_WarmOff[1]; /* g_WarmOff */
+unsigned char g_NoTextureID[127]; /* g_NoTextureID */
+unsigned char __ZN6CFence15sUnusedFenceIDsE[128]; /* __ZN6CFence15sUnusedFenceIDsE */
+unsigned char __ZN13CMemoryBuffer20sDelayedFreeRequestsE[128]; /* __ZN13CMemoryBuffer20sDelayedFreeRequestsE */
+unsigned char __ZN7COpenGL7sOpenGLE[4096]; /* __ZN7COpenGL7sOpenGLE */
+unsigned char g_ShadowCookieMemory[132]; /* g_ShadowCookieMemory */
+unsigned char g_traceThreadInfo[28]; /* g_traceThreadInfo */
+unsigned char com_consoleLines[128]; /* com_consoleLines */
+unsigned char com_numConsoleLines[8]; /* com_numConsoleLines */
+int ui_errorTitle; /* ui_errorTitle */
+int ui_errorMessage; /* ui_errorMessage */
+int com_fixedConsolePosition; /* com_fixedConsolePosition */
+int com_errorEntered; /* com_errorEntered */
+int com_frameNumber; /* com_frameNumber */
+int com_frameTime; /* com_frameTime */
+int com_animCheck; /* com_animCheck */
+int com_recommendedSet; /* com_recommendedSet */
+int sv_paused; /* sv_paused */
+int com_expectedHunkUsage; /* com_expectedHunkUsage */
+int nextmap; /* nextmap */
+int cl_paused; /* cl_paused */
+int com_introPlayed; /* com_introPlayed */
+int shortversion; /* shortversion */
+int version_00ff3f60; /* version */
+int com_logfile; /* com_logfile */
+int com_sv_running; /* com_sv_running */
+int com_maxfps; /* com_maxfps */
+int com_fixedtime; /* com_fixedtime */
+int com_timescaleValue; /* com_timescaleValue */
+int com_timescale; /* com_timescale */
+int com_statmon; /* com_statmon */
+int com_developer_script; /* com_developer_script */
+int com_developer; /* com_developer */
+unsigned char com_viewlog[120]; /* com_viewlog */
+int loc_warningsAsErrors; /* loc_warningsAsErrors */
+int loc_warnings; /* loc_warnings */
+int loc_translate; /* loc_translate */
+int loc_forceEnglish; /* loc_forceEnglish */
+unsigned char loc_language[16]; /* loc_language */
+unsigned char lastValidGame[256]; /* lastValidGame */
+unsigned char lastValidBase[256]; /* lastValidBase */
+unsigned char fs_serverReferencedIwdNames[4096]; /* fs_serverReferencedIwdNames */
+unsigned char fs_serverReferencedIwds[4096]; /* fs_serverReferencedIwds */
+unsigned char fs_numServerReferencedIwds[32]; /* fs_numServerReferencedIwds */
+unsigned char fs_serverIwdNames[4096]; /* fs_serverIwdNames */
+unsigned char fs_serverIwds[4096]; /* fs_serverIwds */
+unsigned char fsh[21016]; /* fsh */
+int fs_checksumFeed; /* fs_checksumFeed */
+int fs_fakeChkSum; /* fs_fakeChkSum */
+int fs_ignoreLocalized; /* fs_ignoreLocalized */
+int fs_restrict; /* fs_restrict */
+int fs_gameDirVar; /* fs_gameDirVar */
+int fs_copyfiles; /* fs_copyfiles */
+int fs_cdpath; /* fs_cdpath */
+int fs_useOldAssets; /* fs_useOldAssets */
+int fs_basegame; /* fs_basegame */
+int fs_basepath; /* fs_basepath */
+int fs_homepath; /* fs_homepath */
+unsigned char fs_debug[28]; /* fs_debug */
+unsigned char fs_gamedir[256]; /* fs_gamedir */
+int fs_loadStack; /* fs_loadStack */
+unsigned char com_fileAccessed[96]; /* com_fileAccessed */
+unsigned char com_dedicated[128]; /* com_dedicated */
+unsigned char scrMemTreePub[28]; /* scrMemTreePub */
+unsigned char g_default[228]; /* g_default */
+int snd_touchStreamFilesOnLoad; /* snd_touchStreamFilesOnLoad */
+int snd_enableReverb; /* snd_enableReverb */
+int snd_enableStream; /* snd_enableStream */
+int snd_enable3D; /* snd_enable3D */
+int snd_enable2D; /* snd_enable2D */
+int snd_slaveFadeTime; /* snd_slaveFadeTime */
+int snd_volume; /* snd_volume */
+int snd_stereo; /* snd_stereo */
+int snd_bits; /* snd_bits */
+int snd_khz; /* snd_khz */
+unsigned char snd_errorOnMissing[84]; /* snd_errorOnMissing */
+unsigned char g_snd[5124]; /* g_snd */
+unsigned char cmd_texts[12]; /* cmd_texts */
+unsigned char cmd_wait[116]; /* cmd_wait */
+int dvarCount; /* dvarCount */
+int dvar_modifiedFlags; /* dvar_modifiedFlags */
+unsigned char sortedDvars[116]; /* sortedDvars */
+int mss_q3fs; /* mss_q3fs */
+unsigned char mss_3d_provider[128]; /* mss_3d_provider */
+int visibleEffectCountBolt; /* visibleEffectCountBolt */
+unsigned char visibleEffectCountNonBolt[24]; /* visibleEffectCountNonBolt */
+unsigned char theFxHelpers[252]; /* theFxHelpers */
+int effectBlockSightCount; /* effectBlockSightCount */
+int cullEffectCountNonBolt; /* cullEffectCountNonBolt */
+int cullEffectCountBolt; /* cullEffectCountBolt */
+int initialEffectActiveCountNonBolt; /* initialEffectActiveCountNonBolt */
+int initialEffectActiveCountBolt; /* initialEffectActiveCountBolt */
+int privateEffectActiveCountNonBolt; /* privateEffectActiveCountNonBolt */
+int privateEffectActiveCountBolt; /* privateEffectActiveCountBolt */
+int effectActiveCount; /* effectActiveCount */
+int effectActiveCountNonBolt; /* effectActiveCountNonBolt */
+unsigned char effectActiveCountBolt[64]; /* effectActiveCountBolt */
+unsigned char g_effectVisArray[36000]; /* g_effectVisArray */
+int g_effectVisArrayCount; /* g_effectVisArrayCount */
+int clusterSort; /* clusterSort */
+unsigned char effectClusterCount[92]; /* effectClusterCount */
+unsigned char fx_camera_valid[128]; /* fx_camera_valid */
+unsigned char fxSchedulers[128]; /* fxSchedulers */
+int player_dmgtimer_flinchTime; /* player_dmgtimer_flinchTime */
+int player_dmgtimer_stumbleTime; /* player_dmgtimer_stumbleTime */
+int player_dmgtimer_minScale; /* player_dmgtimer_minScale */
+int player_dmgtimer_maxTime; /* player_dmgtimer_maxTime */
+int player_dmgtimer_timePerPoint; /* player_dmgtimer_timePerPoint */
+int player_turnAnims; /* player_turnAnims */
+int player_spectateSpeedScale; /* player_spectateSpeedScale */
+int player_backSpeedScale; /* player_backSpeedScale */
+int player_strafeSpeedScale; /* player_strafeSpeedScale */
+int player_footstepsThreshhold; /* player_footstepsThreshhold */
+int player_moveThreshhold; /* player_moveThreshhold */
+int player_adsExitDelay; /* player_adsExitDelay */
+int player_scopeExitOnDamage; /* player_scopeExitOnDamage */
+int player_toggleBinoculars; /* player_toggleBinoculars */
+int player_breath_snd_delay; /* player_breath_snd_delay */
+int player_breath_snd_lerp; /* player_breath_snd_lerp */
+int player_breath_gasp_lerp; /* player_breath_gasp_lerp */
+int player_breath_hold_lerp; /* player_breath_hold_lerp */
+int player_breath_gasp_scale; /* player_breath_gasp_scale */
+int player_breath_fire_delay; /* player_breath_fire_delay */
+int player_breath_gasp_time; /* player_breath_gasp_time */
+int player_breath_hold_time; /* player_breath_hold_time */
+int bg_aimSpreadMoveSpeedThreshold; /* bg_aimSpreadMoveSpeedThreshold */
+int bg_bobMax; /* bg_bobMax */
+int bg_bobAmplitudeProne; /* bg_bobAmplitudeProne */
+int bg_bobAmplitudeDucked; /* bg_bobAmplitudeDucked */
+int bg_bobAmplitudeStanding; /* bg_bobAmplitudeStanding */
+int bg_swingSpeed; /* bg_swingSpeed */
+int friction; /* friction */
+int stopspeed; /* stopspeed */
+int inertiaAngle; /* inertiaAngle */
+int inertiaDebug; /* inertiaDebug */
+int inertiaMax; /* inertiaMax */
+int bg_fallDamageMaxHeight; /* bg_fallDamageMaxHeight */
+int bg_fallDamageMinHeight; /* bg_fallDamageMinHeight */
+int bg_foliagesnd_resetinterval; /* bg_foliagesnd_resetinterval */
+int bg_foliagesnd_fastinterval; /* bg_foliagesnd_fastinterval */
+int bg_foliagesnd_slowinterval; /* bg_foliagesnd_slowinterval */
+int bg_foliagesnd_maxspeed; /* bg_foliagesnd_maxspeed */
+int bg_foliagesnd_minspeed; /* bg_foliagesnd_minspeed */
+int bg_prone_yawcap; /* bg_prone_yawcap */
+int bg_ladder_yawcap; /* bg_ladder_yawcap */
+int player_view_pitch_down; /* player_view_pitch_down */
+unsigned char player_view_pitch_up[112]; /* player_view_pitch_up */
+unsigned char cm[384]; /* cm */
+unsigned char bg_weaponDefs[608]; /* bg_weaponDefs */
+unsigned char scrVmPub[17184]; /* scrVmPub */
+unsigned char g_script_error_level[32]; /* g_script_error_level */
+unsigned char g_script_error[2400]; /* g_script_error */
+unsigned char scrVarPub[262240]; /* scrVarPub */
+unsigned char scrVarGlob[1048608]; /* scrVarGlob */
+unsigned char scrCompilePub[4196]; /* scrCompilePub */
+unsigned char scrParserPub[28]; /* scrParserPub */
+unsigned char scrParserGlob[128]; /* scrParserGlob */
+unsigned char scrAnimPub[1152]; /* scrAnimPub */
+unsigned char g_sa[6500]; /* g_sa */
+unsigned char sys_timeBase[28]; /* sys_timeBase */
+unsigned char legacyHacksArray[1792]; /* legacyHacksArray */
+unsigned char saLoadObjGlob[2272]; /* saLoadObjGlob */
+unsigned char giFilesFound[32]; /* giFilesFound */
+unsigned char sourceFiles[256]; /* sourceFiles */
+int globaldefines; /* globaldefines */
+unsigned char numtokens[92]; /* numtokens */
+unsigned char g_wv[32]; /* g_wv */
+unsigned char sys_packetReceived[16480]; /* sys_packetReceived */
+unsigned char scene[124292]; /* scene */
+unsigned char frontEndDataOut[124]; /* frontEndDataOut */
+unsigned char g_skinBuffers[40964]; /* g_skinBuffers */
+int r_aspectRatio; /* r_aspectRatio */
+int r_rendererInUse; /* r_rendererInUse */
+int r_rendererPreference; /* r_rendererPreference */
+int r_displayRefresh; /* r_displayRefresh */
+int r_mode; /* r_mode */
+int r_monitor; /* r_monitor */
+int r_fullscreen; /* r_fullscreen */
+int r_sse_skinning; /* r_sse_skinning */
+int sys_SSE; /* sys_SSE */
+int developer; /* developer */
+int vid_ypos; /* vid_ypos */
+int vid_xpos; /* vid_xpos */
+int r_testFillEnable; /* r_testFillEnable */
+int r_testFill; /* r_testFill */
+int r_testTransform; /* r_testTransform */
+int r_sun_from_dvars; /* r_sun_from_dvars */
+int r_outdoorFeather; /* r_outdoorFeather */
+int r_outdoorDownBias; /* r_outdoorDownBias */
+int r_outdoorAwayBias; /* r_outdoorAwayBias */
+int r_glowBloomDesaturation; /* r_glowBloomDesaturation */
+int r_glowBloomCutoff; /* r_glowBloomCutoff */
+unsigned char r_glowBloomIntensity[8]; /* r_glowBloomIntensity */
+unsigned char r_glowSkyBleedIntensity[8]; /* r_glowSkyBleedIntensity */
+unsigned char r_glowRadius[8]; /* r_glowRadius */
+int r_glow; /* r_glow */
+int r_distortion; /* r_distortion */
+int r_blur; /* r_blur */
+int sc_offscreenCasterLodScale; /* sc_offscreenCasterLodScale */
+int sc_offscreenCasterLodBias; /* sc_offscreenCasterLodBias */
+int sc_length; /* sc_length */
+int sc_shadowOutRate; /* sc_shadowOutRate */
+int sc_shadowInRate; /* sc_shadowInRate */
+int sc_fadeRange; /* sc_fadeRange */
+int sc_wantCountMargin; /* sc_wantCountMargin */
+int sc_wantCount; /* sc_wantCount */
+int sc_showDebug; /* sc_showDebug */
+int sc_showOverlay; /* sc_showOverlay */
+int sc_debugReceiverCount; /* sc_debugReceiverCount */
+int sc_debugCasterCount; /* sc_debugCasterCount */
+int sc_count; /* sc_count */
+int sc_blur; /* sc_blur */
+int sc_enable; /* sc_enable */
+int r_forceLod; /* r_forceLod */
+int r_lowestLodDist; /* r_lowestLodDist */
+int r_lowLodDist; /* r_lowLodDist */
+int r_mediumLodDist; /* r_mediumLodDist */
+int r_highLodDist; /* r_highLodDist */
+int r_showGroundLit; /* r_showGroundLit */
+int r_showFloatZDebug; /* r_showFloatZDebug */
+int r_showFbColorDebug; /* r_showFbColorDebug */
+int r_showSModelNames; /* r_showSModelNames */
+int r_showPortals; /* r_showPortals */
+int r_portalMinClipArea; /* r_portalMinClipArea */
+int r_portalWalkLimit; /* r_portalWalkLimit */
+int r_singleCell; /* r_singleCell */
+int r_portalBevelsOnly; /* r_portalBevelsOnly */
+int r_portalBevels; /* r_portalBevels */
+int r_portalFineCull; /* r_portalFineCull */
+int r_pvsStats; /* r_pvsStats */
+int r_skipPvs; /* r_skipPvs */
+int r_lockPvs; /* r_lockPvs */
+int r_depthPrepassModels; /* r_depthPrepassModels */
+int r_drawWater; /* r_drawWater */
+int r_drawPrimFloor; /* r_drawPrimFloor */
+int r_drawPrimCap; /* r_drawPrimCap */
+unsigned char r_dlightLimit[8]; /* r_dlightLimit */
+int r_drawXModels; /* r_drawXModels */
+int r_drawSModels; /* r_drawSModels */
+int r_drawBModels; /* r_drawBModels */
+int r_drawEntities; /* r_drawEntities */
+int r_drawDecals; /* r_drawDecals */
+int r_drawWorld; /* r_drawWorld */
+int r_drawSun; /* r_drawSun */
+int r_clearColor2; /* r_clearColor2 */
+int r_clearColor; /* r_clearColor */
+int r_aaSamples; /* r_aaSamples */
+int r_aaAlpha; /* r_aaAlpha */
+int r_swapInterval; /* r_swapInterval */
+int r_norefresh; /* r_norefresh */
+int r_skipBackEnd; /* r_skipBackEnd */
+int r_logFile; /* r_logFile */
+int r_objectiveColorDx7Max; /* r_objectiveColorDx7Max */
+int r_objectiveColorDx7Min; /* r_objectiveColorDx7Min */
+int r_lightTweakSunDirection; /* r_lightTweakSunDirection */
+int r_lightTweakSunDiffuseColor; /* r_lightTweakSunDiffuseColor */
+int r_lightTweakSunColor; /* r_lightTweakSunColor */
+int r_lightTweakAmbientColor; /* r_lightTweakAmbientColor */
+int r_lightTweakSunLight; /* r_lightTweakSunLight */
+int r_lightTweakDiffuseFraction; /* r_lightTweakDiffuseFraction */
+int r_lightTweakAmbient; /* r_lightTweakAmbient */
+int r_showMissingLightGrid; /* r_showMissingLightGrid */
+int r_showLightGrid; /* r_showLightGrid */
+int r_vc_showlog; /* r_vc_showlog */
+int r_vc_makelog; /* r_vc_makelog */
+int r_railCoreWidth; /* r_railCoreWidth */
+int r_xdebug; /* r_xdebug */
+int r_showVertCounts; /* r_showVertCounts */
+int r_showSurfCounts; /* r_showSurfCounts */
+int r_showTriCounts; /* r_showTriCounts */
+int r_showTris; /* r_showTris */
+int r_cosinePowerMapShift; /* r_cosinePowerMapShift */
+int r_specularColorScale; /* r_specularColorScale */
+int r_specularMap; /* r_specularMap */
+int r_normalMap; /* r_normalMap */
+int r_colorMap; /* r_colorMap */
+int r_lightMap; /* r_lightMap */
+int r_picmip_spec; /* r_picmip_spec */
+int r_picmip_bump; /* r_picmip_bump */
+int r_picmip; /* r_picmip */
+int r_picmip_manual; /* r_picmip_manual */
+int r_polygonOffsetBias; /* r_polygonOffsetBias */
+int r_polygonOffsetScale; /* r_polygonOffsetScale */
+int r_fog; /* r_fog */
+int r_zfar; /* r_zfar */
+int r_znear_depthhack; /* r_znear_depthhack */
+int r_znear; /* r_znear */
+int r_lodBias; /* r_lodBias */
+int r_lodScale; /* r_lodScale */
+int r_smc_enable; /* r_smc_enable */
+int r_skinCache; /* r_skinCache */
+int r_multiGpu; /* r_multiGpu */
+int r_gpuSync; /* r_gpuSync */
+int r_optimizeXModels; /* r_optimizeXModels */
+int r_optimizeLightmaps; /* r_optimizeLightmaps */
+int r_optimize; /* r_optimize */
+int r_debugEntCounts; /* r_debugEntCounts */
+int r_debugShader; /* r_debugShader */
+int r_fullbright; /* r_fullbright */
+int r_anisotropy; /* r_anisotropy */
+int r_textureMode; /* r_textureMode */
+int r_ignoreHwGamma; /* r_ignoreHwGamma */
+int r_gamma; /* r_gamma */
+int r_overbrightBits; /* r_overbrightBits */
+unsigned char r_ignore[120]; /* r_ignore */
+unsigned char dx[11744]; /* dx */
+unsigned char vidConfig[64]; /* vidConfig */
+unsigned char ri[576]; /* ri */
+unsigned char rg[12800]; /* rg */
+unsigned char rgp[4336]; /* rgp */
+unsigned char g_disableRendering[16]; /* g_disableRendering */
+unsigned char dxState[8580]; /* dxState */
+unsigned char g_FenceID[124]; /* g_FenceID */
+unsigned char tess[370688]; /* tess */
+unsigned char backEnd[224912]; /* backEnd */
+unsigned char backEndData[16]; /* backEndData */
+unsigned char sunFlareArray[228]; /* sunFlareArray */
+unsigned char rgl[28]; /* rgl */
+unsigned char s_world[640]; /* s_world */
+unsigned char lightGlob[352]; /* lightGlob */
+unsigned char delayedGroup[260]; /* delayedGroup */
+int r_sun_fx_position; /* r_sun_fx_position */
+int r_sunglare_fadeout; /* r_sunglare_fadeout */
+int r_sunglare_fadein; /* r_sunglare_fadein */
+int r_sunglare_max_lighten; /* r_sunglare_max_lighten */
+int r_sunglare_max_angle; /* r_sunglare_max_angle */
+int r_sunglare_min_angle; /* r_sunglare_min_angle */
+int r_sunblind_fadeout; /* r_sunblind_fadeout */
+int r_sunblind_fadein; /* r_sunblind_fadein */
+int r_sunblind_max_darken; /* r_sunblind_max_darken */
+int r_sunblind_max_angle; /* r_sunblind_max_angle */
+int r_sunblind_min_angle; /* r_sunblind_min_angle */
+int r_sunflare_fadeout; /* r_sunflare_fadeout */
+int r_sunflare_fadein; /* r_sunflare_fadein */
+int r_sunflare_max_alpha; /* r_sunflare_max_alpha */
+int r_sunflare_max_angle; /* r_sunflare_max_angle */
+int r_sunflare_max_size; /* r_sunflare_max_size */
+int r_sunflare_min_angle; /* r_sunflare_min_angle */
+int r_sunflare_min_size; /* r_sunflare_min_size */
+int r_sunflare_shader; /* r_sunflare_shader */
+int r_sunsprite_size; /* r_sunsprite_size */
+unsigned char r_sunsprite_shader[44]; /* r_sunsprite_shader */
+unsigned char in_mouse[128]; /* in_mouse */
+int yytext; /* yytext */
+int yyleng; /* yyleng */
+int yynerrs; /* yynerrs */
+unsigned char yylval[8]; /* yylval */
+unsigned char yychar[108]; /* yychar */
+int ui_playerProfileAlreadyChosen; /* ui_playerProfileAlreadyChosen */
+unsigned char com_playerProfile[124]; /* com_playerProfile */
+unsigned char __ZN10CVAOPacket14sGenericPacketE[688]; /* __ZN10CVAOPacket14sGenericPacketE */
+unsigned char __ZN10CVAOPacket11sAllPacketsE[80]; /* __ZN10CVAOPacket11sAllPacketsE */
+unsigned char __ZN12CStreamSound10sQTStreamsE[128]; /* __ZN12CStreamSound10sQTStreamsE */
+unsigned char playerKeys[3392]; /* playerKeys */
+unsigned char g_consoleField[280]; /* g_consoleField */
+int historyLine; /* historyLine */
+int nextHistoryLine; /* nextHistoryLine */
+unsigned char historyEditLines[8992]; /* historyEditLines */
+int cg_weaponrightbone; /* cg_weaponrightbone */
+int cg_weaponleftbone; /* cg_weaponleftbone */
+int cg_blood; /* cg_blood */
+int cg_headIconMinScreenRadius; /* cg_headIconMinScreenRadius */
+int cg_constantSizeHeadIcons; /* cg_constantSizeHeadIcons */
+int cg_voiceIconSize; /* cg_voiceIconSize */
+int cg_connectionIconSize; /* cg_connectionIconSize */
+int cg_scriptIconSize; /* cg_scriptIconSize */
+int cg_youInKillCamSize; /* cg_youInKillCamSize */
+int cg_shock_mouse_fadeTime; /* cg_shock_mouse_fadeTime */
+int cg_shock_mouse_sensitivityscale; /* cg_shock_mouse_sensitivityscale */
+int cg_shock_mouse_maxyawspeed; /* cg_shock_mouse_maxyawspeed */
+int cg_shock_mouse_maxpitchspeed; /* cg_shock_mouse_maxpitchspeed */
+int cg_shock_mouse; /* cg_shock_mouse */
+int cg_shock_volume_shellshock; /* cg_shock_volume_shellshock */
+int cg_shock_volume_announcer; /* cg_shock_volume_announcer */
+int cg_shock_volume_music; /* cg_shock_volume_music */
+int cg_shock_volume_local; /* cg_shock_volume_local */
+int cg_shock_volume_body; /* cg_shock_volume_body */
+int cg_shock_volume_item; /* cg_shock_volume_item */
+int cg_shock_volume_voice; /* cg_shock_volume_voice */
+int cg_shock_volume_weapon; /* cg_shock_volume_weapon */
+int cg_shock_volume_menu; /* cg_shock_volume_menu */
+int cg_shock_volume_auto2d; /* cg_shock_volume_auto2d */
+int cg_shock_volume_auto; /* cg_shock_volume_auto */
+int cg_shock_soundModEndDelay; /* cg_shock_soundModEndDelay */
+int cg_shock_soundWetLevel; /* cg_shock_soundWetLevel */
+int cg_shock_soundDryLevel; /* cg_shock_soundDryLevel */
+int cg_shock_soundRoomType; /* cg_shock_soundRoomType */
+int cg_shock_soundLoopEndDelay; /* cg_shock_soundLoopEndDelay */
+int cg_shock_soundLoopFadeTime; /* cg_shock_soundLoopFadeTime */
+int cg_shock_soundFadeOutTime; /* cg_shock_soundFadeOutTime */
+int cg_shock_soundFadeInTime; /* cg_shock_soundFadeInTime */
+int cg_shock_sound; /* cg_shock_sound */
+int cg_shock_viewKickRadius; /* cg_shock_viewKickRadius */
+int cg_shock_viewKickPeriod; /* cg_shock_viewKickPeriod */
+int cg_shock_screenBlendFadeTime; /* cg_shock_screenBlendFadeTime */
+int cg_shock_screenBlendTime; /* cg_shock_screenBlendTime */
+int cg_scoreboardItemHeight; /* cg_scoreboardItemHeight */
+int cg_scoreboardBannerHeight; /* cg_scoreboardBannerHeight */
+int cg_scoreboardScrollStep; /* cg_scoreboardScrollStep */
+int cg_drawGameMessages; /* cg_drawGameMessages */
+int cg_gameBoldMessageWidth; /* cg_gameBoldMessageWidth */
+int cg_gameMessageWidth; /* cg_gameMessageWidth */
+int cg_subtitleCharHeight; /* cg_subtitleCharHeight */
+int cg_subtitlePosY; /* cg_subtitlePosY */
+int cg_subtitlePosX; /* cg_subtitlePosX */
+int cg_subtitleWidthWidescreen; /* cg_subtitleWidthWidescreen */
+int cg_subtitleWidthStandard; /* cg_subtitleWidthStandard */
+int cg_subtitleMinTime; /* cg_subtitleMinTime */
+int cg_subtitles; /* cg_subtitles */
+int cg_minicon; /* cg_minicon */
+int cg_developer; /* cg_developer */
+int cg_dumpAnims; /* cg_dumpAnims */
+int cg_descriptiveText; /* cg_descriptiveText */
+int cg_voiceSpriteTime; /* cg_voiceSpriteTime */
+int cg_noTaunt; /* cg_noTaunt */
+int cg_predictItems; /* cg_predictItems */
+int cg_paused; /* cg_paused */
+int cg_chatHeight; /* cg_chatHeight */
+int cg_chatTime; /* cg_chatTime */
+int cg_synchronousClients; /* cg_synchronousClients */
+int cg_thirdPersonAngle; /* cg_thirdPersonAngle */
+int cg_thirdPersonRange; /* cg_thirdPersonRange */
+int cg_thirdPerson; /* cg_thirdPerson */
+int cg_fovMin; /* cg_fovMin */
+int cg_fovScale; /* cg_fovScale */
+int cg_fov; /* cg_fov */
+int cg_tracerScaleDistRange; /* cg_tracerScaleDistRange */
+int cg_tracerScaleMinDist; /* cg_tracerScaleMinDist */
+int cg_tracerScale; /* cg_tracerScale */
+int cg_tracerSpeed; /* cg_tracerSpeed */
+int cg_tracerLength; /* cg_tracerLength */
+int cg_tracerWidth; /* cg_tracerWidth */
+int cg_tracerChance; /* cg_tracerChance */
+int cg_gun_move_minspeed; /* cg_gun_move_minspeed */
+int cg_gun_move_rate; /* cg_gun_move_rate */
+int cg_gun_ofs_u; /* cg_gun_ofs_u */
+int cg_gun_ofs_r; /* cg_gun_ofs_r */
+int cg_gun_ofs_f; /* cg_gun_ofs_f */
+int cg_gun_move_u; /* cg_gun_move_u */
+int cg_gun_move_r; /* cg_gun_move_r */
+int cg_gun_move_f; /* cg_gun_move_f */
+int cg_gun_z; /* cg_gun_z */
+int cg_gun_y; /* cg_gun_y */
+int cg_gun_x; /* cg_gun_x */
+int cg_hintFadeTime; /* cg_hintFadeTime */
+int cg_cursorHints; /* cg_cursorHints */
+int cg_drawGun; /* cg_drawGun */
+int cg_viewsize; /* cg_viewsize */
+int cg_brass; /* cg_brass */
+int cg_marksLimit; /* cg_marksLimit */
+int cg_marks; /* cg_marks */
+int cg_footsteps; /* cg_footsteps */
+int cg_showmiss; /* cg_showmiss */
+int cg_nopredict; /* cg_nopredict */
+int cg_errorDecay; /* cg_errorDecay */
+int cg_debugEvents; /* cg_debugEvents */
+int cg_debugPosition; /* cg_debugPosition */
+int cg_drawMantleHint; /* cg_drawMantleHint */
+int cg_drawBreathHint; /* cg_drawBreathHint */
+int cg_drawHealth; /* cg_drawHealth */
+int cg_teamChatsOnly; /* cg_teamChatsOnly */
+int cg_draw2D; /* cg_draw2D */
+int cg_crosshairEnemyColor; /* cg_crosshairEnemyColor */
+int cg_crosshairDynamic; /* cg_crosshairDynamic */
+int cg_crosshairAlphaMin; /* cg_crosshairAlphaMin */
+int cg_crosshairAlpha; /* cg_crosshairAlpha */
+int cg_weaponCycleDelay; /* cg_weaponCycleDelay */
+int cg_drawLagometer; /* cg_drawLagometer */
+int cg_hudProneY; /* cg_hudProneY */
+int cg_centerPrintY; /* cg_centerPrintY */
+int cg_hudSayPosition; /* cg_hudSayPosition */
+int cg_hudChatPosition; /* cg_hudChatPosition */
+int cg_hudGrenadePointerPulseMin; /* cg_hudGrenadePointerPulseMin */
+int cg_hudGrenadePointerPulseMax; /* cg_hudGrenadePointerPulseMax */
+int cg_hudGrenadePointerPulseFreq; /* cg_hudGrenadePointerPulseFreq */
+int cg_hudGrenadePointerPivot; /* cg_hudGrenadePointerPivot */
+int cg_hudGrenadePointerWidth; /* cg_hudGrenadePointerWidth */
+int cg_hudGrenadePointerHeight; /* cg_hudGrenadePointerHeight */
+int cg_hudGrenadeIconWidth; /* cg_hudGrenadeIconWidth */
+int cg_hudGrenadeIconHeight; /* cg_hudGrenadeIconHeight */
+int cg_hudGrenadeIconOffset; /* cg_hudGrenadeIconOffset */
+int cg_hudGrenadeIconMaxHeight; /* cg_hudGrenadeIconMaxHeight */
+int cg_hudGrenadeIconMaxRange; /* cg_hudGrenadeIconMaxRange */
+int cg_hudGrenadeIconInScope; /* cg_hudGrenadeIconInScope */
+int cg_hudDamageIconInScope; /* cg_hudDamageIconInScope */
+int cg_hudDamageIconTime; /* cg_hudDamageIconTime */
+int cg_hudDamageIconOffset; /* cg_hudDamageIconOffset */
+int cg_hudDamageIconHeight; /* cg_hudDamageIconHeight */
+int cg_hudDamageIconWidth; /* cg_hudDamageIconWidth */
+int cg_hudStanceHintPrints; /* cg_hudStanceHintPrints */
+int cg_hudStanceFlash; /* cg_hudStanceFlash */
+int cg_hudObjectiveMinAlpha; /* cg_hudObjectiveMinAlpha */
+int cg_hudObjectiveMaxRange; /* cg_hudObjectiveMaxRange */
+int cg_hudObjectiveMinHeight; /* cg_hudObjectiveMinHeight */
+int cg_hudCompassSoundPingFadeTime; /* cg_hudCompassSoundPingFadeTime */
+int cg_hudCompassSpringyPointers; /* cg_hudCompassSpringyPointers */
+int cg_hudCompassMinRadius; /* cg_hudCompassMinRadius */
+int cg_hudCompassMinRange; /* cg_hudCompassMinRange */
+int cg_hudCompassMaxRange; /* cg_hudCompassMaxRange */
+int cg_hudCompassSize; /* cg_hudCompassSize */
+int cg_drawCrosshairNamesPosY; /* cg_drawCrosshairNamesPosY */
+int cg_drawCrosshairNamesPosX; /* cg_drawCrosshairNamesPosX */
+int cg_drawCrosshairNames; /* cg_drawCrosshairNames */
+int cg_drawTurretCrosshair; /* cg_drawTurretCrosshair */
+int cg_drawCrosshair; /* cg_drawCrosshair */
+int cg_drawSnapshot; /* cg_drawSnapshot */
+int cg_drawScriptUsage; /* cg_drawScriptUsage */
+int cg_drawSoundOverlay; /* cg_drawSoundOverlay */
+int cg_drawMaterial; /* cg_drawMaterial */
+int cg_drawFPS; /* cg_drawFPS */
+unsigned char cg_centertime[32]; /* cg_centertime */
+unsigned char cgDC[640]; /* cgDC */
+int old_com_frameTime; /* old_com_frameTime */
+unsigned char frame_msec[28]; /* frame_msec */
+unsigned char re_0121c6a0[352]; /* re */
+unsigned char cl_pinglist[16704]; /* cl_pinglist */
+unsigned char g_waitingForServer[32]; /* g_waitingForServer */
+unsigned char cls[2755264]; /* cls */
+unsigned char clientConnections[296992]; /* clientConnections */
+unsigned char clients[1547284]; /* clients */
+int cl_voice; /* cl_voice */
+int name_01683858; /* name */
+int nextdemo; /* nextdemo */
+int cl_ingame; /* cl_ingame */
+int fx_profile; /* fx_profile */
+int fx_visMinTraceDist; /* fx_visMinTraceDist */
+int fx_count; /* fx_count */
+int fx_freeze; /* fx_freeze */
+int fx_debugBolt; /* fx_debugBolt */
+int fx_debug; /* fx_debug */
+int fx_sort; /* fx_sort */
+int fx_cull; /* fx_cull */
+int fx_draw; /* fx_draw */
+int fx_enable; /* fx_enable */
+int cl_serverStatusResendTime; /* cl_serverStatusResendTime */
+unsigned char cl_inGameVideo[8]; /* cl_inGameVideo */
+int cl_allowDownload; /* cl_allowDownload */
+int cl_motdString; /* cl_motdString */
+int cl_activeAction; /* cl_activeAction */
+int m_filter; /* m_filter */
+int m_side; /* m_side */
+int m_forward; /* m_forward */
+int m_yaw; /* m_yaw */
+int m_pitch; /* m_pitch */
+int cl_showMouseRate; /* cl_showMouseRate */
+int cl_mouseAccel; /* cl_mouseAccel */
+int cl_sensitivity; /* cl_sensitivity */
+int cl_freelook; /* cl_freelook */
+int cl_forceavidemo; /* cl_forceavidemo */
+int cl_avidemo; /* cl_avidemo */
+int cl_showServerCommands; /* cl_showServerCommands */
+int cl_showSend; /* cl_showSend */
+int cl_shownuments; /* cl_shownuments */
+int cl_freezeDemo; /* cl_freezeDemo */
+int cl_showTimeDelta; /* cl_showTimeDelta */
+int cl_packetdup; /* cl_packetdup */
+int cl_maxpackets; /* cl_maxpackets */
+int cl_connectTimeout; /* cl_connectTimeout */
+int cl_timeout; /* cl_timeout */
+int cl_noprint; /* cl_noprint */
+unsigned char cl_nodelta[8]; /* cl_nodelta */
+unsigned char gameInitialized[128]; /* gameInitialized */
+int ui_playerProfileNameNew; /* ui_playerProfileNameNew */
+int ui_playerProfileSelected; /* ui_playerProfileSelected */
+int ui_playerProfileCount; /* ui_playerProfileCount */
+int ui_serverStatusTimeOut; /* ui_serverStatusTimeOut */
+int ui_currentMap; /* ui_currentMap */
+int ui_browserKillcam; /* ui_browserKillcam */
+int ui_browserFriendlyfire; /* ui_browserFriendlyfire */
+int ui_browserMod; /* ui_browserMod */
+int ui_browserShowDedicated; /* ui_browserShowDedicated */
+int ui_browserShowPure; /* ui_browserShowPure */
+int ui_browserShowNoPassword; /* ui_browserShowNoPassword */
+int ui_browserShowPassword; /* ui_browserShowPassword */
+int ui_browserShowEmpty; /* ui_browserShowEmpty */
+int ui_browserShowFull; /* ui_browserShowFull */
+int ui_currentNetMap; /* ui_currentNetMap */
+int ui_dedicated; /* ui_dedicated */
+int ui_joinGameType; /* ui_joinGameType */
+int ui_netGameTypeName; /* ui_netGameTypeName */
+int ui_netGameType; /* ui_netGameType */
+unsigned char ui_netSource[8]; /* ui_netSource */
+int ui_extraBigFont; /* ui_extraBigFont */
+int ui_bigFont; /* ui_bigFont */
+int ui_smallFont; /* ui_smallFont */
+unsigned char ui_gametype[32]; /* ui_gametype */
+unsigned char uiInfoArray[4288]; /* uiInfoArray */
+unsigned char sharedUiInfo[115392]; /* sharedUiInfo */
+int net_lanauthorize; /* net_lanauthorize */
+int net_showprofile; /* net_showprofile */
+int net_profile; /* net_profile */
+int packetDebug; /* packetDebug */
+int showdrop; /* showdrop */
+unsigned char showpackets[108]; /* showpackets */
+int sv_allowedClan2; /* sv_allowedClan2 */
+int sv_allowedClan1; /* sv_allowedClan1 */
+int sv_referencedIwdNames; /* sv_referencedIwdNames */
+int sv_referencedIwds; /* sv_referencedIwds */
+int sv_iwdNames; /* sv_iwdNames */
+int sv_iwds; /* sv_iwds */
+int sv_voiceQuality; /* sv_voiceQuality */
+int sv_voice; /* sv_voice */
+int sv_disableClientConsole; /* sv_disableClientConsole */
+int sv_kickBanTime; /* sv_kickBanTime */
+int sv_mapRotationCurrent; /* sv_mapRotationCurrent */
+int sv_mapRotation; /* sv_mapRotation */
+int sv_showAverageBPS; /* sv_showAverageBPS */
+int sv_packet_info; /* sv_packet_info */
+int sv_showCommands; /* sv_showCommands */
+int sv_allowAnonymous; /* sv_allowAnonymous */
+int sv_cheats; /* sv_cheats */
+int sv_floodProtect; /* sv_floodProtect */
+int sv_pure; /* sv_pure */
+int sv_debugReliableCmds; /* sv_debugReliableCmds */
+int sv_debugRate; /* sv_debugRate */
+int sv_gametype; /* sv_gametype */
+int sv_maxPing; /* sv_maxPing */
+int sv_minPing; /* sv_minPing */
+int sv_maxRate; /* sv_maxRate */
+int sv_serverid; /* sv_serverid */
+int sv_mapname; /* sv_mapname */
+int sv_padPackets; /* sv_padPackets */
+int sv_reconnectlimit; /* sv_reconnectlimit */
+int sv_hostname; /* sv_hostname */
+int sv_privateClients; /* sv_privateClients */
+int sv_maxclients; /* sv_maxclients */
+int sv_allowDownload; /* sv_allowDownload */
+int sv_privatePassword; /* sv_privatePassword */
+int rcon_password; /* rcon_password */
+int sv_zombietime; /* sv_zombietime */
+int sv_timeout; /* sv_timeout */
+unsigned char sv_fps[108]; /* sv_fps */
+unsigned char sv[390528]; /* sv */
+unsigned char svs[41216]; /* svs */
+int con_restricted; /* con_restricted */
+int con_miniconlines; /* con_miniconlines */
+int con_minicontime; /* con_minicontime */
+int con_boldgamemessagetime; /* con_boldgamemessagetime */
+unsigned char con_gamemessagetime[16]; /* con_gamemessagetime */
+unsigned char cl_serverStatusList[131680]; /* cl_serverStatusList */
+unsigned char scr_initialized[128]; /* scr_initialized */
+unsigned char markVerts[69632]; /* markVerts */
+unsigned char cg_markPolys[663552]; /* cg_markPolys */
+unsigned char cg_freeMarkPolys[128]; /* cg_freeMarkPolys */
+unsigned char buf_017dd900[128]; /* buf */
+int cl_bypassMouseInput; /* cl_bypassMouseInput */
+int cl_talking; /* cl_talking */
+int cl_anglespeedkey; /* cl_anglespeedkey */
+int cl_pitchspeed; /* cl_pitchspeed */
+unsigned char cl_yawspeed[16]; /* cl_yawspeed */
+int cl_stanceHoldTime; /* cl_stanceHoldTime */
+unsigned char cl_analog_attack_threshold[92]; /* cl_analog_attack_threshold */
+int hud_deathQuoteFadeTime; /* hud_deathQuoteFadeTime */
+int hud_health_pulserate_critical; /* hud_health_pulserate_critical */
+int hud_health_pulserate_injured; /* hud_health_pulserate_injured */
+int hud_health_startpulse_critical; /* hud_health_startpulse_critical */
+int hud_health_startpulse_injured; /* hud_health_startpulse_injured */
+int hud_fade_offhand; /* hud_fade_offhand */
+int hud_fade_stance; /* hud_fade_stance */
+int hud_fade_compass; /* hud_fade_compass */
+int hud_fade_healthbar; /* hud_fade_healthbar */
+unsigned char hud_fade_ammodisplay[92]; /* hud_fade_ammodisplay */
+unsigned char g_scr_data[14080]; /* g_scr_data */
+unsigned char itemParseKeywordHash[2048]; /* itemParseKeywordHash */
+int g_dumpAnims; /* g_dumpAnims */
+int g_voteAbstainWeight; /* g_voteAbstainWeight */
+int g_oldVoting; /* g_oldVoting */
+int g_antilag; /* g_antilag */
+int player_meleeHeight; /* player_meleeHeight */
+int player_meleeWidth; /* player_meleeWidth */
+int player_meleeRange; /* player_meleeRange */
+int g_friendlyNameDist; /* g_friendlyNameDist */
+int g_friendlyfireDist; /* g_friendlyfireDist */
+int g_debugLocDamage; /* g_debugLocDamage */
+int g_NoScriptSpam; /* g_NoScriptSpam */
+int g_TeamColor_Axis; /* g_TeamColor_Axis */
+int g_TeamColor_Allies; /* g_TeamColor_Allies */
+int g_TeamName_Axis; /* g_TeamName_Axis */
+int g_TeamName_Allies; /* g_TeamName_Allies */
+int g_ScoresBanner_Spectators; /* g_ScoresBanner_Spectators */
+int g_ScoresBanner_None; /* g_ScoresBanner_None */
+int g_ScoresBanner_Axis; /* g_ScoresBanner_Axis */
+int g_ScoresBanner_Allies; /* g_ScoresBanner_Allies */
+unsigned char g_smoothClients[8]; /* g_smoothClients */
+int g_banIPs; /* g_banIPs */
+int g_listEntity; /* g_listEntity */
+unsigned char g_deadChat[8]; /* g_deadChat */
+int g_allowVote; /* g_allowVote */
+int g_logSync; /* g_logSync */
+int g_log; /* g_log */
+int g_voiceChatTalkingDuration; /* g_voiceChatTalkingDuration */
+int voice_deadChat; /* voice_deadChat */
+int voice_global; /* voice_global */
+int voice_localEcho; /* voice_localEcho */
+int g_mantleBlockTimeBuffer; /* g_mantleBlockTimeBuffer */
+int g_clonePlayerMaxVelocity; /* g_clonePlayerMaxVelocity */
+int g_dropUpSpeedRand; /* g_dropUpSpeedRand */
+int g_dropUpSpeedBase; /* g_dropUpSpeedBase */
+int g_dropForwardSpeed; /* g_dropForwardSpeed */
+int g_playerCollisionEjectSpeed; /* g_playerCollisionEjectSpeed */
+int g_synchronousClients; /* g_synchronousClients */
+int g_motd; /* g_motd */
+int g_maxDroppedWeapons; /* g_maxDroppedWeapons */
+int g_weaponAmmoPools; /* g_weaponAmmoPools */
+int g_debugBullets; /* g_debugBullets */
+int g_debugDamage; /* g_debugDamage */
+int g_inactivity; /* g_inactivity */
+int g_useholdspawndelay; /* g_useholdspawndelay */
+int g_useholdtime; /* g_useholdtime */
+int g_knockback; /* g_knockback */
+int g_cheats; /* g_cheats */
+int g_gravity; /* g_gravity */
+int g_speed; /* g_speed */
+int g_dedicated; /* g_dedicated */
+int g_maxclients; /* g_maxclients */
+int g_password; /* g_password */
+unsigned char g_gametype_017e1a58[40]; /* g_gametype */
+unsigned char g_entities[573440]; /* g_entities */
+unsigned char level_bgs[813568]; /* level_bgs */
+unsigned char level[13952]; /* level */
+unsigned char itemRegistered[1024]; /* itemRegistered */
+unsigned char g_hudelems[143392]; /* g_hudelems */
+unsigned char __ZN12UI_Component1gE[224]; /* __ZN12UI_Component1gE */
+unsigned char g_fHitLocDamageMult[128]; /* g_fHitLocDamageMult */
+unsigned char scr_const[256]; /* scr_const */
+unsigned char lagometer[1664]; /* lagometer */
+unsigned char cl_connectedToPureServer[128]; /* cl_connectedToPureServer */
+int removeMeWhenMPStopsCrashingInHere; /* removeMeWhenMPStopsCrashingInHere */
+unsigned char ejectBrassCasingOrigin[124]; /* ejectBrassCasingOrigin */
+int cg_freeLocalEntities; /* cg_freeLocalEntities */
+unsigned char cg_eachClientFreeLocalEntities[28]; /* cg_eachClientFreeLocalEntities */
+unsigned char cg_eachClientActiveLocalEntities[224]; /* cg_eachClientActiveLocalEntities */
+unsigned char levelSamples[24]; /* levelSamples */
+unsigned char voice_current_voicelevel[8]; /* voice_current_voicelevel */
+unsigned char old_rec_source[256]; /* old_rec_source */
+int mic_current_reclevel; /* mic_current_reclevel */
+int mic_old_reclevel; /* mic_old_reclevel */
+unsigned char winvoice_mic_scaler[8]; /* winvoice_mic_scaler */
+int winvoice_save_voice; /* winvoice_save_voice */
+int winvoice_mic_reclevel; /* winvoice_mic_reclevel */
+unsigned char winvoice_mic_mute[72]; /* winvoice_mic_mute */
+unsigned char partial_audio_buffer[1280]; /* partial_audio_buffer */
+unsigned char enc_buffer[4096]; /* enc_buffer */
+unsigned char g_decode_frame_size[128]; /* g_decode_frame_size */
+unsigned char current_audioCallback[128]; /* current_audioCallback */
+int catch_exception_raise; /* catch_exception_raise */
+int catch_exception_raise_state; /* catch_exception_raise_state */
+int catch_exception_raise_state_identity; /* catch_exception_raise_state_identity */
+int clock_alarm_reply; /* clock_alarm_reply */
+int do_mach_notify_dead_name; /* do_mach_notify_dead_name */
+int do_mach_notify_no_senders; /* do_mach_notify_no_senders */
+int do_mach_notify_port_deleted; /* do_mach_notify_port_deleted */
+int do_mach_notify_send_once; /* do_mach_notify_send_once */
+int do_seqnos_mach_notify_dead_name; /* do_seqnos_mach_notify_dead_name */
+int do_seqnos_mach_notify_no_senders; /* do_seqnos_mach_notify_no_senders */
+int do_seqnos_mach_notify_port_deleted; /* do_seqnos_mach_notify_port_deleted */
+int do_seqnos_mach_notify_send_once; /* do_seqnos_mach_notify_send_once */
+int receive_samples; /* receive_samples */

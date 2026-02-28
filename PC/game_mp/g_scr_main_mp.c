@@ -75,7 +75,7 @@ extern void SV_GetConfigstring(int index, char *buffer, int bufferSize);
 extern int G_EffectIndex(const char *name);
 extern const char *SL_ConvertToString(unsigned int stringValue);
 extern BuiltinFunctionDef functions[144]; /* 0x0 */
-static BuiltinMethodDef methods[59]; /* 0x3138c0 */
+static BuiltinMethodDef methods[59]; /* methods */
 
 unsigned int GScr_AllocString(const char *s);
 unsigned int Scr_LoadLevel(void);
@@ -379,7 +379,7 @@ unsigned int print(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
-        "movl 0x195f6b8, %eax\n" /* line 320 */
+        "movl imp_g_NoScriptSpam, %eax\n" /* line 320 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf19544e_0019546a\n"
@@ -401,7 +401,7 @@ unsigned int print(void)
         "movl %ebx, (%esp)\n" /* line 325 | i */
         "calll Scr_GetDebugString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 324 | i */
         "cmpl %ebx, %esi\n" /* i, num */
@@ -501,7 +501,7 @@ static unsigned int GScr_GetDvarFloat(void)
 /* line 836 */
 static unsigned int GScr_GetTime(void)
 {
-    Scr_AddInt(*(int *)((byte *)*(void **)0x195f6a0 + 0x1ec));
+    Scr_AddInt(*(int *)((byte *)*(void **)imp_level + 0x1ec));
     return 0;
 }
 
@@ -513,7 +513,7 @@ static unsigned int Scr_GetEntByNum(void)
 
     if (num > 0x3ff)
         return 0;
-    ent = (gentity_t *)((byte *)*(void **)0x195f688 + num * 560);
+    ent = (gentity_t *)((byte *)*(void **)imp_g_entities + num * 560);
     if (*(byte *)((byte *)ent + 0xfc))
         Scr_AddEntity(ent);
     return 0;
@@ -544,7 +544,7 @@ static unsigned int GScr_GetAnimLength(void)
     unsigned int animIndex = anim & 0xffff;
 
     if (!XAnimIsPrimitive(anims, animIndex))
-        Scr_ParamError(0, (const char *)0x2b124c);
+        Scr_ParamError(0, (const char *)str_002b124c);
     Scr_AddFloat(XAnimGetLength(anims, animIndex));
     return 0;
 }
@@ -565,7 +565,7 @@ static unsigned int GScr_AnimHasNotetrack(void)
 /* line 1031 */
 static unsigned int GScr_PrecacheTurret(void)
 {
-    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
         Scr_Error("PrecacheTurret must be called before any wait statements in the gametype or level script");
     G_GetWeaponIndexForName(Scr_GetString(0));
     return 0;
@@ -707,7 +707,7 @@ unsigned int SetObjectiveIcon(void)
         "movl %eax, 8(%esp)\n"
         "movsbl %dl, %eax\n" /* paramNum */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b12d0, (%esp)\n" /* "Illegal character '%c'(ascii %i) in objective icon name: %s
+        "movl $str_002b12d0, (%esp)\n" /* "Illegal character '%c'(ascii %i) in objective icon name: %s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -722,7 +722,7 @@ unsigned int SetObjectiveIcon(void)
         "jle .Lf19595c_001959f4\n"
         "movl %esi, 8(%esp)\n" /* line 2121 | shaderName */
         "movl $0x3f, 4(%esp)\n"
-        "movl $0x2b1310, (%esp)\n" /* "Objective icon name is too long (> %i): %s
+        "movl $str_002b1310, (%esp)\n" /* "Objective icon name is too long (> %i): %s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -758,7 +758,7 @@ unsigned int Scr_Objective_Icon(void)
         "jbe .Lf195a08_00195a4a\n"
         "movl $0xf, 8(%esp)\n" /* line 2238 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -767,7 +767,7 @@ unsigned int Scr_Objective_Icon(void)
         "leal (, %ebx, 4), %eax\n" /* line 2240 */
         "shll $5, %ebx\n"
         "subl %eax, %ebx\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x24, %eax\n"
         "leal (%ebx, %eax), %eax\n"
         "movl $1, %edx\n"
@@ -797,7 +797,7 @@ unsigned int Scr_Objective_OnEntity(void)
         "leal (, %ebx, 4), %eax\n" /* line 2283 */
         "shll $5, %ebx\n" /* obj */
         "subl %eax, %ebx\n" /* obj */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x24, %eax\n"
         "addl %eax, %ebx\n" /* obj */
         "movl 0x10(%ebx), %eax\n" /* line 2077 */
@@ -808,7 +808,7 @@ unsigned int Scr_Objective_OnEntity(void)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "cmpb $0, 0xfc(%edx)\n" /* line 2082 */
         "jne .Lf195a70_00195aed\n"
         ".Lf195a70_00195ac8:\n"
@@ -834,7 +834,7 @@ unsigned int Scr_Objective_OnEntity(void)
         ".Lf195a70_00195af6:\n"
         "movl $0xf, 8(%esp)\n" /* line 2282 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -868,7 +868,7 @@ unsigned int Scr_Objective_Current(void)
         "jg .Lf195b24_00195b92\n"
         ".Lf195b24_00195b4b:\n"
         "movl $1, %eax\n"
-        "movl 0x195f6a0, %edx\n"
+        "movl imp_level, %edx\n"
         "addl $0x24, %edx\n"
         "jmp .Lf195b24_00195b6c\n"
         ".Lf195b24_00195b5b:\n"
@@ -914,7 +914,7 @@ unsigned int Scr_Objective_Current(void)
         "jbe .Lf195b24_00195b96\n"
         "movl $0xf, 8(%esp)\n" /* line 2315 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* i */
@@ -942,12 +942,12 @@ unsigned int GScr_Objective_Team(void)
         "leal (, %ebx, 4), %eax\n" /* line 2349 */
         "shll $5, %ebx\n" /* obj */
         "subl %eax, %ebx\n" /* obj */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x24, %eax\n"
         "addl %eax, %ebx\n" /* obj */
         "movl $1, (%esp)\n" /* line 2351 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 2352 */
+        "movl imp_scr_const, %edx\n" /* line 2352 */
         "cmpw 2(%edx), %ax\n"
         "je .Lf195bdc_00195c9b\n"
         "cmpw 4(%edx), %ax\n" /* line 2354 */
@@ -958,7 +958,7 @@ unsigned int GScr_Objective_Team(void)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b1380, (%esp)\n" /* "Illegal team string '%s'. Must be allies, axis, or none." */
+        "movl $str_002b1380, (%esp)\n" /* "Illegal team string '%s'. Must be allies, axis, or none." */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -980,7 +980,7 @@ unsigned int GScr_Objective_Team(void)
         ".Lf195bdc_00195c6e:\n"
         "movl $0xf, 8(%esp)\n" /* line 2348 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -1103,7 +1103,7 @@ unsigned int GScr_Obituary(void)
         "calll Scr_GetEntity\n"
         "movl %eax, %ebx\n" /* pOtherEnt */
         "movl $0xc6, 4(%esp)\n" /* line 2446 */
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_TempEntity\n"
         "movl %eax, %edi\n" /* pEnt */
@@ -1163,7 +1163,7 @@ unsigned int GScr_Obituary(void)
 /* line 2541 */
 static unsigned int GScr_getStartTime(void)
 {
-    Scr_AddInt(*(int *)((byte *)*(void **)0x195f6a0 + 0x1f8));
+    Scr_AddInt(*(int *)((byte *)*(void **)imp_level + 0x1f8));
     return 0;
 }
 
@@ -1202,7 +1202,7 @@ unsigned int GScr_PrecacheMenu(void)
         "jne .Lf195e68_00195e93\n"
         "movl -0x41c(%ebp), %eax\n" /* line 2567 | pszNewMenu */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b13bc, (%esp)\n" /* "Script tried to precache the menu '%s' more than once
+        "movl $str_002b13bc, (%esp)\n" /* "Script tried to precache the menu '%s' more than once
 " */
         "calll Com_DPrintf\n"
         /* } scope */
@@ -1243,7 +1243,7 @@ unsigned int GScr_PrecacheMenu(void)
         /* { scope 1 */
         ".Lf195e68_00195f35:\n"
         "movl $0x20, 4(%esp)\n" /* line 2582 */
-        "movl $0x2b13f4, (%esp)\n" /* "Too many menus precached. Max allowed menus is %i" */
+        "movl $str_002b13f4, (%esp)\n" /* "Too many menus precached. Max allowed menus is %i" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -1298,7 +1298,7 @@ int GScr_GetScriptMenuIndex(const char *pszMenu)
         /* { scope 1 */
         ".Lf195f6a_00195fc2:\n"
         "movl %edi, 4(%esp)\n" /* line 2609 | pszMenu */
-        "movl $0x2b1428, (%esp)\n" /* "Menu '%s' was not precached
+        "movl $str_002b1428, (%esp)\n" /* "Menu '%s' was not precached
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -1359,7 +1359,7 @@ unsigned int GScr_PrecacheStatusIcon(void)
         "cmpl $8, %esi\n" /* iConfigNum */
         "jne .Lf195fea_00196047\n"
         "movl $8, 4(%esp)\n" /* line 2649 */
-        "movl $0x2b1490, (%esp)\n" /* "Too many player status icons precached. Max allowed is %i" */
+        "movl $str_002b1490, (%esp)\n" /* "Too many player status icons precached. Max allowed is %i" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -1380,7 +1380,7 @@ unsigned int GScr_PrecacheStatusIcon(void)
         ".Lf195fea_001960ad:\n"
         "movl -0x41c(%ebp), %eax\n" /* line 2634 | pszNewIcon */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b1448, (%esp)\n" /* "Script tried to precache the player status icon '%s' more th" */
+        "movl $str_002b1448, (%esp)\n" /* "Script tried to precache the player status icon '%s' more th" */
         "calll Com_DPrintf\n"
         /* } scope */
         "addl $0x42c, %esp\n" /* line 2653 */
@@ -1435,7 +1435,7 @@ int GScr_GetStatusIconIndex(const char *pszIcon)
         "cmpl $8, %ebx\n" /* iConfigNum */
         "jne .Lf1960ce_001960f7\n"
         "movl %esi, 4(%esp)\n" /* line 2680 | pszIcon */
-        "movl $0x2b14cc, (%esp)\n" /* "Status icon '%s' was not precached
+        "movl $str_002b14cc, (%esp)\n" /* "Status icon '%s' was not precached
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -1497,7 +1497,7 @@ unsigned int GScr_PrecacheHeadIcon(void)
         "cmpl $0xf, %esi\n" /* iConfigNum */
         "jne .Lf19614e_001961ab\n"
         "movl $0xf, 4(%esp)\n" /* line 2720 */
-        "movl $0x2b1534, (%esp)\n" /* "Too many player head icons precached. Max allowed is %i" */
+        "movl $str_002b1534, (%esp)\n" /* "Too many player head icons precached. Max allowed is %i" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -1518,7 +1518,7 @@ unsigned int GScr_PrecacheHeadIcon(void)
         ".Lf19614e_00196211:\n"
         "movl -0x41c(%ebp), %eax\n" /* line 2705 | pszNewIcon */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b14f0, (%esp)\n" /* "Script tried to precache the player head icon '%s' more than" */
+        "movl $str_002b14f0, (%esp)\n" /* "Script tried to precache the player head icon '%s' more than" */
         "calll Com_DPrintf\n"
         /* } scope */
         "addl $0x42c, %esp\n" /* line 2724 */
@@ -1573,7 +1573,7 @@ int GScr_GetHeadIconIndex(const char *pszIcon)
         "cmpl $0xf, %ebx\n" /* iConfigNum */
         "jne .Lf196232_0019625b\n"
         "movl %esi, 4(%esp)\n" /* line 2751 | pszIcon */
-        "movl $0x2b156c, (%esp)\n" /* "Head icon '%s' was not precached
+        "movl $str_002b156c, (%esp)\n" /* "Head icon '%s' was not precached
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -1699,7 +1699,7 @@ unsigned int Scr_SightTracePassed(void)
         "calll SV_FX_GetVisibility\n"
         "fstps -0x3c(%ebp)\n"
         "movl $1, %eax\n" /* line 2905 */
-        "movss 0x2ed724, %xmm0\n" /* 0.20000000298023224f */
+        "movss lit4_002ed724, %xmm0\n" /* 0.20000000298023224f */
         "ucomiss -0x3c(%ebp), %xmm0\n"
         "cmovbel -0x1c(%ebp), %eax\n" /* hitNum */
         "movl %eax, -0x1c(%ebp)\n" /* hitNum */
@@ -1748,10 +1748,10 @@ unsigned int Scr_PhysicsTrace(void)
         "movl %ebx, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll Scr_GetVector\n"
-        "movl $0x820011, 0x18(%esp)\n" /* line 2928 */
+        "movl $s_debugFrameGlob+188817, 0x18(%esp)\n" /* line 2928 */
         "movl $0x3ff, 0x14(%esp)\n"
         "movl %ebx, 0x10(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n"
@@ -1871,7 +1871,7 @@ unsigned int GScr_tan(void)
         "calll Scr_GetFloat\n"
         "fstps -0x18(%ebp)\n"
         "cvtss2sd -0x18(%ebp), %xmm0\n"
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x14(%ebp)\n" /* radians */
         /* { scope 1 */
@@ -1884,7 +1884,7 @@ unsigned int GScr_tan(void)
         "fstps -0xc(%ebp)\n"
         /* } scope */
         "movss -0xc(%ebp), %xmm0\n" /* line 3038 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "je .Lf1966e8_00196756\n"
         ".Lf1966e8_00196740:\n"
         "movss -0x10(%ebp), %xmm0\n" /* line 3040 */
@@ -1895,7 +1895,7 @@ unsigned int GScr_tan(void)
         "retl\n"
         ".Lf1966e8_00196756:\n"
         "jp .Lf1966e8_00196740\n" /* line 3038 */
-        "movl $0x21d694, (%esp)\n" /* line 3039 */
+        "movl $str_0021d694, (%esp)\n" /* line 3039 */
         "calll Scr_Error\n"
         "movss -0x10(%ebp), %xmm0\n" /* line 3040 */
         "divss -0xc(%ebp), %xmm0\n"
@@ -1919,16 +1919,16 @@ unsigned int GScr_asin(void)
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n" /* x */
         "movss -0xc(%ebp), %xmm0\n" /* line 3054 | x */
-        "ucomiss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "ucomiss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         "jp .Lf19677a_0019679f\n"
         "jb .Lf19677a_001967a8\n"
         ".Lf19677a_0019679f:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lf19677a_001967c7\n"
         ".Lf19677a_001967a8:\n"
         "cvtss2sd -0xc(%ebp), %xmm0\n" /* line 3055 | x */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b167c, (%esp)\n" /* "%g out of range" */
+        "movl $str_002b167c, (%esp)\n" /* "%g out of range" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -1938,7 +1938,7 @@ unsigned int GScr_asin(void)
         "calll asinf\n"
         "fstps -0x10(%ebp)\n"
         "cvtss2sd -0x10(%ebp), %xmm0\n"
-        "mulsd 0x307c40, %xmm0\n" /* 57.29577951308232 */
+        "mulsd lit8_00307c40, %xmm0\n" /* 57.29577951308232 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll Scr_AddFloat\n"
@@ -2147,7 +2147,7 @@ unsigned int Scr_GetSubStr(void)
         "je .Lf196c62_00196ca3\n"
         "cmpl $0x3ff, %esi\n" /* line 3331 | dest */
         "jle .Lf196c62_00196cd0\n"
-        "movl $0x2b16a4, (%esp)\n" /* line 3332 */
+        "movl $str_002b16a4, (%esp)\n" /* line 3332 */
         "calll Scr_Error\n"
         "jmp .Lf196c62_00196cd0\n"
         ".Lf196c62_00196cfe:\n"
@@ -2199,7 +2199,7 @@ unsigned int Scr_ToLower(void)
         "retl\n"
         /* { scope 1 */
         ".Lf196d0c_00196d67:\n"
-        "movl $0x2b16a4, (%esp)\n" /* line 3370 */
+        "movl $str_002b16a4, (%esp)\n" /* line 3370 */
         "calll Scr_Error\n"
         "jmp .Lf196d0c_00196d5c\n"
     );
@@ -2285,7 +2285,7 @@ unsigned int Scr_StrTok(void)
         "movl %eax, -0x41c(%ebp)\n" /* dest */
         "cmpl $0x3ff, %eax\n" /* line 3422 */
         "jle .Lf196d76_00196dfb\n"
-        "movl $0x2b16a4, (%esp)\n" /* line 3423 */
+        "movl $str_002b16a4, (%esp)\n" /* line 3423 */
         "calll Scr_Error\n"
         "jmp .Lf196d76_00196dfb\n"
         ".Lf196d76_00196e67:\n"
@@ -2326,14 +2326,14 @@ unsigned int Scr_SoundFade(void)
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n"
         "movss -0x1c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "cvttss2si %xmm0, %eax\n"
         ".Lf196edc_00196f1b:\n"
         "movl %eax, 0x10(%esp)\n" /* line 3497 */
         "cvtss2sd -0xc(%ebp), %xmm0\n" /* fTargetVol */
         "movsd %xmm0, 8(%esp)\n"
         "movl $0x71, 4(%esp)\n"
-        "movl $0x2b16bc, (%esp)\n" /* "%c %f %i
+        "movl $str_002b16bc, (%esp)\n" /* "%c %f %i
 " */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
@@ -2353,7 +2353,7 @@ unsigned int Scr_SoundFade(void)
 /* line 3506 */
 static unsigned int Scr_PrecacheModel(void)
 {
-    if (!*(int *)(*(byte **)0x195f6a0 + 0x1c))
+    if (!*(int *)(*(byte **)imp_level + 0x1c))
         Scr_Error("precacheModel must be called before any wait statements in the gametype or level script\n");
     G_ModelIndex(Scr_GetString(0));
     return 0;
@@ -2362,7 +2362,7 @@ static unsigned int Scr_PrecacheModel(void)
 /* line 3520 */
 static unsigned int Scr_PrecacheShellShock(void)
 {
-    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
         Scr_Error("PrecacheShellShock must be called before any wait statements in the gametype or level script");
     G_ShellShockIndex(Scr_GetString(0));
     return 0;
@@ -2379,7 +2379,7 @@ unsigned int Scr_PrecacheItem(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
-        "movl 0x195f6a0, %eax\n" /* line 3540 */
+        "movl imp_level, %eax\n" /* line 3540 */
         "movl 0x1c(%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf196fc4_00197033\n"
@@ -2394,7 +2394,7 @@ unsigned int Scr_PrecacheItem(void)
         ".Lf196fc4_00196ff4:\n"
         "movl $1, 4(%esp)\n" /* line 3549 */
         "movl %esi, %ecx\n" /* pItem */
-        "subl 0x195eda8, %ecx\n"
+        "subl imp_bg_itemlist, %ecx\n"
         "sarl $2, %ecx\n"
         "movl %ecx, %edx\n"
         "shll $5, %edx\n"
@@ -2418,7 +2418,7 @@ unsigned int Scr_PrecacheItem(void)
         "retl\n"
         /* { scope 1 */
         ".Lf196fc4_00197033:\n"
-        "movl $0x2b1784, (%esp)\n" /* line 3541 */
+        "movl $str_002b1784, (%esp)\n" /* line 3541 */
         "calll Scr_Error\n"
         "movl $0, (%esp)\n" /* line 3543 */
         "calll Scr_GetString\n"
@@ -2430,7 +2430,7 @@ unsigned int Scr_PrecacheItem(void)
         "jne .Lf196fc4_00196ff4\n"
         ".Lf196fc4_0019705b:\n"
         "movl %ebx, 4(%esp)\n" /* line 3546 | pszItemName */
-        "movl $0x2b17dc, (%esp)\n" /* "unknown item '%s'" */
+        "movl $str_002b17dc, (%esp)\n" /* "unknown item '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2443,7 +2443,7 @@ unsigned int Scr_PrecacheItem(void)
 static unsigned int Scr_PrecacheShader(void)
 {
     const char *shaderName;
-    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
         Scr_Error("PrecacheShader must be called before any wait statements in the gametype or level script");
     shaderName = Scr_GetString(0);
     if (!shaderName[0])
@@ -2456,7 +2456,7 @@ static unsigned int Scr_PrecacheShader(void)
 static unsigned int Scr_PrecacheString(void)
 {
     const char *s;
-    if (!*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
         Scr_Error("PrecacheString must be called before any wait statements in the gametype or level script");
     s = Scr_GetIString(0);
     if (s[0])
@@ -2493,7 +2493,7 @@ unsigned int GScr_RadiusDamage(void)
         "fstps -0x1c(%ebp)\n" /* max_damage */
         "movl $3, (%esp)\n" /* line 3721 */
         "calll Scr_GetFloat\n"
-        "movl 0x195f6a0, %ebx\n" /* line 3723 */
+        "movl imp_level, %ebx\n" /* line 3723 */
         "movl 0x35f8(%ebx), %eax\n"
         "movl %eax, 0x35f4(%ebx)\n"
         "movl $0xe, 0x1c(%esp)\n" /* line 3724 */
@@ -2503,7 +2503,7 @@ unsigned int GScr_RadiusDamage(void)
         "fstps 0x10(%esp)\n"
         "movss -0x1c(%ebp), %xmm0\n" /* max_damage */
         "movss %xmm0, 0xc(%esp)\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "addl $0x8bba0, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -2522,7 +2522,7 @@ unsigned int GScr_RadiusDamage(void)
 /* line 3734 */
 static unsigned int GScr_SetPlayerIgnoreRadiusDamage(void)
 {
-    *(int *)((byte *)*(void **)0x195f6a0 + 0x35f8) = Scr_GetInt(0);
+    *(int *)((byte *)*(void **)imp_level + 0x35f8) = Scr_GetInt(0);
     return 0;
 }
 
@@ -2546,14 +2546,14 @@ unsigned int GScr_GetMoveDelta(void)
         "calll Scr_GetFloat\n"
         "fstps -0x2c(%ebp)\n" /* endTime */
         "movss -0x2c(%ebp), %xmm0\n" /* line 3762 | endTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf1971ea_00197228\n"
         "jb .Lf1971ea_00197231\n"
         ".Lf1971ea_00197228:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lf1971ea_00197245\n"
         ".Lf1971ea_00197231:\n"
-        "movl $0x2b18c4, 4(%esp)\n" /* line 3763 */
+        "movl $str_002b18c4, 4(%esp)\n" /* line 3763 */
         "movl $2, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf1971ea_00197245:\n"
@@ -2561,14 +2561,14 @@ unsigned int GScr_GetMoveDelta(void)
         "calll Scr_GetFloat\n"
         "fstps -0x30(%ebp)\n" /* startTime */
         "movss -0x30(%ebp), %xmm0\n" /* line 3768 | startTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf1971ea_00197264\n"
         "jb .Lf1971ea_0019726d\n"
         ".Lf1971ea_00197264:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lf1971ea_00197281\n"
         ".Lf1971ea_0019726d:\n"
-        "movl $0x2b18e8, 4(%esp)\n" /* line 3769 */
+        "movl $str_002b18e8, 4(%esp)\n" /* line 3769 */
         "movl $1, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf1971ea_00197281:\n"
@@ -2602,11 +2602,11 @@ unsigned int GScr_GetMoveDelta(void)
         ".Lf1971ea_001972e2:\n"
         "pxor %xmm0, %xmm0\n" /* line 3758 */
         "movss %xmm0, -0x30(%ebp)\n" /* startTime */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x2c(%ebp)\n" /* endTime */
         "jmp .Lf1971ea_00197281\n"
         ".Lf1971ea_001972fa:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x2c(%ebp)\n" /* endTime */
         "jmp .Lf1971ea_00197245\n"
     );
@@ -2632,14 +2632,14 @@ unsigned int GScr_GetAngleDelta(void)
         "calll Scr_GetFloat\n"
         "fstps -0x2c(%ebp)\n" /* endTime */
         "movss -0x2c(%ebp), %xmm0\n" /* line 3802 | endTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf19730c_0019734a\n"
         "jb .Lf19730c_00197353\n"
         ".Lf19730c_0019734a:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lf19730c_00197367\n"
         ".Lf19730c_00197353:\n"
-        "movl $0x2b18c4, 4(%esp)\n" /* line 3803 */
+        "movl $str_002b18c4, 4(%esp)\n" /* line 3803 */
         "movl $2, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf19730c_00197367:\n"
@@ -2647,14 +2647,14 @@ unsigned int GScr_GetAngleDelta(void)
         "calll Scr_GetFloat\n"
         "fstps -0x30(%ebp)\n" /* startTime */
         "movss -0x30(%ebp), %xmm0\n" /* line 3808 | startTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf19730c_00197386\n"
         "jb .Lf19730c_0019738f\n"
         ".Lf19730c_00197386:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lf19730c_001973a3\n"
         ".Lf19730c_0019738f:\n"
-        "movl $0x2b18e8, 4(%esp)\n" /* line 3809 */
+        "movl $str_002b18e8, 4(%esp)\n" /* line 3809 */
         "movl $1, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf19730c_001973a3:\n"
@@ -2690,11 +2690,11 @@ unsigned int GScr_GetAngleDelta(void)
         ".Lf19730c_0019740c:\n"
         "pxor %xmm0, %xmm0\n" /* line 3798 */
         "movss %xmm0, -0x30(%ebp)\n" /* startTime */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x2c(%ebp)\n" /* endTime */
         "jmp .Lf19730c_001973a3\n"
         ".Lf19730c_00197427:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x2c(%ebp)\n" /* endTime */
         "jmp .Lf19730c_00197367\n"
     );
@@ -2714,7 +2714,7 @@ static unsigned int Scr_LoadFX(void)
 {
     int id;
     id = G_EffectIndex(Scr_GetString(0));
-    if (!id && !*(int *)((byte *)*(void **)0x195f6a0 + 0x1c))
+    if (!id && !*(int *)((byte *)*(void **)imp_level + 0x1c))
         Scr_Error("loadfx must be called before any wait statements in the gametype or level script");
     Scr_AddInt(id);
     return 0;
@@ -2735,7 +2735,7 @@ unsigned int Scr_PlayFXOnTag(void)
         "calll Scr_GetNumParam\n" /* line 3951 */
         "cmpl $3, %eax\n"
         "je .Lf1974d2_001974f1\n"
-        "movl $0x2b1980, (%esp)\n" /* line 3952 */
+        "movl $str_002b1980, (%esp)\n" /* line 3952 */
         "calll Scr_Error\n"
         ".Lf1974d2_001974f1:\n"
         "movl $0, (%esp)\n" /* line 3954 */
@@ -2760,7 +2760,7 @@ unsigned int Scr_PlayFXOnTag(void)
         "calll strchr\n"
         "testl %eax, %eax\n"
         "je .Lf1974d2_00197564\n"
-        "movl $0x2b1a04, 4(%esp)\n" /* line 3964 */
+        "movl $str_002b1a04, 4(%esp)\n" /* line 3964 */
         "movl $2, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf1974d2_00197564:\n"
@@ -2774,7 +2774,7 @@ unsigned int Scr_PlayFXOnTag(void)
         "calll SL_ConvertToString\n"
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* fxId */
-        "movl $0x2b1a60, (%esp)\n" /* "%02d%s" */
+        "movl $str_002b1a60, (%esp)\n" /* "%02d%s" */
         "calll va\n"
         "movl $0, 0x10(%esp)\n"
         "movl $1, 0xc(%esp)\n"
@@ -2796,7 +2796,7 @@ unsigned int Scr_PlayFXOnTag(void)
         /* { scope 1 */
         ".Lf1974d2_001975d8:\n"
         "movl %edi, 4(%esp)\n" /* line 3956 | fxId */
-        "movl $0x2b19c0, (%esp)\n" /* "effect id %i is invalid
+        "movl $str_002b19c0, (%esp)\n" /* "effect id %i is invalid
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -2808,7 +2808,7 @@ unsigned int Scr_PlayFXOnTag(void)
         "cmpb $0, 0x164(%eax)\n" /* line 3959 */
         "jne .Lf1974d2_00197526\n"
         ".Lf1974d2_00197613:\n"
-        "movl $0x2b19dc, 4(%esp)\n" /* line 3960 */
+        "movl $str_002b19dc, 4(%esp)\n" /* line 3960 */
         "movl $1, (%esp)\n"
         "calll Scr_ParamError\n"
         "jmp .Lf1974d2_00197526\n"
@@ -2820,7 +2820,7 @@ unsigned int Scr_PlayFXOnTag(void)
         "calll G_ModelName\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* tag */
-        "movl $0x2b1a2c, (%esp)\n" /* "tag '%s' does not exist on entity with model '%s'" */
+        "movl $str_002b1a2c, (%esp)\n" /* "tag '%s' does not exist on entity with model '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $2, (%esp)\n"
@@ -2850,7 +2850,7 @@ unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, flo
         "movss 0x10(%ebp), %xmm0\n" /* fTime */
         "movss %xmm0, -0x24(%ebp)\n" /* fTime */
         "movss -0xc(%ebp), %xmm1\n" /* line 4054 */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jb .Lf19766c_001977c5\n"
         ".Lf19766c_001976b9:\n"
         "movaps %xmm1, %xmm0\n"
@@ -2861,24 +2861,24 @@ unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, flo
         "pxor %xmm1, %xmm1\n" /* line 4058 */
         "ucomiss -0x18(%ebp), %xmm1\n"
         "ja .Lf19766c_001976e6\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss -0x18(%ebp), %xmm1\n"
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lf19766c_001977ed\n"
         ".Lf19766c_001976e6:\n"
         "movl %ebx, 4(%esp)\n" /* line 4059 | cmd */
-        "movl $0x2b1abc, (%esp)\n" /* "%s: red/green/blue color components must be in the range [0," */
+        "movl $str_002b1abc, (%esp)\n" /* "%s: red/green/blue color components must be in the range [0," */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         ".Lf19766c_001976fe:\n"
         "movss -0x24(%ebp), %xmm0\n" /* line 4060 | fTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jb .Lf19766c_0019779d\n"
         ".Lf19766c_00197710:\n"
         "movaps %xmm0, %xmm1\n"
         ".Lf19766c_00197713:\n"
-        "mulss 0x2ed5c8, %xmm1\n" /* line 4063 | 1000.0f */
+        "mulss lit4_002ed5c8, %xmm1\n" /* line 4063 | 1000.0f */
         "cvtss2sd %xmm1, %xmm0\n"
         "movsd %xmm0, 0x34(%esp)\n"
         "cvtss2sd -0x20(%ebp), %xmm1\n" /* fBlue */
@@ -2893,7 +2893,7 @@ unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, flo
         "movsd %xmm1, 0xc(%esp)\n"
         "cvtss2sd -0xc(%ebp), %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b1b28, (%esp)\n" /* "%g %g %g %g %g %g %.0f" */
+        "movl $str_002b1b28, (%esp)\n" /* "%g %g %g %g %g %g %.0f" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* fGreen */
         "addl $0x64, %esp\n" /* line 4064 */
@@ -2902,7 +2902,7 @@ unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, flo
         "jmp G_setfog\n" /* line 4063 */
         ".Lf19766c_00197780:\n"
         "movl %ebx, 4(%esp)\n" /* line 4057 | cmd */
-        "movl $0x2b1a88, (%esp)\n" /* "%s: near distance must be less than far distance" */
+        "movl $str_002b1a88, (%esp)\n" /* "%s: near distance must be less than far distance" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -2910,7 +2910,7 @@ unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, flo
         ".Lf19766c_0019779d:\n"
         "jp .Lf19766c_00197710\n" /* line 4060 */
         "movl %ebx, 4(%esp)\n" /* line 4061 | cmd */
-        "movl $0x2b1afc, (%esp)\n" /* "%s: transition time must be >= 0 seconds" */
+        "movl $str_002b1afc, (%esp)\n" /* "%s: transition time must be >= 0 seconds" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -2919,7 +2919,7 @@ unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, flo
         ".Lf19766c_001977c5:\n"
         "jp .Lf19766c_001976b9\n" /* line 4054 */
         "movl %eax, 4(%esp)\n" /* line 4055 */
-        "movl $0x2b1a68, (%esp)\n" /* "%s: near distance must be >= 0" */
+        "movl $str_002b1a68, (%esp)\n" /* "%s: near distance must be >= 0" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -2954,7 +2954,7 @@ unsigned int Scr_SetLinearFog(void)
         "calll Scr_GetNumParam\n" /* line 4076 */
         "cmpl $6, %eax\n"
         "je .Lf19782a_00197846\n"
-        "movl $0x2b1b40, (%esp)\n" /* line 4077 */
+        "movl $str_002b1b40, (%esp)\n" /* line 4077 */
         "calll Scr_Error\n"
         ".Lf19782a_00197846:\n"
         "movl $0, (%esp)\n" /* line 4079 */
@@ -2980,10 +2980,10 @@ unsigned int Scr_SetLinearFog(void)
         "movss -0x10(%ebp), %xmm0\n" /* fGreen */
         "movss %xmm0, (%esp)\n"
         "movss -0x14(%ebp), %xmm3\n" /* fRed */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss -0x18(%ebp), %xmm1\n" /* fFar */
         "movss -0x1c(%ebp), %xmm0\n" /* fNear */
-        "movl $0x2b1b94, %eax\n" /* "setCullFog" */
+        "movl $str_002b1b94, %eax\n" /* "setCullFog" */
         "calll Scr_SetFog\n"
         /* } scope */
         "leave\n" /* line 4087 */
@@ -3003,7 +3003,7 @@ unsigned int Scr_SetExponentialFog(void)
         "calll Scr_GetNumParam\n" /* line 4098 */
         "cmpl $5, %eax\n"
         "je .Lf1978da_001978f6\n"
-        "movl $0x2b1ba0, (%esp)\n" /* line 4100 */
+        "movl $str_002b1ba0, (%esp)\n" /* line 4100 */
         "calll Scr_Error\n"
         ".Lf1978da_001978f6:\n"
         "movl $0, (%esp)\n" /* line 4103 */
@@ -3022,14 +3022,14 @@ unsigned int Scr_SetExponentialFog(void)
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n" /* fTime */
         "movss -0x1c(%ebp), %xmm0\n" /* line 4109 | fDensity */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf1978da_00197951\n"
         "jbe .Lf1978da_0019795a\n"
         ".Lf1978da_00197951:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jb .Lf1978da_00197966\n"
         ".Lf1978da_0019795a:\n"
-        "movl $0x2b1cb4, (%esp)\n" /* line 4110 */
+        "movl $str_002b1cb4, (%esp)\n" /* line 4110 */
         "calll Scr_Error\n"
         ".Lf1978da_00197966:\n"
         "movss -0xc(%ebp), %xmm0\n" /* line 4112 | fTime */
@@ -3040,9 +3040,9 @@ unsigned int Scr_SetExponentialFog(void)
         "movss %xmm0, (%esp)\n"
         "movss -0x18(%ebp), %xmm3\n" /* fRed */
         "movss -0x1c(%ebp), %xmm2\n" /* fDensity */
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "pxor %xmm0, %xmm0\n"
-        "movl $0x2b1cf0, %eax\n" /* "setExpFog" */
+        "movl $str_002b1cf0, %eax\n" /* "setExpFog" */
         "calll Scr_SetFog\n"
         /* } scope */
         "leave\n" /* line 4113 */
@@ -3120,10 +3120,10 @@ unsigned int GScr_SetWinningPlayer(void)
         "movl $0x16, (%esp)\n"
         "calll SV_GetConfigstring\n"
         "movl %ebx, 4(%esp)\n" /* line 4178 | iWinner */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, %ebx\n" /* iWinner */
-        "movl $0x2b1cfc, 4(%esp)\n" /* line 4179 */
+        "movl $str_002b1cfc, 4(%esp)\n" /* line 4179 */
         "movl %esi, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %ebx, 4(%esp)\n" /* iWinner */
@@ -3132,7 +3132,7 @@ unsigned int GScr_SetWinningPlayer(void)
         "testl %eax, %eax\n"
         "je .Lf197a36_00197ac6\n"
         "movl %ebx, 8(%esp)\n" /* line 4181 | iWinner */
-        "movl $0x2b1cfc, 4(%esp)\n" /* "winner" */
+        "movl $str_002b1cfc, 4(%esp)\n" /* "winner" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl %esi, 4(%esp)\n" /* line 4182 */
@@ -3161,7 +3161,7 @@ unsigned int GScr_SetWinningTeam(void)
         /* { scope 1 */
         "movl $0, (%esp)\n" /* line 4198 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 4200 */
+        "movl imp_scr_const, %edx\n" /* line 4200 */
         "cmpw 2(%edx), %ax\n"
         "je .Lf197ad0_00197bc6\n"
         "cmpw 4(%edx), %ax\n" /* line 4202 */
@@ -3172,7 +3172,7 @@ unsigned int GScr_SetWinningTeam(void)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b1380, (%esp)\n" /* "Illegal team string '%s'. Must be allies, axis, or none." */
+        "movl $str_002b1380, (%esp)\n" /* "Illegal team string '%s'. Must be allies, axis, or none." */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -3194,10 +3194,10 @@ unsigned int GScr_SetWinningTeam(void)
         "movl $0x16, (%esp)\n"
         "calll SV_GetConfigstring\n"
         "movl %ebx, 4(%esp)\n" /* line 4215 | iWinner */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, %ebx\n" /* iWinner */
-        "movl $0x2b1cfc, 4(%esp)\n" /* line 4216 */
+        "movl $str_002b1cfc, 4(%esp)\n" /* line 4216 */
         "movl %esi, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %ebx, 4(%esp)\n" /* iWinner */
@@ -3206,7 +3206,7 @@ unsigned int GScr_SetWinningTeam(void)
         "testl %eax, %eax\n"
         "je .Lf197ad0_00197b32\n"
         "movl %ebx, 8(%esp)\n" /* line 4218 | iWinner */
-        "movl $0x2b1cfc, 4(%esp)\n" /* "winner" */
+        "movl $str_002b1cfc, 4(%esp)\n" /* "winner" */
         "movl %esi, (%esp)\n"
         "calll Info_SetValueForKey\n"
         "movl %esi, 4(%esp)\n" /* line 4219 */
@@ -3242,7 +3242,7 @@ unsigned int GScr_GetTeamScore(void)
         "movl $0, (%esp)\n" /* line 4263 */
         "calll Scr_GetConstString\n"
         "movl %eax, %ebx\n" /* team */
-        "movl 0x195f5bc, %esi\n" /* line 4265 */
+        "movl imp_scr_const, %esi\n" /* line 4265 */
         "cmpw 2(%esi), %ax\n"
         "je .Lf197bd0_00197c3b\n"
         "cmpw 4(%esi), %ax\n"
@@ -3251,14 +3251,14 @@ unsigned int GScr_GetTeamScore(void)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b1d04, (%esp)\n" /* "Illegal team string '%s'. Must be allies, or axis." */
+        "movl $str_002b1d04, (%esp)\n" /* "Illegal team string '%s'. Must be allies, or axis." */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         "cmpw 2(%esi), %bx\n" /* line 4270 | team */
         "je .Lf197bd0_00197c3b\n"
         ".Lf197bd0_00197c21:\n"
-        "movl 0x195f6a0, %eax\n" /* line 4273 */
+        "movl imp_level, %eax\n" /* line 4273 */
         "movl 0x200(%eax), %eax\n"
         "movl %eax, (%esp)\n" /* line 4275 */
         "calll Scr_AddInt\n"
@@ -3270,7 +3270,7 @@ unsigned int GScr_GetTeamScore(void)
         "retl\n"
         /* { scope 1 */
         ".Lf197bd0_00197c3b:\n"
-        "movl 0x195f6a0, %eax\n" /* line 4271 */
+        "movl imp_level, %eax\n" /* line 4271 */
         "movl 0x204(%eax), %eax\n"
         "movl %eax, (%esp)\n" /* line 4275 */
         "calll Scr_AddInt\n"
@@ -3296,7 +3296,7 @@ unsigned int GScr_SetTeamScore(void)
         "movl $0, (%esp)\n" /* line 4289 */
         "calll Scr_GetConstString\n"
         "movl %eax, %ebx\n" /* team */
-        "movl 0x195f5bc, %eax\n" /* line 4291 */
+        "movl imp_scr_const, %eax\n" /* line 4291 */
         "cmpw 2(%eax), %bx\n" /* team */
         "je .Lf197c56_00197c9f\n"
         "cmpw 4(%eax), %bx\n" /* team */
@@ -3305,7 +3305,7 @@ unsigned int GScr_SetTeamScore(void)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b1d04, (%esp)\n" /* "Illegal team string '%s'. Must be allies, or axis." */
+        "movl $str_002b1d04, (%esp)\n" /* "Illegal team string '%s'. Must be allies, or axis." */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -3313,21 +3313,21 @@ unsigned int GScr_SetTeamScore(void)
         "movl $1, (%esp)\n" /* line 4296 */
         "calll Scr_GetInt\n"
         "movl %eax, %edx\n"
-        "movl 0x195f5bc, %eax\n" /* line 4298 */
+        "movl imp_scr_const, %eax\n" /* line 4298 */
         "cmpw 2(%eax), %bx\n" /* team */
         "je .Lf197c56_00197d08\n"
-        "movl 0x195f6a0, %eax\n" /* line 4306 */
+        "movl imp_level, %eax\n" /* line 4306 */
         "movl %edx, 0x200(%eax)\n"
         "movl %edx, 8(%esp)\n" /* line 4308 */
         "movl $0x47, 4(%esp)\n"
         ".Lf197c56_00197ccf:\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
+        "movl $str_002b1d38, (%esp)\n" /* "%c %i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl $0xffffffff, (%esp)\n"
         "calll SV_GameSendServerCommand\n"
-        "movl 0x195f6a0, %eax\n" /* line 4311 */
+        "movl imp_level, %eax\n" /* line 4311 */
         "movl $1, 0x210(%eax)\n"
         /* } scope */
         "addl $0x14, %esp\n" /* line 4312 */
@@ -3336,7 +3336,7 @@ unsigned int GScr_SetTeamScore(void)
         "retl\n"
         /* { scope 1 */
         ".Lf197c56_00197d08:\n"
-        "movl 0x195f6a0, %eax\n" /* line 4300 */
+        "movl imp_level, %eax\n" /* line 4300 */
         "movl %edx, 0x204(%eax)\n"
         "movl %edx, 8(%esp)\n" /* line 4302 */
         "movl $0x48, 4(%esp)\n"
@@ -3355,26 +3355,26 @@ unsigned int GScr_SetClientNameMode(void)
         /* { scope 1 */
         "movl $0, (%esp)\n" /* line 4322 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 4324 */
+        "movl imp_scr_const, %edx\n" /* line 4324 */
         "cmpw 0x78(%edx), %ax\n"
         "je .Lf197d22_00197d65\n"
         "cmpw 0x7a(%edx), %ax\n" /* line 4326 */
         "je .Lf197d22_00197d54\n"
-        "movl $0x2b1d40, (%esp)\n" /* line 4329 */
+        "movl $str_002b1d40, (%esp)\n" /* line 4329 */
         "calll Scr_Error\n"
         /* } scope */
         "leave\n" /* line 4330 */
         "retl\n"
         /* { scope 1 */
         ".Lf197d22_00197d54:\n"
-        "movl 0x195f6a0, %eax\n" /* line 4327 */
+        "movl imp_level, %eax\n" /* line 4327 */
         "movl $1, 0x214(%eax)\n"
         /* } scope */
         "leave\n" /* line 4330 */
         "retl\n"
         /* { scope 1 */
         ".Lf197d22_00197d65:\n"
-        "movl 0x195f6a0, %eax\n" /* line 4325 */
+        "movl imp_level, %eax\n" /* line 4325 */
         "movl $0, 0x214(%eax)\n"
         /* } scope */
         "leave\n" /* line 4330 */
@@ -3394,7 +3394,7 @@ unsigned int GScr_UpdateClientNames(void)
         "pushl %ebx\n"
         "subl $0x4c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f6a0, %edi\n" /* line 4344 */
+        "movl imp_level, %edi\n" /* line 4344 */
         "movl 0x214(%edi), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf197d76_00197e38\n"
@@ -3450,7 +3450,7 @@ unsigned int GScr_UpdateClientNames(void)
         "retl\n"
         /* { scope 1 */
         ".Lf197d76_00197e38:\n"
-        "movl $0x2b1d50, (%esp)\n" /* line 4345 */
+        "movl $str_002b1d50, (%esp)\n" /* line 4345 */
         "calll Scr_Error\n"
         "jmp .Lf197d76_00197d93\n"
     );
@@ -3471,7 +3471,7 @@ unsigned int GScr_GetTeamPlayersAlive(void)
         "movl $0, (%esp)\n" /* line 4376 */
         "calll Scr_GetConstString\n"
         "movl %eax, %ebx\n" /* team */
-        "movl 0x195f5bc, %esi\n" /* line 4378 | iLivePlayers */
+        "movl imp_scr_const, %esi\n" /* line 4378 | iLivePlayers */
         "cmpw 2(%esi), %ax\n" /* iLivePlayers */
         "je .Lf197e4a_00197f03\n"
         "cmpw 4(%esi), %ax\n" /* iLivePlayers */
@@ -3480,7 +3480,7 @@ unsigned int GScr_GetTeamPlayersAlive(void)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b1d04, (%esp)\n" /* "Illegal team string '%s'. Must be allies, or axis." */
+        "movl $str_002b1d04, (%esp)\n" /* "Illegal team string '%s'. Must be allies, or axis." */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -3489,7 +3489,7 @@ unsigned int GScr_GetTeamPlayersAlive(void)
         ".Lf197e4a_00197ea0:\n"
         "movl $1, %edi\n" /* iTeamNum */
         ".Lf197e4a_00197ea5:\n"
-        "movl 0x195f6c0, %eax\n" /* line 4389 */
+        "movl imp_g_maxclients, %eax\n" /* line 4389 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* team */
         "testl %ebx, %ebx\n" /* team */
@@ -3509,7 +3509,7 @@ unsigned int GScr_GetTeamPlayersAlive(void)
         ".Lf197e4a_00197ec5:\n"
         "xorl %ecx, %ecx\n" /* line 4389 */
         "xorl %esi, %esi\n" /* iLivePlayers */
-        "movl 0x195f688, %edx\n"
+        "movl imp_g_entities, %edx\n"
         "addl $0xfc, %edx\n"
         "jmp .Lf197e4a_00197ee4\n"
         ".Lf197e4a_00197ed7:\n"
@@ -3569,7 +3569,7 @@ unsigned int GScr_GetPartName(void)
         "movzwl (%eax, %ebx, 2), %ebx\n" /* name */
         "testw %bx, %bx\n" /* line 4435 | name */
         "jne .Lf197f36_00197f93\n"
-        "movl $0x2b1d90, 4(%esp)\n" /* line 4436 */
+        "movl $str_002b1d90, 4(%esp)\n" /* line 4436 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf197f36_00197f93:\n"
@@ -3586,7 +3586,7 @@ unsigned int GScr_GetPartName(void)
         ".Lf197f36_00197fa5:\n"
         "subl $1, %eax\n" /* line 4433 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b1d74, (%esp)\n" /* "index out of range (0 - %d)" */
+        "movl $str_002b1d74, (%esp)\n" /* "index out of range (0 - %d)" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -3613,8 +3613,8 @@ unsigned int GScr_Earthquake(void)
         "calll Scr_GetFloat\n"
         "fstps -0x2c(%ebp)\n"
         "movss -0x2c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x24(%ebp)\n"
@@ -3627,7 +3627,7 @@ unsigned int GScr_Earthquake(void)
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n" /* radius */
         "movss -0x20(%ebp), %xmm0\n" /* line 4459 | scale */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf197fca_00198099\n"
         ".Lf197fca_00198047:\n"
         "testl %ebx, %ebx\n" /* line 4462 | duration */
@@ -3653,19 +3653,19 @@ unsigned int GScr_Earthquake(void)
         "retl\n"
         /* { scope 1 */
         ".Lf197fca_00198083:\n"
-        "movl $0x2b1ddc, 4(%esp)\n" /* line 4466 */
+        "movl $str_002b1ddc, 4(%esp)\n" /* line 4466 */
         "movl $3, (%esp)\n"
         "calll Scr_ParamError\n"
         "jmp .Lf197fca_00198055\n"
         ".Lf197fca_00198099:\n"
         "jp .Lf197fca_00198047\n" /* line 4459 */
-        "movl $0x2b1d9c, 4(%esp)\n" /* line 4460 */
+        "movl $str_002b1d9c, 4(%esp)\n" /* line 4460 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         "testl %ebx, %ebx\n" /* line 4462 | duration */
         "jg .Lf197fca_0019804b\n"
         ".Lf197fca_001980b3:\n"
-        "movl $0x2b1dbc, 4(%esp)\n" /* line 4463 */
+        "movl $str_002b1dbc, 4(%esp)\n" /* line 4463 */
         "movl $1, (%esp)\n"
         "calll Scr_ParamError\n"
         "jmp .Lf197fca_0019804b\n"
@@ -3681,13 +3681,13 @@ unsigned int GScr_MapRestart(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195f6a0, %ebx\n" /* line 4746 */
+        "movl imp_level, %ebx\n" /* line 4746 */
         "movl 0x35f0(%ebx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf1980ca_001980f9\n"
-        "movl $0x2b1dfc, %eax\n" /* line 4747 */
+        "movl $str_002b1dfc, %eax\n" /* line 4747 */
         "subl $1, %edx\n"
-        "movl $0x2b1e18, %edx\n" /* "exitlevel already called" */
+        "movl $str_002b1e18, %edx\n" /* "exitlevel already called" */
         "cmovnel %edx, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -3701,7 +3701,7 @@ unsigned int GScr_MapRestart(void)
         "calll Scr_GetInt\n"
         "movl %eax, 0x1d54(%ebx)\n"
         ".Lf1980ca_00198128:\n"
-        "movl $0x2b1e34, 4(%esp)\n" /* line 4754 */
+        "movl $str_002b1e34, 4(%esp)\n" /* line 4754 */
         "movl $2, (%esp)\n"
         "calll Cbuf_ExecuteText\n"
         "addl $0x14, %esp\n" /* line 4755 */
@@ -3741,7 +3741,7 @@ unsigned int GScr_LoadMap(void)
         "calll SV_MapExists\n"
         "testl %eax, %eax\n"
         "je .Lf198142_00198153\n"
-        "movl 0x195f6a0, %ebx\n" /* line 4779 */
+        "movl imp_level, %ebx\n" /* line 4779 */
         "movl 0x35f0(%ebx), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf198142_001981db\n"
@@ -3756,7 +3756,7 @@ unsigned int GScr_LoadMap(void)
         "movl %eax, 0x1d54(%ebx)\n"
         ".Lf198142_001981b4:\n"
         "movl %esi, 4(%esp)\n" /* line 4787 | mapname */
-        "movl $0x2ab5ac, (%esp)\n" /* "map %s
+        "movl $str_002ab5ac, (%esp)\n" /* "map %s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -3770,9 +3770,9 @@ unsigned int GScr_LoadMap(void)
         "retl\n"
         /* { scope 1 */
         ".Lf198142_001981db:\n"
-        "movl $0x2b1e44, %eax\n" /* line 4780 */
+        "movl $str_002b1e44, %eax\n" /* line 4780 */
         "cmpl $2, %edx\n"
-        "movl $0x2b1e18, %edx\n" /* "exitlevel already called" */
+        "movl $str_002b1e18, %edx\n" /* "exitlevel already called" */
         "cmovnel %edx, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -3794,13 +3794,13 @@ unsigned int GScr_ExitLevel(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195f6a0, %ebx\n" /* line 4799 */
+        "movl imp_level, %ebx\n" /* line 4799 */
         "movl 0x35f0(%ebx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf198214_00198243\n"
-        "movl $0x2b1dfc, %eax\n" /* line 4800 */
+        "movl $str_002b1dfc, %eax\n" /* line 4800 */
         "subl $1, %edx\n"
-        "movl $0x2b1e18, %edx\n" /* "exitlevel already called" */
+        "movl $str_002b1e18, %edx\n" /* "exitlevel already called" */
         "cmovnel %edx, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -3872,24 +3872,24 @@ unsigned int GScr_SetVoteString(void)
         "movl %eax, 4(%esp)\n" /* line 4959 */
         "movl $0x10, (%esp)\n"
         "calll SV_SetConfigstring\n"
-        "movl 0x195f6a0, %ebx\n" /* line 4960 */
+        "movl imp_level, %ebx\n" /* line 4960 */
         "movl 0xb1c(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0xf, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl 0xb24(%ebx), %eax\n" /* line 4961 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x11, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl 0xb28(%ebx), %eax\n" /* line 4962 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x12, (%esp)\n"
@@ -3919,22 +3919,22 @@ unsigned int GScr_SetVoteTime(void)
         "movl $0, (%esp)\n" /* line 4979 */
         "calll Scr_GetInt\n"
         "movl %eax, 4(%esp)\n" /* line 4981 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0xf, (%esp)\n"
         "calll SV_SetConfigstring\n"
-        "movl 0x195f6a0, %ebx\n" /* line 4983 */
+        "movl imp_level, %ebx\n" /* line 4983 */
         "movl 0xb24(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x11, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl 0xb28(%ebx), %eax\n" /* line 4984 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x12, (%esp)\n"
@@ -3968,15 +3968,15 @@ unsigned int GScr_SetVoteYesCount(void)
         "movl $0, (%esp)\n" /* line 5001 */
         "calll Scr_GetInt\n"
         "movl %eax, 4(%esp)\n" /* line 5003 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x11, (%esp)\n"
         "calll SV_SetConfigstring\n"
-        "movl 0x195f6a0, %eax\n" /* line 5004 */
+        "movl imp_level, %eax\n" /* line 5004 */
         "movl 0xb28(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x12, (%esp)\n"
@@ -4007,7 +4007,7 @@ unsigned int GScr_SetVoteNoCount(void)
         "movl $0, (%esp)\n" /* line 5021 */
         "calll Scr_GetInt\n"
         "movl %eax, 4(%esp)\n" /* line 5023 */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0x12, (%esp)\n"
@@ -4038,7 +4038,7 @@ unsigned int GScr_KickPlayer(void)
         "movl $0, (%esp)\n" /* line 5040 */
         "calll Scr_GetInt\n"
         "movl %eax, 4(%esp)\n" /* line 5042 */
-        "movl $0x2b1e58, (%esp)\n" /* "tempBanClient %i
+        "movl $str_002b1e58, (%esp)\n" /* "tempBanClient %i
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -4070,7 +4070,7 @@ unsigned int GScr_BanPlayer(void)
         "movl $0, (%esp)\n" /* line 5059 */
         "calll Scr_GetInt\n"
         "movl %eax, 4(%esp)\n" /* line 5061 */
-        "movl $0x2b1e6c, (%esp)\n" /* "banClient %i
+        "movl $str_002b1e6c, (%esp)\n" /* "banClient %i
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -4102,11 +4102,11 @@ unsigned int GScr_ClientPrint(void)
         "calll Scr_GetString\n"
         "movl %eax, 8(%esp)\n" /* line 5082 */
         "movl $0x65, 4(%esp)\n"
-        "movl $0x2a737c, (%esp)\n" /* "%c "%s"" */
+        "movl $str_002a737c, (%esp)\n" /* "%c "%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "subl 0x195f688, %ebx\n" /* ent */
+        "subl imp_g_entities, %ebx\n" /* ent */
         "sarl $4, %ebx\n" /* ent */
         "imull $0x8af8af8b, %ebx, %eax\n" /* ent */
         "movl %eax, (%esp)\n"
@@ -4141,12 +4141,12 @@ unsigned int GScr_OpenFile(void)
         "movl $1, (%esp)\n" /* line 5104 */
         "calll Scr_GetString\n"
         "movl %eax, -0x4c(%ebp)\n" /* mode */
-        "movl 0x195f6a0, %ebx\n" /* line 5108 */
+        "movl imp_level, %ebx\n" /* line 5108 */
         "movl 0x3608(%ebx), %edx\n"
         "testl %edx, %edx\n"
         "js .Lf19860a_00198673\n"
         "movl $1, 4(%esp)\n" /* line 5117 */
-        "movl $0x2b1e7c, (%esp)\n" /* "OpenFile failed.  %i files already open
+        "movl $str_002b1e7c, (%esp)\n" /* "OpenFile failed.  %i files already open
 " */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5119 */
@@ -4164,10 +4164,10 @@ unsigned int GScr_OpenFile(void)
         /* { scope 1 */
         "leal 0x3608(%ebx), %eax\n" /* line 5110 */
         "movl %eax, -0x2c(%ebp)\n" /* f */
-        "movl $0x2b1ea8, -0x30(%ebp)\n" /* line 5123 */
+        "movl $str_002b1ea8, -0x30(%ebp)\n" /* line 5123 */
         "movl $5, -0x34(%ebp)\n"
         "cld\n"
-        "movl $0x2b1ea8, %edi\n" /* "read" */
+        "movl $str_002b1ea8, %edi\n" /* "read" */
         "movl $5, %ecx\n"
         "repe cmpsb %es:(%edi), (%esi)\n" /* filesize */
         "movl $0, %edx\n"
@@ -4180,8 +4180,8 @@ unsigned int GScr_OpenFile(void)
         "jne .Lf19860a_00198759\n"
         "movl -0x50(%ebp), %eax\n" /* line 5128 | filename */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b1eb0, 4(%esp)\n" /* "scriptdata" */
-        "movl $0x216e18, (%esp)\n" /* "%s/%s" */
+        "movl $str_002b1eb0, 4(%esp)\n" /* "scriptdata" */
+        "movl $str_00216e18, (%esp)\n" /* "%s/%s" */
         "calll va\n"
         "movl $0, 8(%esp)\n"
         "leal -0x1c(%ebp), %edx\n" /* tempFile */
@@ -4215,11 +4215,11 @@ unsigned int GScr_OpenFile(void)
         "calll Scr_AddInt\n"
         "jmp .Lf19860a_0019866b\n"
         ".Lf19860a_00198759:\n"
-        "movl $0x2b1ebc, -0x38(%ebp)\n" /* line 5149 */
+        "movl $str_002b1ebc, -0x38(%ebp)\n" /* line 5149 */
         "movl $6, %ebx\n"
         "cld\n"
         "movl -0x4c(%ebp), %esi\n" /* mode, filesize */
-        "movl $0x2b1ebc, %edi\n" /* "write" */
+        "movl $str_002b1ebc, %edi\n" /* "write" */
         "movl %ebx, %ecx\n"
         "repe cmpsb %es:(%edi), (%esi)\n" /* filesize */
         "movl $0, %edx\n"
@@ -4232,8 +4232,8 @@ unsigned int GScr_OpenFile(void)
         "jne .Lf19860a_001987eb\n"
         "movl -0x50(%ebp), %eax\n" /* line 5152 | filename */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b1eb0, 4(%esp)\n" /* "scriptdata" */
-        "movl $0x216e18, (%esp)\n" /* "%s/%s" */
+        "movl $str_002b1eb0, 4(%esp)\n" /* "scriptdata" */
+        "movl $str_00216e18, (%esp)\n" /* "%s/%s" */
         "calll va\n"
         "movl $1, 8(%esp)\n"
         ".Lf19860a_001987aa:\n"
@@ -4247,18 +4247,18 @@ unsigned int GScr_OpenFile(void)
         "calll Scr_AddInt\n"
         "jmp .Lf19860a_0019866b\n"
         ".Lf19860a_001987ce:\n"
-        "movl $0x2b1ecc, (%esp)\n" /* line 5171 */
+        "movl $str_002b1ecc, (%esp)\n" /* line 5171 */
         "calll Com_Printf\n"
         ".Lf19860a_001987da:\n"
         "movl $0xffffffff, (%esp)\n" /* line 5172 */
         "calll Scr_AddInt\n"
         "jmp .Lf19860a_0019866b\n"
         ".Lf19860a_001987eb:\n"
-        "movl $0x2b1ec4, -0x3c(%ebp)\n" /* line 5159 */
+        "movl $str_002b1ec4, -0x3c(%ebp)\n" /* line 5159 */
         "movl $7, %ebx\n"
         "cld\n"
         "movl -0x4c(%ebp), %esi\n" /* mode, filesize */
-        "movl $0x2b1ec4, %edi\n" /* "append" */
+        "movl $str_002b1ec4, %edi\n" /* "append" */
         "movl %ebx, %ecx\n"
         "repe cmpsb %es:(%edi), (%esi)\n" /* filesize */
         "movl $0, %edx\n"
@@ -4271,8 +4271,8 @@ unsigned int GScr_OpenFile(void)
         "jne .Lf19860a_001987ce\n"
         "movl -0x50(%ebp), %eax\n" /* line 5162 | filename */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b1eb0, 4(%esp)\n" /* "scriptdata" */
-        "movl $0x216e18, (%esp)\n" /* "%s/%s" */
+        "movl $str_002b1eb0, 4(%esp)\n" /* "scriptdata" */
+        "movl $str_00216e18, (%esp)\n" /* "%s/%s" */
         "calll va\n"
         "movl $2, 8(%esp)\n"
         "jmp .Lf19860a_001987aa\n"
@@ -4308,7 +4308,7 @@ unsigned int GScr_CloseFile(void)
         "cmpl $1, %eax\n" /* line 5193 */
         "jbe .Lf198842_00198890\n"
         "movl %eax, 4(%esp)\n" /* line 5195 */
-        "movl $0x2b1f04, (%esp)\n" /* "CloseFile failed, invalid file number %i
+        "movl $str_002b1f04, (%esp)\n" /* "CloseFile failed, invalid file number %i
 " */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5196 */
@@ -4321,7 +4321,7 @@ unsigned int GScr_CloseFile(void)
         "retl\n"
         /* { scope 1 */
         ".Lf198842_00198890:\n"
-        "movl 0x195f6a0, %esi\n" /* line 5203 */
+        "movl imp_level, %esi\n" /* line 5203 */
         "movl 0x3608(%esi, %eax, 4), %eax\n"
         "testl %eax, %eax\n"
         "jle .Lf198842_001988c7\n"
@@ -4350,7 +4350,7 @@ unsigned int GScr_CloseFile(void)
         "jmp .Lf198842_001988b4\n"
         ".Lf198842_001988f3:\n"
         "movl %ebx, 4(%esp)\n" /* line 5216 | filenum */
-        "movl $0x2b1f30, (%esp)\n" /* "CloseFile failed, file number %i was not open
+        "movl $str_002b1f30, (%esp)\n" /* "CloseFile failed, file number %i was not open
 " */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5217 */
@@ -4380,7 +4380,7 @@ unsigned int GScr_FPrintln(void)
         "cmpl $1, %eax\n" /* line 5247 */
         "jbe .Lf198914_00198962\n"
         "movl %eax, 4(%esp)\n" /* line 5249 */
-        "movl $0x2b1f98, (%esp)\n" /* "FPrintln failed, invalid file number %i
+        "movl $str_002b1f98, (%esp)\n" /* "FPrintln failed, invalid file number %i
 " */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5250 */
@@ -4395,7 +4395,7 @@ unsigned int GScr_FPrintln(void)
         "retl\n"
         /* { scope 1 */
         ".Lf198914_00198962:\n"
-        "movl 0x195f6a0, %eax\n" /* line 5254 */
+        "movl imp_level, %eax\n" /* line 5254 */
         "movl 0x3608(%eax, %esi, 4), %ebx\n"
         "testl %ebx, %ebx\n"
         "js .Lf198914_00198a24\n"
@@ -4406,7 +4406,7 @@ unsigned int GScr_FPrintln(void)
         "movl %eax, (%esp)\n"
         "calll Scr_GetString\n"
         "movl %eax, -0x2c(%ebp)\n" /* s */
-        "movl 0x195f6a0, %ebx\n" /* line 5264 */
+        "movl imp_level, %ebx\n" /* line 5264 */
         "movl 0x3608(%ebx, %esi, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
         "cld\n"
@@ -4423,7 +4423,7 @@ unsigned int GScr_FPrintln(void)
         "movl 0x3608(%ebx, %esi, 4), %eax\n" /* line 5265 */
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x21f88c, (%esp)\n" /* "," */
+        "movl $str_0021f88c, (%esp)\n" /* "," */
         "calll FS_Write\n"
         "addl $1, -0x1c(%ebp)\n" /* line 5261 | arg */
         ".Lf198914_001989e2:\n"
@@ -4443,7 +4443,7 @@ unsigned int GScr_FPrintln(void)
         "retl\n"
         /* { scope 1 */
         ".Lf198914_00198a04:\n"
-        "movl $0x2b1f60, (%esp)\n" /* line 5239 */
+        "movl $str_002b1f60, (%esp)\n" /* line 5239 */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5241 */
         "calll Scr_AddInt\n"
@@ -4457,7 +4457,7 @@ unsigned int GScr_FPrintln(void)
         /* { scope 1 */
         ".Lf198914_00198a24:\n"
         "movl %esi, 4(%esp)\n" /* line 5256 | filenum */
-        "movl $0x2b1fc4, (%esp)\n" /* "FPrintln failed, file number %i was not open for writing
+        "movl $str_002b1fc4, (%esp)\n" /* "FPrintln failed, file number %i was not open for writing
 " */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5257 */
@@ -4481,7 +4481,7 @@ unsigned int GScr_FReadLn(void)
         "calll Scr_GetNumParam\n" /* line 5286 */
         "testl %eax, %eax\n"
         "jne .Lf198a46_00198a78\n"
-        "movl $0x2b2000, (%esp)\n" /* line 5288 */
+        "movl $str_002b2000, (%esp)\n" /* line 5288 */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5290 */
         "calll Scr_AddInt\n"
@@ -4500,7 +4500,7 @@ unsigned int GScr_FReadLn(void)
         "cmpl $1, %eax\n" /* line 5296 */
         "jbe .Lf198a46_00198aad\n"
         "movl %eax, 4(%esp)\n" /* line 5298 */
-        "movl $0x2b2038, (%esp)\n" /* "freadln failed, invalid file number %i
+        "movl $str_002b2038, (%esp)\n" /* "freadln failed, invalid file number %i
 " */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5299 */
@@ -4514,7 +4514,7 @@ unsigned int GScr_FReadLn(void)
         "retl\n"
         /* { scope 1 */
         ".Lf198a46_00198aad:\n"
-        "movl 0x195f6a0, %ecx\n" /* line 5303 */
+        "movl imp_level, %ecx\n" /* line 5303 */
         "movl 0x360c(%ecx, %eax, 4), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf198a46_00198b6e\n"
@@ -4565,7 +4565,7 @@ unsigned int GScr_FReadLn(void)
         "jmp .Lf198a46_00198a70\n"
         ".Lf198a46_00198b6e:\n"
         "movl %eax, 4(%esp)\n" /* line 5305 */
-        "movl $0x2b2060, (%esp)\n" /* "freadln failed, file number %i was not open for reading
+        "movl $str_002b2060, (%esp)\n" /* "freadln failed, file number %i was not open for reading
 " */
         "calll Com_Printf\n"
         "movl $0xffffffff, (%esp)\n" /* line 5306 */
@@ -4598,10 +4598,10 @@ unsigned int GScr_FGetArg(void)
         "cmpl $1, %ebx\n" /* line 5372 | i */
         "jbe .Lf198b90_00198bec\n"
         "movl %ebx, 4(%esp)\n" /* line 5374 | i */
-        "movl $0x2b20d8, (%esp)\n" /* "freadline failed, invalid file number %i
+        "movl $str_002b20d8, (%esp)\n" /* "freadline failed, invalid file number %i
 " */
         "calll Com_Printf\n"
-        "movl $0x2157b8, (%esp)\n" /* line 5375 */
+        "movl $str_002157b8, (%esp)\n" /* line 5375 */
         "calll Scr_AddString\n"
         /* } scope */
         ".Lf198b90_00198be4:\n"
@@ -4615,7 +4615,7 @@ unsigned int GScr_FGetArg(void)
         ".Lf198b90_00198bec:\n"
         "testl %eax, %eax\n" /* line 5379 */
         "js .Lf198b90_00198cb4\n"
-        "movl 0x195f6a0, %edx\n" /* line 5386 */
+        "movl imp_level, %edx\n" /* line 5386 */
         "movl 0x360c(%edx, %ebx, 4), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf198b90_00198c93\n"
@@ -4646,9 +4646,9 @@ unsigned int GScr_FGetArg(void)
         "retl\n"
         /* { scope 1 */
         ".Lf198b90_00198c4b:\n"
-        "movl $0x2b209c, (%esp)\n" /* line 5363 */
+        "movl $str_002b209c, (%esp)\n" /* line 5363 */
         "calll Com_Printf\n"
-        "movl $0x2157b8, (%esp)\n" /* line 5365 */
+        "movl $str_002157b8, (%esp)\n" /* line 5365 */
         "calll Scr_AddString\n"
         /* } scope */
         "addl $0x2c, %esp\n" /* line 5412 */
@@ -4662,25 +4662,25 @@ unsigned int GScr_FGetArg(void)
         "movl %ebx, 8(%esp)\n" /* line 5404 | i */
         "leal 1(%esi), %eax\n" /* arg */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2170, (%esp)\n" /* "freadline failed, there aren't %i arguments on this line, th" */
+        "movl $str_002b2170, (%esp)\n" /* "freadline failed, there aren't %i arguments on this line, th" */
         "calll Com_Printf\n"
-        "movl $0x2157b8, (%esp)\n" /* line 5405 */
+        "movl $str_002157b8, (%esp)\n" /* line 5405 */
         "calll Scr_AddString\n"
         "jmp .Lf198b90_00198be4\n"
         ".Lf198b90_00198c93:\n"
         "movl %ebx, 4(%esp)\n" /* line 5388 | i */
-        "movl $0x2b2134, (%esp)\n" /* "freadline failed, file number %i was not open for reading
+        "movl $str_002b2134, (%esp)\n" /* "freadline failed, file number %i was not open for reading
 " */
         "calll Com_Printf\n"
-        "movl $0x2157b8, (%esp)\n" /* line 5389 */
+        "movl $str_002157b8, (%esp)\n" /* line 5389 */
         "calll Scr_AddString\n"
         "jmp .Lf198b90_00198be4\n"
         ".Lf198b90_00198cb4:\n"
         "movl %eax, 4(%esp)\n" /* line 5381 */
-        "movl $0x2b2104, (%esp)\n" /* "freadline failed, invalid argument number %i
+        "movl $str_002b2104, (%esp)\n" /* "freadline failed, invalid argument number %i
 " */
         "calll Com_Printf\n"
-        "movl $0x2157b8, (%esp)\n" /* line 5382 */
+        "movl $str_002157b8, (%esp)\n" /* line 5382 */
         "calll Scr_AddString\n"
         "jmp .Lf198b90_00198be4\n"
     );
@@ -4758,10 +4758,10 @@ unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n"
         "subl %eax, %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
+        "addl imp_g_entities, %esi\n"
         ".Lf198d2a_00198d58:\n"
         "movzwl 0x168(%esi), %edx\n" /* line 5683 | triggerEnt */
-        "movl 0x195f5bc, %edi\n"
+        "movl imp_scr_const, %edi\n"
         "cmpw 0x56(%edi), %dx\n"
         "je .Lf198d2a_00198da9\n"
         "movzwl 0x58(%edi), %eax\n"
@@ -4776,7 +4776,7 @@ unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref)
         "calll SL_ConvertToString\n"
         "movl %ebx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b21d8, (%esp)\n" /* "releaseclaimedtrigger: trigger entity must be of type %s or " */
+        "movl $str_002b21d8, (%esp)\n" /* "releaseclaimedtrigger: trigger entity must be of type %s or " */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -4791,7 +4791,7 @@ unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf198d2a_00198dbb:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n"
         "jmp .Lf198d2a_00198d58\n"
@@ -4835,10 +4835,10 @@ BuiltinFunction Scr_GetFunction(const char * *pName, int *type)
         "movl functions(%edi), %eax\n" /* line 5904 */
         "movl 8(%ebp), %edx\n" /* pName */
         "movl %eax, (%edx)\n"
-        "movl 0x313208(%edi), %eax\n" /* line 5905 */
+        "movl functions+8(%edi), %eax\n" /* line 5905 */
         "movl 0xc(%ebp), %edx\n" /* type */
         "movl %eax, (%edx)\n"
-        "movl 0x313204(%edi), %eax\n" /* line 5906 */
+        "movl functions+4(%edi), %eax\n" /* line 5906 */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 5910 */
         "popl %ebx\n"
@@ -4921,9 +4921,9 @@ BuiltinMethod Scr_GetMethod(const char * *pName, int *type)
         "movl -0x24(%ebp), %edx\n" /* line 5998 */
         "movl methods(%edx), %eax\n"
         "movl %eax, (%ebx)\n"
-        "movl 0x3138c8(%edx), %eax\n" /* line 5999 */
+        "movl methods+8(%edx), %eax\n" /* line 5999 */
         "movl %eax, (%esi)\n"
-        "movl 0x3138c4(%edx), %eax\n" /* line 6000 */
+        "movl methods+4(%edx), %eax\n" /* line 6000 */
         "jmp .Lf198e3e_00198e5f\n"
         ".Lf198e3e_00198edc:\n"
         "xorl %eax, %eax\n" /* line 5994 */
@@ -5051,14 +5051,14 @@ unsigned int Scr_ParseGameTypeList(void)
         /* { scope 1 */
         "movl $0x1080, 8(%esp)\n" /* line 6183 */
         "movl $0, 4(%esp)\n"
-        "movl $0x17ddaac, (%esp)\n"
+        "movl $g_scr_data+44, (%esp)\n"
         "calll memset\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 6186 */
         "leal -0x1420(%ebp), %edi\n" /* szGameTypeList, iFileLength */
         "movl %edi, 0xc(%esp)\n" /* iFileLength */
         "movl $0, 8(%esp)\n"
-        "movl $0x2aa304, 4(%esp)\n" /* "gsc" */
-        "movl $0x2aa308, (%esp)\n" /* "maps/mp/gametypes" */
+        "movl $str_002aa304, 4(%esp)\n" /* "gsc" */
+        "movl $str_002aa308, (%esp)\n" /* "maps/mp/gametypes" */
         "calll FS_GetFileList\n"
         "movl %eax, -0x1430(%ebp)\n" /* iNumGameTypeScripts */
         "testl %eax, %eax\n" /* line 6194 */
@@ -5066,7 +5066,7 @@ unsigned int Scr_ParseGameTypeList(void)
         "movl $0, -0x1434(%ebp)\n" /* iNumGameTypes */
         ".Lf198fba_00199024:\n"
         "movl -0x1434(%ebp), %eax\n" /* line 6290 | iNumGameTypes */
-        "movl %eax, 0x17ddaa8\n"
+        "movl %eax, g_scr_data+40\n"
         /* } scope */
         "addl $0x145c, %esp\n" /* line 6291 */
         "popl %ebx\n"
@@ -5079,7 +5079,7 @@ unsigned int Scr_ParseGameTypeList(void)
         "movl %edi, %esi\n" /* line 6194 | iFileLength, pszFileName */
         "movl $0, -0x1438(%ebp)\n" /* i */
         "movl $0, -0x1434(%ebp)\n" /* iNumGameTypes */
-        "movl $0x17ddaa0, -0x1440(%ebp)\n"
+        "movl $g_scr_data+32, -0x1440(%ebp)\n"
         "jmp .Lf198fba_00199075\n"
         ".Lf198fba_0019905c:\n"
         "leal 1(%esi, %ebx), %esi\n" /* line 6205 | pszFileName */
@@ -5101,7 +5101,7 @@ unsigned int Scr_ParseGameTypeList(void)
         "leal -1(%ecx), %ebx\n" /* len */
         "cmpb $0x5f, (%esi)\n" /* line 6202 | pszFileName */
         "je .Lf198fba_0019905c\n"
-        "movl $0x2aa31c, 4(%esp)\n" /* line 6210 */
+        "movl $str_002aa31c, 4(%esp)\n" /* line 6210 */
         "leal (%esi, %ebx), %eax\n" /* pszFileName */
         "movl %eax, -0x143c(%ebp)\n"
         "subl $4, %eax\n"
@@ -5122,7 +5122,7 @@ unsigned int Scr_ParseGameTypeList(void)
         "movl %eax, (%esp)\n"
         "calll strlwr\n"
         "movl %esi, 4(%esp)\n" /* line 6229 | pszFileName */
-        "movl $0x2aa364, (%esp)\n" /* "maps/mp/gametypes/%s.txt" */
+        "movl $str_002aa364, (%esp)\n" /* "maps/mp/gametypes/%s.txt" */
         "calll va\n"
         "movl $0, 8(%esp)\n" /* line 6233 */
         "leal -0x20(%ebp), %edx\n" /* hFile */
@@ -5136,10 +5136,10 @@ unsigned int Scr_ParseGameTypeList(void)
         "testl %edi, %edi\n" /* line 6243 | iFileLength */
         "jle .Lf198fba_0019923f\n"
         "movl %esi, 4(%esp)\n" /* line 6246 | pszFileName */
-        "movl $0x2aa364, (%esp)\n" /* "maps/mp/gametypes/%s.txt" */
+        "movl $str_002aa364, (%esp)\n" /* "maps/mp/gametypes/%s.txt" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2260, (%esp)\n" /* "WARNING: GameType description file %s is too big to load.
+        "movl $str_002b2260, (%esp)\n" /* "WARNING: GameType description file %s is too big to load.
 " */
         "calll Com_Printf\n"
         ".Lf198fba_00199153:\n"
@@ -5185,7 +5185,7 @@ unsigned int Scr_ParseGameTypeList(void)
         "calll Com_Parse\n"
         "testl %eax, %eax\n" /* line 6271 */
         "je .Lf198fba_0019922a\n"
-        "movl $0x2aa728, 4(%esp)\n" /* "team" */
+        "movl $str_002aa728, 4(%esp)\n" /* "team" */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -5199,16 +5199,16 @@ unsigned int Scr_ParseGameTypeList(void)
         "jmp .Lf198fba_00199180\n"
         ".Lf198fba_0019923f:\n"
         "movl %esi, 4(%esp)\n" /* line 6244 | pszFileName */
-        "movl $0x2aa364, (%esp)\n" /* "maps/mp/gametypes/%s.txt" */
+        "movl $str_002aa364, (%esp)\n" /* "maps/mp/gametypes/%s.txt" */
         "calll va\n"
         "movl %esi, 8(%esp)\n" /* pszFileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2218, (%esp)\n" /* "WARNING: Could not load GameType description file %s for gam" */
+        "movl $str_002b2218, (%esp)\n" /* "WARNING: Could not load GameType description file %s for gam" */
         "calll Com_Printf\n"
         "jmp .Lf198fba_00199153\n"
         ".Lf198fba_00199268:\n"
         "movl $0x1f, 4(%esp)\n" /* line 6221 */
-        "movl $0x2aa324, (%esp)\n" /* "Too many game type scripts found! Only loading the first %i
+        "movl $str_002aa324, (%esp)\n" /* "Too many game type scripts found! Only loading the first %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf198fba_00199024\n"
@@ -5227,7 +5227,7 @@ const char * Scr_GetGameTypeNameForScript(const char *pszGameTypeScript)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl 0x17ddaa8, %eax\n" /* line 6306 */
+        "movl g_scr_data+40, %eax\n" /* line 6306 */
         "testl %eax, %eax\n"
         "jg .Lf199282_0019929e\n"
         ".Lf199282_00199294:\n"
@@ -5243,8 +5243,8 @@ const char * Scr_GetGameTypeNameForScript(const char *pszGameTypeScript)
         /* { scope 1 */
         ".Lf199282_0019929e:\n"
         "xorl %esi, %esi\n" /* line 6306 | i */
-        "movl $0x17ddaec, %edi\n"
-        "movl $0x17ddaac, %ebx\n"
+        "movl $g_scr_data+108, %edi\n"
+        "movl $g_scr_data+44, %ebx\n"
         ".Lf199282_001992aa:\n"
         "movl 8(%ebp), %eax\n" /* line 6308 | pszGameTypeScript */
         "movl %eax, 4(%esp)\n"
@@ -5255,7 +5255,7 @@ const char * Scr_GetGameTypeNameForScript(const char *pszGameTypeScript)
         "addl $1, %esi\n" /* line 6306 | i */
         "addl $0x84, %ebx\n"
         "addl $0x84, %edi\n"
-        "cmpl %esi, 0x17ddaa8\n" /* i */
+        "cmpl %esi, g_scr_data+40\n" /* i */
         "jg .Lf199282_001992aa\n"
         "jmp .Lf199282_00199294\n"
         ".Lf199282_001992d6:\n"
@@ -5318,7 +5318,7 @@ unsigned int Scr_VoteCalled(gentity_t *self, char *command, char *param1, char *
         "movl %esi, (%esp)\n" /* line 6459 | command */
         "calll Scr_AddString\n"
         "movl $3, 0x10(%ebp)\n" /* line 6461 | param1 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x7e(%eax), %eax\n"
         "movl %eax, 0xc(%ebp)\n" /* command */
         "movl %edi, 8(%ebp)\n" /* self */
@@ -5335,7 +5335,7 @@ unsigned int Scr_VoteCalled(gentity_t *self, char *command, char *param1, char *
 unsigned int Scr_PlayerVote(gentity_t *self, char *option)
 {
     Scr_AddString(option);
-    Scr_Notify(self, *(unsigned short *)(*(byte **)0x195f5bc + 0x80), 1);
+    Scr_Notify(self, *(unsigned short *)(*(byte **)imp_scr_const + 0x80), 1);
     return 0;
 }
 
@@ -5552,7 +5552,7 @@ unsigned int GScr_Spawn(void)
         "movl %esi, (%esp)\n" /* line 993 | classname */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b229c, (%esp)\n" /* "unable to spawn "%s" entity" */
+        "movl $str_002b229c, (%esp)\n" /* "unable to spawn "%s" entity" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -5658,7 +5658,7 @@ unsigned int Scr_GrenadeExplosionEffect(void)
         "movl -0x10(%ebp), %eax\n" /* line 200 */
         "movl %eax, -0x28(%ebp)\n"
         "movss -0xc(%ebp), %xmm0\n" /* line 3690 */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x24(%ebp)\n"
         "movl $0xbc, 4(%esp)\n" /* line 3692 */
         "leal -0x2c(%ebp), %ebx\n" /* vPos */
@@ -5679,13 +5679,13 @@ unsigned int Scr_GrenadeExplosionEffect(void)
         "movl -0x28(%ebp), %eax\n" /* line 200 */
         "movl %eax, -0x34(%ebp)\n"
         "movss -0x24(%ebp), %xmm0\n" /* line 201 */
-        "subss 0x2ed97c, %xmm0\n" /* line 3698 | 17.0f */
+        "subss lit4_002ed97c, %xmm0\n" /* line 3698 | 17.0f */
         "movss %xmm0, -0x30(%ebp)\n"
         "movl $0x811, 0x18(%esp)\n" /* line 3699 */
         "movl $0x3ff, 0x14(%esp)\n"
         "leal -0x38(%ebp), %eax\n" /* vEnd */
         "movl %eax, 0x10(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
@@ -5724,7 +5724,7 @@ unsigned int Scr_Objective_Position(void)
         "leal (, %ebx, 4), %eax\n" /* line 2259 */
         "shll $5, %ebx\n" /* obj */
         "subl %eax, %ebx\n" /* obj */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x24, %eax\n"
         "addl %eax, %ebx\n" /* obj */
         "movl 0x10(%ebx), %eax\n" /* line 2077 */
@@ -5735,7 +5735,7 @@ unsigned int Scr_Objective_Position(void)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "cmpb $0, 0xfc(%edx)\n" /* line 2082 */
         "jne .Lf19983c_001998e2\n"
         ".Lf19983c_00199898:\n"
@@ -5769,7 +5769,7 @@ unsigned int Scr_Objective_Position(void)
         ".Lf19983c_001998eb:\n"
         "movl $0xf, 8(%esp)\n" /* line 2258 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -5794,7 +5794,7 @@ unsigned int GScr_positionWouldTelefrag(void)
         "movl $0, (%esp)\n"
         "calll Scr_GetVector\n"
         "movss -0x2c(%ebp), %xmm3\n" /* line 240 | vPos */
-        "movl 0x195f6bc, %eax\n"
+        "movl imp_playerMins, %eax\n"
         "movaps %xmm3, %xmm0\n"
         "addss (%eax), %xmm0\n"
         "movss %xmm0, -0x14(%ebp)\n" /* mins */
@@ -5806,7 +5806,7 @@ unsigned int GScr_positionWouldTelefrag(void)
         "movaps %xmm1, %xmm0\n"
         "addss 8(%eax), %xmm0\n"
         "movss %xmm0, -0xc(%ebp)\n"
-        "movl 0x195f6b0, %eax\n" /* line 240 */
+        "movl imp_playerMaxs, %eax\n" /* line 240 */
         "addss (%eax), %xmm3\n"
         "movss %xmm3, -0x20(%ebp)\n" /* maxs */
         "addss 4(%eax), %xmm2\n" /* line 241 */
@@ -5826,7 +5826,7 @@ unsigned int GScr_positionWouldTelefrag(void)
         "testl %eax, %eax\n" /* line 2520 */
         "jle .Lf199918_001999fa\n"
         "xorl %ecx, %ecx\n"
-        "movl 0x195f688, %esi\n"
+        "movl imp_g_entities, %esi\n"
         ".Lf199918_001999cc:\n"
         "movl -0x102c(%ebp, %ecx, 4), %eax\n" /* line 2523 */
         "leal (%eax, %eax, 4), %eax\n"
@@ -5887,7 +5887,7 @@ unsigned int GScr_GetBrushModelCenter(void)
         "movss 8(%edx), %xmm2\n" /* line 242 */
         "addss 8(%ecx), %xmm2\n"
         /* } scope */
-        "movss 0x2ed5d8, %xmm0\n" /* line 272 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 272 | 0.5f */
         "mulss %xmm0, %xmm3\n"
         "movss %xmm3, -0x14(%ebp)\n" /* vCenter */
         "mulss %xmm0, %xmm1\n" /* line 273 */
@@ -5921,7 +5921,7 @@ unsigned int Scr_Objective_Delete(void)
         "leal (, %ebx, 4), %eax\n" /* line 2189 */
         "shll $5, %ebx\n"
         "subl %eax, %ebx\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x24, %eax\n"
         "leal (%ebx, %eax), %ecx\n" /* obj */
         /* { scope 1 */
@@ -5933,7 +5933,7 @@ unsigned int Scr_Objective_Delete(void)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "cmpb $0, 0xfc(%edx)\n" /* line 2082 */
         "jne .Lf199aa2_00199b31\n"
         ".Lf199aa2_00199afb:\n"
@@ -5966,7 +5966,7 @@ unsigned int Scr_Objective_Delete(void)
         ".Lf199aa2_00199b3a:\n"
         "movl $0xf, 8(%esp)\n" /* line 2188 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -5983,10 +5983,10 @@ unsigned int G_InitObjectives(void)
         "pushl %ebp\n" /* line 2038 */
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
-        "movl 0x195f6a0, %edx\n"
+        "movl imp_level, %edx\n"
         "addl $0x24, %edx\n"
         "movl %edx, %ecx\n"
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         "addl $0x1e4, %ebx\n"
         ".Lf199b68_00199b83:\n"
         "movl $0, (%edx)\n" /* line 2097 */
@@ -6054,7 +6054,7 @@ unsigned int Scr_BulletTrace(void)
         "movl -0x6c(%ebp), %eax\n" /* line 2796 | trace */
         "movl %eax, (%esp)\n"
         "calll Scr_AddFloat\n"
-        "movl 0x195f5bc, %ebx\n" /* line 2797 | iClipMask */
+        "movl imp_scr_const, %ebx\n" /* line 2797 | iClipMask */
         "movzwl 0x16(%ebx), %eax\n" /* iClipMask */
         "movl %eax, (%esp)\n"
         "calll Scr_AddArrayStringIndexed\n"
@@ -6094,15 +6094,15 @@ unsigned int Scr_BulletTrace(void)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
+        "addl imp_g_entities, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_AddEntity\n"
         ".Lf199bc4_00199d12:\n"
-        "movl 0x195f5bc, %esi\n" /* line 2809 */
+        "movl imp_scr_const, %esi\n" /* line 2809 */
         "movzwl 0x12(%esi), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_AddArrayStringIndexed\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2811 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2811 | 1.0f */
         "ucomiss -0x6c(%ebp), %xmm0\n" /* trace */
         "ja .Lf199bc4_00199da3\n"
         /* { scope 2 */
@@ -6204,7 +6204,7 @@ unsigned int Scr_Objective_Add(void)
         "leal (, %ebx, 4), %eax\n" /* line 2152 */
         "shll $5, %ebx\n" /* obj */
         "subl %eax, %ebx\n" /* obj */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x24, %eax\n"
         "addl %eax, %ebx\n" /* obj */
         "movl 0x10(%ebx), %eax\n" /* line 2077 */
@@ -6215,7 +6215,7 @@ unsigned int Scr_Objective_Add(void)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "cmpb $0, 0xfc(%edx)\n" /* line 2082 */
         "jne .Lf199e1e_00199f04\n"
         ".Lf199e1e_00199e8b:\n"
@@ -6225,7 +6225,7 @@ unsigned int Scr_Objective_Add(void)
         "movl $1, (%esp)\n" /* line 2156 */
         "calll Scr_GetConstString\n"
         /* { scope 2 */
-        "movl 0x195f5bc, %ecx\n" /* line 2054 */
+        "movl imp_scr_const, %ecx\n" /* line 2054 */
         "movzwl %ax, %edx\n"
         "cmpw %ax, 0x10(%ecx)\n"
         "je .Lf199e1e_00199eed\n"
@@ -6239,7 +6239,7 @@ unsigned int Scr_Objective_Add(void)
         "movl %edx, (%esp)\n" /* line 2158 */
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2330, (%esp)\n" /* "Illegal objective state "%s". Valid states are "empty", "inv" */
+        "movl $str_002b2330, (%esp)\n" /* "Illegal objective state "%s". Valid states are "empty", "inv" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -6295,7 +6295,7 @@ unsigned int Scr_Objective_Add(void)
         ".Lf199e1e_00199f73:\n"
         "movl $0xf, 8(%esp)\n" /* line 2151 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -6310,7 +6310,7 @@ unsigned int Scr_Objective_Add(void)
         "movl $4, %eax\n" /* line 2172 */
         "jmp .Lf199e1e_00199eef\n"
         ".Lf199e1e_00199fb4:\n"
-        "movl $0x2b22b8, (%esp)\n" /* line 2147 */
+        "movl $str_002b22b8, (%esp)\n" /* line 2147 */
         "calll Scr_Error\n"
         "jmp .Lf199e1e_00199e36\n"
     );
@@ -6335,13 +6335,13 @@ unsigned int Scr_Objective_State(void)
         "leal (, %ebx, 4), %eax\n" /* line 2211 */
         "shll $5, %ebx\n" /* obj */
         "subl %eax, %ebx\n" /* obj */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x24, %eax\n"
         "addl %eax, %ebx\n" /* obj */
         "movl $1, (%esp)\n" /* line 2213 */
         "calll Scr_GetConstString\n"
         /* { scope 2 */
-        "movl 0x195f5bc, %edx\n" /* line 2054 */
+        "movl imp_scr_const, %edx\n" /* line 2054 */
         "movzwl %ax, %ecx\n"
         "cmpw %ax, 0x10(%edx)\n"
         "je .Lf199fc6_0019a059\n"
@@ -6355,7 +6355,7 @@ unsigned int Scr_Objective_State(void)
         "movl $1, (%esp)\n" /* line 2215 */
         "calll Scr_GetString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2330, (%esp)\n" /* "Illegal objective state "%s". Valid states are "empty", "inv" */
+        "movl $str_002b2330, (%esp)\n" /* "Illegal objective state "%s". Valid states are "empty", "inv" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -6384,7 +6384,7 @@ unsigned int Scr_Objective_State(void)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "cmpb $0, 0xfc(%edx)\n" /* line 2082 */
         "jne .Lf199fc6_0019a0a1\n"
         "movl $0x3ff, 0x10(%ebx)\n" /* line 2085 */
@@ -6405,7 +6405,7 @@ unsigned int Scr_Objective_State(void)
         ".Lf199fc6_0019a0b1:\n"
         "movl $0xf, 8(%esp)\n" /* line 2210 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
+        "movl $str_002b133c, (%esp)\n" /* "index %i is an illegal objective index. Valid indexes are 0 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -6438,7 +6438,7 @@ unsigned int Scr_MusicStop(void)
         "je .Lf19a0f2_0019a121\n"
         "subl $1, %eax\n"
         "je .Lf19a0f2_0019a159\n"
-        "movl $0x2b2380, (%esp)\n" /* line 3469 */
+        "movl $str_002b2380, (%esp)\n" /* line 3469 */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6453,7 +6453,7 @@ unsigned int Scr_MusicStop(void)
         ".Lf19a0f2_0019a123:\n"
         "movl %ebx, 8(%esp)\n" /* line 3476 | fadeTime */
         "movl $0x70, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
+        "movl $str_002b1d38, (%esp)\n" /* "%c %i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
@@ -6470,15 +6470,15 @@ unsigned int Scr_MusicStop(void)
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n"
         "movss -0x1c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc(%ebp)\n"
         "cvttss2si -0xc(%ebp), %ebx\n"
         "testl %ebx, %ebx\n" /* line 3473 | fadeTime */
         "jns .Lf19a0f2_0019a123\n"
-        "movl $0x2b23a0, (%esp)\n" /* line 3474 */
+        "movl $str_002b23a0, (%esp)\n" /* line 3474 */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6502,7 +6502,7 @@ unsigned int Scr_AmbientPlay(void)
         "je .Lf19a1ac_0019a1de\n"
         "cmpl $2, %eax\n"
         "je .Lf19a1ac_0019a235\n"
-        "movl $0x2b23c4, (%esp)\n" /* line 3629 */
+        "movl $str_002b23c4, (%esp)\n" /* line 3629 */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6524,11 +6524,11 @@ unsigned int Scr_AmbientPlay(void)
         "testl %ebx, %ebx\n" /* line 3635 | iFadeTime */
         "js .Lf19a1ac_0019a29b\n"
         ".Lf19a1ac_0019a1ff:\n"
-        "movl 0x195f6a0, %eax\n" /* line 3638 */
+        "movl imp_level, %eax\n" /* line 3638 */
         "addl 0x1ec(%eax), %ebx\n" /* iFadeTime */
         "movl %ebx, 8(%esp)\n" /* iFadeTime */
         "movl %esi, 4(%esp)\n" /* pszAliasName */
-        "movl $0x2b246c, (%esp)\n" /* "n\%s\t\%i" */
+        "movl $str_002b246c, (%esp)\n" /* "n\%s\t\%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $3, (%esp)\n"
@@ -6545,8 +6545,8 @@ unsigned int Scr_AmbientPlay(void)
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n"
         "movss -0x1c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc(%ebp)\n"
@@ -6557,13 +6557,13 @@ unsigned int Scr_AmbientPlay(void)
         "cmpb $0, (%eax)\n" /* line 3633 */
         "jne .Lf19a1ac_0019a1f7\n"
         ".Lf19a1ac_0019a282:\n"
-        "movl $0x2b23f4, (%esp)\n" /* line 3634 */
+        "movl $str_002b23f4, (%esp)\n" /* line 3634 */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         "jmp .Lf19a1ac_0019a1f7\n"
         ".Lf19a1ac_0019a29b:\n"
-        "movl $0x2b2444, (%esp)\n" /* line 3636 */
+        "movl $str_002b2444, (%esp)\n" /* line 3636 */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6586,7 +6586,7 @@ unsigned int Scr_AmbientStop(void)
         "je .Lf19a2b4_0019a2e3\n"
         "subl $1, %eax\n"
         "je .Lf19a2b4_0019a316\n"
-        "movl $0x2b2478, (%esp)\n" /* line 3660 */
+        "movl $str_002b2478, (%esp)\n" /* line 3660 */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6599,10 +6599,10 @@ unsigned int Scr_AmbientStop(void)
         ".Lf19a2b4_0019a2e3:\n"
         "xorl %ebx, %ebx\n" /* line 3651 | iFadeTime */
         ".Lf19a2b4_0019a2e5:\n"
-        "movl 0x195f6a0, %eax\n" /* line 3667 */
+        "movl imp_level, %eax\n" /* line 3667 */
         "addl 0x1ec(%eax), %ebx\n" /* iFadeTime */
         "movl %ebx, 4(%esp)\n" /* iFadeTime */
-        "movl $0x2b24c4, (%esp)\n" /* "t\%i" */
+        "movl $str_002b24c4, (%esp)\n" /* "t\%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $3, (%esp)\n"
@@ -6618,15 +6618,15 @@ unsigned int Scr_AmbientStop(void)
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n"
         "movss -0x1c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc(%ebp)\n"
         "cvttss2si -0xc(%ebp), %ebx\n"
         "testl %ebx, %ebx\n" /* line 3664 | iFadeTime */
         "jns .Lf19a2b4_0019a2e5\n"
-        "movl $0x2b249c, (%esp)\n" /* line 3665 */
+        "movl $str_002b249c, (%esp)\n" /* line 3665 */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6672,7 +6672,7 @@ unsigned int Scr_PlayLoopedFX(void)
         "movl $0, -0x44c(%ebp)\n" /* cullDist */
         "jmp .Lf19a36a_0019a512\n"
         ".Lf19a36a_0019a3f1:\n"
-        "movl $0x2b24cc, (%esp)\n" /* line 3989 */
+        "movl $str_002b24cc, (%esp)\n" /* line 3989 */
         "calll Scr_Error\n"
         "jmp .Lf19a36a_0019a38a\n"
         ".Lf19a36a_0019a3ff:\n"
@@ -6702,7 +6702,7 @@ unsigned int Scr_PlayLoopedFX(void)
         "calll SV_GetConfigstring\n"
         ".Lf19a36a_0019a469:\n"
         "movl %ebx, 4(%esp)\n" /* line 4007 | ent */
-        "movl $0x2b257c, (%esp)\n" /* "playLoopedFx called with (0 0 0) up direction (effect = %s)
+        "movl $str_002b257c, (%esp)\n" /* "playLoopedFx called with (0 0 0) up direction (effect = %s)
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -6717,7 +6717,7 @@ unsigned int Scr_PlayLoopedFX(void)
         "calll Vec3Normalize\n"
         "fstps -0x454(%ebp)\n"
         "movss -0x454(%ebp), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jne .Lf19a36a_0019a500\n"
         "jp .Lf19a36a_0019a500\n"
         /* { scope 2 */
@@ -6733,7 +6733,7 @@ unsigned int Scr_PlayLoopedFX(void)
         "calll SV_GetConfigstring\n"
         ".Lf19a36a_0019a4e8:\n"
         "movl %ebx, 4(%esp)\n" /* line 4020 | ent */
-        "movl $0x2b25bc, (%esp)\n" /* "playLoopedFx called with (0 0 0) forward direction (effect =" */
+        "movl $str_002b25bc, (%esp)\n" /* "playLoopedFx called with (0 0 0) forward direction (effect =" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6751,8 +6751,8 @@ unsigned int Scr_PlayLoopedFX(void)
         "calll Scr_GetFloat\n"
         "fstps -0x46c(%ebp)\n"
         "movss -0x46c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x45c(%ebp)\n"
@@ -6812,7 +6812,7 @@ unsigned int Scr_PlayLoopedFX(void)
         /* } scope */
         ".Lf19a36a_0019a63e:\n"
         "movl %esi, 4(%esp)\n" /* line 4030 | repeat */
-        "movl $0x2b2600, (%esp)\n" /* "playLoopedFx called with %f s repeat (should be >= 0.0005s)
+        "movl $str_002b2600, (%esp)\n" /* "playLoopedFx called with %f s repeat (should be >= 0.0005s)
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -6910,7 +6910,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "ja .Lf19a6a2_0019a717\n"
         "movsbl %dl, %eax\n" /* line 450 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b26e0, (%esp)\n" /* "bad escape character (%i) present in string" */
+        "movl $str_002b26e0, (%esp)\n" /* "bad escape character (%i) present in string" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl -0x28(%ebp), %edx\n" /* parmIndex */
@@ -6931,7 +6931,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "testl %eax, %eax\n" /* line 452 */
         "je .Lf19a6a2_0019a735\n"
         ".Lf19a6a2_0019a798:\n"
-        "movl 0x195f570, %eax\n" /* line 454 */
+        "movl imp_loc_warningsAsErrors, %eax\n" /* line 454 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf19a6a2_0019a9a4\n"
@@ -6939,7 +6939,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "movl %eax, 8(%esp)\n"
         "movl 0x10(%ebp), %edx\n" /* errorContext */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b2754, (%esp)\n" /* "^3WARNING: Non-localized %s string is not allowed to have le" */
+        "movl $str_002b2754, (%esp)\n" /* "^3WARNING: Non-localized %s string is not allowed to have le" */
         "calll Com_Printf\n"
         ".Lf19a6a2_0019a7c3:\n"
         "movl -0x24(%ebp), %edx\n" /* line 462 | stringLen */
@@ -7010,7 +7010,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "movl 0x158(%ebx), %eax\n" /* line 427 | ent */
         "addl $0x2784, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ac668, (%esp)\n" /* "%s^7" */
+        "movl $str_002ac668, (%esp)\n" /* "%s^7" */
         "calll va\n"
         "movl %eax, -0x20(%ebp)\n" /* token */
         "cld\n" /* line 428 */
@@ -7029,7 +7029,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "movl %eax, 8(%esp)\n"
         "movl 0x10(%ebp), %edx\n" /* errorContext */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b26a4, (%esp)\n" /* "%s is too long. Max length is %i
+        "movl $str_002b26a4, (%esp)\n" /* "%s is too long. Max length is %i
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -7068,7 +7068,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "je .Lf19a6a2_0019a947\n"
         "movl -0x20(%ebp), %edx\n" /* line 372 | token */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b2640, (%esp)\n" /* "Illegal localized string reference: %s must contain only alp" */
+        "movl $str_002b2640, (%esp)\n" /* "Illegal localized string reference: %s must contain only alp" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl -0x28(%ebp), %eax\n" /* parmIndex */
@@ -7116,7 +7116,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "movl %edx, 8(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* errorContext */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b270c, (%esp)\n" /* "non-localized %s strings are not allowed to have letters in " */
+        "movl $str_002b270c, (%esp)\n" /* "non-localized %s strings are not allowed to have letters in " */
         "calll va\n"
         "movl %eax, 4(%esp)\n" /* line 354 */
         "movl $6, (%esp)\n"
@@ -7127,7 +7127,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "movl %eax, 8(%esp)\n"
         "movl 0x10(%ebp), %edx\n" /* errorContext */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2b26a4, (%esp)\n" /* "%s is too long. Max length is %i
+        "movl $str_002b26a4, (%esp)\n" /* "%s is too long. Max length is %i
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -7136,7 +7136,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
         "calll Scr_ParamError\n"
         "jmp .Lf19a6a2_0019a984\n"
         ".Lf19a6a2_0019a9fe:\n"
-        "movl $0x2b26c8, 4(%esp)\n" /* line 425 */
+        "movl $str_002b26c8, 4(%esp)\n" /* line 425 */
         "movl -0x28(%ebp), %eax\n" /* parmIndex */
         "movl %eax, (%esp)\n"
         "calll Scr_ParamError\n"
@@ -7229,7 +7229,7 @@ unsigned int GScr_MakeDvarServerInfo(void)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* string */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b27d0, 8(%esp)\n" /* "Dvar Value" */
+        "movl $str_002b27d0, 8(%esp)\n" /* "Dvar Value" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -7258,14 +7258,14 @@ unsigned int GScr_ClientAnnouncement(void)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x408(%ebp), %ebx\n" /* string */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b27dc, 8(%esp)\n" /* "Announcement" */
+        "movl $str_002b27dc, 8(%esp)\n" /* "Announcement" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll Scr_ConstructMessageString\n"
         "movl %ebx, 8(%esp)\n" /* line 4249 */
         "movl $0x63, 4(%esp)\n"
-        "movl $0x2b27ec, (%esp)\n" /* "%c "%s" 2" */
+        "movl $str_002b27ec, (%esp)\n" /* "%c "%s" 2" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -7344,7 +7344,7 @@ unsigned int GScr_SetDvar(void)
         "jne .Lf19ac2a_0019acf8\n"
         "movl -0x81c(%ebp), %eax\n" /* line 815 | dvarName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b27f8, (%esp)\n" /* "Dvar %s has an invalid dvar name" */
+        "movl $str_002b27f8, (%esp)\n" /* "Dvar %s has an invalid dvar name" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -7389,7 +7389,7 @@ unsigned int GScr_SetDvar(void)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* string */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b27d0, 8(%esp)\n" /* "Dvar Value" */
+        "movl $str_002b27d0, 8(%esp)\n" /* "Dvar Value" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -7420,7 +7420,7 @@ unsigned int Scr_MakeGameMessage(int iClientNum, const char *pszCmd)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x408(%ebp), %ebx\n" /* string */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b281c, 8(%esp)\n" /* "Game Message" */
+        "movl $str_002b281c, 8(%esp)\n" /* "Game Message" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -7428,7 +7428,7 @@ unsigned int Scr_MakeGameMessage(int iClientNum, const char *pszCmd)
         "movl %ebx, 8(%esp)\n" /* line 499 */
         "movl 0xc(%ebp), %eax\n" /* pszCmd */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b282c, (%esp)\n" /* "%s "%s"" */
+        "movl $str_002b282c, (%esp)\n" /* "%s "%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -7472,7 +7472,7 @@ unsigned int GScr_IsValidGameType(void)
         "calll Scr_GetString\n"
         "movl %eax, -0x1c(%ebp)\n" /* gametype */
         /* { scope 2 */
-        "movl 0x17ddaa8, %edx\n" /* line 6306 */
+        "movl g_scr_data+40, %edx\n" /* line 6306 */
         "testl %edx, %edx\n"
         "jg .Lf19ae0e_0019ae55\n"
         /* } scope */
@@ -7490,14 +7490,14 @@ unsigned int GScr_IsValidGameType(void)
         /* { scope 2 */
         ".Lf19ae0e_0019ae55:\n"
         "xorl %esi, %esi\n" /* line 6306 | i */
-        "movl $0x17ddaec, %edi\n"
-        "movl $0x17ddaac, %ebx\n"
+        "movl $g_scr_data+108, %edi\n"
+        "movl $g_scr_data+44, %ebx\n"
         "jmp .Lf19ae0e_0019ae7a\n"
         ".Lf19ae0e_0019ae63:\n"
         "addl $1, %esi\n" /* i */
         "addl $0x84, %ebx\n"
         "addl $0x84, %edi\n"
-        "cmpl 0x17ddaa8, %esi\n" /* i */
+        "cmpl g_scr_data+40, %esi\n" /* i */
         "jge .Lf19ae0e_0019ae41\n"
         ".Lf19ae0e_0019ae7a:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 6308 | gametype */
@@ -7527,7 +7527,7 @@ qboolean Scr_IsValidGameType(const char *pszGameType)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl 0x17ddaa8, %ecx\n" /* line 6306 */
+        "movl g_scr_data+40, %ecx\n" /* line 6306 */
         "testl %ecx, %ecx\n"
         "jg .Lf19aea0_0019aec5\n"
         ".Lf19aea0_0019aeb3:\n"
@@ -7546,8 +7546,8 @@ qboolean Scr_IsValidGameType(const char *pszGameType)
         /* { scope 1 */
         ".Lf19aea0_0019aec5:\n"
         "xorl %esi, %esi\n" /* line 6306 | i */
-        "movl $0x17ddaec, %edi\n"
-        "movl $0x17ddaac, %ebx\n"
+        "movl $g_scr_data+108, %edi\n"
+        "movl $g_scr_data+44, %ebx\n"
         ".Lf19aea0_0019aed1:\n"
         "movl 8(%ebp), %eax\n" /* line 6308 | pszGameType */
         "movl %eax, 4(%esp)\n"
@@ -7558,7 +7558,7 @@ qboolean Scr_IsValidGameType(const char *pszGameType)
         "addl $1, %esi\n" /* line 6306 | i */
         "addl $0x84, %ebx\n"
         "addl $0x84, %edi\n"
-        "cmpl %esi, 0x17ddaa8\n" /* i */
+        "cmpl %esi, g_scr_data+40\n" /* i */
         "jg .Lf19aea0_0019aed1\n"
         "jmp .Lf19aea0_0019aeb3\n"
         ".Lf19aea0_0019aefd:\n"
@@ -7607,7 +7607,7 @@ unsigned int println(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
-        "movl 0x195f6b8, %eax\n" /* line 337 */
+        "movl imp_g_NoScriptSpam, %eax\n" /* line 337 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf19af4e_0019af6a\n"
@@ -7622,7 +7622,7 @@ unsigned int println(void)
         "testl %eax, %eax\n" /* line 324 */
         "jg .Lf19af4e_0019af88\n"
         ".Lf19af4e_0019af75:\n"
-        "movl $0x2160e8, (%esp)\n" /* line 340 */
+        "movl $str_002160e8, (%esp)\n" /* line 340 */
         "calll Com_Printf\n"
         "addl $0x10, %esp\n" /* line 341 */
         "popl %ebx\n"
@@ -7635,7 +7635,7 @@ unsigned int println(void)
         "movl %ebx, (%esp)\n" /* line 325 */
         "calll Scr_GetDebugString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 324 */
         "cmpl %ebx, %esi\n"
@@ -7699,7 +7699,7 @@ unsigned int Scr_PlayerDamage(gentity_t *self, gentity_t *inflictor, gentity_t *
         "calll Scr_AddString\n"
         "cmpl $0xe, -0x30(%ebp)\n" /* line 6408 | meansOfDeath */
         "jbe .Lf19afac_0019b0b5\n"
-        "movl $0x2b2834, (%esp)\n" /* line 6409 */
+        "movl $str_002b2834, (%esp)\n" /* line 6409 */
         "calll Scr_AddString\n"
         "movl -0x2c(%ebp), %eax\n" /* line 6412 | dflags */
         "movl %eax, (%esp)\n"
@@ -7723,7 +7723,7 @@ unsigned int Scr_PlayerDamage(gentity_t *self, gentity_t *inflictor, gentity_t *
         "calll Scr_AddEntity\n"
         ".Lf19afac_0019b087:\n"
         "movl $0xa, 8(%esp)\n" /* line 6417 */
-        "movl 0x17dda98, %eax\n"
+        "movl g_scr_data+24, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl -0x1c(%ebp), %eax\n" /* self */
         "movl %eax, (%esp)\n"
@@ -7739,7 +7739,7 @@ unsigned int Scr_PlayerDamage(gentity_t *self, gentity_t *inflictor, gentity_t *
         /* { scope 1 */
         "jmp Scr_FreeThread\n" /* line 6418 */
         ".Lf19afac_0019b0b5:\n"
-        "movl 0x195f6a4, %eax\n" /* line 6411 */
+        "movl imp_modNames, %eax\n" /* line 6411 */
         "movl -0x30(%ebp), %edx\n" /* meansOfDeath */
         "movl (%eax, %edx, 4), %eax\n"
         "movl %eax, (%esp)\n"
@@ -7821,7 +7821,7 @@ unsigned int Scr_PlayerKilled(gentity_t *self, gentity_t *inflictor, gentity_t *
         "calll Scr_AddString\n"
         "cmpl $0xe, -0x2c(%ebp)\n" /* line 6437 | meansOfDeath */
         "jbe .Lf19b110_0019b200\n"
-        "movl $0x2b2834, (%esp)\n" /* line 6438 */
+        "movl $str_002b2834, (%esp)\n" /* line 6438 */
         "calll Scr_AddString\n"
         "movl -0x28(%ebp), %eax\n" /* line 6441 | damage */
         "movl %eax, (%esp)\n"
@@ -7842,7 +7842,7 @@ unsigned int Scr_PlayerKilled(gentity_t *self, gentity_t *inflictor, gentity_t *
         "calll Scr_AddEntity\n"
         ".Lf19b110_0019b1d2:\n"
         "movl $9, 8(%esp)\n" /* line 6445 */
-        "movl 0x17dda9c, %eax\n"
+        "movl g_scr_data+28, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl -0x1c(%ebp), %edx\n" /* self */
         "movl %edx, (%esp)\n"
@@ -7858,7 +7858,7 @@ unsigned int Scr_PlayerKilled(gentity_t *self, gentity_t *inflictor, gentity_t *
         /* { scope 1 */
         "jmp Scr_FreeThread\n" /* line 6446 */
         ".Lf19b110_0019b200:\n"
-        "movl 0x195f6a4, %eax\n" /* line 6440 */
+        "movl imp_modNames, %eax\n" /* line 6440 */
         "movl -0x2c(%ebp), %edx\n" /* meansOfDeath */
         "movl (%eax, %edx, 4), %eax\n"
         "movl %eax, (%esp)\n"
@@ -7902,7 +7902,7 @@ unsigned int ScrCmd_Show(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "andl $0xfffff7ff, 0x174(%edx)\n" /* line 1723 */
         "movl $0, 0xf4(%edx)\n" /* line 1724 */
         "movl $0, 0xf8(%edx)\n" /* line 1725 */
@@ -7911,7 +7911,7 @@ unsigned int ScrCmd_Show(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b242_0019b28d:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "andl $0xfffff7ff, 0x174(%edx)\n" /* line 1723 */
@@ -7942,7 +7942,7 @@ unsigned int ScrCmd_Hide(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "orl $0x800, 0x174(%edx)\n" /* line 1739 */
         "movl $0xffffffff, 0xf4(%edx)\n" /* line 1740 */
         "movl $0xffffffff, 0xf8(%edx)\n" /* line 1741 */
@@ -7951,7 +7951,7 @@ unsigned int ScrCmd_Hide(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b2bc_0019b307:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "orl $0x800, 0x174(%edx)\n" /* line 1739 */
@@ -7983,7 +7983,7 @@ unsigned int ScrCmd_ShowToPlayer(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         "movl $0, (%esp)\n" /* line 1756 */
         "calll Scr_GetEntity\n"
         "cmpl $0x3f, (%eax)\n" /* line 1758 */
@@ -8004,7 +8004,7 @@ unsigned int ScrCmd_ShowToPlayer(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b336_0019b39b:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "movl $0, (%esp)\n" /* line 1756 */
@@ -8012,7 +8012,7 @@ unsigned int ScrCmd_ShowToPlayer(scr_entref_t entref)
         "cmpl $0x3f, (%eax)\n" /* line 1758 */
         "jle .Lf19b336_0019b373\n"
         ".Lf19b336_0019b3ba:\n"
-        "movl $0x2b283c, 8(%ebp)\n" /* line 1760 | entref */
+        "movl $str_002b283c, 8(%ebp)\n" /* line 1760 | entref */
         /* } scope */
         "addl $0x14, %esp\n" /* line 1767 */
         "popl %ebx\n"
@@ -8042,13 +8042,13 @@ unsigned int GScr_EnableGrenadeTouchDamage(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b3cc_0019b3f8:\n"
         "movzwl 0x168(%ebx), %edx\n" /* line 1952 | ent */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "cmpw 0x5a(%eax), %dx\n"
         "je .Lf19b3cc_0019b416\n"
-        "movl $0x2b2870, (%esp)\n" /* line 1953 */
+        "movl $str_002b2870, (%esp)\n" /* line 1953 */
         "calll Scr_Error\n"
         ".Lf19b3cc_0019b416:\n"
         "orl $0x4000, 0x174(%ebx)\n" /* line 1955 | ent */
@@ -8059,7 +8059,7 @@ unsigned int GScr_EnableGrenadeTouchDamage(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b3cc_0019b426:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b3cc_0019b3f8\n"
@@ -8086,13 +8086,13 @@ unsigned int GScr_DisableGrenadeTouchDamage(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b436_0019b462:\n"
         "movzwl 0x168(%ebx), %edx\n" /* line 1968 | ent */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "cmpw 0x5a(%eax), %dx\n"
         "je .Lf19b436_0019b480\n"
-        "movl $0x2b2870, (%esp)\n" /* line 1969 */
+        "movl $str_002b2870, (%esp)\n" /* line 1969 */
         "calll Scr_Error\n"
         ".Lf19b436_0019b480:\n"
         "andl $0xffffbfff, 0x174(%ebx)\n" /* line 1971 | ent */
@@ -8103,7 +8103,7 @@ unsigned int GScr_DisableGrenadeTouchDamage(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b436_0019b490:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b436_0019b462\n"
@@ -8129,14 +8129,14 @@ unsigned int GScr_EnableGrenadeBounce(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "andl $0xffff7fff, 0x174(%edx)\n" /* line 1984 */
         /* } scope */
         "leave\n" /* line 1985 */
         "retl\n"
         /* { scope 1 */
         ".Lf19b4a0_0019b4d7:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "andl $0xffff7fff, 0x174(%edx)\n" /* line 1984 */
@@ -8165,14 +8165,14 @@ unsigned int GScr_DisableGrenadeBounce(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "orl $0x8000, 0x174(%edx)\n" /* line 1997 */
         /* } scope */
         "leave\n" /* line 1998 */
         "retl\n"
         /* { scope 1 */
         ".Lf19b4f2_0019b529:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "orl $0x8000, 0x174(%edx)\n" /* line 1997 */
@@ -8202,11 +8202,11 @@ unsigned int GScr_EnableAimAssist(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b544_0019b570:\n"
         "cmpb $0, 0xf1(%ebx)\n" /* line 2007 | ent */
         "jne .Lf19b544_0019b585\n"
-        "movl $0x2b289c, (%esp)\n" /* line 2008 */
+        "movl $str_002b289c, (%esp)\n" /* line 2008 */
         "calll Scr_Error\n"
         ".Lf19b544_0019b585:\n"
         "orl $0x800, 8(%ebx)\n" /* line 2010 | ent */
@@ -8217,7 +8217,7 @@ unsigned int GScr_EnableAimAssist(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b544_0019b592:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b544_0019b570\n"
@@ -8244,11 +8244,11 @@ unsigned int GScr_DisableAimAssist(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b5a2_0019b5ce:\n"
         "cmpb $0, 0xf1(%ebx)\n" /* line 2020 | ent */
         "jne .Lf19b5a2_0019b5e3\n"
-        "movl $0x2b289c, (%esp)\n" /* line 2021 */
+        "movl $str_002b289c, (%esp)\n" /* line 2021 */
         "calll Scr_Error\n"
         ".Lf19b5a2_0019b5e3:\n"
         "andl $0xfffff7ff, 8(%ebx)\n" /* line 2023 | ent */
@@ -8259,7 +8259,7 @@ unsigned int GScr_DisableAimAssist(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b5a2_0019b5f0:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b5a2_0019b5ce\n"
@@ -8288,7 +8288,7 @@ unsigned int ScrCmd_attach(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b600_0019b632:\n"
         "movl $0, (%esp)\n" /* line 1057 */
         "calll Scr_GetString\n"
@@ -8328,7 +8328,7 @@ unsigned int ScrCmd_attach(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b600_0019b6a0:\n"
-        "movl $0x2b28fc, 8(%ebp)\n" /* line 1066 | entref */
+        "movl $str_002b28fc, 8(%ebp)\n" /* line 1066 | entref */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1067 */
         "popl %ebx\n"
@@ -8338,7 +8338,7 @@ unsigned int ScrCmd_attach(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 1066 */
         ".Lf19b600_0019b6b3:\n"
-        "movl 0x195f5bc, %eax\n" /* line 1058 */
+        "movl imp_scr_const, %eax\n" /* line 1058 */
         "movzwl (%eax), %esi\n" /* tagName */
         "calll Scr_GetNumParam\n" /* line 1059 */
         "cmpl $2, %eax\n"
@@ -8358,13 +8358,13 @@ unsigned int ScrCmd_attach(scr_entref_t entref)
         "calll SL_ConvertToString\n"
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* modelName */
-        "movl $0x2b28d4, (%esp)\n" /* "model '%s' already attached to tag '%s'" */
+        "movl $str_002b28d4, (%esp)\n" /* "model '%s' already attached to tag '%s'" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         "jmp .Lf19b600_0019b67d\n"
         ".Lf19b600_0019b711:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b600_0019b632\n"
@@ -8393,7 +8393,7 @@ unsigned int ScrCmd_detach(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b724_0019b756:\n"
         "movl $0, (%esp)\n" /* line 1084 */
         "calll Scr_GetString\n"
@@ -8421,7 +8421,7 @@ unsigned int ScrCmd_detach(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19b724_0019b7a1:\n"
-        "movl $0x2b2920, (%esp)\n" /* line 1090 */
+        "movl $str_002b2920, (%esp)\n" /* line 1090 */
         "calll Com_Printf\n"
         "movl %ebx, %edi\n" /* ent */
         "movl %ebx, %esi\n" /* ent */
@@ -8447,7 +8447,7 @@ unsigned int ScrCmd_detach(scr_entref_t entref)
         "calll G_ModelName\n"
         "movl %ebx, 8(%esp)\n" /* ent */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2938, (%esp)\n" /* "model: '%s', tag: '%s'
+        "movl $str_002b2938, (%esp)\n" /* "model: '%s', tag: '%s'
 " */
         "calll Com_Printf\n"
         "addl $1, %esi\n"
@@ -8461,7 +8461,7 @@ unsigned int ScrCmd_detach(scr_entref_t entref)
         "movl %eax, 8(%esp)\n"
         "movl -0x24(%ebp), %eax\n" /* modelName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2950, (%esp)\n" /* "failed to detach model '%s' from tag '%s'" */
+        "movl $str_002b2950, (%esp)\n" /* "failed to detach model '%s' from tag '%s'" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* entref */
         /* } scope */
@@ -8473,12 +8473,12 @@ unsigned int ScrCmd_detach(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 1101 */
         ".Lf19b724_0019b848:\n"
-        "movl 0x195f5bc, %eax\n" /* line 1085 */
+        "movl imp_scr_const, %eax\n" /* line 1085 */
         "movzwl (%eax), %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* tagName */
         "jmp .Lf19b724_0019b782\n"
         ".Lf19b724_0019b858:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b724_0019b756\n"
@@ -8504,14 +8504,14 @@ unsigned int ScrCmd_detachAll(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "movl %edx, 8(%ebp)\n" /* line 1115 | entref */
         /* } scope */
         "leave\n" /* line 1116 */
         /* { scope 1 */
         "jmp G_EntDetachAll\n" /* line 1115 */
         ".Lf19b86c_0019b8a0:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "movl %edx, 8(%ebp)\n" /* line 1115 | entref */
@@ -8541,7 +8541,7 @@ unsigned int ScrCmd_GetAttachSize(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         ".Lf19b8b8_0019b8e3:\n"
         "movl %edx, %eax\n" /* line 177 */
         "xorl %edx, %edx\n"
@@ -8559,7 +8559,7 @@ unsigned int ScrCmd_GetAttachSize(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 1137 */
         ".Lf19b8b8_0019b904:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "jmp .Lf19b8b8_0019b8e3\n"
@@ -8587,7 +8587,7 @@ unsigned int ScrCmd_GetAttachModelName(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b914_0019b941:\n"
         "movl $0, (%esp)\n" /* line 1153 */
         "calll Scr_GetInt\n"
@@ -8597,7 +8597,7 @@ unsigned int ScrCmd_GetAttachModelName(scr_entref_t entref)
         "cmpb $0, 0x210(%eax, %ebx)\n"
         "jne .Lf19b914_0019b972\n"
         ".Lf19b914_0019b95e:\n"
-        "movl $0x2b297c, 4(%esp)\n" /* line 1155 */
+        "movl $str_002b297c, 4(%esp)\n" /* line 1155 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf19b914_0019b972:\n"
@@ -8613,7 +8613,7 @@ unsigned int ScrCmd_GetAttachModelName(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddString\n" /* line 1157 */
         ".Lf19b914_0019b990:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b914_0019b941\n"
@@ -8641,7 +8641,7 @@ unsigned int ScrCmd_GetAttachTagName(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19b9a0_0019b9cd:\n"
         "movl $0, (%esp)\n" /* line 1173 */
         "calll Scr_GetInt\n"
@@ -8651,7 +8651,7 @@ unsigned int ScrCmd_GetAttachTagName(scr_entref_t entref)
         "cmpb $0, 0x210(%eax, %ebx)\n"
         "jne .Lf19b9a0_0019b9fe\n"
         ".Lf19b9a0_0019b9ea:\n"
-        "movl $0x2b297c, 4(%esp)\n" /* line 1175 */
+        "movl $str_002b297c, 4(%esp)\n" /* line 1175 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf19b9a0_0019b9fe:\n"
@@ -8665,7 +8665,7 @@ unsigned int ScrCmd_GetAttachTagName(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddConstString\n" /* line 1178 */
         ".Lf19b9a0_0019ba14:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19b9a0_0019b9cd\n"
@@ -8693,7 +8693,7 @@ unsigned int ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19ba24_0019ba51:\n"
         "movl $0, (%esp)\n" /* line 1194 */
         "calll Scr_GetInt\n"
@@ -8703,7 +8703,7 @@ unsigned int ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref)
         "cmpb $0, 0x210(%eax, %ebx)\n"
         "jne .Lf19ba24_0019ba82\n"
         ".Lf19ba24_0019ba6e:\n"
-        "movl $0x2b297c, 4(%esp)\n" /* line 1196 */
+        "movl $str_002b297c, 4(%esp)\n" /* line 1196 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf19ba24_0019ba82:\n"
@@ -8720,7 +8720,7 @@ unsigned int ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddBool\n" /* line 1198 */
         ".Lf19ba24_0019ba9e:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19ba24_0019ba51\n"
@@ -8749,13 +8749,13 @@ unsigned int ScrCmd_LinkTo(scr_entref_t entref)
         "leal (, %eax, 8), %edi\n"
         "subl %eax, %edi\n"
         "shll $4, %edi\n"
-        "addl 0x195f688, %edi\n"
+        "addl imp_g_entities, %edi\n"
         "movl $0, (%esp)\n" /* line 1218 */
         "calll Scr_GetType\n"
         "subl $1, %eax\n"
         "je .Lf19baae_0019bcd5\n"
         ".Lf19baae_0019baf5:\n"
-        "movl $0x2b21c8, 4(%esp)\n" /* line 1219 */
+        "movl $str_002b21c8, 4(%esp)\n" /* line 1219 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         ".Lf19baae_0019bb09:\n"
@@ -8801,7 +8801,7 @@ unsigned int ScrCmd_LinkTo(scr_entref_t entref)
         "movl %eax, (%esp)\n"
         "calll G_ModelName\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b29f4, (%esp)\n" /* "failed to link entity since parent model '%s' is invalid" */
+        "movl $str_002b29f4, (%esp)\n" /* "failed to link entity since parent model '%s' is invalid" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -8810,7 +8810,7 @@ unsigned int ScrCmd_LinkTo(scr_entref_t entref)
         "testl %eax, %eax\n"
         "jne .Lf19baae_0019bc4d\n"
         ".Lf19baae_0019bbc9:\n"
-        "movl $0x2b2a7c, (%esp)\n" /* line 1262 */
+        "movl $str_002b2a7c, (%esp)\n" /* line 1262 */
         "calll Scr_Error\n"
         /* } scope */
         ".Lf19baae_0019bbd5:\n"
@@ -8871,13 +8871,13 @@ unsigned int ScrCmd_LinkTo(scr_entref_t entref)
         "calll SL_ConvertToString\n"
         "movl %ebx, 8(%esp)\n" /* numParam */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2a30, (%esp)\n" /* "failed to link entity since tag '%s' does not exist in paren" */
+        "movl $str_002b2a30, (%esp)\n" /* "failed to link entity since tag '%s' does not exist in paren" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         "jmp .Lf19baae_0019bbc9\n"
         ".Lf19baae_0019bcb2:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n"
         "movl $0, (%esp)\n" /* line 1218 */
@@ -8895,13 +8895,13 @@ unsigned int ScrCmd_LinkTo(scr_entref_t entref)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2988, (%esp)\n" /* "entity (classname: '%s') does not currently support linkTo" */
+        "movl $str_002b2988, (%esp)\n" /* "entity (classname: '%s') does not currently support linkTo" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
         "jmp .Lf19baae_0019bb16\n"
         ".Lf19baae_0019bd1b:\n"
-        "movl $0x2b29c4, (%esp)\n" /* line 1250 */
+        "movl $str_002b29c4, (%esp)\n" /* line 1250 */
         "calll Scr_Error\n"
         "movl -0x40(%ebp), %edx\n" /* parent */
         "jmp .Lf19baae_0019bb97\n"
@@ -8927,14 +8927,14 @@ unsigned int ScrCmd_Unlink(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "movl %edx, 8(%ebp)\n" /* line 1277 | entref */
         /* } scope */
         "leave\n" /* line 1278 */
         /* { scope 1 */
         "jmp G_EntUnlink\n" /* line 1277 */
         ".Lf19bd30_0019bd64:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "movl %edx, 8(%ebp)\n" /* line 1277 | entref */
@@ -8965,7 +8965,7 @@ unsigned int ScrCmd_EnableLinkTo(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         "testb $0x10, 0x175(%ebx)\n" /* line 1292 | ent */
         "jne .Lf19bd7c_0019be0f\n"
         ".Lf19bd7c_0019bdb1:\n"
@@ -8979,7 +8979,7 @@ unsigned int ScrCmd_EnableLinkTo(scr_entref_t entref)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2ac8, (%esp)\n" /* "entity (classname: '%s') does not currently support enableLi" */
+        "movl $str_002b2ac8, (%esp)\n" /* "entity (classname: '%s') does not currently support enableLi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ObjectError\n"
@@ -8992,13 +8992,13 @@ unsigned int ScrCmd_EnableLinkTo(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19bd7c_0019bdf8:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "testb $0x10, 0x175(%ebx)\n" /* line 1292 | ent */
         "je .Lf19bd7c_0019bdb1\n"
         ".Lf19bd7c_0019be0f:\n"
-        "movl $0x2b2aa4, (%esp)\n" /* line 1293 */
+        "movl $str_002b2aa4, (%esp)\n" /* line 1293 */
         "calll Scr_ObjectError\n"
         "jmp .Lf19bd7c_0019bdb1\n"
     );
@@ -9023,7 +9023,7 @@ unsigned int ScrCmd_GetOrigin(scr_entref_t entref)
         "leal (, %eax, 8), %ecx\n"
         "subl %eax, %ecx\n"
         "shll $4, %ecx\n"
-        "addl 0x195f688, %ecx\n"
+        "addl imp_g_entities, %ecx\n"
         "leal 0x138(%ecx), %edx\n" /* line 177 */
         /* { scope 2 */
         "movl 0x138(%ecx), %eax\n" /* line 199 */
@@ -9041,7 +9041,7 @@ unsigned int ScrCmd_GetOrigin(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19be1e_0019be71:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ecx, %ecx\n"
         "leal 0x138(%ecx), %edx\n"
@@ -9081,7 +9081,7 @@ unsigned int ScrCmd_GetEye(scr_entref_t entref)
         "leal (, %eax, 8), %ecx\n"
         "subl %eax, %ecx\n"
         "shll $4, %ecx\n"
-        "addl 0x195f688, %ecx\n"
+        "addl imp_g_entities, %ecx\n"
         ".Lf19bea8_0019bed3:\n"
         "leal 0x138(%ecx), %edx\n" /* line 177 */
         /* { scope 2 */
@@ -9090,7 +9090,7 @@ unsigned int ScrCmd_GetEye(scr_entref_t entref)
         "movl 4(%edx), %eax\n" /* line 200 */
         "movl %eax, -0x10(%ebp)\n"
         /* } scope */
-        "movss 0x2ed73c, %xmm0\n" /* line 1333 | 40.0f */
+        "movss lit4_002ed73c, %xmm0\n" /* line 1333 | 40.0f */
         "addss 8(%edx), %xmm0\n"
         "movss %xmm0, -0xc(%ebp)\n"
         "leal -0x14(%ebp), %eax\n" /* line 1334 | eye */
@@ -9101,7 +9101,7 @@ unsigned int ScrCmd_GetEye(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19bea8_0019bf07:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ecx, %ecx\n"
         "jmp .Lf19bea8_0019bed3\n"
@@ -9129,7 +9129,7 @@ unsigned int ScrCmd_UseBy(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19bf18_0019bf45:\n"
         "movl $0, (%esp)\n" /* line 1352 */
         "calll Scr_GetEntity\n"
@@ -9137,7 +9137,7 @@ unsigned int ScrCmd_UseBy(scr_entref_t entref)
         "movl %eax, (%esp)\n" /* line 1355 */
         "calll Scr_AddEntity\n"
         "movl $1, 8(%esp)\n" /* line 1356 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x54(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* pEnt */
@@ -9145,7 +9145,7 @@ unsigned int ScrCmd_UseBy(scr_entref_t entref)
         "movzbl 0x166(%ebx), %eax\n" /* line 1358 | pEnt */
         "leal (%eax, %eax, 4), %eax\n"
         "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
+        "addl imp_entityHandlers, %eax\n"
         "movl 0x10(%eax), %eax\n"
         "testl %eax, %eax\n" /* line 1359 */
         "je .Lf19bf18_0019bf9f\n"
@@ -9162,7 +9162,7 @@ unsigned int ScrCmd_UseBy(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19bf18_0019bfa6:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19bf18_0019bf45\n"
@@ -9190,14 +9190,14 @@ unsigned int Scr_SetStableMissile(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19bfb6_0019bfe3:\n"
         "movl $0, (%esp)\n" /* line 1797 */
         "calll Scr_GetInt\n"
         "movl %eax, %esi\n" /* stableMissile */
         "cmpl $1, 4(%ebx)\n" /* line 1799 | ent */
         "je .Lf19bfb6_0019c003\n"
-        "movl $0x2b2b0c, (%esp)\n" /* line 1800 */
+        "movl $str_002b2b0c, (%esp)\n" /* line 1800 */
         "calll Scr_Error\n"
         ".Lf19bfb6_0019c003:\n"
         "testl %esi, %esi\n" /* line 1802 | stableMissile */
@@ -9220,7 +9220,7 @@ unsigned int Scr_SetStableMissile(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19bfb6_0019c029:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19bfb6_0019bfe3\n"
@@ -9249,7 +9249,7 @@ unsigned int ScrCmd_IsTouching(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n"
         "subl %eax, %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
+        "addl imp_g_entities, %esi\n"
         ".Lf19c03a_0019c06c:\n"
         "cmpb $0, 0xf1(%esi)\n" /* line 1379 | pEnt */
         "jne .Lf19c03a_0019c084\n"
@@ -9266,7 +9266,7 @@ unsigned int ScrCmd_IsTouching(scr_entref_t entref)
         "testb $0x60, %al\n"
         "je .Lf19c03a_0019c0b2\n"
         ".Lf19c03a_0019c0a6:\n"
-        "movl $0x2b2b24, (%esp)\n" /* line 1384 */
+        "movl $str_002b2b24, (%esp)\n" /* line 1384 */
         "calll Scr_Error\n"
         ".Lf19c03a_0019c0b2:\n"
         "movl %esi, %edi\n" /* pEnt, pOther */
@@ -9321,7 +9321,7 @@ unsigned int ScrCmd_IsTouching(scr_entref_t entref)
         "movl %esi, %ebx\n" /* pEnt */
         "jmp .Lf19c03a_0019c0b4\n"
         ".Lf19c03a_0019c179:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n"
         "jmp .Lf19c03a_0019c06c\n"
@@ -9349,7 +9349,7 @@ unsigned int ScrCmd_PlaySound(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19c18c_0019c1b9:\n"
         "movl $0, (%esp)\n" /* line 1433 */
         "calll Scr_GetString\n"
@@ -9372,7 +9372,7 @@ unsigned int ScrCmd_PlaySound(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19c18c_0019c1fe:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19c18c_0019c1b9\n"
@@ -9400,7 +9400,7 @@ unsigned int ScrCmd_PlaySoundAsMaster(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19c20e_0019c23b:\n"
         "movl $0, (%esp)\n" /* line 1455 */
         "calll Scr_GetString\n"
@@ -9423,7 +9423,7 @@ unsigned int ScrCmd_PlaySoundAsMaster(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19c20e_0019c280:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19c20e_0019c23b\n"
@@ -9450,7 +9450,7 @@ unsigned int ScrCmd_PlayLoopSound(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19c290_0019c2bc:\n"
         "movl $0, (%esp)\n" /* line 1476 */
         "calll Scr_GetString\n"
@@ -9466,7 +9466,7 @@ unsigned int ScrCmd_PlayLoopSound(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19c290_0019c2e9:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19c290_0019c2bc\n"
@@ -9492,8 +9492,8 @@ unsigned int ScrCmd_StopLoopSound(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
-        "movl 0x195f6a0, %eax\n" /* line 1496 */
+        "addl imp_g_entities, %edx\n"
+        "movl imp_level, %eax\n" /* line 1496 */
         "movl 0x1ec(%eax), %eax\n"
         "addl $0x12c, %eax\n"
         "movl %eax, 0x100(%edx)\n"
@@ -9503,10 +9503,10 @@ unsigned int ScrCmd_StopLoopSound(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19c2fa_0019c347:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
-        "movl 0x195f6a0, %eax\n" /* line 1496 */
+        "movl imp_level, %eax\n" /* line 1496 */
         "movl 0x1ec(%eax), %eax\n"
         "addl $0x12c, %eax\n"
         "movl %eax, 0x100(%edx)\n"
@@ -9537,21 +9537,21 @@ unsigned int ScrCmd_Delete(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19c378_0019c3a4:\n"
         "movl 0x158(%ebx), %eax\n" /* line 1618 | pEnt */
         "testl %eax, %eax\n"
         "je .Lf19c378_0019c3ba\n"
-        "movl $0x2b2b60, (%esp)\n" /* line 1619 */
+        "movl $str_002b2b60, (%esp)\n" /* line 1619 */
         "calll Scr_Error\n"
         ".Lf19c378_0019c3ba:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1621 */
+        "movl imp_level, %eax\n" /* line 1621 */
         "movl 0x3604(%eax), %eax\n"
         "cmpl (%ebx), %eax\n" /* pEnt */
         "je .Lf19c378_0019c403\n"
         ".Lf19c378_0019c3c9:\n"
         "movl $0, 8(%esp)\n" /* line 1625 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0xa(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* pEnt */
@@ -9564,12 +9564,12 @@ unsigned int ScrCmd_Delete(scr_entref_t entref)
         /* { scope 1 */
         "jmp G_FreeEntity\n" /* line 1627 */
         ".Lf19c378_0019c3f3:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19c378_0019c3a4\n"
         ".Lf19c378_0019c403:\n"
-        "movl $0x2b2b80, (%esp)\n" /* line 1622 */
+        "movl $str_002b2b80, (%esp)\n" /* line 1622 */
         "calll Scr_Error\n"
         "jmp .Lf19c378_0019c3c9\n"
     );
@@ -9595,7 +9595,7 @@ unsigned int ScrCmd_SetModel(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19c412_0019c43e:\n"
         "movl $0, (%esp)\n" /* line 1642 */
         "calll Scr_GetString\n"
@@ -9612,7 +9612,7 @@ unsigned int ScrCmd_SetModel(scr_entref_t entref)
         /* { scope 1 */
         "jmp SV_LinkEntity\n" /* line 1647 */
         ".Lf19c412_0019c46b:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19c412_0019c43e\n"
@@ -9638,7 +9638,7 @@ unsigned int ScrCmd_GetNormalHealth(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         ".Lf19c47c_0019c4a7:\n"
         "movl 0x158(%edx), %ecx\n" /* line 1662 */
         "testl %ecx, %ecx\n"
@@ -9661,7 +9661,7 @@ unsigned int ScrCmd_GetNormalHealth(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddFloat\n" /* line 1665 */
         ".Lf19c47c_0019c4e3:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "jmp .Lf19c47c_0019c4a7\n"
@@ -9696,13 +9696,13 @@ unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19c506_0019c537:\n"
         "movl $0, (%esp)\n" /* line 1688 */
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n"
         "movss -0x1c(%ebp), %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1690 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1690 | 1.0f */
         "minss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"
         "movl 0x158(%ebx), %eax\n" /* line 1692 | ent */
@@ -9710,19 +9710,19 @@ unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref)
         "je .Lf19c506_0019c5dc\n"
         "cvtsi2ssl 0x2728(%eax), %xmm0\n" /* line 428 */
         "mulss %xmm0, %xmm1\n"
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss %xmm1, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc(%ebp)\n"
         "cvttss2si -0xc(%ebp), %esi\n"
         "movl $0, 8(%esp)\n" /* line 1695 */
         "movl $0x49, 4(%esp)\n"
-        "movl $0x2b2ba8, (%esp)\n" /* "%c "%i"" */
+        "movl $str_002b2ba8, (%esp)\n" /* "%c "%i"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %ebx, %eax\n" /* ent */
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -9747,7 +9747,7 @@ unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref)
         "testl %esi, %esi\n" /* line 1703 | newHealth */
         "jg .Lf19c506_0019c5cf\n"
         ".Lf19c506_0019c5ee:\n"
-        "movl $0x2b2bb0, 8(%ebp)\n" /* line 1705 | entref */
+        "movl $str_002b2bb0, 8(%ebp)\n" /* line 1705 | entref */
         /* } scope */
         "addl $0x30, %esp\n" /* line 1710 */
         "popl %ebx\n"
@@ -9756,7 +9756,7 @@ unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref)
         /* { scope 1 */
         "jmp Com_Printf\n" /* line 1705 */
         ".Lf19c506_0019c600:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19c506_0019c537\n"
@@ -9789,7 +9789,7 @@ unsigned int ScrCmd_SetContents(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n"
         "subl %eax, %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
+        "addl imp_g_entities, %esi\n"
         ".Lf19c622_0019c64f:\n"
         "movl $0, (%esp)\n" /* line 1781 */
         "calll Scr_GetInt\n"
@@ -9807,7 +9807,7 @@ unsigned int ScrCmd_SetContents(scr_entref_t entref)
         /* { scope 1 */
         "jmp SV_LinkEntity\n" /* line 1784 */
         ".Lf19c622_0019c67f:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n"
         "jmp .Lf19c622_0019c64f\n"
@@ -9837,7 +9837,7 @@ unsigned int GScr_SetCursorHint(scr_entref_t entref)
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
         "movl %edx, -0x1c(%ebp)\n" /* pEnt */
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "addl %eax, %edx\n"
         "movl %edx, -0x1c(%ebp)\n" /* pEnt */
         ".Lf19c690_0019c6c9:\n"
@@ -9846,14 +9846,14 @@ unsigned int GScr_SetCursorHint(scr_entref_t entref)
         "movl %eax, %edi\n" /* pszHint */
         "movl -0x1c(%ebp), %edx\n" /* line 1827 | pEnt */
         "movzwl 0x168(%edx), %eax\n"
-        "movl 0x195f5bc, %edx\n"
+        "movl imp_scr_const, %edx\n"
         "cmpw 0x56(%edx), %ax\n"
         "je .Lf19c690_0019c7ac\n"
         "cmpw 0x58(%edx), %ax\n"
         "je .Lf19c690_0019c7ac\n"
         ".Lf19c690_0019c6fb:\n"
         "movl $1, %esi\n" /* line 1832 | i */
-        "movl 0x195f6ac, %ebx\n"
+        "movl imp_hintStrings, %ebx\n"
         "jmp .Lf19c690_0019c72a\n"
         ".Lf19c690_0019c708:\n"
         "movl %eax, 4(%esp)\n" /* line 1838 */
@@ -9870,22 +9870,22 @@ unsigned int GScr_SetCursorHint(scr_entref_t entref)
         "testl %eax, %eax\n"
         "jne .Lf19c690_0019c708\n"
         ".Lf19c690_0019c731:\n"
-        "movl $0x2b2bf0, (%esp)\n" /* line 1846 */
+        "movl $str_002b2bf0, (%esp)\n" /* line 1846 */
         "calll Com_Printf\n"
         "movl -0x1c(%ebp), %edx\n" /* line 1847 | pEnt */
         "movzwl 0x168(%edx), %eax\n"
-        "movl 0x195f5bc, %edx\n"
+        "movl imp_scr_const, %edx\n"
         "cmpw 0x56(%edx), %ax\n"
         "je .Lf19c690_0019c802\n"
         "cmpw 0x58(%edx), %ax\n"
         "je .Lf19c690_0019c802\n"
         ".Lf19c690_0019c761:\n"
-        "movl 0x195f6ac, %ebx\n" /* line 1848 */
+        "movl imp_hintStrings, %ebx\n" /* line 1848 */
         "leal 0x210(%ebx), %esi\n" /* i */
         "jmp .Lf19c690_0019c786\n"
         ".Lf19c690_0019c76f:\n"
         "movl %eax, 4(%esp)\n" /* line 1851 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         "addl $4, %ebx\n"
@@ -9897,7 +9897,7 @@ unsigned int GScr_SetCursorHint(scr_entref_t entref)
         "jne .Lf19c690_0019c76f\n"
         ".Lf19c690_0019c78d:\n"
         "movl %edi, 4(%esp)\n" /* line 1853 | pszHint */
-        "movl $0x2b2c58, (%esp)\n" /* "%s is not a valid hint type. See above for list of valid hin" */
+        "movl $str_002b2c58, (%esp)\n" /* "%s is not a valid hint type. See above for list of valid hin" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* entref */
         /* } scope */
@@ -9909,7 +9909,7 @@ unsigned int GScr_SetCursorHint(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 1853 */
         ".Lf19c690_0019c7ac:\n"
-        "movl $0x2b2be0, 4(%esp)\n" /* line 1829 */
+        "movl $str_002b2be0, 4(%esp)\n" /* line 1829 */
         "movl %edi, (%esp)\n" /* pszHint */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -9936,12 +9936,12 @@ unsigned int GScr_SetCursorHint(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19c690_0019c7ea:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "movl $0, -0x1c(%ebp)\n" /* pEnt */
         "jmp .Lf19c690_0019c6c9\n"
         ".Lf19c690_0019c802:\n"
-        "movl $0x2b2c14, (%esp)\n" /* line 1848 */
+        "movl $str_002b2c14, (%esp)\n" /* line 1848 */
         "calll Com_Printf\n"
         "jmp .Lf19c690_0019c761\n"
     );
@@ -9969,17 +9969,17 @@ unsigned int GScr_SetHintString(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "addl %eax, %edx\n"
         "movl %edx, -0x81c(%ebp)\n" /* pEnt */
         ".Lf19c814_0019c850:\n"
         "movzwl 0x168(%edx), %eax\n" /* line 1906 */
-        "movl 0x195f5bc, %edx\n"
+        "movl imp_scr_const, %edx\n"
         "cmpw 0x56(%edx), %ax\n"
         "je .Lf19c814_0019c875\n"
         "cmpw 0x58(%edx), %ax\n"
         "je .Lf19c814_0019c875\n"
-        "movl $0x2b2ca0, (%esp)\n" /* line 1907 */
+        "movl $str_002b2ca0, (%esp)\n" /* line 1907 */
         "calll Scr_Error\n"
         ".Lf19c814_0019c875:\n"
         "movl $0, (%esp)\n" /* line 1910 */
@@ -9991,7 +9991,7 @@ unsigned int GScr_SetHintString(scr_entref_t entref)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x418(%ebp), %edx\n" /* szHint */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x2afa6c, 8(%esp)\n" /* "Hint String" */
+        "movl $str_002afa6c, 8(%esp)\n" /* "Hint String" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -10040,7 +10040,7 @@ unsigned int GScr_SetHintString(scr_entref_t entref)
         "retl\n"
         /* { scope 1: szConfigString */
         ".Lf19c814_0019c939:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "movl $0, -0x81c(%ebp)\n" /* pEnt */
         "movl -0x81c(%ebp), %edx\n" /* pEnt */
@@ -10048,7 +10048,7 @@ unsigned int GScr_SetHintString(scr_entref_t entref)
         ".Lf19c814_0019c95a:\n"
         "movl $0, (%esp)\n" /* line 1913 */
         "calll Scr_GetString\n"
-        "movl $0x2157b8, 4(%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -10065,7 +10065,7 @@ unsigned int GScr_SetHintString(scr_entref_t entref)
         /* { scope 1: szConfigString */
         ".Lf19c814_0019c999:\n"
         "movl $0x20, 4(%esp)\n" /* line 1923 */
-        "movl $0x2b2cf4, (%esp)\n" /* "Too many different hintstring values. Max allowed is %i diff" */
+        "movl $str_002b2cf4, (%esp)\n" /* "Too many different hintstring values. Max allowed is %i diff" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -10101,7 +10101,7 @@ gentity_t * GetPlayerEntity(void)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19c9c0_0019ca00:\n"
         "movl 0x158(%ebx), %eax\n" /* line 195 | ent, entref */
         "testl %eax, %eax\n" /* entref */
@@ -10119,7 +10119,7 @@ gentity_t * GetPlayerEntity(void)
         "movzwl 0x16c(%ebx), %eax\n" /* line 197 | ent, entref */
         "testw %ax, %ax\n" /* entref */
         "jne .Lf19c9c0_0019ca8b\n"
-        "movl $0x2b2d40, %edi\n" /* "<undefined>" */
+        "movl $str_002b2d40, %edi\n" /* "<undefined>" */
         ".Lf19c9c0_0019ca25:\n"
         "movzwl 0x168(%ebx), %eax\n" /* ent, entref */
         "movl %eax, (%esp)\n" /* entref */
@@ -10134,7 +10134,7 @@ gentity_t * GetPlayerEntity(void)
         "movsd %xmm0, 8(%esp)\n"
         "movzwl %si, %eax\n" /* entref */
         "movl %eax, 4(%esp)\n" /* entref */
-        "movl $0x2b2d4c, (%esp)\n" /* "only valid on players; called on entity %i at %.0f %.0f %.0f" */
+        "movl $str_002b2d4c, (%esp)\n" /* "only valid on players; called on entity %i at %.0f %.0f %.0f" */
         "calll va\n"
         "movl %eax, (%esp)\n" /* entref */
         "calll Scr_Error\n"
@@ -10154,7 +10154,7 @@ gentity_t * GetPlayerEntity(void)
         "movl %eax, %edi\n" /* entref */
         "jmp .Lf19c9c0_0019ca25\n"
         ".Lf19c9c0_0019ca9a:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19c9c0_0019ca00\n"
@@ -10178,7 +10178,7 @@ unsigned int GScr_ViewKick(scr_entref_t entref)
         "calll Scr_GetNumParam\n" /* line 4555 */
         "cmpl $2, %eax\n"
         "je .Lf19caae_0019cad6\n"
-        "movl $0x2b2da8, (%esp)\n" /* line 4556 */
+        "movl $str_002b2da8, (%esp)\n" /* line 4556 */
         "calll Scr_Error\n"
         ".Lf19caae_0019cad6:\n"
         "movl 0x158(%esi), %ebx\n" /* line 4558 | ent */
@@ -10230,7 +10230,7 @@ unsigned int GScr_ViewKick(scr_entref_t entref)
         "fstps -0x1c(%ebp)\n"
         "cvtss2sd -0x1c(%ebp), %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b2de4, (%esp)\n" /* "viewkick: damage %g < 0
+        "movl $str_002b2de4, (%esp)\n" /* "viewkick: damage %g < 0
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -10255,7 +10255,7 @@ unsigned int GScr_StopShellShock(scr_entref_t entref)
         "calll Scr_GetNumParam\n" /* line 4534 */
         "testl %eax, %eax\n"
         "je .Lf19cba8_0019cbce\n"
-        "movl $0x2b2e00, (%esp)\n" /* line 4535 */
+        "movl $str_002b2e00, (%esp)\n" /* line 4535 */
         "calll Scr_Error\n"
         ".Lf19cba8_0019cbce:\n"
         "movl 0x158(%ebx), %eax\n" /* line 4537 | ent */
@@ -10290,7 +10290,7 @@ unsigned int GScr_ShellShock(scr_entref_t entref)
         "calll Scr_GetNumParam\n" /* line 4493 */
         "cmpl $2, %eax\n"
         "je .Lf19cc04_0019cc34\n"
-        "movl $0x2b2e24, (%esp)\n" /* line 4494 */
+        "movl $str_002b2e24, (%esp)\n" /* line 4494 */
         "calll Scr_Error\n"
         ".Lf19cc04_0019cc34:\n"
         "movl $0, (%esp)\n" /* line 4496 */
@@ -10313,7 +10313,7 @@ unsigned int GScr_ShellShock(scr_entref_t entref)
         "cmpl $0x10, %ebx\n" /* id */
         "jne .Lf19cc04_0019cc4d\n"
         "movl %edi, 4(%esp)\n" /* line 4519 | shock */
-        "movl $0x2b2e88, (%esp)\n" /* "shellshock '%s' was not precached
+        "movl $str_002b2e88, (%esp)\n" /* "shellshock '%s' was not precached
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -10332,8 +10332,8 @@ unsigned int GScr_ShellShock(scr_entref_t entref)
         "calll Scr_GetFloat\n"
         "fstps -0x42c(%ebp)\n"
         "movss -0x42c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 428 | 1000.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x420(%ebp)\n"
@@ -10346,7 +10346,7 @@ unsigned int GScr_ShellShock(scr_entref_t entref)
         "movl %ebx, 0x5d8(%eax)\n" /* id */
         "movl -0x41c(%ebp), %eax\n" /* line 4507 | ent */
         "movl 0x158(%eax), %edx\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x5dc(%edx)\n"
         "movl -0x41c(%ebp), %edx\n" /* line 4508 | ent */
@@ -10355,8 +10355,8 @@ unsigned int GScr_ShellShock(scr_entref_t entref)
         "movl 0x194(%edx), %edx\n" /* line 4510 */
         "testl %edx, %edx\n"
         "jle .Lf19cc04_0019cc97\n"
-        "movl 0x195f68c, %eax\n" /* line 4512 */
-        "movl 0x195edb4, %edx\n"
+        "movl imp_level_bgs, %eax\n" /* line 4512 */
+        "movl imp_bgs, %edx\n"
         "movl %eax, (%edx)\n"
         "movl $1, 0xc(%esp)\n" /* line 4513 */
         "movl $0, 8(%esp)\n"
@@ -10375,10 +10375,10 @@ unsigned int GScr_ShellShock(scr_entref_t entref)
         /* { scope 1 */
         ".Lf19cc04_0019cd83:\n"
         "cvtsi2ssl %esi, %xmm0\n" /* line 4504 | duration */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b2e60, (%esp)\n" /* "duration %g should be >= 0 and <= 60" */
+        "movl $str_002b2e60, (%esp)\n" /* "duration %g should be >= 0 and <= 60" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -10450,7 +10450,7 @@ unsigned int GScr_LocalToWorldCoords(scr_entref_t entref)
         "leal (, %eax, 8), %edi\n"
         "subl %eax, %edi\n"
         "shll $4, %edi\n"
-        "addl 0x195f688, %edi\n"
+        "addl imp_g_entities, %edi\n"
         ".Lf19ce14_0019ce46:\n"
         "leal -0x24(%ebp), %esi\n" /* line 4581 | vLocal */
         "movl %esi, 4(%esp)\n"
@@ -10490,7 +10490,7 @@ unsigned int GScr_LocalToWorldCoords(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19ce14_0019ceca:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n"
         "jmp .Lf19ce14_0019ce46\n"
@@ -10517,7 +10517,7 @@ unsigned int GScr_SetRightArc(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         ".Lf19cede_0019cf0a:\n"
         "movl 0x15c(%edx), %ebx\n" /* line 4602 | pTurretInfo */
         "testl %ebx, %ebx\n" /* line 4603 | pTurretInfo */
@@ -10527,7 +10527,7 @@ unsigned int GScr_SetRightArc(scr_entref_t entref)
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n"
         "movss -0xc(%ebp), %xmm0\n"
-        "xorps 0x303000, %xmm0\n"
+        "xorps color+640, %xmm0\n"
         "movss %xmm0, 0x10(%ebx)\n" /* pTurretInfo */
         "pxor %xmm1, %xmm1\n" /* line 4607 */
         "ucomiss %xmm1, %xmm0\n"
@@ -10541,12 +10541,12 @@ unsigned int GScr_SetRightArc(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19cede_0019cf48:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "jmp .Lf19cede_0019cf0a\n"
         ".Lf19cede_0019cf58:\n"
-        "movl $0x2b2eac, (%esp)\n" /* line 4604 */
+        "movl $str_002b2eac, (%esp)\n" /* line 4604 */
         "calll Scr_Error\n"
         "jmp .Lf19cede_0019cf14\n"
     );
@@ -10572,7 +10572,7 @@ unsigned int GScr_SetLeftArc(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         ".Lf19cf66_0019cf92:\n"
         "movl 0x15c(%edx), %ebx\n" /* line 4625 | pTurretInfo */
         "testl %ebx, %ebx\n" /* line 4626 | pTurretInfo */
@@ -10583,7 +10583,7 @@ unsigned int GScr_SetLeftArc(scr_entref_t entref)
         "fstps -0xc(%ebp)\n"
         "movss -0xc(%ebp), %xmm0\n"
         "movss %xmm0, 0x18(%ebx)\n" /* pTurretInfo */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 4630 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 4630 | 0.0f */
         "jb .Lf19cf66_0019cfc4\n"
         /* } scope */
         ".Lf19cf66_0019cfbe:\n"
@@ -10603,12 +10603,12 @@ unsigned int GScr_SetLeftArc(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19cf66_0019cfd1:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "jmp .Lf19cf66_0019cf92\n"
         ".Lf19cf66_0019cfe1:\n"
-        "movl $0x2b2eac, (%esp)\n" /* line 4627 */
+        "movl $str_002b2eac, (%esp)\n" /* line 4627 */
         "calll Scr_Error\n"
         "jmp .Lf19cf66_0019cf9c\n"
     );
@@ -10634,7 +10634,7 @@ unsigned int GScr_SetTopArc(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         ".Lf19cff0_0019d01c:\n"
         "movl 0x15c(%edx), %ebx\n" /* line 4648 | pTurretInfo */
         "testl %ebx, %ebx\n" /* line 4649 | pTurretInfo */
@@ -10644,7 +10644,7 @@ unsigned int GScr_SetTopArc(scr_entref_t entref)
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n"
         "movss -0xc(%ebp), %xmm0\n"
-        "xorps 0x303010, %xmm0\n"
+        "xorps color+656, %xmm0\n"
         "movss %xmm0, 0xc(%ebx)\n" /* pTurretInfo */
         "pxor %xmm1, %xmm1\n" /* line 4653 */
         "ucomiss %xmm1, %xmm0\n"
@@ -10658,12 +10658,12 @@ unsigned int GScr_SetTopArc(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19cff0_0019d05a:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "jmp .Lf19cff0_0019d01c\n"
         ".Lf19cff0_0019d06a:\n"
-        "movl $0x2b2eac, (%esp)\n" /* line 4650 */
+        "movl $str_002b2eac, (%esp)\n" /* line 4650 */
         "calll Scr_Error\n"
         "jmp .Lf19cff0_0019d026\n"
     );
@@ -10689,7 +10689,7 @@ unsigned int GScr_SetBottomArc(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         ".Lf19d078_0019d0a4:\n"
         "movl 0x15c(%edx), %ebx\n" /* line 4671 | pTurretInfo */
         "testl %ebx, %ebx\n" /* line 4672 | pTurretInfo */
@@ -10700,7 +10700,7 @@ unsigned int GScr_SetBottomArc(scr_entref_t entref)
         "fstps -0xc(%ebp)\n"
         "movss -0xc(%ebp), %xmm0\n"
         "movss %xmm0, 0x14(%ebx)\n" /* pTurretInfo */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 4676 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 4676 | 0.0f */
         "jb .Lf19d078_0019d0d6\n"
         /* } scope */
         ".Lf19d078_0019d0d0:\n"
@@ -10720,12 +10720,12 @@ unsigned int GScr_SetBottomArc(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19d078_0019d0e3:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "jmp .Lf19d078_0019d0a4\n"
         ".Lf19d078_0019d0f3:\n"
-        "movl $0x2b2eac, (%esp)\n" /* line 4673 */
+        "movl $str_002b2eac, (%esp)\n" /* line 4673 */
         "calll Scr_Error\n"
         "jmp .Lf19d078_0019d0ae\n"
     );
@@ -10750,7 +10750,7 @@ unsigned int GScr_GetEntityNumber(scr_entref_t entref)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "movl (%edx), %eax\n" /* line 1939 */
         "movl %eax, 8(%ebp)\n" /* entref */
         /* } scope */
@@ -10758,7 +10758,7 @@ unsigned int GScr_GetEntityNumber(scr_entref_t entref)
         /* { scope 1 */
         "jmp Scr_AddInt\n" /* line 1939 */
         ".Lf19d102_0019d138:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         "movl (%edx), %eax\n" /* line 1939 */
@@ -10792,7 +10792,7 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
         "leal (, %eax, 8), %edi\n"
         "subl %eax, %edi\n"
         "shll $4, %edi\n"
-        "addl 0x195f688, %edi\n"
+        "addl imp_g_entities, %edi\n"
         ".Lf19d152_0019d184:\n"
         "movl 0x138(%edi), %eax\n" /* line 199 */
         "movl %eax, -0x24(%ebp)\n" /* vStart */
@@ -10804,7 +10804,7 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
         "movl %eax, -0x30(%ebp)\n" /* vEnd */
         "movl 0x13c(%edi), %eax\n" /* line 200 */
         "movl %eax, -0x2c(%ebp)\n"
-        "movss 0x2ed7cc, %xmm0\n" /* line 4699 | 128.0f */
+        "movss lit4_002ed7cc, %xmm0\n" /* line 4699 | 128.0f */
         "addss 0x140(%edi), %xmm0\n" /* pEnt */
         "movss %xmm0, -0x28(%ebp)\n"
         "movl $0x2810011, 0x18(%esp)\n" /* line 4700 */
@@ -10812,9 +10812,9 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
         "movl %eax, 0x14(%esp)\n"
         "leal -0x30(%ebp), %ebx\n" /* vEnd */
         "movl %ebx, 0x10(%esp)\n"
-        "movl 0x195f6b0, %eax\n"
+        "movl imp_playerMaxs, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl 0x195f6bc, %eax\n"
+        "movl imp_playerMins, %eax\n"
         "movl %eax, 8(%esp)\n"
         "leal -0x24(%ebp), %esi\n" /* vStart */
         "movl %esi, 4(%esp)\n"
@@ -10844,15 +10844,15 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
         /* } scope */
         "movss %xmm2, -0x30(%ebp)\n" /* line 199 | vEnd */
         "movss %xmm1, -0x2c(%ebp)\n" /* line 200 */
-        "subss 0x2ed864, %xmm0\n" /* line 4704 | 262144.0f */
+        "subss lit4_002ed864, %xmm0\n" /* line 4704 | 262144.0f */
         "movss %xmm0, -0x28(%ebp)\n"
         "movl $0x2810011, 0x18(%esp)\n" /* line 4705 */
         "movl (%edi), %eax\n" /* pEnt */
         "movl %eax, 0x14(%esp)\n"
         "movl %ebx, 0x10(%esp)\n"
-        "movl 0x195f6b0, %eax\n"
+        "movl imp_playerMaxs, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl 0x195f6bc, %eax\n"
+        "movl imp_playerMins, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n"
         "leal -0x54(%ebp), %eax\n" /* trace */
@@ -10885,9 +10885,9 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
         "movl (%edi), %eax\n" /* pEnt */
         "movl %eax, 0x14(%esp)\n"
         "movl %esi, 0x10(%esp)\n"
-        "movl 0x195f6b0, %eax\n"
+        "movl imp_playerMaxs, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl 0x195f6bc, %eax\n"
+        "movl imp_playerMins, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n"
         "leal -0x54(%ebp), %eax\n" /* trace */
@@ -10903,7 +10903,7 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
         "movl %eax, 8(%esp)\n"
         "movl (%edi), %eax\n" /* pEnt */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2ec4, (%esp)\n" /* "WARNING: Spawn point entity %i is in solid at (%i, %i, %i)
+        "movl $str_002b2ec4, (%esp)\n" /* "WARNING: Spawn point entity %i is in solid at (%i, %i, %i)
 " */
         "calll Com_Printf\n"
         ".Lf19d152_0019d36b:\n"
@@ -10919,7 +10919,7 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19d152_0019d37f:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n"
         "jmp .Lf19d152_0019d184\n"
@@ -10946,15 +10946,15 @@ unsigned int GScr_UpdateScores(scr_entref_t entref)
         "leal (, %eax, 8), %ebx\n"
         "subl %eax, %ebx\n"
         "shll $4, %ebx\n"
-        "addl 0x195f688, %ebx\n"
+        "addl imp_g_entities, %ebx\n"
         ".Lf19d392_0019d3c3:\n"
-        "movl 0x195f6a0, %esi\n" /* line 4726 */
+        "movl imp_level, %esi\n" /* line 4726 */
         "movl 0x204(%esi), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x48, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
+        "movl $str_002b1d38, (%esp)\n" /* "%c %i" */
         "calll va\n"
-        "subl 0x195f688, %ebx\n"
+        "subl imp_g_entities, %ebx\n"
         "sarl $4, %ebx\n"
         "imull $0x8af8af8b, %ebx, %ebx\n"
         "movl %eax, 8(%esp)\n"
@@ -10964,7 +10964,7 @@ unsigned int GScr_UpdateScores(scr_entref_t entref)
         "movl 0x200(%esi), %eax\n" /* line 4727 */
         "movl %eax, 8(%esp)\n"
         "movl $0x47, 4(%esp)\n"
-        "movl $0x2b1d38, (%esp)\n" /* "%c %i" */
+        "movl $str_002b1d38, (%esp)\n" /* "%c %i" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -10976,7 +10976,7 @@ unsigned int GScr_UpdateScores(scr_entref_t entref)
         "popl %ebp\n"
         "retl\n"
         ".Lf19d392_0019d443:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf19d392_0019d3c3\n"
@@ -11005,10 +11005,10 @@ unsigned int GScr_SetTeamForTrigger(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n"
         "subl %eax, %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
+        "addl imp_g_entities, %esi\n"
         ".Lf19d456_0019d488:\n"
         "movzwl 0x168(%esi), %edx\n" /* line 5606 | ent */
-        "movl 0x195f5bc, %edi\n"
+        "movl imp_scr_const, %edi\n"
         "cmpw 0x56(%edi), %dx\n"
         "je .Lf19d456_0019d4d9\n"
         "movzwl 0x58(%edi), %eax\n"
@@ -11023,14 +11023,14 @@ unsigned int GScr_SetTeamForTrigger(scr_entref_t entref)
         "calll SL_ConvertToString\n"
         "movl %ebx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2f00, (%esp)\n" /* "setteamfortrigger: trigger entity must be of type %s or %s" */
+        "movl $str_002b2f00, (%esp)\n" /* "setteamfortrigger: trigger entity must be of type %s or %s" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         ".Lf19d456_0019d4d9:\n"
         "movl $0, (%esp)\n" /* line 5609 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edi\n" /* line 5610 */
+        "movl imp_scr_const, %edi\n" /* line 5610 */
         "cmpw 2(%edi), %ax\n"
         "je .Lf19d456_0019d578\n"
         "cmpw 4(%edi), %ax\n" /* line 5612 */
@@ -11052,7 +11052,7 @@ unsigned int GScr_SetTeamForTrigger(scr_entref_t entref)
         "movl %esi, 0xc(%esp)\n" /* ent */
         "movl %ebx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2f3c, (%esp)\n" /* "setteamfortrigger: invalid team used must be %s, %s or %s" */
+        "movl $str_002b2f3c, (%esp)\n" /* "setteamfortrigger: invalid team used must be %s, %s or %s" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* entref */
         /* } scope */
@@ -11074,7 +11074,7 @@ unsigned int GScr_SetTeamForTrigger(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19d456_0019d565:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n"
         "jmp .Lf19d456_0019d488\n"
@@ -11122,7 +11122,7 @@ unsigned int GScr_ClientClaimTrigger(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n"
         "subl %eax, %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
+        "addl imp_g_entities, %esi\n"
         ".Lf19d596_0019d5c8:\n"
         "movl 0x158(%esi), %ecx\n" /* line 5632 | clientEnt */
         "testl %ecx, %ecx\n"
@@ -11132,7 +11132,7 @@ unsigned int GScr_ClientClaimTrigger(scr_entref_t entref)
         "calll Scr_GetEntity\n"
         "movl %eax, -0x1c(%ebp)\n" /* triggerEnt */
         "movzwl 0x168(%eax), %edx\n" /* line 5637 */
-        "movl 0x195f5bc, %edi\n"
+        "movl imp_scr_const, %edi\n"
         "cmpw 0x56(%edi), %dx\n"
         "je .Lf19d596_0019d639\n"
         "movzwl 0x58(%edi), %eax\n"
@@ -11147,7 +11147,7 @@ unsigned int GScr_ClientClaimTrigger(scr_entref_t entref)
         "calll SL_ConvertToString\n"
         "movl %ebx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b2fa8, (%esp)\n" /* "clientclaimtrigger: trigger entity must be of type %s or %s" */
+        "movl $str_002b2fa8, (%esp)\n" /* "clientclaimtrigger: trigger entity must be of type %s or %s" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -11185,12 +11185,12 @@ unsigned int GScr_ClientClaimTrigger(scr_entref_t entref)
         "jmp .Lf19d596_0019d639\n"
         /* { scope 1 */
         ".Lf19d596_0019d67f:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n"
         "jmp .Lf19d596_0019d5c8\n"
         ".Lf19d596_0019d692:\n"
-        "movl $0x2b2f78, (%esp)\n" /* line 5633 */
+        "movl $str_002b2f78, (%esp)\n" /* line 5633 */
         "calll Scr_Error\n"
         "jmp .Lf19d596_0019d5d6\n"
     );
@@ -11218,7 +11218,7 @@ unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref)
         "leal (, %eax, 8), %esi\n"
         "subl %eax, %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
+        "addl imp_g_entities, %esi\n"
         ".Lf19d6a4_0019d6d6:\n"
         "movl 0x158(%esi), %ebx\n" /* line 5658 | clientEnt, triggerEnt */
         "testl %ebx, %ebx\n" /* triggerEnt */
@@ -11228,7 +11228,7 @@ unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref)
         "calll Scr_GetEntity\n"
         "movl %eax, %ebx\n" /* triggerEnt */
         "movzwl 0x168(%eax), %edx\n" /* line 5663 */
-        "movl 0x195f5bc, %edi\n"
+        "movl imp_scr_const, %edi\n"
         "cmpw 0x56(%edi), %dx\n"
         "je .Lf19d6a4_0019d747\n"
         "movzwl 0x58(%edi), %eax\n"
@@ -11244,7 +11244,7 @@ unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref)
         "movl -0x1c(%ebp), %edx\n"
         "movl %edx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b3018, (%esp)\n" /* "clientreleasetrigger: trigger entity must be of type %s or %" */
+        "movl $str_002b3018, (%esp)\n" /* "clientreleasetrigger: trigger entity must be of type %s or %" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -11264,12 +11264,12 @@ unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref)
         "retl\n"
         /* { scope 1 */
         ".Lf19d6a4_0019d76d:\n"
-        "movl $0x2b21c8, (%esp)\n" /* line 177 */
+        "movl $str_002b21c8, (%esp)\n" /* line 177 */
         "calll Scr_ObjectError\n"
         "xorl %esi, %esi\n"
         "jmp .Lf19d6a4_0019d6d6\n"
         ".Lf19d6a4_0019d780:\n"
-        "movl $0x2b2fe4, (%esp)\n" /* line 5659 */
+        "movl $str_002b2fe4, (%esp)\n" /* line 5659 */
         "calll Scr_Error\n"
         "jmp .Lf19d6a4_0019d6e4\n"
     );
@@ -11323,7 +11323,7 @@ unsigned int Scr_PlayFX(void)
         "addss %xmm2, %xmm0\n"
         "sqrtss %xmm0, %xmm0\n"
         "movss %xmm0, -0x450(%ebp)\n" /* vecLength */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 3899 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 3899 | 0.0f */
         "jne .Lf19d792_0019d893\n"
         "jp .Lf19d792_0019d893\n"
         /* { scope 2 */
@@ -11338,15 +11338,15 @@ unsigned int Scr_PlayFX(void)
         ".Lf19d792_0019d86d:\n"
         "leal -0x448(%ebp), %eax\n" /* line 3864 | fxName */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b3078, 4(%esp)\n" /* "playFx called with (0 0 0) forward direction" */
-        "movl $0x2b30a8, (%esp)\n" /* "%s (effect = %s)
+        "movl $str_002b3078, 4(%esp)\n" /* "playFx called with (0 0 0) forward direction" */
+        "movl $str_002b30a8, (%esp)\n" /* "%s (effect = %s)
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         /* } scope */
         ".Lf19d792_0019d893:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 3903 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 3903 | 1.0f, scale */
         "divss -0x450(%ebp), %xmm0\n" /* vecLength, scale */
         /* { scope 2 */
         "movaps %xmm0, %xmm1\n" /* line 272 */
@@ -11374,7 +11374,7 @@ unsigned int Scr_PlayFX(void)
         "addss %xmm2, %xmm0\n"
         "sqrtss %xmm0, %xmm0\n"
         "movss %xmm0, -0x44c(%ebp)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 3915 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 3915 | 0.0f */
         "jne .Lf19d792_0019d96b\n"
         "jp .Lf19d792_0019d96b\n"
         /* { scope 2 */
@@ -11389,15 +11389,15 @@ unsigned int Scr_PlayFX(void)
         ".Lf19d792_0019d945:\n"
         "leal -0x448(%ebp), %edx\n" /* line 3864 | fxName */
         "movl %edx, 8(%esp)\n"
-        "movl $0x2b30bc, 4(%esp)\n" /* "playFx called with (0 0 0) up direction" */
-        "movl $0x2b30a8, (%esp)\n" /* "%s (effect = %s)
+        "movl $str_002b30bc, 4(%esp)\n" /* "playFx called with (0 0 0) up direction" */
+        "movl $str_002b30a8, (%esp)\n" /* "%s (effect = %s)
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         /* } scope */
         ".Lf19d792_0019d96b:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 3919 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 3919 | 1.0f, scale */
         "divss -0x44c(%ebp), %xmm0\n" /* scale */
         /* { scope 2 */
         "movaps %xmm0, %xmm1\n" /* line 272 */
@@ -11425,7 +11425,7 @@ unsigned int Scr_PlayFX(void)
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm1\n"
         "sqrtss %xmm1, %xmm1\n"
-        "ucomiss 0x2ed658, %xmm1\n" /* line 3925 | 0.0010000000474974513f */
+        "ucomiss lit4_002ed658, %xmm1\n" /* line 3925 | 0.0010000000474974513f */
         "jae .Lf19d792_0019da80\n"
         "jp .Lf19d792_0019da80\n"
         /* { scope 2 */
@@ -11440,8 +11440,8 @@ unsigned int Scr_PlayFX(void)
         ".Lf19d792_0019da1a:\n"
         "leal -0x448(%ebp), %edx\n" /* line 3864 | fxName */
         "movl %edx, 8(%esp)\n"
-        "movl $0x2b30e4, 4(%esp)\n" /* "playFx called an up direction 0 or 180 degrees from forward" */
-        "movl $0x2b30a8, (%esp)\n" /* "%s (effect = %s)
+        "movl $str_002b30e4, 4(%esp)\n" /* "playFx called an up direction 0 or 180 degrees from forward" */
+        "movl $str_002b30a8, (%esp)\n" /* "%s (effect = %s)
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -11472,14 +11472,14 @@ unsigned int Scr_PlayFX(void)
         "retl\n"
         /* { scope 1: fxName */
         ".Lf19d792_0019da6f:\n"
-        "movl $0x2b3058, (%esp)\n" /* line 3880 */
+        "movl $str_002b3058, (%esp)\n" /* line 3880 */
         "calll Scr_Error\n"
         "jmp .Lf19d792_0019d7b1\n"
         ".Lf19d792_0019da80:\n"
-        "ucomiss 0x2ed690, %xmm1\n" /* line 3929 | 0.9990000128746033f */
+        "ucomiss lit4_002ed690, %xmm1\n" /* line 3929 | 0.9990000128746033f */
         "jae .Lf19d792_0019da40\n"
         "jp .Lf19d792_0019da40\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 3931 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 3931 | 1.0f, scale */
         "divss %xmm1, %xmm0\n" /* scale */
         /* { scope 2 */
         "mulss %xmm0, %xmm3\n" /* line 272 */
@@ -11554,7 +11554,7 @@ unsigned int iprintln(void)
         "pushl %ebx\n"
         "subl $0x420, %esp\n"
         "movl $0x66, 4(%esp)\n" /* line 511 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, %esi\n"
         /* { scope 1 */
@@ -11562,14 +11562,14 @@ unsigned int iprintln(void)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x408(%ebp), %ebx\n" /* string */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b281c, 8(%esp)\n" /* "Game Message" */
+        "movl $str_002b281c, 8(%esp)\n" /* "Game Message" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll Scr_ConstructMessageString\n"
         "movl %ebx, 8(%esp)\n" /* line 499 */
         "movl %esi, 4(%esp)\n"
-        "movl $0x2b282c, (%esp)\n" /* "%s "%s"" */
+        "movl $str_002b282c, (%esp)\n" /* "%s "%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -11595,7 +11595,7 @@ unsigned int iprintlnbold(void)
         "pushl %ebx\n"
         "subl $0x420, %esp\n"
         "movl $0x67, 4(%esp)\n" /* line 523 */
-        "movl $0x2a6fe0, (%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, (%esp)\n" /* "%c" */
         "calll va\n"
         "movl %eax, %esi\n"
         /* { scope 1 */
@@ -11603,14 +11603,14 @@ unsigned int iprintlnbold(void)
         "movl $0x400, 0x10(%esp)\n"
         "leal -0x408(%ebp), %ebx\n" /* string */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b281c, 8(%esp)\n" /* "Game Message" */
+        "movl $str_002b281c, 8(%esp)\n" /* "Game Message" */
         "subl $1, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll Scr_ConstructMessageString\n"
         "movl %ebx, 8(%esp)\n" /* line 499 */
         "movl %esi, 4(%esp)\n"
-        "movl $0x2b282c, (%esp)\n" /* "%s "%s"" */
+        "movl $str_002b282c, (%esp)\n" /* "%s "%s"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -11636,11 +11636,11 @@ unsigned int GScr_LoadGameTypeScript(void)
         "pushl %ebx\n"
         "subl $0x50, %esp\n"
         /* { scope 1 */
-        "movl 0x195f6a8, %eax\n" /* line 93 */
+        "movl imp_g_gametype, %eax\n" /* line 93 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3120, 8(%esp)\n" /* "maps/mp/gametypes/%s" */
+        "movl $str_002b3120, 8(%esp)\n" /* "maps/mp/gametypes/%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x48(%ebp), %esi\n" /* filename */
         "movl %esi, (%esp)\n"
@@ -11651,7 +11651,7 @@ unsigned int GScr_LoadGameTypeScript(void)
         "testl %eax, %eax\n"
         "je .Lf19dcc6_0019dfc9\n"
         ".Lf19dcc6_0019dd07:\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 77 */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 77 */
         "movl %esi, (%esp)\n"
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
@@ -11659,87 +11659,87 @@ unsigned int GScr_LoadGameTypeScript(void)
         "je .Lf19dcc6_0019dfa4\n"
         /* } scope */
         ".Lf19dcc6_0019dd21:\n"
-        "movl %ebx, 0x17dda88\n" /* line 95 | func */
+        "movl %ebx, g_scr_data+8\n" /* line 95 | func */
         /* { scope 2 */
-        "movl $0x2b3180, (%esp)\n" /* line 72 */
+        "movl $str_002b3180, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dcc6_0019df83\n"
         ".Lf19dcc6_0019dd3b:\n"
-        "movl $0x2b31a4, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
+        "movl $str_002b31a4, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "je .Lf19dcc6_0019df5a\n"
         /* } scope */
         ".Lf19dcc6_0019dd59:\n"
-        "movl %ebx, 0x17dda8c\n" /* line 98 | func */
+        "movl %ebx, g_scr_data+12\n" /* line 98 | func */
         /* { scope 2 */
-        "movl $0x2b3180, (%esp)\n" /* line 72 */
+        "movl $str_002b3180, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dcc6_0019df39\n"
         ".Lf19dcc6_0019dd73:\n"
-        "movl $0x2b31c0, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
+        "movl $str_002b31c0, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "je .Lf19dcc6_0019df10\n"
         /* } scope */
         ".Lf19dcc6_0019dd91:\n"
-        "movl %ebx, 0x17dda90\n" /* line 99 | func */
+        "movl %ebx, g_scr_data+16\n" /* line 99 | func */
         /* { scope 2 */
-        "movl $0x2b3180, (%esp)\n" /* line 72 */
+        "movl $str_002b3180, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dcc6_0019deef\n"
         ".Lf19dcc6_0019ddab:\n"
-        "movl $0x2b31dc, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
+        "movl $str_002b31dc, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "je .Lf19dcc6_0019dec6\n"
         /* } scope */
         ".Lf19dcc6_0019ddc9:\n"
-        "movl %ebx, 0x17dda94\n" /* line 100 | func */
+        "movl %ebx, g_scr_data+20\n" /* line 100 | func */
         /* { scope 2 */
-        "movl $0x2b3180, (%esp)\n" /* line 72 */
+        "movl $str_002b3180, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dcc6_0019dea5\n"
         ".Lf19dcc6_0019dde3:\n"
-        "movl $0x2b31fc, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
+        "movl $str_002b31fc, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "je .Lf19dcc6_0019de7c\n"
         /* } scope */
         ".Lf19dcc6_0019ddfd:\n"
-        "movl %ebx, 0x17dda98\n" /* line 101 | func */
+        "movl %ebx, g_scr_data+24\n" /* line 101 | func */
         /* { scope 2 */
-        "movl $0x2b3180, (%esp)\n" /* line 72 */
+        "movl $str_002b3180, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dcc6_0019de5e\n"
         ".Lf19dcc6_0019de13:\n"
-        "movl $0x2b3218, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
+        "movl $str_002b3218, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3180, (%esp)\n" /* "maps/mp/gametypes/_callbacksetup" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "jne .Lf19dcc6_0019de51\n"
-        "movl $0x2b3180, 0xc(%esp)\n" /* line 81 */
-        "movl $0x2b3218, 8(%esp)\n" /* "CodeCallback_PlayerKilled" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3180, 0xc(%esp)\n" /* line 81 */
+        "movl $str_002b3218, 8(%esp)\n" /* "CodeCallback_PlayerKilled" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
         ".Lf19dcc6_0019de51:\n"
-        "movl %ebx, 0x17dda9c\n" /* line 102 | func */
+        "movl %ebx, g_scr_data+28\n" /* line 102 | func */
         /* } scope */
         "addl $0x50, %esp\n" /* line 103 */
         "popl %ebx\n"
@@ -11749,68 +11749,68 @@ unsigned int GScr_LoadGameTypeScript(void)
         /* { scope 1 */
         /* { scope 2 */
         ".Lf19dcc6_0019de5e:\n"
-        "movl $0x2b3180, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3180, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019de13\n"
         /* } scope */
         /* { scope 2 */
         ".Lf19dcc6_0019de7c:\n"
-        "movl $0x2b3180, 0xc(%esp)\n" /* line 81 */
-        "movl $0x2b31fc, 8(%esp)\n" /* "CodeCallback_PlayerDamage" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3180, 0xc(%esp)\n" /* line 81 */
+        "movl $str_002b31fc, 8(%esp)\n" /* "CodeCallback_PlayerDamage" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019ddfd\n"
         ".Lf19dcc6_0019dea5:\n"
-        "movl $0x2b3180, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3180, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019dde3\n"
         /* } scope */
         /* { scope 2 */
         ".Lf19dcc6_0019dec6:\n"
-        "movl $0x2b3180, 0xc(%esp)\n" /* line 81 */
-        "movl $0x2b31dc, 8(%esp)\n" /* "CodeCallback_PlayerDisconnect" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3180, 0xc(%esp)\n" /* line 81 */
+        "movl $str_002b31dc, 8(%esp)\n" /* "CodeCallback_PlayerDisconnect" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019ddc9\n"
         ".Lf19dcc6_0019deef:\n"
-        "movl $0x2b3180, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3180, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019ddab\n"
         /* } scope */
         /* { scope 2 */
         ".Lf19dcc6_0019df10:\n"
-        "movl $0x2b3180, 0xc(%esp)\n" /* line 81 */
-        "movl $0x2b31c0, 8(%esp)\n" /* "CodeCallback_PlayerConnect" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3180, 0xc(%esp)\n" /* line 81 */
+        "movl $str_002b31c0, 8(%esp)\n" /* "CodeCallback_PlayerConnect" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019dd91\n"
         ".Lf19dcc6_0019df39:\n"
-        "movl $0x2b3180, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3180, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019dd73\n"
         /* } scope */
         /* { scope 2 */
         ".Lf19dcc6_0019df5a:\n"
-        "movl $0x2b3180, 0xc(%esp)\n" /* line 81 */
-        "movl $0x2b31a4, 8(%esp)\n" /* "CodeCallback_StartGameType" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3180, 0xc(%esp)\n" /* line 81 */
+        "movl $str_002b31a4, 8(%esp)\n" /* "CodeCallback_StartGameType" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019dd59\n"
         ".Lf19dcc6_0019df83:\n"
-        "movl $0x2b3180, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3180, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019dd3b\n"
@@ -11818,14 +11818,14 @@ unsigned int GScr_LoadGameTypeScript(void)
         /* { scope 2 */
         ".Lf19dcc6_0019dfa4:\n"
         "movl %esi, 0xc(%esp)\n" /* line 81 */
-        "movl $0x216f3c, 8(%esp)\n" /* "main" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_00216f3c, 8(%esp)\n" /* "main" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019dd21\n"
         ".Lf19dcc6_0019dfc9:\n"
         "movl %esi, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dcc6_0019dd07\n"
@@ -11843,64 +11843,64 @@ unsigned int GScr_LoadScripts(void)
         "subl $0x54, %esp\n"
         "calll Scr_BeginLoadScripts\n" /* line 135 */
         /* { scope 1 */
-        "movl $0x2b3234, (%esp)\n" /* line 72 */
+        "movl $str_002b3234, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dfe6_0019e12b\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3234, (%esp)\n" /* "codescripts/delete" */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3234, (%esp)\n" /* "codescripts/delete" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "je .Lf19dfe6_0019e165\n"
         /* } scope */
         ".Lf19dfe6_0019e024:\n"
-        "movl %ebx, 0x17deb2c\n" /* line 137 | func */
+        "movl %ebx, g_scr_data+4268\n" /* line 137 | func */
         /* { scope 1 */
-        "movl $0x2b3248, (%esp)\n" /* line 72 */
+        "movl $str_002b3248, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dfe6_0019e1a3\n"
         ".Lf19dfe6_0019e03e:\n"
-        "movl $0x2b325c, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3248, (%esp)\n" /* "codescripts/struct" */
+        "movl $str_002b325c, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3248, (%esp)\n" /* "codescripts/struct" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "je .Lf19dfe6_0019e1dd\n"
         /* } scope */
         ".Lf19dfe6_0019e05c:\n"
-        "movl %ebx, 0x17deb30\n" /* line 138 | func */
+        "movl %ebx, g_scr_data+4272\n" /* line 138 | func */
         /* { scope 1 */
-        "movl $0x2b3248, (%esp)\n" /* line 72 */
+        "movl $str_002b3248, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "je .Lf19dfe6_0019e21b\n"
         ".Lf19dfe6_0019e076:\n"
-        "movl $0x2b3268, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3248, (%esp)\n" /* "codescripts/struct" */
+        "movl $str_002b3268, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3248, (%esp)\n" /* "codescripts/struct" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "je .Lf19dfe6_0019e255\n"
         /* } scope */
         ".Lf19dfe6_0019e094:\n"
-        "movl %ebx, 0x17deb34\n" /* line 139 | func */
+        "movl %ebx, g_scr_data+4276\n" /* line 139 | func */
         "calll GScr_LoadGameTypeScript\n" /* line 141 */
         "movl $0x1044, 8(%esp)\n" /* line 111 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2a7124, (%esp)\n" /* "mapname" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_002a7124, (%esp)\n" /* "mapname" */
         "calll Dvar_RegisterString\n"
         "movl 8(%eax), %eax\n" /* line 112 */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b3278, 8(%esp)\n" /* "maps/mp/%s" */
+        "movl $str_002b3278, 8(%esp)\n" /* "maps/mp/%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x48(%ebp), %ebx\n" /* func */
         "movl %ebx, (%esp)\n" /* func */
         "calll Com_sprintf\n"
         "movl %ebx, (%esp)\n" /* line 72 | func */
         "calll Scr_LoadScript\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 77 */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 77 */
         "movl %ebx, (%esp)\n" /* func */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, g_scr_data\n" /* line 114 */
@@ -11922,68 +11922,68 @@ unsigned int GScr_LoadScripts(void)
         "retl\n"
         /* { scope 1 */
         ".Lf19dfe6_0019e12b:\n"
-        "movl $0x2b3234, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3234, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3234, (%esp)\n" /* "codescripts/delete" */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3234, (%esp)\n" /* "codescripts/delete" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "jne .Lf19dfe6_0019e024\n"
         ".Lf19dfe6_0019e165:\n"
-        "movl $0x2b3234, 0xc(%esp)\n" /* line 81 */
-        "movl $0x216f3c, 8(%esp)\n" /* "main" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3234, 0xc(%esp)\n" /* line 81 */
+        "movl $str_00216f3c, 8(%esp)\n" /* "main" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
-        "movl %ebx, 0x17deb2c\n" /* line 137 | func */
+        "movl %ebx, g_scr_data+4268\n" /* line 137 | func */
         /* { scope 1 */
-        "movl $0x2b3248, (%esp)\n" /* line 72 */
+        "movl $str_002b3248, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "jne .Lf19dfe6_0019e03e\n"
         ".Lf19dfe6_0019e1a3:\n"
-        "movl $0x2b3248, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3248, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl $0x2b325c, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3248, (%esp)\n" /* "codescripts/struct" */
+        "movl $str_002b325c, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3248, (%esp)\n" /* "codescripts/struct" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "jne .Lf19dfe6_0019e05c\n"
         ".Lf19dfe6_0019e1dd:\n"
-        "movl $0x2b3248, 0xc(%esp)\n" /* line 81 */
-        "movl $0x2b325c, 8(%esp)\n" /* "initstructs" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3248, 0xc(%esp)\n" /* line 81 */
+        "movl $str_002b325c, 8(%esp)\n" /* "initstructs" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
-        "movl %ebx, 0x17deb30\n" /* line 138 | func */
+        "movl %ebx, g_scr_data+4272\n" /* line 138 | func */
         /* { scope 1 */
-        "movl $0x2b3248, (%esp)\n" /* line 72 */
+        "movl $str_002b3248, (%esp)\n" /* line 72 */
         "calll Scr_LoadScript\n"
         "testl %eax, %eax\n"
         "jne .Lf19dfe6_0019e076\n"
         ".Lf19dfe6_0019e21b:\n"
-        "movl $0x2b3248, 8(%esp)\n" /* line 75 */
-        "movl $0x2b3138, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_002b3248, 8(%esp)\n" /* line 75 */
+        "movl $str_002b3138, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl $0x2b3268, 4(%esp)\n" /* line 77 */
-        "movl $0x2b3248, (%esp)\n" /* "codescripts/struct" */
+        "movl $str_002b3268, 4(%esp)\n" /* line 77 */
+        "movl $str_002b3248, (%esp)\n" /* "codescripts/struct" */
         "calll Scr_GetFunctionHandle\n"
         "movl %eax, %ebx\n" /* func */
         "testl %eax, %eax\n" /* line 78 */
         "jne .Lf19dfe6_0019e094\n"
         ".Lf19dfe6_0019e255:\n"
-        "movl $0x2b3248, 0xc(%esp)\n" /* line 81 */
-        "movl $0x2b3268, 8(%esp)\n" /* "createstruct" */
-        "movl $0x2b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
+        "movl $str_002b3248, 0xc(%esp)\n" /* line 81 */
+        "movl $str_002b3268, 8(%esp)\n" /* "createstruct" */
+        "movl $str_002b3154, 4(%esp)\n" /* "Could not find label '%s' in script '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19dfe6_0019e094\n"

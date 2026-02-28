@@ -13,7 +13,7 @@ extern float floorf(float x);
  */
 
 /* extern data */
-extern char **cg_glob;            /* 0x195f584 -- pointer to cg_t base */
+extern char **cg_glob;            /* imp_cg -- pointer to cg_t base */
 
 /* extern functions */
 extern int CL_GetKeyCatchers(void);

@@ -110,11 +110,11 @@ static float nextPowerOfTwoF(unsigned int val)
 static float absf(float x) { return x < 0.0f ? -x : x; }
 
 /* Constants from the binary's float literal pool */
-#define GLOW_MAX_RADIUS    1.3895604610443115f   /* 0x2ed894 */
-#define GLOW_MAX_RADIUS_SQ 1.9308782815933228f   /* 0x2ed898 */
-#define FILTER_MIN_RADIUS  0.3295051157474518f    /* 0x2ed89c */
-#define FILTER_MAX_SINGLE  6.497750282287598f     /* 0x2ed8a0 */
-#define FILTER_MAX_SQ      42.220760345458984f    /* 0x2ed8a4 */
+#define GLOW_MAX_RADIUS    1.3895604610443115f   /* lit4_002ed894 */
+#define GLOW_MAX_RADIUS_SQ 1.9308782815933228f   /* lit4_002ed898 */
+#define FILTER_MIN_RADIUS  0.3295051157474518f    /* lit4_002ed89c */
+#define FILTER_MAX_SINGLE  6.497750282287598f     /* lit4_002ed8a0 */
+#define FILTER_MAX_SQ      42.220760345458984f    /* lit4_002ed8a4 */
 
 /* line 81 */
 static int RB_GaussianFilterPoints1D(float pixels, int srcRes, int dstRes, int tapLimit, float *tapOffsets, float *tapWeights)

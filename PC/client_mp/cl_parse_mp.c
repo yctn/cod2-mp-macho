@@ -9,15 +9,15 @@ extern int cl_connectedToPureServer; /* 0x0 */
 extern char * svc_strings[256]; /* 0x0 */
 
 /* Global pointer externs - these are indirect pointers to game structures */
-extern byte **cls_ptr;          /* 0x195ee78 - clientStatic_t** */
-extern byte **clc_ptr;          /* 0x195ee8c - clientConnection_t** */
-extern byte **com_dedicated;    /* 0x195ecbc - dvar_t** */
-extern byte **cl_paused;        /* 0x195f354 - dvar_t** */
-extern byte **cl_packetdelay;   /* 0x195ed18 - dvar_t** */
-extern byte *com_frameTime;     /* 0x195ecac */
-extern byte **download_ui_ptr;  /* 0x195ecb4 - download progress** */
-extern byte **cl_shownet;       /* 0x195f5e4 - dvar_t** */
-extern byte **cl_showPackets;   /* 0x195f870 - dvar_t** */
+extern byte **cls_ptr;          /* imp_cl - clientStatic_t** */
+extern byte **clc_ptr;          /* imp_clc - clientConnection_t** */
+extern byte **com_dedicated;    /* imp_com_sv_running - dvar_t** */
+extern byte **cl_paused;        /* imp_net_lanauthorize - dvar_t** */
+extern byte **cl_packetdelay;   /* imp_cl_paused - dvar_t** */
+extern byte *com_frameTime;     /* imp_cls */
+extern byte **download_ui_ptr;  /* imp_legacyHacks - download progress** */
+extern byte **cl_shownet;       /* imp_cl_shownet - dvar_t** */
+extern byte **cl_showPackets;   /* imp_cl_shownuments - dvar_t** */
 
 /* Function declarations */
 void CL_SystemInfoChanged(void);

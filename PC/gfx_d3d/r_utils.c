@@ -12,9 +12,9 @@ extern double sin(double);
 extern double tan(double);
 extern double fabs(double);
 
-extern byte *r_vtable_ptr;         /* 0x195eee0 */
-extern byte *r_world_ptr;          /* 0x195ed4c */
-extern byte *r_surftype_table_ptr; /* 0x195f1f4 */
+extern byte *r_vtable_ptr;         /* imp_ri */
+extern byte *r_world_ptr;          /* imp_vec3_origin */
+extern byte *r_surftype_table_ptr; /* imp_infoParms */
 
 int R_HashAssetName(const char *name);
 int R_HashString(const char *string);

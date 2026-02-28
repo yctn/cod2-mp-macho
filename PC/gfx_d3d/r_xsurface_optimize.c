@@ -12,15 +12,15 @@
  * Absolute-address globals from the original Mach-O binary.
  * These are pointers-to-pointers used for D3D COM vtable dispatch.
  *
- * 0x195eec0 - dx_config: pointer to D3D config struct (offset 8 == adapter type, 2 => DX7)
- * 0x195eed0 - dx_device_wrapper: pointer to wrapper, offset 8 is the IDirect3DDevice9*
- * 0x195eee0 - xmodel_vtable: XModel interface function table (GetLodCount @ 0x174, GetSurfaces @ 0x168)
- * 0x195f0e0 - gpu_fence_flag: GPU fence / pending-release flag
+ * imp_r_rendererInUse - dx_config: pointer to D3D config struct (offset 8 == adapter type, 2 => DX7)
+ * imp_dx - dx_device_wrapper: pointer to wrapper, offset 8 is the IDirect3DDevice9*
+ * imp_ri - xmodel_vtable: XModel interface function table (GetLodCount @ 0x174, GetSurfaces @ 0x168)
+ * imp_alwaysfails - gpu_fence_flag: GPU fence / pending-release flag
  */
-#define DX_CONFIG        (*(void **)0x195eec0)
-#define DX_DEVICE_WRAP   (*(void **)0x195eed0)
-#define XMODEL_VTABLE    (*(char **)0x195eee0)
-#define GPU_FENCE_FLAG   (*(volatile int **)0x195f0e0)
+#define DX_CONFIG        (*(void **)imp_r_rendererInUse)
+#define DX_DEVICE_WRAP   (*(void **)imp_dx)
+#define XMODEL_VTABLE    (*(char **)imp_ri)
+#define GPU_FENCE_FLAG   (*(volatile int **)imp_alwaysfails)
 
 /* Helper to read an int at byte offset from a void pointer */
 #define DEREF_INT(ptr, off)       (*(int *)((char *)(ptr) + (off)))

@@ -4,16 +4,16 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern void **g_renderState; /* 0x195f234 */
-extern void **g_viewParms;   /* 0x195f188 */
-extern r_globals_t *rg;      /* 0x195eec8 */
-extern r_backEndGlobals_t *backEnd; /* 0x195f0c8 */
-extern void **g_dx;          /* 0x195eed0 */
-extern void **g_dxIter;      /* 0x195f0e0 */
-extern void **g_backEndData; /* 0x195f138 */
-extern void **g_dxCaps;      /* 0x195eec0 */
-extern void **g_drawSurf;    /* 0x195f160 */
-extern void **g_viewInfo;    /* 0x195f1c4 */
+extern void **g_renderState; /* imp_r_fog */
+extern void **g_viewParms;   /* imp_backEndData */
+extern r_globals_t *rg;      /* imp_rg */
+extern r_backEndGlobals_t *backEnd; /* imp_backEnd */
+extern void **g_dx;          /* imp_dx */
+extern void **g_dxIter;      /* imp_alwaysfails */
+extern void **g_backEndData; /* imp_dxState */
+extern void **g_dxCaps;      /* imp_r_rendererInUse */
+extern void **g_drawSurf;    /* imp_tess */
+extern void **g_viewInfo;    /* imp_r_zfar */
 
 GfxFogOffset RB_FogOffset(void)
 {

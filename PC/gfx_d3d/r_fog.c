@@ -6,7 +6,7 @@
 
 typedef void (*ArchiveProc)(MemoryFile *, int, void *);
 
-extern r_globals_t *rg; /* 0x195eec8 */
+extern r_globals_t *rg; /* imp_rg */
 
 void R_ClearFogs(void)
 {

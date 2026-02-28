@@ -21,7 +21,7 @@ extern int CL_SortGlobalServers(void);
 extern const char str_002b6980[]; /* "servercache.dat" */
 
 /*
- * The global at 0x195ecac is a pointer to a clientStatic_t structure.
+ * The global at imp_cls is a pointer to a clientStatic_t structure.
  * We access it as a byte pointer and use offsets for fields that don't
  * match the struct definition exactly (globalServers is actually a large array).
  *
@@ -31,7 +31,7 @@ extern const char str_002b6980[]; /* "servercache.dat" */
  *   0x29c644 - numfavoriteservers (int)
  *   0x29c648 - favoriteServers[128] (serverInfo_t array)
  */
-extern byte *cls_ptr_195ecac; /* 0x195ecac - pointer to clientStatic_t */
+extern byte *cls_ptr_195ecac; /* imp_cls - pointer to clientStatic_t */
 
 #define CLS (*(byte **)&cls_ptr_195ecac)
 

@@ -11,8 +11,8 @@
  *   #include "PC/xanim/xanim_public.h"
  */
 
-static vec3_t mins; /* 0x31466c */
-static vec3_t maxs; /* 0x314660 */
+static vec3_t mins; /* mins */
+static vec3_t maxs; /* maxs */
 
 extern void Com_Printf(const char *fmt, ...);
 extern void FX_FreeSystem(void);
@@ -49,7 +49,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
 /* line 56 */
 void CG_FxRestart(void)
 {
-    Com_Printf((const char *)0x2b74b0);
+    Com_Printf((const char *)str_002b74b0);
     FX_FreeSystem();
     FX_InitSystem(1);
 }
@@ -62,15 +62,15 @@ void CG_FxTest(void)
     int fx;
 
     if (Cmd_Argc() - 1 <= 0) {
-        Com_Printf((const char *)0x2b74e0);
+        Com_Printf((const char *)str_002b74e0);
     }
 
-    cg_s = *(char **)(*(int *)0x195f584);
+    cg_s = *(char **)(*(int *)imp_cg);
     fxName = cg_s + 0x2bfdc;
     I_strncpyz(fxName, CG_Argv(1), 0x40);
 
     fx = FX_RegisterEffect(fxName);
-    Com_Printf((const char *)0x2b7520, fxName);
+    Com_Printf((const char *)str_002b7520, fxName);
     FX_PlaySimpleEffect(fx, (const vec_t *)(cg_s + 0x2c01c));
     *(int *)(cg_s + 0x2c028) = *(int *)(cg_s + 0x25bb0);
 
@@ -90,14 +90,14 @@ float CG_GetViewFov(void)
     char *weapDef;
     float fov_x;
 
-    cg_s = *(char **)(*(int *)0x195f584);
+    cg_s = *(char **)(*(int *)imp_cg);
     weapIndex = BG_GetViewmodelWeaponIndex((void *)(cg_s + 0x25bc4));
     weapDef = (char *)BG_GetWeaponDef(weapIndex);
 
     if (*(int *)(cg_s + 0x25bc8) == 5) {
         fov_x = 90.0f;
     } else {
-        fov_x = *(float *)(*(char **)(*(int *)0x195f868) + 8);
+        fov_x = *(float *)(*(char **)(*(int *)imp_cg_fov) + 8);
 
         if (BG_IsAimDownSightWeapon(weapIndex)) {
             float fPosLerp = *(float *)(cg_s + 0x25ca0);
@@ -127,16 +127,16 @@ float CG_GetViewFov(void)
     }
 
     /* Scope overlay check */
-    if (*(int *)(*(char **)(*(int *)0x195f584) + 0x25c64) & 0x300) {
+    if (*(int *)(*(char **)(*(int *)imp_cg) + 0x25c64) & 0x300) {
         fov_x = 55.0f;
     }
 
     /* Apply fov scale */
-    fov_x *= *(float *)(*(char **)(*(int *)0x195f864) + 8);
+    fov_x *= *(float *)(*(char **)(*(int *)imp_cg_fovScale) + 8);
 
     /* Clamp to minimum */
     {
-        float fovClamp = *(float *)(*(char **)(*(int *)0x195f850) + 8);
+        float fovClamp = *(float *)(*(char **)(*(int *)imp_cg_fovMin) + 8);
         if (fovClamp > fov_x) {
             fov_x = fovClamp;
         }
@@ -159,8 +159,8 @@ static void CG_CalcFov(void)
     halfAngle = (double)fov * 0.017453292519943295 * 0.5;
     tanVal = (float)tan(halfAngle) * 0.75f;
 
-    cg_s = *(char **)(*(int *)0x195f584);
-    fov_x = (float)((double)atanf(tanVal * *(float *)(*(char **)(*(int *)0x195f5c4) + 0x5e94)) * 57.29577951308232 * 2.0);
+    cg_s = *(char **)(*(int *)imp_cg);
+    fov_x = (float)((double)atanf(tanVal * *(float *)(*(char **)(*(int *)imp_cgs) + 0x5e94)) * 57.29577951308232 * 2.0);
     fov_y = (float)((double)atanf(tanVal) * 57.29577951308232 * 2.0);
 
     if (CG_PointContents((const vec_t *)(cg_s + 0x28588), -1, 0x20)) {
@@ -172,13 +172,13 @@ static void CG_CalcFov(void)
 
     *(float *)(cg_s + 0x28580) = fov_x;
     *(float *)(cg_s + 0x28584) = fov_y;
-    *(float *)(cg_s + 0x2a5f8) = fov_x / *(float *)(*(char **)(*(int *)0x195f868) + 8);
+    *(float *)(cg_s + 0x2a5f8) = fov_x / *(float *)(*(char **)(*(int *)imp_cg_fov) + 8);
 }
 
 /* line 49 */
 void CG_FxSetTestPosition(void)
 {
-    char *cg_s = *(char **)(*(int *)0x195f584);
+    char *cg_s = *(char **)(*(int *)imp_cg);
     float *start = (float *)(cg_s + 0x28588);
     float *dir = (float *)(cg_s + 0x28594);
     float *result = (float *)(cg_s + 0x2c01c);
@@ -187,7 +187,7 @@ void CG_FxSetTestPosition(void)
     result[1] = start[1] + 100.0f * dir[1];
     result[2] = start[2] + 100.0f * dir[2];
 
-    Com_Printf((const char *)0x2b7530,
+    Com_Printf((const char *)str_002b7530,
                (double)result[0], (double)result[1], (double)result[2]);
 }
 
@@ -203,7 +203,7 @@ void CG_OffsetThirdPersonView(void)
         "pushl %ebx\n"
         "subl $0xac, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 139 */
+        "movl imp_cg, %eax\n" /* line 139 */
         "movl (%eax), %esi\n"
         "movss 0x28590(%esi), %xmm0\n"
         "addss 0x25cbc(%esi), %xmm0\n"
@@ -224,7 +224,7 @@ void CG_OffsetThirdPersonView(void)
         "cvtsi2ssl 0x25cf4(%esi), %xmm0\n" /* line 147 */
         "movss %xmm0, 0x285cc(%esi)\n"
         ".Lf1d128e_001d12fa:\n"
-        "movss 0x2ed6ec, %xmm0\n" /* line 152 | 45.0f */
+        "movss lit4_002ed6ec, %xmm0\n" /* line 152 | 45.0f */
         "movss -0x54(%ebp), %xmm2\n" /* focusAngles */
         "movaps %xmm0, %xmm1\n"
         "movaps %xmm2, %xmm3\n"
@@ -242,7 +242,7 @@ void CG_OffsetThirdPersonView(void)
         "calll AngleVectors\n"
         "leal 0x28588(%esi), %eax\n" /* line 156 */
         "movl %eax, -0x88(%ebp)\n"
-        "movss 0x2ed828, %xmm0\n" /* line 288 | 512.0f */
+        "movss lit4_002ed828, %xmm0\n" /* line 288 | 512.0f */
         "movss -0x24(%ebp), %xmm1\n" /* forward */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x7c(%ebp)\n"
@@ -261,13 +261,13 @@ void CG_OffsetThirdPersonView(void)
         "movl %eax, -0x48(%ebp)\n" /* view */
         "movl 0x2858c(%esi), %eax\n" /* line 200 */
         "movl %eax, -0x44(%ebp)\n"
-        "movss 0x2ed740, %xmm0\n" /* line 160 | 8.0f */
+        "movss lit4_002ed740, %xmm0\n" /* line 160 | 8.0f */
         "addss 0x28590(%esi), %xmm0\n"
         "movss %xmm0, -0x40(%ebp)\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 162 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 162 | 0.5f */
         "mulss 0x285c8(%esi), %xmm0\n"
         "movss %xmm0, 0x285c8(%esi)\n"
-        "movl 0x195f854, %eax\n" /* line 163 */
+        "movl imp_cg_thirdPersonAngle, %eax\n" /* line 163 */
         "movl (%eax), %eax\n"
         "movss 0x285cc(%esi), %xmm0\n"
         "subss 8(%eax), %xmm0\n"
@@ -279,10 +279,10 @@ void CG_OffsetThirdPersonView(void)
         "movl %ebx, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* from */
         "calll AngleVectors\n"
-        "movl 0x195f858, %eax\n" /* line 167 */
+        "movl imp_cg_thirdPersonRange, %eax\n" /* line 167 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n" /* scale */
-        "xorps 0x303420, %xmm1\n" /* scale */
+        "xorps colorWhiteFaded+64, %xmm1\n" /* scale */
         /* { scope 2 */
         "movaps %xmm1, %xmm0\n" /* line 288 */
         "mulss -0x24(%ebp), %xmm0\n" /* forward */
@@ -309,11 +309,11 @@ void CG_OffsetThirdPersonView(void)
         "movl %ebx, (%esp)\n"
         "calll CG_TraceCapsule\n"
         "movss -0x78(%ebp), %xmm2\n" /* line 174 | trace */
-        "ucomiss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "jp .Lf1d128e_001d1584\n"
         "jne .Lf1d128e_001d1584\n"
         ".Lf1d128e_001d14ba:\n"
-        "movl 0x195f584, %eax\n" /* line 185 */
+        "movl imp_cg, %eax\n" /* line 185 */
         "movl (%eax), %ebx\n"
         "leal 0x28588(%ebx), %edx\n" /* to */
         /* { scope 2 */
@@ -338,7 +338,7 @@ void CG_OffsetThirdPersonView(void)
         "mulss %xmm1, %xmm1\n"
         "addss %xmm1, %xmm2\n"
         "sqrtss %xmm2, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 190 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 190 | 1.0f */
         "ucomiss %xmm1, %xmm3\n"
         "ja .Lf1d128e_001d157a\n"
         "cvtss2sd %xmm1, %xmm1\n"
@@ -350,7 +350,7 @@ void CG_OffsetThirdPersonView(void)
         "fstpl -0x90(%ebp)\n"
         "cvtsd2ss -0x90(%ebp), %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307da0, %xmm0\n" /* -57.29577951308232 */
+        "mulsd lit8_00307da0, %xmm0\n" /* -57.29577951308232 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, 0x285c8(%ebx)\n"
         /* } scope */
@@ -362,7 +362,7 @@ void CG_OffsetThirdPersonView(void)
         "retl\n"
         /* { scope 1 */
         ".Lf1d128e_001d157a:\n"
-        "movsd 0x307c10, %xmm1\n" /* line 190 | 1.0 */
+        "movsd lit8_00307c10, %xmm1\n" /* line 190 | 1.0 */
         "jmp .Lf1d128e_001d1535\n"
         ".Lf1d128e_001d1584:\n"
         "movss 0x28588(%esi), %xmm1\n" /* line 1203 */
@@ -383,9 +383,9 @@ void CG_OffsetThirdPersonView(void)
         "subss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "addss %xmm2, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 177 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 177 | 1.0f */
         "subss -0x78(%ebp), %xmm0\n" /* trace */
-        "mulss 0x2ed830, %xmm0\n" /* 32.0f */
+        "mulss lit4_002ed830, %xmm0\n" /* 32.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, -0x40(%ebp)\n"
         "movl $0x811, 0x18(%esp)\n" /* line 181 */
@@ -435,7 +435,7 @@ void CG_CalcViewValues(void)
         "pushl %ebx\n"
         "subl $0x14c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 692 */
+        "movl imp_cg, %eax\n" /* line 692 */
         "movl (%eax), %esi\n"
         "leal 0x28570(%esi), %eax\n"
         "movl $0x58, 8(%esp)\n"
@@ -445,7 +445,7 @@ void CG_CalcViewValues(void)
         "calll CL_GetMenuBlurRadius\n" /* line 694 */
         "fstps -0xfc(%ebp)\n"
         "movss -0xfc(%ebp), %xmm1\n"
-        "movl 0x195f7d4, %eax\n" /* line 695 */
+        "movl imp_cgDC, %eax\n" /* line 695 */
         "movss 0x28(%eax), %xmm0\n"
         "mulss %xmm0, %xmm0\n"
         "mulss %xmm1, %xmm1\n"
@@ -458,13 +458,13 @@ void CG_CalcViewValues(void)
         "movl 0x24(%esi), %eax\n" /* line 704 */
         "cmpl $5, 0x10(%eax)\n"
         "je .Lf1d1694_001d1d12\n"
-        "movl 0x195f84c, %eax\n" /* line 707 */
+        "movl imp_cg_viewsize, %eax\n" /* line 707 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0xe0(%ebp)\n" /* viewSize */
         "movl %eax, %edi\n"
         ".Lf1d1694_001d1724:\n"
-        "movl 0x195f5c4, %eax\n" /* line 106 */
+        "movl imp_cgs, %eax\n" /* line 106 */
         "movl (%eax), %ecx\n"
         "imull 0x5e8c(%ecx), %edi\n"
         "movl $0x51eb851f, %eax\n"
@@ -474,7 +474,7 @@ void CG_CalcViewValues(void)
         "sarl $0x1f, %eax\n"
         "subl %eax, %edx\n"
         "movl %edx, 0x28578(%esi)\n"
-        "movl 0x195f584, %eax\n" /* line 107 */
+        "movl imp_cg, %eax\n" /* line 107 */
         "movl (%eax), %edi\n"
         "movl 0x28578(%edi), %ebx\n"
         "andl $0xfffffffe, %ebx\n"
@@ -548,7 +548,7 @@ void CG_CalcViewValues(void)
         "movl 8(%edx), %eax\n" /* line 201 */
         "movl %eax, 8(%ecx)\n"
         /* } scope */
-        "movl 0x195f86c, %eax\n" /* line 731 */
+        "movl imp_cg_errorDecay, %eax\n" /* line 731 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "pxor %xmm3, %xmm3\n"
@@ -567,7 +567,7 @@ void CG_CalcViewValues(void)
         "movl $0, 0x284c0(%edi)\n" /* line 744 */
         /* } scope */
         ".Lf1d1694_001d18c3:\n"
-        "movl 0x195f584, %eax\n" /* line 577 */
+        "movl imp_cg, %eax\n" /* line 577 */
         "movl (%eax), %ebx\n"
         "leal 0x25bc4(%ebx), %edi\n"
         "testl $0x300, 0xa0(%edi)\n" /* line 579 */
@@ -591,7 +591,7 @@ void CG_CalcViewValues(void)
         "subl 0x7a4(%ecx), %eax\n"
         ".Lf1d1694_001d192c:\n"
         "movl %eax, -0x44(%ebp)\n"
-        "movl 0x195f584, %edx\n" /* line 330 */
+        "movl imp_cg, %edx\n" /* line 330 */
         "movl (%edx), %edx\n"
         "movl %edx, -0xe4(%ebp)\n"
         "movl 0x25bb0(%edx), %eax\n"
@@ -606,7 +606,7 @@ void CG_CalcViewValues(void)
         "movl 0x2bf1c(%ecx), %eax\n" /* line 333 */
         "movl %eax, -0x34(%ebp)\n"
         "cvtsi2ssl 0x25bac(%ecx), %xmm0\n" /* line 334 */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x30(%ebp)\n"
         "movl 0x14(%ebx), %eax\n" /* line 335 */
         "movl %eax, -0x2c(%ebp)\n"
@@ -636,7 +636,7 @@ void CG_CalcViewValues(void)
         "movss 0x28590(%edx), %xmm0\n"
         "addss 0x25cbc(%edx), %xmm0\n"
         "movss %xmm0, 0x28590(%edx)\n"
-        "movl 0x195f680, %edi\n" /* line 349 */
+        "movl imp_bg_bobMax, %edi\n" /* line 349 */
         "movl (%edi), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n"
@@ -689,10 +689,10 @@ void CG_CalcViewValues(void)
         "movl %edx, %eax\n"
         "subl 0x284dc(%ebx), %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 357 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 357 | 0.0f */
         "jb .Lf1d1694_001d250e\n"
         ".Lf1d1694_001d1b41:\n"
-        "movss 0x2ed93c, %xmm1\n" /* line 359 | 150.0f */
+        "movss lit4_002ed93c, %xmm1\n" /* line 359 | 150.0f */
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lf1d1694_001d2261\n"
         "divss %xmm1, %xmm0\n" /* line 362 */
@@ -701,7 +701,7 @@ void CG_CalcViewValues(void)
         "addss 0x28590(%edx), %xmm0\n"
         "movss %xmm0, 0x28590(%edx)\n"
         ".Lf1d1694_001d1b74:\n"
-        "movl 0x195f584, %ebx\n" /* line 204 */
+        "movl imp_cg, %ebx\n" /* line 204 */
         "movl (%ebx), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "movl %edx, %ecx\n" /* line 206 */
@@ -710,7 +710,7 @@ void CG_CalcViewValues(void)
         "cmpl $0x63, %ecx\n" /* line 210 */
         "jle .Lf1d1694_001d21a3\n"
         ".Lf1d1694_001d1b99:\n"
-        "movl 0x195f584, %edx\n" /* line 375 */
+        "movl imp_cg, %edx\n" /* line 375 */
         "movl (%edx), %ebx\n"
         "movl $0x41a00000, 0x10(%esp)\n"
         "movl $0x41800000, 0xc(%esp)\n"
@@ -721,14 +721,14 @@ void CG_CalcViewValues(void)
         "leal 0x28588(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll AddLeanToPosition\n"
-        "movss 0x2ed740, %xmm0\n" /* line 378 | 8.0f */
+        "movss lit4_002ed740, %xmm0\n" /* line 378 | 8.0f */
         "addss 0x25be0(%ebx), %xmm0\n"
         "ucomiss 0x28590(%ebx), %xmm0\n"
         "jbe .Lf1d1694_001d1bf4\n"
         "movss %xmm0, 0x28590(%ebx)\n" /* line 379 */
         ".Lf1d1694_001d1bf4:\n"
         "calll CG_ShakeCamera\n" /* line 761 */
-        "movl 0x195f584, %eax\n" /* line 764 */
+        "movl imp_cg, %eax\n" /* line 764 */
         "movl (%eax), %ebx\n" /* to */
         "leal 0x28594(%ebx), %esi\n" /* to */
         "movl %esi, 4(%esp)\n"
@@ -819,7 +819,7 @@ void CG_CalcViewValues(void)
         "calll atan2\n"
         "fstpl -0x108(%ebp)\n"
         "movsd -0x108(%ebp), %xmm0\n"
-        "mulsd 0x307da8, %xmm0\n" /* 114.59155902616465 */
+        "mulsd lit8_00307da8, %xmm0\n" /* 114.59155902616465 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, 0x28580(%esi)\n"
         "movss %xmm0, 0x28584(%esi)\n" /* line 523 */
@@ -837,7 +837,7 @@ void CG_CalcViewValues(void)
         "cmpl $6, 0xc(%esi)\n" /* line 527 */
         "ja .Lf1d1694_001d1d07\n"
         "movl 0xc(%esi), %eax\n"
-        "jmpl *0x303430(, %eax, 4)\n"
+        "jmpl *colorWhiteFaded+80(, %eax, 4)\n"
         ".Lf1d1694_001d1ded:\n"
         "leal 0x28588(%edi), %ecx\n" /* line 717 | to */
         "leal 0x25bd8(%edi), %edx\n" /* from */
@@ -883,14 +883,14 @@ void CG_CalcViewValues(void)
         "leal (%eax, %eax, 2), %eax\n" /* line 646 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, -0xbc(%ebp)\n"
         "movl (%eax), %edx\n" /* line 647 */
         "testl %edx, %edx\n"
         "je .Lf1d1694_001d1cfd\n"
-        "movl 0x195f5bc, %eax\n" /* line 650 */
+        "movl imp_scr_const, %eax\n" /* line 650 */
         "movzwl 0x9c(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
@@ -935,7 +935,7 @@ void CG_CalcViewValues(void)
         "movss %xmm1, -0x10c(%ebp)\n"
         "movss -0xac(%ebp), %xmm0\n" /* line 320 */
         "addss %xmm3, %xmm0\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm1\n"
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x48(%ebp)\n"
@@ -1036,7 +1036,7 @@ void CG_CalcViewValues(void)
         "jmp .Lf1d1694_001d1cfd\n"
         /* { scope 2 */
         ".Lf1d1694_001d2145:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 738 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 738 | 1.0f */
         "ucomiss %xmm2, %xmm0\n"
         "jbe .Lf1d1694_001d18b9\n"
         "leal 0x284c4(%edi), %eax\n" /* line 740 | dir */
@@ -1058,13 +1058,13 @@ void CG_CalcViewValues(void)
         ".Lf1d1694_001d219d:\n"
         "movl %edx, 0x284d4(%eax)\n" /* line 208 */
         ".Lf1d1694_001d21a3:\n"
-        "movl 0x195f584, %eax\n" /* line 212 */
+        "movl imp_cg, %eax\n" /* line 212 */
         "movl (%eax), %edx\n"
         "movl $0x64, %eax\n"
         "subl %ecx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "mulss 0x284d0(%edx), %xmm0\n"
-        "divss 0x2eda64, %xmm0\n" /* -100.0f */
+        "divss lit4_002eda64, %xmm0\n" /* -100.0f */
         "addss 0x28590(%edx), %xmm0\n"
         "movss %xmm0, 0x28590(%edx)\n"
         "jmp .Lf1d1694_001d1b99\n"
@@ -1077,7 +1077,7 @@ void CG_CalcViewValues(void)
         "shll $4, %edx\n"
         "addl %eax, %edx\n"
         "leal (%eax, %edx, 8), %edx\n"
-        "movl 0x195f5cc, %eax\n"
+        "movl imp_cg_entities, %eax\n"
         "movl (%eax), %eax\n"
         "leal (%eax, %edx, 4), %esi\n"
         "movl 0x220(%esi), %eax\n" /* line 586 */
@@ -1090,7 +1090,7 @@ void CG_CalcViewValues(void)
         "je .Lf1d1694_001d2257\n"
         "leal 0x28588(%ebx), %eax\n" /* line 591 */
         "movl %eax, 0xc(%esp)\n"
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x9a(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
@@ -1102,15 +1102,15 @@ void CG_CalcViewValues(void)
         "cmpl $2, 0x590(%edi)\n" /* line 595 */
         "je .Lf1d1694_001d2461\n"
         ".Lf1d1694_001d2257:\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "jmp .Lf1d1694_001d18e0\n"
         ".Lf1d1694_001d2261:\n"
-        "ucomiss 0x2eda5c, %xmm0\n" /* line 364 | 450.0f */
+        "ucomiss lit4_002eda5c, %xmm0\n" /* line 364 | 450.0f */
         "jae .Lf1d1694_001d1b74\n"
         "jp .Lf1d1694_001d1b74\n"
         "subss %xmm1, %xmm0\n" /* line 368 */
-        "divss 0x2eda60, %xmm0\n" /* -300.0f */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "divss lit4_002eda60, %xmm0\n" /* -300.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movl -0xe4(%ebp), %ecx\n"
         "mulss 0x284d8(%ecx), %xmm0\n"
         "addss 0x28590(%ecx), %xmm0\n"
@@ -1122,7 +1122,7 @@ void CG_CalcViewValues(void)
         "movl %edx, 4(%eax)\n" /* line 192 */
         "movl $0x3f800000, %ebx\n" /* line 193 */
         "movl %ebx, 8(%eax)\n"
-        "movl 0x195f584, %eax\n" /* line 531 */
+        "movl imp_cg, %eax\n" /* line 531 */
         "movl (%eax), %eax\n"
         "leal 0x285a0(%eax), %ecx\n"
         "movl %edx, 0x285a0(%eax)\n" /* line 191 */
@@ -1138,7 +1138,7 @@ void CG_CalcViewValues(void)
         "movl %edx, 0x28594(%esi)\n"
         "movl %edx, 4(%eax)\n" /* line 192 */
         "movl $0xbf800000, 8(%eax)\n" /* line 193 */
-        "movl 0x195f584, %eax\n" /* line 536 */
+        "movl imp_cg, %eax\n" /* line 536 */
         "movl (%eax), %eax\n"
         "leal 0x285a0(%eax), %ecx\n"
         "movl %edx, 0x285a0(%eax)\n" /* line 191 */
@@ -1156,7 +1156,7 @@ void CG_CalcViewValues(void)
         "xorl %edx, %edx\n" /* line 192 */
         "movl %edx, 4(%eax)\n"
         "movl %edx, 8(%eax)\n" /* line 193 */
-        "movl 0x195f584, %eax\n" /* line 541 */
+        "movl imp_cg, %eax\n" /* line 541 */
         "movl (%eax), %eax\n"
         "leal 0x285a0(%eax), %ecx\n"
         "movl %edx, 0x285a0(%eax)\n" /* line 191 */
@@ -1173,7 +1173,7 @@ void CG_CalcViewValues(void)
         "xorl %edx, %edx\n" /* line 192 */
         "movl %edx, 4(%eax)\n"
         "movl %edx, 8(%eax)\n" /* line 193 */
-        "movl 0x195f584, %eax\n" /* line 546 */
+        "movl imp_cg, %eax\n" /* line 546 */
         "movl (%eax), %eax\n"
         "leal 0x285a0(%eax), %ecx\n"
         "movl %edx, 0x285a0(%eax)\n" /* line 191 */
@@ -1190,7 +1190,7 @@ void CG_CalcViewValues(void)
         "movl %edx, 0x28594(%esi)\n"
         "movl $0xbf800000, 4(%eax)\n" /* line 192 */
         "movl %edx, 8(%eax)\n" /* line 193 */
-        "movl 0x195f584, %eax\n" /* line 551 */
+        "movl imp_cg, %eax\n" /* line 551 */
         "movl (%eax), %eax\n"
         "leal 0x285a0(%eax), %ecx\n"
         "movl $0x3f800000, %ebx\n" /* line 191 */
@@ -1203,14 +1203,14 @@ void CG_CalcViewValues(void)
         "movl $0x3f800000, %ebx\n" /* line 192 */
         "movl %ebx, 4(%eax)\n"
         "movl %edx, 8(%eax)\n" /* line 193 */
-        "movl 0x195f584, %eax\n" /* line 556 */
+        "movl imp_cg, %eax\n" /* line 556 */
         "movl (%eax), %eax\n"
         "leal 0x285a0(%eax), %ecx\n"
         "movl $0xbf800000, 0x285a0(%eax)\n" /* line 191 */
         "movl %edx, 4(%ecx)\n" /* line 192 */
         "jmp .Lf1d1694_001d23c1\n"
         ".Lf1d1694_001d2448:\n"
-        "movl $0x2b7560, 4(%esp)\n" /* line 592 */
+        "movl $str_002b7560, 4(%esp)\n" /* line 592 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1d1694_001d224a\n"
@@ -1256,11 +1256,11 @@ void CG_InitView(void)
     char *cg_s;
     int renderPlayerState;
 
-    cg_s = *(char **)(*(int *)0x195f584);
+    cg_s = *(char **)(*(int *)imp_cg);
     *(int *)(cg_s + 0x285b8) = *(int *)(cg_s + 0x25bb0);
     *(int *)(cg_s + 0x285bc) = 0x3f800000;
 
-    if (*(unsigned char *)(*(char **)(*(int *)0x195f860) + 8) != 0) {
+    if (*(unsigned char *)(*(char **)(*(int *)imp_cg_thirdPerson) + 8) != 0) {
         renderPlayerState = 1;
     } else if (*(int *)(*(char **)(cg_s + 0x24) + 0x10) > 5) {
         renderPlayerState = 1;
@@ -1272,7 +1272,7 @@ void CG_InitView(void)
     CG_PredictPlayerState();
     CL_ResetSkeletonCache(0);
 
-    cg_s = *(char **)(*(int *)0x195f584);
+    cg_s = *(char **)(*(int *)imp_cg);
     CG_UpdateViewWeaponAnim((void *)(cg_s + 0x25bc4));
     CG_CalcViewValues();
     CL_FX_AdjustCamera((void *)(cg_s + 0x28570));
@@ -1292,7 +1292,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "subl $0x4c, %esp\n"
         "movl 8(%ebp), %ecx\n" /* serverTime */
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 942 */
+        "movl imp_cg, %eax\n" /* line 942 */
         "movl (%eax), %ebx\n"
         "movl 0x25bb0(%ebx), %edx\n"
         "movl %edx, 0x25bb4(%ebx)\n"
@@ -1317,7 +1317,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl %eax, 0xe08fc(%ebx)\n"
         "cmpb $0, 0x2a5fc(%ebx)\n" /* line 963 */
         "je .Lf1d25bc_001d2640\n"
-        "movl 0x195edb4, %eax\n" /* line 965 */
+        "movl imp_bgs, %eax\n" /* line 965 */
         "movl $0, (%eax)\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -1330,7 +1330,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "retl\n"
         /* { scope 1 */
         ".Lf1d25bc_001d2640:\n"
-        "movl 0x195edb4, %esi\n" /* line 969 */
+        "movl imp_bgs, %esi\n" /* line 969 */
         "leal 0x2cd18(%ebx), %eax\n"
         "movl %eax, (%esi)\n"
         "calll CG_ProcessSnapshots\n" /* line 972 */
@@ -1342,13 +1342,13 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "je .Lf1d25bc_001d29d6\n"
         "testb $2, (%eax)\n"
         "jne .Lf1d25bc_001d29d6\n"
-        "movl 0x195ecb4, %eax\n" /* line 992 */
+        "movl imp_legacyHacks, %eax\n" /* line 992 */
         "movl (%eax), %eax\n"
         "cmpb $0, 0x5c(%eax)\n"
         "jne .Lf1d25bc_001d29c9\n"
         ".Lf1d25bc_001d2683:\n"
         "movb $0, 0xdc(%eax)\n" /* line 1008 */
-        "movl 0x195f584, %eax\n" /* line 1011 */
+        "movl imp_cg, %eax\n" /* line 1011 */
         "movl (%eax), %edi\n" /* delayedDrawing */
         "addl $1, (%edi)\n" /* delayedDrawing */
         "leal 0x28588(%edi), %esi\n" /* line 1013 | delayedDrawing, result */
@@ -1393,7 +1393,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl 0x5e4(%ecx), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf1d25bc_001d2a05\n"
-        "movl 0x195f5c4, %eax\n" /* line 1022 */
+        "movl imp_cgs, %eax\n" /* line 1022 */
         "movl (%eax), %eax\n"
         "addl $0x68c4, %eax\n"
         "movl %eax, 0x2ccd8(%edi)\n" /* delayedDrawing */
@@ -1402,7 +1402,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl 0x2ccfc(%edi), %eax\n" /* line 1024 | delayedDrawing */
         "movl %eax, 0x2cce0(%edi)\n" /* delayedDrawing */
         ".Lf1d25bc_001d277d:\n"
-        "movl 0x195f584, %eax\n" /* line 1032 */
+        "movl imp_cg, %eax\n" /* line 1032 */
         "movl (%eax), %ebx\n" /* from */
         "movl 0x2cce0(%ebx), %eax\n" /* from */
         "movl %eax, 8(%esp)\n"
@@ -1411,7 +1411,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl 0x2ccd8(%ebx), %eax\n" /* from */
         "movl %eax, (%esp)\n"
         "calll CG_UpdateShellShock\n"
-        "movl 0x195f860, %eax\n" /* line 842 */
+        "movl imp_cg_thirdPerson, %eax\n" /* line 842 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1d25bc_001d29fb\n"
@@ -1421,7 +1421,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "xorl %eax, %eax\n"
         ".Lf1d25bc_001d27c6:\n"
         "movl %eax, 0x25bc0(%ebx)\n"
-        "movl 0x195f584, %eax\n" /* line 814 */
+        "movl imp_cg, %eax\n" /* line 814 */
         "movl %eax, -0x24(%ebp)\n"
         "movl (%eax), %ecx\n"
         "movl 0x24(%ecx), %eax\n"
@@ -1454,7 +1454,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "calll CG_AddLocalEntities\n" /* line 1059 */
         "calll CL_Input\n" /* line 1062 */
         "calll CG_PredictPlayerState\n" /* line 1066 */
-        "movl 0x195f584, %eax\n" /* line 1070 */
+        "movl imp_cg, %eax\n" /* line 1070 */
         "movl (%eax), %esi\n" /* result */
         "leal 0x25bc4(%esi), %ebx\n" /* result, from */
         "movl %ebx, (%esp)\n" /* from */
@@ -1480,7 +1480,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "cmpl %eax, 0x25bb0(%esi)\n"
         "jg .Lf1d25bc_001d2cec\n"
         ".Lf1d25bc_001d28b2:\n"
-        "movl 0x195f584, %ebx\n" /* line 1090 | from */
+        "movl imp_cg, %ebx\n" /* line 1090 | from */
         "movl %ebx, -0x24(%ebp)\n" /* from */
         "movl (%ebx), %ebx\n" /* from */
         "movl 0x24(%ebx), %eax\n" /* from */
@@ -1496,18 +1496,18 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
         "leal (%edx, %eax, 8), %eax\n"
-        "movl 0x195f5cc, %edx\n"
+        "movl imp_cg_entities, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CG_ProcessEntity\n"
         ".Lf1d25bc_001d28fd:\n"
-        "movl 0x195f85c, %eax\n" /* line 916 */
+        "movl imp_cg_dumpAnims, %eax\n" /* line 916 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "testl %edx, %edx\n"
         "js .Lf1d25bc_001d291d\n"
-        "movl 0x195f74c, %eax\n"
+        "movl imp_cg_paused, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1521,7 +1521,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "calll CG_Draw2D\n" /* line 1121 */
         "movl %edi, (%esp)\n" /* line 1124 | delayedDrawing */
         "calll CL_EndDelayedDrawing\n"
-        "movl 0x195f584, %eax\n" /* line 1127 */
+        "movl imp_cg, %eax\n" /* line 1127 */
         "movl (%eax), %esi\n" /* result */
         "movl 0x2be50(%esi), %ebx\n" /* result, from */
         "testl %ebx, %ebx\n" /* from */
@@ -1535,7 +1535,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl %eax, 8(%esp)\n"
         "movl 0x2be50(%esi), %eax\n" /* result */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b758c, (%esp)\n" /* "WARNING: Invalid weaponSelect setting %i (out of range 0 - %" */
+        "movl $str_002b758c, (%esp)\n" /* "WARNING: Invalid weaponSelect setting %i (out of range 0 - %" */
         "calll Com_Printf\n"
         "movl $1, %ecx\n"
         "movl %esi, %edx\n" /* result */
@@ -1555,7 +1555,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "calll CG_DrawActive\n" /* line 1143 */
         "movl %edi, (%esp)\n" /* line 1145 | delayedDrawing */
         "calll CL_IssueDelayedDrawing\n"
-        "movl 0x195edb4, %eax\n" /* line 1147 */
+        "movl imp_bgs, %eax\n" /* line 1147 */
         "movl $0, (%eax)\n"
         "movl $1, %eax\n"
         "jmp .Lf1d25bc_001d2638\n"
@@ -1584,7 +1584,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl %edx, %eax\n" /* line 1028 */
         "shll $7, %eax\n"
         "leal 0x68c0(%eax, %edx, 4), %eax\n"
-        "movl 0x195f5c4, %edx\n"
+        "movl imp_cgs, %edx\n"
         "addl (%edx), %eax\n"
         "addl $4, %eax\n"
         "movl %eax, 0x2ccd8(%edi)\n" /* delayedDrawing */
@@ -1601,7 +1601,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl %eax, (%esp)\n" /* line 239 */
         "calll BG_GetWeaponDef\n"
         "movl %eax, -0x20(%ebp)\n"
-        "movl 0x195f584, %eax\n" /* line 242 */
+        "movl imp_cg, %eax\n" /* line 242 */
         "movl %eax, -0x24(%ebp)\n"
         "movl (%eax), %eax\n"
         "movl 0x25bac(%eax), %edi\n"
@@ -1616,16 +1616,16 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "cmpl $6, %esi\n"
         "cmovll %esi, %eax\n"
         "cvtsi2ssl %eax, %xmm4\n"
-        "mulss 0x2ed658, %xmm4\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm4\n" /* 0.0010000000474974513f */
         "movl -0x1c(%ebp), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1d25bc_001d2d5a\n"
         "xorl %edx, %edx\n" /* line 1147 */
         "movl -0x24(%ebp), %ebx\n" /* from */
         "movl (%ebx), %ecx\n" /* from */
-        "movss 0x2ed6b4, %xmm6\n" /* 10.0f */
-        "movss 0x303450, %xmm5\n"
-        "movss 0x2eda6c, %xmm7\n" /* 2400.0f */
+        "movss lit4_002ed6b4, %xmm6\n" /* 10.0f */
+        "movss colorWhiteFaded+112, %xmm5\n"
+        "movss lit4_002eda6c, %xmm7\n" /* 2400.0f */
         ".Lf1d25bc_001d2ac0:\n"
         "movss 0x2c030(%ecx, %edx, 4), %xmm1\n" /* line 252 */
         "ucomiss %xmm3, %xmm1\n"
@@ -1686,7 +1686,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         ".Lf1d25bc_001d2b93:\n"
         "ucomiss %xmm3, %xmm0\n" /* line 257 */
         "jbe .Lf1d25bc_001d2c15\n"
-        "movss 0x2ed5dc, %xmm0\n" /* line 269 | -1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* line 269 | -1.0f */
         ".Lf1d25bc_001d2ba0:\n"
         "mulss %xmm7, %xmm0\n"
         "mulss %xmm4, %xmm0\n"
@@ -1714,10 +1714,10 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl $0, 0x2c030(%eax, %edx, 4)\n"
         "jmp .Lf1d25bc_001d2ae8\n"
         ".Lf1d25bc_001d2c08:\n"
-        "mulss 0x2eda68, %xmm2\n" /* line 275 | 0.05999999865889549f */
+        "mulss lit4_002eda68, %xmm2\n" /* line 275 | 0.05999999865889549f */
         "jmp .Lf1d25bc_001d2b51\n"
         ".Lf1d25bc_001d2c15:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 274 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 274 | 1.0f */
         "jmp .Lf1d25bc_001d2ba0\n"
         ".Lf1d25bc_001d2c1f:\n"
         "xorl %edi, %edi\n" /* line 814 */
@@ -1750,7 +1750,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "shll $4, %eax\n"
         "addl %ebx, %eax\n"
         "leal (%ebx, %eax, 8), %eax\n"
-        "movl 0x195f5cc, %ecx\n"
+        "movl imp_cg_entities, %ecx\n"
         "movl (%ecx), %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "cmpl $9, 0xf4(%eax)\n" /* line 828 */
@@ -1796,7 +1796,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "movl %eax, %ebx\n"
         "testl %eax, %eax\n" /* line 919 */
         "je .Lf1d25bc_001d291d\n"
-        "movl $0x2b7580, (%esp)\n" /* line 921 */
+        "movl $str_002b7580, (%esp)\n" /* line 921 */
         "calll Com_Printf\n"
         "movl %ebx, (%esp)\n" /* line 922 */
         "calll DObjDisplayAnim\n"
@@ -1808,7 +1808,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "xorl %edx, %edx\n" /* line 247 */
         "movl -0x24(%ebp), %ebx\n"
         "movl (%ebx), %ecx\n"
-        "movss 0x2ed5dc, %xmm7\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm7\n" /* -1.0f */
         ".Lf1d25bc_001d2d69:\n"
         "movss 0x2c030(%ecx, %edx, 4), %xmm1\n" /* line 252 */
         "ucomiss %xmm3, %xmm1\n"
@@ -1830,14 +1830,14 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "je .Lf1d25bc_001d2df2\n"
         ".Lf1d25bc_001d2da6:\n"
         "movaps %xmm3, %xmm2\n" /* line 257 */
-        "movss 0x2ed5d0, %xmm6\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm6\n" /* 1.0f */
         "movaps %xmm6, %xmm5\n"
         "cmpnltss %xmm0, %xmm2\n"
         "andps %xmm2, %xmm5\n"
         "andnps %xmm7, %xmm2\n"
         "orps %xmm5, %xmm2\n"
         "movss 0x25ca0(%ecx), %xmm0\n" /* line 262 */
-        "ucomiss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "jbe .Lf1d25bc_001d2e4f\n"
         "movaps %xmm2, %xmm0\n" /* line 263 */
         "movl -0x20(%ebp), %eax\n"
@@ -1856,7 +1856,7 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "mulss %xmm1, %xmm0\n"
         "ucomiss %xmm0, %xmm3\n"
         "jbe .Lf1d25bc_001d2e20\n"
-        "mulss 0x2eda68, %xmm2\n" /* line 275 | 0.05999999865889549f */
+        "mulss lit4_002eda68, %xmm2\n" /* line 275 | 0.05999999865889549f */
         ".Lf1d25bc_001d2e20:\n"
         "addss %xmm1, %xmm2\n" /* line 277 */
         "mulss %xmm2, %xmm1\n"
@@ -1876,12 +1876,12 @@ qboolean CG_DrawActiveFrame(int serverTime, DemoType demoType, CubemapShot cubem
         "jmp .Lf1d25bc_001d2de1\n"
         ".Lf1d25bc_001d2e5f:\n"
         "movaps %xmm2, %xmm0\n" /* line 284 */
-        "andps 0x303450, %xmm0\n"
-        "ucomiss 0x2ed6b4, %xmm0\n" /* 10.0f */
+        "andps colorWhiteFaded+112, %xmm0\n"
+        "ucomiss lit4_002ed6b4, %xmm0\n" /* 10.0f */
         "jbe .Lf1d25bc_001d2d89\n"
         "movaps %xmm3, %xmm0\n" /* line 286 */
-        "movss 0x2ed98c, %xmm5\n" /* -10.0f */
-        "movss 0x2ed6b4, %xmm6\n" /* 10.0f */
+        "movss lit4_002ed98c, %xmm5\n" /* -10.0f */
+        "movss lit4_002ed6b4, %xmm6\n" /* 10.0f */
         "movaps %xmm5, %xmm1\n"
         "cmpnltss %xmm2, %xmm0\n"
         "andps %xmm0, %xmm1\n"

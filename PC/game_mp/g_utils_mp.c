@@ -57,7 +57,7 @@ extern qboolean SV_DObjExists(gentity_t *ent);
  *   #include "PC/xanim/xanim_public.h"
  */
 
-static struct XModel * cached_models[256]; /* 0xfdf380 */
+static struct XModel * cached_models[256]; /* cached_models */
 
 /* gentity_s field access macros (using struct fields from common_types.h).
  * _ENT(e) casts to gentity_t* so these work with both gentity_t* and byte*. */
@@ -121,11 +121,11 @@ static struct XModel * cached_models[256]; /* 0xfdf380 */
 #define TAGINFO_ORIGIN(ti)     ((vec_t *)((byte *)(ti) + 0x34))
 
 /* External globals */
-extern byte *level_ptr;              /* 0x195f6a0 */
-extern byte *g_entities_ptr;         /* 0x195f688 */
-extern byte *scr_const_ptr;          /* 0x195f5bc */
-extern byte *entityHandlers_ptr;     /* 0x195f6b4 */
-extern byte *playerCorpseInfo_ptr;   /* 0x195f6d0 */
+extern byte *level_ptr;              /* imp_level */
+extern byte *g_entities_ptr;         /* imp_g_entities */
+extern byte *scr_const_ptr;          /* imp_scr_const */
+extern byte *entityHandlers_ptr;     /* imp_entityHandlers */
+extern byte *playerCorpseInfo_ptr;   /* imp_g_scr_data */
 
 #define LEVEL_GENTITIES     (*(byte **)(level_ptr + 0x04))
 #define LEVEL_NUMENTS       (*(int *)(level_ptr + 0x0C))

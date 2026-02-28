@@ -12,12 +12,12 @@
 
 extern int bg_iNumWeapons; /* 0x0 */
 extern WeaponDef * bg_weaponDefs[128]; /* 0x0 */
-static WeaponDef * bg_weapAmmoTypes[128]; /* 0x4ea720 */
-static int bg_iNumAmmoTypes; /* 0x4ea700 */
-static WeaponDef * bg_sharedAmmoCaps[128]; /* 0x4ea940 */
-static int bg_iNumSharedAmmoCaps; /* 0x4ea920 */
-static WeaponDef * bg_weapClips[128]; /* 0x4eab60 */
-static int bg_iNumWeapClips; /* 0x4eab40 */
+static WeaponDef * bg_weapAmmoTypes[128]; /* bg_weapAmmoTypes */
+static int bg_iNumAmmoTypes; /* bg_iNumAmmoTypes */
+static WeaponDef * bg_sharedAmmoCaps[128]; /* bg_sharedAmmoCaps */
+static int bg_iNumSharedAmmoCaps; /* bg_iNumSharedAmmoCaps */
+static WeaponDef * bg_weapClips[128]; /* bg_weapClips */
+static int bg_iNumWeapClips; /* bg_iNumWeapClips */
 
 void BG_ShutdownWeaponDefFiles(void);
 WeaponDef * BG_GetWeaponDef(int iWeapon);
@@ -104,7 +104,7 @@ void BG_ClearWeaponDef(void)
         "movl $1, bg_iNumSharedAmmoCaps\n" /* line 388 */
         "movl %eax, bg_weapClips\n" /* line 390 */
         "movl $1, bg_iNumWeapClips\n" /* line 391 */
-        "movl 0x195eda8, %eax\n"
+        "movl imp_bg_itemlist, %eax\n"
         "leal 0x1600(%eax), %edx\n"
         ".Lf7a6b8_0007a700:\n"
         "movl $0, 0x48(%eax)\n" /* line 394 */
@@ -229,7 +229,7 @@ float BG_GetVerticalBobFactor(const playerState_t *ps, float cycle, float speed,
         "je .Lf7a848_0007a90a\n"
         "cmpl $0x28, %eax\n" /* line 4094 */
         "je .Lf7a848_0007a91e\n"
-        "movl 0x195ee3c, %eax\n" /* line 4097 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4097 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
@@ -244,18 +244,18 @@ float BG_GetVerticalBobFactor(const playerState_t *ps, float cycle, float speed,
         "fstps -0x4c(%ebp)\n"
         "movss -0x4c(%ebp), %xmm1\n"
         "movss -0x48(%ebp), %xmm3\n"
-        "mulss 0x2ed608, %xmm3\n" /* 4.0f */
+        "mulss lit4_002ed608, %xmm3\n" /* 4.0f */
         "cvtss2sd %xmm3, %xmm0\n"
-        "addsd 0x307ca0, %xmm0\n" /* 1.5707963267948966 */
+        "addsd lit8_00307ca0, %xmm0\n" /* 1.5707963267948966 */
         "movsd %xmm0, (%esp)\n"
         "movss %xmm1, -0x28(%ebp)\n"
         "calll sin\n"
         "fstpl -0x10(%ebp)\n"
         "cvtsd2ss -0x10(%ebp), %xmm0\n"
-        "mulss 0x2ed724, %xmm0\n" /* 0.20000000298023224f */
+        "mulss lit4_002ed724, %xmm0\n" /* 0.20000000298023224f */
         "movss -0x28(%ebp), %xmm1\n"
         "addss %xmm0, %xmm1\n"
-        "mulss 0x2ed67c, %xmm1\n" /* 0.75f */
+        "mulss lit4_002ed67c, %xmm1\n" /* 0.75f */
         "movss -0x38(%ebp), %xmm2\n"
         "mulss %xmm1, %xmm2\n"
         /* } scope */
@@ -265,13 +265,13 @@ float BG_GetVerticalBobFactor(const playerState_t *ps, float cycle, float speed,
         "retl\n"
         /* { scope 1 */
         ".Lf7a848_0007a90a:\n"
-        "movl 0x195ee28, %eax\n" /* line 4093 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4093 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
         "jmp .Lf7a848_0007a887\n"
         ".Lf7a848_0007a91e:\n"
-        "movl 0x195ee34, %eax\n" /* line 4095 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4095 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
@@ -296,7 +296,7 @@ float BG_GetHorizontalBobFactor(const playerState_t *ps, float cycle, float spee
         "je .Lf7a932_0007a98c\n"
         "cmpl $0x28, %eax\n" /* line 4119 */
         "je .Lf7a932_0007a99a\n"
-        "movl 0x195ee3c, %eax\n" /* line 4122 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4122 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         ".Lf7a932_0007a961:\n"
@@ -315,12 +315,12 @@ float BG_GetHorizontalBobFactor(const playerState_t *ps, float cycle, float spee
         "retl\n"
         /* { scope 1 */
         ".Lf7a932_0007a98c:\n"
-        "movl 0x195ee28, %eax\n" /* line 4118 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4118 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "jmp .Lf7a932_0007a961\n"
         ".Lf7a932_0007a99a:\n"
-        "movl 0x195ee34, %eax\n" /* line 4120 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4120 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "jmp .Lf7a932_0007a961\n"
@@ -429,7 +429,7 @@ void BG_SetupClipIndexes(int weapIndex)
         "movl %eax, 0xc(%esp)\n"
         "movl 0x1c4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21ca94, 4(%esp)\n" /* "Clip Size mismatch for "%s" clip: '%s" set it to %i, but "%" */
+        "movl $str_0021ca94, 4(%esp)\n" /* "Clip Size mismatch for "%s" clip: '%s" set it to %i, but "%" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7a9aa_0007aa62\n"
@@ -467,7 +467,7 @@ void BG_SetupSharedAmmoIndexes(int weapIndex)
         "movl %eax, 8(%esp)\n" /* line 240 */
         "movl (%ebx), %eax\n" /* weapDef */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21caec, (%esp)\n" /* "%s: %s
+        "movl $str_0021caec, (%esp)\n" /* "%s: %s
 " */
         "calll Com_DPrintf\n"
         "movl bg_iNumSharedAmmoCaps, %eax\n" /* line 243 */
@@ -551,7 +551,7 @@ void BG_SetupSharedAmmoIndexes(int weapIndex)
         "movl %eax, 0xc(%esp)\n"
         "movl 0x1e0(%ebx), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21caf4, 4(%esp)\n" /* "Shared ammo cap mismatch for "%s" shared ammo cap: '%s" set" */
+        "movl $str_0021caf4, 4(%esp)\n" /* "Shared ammo cap mismatch for "%s" shared ammo cap: '%s" set" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7aaf0_0007abd5\n"
@@ -660,7 +660,7 @@ void BG_SetupAmmoIndexes(int weapIndex)
         "movl %eax, 0xc(%esp)\n"
         "movl 0x1c4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21cb5c, 4(%esp)\n" /* "Max ammo mismatch for "%s" ammo: '%s" set it to %i, but "%s" */
+        "movl $str_0021cb5c, 4(%esp)\n" /* "Max ammo mismatch for "%s" ammo: '%s" set it to %i, but "%s" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7ac64_0007ad1c\n"
@@ -856,10 +856,10 @@ void BG_GetSpreadForWeapon(const playerState_t *ps, int weaponIndex, float *minS
         "movl bg_weaponDefs(, %eax, 4), %edx\n"
         "movl 8(%ebp), %eax\n" /* line 1335 | ps */
         "movss 0xf8(%eax), %xmm2\n"
-        "ucomiss 0x2ed73c, %xmm2\n" /* 40.0f */
+        "ucomiss lit4_002ed73c, %xmm2\n" /* 40.0f */
         "jbe .Lf7af42_0007afbd\n"
-        "subss 0x2ed73c, %xmm2\n" /* line 1337 | 40.0f */
-        "divss 0x2ed694, %xmm2\n" /* 20.0f */
+        "subss lit4_002ed73c, %xmm2\n" /* line 1337 | 40.0f */
+        "divss lit4_002ed694, %xmm2\n" /* 20.0f */
         "movss 0x290(%edx), %xmm1\n" /* line 1339 */
         "movss 0x28c(%edx), %xmm0\n"
         "subss %xmm1, %xmm0\n"
@@ -878,8 +878,8 @@ void BG_GetSpreadForWeapon(const playerState_t *ps, int weaponIndex, float *minS
         "retl\n"
         /* { scope 1 */
         ".Lf7af42_0007afbd:\n"
-        "subss 0x2ed7bc, %xmm2\n" /* line 1344 | 11.0f */
-        "divss 0x2ed7c0, %xmm2\n" /* 29.0f */
+        "subss lit4_002ed7bc, %xmm2\n" /* line 1344 | 11.0f */
+        "divss lit4_002ed7c0, %xmm2\n" /* 29.0f */
         "movss 0x294(%edx), %xmm1\n" /* line 1346 */
         "movss 0x290(%edx), %xmm0\n"
         "subss %xmm1, %xmm0\n"
@@ -1371,16 +1371,16 @@ void PM_AdjustAimSpreadScale(pmove_t *pm, pml_t *pml)
         "ucomiss %xmm3, %xmm0\n"
         "jne .Lf7b4c4_0007b534\n"
         "jp .Lf7b4c4_0007b534\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         ".Lf7b4c4_0007b4fa:\n"
-        "movss 0x2ed5d4, %xmm1\n" /* line 2731 | 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* line 2731 | 255.0f */
         "mulss %xmm1, %xmm0\n"
         "addss 0x5d4(%ebx), %xmm0\n" /* ps */
         "movss %xmm0, 0x5d4(%ebx)\n" /* ps */
         "ucomiss %xmm0, %xmm3\n" /* line 2732 */
         "ja .Lf7b4c4_0007b598\n"
         ".Lf7b4c4_0007b51b:\n"
-        "ucomiss 0x2ed5d4, %xmm0\n" /* line 2734 | 255.0f */
+        "ucomiss lit4_002ed5d4, %xmm0\n" /* line 2734 | 255.0f */
         "jbe .Lf7b4c4_0007b52c\n"
         "movss %xmm1, 0x5d4(%ebx)\n" /* line 2735 | ps */
         /* } scope */
@@ -1404,14 +1404,14 @@ void PM_AdjustAimSpreadScale(pmove_t *pm, pml_t *pml)
         "movl 0xc(%ebp), %eax\n" /* line 2685 | pml */
         "mulss 0x24(%eax), %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n" /* decrease */
-        "movss 0x2ed5d0, %xmm0\n" /* line 2687 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2687 | 1.0f */
         "ucomiss 0xdc(%ebx), %xmm0\n" /* ps */
         "jne .Lf7b4c4_0007b5e8\n"
         ".Lf7b4c4_0007b56d:\n"
         "jp .Lf7b4c4_0007b5e8\n"
         "movaps %xmm3, %xmm0\n"
         "subss -0x20(%ebp), %xmm0\n" /* decrease */
-        "movss 0x2ed5d4, %xmm1\n" /* line 2731 | 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* line 2731 | 255.0f */
         "mulss %xmm1, %xmm0\n"
         "addss 0x5d4(%ebx), %xmm0\n" /* ps */
         "movss %xmm0, 0x5d4(%ebx)\n" /* ps */
@@ -1435,11 +1435,11 @@ void PM_AdjustAimSpreadScale(pmove_t *pm, pml_t *pml)
         ".Lf7b4c4_0007b5b8:\n"
         "cmpl $1, 4(%ebx)\n" /* line 2678 | ps */
         "je .Lf7b4c4_0007b53d\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* line 2679 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* line 2679 | 0.5f */
         "movl 0xc(%ebp), %eax\n" /* line 2685 | pml */
         "mulss 0x24(%eax), %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n" /* decrease */
-        "movss 0x2ed5d0, %xmm0\n" /* line 2687 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2687 | 1.0f */
         "ucomiss 0xdc(%ebx), %xmm0\n" /* ps */
         "je .Lf7b4c4_0007b56d\n"
         ".Lf7b4c4_0007b5e8:\n"
@@ -1458,7 +1458,7 @@ void PM_AdjustAimSpreadScale(pmove_t *pm, pml_t *pml)
         "je .Lf7b4c4_0007b63e\n"
         "movss 0x20(%ebx), %xmm2\n" /* line 126 */
         "movss 0x24(%ebx), %xmm1\n"
-        "movl 0x195ee38, %eax\n" /* line 2709 */
+        "movl imp_bg_aimSpreadMoveSpeedThreshold, %eax\n" /* line 2709 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "mulss %xmm2, %xmm2\n"
@@ -1482,17 +1482,17 @@ void PM_AdjustAimSpreadScale(pmove_t *pm, pml_t *pml)
         "movl $2, -0x1c(%ebp)\n"
         ".Lf7b4c4_0007b66d:\n"
         "cvtsi2ssl 0x2c(%edi), %xmm0\n" /* line 2700 */
-        "mulss 0x2ed648, %xmm0\n" /* 0.0054931640625f */
+        "mulss lit4_002ed648, %xmm0\n" /* 0.0054931640625f */
         "movss %xmm0, 4(%esp)\n"
         "cvtsi2ssl 0x10(%edi), %xmm0\n"
-        "mulss 0x2ed648, %xmm0\n" /* 0.0054931640625f */
+        "mulss lit4_002ed648, %xmm0\n" /* 0.0054931640625f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm5, -0x38(%ebp)\n"
         "calll AngleSubtract\n"
         "fstps -0x3c(%ebp)\n"
         "movss -0x3c(%ebp), %xmm0\n"
-        "andps 0x2f09c0, %xmm0\n"
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "andps CorrectSolidDeltas+704, %xmm0\n"
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "mulss 0x2ac(%esi), %xmm0\n" /* weapDef */
         "movl 0xc(%ebp), %eax\n" /* pml */
         "divss 0x24(%eax), %xmm0\n"
@@ -1507,7 +1507,7 @@ void PM_AdjustAimSpreadScale(pmove_t *pm, pml_t *pml)
         "cmpl $1, 4(%ebx)\n" /* line 2715 | ps */
         "je .Lf7b4c4_0007b64b\n"
         "xorl %eax, %eax\n"
-        "movss 0x2ed7c4, %xmm0\n" /* 1.2799999713897705f */
+        "movss lit4_002ed7c4, %xmm0\n" /* 1.2799999713897705f */
         ".Lf7b4c4_0007b6f2:\n"
         "addss %xmm0, %xmm5\n" /* line 2718 */
         "addl $1, %eax\n" /* line 2717 */
@@ -1535,15 +1535,15 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float fGunKickSpeedMax
         "movss 0xc(%ebp), %xmm3\n" /* fGunKickStaticDecay */
         /* { scope 1 */
         "movss (%eax), %xmm5\n" /* line 4441 */
-        "movss 0x2f09d0, %xmm4\n"
+        "movss CorrectSolidDeltas+720, %xmm4\n"
         "movaps %xmm5, %xmm0\n"
         "andps %xmm4, %xmm0\n"
-        "ucomiss 0x2ed604, %xmm0\n" /* 0.25f */
+        "ucomiss lit4_002ed604, %xmm0\n" /* 0.25f */
         "jae .Lf7b70c_0007b762\n"
         "jp .Lf7b70c_0007b762\n"
         "movss (%edx), %xmm0\n" /* speed */
         "andps %xmm4, %xmm0\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jae .Lf7b70c_0007b762\n"
         "jp .Lf7b70c_0007b762\n"
         "xorl %eax, %eax\n" /* line 4443 */
@@ -1602,7 +1602,7 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float fGunKickSpeedMax
         "retl\n"
         /* { scope 1 */
         ".Lf7b70c_0007b7e5:\n"
-        "xorps 0x2f09e0, %xmm1\n" /* line 4461 | fOfsCap */
+        "xorps CorrectSolidDeltas+736, %xmm1\n" /* line 4461 | fOfsCap */
         "ucomiss %xmm0, %xmm1\n" /* fOfsCap */
         "ja .Lf7b70c_0007b85b\n"
         "pxor %xmm4, %xmm4\n"
@@ -1633,7 +1633,7 @@ qboolean BG_CalculateWeaponPosition_GunRecoil_SingleAngle(float fGunKickSpeedMax
         "ja .Lf7b70c_0007b7d8\n"
         ".Lf7b70c_0007b842:\n"
         "movss -4(%ebp), %xmm3\n" /* line 4492 */
-        "xorps 0x2f09e0, %xmm3\n"
+        "xorps CorrectSolidDeltas+736, %xmm3\n"
         "ucomiss %xmm0, %xmm3\n"
         "jbe .Lf7b70c_0007b857\n"
         "movss %xmm3, (%edx)\n" /* line 4493 | speed */
@@ -1795,7 +1795,7 @@ int BG_GetViewmodelWeaponIndex(const playerState_t *ps)
         "movl bg_iNumWeapons, %ebx\n" /* line 771 */
         "testl %ebx, %ebx\n"
         "jle .Lf7b9a6_0007ba09\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7b9a6_0007ba0e\n"
         "movl $1, %ecx\n"
@@ -1876,10 +1876,10 @@ void BG_WeaponFireRecoil(const playerState_t *ps, vec_t *vGunSpeed, vec_t *kickA
         "testl %eax, %eax\n"
         "jle .Lf7ba18_0007bc04\n"
         ".Lf7ba18_0007ba64:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* line 4017 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* line 4017 | 1.0f */
         "jne .Lf7ba18_0007bc65\n"
         "jp .Lf7ba18_0007bc65\n"
-        "movss 0x2ed738, %xmm1\n" /* line 4018 | 0.009999999776482582f */
+        "movss lit4_002ed738, %xmm1\n" /* line 4018 | 0.009999999776482582f */
         "movss %xmm1, -0x1c(%ebp)\n" /* fReducePercent */
         "mulss 0x47c(%ebx), %xmm1\n" /* weapDef */
         "movss %xmm1, -0x1c(%ebp)\n" /* fReducePercent */
@@ -1909,13 +1909,13 @@ void BG_WeaponFireRecoil(const playerState_t *ps, vec_t *vGunSpeed, vec_t *kickA
         ".Lf7ba18_0007bb06:\n"
         "mulss -0x1c(%ebp), %xmm0\n" /* line 4035 | fReducePercent */
         "mulss -0x1c(%ebp), %xmm1\n" /* line 4037 | fReducePercent */
-        "xorps 0x2f09f0, %xmm1\n"
+        "xorps CorrectSolidDeltas+752, %xmm1\n"
         "movss %xmm1, (%edi)\n" /* kickAVel */
         "movss %xmm0, 4(%edi)\n" /* line 4038 | kickAVel */
-        "mulss 0x2ed63c, %xmm0\n" /* line 4039 | -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* line 4039 | -0.5f */
         "movss %xmm0, 8(%edi)\n" /* kickAVel */
         "movss -0x20(%ebp), %xmm1\n" /* line 4042 | fPosLerp */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jbe .Lf7ba18_0007bcfa\n"
         "movss 0x480(%ebx), %xmm0\n" /* line 4044 | weapDef */
         "movss %xmm0, -0x40(%ebp)\n"
@@ -1967,7 +1967,7 @@ void BG_WeaponFireRecoil(const playerState_t *ps, vec_t *vGunSpeed, vec_t *kickA
         "jg .Lf7ba18_0007ba64\n"
         ".Lf7ba18_0007bc04:\n"
         "movaps %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4023 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4023 | 1.0f */
         "ucomiss %xmm0, %xmm1\n"
         "jne .Lf7ba18_0007bc7a\n"
         "jp .Lf7ba18_0007bc7a\n"
@@ -1977,7 +1977,7 @@ void BG_WeaponFireRecoil(const playerState_t *ps, vec_t *vGunSpeed, vec_t *kickA
         "movl 0xd0(%esi), %eax\n" /* line 792 */
         "jmp .Lf7ba18_0007ba45\n"
         ".Lf7ba18_0007bc2b:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7ba18_0007bd70\n"
         "movl $1, %ecx\n"
@@ -1994,7 +1994,7 @@ void BG_WeaponFireRecoil(const playerState_t *ps, vec_t *vGunSpeed, vec_t *kickA
         "movzbl %al, %eax\n" /* line 774 */
         "jmp .Lf7ba18_0007ba45\n"
         ".Lf7ba18_0007bc65:\n"
-        "movss 0x2ed738, %xmm0\n" /* line 4020 | 0.009999999776482582f */
+        "movss lit4_002ed738, %xmm0\n" /* line 4020 | 0.009999999776482582f */
         "movss %xmm0, -0x1c(%ebp)\n" /* fReducePercent */
         "mulss 0x4c4(%ebx), %xmm0\n" /* weapDef */
         ".Lf7ba18_0007bc7a:\n"
@@ -2081,13 +2081,13 @@ void BG_CalculateWeaponPosition_Sway(playerState_t *ps, vec_t *swayViewAngles, v
         ".Lf7bd7e_0007bdc0:\n"
         "movl bg_weaponDefs(, %eax, 4), %eax\n" /* line 521 */
         "cvtsi2ssl %esi, %xmm0\n" /* line 4832 | frametime */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x3c(%ebp)\n" /* dt */
         "movl 0x32c(%eax), %ecx\n" /* line 4834 */
         "testl %ecx, %ecx\n"
         "je .Lf7bd7e_0007c0eb\n"
         ".Lf7bd7e_0007bde6:\n"
-        "ucomiss 0x2ed5e8, %xmm5\n" /* line 4836 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm5\n" /* line 4836 | 0.0f */
         "jbe .Lf7bd7e_0007bdfd\n"
         "movl 0x278(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -2142,8 +2142,8 @@ void BG_CalculateWeaponPosition_Sway(playerState_t *ps, vec_t *swayViewAngles, v
         "movss %xmm6, -0x58(%ebp)\n"
         "calll AnglesSubtract\n"
         "movss -0x3c(%ebp), %xmm1\n" /* line 4865 | dt */
-        "mulss 0x2ed7c8, %xmm1\n" /* 60.0f */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f, scale */
+        "mulss lit4_002ed7c8, %xmm1\n" /* 60.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f, scale */
         "divss %xmm1, %xmm0\n" /* scale */
         /* { scope 2 */
         "movaps %xmm0, %xmm4\n" /* line 272 */
@@ -2155,7 +2155,7 @@ void BG_CalculateWeaponPosition_Sway(playerState_t *ps, vec_t *swayViewAngles, v
         /* } scope */
         "movss -0x58(%ebp), %xmm6\n" /* line 4867 */
         "movaps %xmm6, %xmm2\n"
-        "xorps 0x2f0a00, %xmm2\n"
+        "xorps CorrectSolidDeltas+768, %xmm2\n"
         "movaps %xmm4, %xmm1\n" /* line 45 */
         "subss %xmm6, %xmm1\n"
         "pxor %xmm3, %xmm3\n"
@@ -2266,7 +2266,7 @@ void BG_CalculateWeaponPosition_Sway(playerState_t *ps, vec_t *swayViewAngles, v
         "movl 0xd4(%edi), %eax\n" /* line 797 */
         "movl bg_weaponDefs(, %eax, 4), %eax\n" /* line 521 */
         "cvtsi2ssl %esi, %xmm0\n" /* line 4832 | frametime */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x3c(%ebp)\n" /* dt */
         "movl 0x32c(%eax), %ecx\n" /* line 4834 */
         "testl %ecx, %ecx\n"
@@ -2281,7 +2281,7 @@ void BG_CalculateWeaponPosition_Sway(playerState_t *ps, vec_t *swayViewAngles, v
         "movss 0x2fc(%eax), %xmm1\n" /* line 4853 */
         "jmp .Lf7bd7e_0007beaa\n"
         ".Lf7bd7e_0007c125:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7bd7e_0007c166\n"
         "movl $1, %ecx\n"
@@ -2637,7 +2637,7 @@ void PM_UpdateAimDownSightFlag(pmove_t *pm, pml_t *pml)
         "movl %esi, 0xc(%ebx)\n" /* ps */
         "jmp .Lf7c3e0_0007c42e\n"
         ".Lf7c3e0_0007c566:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7c3e0_0007c5be\n"
         "movl $1, %ecx\n"
@@ -3505,7 +3505,7 @@ void PM_UpdateAimDownSightLerp(pmove_t *pm, pml_t *pml)
         "xorl %eax, %eax\n" /* line 797 */
         ".Lf7cee2_0007cf07:\n"
         "movl bg_weaponDefs(, %eax, 4), %edx\n" /* line 521 */
-        "movl 0x195ee24, %eax\n" /* line 1504 */
+        "movl imp_player_scopeExitOnDamage, %eax\n" /* line 1504 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf7cee2_0007cf33\n"
@@ -3539,7 +3539,7 @@ void PM_UpdateAimDownSightLerp(pmove_t *pm, pml_t *pml)
         "movl 0xd0(%ebx), %eax\n" /* line 792 */
         "jmp .Lf7cee2_0007cf07\n"
         ".Lf7cee2_0007cf71:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7cee2_0007d1bc\n"
         "movl $1, %ecx\n"
@@ -3578,13 +3578,13 @@ void PM_UpdateAimDownSightLerp(pmove_t *pm, pml_t *pml)
         "testl %esi, %esi\n"
         "jne .Lf7cee2_0007d15b\n"
         ".Lf7cee2_0007cff4:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 1545 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 1545 | 1.0f */
         "ucomiss 0xdc(%ebx), %xmm3\n" /* ps */
         "jne .Lf7cee2_0007d0d0\n"
         "jp .Lf7cee2_0007d0d0\n"
         "testb %cl, %cl\n"
         "jne .Lf7cee2_0007d0d0\n"
-        "movl 0x195ee48, %eax\n"
+        "movl imp_player_adsExitDelay, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -3883,20 +3883,20 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         ".Lf7d332_0007d3b3:\n"
         "movl bg_weaponDefs(, %eax, 4), %ecx\n" /* line 521 */
         /* } scope */
-        "movl 0x195ee44, %eax\n" /* line 1642 */
+        "movl imp_player_breath_hold_time, %eax\n" /* line 1642 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "movss 8(%eax), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "cvttss2si %xmm1, %edx\n"
-        "movl 0x195ee2c, %eax\n" /* line 1643 */
+        "movl imp_player_breath_gasp_time, %eax\n" /* line 1643 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, -0x4c(%ebp)\n" /* breathGaspTime */
         "testl %edx, %edx\n" /* line 1645 */
         "jle .Lf7d332_0007e20b\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 1653 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 1653 | 1.0f */
         "ucomiss 0xdc(%ebx), %xmm2\n"
         "jne .Lf7d332_0007d422\n"
         "jp .Lf7d332_0007d422\n"
@@ -3934,13 +3934,13 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl %esi, 0xc(%ebx)\n"
         /* } scope */
         ".Lf7d332_0007d481:\n"
-        "movl 0x195ee40, %eax\n" /* line 1685 */
+        "movl imp_player_breath_gasp_lerp, %eax\n" /* line 1685 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
         "cvtsi2ssl 0x5b8(%ebx), %xmm1\n" /* ps */
         "cvtsi2ssl %edx, %xmm0\n"
         "divss %xmm0, %xmm1\n"
-        "movl 0x195ee4c, %eax\n"
+        "movl imp_player_breath_gasp_scale, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "subss %xmm2, %xmm0\n"
@@ -4015,7 +4015,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "cmpl $5, %ecx\n"
         "jbe .Lf7d332_0007d5b8\n"
         "movss 0xdc(%esi), %xmm0\n" /* line 3723 | weapDef */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf7d332_0007d5a8\n"
         "movl 0xd4(%esi), %eax\n" /* line 3727 | weapDef */
         "movl bg_weaponDefs(, %eax, 4), %eax\n"
@@ -4362,7 +4362,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "testl %eax, %eax\n"
         "jne .Lf7d332_0007dac8\n"
         "movss 0xdc(%edi), %xmm0\n" /* line 1924 */
-        "ucomiss 0x2ed67c, %xmm0\n" /* 0.75f */
+        "ucomiss lit4_002ed67c, %xmm0\n" /* 0.75f */
         "jbe .Lf7d332_0007ed7d\n"
         "cmpl $5, 4(%edi)\n" /* line 485 */
         "jg .Lf7d332_0007da88\n"
@@ -4413,7 +4413,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "ja .Lf7d332_0007dbe9\n"
         "movl 0xd8(%edi), %edx\n" /* ps */
         "movl %edx, -0x5c(%ebp)\n" /* reloadRequested */
-        "jmpl *0x2f0a10(, %edx, 4)\n"
+        "jmpl *CorrectSolidDeltas+784(, %edx, 4)\n"
         /* { scope 2: weapCount */
         ".Lf7d332_0007db2a:\n"
         "testl $0x10, %esi\n" /* line 790 */
@@ -4421,7 +4421,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl 0xd4(%ebx), %eax\n" /* line 797 */
         "jmp .Lf7d332_0007d3b3\n"
         ".Lf7d332_0007db3d:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7d332_0007e6ed\n"
         "movl $1, %ecx\n"
@@ -4649,7 +4649,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl bg_iNumWeapons, %esi\n" /* line 771 */
         "testl %esi, %esi\n"
         "jle .Lf7d332_0007eb8b\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7d332_0007eff3\n"
         "movl $1, %ecx\n"
@@ -4875,10 +4875,10 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl $0, 0x5b8(%ebx)\n" /* line 1649 */
         "jmp .Lf7d332_0007d4eb\n"
         ".Lf7d332_0007e22d:\n"
-        "movl 0x195ee50, %eax\n" /* line 1679 */
+        "movl imp_player_breath_hold_lerp, %eax\n" /* line 1679 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
-        "movss 0x2ed5dc, %xmm1\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm1\n" /* -1.0f */
         "jmp .Lf7d332_0007d4b7\n"
         /* } scope */
         /* { scope 2: weapCount */
@@ -4893,7 +4893,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl 0x348(%ebx), %eax\n" /* line 2949 | weapDef */
         "testl %eax, %eax\n"
         "je .Lf7d332_0007e297\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2950 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2950 | 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss 0xdc(%edi), %xmm1\n" /* iWeapon */
         "divss 0x588(%ebx), %xmm0\n" /* weapDef */
@@ -4922,7 +4922,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "cmpl $3, 0xd8(%edi)\n" /* line 2959 | iWeapon */
         "je .Lf7d332_0007e311\n"
         "movss 0xdc(%edi), %xmm0\n" /* line 2961 | iWeapon */
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jb .Lf7d332_0007ea6f\n"
         "movl 0x204(%ebx), %eax\n" /* line 2962 | weapDef */
         "imull 0x478(%ebx), %eax\n" /* weapDef */
@@ -4954,7 +4954,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "je .Lf7d332_0007e965\n"
         ".Lf7d332_0007e370:\n"
         "movss 0xdc(%edi), %xmm0\n" /* line 3054 | iWeapon */
-        "ucomiss 0x2ed67c, %xmm0\n" /* 0.75f */
+        "ucomiss lit4_002ed67c, %xmm0\n" /* 0.75f */
         "jbe .Lf7d332_0007e838\n"
         "movl bg_weaponDefs(, %esi, 4), %eax\n" /* line 3056 */
         "movl 0x1d0(%eax), %eax\n"
@@ -4989,7 +4989,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl bg_iNumWeapons, %esi\n" /* line 771 */
         "testl %esi, %esi\n"
         "jle .Lf7d332_0007e88e\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7d332_0007ed73\n"
         "movl $1, %ecx\n"
@@ -5010,7 +5010,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         ".Lf7d332_0007e441:\n"
         "movl bg_weaponDefs(, %eax, 4), %eax\n" /* line 521 */
         /* } scope */
-        "movss 0x2ed5d0, %xmm2\n" /* line 1605 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 1605 | 1.0f */
         "ucomiss 0xdc(%edi), %xmm2\n"
         "jne .Lf7d332_0007e4b5\n"
         "jp .Lf7d332_0007e4b5\n"
@@ -5019,13 +5019,13 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "je .Lf7d332_0007e4b5\n"
         "cmpl $9, 0x7c(%eax)\n"
         "je .Lf7d332_0007e4b5\n"
-        "movl 0x195ee44, %eax\n" /* line 1608 */
+        "movl imp_player_breath_hold_time, %eax\n" /* line 1608 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "movss 8(%eax), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "cvttss2si %xmm1, %edx\n"
-        "movl 0x195ee30, %eax\n" /* line 1609 */
+        "movl imp_player_breath_fire_delay, %eax\n" /* line 1609 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "cvttss2si %xmm0, %ecx\n"
@@ -5047,7 +5047,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "jp .Lf7d332_0007e4cb\n"
         "je .Lf7d332_0007e802\n"
         ".Lf7d332_0007e4cb:\n"
-        "movss 0x2ed5d4, %xmm1\n" /* line 3091 | 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* line 3091 | 255.0f */
         "movss 0x2a8(%eax), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss 0x5d4(%edi), %xmm0\n" /* iWeapon */
@@ -5421,7 +5421,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "orb $0x20, %ah\n" /* line 3262 */
         "movl %eax, 0xc(%esi)\n" /* weapDef */
         "movss 0xdc(%esi), %xmm0\n" /* line 3265 | weapDef */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf7d332_0007e9a4\n"
         "movl 0x278(%ebx), %eax\n" /* weapDef */
         "testl %eax, %eax\n"
@@ -5584,7 +5584,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "cmpl $0x14, %edx\n" /* line 3771 */
         "je .Lf7d332_0007f1fc\n"
         ".Lf7d332_0007ebd9:\n"
-        "movl 0x195ee20, %eax\n" /* line 3783 */
+        "movl imp_player_toggleBinoculars, %eax\n" /* line 3783 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf7d332_0007f163\n"
@@ -5610,7 +5610,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl bg_iNumWeapons, %ebx\n" /* line 771 */
         "testl %ebx, %ebx\n"
         "jle .Lf7d332_0007f03b\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "movl 0x78(%eax), %eax\n"
         "movl %eax, -0x40(%ebp)\n"
         "cmpl $3, %eax\n"
@@ -5923,7 +5923,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl bg_iNumWeapons, %ebx\n" /* line 771 */
         "testl %ebx, %ebx\n"
         "jle .Lf7d332_0007f092\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7d332_0007f50a\n"
         "movl $1, %ecx\n"
@@ -5945,7 +5945,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl bg_weaponDefs(, %eax, 4), %ecx\n" /* line 521 */
         /* } scope */
         "movl $0x15, 0xd8(%esi)\n" /* line 3653 | weapDef */
-        "movl 0x195ee48, %eax\n" /* line 3654 */
+        "movl imp_player_adsExitDelay, %eax\n" /* line 3654 */
         "movl (%eax), %edx\n"
         "movl 0x2c4(%ecx), %eax\n"
         "addl 8(%edx), %eax\n"
@@ -5984,7 +5984,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "calll PM_AddEvent\n"
         "andl $0xffffffbf, 0xc(%esi)\n" /* line 1485 */
         "movl $0, 0x34(%esi)\n" /* line 3596 | weapDef */
-        "movl 0x195ee48, %eax\n" /* line 3597 */
+        "movl imp_player_adsExitDelay, %eax\n" /* line 3597 */
         "movl (%eax), %edx\n"
         "movl 0x2c4(%ebx), %eax\n" /* weapDef */
         "addl 8(%edx), %eax\n"
@@ -6069,7 +6069,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "je .Lf7d332_0007f264\n"
         "movl (%ebx), %eax\n" /* line 3521 | offHandIndex */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21cbb4, 4(%esp)\n" /* "[%s] Only grenades are currently supported for off hand use
+        "movl $str_0021cbb4, 4(%esp)\n" /* "[%s] Only grenades are currently supported for off hand use
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -6158,7 +6158,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         /* } scope */
         /* { scope 2: weapCount */
         ".Lf7d332_0007f3a8:\n"
-        "movss 0x2ed7cc, %xmm0\n" /* line 2279 | 128.0f */
+        "movss lit4_002ed7cc, %xmm0\n" /* line 2279 | 128.0f */
         "ucomiss 0x5d4(%esi), %xmm0\n" /* weapDef */
         "jbe .Lf7d332_0007f3c1\n"
         "movss %xmm0, 0x5d4(%esi)\n" /* line 2280 | weapDef */
@@ -6210,7 +6210,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         ".Lf7d332_0007f464:\n"
         "movl (%ebx), %eax\n" /* line 3524 | offHandIndex */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21cbf4, 4(%esp)\n" /* "[%s] No offhand class set
+        "movl $str_0021cbf4, 4(%esp)\n" /* "[%s] No offhand class set
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -6308,7 +6308,7 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "retl\n"
         /* { scope 1 */
         ".Lf7f560_0007f57d:\n"
-        "movl $0x218298, 4(%esp)\n" /* line 737 */
+        "movl $str_00218298, 4(%esp)\n" /* line 737 */
         "movl %edi, (%esp)\n" /* name */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -6320,7 +6320,7 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "cmpb $0, (%edi)\n" /* line 4903 | name */
         "je .Lf7f560_0007f6b5\n"
         "movl %edi, 4(%esp)\n" /* line 4905 | name */
-        "movl $0x21cc10, (%esp)\n" /* "mp" */
+        "movl $str_0021cc10, (%esp)\n" /* "mp" */
         "calll BG_LoadWeaponDefInternal\n"
         "movl %eax, %ebx\n" /* weapDef */
         "testl %eax, %eax\n" /* line 4906 */
@@ -6340,7 +6340,7 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "movl bg_weaponDefs(, %esi, 4), %ebx\n" /* line 521 | weapDef */
         "leal (%esi, %esi, 4), %eax\n" /* line 101 */
         "leal (%esi, %eax, 2), %eax\n"
-        "movl 0x195eda8, %edx\n"
+        "movl imp_bg_itemlist, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl 0x98(%ebx), %edx\n" /* line 104 | weapDef */
         "movl %edx, 4(%eax)\n"
@@ -6382,8 +6382,8 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "retl\n"
         /* { scope 1 */
         ".Lf7f560_0007f683:\n"
-        "movl $0x21ca4c, 4(%esp)\n" /* line 4909 */
-        "movl $0x21cc10, (%esp)\n" /* "mp" */
+        "movl $str_0021ca4c, 4(%esp)\n" /* line 4909 */
+        "movl $str_0021cc10, (%esp)\n" /* "mp" */
         "calll BG_LoadWeaponDefInternal\n"
         "movl %eax, %ebx\n" /* weapDef */
         "testl %eax, %eax\n" /* line 4910 */
@@ -6396,7 +6396,7 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "jne .Lf7f560_0007f5c1\n"
         ".Lf7f560_0007f6b5:\n"
         "movl %edi, 4(%esp)\n" /* line 747 | name */
-        "movl $0x21cc14, (%esp)\n" /* "Couldn't find weapon "%s"
+        "movl $str_0021cc14, (%esp)\n" /* "Couldn't find weapon "%s"
 " */
         "calll Com_DPrintf\n"
         "xorl %esi, %esi\n" /* weapIndex */
@@ -6448,7 +6448,7 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "movl %eax, 0xc(%esp)\n"
         "movl (%ebx), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21cc60, 4(%esp)\n" /* "weapon '%s' does not have same weaponSlot setting as its al" */
+        "movl $str_0021cc60, 4(%esp)\n" /* "weapon '%s' does not have same weaponSlot setting as its al" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf7f560_0007f761:\n"
@@ -6459,7 +6459,7 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "movl %eax, 0xc(%esp)\n"
         "movl (%ebx), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21ccac, 4(%esp)\n" /* "weapon '%s' does not have same slotStackable setting as its" */
+        "movl $str_0021ccac, 4(%esp)\n" /* "weapon '%s' does not have same slotStackable setting as its" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7f560_0007f668\n"
@@ -6468,13 +6468,13 @@ int BG_GetWeaponIndexForName(const char *name, BG_RegisterWeapon regWeap)
         "movl %eax, 0xc(%esp)\n"
         "movl 0x368(%ebx), %eax\n" /* weapDef */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21cc30, 4(%esp)\n" /* "could not find altWeapon '%s' for weapon '%s'" */
+        "movl $str_0021cc30, 4(%esp)\n" /* "could not find altWeapon '%s' for weapon '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7f560_0007f726\n"
         /* } scope */
         ".Lf7f560_0007f7c1:\n"
-        "movl $0x21ca60, 4(%esp)\n" /* line 4911 */
+        "movl $str_0021ca60, 4(%esp)\n" /* line 4911 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7f560_0007f6a1\n"
@@ -6493,12 +6493,12 @@ void BG_FillInAmmoItems(BG_RegisterWeapon regWeap)
         "pushl %ebx\n"
         "subl $0x6c, %esp\n"
         /* { scope 1 */
-        "movl 0x195edac, %eax\n" /* line 133 */
+        "movl imp_bg_numItems, %eax\n" /* line 133 */
         "cmpl $0x81, (%eax)\n"
         "jle .Lf7f7da_0007f8d5\n"
         "movl $0x81, %edi\n" /* i */
         "movl %eax, -0x5c(%ebp)\n"
-        "movl 0x195eda8, %ebx\n"
+        "movl imp_bg_itemlist, %ebx\n"
         "addl $0x162c, %ebx\n"
         "jmp .Lf7f7da_0007f818\n"
         ".Lf7f7da_0007f80a:\n"
@@ -6540,12 +6540,12 @@ void BG_FillInAmmoItems(BG_RegisterWeapon regWeap)
         "jne .Lf7f7da_0007f8fe\n"
         "movl 0x14(%ebx), %eax\n" /* line 160 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21ccfc, (%esp)\n" /* "^3WARNING^7: Could not find weapon for ammo item %s
+        "movl $str_0021ccfc, (%esp)\n" /* "^3WARNING^7: Could not find weapon for ammo item %s
 " */
         "calll Com_Printf\n"
         "movl 8(%ebp), %eax\n" /* line 162 | regWeap */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21ca4c, (%esp)\n" /* "defaultweapon_mp" */
+        "movl $str_0021ca4c, (%esp)\n" /* "defaultweapon_mp" */
         "calll BG_GetWeaponIndexForName\n"
         "movl %eax, %esi\n"
         "testl %eax, %eax\n" /* line 163 */
@@ -6572,7 +6572,7 @@ void BG_FillInAmmoItems(BG_RegisterWeapon regWeap)
         "retl\n"
         /* { scope 1 */
         ".Lf7f7da_0007f8dd:\n"
-        "movl $0x21cd34, 4(%esp)\n" /* line 164 */
+        "movl $str_0021cd34, 4(%esp)\n" /* line 164 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7f7da_0007f8a4\n"
@@ -6604,7 +6604,7 @@ void CG_SetWeaponDefToDefaultWeapon(int iWeapon)
         "movl 8(%ebp), %esi\n" /* iWeapon */
         /* { scope 1 */
         "movl $0, 4(%esp)\n" /* line 762 */
-        "movl $0x21ca4c, (%esp)\n" /* "defaultweapon_mp" */
+        "movl $str_0021ca4c, (%esp)\n" /* "defaultweapon_mp" */
         "calll BG_GetWeaponIndexForName\n"
         "movl %eax, %ebx\n" /* defaultWeaponNum */
         "testl %eax, %eax\n" /* line 540 */
@@ -6635,7 +6635,7 @@ void CG_SetWeaponDefToDefaultWeapon(int iWeapon)
         "retl\n"
         /* { scope 1 */
         ".Lf7f91c_0007f990:\n"
-        "movl $0x21cd7c, 4(%esp)\n" /* line 541 */
+        "movl $str_0021cd7c, 4(%esp)\n" /* line 541 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf7f91c_0007f941\n"
@@ -6703,7 +6703,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl bg_iNumWeapons, %ebx\n" /* line 771 */
         "testl %ebx, %ebx\n"
         "jle .Lf7f9a6_000807d9\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7f9a6_000809af\n"
         "movl $1, %ecx\n"
@@ -6746,9 +6746,9 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf7f9a6_00080a9c\n"
         "pxor %xmm2, %xmm2\n"
-        "movss 0x2ed5dc, %xmm1\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm1\n" /* -1.0f */
         ".Lf7f9a6_0007fb12:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "pxor %xmm4, %xmm4\n"
         "movaps %xmm2, %xmm3\n"
         "cmpltss %xmm4, %xmm1\n"
@@ -6776,7 +6776,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl 0xd0(%esi), %eax\n" /* line 792 */
         "jmp .Lf7f9a6_0007fa1b\n"
         ".Lf7f9a6_0007fb73:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7f9a6_000809c9\n"
         "movl $1, %ecx\n"
@@ -6826,7 +6826,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "jp .Lf7f9a6_0007fc1f\n"
         "je .Lf7f9a6_0007fc4f\n"
         ".Lf7f9a6_0007fc1f:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4176 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4176 | 1.0f */
         "subss %xmm1, %xmm0\n"
         /* { scope 4 */
         "movaps %xmm0, %xmm1\n" /* line 272 */
@@ -6840,9 +6840,9 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         ".Lf7f9a6_0007fc4f:\n"
         "movl 8(%ebp), %eax\n" /* ws */
         "movl $1, %ecx\n"
-        "movss 0x2ed7d0, %xmm6\n" /* 0.10000000149011612f */
-        "movss 0x2ed7d4, %xmm5\n" /* -0.10000000149011612f */
-        "movss 0x2ed7bc, %xmm4\n" /* 11.0f */
+        "movss lit4_002ed7d0, %xmm6\n" /* 0.10000000149011612f */
+        "movss lit4_002ed7d4, %xmm5\n" /* -0.10000000149011612f */
+        "movss lit4_002ed7bc, %xmm4\n" /* 11.0f */
         ".Lf7f9a6_0007fc6f:\n"
         "leal 0xc(%eax), %edx\n" /* line 4563 */
         /* } scope */
@@ -6883,11 +6883,11 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "jp .Lf7f9a6_0007fcfe\n"
         "je .Lf7f9a6_0007fe82\n"
         ".Lf7f9a6_0007fcfe:\n"
-        "ucomiss 0x2ed5d8, %xmm1\n" /* line 4213 | 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm1\n" /* line 4213 | 0.5f */
         "jae .Lf7f9a6_0007fd5c\n"
         "jp .Lf7f9a6_0007fd5c\n"
-        "mulss 0x2ed628, %xmm1\n" /* line 4215 | -2.0f */
-        "addss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "mulss lit4_002ed628, %xmm1\n" /* line 4215 | -2.0f */
+        "addss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movl 8(%ebp), %eax\n" /* ws */
         "addl $0xc, %eax\n"
         /* { scope 4 */
@@ -6930,8 +6930,8 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "ucomiss %xmm0, %xmm5\n"
         "jne .Lf7f9a6_000808a2\n"
         "jp .Lf7f9a6_000808a2\n"
-        "movss 0x2ed7d8, %xmm5\n" /* 80.0f */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed7d8, %xmm5\n" /* 80.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         ".Lf7f9a6_0007fdb8:\n"
         "movl 0xa0(%esi), %eax\n" /* line 4283 */
         "testb $8, %al\n"
@@ -6939,7 +6939,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         ".Lf7f9a6_0007fdc6:\n"
         "testb $4, %al\n" /* line 4285 */
         "jne .Lf7f9a6_00080854\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         ".Lf7f9a6_0007fdd6:\n"
         "movl 0x278(%edx), %edi\n" /* line 4290 */
         "testl %edi, %edi\n"
@@ -6960,7 +6960,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl 8(%ebp), %ecx\n" /* line 4303 | ws */
         "movss 8(%ecx), %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "subss %xmm0, %xmm2\n"
         "movss %xmm2, 0x18(%ecx)\n"
         "ucomiss %xmm2, %xmm4\n" /* line 4304 */
@@ -7019,7 +7019,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl bg_iNumWeapons, %ebx\n" /* line 771 */
         "testl %ebx, %ebx\n"
         "jle .Lf7f9a6_000807d2\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7f9a6_000809bc\n"
         "movl $1, %ecx\n"
@@ -7065,50 +7065,50 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl 0x278(%edx), %ebx\n" /* line 4312 | weapDef */
         "testl %ebx, %ebx\n" /* weapDef */
         "je .Lf7f9a6_000800e1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4313 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4313 | 1.0f */
         "subss 0xdc(%esi), %xmm0\n"
         "mulss %xmm5, %xmm0\n"
         "movss %xmm0, -0x2c(%ebp)\n"
         "movl 8(%ebp), %edi\n" /* ws */
         ".Lf7f9a6_0007ffbb:\n"
         "movl 0x50(%edi), %edx\n" /* line 4315 */
-        "mulss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         "mulss %xmm1, %xmm3\n"
         "cvttss2si %xmm3, %eax\n"
         "addl %eax, (%edx)\n"
         "movl 0x50(%edi), %eax\n" /* line 4317 */
         "cvtsi2ssl (%eax), %xmm0\n"
-        "mulss 0x2ed618, %xmm0\n" /* 0.0005000000237487257f */
+        "mulss lit4_002ed618, %xmm0\n" /* 0.0005000000237487257f */
         "movss %xmm0, (%esp)\n"
         "calll sinf\n"
         "fstps -0xcc(%ebp)\n"
         "movss -0xcc(%ebp), %xmm0\n"
         "mulss -0x2c(%ebp), %xmm0\n"
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "movl -0x5c(%ebp), %eax\n"
         "addss (%eax), %xmm0\n"
         "movss %xmm0, (%eax)\n"
         "movl 0x50(%edi), %eax\n" /* line 4320 */
         "cvtsi2ssl (%eax), %xmm0\n"
-        "mulss 0x2ed7dc, %xmm0\n" /* 0.000699999975040555f */
+        "mulss lit4_002ed7dc, %xmm0\n" /* 0.000699999975040555f */
         "movss %xmm0, (%esp)\n"
         "calll sinf\n"
         "fstps -0xcc(%ebp)\n"
         "movss -0xcc(%ebp), %xmm0\n"
         "mulss -0x2c(%ebp), %xmm0\n"
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "movl -0x58(%ebp), %edx\n"
         "addss (%edx), %xmm0\n"
         "movss %xmm0, (%edx)\n"
         "movl 0x50(%edi), %eax\n" /* line 4323 */
         "cvtsi2ssl (%eax), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, (%esp)\n"
         "calll sinf\n"
         "fstps -0x48(%ebp)\n"
         "movss -0x2c(%ebp), %xmm0\n"
         "mulss -0x48(%ebp), %xmm0\n"
-        "movss 0x2ed738, %xmm1\n" /* 0.009999999776482582f */
+        "movss lit4_002ed738, %xmm1\n" /* 0.009999999776482582f */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x2c(%ebp)\n"
         "movl 0xc(%ebp), %eax\n" /* angles */
@@ -7123,7 +7123,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl bg_iNumWeapons, %esi\n" /* line 771 */
         "testl %esi, %esi\n"
         "jle .Lf7f9a6_000807cb\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7f9a6_000809e3\n"
         "movl $1, %ecx\n"
@@ -7152,19 +7152,19 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* } scope */
         "movzbl 8(%ebx), %eax\n" /* line 4351 | ps */
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
+        "mulsd lit8_00307c28, %xmm0\n" /* 3.141592653589793 */
         "addsd %xmm0, %xmm0\n"
-        "movsd 0x307c98, %xmm1\n" /* 6.283185307179586 */
+        "movsd lit8_00307c98, %xmm1\n" /* 6.283185307179586 */
         "addsd %xmm1, %xmm0\n"
         "cvtsd2ss %xmm0, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "addsd 0x307ca8, %xmm0\n" /* 0.7853981633974483 */
+        "addsd lit8_00307ca8, %xmm0\n" /* 0.7853981633974483 */
         "addsd %xmm1, %xmm0\n"
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x40(%ebp)\n" /* cycle */
-        "movss 0x2ed7e0, %xmm0\n" /* line 4352 | 0.1599999964237213f */
+        "movss lit4_002ed7e0, %xmm0\n" /* line 4352 | 0.1599999964237213f */
         "movss %xmm0, -0x44(%ebp)\n" /* speed */
         "movl 8(%ebp), %eax\n" /* ws */
         "mulss 4(%eax), %xmm0\n"
@@ -7175,12 +7175,12 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "je .Lf7f9a6_00080843\n"
         "cmpl $0x28, %eax\n" /* line 4094 */
         "je .Lf7f9a6_000808f3\n"
-        "movl 0x195ee3c, %eax\n" /* line 4097 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4097 */
         "movl (%eax), %eax\n"
         "movss -0x44(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
         ".Lf7f9a6_00080189:\n"
-        "movss 0x2ed6b4, %xmm1\n" /* line 4099 | 10.0f */
+        "movss lit4_002ed6b4, %xmm1\n" /* line 4099 | 10.0f */
         "movaps %xmm1, %xmm2\n"
         "cmpltss %xmm0, %xmm1\n"
         "andps %xmm1, %xmm2\n"
@@ -7195,18 +7195,18 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "fstps -0xcc(%ebp)\n"
         "movss -0xcc(%ebp), %xmm1\n"
         "movss -0x40(%ebp), %xmm0\n" /* cycle */
-        "mulss 0x2ed608, %xmm0\n" /* 4.0f */
+        "mulss lit4_002ed608, %xmm0\n" /* 4.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "addsd 0x307ca0, %xmm0\n" /* 1.5707963267948966 */
+        "addsd lit8_00307ca0, %xmm0\n" /* 1.5707963267948966 */
         "movsd %xmm0, (%esp)\n"
         "movss %xmm1, -0x78(%ebp)\n"
         "calll sin\n"
         "fstpl -0x50(%ebp)\n"
         "cvtsd2ss -0x50(%ebp), %xmm0\n"
-        "mulss 0x2ed724, %xmm0\n" /* 0.20000000298023224f */
+        "mulss lit4_002ed724, %xmm0\n" /* 0.20000000298023224f */
         "movss -0x78(%ebp), %xmm1\n"
         "addss %xmm0, %xmm1\n"
-        "mulss 0x2ed67c, %xmm1\n" /* 0.75f */
+        "mulss lit4_002ed67c, %xmm1\n" /* 0.75f */
         "mulss -0x30(%ebp), %xmm1\n"
         "movss %xmm1, -0x30(%ebp)\n"
         "xorl $0x80000000, -0x30(%ebp)\n"
@@ -7217,12 +7217,12 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "je .Lf7f9a6_0008082d\n"
         "cmpl $0x28, %eax\n" /* line 4119 */
         "je .Lf7f9a6_000808dd\n"
-        "movl 0x195ee3c, %eax\n" /* line 4122 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4122 */
         "movl (%eax), %eax\n"
         "movss -0x44(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
         ".Lf7f9a6_0008024b:\n"
-        "movss 0x2ed6b4, %xmm4\n" /* line 4124 | 10.0f */
+        "movss lit4_002ed6b4, %xmm4\n" /* line 4124 | 10.0f */
         "movaps %xmm4, %xmm3\n"
         "cmpltss %xmm0, %xmm4\n"
         "andps %xmm4, %xmm3\n"
@@ -7237,12 +7237,12 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "fstps -0x54(%ebp)\n"
         "movss -0x98(%ebp), %xmm4\n"
         "mulss -0x54(%ebp), %xmm4\n"
-        "xorps 0x2f0a70, %xmm4\n"
+        "xorps CorrectSolidDeltas+880, %xmm4\n"
         "cvtss2sd -0x40(%ebp), %xmm0\n" /* line 4356 | cycle */
-        "subsd 0x307cb0, %xmm0\n" /* 0.4712389167638204 */
+        "subsd lit8_00307cb0, %xmm0\n" /* 0.4712389167638204 */
         "cvtsd2ss %xmm0, %xmm2\n"
         "movss -0x44(%ebp), %xmm0\n" /* line 4357 | speed */
-        "mulss 0x2ed600, %xmm0\n" /* 1.5f */
+        "mulss lit4_002ed600, %xmm0\n" /* 1.5f */
         /* { scope 3 */
         /* { scope 4 */
         "movl 0xf4(%ebx), %eax\n" /* line 4117 */
@@ -7250,12 +7250,12 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "je .Lf7f9a6_00080819\n"
         "cmpl $0x28, %eax\n" /* line 4119 */
         "je .Lf7f9a6_000808c9\n"
-        "movl 0x195ee3c, %eax\n" /* line 4122 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4122 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
         ".Lf7f9a6_000802d7:\n"
-        "movss 0x2ed6b4, %xmm0\n" /* line 4124 | 10.0f */
+        "movss lit4_002ed6b4, %xmm0\n" /* line 4124 | 10.0f */
         "movaps %xmm0, %xmm3\n"
         "cmpltss %xmm1, %xmm0\n"
         "andps %xmm0, %xmm3\n"
@@ -7288,7 +7288,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "jp .Lf7f9a6_0008035c\n"
         "je .Lf7f9a6_0008038d\n"
         ".Lf7f9a6_0008035c:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4365 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4365 | 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss 0x284(%esi), %xmm1\n" /* weapDef */
         "mulss %xmm3, %xmm1\n"
@@ -7302,7 +7302,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl 0x278(%esi), %edx\n" /* line 4371 | weapDef */
         "testl %edx, %edx\n"
         "je .Lf7f9a6_00080781\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4372 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4372 | 1.0f, scale */
         "subss %xmm3, %xmm0\n" /* scale */
         /* { scope 3 */
         "movss -0x30(%ebp), %xmm3\n" /* line 272 */
@@ -7343,14 +7343,14 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl bg_weaponDefs(, %eax, 4), %eax\n" /* line 521 */
         /* } scope */
         "movss 0xdc(%esi), %xmm1\n" /* line 4397 | weapDef */
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movaps %xmm1, %xmm2\n"
         "mulss %xmm0, %xmm2\n"
         "addss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm3\n" /* line 4398 */
-        "mulss 0x2ed798, %xmm3\n" /* 100.0f */
+        "mulss lit4_002ed798, %xmm3\n" /* 100.0f */
         "movaps %xmm2, %xmm4\n" /* line 4399 */
-        "mulss 0x2ed730, %xmm4\n" /* 400.0f */
+        "mulss lit4_002ed730, %xmm4\n" /* 400.0f */
         "pxor %xmm0, %xmm0\n" /* line 4400 */
         "ucomiss %xmm0, %xmm1\n"
         "jp .Lf7f9a6_00080457\n"
@@ -7359,8 +7359,8 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl 0x278(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf7f9a6_00080475\n"
-        "mulss 0x2ed6c4, %xmm1\n" /* line 4401 | -0.75f */
-        "addss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "mulss lit4_002ed6c4, %xmm1\n" /* line 4401 | -0.75f */
+        "addss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "mulss %xmm1, %xmm2\n"
         ".Lf7f9a6_00080475:\n"
         "movl 8(%ebp), %edx\n" /* line 4403 | ws */
@@ -7371,25 +7371,25 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "ja .Lf7f9a6_000809f8\n"
         "subss %xmm3, %xmm0\n" /* line 4416 */
         "divss %xmm4, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "pxor %xmm3, %xmm3\n" /* line 4417 */
         "ucomiss %xmm3, %xmm1\n"
         "jbe .Lf7f9a6_00080534\n"
-        "movss 0x2ed5d0, %xmm4\n" /* line 4419 | 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* line 4419 | 1.0f */
         "subss %xmm1, %xmm4\n"
         "movss %xmm4, (%esp)\n"
         "movss %xmm2, -0x88(%ebp)\n"
         "calll GetLeanFraction\n"
         "fstps -0x3c(%ebp)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss -0x3c(%ebp), %xmm1\n"
         "movss -0x88(%ebp), %xmm2\n" /* line 4420 */
         "mulss %xmm2, %xmm1\n"
         "movaps %xmm1, %xmm0\n" /* line 4422 */
         "movl 8(%ebp), %eax\n" /* ws */
         "mulss 0x24(%eax), %xmm0\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "mulss %xmm3, %xmm0\n"
         "movl 0xc(%ebp), %edx\n" /* angles */
         "addss (%edx), %xmm0\n"
@@ -7458,10 +7458,10 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl %eax, -0x60(%ebp)\n"
         "jmp .Lf7f9a6_000806f0\n"
         ".Lf7f9a6_00080613:\n"
-        "subsd 0x307cb8, %xmm0\n" /* line 4539 | 0.005 */
+        "subsd lit8_00307cb8, %xmm0\n" /* line 4539 | 0.005 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x38(%ebp)\n" /* fTimeStep */
-        "movss 0x2ed7e4, %xmm4\n" /* 0.004999999888241291f */
+        "movss lit4_002ed7e4, %xmm4\n" /* 0.004999999888241291f */
         ".Lf7f9a6_0008062c:\n"
         "movss 0x2e0(%ebx), %xmm1\n" /* line 4548 | weapDef */
         "movss %xmm5, 4(%esp)\n"
@@ -7505,7 +7505,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movaps %xmm0, %xmm4\n"
         ".Lf7f9a6_000806f0:\n"
         "cvtss2sd %xmm4, %xmm0\n" /* line 4536 */
-        "ucomisd 0x307cb8, %xmm0\n" /* 0.005 */
+        "ucomisd lit8_00307cb8, %xmm0\n" /* 0.005 */
         "ja .Lf7f9a6_00080613\n"
         "movl $0, -0x38(%ebp)\n" /* fTimeStep */
         "jmp .Lf7f9a6_0008062c\n"
@@ -7559,7 +7559,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl bg_iNumWeapons, %ebx\n" /* line 771 */
         "testl %ebx, %ebx\n"
         "jle .Lf7f9a6_000807e0\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7f9a6_000809d6\n"
         "movl $1, %ecx\n"
@@ -7603,7 +7603,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "calll GetLeanFraction\n"
         "fstps -0xcc(%ebp)\n"
         "movss -0xcc(%ebp), %xmm0\n"
-        "mulss 0x2ed628, %xmm0\n" /* line 4576 | -2.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* line 4576 | -2.0f */
         "movl 0xc(%ebp), %eax\n" /* angles */
         "addss 8(%eax), %xmm0\n"
         "movss %xmm0, 8(%eax)\n"
@@ -7612,7 +7612,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* { scope 3 */
         /* { scope 4 */
         ".Lf7f9a6_00080819:\n"
-        "movl 0x195ee28, %eax\n" /* line 4118 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4118 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
@@ -7622,7 +7622,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* { scope 3 */
         /* { scope 4 */
         ".Lf7f9a6_0008082d:\n"
-        "movl 0x195ee28, %eax\n"
+        "movl imp_bg_bobAmplitudeProne, %eax\n"
         "movl (%eax), %eax\n"
         "movss -0x44(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
@@ -7631,7 +7631,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* } scope */
         /* { scope 3 */
         ".Lf7f9a6_00080843:\n"
-        "movl 0x195ee28, %eax\n" /* line 4093 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4093 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "jmp .Lf7f9a6_00080189\n"
@@ -7686,7 +7686,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* { scope 3 */
         /* { scope 4 */
         ".Lf7f9a6_000808c9:\n"
-        "movl 0x195ee34, %eax\n" /* line 4120 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4120 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
@@ -7696,7 +7696,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* { scope 3 */
         /* { scope 4 */
         ".Lf7f9a6_000808dd:\n"
-        "movl 0x195ee34, %eax\n"
+        "movl imp_bg_bobAmplitudeDucked, %eax\n"
         "movl (%eax), %eax\n"
         "movss -0x44(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
@@ -7705,7 +7705,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* } scope */
         /* { scope 3 */
         ".Lf7f9a6_000808f3:\n"
-        "movl 0x195ee34, %eax\n" /* line 4095 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4095 */
         "movl (%eax), %eax\n"
         "movss -0x44(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
@@ -7716,7 +7716,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         ".Lf7f9a6_00080909:\n"
         "movss 8(%eax), %xmm1\n" /* line 4297 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss %xmm2, %xmm0\n"
         "movss %xmm0, 0x18(%eax)\n"
         "ucomiss %xmm4, %xmm0\n" /* line 4298 */
@@ -7750,7 +7750,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movl 0xd0(%esi), %eax\n" /* line 792 */
         "jmp .Lf7f9a6_00080414\n"
         ".Lf7f9a6_00080975:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf7f9a6_00080aac\n"
         "movl $1, %ecx\n"
@@ -7815,7 +7815,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         "movaps %xmm1, %xmm0\n" /* line 4410 */
         "movl 8(%ebp), %ecx\n" /* ws */
         "mulss 0x24(%ecx), %xmm0\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "mulss %xmm3, %xmm0\n"
         "movl 0xc(%ebp), %edi\n" /* angles */
         "addss (%edi), %xmm0\n"
@@ -7851,7 +7851,7 @@ void BG_CalculateWeaponAngles(weaponState_t *ws, vec_t *angles)
         /* } scope */
         ".Lf7f9a6_00080a9c:\n"
         "movaps %xmm2, %xmm1\n" /* line 45 */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "jmp .Lf7f9a6_0007fb12\n"
         /* } scope */
         /* } scope */
@@ -7905,8 +7905,8 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* } scope */
         "movss 0xdc(%ebx), %xmm0\n" /* line 4611 */
         "movaps %xmm0, %xmm1\n"
-        "mulss 0x2ed63c, %xmm1\n" /* -0.5f */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "mulss lit4_002ed63c, %xmm1\n" /* -0.5f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "addss %xmm2, %xmm1\n"
         "movss %xmm1, -0x34(%ebp)\n" /* fFactor */
         "ucomiss %xmm5, %xmm0\n" /* line 4612 */
@@ -7916,7 +7916,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "movl 0x278(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf80aba_00080b6c\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* line 4613 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* line 4613 | 0.5f */
         "addss %xmm2, %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n" /* fFactor */
@@ -7925,11 +7925,11 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "movl 8(%edx), %eax\n"
         "subl %edi, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed798, %xmm1\n" /* line 4616 | 100.0f */
+        "movss lit4_002ed798, %xmm1\n" /* line 4616 | 100.0f */
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf80aba_00081500\n"
         "subss %xmm1, %xmm0\n" /* line 4627 */
-        "divss 0x2ed6d8, %xmm0\n" /* -400.0f */
+        "divss lit4_002ed6d8, %xmm0\n" /* -400.0f */
         "addss %xmm2, %xmm0\n"
         "ucomiss %xmm5, %xmm0\n" /* line 4628 */
         "jbe .Lf80aba_00080bfa\n"
@@ -8016,14 +8016,14 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "movl %edx, %eax\n" /* line 4707 */
         "movl 0x20(%edx), %edx\n"
         "mulss 0x18(%eax), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "mulss %xmm0, %xmm2\n"
         "cvttss2si %xmm2, %eax\n"
         "addl %eax, (%edx)\n"
         "movl 8(%ebp), %edx\n" /* line 4709 | vs */
         "movl 0x20(%edx), %eax\n"
         "cvtsi2ssl (%eax), %xmm0\n"
-        "mulss 0x2ed7dc, %xmm0\n" /* 0.000699999975040555f */
+        "mulss lit4_002ed7dc, %xmm0\n" /* 0.000699999975040555f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x78(%ebp)\n"
         "calll sinf\n"
@@ -8031,21 +8031,21 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "movss -0x9c(%ebp), %xmm0\n"
         "movss -0x78(%ebp), %xmm1\n"
         "mulss %xmm1, %xmm0\n"
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "movl -0x40(%ebp), %eax\n"
         "addss (%eax), %xmm0\n"
         "movss %xmm0, (%eax)\n"
         "movl 8(%ebp), %edx\n" /* line 4712 | vs */
         "movl 0x20(%edx), %eax\n"
         "cvtsi2ssl (%eax), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x78(%ebp)\n"
         "calll sinf\n"
         "fstps -0x44(%ebp)\n"
         "movss -0x78(%ebp), %xmm1\n"
         "mulss -0x44(%ebp), %xmm1\n"
-        "mulss 0x2ed738, %xmm1\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm1\n" /* 0.009999999776482582f */
         "movl 0xc(%ebp), %eax\n" /* angles */
         "addss (%eax), %xmm1\n"
         "movss %xmm1, (%eax)\n"
@@ -8060,7 +8060,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "movl bg_iNumWeapons, %esi\n" /* line 771 */
         "testl %esi, %esi\n"
         "jle .Lf80aba_000813bd\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf80aba_000814c5\n"
         "movl $1, %ecx\n"
@@ -8091,7 +8091,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* } scope */
         /* { scope 1: speed, cycle, cycle */
         ".Lf80aba_00080e02:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf80aba_000814d2\n"
         "movl $1, %ecx\n"
@@ -8122,19 +8122,19 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "je .Lf80aba_0008112a\n"
         "movzbl 8(%ebx), %eax\n" /* line 4737 */
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
+        "mulsd lit8_00307c28, %xmm0\n" /* 3.141592653589793 */
         "addsd %xmm0, %xmm0\n"
-        "movsd 0x307c98, %xmm1\n" /* 6.283185307179586 */
+        "movsd lit8_00307c98, %xmm1\n" /* 6.283185307179586 */
         "addsd %xmm1, %xmm0\n"
         "cvtsd2ss %xmm0, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "addsd 0x307ca8, %xmm0\n" /* 0.7853981633974483 */
+        "addsd lit8_00307ca8, %xmm0\n" /* 0.7853981633974483 */
         "addsd %xmm1, %xmm0\n"
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x2c(%ebp)\n" /* cycle */
-        "movss 0x2ed7e0, %xmm0\n" /* line 4738 | 0.1599999964237213f */
+        "movss lit4_002ed7e0, %xmm0\n" /* line 4738 | 0.1599999964237213f */
         "movss %xmm0, -0x30(%ebp)\n" /* speed */
         "movl 8(%ebp), %eax\n" /* vs */
         "mulss 0x14(%eax), %xmm0\n"
@@ -8145,12 +8145,12 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "je .Lf80aba_0008157b\n"
         "cmpl $0x28, %eax\n" /* line 4094 */
         "je .Lf80aba_0008158c\n"
-        "movl 0x195ee3c, %eax\n" /* line 4097 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4097 */
         "movl (%eax), %eax\n"
         "movss -0x30(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
         ".Lf80aba_00080eeb:\n"
-        "movss 0x2ed6b4, %xmm1\n" /* line 4099 | 10.0f */
+        "movss lit4_002ed6b4, %xmm1\n" /* line 4099 | 10.0f */
         "movaps %xmm1, %xmm2\n"
         "cmpltss %xmm0, %xmm1\n"
         "andps %xmm1, %xmm2\n"
@@ -8165,18 +8165,18 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "fstps -0x9c(%ebp)\n"
         "movss -0x9c(%ebp), %xmm1\n"
         "movss -0x2c(%ebp), %xmm0\n" /* cycle */
-        "mulss 0x2ed608, %xmm0\n" /* 4.0f */
+        "mulss lit4_002ed608, %xmm0\n" /* 4.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "addsd 0x307ca0, %xmm0\n" /* 1.5707963267948966 */
+        "addsd lit8_00307ca0, %xmm0\n" /* 1.5707963267948966 */
         "movsd %xmm0, (%esp)\n"
         "movss %xmm1, -0x78(%ebp)\n"
         "calll sin\n"
         "fstpl -0x50(%ebp)\n"
         "cvtsd2ss -0x50(%ebp), %xmm0\n"
-        "mulss 0x2ed724, %xmm0\n" /* 0.20000000298023224f */
+        "mulss lit4_002ed724, %xmm0\n" /* 0.20000000298023224f */
         "movss -0x78(%ebp), %xmm1\n"
         "addss %xmm0, %xmm1\n"
-        "mulss 0x2ed67c, %xmm1\n" /* 0.75f */
+        "mulss lit4_002ed67c, %xmm1\n" /* 0.75f */
         "mulss -0x1c(%ebp), %xmm1\n"
         "movss %xmm1, -0x1c(%ebp)\n"
         "xorl $0x80000000, -0x1c(%ebp)\n"
@@ -8187,12 +8187,12 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "je .Lf80aba_00081565\n"
         "cmpl $0x28, %eax\n" /* line 4119 */
         "je .Lf80aba_000815b6\n"
-        "movl 0x195ee3c, %eax\n" /* line 4122 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4122 */
         "movl (%eax), %eax\n"
         "movss -0x30(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
         ".Lf80aba_00080fad:\n"
-        "movss 0x2ed6b4, %xmm4\n" /* line 4124 | 10.0f */
+        "movss lit4_002ed6b4, %xmm4\n" /* line 4124 | 10.0f */
         "movaps %xmm4, %xmm3\n"
         "cmpltss %xmm0, %xmm4\n"
         "andps %xmm4, %xmm3\n"
@@ -8207,12 +8207,12 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "fstps -0x54(%ebp)\n"
         "movss -0x98(%ebp), %xmm4\n"
         "mulss -0x54(%ebp), %xmm4\n"
-        "xorps 0x2f0a80, %xmm4\n"
+        "xorps CorrectSolidDeltas+896, %xmm4\n"
         "cvtss2sd -0x2c(%ebp), %xmm0\n" /* line 4742 | cycle */
-        "subsd 0x307cb0, %xmm0\n" /* 0.4712389167638204 */
+        "subsd lit8_00307cb0, %xmm0\n" /* 0.4712389167638204 */
         "cvtsd2ss %xmm0, %xmm2\n"
         "movss -0x30(%ebp), %xmm0\n" /* line 4743 | speed */
-        "mulss 0x2ed600, %xmm0\n" /* 1.5f */
+        "mulss lit4_002ed600, %xmm0\n" /* 1.5f */
         /* { scope 2 */
         /* { scope 3 */
         "movl 0xf4(%ebx), %eax\n" /* line 4117 */
@@ -8220,12 +8220,12 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "je .Lf80aba_00081551\n"
         "cmpl $0x28, %eax\n" /* line 4119 */
         "je .Lf80aba_000815a2\n"
-        "movl 0x195ee3c, %eax\n" /* line 4122 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4122 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
         ".Lf80aba_00081039:\n"
-        "movss 0x2ed6b4, %xmm0\n" /* line 4124 | 10.0f */
+        "movss lit4_002ed6b4, %xmm0\n" /* line 4124 | 10.0f */
         "movaps %xmm0, %xmm3\n"
         "cmpltss %xmm1, %xmm0\n"
         "andps %xmm0, %xmm3\n"
@@ -8257,7 +8257,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "jp .Lf80aba_000810bd\n"
         "je .Lf80aba_00081427\n"
         ".Lf80aba_000810bd:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4751 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4751 | 1.0f */
         "movaps %xmm0, %xmm1\n"
         "subss 0x284(%esi), %xmm1\n" /* weapDef */
         "mulss %xmm2, %xmm1\n"
@@ -8293,7 +8293,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "movl bg_iNumWeapons, %esi\n" /* line 771 */
         "testl %esi, %esi\n"
         "jle .Lf80aba_000813c4\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf80aba_000814df\n"
         "movl $1, %ecx\n"
@@ -8349,11 +8349,11 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         ".Lf80aba_000811e7:\n"
         "movzbl 8(%ebx), %eax\n" /* line 4783 */
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
+        "mulsd lit8_00307c28, %xmm0\n" /* 3.141592653589793 */
         "addsd %xmm0, %xmm0\n"
-        "addsd 0x307c98, %xmm0\n" /* 6.283185307179586 */
+        "addsd lit8_00307c98, %xmm0\n" /* 6.283185307179586 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n" /* cycle */
         "movl 8(%ebp), %eax\n" /* line 4785 | vs */
@@ -8365,12 +8365,12 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "je .Lf80aba_000815cc\n"
         "cmpl $0x28, %eax\n" /* line 4094 */
         "je .Lf80aba_000814ec\n"
-        "movl 0x195ee3c, %eax\n" /* line 4097 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4097 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
         ".Lf80aba_00081247:\n"
-        "movss 0x2ed6ec, %xmm0\n" /* line 4099 | 45.0f */
+        "movss lit4_002ed6ec, %xmm0\n" /* line 4099 | 45.0f */
         "movaps %xmm0, %xmm1\n"
         "cmpltss %xmm2, %xmm0\n"
         "andps %xmm0, %xmm1\n"
@@ -8385,18 +8385,18 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "fstps -0x9c(%ebp)\n"
         "movss -0x9c(%ebp), %xmm1\n"
         "movss -0x20(%ebp), %xmm0\n" /* cycle */
-        "mulss 0x2ed608, %xmm0\n" /* 4.0f */
+        "mulss lit4_002ed608, %xmm0\n" /* 4.0f */
         "cvtss2sd %xmm0, %xmm0\n"
-        "addsd 0x307ca0, %xmm0\n" /* 1.5707963267948966 */
+        "addsd lit8_00307ca0, %xmm0\n" /* 1.5707963267948966 */
         "movsd %xmm0, (%esp)\n"
         "movss %xmm1, -0x78(%ebp)\n"
         "calll sin\n"
         "fstpl -0x60(%ebp)\n"
         "cvtsd2ss -0x60(%ebp), %xmm0\n"
-        "mulss 0x2ed724, %xmm0\n" /* 0.20000000298023224f */
+        "mulss lit4_002ed724, %xmm0\n" /* 0.20000000298023224f */
         "movss -0x78(%ebp), %xmm1\n"
         "addss %xmm0, %xmm1\n"
-        "mulss 0x2ed67c, %xmm1\n" /* 0.75f */
+        "mulss lit4_002ed67c, %xmm1\n" /* 0.75f */
         "movss -0x88(%ebp), %xmm2\n"
         "mulss %xmm1, %xmm2\n"
         /* } scope */
@@ -8417,12 +8417,12 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "je .Lf80aba_000815e0\n"
         "cmpl $0x28, %eax\n" /* line 4119 */
         "je .Lf80aba_000815f4\n"
-        "movl 0x195ee3c, %eax\n" /* line 4122 */
+        "movl imp_bg_bobAmplitudeStanding, %eax\n" /* line 4122 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
         ".Lf80aba_0008132d:\n"
-        "movss 0x2ed6ec, %xmm0\n" /* line 4124 | 45.0f */
+        "movss lit4_002ed6ec, %xmm0\n" /* line 4124 | 45.0f */
         "movaps %xmm0, %xmm2\n"
         "cmpltss %xmm1, %xmm0\n"
         "andps %xmm0, %xmm2\n"
@@ -8454,7 +8454,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "retl\n"
         /* { scope 1: speed, cycle, cycle */
         ".Lf80aba_00081398:\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 4696 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 4696 | 0.5f */
         "movl 8(%ebp), %eax\n" /* vs */
         "mulss 0x18(%eax), %xmm0\n"
         "subss %xmm0, %xmm1\n"
@@ -8489,8 +8489,8 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "ucomiss %xmm5, %xmm3\n"
         "jne .Lf80aba_000814ab\n"
         "jp .Lf80aba_000814ab\n"
-        "movss 0x2ed7d8, %xmm3\n" /* 80.0f */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed7d8, %xmm3\n" /* 80.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "jmp .Lf80aba_00080c8b\n"
         /* } scope */
         /* { scope 1: speed, cycle, cycle */
@@ -8503,7 +8503,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* } scope */
         /* { scope 1: speed, cycle, cycle */
         ".Lf80aba_00081431:\n"
-        "movl 0x1007fa4, %eax\n" /* line 773 */
+        "movl bg_weaponDefs+4, %eax\n" /* line 773 */
         "cmpl $3, 0x78(%eax)\n"
         "je .Lf80aba_00081608\n"
         "movl $1, %ecx\n"
@@ -8524,7 +8524,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         ".Lf80aba_0008146b:\n"
         "ucomiss %xmm1, %xmm4\n" /* line 4688 */
         "jbe .Lf80aba_00081398\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 4690 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 4690 | 0.5f */
         "mulss 0x18(%edx), %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 0x1c(%edx)\n"
@@ -8544,7 +8544,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         "movss 0x2d4(%eax), %xmm2\n" /* line 4667 */
         "jmp .Lf80aba_00080c8b\n"
         ".Lf80aba_000814b8:\n"
-        "movss 0x2ed5d0, %xmm4\n" /* line 4678 | 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* line 4678 | 1.0f */
         "jmp .Lf80aba_00080ca2\n"
         /* } scope */
         /* { scope 1: speed, cycle, cycle */
@@ -8567,7 +8567,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf80aba_000814ec:\n"
-        "movl 0x195ee34, %eax\n" /* line 4095 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4095 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
@@ -8601,7 +8601,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf80aba_00081551:\n"
-        "movl 0x195ee28, %eax\n" /* line 4118 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4118 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
@@ -8611,7 +8611,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf80aba_00081565:\n"
-        "movl 0x195ee28, %eax\n"
+        "movl imp_bg_bobAmplitudeProne, %eax\n"
         "movl (%eax), %eax\n"
         "movss -0x30(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
@@ -8620,12 +8620,12 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* } scope */
         /* { scope 2 */
         ".Lf80aba_0008157b:\n"
-        "movl 0x195ee28, %eax\n" /* line 4093 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4093 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "jmp .Lf80aba_00080eeb\n"
         ".Lf80aba_0008158c:\n"
-        "movl 0x195ee34, %eax\n" /* line 4095 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4095 */
         "movl (%eax), %eax\n"
         "movss -0x30(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
@@ -8634,7 +8634,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf80aba_000815a2:\n"
-        "movl 0x195ee34, %eax\n" /* line 4120 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4120 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
@@ -8644,7 +8644,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf80aba_000815b6:\n"
-        "movl 0x195ee34, %eax\n"
+        "movl imp_bg_bobAmplitudeDucked, %eax\n"
         "movl (%eax), %eax\n"
         "movss -0x30(%ebp), %xmm0\n" /* speed */
         "mulss 8(%eax), %xmm0\n"
@@ -8656,7 +8656,7 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf80aba_000815cc:\n"
-        "movl 0x195ee28, %eax\n" /* line 4093 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4093 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
@@ -8666,13 +8666,13 @@ void BG_CalculateViewAngles(viewState_t *vs, vec_t *angles)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf80aba_000815e0:\n"
-        "movl 0x195ee28, %eax\n" /* line 4118 */
+        "movl imp_bg_bobAmplitudeProne, %eax\n" /* line 4118 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
         "jmp .Lf80aba_0008132d\n"
         ".Lf80aba_000815f4:\n"
-        "movl 0x195ee34, %eax\n" /* line 4120 */
+        "movl imp_bg_bobAmplitudeDucked, %eax\n" /* line 4120 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"

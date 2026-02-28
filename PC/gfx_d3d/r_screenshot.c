@@ -13,16 +13,16 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static int lastNumber; /* 0xc96c18 */
-static vec3_t cubemapShotAxis[7][3]; /* 0x2f2720 */
-static int cubeShotGlob; /* 0xc96c00 */
+static int lastNumber; /* lastNumber */
+static vec3_t cubemapShotAxis[7][3]; /* cubemapShotAxis */
+static int cubeShotGlob; /* cubeShotGlob */
 
-extern DxGlobals *dx;               /* 0x195eed0 */
-extern volatile int *dxIter;        /* 0x195f0e0 */
-extern refimport_t *ri;             /* 0x195eee0 */
-extern vidConfig_t *vidConfig;      /* 0x195eeec */
-extern r_global_permanent_t *rgp;   /* 0x195eebc */
-extern int **r_gammaSetting;        /* 0x195f17c */
+extern DxGlobals *dx;               /* imp_dx */
+extern volatile int *dxIter;        /* imp_alwaysfails */
+extern refimport_t *ri;             /* imp_ri */
+extern vidConfig_t *vidConfig;      /* imp_vidConfig */
+extern r_global_permanent_t *rgp;   /* imp_rgp */
+extern int **r_gammaSetting;        /* imp_r_overbrightBits */
 
 void R_BeginCubemapShot(const int pixelWidthHeight, const int pixelBorder);
 static Bool R_GetFrontBufferData(int width, int height, int bytesPerPixel, byte *buffer);

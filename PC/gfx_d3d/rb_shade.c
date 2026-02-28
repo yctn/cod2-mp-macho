@@ -12,10 +12,10 @@
  *   #include "PC/gfx_d3d/rb_shade.h"
  */
 
-static const float lightGridLookupMatrix[4][4]; /* 0x2f2c60 */
-static vec4_t debugShaderConsts[5]; /* 0x2f2c00 */
-static const GfxStateOverride overrideEnableRenormalize; /* 0x2f2be0 */
-static const DWORD s_fvfForVertDeclType[4]; /* 0x2f2c50 */
+static const float lightGridLookupMatrix[4][4]; /* lightGridLookupMatrix */
+static vec4_t debugShaderConsts[5]; /* debugShaderConsts */
+static const GfxStateOverride overrideEnableRenormalize; /* overrideEnableRenormalize */
+static const DWORD s_fvfForVertDeclType[4]; /* s_fvfForVertDeclType */
 
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
 int RB_SetIndexData(const r_index_t *indices, int indexCount);
@@ -32,7 +32,7 @@ void RB_EndSurface(void);
 /* line 1587 */
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex)
 {
-    char *tess = *(char **)0x195f160;
+    char *tess = *(char **)imp_tess;
     *(int *)(tess + 0x5a7cc) = 0;
     *(int *)(tess + 0x5a7b8) = 0;
     *(int *)(tess + 0x5a7d0) = 0;
@@ -58,7 +58,7 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
         /* { scope 1 */
         "movl 0xc(%ebp), %edi\n" /* line 146 | indexCount, indexDataSize */
         "addl %edi, %edi\n" /* indexDataSize */
-        "movl 0x195eed0, %esi\n" /* line 149 | lockFlags */
+        "movl imp_dx, %esi\n" /* line 149 | lockFlags */
         "movl 0x2d8c(%esi), %edx\n" /* lockFlags */
         "movl %edi, %eax\n" /* indexDataSize */
         "addl (%edx), %eax\n"
@@ -123,7 +123,7 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
         "movl -0x1c(%ebp), %eax\n" /* bufferData */
         "movl %eax, (%esp)\n"
         "calll Com_Memcpy\n"
-        "movl 0x195f0e0, %esi\n" /* lockFlags */
+        "movl imp_alwaysfails, %esi\n" /* lockFlags */
         ".Lff6e6a_000f6f3c:\n"
         "movl (%ebx), %eax\n" /* line 197 | dxIb */
         "movl %ebx, (%esp)\n" /* dxIb */
@@ -131,13 +131,13 @@ int RB_SetIndexData(const r_index_t *indices, int indexCount)
         "movl (%esi), %eax\n" /* lockFlags */
         "testl %eax, %eax\n"
         "jne .Lff6e6a_000f6f3c\n"
-        "movl 0x195f138, %eax\n" /* line 212 */
+        "movl imp_dxState, %eax\n" /* line 212 */
         "cmpl 0x20cc(%eax), %ebx\n" /* dxIb */
         "je .Lff6e6a_000f6f5f\n"
         "movl %ebx, (%esp)\n" /* line 213 | dxIb */
         "calll RB_ChangeIndices\n"
         ".Lff6e6a_000f6f5f:\n"
-        "movl 0x195eed0, %eax\n" /* line 201 */
+        "movl imp_dx, %eax\n" /* line 201 */
         "movl 0x2d8c(%eax), %eax\n"
         "addl %edi, (%eax)\n" /* indexDataSize */
         /* } scope */
@@ -167,7 +167,7 @@ void RB_GetTextureFromCode(void)
         "movl %ecx, %edi\n" /* samplerState */
         "cmpl $0x17, %eax\n" /* line 527 */
         "ja .Lff6f78_000f6f93\n"
-        "jmpl *0x2f2ca0(, %eax, 4)\n"
+        "jmpl *lightGridLookupMatrix+64(, %eax, 4)\n"
         ".Lff6f78_000f6f93:\n"
         "movb $0, (%ecx)\n" /* line 659 */
         "movl $0, (%edx)\n" /* line 660 */
@@ -178,27 +178,27 @@ void RB_GetTextureFromCode(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        "movl 0x195eebc, %eax\n" /* line 530 */
+        "movl imp_rgp, %eax\n" /* line 530 */
         "movl 0x100c(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $1, (%ecx)\n" /* line 531 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eebc, %eax\n" /* line 535 */
+        "movl imp_rgp, %eax\n" /* line 535 */
         "movl 0x1008(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $1, (%ecx)\n" /* line 536 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eebc, %eax\n" /* line 540 */
+        "movl imp_rgp, %eax\n" /* line 540 */
         "movl 0x1010(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $1, (%ecx)\n" /* line 541 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eebc, %eax\n" /* line 545 */
+        "movl imp_rgp, %eax\n" /* line 545 */
         "movl 0x1014(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 546 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eebc, %ebx\n" /* line 550 | codeTexture */
+        "movl imp_rgp, %ebx\n" /* line 550 | codeTexture */
         "movl 0x109c(%ebx), %eax\n" /* codeTexture */
         "testl %eax, %eax\n"
         "je .Lff6f78_000f725b\n"
@@ -211,22 +211,22 @@ void RB_GetTextureFromCode(void)
         "movl %eax, (%esi)\n" /* image */
         "movb $0x72, (%edi)\n" /* line 553 | samplerState */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eebc, %eax\n" /* line 558 */
+        "movl imp_rgp, %eax\n" /* line 558 */
         "movl 0x1008(%eax, %ebx, 4), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 559 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eebc, %eax\n" /* line 563 */
+        "movl imp_rgp, %eax\n" /* line 563 */
         "movl 0x1018(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 564 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195f160, %eax\n" /* line 572 */
+        "movl imp_tess, %eax\n" /* line 572 */
         "cmpl $0x1f, 0x5a7c4(%eax)\n"
         "je .Lff6f78_000f729d\n"
         "movl %eax, %edx\n"
         ".Lff6f78_000f7063:\n"
-        "movl 0x195eebc, %ecx\n" /* line 582 */
+        "movl imp_rgp, %ecx\n" /* line 582 */
         "movl 0x5a7c4(%edx), %eax\n"
         "shll $4, %eax\n"
         "leal (%eax, %ebx, 4), %eax\n"
@@ -235,7 +235,7 @@ void RB_GetTextureFromCode(void)
         "movl -0x20(%eax), %eax\n"
         "movl %eax, (%esi)\n" /* image */
         "movb $0x32, (%edi)\n" /* line 583 | samplerState */
-        "movl 0x195f220, %eax\n" /* line 452 */
+        "movl imp_r_lightMap, %eax\n" /* line 452 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -248,22 +248,22 @@ void RB_GetTextureFromCode(void)
         "movl %eax, (%esi)\n"
         "movb $1, (%edi)\n" /* line 465 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eed0, %eax\n" /* line 595 */
+        "movl imp_dx, %eax\n" /* line 595 */
         "movl 0x2c80(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 596 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195f0c8, %eax\n" /* line 609 */
+        "movl imp_backEnd, %eax\n" /* line 609 */
         "movl 0x2e8c(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 610 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195f0c8, %eax\n" /* line 614 */
+        "movl imp_backEnd, %eax\n" /* line 614 */
         "movl 0x2e84(%eax), %eax\n"
         ".Lff6f78_000f70f2:\n"
         "leal (%eax, %eax, 4), %eax\n" /* line 619 */
         "shll $2, %eax\n"
-        "addl 0x195eed0, %eax\n"
+        "addl imp_dx, %eax\n"
         "movl 0x2c30(%eax), %eax\n"
         "movl %eax, (%esi)\n" /* image */
         "movb $0x32, (%edi)\n" /* line 648 | samplerState */
@@ -274,10 +274,10 @@ void RB_GetTextureFromCode(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
-        "movl 0x195f0c8, %eax\n" /* line 619 */
+        "movl imp_backEnd, %eax\n" /* line 619 */
         "movl 0x2e88(%eax), %eax\n"
         "jmp .Lff6f78_000f70f2\n"
-        "movl 0x195eebc, %ebx\n" /* line 624 | codeTexture */
+        "movl imp_rgp, %ebx\n" /* line 624 | codeTexture */
         "movl 0x109c(%ebx), %eax\n" /* codeTexture */
         "testl %eax, %eax\n"
         "je .Lff6f78_000f7242\n"
@@ -294,7 +294,7 @@ void RB_GetTextureFromCode(void)
         "jmp .Lff6f78_000f6f9c\n"
         "shll $6, %eax\n" /* line 634 */
         "leal -0x484(%eax, %ebx, 4), %eax\n"
-        "addl 0x195f0c8, %eax\n"
+        "addl imp_backEnd, %eax\n"
         "movl 0x2ed0(%eax), %edx\n"
         "movl 0xc(%edx), %edx\n"
         "movl %edx, (%esi)\n" /* image */
@@ -302,7 +302,7 @@ void RB_GetTextureFromCode(void)
         "movzbl 0x10(%eax), %eax\n"
         "movb %al, (%ecx)\n"
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195eebc, %ebx\n" /* line 588 | codeTexture */
+        "movl imp_rgp, %ebx\n" /* line 588 | codeTexture */
         "movl 0x109c(%ebx), %eax\n" /* codeTexture */
         "testl %eax, %eax\n"
         "je .Lff6f78_000f7274\n"
@@ -318,50 +318,50 @@ void RB_GetTextureFromCode(void)
         "movl $0, (%edx)\n" /* line 640 */
         "movb $0x31, (%ecx)\n" /* line 641 */
         "jmp .Lff6f78_000f6f9c\n"
-        "movl 0x195f1fc, %eax\n" /* line 600 */
+        "movl imp_sc_enable, %eax\n" /* line 600 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lff6f78_000f722d\n"
-        "movl 0x195f0c8, %eax\n"
+        "movl imp_backEnd, %eax\n"
         "movl 0x440(%eax), %eax\n"
         "cmpl $2, (%eax)\n"
         "jg .Lff6f78_000f71ee\n"
         "testb $1, 5(%eax)\n"
         "je .Lff6f78_000f722d\n"
         ".Lff6f78_000f71ee:\n"
-        "movl 0x195eed0, %eax\n" /* line 602 */
+        "movl imp_dx, %eax\n" /* line 602 */
         "movl 0x2c6c(%eax), %eax\n"
         "movl %eax, (%esi)\n" /* image */
         "movb $0x32, (%edi)\n" /* line 648 | samplerState */
         "jmp .Lff6f78_000f7109\n"
-        "movl 0x195eebc, %eax\n" /* line 652 */
+        "movl imp_rgp, %eax\n" /* line 652 */
         "movl 0x10a0(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%edi)\n" /* line 648 | samplerState */
         "jmp .Lff6f78_000f7109\n"
-        "movl 0x195eebc, %eax\n" /* line 647 */
+        "movl imp_rgp, %eax\n" /* line 647 */
         "movl 0x10a4(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%edi)\n" /* line 648 | samplerState */
         "jmp .Lff6f78_000f7109\n"
         ".Lff6f78_000f722d:\n"
-        "movl 0x195eebc, %eax\n" /* line 604 */
+        "movl imp_rgp, %eax\n" /* line 604 */
         "movl 0x1008(%eax), %eax\n"
         "movl %eax, (%esi)\n" /* image */
         "movb $0x32, (%edi)\n" /* line 648 | samplerState */
         "jmp .Lff6f78_000f7109\n"
         ".Lff6f78_000f7242:\n"
-        "movl $0x226828, 4(%esp)\n" /* line 625 */
+        "movl $str_00226828, 4(%esp)\n" /* line 625 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lff6f78_000f713d\n"
         ".Lff6f78_000f725b:\n"
-        "movl $0x2266cc, 4(%esp)\n" /* line 551 */
+        "movl $str_002266cc, 4(%esp)\n" /* line 551 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lff6f78_000f700e\n"
         ".Lff6f78_000f7274:\n"
-        "movl $0x2267f4, 4(%esp)\n" /* line 589 */
+        "movl $str_002267f4, 4(%esp)\n" /* line 589 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lff6f78_000f71a7\n"
@@ -374,10 +374,10 @@ void RB_GetTextureFromCode(void)
         "movl 0x5a7bc(%eax), %eax\n" /* line 580 */
         "movl (%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x226700, 4(%esp)\n" /* "Material '%s' tried to use a lightmap but doesn't have one s" */
+        "movl $str_00226700, 4(%esp)\n" /* "Material '%s' tried to use a lightmap but doesn't have one s" */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
-        "movl 0x195f160, %edx\n"
+        "movl imp_tess, %edx\n"
         "jmp .Lff6f78_000f7063\n"
     );
 }
@@ -397,7 +397,7 @@ void RB_SetEntityHwLightsDx7(void)
         "movl $8, 0x10(%esp)\n" /* line 1487 */
         "leal -0x358(%ebp), %esi\n" /* lights */
         "movl %esi, 0xc(%esp)\n"
-        "movl 0x195f160, %edx\n"
+        "movl imp_tess, %edx\n"
         "movl 0x5a7bc(%edx), %edx\n"
         "movl %edx, 8(%esp)\n"
         "movss %xmm0, 4(%esp)\n" /* sunVisibility */
@@ -409,8 +409,8 @@ void RB_SetEntityHwLightsDx7(void)
         "movl $0, -0x35c(%ebp)\n" /* lightIndex */
         "xorl %ebx, %ebx\n"
         ".Lff72c8_000f731a:\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lff72c8_000f7326:\n"
         "movl 8(%edi), %eax\n" /* line 1495 | colorForDir */
         "movl (%eax), %edx\n" /* colorForDir */
@@ -435,11 +435,11 @@ void RB_SetEntityHwLightsDx7(void)
         /* { scope 1 */
         ".Lff72c8_000f7363:\n"
         "xorl %ebx, %ebx\n" /* line 1489 */
-        "movl 0x195eed0, %edi\n"
+        "movl imp_dx, %edi\n"
         "movl %edi, %edx\n"
         "jmp .Lff72c8_000f7375\n"
         ".Lff72c8_000f736f:\n"
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         ".Lff72c8_000f7375:\n"
         "movl 8(%edx), %eax\n" /* line 1491 | colorForDir */
         "movl (%eax), %edx\n" /* colorForDir */
@@ -447,7 +447,7 @@ void RB_SetEntityHwLightsDx7(void)
         "movl %ebx, 4(%esp)\n"
         "movl %eax, (%esp)\n" /* colorForDir */
         "calll *0xd4(%edx)\n"
-        "movl 0x195f0e0, %eax\n" /* colorForDir */
+        "movl imp_alwaysfails, %eax\n" /* colorForDir */
         "movl (%eax), %eax\n" /* colorForDir */
         "testl %eax, %eax\n" /* colorForDir */
         "jne .Lff72c8_000f736f\n"
@@ -458,7 +458,7 @@ void RB_SetEntityHwLightsDx7(void)
         "movl %ebx, 4(%esp)\n"
         "movl %eax, (%esp)\n" /* colorForDir */
         "calll *0xcc(%edx)\n"
-        "movl 0x195f0e0, %edx\n"
+        "movl imp_alwaysfails, %edx\n"
         "movl (%edx), %eax\n" /* colorForDir */
         "testl %eax, %eax\n" /* colorForDir */
         "jne .Lff72c8_000f739a\n"
@@ -491,10 +491,10 @@ void RB_CreateDynamicBuffers(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
-        "movl 0x195eee0, %esi\n" /* line 1799 */
+        "movl imp_ri, %esi\n" /* line 1799 */
         "movl $0x200000, (%esp)\n"
         "calll *0xc(%esi)\n"
-        "movl 0x195f160, %ebx\n"
+        "movl imp_tess, %ebx\n"
         "movl %eax, 0x5a7b0(%ebx)\n"
         "movl $0x200000, (%esp)\n" /* line 1800 */
         "calll *0xc(%esi)\n"
@@ -517,11 +517,11 @@ void RB_SetupLighting(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x20, %esp\n"
-        "movl 0x195eec0, %eax\n" /* line 1503 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1503 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lff7428_000f75ab\n"
-        "movl 0x195f0c8, %esi\n" /* line 1525 */
+        "movl imp_backEnd, %esi\n" /* line 1525 */
         "movl 0x444(%esi), %edx\n"
         "testl %edx, %edx\n"
         "je .Lff7428_000f7607\n"
@@ -629,12 +629,12 @@ void RB_SetupLighting(void)
         "popl %ebp\n"
         "retl\n"
         ".Lff7428_000f75ab:\n"
-        "movl 0x195f160, %eax\n" /* line 1505 */
+        "movl imp_tess, %eax\n" /* line 1505 */
         "movl 0x5a7c0(%eax), %eax\n"
         "subl $0xf, %eax\n"
         "cmpl $2, %eax\n"
         "jbe .Lff7428_000f75a4\n"
-        "movl 0x195f0c8, %ebx\n" /* line 1508 */
+        "movl imp_backEnd, %ebx\n" /* line 1508 */
         "movl 0x444(%ebx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lff7428_000f76a3\n"
@@ -670,7 +670,7 @@ void RB_SetupLighting(void)
         "movl 0x440(%esi), %eax\n" /* line 1547 */
         "cmpl $2, (%eax)\n"
         "jne .Lff7428_000f75a4\n"
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x109c(%eax), %eax\n"
         "leal 0x110(%eax), %edx\n"
         "leal 0x190(%esi), %ecx\n" /* line 284 | to */
@@ -722,7 +722,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "movl 0x14(%ebp), %eax\n" /* line 224 | stride */
         "imull 0x10(%ebp), %eax\n" /* vertexCount */
         "movl %eax, -0xd8(%ebp)\n" /* totalSize */
-        "movl 0x195eed0, %eax\n" /* line 245 | vb */
+        "movl imp_dx, %eax\n" /* line 245 | vb */
         "movl 0x2db4(%eax), %eax\n" /* vb */
         /* { scope 2: y, color, tx, ty, ... */
         "movl 8(%eax), %edx\n" /* line 1005 */
@@ -763,7 +763,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "subl $0x14, %eax\n"
         "cmpl $0x30, %eax\n"
         "ja .Lff76c0_000f7795\n"
-        "jmpl *0x2f2d00(, %eax, 4)\n"
+        "jmpl *lightGridLookupMatrix+160(, %eax, 4)\n"
         "movl -0xd8(%ebp), %edx\n" /* line 324 | totalSize */
         "movl %edx, 8(%esp)\n"
         "movl 0xc(%ebp), %ebx\n" /* data, x */
@@ -776,18 +776,18 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "movl (%edx), %eax\n"
         "movl %edx, (%esp)\n"
         "calll *0x30(%eax)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff76c0_000f7795\n"
-        "movl 0x195eed0, %ebx\n" /* line 442 | nx */
+        "movl imp_dx, %ebx\n" /* line 442 | nx */
         "movl 0x2db4(%ebx), %eax\n" /* nx */
         "movl (%eax), %ecx\n" /* vertexOffset */
         /* { scope 2: y, color, tx, ty, ... */
         "movl 8(%ebp), %esi\n" /* line 220 | streamIndex */
         "leal (%esi, %esi, 2), %eax\n"
         "shll $2, %eax\n"
-        "addl 0x195f138, %eax\n"
+        "addl imp_dxState, %eax\n"
         "leal 0x20d0(%eax), %edx\n"
         "movl -0xdc(%ebp), %esi\n" /* dxVb */
         "cmpl 0x20d0(%eax), %esi\n"
@@ -801,7 +801,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "movl 8(%ebp), %esi\n" /* streamIndex */
         "movl %esi, (%esp)\n"
         "calll RB_ChangeStreamSource\n"
-        "movl 0x195eed0, %ebx\n"
+        "movl imp_dx, %ebx\n"
         /* } scope */
         ".Lff76c0_000f7801:\n"
         "movl 0x2db4(%ebx), %eax\n" /* line 443 | nx */
@@ -1217,7 +1217,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movl %eax, -0x138(%ebp)\n"
         "movl %edx, -0x13c(%ebp)\n"
         /* { scope 1: OGLWorld, OGLView, OGLWorldView, OGLProjection, ... */
-        "movl 0x195f0c8, %ebx\n" /* line 719 */
+        "movl imp_backEnd, %ebx\n" /* line 719 */
         "movl 0x2e80(%ebx), %edx\n"
         "movl %edx, %ecx\n" /* rowCount */
         "shll $4, %ecx\n" /* rowCount */
@@ -1233,7 +1233,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "subl $0xbc, %eax\n"
         "cmpl $0x30, %eax\n"
         "ja .Lff7dca_000f7e26\n"
-        "jmpl *0x2f2de0(, %eax, 4)\n"
+        "jmpl *lightGridLookupMatrix+384(, %eax, 4)\n"
         ".Lff7dca_000f7e26:\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -1420,7 +1420,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movl %edx, -0x70(%ebp)\n"
         "movl 0x3c(%eax), %eax\n"
         "movl %eax, -0x6c(%ebp)\n"
-        "movss 0x2f2dd0, %xmm1\n" /* line 782 */
+        "movss lightGridLookupMatrix+368, %xmm1\n" /* line 782 */
         "movss -0xa0(%ebp), %xmm0\n"
         "xorps %xmm1, %xmm0\n"
         "movss %xmm0, -0xa0(%ebp)\n"
@@ -1507,7 +1507,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movl $0xd0, %eax\n"
         ".Lff7dca_000f8298:\n"
         "calll RB_GetCodeMatrix\n" /* line 815 */
-        "movss 0x2ed5d0, %xmm1\n" /* line 816 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 816 | 1.0f, scale */
         "movl -0x134(%ebp), %edx\n" /* activeMatrices */
         "divss (%edx), %xmm1\n" /* scale */
         /* { scope 2 */
@@ -1589,10 +1589,10 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "cmpb $0, 0x100(%eax)\n" /* line 852 */
         "jne .Lff7dca_000f7e42\n"
         /* { scope 2 */
-        "movl 0x195f20c, %eax\n" /* line 932 */
+        "movl imp_r_outdoorAwayBias, %eax\n" /* line 932 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* awayBias */
-        "movl 0x195f214, %eax\n" /* line 933 */
+        "movl imp_r_outdoorDownBias, %eax\n" /* line 933 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x12c(%ebp)\n" /* downBias */
@@ -1622,7 +1622,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movss %xmm0, -0x60(%ebp)\n"
         "leal -0x28(%ebp), %eax\n" /* line 942 | viewport */
         "movl %eax, 8(%esp)\n"
-        "movl 0x195eebc, %ebx\n" /* awayBias */
+        "movl imp_rgp, %ebx\n" /* awayBias */
         "movl 0x109c(%ebx), %eax\n" /* awayBias */
         "addl $0x1c0, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -1692,7 +1692,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "xorl %edx, %edx\n"
         "movl $0xbc, %eax\n"
         "calll RB_GetCodeMatrix\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 806 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 806 | 1.0f, scale */
         "movl -0x134(%ebp), %ecx\n" /* activeMatrices, rowCount */
         "divss (%ecx), %xmm1\n" /* rowCount, scale */
         /* { scope 2 */
@@ -1776,7 +1776,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %edx, -0xdc(%ebp)\n"
         "movl %ecx, -0xe0(%ebp)\n"
         /* { scope 1: pass, stateBits */
-        "movl 0x195f160, %esi\n" /* line 1444 | constantIndex */
+        "movl imp_tess, %esi\n" /* line 1444 | constantIndex */
         "movl 0x5a7bc(%esi), %edx\n" /* constantIndex */
         "movl 0x38(%edx), %edx\n"
         "movl 4(%edx, %eax, 4), %edx\n"
@@ -1784,14 +1784,14 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "cmpl $0x21, %eax\n" /* line 1450 | techType */
         "je .Lff8708_000f9b4b\n"
         ".Lff8708_000f873f:\n"
-        "movl 0x195f210, %eax\n" /* line 1457 | techType */
+        "movl imp_g_special, %eax\n" /* line 1457 | techType */
         "cmpl $3, -0xdc(%ebp)\n"
         "sete (%eax)\n" /* techType */
         "cmpw $0, 6(%edx)\n" /* line 1459 */
         "je .Lff8708_000f9175\n"
         "movl %edx, -0x4c(%ebp)\n"
         "movl $0, -0xd8(%ebp)\n" /* passIndex */
-        "movl 0x195eec0, %eax\n" /* line 1429 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1429 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lff8708_000f8d5f\n"
@@ -1902,13 +1902,13 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "cmpl $3, %ebx\n" /* line 1283 | codeConst */
         "jne .Lff8708_000f889a\n"
         ".Lff8708_000f88b3:\n"
-        "movl 0x195f0c8, %eax\n" /* line 1290 */
+        "movl imp_backEnd, %eax\n" /* line 1290 */
         "cmpb $0, 0x4bd(%eax)\n"
         "je .Lff8708_000f88c5\n"
         "andl $0xffffffcf, -0x24(%ebp)\n" /* line 1291 */
         ".Lff8708_000f88c5:\n"
         "movl -0x28(%ebp), %eax\n" /* line 155 | stateBits */
-        "movl 0x195f138, %esi\n"
+        "movl imp_dxState, %esi\n"
         "cmpl 0x2000(%esi), %eax\n"
         "je .Lff8708_000f88e7\n"
         "movl %eax, (%esp)\n" /* line 158 */
@@ -1932,8 +1932,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         "cmpl 0x2138(%esi), %ebx\n" /* line 227 */
         "je .Lff8708_000f97d0\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lff8708_000f8933:\n"
         "movl 8(%edi), %eax\n" /* line 231 */
         "movl (%eax), %edx\n"
@@ -1943,7 +1943,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl (%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff8708_000f8933\n"
-        "movl 0x195f138, %edx\n" /* line 232 */
+        "movl imp_dxState, %edx\n" /* line 232 */
         "movl %ebx, 0x2138(%edx)\n"
         /* } scope */
         ".Lff8708_000f8957:\n"
@@ -1953,8 +1953,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         "cmpl 0x213c(%edx), %ebx\n" /* line 240 */
         "je .Lff8708_000f899b\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lff8708_000f8977:\n"
         "movl 8(%edi), %eax\n" /* line 244 */
         "movl (%eax), %edx\n"
@@ -1964,7 +1964,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl (%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff8708_000f8977\n"
-        "movl 0x195f138, %edx\n" /* line 245 */
+        "movl imp_dxState, %edx\n" /* line 245 */
         "movl %ebx, 0x213c(%edx)\n"
         /* } scope */
         ".Lff8708_000f899b:\n"
@@ -1975,8 +1975,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         "cmpl 0x2140(%edx), %ebx\n" /* line 256 */
         "je .Lff8708_000f89ef\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n"
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n"
         ".Lff8708_000f89c2:\n"
         "movl 8(%edi), %eax\n" /* line 260 */
         "movl (%eax), %edx\n"
@@ -1986,7 +1986,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl (%esi), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff8708_000f89c2\n"
-        "movl 0x195f138, %eax\n" /* line 261 */
+        "movl imp_dxState, %eax\n" /* line 261 */
         "movl %ebx, 0x2140(%eax)\n"
         "movl $0, 0x2144(%eax)\n" /* line 262 */
         /* } scope */
@@ -2002,9 +2002,9 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "testl %ebx, %ebx\n" /* line 1131 | textureIndex */
         "jle .Lff8708_000f8c18\n"
         "movl $0, -0xb0(%ebp)\n" /* routingIndex */
-        "movl 0x195eed0, %edx\n"
+        "movl imp_dx, %edx\n"
         "movl %edx, -0xf0(%ebp)\n"
-        "movl 0x195f0e0, %ecx\n"
+        "movl imp_alwaysfails, %ecx\n"
         "movl %ecx, -0xf4(%ebp)\n"
         "movl %edx, -0xf8(%ebp)\n"
         "movl %ecx, -0xfc(%ebp)\n"
@@ -2016,7 +2016,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %ecx, -0xa4(%ebp)\n" /* destIndex */
         /* { scope 6 */
         "shll $4, %ecx\n" /* line 996 */
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "addl %eax, %ecx\n"
         "movl %ecx, -0x174(%ebp)\n"
         "movl $0x10, -0xe8(%ebp)\n"
@@ -2053,7 +2053,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, -0x98(%ebp)\n" /* literalName */
         /* { scope 6 */
         /* { scope 7 */
-        "movl 0x195f160, %edx\n" /* line 971 */
+        "movl imp_tess, %edx\n" /* line 971 */
         "movl 0x5a7bc(%edx), %eax\n"
         "movzwl 0x36(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -2087,7 +2087,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %ecx, -0x94(%ebp)\n" /* destIndex */
         /* { scope 6 */
         /* { scope 7 */
-        "movl 0x195f200, %eax\n" /* line 991 */
+        "movl imp_r_logFile, %eax\n" /* line 991 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2105,7 +2105,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "shll $4, %ebx\n" /* textureIndex */
         "movl -0x94(%ebp), %eax\n" /* destIndex */
         "shll $4, %eax\n"
-        "movl 0x195f138, %edx\n"
+        "movl imp_dxState, %edx\n"
         "addl %edx, %eax\n"
         "movl %eax, -0x90(%ebp)\n"
         "cld\n"
@@ -2170,12 +2170,12 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movzwl (%ebx), %eax\n" /* codeConst */
         "cmpl $4, %eax\n"
         "ja .Lff8708_000f9357\n"
-        "jmpl *0x2f2ea4(, %eax, 4)\n"
+        "jmpl *lightGridLookupMatrix+580(, %eax, 4)\n"
         /* } scope */
         /* } scope */
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         ".Lff8708_000f8c62:\n"
-        "movl 0x195f160, %eax\n" /* line 1252 */
+        "movl imp_tess, %eax\n" /* line 1252 */
         "movl 0x5a7bc(%eax), %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, 0x10(%esp)\n"
@@ -2184,7 +2184,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl -0x44(%ebp), %edx\n"
         "movl (%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x226858, 4(%esp)\n" /* "No rule in stateMap '%s' rule set %i matched the current mat" */
+        "movl $str_00226858, 4(%esp)\n" /* "No rule in stateMap '%s' rule set %i matched the current mat" */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
         "addl $1, -0xbc(%ebp)\n" /* line 1249 | ruleSetIndex */
@@ -2211,16 +2211,16 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "je .Lff8708_000f910d\n"
         "movl $0, (%esp)\n" /* line 1466 */
         "calll RB_SetViewMatrixForWDx7\n"
-        "movl 0x195f0c8, %eax\n" /* line 75 */
+        "movl imp_backEnd, %eax\n" /* line 75 */
         "cmpb $0, 0x4bd(%eax)\n"
         "jne .Lff8708_000f9bf2\n"
         "movl -0xe0(%ebp), %eax\n" /* line 77 */
         "movl 8(%eax), %ebx\n"
-        "movl 0x195f228, %eax\n"
+        "movl imp_r_drawPrimFloor, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl 8(%eax), %ebx\n"
         "jl .Lff8708_000f8d1e\n"
-        "movl 0x195f204, %eax\n" /* line 79 */
+        "movl imp_r_drawPrimCap, %eax\n" /* line 79 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2238,8 +2238,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "cmpl %eax, -0xd8(%ebp)\n" /* techType, passIndex */
         "jge .Lff8708_000f9170\n"
         ".Lff8708_000f8d48:\n"
-        "movl 0x195f160, %esi\n" /* constantIndex */
-        "movl 0x195eec0, %eax\n" /* line 1429 */
+        "movl imp_tess, %esi\n" /* constantIndex */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1429 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jne .Lff8708_000f8777\n"
@@ -2343,13 +2343,13 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "cmpl $3, %ebx\n" /* line 1375 | decl */
         "jne .Lff8708_000f8e69\n"
         ".Lff8708_000f8e82:\n"
-        "movl 0x195f0c8, %eax\n" /* line 1381 */
+        "movl imp_backEnd, %eax\n" /* line 1381 */
         "cmpb $0, 0x4bd(%eax)\n"
         "je .Lff8708_000f8e94\n"
         "andl $0xffffffcf, -0x24(%ebp)\n" /* line 1382 */
         ".Lff8708_000f8e94:\n"
         "movl -0x28(%ebp), %eax\n" /* line 155 | stateBits */
-        "movl 0x195f138, %ebx\n"
+        "movl imp_dxState, %ebx\n"
         "cmpl 0x2000(%ebx), %eax\n"
         "je .Lff8708_000f8eb6\n"
         "movl %eax, (%esp)\n" /* line 158 */
@@ -2377,8 +2377,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl -0x48(%ebp), %ebx\n" /* decl */
         "cmpb 4(%ebx), %al\n" /* decl */
         "je .Lff8708_000f8f45\n"
-        "movl 0x195eed0, %esi\n" /* constantIndex */
-        "movl 0x195f0e0, %ebx\n" /* decl */
+        "movl imp_dx, %esi\n" /* constantIndex */
+        "movl imp_alwaysfails, %ebx\n" /* decl */
         ".Lff8708_000f8f05:\n"
         "movl 8(%esi), %eax\n" /* line 1397 | constantIndex */
         "movl (%eax), %ecx\n"
@@ -2393,7 +2393,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl (%ebx), %edi\n" /* decl */
         "testl %edi, %edi\n"
         "jne .Lff8708_000f8f05\n"
-        "movl 0x195f138, %edx\n" /* line 1398 */
+        "movl imp_dxState, %edx\n" /* line 1398 */
         "movl -0x48(%ebp), %ecx\n"
         "movzbl 4(%ecx), %eax\n"
         "movb %al, 0x2094(%edx)\n"
@@ -2405,17 +2405,17 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "testl %ecx, %ecx\n"
         "je .Lff8708_000f9805\n"
         ".Lff8708_000f8f60:\n"
-        "movl 0x195eed0, %eax\n" /* line 275 */
+        "movl imp_dx, %eax\n" /* line 275 */
         "movl 8(%eax), %eax\n"
         "movl (%eax), %edx\n" /* to */
         "movl %ebx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x164(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff8708_000f8f60\n"
-        "movl 0x195f138, %eax\n" /* line 276 */
+        "movl imp_dxState, %eax\n" /* line 276 */
         "movl %ebx, 0x2144(%eax)\n"
         "movl $0, 0x2140(%eax)\n" /* line 277 */
         /* } scope */
@@ -2430,7 +2430,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl -0x48(%ebp), %eax\n"
         "movl %eax, -0x5c(%ebp)\n"
         "movl $0, -0xc4(%ebp)\n" /* samplerIndex */
-        "movl 0x195f138, %edx\n"
+        "movl imp_dxState, %edx\n"
         "movl %edx, -0x58(%ebp)\n"
         "movl %eax, -0x100(%ebp)\n"
         "movl %eax, %ecx\n"
@@ -2442,7 +2442,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, -0xc8(%ebp)\n" /* textureName */
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         /* { scope 5: destIndex, literalName, destIndex, rule, ... */
-        "movl 0x195f160, %eax\n" /* line 671 */
+        "movl imp_tess, %eax\n" /* line 671 */
         "movl 0x5a7bc(%eax), %eax\n"
         "movzwl 0x34(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -2504,7 +2504,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         ".Lff8708_000f90a9:\n"
         "movl -0x48(%ebp), %ebx\n" /* fvf */
         "xorl %edi, %edi\n"
-        "movl 0x195f138, %esi\n" /* constantIndex */
+        "movl imp_dxState, %esi\n" /* constantIndex */
         ".Lff8708_000f90b4:\n"
         "movl 0x1c(%ebx), %eax\n" /* line 1419 | fvf, texStageBits */
         /* { scope 3: ruleSetIndex, routingCount, routingCount, routingData, ... */
@@ -2533,21 +2533,21 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "jne .Lff8708_000f90b4\n"
         /* } scope */
         ".Lff8708_000f90fc:\n"
-        "movl 0x195eec0, %eax\n" /* line 1464 | techType */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1464 | techType */
         "movl (%eax), %eax\n" /* techType */
         "cmpl $2, 8(%eax)\n" /* techType */
         "je .Lff8708_000f8cc4\n"
         ".Lff8708_000f910d:\n"
-        "movl 0x195f0c8, %eax\n" /* line 75 */
+        "movl imp_backEnd, %eax\n" /* line 75 */
         "cmpb $0, 0x4bd(%eax)\n"
         "jne .Lff8708_000f97c2\n"
         "movl -0xe0(%ebp), %eax\n" /* line 77 */
         "movl 8(%eax), %ebx\n"
-        "movl 0x195f228, %eax\n"
+        "movl imp_r_drawPrimFloor, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl 8(%eax), %ebx\n"
         "jl .Lff8708_000f8d2a\n"
-        "movl 0x195f204, %eax\n" /* line 79 */
+        "movl imp_r_drawPrimCap, %eax\n" /* line 79 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2561,7 +2561,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "cmpl %eax, -0xd8(%ebp)\n" /* techType, passIndex */
         "jl .Lff8708_000f8d48\n"
         ".Lff8708_000f9170:\n"
-        "movl 0x195f210, %eax\n" /* techType */
+        "movl imp_g_special, %eax\n" /* techType */
         ".Lff8708_000f9175:\n"
         "movb $0, (%eax)\n" /* line 1474 | techType */
         /* } scope */
@@ -2576,7 +2576,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 3: ruleSetIndex, routingCount, routingCount, routingData, ... */
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         ".Lff8708_000f9183:\n"
-        "movl 0x195f160, %eax\n" /* line 1252 */
+        "movl imp_tess, %eax\n" /* line 1252 */
         "movl 0x5a7bc(%eax), %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, 0x10(%esp)\n"
@@ -2585,7 +2585,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl -0xd4(%ebp), %edx\n" /* stateMap */
         "movl (%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x226858, 4(%esp)\n" /* "No rule in stateMap '%s' rule set %i matched the current mat" */
+        "movl $str_00226858, 4(%esp)\n" /* "No rule in stateMap '%s' rule set %i matched the current mat" */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
         "addl $1, -0xd0(%ebp)\n" /* line 1249 | ruleSetIndex */
@@ -2623,7 +2623,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movzwl %ax, %eax\n" /* line 292 */
         "shll $4, %eax\n"
         "subl $0x800, %eax\n"
-        "movl 0x195f0c8, %ecx\n"
+        "movl imp_backEnd, %ecx\n"
         "addl %ecx, %eax\n"
         "movl %eax, -0xa8(%ebp)\n" /* data */
         "movzbl 3(%ebx), %ebx\n" /* line 956 | textureIndex */
@@ -2635,7 +2635,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %ebx, -0xa0(%ebp)\n" /* codeConst, destIndex */
         /* { scope 6 */
         /* { scope 7 */
-        "movl 0x195f200, %eax\n" /* line 991 */
+        "movl imp_r_logFile, %eax\n" /* line 991 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2653,7 +2653,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "shll $4, %ebx\n" /* textureIndex */
         "movl -0xa0(%ebp), %eax\n" /* destIndex */
         "shll $4, %eax\n"
-        "movl 0x195f138, %edx\n"
+        "movl imp_dxState, %edx\n"
         "addl %edx, %eax\n"
         "movl %eax, -0x9c(%ebp)\n"
         "cld\n"
@@ -2705,7 +2705,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %edx, -0x78(%ebp)\n" /* destIndex */
         /* { scope 6 */
         "shll $4, %edx\n" /* line 1065 */
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "leal 0x1000(%edx, %eax), %edx\n"
         "movl %edx, -0x174(%ebp)\n"
         "movl $0x10, -0xec(%ebp)\n"
@@ -2738,7 +2738,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* } scope */
         /* } scope */
         ".Lff8708_000f9385:\n"
-        "movl 0x195eed0, %eax\n" /* line 98 */
+        "movl imp_dx, %eax\n" /* line 98 */
         "movl 8(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl %ebx, 0x18(%esp)\n"
@@ -2754,7 +2754,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl $4, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *0x148(%ecx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff8708_000f937c\n"
@@ -2772,7 +2772,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "ja .Lff8708_000f9a2a\n"
         "movzwl %ax, %eax\n" /* line 292 */
         "shll $4, %eax\n"
-        "movl 0x195f0c8, %edx\n"
+        "movl imp_backEnd, %edx\n"
         "leal -0x800(%eax, %edx), %eax\n"
         "movl %eax, -0x7c(%ebp)\n" /* data */
         "movzbl 3(%ebx), %ebx\n" /* line 956 | textureIndex */
@@ -2784,7 +2784,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, -0x74(%ebp)\n" /* destIndex */
         /* { scope 6 */
         /* { scope 7 */
-        "movl 0x195f200, %eax\n" /* line 1060 */
+        "movl imp_r_logFile, %eax\n" /* line 1060 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -2802,7 +2802,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "shll $4, %ebx\n" /* textureIndex */
         "movl -0x74(%ebp), %edx\n" /* destIndex */
         "shll $4, %edx\n"
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "leal 0x1000(%edx, %eax), %edx\n"
         "movl %edx, -0x70(%ebp)\n"
         "cld\n"
@@ -2825,8 +2825,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl -0x70(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll memcpy\n"
-        "movl 0x195eed0, %esi\n" /* constantIndex */
-        "movl 0x195f0e0, %ebx\n" /* textureIndex */
+        "movl imp_dx, %esi\n" /* constantIndex */
+        "movl imp_alwaysfails, %ebx\n" /* textureIndex */
         ".Lff8708_000f949d:\n"
         "movl 8(%esi), %eax\n" /* line 1068 | constantIndex */
         "movl (%eax), %edx\n"
@@ -2862,7 +2862,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, -0x60(%ebp)\n" /* textureName */
         /* { scope 6 */
         /* { scope 7 */
-        "movl 0x195f160, %eax\n" /* line 671 */
+        "movl imp_tess, %eax\n" /* line 671 */
         "movl 0x5a7bc(%eax), %eax\n"
         "movzwl 0x34(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -2912,7 +2912,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %ebx, -0x6c(%ebp)\n" /* codeConst, literalName */
         /* { scope 6 */
         /* { scope 7 */
-        "movl 0x195f160, %esi\n" /* line 971 | constantIndex */
+        "movl imp_tess, %esi\n" /* line 971 | constantIndex */
         "movl 0x5a7bc(%esi), %eax\n" /* constantIndex */
         "movzwl 0x36(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -2945,7 +2945,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, -0x68(%ebp)\n" /* destIndex */
         /* { scope 6 */
         /* { scope 7 */
-        "movl 0x195f200, %eax\n" /* line 1060 */
+        "movl imp_r_logFile, %eax\n" /* line 1060 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -2963,7 +2963,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "shll $4, %ebx\n" /* textureIndex */
         "movl -0x68(%ebp), %edx\n" /* destIndex */
         "shll $4, %edx\n"
-        "movl 0x195f138, %eax\n"
+        "movl imp_dxState, %eax\n"
         "leal 0x1000(%edx, %eax), %edx\n"
         "movl %edx, -0x64(%ebp)\n"
         "cld\n"
@@ -2986,8 +2986,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl -0x64(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll memcpy\n"
-        "movl 0x195eed0, %esi\n" /* constantIndex */
-        "movl 0x195f0e0, %ebx\n" /* textureIndex */
+        "movl imp_dx, %esi\n" /* constantIndex */
+        "movl imp_alwaysfails, %ebx\n" /* textureIndex */
         ".Lff8708_000f966f:\n"
         "movl 8(%esi), %eax\n" /* line 1068 | constantIndex */
         "movl (%eax), %edx\n"
@@ -3021,7 +3021,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl 0xc(%ebx), %eax\n" /* textureIndex */
         "movl %eax, 0xc(%edx)\n"
         ".Lff8708_000f96b9:\n"
-        "movl 0x195eed0, %ecx\n" /* line 999 */
+        "movl imp_dx, %ecx\n" /* line 999 */
         "movl 8(%ecx), %eax\n"
         "movl (%eax), %edx\n"
         "movl $1, 0xc(%esp)\n"
@@ -3030,7 +3030,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %ecx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll *0x178(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff8708_000f96b9\n"
@@ -3157,15 +3157,15 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "je .Lff8708_000f8fa4\n"
         /* { scope 3: ruleSetIndex, routingCount, routingCount, routingData, ... */
         ".Lff8708_000f981e:\n"
-        "movl 0x195f0c8, %eax\n" /* line 1346 */
+        "movl imp_backEnd, %eax\n" /* line 1346 */
         "movss 0x3bc(%eax), %xmm0\n"
-        "movl 0x195f208, %eax\n" /* line 1348 */
+        "movl imp_r_objectiveColorDx7Min, %eax\n" /* line 1348 */
         "movl (%eax), %eax\n"
         "leal 8(%eax), %edx\n" /* from */
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         "movzbl 8(%eax), %eax\n" /* line 705 */
         "cvtsi2ssl %eax, %xmm3\n"
-        "movss 0x2ed5cc, %xmm5\n" /* 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm5\n" /* 0.003921568859368563f */
         "mulss %xmm5, %xmm3\n"
         "movzbl 1(%edx), %eax\n" /* line 706 */
         "cvtsi2ssl %eax, %xmm4\n"
@@ -3177,7 +3177,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "cvtsi2ssl %eax, %xmm1\n"
         "mulss %xmm5, %xmm1\n"
         /* } scope */
-        "movl 0x195f218, %eax\n" /* line 1349 */
+        "movl imp_r_objectiveColorDx7Max, %eax\n" /* line 1349 */
         "movl (%eax), %ebx\n" /* decl */
         "leal 8(%ebx), %esi\n" /* decl, constantIndex */
         "movss %xmm0, (%esp)\n" /* line 1347 */
@@ -3192,14 +3192,14 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movss -0x118(%ebp), %xmm0\n"
         "subss -0xe4(%ebp), %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c98, %xmm0\n" /* 6.283185307179586 */
+        "mulsd lit8_00307c98, %xmm0\n" /* 6.283185307179586 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll sinf\n"
         "fstps -0x16c(%ebp)\n"
         "movss -0x16c(%ebp), %xmm2\n"
-        "mulss 0x2ed63c, %xmm2\n" /* -0.5f */
-        "addss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "mulss lit4_002ed63c, %xmm2\n" /* -0.5f */
+        "addss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "movzbl 3(%esi), %eax\n" /* line 1354 | constantIndex */
         "cvtsi2ssl %eax, %xmm0\n"
         "movss -0x158(%ebp), %xmm5\n"
@@ -3208,7 +3208,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "subss %xmm1, %xmm0\n"
         "mulss %xmm2, %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "movss 0x2ed5d4, %xmm7\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm7\n" /* 255.0f */
         "mulss %xmm7, %xmm1\n"
         "fnstcw -0x2a(%ebp)\n"
         "movzwl -0x2a(%ebp), %eax\n"
@@ -3298,8 +3298,8 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, 8(%edx)\n"
         "movl 0xc(%ebx), %eax\n" /* textureIndex */
         "movl %eax, 0xc(%edx)\n"
-        "movl 0x195eed0, %edi\n"
-        "movl 0x195f0e0, %esi\n" /* constantIndex */
+        "movl imp_dx, %edi\n"
+        "movl imp_alwaysfails, %esi\n" /* constantIndex */
         ".Lff8708_000f9a71:\n"
         "movl 8(%edi), %eax\n" /* line 1068 */
         "movl (%eax), %edx\n"
@@ -3322,7 +3322,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* } scope */
         /* } scope */
         ".Lff8708_000f9aa6:\n"
-        "movl 0x195eed0, %eax\n" /* line 98 */
+        "movl imp_dx, %eax\n" /* line 98 */
         "movl 8(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl %ebx, 0x18(%esp)\n"
@@ -3338,7 +3338,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl $4, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *0x148(%ecx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lff8708_000f9a9d\n"
@@ -3355,10 +3355,10 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl (%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x2268b4, 4(%esp)\n" /* "Vertex type %i doesn't have the information used by shader %" */
+        "movl $str_002268b4, 4(%esp)\n" /* "Vertex type %i doesn't have the information used by shader %" */
         "movl $0, (%esp)\n"
         "calll R_Error\n"
-        "movl 0x195f160, %esi\n" /* constantIndex */
+        "movl imp_tess, %esi\n" /* constantIndex */
         "jmp .Lff8708_000f87b0\n"
         /* } scope */
         /* } scope */
@@ -3377,12 +3377,12 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* } scope */
         /* } scope */
         ".Lff8708_000f9b4b:\n"
-        "movl 0x195eef0, %eax\n" /* line 1451 | techType */
+        "movl imp_r_debugShader, %eax\n" /* line 1451 | techType */
         "movl (%eax), %eax\n" /* techType */
         "movl 8(%eax), %eax\n" /* techType */
         "shll $4, %eax\n" /* techType */
         "leal debugShaderConsts(%eax), %ecx\n" /* techType */
-        "movl 0x195f0c8, %edx\n" /* line 275 | to */
+        "movl imp_backEnd, %edx\n" /* line 275 | to */
         "addl $0x1a0, %edx\n" /* to */
         /* { scope 2: stateBits, stateMap, image, samplerState, ... */
         "movl debugShaderConsts(%eax), %eax\n" /* line 456 */
@@ -3410,7 +3410,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "ja .Lff8708_000f97d7\n"
         "cmpb $2, %al\n"
         "jne .Lff8708_000f956d\n"
-        "movl 0x195f21c, %eax\n" /* line 452 */
+        "movl imp_r_colorMap, %eax\n" /* line 452 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -3420,7 +3420,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "je .Lff8708_000f9d13\n"
         "cmpl $2, %eax\n" /* line 462 */
         "jne .Lff8708_000f956d\n"
-        "movl 0x195eebc, %eax\n" /* line 464 */
+        "movl imp_rgp, %eax\n" /* line 464 */
         "movl 0x100c(%eax), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 465 | samplerState */
@@ -3450,7 +3450,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         ".Lff8708_000f9c00:\n"
         "cmpb $2, %al\n" /* line 486 */
         "jne .Lff8708_000f904e\n"
-        "movl 0x195f21c, %eax\n" /* line 452 */
+        "movl imp_r_colorMap, %eax\n" /* line 452 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -3459,7 +3459,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "je .Lff8708_000f9ce3\n"
         "cmpl $2, %eax\n" /* line 462 */
         "jne .Lff8708_000f904e\n"
-        "movl 0x195eebc, %eax\n" /* line 464 */
+        "movl imp_rgp, %eax\n" /* line 464 */
         "movl 0x100c(%eax), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 465 | samplerState */
@@ -3477,11 +3477,11 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 7 */
         /* { scope 8 */
         ".Lff8708_000f9c43:\n"
-        "movl 0x195f1f8, %eax\n" /* line 497 */
+        "movl imp_r_normalMap, %eax\n" /* line 497 */
         "movl (%eax), %eax\n"
         "cmpl $1, 8(%eax)\n"
         "jne .Lff8708_000f956d\n"
-        "movl 0x195eebc, %eax\n" /* line 499 */
+        "movl imp_rgp, %eax\n" /* line 499 */
         "movl 0x1010(%eax), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 500 | samplerState */
@@ -3499,17 +3499,17 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 5: destIndex, literalName, destIndex, rule, ... */
         /* { scope 6 */
         ".Lff8708_000f9c6b:\n"
-        "movl 0x195f1f8, %eax\n" /* line 497 */
+        "movl imp_r_normalMap, %eax\n" /* line 497 */
         "movl (%eax), %eax\n"
         "cmpl $1, 8(%eax)\n"
         "jne .Lff8708_000f904e\n"
-        "movl 0x195eebc, %ebx\n" /* line 499 */
+        "movl imp_rgp, %ebx\n" /* line 499 */
         "movl 0x1010(%ebx), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 500 | samplerState */
         "jmp .Lff8708_000f904e\n"
         ".Lff8708_000f9c94:\n"
-        "movl 0x195f224, %eax\n" /* line 452 */
+        "movl imp_r_specularMap, %eax\n" /* line 452 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -3518,7 +3518,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "je .Lff8708_000f9cfb\n"
         "cmpl $2, %eax\n" /* line 462 */
         "jne .Lff8708_000f904e\n"
-        "movl 0x195eebc, %ecx\n" /* line 464 */
+        "movl imp_rgp, %ecx\n" /* line 464 */
         "movl 0x100c(%ecx), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 465 | samplerState */
@@ -3536,7 +3536,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 7 */
         /* { scope 8 */
         ".Lff8708_000f9ccc:\n"
-        "movl 0x195f224, %eax\n" /* line 452 */
+        "movl imp_r_specularMap, %eax\n" /* line 452 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -3555,13 +3555,13 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 5: destIndex, literalName, destIndex, rule, ... */
         /* { scope 6 */
         ".Lff8708_000f9ce3:\n"
-        "movl 0x195eebc, %ecx\n" /* line 457 */
+        "movl imp_rgp, %ecx\n" /* line 457 */
         "movl 0x1008(%ecx), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 458 | samplerState */
         "jmp .Lff8708_000f904e\n"
         ".Lff8708_000f9cfb:\n"
-        "movl 0x195eebc, %ebx\n" /* line 457 */
+        "movl imp_rgp, %ebx\n" /* line 457 */
         "movl 0x1008(%ebx), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 458 | samplerState */
@@ -3579,7 +3579,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 7 */
         /* { scope 8 */
         ".Lff8708_000f9d13:\n"
-        "movl 0x195eebc, %eax\n" /* line 457 */
+        "movl imp_rgp, %eax\n" /* line 457 */
         "movl 0x1008(%eax), %edx\n"
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 458 | samplerState */
@@ -3601,11 +3601,11 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
         "movl 8(%ebp), %edi\n" /* vertDeclType */
         "movl 0xc(%ebp), %esi\n" /* args */
         /* { scope 1 */
-        "movl 0x195f0c8, %eax\n" /* line 1562 */
+        "movl imp_backEnd, %eax\n" /* line 1562 */
         "cmpb $0, 0x4bc(%eax)\n"
         "jne .Lff9d2a_000f9dd9\n"
         ".Lff9d2a_000f9d4b:\n"
-        "movl 0x195f160, %ebx\n" /* line 1567 */
+        "movl imp_tess, %ebx\n" /* line 1567 */
         "movl 0x5a7c0(%ebx), %edx\n"
         "leal -6(%edx), %eax\n"
         "cmpl $0xb, %eax\n"
@@ -3615,13 +3615,13 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
         "cmpl $0x17, %eax\n"
         "jbe .Lff9d2a_000f9dc5\n"
         ".Lff9d2a_000f9d67:\n"
-        "movl 0x195eec0, %eax\n" /* line 1575 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lff9d2a_000f9d94\n"
         ".Lff9d2a_000f9d74:\n"
         "xorl %edx, %edx\n" /* line 1577 */
-        "movl 0x195f160, %eax\n" /* line 1582 */
+        "movl imp_tess, %eax\n" /* line 1582 */
         "movl 0x5a7c0(%eax), %eax\n"
         "movl %edx, 8(%ebp)\n" /* vertDeclType */
         "movl %esi, %ecx\n" /* args */
@@ -3640,7 +3640,7 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
         "cmpl $5, %eax\n"
         "ja .Lff9d2a_000f9d74\n"
         "movl $overrideEnableRenormalize, %edx\n"
-        "movl 0x195f160, %eax\n" /* line 1582 */
+        "movl imp_tess, %eax\n" /* line 1582 */
         "movl 0x5a7c0(%eax), %eax\n"
         "movl %edx, 8(%ebp)\n" /* vertDeclType */
         "movl %esi, %ecx\n" /* args */
@@ -3677,7 +3677,7 @@ void RB_EndSurface(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
-        "movl 0x195f160, %edi\n"
+        "movl imp_tess, %edi\n"
         "movl 0x5a7bc(%edi), %eax\n"
         "movl 0x38(%eax), %edx\n"
         "movl 0x5a7c0(%edi), %eax\n"
@@ -3685,11 +3685,11 @@ void RB_EndSurface(void)
         /* { scope 1 */
         "testl %ebx, %ebx\n" /* line 1695 */
         "je .Lff9de4_000f9e2b\n"
-        "movl 0x195f0c8, %esi\n" /* line 1698 */
+        "movl imp_backEnd, %esi\n" /* line 1698 */
         "cmpb $0, 0x4bc(%esi)\n"
         "jne .Lff9de4_000f9fa6\n"
         ".Lff9de4_000f9e1d:\n"
-        "movl 0x195f138, %eax\n" /* line 1700 */
+        "movl imp_dxState, %eax\n" /* line 1700 */
         "cmpb $0, 0x20c8(%eax)\n"
         "je .Lff9de4_000f9e51\n"
         /* } scope */
@@ -3735,7 +3735,7 @@ void RB_EndSurface(void)
         "movl %edx, -0x24(%ebp)\n"
         "cmpl $1, 0x5a7cc(%edi)\n" /* line 1672 */
         "je .Lff9de4_000fa11c\n"
-        "movl 0x195eec0, %eax\n" /* line 1067 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1067 */
         "movl (%eax), %edx\n"
         "movl $0x24, %eax\n"
         "cmpl $2, 8(%edx)\n"
@@ -3748,7 +3748,7 @@ void RB_EndSurface(void)
         "movl %eax, (%esp)\n"
         "calll RB_SetIndexData\n"
         "movl %eax, -0x1c(%ebp)\n"
-        "movl 0x195eed0, %eax\n" /* line 27 */
+        "movl imp_dx, %eax\n" /* line 27 */
         "movl 0x2db4(%eax), %edx\n"
         "movl 0x5a7d4(%edi), %eax\n"
         "imull -0x20(%ebp), %eax\n"
@@ -3766,7 +3766,7 @@ void RB_EndSurface(void)
         "calll RB_SetVertexData\n"
         "movl $0, -0x20(%ebp)\n" /* line 1682 */
         "movl 0x5a7cc(%edi), %esi\n" /* line 1685 */
-        "movl 0x195f0c8, %eax\n" /* line 1562 */
+        "movl imp_backEnd, %eax\n" /* line 1562 */
         "cmpb $0, 0x4bc(%eax)\n"
         "jne .Lff9de4_000fa112\n"
         ".Lff9de4_000f9f44:\n"
@@ -3779,7 +3779,7 @@ void RB_EndSurface(void)
         "cmpl $0x17, %eax\n"
         "jbe .Lff9de4_000fa0f8\n"
         ".Lff9de4_000f9f62:\n"
-        "movl 0x195eec0, %eax\n" /* line 1575 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lff9de4_000f9fc2\n"
@@ -3787,7 +3787,7 @@ void RB_EndSurface(void)
         "xorl %edx, %edx\n" /* line 1577 */
         ".Lff9de4_000f9f71:\n"
         "leal -0x2c(%ebp), %ecx\n" /* line 1582 */
-        "movl 0x195f160, %ebx\n"
+        "movl imp_tess, %ebx\n"
         "movl 0x5a7c0(%ebx), %eax\n"
         "movl %edx, (%esp)\n"
         "movl %esi, %edx\n"
@@ -3836,15 +3836,15 @@ void RB_EndSurface(void)
         "movl %eax, -0x1c(%ebp)\n"
         "cmpl $1, 0x5a7b8(%edi)\n" /* line 1631 */
         "je .Lff9de4_000fa19b\n"
-        "movl 0x195eec0, %eax\n" /* line 1089 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1089 */
         "movl (%eax), %eax\n"
         "movl $0x18, %edx\n"
         "cmpl $2, 8(%eax)\n"
         "movl $0x40, %eax\n"
         "cmovnel %eax, %edx\n"
-        "movl 0x195eed0, %eax\n" /* line 1024 */
+        "movl imp_dx, %eax\n" /* line 1024 */
         "movl 0x2dc4(%eax), %ecx\n"
-        "movl 0x195f138, %eax\n" /* line 220 */
+        "movl imp_dxState, %eax\n" /* line 220 */
         "cmpl 0x20d0(%eax), %ecx\n"
         "je .Lff9de4_000fa13c\n"
         ".Lff9de4_000fa059:\n"
@@ -3854,11 +3854,11 @@ void RB_EndSurface(void)
         "movl $0, (%esp)\n"
         "calll RB_ChangeStreamSource\n"
         ".Lff9de4_000fa075:\n"
-        "movl 0x195f0c8, %eax\n" /* line 1562 */
+        "movl imp_backEnd, %eax\n" /* line 1562 */
         "cmpb $0, 0x4bc(%eax)\n"
         "jne .Lff9de4_000fa175\n"
         ".Lff9de4_000fa087:\n"
-        "movl 0x195f160, %ebx\n" /* line 1567 */
+        "movl imp_tess, %ebx\n" /* line 1567 */
         "movl 0x5a7c0(%ebx), %edx\n"
         "leal -6(%edx), %eax\n"
         "cmpl $0xb, %eax\n"
@@ -3868,7 +3868,7 @@ void RB_EndSurface(void)
         "cmpl $0x17, %eax\n"
         "jbe .Lff9de4_000fa15b\n"
         ".Lff9de4_000fa0ab:\n"
-        "movl 0x195eec0, %eax\n" /* line 1575 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lff9de4_000fa17f\n"
@@ -3876,13 +3876,13 @@ void RB_EndSurface(void)
         "xorl %edx, %edx\n" /* line 1577 */
         ".Lff9de4_000fa0be:\n"
         "leal -0x2c(%ebp), %ecx\n" /* line 1582 */
-        "movl 0x195f160, %eax\n"
+        "movl imp_tess, %eax\n"
         "movl 0x5a7c0(%eax), %eax\n"
         "movl %edx, (%esp)\n"
         "movl $3, %edx\n"
         "calll RB_DrawSingleTechnique\n"
         ".Lff9de4_000fa0d9:\n"
-        "movl 0x195f160, %edi\n" /* line 1653 */
+        "movl imp_tess, %edi\n" /* line 1653 */
         "movl $0, 0x5a7e0(%edi)\n"
         "movl $0, 0x5a7b8(%edi)\n" /* line 1654 */
         "jmp .Lff9de4_000f9e78\n"
@@ -3897,7 +3897,7 @@ void RB_EndSurface(void)
         "calll RB_UpdateViewport\n" /* line 1563 */
         "jmp .Lff9de4_000f9f44\n"
         ".Lff9de4_000fa11c:\n"
-        "movl 0x195eec0, %eax\n" /* line 1078 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1078 */
         "movl (%eax), %edx\n"
         "movl $0x20, %eax\n"
         "cmpl $2, 8(%edx)\n"
@@ -3930,16 +3930,16 @@ void RB_EndSurface(void)
         "movl $overrideEnableRenormalize, %edx\n"
         "jmp .Lff9de4_000fa0be\n"
         ".Lff9de4_000fa19b:\n"
-        "movl 0x195eec0, %eax\n" /* line 1078 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1078 */
         "movl (%eax), %eax\n"
         "movl $0x20, %edx\n"
         "cmpl $2, 8(%eax)\n"
         "movl $0x44, %eax\n"
         "cmovnel %eax, %edx\n"
-        "movl 0x195eebc, %eax\n" /* line 1638 */
+        "movl imp_rgp, %eax\n" /* line 1638 */
         "movl 0x109c(%eax), %eax\n"
         "movl 0x30(%eax), %ecx\n"
-        "movl 0x195f138, %eax\n" /* line 220 */
+        "movl imp_dxState, %eax\n" /* line 220 */
         "cmpl 0x20d0(%eax), %ecx\n"
         "je .Lff9de4_000fa260\n"
         ".Lff9de4_000fa1d2:\n"
@@ -3949,11 +3949,11 @@ void RB_EndSurface(void)
         "movl $0, (%esp)\n"
         "calll RB_ChangeStreamSource\n"
         ".Lff9de4_000fa1ee:\n"
-        "movl 0x195f0c8, %eax\n" /* line 1562 */
+        "movl imp_backEnd, %eax\n" /* line 1562 */
         "cmpb $0, 0x4bc(%eax)\n"
         "jne .Lff9de4_000fa293\n"
         ".Lff9de4_000fa200:\n"
-        "movl 0x195f160, %ebx\n" /* line 1567 */
+        "movl imp_tess, %ebx\n" /* line 1567 */
         "movl 0x5a7c0(%ebx), %edx\n"
         "leal -6(%edx), %eax\n"
         "cmpl $0xb, %eax\n"
@@ -3963,7 +3963,7 @@ void RB_EndSurface(void)
         "cmpl $0x17, %eax\n"
         "jbe .Lff9de4_000fa27f\n"
         ".Lff9de4_000fa21c:\n"
-        "movl 0x195eec0, %eax\n" /* line 1575 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 1575 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lff9de4_000fa24b\n"
@@ -3971,7 +3971,7 @@ void RB_EndSurface(void)
         "xorl %edx, %edx\n" /* line 1577 */
         ".Lff9de4_000fa22b:\n"
         "leal -0x2c(%ebp), %ecx\n" /* line 1582 */
-        "movl 0x195f160, %eax\n"
+        "movl imp_tess, %eax\n"
         "movl 0x5a7c0(%eax), %eax\n"
         "movl %edx, (%esp)\n"
         "movl $1, %edx\n"

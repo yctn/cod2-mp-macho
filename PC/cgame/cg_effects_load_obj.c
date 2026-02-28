@@ -28,7 +28,7 @@ extern const char *Com_SurfaceTypeToName(int type);
 extern int stricmp(const char *s1, const char *s2);
 extern void *FX_RegisterEffect(const char *name);
 
-static const char *g_TypeName[11]; /* 0x333c80 */
+static const char *g_TypeName[11]; /* g_TypeName */
 
 static int compare_impact_files(const int *pe0, const int *pe1)
 {

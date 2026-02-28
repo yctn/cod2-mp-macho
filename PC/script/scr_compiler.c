@@ -10,7 +10,7 @@
 
 extern struct scrCompilePub_t scrCompilePub; /* 0x0 */
 extern void Z_FreeInternal(void *ptr);
-static struct scrCompileGlob_t scrCompileGlob; /* 0x4ece00 */
+static struct scrCompileGlob_t scrCompileGlob; /* scrCompileGlob */
 
 static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]);
 static unsigned int SpecifyThreadPosition(int type);
@@ -114,7 +114,7 @@ unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16])
         "cmpl $7, %eax\n" /* line 2328 */
         "jne .Lf92666_000926b6\n"
         ".Lf92666_000926fd:\n"
-        "movl $0x21d718, 4(%esp)\n" /* line 2330 */
+        "movl $str_0021d718, 4(%esp)\n" /* line 2330 */
         "movl (%edi), %eax\n" /* value */
         "movl %eax, (%esp)\n"
         "calll CompileError2\n"
@@ -152,13 +152,13 @@ unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16])
         "jne .Lf92666_00092718\n"
         "jmp .Lf92666_000926fd\n"
         ".Lf92666_0009276a:\n"
-        "movl $0x21d75c, 4(%esp)\n" /* line 2337 */
+        "movl $str_0021d75c, 4(%esp)\n" /* line 2337 */
         "movl (%edi), %eax\n" /* value */
         "movl %eax, (%esp)\n"
         "calll CompileError2\n"
         "jmp .Lf92666_0009268b\n"
         ".Lf92666_00092781:\n"
-        "movl $0x21d75c, 4(%esp)\n" /* line 2343 */
+        "movl $str_0021d75c, 4(%esp)\n" /* line 2343 */
         "movl %eax, (%esp)\n"
         "calll CompileError2\n"
         "jmp .Lf92666_0009268b\n"
@@ -195,7 +195,7 @@ unsigned int SpecifyThreadPosition(int type)
         "je .Lf92796_0009283a\n"
         "movl %eax, (%esp)\n" /* line 2403 */
         "calll Scr_GetSourceBuffer\n"
-        "movl 0x195ee64, %edx\n" /* line 2404 */
+        "movl imp_scrParserPub, %edx\n" /* line 2404 */
         "movl (%edx), %edx\n"
         "leal (%eax, %eax, 2), %eax\n"
         "movl 4(%edx, %eax, 8), %ebx\n" /* posId */
@@ -203,7 +203,7 @@ unsigned int SpecifyThreadPosition(int type)
         "calll SL_ConvertToString\n"
         "movl %ebx, 0xc(%esp)\n" /* posId */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21d770, 4(%esp)\n" /* "function '%s' already defined in '%s'" */
+        "movl $str_0021d770, 4(%esp)\n" /* "function '%s' already defined in '%s'" */
         "movl %edi, (%esp)\n" /* sourcePos */
         "calll CompileError\n"
         "xorl %ebx, %ebx\n" /* posId */
@@ -237,7 +237,7 @@ unsigned int SpecifyThreadPosition(int type)
         "movl %esi, (%esp)\n" /* line 2408 | name */
         "calll SL_ConvertToString\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21d798, 4(%esp)\n" /* "function '%s' already defined" */
+        "movl $str_0021d798, 4(%esp)\n" /* "function '%s' already defined" */
         "movl %edi, (%esp)\n" /* sourcePos */
         "calll CompileError\n"
         "xorl %ebx, %ebx\n" /* posId */
@@ -445,7 +445,7 @@ unsigned int Scr_CalcLocalVarsVariableExpressionRef(void)
         /* } scope */
         /* { scope 1 */
         ".Lf928ac_00092a7a:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%esi), %edi\n"
@@ -635,7 +635,7 @@ Bool EvalPrimitiveExpression(void)
         "subl $7, %edx\n"
         "cmpl $0x42, %edx\n"
         "ja .Lf92c54_00092c70\n"
-        "jmpl *0x2f1500(, %edx, 4)\n"
+        "jmpl *CorrectSolidDeltas+3584(, %edx, 4)\n"
         ".Lf92c54_00092c70:\n"
         "xorl %eax, %eax\n" /* expr */
         ".Lf92c54_00092c72:\n"
@@ -853,10 +853,10 @@ Bool EvalPrimitiveExpression(void)
         "movl %eax, 8(%edx)\n"
         "jmp .Lf92c54_00092e62\n"
         ".Lf92c54_00092ec6:\n"
-        "movl 0x195ee60, %eax\n" /* line 2480 */
+        "movl imp_var_typename, %eax\n" /* line 2480 */
         "movl (%eax, %edx, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21cea0, 4(%esp)\n" /* "type %s is not a float" */
+        "movl $str_0021cea0, 4(%esp)\n" /* "type %s is not a float" */
         "movl -0x50(%ebp), %edx\n"
         "movl 8(%edx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -943,12 +943,12 @@ Bool EvalBinaryOperatorExpression(sval_t opcode, sval_t sourcePos, VariableCompi
         "movl -0x3c(%ebp), %eax\n" /* expr1 */
         "movl %eax, (%esp)\n" /* expr1 */
         "calll Scr_EvalBinaryOperator\n"
-        "movl 0x195ee58, %eax\n" /* line 2762 | expr1 */
+        "movl imp_scrVarPub, %eax\n" /* line 2762 | expr1 */
         "movl 0x10(%eax), %eax\n" /* expr1 */
         "testl %eax, %eax\n" /* expr1 */
         "je .Lf92eea_00092fef\n"
         "movl %eax, 8(%esp)\n" /* line 2764 | expr1 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "movl 8(%ebp), %edx\n" /* sourcePos */
         "movl %edx, (%esp)\n"
         "calll CompileError\n"
@@ -996,20 +996,20 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "cmpl $0x40, (%eax)\n" /* line 4594 */
         "ja .Lf9300e_000931ad\n"
         "movl (%eax), %eax\n"
-        "jmpl *0x2f160c(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+3852(, %eax, 4)\n"
         "movl 8(%ebx), %edi\n" /* line 4644 | val, abortLevel */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
-        "movl 0x4ece3c, %esi\n" /* line 4141 | currentBlock */
+        "movl scrCompileGlob+60, %esi\n" /* line 4141 | currentBlock */
         "movl %esi, -0xd0(%ebp)\n" /* currentBlock, oldBreakChildBlocks */
-        "movl 0x4ece40, %eax\n" /* line 4142 */
+        "movl scrCompileGlob+64, %eax\n" /* line 4142 */
         "movl %eax, -0xcc(%ebp)\n" /* oldBreakChildCount */
         "movl $0, -0x1c(%ebp)\n" /* line 4144 | breakChildCount */
         "movl $__mh_execute_header, (%esp)\n" /* line 4145 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0xc0(%ebp)\n" /* childBlocks */
-        "movl %eax, 0x4ece3c\n" /* line 4146 */
+        "movl %eax, scrCompileGlob+60\n" /* line 4146 */
         "leal -0x1c(%ebp), %eax\n" /* line 4147 | breakChildCount */
-        "movl %eax, 0x4ece40\n"
+        "movl %eax, scrCompileGlob+64\n"
         "movl $__mh_execute_header, (%esp)\n" /* line 4154 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0xb4(%ebp)\n" /* childBlocks */
@@ -1052,17 +1052,17 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl (%esi), %edx\n" /* line 3286 | j */
         "testl %edx, %edx\n"
         "jne .Lf9300e_00093128\n"
-        "movl 0x4ece3c, %eax\n" /* line 3288 */
+        "movl scrCompileGlob+60, %eax\n" /* line 3288 */
         "testl %eax, %eax\n"
         "je .Lf9300e_00093128\n"
-        "movl 0x4ece40, %eax\n" /* line 886 */
+        "movl scrCompileGlob+64, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf9300e_00094f80\n"
         ".Lf9300e_00093116:\n"
         "movl (%eax), %edx\n" /* line 3291 */
-        "movl 0x4ece3c, %eax\n"
+        "movl scrCompileGlob+60, %eax\n"
         "movl %esi, (%eax, %edx, 4)\n" /* j */
-        "movl 0x4ece40, %eax\n" /* line 3292 */
+        "movl scrCompileGlob+64, %eax\n" /* line 3292 */
         "addl $1, (%eax)\n"
         ".Lf9300e_00093128:\n"
         "cmpl $0x3ff, -0xb8(%ebp)\n" /* line 886 | childCount */
@@ -1106,9 +1106,9 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         ".Lf9300e_00093195:\n"
         "movl -0xd0(%ebp), %edx\n" /* line 4218 | oldBreakChildBlocks */
-        "movl %edx, 0x4ece3c\n"
+        "movl %edx, scrCompileGlob+60\n"
         "movl -0xcc(%ebp), %ecx\n" /* line 4219 | oldBreakChildCount */
-        "movl %ecx, 0x4ece40\n"
+        "movl %ecx, scrCompileGlob+64\n"
         /* } scope */
         ".Lf9300e_000931ad:\n"
         "addl $0x20c, %esp\n" /* line 4659 */
@@ -1429,28 +1429,28 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         ".Lf9300e_00093644:\n"
         "movb $0, -0x145(%ebp)\n" /* line 3474 | constConditional */
         ".Lf9300e_0009364b:\n"
-        "movl 0x4ece3c, %ecx\n" /* line 3485 */
+        "movl scrCompileGlob+60, %ecx\n" /* line 3485 */
         "movl %ecx, -0x144(%ebp)\n" /* oldBreakChildBlocks */
-        "movl 0x4ece40, %esi\n" /* line 3486 | continueChildBlocks */
+        "movl scrCompileGlob+64, %esi\n" /* line 3486 | continueChildBlocks */
         "movl %esi, -0x140(%ebp)\n" /* continueChildBlocks, oldBreakChildCount */
-        "movl 0x4ece48, %eax\n" /* line 3488 */
+        "movl scrCompileGlob+72, %eax\n" /* line 3488 */
         "movl %eax, -0x13c(%ebp)\n" /* oldContinueChildBlocks */
-        "movl 0x4ece4c, %edx\n" /* line 3489 */
+        "movl scrCompileGlob+76, %edx\n" /* line 3489 */
         "movl %edx, -0x138(%ebp)\n" /* oldContinueChildCount */
         "movl $0, -0x1c(%ebp)\n" /* line 3491 | breakChildCount */
         "movl $0, -0x20(%ebp)\n" /* line 3492 | continueChildCount */
         "movl $__mh_execute_header, (%esp)\n" /* line 3494 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, %esi\n" /* continueChildBlocks */
-        "movl %eax, 0x4ece48\n" /* line 3495 */
+        "movl %eax, scrCompileGlob+72\n" /* line 3495 */
         "leal -0x20(%ebp), %eax\n" /* line 3496 | continueChildCount */
-        "movl %eax, 0x4ece4c\n"
+        "movl %eax, scrCompileGlob+76\n"
         "cmpb $0, -0x145(%ebp)\n" /* line 3500 | constConditional */
         "jne .Lf9300e_0009463e\n"
         "movl $0, -0x130(%ebp)\n" /* childBlocks */
         ".Lf9300e_000936ba:\n"
         "movl -0x130(%ebp), %ecx\n" /* line 3510 | childBlocks */
-        "movl %ecx, 0x4ece3c\n"
+        "movl %ecx, scrCompileGlob+60\n"
         "movl -0x14c(%ebp), %eax\n" /* line 924 | whileStatBlock */
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -1475,17 +1475,17 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl (%ebx), %eax\n" /* line 3298 | abortLevel */
         "testl %eax, %eax\n"
         "jne .Lf9300e_00093746\n"
-        "movl 0x4ece48, %eax\n" /* line 3300 */
+        "movl scrCompileGlob+72, %eax\n" /* line 3300 */
         "testl %eax, %eax\n"
         "je .Lf9300e_00093746\n"
-        "movl 0x4ece4c, %eax\n" /* line 886 */
+        "movl scrCompileGlob+76, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf9300e_00094e1e\n"
         ".Lf9300e_00093734:\n"
         "movl (%eax), %edx\n" /* line 3303 */
-        "movl 0x4ece48, %eax\n"
+        "movl scrCompileGlob+72, %eax\n"
         "movl %ebx, (%eax, %edx, 4)\n" /* abortLevel */
-        "movl 0x4ece4c, %eax\n" /* line 3304 */
+        "movl scrCompileGlob+76, %eax\n" /* line 3304 */
         "addl $1, (%eax)\n"
         /* } scope */
         ".Lf9300e_00093746:\n"
@@ -1577,28 +1577,28 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "je .Lf9300e_000946c1\n"
         "movb $1, -0x111(%ebp)\n" /* constConditional */
         ".Lf9300e_00093840:\n"
-        "movl 0x4ece3c, %eax\n" /* line 3735 */
+        "movl scrCompileGlob+60, %eax\n" /* line 3735 */
         "movl %eax, -0x110(%ebp)\n" /* oldBreakChildBlocks */
-        "movl 0x4ece40, %edx\n" /* line 3736 */
+        "movl scrCompileGlob+64, %edx\n" /* line 3736 */
         "movl %edx, -0x10c(%ebp)\n" /* oldBreakChildCount */
-        "movl 0x4ece48, %ecx\n" /* line 3738 */
+        "movl scrCompileGlob+72, %ecx\n" /* line 3738 */
         "movl %ecx, -0x108(%ebp)\n" /* oldContinueChildBlocks */
-        "movl 0x4ece4c, %esi\n" /* line 3739 | continueChildBlocks */
+        "movl scrCompileGlob+76, %esi\n" /* line 3739 | continueChildBlocks */
         "movl %esi, -0x104(%ebp)\n" /* continueChildBlocks, oldContinueChildCount */
         "movl $0, -0x1c(%ebp)\n" /* line 3741 | breakChildCount */
         "movl $0, -0x20(%ebp)\n" /* line 3742 | continueChildCount */
         "movl $__mh_execute_header, (%esp)\n" /* line 3744 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, %esi\n" /* continueChildBlocks */
-        "movl %eax, 0x4ece48\n" /* line 3745 */
+        "movl %eax, scrCompileGlob+72\n" /* line 3745 */
         "leal -0x20(%ebp), %eax\n" /* line 3746 | continueChildCount */
-        "movl %eax, 0x4ece4c\n"
+        "movl %eax, scrCompileGlob+76\n"
         "cmpb $0, -0x111(%ebp)\n" /* line 3750 | constConditional */
         "jne .Lf9300e_0009465d\n"
         "movl $0, -0xf0(%ebp)\n" /* childBlocks */
         ".Lf9300e_000938af:\n"
         "movl -0xf0(%ebp), %eax\n" /* line 3760 | childBlocks */
-        "movl %eax, 0x4ece3c\n"
+        "movl %eax, scrCompileGlob+60\n"
         "movl -0x118(%ebp), %edx\n" /* line 924 | forStatBlock */
         "movl (%edx), %eax\n"
         "testl %eax, %eax\n"
@@ -1637,17 +1637,17 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl (%ebx), %eax\n" /* line 3298 | abortLevel */
         "testl %eax, %eax\n"
         "jne .Lf9300e_0009397d\n"
-        "movl 0x4ece48, %eax\n" /* line 3300 */
+        "movl scrCompileGlob+72, %eax\n" /* line 3300 */
         "testl %eax, %eax\n"
         "je .Lf9300e_0009397d\n"
-        "movl 0x4ece4c, %eax\n" /* line 886 */
+        "movl scrCompileGlob+76, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf9300e_00094de2\n"
         ".Lf9300e_0009396b:\n"
         "movl (%eax), %edx\n" /* line 3303 */
-        "movl 0x4ece48, %eax\n"
+        "movl scrCompileGlob+72, %eax\n"
         "movl %ebx, (%eax, %edx, 4)\n" /* abortLevel */
-        "movl 0x4ece4c, %eax\n" /* line 3304 */
+        "movl scrCompileGlob+76, %eax\n" /* line 3304 */
         "addl $1, (%eax)\n"
         /* } scope */
         ".Lf9300e_0009397d:\n"
@@ -1962,18 +1962,18 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl (%esi), %edi\n" /* j, i */
         "testl %edi, %edi\n" /* i */
         "jne .Lf9300e_00093d45\n"
-        "movl 0x4ece3c, %ebx\n" /* line 3288 | abortLevel */
+        "movl scrCompileGlob+60, %ebx\n" /* line 3288 | abortLevel */
         "testl %ebx, %ebx\n" /* abortLevel */
         "je .Lf9300e_00094e3c\n"
-        "movl 0x4ece40, %eax\n" /* line 886 */
+        "movl scrCompileGlob+64, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf9300e_00094e00\n"
         ".Lf9300e_00093d27:\n"
         "movl (%eax), %edx\n" /* line 3291 */
-        "movl 0x4ece3c, %eax\n"
+        "movl scrCompileGlob+60, %eax\n"
         "movl -0x174(%ebp), %ecx\n"
         "movl %ecx, (%eax, %edx, 4)\n"
-        "movl 0x4ece40, %eax\n" /* line 3292 */
+        "movl scrCompileGlob+64, %eax\n" /* line 3292 */
         "addl $1, (%eax)\n"
         "movl -0x174(%ebp), %esi\n" /* j */
         ".Lf9300e_00093d45:\n"
@@ -1986,18 +1986,18 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf9300e_0009458b\n"
-        "movl 0x4ece48, %eax\n" /* line 3300 */
+        "movl scrCompileGlob+72, %eax\n" /* line 3300 */
         "testl %eax, %eax\n"
         "je .Lf9300e_00094e47\n"
-        "movl 0x4ece4c, %eax\n" /* line 886 */
+        "movl scrCompileGlob+76, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf9300e_00094da8\n"
         ".Lf9300e_00093d88:\n"
         "movl (%eax), %edx\n" /* line 3303 */
-        "movl 0x4ece48, %eax\n"
+        "movl scrCompileGlob+72, %eax\n"
         "movl -0x174(%ebp), %ecx\n"
         "movl %ecx, (%eax, %edx, 4)\n"
-        "movl 0x4ece4c, %eax\n" /* line 3304 */
+        "movl scrCompileGlob+76, %eax\n" /* line 3304 */
         "addl $1, (%eax)\n"
         "movl -0x174(%ebp), %esi\n" /* j */
         ".Lf9300e_00093da6:\n"
@@ -2230,7 +2230,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "jne .Lf9300e_0009348d\n"
         "jmp .Lf9300e_000931ad\n"
         ".Lf9300e_00094085:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x60(%ebp), %edx\n"
@@ -2272,13 +2272,13 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* { scope 2: i, childIndex, i, childCount, ... */
         ".Lf9300e_000940d7:\n"
         "movl -0x144(%ebp), %eax\n" /* line 3524 | oldBreakChildBlocks */
-        "movl %eax, 0x4ece3c\n"
+        "movl %eax, scrCompileGlob+60\n"
         "movl -0x140(%ebp), %edx\n" /* line 3525 | oldBreakChildCount */
-        "movl %edx, 0x4ece40\n"
+        "movl %edx, scrCompileGlob+64\n"
         "movl -0x13c(%ebp), %ecx\n" /* line 3527 | oldContinueChildBlocks */
-        "movl %ecx, 0x4ece48\n"
+        "movl %ecx, scrCompileGlob+72\n"
         "movl -0x138(%ebp), %esi\n" /* line 3528 | oldContinueChildCount, continueChildBlocks */
-        "movl %esi, 0x4ece4c\n" /* continueChildBlocks */
+        "movl %esi, scrCompileGlob+76\n" /* continueChildBlocks */
         "jmp .Lf9300e_000931ad\n"
         ".Lf9300e_0009410b:\n"
         "movl -0x174(%ebp), %eax\n"
@@ -2497,13 +2497,13 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         ".Lf9300e_0009441a:\n"
         "movl -0x110(%ebp), %eax\n" /* line 3780 | oldBreakChildBlocks */
-        "movl %eax, 0x4ece3c\n"
+        "movl %eax, scrCompileGlob+60\n"
         "movl -0x10c(%ebp), %edx\n" /* line 3781 | oldBreakChildCount */
-        "movl %edx, 0x4ece40\n"
+        "movl %edx, scrCompileGlob+64\n"
         "movl -0x108(%ebp), %ecx\n" /* line 3783 | oldContinueChildBlocks */
-        "movl %ecx, 0x4ece48\n"
+        "movl %ecx, scrCompileGlob+72\n"
         "movl -0x104(%ebp), %esi\n" /* line 3784 | oldContinueChildCount, continueChildBlocks */
-        "movl %esi, 0x4ece4c\n" /* continueChildBlocks */
+        "movl %esi, scrCompileGlob+76\n" /* continueChildBlocks */
         "jmp .Lf9300e_000931ad\n"
         ".Lf9300e_0009444e:\n"
         "movl -0x174(%ebp), %edx\n"
@@ -2516,7 +2516,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         /* { scope 2: i, childIndex, i, childCount, ... */
         ".Lf9300e_00094464:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x174(%ebp), %edx\n"
@@ -2545,7 +2545,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         ".Lf9300e_000944d1:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x5c(%ebp), %edx\n"
@@ -2557,7 +2557,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         /* { scope 2: i, childIndex, i, childCount, ... */
         ".Lf9300e_000944f8:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* "LOCAL_VAR_STACK_SIZE exceeded" */
+        "movl $str_0021d7b8, 4(%esp)\n" /* "LOCAL_VAR_STACK_SIZE exceeded" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x54(%ebp), %edx\n"
@@ -2605,7 +2605,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* { scope 2: i, childIndex, i, childCount, ... */
         /* { scope 3: j, childIndex, i, block, ... */
         ".Lf9300e_00094592:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x120(%ebp), %eax\n" /* block */
@@ -2619,7 +2619,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* { scope 2: i, childIndex, i, childCount, ... */
         /* { scope 3: j, childIndex, i, block, ... */
         ".Lf9300e_000945ba:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* "LOCAL_VAR_STACK_SIZE exceeded" */
+        "movl $str_0021d7b8, 4(%esp)\n" /* "LOCAL_VAR_STACK_SIZE exceeded" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x58(%ebp), %eax\n"
@@ -2629,7 +2629,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* { scope 3: j, childIndex, i, block, ... */
         ".Lf9300e_000945df:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* "LOCAL_VAR_STACK_SIZE exceeded" */
+        "movl $str_0021d7b8, 4(%esp)\n" /* "LOCAL_VAR_STACK_SIZE exceeded" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0xe0(%ebp), %eax\n" /* block */
@@ -2685,7 +2685,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0x130(%ebp)\n" /* childBlocks */
         "leal -0x1c(%ebp), %eax\n" /* line 3503 | breakChildCount */
-        "movl %eax, 0x4ece40\n"
+        "movl %eax, scrCompileGlob+64\n"
         "jmp .Lf9300e_000936ba\n"
         /* } scope */
         /* } scope */
@@ -2696,7 +2696,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0xf0(%ebp)\n" /* childBlocks */
         "leal -0x1c(%ebp), %eax\n" /* line 3753 | breakChildCount */
-        "movl %eax, 0x4ece40\n"
+        "movl %eax, scrCompileGlob+64\n"
         "jmp .Lf9300e_000938af\n"
         /* } scope */
         /* } scope */
@@ -2898,7 +2898,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         ".Lf9300e_0009487f:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf9300e_00094535\n"
@@ -3110,7 +3110,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl %eax, %ecx\n"
         "jmp .Lf9300e_000949d1\n"
         ".Lf9300e_00094b2d:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x50(%ebp), %ecx\n"
@@ -3124,7 +3124,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* } scope */
         ".Lf9300e_00094b59:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf9300e_00093138\n"
@@ -3342,10 +3342,10 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* } scope */
         ".Lf9300e_00094da8:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece4c, %eax\n"
+        "movl scrCompileGlob+76, %eax\n"
         "jmp .Lf9300e_00093d88\n"
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         ".Lf9300e_00094dc6:\n"
@@ -3361,28 +3361,28 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* { scope 2: i, childIndex, i, childCount, ... */
         /* { scope 3: j, childIndex, i, block, ... */
         ".Lf9300e_00094de2:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece4c, %eax\n"
+        "movl scrCompileGlob+76, %eax\n"
         "jmp .Lf9300e_0009396b\n"
         /* } scope */
         /* } scope */
         /* } scope */
         ".Lf9300e_00094e00:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* "MAX_SWITCH_CASES exceeded" */
+        "movl $str_0021d7d8, 4(%esp)\n" /* "MAX_SWITCH_CASES exceeded" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece40, %eax\n"
+        "movl scrCompileGlob+64, %eax\n"
         "jmp .Lf9300e_00093d27\n"
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         /* { scope 2: i, childIndex, i, childCount, ... */
         /* { scope 3: j, childIndex, i, block, ... */
         ".Lf9300e_00094e1e:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* "MAX_SWITCH_CASES exceeded" */
+        "movl $str_0021d7d8, 4(%esp)\n" /* "MAX_SWITCH_CASES exceeded" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece4c, %eax\n"
+        "movl scrCompileGlob+76, %eax\n"
         "jmp .Lf9300e_00093734\n"
         ".Lf9300e_00094e3c:\n"
         "movl -0x174(%ebp), %esi\n"
@@ -3470,7 +3470,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         ".Lf9300e_00094f3d:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x174(%ebp), %edx\n"
@@ -3495,15 +3495,15 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         ".Lf9300e_00094f80:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece40, %eax\n"
+        "movl scrCompileGlob+64, %eax\n"
         "jmp .Lf9300e_00093116\n"
         /* } scope */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         ".Lf9300e_00094f9e:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x174(%ebp), %eax\n"
@@ -3561,7 +3561,7 @@ unsigned int EmitValue(void)
         "cmpl $6, 4(%eax)\n" /* line 1185 */
         "ja .Lf95014_00095093\n"
         "movl 4(%eax), %eax\n"
-        "jmpl *0x2f1710(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+4112(, %eax, 4)\n"
         "movl 8(%ecx), %esi\n" /* line 1204 | constValue */
         "movl (%ecx), %ebx\n" /* constValue, value */
         "xorl %ecx, %ecx\n" /* line 1161 */
@@ -3576,9 +3576,9 @@ unsigned int EmitValue(void)
         "calll TempMallocAlign\n"
         "movl %eax, scrCompileGlob\n"
         "movw %bx, (%eax)\n" /* line 631 | stringValue */
-        "cmpl $2, 0x114cf48\n" /* line 255 */
+        "cmpl $2, scrCompilePub+40\n" /* line 255 */
         "je .Lf95014_0009517c\n"
-        "cmpb $0, 0x4ece1c\n" /* line 266 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 266 */
         "jne .Lf95014_00095196\n"
         ".Lf95014_00095083:\n"
         "movl $1, 4(%esp)\n" /* line 268 */
@@ -3659,7 +3659,7 @@ unsigned int EmitValue(void)
         "jmp .Lf95014_00095040\n"
         /* { scope 1 */
         ".Lf95014_0009517c:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf95014_00095093\n"
         "movl %ebx, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -3693,7 +3693,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "movl $0, scrCompilePub\n" /* line 327 */
         "jg .Lf951a4_00095290\n" /* line 329 */
         ".Lf951a4_000951d1:\n"
-        "movl 0x4ece10, %eax\n" /* line 333 */
+        "movl scrCompileGlob+16, %eax\n" /* line 333 */
         "testl %eax, %eax\n"
         "je .Lf951a4_000951ea\n"
         "cmpl $2, -0x24(%ebp)\n"
@@ -3705,30 +3705,30 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         ".Lf951a4_000951ea:\n"
         "movl $1, %edx\n"
         ".Lf951a4_000951ef:\n"
-        "movb %dl, 0x114cf45\n"
+        "movb %dl, scrCompilePub+37\n"
         "movl -0x20(%ebp), %ecx\n" /* line 335 */
         "leal (%eax, %ecx), %edx\n"
-        "movl %edx, 0x4ece10\n"
-        "cmpl 0x4ece14, %edx\n" /* line 337 */
-        "movl 0x4ece14, %eax\n"
+        "movl %edx, scrCompileGlob+16\n"
+        "cmpl scrCompileGlob+20, %edx\n" /* line 337 */
+        "movl scrCompileGlob+20, %eax\n"
         "cmovgl %edx, %eax\n"
-        "movl %eax, 0x4ece14\n"
+        "movl %eax, scrCompileGlob+20\n"
         "movl -0x24(%ebp), %ecx\n" /* line 338 */
         "testl %ecx, %ecx\n"
         "je .Lf951a4_0009522e\n"
-        "cmpl %edx, 0x4ece18\n" /* line 339 */
-        "movl 0x4ece18, %eax\n"
+        "cmpl %edx, scrCompileGlob+24\n" /* line 339 */
+        "movl scrCompileGlob+24, %eax\n"
         "cmovll %edx, %eax\n"
-        "movl %eax, 0x4ece18\n"
+        "movl %eax, scrCompileGlob+24\n"
         ".Lf951a4_0009522e:\n"
-        "movl 0x195ee58, %ecx\n" /* line 342 */
+        "movl imp_scrVarPub, %ecx\n" /* line 342 */
         "movl 0x3c(%ecx), %edx\n"
         "movl %edx, %eax\n"
         "shll $5, %eax\n"
         "subl %edx, %eax\n"
         "addl -0x1c(%ebp), %eax\n"
         "movl %eax, 0x3c(%ecx)\n"
-        "movl 0x114cf4c, %edx\n" /* line 347 */
+        "movl scrCompilePub+44, %edx\n" /* line 347 */
         "testl %edx, %edx\n"
         "je .Lf951a4_0009525f\n"
         "movl %edx, scrCompileGlob\n" /* line 349 */
@@ -3737,10 +3737,10 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpl $0x3e, %eax\n"
         "jbe .Lf951a4_00095289\n"
         ".Lf951a4_0009525f:\n"
-        "movl %edx, 0x4ece04\n" /* line 568 */
+        "movl %edx, scrCompileGlob+4\n" /* line 568 */
         "movl $1, (%esp)\n" /* line 569 */
         "calll TempMalloc\n"
-        "movl %eax, 0x114cf4c\n"
+        "movl %eax, scrCompilePub+44\n"
         "movl %eax, scrCompileGlob\n" /* line 570 */
         "movzbl -0x1c(%ebp), %edx\n" /* line 571 */
         "movb %dl, (%eax)\n"
@@ -3754,10 +3754,10 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "retl\n"
         /* { scope 1 */
         ".Lf951a4_00095289:\n"
-        "jmpl *0x2f172c(, %eax, 4)\n" /* line 352 */
+        "jmpl *CorrectSolidDeltas+4140(, %eax, 4)\n" /* line 352 */
         ".Lf951a4_00095290:\n"
         "xorl %esi, %esi\n" /* line 329 | valueIndex */
-        "movl $0x4ece5c, %ebx\n" /* index */
+        "movl $scrCompileGlob+92, %ebx\n" /* index */
         ".Lf951a4_00095297:\n"
         "movl %ebx, %eax\n" /* line 330 | index */
         "calll EmitValue\n"
@@ -3774,7 +3774,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpl $5, %ebx\n" /* line 364 | index */
         "ja .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 366 */
-        "movl 0x114cf4c, %eax\n" /* line 367 */
+        "movl scrCompilePub+44, %eax\n" /* line 367 */
         "movb $0x1f, (%eax)\n"
         "movl $1, (%esp)\n" /* line 616 */
         "calll TempMalloc\n"
@@ -3784,7 +3784,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpb $0x5c, (%edx)\n" /* line 558 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 560 */
-        "movl 0x114cf4c, %eax\n" /* line 561 */
+        "movl scrCompilePub+44, %eax\n" /* line 561 */
         "movb $0x5f, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         "movzbl (%edx), %eax\n" /* line 541 */
@@ -3803,7 +3803,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpb $0xf, (%edx)\n" /* line 532 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 534 */
-        "movl 0x114cf4c, %eax\n" /* line 535 */
+        "movl scrCompilePub+44, %eax\n" /* line 535 */
         "movb $0x54, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         "cmpb $0x16, (%edx)\n" /* line 449 */
@@ -3834,7 +3834,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpb $0x36, %al\n" /* line 383 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 385 */
-        "movl 0x114cf4c, %eax\n" /* line 386 */
+        "movl scrCompilePub+44, %eax\n" /* line 386 */
         "movb $0x21, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         "cmpb $0x4e, (%edx)\n" /* line 505 */
@@ -3844,18 +3844,18 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpb $0xf, (%edx)\n" /* line 513 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 515 */
-        "movl 0x114cf4c, %eax\n" /* line 516 */
+        "movl scrCompilePub+44, %eax\n" /* line 516 */
         "movb $0x50, (%eax)\n"
-        "movl 0x4ece04, %eax\n" /* line 518 */
+        "movl scrCompileGlob+4, %eax\n" /* line 518 */
         "cmpb $0x4e, (%eax)\n"
         "jne .Lf951a4_00095281\n"
-        "movl 0x114cf4c, %eax\n" /* line 521 */
+        "movl scrCompilePub+44, %eax\n" /* line 521 */
         "movl %eax, (%esp)\n"
         "calll TempMemorySetPos\n"
-        "movl 0x114cf4c, %edx\n" /* line 522 */
+        "movl scrCompilePub+44, %edx\n" /* line 522 */
         "leal -1(%edx), %eax\n"
-        "movl %eax, 0x114cf4c\n"
-        "movl $0, 0x4ece04\n" /* line 523 */
+        "movl %eax, scrCompilePub+44\n"
+        "movl $0, scrCompileGlob+4\n" /* line 523 */
         "movl %eax, scrCompileGlob\n" /* line 524 */
         "movb $0x4f, -1(%edx)\n" /* line 525 */
         "jmp .Lf951a4_00095281\n"
@@ -3871,7 +3871,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpb $0x2c, %al\n" /* line 493 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 495 */
-        "movl 0x114cf4c, %eax\n" /* line 496 */
+        "movl scrCompilePub+44, %eax\n" /* line 496 */
         "movb $0x3a, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         ".Lf951a4_0009546a:\n"
@@ -3891,32 +3891,32 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "jmp .Lf951a4_00095281\n"
         ".Lf951a4_00095492:\n"
         "calll RemoveOpcodePos\n" /* line 376 */
-        "movl 0x114cf4c, %eax\n" /* line 377 */
+        "movl scrCompilePub+44, %eax\n" /* line 377 */
         "movb $0x22, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         ".Lf951a4_000954a4:\n"
         "calll RemoveOpcodePos\n" /* line 357 */
-        "movl 0x114cf4c, %eax\n" /* line 358 */
+        "movl scrCompilePub+44, %eax\n" /* line 358 */
         "movb $0x1f, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         ".Lf951a4_000954b6:\n"
         "calll RemoveOpcodePos\n" /* line 459 */
-        "movl 0x114cf4c, %eax\n" /* line 460 */
+        "movl scrCompilePub+44, %eax\n" /* line 460 */
         "movb $0x3d, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         ".Lf951a4_000954c8:\n"
         "calll RemoveOpcodePos\n" /* line 468 */
-        "movl 0x114cf4c, %eax\n" /* line 469 */
+        "movl scrCompilePub+44, %eax\n" /* line 469 */
         "movb $0x3c, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         ".Lf951a4_000954da:\n"
         "calll RemoveOpcodePos\n" /* line 477 */
-        "movl 0x114cf4c, %eax\n" /* line 478 */
+        "movl scrCompilePub+44, %eax\n" /* line 478 */
         "movb $0x3b, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
         ".Lf951a4_000954ec:\n"
         "calll RemoveOpcodePos\n" /* line 486 */
-        "movl 0x114cf4c, %eax\n" /* line 487 */
+        "movl scrCompilePub+44, %eax\n" /* line 487 */
         "movb $0x38, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
     );
@@ -4092,15 +4092,15 @@ int Scr_FindLocalVarIndex(unsigned int name, sval_t sourcePos, Bool create, scr_
         "movl 0x18(%edi), %eax\n" /* line 791 */
         "movl %eax, -0x1c(%ebp)\n" /* stringValue */
         /* { scope 2: stringValue */
-        "movzbl 0x4ece1c, %edx\n" /* line 244 */
+        "movzbl scrCompileGlob+28, %edx\n" /* line 244 */
         "movb %dl, -0x1d(%ebp)\n" /* bConstRefCount */
-        "movb $1, 0x4ece1c\n" /* line 245 */
+        "movb $1, scrCompileGlob+28\n" /* line 245 */
         "movl $2, (%esp)\n" /* line 214 */
         "calll TempMallocAlign\n"
         "movl %eax, scrCompileGlob\n"
-        "cmpl $2, 0x114cf48\n" /* line 216 */
+        "cmpl $2, scrCompilePub+40\n" /* line 216 */
         "je .Lf95688_000957f6\n"
-        "cmpb $0, 0x4ece1c\n" /* line 233 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 233 */
         "jne .Lf95688_00095813\n"
         ".Lf95688_00095737:\n"
         "movl scrCompileGlob, %ebx\n" /* line 236 */
@@ -4110,13 +4110,13 @@ int Scr_FindLocalVarIndex(unsigned int name, sval_t sourcePos, Bool create, scr_
         "movw %ax, (%ebx)\n"
         ".Lf95688_0009574b:\n"
         "movzbl -0x1d(%ebp), %edx\n" /* line 247 | bConstRefCount */
-        "movb %dl, 0x4ece1c\n"
+        "movb %dl, scrCompileGlob+28\n"
         /* } scope */
         "movl -0x24(%ebp), %eax\n" /* line 797 */
         "cmpl 0x18(%edi), %eax\n"
         "jne .Lf95688_000956c8\n"
         ".Lf95688_00095761:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf95688_00095848\n"
         ".Lf95688_0009576e:\n"
         "movl %esi, %ecx\n" /* line 802 | i */
@@ -4138,7 +4138,7 @@ int Scr_FindLocalVarIndex(unsigned int name, sval_t sourcePos, Bool create, scr_
         "movl %edx, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21d7f4, 4(%esp)\n" /* "uninitialised variable '%s'" */
+        "movl $str_0021d7f4, 4(%esp)\n" /* "uninitialised variable '%s'" */
         "movl -0x28(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -4155,10 +4155,10 @@ int Scr_FindLocalVarIndex(unsigned int name, sval_t sourcePos, Bool create, scr_
         ".Lf95688_000957ca:\n"
         "cmpb $0, -0x29(%ebp)\n" /* line 813 */
         "je .Lf95688_0009579e\n"
-        "cmpb $0, 0x4ece50\n"
+        "cmpb $0, scrCompileGlob+80\n"
         "jne .Lf95688_0009579e\n"
         ".Lf95688_000957d9:\n"
-        "movl $0x21d810, 4(%esp)\n" /* line 820 */
+        "movl $str_0021d810, 4(%esp)\n" /* line 820 */
         "movl -0x28(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll CompileError\n"
@@ -4174,7 +4174,7 @@ int Scr_FindLocalVarIndex(unsigned int name, sval_t sourcePos, Bool create, scr_
         /* { scope 2: stringValue */
         /* { scope 3 */
         ".Lf95688_000957f6:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf95688_0009574b\n"
         "movl -0x1c(%ebp), %eax\n" /* line 206 | stringValue */
         "movl %eax, (%esp)\n"
@@ -4188,7 +4188,7 @@ int Scr_FindLocalVarIndex(unsigned int name, sval_t sourcePos, Bool create, scr_
         "jmp .Lf95688_00095737\n"
         /* } scope */
         ".Lf95688_00095823:\n"
-        "cmpb $0, 0x4ece50\n" /* line 805 */
+        "cmpb $0, scrCompileGlob+80\n" /* line 805 */
         "jne .Lf95688_0009579e\n"
         "orb %cl, %dl\n" /* line 807 */
         "movl 8(%ebp), %eax\n" /* block */
@@ -4219,22 +4219,22 @@ unsigned int EmitContinueStatement(void)
         "subl $0x1c, %esp\n"
         "movl %eax, %esi\n" /* sourcePos */
         "movl %edx, %ebx\n" /* block */
-        "cmpb $0, 0x4ece34\n" /* line 4370 */
+        "cmpb $0, scrCompileGlob+52\n" /* line 4370 */
         "je .Lf95856_00095954\n"
         "movl (%edx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf95856_00095954\n"
-        "movl 0x4ece48, %eax\n" /* line 3300 */
+        "movl scrCompileGlob+72, %eax\n" /* line 3300 */
         "testl %eax, %eax\n"
         "je .Lf95856_000958a6\n"
-        "movl 0x4ece4c, %eax\n" /* line 886 */
+        "movl scrCompileGlob+76, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf95856_0009596c\n"
         ".Lf95856_00095894:\n"
         "movl (%eax), %edx\n" /* line 3303 */
-        "movl 0x4ece48, %eax\n"
+        "movl scrCompileGlob+72, %eax\n"
         "movl %ebx, (%eax, %edx, 4)\n"
-        "movl 0x4ece4c, %eax\n" /* line 3304 */
+        "movl scrCompileGlob+76, %eax\n" /* line 3304 */
         "addl $1, (%eax)\n"
         /* { scope 1 */
         ".Lf95856_000958a6:\n"
@@ -4278,9 +4278,9 @@ unsigned int EmitContinueStatement(void)
         "movl $0, (%esp)\n" /* line 4386 */
         "calll TempMalloc\n"
         "movl %eax, 4(%ebx)\n" /* block */
-        "movl 0x4ece38, %eax\n" /* line 4387 */
+        "movl scrCompileGlob+56, %eax\n" /* line 4387 */
         "movl %eax, 8(%ebx)\n" /* block */
-        "movl %ebx, 0x4ece38\n" /* line 4388 | block */
+        "movl %ebx, scrCompileGlob+56\n" /* line 4388 | block */
         "addl $0x1c, %esp\n" /* line 4389 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -4288,7 +4288,7 @@ unsigned int EmitContinueStatement(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf95856_00095954:\n"
-        "movl $0x21d824, 4(%esp)\n" /* line 4372 */
+        "movl $str_0021d824, 4(%esp)\n" /* line 4372 */
         "movl %esi, (%esp)\n" /* sourcePos */
         "calll CompileError\n"
         "addl $0x1c, %esp\n" /* line 4389 */
@@ -4298,10 +4298,10 @@ unsigned int EmitContinueStatement(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf95856_0009596c:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece4c, %eax\n"
+        "movl scrCompileGlob+76, %eax\n"
         "jmp .Lf95856_00095894\n"
     );
 }
@@ -4319,25 +4319,25 @@ unsigned int EmitBreakStatement(void)
         "subl $0x1c, %esp\n"
         "movl %eax, %esi\n" /* sourcePos */
         "movl %edx, %ebx\n" /* block */
-        "cmpb $0, 0x4ece2c\n" /* line 4343 */
+        "cmpb $0, scrCompileGlob+44\n" /* line 4343 */
         "je .Lf9598a_00095a8e\n"
         "movl (%edx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf9598a_00095a8e\n"
-        "movl 0x4ece3c, %eax\n" /* line 3288 */
+        "movl scrCompileGlob+60, %eax\n" /* line 3288 */
         "testl %eax, %eax\n"
         "je .Lf9598a_000959da\n"
-        "movl 0x4ece40, %eax\n" /* line 886 */
+        "movl scrCompileGlob+64, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf9598a_00095aa6\n"
         ".Lf9598a_000959c8:\n"
         "movl (%eax), %edx\n" /* line 3291 */
-        "movl 0x4ece3c, %eax\n"
+        "movl scrCompileGlob+60, %eax\n"
         "movl %ebx, (%eax, %edx, 4)\n"
-        "movl 0x4ece40, %eax\n" /* line 3292 */
+        "movl scrCompileGlob+64, %eax\n" /* line 3292 */
         "addl $1, (%eax)\n"
         ".Lf9598a_000959da:\n"
-        "movl 0x4ece44, %edx\n" /* line 4351 | outerBlock */
+        "movl scrCompileGlob+68, %edx\n" /* line 4351 | outerBlock */
         /* { scope 1 */
         /* { scope 2 */
         "movl (%ebx), %eax\n" /* line 850 */
@@ -4381,9 +4381,9 @@ unsigned int EmitBreakStatement(void)
         "movl $0, (%esp)\n" /* line 4360 */
         "calll TempMalloc\n"
         "movl %eax, 4(%ebx)\n" /* block */
-        "movl 0x4ece30, %eax\n" /* line 4361 */
+        "movl scrCompileGlob+48, %eax\n" /* line 4361 */
         "movl %eax, 8(%ebx)\n" /* block */
-        "movl %ebx, 0x4ece30\n" /* line 4362 | block */
+        "movl %ebx, scrCompileGlob+48\n" /* line 4362 | block */
         "addl $0x1c, %esp\n" /* line 4363 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -4391,7 +4391,7 @@ unsigned int EmitBreakStatement(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf9598a_00095a8e:\n"
-        "movl $0x21d840, 4(%esp)\n" /* line 4345 */
+        "movl $str_0021d840, 4(%esp)\n" /* line 4345 */
         "movl %esi, (%esp)\n" /* sourcePos */
         "calll CompileError\n"
         "addl $0x1c, %esp\n" /* line 4363 */
@@ -4401,10 +4401,10 @@ unsigned int EmitBreakStatement(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf9598a_00095aa6:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece40, %eax\n"
+        "movl scrCompileGlob+64, %eax\n"
         "jmp .Lf9598a_000959c8\n"
     );
 }
@@ -4423,7 +4423,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         "movl %eax, %ebx\n" /* func */
         "movl %edx, -0x2c(%ebp)\n"
         /* { scope 1 */
-        "cmpl $2, 0x114cf48\n" /* line 1703 */
+        "cmpl $2, scrCompilePub+40\n" /* line 1703 */
         "je .Lf95ac4_00095ce5\n"
         "cmpl $0x14, (%eax)\n" /* line 1716 */
         "je .Lf95ac4_00095d19\n"
@@ -4435,12 +4435,12 @@ unsigned int EmitFunction(sval_t sourcePos)
         "movl %eax, %esi\n" /* scope */
         "movl 4(%ebx), %eax\n" /* line 1730 | threadId, stringValue */
         /* { scope 2 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf95ac4_00095d7a\n"
         /* } scope */
         ".Lf95ac4_00095b0d:\n"
         "movl %esi, 4(%esp)\n" /* line 1731 | scope */
-        "movl 0x114cf28, %eax\n"
+        "movl scrCompilePub+8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll FindVariable\n"
         "movl %eax, (%esp)\n"
@@ -4450,19 +4450,19 @@ unsigned int EmitFunction(sval_t sourcePos)
         "movl -0x24(%ebp), %edi\n" /* line 1732 */
         "movl %esi, (%esp)\n" /* line 1663 */
         "calll SL_AddRefToString\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf95ac4_00095d6d\n"
         ".Lf95ac4_00095b44:\n"
-        "movl 0x4ece54, %eax\n" /* line 1665 */
+        "movl scrCompileGlob+84, %eax\n" /* line 1665 */
         "movw %si, (%eax)\n"
-        "movl 0x4ece54, %eax\n" /* line 1666 */
+        "movl scrCompileGlob+84, %eax\n" /* line 1666 */
         "movl -0x2c(%ebp), %edx\n"
         "movl %edx, 4(%eax)\n"
-        "movl 0x4ece54, %eax\n" /* line 1667 */
+        "movl scrCompileGlob+84, %eax\n" /* line 1667 */
         "movb $0, 2(%eax)\n"
-        "addl $0xc, 0x4ece54\n" /* line 1668 */
+        "addl $0xc, scrCompileGlob+84\n" /* line 1668 */
         "movl %esi, 4(%esp)\n" /* line 1669 */
-        "movl 0x114cf2c, %eax\n"
+        "movl scrCompilePub+12, %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetVariable\n"
         "movl %eax, (%esp)\n"
@@ -4478,9 +4478,9 @@ unsigned int EmitFunction(sval_t sourcePos)
         "movl %eax, %esi\n" /* scope */
         ".Lf95ac4_00095b9e:\n"
         "movl (%edi), %ebx\n" /* line 1754 | threadId */
-        "cmpl $2, 0x114cf48\n" /* line 255 */
+        "cmpl $2, scrCompilePub+40\n" /* line 255 */
         "je .Lf95ac4_00095e07\n"
-        "cmpb $0, 0x4ece1c\n" /* line 266 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 266 */
         "jne .Lf95ac4_00095de0\n"
         ".Lf95ac4_00095bba:\n"
         "movl $2, 4(%esp)\n" /* line 268 */
@@ -4523,7 +4523,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         "calll GetNewVariable\n"
         "movl scrCompileGlob, %edx\n" /* line 1811 */
         "movl %edx, -0x28(%ebp)\n" /* value */
-        "cmpl $1, 0x114cf48\n" /* line 1816 */
+        "cmpl $1, scrCompilePub+40\n" /* line 1816 */
         "sbbl %edx, %edx\n"
         "andl $0xfffffffb, %edx\n"
         "addl $0xc, %edx\n"
@@ -4563,7 +4563,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         "calll GetVarType\n"
         "subl $1, %eax\n"
         "je .Lf95ac4_00095b9e\n"
-        "movl $0x21d75c, 4(%esp)\n" /* line 1745 */
+        "movl $str_0021d75c, 4(%esp)\n" /* line 1745 */
         "movl -0x2c(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll CompileError\n"
@@ -4571,7 +4571,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         ".Lf95ac4_00095ce5:\n"
         "movl 4(%eax), %eax\n" /* line 1705 | stringValue */
         /* { scope 2 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf95ac4_00095e21\n"
         /* } scope */
         ".Lf95ac4_00095cf5:\n"
@@ -4579,11 +4579,11 @@ unsigned int EmitFunction(sval_t sourcePos)
         "jne .Lf95ac4_00095c9b\n"
         "movl 8(%ebx), %eax\n" /* line 1708 | threadId, stringValue */
         /* { scope 2 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf95ac4_00095e53\n"
         /* } scope */
         ".Lf95ac4_00095d0a:\n"
-        "subl $1, 0x114cf24\n" /* line 1709 */
+        "subl $1, scrCompilePub+4\n" /* line 1709 */
         /* } scope */
         "addl $0x3c, %esp\n" /* line 1829 */
         "popl %ebx\n"
@@ -4595,14 +4595,14 @@ unsigned int EmitFunction(sval_t sourcePos)
         ".Lf95ac4_00095d19:\n"
         "movl 4(%eax), %eax\n" /* line 1720 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x4ece08, %eax\n"
+        "movl scrCompileGlob+8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetVariable\n"
         "movl %eax, %esi\n" /* scope */
         "movl 4(%ebx), %ebx\n" /* line 1721 | threadId */
-        "cmpl $2, 0x114cf48\n" /* line 255 */
+        "cmpl $2, scrCompilePub+40\n" /* line 255 */
         "je .Lf95ac4_00095ded\n"
-        "cmpb $0, 0x4ece1c\n" /* line 266 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 266 */
         "jne .Lf95ac4_00095e46\n"
         ".Lf95ac4_00095d4c:\n"
         "movl $2, 4(%esp)\n" /* line 268 */
@@ -4625,7 +4625,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         "jmp .Lf95ac4_00095b0d\n"
         /* } scope */
         ".Lf95ac4_00095d87:\n"
-        "movl $0x21d75c, 4(%esp)\n" /* line 1769 */
+        "movl $str_0021d75c, 4(%esp)\n" /* line 1769 */
         "movl -0x2c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -4647,7 +4647,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         "je .Lf95ac4_00095bec\n"
         "cmpl $7, %edx\n" /* line 1776 */
         "je .Lf95ac4_00095dc8\n"
-        "movl 0x114cf48, %edx\n" /* line 1786 */
+        "movl scrCompilePub+40, %edx\n" /* line 1786 */
         "testl %edx, %edx\n"
         "je .Lf95ac4_00095e2e\n"
         ".Lf95ac4_00095dc8:\n"
@@ -4662,7 +4662,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         "jmp .Lf95ac4_00095bba\n"
         /* { scope 2 */
         ".Lf95ac4_00095ded:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf95ac4_00095d5c\n"
         "movl %ebx, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -4670,7 +4670,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         /* } scope */
         /* { scope 2 */
         ".Lf95ac4_00095e07:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf95ac4_00095bca\n"
         "movl %ebx, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -4683,7 +4683,7 @@ unsigned int EmitFunction(sval_t sourcePos)
         "jmp .Lf95ac4_00095cf5\n"
         /* } scope */
         ".Lf95ac4_00095e2e:\n"
-        "movl $0x21d718, 4(%esp)\n" /* line 1788 */
+        "movl $str_0021d718, 4(%esp)\n" /* line 1788 */
         "movl -0x2c(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll CompileError\n"
@@ -4759,7 +4759,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "movl -0x4c(%ebp), %eax\n"
         "calll EmitPostFunctionCall\n"
         /* { scope 2: constValue */
-        "movl 0x195ee58, %eax\n" /* line 1651 */
+        "movl imp_scrVarPub, %eax\n" /* line 1651 */
         "cmpb $0, 0xa(%eax)\n"
         "jne .Lf95e60_00095f03\n"
         /* } scope */
@@ -4807,7 +4807,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "movl -0x4c(%ebp), %eax\n"
         "calll EmitPostFunctionCall\n"
         /* { scope 2: constValue */
-        "movl 0x195ee58, %eax\n" /* line 1651 */
+        "movl imp_scrVarPub, %eax\n" /* line 1651 */
         "cmpb $0, 0xa(%eax)\n"
         "je .Lf95e60_00095ee4\n"
         "jmp .Lf95e60_00095f03\n"
@@ -4832,7 +4832,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "jne .Lf95e60_00095f53\n"
         "movl 4(%ebx), %eax\n" /* line 1981 | i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x4ece08, %eax\n"
+        "movl scrCompileGlob+8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll FindVariable\n"
         "testl %eax, %eax\n"
@@ -4847,7 +4847,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x48(%ebp)\n" /* sourcePos */
         "movl %esi, 4(%esp)\n" /* line 2114 | name */
-        "movl 0x114cf30, %eax\n"
+        "movl scrCompilePub+16, %eax\n"
         "movl %eax, (%esp)\n"
         "calll FindVariable\n"
         "testl %eax, %eax\n" /* line 2115 */
@@ -4905,7 +4905,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "calll Scr_GetFunction\n"
         "movl %eax, -0x40(%ebp)\n" /* func */
         "movl %esi, 4(%esp)\n" /* line 2125 | name */
-        "movl 0x114cf30, %eax\n"
+        "movl scrCompilePub+16, %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetNewVariable\n"
         "cmpl $1, -0x20(%ebp)\n" /* line 2024 | type */
@@ -4926,7 +4926,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "movb $1, %bl\n" /* i */
         "subl -0x44(%ebp), %ebx\n" /* param_count, i */
         ".Lf95e60_000960a1:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf95e60_000960b2\n"
         "movl %esi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -4949,7 +4949,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         /* } scope */
         /* { scope 2: constValue */
         ".Lf95e60_000960eb:\n"
-        "movl 0x114cf54, %edx\n" /* line 1844 */
+        "movl scrCompilePub+52, %edx\n" /* line 1844 */
         "testl %edx, %edx\n"
         "jg .Lf95e60_000961a7\n"
         "xorl %ebx, %ebx\n" /* i */
@@ -4958,9 +4958,9 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "je .Lf95e60_00096267\n"
         ".Lf95e60_00096107:\n"
         "movl -0x40(%ebp), %eax\n" /* line 1854 | func */
-        "movl %eax, 0x114cf58(, %edx, 4)\n"
+        "movl %eax, scrCompilePub+56(, %edx, 4)\n"
         "leal 1(%edx), %eax\n" /* line 1860 */
-        "movl %eax, 0x114cf54\n"
+        "movl %eax, scrCompilePub+52\n"
         /* } scope */
         ".Lf95e60_00096119:\n"
         "movl $2, (%esp)\n" /* line 609 */
@@ -4968,7 +4968,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "movl %eax, scrCompileGlob\n"
         "movw %bx, (%eax)\n" /* line 610 */
         /* { scope 2: constValue */
-        "movl 0x195ee58, %eax\n" /* line 1651 */
+        "movl imp_scrVarPub, %eax\n" /* line 1651 */
         "cmpb $0, 0xa(%eax)\n"
         "je .Lf95e60_0009615d\n"
         "movl -0x50(%ebp), %edx\n" /* line 1654 */
@@ -4995,8 +4995,8 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         ".Lf95e60_00096174:\n"
         "cmpl $1, -0x20(%ebp)\n" /* line 2012 | type */
         "jne .Lf95e60_00095efb\n"
-        "movl $0, 0x114cf48\n" /* line 2015 */
-        "movl 0x195ee58, %eax\n" /* line 2017 */
+        "movl $0, scrCompilePub+40\n" /* line 2015 */
+        "movl imp_scrVarPub, %eax\n" /* line 2017 */
         "cmpb $0, 0xb(%eax)\n"
         "jne .Lf95e60_00095efb\n"
         "movl -0x3c(%ebp), %eax\n" /* line 2018 | savedPos */
@@ -5006,7 +5006,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         /* { scope 2: constValue */
         ".Lf95e60_000961a7:\n"
         "movl -0x40(%ebp), %eax\n" /* line 1846 | func */
-        "cmpl 0x114cf58, %eax\n"
+        "cmpl scrCompilePub+56, %eax\n"
         "je .Lf95e60_0009628d\n"
         "xorl %ebx, %ebx\n" /* i */
         "movl $scrCompilePub, %ecx\n"
@@ -5031,7 +5031,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "movl $1, %ebx\n" /* i */
         "jmp .Lf95e60_000960a1\n"
         ".Lf95e60_000961f4:\n"
-        "movl 0x114cf48, %ecx\n" /* line 1990 */
+        "movl scrCompilePub+40, %ecx\n" /* line 1990 */
         "testl %ecx, %ecx\n"
         "je .Lf95e60_00096249\n"
         "movl $0, -0x20(%ebp)\n" /* line 1992 | type */
@@ -5040,31 +5040,31 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "jne .Lf95e60_00095ffa\n"
         "cmpb $0, -0x51(%ebp)\n"
         "jne .Lf95e60_00095ffa\n"
-        "movl $0x21d858, 4(%esp)\n" /* line 2147 */
+        "movl $str_0021d858, 4(%esp)\n" /* line 2147 */
         "movl -0x48(%ebp), %eax\n" /* sourcePos */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf95e60_00095efb\n"
         ".Lf95e60_00096231:\n"
-        "movl $0x21d8ac, 4(%esp)\n" /* line 2156 */
+        "movl $str_0021d8ac, 4(%esp)\n" /* line 2156 */
         "movl -0x48(%ebp), %eax\n" /* sourcePos */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf95e60_00095efb\n"
         ".Lf95e60_00096249:\n"
-        "movl 0x195ee58, %eax\n" /* line 1996 */
+        "movl imp_scrVarPub, %eax\n" /* line 1996 */
         "cmpb $0, 0xb(%eax)\n"
         "je .Lf95e60_000962b0\n"
-        "movl $1, 0x114cf48\n" /* line 2003 */
+        "movl $1, scrCompilePub+40\n" /* line 2003 */
         ".Lf95e60_0009625e:\n"
         "movl $1, -0x20(%ebp)\n" /* line 2006 | type */
         "jmp .Lf95e60_00096205\n"
         /* { scope 2: constValue */
         ".Lf95e60_00096267:\n"
-        "movl $0x21d8c8, 4(%esp)\n" /* line 1852 */
+        "movl $str_0021d8c8, 4(%esp)\n" /* line 1852 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x114cf54, %edx\n"
+        "movl scrCompilePub+52, %edx\n"
         "jmp .Lf95e60_00096107\n"
         ".Lf95e60_00096286:\n"
         "movl %edx, %ebx\n" /* line 1844 | i */
@@ -5086,7 +5086,7 @@ unsigned int EmitCall(sval_t func_name, sval_t params, Bool bStatement, scr_bloc
         "movl $0, (%esp)\n" /* line 1998 */
         "calll TempMalloc\n"
         "movl %eax, -0x3c(%ebp)\n" /* savedPos */
-        "movl $2, 0x114cf48\n" /* line 1999 */
+        "movl $2, scrCompilePub+40\n" /* line 1999 */
         "jmp .Lf95e60_0009625e\n"
     );
 }
@@ -5109,7 +5109,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "subl $0x11, %edx\n"
         "cmpl $0x39, %edx\n"
         "ja .Lf962cc_000962ea\n"
-        "jmpl *0x2f1828(, %edx, 4)\n"
+        "jmpl *CorrectSolidDeltas+4392(, %edx, 4)\n"
         ".Lf962cc_000962ea:\n"
         "movl %edi, %edx\n" /* line 2694 | constValue */
         "calll EvalPrimitiveExpression\n"
@@ -5221,7 +5221,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "movl %eax, -0x40(%ebp)\n"
         "cmpl $0x1f, %eax\n"
         "jg .Lf962cc_00096686\n"
-        "movl $0x4ece50, %ecx\n" /* line 1224 */
+        "movl $scrCompileGlob+80, %ecx\n" /* line 1224 */
         "leal (%eax, %eax, 2), %edx\n"
         "shll $2, %edx\n"
         "movl -0x24(%ebp), %eax\n" /* constValue2 */
@@ -5303,18 +5303,18 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "movl scrCompileGlob, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EmitAnimation\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf962cc_0009635e\n"
         "movl %esi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
         "xorl %eax, %eax\n"
         "jmp .Lf962cc_000962f4\n"
         "movl 4(%eax), %esi\n" /* line 2690 | expr */
-        "movl 0x195ee54, %eax\n" /* line 740 */
+        "movl imp_scrAnimPub, %eax\n" /* line 740 */
         "movl 0x414(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf962cc_000965ae\n"
-        "movl $0x21d930, 4(%esp)\n" /* line 742 */
+        "movl $str_0021d930, 4(%esp)\n" /* line 742 */
         "movl %esi, (%esp)\n"
         "calll CompileError\n"
         "xorl %eax, %eax\n"
@@ -5338,7 +5338,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "jmp .Lf962cc_000962f4\n"
         /* { scope 1: constValue */
         ".Lf962cc_000965bc:\n"
-        "movl $0x21d904, 4(%esp)\n" /* line 2574 */
+        "movl $str_0021d904, 4(%esp)\n" /* line 2574 */
         "movl -0x48(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -5376,7 +5376,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "subl $3, %eax\n"
         "movl %eax, scrCompilePub\n"
         "leal (%eax, %eax, 2), %eax\n" /* line 2563 */
-        "leal 0x4ece5c(, %eax, 4), %ecx\n"
+        "leal scrCompileGlob+92(, %eax, 4), %ecx\n"
         "xorl %esi, %esi\n"
         "leal -0x30(%ebp), %ebx\n" /* constValue, node */
         /* { scope 2 */
@@ -5412,7 +5412,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "jmp .Lf962cc_0009664d\n"
         /* } scope */
         ".Lf962cc_00096686:\n"
-        "movl $0x21d8e8, 4(%esp)\n" /* line 1220 */
+        "movl $str_0021d8e8, 4(%esp)\n" /* line 1220 */
         "movl -0x1c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -5427,7 +5427,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "movl %edx, (%esp)\n"
         "calll AddOpcodePos\n"
         /* { scope 2 */
-        "movl 0x195ee58, %eax\n" /* line 1651 */
+        "movl imp_scrVarPub, %eax\n" /* line 1651 */
         "cmpb $0, 0xa(%eax)\n"
         "je .Lf962cc_000966ef\n"
         "movl (%esi), %ebx\n" /* line 1654 | node */
@@ -5448,10 +5448,10 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "jmp .Lf962cc_000962f1\n"
         /* { scope 2 */
         ".Lf962cc_000966f6:\n"
-        "movl 0x195ee60, %eax\n" /* line 2480 */
+        "movl imp_var_typename, %eax\n" /* line 2480 */
         "movl (%eax, %edx, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21cea0, 4(%esp)\n" /* "type %s is not a float" */
+        "movl $str_0021cea0, 4(%esp)\n" /* "type %s is not a float" */
         "movl 8(%ecx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -5478,7 +5478,7 @@ Bool EmitOrEvalExpression(void)
         "subl $6, %eax\n"
         "cmpl $0x2d, %eax\n"
         "ja .Lf9671a_00096776\n"
-        "jmpl *0x2f1910(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+4624(, %eax, 4)\n"
         "movl 4(%ebx), %eax\n" /* line 2870 | expr */
         /* { scope 1: constValue, constValue */
         "leal -0x24(%ebp), %edi\n" /* line 2883 | constValue */
@@ -5547,7 +5547,7 @@ Bool EmitOrEvalExpression(void)
         "movl scrCompilePub, %ebx\n" /* line 1218 */
         "cmpl $0x1f, %ebx\n"
         "jg .Lf9671a_000969fe\n"
-        "movl $0x4ece50, %ecx\n" /* line 1224 */
+        "movl $scrCompileGlob+80, %ecx\n" /* line 1224 */
         "leal (%ebx, %ebx, 2), %edx\n"
         "shll $2, %edx\n"
         "movl -0x24(%ebp), %eax\n" /* constValue */
@@ -5698,7 +5698,7 @@ Bool EmitOrEvalExpression(void)
         /* } scope */
         /* { scope 1: constValue, constValue */
         ".Lf9671a_000969fe:\n"
-        "movl $0x21d8e8, 4(%esp)\n" /* line 1220 */
+        "movl $str_0021d8e8, 4(%esp)\n" /* line 1220 */
         "movl -0x1c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -5772,12 +5772,12 @@ Bool EmitOrEvalExpression(void)
         "movl -0x58(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalBinaryOperator\n"
-        "movl 0x195ee58, %eax\n" /* line 2793 */
+        "movl imp_scrVarPub, %eax\n" /* line 2793 */
         "movl 0x10(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf9671a_00096acb\n"
         "movl %eax, 8(%esp)\n" /* line 2795 */
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "movl -0x5c(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll CompileError\n"
@@ -6086,7 +6086,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "movl %eax, (%esp)\n"
         "calll AddOpcodePos\n"
         /* { scope 2: constValue */
-        "movl 0x195ee58, %eax\n" /* line 1651 */
+        "movl imp_scrVarPub, %eax\n" /* line 1651 */
         "cmpb $0, 0xa(%eax)\n"
         "jne .Lf96d1c_00096def\n"
         /* } scope */
@@ -6159,7 +6159,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "jne .Lf96d1c_00096e42\n"
         "movl 4(%ebx), %eax\n" /* line 1981 | i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x4ece08, %eax\n"
+        "movl scrCompileGlob+8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll FindVariable\n"
         "testl %eax, %eax\n"
@@ -6176,7 +6176,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "movl %eax, -0x48(%ebp)\n" /* sourcePos */
         "movl -0x44(%ebp), %edx\n" /* line 2214 | name */
         "movl %edx, 4(%esp)\n"
-        "movl 0x114cf34, %eax\n"
+        "movl scrCompilePub+20, %eax\n"
         "movl %eax, (%esp)\n"
         "calll FindVariable\n"
         "testl %eax, %eax\n" /* line 2215 */
@@ -6240,7 +6240,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         ".Lf96d1c_00096f41:\n"
         "cmpl $0xff, %esi\n" /* line 2255 | param_count */
         "jg .Lf96d1c_000970c3\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf96d1c_00096f61\n"
         "movl -0x44(%ebp), %edx\n" /* line 206 | name */
         "movl %edx, (%esp)\n"
@@ -6265,7 +6265,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         /* } scope */
         /* { scope 2: constValue */
         ".Lf96d1c_00096f9b:\n"
-        "movl 0x114cf54, %edx\n" /* line 1844 */
+        "movl scrCompilePub+52, %edx\n" /* line 1844 */
         "testl %edx, %edx\n"
         "jg .Lf96d1c_0009711c\n"
         "xorl %ebx, %ebx\n" /* i */
@@ -6274,9 +6274,9 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "je .Lf96d1c_00097173\n"
         ".Lf96d1c_00096fb7:\n"
         "movl -0x40(%ebp), %eax\n" /* line 1854 | meth */
-        "movl %eax, 0x114cf58(, %edx, 4)\n"
+        "movl %eax, scrCompilePub+56(, %edx, 4)\n"
         "leal 1(%edx), %eax\n" /* line 1860 */
-        "movl %eax, 0x114cf54\n"
+        "movl %eax, scrCompilePub+52\n"
         /* } scope */
         ".Lf96d1c_00096fc9:\n"
         "movl $2, (%esp)\n" /* line 609 */
@@ -6288,7 +6288,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "movl %edx, (%esp)\n"
         "calll AddOpcodePos\n"
         /* { scope 2: constValue */
-        "movl 0x195ee58, %eax\n" /* line 1651 */
+        "movl imp_scrVarPub, %eax\n" /* line 1651 */
         "cmpb $0, 0xa(%eax)\n"
         "je .Lf96d1c_00097020\n"
         "movl -0x54(%ebp), %eax\n" /* line 1654 */
@@ -6315,8 +6315,8 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         ".Lf96d1c_00097037:\n"
         "cmpl $1, -0x1c(%ebp)\n" /* line 2012 | type */
         "jne .Lf96d1c_00096de7\n"
-        "movl $0, 0x114cf48\n" /* line 2015 */
-        "movl 0x195ee58, %eax\n" /* line 2017 */
+        "movl $0, scrCompilePub+40\n" /* line 2015 */
+        "movl imp_scrVarPub, %eax\n" /* line 2017 */
         "cmpb $0, 0xb(%eax)\n"
         "jne .Lf96d1c_00096de7\n"
         "movl -0x3c(%ebp), %edx\n" /* line 2018 | savedPos */
@@ -6333,7 +6333,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "movl %eax, -0x40(%ebp)\n" /* meth */
         "movl -0x44(%ebp), %edx\n" /* line 2225 | name */
         "movl %edx, 4(%esp)\n"
-        "movl 0x114cf34, %eax\n"
+        "movl scrCompilePub+20, %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetNewVariable\n"
         "cmpl $1, -0x1c(%ebp)\n" /* line 2024 | type */
@@ -6349,13 +6349,13 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "calll SetVariableValue\n"
         "jmp .Lf96d1c_00096ede\n"
         ".Lf96d1c_000970c3:\n"
-        "movl $0x21d8ac, 4(%esp)\n" /* line 2257 */
+        "movl $str_0021d8ac, 4(%esp)\n" /* line 2257 */
         "movl -0x48(%ebp), %eax\n" /* sourcePos */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf96d1c_00096de7\n"
         ".Lf96d1c_000970db:\n"
-        "movl 0x114cf48, %esi\n" /* line 1990 */
+        "movl scrCompilePub+40, %esi\n" /* line 1990 */
         "testl %esi, %esi\n"
         "je .Lf96d1c_00097192\n"
         "movl $0, -0x1c(%ebp)\n" /* line 1992 | type */
@@ -6364,7 +6364,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "jne .Lf96d1c_00096ef3\n"
         "cmpb $0, -0x55(%ebp)\n" /* bStatement */
         "jne .Lf96d1c_00096ef3\n"
-        "movl $0x21d858, 4(%esp)\n" /* line 2247 */
+        "movl $str_0021d858, 4(%esp)\n" /* line 2247 */
         "movl -0x48(%ebp), %eax\n" /* sourcePos */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -6372,7 +6372,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         /* { scope 2: constValue */
         ".Lf96d1c_0009711c:\n"
         "movl -0x40(%ebp), %eax\n" /* line 1846 | meth */
-        "cmpl 0x114cf58, %eax\n"
+        "cmpl scrCompilePub+56, %eax\n"
         "je .Lf96d1c_000971b3\n"
         "xorl %ebx, %ebx\n" /* i */
         "movl $scrCompilePub, %ecx\n"
@@ -6403,17 +6403,17 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         /* } scope */
         /* { scope 2: constValue */
         ".Lf96d1c_00097173:\n"
-        "movl $0x21d8c8, 4(%esp)\n" /* line 1852 */
+        "movl $str_0021d8c8, 4(%esp)\n" /* line 1852 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x114cf54, %edx\n"
+        "movl scrCompilePub+52, %edx\n"
         "jmp .Lf96d1c_00096fb7\n"
         /* } scope */
         ".Lf96d1c_00097192:\n"
-        "movl 0x195ee58, %eax\n" /* line 1996 */
+        "movl imp_scrVarPub, %eax\n" /* line 1996 */
         "cmpb $0, 0xb(%eax)\n"
         "je .Lf96d1c_000971ba\n"
-        "movl $1, 0x114cf48\n" /* line 2003 */
+        "movl $1, scrCompilePub+40\n" /* line 2003 */
         ".Lf96d1c_000971a7:\n"
         "movl $1, -0x1c(%ebp)\n" /* line 2006 | type */
         "jmp .Lf96d1c_000970f0\n"
@@ -6426,7 +6426,7 @@ unsigned int EmitMethod(sval_t expr, sval_t func_name, sval_t params, sval_t met
         "movl $0, (%esp)\n" /* line 1998 */
         "calll TempMalloc\n"
         "movl %eax, -0x3c(%ebp)\n" /* savedPos */
-        "movl $2, 0x114cf48\n" /* line 1999 */
+        "movl $2, scrCompilePub+40\n" /* line 1999 */
         "jmp .Lf96d1c_000971a7\n"
     );
 }
@@ -6448,7 +6448,7 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "subl $0x11, %eax\n"
         "cmpl $0x1d, %eax\n"
         "ja .Lf971d6_00097206\n"
-        "jmpl *0x2f19c8(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+4808(, %eax, 4)\n"
         "movl 4(%ebx), %esi\n" /* line 2963 | expr */
         /* { scope 1 */
         "movl (%esi), %eax\n" /* line 1638 */
@@ -6459,7 +6459,7 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "je .Lf971d6_000972fb\n"
         /* } scope */
         ".Lf971d6_00097206:\n"
-        "movl $0x21d954, 4(%esp)\n" /* line 2988 */
+        "movl $str_0021d954, 4(%esp)\n" /* line 2988 */
         "movl %edx, (%esp)\n" /* sourcePos */
         "calll CompileError\n"
         ".Lf971d6_00097216:\n"
@@ -6652,9 +6652,9 @@ unsigned int EmitVariableExpression(void)
         "movl $2, (%esp)\n" /* line 214 */
         "calll TempMallocAlign\n"
         "movl %eax, scrCompileGlob\n"
-        "cmpl $2, 0x114cf48\n" /* line 216 */
+        "cmpl $2, scrCompilePub+40\n" /* line 216 */
         "je .Lf97358_0009758d\n"
-        "cmpb $0, 0x4ece1c\n" /* line 233 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 233 */
         "jne .Lf97358_00097501\n"
         ".Lf97358_0009746e:\n"
         "movl scrCompileGlob, %ebx\n" /* line 236 */
@@ -6673,7 +6673,7 @@ unsigned int EmitVariableExpression(void)
         "movl %eax, -0x30(%ebp)\n"
         "movl 4(%ecx), %ebx\n" /* expr, s */
         /* { scope 1 */
-        "cmpb $0, 0x114cf44\n" /* line 1479 */
+        "cmpb $0, scrCompilePub+36\n" /* line 1479 */
         "jne .Lf97358_000975af\n"
         "movl %ebx, (%esp)\n" /* line 1485 | s */
         "calll SL_ConvertToString\n"
@@ -6696,7 +6696,7 @@ unsigned int EmitVariableExpression(void)
         "cmpb $0x30, 1(%ebx)\n" /* s */
         "je .Lf97358_000975f8\n"
         ".Lf97358_000974e9:\n"
-        "movl $0x21d990, 4(%esp)\n" /* line 1523 */
+        "movl $str_0021d990, 4(%esp)\n" /* line 1523 */
         "movl -0x30(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll CompileError\n"
@@ -6708,9 +6708,9 @@ unsigned int EmitVariableExpression(void)
         "calll SL_AddRefToString\n"
         "jmp .Lf97358_0009746e\n"
         ".Lf97358_00097511:\n"
-        "movl $0x21d9a0, %eax\n" /* line 1600 */
-        "cmpb $0, 0x114cf44\n"
-        "movl $0x21d9dc, %edx\n" /* "self field can only be used in the script debugger" */
+        "movl $str_0021d9a0, %eax\n" /* line 1600 */
+        "cmpb $0, scrCompilePub+36\n"
+        "movl $str_0021d9dc, %edx\n" /* "self field can only be used in the script debugger" */
         "cmovnel %edx, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ecx), %eax\n" /* expr */
@@ -6756,7 +6756,7 @@ unsigned int EmitVariableExpression(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf97358_0009758d:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf97358_00097384\n"
         "movl -0x30(%ebp), %edx\n" /* line 206 */
         "movl %edx, (%esp)\n"
@@ -6769,7 +6769,7 @@ unsigned int EmitVariableExpression(void)
         /* } scope */
         /* { scope 1 */
         ".Lf97358_000975af:\n"
-        "movl $0x21d964, 4(%esp)\n" /* line 1481 */
+        "movl $str_0021d964, 4(%esp)\n" /* line 1481 */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf97358_00097384\n"
@@ -6834,7 +6834,7 @@ unsigned int EmitVariableExpression(void)
         "ja .Lf97358_000974e9\n"
         "movl $1, %eax\n"
         "shll %cl, %eax\n"
-        "testl $0x878000, %eax\n"
+        "testl $s_debugFrameGlob+549248, %eax\n"
         "je .Lf97358_000974e9\n"
         "xorl %ecx, %ecx\n" /* line 1502 */
         "movl $1, %edx\n"
@@ -6846,7 +6846,7 @@ unsigned int EmitVariableExpression(void)
         "movw %bx, (%eax)\n" /* line 603 */
         "jmp .Lf97358_00097384\n"
         ".Lf97358_000976b1:\n"
-        "movl $0x21d990, 4(%esp)\n" /* line 1516 */
+        "movl $str_0021d990, 4(%esp)\n" /* line 1516 */
         "movl -0x30(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -6908,7 +6908,7 @@ unsigned int EmitVariableExpressionRef(void)
         "je .Lf976ca_000978d4\n"
         "cmpl $0x23, %eax\n"
         "je .Lf976ca_0009788c\n"
-        "movl $0x21da10, 4(%esp)\n" /* line 2941 */
+        "movl $str_0021da10, 4(%esp)\n" /* line 2941 */
         "movl -0x2c(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -6941,9 +6941,9 @@ unsigned int EmitVariableExpressionRef(void)
         "movl $2, (%esp)\n" /* line 214 */
         "calll TempMallocAlign\n"
         "movl %eax, scrCompileGlob\n"
-        "cmpl $2, 0x114cf48\n" /* line 216 */
+        "cmpl $2, scrCompilePub+40\n" /* line 216 */
         "je .Lf976ca_00097872\n"
-        "cmpb $0, 0x4ece1c\n" /* line 233 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 233 */
         "jne .Lf976ca_00097822\n"
         ".Lf976ca_000977de:\n"
         "movl scrCompileGlob, %ebx\n" /* line 236 */
@@ -6957,9 +6957,9 @@ unsigned int EmitVariableExpressionRef(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf976ca_000977f7:\n"
-        "movl $0x21da10, %eax\n" /* line 2907 */
-        "cmpb $0, 0x114cf44\n"
-        "movl $0x21da20, %edx\n" /* "$ and self field can only be used in the script debugger" */
+        "movl $str_0021da10, %eax\n" /* line 2907 */
+        "cmpb $0, scrCompilePub+36\n"
+        "movl $str_0021da20, %edx\n" /* "$ and self field can only be used in the script debugger" */
         "cmovnel %edx, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ecx), %eax\n" /* expr */
@@ -7005,7 +7005,7 @@ unsigned int EmitVariableExpressionRef(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf976ca_00097872:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf976ca_000976f6\n"
         "movl %edi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -7060,7 +7060,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "cmpl $0x4d, (%eax)\n" /* line 4479 */
         "ja .Lf978e6_000979be\n"
         "movl (%eax), %eax\n"
-        "jmpl *0x2f1a40(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+4928(, %eax, 4)\n"
         ".Lf978e6_00097905:\n"
         "movl 4(%ecx), %eax\n" /* line 3051 */
         "cmpl $0x1f, (%eax)\n" /* line 3082 */
@@ -7096,7 +7096,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "je .Lf978e6_000984e3\n"
         "cmpl $0x23, %eax\n"
         "je .Lf978e6_000984bd\n"
-        "movl $0x21da10, 4(%esp)\n" /* line 2941 */
+        "movl $str_0021da10, 4(%esp)\n" /* line 2941 */
         "movl -0x34(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll CompileError\n"
@@ -7327,11 +7327,11 @@ unsigned int EmitStatement(scr_block_t *block)
         "jmp .Lf978e6_000979be\n"
         "movl 8(%ebx), %esi\n" /* line 4518 | val, endSourcePos */
         "movl 4(%ebx), %edi\n" /* val */
-        "movb $1, 0x4ece50\n" /* line 3791 */
+        "movb $1, scrCompileGlob+80\n" /* line 3791 */
         "movl 8(%ebp), %edx\n" /* line 3792 | block */
         "movl %edi, %eax\n"
         "calll EmitVariableExpressionRef\n"
-        "movb $0, 0x4ece50\n" /* line 3794 */
+        "movb $0, scrCompileGlob+80\n" /* line 3794 */
         "xorl %ecx, %ecx\n" /* line 3795 */
         "movl $1, %edx\n"
         "movl $0x64, %eax\n"
@@ -7350,11 +7350,11 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl 8(%ebx), %eax\n" /* line 4522 | val */
         "movl %eax, -0x3c(%ebp)\n"
         "movl 4(%ebx), %edi\n" /* val */
-        "movb $1, 0x4ece50\n" /* line 3810 */
+        "movb $1, scrCompileGlob+80\n" /* line 3810 */
         "movl 8(%ebp), %edx\n" /* line 3811 | block */
         "movl %edi, %eax\n"
         "calll EmitVariableExpressionRef\n"
-        "movb $0, 0x4ece50\n" /* line 3813 */
+        "movb $0, scrCompileGlob+80\n" /* line 3813 */
         "xorl %ecx, %ecx\n" /* line 3814 */
         "movl $1, %edx\n"
         "movl $0x65, %eax\n"
@@ -7374,11 +7374,11 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl 8(%ebx), %edx\n" /* val, lastStatement */
         "movl %edx, -0x3c(%ebp)\n" /* lastStatement */
         "movl 4(%ebx), %edi\n" /* val */
-        "movb $1, 0x4ece1c\n" /* line 2813 */
+        "movb $1, scrCompileGlob+28\n" /* line 2813 */
         "movl 8(%ebp), %edx\n" /* line 2814 | block */
         "movl %edi, %eax\n"
         "calll EmitVariableExpression\n"
-        "movb $0, 0x4ece1c\n" /* line 2816 */
+        "movb $0, scrCompileGlob+28\n" /* line 2816 */
         /* { scope 1: constValue */
         "leal -0x24(%ebp), %ebx\n" /* line 2883 | constValue, index */
         "movl 8(%ebp), %ecx\n" /* block */
@@ -7423,7 +7423,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "je .Lf978e6_000981ce\n"
         "testl %ebx, %ebx\n" /* line 3985 | start_node */
         "je .Lf978e6_00097e12\n"
-        "movl 0x195ee58, %eax\n" /* line 3987 */
+        "movl imp_scrVarPub, %eax\n" /* line 3987 */
         "cmpb $0, 0xb(%eax)\n"
         "jne .Lf978e6_000981ce\n"
         "movl %ebx, %edx\n" /* start_node */
@@ -7688,10 +7688,10 @@ unsigned int EmitStatement(scr_block_t *block)
         "calll EmitContinueStatement\n"
         "jmp .Lf978e6_000979be\n"
         "movl 4(%ebx), %edi\n" /* line 4582 | val */
-        "movl 0x195ee58, %eax\n" /* line 4410 */
+        "movl imp_scrVarPub, %eax\n" /* line 4410 */
         "cmpb $0, 0xb(%eax)\n"
         "je .Lf978e6_00098167\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf978e6_000983d2\n"
         ".Lf978e6_0009812e:\n"
         "xorl %ecx, %ecx\n" /* line 4438 */
@@ -7705,21 +7705,21 @@ unsigned int EmitStatement(scr_block_t *block)
         "movb $0, (%eax)\n" /* line 617 */
         "jmp .Lf978e6_000979be\n"
         "movl 4(%ebx), %edi\n" /* line 4586 | val */
-        "movl 0x195ee58, %eax\n" /* line 4410 */
+        "movl imp_scrVarPub, %eax\n" /* line 4410 */
         "cmpb $0, 0xb(%eax)\n"
         "jne .Lf978e6_000982fe\n"
         ".Lf978e6_00098167:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf978e6_000979be\n"
         "movl %edi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
         "jmp .Lf978e6_000979be\n"
-        "movl $0x21da5c, 4(%esp)\n" /* line 4562 */
+        "movl $str_0021da5c, 4(%esp)\n" /* line 4562 */
         "movl 8(%ebx), %eax\n" /* val */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf978e6_000979be\n"
-        "movl $0x21da74, 4(%esp)\n" /* line 4566 */
+        "movl $str_0021da74, 4(%esp)\n" /* line 4566 */
         "movl 4(%ebx), %eax\n" /* val */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -7835,7 +7835,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "jmp .Lf978e6_00097a87\n"
         /* } scope */
         ".Lf978e6_000982fe:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf978e6_000983df\n"
         ".Lf978e6_0009830b:\n"
         "xorl %ecx, %ecx\n" /* line 4438 */
@@ -7949,9 +7949,9 @@ unsigned int EmitStatement(scr_block_t *block)
         "cmpl $0x4f, %eax\n"
         "jne .Lf978e6_000979be\n"
         ".Lf978e6_00098402:\n"
-        "movl $0x21da10, %eax\n" /* line 3072 */
-        "cmpb $0, 0x114cf44\n"
-        "movl $0x21da20, %edx\n" /* "$ and self field can only be used in the script debugger" */
+        "movl $str_0021da10, %eax\n" /* line 3072 */
+        "cmpb $0, scrCompilePub+36\n"
+        "movl $str_0021da20, %edx\n" /* "$ and self field can only be used in the script debugger" */
         "cmovnel %edx, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%edi), %eax\n"
@@ -7977,9 +7977,9 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl $2, (%esp)\n" /* line 214 */
         "calll TempMallocAlign\n"
         "movl %eax, scrCompileGlob\n"
-        "cmpl $2, 0x114cf48\n" /* line 216 */
+        "cmpl $2, scrCompilePub+40\n" /* line 216 */
         "je .Lf978e6_00098499\n"
-        "cmpb $0, 0x4ece1c\n" /* line 233 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 233 */
         "jne .Lf978e6_000984b3\n"
         ".Lf978e6_00098483:\n"
         "movl scrCompileGlob, %ebx\n" /* line 236 */
@@ -7988,7 +7988,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movw %ax, (%ebx)\n"
         "jmp .Lf978e6_000979be\n"
         ".Lf978e6_00098499:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf978e6_000979be\n"
         "movl %esi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -8151,7 +8151,7 @@ unsigned int EmitIfStatement(sval_t stmt, int lastStatement, unsigned int endSou
         "movl %esi, %ebx\n" /* outerBlock, removeCount */
         "jmp .Lf984f6_000985e1\n"
         ".Lf984f6_00098665:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %ecx\n" /* checksum */
@@ -8176,7 +8176,7 @@ unsigned int EmitIfStatement(sval_t stmt, int lastStatement, unsigned int endSou
         "movl 0x14(%ebp), %eax\n" /* line 3159 | ifStatBlock, expr */
         "movl (%eax), %esi\n" /* expr, outerBlock */
         /* { scope 2 */
-        "movl 0x195ee58, %edx\n" /* line 868 */
+        "movl imp_scrVarPub, %edx\n" /* line 868 */
         "movl 0x3c(%edx), %edi\n" /* checksum */
         "testl %ebx, %ebx\n" /* line 870 | removeCount */
         "jne .Lf984f6_0009871a\n"
@@ -8203,7 +8203,7 @@ unsigned int EmitIfStatement(sval_t stmt, int lastStatement, unsigned int endSou
         /* } scope */
         ".Lf984f6_000986f1:\n"
         "leal 1(%edi), %eax\n" /* line 880 | checksum */
-        "movl 0x195ee58, %edx\n"
+        "movl imp_scrVarPub, %edx\n"
         "movl %eax, 0x3c(%edx)\n"
         /* } scope */
         "movl $0, (%esp)\n" /* line 3160 */
@@ -8376,7 +8376,7 @@ unsigned int EmitIfElseStatement(sval_t stmt1, sval_t stmt2, sval_t sourcePos, s
         "movl %esi, %ebx\n" /* checksum, outerBlock */
         "jmp .Lf98746_00098841\n"
         ".Lf98746_000988c5:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %ecx\n"
@@ -8415,7 +8415,7 @@ unsigned int EmitIfElseStatement(sval_t stmt1, sval_t stmt2, sval_t sourcePos, s
         "je .Lf98746_00098c33\n"
         "movl $0, -0x68(%ebp)\n" /* childCount */
         ".Lf98746_00098936:\n"
-        "movl 0x195ee58, %eax\n" /* line 3203 */
+        "movl imp_scrVarPub, %eax\n" /* line 3203 */
         "movl 0x3c(%eax), %ebx\n" /* checksum */
         "cmpb $0, -0x85(%ebp)\n" /* line 3205 | lastStatement */
         "je .Lf98746_00098bde\n"
@@ -8435,7 +8435,7 @@ unsigned int EmitIfElseStatement(sval_t stmt1, sval_t stmt2, sval_t sourcePos, s
         "movl $0, -0x6c(%ebp)\n" /* nextPos2 */
         ".Lf98746_0009898e:\n"
         "leal 1(%ebx), %edx\n" /* line 3222 | checksum */
-        "movl 0x195ee58, %eax\n"
+        "movl imp_scrVarPub, %eax\n"
         "movl %edx, 0x3c(%eax)\n"
         "movl $0, (%esp)\n" /* line 3224 */
         "calll TempMalloc\n"
@@ -8536,7 +8536,7 @@ unsigned int EmitIfElseStatement(sval_t stmt1, sval_t stmt2, sval_t sourcePos, s
         "movl %esi, %ebx\n" /* checksum, outerBlock */
         "jmp .Lf98746_00098a1f\n"
         ".Lf98746_00098aa3:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %ecx\n"
@@ -8560,7 +8560,7 @@ unsigned int EmitIfElseStatement(sval_t stmt1, sval_t stmt2, sval_t sourcePos, s
         "movl 0x20(%ebp), %eax\n" /* line 3230 | elseStatBlock */
         "movl (%eax), %ebx\n" /* checksum */
         /* { scope 2 */
-        "movl 0x195ee58, %edi\n" /* line 868 */
+        "movl imp_scrVarPub, %edi\n" /* line 868 */
         "movl 0x3c(%edi), %esi\n" /* checksum */
         "movl -0x7c(%ebp), %eax\n" /* line 870 */
         "testl %eax, %eax\n"
@@ -8774,22 +8774,22 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "movl %edx, -0x84(%ebp)\n"
         "movl %ecx, -0x88(%ebp)\n"
         /* { scope 1: j, i, childCount */
-        "movzbl 0x4ece2c, %eax\n" /* line 3330 */
+        "movzbl scrCompileGlob+44, %eax\n" /* line 3330 */
         "movb %al, -0x72(%ebp)\n" /* bOldCanBreak */
-        "movzbl 0x4ece2d, %edx\n" /* line 3331 */
+        "movzbl scrCompileGlob+45, %edx\n" /* line 3331 */
         "movb %dl, -0x71(%ebp)\n" /* bOldCanIgnoreBreak */
-        "movl 0x4ece30, %ecx\n" /* line 3332 */
+        "movl scrCompileGlob+48, %ecx\n" /* line 3332 */
         "movl %ecx, -0x70(%ebp)\n" /* oldBreakStatement */
-        "movb $0, 0x4ece2c\n" /* line 3333 */
-        "movb $0, 0x4ece2d\n" /* line 3334 */
-        "movzbl 0x4ece34, %ebx\n" /* line 3336 */
+        "movb $0, scrCompileGlob+44\n" /* line 3333 */
+        "movb $0, scrCompileGlob+45\n" /* line 3334 */
+        "movzbl scrCompileGlob+52, %ebx\n" /* line 3336 */
         "movb %bl, -0x6a(%ebp)\n" /* bOldCanContinue */
-        "movzbl 0x4ece35, %eax\n" /* line 3337 */
+        "movzbl scrCompileGlob+53, %eax\n" /* line 3337 */
         "movb %al, -0x69(%ebp)\n" /* bOldCanIgnoreContinue */
-        "movl 0x4ece38, %edx\n" /* line 3338 */
+        "movl scrCompileGlob+56, %edx\n" /* line 3338 */
         "movl %edx, -0x68(%ebp)\n" /* oldContinueStatement */
-        "movb $0, 0x4ece34\n" /* line 3339 */
-        "movb $0, 0x4ece35\n" /* line 3340 */
+        "movb $0, scrCompileGlob+52\n" /* line 3339 */
+        "movb $0, scrCompileGlob+53\n" /* line 3340 */
         "movl 0x10(%ebp), %ecx\n" /* line 3342 | whileStatBlock */
         "movl (%ecx), %edi\n" /* constConditional */
         "movl %edi, -0x30(%ebp)\n" /* constConditional */
@@ -8883,7 +8883,7 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "movl %esi, %ebx\n"
         "jmp .Lf98d20_00098e05\n"
         ".Lf98d20_00098e89:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %ecx\n" /* stringValue */
@@ -8932,21 +8932,21 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         ".Lf98d20_00098f14:\n"
         "xorl %edi, %edi\n" /* constConditional */
         ".Lf98d20_00098f16:\n"
-        "movl 0x4ece3c, %edx\n" /* line 3365 */
+        "movl scrCompileGlob+60, %edx\n" /* line 3365 */
         "movl %edx, -0x64(%ebp)\n" /* oldBreakChildBlocks */
-        "movl 0x4ece40, %ecx\n" /* line 3366 */
+        "movl scrCompileGlob+64, %ecx\n" /* line 3366 */
         "movl %ecx, -0x60(%ebp)\n" /* oldBreakChildCount */
-        "movl 0x4ece44, %ebx\n" /* line 3367 */
+        "movl scrCompileGlob+68, %ebx\n" /* line 3367 */
         "movl %ebx, -0x50(%ebp)\n" /* oldBreakBlock */
-        "movl 0x4ece48, %esi\n" /* line 3369 | pos2 */
+        "movl scrCompileGlob+72, %esi\n" /* line 3369 | pos2 */
         "movl %esi, -0x58(%ebp)\n" /* pos2, oldContinueChildBlocks */
-        "movl 0x4ece4c, %eax\n" /* line 3370 */
+        "movl scrCompileGlob+76, %eax\n" /* line 3370 */
         "movl %eax, -0x54(%ebp)\n" /* oldContinueChildCount */
         "movl $0, -0x1c(%ebp)\n" /* line 3372 | breakChildCount */
-        "movl $0, 0x4ece48\n" /* line 3374 */
+        "movl $0, scrCompileGlob+72\n" /* line 3374 */
         "movl 0x10(%ebp), %edx\n" /* line 3376 | whileStatBlock */
         "movl (%edx), %eax\n"
-        "movl %eax, 0x4ece44\n"
+        "movl %eax, scrCompileGlob+68\n"
         "movl %edi, %ecx\n" /* line 3378 | constConditional */
         "testb %cl, %cl\n"
         "jne .Lf98d20_00099235\n"
@@ -8969,16 +8969,16 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "movl $0, -0x5c(%ebp)\n" /* breakChildBlocks */
         ".Lf98d20_00098fc0:\n"
         "movl -0x5c(%ebp), %eax\n" /* line 3397 | breakChildBlocks */
-        "movl %eax, 0x4ece3c\n"
-        "movb $1, 0x4ece2c\n" /* line 3399 */
-        "movl 0x114cf48, %eax\n" /* line 3400 */
+        "movl %eax, scrCompileGlob+60\n"
+        "movb $1, scrCompileGlob+44\n" /* line 3399 */
+        "movl scrCompilePub+40, %eax\n" /* line 3400 */
         "testl %eax, %eax\n"
         "setne %al\n"
-        "movb %al, 0x4ece2d\n"
-        "movl $0, 0x4ece30\n" /* line 3401 */
-        "movb $1, 0x4ece34\n" /* line 3403 */
-        "movb %al, 0x4ece35\n" /* line 3404 */
-        "movl $0, 0x4ece38\n" /* line 3405 */
+        "movb %al, scrCompileGlob+45\n"
+        "movl $0, scrCompileGlob+48\n" /* line 3401 */
+        "movb $1, scrCompileGlob+52\n" /* line 3403 */
+        "movb %al, scrCompileGlob+53\n" /* line 3404 */
+        "movl $0, scrCompileGlob+56\n" /* line 3405 */
         "movl 0x10(%ebp), %edx\n" /* line 3407 | whileStatBlock */
         "movl (%edx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -8992,14 +8992,14 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "je .Lf98d20_00099027\n"
         "movl $0, (%eax)\n" /* line 3410 */
         ".Lf98d20_00099027:\n"
-        "movb $0, 0x4ece2c\n" /* line 3412 */
-        "movb $0, 0x4ece2d\n" /* line 3413 */
-        "movb $0, 0x4ece34\n" /* line 3415 */
-        "movb $0, 0x4ece35\n" /* line 3416 */
+        "movb $0, scrCompileGlob+44\n" /* line 3412 */
+        "movb $0, scrCompileGlob+45\n" /* line 3413 */
+        "movb $0, scrCompileGlob+52\n" /* line 3415 */
+        "movb $0, scrCompileGlob+53\n" /* line 3416 */
         "movl $0, (%esp)\n" /* line 3032 */
         "calll TempMalloc\n"
         "movl %eax, %ebx\n"
-        "movl 0x4ece38, %ecx\n" /* line 3033 */
+        "movl scrCompileGlob+56, %ecx\n" /* line 3033 */
         "testl %ecx, %ecx\n" /* line 3035 */
         "je .Lf98d20_0009906b\n"
         ".Lf98d20_0009905b:\n"
@@ -9042,7 +9042,7 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "movl $0, (%esp)\n" /* line 3016 */
         "calll TempMalloc\n"
         "movl %eax, %ebx\n"
-        "movl 0x4ece30, %ecx\n" /* line 3017 */
+        "movl scrCompileGlob+48, %ecx\n" /* line 3017 */
         "testl %ecx, %ecx\n" /* line 3019 */
         "je .Lf98d20_00099107\n"
         ".Lf98d20_000990f7:\n"
@@ -9055,17 +9055,17 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "jne .Lf98d20_000990f7\n"
         ".Lf98d20_00099107:\n"
         "movzbl -0x72(%ebp), %eax\n" /* line 3438 | bOldCanBreak */
-        "movb %al, 0x4ece2c\n"
+        "movb %al, scrCompileGlob+44\n"
         "movzbl -0x71(%ebp), %edx\n" /* line 3439 | bOldCanIgnoreBreak */
-        "movb %dl, 0x4ece2d\n"
+        "movb %dl, scrCompileGlob+45\n"
         "movl -0x70(%ebp), %ecx\n" /* line 3440 | oldBreakStatement */
-        "movl %ecx, 0x4ece30\n"
+        "movl %ecx, scrCompileGlob+48\n"
         "movzbl -0x6a(%ebp), %ebx\n" /* line 3442 | bOldCanContinue */
-        "movb %bl, 0x4ece34\n"
+        "movb %bl, scrCompileGlob+52\n"
         "movzbl -0x69(%ebp), %eax\n" /* line 3443 | bOldCanIgnoreContinue */
-        "movb %al, 0x4ece35\n"
+        "movb %al, scrCompileGlob+53\n"
         "movl -0x68(%ebp), %edx\n" /* line 3444 | oldContinueStatement */
-        "movl %edx, 0x4ece38\n"
+        "movl %edx, scrCompileGlob+56\n"
         "movl %edi, %ecx\n" /* line 3446 | constConditional */
         "testb %cl, %cl\n"
         "je .Lf98d20_000991fe\n"
@@ -9137,15 +9137,15 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         /* } scope */
         ".Lf98d20_000991fe:\n"
         "movl -0x64(%ebp), %ecx\n" /* line 3449 | oldBreakChildBlocks */
-        "movl %ecx, 0x4ece3c\n"
+        "movl %ecx, scrCompileGlob+60\n"
         "movl -0x60(%ebp), %ebx\n" /* line 3450 | oldBreakChildCount */
-        "movl %ebx, 0x4ece40\n"
+        "movl %ebx, scrCompileGlob+64\n"
         "movl -0x50(%ebp), %esi\n" /* line 3451 | oldBreakBlock, pos2 */
-        "movl %esi, 0x4ece44\n" /* pos2 */
+        "movl %esi, scrCompileGlob+68\n" /* pos2 */
         "movl -0x58(%ebp), %eax\n" /* line 3453 | oldContinueChildBlocks */
-        "movl %eax, 0x4ece48\n"
+        "movl %eax, scrCompileGlob+72\n"
         "movl -0x54(%ebp), %edx\n" /* line 3454 | oldContinueChildCount */
-        "movl %edx, 0x4ece4c\n"
+        "movl %edx, scrCompileGlob+76\n"
         /* } scope */
         "addl $0xac, %esp\n" /* line 3455 */
         "popl %ebx\n"
@@ -9159,7 +9159,7 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0x5c(%ebp)\n" /* breakChildBlocks */
         "leal -0x1c(%ebp), %eax\n" /* line 3394 | breakChildCount */
-        "movl %eax, 0x4ece40\n"
+        "movl %eax, scrCompileGlob+64\n"
         "xorl %esi, %esi\n" /* pos2 */
         "movl $0, -0x78(%ebp)\n" /* nextPos2 */
         "jmp .Lf98d20_00098fc0\n"
@@ -9171,7 +9171,7 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "jmp .Lf98d20_000992a2\n"
         /* { scope 3 */
         ".Lf98d20_00099266:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 233 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 233 */
         "jne .Lf98d20_00099320\n"
         ".Lf98d20_00099273:\n"
         "movl scrCompileGlob, %ebx\n" /* line 236 */
@@ -9180,7 +9180,7 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "movw %ax, (%ebx)\n"
         ".Lf98d20_00099284:\n"
         "movzbl -0x3d(%ebp), %ecx\n" /* line 247 | bConstRefCount */
-        "movb %cl, 0x4ece1c\n"
+        "movb %cl, scrCompileGlob+28\n"
         /* } scope */
         "addl $1, -0x44(%ebp)\n" /* line 833 | i */
         "movl 8(%esi), %eax\n"
@@ -9195,16 +9195,16 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "movl -0x34(%ebp), %eax\n" /* line 836 */
         "movl (%eax), %edi\n" /* stringValue */
         /* { scope 3 */
-        "movzbl 0x4ece1c, %edx\n" /* line 244 */
+        "movzbl scrCompileGlob+28, %edx\n" /* line 244 */
         "movb %dl, -0x3d(%ebp)\n" /* bConstRefCount */
-        "movb $1, 0x4ece1c\n" /* line 245 */
+        "movb $1, scrCompileGlob+28\n" /* line 245 */
         "movl $2, (%esp)\n" /* line 214 */
         "calll TempMallocAlign\n"
         "movl %eax, scrCompileGlob\n"
-        "cmpl $2, 0x114cf48\n" /* line 216 */
+        "cmpl $2, scrCompilePub+40\n" /* line 216 */
         "jne .Lf98d20_00099266\n"
         /* { scope 4 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf98d20_00099284\n"
         "movl %edi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -9250,7 +9250,7 @@ unsigned int EmitWhileStatement(sval_t expr, sval_t stmt, sval_t sourcePos, sval
         "calll AddOpcodePos\n"
         "jmp .Lf98d20_0009909b\n"
         ".Lf98d20_0009935e:\n"
-        "movl $0x21da90, 4(%esp)\n" /* line 3356 */
+        "movl $str_0021da90, 4(%esp)\n" /* line 3356 */
         "movl -0x88(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -9273,22 +9273,22 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl %edx, -0xb8(%ebp)\n"
         "movl %ecx, -0xbc(%ebp)\n"
         /* { scope 1: j, i, j, childCount, ... */
-        "movzbl 0x4ece2c, %edx\n" /* line 3556 */
+        "movzbl scrCompileGlob+44, %edx\n" /* line 3556 */
         "movb %dl, -0xa6(%ebp)\n" /* bOldCanBreak */
-        "movzbl 0x4ece2d, %ecx\n" /* line 3557 */
+        "movzbl scrCompileGlob+45, %ecx\n" /* line 3557 */
         "movb %cl, -0xa5(%ebp)\n" /* bOldCanIgnoreBreak */
-        "movl 0x4ece30, %ebx\n" /* line 3558 */
+        "movl scrCompileGlob+48, %ebx\n" /* line 3558 */
         "movl %ebx, -0xa4(%ebp)\n" /* oldBreakStatement */
-        "movb $0, 0x4ece2c\n" /* line 3559 */
-        "movb $0, 0x4ece2d\n" /* line 3560 */
-        "movzbl 0x4ece34, %edx\n" /* line 3562 */
+        "movb $0, scrCompileGlob+44\n" /* line 3559 */
+        "movb $0, scrCompileGlob+45\n" /* line 3560 */
+        "movzbl scrCompileGlob+52, %edx\n" /* line 3562 */
         "movb %dl, -0x9e(%ebp)\n" /* bOldCanContinue */
-        "movzbl 0x4ece35, %ecx\n" /* line 3563 */
+        "movzbl scrCompileGlob+53, %ecx\n" /* line 3563 */
         "movb %cl, -0x9d(%ebp)\n" /* bOldCanIgnoreContinue */
-        "movl 0x4ece38, %ebx\n" /* line 3564 */
+        "movl scrCompileGlob+56, %ebx\n" /* line 3564 */
         "movl %ebx, -0x9c(%ebp)\n" /* oldContinueStatement */
-        "movb $0, 0x4ece34\n" /* line 3565 */
-        "movb $0, 0x4ece35\n" /* line 3566 */
+        "movb $0, scrCompileGlob+52\n" /* line 3565 */
+        "movb $0, scrCompileGlob+53\n" /* line 3566 */
         "movl 0x14(%ebp), %esi\n" /* line 3568 | block */
         "movl %esi, (%esp)\n"
         "xorl %ecx, %ecx\n"
@@ -9388,7 +9388,7 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl %esi, %ebx\n"
         "jmp .Lf9937e_0009947f\n"
         ".Lf9937e_00099503:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %ecx\n" /* stringValue */
@@ -9512,7 +9512,7 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl %esi, %ebx\n"
         "jmp .Lf9937e_000995c7\n"
         ".Lf9937e_0009964b:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %ecx\n" /* stringValue */
@@ -9533,27 +9533,27 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         ".Lf9937e_00099696:\n"
         "movb $1, -0x95(%ebp)\n" /* line 3593 | constConditional */
         ".Lf9937e_0009969d:\n"
-        "movl 0x4ece3c, %esi\n" /* line 3602 */
+        "movl scrCompileGlob+60, %esi\n" /* line 3602 */
         "movl %esi, -0x94(%ebp)\n" /* oldBreakChildBlocks */
-        "movl 0x4ece40, %eax\n" /* line 3603 | stmt1 */
+        "movl scrCompileGlob+64, %eax\n" /* line 3603 | stmt1 */
         "movl %eax, -0x90(%ebp)\n" /* stmt1, oldBreakChildCount */
-        "movl 0x4ece44, %edx\n" /* line 3604 */
+        "movl scrCompileGlob+68, %edx\n" /* line 3604 */
         "movl %edx, -0x7c(%ebp)\n" /* oldBreakBlock */
-        "movl 0x4ece48, %ecx\n" /* line 3606 */
+        "movl scrCompileGlob+72, %ecx\n" /* line 3606 */
         "movl %ecx, -0x84(%ebp)\n" /* oldContinueChildBlocks */
-        "movl 0x4ece4c, %ebx\n" /* line 3607 */
+        "movl scrCompileGlob+76, %ebx\n" /* line 3607 */
         "movl %ebx, -0x80(%ebp)\n" /* oldContinueChildCount */
         "movl $0, -0x1c(%ebp)\n" /* line 3609 | breakChildCount */
         "movl $0, -0x20(%ebp)\n" /* line 3610 | continueChildCount */
         "movl $__mh_execute_header, (%esp)\n" /* line 3612 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0x88(%ebp)\n" /* stmt1, continueChildBlocks */
-        "movl %eax, 0x4ece48\n" /* line 3613 | stmt1 */
+        "movl %eax, scrCompileGlob+72\n" /* line 3613 | stmt1 */
         "leal -0x20(%ebp), %eax\n" /* line 3614 | continueChildCount, stmt1 */
-        "movl %eax, 0x4ece4c\n" /* stmt1 */
+        "movl %eax, scrCompileGlob+76\n" /* stmt1 */
         "movl 0x18(%ebp), %esi\n" /* line 3616 | forStatBlock */
         "movl (%esi), %eax\n" /* stmt1 */
-        "movl %eax, 0x4ece44\n" /* stmt1 */
+        "movl %eax, scrCompileGlob+68\n" /* stmt1 */
         "cmpb $0, -0x95(%ebp)\n" /* line 3618 | constConditional */
         "jne .Lf9937e_00099b47\n"
         "xorl %ecx, %ecx\n" /* line 3620 */
@@ -9576,16 +9576,16 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl $0, -0x8c(%ebp)\n" /* breakChildBlocks */
         ".Lf9937e_00099778:\n"
         "movl -0x8c(%ebp), %ecx\n" /* line 3637 | breakChildBlocks */
-        "movl %ecx, 0x4ece3c\n"
-        "movb $1, 0x4ece2c\n" /* line 3639 */
-        "movl 0x114cf48, %eax\n" /* line 3640 | stmt1 */
+        "movl %ecx, scrCompileGlob+60\n"
+        "movb $1, scrCompileGlob+44\n" /* line 3639 */
+        "movl scrCompilePub+40, %eax\n" /* line 3640 | stmt1 */
         "testl %eax, %eax\n" /* stmt1 */
         "setne %al\n" /* stmt1 */
-        "movb %al, 0x4ece2d\n" /* stmt1 */
-        "movl $0, 0x4ece30\n" /* line 3641 */
-        "movb $1, 0x4ece34\n" /* line 3643 */
-        "movb %al, 0x4ece35\n" /* line 3644 | stmt1 */
-        "movl $0, 0x4ece38\n" /* line 3645 */
+        "movb %al, scrCompileGlob+45\n" /* stmt1 */
+        "movl $0, scrCompileGlob+48\n" /* line 3641 */
+        "movb $1, scrCompileGlob+52\n" /* line 3643 */
+        "movb %al, scrCompileGlob+53\n" /* line 3644 | stmt1 */
+        "movl $0, scrCompileGlob+56\n" /* line 3645 */
         "movl 0x18(%ebp), %ebx\n" /* line 3647 | forStatBlock */
         "movl (%ebx), %eax\n" /* stmt1 */
         "movl %eax, (%esp)\n" /* stmt1 */
@@ -9599,28 +9599,28 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl (%ebx), %eax\n" /* line 3298 */
         "testl %eax, %eax\n"
         "jne .Lf9937e_00099808\n"
-        "movl 0x4ece48, %edi\n" /* line 3300 | block */
+        "movl scrCompileGlob+72, %edi\n" /* line 3300 | block */
         "testl %edi, %edi\n" /* block */
         "je .Lf9937e_00099808\n"
-        "movl 0x4ece4c, %eax\n" /* line 886 */
+        "movl scrCompileGlob+76, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf9937e_00099cd9\n"
         ".Lf9937e_000997f6:\n"
         "movl (%eax), %edx\n" /* line 3303 */
-        "movl 0x4ece48, %eax\n"
+        "movl scrCompileGlob+72, %eax\n"
         "movl %ebx, (%eax, %edx, 4)\n"
-        "movl 0x4ece4c, %eax\n" /* line 3304 */
+        "movl scrCompileGlob+76, %eax\n" /* line 3304 */
         "addl $1, (%eax)\n"
         /* } scope */
         ".Lf9937e_00099808:\n"
-        "movb $0, 0x4ece2c\n" /* line 3650 */
-        "movb $0, 0x4ece2d\n" /* line 3651 */
-        "movb $0, 0x4ece34\n" /* line 3653 */
-        "movb $0, 0x4ece35\n" /* line 3654 */
+        "movb $0, scrCompileGlob+44\n" /* line 3650 */
+        "movb $0, scrCompileGlob+45\n" /* line 3651 */
+        "movb $0, scrCompileGlob+52\n" /* line 3653 */
+        "movb $0, scrCompileGlob+53\n" /* line 3654 */
         "movl $0, (%esp)\n" /* line 3032 */
         "calll TempMalloc\n"
         "movl %eax, %ebx\n"
-        "movl 0x4ece38, %ecx\n" /* line 3033 */
+        "movl scrCompileGlob+56, %ecx\n" /* line 3033 */
         "testl %ecx, %ecx\n" /* line 3035 */
         "je .Lf9937e_0009984c\n"
         ".Lf9937e_0009983c:\n"
@@ -9748,7 +9748,7 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl $0, (%esp)\n" /* line 3016 */
         "calll TempMalloc\n"
         "movl %eax, %ebx\n"
-        "movl 0x4ece30, %ecx\n" /* line 3017 */
+        "movl scrCompileGlob+48, %ecx\n" /* line 3017 */
         "testl %ecx, %ecx\n" /* line 3019 */
         "je .Lf9937e_000999ee\n"
         ".Lf9937e_000999de:\n"
@@ -9761,17 +9761,17 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "jne .Lf9937e_000999de\n"
         ".Lf9937e_000999ee:\n"
         "movzbl -0xa6(%ebp), %ebx\n" /* line 3679 | bOldCanBreak, block */
-        "movb %bl, 0x4ece2c\n" /* block */
+        "movb %bl, scrCompileGlob+44\n" /* block */
         "movzbl -0xa5(%ebp), %eax\n" /* line 3680 | bOldCanIgnoreBreak, stmt1 */
-        "movb %al, 0x4ece2d\n" /* stmt1 */
+        "movb %al, scrCompileGlob+45\n" /* stmt1 */
         "movl -0xa4(%ebp), %edx\n" /* line 3681 | oldBreakStatement */
-        "movl %edx, 0x4ece30\n"
+        "movl %edx, scrCompileGlob+48\n"
         "movzbl -0x9e(%ebp), %ecx\n" /* line 3683 | bOldCanContinue */
-        "movb %cl, 0x4ece34\n"
+        "movb %cl, scrCompileGlob+52\n"
         "movzbl -0x9d(%ebp), %ebx\n" /* line 3684 | bOldCanIgnoreContinue, block */
-        "movb %bl, 0x4ece35\n" /* block */
+        "movb %bl, scrCompileGlob+53\n" /* block */
         "movl -0x9c(%ebp), %esi\n" /* line 3685 | oldContinueStatement */
-        "movl %esi, 0x4ece38\n"
+        "movl %esi, scrCompileGlob+56\n"
         "cmpb $0, -0x95(%ebp)\n" /* line 3687 | constConditional */
         "je .Lf9937e_00099b07\n"
         "movl -0x1c(%ebp), %eax\n" /* line 3688 | breakChildCount, stmt1 */
@@ -9842,15 +9842,15 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         /* } scope */
         ".Lf9937e_00099b07:\n"
         "movl -0x94(%ebp), %ecx\n" /* line 3690 | oldBreakChildBlocks */
-        "movl %ecx, 0x4ece3c\n"
+        "movl %ecx, scrCompileGlob+60\n"
         "movl -0x90(%ebp), %ebx\n" /* line 3691 | oldBreakChildCount, block */
-        "movl %ebx, 0x4ece40\n" /* block */
+        "movl %ebx, scrCompileGlob+64\n" /* block */
         "movl -0x7c(%ebp), %esi\n" /* line 3692 | oldBreakBlock */
-        "movl %esi, 0x4ece44\n"
+        "movl %esi, scrCompileGlob+68\n"
         "movl -0x84(%ebp), %eax\n" /* line 3694 | oldContinueChildBlocks, stmt1 */
-        "movl %eax, 0x4ece48\n" /* stmt1 */
+        "movl %eax, scrCompileGlob+72\n" /* stmt1 */
         "movl -0x80(%ebp), %edx\n" /* line 3695 | oldContinueChildCount */
-        "movl %edx, 0x4ece4c\n"
+        "movl %edx, scrCompileGlob+76\n"
         /* } scope */
         "addl $0xec, %esp\n" /* line 3696 */
         "popl %ebx\n"
@@ -9864,7 +9864,7 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0x8c(%ebp)\n" /* stmt1, breakChildBlocks */
         "leal -0x1c(%ebp), %eax\n" /* line 3634 | breakChildCount, stmt1 */
-        "movl %eax, 0x4ece40\n" /* stmt1 */
+        "movl %eax, scrCompileGlob+64\n" /* stmt1 */
         "movl $0, -0xb0(%ebp)\n" /* pos2 */
         "movl $0, -0xac(%ebp)\n" /* nextPos2 */
         "jmp .Lf9937e_00099778\n"
@@ -9882,7 +9882,7 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "jmp .Lf9937e_00099bd4\n"
         /* { scope 3 */
         ".Lf9937e_00099b98:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 233 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 233 */
         "jne .Lf9937e_00099c82\n"
         ".Lf9937e_00099ba5:\n"
         "movl scrCompileGlob, %ebx\n" /* line 236 */
@@ -9891,7 +9891,7 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movw %ax, (%ebx)\n"
         ".Lf9937e_00099bb6:\n"
         "movzbl -0x69(%ebp), %ecx\n" /* line 247 | bConstRefCount */
-        "movb %cl, 0x4ece1c\n"
+        "movb %cl, scrCompileGlob+28\n"
         /* } scope */
         "addl $1, -0x70(%ebp)\n" /* line 833 | i */
         "movl 8(%esi), %eax\n"
@@ -9906,16 +9906,16 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl -0x48(%ebp), %eax\n" /* line 836 */
         "movl (%eax), %edi\n" /* stringValue */
         /* { scope 3 */
-        "movzbl 0x4ece1c, %edx\n" /* line 244 */
+        "movzbl scrCompileGlob+28, %edx\n" /* line 244 */
         "movb %dl, -0x69(%ebp)\n" /* bConstRefCount */
-        "movb $1, 0x4ece1c\n" /* line 245 */
+        "movb $1, scrCompileGlob+28\n" /* line 245 */
         "movl $2, (%esp)\n" /* line 214 */
         "calll TempMallocAlign\n"
         "movl %eax, scrCompileGlob\n"
-        "cmpl $2, 0x114cf48\n" /* line 216 */
+        "cmpl $2, scrCompilePub+40\n" /* line 216 */
         "jne .Lf9937e_00099b98\n"
         /* { scope 4 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf9937e_00099bb6\n"
         "movl %edi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -9986,10 +9986,10 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "jmp .Lf9937e_00099970\n"
         /* { scope 2: i, i, bConstRefCount */
         ".Lf9937e_00099cd9:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece4c, %eax\n"
+        "movl scrCompileGlob+76, %eax\n"
         "jmp .Lf9937e_000997f6\n"
         /* } scope */
         ".Lf9937e_00099cf7:\n"
@@ -9998,7 +9998,7 @@ unsigned int EmitForStatement(sval_t expr, sval_t stmt2, sval_t stmt, sval_t sou
         "movl -0x2c(%ebp), %eax\n" /* line 3587 | constValue, stmt1 */
         "testl %eax, %eax\n" /* stmt1 */
         "jne .Lf9937e_00099696\n"
-        "movl $0x21da90, 4(%esp)\n" /* line 3588 */
+        "movl $str_0021da90, 4(%esp)\n" /* line 3588 */
         "movl 0xc(%ebp), %ebx\n" /* sourcePos */
         "movl %ebx, (%esp)\n"
         "calll CompileError\n"
@@ -10022,19 +10022,19 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl %ecx, -0x7c(%ebp)\n"
         "movzbl 8(%ebp), %esi\n" /* lastStatement */
         /* { scope 1: constValue, lastStatement */
-        "movzbl 0x4ece26, %edx\n" /* line 4237 */
+        "movzbl scrCompileGlob+38, %edx\n" /* line 4237 */
         "movb %dl, -0x75(%ebp)\n" /* bOldCanIgnoreCase */
-        "movl 0x4ece28, %ecx\n" /* line 4238 */
+        "movl scrCompileGlob+40, %ecx\n" /* line 4238 */
         "movl %ecx, -0x74(%ebp)\n" /* oldCaseStatement */
-        "movb $0, 0x4ece26\n" /* line 4239 */
-        "movzbl 0x4ece2c, %ebx\n" /* line 4241 | outerBlock */
+        "movb $0, scrCompileGlob+38\n" /* line 4239 */
+        "movzbl scrCompileGlob+44, %ebx\n" /* line 4241 | outerBlock */
         "movb %bl, -0x6e(%ebp)\n" /* outerBlock, bOldCanBreak */
-        "movzbl 0x4ece2d, %edx\n" /* line 4242 */
+        "movzbl scrCompileGlob+45, %edx\n" /* line 4242 */
         "movb %dl, -0x6d(%ebp)\n" /* bOldCanIgnoreBreak */
-        "movl 0x4ece30, %ecx\n" /* line 4243 */
+        "movl scrCompileGlob+48, %ecx\n" /* line 4243 */
         "movl %ecx, -0x6c(%ebp)\n" /* oldBreakStatement */
-        "movb $0, 0x4ece2c\n" /* line 4244 */
-        "movb $0, 0x4ece2d\n" /* line 4245 */
+        "movb $0, scrCompileGlob+44\n" /* line 4244 */
+        "movb $0, scrCompileGlob+45\n" /* line 4245 */
         /* { scope 2: hasDefault, breakChildCount, oldBreakChildBlocks, oldBreakChildCount, ... */
         "leal -0x28(%ebp), %ebx\n" /* line 2883 | constValue */
         "movl 0x10(%ebp), %ecx\n" /* block */
@@ -10057,31 +10057,31 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl $0, (%esp)\n" /* line 4251 */
         "calll TempMalloc\n"
         "movl %eax, -0x60(%ebp)\n" /* expr, nextPos1 */
-        "movl 0x114cf48, %eax\n" /* line 4253 | expr */
+        "movl scrCompilePub+40, %eax\n" /* line 4253 | expr */
         "testl %eax, %eax\n" /* expr */
         "setne %al\n" /* expr */
-        "movb %al, 0x4ece26\n" /* expr */
-        "movl $0, 0x4ece28\n" /* line 4254 */
-        "movb %al, 0x4ece2d\n" /* line 4256 | expr */
-        "movl $0, 0x4ece30\n" /* line 4257 */
+        "movb %al, scrCompileGlob+38\n" /* expr */
+        "movl $0, scrCompileGlob+40\n" /* line 4254 */
+        "movb %al, scrCompileGlob+45\n" /* line 4256 | expr */
+        "movl $0, scrCompileGlob+48\n" /* line 4257 */
         "movl %esi, %eax\n" /* line 4259 | caseStatement, expr */
         "movb %al, -0x56(%ebp)\n" /* expr, lastStatement */
         /* { scope 2: hasDefault, breakChildCount, oldBreakChildBlocks, oldBreakChildCount, ... */
         /* { scope 3: j, childCount, childBlocks */
-        "movl 0x4ece3c, %edx\n" /* line 4045 */
+        "movl scrCompileGlob+60, %edx\n" /* line 4045 */
         "movl %edx, -0x54(%ebp)\n" /* oldBreakChildBlocks */
-        "movl 0x4ece40, %ecx\n" /* line 4046 */
+        "movl scrCompileGlob+64, %ecx\n" /* line 4046 */
         "movl %ecx, -0x50(%ebp)\n" /* oldBreakChildCount */
-        "movl 0x4ece44, %ebx\n" /* line 4047 */
+        "movl scrCompileGlob+68, %ebx\n" /* line 4047 */
         "movl %ebx, -0x4c(%ebp)\n" /* oldBreakBlock */
         "movl $0, -0x1c(%ebp)\n" /* line 4049 | breakChildCount */
         "movl $__mh_execute_header, (%esp)\n" /* line 4050 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl %eax, -0x3c(%ebp)\n" /* childBlocks */
-        "movl %eax, 0x4ece3c\n" /* line 4051 */
+        "movl %eax, scrCompileGlob+60\n" /* line 4051 */
         "leal -0x1c(%ebp), %eax\n" /* line 4052 | breakChildCount */
-        "movl %eax, 0x4ece40\n"
-        "movl $0, 0x4ece44\n" /* line 4053 */
+        "movl %eax, scrCompileGlob+64\n"
+        "movl $0, scrCompileGlob+68\n" /* line 4053 */
         "movl (%edi), %eax\n" /* line 4057 | removeCount */
         "movl 4(%eax), %esi\n" /* node */
         "testl %esi, %esi\n" /* node */
@@ -10095,7 +10095,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "cmpl $1, %eax\n"
         "jbe .Lf99d2a_00099f10\n"
         ".Lf99d2a_00099e77:\n"
-        "movl 0x4ece44, %ecx\n" /* line 4089 */
+        "movl scrCompileGlob+68, %ecx\n" /* line 4089 */
         "testl %ecx, %ecx\n"
         "je .Lf99d2a_0009a46c\n"
         "cmpb $0, -0x56(%ebp)\n" /* line 4095 | lastStatement */
@@ -10103,7 +10103,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl -0x2c(%ebp), %edi\n" /* line 3985 | removeCount */
         "testl %edi, %edi\n" /* removeCount */
         "je .Lf99d2a_00099eba\n"
-        "movl 0x195ee58, %eax\n" /* line 3987 */
+        "movl imp_scrVarPub, %eax\n" /* line 3987 */
         "cmpb $0, 0xb(%eax)\n"
         "jne .Lf99d2a_0009a06d\n"
         "movl -0x2c(%ebp), %edx\n"
@@ -10121,14 +10121,14 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl 0xc(%ebp), %ecx\n" /* endSourcePos */
         "movl %ebx, %eax\n" /* outerBlock */
         "calll EmitStatement\n"
-        "movl 0x4ece44, %eax\n" /* line 4096 */
+        "movl scrCompileGlob+68, %eax\n" /* line 4096 */
         "testl %eax, %eax\n"
         "je .Lf99d2a_00099eec\n"
         "movl (%eax), %esi\n" /* node */
         "testl %esi, %esi\n" /* node */
         "je .Lf99d2a_00099eec\n"
-        "movl $0, 0x4ece44\n" /* line 4099 */
-        "movb $0, 0x4ece2c\n" /* line 4102 */
+        "movl $0, scrCompileGlob+68\n" /* line 4099 */
+        "movb $0, scrCompileGlob+44\n" /* line 4102 */
         ".Lf99d2a_00099eec:\n"
         "movl -0x2c(%ebp), %ebx\n" /* line 4057 */
         "testl %ebx, %ebx\n"
@@ -10143,11 +10143,11 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "cmpl $1, %eax\n"
         "ja .Lf99d2a_00099e77\n"
         ".Lf99d2a_00099f10:\n"
-        "movl 0x4ece44, %eax\n" /* line 4063 */
+        "movl scrCompileGlob+68, %eax\n" /* line 4063 */
         "testl %eax, %eax\n"
         "je .Lf99d2a_00099f32\n"
-        "movb $0, 0x4ece2c\n" /* line 4066 */
-        "movl 0x4ece44, %ebx\n" /* line 4067 | outerBlock */
+        "movb $0, scrCompileGlob+44\n" /* line 4066 */
+        "movl scrCompileGlob+68, %ebx\n" /* line 4067 | outerBlock */
         /* { scope 4: i */
         /* { scope 5 */
         "movl (%ebx), %eax\n" /* line 850 */
@@ -10162,10 +10162,10 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "je .Lf99d2a_0009a2df\n"
         ".Lf99d2a_00099f3b:\n"
         "movl 8(%ebx), %eax\n" /* line 4077 | outerBlock */
-        "movl %eax, 0x4ece44\n"
+        "movl %eax, scrCompileGlob+68\n"
         "movl (%esi), %eax\n" /* line 4079 | node */
         "movl 4(%eax), %esi\n" /* node */
-        "cmpl $2, 0x114cf48\n" /* line 4323 */
+        "cmpl $2, scrCompilePub+40\n" /* line 4323 */
         "je .Lf99d2a_00099f85\n"
         "movl $0x10, (%esp)\n" /* line 4329 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
@@ -10175,13 +10175,13 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "calll TempMalloc\n"
         "movl %eax, 4(%ebx)\n" /* expr, pos */
         "movl %esi, 8(%ebx)\n" /* line 4333 | caseStatement, pos */
-        "movl 0x4ece28, %eax\n" /* line 4334 | expr */
+        "movl scrCompileGlob+40, %eax\n" /* line 4334 | expr */
         "movl %eax, 0xc(%ebx)\n" /* expr, pos */
-        "movl %ebx, 0x4ece28\n" /* line 4335 | pos */
+        "movl %ebx, scrCompileGlob+40\n" /* line 4335 | pos */
         ".Lf99d2a_00099f85:\n"
         "movb $1, -0x55(%ebp)\n" /* hasDefault */
         ".Lf99d2a_00099f89:\n"
-        "movl 0x4ece44, %edi\n" /* line 4082 | removeCount */
+        "movl scrCompileGlob+68, %edi\n" /* line 4082 | removeCount */
         "movl %edi, -0x34(%ebp)\n" /* removeCount */
         "movl 0x10(%ebp), %ecx\n" /* block */
         "addl $0x18, %ecx\n"
@@ -10277,7 +10277,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl %esi, %ebx\n" /* removeCount */
         "jmp .Lf99d2a_00099ffb\n"
         ".Lf99d2a_0009a086:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %ecx\n" /* removeCount */
@@ -10289,16 +10289,16 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl %eax, 4(%edi)\n" /* line 1084 | removeCount */
         "movl $0, (%edi)\n" /* line 1085 | removeCount */
         /* } scope */
-        "movb $1, 0x4ece2c\n" /* line 4085 */
+        "movb $1, scrCompileGlob+44\n" /* line 4085 */
         "movl -0x2c(%ebp), %ebx\n" /* line 4057 */
         "testl %ebx, %ebx\n"
         "jne .Lf99d2a_00099ef7\n"
         ".Lf99d2a_0009a0c2:\n"
-        "movl 0x4ece44, %ecx\n" /* line 4105 */
+        "movl scrCompileGlob+68, %ecx\n" /* line 4105 */
         "testl %ecx, %ecx\n"
         "je .Lf99d2a_0009a0e3\n"
-        "movb $0, 0x4ece2c\n" /* line 4108 */
-        "movl 0x4ece44, %ebx\n" /* line 4109 | outerBlock */
+        "movb $0, scrCompileGlob+44\n" /* line 4108 */
+        "movl scrCompileGlob+68, %ebx\n" /* line 4109 | outerBlock */
         /* { scope 4: i */
         /* { scope 5 */
         "movl (%ebx), %edx\n" /* line 850 */
@@ -10311,16 +10311,16 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "jne .Lf99d2a_0009a318\n"
         ".Lf99d2a_0009a0ed:\n"
         "movl -0x54(%ebp), %ecx\n" /* line 4120 | oldBreakChildBlocks */
-        "movl %ecx, 0x4ece3c\n"
+        "movl %ecx, scrCompileGlob+60\n"
         "movl -0x50(%ebp), %ebx\n" /* line 4121 | oldBreakChildCount, outerBlock */
-        "movl %ebx, 0x4ece40\n" /* outerBlock */
+        "movl %ebx, scrCompileGlob+64\n" /* outerBlock */
         "movl -0x4c(%ebp), %esi\n" /* line 4122 | oldBreakBlock, node */
-        "movl %esi, 0x4ece44\n" /* node */
+        "movl %esi, scrCompileGlob+68\n" /* node */
         /* } scope */
         /* } scope */
         ".Lf99d2a_0009a108:\n"
-        "movb $0, 0x4ece26\n" /* line 4261 */
-        "movb $0, 0x4ece2d\n" /* line 4262 */
+        "movb $0, scrCompileGlob+38\n" /* line 4261 */
+        "movb $0, scrCompileGlob+45\n" /* line 4262 */
         "xorl %ecx, %ecx\n" /* line 4264 */
         "xorl %edx, %edx\n"
         "movl $0x7d, %eax\n" /* expr */
@@ -10342,7 +10342,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl $0, (%esp)\n" /* line 4272 */
         "calll TempMallocAlignStrict\n"
         "movl %eax, %edi\n" /* expr, pos3 */
-        "movl 0x4ece28, %esi\n" /* line 4276 | caseStatement */
+        "movl scrCompileGlob+40, %esi\n" /* line 4276 | caseStatement */
         "testl %esi, %esi\n" /* line 4277 | caseStatement */
         "je .Lf99d2a_0009a450\n"
         "movl $0, -0x5c(%ebp)\n" /* num */
@@ -10377,7 +10377,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "calll qsort\n"
         "cmpl $1, -0x5c(%ebp)\n" /* line 4289 | num */
         "jle .Lf99d2a_0009a205\n"
-        "movl 0x4ece28, %ebx\n" /* line 4293 | pos */
+        "movl scrCompileGlob+40, %ebx\n" /* line 4293 | pos */
         "xorl %ecx, %ecx\n"
         "movl -0x5c(%ebp), %esi\n" /* num, caseStatement */
         "subl $1, %esi\n" /* caseStatement */
@@ -10394,7 +10394,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl $0, (%esp)\n" /* line 3016 */
         "calll TempMalloc\n"
         "movl %eax, %ebx\n"
-        "movl 0x4ece30, %ecx\n" /* line 3017 */
+        "movl scrCompileGlob+48, %ecx\n" /* line 3017 */
         "testl %ecx, %ecx\n" /* line 3019 */
         "je .Lf99d2a_0009a22d\n"
         ".Lf99d2a_0009a21d:\n"
@@ -10407,15 +10407,15 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "jne .Lf99d2a_0009a21d\n"
         ".Lf99d2a_0009a22d:\n"
         "movzbl -0x75(%ebp), %eax\n" /* line 4310 | bOldCanIgnoreCase, expr */
-        "movb %al, 0x4ece26\n" /* expr */
+        "movb %al, scrCompileGlob+38\n" /* expr */
         "movl -0x74(%ebp), %edx\n" /* line 4311 | oldCaseStatement */
-        "movl %edx, 0x4ece28\n"
+        "movl %edx, scrCompileGlob+40\n"
         "movzbl -0x6e(%ebp), %ecx\n" /* line 4313 | bOldCanBreak */
-        "movb %cl, 0x4ece2c\n"
+        "movb %cl, scrCompileGlob+44\n"
         "movzbl -0x6d(%ebp), %ebx\n" /* line 4314 | bOldCanIgnoreBreak, pos */
-        "movb %bl, 0x4ece2d\n" /* pos */
+        "movb %bl, scrCompileGlob+45\n" /* pos */
         "movl -0x6c(%ebp), %esi\n" /* line 4315 | oldBreakStatement, caseStatement */
-        "movl %esi, 0x4ece30\n" /* caseStatement */
+        "movl %esi, scrCompileGlob+48\n" /* caseStatement */
         /* } scope */
         "addl $0xac, %esp\n" /* line 4316 */
         "popl %ebx\n"
@@ -10438,7 +10438,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "jne .Lf99d2a_0009a272\n"
         "movl %eax, %ebx\n" /* expr, pos */
         ".Lf99d2a_0009a27f:\n"
-        "movl $0x21db20, 4(%esp)\n" /* line 4298 */
+        "movl $str_0021db20, 4(%esp)\n" /* line 4298 */
         "movl 8(%ebx), %eax\n" /* pos, expr */
         "movl %eax, (%esp)\n" /* expr */
         "calll CompileError\n"
@@ -10477,7 +10477,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "jne .Lf99d2a_00099f3b\n"
         ".Lf99d2a_0009a2df:\n"
         "movl 0xc(%ebx), %eax\n" /* line 4072 | outerBlock */
-        "movl %eax, 0x4ece44\n"
+        "movl %eax, scrCompileGlob+68\n"
         "movl (%esi), %eax\n" /* line 4073 | node */
         "movl 8(%eax), %edi\n" /* removeCount */
         "movl 4(%eax), %esi\n" /* node */
@@ -10486,28 +10486,28 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "je .Lf99d2a_0009a529\n"
         "cmpl $0xb, %eax\n"
         "je .Lf99d2a_0009a48d\n"
-        "movl $0x21dadc, 4(%esp)\n" /* line 4020 */
+        "movl $str_0021dadc, 4(%esp)\n" /* line 4020 */
         "movl %edi, (%esp)\n" /* removeCount */
         "calll CompileError\n"
         "jmp .Lf99d2a_00099f89\n"
         ".Lf99d2a_0009a318:\n"
-        "movl 0x4ece44, %ebx\n" /* line 4114 | outerBlock */
+        "movl scrCompileGlob+68, %ebx\n" /* line 4114 | outerBlock */
         "testl %ebx, %ebx\n" /* outerBlock */
         "je .Lf99d2a_0009a354\n"
         "movl (%ebx), %eax\n" /* line 3286 */
         "testl %eax, %eax\n"
         "jne .Lf99d2a_0009a354\n"
-        "movl 0x4ece3c, %eax\n" /* line 3288 */
+        "movl scrCompileGlob+60, %eax\n" /* line 3288 */
         "testl %eax, %eax\n"
         "je .Lf99d2a_0009a354\n"
-        "movl 0x4ece40, %eax\n" /* line 886 */
+        "movl scrCompileGlob+64, %eax\n" /* line 886 */
         "cmpl $0x3ff, (%eax)\n"
         "jg .Lf99d2a_0009a56e\n"
         ".Lf99d2a_0009a342:\n"
         "movl (%eax), %edx\n" /* line 3291 */
-        "movl 0x4ece3c, %eax\n"
+        "movl scrCompileGlob+60, %eax\n"
         "movl %ebx, (%eax, %edx, 4)\n"
-        "movl 0x4ece40, %eax\n" /* line 3292 */
+        "movl scrCompileGlob+64, %eax\n" /* line 3292 */
         "addl $1, (%eax)\n"
         ".Lf99d2a_0009a354:\n"
         "movl -0x1c(%ebp), %ecx\n" /* line 4117 | breakChildCount */
@@ -10615,7 +10615,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         /* { scope 2: hasDefault, breakChildCount, oldBreakChildBlocks, oldBreakChildCount, ... */
         /* { scope 3: j, childCount, childBlocks */
         ".Lf99d2a_0009a46c:\n"
-        "movl $0x21db08, 4(%esp)\n" /* line 4091 */
+        "movl $str_0021db08, 4(%esp)\n" /* line 4091 */
         "movl 0xc(%ebp), %ecx\n" /* endSourcePos */
         "movl %ecx, (%esp)\n"
         "calll CompileError\n"
@@ -10625,9 +10625,9 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "jmp .Lf99d2a_0009a0c2\n"
         ".Lf99d2a_0009a48d:\n"
         "movl 4(%esi), %esi\n" /* line 4015 | removeCount */
-        "cmpl $2, 0x114cf48\n" /* line 255 */
+        "cmpl $2, scrCompilePub+40\n" /* line 255 */
         "je .Lf99d2a_0009a58c\n"
-        "cmpb $0, 0x4ece1c\n" /* line 266 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 266 */
         "jne .Lf99d2a_0009a5a6\n"
         ".Lf99d2a_0009a4aa:\n"
         "movl $1, 4(%esp)\n" /* line 268 */
@@ -10635,7 +10635,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "calll SL_TransferRefToUser\n"
         /* { scope 4: i */
         ".Lf99d2a_0009a4ba:\n"
-        "cmpl $2, 0x114cf48\n" /* line 4323 */
+        "cmpl $2, scrCompilePub+40\n" /* line 4323 */
         "je .Lf99d2a_00099f89\n"
         "movl $0x10, (%esp)\n" /* line 4329 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
@@ -10645,9 +10645,9 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "calll TempMalloc\n"
         "movl %eax, 4(%ebx)\n" /* expr, pos */
         "movl %edi, 8(%ebx)\n" /* line 4333 | pos3, pos */
-        "movl 0x4ece28, %eax\n" /* line 4334 | expr */
+        "movl scrCompileGlob+40, %eax\n" /* line 4334 | expr */
         "movl %eax, 0xc(%ebx)\n" /* expr, pos */
-        "movl %ebx, 0x4ece28\n" /* line 4335 | pos */
+        "movl %ebx, scrCompileGlob+40\n" /* line 4335 | pos */
         "jmp .Lf99d2a_00099f89\n"
         /* } scope */
         /* { scope 4: i */
@@ -10673,7 +10673,7 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "jne .Lf99d2a_0009a55c\n"
         "movl 4(%esi), %eax\n" /* line 4008 | removeCount */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21dac0, (%esp)\n" /* "case index %d out of range" */
+        "movl $str_0021dac0, (%esp)\n" /* "case index %d out of range" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* removeCount */
@@ -10686,13 +10686,13 @@ unsigned int EmitSwitchStatement(sval_t sourcePos, int lastStatement, unsigned i
         "movl %eax, %esi\n" /* removeCount */
         "jmp .Lf99d2a_0009a4ba\n"
         ".Lf99d2a_0009a56e:\n"
-        "movl $0x21d7d8, 4(%esp)\n" /* line 888 */
+        "movl $str_0021d7d8, 4(%esp)\n" /* line 888 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
-        "movl 0x4ece40, %eax\n"
+        "movl scrCompileGlob+64, %eax\n"
         "jmp .Lf99d2a_0009a342\n"
         ".Lf99d2a_0009a58c:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf99d2a_0009a4ba\n"
         "movl %esi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -10721,18 +10721,18 @@ unsigned int EmitThreadInternal(sval_t val, sval_t sourcePos, sval_t endSourcePo
         "movl %edx, -0x24(%ebp)\n" /* endSourcePos */
         "movl 0xc(%ebp), %ecx\n" /* block */
         "movl %ecx, -0x28(%ebp)\n" /* block */
-        "movl %eax, 0x4ece0c\n" /* line 4781 | threadId */
+        "movl %eax, scrCompileGlob+12\n" /* line 4781 | threadId */
         "movl -0x20(%ebp), %eax\n" /* line 4783 | threadId */
         "movl %eax, (%esp)\n" /* threadId */
         "calll AddThreadStartOpcodePos\n"
-        "movl $0, 0x4ece10\n" /* line 4785 */
-        "movl $0, 0x4ece14\n" /* line 4786 */
-        "movl $0, 0x4ece18\n" /* line 4787 */
+        "movl $0, scrCompileGlob+16\n" /* line 4785 */
+        "movl $0, scrCompileGlob+20\n" /* line 4786 */
+        "movl $0, scrCompileGlob+24\n" /* line 4787 */
         "movl -0x1c(%ebp), %edx\n" /* line 4789 */
         "movl 4(%edx), %ebx\n" /* index */
-        "cmpl $2, 0x114cf48\n" /* line 255 */
+        "cmpl $2, scrCompilePub+40\n" /* line 255 */
         "je .Lf9a5b4_0009a7b4\n"
-        "cmpb $0, 0x4ece1c\n" /* line 266 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 266 */
         "jne .Lf9a5b4_0009a78e\n"
         ".Lf9a5b4_0009a61d:\n"
         "movl $2, 4(%esp)\n" /* line 268 */
@@ -10801,7 +10801,7 @@ unsigned int EmitThreadInternal(sval_t val, sval_t sourcePos, sval_t endSourcePo
         "movl 4(%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf9a5b4_0009a73f\n"
-        "movl 0x195ee58, %esi\n"
+        "movl imp_scrVarPub, %esi\n"
         ".Lf9a5b4_0009a6e5:\n"
         "movl 4(%edx), %ebx\n" /* line 4669 | index */
         "testl %ebx, %ebx\n" /* line 3985 | index */
@@ -10854,9 +10854,9 @@ unsigned int EmitThreadInternal(sval_t val, sval_t sourcePos, sval_t endSourcePo
         "movl $0, 4(%esp)\n" /* line 4795 */
         "movl $0xfffffffe, (%esp)\n"
         "calll AddOpcodePos\n"
-        "movl 0x4ece18, %eax\n" /* line 4799 | threadId */
+        "movl scrCompileGlob+24, %eax\n" /* line 4799 | threadId */
         "shll $5, %eax\n" /* threadId */
-        "addl 0x4ece14, %eax\n" /* threadId */
+        "addl scrCompileGlob+20, %eax\n" /* threadId */
         "cmpl $0x7ff, %eax\n" /* threadId */
         "jg .Lf9a5b4_0009a79b\n"
         "addl $0x2c, %esp\n" /* line 4801 */
@@ -10870,7 +10870,7 @@ unsigned int EmitThreadInternal(sval_t val, sval_t sourcePos, sval_t endSourcePo
         "calll SL_AddRefToString\n"
         "jmp .Lf9a5b4_0009a61d\n"
         ".Lf9a5b4_0009a79b:\n"
-        "movl $0x21db3c, 0xc(%ebp)\n" /* line 4800 | block */
+        "movl $str_0021db3c, 0xc(%ebp)\n" /* line 4800 | block */
         "movl -0x20(%ebp), %edx\n"
         "movl %edx, 8(%ebp)\n" /* endSourcePos */
         "addl $0x2c, %esp\n" /* line 4801 */
@@ -10881,7 +10881,7 @@ unsigned int EmitThreadInternal(sval_t val, sval_t sourcePos, sval_t endSourcePo
         "jmp CompileError\n" /* line 4800 */
         /* { scope 1 */
         ".Lf9a5b4_0009a7b4:\n"
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf9a5b4_0009a62d\n"
         "movl %ebx, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -10902,23 +10902,23 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "subl $0x8c, %esp\n"
         /* { scope 1: pos, emptyValue */
         "movl 0xc(%ebp), %eax\n" /* line 4991 | fileId */
-        "movl %eax, 0x4ece08\n"
-        "movb $0, 0x4ece1c\n" /* line 4992 */
-        "movl 0x195ee54, %eax\n" /* line 4993 */
+        "movl %eax, scrCompileGlob+8\n"
+        "movb $0, scrCompileGlob+28\n" /* line 4992 */
+        "movl imp_scrAnimPub, %eax\n" /* line 4993 */
         "movl $0, 0x414(%eax)\n"
-        "movl $0, 0x114cf48\n" /* line 4994 */
-        "movl 0x114cf24, %eax\n" /* line 4996 */
+        "movl $0, scrCompilePub+40\n" /* line 4994 */
+        "movl scrCompilePub+4, %eax\n" /* line 4996 */
         "testl %eax, %eax\n"
         "jne .Lf9a7ce_0009aec2\n"
         "movl $0, -0x68(%ebp)\n" /* precachescriptList */
         "movl -0x68(%ebp), %ecx\n" /* precachescriptList */
         ".Lf9a7ce_0009a819:\n"
-        "movl %ecx, 0x4ece54\n" /* line 4997 */
+        "movl %ecx, scrCompileGlob+84\n" /* line 4997 */
         "testl %ecx, %ecx\n" /* line 4999 */
         "je .Lf9a7ce_0009a831\n"
-        "movl 0x4ece58, %eax\n" /* line 5001 */
+        "movl scrCompileGlob+88, %eax\n" /* line 5001 */
         "movl %eax, 8(%ecx)\n"
-        "movl %ecx, 0x4ece58\n" /* line 5002 */
+        "movl %ecx, scrCompileGlob+88\n" /* line 5002 */
         ".Lf9a7ce_0009a831:\n"
         "movl 8(%ebp), %ebx\n" /* line 5005 | val, i */
         "movl (%ebx), %eax\n" /* i */
@@ -10934,19 +10934,19 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl %esi, (%esp)\n" /* line 1663 */
         "calll SL_AddRefToString\n"
         /* { scope 4 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "je .Lf9a7ce_0009a8d7\n"
         /* } scope */
         ".Lf9a7ce_0009a858:\n"
-        "movl 0x4ece54, %eax\n" /* line 1665 */
+        "movl scrCompileGlob+84, %eax\n" /* line 1665 */
         "movw %si, (%eax)\n" /* stringValue */
-        "movl 0x4ece54, %eax\n" /* line 1666 */
+        "movl scrCompileGlob+84, %eax\n" /* line 1666 */
         "movl %ebx, 4(%eax)\n"
-        "movl 0x4ece54, %eax\n" /* line 1667 */
+        "movl scrCompileGlob+84, %eax\n" /* line 1667 */
         "movb $1, 2(%eax)\n"
-        "addl $0xc, 0x4ece54\n" /* line 1668 */
+        "addl $0xc, scrCompileGlob+84\n" /* line 1668 */
         "movl %esi, 4(%esp)\n" /* line 1669 | stringValue */
-        "movl 0x114cf2c, %eax\n"
+        "movl scrCompilePub+12, %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetVariable\n"
         "movl %eax, (%esp)\n"
@@ -10965,7 +10965,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl %eax, %esi\n" /* threadId */
         "movl 4(%ebx), %eax\n" /* line 4955 | node, stringValue */
         /* { scope 3 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf9a7ce_0009a844\n"
         "movl %eax, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
@@ -10975,7 +10975,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl %esi, (%esp)\n" /* line 1663 */
         "calll SL_AddRefToString\n"
         /* { scope 4 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf9a7ce_0009a858\n"
         ".Lf9a7ce_0009a8d7:\n"
         "movl %esi, (%esp)\n" /* line 206 */
@@ -10990,7 +10990,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl 4(%eax), %eax\n" /* line 5006 */
         "movl %eax, -0x6c(%ebp)\n"
         /* { scope 2: stmttblock */
-        "movb $0, 0x4ece1d\n" /* line 4930 */
+        "movb $0, scrCompileGlob+29\n" /* line 4930 */
         "movl (%eax), %eax\n" /* line 4932 */
         "movl 4(%eax), %edi\n" /* node */
         "testl %edi, %edi\n" /* node */
@@ -11011,21 +11011,21 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl (%ecx), %eax\n" /* line 4748 */
         "cmpl $0x45, %eax\n"
         "jne .Lf9a7ce_0009a8ff\n"
-        "cmpb $0, 0x4ece1d\n" /* line 4751 */
+        "cmpb $0, scrCompileGlob+29\n" /* line 4751 */
         "jne .Lf9a7ce_0009ad4f\n"
-        "movb $1, 0x4ece1d\n" /* line 4756 */
+        "movb $1, scrCompileGlob+29\n" /* line 4756 */
         "movl -0x54(%ebp), %edx\n" /* line 4757 */
         "movl 4(%edx), %eax\n"
-        "movl %eax, 0x4ece20\n"
+        "movl %eax, scrCompileGlob+32\n"
         "movl 4(%edi), %edi\n" /* line 4932 | node */
         "testl %edi, %edi\n" /* node */
         "jne .Lf9a7ce_0009a918\n"
         ".Lf9a7ce_0009a94a:\n"
-        "cmpb $0, 0x4ece1d\n" /* line 4935 */
+        "cmpb $0, scrCompileGlob+29\n" /* line 4935 */
         "jne .Lf9a7ce_0009aeda\n"
         ".Lf9a7ce_0009a957:\n"
-        "movb $1, 0x4ece24\n" /* line 4938 */
-        "movb $1, 0x4ece25\n" /* line 4939 */
+        "movb $1, scrCompileGlob+36\n" /* line 4938 */
+        "movb $1, scrCompileGlob+37\n" /* line 4939 */
         "movl -0x6c(%ebp), %ecx\n" /* line 4942 */
         "movl (%ecx), %eax\n"
         "movl 4(%eax), %eax\n"
@@ -11053,7 +11053,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "je .Lf9a7ce_0009ab62\n"
         "cmpl $0x47, %eax\n"
         "jne .Lf9a7ce_0009a982\n"
-        "cmpb $0, 0x4ece1d\n" /* line 4914 */
+        "cmpb $0, scrCompileGlob+29\n" /* line 4914 */
         "jne .Lf9a7ce_0009ae71\n"
         "movl -0x54(%ebp), %ecx\n" /* line 4919 */
         "movl 0xc(%ecx), %ebx\n" /* node */
@@ -11066,19 +11066,19 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl -0x54(%ebp), %ebx\n" /* line 4920 | node */
         "movl 4(%ebx), %eax\n" /* node, stringValue */
         /* { scope 3 */
-        "cmpb $0, 0x4ece1c\n" /* line 200 */
+        "cmpb $0, scrCompileGlob+28\n" /* line 200 */
         "jne .Lf9a7ce_0009a982\n"
         "movl %eax, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
         "jmp .Lf9a7ce_0009a982\n"
         /* } scope */
         ".Lf9a7ce_0009a9f6:\n"
-        "cmpb $0, 0x4ece1d\n" /* line 4761 */
+        "cmpb $0, scrCompileGlob+29\n" /* line 4761 */
         "je .Lf9a7ce_0009ae8c\n"
-        "movb $0, 0x4ece1d\n" /* line 4766 */
+        "movb $0, scrCompileGlob+29\n" /* line 4766 */
         "jmp .Lf9a7ce_0009a911\n"
         ".Lf9a7ce_0009aa0f:\n"
-        "cmpb $0, 0x4ece1d\n" /* line 4770 */
+        "cmpb $0, scrCompileGlob+29\n" /* line 4770 */
         "jne .Lf9a7ce_0009ad86\n"
         "movl $7, -0x50(%ebp)\n"
         ".Lf9a7ce_0009aa23:\n"
@@ -11086,7 +11086,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl 0x10(%ebx), %esi\n" /* node, threadPtr */
         "movl 4(%ebx), %ebx\n" /* node */
         "movl %ebx, 4(%esp)\n" /* node */
-        "movl 0x4ece08, %eax\n"
+        "movl scrCompileGlob+8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetVariable\n"
         "movl %eax, (%esp)\n"
@@ -11098,7 +11098,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "calll SpecifyThreadPosition\n"
         "jmp .Lf9a7ce_0009a911\n"
         ".Lf9a7ce_0009aa59:\n"
-        "movb $1, 0x4ece1d\n" /* line 4897 */
+        "movb $1, scrCompileGlob+29\n" /* line 4897 */
         "movl -0x3c(%ebp), %eax\n" /* line 4942 */
         "movl 4(%eax), %eax\n"
         "movl %eax, -0x3c(%ebp)\n"
@@ -11108,11 +11108,11 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         ".Lf9a7ce_0009aa71:\n"
         "movl $0, (%esp)\n" /* line 5009 */
         "calll TempMalloc\n"
-        "movl 0x195ee58, %edx\n"
+        "movl imp_scrVarPub, %edx\n"
         "subl 0x48(%edx), %eax\n"
-        "movl %eax, 0x114cf50\n"
+        "movl %eax, scrCompilePub+48\n"
         "calll Hunk_ClearTempMemoryHigh\n" /* line 5011 */
-        "movl 0x114cf24, %edx\n" /* line 5014 */
+        "movl scrCompilePub+4, %edx\n" /* line 5014 */
         "movl %edx, -0x64(%ebp)\n" /* far_function_count */
         "testl %edx, %edx\n" /* line 5016 */
         "jg .Lf9a7ce_0009aef4\n"
@@ -11122,7 +11122,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "je .Lf9a7ce_0009aabb\n"
         "movl -0x68(%ebp), %ecx\n" /* line 5069 | precachescriptList */
         "movl 8(%ecx), %eax\n"
-        "movl %eax, 0x4ece58\n"
+        "movl %eax, scrCompileGlob+88\n"
         "movl %ecx, (%esp)\n" /* line 5070 */
         "calll Z_FreeInternal\n"
         /* { scope 2: stmttblock */
@@ -11187,7 +11187,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         /* } scope */
         /* { scope 2: stmttblock */
         ".Lf9a7ce_0009ab62:\n"
-        "movb $0, 0x4ece1d\n" /* line 4902 */
+        "movb $0, scrCompileGlob+29\n" /* line 4902 */
         "jmp .Lf9a7ce_0009a982\n"
         ".Lf9a7ce_0009ab6e:\n"
         "movl -0x54(%ebp), %eax\n" /* line 4906 */
@@ -11199,7 +11199,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl -0x54(%ebp), %ecx\n"
         "movl 8(%ecx), %ebx\n" /* node */
         /* { scope 3 */
-        "movb $0, 0x4ece50\n" /* line 4806 */
+        "movb $0, scrCompileGlob+80\n" /* line 4806 */
         "movl $0x118, (%esp)\n" /* line 4808 */
         "calll Hunk_AllocateTempMemoryHighInternal\n"
         "movl -0x54(%ebp), %edx\n"
@@ -11282,30 +11282,30 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         /* } scope */
         /* } scope */
         ".Lf9a7ce_0009ac50:\n"
-        "cmpb $0, 0x4ece1d\n" /* line 4907 */
+        "cmpb $0, scrCompileGlob+29\n" /* line 4907 */
         "je .Lf9a7ce_0009ada1\n"
         /* { scope 3 */
-        "movl 0x195ee58, %ebx\n" /* line 4864 | node */
+        "movl imp_scrVarPub, %ebx\n" /* line 4864 | node */
         "cmpb $0, 0xb(%ebx)\n" /* node */
         "je .Lf9a7ce_0009b0fa\n"
-        "movl $1, 0x114cf48\n" /* line 4879 */
-        "movb $0, 0x4ece26\n" /* line 4821 */
-        "movl $0, 0x4ece28\n" /* line 4822 */
-        "movb $0, 0x4ece2c\n" /* line 4824 */
-        "movb $0, 0x4ece2d\n" /* line 4825 */
-        "movl $0, 0x4ece30\n" /* line 4826 */
-        "movb $0, 0x4ece34\n" /* line 4828 */
-        "movb $0, 0x4ece35\n" /* line 4829 */
-        "movl $0, 0x4ece38\n" /* line 4830 */
-        "movl $0, 0x4ece3c\n" /* line 4832 */
-        "movl $0, 0x4ece48\n" /* line 4833 */
-        "cmpb $0, 0x4ece25\n" /* line 4835 */
+        "movl $1, scrCompilePub+40\n" /* line 4879 */
+        "movb $0, scrCompileGlob+38\n" /* line 4821 */
+        "movl $0, scrCompileGlob+40\n" /* line 4822 */
+        "movb $0, scrCompileGlob+44\n" /* line 4824 */
+        "movb $0, scrCompileGlob+45\n" /* line 4825 */
+        "movl $0, scrCompileGlob+48\n" /* line 4826 */
+        "movb $0, scrCompileGlob+52\n" /* line 4828 */
+        "movb $0, scrCompileGlob+53\n" /* line 4829 */
+        "movl $0, scrCompileGlob+56\n" /* line 4830 */
+        "movl $0, scrCompileGlob+60\n" /* line 4832 */
+        "movl $0, scrCompileGlob+72\n" /* line 4833 */
+        "cmpb $0, scrCompileGlob+37\n" /* line 4835 */
         "jne .Lf9a7ce_0009b07c\n"
         ".Lf9a7ce_0009acd9:\n"
         "movl -0x54(%ebp), %edx\n" /* line 4882 */
         "movl 4(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x4ece08, %eax\n"
+        "movl scrCompileGlob+8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll FindVariable\n"
         "movl %eax, (%esp)\n"
@@ -11333,11 +11333,11 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl %esi, %eax\n" /* threadId */
         "calll EmitThreadInternal\n"
         ".Lf9a7ce_0009ad40:\n"
-        "movl $0, 0x114cf48\n" /* line 4887 */
+        "movl $0, scrCompilePub+40\n" /* line 4887 */
         "jmp .Lf9a7ce_0009a982\n"
         /* } scope */
         ".Lf9a7ce_0009ad4f:\n"
-        "movl $0x21db60, 4(%esp)\n" /* line 4753 */
+        "movl $str_0021db60, 4(%esp)\n" /* line 4753 */
         "movl -0x54(%ebp), %ebx\n" /* node */
         "movl 4(%ebx), %eax\n" /* node */
         "movl %eax, (%esp)\n"
@@ -11348,7 +11348,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         /* { scope 5 */
         /* { scope 6 */
         ".Lf9a7ce_0009ad6a:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%edi), %esi\n"
@@ -11358,29 +11358,29 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         /* } scope */
         /* } scope */
         ".Lf9a7ce_0009ad86:\n"
-        "movl 0x195ee58, %eax\n" /* line 4770 */
+        "movl imp_scrVarPub, %eax\n" /* line 4770 */
         "cmpb $0, 0xb(%eax)\n"
         "je .Lf9a7ce_0009a911\n"
         "movl $0xc, -0x50(%ebp)\n"
         "jmp .Lf9a7ce_0009aa23\n"
         ".Lf9a7ce_0009ada1:\n"
-        "movb $0, 0x4ece26\n" /* line 4821 */
-        "movl $0, 0x4ece28\n" /* line 4822 */
-        "movb $0, 0x4ece2c\n" /* line 4824 */
-        "movb $0, 0x4ece2d\n" /* line 4825 */
-        "movl $0, 0x4ece30\n" /* line 4826 */
-        "movb $0, 0x4ece34\n" /* line 4828 */
-        "movb $0, 0x4ece35\n" /* line 4829 */
-        "movl $0, 0x4ece38\n" /* line 4830 */
-        "movl $0, 0x4ece3c\n" /* line 4832 */
-        "movl $0, 0x4ece48\n" /* line 4833 */
-        "cmpb $0, 0x4ece24\n" /* line 4835 */
+        "movb $0, scrCompileGlob+38\n" /* line 4821 */
+        "movl $0, scrCompileGlob+40\n" /* line 4822 */
+        "movb $0, scrCompileGlob+44\n" /* line 4824 */
+        "movb $0, scrCompileGlob+45\n" /* line 4825 */
+        "movl $0, scrCompileGlob+48\n" /* line 4826 */
+        "movb $0, scrCompileGlob+52\n" /* line 4828 */
+        "movb $0, scrCompileGlob+53\n" /* line 4829 */
+        "movl $0, scrCompileGlob+56\n" /* line 4830 */
+        "movl $0, scrCompileGlob+60\n" /* line 4832 */
+        "movl $0, scrCompileGlob+72\n" /* line 4833 */
+        "cmpb $0, scrCompileGlob+36\n" /* line 4835 */
         "jne .Lf9a7ce_0009b0bb\n"
         ".Lf9a7ce_0009ae03:\n"
         "movl -0x54(%ebp), %ecx\n" /* line 4850 */
         "movl 4(%ecx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x4ece08, %eax\n"
+        "movl scrCompileGlob+8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll FindVariable\n"
         "movl %eax, (%esp)\n"
@@ -11410,14 +11410,14 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "calll EmitThreadInternal\n"
         "jmp .Lf9a7ce_0009a982\n"
         ".Lf9a7ce_0009ae71:\n"
-        "movl $0x21dba4, 4(%esp)\n" /* line 4916 */
+        "movl $str_0021dba4, 4(%esp)\n" /* line 4916 */
         "movl -0x54(%ebp), %edx\n"
         "movl 8(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf9a7ce_0009a982\n"
         ".Lf9a7ce_0009ae8c:\n"
-        "movl $0x21db74, 4(%esp)\n" /* line 4763 */
+        "movl $str_0021db74, 4(%esp)\n" /* line 4763 */
         "movl -0x54(%ebp), %ecx\n"
         "movl 4(%ecx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -11445,8 +11445,8 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "jmp .Lf9a7ce_0009a819\n"
         /* { scope 2: stmttblock */
         ".Lf9a7ce_0009aeda:\n"
-        "movl $0x21db8c, 4(%esp)\n" /* line 4936 */
-        "movl 0x4ece20, %eax\n"
+        "movl $str_0021db8c, 4(%esp)\n" /* line 4936 */
+        "movl scrCompileGlob+32, %eax\n"
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf9a7ce_0009a957\n"
@@ -11505,7 +11505,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "cmpl %edi, %eax\n" /* threadPtr */
         "jne .Lf9a7ce_0009af67\n"
         ".Lf9a7ce_0009af84:\n"
-        "movl $0x21dbf4, 4(%esp)\n" /* line 5037 */
+        "movl $str_0021dbf4, 4(%esp)\n" /* line 5037 */
         "movl 4(%esi), %eax\n" /* toThreadId */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
@@ -11587,7 +11587,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         /* { scope 2: stmttblock */
         /* { scope 3 */
         ".Lf9a7ce_0009b07c:\n"
-        "movb $0, 0x4ece25\n" /* line 4837 */
+        "movb $0, scrCompileGlob+37\n" /* line 4837 */
         "xorl %ecx, %ecx\n" /* line 577 */
         "xorl %edx, %edx\n"
         "xorl %eax, %eax\n"
@@ -11601,7 +11601,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "jmp .Lf9a7ce_0009acd9\n"
         /* } scope */
         ".Lf9a7ce_0009b0bb:\n"
-        "movb $0, 0x4ece24\n" /* line 4837 */
+        "movb $0, scrCompileGlob+36\n" /* line 4837 */
         "xorl %ecx, %ecx\n" /* line 577 */
         "xorl %edx, %edx\n"
         "xorl %eax, %eax\n"
@@ -11619,18 +11619,18 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "calll TempMalloc\n"
         "movl %eax, %esi\n" /* begin_pos */
         "movl 0x3c(%ebx), %edi\n" /* line 4867 | node, savedChecksum */
-        "movl $2, 0x114cf48\n" /* line 4869 */
-        "movb $0, 0x4ece26\n" /* line 4821 */
-        "movl $0, 0x4ece28\n" /* line 4822 */
-        "movb $0, 0x4ece2c\n" /* line 4824 */
-        "movb $0, 0x4ece2d\n" /* line 4825 */
-        "movl $0, 0x4ece30\n" /* line 4826 */
-        "movb $0, 0x4ece34\n" /* line 4828 */
-        "movb $0, 0x4ece35\n" /* line 4829 */
-        "movl $0, 0x4ece38\n" /* line 4830 */
-        "movl $0, 0x4ece3c\n" /* line 4832 */
-        "movl $0, 0x4ece48\n" /* line 4833 */
-        "cmpb $0, 0x4ece25\n" /* line 4835 */
+        "movl $2, scrCompilePub+40\n" /* line 4869 */
+        "movb $0, scrCompileGlob+38\n" /* line 4821 */
+        "movl $0, scrCompileGlob+40\n" /* line 4822 */
+        "movb $0, scrCompileGlob+44\n" /* line 4824 */
+        "movb $0, scrCompileGlob+45\n" /* line 4825 */
+        "movl $0, scrCompileGlob+48\n" /* line 4826 */
+        "movb $0, scrCompileGlob+52\n" /* line 4828 */
+        "movb $0, scrCompileGlob+53\n" /* line 4829 */
+        "movl $0, scrCompileGlob+56\n" /* line 4830 */
+        "movl $0, scrCompileGlob+60\n" /* line 4832 */
+        "movl $0, scrCompileGlob+72\n" /* line 4833 */
+        "cmpb $0, scrCompileGlob+37\n" /* line 4835 */
         "jne .Lf9a7ce_0009b1a8\n"
         ".Lf9a7ce_0009b173:\n"
         "movl -0x48(%ebp), %eax\n" /* line 4872 | stmttblock */
@@ -11650,7 +11650,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl %edi, 0x3c(%ebx)\n" /* line 4875 | savedChecksum, node */
         "jmp .Lf9a7ce_0009ad40\n"
         ".Lf9a7ce_0009b1a8:\n"
-        "movb $0, 0x4ece25\n" /* line 4837 */
+        "movb $0, scrCompileGlob+37\n" /* line 4837 */
         "xorl %ecx, %ecx\n" /* line 577 */
         "xorl %edx, %edx\n"
         "xorl %eax, %eax\n"
@@ -11668,7 +11668,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl %edi, (%esp)\n" /* line 5023 | threadPtr */
         "calll SL_ConvertToString\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x21dbd8, 4(%esp)\n" /* "Could not find script '%s'" */
+        "movl $str_0021dbd8, 4(%esp)\n" /* "Could not find script '%s'" */
         "movl -0x60(%ebp), %edx\n" /* precachescript */
         "movl 4(%edx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -11691,11 +11691,11 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
         "movl %eax, -0x2c(%ebp)\n"
         "movl %ecx, -0x30(%ebp)\n"
         /* { scope 1 */
-        "movl 0x114cf48, %ebx\n" /* line 4697 | removeCount */
+        "movl scrCompilePub+40, %ebx\n" /* line 4697 | removeCount */
         "testl %ebx, %ebx\n" /* removeCount */
         "jne .Lf9b20c_0009b40e\n"
         "movl %ecx, %edx\n" /* sourcePos */
-        "movl 0x195ee58, %eax\n" /* line 4703 */
+        "movl imp_scrVarPub, %eax\n" /* line 4703 */
         "movl 0x3c(%eax), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* savedChecksum */
         "movl 8(%ebp), %eax\n" /* line 4705 | devStatBlock */
@@ -11790,7 +11790,7 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
         "movl %eax, 0xc(%esi)\n"
         "jmp .Lf9b20c_0009b29c\n"
         ".Lf9b20c_0009b319:\n"
-        "movl $0x21d7b8, 4(%esp)\n" /* line 896 */
+        "movl $str_0021d7b8, 4(%esp)\n" /* line 896 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc(%esi), %eax\n"
@@ -11803,10 +11803,10 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
         "movl %eax, 4(%esi)\n" /* line 1084 */
         "movl $0, (%esi)\n" /* line 1085 */
         /* } scope */
-        "movl 0x195ee58, %eax\n" /* line 4707 */
+        "movl imp_scrVarPub, %eax\n" /* line 4707 */
         "cmpb $0, 0xb(%eax)\n"
         "je .Lf9b20c_0009b3ba\n"
-        "movl $1, 0x114cf48\n" /* line 4719 */
+        "movl $1, scrCompilePub+40\n" /* line 4719 */
         "movl 8(%ebp), %ebx\n" /* line 4721 | devStatBlock, removeCount */
         "movl (%ebx), %esi\n" /* removeCount, block */
         /* { scope 2 */
@@ -11841,8 +11841,8 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
         "jne .Lf9b20c_0009b426\n"
         /* } scope */
         ".Lf9b20c_0009b39d:\n"
-        "movl $0, 0x114cf48\n" /* line 4726 */
-        "movl 0x195ee58, %eax\n" /* line 4728 */
+        "movl $0, scrCompilePub+40\n" /* line 4726 */
+        "movl imp_scrVarPub, %eax\n" /* line 4728 */
         "movl -0x28(%ebp), %edx\n" /* savedChecksum, sourcePos */
         "movl %edx, 0x3c(%eax)\n" /* sourcePos */
         /* } scope */
@@ -11857,7 +11857,7 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
         "movl $0, (%esp)\n" /* line 4709 */
         "calll TempMalloc\n"
         "movl %eax, %edi\n" /* savedPos */
-        "movl $2, 0x114cf48\n" /* line 4711 */
+        "movl $2, scrCompilePub+40\n" /* line 4711 */
         "movl 8(%ebp), %ebx\n" /* line 4713 | devStatBlock, removeCount */
         "movl (%ebx), %esi\n" /* removeCount, block */
         /* { scope 2 */
@@ -11891,7 +11891,7 @@ unsigned int EmitDeveloperStatementList(sval_t val, scr_block_t *block, sval_t *
         "calll TempMemorySetPos\n"
         "jmp .Lf9b20c_0009b39d\n"
         ".Lf9b20c_0009b40e:\n"
-        "movl $0x21db60, 4(%esp)\n" /* line 4699 */
+        "movl $str_0021db60, 4(%esp)\n" /* line 4699 */
         "movl %edx, (%esp)\n" /* sourcePos */
         "calll CompileError\n"
         /* } scope */

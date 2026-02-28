@@ -19,8 +19,8 @@
 extern int irand(int min, int max);
 
 extern FxScheduler * fxSchedulers[1]; /* 0x0 */
-static EffectTemplate * effectTemplateArray[256]; /* 0x4b5720 */
-static int effectTemplateArrayCount; /* 0x4b5700 */
+static EffectTemplate * effectTemplateArray[256]; /* effectTemplateArray */
+static int effectTemplateArrayCount; /* effectTemplateArrayCount */
 
 TMediaElement MediaHandles_GetHandle(const MediaHandles * _this);
 void FxScheduler_FxScheduler(const FxScheduler * _this);
@@ -153,7 +153,7 @@ EffectTemplate * FX_TryRegisterEffect(const char *name)
         /* { scope 1 */
         ".Lf6164a_000616dd:\n"
         "movl $0x100, 4(%esp)\n" /* line 824 */
-        "movl $0x21a904, (%esp)\n" /* "^1Max effect templates of '%i' exceeded
+        "movl $str_0021a904, (%esp)\n" /* "^1Max effect templates of '%i' exceeded
 " */
         "calll FX_Print\n"
         ".Lf6164a_000616f1:\n"
@@ -330,7 +330,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         /* { scope 1 */
         ".Lf617ce_00061880:\n"
         "movl 0x40(%ebx), %eax\n" /* line 631 */
-        "jmpl *0x2f0480(, %eax, 4)\n"
+        "jmpl *__ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+128(, %eax, 4)\n"
         "movl 0x24(%ebp), %eax\n" /* line 634 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -487,7 +487,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "pushl %ebx\n"
         "subl $0x8c, %esp\n"
         /* { scope 1: t */
-        "movl 0x195ed88, %ebx\n" /* line 295 | ptr */
+        "movl imp_theFxHelper, %ebx\n" /* line 295 | ptr */
         "movl (%ebx), %eax\n" /* ptr */
         "movl %eax, (%esp)\n"
         "calll FxHelper_GetSeed\n"
@@ -499,11 +499,11 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "testl %eax, %eax\n"
         "je .Lf61a8a_00061e68\n"
         ".Lf61a8a_00061abe:\n"
-        "movl 0x195eda0, %eax\n" /* line 316 */
+        "movl imp_fx_freeze, %eax\n" /* line 316 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf61a8a_00061e24\n"
-        "movl 0x195ed80, %eax\n"
+        "movl imp_fx_enable, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf61a8a_00061e24\n"
@@ -547,7 +547,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "testb %al, %al\n" /* line 270 */
         "je .Lf61a8a_00061e2f\n"
         ".Lf61a8a_00061b66:\n"
-        "movl 0x195ed88, %eax\n" /* line 273 */
+        "movl imp_theFxHelper, %eax\n" /* line 273 */
         "movl (%eax), %eax\n"
         "movss 0x64(%edi), %xmm0\n"
         "mulss 0xf8(%eax), %xmm0\n"
@@ -562,7 +562,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "movl %eax, 8(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* origin */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxHelper_CullSpherePreviousFrame\n"
@@ -574,7 +574,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "calll FxRange_GetVal\n"
         "fstps -0x6c(%ebp)\n"
         "movss -0x6c(%ebp), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "cvttss2si %xmm0, %edx\n"
         "movl %edx, -0x60(%ebp)\n" /* count */
         "testl %edx, %edx\n" /* line 383 */
@@ -617,7 +617,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "movl %eax, (%esp)\n"
         "calll memset\n"
         /* } scope */
-        "movl 0x195ed88, %edx\n" /* line 412 */
+        "movl imp_theFxHelper, %edx\n" /* line 412 */
         "movl (%edx), %eax\n"
         "addl 4(%eax), %esi\n" /* delay */
         "movl %esi, 8(%ebx)\n" /* delay, ptr */
@@ -714,7 +714,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "ucomiss 0x60(%edi), %xmm0\n" /* line 257 */
         "je .Lf61a8a_00061b4b\n"
         ".Lf61a8a_00061d9f:\n"
-        "movl 0x195ed88, %ebx\n" /* line 260 | ptr */
+        "movl imp_theFxHelper, %ebx\n" /* line 260 | ptr */
         "movl (%ebx), %eax\n" /* ptr */
         "addl $0x14, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -737,18 +737,18 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "movl -0x58(%ebp), %ebx\n" /* line 450 | numAdded, ptr */
         "testl %ebx, %ebx\n" /* ptr */
         "je .Lf61a8a_00061e24\n"
-        "movl 0x195ed9c, %eax\n"
+        "movl imp_fx_count, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf61a8a_00061e24\n"
         "movl $0xbb8, 0xc(%esp)\n" /* line 453 */
-        "movl 0x195ed98, %eax\n"
+        "movl imp_colorYellow, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x58(%ebp), %ecx\n" /* numAdded */
         "movl %ecx, 4(%esp)\n"
         "leal -0x48(%ebp), %eax\n" /* or_ */
         "movl %eax, (%esp)\n"
-        "movl 0x195eca8, %eax\n"
+        "movl imp_re, %eax\n"
         "calll *0x104(%eax)\n"
         /* } scope */
         ".Lf61a8a_00061e24:\n"
@@ -761,7 +761,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         /* { scope 1: t */
         /* { scope 2 */
         ".Lf61a8a_00061e2f:\n"
-        "movl 0x195ed88, %eax\n" /* line 271 */
+        "movl imp_theFxHelper, %eax\n" /* line 271 */
         "movl (%eax), %eax\n"
         "addl $0x14, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -783,7 +783,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "movl (%ebx), %eax\n" /* ptr */
         "movl %eax, (%esp)\n"
         "calll FxHelper_SetIgnorePrecacheErrors\n"
-        "movl $0x21a930, (%esp)\n" /* line 304 */
+        "movl $str_0021a930, (%esp)\n" /* line 304 */
         "calll FX_RegisterEffect\n"
         "movl %eax, 0xc(%ebp)\n" /* fx */
         "movl $0, 4(%esp)\n" /* line 305 */
@@ -793,7 +793,7 @@ void FxScheduler_PlayEffect(const FxScheduler * _this, const EffectTemplate *fx,
         "movl 0xc(%ebp), %eax\n" /* line 306 | fx */
         "testl %eax, %eax\n"
         "jne .Lf61a8a_00061abe\n"
-        "movl $0x21a940, (%esp)\n" /* line 158 */
+        "movl $str_0021a940, (%esp)\n" /* line 158 */
         "calll FX_Print\n"
         "jmp .Lf61a8a_00061e24\n"
         ".Lf61a8a_00061eb7:\n"
@@ -1247,7 +1247,7 @@ float FxScheduler_GetDecalAlpha(const FxScheduler * _this, const PrimitiveTempla
         "ucomiss %xmm3, %xmm5\n" /* line 406 */
         "ja .Lf62414_0006260f\n"
         ".Lf62414_000624c1:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 408 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 408 | 1.0f */
         "minss %xmm3, %xmm0\n"
         "movaps %xmm0, %xmm3\n"
         /* } scope */
@@ -2018,7 +2018,7 @@ void FxScheduler_Archive(const FxScheduler * _this, FxArchive *arch)
         "movl %esi, (%esp)\n"
         "calll FxArchive_WriteData\n"
         /* } scope */
-        "movl 0x195ed48, %eax\n" /* line 753 */
+        "movl imp_theFxScheduler, %eax\n" /* line 753 */
         "movl (%eax), %eax\n"
         "movl 4(%eax), %ebx\n" /* sfx */
         "testl %ebx, %ebx\n" /* sfx */

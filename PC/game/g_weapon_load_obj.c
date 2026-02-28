@@ -14,7 +14,7 @@ extern const char *Com_Parse(const char **buf);
 extern void Com_Printf(const char *fmt, ...);
 extern void *Hunk_AllocLowAlignInternal(int size, int align);
 
-static const char *accuracyDirName[3]; /* 0x314b40 */
+static const char *accuracyDirName[3]; /* accuracyDirName */
 
 static Bool G_ParseWeaponAccuracyGraph(const char *dirName, const char *graphName,
                                        float accuracyGraphKnots[16][2],

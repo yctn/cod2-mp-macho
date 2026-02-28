@@ -11,11 +11,11 @@
  */
 
 extern pmoveHandler_t pmoveHandlers[2]; /* 0x0 */
-static viewLerpWaypoint_t viewLerp_StandCrouch[9]; /* 0x30a880 */
-static viewLerpWaypoint_t viewLerp_CrouchStand[9]; /* 0x30a7a0 */
-static viewLerpWaypoint_t viewLerp_CrouchProne[11]; /* 0x30a900 */
-static viewLerpWaypoint_t viewLerp_ProneCrouch[8]; /* 0x30a820 */
-static vec3_t CorrectSolidDeltas[26]; /* 0x2f0700 */
+static viewLerpWaypoint_t viewLerp_StandCrouch[9]; /* viewLerp_StandCrouch */
+static viewLerpWaypoint_t viewLerp_CrouchStand[9]; /* viewLerp_CrouchStand */
+static viewLerpWaypoint_t viewLerp_CrouchProne[11]; /* viewLerp_CrouchProne */
+static viewLerpWaypoint_t viewLerp_ProneCrouch[8]; /* viewLerp_ProneCrouch */
+static vec3_t CorrectSolidDeltas[26]; /* CorrectSolidDeltas */
 
 void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask);
 void PM_AddTouchEnt(pmove_t *pm, int entityNum);
@@ -257,9 +257,9 @@ qboolean BG_CheckProneTurned(void)
         "fstps -0x3c(%ebp)\n"
         "movss -0x3c(%ebp), %xmm1\n"
         "movaps %xmm1, %xmm0\n" /* line 3538 */
-        "andps 0x2f0850, %xmm0\n"
-        "divss 0x2ed6e8, %xmm0\n" /* 240.0f */
-        "movss 0x2ed5d0, %xmm2\n" /* line 3539 | 1.0f */
+        "andps CorrectSolidDeltas+336, %xmm0\n"
+        "divss lit4_002ed6e8, %xmm0\n" /* 240.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 3539 | 1.0f */
         "subss %xmm0, %xmm2\n"
         "mulss %xmm2, %xmm1\n"
         "movss -0x38(%ebp), %xmm3\n" /* newProneYaw */
@@ -269,9 +269,9 @@ qboolean BG_CheckProneTurned(void)
         "movss %xmm2, -0x28(%ebp)\n"
         "calll AngleNormalize360Accurate\n"
         "movss -0x18(%ebp), %xmm0\n" /* line 3543 */
-        "mulss 0x2ed6ec, %xmm0\n" /* 45.0f */
+        "mulss lit4_002ed6ec, %xmm0\n" /* 45.0f */
         "movss -0x28(%ebp), %xmm2\n"
-        "mulss 0x2ed6f0, %xmm2\n" /* 66.0f */
+        "mulss lit4_002ed6f0, %xmm2\n" /* 66.0f */
         "addss %xmm2, %xmm0\n"
         "movss %xmm0, 0x34(%esp)\n"
         "movl $0, 0x30(%esp)\n"
@@ -329,7 +329,7 @@ qboolean PM_ShouldMakeFootsteps(pmove_t *pm)
         "je .Lf6c00a_0006c04e\n"
         "testl %ecx, %ecx\n" /* line 2759 */
         "jne .Lf6c00a_0006c04e\n"
-        "movl 0x195edfc, %eax\n" /* line 2760 */
+        "movl imp_player_footstepsThreshhold, %eax\n" /* line 2760 */
         "movl (%eax), %eax\n"
         "movss 0xdc(%ebx), %xmm0\n" /* pm */
         "ucomiss 8(%eax), %xmm0\n"
@@ -371,10 +371,10 @@ void PM_ClipVelocity(const vec_t *in, const vec_t *normal, vec_t *out)
         "mulss 8(%eax), %xmm0\n"
         "addss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm1\n" /* line 336 | scale */
-        "andps 0x2f0860, %xmm1\n" /* scale */
-        "mulss 0x2ed670, %xmm1\n" /* -0.0010000000474974513f, scale */
+        "andps CorrectSolidDeltas+352, %xmm1\n" /* scale */
+        "mulss lit4_002ed670, %xmm1\n" /* -0.0010000000474974513f, scale */
         "addss %xmm2, %xmm1\n" /* scale */
-        "xorps 0x2f0870, %xmm1\n" /* scale */
+        "xorps CorrectSolidDeltas+368, %xmm1\n" /* scale */
         /* { scope 2 */
         "mulss %xmm1, %xmm3\n" /* line 288 */
         "addss %xmm3, %xmm4\n"
@@ -432,11 +432,11 @@ void PM_Accelerate(pml_t *pml)
         "movaps %xmm3, %xmm1\n" /* wishspeed */
         "subss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 493 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 493 | 0.0f */
         "jp .Lf6c0d8_0006c154\n"
         "jbe .Lf6c0d8_0006c1fe\n"
         ".Lf6c0d8_0006c154:\n"
-        "movl 0x195edf0, %eax\n" /* line 497 */
+        "movl imp_stopspeed, %eax\n" /* line 497 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm2\n"
         "maxss %xmm3, %xmm2\n" /* wishspeed */
@@ -447,7 +447,7 @@ void PM_Accelerate(pml_t *pml)
         "movaps %xmm0, %xmm2\n"
         "cmpl $2, 4(%esi)\n" /* line 454 */
         "je .Lf6c0d8_0006c1c3\n"
-        "movl 0x195edf4, %edx\n" /* line 457 */
+        "movl imp_inertiaMax, %edx\n" /* line 457 */
         "movl (%edx), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss %xmm2, %xmm0\n"
@@ -460,7 +460,7 @@ void PM_Accelerate(pml_t *pml)
         "mulss %xmm3, %xmm1\n"
         "addss %xmm1, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "ucomisd 0x307c90, %xmm0\n" /* 0.0001 */
+        "ucomisd lit8_00307c90, %xmm0\n" /* 0.0001 */
         "jp .Lf6c0d8_0006c2bc\n"
         "jae .Lf6c0d8_0006c2bc\n"
         ".Lf6c0d8_0006c1c3:\n"
@@ -562,18 +562,18 @@ void PM_Accelerate(pml_t *pml)
         "movss -0x1c(%ebp), %xmm0\n"
         "mulss -0x28(%ebp), %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "movl 0x195edcc, %eax\n" /* line 439 */
+        "movl imp_inertiaAngle, %eax\n" /* line 439 */
         "movl (%eax), %eax\n"
         "ucomiss 8(%eax), %xmm1\n"
         "movss -0x68(%ebp), %xmm2\n"
         "jae .Lf6c0d8_0006c1c3\n"
-        "movl 0x195edd4, %eax\n" /* line 442 */
+        "movl imp_inertiaDebug, %eax\n" /* line 442 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf6c0d8_0006c354\n"
         /* } scope */
         ".Lf6c0d8_0006c343:\n"
-        "movl 0x195edf4, %eax\n" /* line 467 */
+        "movl imp_inertiaMax, %eax\n" /* line 467 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "jmp .Lf6c0d8_0006c1c6\n"
@@ -589,17 +589,17 @@ void PM_Accelerate(pml_t *pml)
         "movsd %xmm0, 0xc(%esp)\n"
         "cvtss2sd %xmm1, %xmm1\n"
         "movsd %xmm1, 4(%esp)\n"
-        "movl $0x21be98, (%esp)\n" /* "angle is %f (oldVel is (%f,%f), vel is (%f, %f))
+        "movl $str_0021be98, (%esp)\n" /* "angle is %f (oldVel is (%f,%f), vel is (%f, %f))
 " */
         "calll Com_Printf\n"
-        "movl 0x195edf4, %edx\n" /* line 445 */
+        "movl imp_inertiaMax, %edx\n" /* line 445 */
         "movl (%edx), %eax\n"
         "cvtss2sd 8(%eax), %xmm0\n"
         "movsd %xmm0, 0xc(%esp)\n"
         "movss -0x68(%ebp), %xmm2\n"
         "cvtss2sd %xmm2, %xmm2\n"
         "movsd %xmm2, 4(%esp)\n"
-        "movl $0x21becc, (%esp)\n" /* "clamping acceleration from %f to %f
+        "movl $str_0021becc, (%esp)\n" /* "clamping acceleration from %f to %f
 " */
         "calll Com_Printf\n"
         "jmp .Lf6c0d8_0006c343\n"
@@ -633,7 +633,7 @@ void PM_Friction(void)
         "addss %xmm1, %xmm0\n"
         "addss %xmm2, %xmm0\n"
         "sqrtss %xmm0, %xmm2\n"
-        "ucomiss 0x2ed5d0, %xmm2\n" /* line 382 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* line 382 | 1.0f */
         "jb .Lf6c3ca_0006c487\n"
         ".Lf6c3ca_0006c411:\n"
         "testl %eax, %eax\n" /* line 390 */
@@ -673,7 +673,7 @@ void PM_Friction(void)
         "addss %xmm1, %xmm0\n"
         "addss %xmm2, %xmm0\n"
         "sqrtss %xmm0, %xmm2\n"
-        "ucomiss 0x2ed5d0, %xmm2\n" /* line 382 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* line 382 | 1.0f */
         "jae .Lf6c3ca_0006c411\n"
         ".Lf6c3ca_0006c487:\n"
         "jp .Lf6c3ca_0006c411\n"
@@ -695,7 +695,7 @@ void PM_Friction(void)
         "movl 0xc(%esi), %edx\n" /* line 393 | ps */
         "testb $4, %dh\n"
         "jne .Lf6c3ca_0006c419\n"
-        "movl 0x195edf0, %eax\n" /* line 395 */
+        "movl imp_stopspeed, %eax\n" /* line 395 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "maxss %xmm2, %xmm0\n"
@@ -714,14 +714,14 @@ void PM_Friction(void)
         "jmp .Lf6c3ca_0006c515\n"
         ".Lf6c3ca_0006c4f4:\n"
         "movaps %xmm2, %xmm0\n" /* line 409 */
-        "mulss 0x2ed6d4, %xmm0\n" /* 5.0f */
+        "mulss lit4_002ed6d4, %xmm0\n" /* 5.0f */
         "mulss 0x24(%edi), %xmm0\n" /* pml */
         "addss %xmm0, %xmm1\n"
         "jmp .Lf6c3ca_0006c42a\n"
         ".Lf6c3ca_0006c50d:\n"
-        "mulss 0x2ed6f4, %xmm0\n" /* line 399 | 0.30000001192092896f */
+        "mulss lit4_002ed6f4, %xmm0\n" /* line 399 | 0.30000001192092896f */
         ".Lf6c3ca_0006c515:\n"
-        "movl 0x195edec, %eax\n" /* line 403 */
+        "movl imp_friction, %eax\n" /* line 403 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm1\n"
         "mulss 8(%eax), %xmm1\n"
@@ -763,7 +763,7 @@ void PM_UpdateLean(playerState_t *ps, float msec, usercmd_t *cmd, void (*capsule
         "cmpl $0xb, %eax\n" /* line 353 */
         "je .Lf6c536_0006c749\n"
         ".Lf6c536_0006c587:\n"
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         ".Lf6c536_0006c58f:\n"
         "movss 0x4c(%esi), %xmm0\n" /* line 3451 | ps */
         "cmpl $0, %edx\n" /* line 3453 */
@@ -772,7 +772,7 @@ void PM_UpdateLean(playerState_t *ps, float msec, usercmd_t *cmd, void (*capsule
         "ucomiss %xmm4, %xmm0\n"
         "jbe .Lf6c536_0006c77b\n"
         "movaps %xmm3, %xmm1\n" /* line 3457 */
-        "divss 0x2ed6f8, %xmm1\n" /* -280.0f */
+        "divss lit4_002ed6f8, %xmm1\n" /* -280.0f */
         "mulss %xmm2, %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "ucomiss %xmm1, %xmm4\n" /* line 3458 */
@@ -874,7 +874,7 @@ void PM_UpdateLean(playerState_t *ps, float msec, usercmd_t *cmd, void (*capsule
         "fstps -0x6c(%ebp)\n"
         "movss 0x4c(%esi), %xmm1\n" /* line 3516 | ps */
         "movaps %xmm1, %xmm0\n"
-        "andps 0x2f0890, %xmm0\n"
+        "andps CorrectSolidDeltas+400, %xmm0\n"
         "ucomiss -0x6c(%ebp), %xmm0\n"
         "movss -0x88(%ebp), %xmm4\n"
         "jbe .Lf6c536_0006c5ce\n"
@@ -895,11 +895,11 @@ void PM_UpdateLean(playerState_t *ps, float msec, usercmd_t *cmd, void (*capsule
         "retl\n"
         /* { scope 1 */
         ".Lf6c536_0006c749:\n"
-        "movss 0x2ed604, %xmm2\n" /* line 353 | 0.25f */
+        "movss lit4_002ed604, %xmm2\n" /* line 353 | 0.25f */
         "jmp .Lf6c536_0006c58f\n"
         ".Lf6c536_0006c756:\n"
         "movaps %xmm3, %xmm1\n" /* line 3473 */
-        "divss 0x2ed700, %xmm1\n" /* 350.0f */
+        "divss lit4_002ed700, %xmm1\n" /* 350.0f */
         "mulss %xmm2, %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "ucomiss %xmm2, %xmm1\n" /* line 3475 */
@@ -914,10 +914,10 @@ void PM_UpdateLean(playerState_t *ps, float msec, usercmd_t *cmd, void (*capsule
         "jmp .Lf6c536_0006c5c2\n"
         ".Lf6c536_0006c788:\n"
         "movaps %xmm2, %xmm1\n" /* line 3480 */
-        "xorps 0x2f0880, %xmm1\n"
+        "xorps CorrectSolidDeltas+384, %xmm1\n"
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf6c536_0006c7a7\n"
-        "divss 0x2ed704, %xmm3\n" /* line 3481 | -350.0f */
+        "divss lit4_002ed704, %xmm3\n" /* line 3481 | -350.0f */
         "mulss %xmm3, %xmm2\n"
         "addss %xmm2, %xmm0\n"
         ".Lf6c536_0006c7a7:\n"
@@ -928,7 +928,7 @@ void PM_UpdateLean(playerState_t *ps, float msec, usercmd_t *cmd, void (*capsule
         "jmp .Lf6c536_0006c5c2\n"
         ".Lf6c536_0006c7b8:\n"
         "movaps %xmm3, %xmm1\n" /* line 3463 */
-        "divss 0x2ed6fc, %xmm1\n" /* 280.0f */
+        "divss lit4_002ed6fc, %xmm1\n" /* 280.0f */
         "mulss %xmm2, %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "ucomiss %xmm4, %xmm1\n" /* line 3464 */
@@ -967,15 +967,15 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "jg .Lf6c7ea_0006c92b\n" /* line 3578 */
         "movss 0xec(%esi), %xmm0\n" /* line 3592 | ps */
         "movss %xmm0, -0x34(%ebp)\n" /* oldViewYaw */
-        "movl 0x195ede0, %eax\n" /* line 3594 */
+        "movl imp_player_view_pitch_up, %eax\n" /* line 3594 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed644, %xmm1\n" /* 182.04444885253906f */
+        "movss lit4_002ed644, %xmm1\n" /* 182.04444885253906f */
         "movss 8(%eax), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "andl $0xffff, %eax\n"
         "movl %eax, -0x24(%ebp)\n" /* minPitch */
-        "movl 0x195edf8, %eax\n" /* line 3595 */
+        "movl imp_player_view_pitch_down, %eax\n" /* line 3595 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm1\n"
         "cvttss2si %xmm1, %eax\n"
@@ -984,7 +984,7 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "movl -0x40(%ebp), %ecx\n" /* cmd */
         "movl %esi, %edx\n" /* ps */
         "xorl %ebx, %ebx\n" /* bRetry */
-        "movss 0x2ed648, %xmm1\n" /* 0.0054931640625f */
+        "movss lit4_002ed648, %xmm1\n" /* 0.0054931640625f */
         "movl -0x24(%ebp), %eax\n" /* minPitch */
         "negl %eax\n"
         "movl %eax, -0x50(%ebp)\n"
@@ -1085,28 +1085,28 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "calll AngleDelta\n"
         "fstps -0x7c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm1\n"
-        "movl 0x195edd0, %eax\n" /* line 3686 */
+        "movl imp_bg_prone_yawcap, %eax\n" /* line 3686 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "subss 0x2ed6d4, %xmm0\n" /* 5.0f */
+        "subss lit4_002ed6d4, %xmm0\n" /* 5.0f */
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf6c7ea_0006ca0a\n"
-        "xorps 0x2f08a0, %xmm0\n"
+        "xorps CorrectSolidDeltas+416, %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lf6c7ea_0006ca0a\n"
         "movl -0x40(%ebp), %eax\n" /* cmd */
         "cmpw $0, 0x18(%eax)\n"
         "je .Lf6c7ea_0006d13e\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jp .Lf6c7ea_0006ca0a\n"
         "je .Lf6c7ea_0006d13e\n"
         ".Lf6c7ea_0006ca0a:\n"
         "movss -0x3c(%ebp), %xmm3\n" /* line 3688 | msec */
-        "mulss 0x2ed708, %xmm3\n" /* 55.0f */
+        "mulss lit4_002ed708, %xmm3\n" /* 55.0f */
         "movaps %xmm3, %xmm2\n"
-        "mulss 0x2ed658, %xmm2\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm2\n" /* 0.0010000000474974513f */
         "movaps %xmm1, %xmm0\n"
-        "andps 0x2f08b0, %xmm0\n"
+        "andps CorrectSolidDeltas+432, %xmm0\n"
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf6c7ea_0006d054\n"
         "movss 0xec(%esi), %xmm0\n" /* line 3689 | ps */
@@ -1119,9 +1119,9 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "movl %eax, -0x4c(%ebp)\n"
         "jmp .Lf6c7ea_0006ca81\n"
         ".Lf6c7ea_0006ca5a:\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3723 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3723 | 0.0f */
         "jbe .Lf6c7ea_0006d015\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         ".Lf6c7ea_0006ca6f:\n"
         "addss -0x38(%ebp), %xmm1\n" /* line 3733 | newProneYaw */
         "movss %xmm1, (%esp)\n"
@@ -1144,9 +1144,9 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "fstps -0x7c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm1\n"
         "movaps %xmm1, %xmm0\n" /* line 3720 */
-        "andps 0x2f08b0, %xmm0\n"
+        "andps CorrectSolidDeltas+432, %xmm0\n"
         "xorl %ebx, %ebx\n" /* bRetry */
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "seta %bl\n" /* bRetry */
         "testl %ebx, %ebx\n" /* line 3721 | bRetry */
         "jne .Lf6c7ea_0006ca5a\n"
@@ -1155,7 +1155,7 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         ".Lf6c7ea_0006cae3:\n"
         "cmpl $0x3ff, 0x60(%esi)\n" /* line 3653 | ps */
         "jne .Lf6c7ea_0006c905\n"
-        "movl 0x195ede8, %ebx\n" /* bRetry */
+        "movl imp_bg_ladder_yawcap, %ebx\n" /* bRetry */
         "movl (%ebx), %eax\n" /* bRetry */
         "pxor %xmm0, %xmm0\n"
         "ucomiss 8(%eax), %xmm0\n"
@@ -1167,7 +1167,7 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "calll vectoyaw\n"
         "fstps -0x7c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm3\n"
-        "addss 0x2ed64c, %xmm3\n" /* 180.0f */
+        "addss lit4_002ed64c, %xmm3\n" /* 180.0f */
         "movl 0xec(%esi), %eax\n" /* line 3656 | ps */
         "movl %eax, 4(%esp)\n"
         "movss %xmm3, (%esp)\n"
@@ -1181,19 +1181,19 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "movss -0x78(%ebp), %xmm3\n"
         "ja .Lf6c7ea_0006d18b\n"
         "movaps %xmm1, %xmm0\n"
-        "xorps 0x2f08a0, %xmm0\n"
+        "xorps CorrectSolidDeltas+416, %xmm0\n"
         "ucomiss %xmm2, %xmm0\n"
         "jbe .Lf6c7ea_0006d24b\n"
         "addss %xmm2, %xmm1\n" /* line 3663 */
         ".Lf6c7ea_0006cb70:\n"
         "movaps %xmm1, %xmm0\n" /* line 3665 */
-        "mulss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
+        "mulss lit4_002ed644, %xmm0\n" /* 182.04444885253906f */
         "cvttss2si %xmm0, %eax\n"
         "andl $0xffff, %eax\n"
         "addl %eax, 0x58(%esi)\n" /* ps */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3667 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3667 | 0.0f */
         "jbe .Lf6c7ea_0006d22f\n"
-        "movl 0x195ede8, %eax\n" /* line 3668 */
+        "movl imp_bg_ladder_yawcap, %eax\n" /* line 3668 */
         "movl (%eax), %eax\n"
         "subss 8(%eax), %xmm3\n"
         "movss %xmm3, (%esp)\n"
@@ -1216,17 +1216,17 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "ja .Lf6c7ea_0006cc61\n"
         ".Lf6c7ea_0006cbe3:\n"
         "movaps %xmm1, %xmm0\n"
-        "xorps 0x2f08a0, %xmm0\n"
+        "xorps CorrectSolidDeltas+416, %xmm0\n"
         "ucomiss %xmm2, %xmm0\n"
         "jbe .Lf6c7ea_0006cc2f\n"
         "addss %xmm2, %xmm1\n" /* line 3632 */
         ".Lf6c7ea_0006cbf6:\n"
         "movaps %xmm1, %xmm0\n" /* line 3634 */
-        "mulss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
+        "mulss lit4_002ed644, %xmm0\n" /* 182.04444885253906f */
         "cvttss2si %xmm0, %eax\n"
         "andl $0xffff, %eax\n"
         "addl %eax, -0xc0(%ebx)\n" /* bRetry */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3636 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3636 | 0.0f */
         "jbe .Lf6c7ea_0006cc98\n"
         "movss -8(%ebx), %xmm0\n" /* line 3637 | bRetry */
         "subss (%ebx), %xmm0\n" /* bRetry */
@@ -1255,7 +1255,7 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         ".Lf6c7ea_0006cc6a:\n"
         "cwtl\n" /* line 3584 */
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed648, %xmm0\n" /* 0.0054931640625f */
+        "mulss lit4_002ed648, %xmm0\n" /* 0.0054931640625f */
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, 0x130(%esi)\n" /* ps */
         "jmp .Lf6c7ea_0006c945\n"
@@ -1312,7 +1312,7 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "calll AngleDelta\n"
         "fstps -0x7c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3738 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3738 | 0.0f */
         "jp .Lf6c7ea_0006cd71\n"
         "je .Lf6c7ea_0006cee5\n"
         ".Lf6c7ea_0006cd71:\n"
@@ -1325,10 +1325,10 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "movl %edx, -0x48(%ebp)\n"
         "jmp .Lf6c7ea_0006ce04\n"
         ".Lf6c7ea_0006cd92:\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3762 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3762 | 0.0f */
         "jbe .Lf6c7ea_0006d022\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "movss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed644, %xmm0\n" /* 182.04444885253906f */
         ".Lf6c7ea_0006cdaf:\n"
         "cvttss2si %xmm0, %eax\n" /* line 3770 */
         "andl $0xffff, %eax\n"
@@ -1380,14 +1380,14 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "testl %edi, %edi\n" /* line 3756 | i */
         "je .Lf6c7ea_0006cee5\n"
         "movaps %xmm1, %xmm0\n" /* line 3759 */
-        "andps 0x2f08b0, %xmm0\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "andps CorrectSolidDeltas+432, %xmm0\n"
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "seta %al\n"
         "movzbl %al, %edi\n" /* i */
         "testl %edi, %edi\n" /* line 3760 | i */
         "jne .Lf6c7ea_0006cd92\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
+        "mulss lit4_002ed644, %xmm0\n" /* 182.04444885253906f */
         "jmp .Lf6c7ea_0006cdaf\n"
         ".Lf6c7ea_0006cec0:\n"
         "movl -0x20(%ebp), %edx\n" /* line 3749 */
@@ -1400,23 +1400,23 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "movss -0x1c(%ebp), %xmm0\n" /* line 3751 */
         "movss %xmm0, 0x584(%esi)\n" /* ps */
         ".Lf6c7ea_0006cee5:\n"
-        "movl 0x195edd0, %edx\n" /* line 3783 */
+        "movl imp_bg_prone_yawcap, %edx\n" /* line 3783 */
         "movl (%edx), %eax\n"
         "movss 8(%eax), %xmm2\n"
         "ucomiss %xmm2, %xmm1\n"
         "ja .Lf6c7ea_0006d04b\n"
         "movaps %xmm2, %xmm0\n"
-        "xorps 0x2f08a0, %xmm0\n"
+        "xorps CorrectSolidDeltas+416, %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf6c7ea_0006cf51\n"
         "addss %xmm2, %xmm1\n" /* line 3789 */
         ".Lf6c7ea_0006cf0e:\n"
         "movaps %xmm1, %xmm0\n" /* line 3791 */
-        "mulss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
+        "mulss lit4_002ed644, %xmm0\n" /* 182.04444885253906f */
         "cvttss2si %xmm0, %eax\n"
         "andl $0xffff, %eax\n"
         "addl %eax, 0x58(%esi)\n" /* ps */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3793 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3793 | 0.0f */
         "jbe .Lf6c7ea_0006d167\n"
         "movl (%edx), %eax\n" /* line 3794 */
         "movss 0x584(%esi), %xmm0\n" /* ps */
@@ -1436,21 +1436,21 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "calll AngleDelta\n"
         "fstps -0x7c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm0\n"
-        "ucomiss 0x2ed6ec, %xmm0\n" /* line 3824 | 45.0f */
+        "ucomiss lit4_002ed6ec, %xmm0\n" /* line 3824 | 45.0f */
         "ja .Lf6c7ea_0006d037\n"
-        "ucomiss 0x2ed714, %xmm0\n" /* -45.0f */
+        "ucomiss lit4_002ed714, %xmm0\n" /* -45.0f */
         "jp .Lf6c7ea_0006c90e\n"
         "jae .Lf6c7ea_0006c90e\n"
-        "movss 0x2ed6ec, %xmm2\n" /* line 3830 | 45.0f */
+        "movss lit4_002ed6ec, %xmm2\n" /* line 3830 | 45.0f */
         "movaps %xmm0, %xmm1\n"
         "addss %xmm2, %xmm1\n"
         ".Lf6c7ea_0006cfab:\n"
         "movaps %xmm1, %xmm0\n" /* line 3832 */
-        "mulss 0x2ed644, %xmm0\n" /* 182.04444885253906f */
+        "mulss lit4_002ed644, %xmm0\n" /* 182.04444885253906f */
         "cvttss2si %xmm0, %eax\n"
         "andl $0xffff, %eax\n"
         "addl %eax, 0x54(%esi)\n" /* ps */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3834 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3834 | 0.0f */
         "jbe .Lf6c7ea_0006d14a\n"
         "movss 0x58c(%esi), %xmm0\n" /* line 3835 | ps */
         "subss %xmm2, %xmm0\n"
@@ -1468,14 +1468,14 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "movss -0x68(%ebp), %xmm1\n"
         "jmp .Lf6c7ea_0006cdf5\n"
         ".Lf6c7ea_0006d015:\n"
-        "movss 0x2ed5dc, %xmm1\n" /* line 3723 | -1.0f */
+        "movss lit4_002ed5dc, %xmm1\n" /* line 3723 | -1.0f */
         "jmp .Lf6c7ea_0006ca6f\n"
         ".Lf6c7ea_0006d022:\n"
-        "movss 0x2ed5dc, %xmm1\n" /* line 3762 | -1.0f */
-        "movss 0x2ed70c, %xmm0\n" /* -182.04444885253906f */
+        "movss lit4_002ed5dc, %xmm1\n" /* line 3762 | -1.0f */
+        "movss lit4_002ed70c, %xmm0\n" /* -182.04444885253906f */
         "jmp .Lf6c7ea_0006cdaf\n"
         ".Lf6c7ea_0006d037:\n"
-        "movss 0x2ed6ec, %xmm2\n" /* line 3828 | 45.0f */
+        "movss lit4_002ed6ec, %xmm2\n" /* line 3828 | 45.0f */
         "movaps %xmm0, %xmm1\n"
         "subss %xmm2, %xmm1\n"
         "jmp .Lf6c7ea_0006cfab\n"
@@ -1483,9 +1483,9 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "subss %xmm2, %xmm1\n" /* line 3787 */
         "jmp .Lf6c7ea_0006cf0e\n"
         ".Lf6c7ea_0006d054:\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 3690 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 3690 | 0.0f */
         "jbe .Lf6c7ea_0006d253\n"
-        "mulss 0x2ed670, %xmm3\n" /* line 3691 | -0.0010000000474974513f */
+        "mulss lit4_002ed670, %xmm3\n" /* line 3691 | -0.0010000000474974513f */
         "movaps %xmm3, %xmm0\n"
         "addss 0x584(%esi), %xmm0\n" /* ps */
         "movss %xmm0, -0x38(%ebp)\n" /* newProneYaw */
@@ -1499,8 +1499,8 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "calll AngleDelta\n"
         "fstps -0x28(%ebp)\n" /* deltaYaw1 */
         "movss -0x28(%ebp), %xmm0\n" /* line 3806 | deltaYaw1 */
-        "andps 0x2f08b0, %xmm0\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "andps CorrectSolidDeltas+432, %xmm0\n"
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ja .Lf6c7ea_0006cf5c\n"
         "jp .Lf6c7ea_0006cf5c\n"
         "movl 0xec(%esi), %eax\n" /* line 3808 | ps */
@@ -1511,10 +1511,10 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "fstps -0x7c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm0\n"
         "mulss -0x28(%ebp), %xmm0\n" /* line 3810 | deltaYaw1 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf6c7ea_0006cf5c\n"
         "movss -0x28(%ebp), %xmm1\n" /* line 3812 | deltaYaw1 */
-        "mulss 0x2ed710, %xmm1\n" /* 0.9800000190734863f */
+        "mulss lit4_002ed710, %xmm1\n" /* 0.9800000190734863f */
         "movaps %xmm1, %xmm0\n" /* line 3813 */
         "addss 0xec(%esi), %xmm0\n" /* ps */
         "movss %xmm0, (%esp)\n"
@@ -1522,7 +1522,7 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "calll AngleNormalize360Accurate\n"
         "fstps 0xec(%esi)\n" /* ps */
         "movss -0x68(%ebp), %xmm1\n" /* line 3814 */
-        "mulss 0x2ed644, %xmm1\n" /* 182.04444885253906f */
+        "mulss lit4_002ed644, %xmm1\n" /* 182.04444885253906f */
         "cvttss2si %xmm1, %eax\n"
         "andl $0xffff, %eax\n"
         "addl %eax, 0x58(%esi)\n" /* ps */
@@ -1577,7 +1577,7 @@ void PM_UpdateViewAngles(playerState_t *ps, float msec, usercmd_t *cmd, int hand
         "movss %xmm0, 0x584(%esi)\n" /* ps */
         "jmp .Lf6c7ea_0006cd42\n"
         ".Lf6c7ea_0006d22f:\n"
-        "movl 0x195ede8, %eax\n" /* line 3670 */
+        "movl imp_bg_ladder_yawcap, %eax\n" /* line 3670 */
         "movl (%eax), %eax\n"
         "addss 8(%eax), %xmm3\n"
         "movss %xmm3, (%esp)\n"
@@ -1614,7 +1614,7 @@ void PM_UpdatePronePitch(pmove_t *pm, pml_t *pml)
         "movl 0x30(%esi), %eax\n" /* line 3899 | pml */
         "testl %eax, %eax\n"
         "je .Lf6d266_0006d46d\n"
-        "movss 0x2ed6ac, %xmm0\n" /* 0.699999988079071f */
+        "movss lit4_002ed6ac, %xmm0\n" /* 0.699999988079071f */
         "ucomiss 0x44(%esi), %xmm0\n" /* pml */
         "ja .Lf6d266_0006d4b8\n"
         ".Lf6d266_0006d2aa:\n"
@@ -1635,10 +1635,10 @@ void PM_UpdatePronePitch(pmove_t *pm, pml_t *pml)
         "jp .Lf6d266_0006d2e4\n"
         "je .Lf6d266_0006d33f\n"
         ".Lf6d266_0006d2e4:\n"
-        "movss 0x2ed6d0, %xmm2\n" /* line 3918 | 70.0f */
+        "movss lit4_002ed6d0, %xmm2\n" /* line 3918 | 70.0f */
         "mulss 0x24(%esi), %xmm2\n" /* pml */
         "movaps %xmm1, %xmm0\n"
-        "andps 0x2f08c0, %xmm0\n"
+        "andps CorrectSolidDeltas+448, %xmm0\n"
         "ucomiss %xmm2, %xmm0\n"
         "jbe .Lf6d266_0006d4a3\n"
         "xorl %eax, %eax\n" /* line 3919 */
@@ -1673,10 +1673,10 @@ void PM_UpdatePronePitch(pmove_t *pm, pml_t *pml)
         "jp .Lf6d266_0006d371\n"
         "je .Lf6d266_0006d3cc\n"
         ".Lf6d266_0006d371:\n"
-        "movss 0x2ed6d0, %xmm2\n" /* line 3938 | 70.0f */
+        "movss lit4_002ed6d0, %xmm2\n" /* line 3938 | 70.0f */
         "mulss 0x24(%esi), %xmm2\n" /* pml */
         "movaps %xmm1, %xmm0\n"
-        "andps 0x2f08c0, %xmm0\n"
+        "andps CorrectSolidDeltas+448, %xmm0\n"
         "ucomiss %xmm2, %xmm0\n"
         "jbe .Lf6d266_0006d474\n"
         "xorl %eax, %eax\n" /* line 3939 */
@@ -1948,11 +1948,11 @@ void PM_SetMovementDir(void)
         "mulss %xmm0, %xmm0\n"
         "addss %xmm0, %xmm2\n"
         "sqrtss %xmm2, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 783 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 783 | 0.0f */
         "jp .Lf6d620_0006d6c6\n"
         "je .Lf6d620_0006d688\n"
         ".Lf6d620_0006d6c6:\n"
-        "movss 0x2ed6d4, %xmm0\n" /* 5.0f */
+        "movss lit4_002ed6d4, %xmm0\n" /* 5.0f */
         "mulss 0x24(%ecx), %xmm0\n" /* pml */
         "ucomiss %xmm0, %xmm1\n"
         "jbe .Lf6d620_0006d688\n"
@@ -1976,7 +1976,7 @@ void PM_SetMovementDir(void)
         "cmpb $0, 0x1c(%edi)\n" /* line 792 | pm */
         "jns .Lf6d620_0006d772\n"
         "cvtsi2ssl %eax, %xmm0\n" /* line 793 */
-        "addss 0x2ed64c, %xmm0\n" /* 180.0f */
+        "addss lit4_002ed64c, %xmm0\n" /* 180.0f */
         "movss %xmm0, (%esp)\n"
         "calll AngleNormalize180\n"
         "fstps -0x3c(%ebp)\n"
@@ -1991,7 +1991,7 @@ void PM_SetMovementDir(void)
         "movss -0x4c(%ebp), %xmm0\n"
         "movl 0xec(%esi), %eax\n" /* line 767 | ps */
         "movl %eax, 4(%esp)\n"
-        "addss 0x2ed64c, %xmm0\n" /* 180.0f */
+        "addss lit4_002ed64c, %xmm0\n" /* 180.0f */
         "movss %xmm0, (%esp)\n"
         "calll AngleDelta\n"
         "fstps -0x44(%ebp)\n"
@@ -2093,12 +2093,12 @@ void PM_AirMove(pmove_t *pm)
         "cvtsi2ssl 0x50(%edi), %xmm2\n" /* line 594 */
         "cvtsi2ssl %edx, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
-        "mulss 0x2ed718, %xmm1\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm1\n" /* 127.0f */
         "divss %xmm1, %xmm2\n"
         "testb $1, 0xd(%edi)\n" /* line 596 */
         "je .Lf6d7c8_0006d9e1\n"
         ".Lf6d7c8_0006d85f:\n"
-        "mulss 0x2ed71c, %xmm2\n" /* line 597 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm2\n" /* line 597 | 0.4000000059604645f */
         "movl 4(%edi), %eax\n" /* line 601 */
         "cmpl $2, %eax\n"
         "je .Lf6d7c8_0006da01\n"
@@ -2107,7 +2107,7 @@ void PM_AirMove(pmove_t *pm)
         "je .Lf6d7c8_0006da0e\n"
         "cmpl $4, %eax\n" /* line 606 */
         "jne .Lf6d7c8_0006d88d\n"
-        "movl 0x195ee0c, %eax\n" /* line 607 */
+        "movl imp_player_spectateSpeedScale, %eax\n" /* line 607 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm2\n"
         /* } scope */
@@ -2149,7 +2149,7 @@ void PM_AirMove(pmove_t *pm)
         "movss %xmm2, -0x58(%ebp)\n"
         "calll Vec3Normalize\n"
         "fstps -0x3c(%ebp)\n" /* wishspeed */
-        "movss 0x2ed5d0, %xmm1\n" /* line 941 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 941 | 1.0f */
         "movss -0x58(%ebp), %xmm2\n"
         "movss -0x3c(%ebp), %xmm0\n" /* wishspeed */
         "mulss %xmm2, %xmm0\n"
@@ -2172,10 +2172,10 @@ void PM_AirMove(pmove_t *pm)
         "mulss 0x44(%esi), %xmm0\n"
         "addss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm1\n" /* line 336 | scale */
-        "andps 0x2f08d0, %xmm1\n" /* scale */
-        "mulss 0x2ed670, %xmm1\n" /* -0.0010000000474974513f, scale */
+        "andps CorrectSolidDeltas+464, %xmm1\n" /* scale */
+        "mulss lit4_002ed670, %xmm1\n" /* -0.0010000000474974513f, scale */
         "addss %xmm2, %xmm1\n" /* scale */
-        "xorps 0x2f08e0, %xmm1\n" /* scale */
+        "xorps CorrectSolidDeltas+480, %xmm1\n" /* scale */
         /* { scope 2 */
         "mulss %xmm1, %xmm3\n" /* line 288 */
         "addss %xmm3, %xmm4\n"
@@ -2215,10 +2215,10 @@ void PM_AirMove(pmove_t *pm)
         "cmpl $2, %eax\n"
         "jne .Lf6d7c8_0006d873\n"
         ".Lf6d7c8_0006da01:\n"
-        "mulss 0x2ed720, %xmm2\n" /* line 602 | 3.0f */
+        "mulss lit4_002ed720, %xmm2\n" /* line 602 | 3.0f */
         "jmp .Lf6d7c8_0006d88d\n"
         ".Lf6d7c8_0006da0e:\n"
-        "mulss 0x2ed5e0, %xmm2\n" /* line 604 | 6.0f */
+        "mulss lit4_002ed5e0, %xmm2\n" /* line 604 | 6.0f */
         "jmp .Lf6d7c8_0006d88d\n"
     );
 }
@@ -2243,10 +2243,10 @@ void PM_LadderMove(pmove_t *pm)
         "calll Jump_Check\n"
         "testb %al, %al\n"
         "jne .Lf6da1c_0006de2d\n"
-        "movss 0x2ed604, %xmm3\n" /* line 4189 | 0.25f */
+        "movss lit4_002ed604, %xmm3\n" /* line 4189 | 0.25f */
         "addss 8(%edi), %xmm3\n" /* pml */
-        "mulss 0x2ed6c0, %xmm3\n" /* 2.5f */
-        "movss 0x2ed5d0, %xmm0\n" /* line 4190 | 1.0f */
+        "mulss lit4_002ed6c0, %xmm3\n" /* 2.5f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4190 | 1.0f */
         "ucomiss %xmm0, %xmm3\n"
         "jbe .Lf6da1c_0006dea9\n"
         ".Lf6da1c_0006da66:\n"
@@ -2308,7 +2308,7 @@ void PM_LadderMove(pmove_t *pm)
         "movzbl 0x1c(%edx), %eax\n"
         "testb %al, %al\n"
         "je .Lf6da1c_0006db40\n"
-        "mulss 0x2ed5d8, %xmm3\n" /* line 4218 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm3\n" /* line 4218 | 0.5f */
         "mulss %xmm1, %xmm3\n"
         "movsbl %al, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
@@ -2319,7 +2319,7 @@ void PM_LadderMove(pmove_t *pm)
         "movzbl 0x1d(%edx), %eax\n" /* line 4223 */
         "testb %al, %al\n"
         "je .Lf6da1c_0006db90\n"
-        "mulss 0x2ed724, %xmm1\n" /* line 4224 | 0.20000000298023224f, scale */
+        "mulss lit4_002ed724, %xmm1\n" /* line 4224 | 0.20000000298023224f, scale */
         "movsbl %al, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "mulss %xmm0, %xmm1\n" /* scale */
@@ -2343,7 +2343,7 @@ void PM_LadderMove(pmove_t *pm)
         "leal -0x38(%ebp), %eax\n" /* wishvel */
         "movl %eax, (%esp)\n"
         "calll Vec3NormalizeTo\n"
-        "movss 0x2ed728, %xmm1\n" /* line 4232 | 9.0f */
+        "movss lit4_002ed728, %xmm1\n" /* line 4232 | 9.0f */
         "fstps -0x6c(%ebp)\n"
         "movss -0x6c(%ebp), %xmm0\n"
         "movl %ebx, %ecx\n"
@@ -2380,7 +2380,7 @@ void PM_LadderMove(pmove_t *pm)
         "movss 4(%eax), %xmm1\n"
         "mulss 0x24(%esi), %xmm1\n" /* ps */
         "addss %xmm1, %xmm0\n" /* scale */
-        "xorps 0x2f08f0, %xmm0\n" /* scale */
+        "xorps CorrectSolidDeltas+496, %xmm0\n" /* scale */
         /* { scope 2 */
         "movaps %xmm0, %xmm1\n" /* line 100 */
         "mulss (%eax), %xmm1\n"
@@ -2410,7 +2410,7 @@ void PM_LadderMove(pmove_t *pm)
         "movss -0x6c(%ebp), %xmm0\n"
         "movl 0xec(%esi), %eax\n" /* line 4295 | ps */
         "movl %eax, 4(%esp)\n"
-        "addss 0x2ed64c, %xmm0\n" /* 180.0f */
+        "addss lit4_002ed64c, %xmm0\n" /* 180.0f */
         "movss %xmm0, (%esp)\n"
         "calll AngleDelta\n"
         "fstps -0x4c(%ebp)\n"
@@ -2439,12 +2439,12 @@ void PM_LadderMove(pmove_t *pm)
         "cvtsi2ssl 0x50(%esi), %xmm1\n" /* line 594 */
         "cvtsi2ssl %ecx, %xmm0\n"
         "mulss %xmm0, %xmm1\n"
-        "mulss 0x2ed718, %xmm2\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm2\n" /* 127.0f */
         "divss %xmm2, %xmm1\n"
         "testb $1, 0xd(%esi)\n" /* line 596 */
         "je .Lf6da1c_0006de6d\n"
         ".Lf6da1c_0006dd09:\n"
-        "mulss 0x2ed71c, %xmm1\n" /* line 597 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm1\n" /* line 597 | 0.4000000059604645f */
         ".Lf6da1c_0006dd11:\n"
         "movl 4(%esi), %eax\n" /* line 601 */
         "cmpl $2, %eax\n"
@@ -2453,7 +2453,7 @@ void PM_LadderMove(pmove_t *pm)
         "je .Lf6da1c_0006de86\n"
         "cmpl $4, %eax\n" /* line 606 */
         "jne .Lf6da1c_0006db01\n"
-        "movl 0x195ee0c, %eax\n" /* line 607 */
+        "movl imp_player_spectateSpeedScale, %eax\n" /* line 607 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm1\n"
         "jmp .Lf6da1c_0006db01\n"
@@ -2485,7 +2485,7 @@ void PM_LadderMove(pmove_t *pm)
         "je .Lf6da1c_0006dc0c\n"
         ".Lf6da1c_0006dd91:\n"
         "movaps %xmm1, %xmm0\n" /* line 4259 | scale */
-        "xorps 0x2f08f0, %xmm0\n" /* scale */
+        "xorps CorrectSolidDeltas+496, %xmm0\n" /* scale */
         /* { scope 2 */
         "mulss %xmm0, %xmm2\n" /* line 100 */
         "addss 0x20(%esi), %xmm2\n"
@@ -2496,14 +2496,14 @@ void PM_LadderMove(pmove_t *pm)
         /* } scope */
         "movaps %xmm1, %xmm2\n" /* line 4261 */
         "mulss 0x24(%edi), %xmm2\n" /* pml */
-        "mulss 0x2ed6a8, %xmm2\n" /* 16.0f */
-        "movss 0x2f0900, %xmm0\n" /* line 54 */
+        "mulss lit4_002ed6a8, %xmm2\n" /* 16.0f */
+        "movss CorrectSolidDeltas+512, %xmm0\n" /* line 54 */
         "movaps %xmm2, %xmm3\n"
         "andps %xmm0, %xmm3\n"
         "andps %xmm1, %xmm0\n" /* line 4262 */
         "ucomiss %xmm3, %xmm0\n"
         "jbe .Lf6da1c_0006dc0c\n"
-        "ucomiss 0x2ed5d0, %xmm3\n" /* line 4264 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm3\n" /* line 4264 | 1.0f */
         "jb .Lf6da1c_0006def4\n"
         ".Lf6da1c_0006ddef:\n"
         "subss %xmm2, %xmm1\n" /* line 4267 */
@@ -2534,7 +2534,7 @@ void PM_LadderMove(pmove_t *pm)
         "retl\n"
         /* { scope 1 */
         ".Lf6da1c_0006de3f:\n"
-        "movss 0x2ed6cc, %xmm1\n" /* line 100 | -50.0f */
+        "movss lit4_002ed6cc, %xmm1\n" /* line 100 | -50.0f */
         "movss (%eax), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss 0x20(%esi), %xmm0\n"
@@ -2552,7 +2552,7 @@ void PM_LadderMove(pmove_t *pm)
         "je .Lf6da1c_0006dd11\n"
         "jmp .Lf6da1c_0006dd09\n"
         ".Lf6da1c_0006de86:\n"
-        "mulss 0x2ed5e0, %xmm1\n" /* line 604 | 6.0f */
+        "mulss lit4_002ed5e0, %xmm1\n" /* line 604 | 6.0f */
         "jmp .Lf6da1c_0006db01\n"
         /* } scope */
         /* } scope */
@@ -2564,13 +2564,13 @@ void PM_LadderMove(pmove_t *pm)
         "negl %edx\n" /* line 4297 */
         "jmp .Lf6da1c_0006dcca\n"
         ".Lf6da1c_0006dea9:\n"
-        "movss 0x2ed5dc, %xmm0\n" /* line 4192 | -1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* line 4192 | -1.0f */
         "maxss %xmm3, %xmm0\n"
         "jmp .Lf6da1c_0006da66\n"
         /* { scope 2 */
         /* { scope 3 */
         ".Lf6da1c_0006deba:\n"
-        "mulss 0x2ed720, %xmm1\n" /* line 602 | 3.0f */
+        "mulss lit4_002ed720, %xmm1\n" /* line 602 | 3.0f */
         "jmp .Lf6da1c_0006db01\n"
         /* } scope */
         /* } scope */
@@ -2618,7 +2618,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "testl %eax, %eax\n"
         "je .Lf6df12_0006dfb4\n"
         "movss 0xf8(%ebx), %xmm1\n" /* ps */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "je .Lf6df12_0006dfb2\n"
         ".Lf6df12_0006df44:\n"
         "cvtsi2ssl %eax, %xmm0\n" /* line 1961 */
@@ -2640,7 +2640,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "cvtsi2ssl 0xf4(%ebx), %xmm2\n" /* line 1971 | ps */
         "ucomiss %xmm1, %xmm2\n"
         "jbe .Lf6df12_0006e31b\n"
-        "movss 0x2ed64c, %xmm0\n" /* line 1973 | 180.0f */
+        "movss lit4_002ed64c, %xmm0\n" /* line 1973 | 180.0f */
         "movl -0x50(%ebp), %eax\n"
         "mulss 0x24(%eax), %xmm0\n"
         "addss %xmm1, %xmm0\n"
@@ -2718,8 +2718,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x2c(%ebp), %edx\n" /* line 1842 */
         "testl %edx, %edx\n"
         "je .Lf6df12_0006e098\n"
-        "movl $0x30a7b8, %edx\n" /* line 1845 */
-        "movl $0x30a7ac, -0x30(%ebp)\n"
+        "movl $viewLerp_CrouchStand+24, %edx\n" /* line 1845 */
+        "movl $viewLerp_CrouchStand+12, -0x30(%ebp)\n"
         "movl $1, %ecx\n"
         ".Lf6df12_0006e074:\n"
         "movl -0x30(%ebp), %eax\n" /* line 1855 */
@@ -2734,16 +2734,16 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "addl $1, %eax\n"
         "jne .Lf6df12_0006e074\n"
         ".Lf6df12_0006e098:\n"
-        "cvtsi2ssl 0x30a7a8, %xmm3\n" /* line 1885 */
-        "movss 0x30a7a4, %xmm2\n" /* line 1886 */
+        "cvtsi2ssl viewLerp_CrouchStand+8, %xmm3\n" /* line 1885 */
+        "movss viewLerp_CrouchStand+4, %xmm2\n" /* line 1886 */
         /* } scope */
         ".Lf6df12_0006e0a8:\n"
         "movss %xmm2, 0xf8(%ebx)\n" /* line 2021 | ps */
         "movss 0x108(%ebx), %xmm1\n" /* line 2024 | ps */
         "movaps %xmm1, %xmm0\n"
         "subss %xmm3, %xmm0\n"
-        "andps 0x2f0910, %xmm0\n"
-        "ucomiss 0x2ed72c, %xmm0\n" /* 0.05000000074505806f */
+        "andps CorrectSolidDeltas+528, %xmm0\n"
+        "ucomiss lit4_002ed72c, %xmm0\n" /* 0.05000000074505806f */
         "jbe .Lf6df12_0006e19b\n"
         /* { scope 3 */
         "leal 0x20(%ebx), %eax\n" /* line 2030 | ps */
@@ -2829,11 +2829,11 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "cmpl $0x28, %ecx\n" /* line 1810 */
         "je .Lf6df12_0006e50f\n"
         ".Lf6df12_0006e22d:\n"
-        "movss 0x2ed734, %xmm1\n" /* line 1812 | 200.0f */
+        "movss lit4_002ed734, %xmm1\n" /* line 1812 | 200.0f */
         /* } scope */
         ".Lf6df12_0006e235:\n"
         "cvtsi2ssl -0x4c(%ebp), %xmm0\n" /* line 2100 | iLerpFrac */
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "mulss %xmm1, %xmm0\n"
         "cvttss2si %xmm0, %edx\n"
         "movl 4(%edi), %eax\n" /* pm */
@@ -2847,8 +2847,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x4c(%ebp), %esi\n" /* line 1842 | iLerpFrac */
         "testl %esi, %esi\n"
         "je .Lf6df12_0006e29d\n"
-        "movl $0x30a7b8, %edx\n" /* line 1844 */
-        "movl $0x30a7ac, %edi\n" /* pCurr */
+        "movl $viewLerp_CrouchStand+24, %edx\n" /* line 1844 */
+        "movl $viewLerp_CrouchStand+12, %edi\n" /* pCurr */
         "movl $1, %ecx\n"
         ".Lf6df12_0006e27d:\n"
         "movl (%edi), %esi\n" /* line 1855 | pCurr */
@@ -2862,7 +2862,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "addl $1, %eax\n"
         "jne .Lf6df12_0006e27d\n"
         ".Lf6df12_0006e29d:\n"
-        "cvtsi2ssl 0x30a7a8, %xmm2\n" /* line 1885 */
+        "cvtsi2ssl viewLerp_CrouchStand+8, %xmm2\n" /* line 1885 */
         /* } scope */
         ".Lf6df12_0006e2a5:\n"
         "movss %xmm2, 0x108(%ebx)\n" /* line 2120 | ps */
@@ -2884,13 +2884,13 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "jne .Lf6df12_0006dfc6\n"
         "movl $0, 0x104(%ebx)\n" /* line 2150 | ps */
         "movl $0x28, %eax\n" /* line 2153 */
-        "movss 0x2ed73c, %xmm0\n" /* 40.0f */
+        "movss lit4_002ed73c, %xmm0\n" /* 40.0f */
         "ucomiss 0xf8(%ebx), %xmm0\n" /* ps */
         "cmovbel %edx, %eax\n"
         "movl %eax, 0x100(%ebx)\n" /* ps */
         "jmp .Lf6df12_0006dfc6\n"
         ".Lf6df12_0006e31b:\n"
-        "movss 0x2ed650, %xmm0\n" /* line 1979 | -180.0f */
+        "movss lit4_002ed650, %xmm0\n" /* line 1979 | -180.0f */
         "movl -0x50(%ebp), %edx\n"
         "mulss 0x24(%edx), %xmm0\n"
         "addss %xmm1, %xmm0\n"
@@ -2902,7 +2902,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl $1, 0x104(%ebx)\n" /* line 2132 | ps */
         "movss 0xf8(%ebx), %xmm0\n" /* line 2134 | ps */
         "movl $0x28, %eax\n" /* line 2135 */
-        "ucomiss 0x2ed73c, %xmm0\n" /* 40.0f */
+        "ucomiss lit4_002ed73c, %xmm0\n" /* 40.0f */
         "cmovbel %edx, %eax\n"
         "movl %eax, 0x100(%ebx)\n" /* ps */
         "jmp .Lf6df12_0006dfc6\n"
@@ -2928,7 +2928,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         ".Lf6df12_0006e3be:\n"
         "movss 0xf8(%ebx), %xmm0\n" /* line 2141 | ps */
         "xorl %eax, %eax\n" /* line 2142 */
-        "ucomiss 0x2ed73c, %xmm0\n" /* 40.0f */
+        "ucomiss lit4_002ed73c, %xmm0\n" /* 40.0f */
         "seta %al\n"
         "movl %eax, 0x104(%ebx)\n" /* ps */
         "movl $0x28, 0x100(%ebx)\n" /* line 2145 | ps */
@@ -2944,8 +2944,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x2c(%ebp), %eax\n" /* line 1842 */
         "testl %eax, %eax\n"
         "je .Lf6df12_0006e43c\n"
-        "movl $0x30a918, %edx\n" /* line 1845 */
-        "movl $0x30a90c, -0x34(%ebp)\n"
+        "movl $viewLerp_CrouchProne+24, %edx\n" /* line 1845 */
+        "movl $viewLerp_CrouchProne+12, -0x34(%ebp)\n"
         "movl $1, %ecx\n"
         ".Lf6df12_0006e418:\n"
         "movl -0x34(%ebp), %eax\n" /* line 1855 */
@@ -2960,8 +2960,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "addl $1, %eax\n"
         "jne .Lf6df12_0006e418\n"
         ".Lf6df12_0006e43c:\n"
-        "cvtsi2ssl 0x30a908, %xmm3\n" /* line 1885 */
-        "movss 0x30a904, %xmm2\n" /* line 1886 */
+        "cvtsi2ssl viewLerp_CrouchProne+8, %xmm3\n" /* line 1885 */
+        "movss viewLerp_CrouchProne+4, %xmm2\n" /* line 1886 */
         "jmp .Lf6df12_0006e0a8\n"
         /* } scope */
         ".Lf6df12_0006e451:\n"
@@ -2979,8 +2979,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x2c(%ebp), %esi\n" /* line 1842 */
         "testl %esi, %esi\n"
         "je .Lf6df12_0006e4b5\n"
-        "movl $0x30a898, %edx\n" /* line 1845 */
-        "movl $0x30a88c, -0x44(%ebp)\n" /* pCurr */
+        "movl $viewLerp_StandCrouch+24, %edx\n" /* line 1845 */
+        "movl $viewLerp_StandCrouch+12, -0x44(%ebp)\n" /* pCurr */
         "movl $1, %ecx\n"
         ".Lf6df12_0006e491:\n"
         "movl -0x44(%ebp), %eax\n" /* line 1855 | pCurr */
@@ -2995,8 +2995,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "addl $1, %eax\n"
         "jne .Lf6df12_0006e491\n"
         ".Lf6df12_0006e4b5:\n"
-        "cvtsi2ssl 0x30a888, %xmm3\n" /* line 1885 */
-        "movss 0x30a884, %xmm2\n" /* line 1886 */
+        "cvtsi2ssl viewLerp_StandCrouch+8, %xmm3\n" /* line 1885 */
+        "movss viewLerp_StandCrouch+4, %xmm2\n" /* line 1886 */
         "jmp .Lf6df12_0006e0a8\n"
         /* } scope */
         ".Lf6df12_0006e4ca:\n"
@@ -3004,7 +3004,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "jmp .Lf6df12_0006e205\n"
         /* { scope 3 */
         ".Lf6df12_0006e4d9:\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* line 2036 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* line 2036 | 0.5f */
         "jmp .Lf6df12_0006e101\n"
         /* } scope */
         ".Lf6df12_0006e4e6:\n"
@@ -3018,7 +3018,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "testl %eax, %eax\n" /* line 1812 */
         "jne .Lf6df12_0006e22d\n"
         ".Lf6df12_0006e517:\n"
-        "movss 0x2ed730, %xmm1\n" /* 400.0f */
+        "movss lit4_002ed730, %xmm1\n" /* 400.0f */
         "jmp .Lf6df12_0006e235\n"
         /* } scope */
         /* { scope 3 */
@@ -3026,8 +3026,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x4c(%ebp), %eax\n" /* line 1842 | iLerpFrac */
         "testl %eax, %eax\n"
         "je .Lf6df12_0006e558\n"
-        "movl $0x30a918, %edx\n" /* line 1844 */
-        "movl $0x30a90c, %edi\n" /* pCurr */
+        "movl $viewLerp_CrouchProne+24, %edx\n" /* line 1844 */
+        "movl $viewLerp_CrouchProne+12, %edi\n" /* pCurr */
         "movl $1, %eax\n"
         ".Lf6df12_0006e53a:\n"
         "movl (%edi), %esi\n" /* line 1855 | pCurr */
@@ -3040,7 +3040,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "cmpl $-1, (%edi)\n" /* pCurr */
         "jne .Lf6df12_0006e53a\n"
         ".Lf6df12_0006e558:\n"
-        "cvtsi2ssl 0x30a908, %xmm2\n" /* line 1885 */
+        "cvtsi2ssl viewLerp_CrouchProne+8, %xmm2\n" /* line 1885 */
         "jmp .Lf6df12_0006e2a5\n"
         /* } scope */
         /* { scope 3 */
@@ -3048,8 +3048,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x2c(%ebp), %ecx\n" /* line 1842 */
         "testl %ecx, %ecx\n"
         "je .Lf6df12_0006e5a1\n"
-        "movl $0x30a838, %edx\n" /* line 1845 */
-        "movl $0x30a82c, -0x40(%ebp)\n" /* pCurr */
+        "movl $viewLerp_ProneCrouch+24, %edx\n" /* line 1845 */
+        "movl $viewLerp_ProneCrouch+12, -0x40(%ebp)\n" /* pCurr */
         "movl $1, %ecx\n"
         ".Lf6df12_0006e57d:\n"
         "movl -0x40(%ebp), %eax\n" /* line 1855 | pCurr */
@@ -3064,8 +3064,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "addl $1, %eax\n"
         "jne .Lf6df12_0006e57d\n"
         ".Lf6df12_0006e5a1:\n"
-        "cvtsi2ssl 0x30a828, %xmm3\n" /* line 1885 */
-        "movss 0x30a824, %xmm2\n" /* line 1886 */
+        "cvtsi2ssl viewLerp_ProneCrouch+8, %xmm3\n" /* line 1885 */
+        "movss viewLerp_ProneCrouch+4, %xmm2\n" /* line 1886 */
         "jmp .Lf6df12_0006e0a8\n"
         /* } scope */
         ".Lf6df12_0006e5b6:\n"
@@ -3076,8 +3076,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x4c(%ebp), %eax\n" /* line 1842 | iLerpFrac */
         "testl %eax, %eax\n"
         "je .Lf6df12_0006e5f8\n"
-        "movl $0x30a898, %edx\n" /* line 1844 */
-        "movl $0x30a88c, %edi\n" /* pCurr */
+        "movl $viewLerp_StandCrouch+24, %edx\n" /* line 1844 */
+        "movl $viewLerp_StandCrouch+12, %edi\n" /* pCurr */
         "movl $1, %eax\n"
         ".Lf6df12_0006e5da:\n"
         "movl (%edi), %esi\n" /* line 1855 | pCurr */
@@ -3090,7 +3090,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "cmpl $-1, (%edi)\n" /* pCurr */
         "jne .Lf6df12_0006e5da\n"
         ".Lf6df12_0006e5f8:\n"
-        "cvtsi2ssl 0x30a888, %xmm2\n" /* line 1885 */
+        "cvtsi2ssl viewLerp_StandCrouch+8, %xmm2\n" /* line 1885 */
         "jmp .Lf6df12_0006e2a5\n"
         /* } scope */
         ".Lf6df12_0006e605:\n"
@@ -3135,8 +3135,8 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "movl -0x4c(%ebp), %edi\n" /* line 1842 | iLerpFrac, pCurr */
         "testl %edi, %edi\n" /* pCurr */
         "je .Lf6df12_0006e6ac\n"
-        "movl $0x30a838, %edx\n" /* line 1844 */
-        "movl $0x30a82c, %edi\n" /* pCurr */
+        "movl $viewLerp_ProneCrouch+24, %edx\n" /* line 1844 */
+        "movl $viewLerp_ProneCrouch+12, %edi\n" /* pCurr */
         "movl $1, %eax\n"
         ".Lf6df12_0006e692:\n"
         "movl (%edi), %esi\n" /* line 1855 | pCurr */
@@ -3149,7 +3149,7 @@ void PM_ViewHeightAdjust(pml_t *pml)
         "cmpl $-1, (%edi)\n" /* pCurr */
         "jne .Lf6df12_0006e692\n"
         ".Lf6df12_0006e6ac:\n"
-        "cvtsi2ssl 0x30a828, %xmm2\n" /* line 1885 */
+        "cvtsi2ssl viewLerp_ProneCrouch+8, %xmm2\n" /* line 1885 */
         "jmp .Lf6df12_0006e2a5\n"
         /* } scope */
         /* { scope 3 */
@@ -3359,7 +3359,7 @@ void PM_CheckDuck(void)
         "movl %eax, -0x30(%ebp)\n" /* vEnd */
         "movl 0x18(%edi), %eax\n" /* line 200 */
         "movl %eax, -0x2c(%ebp)\n"
-        "movss 0x2ed6b4, %xmm0\n" /* line 2614 | 10.0f */
+        "movss lit4_002ed6b4, %xmm0\n" /* line 2614 | 10.0f */
         "addss 0x1c(%edi), %xmm0\n" /* ps */
         "movss %xmm0, -0x28(%ebp)\n"
         "leal 0xd0(%esi), %eax\n" /* line 2615 | pm */
@@ -3449,7 +3449,7 @@ void PM_CheckDuck(void)
         "movl 0x18(%edi), %eax\n" /* line 200 */
         "movl %eax, -0x20(%ebp)\n"
         "movss 0x1c(%edi), %xmm0\n" /* line 201 */
-        "subss 0x2ed604, %xmm0\n" /* line 2626 | 0.25f */
+        "subss lit4_002ed604, %xmm0\n" /* line 2626 | 0.25f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movzbl 0xe4(%esi), %edx\n" /* line 2627 | pm */
         "leal (%edx, %edx, 2), %edx\n"
@@ -3480,11 +3480,11 @@ void PM_CheckDuck(void)
         "calll AngleDelta\n"
         "fstps -0x68(%ebp)\n" /* delta */
         "movss -0x68(%ebp), %xmm0\n" /* line 2641 | delta */
-        "ucomiss 0x2ed714, %xmm0\n" /* -45.0f */
+        "ucomiss lit4_002ed714, %xmm0\n" /* -45.0f */
         "jae .Lf6e7f6_0006eea3\n"
         "jp .Lf6e7f6_0006eea3\n"
         "movss 0xe8(%edi), %xmm0\n" /* line 2642 | ps */
-        "subss 0x2ed6ec, %xmm0\n" /* 45.0f */
+        "subss lit4_002ed6ec, %xmm0\n" /* 45.0f */
         "movss %xmm0, 0x58c(%edi)\n" /* ps */
         /* } scope */
         /* } scope */
@@ -3620,7 +3620,7 @@ void PM_CheckDuck(void)
         "jmp .Lf6e7f6_0006e898\n"
         /* { scope 2 */
         ".Lf6e7f6_0006ed91:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2629 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2629 | 1.0f */
         "ucomiss -0x54(%ebp), %xmm0\n" /* trace */
         "jbe .Lf6e7f6_0006eb0e\n"
         "leal -0x50(%ebp), %eax\n" /* line 2632 */
@@ -3687,9 +3687,9 @@ void PM_CheckDuck(void)
         "jmp .Lf6e7f6_0006e90b\n"
         /* { scope 2 */
         ".Lf6e7f6_0006eea3:\n"
-        "ucomiss 0x2ed6ec, %xmm0\n" /* line 2643 | 45.0f */
+        "ucomiss lit4_002ed6ec, %xmm0\n" /* line 2643 | 45.0f */
         "jbe .Lf6e7f6_0006efe8\n"
-        "movss 0x2ed6ec, %xmm0\n" /* line 2644 | 45.0f */
+        "movss lit4_002ed6ec, %xmm0\n" /* line 2644 | 45.0f */
         "addss 0xe8(%edi), %xmm0\n" /* ps */
         "movss %xmm0, 0x58c(%edi)\n" /* ps */
         "jmp .Lf6e7f6_0006eb8b\n"
@@ -3938,13 +3938,13 @@ void PM_FootstepEvent(pmove_t *pm, pml_t *pml, int iOldBobCycle, int iNewBobCycl
         "je .Lf6f21a_0006f271\n"
         /* { scope 2: passEntityNum */
         "movss 0xc8(%esi), %xmm1\n" /* line 200 */
-        "movss 0x2ed5e0, %xmm4\n" /* line 2682 | 6.0f */
+        "movss lit4_002ed5e0, %xmm4\n" /* line 2682 | 6.0f */
         "movss 0xc4(%esi), %xmm0\n" /* pm */
         "addss %xmm4, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n" /* mins */
         "addss %xmm4, %xmm1\n" /* line 2683 */
         "movss %xmm1, -0x20(%ebp)\n"
-        "movss 0x2ed740, %xmm3\n" /* line 2684 | 8.0f */
+        "movss lit4_002ed740, %xmm3\n" /* line 2684 | 8.0f */
         "movss %xmm3, -0x1c(%ebp)\n"
         "leal 0xd0(%esi), %eax\n" /* pm */
         /* { scope 3: entityNum */
@@ -3969,7 +3969,7 @@ void PM_FootstepEvent(pmove_t *pm, pml_t *pml, int iOldBobCycle, int iNewBobCycl
         "movl %edx, -0x78(%ebp)\n"
         "leal 0x64(%ebx), %eax\n" /* ps, dir */
         /* { scope 3: entityNum */
-        "movss 0x2ed744, %xmm1\n" /* line 288 | -31.0f */
+        "movss lit4_002ed744, %xmm1\n" /* line 288 | -31.0f */
         "movss 0x64(%ebx), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss 0x14(%ebx), %xmm0\n"
@@ -4058,7 +4058,7 @@ void PM_FootstepEvent(pmove_t *pm, pml_t *pml, int iOldBobCycle, int iNewBobCycl
         "andl $0x1f00000, %eax\n"
         "shrl $0x14, %eax\n"
         "movzbl %al, %edx\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2703 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2703 | 1.0f */
         "ucomiss -0x60(%ebp), %xmm0\n" /* trace */
         "jp .Lf6f21a_0006f493\n"
         "jne .Lf6f21a_0006f493\n"
@@ -4135,7 +4135,7 @@ void PM_Footsteps(pml_t *pml)
         "jle .Lf6f4c4_0006f57c\n"
         "movl $0, -0x24(%ebp)\n" /* ci */
         ".Lf6f4c4_0006f4f4:\n"
-        "movl 0x195edc4, %eax\n" /* line 2861 */
+        "movl imp_player_dmgtimer_stumbleTime, %eax\n" /* line 2861 */
         "movl (%eax), %edx\n"
         "movl 0x94(%ebx), %eax\n" /* ps */
         "subl 8(%edx), %eax\n" /* line 2863 */
@@ -4178,7 +4178,7 @@ void PM_Footsteps(pml_t *pml)
         "shll $4, %eax\n"
         "subl %edx, %eax\n"
         "leal (%ecx, %eax, 2), %eax\n"
-        "movl 0x195edb4, %edx\n"
+        "movl imp_bgs, %edx\n"
         "movl (%edx), %edx\n"
         "leal 0xb3bfc(%edx, %eax, 8), %edx\n"
         "movl %edx, -0x24(%ebp)\n" /* ci */
@@ -4209,7 +4209,7 @@ void PM_Footsteps(pml_t *pml)
         "movb $1, -0x31(%ebp)\n"
         ".Lf6f4c4_0006f5e9:\n"
         "movss 0xdc(%esi), %xmm1\n" /* line 2939 | pm */
-        "movl 0x195edd8, %eax\n"
+        "movl imp_player_moveThreshhold, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
@@ -4222,15 +4222,15 @@ void PM_Footsteps(pml_t *pml)
         "je .Lf6f4c4_0006fb69\n"
         "cmpb $0, 0x1d(%esi)\n" /* line 3090 | pm */
         "je .Lf6f4c4_0006fc6e\n"
-        "movl 0x195ee14, %eax\n" /* line 3092 */
+        "movl imp_player_strafeSpeedScale, %eax\n" /* line 3092 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm1, %xmm0\n"
-        "mulss 0x2ed67c, %xmm0\n" /* 0.75f */
+        "mulss lit4_002ed67c, %xmm0\n" /* 0.75f */
         "addss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "mulss %xmm3, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "testb %dl, %dl\n" /* line 3093 */
@@ -4250,7 +4250,7 @@ void PM_Footsteps(pml_t *pml)
         ".Lf6f4c4_0006f6a6:\n"
         "cmpb $0, -0x31(%ebp)\n" /* line 3115 */
         "je .Lf6f4c4_0006f6b4\n"
-        "mulss 0x2ed71c, %xmm2\n" /* line 3116 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm2\n" /* line 3116 | 0.4000000059604645f */
         /* { scope 2 */
         ".Lf6f4c4_0006f6b4:\n"
         "movl (%esi), %eax\n" /* line 1903 */
@@ -4269,17 +4269,17 @@ void PM_Footsteps(pml_t *pml)
         "movl 4(%esi), %eax\n" /* line 1921 */
         "subl %ecx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed730, %xmm0\n" /* 400.0f */
+        "divss lit4_002ed730, %xmm0\n" /* 400.0f */
         "pxor %xmm5, %xmm5\n" /* line 1922 */
         "ucomiss %xmm0, %xmm5\n"
         "ja .Lf6f4c4_0006fbb6\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 1924 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 1924 | 1.0f */
         "ucomiss %xmm3, %xmm0\n"
         "jbe .Lf6f4c4_00070331\n"
-        "movss 0x2ed768, %xmm4\n" /* 0.6499999761581421f */
+        "movss lit4_002ed768, %xmm4\n" /* 0.6499999761581421f */
         "movaps %xmm5, %xmm3\n"
         ".Lf6f4c4_0006f724:\n"
-        "mulss 0x2ed764, %xmm3\n" /* line 3124 | 0.15000000596046448f */
+        "mulss lit4_002ed764, %xmm3\n" /* line 3124 | 0.15000000596046448f */
         "addss %xmm3, %xmm4\n"
         "mulss %xmm4, %xmm2\n"
         ".Lf6f4c4_0006f734:\n"
@@ -4292,7 +4292,7 @@ void PM_Footsteps(pml_t *pml)
         "je .Lf6f4c4_00070067\n"
         "divss %xmm2, %xmm1\n" /* line 3147 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed770, %xmm0\n" /* 0.3149999976158142f */
+        "mulss lit4_002ed770, %xmm0\n" /* 0.3149999976158142f */
         "movss %xmm0, -0x1c(%ebp)\n"
         ".Lf6f4c4_0006f766:\n"
         "movl %edi, %eax\n" /* line 3152 | footstep */
@@ -4324,7 +4324,7 @@ void PM_Footsteps(pml_t *pml)
         /* } scope */
         "testl %ecx, %ecx\n" /* line 2759 */
         "jne .Lf6f4c4_0006fd4b\n"
-        "movl 0x195edfc, %eax\n" /* line 2760 */
+        "movl imp_player_footstepsThreshhold, %eax\n" /* line 2760 */
         "movl (%eax), %eax\n"
         "movss 0xdc(%esi), %xmm0\n"
         "ucomiss 8(%eax), %xmm0\n"
@@ -4346,7 +4346,7 @@ void PM_Footsteps(pml_t *pml)
         "cmpw $0, 0x1c(%esi)\n" /* line 3270 | pm */
         "jne .Lf6f4c4_0006fd52\n"
         "movss 0xdc(%esi), %xmm0\n" /* line 3273 | pm */
-        "ucomiss 0x2ed788, %xmm0\n" /* 120.0f */
+        "ucomiss lit4_002ed788, %xmm0\n" /* 120.0f */
         "ja .Lf6f4c4_0006f574\n"
         "movl 0xf4(%ebx), %eax\n" /* line 3276 | ps */
         "cmpl $0xb, %eax\n"
@@ -4368,13 +4368,13 @@ void PM_Footsteps(pml_t *pml)
         "calll BG_AnimScriptAnimation\n"
         "jmp .Lf6f4c4_0006f574\n"
         ".Lf6f4c4_0006f895:\n"
-        "ucomiss 0x2ed5d0, %xmm1\n" /* line 2941 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm1\n" /* line 2941 | 1.0f */
         "jb .Lf6f4c4_0006fc29\n"
         ".Lf6f4c4_0006f8a2:\n"
         "movl -0x24(%ebp), %edi\n" /* line 2947 | ci, footstep */
         "testl %edi, %edi\n" /* footstep */
         "je .Lf6f4c4_0006fa9f\n"
-        "movl 0x195ee08, %eax\n" /* line 2949 */
+        "movl imp_player_turnAnims, %eax\n" /* line 2949 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf6f4c4_0006fa9f\n"
@@ -4399,7 +4399,7 @@ void PM_Footsteps(pml_t *pml)
         "movl -0x24(%ebp), %esi\n" /* line 2960 | ci, pm */
         "movss %xmm1, 0x380(%esi)\n" /* pm */
         "movb %al, 0x4b4(%esi)\n" /* line 2962 | pm */
-        "movl 0x195edb4, %eax\n" /* line 2963 */
+        "movl imp_bgs, %eax\n" /* line 2963 */
         "movl (%eax), %eax\n"
         "cmpl 0xb3bdc(%eax), %ecx\n"
         "jge .Lf6f4c4_0006faa1\n"
@@ -4453,8 +4453,8 @@ void PM_Footsteps(pml_t *pml)
         "jp .Lf6f4c4_0006fe87\n"
         "jne .Lf6f4c4_0006fe87\n"
         "movaps %xmm0, %xmm2\n" /* line 2918 */
-        "divss 0x2ed750, %xmm2\n" /* 95.25f */
-        "mulss 0x2ed754, %xmm2\n" /* 0.44999998807907104f */
+        "divss lit4_002ed750, %xmm2\n" /* 95.25f */
+        "mulss lit4_002ed754, %xmm2\n" /* 0.44999998807907104f */
         ".Lf6f4c4_0006fa14:\n"
         "ucomiss %xmm1, %xmm0\n" /* line 2921 */
         "jb .Lf6f4c4_000702d5\n"
@@ -4507,18 +4507,18 @@ void PM_Footsteps(pml_t *pml)
         "jge .Lf6f4c4_0006fe27\n"
         "cvtsi2ssl 0x98(%ebx), %xmm0\n" /* line 3059 | ps, flinch_angle */
         /* { scope 2 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 2782 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 2782 | 0.0f */
         "jb .Lf6f4c4_0006fd38\n"
         ".Lf6f4c4_0006faef:\n"
-        "ucomiss 0x2ed758, %xmm0\n" /* line 2786 | 315.0f */
+        "ucomiss lit4_002ed758, %xmm0\n" /* line 2786 | 315.0f */
         "jae .Lf6f4c4_0006fc48\n"
-        "ucomiss 0x2ed6ec, %xmm0\n" /* 45.0f */
+        "ucomiss lit4_002ed6ec, %xmm0\n" /* 45.0f */
         "jp .Lf6f4c4_0006fb0b\n"
         "jb .Lf6f4c4_0006fc48\n"
         ".Lf6f4c4_0006fb0b:\n"
-        "ucomiss 0x2ed6ec, %xmm0\n" /* line 2788 | 45.0f */
+        "ucomiss lit4_002ed6ec, %xmm0\n" /* line 2788 | 45.0f */
         "jb .Lf6f4c4_000700c4\n"
-        "ucomiss 0x2ed75c, %xmm0\n" /* 135.0f */
+        "ucomiss lit4_002ed75c, %xmm0\n" /* 135.0f */
         "jae .Lf6f4c4_000700c4\n"
         "jp .Lf6f4c4_000700c4\n"
         "movl $0x21, %eax\n"
@@ -4544,12 +4544,12 @@ void PM_Footsteps(pml_t *pml)
         ".Lf6f4c4_0006fb69:\n"
         "cmpb $0, 0x1d(%esi)\n" /* line 3103 | pm */
         "je .Lf6f4c4_0006f6a6\n"
-        "movl 0x195ee14, %eax\n" /* line 3105 */
+        "movl imp_player_strafeSpeedScale, %eax\n" /* line 3105 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm1, %xmm0\n"
-        "mulss 0x2ed67c, %xmm0\n" /* 0.75f */
+        "mulss lit4_002ed67c, %xmm0\n" /* 0.75f */
         "addss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "jle .Lf6f4c4_00070273\n" /* line 3108 */
@@ -4569,7 +4569,7 @@ void PM_Footsteps(pml_t *pml)
         "je .Lf6f4c4_0006ff90\n"
         "divss %xmm2, %xmm1\n" /* line 3237 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed780, %xmm0\n" /* 0.3050000071525574f */
+        "mulss lit4_002ed780, %xmm0\n" /* 0.3050000071525574f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl -0x28(%ebp), %eax\n" /* line 3241 | stumble_end_time */
         "cmpl 0x90(%ebx), %eax\n" /* ps */
@@ -4603,7 +4603,7 @@ void PM_Footsteps(pml_t *pml)
         ".Lf6f4c4_0006fc6e:\n"
         "testb %dl, %dl\n" /* line 3096 */
         "jns .Lf6f4c4_0006f66b\n"
-        "movl 0x195edb8, %eax\n" /* line 3097 */
+        "movl imp_player_backSpeedScale, %eax\n" /* line 3097 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm2\n"
         "jmp .Lf6f4c4_0006f66b\n"
@@ -4612,7 +4612,7 @@ void PM_Footsteps(pml_t *pml)
         "je .Lf6f4c4_0006ffdb\n"
         "divss %xmm2, %xmm1\n" /* line 3204 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed778, %xmm0\n" /* 0.32499998807907104f */
+        "mulss lit4_002ed778, %xmm0\n" /* 0.32499998807907104f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl -0x28(%ebp), %eax\n" /* line 3208 | stumble_end_time */
         "cmpl 0x90(%ebx), %eax\n" /* ps */
@@ -4625,32 +4625,32 @@ void PM_Footsteps(pml_t *pml)
         "movl %eax, -0x20(%ebp)\n" /* animResult */
         "jmp .Lf6f4c4_0006f7ac\n"
         ".Lf6f4c4_0006fcdc:\n"
-        "mulss 0x2ed768, %xmm2\n" /* line 3128 | 0.6499999761581421f */
+        "mulss lit4_002ed768, %xmm2\n" /* line 3128 | 0.6499999761581421f */
         "jmp .Lf6f4c4_0006f748\n"
         /* { scope 2 */
         ".Lf6f4c4_0006fce9:\n"
         "movl 4(%esi), %eax\n" /* line 1921 */
         "subl %ecx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "divss 0x2ed730, %xmm0\n" /* 400.0f */
+        "divss lit4_002ed730, %xmm0\n" /* 400.0f */
         "pxor %xmm5, %xmm5\n" /* line 1922 */
         "ucomiss %xmm0, %xmm5\n"
         "ja .Lf6f4c4_0006fbb6\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 1924 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 1924 | 1.0f */
         "ucomiss %xmm3, %xmm0\n"
         "jbe .Lf6f4c4_00070312\n"
-        "movss 0x2ed764, %xmm4\n" /* 0.15000000596046448f */
+        "movss lit4_002ed764, %xmm4\n" /* 0.15000000596046448f */
         "movaps %xmm5, %xmm3\n"
         /* } scope */
         ".Lf6f4c4_0006fd23:\n"
-        "mulss 0x2ed768, %xmm3\n" /* line 3122 | 0.6499999761581421f */
+        "mulss lit4_002ed768, %xmm3\n" /* line 3122 | 0.6499999761581421f */
         "addss %xmm3, %xmm4\n"
         "mulss %xmm4, %xmm2\n"
         "jmp .Lf6f4c4_0006f734\n"
         /* { scope 2 */
         ".Lf6f4c4_0006fd38:\n"
         "jp .Lf6f4c4_0006faef\n" /* line 2782 */
-        "addss 0x2ed638, %xmm0\n" /* line 2783 | 360.0f */
+        "addss lit4_002ed638, %xmm0\n" /* line 2783 | 360.0f */
         "jmp .Lf6f4c4_0006faef\n"
         /* } scope */
         /* { scope 2 */
@@ -4674,7 +4674,7 @@ void PM_Footsteps(pml_t *pml)
         "calll PM_FootstepEvent\n"
         "jmp .Lf6f4c4_0006f574\n"
         ".Lf6f4c4_0006fd83:\n"
-        "movl 0x195edb4, %eax\n" /* line 2972 */
+        "movl imp_bgs, %eax\n" /* line 2972 */
         "movl (%eax), %eax\n"
         "cmpl 0xb3bdc(%eax), %ecx\n"
         "jle .Lf6f4c4_0006fe5b\n"
@@ -4683,13 +4683,13 @@ void PM_Footsteps(pml_t *pml)
         "movl %eax, 0x380(%edx)\n"
         "jmp .Lf6f4c4_0006f574\n"
         ".Lf6f4c4_0006fdaa:\n"
-        "mulss 0x2ed764, %xmm2\n" /* line 3126 | 0.15000000596046448f */
+        "mulss lit4_002ed764, %xmm2\n" /* line 3126 | 0.15000000596046448f */
         ".Lf6f4c4_0006fdb2:\n"
         "cmpb $0, -0x31(%ebp)\n" /* line 3132 */
         "je .Lf6f4c4_0006ff20\n"
         "divss %xmm2, %xmm1\n" /* line 3133 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed76c, %xmm0\n" /* 0.23999999463558197f */
+        "mulss lit4_002ed76c, %xmm0\n" /* 0.23999999463558197f */
         "movss %xmm0, -0x1c(%ebp)\n"
         ".Lf6f4c4_0006fdd0:\n"
         "movl %edi, %eax\n" /* line 3138 | footstep */
@@ -4734,8 +4734,8 @@ void PM_Footsteps(pml_t *pml)
         /* { scope 2 */
         ".Lf6f4c4_0006fe87:\n"
         "movaps %xmm0, %xmm2\n" /* line 2916 */
-        "divss 0x2ed748, %xmm2\n" /* 38.10000228881836f */
-        "mulss 0x2ed74c, %xmm2\n" /* 0.3499999940395355f */
+        "divss lit4_002ed748, %xmm2\n" /* 38.10000228881836f */
+        "mulss lit4_002ed74c, %xmm2\n" /* 0.3499999940395355f */
         "jmp .Lf6f4c4_0006fa14\n"
         /* } scope */
         ".Lf6f4c4_0006fe9f:\n"
@@ -4752,7 +4752,7 @@ void PM_Footsteps(pml_t *pml)
         "testl %ecx, %ecx\n"
         "jne .Lf6f4c4_0006f574\n"
         "movl %eax, %edx\n"
-        "movl 0x195edb4, %eax\n" /* line 3036 */
+        "movl imp_bgs, %eax\n" /* line 3036 */
         "movl (%eax), %eax\n"
         "movl 0xb3bdc(%eax), %eax\n"
         "addl 0x88(%ebx), %eax\n" /* ps */
@@ -4769,7 +4769,7 @@ void PM_Footsteps(pml_t *pml)
         ".Lf6f4c4_0006ff20:\n"
         "divss %xmm2, %xmm1\n" /* line 3135 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed604, %xmm0\n" /* 0.25f */
+        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "jmp .Lf6f4c4_0006fdd0\n"
         ".Lf6f4c4_0006ff39:\n"
@@ -4785,7 +4785,7 @@ void PM_Footsteps(pml_t *pml)
         "movl 0x4b0(%esi), %edx\n" /* pm */
         "testl %edx, %edx\n"
         "jne .Lf6f4c4_0006f574\n"
-        "movl 0x195edb4, %eax\n" /* line 3049 */
+        "movl imp_bgs, %eax\n" /* line 3049 */
         "movl (%eax), %eax\n"
         "movl 0xb3bdc(%eax), %eax\n"
         "addl 0x88(%ebx), %eax\n" /* ps */
@@ -4794,7 +4794,7 @@ void PM_Footsteps(pml_t *pml)
         ".Lf6f4c4_0006ff90:\n"
         "divss %xmm2, %xmm1\n" /* line 3250 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed784, %xmm0\n" /* 0.33500000834465027f */
+        "mulss lit4_002ed784, %xmm0\n" /* 0.33500000834465027f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl -0x28(%ebp), %eax\n" /* line 3254 | stumble_end_time */
         "cmpl 0x90(%ebx), %eax\n" /* ps */
@@ -4809,7 +4809,7 @@ void PM_Footsteps(pml_t *pml)
         ".Lf6f4c4_0006ffdb:\n"
         "divss %xmm2, %xmm1\n" /* line 3217 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed77c, %xmm0\n" /* 0.36000001430511475f */
+        "mulss lit4_002ed77c, %xmm0\n" /* 0.36000001430511475f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl -0x28(%ebp), %eax\n" /* line 3221 | stumble_end_time */
         "cmpl 0x90(%ebx), %eax\n" /* ps */
@@ -4837,16 +4837,16 @@ void PM_Footsteps(pml_t *pml)
         ".Lf6f4c4_00070067:\n"
         "divss %xmm2, %xmm1\n" /* line 3149 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed774, %xmm0\n" /* 0.3400000035762787f */
+        "mulss lit4_002ed774, %xmm0\n" /* 0.3400000035762787f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "jmp .Lf6f4c4_0006f766\n"
         ".Lf6f4c4_00070080:\n"
-        "movl 0x195edb4, %eax\n" /* line 2952 */
+        "movl imp_bgs, %eax\n" /* line 2952 */
         "movl (%eax), %eax\n"
         "movl 0xb3bdc(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x21bef4, (%esp)\n" /* "turn anim end time is %i, time is %i
+        "movl $str_0021bef4, (%esp)\n" /* "turn anim end time is %i, time is %i
 " */
         "calll Com_DPrintf\n"
         "movl 0x4b0(%esi), %ecx\n" /* pm */
@@ -4858,9 +4858,9 @@ void PM_Footsteps(pml_t *pml)
         "jmp .Lf6f4c4_0006ff49\n"
         /* { scope 2 */
         ".Lf6f4c4_000700c4:\n"
-        "ucomiss 0x2ed75c, %xmm0\n" /* line 2790 | 135.0f */
+        "ucomiss lit4_002ed75c, %xmm0\n" /* line 2790 | 135.0f */
         "jb .Lf6f4c4_000700e2\n"
-        "ucomiss 0x2ed760, %xmm0\n" /* 225.0f */
+        "ucomiss lit4_002ed760, %xmm0\n" /* 225.0f */
         "jae .Lf6f4c4_000700e2\n"
         "jp .Lf6f4c4_000700e2\n"
         "movl $0x20, %eax\n"
@@ -4944,7 +4944,7 @@ void PM_Footsteps(pml_t *pml)
         "movl %eax, -0x20(%ebp)\n" /* animResult */
         "jmp .Lf6f4c4_0006f7ac\n"
         ".Lf6f4c4_00070257:\n"
-        "movl 0x195edb8, %eax\n" /* line 3094 */
+        "movl imp_player_backSpeedScale, %eax\n" /* line 3094 */
         "movl (%eax), %eax\n"
         "movaps %xmm1, %xmm0\n"
         "addss 8(%eax), %xmm0\n"
@@ -4990,7 +4990,7 @@ void PM_Footsteps(pml_t *pml)
         "je .Lf6f4c4_0006fbb6\n"
         ".Lf6f4c4_0007031d:\n"
         "movaps %xmm0, %xmm4\n"
-        "mulss 0x2ed764, %xmm4\n" /* 0.15000000596046448f */
+        "mulss lit4_002ed764, %xmm4\n" /* 0.15000000596046448f */
         "subss %xmm0, %xmm3\n"
         "jmp .Lf6f4c4_0006fd23\n"
         ".Lf6f4c4_00070331:\n"
@@ -4999,7 +4999,7 @@ void PM_Footsteps(pml_t *pml)
         "je .Lf6f4c4_0006fbb6\n"
         ".Lf6f4c4_0007033c:\n"
         "movaps %xmm0, %xmm4\n"
-        "mulss 0x2ed768, %xmm4\n" /* 0.6499999761581421f */
+        "mulss lit4_002ed768, %xmm4\n" /* 0.6499999761581421f */
         "subss %xmm0, %xmm3\n"
         "jmp .Lf6f4c4_0006f724\n"
     );
@@ -5035,7 +5035,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movl 0x1c(%edx), %eax\n" /* line 1698 */
         "movl %eax, -0x1c(%ebp)\n"
         "movss 0x1c(%edx), %xmm0\n" /* line 1699 */
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x28(%ebp)\n"
         "movl -0xac(%ebp), %eax\n" /* ps */
         ".Lf70350_000703b8:\n"
@@ -5219,7 +5219,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movl 0x18(%ebx), %eax\n" /* line 1586 | ps */
         "movl %eax, -0x38(%ebp)\n"
         "movss 0x1c(%ebx), %xmm0\n" /* line 1587 | ps */
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x34(%ebp)\n"
         "movl -0xb8(%ebp), %eax\n" /* line 1589 */
         "movl 0x3c(%eax), %esi\n" /* contentMask */
@@ -5295,7 +5295,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "cmpb $0, -0x3d(%ebp)\n" /* line 1720 */
         "jne .Lf70350_00070a63\n"
         ".Lf70350_0007079f:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1738 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1738 | 1.0f */
         "ucomiss -0x60(%ebp), %xmm0\n" /* trace */
         "jne .Lf70350_00070911\n"
         "jp .Lf70350_00070911\n"
@@ -5311,7 +5311,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movl 4(%ecx), %eax\n" /* line 200 */
         "movl %eax, -0x38(%ebp)\n"
         "movss 8(%ecx), %xmm0\n" /* line 201 */
-        "subss 0x2ed78c, %xmm0\n" /* line 1641 | 64.0f */
+        "subss lit4_002ed78c, %xmm0\n" /* line 1641 | 64.0f */
         "movss %xmm0, -0x34(%ebp)\n"
         "movzbl 0xe4(%esi), %edx\n" /* line 1643 | contentMask */
         "leal (%edx, %edx, 2), %edx\n"
@@ -5330,7 +5330,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movl %eax, (%esp)\n"
         "calll *pmoveHandlers(, %edx, 4)\n"
         "movss -0x84(%ebp), %xmm1\n" /* line 1644 | trace */
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "jne .Lf70350_00070d6e\n"
         "jp .Lf70350_00070d6e\n"
         "movl -0xb8(%ebp), %eax\n" /* line 1646 */
@@ -5362,7 +5362,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "jmp .Lf70350_00070451\n"
         /* { scope 1: passEntityNum, i, point, trace, ... */
         ".Lf70350_000708bf:\n"
-        "movss 0x2ed604, %xmm1\n" /* line 1706 | 0.25f */
+        "movss lit4_002ed604, %xmm1\n" /* line 1706 | 0.25f */
         "movl -0xac(%ebp), %ecx\n" /* ps */
         "movss 0x1c(%ecx), %xmm0\n"
         "addss %xmm1, %xmm0\n"
@@ -5393,7 +5393,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "testb $0x20, 0xc(%esi)\n" /* contentMask */
         "je .Lf70350_00070c09\n"
         ".Lf70350_00070921:\n"
-        "movss 0x2ed6ac, %xmm0\n" /* line 1766 | 0.699999988079071f */
+        "movss lit4_002ed6ac, %xmm0\n" /* line 1766 | 0.699999988079071f */
         "ucomiss -0x54(%ebp), %xmm0\n"
         "ja .Lf70350_00071045\n"
         "movl -0xbc(%ebp), %ecx\n" /* line 1780 */
@@ -5488,7 +5488,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         ".Lf70350_00070a63:\n"
         "movl -0xac(%ebp), %edx\n" /* line 1722 | ps */
         "movss 0x1c(%edx), %xmm0\n"
-        "subss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "subss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl -0xb8(%ebp), %ecx\n" /* line 1723 */
         "movl 0x3c(%ecx), %ebx\n" /* contentMask */
@@ -5606,7 +5606,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         /* { scope 1: passEntityNum, i, point, trace, ... */
         ".Lf70350_00070c09:\n"
         "movss 0x28(%esi), %xmm0\n" /* line 1747 | contentMask */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf70350_00070921\n"
         "movl %esi, %eax\n" /* contentMask */
         "addl $0x20, %eax\n"
@@ -5618,7 +5618,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movss 8(%eax), %xmm0\n"
         "mulss -0x54(%ebp), %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed6b4, %xmm1\n" /* 10.0f */
+        "ucomiss lit4_002ed6b4, %xmm1\n" /* 10.0f */
         "jbe .Lf70350_00070921\n"
         "movl -0xb8(%ebp), %eax\n" /* line 1751 */
         "cmpb $0, 0x1c(%eax)\n"
@@ -5696,7 +5696,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         /* } scope */
         /* { scope 2: passEntityNum, passEntityNum */
         ".Lf70350_00070d6e:\n"
-        "movss 0x2ed790, %xmm0\n" /* line 1655 | 0.015625f */
+        "movss lit4_002ed790, %xmm0\n" /* line 1655 | 0.015625f */
         "xorl %eax, %eax\n"
         "ucomiss %xmm1, %xmm0\n"
         "seta %al\n"
@@ -5735,20 +5735,20 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         ".Lf70350_00070de0:\n"
         "movss 0x74(%ecx), %xmm5\n" /* line 1425 */
         "cvtsi2ssl 0x48(%esi), %xmm6\n" /* line 1426 | damage */
-        "movss 0x2f0920, %xmm3\n"
+        "movss CorrectSolidDeltas+544, %xmm3\n"
         "movaps %xmm6, %xmm7\n"
         "xorps %xmm3, %xmm7\n"
         "movaps %xmm7, %xmm4\n" /* line 1428 */
-        "mulss 0x2ed5d8, %xmm4\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm4\n" /* 0.5f */
         "movaps %xmm5, %xmm2\n" /* line 1432 */
         "mulss %xmm5, %xmm2\n"
         "movss 0x68(%ecx), %xmm0\n"
         "subss 0x1c(%esi), %xmm0\n" /* damage */
         "movaps %xmm4, %xmm1\n"
-        "mulss 0x2ed794, %xmm1\n" /* -4.0f */
+        "mulss lit4_002ed794, %xmm1\n" /* -4.0f */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm0, %xmm2\n"
-        "ucomiss 0x2ed5e8, %xmm2\n" /* line 1433 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 1433 | 0.0f */
         "jp .Lf70350_00070e36\n"
         "jb .Lf70350_00071095\n"
         ".Lf70350_00070e36:\n"
@@ -5768,10 +5768,10 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "mulss %xmm2, %xmm2\n" /* line 1439 */
         "addss %xmm6, %xmm6\n"
         "divss %xmm6, %xmm2\n"
-        "movl 0x195ede4, %eax\n" /* line 1442 */
+        "movl imp_bg_fallDamageMaxHeight, %eax\n" /* line 1442 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm3\n"
-        "movl 0x195ee10, %eax\n"
+        "movl imp_bg_fallDamageMinHeight, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "ucomiss %xmm3, %xmm1\n"
@@ -5788,7 +5788,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "jb .Lf70350_000710c5\n"
         "movl $0x64, %esi\n" /* damage */
         ".Lf70350_00070ecb:\n"
-        "ucomiss 0x2ed79c, %xmm2\n" /* line 1462 | 12.0f */
+        "ucomiss lit4_002ed79c, %xmm2\n" /* line 1462 | 12.0f */
         "ja .Lf70350_00071195\n"
         "jp .Lf70350_00071195\n"
         "xorl %ebx, %ebx\n" /* viewDip */
@@ -5806,7 +5806,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "addl $0x1f4, %eax\n"
         "cmpl $0x7d0, %eax\n" /* line 1484 */
         "jle .Lf70350_00071380\n"
-        "movss 0x2ed724, %xmm1\n" /* 0.20000000298023224f */
+        "movss lit4_002ed724, %xmm1\n" /* 0.20000000298023224f */
         "movl $0x7d0, %eax\n"
         ".Lf70350_00070f2a:\n"
         "movl -0xac(%ebp), %ecx\n" /* line 1494 | ps */
@@ -5848,7 +5848,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movl 4(%ecx), %eax\n" /* line 200 */
         "movl %eax, -0x38(%ebp)\n"
         "movss 8(%ecx), %xmm0\n" /* line 201 */
-        "subss 0x2ed5d0, %xmm0\n" /* line 1661 | 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* line 1661 | 1.0f */
         "movss %xmm0, -0x34(%ebp)\n"
         "movzbl 0xe4(%esi), %edx\n" /* line 1663 | contentMask */
         "leal (%edx, %edx, 2), %edx\n"
@@ -5866,7 +5866,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "leal -0x84(%ebp), %eax\n" /* trace */
         "movl %eax, (%esp)\n"
         "calll *pmoveHandlers(, %edx, 4)\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1664 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1664 | 1.0f */
         "ucomiss -0x84(%ebp), %xmm0\n" /* trace */
         "setne %al\n"
         "setp %dl\n"
@@ -5927,7 +5927,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "subss %xmm1, %xmm0\n"
         "subss %xmm1, %xmm3\n"
         "divss %xmm3, %xmm0\n"
-        "mulss 0x2ed798, %xmm0\n" /* 100.0f */
+        "mulss lit4_002ed798, %xmm0\n" /* 100.0f */
         "cvttss2si %xmm0, %eax\n"
         "movl $0x64, %esi\n" /* line 154 */
         "movl %eax, %ecx\n"
@@ -5968,9 +5968,9 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         /* } scope */
         /* { scope 2: passEntityNum, passEntityNum */
         ".Lf70350_00071128:\n"
-        "ucomiss 0x2ed608, %xmm2\n" /* line 1505 | 4.0f */
+        "ucomiss lit4_002ed608, %xmm2\n" /* line 1505 | 4.0f */
         "jbe .Lf70350_00071095\n"
-        "ucomiss 0x2ed740, %xmm2\n" /* line 1507 | 8.0f */
+        "ucomiss lit4_002ed740, %xmm2\n" /* line 1507 | 8.0f */
         "jae .Lf70350_000712b0\n"
         "jp .Lf70350_000712b0\n"
         /* { scope 3: entityNum */
@@ -5997,9 +5997,9 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         /* } scope */
         ".Lf70350_00071195:\n"
         "movaps %xmm2, %xmm0\n" /* line 1468 */
-        "subss 0x2ed79c, %xmm0\n" /* 12.0f */
-        "divss 0x2ed7a0, %xmm0\n" /* 26.0f */
-        "movss 0x2ed608, %xmm1\n" /* 4.0f */
+        "subss lit4_002ed79c, %xmm0\n" /* 12.0f */
+        "divss lit4_002ed7a0, %xmm0\n" /* 26.0f */
+        "movss lit4_002ed608, %xmm1\n" /* 4.0f */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "cvttss2si %xmm0, %ebx\n" /* viewDip */
@@ -6019,7 +6019,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movl -0xac(%ebp), %eax\n" /* line 1500 | ps, result */
         "addl $0x20, %eax\n" /* result */
         /* { scope 3: entityNum */
-        "movss 0x2ed7a8, %xmm0\n" /* line 272 | 0.6700000166893005f */
+        "movss lit4_002ed7a8, %xmm0\n" /* line 272 | 0.6700000166893005f */
         "movl -0xac(%ebp), %edx\n" /* ps */
         "movss 0x20(%edx), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
@@ -6032,7 +6032,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "jmp .Lf70350_00070f63\n"
         /* } scope */
         ".Lf70350_00071244:\n"
-        "movl $0x21bf1c, (%esp)\n" /* line 1444 */
+        "movl $str_0021bf1c, (%esp)\n" /* line 1444 */
         "movss %xmm2, -0xd8(%ebp)\n"
         "calll Com_Printf\n"
         "xorl %esi, %esi\n" /* damage */
@@ -6060,7 +6060,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "jmp .Lf70350_00070b35\n"
         /* { scope 2: passEntityNum, passEntityNum */
         ".Lf70350_000712b0:\n"
-        "ucomiss 0x2ed79c, %xmm2\n" /* line 1511 | 12.0f */
+        "ucomiss lit4_002ed79c, %xmm2\n" /* line 1511 | 12.0f */
         "jae .Lf70350_0007130f\n"
         "jp .Lf70350_0007130f\n"
         /* { scope 3: entityNum */
@@ -6094,7 +6094,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "movl -0xac(%ebp), %eax\n" /* line 1517 | ps, result */
         "addl $0x20, %eax\n" /* result */
         /* { scope 3: entityNum */
-        "movss 0x2ed7a8, %xmm0\n" /* line 272 | 0.6700000166893005f */
+        "movss lit4_002ed7a8, %xmm0\n" /* line 272 | 0.6700000166893005f */
         "movl -0xac(%ebp), %esi\n" /* ps, entityNum */
         "movss 0x20(%esi), %xmm1\n" /* entityNum */
         "mulss %xmm0, %xmm1\n"
@@ -6121,7 +6121,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         ".Lf70350_00071380:\n"
         "cmpl $0x1f4, %eax\n" /* line 1487 */
         "jg .Lf70350_0007139b\n"
-        "movss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "jmp .Lf70350_00070f2a\n"
         /* { scope 3: entityNum */
         ".Lf70350_00071394:\n"
@@ -6131,7 +6131,7 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         ".Lf70350_0007139b:\n"
         "cmpl $0x5db, %eax\n" /* line 1489 */
         "jle .Lf70350_000713bc\n"
-        "movss 0x2ed724, %xmm1\n" /* 0.20000000298023224f */
+        "movss lit4_002ed724, %xmm1\n" /* 0.20000000298023224f */
         "jmp .Lf70350_00070f2a\n"
         ".Lf70350_000713af:\n"
         "andl $0x1f00000, %eax\n" /* line 822 */
@@ -6140,10 +6140,10 @@ void PM_GroundTrace(pmove_t *pm, pml_t *pml)
         "jmp .Lf70350_0007135f\n"
         ".Lf70350_000713bc:\n"
         "cvtsi2ssl %eax, %xmm1\n" /* line 1492 */
-        "subss 0x2ed7a4, %xmm1\n" /* 500.0f */
-        "divss 0x2ed5c8, %xmm1\n" /* 1000.0f */
-        "mulss 0x2ed61c, %xmm1\n" /* -0.30000001192092896f */
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "subss lit4_002ed7a4, %xmm1\n" /* 500.0f */
+        "divss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
+        "mulss lit4_002ed61c, %xmm1\n" /* -0.30000001192092896f */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "jmp .Lf70350_00070f2a\n"
     );
 }
@@ -6229,7 +6229,7 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_000714ff\n"
         "movsbl %al, %eax\n"
         "cvtsi2ssl %eax, %xmm2\n"
-        "movss 0x2f0930, %xmm1\n"
+        "movss CorrectSolidDeltas+560, %xmm1\n"
         "andps %xmm1, %xmm2\n"
         "movsbl %dl, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
@@ -6243,7 +6243,7 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_00071830\n"
         "movsbl %al, %eax\n"
         "cvtsi2ssl %eax, %xmm2\n"
-        "movss 0x2f0930, %xmm1\n"
+        "movss CorrectSolidDeltas+560, %xmm1\n"
         "andps %xmm1, %xmm2\n"
         "movsbl %dl, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
@@ -6336,7 +6336,7 @@ void Pmove(pmove_t *pm)
         "movl 0x28(%esi), %eax\n"
         "movl %eax, -0x74(%ebp)\n"
         "cvtsi2ssl -0xc0(%ebp), %xmm0\n" /* line 4454 */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0xc4(%ebp)\n"
         "leal -0xe8(%ebp), %ecx\n" /* line 4456 | pml */
         "movl %ecx, 4(%esp)\n"
@@ -6378,7 +6378,7 @@ void Pmove(pmove_t *pm)
         "cmpl $7, 4(%esi)\n" /* line 4488 */
         "ja .Lf713e6_00071734\n"
         "movl 4(%esi), %eax\n"
-        "jmpl *0x2f0950(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+592(, %eax, 4)\n"
         ".Lf713e6_00071734:\n"
         "testl $0x300, 0xa0(%esi)\n" /* line 4569 */
         "je .Lf713e6_0007188b\n"
@@ -6717,14 +6717,14 @@ void Pmove(pmove_t *pm)
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm0\n"
         "sqrtss %xmm0, %xmm2\n"
-        "ucomiss 0x2ed5d0, %xmm2\n" /* line 1143 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* line 1143 | 1.0f */
         "jb .Lf713e6_00073277\n"
         ".Lf713e6_00071bee:\n"
-        "movl 0x195edec, %eax\n" /* line 1151 */
+        "movl imp_friction, %eax\n" /* line 1151 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed600, %xmm1\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm1\n" /* 1.5f */
         "mulss 8(%eax), %xmm1\n"
-        "movl 0x195edf0, %eax\n" /* line 1152 */
+        "movl imp_stopspeed, %eax\n" /* line 1152 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "maxss %xmm2, %xmm0\n"
@@ -6757,11 +6757,11 @@ void Pmove(pmove_t *pm)
         "pxor %xmm4, %xmm4\n"
         "testb %al, %al\n"
         "jns .Lf713e6_00071c85\n"
-        "movss 0x2ed718, %xmm4\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm4\n" /* 127.0f */
         ".Lf713e6_00071c85:\n"
         "testb $0x40, %al\n" /* line 1170 */
         "je .Lf713e6_00071c91\n"
-        "subss 0x2ed718, %xmm4\n" /* line 1171 | 127.0f */
+        "subss lit4_002ed718, %xmm4\n" /* line 1171 | 127.0f */
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_00071c91:\n"
@@ -6820,7 +6820,7 @@ void Pmove(pmove_t *pm)
         "movss %xmm5, -0x1e8(%ebp)\n"
         "calll Vec3Normalize\n"
         "fstps -0x158(%ebp)\n" /* wishspeed */
-        "movss 0x2ed728, %xmm1\n" /* line 1183 | 9.0f */
+        "movss lit4_002ed728, %xmm1\n" /* line 1183 | 9.0f */
         "movss -0x1e8(%ebp), %xmm5\n"
         "movss -0x158(%ebp), %xmm0\n" /* wishspeed */
         "mulss %xmm5, %xmm0\n"
@@ -6917,11 +6917,11 @@ void Pmove(pmove_t *pm)
         "pxor %xmm5, %xmm5\n"
         "testb %al, %al\n"
         "jns .Lf713e6_00071eb0\n"
-        "movss 0x2ed718, %xmm5\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm5\n" /* 127.0f */
         ".Lf713e6_00071eb0:\n"
         "testb $0x40, %al\n" /* line 1230 */
         "je .Lf713e6_00071ebc\n"
-        "subss 0x2ed718, %xmm5\n" /* line 1231 | 127.0f */
+        "subss lit4_002ed718, %xmm5\n" /* line 1231 | 127.0f */
         ".Lf713e6_00071ebc:\n"
         "pxor %xmm0, %xmm0\n" /* line 1235 */
         "ucomiss %xmm0, %xmm3\n"
@@ -6941,14 +6941,14 @@ void Pmove(pmove_t *pm)
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm0\n"
         "sqrtss %xmm0, %xmm2\n"
-        "ucomiss 0x2ed5d0, %xmm2\n" /* line 1241 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* line 1241 | 1.0f */
         "jb .Lf713e6_00073672\n"
         ".Lf713e6_00071f0d:\n"
-        "movl 0x195edec, %eax\n" /* line 1249 */
+        "movl imp_friction, %eax\n" /* line 1249 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed600, %xmm1\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm1\n" /* 1.5f */
         "mulss 8(%eax), %xmm1\n"
-        "movl 0x195edf0, %eax\n" /* line 1250 */
+        "movl imp_stopspeed, %eax\n" /* line 1250 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "maxss %xmm2, %xmm0\n"
@@ -7051,7 +7051,7 @@ void Pmove(pmove_t *pm)
         "movss %xmm2, -0x1b8(%ebp)\n"
         "calll Vec3Normalize\n"
         "fstps -0x14c(%ebp)\n" /* wishspeed */
-        "movss 0x2ed728, %xmm1\n" /* line 1281 | 9.0f */
+        "movss lit4_002ed728, %xmm1\n" /* line 1281 | 9.0f */
         "movss -0x1b8(%ebp), %xmm2\n"
         "movss -0x14c(%ebp), %xmm0\n" /* wishspeed */
         "mulss %xmm2, %xmm0\n"
@@ -7136,12 +7136,12 @@ void Pmove(pmove_t *pm)
         "cvtsi2ssl 0x50(%edx), %xmm2\n"
         "cvtsi2ssl %ecx, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
-        "mulss 0x2ed718, %xmm1\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm1\n" /* 127.0f */
         "divss %xmm1, %xmm2\n"
         "testb $1, 0xd(%edx)\n" /* line 596 */
         "je .Lf713e6_00072c3f\n"
         ".Lf713e6_000721f6:\n"
-        "mulss 0x2ed71c, %xmm2\n" /* line 597 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm2\n" /* line 597 | 0.4000000059604645f */
         ".Lf713e6_000721fe:\n"
         "movl -0x160(%ebp), %edx\n" /* line 601 | ps */
         "movl 4(%edx), %eax\n"
@@ -7151,7 +7151,7 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_00073807\n"
         "cmpl $4, %eax\n" /* line 606 */
         "jne .Lf713e6_0007222a\n"
-        "movl 0x195ee0c, %eax\n" /* line 607 */
+        "movl imp_player_spectateSpeedScale, %eax\n" /* line 607 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm2\n"
         /* } scope */
@@ -7171,13 +7171,13 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_000722e7\n"
         /* { scope 5: entityNum, entityNum, entityNum */
         "cvtsi2ssl %eax, %xmm1\n" /* line 550 */
-        "movss 0x2ed718, %xmm2\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm2\n" /* 127.0f */
         "mulss %xmm2, %xmm1\n"
-        "divss 0x2ed7ac, %xmm1\n" /* 16129.0f */
+        "divss lit4_002ed7ac, %xmm1\n" /* 16129.0f */
         "testb $1, 0xd(%edx)\n" /* line 552 */
         "je .Lf713e6_00072db6\n"
         ".Lf713e6_00072285:\n"
-        "mulss 0x2ed71c, %xmm1\n" /* line 553 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm1\n" /* line 553 | 0.4000000059604645f */
         ".Lf713e6_0007228d:\n"
         "movl -0x160(%ebp), %edx\n" /* line 557 | ps */
         "movl 4(%edx), %eax\n"
@@ -7187,7 +7187,7 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_000737fa\n"
         "cmpl $4, %eax\n" /* line 562 */
         "jne .Lf713e6_000722b9\n"
-        "movl 0x195ee0c, %eax\n" /* line 563 */
+        "movl imp_player_spectateSpeedScale, %eax\n" /* line 563 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm1\n"
         /* } scope */
@@ -7196,7 +7196,7 @@ void Pmove(pmove_t *pm)
         "testb $0x40, %al\n"
         "je .Lf713e6_000722d5\n"
         "movaps %xmm1, %xmm0\n" /* line 880 */
-        "mulss 0x2ed7b0, %xmm0\n" /* -127.0f */
+        "mulss lit4_002ed7b0, %xmm0\n" /* -127.0f */
         "addss -0x34(%ebp), %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         ".Lf713e6_000722d5:\n"
@@ -7215,7 +7215,7 @@ void Pmove(pmove_t *pm)
         "leal -0x48(%ebp), %ecx\n" /* line 886 | wishvel */
         "movl %ecx, (%esp)\n"
         "calll Vec3Normalize\n"
-        "movss 0x2ed740, %xmm1\n" /* line 888 | 8.0f */
+        "movss lit4_002ed740, %xmm1\n" /* line 888 | 8.0f */
         "fstps -0x1fc(%ebp)\n"
         "movss -0x1fc(%ebp), %xmm0\n"
         "leal -0x48(%ebp), %ecx\n" /* wishvel */
@@ -7418,11 +7418,11 @@ void Pmove(pmove_t *pm)
         "sqrtss %xmm0, %xmm3\n"
         "testb %cl, %cl\n" /* line 640 */
         "js .Lf713e6_0007385e\n"
-        "movss 0x2f0930, %xmm7\n" /* line 54 */
+        "movss CorrectSolidDeltas+560, %xmm7\n" /* line 54 */
         "movss -0x114(%ebp), %xmm2\n" /* fmove */
         "andps %xmm7, %xmm2\n"
         ".Lf713e6_000725d7:\n"
-        "movl 0x195ee14, %eax\n"
+        "movl imp_player_strafeSpeedScale, %eax\n"
         "movl (%eax), %eax\n"
         "movss -0x110(%ebp), %xmm1\n" /* smove */
         "mulss 8(%eax), %xmm1\n"
@@ -7447,7 +7447,7 @@ void Pmove(pmove_t *pm)
         /* { scope 6: i, i, ps, i */
         "testl %edx, %edx\n" /* line 707 */
         "je .Lf713e6_0007329f\n"
-        "movl 0x195edc8, %eax\n" /* line 710 */
+        "movl imp_player_dmgtimer_maxTime, %eax\n" /* line 710 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "pxor %xmm1, %xmm1\n" /* line 711 */
@@ -7455,15 +7455,15 @@ void Pmove(pmove_t *pm)
         "jne .Lf713e6_00072649\n"
         "jnp .Lf713e6_0007329f\n"
         ".Lf713e6_00072649:\n"
-        "movl 0x195ee18, %eax\n" /* line 719 */
+        "movl imp_player_dmgtimer_minScale, %eax\n" /* line 719 */
         "movl (%eax), %eax\n"
-        "movss 0x2f0940, %xmm6\n"
+        "movss CorrectSolidDeltas+576, %xmm6\n"
         "movss 8(%eax), %xmm1\n"
         "xorps %xmm6, %xmm1\n"
         "divss %xmm0, %xmm1\n"
         "cvtsi2ssl %edx, %xmm0\n"
         "mulss %xmm0, %xmm1\n"
-        "addss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "jmp .Lf713e6_000732af\n"
         /* } scope */
         /* } scope */
@@ -7473,7 +7473,7 @@ void Pmove(pmove_t *pm)
         "movl -0xbc(%ebp), %eax\n" /* line 4047 */
         "testl %eax, %eax\n"
         "je .Lf713e6_00072b78\n"
-        "movss 0x2ed740, %xmm0\n" /* 8.0f */
+        "movss lit4_002ed740, %xmm0\n" /* 8.0f */
         "movss %xmm0, -0x128(%ebp)\n" /* scale */
         ".Lf713e6_00072697:\n"
         "andb $0x20, %dl\n" /* line 4052 */
@@ -7539,12 +7539,12 @@ void Pmove(pmove_t *pm)
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         "movl (%edi), %ebx\n" /* line 3321 | ps */
         "movss 0xdc(%edi), %xmm1\n" /* line 3324 */
-        "movl 0x195ee00, %eax\n"
+        "movl imp_bg_foliagesnd_minspeed, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm2\n"
         "ucomiss %xmm1, %xmm2\n"
         "jbe .Lf713e6_00072954\n"
-        "movl 0x195edc0, %eax\n" /* line 3327 */
+        "movl imp_bg_foliagesnd_resetinterval, %eax\n" /* line 3327 */
         "movl (%eax), %edx\n"
         "movl 0x44(%ebx), %eax\n" /* ps */
         "addl 8(%edx), %eax\n"
@@ -7588,10 +7588,10 @@ void Pmove(pmove_t *pm)
         "addss %xmm1, %xmm0\n"
         "mulss %xmm3, %xmm3\n"
         "addss %xmm3, %xmm0\n"
-        "mulss 0x2ed604, %xmm0\n" /* 0.25f */
+        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
         "ucomiss %xmm2, %xmm0\n"
         "jbe .Lf713e6_00072947\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4661 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4661 | 1.0f, scale */
         "divss -0x18c(%ebp), %xmm0\n" /* scale */
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         "movss -0xf0(%ebp), %xmm1\n" /* line 272 */
@@ -7610,11 +7610,11 @@ void Pmove(pmove_t *pm)
         ".Lf713e6_000728c2:\n"
         "subss 0x2c(%esi), %xmm4\n" /* line 65 */
         "subss 0x30(%esi), %xmm7\n" /* line 66 */
-        "movss 0x2ed5d0, %xmm0\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 45 | 1.0f */
         "subss -0x18c(%ebp), %xmm0\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movaps %xmm2, %xmm1\n"
-        "cmpnltss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "cmpnltss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "andps %xmm0, %xmm1\n"
         "andnps %xmm3, %xmm0\n"
         "orps %xmm1, %xmm0\n"
@@ -7642,18 +7642,18 @@ void Pmove(pmove_t *pm)
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         ".Lf713e6_00072954:\n"
         "subss %xmm2, %xmm1\n" /* line 3333 */
-        "movl 0x195eddc, %eax\n"
+        "movl imp_bg_foliagesnd_maxspeed, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "subss %xmm2, %xmm0\n"
         "divss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 3334 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 3334 | 1.0f */
         "minss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"
-        "movl 0x195edbc, %eax\n" /* line 3336 */
+        "movl imp_bg_foliagesnd_slowinterval, %eax\n" /* line 3336 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
-        "movl 0x195ee04, %eax\n" /* line 3338 */
+        "movl imp_bg_foliagesnd_fastinterval, %eax\n" /* line 3338 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "subl %edx, %eax\n"
@@ -7667,7 +7667,7 @@ void Pmove(pmove_t *pm)
         "jge .Lf713e6_000727b0\n"
         "leal 0xc4(%edi), %eax\n"
         /* { scope 5: entityNum, entityNum, entityNum */
-        "movss 0x2ed67c, %xmm0\n" /* line 272 | 0.75f */
+        "movss lit4_002ed67c, %xmm0\n" /* line 272 | 0.75f */
         "movss 0xc4(%edi), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x48(%ebp)\n" /* wishvel */
@@ -7683,7 +7683,7 @@ void Pmove(pmove_t *pm)
         "movss %xmm1, -0x3c(%ebp)\n" /* wishdir */
         "mulss 0xd4(%edi), %xmm0\n" /* line 273 */
         "movss %xmm0, -0x38(%ebp)\n"
-        "movss 0x2ed7b8, %xmm0\n" /* line 3343 | 0.8999999761581421f */
+        "movss lit4_002ed7b8, %xmm0\n" /* line 3343 | 0.8999999761581421f */
         "mulss 0xd8(%edi), %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "movl 0xcc(%ebx), %eax\n" /* line 3344 | ps */
@@ -7778,7 +7778,7 @@ void Pmove(pmove_t *pm)
         "jmp .Lf713e6_00071df4\n"
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         ".Lf713e6_00072b78:\n"
-        "movss 0x2ed7b4, %xmm1\n" /* line 4047 | 30.0f */
+        "movss lit4_002ed7b4, %xmm1\n" /* line 4047 | 30.0f */
         "movss %xmm1, -0x128(%ebp)\n" /* scale */
         "jmp .Lf713e6_00072697\n"
         /* } scope */
@@ -7791,7 +7791,7 @@ void Pmove(pmove_t *pm)
         "leal 0x20(%ebx), %edx\n" /* ps */
         "movl %edx, -0x184(%ebp)\n"
         ".Lf713e6_00072bab:\n"
-        "movl 0x195ed4c, %edx\n" /* line 199 */
+        "movl imp_vec3_origin, %edx\n" /* line 199 */
         "movl (%edx), %eax\n"
         "movl %eax, 0x20(%ebx)\n"
         "movl 4(%edx), %eax\n" /* line 200 */
@@ -7969,13 +7969,13 @@ void Pmove(pmove_t *pm)
         "cmpl $0x12b, %eax\n"
         "jle .Lf713e6_00072708\n"
         "movss 0xc8(%edi), %xmm1\n" /* line 200 */
-        "movss 0x2ed5e0, %xmm4\n" /* line 4104 | 6.0f */
+        "movss lit4_002ed5e0, %xmm4\n" /* line 4104 | 6.0f */
         "movss 0xc4(%edi), %xmm0\n"
         "addss %xmm4, %xmm0\n"
         "movss %xmm0, -0x48(%ebp)\n" /* wishvel */
         "addss %xmm4, %xmm1\n" /* line 4105 */
         "movss %xmm1, -0x44(%ebp)\n"
-        "movss 0x2ed740, %xmm3\n" /* line 4106 | 8.0f */
+        "movss lit4_002ed740, %xmm3\n" /* line 4106 | 8.0f */
         "movss %xmm3, -0x40(%ebp)\n"
         "leal 0xd0(%edi), %eax\n"
         /* { scope 5: entityNum, entityNum, entityNum */
@@ -8085,7 +8085,7 @@ void Pmove(pmove_t *pm)
         "calll *pmoveHandlers(, %eax, 4)\n"
         /* } scope */
         ".Lf713e6_00073009:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4120 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4120 | 1.0f */
         "ucomiss -0x6c(%ebp), %xmm0\n" /* trace */
         "ja .Lf713e6_000738fd\n"
         /* { scope 5: entityNum, entityNum, entityNum */
@@ -8129,9 +8129,9 @@ void Pmove(pmove_t *pm)
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm0\n"
         "sqrtss %xmm0, %xmm1\n"
-        "subss 0x2ed694, %xmm1\n" /* 20.0f */
+        "subss lit4_002ed694, %xmm1\n" /* 20.0f */
         "xorl %eax, %eax\n" /* line 1097 */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jbe .Lf713e6_000738c9\n"
         ".Lf713e6_000730d1:\n"
         "movl %edx, (%esp)\n" /* line 1103 */
@@ -8168,7 +8168,7 @@ void Pmove(pmove_t *pm)
         "mulss %xmm4, %xmm1\n"
         "addss %xmm1, %xmm0\n"
         "sqrtss %xmm0, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         "divss %xmm0, %xmm5\n"
         "testb $1, 0xd(%ebx)\n" /* line 552 */
         "jne .Lf713e6_00073199\n"
@@ -8184,12 +8184,12 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_00073842\n"
         "cmpl $4, %eax\n" /* line 562 */
         "jne .Lf713e6_00071ce6\n"
-        "movl 0x195ee0c, %eax\n" /* line 563 */
+        "movl imp_player_spectateSpeedScale, %eax\n" /* line 563 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm5\n"
         "jmp .Lf713e6_00071ce6\n"
         ".Lf713e6_00073199:\n"
-        "mulss 0x2ed71c, %xmm5\n" /* line 553 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm5\n" /* line 553 | 0.4000000059604645f */
         "jmp .Lf713e6_0007316a\n"
         /* } scope */
         /* } scope */
@@ -8209,7 +8209,7 @@ void Pmove(pmove_t *pm)
         "mulss %xmm5, %xmm1\n"
         "addss %xmm1, %xmm0\n"
         "sqrtss %xmm0, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         "divss %xmm0, %xmm2\n"
         "testb $1, 0xd(%ebx)\n" /* line 552 */
         "jne .Lf713e6_0007321a\n"
@@ -8225,12 +8225,12 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_00073835\n"
         "cmpl $4, %eax\n" /* line 562 */
         "jne .Lf713e6_00071fdd\n"
-        "movl 0x195ee0c, %eax\n" /* line 563 */
+        "movl imp_player_spectateSpeedScale, %eax\n" /* line 563 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm2\n"
         "jmp .Lf713e6_00071fdd\n"
         ".Lf713e6_0007321a:\n"
-        "mulss 0x2ed71c, %xmm2\n" /* line 553 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm2\n" /* line 553 | 0.4000000059604645f */
         "jmp .Lf713e6_000731eb\n"
         /* } scope */
         /* } scope */
@@ -8260,7 +8260,7 @@ void Pmove(pmove_t *pm)
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         ".Lf713e6_00073277:\n"
         "jp .Lf713e6_00071bee\n" /* line 1143 */
-        "movl 0x195ed4c, %edx\n" /* line 199 */
+        "movl imp_vec3_origin, %edx\n" /* line 199 */
         "movl (%edx), %eax\n"
         "movl %eax, 0x20(%ebx)\n"
         "movl 4(%edx), %eax\n" /* line 200 */
@@ -8274,14 +8274,14 @@ void Pmove(pmove_t *pm)
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_0007329f:\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 711 | 1.0f */
-        "movss 0x2f0940, %xmm6\n"
+        "movss lit4_002ed5d0, %xmm1\n" /* line 711 | 1.0f */
+        "movss CorrectSolidDeltas+576, %xmm6\n"
         /* } scope */
         /* } scope */
         ".Lf713e6_000732af:\n"
         "mulss %xmm1, %xmm2\n" /* line 1000 */
         "movss %xmm2, -0xec(%ebp)\n"
-        "movss 0x2ed5c8, %xmm0\n" /* line 1003 | 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* line 1003 | 1000.0f */
         "mulss -0xc4(%ebp), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "subl %eax, %edx\n"
@@ -8305,7 +8305,7 @@ void Pmove(pmove_t *pm)
         "addss %xmm5, %xmm1\n"
         "movaps %xmm1, %xmm0\n" /* line 336 | scale */
         "andps %xmm7, %xmm0\n" /* scale */
-        "movss 0x2ed670, %xmm4\n" /* -0.0010000000474974513f */
+        "movss lit4_002ed670, %xmm4\n" /* -0.0010000000474974513f */
         "mulss %xmm4, %xmm0\n" /* scale */
         "addss %xmm1, %xmm0\n" /* scale */
         "xorps %xmm6, %xmm0\n" /* scale */
@@ -8393,11 +8393,11 @@ void Pmove(pmove_t *pm)
         "testb $4, %dh\n"
         "je .Lf713e6_0007379d\n"
         ".Lf713e6_000734d5:\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1039 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1039 | 1.0f */
         ".Lf713e6_000734dd:\n"
         "andb $2, %dh\n" /* line 1045 */
         "je .Lf713e6_000734ea\n"
-        "mulss 0x2ed604, %xmm1\n" /* line 1046 | 0.25f */
+        "mulss lit4_002ed604, %xmm1\n" /* line 1046 | 0.25f */
         ".Lf713e6_000734ea:\n"
         "leal -0x48(%ebp), %ecx\n" /* line 1048 | wishvel */
         "leal -0xe8(%ebp), %edx\n" /* pml */
@@ -8437,10 +8437,10 @@ void Pmove(pmove_t *pm)
         "mulss -0xa4(%ebp), %xmm1\n"
         "addss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n" /* line 336 | scale */
-        "andps 0x2f0930, %xmm1\n" /* scale */
-        "mulss 0x2ed670, %xmm1\n" /* -0.0010000000474974513f, scale */
+        "andps CorrectSolidDeltas+560, %xmm1\n" /* scale */
+        "mulss lit4_002ed670, %xmm1\n" /* -0.0010000000474974513f, scale */
         "addss %xmm0, %xmm1\n" /* scale */
-        "xorps 0x2f0940, %xmm1\n" /* scale */
+        "xorps CorrectSolidDeltas+576, %xmm1\n" /* scale */
         /* { scope 5: entityNum, entityNum, entityNum */
         "mulss %xmm1, %xmm2\n" /* line 288 */
         "addss %xmm3, %xmm2\n"
@@ -8503,12 +8503,12 @@ void Pmove(pmove_t *pm)
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         /* { scope 5: entityNum, entityNum, entityNum */
         ".Lf713e6_0007367d:\n"
-        "mulss 0x2ed720, %xmm1\n" /* line 558 | 3.0f */
+        "mulss lit4_002ed720, %xmm1\n" /* line 558 | 3.0f */
         "jmp .Lf713e6_000722b9\n"
         /* } scope */
         /* { scope 5: entityNum, entityNum, entityNum */
         ".Lf713e6_0007368a:\n"
-        "mulss 0x2ed720, %xmm2\n" /* line 602 | 3.0f */
+        "mulss lit4_002ed720, %xmm2\n" /* line 602 | 3.0f */
         "jmp .Lf713e6_0007222a\n"
         ".Lf713e6_00073697:\n"
         "movl 0xc(%ebx), %edx\n"
@@ -8521,12 +8521,12 @@ void Pmove(pmove_t *pm)
         "movl -0x10c(%ebp), %eax\n" /* line 650 | ps */
         "cvtsi2ssl 0x50(%eax), %xmm2\n"
         "mulss %xmm1, %xmm2\n"
-        "mulss 0x2ed718, %xmm3\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm3\n" /* 127.0f */
         "divss %xmm3, %xmm2\n"
         "testb $1, 0xd(%eax)\n" /* line 652 */
         "je .Lf713e6_0007377a\n"
         ".Lf713e6_000736c4:\n"
-        "mulss 0x2ed71c, %xmm2\n" /* line 653 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm2\n" /* line 653 | 0.4000000059604645f */
         ".Lf713e6_000736cc:\n"
         "movl -0x10c(%ebp), %edx\n" /* line 657 | ps */
         "movl 4(%edx), %eax\n"
@@ -8569,7 +8569,7 @@ void Pmove(pmove_t *pm)
         ".Lf713e6_0007375d:\n"
         "testl $0x800, -0xf8(%ebp)\n" /* line 686 */
         "je .Lf713e6_00072620\n"
-        "mulss 0x2ed71c, %xmm2\n" /* line 687 | 0.4000000059604645f */
+        "mulss lit4_002ed71c, %xmm2\n" /* line 687 | 0.4000000059604645f */
         "jmp .Lf713e6_00072620\n"
         ".Lf713e6_0007377a:\n"
         "pxor %xmm0, %xmm0\n" /* line 652 */
@@ -8586,14 +8586,14 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_000738e9\n"
         "cmpl $2, %eax\n" /* line 1039 */
         "je .Lf713e6_0007393e\n"
-        "movss 0x2ed728, %xmm1\n" /* 9.0f */
+        "movss lit4_002ed728, %xmm1\n" /* 9.0f */
         "jmp .Lf713e6_000734dd\n"
         /* } scope */
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         ".Lf713e6_000737bc:\n"
         "leal 0x64(%ebx), %eax\n" /* line 4052 | ps */
         /* { scope 5: entityNum, entityNum, entityNum */
-        "movss 0x2f0940, %xmm0\n" /* line 216 */
+        "movss CorrectSolidDeltas+576, %xmm0\n" /* line 216 */
         "movss 0x64(%ebx), %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x30(%ebp)\n" /* up */
@@ -8610,12 +8610,12 @@ void Pmove(pmove_t *pm)
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         /* { scope 5: entityNum, entityNum, entityNum */
         ".Lf713e6_000737fa:\n"
-        "mulss 0x2ed5e0, %xmm1\n" /* line 560 | 6.0f */
+        "mulss lit4_002ed5e0, %xmm1\n" /* line 560 | 6.0f */
         "jmp .Lf713e6_000722b9\n"
         /* } scope */
         /* { scope 5: entityNum, entityNum, entityNum */
         ".Lf713e6_00073807:\n"
-        "mulss 0x2ed5e0, %xmm2\n" /* line 604 | 6.0f */
+        "mulss lit4_002ed5e0, %xmm2\n" /* line 604 | 6.0f */
         "jmp .Lf713e6_0007222a\n"
         /* } scope */
         /* } scope */
@@ -8623,7 +8623,7 @@ void Pmove(pmove_t *pm)
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_00073814:\n"
-        "mulss 0x2ed720, %xmm2\n" /* line 558 | 3.0f */
+        "mulss lit4_002ed720, %xmm2\n" /* line 558 | 3.0f */
         "jmp .Lf713e6_00071fdd\n"
         /* } scope */
         /* } scope */
@@ -8632,7 +8632,7 @@ void Pmove(pmove_t *pm)
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_00073821:\n"
-        "mulss 0x2ed720, %xmm5\n" /* 3.0f */
+        "mulss lit4_002ed720, %xmm5\n" /* 3.0f */
         "jmp .Lf713e6_00071ce6\n"
         /* } scope */
         /* } scope */
@@ -8648,7 +8648,7 @@ void Pmove(pmove_t *pm)
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_00073835:\n"
-        "mulss 0x2ed5e0, %xmm2\n" /* line 560 | 6.0f */
+        "mulss lit4_002ed5e0, %xmm2\n" /* line 560 | 6.0f */
         "jmp .Lf713e6_00071fdd\n"
         /* } scope */
         /* } scope */
@@ -8657,7 +8657,7 @@ void Pmove(pmove_t *pm)
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_00073842:\n"
-        "mulss 0x2ed5e0, %xmm5\n" /* 6.0f */
+        "mulss lit4_002ed5e0, %xmm5\n" /* 6.0f */
         "jmp .Lf713e6_00071ce6\n"
         /* } scope */
         /* } scope */
@@ -8668,11 +8668,11 @@ void Pmove(pmove_t *pm)
         "jmp .Lf713e6_000732e8\n"
         /* { scope 5: entityNum, entityNum, entityNum */
         ".Lf713e6_0007385e:\n"
-        "movl 0x195edb8, %eax\n" /* line 54 */
+        "movl imp_player_backSpeedScale, %eax\n" /* line 54 */
         "movl (%eax), %eax\n"
         "movss -0x114(%ebp), %xmm2\n" /* fmove */
         "mulss 8(%eax), %xmm2\n"
-        "movss 0x2f0930, %xmm7\n"
+        "movss CorrectSolidDeltas+560, %xmm7\n"
         "andps %xmm7, %xmm2\n"
         "jmp .Lf713e6_000725d7\n"
         ".Lf713e6_00073882:\n"
@@ -8685,10 +8685,10 @@ void Pmove(pmove_t *pm)
         "movss -0x1b8(%ebp), %xmm2\n"
         "ja .Lf713e6_0007394b\n"
         ".Lf713e6_000738af:\n"
-        "movss 0x2f0930, %xmm7\n"
+        "movss CorrectSolidDeltas+560, %xmm7\n"
         "jmp .Lf713e6_0007375d\n"
         ".Lf713e6_000738bc:\n"
-        "mulss 0x2ed720, %xmm2\n" /* line 659 | 3.0f */
+        "mulss lit4_002ed720, %xmm2\n" /* line 659 | 3.0f */
         "jmp .Lf713e6_00073749\n"
         /* } scope */
         /* } scope */
@@ -8701,11 +8701,11 @@ void Pmove(pmove_t *pm)
         /* { scope 4: up, forward, ps, passEntityNum, ... */
         /* { scope 5: entityNum, entityNum, entityNum */
         ".Lf713e6_000738dc:\n"
-        "mulss 0x2ed5e0, %xmm2\n" /* line 663 | 6.0f */
+        "mulss lit4_002ed5e0, %xmm2\n" /* line 663 | 6.0f */
         "jmp .Lf713e6_00073749\n"
         /* } scope */
         ".Lf713e6_000738e9:\n"
-        "movss 0x2ed69c, %xmm1\n" /* line 1037 | 19.0f */
+        "movss lit4_002ed69c, %xmm1\n" /* line 1037 | 19.0f */
         "jmp .Lf713e6_000734dd\n"
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
@@ -8738,12 +8738,12 @@ void Pmove(pmove_t *pm)
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_00073931:\n"
-        "mulss 0x2ed764, %xmm2\n" /* line 677 | 0.15000000596046448f */
+        "mulss lit4_002ed764, %xmm2\n" /* line 677 | 0.15000000596046448f */
         "jmp .Lf713e6_00073749\n"
         /* } scope */
         /* } scope */
         ".Lf713e6_0007393e:\n"
-        "movss 0x2ed79c, %xmm1\n" /* line 1039 | 12.0f */
+        "movss lit4_002ed79c, %xmm1\n" /* line 1039 | 12.0f */
         "jmp .Lf713e6_000734dd\n"
         /* { scope 5: entityNum, entityNum, entityNum */
         ".Lf713e6_0007394b:\n"
@@ -8774,22 +8774,22 @@ void Pmove(pmove_t *pm)
         /* { scope 5: entityNum, entityNum, entityNum */
         /* { scope 6: i, i, ps, i */
         ".Lf713e6_00073989:\n"
-        "mulss 0x2ed768, %xmm2\n" /* line 679 | 0.6499999761581421f */
+        "mulss lit4_002ed768, %xmm2\n" /* line 679 | 0.6499999761581421f */
         "jmp .Lf713e6_00073749\n"
         ".Lf713e6_00073996:\n"
         "subl %edx, -0xf4(%ebp)\n" /* line 1921 */
         "cvtsi2ssl -0xf4(%ebp), %xmm0\n"
-        "divss 0x2ed730, %xmm0\n" /* 400.0f */
+        "divss lit4_002ed730, %xmm0\n" /* 400.0f */
         "pxor %xmm1, %xmm1\n" /* line 1922 */
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf713e6_00073737\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1924 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1924 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf713e6_00073c53\n"
-        "movss 0x2ed764, %xmm3\n" /* 0.15000000596046448f */
+        "movss lit4_002ed764, %xmm3\n" /* 0.15000000596046448f */
         "pxor %xmm1, %xmm1\n"
         ".Lf713e6_000739d6:\n"
-        "mulss 0x2ed768, %xmm1\n" /* line 673 | 0.6499999761581421f */
+        "mulss lit4_002ed768, %xmm1\n" /* line 673 | 0.6499999761581421f */
         "addss %xmm3, %xmm1\n"
         "mulss %xmm1, %xmm2\n"
         "jmp .Lf713e6_00073749\n"
@@ -8800,17 +8800,17 @@ void Pmove(pmove_t *pm)
         "jne .Lf713e6_00073737\n"
         "subl %edx, -0xf4(%ebp)\n" /* line 1921 */
         "cvtsi2ssl -0xf4(%ebp), %xmm0\n"
-        "divss 0x2ed730, %xmm0\n" /* 400.0f */
+        "divss lit4_002ed730, %xmm0\n" /* 400.0f */
         "pxor %xmm1, %xmm1\n" /* line 1922 */
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf713e6_00073737\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1924 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1924 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf713e6_00073c76\n"
-        "movss 0x2ed768, %xmm3\n" /* 0.6499999761581421f */
+        "movss lit4_002ed768, %xmm3\n" /* 0.6499999761581421f */
         "pxor %xmm1, %xmm1\n"
         ".Lf713e6_00073a3f:\n"
-        "mulss 0x2ed764, %xmm1\n" /* line 675 | 0.15000000596046448f */
+        "mulss lit4_002ed764, %xmm1\n" /* line 675 | 0.15000000596046448f */
         "addss %xmm1, %xmm3\n"
         "mulss %xmm3, %xmm2\n"
         "jmp .Lf713e6_00073749\n"
@@ -8840,7 +8840,7 @@ void Pmove(pmove_t *pm)
         "movl -0x60(%ebp), %eax\n" /* line 201 */
         "movl %eax, 8(%edx)\n"
         /* } scope */
-        "movss 0x2f0940, %xmm0\n" /* line 216 */
+        "movss CorrectSolidDeltas+576, %xmm0\n" /* line 216 */
         "movss 0x64(%ebx), %xmm1\n"
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x30(%ebp)\n" /* up */
@@ -8948,7 +8948,7 @@ void Pmove(pmove_t *pm)
         "calll *pmoveHandlers(, %eax, 4)\n"
         /* } scope */
         ".Lf713e6_00073c2e:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 4129 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 4129 | 1.0f */
         "ucomiss -0x6c(%ebp), %xmm0\n" /* trace */
         "jbe .Lf713e6_0007301b\n"
         "testb $8, -0x5c(%ebp)\n"
@@ -8966,7 +8966,7 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_00073737\n"
         ".Lf713e6_00073c62:\n"
         "movaps %xmm0, %xmm3\n"
-        "mulss 0x2ed764, %xmm3\n" /* 0.15000000596046448f */
+        "mulss lit4_002ed764, %xmm3\n" /* 0.15000000596046448f */
         "subss %xmm0, %xmm1\n"
         "jmp .Lf713e6_000739d6\n"
         ".Lf713e6_00073c76:\n"
@@ -8976,7 +8976,7 @@ void Pmove(pmove_t *pm)
         "je .Lf713e6_00073737\n"
         ".Lf713e6_00073c85:\n"
         "movaps %xmm0, %xmm3\n"
-        "mulss 0x2ed768, %xmm3\n" /* 0.6499999761581421f */
+        "mulss lit4_002ed768, %xmm3\n" /* 0.6499999761581421f */
         "subss %xmm0, %xmm1\n"
         "jmp .Lf713e6_00073a3f\n"
     );

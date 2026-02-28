@@ -10,8 +10,8 @@ extern void Com_Error(int level, const char *fmt, ...);
 extern qboolean SV_GetEntityToken(char *buffer, int bufferSize);
 extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
 
-static int index_00fea280; /* 0xfea280 */
-static char str[8][32]; /* 0xfea180 */
+static int index_00fea280; /* index */
+static char str[8][32]; /* str */
 
 qboolean G_SpawnStringInternal(SpawnVar *spawnVar, const char *key, const char *defaultString, const char * *out);
 unsigned int G_NewString(const char *string);

@@ -4,11 +4,11 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern void **g_dx;          /* 0x195eed0 */
-extern void **g_vidConfig;   /* 0x195eeec */
-extern void **g_ri;          /* 0x195eee0 */
-extern void **g_dxIter;      /* 0x195f0e0 */
-extern byte *g_creatingTexture; /* 0x195ec5c */
+extern void **g_dx;          /* imp_dx */
+extern void **g_vidConfig;   /* imp_vidConfig */
+extern void **g_ri;          /* imp_ri */
+extern void **g_dxIter;      /* imp_alwaysfails */
+extern byte *g_creatingTexture; /* imp_g_NoTextureID */
 
 /* Function declarations */
 extern const char *va(const char *fmt, ...);

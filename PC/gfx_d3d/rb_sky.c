@@ -14,17 +14,17 @@ extern SunFlareDynamic sunFlareArray[4]; /* 0x0 */
 
 /* Globals accessed via absolute addresses */
 extern IDirect3DQuery9 *r_occlusionQuery;              /* 0x12184c4 */
-extern void *dx_device_ptr;                             /* 0x195eed0 - device struct, field at +8 is IDirect3DDevice9* */
-extern volatile int *dx_fence;                          /* 0x195f0e0 */
-extern void *r_glob;                                    /* 0x195eebc - GfxGlobals */
-extern void *r_frontEndDataOut;                         /* 0x195f0c8 */
-extern void *gfx_buf;                                   /* 0x195f160 - tess globals */
-extern void *r_dvar_sunEnable;                          /* 0x195f15c */
-extern void *r_rendererGlob;                            /* 0x195eec0 */
-extern unsigned int r_defaultColor;                     /* 0x195ed2c */
-extern void *r_videoConfig;                             /* 0x195eeec */
-extern void *r_phys;                                    /* 0x195eee0 */
-extern unsigned int r_contentmask;                      /* 0x195ed4c */
+extern void *dx_device_ptr;                             /* imp_dx - device struct, field at +8 is IDirect3DDevice9* */
+extern volatile int *dx_fence;                          /* imp_alwaysfails */
+extern void *r_glob;                                    /* imp_rgp - GfxGlobals */
+extern void *r_frontEndDataOut;                         /* imp_backEnd */
+extern void *gfx_buf;                                   /* imp_tess - tess globals */
+extern void *r_dvar_sunEnable;                          /* imp_r_drawSun */
+extern void *r_rendererGlob;                            /* imp_r_rendererInUse */
+extern unsigned int r_defaultColor;                     /* imp_colorWhite */
+extern void *r_videoConfig;                             /* imp_vidConfig */
+extern void *r_phys;                                    /* imp_ri */
+extern unsigned int r_contentmask;                      /* imp_vec3_origin */
 
 /* External functions */
 extern void RB_ClearScreen(int whichToClear, const vec_t *color, float depth, int stencil);

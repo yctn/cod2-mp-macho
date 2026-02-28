@@ -15,8 +15,8 @@ extern const char * Com_ParseOnLine(const char **p);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void Com_Printf(const char *fmt, ...);
 
-static const char *staticNULL; /* 0x3131a0 */
-static stringDef_t * g_strHandle[2048]; /* 0xf2f680 */
+static const char *staticNULL; /* staticNULL */
+static stringDef_t * g_strHandle[2048]; /* g_strHandle */
 
 void Window_SetStaticFlags(Window *w, const int flags);
 qboolean Item_EnableShowViaDvar(const itemDef_t *item, int flag);

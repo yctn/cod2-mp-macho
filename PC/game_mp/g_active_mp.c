@@ -10,7 +10,7 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static vec3_t range; /* 0x313c60 */
+static vec3_t range; /* range */
 
 /* Extern functions */
 extern void Scr_IsSystemActive(int);
@@ -101,7 +101,7 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm)
         "movzbl 0x166(%edx), %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
         "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
+        "addl imp_entityHandlers, %eax\n"
         "movl 0xc(%eax), %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* entTouch */
         "movl 0xc(%ebp), %eax\n" /* line 128 | pm */
@@ -116,7 +116,7 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm)
         "leal (, %eax, 8), %esi\n" /* other */
         "subl %eax, %esi\n" /* other */
         "shll $4, %esi\n" /* other */
-        "addl 0x195f688, %esi\n" /* other */
+        "addl imp_g_entities, %esi\n" /* other */
         "movl $1, (%esp)\n" /* line 143 */
         "calll Scr_IsSystemActive\n"
         "testl %eax, %eax\n"
@@ -125,7 +125,7 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm)
         "movzbl 0x166(%esi), %eax\n" /* line 153 | other */
         "leal (%eax, %eax, 4), %eax\n"
         "shll $3, %eax\n"
-        "addl 0x195f6b4, %eax\n"
+        "addl imp_entityHandlers, %eax\n"
         "movl 0xc(%eax), %eax\n"
         "testl %eax, %eax\n" /* line 154 */
         "je .Lf1a01f2_001a0284\n"
@@ -189,7 +189,7 @@ void ClientImpacts(gentity_t *ent, pmove_t *pm)
         "movl %esi, (%esp)\n" /* line 146 | other */
         "calll Scr_AddEntity\n"
         "movl $1, 8(%esp)\n" /* line 147 */
-        "movl 0x195f5bc, %ebx\n"
+        "movl imp_scr_const, %ebx\n"
         "movzwl 0x52(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* ent */
@@ -224,12 +224,12 @@ qboolean ClientInactivityTimer(gclient_t *client)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* client */
-        "movl 0x195f694, %eax\n" /* line 314 */
+        "movl imp_g_inactivity, %eax\n" /* line 314 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1a0368_001a03ad\n"
-        "movl 0x195f6a0, %eax\n" /* line 318 */
+        "movl imp_level, %eax\n" /* line 318 */
         "movl 0x1ec(%eax), %eax\n"
         "addl $0xea60, %eax\n"
         "movl %eax, 0x2800(%ebx)\n" /* client */
@@ -248,7 +248,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
         "leal (%eax, %eax, 4), %eax\n" /* line 323 */
         "leal (%eax, %eax, 4), %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
-        "movl 0x195f6a0, %edx\n"
+        "movl imp_level, %edx\n"
         "movl 0x1ec(%edx), %edx\n"
         "leal (%edx, %eax, 8), %eax\n"
         "movl %eax, 0x2800(%ebx)\n" /* client */
@@ -265,7 +265,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
         "movl 0x2700(%ebx), %esi\n" /* line 326 | client */
         "testl %esi, %esi\n"
         "jne .Lf1a0368_001a048b\n"
-        "movl 0x195f6a0, %esi\n" /* line 328 */
+        "movl imp_level, %esi\n" /* line 328 */
         "movl 0x1ec(%esi), %edx\n"
         "movl 0x2800(%ebx), %eax\n" /* client */
         "cmpl %eax, %edx\n"
@@ -278,7 +278,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
         "jne .Lf1a0368_001a048b\n"
         "movl $1, 0x2804(%ebx)\n" /* line 335 | client */
         "movl $0x63, 4(%esp)\n" /* line 336 */
-        "movl $0x2b3544, (%esp)\n" /* "%c "GAME_INACTIVEDROPWARNING"" */
+        "movl $str_002b3544, (%esp)\n" /* "%c "GAME_INACTIVEDROPWARNING"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -303,7 +303,7 @@ qboolean ClientInactivityTimer(gclient_t *client)
         "movl $1, %eax\n"
         "jmp .Lf1a0368_001a03a6\n"
         ".Lf1a0368_001a0495:\n"
-        "movl $0x2b3528, 4(%esp)\n" /* line 330 */
+        "movl $str_002b3528, 4(%esp)\n" /* line 330 */
         "movl %ebx, %edx\n" /* client */
         "subl (%esi), %edx\n"
         "sarl $2, %edx\n"
@@ -397,11 +397,11 @@ void G_PlayerController(gentity_t *self, int *partBits)
         "shll $4, %ebx\n" /* ci */
         "subl %edx, %ebx\n" /* ci */
         "leal (%eax, %ebx, 2), %ebx\n" /* ci */
-        "movl 0x195f68c, %edx\n"
+        "movl imp_level_bgs, %edx\n"
         "leal 0xb3bfc(%edx, %ebx, 8), %ebx\n" /* ci */
-        "movl 0x195edb4, %eax\n" /* line 1326 */
+        "movl imp_bgs, %eax\n" /* line 1326 */
         "movl %edx, (%eax)\n"
-        "movl 0x195f6a0, %eax\n" /* line 1327 */
+        "movl imp_level, %eax\n" /* line 1327 */
         "movl 0x1f4(%eax), %edi\n"
         "movl (%esi), %eax\n" /* self */
         "movl %eax, (%esp)\n"
@@ -508,7 +508,7 @@ void SpectatorThink(gentity_t *ent, usercmd_t *ucmd)
         "movl %eax, -0xf8(%ebp)\n"
         "movl 0x18(%edi), %eax\n" /* ucmd */
         "movl %eax, -0xf4(%ebp)\n"
-        "movl $0x800811, -0xd4(%ebp)\n" /* line 293 */
+        "movl $s_debugFrameGlob+59793, -0xd4(%ebp)\n" /* line 293 */
         "movb $1, -0x2c(%ebp)\n" /* line 294 */
         "movl %ebx, (%esp)\n" /* line 296 */
         "calll Pmove\n"
@@ -668,7 +668,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
         "testb $4, %al\n" /* line 1178 */
         "jne .Lf1a0862_001a09e2\n"
         ".Lf1a0862_001a09ce:\n"
-        "orl $0x1000000, %edx\n" /* line 1179 */
+        "orl $g_effectVisArray+4352, %edx\n" /* line 1179 */
         "movl %edx, 0xc(%esi)\n" /* client */
         /* } scope */
         ".Lf1a0862_001a09d7:\n"
@@ -714,7 +714,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
         "movl 0xc(%esi), %edx\n" /* line 1142 | client */
         "andl $0xff7fffff, %edx\n"
         "movl %edx, %eax\n" /* line 1143 */
-        "orl $0x400000, %eax\n"
+        "orl $scrMemTreeGlob+39168, %eax\n"
         "movl %eax, 0xc(%esi)\n" /* client */
         "movl 0x26ac(%esi), %ecx\n" /* line 1145 | client */
         "testl %ecx, %ecx\n"
@@ -785,11 +785,11 @@ void G_TouchTriggers(gentity_t *ent)
         "movss 0x14(%edx), %xmm0\n"
         "subss %xmm3, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n" /* mins */
-        "movss 0x313c64, %xmm2\n" /* line 249 */
+        "movss range+4, %xmm2\n" /* line 249 */
         "movss 4(%eax), %xmm0\n"
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n"
-        "movss 0x313c68, %xmm1\n" /* line 250 */
+        "movss range+8, %xmm1\n" /* line 250 */
         "movss 8(%eax), %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
@@ -843,7 +843,7 @@ void G_TouchTriggers(gentity_t *ent)
         "leal -0x24(%ebp), %edx\n" /* mins */
         "movl %edx, (%esp)\n"
         "calll ShrinkBoundsToHeight\n"
-        "movl 0x195f6b4, %edx\n" /* line 203 */
+        "movl imp_entityHandlers, %edx\n" /* line 203 */
         "movzbl 0x166(%ebx), %eax\n" /* i */
         "leal (%eax, %eax, 4), %eax\n"
         "movl 0xc(%edx, %eax, 8), %eax\n"
@@ -878,14 +878,14 @@ void G_TouchTriggers(gentity_t *ent)
         "addl $1, %ebx\n" /* line 205 | i */
         "cmpl %ebx, -0x1040(%ebp)\n" /* i, num */
         "je .Lf1a0ada_001a0af5\n"
-        "movl 0x195f6b4, %edx\n"
+        "movl imp_entityHandlers, %edx\n"
         ".Lf1a0ada_001a0ca5:\n"
         "movl -0x1030(%ebp, %ebx, 4), %eax\n" /* line 207 */
         "leal (%eax, %eax, 4), %eax\n"
         "leal (, %eax, 8), %esi\n" /* hit */
         "subl %eax, %esi\n" /* hit */
         "shll $4, %esi\n" /* hit */
-        "addl 0x195f688, %esi\n" /* hit */
+        "addl imp_g_entities, %esi\n" /* hit */
         "movzbl 0x166(%esi), %eax\n" /* line 210 | hit */
         "leal (%eax, %eax, 4), %eax\n"
         "movl 0xc(%edx, %eax, 8), %edi\n" /* hitTouch */
@@ -894,7 +894,7 @@ void G_TouchTriggers(gentity_t *ent)
         ".Lf1a0ada_001a0cd7:\n"
         "cmpl $3, 4(%esi)\n" /* line 216 | hit */
         "jne .Lf1a0ada_001a0c4a\n"
-        "movl 0x195f6a0, %eax\n" /* line 218 */
+        "movl imp_level, %eax\n" /* line 218 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* hit */
@@ -913,7 +913,7 @@ void G_TouchTriggers(gentity_t *ent)
         "movl %ecx, (%esp)\n"
         "calll Scr_AddEntity\n"
         "movl $1, 8(%esp)\n" /* line 231 */
-        "movl 0x195f5bc, %edx\n"
+        "movl imp_scr_const, %edx\n"
         "movzwl 0x52(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n" /* hit */
@@ -921,7 +921,7 @@ void G_TouchTriggers(gentity_t *ent)
         "movl %esi, (%esp)\n" /* line 232 | hit */
         "calll Scr_AddEntity\n"
         "movl $1, 8(%esp)\n" /* line 233 */
-        "movl 0x195f5bc, %ecx\n"
+        "movl imp_scr_const, %ecx\n"
         "movzwl 0x52(%ecx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* ent */
@@ -965,8 +965,8 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "cmpl $0x63, %ecx\n" /* line 393 */
         "jg .Lf1a0d88_001a0e84\n"
         "cvtsi2ssl %ecx, %xmm1\n" /* line 396 */
-        "mulss 0x2ed738, %xmm1\n" /* 0.009999999776482582f */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 398 | 0.0f */
+        "mulss lit4_002ed738, %xmm1\n" /* 0.009999999776482582f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 398 | 0.0f */
         "jp .Lf1a0d88_001a0de4\n"
         "je .Lf1a0d88_001a0e40\n"
         ".Lf1a0d88_001a0de4:\n"
@@ -999,7 +999,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "leal -0x9e(%edx), %eax\n" /* line 409 */
         "cmpl $0x27, %eax\n"
         "ja .Lf1a0d88_001a0e40\n"
-        "jmpl *0x303120(, %eax, 4)\n"
+        "jmpl *sign+32(, %eax, 4)\n"
         /* } scope */
         ".Lf1a0d88_001a0e7c:\n"
         "addl $0x3c, %esp\n" /* line 477 */
@@ -1010,7 +1010,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "retl\n"
         /* { scope 1 */
         ".Lf1a0d88_001a0e84:\n"
-        "movss 0x2ed808, %xmm1\n" /* line 393 | 1.100000023841858f */
+        "movss lit4_002ed808, %xmm1\n" /* line 393 | 1.100000023841858f */
         "jmp .Lf1a0d88_001a0de4\n"
         "movl %edi, (%esp)\n" /* line 426 | ent */
         "calll FireWeaponMelee\n"
@@ -1033,46 +1033,46 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll player_die\n"
         "jmp .Lf1a0d88_001a0e40\n"
-        "movl 0x195f6e0, %eax\n" /* line 415 */
+        "movl imp_g_antilag, %eax\n" /* line 415 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1a0d88_001a0feb\n"
-        "movl 0x195f6a0, %eax\n" /* line 421 */
+        "movl imp_level, %eax\n" /* line 421 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* ent */
         "calll FireWeaponAntiLag\n"
         "jmp .Lf1a0d88_001a0e40\n"
         "movl $0, 8(%esp)\n" /* line 461 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x6a(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
         "movl $0, 8(%esp)\n" /* line 456 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x68(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
         "movl $0, 8(%esp)\n" /* line 451 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x66(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
         "movl $0, 8(%esp)\n" /* line 446 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x64(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
         "movl $0, 8(%esp)\n" /* line 441 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x62(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* ent */
@@ -1124,23 +1124,23 @@ void P_DamageFeedback(gentity_t *player)
         "cmpl $0x7f, %eax\n" /* line 47 */
         "jle .Lf1a1002_001a1146\n"
         "movl $0x7f, %esi\n" /* damage */
-        "movss 0x2ed718, %xmm1\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm1\n" /* 127.0f */
         ".Lf1a1002_001a1070:\n"
         "movaps %xmm1, %xmm0\n" /* line 51 */
         "addss 0x5d4(%ebx), %xmm0\n" /* client */
         "movss %xmm0, 0x5d4(%ebx)\n" /* client */
-        "ucomiss 0x2ed5d4, %xmm0\n" /* line 52 | 255.0f */
+        "ucomiss lit4_002ed5d4, %xmm0\n" /* line 52 | 255.0f */
         "jbe .Lf1a1002_001a1096\n"
         "movl $0x437f0000, 0x5d4(%ebx)\n" /* line 53 | client */
         ".Lf1a1002_001a1096:\n"
-        "mulss 0x2ed724, %xmm1\n" /* line 57 | 0.20000000298023224f */
+        "mulss lit4_002ed724, %xmm1\n" /* line 57 | 0.20000000298023224f */
         "movss %xmm1, -0x50(%ebp)\n" /* kick */
-        "ucomiss 0x2ed6d4, %xmm1\n" /* line 59 | 5.0f */
+        "ucomiss lit4_002ed6d4, %xmm1\n" /* line 59 | 5.0f */
         "jae .Lf1a1002_001a114f\n"
         "jp .Lf1a1002_001a114f\n"
-        "movss 0x2ed6d4, %xmm0\n" /* 5.0f */
+        "movss lit4_002ed6d4, %xmm0\n" /* 5.0f */
         "movss %xmm0, -0x50(%ebp)\n" /* kick */
-        "movss 0x2ed920, %xmm0\n" /* -5.0f */
+        "movss lit4_002ed920, %xmm0\n" /* -5.0f */
         "movss %xmm0, -0x4c(%ebp)\n"
         ".Lf1a1002_001a10d0:\n"
         "movl 0x27f0(%ebx), %eax\n" /* line 66 | client */
@@ -1155,7 +1155,7 @@ void P_DamageFeedback(gentity_t *player)
         "movl $0, 0x27f0(%ebx)\n" /* line 74 | client */
         ".Lf1a1002_001a1113:\n"
         "addl $1, 0x11c(%ebx)\n" /* line 89 | client */
-        "movl 0x195f6a0, %eax\n" /* line 90 */
+        "movl imp_level, %eax\n" /* line 90 */
         "movl 0x1ec(%eax), %eax\n"
         "subl $0x14, %eax\n"
         "movl %eax, 0x2840(%ebx)\n" /* client */
@@ -1175,9 +1175,9 @@ void P_DamageFeedback(gentity_t *player)
         "jmp .Lf1a1002_001a1070\n"
         ".Lf1a1002_001a114f:\n"
         "movaps %xmm1, %xmm0\n"
-        "ucomiss 0x2ed5f8, %xmm1\n" /* line 61 | 90.0f */
+        "ucomiss lit4_002ed5f8, %xmm1\n" /* line 61 | 90.0f */
         "ja .Lf1a1002_001a124f\n"
-        "xorps 0x3031c0, %xmm0\n"
+        "xorps sign+192, %xmm0\n"
         "movss %xmm0, -0x4c(%ebp)\n"
         "movl 0x27f0(%ebx), %eax\n" /* line 66 | client */
         "testl %eax, %eax\n"
@@ -1214,9 +1214,9 @@ void P_DamageFeedback(gentity_t *player)
         "mulss -0x50(%ebp), %xmm1\n" /* kick */
         "movss %xmm1, 0x2848(%ebx)\n" /* client */
         "movss -0x24(%ebp), %xmm0\n" /* line 85 | angles */
-        "movss 0x2ed638, %xmm2\n" /* 360.0f */
+        "movss lit4_002ed638, %xmm2\n" /* 360.0f */
         "divss %xmm2, %xmm0\n"
-        "movss 0x2ed8b0, %xmm1\n" /* 256.0f */
+        "movss lit4_002ed8b0, %xmm1\n" /* 256.0f */
         "mulss %xmm1, %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, 0x124(%ebx)\n" /* client */
@@ -1227,9 +1227,9 @@ void P_DamageFeedback(gentity_t *player)
         "movl %eax, 0x120(%ebx)\n" /* client */
         "jmp .Lf1a1002_001a1113\n"
         ".Lf1a1002_001a124f:\n"
-        "movss 0x2ed5f8, %xmm0\n" /* line 61 | 90.0f */
+        "movss lit4_002ed5f8, %xmm0\n" /* line 61 | 90.0f */
         "movss %xmm0, -0x50(%ebp)\n" /* kick */
-        "movss 0x2ed660, %xmm0\n" /* -90.0f */
+        "movss lit4_002ed660, %xmm0\n" /* -90.0f */
         "movss %xmm0, -0x4c(%ebp)\n"
         "jmp .Lf1a1002_001a10d0\n"
     );
@@ -1271,12 +1271,12 @@ qboolean StuckInClient(gentity_t *self)
         "retl\n"
         /* { scope 1 */
         ".Lf1a126e_001a12ae:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1244 */
+        "movl imp_level, %eax\n" /* line 1244 */
         "movl 0x1e4(%eax), %edi\n"
         "testl %edi, %edi\n"
         "jle .Lf1a126e_001a12a4\n"
         "xorl %ecx, %ecx\n" /* line 1240 */
-        "movl 0x195f688, %edx\n"
+        "movl imp_g_entities, %edx\n"
         "movl %edx, %esi\n"
         "addl $0xfc, %edx\n"
         ".Lf1a126e_001a12cd:\n"
@@ -1372,7 +1372,7 @@ qboolean StuckInClient(gentity_t *self)
         "pxor %xmm3, %xmm3\n"
         "ucomiss %xmm3, %xmm0\n"
         "jbe .Lf1a126e_001a1547\n"
-        "movl 0x195f6f8, %eax\n" /* line 1287 */
+        "movl imp_g_playerCollisionEjectSpeed, %eax\n" /* line 1287 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm2\n"
         ".Lf1a126e_001a146d:\n"
@@ -1385,14 +1385,14 @@ qboolean StuckInClient(gentity_t *self)
         "sqrtss %xmm0, %xmm0\n"
         "ucomiss %xmm3, %xmm0\n"
         "jbe .Lf1a126e_001a153f\n"
-        "movl 0x195f6f8, %eax\n" /* line 1288 */
+        "movl imp_g_playerCollisionEjectSpeed, %eax\n" /* line 1288 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm1\n"
         ".Lf1a126e_001a14a2:\n"
-        "ucomiss 0x2ed5f0, %xmm2\n" /* line 1291 | 9.999999747378752e-05f */
+        "ucomiss lit4_002ed5f0, %xmm2\n" /* line 1291 | 9.999999747378752e-05f */
         "jae .Lf1a126e_001a14c4\n"
         "jp .Lf1a126e_001a14c4\n"
-        "movss 0x2ed5f0, %xmm0\n" /* 9.999999747378752e-05f */
+        "movss lit4_002ed5f0, %xmm0\n" /* 9.999999747378752e-05f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1a126e_001a14c4\n"
         "cvtsi2ssl 0x50(%ecx), %xmm2\n" /* line 1293 */
@@ -1409,7 +1409,7 @@ qboolean StuckInClient(gentity_t *self)
         "orl $0x200, 0xc(%eax)\n"
         "movl 0x158(%ebx), %eax\n" /* line 1301 | self */
         "movaps %xmm1, %xmm0\n" /* scale */
-        "xorps 0x3031d0, %xmm0\n" /* scale */
+        "xorps sign+208, %xmm0\n" /* scale */
         /* { scope 2 */
         "movaps %xmm0, %xmm1\n" /* line 86 */
         "mulss -0x20(%ebp), %xmm1\n" /* vDelta */
@@ -1516,7 +1516,7 @@ void G_PlayerStateToEntityStateExtrapolate(qboolean snap)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $4, %eax\n"
-        "addl 0x195f688, %eax\n"
+        "addl imp_g_entities, %eax\n"
         "movl 0x158(%eax), %edx\n"
         "leal 0x62(%ecx), %eax\n" /* line 1608 */
         "cmpb $0x11, %al\n"
@@ -1535,14 +1535,14 @@ void G_PlayerStateToEntityStateExtrapolate(qboolean snap)
         /* } scope */
         /* } scope */
         ".Lf1a1550_001a1684:\n"
-        "movl 0x195f6e4, %edx\n" /* line 581 */
+        "movl imp_singleClientEvents, %edx\n" /* line 581 */
         "movl (%edx), %eax\n"
         "testl %eax, %eax\n"
         "jle .Lf1a1550_001a17e8\n"
         "cmpl %eax, %ebx\n" /* line 583 | event */
         "je .Lf1a1550_001a16b5\n"
         "xorl %ecx, %ecx\n" /* line 584 */
-        "movl 0x195f6e4, %edx\n"
+        "movl imp_singleClientEvents, %edx\n"
         ".Lf1a1550_001a16a0:\n"
         "addl $1, %ecx\n" /* line 581 */
         "movl 4(%edx), %eax\n"
@@ -1638,7 +1638,7 @@ void G_PlayerStateToEntityStateExtrapolate(qboolean snap)
         ".Lf1a1550_001a17e8:\n"
         "xorl %ecx, %ecx\n" /* line 581 */
         ".Lf1a1550_001a17ea:\n"
-        "movl 0x195f6e4, %eax\n" /* line 586 */
+        "movl imp_singleClientEvents, %eax\n" /* line 586 */
         "movl (%eax, %ecx, 4), %eax\n"
         "testl %eax, %eax\n"
         "jns .Lf1a1550_001a16b5\n"
@@ -1679,17 +1679,17 @@ void G_PlayerStateToEntityStateExtrapolate(qboolean snap)
         "cvtsi2ssl %edx, %xmm1\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "divss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 641 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 641 | 0.0f */
         "jb .Lf1a1550_001a198c\n"
         ".Lf1a1550_001a189e:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 643 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 643 | 1.0f */
         "minss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"
         ".Lf1a1550_001a18ad:\n"
         "movl 0x104(%edi), %ecx\n" /* line 645 | ps */
         "testl %ecx, %ecx\n"
         "jne .Lf1a1550_001a18c6\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 646 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 646 | 1.0f */
         "subss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n"
         ".Lf1a1550_001a18c6:\n"
@@ -1779,7 +1779,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "retl\n"
         /* { scope 1: duration */
         ".Lf1a199c_001a19c8:\n"
-        "movl 0x195f6a0, %ecx\n" /* line 732 */
+        "movl imp_level, %ecx\n" /* line 732 */
         "movl 0x1ec(%ecx), %eax\n"
         "leal 0xc8(%eax), %edx\n"
         "cmpl %edx, (%ebx)\n" /* ucmd */
@@ -1850,7 +1850,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "movl %eax, -0x1d8(%ebp)\n"
         "movl 0x26fc(%edi), %eax\n" /* client */
         "movl %eax, -0x1d4(%ebp)\n"
-        "movl $0x810011, %eax\n" /* line 796 */
+        "movl $s_debugFrameGlob+123281, %eax\n" /* line 796 */
         "cmpl $6, 4(%edi)\n" /* client */
         "movl $0x2810011, %edx\n"
         "cmovll %edx, %eax\n"
@@ -1877,7 +1877,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "movl %edi, -0x78(%ebp)\n" /* line 813 | client, vs */
         "movl 0x2840(%edi), %eax\n" /* line 814 | client */
         "movl %eax, -0x74(%ebp)\n"
-        "movl 0x195f6a0, %eax\n" /* line 815 */
+        "movl imp_level, %eax\n" /* line 815 */
         "movl 0x1ec(%eax), %edx\n"
         "movl %edx, -0x70(%ebp)\n"
         "movl 0x2848(%edi), %eax\n" /* line 816 | client */
@@ -1889,7 +1889,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "calll BG_GetSpeed\n"
         "fstps -0x64(%ebp)\n"
         "cvtsi2ssl %esi, %xmm0\n" /* line 819 | msec */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x23c(%ebp)\n"
         "movss %xmm0, -0x60(%ebp)\n"
         "movl 0x287c(%edi), %eax\n" /* line 820 | client */
@@ -2036,14 +2036,14 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "movl -0x228(%ebp), %ecx\n" /* line 907 | oldEventSequence */
         "cmpl 0xa4(%ebx), %ecx\n" /* ucmd */
         "je .Lf1a199c_001a1e9e\n"
-        "movl 0x195f6a0, %eax\n" /* line 909 */
+        "movl imp_level, %eax\n" /* line 909 */
         "movl 0x1ec(%eax), %edx\n"
         "movl 8(%ebp), %esi\n" /* ent, msec */
         "movl %edx, 0x178(%esi)\n" /* msec */
         "movl 0x1ec(%eax), %eax\n" /* line 910 */
         "movl %eax, 0x154(%esi)\n" /* msec */
         ".Lf1a199c_001a1e9e:\n"
-        "movl 0x195f6dc, %eax\n" /* line 913 */
+        "movl imp_g_smoothClients, %eax\n" /* line 913 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a199c_001a2085\n"
@@ -2125,7 +2125,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "movl -0x228(%ebp), %edx\n" /* oldEventSequence */
         "cmpl 0xa4(%eax), %edx\n"
         "je .Lf1a199c_001a224a\n"
-        "movl 0x195f6a0, %eax\n" /* line 950 */
+        "movl imp_level, %eax\n" /* line 950 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x178(%esi)\n" /* msec */
         "movl 8(%ebp), %ecx\n" /* ent */
@@ -2170,7 +2170,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         /* { scope 1: duration */
         ".Lf1a199c_001a204e:\n"
         "movl 8(%ebp), %eax\n" /* line 746 | ent */
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "cmpl %eax, 0xcc(%edi)\n" /* client */
@@ -2233,7 +2233,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "leal (, %eax, 8), %ebx\n" /* owner */
         "subl %eax, %ebx\n" /* owner */
         "shll $4, %ebx\n" /* owner */
-        "addl 0x195f688, %ebx\n" /* owner */
+        "addl imp_g_entities, %ebx\n" /* owner */
         "calll G_Spawn\n" /* line 671 */
         "movl %eax, -0x21c(%ebp)\n" /* ent */
         "movl %ebx, 0x18c(%eax)\n" /* line 672 | owner */
@@ -2275,9 +2275,9 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "calll G_SetOrigin\n"
         "movl %esi, (%esp)\n" /* line 684 */
         "calll SV_LinkEntity\n"
-        "movl 0x195f6ec, %eax\n" /* line 689 */
+        "movl imp_g_mantleBlockTimeBuffer, %eax\n" /* line 689 */
         "movl (%eax), %edx\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl 0x1ec(%eax), %ecx\n"
         "addl %ecx, -0x220(%ebp)\n" /* duration */
         "movl 8(%edx), %ebx\n" /* owner */
@@ -2348,9 +2348,9 @@ void ClientThink(int clientNum)
         "leal (, %eax, 8), %ebx\n" /* ent */
         "subl %eax, %ebx\n" /* ent */
         "shll $4, %ebx\n" /* ent */
-        "addl 0x195f688, %ebx\n" /* ent */
-        "movl 0x195edb4, %esi\n" /* line 972 */
-        "movl 0x195f68c, %eax\n"
+        "addl imp_g_entities, %ebx\n" /* ent */
+        "movl imp_bgs, %esi\n" /* line 972 */
+        "movl imp_level_bgs, %eax\n"
         "movl %eax, (%esi)\n"
         "movl 0x158(%ebx), %eax\n" /* line 974 | ent */
         "movl 0x26c8(%eax), %edx\n"
@@ -2373,10 +2373,10 @@ void ClientThink(int clientNum)
         "movl %ecx, (%esp)\n"
         "calll SV_GetUsercmd\n"
         "movl 0x158(%ebx), %edx\n" /* line 979 | ent */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x27b8(%edx)\n"
-        "movl 0x195f6f4, %eax\n" /* line 981 */
+        "movl imp_g_synchronousClients, %eax\n" /* line 981 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1a235e_001a2437\n"
@@ -2423,7 +2423,7 @@ void ClientEndFrame(gentity_t *ent)
         "shll $4, %ebx\n" /* tagName */
         "subl %edx, %ebx\n" /* tagName */
         "leal (%eax, %ebx, 2), %ebx\n" /* tagName */
-        "movl 0x195f68c, %eax\n"
+        "movl imp_level_bgs, %eax\n"
         "leal 0xb3bf0(%eax, %ebx, 8), %ebx\n" /* tagName */
         "leal 0xc(%ebx), %edi\n" /* tagName */
         "movl %edi, -0x5c(%ebp)\n" /* ci */
@@ -2603,7 +2603,7 @@ void ClientEndFrame(gentity_t *ent)
         "movb $1, 0x161(%edi)\n" /* line 1464 */
         "movl -0x64(%ebp), %ecx\n" /* line 1466 | client */
         "movl 0xc(%ecx), %eax\n"
-        "orl $0x800000, %eax\n"
+        "orl $s_debugFrameGlob+57728, %eax\n"
         "andl $0xfcffffff, %eax\n"
         "movl %eax, 0xc(%ecx)\n"
         "movl 0x273c(%ecx), %eax\n" /* line 1468 */
@@ -2618,7 +2618,7 @@ void ClientEndFrame(gentity_t *ent)
         "movl -0x64(%ebp), %ecx\n" /* line 1472 | client */
         "movl $0, 0x281c(%ecx)\n"
         "movl 0x283c(%ecx), %edx\n" /* line 1474 */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "cmpl 0x1ec(%eax), %edx\n"
         "jg .Lf1a2444_001a276b\n"
         "andl $0xffbfffff, 0xa0(%ecx)\n" /* line 1475 */
@@ -2629,17 +2629,17 @@ void ClientEndFrame(gentity_t *ent)
         "je .Lf1a2444_001a2a51\n"
         "movl $2, 4(%edi)\n" /* line 1479 */
         ".Lf1a2444_001a2783:\n"
-        "movl 0x195f6c8, %eax\n" /* line 1497 */
+        "movl imp_g_gravity, %eax\n" /* line 1497 */
         "movl (%eax), %eax\n"
         "cvttss2si 8(%eax), %eax\n"
         "movl -0x64(%ebp), %ecx\n" /* client */
         "movl %eax, 0x48(%ecx)\n"
-        "movl 0x195f6e8, %eax\n" /* line 1500 */
+        "movl imp_g_speed, %eax\n" /* line 1500 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x50(%ecx)\n"
         "movss 0x5d4(%ecx), %xmm0\n" /* line 1502 */
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "movss %xmm0, 0x2810(%ecx)\n"
         "movl 8(%ebp), %edi\n" /* line 1504 | ent */
         "movl %edi, (%esp)\n"
@@ -2648,7 +2648,7 @@ void ClientEndFrame(gentity_t *ent)
         "calll Player_UpdateCursorHints\n"
         "movl %edi, (%esp)\n" /* line 1508 */
         "calll P_DamageFeedback\n"
-        "movl 0x195f6a0, %eax\n" /* line 1511 */
+        "movl imp_level, %eax\n" /* line 1511 */
         "movl 0x1ec(%eax), %eax\n"
         "movl -0x64(%ebp), %edx\n" /* client */
         "subl 0x27b8(%edx), %eax\n"
@@ -2661,7 +2661,7 @@ void ClientEndFrame(gentity_t *ent)
         "movl -0x64(%ebp), %edx\n" /* client */
         "movl %eax, 0x12c(%edx)\n"
         "movl $0, 0x84(%edi)\n" /* line 108 */
-        "movl 0x195f6dc, %eax\n" /* line 1526 */
+        "movl imp_g_smoothClients, %eax\n" /* line 1526 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1a2444_001a2a1b\n"
@@ -2703,10 +2703,10 @@ void ClientEndFrame(gentity_t *ent)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "testb $0x40, 0xa(%edx, %eax)\n"
         "je .Lf1a2444_001a2b8e\n"
-        "orl $0x800000, 0xa0(%edi)\n" /* line 1547 */
+        "orl $s_debugFrameGlob+57728, 0xa0(%edi)\n" /* line 1547 */
         ".Lf1a2444_001a28d7:\n"
         "movl 8(%ebp), %edi\n" /* line 1554 | ent */
         "cmpl $1, 4(%edi)\n"
@@ -2723,7 +2723,7 @@ void ClientEndFrame(gentity_t *ent)
         "shll $4, %eax\n"
         "subl %ecx, %eax\n"
         "leal (%edx, %eax, 2), %eax\n"
-        "movl 0x195f68c, %edx\n"
+        "movl imp_level_bgs, %edx\n"
         "leal 0xb3bf0(%edx, %eax, 8), %eax\n"
         "leal 0xc(%eax), %esi\n" /* ci */
         "movl 8(%ebp), %edi\n" /* line 1566 | ent */
@@ -2770,7 +2770,7 @@ void ClientEndFrame(gentity_t *ent)
         "testl $0x300, 0xa0(%eax)\n"
         "jne .Lf1a2444_001a2c0a\n"
         ".Lf1a2444_001a29c5:\n"
-        "movl 0x195f6f0, %eax\n" /* line 1584 */
+        "movl imp_g_debugLocDamage, %eax\n" /* line 1584 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1a2444_001a2ba0\n"
@@ -2845,17 +2845,17 @@ void ClientEndFrame(gentity_t *ent)
         "andl $0xffdfffbf, 0xa0(%edx)\n" /* line 1049 */
         "movl $0, 0xe4(%edx)\n" /* line 1051 */
         "movl $5, 4(%ecx)\n" /* line 1053 */
-        "movl 0x195f6a0, %ebx\n" /* line 1057 */
+        "movl imp_level, %ebx\n" /* line 1057 */
         "movl 0x200(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $5, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl 0x204(%ebx), %eax\n" /* line 1058 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $6, (%esp)\n"
@@ -2912,7 +2912,7 @@ void ClientEndFrame(gentity_t *ent)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl 4(%eax), %edx\n"
         "movl %edx, (%esp)\n"
         "calll turret_think_client\n"

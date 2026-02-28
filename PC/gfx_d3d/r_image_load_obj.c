@@ -15,8 +15,8 @@ extern int Image_CubemapFace(int face);
 extern void Image_UploadData(GfxImage *image, int imageFormat, int face, int mipLevel, byte *pixels);
 extern void Image_Create2DTexture(GfxImage *image, int width, int height, int depth, int flags, int format, int unused);
 extern GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTrack);
-static vec3_t lightGridLookupMatrix[3]; /* 0x2f2f20 */
-static const int faceAxis[6][3]; /* 0x2f2f60 */
+static vec3_t lightGridLookupMatrix[3]; /* lightGridLookupMatrix */
+static const int faceAxis[6][3]; /* faceAxis */
 
 jpeg_alloc Image_Generate2D(GfxImage *image, byte *pixels, int width, int height, int imageFormat);
 jpeg_alloc Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int depth, D3DFORMAT imageFormat);
@@ -56,7 +56,7 @@ jpeg_alloc Image_Generate3D(GfxImage *image, byte *pixels, int width, int height
 /* line 1180 */
 jpeg_alloc Image_BuildWaterMap(GfxImage *image)
 {
-    if (*(int *)((char *)(*(void **)0x195eec0) + 8) == 2) {
+    if (*(int *)((char *)(*(void **)imp_r_rendererInUse) + 8) == 2) {
         Image_Create2DTexture(image, *(unsigned short *)((char *)image + 0x18), *(unsigned short *)((char *)image + 0x1a), 1, 0x200, 0x16, 0);
     } else {
         Image_Create2DTexture(image, *(unsigned short *)((char *)image + 0x18), *(unsigned short *)((char *)image + 0x1a), 0, 0x200, 0x32, 0);
@@ -663,7 +663,7 @@ jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, c
         "movzbl 4(%edx), %eax\n" /* line 324 */
         "cmpl $0xd, %eax\n"
         "ja .Lffce9e_000fcec2\n"
-        "jmpl *0x2f2ee0(, %eax, 4)\n"
+        "jmpl *lightGridLookupMatrix+640(, %eax, 4)\n"
         ".Lffce9e_000fcec2:\n"
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
@@ -766,7 +766,7 @@ jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byt
         "movl %eax, (%esp)\n"
         "calll Vec3NormalizeTo\n"
         "fstp %st(0)\n"
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x109c(%eax), %eax\n"
         "leal 0xb8(%eax), %edx\n"
         /* { scope 2 */
@@ -784,11 +784,11 @@ jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byt
         "movl %eax, (%esp)\n"
         "calll Vec3Normalize\n"
         "fstp %st(0)\n"
-        "movss 0x2ed5d8, %xmm1\n" /* line 428 | 0.5f */
+        "movss lit4_002ed5d8, %xmm1\n" /* line 428 | 0.5f */
         "movss -0x18(%ebp), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x48(%ebp)\n"
@@ -800,7 +800,7 @@ jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byt
         "movss -0x1c(%ebp), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
@@ -811,7 +811,7 @@ jpeg_alloc Image_GetSunHalfAngleForVector(const vec_t *facePos, int ignored, byt
         "movss -0x20(%ebp), %xmm0\n" /* halfAngle */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm1, %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
@@ -851,8 +851,8 @@ jpeg_alloc Image_GetWaterColorForVector(const vec_t *facePos, int packedColor, b
         "movss -0x2c(%ebp), %xmm0\n"
         "movl 0xc(%ebp), %eax\n" /* line 1036 | packedColor */
         "movl %eax, -0xc(%ebp)\n" /* color */
-        "mulss 0x2ed5d4, %xmm0\n" /* line 428 | 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x1c(%ebp)\n"
@@ -894,8 +894,8 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         "movl %ebx, (%esp)\n" /* line 944 */
         "calll Vec3MajorAxis\n"
         "movss -0x24(%ebp, %eax, 4), %xmm0\n" /* line 945 */
-        "andps 0x2f2f50, %xmm0\n"
-        "movss 0x2ed5d0, %xmm7\n" /* 1.0f */
+        "andps lightGridLookupMatrix+48, %xmm0\n"
+        "movss lit4_002ed5d0, %xmm7\n" /* 1.0f */
         "movaps %xmm7, %xmm2\n"
         "divss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n" /* line 272 */
@@ -906,19 +906,19 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         "movss %xmm1, -0x20(%ebp)\n"
         "mulss -0x1c(%ebp), %xmm2\n" /* line 274 */
         "movss %xmm2, -0x1c(%ebp)\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* line 948 | 0.5f, lerp */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f, lerp */
+        "mulss lit4_002ed5d8, %xmm0\n" /* line 948 | 0.5f, lerp */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f, lerp */
         /* { scope 2 */
         "movaps %xmm0, %xmm5\n" /* line 924 */
         "mulss %xmm0, %xmm5\n"
-        "movss 0x2ed628, %xmm3\n" /* -2.0f */
+        "movss lit4_002ed628, %xmm3\n" /* -2.0f */
         "mulss %xmm3, %xmm0\n"
-        "movss 0x2ed720, %xmm6\n" /* 3.0f */
+        "movss lit4_002ed720, %xmm6\n" /* 3.0f */
         "addss %xmm6, %xmm0\n"
         "mulss %xmm0, %xmm5\n"
         /* } scope */
-        "mulss 0x2ed5d8, %xmm1\n" /* line 949 | 0.5f, lerp */
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f, lerp */
+        "mulss lit4_002ed5d8, %xmm1\n" /* line 949 | 0.5f, lerp */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f, lerp */
         /* { scope 2 */
         "movaps %xmm1, %xmm4\n" /* line 924 */
         "mulss %xmm1, %xmm4\n"
@@ -930,9 +930,9 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         "testl %ebx, %ebx\n"
         "jne .Lffd178_000fd3bd\n"
         "movaps %xmm2, %xmm0\n" /* line 951 */
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         ".Lffd178_000fd262:\n"
-        "addss 0x2ed5d8, %xmm0\n" /* line 953 | 0.5f, lerp */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 953 | 0.5f, lerp */
         /* { scope 2 */
         "movaps %xmm0, %xmm2\n" /* line 924 */
         "mulss %xmm0, %xmm2\n"
@@ -954,8 +954,8 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         "mulss %xmm2, %xmm5\n" /* line 958 */
         "movss %xmm5, -0x34(%ebp)\n"
         "mulss %xmm1, %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm3, -0x58(%ebp)\n"
         "calll floorf\n"
@@ -971,8 +971,8 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         "movb %dl, -0x29(%ebp)\n"
         /* } scope */
         ".Lffd178_000fd2f4:\n"
-        "mulss 0x2ed5d4, %xmm3\n" /* line 428 | 255.0f */
-        "addss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm3\n" /* line 428 | 255.0f */
+        "addss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "movss %xmm3, (%esp)\n"
         "calll floorf\n"
         "fstps -0x3c(%ebp)\n"
@@ -986,9 +986,9 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         "movl %edx, %edi\n"
         /* } scope */
         ".Lffd178_000fd32a:\n"
-        "movss 0x2ed5d4, %xmm0\n" /* line 428 | 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
         "mulss -0x30(%ebp), %xmm0\n"
-        "movss 0x2ed5d8, %xmm4\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm4\n" /* 0.5f */
         "addss %xmm0, %xmm4\n"
         "movss %xmm4, (%esp)\n"
         "calll floorf\n"
@@ -1003,9 +1003,9 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         "movl %edx, %ebx\n"
         /* } scope */
         ".Lffd178_000fd369:\n"
-        "movss 0x2ed5d4, %xmm0\n" /* line 428 | 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
         "mulss -0x34(%ebp), %xmm0\n"
-        "movss 0x2ed5d8, %xmm4\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm4\n" /* 0.5f */
         "addss %xmm0, %xmm4\n"
         "movss %xmm4, (%esp)\n"
         "calll floorf\n"
@@ -1035,7 +1035,7 @@ jpeg_alloc Image_GetLightGridWeightsForVector(const vec_t *facePos, int subMap, 
         /* { scope 1 */
         ".Lffd178_000fd3bd:\n"
         "movaps %xmm2, %xmm0\n" /* line 953 | lerp */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f, lerp */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f, lerp */
         "jmp .Lffd178_000fd262\n"
         ".Lffd178_000fd3cd:\n"
         "movl %edx, %eax\n" /* line 154 */
@@ -1100,11 +1100,11 @@ Bool Image_LoadFromFile(GfxImage *image)
         "subl $0x70, %esp\n"
         "movl 8(%ebp), %esi\n" /* image */
         /* { scope 1 */
-        "movl $0x226a2c, 0x14(%esp)\n" /* line 479 */
+        "movl $str_00226a2c, 0x14(%esp)\n" /* line 479 */
         "movl 0x20(%esi), %eax\n" /* image */
         "movl %eax, 0x10(%esp)\n"
-        "movl $0x226a34, 0xc(%esp)\n" /* "images/" */
-        "movl $0x226a3c, 8(%esp)\n" /* "%s%s%s" */
+        "movl $str_00226a34, 0xc(%esp)\n" /* "images/" */
+        "movl $str_00226a3c, 8(%esp)\n" /* "%s%s%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x4c(%ebp), %ebx\n" /* filepath */
         "movl %ebx, (%esp)\n"
@@ -1125,11 +1125,11 @@ Bool Image_LoadFromFile(GfxImage *image)
         "movb $1, 0xb(%esi)\n" /* line 505 | image */
         ".Lffd42c_000fd49b:\n"
         "movl (%edx), %eax\n" /* line 28 */
-        "andl $0xffffff, %eax\n"
+        "andl $g_effectVisArray+4351, %eax\n"
         "cmpl $0x695749, %eax\n"
         "je .Lffd42c_000fd4f1\n"
         "movl %ebx, 4(%esp)\n" /* line 30 */
-        "movl $0x2269c8, (%esp)\n" /* "^1ERROR: image '%s' is not an IW image
+        "movl $str_002269c8, (%esp)\n" /* "^1ERROR: image '%s' is not an IW image
 " */
         "calll Com_Printf\n"
         "movl -0xc(%ebp), %edx\n" /* imageFile */
@@ -1147,7 +1147,7 @@ Bool Image_LoadFromFile(GfxImage *image)
         /* { scope 1 */
         ".Lffd42c_000fd4cd:\n"
         "movl %ebx, 4(%esp)\n" /* line 494 */
-        "movl $0x226a64, (%esp)\n" /* "^1ERROR: image '%s' has 0 length
+        "movl $str_00226a64, (%esp)\n" /* "^1ERROR: image '%s' has 0 length
 " */
         "calll Com_Printf\n"
         "movl -0xc(%ebp), %eax\n" /* line 495 | imageFile */
@@ -1169,14 +1169,14 @@ Bool Image_LoadFromFile(GfxImage *image)
         "movzbl %al, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2269f0, (%esp)\n" /* "^1ERROR: image '%s' is version %i but should be version %i
+        "movl $str_002269f0, (%esp)\n" /* "^1ERROR: image '%s' is version %i but should be version %i
 " */
         "calll Com_Printf\n"
         "movl -0xc(%ebp), %edx\n" /* imageFile */
         "jmp .Lffd42c_000fd4bc\n"
         ".Lffd42c_000fd51d:\n"
         "movl %ebx, 4(%esp)\n" /* line 481 */
-        "movl $0x21fd24, (%esp)\n" /* "^1ERROR: filename '%s' too long
+        "movl $str_0021fd24, (%esp)\n" /* "^1ERROR: filename '%s' too long
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -1189,7 +1189,7 @@ Bool Image_LoadFromFile(GfxImage *image)
         /* { scope 1 */
         ".Lffd42c_000fd536:\n"
         "movl %ebx, 4(%esp)\n" /* line 488 */
-        "movl $0x226a44, (%esp)\n" /* "^1ERROR: image '%s' is missing
+        "movl $str_00226a44, (%esp)\n" /* "^1ERROR: image '%s' is missing
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -1214,7 +1214,7 @@ GfxImage * R_CreateWaterMap(char *name, int imageWidth, int imageHeight)
     image->width = (unsigned short)imageWidth;
     image->height = (unsigned short)imageHeight;
 
-    int *dvar = *(int **)0x195eec0;
+    int *dvar = *(int **)imp_r_rendererInUse;
     if (*(int *)(dvar + 2) == 2)
         Image_Create2DTexture(image, image->width, imageHeight, 1, 0x200, 0x16, 0);
     else
@@ -1236,7 +1236,7 @@ jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, in
         "subl $0x8c, %esp\n"
         /* { scope 1 */
         "cvtsi2ssl 0x10(%ebp), %xmm0\n" /* line 884 | res */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "divss %xmm0, %xmm3\n"
         "xorl %edi, %edi\n" /* pixelIndex */
         "movl $faceAxis, -0x4c(%ebp)\n"
@@ -1304,7 +1304,7 @@ jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, in
         "testl %esi, %esi\n" /* s */
         "jle .Lffd64a_000fd85f\n"
         "movl $0, -0x50(%ebp)\n" /* t */
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         ".Lffd64a_000fd76f:\n"
         "movss -0x3c(%ebp), %xmm0\n" /* line 288 */
         "mulss %xmm2, %xmm0\n"
@@ -1367,7 +1367,7 @@ jpeg_alloc Image_GenerateCubemapFunction(GfxImage *image, byte *pic, int res, in
         "jne .Lffd64a_000fd76f\n"
         ".Lffd64a_000fd85f:\n"
         "addl $0xc, -0x4c(%ebp)\n"
-        "cmpl $0x2f2fa8, -0x4c(%ebp)\n" /* line 886 */
+        "cmpl $faceAxis+72, -0x4c(%ebp)\n" /* line 886 */
         "jne .Lffd64a_000fd670\n"
         "movl 0x10(%ebp), %eax\n" /* line 918 | res */
         "imull %eax, %eax\n"
@@ -1518,18 +1518,18 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         /* { scope 1 */
         ".Lffd9f6_000fda12:\n"
         "cvtsi2ssl -0x1034(%ebp), %xmm0\n" /* line 792 | t */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
-        "movss 0x2ed878, %xmm1\n" /* 0.03125f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed878, %xmm1\n" /* 0.03125f */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm0, %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x20(%ebp)\n"
         "xorl %esi, %esi\n" /* s */
         "jmp .Lffd9f6_000fdbe1\n"
         ".Lffd9f6_000fda46:\n"
-        "subss 0x2ed5d0, %xmm1\n" /* line 743 | 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* line 743 | 1.0f */
         "movss %xmm1, -0x102c(%ebp)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 745 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 745 | 1.0f */
         "subss -0x102c(%ebp), %xmm1\n"
         "pxor %xmm2, %xmm2\n"
         ".Lffd9f6_000fda6a:\n"
@@ -1540,8 +1540,8 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "calll acosf\n"
         "fstps -0x1074(%ebp)\n"
         "movss -0x1074(%ebp), %xmm0\n"
-        "divss 0x2ed88c, %xmm0\n" /* -0.9553166031837463f */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "divss lit4_002ed88c, %xmm0\n" /* -0.9553166031837463f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "addss %xmm3, %xmm0\n"
         "pxor %xmm4, %xmm4\n" /* line 759 */
         "ucomiss %xmm0, %xmm4\n"
@@ -1551,10 +1551,10 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "ucomiss %xmm3, %xmm0\n" /* line 761 */
         "jbe .Lffd9f6_000fdd04\n"
         "movl $0, -0x1030(%ebp)\n"
-        "movss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         ".Lffd9f6_000fdadf:\n"
         "leal (%edi, %esi, 4), %ebx\n" /* line 771 */
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x1058(%ebp)\n"
         "movss %xmm2, -0x1068(%ebp)\n"
@@ -1564,8 +1564,8 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "movb %al, (%ebx)\n"
         "movss -0x1068(%ebp), %xmm2\n"
         "mulss -0x1030(%ebp), %xmm2\n"
-        "mulss 0x2ed5d4, %xmm2\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm2\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "movss %xmm2, (%esp)\n"
         "calll floorf\n"
         "fstps -0x103c(%ebp)\n"
@@ -1573,8 +1573,8 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "movb %al, 1(%ebx)\n"
         "movss -0x1058(%ebp), %xmm1\n"
         "mulss -0x1030(%ebp), %xmm1\n"
-        "mulss 0x2ed5d4, %xmm1\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm1\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss %xmm1, (%esp)\n"
         "calll floorf\n"
         "fstps -0x1040(%ebp)\n"
@@ -1582,9 +1582,9 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "movb %al, 2(%ebx)\n"
         "movss -0x1030(%ebp), %xmm0\n"
         "mulss -0x102c(%ebp), %xmm0\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* 255.0f */
         "mulss %xmm0, %xmm1\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "addss %xmm1, %xmm3\n"
         "movss %xmm3, (%esp)\n"
         "calll floorf\n"
@@ -1594,19 +1594,19 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "addl $1, %esi\n" /* line 793 | s */
         "cmpl $0x20, %esi\n" /* s */
         "je .Lffd9f6_000fdd3b\n"
-        "movss 0x2ed878, %xmm1\n" /* 0.03125f */
+        "movss lit4_002ed878, %xmm1\n" /* 0.03125f */
         ".Lffd9f6_000fdbe1:\n"
         "cvtsi2ssl %esi, %xmm0\n" /* line 795 | s */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm0, %xmm0\n"
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x24(%ebp)\n" /* dir */
         "movss -0x20(%ebp), %xmm1\n" /* line 126 */
         "mulss %xmm0, %xmm0\n" /* line 796 */
         "mulss %xmm1, %xmm1\n"
         "addss %xmm1, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
         "pxor %xmm3, %xmm3\n" /* line 797 */
@@ -1622,25 +1622,25 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "calll atan2\n"
         "fstpl -0x1070(%ebp)\n"
         "movsd -0x1070(%ebp), %xmm0\n"
-        "mulsd 0x307cf8, %xmm0\n" /* 0.477464829275686 */
-        "subsd 0x307d00, %xmm0\n" /* 0.75 */
+        "mulsd lit8_00307cf8, %xmm0\n" /* 0.477464829275686 */
+        "subsd lit8_00307d00, %xmm0\n" /* 0.75 */
         "cvtsd2ss %xmm0, %xmm1\n"
         "pxor %xmm0, %xmm0\n" /* line 729 */
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lffd9f6_000fdcea\n"
-        "ucomiss 0x2ed720, %xmm1\n" /* line 731 | 3.0f */
+        "ucomiss lit4_002ed720, %xmm1\n" /* line 731 | 3.0f */
         "jbe .Lffd9f6_000fdc8e\n"
-        "subss 0x2ed720, %xmm1\n" /* line 732 | 3.0f */
+        "subss lit4_002ed720, %xmm1\n" /* line 732 | 3.0f */
         ".Lffd9f6_000fdc8e:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 734 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 734 | 1.0f */
         "ucomiss %xmm1, %xmm3\n"
         "ja .Lffd9f6_000fdcd4\n"
-        "movss 0x2ed62c, %xmm0\n" /* line 741 | 2.0f */
+        "movss lit4_002ed62c, %xmm0\n" /* line 741 | 2.0f */
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lffd9f6_000fda46\n"
         "movaps %xmm1, %xmm2\n" /* line 750 */
-        "subss 0x2ed62c, %xmm2\n" /* 2.0f */
-        "movss 0x2ed5d0, %xmm1\n" /* line 753 | 1.0f */
+        "subss lit4_002ed62c, %xmm2\n" /* 2.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 753 | 1.0f */
         "subss %xmm2, %xmm1\n"
         "movss %xmm1, -0x102c(%ebp)\n"
         "pxor %xmm1, %xmm1\n"
@@ -1651,17 +1651,17 @@ jpeg_alloc Image_LoadLightmapWeights(GfxImage *image)
         "movl $0, -0x102c(%ebp)\n"
         "jmp .Lffd9f6_000fda6a\n"
         ".Lffd9f6_000fdcea:\n"
-        "addss 0x2ed720, %xmm1\n" /* line 730 | 3.0f */
+        "addss lit4_002ed720, %xmm1\n" /* line 730 | 3.0f */
         "jmp .Lffd9f6_000fdc8e\n"
         ".Lffd9f6_000fdcf4:\n"
         "movss %xmm3, -0x1030(%ebp)\n" /* line 759 */
         "movaps %xmm4, %xmm0\n"
         "jmp .Lffd9f6_000fdadf\n"
         ".Lffd9f6_000fdd04:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 761 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 761 | 1.0f */
         "subss %xmm0, %xmm3\n"
         "movss %xmm3, -0x1030(%ebp)\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "jmp .Lffd9f6_000fdadf\n"
         ".Lffd9f6_000fdd25:\n"
         "leal -0x24(%ebp), %eax\n" /* line 799 | dir */
@@ -1748,7 +1748,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         ".Lffddce_000fde31:\n"
         "movb %al, -0x6019(%ebp)\n" /* line 1169 | semantic */
         /* { scope 2: pic, color */
-        "movl $0x225570, %edi\n" /* line 1078 */
+        "movl $str_00225570, %edi\n" /* line 1078 */
         "movl $7, %ebx\n"
         "cld\n"
         "movl %edx, %esi\n"
@@ -1810,7 +1810,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         /* { scope 1: semantic */
         /* { scope 2: pic, color */
         ".Lffddce_000fdf1b:\n"
-        "movl $0x225578, %edi\n" /* line 1086 */
+        "movl $str_00225578, %edi\n" /* line 1086 */
         "movl $7, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -1840,7 +1840,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "jmp .Lffddce_000fde9d\n"
         /* } scope */
         ".Lffddce_000fdf83:\n"
-        "movl $0x22558c, %edi\n" /* line 1094 */
+        "movl $str_0022558c, %edi\n" /* line 1094 */
         "movl $0x13, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -1854,7 +1854,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         ".Lffddce_000fdfa6:\n"
         "testl %edx, %edx\n"
         "je .Lffddce_000fe07f\n"
-        "movl $0x2255a0, %edi\n" /* line 1102 */
+        "movl $str_002255a0, %edi\n" /* line 1102 */
         "movl $0xd, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -1918,7 +1918,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "jmp .Lffddce_000fdea4\n"
         /* } scope */
         ".Lffddce_000fe0c7:\n"
-        "movl $0x226a88, %edi\n" /* line 1110 */
+        "movl $str_00226a88, %edi\n" /* line 1110 */
         "movl $9, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -1945,7 +1945,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "calll R_GenerateOutdoorImage\n"
         "jmp .Lffddce_000fde24\n"
         ".Lffddce_000fe122:\n"
-        "movl $0x2255d8, %edi\n" /* line 1118 */
+        "movl $str_002255d8, %edi\n" /* line 1118 */
         "movl $0x11, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -1972,7 +1972,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "calll Image_LoadLightmapWeights\n"
         "jmp .Lffddce_000fde24\n"
         ".Lffddce_000fe17d:\n"
-        "movl $0x2255b0, %edi\n" /* line 1126 */
+        "movl $str_002255b0, %edi\n" /* line 1126 */
         "movl $0x13, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -2009,7 +2009,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "jmp .Lffddce_000fde24\n"
         /* } scope */
         ".Lffddce_000fe1fa:\n"
-        "movl $0x2255c4, %edi\n" /* line 1134 */
+        "movl $str_002255c4, %edi\n" /* line 1134 */
         "movl $0x13, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -2038,7 +2038,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "jmp .Lffddce_000fe1db\n"
         /* } scope */
         ".Lffddce_000fe25a:\n"
-        "movl $0x225580, %edi\n" /* line 1143 */
+        "movl $str_00225580, %edi\n" /* line 1143 */
         "movl $0xc, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -2066,8 +2066,8 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "movl -0x6020(%ebp), %ecx\n" /* color */
         "movb $0x33, %ch\n"
         "andl $0xff00ffff, %ecx\n"
-        "orl $0x400000, %ecx\n"
-        "andl $0xffffff, %ecx\n"
+        "orl $scrMemTreeGlob+39168, %ecx\n"
+        "andl $g_effectVisArray+4351, %ecx\n"
         "movl %ecx, -0x6020(%ebp)\n" /* color */
         "orl $0x4d000000, %ecx\n"
         "movl $Image_GetWaterColorForVector, 0x10(%esp)\n" /* line 1069 */
@@ -2080,7 +2080,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "jmp .Lffddce_000fde24\n"
         /* } scope */
         ".Lffddce_000fe300:\n"
-        "movl $0x224af8, %edi\n" /* line 1151 */
+        "movl $str_00224af8, %edi\n" /* line 1151 */
         "movl $0xe, %ebx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* name */
@@ -2118,7 +2118,7 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         ".Lffddce_000fe38d:\n"
         "movl 8(%ebp), %ecx\n" /* line 1160 | name */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x226a94, (%esp)\n" /* "ERROR: Unknown built-in image '%s'" */
+        "movl $str_00226a94, (%esp)\n" /* "ERROR: Unknown built-in image '%s'" */
         "calll Com_Printf\n"
         "xorl %esi, %esi\n"
         "jmp .Lffddce_000fde24\n"

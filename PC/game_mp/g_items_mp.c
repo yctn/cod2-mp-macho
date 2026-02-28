@@ -58,7 +58,7 @@ void G_GetItemClassname(const gitem_t *item, scr_string_t *out)
         "movl 0xc(%ebp), %edi\n" /* out */
         /* { scope 1 */
         "movl %esi, %ecx\n" /* line 730 | item */
-        "subl 0x195eda8, %ecx\n"
+        "subl imp_bg_itemlist, %ecx\n"
         "sarl $2, %ecx\n"
         "movl %ecx, %edx\n"
         "shll $5, %edx\n"
@@ -79,7 +79,7 @@ void G_GetItemClassname(const gitem_t *item, scr_string_t *out)
         "calll BG_GetWeaponDef\n"
         "movl (%eax), %eax\n" /* line 734 */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b4978, 8(%esp)\n" /* "weapon_%s" */
+        "movl $str_002b4978, 8(%esp)\n" /* "weapon_%s" */
         "movl $0x100, 4(%esp)\n"
         "leal -0x118(%ebp), %ebx\n" /* classname */
         "movl %ebx, (%esp)\n"
@@ -129,7 +129,7 @@ void SaveRegisteredWeapons(void)
         "pushl %ebx\n"
         "subl $0x201c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f6a0, %eax\n" /* line 1130 */
+        "movl imp_level, %eax\n" /* line 1130 */
         "movl $0, 0x35fc(%eax)\n"
         "movb $0, -0x2018(%ebp)\n" /* line 1133 | szConfigString */
         "xorl %ebx, %ebx\n" /* weapDef */
@@ -139,7 +139,7 @@ void SaveRegisteredWeapons(void)
         ".Lf1ad7f8_001ad829:\n"
         "testl %ebx, %ebx\n" /* line 1138 | weapDef */
         "je .Lf1ad7f8_001ad845\n"
-        "movl $0x217914, 8(%esp)\n" /* line 1139 */
+        "movl $str_00217914, 8(%esp)\n" /* line 1139 */
         "movl $0x2000, 4(%esp)\n"
         "movl %edi, (%esp)\n"
         "calll I_strncat\n"
@@ -182,9 +182,9 @@ void SaveRegisteredItems(void)
         "pushl %ebx\n"
         "subl $0x13c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f6a0, %eax\n" /* line 1163 */
+        "movl imp_level, %eax\n" /* line 1163 */
         "movl $0, 0x3600(%eax)\n"
-        "movl 0x195edac, %eax\n" /* line 1168 */
+        "movl imp_bg_numItems, %eax\n" /* line 1168 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x130(%ebp)\n"
         "testl %eax, %eax\n"
@@ -276,7 +276,7 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS)
         "movl itemRegistered(, %ebx, 4), %eax\n" /* line 1218 */
         "testl %eax, %eax\n"
         "jne .Lf1ad9a6_001ada50\n"
-        "movl 0x195f6a0, %eax\n" /* line 1224 */
+        "movl imp_level, %eax\n" /* line 1224 */
         "movl 0x1c(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf1ad9a6_001ad9fe\n"
@@ -284,14 +284,14 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS)
         "leal (%ebx, %ebx, 4), %eax\n" /* line 1228 | iItemIndex */
         "leal (%ebx, %eax, 2), %eax\n" /* iItemIndex */
         "shll $2, %eax\n"
-        "addl 0x195eda8, %eax\n"
+        "addl imp_bg_itemlist, %eax\n"
         "movl 0x14(%eax), %eax\n"
         "testl %eax, %eax\n" /* line 1229 */
         "je .Lf1ad9a6_001ada56\n"
         "cmpb $0, (%eax)\n"
         "je .Lf1ad9a6_001ada56\n"
         "movl %eax, 4(%esp)\n" /* line 1231 */
-        "movl $0x2b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
+        "movl $str_002b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -301,7 +301,7 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS)
         "leal (%ebx, %ebx, 4), %eax\n" /* line 1235 | iItemIndex */
         "leal (%ebx, %eax, 2), %eax\n" /* iItemIndex */
         "leal (, %eax, 4), %ebx\n" /* iItemIndex */
-        "addl 0x195eda8, %ebx\n" /* iItemIndex */
+        "addl imp_bg_itemlist, %ebx\n" /* iItemIndex */
         "movl 8(%ebx), %eax\n" /* iItemIndex */
         "testl %eax, %eax\n"
         "je .Lf1ad9a6_001ada2b\n"
@@ -317,7 +317,7 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS)
         "movl 0xc(%ebp), %edx\n" /* line 1240 | bUpdateCS */
         "testl %edx, %edx\n"
         "je .Lf1ad9a6_001ada50\n"
-        "movl 0x195f6a0, %eax\n" /* line 1241 */
+        "movl imp_level, %eax\n" /* line 1241 */
         "movl $1, 0x3600(%eax)\n"
         ".Lf1ad9a6_001ada50:\n"
         "addl $0x14, %esp\n" /* line 1242 */
@@ -326,9 +326,9 @@ void RegisterItem(int iItemIndex, qboolean bUpdateCS)
         "retl\n"
         /* { scope 1 */
         ".Lf1ad9a6_001ada56:\n"
-        "movl $0x2b4984, %eax\n" /* line 1229 */
+        "movl $str_002b4984, %eax\n" /* line 1229 */
         "movl %eax, 4(%esp)\n" /* line 1231 */
-        "movl $0x2b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
+        "movl $str_002b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -349,7 +349,7 @@ void G_RegisterWeapon(int weapIndex)
         "movl 8(%ebp), %edx\n" /* weapIndex */
         /* { scope 1 */
         "movl $1, itemRegistered(, %edx, 4)\n" /* line 1257 */
-        "movl 0x195f6a0, %eax\n" /* line 1258 */
+        "movl imp_level, %eax\n" /* line 1258 */
         "movl $1, 0x3600(%eax)\n"
         "movl $1, 0x35fc(%eax)\n" /* line 1259 */
         "movl %edx, (%esp)\n" /* line 1261 */
@@ -385,7 +385,7 @@ void G_RegisterWeapon(int weapIndex)
         "calll G_XModelBad\n"
         "testl %eax, %eax\n"
         "je .Lf1ada76_001adadd\n"
-        "movl $0x2b4a2c, 4(%esp)\n" /* line 1277 */
+        "movl $str_002b4a2c, 4(%esp)\n" /* line 1277 */
         "movl %ebx, (%esp)\n" /* modelindex */
         "calll G_OverrideModel\n"
         "movl 0x38c(%esi), %eax\n" /* line 1279 | weapDef */
@@ -406,7 +406,7 @@ void G_RegisterWeapon(int weapIndex)
         "testl %eax, %eax\n"
         "jne .Lf1ada76_001adac9\n"
         "movl $0x20, 8(%esp)\n" /* line 1271 */
-        "movl $0x2b49d4, 4(%esp)\n" /* "Too many different hintstring values on weapons. Max allowe" */
+        "movl $str_002b49d4, 4(%esp)\n" /* "Too many different hintstring values on weapons. Max allowe" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1ada76_001adac9\n"
@@ -418,7 +418,7 @@ void G_RegisterWeapon(int weapIndex)
         "testl %eax, %eax\n"
         "jne .Lf1ada76_001adabe\n"
         "movl $0x20, 8(%esp)\n" /* line 1266 */
-        "movl $0x2b49d4, 4(%esp)\n" /* "Too many different hintstring values on weapons. Max allowe" */
+        "movl $str_002b49d4, 4(%esp)\n" /* "Too many different hintstring values on weapons. Max allowe" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1ada76_001adabe\n"
@@ -450,7 +450,7 @@ void FinishSpawningItem(gentity_t *ent)
         "movzwl 0x1ac(%edi), %eax\n" /* line 1042 | ent */
         "leal (%eax, %eax, 4), %edx\n"
         "leal (%eax, %edx, 2), %edx\n"
-        "movl 0x195eda8, %eax\n"
+        "movl imp_bg_itemlist, %eax\n"
         "cmpl $1, 0x1c(%eax, %edx, 4)\n"
         "je .Lf1adba6_001adda7\n"
         "movl $0xbf800000, %eax\n" /* line 191 */
@@ -474,7 +474,7 @@ void FinishSpawningItem(gentity_t *ent)
         "movl %eax, -0x50(%ebp)\n"
         "movss 0x140(%edi), %xmm0\n" /* line 201 */
         "movss %xmm0, -0x4c(%ebp)\n"
-        "subss 0x2ed99c, %xmm0\n" /* line 1055 | 4096.0f */
+        "subss lit4_002ed99c, %xmm0\n" /* line 1055 | 4096.0f */
         "movl %edx, -0x30(%ebp)\n" /* line 191 | dest */
         "movl %eax, -0x2c(%ebp)\n" /* line 192 */
         "movss %xmm0, -0x28(%ebp)\n" /* line 193 */
@@ -500,9 +500,9 @@ void FinishSpawningItem(gentity_t *ent)
         "movl %eax, -0x50(%ebp)\n"
         "movss 0x140(%edi), %xmm1\n" /* line 201 */
         "movaps %xmm1, %xmm0\n" /* line 1061 */
-        "subss 0x2ed908, %xmm0\n" /* 15.0f */
+        "subss lit4_002ed908, %xmm0\n" /* 15.0f */
         "movss %xmm0, -0x4c(%ebp)\n"
-        "subss 0x2ed99c, %xmm1\n" /* line 1063 | 4096.0f */
+        "subss lit4_002ed99c, %xmm1\n" /* line 1063 | 4096.0f */
         "movl %edx, -0x30(%ebp)\n" /* line 191 | dest */
         "movl %eax, -0x2c(%ebp)\n" /* line 192 */
         "movss %xmm1, -0x28(%ebp)\n" /* line 193 */
@@ -549,7 +549,7 @@ void FinishSpawningItem(gentity_t *ent)
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* ent */
         "calll G_SetOrigin\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1082 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1082 | 1.0f */
         "ucomiss -0xa8(%ebp), %xmm0\n" /* tr */
         "ja .Lf1adba6_001ade22\n"
         ".Lf1adba6_001add94:\n"
@@ -589,7 +589,7 @@ void FinishSpawningItem(gentity_t *ent)
         "calll SL_ConvertToString\n"
         "movl %ebx, 8(%esp)\n" /* clipMask */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b4a44, (%esp)\n" /* "FinishSpawningItem: %s startsolid at %s
+        "movl $str_002b4a44, (%esp)\n" /* "FinishSpawningItem: %s startsolid at %s
 " */
         "calll Com_Printf\n"
         "movl %edi, (%esp)\n" /* line 1070 | ent */
@@ -636,7 +636,7 @@ void FinishSpawningItem(gentity_t *ent)
         "leal (%edx, %edx, 4), %eax\n"
         "leal (%edx, %eax, 2), %eax\n"
         "shll $2, %eax\n"
-        "addl 0x195eda8, %eax\n"
+        "addl imp_bg_itemlist, %eax\n"
         "cmpl $1, 0x1c(%eax)\n"
         "je .Lf1adba6_001adec9\n"
         ".Lf1adba6_001adeb8:\n"
@@ -645,7 +645,7 @@ void FinishSpawningItem(gentity_t *ent)
         "calll G_SetAngle\n"
         "jmp .Lf1adba6_001add94\n"
         ".Lf1adba6_001adec9:\n"
-        "movss 0x2ed5f8, %xmm0\n" /* line 1093 | 90.0f */
+        "movss lit4_002ed5f8, %xmm0\n" /* line 1093 | 90.0f */
         "addss -0x1c(%ebp), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
         "jmp .Lf1adba6_001adeb8\n"
@@ -671,7 +671,7 @@ void G_RunCorpseMove(gentity_t *ent)
         "movl %eax, %edx\n"
         "shll $4, %edx\n"
         "addl %edx, %eax\n"
-        "movl 0x195f6d0, %edx\n"
+        "movl imp_g_scr_data, %edx\n"
         "leal 0x10b0(%edx, %eax, 8), %eax\n"
         "leal 8(%eax), %edx\n"
         "movl %edx, -0xd0(%ebp)\n" /* corpseInfo */
@@ -693,7 +693,7 @@ void G_RunCorpseMove(gentity_t *ent)
         ".Lf1adede_001adf58:\n"
         "leal -0x30(%ebp), %edx\n" /* line 1508 | origin */
         "movl %edx, 8(%esp)\n"
-        "movl 0x195f6a0, %ecx\n"
+        "movl imp_level, %ecx\n"
         "movl 0x1ec(%ecx), %eax\n"
         "movl %eax, 4(%esp)\n"
         "leal 0xc(%edi), %eax\n" /* ent */
@@ -760,7 +760,7 @@ void G_RunCorpseMove(gentity_t *ent)
         "calll G_RunThink\n"
         "cmpb $0, 0xfc(%edi)\n" /* line 1544 | ent */
         "je .Lf1adede_001ae0ed\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 1547 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1547 | 1.0f */
         "ucomiss -0x90(%ebp), %xmm1\n" /* tr */
         "jne .Lf1adede_001ae21e\n"
         "jp .Lf1adede_001ae21e\n"
@@ -787,7 +787,7 @@ void G_RunCorpseMove(gentity_t *ent)
         "addss %xmm1, %xmm0\n"
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm0\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lf1adede_001ae0ed\n"
         "movb $1, -0xd9(%ebp)\n"
         "jmp .Lf1adede_001adf58\n"
@@ -803,7 +803,7 @@ void G_RunCorpseMove(gentity_t *ent)
         "leal 0x144(%edi), %eax\n" /* ent */
         "movl %eax, (%esp)\n"
         "calll AngleVectors\n"
-        "movss 0x3031e0, %xmm0\n" /* line 272 */
+        "movss sign+224, %xmm0\n" /* line 272 */
         "movss -0x60(%ebp), %xmm1\n" /* right */
         "xorps %xmm0, %xmm1\n"
         "movss %xmm1, -0x6c(%ebp)\n" /* left */
@@ -893,7 +893,7 @@ void G_RunCorpseMove(gentity_t *ent)
         "movl (%ecx), %eax\n"
         "movl %eax, 8(%edx)\n"
         /* } scope */
-        "movl 0x195f6a0, %eax\n" /* line 1415 */
+        "movl imp_level, %eax\n" /* line 1415 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x10(%edi)\n"
         "jmp .Lf1adede_001ae0ed\n"
@@ -966,7 +966,7 @@ void G_RunCorpseMove(gentity_t *ent)
         "addss 0x2c(%edi), %xmm1\n"
         "movss %xmm1, 0x2c(%edi)\n"
         /* } scope */
-        "movl 0x195f6a0, %edx\n" /* line 1571 */
+        "movl imp_level, %edx\n" /* line 1571 */
         "movl 0x1ec(%edx), %eax\n"
         "movl %eax, 0x10(%edi)\n" /* ent */
         "movl $0, 0x14(%edi)\n" /* line 1572 | ent */
@@ -1043,7 +1043,7 @@ void G_RunCorpseMove(gentity_t *ent)
         "movl -0xcc(%ebp), %edx\n" /* line 200 */
         "movl (%edx), %eax\n"
         "movl %eax, -0x38(%ebp)\n"
-        "movss 0x2ed78c, %xmm0\n" /* line 1592 | 64.0f */
+        "movss lit4_002ed78c, %xmm0\n" /* line 1592 | 64.0f */
         "movl -0xc8(%ebp), %ecx\n"
         "addss (%ecx), %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
@@ -1122,7 +1122,7 @@ void G_RunCorpse(gentity_t *ent)
         "movl %eax, %edx\n"
         "shll $4, %edx\n"
         "addl %edx, %eax\n"
-        "movl 0x195f6d0, %edx\n"
+        "movl imp_g_scr_data, %edx\n"
         "leal 0x10c4(%edx, %eax, 8), %esi\n"
         "movl (%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1168,7 +1168,7 @@ void G_RunItem(gentity_t *ent)
         "movl 0x7c(%edi), %edx\n" /* line 1654 | ent */
         "cmpl $0x3ff, %edx\n"
         "je .Lf1ae732_001ae794\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl 4(%eax), %ecx\n"
         "leal (%edx, %edx, 4), %edx\n"
         "leal (, %edx, 8), %eax\n"
@@ -1204,7 +1204,7 @@ void G_RunItem(gentity_t *ent)
         "testb $1, 0x170(%edi)\n" /* line 1659 | ent */
         "jne .Lf1ae732_001ae76b\n"
         "movl $5, 0xc(%edi)\n" /* line 1661 | ent */
-        "movl 0x195f6a0, %eax\n" /* line 1662 */
+        "movl imp_level, %eax\n" /* line 1662 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x10(%edi)\n" /* ent */
         "leal 0x18(%edi), %ecx\n" /* line 1663 | ent, to */
@@ -1228,7 +1228,7 @@ void G_RunItem(gentity_t *ent)
         ".Lf1ae732_001ae7e6:\n"
         "leal -0x24(%ebp), %eax\n" /* line 1677 | origin */
         "movl %eax, 8(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl 0x1ec(%eax), %eax\n"
         "addl $0x32, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -1246,11 +1246,11 @@ void G_RunItem(gentity_t *ent)
         "calll Vec3DistanceSq\n"
         "fstps -0xa0(%ebp)\n"
         "movss -0xa0(%ebp), %xmm0\n"
-        "ucomiss 0x2ed7d0, %xmm0\n" /* 0.10000000149011612f */
+        "ucomiss lit4_002ed7d0, %xmm0\n" /* 0.10000000149011612f */
         "jae .Lf1ae732_001ae85a\n"
         "jp .Lf1ae732_001ae85a\n"
         "movss -0x1c(%ebp), %xmm0\n" /* line 1686 */
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x1c(%ebp)\n"
         ".Lf1ae732_001ae85a:\n"
         "leal 0x110(%edi), %eax\n" /* line 1688 | ent */
@@ -1270,7 +1270,7 @@ void G_RunItem(gentity_t *ent)
         "movl %edx, (%esp)\n"
         "calll G_TraceCapsule\n"
         "movss -0x60(%ebp), %xmm1\n" /* line 1690 | tr */
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "jb .Lf1ae732_001ae92d\n"
         ".Lf1ae732_001ae8b2:\n"
         "movl -0x24(%ebp), %eax\n" /* line 199 | origin */
@@ -1287,7 +1287,7 @@ void G_RunItem(gentity_t *ent)
         "cmpb $0, 0xfc(%edi)\n" /* line 1724 | ent */
         "je .Lf1ae732_001ae789\n"
         "movss -0x60(%ebp), %xmm0\n" /* line 1727 | tr */
-        "ucomiss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "jae .Lf1ae732_001ae789\n"
         "pxor %xmm0, %xmm0\n" /* line 1731 */
         "ucomiss -0x54(%ebp), %xmm0\n"
@@ -1332,15 +1332,15 @@ void G_RunItem(gentity_t *ent)
         "movss %xmm2, -0x28(%ebp)\n"
         "cmpb $0, -0x3d(%ebp)\n" /* line 1695 */
         "jne .Lf1ae732_001ae9da\n"
-        "ucomiss 0x2ed738, %xmm1\n" /* 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm1\n" /* 0.009999999776482582f */
         "jae .Lf1ae732_001ae9da\n"
         "jp .Lf1ae732_001ae9da\n"
         "movss -0x54(%ebp), %xmm7\n"
-        "ucomiss 0x2ed5d8, %xmm7\n" /* 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm7\n" /* 0.5f */
         "jb .Lf1ae732_001aeb4d\n"
         ".Lf1ae732_001ae9da:\n"
         "movl $3, 0xc(%edi)\n" /* line 1704 | ent */
-        "movl 0x195f6a0, %eax\n" /* line 1705 */
+        "movl imp_level, %eax\n" /* line 1705 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x10(%edi)\n" /* ent */
         "movl $0x32, 0x14(%edi)\n" /* line 1706 | ent */
@@ -1368,7 +1368,7 @@ void G_RunItem(gentity_t *ent)
         "subss (%ecx), %xmm0\n"
         "movss %xmm0, 0x2c(%edi)\n"
         /* } scope */
-        "movss 0x2ed694, %xmm0\n" /* line 272 | 20.0f */
+        "movss lit4_002ed694, %xmm0\n" /* line 272 | 20.0f */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, 0x24(%edi)\n"
         "movss 4(%eax), %xmm1\n" /* line 273 */
@@ -1414,7 +1414,7 @@ void G_RunItem(gentity_t *ent)
         "leal (%edx, %edx, 4), %eax\n"
         "leal (%edx, %eax, 2), %eax\n"
         "shll $2, %eax\n"
-        "addl 0x195eda8, %eax\n"
+        "addl imp_bg_itemlist, %eax\n"
         "cmpl $1, 0x1c(%eax)\n"
         "je .Lf1ae732_001aeb39\n"
         ".Lf1ae732_001aeb0a:\n"
@@ -1433,7 +1433,7 @@ void G_RunItem(gentity_t *ent)
         "jmp .Lf1ae732_001ae789\n"
         /* { scope 2 */
         ".Lf1ae732_001aeb39:\n"
-        "movss 0x2ed5f8, %xmm0\n" /* line 1436 | 90.0f */
+        "movss lit4_002ed5f8, %xmm0\n" /* line 1436 | 90.0f */
         "addss -0x34(%ebp), %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "jmp .Lf1ae732_001aeb0a\n"
@@ -1451,7 +1451,7 @@ void G_RunItem(gentity_t *ent)
         "subss 0x140(%edi), %xmm5\n" /* ent */
         "mulss %xmm7, %xmm5\n"
         "addss %xmm5, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm3\n" /* line 288 */
         "addss -0x94(%ebp), %xmm3\n"
@@ -1758,14 +1758,14 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         /* } scope */
         "movss 0x118(%ebx), %xmm0\n" /* line 848 | ent */
         "subss 0x10c(%ebx), %xmm0\n" /* ent */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss -0x34(%ebp), %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "movl (%ebx), %ebx\n" /* line 850 | ent */
         "movl %ebx, -0x68(%ebp)\n" /* ent, ownerNum */
         /* { scope 2: dropped */
         /* { scope 3 */
-        "movl 0x195eda8, %ebx\n" /* line 765 */
+        "movl imp_bg_itemlist, %ebx\n" /* line 765 */
         "movl 0xc(%ebp), %ecx\n" /* item */
         "subl %ebx, %ecx\n"
         "sarl $2, %ecx\n"
@@ -1785,7 +1785,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "movl itemRegistered(, %edx, 4), %esi\n" /* line 1218 */
         "testl %esi, %esi\n"
         "jne .Lf1aef58_001af0a5\n"
-        "movl 0x195f6a0, %eax\n" /* line 1224 */
+        "movl imp_level, %eax\n" /* line 1224 */
         "movl 0x1c(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf1aef58_001af05f\n"
@@ -1798,11 +1798,11 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "cmpb $0, (%eax)\n"
         "je .Lf1aef58_001af450\n"
         "movl %eax, 4(%esp)\n" /* line 1231 */
-        "movl $0x2b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
+        "movl $str_002b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
-        "movl 0x195eda8, %ebx\n" /* ent */
+        "movl imp_bg_itemlist, %ebx\n" /* ent */
         /* } scope */
         ".Lf1aef58_001af05f:\n"
         "movl -0x70(%ebp), %eax\n" /* line 1233 */
@@ -1823,23 +1823,23 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "movl %eax, (%esp)\n" /* line 1238 */
         "calll G_ModelIndex\n"
         ".Lf1aef58_001af096:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1241 */
+        "movl imp_level, %eax\n" /* line 1241 */
         "movl $1, 0x3600(%eax)\n"
         ".Lf1aef58_001af0a5:\n"
         "calll G_Spawn\n" /* line 768 */
         "movl %eax, -0x64(%ebp)\n" /* dropped */
-        "movl 0x195f724, %eax\n" /* line 667 */
+        "movl imp_g_maxDroppedWeapons, %eax\n" /* line 667 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x58(%ebp)\n"
         "testl %eax, %eax\n" /* line 670 */
         "jle .Lf1aef58_001af1e3\n"
-        "movl 0x195f6a0, %ecx\n" /* line 672 */
+        "movl imp_level, %ecx\n" /* line 672 */
         "movl 0x1d58(%ecx), %eax\n"
         "testl %eax, %eax\n" /* line 673 */
         "je .Lf1aef58_001af478\n"
         "movl %ecx, %edx\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         "movss %xmm0, -0x5c(%ebp)\n"
         "movl $0, -0x60(%ebp)\n"
         "movl $0, -0x4c(%ebp)\n"
@@ -1848,7 +1848,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "testl %edx, %edx\n"
         "jg .Lf1aef58_001af150\n"
         ".Lf1aef58_001af100:\n"
-        "movss 0x2ed9a0, %xmm0\n" /* 999998029824.0f */
+        "movss lit4_002ed9a0, %xmm0\n" /* 999998029824.0f */
         ".Lf1aef58_001af108:\n"
         "ucomiss -0x5c(%ebp), %xmm0\n" /* line 690 */
         "jbe .Lf1aef58_001af119\n"
@@ -1866,17 +1866,17 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "movl %ebx, -0x54(%ebp)\n"
         "testl %eax, %eax\n" /* line 673 */
         "je .Lf1aef58_001af35d\n"
-        "movl 0x195f6a0, %edx\n"
+        "movl imp_level, %edx\n"
         "movl 0x1e4(%edx), %edx\n" /* line 677 */
         "testl %edx, %edx\n"
         "jle .Lf1aef58_001af100\n"
         ".Lf1aef58_001af150:\n"
         "xorl %esi, %esi\n"
-        "movss 0x2ed9a0, %xmm0\n" /* 999998029824.0f */
+        "movss lit4_002ed9a0, %xmm0\n" /* 999998029824.0f */
         "xorl %ebx, %ebx\n"
         "addl $0x138, %eax\n"
         "movl %eax, -0x74(%ebp)\n"
-        "movl 0x195f688, %edi\n"
+        "movl imp_g_entities, %edi\n"
         "addl $0x138, %edi\n"
         "jmp .Lf1aef58_001af18f\n"
         ".Lf1aef58_001af172:\n"
@@ -1889,7 +1889,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "jle .Lf1aef58_001af108\n"
         ".Lf1aef58_001af18f:\n"
         "movl %ebx, %eax\n" /* line 679 */
-        "movl 0x195f6a0, %ecx\n"
+        "movl imp_level, %ecx\n"
         "addl (%ecx), %eax\n"
         "cmpl $2, 0x26c4(%eax)\n" /* line 680 */
         "jne .Lf1aef58_001af172\n"
@@ -1897,7 +1897,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "testl %eax, %eax\n"
         "je .Lf1aef58_001af1b4\n"
         ".Lf1aef58_001af1ac:\n"
-        "movl 0x195f6a0, %edx\n"
+        "movl imp_level, %edx\n"
         "jmp .Lf1aef58_001af174\n"
         ".Lf1aef58_001af1b4:\n"
         "movl -0x74(%ebp), %eax\n" /* line 685 */
@@ -1915,12 +1915,12 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "movl $0, -0x4c(%ebp)\n" /* line 670 */
         ".Lf1aef58_001af1ea:\n"
         "movl -0x4c(%ebp), %edx\n" /* line 699 */
-        "movl 0x195f6a0, %ecx\n"
+        "movl imp_level, %ecx\n"
         "movl 0x1d58(%ecx, %edx, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_FreeEntity\n"
         "movl -0x4c(%ebp), %ebx\n" /* line 700 */
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "movl $0, 0x1d58(%eax, %ebx, 4)\n"
         "movl %ebx, %edx\n"
         "movl %eax, %ecx\n"
@@ -1984,7 +1984,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "movl %ebx, (%esp)\n"
         "calll G_SetOrigin\n"
         "movl $5, 0xc(%ebx)\n" /* line 803 */
-        "movl 0x195f6a0, %ecx\n" /* line 804 */
+        "movl imp_level, %ecx\n" /* line 804 */
         "movl 0x1ec(%ecx), %eax\n"
         "movl %eax, 0x10(%ebx)\n"
         "movl %ebx, %edx\n" /* line 805 | to */
@@ -2020,7 +2020,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "movl -0x60(%ebp), %ecx\n" /* line 673 */
         "movl %ecx, -0x4c(%ebp)\n"
         "movl %ecx, %edx\n"
-        "movl 0x195f6a0, %ecx\n"
+        "movl imp_level, %ecx\n"
         "jmp .Lf1aef58_001af219\n"
         /* } scope */
         /* } scope */
@@ -2032,7 +2032,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "leal -0x30(%ebp), %eax\n" /* angles */
         "movl %eax, (%esp)\n"
         "calll AngleVectors\n"
-        "movl 0x195f728, %eax\n" /* line 843 */
+        "movl imp_g_dropForwardSpeed, %eax\n" /* line 843 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n" /* scale */
         /* { scope 2: dropped */
@@ -2045,7 +2045,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "mulss -0x1c(%ebp), %xmm1\n" /* line 274 */
         "movss %xmm1, -0x1c(%ebp)\n"
         /* } scope */
-        "movl 0x195f71c, %eax\n" /* line 844 */
+        "movl imp_g_dropUpSpeedBase, %eax\n" /* line 844 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x6c(%ebp)\n"
@@ -2053,7 +2053,7 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         "calll crandom\n"
         "fstps -0x9c(%ebp)\n"
         "movss -0x9c(%ebp), %xmm0\n"
-        "movl 0x195f720, %eax\n"
+        "movl imp_g_dropUpSpeedRand, %eax\n"
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "addss -0x6c(%ebp), %xmm0\n"
@@ -2084,19 +2084,19 @@ gentity_t * Drop_Item(gentity_t *ent, const gitem_t *item, float angle, qboolean
         /* } scope */
         /* { scope 4 */
         ".Lf1aef58_001af450:\n"
-        "movl $0x2b4984, %eax\n" /* line 1229 */
+        "movl $str_002b4984, %eax\n" /* line 1229 */
         "movl %eax, 4(%esp)\n" /* line 1231 */
-        "movl $0x2b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
+        "movl $str_002b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
-        "movl 0x195eda8, %ebx\n" /* ent */
+        "movl imp_bg_itemlist, %ebx\n" /* ent */
         "jmp .Lf1aef58_001af05f\n"
         /* } scope */
         ".Lf1aef58_001af478:\n"
         "movl $0, -0x4c(%ebp)\n" /* line 673 */
         "movl -0x4c(%ebp), %edx\n"
-        "movl 0x195f6a0, %ecx\n"
+        "movl imp_level, %ecx\n"
         "jmp .Lf1aef58_001af219\n"
     );
 }
@@ -2116,7 +2116,7 @@ gentity_t * Drop_Weapon(gentity_t *pEnt, int iWeaponIndex, unsigned int tag)
         /* { scope 1: tagMat, vAngles */
         "leal (%ebx, %ebx, 4), %eax\n" /* line 872 | size */
         "leal (%ebx, %eax, 2), %eax\n" /* size */
-        "movl 0x195eda8, %edx\n"
+        "movl imp_bg_itemlist, %edx\n"
         "leal (%edx, %eax, 4), %edi\n" /* pWeapItem */
         "movl 8(%ebp), %eax\n" /* line 876 | pEnt */
         "movl 0x158(%eax), %edx\n"
@@ -2233,7 +2233,7 @@ gentity_t * Drop_Weapon(gentity_t *pEnt, int iWeaponIndex, unsigned int tag)
         /* { scope 4 */
         "movss 0x104(%esi), %xmm2\n" /* line 256 */
         "addss 0x110(%esi), %xmm2\n"
-        "movss 0x2ed5d8, %xmm3\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm3\n" /* 0.5f */
         "mulss %xmm3, %xmm2\n"
         "movss 4(%eax), %xmm1\n" /* line 257 */
         "addss 4(%edx), %xmm1\n"
@@ -2306,7 +2306,7 @@ gentity_t * Drop_Weapon(gentity_t *pEnt, int iWeaponIndex, unsigned int tag)
         "movl 8(%ecx), %eax\n" /* line 201 */
         "movl %eax, 8(%edx)\n"
         /* } scope */
-        "movl 0x195f6a0, %eax\n" /* line 989 */
+        "movl imp_level, %eax\n" /* line 989 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x10(%esi)\n" /* iMax */
         "leal -0x24(%ebp), %eax\n" /* line 991 | vAngles */
@@ -2317,7 +2317,7 @@ gentity_t * Drop_Weapon(gentity_t *pEnt, int iWeaponIndex, unsigned int tag)
         "leal 0x144(%eax), %edx\n"
         /* } scope */
         ".Lf1af48e_001af7a7:\n"
-        "movss 0x2ed5f8, %xmm0\n" /* line 997 | 90.0f */
+        "movss lit4_002ed5f8, %xmm0\n" /* line 997 | 90.0f */
         "addss -0x1c(%ebp), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
         "movl %edx, 4(%esp)\n" /* line 998 */
@@ -2332,19 +2332,19 @@ gentity_t * Drop_Weapon(gentity_t *pEnt, int iWeaponIndex, unsigned int tag)
         "fstps -0xbc(%ebp)\n"
         "movss -0xbc(%ebp), %xmm0\n"
         "movl $2, 0x30(%esi)\n" /* line 1002 | iMax */
-        "movl 0x195f6a0, %eax\n" /* line 1003 */
+        "movl imp_level, %eax\n" /* line 1003 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x34(%esi)\n" /* iMax */
         "movl %esi, %eax\n" /* line 1004 | iMax, to */
         "addl $0x48, %eax\n" /* to */
         /* { scope 3 */
-        "mulss 0x2ed910, %xmm0\n" /* line 199 | 50.0f */
+        "mulss lit4_002ed910, %xmm0\n" /* line 199 | 50.0f */
         "movss %xmm0, 0x48(%esi)\n"
         "movss -0x94(%ebp), %xmm0\n" /* line 200 */
-        "mulss 0x2ed73c, %xmm0\n" /* 40.0f */
+        "mulss lit4_002ed73c, %xmm0\n" /* 40.0f */
         "movss %xmm0, 4(%eax)\n"
         "movss -0x98(%ebp), %xmm0\n" /* line 201 */
-        "mulss 0x2ed7c8, %xmm0\n" /* 60.0f */
+        "mulss lit4_002ed7c8, %xmm0\n" /* 60.0f */
         "movss %xmm0, 8(%eax)\n"
         /* } scope */
         /* } scope */
@@ -2447,12 +2447,12 @@ gentity_t * Drop_Weapon(gentity_t *pEnt, int iWeaponIndex, unsigned int tag)
         "movss %xmm0, -0xb8(%ebp)\n"
         "calll BG_GetAmmoClipSize\n"
         "movss -0xb8(%ebp), %xmm0\n" /* line 428 */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "subl $1, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
         "mulss %xmm1, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x9c(%ebp)\n"
@@ -2461,11 +2461,11 @@ gentity_t * Drop_Weapon(gentity_t *pEnt, int iWeaponIndex, unsigned int tag)
         "calll randomf\n" /* line 924 */
         "fstps -0xbc(%ebp)\n"
         "movss -0xbc(%ebp), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
-        "addss 0x2ed604, %xmm0\n" /* 0.25f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed604, %xmm0\n" /* 0.25f */
         "cvtsi2ssl %ebx, %xmm1\n"
         "mulss %xmm1, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xa0(%ebp)\n"
@@ -2509,7 +2509,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl 0x194(%edi), %eax\n" /* line 544 | other */
         "testl %eax, %eax\n"
         "jle .Lf1afa1a_001afa5c\n"
-        "movl 0x195f6a0, %eax\n" /* line 548 */
+        "movl imp_level, %eax\n" /* line 548 */
         "movl 0x20(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1afa1a_001afa67\n"
@@ -2527,7 +2527,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movzwl 0x1ac(%edx), %eax\n"
         "leal (%eax, %eax, 4), %edx\n"
         "leal (%eax, %edx, 2), %edx\n"
-        "movl 0x195eda8, %eax\n"
+        "movl imp_bg_itemlist, %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "movl %edx, -0x84(%ebp)\n" /* item */
         "movl 0x10(%ebp), %ebx\n" /* line 554 | bTouched, makenoise */
@@ -2562,12 +2562,12 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl 4(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x66, 4(%esp)\n"
-        "movl $0x2b4a70, (%esp)\n" /* "%c "GAME_PICKUP_CANTCARRYMOREAMMO%s"" */
+        "movl $str_002b4a70, (%esp)\n" /* "%c "GAME_PICKUP_CANTCARRYMOREAMMO%s"" */
         ".Lf1afa1a_001afb02:\n"
         "calll va\n" /* line 576 */
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "subl 0x195f688, %edi\n" /* other */
+        "subl imp_g_entities, %edi\n" /* other */
         "sarl $4, %edi\n" /* other */
         "imull $0x8af8af8b, %edi, %eax\n" /* other */
         "movl %eax, (%esp)\n"
@@ -2596,7 +2596,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %edx, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b4ad4, (%esp)\n" /* "Item;%d;%d;%s;%s
+        "movl $str_002b4ad4, (%esp)\n" /* "Item;%d;%d;%s;%s
 " */
         "calll G_LogPrintf\n"
         ".Lf1afa1a_001afb97:\n"
@@ -2613,7 +2613,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movzwl 0x1ac(%edx), %eax\n"
         "leal (%eax, %eax, 4), %edx\n"
         "leal (%eax, %edx, 2), %edx\n"
-        "movl 0x195eda8, %eax\n"
+        "movl imp_bg_itemlist, %eax\n"
         "movl 0x20(%eax, %edx, 4), %edx\n"
         "movl %edx, -0x6c(%ebp)\n"
         "movl %edx, (%esp)\n" /* line 196 */
@@ -2773,7 +2773,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "je .Lf1afa1a_001b05ac\n"
         /* { scope 3 */
         "movl %edi, %eax\n" /* line 333 */
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %esi\n"
         /* } scope */
@@ -2817,7 +2817,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %edi, (%esp)\n" /* line 426 */
         "calll Scr_AddEntity\n"
         "movl $2, 8(%esp)\n" /* line 427 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x54(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* ent */
@@ -2830,7 +2830,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl $4, 8(%esp)\n" /* line 430 */
         ".Lf1afa1a_001afec4:\n"
         "movl $0x49, 4(%esp)\n" /* line 432 */
-        "movl $0x2b2ba8, (%esp)\n" /* "%c "%i"" */
+        "movl $str_002b2ba8, (%esp)\n" /* "%c "%i"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -2859,7 +2859,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movzwl 0x1ac(%edx), %eax\n"
         "leal (%eax, %eax, 4), %edx\n"
         "leal (%eax, %edx, 2), %edx\n"
-        "movl 0x195eda8, %eax\n"
+        "movl imp_bg_itemlist, %eax\n"
         "movl 0x18(%eax, %edx, 4), %ecx\n"
         "cmpl $5, %ecx\n"
         "je .Lf1afa1a_001b0282\n"
@@ -2877,7 +2877,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "cvtsi2ssl %ecx, %xmm0\n" /* line 463 */
         "cvtsi2ssl 0x134(%esi), %xmm1\n"
         "mulss %xmm1, %xmm0\n"
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "cvttss2si %xmm0, %eax\n"
         "addl -0x60(%ebp), %eax\n" /* iOldHealth */
         "movl %eax, 0x194(%edi)\n"
@@ -2932,10 +2932,10 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %eax, 0x12c(%esi)\n" /* line 495 */
         "movl %ecx, 8(%esp)\n" /* line 498 */
         "movl $0x66, 4(%esp)\n"
-        "movl $0x2b4b88, (%esp)\n" /* "%c "GAME_PICKUP_HEALTH%i"" */
+        "movl $str_002b4b88, (%esp)\n" /* "%c "GAME_PICKUP_HEALTH%i"" */
         "calll va\n"
         "movl %edi, %ebx\n" /* iNormVal */
-        "subl 0x195f688, %ebx\n" /* iNormVal */
+        "subl imp_g_entities, %ebx\n" /* iNormVal */
         "sarl $4, %ebx\n" /* iNormVal */
         "imull $0x8af8af8b, %ebx, %ebx\n" /* iNormVal */
         "movl %eax, 8(%esp)\n"
@@ -2944,7 +2944,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "calll SV_GameSendServerCommand\n"
         "movl $0, 8(%esp)\n" /* line 499 */
         "movl $0x49, 4(%esp)\n"
-        "movl $0x2b2ba8, (%esp)\n" /* "%c "%i"" */
+        "movl $str_002b2ba8, (%esp)\n" /* "%c "%i"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -2953,7 +2953,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %edi, (%esp)\n" /* line 502 */
         "calll Scr_AddEntity\n"
         "movl $1, 8(%esp)\n" /* line 503 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x54(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %edx\n" /* ent */
@@ -2968,7 +2968,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movzwl 0x1ac(%ebx), %eax\n" /* item */
         "leal (%eax, %eax, 4), %edx\n"
         "leal (%eax, %edx, 2), %edx\n"
-        "movl 0x195eda8, %eax\n"
+        "movl imp_bg_itemlist, %eax\n"
         "leal (%eax, %edx, 4), %ebx\n" /* item */
         "movl 8(%ebp), %edx\n" /* line 149 | ent */
         "movl 0x1a0(%edx), %eax\n"
@@ -2995,11 +2995,11 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl 4(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x66, 4(%esp)\n"
-        "movl $0x2b4b48, (%esp)\n" /* "%c "GAME_PICKUP_CLIPONLY_AMMO%s"" */
+        "movl $str_002b4b48, (%esp)\n" /* "%c "GAME_PICKUP_CLIPONLY_AMMO%s"" */
         ".Lf1afa1a_001b0156:\n"
         "calll va\n" /* line 163 */
         "movl %edi, %edx\n"
-        "subl 0x195f688, %edx\n"
+        "subl imp_g_entities, %edx\n"
         "sarl $4, %edx\n"
         "imull $0x8af8af8b, %edx, %esi\n"
         "movl %eax, 8(%esp)\n"
@@ -3009,7 +3009,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %edi, (%esp)\n" /* line 166 */
         "calll Scr_AddEntity\n"
         "movl $1, 8(%esp)\n" /* line 167 */
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x54(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* ent */
@@ -3024,7 +3024,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl $4, 8(%esp)\n" /* line 173 */
         ".Lf1afa1a_001b01c9:\n"
         "movl $0x49, 4(%esp)\n" /* line 175 */
-        "movl $0x2b2ba8, (%esp)\n" /* "%c "%i"" */
+        "movl $str_002b2ba8, (%esp)\n" /* "%c "%i"" */
         "calll va\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -3046,7 +3046,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %edx, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* makenoise */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b4ac0, (%esp)\n" /* "Weapon;%d;%d;%s;%s
+        "movl $str_002b4ac0, (%esp)\n" /* "Weapon;%d;%d;%s;%s
 " */
         "calll G_LogPrintf\n"
         "jmp .Lf1afa1a_001afb97\n"
@@ -3067,7 +3067,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "ja .Lf1afa1a_001afa5c\n"
         ".Lf1afa1a_001b026e:\n"
         "movl $0x66, 4(%esp)\n" /* line 576 */
-        "movl $0x2b4a98, (%esp)\n" /* "%c "GAME_CANT_GET_PRIMARY_WEAP_MESSAGE"" */
+        "movl $str_002b4a98, (%esp)\n" /* "%c "GAME_CANT_GET_PRIMARY_WEAP_MESSAGE"" */
         "jmp .Lf1afa1a_001afb02\n"
         /* { scope 2: iMax, iDropSlot, iWeap */
         ".Lf1afa1a_001b0282:\n"
@@ -3104,7 +3104,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "testl %eax, %eax\n"
         "jle .Lf1afa1a_001b04a0\n"
         ".Lf1afa1a_001b02ef:\n"
-        "movl 0x195f72c, %eax\n"
+        "movl imp_g_weaponAmmoPools, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1afa1a_001afa5c\n"
@@ -3113,7 +3113,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         ".Lf1afa1a_001b0305:\n"
         "calll Scr_AddUndefined\n" /* line 425 */
         "movl %edi, %eax\n"
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %esi\n"
         "jmp .Lf1afa1a_001afe83\n"
@@ -3132,7 +3132,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl 4(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x66, 4(%esp)\n"
-        "movl $0x2b4b6c, (%esp)\n" /* "%c "GAME_PICKUP_AMMO%s"" */
+        "movl $str_002b4b6c, (%esp)\n" /* "%c "GAME_PICKUP_AMMO%s"" */
         "jmp .Lf1afa1a_001b0156\n"
         /* } scope */
         /* { scope 2: iMax, iDropSlot, iWeap */
@@ -3177,7 +3177,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %eax, (%esp)\n"
         "calll G_GivePlayerWeapon\n"
         "movl %edi, %eax\n"
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %esi\n"
         "movl $0, -0x78(%ebp)\n" /* pDropped */
@@ -3201,13 +3201,13 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl 4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x66, 4(%esp)\n"
-        "movl $0x2b4b48, (%esp)\n" /* "%c "GAME_PICKUP_CLIPONLY_AMMO%s"" */
+        "movl $str_002b4b48, (%esp)\n" /* "%c "GAME_PICKUP_CLIPONLY_AMMO%s"" */
         ".Lf1afa1a_001b043d:\n"
         "calll va\n" /* line 385 */
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %edi, %eax\n"
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -3224,7 +3224,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl 4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x66, 4(%esp)\n"
-        "movl $0x2b4b6c, (%esp)\n" /* "%c "GAME_PICKUP_AMMO%s"" */
+        "movl $str_002b4b6c, (%esp)\n" /* "%c "GAME_PICKUP_AMMO%s"" */
         "jmp .Lf1afa1a_001b043d\n"
         ".Lf1afa1a_001b04a0:\n"
         "movl 0x1a8(%ebx), %eax\n" /* line 401 | iAmmoIndex */
@@ -3255,8 +3255,8 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "movl %eax, (%esp)\n"
         "calll BG_GetAmmoClipSize\n"
         "movss -0x98(%ebp), %xmm0\n" /* line 428 */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "mulss %xmm2, %xmm0\n"
         "subl $1, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
@@ -3290,7 +3290,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "jmp .Lf1afa1a_001afe2a\n"
         ".Lf1afa1a_001b05ac:\n"
         "movl %edi, %eax\n" /* line 364 */
-        "subl 0x195f688, %eax\n"
+        "subl imp_g_entities, %eax\n"
         "sarl $4, %eax\n"
         "imull $0x8af8af8b, %eax, %esi\n"
         "movl -0x6c(%ebp), %edx\n"
@@ -3361,7 +3361,7 @@ void Touch_Item(gentity_t *ent, gentity_t *other, qboolean bTouched)
         "calll BG_GetEmptySlotForWeapon\n"
         "testl %eax, %eax\n"
         "jne .Lf1afa1a_001afd7b\n"
-        "movl $0x2b4ae8, (%esp)\n" /* line 296 */
+        "movl $str_002b4ae8, (%esp)\n" /* line 296 */
         "calll Com_Printf\n"
         "jmp .Lf1afa1a_001afa5c\n"
         ".Lf1afa1a_001b06db:\n"
@@ -3429,7 +3429,7 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         "movl 8(%ebp), %ebx\n" /* ent */
         "movl 0xc(%ebp), %eax\n" /* item */
         "movl %eax, -0x1c(%ebp)\n" /* item */
-        "movl 0x195eda8, %edi\n" /* line 1313 */
+        "movl imp_bg_itemlist, %edi\n" /* line 1313 */
         "movl %eax, %ecx\n"
         "subl %edi, %ecx\n"
         "sarl $2, %ecx\n"
@@ -3448,7 +3448,7 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         "movl itemRegistered(, %esi, 4), %eax\n" /* line 1218 */
         "testl %eax, %eax\n"
         "jne .Lf1b078a_001b0848\n"
-        "movl 0x195f6a0, %eax\n" /* line 1224 */
+        "movl imp_level, %eax\n" /* line 1224 */
         "movl 0x1c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1b078a_001b0816\n"
@@ -3461,11 +3461,11 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         "cmpb $0, (%eax)\n"
         "je .Lf1b078a_001b09d0\n"
         "movl %eax, 4(%esp)\n" /* line 1231 */
-        "movl $0x2b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
+        "movl $str_002b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
-        "movl 0x195eda8, %edi\n"
+        "movl imp_bg_itemlist, %edi\n"
         /* } scope */
         ".Lf1b078a_001b0816:\n"
         "movl $1, itemRegistered(, %esi, 4)\n" /* line 1233 */
@@ -3521,7 +3521,7 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         "calll G_DObjUpdate\n"
         "movl $0x3fe, 0x90(%ebx)\n" /* line 1341 | ent */
         "orl $__mh_execute_header, 0x174(%ebx)\n" /* line 1343 | ent */
-        "movl 0x195f6a0, %esi\n" /* line 1345 */
+        "movl imp_level, %esi\n" /* line 1345 */
         "cmpb $0, 0x1348(%esi)\n"
         "jne .Lf1b078a_001b096d\n"
         "movb $0x11, 0x166(%ebx)\n" /* line 1355 | ent */
@@ -3548,7 +3548,7 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         "movl -0x1c(%ebp), %eax\n" /* line 1359 | item */
         "cmpl $1, 0x1c(%eax)\n"
         "jne .Lf1b078a_001b0910\n"
-        "movss 0x2ed5f8, %xmm0\n" /* line 1360 | 90.0f */
+        "movss lit4_002ed5f8, %xmm0\n" /* line 1360 | 90.0f */
         "addss 0x14c(%ebx), %xmm0\n" /* ent */
         "movss %xmm0, 0x14c(%ebx)\n" /* ent */
         "jmp .Lf1b078a_001b0910\n"
@@ -3585,13 +3585,13 @@ void G_SpawnItem(gentity_t *ent, const gitem_t *item)
         /* } scope */
         /* { scope 1 */
         ".Lf1b078a_001b09d0:\n"
-        "movl $0x2b4984, %eax\n" /* line 1229 */
+        "movl $str_002b4984, %eax\n" /* line 1229 */
         "movl %eax, 4(%esp)\n" /* line 1231 */
-        "movl $0x2b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
+        "movl $str_002b4990, (%esp)\n" /* "game tried to register the item '%s' after initialization fi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
-        "movl 0x195eda8, %edi\n"
+        "movl imp_bg_itemlist, %edi\n"
         "jmp .Lf1b078a_001b0816\n"
     );
 }

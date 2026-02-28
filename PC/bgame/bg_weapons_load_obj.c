@@ -25,17 +25,17 @@ extern qboolean Info_Validate(const char *s);
 extern int ParseConfigStringToStruct(byte *pStruct, cspField_t *fields, int numFields, const char *buffer, int maxFieldTypes, qboolean (*parseSpecificFieldType)(byte *, const char *, int), long int (*setConfigString)(byte *, const char *));
 extern void I_strlwr(char *s);
 
-static WeaponDef bg_defaultWeaponDefs; /* 0x7ef500 */
-static int g_playerAnimTypeNamesCount; /* 0x7efc20 */
-static char * g_playerAnimTypeNames[64]; /* 0x7efb20 */
-static char * szWeapTypeNames[4]; /* 0x310c88 */
-static char * szWeapSlotNames[3]; /* 0x310c2c */
-static char * szProjectileExplosionNames[3]; /* 0x310c14 */
-static char * szWeapOverlayReticleNames[5]; /* 0x310c38 */
-static char * szWeapClassNames[10]; /* 0x310c60 */
-static char * szWeapStanceNames[3]; /* 0x310c20 */
-static char * offhandClassNames[3]; /* 0x310c08 */
-static cspField_t weaponDefFields[366]; /* 0x30fae0 */
+static WeaponDef bg_defaultWeaponDefs; /* bg_defaultWeaponDefs */
+static int g_playerAnimTypeNamesCount; /* g_playerAnimTypeNamesCount */
+static char * g_playerAnimTypeNames[64]; /* g_playerAnimTypeNames */
+static char * szWeapTypeNames[4]; /* szWeapTypeNames */
+static char * szWeapSlotNames[3]; /* szWeapSlotNames */
+static char * szProjectileExplosionNames[3]; /* szProjectileExplosionNames */
+static char * szWeapOverlayReticleNames[5]; /* szWeapOverlayReticleNames */
+static char * szWeapClassNames[10]; /* szWeapClassNames */
+static char * szWeapStanceNames[3]; /* szWeapStanceNames */
+static char * offhandClassNames[3]; /* offhandClassNames */
+static cspField_t weaponDefFields[366]; /* weaponDefFields */
 
 int BG_GetWeaponSlotForName(const char *pszSlotName);
 const char * BG_GetWeaponSlotNameForIndex(int iSlot);

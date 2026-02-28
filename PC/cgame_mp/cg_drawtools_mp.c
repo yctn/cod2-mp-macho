@@ -11,18 +11,18 @@ extern float sinf(float x);
 extern float cosf(float x);
 extern double atof(const char *s);
 
-static vec4_t color; /* 0xf31700 */
-static vec2_t sign[4] = { /* 0x303100 */
+static vec4_t color; /* color */
+static vec2_t sign[4] = { /* sign */
     {-1.0f, -1.0f},
     { 1.0f, -1.0f},
     { 1.0f,  1.0f},
     {-1.0f,  1.0f}
 };
 
-extern char **cg_glob;              /* 0x195f584 — pointer to cg_t base */
-extern char **cgs_glob;             /* 0x195f5c4 — pointer to cgs_t base */
-extern char **compPointerConfig;    /* 0x195f6d8 */
-extern const vec_t *colorWhite;    /* 0x195ed2c */
+extern char **cg_glob;              /* imp_cg — pointer to cg_t base */
+extern char **cgs_glob;             /* imp_cgs — pointer to cgs_t base */
+extern char **compPointerConfig;    /* imp_cg_hudCompassSpringyPointers */
+extern const vec_t *colorWhite;    /* imp_colorWhite */
 
 extern FontHandle UI_GetFontHandle(int type, float scale);
 extern void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, int horzAlign, int vertAlign, float fontScale, const vec_t *color, int style);

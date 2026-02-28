@@ -10,13 +10,13 @@ extern void DObjFree(struct DObj_s *dobj);
 extern void Com_Error(int level, const char *fmt, ...);
 extern void Com_Memset(void *dest, int val, int count);
 
-static objBufEntry objBuf[2048]; /* 0x4b7580 */
-static Bool objAlloced[2048]; /* 0x4b6d80 */
-static int objFreeCount; /* 0x4b6d00 */
-static short int clientObjMap[1152]; /* 0x4b6400 */
-static short int serverObjMap[1024]; /* 0x4b5c00 */
-static int com_lastDObjIndex; /* 0x4b5b84 */
-static qboolean g_bDObjInited; /* 0x4b5b80 */
+static objBufEntry objBuf[2048]; /* objBuf */
+static Bool objAlloced[2048]; /* objAlloced */
+static int objFreeCount; /* objFreeCount */
+static short int clientObjMap[1152]; /* clientObjMap */
+static short int serverObjMap[1024]; /* serverObjMap */
+static int com_lastDObjIndex; /* com_lastDObjIndex */
+static qboolean g_bDObjInited; /* g_bDObjInited */
 
 struct DObj_s * Com_GetClientDObj(int handle, int localClientNum);
 struct DObj_s * Com_GetServerDObj(int handle);

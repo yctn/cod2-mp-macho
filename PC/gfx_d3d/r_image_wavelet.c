@@ -4,9 +4,9 @@
 #include "common_types.h"
 #include "imports.h"
 
-static const WaveletHuffmanDecode waveletDecodeBlue[4096]; /* 0x2fb100 */
-static const WaveletHuffmanDecode waveletDecodeRedGreen[4096]; /* 0x2f7100 */
-static const WaveletHuffmanDecode waveletDecodeAlpha[4096]; /* 0x2f3100 */
+static const WaveletHuffmanDecode waveletDecodeBlue[4096]; /* waveletDecodeBlue */
+static const WaveletHuffmanDecode waveletDecodeRedGreen[4096]; /* waveletDecodeRedGreen */
+static const WaveletHuffmanDecode waveletDecodeAlpha[4096]; /* waveletDecodeAlpha */
 
 void Wavelet_DecompressLevel(byte *src, byte *dst, WaveletDecode *decode);
 

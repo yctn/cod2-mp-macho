@@ -209,7 +209,7 @@ const orientation_t * FxBoltFrame_GetOrientation(const FxBoltFrame * _this)
         "movl 0x3c(%esi), %eax\n" /* line 90 | this */
         "testl %eax, %eax\n"
         "js .Lfa05be_000a0617\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%esi)\n" /* this */
@@ -636,7 +636,7 @@ void Light_Draw(const Light * _this)
         "movl %edx, 8(%esp)\n"
         "addl $0x7c, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxHelper_AddLightToScene\n"
@@ -663,7 +663,7 @@ void Flash_Init(const Flash * _this)
         "subl $0x30, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
         "leal 4(%esi), %ecx\n" /* this */
-        "movl 0x195ed88, %ebx\n"
+        "movl imp_theFxHelper, %ebx\n"
         "movl (%ebx), %eax\n"
         "leal 0x14(%eax), %edx\n"
         /* { scope 1 */
@@ -695,21 +695,21 @@ void Flash_Init(const Flash * _this)
         "mulss 8(%edx), %xmm0\n"
         "addss %xmm0, %xmm1\n"
         /* } scope */
-        "ucomiss 0x2ed804, %xmm2\n" /* line 2274 | 600.0f */
+        "ucomiss lit4_002ed804, %xmm2\n" /* line 2274 | 600.0f */
         "ja .Lfa0ac2_000a0ba5\n"
-        "ucomiss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "jae .Lfa0ac2_000a0b76\n"
         "jp .Lfa0ac2_000a0b76\n"
-        "ucomiss 0x2ed798, %xmm2\n" /* 100.0f */
+        "ucomiss lit4_002ed798, %xmm2\n" /* 100.0f */
         "ja .Lfa0ac2_000a0ba5\n"
-        "ucomiss 0x2ed798, %xmm2\n" /* line 2276 | 100.0f */
+        "ucomiss lit4_002ed798, %xmm2\n" /* line 2276 | 100.0f */
         "ja .Lfa0ac2_000a0b76\n"
         "jp .Lfa0ac2_000a0b76\n"
-        "addss 0x2ed808, %xmm1\n" /* line 2277 | 1.100000023841858f */
+        "addss lit4_002ed808, %xmm1\n" /* line 2277 | 1.100000023841858f */
         ".Lfa0ac2_000a0b76:\n"
         "mulss %xmm2, %xmm2\n" /* line 2281 */
-        "divss 0x2ed80c, %xmm2\n" /* -360000.0f */
-        "addss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "divss lit4_002ed80c, %xmm2\n" /* -360000.0f */
+        "addss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "mulss %xmm2, %xmm1\n"
         "mulss 0xd4(%esi), %xmm1\n" /* this */
         "movss %xmm1, 0xd4(%esi)\n" /* this */
@@ -748,10 +748,10 @@ void Particle_AddVisibility(const Particle * _this)
         "pushl %ebx\n"
         "movl 8(%ebp), %ebx\n" /* this */
         /* { scope 1 */
-        "movl 0x195ee74, %esi\n" /* line 570 */
+        "movl imp_g_effectVisArrayCount, %esi\n" /* line 570 */
         "movl (%esi), %eax\n"
         "leal (%eax, %eax, 4), %ecx\n"
-        "movl 0x195ee70, %edx\n"
+        "movl imp_g_effectVisArray, %edx\n"
         "leal (%edx, %ecx, 4), %ecx\n"
         "addl $1, %eax\n" /* line 571 */
         "movl %eax, (%esi)\n"
@@ -769,8 +769,8 @@ void Particle_AddVisibility(const Particle * _this)
         "movss %xmm0, 0xc(%ecx)\n"
         "movzbl 0x93(%ebx), %eax\n" /* line 575 | this */
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed810, %xmm0\n" /* -0.003921568859368563f */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "mulss lit4_002ed810, %xmm0\n" /* -0.003921568859368563f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, 0x10(%ecx)\n"
         /* } scope */
         "popl %ebx\n" /* line 576 */
@@ -855,7 +855,7 @@ void FX_AddFxToScene(void)
         "movl 0xb4(%esi), %eax\n" /* line 356 | effect */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxHelper_AddFxToScene\n"
@@ -998,7 +998,7 @@ Bool Effect_Update(const Effect * _this)
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %ecx\n" /* this */
         "movl 0xb8(%ecx), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -1010,7 +1010,7 @@ Bool Effect_Update(const Effect * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%ecx)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa0df4_000a0e3b\n"
         "movss %xmm1, 0x3c(%ecx)\n" /* line 242 */
@@ -1045,7 +1045,7 @@ Bool Particle_Cull(const Particle * _this)
         "movl 8(%ebp), %edx\n" /* this */
         "testb $2, 0xab(%edx)\n" /* line 220 */
         "je .Lfa0e5c_000a0eb1\n"
-        "movl 0x195ed88, %ecx\n" /* line 221 */
+        "movl imp_theFxHelper, %ecx\n" /* line 221 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         /* { scope 1 */
@@ -1069,7 +1069,7 @@ Bool Particle_Cull(const Particle * _this)
         "popl %ebp\n"
         "retl\n"
         ".Lfa0e5c_000a0eb1:\n"
-        "movl 0x195ed88, %ecx\n" /* line 223 */
+        "movl imp_theFxHelper, %ecx\n" /* line 223 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n" /* line 397 */
@@ -1100,7 +1100,7 @@ Bool OrientedParticle_Cull(const OrientedParticle * _this)
         "movl 8(%ebp), %edx\n" /* this */
         "testb $2, 0xab(%edx)\n" /* line 220 */
         "je .Lfa0ee8_000a0f3d\n"
-        "movl 0x195ed88, %ecx\n" /* line 221 */
+        "movl imp_theFxHelper, %ecx\n" /* line 221 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         /* { scope 1 */
@@ -1124,7 +1124,7 @@ Bool OrientedParticle_Cull(const OrientedParticle * _this)
         "popl %ebp\n"
         "retl\n"
         ".Lfa0ee8_000a0f3d:\n"
-        "movl 0x195ed88, %ecx\n" /* line 223 */
+        "movl imp_theFxHelper, %ecx\n" /* line 223 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n" /* line 1272 */
@@ -1155,7 +1155,7 @@ Bool Cloud_Cull(const Cloud * _this)
         "movl 8(%ebp), %edx\n" /* this */
         "testb $2, 0xab(%edx)\n" /* line 220 */
         "je .Lfa0f74_000a0ffd\n"
-        "movl 0x195ed88, %ecx\n" /* line 221 */
+        "movl imp_theFxHelper, %ecx\n" /* line 221 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         /* { scope 1 */
@@ -1172,7 +1172,7 @@ Bool Cloud_Cull(const Cloud * _this)
         "movaps %xmm1, %xmm0\n" /* line 45 */
         "subss %xmm2, %xmm0\n"
         "movaps %xmm2, %xmm4\n"
-        "cmpltss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "cmpltss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "andps %xmm0, %xmm4\n"
         "andnps %xmm1, %xmm0\n"
         "orps %xmm4, %xmm0\n"
@@ -1191,7 +1191,7 @@ Bool Cloud_Cull(const Cloud * _this)
         "popl %ebp\n"
         "retl\n"
         ".Lfa0f74_000a0ffd:\n"
-        "movl 0x195ed88, %ecx\n" /* line 223 */
+        "movl imp_theFxHelper, %ecx\n" /* line 223 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         "jmp .Lfa0f74_000a0fa1\n"
@@ -1210,7 +1210,7 @@ Bool Line_Cull(const Line * _this)
         "movl 8(%ebp), %ecx\n" /* this */
         "testb $2, 0xab(%ecx)\n" /* line 220 */
         "je .Lfa100e_000a1071\n"
-        "movl 0x195ed88, %ebx\n" /* line 221 */
+        "movl imp_theFxHelper, %ebx\n" /* line 221 */
         "movl (%ebx), %eax\n"
         "movl 0x80(%eax), %edx\n"
         /* { scope 1 */
@@ -1237,7 +1237,7 @@ Bool Line_Cull(const Line * _this)
         "popl %ebp\n"
         "retl\n"
         ".Lfa100e_000a1071:\n"
-        "movl 0x195ed88, %ebx\n" /* line 223 */
+        "movl imp_theFxHelper, %ebx\n" /* line 223 */
         "movl (%ebx), %eax\n"
         "movl 0x80(%eax), %edx\n"
         "jmp .Lfa100e_000a103b\n"
@@ -1256,7 +1256,7 @@ Bool Tail_Cull(const Tail * _this)
         "movl 8(%ebp), %ecx\n" /* this */
         "testb $2, 0xab(%ecx)\n" /* line 220 */
         "je .Lfa1082_000a10e5\n"
-        "movl 0x195ed88, %ebx\n" /* line 221 */
+        "movl imp_theFxHelper, %ebx\n" /* line 221 */
         "movl (%ebx), %eax\n"
         "movl 0x80(%eax), %edx\n"
         /* { scope 1 */
@@ -1283,7 +1283,7 @@ Bool Tail_Cull(const Tail * _this)
         "popl %ebp\n"
         "retl\n"
         ".Lfa1082_000a10e5:\n"
-        "movl 0x195ed88, %ebx\n" /* line 223 */
+        "movl imp_theFxHelper, %ebx\n" /* line 223 */
         "movl (%ebx), %eax\n"
         "movl 0x80(%eax), %edx\n"
         "jmp .Lfa1082_000a10af\n"
@@ -1302,7 +1302,7 @@ Bool Cylinder_Cull(const Cylinder * _this)
         "movl 8(%ebp), %edx\n" /* this */
         "testb $2, 0xab(%edx)\n" /* line 220 */
         "je .Lfa10f6_000a115f\n"
-        "movl 0x195ed88, %ecx\n" /* line 221 */
+        "movl imp_theFxHelper, %ecx\n" /* line 221 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         /* { scope 1 */
@@ -1330,7 +1330,7 @@ Bool Cylinder_Cull(const Cylinder * _this)
         "popl %ebp\n"
         "retl\n"
         ".Lfa10f6_000a115f:\n"
-        "movl 0x195ed88, %ecx\n" /* line 223 */
+        "movl imp_theFxHelper, %ecx\n" /* line 223 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         "jmp .Lfa10f6_000a1123\n"
@@ -1349,7 +1349,7 @@ Bool Light_Cull(const Light * _this)
         "movl 8(%ebp), %edx\n" /* this */
         "testb $2, 0xab(%edx)\n" /* line 220 */
         "je .Lfa1170_000a11c5\n"
-        "movl 0x195ed88, %ecx\n" /* line 221 */
+        "movl imp_theFxHelper, %ecx\n" /* line 221 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         /* { scope 1 */
@@ -1373,7 +1373,7 @@ Bool Light_Cull(const Light * _this)
         "popl %ebp\n"
         "retl\n"
         ".Lfa1170_000a11c5:\n"
-        "movl 0x195ed88, %ecx\n" /* line 223 */
+        "movl imp_theFxHelper, %ecx\n" /* line 223 */
         "movl (%ecx), %eax\n"
         "movl 0x80(%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n" /* line 2154 */
@@ -1430,11 +1430,11 @@ float Particle_GetVisibility(const Particle * _this, const vec_t *start, const v
         "addss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n" /* line 547 */
         "subss %xmm1, %xmm0\n"
-        "andps 0x2f1c00, %xmm0\n"
+        "andps CorrectSolidDeltas+5376, %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa1220_000a129c\n"
         ".Lfa1220_000a1286:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 554 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 554 | 1.0f */
         /* } scope */
         "movss %xmm0, -0x2c(%ebp)\n" /* line 558 */
         "flds -0x2c(%ebp)\n"
@@ -1465,8 +1465,8 @@ float Particle_GetVisibility(const Particle * _this, const vec_t *start, const v
         "jbe .Lfa1220_000a1286\n"
         "movzbl 0x93(%ebx), %eax\n" /* line 555 | this */
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed810, %xmm0\n" /* -0.003921568859368563f */
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "mulss lit4_002ed810, %xmm0\n" /* -0.003921568859368563f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         /* } scope */
         "movss %xmm0, -0x2c(%ebp)\n" /* line 558 */
         "flds -0x2c(%ebp)\n"
@@ -1658,7 +1658,7 @@ void Flash_Draw(const Flash * _this)
         "movl %esi, %eax\n" /* this */
         "movl $1, %edx\n"
         "pxor %xmm2, %xmm2\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "leal -0x28(%ebp), %ecx\n" /* color */
         /* { scope 1 */
         ".Lfa1522_000a1544:\n"
@@ -1680,8 +1680,8 @@ void Flash_Draw(const Flash * _this)
         "leal 0x90(%esi), %ebx\n" /* line 2293 | this, to */
         /* { scope 2 */
         "movss -0x28(%ebp), %xmm0\n" /* line 428 | color */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x2c(%ebp)\n"
@@ -1698,8 +1698,8 @@ void Flash_Draw(const Flash * _this)
         "movb %al, (%ebx)\n" /* line 696 */
         "leal 1(%ebx), %edi\n" /* line 697 */
         "movss -0x24(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x30(%ebp)\n"
@@ -1716,8 +1716,8 @@ void Flash_Draw(const Flash * _this)
         "movb %al, (%edi)\n" /* line 697 */
         "leal 2(%ebx), %edi\n" /* line 698 */
         "movss -0x20(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x34(%ebp)\n"
@@ -1733,9 +1733,9 @@ void Flash_Draw(const Flash * _this)
         ".Lfa1522_000a1635:\n"
         "movb %al, (%edi)\n" /* line 698 */
         "addl $3, %ebx\n" /* line 699 */
-        "movss 0x2ed5d4, %xmm0\n" /* line 428 | 255.0f */
+        "movss lit4_002ed5d4, %xmm0\n" /* line 428 | 255.0f */
         "mulss -0x1c(%ebp), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x38(%ebp)\n"
@@ -1752,7 +1752,7 @@ void Flash_Draw(const Flash * _this)
         "movb %al, (%ebx)\n" /* line 699 */
         /* } scope */
         "leal 0x7c(%esi), %ebx\n" /* line 2295 | this, to */
-        "movl 0x195ed88, %ecx\n"
+        "movl imp_theFxHelper, %ecx\n"
         "movl (%ecx), %eax\n"
         "leal 0x14(%eax), %edx\n" /* from */
         /* { scope 2 */
@@ -1766,7 +1766,7 @@ void Flash_Draw(const Flash * _this)
         "leal 0x20(%eax), %edx\n"
         /* } scope */
         /* { scope 2 */
-        "movss 0x2ed740, %xmm1\n" /* line 288 | 8.0f */
+        "movss lit4_002ed740, %xmm1\n" /* line 288 | 8.0f */
         "movss 0x20(%eax), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss 0x7c(%esi), %xmm0\n"
@@ -1965,7 +1965,7 @@ void Particle_Die(const Particle * _this)
         "addss %xmm1, %xmm0\n"
         "sqrtss %xmm0, %xmm1\n"
         "cvtss2sd %xmm1, %xmm0\n" /* line 384 */
-        "ucomisd 0x307cc0, %xmm0\n" /* 1e-06 */
+        "ucomisd lit8_00307cc0, %xmm0\n" /* 1e-06 */
         "jae .Lfa1802_000a18f7\n"
         "jp .Lfa1802_000a18f7\n"
         "xorl %eax, %eax\n" /* line 191 */
@@ -1979,7 +1979,7 @@ void Particle_Die(const Particle * _this)
         "movl %eax, 8(%esp)\n"
         "movl 0x30(%esi), %eax\n" /* this */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_PlayEffect\n"
@@ -2038,9 +2038,9 @@ void Tail_CalcNewEndpoint(const Tail * _this, const orientation_t *or_)
         "mulss %xmm0, %xmm0\n"
         "addss %xmm0, %xmm2\n"
         "sqrtss %xmm2, %xmm2\n"
-        "ucomiss 0x2ed5e8, %xmm2\n" /* line 1674 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* line 1674 | 0.0f */
         "jbe .Lfa1926_000a1a13\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1676 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1676 | 1.0f, scale */
         "divss %xmm2, %xmm0\n" /* scale */
         /* { scope 2 */
         "mulss %xmm0, %xmm3\n" /* line 272 */
@@ -2434,7 +2434,7 @@ void ZN6EffectD1Ev(void) /* Effect_~Effect */
         "pushl %ebp\n" /* line 182 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n"
+        "movl $__ZTV6Effect+8, (%eax)\n"
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa202a_000a2078\n"
@@ -2709,7 +2709,7 @@ void ZN6EffectD0Ev(void) /* Effect_~Effect */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* this */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* this */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa2286_000a22d7\n"
@@ -2981,7 +2981,7 @@ void Particle_UpdateRGB(const Particle * _this)
         "addl $0x90, %esi\n" /* res */
         "movl $1, %ebx\n"
         "leal -0x18(%ebp), %edi\n" /* rgbVal, keySize */
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* 255.0f */
         /* { scope 2 */
         ".Lfa236e_000a2560:\n"
         "movss -4(%edi, %ebx, 4), %xmm0\n" /* line 49 */
@@ -3155,7 +3155,7 @@ Bool Flash_Update(const Flash * _this)
         "subl $0x18, %esp\n"
         "movl 8(%ebp), %ecx\n" /* this */
         "movl 0xb8(%ecx), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -3171,7 +3171,7 @@ Bool Flash_Update(const Flash * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%ecx)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa273c_000a278a\n"
         "movss %xmm1, 0x3c(%ecx)\n" /* line 242 */
@@ -3295,7 +3295,7 @@ void Particle_IntegrateVelocity(const Particle * _this, float normDuration, vec_
         "movl 0xbc(%esi), %eax\n" /* line 902 | this */
         "subl 0xb8(%esi), %eax\n" /* this */
         "cvtsi2ssl %eax, %xmm0\n" /* scale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
         /* { scope 1 */
         "movaps %xmm0, %xmm1\n" /* line 272 */
         "mulss (%edi), %xmm1\n"
@@ -3467,7 +3467,7 @@ void Particle_IntegrateVelocity2(const Particle * _this, float normDuration, vec
         "movl 0xbc(%esi), %eax\n" /* line 928 | this */
         "subl 0xb8(%esi), %eax\n" /* this */
         "cvtsi2ssl %eax, %xmm0\n" /* scale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
         /* { scope 1 */
         "movaps %xmm0, %xmm1\n" /* line 272 */
         "mulss (%edi), %xmm1\n"
@@ -3577,12 +3577,12 @@ void Particle_IntegrateTotalVelocity(const Particle * _this, int duration, vec_t
         "calll Particle_IntegrateVelocity2\n"
         "movss -0x2c(%ebp), %xmm2\n" /* line 938 */
         "mulss 0xf4(%esi), %xmm2\n"
-        "movss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "mulss %xmm1, %xmm2\n"
         "mulss -0x2c(%ebp), %xmm1\n" /* line 961 | scale */
         /* { scope 2 */
         "movaps %xmm1, %xmm3\n" /* line 272 */
-        "mulss 0x2ed5e8, %xmm3\n" /* 0.0f */
+        "mulss lit4_002ed5e8, %xmm3\n" /* 0.0f */
         /* } scope */
         "movss -0x14(%ebp), %xmm0\n" /* line 240 | velocitySum */
         "addss -0x20(%ebp), %xmm0\n" /* velocity2Sum */
@@ -3611,7 +3611,7 @@ void Particle_IntegrateTotalVelocity(const Particle * _this, int duration, vec_t
         ".Lfa2d00_000a2df1:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 955 */
         "movss %xmm0, -0x2c(%ebp)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movss %xmm1, -0x30(%ebp)\n" /* normDuration */
         "movaps %xmm1, %xmm0\n"
         "jmp .Lfa2d00_000a2d43\n"
@@ -3638,7 +3638,7 @@ void ZN8ParticleD1Ev(void) /* Particle_~Particle */
         "pushl %ebp\n" /* line 366 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa2e68_000a2eb6\n"
@@ -3693,7 +3693,7 @@ void ZN8ParticleD0Ev(void) /* Particle_~Particle */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa2ec4_000a2f15\n"
@@ -3761,7 +3761,7 @@ void ZN5LightD1Ev(void) /* Light_~Light */
         "pushl %ebp\n" /* line 2136 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa2f64_000a2fb2\n"
@@ -3816,7 +3816,7 @@ void ZN5LightD0Ev(void) /* Light_~Light */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa2fc0_000a3011\n"
@@ -4114,7 +4114,7 @@ Bool Light_Update(const Light * _this)
         "movl 8(%ebp), %esi\n" /* this */
         /* { scope 1 */
         "movl 0xb8(%esi), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -4126,7 +4126,7 @@ Bool Light_Update(const Light * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%esi)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa32cc_000a331d\n"
         "movss %xmm1, 0x3c(%esi)\n" /* line 242 */
@@ -4222,7 +4222,7 @@ Bool Light_Update(const Light * _this)
         "movl 0x3c(%ebx), %eax\n" /* line 90 */
         "testl %eax, %eax\n"
         "js .Lfa32cc_000a3468\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n"
@@ -5796,7 +5796,7 @@ void Particle_GetTotalVelocity(const Particle * _this, float normTime, vec_t *ou
         "movl %edx, -0x44(%ebp)\n" /* line 937 */
         "cvtsi2ssl %eax, %xmm0\n" /* line 938 */
         "mulss 0xf4(%ebx), %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x40(%ebp)\n"
         /* } scope */
         "testl %esi, %esi\n" /* line 856 */
@@ -5862,7 +5862,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         /* { scope 1: time, worldorg */
         "testb $1, 0xa9(%ebx)\n" /* line 1927 | this */
         "je .Lfa467a_000a48c2\n"
-        "movl 0x195ed88, %ecx\n" /* line 1930 */
+        "movl imp_theFxHelper, %ecx\n" /* line 1930 */
         "movl (%ecx), %eax\n"
         "movl 0xc(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -5875,7 +5875,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "movl 4(%eax), %eax\n" /* line 1944 */
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0x88(%ebp)\n" /* age */
         "movl 0xbc(%ebx), %eax\n" /* line 1945 | this */
@@ -5906,7 +5906,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "addl $0xc, %edi\n" /* line 1951 | dif */
         "cvtsi2ssl %edi, %xmm0\n" /* line 1954 | dif */
         "movss %xmm0, -0xa0(%ebp)\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x94(%ebp)\n" /* ftime */
         "movss 0x24c(%ebx), %xmm0\n" /* line 240 */
         "addss 0x264(%ebx), %xmm0\n"
@@ -5922,7 +5922,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "movss %xmm1, -0x80(%ebp)\n" /* time */
         /* { scope 2 */
         "divss -0x84(%ebp), %xmm1\n" /* line 588 | lifeTime */
-        "movss 0x2ed5d0, %xmm0\n" /* line 590 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 590 | 1.0f */
         "minss %xmm1, %xmm0\n"
         /* } scope */
         "movl 0x10(%ebp), %eax\n" /* line 1967 | or_ */
@@ -5970,7 +5970,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "ucomiss -0x98(%ebp), %xmm0\n"
         "jbe .Lfa467a_000a48cd\n"
         "addl $0xc, %esi\n" /* line 1985 | t */
-        "movl 0x195ed88, %ecx\n"
+        "movl imp_theFxHelper, %ecx\n"
         "movl (%ecx), %eax\n" /* line 1949 */
         "cmpl 4(%eax), %esi\n" /* t */
         "jl .Lfa467a_000a475f\n"
@@ -6005,7 +6005,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "movl %eax, 8(%esp)\n" /* line 2015 */
         "movl 0x290(%ebx), %eax\n" /* this */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_PlayEffect\n"
@@ -6023,7 +6023,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "movaps %xmm2, %xmm0\n" /* line 2026 | dF */
         "addss %xmm2, %xmm0\n" /* dF */
         "mulss -0x94(%ebp), %xmm0\n" /* ftime, dF */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 2027 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 2027 | 0.0f */
         "jne .Lfa467a_000a4ab4\n"
         "jp .Lfa467a_000a4ab4\n"
         "movss -0x94(%ebp), %xmm1\n" /* ftime */
@@ -6031,7 +6031,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "divss -0x84(%ebp), %xmm1\n" /* lifeTime */
         /* } scope */
         ".Lfa467a_000a498c:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 590 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 590 | 1.0f */
         "minss %xmm1, %xmm0\n"
         "movl 0x10(%ebp), %ecx\n" /* line 2052 | or_ */
         "movl %ecx, 0xc(%esp)\n"
@@ -6060,7 +6060,7 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "testl %edx, %edx\n"
         "je .Lfa467a_000a4a40\n"
         "movss -0xa0(%ebp), %xmm0\n" /* line 2069 | scale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
         /* { scope 2 */
         "movaps %xmm0, %xmm1\n" /* line 288 */
         "movl 0xc(%ebp), %ecx\n" /* bindVelocity */
@@ -6096,15 +6096,15 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "mulss %xmm0, %xmm0\n" /* line 2080 */
         "movss %xmm0, -0x90(%ebp)\n" /* step2 */
         "xorl %edi, %edi\n" /* dif */
-        "movl 0x195ed88, %ecx\n"
+        "movl imp_theFxHelper, %ecx\n"
         "jmp .Lfa467a_000a4754\n"
         /* { scope 2 */
         ".Lfa467a_000a4ab4:\n"
         "mulss %xmm1, %xmm2\n" /* line 428 */
         "subss -0x90(%ebp), %xmm2\n" /* step2 */
         "divss %xmm0, %xmm2\n"
-        "mulss 0x2ed5c8, %xmm2\n" /* 1000.0f */
-        "addss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "mulss lit4_002ed5c8, %xmm2\n" /* 1000.0f */
+        "addss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "movss %xmm2, (%esp)\n"
         "calll floorf\n"
         "fstps -0x9c(%ebp)\n"
@@ -6116,12 +6116,12 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "cmovll %eax, %edi\n" /* dif */
         "cvtsi2ssl %edi, %xmm0\n" /* line 2039 | dif */
         "movss %xmm0, -0xa0(%ebp)\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, -0x94(%ebp)\n" /* ftime */
         "movss -0x80(%ebp), %xmm1\n" /* line 588 | time */
         "addss %xmm0, %xmm1\n"
         "divss -0x84(%ebp), %xmm1\n" /* lifeTime */
-        "movss 0x2ed5d0, %xmm0\n" /* line 590 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 590 | 1.0f */
         "minss %xmm1, %xmm0\n"
         "movl 0x10(%ebp), %eax\n" /* line 2041 | or_ */
         "movl %eax, 0xc(%esp)\n"
@@ -6160,9 +6160,9 @@ void Emitter_UpdateEmitFx(const Emitter * _this, vec_t *bindVelocity, const orie
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm1\n"
         "sqrtss %xmm1, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 1999 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 1999 | 0.0f */
         "jbe .Lfa467a_000a4c48\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2001 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2001 | 1.0f, scale */
         "divss %xmm1, %xmm0\n" /* scale */
         /* { scope 2 */
         "mulss %xmm0, %xmm3\n" /* line 272 */
@@ -6238,7 +6238,7 @@ void Particle_GetTotalVelocityAtTime0(const Particle * _this, vec_t *outVector)
         "movl 0x3c(%ebx), %ecx\n" /* line 90 */
         "testl %ecx, %ecx\n"
         "js .Lfa4c8a_000a4cea\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n"
@@ -6323,7 +6323,7 @@ void Particle_ApplyImpact(const Particle * _this, const orientation_t *or_, floa
         "addss %xmm1, %xmm0\n"
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm0\n"
-        "ucomiss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "ucomiss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "jb .Lfa4d30_000a4ebc\n"
         ".Lfa4d30_000a4d80:\n"
         "movss 0x18(%ebp), %xmm0\n" /* line 607 | traceFraction */
@@ -6381,7 +6381,7 @@ void Particle_ApplyImpact(const Particle * _this, const orientation_t *or_, floa
         "addss %xmm3, %xmm1\n" /* scale */
         "mulss -0xc(%ebp), %xmm2\n"
         "addss %xmm2, %xmm1\n" /* scale */
-        "mulss 0x2ed628, %xmm1\n" /* -2.0f, scale */
+        "mulss lit4_002ed628, %xmm1\n" /* -2.0f, scale */
         /* { scope 2 */
         "mulss %xmm1, %xmm0\n" /* line 288 */
         "addss 0xc4(%ebx), %xmm0\n"
@@ -6405,7 +6405,7 @@ void Particle_ApplyImpact(const Particle * _this, const orientation_t *or_, floa
         ".Lfa4d30_000a4ec2:\n"
         "movl 0xa8(%ebx), %eax\n" /* line 616 */
         "andl $0xfffff7df, %eax\n"
-        "orl $0x1000000, %eax\n" /* line 617 */
+        "orl $g_effectVisArray+4352, %eax\n" /* line 617 */
         "movl %eax, 0xa8(%ebx)\n"
         /* } scope */
         "addl $0x34, %esp\n" /* line 657 */
@@ -6439,14 +6439,14 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         /* { scope 1 */
         "testb $1, 0xab(%ebx)\n" /* line 694 | this */
         "jne .Lfa4ef4_000a510f\n"
-        "movl 0x195ed88, %eax\n" /* line 697 */
+        "movl imp_theFxHelper, %eax\n" /* line 697 */
         "movl (%eax), %eax\n"
         "movl 0xc(%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lfa4ef4_000a510f\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 703 */
         "movss %xmm0, -0xac(%ebp)\n" /* ftime */
-        "movss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss -0xac(%ebp), %xmm1\n" /* ftime */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, -0xac(%ebp)\n" /* ftime */
@@ -6463,7 +6463,7 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         "movss %xmm0, -0xa8(%ebp)\n" /* lifeTime */
         "movss -0xa4(%ebp), %xmm1\n" /* line 588 | age */
         "divss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 590 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 590 | 1.0f */
         "minss %xmm1, %xmm0\n"
         "movl 0xc(%ebp), %eax\n" /* line 712 | or_ */
         "movl %eax, 0xc(%esp)\n"
@@ -6542,7 +6542,7 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         "movl %eax, 8(%esp)\n"
         "leal -0x90(%ebp), %eax\n" /* trace */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxHelper_Trace\n"
@@ -6550,7 +6550,7 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         "jne .Lfa4ef4_000a50ee\n"
         "cmpb $0, -0x6e(%ebp)\n" /* line 667 */
         "jne .Lfa4ef4_000a50ee\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 670 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 670 | 1.0f */
         "ucomiss -0x90(%ebp), %xmm0\n" /* trace */
         "jp .Lfa4ef4_000a516a\n"
         "jne .Lfa4ef4_000a516a\n"
@@ -6597,7 +6597,7 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         "movl $1, 0x1c(%esp)\n" /* line 742 */
         "movl $0xffffffff, 0x18(%esp)\n"
         "movl %edi, 0x14(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "jmp .Lfa4ef4_000a50ab\n"
         ".Lfa4ef4_000a516a:\n"
@@ -6631,7 +6631,7 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         "movl %eax, 8(%esp)\n"
         "movl 0x2c(%ebx), %eax\n" /* this */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed48, %eax\n"
+        "movl imp_theFxScheduler, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxScheduler_PlayEffect\n"
@@ -6647,7 +6647,7 @@ Bool Particle_UpdateOrigin(const Particle * _this, const orientation_t *or_)
         "addss -0xac(%ebp), %xmm0\n" /* ftime */
         "divss -0xa8(%ebp), %xmm0\n" /* lifeTime */
         "movss %xmm0, -0xa4(%ebp)\n" /* age */
-        "movss 0x2ed5d0, %xmm0\n" /* line 590 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 590 | 1.0f */
         "minss -0xa4(%ebp), %xmm0\n" /* age */
         "leal -0x8c(%ebp), %eax\n" /* line 762 */
         "movl %eax, 0x14(%esp)\n"
@@ -6704,7 +6704,7 @@ Bool Emitter_Update(const Emitter * _this)
         "movl 8(%ebp), %esi\n" /* this */
         /* { scope 1: axis */
         "movl 0xb8(%esi), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -6716,7 +6716,7 @@ Bool Emitter_Update(const Emitter * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%esi)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa52f2_000a5346\n"
         "movss %xmm1, 0x3c(%esi)\n" /* line 242 */
@@ -6765,7 +6765,7 @@ Bool Emitter_Update(const Emitter * _this)
         "testl %eax, %eax\n" /* line 1858 */
         "je .Lfa52f2_000a56f6\n"
         "leal 0x284(%esi), %ecx\n" /* line 1859 | this */
-        "movss 0x2ed6ac, %xmm0\n" /* line 272 | 0.699999988079071f */
+        "movss lit4_002ed6ac, %xmm0\n" /* line 272 | 0.699999988079071f */
         "movss 0x284(%esi), %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, 0x284(%esi)\n"
@@ -6775,10 +6775,10 @@ Bool Emitter_Update(const Emitter * _this)
         "mulss 8(%ecx), %xmm0\n" /* line 274 */
         "movss %xmm0, 8(%ecx)\n"
         ".Lfa52f2_000a541d:\n"
-        "movl 0x195ed88, %eax\n" /* line 2089 */
+        "movl imp_theFxHelper, %eax\n" /* line 2089 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 0xc(%eax), %xmm1\n" /* scale */
-        "mulss 0x2ed738, %xmm1\n" /* 0.009999999776482582f, scale */
+        "mulss lit4_002ed738, %xmm1\n" /* 0.009999999776482582f, scale */
         "leal 0x278(%esi), %edx\n" /* this, result */
         /* { scope 2: keySize, i */
         "movaps %xmm1, %xmm0\n" /* line 288 */
@@ -6955,7 +6955,7 @@ Bool Emitter_Update(const Emitter * _this)
         /* } scope */
         "movl 0x88(%esi), %eax\n" /* line 1882 | this */
         "movl %eax, 0x98(%esi)\n" /* this */
-        "movl 0x195ed88, %eax\n" /* line 1884 */
+        "movl imp_theFxHelper, %eax\n" /* line 1884 */
         "movl (%eax), %edx\n"
         "movl 0x270(%esi), %ecx\n" /* this */
         "cmpl 4(%edx), %ecx\n"
@@ -6984,7 +6984,7 @@ Bool Emitter_Update(const Emitter * _this)
         "movl 0x3c(%ebx), %eax\n" /* line 90 | key */
         "testl %eax, %eax\n"
         "js .Lfa52f2_000a56e9\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n" /* key */
@@ -7100,7 +7100,7 @@ Bool Emitter_Update(const Emitter * _this)
         "movl 4(%edx), %eax\n" /* line 1893 */
         "subl %ecx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n" /* scale */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f, scale */
         /* { scope 3 */
         "movaps %xmm0, %xmm1\n" /* line 272 */
         "mulss -0x24(%ebp), %xmm1\n" /* bindVelocity */
@@ -7235,7 +7235,7 @@ void Particle_UpdateAlpha(const Particle * _this)
         "mulss 8(%ecx), %xmm3\n"
         /* } scope */
         ".Lfa587c_000a5997:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 45 | 1.0f */
         "movaps %xmm3, %xmm4\n"
         "subss %xmm0, %xmm4\n"
         "pxor %xmm1, %xmm1\n"
@@ -7256,7 +7256,7 @@ void Particle_UpdateAlpha(const Particle * _this)
         "cmpb $0, 0xa8(%eax)\n"
         "jns .Lfa587c_000a5a39\n"
         "movl %eax, %edx\n"
-        "mulss 0x2ed5d4, %xmm4\n" /* line 1072 | 255.0f */
+        "mulss lit4_002ed5d4, %xmm4\n" /* line 1072 | 255.0f */
         "cvttss2si %xmm4, %eax\n"
         "movb %al, 0x93(%edx)\n"
         /* } scope */
@@ -7417,7 +7417,7 @@ Bool Cylinder_Update(const Cylinder * _this)
         "movl 8(%ebp), %esi\n" /* this */
         /* { scope 1 */
         "movl 0xb8(%esi), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -7429,7 +7429,7 @@ Bool Cylinder_Update(const Cylinder * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%esi)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa5b84_000a5bd5\n"
         "movss %xmm1, 0x3c(%esi)\n" /* line 242 */
@@ -7659,7 +7659,7 @@ Bool Cylinder_Update(const Cylinder * _this)
         "movl 0x3c(%ebx), %ecx\n" /* line 90 | key */
         "testl %ecx, %ecx\n"
         "js .Lfa5b84_000a5ee4\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n" /* key */
@@ -8113,7 +8113,7 @@ Bool Tail_Update(const Tail * _this)
         "movl 8(%ebp), %esi\n" /* this */
         /* { scope 1 */
         "movl 0xb8(%esi), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -8125,7 +8125,7 @@ Bool Tail_Update(const Tail * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%esi)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa63aa_000a63fb\n"
         "movss %xmm1, 0x3c(%esi)\n" /* line 242 */
@@ -8387,7 +8387,7 @@ Bool Tail_Update(const Tail * _this)
         /* { scope 2: keySize, keySize */
         "movl 0x40(%esi), %eax\n" /* line 1110 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ed88, %ebx\n" /* source1 */
+        "movl imp_theFxHelper, %ebx\n" /* source1 */
         "movl (%ebx), %eax\n" /* source1 */
         "movl %eax, (%esp)\n"
         "calll FxHelper_GetMaterialSubimageCount\n"
@@ -8428,7 +8428,7 @@ Bool Tail_Update(const Tail * _this)
         "movl 0x3c(%ebx), %eax\n" /* line 90 | key */
         "testl %eax, %eax\n"
         "js .Lfa63aa_000a67d2\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n" /* key */
@@ -8640,7 +8640,7 @@ Bool Line_Update(const Line * _this)
         "movl 8(%ebp), %esi\n" /* this */
         /* { scope 1 */
         "movl 0xb8(%esi), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -8652,7 +8652,7 @@ Bool Line_Update(const Line * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%esi)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa69da_000a6a2b\n"
         "movss %xmm1, 0x3c(%esi)\n" /* line 242 */
@@ -8743,7 +8743,7 @@ Bool Line_Update(const Line * _this)
         "movl 0x3c(%ebx), %eax\n" /* line 90 */
         "testl %eax, %eax\n"
         "js .Lfa69da_000a6b78\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n"
@@ -8933,7 +8933,7 @@ Bool Cloud_Update(const Cloud * _this)
         "movl 8(%ebp), %esi\n" /* this */
         /* { scope 1 */
         "movl 0xb8(%esi), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -8945,7 +8945,7 @@ Bool Cloud_Update(const Cloud * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%esi)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa6d3c_000a6d8d\n"
         "movss %xmm1, 0x3c(%esi)\n" /* line 242 */
@@ -9249,10 +9249,10 @@ Bool Cloud_Update(const Cloud * _this)
         "mulss 8(%ecx), %xmm3\n"
         /* } scope */
         ".Lfa6d3c_000a7146:\n"
-        "movl 0x195ed88, %eax\n" /* line 1094 */
+        "movl imp_theFxHelper, %eax\n" /* line 1094 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "mulss %xmm3, %xmm0\n"
         "addss 0x44(%esi), %xmm0\n"
         "movss %xmm0, 0x44(%esi)\n"
@@ -9311,7 +9311,7 @@ Bool Cloud_Update(const Cloud * _this)
         "movl 0x3c(%ebx), %eax\n" /* line 90 | key */
         "testl %eax, %eax\n"
         "js .Lfa6d3c_000a7265\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n" /* key */
@@ -9843,7 +9843,7 @@ Bool OrientedParticle_Update(const OrientedParticle * _this)
         "movl 8(%ebp), %edi\n" /* this */
         /* { scope 1 */
         "movl 0xb8(%edi), %edx\n" /* line 232 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -9855,7 +9855,7 @@ Bool OrientedParticle_Update(const OrientedParticle * _this)
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%edi)\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa77be_000a780f\n"
         "movss %xmm1, 0x3c(%edi)\n" /* line 242 */
@@ -10045,10 +10045,10 @@ Bool OrientedParticle_Update(const OrientedParticle * _this)
         "mulss 8(%ecx), %xmm3\n"
         /* } scope */
         ".Lfa77be_000a7a57:\n"
-        "movl 0x195ed88, %ebx\n" /* line 1094 | source1 */
+        "movl imp_theFxHelper, %ebx\n" /* line 1094 | source1 */
         "movl (%ebx), %eax\n" /* source1 */
         "cvtsi2ssl 0xc(%eax), %xmm0\n"
-        "mulss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "mulss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "mulss %xmm0, %xmm3\n"
         "addss 0x44(%edi), %xmm3\n"
         "movss %xmm3, 0x44(%edi)\n"
@@ -10109,7 +10109,7 @@ Bool OrientedParticle_Update(const OrientedParticle * _this)
         "movl 0x3c(%ebx), %esi\n" /* line 90 | key, keySize */
         "testl %esi, %esi\n" /* keySize */
         "js .Lfa77be_000a7b6e\n"
-        "movl 0x195ee78, %eax\n" /* line 94 */
+        "movl imp_cl, %eax\n" /* line 94 */
         "movl (%eax), %eax\n"
         "movl 0x864c(%eax), %eax\n"
         "cmpl %eax, 4(%ebx)\n" /* key */
@@ -10597,7 +10597,7 @@ Bool Particle_Update(const Particle * _this, const Particle * _this_1, const Clo
         "movl 8(%ebp), %edi\n" /* this */
         /* { scope 1 */
         "movl 0xb8(%edi), %edx\n" /* line 232 | keySize */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl %eax, %edx\n"
@@ -10609,7 +10609,7 @@ Bool Particle_Update(const Particle * _this, const Particle * _this_1, const Clo
         "cvtsi2ssl %eax, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0x3c(%edi)\n" /* keySize */
-        "movss 0x2ed5d0, %xmm1\n" /* line 241 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 241 | 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lfa8074_000a80c5\n"
         "movss %xmm1, 0x3c(%edi)\n" /* line 242 | keySize */
@@ -12514,7 +12514,7 @@ void ZN8CylinderD0Ev(void) /* Cylinder_~Cylinder */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa9e16_000a9e67\n"
@@ -12573,7 +12573,7 @@ void ZN8CylinderD1Ev(void) /* Cylinder_~Cylinder */
         "pushl %ebp\n" /* line 1732 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa9e86_000a9ed4\n"
@@ -12630,7 +12630,7 @@ void Cylinder_Cylinder(const Cylinder * _this)
         "movl 8(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* line 1579 */
         "calll Particle_Particle\n"
-        "movl $0x330108, (%ebx)\n" /* line 1727 | this */
+        "movl $__ZTV8Cylinder+8, (%ebx)\n" /* line 1727 | this */
         "addl $0x14, %esp\n" /* line 1729 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -12650,7 +12650,7 @@ void OrientedParticle_OrientedParticle(const OrientedParticle * _this)
         "movl 8(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll Particle_Particle\n"
-        "movl $0x330008, (%ebx)\n" /* this */
+        "movl $__ZTV16OrientedParticle+8, (%ebx)\n" /* this */
         "addl $0x14, %esp\n" /* line 1262 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -12666,7 +12666,7 @@ void ZN16OrientedParticleD1Ev(void) /* OrientedParticle_~OrientedParticle */
         "pushl %ebp\n" /* line 1265 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa9f1e_000a9f6c\n"
@@ -12721,7 +12721,7 @@ void ZN16OrientedParticleD0Ev(void) /* OrientedParticle_~OrientedParticle */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfa9f7a_000a9fcb\n"
@@ -12787,7 +12787,7 @@ void Cloud_Cloud(const Cloud * _this, const Cloud * _this_1)
         "movl %eax, (%esp)\n"
         "calll Particle_Particle\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl $0x330048, (%edx)\n"
+        "movl $__ZTV5Cloud+8, (%edx)\n"
         "movl $4, -0x1c(%ebp)\n"
         "movl %edx, %edi\n"
         "addl $0x24c, %edi\n"
@@ -12814,7 +12814,7 @@ void ZN5CloudD1Ev(void) /* Cloud_~Cloud */
         "pushl %ebp\n" /* line 1347 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa112_000aa160\n"
@@ -12869,7 +12869,7 @@ void ZN5CloudD0Ev(void) /* Cloud_~Cloud */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa16e_000aa1bf\n"
@@ -12932,7 +12932,7 @@ void Line_Line(const Line * _this)
         "movl 8(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll Particle_Particle\n"
-        "movl $0x330088, (%ebx)\n" /* this */
+        "movl $__ZTV4Line+8, (%ebx)\n" /* this */
         "addl $0x14, %esp\n" /* line 1501 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -12948,7 +12948,7 @@ void ZN4LineD1Ev(void) /* Line_~Line */
         "pushl %ebp\n" /* line 1504 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa1fe_000aa24c\n"
@@ -13003,7 +13003,7 @@ void ZN4LineD0Ev(void) /* Line_~Line */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa25a_000aa2ab\n"
@@ -13066,7 +13066,7 @@ void Tail_Tail(const Tail * _this)
         "movl 8(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll Particle_Particle\n"
-        "movl $0x3300c8, (%ebx)\n" /* this */
+        "movl $__ZTV4Tail+8, (%ebx)\n" /* this */
         "addl $0x14, %esp\n" /* line 1581 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -13082,7 +13082,7 @@ void ZN4TailD1Ev(void) /* Tail_~Tail */
         "pushl %ebp\n" /* line 1584 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa2ea_000aa338\n"
@@ -13137,7 +13137,7 @@ void ZN4TailD0Ev(void) /* Tail_~Tail */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa346_000aa397\n"
@@ -13200,7 +13200,7 @@ void Emitter_Emitter(const Emitter * _this)
         "movl 8(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll Particle_Particle\n"
-        "movl $0x330148, (%ebx)\n" /* this */
+        "movl $__ZTV7Emitter+8, (%ebx)\n" /* this */
         "addl $0x14, %esp\n" /* line 1806 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -13216,7 +13216,7 @@ void ZN7EmitterD1Ev(void) /* Emitter_~Emitter */
         "pushl %ebp\n" /* line 1809 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa3d6_000aa424\n"
@@ -13271,7 +13271,7 @@ void ZN7EmitterD0Ev(void) /* Emitter_~Emitter */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lfaa432_000aa483\n"
@@ -13349,7 +13349,7 @@ void ZN5FlashD0Ev(void) /* Flash_~Flash */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32ff88, (%ebx)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%ebx)\n" /* line 182 */
         "movl 0xc0(%ebx), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lf2bf27a_002bf2cb\n"
@@ -13408,7 +13408,7 @@ void ZN5FlashD1Ev(void) /* Flash_~Flash */
         "pushl %ebp\n" /* line 282 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32ff88, (%eax)\n" /* line 182 */
+        "movl $__ZTV6Effect+8, (%eax)\n" /* line 182 */
         "movl 0xc0(%eax), %edx\n" /* line 60 */
         "testl %edx, %edx\n"
         "je .Lf2bf2ea_002bf338\n"

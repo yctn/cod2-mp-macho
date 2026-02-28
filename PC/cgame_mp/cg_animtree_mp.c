@@ -8,9 +8,9 @@ extern void Scr_BeginLoadAnimTrees(int param);
 extern void Com_SafeClientDObjFree(int entNum);
 extern void XAnimFreeTree(void *tree, void *allocInfo);
 
-extern char **cg_glob; /* 0x195f584 — pointer to cg_t base */
-extern centity_s **cg_entities; /* 0x195f5cc — pointer to centity array */
-extern void *cg_xanimInfo; /* 0x195f954 — XAnim allocator */
+extern char **cg_glob; /* imp_cg — pointer to cg_t base */
+extern centity_s **cg_entities; /* imp_cg_entities — pointer to centity array */
+extern void *cg_xanimInfo; /* imp___Z7MT_FreePvi — XAnim allocator */
 
 /* cg_t field offsets (from $_3724 in STABS) */
 #define CG_ENTITY_LAST_TYPE    0x285f8

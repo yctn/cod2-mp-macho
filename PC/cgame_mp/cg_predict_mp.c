@@ -14,11 +14,11 @@ extern float sqrtf(float x);
  *   #include "PC/universal/q_shared.h"
  */
 
-static pmove_t cg_pmove[1]; /* 0xfea400 */
-static int cg_numSolidEntities; /* 0xfea900 */
-static cg_solidEntities_t cg_solidEntities; /* 0xfea980 */
-static int cg_numTriggerEntities; /* 0xfea4f8 */
-static centity_t * cg_triggerEntities[256]; /* 0xfea500 */
+static pmove_t cg_pmove[1]; /* cg_pmove */
+static int cg_numSolidEntities; /* cg_numSolidEntities */
+static cg_solidEntities_t cg_solidEntities; /* cg_solidEntities */
+static int cg_numTriggerEntities; /* cg_numTriggerEntities */
+static centity_t * cg_triggerEntities[256]; /* cg_triggerEntities */
 
 extern int CM_PointContents(const vec_t *point, unsigned int model);
 extern int CM_TransformedPointContents(const vec_t *point, unsigned int model, const vec_t *origin, const vec_t *angles);
@@ -50,15 +50,15 @@ extern void ZN10LargeLocalD1Ev(void *ll);
 extern void Com_Printf(const char *fmt, ...);
 
 /* External globals */
-extern byte **cg_glob;           /* 0x195f584 — pointer to cg_t base */
-extern byte **cg_entities_glob;  /* 0x195f5cc — pointer to centity array base */
+extern byte **cg_glob;           /* imp_cg — pointer to cg_t base */
+extern byte **cg_entities_glob;  /* imp_cg_entities — pointer to centity array base */
 
 /* Dvar pointers (pointer-to-pointer) */
-extern const dvar_t **dvar_nopredict;    /* 0x195f788 — cg_nopredict */
-extern const dvar_t **dvar_synchronous;  /* 0x195f78c — cg_synchronousClients */
-extern const dvar_t **dvar_developer;    /* 0x195f940 — developer */
-extern const dvar_t **dvar_autoPickup;   /* 0x195f944 — cg_autoPickup */
-extern const dvar_t **dvar_errorDecay;   /* 0x195f86c — cg_errorDecay */
+extern const dvar_t **dvar_nopredict;    /* imp_cg_nopredict — cg_nopredict */
+extern const dvar_t **dvar_synchronous;  /* imp_cg_synchronousClients — cg_synchronousClients */
+extern const dvar_t **dvar_developer;    /* imp_cg_showmiss — developer */
+extern const dvar_t **dvar_autoPickup;   /* imp_cg_predictItems — cg_autoPickup */
+extern const dvar_t **dvar_errorDecay;   /* imp_cg_errorDecay — cg_errorDecay */
 
 /* cg_t field offsets */
 #define CG_DEMOYPE          0x08

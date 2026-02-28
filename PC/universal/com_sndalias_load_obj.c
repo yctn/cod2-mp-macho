@@ -9,9 +9,9 @@
  */
 
 extern struct saLoadObjGlob_type saLoadObjGlob; /* 0x0 */
-static char szReference[1024]; /* 0x7ef080 */
-static const char * g_pszSndAliasKeyNames[24]; /* 0x30f600 */
-static const char * g_pszChannelNames[11]; /* 0x30f660 */
+static char szReference[1024]; /* szReference */
+static const char * g_pszSndAliasKeyNames[24]; /* g_pszSndAliasKeyNames */
+static const char * g_pszChannelNames[11]; /* g_pszChannelNames */
 
 extern int I_stricmp(const char *s0, const char *s1);
 
@@ -222,7 +222,7 @@ snd_alias_build_t * Com_SortTempSoundAliases_r(snd_alias_build_t *pAliasList, in
         "leal 0x40(%edi), %eax\n" /* line 1071 | pBackList */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* pBackList */
-        "movl $0x21ec34, (%esp)\n" /* "^1ERROR: sound alias file %s: duplicate alias '%s'
+        "movl $str_0021ec34, (%esp)\n" /* "^1ERROR: sound alias file %s: duplicate alias '%s'
 " */
         "calll Com_Printf\n"
         "movl 0x150(%edi), %edi\n" /* line 1072 | pBackList */
@@ -257,7 +257,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "movl $0, (%eax)\n"
         "movl 8(%ebp), %edx\n" /* line 1315 | aliasInfo */
         "movl $0, 8(%edx)\n"
-        "movl 0x1150524, %eax\n" /* line 1317 */
+        "movl saLoadObjGlob+4, %eax\n" /* line 1317 */
         "testl %eax, %eax\n"
         "jne .Lfb71c8_000b71f5\n"
         /* } scope */
@@ -272,7 +272,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         ".Lfb71c8_000b71f5:\n"
         "movl $1, (%esp)\n" /* line 1320 */
         "movl $AliasNameCompare, %ecx\n"
-        "movl $0x1150524, %edx\n"
+        "movl $saLoadObjGlob+4, %edx\n"
         "movl saLoadObjGlob, %eax\n"
         "calll Com_SortTempSoundAliases_r\n"
         "movl %eax, saLoadObjGlob\n"
@@ -280,7 +280,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "je .Lfb71c8_000b71ed\n"
         "movl $0, (%esp)\n" /* line 1323 */
         "movl $FileNameTypeCompare, %ecx\n"
-        "movl $0x1150524, %edx\n"
+        "movl $saLoadObjGlob+4, %edx\n"
         "calll Com_SortTempSoundAliases_r\n"
         "movl %eax, %ebx\n" /* alias */
         "movl %eax, saLoadObjGlob\n"
@@ -331,7 +331,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "jne .Lfb71c8_000b7256\n"
         "movl $1, (%esp)\n" /* line 1361 */
         "movl $AliasNameCompare, %ecx\n"
-        "movl $0x1150524, %edx\n"
+        "movl $saLoadObjGlob+4, %edx\n"
         "movl saLoadObjGlob, %eax\n"
         "calll Com_SortTempSoundAliases_r\n"
         "movl %eax, %esi\n"
@@ -378,8 +378,8 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "testl %esi, %esi\n"
         "jne .Lfb71c8_000b7301\n"
         "movl $0xe, 8(%esp)\n" /* line 1383 */
-        "movl $0x21eccc, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:aliases" */
-        "movl 0x1150524, %eax\n"
+        "movl $str_0021eccc, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:aliases" */
+        "movl saLoadObjGlob+4, %eax\n"
         "movl %eax, %edx\n"
         "shll $6, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
@@ -388,7 +388,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "movl 8(%ebp), %edx\n" /* aliasInfo */
         "movl %eax, 4(%edx)\n"
         "movl $0xe, 8(%esp)\n" /* line 1384 */
-        "movl $0x21ecf4, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:soundFiles" */
+        "movl $str_0021ecf4, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:soundFiles" */
         "shll $4, -0x30(%ebp)\n" /* soundCount */
         "movl -0x30(%ebp), %ecx\n" /* soundCount */
         "movl %ecx, (%esp)\n"
@@ -396,7 +396,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "movl 0xc(%ebp), %edi\n" /* soundFileInfo */
         "movl %eax, 4(%edi)\n"
         "movl $0xe, 8(%esp)\n" /* line 1385 */
-        "movl $0x21ed20, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:strings" */
+        "movl $str_0021ed20, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:strings" */
         "movl -0x3c(%ebp), %eax\n" /* stringBytesCount */
         "movl %eax, (%esp)\n"
         "calll Com_AllocSoundMemory\n"
@@ -458,7 +458,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "je .Lfb71c8_000b74b6\n"
         ".Lfb71c8_000b7475:\n"
         "movl $0xe, 8(%esp)\n" /* line 1416 */
-        "movl $0x21ed48, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:aliasList" */
+        "movl $str_0021ed48, 4(%esp)\n" /* "Com_MakeSoundAliasesPermanent:aliasList" */
         "movl $0x10, (%esp)\n"
         "calll Com_AllocSoundMemory\n"
         "movl %eax, -0x34(%ebp)\n" /* aliasList */
@@ -593,18 +593,18 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "movl 0x12c(%ebx), %eax\n" /* line 1174 */
         "cmpl $2, %eax\n"
         "je .Lfb71c8_000b781f\n"
-        "movl $0x21ec68, %ecx\n" /* "primed" */
+        "movl $str_0021ec68, %ecx\n" /* "primed" */
         "cmpl $3, %eax\n"
-        "movl $0x21ec70, %eax\n" /* "loaded" */
+        "movl $str_0021ec70, %eax\n" /* "loaded" */
         "cmovnel %eax, %ecx\n"
         ".Lfb71c8_000b7690:\n"
         "movl -0x44(%ebp), %edi\n" /* line 1187 | other */
         "movl 0x12c(%edi), %eax\n"
         "cmpl $2, %eax\n"
         "je .Lfb71c8_000b7815\n"
-        "movl $0x21ec68, %edx\n" /* "primed" */
+        "movl $str_0021ec68, %edx\n" /* "primed" */
         "cmpl $3, %eax\n"
-        "movl $0x21ec70, %eax\n" /* "loaded" */
+        "movl $str_0021ec70, %eax\n" /* "loaded" */
         "cmovnel %eax, %edx\n"
         ".Lfb71c8_000b76b2:\n"
         "movl -0x44(%ebp), %eax\n" /* line 1201 | other */
@@ -616,7 +616,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "movl %ecx, 8(%esp)\n"
         "movl -0x24(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21ec84, (%esp)\n" /* "WARNING: sound file '%s' used as %s in alias '%s' and %s in " */
+        "movl $str_0021ec84, (%esp)\n" /* "WARNING: sound file '%s' used as %s in alias '%s' and %s in " */
         "calll Com_Printf\n"
         /* } scope */
         "movl $0, 0x14c(%ebx)\n" /* line 1349 | alias */
@@ -656,7 +656,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "leal 0x80(%esi), %edi\n" /* line 1234 */
         "movl %edi, -0x5c(%ebp)\n"
         "movl $0xe, 8(%esp)\n"
-        "movl $0x21eda0, 4(%esp)\n" /* "Com_AddSoundAlias" */
+        "movl $str_0021eda0, 4(%esp)\n" /* "Com_AddSoundAlias" */
         "cld\n"
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
@@ -673,7 +673,7 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         ".Lfb71c8_000b778d:\n"
         "movl -0x1c(%ebp), %edi\n" /* line 1420 */
         "movl %edi, 4(%esp)\n"
-        "movl $0x21ed70, (%esp)\n" /* "^1ERROR: alias '%s' already added - ignoring
+        "movl $str_0021ed70, (%esp)\n" /* "^1ERROR: alias '%s' already added - ignoring
 " */
         "calll Com_Printf\n"
         "movl -0x40(%ebp), %eax\n" /* strings */
@@ -715,10 +715,10 @@ void Com_MakeSoundAliasesPermanent(snd_alias_list_t *aliasInfo, SoundFileInfo *s
         "jmp .Lfb71c8_000b74d5\n"
         /* { scope 2 */
         ".Lfb71c8_000b7815:\n"
-        "movl $0x21ec78, %edx\n" /* line 1187 */
+        "movl $str_0021ec78, %edx\n" /* line 1187 */
         "jmp .Lfb71c8_000b76b2\n"
         ".Lfb71c8_000b781f:\n"
-        "movl $0x21ec78, %ecx\n" /* line 1174 */
+        "movl $str_0021ec78, %ecx\n" /* line 1174 */
         "jmp .Lfb71c8_000b7690\n"
         ".Lfb71c8_000b7829:\n"
         "leal 0x40(%esi), %ebx\n"
@@ -744,7 +744,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         /* { scope 1: buffer */
         "movl 8(%ebp), %eax\n" /* line 1557 | name */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x21edb4, 8(%esp)\n" /* "soundaliases/%s.vfcurve" */
+        "movl $str_0021edb4, 8(%esp)\n" /* "soundaliases/%s.vfcurve" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x60(%ebp), %edx\n" /* fileName */
         "movl %edx, (%esp)\n"
@@ -766,7 +766,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "movl %edx, (%esp)\n"
         "calll FS_Read\n"
         "movb $0, -0x2058(%ebp)\n" /* line 1574 */
-        "movl $0x21ee20, %edi\n" /* line 1576 */
+        "movl $str_0021ee20, %edi\n" /* line 1576 */
         "movl $8, %ecx\n"
         "cld\n"
         "leal -0x2060(%ebp), %esi\n" /* buffer */
@@ -822,7 +822,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "movl %eax, 8(%esp)\n"
         "leal -0x60(%ebp), %eax\n" /* fileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21eeec, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot count (%d" */
+        "movl $str_0021eeec, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot count (%d" */
         "calll Com_Printf\n"
         /* } scope */
         /* } scope */
@@ -834,7 +834,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "calll FS_FCloseFile\n"
         "leal -0x60(%ebp), %eax\n" /* line 1568 | fileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21edf8, (%esp)\n" /* "^1ERROR: sndcurve file '%s' is empty
+        "movl $str_0021edf8, (%esp)\n" /* "^1ERROR: sndcurve file '%s' is empty
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -853,7 +853,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "calll FS_FCloseFile\n"
         "leal -0x60(%ebp), %edx\n" /* line 1587 | fileName */
         "movl %edx, 4(%esp)\n"
-        "movl $0x21ee64, (%esp)\n" /* "^1ERROR: "%s" Is too long of a sndcurve file to parse
+        "movl $str_0021ee64, (%esp)\n" /* "^1ERROR: "%s" Is too long of a sndcurve file to parse
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -871,7 +871,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "calll FS_FCloseFile\n"
         "leal -0x60(%ebp), %eax\n" /* line 1579 | fileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21ee2c, (%esp)\n" /* "^1ERROR: "%s" does not appear to be a sndcurve file
+        "movl $str_0021ee2c, (%esp)\n" /* "^1ERROR: "%s" does not appear to be a sndcurve file
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -886,7 +886,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         ".Lfb783a_000b7a2a:\n"
         "leal -0x60(%ebp), %edx\n" /* line 1562 | fileName */
         "movl %edx, 4(%esp)\n"
-        "movl $0x21edcc, (%esp)\n" /* "^1ERROR: Could not load sndcurve file '%s'
+        "movl $str_0021edcc, (%esp)\n" /* "^1ERROR: Could not load sndcurve file '%s'
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -913,7 +913,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "pxor %xmm1, %xmm1\n" /* line 1497 */
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lfb783a_000b7bc9\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ja .Lfb783a_000b7bc9\n"
         "movl %edi, (%esp)\n" /* line 1504 */
         "calll Com_Parse\n"
@@ -931,7 +931,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lfb783a_000b7bf7\n"
         "addl $8, %ebx\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ja .Lfb783a_000b7bf7\n"
         "addl $1, %esi\n" /* line 1516 */
         ".Lfb783a_000b7ae0:\n"
@@ -949,7 +949,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "movl $8, 8(%esp)\n"
         "leal -0x60(%ebp), %eax\n" /* fileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21ef4c, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knots parsed (" */
+        "movl $str_0021ef4c, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knots parsed (" */
         "calll Com_Printf\n"
         /* } scope */
         /* } scope */
@@ -964,7 +964,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "movl %eax, 8(%esp)\n"
         "leal -0x60(%ebp), %eax\n" /* fileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21ee9c, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot count (%d" */
+        "movl $str_0021ee9c, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot count (%d" */
         "calll Com_Printf\n"
         /* } scope */
         /* } scope */
@@ -982,7 +982,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "movl %eax, 8(%esp)\n"
         "leal -0x60(%ebp), %eax\n" /* fileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f014, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot count (%d" */
+        "movl $str_0021f014, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot count (%d" */
         "calll Com_Printf\n"
         /* } scope */
         /* } scope */
@@ -996,7 +996,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "ucomiss 8(%edx), %xmm1\n"
         "jne .Lfb783a_000b7c0a\n"
         "jp .Lfb783a_000b7c0a\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ucomiss 0xc(%edx), %xmm0\n"
         "jne .Lfb783a_000b7c07\n"
         "jp .Lfb783a_000b7c07\n"
@@ -1024,7 +1024,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "movsd %xmm0, 8(%esp)\n" /* line 1512 */
         "leal -0x60(%ebp), %edx\n" /* fileName */
         "movl %edx, 4(%esp)\n"
-        "movl $0x21efb8, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot x-coord '" */
+        "movl $str_0021efb8, (%esp)\n" /* "^1ERROR: sndcurve parse failure on file "%s": knot x-coord '" */
         "calll Com_Printf\n"
         /* } scope */
         /* } scope */
@@ -1046,7 +1046,7 @@ Bool Com_LoadVolumeFalloffCurve(const char *name, SndCurve *curve)
         "movl $0, 0xc(%edx, %eax, 8)\n" /* line 1533 */
         "leal -0x60(%ebp), %eax\n" /* line 1534 | fileName */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f078, (%esp)\n" /* "^3WARNING^7: sndcurve parse on file "%s": the first point mu" */
+        "movl $str_0021f078, (%esp)\n" /* "^3WARNING^7: sndcurve parse on file "%s": the first point mu" */
         "calll Com_Printf\n"
         "jmp .Lfb783a_000b7bb7\n"
     );
@@ -1074,7 +1074,7 @@ int Com_LoadSoundAliasSounds(SoundFileInfo *soundFileInfo)
         ".Lfb7c40_000b7c61:\n"
         "movl (%ebx), %eax\n" /* line 1648 | soundFile */
         "movl %eax, 4(%esp)\n"
-        "movl $0x219968, (%esp)\n" /* "sound/%s" */
+        "movl $str_00219968, (%esp)\n" /* "sound/%s" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll FS_TouchFile\n"
@@ -1091,11 +1091,11 @@ int Com_LoadSoundAliasSounds(SoundFileInfo *soundFileInfo)
         "addl 4(%edi), %ebx\n" /* soundFileInfo, soundFile */
         "cmpl $1, 0xc(%ebx)\n" /* line 1630 | soundFile */
         "je .Lfb7c40_000b7ce1\n"
-        "movl 0x195ee94, %eax\n" /* line 1647 */
+        "movl imp_snd_touchStreamFilesOnLoad, %eax\n" /* line 1647 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfb7c40_000b7c61\n"
-        "movl 0x195ee90, %eax\n"
+        "movl imp_fs_copyfiles, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfb7c40_000b7c61\n"
@@ -1105,7 +1105,7 @@ int Com_LoadSoundAliasSounds(SoundFileInfo *soundFileInfo)
         ".Lfb7c40_000b7cbd:\n"
         "movl (%ebx), %eax\n" /* line 1652 | soundFile */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f118, (%esp)\n" /* "^1ERROR: Streamed sound file '%s' not found
+        "movl $str_0021f118, (%esp)\n" /* "^1ERROR: Streamed sound file '%s' not found
 " */
         "calll Com_Printf\n"
         "addl $1, %esi\n" /* line 1626 | soundIndex */
@@ -1150,7 +1150,7 @@ void Com_InitDefaultSoundAliasVolumeFalloffCurve(SndCurve *sndCurve)
         "pushl %ebp\n" /* line 1687 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* sndCurve */
-        "movl $0x2157b8, (%eax)\n" /* line 1689 */
+        "movl $str_002157b8, (%eax)\n" /* line 1689 */
         "xorl %ecx, %ecx\n" /* line 1690 */
         "movl %ecx, 8(%eax)\n"
         "movl $0x3f800000, %edx\n" /* line 1691 */
@@ -1177,11 +1177,11 @@ const char * Com_GetSubtitleStringEdReference(const char *pszSubtitle)
         /* { scope 1 */
         "leal -0x1c(%ebp), %eax\n" /* line 2152 | file */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f148, (%esp)\n" /* "soundaliases/subtitle.st" */
+        "movl $str_0021f148, (%esp)\n" /* "soundaliases/subtitle.st" */
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n"
         "js .Lfb7d30_000b7e95\n"
-        "movl $0x21f148, (%esp)\n" /* line 2158 */
+        "movl $str_0021f148, (%esp)\n" /* line 2158 */
         "calll Com_BeginParseSession\n"
         "movl -0x1c(%ebp), %eax\n" /* line 2160 | file */
         "movl %eax, -0x20(%ebp)\n" /* ptr */
@@ -1192,7 +1192,7 @@ const char * Com_GetSubtitleStringEdReference(const char *pszSubtitle)
         "testl %ebx, %ebx\n"
         "je .Lfb7d30_000b7e3d\n"
         ".Lfb7d30_000b7d7c:\n"
-        "movl $0x218158, %edi\n" /* line 2167 */
+        "movl $str_00218158, %edi\n" /* line 2167 */
         "movl $0xa, %ecx\n"
         "cld\n"
         "movl %eax, %esi\n"
@@ -1226,7 +1226,7 @@ const char * Com_GetSubtitleStringEdReference(const char *pszSubtitle)
         "movl $0xd, %ecx\n" /* line 2178 */
         "cld\n"
         "movl %ebx, %esi\n"
-        "movl $0x21f1c0, %edi\n" /* "LANG_ENGLISH" */
+        "movl $str_0021f1c0, %edi\n" /* "LANG_ENGLISH" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lfb7d30_000b7dfa\n"
@@ -1271,8 +1271,8 @@ const char * Com_GetSubtitleStringEdReference(const char *pszSubtitle)
         "retl\n"
         /* { scope 1 */
         ".Lfb7d30_000b7e57:\n"
-        "movl $0x21f148, 8(%esp)\n" /* line 2177 */
-        "movl $0x21f19c, 4(%esp)\n" /* "StringEd file %s has bad syntax" */
+        "movl $str_0021f148, 8(%esp)\n" /* line 2177 */
+        "movl $str_0021f19c, 4(%esp)\n" /* "StringEd file %s has bad syntax" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfb7d30_000b7dda\n"
@@ -1291,8 +1291,8 @@ const char * Com_GetSubtitleStringEdReference(const char *pszSubtitle)
         "retl\n"
         /* { scope 1 */
         ".Lfb7d30_000b7e95:\n"
-        "movl $0x21f148, 4(%esp)\n" /* line 2154 */
-        "movl $0x21f164, (%esp)\n" /* "WARNING: Could not read local copy of StringEd file %s
+        "movl $str_0021f148, 4(%esp)\n" /* line 2154 */
+        "movl $str_0021f164, (%esp)\n" /* "WARNING: Could not read local copy of StringEd file %s
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -1316,7 +1316,7 @@ void Com_WriteStringEdReferenceToFile(const char *pszReference)
         "movl %ecx, %ebx\n" /* hOutFile */
         "movl %ecx, 8(%esp)\n" /* line 2210 */
         "movl $0x14, 4(%esp)\n"
-        "movl $0x21f1d0, (%esp)\n" /* "REFERENCE           " */
+        "movl $str_0021f1d0, (%esp)\n" /* "REFERENCE           " */
         "calll FS_Write\n"
         "movl %ebx, 8(%esp)\n" /* line 2211 | hOutFile */
         "movl -0x1c(%ebp), %edx\n"
@@ -1332,7 +1332,7 @@ void Com_WriteStringEdReferenceToFile(const char *pszReference)
         "calll FS_Write\n"
         "movl %ebx, 8(%esp)\n" /* line 2213 | hOutFile */
         "movl $0x17, 4(%esp)\n"
-        "movl $0x21f1e8, (%esp)\n" /* "
+        "movl $str_0021f1e8, (%esp)\n" /* "
 LANG_ENGLISH        "" */
         "calll FS_Write\n"
         "movl %ebx, 8(%esp)\n" /* line 2214 | hOutFile */
@@ -1348,7 +1348,7 @@ LANG_ENGLISH        "" */
         "calll FS_Write\n"
         "movl %ebx, 8(%esp)\n" /* line 2216 | hOutFile */
         "movl $5, 4(%esp)\n"
-        "movl $0x21f200, (%esp)\n" /* ""
+        "movl $str_0021f200, (%esp)\n" /* ""
 
 " */
         "calll FS_Write\n"
@@ -1432,7 +1432,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movb $1, (%eax)\n" /* line 529 */
         "cmpl $0x17, %edx\n" /* line 534 */
         "ja .Lfb7faa_000b8076\n"
-        "jmpl *0x2f1d60(, %edx, 4)\n"
+        "jmpl *CorrectSolidDeltas+5728(, %edx, 4)\n"
         "cld\n" /* line 537 */
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
@@ -1468,7 +1468,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %edi, 8(%esp)\n" /* line 545 */
         "movl -0x4078(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f29c, (%esp)\n" /* "^1ERROR: Sound alias file %s: Alias name '%s' is invalid
+        "movl $str_0021f29c, (%esp)\n" /* "^1ERROR: Sound alias file %s: Alias name '%s' is invalid
 " */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edx\n" /* line 546 | alias */
@@ -1487,7 +1487,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %eax, 8(%esp)\n"
         "movl -0x4078(%ebp), %edi\n"
         "movl %edi, 4(%esp)\n"
-        "movl $0x21f208, (%esp)\n" /* "^1ERROR: Sound alias file %s: Duplicate entries for the '%s'" */
+        "movl $str_0021f208, (%esp)\n" /* "^1ERROR: Sound alias file %s: Duplicate entries for the '%s'" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %eax\n" /* line 526 | alias */
         "movb $1, 0x149(%eax)\n"
@@ -1504,7 +1504,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "calll atof\n"
         "fstpl -0x4038(%ebp)\n"
         "cvtsd2ss -0x4038(%ebp), %xmm0\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 45 | 1.0f */
         "movaps %xmm0, %xmm2\n"
         "subss %xmm3, %xmm2\n"
         "pxor %xmm1, %xmm1\n"
@@ -1524,7 +1524,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %eax\n" /* line 663 | alias */
         "movss %xmm0, 0x13c(%eax)\n"
         "jmp .Lfb7faa_000b8076\n"
-        "movl $0x21f6b0, 4(%esp)\n" /* line 500 */
+        "movl $str_0021f6b0, 4(%esp)\n" /* line 500 */
         "movl 8(%ebp), %eax\n" /* token */
         "movl %eax, (%esp)\n"
         "calll strstr\n"
@@ -1533,7 +1533,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* line 501 | alias */
         "movb $1, 0x147(%edx)\n"
         ".Lfb7faa_000b8140:\n"
-        "movl $0x21f6c0, 4(%esp)\n" /* line 503 */
+        "movl $str_0021f6c0, 4(%esp)\n" /* line 503 */
         "movl 8(%ebp), %ecx\n" /* token */
         "movl %ecx, (%esp)\n"
         "calll strstr\n"
@@ -1591,12 +1591,12 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %eax, 8(%esp)\n" /* line 560 */
         "movl -0x4078(%ebp), %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x21f330, (%esp)\n" /* "^1ERROR: Sound alias file %s: Secondary Alias name '%s' is i" */
+        "movl $str_0021f330, (%esp)\n" /* "^1ERROR: Sound alias file %s: Secondary Alias name '%s' is i" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %ecx\n" /* line 561 | alias */
         "movb $1, 0x149(%ecx)\n"
         "jmp .Lfb7faa_000b8076\n"
-        "movl $0x21f64c, 4(%esp)\n" /* line 472 */
+        "movl $str_0021f64c, 4(%esp)\n" /* line 472 */
         "movl 8(%ebp), %ecx\n" /* token */
         "movl %ecx, (%esp)\n"
         "calll stricmp\n"
@@ -1627,7 +1627,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl $0x3fff, 8(%esp)\n" /* line 434 */
         "movl -0x4078(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x21f610, (%esp)\n" /* "^1ERROR: Sound alias file %s: loadspec is > %i characters
+        "movl $str_0021f610, (%esp)\n" /* "^1ERROR: Sound alias file %s: loadspec is > %i characters
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -1644,7 +1644,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edi\n" /* alias */
         "movss %xmm0, 0x138(%edi)\n"
         "jmp .Lfb7faa_000b8076\n"
-        "movl $0x21f59c, 4(%esp)\n" /* line 392 */
+        "movl $str_0021f59c, 4(%esp)\n" /* line 392 */
         "movl 8(%ebp), %ecx\n" /* token */
         "movl %ecx, (%esp)\n"
         "calll I_stricmp\n"
@@ -1661,7 +1661,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %eax\n" /* alias */
         "movss %xmm0, 0x11c(%eax)\n"
         "jmp .Lfb7faa_000b8076\n"
-        "movl $0x21ec78, 4(%esp)\n" /* line 356 */
+        "movl $str_0021ec78, 4(%esp)\n" /* line 356 */
         "movl 8(%ebp), %edx\n" /* token */
         "movl %edx, (%esp)\n"
         "calll I_stricmp\n"
@@ -1700,7 +1700,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         ".Lfb7faa_000b83c9:\n"
         "movl (%edi), %eax\n" /* line 333 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x216058, 4(%esp)\n" /* "%s" */
+        "movl $str_00216058, 4(%esp)\n" /* "%s" */
         "leal -0x4018(%ebp), %eax\n" /* loadlist */
         "addl %ebx, %eax\n" /* len */
         "movl %eax, (%esp)\n"
@@ -1738,11 +1738,11 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "cvtsd2ss -0x4070(%ebp), %xmm0\n"
         "movl 0x14(%ebp), %edi\n" /* alias */
         "movss %xmm0, 0x10c(%edi)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 595 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 595 | 0.0f */
         "jp .Lfb7faa_000b8485\n"
         "jb .Lfb7faa_000b8492\n"
         ".Lfb7faa_000b8485:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lfb7faa_000b8ae2\n"
         ".Lfb7faa_000b8492:\n"
         "movl $0, 0x18(%esp)\n" /* line 597 */
@@ -1753,7 +1753,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movsd %xmm0, 8(%esp)\n"
         "movl -0x4078(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f414, (%esp)\n" /* "^1ERROR: Sound alias file %s: MinVolume '%f' is not within t" */
+        "movl $str_0021f414, (%esp)\n" /* "^1ERROR: Sound alias file %s: MinVolume '%f' is not within t" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edx\n" /* line 598 | alias */
         "movb $1, 0x149(%edx)\n"
@@ -1781,7 +1781,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %edi, 8(%esp)\n"
         "movl -0x4078(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f3c0, (%esp)\n" /* "^1ERROR: Sound alias file %s: Subtitle '%s' has invalid char" */
+        "movl $str_0021f3c0, (%esp)\n" /* "^1ERROR: Sound alias file %s: Subtitle '%s' has invalid char" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edx\n" /* line 584 | alias */
         "movb $1, 0x149(%edx)\n"
@@ -1809,7 +1809,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %eax, 0xc4(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
         "xorl %esi, %esi\n" /* line 610 | i */
-        "movl $0x1150528, %ebx\n" /* loadspec */
+        "movl $saLoadObjGlob+8, %ebx\n" /* loadspec */
         "xorl %edi, %edi\n"
         "jmp .Lfb7faa_000b85b5\n"
         /* { scope 2 */
@@ -1826,7 +1826,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lfb7faa_000b85a3\n"
-        "movl 0x1150568(%edi), %eax\n" /* line 229 */
+        "movl saLoadObjGlob+72(%edi), %eax\n" /* line 229 */
         /* } scope */
         ".Lfb7faa_000b85ce:\n"
         "movl 0x14(%ebp), %edi\n" /* line 614 | alias */
@@ -1839,11 +1839,11 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "cvtsd2ss -0x4068(%ebp), %xmm0\n"
         "movl 0x14(%ebp), %edx\n" /* alias */
         "movss %xmm0, 0x110(%edx)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 606 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 606 | 0.0f */
         "jp .Lfb7faa_000b860b\n"
         "jb .Lfb7faa_000b8618\n"
         ".Lfb7faa_000b860b:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lfb7faa_000b8076\n"
         ".Lfb7faa_000b8618:\n"
         "movl $0, 0x18(%esp)\n" /* line 608 */
@@ -1854,7 +1854,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movsd %xmm0, 8(%esp)\n"
         "movl -0x4078(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x21f468, (%esp)\n" /* "^1ERROR: Sound alias file %s: MaxVolume '%f' is not within t" */
+        "movl $str_0021f468, (%esp)\n" /* "^1ERROR: Sound alias file %s: MaxVolume '%f' is not within t" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edi\n" /* line 609 | alias */
         "movb $1, 0x149(%edi)\n"
@@ -1886,7 +1886,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %ecx, 8(%esp)\n"
         "movl -0x4078(%ebp), %edi\n"
         "movl %edi, 4(%esp)\n"
-        "movl $0x21f4f4, (%esp)\n" /* "^1ERROR: Sound alias file %s: Unknown sound channel '%s'; sh" */
+        "movl $str_0021f4f4, (%esp)\n" /* "^1ERROR: Sound alias file %s: Unknown sound channel '%s'; sh" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %eax\n" /* line 341 | alias */
         "movb $1, 0x149(%eax)\n"
@@ -1898,7 +1898,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %ecx, 8(%esp)\n"
         "movl -0x4078(%ebp), %edi\n"
         "movl %edi, 4(%esp)\n"
-        "movl $0x21f374, (%esp)\n" /* "^1ERROR: Sound alias file %s: Sound file '%s' is longer than" */
+        "movl $str_0021f374, (%esp)\n" /* "^1ERROR: Sound alias file %s: Sound file '%s' is longer than" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %eax\n" /* line 573 | alias */
         "movb $1, 0x149(%eax)\n"
@@ -1937,11 +1937,11 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "calll strstr\n"
         "testl %eax, %eax\n" /* line 445 */
         "jne .Lfb7faa_000b875b\n"
-        "movl $0x216cd8, -0x407c(%ebp)\n" /* line 448 */
+        "movl $str_00216cd8, -0x407c(%ebp)\n" /* line 448 */
         "movl $5, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* len, i */
-        "movl $0x216cd8, %edi\n" /* "menu" */
+        "movl $str_00216cd8, %edi\n" /* "menu" */
         "repe cmpsb %es:(%edi), (%esi)\n" /* i */
         "movl $0, %edx\n"
         "je .Lfb7faa_000b87c0\n"
@@ -1962,7 +1962,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %edx, 0xc(%esp)\n"
         "movl -0x4078(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x21f4bc, 4(%esp)\n" /* "Sound alias file %s: Volume Mod Group '%s' not found." */
+        "movl $str_0021f4bc, 4(%esp)\n" /* "Sound alias file %s: Volume Mod Group '%s' not found." */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "xorl %eax, %eax\n"
@@ -1986,7 +1986,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %edx, 8(%esp)\n"
         "movl -0x4078(%ebp), %ecx\n"
         "movl %ecx, 4(%esp)\n"
-        "movl $0x21f250, (%esp)\n" /* "^1ERROR: Sound alias file %s: Alias name '%s' is longer than" */
+        "movl $str_0021f250, (%esp)\n" /* "^1ERROR: Sound alias file %s: Alias name '%s' is longer than" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edi\n" /* line 540 | alias */
         "movb $1, 0x149(%edi)\n"
@@ -1997,7 +1997,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %edi, 8(%esp)\n"
         "movl -0x4078(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f2d8, (%esp)\n" /* "^1ERROR: Sound alias file %s: Secondary Alias name '%s' is l" */
+        "movl $str_0021f2d8, (%esp)\n" /* "^1ERROR: Sound alias file %s: Secondary Alias name '%s' is l" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edx\n" /* line 555 | alias */
         "movb $1, 0x149(%edx)\n"
@@ -2020,7 +2020,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movb $0, (%eax, %ebx)\n"
         "jmp .Lfb7faa_000b8076\n"
         ".Lfb7faa_000b88c2:\n"
-        "movl $0x21ec68, 4(%esp)\n" /* line 361 */
+        "movl $str_0021ec68, 4(%esp)\n" /* line 361 */
         "movl 8(%ebp), %ecx\n" /* token */
         "movl %ecx, (%esp)\n"
         "calll I_stricmp\n"
@@ -2039,11 +2039,11 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "fstpl -0x4028(%ebp)\n"
         "cvtsd2ss -0x4028(%ebp), %xmm0\n"
         "movss %xmm0, 0x134(%edi)\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 482 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 482 | 0.0f */
         "jp .Lfb7faa_000b892c\n"
         "jb .Lfb7faa_000b8939\n"
         ".Lfb7faa_000b892c:\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jbe .Lfb7faa_000b8076\n"
         ".Lfb7faa_000b8939:\n"
         "movl $0, 0x18(%esp)\n" /* line 484 */
@@ -2054,13 +2054,13 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movsd %xmm0, 8(%esp)\n"
         "movl -0x4078(%ebp), %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x21f654, (%esp)\n" /* "^1ERROR: Sound alias file %s: SlavePercentage'%f' is not wit" */
+        "movl $str_0021f654, (%esp)\n" /* "^1ERROR: Sound alias file %s: SlavePercentage'%f' is not wit" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %ecx\n" /* line 485 | alias */
         "movb $1, 0x149(%ecx)\n"
         "jmp .Lfb7faa_000b8076\n"
         ".Lfb7faa_000b8988:\n"
-        "movl $0x21f5a4, 4(%esp)\n" /* line 397 */
+        "movl $str_0021f5a4, 4(%esp)\n" /* line 397 */
         "movl 8(%ebp), %edi\n" /* token */
         "movl %edi, (%esp)\n"
         "calll I_stricmp\n"
@@ -2233,13 +2233,13 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %edi, 8(%esp)\n" /* line 403 */
         "movl -0x4078(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f5b0, (%esp)\n" /* "^1ERROR: Sound alias file %s: Unknown sound looping type '%s" */
+        "movl $str_0021f5b0, (%esp)\n" /* "^1ERROR: Sound alias file %s: Unknown sound looping type '%s" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edx\n" /* line 404 | alias */
         "movb $1, 0x149(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
         ".Lfb7faa_000b8ba6:\n"
-        "movl $0x21ec70, 4(%esp)\n" /* line 370 */
+        "movl $str_0021ec70, 4(%esp)\n" /* line 370 */
         "movl 8(%ebp), %edi\n" /* token */
         "movl %edi, (%esp)\n"
         "calll I_stricmp\n"
@@ -2250,7 +2250,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "jmp .Lfb7faa_000b8076\n"
         /* { scope 2 */
         ".Lfb7faa_000b8bcf:\n"
-        "movl $0x216cd8, %edi\n" /* line 440 */
+        "movl $str_00216cd8, %edi\n" /* line 440 */
         "movl $5, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* len, i */
@@ -2273,7 +2273,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %edi, 8(%esp)\n" /* line 376 */
         "movl -0x4078(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f53c, (%esp)\n" /* "^1ERROR: Sound alias file %s: Unknown sound type '%s'; shoul" */
+        "movl $str_0021f53c, (%esp)\n" /* "^1ERROR: Sound alias file %s: Unknown sound type '%s'; shoul" */
         "calll Com_Printf\n"
         "movl 0x14(%ebp), %edx\n" /* line 377 | alias */
         "movb $1, 0x149(%edx)\n"
@@ -2295,7 +2295,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         /* { scope 1: bHasName, bHasFile, file, ptr, ... */
         "movl 8(%ebp), %eax\n" /* line 2372 | sourceFile */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x21f6cc, 8(%esp)\n" /* "soundaliases/%s" */
+        "movl $str_0021f6cc, 8(%esp)\n" /* "soundaliases/%s" */
         "movl $0x100, 4(%esp)\n"
         "leal -0x540(%ebp), %edx\n" /* soundAliasFile */
         "movl %edx, (%esp)\n"
@@ -2304,18 +2304,18 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl %ebx, 0xc(%esp)\n" /* startmarker */
         "leal -0x540(%ebp), %ecx\n" /* soundAliasFile */
         "movl %ecx, 8(%esp)\n"
-        "movl 0x195ee98, %eax\n"
+        "movl imp_fs_gamedir, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ecc8, %eax\n"
+        "movl imp_fs_basepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FS_BuildOSPath\n"
         "movl %ebx, 4(%esp)\n" /* line 2375 | startmarker */
-        "movl $0x21f6dc, (%esp)\n" /* "Processing sound alias file %s..
+        "movl $str_0021f6dc, (%esp)\n" /* "Processing sound alias file %s..
 " */
         "calll Com_Printf\n"
-        "movl $0x21f700, 4(%esp)\n" /* line 2378 */
+        "movl $str_0021f700, 4(%esp)\n" /* line 2378 */
         "movl %ebx, (%esp)\n" /* startmarker */
         "calll FS_FileOpen\n"
         "testl %eax, %eax\n" /* line 2379 */
@@ -2329,7 +2329,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n"
         "js .Lfb8c34_000b94fb\n"
-        "movl $0x21f764, (%esp)\n" /* line 2392 */
+        "movl $str_0021f764, (%esp)\n" /* line 2392 */
         "calll FS_FOpenFileWrite\n"
         "movl %eax, -0x6fc4(%ebp)\n" /* hAliasOutFile */
         "testl %eax, %eax\n" /* line 2393 */
@@ -2363,7 +2363,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "testl %edx, %edx\n"
         "je .Lfb8c34_000b8f02\n"
         ".Lfb8c34_000b8d75:\n"
-        "movl $0x21f7b0, 4(%esp)\n" /* line 2426 */
+        "movl $str_0021f7b0, 4(%esp)\n" /* line 2426 */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "movl -0x6ff0(%ebp), %edi\n" /* line 2430 | token */
@@ -2426,8 +2426,8 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "jmp .Lfb8c34_000b8dca\n"
         /* } scope */
         ".Lfb8c34_000b8e7c:\n"
-        "movl $0x21f764, 4(%esp)\n" /* line 2395 */
-        "movl $0x21f77c, (%esp)\n" /* "WARNING: Could not open output file %s for writing
+        "movl $str_0021f764, 4(%esp)\n" /* line 2395 */
+        "movl $str_0021f77c, (%esp)\n" /* "WARNING: Could not open output file %s for writing
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -2454,7 +2454,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl -0x6fc4(%ebp), %eax\n" /* line 2418 | hAliasOutFile */
         "movl %eax, 8(%esp)\n"
         "movl $2, 4(%esp)\n"
-        "movl $0x218068, (%esp)\n" /* "
+        "movl $str_00218068, (%esp)\n" /* "
 " */
         "calll FS_Write\n"
         "movl -0x28(%ebp), %edx\n" /* ptr */
@@ -2473,10 +2473,10 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "calll FS_FCloseFile\n"
         "leal -0x340(%ebp), %edi\n" /* line 2600 | szFromFile */
         "movl %edi, 0xc(%esp)\n"
-        "movl $0x21f764, 8(%esp)\n" /* "soundaliases/temp.csv" */
-        "movl 0x195ee98, %ebx\n" /* startmarker */
+        "movl $str_0021f764, 8(%esp)\n" /* "soundaliases/temp.csv" */
+        "movl imp_fs_gamedir, %ebx\n" /* startmarker */
         "movl %ebx, 4(%esp)\n" /* startmarker */
-        "movl 0x195ecc8, %esi\n" /* i */
+        "movl imp_fs_basepath, %esi\n" /* i */
         "movl (%esi), %eax\n" /* i */
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2498,7 +2498,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "calll FS_Remove\n"
         "movl -0x6fc8(%ebp), %edi\n" /* line 2606 | iNumSubtitlesLocalized */
         "movl %edi, 4(%esp)\n"
-        "movl $0x21f890, (%esp)\n" /* "Localized %i sound alias subtitles
+        "movl $str_0021f890, (%esp)\n" /* "Localized %i sound alias subtitles
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -2520,7 +2520,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         ".Lfb8c34_000b8fb4:\n"
         "movl 8(%ebp), %edi\n" /* line 2473 | sourceFile */
         "movl %edi, 8(%esp)\n"
-        "movl $0x21f7c0, 4(%esp)\n" /* "Sound alias file %s: missing 'name' and/or 'file' columns
+        "movl $str_0021f7c0, 4(%esp)\n" /* "Sound alias file %s: missing 'name' and/or 'file' columns
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -2622,7 +2622,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl %eax, (%esp)\n"
         "movl 8(%ebp), %ecx\n" /* sourceFile */
         "movl 0xc(%ebp), %edx\n" /* loadspecCurGame */
-        "movl $0x216cd8, %eax\n" /* "menu" */
+        "movl $str_00216cd8, %eax\n" /* "menu" */
         "calll Com_LoadSoundAliasField\n"
         "addl $1, %esi\n" /* line 2495 | i */
         "cmpl %esi, -0x6fcc(%ebp)\n" /* line 2496 | i, iColCount */
@@ -2661,7 +2661,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "jne .Lfb8c34_000b9201\n"
         ".Lfb8c34_000b9223:\n"
         "movl $9, 8(%esp)\n" /* line 2516 */
-        "movl $0x21f838, 4(%esp)\n" /* "SUBTITLE_" */
+        "movl $str_0021f838, 4(%esp)\n" /* "SUBTITLE_" */
         "leal -0x5f94(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll I_strncmp\n"
@@ -2693,7 +2693,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "je .Lfb8c34_000b95eb\n"
         ".Lfb8c34_000b92b8:\n"
         "movl %ebx, 4(%esp)\n" /* line 2568 | startmarker */
-        "movl $0x21f880, (%esp)\n" /* ""%s"," */
+        "movl $str_0021f880, (%esp)\n" /* ""%s"," */
         "calll va\n"
         "movl %eax, %ebx\n" /* startmarker */
         ".Lfb8c34_000b92ca:\n"
@@ -2728,7 +2728,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl -0x6fc4(%ebp), %eax\n" /* line 2579 | hAliasOutFile */
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x21f88c, (%esp)\n" /* "," */
+        "movl $str_0021f88c, (%esp)\n" /* "," */
         "calll FS_Write\n"
         "addl $1, -0x6fa4(%ebp)\n" /* line 2526 */
         "movl -0x6fa4(%ebp), %edx\n"
@@ -2738,7 +2738,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl -0x6fc4(%ebp), %ecx\n" /* line 2581 | hAliasOutFile */
         "movl %ecx, 8(%esp)\n"
         "movl $2, 4(%esp)\n"
-        "movl $0x218068, (%esp)\n" /* "
+        "movl $str_00218068, (%esp)\n" /* "
 " */
         "calll FS_Write\n"
         "leal -0x28(%ebp), %edi\n" /* line 2592 | ptr */
@@ -2749,7 +2749,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         ".Lfb8c34_000b938c:\n"
         "movl 8(%ebp), %eax\n" /* line 2501 | sourceFile */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21f7fc, 4(%esp)\n" /* "Sound alias file %s: alias entry missing name and/or file
+        "movl $str_0021f7fc, 4(%esp)\n" /* "Sound alias file %s: alias entry missing name and/or file
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -2774,13 +2774,14 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl -0x6fc4(%ebp), %ecx\n" /* line 2478 | hAliasOutFile */
         "movl %ecx, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x21f7bc, (%esp)\n" /* "" */
+        "movl $str_0021f7bc, (%esp)\n" /* "
+" */
         "calll FS_Write\n"
         "jmp .Lfb8c34_000b8fe9\n"
         /* } scope */
         ".Lfb8c34_000b940c:\n"
         "movl %ebx, 4(%esp)\n" /* line 2381 | startmarker */
-        "movl $0x21f704, (%esp)\n" /* "WARNING: Can not write to sound alias file %s
+        "movl $str_0021f704, (%esp)\n" /* "WARNING: Can not write to sound alias file %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -2794,7 +2795,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         /* { scope 2 */
         ".Lfb8c34_000b9427:\n"
         "movl $9, 8(%esp)\n" /* line 2099 */
-        "movl $0x21f838, 4(%esp)\n" /* "SUBTITLE_" */
+        "movl $str_0021f838, 4(%esp)\n" /* "SUBTITLE_" */
         "leal -0x5f94(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll I_strncmp\n"
@@ -2802,18 +2803,18 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "jne .Lfb8c34_000b9249\n"
         "leal -0x24(%ebp), %eax\n" /* line 2102 | file */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21f148, (%esp)\n" /* "soundaliases/subtitle.st" */
+        "movl $str_0021f148, (%esp)\n" /* "soundaliases/subtitle.st" */
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n"
         "js .Lfb8c34_000b9731\n"
-        "movl $0x21f148, (%esp)\n" /* line 2108 */
+        "movl $str_0021f148, (%esp)\n" /* line 2108 */
         "calll Com_BeginParseSession\n"
         "movl -0x24(%ebp), %eax\n" /* line 2110 | file */
         "movl %eax, -0x1c(%ebp)\n" /* ptr */
         "leal -0x1c(%ebp), %ebx\n" /* ptr, bReferenceFound */
         "jmp .Lfb8c34_000b94cd\n"
         ".Lfb8c34_000b947f:\n"
-        "movl $0x218158, %edi\n" /* line 2117 */
+        "movl $str_00218158, %edi\n" /* line 2117 */
         "movl $0xa, %ecx\n"
         "cld\n"
         "movl %eax, %esi\n"
@@ -2855,7 +2856,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "jmp .Lfb8c34_000b9249\n"
         ".Lfb8c34_000b94fb:\n"
         "movl %edi, 4(%esp)\n" /* line 2388 */
-        "movl $0x21f734, (%esp)\n" /* "WARNING: Could not read sound alias file %s
+        "movl $str_0021f734, (%esp)\n" /* "WARNING: Could not read sound alias file %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -2883,7 +2884,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "je .Lfb8c34_000b964a\n"
         ".Lfb8c34_000b9550:\n"
         "movl %ebx, 4(%esp)\n" /* line 2559 | startmarker */
-        "movl $0x21f878, (%esp)\n" /* ""%s"" */
+        "movl $str_0021f878, (%esp)\n" /* ""%s"" */
         "calll va\n"
         "movl %eax, %ebx\n" /* startmarker */
         "jmp .Lfb8c34_000b92ca\n"
@@ -2894,8 +2895,8 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "testl %eax, %eax\n" /* line 2533 */
         "je .Lfb8c34_000b96a9\n"
         "movl %eax, 0x10(%esp)\n" /* line 2535 */
-        "movl $0x21f838, 0xc(%esp)\n" /* "SUBTITLE_" */
-        "movl $0x215f50, 8(%esp)\n" /* "%s%s" */
+        "movl $str_0021f838, 0xc(%esp)\n" /* "SUBTITLE_" */
+        "movl $str_00215f50, 8(%esp)\n" /* "%s%s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0xf94(%ebp), %ebx\n" /* szNewReference, startmarker */
         "movl %ebx, (%esp)\n" /* startmarker */
@@ -2935,7 +2936,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "testl %eax, %eax\n"
         "jne .Lfb8c34_000b92b8\n"
         "movl %ebx, 4(%esp)\n" /* line 2571 | startmarker */
-        "movl $0x21f888, (%esp)\n" /* "%s," */
+        "movl $str_0021f888, (%esp)\n" /* "%s," */
         "calll va\n"
         "movl %eax, %ebx\n" /* startmarker */
         "jmp .Lfb8c34_000b92ca\n"
@@ -2956,7 +2957,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "testl %eax, %eax\n"
         "jne .Lfb8c34_000b9550\n"
         "movl %ebx, 4(%esp)\n" /* line 2562 | startmarker */
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll va\n"
         "movl %eax, %ebx\n" /* startmarker */
         "jmp .Lfb8c34_000b92ca\n"
@@ -2967,8 +2968,8 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl %eax, 0x14(%esp)\n"
         "leal -0x6b94(%ebp), %eax\n"
         "movl %eax, 0x10(%esp)\n"
-        "movl $0x21f838, 0xc(%esp)\n" /* "SUBTITLE_" */
-        "movl $0x21f844, 8(%esp)\n" /* "%s%s_%s" */
+        "movl $str_0021f838, 0xc(%esp)\n" /* "SUBTITLE_" */
+        "movl $str_0021f844, 8(%esp)\n" /* "%s%s_%s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0xf94(%ebp), %ebx\n" /* szNewReference, startmarker */
         "movl %ebx, (%esp)\n" /* startmarker */
@@ -2978,13 +2979,13 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "calll I_strupr\n"
         "movl %eax, -0x6f9c(%ebp)\n"
         /* { scope 2 */
-        "movl $0x21f84c, (%esp)\n" /* line 2245 */
+        "movl $str_0021f84c, (%esp)\n" /* line 2245 */
         "calll FS_FOpenFileWrite\n"
         "movl %eax, -0x6fb4(%ebp)\n" /* hOutFile */
         "testl %eax, %eax\n" /* line 2246 */
         "jne .Lfb8c34_000b9754\n"
-        "movl $0x21f84c, 4(%esp)\n" /* line 2248 */
-        "movl $0x21f77c, (%esp)\n" /* "WARNING: Could not open output file %s for writing
+        "movl $str_0021f84c, 4(%esp)\n" /* line 2248 */
+        "movl $str_0021f77c, (%esp)\n" /* "WARNING: Could not open output file %s for writing
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -2993,8 +2994,8 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "jmp .Lfb8c34_000b95b5\n"
         /* { scope 2 */
         ".Lfb8c34_000b9731:\n"
-        "movl $0x21f148, 4(%esp)\n" /* line 2104 */
-        "movl $0x21f164, (%esp)\n" /* "WARNING: Could not read local copy of StringEd file %s
+        "movl $str_0021f148, 4(%esp)\n" /* line 2104 */
+        "movl $str_0021f164, (%esp)\n" /* "WARNING: Could not read local copy of StringEd file %s
 " */
         "calll Com_Printf\n"
         "jmp .Lfb8c34_000b9249\n"
@@ -3006,11 +3007,11 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         ".Lfb8c34_000b9754:\n"
         "leal -0x1c(%ebp), %edx\n" /* line 2252 | ptr */
         "movl %edx, 4(%esp)\n"
-        "movl $0x21f148, (%esp)\n" /* "soundaliases/subtitle.st" */
+        "movl $str_0021f148, (%esp)\n" /* "soundaliases/subtitle.st" */
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n"
         "js .Lfb8c34_000b99f2\n"
-        "movl $0x21f148, (%esp)\n" /* line 2259 */
+        "movl $str_0021f148, (%esp)\n" /* line 2259 */
         "calll Com_BeginParseSession\n"
         "movl -0x1c(%ebp), %eax\n" /* line 2261 | ptr */
         "movl %eax, -0x24(%ebp)\n" /* file */
@@ -3033,7 +3034,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl $0xa, -0x6fd4(%ebp)\n" /* line 2269 */
         "cld\n"
         "movl -0x6fb8(%ebp), %esi\n" /* token */
-        "movl $0x218164, %edi\n" /* "ENDMARKER" */
+        "movl $str_00218164, %edi\n" /* "ENDMARKER" */
         "movl $0xa, %ecx\n"
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
@@ -3047,7 +3048,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl $0xa, %ecx\n" /* line 2281 */
         "cld\n"
         "movl -0x6fb8(%ebp), %esi\n" /* token */
-        "movl $0x218158, %edi\n" /* "REFERENCE" */
+        "movl $str_00218158, %edi\n" /* "REFERENCE" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lfb8c34_000b9816\n"
@@ -3092,7 +3093,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl $0xa, %ecx\n" /* line 2308 */
         "cld\n"
         "movl %eax, %esi\n"
-        "movl $0x218158, %edi\n" /* "REFERENCE" */
+        "movl $str_00218158, %edi\n" /* "REFERENCE" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lfb8c34_000b98b8\n"
@@ -3104,7 +3105,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "je .Lfb8c34_000b98e3\n"
         "movl $0xa, %ecx\n"
         "movl -0x6fa0(%ebp), %esi\n"
-        "movl $0x218164, %edi\n" /* "ENDMARKER" */
+        "movl $str_00218164, %edi\n" /* "ENDMARKER" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lfb8c34_000b98df\n"
@@ -3145,7 +3146,7 @@ void Com_ProcessSoundAliasFileLocalization(const char *sourceFile, const char *l
         "movl -0x6fb4(%ebp), %edx\n" /* line 2330 | hOutFile */
         "movl %edx, 8(%esp)\n"
         "movl $0x11, 4(%esp)\n"
-        "movl $0x21f864, (%esp)\n" /* "
+        "movl $str_0021f864, (%esp)\n" /* "
 ENDMARKER
 
 
@@ -3156,17 +3157,17 @@ ENDMARKER
         "calll FS_FCloseFile\n"
         "leal -0x640(%ebp), %edi\n" /* line 2334 | szFromFile */
         "movl %edi, 0xc(%esp)\n"
-        "movl $0x21f84c, 8(%esp)\n" /* "soundaliases/temp.st" */
-        "movl 0x195ee98, %ebx\n" /* startmarker */
+        "movl $str_0021f84c, 8(%esp)\n" /* "soundaliases/temp.st" */
+        "movl imp_fs_gamedir, %ebx\n" /* startmarker */
         "movl %ebx, 4(%esp)\n" /* startmarker */
-        "movl 0x195ecc8, %esi\n"
+        "movl imp_fs_basepath, %esi\n"
         "movl (%esi), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FS_BuildOSPath\n"
         "leal -0x140(%ebp), %eax\n" /* line 2335 | szToFile */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x21f148, 8(%esp)\n" /* "soundaliases/subtitle.st" */
+        "movl $str_0021f148, 8(%esp)\n" /* "soundaliases/subtitle.st" */
         "movl %ebx, 4(%esp)\n" /* startmarker */
         "movl (%esi), %eax\n"
         "movl 8(%eax), %eax\n"
@@ -3180,8 +3181,8 @@ ENDMARKER
         "calll FS_Remove\n"
         "jmp .Lfb8c34_000b9725\n"
         ".Lfb8c34_000b99f2:\n"
-        "movl $0x21f148, 4(%esp)\n" /* line 2254 */
-        "movl $0x21f164, (%esp)\n" /* "WARNING: Could not read local copy of StringEd file %s
+        "movl $str_0021f148, 4(%esp)\n" /* line 2254 */
+        "movl $str_0021f164, (%esp)\n" /* "WARNING: Could not read local copy of StringEd file %s
 " */
         "calll Com_Printf\n"
         "movl -0x6fb4(%ebp), %ecx\n" /* line 2255 | hOutFile */
@@ -3192,8 +3193,8 @@ ENDMARKER
         ".Lfb8c34_000b9a19:\n"
         "leal -0x6b94(%ebp), %eax\n" /* line 2543 */
         "movl %eax, 0x10(%esp)\n"
-        "movl $0x21f838, 0xc(%esp)\n" /* "SUBTITLE_" */
-        "movl $0x215f50, 8(%esp)\n" /* "%s%s" */
+        "movl $str_0021f838, 0xc(%esp)\n" /* "SUBTITLE_" */
+        "movl $str_00215f50, 8(%esp)\n" /* "%s%s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0xf94(%ebp), %ebx\n" /* szNewReference, startmarker */
         "movl %ebx, (%esp)\n" /* startmarker */
@@ -3221,9 +3222,9 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         /* { scope 1 */
         "leal -0x11c(%ebp), %ebx\n" /* line 2681 | stringEdExternalFileName */
         "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x21f8b4, 4(%esp)\n" /* "../source_data/string_resources/subtitle.st" */
-        "movl 0x195ed00, %eax\n"
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_0021f8b4, 4(%esp)\n" /* "../source_data/string_resources/subtitle.st" */
+        "movl imp_fs_homepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -3235,7 +3236,7 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "repne scasb %es:(%edi), %al\n" /* i */
         "notl %ecx\n"
         "movb $0, -0x11e(%ecx, %ebp)\n"
-        "movl $0x21f700, 4(%esp)\n" /* line 2683 */
+        "movl $str_0021f700, 4(%esp)\n" /* line 2683 */
         "movl %ebx, (%esp)\n"
         "calll FS_FileOpen\n"
         "testl %eax, %eax\n" /* line 2684 */
@@ -3244,10 +3245,10 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "calll FS_FileClose\n"
         "leal -0x21c(%ebp), %eax\n" /* line 2692 | stringEdFileName */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x21f148, 8(%esp)\n" /* "soundaliases/subtitle.st" */
-        "movl 0x195ee98, %eax\n"
+        "movl $str_0021f148, 8(%esp)\n" /* "soundaliases/subtitle.st" */
+        "movl imp_fs_gamedir, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ecc8, %eax\n"
+        "movl imp_fs_basepath, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -3256,28 +3257,28 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
         "calll FS_CopyFile\n"
-        "movl $0x21f148, (%esp)\n" /* line 2694 */
+        "movl $str_0021f148, (%esp)\n" /* line 2694 */
         "calll FS_FileExists\n"
         "testl %eax, %eax\n"
         "je .Lfb9a60_000b9b84\n"
-        "movl $0x21f944, (%esp)\n" /* line 2700 */
+        "movl $str_0021f944, (%esp)\n" /* line 2700 */
         "calll Com_Printf\n"
         "movl %ebx, 4(%esp)\n" /* line 2701 */
-        "movl $0x21f970, (%esp)\n" /* "Writing to StringEd file %s
+        "movl $str_0021f970, (%esp)\n" /* "Writing to StringEd file %s
 " */
         "calll Com_Printf\n"
         "movl $0xa, 0x10(%esp)\n" /* line 2704 */
         "leal -0x1c(%ebp), %eax\n" /* fileCount */
         "movl %eax, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x21e5ac, 4(%esp)\n" /* "csv" */
-        "movl $0x21e51c, (%esp)\n" /* "soundaliases" */
+        "movl $str_0021e5ac, 4(%esp)\n" /* "csv" */
+        "movl $str_0021e51c, (%esp)\n" /* "soundaliases" */
         "calll FS_ListFiles\n"
         "movl %eax, %esi\n" /* fileNames */
         "movl -0x1c(%ebp), %edi\n" /* line 2705 | fileCount, i */
         "testl %edi, %edi\n" /* i */
         "jne .Lfb9a60_000b9ba3\n"
-        "movl $0x21e5b0, (%esp)\n" /* line 2707 */
+        "movl $str_0021e5b0, (%esp)\n" /* line 2707 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x24c, %esp\n" /* line 2728 */
@@ -3288,8 +3289,8 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "retl\n"
         /* { scope 1 */
         ".Lfb9a60_000b9b84:\n"
-        "movl $0x21f148, 4(%esp)\n" /* line 2696 */
-        "movl $0x21f90c, (%esp)\n" /* "WARNING: Could not make local copy of StringEd file %s
+        "movl $str_0021f148, 4(%esp)\n" /* line 2696 */
+        "movl $str_0021f90c, (%esp)\n" /* "WARNING: Could not make local copy of StringEd file %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -3313,7 +3314,7 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "movl %esi, (%esp)\n" /* fileNames */
         "calll FS_FreeFileList\n"
         /* { scope 2 */
-        "movl $0x215b98, 4(%esp)\n" /* line 2625 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 2625 */
         "leal -0x21c(%ebp), %eax\n" /* stringEdFileName */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -3341,13 +3342,13 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "calll FS_FileRead\n"
         "cmpl %eax, %esi\n"
         "je .Lfb9a60_000b9c69\n"
-        "movl $0x21f998, 4(%esp)\n" /* line 2637 */
+        "movl $str_0021f998, 4(%esp)\n" /* line 2637 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         ".Lfb9a60_000b9c69:\n"
         "movl %edi, (%esp)\n" /* line 2638 | f */
         "calll FS_FileClose\n"
-        "movl $0x216fec, 4(%esp)\n" /* line 2640 */
+        "movl $str_00216fec, 4(%esp)\n" /* line 2640 */
         "movl %ebx, (%esp)\n"
         "calll FS_FileOpen\n"
         "movl %eax, %ebx\n"
@@ -3361,7 +3362,7 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "calll FS_FileWrite\n"
         "cmpl %eax, %esi\n"
         "je .Lfb9a60_000b9cbd\n"
-        "movl $0x21f9c8, 4(%esp)\n" /* line 2647 */
+        "movl $str_0021f9c8, 4(%esp)\n" /* line 2647 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         ".Lfb9a60_000b9cbd:\n"
@@ -3376,7 +3377,7 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "leal -0x21c(%ebp), %eax\n" /* line 2725 | stringEdFileName */
         "movl %eax, (%esp)\n"
         "calll FS_Remove\n"
-        "movl $0x21f9f8, (%esp)\n" /* line 2727 */
+        "movl $str_0021f9f8, (%esp)\n" /* line 2727 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x24c, %esp\n" /* line 2728 */
@@ -3391,7 +3392,7 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         ".Lfb9a60_000b9cfa:\n"
         "leal -0x21c(%ebp), %eax\n" /* line 2715 | stringEdFileName */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21f990, 4(%esp)\n" /* "all_mp" */
+        "movl $str_0021f990, 4(%esp)\n" /* "all_mp" */
         "movl (%esi, %edi, 4), %eax\n" /* fileNames */
         "movl %eax, (%esp)\n"
         "calll Com_ProcessSoundAliasFileLocalization\n"
@@ -3403,7 +3404,7 @@ void Com_WriteLocalizedSoundAliasFiles(void)
         "jmp .Lfb9a60_000b9bb9\n"
         ".Lfb9a60_000b9d2f:\n"
         "movl %ebx, 4(%esp)\n" /* line 2686 */
-        "movl $0x21f8e0, (%esp)\n" /* "WARNING: Can not write to StringEd file %s
+        "movl $str_0021f8e0, (%esp)\n" /* "WARNING: Can not write to StringEd file %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -3430,7 +3431,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         /* { scope 1: fileName, fileHandle, buffer, parseBuffer, ... */
         "movl 0x10(%ebp), %eax\n" /* line 897 | sourceFile */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x21f6cc, 8(%esp)\n" /* "soundaliases/%s" */
+        "movl $str_0021f6cc, 8(%esp)\n" /* "soundaliases/%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x80(%ebp), %edx\n" /* filename */
         "movl %edx, (%esp)\n"
@@ -3442,9 +3443,9 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n"
         "js .Lfb9d4a_000b9ec0\n"
-        "cmpb $0, 0x1150da8\n" /* line 902 */
+        "cmpb $0, saLoadObjGlob+2184\n" /* line 902 */
         "jne .Lfb9d4a_000b9efb\n"
-        "cmpb $0, 0x1150da9\n" /* line 905 */
+        "cmpb $0, saLoadObjGlob+2185\n" /* line 905 */
         "je .Lfb9d4a_000ba3c8\n"
         /* { scope 2 */
         ".Lfb9d4a_000b9dac:\n"
@@ -3474,7 +3475,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movl %eax, (%esp)\n"
         "calll FS_Read\n"
         "movb $0, -0x2605(%ebp)\n" /* line 807 */
-        "movl $0x21fa50, %edi\n" /* line 809 | volumeModGroupIndex */
+        "movl $str_0021fa50, %edi\n" /* line 809 | volumeModGroupIndex */
         "movl $0xf, %ecx\n"
         "cld\n"
         "leal -0x2614(%ebp), %esi\n" /* buffer */
@@ -3495,7 +3496,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "calll FS_FCloseFile\n"
         "leal -0xc0(%ebp), %edi\n" /* line 820 | fileName, volumeModGroupIndex */
         "movl %edi, 8(%esp)\n" /* volumeModGroupIndex */
-        "movl $0x21fa9c, 4(%esp)\n" /* "ERROR: "%s" Is too long of a volumemodgroups file to parse
+        "movl $str_0021fa9c, 4(%esp)\n" /* "ERROR: "%s" Is too long of a volumemodgroups file to parse
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -3519,13 +3520,13 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "calll FS_FCloseFile\n"
         "leal -0xc0(%ebp), %edi\n" /* line 801 | fileName, volumeModGroupIndex */
         "movl %edi, 8(%esp)\n" /* volumeModGroupIndex */
-        "movl $0x21fa38, 4(%esp)\n" /* "ERROR: '%s' is empty
+        "movl $str_0021fa38, 4(%esp)\n" /* "ERROR: '%s' is empty
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
         ".Lfb9d4a_000b9ef4:\n"
-        "movb $1, 0x1150da8\n" /* line 913 */
+        "movb $1, saLoadObjGlob+2184\n" /* line 913 */
         ".Lfb9d4a_000b9efb:\n"
         "leal -0x80(%ebp), %eax\n" /* line 916 | filename */
         "movl %eax, (%esp)\n"
@@ -3663,7 +3664,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movss %xmm0, -0xdc(%ebp)\n" /* line 263 */
         "movl %eax, -0xd8(%ebp)\n" /* line 264 */
         "movb $0, -0xcb(%ebp)\n" /* line 265 */
-        "movl $0x216cd8, %ebx\n" /* line 266 */
+        "movl $str_00216cd8, %ebx\n" /* line 266 */
         "movl $5, %ecx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* loadspec */
@@ -3746,7 +3747,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "jp .Lfb9d4a_000ba3a3\n"
         "movss -0xf4(%ebp), %xmm1\n" /* line 708 */
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed6d4, %xmm0\n" /* 5.0f */
+        "mulss lit4_002ed6d4, %xmm0\n" /* 5.0f */
         "movss %xmm0, -0xf0(%ebp)\n"
         ".Lfb9d4a_000ba2c2:\n"
         "movss -0xf0(%ebp), %xmm0\n" /* line 709 */
@@ -3755,7 +3756,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "ucomiss %xmm1, %xmm2\n" /* line 714 */
         "jae .Lfb9d4a_000ba586\n"
         "movss -0x100(%ebp), %xmm0\n" /* line 720 */
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jp .Lfb9d4a_000ba2f3\n"
         "je .Lfb9d4a_000ba33e\n"
@@ -3778,7 +3779,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movss %xmm0, -0x104(%ebp)\n" /* line 734 */
         /* } scope */
         ".Lfb9d4a_000ba33e:\n"
-        "movl $0x21fd00, 4(%esp)\n" /* line 750 */
+        "movl $str_0021fd00, 4(%esp)\n" /* line 750 */
         "movl $0x154, (%esp)\n"
         "calll Com_AllocateTempSoundMemory\n"
         "movl %eax, %ebx\n"
@@ -3790,7 +3791,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movl saLoadObjGlob, %eax\n" /* line 753 */
         "movl %eax, 0x150(%ebx)\n"
         "movl %ebx, saLoadObjGlob\n" /* line 754 */
-        "addl $1, 0x1150524\n" /* line 755 */
+        "addl $1, saLoadObjGlob+4\n" /* line 755 */
         "jmp .Lfb9d4a_000ba055\n"
         /* { scope 2 */
         ".Lfb9d4a_000ba38b:\n"
@@ -3809,15 +3810,15 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         /* } scope */
         ".Lfb9d4a_000ba3c8:\n"
         "movl $Com_RefreshVolumeModGroups_f, 4(%esp)\n" /* line 907 */
-        "movl $0x21fa00, (%esp)\n" /* "snd_refreshVolumeModGroups" */
+        "movl $str_0021fa00, (%esp)\n" /* "snd_refreshVolumeModGroups" */
         "calll Cmd_AddCommand\n"
-        "movb $1, 0x1150da9\n" /* line 908 */
+        "movb $1, saLoadObjGlob+2185\n" /* line 908 */
         "jmp .Lfb9d4a_000b9dac\n"
         /* { scope 2 */
         ".Lfb9d4a_000ba3e8:\n"
         "movl 0x10(%ebp), %edx\n" /* line 964 | sourceFile */
         "movl %edx, 4(%esp)\n"
-        "movl $0x21fba8, (%esp)\n" /* "^1ERROR: Sound alias file %s: missing 'name' and/or 'file' c" */
+        "movl $str_0021fba8, (%esp)\n" /* "^1ERROR: Sound alias file %s: missing 'name' and/or 'file' c" */
         "calll Com_Printf\n"
         "calll Com_EndParseSession\n" /* line 965 */
         "jmp .Lfb9d4a_000b9ec0\n"
@@ -3830,7 +3831,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movsd %xmm1, 8(%esp)\n"
         "leal -0x1d4(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21fc94, (%esp)\n" /* "^1ERROR: sound alias '%s' has dist_min %g <= dist_max %g
+        "movl $str_0021fc94, (%esp)\n" /* "^1ERROR: sound alias '%s' has dist_min %g <= dist_max %g
 " */
         "calll Com_Printf\n"
         "jmp .Lfb9d4a_000ba055\n"
@@ -3838,7 +3839,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         ".Lfb9d4a_000ba434:\n"
         "movl 0x10(%ebp), %edi\n" /* line 986 | sourceFile, volumeModGroupIndex */
         "movl %edi, 4(%esp)\n" /* volumeModGroupIndex */
-        "movl $0x21fbec, (%esp)\n" /* "^1ERROR: Sound alias file %s: alias entry missing name and/o" */
+        "movl $str_0021fbec, (%esp)\n" /* "^1ERROR: Sound alias file %s: alias entry missing name and/o" */
         "calll Com_Printf\n"
         "calll Com_EndParseSession\n" /* line 987 */
         "jmp .Lfb9d4a_000b9ec0\n"
@@ -3848,7 +3849,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movsd %xmm1, 8(%esp)\n"
         "leal -0x1d4(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21fc64, (%esp)\n" /* "^1ERROR: sound alias '%s' has vol_min %g < 0
+        "movl $str_0021fc64, (%esp)\n" /* "^1ERROR: sound alias '%s' has vol_min %g < 0
 " */
         "calll Com_Printf\n"
         "jmp .Lfb9d4a_000ba055\n"
@@ -3857,7 +3858,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movsd %xmm0, 8(%esp)\n"
         "leal -0x1d4(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21fc30, (%esp)\n" /* "^1ERROR: sound alias '%s' has pitch_min %g <= 0
+        "movl $str_0021fc30, (%esp)\n" /* "^1ERROR: sound alias '%s' has pitch_min %g <= 0
 " */
         "calll Com_Printf\n"
         "jmp .Lfb9d4a_000ba055\n"
@@ -3884,7 +3885,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "calll Com_BeginParseSession\n"
         "movl %edi, -0x28(%ebp)\n" /* line 832 | volumeModGroupIndex, parseBuffer */
         "xorl %edi, %edi\n" /* volumeModGroupIndex */
-        "movl $0x1150568, %esi\n"
+        "movl $saLoadObjGlob+72, %esi\n"
         "xorl %ebx, %ebx\n" /* fileLength */
         "jmp .Lfb9d4a_000ba56a\n"
         ".Lfb9d4a_000ba501:\n"
@@ -3892,7 +3893,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "je .Lfb9d4a_000ba57c\n"
         "cmpl $0x20, %edi\n" /* line 841 | volumeModGroupIndex */
         "je .Lfb9d4a_000ba62e\n"
-        "leal 0x1150528(%ebx), %edx\n" /* line 844 | fileLength */
+        "leal saLoadObjGlob+8(%ebx), %edx\n" /* line 844 | fileLength */
         "movl %edx, -0x2634(%ebp)\n"
         "movl %eax, 4(%esp)\n" /* line 848 */
         "movl %edx, (%esp)\n"
@@ -3930,7 +3931,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movsd %xmm1, 8(%esp)\n"
         "leal -0x1d4(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21fcd0, (%esp)\n" /* "^1ERROR: sound alias '%s' has dist_min %g <= 0
+        "movl $str_0021fcd0, (%esp)\n" /* "^1ERROR: sound alias '%s' has dist_min %g <= 0
 " */
         "calll Com_Printf\n"
         "jmp .Lfb9d4a_000ba055\n"
@@ -3942,7 +3943,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "calll FS_FCloseFile\n"
         "leal -0xc0(%ebp), %edx\n" /* line 812 | fileName */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21fa60, 4(%esp)\n" /* "ERROR: "%s" does not appear to be a volumemodgroups file
+        "movl $str_0021fa60, 4(%esp)\n" /* "ERROR: "%s" does not appear to be a volumemodgroups file
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -3950,7 +3951,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         ".Lfb9d4a_000ba5d9:\n"
         "leal -0xc0(%ebp), %edx\n" /* line 795 | fileName */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21fa1c, 4(%esp)\n" /* "ERROR: Could not find '%s'
+        "movl $str_0021fa1c, 4(%esp)\n" /* "ERROR: Could not find '%s'
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -3961,7 +3962,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movl %edx, 0xc(%esp)\n"
         "leal -0xc0(%ebp), %edi\n" /* fileName, volumeModGroupIndex */
         "movl %edi, 8(%esp)\n" /* volumeModGroupIndex */
-        "movl $0x21fb4c, 4(%esp)\n" /* "ERROR: volumemodgroups parse failure on file "%s": groupname" */
+        "movl $str_0021fb4c, 4(%esp)\n" /* "ERROR: volumemodgroups parse failure on file "%s": groupname" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfb9d4a_000b9ef4\n"
@@ -3971,7 +3972,7 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
         "movl $0x20, 0xc(%esp)\n"
         "leal -0xc0(%ebp), %eax\n" /* fileName */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21fad8, 4(%esp)\n" /* "ERROR: volumemodgroups parse failure on file "%s": groups pa" */
+        "movl $str_0021fad8, 4(%esp)\n" /* "ERROR: volumemodgroups parse failure on file "%s": groups pa" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfb9d4a_000b9ef4\n"

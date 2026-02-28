@@ -30,7 +30,7 @@ unzFile unzReOpen(const char *path, unzFile file)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
-        "movl $0x215b98, 4(%esp)\n" /* line 331 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 331 */
         "movl 8(%ebp), %eax\n" /* path */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -1022,7 +1022,7 @@ unzFile unzOpen(const char *path)
         "pushl %ebx\n"
         "subl $0xec, %esp\n"
         /* { scope 1: uBackRead, v */
-        "movl $0x215b98, 4(%esp)\n" /* line 373 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 373 */
         "movl 8(%ebp), %eax\n" /* path */
         "movl %eax, (%esp)\n"
         "calll FS_FileOpen\n"
@@ -1655,7 +1655,7 @@ int unzOpenCurrentFile(unzFile file)
         "movl $0, 0x28(%esi)\n" /* line 1001 | size_filename */
         "movl $0, 0x2c(%esi)\n" /* line 1002 | size_filename */
         "movl $0x38, 0xc(%esp)\n" /* line 1004 */
-        "movl $0x215d44, 8(%esp)\n" /* "1.1.4" */
+        "movl $str_00215d44, 8(%esp)\n" /* "1.1.4" */
         "movl $0xfffffff1, 4(%esp)\n"
         "leal 4(%esi), %eax\n" /* size_filename */
         "movl %eax, (%esp)\n"

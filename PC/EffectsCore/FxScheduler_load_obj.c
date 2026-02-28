@@ -26,7 +26,7 @@ extern int strnicmp(const char *s1, const char *s2, int n);
 extern int stricmp(const char *s1, const char *s2);
 extern void strlwr(char *s);
 
-extern byte *fx_developer_check_ptr; /* 0x195ed5c */
+extern byte *fx_developer_check_ptr; /* imp_g_rendererExists */
 
 extern FxScheduler *theFxScheduler; /* 0x0 */
 extern EffectTemplate *defaultEffect; /* 0x0 */

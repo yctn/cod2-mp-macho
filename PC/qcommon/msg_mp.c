@@ -7,16 +7,16 @@
 extern NetField objectiveFields[6]; /* 0x0 */
 extern NetField hudElemFields[32]; /* 0x0 */
 extern int msg_hData[256]; /* 0x0 */
-static char string_00f0e860[1024]; /* 0xf0e860 */
-static char string_00f0ec60[8192]; /* 0xf0ec60 */
-static char string_00f10c60[1024]; /* 0xf10c60 */
-static struct huffman_t msgHuff; /* 0xf00820 */
-static qboolean msgInit; /* 0xf00800 */
-static unsigned int kbitmask[33]; /* 0x312c00 */
-static const NetField entityStateFields[59]; /* 0x332f60 */
-static const NetField archivedEntityFields[68]; /* 0x332c20 */
-static const NetField clientStateFields[22]; /* 0x332b00 */
-static const NetField playerStateFields[105]; /* 0x332600 */
+static char string_00f0e860[1024]; /* string */
+static char string_00f0ec60[8192]; /* string */
+static char string_00f10c60[1024]; /* string */
+static struct huffman_t msgHuff; /* msgHuff */
+static qboolean msgInit; /* msgInit */
+static unsigned int kbitmask[33]; /* kbitmask */
+static const NetField entityStateFields[59]; /* entityStateFields */
+static const NetField archivedEntityFields[68]; /* archivedEntityFields */
+static const NetField clientStateFields[22]; /* clientStateFields */
+static const NetField playerStateFields[105]; /* playerStateFields */
 
 void MSG_BeginReading(msg_t *msg);
 void MSG_WriteBits(msg_t *msg, int value, int bits);
@@ -433,7 +433,7 @@ int MSG_ReadBitsCompress(byte *from, byte *to, int size)
         "movl 8(%ebp), %eax\n" /* from */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
-        "movl 0xf07844, %eax\n"
+        "movl msgHuff+28708, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Huff_offsetReceive\n"
         "movl -0x1c(%ebp), %eax\n" /* line 977 | get */
@@ -653,7 +653,7 @@ void MSG_WriteReliableCommandToBuffer(const char *pszCommand, char *pszBuffer, i
         "retl\n"
         /* { scope 1 */
         ".Lf171fc8_00172020:\n"
-        "movl $0x2ad8fc, (%esp)\n" /* line 1436 */
+        "movl $str_002ad8fc, (%esp)\n" /* line 1436 */
         "calll Com_Printf\n"
         "jmp .Lf171fc8_00171fee\n"
         ".Lf171fc8_0017202e:\n"
@@ -661,7 +661,7 @@ void MSG_WriteReliableCommandToBuffer(const char *pszCommand, char *pszBuffer, i
         "movl 0x10(%ebp), %eax\n" /* iBufferSize */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* ch */
-        "movl $0x2ad8b0, (%esp)\n" /* "WARNING: Reliable command is too long (%i/%i) and will be tr" */
+        "movl $str_002ad8b0, (%esp)\n" /* "WARNING: Reliable command is too long (%i/%i) and will be tr" */
         "calll Com_Printf\n"
         "jmp .Lf171fc8_00171fea\n"
         ".Lf171fc8_0017204b:\n"
@@ -711,7 +711,7 @@ void MSG_SetDefaultUserCmd(playerState_t *ps, usercmd_t *cmd)
         "movl %esi, %edx\n" /* ps */
         "movl %ebx, %ecx\n" /* cmd */
         "movl $2, %edi\n"
-        "movss 0x2ed644, %xmm1\n" /* 182.04444885253906f */
+        "movss lit4_002ed644, %xmm1\n" /* 182.04444885253906f */
         ".Lf17207e_001720b9:\n"
         "movss 0xe8(%edx), %xmm0\n" /* line 1494 */
         "mulss %xmm1, %xmm0\n"
@@ -810,7 +810,7 @@ char * MSG_ReadString(msg_t *msg)
         "testl %ebx, %ebx\n" /* line 1212 | c */
         "jne .Lf172146_00172174\n"
         ".Lf172146_001721a4:\n"
-        "movb $0, 0xf0ec5f\n" /* line 1217 */
+        "movb $0, string+1023\n" /* line 1217 */
         /* } scope */
         "movl $string, %eax\n" /* line 1220 */
         "addl $0x1c, %esp\n"
@@ -872,7 +872,7 @@ char * MSG_ReadBigString(msg_t *msg)
         "testl %ebx, %ebx\n" /* line 1241 | c */
         "jne .Lf1721b8_001721ee\n"
         ".Lf1721b8_0017221e:\n"
-        "movb $0, 0xf10c5f\n" /* line 1247 */
+        "movb $0, string+8191\n" /* line 1247 */
         /* } scope */
         "movl $string, %eax\n" /* line 1250 */
         "addl $0x1c, %esp\n"
@@ -944,7 +944,7 @@ char * MSG_ReadStringLine(msg_t *msg)
         "testl %ebx, %ebx\n" /* line 1271 | c */
         "jne .Lf17223a_00172278\n"
         ".Lf17223a_001722ad:\n"
-        "movb $0, 0xf1105f\n" /* line 1277 */
+        "movb $0, string+1023\n" /* line 1277 */
         /* } scope */
         "movl $string, %eax\n" /* line 1280 */
         "addl $0x1c, %esp\n"
@@ -1084,7 +1084,7 @@ void MSG_Init(msg_t *buf, byte *data, int length)
         "movl $msgHuff, (%esp)\n"
         "calll Huff_addRef\n"
         "movl %ebx, 4(%esp)\n" /* line 3056 */
-        "movl $0xf0783c, (%esp)\n"
+        "movl $msgHuff+28700, (%esp)\n"
         "calll Huff_addRef\n"
         "addl $1, %edi\n" /* line 3053 */
         "cmpl (%esi), %edi\n"
@@ -1182,7 +1182,7 @@ void MSG_WriteString(msg_t *sb, const char *s)
         "retl\n"
         /* { scope 1 */
         ".Lf1723ca_00172487:\n"
-        "movl $0x2ad920, (%esp)\n" /* line 1077 */
+        "movl $str_002ad920, (%esp)\n" /* line 1077 */
         "calll Com_Printf\n"
         /* { scope 2 */
         "movl 8(%ebp), %edx\n" /* line 1007 | sb */
@@ -1231,7 +1231,7 @@ void MSG_WriteBigString(msg_t *sb, const char *s, msg_t *msg, int key, int oldV,
         "leal -1(%ecx), %esi\n" /* l */
         "cmpl $0x1fff, %esi\n" /* line 1099 | l */
         "jle .Lf1724c4_00172518\n"
-        "movl $0x2ad944, (%esp)\n" /* line 1101 */
+        "movl $str_002ad944, (%esp)\n" /* line 1101 */
         "calll Com_Printf\n"
         /* { scope 2 */
         "movl 8(%ebp), %edx\n" /* line 1007 | sb */
@@ -1450,7 +1450,7 @@ void MSG_ReadDeltaField(msg_t *msg, byte *from, byte *to, const NetField *field,
         "movl (%edx), %eax\n"
         ".Lf1725c0_001726fe:\n"
         "movl %eax, 0xc(%ebp)\n" /* line 2261 | from */
-        "movl $0x2ad968, 8(%ebp)\n" /* msg */
+        "movl $str_002ad968, 8(%ebp)\n" /* msg */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 2266 */
         "popl %ebx\n"
@@ -1629,7 +1629,7 @@ void MSG_ReadDeltaField(msg_t *msg, byte *from, byte *to, const NetField *field,
         "movl -0x2c(%ebp), %edx\n" /* field */
         "movl (%edx), %eax\n"
         "movl %eax, 0xc(%ebp)\n" /* from */
-        "movl $0x2ad970, 8(%ebp)\n" /* msg */
+        "movl $str_002ad970, 8(%ebp)\n" /* msg */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 2266 */
         "popl %ebx\n"
@@ -1735,7 +1735,7 @@ void MSG_ReadDeltaField(msg_t *msg, byte *from, byte *to, const NetField *field,
         "cvtsi2ssl %eax, %xmm0\n"
         /* } scope */
         ".Lf1725c0_001729d5:\n"
-        "mulss 0x2ed648, %xmm0\n" /* line 2215 | 0.0054931640625f */
+        "mulss lit4_002ed648, %xmm0\n" /* line 2215 | 0.0054931640625f */
         "movl -0x28(%ebp), %eax\n" /* toF */
         "movss %xmm0, (%eax)\n"
         "jmp .Lf1725c0_00172751\n"
@@ -1848,7 +1848,7 @@ void MSG_ReadDeltaField(msg_t *msg, byte *from, byte *to, const NetField *field,
         /* { scope 2 */
         ".Lf1725c0_00172b12:\n"
         "movl $1, (%ebx)\n" /* line 1160 */
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         "jmp .Lf1725c0_001729d5\n"
         /* } scope */
         ".Lf1725c0_00172b25:\n"
@@ -1951,7 +1951,7 @@ qboolean MSG_ReadDeltaStruct(byte *from, byte *to, unsigned int number, int numF
         /* } scope */
         "testb $1, %al\n" /* line 2317 */
         "je .Lf172bda_00172c6f\n"
-        "movl 0x195f5e4, %eax\n" /* line 2320 */
+        "movl imp_cl_shownet, %eax\n" /* line 2320 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf172bda_00172dd4\n"
@@ -1963,7 +1963,7 @@ qboolean MSG_ReadDeltaStruct(byte *from, byte *to, unsigned int number, int numF
         "movl %edi, 8(%esp)\n" /* i */
         "movl 0x10(%ebx), %eax\n" /* msg */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ad978, (%esp)\n" /* "%3i: #%-3i remove
+        "movl $str_002ad978, (%esp)\n" /* "%3i: #%-3i remove
 " */
         "calll Com_Printf\n"
         "movl $1, %eax\n"
@@ -2064,7 +2064,7 @@ qboolean MSG_ReadDeltaStruct(byte *from, byte *to, unsigned int number, int numF
         "cmpl %ecx, -0x20(%ebp)\n" /* lc */
         "jg .Lf172bda_00172d10\n"
         ".Lf172bda_00172d35:\n"
-        "movl 0x195f5e4, %eax\n" /* line 2344 */
+        "movl imp_cl_shownet, %eax\n" /* line 2344 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf172bda_00172dea\n"
@@ -2077,7 +2077,7 @@ qboolean MSG_ReadDeltaStruct(byte *from, byte *to, unsigned int number, int numF
         "movl %eax, 8(%esp)\n"
         "movl 0x10(%ebx), %eax\n" /* msg */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ad98c, (%esp)\n" /* "%3i: #%-3i " */
+        "movl $str_002ad98c, (%esp)\n" /* "%3i: #%-3i " */
         "calll Com_Printf\n"
         "movl $1, -0x1c(%ebp)\n" /* print */
         ".Lf172bda_00172d73:\n"
@@ -2466,7 +2466,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl 0x10(%ebp), %edx\n" /* to */
         "movl %edx, (%esp)\n"
         "calll memcpy\n"
-        "movl 0x195f5e4, %eax\n" /* line 2846 */
+        "movl imp_cl_shownet, %eax\n" /* line 2846 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1730d4_00173ebe\n"
@@ -2476,7 +2476,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         ".Lf1730d4_00173123:\n"
         "movl 0x10(%edi), %eax\n" /* line 2849 | msg */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ad998, (%esp)\n" /* "%3i: playerstate " */
+        "movl $str_002ad998, (%esp)\n" /* "%3i: playerstate " */
         "calll Com_Printf\n"
         "movl $1, -0x2714(%ebp)\n" /* print */
         ".Lf1730d4_00173140:\n"
@@ -2491,7 +2491,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "testl %eax, %eax\n" /* line 2860 */
         "jle .Lf1730d4_00173a39\n"
         "movl $0, -0x271c(%ebp)\n" /* line 1143 | i */
-        "movl $0x332604, -0x26e0(%ebp)\n"
+        "movl $playerStateFields+4, -0x26e0(%ebp)\n"
         ".Lf1730d4_0017317b:\n"
         "movl -0x26e0(%ebp), %ecx\n" /* line 2862 */
         "movl (%ecx), %eax\n"
@@ -2544,7 +2544,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl -0x26e0(%ebp), %edx\n"
         "movl -4(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ad970, (%esp)\n" /* "%s:%f " */
+        "movl $str_002ad970, (%esp)\n" /* "%s:%f " */
         "calll Com_Printf\n"
         "addl $1, -0x271c(%ebp)\n" /* line 2860 | i */
         "addl $0xc, -0x26e0(%ebp)\n"
@@ -2624,7 +2624,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl $1, (%edi)\n" /* line 920 */
         /* } scope */
         ".Lf1730d4_0017333c:\n"
-        "movl 0x195f5e4, %eax\n" /* line 2980 */
+        "movl imp_cl_shownet, %eax\n" /* line 2980 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1730d4_00173351\n"
@@ -2690,7 +2690,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl $1, (%edi)\n" /* line 920 */
         /* } scope */
         ".Lf1730d4_0017340c:\n"
-        "movl 0x195f5e4, %eax\n" /* line 2998 */
+        "movl imp_cl_shownet, %eax\n" /* line 2998 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1730d4_00173421\n"
@@ -2825,7 +2825,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl %edi, (%esp)\n"
         "calll MSG_ReadDeltaField\n"
         "addl $0xc, %ebx\n" /* bit */
-        "cmpl $0x312be8, %ebx\n" /* line 2283 | bit */
+        "cmpl $objectiveFields+72, %ebx\n" /* line 2283 | bit */
         "jne .Lf1730d4_001735b3\n"
         /* } scope */
         "addl $1, -0x26cc(%ebp)\n" /* line 3013 */
@@ -2928,7 +2928,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl -0x26e0(%ebp), %edx\n"
         "movl -4(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ad968, (%esp)\n" /* "%s:%i " */
+        "movl $str_002ad968, (%esp)\n" /* "%s:%i " */
         "calll Com_Printf\n"
         "jmp .Lf1730d4_00173655\n"
         /* { scope 2 */
@@ -2936,7 +2936,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl $1, (%edi)\n" /* line 920 */
         /* } scope */
         ".Lf1730d4_00173753:\n"
-        "movl 0x195f5e4, %eax\n" /* line 2945 */
+        "movl imp_cl_shownet, %eax\n" /* line 2945 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1730d4_00173768\n"
@@ -3133,7 +3133,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl -0x26e0(%ebp), %ecx\n"
         "movl -4(%ecx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ad968, (%esp)\n" /* "%s:%i " */
+        "movl $str_002ad968, (%esp)\n" /* "%s:%i " */
         "calll Com_Printf\n"
         "jmp .Lf1730d4_00173655\n"
         ".Lf1730d4_00173a29:\n"
@@ -3313,14 +3313,14 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         /* } scope */
         "testb $1, %al\n" /* line 2281 */
         "jne .Lf1730d4_001735ae\n"
-        "movl $0x312ba4, %ecx\n" /* line 2283 */
+        "movl $objectiveFields+4, %ecx\n" /* line 2283 */
         ".Lf1730d4_00173c82:\n"
         "movl (%ecx), %edx\n" /* line 2292 */
         "movl (%esi, %edx), %eax\n" /* line 2294 | bit */
         "movl -0x26f4(%ebp), %ebx\n" /* to, bit */
         "movl %eax, (%ebx, %edx)\n" /* bit */
         "addl $0xc, %ecx\n"
-        "cmpl $0x312bec, %ecx\n" /* line 2289 */
+        "cmpl $objectiveFields+76, %ecx\n" /* line 2289 */
         "jne .Lf1730d4_00173c82\n"
         /* } scope */
         "addl $1, -0x26cc(%ebp)\n" /* line 3013 */
@@ -3511,8 +3511,8 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl $0, -0x2714(%ebp)\n" /* print */
         "jmp .Lf1730d4_00173140\n"
         ".Lf1730d4_00173ecd:\n"
-        "movl $0x2ad9c4, 4(%esp)\n" /* line 2998 */
-        "movl $0x2ad9b8, (%esp)\n" /* "%s " */
+        "movl $str_002ad9c4, 4(%esp)\n" /* line 2998 */
+        "movl $str_002ad9b8, (%esp)\n" /* "%s " */
         "calll Com_Printf\n"
         "jmp .Lf1730d4_00173421\n"
         /* { scope 2 */
@@ -3536,7 +3536,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "cvtsi2ssl %eax, %xmm0\n"
         /* } scope */
         ".Lf1730d4_00173f19:\n"
-        "mulss 0x2ed648, %xmm0\n" /* line 2908 | 0.0054931640625f */
+        "mulss lit4_002ed648, %xmm0\n" /* line 2908 | 0.0054931640625f */
         "movl -0x26dc(%ebp), %edx\n"
         "movss %xmm0, (%edx)\n"
         "jmp .Lf1730d4_00173655\n"
@@ -3635,8 +3635,8 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "jmp .Lf1730d4_00173b3b\n"
         /* } scope */
         ".Lf1730d4_00174053:\n"
-        "movl $0x2ad9ac, 4(%esp)\n" /* line 2945 */
-        "movl $0x2ad9b8, (%esp)\n" /* "%s " */
+        "movl $str_002ad9ac, 4(%esp)\n" /* line 2945 */
+        "movl $str_002ad9b8, (%esp)\n" /* "%s " */
         "calll Com_Printf\n"
         "movl 0x14(%edi), %eax\n" /* msg */
         "movl %eax, -0x272c(%ebp)\n"
@@ -3645,8 +3645,8 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         "movl 0x10(%edi), %edx\n" /* msg */
         "jmp .Lf1730d4_00173eff\n"
         ".Lf1730d4_0017407d:\n"
-        "movl $0x2ad9bc, 4(%esp)\n" /* line 2980 */
-        "movl $0x2ad9b8, (%esp)\n" /* "%s " */
+        "movl $str_002ad9bc, 4(%esp)\n" /* line 2980 */
+        "movl $str_002ad9b8, (%esp)\n" /* "%s " */
         "calll Com_Printf\n"
         "jmp .Lf1730d4_00173351\n"
         ".Lf1730d4_00174096:\n"
@@ -3664,7 +3664,7 @@ void MSG_ReadDeltaPlayerstate(msg_t *msg, playerState_t *from, playerState_t *to
         /* { scope 2 */
         ".Lf1730d4_001740c6:\n"
         "movl $1, (%edi)\n" /* line 1160 */
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         "jmp .Lf1730d4_00173f19\n"
         /* } scope */
         /* { scope 2 */
@@ -3776,7 +3776,7 @@ void MSG_ReadDeltaUsercmdKey(msg_t *msg, int key, usercmd_t *from, usercmd_t *to
         "andl $1, %edx\n"
         /* } scope */
         "movl 0xc(%ebp), %eax\n" /* line 1671 | key */
-        "andl 0x312c04, %eax\n"
+        "andl kbitmask+4, %eax\n"
         "cmpl %edx, %eax\n"
         "je 0x174428\n"
         "movl 0x14(%ebp), %eax\n" /* line 1674 | to */
@@ -3808,7 +3808,7 @@ void MSG_ReadDeltaUsercmdKey(msg_t *msg, int key, usercmd_t *from, usercmd_t *to
         "andl $1, %edx\n"
         /* } scope */
         "movl 0xc(%ebp), %eax\n" /* line 1676 | key */
-        "andl 0x312c04, %eax\n"
+        "andl kbitmask+4, %eax\n"
         "cmpl %edx, %eax\n"
         "jne 0x174544\n"
         "movl 0xc(%ebp), %edx\n" /* line 1678 | key */
@@ -5864,7 +5864,7 @@ void MSG_WriteDeltaField(const NetField *field)
         ".Lf176226_00176265:\n"
         "movss (%edi), %xmm1\n" /* line 1772 | value */
         "cvttss2si %xmm1, %esi\n" /* line 1773 | bits */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 1775 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 1775 | 0.0f */
         "je .Lf176226_001763c1\n"
         /* { scope 2: bit, bit */
         ".Lf176226_0017627a:\n"
@@ -6031,7 +6031,7 @@ void MSG_WriteDeltaField(const NetField *field)
         "movl $1, (%ebx)\n" /* line 862 */
         /* } scope */
         ".Lf176226_0017642d:\n"
-        "movss 0x2ed644, %xmm0\n" /* line 1123 | 182.04444885253906f */
+        "movss lit4_002ed644, %xmm0\n" /* line 1123 | 182.04444885253906f */
         "mulss (%edi), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "movzwl %ax, %esi\n" /* c */
@@ -6066,7 +6066,7 @@ void MSG_WriteDeltaField(const NetField *field)
         ".Lf176226_00176486:\n"
         "movss (%edi), %xmm1\n" /* line 1802 | bits */
         "cvttss2si %xmm1, %esi\n" /* line 1803 | bits */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 1805 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 1805 | 0.0f */
         "jne .Lf176226_0017649d\n"
         "jnp .Lf176226_0017634b\n"
         /* { scope 2: bit, bit */
@@ -7038,7 +7038,7 @@ void MSG_WriteDeltaStruct(byte *from, byte *to, qboolean force, int numFields, i
         "jmp .Lf176b2c_00176ca5\n"
         /* } scope */
         ".Lf176b2c_00176e9d:\n"
-        "movl 0x195f5e4, %eax\n" /* line 1950 */
+        "movl imp_cl_shownet, %eax\n" /* line 1950 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf176b2c_00176ed0\n"
@@ -7051,7 +7051,7 @@ void MSG_WriteDeltaStruct(byte *from, byte *to, qboolean force, int numFields, i
         "movl %eax, 8(%esp)\n"
         "movl 0xc(%esi), %eax\n" /* msg */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ad9d0, (%esp)\n" /* "W|%3i: #%-3i remove
+        "movl $str_002ad9d0, (%esp)\n" /* "W|%3i: #%-3i remove
 " */
         "calll Com_Printf\n"
         ".Lf176b2c_00176ed0:\n"
@@ -7350,7 +7350,7 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
         ".Lf177192_001771ac:\n"
         "movl $0, -0x271c(%ebp)\n" /* line 2567 | lc */
         "xorl %esi, %esi\n" /* bits */
-        "movl $0x332604, %ecx\n"
+        "movl $playerStateFields+4, %ecx\n"
         "jmp .Lf177192_001771d2\n"
         ".Lf177192_001771bf:\n"
         "leal 1(%esi), %eax\n" /* line 2582 | bits */
@@ -7387,8 +7387,8 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
         "testl %eax, %eax\n"
         "jle .Lf177192_0017730f\n"
         "movl $0, -0x2724(%ebp)\n" /* i */
-        "movl $0x332604, -0x26e8(%ebp)\n"
-        "movss 0x2ed644, %xmm2\n" /* 182.04444885253906f */
+        "movl $playerStateFields+4, -0x26e8(%ebp)\n"
+        "movss lit4_002ed644, %xmm2\n" /* 182.04444885253906f */
         ".Lf177192_00177245:\n"
         "movl -0x26e8(%ebp), %edi\n" /* line 2590 */
         "movl (%edi), %eax\n"
@@ -8455,7 +8455,7 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
         /* } scope */
         /* } scope */
         ".Lf177192_0017804d:\n"
-        "movl $0x312ba4, %ecx\n" /* line 2784 */
+        "movl $objectiveFields+4, %ecx\n" /* line 2784 */
         ".Lf177192_00178052:\n"
         "movl (%ecx), %edx\n" /* line 1907 */
         "movl -0x274c(%ebp), %esi\n" /* line 1909 | bit */
@@ -8464,7 +8464,7 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
         "cmpl (%edi, %edx), %eax\n"
         "jne .Lf177192_001781d5\n"
         "addl $0xc, %ecx\n" /* line 1910 */
-        "cmpl $0x312bec, %ecx\n" /* line 1904 */
+        "cmpl $objectiveFields+76, %ecx\n" /* line 1904 */
         "jne .Lf177192_00178052\n"
         "movl -0x2738(%ebp), %eax\n" /* line 839 */
         "cmpl 8(%ebx), %eax\n"
@@ -8571,7 +8571,7 @@ void MSG_WriteDeltaPlayerstate(msg_t *msg, playerState_s *from, playerState_s *t
         "movl %ebx, %eax\n"
         "calll MSG_WriteDeltaField\n"
         "addl $0xc, %esi\n" /* bit */
-        "cmpl $0x312be8, %esi\n" /* line 1918 | bit */
+        "cmpl $objectiveFields+72, %esi\n" /* line 1918 | bit */
         "jne .Lf177192_001781eb\n"
         "movl 0xc(%ebx), %edi\n"
         "movl %edi, -0x2738(%ebp)\n"

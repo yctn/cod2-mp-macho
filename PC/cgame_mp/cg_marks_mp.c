@@ -28,15 +28,15 @@ extern void Com_Error(errorParm_t code, const char *fmt);
 /*
  * Indirect global pointers (absolute addresses from original binary).
  * These are pointer-to-pointer indirections used by the cgame module.
- *   0x195f5f8 -> int** : points to a struct whose field at offset 8 holds the max markPoly count
- *   0x195f584 -> char** : points to cg_t* (the main cgame state)
- *   0x195f5fc -> char** : points to a struct whose byte at offset 8 is a "marks enabled" flag
- *   0x195ed88 -> FxHelper* : the FX helper singleton
+ *   imp_cg_marksLimit -> int** : points to a struct whose field at offset 8 holds the max markPoly count
+ *   imp_cg -> char** : points to cg_t* (the main cgame state)
+ *   imp_cg_marks -> char** : points to a struct whose byte at offset 8 is a "marks enabled" flag
+ *   imp_theFxHelper -> FxHelper* : the FX helper singleton
  */
-#define CG_MARKCOUNT_PTR   (*(int **)(0x195f5f8))
-#define CG_PTR             (*(char **)(0x195f584))
-#define CG_MARKS_ENABLED   (*(char **)(0x195f5fc))
-#define FX_HELPER_PTR      (*(FxHelper **)(0x195ed88))
+#define CG_MARKCOUNT_PTR   (*(int **)(imp_cg_marksLimit))
+#define CG_PTR             (*(char **)(imp_cg))
+#define CG_MARKS_ENABLED   (*(char **)(imp_cg_marks))
+#define FX_HELPER_PTR      (*(FxHelper **)(imp_theFxHelper))
 
 /* Offset of activeMarkPolys sentinel within cg_t */
 #define CG_ACTIVE_MARKS_OFFSET  0xf3714

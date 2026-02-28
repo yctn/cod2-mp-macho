@@ -8,7 +8,7 @@ extern Bool Dvar_IsSystemActive(void);
 extern Bool Dvar_GetBool(const char *name);
 extern int Dvar_GetInt(const char *name);
 
-static Bool shouldQuitOnError; /* 0x4ea680 */
+static Bool shouldQuitOnError; /* shouldQuitOnError */
 
 static void RefreshQuitOnErrorCondition_inline(void)
 {

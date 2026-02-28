@@ -9,7 +9,7 @@ extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float 
 extern int Dvar_GetInt(const char *dvarName);
 extern int Hunk_Used(void);
 
-extern byte *uiInfo_ptr; /* 0x195f5d8 */
+extern byte *uiInfo_ptr; /* imp_sharedUiInfo */
 
 float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle hMaterial);
 float UI_DrawLoadBar(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle material);

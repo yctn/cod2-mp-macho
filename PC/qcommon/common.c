@@ -51,26 +51,26 @@ extern int com_numConsoleLines; /* 0x0 */
 extern char * com_consoleLines[32]; /* 0x0 */
 extern char cl_cdkey[34]; /* 0x0 */
 extern char cl_cdkeychecksum[10]; /* 0x0 */
-static qboolean opening_qconsole; /* 0x33c118 */
-static int printedWarning; /* 0x33c11c */
-static int timeClientFrame; /* 0x33c120 */
-static int lastErrorTime; /* 0x33c128 */
-static int errorCount; /* 0x33c124 */
-static errorParm_t errorcode; /* 0x339808 */
-static fileHandle_t logfile; /* 0x339804 */
-static int com_lastFrameTime; /* 0x33a880 */
-static float com_codeTimeScale; /* 0x33a884 */
-static qboolean com_fullyInitialized; /* 0x33a888 */
-static char com_errorMessage[4096]; /* 0x339880 */
-static int com_pushedEventsHead; /* 0x33c104 */
-static int com_pushedEventsTail; /* 0x33c100 */
-static sysEvent_t com_pushedEvents[256]; /* 0x33a900 */
-static qboolean com_safemode; /* 0x33c108 */
-static int iWeaponInfoSource; /* 0x339800 */
-static char *rd_buffer; /* 0x33c114 */
-static int rd_buffersize; /* 0x33c110 */
-static void (*rd_flush)(); /* 0x33c10c */
-static char * noticeErrors[8]; /* 0x308ba0 */
+static qboolean opening_qconsole; /* opening_qconsole */
+static int printedWarning; /* printedWarning */
+static int timeClientFrame; /* timeClientFrame */
+static int lastErrorTime; /* lastErrorTime */
+static int errorCount; /* errorCount */
+static errorParm_t errorcode; /* errorcode */
+static fileHandle_t logfile; /* logfile */
+static int com_lastFrameTime; /* com_lastFrameTime */
+static float com_codeTimeScale; /* com_codeTimeScale */
+static qboolean com_fullyInitialized; /* com_fullyInitialized */
+static char com_errorMessage[4096]; /* com_errorMessage */
+static int com_pushedEventsHead; /* com_pushedEventsHead */
+static int com_pushedEventsTail; /* com_pushedEventsTail */
+static sysEvent_t com_pushedEvents[256]; /* com_pushedEvents */
+static qboolean com_safemode; /* com_safemode */
+static int iWeaponInfoSource; /* iWeaponInfoSource */
+static char *rd_buffer; /* rd_buffer */
+static int rd_buffersize; /* rd_buffersize */
+static void (*rd_flush)(); /* rd_flush */
+static char * noticeErrors[8]; /* noticeErrors */
 
 void Com_BeginRedirect(char *buffer, int buffersize, void (*flush)());
 void Com_EndRedirect(void);
@@ -216,7 +216,7 @@ void Com_PrintMessage(print_msg_type_t type, const char *msg)
         ".Lf2e9d6_0002ea5b:\n"
         "cmpl $4, 8(%ebp)\n" /* line 363 | type */
         "je .Lf2e9d6_0002ea77\n"
-        "movl 0x195ec98, %eax\n" /* line 383 */
+        "movl imp_com_dedicated, %eax\n" /* line 383 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf2e9d6_0002ea77\n"
@@ -280,13 +280,13 @@ void Com_PrintMessage(print_msg_type_t type, const char *msg)
         "movl %ebx, (%esp)\n" /* line 427 | newtime */
         "calll localtime\n"
         "movl %eax, %ebx\n" /* newtime */
-        "movl $0x216030, (%esp)\n" /* line 444 */
+        "movl $str_00216030, (%esp)\n" /* line 444 */
         "calll FS_FOpenTextFileWrite\n"
         "movl %eax, logfile\n"
         "movl %ebx, (%esp)\n" /* line 446 | newtime */
         "calll asctime\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x216040, (%esp)\n" /* "logfile opened on %s
+        "movl $str_00216040, (%esp)\n" /* "logfile opened on %s
 " */
         "calll Com_Printf\n"
         "movl $0, opening_qconsole\n" /* line 447 */
@@ -336,13 +336,13 @@ void Com_SetErrorMessage(void)
         "movl %eax, %esi\n" /* errorMessage */
         /* { scope 1 */
         "movl $0x1040, 8(%esp)\n" /* line 643 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x21605c, (%esp)\n" /* "com_errorMessage" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_0021605c, (%esp)\n" /* "com_errorMessage" */
         "calll Dvar_RegisterString\n"
         "movl %eax, ui_errorMessage\n"
         "movl $0x1040, 8(%esp)\n" /* line 644 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x216070, (%esp)\n" /* "com_errorTitle" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_00216070, (%esp)\n" /* "com_errorTitle" */
         "calll Dvar_RegisterString\n"
         "movl %eax, ui_errorTitle\n"
         "cmpl $2, errorcode\n" /* line 650 */
@@ -352,8 +352,8 @@ void Com_SetErrorMessage(void)
         "jne .Lf2ebfa_0002ece8\n"
         ".Lf2ebfa_0002ec61:\n"
         "movl $1, 8(%esp)\n" /* line 660 */
-        "movl $0x216080, 4(%esp)\n" /* "error message" */
-        "movl $0x21609c, (%esp)\n" /* "MENU_ERROR" */
+        "movl $str_00216080, 4(%esp)\n" /* "error message" */
+        "movl $str_0021609c, (%esp)\n" /* "MENU_ERROR" */
         "calll SEH_LocalizeTextMessage\n"
         "testl %eax, %eax\n" /* line 661 */
         "je .Lf2ebfa_0002ed64\n"
@@ -364,7 +364,7 @@ void Com_SetErrorMessage(void)
         "calll Dvar_SetString\n"
         ".Lf2ebfa_0002ec96:\n"
         "movl $1, 8(%esp)\n" /* line 667 */
-        "movl $0x216080, 4(%esp)\n" /* "error message" */
+        "movl $str_00216080, 4(%esp)\n" /* "error message" */
         "movl %esi, (%esp)\n" /* errorMessage */
         "calll SEH_LocalizeTextMessage\n"
         "movl %eax, %ebx\n" /* translation */
@@ -401,12 +401,12 @@ void Com_SetErrorMessage(void)
         "jne .Lf2ebfa_0002ecef\n"
         ".Lf2ebfa_0002ed0e:\n"
         "movl $1, 8(%esp)\n" /* line 652 */
-        "movl $0x216080, 4(%esp)\n" /* "error message" */
-        "movl $0x216090, (%esp)\n" /* "MENU_NOTICE" */
+        "movl $str_00216080, 4(%esp)\n" /* "error message" */
+        "movl $str_00216090, (%esp)\n" /* "MENU_NOTICE" */
         "calll SEH_LocalizeTextMessage\n"
         "testl %eax, %eax\n" /* line 653 */
         "jne .Lf2ebfa_0002ec85\n"
-        "movl $0x216090, 4(%esp)\n" /* line 656 */
+        "movl $str_00216090, 4(%esp)\n" /* line 656 */
         "movl ui_errorTitle, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
@@ -424,7 +424,7 @@ void Com_SetErrorMessage(void)
         "retl\n"
         /* { scope 1 */
         ".Lf2ebfa_0002ed64:\n"
-        "movl $0x21609c, 4(%esp)\n" /* line 664 */
+        "movl $str_0021609c, 4(%esp)\n" /* line 664 */
         "movl ui_errorTitle, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
@@ -456,7 +456,7 @@ void Com_Error(errorParm_t code, const char *fmt)
         "movl $__mh_execute_header, 4(%esp)\n"
         "movl $com_errorMessage, (%esp)\n"
         "calll vsnprintf\n"
-        "movb $0, 0x33a87f\n" /* line 927 */
+        "movb $0, com_errorMessage+4095\n" /* line 927 */
         "cmpl $4, %ebx\n" /* line 932 | code */
         "je .Lf2ed7e_0002ee0a\n"
         "cmpl $6, %ebx\n" /* code */
@@ -476,7 +476,7 @@ void Com_Error(errorParm_t code, const char *fmt)
         "testl %eax, %eax\n"
         "je .Lf2ed7e_0002ee7c\n"
         ".Lf2ed7e_0002ee13:\n"
-        "movl 0x195ecac, %ebx\n" /* line 946 | code */
+        "movl imp_cls, %ebx\n" /* line 946 | code */
         "movl 0x110(%ebx), %eax\n" /* code */
         "testl %eax, %eax\n"
         "jne .Lf2ed7e_0002ee43\n"
@@ -485,7 +485,7 @@ void Com_Error(errorParm_t code, const char *fmt)
         "jmp .Lf2ed7e_0002ede8\n"
         ".Lf2ed7e_0002ee2a:\n"
         "movl $com_errorMessage, 4(%esp)\n" /* line 922 */
-        "movl $0x2160a8, (%esp)\n" /* "recursive error after: %s" */
+        "movl $str_002160a8, (%esp)\n" /* "recursive error after: %s" */
         "calll Sys_Error\n"
         "jmp .Lf2ed7e_0002ed95\n"
         ".Lf2ed7e_0002ee43:\n"
@@ -551,7 +551,7 @@ qboolean Com_SafeMode(void)
         ".Lf2eea8_0002eece:\n"
         "movl $0, (%esp)\n" /* line 1256 */
         "calll Cmd_Argv\n"
-        "movl $0x2160cc, 4(%esp)\n" /* "dvar_restart" */
+        "movl $str_002160cc, 4(%esp)\n" /* "dvar_restart" */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -566,7 +566,7 @@ qboolean Com_SafeMode(void)
         "calll Cmd_TokenizeString\n"
         "movl $0, (%esp)\n" /* line 1256 */
         "calll Cmd_Argv\n"
-        "movl $0x2160c4, 4(%esp)\n" /* "safe" */
+        "movl $str_002160c4, 4(%esp)\n" /* "safe" */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -632,14 +632,14 @@ void Com_StartupVariable(const char *match)
         "jne .Lf2ef3c_0002ef68\n"
         "movl $0, (%esp)\n" /* line 1298 */
         "calll Cmd_Argv\n"
-        "movl $0x2160dc, 4(%esp)\n" /* "set" */
+        "movl $str_002160dc, 4(%esp)\n" /* "set" */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf2ef3c_0002f055\n"
         "movl $0, (%esp)\n" /* line 1300 */
         "calll Cmd_Argv\n"
-        "movl $0x2160e0, 4(%esp)\n" /* "seta" */
+        "movl $str_002160e0, 4(%esp)\n" /* "seta" */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -659,14 +659,14 @@ void Com_StartupVariable(const char *match)
         "calll Cmd_TokenizeString\n"
         "movl $0, (%esp)\n" /* line 1298 */
         "calll Cmd_Argv\n"
-        "movl $0x2160dc, 4(%esp)\n" /* "set" */
+        "movl $str_002160dc, 4(%esp)\n" /* "set" */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf2ef3c_0002efed\n"
         "movl $0, (%esp)\n" /* line 1300 */
         "calll Cmd_Argv\n"
-        "movl $0x2160e0, 4(%esp)\n" /* "seta" */
+        "movl $str_002160e0, 4(%esp)\n" /* "seta" */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -715,7 +715,7 @@ void Info_Print(const char *s)
         ".Lf2f060_0002f0b8:\n"
         "movb $0, (%edx)\n" /* line 1369 */
         "movl %esi, 4(%esp)\n" /* line 1370 */
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll Com_Printf\n"
         "cmpb $0, (%ebx)\n" /* line 1372 | s */
         "je .Lf2f060_0002f1ba\n"
@@ -742,7 +742,7 @@ void Info_Print(const char *s)
         "cmpb $1, (%ebx)\n" /* line 1385 | s */
         "sbbl $-1, %ebx\n" /* s */
         "movl %ecx, 4(%esp)\n" /* line 1386 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         "cmpb $0, (%ebx)\n" /* line 1356 | s */
@@ -762,7 +762,7 @@ void Info_Print(const char *s)
         "cmpb $1, (%ebx)\n" /* line 1385 | s */
         "sbbl $-1, %ebx\n" /* s */
         "movl %ecx, 4(%esp)\n" /* line 1386 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         "cmpb $0, (%ebx)\n" /* line 1356 | s */
@@ -792,12 +792,12 @@ void Info_Print(const char *s)
         "calll memset\n"
         "movb $0, -0x1f4(%ebp)\n" /* line 1366 */
         "movl %esi, 4(%esp)\n" /* line 1370 */
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll Com_Printf\n"
         "cmpb $0, (%ebx)\n" /* line 1372 | s */
         "jne .Lf2f060_0002f0d4\n"
         ".Lf2f060_0002f1ba:\n"
-        "movl $0x2160ec, (%esp)\n" /* line 1374 */
+        "movl $str_002160ec, (%esp)\n" /* line 1374 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x410, %esp\n" /* line 1388 */
@@ -827,7 +827,7 @@ void Com_ShutdownEvents(void)
         ".Lf2f1da_0002f1ee:\n"
         "movzbl %dl, %eax\n" /* line 1466 */
         "leal (%eax, %eax, 2), %eax\n"
-        "movl 0x33a914(, %eax, 8), %ecx\n"
+        "movl com_pushedEvents+20(, %eax, 8), %ecx\n"
         "leal 1(%edx), %eax\n" /* line 1467 */
         "movl %eax, com_pushedEventsTail\n"
         "testl %ecx, %ecx\n" /* line 1468 */
@@ -876,10 +876,10 @@ void Com_WriteCDKey(void)
         "testl %eax, %eax\n"
         "jne .Lf2f272_0002f2c1\n"
         "movl $0x20202020, cl_cdkey\n" /* line 1910 */
-        "movl $0x20202020, 0x308b70\n"
-        "movl $0x20202020, 0x308b74\n"
-        "movl $0x20202020, 0x308b78\n"
-        "movb $0, 0x308b7c\n"
+        "movl $0x20202020, cl_cdkey+4\n"
+        "movl $0x20202020, cl_cdkey+8\n"
+        "movl $0x20202020, cl_cdkey+12\n"
+        "movb $0, cl_cdkey+16\n"
         /* } scope */
         "leave\n" /* line 2029 */
         "retl\n"
@@ -888,17 +888,17 @@ void Com_WriteCDKey(void)
         "leal -0x1d(%ebp), %edx\n" /* line 2002 | regkey */
         "movl cl_cdkey, %eax\n"
         "movl %eax, -0x1d(%ebp)\n" /* regkey */
-        "movl 0x308b70, %eax\n"
+        "movl cl_cdkey+4, %eax\n"
         "movl %eax, -0x19(%ebp)\n"
-        "movl 0x308b74, %eax\n"
+        "movl cl_cdkey+8, %eax\n"
         "movl %eax, -0x15(%ebp)\n"
-        "movl 0x308b78, %eax\n"
+        "movl cl_cdkey+12, %eax\n"
         "movl %eax, -0x11(%ebp)\n"
         "movl cl_cdkeychecksum, %eax\n" /* line 2003 */
         "movl %eax, -0xd(%ebp)\n"
         "movb $0, -9(%ebp)\n" /* line 2004 */
         "movl %edx, 4(%esp)\n" /* line 2005 */
-        "movl $0x21614c, (%esp)\n" /* "codkey" */
+        "movl $str_0021614c, (%esp)\n" /* "codkey" */
         "calll MacPreferences_PutString\n"
         /* } scope */
         "leave\n" /* line 2029 */
@@ -1064,7 +1064,7 @@ int Com_GetConfigureDvarNames(const char * *text)
         "jbe .Lf2f3d0_0002f3e7\n"
         "movl $0x1f, 0xc(%esp)\n" /* line 2165 */
         "movl %ebx, 8(%esp)\n" /* token */
-        "movl $0x216180, 4(%esp)\n" /* "configure_mp.csv: dvar name "%s" longer than %i
+        "movl $str_00216180, 4(%esp)\n" /* "configure_mp.csv: dvar name "%s" longer than %i
 " */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
@@ -1072,7 +1072,7 @@ int Com_GetConfigureDvarNames(const char * *text)
         "jle .Lf2f3d0_0002f3ed\n"
         ".Lf2f3d0_0002f45f:\n"
         "movl $0x40, 8(%esp)\n" /* line 2167 */
-        "movl $0x2161b4, 4(%esp)\n" /* "configure_mp.csv: more than %i dvars
+        "movl $str_002161b4, 4(%esp)\n" /* "configure_mp.csv: more than %i dvars
 " */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
@@ -1088,7 +1088,7 @@ int Com_GetConfigureDvarNames(const char * *text)
         "retl\n"
         /* { scope 1 */
         ".Lf2f3d0_0002f48b:\n"
-        "movl $0x216154, 4(%esp)\n" /* line 2160 */
+        "movl $str_00216154, 4(%esp)\n" /* line 2160 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf2f3d0_0002f41e\n"
@@ -1118,7 +1118,7 @@ void Com_GetConfigureDvarValues(int dvarCount, const char * *text)
         "cmpb $0, (%eax)\n" /* line 2199 */
         "je .Lf2f4a4_0002f4de\n"
         "movl %eax, 8(%esp)\n" /* line 2200 */
-        "movl $0x216264, 4(%esp)\n" /* "configure_mp.csv: extra dvar value column(s): value = %s
+        "movl $str_00216264, 4(%esp)\n" /* "configure_mp.csv: extra dvar value column(s): value = %s
 " */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
@@ -1145,7 +1145,7 @@ void Com_GetConfigureDvarValues(int dvarCount, const char * *text)
         "testl %eax, %eax\n"
         "jne .Lf2f4a4_0002f556\n"
         ".Lf2f4a4_0002f509:\n"
-        "movl $0x216154, 4(%esp)\n" /* line 2188 */
+        "movl $str_00216154, 4(%esp)\n" /* line 2188 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "cmpb $0, (%ebx)\n" /* line 2189 */
@@ -1178,7 +1178,7 @@ void Com_GetConfigureDvarValues(int dvarCount, const char * *text)
         "jne .Lf2f4a4_0002f522\n"
         ".Lf2f4a4_0002f55b:\n"
         "movl %esi, 8(%esp)\n" /* line 2190 | dvarIndex */
-        "movl $0x2161dc, 4(%esp)\n" /* "configure_mp.csv: missing entry in dvar value column %i
+        "movl $str_002161dc, 4(%esp)\n" /* "configure_mp.csv: missing entry in dvar value column %i
 " */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
@@ -1195,7 +1195,7 @@ void Com_GetConfigureDvarValues(int dvarCount, const char * *text)
         "movl $0x1f, 0x10(%esp)\n" /* line 2192 */
         "movl %esi, 0xc(%esp)\n" /* dvarIndex */
         "movl %ebx, 8(%esp)\n"
-        "movl $0x216218, 4(%esp)\n" /* "configure_mp.csv: entry '%s' in dvar value column %i is lon" */
+        "movl $str_00216218, 4(%esp)\n" /* "configure_mp.csv: entry '%s' in dvar value column %i is lon" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "addl $1, %esi\n" /* line 2184 | dvarIndex */
@@ -1206,7 +1206,7 @@ void Com_GetConfigureDvarValues(int dvarCount, const char * *text)
         "jmp .Lf2f4a4_0002f4b9\n"
         ".Lf2f4a4_0002f5bd:\n"
         "movl %esi, 8(%esp)\n" /* line 2190 | dvarIndex */
-        "movl $0x2161dc, 4(%esp)\n" /* "configure_mp.csv: missing entry in dvar value column %i
+        "movl $str_002161dc, 4(%esp)\n" /* "configure_mp.csv: missing entry in dvar value column %i
 " */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
@@ -1254,12 +1254,12 @@ void Com_GetConfigureDvarValues(int dvarCount, const char * *text)
         "movl $0x1f, 0x10(%esp)\n" /* line 2192 */
         "movl %esi, 0xc(%esp)\n" /* dvarIndex */
         "movl %ebx, 8(%esp)\n"
-        "movl $0x216218, 4(%esp)\n" /* "configure_mp.csv: entry '%s' in dvar value column %i is lon" */
+        "movl $str_00216218, 4(%esp)\n" /* "configure_mp.csv: entry '%s' in dvar value column %i is lon" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf2f4a4_0002f5eb\n"
         ".Lf2f4a4_0002f665:\n"
-        "movl $0x216154, 4(%esp)\n" /* line 2188 */
+        "movl $str_00216154, 4(%esp)\n" /* line 2188 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf2f4a4_0002f624\n"
@@ -1297,7 +1297,7 @@ void Com_SetConfigureDvars(int dvarCount)
         "jmp .Lf2f67c_0002f6e5\n"
         ".Lf2f67c_0002f6a2:\n"
         "movl $1, 8(%esp)\n" /* line 2216 */
-        "movl $0x2162ac, 4(%esp)\n" /* "1" */
+        "movl $str_002162ac, 4(%esp)\n" /* "1" */
         ".Lf2f67c_0002f6b2:\n"
         "movl %ebx, (%esp)\n" /* line 2224 */
         "calll Dvar_SetFromStringByNameFromSource\n"
@@ -1316,7 +1316,7 @@ void Com_SetConfigureDvars(int dvarCount)
         "movl $0xc, %ecx\n" /* line 2214 | dvarValues */
         "cld\n"
         "movl %ebx, %esi\n"
-        "movl $0x2162a0, %edi\n" /* "r_aaSamples" */
+        "movl $str_002162a0, %edi\n" /* "r_aaSamples" */
         "repe cmpsb %es:(%edi), (%esi)\n"
         "movl $0, %eax\n"
         "je .Lf2f67c_0002f705\n"
@@ -1351,7 +1351,7 @@ void Com_WriteConfigToFile(void)
         "testl %eax, %eax\n" /* line 2945 */
         "jne .Lf2f71a_0002f749\n"
         "movl %esi, 4(%esp)\n" /* line 2947 | filename */
-        "movl $0x2162b0, (%esp)\n" /* "Couldn't write %s.
+        "movl $str_002162b0, (%esp)\n" /* "Couldn't write %s.
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -1362,10 +1362,10 @@ void Com_WriteConfigToFile(void)
         "retl\n"
         /* { scope 1 */
         ".Lf2f71a_0002f749:\n"
-        "movl $0x2162c4, 4(%esp)\n" /* line 2951 */
+        "movl $str_002162c4, 4(%esp)\n" /* line 2951 */
         "movl %eax, (%esp)\n"
         "calll FS_Printf\n"
-        "movl $0x2162f4, 4(%esp)\n" /* line 2953 */
+        "movl $str_002162f4, 4(%esp)\n" /* line 2953 */
         "movl %ebx, (%esp)\n" /* f */
         "calll FS_Printf\n"
         "movl %ebx, (%esp)\n" /* line 2954 | f */
@@ -1396,7 +1396,7 @@ void Com_WriteConfig_f(void)
         "calll Cmd_Argc\n" /* line 3040 */
         "cmpl $2, %eax\n"
         "je .Lf2f78a_0002f7ad\n"
-        "movl $0x216310, (%esp)\n" /* line 3042 */
+        "movl $str_00216310, (%esp)\n" /* line 3042 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x54, %esp\n" /* line 3050 */
@@ -1412,12 +1412,12 @@ void Com_WriteConfig_f(void)
         "leal -0x48(%ebp), %ebx\n" /* filename */
         "movl %ebx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x216330, 8(%esp)\n" /* line 3047 */
+        "movl $str_00216330, 8(%esp)\n" /* line 3047 */
         "movl $0x40, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
         "calll Com_DefaultExtension\n"
         "movl %ebx, 4(%esp)\n" /* line 3048 */
-        "movl $0x216338, (%esp)\n" /* "Writing %s.
+        "movl $str_00216338, (%esp)\n" /* "Writing %s.
 " */
         "calll Com_Printf\n"
         "movl %ebx, %eax\n" /* line 3049 */
@@ -1584,7 +1584,7 @@ char Com_GetDecimalDelimiter(void)
         "pushl %ebp\n" /* line 4023 */
         "movl %esp, %ebp\n"
         /* { scope 1 */
-        "movl 0x195ecb0, %eax\n" /* line 4028 */
+        "movl imp_loc_language, %eax\n" /* line 4028 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "leal -1(%edx), %eax\n" /* line 4030 */
@@ -1619,12 +1619,12 @@ void Com_SetRecommended(qboolean restart)
         "pushl %ebx\n"
         "subl $0x1e7c, %esp\n"
         /* { scope 1: dvarNames, dvarValues, best, cur, ... */
-        "movl $0x216378, (%esp)\n" /* line 2373 */
+        "movl $str_00216378, (%esp)\n" /* line 2373 */
         "calll Com_Printf\n"
         "leal -0x230(%ebp), %eax\n" /* line 2375 | info */
         "movl %eax, (%esp)\n"
         "calll Sys_GetInfo\n"
-        "movsd 0x307c70, %xmm0\n" /* line 2377 | 1.02 */
+        "movsd lit8_00307c70, %xmm0\n" /* line 2377 | 1.02 */
         "mulsd -0x230(%ebp), %xmm0\n" /* info */
         "movsd %xmm0, -0x230(%ebp)\n" /* info */
         "movl -0x228(%ebp), %eax\n" /* line 2379 */
@@ -1633,7 +1633,7 @@ void Com_SetRecommended(qboolean restart)
         "movl $0x80, -0x228(%ebp)\n" /* line 2380 */
         "leal -0x20(%ebp), %eax\n" /* line 2385 | csv */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216394, (%esp)\n" /* "configure_mp.csv" */
+        "movl $str_00216394, (%esp)\n" /* "configure_mp.csv" */
         "calll FS_ReadFile\n"
         "movl %eax, -0x1e5c(%ebp)\n" /* filesize */
         "testl %eax, %eax\n" /* line 2386 */
@@ -1641,14 +1641,14 @@ void Com_SetRecommended(qboolean restart)
         ".Lf2f9ca_0002fa42:\n"
         "movl -0x20(%ebp), %eax\n" /* line 2389 | csv */
         "movl %eax, -0x1c(%ebp)\n" /* text */
-        "movl $0x216394, (%esp)\n" /* line 2390 */
+        "movl $str_00216394, (%esp)\n" /* line 2390 */
         "calll Com_BeginParseSession\n"
         "movl $1, (%esp)\n" /* line 2391 */
         "calll Com_SetCSV\n"
         "xorl %esi, %esi\n" /* dvarCount */
         "movb $0, -0x1e55(%ebp)\n" /* foundMatch */
         "xorl %edi, %edi\n"
-        "movsd 0x307c78, %xmm0\n" /* -1.0 */
+        "movsd lit8_00307c78, %xmm0\n" /* -1.0 */
         "movsd %xmm0, -0x1e48(%ebp)\n"
         /* { scope 2: find */
         ".Lf2f9ca_0002fa7b:\n"
@@ -1662,14 +1662,14 @@ void Com_SetRecommended(qboolean restart)
         ".Lf2f9ca_0002fa8f:\n"
         "cmpb $0x23, %al\n"
         "je .Lf2f9ca_0002fb0e\n"
-        "movl $0x2163cc, 4(%esp)\n" /* line 2259 */
+        "movl $str_002163cc, 4(%esp)\n" /* line 2259 */
         "movl %ebx, (%esp)\n" /* token */
         "calll stricmp\n"
         "testl %eax, %eax\n"
         "je .Lf2f9ca_0002fbff\n"
         "testl %esi, %esi\n" /* line 2265 | dvarCount */
         "jne .Lf2f9ca_0002fb1e\n"
-        "movl $0x2163d0, 4(%esp)\n" /* line 2267 */
+        "movl $str_002163d0, 4(%esp)\n" /* line 2267 */
         "movl %ebx, (%esp)\n" /* token */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -1678,7 +1678,7 @@ void Com_SetRecommended(qboolean restart)
         "leal -0x1c(%ebp), %eax\n" /* line 2270 | text */
         "movl %eax, (%esp)\n"
         "calll Com_ParseOnLine\n"
-        "movl $0x216414, 4(%esp)\n" /* line 2271 */
+        "movl $str_00216414, 4(%esp)\n" /* line 2271 */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -1705,7 +1705,7 @@ void Com_SetRecommended(qboolean restart)
         "calll atof\n"
         "fstpl -0x1e40(%ebp)\n"
         "movsd -0x1e40(%ebp), %xmm0\n" /* line 2280 */
-        "ucomisd 0x307c80, %xmm0\n" /* 0.0 */
+        "ucomisd lit8_00307c80, %xmm0\n" /* 0.0 */
         "jb .Lf2f9ca_0002ffe6\n"
         ".Lf2f9ca_0002fb42:\n"
         "leal -0x1c(%ebp), %eax\n" /* line 2283 | text */
@@ -1737,17 +1737,17 @@ void Com_SetRecommended(qboolean restart)
         "jmp .Lf2f9ca_0002fa7b\n"
         ".Lf2f9ca_0002fbb3:\n"
         "movl %eax, 8(%esp)\n" /* line 2286 */
-        "movl $0x216498, 4(%esp)\n" /* "configure_mp.csv: sys mb %i not allowed to be less than 128" */
+        "movl $str_00216498, 4(%esp)\n" /* "configure_mp.csv: sys mb %i not allowed to be less than 128" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf2f9ca_0002fb5c\n"
         ".Lf2f9ca_0002fbcd:\n"
-        "movl $0x21641c, 4(%esp)\n" /* line 2272 */
+        "movl $str_0021641c, 4(%esp)\n" /* line 2272 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf2f9ca_0002faea\n"
         ".Lf2f9ca_0002fbe6:\n"
-        "movl $0x2163d8, 4(%esp)\n" /* line 2268 */
+        "movl $str_002163d8, 4(%esp)\n" /* line 2268 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf2f9ca_0002fac7\n"
@@ -1763,7 +1763,7 @@ void Com_SetRecommended(qboolean restart)
         "movl %eax, 0x10(%esp)\n"
         "movsd -0x230(%ebp), %xmm0\n" /* info */
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x21652c, 4(%esp)\n" /* "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE %.0f GHz %i M" */
+        "movl $str_0021652c, 4(%esp)\n" /* "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE %.0f GHz %i M" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         /* { scope 2: find */
@@ -1771,7 +1771,7 @@ void Com_SetRecommended(qboolean restart)
         "leal -0x1c(%ebp), %edx\n" /* line 2325 | text */
         "movl %edx, (%esp)\n"
         "calll Com_Parse\n"
-        "movl $0x2163cc, 4(%esp)\n" /* line 2326 */
+        "movl $str_002163cc, 4(%esp)\n" /* line 2326 */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -1781,7 +1781,7 @@ void Com_SetRecommended(qboolean restart)
         ".Lf2f9ca_0002fc73:\n"
         "leal -0x223(%ebp), %eax\n" /* line 2401 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2165cc, 4(%esp)\n" /* "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE "%s"
+        "movl $str_002165cc, 4(%esp)\n" /* "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE "%s"
 " */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
@@ -1838,13 +1838,13 @@ void Com_SetRecommended(qboolean restart)
         "movl %eax, -0x228(%ebp)\n"
         "leal -0x20(%ebp), %eax\n" /* line 2385 | csv */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216394, (%esp)\n" /* "configure_mp.csv" */
+        "movl $str_00216394, (%esp)\n" /* "configure_mp.csv" */
         "calll FS_ReadFile\n"
         "movl %eax, -0x1e5c(%ebp)\n" /* filesize */
         "testl %eax, %eax\n" /* line 2386 */
         "jns .Lf2f9ca_0002fa42\n"
         ".Lf2f9ca_0002fd68:\n"
-        "movl $0x2163a8, 4(%esp)\n" /* line 2387 */
+        "movl $str_002163a8, 4(%esp)\n" /* line 2387 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf2f9ca_0002fa42\n"
@@ -1881,7 +1881,7 @@ void Com_SetRecommended(qboolean restart)
         "calll Dvar_AnyLatchedValues\n"
         "testb %al, %al\n"
         "je .Lf2f9ca_0002fcc7\n"
-        "movl $0x216604, (%esp)\n" /* line 2412 */
+        "movl $str_00216604, (%esp)\n" /* line 2412 */
         "calll Cbuf_AddText\n"
         /* } scope */
         "addl $0x1e7c, %esp\n" /* line 2414 */
@@ -2000,7 +2000,7 @@ void Com_SetRecommended(qboolean restart)
         "cmpl $0x3ff, %esi\n" /* line 2134 | wildcardLen */
         "jne .Lf2f9ca_0002ff10\n"
         ".Lf2f9ca_0002ff57:\n"
-        "movl $0x21656c, 4(%esp)\n" /* line 2135 */
+        "movl $str_0021656c, 4(%esp)\n" /* line 2135 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl %ebx, %edi\n"
@@ -2026,7 +2026,7 @@ void Com_SetRecommended(qboolean restart)
         ".Lf2f9ca_0002ff99:\n"
         "movl -0x1e4c(%ebp), %eax\n" /* line 2348 | find */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21659c, (%esp)\n" /* "configure_mp.csv: using GPU configuration "%s"
+        "movl $str_0021659c, (%esp)\n" /* "configure_mp.csv: using GPU configuration "%s"
 " */
         "calll Com_Printf\n"
         "leal -0xe30(%ebp), %ecx\n" /* line 2349 | best */
@@ -2044,7 +2044,7 @@ void Com_SetRecommended(qboolean restart)
         ".Lf2f9ca_0002ffe6:\n"
         "jp .Lf2f9ca_0002fb42\n" /* line 2280 */
         "movsd %xmm0, 8(%esp)\n" /* line 2281 */
-        "movl $0x216458, 4(%esp)\n" /* "configure_mp.csv: cpu ghz %g not allowed to be less than 0
+        "movl $str_00216458, 4(%esp)\n" /* "configure_mp.csv: cpu ghz %g not allowed to be less than 0
 " */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
@@ -2053,10 +2053,10 @@ void Com_SetRecommended(qboolean restart)
         "movl %edi, 0xc(%esp)\n" /* line 2305 */
         "movsd -0x1e48(%ebp), %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2164d8, (%esp)\n" /* "configure_mp.csv: using CPU configuration %.0f GHz %i MB
+        "movl $str_002164d8, (%esp)\n" /* "configure_mp.csv: using CPU configuration %.0f GHz %i MB
 " */
         "calll Com_Printf\n"
-        "movl $0x216514, (%esp)\n" /* line 2307 */
+        "movl $str_00216514, (%esp)\n" /* line 2307 */
         "calll Cbuf_AddText\n"
         "calll Cbuf_Execute\n" /* line 2308 */
         "leal -0x1e30(%ebp), %ecx\n" /* line 2310 | dvarValues */
@@ -2082,7 +2082,7 @@ void Com_CheckSetRecommended(void)
         "je .Lf30052_000300d4\n"
         "leal -0xc(%ebp), %eax\n" /* line 2055 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216394, (%esp)\n" /* "configure_mp.csv" */
+        "movl $str_00216394, (%esp)\n" /* "configure_mp.csv" */
         "calll FS_ReadFile\n"
         "movl %eax, %ebx\n"
         "testl %eax, %eax\n" /* line 2056 */
@@ -2146,7 +2146,7 @@ void Com_CheckSetRecommended(void)
         "je .Lf30052_000300f5\n"
         "jmp .Lf30052_000300d4\n"
         ".Lf30052_0003012c:\n"
-        "movl $0x2163a8, 4(%esp)\n" /* line 2057 */
+        "movl $str_002163a8, 4(%esp)\n" /* line 2057 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf30052_00030082\n"
@@ -2166,22 +2166,22 @@ void Com_ReadCDKey(void)
         "movl $0x15, 8(%esp)\n"
         "leal -0x1d(%ebp), %eax\n" /* regkey */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21614c, (%esp)\n" /* "codkey" */
+        "movl $str_0021614c, (%esp)\n" /* "codkey" */
         "calll MacPreferences_GetString\n"
         "testb %al, %al\n"
         "je .Lf30146_000301c3\n"
         "movl -0x1d(%ebp), %eax\n" /* line 1973 | regkey */
         "movl %eax, cl_cdkey\n"
         "movl -0x19(%ebp), %eax\n"
-        "movl %eax, 0x308b70\n"
+        "movl %eax, cl_cdkey+4\n"
         "movl -0x15(%ebp), %eax\n"
-        "movl %eax, 0x308b74\n"
+        "movl %eax, cl_cdkey+8\n"
         "movl -0x11(%ebp), %eax\n"
-        "movl %eax, 0x308b78\n"
-        "movb $0, 0x308b7c\n" /* line 1974 */
+        "movl %eax, cl_cdkey+12\n"
+        "movb $0, cl_cdkey+16\n" /* line 1974 */
         "movl -0xd(%ebp), %eax\n" /* line 1975 */
         "movl %eax, cl_cdkeychecksum\n"
-        "movb $0, 0x308b64\n" /* line 1976 */
+        "movb $0, cl_cdkeychecksum+4\n" /* line 1976 */
         "movl $cl_cdkeychecksum, 4(%esp)\n" /* line 1977 */
         "movl $cl_cdkey, (%esp)\n"
         "calll CL_CDKeyValidate\n"
@@ -2193,10 +2193,10 @@ void Com_ReadCDKey(void)
         /* { scope 1 */
         ".Lf30146_000301c3:\n"
         "movl $0x20202020, cl_cdkey\n" /* line 1910 */
-        "movl $0x20202020, 0x308b70\n"
-        "movl $0x20202020, 0x308b74\n"
-        "movl $0x20202020, 0x308b78\n"
-        "movb $0, 0x308b7c\n"
+        "movl $0x20202020, cl_cdkey+4\n"
+        "movl $0x20202020, cl_cdkey+8\n"
+        "movl $0x20202020, cl_cdkey+12\n"
+        "movb $0, cl_cdkey+16\n"
         /* } scope */
         "leave\n" /* line 1982 */
         "retl\n"
@@ -2220,13 +2220,13 @@ void Com_LocalizedFloatToString(float f, char *buffer, unsigned int maxlen, unsi
         "movsd %xmm0, 0x10(%esp)\n"
         "movl 0x14(%ebp), %eax\n" /* numDecimalPlaces */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x216614, 8(%esp)\n" /* "%.*f" */
+        "movl $str_00216614, 8(%esp)\n" /* "%.*f" */
         "leal -1(%ebx), %eax\n" /* maxlen */
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n" /* buffer */
         "calll snprintf\n"
         "movb $0, -1(%esi, %ebx)\n" /* line 4046 | buffer */
-        "movl 0x195ecb0, %eax\n" /* line 4028 */
+        "movl imp_loc_language, %eax\n" /* line 4028 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edx\n"
         "leal -1(%edx), %eax\n" /* line 4030 */
@@ -2281,7 +2281,7 @@ void Com_Quit_f(void)
         "pushl %ebp\n" /* line 1045 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl $0x21661c, (%esp)\n" /* line 1049 */
+        "movl $str_0021661c, (%esp)\n" /* line 1049 */
         "calll Com_Printf\n"
         "movl com_errorEntered, %ecx\n" /* line 1060 */
         "testl %ecx, %ecx\n"
@@ -2297,7 +2297,7 @@ void Com_Quit_f(void)
         "calll CL_Shutdown\n" /* line 1070 */
         "movl $0, (%esp)\n" /* line 1072 */
         "calll CL_SwitchToLocalClient\n"
-        "movl $0x21662c, (%esp)\n" /* line 1079 */
+        "movl $str_0021662c, (%esp)\n" /* line 1079 */
         "calll SV_Shutdown\n"
         "calll Com_Close\n" /* line 1083 */
         "movl logfile, %eax\n" /* line 3766 */
@@ -2401,7 +2401,7 @@ void Com_ErrorCleanup(void)
         "subl $0x1014, %esp\n"
         /* { scope 1 */
         "calll LargeLocalReset\n" /* line 700 */
-        "movl 0x195eca8, %eax\n" /* line 706 */
+        "movl imp_re, %eax\n" /* line 706 */
         "movl 0x14c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf303e6_00030406\n"
@@ -2413,10 +2413,10 @@ void Com_ErrorCleanup(void)
         "calll Hunk_ClearTempMemoryHigh\n" /* line 583 */
         "calll Com_IsMapProfilerActive\n" /* line 718 */
         "movl $0, 4(%esp)\n" /* line 725 */
-        "movl $0x21663c, (%esp)\n" /* "cl_paused" */
+        "movl $str_0021663c, (%esp)\n" /* "cl_paused" */
         "calll Dvar_SetIntByName\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 733 */
-        "movl $0x2157b8, (%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n" /* line 733 */
+        "movl $str_002157b8, (%esp)\n"
         "calll FS_PureServerSetLoadedIwds\n"
         "calll SEH_UpdateLanguageInfo\n" /* line 739 */
         "movl $com_errorMessage, 4(%esp)\n" /* line 744 */
@@ -2425,7 +2425,7 @@ void Com_ErrorCleanup(void)
         "calll strcpy\n"
         "cmpl $3, errorcode\n" /* line 746 */
         "je .Lf303e6_0003061d\n"
-        "movl 0x195ecac, %eax\n" /* line 753 */
+        "movl imp_cls, %eax\n" /* line 753 */
         "movl 0x110(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf303e6_0003060c\n"
@@ -2443,7 +2443,7 @@ void Com_ErrorCleanup(void)
         "calll Com_ResetParseSessions\n" /* line 789 */
         "movl $1, (%esp)\n" /* line 792 */
         "calll CL_FlushDebugData\n"
-        "movl 0x195eca8, %eax\n" /* line 795 */
+        "movl imp_re, %eax\n" /* line 795 */
         "movl 0xe4(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf303e6_000304cd\n"
@@ -2470,13 +2470,13 @@ void Com_ErrorCleanup(void)
         "cmpl $2, %eax\n"
         "ja .Lf303e6_000305ab\n"
         ".Lf303e6_00030522:\n"
-        "movl 0x195ec94, %eax\n" /* line 828 */
+        "movl imp_updateScreenCalled, %eax\n" /* line 828 */
         "movb $0, (%eax)\n"
         "cmpl $2, errorcode\n" /* line 832 */
         "je .Lf303e6_000305d4\n"
         ".Lf303e6_00030537:\n"
         "movl $com_errorMessage, 4(%esp)\n" /* line 840 */
-        "movl $0x21666c, (%esp)\n" /* "********************
+        "movl $str_0021666c, (%esp)\n" /* "********************
 ERROR: %s
 ********************
 " */
@@ -2506,14 +2506,14 @@ ERROR: %s
         "jbe .Lf303e6_00030522\n"
         ".Lf303e6_000305ab:\n"
         "movl $com_errorMessage, 4(%esp)\n" /* line 824 */
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll Sys_Error\n"
-        "movl 0x195ec94, %eax\n" /* line 828 */
+        "movl imp_updateScreenCalled, %eax\n" /* line 828 */
         "movb $0, (%eax)\n"
         "cmpl $2, errorcode\n" /* line 832 */
         "jne .Lf303e6_00030537\n"
         ".Lf303e6_000305d4:\n"
-        "movl $0x216648, (%esp)\n" /* line 834 */
+        "movl $str_00216648, (%esp)\n" /* line 834 */
         "calll Com_ShutdownInternal\n"
         "movl $0, com_fixedConsolePosition\n" /* line 870 */
         "movl $0, com_errorEntered\n" /* line 876 */
@@ -2535,7 +2535,7 @@ ERROR: %s
         "je .Lf303e6_0003048e\n"
         /* { scope 2 */
         "movl $1, 8(%esp)\n" /* line 763 */
-        "movl $0x216080, 4(%esp)\n" /* "error message" */
+        "movl $str_00216080, 4(%esp)\n" /* "error message" */
         "movl $com_errorMessage, (%esp)\n"
         "calll SEH_LocalizeTextMessage\n"
         "testl %eax, %eax\n" /* line 764 */
@@ -2547,7 +2547,7 @@ ERROR: %s
         "jmp .Lf303e6_0003048e\n"
         /* } scope */
         ".Lf303e6_0003066b:\n"
-        "movl 0x195ecac, %eax\n" /* line 845 */
+        "movl imp_cls, %eax\n" /* line 845 */
         "movl 0x110(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf303e6_00030558\n"
@@ -2578,14 +2578,14 @@ void Com_ExecStartupConfigs(const char *configFile)
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* configFile */
-        "movl $0x2166a4, (%esp)\n" /* line 2610 */
+        "movl $str_002166a4, (%esp)\n" /* line 2610 */
         "calll Cbuf_AddText\n"
-        "movl $0x2166bc, (%esp)\n" /* line 2611 */
+        "movl $str_002166bc, (%esp)\n" /* line 2611 */
         "calll Cbuf_AddText\n"
         "testl %ebx, %ebx\n" /* line 2612 | configFile */
         "je .Lf306b6_000306f4\n"
         "movl %ebx, 4(%esp)\n" /* line 2613 | configFile */
-        "movl $0x2166d0, (%esp)\n" /* "exec %s
+        "movl $str_002166d0, (%esp)\n" /* "exec %s
 " */
         "calll va\n"
         "movl %eax, (%esp)\n"
@@ -2600,7 +2600,7 @@ void Com_ExecStartupConfigs(const char *configFile)
         "calll Com_SafeMode\n" /* line 2618 */
         "testl %eax, %eax\n"
         "je .Lf306b6_0003072b\n"
-        "movl $0x2166dc, (%esp)\n" /* line 2619 */
+        "movl $str_002166dc, (%esp)\n" /* line 2619 */
         "calll Cbuf_AddText\n"
         ".Lf306b6_0003072b:\n"
         "addl $0x14, %esp\n" /* line 2622 */
@@ -2644,17 +2644,17 @@ int Com_EventLoop(void)
         "movzbl %dl, %eax\n" /* line 1484 */
         "leal (%eax, %eax, 2), %eax\n"
         "shll $3, %eax\n"
-        "movl 0x33a914(%eax), %ebx\n"
+        "movl com_pushedEvents+20(%eax), %ebx\n"
         "movl %ebx, -0xac(%ebp)\n"
-        "movl 0x33a910(%eax), %edx\n"
-        "movl 0x33a90c(%eax), %ecx\n"
-        "movl 0x33a908(%eax), %ebx\n"
-        "movl 0x33a904(%eax), %esi\n"
+        "movl com_pushedEvents+16(%eax), %edx\n"
+        "movl com_pushedEvents+12(%eax), %ecx\n"
+        "movl com_pushedEvents+8(%eax), %ebx\n"
+        "movl com_pushedEvents+4(%eax), %esi\n"
         "movl com_pushedEvents(%eax), %edi\n"
         "cmpl $5, %esi\n" /* line 1516 */
         "ja .Lf30736_00030909\n"
         ".Lf30736_000307d0:\n"
-        "jmpl *0x2efd80(, %esi, 4)\n"
+        "jmpl *vec2_origin+516(, %esi, 4)\n"
         "leal -0x58(%ebp), %ebx\n" /* evFrom */
         "jmp .Lf30736_0003080c\n"
         ".Lf30736_000307dc:\n"
@@ -2734,7 +2734,7 @@ int Com_EventLoop(void)
         "jbe .Lf30736_000307d0\n"
         ".Lf30736_00030909:\n"
         "movl %esi, 8(%esp)\n" /* line 1520 */
-        "movl $0x2166f4, 4(%esp)\n" /* "Com_EventLoop: bad event type %i" */
+        "movl $str_002166f4, 4(%esp)\n" /* "Com_EventLoop: bad event type %i" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf30736_0003077a\n"
@@ -2749,7 +2749,7 @@ int Com_EventLoop(void)
         "movl -0xac(%ebp), %ecx\n" /* line 1645 */
         "movl %ecx, (%esp)\n"
         "calll Z_FreeInternal\n"
-        "movl $0x2160e8, (%esp)\n" /* line 1646 */
+        "movl $str_002160e8, (%esp)\n" /* line 1646 */
         "calll Cbuf_AddText\n"
         "jmp .Lf30736_0003077a\n"
         "movl -0xac(%ebp), %ebx\n" /* line 1652 */
@@ -2765,7 +2765,7 @@ int Com_EventLoop(void)
         "jbe .Lf30736_000309bc\n"
         "movl %ebx, (%esp)\n" /* line 1661 */
         "calll Z_FreeInternal\n"
-        "movl $0x216718, (%esp)\n" /* line 1662 */
+        "movl $str_00216718, (%esp)\n" /* line 1662 */
         "calll Com_Printf\n"
         "jmp .Lf30736_0003077a\n"
         ".Lf30736_000309a7:\n"
@@ -2858,20 +2858,20 @@ qboolean Debug_EventLoop(void)
         "movzbl %dl, %eax\n" /* line 1484 */
         "leal (%eax, %eax, 2), %eax\n"
         "shll $3, %eax\n"
-        "movl 0x33a914(%eax), %edi\n"
-        "movl 0x33a90c(%eax), %edx\n"
-        "movl 0x33a908(%eax), %ecx\n"
-        "movl 0x33a904(%eax), %ebx\n"
+        "movl com_pushedEvents+20(%eax), %edi\n"
+        "movl com_pushedEvents+12(%eax), %edx\n"
+        "movl com_pushedEvents+8(%eax), %ecx\n"
+        "movl com_pushedEvents+4(%eax), %ebx\n"
         "movl com_pushedEvents(%eax), %eax\n"
         "cmpl $5, %ebx\n" /* line 1727 */
         "ja .Lf30a84_00030b49\n"
         ".Lf30a84_00030ad6:\n"
-        "jmpl *0x2efd98(, %ebx, 4)\n"
+        "jmpl *vec2_origin+540(, %ebx, 4)\n"
         "movl %edi, (%esp)\n" /* line 1764 */
         "calll Cbuf_AddText\n"
         "movl %edi, (%esp)\n" /* line 1765 */
         "calll Z_FreeInternal\n"
-        "movl $0x2160e8, (%esp)\n" /* line 1766 */
+        "movl $str_002160e8, (%esp)\n" /* line 1766 */
         "calll Cbuf_AddText\n"
         /* } scope */
         "movl $1, -0x5c(%ebp)\n" /* line 1716 | newEvent */
@@ -2903,7 +2903,7 @@ qboolean Debug_EventLoop(void)
         "jbe .Lf30a84_00030ad6\n"
         ".Lf30a84_00030b49:\n"
         "movl %ebx, 8(%esp)\n" /* line 1731 */
-        "movl $0x2166f4, 4(%esp)\n" /* "Com_EventLoop: bad event type %i" */
+        "movl $str_002166f4, 4(%esp)\n" /* "Com_EventLoop: bad event type %i" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
@@ -2954,7 +2954,7 @@ void Com_Frame_Try_Block_Function(void)
         "movl com_fullyInitialized, %edi\n" /* line 3002 */
         "testl %edi, %edi\n"
         "je .Lf30bb6_00030bd9\n"
-        "movl 0x195ec9c, %edx\n" /* line 3005 */
+        "movl imp_dvar_modifiedFlags, %edx\n" /* line 3005 */
         "movl (%edx), %eax\n"
         "testb $1, %al\n"
         "jne .Lf30bb6_00030f6d\n"
@@ -2962,7 +2962,7 @@ void Com_Frame_Try_Block_Function(void)
         "movl com_viewlog, %edx\n" /* line 3286 */
         "cmpb $0, 7(%edx)\n"
         "je .Lf30bb6_00030bff\n"
-        "movl 0x195ec98, %eax\n" /* line 3290 */
+        "movl imp_com_dedicated, %eax\n" /* line 3290 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %esi\n"
         "testl %esi, %esi\n"
@@ -2979,7 +2979,7 @@ void Com_Frame_Try_Block_Function(void)
         "movl 8(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jle .Lf30bb6_00030c2e\n"
-        "movl 0x195ec98, %eax\n" /* line 3348 */
+        "movl imp_com_dedicated, %eax\n" /* line 3348 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* minMsec */
         "testl %ebx, %ebx\n" /* minMsec */
@@ -3011,7 +3011,7 @@ void Com_Frame_Try_Block_Function(void)
         "jne .Lf30bb6_00030dfb\n"
         "movl com_timescale, %eax\n" /* line 3112 */
         "movss 8(%eax), %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ucomiss %xmm0, %xmm1\n"
         "jne .Lf30bb6_00030dd1\n"
         "jp .Lf30bb6_00030dd1\n"
@@ -3023,7 +3023,7 @@ void Com_Frame_Try_Block_Function(void)
         "testl %ebx, %ebx\n" /* line 3123 */
         "movl $1, %eax\n"
         "cmovlel %eax, %ebx\n"
-        "movl 0x195ec98, %eax\n" /* line 3127 */
+        "movl imp_com_dedicated, %eax\n" /* line 3127 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -3042,7 +3042,7 @@ void Com_Frame_Try_Block_Function(void)
         "testl %esi, %esi\n"
         "jne .Lf30bb6_00030f42\n"
         ".Lf30bb6_00030d06:\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         ".Lf30bb6_00030d0e:\n"
         "movss %xmm1, com_timescaleValue\n"
         /* } scope */
@@ -3050,7 +3050,7 @@ void Com_Frame_Try_Block_Function(void)
         "calll CL_SwitchToLocalClient\n"
         "movl %edi, (%esp)\n" /* line 3400 */
         "calll SV_Frame\n"
-        "movl 0x195ec98, %ebx\n" /* line 3180 */
+        "movl imp_com_dedicated, %ebx\n" /* line 3180 */
         "movl (%ebx), %edx\n"
         "testb $0x40, 4(%edx)\n"
         "jne .Lf30bb6_00030e34\n"
@@ -3061,7 +3061,7 @@ void Com_Frame_Try_Block_Function(void)
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x21675c, (%esp)\n" /* "dedicated" */
+        "movl $str_0021675c, (%esp)\n" /* "dedicated" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, (%ebx)\n"
         "movl 8(%eax), %edx\n" /* line 3188 */
@@ -3099,7 +3099,7 @@ void Com_Frame_Try_Block_Function(void)
         "cvtsi2ssl %esi, %xmm0\n" /* line 428 */
         "mulss %xmm0, %xmm1\n"
         "mulss com_codeTimeScale, %xmm1\n"
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss %xmm1, (%esp)\n"
         "calll floorf\n"
         "fstps -0x60(%ebp)\n"
@@ -3109,7 +3109,7 @@ void Com_Frame_Try_Block_Function(void)
         "testl %ebx, %ebx\n" /* line 3123 */
         "movl $1, %eax\n"
         "cmovlel %eax, %ebx\n"
-        "movl 0x195ec98, %eax\n" /* line 3127 */
+        "movl imp_com_dedicated, %eax\n" /* line 3127 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -3152,7 +3152,7 @@ void Com_Frame_Try_Block_Function(void)
         "movl com_statmon, %eax\n" /* line 3259 */
         "cmpb $0, 8(%eax)\n"
         "je .Lf30bb6_00030dc9\n"
-        "movl 0x195eca0, %ebx\n" /* line 3262 */
+        "movl imp_com_fileAccessed, %ebx\n" /* line 3262 */
         "movl (%ebx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf30bb6_00030ff7\n"
@@ -3169,7 +3169,7 @@ void Com_Frame_Try_Block_Function(void)
         "jle .Lf30bb6_00030dc9\n"
         "testl %ebx, %ebx\n"
         "je .Lf30bb6_00030dc9\n"
-        "movl $0x216360, 8(%esp)\n" /* line 3271 */
+        "movl $str_00216360, 8(%esp)\n" /* line 3271 */
         "movl $0xbb8, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll StatMon_Warning\n"
@@ -3192,7 +3192,7 @@ void Com_Frame_Try_Block_Function(void)
         "jmp .Lf30bb6_00030d0e\n"
         ".Lf30bb6_00030f53:\n"
         "movl %ebx, 4(%esp)\n" /* line 3134 */
-        "movl $0x216738, (%esp)\n" /* "Hitch warning: %i msec frame time
+        "movl $str_00216738, (%esp)\n" /* "Hitch warning: %i msec frame time
 " */
         "calll Com_Printf\n"
         "movl $0x1388, %edi\n"
@@ -3204,7 +3204,7 @@ void Com_Frame_Try_Block_Function(void)
         "calll Com_HasPlayerProfile\n" /* line 3010 */
         "testb %al, %al\n"
         "je .Lf30bb6_00030bd9\n"
-        "movl $0x216300, 8(%esp)\n" /* line 3012 */
+        "movl $str_00216300, 8(%esp)\n" /* line 3012 */
         "movl $0x40, 4(%esp)\n"
         "leal -0x58(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
@@ -3224,12 +3224,12 @@ void Com_Frame_Try_Block_Function(void)
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x21675c, (%esp)\n" /* "dedicated" */
+        "movl $str_0021675c, (%esp)\n" /* "dedicated" */
         "calll Dvar_RegisterInt\n"
         "movl (%ebx), %eax\n"
         "jmp .Lf30bb6_00030d7d\n"
         ".Lf30bb6_00030ff7:\n"
-        "movl $0x216348, 8(%esp)\n" /* line 3264 */
+        "movl $str_00216348, 8(%esp)\n" /* line 3264 */
         "movl $0xbb8, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll StatMon_Warning\n"
@@ -3260,12 +3260,12 @@ void Com_StartHunkUsers(void)
         "calll setjmp\n"
         "testl %eax, %eax\n"
         "jne .Lf3104a_000310a6\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 3487 */
-        "movl $0x2157b8, (%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n" /* line 3487 */
+        "movl $str_002157b8, (%esp)\n"
         "calll UI_SetMap\n"
         "calll CL_StartHunkUsers\n" /* line 3490 */
         "calll Com_EventLoop\n" /* line 3513 */
-        "movl 0x195ec98, %eax\n" /* line 3530 */
+        "movl imp_com_dedicated, %eax\n" /* line 3530 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf3104a_000310a4\n"
@@ -3278,7 +3278,7 @@ void Com_StartHunkUsers(void)
         "leave\n" /* line 3539 */
         "retl\n"
         ".Lf3104a_000310a6:\n"
-        "movl $0x216768, (%esp)\n" /* line 3537 */
+        "movl $str_00216768, (%esp)\n" /* line 3537 */
         "calll Sys_Error\n"
         "leave\n" /* line 3539 */
         "retl\n"
@@ -3331,7 +3331,7 @@ void Com_WriteDefaults_f(void)
         "calll Cmd_Argc\n" /* line 3064 */
         "cmpl $2, %eax\n"
         "je .Lf310f8_0003111d\n"
-        "movl $0x216784, (%esp)\n" /* line 3066 */
+        "movl $str_00216784, (%esp)\n" /* line 3066 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x50, %esp\n" /* line 3074 */
@@ -3348,12 +3348,12 @@ void Com_WriteDefaults_f(void)
         "leal -0x48(%ebp), %esi\n" /* filename */
         "movl %esi, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x216330, 8(%esp)\n" /* line 3071 */
+        "movl $str_00216330, 8(%esp)\n" /* line 3071 */
         "movl $0x40, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll Com_DefaultExtension\n"
         "movl %esi, 4(%esp)\n" /* line 3072 */
-        "movl $0x216338, (%esp)\n" /* "Writing %s.
+        "movl $str_00216338, (%esp)\n" /* "Writing %s.
 " */
         "calll Com_Printf\n"
         /* { scope 2 */
@@ -3362,7 +3362,7 @@ void Com_WriteDefaults_f(void)
         "movl %eax, %ebx\n" /* f */
         "testl %eax, %eax\n" /* line 2977 */
         "je .Lf310f8_0003119d\n"
-        "movl $0x2162c4, 4(%esp)\n" /* line 2983 */
+        "movl $str_002162c4, 4(%esp)\n" /* line 2983 */
         "movl %eax, (%esp)\n"
         "calll FS_Printf\n"
         "movl %ebx, (%esp)\n" /* line 2984 | f */
@@ -3380,7 +3380,7 @@ void Com_WriteDefaults_f(void)
         /* { scope 2 */
         ".Lf310f8_0003119d:\n"
         "movl %esi, 4(%esp)\n" /* line 2979 */
-        "movl $0x2162b0, (%esp)\n" /* "Couldn't write %s.
+        "movl $str_002162b0, (%esp)\n" /* "Couldn't write %s.
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -3468,7 +3468,7 @@ int Com_Milliseconds(void)
         "jmp .Lf311b4_000311e8\n"
         ".Lf311b4_0003127e:\n"
         "movl $1, printedWarning\n" /* line 1435 */
-        "movl $0x2160fc, (%esp)\n" /* line 1436 */
+        "movl $str_002160fc, (%esp)\n" /* line 1436 */
         "calll Com_Printf\n"
         "jmp .Lf311b4_000311cc\n"
         /* } scope */
@@ -3559,7 +3559,7 @@ void Com_PumpMessageLoop(void)
         "jmp .Lf312a4_000312db\n"
         ".Lf312a4_0003136e:\n"
         "movl $1, printedWarning\n" /* line 1435 */
-        "movl $0x2160fc, (%esp)\n" /* line 1436 */
+        "movl $str_002160fc, (%esp)\n" /* line 1436 */
         "calll Com_Printf\n"
         "jmp .Lf312a4_000312bf\n"
         /* } scope */
@@ -3589,7 +3589,7 @@ void Com_Freeze_f(void)
         "calll Cmd_Argc\n" /* line 1863 */
         "cmpl $2, %eax\n"
         "je .Lf31392_000313bc\n"
-        "movl $0x2167a8, (%esp)\n" /* line 1865 */
+        "movl $str_002167a8, (%esp)\n" /* line 1865 */
         "calll Com_Printf\n"
         /* } scope */
         "leal -0xc(%ebp), %esp\n" /* line 1880 */
@@ -3669,7 +3669,7 @@ void Com_Freeze_f(void)
         "jmp .Lf31392_000313f2\n"
         ".Lf31392_000314ad:\n"
         "movl $1, printedWarning\n" /* line 1435 */
-        "movl $0x2160fc, (%esp)\n" /* line 1436 */
+        "movl $str_002160fc, (%esp)\n" /* line 1436 */
         "calll Com_Printf\n"
         "jmp .Lf31392_0003148c\n"
         ".Lf31392_000314c5:\n"
@@ -3733,7 +3733,7 @@ void Com_Freeze_f(void)
         ".Lf31392_00031587:\n"
         "subl -0x8c(%ebp), %esi\n" /* line 1875 */
         "cvtsi2sdl %esi, %xmm0\n"
-        "mulsd 0x307c88, %xmm0\n" /* 0.001 */
+        "mulsd lit8_00307c88, %xmm0\n" /* 0.001 */
         "ucomisd -0x98(%ebp), %xmm0\n"
         "jbe .Lf31392_000314d2\n"
         /* } scope */
@@ -3749,7 +3749,7 @@ void Com_Freeze_f(void)
         "jmp .Lf31392_00031557\n"
         ".Lf31392_000315bb:\n"
         "movl $1, printedWarning\n" /* line 1435 */
-        "movl $0x2160fc, (%esp)\n" /* line 1436 */
+        "movl $str_002160fc, (%esp)\n" /* line 1436 */
         "calll Com_Printf\n"
         "jmp .Lf31392_0003153b\n"
     );
@@ -3768,11 +3768,11 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "subl $0x8c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* commandLine */
         /* { scope 1 */
-        "movl $0x2167bc, 0x10(%esp)\n" /* line 2663 */
-        "movl $0x2167c8, 0xc(%esp)\n" /* "MacOSXS-i386" */
-        "movl $0x2167d8, 8(%esp)\n" /* "1.0" */
-        "movl $0x2167dc, 4(%esp)\n" /* "CoD2 MP" */
-        "movl $0x2167e4, (%esp)\n" /* "%s %s build %s %s
+        "movl $str_002167bc, 0x10(%esp)\n" /* line 2663 */
+        "movl $str_002167c8, 0xc(%esp)\n" /* "MacOSXS-i386" */
+        "movl $str_002167d8, 8(%esp)\n" /* "1.0" */
+        "movl $str_002167dc, 4(%esp)\n" /* "CoD2 MP" */
+        "movl $str_002167e4, (%esp)\n" /* "%s %s build %s %s
 " */
         "calll Com_Printf\n"
         "movl $0x1800, 8(%esp)\n" /* line 1409 */
@@ -3802,7 +3802,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "calll Cmd_Init\n" /* line 2675 */
         "movl $0, (%esp)\n" /* line 2678 */
         "calll Com_StartupVariable\n"
-        "movl $0x2167f8, (%esp)\n" /* line 2681 */
+        "movl $str_002167f8, (%esp)\n" /* line 2681 */
         "calll Com_StartupVariable\n"
         "calll CL_InitKeyCommands\n" /* line 2685 */
         "calll FS_InitFilesystem\n" /* line 2691 */
@@ -3810,9 +3810,9 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x21675c, (%esp)\n" /* "dedicated" */
+        "movl $str_0021675c, (%esp)\n" /* "dedicated" */
         "calll Dvar_RegisterInt\n"
-        "movl 0x195ec98, %ebx\n"
+        "movl imp_com_dedicated, %ebx\n"
         "movl %eax, (%ebx)\n"
         "movl 8(%eax), %esi\n" /* line 2536 */
         "testl %esi, %esi\n"
@@ -3822,84 +3822,84 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x55, 4(%esp)\n"
-        "movl $0x216804, (%esp)\n" /* "com_maxfps" */
+        "movl $str_00216804, (%esp)\n" /* "com_maxfps" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, com_maxfps\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 2556 */
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2167f8, (%esp)\n" /* "developer" */
+        "movl $str_002167f8, (%esp)\n" /* "developer" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, com_developer\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 2557 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216810, (%esp)\n" /* "developer_script" */
+        "movl $str_00216810, (%esp)\n" /* "developer_script" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, com_developer_script\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 2558 */
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x216824, (%esp)\n" /* "logfile" */
+        "movl $str_00216824, (%esp)\n" /* "logfile" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, com_logfile\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 2559 */
         "movl $0, 4(%esp)\n"
-        "movl $0x21682c, (%esp)\n" /* "com_statmon" */
+        "movl $str_0021682c, (%esp)\n" /* "com_statmon" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, com_statmon\n"
         "movl $0x1088, 0x10(%esp)\n" /* line 2561 */
         "movl $0x447a0000, 0xc(%esp)\n"
         "movl $0x3a83126f, 8(%esp)\n"
         "movl $0x3f800000, 4(%esp)\n"
-        "movl $0x216838, (%esp)\n" /* "timescale" */
+        "movl $str_00216838, (%esp)\n" /* "timescale" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, com_timescale\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 2562 */
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x216844, (%esp)\n" /* "fixedtime" */
+        "movl $str_00216844, (%esp)\n" /* "fixedtime" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, com_fixedtime\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 2563 */
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x216850, (%esp)\n" /* "viewlog" */
+        "movl $str_00216850, (%esp)\n" /* "viewlog" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, com_viewlog\n"
         "movl $0x1040, 0x10(%esp)\n" /* line 2565 */
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x216858, (%esp)\n" /* "sv_paused" */
+        "movl $str_00216858, (%esp)\n" /* "sv_paused" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, sv_paused\n"
         "movl $0x1040, 0x10(%esp)\n" /* line 2566 */
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x21663c, (%esp)\n" /* "cl_paused" */
+        "movl $str_0021663c, (%esp)\n" /* "cl_paused" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, cl_paused\n"
         "movl $0x1040, 8(%esp)\n" /* line 2570 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216864, (%esp)\n" /* "sv_running" */
+        "movl $str_00216864, (%esp)\n" /* "sv_running" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, com_sv_running\n"
-        "movl 0x195ecb4, %eax\n" /* line 2571 */
+        "movl imp_legacyHacks, %eax\n" /* line 2571 */
         "movl (%eax), %eax\n"
         "movl $0, 4(%eax)\n"
         "movl $0x1001, 8(%esp)\n" /* line 2573 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216870, (%esp)\n" /* "com_introPlayed" */
+        "movl $str_00216870, (%esp)\n" /* "com_introPlayed" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, com_introPlayed\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 2575 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216880, (%esp)\n" /* "com_animCheck" */
+        "movl $str_00216880, (%esp)\n" /* "com_animCheck" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, com_animCheck\n"
         "movl (%ebx), %eax\n" /* line 2578 */
@@ -3919,21 +3919,21 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "calll Cbuf_Execute\n" /* line 2714 */
         "movl $0x1001, 8(%esp)\n" /* line 2717 */
         "movl $0, 4(%esp)\n"
-        "movl $0x216890, (%esp)\n" /* "com_recommendedSet" */
+        "movl $str_00216890, (%esp)\n" /* "com_recommendedSet" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, com_recommendedSet\n"
         "calll Com_CheckSetRecommended\n" /* line 2718 */
         "movl $0, (%esp)\n" /* line 2724 */
         "calll Com_StartupVariable\n"
         "calll SEH_UpdateLanguageInfo\n" /* line 2729 */
-        "movl 0x195ec98, %eax\n" /* line 2735 */
+        "movl imp_com_dedicated, %eax\n" /* line 2735 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf315d6_00031eec\n"
         ".Lf315d6_000319a1:\n"
         "calll Com_InitHunkMemory\n" /* line 2753 */
-        "movl 0x195ec9c, %eax\n" /* line 2757 */
+        "movl imp_dvar_modifiedFlags, %eax\n" /* line 2757 */
         "andl $0xfffffffe, (%eax)\n"
         "movl $0x3f800000, com_codeTimeScale\n" /* line 2758 */
         "movl com_developer, %eax\n" /* line 2770 */
@@ -3942,33 +3942,33 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "jne .Lf315d6_00031eab\n"
         ".Lf315d6_000319c8:\n"
         "movl $Com_Quit_f, 4(%esp)\n" /* line 2776 */
-        "movl $0x2168bc, (%esp)\n" /* "quit" */
+        "movl $str_002168bc, (%esp)\n" /* "quit" */
         "calll Cmd_AddCommand\n"
         "movl $Com_WriteConfig_f, 4(%esp)\n" /* line 2778 */
-        "movl $0x2168c4, (%esp)\n" /* "writeconfig" */
+        "movl $str_002168c4, (%esp)\n" /* "writeconfig" */
         "calll Cmd_AddCommand\n"
         "movl $Com_WriteDefaults_f, 4(%esp)\n" /* line 2779 */
-        "movl $0x2168d0, (%esp)\n" /* "writedefaults" */
+        "movl $str_002168d0, (%esp)\n" /* "writedefaults" */
         "calll Cmd_AddCommand\n"
         "calll getBuildNumber\n" /* line 2781 */
-        "movl $0x2167c8, 0x10(%esp)\n" /* "MacOSXS-i386" */
+        "movl $str_002167c8, 0x10(%esp)\n" /* "MacOSXS-i386" */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2167d8, 8(%esp)\n" /* "1.0" */
-        "movl $0x2167dc, 4(%esp)\n" /* "CoD2 MP" */
-        "movl $0x2168e0, (%esp)\n" /* "%s %s build %s %s" */
+        "movl $str_002167d8, 8(%esp)\n" /* "1.0" */
+        "movl $str_002167dc, 4(%esp)\n" /* "CoD2 MP" */
+        "movl $str_002168e0, (%esp)\n" /* "%s %s build %s %s" */
         "calll va\n"
         "movl %eax, %ebx\n" /* s */
         "movl $0x1040, 8(%esp)\n" /* line 2782 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2168f4, (%esp)\n" /* "version" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_002168f4, (%esp)\n" /* "version" */
         "calll Dvar_RegisterString\n"
         "movl %eax, version\n"
         "movl %ebx, 4(%esp)\n" /* line 2783 | s */
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
         "movl $0x1044, 8(%esp)\n" /* line 2785 */
-        "movl $0x2167d8, 4(%esp)\n" /* "1.0" */
-        "movl $0x2168fc, (%esp)\n" /* "shortversion" */
+        "movl $str_002167d8, 4(%esp)\n" /* "1.0" */
+        "movl $str_002168fc, (%esp)\n" /* "shortversion" */
         "calll Dvar_RegisterString\n"
         "movl %eax, shortversion\n"
         "calll FxMem_Init\n" /* line 2795 */
@@ -4033,7 +4033,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "jmp .Lf315d6_00031ab6\n"
         ".Lf315d6_00031b4d:\n"
         "movl $1, printedWarning\n" /* line 1435 */
-        "movl $0x2160fc, (%esp)\n" /* line 1436 */
+        "movl $str_002160fc, (%esp)\n" /* line 1436 */
         "calll Com_Printf\n"
         "jmp .Lf315d6_00031a9a\n"
         ".Lf315d6_00031b68:\n"
@@ -4074,7 +4074,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "calll DObjInit\n" /* line 2809 */
         "calll SV_Init\n" /* line 2811 */
         "calll NET_Init\n" /* line 2813 */
-        "movl 0x195ec98, %ebx\n" /* line 2817 | s */
+        "movl imp_com_dedicated, %ebx\n" /* line 2817 | s */
         "movl (%ebx), %eax\n" /* s */
         "movl %eax, (%esp)\n"
         "calll Dvar_ClearModified\n"
@@ -4142,7 +4142,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "jmp .Lf315d6_00031c3b\n"
         ".Lf315d6_00031cd1:\n"
         "movl $1, printedWarning\n" /* line 1435 */
-        "movl $0x2160fc, (%esp)\n" /* line 1436 */
+        "movl $str_002160fc, (%esp)\n" /* line 1436 */
         "calll Com_Printf\n"
         "jmp .Lf315d6_00031c1f\n"
         ".Lf315d6_00031cec:\n"
@@ -4165,20 +4165,20 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "cmpb $0, (%eax)\n"
         "je .Lf315d6_00031d05\n"
         "movl $3, 8(%esp)\n" /* line 1333 */
-        "movl $0x2160dc, 4(%esp)\n" /* "set" */
+        "movl $str_002160dc, 4(%esp)\n" /* "set" */
         "movl %eax, (%esp)\n"
         "calll I_strnicmp\n"
         "movl (%ebx), %eax\n" /* line 1337 */
         "movl %eax, (%esp)\n"
         "calll Cbuf_AddText\n"
-        "movl $0x2160e8, (%esp)\n" /* line 1338 */
+        "movl $str_002160e8, (%esp)\n" /* line 1338 */
         "calll Cbuf_AddText\n"
         "addl $1, %esi\n" /* line 1325 */
         "addl $4, %ebx\n"
         "cmpl com_numConsoleLines, %esi\n"
         "jl .Lf315d6_00031d13\n"
         ".Lf315d6_00031d5a:\n"
-        "movl 0x195ec98, %esi\n" /* line 2856 */
+        "movl imp_com_dedicated, %esi\n" /* line 2856 */
         "movl (%esi), %eax\n"
         "movl 8(%eax), %ebx\n" /* s */
         "testl %ebx, %ebx\n" /* s */
@@ -4197,7 +4197,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "je .Lf315d6_00031f24\n"
         ".Lf315d6_00031d91:\n"
         "movl $1, com_fullyInitialized\n" /* line 2896 */
-        "movl $0x216950, (%esp)\n" /* line 2897 */
+        "movl $str_00216950, (%esp)\n" /* line 2897 */
         "calll Com_Printf\n"
         "calll Cbuf_Execute\n" /* line 2904 */
         "movl com_sv_running, %eax\n" /* line 2906 */
@@ -4215,8 +4215,8 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "xorl %ecx, %ecx\n" /* line 2441 */
         "jmp .Lf315d6_00031bc7\n"
         ".Lf315d6_00031dc6:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 3487 */
-        "movl $0x2157b8, (%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n" /* line 3487 */
+        "movl $str_002157b8, (%esp)\n"
         "calll UI_SetMap\n"
         /* } scope */
         "leal -0xc(%ebp), %esp\n" /* line 2908 */
@@ -4227,7 +4227,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
         /* { scope 1 */
         "jmp CL_StartHunkUsers\n" /* line 3490 */
         ".Lf315d6_00031de6:\n"
-        "movl 0x195ecac, %ebx\n" /* line 2860 | s */
+        "movl imp_cls, %ebx\n" /* line 2860 | s */
         "movl $1, 0x108(%ebx)\n" /* s */
         "calll CL_InitRenderer\n" /* line 2861 */
         "movl $1, 0x10c(%ebx)\n" /* line 2864 | s */
@@ -4263,18 +4263,18 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x21675c, (%esp)\n" /* "dedicated" */
+        "movl $str_0021675c, (%esp)\n" /* "dedicated" */
         "calll Dvar_RegisterInt\n"
         "jmp .Lf315d6_000316e2\n"
         ".Lf315d6_00031eab:\n"
         "movl $Com_Error_f, 4(%esp)\n" /* line 2772 */
-        "movl $0x2168a4, (%esp)\n" /* "error" */
+        "movl $str_002168a4, (%esp)\n" /* "error" */
         "calll Cmd_AddCommand\n"
         "movl $Com_Crash_f, 4(%esp)\n" /* line 2773 */
-        "movl $0x2168ac, (%esp)\n" /* "crash" */
+        "movl $str_002168ac, (%esp)\n" /* "crash" */
         "calll Cmd_AddCommand\n"
         "movl $Com_Freeze_f, 4(%esp)\n" /* line 2774 */
-        "movl $0x2168b4, (%esp)\n" /* "freeze" */
+        "movl $str_002168b4, (%esp)\n" /* "freeze" */
         "calll Cmd_AddCommand\n"
         "jmp .Lf315d6_000319c8\n"
         ".Lf315d6_00031eec:\n"
@@ -4290,9 +4290,9 @@ void Com_Init_Try_Block_Function(char *commandLine)
         "calll Dvar_SetInt\n"
         "jmp .Lf315d6_00031936\n"
         ".Lf315d6_00031f24:\n"
-        "movl $0x21690c, (%esp)\n" /* line 2487 */
+        "movl $str_0021690c, (%esp)\n" /* line 2487 */
         "calll Cbuf_AddText\n"
-        "movl $0x21691c, 4(%esp)\n" /* line 2488 */
+        "movl $str_0021691c, 4(%esp)\n" /* line 2488 */
         "movl nextmap, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
@@ -4325,7 +4325,7 @@ void Com_Init(char *commandLine)
         "retl\n"
         ".Lf31f60_00031f8b:\n"
         "movl $com_errorMessage, 4(%esp)\n" /* line 2924 */
-        "movl $0x216978, (%esp)\n" /* "Error during initialization:
+        "movl $str_00216978, (%esp)\n" /* "Error during initialization:
 %s
 " */
         "calll va\n"

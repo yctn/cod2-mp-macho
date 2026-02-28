@@ -324,7 +324,7 @@ void FxArchive_ArchiveEffect(const FxArchive * _this, const EffectTemplate * *fx
         "movb $0, -0x9a(%ebp, %eax)\n"
         "leal -0x9a(%ebp), %edx\n" /* line 76 | chEffectName */
         "movl %edx, 0xc(%esp)\n"
-        "movl $0x21e4f0, 8(%esp)\n" /* "fx/%s" */
+        "movl $str_0021e4f0, 8(%esp)\n" /* "fx/%s" */
         "movl $0x40, 4(%esp)\n"
         "leal -0x5a(%ebp), %ebx\n" /* filename */
         "movl %ebx, (%esp)\n"
@@ -357,7 +357,7 @@ void FxArchive_ArchiveEffect(const FxArchive * _this, const EffectTemplate * *fx
         /* { scope 1: ch, effectName */
         /* { scope 2: b, value */
         ".Lfaa8b6_000aaa2e:\n"
-        "movl $0x2157b8, -0xb0(%ebp)\n" /* line 185 | effectName */
+        "movl $str_002157b8, -0xb0(%ebp)\n" /* line 185 | effectName */
         "movl -0xb0(%ebp), %edi\n" /* effectName, data */
         "jmp .Lfaa8b6_000aa923\n"
         /* } scope */
@@ -531,7 +531,7 @@ void FxArchive_ArchiveMaterial(const FxArchive * _this, MaterialHandle *ph)
         "testl %eax, %eax\n" /* line 203 */
         "je .Lfaaba2_000aacc1\n"
         "movl %eax, 4(%esp)\n" /* line 204 */
-        "movl 0x195ed88, %eax\n"
+        "movl imp_theFxHelper, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll FxHelper_GetMaterialName\n"
@@ -612,7 +612,7 @@ void FxArchive_ArchiveMaterial(const FxArchive * _this, MaterialHandle *ph)
         /* { scope 1: ch, materialName */
         /* { scope 2: b */
         ".Lfaaba2_000aacc1:\n"
-        "movl $0x2157b8, -0x70(%ebp)\n" /* line 203 | materialName */
+        "movl $str_002157b8, -0x70(%ebp)\n" /* line 203 | materialName */
         "movl -0x70(%ebp), %edi\n" /* materialName, data */
         "jmp .Lfaaba2_000aac17\n"
         /* } scope */
@@ -881,7 +881,7 @@ void FxArchive_ArchiveModel(const FxArchive * _this, struct XModel * *model)
         /* { scope 1: ch, pszModelName */
         /* { scope 2: b */
         ".Lfaae5c_000aaf70:\n"
-        "movl $0x2157b8, -0x70(%ebp)\n" /* line 221 | pszModelName */
+        "movl $str_002157b8, -0x70(%ebp)\n" /* line 221 | pszModelName */
         "movl -0x70(%ebp), %edi\n" /* pszModelName, data */
         "jmp .Lfaae5c_000aaec6\n"
         /* } scope */

@@ -10,13 +10,13 @@
 
 extern SkinBuffers g_skinBuffers[1]; /* 0x0 */
 extern GfxBackEndData *frontEndDataOut; /* 0x0 */
-static byte g_dummyBuf[1]; /* 0xc8596c */
+static byte g_dummyBuf[1]; /* g_dummyBuf */
 extern void R_ShutdownDebugEntry(void *entry);
 extern void R_UnlockSkinnedCache(void);
 
-static GfxBackEndData s_backEndData[1]; /* 0xa3bc00 */
-static GfxCmdArray *s_cmdList; /* 0x7f1e00 */
-static struct GfxDebugFrameGlob s_debugFrameGlob; /* 0x7f1e80 */
+static GfxBackEndData s_backEndData[1]; /* s_backEndData */
+static GfxCmdArray *s_cmdList; /* s_cmdList */
+static struct GfxDebugFrameGlob s_debugFrameGlob; /* s_debugFrameGlob */
 
 void R_ShutdownBackendData(void);
 static __attribute__((regparm(3))) void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread);
@@ -75,7 +75,7 @@ void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread)
         "subl $0x18, %esp\n"
         "cmpl $7, %eax\n" /* line 255 | type */
         "ja .Lfc7d30_000c7d4e\n"
-        "jmpl *0x2f2200(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+6912(, %eax, 4)\n"
         "movl %ecx, 4(%esp)\n" /* line 271 | context */
         "movl %edx, (%esp)\n" /* data */
         "calll R_SkinXModelCmd\n"
@@ -133,11 +133,11 @@ GfxViewParms * R_AllocViewParms(void)
 /* line 1806 */
 void R_BeginDebugFrame(void)
 {
-    if (!*(char *)*(int *)0x195eec8)
+    if (!*(char *)*(int *)imp_rg)
         return;
     *(GfxCmdArray **)&s_debugFrameGlob = s_cmdList;
     *(GfxBackEndData **)0x7f1e84 = frontEndDataOut;
-    if (*(int *)((char *)*(int *)0x195eed0 + 0x2dc0)) {
+    if (*(int *)((char *)*(int *)imp_dx + 0x2dc0)) {
         *(char *)0x7f1e88 = 1;
         R_UnlockSkinnedCache();
     }
@@ -170,7 +170,7 @@ void R_AbortRenderCommands(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195eec8, %eax\n" /* line 894 */
+        "movl imp_rg, %eax\n" /* line 894 */
         "cmpb $0, (%eax)\n"
         "jne .Lfc7e86_000c7e9d\n"
         ".Lfc7e86_000c7e97:\n"
@@ -181,19 +181,19 @@ void R_AbortRenderCommands(void)
         ".Lfc7e86_000c7e9d:\n"
         "calll R_UnlockSkinnedCache\n" /* line 903 */
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
+        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
 " */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
         "movl $0, 0x30008(%eax)\n" /* line 659 */
-        "movl 0x195eed0, %ebx\n" /* line 830 */
+        "movl imp_dx, %ebx\n" /* line 830 */
         "movl 0x2dd4(%ebx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfc7e86_000c7e97\n"
         "movl %eax, 4(%esp)\n" /* line 832 */
         "movl 0x2dd0(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x28(%eax)\n"
         "movl $0, 0x2dd4(%ebx)\n" /* line 833 */
         "addl $0x14, %esp\n" /* line 923 */
@@ -212,10 +212,10 @@ void R_BeginFrame(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195eec8, %eax\n" /* line 1742 */
+        "movl imp_rg, %eax\n" /* line 1742 */
         "cmpb $0, (%eax)\n"
         "je .Lfc7f00_000c80b5\n"
-        "movl 0x195eebc, %ebx\n" /* line 1746 */
+        "movl imp_rgp, %ebx\n" /* line 1746 */
         "movl (%ebx), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfc7f00_000c80bb\n"
@@ -223,47 +223,47 @@ void R_BeginFrame(void)
         "movl 0x109c(%ebx), %edx\n" /* line 1652 */
         "testl %edx, %edx\n"
         "je .Lfc7f00_000c7fca\n"
-        "movl 0x195ef38, %eax\n" /* line 1664 */
+        "movl imp_r_lightTweakAmbient, %eax\n" /* line 1664 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c81b5\n"
         "xorl %ebx, %ebx\n"
-        "movl 0x195ef34, %eax\n" /* line 1665 */
+        "movl imp_r_lightTweakDiffuseFraction, %eax\n" /* line 1665 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c81d9\n"
         ".Lfc7f00_000c7f57:\n"
         "xorl %eax, %eax\n"
         "orb %al, %bl\n" /* line 1665 */
-        "movl 0x195ef48, %eax\n" /* line 1666 */
+        "movl imp_r_lightTweakSunLight, %eax\n" /* line 1666 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c81ff\n"
         ".Lfc7f00_000c7f6c:\n"
         "xorl %eax, %eax\n"
         "orb %al, %bl\n" /* line 1666 */
-        "movl 0x195ef3c, %eax\n" /* line 1667 */
+        "movl imp_r_lightTweakAmbientColor, %eax\n" /* line 1667 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c8225\n"
         ".Lfc7f00_000c7f81:\n"
         "xorl %eax, %eax\n"
         "orb %al, %bl\n" /* line 1667 */
-        "movl 0x195ef30, %eax\n" /* line 1668 */
+        "movl imp_r_lightTweakSunColor, %eax\n" /* line 1668 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c824b\n"
         ".Lfc7f00_000c7f96:\n"
         "xorl %eax, %eax\n"
         "orb %al, %bl\n" /* line 1668 */
-        "movl 0x195ef44, %eax\n" /* line 1669 */
+        "movl imp_r_lightTweakSunDiffuseColor, %eax\n" /* line 1669 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c8271\n"
         ".Lfc7f00_000c7fab:\n"
         "xorl %eax, %eax\n"
         "orb %al, %bl\n" /* line 1669 */
-        "movl 0x195ef4c, %eax\n" /* line 1670 */
+        "movl imp_r_lightTweakSunDirection, %eax\n" /* line 1670 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c8297\n"
@@ -273,12 +273,12 @@ void R_BeginFrame(void)
         "orb %bl, %al\n" /* line 1712 */
         "jne .Lfc7f00_000c819a\n"
         ".Lfc7f00_000c7fca:\n"
-        "movl 0x195ef10, %eax\n" /* line 1726 */
+        "movl imp_r_sun_from_dvars, %eax\n" /* line 1726 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc7f00_000c7ff3\n"
         ".Lfc7f00_000c7fd7:\n"
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x109c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfc7f00_000c7ff3\n"
@@ -286,12 +286,12 @@ void R_BeginFrame(void)
         "movl %eax, (%esp)\n"
         "calll R_SetSunFromDvars\n"
         ".Lfc7f00_000c7ff3:\n"
-        "movl 0x195ef20, %eax\n" /* line 1684 */
+        "movl imp_r_gpuSync, %eax\n" /* line 1684 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c80cb\n"
         "xorl %ebx, %ebx\n"
-        "movl 0x195ef50, %eax\n" /* line 1685 */
+        "movl imp_r_multiGpu, %eax\n" /* line 1685 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "jne .Lfc7f00_000c80ef\n"
@@ -300,14 +300,14 @@ void R_BeginFrame(void)
         "orb %bl, %al\n" /* line 1731 */
         "jne .Lfc7f00_000c810a\n"
         ".Lfc7f00_000c8021:\n"
-        "movl 0x195ef18, %ecx\n" /* line 1695 */
+        "movl imp_r_forceLod, %ecx\n" /* line 1695 */
         "movl (%ecx), %edx\n"
         "movl 8(%edx), %eax\n"
         "cmpl 0x10(%edx), %eax\n"
         "je .Lfc7f00_000c8123\n"
         ".Lfc7f00_000c8035:\n"
         "xorl %ebx, %ebx\n"
-        "movl 0x195eee0, %eax\n" /* line 1698 */
+        "movl imp_ri, %eax\n" /* line 1698 */
         "movl 0x178(%eax), %edx\n"
         "movl (%ecx), %eax\n"
         "cmpl %ebx, 8(%eax)\n"
@@ -321,8 +321,8 @@ void R_BeginFrame(void)
         "cmpl $4, %ebx\n"
         "je .Lfc7f00_000c808a\n"
         ".Lfc7f00_000c805f:\n"
-        "movl 0x195ef18, %ecx\n"
-        "movl 0x195eee0, %eax\n" /* line 1698 */
+        "movl imp_r_forceLod, %ecx\n"
+        "movl imp_ri, %eax\n" /* line 1698 */
         "movl 0x178(%eax), %edx\n"
         "movl (%ecx), %eax\n"
         "cmpl %ebx, 8(%eax)\n"
@@ -337,9 +337,9 @@ void R_BeginFrame(void)
         "jne .Lfc7f00_000c805f\n"
         ".Lfc7f00_000c808a:\n"
         "movl $0, (%esp)\n" /* line 1762 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x120(%eax)\n"
-        "movl 0x195ef14, %eax\n" /* line 1765 */
+        "movl imp_r_skinCache, %eax\n" /* line 1765 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc7f00_000c80b5\n"
@@ -356,48 +356,48 @@ void R_BeginFrame(void)
         "jmp .Lfc7f00_000c7f25\n"
         ".Lfc7f00_000c80cb:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %ebx\n"
-        "movl 0x195ef50, %eax\n" /* line 1685 */
+        "movl imp_r_multiGpu, %eax\n" /* line 1685 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "je .Lfc7f00_000c8017\n"
         ".Lfc7f00_000c80ef:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %eax\n"
         "orb %bl, %al\n" /* line 1731 */
         "je .Lfc7f00_000c8021\n"
         ".Lfc7f00_000c810a:\n"
         "calll R_UpdateGpuSyncType\n" /* line 1732 */
-        "movl 0x195ef18, %ecx\n" /* line 1695 */
+        "movl imp_r_forceLod, %ecx\n" /* line 1695 */
         "movl (%ecx), %edx\n"
         "movl 8(%edx), %eax\n"
         "cmpl 0x10(%edx), %eax\n"
         "jne .Lfc7f00_000c8035\n"
         ".Lfc7f00_000c8123:\n"
-        "movl 0x195eee0, %ebx\n" /* line 1702 */
-        "movl 0x195ef24, %eax\n"
+        "movl imp_ri, %ebx\n" /* line 1702 */
+        "movl imp_r_highLodDist, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll *0x178(%ebx)\n"
-        "movl 0x195ef1c, %eax\n" /* line 1703 */
+        "movl imp_r_mediumLodDist, %eax\n" /* line 1703 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll *0x178(%ebx)\n"
-        "movl 0x195ef28, %eax\n" /* line 1704 */
+        "movl imp_r_lowLodDist, %eax\n" /* line 1704 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $2, (%esp)\n"
         "calll *0x178(%ebx)\n"
-        "movl 0x195ef2c, %eax\n" /* line 1705 */
+        "movl imp_r_lowestLodDist, %eax\n" /* line 1705 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -406,73 +406,73 @@ void R_BeginFrame(void)
         "jmp .Lfc7f00_000c808a\n"
         ".Lfc7f00_000c819a:\n"
         "calll R_UpdateLightsFromDvars\n" /* line 1713 */
-        "movl 0x195ef10, %eax\n" /* line 1726 */
+        "movl imp_r_sun_from_dvars, %eax\n" /* line 1726 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfc7f00_000c7ff3\n"
         "jmp .Lfc7f00_000c7fd7\n"
         ".Lfc7f00_000c81b5:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %ebx\n"
-        "movl 0x195ef34, %eax\n" /* line 1665 */
+        "movl imp_r_lightTweakDiffuseFraction, %eax\n" /* line 1665 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "je .Lfc7f00_000c7f57\n"
         ".Lfc7f00_000c81d9:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %eax\n"
         "orb %al, %bl\n" /* line 1665 */
-        "movl 0x195ef48, %eax\n" /* line 1666 */
+        "movl imp_r_lightTweakSunLight, %eax\n" /* line 1666 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "je .Lfc7f00_000c7f6c\n"
         ".Lfc7f00_000c81ff:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %eax\n"
         "orb %al, %bl\n" /* line 1666 */
-        "movl 0x195ef3c, %eax\n" /* line 1667 */
+        "movl imp_r_lightTweakAmbientColor, %eax\n" /* line 1667 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "je .Lfc7f00_000c7f81\n"
         ".Lfc7f00_000c8225:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %eax\n"
         "orb %al, %bl\n" /* line 1667 */
-        "movl 0x195ef30, %eax\n" /* line 1668 */
+        "movl imp_r_lightTweakSunColor, %eax\n" /* line 1668 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "je .Lfc7f00_000c7f96\n"
         ".Lfc7f00_000c824b:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %eax\n"
         "orb %al, %bl\n" /* line 1668 */
-        "movl 0x195ef44, %eax\n" /* line 1669 */
+        "movl imp_r_lightTweakSunDiffuseColor, %eax\n" /* line 1669 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "je .Lfc7f00_000c7fab\n"
         ".Lfc7f00_000c8271:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %eax\n"
         "orb %al, %bl\n" /* line 1669 */
-        "movl 0x195ef4c, %eax\n" /* line 1670 */
+        "movl imp_r_lightTweakSunDirection, %eax\n" /* line 1670 */
         "movl (%eax), %eax\n"
         "cmpb $0, 7(%eax)\n" /* line 1640 */
         "je .Lfc7f00_000c7fc0\n"
         ".Lfc7f00_000c8297:\n"
         "movl %eax, (%esp)\n" /* line 1643 */
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x88(%eax)\n"
         "movl $1, %eax\n"
         "jmp .Lfc7f00_000c7fc2\n"
@@ -517,21 +517,21 @@ void R_InitBackendData(void)
         "movl frontEndDataOut, %eax\n" /* line 146 */
         "testl %eax, %eax\n"
         "je .Lfc8308_000c834d\n"
-        "addl $0x219d0c, %eax\n" /* line 656 */
+        "addl $str_00219d0c, %eax\n" /* line 656 */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
         "movl $0, 0x30008(%eax)\n" /* line 659 */
         "leave\n" /* line 150 */
         "retl\n"
         ".Lfc8308_000c834d:\n"
-        "movl $0xa3bc00, frontEndDataOut\n" /* line 1067 */
-        "movl 0x195eec8, %eax\n" /* line 1070 */
+        "movl $s_backEndData, frontEndDataOut\n" /* line 1067 */
+        "movl imp_rg, %eax\n" /* line 1070 */
         "movl 0x1c(%eax), %edx\n"
         "addl $1, %edx\n"
         "movl %edx, 0x1c(%eax)\n"
         "movl %edx, s_backEndData\n" /* line 1074 */
         "calll R_UnlockSkinnedCache\n" /* line 1081 */
-        "movl 0x195eed0, %edx\n" /* line 1084 */
+        "movl imp_dx, %edx\n" /* line 1084 */
         "movl 0x2dcc(%edx), %eax\n"
         "addl $1, %eax\n"
         "andl $0x80000001, %eax\n"
@@ -541,12 +541,12 @@ void R_InitBackendData(void)
         "leal (%eax, %eax, 2), %eax\n" /* line 1085 */
         "leal 0x2d90(%edx, %eax, 4), %eax\n"
         "movl frontEndDataOut, %edx\n"
-        "movl %eax, 0x217c78(%edx)\n"
+        "movl %eax, str_00217c60+24(%edx)\n"
         "movl frontEndDataOut, %eax\n" /* line 1093 */
-        "movl 0x217c78(%eax), %eax\n"
+        "movl str_00217c60+24(%eax), %eax\n"
         "movl $0, (%eax)\n"
         "movl frontEndDataOut, %edx\n" /* line 1095 */
-        "leal 0x219d0c(%edx), %eax\n"
+        "leal str_00219d0c(%edx), %eax\n"
         "movl %eax, s_cmdList\n"
         "movl $0, 4(%edx)\n" /* line 1120 */
         "movl frontEndDataOut, %eax\n" /* line 1121 */
@@ -558,9 +558,9 @@ void R_InitBackendData(void)
         "movl frontEndDataOut, %eax\n" /* line 1124 */
         "movl $0, 0x18fc74(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1130 */
-        "movl $0, 0x217c7c(%eax)\n"
+        "movl $0, str_00217c60+28(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1132 */
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -586,7 +586,7 @@ void R_EndFrame(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195eec8, %eax\n" /* line 1774 */
+        "movl imp_rg, %eax\n" /* line 1774 */
         "cmpb $0, (%eax)\n"
         "jne .Lfc844a_000c8461\n"
         ".Lfc844a_000c845b:\n"
@@ -597,10 +597,10 @@ void R_EndFrame(void)
         ".Lfc844a_000c8461:\n"
         "calll RB_AdaptiveGpuSyncTarget\n" /* line 1779 */
         "calll R_UnlockSkinnedCache\n" /* line 1781 */
-        "movl 0x195eee0, %eax\n" /* line 1785 */
+        "movl imp_ri, %eax\n" /* line 1785 */
         "calll *0x11c(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1787 */
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -615,7 +615,7 @@ DP4 oPos.z," */
         "movl $0, 0x30008(%ecx)\n" /* line 956 */
         ".Lfc844a_000c84ae:\n"
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
+        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
 " */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
@@ -624,14 +624,14 @@ DP4 oPos.z," */
         "movl %eax, (%esp)\n"
         "calll RB_ExecuteRenderCommands\n"
         "calll RB_EndFrame\n" /* line 865 */
-        "movl $0xa3bc00, frontEndDataOut\n" /* line 1067 */
-        "movl 0x195eec8, %eax\n" /* line 1070 */
+        "movl $s_backEndData, frontEndDataOut\n" /* line 1067 */
+        "movl imp_rg, %eax\n" /* line 1070 */
         "movl 0x1c(%eax), %edx\n"
         "addl $1, %edx\n"
         "movl %edx, 0x1c(%eax)\n"
         "movl %edx, s_backEndData\n" /* line 1074 */
         "calll R_UnlockSkinnedCache\n" /* line 1081 */
-        "movl 0x195eed0, %ebx\n" /* line 1084 */
+        "movl imp_dx, %ebx\n" /* line 1084 */
         "movl 0x2dcc(%ebx), %eax\n"
         "addl $1, %eax\n"
         "andl $0x80000001, %eax\n"
@@ -641,12 +641,12 @@ DP4 oPos.z," */
         "leal (%eax, %eax, 2), %eax\n" /* line 1085 */
         "leal 0x2d90(%ebx, %eax, 4), %eax\n"
         "movl frontEndDataOut, %edx\n"
-        "movl %eax, 0x217c78(%edx)\n"
+        "movl %eax, str_00217c60+24(%edx)\n"
         "movl frontEndDataOut, %eax\n" /* line 1093 */
-        "movl 0x217c78(%eax), %eax\n"
+        "movl str_00217c60+24(%eax), %eax\n"
         "movl $0, (%eax)\n"
         "movl frontEndDataOut, %edx\n" /* line 1095 */
-        "leal 0x219d0c(%edx), %eax\n"
+        "leal str_00219d0c(%edx), %eax\n"
         "movl %eax, s_cmdList\n"
         "movl $0, 4(%edx)\n" /* line 1120 */
         "movl frontEndDataOut, %eax\n" /* line 1121 */
@@ -658,9 +658,9 @@ DP4 oPos.z," */
         "movl frontEndDataOut, %eax\n" /* line 1124 */
         "movl $0, 0x18fc74(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1130 */
-        "movl $0, 0x217c7c(%eax)\n"
+        "movl $0, str_00217c60+28(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1132 */
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -673,7 +673,7 @@ DP4 oPos.z," */
         "movl %eax, 4(%esp)\n" /* line 832 */
         "movl 0x2dd0(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x28(%eax)\n"
         "movl $0, 0x2dd4(%ebx)\n" /* line 833 */
         "addl $0x14, %esp\n" /* line 1803 */
@@ -1648,7 +1648,7 @@ void R_AddCmdLightProperties(int lightIndex, const GfxLight *light)
         /* } scope */
         "movl %eax, %edx\n" /* line 1382 | result */
         "addl $0x38, %edx\n" /* result */
-        "movl 0x195ef40, %eax\n"
+        "movl imp_r_specularColorScale, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n" /* scale */
         /* { scope 1 */
@@ -1896,7 +1896,7 @@ void R_EndDebugFrame(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195eec8, %eax\n" /* line 1841 */
+        "movl imp_rg, %eax\n" /* line 1841 */
         "cmpb $0, (%eax)\n"
         "je .Lfc9240_000c92e2\n"
         "movl s_cmdList, %ecx\n" /* line 950 */
@@ -1908,7 +1908,7 @@ void R_EndDebugFrame(void)
         "movl $0, 0x30008(%ecx)\n" /* line 956 */
         ".Lfc9240_000c9277:\n"
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
+        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
 " */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
@@ -1919,13 +1919,13 @@ void R_EndDebugFrame(void)
         "calll RB_EndFrame\n" /* line 1849 */
         "movl s_debugFrameGlob, %eax\n" /* line 1851 */
         "movl %eax, s_cmdList\n"
-        "movl 0x7f1e84, %eax\n" /* line 1852 */
+        "movl s_debugFrameGlob+4, %eax\n" /* line 1852 */
         "movl %eax, frontEndDataOut\n"
-        "cmpb $0, 0x7f1e88\n" /* line 1855 */
+        "cmpb $0, s_debugFrameGlob+8\n" /* line 1855 */
         "jne .Lfc9240_000c9311\n"
         ".Lfc9240_000c92ce:\n"
         "movl $0, s_debugFrameGlob\n" /* line 1862 */
-        "movl $0, 0x7f1e84\n" /* line 1863 */
+        "movl $0, s_debugFrameGlob+4\n" /* line 1863 */
         ".Lfc9240_000c92e2:\n"
         "addl $0x14, %esp\n" /* line 1864 */
         "popl %ebx\n"
@@ -1941,7 +1941,7 @@ void R_EndDebugFrame(void)
         "movw $4, 2(%edx)\n" /* line 965 */
         "jmp .Lfc9240_000c9277\n"
         ".Lfc9240_000c9311:\n"
-        "movb $0, 0x7f1e88\n" /* line 1857 */
+        "movb $0, s_debugFrameGlob+8\n" /* line 1857 */
         "movl $1, (%esp)\n" /* line 1858 */
         "calll R_LockSkinnedCache\n"
         "jmp .Lfc9240_000c92ce\n"

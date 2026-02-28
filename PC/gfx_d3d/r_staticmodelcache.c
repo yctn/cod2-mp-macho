@@ -12,14 +12,14 @@
  *   #include "PC/gfx_d3d/r_local.h"
  */
 
-static static_model_cache_t s_cache; /* 0xc88580 */
+static static_model_cache_t s_cache; /* s_cache */
 
-extern refimport_t *ri; /* 0x195eee0 */
-extern GfxBackEndData **gfxBuf; /* 0x195eef4 */
-extern void **g_dxCaps; /* 0x195eec0 */
-extern byte *g_dx; /* 0x195eed0 */
-extern volatile int *g_dxIter; /* 0x195f0e0 */
-extern r_global_permanent_t *rgp; /* 0x195eebc */
+extern refimport_t *ri; /* imp_ri */
+extern GfxBackEndData **gfxBuf; /* imp_frontEndDataOut */
+extern void **g_dxCaps; /* imp_r_rendererInUse */
+extern byte *g_dx; /* imp_dx */
+extern volatile int *g_dxIter; /* imp_alwaysfails */
+extern r_global_permanent_t *rgp; /* imp_rgp */
 
 void R_AddFrontendCmd(int type, void *data);
 void R_InitStaticModelIndexCache(void);
@@ -37,8 +37,8 @@ void R_FlushStaticModelCache(void);
 /* line 781 */
 void R_InitStaticModelIndexCache(void)
 {
-    void *mem = ((void *(*)(int))(*(void **)(*(int *)0x195eee0 + 0xc)))(0xc0000);
-    *(void **)(*(int *)0x195eed0 + 0x2dc8) = mem;
+    void *mem = ((void *(*)(int))(*(void **)(*(int *)imp_ri + 0xc)))(0xc0000);
+    *(void **)(*(int *)imp_dx + 0x2dc8) = mem;
 }
 
 /* line 819 */
@@ -91,13 +91,13 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movl %eax, -0x47c(%ebp)\n" /* cached */
         "movl 8(%eax), %edx\n" /* line 608 */
         "movl %edx, -0x480(%ebp)\n" /* xsurf */
-        "movl 0x195eebc, %ecx\n" /* line 609 */
+        "movl imp_rgp, %ecx\n" /* line 609 */
         "movl 0x109c(%ecx), %eax\n"
         "movl 4(%edi), %ebx\n" /* skinCmd, smodelInst */
         "leal (%ebx, %ebx, 2), %ebx\n" /* smodelInst */
         "shll $5, %ebx\n" /* smodelInst */
         "addl 0xf8(%eax), %ebx\n" /* smodelInst */
-        "movl 0x195eee0, %eax\n" /* line 610 */
+        "movl imp_ri, %eax\n" /* line 610 */
         "movl 0x1a4(%eax), %esi\n" /* pSrc */
         "movl %edx, (%esp)\n"
         "calll XSurfaceGetBoneOffset\n"
@@ -135,7 +135,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movss %xmm1, -0x4bc(%ebp)\n" /* zw */
         "movss -0x474(%ebp), %xmm0\n" /* line 364 | yy */
         "addss %xmm2, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0xc8(%ebp)\n" /* boneMatrix */
         "movss -0x4bc(%ebp), %xmm0\n" /* line 365 | zw */
@@ -149,7 +149,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "subss -0x4bc(%ebp), %xmm5\n" /* line 369 | zw */
         "movss %xmm5, -0xb8(%ebp)\n"
         "addss -0x478(%ebp), %xmm2\n" /* line 370 | xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, -0xb4(%ebp)\n"
         "movaps %xmm3, %xmm0\n" /* line 371 */
@@ -163,7 +163,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movss -0x478(%ebp), %xmm0\n" /* line 376 | xx */
         "addss -0x474(%ebp), %xmm0\n" /* yy */
         "movss %xmm0, -0x478(%ebp)\n" /* xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss -0x478(%ebp), %xmm0\n" /* xx */
         "movss %xmm0, -0xa0(%ebp)\n"
         "movl %edx, -0x9c(%ebp)\n" /* line 377 */
@@ -218,7 +218,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movl %edx, -0x454(%ebp)\n" /* baseVertIndex */
         "movl -0x480(%ebp), %eax\n" /* xsurf */
         "movl 0xc(%eax), %edi\n" /* skinCmd */
-        "movl 0x195eec0, %eax\n" /* line 580 */
+        "movl imp_r_rendererInUse, %eax\n" /* line 580 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lfe0408_000e0a64\n"
@@ -227,16 +227,16 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movl %ebx, -0x45c(%ebp)\n" /* material, verts */
         /* { scope 2: vertIndex, bufferData, pSrc, c, ... */
         /* { scope 3: i, lightCount */
-        "movl 0x195eebc, %eax\n" /* line 393 */
+        "movl imp_rgp, %eax\n" /* line 393 */
         "movl 0x109c(%eax), %edx\n"
         "leal (%ecx, %ecx, 2), %eax\n"
         "shll $5, %eax\n"
         "addl 0xf8(%edx), %eax\n"
         "leal 0x54(%eax), %ebx\n" /* baseLightingCoords */
-        "movss 0x2ed824, %xmm1\n" /* line 428 | 32768.0f */
+        "movss lit4_002ed824, %xmm1\n" /* line 428 | 32768.0f */
         "movss 0x54(%eax), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x4b8(%ebp)\n"
         "calll floorf\n"
@@ -245,7 +245,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movw %ax, -0x428(%ebp)\n"
         "movss -0x4b8(%ebp), %xmm1\n"
         "mulss 4(%ebx), %xmm1\n" /* baseLightingCoords */
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss %xmm1, (%esp)\n"
         "calll floorf\n"
         "fstps -0x49c(%ebp)\n"
@@ -255,7 +255,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "testl %edx, %edx\n"
         "jg .Lfe0408_000e08af\n"
         ".Lfe0408_000e072a:\n"
-        "movl 0x195eed0, %eax\n" /* line 439 */
+        "movl imp_dx, %eax\n" /* line 439 */
         "movl 0x2dc4(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl $0x1001, 0x10(%esp)\n"
@@ -283,12 +283,12 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "jne .Lfe0408_000e07c6\n"
         /* } scope */
         ".Lfe0408_000e079d:\n"
-        "movl 0x195eed0, %eax\n" /* line 467 */
+        "movl imp_dx, %eax\n" /* line 467 */
         "movl 0x2dc4(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *0x30(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfe0408_000e079d\n"
@@ -372,12 +372,12 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "cmpl %eax, -0x444(%ebp)\n" /* i */
         "jb .Lfe0408_000e07dc\n"
         /* } scope */
-        "movl 0x195eed0, %eax\n" /* line 467 */
+        "movl imp_dx, %eax\n" /* line 467 */
         "movl 0x2dc4(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *0x30(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lfe0408_000e079d\n"
@@ -497,7 +497,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movl %edx, -0x470(%ebp)\n" /* verts */
         /* { scope 2: vertIndex, bufferData, pSrc, c, ... */
         /* { scope 3: i, lightCount */
-        "movl 0x195eebc, %eax\n" /* line 524 */
+        "movl imp_rgp, %eax\n" /* line 524 */
         "movl 0x109c(%eax), %edx\n"
         "movl $8, 0x10(%esp)\n"
         "leal -0x408(%ebp), %eax\n" /* lights */
@@ -516,7 +516,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "testl %eax, %eax\n"
         "jg .Lfe0408_000e0b65\n"
         ".Lfe0408_000e0ac9:\n"
-        "movl 0x195eed0, %eax\n" /* line 546 */
+        "movl imp_dx, %eax\n" /* line 546 */
         "movl 0x2dc4(%eax), %edx\n"
         "movl (%edx), %ecx\n"
         "movl $0x1001, 0x10(%esp)\n"
@@ -545,12 +545,12 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "jne .Lfe0408_000e0efb\n"
         /* } scope */
         ".Lfe0408_000e0b3c:\n"
-        "movl 0x195eed0, %eax\n" /* line 570 */
+        "movl imp_dx, %eax\n" /* line 570 */
         "movl 0x2dc4(%eax), %eax\n"
         "movl (%eax), %edx\n"
         "movl %eax, (%esp)\n"
         "calll *0x30(%edx)\n"
-        "movl 0x195f0e0, %eax\n"
+        "movl imp_alwaysfails, %eax\n"
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lfe0408_000e0b3c\n"
@@ -629,24 +629,24 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movzbl 2(%ebx), %eax\n" /* line 497 | baseLightingCoords */
         "cvtsi2ssl %eax, %xmm1\n"
         "mulss %xmm4, %xmm1\n"
-        "mulss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5cc, %xmm1\n" /* 0.003921568859368563f */
         "movzbl 1(%ebx), %eax\n" /* line 498 | baseLightingCoords */
         "cvtsi2ssl %eax, %xmm0\n"
         "mulss %xmm0, %xmm5\n"
-        "movss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "mulss %xmm5, %xmm0\n"
         "movss %xmm0, -0x43c(%ebp)\n"
         "movzbl (%ebx), %eax\n" /* line 499 | baseLightingCoords */
         "cvtsi2ssl %eax, %xmm0\n"
         "mulss %xmm0, %xmm3\n"
-        "movss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "mulss %xmm3, %xmm0\n"
         "movss %xmm0, -0x440(%ebp)\n"
         "movzbl 3(%ebx), %eax\n" /* line 428 | baseLightingCoords */
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5cc, %xmm0\n" /* 0.003921568859368563f */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x4b8(%ebp)\n"
         "calll floorf\n"
@@ -665,8 +665,8 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movb %al, (%esi)\n" /* line 503 */
         "leal 1(%esi), %edi\n" /* line 504 | pDst */
         "movaps %xmm1, %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x48c(%ebp)\n"
@@ -683,8 +683,8 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movb %al, (%edi)\n" /* line 504 | pDst */
         "leal 2(%esi), %edi\n" /* line 505 | pDst */
         "movss -0x43c(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x490(%ebp)\n"
@@ -701,8 +701,8 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movb %al, (%edi)\n" /* line 505 | pDst */
         "leal 3(%esi), %edi\n" /* line 506 | pDst */
         "movss -0x440(%ebp), %xmm0\n" /* line 428 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x494(%ebp)\n"
@@ -738,7 +738,7 @@ void R_SkinStaticModelCachedCmd(SkinStaticModelCachedCmd *skinCmd, SkinBuffers *
         "movaps %xmm3, %xmm5\n"
         "movaps %xmm3, %xmm4\n"
         "leal -0x3e4(%ebp), %eax\n"
-        "movss 0x2f26e0, %xmm2\n"
+        "movss refEntIsInWorldSpace+80, %xmm2\n"
         "movaps %xmm0, %xmm1\n"
         "jmp .Lfe0408_000e0e41\n"
         ".Lfe0408_000e0e39:\n"

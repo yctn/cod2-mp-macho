@@ -12,9 +12,9 @@ static const int iEdgePairs[12][2] = {
 };
 static DebugGlobals debugGlobals;
 
-extern refimport_t *ri;                /* 0x195eee0 */
-extern GfxBackEndData **gfxBuf;        /* 0x195eef4 */
-extern GfxScene *gfxScene;             /* 0x195f0f4 */
+extern refimport_t *ri;                /* imp_ri */
+extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
+extern GfxScene *gfxScene;             /* imp_scene */
 extern int __mh_execute_header;
 
 extern float Vec3Normalize(vec_t *v);

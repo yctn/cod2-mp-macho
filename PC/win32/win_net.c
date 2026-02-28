@@ -10,24 +10,24 @@
 #include <unistd.h>
 #include <errno.h>
 
-static qboolean usingSocks; /* 0xff0d64 */
-static qboolean networkingEnabled; /* 0xff0d4c */
-static const dvar_t *net_noudp; /* 0xff0d48 */
-static const dvar_t *net_noipx; /* 0xff0d44 */
-static const dvar_t *net_socksEnabled; /* 0xff0d40 */
-static const dvar_t *net_socksServer; /* 0xff0d3c */
-static const dvar_t *net_socksPort; /* 0xff0d38 */
-static const dvar_t *net_socksUsername; /* 0xff0d34 */
-static const dvar_t *net_socksPassword; /* 0xff0d30 */
-static struct sockaddr socksRelayAddr; /* 0xff0d54 */
-static int ip_socket; /* 0xff0b80 */
-static int numIP; /* 0xff0dc0 */
-static byte localIP[16][4]; /* 0xff0d80 */
-static char winsockdata[400]; /* 0xff0ba0 */
-static qboolean winsockInitialized; /* 0xff0b84 */
-static int socks_socket; /* 0xff0d50 */
-static int ipx_socket; /* 0xff1de0 */
-static char socksBuf[4096]; /* 0xff0de0 */
+static qboolean usingSocks; /* usingSocks */
+static qboolean networkingEnabled; /* networkingEnabled */
+static const dvar_t *net_noudp; /* net_noudp */
+static const dvar_t *net_noipx; /* net_noipx */
+static const dvar_t *net_socksEnabled; /* net_socksEnabled */
+static const dvar_t *net_socksServer; /* net_socksServer */
+static const dvar_t *net_socksPort; /* net_socksPort */
+static const dvar_t *net_socksUsername; /* net_socksUsername */
+static const dvar_t *net_socksPassword; /* net_socksPassword */
+static struct sockaddr socksRelayAddr; /* socksRelayAddr */
+static int ip_socket; /* ip_socket */
+static int numIP; /* numIP */
+static byte localIP[16][4]; /* localIP */
+static char winsockdata[400]; /* winsockdata */
+static qboolean winsockInitialized; /* winsockInitialized */
+static int socks_socket; /* socks_socket */
+static int ipx_socket; /* ipx_socket */
+static char socksBuf[4096]; /* socksBuf */
 
 extern void Com_Printf(const char *fmt, ...);
 extern void Com_Error(int code, const char *fmt, ...);

@@ -12,8 +12,8 @@ extern void RB_DrawStretchPic(MaterialHandle material, float x, float y, float w
                                unsigned int color, int splitScreen);
 extern void RB_EndSurface(void);
 
-extern r_backEndGlobals_t *backEnd; /* 0x195f0c8 */
-extern r_global_permanent_t *rgp;  /* 0x195eebc */
+extern r_backEndGlobals_t *backEnd; /* imp_backEnd */
+extern r_global_permanent_t *rgp;  /* imp_rgp */
 
 static int RB_CompareTouchImages(const void *e0, const void *e1)
 {

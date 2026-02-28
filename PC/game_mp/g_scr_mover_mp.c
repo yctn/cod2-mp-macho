@@ -27,11 +27,11 @@ extern float AngleNormalize360(float angle);
 extern float AngleSubtract(float a, float b);
 
 extern int __mh_execute_header;
-extern gentity_t *g_entities;       /* 0x195f688 */
-extern level_locals_t level;        /* 0x195f6a0 */
-extern byte *g_scr_data_ptr;        /* 0x195f5bc */
+extern gentity_t *g_entities;       /* imp_g_entities */
+extern level_locals_t level;        /* imp_level */
+extern byte *g_scr_data_ptr;        /* imp_scr_const */
 
-static const BuiltinMethodDef methods[12]; /* 0x3336c0 */
+static const BuiltinMethodDef methods[12]; /* methods */
 
 /* Helper to get mover_ent_t from gentity - overlaid at offset 0x1A8 */
 #define MOVER(ent) ((mover_ent_t *)((byte *)(ent) + 0x1A8))

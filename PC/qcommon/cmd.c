@@ -30,12 +30,12 @@ extern const char *va(const char *format, ...);
 extern int cmd_wait; /* 0x0 */
 extern cmd_t cmd_texts[1]; /* 0x0 */
 extern cmd_t *cmd_text; /* 0x0 */
-static cmd_text_buf_t cmd_text_buf; /* 0x485f00 */
-static int cmd_argc; /* 0x483880 */
-static char * cmd_argv[512]; /* 0x483080 */
-static char cmd_tokenized[8704]; /* 0x483900 */
-static cmd_function_t *cmd_functions; /* 0x483000 */
-static char cmd_args1[1024]; /* 0x485b00 */
+static cmd_text_buf_t cmd_text_buf; /* cmd_text_buf */
+static int cmd_argc; /* cmd_argc */
+static char * cmd_argv[512]; /* cmd_argv */
+static char cmd_tokenized[8704]; /* cmd_tokenized */
+static cmd_function_t *cmd_functions; /* cmd_functions */
+static char cmd_args1[1024]; /* cmd_args1 */
 
 /* forward declarations */
 static int Cmd_TokenizeStringInternal(const char *text_in, char **argv, int max_tokens, char *textOut);
@@ -44,8 +44,8 @@ static void Cbuf_ExecuteInternal(void);
 static void Cmd_Exec_f(void);
 void Cmd_ExecuteString(const char *text);
 
-extern byte *ptr_195ecb4; /* 0x195ecb4 */
-extern byte *ptr_195ecbc; /* 0x195ecbc */
+extern byte *ptr_195ecb4; /* imp_legacyHacks */
+extern byte *ptr_195ecbc; /* imp_com_sv_running */
 
 /* line 122 */
 void Cmd_Wait_f(void)

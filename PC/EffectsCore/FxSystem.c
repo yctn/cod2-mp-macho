@@ -43,8 +43,8 @@ void FxHelper_CalcFrustumPlanes(const FxHelper * _this, refdef_t *refdef, float 
 void FxHelper_AdjustCamera(const FxHelper * _this, refdef_t *refdef, float zfar);
 void FxHelper_Archive(const FxHelper * _this, FxArchive *arch);
 
-#define RE        (*(refexport_t **)0x195eca8)
-#define FX_HELPER (*(FxHelper **)0x195ed88)
+#define RE        (*(refexport_t **)imp_re)
+#define FX_HELPER (*(FxHelper **)imp_theFxHelper)
 
 /* line 28 */
 void FxHelper_FxHelper(const FxHelper *_this)
@@ -72,7 +72,7 @@ void FxHelper_Init(const FxHelper *_this)
 void FxHelper_AdjustTime(const FxHelper *_this, int intime)
 {
     FxHelper *self = (FxHelper *)_this;
-    char *frozenStruct = *(char **)*(void **)0x195eda0;
+    char *frozenStruct = *(char **)*(void **)imp_fx_freeze;
 
     if (frozenStruct[8]) {
         self->mFrameTime = 0;
@@ -101,7 +101,7 @@ void FxHelper_AdjustTime(const FxHelper *_this, int intime)
 void FxHelper_WarpTime(const FxHelper *_this, int intime)
 {
     FxHelper *self = (FxHelper *)_this;
-    char *frozenStruct = *(char **)*(void **)0x195eda0;
+    char *frozenStruct = *(char **)*(void **)imp_fx_freeze;
     int frameTime;
 
     if (frozenStruct[8] || self->time == 0) {

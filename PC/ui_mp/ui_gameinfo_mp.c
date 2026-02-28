@@ -23,10 +23,10 @@ extern void Com_BeginParseSession(const char *name);
 extern void Com_EndParseSession(void);
 extern int I_stricmp(const char *s1, const char *s2);
 
-extern byte *uiInfo_ptr; /* 0x195f5d8 */
+extern byte *uiInfo_ptr; /* imp_sharedUiInfo */
 
-static int ui_numArenas; /* 0xf13280 */
-static char * ui_arenaInfos[64]; /* 0xf13180 */
+static int ui_numArenas; /* ui_numArenas */
+static char * ui_arenaInfos[64]; /* ui_arenaInfos */
 
 int UI_ParseInfos(const char *buf, int max, char * *infos);
 inflate_blocks_statef UI_LoadArenas(void);

@@ -10,13 +10,13 @@
  */
 
 extern struct lagometer_t lagometer; /* 0x0 */
-static int previous; /* 0xfea3c4 */
-static struct trStatistics_t rendererStats; /* 0xfea300 */
-static int fps_previousTimes[32]; /* 0xfea340 */
-static int fps_index; /* 0xfea3c0 */
-static vec4_t colorWhiteFaded; /* 0x3033e0 */
-static vec4_t colorGreenFaded; /* 0x3033d0 */
-static vec4_t colorRedFaded; /* 0x3033c0 */
+static int previous; /* previous */
+static struct trStatistics_t rendererStats; /* rendererStats */
+static int fps_previousTimes[32]; /* fps_previousTimes */
+static int fps_index; /* fps_index */
+static vec4_t colorWhiteFaded; /* colorWhiteFaded */
+static vec4_t colorGreenFaded; /* colorGreenFaded */
+static vec4_t colorRedFaded; /* colorRedFaded */
 
 unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alpha, int team);
 static unsigned int CG_DrawScriptUsage(void);
@@ -72,7 +72,7 @@ unsigned int CG_DrawTeamBackground(float x, float y, float w, float h, float alp
         "movl %eax, -0x14(%ebp)\n" /* line 147 */
         "movl $0x3f800000, -0x10(%ebp)\n" /* line 148 */
         ".Lf1cb014_001cb03e:\n"
-        "movl 0x195f5c4, %eax\n" /* line 154 */
+        "movl imp_cgs, %eax\n" /* line 154 */
         "movl (%eax), %eax\n"
         "movl 0xba28(%eax), %eax\n"
         "movl %eax, 0x1c(%esp)\n"
@@ -115,14 +115,14 @@ unsigned int CG_DrawScriptUsage(void)
         "subl $0x2c, %esp\n"
         "calll Scr_GetNumScriptVars\n" /* line 243 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b6fbc, (%esp)\n" /* "num vars:    %d" */
+        "movl $str_002b6fbc, (%esp)\n" /* "num vars:    %d" */
         "calll va\n"
         "movl $1, 0x1c(%esp)\n"
         "movl $0x41800000, %edi\n"
         "movl %edi, 0x18(%esp)\n"
         "movl $1, 0x14(%esp)\n"
         "movl $1, 0x10(%esp)\n"
-        "movl 0x195ed2c, %esi\n"
+        "movl imp_colorWhite, %esi\n"
         "movl %esi, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x42a00000, 4(%esp)\n"
@@ -131,7 +131,7 @@ unsigned int CG_DrawScriptUsage(void)
         "calll CG_DrawStringExt\n"
         "calll Scr_GetNumScriptThreads\n" /* line 244 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b6fcc, (%esp)\n" /* "num threads: %d" */
+        "movl $str_002b6fcc, (%esp)\n" /* "num threads: %d" */
         "calll va\n"
         "movl $1, 0x1c(%esp)\n"
         "movl %edi, 0x18(%esp)\n"
@@ -144,7 +144,7 @@ unsigned int CG_DrawScriptUsage(void)
         "calll CG_DrawStringExt\n"
         "calll Scr_GetStringUsage\n" /* line 245 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b6fdc, (%esp)\n" /* "string usage: %d" */
+        "movl $str_002b6fdc, (%esp)\n" /* "string usage: %d" */
         "calll va\n"
         "movl $1, 0x1c(%esp)\n"
         "movl %edi, 0x18(%esp)\n"
@@ -204,7 +204,7 @@ unsigned int CG_CalculateFPS(void)
 /* line 639 */
 unsigned int CG_AddLagometerFrameInfo(void)
 {
-    byte *cg = *(byte **)(*(int *)0x195f584);
+    byte *cg = *(byte **)(*(int *)imp_cg);
     int index = *(int *)0x195b380;
     lagometer.frameSamples[index & 0x7f] = *(int *)(cg + 0x25bb0) - *(int *)(cg + 0x1c);
     *(int *)0x195b380 = index + 1;
@@ -253,7 +253,7 @@ unsigned int CG_DrawDisconnect(void)
         "movl %eax, (%esp)\n"
         "calll CL_GetUserCmd\n"
         "movl -0x44(%ebp), %edx\n" /* line 692 | cmd */
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %edi\n"
         "movl 0x24(%edi), %eax\n"
         "cmpl 0xc(%eax), %edx\n"
@@ -270,7 +270,7 @@ unsigned int CG_DrawDisconnect(void)
         "retl\n"
         /* { scope 1 */
         ".Lf1cb280_001cb2d3:\n"
-        "movl $0x2b6ff0, (%esp)\n" /* line 696 */
+        "movl $str_002b6ff0, (%esp)\n" /* line 696 */
         "calll UI_SafeTranslateString\n"
         "movl %eax, -0x4c(%ebp)\n" /* s */
         "movl $0x3f000000, %ebx\n" /* line 697 */
@@ -309,7 +309,7 @@ unsigned int CG_DrawDisconnect(void)
         "testb $2, 0x25bb1(%edi)\n" /* line 704 */
         "jne .Lf1cb280_001cb2cb\n"
         "movl $7, 4(%esp)\n" /* line 710 */
-        "movl $0x2a89c8, (%esp)\n" /* "net_disconnect" */
+        "movl $str_002a89c8, (%esp)\n" /* "net_disconnect" */
         "calll CL_RegisterMaterial\n"
         "movl %eax, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -344,7 +344,7 @@ unsigned int CG_PriorityCenterPrint(const char *str, float charWidth, int priori
         "subl $0x12c, %esp\n"
         "movl 0x10(%ebp), %edi\n" /* priority */
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 982 */
+        "movl imp_cg, %eax\n" /* line 982 */
         "movl (%eax), %esi\n" /* neednewline */
         "movl 0x2b990(%esi), %eax\n" /* neednewline */
         "testl %eax, %eax\n"
@@ -354,7 +354,7 @@ unsigned int CG_PriorityCenterPrint(const char *str, float charWidth, int priori
         ".Lf1cb3de_001cb40a:\n"
         "leal -0x11c(%ebp), %ebx\n" /* line 985 | hudElemString, count */
         "movl %ebx, 8(%esp)\n" /* count */
-        "movl $0x2b700c, 4(%esp)\n" /* "Center Print" */
+        "movl $str_002b700c, 4(%esp)\n" /* "Center Print" */
         "movl 8(%ebp), %eax\n" /* str */
         "movl %eax, (%esp)\n"
         "calll CG_TranslateHudElemMessage\n"
@@ -394,7 +394,7 @@ unsigned int CG_PriorityCenterPrint(const char *str, float charWidth, int priori
         "cmpb $0, (%eax)\n"
         "jne .Lf1cb3de_001cb459\n"
         ".Lf1cb3de_001cb497:\n"
-        "movl 0x195f584, %ecx\n" /* line 1015 */
+        "movl imp_cg, %ecx\n" /* line 1015 */
         "movl (%ecx), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
         "addl $0x7d0, %edx\n"
@@ -463,7 +463,7 @@ Bool CG_GetWeapReticleZoom(float *pfZoom)
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* pfZoom */
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 1138 */
+        "movl imp_cg, %eax\n" /* line 1138 */
         "movl (%eax), %ebx\n"
         "leal 0x25bc4(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
@@ -488,7 +488,7 @@ Bool CG_GetWeapReticleZoom(float *pfZoom)
         "movl 0x28494(%ebx), %ecx\n" /* line 1156 */
         "testl %ecx, %ecx\n"
         "je .Lf1cb53e_001cb5f8\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 1158 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 1158 | 1.0f */
         "movaps %xmm3, %xmm0\n"
         "subss 0x26c(%edx), %xmm0\n"
         "subss %xmm0, %xmm1\n"
@@ -499,7 +499,7 @@ Bool CG_GetWeapReticleZoom(float *pfZoom)
         "divss 0x26c(%edx), %xmm0\n" /* line 1160 */
         "movss %xmm0, (%esi)\n" /* pfZoom */
         ".Lf1cb53e_001cb5cd:\n"
-        "ucomiss 0x2ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
         "jp .Lf1cb53e_001cb5d8\n"
         "jbe .Lf1cb53e_001cb5ef\n"
         ".Lf1cb53e_001cb5d8:\n"
@@ -525,7 +525,7 @@ Bool CG_GetWeapReticleZoom(float *pfZoom)
         "retl\n"
         /* { scope 1 */
         ".Lf1cb53e_001cb5f8:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 1164 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 1164 | 1.0f */
         "movaps %xmm3, %xmm0\n"
         "subss 0x270(%edx), %xmm0\n"
         "subss %xmm0, %xmm1\n"
@@ -552,9 +552,9 @@ unsigned int CG_DrawFrameOverlay(float innerLeft, float innerRight, float innerT
         "movl 0x18(%ebp), %esi\n" /* color */
         "movl 0x1c(%ebp), %ebx\n" /* material */
         /* { scope 1 */
-        "movl 0x195ecac, %eax\n" /* line 1188 */
-        "cvtsi2ssl 0x2a0a64(%eax), %xmm0\n" /* screenWidth */
-        "cvtsi2ssl 0x2a0a68(%eax), %xmm1\n" /* line 1189 */
+        "movl imp_cls, %eax\n" /* line 1188 */
+        "cvtsi2ssl str_002a0938+300(%eax), %xmm0\n" /* screenWidth */
+        "cvtsi2ssl str_002a0938+304(%eax), %xmm1\n" /* line 1189 */
         "movss %xmm1, -0xc(%ebp)\n" /* screenHeight */
         "pxor %xmm1, %xmm1\n" /* line 1192 */
         "movss 8(%ebp), %xmm2\n" /* innerLeft */
@@ -661,11 +661,11 @@ unsigned int CG_DrawCrosshairNames(void)
         "pushl %ebx\n"
         "subl $0x9c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f82c, %eax\n" /* line 1798 */
+        "movl imp_cg_drawCrosshairNames, %eax\n" /* line 1798 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1cb7ec_001cb816\n"
-        "movl 0x195f584, %eax\n" /* line 1800 */
+        "movl imp_cg, %eax\n" /* line 1800 */
         "movl (%eax), %ebx\n"
         "movl 0x25bc0(%ebx), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -688,7 +688,7 @@ unsigned int CG_DrawCrosshairNames(void)
         "movss 8(%edx), %xmm2\n" /* line 201 */
         "movss %xmm2, -0x1c(%ebp)\n"
         "leal 0x28594(%ebx), %eax\n"
-        "movss 0x2eda0c, %xmm1\n" /* line 288 | 8192.0f */
+        "movss lit4_002eda0c, %xmm1\n" /* line 288 | 8192.0f */
         "movss 0x28594(%ebx), %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "addss -0x24(%ebp), %xmm0\n"
@@ -706,7 +706,7 @@ unsigned int CG_DrawCrosshairNames(void)
         "movl %eax, 0x14(%esp)\n"
         "leal -0x30(%ebp), %eax\n"
         "movl %eax, 0x10(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "leal -0x24(%ebp), %eax\n"
@@ -760,7 +760,7 @@ unsigned int CG_DrawCrosshairNames(void)
         ".Lf1cb7ec_001cb96b:\n"
         "leal 0xe0920(%eax, %ebx), %eax\n" /* line 1834 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll va\n"
         "movl %eax, %esi\n" /* s */
         "testl %eax, %eax\n" /* line 1835 */
@@ -769,11 +769,11 @@ unsigned int CG_DrawCrosshairNames(void)
         "je .Lf1cb7ec_001cb816\n"
         "movl %eax, (%esp)\n" /* line 1837 */
         "calll I_CleanStr\n"
-        "movl 0x195f7bc, %eax\n" /* line 1839 */
+        "movl imp_cg_drawCrosshairNamesPosX, %eax\n" /* line 1839 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm0\n"
         "movss %xmm0, -0x70(%ebp)\n" /* x */
-        "movl 0x195f79c, %eax\n" /* line 1840 */
+        "movl imp_cg_drawCrosshairNamesPosY, %eax\n" /* line 1840 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "addl $0x10, %eax\n"
@@ -787,7 +787,7 @@ unsigned int CG_DrawCrosshairNames(void)
         "movl %eax, -0x3c(%ebp)\n" /* line 192 */
         "movl %eax, -0x38(%ebp)\n" /* line 193 */
         ".Lf1cb7ec_001cb9e4:\n"
-        "movss 0x2ed944, %xmm0\n" /* line 1867 | 0.6000000238418579f */
+        "movss lit4_002ed944, %xmm0\n" /* line 1867 | 0.6000000238418579f */
         "mulss 0xc(%edi), %xmm0\n" /* baseColor */
         "movss %xmm0, -0x34(%ebp)\n"
         "movl $0x3eaaaaab, %ebx\n" /* line 1875 */
@@ -817,14 +817,14 @@ unsigned int CG_DrawCrosshairNames(void)
         "jmp .Lf1cb7ec_001cb8cd\n"
         ".Lf1cb7ec_001cba77:\n"
         "cvtsi2ssl 0x2bde0(%ebx), %xmm1\n" /* line 1844 */
-        "divss 0x2ed798, %xmm1\n" /* 100.0f */
-        "movss 0x2ed5d0, %xmm2\n" /* line 1846 | 1.0f */
+        "divss lit4_002ed798, %xmm1\n" /* 100.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 1846 | 1.0f */
         "ucomiss %xmm2, %xmm1\n"
         "jbe .Lf1cb7ec_001cbad8\n"
         "movaps %xmm2, %xmm1\n"
         ".Lf1cb7ec_001cba97:\n"
         "movl $0, -0x38(%ebp)\n" /* line 1851 */
-        "ucomiss 0x2ed5d8, %xmm1\n" /* line 1852 | 0.5f */
+        "ucomiss lit4_002ed5d8, %xmm1\n" /* line 1852 | 0.5f */
         "jbe .Lf1cb7ec_001cbac3\n"
         "movaps %xmm2, %xmm0\n" /* line 1854 */
         "subss %xmm1, %xmm0\n"
@@ -856,7 +856,7 @@ unsigned int CG_CheckTimedMenus(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0xdc, %esp\n"
-        "movl 0x195f584, %eax\n" /* line 2414 */
+        "movl imp_cg, %eax\n" /* line 2414 */
         "movl (%eax), %esi\n"
         "movl 0x2be4c(%esi), %edx\n"
         "testl %edx, %edx\n"
@@ -938,14 +938,14 @@ unsigned int CG_CheckTimedMenus(void)
         ".Lf1cbae6_001cbc03:\n"
         "testb $1, -0x94(%ebp)\n" /* line 2186 */
         "je .Lf1cbae6_001cbc23\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "testl $0x300, 0x25c64(%eax)\n"
         "je .Lf1cbae6_001cc08b\n"
         ".Lf1cbae6_001cbc23:\n"
         "testb $0x30, -0x94(%ebp)\n" /* line 2169 */
         "je .Lf1cbae6_001cbc40\n"
-        "movl 0x195f584, %eax\n" /* line 2171 */
+        "movl imp_cg, %eax\n" /* line 2171 */
         "movl (%eax), %edx\n"
         "testb $4, 0x25bd0(%edx)\n"
         "je .Lf1cbae6_001cc06b\n"
@@ -967,15 +967,15 @@ unsigned int CG_CheckTimedMenus(void)
         ".Lf1cbae6_001cbc84:\n"
         "calll CG_CalcPlayerHealth\n" /* line 2268 */
         "fstps -0x8c(%ebp)\n"
-        "movl 0x195f7b8, %eax\n"
+        "movl imp_hud_health_startpulse_injured, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss -0x8c(%ebp), %xmm0\n"
         "ja .Lf1cbae6_001cc045\n"
-        "movl 0x195f83c, %eax\n" /* line 2272 */
+        "movl imp_hud_fade_healthbar, %eax\n" /* line 2272 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jp .Lf1cbae6_001cbe35\n"
         "jne .Lf1cbae6_001cbe35\n"
         ".Lf1cbae6_001cbcc7:\n"
@@ -986,7 +986,7 @@ unsigned int CG_CheckTimedMenus(void)
         "testb %al, %al\n"
         "jne .Lf1cbae6_001cbddb\n"
         ".Lf1cbae6_001cbce1:\n"
-        "movl 0x195f7b0, %eax\n" /* line 2298 */
+        "movl imp_hud_fade_ammodisplay, %eax\n" /* line 2298 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "pxor %xmm2, %xmm2\n"
@@ -994,13 +994,13 @@ unsigned int CG_CheckTimedMenus(void)
         "jp .Lf1cbae6_001cbcfc\n"
         "je .Lf1cbae6_001cbe10\n"
         ".Lf1cbae6_001cbcfc:\n"
-        "movl 0x195f584, %ecx\n"
+        "movl imp_cg, %ecx\n"
         "movl (%ecx), %eax\n"
         "movl 0x2c5c8(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf1cbae6_001cbefe\n"
         ".Lf1cbae6_001cbd12:\n"
-        "movl 0x195f678, %eax\n" /* line 2320 */
+        "movl imp_hud_fade_compass, %eax\n" /* line 2320 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "ucomiss %xmm2, %xmm1\n"
@@ -1022,7 +1022,7 @@ unsigned int CG_CheckTimedMenus(void)
         "testb $4, %al\n" /* line 2344 */
         "jne .Lf1cbae6_001cbe1b\n"
         ".Lf1cbae6_001cbd57:\n"
-        "movl 0x195f834, %eax\n" /* line 2347 */
+        "movl imp_hud_fade_stance, %eax\n" /* line 2347 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "pxor %xmm2, %xmm2\n"
@@ -1030,20 +1030,20 @@ unsigned int CG_CheckTimedMenus(void)
         "jp .Lf1cbae6_001cbd6e\n"
         "je .Lf1cbae6_001cbd83\n"
         ".Lf1cbae6_001cbd6e:\n"
-        "movl 0x195f584, %eax\n" /* line 2349 */
+        "movl imp_cg, %eax\n" /* line 2349 */
         "movl (%eax), %eax\n"
         "movl 0x2c5cc(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf1cbae6_001cbfd7\n"
         ".Lf1cbae6_001cbd83:\n"
-        "movl 0x195f730, %eax\n" /* line 2373 */
+        "movl imp_hud_fade_offhand, %eax\n" /* line 2373 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "ucomiss %xmm2, %xmm1\n"
         "jp .Lf1cbae6_001cbd96\n"
         "je .Lf1cbae6_001cbdab\n"
         ".Lf1cbae6_001cbd96:\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x2c5d0(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -1052,7 +1052,7 @@ unsigned int CG_CheckTimedMenus(void)
         "calll CG_ScoreboardDisplayed\n" /* line 2396 */
         "testl %eax, %eax\n"
         "je .Lf1cbae6_001cbdd0\n"
-        "movl 0x195f584, %eax\n" /* line 2398 */
+        "movl imp_cg, %eax\n" /* line 2398 */
         "movl (%eax), %edx\n"
         "movl 0x25bb0(%edx), %eax\n" /* line 2399 */
         "subl 0x2b538(%edx), %eax\n"
@@ -1073,14 +1073,14 @@ unsigned int CG_CheckTimedMenus(void)
         "movl 0x25bb0(%eax), %eax\n" /* line 2323 */
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lf1cbae6_001cc114\n"
         ".Lf1cbae6_001cbe09:\n"
         "movl (%ecx), %eax\n"
         "jmp .Lf1cbae6_001cbd39\n"
         ".Lf1cbae6_001cbe10:\n"
-        "movl 0x195f584, %ecx\n"
+        "movl imp_cg, %ecx\n"
         "jmp .Lf1cbae6_001cbd12\n"
         ".Lf1cbae6_001cbe1b:\n"
         "testb $2, %ah\n" /* line 2344 */
@@ -1090,7 +1090,7 @@ unsigned int CG_CheckTimedMenus(void)
         "calll CG_MenuShowNotify\n"
         "jmp .Lf1cbae6_001cbd57\n"
         ".Lf1cbae6_001cbe35:\n"
-        "movl 0x195f584, %eax\n" /* line 2272 */
+        "movl imp_cg, %eax\n" /* line 2272 */
         "movl (%eax), %eax\n"
         "movl 0x2c5c4(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -1098,14 +1098,14 @@ unsigned int CG_CheckTimedMenus(void)
         "movl 0x25bb0(%eax), %eax\n" /* line 2275 */
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1cbae6_001cbcc7\n"
         "calll CL_GetLocalClientActiveCount\n" /* line 2277 */
         "subl $1, %eax\n"
         "je .Lf1cbae6_001cc16f\n"
-        "movl $0x2b7030, 4(%esp)\n" /* line 2280 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7030, 4(%esp)\n" /* line 2280 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         ".Lf1cbae6_001cbe8a:\n"
@@ -1115,13 +1115,13 @@ unsigned int CG_CheckTimedMenus(void)
         "movl %eax, (%esp)\n"
         "calll Window_RemoveDynamicFlags\n"
         ".Lf1cbae6_001cbe9e:\n"
-        "movl 0x195f584, %eax\n" /* line 2283 */
+        "movl imp_cg, %eax\n" /* line 2283 */
         "movl (%eax), %eax\n"
         "movl $0, 0x2c5c4(%eax)\n"
         "jmp .Lf1cbae6_001cbcc7\n"
         ".Lf1cbae6_001cbeb4:\n"
-        "movl $0x2b7074, 4(%esp)\n" /* line 2401 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7074, 4(%esp)\n" /* line 2401 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "testl %eax, %eax\n" /* line 2402 */
@@ -1144,14 +1144,14 @@ unsigned int CG_CheckTimedMenus(void)
         "movl 0x25bb0(%eax), %eax\n" /* line 2301 */
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1cbae6_001cbd12\n"
         "calll CL_GetLocalClientActiveCount\n" /* line 2303 */
         "subl $1, %eax\n"
         "je .Lf1cbae6_001cc1a0\n"
-        "movl $0x2b703c, 4(%esp)\n" /* line 2306 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b703c, 4(%esp)\n" /* line 2306 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         ".Lf1cbae6_001cbf3e:\n"
@@ -1161,7 +1161,7 @@ unsigned int CG_CheckTimedMenus(void)
         "movl %eax, (%esp)\n"
         "calll Window_RemoveDynamicFlags\n"
         ".Lf1cbae6_001cbf52:\n"
-        "movl 0x195f584, %ecx\n" /* line 2309 */
+        "movl imp_cg, %ecx\n" /* line 2309 */
         "movl (%ecx), %eax\n"
         "movl $0, 0x2c5c8(%eax)\n"
         "pxor %xmm2, %xmm2\n"
@@ -1170,14 +1170,14 @@ unsigned int CG_CheckTimedMenus(void)
         "movl 0x25bb0(%eax), %eax\n" /* line 2376 */
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1cbae6_001cbdab\n"
         "calll CL_GetLocalClientActiveCount\n" /* line 2378 */
         "subl $1, %eax\n"
         "je .Lf1cbae6_001cc1ba\n"
-        "movl $0x2b7064, 4(%esp)\n" /* line 2381 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7064, 4(%esp)\n" /* line 2381 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         ".Lf1cbae6_001cbfad:\n"
@@ -1187,7 +1187,7 @@ unsigned int CG_CheckTimedMenus(void)
         "movl %eax, (%esp)\n"
         "calll Window_RemoveDynamicFlags\n"
         ".Lf1cbae6_001cbfc1:\n"
-        "movl 0x195f584, %eax\n" /* line 2384 */
+        "movl imp_cg, %eax\n" /* line 2384 */
         "movl (%eax), %eax\n"
         "movl $0, 0x2c5d0(%eax)\n"
         "jmp .Lf1cbae6_001cbdab\n"
@@ -1195,14 +1195,14 @@ unsigned int CG_CheckTimedMenus(void)
         "movl 0x25bb0(%eax), %eax\n" /* line 2352 */
         "subl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1cbae6_001cbd83\n"
         "calll CL_GetLocalClientActiveCount\n" /* line 2354 */
         "subl $1, %eax\n"
         "je .Lf1cbae6_001cc1d4\n"
-        "movl $0x2b704c, 4(%esp)\n" /* line 2357 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b704c, 4(%esp)\n" /* line 2357 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         ".Lf1cbae6_001cc017:\n"
@@ -1212,7 +1212,7 @@ unsigned int CG_CheckTimedMenus(void)
         "movl %eax, (%esp)\n"
         "calll Window_RemoveDynamicFlags\n"
         ".Lf1cbae6_001cc02b:\n"
-        "movl 0x195f584, %eax\n" /* line 2361 */
+        "movl imp_cg, %eax\n" /* line 2361 */
         "movl (%eax), %eax\n"
         "movl $0, 0x2c5cc(%eax)\n"
         "pxor %xmm2, %xmm2\n"
@@ -1252,8 +1252,8 @@ unsigned int CG_CheckTimedMenus(void)
         "calll CG_MenuShowNotify\n"
         "jmp .Lf1cbae6_001cbc78\n"
         ".Lf1cbae6_001cc0f0:\n"
-        "movl $0x2b701c, 4(%esp)\n" /* line 2420 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b701c, 4(%esp)\n" /* line 2420 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_CloseByName\n"
         "movl $0, 0x2be4c(%esi)\n" /* line 2421 */
@@ -1262,8 +1262,8 @@ unsigned int CG_CheckTimedMenus(void)
         "calll CL_GetLocalClientActiveCount\n" /* line 2325 */
         "subl $1, %eax\n"
         "je .Lf1cbae6_001cc189\n"
-        "movl $0x2a79e8, 4(%esp)\n" /* line 2328 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002a79e8, 4(%esp)\n" /* line 2328 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         ".Lf1cbae6_001cc133:\n"
@@ -1273,7 +1273,7 @@ unsigned int CG_CheckTimedMenus(void)
         "movl %eax, (%esp)\n"
         "calll Window_RemoveDynamicFlags\n"
         ".Lf1cbae6_001cc147:\n"
-        "movl 0x195f584, %ecx\n" /* line 2331 */
+        "movl imp_cg, %ecx\n" /* line 2331 */
         "movl (%ecx), %eax\n"
         "movl $0, 0x2c5c0(%eax)\n"
         "jmp .Lf1cbae6_001cbd39\n"
@@ -1282,32 +1282,32 @@ unsigned int CG_CheckTimedMenus(void)
         "calll CG_MenuShowNotify\n"
         "jmp .Lf1cbae6_001cbc70\n"
         ".Lf1cbae6_001cc16f:\n"
-        "movl $0x2b7028, 4(%esp)\n" /* line 2278 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7028, 4(%esp)\n" /* line 2278 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1cbae6_001cbe8a\n"
         ".Lf1cbae6_001cc189:\n"
-        "movl $0x2a79e0, 4(%esp)\n" /* line 2326 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002a79e0, 4(%esp)\n" /* line 2326 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1cbae6_001cc133\n"
         ".Lf1cbae6_001cc1a0:\n"
-        "movl $0x2b5978, 4(%esp)\n" /* line 2304 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b5978, 4(%esp)\n" /* line 2304 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1cbae6_001cbf3e\n"
         ".Lf1cbae6_001cc1ba:\n"
-        "movl $0x2b7058, 4(%esp)\n" /* line 2379 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_002b7058, 4(%esp)\n" /* line 2379 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1cbae6_001cbfad\n"
         ".Lf1cbae6_001cc1d4:\n"
-        "movl $0x221984, 4(%esp)\n" /* line 2355 */
-        "movl 0x195f7d4, %eax\n"
+        "movl $str_00221984, 4(%esp)\n" /* line 2355 */
+        "movl imp_cgDC, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1cbae6_001cc017\n"
@@ -1331,7 +1331,7 @@ unsigned int CG_DrawSoundOverlay(void)
         "movl $0x40, 8(%esp)\n"
         "leal -0x51c(%ebp), %eax\n" /* info */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f7ec, %eax\n"
+        "movl imp_cg_drawSoundOverlay, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -1339,16 +1339,16 @@ unsigned int CG_DrawSoundOverlay(void)
         "movl %eax, -0x530(%ebp)\n" /* count */
         "testl %eax, %eax\n" /* line 2527 */
         "jle .Lf1cc1f0_001cc3c1\n"
-        "movl $0x219b04, (%esp)\n" /* line 2545 */
+        "movl $str_00219b04, (%esp)\n" /* line 2545 */
         "calll Dvar_GetString\n"
         "movl %eax, %edi\n" /* provider */
-        "movl $0x2189d4, (%esp)\n" /* line 2547 */
+        "movl $str_002189d4, (%esp)\n" /* line 2547 */
         "calll Dvar_GetInt\n"
         "movl %eax, %esi\n" /* bits */
-        "movl $0x2189cc, (%esp)\n" /* line 2548 */
+        "movl $str_002189cc, (%esp)\n" /* line 2548 */
         "calll Dvar_GetInt\n"
         "movl %eax, %ebx\n" /* khz */
-        "movl $0x2189e0, (%esp)\n" /* line 2549 */
+        "movl $str_002189e0, (%esp)\n" /* line 2549 */
         "calll Dvar_GetBool\n"
         "cmpb $1, %al\n" /* line 2552 */
         "sbbl %eax, %eax\n"
@@ -1359,20 +1359,20 @@ unsigned int CG_DrawSoundOverlay(void)
         "movl %edi, 8(%esp)\n" /* provider */
         "movl -0x1c(%ebp), %eax\n" /* cpu */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7084, (%esp)\n" /* "CPU: ^3%%%i ^73D provider: ^3%s ^7bits: ^3%i ^7kHz: ^3%i ^7c" */
+        "movl $str_002b7084, (%esp)\n" /* "CPU: ^3%%%i ^73D provider: ^3%s ^7bits: ^3%i ^7kHz: ^3%i ^7c" */
         "calll va\n"
         "movl $0, 0x1c(%esp)\n" /* line 2556 */
         "movl $0x41200000, %ebx\n" /* khz */
         "movl %ebx, 0x18(%esp)\n" /* khz */
         "movl $1, 0x14(%esp)\n"
         "movl $0, 0x10(%esp)\n"
-        "movl 0x195ed2c, %edx\n"
+        "movl imp_colorWhite, %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x42a40000, 4(%esp)\n"
         "movl $0x40000000, (%esp)\n"
         "calll CG_DrawStringExt\n"
-        "movss 0x2eda1c, %xmm0\n" /* 92.0f */
+        "movss lit4_002eda1c, %xmm0\n" /* 92.0f */
         "movss %xmm0, -0x52c(%ebp)\n" /* y */
         "xorl %edi, %edi\n" /* provider */
         "leal -0x51c(%ebp), %esi\n" /* info, bits */
@@ -1388,7 +1388,7 @@ unsigned int CG_DrawSoundOverlay(void)
         "movsd %xmm0, 0xc(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* provider */
-        "movl $0x2b70cc, (%esp)\n" /* "%2i %-50s vol^3%04.2f ^7rvol^3%04.2f ^7dist^3%5i ^7pit^3%04." */
+        "movl $str_002b70cc, (%esp)\n" /* "%2i %-50s vol^3%04.2f ^7rvol^3%04.2f ^7dist^3%5i ^7pit^3%04." */
         "calll va\n"
         "movl %eax, %edx\n"
         ".Lf1cc1f0_001cc333:\n"
@@ -1396,14 +1396,14 @@ unsigned int CG_DrawSoundOverlay(void)
         "movl $0x41200000, 0x18(%esp)\n"
         "movl $1, 0x14(%esp)\n"
         "movl $0, 0x10(%esp)\n"
-        "movl 0x195ed2c, %eax\n"
+        "movl imp_colorWhite, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %edx, 8(%esp)\n"
         "movss -0x52c(%ebp), %xmm0\n" /* y */
         "movss %xmm0, 4(%esp)\n"
         "movl $0x40000000, (%esp)\n"
         "calll CG_DrawStringExt\n"
-        "movss 0x2ed6b4, %xmm0\n" /* line 2571 | 10.0f */
+        "movss lit4_002ed6b4, %xmm0\n" /* line 2571 | 10.0f */
         "addss -0x52c(%ebp), %xmm0\n" /* y */
         "movss %xmm0, -0x52c(%ebp)\n" /* y */
         "addl $1, %edi\n" /* line 2559 | provider */
@@ -1415,7 +1415,7 @@ unsigned int CG_DrawSoundOverlay(void)
         "testl %edx, %edx\n"
         "jne .Lf1cc1f0_001cc2f5\n"
         "movl %edi, 4(%esp)\n" /* line 2563 | provider */
-        "movl $0x2afbe0, (%esp)\n" /* "%2i" */
+        "movl $str_002afbe0, (%esp)\n" /* "%2i" */
         "calll va\n"
         "movl %eax, %edx\n"
         "jmp .Lf1cc1f0_001cc333\n"
@@ -1442,7 +1442,7 @@ unsigned int CG_DrawMaterial(void)
         "pushl %ebx\n"
         "subl $0x207c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 2723 */
+        "movl imp_cg, %eax\n" /* line 2723 */
         "movl (%eax), %edx\n"
         "movl $__mh_execute_header, 0x14(%esp)\n"
         "leal -0x2058(%ebp), %eax\n" /* szContents */
@@ -1459,7 +1459,7 @@ unsigned int CG_DrawMaterial(void)
         "testl %eax, %eax\n"
         "je .Lf1cc3ce_001cc4b5\n"
         "movl $5, 0x10(%esp)\n" /* line 2727 */
-        "movl 0x195ed2c, %ebx\n"
+        "movl imp_colorWhite, %ebx\n"
         "movl %ebx, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n"
         "movl $0x43700000, 4(%esp)\n"
@@ -1467,7 +1467,7 @@ unsigned int CG_DrawMaterial(void)
         "movl %esi, (%esp)\n"
         "calll CG_DrawSmallDevStringColor\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "addss 0x2ed6e8, %xmm1\n" /* 240.0f */
+        "addss lit4_002ed6e8, %xmm1\n" /* 240.0f */
         "movl $5, 0x10(%esp)\n" /* line 2728 */
         "movl %ebx, 0xc(%esp)\n"
         "movl %edi, 8(%esp)\n"
@@ -1508,10 +1508,10 @@ unsigned int CG_ShakeCamera(void)
         "pushl %ebx\n"
         "subl $0x9c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %edx\n" /* line 2904 */
+        "movl imp_cg, %edx\n" /* line 2904 */
         "movl (%edx), %eax\n"
         "cvtsi2ssl 0x25bb0(%eax), %xmm0\n"
-        "divss 0x2ed804, %xmm0\n" /* 600.0f */
+        "divss lit4_002ed804, %xmm0\n" /* 600.0f */
         "movss %xmm0, -0x20(%ebp)\n" /* sx */
         "pxor %xmm1, %xmm1\n"
         "movss %xmm1, -0x1c(%ebp)\n" /* bx */
@@ -1541,7 +1541,7 @@ unsigned int CG_ShakeCamera(void)
         "cmpl $4, %edi\n" /* i */
         "je .Lf1cc4c0_001cc627\n"
         ".Lf1cc4c0_001cc538:\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %ecx\n" /* line 2907 */
         "leal (%ecx, %esi), %edx\n"
         "leal 0xc(%edx), %ebx\n" /* shake */
@@ -1564,12 +1564,12 @@ unsigned int CG_ShakeCamera(void)
         "fstps -0x8c(%ebp)\n"
         "movss -0x8c(%ebp), %xmm0\n"
         "divss 0xc(%ebx), %xmm0\n" /* line 2826 */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "subss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n"
         "movss -0x68(%ebp), %xmm1\n" /* line 2829 */
         "divss 8(%ebx), %xmm1\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "subss %xmm1, %xmm2\n"
         "movaps %xmm2, %xmm1\n"
         "mulss 4(%ebx), %xmm1\n"
@@ -1586,7 +1586,7 @@ unsigned int CG_ShakeCamera(void)
         /* } scope */
         /* } scope */
         "movl -0x4c(%ebp), %eax\n" /* line 2910 */
-        "movl 0x195f584, %edx\n"
+        "movl imp_cg, %edx\n"
         "addl (%edx), %eax\n"
         "movss 0x2c528(%eax), %xmm0\n"
         "ucomiss %xmm3, %xmm0\n"
@@ -1600,7 +1600,7 @@ unsigned int CG_ShakeCamera(void)
         "cmpl $4, %edi\n" /* i */
         "jne .Lf1cc4c0_001cc538\n"
         ".Lf1cc4c0_001cc627:\n"
-        "movl 0x195f584, %eax\n" /* line 2918 */
+        "movl imp_cg, %eax\n" /* line 2918 */
         "movl (%eax), %ebx\n" /* shake */
         "movss 0x2c5a0(%ebx), %xmm2\n" /* shake */
         "ucomiss %xmm3, %xmm2\n"
@@ -1609,12 +1609,12 @@ unsigned int CG_ShakeCamera(void)
         "ucomiss %xmm2, %xmm4\n" /* line 2924 */
         "jae .Lf1cc4c0_001cc78c\n"
         ".Lf1cc4c0_001cc64d:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2930 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2930 | 1.0f */
         "minss %xmm2, %xmm0\n"
         "movaps %xmm0, %xmm2\n"
         "cvtss2sd -0x20(%ebp), %xmm0\n" /* line 2934 | sx */
         "movsd %xmm0, -0x28(%ebp)\n"
-        "mulsd 0x307d78, %xmm0\n" /* 25.132741228718345 */
+        "mulsd lit8_00307d78, %xmm0\n" /* 25.132741228718345 */
         "cvtss2sd 0x2c59c(%ebx), %xmm1\n" /* shake */
         "addsd %xmm1, %xmm0\n"
         "movsd %xmm0, (%esp)\n"
@@ -1623,15 +1623,15 @@ unsigned int CG_ShakeCamera(void)
         "fstpl -0x38(%ebp)\n"
         "cvtsd2ss -0x38(%ebp), %xmm0\n"
         "mulss -0x1c(%ebp), %xmm0\n" /* bx */
-        "mulss 0x2ed6c8, %xmm0\n" /* 18.0f */
+        "mulss lit4_002ed6c8, %xmm0\n" /* 18.0f */
         "movss -0x78(%ebp), %xmm2\n"
         "mulss %xmm2, %xmm0\n"
         "addss 0x285c8(%ebx), %xmm0\n" /* shake */
         "movss %xmm0, 0x285c8(%ebx)\n" /* shake */
-        "movl 0x195f584, %eax\n" /* line 2938 */
+        "movl imp_cg, %eax\n" /* line 2938 */
         "movl (%eax), %ebx\n" /* shake */
         "movsd -0x28(%ebp), %xmm0\n"
-        "mulsd 0x307d80, %xmm0\n" /* 47.12388980384689 */
+        "mulsd lit8_00307d80, %xmm0\n" /* 47.12388980384689 */
         "cvtss2sd 0x2c59c(%ebx), %xmm1\n" /* shake */
         "addsd %xmm1, %xmm0\n"
         "movsd %xmm0, (%esp)\n"
@@ -1640,13 +1640,13 @@ unsigned int CG_ShakeCamera(void)
         "fstpl -0x40(%ebp)\n"
         "cvtsd2ss -0x40(%ebp), %xmm0\n"
         "mulss -0x1c(%ebp), %xmm0\n" /* bx */
-        "mulss 0x2ed6a8, %xmm0\n" /* 16.0f */
+        "mulss lit4_002ed6a8, %xmm0\n" /* 16.0f */
         "movss -0x78(%ebp), %xmm2\n"
         "mulss %xmm2, %xmm0\n"
         "addss 0x285cc(%ebx), %xmm0\n" /* shake */
         "movss %xmm0, 0x285cc(%ebx)\n" /* shake */
         "movsd -0x28(%ebp), %xmm0\n" /* line 2942 */
-        "mulsd 0x307d88, %xmm0\n" /* 37.69911184307752 */
+        "mulsd lit8_00307d88, %xmm0\n" /* 37.69911184307752 */
         "movsd %xmm0, -0x28(%ebp)\n"
         "cvtss2sd 0x2c59c(%ebx), %xmm0\n" /* shake */
         "addsd -0x28(%ebp), %xmm0\n"
@@ -1657,7 +1657,7 @@ unsigned int CG_ShakeCamera(void)
         "cvtsd2ss -0x48(%ebp), %xmm0\n"
         "mulss -0x1c(%ebp), %xmm0\n" /* bx */
         "movss %xmm0, -0x1c(%ebp)\n" /* bx */
-        "mulss 0x2ed6b4, %xmm0\n" /* 10.0f */
+        "mulss lit4_002ed6b4, %xmm0\n" /* 10.0f */
         "movss -0x78(%ebp), %xmm2\n"
         "mulss %xmm0, %xmm2\n"
         "addss 0x285d0(%ebx), %xmm2\n" /* shake */
@@ -1678,7 +1678,7 @@ unsigned int CG_ShakeCamera(void)
         "calll crandom\n" /* line 2926 */
         "fstps -0x2c(%ebp)\n"
         "cvtss2sd -0x2c(%ebp), %xmm0\n"
-        "mulsd 0x307c28, %xmm0\n" /* 3.141592653589793 */
+        "mulsd lit8_00307c28, %xmm0\n" /* 3.141592653589793 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, 0x2c59c(%ebx)\n" /* shake */
         /* } scope */
@@ -1709,7 +1709,7 @@ qboolean CG_DrawFollow(void)
         "pushl %ebx\n"
         "subl $0x4c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 3225 */
+        "movl imp_cg, %eax\n" /* line 3225 */
         "movl (%eax), %ebx\n" /* font */
         "movl 0x24(%ebx), %eax\n" /* font */
         "testb $0x40, 0x1a(%eax)\n"
@@ -1727,11 +1727,11 @@ qboolean CG_DrawFollow(void)
         "movl 0xe0914(%eax, %ebx), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf1cc7c2_001cc95c\n"
-        "movl $0x22292c, -0x1c(%ebp)\n" /* clientName */
+        "movl $str_0022292c, -0x1c(%ebp)\n" /* clientName */
         ".Lf1cc7c2_001cc81d:\n"
         "movl $0, 8(%esp)\n" /* line 3237 */
-        "movl $0x2b710c, 4(%esp)\n" /* "spectator follow string" */
-        "movl $0x2b7124, (%esp)\n" /* "CGAME_FOLLOWING" */
+        "movl $str_002b710c, 4(%esp)\n" /* "spectator follow string" */
+        "movl $str_002b7124, (%esp)\n" /* "CGAME_FOLLOWING" */
         "calll SEH_LocalizeTextMessage\n"
         "movl %eax, %esi\n" /* followingString */
         "calll CL_IsRenderingSplitScreen\n" /* line 3240 */
@@ -1749,7 +1749,7 @@ qboolean CG_DrawFollow(void)
         "movl %esi, (%esp)\n" /* followingString */
         "calll UI_TextWidth\n"
         "movl $3, 0x24(%esp)\n" /* line 3247 */
-        "movl 0x195ed2c, %edx\n"
+        "movl imp_colorWhite, %edx\n"
         "movl %edx, 0x20(%esp)\n"
         "movl %edi, 0x1c(%esp)\n" /* scale */
         "movl $1, 0x18(%esp)\n"
@@ -1757,7 +1757,7 @@ qboolean CG_DrawFollow(void)
         "movl $0x42200000, 0x10(%esp)\n"
         "negl %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* font */
         "movl $0x7fffffff, 4(%esp)\n"
@@ -1770,7 +1770,7 @@ qboolean CG_DrawFollow(void)
         "movl %eax, (%esp)\n"
         "calll UI_TextWidth\n"
         "movl $3, 0x24(%esp)\n" /* line 3251 */
-        "movl 0x195ed2c, %edx\n"
+        "movl imp_colorWhite, %edx\n"
         "movl %edx, 0x20(%esp)\n"
         "movl %edi, 0x1c(%esp)\n" /* scale */
         "movl $1, 0x18(%esp)\n"
@@ -1778,7 +1778,7 @@ qboolean CG_DrawFollow(void)
         "movl $0x42820000, 0x10(%esp)\n"
         "negl %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* font */
         "movl $0x7fffffff, 4(%esp)\n"
@@ -1826,14 +1826,14 @@ unsigned int CG_DrawPlayerSprites(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %ecx\n" /* line 3263 */
+        "movl imp_cg, %ecx\n" /* line 3263 */
         "movl (%ecx), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "movl 0x26b4(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
         "jle .Lf1cc976_001cc9f9\n"
         "xorl %esi, %esi\n" /* entityIndex */
-        "movl 0x195f5cc, %edi\n"
+        "movl imp_cg_entities, %edi\n"
         "movl %ecx, -0x1c(%ebp)\n"
         "xorl %ebx, %ebx\n"
         "jmp .Lf1cc976_001cc9b9\n"
@@ -1884,7 +1884,7 @@ unsigned int CG_DrawActive(void)
         "pushl %ebx\n"
         "subl $0x34, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 3409 */
+        "movl imp_cg, %eax\n" /* line 3409 */
         "movl (%eax), %ecx\n"
         "movl 0x25bb0(%ecx), %eax\n"
         "movl %eax, 0x285b8(%ecx)\n"
@@ -1892,7 +1892,7 @@ unsigned int CG_DrawActive(void)
         "movss 0x2a5f8(%ecx), %xmm0\n" /* line 3413 */
         "movss %xmm0, -0x1c(%ebp)\n" /* sensitivity */
         "movss 0x2cce8(%ecx), %xmm0\n" /* line 3414 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf1cca02_001cca46\n"
         "je .Lf1cca02_001cca50\n"
         ".Lf1cca02_001cca46:\n"
@@ -1915,7 +1915,7 @@ unsigned int CG_DrawActive(void)
         "leal -0x14(%ebp), %eax\n" /* line 3418 | angles */
         "movl %eax, (%esp)\n"
         "calll CL_SetUserCmdAimValues\n"
-        "movl 0x195f584, %eax\n" /* line 3419 */
+        "movl imp_cg, %eax\n" /* line 3419 */
         "movl (%eax), %ebx\n"
         "movss -0x1c(%ebp), %xmm0\n" /* sensitivity */
         "movss %xmm0, 8(%esp)\n"
@@ -1959,32 +1959,32 @@ unsigned int CG_DrawChatMessages(void)
         "pushl %ebx\n"
         "subl $0x6c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f7e4, %eax\n" /* line 566 */
+        "movl imp_cg_chatHeight, %eax\n" /* line 566 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* chatHeight */
         "testl %eax, %eax\n" /* line 567 */
         "je .Lf1ccb08_001ccdd9\n"
-        "movl 0x195f818, %eax\n" /* line 570 */
+        "movl imp_cg_hudChatPosition, %eax\n" /* line 570 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "cvttss2si (%eax), %edx\n"
         "movl %edx, -0x30(%ebp)\n" /* hudChatX */
         "cvttss2si 4(%eax), %eax\n" /* line 571 */
         "movl %eax, -0x34(%ebp)\n" /* hudChatY */
-        "movl 0x195f5c4, %eax\n" /* line 573 */
+        "movl imp_cgs, %eax\n" /* line 573 */
         "movl (%eax), %ebx\n"
         "movl 0xba18(%ebx), %ecx\n"
         "cmpl 0xba14(%ebx), %ecx\n"
         "je .Lf1ccb08_001ccdd9\n"
-        "movl 0x195f584, %eax\n" /* line 575 */
+        "movl imp_cg, %eax\n" /* line 575 */
         "movl (%eax), %edi\n" /* msg */
         "movl %ecx, %eax\n"
         "cltd\n"
         "idivl -0x44(%ebp)\n" /* chatHeight */
         "movl 0x25bb0(%edi), %eax\n" /* msg */
         "subl 0xb9f4(%ebx, %edx, 4), %eax\n"
-        "movl 0x195f810, %edx\n"
+        "movl imp_cg_chatTime, %edx\n"
         "movl (%edx), %edx\n"
         "cmpl 8(%edx), %eax\n"
         "jg .Lf1ccb08_001ccde1\n"
@@ -2000,9 +2000,9 @@ unsigned int CG_DrawChatMessages(void)
         "movl %edi, -0x48(%ebp)\n" /* msg */
         "jmp .Lf1ccb08_001ccd75\n"
         ".Lf1ccb08_001ccbb7:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 582 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 582 | 1.0f */
         "movss %xmm0, -0x3c(%ebp)\n" /* alphapercent */
-        "movss 0x2ed944, %xmm0\n" /* 0.6000000238418579f */
+        "movss lit4_002ed944, %xmm0\n" /* 0.6000000238418579f */
         "movss %xmm0, -0x2c(%ebp)\n"
         ".Lf1ccb08_001ccbd1:\n"
         "movl %ecx, %eax\n" /* line 591 */
@@ -2023,17 +2023,17 @@ unsigned int CG_DrawChatMessages(void)
         "movl $0x3f800000, -0x20(%ebp)\n" /* line 193 */
         ".Lf1ccb08_001ccc0c:\n"
         "movss -0x28(%ebp), %xmm0\n" /* line 272 | color */
-        "mulss 0x2ed604, %xmm0\n" /* 0.25f */
+        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
         "movss %xmm0, -0x28(%ebp)\n" /* color */
         "movss -0x24(%ebp), %xmm0\n" /* line 273 */
-        "mulss 0x2ed604, %xmm0\n" /* 0.25f */
+        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
         "movss %xmm0, -0x24(%ebp)\n"
         "movss -0x20(%ebp), %xmm0\n" /* line 274 */
-        "mulss 0x2ed604, %xmm0\n" /* 0.25f */
+        "mulss lit4_002ed604, %xmm0\n" /* 0.25f */
         "movss %xmm0, -0x20(%ebp)\n"
         "movss -0x2c(%ebp), %xmm0\n" /* line 600 */
         "movss %xmm0, -0x1c(%ebp)\n"
-        "movl 0x195f5c4, %eax\n" /* line 603 */
+        "movl imp_cgs, %eax\n" /* line 603 */
         "movl (%eax), %ebx\n"
         "movl 0xba14(%ebx), %eax\n"
         "subl %esi, %eax\n" /* i */
@@ -2093,7 +2093,7 @@ unsigned int CG_DrawChatMessages(void)
         "calll UI_DrawText\n"
         ".Lf1ccb08_001ccd63:\n"
         "subl $1, %esi\n" /* line 579 | i */
-        "movl 0x195f5c4, %eax\n"
+        "movl imp_cgs, %eax\n"
         "movl (%eax), %ebx\n"
         "cmpl 0xba18(%ebx), %esi\n" /* i */
         "jl .Lf1ccb08_001ccdd9\n"
@@ -2102,7 +2102,7 @@ unsigned int CG_DrawChatMessages(void)
         "cltd\n"
         "idivl -0x44(%ebp)\n" /* chatHeight */
         "movl %edx, %ecx\n"
-        "movl 0x195f810, %eax\n"
+        "movl imp_cg_chatTime, %eax\n"
         "movl (%eax), %eax\n"
         "cvtsi2ssl 8(%eax), %xmm1\n"
         "movl -0x48(%ebp), %edx\n"
@@ -2110,15 +2110,15 @@ unsigned int CG_DrawChatMessages(void)
         "subl 0xb9f4(%ebx, %ecx, 4), %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "subss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed734, %xmm1\n" /* line 582 | 200.0f */
+        "ucomiss lit4_002ed734, %xmm1\n" /* line 582 | 200.0f */
         "ja .Lf1ccb08_001ccbb7\n"
-        "divss 0x2ed734, %xmm1\n" /* line 586 | 200.0f */
+        "divss lit4_002ed734, %xmm1\n" /* line 586 | 200.0f */
         "movss %xmm1, -0x3c(%ebp)\n" /* alphapercent */
         "pxor %xmm0, %xmm0\n" /* line 587 */
         "ucomiss %xmm1, %xmm0\n"
         "jae .Lf1ccb08_001ccd63\n"
         "movaps %xmm1, %xmm0\n" /* line 588 */
-        "mulss 0x2ed944, %xmm0\n" /* 0.6000000238418579f */
+        "mulss lit4_002ed944, %xmm0\n" /* 0.6000000238418579f */
         "movss %xmm0, -0x2c(%ebp)\n"
         "jmp .Lf1ccb08_001ccbd1\n"
         /* } scope */
@@ -2167,7 +2167,7 @@ unsigned int CG_CalcCrosshairPosition(void)
         "movl %eax, %esi\n" /* x */
         "movl %edx, %edi\n" /* y */
         /* { scope 1 */
-        "movl 0x195f584, %eax\n" /* line 1116 */
+        "movl imp_cg, %eax\n" /* line 1116 */
         "movl (%eax), %ebx\n"
         "movl 0x285d0(%ebx), %ecx\n" /* z */
         "movl 0x2c094(%ebx), %edx\n" /* y */
@@ -2213,7 +2213,7 @@ unsigned int CG_CalcCrosshairPosition(void)
         "mulss 8(%eax), %xmm4\n"
         "addss %xmm4, %xmm1\n"
         "cvtss2sd %xmm0, %xmm0\n"
-        "mulsd 0x307c68, %xmm0\n" /* 0.008726646259971648 */
+        "mulsd lit8_00307c68, %xmm0\n" /* 0.008726646259971648 */
         "movsd %xmm0, (%esp)\n"
         "movss %xmm1, -0x58(%ebp)\n"
         "movss %xmm2, -0x68(%ebp)\n"
@@ -2224,7 +2224,7 @@ unsigned int CG_CalcCrosshairPosition(void)
         "mulss %xmm2, %xmm0\n"
         "movss -0x58(%ebp), %xmm1\n"
         "divss %xmm0, %xmm1\n"
-        "mulss 0x2eda20, %xmm1\n" /* -320.0f */
+        "mulss lit4_002eda20, %xmm1\n" /* -320.0f */
         "movss %xmm1, (%esi)\n" /* x */
         "leal 0x285ac(%ebx), %eax\n" /* line 1128 */
         "movss 0x285ac(%ebx), %xmm1\n"
@@ -2236,7 +2236,7 @@ unsigned int CG_CalcCrosshairPosition(void)
         "mulss -0x28(%ebp), %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "cvtss2sd 0x28584(%ebx), %xmm0\n"
-        "mulsd 0x307c68, %xmm0\n" /* 0.008726646259971648 */
+        "mulsd lit8_00307c68, %xmm0\n" /* 0.008726646259971648 */
         "movsd %xmm0, (%esp)\n"
         "movss %xmm1, -0x58(%ebp)\n"
         "calll tan\n"
@@ -2246,7 +2246,7 @@ unsigned int CG_CalcCrosshairPosition(void)
         "mulss %xmm0, %xmm2\n"
         "movss -0x58(%ebp), %xmm1\n"
         "divss %xmm2, %xmm1\n"
-        "mulss 0x2eda24, %xmm1\n" /* -240.0f */
+        "mulss lit4_002eda24, %xmm1\n" /* -240.0f */
         "movss %xmm1, (%edi)\n" /* y */
         /* } scope */
         "addl $0x6c, %esp\n" /* line 1129 */
@@ -2303,10 +2303,10 @@ float CG_DrawFPS(float y)
         "cvtsi2ssl %ecx, %xmm0\n" /* line 316 */
         "movss %xmm0, -0x3c(%ebp)\n"
         "movaps %xmm0, %xmm3\n"
-        "mulss 0x2ed878, %xmm3\n" /* 0.03125f */
+        "mulss lit4_002ed878, %xmm3\n" /* 0.03125f */
         "pxor %xmm2, %xmm2\n"
         "movl $fps_previousTimes, %eax\n"
-        "movss 0x3033f0, %xmm1\n"
+        "movss colorWhiteFaded+16, %xmm1\n"
         ".Lf1ccfd4_001cd044:\n"
         "cvtsi2ssl (%eax), %xmm0\n" /* line 321 */
         "subss %xmm3, %xmm0\n"
@@ -2315,7 +2315,7 @@ float CG_DrawFPS(float y)
         "addl $4, %eax\n"
         "cmpl %eax, %esi\n" /* line 319 | color */
         "jne .Lf1ccfd4_001cd044\n"
-        "mulss 0x2ed878, %xmm2\n" /* line 323 | 0.03125f */
+        "mulss lit4_002ed878, %xmm2\n" /* line 323 | 0.03125f */
         "movss %xmm2, -0x40(%ebp)\n" /* variance */
         "testl %ecx, %ecx\n" /* line 325 */
         "je .Lf1ccfd4_001cd655\n"
@@ -2326,11 +2326,11 @@ float CG_DrawFPS(float y)
         "movss %xmm0, -0x38(%ebp)\n"
         ".Lf1ccfd4_001cd080:\n"
         "cvtsi2ssl %edi, %xmm0\n" /* line 428 | maxTime */
-        "movss 0x2ed5c8, %xmm1\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm1\n" /* 1000.0f */
         "movaps %xmm1, %xmm2\n"
         "divss %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm1, -0x78(%ebp)\n"
         "calll floorf\n"
@@ -2339,22 +2339,22 @@ float CG_DrawFPS(float y)
         "movl %eax, -0x44(%ebp)\n" /* fpsMin */
         "movss -0x78(%ebp), %xmm1\n"
         "divss -0x38(%ebp), %xmm1\n"
-        "addss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss %xmm1, (%esp)\n"
         "calll floorf\n"
         "fstps -0x50(%ebp)\n"
         "cvttss2si -0x50(%ebp), %esi\n" /* color */
-        "movl 0x195f794, %eax\n" /* line 335 */
+        "movl imp_cg_drawFPS, %eax\n" /* line 335 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "jle .Lf1ccfd4_001cd5eb\n"
         "movl %edi, 0x10(%esp)\n" /* line 338 | maxTime */
         "movl %ebx, 0xc(%esp)\n" /* minTime */
-        "movss 0x2ed878, %xmm0\n" /* 0.03125f */
+        "movss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "mulss -0x3c(%ebp), %xmm0\n"
         "cvtss2sd %xmm0, %xmm1\n"
         "movsd %xmm1, 4(%esp)\n"
-        "movl $0x2b7138, (%esp)\n" /* "%1.2fmspf(%i-%i)" */
+        "movl $str_002b7138, (%esp)\n" /* "%1.2fmspf(%i-%i)" */
         "calll va\n"
         ".Lf1ccfd4_001cd118:\n"
         "movl $6, 0x10(%esp)\n" /* line 346 */
@@ -2368,7 +2368,7 @@ float CG_DrawFPS(float y)
         "cvtsi2ssl %eax, %xmm0\n"
         "addss -0x48(%ebp), %xmm0\n"
         "movss %xmm0, -0x48(%ebp)\n"
-        "movl 0x195f794, %eax\n" /* line 349 */
+        "movl imp_cg_drawFPS, %eax\n" /* line 349 */
         "movl (%eax), %eax\n"
         "cmpl $1, 8(%eax)\n"
         "jle .Lf1ccfd4_001cd5e0\n"
@@ -2376,7 +2376,7 @@ float CG_DrawFPS(float y)
         "calll CL_TrackStatistics\n"
         "movl $6, 0x10(%esp)\n" /* line 362 */
         "movl $colorGreenFaded, 0xc(%esp)\n"
-        "movl $0x2b715c, 8(%esp)\n" /* "scene" */
+        "movl $str_002b715c, 8(%esp)\n" /* "scene" */
         "movss -0x48(%ebp), %xmm1\n"
         "movss %xmm1, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
@@ -2385,7 +2385,7 @@ float CG_DrawFPS(float y)
         "movss -0x48(%ebp), %xmm0\n"
         "addss %xmm2, %xmm0\n"
         "movss %xmm0, -0x30(%ebp)\n"
-        "movl $0x2b7164, (%esp)\n" /* line 364 */
+        "movl $str_002b7164, (%esp)\n" /* line 364 */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 365 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2394,7 +2394,7 @@ float CG_DrawFPS(float y)
         "movss %xmm1, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
         "calll CG_DrawSmallDevStringColor\n"
-        "movl 0xfea308, %ecx\n" /* line 366 */
+        "movl rendererStats+8, %ecx\n" /* line 366 */
         "movl $0x55555556, %esi\n" /* color */
         "movl %ecx, %eax\n"
         "imull %esi\n" /* color */
@@ -2402,7 +2402,7 @@ float CG_DrawFPS(float y)
         "sarl $0x1f, %eax\n"
         "subl %eax, %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 367 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2415,11 +2415,11 @@ float CG_DrawFPS(float y)
         "movss -0x30(%ebp), %xmm2\n"
         "addss %xmm1, %xmm2\n"
         "movss %xmm2, -0x34(%ebp)\n"
-        "movl 0xfea30c, %edi\n" /* line 369 | maxTime */
+        "movl rendererStats+12, %edi\n" /* line 369 | maxTime */
         "testl %edi, %edi\n" /* maxTime */
         "jne .Lf1ccfd4_001cd6a7\n"
         ".Lf1ccfd4_001cd24c:\n"
-        "movl $0x2b7190, (%esp)\n" /* line 377 */
+        "movl $str_002b7190, (%esp)\n" /* line 377 */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 378 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2435,7 +2435,7 @@ float CG_DrawFPS(float y)
         "sarl $0x1f, %eax\n"
         "subl %eax, %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 380 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2448,7 +2448,7 @@ float CG_DrawFPS(float y)
         "movss -0x34(%ebp), %xmm2\n"
         "addss %xmm1, %xmm2\n"
         "movss %xmm2, -0x2c(%ebp)\n"
-        "movl $0x2b71a8, (%esp)\n" /* line 382 */
+        "movl $str_002b71a8, (%esp)\n" /* line 382 */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 383 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2457,14 +2457,14 @@ float CG_DrawFPS(float y)
         "movss %xmm0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
         "calll CG_DrawSmallDevStringColor\n"
-        "movl 0xfea304, %ecx\n" /* line 384 */
+        "movl rendererStats+4, %ecx\n" /* line 384 */
         "movl %ecx, %eax\n"
         "imull %esi\n" /* color */
         "movl %ecx, %eax\n"
         "sarl $0x1f, %eax\n"
         "subl %eax, %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 385 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2477,7 +2477,7 @@ float CG_DrawFPS(float y)
         "movss -0x2c(%ebp), %xmm2\n"
         "addss %xmm1, %xmm2\n"
         "movss %xmm2, -0x28(%ebp)\n"
-        "movl $0x2b71c0, (%esp)\n" /* line 387 */
+        "movl $str_002b71c0, (%esp)\n" /* line 387 */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 388 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2486,9 +2486,9 @@ float CG_DrawFPS(float y)
         "movss %xmm0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
         "calll CG_DrawSmallDevStringColor\n"
-        "movl 0xfea314, %eax\n" /* line 389 */
+        "movl rendererStats+20, %eax\n" /* line 389 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 390 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2501,7 +2501,7 @@ float CG_DrawFPS(float y)
         "addss -0x28(%ebp), %xmm0\n"
         "movl $6, 0x10(%esp)\n" /* line 392 */
         "movl $colorGreenFaded, 0xc(%esp)\n"
-        "movl $0x2182a0, 8(%esp)\n" /* "level" */
+        "movl $str_002182a0, 8(%esp)\n" /* "level" */
         "movss %xmm0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
         "movss %xmm0, -0x68(%ebp)\n"
@@ -2510,7 +2510,7 @@ float CG_DrawFPS(float y)
         "movss -0x68(%ebp), %xmm0\n"
         "addss %xmm2, %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n"
-        "movl $0x2b71d0, (%esp)\n" /* line 395 */
+        "movl $str_002b71d0, (%esp)\n" /* line 395 */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 396 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2519,13 +2519,13 @@ float CG_DrawFPS(float y)
         "movss %xmm0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
         "calll CG_DrawSmallDevStringColor\n"
-        "movl 0xfea320, %eax\n" /* line 397 */
+        "movl rendererStats+32, %eax\n" /* line 397 */
         "leal 0xfffff(%eax), %edx\n"
         "cmpl $-1, %eax\n"
         "cmovlel %edx, %eax\n"
         "sarl $0x14, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x215a64, (%esp)\n" /* "%d" */
+        "movl $str_00215a64, (%esp)\n" /* "%d" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 398 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2538,9 +2538,9 @@ float CG_DrawFPS(float y)
         "movss -0x24(%ebp), %xmm0\n"
         "addss %xmm2, %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n"
-        "cmpl $0x3000000, 0xfea328\n" /* line 422 */
+        "cmpl $0x3000000, rendererStats+40\n" /* line 422 */
         "jg .Lf1ccfd4_001cd681\n"
-        "movl $0x2b71dc, (%esp)\n" /* line 425 */
+        "movl $str_002b71dc, (%esp)\n" /* line 425 */
         "calll va\n"
         "movl $colorWhiteFaded, %esi\n" /* color */
         ".Lf1ccfd4_001cd4cc:\n"
@@ -2552,13 +2552,13 @@ float CG_DrawFPS(float y)
         "movl $0x441b0000, %ebx\n" /* minTime */
         "movl %ebx, (%esp)\n" /* minTime */
         "calll CG_DrawSmallDevStringColor\n"
-        "movl 0xfea328, %eax\n" /* line 433 */
+        "movl rendererStats+40, %eax\n" /* line 433 */
         "leal 0xfffff(%eax), %edx\n"
         "cmpl $-1, %eax\n"
         "cmovlel %edx, %eax\n"
         "sarl $0x14, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x215a64, (%esp)\n" /* "%d" */
+        "movl $str_00215a64, (%esp)\n" /* "%d" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 434 */
         "movl %esi, 0xc(%esp)\n" /* color */
@@ -2571,7 +2571,7 @@ float CG_DrawFPS(float y)
         "movss -0x20(%ebp), %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, -0x1c(%ebp)\n"
-        "movl $0x2b7208, (%esp)\n" /* line 443 */
+        "movl $str_002b7208, (%esp)\n" /* line 443 */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 444 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2580,13 +2580,13 @@ float CG_DrawFPS(float y)
         "movss %xmm2, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
         "calll CG_DrawSmallDevStringColor\n"
-        "movl 0xfea324, %eax\n" /* line 445 */
+        "movl rendererStats+36, %eax\n" /* line 445 */
         "leal 0xfffff(%eax), %edx\n"
         "cmpl $-1, %eax\n"
         "cmovlel %edx, %eax\n"
         "sarl $0x14, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x215a64, (%esp)\n" /* "%d" */
+        "movl $str_00215a64, (%esp)\n" /* "%d" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 446 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2611,7 +2611,7 @@ float CG_DrawFPS(float y)
         /* { scope 1 */
         ".Lf1ccfd4_001cd5eb:\n"
         "movss -0x40(%ebp), %xmm0\n" /* line 428 | variance */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x54(%ebp)\n"
@@ -2620,36 +2620,36 @@ float CG_DrawFPS(float y)
         "movl %esi, 0xc(%esp)\n" /* color */
         "movl -0x44(%ebp), %eax\n" /* fpsMin */
         "movl %eax, 8(%esp)\n"
-        "movss 0x2eda28, %xmm0\n" /* 32000.0f */
+        "movss lit4_002eda28, %xmm0\n" /* 32000.0f */
         "divss -0x3c(%ebp), %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x58(%ebp)\n"
         "cvttss2si -0x58(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b714c, (%esp)\n" /* "%ifps(%i-%i,%i)" */
+        "movl $str_002b714c, (%esp)\n" /* "%ifps(%i-%i,%i)" */
         "calll va\n"
         "jmp .Lf1ccfd4_001cd118\n"
         ".Lf1ccfd4_001cd655:\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 325 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 325 | 1.0f */
         "movss %xmm1, -0x3c(%ebp)\n"
         "testl %ebx, %ebx\n" /* line 329 | minTime */
         "jg .Lf1ccfd4_001cd077\n"
         ".Lf1ccfd4_001cd66a:\n"
         "movl $1, %ebx\n" /* minTime */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss %xmm2, -0x38(%ebp)\n"
         "jmp .Lf1ccfd4_001cd080\n"
         ".Lf1ccfd4_001cd681:\n"
         "movl $0, 4(%esp)\n" /* line 430 */
         "movl $0x40480000, 8(%esp)\n"
-        "movl $0x2b71f0, (%esp)\n" /* "min pc tex (%g)      " */
+        "movl $str_002b71f0, (%esp)\n" /* "min pc tex (%g)      " */
         "calll va\n"
         "movl $colorRedFaded, %esi\n" /* color */
         "jmp .Lf1ccfd4_001cd4cc\n"
         ".Lf1ccfd4_001cd6a7:\n"
-        "movl $0x2b7178, (%esp)\n" /* line 371 */
+        "movl $str_002b7178, (%esp)\n" /* line 371 */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 372 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2658,14 +2658,14 @@ float CG_DrawFPS(float y)
         "movss %xmm0, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* minTime */
         "calll CG_DrawSmallDevStringColor\n"
-        "movl 0xfea30c, %ecx\n" /* line 373 */
+        "movl rendererStats+12, %ecx\n" /* line 373 */
         "movl %ecx, %eax\n"
         "imull %esi\n" /* color */
         "movl %ecx, %eax\n"
         "sarl $0x1f, %eax\n"
         "subl %eax, %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 374 */
         "movl $colorWhiteFaded, 0xc(%esp)\n"
@@ -2709,7 +2709,7 @@ unsigned int CG_DrawBoldGameMessages(void)
         ".Lf1cd736_001cd76c:\n"
         "movl $0x64, 8(%esp)\n" /* line 2623 */
         "movl $0x64, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x2b538(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -2732,19 +2732,19 @@ unsigned int CG_DrawTurretCrossHair(void)
         "pushl %ebx\n"
         "subl $0x50, %esp\n"
         /* { scope 1 */
-        "movl 0x195f7d0, %eax\n" /* line 1341 */
+        "movl imp_cg_drawTurretCrosshair, %eax\n" /* line 1341 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1cd79a_001cd8de\n"
-        "movl 0x195f74c, %eax\n"
+        "movl imp_cg_paused, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1cd79a_001cd8de\n"
-        "movl 0x195f584, %eax\n" /* line 1348 */
+        "movl imp_cg, %eax\n" /* line 1348 */
         "movl (%eax), %esi\n"
         "movl 0x26158(%esi), %edx\n"
-        "movl 0x195f5cc, %eax\n"
+        "movl imp_cg_entities, %eax\n"
         "movl (%eax), %ecx\n"
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
@@ -2759,15 +2759,15 @@ unsigned int CG_DrawTurretCrossHair(void)
         "leal (%ebx, %ebx, 2), %eax\n" /* line 1355 | weapIndex */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n" /* weapIndex */
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* weapIndex */
         "movl 0x178(%ebx), %eax\n" /* line 1356 | weapIndex */
         "testl %eax, %eax\n"
         "je .Lf1cd79a_001cd8de\n"
-        "movl 0x195f7e8, %eax\n" /* line 1359 */
+        "movl imp_cg_crosshairAlpha, %eax\n" /* line 1359 */
         "movl (%eax), %edx\n"
-        "movss 0x2ed738, %xmm0\n" /* 0.009999999776482582f */
+        "movss lit4_002ed738, %xmm0\n" /* 0.009999999776482582f */
         "ucomiss 8(%edx), %xmm0\n"
         "ja .Lf1cd79a_001cd8de\n"
         "movl 0x25bd0(%esi), %eax\n" /* line 1311 */
@@ -2789,7 +2789,7 @@ unsigned int CG_DrawTurretCrossHair(void)
         "addss %xmm1, %xmm1\n" /* line 1365 */
         ".Lf1cd79a_001cd87f:\n"
         "movaps %xmm1, %xmm0\n" /* line 1368 */
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "movl 0x178(%ebx), %eax\n" /* line 1375 | weapIndex */
         "movl %eax, 0x2c(%esp)\n"
         "leal -0x18(%ebp), %eax\n" /* reticleColor */
@@ -2818,7 +2818,7 @@ unsigned int CG_DrawTurretCrossHair(void)
         ".Lf1cd79a_001cd8e5:\n"
         "testl $0x200000, %eax\n" /* line 1313 */
         "je .Lf1cd79a_001cd910\n"
-        "movl 0x195f7c0, %eax\n"
+        "movl imp_cg_crosshairEnemyColor, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1cd79a_001cd910\n"
@@ -2848,7 +2848,7 @@ unsigned int CG_DrawSpectatorMessage(void)
         "pushl %ebx\n"
         "subl $0x27c, %esp\n"
         /* { scope 1: binding */
-        "movl 0x195f784, %eax\n" /* line 3093 */
+        "movl imp_cg_descriptiveText, %eax\n" /* line 3093 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cd924_001cd948\n"
@@ -2865,7 +2865,7 @@ unsigned int CG_DrawSpectatorMessage(void)
         "calll CL_GetKeyCatchers\n" /* line 3097 */
         "testb $8, %al\n"
         "jne .Lf1cd924_001cd93d\n"
-        "movl 0x195f584, %eax\n" /* line 3102 */
+        "movl imp_cg, %eax\n" /* line 3102 */
         "movl (%eax), %esi\n" /* i */
         "movl 0x24(%esi), %eax\n" /* i */
         "testl $0x3000000, 0x18(%eax)\n"
@@ -2881,15 +2881,15 @@ unsigned int CG_DrawSpectatorMessage(void)
         "calll UI_TextHeight\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "movss %xmm0, -0x24c(%ebp)\n" /* lineHeight */
-        "mulss 0x2ed628, %xmm0\n" /* line 3179 | -2.0f */
-        "addss 0x2eda2c, %xmm0\n" /* 436.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* line 3179 | -2.0f */
+        "addss lit4_002eda2c, %xmm0\n" /* 436.0f */
         "movss %xmm0, -0x258(%ebp)\n" /* y */
         "movl 0x24(%esi), %eax\n" /* line 3183 | i */
         "testb $1, 0x1b(%eax)\n"
         "jne .Lf1cd924_001cdb16\n"
         "movl $0, -0x254(%ebp)\n" /* lineNum */
         ".Lf1cd924_001cd9cb:\n"
-        "movl 0x195f584, %eax\n" /* line 3194 */
+        "movl imp_cg, %eax\n" /* line 3194 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "testb $2, 0x1b(%eax)\n"
@@ -2909,7 +2909,7 @@ unsigned int CG_DrawSpectatorMessage(void)
         "movl %eax, (%esp)\n"
         "calll UI_ReplaceConversionString\n"
         "movl $3, 0x24(%esp)\n" /* line 3210 */
-        "movl 0x195ed2c, %edx\n"
+        "movl imp_colorWhite, %edx\n"
         "movl %edx, 0x20(%esp)\n"
         "movl $0x3e555555, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -2936,7 +2936,7 @@ unsigned int CG_DrawSpectatorMessage(void)
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n" /* line 3206 */
         "jne .Lf1cd924_001cd9fa\n"
-        "movl $0x2a79c4, (%esp)\n" /* line 3207 */
+        "movl $str_002a79c4, (%esp)\n" /* line 3207 */
         "calll UI_SafeTranslateString\n"
         "movl $0x100, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
@@ -2947,55 +2947,55 @@ unsigned int CG_DrawSpectatorMessage(void)
         ".Lf1cd924_001cdad7:\n"
         "leal -0x240(%ebp), %ebx\n" /* line 3051 | binding */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2ac0cc, (%esp)\n" /* "+melee" */
+        "movl $str_002ac0cc, (%esp)\n" /* "+melee" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n" /* line 3052 */
         "je .Lf1cd924_001cdb5c\n"
-        "movl $0x2ac0cc, %edx\n" /* "+melee" */
+        "movl $str_002ac0cc, %edx\n" /* "+melee" */
         /* } scope */
         ".Lf1cd924_001cdaf6:\n"
         "movl -0x254(%ebp), %eax\n" /* line 3196 | lineNum */
         "movl %edx, -0x2c(%ebp, %eax, 4)\n"
-        "movl $0x2b726c, -0x40(%ebp, %eax, 4)\n" /* line 3197 */
+        "movl $str_002b726c, -0x40(%ebp, %eax, 4)\n" /* line 3197 */
         "addl $1, %eax\n" /* line 3198 */
         "movl %eax, -0x254(%ebp)\n" /* lineNum */
         "jmp .Lf1cd924_001cd9df\n"
         ".Lf1cd924_001cdb16:\n"
-        "movl $0x2abfd8, -0x2c(%ebp)\n" /* line 3185 | commands */
-        "movl $0x2b7230, -0x40(%ebp)\n" /* line 3186 | messages */
+        "movl $str_002abfd8, -0x2c(%ebp)\n" /* line 3185 | commands */
+        "movl $str_002b7230, -0x40(%ebp)\n" /* line 3186 | messages */
         /* { scope 2 */
         "leal -0x240(%ebp), %ebx\n" /* line 3051 | binding */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2ac154, (%esp)\n" /* "toggleads" */
+        "movl $str_002ac154, (%esp)\n" /* "toggleads" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n" /* line 3052 */
         "je .Lf1cd924_001cdb80\n"
-        "movl $0x2ac154, %edx\n" /* "toggleads" */
+        "movl $str_002ac154, %edx\n" /* "toggleads" */
         /* } scope */
         ".Lf1cd924_001cdb43:\n"
         "movl %edx, -0x28(%ebp)\n" /* line 3189 */
-        "movl $0x2b724c, -0x3c(%ebp)\n" /* line 3190 */
+        "movl $str_002b724c, -0x3c(%ebp)\n" /* line 3190 */
         "movl $2, -0x254(%ebp)\n" /* lineNum */
         "jmp .Lf1cd924_001cd9cb\n"
         /* { scope 2 */
         ".Lf1cd924_001cdb5c:\n"
         "movl %ebx, 4(%esp)\n" /* line 3054 */
-        "movl $0x2ac0e0, (%esp)\n" /* "+melee_breath" */
+        "movl $str_002ac0e0, (%esp)\n" /* "+melee_breath" */
         "calll GetKeyBindingLocalizedString\n"
-        "movl $0x2ac0cc, %edx\n" /* line 3055 */
+        "movl $str_002ac0cc, %edx\n" /* line 3055 */
         "testl %eax, %eax\n"
-        "movl $0x2ac0e0, %eax\n" /* "+melee_breath" */
+        "movl $str_002ac0e0, %eax\n" /* "+melee_breath" */
         "cmovnel %eax, %edx\n"
         "jmp .Lf1cd924_001cdaf6\n"
         /* } scope */
         /* { scope 2 */
         ".Lf1cd924_001cdb80:\n"
         "movl %ebx, 4(%esp)\n" /* line 3054 */
-        "movl $0x2abf50, (%esp)\n" /* "+speed" */
+        "movl $str_002abf50, (%esp)\n" /* "+speed" */
         "calll GetKeyBindingLocalizedString\n"
-        "movl $0x2ac154, %edx\n" /* line 3055 */
+        "movl $str_002ac154, %edx\n" /* line 3055 */
         "testl %eax, %eax\n"
-        "movl $0x2abf50, %eax\n" /* "+speed" */
+        "movl $str_002abf50, %eax\n" /* "+speed" */
         "cmovnel %eax, %edx\n"
         "jmp .Lf1cd924_001cdb43\n"
     );
@@ -3018,7 +3018,7 @@ unsigned int CG_StartShakeCamera(float p, int duration, vec_t *src, float radius
         "movl %eax, -0x38(%ebp)\n"
         "cvtsi2ssl 0xc(%ebp), %xmm0\n" /* line 2857 | duration */
         "movss %xmm0, -0x34(%ebp)\n"
-        "movl 0x195f584, %esi\n" /* line 2858 */
+        "movl imp_cg, %esi\n" /* line 2858 */
         "movl (%esi), %ebx\n" /* i */
         "movl 0x25bb0(%ebx), %edx\n" /* i */
         "movl %edx, -0x3c(%ebp)\n" /* shake */
@@ -3116,7 +3116,7 @@ unsigned int CG_StartShakeCamera(float p, int duration, vec_t *src, float radius
         "fstps -0x5c(%ebp)\n"
         "movss -0x5c(%ebp), %xmm0\n"
         "divss -0x30(%ebp), %xmm0\n" /* line 2826 */
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "movaps %xmm1, %xmm3\n"
         "subss %xmm0, %xmm3\n"
         "movaps %xmm3, %xmm0\n"
@@ -3124,17 +3124,17 @@ unsigned int CG_StartShakeCamera(float p, int duration, vec_t *src, float radius
         "divss -0x34(%ebp), %xmm2\n"
         "subss %xmm2, %xmm1\n"
         "mulss -0x38(%ebp), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 2831 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 2831 | 0.0f */
         "jp .Lf1cdba2_001cdd1b\n"
         "jbe .Lf1cdba2_001cdc01\n"
         ".Lf1cdba2_001cdd1b:\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 2834 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 2834 | 0.0f */
         "jb .Lf1cdba2_001cdd84\n"
         "mulss %xmm1, %xmm0\n" /* line 2835 */
         ".Lf1cdba2_001cdd28:\n"
         "movss %xmm0, -0x20(%ebp)\n" /* line 2839 */
         "movss %xmm1, -0x1c(%ebp)\n" /* line 2840 */
-        "movl 0x195f584, %esi\n"
+        "movl imp_cg, %esi\n"
         "movl (%esi), %edi\n"
         "jmp .Lf1cdba2_001cdc03\n"
         /* } scope */
@@ -3188,7 +3188,7 @@ float CG_DrawWeapReticle(void)
         "subl $0x7c, %esp\n"
         /* { scope 1: drawPos, drawSize, material */
         /* { scope 2 */
-        "movl 0x195f584, %eax\n" /* line 1138 */
+        "movl imp_cg, %eax\n" /* line 1138 */
         "movl (%eax), %ebx\n"
         "leal 0x25bc4(%ebx), %esi\n"
         "movl %esi, (%esp)\n"
@@ -3205,7 +3205,7 @@ float CG_DrawWeapReticle(void)
         "jne .Lf1cdd8a_001cdddf\n"
         /* } scope */
         ".Lf1cdd8a_001cddcf:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1280 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1280 | 1.0f */
         /* } scope */
         "addl $0x7c, %esp\n" /* line 1300 */
         "popl %ebx\n"
@@ -3226,7 +3226,7 @@ float CG_DrawWeapReticle(void)
         "je .Lf1cdd8a_001cdfc4\n"
         "movss 0x26c(%edx), %xmm3\n" /* line 1158 */
         ".Lf1cdd8a_001cde00:\n"
-        "movss 0x2ed5d0, %xmm4\n" /* line 1164 | 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* line 1164 | 1.0f */
         "movaps %xmm4, %xmm0\n"
         "subss %xmm3, %xmm0\n"
         "subss %xmm0, %xmm1\n"
@@ -3237,7 +3237,7 @@ float CG_DrawWeapReticle(void)
         "divss %xmm3, %xmm0\n" /* line 1166 */
         "movss %xmm0, -0x50(%ebp)\n" /* zoomFrac */
         ".Lf1cdd8a_001cde2d:\n"
-        "ucomiss 0x2ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
         "jp .Lf1cdd8a_001cde38\n"
         "jbe .Lf1cdd8a_001cddcf\n"
         ".Lf1cdd8a_001cde38:\n"
@@ -3262,7 +3262,7 @@ float CG_DrawWeapReticle(void)
         "leal -0x1c(%ebp), %edx\n"
         "calll CG_CalcCrosshairPosition\n"
         /* { scope 2 */
-        "movl 0x195f5c8, %eax\n" /* line 1220 */
+        "movl imp_cg_weapons, %eax\n" /* line 1220 */
         "movl (%eax), %edx\n"
         "leal (%ebx, %ebx, 2), %eax\n"
         "leal (%eax, %eax, 8), %eax\n"
@@ -3275,12 +3275,12 @@ float CG_DrawWeapReticle(void)
         "movss %xmm3, -0x30(%ebp)\n" /* drawSize */
         "movss 0x280(%esi), %xmm2\n" /* line 1228 */
         "movss %xmm2, -0x2c(%ebp)\n"
-        "ucomiss 0x2ed8e8, %xmm3\n" /* line 1231 | 320.0f */
+        "ucomiss lit4_002ed8e8, %xmm3\n" /* line 1231 | 320.0f */
         "ja .Lf1cdd8a_001cdecb\n"
-        "ucomiss 0x2ed6e8, %xmm2\n" /* 240.0f */
+        "ucomiss lit4_002ed6e8, %xmm2\n" /* 240.0f */
         "jbe .Lf1cdd8a_001cdfd9\n"
         ".Lf1cdd8a_001cdecb:\n"
-        "movss 0x2ed63c, %xmm0\n" /* line 1233 | -0.5f */
+        "movss lit4_002ed63c, %xmm0\n" /* line 1233 | -0.5f */
         "movaps %xmm3, %xmm1\n"
         "mulss %xmm0, %xmm1\n"
         "addss -0x20(%ebp), %xmm1\n" /* crosshairPos */
@@ -3331,7 +3331,7 @@ float CG_DrawWeapReticle(void)
         "calll CG_DrawFrameOverlay\n"
         /* } scope */
         ".Lf1cdd8a_001cdfaf:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1295 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1295 | 1.0f */
         "subss -0x50(%ebp), %xmm0\n" /* zoomFrac */
         /* } scope */
         "addl $0x7c, %esp\n" /* line 1300 */
@@ -3484,7 +3484,7 @@ unsigned int CG_DrawCrosshair(void)
         "pushl %ebx\n"
         "subl $0xfc, %esp\n"
         /* { scope 1: reticleColor */
-        "movl 0x195f584, %eax\n" /* line 1680 */
+        "movl imp_cg, %eax\n" /* line 1680 */
         "movl (%eax), %ebx\n" /* material */
         "movl 0x25bc0(%ebx), %esi\n" /* material, drawHudMenus */
         "testl %esi, %esi\n" /* drawHudMenus */
@@ -3539,15 +3539,15 @@ unsigned int CG_DrawCrosshair(void)
         "je .Lf1ce1ee_001ce99e\n"
         "movl $0x3e800000, %eax\n" /* line 191 */
         "movl %eax, -0x38(%ebp)\n" /* color */
-        "movss 0x2ed5d0, %xmm5\n" /* line 192 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 192 | 1.0f */
         "movss %xmm5, -0x34(%ebp)\n"
         "movl %eax, -0x30(%ebp)\n" /* line 193 */
         ".Lf1ce1ee_001ce2ae:\n"
-        "movl 0x195f7e8, %eax\n" /* line 1319 */
+        "movl imp_cg_crosshairAlpha, %eax\n" /* line 1319 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x2c(%ebp)\n"
-        "ucomiss 0x2ed738, %xmm0\n" /* line 1717 | 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm0\n" /* line 1717 | 0.009999999776482582f */
         "jp .Lf1ce1ee_001ce2ce\n"
         "jb .Lf1ce1ee_001ce20b\n"
         ".Lf1ce1ee_001ce2ce:\n"
@@ -3555,21 +3555,21 @@ unsigned int CG_DrawCrosshair(void)
         "ucomiss %xmm5, %xmm0\n"
         "jne .Lf1ce1ee_001ce2eb\n"
         "jp .Lf1ce1ee_001ce2eb\n"
-        "movl 0x195f7a4, %eax\n"
+        "movl imp_cg_drawGun, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1ce1ee_001ce20b\n"
         ".Lf1ce1ee_001ce2eb:\n"
-        "movl 0x195f74c, %eax\n" /* line 1400 */
+        "movl imp_cg_paused, %eax\n" /* line 1400 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
         "jne .Lf1ce1ee_001ce20b\n"
-        "movl 0x195f358, %eax\n" /* line 1403 */
+        "movl imp_cg_drawCrosshair, %eax\n" /* line 1403 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1ce1ee_001ce20b\n"
-        "movl 0x195f584, %eax\n" /* line 1407 */
+        "movl imp_cg, %eax\n" /* line 1407 */
         "movl (%eax), %eax\n"
         "movl 0x25c9c(%eax), %edx\n"
         "leal -0xa(%edx), %eax\n"
@@ -3588,7 +3588,7 @@ unsigned int CG_DrawCrosshair(void)
         "ucomiss %xmm2, %xmm1\n"
         "jne .Lf1ce1ee_001cea47\n"
         "jp .Lf1ce1ee_001cea47\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movss %xmm3, -0x70(%ebp)\n" /* transScale */
         "movaps %xmm3, %xmm5\n"
         "movaps %xmm2, %xmm4\n"
@@ -3597,12 +3597,12 @@ unsigned int CG_DrawCrosshair(void)
         "ucomiss %xmm5, %xmm0\n"
         "jne .Lf1ce1ee_001ce38f\n"
         "jp .Lf1ce1ee_001ce38f\n"
-        "movl 0x195f7a4, %eax\n"
+        "movl imp_cg_drawGun, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1ce1ee_001ce20b\n"
         ".Lf1ce1ee_001ce38f:\n"
-        "movl 0x195f7ac, %eax\n" /* line 1741 */
+        "movl imp_cg_crosshairDynamic, %eax\n" /* line 1741 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1ce1ee_001ce3a8\n"
@@ -3618,7 +3618,7 @@ unsigned int CG_DrawCrosshair(void)
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%edi, %eax, 4), %eax\n"
         "leal (, %eax, 4), %esi\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         "movl (%edx), %eax\n"
         "movl 0x178(%esi, %eax), %ebx\n" /* material */
         "testl %ebx, %ebx\n" /* line 1514 | material */
@@ -3637,7 +3637,7 @@ unsigned int CG_DrawCrosshair(void)
         "addss %xmm1, %xmm1\n" /* line 1526 */
         ".Lf1ce1ee_001ce420:\n"
         "movaps %xmm1, %xmm0\n" /* line 1529 */
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "movl %ebx, 0x2c(%esp)\n" /* line 1533 | material */
         "leal -0x38(%ebp), %eax\n" /* color */
         "movl %eax, 0x28(%esp)\n"
@@ -3661,7 +3661,7 @@ unsigned int CG_DrawCrosshair(void)
         "movss %xmm2, -0x84(%ebp)\n"
         "movss -0x1c(%ebp), %xmm3\n" /* centerX */
         "movss %xmm3, -0x88(%ebp)\n"
-        "movl 0x195f5c8, %edx\n"
+        "movl imp_cg_weapons, %edx\n"
         /* } scope */
         /* { scope 2: f, maxSpread, material */
         ".Lf1ce1ee_001ce4ad:\n"
@@ -3677,17 +3677,17 @@ unsigned int CG_DrawCrosshair(void)
         "movl %eax, -0x44(%ebp)\n"
         "movl -0x30(%ebp), %eax\n" /* line 201 */
         "movl %eax, -0x40(%ebp)\n"
-        "movl 0x195f7e8, %eax\n" /* line 1566 */
+        "movl imp_cg_crosshairAlpha, %eax\n" /* line 1566 */
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movss 0x26198(%eax), %xmm1\n"
-        "divss 0x2eda30, %xmm1\n" /* -255.0f */
-        "addss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "divss lit4_002eda30, %xmm1\n" /* -255.0f */
+        "addss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x3c(%ebp)\n"
-        "movl 0x195f844, %eax\n" /* line 1567 */
+        "movl imp_cg_crosshairAlphaMin, %eax\n" /* line 1567 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
         "movaps %xmm0, %xmm2\n" /* line 1568 */
@@ -3713,7 +3713,7 @@ unsigned int CG_DrawCrosshair(void)
         "leal -0x24(%ebp), %eax\n" /* f */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %ebx\n" /* material */
         "leal 0x25bc4(%ebx), %eax\n" /* material */
         "movl %eax, (%esp)\n"
@@ -3722,21 +3722,21 @@ unsigned int CG_DrawCrosshair(void)
         "movss -0x28(%ebp), %xmm0\n" /* maxSpread */
         "subss %xmm2, %xmm0\n"
         "movss 0x26198(%ebx), %xmm1\n" /* material */
-        "divss 0x2ed5d4, %xmm1\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm1\n" /* 255.0f */
         "mulss %xmm1, %xmm0\n"
         "addss %xmm2, %xmm0\n"
         "mulss -0x70(%ebp), %xmm0\n" /* transScale */
         "movss %xmm0, -0x24(%ebp)\n" /* f */
         "cvtss2sd %xmm0, %xmm0\n" /* line 1549 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "movsd %xmm0, (%esp)\n"
         "calll tan\n"
         "fstpl -0xd0(%ebp)\n"
         "movsd -0xd0(%ebp), %xmm1\n"
-        "mulsd 0x307d90, %xmm1\n" /* 240.0 */
+        "mulsd lit8_00307d90, %xmm1\n" /* 240.0 */
         "cvtss2sd 0x28584(%ebx), %xmm0\n" /* material */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
-        "mulsd 0x307ce0, %xmm0\n" /* 0.5 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307ce0, %xmm0\n" /* 0.5 */
         "movsd %xmm0, (%esp)\n"
         "movsd %xmm1, -0x98(%ebp)\n"
         "calll tan\n"
@@ -3764,13 +3764,13 @@ unsigned int CG_DrawCrosshair(void)
         "calll GetRealHeightFromVirtualHeight\n"
         "fstps -0xd4(%ebp)\n"
         "movss -0xd4(%ebp), %xmm2\n"
-        "movl 0x195f5c4, %eax\n" /* line 1590 */
+        "movl imp_cgs, %eax\n" /* line 1590 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 0x5e90(%eax), %xmm3\n"
         "cvtsi2ssl 0x5e8c(%eax), %xmm0\n"
         "movss -0x98(%ebp), %xmm1\n" /* line 1596 */
         "divss %xmm0, %xmm1\n"
-        "mulss 0x2ed610, %xmm1\n" /* 0.125f */
+        "mulss lit4_002ed610, %xmm1\n" /* 0.125f */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "movss %xmm2, -0xa8(%ebp)\n"
@@ -3780,7 +3780,7 @@ unsigned int CG_DrawCrosshair(void)
         "movss -0xa8(%ebp), %xmm2\n" /* line 1597 */
         "movss -0xb8(%ebp), %xmm3\n"
         "divss %xmm3, %xmm2\n"
-        "mulss 0x2ed610, %xmm2\n" /* 0.125f */
+        "mulss lit4_002ed610, %xmm2\n" /* 0.125f */
         "mulss %xmm2, %xmm3\n"
         "movss %xmm3, (%esp)\n"
         "calll GetVirtualHeightFromRealHeight\n"
@@ -3908,25 +3908,25 @@ unsigned int CG_DrawCrosshair(void)
         ".Lf1ce1ee_001ce99e:\n"
         "testl $0x200000, %eax\n" /* line 1313 */
         "je .Lf1ce1ee_001ce9cf\n"
-        "movl 0x195f7c0, %eax\n"
+        "movl imp_cg_crosshairEnemyColor, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1ce1ee_001ce9cf\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 191 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 191 | 1.0f */
         "movss %xmm5, -0x38(%ebp)\n" /* color */
         "movl $0x3e800000, %eax\n" /* line 192 */
         "movl %eax, -0x34(%ebp)\n"
         "movl %eax, -0x30(%ebp)\n" /* line 193 */
         "jmp .Lf1ce1ee_001ce2ae\n"
         ".Lf1ce1ee_001ce9cf:\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 191 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 191 | 1.0f */
         "movss %xmm5, -0x38(%ebp)\n" /* color */
         "movss %xmm5, -0x34(%ebp)\n" /* line 192 */
         "movss %xmm5, -0x30(%ebp)\n" /* line 193 */
         "jmp .Lf1ce1ee_001ce2ae\n"
         /* { scope 2: f, maxSpread, material */
         ".Lf1ce1ee_001ce9eb:\n"
-        "movl 0x195f584, %eax\n" /* line 1522 */
+        "movl imp_cg, %eax\n" /* line 1522 */
         "movl (%eax), %eax\n"
         "movl 0x25c00(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -3948,13 +3948,13 @@ unsigned int CG_DrawCrosshair(void)
         "shll $3, %edx\n"
         "subl %edx, %ecx\n"
         "cvtsi2ssl %ecx, %xmm0\n"
-        "divss 0x2ed798, %xmm0\n" /* 100.0f */
+        "divss lit4_002ed798, %xmm0\n" /* 100.0f */
         "addss %xmm0, %xmm1\n"
         "jmp .Lf1ce1ee_001ce3fe\n"
         /* } scope */
         /* { scope 2: f, maxSpread, material */
         ".Lf1ce1ee_001cea47:\n"
-        "movl 0x195f584, %eax\n" /* line 1472 */
+        "movl imp_cg, %eax\n" /* line 1472 */
         "movl (%eax), %eax\n"
         "movl 0x28494(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -3962,7 +3962,7 @@ unsigned int CG_DrawCrosshair(void)
         "movl -0x78(%ebp), %edx\n" /* line 1474 | weapDef */
         "movss 0x470(%edx), %xmm1\n"
         ".Lf1ce1ee_001cea67:\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 1483 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 1483 | 1.0f */
         "movaps %xmm5, %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movss -0x74(%ebp), %xmm3\n" /* posLerp */
@@ -3974,10 +3974,10 @@ unsigned int CG_DrawCrosshair(void)
         "ucomiss %xmm2, %xmm0\n" /* line 1491 */
         "jbe .Lf1ce1ee_001cebcc\n"
         "movaps %xmm0, %xmm1\n" /* line 1496 */
-        "mulss 0x2ed63c, %xmm1\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm1\n" /* -0.5f */
         "addss %xmm5, %xmm1\n"
         "movss %xmm1, -0x70(%ebp)\n" /* transScale */
-        "movss 0x2ed840, %xmm4\n" /* line 1497 | 480.0f */
+        "movss lit4_002ed840, %xmm4\n" /* line 1497 | 480.0f */
         "divss 0x28584(%eax), %xmm4\n"
         "mulss %xmm0, %xmm4\n"
         "movl -0x78(%ebp), %eax\n" /* weapDef */
@@ -3988,14 +3988,14 @@ unsigned int CG_DrawCrosshair(void)
         "movss -0x1c(%ebp), %xmm2\n" /* centerX */
         /* { scope 2: f, maxSpread, material */
         /* { scope 3 */
-        "movl 0x195f7a4, %eax\n" /* line 1435 */
+        "movl imp_cg_drawGun, %eax\n" /* line 1435 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1ce1ee_001ce372\n"
         "movss -0x70(%ebp), %xmm0\n" /* line 1440 | transScale */
         "ucomiss %xmm5, %xmm0\n"
         "jae .Lf1ce1ee_001ce372\n"
-        "movl 0x195f5c8, %eax\n" /* line 1443 */
+        "movl imp_cg_weapons, %eax\n" /* line 1443 */
         "movl (%eax), %edx\n"
         "leal (%edi, %edi, 2), %eax\n"
         "leal (%eax, %eax, 8), %eax\n"
@@ -4005,11 +4005,11 @@ unsigned int CG_DrawCrosshair(void)
         "je .Lf1ce1ee_001ce372\n"
         "movl -0x78(%ebp), %edx\n" /* line 1451 | weapDef */
         "cvtsi2ssl 0x120(%edx), %xmm1\n"
-        "movss 0x2ed600, %xmm0\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm0\n" /* 1.5f */
         "subss -0x70(%ebp), %xmm0\n" /* transScale */
         "mulss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n" /* line 1453 */
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "movl %eax, 0x2c(%esp)\n" /* line 1457 */
         "leal -0x38(%ebp), %eax\n" /* color */
         "movl %eax, 0x28(%esp)\n"
@@ -4027,7 +4027,7 @@ unsigned int CG_DrawCrosshair(void)
         "movss %xmm2, (%esp)\n"
         "movss %xmm4, -0xc8(%ebp)\n"
         "calll CL_DrawStretchPic\n"
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "movss -0xc8(%ebp), %xmm4\n"
         "jmp .Lf1ce1ee_001ce372\n"
         /* } scope */
@@ -4064,12 +4064,12 @@ unsigned int CG_Draw2D(void)
         "pushl %ebx\n"
         "subl $0x71c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f584, %ecx\n" /* line 3285 */
+        "movl imp_cg, %ecx\n" /* line 3285 */
         "movl (%ecx), %edx\n"
         "movl 0xc(%edx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1cebea_001cf376\n"
-        "movl 0x195f820, %eax\n" /* line 3288 */
+        "movl imp_cg_draw2D, %eax\n" /* line 3288 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1cebea_001cf376\n"
@@ -4085,7 +4085,7 @@ unsigned int CG_Draw2D(void)
         "jle .Lf1cebea_001cfd2e\n"
         "cvtsi2ssl %eax, %xmm2\n" /* line 2463 */
         "mulss %xmm0, %xmm2\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 2465 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 2465 | 1.0f */
         "subss %xmm2, %xmm3\n"
         "xorl %ebx, %ebx\n"
         "leal -0x620(%ebp), %eax\n"
@@ -4108,10 +4108,10 @@ unsigned int CG_Draw2D(void)
         "movl -0x6a4(%ebp), %edx\n" /* line 2471 */
         "movl %edx, 0x10(%esp)\n"
         ".Lf1cebea_001cecab:\n"
-        "movl 0x195ecac, %eax\n"
-        "cvtsi2ssl 0x2a0a68(%eax), %xmm0\n"
+        "movl imp_cls, %eax\n"
+        "cvtsi2ssl str_002a0938+304(%eax), %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl 0x2a0a64(%eax), %xmm0\n"
+        "cvtsi2ssl str_002a0938+300(%eax), %xmm0\n"
         "movss %xmm0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -4124,7 +4124,7 @@ unsigned int CG_Draw2D(void)
         "calll CG_AreHudElemsHidden\n" /* line 3294 */
         "testb %al, %al\n"
         "sete -0x689(%ebp)\n" /* drawHudElems */
-        "movl 0x195f584, %eax\n" /* line 3296 */
+        "movl imp_cg, %eax\n" /* line 3296 */
         "movl (%eax), %ebx\n"
         "movl 0x24(%ebx), %eax\n"
         "movl 0x10(%eax), %eax\n"
@@ -4154,7 +4154,7 @@ unsigned int CG_Draw2D(void)
         "movl %edi, %ecx\n" /* line 3344 | drawHudMenus */
         "testb %cl, %cl\n"
         "je .Lf1cebea_001cf376\n"
-        "movl 0x195f584, %ecx\n" /* line 1886 */
+        "movl imp_cg, %ecx\n" /* line 1886 */
         "movl (%ecx), %edx\n"
         "movl 0x24(%edx), %eax\n"
         "testl %eax, %eax\n"
@@ -4166,33 +4166,33 @@ unsigned int CG_Draw2D(void)
         "subl %ebx, %eax\n" /* line 54 */
         "cvtsi2ssl %eax, %xmm0\n"
         "mulss 0x2bf10(%edx), %xmm0\n"
-        "divss 0x2ed7a4, %xmm0\n" /* 500.0f */
-        "andps 0x303400, %xmm0\n"
-        "ucomiss 0x2ed6d4, %xmm0\n" /* line 1894 | 5.0f */
+        "divss lit4_002ed7a4, %xmm0\n" /* 500.0f */
+        "andps colorWhiteFaded+32, %xmm0\n"
+        "ucomiss lit4_002ed6d4, %xmm0\n" /* line 1894 | 5.0f */
         "jbe .Lf1cebea_001cfa1d\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         ".Lf1cebea_001cedc2:\n"
         "movl $0x3e4ccccd, -0x620(%ebp)\n" /* line 191 */
         "xorl %eax, %eax\n" /* line 192 */
         "movl %eax, -0x61c(%ebp)\n"
         "movl %eax, -0x618(%ebp)\n" /* line 193 */
-        "mulss 0x2ed6ac, %xmm0\n" /* line 1898 | 0.699999988079071f */
+        "mulss lit4_002ed6ac, %xmm0\n" /* line 1898 | 0.699999988079071f */
         "movss %xmm0, -0x614(%ebp)\n"
         "leal -0x620(%ebp), %ebx\n" /* line 1901 */
         "movl %ebx, 0x10(%esp)\n"
-        "movl 0x195ecac, %eax\n"
-        "cvtsi2ssl 0x2a0a68(%eax), %xmm0\n"
-        "movss 0x2ed6b4, %xmm1\n" /* 10.0f */
+        "movl imp_cls, %eax\n"
+        "cvtsi2ssl str_002a0938+304(%eax), %xmm0\n"
+        "movss lit4_002ed6b4, %xmm1\n" /* 10.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl 0x2a0a64(%eax), %xmm0\n"
+        "cvtsi2ssl str_002a0938+300(%eax), %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 8(%esp)\n"
         "movl $0xc1200000, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll UI_FillRectPhysical\n"
-        "movl 0x195f584, %ecx\n"
+        "movl imp_cg, %ecx\n"
         ".Lf1cebea_001cee3c:\n"
         "movl (%ecx), %ebx\n"
         ".Lf1cebea_001cee3e:\n"
@@ -4216,13 +4216,13 @@ unsigned int CG_Draw2D(void)
         "movl $0x43a00000, -0x20(%ebp)\n" /* line 1933 */
         "movl $0x43700000, -0x1c(%ebp)\n" /* line 1934 */
         ".Lf1cebea_001cee94:\n"
-        "movl 0x195f838, %eax\n" /* line 1937 */
+        "movl imp_cg_hudDamageIconWidth, %eax\n" /* line 1937 */
         "movl (%eax), %eax\n"
-        "movss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "mulss 8(%eax), %xmm2\n"
-        "movl 0x195f830, %ecx\n" /* line 1938 */
+        "movl imp_cg_hudDamageIconOffset, %ecx\n" /* line 1938 */
         "movl (%ecx), %edx\n"
-        "movl 0x195f7dc, %ebx\n"
+        "movl imp_cg_hudDamageIconHeight, %ebx\n"
         "movl (%ebx), %eax\n"
         "movss 8(%edx), %xmm0\n"
         "addss 8(%eax), %xmm0\n"
@@ -4233,7 +4233,7 @@ unsigned int CG_Draw2D(void)
         "movss 8(%eax), %xmm0\n"
         "addss 8(%edx), %xmm0\n"
         "movaps %xmm2, %xmm1\n"
-        "xorps 0x303410, %xmm1\n"
+        "xorps colorWhiteFaded+48, %xmm1\n"
         "movss %xmm1, -0x118(%ebp)\n" /* line 30 */
         "movss %xmm0, -0x114(%ebp)\n" /* line 31 */
         "movl (%ecx), %eax\n" /* line 1940 */
@@ -4252,7 +4252,7 @@ unsigned int CG_Draw2D(void)
         "leal -0x1c(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll CalcScreenY\n"
-        "movl 0x195ed2c, %edx\n" /* line 456 */
+        "movl imp_colorWhite, %edx\n" /* line 456 */
         "movl (%edx), %eax\n"
         "movl %eax, -0x620(%ebp)\n"
         "movl 4(%edx), %eax\n" /* line 457 */
@@ -4262,7 +4262,7 @@ unsigned int CG_Draw2D(void)
         "movl 0xc(%edx), %eax\n" /* line 459 */
         "movl %eax, -0x614(%ebp)\n"
         "movl $0, -0x688(%ebp)\n"
-        "movl 0x195f584, %ecx\n"
+        "movl imp_cg, %ecx\n"
         "movl %ecx, -0x6a8(%ebp)\n"
         "movl $0, -0x6ac(%ebp)\n"
         "jmp .Lf1cebea_001cefac\n"
@@ -4289,20 +4289,20 @@ unsigned int CG_Draw2D(void)
         "movss -0x6ec(%ebp), %xmm2\n"
         "subss 0x2be7c(%esi), %xmm2\n" /* line 1954 */
         "cvtsi2ssl %ebx, %xmm0\n" /* line 1955 */
-        "mulss 0x2ed628, %xmm0\n" /* -2.0f */
+        "mulss lit4_002ed628, %xmm0\n" /* -2.0f */
         "cvtsi2ssl %edi, %xmm1\n"
         "divss %xmm1, %xmm0\n"
-        "addss 0x2ed62c, %xmm0\n" /* 2.0f */
+        "addss lit4_002ed62c, %xmm0\n" /* 2.0f */
         "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         "movaps %xmm0, %xmm3\n"
-        "cmpltss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "cmpltss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "andps %xmm1, %xmm3\n"
         "andnps %xmm4, %xmm1\n"
         "orps %xmm3, %xmm1\n"
         "movss %xmm1, -0x614(%ebp)\n" /* line 1955 */
-        "movl 0x195f5c4, %eax\n" /* line 1956 */
+        "movl imp_cgs, %eax\n" /* line 1956 */
         "movl (%eax), %eax\n"
         "movl 0xbc74(%eax), %eax\n"
         "movl %eax, 0x14(%esp)\n"
@@ -4335,17 +4335,17 @@ unsigned int CG_Draw2D(void)
         "testl %ebx, %ebx\n"
         "je .Lf1cebea_001cf4bd\n"
         ".Lf1cebea_001cf0ca:\n"
-        "movl 0x195f5c4, %eax\n" /* line 2974 */
+        "movl imp_cgs, %eax\n" /* line 2974 */
         "movl (%eax), %eax\n"
         "movl 0x6088(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jne .Lf1cebea_001cf4cc\n"
         ".Lf1cebea_001cf0df:\n"
-        "movl 0x195f7e0, %eax\n" /* line 874 */
+        "movl imp_cg_drawLagometer, %eax\n" /* line 874 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1cebea_001cf275\n"
-        "movl 0x195f5c4, %esi\n"
+        "movl imp_cgs, %esi\n"
         "movl (%esi), %eax\n"
         "movl 0x5ea0(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -4366,13 +4366,13 @@ unsigned int CG_Draw2D(void)
         "movaps %xmm4, %xmm2\n"
         "jmp .Lf1cebea_001cf1e6\n"
         ".Lf1cebea_001cf157:\n"
-        "movss 0x2eda3c, %xmm0\n" /* line 907 | -124.0f */
+        "movss lit4_002eda3c, %xmm0\n" /* line 907 | -124.0f */
         "subss %xmm1, %xmm0\n"
         ".Lf1cebea_001cf163:\n"
         "movl (%esi), %eax\n" /* line 911 */
         "movl 0xba1c(%eax), %eax\n"
         "movl %eax, 0x2c(%esp)\n"
-        "movl 0x195ed98, %eax\n"
+        "movl imp_colorYellow, %eax\n"
         "movl %eax, 0x28(%esp)\n"
         "movl $0, 0x24(%esp)\n"
         "movl $0, 0x20(%esp)\n"
@@ -4384,7 +4384,7 @@ unsigned int CG_Draw2D(void)
         "movl $0x3f800000, 8(%esp)\n"
         "movss %xmm0, 4(%esp)\n"
         ".Lf1cebea_001cf1bc:\n"
-        "movss 0x2eda40, %xmm0\n" /* line 920 | -7.0f */
+        "movss lit4_002eda40, %xmm0\n" /* line 920 | -7.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll CL_DrawStretchPic\n"
@@ -4397,30 +4397,30 @@ unsigned int CG_Draw2D(void)
         ".Lf1cebea_001cf1e6:\n"
         "movl %ebx, %eax\n" /* line 903 */
         "notl %eax\n"
-        "addl 0x195b380, %eax\n"
+        "addl lagometer+512, %eax\n"
         "andl $0x7f, %eax\n"
         "cvtsi2ssl lagometer(, %eax, 4), %xmm1\n"
-        "mulss 0x2eda38, %xmm1\n" /* line 904 | 0.0533333346247673f */
+        "mulss lit4_002eda38, %xmm1\n" /* line 904 | 0.0533333346247673f */
         "ucomiss %xmm4, %xmm1\n" /* line 905 */
         "jbe .Lf1cebea_001cf760\n"
-        "ucomiss 0x2ed6a8, %xmm1\n" /* line 907 | 16.0f */
+        "ucomiss lit4_002ed6a8, %xmm1\n" /* line 907 | 16.0f */
         "jbe .Lf1cebea_001cf157\n"
-        "movss 0x2ed6a8, %xmm1\n" /* 16.0f */
-        "movss 0x2eda34, %xmm0\n" /* -140.0f */
+        "movss lit4_002ed6a8, %xmm1\n" /* 16.0f */
+        "movss lit4_002eda34, %xmm0\n" /* -140.0f */
         "jmp .Lf1cebea_001cf163\n"
         ".Lf1cebea_001cf22f:\n"
-        "movl 0x195f788, %eax\n" /* line 956 */
+        "movl imp_cg_nopredict, %eax\n" /* line 956 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001cf249\n"
-        "movl 0x195f78c, %eax\n"
+        "movl imp_cg_synchronousClients, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1cebea_001cf275\n"
         ".Lf1cebea_001cf249:\n"
         "movl $9, 0x10(%esp)\n" /* line 957 */
         "movl $0x3f800000, 0xc(%esp)\n"
-        "movl $0x2b72e8, 8(%esp)\n" /* "snc" */
+        "movl $str_002b72e8, 8(%esp)\n" /* "snc" */
         "movl $0xc30c0000, 4(%esp)\n"
         "movl $0xc25c0000, (%esp)\n"
         "calll CG_DrawBigDevString\n"
@@ -4437,29 +4437,29 @@ unsigned int CG_Draw2D(void)
         "testl %eax, %eax\n"
         "jg .Lf1cebea_001cf3aa\n"
         ".Lf1cebea_001cf29e:\n"
-        "movl 0x195f7ec, %eax\n" /* line 2773 */
+        "movl imp_cg_drawSoundOverlay, %eax\n" /* line 2773 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1cebea_001cf6b6\n"
-        "movl 0x195f828, %eax\n" /* line 2779 */
+        "movl imp_cg_drawScriptUsage, %eax\n" /* line 2779 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001cf88c\n"
-        "movl 0x195f7f4, %eax\n" /* line 2785 */
+        "movl imp_cg_drawMaterial, %eax\n" /* line 2785 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001d065a\n"
         ".Lf1cebea_001cf2d2:\n"
         "movl $0, (%esp)\n" /* line 525 */
         "calll CL_TrackStatistics\n"
-        "movl 0x195f80c, %eax\n" /* line 529 */
+        "movl imp_cg_drawSnapshot, %eax\n" /* line 529 */
         "movl (%eax), %eax\n"
         "pxor %xmm0, %xmm0\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001cf7f7\n"
         ".Lf1cebea_001cf2f3:\n"
-        "movl 0x195f794, %eax\n" /* line 539 */
+        "movl imp_cg_drawFPS, %eax\n" /* line 539 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -4468,29 +4468,29 @@ unsigned int CG_Draw2D(void)
         "movl -0x690(%ebp), %edi\n" /* line 3374 | drawScoreboard, drawHudMenus */
         "testl %edi, %edi\n" /* drawHudMenus */
         "jne .Lf1cebea_001cf376\n"
-        "movl 0x195f584, %eax\n" /* line 1062 */
+        "movl imp_cg, %eax\n" /* line 1062 */
         "movl (%eax), %ebx\n"
         "movl 0x2b990(%ebx), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf1cebea_001cfb27\n"
         ".Lf1cebea_001cf324:\n"
-        "movl 0x195f7cc, %eax\n" /* line 3378 */
+        "movl imp_cg_drawGameMessages, %eax\n" /* line 3378 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001cfa4b\n"
         ".Lf1cebea_001cf335:\n"
         "calll CG_DrawBoldGameMessages\n" /* line 3380 */
-        "movl 0x195f7b4, %eax\n" /* line 2640 */
+        "movl imp_cg_minicon, %eax\n" /* line 2640 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001cfa2a\n"
         ".Lf1cebea_001cf34b:\n"
-        "movl 0x195f814, %eax\n" /* line 2656 */
+        "movl imp_cg_subtitles, %eax\n" /* line 2656 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001cfae4\n"
         ".Lf1cebea_001cf35c:\n"
-        "movl 0x195f5b0, %eax\n" /* line 2672 */
+        "movl imp_cg_hudSayPosition, %eax\n" /* line 2672 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "cvttss2si 4(%eax), %eax\n"
@@ -4517,24 +4517,24 @@ unsigned int CG_Draw2D(void)
         "je .Lf1cebea_001ced3e\n"
         "jmp .Lf1cebea_001cf4a2\n"
         ".Lf1cebea_001cf3aa:\n"
-        "movss 0x2ed62c, %xmm1\n" /* line 2700 | 2.0f */
-        "movss 0x2ed734, %xmm0\n" /* 200.0f */
+        "movss lit4_002ed62c, %xmm1\n" /* line 2700 | 2.0f */
+        "movss lit4_002ed734, %xmm0\n" /* 200.0f */
         "movss %xmm0, -0x640(%ebp)\n"
         "xorl %ebx, %ebx\n"
-        "movss 0x2ed830, %xmm2\n" /* 32.0f */
+        "movss lit4_002ed830, %xmm2\n" /* 32.0f */
         "movss %xmm2, -0x6ec(%ebp)\n"
         "movl -0x6ec(%ebp), %edi\n"
         "jmp .Lf1cebea_001cf420\n"
         ".Lf1cebea_001cf3dc:\n"
-        "addss 0x2eda50, %xmm1\n" /* line 2705 | 34.0f */
+        "addss lit4_002eda50, %xmm1\n" /* line 2705 | 34.0f */
         "movaps %xmm1, %xmm0\n" /* line 2706 */
         "addss %xmm2, %xmm0\n"
-        "ucomiss 0x2eda54, %xmm0\n" /* 68.0f */
+        "ucomiss lit4_002eda54, %xmm0\n" /* 68.0f */
         "jbe .Lf1cebea_001cf414\n"
-        "movss 0x2eda50, %xmm0\n" /* line 2709 | 34.0f */
+        "movss lit4_002eda50, %xmm0\n" /* line 2709 | 34.0f */
         "addss -0x640(%ebp), %xmm0\n"
         "movss %xmm0, -0x640(%ebp)\n"
-        "movss 0x2ed62c, %xmm1\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm1\n" /* 2.0f */
         ".Lf1cebea_001cf414:\n"
         "addl $1, %ebx\n" /* line 2700 */
         "cmpl -0x20(%ebp), %ebx\n"
@@ -4561,7 +4561,7 @@ unsigned int CG_Draw2D(void)
         "movss -0x6c8(%ebp), %xmm1\n"
         "jmp .Lf1cebea_001cf3dc\n"
         ".Lf1cebea_001cf490:\n"
-        "movl 0x195f7d4, %eax\n" /* line 3337 */
+        "movl imp_cgDC, %eax\n" /* line 3337 */
         "movl %eax, (%esp)\n"
         "calll Menu_PaintAll\n"
         "jmp .Lf1cebea_001ced48\n"
@@ -4583,7 +4583,7 @@ unsigned int CG_Draw2D(void)
         "movl %eax, -0x644(%ebp)\n"
         "leal -0x120(%ebp), %ebx\n" /* line 2981 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2ac060, (%esp)\n" /* "vote yes" */
+        "movl $str_002ac060, (%esp)\n" /* "vote yes" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n" /* line 2982 */
         "je .Lf1cebea_001d04e7\n"
@@ -4594,7 +4594,7 @@ unsigned int CG_Draw2D(void)
         "calll I_strncpyz\n"
         ".Lf1cebea_001cf51e:\n"
         "movl %ebx, 4(%esp)\n" /* line 2987 */
-        "movl $0x2ac06c, (%esp)\n" /* "vote no" */
+        "movl $str_002ac06c, (%esp)\n" /* "vote no" */
         "calll GetKeyBindingLocalizedString\n"
         "testl %eax, %eax\n" /* line 2988 */
         "je .Lf1cebea_001d0631\n"
@@ -4605,9 +4605,9 @@ unsigned int CG_Draw2D(void)
         "movl %ecx, (%esp)\n"
         "calll I_strncpyz\n"
         ".Lf1cebea_001cf556:\n"
-        "movl 0x195f5c4, %eax\n" /* line 2993 */
+        "movl imp_cgs, %eax\n" /* line 2993 */
         "movl (%eax), %esi\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %ecx\n"
         "movl 0x6088(%esi), %ebx\n"
         "subl 0x25bb0(%ecx), %ebx\n"
@@ -4624,16 +4624,16 @@ unsigned int CG_Draw2D(void)
         "movl 0x24(%ecx), %eax\n" /* line 2997 */
         "testb $0x10, 0xae(%eax)\n"
         "je .Lf1cebea_001d055d\n"
-        "movl $0x2b7290, (%esp)\n" /* line 2999 */
+        "movl $str_002b7290, (%esp)\n" /* line 2999 */
         "calll UI_SafeTranslateString\n"
         "leal 0x6094(%esi), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b729c, (%esp)\n" /* "%s(%i):%s" */
+        "movl $str_002b729c, (%esp)\n" /* "%s(%i):%s" */
         "calll va\n"
         "movl $3, 0x24(%esp)\n" /* line 3000 */
-        "movl 0x195ed98, %edx\n"
+        "movl imp_colorYellow, %edx\n"
         "movl %edx, 0x20(%esp)\n"
         "movl $0x3e555555, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -4646,21 +4646,21 @@ unsigned int CG_Draw2D(void)
         "movl %eax, (%esp)\n"
         "calll UI_DrawText\n"
         "movl 0x6090(%esi), %edi\n" /* line 3003 */
-        "movl $0x2b72a8, (%esp)\n" /* "CGAME_NO" */
+        "movl $str_002b72a8, (%esp)\n" /* "CGAME_NO" */
         "calll UI_SafeTranslateString\n"
         "movl %eax, %ebx\n"
         "movl 0x608c(%esi), %esi\n"
-        "movl $0x2b72b4, (%esp)\n" /* "CGAME_YES" */
+        "movl $str_002b72b4, (%esp)\n" /* "CGAME_YES" */
         "calll UI_SafeTranslateString\n"
         "movl %edi, 0x10(%esp)\n"
         "movl %ebx, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b72c0, (%esp)\n" /* "%s:%i, %s:%i" */
+        "movl $str_002b72c0, (%esp)\n" /* "%s:%i, %s:%i" */
         ".Lf1cebea_001cf658:\n"
         "calll va\n" /* line 3012 */
         "movl $3, 0x24(%esp)\n" /* line 3013 */
-        "movl 0x195ed98, %ebx\n"
+        "movl imp_colorYellow, %ebx\n"
         "movl %ebx, 0x20(%esp)\n"
         "movl $0x3e555555, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -4687,7 +4687,7 @@ unsigned int CG_Draw2D(void)
         "je .Lf1cebea_001d050a\n"
         "movss 0x26c(%edx), %xmm3\n" /* line 1158 */
         ".Lf1cebea_001cf6e5:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1164 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1164 | 1.0f */
         "subss %xmm3, %xmm0\n"
         "subss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
@@ -4695,15 +4695,15 @@ unsigned int CG_Draw2D(void)
         "jbe .Lf1cebea_001cf701\n"
         "divss %xmm3, %xmm0\n" /* line 1166 */
         ".Lf1cebea_001cf701:\n"
-        "ucomiss 0x2ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
         "jp .Lf1cebea_001cf710\n"
         "jbe .Lf1cebea_001cee86\n"
         ".Lf1cebea_001cf710:\n"
-        "movl 0x195f81c, %eax\n" /* line 1924 */
+        "movl imp_cg_hudDamageIconInScope, %eax\n" /* line 1924 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1cebea_001d071a\n"
-        "movl 0x195f584, %ecx\n"
+        "movl imp_cg, %ecx\n"
         "jmp .Lf1cebea_001cf09d\n"
         ".Lf1cebea_001cf72c:\n"
         "movl %edi, %ebx\n" /* line 3304 | drawHudMenus */
@@ -4721,8 +4721,8 @@ unsigned int CG_Draw2D(void)
         "pxor %xmm0, %xmm0\n" /* line 913 */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1cebea_001cf1d6\n"
-        "xorps 0x303410, %xmm1\n" /* line 915 */
-        "movss 0x2ed6a8, %xmm0\n" /* line 916 | 16.0f */
+        "xorps colorWhiteFaded+48, %xmm1\n" /* line 915 */
+        "movss lit4_002ed6a8, %xmm0\n" /* line 916 | 16.0f */
         "movaps %xmm0, %xmm3\n"
         "cmpltss %xmm1, %xmm0\n"
         "andps %xmm0, %xmm3\n"
@@ -4731,7 +4731,7 @@ unsigned int CG_Draw2D(void)
         "movl (%esi), %eax\n" /* line 920 */
         "movl 0xba1c(%eax), %eax\n"
         "movl %eax, 0x2c(%esp)\n"
-        "movl 0x195ed78, %eax\n"
+        "movl imp_colorBlue, %eax\n"
         "movl %eax, 0x28(%esp)\n"
         "movl $0, 0x24(%esp)\n"
         "movl $0, 0x20(%esp)\n"
@@ -4747,9 +4747,9 @@ unsigned int CG_Draw2D(void)
         "calll CG_DrawFPS\n" /* line 540 */
         "jmp .Lf1cebea_001cf305\n"
         ".Lf1cebea_001cf7f7:\n"
-        "movl 0x195f584, %eax\n" /* line 255 */
+        "movl imp_cg, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
-        "movl 0x195f5c4, %eax\n"
+        "movl imp_cgs, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x5e98(%eax), %eax\n"
         "movl %eax, 0xc(%esp)\n"
@@ -4758,10 +4758,10 @@ unsigned int CG_Draw2D(void)
         "movl 0x24(%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b7218, (%esp)\n" /* "time:%i snap:%i cmd:%i" */
+        "movl $str_002b7218, (%esp)\n" /* "time:%i snap:%i cmd:%i" */
         "calll va\n"
         "movl $6, 0x10(%esp)\n" /* line 256 */
-        "movl 0x195ed2c, %edx\n"
+        "movl imp_colorWhite, %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -4786,15 +4786,15 @@ unsigned int CG_Draw2D(void)
         "movaps %xmm4, %xmm2\n"
         "jmp .Lf1cebea_001cf94a\n"
         ".Lf1cebea_001cf8a0:\n"
-        "movl 0x195ed60, %edx\n" /* line 934 */
-        "mulss 0x2eda44, %xmm0\n" /* line 942 | 0.02666666731238365f */
-        "ucomiss 0x2ed8b8, %xmm0\n" /* line 943 | 24.0f */
+        "movl imp_colorGreen, %edx\n" /* line 934 */
+        "mulss lit4_002eda44, %xmm0\n" /* line 942 | 0.02666666731238365f */
+        "ucomiss lit4_002ed8b8, %xmm0\n" /* line 943 | 24.0f */
         "ja .Lf1cebea_001cf98e\n"
         ".Lf1cebea_001cf8bb:\n"
-        "movss 0x2eda4c, %xmm1\n" /* -92.0f */
+        "movss lit4_002eda4c, %xmm1\n" /* -92.0f */
         "subss %xmm0, %xmm1\n"
         ".Lf1cebea_001cf8c7:\n"
-        "movl 0x195f5c4, %eax\n" /* line 947 */
+        "movl imp_cgs, %eax\n" /* line 947 */
         "movl (%eax), %eax\n"
         "movl 0xba1c(%eax), %eax\n"
         "movl %eax, 0x2c(%esp)\n"
@@ -4808,7 +4808,7 @@ unsigned int CG_Draw2D(void)
         "movss %xmm0, 0xc(%esp)\n"
         "movl $0x3f800000, 8(%esp)\n"
         "movss %xmm1, 4(%esp)\n"
-        "movss 0x2eda40, %xmm0\n" /* -7.0f */
+        "movss lit4_002eda40, %xmm0\n" /* -7.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll CL_DrawStretchPic\n"
@@ -4821,29 +4821,29 @@ unsigned int CG_Draw2D(void)
         ".Lf1cebea_001cf94a:\n"
         "movl %ebx, %eax\n" /* line 930 */
         "notl %eax\n"
-        "addl 0x195b784, %eax\n"
+        "addl lagometer+1540, %eax\n"
         "andl $0x7f, %eax\n"
-        "cvtsi2ssl 0x195b584(, %eax, 4), %xmm0\n" /* line 931 */
+        "cvtsi2ssl lagometer+1028(, %eax, 4), %xmm0\n" /* line 931 */
         "ucomiss %xmm4, %xmm0\n" /* line 932 */
         "jbe .Lf1cebea_001cf9a3\n"
-        "testb $1, 0x195b384(, %eax, 4)\n" /* line 934 */
+        "testb $1, lagometer+516(, %eax, 4)\n" /* line 934 */
         "je .Lf1cebea_001cf8a0\n"
-        "movl 0x195ed98, %edx\n"
-        "mulss 0x2eda44, %xmm0\n" /* line 942 | 0.02666666731238365f */
-        "ucomiss 0x2ed8b8, %xmm0\n" /* line 943 | 24.0f */
+        "movl imp_colorYellow, %edx\n"
+        "mulss lit4_002eda44, %xmm0\n" /* line 942 | 0.02666666731238365f */
+        "ucomiss lit4_002ed8b8, %xmm0\n" /* line 943 | 24.0f */
         "jbe .Lf1cebea_001cf8bb\n"
         ".Lf1cebea_001cf98e:\n"
-        "movss 0x2ed8b8, %xmm0\n" /* 24.0f */
-        "movss 0x2eda48, %xmm1\n" /* -116.0f */
+        "movss lit4_002ed8b8, %xmm0\n" /* 24.0f */
+        "movss lit4_002eda48, %xmm1\n" /* -116.0f */
         "jmp .Lf1cebea_001cf8c7\n"
         ".Lf1cebea_001cf9a3:\n"
         "ucomiss %xmm0, %xmm4\n" /* line 949 */
         "jbe .Lf1cebea_001cf936\n"
-        "movl 0x195f5c4, %eax\n" /* line 952 */
+        "movl imp_cgs, %eax\n" /* line 952 */
         "movl (%eax), %eax\n"
         "movl 0xba1c(%eax), %eax\n"
         "movl %eax, 0x2c(%esp)\n"
-        "movl 0x195ed58, %eax\n"
+        "movl imp_colorRed, %eax\n"
         "movl %eax, 0x28(%esp)\n"
         "movss %xmm4, 0x24(%esp)\n"
         "movss %xmm4, 0x20(%esp)\n"
@@ -4854,13 +4854,13 @@ unsigned int CG_Draw2D(void)
         "movl $0x41c00000, 0xc(%esp)\n"
         "movl $0x3f800000, 8(%esp)\n"
         "movl $0xc2e80000, 4(%esp)\n"
-        "movss 0x2eda40, %xmm0\n" /* -7.0f */
+        "movss lit4_002eda40, %xmm0\n" /* -7.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, (%esp)\n"
         "calll CL_DrawStretchPic\n"
         "jmp .Lf1cebea_001cf936\n"
         ".Lf1cebea_001cfa1d:\n"
-        "divss 0x2ed6d4, %xmm0\n" /* line 1894 | 5.0f */
+        "divss lit4_002ed6d4, %xmm0\n" /* line 1894 | 5.0f */
         "jmp .Lf1cebea_001cedc2\n"
         ".Lf1cebea_001cfa2a:\n"
         "movl $0x3f800000, 8(%esp)\n" /* line 2643 */
@@ -4869,17 +4869,17 @@ unsigned int CG_Draw2D(void)
         "calll Con_DrawMiniConsole\n"
         "jmp .Lf1cebea_001cf34b\n"
         ".Lf1cebea_001cfa4b:\n"
-        "movl 0x195f5c4, %eax\n" /* line 2590 */
+        "movl imp_cgs, %eax\n" /* line 2590 */
         "movl (%eax), %edx\n"
-        "movl 0x195f640, %eax\n" /* line 428 */
+        "movl imp_cg_hudCompassSize, %eax\n" /* line 428 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm1\n"
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "mulss 0xc20c(%edx), %xmm1\n"
         "movss 0xc210(%edx), %xmm0\n"
         "subss %xmm1, %xmm0\n"
-        "addss 0x2ed79c, %xmm0\n" /* 12.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed79c, %xmm0\n" /* 12.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x6a0(%ebp)\n"
@@ -4889,7 +4889,7 @@ unsigned int CG_Draw2D(void)
         "je .Lf1cebea_001d0517\n"
         "movl $0x64, 8(%esp)\n" /* line 2595 */
         "movl $0x64, 4(%esp)\n"
-        "movl 0x195f584, %eax\n"
+        "movl imp_cg, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x2b538(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -4901,15 +4901,15 @@ unsigned int CG_Draw2D(void)
         ".Lf1cebea_001cfae4:\n"
         "movl $2, 0x10(%esp)\n" /* line 2662 */
         "movl $0x3f800000, 0xc(%esp)\n"
-        "movl 0x195f840, %eax\n"
+        "movl imp_cg_subtitleCharHeight, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x195f800, %eax\n"
+        "movl imp_cg_subtitlePosY, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f824, %eax\n"
+        "movl imp_cg_subtitlePosX, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -4917,9 +4917,9 @@ unsigned int CG_Draw2D(void)
         "jmp .Lf1cebea_001cf35c\n"
         ".Lf1cebea_001cfb27:\n"
         "movl $0x64, 8(%esp)\n" /* line 1065 */
-        "movl 0x195f790, %eax\n"
+        "movl imp_cg_centertime, %eax\n"
         "movl (%eax), %eax\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "mulss 8(%eax), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -4930,13 +4930,13 @@ unsigned int CG_Draw2D(void)
         "je .Lf1cebea_001d053d\n"
         "leal 0x2b998(%ebx), %esi\n" /* line 1073 */
         "cvtsi2ssl 0x2b994(%ebx), %xmm2\n" /* line 1074 */
-        "mulss 0x2ed878, %xmm2\n" /* 0.03125f */
+        "mulss lit4_002ed878, %xmm2\n" /* 0.03125f */
         "movss %xmm2, -0x634(%ebp)\n"
         "calll CL_IsRenderingSplitScreen\n" /* line 1075 */
         "testb %al, %al\n"
         "je .Lf1cebea_001d074e\n"
         "movss -0x634(%ebp), %xmm3\n" /* line 1076 */
-        "mulss 0x2ed7f8, %xmm3\n" /* 1.25f */
+        "mulss lit4_002ed7f8, %xmm3\n" /* 1.25f */
         "movss %xmm3, -0x634(%ebp)\n"
         "movaps %xmm3, %xmm4\n"
         ".Lf1cebea_001cfba3:\n"
@@ -4948,16 +4948,16 @@ unsigned int CG_Draw2D(void)
         "movl %eax, (%esp)\n"
         "calll UI_TextHeight\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movl 0x195f780, %eax\n" /* line 1080 */
+        "movl imp_cg_centerPrintY, %eax\n" /* line 1080 */
         "movl (%eax), %eax\n"
         "cvtsi2ssl 0x2bd98(%ebx), %xmm2\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed92c, %xmm0\n" /* -1.2000000476837158f */
+        "mulss lit4_002ed92c, %xmm0\n" /* -1.2000000476837158f */
         "mulss %xmm2, %xmm0\n"
         "movss %xmm0, -0x638(%ebp)\n"
         "addss 8(%eax), %xmm0\n"
         "movss %xmm0, -0x638(%ebp)\n"
-        "mulss 0x2eda58, %xmm1\n" /* line 1099 | 1.2000000476837158f */
+        "mulss lit4_002eda58, %xmm1\n" /* line 1099 | 1.2000000476837158f */
         "movss %xmm1, -0x63c(%ebp)\n"
         "leal -0x620(%ebp), %eax\n"
         "movl %eax, -0x6a4(%ebp)\n"
@@ -4999,7 +4999,7 @@ unsigned int CG_Draw2D(void)
         "movss -0x638(%ebp), %xmm1\n"
         "movss %xmm1, 0x10(%esp)\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x7fffffff, 4(%esp)\n"
@@ -5062,7 +5062,7 @@ unsigned int CG_Draw2D(void)
         "je .Lf1cebea_001d076a\n"
         "movss 0x26c(%edx), %xmm3\n" /* line 1158 */
         ".Lf1cebea_001cfddc:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1164 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1164 | 1.0f */
         "subss %xmm3, %xmm0\n"
         "subss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
@@ -5070,11 +5070,11 @@ unsigned int CG_Draw2D(void)
         "jbe .Lf1cebea_001cfdf8\n"
         "divss %xmm3, %xmm0\n" /* line 1166 */
         ".Lf1cebea_001cfdf8:\n"
-        "ucomiss 0x2ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
+        "ucomiss lit4_002ed738, %xmm0\n" /* line 1170 | 0.009999999776482582f */
         "jp .Lf1cebea_001cfe07\n"
         "jbe .Lf1cebea_001d070d\n"
         ".Lf1cebea_001cfe07:\n"
-        "movl 0x195f7c4, %eax\n" /* line 2098 */
+        "movl imp_cg_hudGrenadeIconInScope, %eax\n" /* line 2098 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1cebea_001cf0bc\n"
@@ -5090,7 +5090,7 @@ unsigned int CG_Draw2D(void)
         "leal -0x20(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll CalcScreenY\n"
-        "movl 0x195f584, %ecx\n" /* line 2112 */
+        "movl imp_cg, %ecx\n" /* line 2112 */
         "movl (%ecx), %eax\n"
         "movl 0x24(%eax), %eax\n"
         "movl 0x26b4(%eax), %edx\n"
@@ -5122,7 +5122,7 @@ unsigned int CG_Draw2D(void)
         "addss %xmm1, %xmm0\n"
         "mulss %xmm2, %xmm2\n"
         "addss %xmm2, %xmm0\n"
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "ja .Lf1cebea_001cfe79\n"
         "movl 0xc8(%esi), %eax\n" /* line 2049 */
         "movl %eax, (%esp)\n"
@@ -5130,7 +5130,7 @@ unsigned int CG_Draw2D(void)
         "movl 0x390(%eax), %eax\n" /* line 2050 */
         "testl %eax, %eax\n"
         "jne .Lf1cebea_001d0777\n"
-        "movl 0x195f584, %ecx\n" /* line 2054 */
+        "movl imp_cg, %ecx\n" /* line 2054 */
         "movl (%ecx), %eax\n"
         "movl %eax, -0x680(%ebp)\n"
         "leal 0x24(%ebx), %eax\n"
@@ -5143,10 +5143,10 @@ unsigned int CG_Draw2D(void)
         "subss 4(%edx), %xmm3\n"
         "movss 8(%eax), %xmm1\n" /* line 250 */
         "subss 8(%edx), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 2056 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 2056 | 0.0f */
         "jb .Lf1cebea_001d0782\n"
         ".Lf1cebea_001cff45:\n"
-        "movl 0x195f7c8, %eax\n" /* line 2063 */
+        "movl imp_cg_hudGrenadeIconMaxHeight, %eax\n" /* line 2063 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "movl -0x680(%ebp), %eax\n"
@@ -5154,7 +5154,7 @@ unsigned int CG_Draw2D(void)
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf1cebea_001cfe79\n"
         ".Lf1cebea_001cff68:\n"
-        "movl 0x195f7a0, %eax\n" /* line 2068 */
+        "movl imp_cg_hudGrenadeIconMaxRange, %eax\n" /* line 2068 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "mulss %xmm0, %xmm0\n" /* line 2071 */
@@ -5177,7 +5177,7 @@ unsigned int CG_Draw2D(void)
         "movss 8(%eax), %xmm0\n" /* line 250 */
         "subss 8(%edx), %xmm0\n"
         "movss %xmm0, -0x618(%ebp)\n"
-        "movl 0x195ed2c, %edx\n" /* line 456 */
+        "movl imp_colorWhite, %edx\n" /* line 456 */
         "movl (%edx), %eax\n"
         "movl %eax, -0x220(%ebp)\n"
         "movl 4(%edx), %eax\n" /* line 457 */
@@ -5186,18 +5186,18 @@ unsigned int CG_Draw2D(void)
         "movl %eax, -0x218(%ebp)\n"
         "movl 0xc(%edx), %eax\n" /* line 459 */
         "movl %eax, -0x214(%ebp)\n"
-        "movl 0x195f7fc, %eax\n" /* line 2121 */
+        "movl imp_cg_hudGrenadePointerPulseMin, %eax\n" /* line 2121 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm3\n"
-        "movl 0x195f848, %eax\n"
+        "movl imp_cg_hudGrenadePointerPulseMax, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm2\n"
         "subss %xmm3, %xmm2\n"
-        "mulss 0x2ed5d8, %xmm2\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm2\n" /* 0.5f */
         "addss %xmm2, %xmm3\n" /* line 2123 */
         "cvtsi2sdl 0x25bb0(%ecx), %xmm0\n"
-        "mulsd 0x307d98, %xmm0\n" /* 0.006283185307179587 */
-        "movl 0x195f7a8, %eax\n"
+        "mulsd lit8_00307d98, %xmm0\n" /* 0.006283185307179587 */
+        "movl imp_cg_hudGrenadePointerPulseFreq, %eax\n"
         "movl (%eax), %eax\n"
         "cvtss2sd 8(%eax), %xmm1\n"
         "mulsd %xmm1, %xmm0\n"
@@ -5213,9 +5213,9 @@ unsigned int CG_Draw2D(void)
         "movss -0x6e8(%ebp), %xmm3\n"
         "addss %xmm3, %xmm0\n"
         "movaps %xmm0, %xmm1\n" /* line 45 */
-        "subss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "pxor %xmm4, %xmm4\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movaps %xmm3, %xmm2\n"
         "cmpnltss %xmm4, %xmm1\n"
         "andps %xmm1, %xmm2\n"
@@ -5234,25 +5234,25 @@ unsigned int CG_Draw2D(void)
         "movss %xmm4, -0x67c(%ebp)\n"
         "movss -0x1c(%ebp), %xmm0\n"
         "movss %xmm0, -0x678(%ebp)\n"
-        "movl 0x195f7f8, %eax\n" /* line 1974 */
+        "movl imp_cg_hudGrenadePointerWidth, %eax\n" /* line 1974 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetRealWidthFromVirtualWidth\n"
         "fstps -0x674(%ebp)\n"
-        "movl 0x195f804, %eax\n" /* line 1975 */
+        "movl imp_cg_hudGrenadePointerHeight, %eax\n" /* line 1975 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetRealHeightFromVirtualHeight\n"
         "fstps -0x670(%ebp)\n"
-        "movl 0x195f798, %edx\n" /* line 1976 */
+        "movl imp_cg_hudGrenadeIconOffset, %edx\n" /* line 1976 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetRealHeightFromVirtualHeight\n"
         "fstps -0x66c(%ebp)\n"
-        "movl 0x195f7f0, %eax\n"
+        "movl imp_cg_hudGrenadePointerPivot, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl (%eax), %edx\n" /* line 37 */
@@ -5276,7 +5276,7 @@ unsigned int CG_Draw2D(void)
         "calll AngleNormalize360\n"
         "fstps -0x668(%ebp)\n"
         "cvtss2sd -0x668(%ebp), %xmm0\n" /* line 1984 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x664(%ebp)\n"
         "movss %xmm0, (%esp)\n" /* line 485 */
@@ -5296,7 +5296,7 @@ unsigned int CG_Draw2D(void)
         "movss -0x67c(%ebp), %xmm4\n"
         "subss %xmm3, %xmm4\n"
         "movss -0x62c(%ebp), %xmm0\n" /* line 1988 */
-        "xorps 0x303410, %xmm0\n"
+        "xorps colorWhiteFaded+48, %xmm0\n"
         "movss %xmm0, -0x108(%ebp)\n"
         "movss %xmm0, -0x120(%ebp)\n"
         "movss -0x674(%ebp), %xmm0\n" /* line 1989 */
@@ -5304,14 +5304,14 @@ unsigned int CG_Draw2D(void)
         "movss %xmm0, -0x110(%ebp)\n"
         "movss %xmm0, -0x118(%ebp)\n"
         "movss -0x630(%ebp), %xmm0\n" /* line 1990 */
-        "xorps 0x303410, %xmm0\n"
+        "xorps colorWhiteFaded+48, %xmm0\n"
         "movss %xmm0, -0x114(%ebp)\n"
         "movss %xmm0, -0x11c(%ebp)\n"
         "movss -0x670(%ebp), %xmm0\n" /* line 1991 */
         "subss -0x630(%ebp), %xmm0\n"
         "movss %xmm0, -0x104(%ebp)\n"
         "movss %xmm0, -0x10c(%ebp)\n"
-        "movl 0x195f5c4, %eax\n" /* line 1993 */
+        "movl imp_cgs, %eax\n" /* line 1993 */
         "movl (%eax), %esi\n"
         "movl 0xc1fc(%esi), %eax\n"
         "movl %eax, 0x14(%esp)\n"
@@ -5330,19 +5330,19 @@ unsigned int CG_Draw2D(void)
         "movss %xmm1, -0x660(%ebp)\n"
         "movss -0x1c(%ebp), %xmm2\n"
         "movss %xmm2, -0x65c(%ebp)\n"
-        "movl 0x195f7d8, %eax\n" /* line 2007 */
+        "movl imp_cg_hudGrenadeIconWidth, %eax\n" /* line 2007 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetRealWidthFromVirtualWidth\n"
         "fstps -0x658(%ebp)\n"
-        "movl 0x195f808, %eax\n" /* line 2008 */
+        "movl imp_cg_hudGrenadeIconHeight, %eax\n" /* line 2008 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll GetRealHeightFromVirtualHeight\n"
         "fstps -0x654(%ebp)\n"
-        "movl 0x195f798, %edx\n" /* line 2009 */
+        "movl imp_cg_hudGrenadeIconOffset, %edx\n" /* line 2009 */
         "movl (%edx), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, (%esp)\n"
@@ -5358,7 +5358,7 @@ unsigned int CG_Draw2D(void)
         "calll AngleNormalize360\n"
         "fstps -0x64c(%ebp)\n"
         "cvtss2sd -0x64c(%ebp), %xmm0\n" /* line 2013 */
-        "mulsd 0x307c48, %xmm0\n" /* 0.017453292519943295 */
+        "mulsd lit8_00307c48, %xmm0\n" /* 0.017453292519943295 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "movss %xmm0, -0x648(%ebp)\n"
         "movss %xmm0, (%esp)\n" /* line 486 */
@@ -5371,13 +5371,13 @@ unsigned int CG_Draw2D(void)
         "movss -0x6ec(%ebp), %xmm1\n"
         "mulss -0x650(%ebp), %xmm1\n"
         "movss -0x658(%ebp), %xmm0\n" /* line 2014 */
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "addss -0x65c(%ebp), %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, -0x108(%ebp)\n"
         "movss %xmm0, -0x120(%ebp)\n"
         "movss -0x658(%ebp), %xmm0\n" /* line 2015 */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss -0x65c(%ebp), %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, -0x110(%ebp)\n"
@@ -5385,13 +5385,13 @@ unsigned int CG_Draw2D(void)
         "movss -0x650(%ebp), %xmm1\n" /* line 2016 */
         "mulss -0x69c(%ebp), %xmm1\n"
         "movss -0x654(%ebp), %xmm0\n"
-        "mulss 0x2ed63c, %xmm0\n" /* -0.5f */
+        "mulss lit4_002ed63c, %xmm0\n" /* -0.5f */
         "addss -0x660(%ebp), %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, -0x114(%ebp)\n"
         "movss %xmm0, -0x11c(%ebp)\n"
         "movss -0x654(%ebp), %xmm0\n" /* line 2017 */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "addss -0x660(%ebp), %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, -0x104(%ebp)\n"
@@ -5411,7 +5411,7 @@ unsigned int CG_Draw2D(void)
         "jmp .Lf1cebea_001cf393\n"
         ".Lf1cebea_001d04e7:\n"
         "movl $0x100, 8(%esp)\n" /* line 2985 */
-        "movl $0x2ac060, 4(%esp)\n" /* "vote yes" */
+        "movl $str_002ac060, 4(%esp)\n" /* "vote yes" */
         "leal -0x220(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll I_strncpyz\n"
@@ -5436,16 +5436,16 @@ unsigned int CG_Draw2D(void)
         "movl %edx, %ebx\n"
         "jmp .Lf1cebea_001cee3e\n"
         ".Lf1cebea_001d055d:\n"
-        "movl $0x2b7290, (%esp)\n" /* line 3008 */
+        "movl $str_002b7290, (%esp)\n" /* line 3008 */
         "calll UI_SafeTranslateString\n"
         "leal 0x6094(%esi), %edx\n"
         "movl %edx, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b729c, (%esp)\n" /* "%s(%i):%s" */
+        "movl $str_002b729c, (%esp)\n" /* "%s(%i):%s" */
         "calll va\n"
         "movl $3, 0x24(%esp)\n" /* line 3009 */
-        "movl 0x195ed98, %ecx\n"
+        "movl imp_colorYellow, %ecx\n"
         "movl %ecx, 0x20(%esp)\n"
         "movl $0x3e555555, 0x1c(%esp)\n"
         "movl $0, 0x18(%esp)\n"
@@ -5458,11 +5458,11 @@ unsigned int CG_Draw2D(void)
         "movl %eax, (%esp)\n"
         "calll UI_DrawText\n"
         "movl 0x6090(%esi), %edi\n" /* line 3012 */
-        "movl $0x2b72a8, (%esp)\n" /* "CGAME_NO" */
+        "movl $str_002b72a8, (%esp)\n" /* "CGAME_NO" */
         "calll UI_SafeTranslateString\n"
         "movl %eax, %ebx\n"
         "movl 0x608c(%esi), %esi\n"
-        "movl $0x2b72b4, (%esp)\n" /* "CGAME_YES" */
+        "movl $str_002b72b4, (%esp)\n" /* "CGAME_YES" */
         "calll UI_SafeTranslateString\n"
         "movl %edi, 0x18(%esp)\n"
         "movl -0x6a4(%ebp), %edx\n"
@@ -5472,11 +5472,11 @@ unsigned int CG_Draw2D(void)
         "leal -0x220(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b72d0, (%esp)\n" /* "%s(%s):%i, %s(%s):%i" */
+        "movl $str_002b72d0, (%esp)\n" /* "%s(%s):%i, %s(%s):%i" */
         "jmp .Lf1cebea_001cf658\n"
         ".Lf1cebea_001d0631:\n"
         "movl $0x100, 8(%esp)\n" /* line 2991 */
-        "movl $0x2ac06c, 4(%esp)\n" /* "vote no" */
+        "movl $str_002ac06c, 4(%esp)\n" /* "vote no" */
         "leal -0x620(%ebp), %ebx\n"
         "movl %ebx, -0x6a4(%ebp)\n"
         "movl %ebx, (%esp)\n"
@@ -5486,7 +5486,7 @@ unsigned int CG_Draw2D(void)
         "calll CG_DrawMaterial\n" /* line 2787 */
         "jmp .Lf1cebea_001cf2d2\n"
         ".Lf1cebea_001d0664:\n"
-        "movl $0x2b7280, (%esp)\n" /* line 2954 */
+        "movl $str_002b7280, (%esp)\n" /* line 2954 */
         "calll UI_SafeTranslateString\n"
         "movl %eax, %esi\n"
         "movl $0x3f000000, 4(%esp)\n" /* line 2955 */
@@ -5499,7 +5499,7 @@ unsigned int CG_Draw2D(void)
         "movl %esi, (%esp)\n"
         "calll UI_TextWidth\n"
         "movl $3, 0x24(%esp)\n" /* line 2958 */
-        "movl 0x195ed2c, %edx\n"
+        "movl imp_colorWhite, %edx\n"
         "movl %edx, 0x20(%esp)\n"
         "movl $0x3f000000, 0x1c(%esp)\n"
         "movl $3, 0x18(%esp)\n"
@@ -5507,7 +5507,7 @@ unsigned int CG_Draw2D(void)
         "movl $0xc1d80000, 0x10(%esp)\n"
         "negl %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n"
         "movl $0x7fffffff, 4(%esp)\n"
@@ -5525,10 +5525,10 @@ unsigned int CG_Draw2D(void)
         "leal -0x1c(%ebp), %edx\n" /* line 1927 */
         "leal -0x20(%ebp), %eax\n"
         "calll CG_CalcCrosshairPosition\n"
-        "movss 0x2ed8e8, %xmm0\n" /* line 1928 | 320.0f */
+        "movss lit4_002ed8e8, %xmm0\n" /* line 1928 | 320.0f */
         "addss -0x20(%ebp), %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n"
-        "movss 0x2ed6e8, %xmm0\n" /* line 1929 | 240.0f */
+        "movss lit4_002ed6e8, %xmm0\n" /* line 1929 | 240.0f */
         "addss -0x1c(%ebp), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
         "jmp .Lf1cebea_001cee94\n"
@@ -5543,14 +5543,14 @@ unsigned int CG_Draw2D(void)
         "movss 0x270(%edx), %xmm3\n" /* line 1164 */
         "jmp .Lf1cebea_001cfddc\n"
         ".Lf1cebea_001d0777:\n"
-        "movl 0x195f584, %ecx\n"
+        "movl imp_cg, %ecx\n"
         "jmp .Lf1cebea_001cfe79\n"
         ".Lf1cebea_001d0782:\n"
         "jp .Lf1cebea_001cff45\n" /* line 2056 */
-        "movl 0x195f7c8, %eax\n" /* line 2058 */
+        "movl imp_cg_hudGrenadeIconMaxHeight, %eax\n" /* line 2058 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "xorps 0x303410, %xmm0\n"
+        "xorps colorWhiteFaded+48, %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lf1cebea_001cfe79\n"
         "jmp .Lf1cebea_001cff68\n"

@@ -29,34 +29,34 @@ void Scr_InitOpcodeLookup(void)
         "pushl %ebp\n" /* line 63 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl 0x195ee58, %eax\n" /* line 69 */
+        "movl imp_scrVarPub, %eax\n" /* line 69 */
         "cmpb $0, 0xa(%eax)\n"
         "jne .Lf9b454_0009b467\n"
         "leave\n" /* line 89 */
         "retl\n"
         ".Lf9b454_0009b467:\n"
-        "movl $0xffffffff, 0x114dfcc\n" /* line 72 */
-        "movl $0x10000, 0x114dfa4\n" /* line 74 */
-        "movl $0, 0x114dfa8\n" /* line 75 */
+        "movl $0xffffffff, scrParserGlob+44\n" /* line 72 */
+        "movl $0x10000, scrParserGlob+4\n" /* line 74 */
+        "movl $0, scrParserGlob+8\n" /* line 75 */
         "movl $0x140000, (%esp)\n" /* line 76 */
         "calll Z_MallocInternal\n"
         "movl %eax, scrParserGlob\n"
-        "movl 0x114dfa4, %edx\n" /* line 77 */
+        "movl scrParserGlob+4, %edx\n" /* line 77 */
         "leal (%edx, %edx, 4), %edx\n"
         "shll $2, %edx\n"
         "movl %edx, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll memset\n"
-        "movl $0x10000, 0x114dfb0\n" /* line 79 */
-        "movl $0, 0x114dfb4\n" /* line 80 */
+        "movl $0x10000, scrParserGlob+16\n" /* line 79 */
+        "movl $0, scrParserGlob+20\n" /* line 80 */
         "movl $0x80000, (%esp)\n" /* line 81 */
         "calll Z_MallocInternal\n"
-        "movl %eax, 0x114dfac\n"
-        "movl $0, 0x114dfbc\n" /* line 83 */
-        "movl $0, 0x114dfc0\n" /* line 84 */
-        "movl $0x10, 0x114dfb8\n" /* line 86 */
-        "movl $0, 0x114df88\n" /* line 87 */
+        "movl %eax, scrParserGlob+12\n"
+        "movl $0, scrParserGlob+28\n" /* line 83 */
+        "movl $0, scrParserGlob+32\n" /* line 84 */
+        "movl $0x10, scrParserGlob+24\n" /* line 86 */
+        "movl $0, scrParserPub+4\n" /* line 87 */
         "movl $0x180, (%esp)\n" /* line 88 */
         "calll Z_MallocInternal\n"
         "movl %eax, scrParserPub\n"
@@ -82,17 +82,17 @@ void Scr_ShutdownOpcodeLookup(void)
         "calll Z_FreeInternal\n"
         "movl $0, scrParserGlob\n" /* line 99 */
         ".Lf9b516_0009b538:\n"
-        "movl 0x114dfac, %eax\n" /* line 102 */
+        "movl scrParserGlob+12, %eax\n" /* line 102 */
         "testl %eax, %eax\n"
         "je .Lf9b516_0009b553\n"
         "movl %eax, (%esp)\n" /* line 104 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x114dfac\n" /* line 105 */
+        "movl $0, scrParserGlob+12\n" /* line 105 */
         ".Lf9b516_0009b553:\n"
         "movl scrParserPub, %ebx\n" /* line 108 | i */
         "testl %ebx, %ebx\n" /* i */
         "je .Lf9b516_0009b582\n"
-        "movl 0x114df88, %edx\n" /* line 110 */
+        "movl scrParserPub+4, %edx\n" /* line 110 */
         "testl %edx, %edx\n"
         "jne .Lf9b516_0009b5ef\n"
         ".Lf9b516_0009b56b:\n"
@@ -101,28 +101,28 @@ void Scr_ShutdownOpcodeLookup(void)
         "calll Z_FreeInternal\n"
         "movl $0, scrParserPub\n" /* line 113 */
         ".Lf9b516_0009b582:\n"
-        "movl 0x114dfc4, %ecx\n" /* line 116 */
+        "movl scrParserGlob+36, %ecx\n" /* line 116 */
         "testl %ecx, %ecx\n"
         "je .Lf9b516_0009b5cf\n"
-        "movl 0x114dfc8, %eax\n" /* line 118 */
+        "movl scrParserGlob+40, %eax\n" /* line 118 */
         "testl %eax, %eax\n"
         "jle .Lf9b516_0009b5d5\n"
         "xorl %ebx, %ebx\n" /* i */
-        "movl 0x114dfc4, %edx\n"
+        "movl scrParserGlob+36, %edx\n"
         ".Lf9b516_0009b59d:\n"
         "movl (%edx, %ebx, 8), %eax\n" /* line 120 */
         "testl %eax, %eax\n"
         "je .Lf9b516_0009b5b2\n"
         "movl %eax, (%esp)\n" /* line 121 */
         "calll Z_FreeInternal\n"
-        "movl 0x114dfc4, %edx\n"
+        "movl scrParserGlob+36, %edx\n"
         ".Lf9b516_0009b5b2:\n"
         "addl $1, %ebx\n" /* line 118 | i */
-        "cmpl 0x114dfc8, %ebx\n" /* i */
+        "cmpl scrParserGlob+40, %ebx\n" /* i */
         "jl .Lf9b516_0009b59d\n"
         "movl %edx, (%esp)\n" /* line 123 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x114dfc4\n" /* line 124 */
+        "movl $0, scrParserGlob+36\n" /* line 124 */
         /* } scope */
         ".Lf9b516_0009b5cf:\n"
         "addl $0x14, %esp\n" /* line 126 */
@@ -130,11 +130,11 @@ void Scr_ShutdownOpcodeLookup(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf9b516_0009b5d5:\n"
-        "movl 0x114dfc4, %edx\n"
+        "movl scrParserGlob+36, %edx\n"
         /* { scope 1 */
         "movl %edx, (%esp)\n" /* line 123 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x114dfc4\n" /* line 124 */
+        "movl $0, scrParserGlob+36\n" /* line 124 */
         "jmp .Lf9b516_0009b5cf\n"
         ".Lf9b516_0009b5ef:\n"
         "xorl %ebx, %ebx\n" /* line 110 | i */
@@ -147,7 +147,7 @@ void Scr_ShutdownOpcodeLookup(void)
         "calll Z_FreeInternal\n"
         "addl $1, %ebx\n" /* line 110 | i */
         "movl %ebx, %eax\n" /* i */
-        "cmpl 0x114df88, %ebx\n" /* i */
+        "cmpl scrParserPub+4, %ebx\n" /* i */
         "jb .Lf9b516_0009b5f3\n"
         "jmp .Lf9b516_0009b56b\n"
     );
@@ -166,40 +166,40 @@ void AddOpcodePos(unsigned int sourcePos, int type)
         "subl $0x1c, %esp\n"
         "movl 0xc(%ebp), %esi\n" /* type */
         /* { scope 1 */
-        "movl 0x195ee58, %eax\n" /* line 137 */
+        "movl imp_scrVarPub, %eax\n" /* line 137 */
         "cmpb $0, 0xa(%eax)\n"
         "je .Lf9b61a_0009b713\n"
-        "movl 0x195ee5c, %edi\n" /* line 140 */
+        "movl imp_scrCompilePub, %edi\n" /* line 140 */
         "cmpl $2, 0x28(%edi)\n"
         "je .Lf9b61a_0009b713\n"
         "movl %esi, %eax\n" /* line 152 | type */
         "andl $0xfffffffe, %eax\n"
         "cmpb $0, 0x25(%edi)\n"
         "cmovel %eax, %esi\n" /* type */
-        "movl 0x114dfa4, %edx\n" /* line 159 */
-        "cmpl %edx, 0x114dfa8\n"
+        "movl scrParserGlob+4, %edx\n" /* line 159 */
+        "cmpl %edx, scrParserGlob+8\n"
         "jae .Lf9b61a_0009b774\n"
-        "movl 0x114dfb0, %edx\n" /* line 169 */
-        "cmpl %edx, 0x114dfb4\n"
+        "movl scrParserGlob+16, %edx\n" /* line 169 */
+        "cmpl %edx, scrParserGlob+20\n"
         "jae .Lf9b61a_0009b71b\n"
         ".Lf9b61a_0009b675:\n"
         "movl 0x2c(%edi), %eax\n" /* line 179 */
-        "cmpl %eax, 0x114dfbc\n"
+        "cmpl %eax, scrParserGlob+28\n"
         "je .Lf9b61a_0009b811\n"
         ".Lf9b61a_0009b684:\n"
-        "movl $0, 0x114dfc0\n" /* line 192 */
-        "movl %eax, 0x114dfbc\n" /* line 193 */
-        "movl 0x114dfa8, %eax\n" /* line 195 */
+        "movl $0, scrParserGlob+32\n" /* line 192 */
+        "movl %eax, scrParserGlob+28\n" /* line 193 */
+        "movl scrParserGlob+8, %eax\n" /* line 195 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl scrParserGlob, %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* opcodeLookup */
-        "movl 0x114dfb4, %eax\n" /* line 197 */
+        "movl scrParserGlob+20, %eax\n" /* line 197 */
         "movl %eax, 4(%ebx)\n" /* opcodeLookup */
-        "movl 0x114dfbc, %eax\n" /* line 198 */
+        "movl scrParserGlob+28, %eax\n" /* line 198 */
         "movl %eax, (%ebx)\n" /* opcodeLookup */
         "movl 4(%ebx), %edx\n" /* line 201 | opcodeLookup */
-        "addl 0x114dfc0, %edx\n"
-        "movl 0x114dfac, %eax\n" /* line 202 */
+        "addl scrParserGlob+32, %edx\n"
+        "movl scrParserGlob+12, %eax\n" /* line 202 */
         "leal (%eax, %edx, 8), %ecx\n"
         "movl 8(%ebp), %eax\n" /* line 203 | sourcePos */
         "movl %eax, (%ecx)\n"
@@ -208,19 +208,19 @@ void AddOpcodePos(unsigned int sourcePos, int type)
         ".Lf9b61a_0009b6d2:\n"
         "cmpl $-2, 8(%ebp)\n" /* line 211 | sourcePos */
         "je .Lf9b61a_0009b875\n"
-        "movl 0x114dfcc, %edx\n" /* line 215 */
+        "movl scrParserGlob+44, %edx\n" /* line 215 */
         "testl %edx, %edx\n"
         "js .Lf9b61a_0009b6f2\n"
         "testl $1, %esi\n" /* type */
         "jne .Lf9b61a_0009b7d6\n"
         ".Lf9b61a_0009b6f2:\n"
         "orl %esi, 4(%ecx)\n" /* line 222 | type */
-        "movl 0x114dfc0, %eax\n" /* line 224 */
+        "movl scrParserGlob+32, %eax\n" /* line 224 */
         "addl $1, %eax\n"
-        "movl %eax, 0x114dfc0\n"
+        "movl %eax, scrParserGlob+32\n"
         "movl %eax, 8(%ebx)\n" /* line 226 | opcodeLookup */
-        "addl $1, 0x114dfa8\n" /* line 228 */
-        "addl $1, 0x114dfb4\n" /* line 229 */
+        "addl $1, scrParserGlob+8\n" /* line 228 */
+        "addl $1, scrParserGlob+20\n" /* line 229 */
         /* } scope */
         ".Lf9b61a_0009b713:\n"
         "addl $0x1c, %esp\n" /* line 230 */
@@ -232,35 +232,35 @@ void AddOpcodePos(unsigned int sourcePos, int type)
         /* { scope 1 */
         ".Lf9b61a_0009b71b:\n"
         "leal (%edx, %edx), %eax\n" /* line 171 */
-        "movl %eax, 0x114dfb0\n"
+        "movl %eax, scrParserGlob+16\n"
         "shll $4, %edx\n" /* line 173 */
         "movl %edx, (%esp)\n"
         "calll Z_MallocInternal\n"
         "movl %eax, %ebx\n" /* opcodeLookup */
-        "movl 0x114dfb4, %eax\n" /* line 174 */
+        "movl scrParserGlob+20, %eax\n" /* line 174 */
         "shll $3, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x114dfac, %eax\n"
+        "movl scrParserGlob+12, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* opcodeLookup */
         "calll memcpy\n"
-        "movl 0x114dfac, %eax\n" /* line 175 */
+        "movl scrParserGlob+12, %eax\n" /* line 175 */
         "movl %eax, (%esp)\n"
         "calll Z_FreeInternal\n"
-        "movl %ebx, 0x114dfac\n" /* line 176 | opcodeLookup */
+        "movl %ebx, scrParserGlob+12\n" /* line 176 | opcodeLookup */
         "movl 0x2c(%edi), %eax\n" /* line 179 */
-        "cmpl %eax, 0x114dfbc\n"
+        "cmpl %eax, scrParserGlob+28\n"
         "jne .Lf9b61a_0009b684\n"
         "jmp .Lf9b61a_0009b811\n"
         ".Lf9b61a_0009b774:\n"
         "leal (%edx, %edx), %eax\n" /* line 161 */
-        "movl %eax, 0x114dfa4\n"
+        "movl %eax, scrParserGlob+4\n"
         "leal (%edx, %edx, 4), %eax\n" /* line 163 */
         "shll $3, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Z_MallocInternal\n"
         "movl %eax, %ebx\n" /* opcodeLookup */
-        "movl 0x114dfa8, %eax\n" /* line 164 */
+        "movl scrParserGlob+8, %eax\n" /* line 164 */
         "leal (%eax, %eax, 4), %eax\n"
         "shll $2, %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -272,57 +272,57 @@ void AddOpcodePos(unsigned int sourcePos, int type)
         "movl %eax, (%esp)\n"
         "calll Z_FreeInternal\n"
         "movl %ebx, scrParserGlob\n" /* line 166 | opcodeLookup */
-        "movl 0x114dfb0, %edx\n" /* line 169 */
-        "cmpl %edx, 0x114dfb4\n"
+        "movl scrParserGlob+16, %edx\n" /* line 169 */
+        "cmpl %edx, scrParserGlob+20\n"
         "jb .Lf9b61a_0009b675\n"
         "jmp .Lf9b61a_0009b71b\n"
         ".Lf9b61a_0009b7d6:\n"
-        "movl 0x114dfac, %eax\n" /* line 218 */
+        "movl scrParserGlob+12, %eax\n" /* line 218 */
         "movl 8(%ebp), %edi\n" /* sourcePos */
         "movl %edi, (%eax, %edx, 8)\n"
-        "movl $0xffffffff, 0x114dfcc\n" /* line 219 */
+        "movl $0xffffffff, scrParserGlob+44\n" /* line 219 */
         "orl %esi, 4(%ecx)\n" /* line 222 | type */
-        "movl 0x114dfc0, %eax\n" /* line 224 */
+        "movl scrParserGlob+32, %eax\n" /* line 224 */
         "addl $1, %eax\n"
-        "movl %eax, 0x114dfc0\n"
+        "movl %eax, scrParserGlob+32\n"
         "movl %eax, 8(%ebx)\n" /* line 226 | opcodeLookup */
-        "addl $1, 0x114dfa8\n" /* line 228 */
-        "addl $1, 0x114dfb4\n" /* line 229 */
+        "addl $1, scrParserGlob+8\n" /* line 228 */
+        "addl $1, scrParserGlob+20\n" /* line 229 */
         "jmp .Lf9b61a_0009b713\n"
         ".Lf9b61a_0009b811:\n"
-        "movl 0x114dfa8, %eax\n" /* line 183 */
+        "movl scrParserGlob+8, %eax\n" /* line 183 */
         "subl $1, %eax\n"
-        "movl %eax, 0x114dfa8\n"
+        "movl %eax, scrParserGlob+8\n"
         "leal (%eax, %eax, 4), %eax\n" /* line 185 */
         "movl scrParserGlob, %edx\n"
         "leal (%edx, %eax, 4), %ebx\n" /* opcodeLookup */
         "movl 4(%ebx), %edx\n" /* line 201 | opcodeLookup */
-        "addl 0x114dfc0, %edx\n"
-        "movl 0x114dfac, %eax\n" /* line 202 */
+        "addl scrParserGlob+32, %edx\n"
+        "movl scrParserGlob+12, %eax\n" /* line 202 */
         "leal (%eax, %edx, 8), %ecx\n"
         "movl 8(%ebp), %eax\n" /* line 203 | sourcePos */
         "movl %eax, (%ecx)\n"
         "addl $1, %eax\n" /* line 205 */
         "jne .Lf9b61a_0009b6d2\n"
         ".Lf9b61a_0009b849:\n"
-        "movl %edx, 0x114dfcc\n" /* line 209 */
+        "movl %edx, scrParserGlob+44\n" /* line 209 */
         "orl %esi, 4(%ecx)\n" /* line 222 | type */
-        "movl 0x114dfc0, %eax\n" /* line 224 */
+        "movl scrParserGlob+32, %eax\n" /* line 224 */
         "addl $1, %eax\n"
-        "movl %eax, 0x114dfc0\n"
+        "movl %eax, scrParserGlob+32\n"
         "movl %eax, 8(%ebx)\n" /* line 226 | opcodeLookup */
-        "addl $1, 0x114dfa8\n" /* line 228 */
-        "addl $1, 0x114dfb4\n" /* line 229 */
+        "addl $1, scrParserGlob+8\n" /* line 228 */
+        "addl $1, scrParserGlob+20\n" /* line 229 */
         "jmp .Lf9b61a_0009b713\n"
         ".Lf9b61a_0009b875:\n"
-        "movl %edx, 0x114dfd0\n" /* line 213 */
+        "movl %edx, scrParserGlob+48\n" /* line 213 */
         "orl %esi, 4(%ecx)\n" /* line 222 | type */
-        "movl 0x114dfc0, %eax\n" /* line 224 */
+        "movl scrParserGlob+32, %eax\n" /* line 224 */
         "addl $1, %eax\n"
-        "movl %eax, 0x114dfc0\n"
+        "movl %eax, scrParserGlob+32\n"
         "movl %eax, 8(%ebx)\n" /* line 226 | opcodeLookup */
-        "addl $1, 0x114dfa8\n" /* line 228 */
-        "addl $1, 0x114dfb4\n" /* line 229 */
+        "addl $1, scrParserGlob+8\n" /* line 228 */
+        "addl $1, scrParserGlob+20\n" /* line 229 */
         "jmp .Lf9b61a_0009b713\n"
     );
 }
@@ -334,24 +334,24 @@ void RemoveOpcodePos(void)
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 233 */
         "movl %esp, %ebp\n"
-        "movl 0x195ee58, %eax\n" /* line 237 */
+        "movl imp_scrVarPub, %eax\n" /* line 237 */
         "cmpb $0, 0xa(%eax)\n"
         "je .Lf9b8a2_0009b8fc\n"
-        "movl 0x195ee5c, %eax\n" /* line 240 */
+        "movl imp_scrCompilePub, %eax\n" /* line 240 */
         "cmpl $2, 0x28(%eax)\n"
         "je .Lf9b8a2_0009b8fc\n"
-        "subl $1, 0x114dfb4\n" /* line 252 */
-        "movl 0x114dfa8, %edx\n" /* line 255 */
+        "subl $1, scrParserGlob+20\n" /* line 252 */
+        "movl scrParserGlob+8, %edx\n" /* line 255 */
         "subl $1, %edx\n"
-        "movl %edx, 0x114dfa8\n"
-        "movl 0x114dfc0, %ecx\n" /* line 258 */
+        "movl %edx, scrParserGlob+8\n"
+        "movl scrParserGlob+32, %ecx\n" /* line 258 */
         "subl $1, %ecx\n"
-        "movl %ecx, 0x114dfc0\n"
+        "movl %ecx, scrParserGlob+32\n"
         "leal (%edx, %edx, 4), %edx\n" /* line 260 */
         "xorl %eax, %eax\n" /* line 267 */
         "testl %ecx, %ecx\n"
-        "cmovnel 0x114dfbc, %eax\n"
-        "movl %eax, 0x114dfbc\n"
+        "cmovnel scrParserGlob+28, %eax\n"
+        "movl %eax, scrParserGlob+28\n"
         "movl scrParserGlob, %eax\n" /* line 269 */
         "movl %ecx, 8(%eax, %edx, 4)\n"
         ".Lf9b8a2_0009b8fc:\n"
@@ -368,19 +368,19 @@ void AddThreadStartOpcodePos(unsigned int sourcePos)
         "pushl %ebp\n" /* line 273 */
         "movl %esp, %ebp\n"
         /* { scope 1 */
-        "movl 0x195ee58, %eax\n" /* line 277 */
+        "movl imp_scrVarPub, %eax\n" /* line 277 */
         "cmpb $0, 0xa(%eax)\n"
         "je .Lf9b8fe_0009b93b\n"
-        "movl 0x195ee5c, %eax\n" /* line 280 */
+        "movl imp_scrCompilePub, %eax\n" /* line 280 */
         "cmpl $2, 0x28(%eax)\n"
         "je .Lf9b8fe_0009b93b\n"
-        "movl 0x114dfd0, %eax\n" /* line 287 */
-        "movl 0x114dfac, %edx\n"
+        "movl scrParserGlob+48, %eax\n" /* line 287 */
+        "movl scrParserGlob+12, %edx\n"
         "leal (%edx, %eax, 8), %eax\n"
         "movl 8(%ebp), %edx\n" /* line 288 | sourcePos */
         "movl %edx, (%eax)\n"
         "movl $4, 4(%eax)\n" /* line 290 */
-        "movl $0xffffffff, 0x114dfd0\n" /* line 291 */
+        "movl $0xffffffff, scrParserGlob+48\n" /* line 291 */
         /* } scope */
         ".Lf9b8fe_0009b93b:\n"
         "popl %ebp\n" /* line 292 */
@@ -400,7 +400,7 @@ int Scr_GetSourceBuffer(const char *codePos)
         "pushl %ebx\n"
         "movl 8(%ebp), %edi\n" /* codePos */
         /* { scope 1 */
-        "movl 0x114df88, %ecx\n" /* line 869 */
+        "movl scrParserPub+4, %ecx\n" /* line 869 */
         "subl $1, %ecx\n"
         "testl %ecx, %ecx\n"
         "jle .Lf9b940_0009b97c\n"
@@ -481,17 +481,17 @@ void Scr_AddSourceBufferInternal(const char *codePos, char *sourceBuf, int len, 
         "testl %eax, %eax\n"
         "jns .Lf9b986_0009bae8\n"
         ".Lf9b986_0009ba01:\n"
-        "movl 0x114dfb8, %edx\n" /* line 554 */
-        "cmpl %edx, 0x114df88\n"
+        "movl scrParserGlob+24, %edx\n" /* line 554 */
+        "cmpl %edx, scrParserPub+4\n"
         "jae .Lf9b986_0009ba85\n"
         ".Lf9b986_0009ba0f:\n"
         "movl scrParserPub, %ecx\n"
         ".Lf9b986_0009ba15:\n"
-        "movl 0x114df88, %eax\n" /* line 564 */
+        "movl scrParserPub+4, %eax\n" /* line 564 */
         "leal (%eax, %eax, 2), %edx\n"
         "leal (%ecx, %edx, 8), %edx\n"
         "addl $1, %eax\n" /* line 565 */
-        "movl %eax, 0x114df88\n"
+        "movl %eax, scrParserPub+4\n"
         "movl -0x1c(%ebp), %eax\n" /* line 624 */
         "movl %eax, (%edx)\n"
         "movl %edi, 4(%edx)\n" /* line 625 | buf */
@@ -503,7 +503,7 @@ void Scr_AddSourceBufferInternal(const char *codePos, char *sourceBuf, int len, 
         "movb %al, 0x14(%edx)\n"
         "testl %esi, %esi\n" /* line 631 | sourceBuf2 */
         "je .Lf9b986_0009ba51\n"
-        "movl %esi, 0x114df90\n" /* line 632 | sourceBuf2 */
+        "movl %esi, scrParserPub+12\n" /* line 632 | sourceBuf2 */
         /* } scope */
         ".Lf9b986_0009ba51:\n"
         "addl $0x2c, %esp\n" /* line 633 */
@@ -527,18 +527,18 @@ void Scr_AddSourceBufferInternal(const char *codePos, char *sourceBuf, int len, 
         "addl $1, %edx\n" /* line 613 */
         "cmpl %edx, 8(%ebp)\n" /* len */
         "jge .Lf9b986_0009ba64\n"
-        "movl 0x114dfb8, %edx\n" /* line 554 */
-        "cmpl %edx, 0x114df88\n"
+        "movl scrParserGlob+24, %edx\n" /* line 554 */
+        "cmpl %edx, scrParserPub+4\n"
         "jb .Lf9b986_0009ba0f\n"
         ".Lf9b986_0009ba85:\n"
         "leal (%edx, %edx), %eax\n" /* line 556 */
-        "movl %eax, 0x114dfb8\n"
+        "movl %eax, scrParserGlob+24\n"
         "addl %edx, %eax\n" /* line 558 */
         "shll $4, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Z_MallocInternal\n"
         "movl %eax, %ebx\n"
-        "movl 0x114df88, %eax\n" /* line 559 */
+        "movl scrParserPub+4, %eax\n" /* line 559 */
         "leal (%eax, %eax, 2), %eax\n"
         "shll $3, %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -553,7 +553,7 @@ void Scr_AddSourceBufferInternal(const char *codePos, char *sourceBuf, int len, 
         "movl %ebx, %ecx\n"
         "jmp .Lf9b986_0009ba15\n"
         ".Lf9b986_0009bad6:\n"
-        "movl $0, 0x114df90\n" /* line 585 */
+        "movl $0, scrParserPub+12\n" /* line 585 */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 633 */
         "popl %ebx\n"
@@ -611,13 +611,13 @@ char * Scr_AddSourceBuffer(const char *filename, const char *extFilename, const 
         /* { scope 1 */
         "testb %al, %al\n" /* line 760 */
         "je .Lf9bb30_0009bbee\n"
-        "movl 0x114dfc4, %edx\n"
+        "movl scrParserGlob+36, %edx\n"
         "testl %edx, %edx\n"
         "je .Lf9bb30_0009bc94\n"
-        "movl 0x114dfc8, %edx\n" /* line 763 */
+        "movl scrParserGlob+40, %edx\n" /* line 763 */
         "subl $1, %edx\n"
-        "movl %edx, 0x114dfc8\n"
-        "movl 0x114dfc4, %eax\n" /* line 764 */
+        "movl %edx, scrParserGlob+40\n"
+        "movl scrParserGlob+36, %eax\n" /* line 764 */
         "leal (%eax, %edx, 8), %edx\n"
         "movl %edx, -0x2c(%ebp)\n" /* saveSourceBuffer */
         "movl 4(%edx), %edx\n" /* line 765 */
@@ -641,8 +641,8 @@ char * Scr_AddSourceBuffer(const char *filename, const char *extFilename, const 
         "movl (%edx), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf9bb30_0009bbc1\n"
-        "movl 0x114dfc8, %eax\n" /* line 789 */
-        "movl 0x114dfc4, %edx\n"
+        "movl scrParserGlob+40, %eax\n" /* line 789 */
+        "movl scrParserGlob+36, %edx\n"
         "movl (%edx, %eax, 8), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Z_FreeInternal\n"
@@ -810,16 +810,16 @@ void Scr_PrintSourcePos(const char *filename, unsigned int sourcePos)
         ".Lf9bcca_0009bd57:\n"
         "movl -0x41c(%ebp), %ecx\n" /* line 839 | buf */
         "addl $1, %ecx\n" /* buf */
-        "movl $0x21dc08, %edx\n" /* " (savegame)" */
-        "movl 0x114dfc4, %ebx\n" /* startLine */
+        "movl $str_0021dc08, %edx\n" /* " (savegame)" */
+        "movl scrParserGlob+36, %ebx\n" /* startLine */
         "testl %ebx, %ebx\n" /* startLine */
-        "movl $0x2157b8, %eax\n"
+        "movl $str_002157b8, %eax\n"
         "cmovel %eax, %edx\n"
         "movl %ecx, 0xc(%esp)\n" /* buf */
         "movl %edx, 8(%esp)\n"
         "movl -0x424(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21dc14, (%esp)\n" /* "(file '%s'%s, line %d)
+        "movl $str_0021dc14, (%esp)\n" /* "(file '%s'%s, line %d)
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -827,7 +827,7 @@ void Scr_PrintSourcePos(const char *filename, unsigned int sourcePos)
         "calll Com_PrintMessage\n"
         "leal -0x418(%ebp), %eax\n" /* line 840 | line */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
@@ -836,7 +836,7 @@ void Scr_PrintSourcePos(const char *filename, unsigned int sourcePos)
         "movl -0x420(%ebp), %ecx\n" /* line 842 | buf */
         "testl %ecx, %ecx\n" /* buf */
         "jg .Lf9bcca_0009be42\n"
-        "movl $0x21dc2c, 4(%esp)\n" /* line 844 */
+        "movl $str_0021dc2c, 4(%esp)\n" /* line 844 */
         "movl %esi, (%esp)\n" /* type */
         "calll Com_PrintMessage\n"
         /* } scope */
@@ -888,13 +888,13 @@ void Scr_PrintSourcePos(const char *filename, unsigned int sourcePos)
         ".Lf9bcca_0009be42:\n"
         "xorl %edi, %edi\n" /* line 842 | i */
         ".Lf9bcca_0009be44:\n"
-        "movl $0x217914, 4(%esp)\n" /* line 843 */
+        "movl $str_00217914, 4(%esp)\n" /* line 843 */
         "movl %esi, (%esp)\n" /* type */
         "calll Com_PrintMessage\n"
         "addl $1, %edi\n" /* line 842 | i */
         "cmpl -0x420(%ebp), %edi\n" /* i */
         "jne .Lf9bcca_0009be44\n"
-        "movl $0x21dc2c, 4(%esp)\n" /* line 844 */
+        "movl $str_0021dc2c, 4(%esp)\n" /* line 844 */
         "movl %esi, (%esp)\n" /* type */
         "calll Com_PrintMessage\n"
         /* } scope */
@@ -927,7 +927,7 @@ void CompileError(unsigned int sourcePos, const char *msg)
         "leal -0x40c(%ebp), %esi\n" /* text */
         "movl %esi, (%esp)\n"
         "calll vsnprintf\n"
-        "movl 0x195ee58, %ebx\n" /* line 1115 */
+        "movl imp_scrVarPub, %ebx\n" /* line 1115 */
         "cmpb $0, 0xc(%ebx)\n"
         "je .Lf9be7a_0009becd\n"
         "movl 0x10(%ebx), %eax\n" /* line 1117 */
@@ -941,20 +941,20 @@ void CompileError(unsigned int sourcePos, const char *msg)
         "retl\n"
         /* { scope 1 */
         ".Lf9be7a_0009becd:\n"
-        "movl $0x2160e8, (%esp)\n" /* line 1122 */
+        "movl $str_002160e8, (%esp)\n" /* line 1122 */
         "calll Com_Printf\n"
-        "movl $0x21dc30, (%esp)\n" /* line 1123 */
+        "movl $str_0021dc30, (%esp)\n" /* line 1123 */
         "calll Com_Printf\n"
         "cmpb $0, 0xa(%ebx)\n" /* line 1125 */
         "jne .Lf9be7a_0009bf25\n"
         "movl %esi, 4(%esp)\n" /* line 1127 */
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         ".Lf9be7a_0009befb:\n"
-        "movl $0x21dc60, (%esp)\n" /* line 1135 */
+        "movl $str_0021dc60, (%esp)\n" /* line 1135 */
         "calll Com_Printf\n"
-        "movl $0x21dc88, 4(%esp)\n" /* line 1136 */
+        "movl $str_0021dc88, 4(%esp)\n" /* line 1136 */
         "movl $5, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
@@ -966,18 +966,18 @@ void CompileError(unsigned int sourcePos, const char *msg)
         /* { scope 1 */
         ".Lf9be7a_0009bf25:\n"
         "movl %esi, 4(%esp)\n" /* line 1132 */
-        "movl $0x21dc58, (%esp)\n" /* "%s: " */
+        "movl $str_0021dc58, (%esp)\n" /* "%s: " */
         "calll Com_Printf\n"
         "movl 8(%ebp), %eax\n" /* line 1133 | sourcePos */
         "movl %eax, (%esp)\n"
-        "movl 0x114df90, %ecx\n"
-        "movl 0x114df8c, %edx\n"
+        "movl scrParserPub+12, %ecx\n"
+        "movl scrParserPub+8, %edx\n"
         "xorl %eax, %eax\n"
         "calll Scr_PrintSourcePos\n"
         "jmp .Lf9be7a_0009befb\n"
         ".Lf9be7a_0009bf50:\n"
         "movl %esi, 4(%esp)\n" /* line 1118 */
-        "movl $0x216058, (%esp)\n" /* "%s" */
+        "movl $str_00216058, (%esp)\n" /* "%s" */
         "calll va\n"
         "movl %eax, 0x10(%ebx)\n"
         /* } scope */
@@ -1008,9 +1008,9 @@ void Scr_PrintPrevCodePos(print_msg_type_t type, const char *codePos, unsigned i
         /* { scope 1: codePos */
         "testl %ebx, %ebx\n" /* line 885 | codePos */
         "je .Lf9bf70_0009c104\n"
-        "cmpl 0x195ee6c, %ebx\n" /* line 891 | codePos */
+        "cmpl imp_g_EndPos, %ebx\n" /* line 891 | codePos */
         "je .Lf9bf70_0009c110\n"
-        "movl 0x195ee58, %esi\n" /* line 893 | bufferIndex */
+        "movl imp_scrVarPub, %esi\n" /* line 893 | bufferIndex */
         "cmpb $0, 0xa(%esi)\n" /* bufferIndex */
         "je .Lf9bf70_0009c078\n"
         "movl 0x48(%esi), %ecx\n" /* line 903 | bufferIndex */
@@ -1023,7 +1023,7 @@ void Scr_PrintPrevCodePos(print_msg_type_t type, const char *codePos, unsigned i
         "subl $1, %ebx\n" /* line 905 | codePos */
         "movl %ebx, -0x28(%ebp)\n" /* codePos */
         /* { scope 2 */
-        "movl 0x114df88, %esi\n" /* line 869 */
+        "movl scrParserPub+4, %esi\n" /* line 869 */
         "subl $1, %esi\n"
         "testl %esi, %esi\n"
         "jle .Lf9bf70_0009c11f\n"
@@ -1047,10 +1047,10 @@ void Scr_PrintPrevCodePos(print_msg_type_t type, const char *codePos, unsigned i
         "jne .Lf9bf70_0009bff1\n"
         /* } scope */
         ".Lf9bf70_0009c009:\n"
-        "movl 0x114dfac, %eax\n" /* line 477 */
+        "movl scrParserGlob+12, %eax\n" /* line 477 */
         "movl %eax, -0x24(%ebp)\n"
         /* { scope 2 */
-        "movl 0x114dfa8, %edx\n" /* line 424 */
+        "movl scrParserGlob+8, %edx\n" /* line 424 */
         "movl %edx, -0x20(%ebp)\n"
         "movl %edx, %ecx\n" /* line 425 */
         "subl $1, %ecx\n"
@@ -1095,7 +1095,7 @@ void Scr_PrintPrevCodePos(print_msg_type_t type, const char *codePos, unsigned i
         "jne .Lf9bf70_0009c0ac\n"
         ".Lf9bf70_0009c087:\n"
         "movl %ebx, 4(%esp)\n" /* line 911 | codePos */
-        "movl $0x21dcd4, (%esp)\n" /* "%s
+        "movl $str_0021dcd4, (%esp)\n" /* "%s
 
 " */
         "calll va\n"
@@ -1114,7 +1114,7 @@ void Scr_PrintPrevCodePos(print_msg_type_t type, const char *codePos, unsigned i
         ".Lf9bf70_0009c0ac:\n"
         "subl 0x48(%esi), %ebx\n" /* bufferIndex, codePos */
         "movl %ebx, 4(%esp)\n" /* codePos */
-        "movl $0x21dccc, (%esp)\n" /* "@ %d
+        "movl $str_0021dccc, (%esp)\n" /* "@ %d
 " */
         "calll va\n"
         "movl %eax, 0xc(%ebp)\n" /* codePos */
@@ -1148,11 +1148,11 @@ void Scr_PrintPrevCodePos(print_msg_type_t type, const char *codePos, unsigned i
         /* { scope 1: codePos */
         "jmp Scr_PrintSourcePos\n" /* line 906 */
         ".Lf9bf70_0009c104:\n"
-        "movl $0x21dcb8, 0xc(%ebp)\n" /* line 887 | codePos */
+        "movl $str_0021dcb8, 0xc(%ebp)\n" /* line 887 | codePos */
         "movl %eax, 8(%ebp)\n" /* type */
         "jmp .Lf9bf70_0009c0a0\n"
         ".Lf9bf70_0009c110:\n"
-        "movl $0x21dcdc, 0xc(%ebp)\n" /* line 915 | codePos */
+        "movl $str_0021dcdc, 0xc(%ebp)\n" /* line 915 | codePos */
         "movl -0x2c(%ebp), %edx\n" /* type */
         "movl %edx, 8(%ebp)\n" /* type */
         "jmp .Lf9bf70_0009c0a0\n"
@@ -1175,16 +1175,16 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ee58, %eax\n" /* line 1191 */
+        "movl imp_scrVarPub, %eax\n" /* line 1191 */
         "cmpb $0, 0xa(%eax)\n"
         "jne .Lf9c12e_0009c218\n"
-        "movl 0x195ee68, %ebx\n" /* line 1194 */
+        "movl imp_scrVmPub, %ebx\n" /* line 1194 */
         "cmpb $0, 0x16(%ebx)\n"
         "je .Lf9c12e_0009c210\n"
         "cmpb $0, 0x14(%ebx)\n" /* line 1198 */
         "jne .Lf9c12e_0009c228\n"
         ".Lf9c12e_0009c160:\n"
-        "testl $0xffff00, 0x14(%ebx)\n" /* line 1206 */
+        "testl $g_effectVisArray+4096, 0x14(%ebx)\n" /* line 1206 */
         "setne -0x1d(%ebp)\n" /* abort_on_error */
         "cmpb $1, -0x1d(%ebp)\n" /* line 1208 | abort_on_error */
         "sbbl %esi, %esi\n" /* type */
@@ -1192,7 +1192,7 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         /* { scope 2 */
         "movl 0x10(%ebp), %edx\n" /* line 1167 | msg */
         "movl %edx, 4(%esp)\n"
-        "movl $0x21dcf0, (%esp)\n" /* "
+        "movl $str_0021dcf0, (%esp)\n" /* "
 ******* script runtime error *******
 %s: " */
         "calll va\n"
@@ -1205,11 +1205,11 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll Scr_PrintPrevCodePos\n"
-        "movl 0x195ee68, %edx\n" /* line 1170 */
+        "movl imp_scrVmPub, %edx\n" /* line 1170 */
         "movl 8(%edx), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf9c12e_0009c24d\n"
-        "movl $0x21dc60, 4(%esp)\n" /* line 1183 */
+        "movl $str_0021dc60, 4(%esp)\n" /* line 1183 */
         "movl %esi, (%esp)\n"
         "calll Com_PrintMessage\n"
         /* } scope */
@@ -1220,10 +1220,10 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "testl %ebx, %ebx\n"
         "je .Lf9c12e_0009c2e1\n"
         ".Lf9c12e_0009c1db:\n"
-        "movl $0x2160e8, %edx\n" /* "
+        "movl $str_002160e8, %edx\n" /* "
 " */
         ".Lf9c12e_0009c1e0:\n"
-        "movl 0x195ee68, %eax\n"
+        "movl imp_scrVmPub, %eax\n"
         "cmpb $1, 0x16(%eax)\n"
         "sbbl %eax, %eax\n"
         "addl $5, %eax\n"
@@ -1232,7 +1232,7 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "movl %edx, 0xc(%esp)\n"
         "movl 0x10(%ebp), %edx\n" /* msg */
         "movl %edx, 8(%esp)\n"
-        "movl $0x21dd2c, 4(%esp)\n" /* "script runtime error
+        "movl $str_0021dd2c, 4(%esp)\n" /* "script runtime error
 (see console for details)
 %s%s%s" */
         "movl %eax, (%esp)\n"
@@ -1246,14 +1246,14 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "popl %ebp\n"
         "retl\n"
         ".Lf9c12e_0009c218:\n"
-        "movl 0x195ee68, %ebx\n"
+        "movl imp_scrVmPub, %ebx\n"
         /* { scope 1 */
         "cmpb $0, 0x14(%ebx)\n" /* line 1198 */
         "je .Lf9c12e_0009c160\n"
         ".Lf9c12e_0009c228:\n"
         "movl 0x10(%ebp), %eax\n" /* line 1200 | msg */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bbc, (%esp)\n" /* "%s
+        "movl $str_00215bbc, (%esp)\n" /* "%s
 " */
         "calll Com_Printf\n"
         "cmpb $0, 0x16(%ebx)\n" /* line 1201 */
@@ -1272,7 +1272,7 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "leal (%eax, %eax, 2), %eax\n"
         "leal 0x20(%edx, %eax, 8), %ebx\n"
         ".Lf9c12e_0009c260:\n"
-        "movl $0x21d430, 4(%esp)\n" /* line 1174 */
+        "movl $str_0021d430, 4(%esp)\n" /* line 1174 */
         "movl %esi, (%esp)\n"
         "calll Com_PrintMessage\n"
         "xorl %eax, %eax\n" /* line 1176 */
@@ -1288,16 +1288,16 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "cmpl %edi, -0x1c(%ebp)\n" /* line 1172 */
         "jne .Lf9c12e_0009c260\n"
         ".Lf9c12e_0009c296:\n"
-        "movl $0x21dd1c, 4(%esp)\n" /* line 1179 */
+        "movl $str_0021dd1c, 4(%esp)\n" /* line 1179 */
         "movl %esi, (%esp)\n"
         "calll Com_PrintMessage\n"
         "movl $1, 8(%esp)\n" /* line 1180 */
-        "movl 0x195ee68, %eax\n"
+        "movl imp_scrVmPub, %eax\n"
         "movl 0x20(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll Scr_PrintPrevCodePos\n"
-        "movl $0x21dc60, 4(%esp)\n" /* line 1183 */
+        "movl $str_0021dc60, 4(%esp)\n" /* line 1183 */
         "movl %esi, (%esp)\n"
         "calll Com_PrintMessage\n"
         /* } scope */
@@ -1305,8 +1305,8 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "jne .Lf9c12e_0009c1d0\n"
         "jmp .Lf9c12e_0009c210\n"
         ".Lf9c12e_0009c2e1:\n"
-        "movl $0x2157b8, %edx\n" /* line 1214 */
-        "movl $0x2157b8, 0x14(%ebp)\n" /* dialogMessage */
+        "movl $str_002157b8, %edx\n" /* line 1214 */
+        "movl $str_002157b8, 0x14(%ebp)\n" /* dialogMessage */
         "jmp .Lf9c12e_0009c1e0\n"
     );
 }
@@ -1321,9 +1321,9 @@ void CompileError2(const char *codePos, const char *msg)
         "pushl %ebx\n"
         "subl $0x424, %esp\n"
         /* { scope 1 */
-        "movl $0x2160e8, (%esp)\n" /* line 1148 */
+        "movl $str_002160e8, (%esp)\n" /* line 1148 */
         "calll Com_Printf\n"
-        "movl $0x21dc30, (%esp)\n" /* line 1149 */
+        "movl $str_0021dc30, (%esp)\n" /* line 1149 */
         "calll Com_Printf\n"
         "leal 0x10(%ebp), %eax\n" /* line 1151 */
         "movl %eax, -0xc(%ebp)\n" /* argptr */
@@ -1335,16 +1335,16 @@ void CompileError2(const char *codePos, const char *msg)
         "movl %ebx, (%esp)\n"
         "calll vsnprintf\n"
         "movl %ebx, 4(%esp)\n" /* line 1154 */
-        "movl $0x21dc58, (%esp)\n" /* "%s: " */
+        "movl $str_0021dc58, (%esp)\n" /* "%s: " */
         "calll Com_Printf\n"
         "movl $0, 8(%esp)\n" /* line 1155 */
         "movl 8(%ebp), %eax\n" /* codePos */
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll Scr_PrintPrevCodePos\n"
-        "movl $0x21dc60, (%esp)\n" /* line 1156 */
+        "movl $str_0021dc60, (%esp)\n" /* line 1156 */
         "calll Com_Printf\n"
-        "movl $0x21dc88, 4(%esp)\n" /* line 1157 */
+        "movl $str_0021dc88, 4(%esp)\n" /* line 1157 */
         "movl $5, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */

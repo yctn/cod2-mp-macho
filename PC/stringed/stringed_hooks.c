@@ -11,13 +11,13 @@ extern const dvar_t *loc_forceEnglish; /* 0x0 */
 extern const dvar_t *loc_translate; /* 0x0 */
 extern const dvar_t *loc_warnings; /* 0x0 */
 extern const dvar_t *loc_warningsAsErrors; /* 0x0 */
-static char szErrorString[1024]; /* 0x33c1a0 */
-static int iCurrString; /* 0x33cda0 */
-static char szStrings[2][1024]; /* 0x33c5a0 */
-static languageInfo_t g_languages[14]; /* 0x308bc0 */
-static qboolean g_currentAsian; /* 0x33c180 */
+static char szErrorString[1024]; /* szErrorString */
+static int iCurrString; /* iCurrString */
+static char szStrings[2][1024]; /* szStrings */
+static languageInfo_t g_languages[14]; /* g_languages */
+static qboolean g_currentAsian; /* g_currentAsian */
 
-extern const dvar_t **com_developer; /* 0x195ecb8 */
+extern const dvar_t **com_developer; /* imp_fs_ignoreLocalized */
 extern int __mh_execute_header;
 extern byte *__DefaultRuneLocale;
 

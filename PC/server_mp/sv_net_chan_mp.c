@@ -163,7 +163,7 @@ void SV_Netchan_AddOOBProfilePacket(int iLength)
 
     /*
      * Check if net profiling is enabled.
-     * Original accesses: *(*(byte**)0x195f67c + 8) -- dvar current.integer
+     * Original accesses: *(*(byte**)imp_net_profile + 8) -- dvar current.integer
      * net_profile_dvar is a pointer to a dvar_t*; double-deref to get enabled state.
      */
     if (*(int *)(*(byte **)net_profile_dvar + 8) == 0)

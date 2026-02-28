@@ -16,7 +16,7 @@ extern void Scr_NotifyNum(int entNum, int classnum, int stringValue, unsigned in
 extern void Scr_Error(const char *msg);
 
 extern spawn_t spawns[22]; /* 0x0 */
-static const ent_field_t fields[11]; /* 0x333360 */
+static const ent_field_t fields[11]; /* fields */
 
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out);
 static my_upsampler Scr_ReadOnlyField(gentity_t *ent, int offset);
@@ -51,13 +51,13 @@ my_upsampler G_SpawnEntitiesFromString(void);
 /* line 7 */
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out)
 {
-    return G_SpawnStringInternal((const char *)(*(int *)0x195f6a0 + 0x1348), key, defaultString, out);
+    return G_SpawnStringInternal((const char *)(*(int *)imp_level + 0x1348), key, defaultString, out);
 }
 
 /* line 47 */
 static my_upsampler Scr_ReadOnlyField(gentity_t *ent, int offset)
 {
-    Scr_Error((const char *)0x2b33d0);
+    Scr_Error((const char *)str_002b33d0);
 }
 
 /* line 160 */
@@ -117,7 +117,7 @@ unsigned int G_SetEntityScriptVariableInternal(void)
         "leal -0x24(%ebp), %eax\n" /* key */
         "movl %eax, 0xc(%esp)\n" /* key */
         "movl %ebx, 8(%esp)\n"
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %esi, (%esp)\n" /* value */
         "calll sscanf\n"
         "movl %ebx, (%esp)\n" /* line 187 */
@@ -162,12 +162,12 @@ my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
         "movl fields, %eax\n" /* line 346 */
         "testl %eax, %eax\n"
         "je .Lf19e380_0019e3bf\n"
-        "movl $0x333368, %ebx\n"
+        "movl $fields+8, %ebx\n"
         ".Lf19e380_0019e39d:\n"
         "cmpl $8, (%ebx)\n" /* line 348 */
         "ja .Lf19e380_0019e3b5\n"
         "movl (%ebx), %eax\n"
-        "jmpl *0x303020(, %eax, 4)\n"
+        "jmpl *color+672(, %eax, 4)\n"
         "movl -4(%ebx), %edx\n" /* line 363 */
         "movzbl (%esi, %edx), %eax\n" /* source */
         "movb %al, (%edi, %edx)\n" /* dest */
@@ -242,7 +242,7 @@ const gitem_t * G_GetItemForClassname(void)
         "subl $0x2c, %esp\n"
         "movl %eax, %ebx\n" /* classname */
         /* { scope 1 */
-        "movl $0x2b33f8, %edi\n" /* line 399 | itemIndex */
+        "movl $str_002b33f8, %edi\n" /* line 399 | itemIndex */
         "movl $7, %ecx\n"
         "cld\n"
         "movl %eax, %esi\n" /* weapIndex */
@@ -262,7 +262,7 @@ const gitem_t * G_GetItemForClassname(void)
         "testl %eax, %eax\n" /* line 402 */
         "jne .Lf19e43e_0019e4cb\n"
         ".Lf19e43e_0019e47e:\n"
-        "movl 0x195edac, %eax\n" /* line 409 */
+        "movl imp_bg_numItems, %eax\n" /* line 409 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
         "cmpl $0x81, %eax\n"
@@ -281,7 +281,7 @@ const gitem_t * G_GetItemForClassname(void)
         /* { scope 1 */
         ".Lf19e43e_0019e49b:\n"
         "movl $0x81, %edi\n" /* line 409 | itemIndex */
-        "movl 0x195eda8, %eax\n"
+        "movl imp_bg_itemlist, %eax\n"
         "addl $0x162c, %eax\n"
         ".Lf19e43e_0019e4aa:\n"
         "movl %eax, %esi\n" /* line 411 | weapIndex */
@@ -329,7 +329,7 @@ qboolean G_CallSpawnEntity(gentity_t *ent)
         "movzwl 0x168(%edi), %eax\n" /* line 487 | ent */
         "testw %ax, %ax\n"
         "jne .Lf19e4e8_0019e516\n"
-        "movl $0x2b3400, (%esp)\n" /* line 489 */
+        "movl $str_002b3400, (%esp)\n" /* line 489 */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -381,7 +381,7 @@ qboolean G_CallSpawnEntity(gentity_t *ent)
         "movl %eax, (%esp)\n"
         "calll SL_ConvertToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b3424, (%esp)\n" /* "%s doesn't have a spawn function
+        "movl $str_002b3424, (%esp)\n" /* "%s doesn't have a spawn function
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -415,7 +415,7 @@ my_upsampler GScr_AddFieldsForEntity(void)
         "testl %edx, %edx\n"
         "je .Lf19e5a6_0019e5e7\n"
         "xorl %esi, %esi\n" /* line 523 */
-        "movl $0x333370, %ebx\n"
+        "movl $fields+16, %ebx\n"
         ".Lf19e5a6_0019e5bf:\n"
         "movl %esi, %eax\n" /* line 531 */
         "sarl $4, %eax\n"
@@ -441,7 +441,7 @@ my_upsampler GScr_AddFieldsForEntity(void)
 /* line 543 */
 my_upsampler GScr_AddFieldsForRadiant(void)
 {
-    Scr_AddFields("radiant", (const void *)0x2b3448);
+    Scr_AddFields("radiant", (const void *)str_002b3448);
 }
 
 /* line 814 */
@@ -471,7 +471,7 @@ gentity_t * Scr_GetEntity(unsigned int index)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         ".Lf19e62c_0019e660:\n"
         "movl %edx, %eax\n" /* line 841 */
         "addl $0x14, %esp\n"
@@ -479,7 +479,7 @@ gentity_t * Scr_GetEntity(unsigned int index)
         "popl %ebp\n"
         "retl\n"
         ".Lf19e62c_0019e668:\n"
-        "movl $0x2b21c8, 4(%esp)\n" /* line 839 */
+        "movl $str_002b21c8, 4(%esp)\n" /* line 839 */
         "movl %ebx, (%esp)\n" /* index */
         "calll Scr_ParamError\n"
         "xorl %edx, %edx\n"
@@ -500,7 +500,7 @@ my_upsampler Scr_FreeHudElem(game_hudelem_t *hud)
         "movl %ebx, (%esp)\n" /* line 855 | hud */
         "calll Scr_FreeHudElemConstStrings\n"
         "movl $1, 4(%esp)\n" /* line 856 */
-        "subl 0x195f6c4, %ebx\n" /* hud */
+        "subl imp_g_hudelems, %ebx\n" /* hud */
         "sarl $2, %ebx\n" /* hud */
         "imull $0x8af8af8b, %ebx, %ebx\n" /* hud */
         "movl %ebx, (%esp)\n" /* hud */
@@ -522,7 +522,7 @@ my_upsampler Scr_AddHudElem(game_hudelem_t *hud)
         "subl $0x18, %esp\n"
         "movl 8(%ebp), %eax\n" /* hud */
         "movl $1, 4(%esp)\n" /* line 871 */
-        "subl 0x195f6c4, %eax\n"
+        "subl imp_g_hudelems, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x8af8af8b, %eax, %eax\n"
         "movl %eax, (%esp)\n"
@@ -609,7 +609,7 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "cmpl $8, 8(%ebx)\n" /* line 239 */
         "ja .Lf19e73a_0019e77e\n"
         "movl 8(%ebx), %eax\n"
-        "jmpl *0x303044(, %eax, 4)\n"
+        "jmpl *color+708(, %eax, 4)\n"
         "movl 4(%ebx), %eax\n" /* line 253 */
         "addl %eax, -0x34(%ebp)\n"
         "movl %edi, (%esp)\n" /* value */
@@ -648,7 +648,7 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "leal -0x20(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %edx, 8(%esp)\n"
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl %edi, (%esp)\n" /* value */
         "calll sscanf\n"
         "movl 4(%ebx), %edx\n" /* line 248 */
@@ -693,7 +693,7 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         /* { scope 1 */
         "cmpl $8, %eax\n" /* line 696 */
         "ja .Lf19e8a4_0019e8d4\n"
-        "jmpl *0x303068(, %eax, 4)\n"
+        "jmpl *color+744(, %eax, 4)\n"
         "movl 0x10(%ebp), %ecx\n" /* line 732 | ofs */
         "movl 8(%ebp), %ebx\n" /* b */
         "movzbl (%ecx, %ebx), %eax\n"
@@ -808,12 +808,12 @@ my_upsampler Scr_GetEnt(void)
         "retl\n"
         /* { scope 1 */
         ".Lf19e9ac_0019e9fc:\n"
-        "movl 0x195f6a0, %ecx\n" /* line 973 */
+        "movl imp_level, %ecx\n" /* line 973 */
         "movl 0xc(%ecx), %ebx\n" /* ent */
         "testl %ebx, %ebx\n" /* ent */
         "jle .Lf19e9ac_0019e9f4\n"
         "xorl %esi, %esi\n" /* i */
-        "movl 0x195f688, %ebx\n" /* ent */
+        "movl imp_g_entities, %ebx\n" /* ent */
         "xorl %edx, %edx\n"
         ".Lf19e9ac_0019ea13:\n"
         "cmpb $0, 0xfc(%ebx)\n" /* line 975 | ent */
@@ -846,10 +846,10 @@ my_upsampler Scr_GetEnt(void)
         ".Lf19e9ac_0019ea5a:\n"
         "testl %edx, %edx\n" /* line 983 */
         "je .Lf19e9ac_0019ea74\n"
-        "movl $0x2b3454, (%esp)\n" /* line 984 */
+        "movl $str_002b3454, (%esp)\n" /* line 984 */
         "calll Scr_Error\n"
         "movl %ebx, %edx\n" /* ent */
-        "movl 0x195f6a0, %ecx\n"
+        "movl imp_level, %ecx\n"
         "jmp .Lf19e9ac_0019ea2e\n"
         ".Lf19e9ac_0019ea74:\n"
         "movl %ebx, %edx\n" /* line 983 | ent */
@@ -873,12 +873,12 @@ my_upsampler Scr_GetEntArray(void)
         "testl %eax, %eax\n"
         "jne .Lf19ea78_0019eaf4\n"
         "calll Scr_MakeArray\n" /* line 1011 */
-        "movl 0x195f6a0, %edx\n" /* line 1012 */
+        "movl imp_level, %edx\n" /* line 1012 */
         "movl 0xc(%edx), %edi\n" /* ent */
         "testl %edi, %edi\n" /* ent */
         "jle .Lf19ea78_0019eaec\n"
         "xorl %esi, %esi\n" /* i */
-        "movl 0x195f688, %ebx\n"
+        "movl imp_g_entities, %ebx\n"
         "addl $0xfc, %ebx\n"
         "movl %edx, %edi\n" /* ent */
         "jmp .Lf19ea78_0019eabc\n"
@@ -926,12 +926,12 @@ my_upsampler Scr_GetEntArray(void)
         "cmpl $3, 8(%eax)\n" /* line 1032 */
         "jne .Lf19ea78_0019eaec\n"
         "calll Scr_MakeArray\n" /* line 1035 */
-        "movl 0x195f6a0, %edx\n" /* line 1036 */
+        "movl imp_level, %edx\n" /* line 1036 */
         "movl 0xc(%edx), %esi\n" /* i */
         "testl %esi, %esi\n" /* i */
         "jle .Lf19ea78_0019eaec\n"
         "xorl %esi, %esi\n" /* i */
-        "movl 0x195f688, %ebx\n"
+        "movl imp_g_entities, %ebx\n"
         "movl %ebx, %edi\n" /* ent */
         "addl $0xfc, %ebx\n"
         "movl %edx, -0x24(%ebp)\n"
@@ -979,7 +979,7 @@ qboolean G_SpawnFloat(const char *key, const char *defaultString, float *out)
         "movl %eax, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* key */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x1348, %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_SpawnStringInternal\n"
@@ -1016,7 +1016,7 @@ qboolean G_SpawnInt(const char *key, const char *defaultString, int *out)
         "movl %eax, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* key */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x1348, %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_SpawnStringInternal\n"
@@ -1053,7 +1053,7 @@ qboolean G_SpawnVector(const char *key, const char *defaultString, float *out)
         "movl %eax, 8(%esp)\n"
         "movl 8(%ebp), %eax\n" /* key */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f6a0, %eax\n"
+        "movl imp_level, %eax\n"
         "addl $0x1348, %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_SpawnStringInternal\n"
@@ -1067,7 +1067,7 @@ qboolean G_SpawnVector(const char *key, const char *defaultString, float *out)
         "movl %edx, 0x10(%esp)\n" /* line 42 */
         "movl %ecx, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* out */
-        "movl $0x21c238, 4(%esp)\n" /* "%f %f %f" */
+        "movl $str_0021c238, 4(%esp)\n" /* "%f %f %f" */
         "movl -0xc(%ebp), %eax\n" /* s */
         "movl %eax, (%esp)\n"
         "calll sscanf\n"
@@ -1095,48 +1095,48 @@ my_upsampler SP_worldspawn(void)
         /* { scope 1 */
         "leal -0x1c(%ebp), %edi\n" /* line 9 | s */
         "movl %edi, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x21c208, 4(%esp)\n" /* "classname" */
-        "movl 0x195f6a0, %esi\n"
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_0021c208, 4(%esp)\n" /* "classname" */
+        "movl imp_level, %esi\n"
         "leal 0x1348(%esi), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll G_SpawnStringInternal\n"
-        "movl $0x2b347c, 4(%esp)\n" /* line 1068 */
+        "movl $str_002b347c, 4(%esp)\n" /* line 1068 */
         "movl -0x1c(%ebp), %eax\n" /* s */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
         "jne .Lf19ecb4_0019eef9\n"
         ".Lf19ecb4_0019ed03:\n"
-        "movl $0x2a89ec, 4(%esp)\n" /* line 1074 */
+        "movl $str_002a89ec, 4(%esp)\n" /* line 1074 */
         "movl $2, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl 0x1f8(%esi), %eax\n" /* line 1076 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0xd, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl %edi, 0xc(%esp)\n" /* line 9 */
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x2b34bc, 4(%esp)\n" /* "ambienttrack" */
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_002b34bc, 4(%esp)\n" /* "ambienttrack" */
         "movl %ebx, (%esp)\n"
         "calll G_SpawnStringInternal\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1079 | s */
         "cmpb $0, (%eax)\n"
         "je .Lf19ecb4_0019eec7\n"
         "movl %eax, 4(%esp)\n" /* line 1080 */
-        "movl $0x2b34cc, (%esp)\n" /* "n\%s" */
+        "movl $str_002b34cc, (%esp)\n" /* "n\%s" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $3, (%esp)\n"
         "calll SV_SetConfigstring\n"
         ".Lf19ecb4_0019ed85:\n"
         "movl %edi, 0xc(%esp)\n" /* line 9 */
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x2b34d4, 4(%esp)\n" /* "message" */
-        "movl 0x195f6a0, %ebx\n"
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_002b34d4, 4(%esp)\n" /* "message" */
+        "movl imp_level, %ebx\n"
         "addl $0x1348, %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll G_SpawnStringInternal\n"
@@ -1144,15 +1144,15 @@ my_upsampler SP_worldspawn(void)
         "movl %eax, 4(%esp)\n"
         "movl $4, (%esp)\n"
         "calll SV_SetConfigstring\n"
-        "movl 0x195f6d4, %eax\n" /* line 1087 */
+        "movl imp_g_motd, %eax\n" /* line 1087 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl $0xe, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "movl %edi, 0xc(%esp)\n" /* line 9 */
-        "movl $0x2b34dc, 8(%esp)\n" /* "800" */
-        "movl $0x21a8b4, 4(%esp)\n" /* "gravity" */
+        "movl $str_002b34dc, 8(%esp)\n" /* "800" */
+        "movl $str_0021a8b4, 4(%esp)\n" /* "gravity" */
         "movl %ebx, (%esp)\n"
         "calll G_SpawnStringInternal\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1091 | s */
@@ -1161,13 +1161,13 @@ my_upsampler SP_worldspawn(void)
         "fstpl -0x30(%ebp)\n"
         "cvtsd2ss -0x30(%ebp), %xmm0\n"
         "movss %xmm0, 4(%esp)\n"
-        "movl 0x195f6c8, %eax\n"
+        "movl imp_g_gravity, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetFloat\n"
         "movl %edi, 0xc(%esp)\n" /* line 9 */
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x2b34e0, 4(%esp)\n" /* "northyaw" */
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_002b34e0, 4(%esp)\n" /* "northyaw" */
         "movl %ebx, (%esp)\n"
         "calll G_SpawnStringInternal\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1094 | s */
@@ -1178,19 +1178,19 @@ my_upsampler SP_worldspawn(void)
         "calll SV_SetConfigstring\n"
         ".Lf19ecb4_0019ee56:\n"
         "movl %edi, 0xc(%esp)\n" /* line 9 */
-        "movl $0x21952c, 8(%esp)\n" /* "0" */
-        "movl $0x2b33a4, 4(%esp)\n" /* "spawnflags" */
-        "movl 0x195f6a0, %eax\n"
+        "movl $str_0021952c, 8(%esp)\n" /* "0" */
+        "movl $str_002b33a4, 4(%esp)\n" /* "spawnflags" */
+        "movl imp_level, %eax\n"
         "addl $0x1348, %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_SpawnStringInternal\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1100 | s */
         "movl %eax, (%esp)\n"
         "calll atoi\n"
-        "movl 0x195f688, %ebx\n"
+        "movl imp_g_entities, %ebx\n"
         "movl %eax, 0x8bd10(%ebx)\n"
         "movl $0x3fe, 0x8bba0(%ebx)\n" /* line 1102 */
-        "movl 0x195f5bc, %eax\n" /* line 1103 */
+        "movl imp_scr_const, %eax\n" /* line 1103 */
         "movzwl 0x60(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "leal 0x8bd08(%ebx), %eax\n"
@@ -1206,17 +1206,17 @@ my_upsampler SP_worldspawn(void)
         "retl\n"
         /* { scope 1 */
         ".Lf19ecb4_0019eec7:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 1082 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 1082 */
         "movl $3, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "jmp .Lf19ecb4_0019ed85\n"
         ".Lf19ecb4_0019eee0:\n"
-        "movl $0x21952c, 4(%esp)\n" /* line 1097 */
+        "movl $str_0021952c, 4(%esp)\n" /* line 1097 */
         "movl $0xb, (%esp)\n"
         "calll SV_SetConfigstring\n"
         "jmp .Lf19ecb4_0019ee56\n"
         ".Lf19ecb4_0019eef9:\n"
-        "movl $0x2b3488, 4(%esp)\n" /* line 1070 */
+        "movl $str_002b3488, 4(%esp)\n" /* line 1070 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19ecb4_0019ed03\n"
@@ -1236,18 +1236,18 @@ my_upsampler G_LoadStructs(void)
         "subl $0x6c, %esp\n"
         /* { scope 1 */
         "movl $0, 4(%esp)\n" /* line 1143 */
-        "movl 0x195f6d0, %eax\n"
+        "movl imp_g_scr_data, %eax\n"
         "movl 0x10b0(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_ExecThread\n"
         "movzwl %ax, %eax\n" /* line 1144 */
         "movl %eax, (%esp)\n"
         "calll Scr_FreeThread\n"
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         "movl %ebx, -0x30(%ebp)\n"
         "jmp .Lf19ef12_0019ef52\n"
         ".Lf19ef12_0019ef4c:\n"
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         ".Lf19ef12_0019ef52:\n"
         "leal 0x1348(%ebx), %esi\n" /* line 1146 */
         "movl %esi, (%esp)\n"
@@ -1256,12 +1256,12 @@ my_upsampler G_LoadStructs(void)
         "je .Lf19ef12_0019f027\n"
         "leal -0x1c(%ebp), %eax\n" /* line 9 | classname */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x21c208, 4(%esp)\n" /* "classname" */
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_0021c208, 4(%esp)\n" /* "classname" */
         "movl %esi, (%esp)\n"
         "calll G_SpawnStringInternal\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1149 | classname */
-        "movl $0x2b3394, %esi\n" /* "script_struct" */
+        "movl $str_002b3394, %esi\n" /* "script_struct" */
         "movl $0xe, %ecx\n"
         "cld\n"
         "movl %eax, %edi\n"
@@ -1275,7 +1275,7 @@ my_upsampler G_LoadStructs(void)
         "testl %eax, %eax\n"
         "jne .Lf19ef12_0019ef4c\n"
         "movl $0, 4(%esp)\n" /* line 318 */
-        "movl 0x195f6d0, %eax\n"
+        "movl imp_g_scr_data, %eax\n"
         "movl 0x10b4(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_AddExecThread\n"
@@ -1330,7 +1330,7 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         /* { scope 1 */
         "cmpl $6, %eax\n" /* line 598 */
         "ja .Lf19f034_0019f084\n"
-        "jmpl *0x30308c(, %eax, 4)\n"
+        "jmpl *color+780(, %eax, 4)\n"
         "movl 0x10(%ebp), %ebx\n" /* line 620 | ofs */
         "addl 8(%ebp), %ebx\n" /* b */
         "movl $0, (%esp)\n" /* line 833 */
@@ -1344,7 +1344,7 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "movl %edx, (%ebx)\n" /* line 620 */
         /* } scope */
         ".Lf19f034_0019f084:\n"
@@ -1396,7 +1396,7 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         "fstps (%eax, %edx)\n"
         "jmp .Lf19f034_0019f084\n"
         ".Lf19f034_0019f12b:\n"
-        "movl $0x2b21c8, 4(%esp)\n" /* line 839 */
+        "movl $str_002b21c8, 4(%esp)\n" /* line 839 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         "xorl %edx, %edx\n"
@@ -1434,7 +1434,7 @@ qboolean Scr_SetObjectField(unsigned int classnum, int entnum, int offset)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "addl 0x195f688, %edx\n"
+        "addl imp_g_entities, %edx\n"
         "movl %ecx, %eax\n" /* line 564 */
         "andl $0xc000, %eax\n"
         "cmpl $0xc000, %eax\n"
@@ -1512,7 +1512,7 @@ my_upsampler Scr_GetObjectField(unsigned int classnum, int entnum, int offset)
         "leal (, %eax, 8), %ecx\n"
         "subl %eax, %ecx\n"
         "shll $4, %ecx\n"
-        "addl 0x195f688, %ecx\n"
+        "addl imp_g_entities, %ecx\n"
         "movl %ebx, %eax\n" /* line 667 */
         "andl $0xc000, %eax\n"
         "cmpl $0xc000, %eax\n"
@@ -1566,7 +1566,7 @@ my_upsampler Scr_FreeEntity(gentity_t *ent)
         "movl fields, %eax\n" /* line 776 */
         "testl %eax, %eax\n"
         "je .Lf19f28a_0019f2d2\n"
-        "movl $0x333368, %ebx\n"
+        "movl $fields+8, %ebx\n"
         "jmp .Lf19f28a_0019f2ad\n"
         ".Lf19f28a_0019f2a3:\n"
         "movl 8(%ebx), %eax\n"
@@ -1629,9 +1629,9 @@ my_upsampler G_CallSpawn(void)
         /* { scope 1: i */
         "leal -0x1c(%ebp), %eax\n" /* line 9 | classname */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
-        "movl $0x21c208, 4(%esp)\n" /* "classname" */
-        "movl 0x195f6a0, %ebx\n"
+        "movl $str_002157b8, 8(%esp)\n"
+        "movl $str_0021c208, 4(%esp)\n" /* "classname" */
+        "movl imp_level, %ebx\n"
         "leal 0x1348(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_SpawnStringInternal\n"
@@ -1691,7 +1691,7 @@ my_upsampler G_CallSpawn(void)
         "calll G_Spawn\n" /* line 468 */
         "movl %eax, %esi\n" /* ent */
         /* { scope 2 */
-        "movl 0x195f6a0, %eax\n" /* line 295 */
+        "movl imp_level, %eax\n" /* line 295 */
         "movl 0x134c(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jg .Lf19f322_0019f45b\n"
@@ -1747,7 +1747,7 @@ my_upsampler G_CallSpawn(void)
         "jmp .Lf19f322_0019f401\n"
         /* } scope */
         ".Lf19f322_0019f48b:\n"
-        "movl $0x2b34ec, (%esp)\n" /* line 440 */
+        "movl $str_002b34ec, (%esp)\n" /* line 440 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x4c, %esp\n" /* line 470 */
@@ -1758,13 +1758,13 @@ my_upsampler G_CallSpawn(void)
         "retl\n"
         /* { scope 1: i */
         ".Lf19f322_0019f49f:\n"
-        "movl 0x195f6cc, %eax\n" /* line 458 */
+        "movl imp___Z12G_FreeEntityP9gentity_s, %eax\n" /* line 458 */
         "cmpl %eax, 4(%ebx)\n" /* s */
         "je .Lf19f322_0019f3b5\n"
         "calll G_Spawn\n" /* line 460 */
         "movl %eax, %edi\n" /* i */
         /* { scope 2 */
-        "movl 0x195f6a0, %eax\n" /* line 295 */
+        "movl imp_level, %eax\n" /* line 295 */
         "movl 0x134c(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "jg .Lf19f322_0019f4f2\n"
@@ -1810,7 +1810,7 @@ my_upsampler G_SpawnEntitiesFromString(void)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "movl 0x195f6a0, %eax\n" /* line 1120 */
+        "movl imp_level, %eax\n" /* line 1120 */
         "addl $0x1348, %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_ParseSpawnVars\n"
@@ -1818,7 +1818,7 @@ my_upsampler G_SpawnEntitiesFromString(void)
         "je .Lf19f528_0019f56f\n"
         ".Lf19f528_0019f545:\n"
         "calll SP_worldspawn\n" /* line 1123 */
-        "movl 0x195f6a0, %ebx\n"
+        "movl imp_level, %ebx\n"
         "addl $0x1348, %ebx\n"
         "jmp .Lf19f528_0019f55d\n"
         ".Lf19f528_0019f558:\n"
@@ -1833,7 +1833,7 @@ my_upsampler G_SpawnEntitiesFromString(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf19f528_0019f56f:\n"
-        "movl $0x2b350c, 4(%esp)\n" /* line 1121 */
+        "movl $str_002b350c, 4(%esp)\n" /* line 1121 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf19f528_0019f545\n"

@@ -9,12 +9,12 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static XAnimInfo g_xAnimInfo[4096]; /* 0x3be000 */
-static unsigned int g_end; /* 0x3e6620 */
+static XAnimInfo g_xAnimInfo[4096]; /* g_xAnimInfo */
+static unsigned int g_end; /* g_end */
 extern void SL_RemoveRefToString(unsigned int stringValue);
-static XAnimNotify g_notifyList[128]; /* 0x3e6020 */
-static int g_notifyListSize; /* 0x3e6000 */
-static Bool g_anim_developer; /* 0x3e6625 */
+static XAnimNotify g_notifyList[128]; /* g_notifyList */
+static int g_notifyListSize; /* g_notifyListSize */
+static Bool g_anim_developer; /* g_anim_developer */
 
 extern void * Hunk_AllocAlignInternal(int size, int align);
 
@@ -134,16 +134,16 @@ void XAnimInit(void)
         "jne .Lf38dd0_00038dfe\n"
         ".Lf38dd0_00038e40:\n"
         "xorl %eax, %eax\n" /* line 127 */
-        "movl %eax, 0x3be00c\n" /* line 129 */
-        "movl %eax, 0x3be010\n" /* line 130 */
-        "movw $0, 0x3be014\n" /* line 133 */
-        "movw $0, 0x3be016\n" /* line 134 */
+        "movl %eax, g_xAnimInfo+12\n" /* line 129 */
+        "movl %eax, g_xAnimInfo+16\n" /* line 130 */
+        "movw $0, g_xAnimInfo+20\n" /* line 133 */
+        "movw $0, g_xAnimInfo+22\n" /* line 134 */
         "movl $3, 8(%esp)\n" /* line 136 */
         "movl $0, 4(%esp)\n"
-        "movl $0x217830, (%esp)\n" /* "end" */
+        "movl $str_00217830, (%esp)\n" /* "end" */
         "calll SL_GetString_\n"
         "movl %eax, g_end\n"
-        "movl 0x195ecc0, %eax\n" /* line 141 */
+        "movl imp_com_developer, %eax\n" /* line 141 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -481,7 +481,7 @@ Bool XAnimHasFinished(const XAnimTree *tree, unsigned int animIndex)
         "movss 4(%edx), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
         "ja .Lf39164_000391af\n"
-        "ucomiss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "jp .Lf39164_000391a1\n"
         "je .Lf39164_000391af\n"
         ".Lf39164_000391a1:\n"
@@ -518,7 +518,7 @@ const char * XAnimGetAnimName(const XAnim *anims, unsigned int animIndex)
 {
     char *entry = (char *)anims + animIndex * 8 + 0xc;
     if (*(unsigned short *)entry != 0)
-        return (const char *)0x2157b8;
+        return (const char *)str_002157b8;
     return *(const char **)(*(void **)(entry + 4) + 0x24);
 }
 
@@ -959,7 +959,7 @@ const char * XAnimGetAnimDebugName(const XAnim *anims, unsigned int animIndex)
         "cmpb $0, 0x28(%eax)\n"
         "je .Lf395c2_0003960a\n"
         "movl %ecx, 0xc(%ebp)\n" /* line 3012 | animIndex */
-        "movl $0x217860, 8(%ebp)\n" /* anims */
+        "movl $str_00217860, 8(%ebp)\n" /* anims */
         /* } scope */
         "popl %ebx\n" /* line 3013 */
         "popl %ebp\n"
@@ -979,7 +979,7 @@ const char * XAnimGetAnimDebugName(const XAnim *anims, unsigned int animIndex)
         /* { scope 1 */
         ".Lf395c2_0003960f:\n"
         "movl %ecx, 0xc(%ebp)\n" /* line 3008 | animIndex */
-        "movl $0x21785c, 8(%ebp)\n" /* anims */
+        "movl $str_0021785c, 8(%ebp)\n" /* anims */
         /* } scope */
         "popl %ebx\n" /* line 3013 */
         "popl %ebp\n"
@@ -1077,11 +1077,11 @@ XAnimParts * XAnimPrecache(const char *name, Alloc_t Alloc)
         "retl\n"
         /* { scope 1: size, notifyInfoIndex */
         ".Lf3965c_000396c5:\n"
-        "movl $0x217870, 8(%esp)\n" /* line 236 */
+        "movl $str_00217870, 8(%esp)\n" /* line 236 */
         "movl %edi, 4(%esp)\n" /* name */
-        "movl $0x217878, (%esp)\n" /* "^3WARNING: Couldn't find xanim '%s', using default xanim '%s" */
+        "movl $str_00217878, (%esp)\n" /* "^3WARNING: Couldn't find xanim '%s', using default xanim '%s" */
         "calll Com_Printf\n"
-        "movl $0x217870, 4(%esp)\n" /* line 196 */
+        "movl $str_00217870, 4(%esp)\n" /* line 196 */
         "movl $5, (%esp)\n"
         "calll Hunk_FindDataForFile\n"
         "movl %eax, %esi\n"
@@ -1158,7 +1158,7 @@ XAnimParts * XAnimPrecache(const char *name, Alloc_t Alloc)
         ".Lf3965c_000397b0:\n"
         "movl 0xc(%ebp), %edx\n" /* line 240 | Alloc */
         "movl %edx, 4(%esp)\n"
-        "movl $0x217870, (%esp)\n" /* "void" */
+        "movl $str_00217870, (%esp)\n" /* "void" */
         "calll XAnimLoadFile\n"
         "movl %eax, %esi\n" /* defaultParts */
         "testl %eax, %eax\n" /* line 241 */
@@ -1166,13 +1166,13 @@ XAnimParts * XAnimPrecache(const char *name, Alloc_t Alloc)
         "movl 0xc(%ebp), %eax\n" /* line 247 | Alloc */
         "movl %eax, 0xc(%esp)\n"
         "movl %esi, 8(%esp)\n" /* defaultParts */
-        "movl $0x217870, 4(%esp)\n" /* "void" */
+        "movl $str_00217870, 4(%esp)\n" /* "void" */
         "movl $5, (%esp)\n"
         "calll Hunk_SetDataForFile\n"
         "jmp .Lf3965c_000396fb\n"
         ".Lf3965c_000397ed:\n"
-        "movl $0x217870, 8(%esp)\n" /* line 243 */
-        "movl $0x2178c0, 4(%esp)\n" /* "Cannot find xanim '%s'." */
+        "movl $str_00217870, 8(%esp)\n" /* line 243 */
+        "movl $str_002178c0, 4(%esp)\n" /* "Cannot find xanim '%s'." */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf3965c_0003967e\n"
@@ -1237,7 +1237,7 @@ void XAnimCreate(XAnim *anims, unsigned int animIndex, const char *name)
         /* { scope 1 */
         ".Lf3980e_0003988d:\n"
         "movl %esi, 0x10(%ebp)\n" /* line 286 | name */
-        "movl $0x2178dc, 0xc(%ebp)\n" /* animIndex */
+        "movl $str_002178dc, 0xc(%ebp)\n" /* animIndex */
         "movl $1, 8(%ebp)\n" /* anims */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 304 */
@@ -1284,7 +1284,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0xc0(%ebp)\n" /* testWeight */
         "movss -0xc4(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0xc0(%ebp), %xmm0\n" /* testWeight */
@@ -1310,7 +1310,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
         "movss -0xac(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x1c(%ebp), %xmm0\n"
@@ -1336,7 +1336,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n"
         "movss -0xa0(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x20(%ebp), %xmm0\n"
@@ -1362,7 +1362,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x24(%ebp)\n"
         "movss -0x94(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x24(%ebp), %xmm0\n"
@@ -1388,7 +1388,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x28(%ebp)\n"
         "movss -0x88(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x28(%ebp), %xmm0\n"
@@ -1414,7 +1414,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x2c(%ebp)\n"
         "movss -0x7c(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x2c(%ebp), %xmm0\n"
@@ -1440,7 +1440,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x30(%ebp)\n"
         "movss -0x70(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x30(%ebp), %xmm0\n"
@@ -1466,7 +1466,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "addl %eax, %edx\n" /* animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n"
         "movss -0x64(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x34(%ebp), %xmm0\n"
@@ -1498,7 +1498,7 @@ unsigned int XAnimGetDescendantWithGreatestWeight(void)
         "leal (%ebx, %eax), %edx\n" /* i, animIndex */
         "movzwl 8(%esi, %edx, 2), %eax\n" /* tree */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x38(%ebp)\n"
         "movss -0x58(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x38(%ebp), %xmm0\n"
@@ -1743,7 +1743,7 @@ void XAnim_CalcDeltaForTime(vec_t *posDelta)
         "movzwl (%eax), %eax\n" /* line 1171 | anim */
         "movzwl %ax, %ecx\n" /* anim */
         "movl %ecx, -0x40(%ebp)\n" /* frameCount */
-        "ucomiss 0x2ed5d0, %xmm0\n" /* line 1172 | 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* line 1172 | 1.0f */
         "jp .Lf39f48_00039f73\n"
         "je .Lf39f48_00039fd8\n"
         ".Lf39f48_00039f73:\n"
@@ -2155,7 +2155,7 @@ void XAnimGetAbsDelta(const XAnim *anims, unsigned int animIndex, vec_t *rot, ve
         "leal -0x10(%ebp), %edx\n" /* Q */
         "movss 0x18(%ebp), %xmm0\n" /* time */
         "calll XAnim_CalcDeltaForTime\n"
-        "movss 0x2ed664, %xmm0\n" /* line 100 | 3.0518509447574615e-05f */
+        "movss lit4_002ed664, %xmm0\n" /* line 100 | 3.0518509447574615e-05f */
         "movss -0x10(%ebp), %xmm2\n" /* Q */
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm1, %xmm1\n"
@@ -2237,7 +2237,7 @@ void XAnimCalcRelDeltaParts(const float time1, const float time2)
         "movss %xmm0, -0x58(%ebp)\n"
         ".Lf3a432_0003a4a1:\n"
         "movaps %xmm7, %xmm4\n" /* line 1244 | weightScale */
-        "mulss 0x2ed668, %xmm4\n" /* 9.313794180343393e-10f */
+        "mulss lit4_002ed668, %xmm4\n" /* 9.313794180343393e-10f */
         "movss -0x38(%ebp), %xmm2\n" /* line 1246 */
         "movaps %xmm2, %xmm0\n"
         "mulss -0x3c(%ebp), %xmm0\n"
@@ -2269,15 +2269,15 @@ void XAnimCalcRelDeltaParts(const float time1, const float time2)
         "movaps %xmm1, %xmm3\n"
         "mulss %xmm1, %xmm3\n"
         "addss %xmm2, %xmm3\n"
-        "ucomiss 0x2ed5e8, %xmm3\n" /* line 1203 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm3\n" /* line 1203 | 0.0f */
         "je .Lf3a432_0003a642\n"
         ".Lf3a432_0003a537:\n"
-        "movss 0x2ed62c, %xmm0\n" /* line 1206 | 2.0f */
+        "movss lit4_002ed62c, %xmm0\n" /* line 1206 | 2.0f */
         "divss %xmm3, %xmm0\n"
         "mulss %xmm0, %xmm2\n" /* line 1207 */
         "mulss %xmm4, %xmm1\n" /* line 1208 */
         "mulss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 1210 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 1210 | 1.0f */
         "subss %xmm2, %xmm3\n"
         "mulss %xmm6, %xmm3\n"
         "movaps %xmm5, %xmm0\n"
@@ -2406,7 +2406,7 @@ void XAnimGetRelDelta(const XAnim *anims, unsigned int animIndex, vec_t *rot, ve
         "xorl %ecx, %ecx\n"
         "movss 0x1c(%ebp), %xmm2\n" /* time2 */
         "movss 0x18(%ebp), %xmm1\n" /* time1 */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm3, -0x38(%ebp)\n"
         "calll XAnimCalcRelDeltaParts\n"
         "movss -0x38(%ebp), %xmm3\n" /* line 3453 */
@@ -2649,12 +2649,12 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movw %di, 0x3be008(, %eax, 8)\n"
-        "movw %di, 0x3be00a\n" /* line 1298 */
+        "movw %di, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %di, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x3c(%ebp), %eax\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %edx\n"
@@ -2726,13 +2726,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x34(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x4c(%ebp), %edx\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %ecx\n"
@@ -2757,13 +2757,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x30(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x5c(%ebp), %edx\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %ecx\n"
@@ -2788,13 +2788,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x2c(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x6c(%ebp), %edx\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %ecx\n"
@@ -2819,13 +2819,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x28(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x7c(%ebp), %edx\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %ecx\n"
@@ -2850,13 +2850,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x24(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x8c(%ebp), %edx\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %ecx\n"
@@ -2881,13 +2881,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x20(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x9c(%ebp), %edx\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %ecx\n"
@@ -2916,13 +2916,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x1c(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0xac(%ebp), %edx\n" /* line 3814 | animIndex */
         "movl -0xc0(%ebp), %ecx\n"
@@ -2950,13 +2950,13 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0xb4(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         "movl -0xc4(%ebp), %edx\n" /* line 3814 */
         "movl -0xc0(%ebp), %ecx\n"
         "movw $0, 8(%ecx, %edx, 2)\n"
@@ -3145,7 +3145,7 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "je .Lf3aef0_0003afc0\n"
         "movzwl %ax, %eax\n" /* line 2735 */
         "leal (%eax, %eax, 4), %eax\n"
-        "leal 0x3be00c(, %eax, 8), %eax\n"
+        "leal g_xAnimInfo+12(, %eax, 8), %eax\n"
         "movl %eax, -0x9c(%ebp)\n" /* state */
         "movl -0x68(%ebp), %eax\n" /* line 2736 */
         "movzbl 7(%eax), %esi\n" /* animIndex */
@@ -3207,7 +3207,7 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "calll XAnim_CalcDeltaForTime\n"
         "movss -0x98(%ebp), %xmm3\n" /* line 1264 */
         "movaps %xmm3, %xmm1\n" /* scale */
-        "mulss 0x2ed664, %xmm1\n" /* 3.0518509447574615e-05f, scale */
+        "mulss lit4_002ed664, %xmm1\n" /* 3.0518509447574615e-05f, scale */
         /* { scope 3 */
         "movaps %xmm1, %xmm0\n" /* line 100 */
         "mulss -0x28(%ebp), %xmm0\n" /* Q */
@@ -3269,7 +3269,7 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "je .Lf3aef0_0003b12d\n"
         "movzwl %ax, %eax\n" /* line 2750 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm1\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm1\n"
         "ucomiss %xmm4, %xmm1\n" /* line 2752 */
         "jp .Lf3aef0_0003b159\n"
         "je .Lf3aef0_0003b12d\n"
@@ -3327,7 +3327,7 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "je .Lf3aef0_0003b1f3\n"
         "movzwl %ax, %eax\n" /* line 2768 */
         "leal (%eax, %eax, 4), %eax\n"
-        "leal 0x3be00c(, %eax, 8), %eax\n"
+        "leal g_xAnimInfo+12(, %eax, 8), %eax\n"
         "cmpb $0, 7(%ecx)\n" /* line 2769 */
         "je .Lf3aef0_0003b1df\n"
         "movss 0x10(%eax), %xmm0\n"
@@ -3343,7 +3343,7 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "je .Lf3aef0_0003b261\n"
         "movzwl %ax, %eax\n" /* line 2750 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be020(, %eax, 8), %xmm1\n"
+        "movss g_xAnimInfo+32(, %eax, 8), %xmm1\n"
         "ucomiss %xmm4, %xmm1\n" /* line 2752 */
         "jp .Lf3aef0_0003b159\n"
         "jne .Lf3aef0_0003b159\n"
@@ -3374,7 +3374,7 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "jp .Lf3aef0_0003b2ad\n"
         "je .Lf3aef0_0003af81\n"
         ".Lf3aef0_0003b2ad:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2783 | 1.0f, scale */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2783 | 1.0f, scale */
         "divss %xmm1, %xmm0\n" /* scale */
         "movl %edx, %eax\n" /* result */
         "addl $0xc, %eax\n" /* result */
@@ -3421,10 +3421,10 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "subl %edx, %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* i */
         "movss -0x20(%ebp), %xmm1\n" /* line 72 | i */
-        "mulss 0x2ed5d8, %xmm2\n" /* line 73 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm2\n" /* line 73 | 0.5f */
         "mulss %xmm1, %xmm2\n"
         "mulss %xmm1, %xmm2\n"
-        "movss 0x2ed600, %xmm0\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm0\n" /* 1.5f */
         "subss %xmm2, %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n" /* y */
@@ -3484,10 +3484,10 @@ void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat,
         "subl %edx, %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* y */
         "movss -0x1c(%ebp), %xmm1\n" /* line 72 | y */
-        "mulss 0x2ed5d8, %xmm2\n" /* line 73 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm2\n" /* line 73 | 0.5f */
         "mulss %xmm1, %xmm2\n"
         "mulss %xmm1, %xmm2\n"
-        "movss 0x2ed600, %xmm0\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm0\n" /* 1.5f */
         "subss %xmm2, %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n" /* i */
@@ -3559,7 +3559,7 @@ void XAnimCalcAbsDelta(XAnimTree *tree, unsigned int animIndex, vec_t *rot, vec_
         "movl %ecx, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "calll XAnimCalcDeltaTree\n"
         "pxor %xmm0, %xmm0\n" /* line 3407 */
         "ucomiss -0x20(%ebp), %xmm0\n" /* rotPos */
@@ -3626,7 +3626,7 @@ void XAnimCalcDelta(XAnimTree *tree, unsigned int animIndex, vec_t *rot, vec_t *
         "movl %ecx, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "calll XAnimCalcDeltaTree\n"
         "pxor %xmm0, %xmm0\n" /* line 3371 */
         "ucomiss -0x20(%ebp), %xmm0\n" /* rotPos */
@@ -4224,14 +4224,14 @@ void XAnimUpdateOldTime(XAnimTree *tree, unsigned int animIndex, XAnimState *syn
         ".Lf3bb68_0003bc31:\n"
         "movw $0xffff, 2(%eax)\n" /* line 1278 */
         "movw $0, 8(%eax)\n" /* line 1290 */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movl -0x3c(%ebp), %edx\n" /* info */
         "movw %ax, 0xa(%edx)\n"
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
         "movl -0x40(%ebp), %ecx\n" /* infoIndex */
-        "movw %cx, 0x3be008(, %eax, 8)\n"
-        "movw %cx, 0x3be00a\n" /* line 1298 */
+        "movw %cx, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %cx, g_xAnimInfo+10\n" /* line 1298 */
         "movl -0x50(%ebp), %eax\n" /* line 2022 */
         "movl -0x4c(%ebp), %edx\n"
         "movw $0, 8(%edx, %eax, 2)\n"
@@ -4299,10 +4299,10 @@ void XAnimUpdateOldTime(XAnimTree *tree, unsigned int animIndex, XAnimState *syn
         "divss %xmm2, %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 0x14(%esi)\n" /* state */
-        "ucomiss 0x2ed66c, %xmm0\n" /* line 1990 | 1.0000001111620804e-06f */
+        "ucomiss lit4_002ed66c, %xmm0\n" /* line 1990 | 1.0000001111620804e-06f */
         "jae .Lf3bb68_0003bd4f\n"
         "jp .Lf3bb68_0003bd4f\n"
-        "mulss 0x2ed658, %xmm3\n" /* line 1991 | 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm3\n" /* line 1991 | 0.0010000000474974513f */
         "movss %xmm3, 0x14(%esi)\n" /* state */
         ".Lf3bb68_0003bd4f:\n"
         "subss %xmm4, %xmm2\n" /* line 1992 | dtime */
@@ -4514,16 +4514,16 @@ int XAnimSetGoalWeightInternal(XAnimTree *tree, unsigned int animIndex, float ra
         "je .Lf3bf56_0003c17d\n"
         /* { scope 2 */
         ".Lf3bf56_0003bf8e:\n"
-        "movzwl 0x3be00a, %ecx\n" /* line 3547 */
+        "movzwl g_xAnimInfo+10, %ecx\n" /* line 3547 */
         "testw %cx, %cx\n" /* line 3548 */
         "je .Lf3bf56_0003c24a\n"
         "movzwl %cx, %edx\n" /* line 3570 */
         "leal (%edx, %edx, 4), %edx\n"
         "shll $3, %edx\n"
-        "movzwl 0x3be00a(%edx), %eax\n"
-        "movw %ax, 0x3be00a\n" /* line 3571 */
+        "movzwl g_xAnimInfo+10(%edx), %eax\n"
+        "movw %ax, g_xAnimInfo+10\n" /* line 3571 */
         "leal (%eax, %eax, 4), %eax\n" /* line 3573 */
-        "movw $0, 0x3be008(, %eax, 8)\n"
+        "movw $0, g_xAnimInfo+8(, %eax, 8)\n"
         "movl -0x2c(%ebp), %eax\n" /* line 3580 */
         "movl -0x28(%ebp), %ebx\n"
         "movw %cx, 8(%ebx, %eax, 2)\n"
@@ -4606,7 +4606,7 @@ int XAnimSetGoalWeightInternal(XAnimTree *tree, unsigned int animIndex, float ra
         "movl -0x28(%ebp), %ecx\n"
         "movzwl 8(%ecx, %edx, 2), %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be01c(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
         "movss -0x24(%ebp), %xmm0\n" /* line 3896 | bestWeight */
         "ucomiss -0x1c(%ebp), %xmm0\n"
@@ -4634,7 +4634,7 @@ int XAnimSetGoalWeightInternal(XAnimTree *tree, unsigned int animIndex, float ra
         "testl %edi, %edi\n" /* i */
         "jne .Lf3bf56_0003c003\n"
         ".Lf3bf56_0003c13f:\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f, goalWeight */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f, goalWeight */
         "movaps %xmm1, %xmm3\n" /* goalTime */
         "movss %xmm4, -0x30(%ebp)\n" /* goalWeight */
         "ucomiss %xmm1, %xmm3\n" /* line 3952 | goalTime */
@@ -4644,7 +4644,7 @@ int XAnimSetGoalWeightInternal(XAnimTree *tree, unsigned int animIndex, float ra
         "jne .Lf3bf56_0003c017\n"
         "jp .Lf3bf56_0003c017\n"
         "movaps %xmm4, %xmm0\n" /* line 3955 | goalWeight */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movss %xmm0, 0x14(%edx)\n"
         "jmp .Lf3bf56_0003c017\n"
         ".Lf3bf56_0003c17d:\n"
@@ -4719,7 +4719,7 @@ int XAnimSetGoalWeightInternal(XAnimTree *tree, unsigned int animIndex, float ra
         "jmp .Lf3bf56_0003c18d\n"
         /* { scope 2 */
         ".Lf3bf56_0003c24a:\n"
-        "movl $0x217834, 4(%esp)\n" /* line 3554 */
+        "movl $str_00217834, 4(%esp)\n" /* line 3554 */
         "movl $1, (%esp)\n"
         "movss %xmm3, -0x48(%ebp)\n"
         "movss %xmm4, -0x58(%ebp)\n"
@@ -4752,7 +4752,7 @@ void XAnimSetCompleteGoalWeight(XAnimTree *tree, unsigned int animIndex, float g
         "movss 0x10(%ebp), %xmm0\n" /* goalWeight */
         /* { scope 1: numAnims, i */
         "movaps %xmm0, %xmm1\n" /* line 4324 */
-        "cmpnltss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "cmpnltss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "andps %xmm1, %xmm0\n"
         "movl 0x20(%ebp), %eax\n" /* line 4327 | notifyType */
         "movl %eax, 4(%esp)\n"
@@ -4778,14 +4778,14 @@ void XAnimSetCompleteGoalWeight(XAnimTree *tree, unsigned int animIndex, float g
         "je .Lf3c282_0003c2f9\n"
         "leal (%edx, %edx, 4), %eax\n"
         "pxor %xmm0, %xmm0\n"
-        "ucomiss 0x3be01c(, %eax, 8), %xmm0\n"
+        "ucomiss g_xAnimInfo+28(, %eax, 8), %xmm0\n"
         "jne .Lf3c282_0003c323\n"
         "jp .Lf3c282_0003c323\n"
         ".Lf3c282_0003c2f9:\n"
         "movl $0, 4(%esp)\n" /* line 4338 */
         "movl $0, (%esp)\n"
         "xorl %ecx, %ecx\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss 0x14(%ebp), %xmm1\n" /* goalTime */
         "movaps %xmm2, %xmm0\n"
         "movl %ebx, %edx\n" /* parentAnimIndex */
@@ -4981,12 +4981,12 @@ void XAnimCloneAnimTree(const XAnimTree *from, XAnimTree *to)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movw %si, 0x3be008(, %eax, 8)\n"
-        "movw %si, 0x3be00a\n" /* line 1298 */
+        "movw %si, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %si, g_xAnimInfo+10\n" /* line 1298 */
         "movw $0, 8(%edi)\n" /* line 4381 */
         ".Lf3c4bc_0003c540:\n"
         "addl $1, -0x24(%ebp)\n" /* line 4372 | i */
@@ -5006,16 +5006,16 @@ void XAnimCloneAnimTree(const XAnimTree *from, XAnimTree *to)
         "testw %ax, %ax\n"
         "jne .Lf3c4bc_0003c646\n"
         /* { scope 2 */
-        "movzwl 0x3be00a, %ecx\n" /* line 3547 */
+        "movzwl g_xAnimInfo+10, %ecx\n" /* line 3547 */
         "testw %cx, %cx\n" /* line 3548 */
         "je .Lf3c4bc_0003c690\n"
         "movzwl %cx, %edx\n" /* line 3570 */
         "leal (%edx, %edx, 4), %edx\n"
         "shll $3, %edx\n"
-        "movzwl 0x3be00a(%edx), %eax\n"
-        "movw %ax, 0x3be00a\n" /* line 3571 */
+        "movzwl g_xAnimInfo+10(%edx), %eax\n"
+        "movw %ax, g_xAnimInfo+10\n" /* line 3571 */
         "leal (%eax, %eax, 4), %eax\n" /* line 3573 */
-        "movw $0, 0x3be008(, %eax, 8)\n"
+        "movw $0, g_xAnimInfo+8(, %eax, 8)\n"
         "movw %cx, 8(%edi)\n" /* line 3580 */
         "leal g_xAnimInfo(%edx), %ebx\n" /* line 3582 | info */
         /* } scope */
@@ -5024,23 +5024,23 @@ void XAnimCloneAnimTree(const XAnimTree *from, XAnimTree *to)
         "shll $3, %edx\n"
         "movl g_xAnimInfo(%edx), %eax\n"
         "movl %eax, (%ebx)\n" /* info */
-        "movl 0x3be004(%edx), %eax\n"
+        "movl g_xAnimInfo+4(%edx), %eax\n"
         "movl %eax, 4(%ebx)\n" /* info */
-        "movl 0x3be008(%edx), %eax\n"
+        "movl g_xAnimInfo+8(%edx), %eax\n"
         "movl %eax, 8(%ebx)\n" /* info */
-        "movl 0x3be00c(%edx), %eax\n"
+        "movl g_xAnimInfo+12(%edx), %eax\n"
         "movl %eax, 0xc(%ebx)\n" /* info */
-        "movl 0x3be010(%edx), %eax\n"
+        "movl g_xAnimInfo+16(%edx), %eax\n"
         "movl %eax, 0x10(%ebx)\n" /* info */
-        "movl 0x3be014(%edx), %eax\n"
+        "movl g_xAnimInfo+20(%edx), %eax\n"
         "movl %eax, 0x14(%ebx)\n" /* info */
-        "movl 0x3be018(%edx), %eax\n"
+        "movl g_xAnimInfo+24(%edx), %eax\n"
         "movl %eax, 0x18(%ebx)\n" /* info */
-        "movl 0x3be01c(%edx), %eax\n"
+        "movl g_xAnimInfo+28(%edx), %eax\n"
         "movl %eax, 0x1c(%ebx)\n" /* info */
-        "movl 0x3be020(%edx), %eax\n"
+        "movl g_xAnimInfo+32(%edx), %eax\n"
         "movl %eax, 0x20(%ebx)\n" /* info */
-        "movl 0x3be024(%edx), %eax\n"
+        "movl g_xAnimInfo+36(%edx), %eax\n"
         "movl %eax, 0x24(%ebx)\n" /* info */
         "movzwl 4(%ebx), %eax\n" /* line 4352 | info */
         "testw %ax, %ax\n"
@@ -5089,7 +5089,7 @@ void XAnimCloneAnimTree(const XAnimTree *from, XAnimTree *to)
         "jmp .Lf3c4bc_0003c65c\n"
         /* { scope 2 */
         ".Lf3c4bc_0003c690:\n"
-        "movl $0x217834, 4(%esp)\n" /* line 3554 */
+        "movl $str_00217834, 4(%esp)\n" /* line 3554 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "xorl %ebx, %ebx\n" /* info */
@@ -5137,12 +5137,12 @@ void XAnimFreeTree(XAnimTree *tree, Free_t Free)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movw %di, 0x3be008(, %eax, 8)\n"
-        "movw %di, 0x3be00a\n" /* line 1298 */
+        "movw %di, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %di, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl -0x24(%ebp), %eax\n" /* line 3814 | tree */
         "movw $0, 8(%eax)\n"
@@ -5276,12 +5276,12 @@ void XAnimClearTree(XAnimTree *tree)
         "movw $0xffff, 2(%ebx)\n" /* line 1278 */
         /* } scope */
         "movw $0, 8(%ebx)\n" /* line 1290 | info */
-        "movzwl 0x3be00a, %eax\n" /* line 1296 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1296 */
         "movw %ax, 0xa(%ebx)\n" /* info */
-        "movzwl 0x3be00a, %eax\n" /* line 1297 */
+        "movzwl g_xAnimInfo+10, %eax\n" /* line 1297 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movw %di, 0x3be008(, %eax, 8)\n"
-        "movw %di, 0x3be00a\n" /* line 1298 */
+        "movw %di, g_xAnimInfo+8(, %eax, 8)\n"
+        "movw %di, g_xAnimInfo+10\n" /* line 1298 */
         /* } scope */
         "movl 8(%ebp), %edx\n" /* line 3814 | tree */
         "movw $0, 8(%edx)\n"
@@ -5547,8 +5547,8 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "movl -0x160(%ebp), %edx\n" /* tree */
         "movzwl 8(%edx, %ebx, 2), %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be00c(, %eax, 8), %xmm1\n"
-        "ucomiss 0x2ed5d0, %xmm1\n" /* line 2434 | 1.0f */
+        "movss g_xAnimInfo+12(, %eax, 8), %xmm1\n"
+        "ucomiss lit4_002ed5d0, %xmm1\n" /* line 2434 | 1.0f */
         "jp .Lf3c92e_0003cbf8\n"
         "je .Lf3c92e_0003cf8d\n"
         ".Lf3c92e_0003cbf8:\n"
@@ -5575,7 +5575,7 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "movl %eax, -0xa4(%ebp)\n"
         /* } scope */
         "movss -0x174(%ebp), %xmm3\n" /* line 870 */
-        "mulss 0x2ed664, %xmm3\n" /* 3.0518509447574615e-05f */
+        "mulss lit4_002ed664, %xmm3\n" /* 3.0518509447574615e-05f */
         "movl -0x15c(%ebp), %eax\n" /* line 872 | parts */
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0xe4(%ebp)\n" /* simpleQuatBits */
@@ -5815,7 +5815,7 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "je .Lf3c92e_0003cf7e\n"
         "movzwl %ax, %eax\n" /* line 2459 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be020(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+32(, %eax, 8), %xmm0\n"
         "pxor %xmm2, %xmm2\n" /* line 2461 */
         "ucomiss %xmm2, %xmm0\n"
         "jp .Lf3c92e_0003d7fe\n"
@@ -5838,7 +5838,7 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         /* { scope 2: animToModel, boneIndex, localBoneIndex, numBones, ... */
         /* { scope 3: keyFrameIndex, keyFrameLerpFrac */
         "movss -0x174(%ebp), %xmm1\n" /* line 949 */
-        "mulss 0x2ed664, %xmm1\n" /* 3.0518509447574615e-05f */
+        "mulss lit4_002ed664, %xmm1\n" /* 3.0518509447574615e-05f */
         "movl 0x14(%ebx), %ebx\n" /* line 951 | totalRotTrans */
         "movl %ebx, -0xfc(%ebp)\n" /* totalRotTrans, simpleQuatBits */
         "movswl 0xe(%eax), %eax\n" /* line 952 */
@@ -6198,7 +6198,7 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "movl %eax, -0xa4(%ebp)\n"
         /* } scope */
         "movss -0x174(%ebp), %xmm3\n" /* line 870 */
-        "mulss 0x2ed664, %xmm3\n" /* 3.0518509447574615e-05f */
+        "mulss lit4_002ed664, %xmm3\n" /* 3.0518509447574615e-05f */
         "movl -0x15c(%ebp), %ebx\n" /* line 872 | parts, to */
         "movl 0x14(%ebx), %ebx\n" /* to */
         "movl %ebx, -0xcc(%ebp)\n" /* to, simpleQuatBits */
@@ -6443,7 +6443,7 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "je .Lf3c92e_0003d84d\n"
         "movzwl %ax, %eax\n" /* line 2473 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be020(, %eax, 8), %xmm1\n"
+        "movss g_xAnimInfo+32(, %eax, 8), %xmm1\n"
         "movss %xmm1, -0xc0(%ebp)\n"
         "ucomiss %xmm2, %xmm1\n" /* line 2475 */
         "jp .Lf3c92e_0003dc4b\n"
@@ -6813,8 +6813,8 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "je .Lf3c92e_0003dcf0\n"
         "movzwl %ax, %eax\n" /* line 2505 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be020(, %eax, 8), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* line 2507 | 0.0f */
+        "movss g_xAnimInfo+32(, %eax, 8), %xmm0\n"
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* line 2507 | 0.0f */
         "jp .Lf3c92e_0003dd2e\n"
         "je .Lf3c92e_0003dcf0\n"
         ".Lf3c92e_0003dd2e:\n"
@@ -6847,11 +6847,11 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "jne .Lf3c92e_0003de1e\n"
         "movl -0x178(%ebp), %eax\n" /* line 2521 */
         "movss 0x1c(%eax), %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jp .Lf3c92e_0003ddad\n"
         "je .Lf3c92e_0003de1e\n"
         ".Lf3c92e_0003ddad:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 2523 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 2523 | 1.0f */
         "divss %xmm1, %xmm0\n"
         "movaps %xmm0, %xmm1\n" /* line 519 */
         "mulss (%eax), %xmm1\n"
@@ -6928,10 +6928,10 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "subl %edx, %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* keyFrameLerpFrac */
         "movss -0x1c(%ebp), %xmm1\n" /* line 72 | keyFrameLerpFrac */
-        "mulss 0x2ed5d8, %xmm3\n" /* line 73 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm3\n" /* line 73 | 0.5f */
         "mulss %xmm1, %xmm3\n"
         "mulss %xmm1, %xmm3\n"
-        "movss 0x2ed600, %xmm0\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm0\n" /* 1.5f */
         "subss %xmm3, %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x20(%ebp)\n" /* keyFrameIndex */
@@ -7021,10 +7021,10 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "subl %edx, %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* keyFrameIndex */
         "movss -0x20(%ebp), %xmm1\n" /* line 72 | keyFrameIndex */
-        "mulss 0x2ed5d8, %xmm3\n" /* line 73 | 0.5f */
+        "mulss lit4_002ed5d8, %xmm3\n" /* line 73 | 0.5f */
         "mulss %xmm1, %xmm3\n"
         "mulss %xmm1, %xmm3\n"
-        "movss 0x2ed600, %xmm0\n" /* 1.5f */
+        "movss lit4_002ed600, %xmm0\n" /* 1.5f */
         "subss %xmm3, %xmm0\n"
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n" /* keyFrameLerpFrac */
@@ -7090,7 +7090,7 @@ void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnim
         "movl -0x178(%ebp), %esi\n" /* line 2489 | animToModel */
         "jmp .Lf3c92e_0003dc7d\n"
         ".Lf3c92e_0003e14c:\n"
-        "movl $0x2178f4, (%esp)\n" /* line 2488 */
+        "movl $str_002178f4, (%esp)\n" /* line 2488 */
         "calll Com_Printf\n"
         "jmp .Lf3c92e_0003cec1\n"
     );
@@ -7159,7 +7159,7 @@ void DObjCalcAnim(const DObj *obj, int *partBits)
         "movl $0, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "movl %ebx, %ecx\n" /* mat */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "xorl %edx, %edx\n"
         "movl %edi, %eax\n" /* model */
         "calll XAnimCalc\n"
@@ -7170,7 +7170,7 @@ void DObjCalcAnim(const DObj *obj, int *partBits)
         "movl %edx, -0x4040(%ebp)\n"
         "xorl %ecx, %ecx\n"
         "movl $0, -0x4044(%ebp)\n" /* j */
-        "movss 0x2ed664, %xmm2\n" /* 3.0518509447574615e-05f */
+        "movss lit4_002ed664, %xmm2\n" /* 3.0518509447574615e-05f */
         "movl %edx, %edi\n" /* model */
         "movl 0x1c(%edi), %eax\n" /* line 3281 | model */
         "movl (%eax), %edi\n" /* model */
@@ -8826,7 +8826,7 @@ void XAnimProcessServerNotify(const XAnimTree *tree, XAnimInfo *info, float time
         "cmpw $0, 4(%edx)\n" /* line 2244 */
         "je .Lf3f576_0003f607\n"
         "movss 0xc(%edx), %xmm1\n" /* line 2247 */
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "ucomiss %xmm2, %xmm1\n"
         "je .Lf3f576_0003f743\n"
         ".Lf3f576_0003f5ae:\n"
@@ -9096,7 +9096,7 @@ void XAnimProcessServerNotify(const XAnimTree *tree, XAnimInfo *info, float time
         /* { scope 2 */
         ".Lf3f576_0003f8fd:\n"
         "movl %edi, %ebx\n" /* line 1391 | bestNotifyInfo */
-        "movss 0x2ed62c, %xmm3\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm3\n" /* 2.0f */
         "xorl %esi, %esi\n" /* notifyInfoIndex */
         "xorl %eax, %eax\n"
         ".Lf3f576_0003f90b:\n"
@@ -9126,7 +9126,7 @@ void XAnimProcessServerNotify(const XAnimTree *tree, XAnimInfo *info, float time
         "pxor %xmm0, %xmm0\n"
         "movss 0x14(%ebp), %xmm1\n" /* goalTime */
         "movaps %xmm1, %xmm2\n"
-        "cmpnltss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "cmpnltss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "andps %xmm1, %xmm2\n"
         "andnps %xmm0, %xmm1\n"
         "orps %xmm2, %xmm1\n"
@@ -9150,7 +9150,7 @@ void XAnimProcessServerNotify(const XAnimTree *tree, XAnimInfo *info, float time
         "xorl %ecx, %ecx\n"
         "movaps %xmm0, %xmm4\n"
         "movaps %xmm0, %xmm1\n"
-        "movss 0x2efde0, %xmm2\n"
+        "movss vec2_origin+612, %xmm2\n"
         "jmp .Lf3f576_0003f9c6\n"
         ".Lf3f576_0003f9a6:\n"
         "movaps %xmm4, %xmm0\n"
@@ -9170,7 +9170,7 @@ void XAnimProcessServerNotify(const XAnimTree *tree, XAnimInfo *info, float time
         "je .Lf3f576_0003f9a6\n"
         "movzwl %ax, %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be020(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+32(, %eax, 8), %xmm0\n"
         "leal (%ebx, %ecx), %eax\n" /* bestNotifyInfo */
         "cmpl %eax, 0xc(%ebp)\n" /* animIndex */
         "jne .Lf3f576_0003f9b1\n"
@@ -9204,7 +9204,7 @@ int XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, unsigned int animIndex, u
         "pxor %xmm0, %xmm0\n" /* line 3727 */
         "movss 0x14(%ebp), %xmm1\n" /* goalWeight */
         "movaps %xmm1, %xmm2\n"
-        "cmpnltss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "cmpnltss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "andps %xmm1, %xmm2\n"
         "andnps %xmm0, %xmm1\n"
         "orps %xmm2, %xmm1\n"
@@ -9229,7 +9229,7 @@ int XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, unsigned int animIndex, u
         "xorl %ecx, %ecx\n"
         "movaps %xmm0, %xmm4\n"
         "movaps %xmm0, %xmm1\n"
-        "movss 0x2efde0, %xmm2\n"
+        "movss vec2_origin+612, %xmm2\n"
         "jmp .Lf3f930_0003f9c6\n"
         ".Lf3f930_0003f9a6:\n"
         "movaps %xmm4, %xmm0\n" /* line 3690 */
@@ -9249,7 +9249,7 @@ int XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, unsigned int animIndex, u
         "je .Lf3f930_0003f9a6\n"
         "movzwl %ax, %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be020(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+32(, %eax, 8), %xmm0\n"
         "leal (%ebx, %ecx), %eax\n" /* line 3692 | info */
         "cmpl %eax, 0xc(%ebp)\n" /* animIndex */
         "jne .Lf3f930_0003f9b1\n"
@@ -9410,7 +9410,7 @@ int XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, unsigned int animIndex, u
         "movl $0, 4(%esp)\n" /* line 3752 */
         "movl $0, (%esp)\n"
         "xorl %ecx, %ecx\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss 0x18(%ebp), %xmm1\n" /* goalTime */
         "movaps %xmm2, %xmm0\n"
         "movl %edi, %edx\n" /* numAnims */
@@ -9512,8 +9512,8 @@ int XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, unsigned int animIndex, u
         "xorl %ecx, %ecx\n"
         "pxor %xmm4, %xmm4\n"
         "movaps %xmm4, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
-        "movss 0x2efde0, %xmm2\n"
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
+        "movss vec2_origin+612, %xmm2\n"
         "jmp .Lf3f930_0003fd02\n"
         ".Lf3f930_0003fce2:\n"
         "movaps %xmm4, %xmm0\n" /* line 3690 */
@@ -9533,7 +9533,7 @@ int XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, unsigned int animIndex, u
         "je .Lf3f930_0003fce2\n"
         "movzwl %ax, %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
-        "movss 0x3be020(, %eax, 8), %xmm0\n"
+        "movss g_xAnimInfo+32(, %eax, 8), %xmm0\n"
         "leal (%ebx, %ecx), %eax\n" /* line 3692 | info */
         "cmpl %eax, %edi\n" /* numAnims */
         "jne .Lf3f930_0003fcec\n"
@@ -9699,7 +9699,7 @@ int XAnimSetCompleteGoalWeightKnobAll(XAnimTree *tree, unsigned int animIndex, u
         "movl $0, 4(%esp)\n" /* line 4245 */
         "movl $0, (%esp)\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss 0x18(%ebp), %xmm1\n" /* goalTime */
         "pxor %xmm0, %xmm0\n"
         "movl %ebx, %edx\n" /* info */
@@ -10017,7 +10017,7 @@ int XAnimSetGoalWeight(XAnimTree *tree, unsigned int animIndex, float goalWeight
         "movss 0x10(%ebp), %xmm0\n" /* goalWeight */
         /* { scope 1: numAnims, i */
         "movaps %xmm0, %xmm1\n" /* line 4257 */
-        "cmpnltss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "cmpnltss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "andps %xmm1, %xmm0\n"
         "movl 0x20(%ebp), %eax\n" /* line 4260 | notifyType */
         "movl %eax, 4(%esp)\n"
@@ -10086,7 +10086,7 @@ int XAnimSetGoalWeight(XAnimTree *tree, unsigned int animIndex, float goalWeight
         "movl $0, 4(%esp)\n" /* line 4245 */
         "movl $0, (%esp)\n"
         "movl $1, %ecx\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movss 0x14(%ebp), %xmm1\n" /* goalTime */
         "pxor %xmm0, %xmm0\n"
         "movl %ebx, %edx\n" /* info */
@@ -10260,7 +10260,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "ucomiss %xmm3, %xmm2\n"
         "jbe .Lf4044c_000405a1\n"
         ".Lf4044c_000404d9:\n"
-        "movl $0x217918, %ebx\n" /* color */
+        "movl $str_00217918, %ebx\n" /* color */
         "cmpw $0, -0x32(%ebp)\n" /* line 2624 */
         "jne .Lf4044c_000405bc\n"
         ".Lf4044c_000404e9:\n"
@@ -10270,11 +10270,11 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movss 4(%edi), %xmm5\n" /* state */
         "movaps %xmm4, %xmm1\n"
         "subss %xmm5, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 2630 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 2630 | 0.0f */
         "jb .Lf4044c_00040817\n"
         ".Lf4044c_0004050c:\n"
         "movss 8(%eax), %xmm0\n" /* line 2632 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jne .Lf4044c_00040778\n"
         "jp .Lf4044c_00040778\n"
         "pxor %xmm0, %xmm0\n"
@@ -10301,7 +10301,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movl -0x24(%ebp), %eax\n" /* debugName */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* color */
-        "movl $0x217920, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, (realtimed" */
+        "movl $str_00217920, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, (realtimed" */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf4044c_00040599:\n"
@@ -10313,9 +10313,9 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "retl\n"
         /* { scope 1 */
         ".Lf4044c_000405a1:\n"
-        "movl $0x21791c, %ebx\n" /* line 2619 | color */
+        "movl $str_0021791c, %ebx\n" /* line 2619 | color */
         "ucomiss %xmm2, %xmm3\n"
-        "movl $0x2157b8, %eax\n"
+        "movl $str_002157b8, %eax\n"
         "cmovbel %eax, %ebx\n" /* color */
         "cmpw $0, -0x32(%ebp)\n" /* line 2624 */
         "je .Lf4044c_000404e9\n"
@@ -10350,7 +10350,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movl -0x24(%ebp), %eax\n" /* debugName */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* color */
-        "movl $0x217a14, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f
+        "movl $str_00217a14, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f
 " */
         "calll Com_Printf\n"
         "jmp .Lf4044c_00040741\n"
@@ -10361,7 +10361,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "je .Lf4044c_000404c6\n"
         "movl -0x24(%ebp), %ebx\n" /* line 3012 | debugName, anim */
         "movl %ebx, 4(%esp)\n" /* anim */
-        "movl $0x217860, (%esp)\n" /* "^3%s (missing)" */
+        "movl $str_00217860, (%esp)\n" /* "^3%s (missing)" */
         "calll va\n"
         "movl %eax, -0x24(%ebp)\n" /* debugName */
         /* } scope */
@@ -10373,7 +10373,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         ".Lf4044c_00040675:\n"
         "xorl %ebx, %ebx\n" /* line 2612 | color */
         ".Lf4044c_00040677:\n"
-        "movl $0x217914, (%esp)\n" /* line 2613 */
+        "movl $str_00217914, (%esp)\n" /* line 2613 */
         "calll Com_Printf\n"
         "addl $1, %ebx\n" /* line 2612 | color */
         "cmpl %ebx, -0x3c(%ebp)\n" /* color */
@@ -10428,7 +10428,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movl -0x24(%ebp), %edx\n" /* debugName */
         "movl %edx, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* color */
-        "movl $0x2179b8, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, '%s'
+        "movl $str_002179b8, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, '%s'
 " */
         "calll Com_Printf\n"
         ".Lf4044c_00040741:\n"
@@ -10478,7 +10478,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movl -0x24(%ebp), %eax\n" /* debugName */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* color */
-        "movl $0x217970, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, (realtimed" */
+        "movl $str_00217970, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, (realtimed" */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x7c, %esp\n" /* line 2671 */
@@ -10496,13 +10496,13 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movl -0x24(%ebp), %edx\n" /* debugName */
         "movl %edx, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* color */
-        "movl $0x217a48, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f
+        "movl $str_00217a48, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f
 " */
         "calll Com_Printf\n"
         "jmp .Lf4044c_00040741\n"
         ".Lf4044c_00040817:\n"
         "jp .Lf4044c_0004050c\n" /* line 2630 */
-        "addss 0x2ed5d0, %xmm1\n" /* line 2631 | 1.0f */
+        "addss lit4_002ed5d0, %xmm1\n" /* line 2631 | 1.0f */
         "jmp .Lf4044c_0004050c\n"
         ".Lf4044c_0004082a:\n"
         "movzwl %cx, %eax\n" /* line 2651 */
@@ -10520,7 +10520,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movl -0x24(%ebp), %eax\n" /* debugName */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* color */
-        "movl $0x2179b8, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, '%s'
+        "movl $str_002179b8, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, (time) %.2f -> %.2f, '%s'
 " */
         "calll Com_Printf\n"
         "jmp .Lf4044c_00040741\n"
@@ -10536,7 +10536,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         "movl -0x24(%ebp), %edx\n" /* debugName */
         "movl %edx, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* color */
-        "movl $0x2179f0, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, '%s'
+        "movl $str_002179f0, (%esp)\n" /* "%s%s: (weight) %.2f -> %.2f, '%s'
 " */
         "calll Com_Printf\n"
         "jmp .Lf4044c_00040741\n"
@@ -10553,7 +10553,7 @@ void XAnimDisplay(const XAnimTree *tree, int depth)
         /* { scope 2 */
         ".Lf4044c_000408cf:\n"
         "movl %esi, 4(%esp)\n" /* line 3008 | animIndex */
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, -0x24(%ebp)\n" /* debugName */
         "jmp .Lf4044c_000404c6\n"
@@ -10575,11 +10575,11 @@ void DObjDisplayAnim(DObj *obj)
         "xorl %ecx, %ecx\n" /* line 3346 */
         "xorl %edx, %edx\n"
         "calll XAnimDisplay\n"
-        "movl $0x2160e8, 8(%ebp)\n" /* line 3347 | obj */
+        "movl $str_002160e8, 8(%ebp)\n" /* line 3347 | obj */
         "leave\n" /* line 3348 */
         "jmp Com_Printf\n" /* line 3347 */
         ".Lf408e8_0004090d:\n"
-        "movl $0x217a68, 8(%ebp)\n" /* line 3342 | obj */
+        "movl $str_00217a68, 8(%ebp)\n" /* line 3342 | obj */
         "leave\n" /* line 3348 */
         "jmp Com_Printf\n" /* line 3342 */
     );
@@ -10625,7 +10625,7 @@ void XAnimFillInSyncNodes_r(Bool bLoop)
         ".Lf4091a_0004096d:\n"
         "movl %ebx, 0xc(%esp)\n" /* line 4061 | count */
         "movl %eax, 8(%esp)\n"
-        "movl $0x217b10, 4(%esp)\n" /* "animation '%s' in '%s' cannot be sync nonlooping and loopin" */
+        "movl $str_00217b10, 4(%esp)\n" /* "animation '%s' in '%s' cannot be sync nonlooping and loopin" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
@@ -10663,7 +10663,7 @@ void XAnimFillInSyncNodes_r(Bool bLoop)
         "cmpb $0, 0x28(%eax)\n"
         "je .Lf4091a_000409e9\n"
         "movl %edx, 4(%esp)\n" /* line 3012 */
-        "movl $0x217860, (%esp)\n" /* "^3%s (missing)" */
+        "movl $str_00217860, (%esp)\n" /* "^3%s (missing)" */
         "calll va\n"
         "movl %eax, %edx\n"
         /* } scope */
@@ -10672,7 +10672,7 @@ void XAnimFillInSyncNodes_r(Bool bLoop)
         "movl %ebx, 0xc(%esp)\n" /* count */
         "movl (%edi), %eax\n" /* anims */
         "movl %eax, 8(%esp)\n"
-        "movl $0x217b50, 4(%esp)\n" /* "duplicate specification of animation sync in '%s', %d nodes" */
+        "movl $str_00217b50, 4(%esp)\n" /* "duplicate specification of animation sync in '%s', %d nodes" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         ".Lf4091a_00040a0b:\n"
@@ -10718,7 +10718,7 @@ void XAnimFillInSyncNodes_r(Bool bLoop)
         ".Lf4091a_00040a63:\n"
         "movl %ebx, 0xc(%esp)\n" /* line 4057 | count */
         "movl %eax, 8(%esp)\n"
-        "movl $0x217ad0, 4(%esp)\n" /* "animation '%s' in '%s' cannot be sync looping and nonloopin" */
+        "movl $str_00217ad0, 4(%esp)\n" /* "animation '%s' in '%s' cannot be sync looping and nonloopin" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         /* } scope */
@@ -10731,16 +10731,16 @@ void XAnimFillInSyncNodes_r(Bool bLoop)
         /* { scope 1: anim */
         ".Lf4091a_00040a87:\n"
         "movl $Hunk_AllocXAnimPrecache, 4(%esp)\n" /* line 4049 */
-        "movl $0x217a74, (%esp)\n" /* "void_loop" */
+        "movl $str_00217a74, (%esp)\n" /* "void_loop" */
         "calll XAnimPrecache\n"
-        "movl $0x217a74, 4(%esp)\n" /* line 196 */
+        "movl $str_00217a74, 4(%esp)\n" /* line 196 */
         "movl $5, (%esp)\n"
         "calll Hunk_FindDataForFile\n"
         "movl %eax, 4(%esi)\n" /* line 4051 | anim */
         "testl %eax, %eax\n" /* line 4052 */
         "jne .Lf4091a_00040989\n"
-        "movl $0x217a74, 8(%esp)\n" /* line 4053 */
-        "movl $0x217a80, 4(%esp)\n" /* "Cannot find 'xanim/%s'.
+        "movl $str_00217a74, 8(%esp)\n" /* line 4053 */
+        "movl $str_00217a80, 4(%esp)\n" /* "Cannot find 'xanim/%s'.
 This is a default xanim file that y" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
@@ -10767,7 +10767,7 @@ This is a default xanim file that y" */
         /* { scope 2 */
         ".Lf4091a_00040b00:\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x21785c, (%esp)\n" /* "%i" */
+        "movl $str_0021785c, (%esp)\n" /* "%i" */
         "calll va\n"
         "movl %eax, %edx\n"
         "jmp .Lf4091a_000409e9\n"
@@ -11217,43 +11217,43 @@ void XAnimSetupSyncNodes_r(XAnim *anims)
         /* { scope 6 */
         /* { scope 7 */
         ".Lf40b18_00040f52:\n"
-        "movl $0x217b98, 4(%esp)\n" /* line 4102 */
+        "movl $str_00217b98, 4(%esp)\n" /* line 4102 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf40b18_00040db8\n"
         /* } scope */
         ".Lf40b18_00040f6b:\n"
-        "movl $0x217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
+        "movl $str_00217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf40b18_00040d43\n"
         /* } scope */
         ".Lf40b18_00040f84:\n"
-        "movl $0x217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
+        "movl $str_00217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf40b18_00040cce\n"
         /* } scope */
         ".Lf40b18_00040f9d:\n"
-        "movl $0x217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
+        "movl $str_00217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf40b18_00040c59\n"
         /* } scope */
         ".Lf40b18_00040fb6:\n"
-        "movl $0x217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
+        "movl $str_00217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf40b18_00040be4\n"
         /* } scope */
         ".Lf40b18_00040fcf:\n"
-        "movl $0x217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
+        "movl $str_00217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf40b18_00040b6f\n"
         /* } scope */
         ".Lf40b18_00040fe8:\n"
-        "movl $0x217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
+        "movl $str_00217b98, 4(%esp)\n" /* "animation cannot be sync looping and sync nonlooping" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf40b18_00040e24\n"
@@ -11345,7 +11345,7 @@ void XAnimSetupSyncNodes(XAnim *anims)
         "retl\n"
         /* { scope 1 */
         ".Lf41002_00041098:\n"
-        "movl $0x217b98, 4(%esp)\n" /* line 4102 */
+        "movl $str_00217b98, 4(%esp)\n" /* line 4102 */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf41002_00041030\n"
@@ -11372,7 +11372,7 @@ void XAnimProcessClientNotify(void)
         "je .Lf410ae_000411bc\n"
         "movl -0x54(%ebp), %ebx\n" /* line 1527 | state, i */
         "movss 4(%ebx), %xmm1\n" /* i */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "ucomiss %xmm5, %xmm1\n"
         "jne .Lf410ae_000411c7\n"
         "jp .Lf410ae_000411c7\n"
@@ -11615,7 +11615,7 @@ void XAnimProcessClientNotify(void)
         "jae .Lf410ae_00041a2c\n"
         "movl -0x54(%ebp), %eax\n" /* state, info */
         "movss 4(%eax), %xmm1\n" /* info */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "movss 4(%edi), %xmm3\n" /* notetrackName */
         "ucomiss %xmm5, %xmm1\n" /* line 1422 */
         "je .Lf410ae_000412fb\n"
@@ -11628,7 +11628,7 @@ void XAnimProcessClientNotify(void)
         "jbe .Lf410ae_000419a9\n"
         "movaps %xmm3, %xmm0\n" /* line 1428 */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041304\n"
         ".Lf410ae_00041418:\n"
@@ -11640,7 +11640,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm5, %xmm0\n" /* line 1437 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004112a\n"
         ".Lf410ae_00041446:\n"
@@ -11731,13 +11731,13 @@ void XAnimProcessClientNotify(void)
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf410ae_000411bc\n"
         "movss 4(%ebx), %xmm1\n" /* i */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "movss 4(%edi), %xmm3\n" /* notetrackName */
         "jmp .Lf410ae_00041478\n"
         /* { scope 2 */
         ".Lf410ae_00041582:\n"
         "movl %esi, %eax\n" /* line 1391 */
-        "movss 0x2ed62c, %xmm2\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm2\n" /* 2.0f */
         "xorl %edx, %edx\n"
         "xorl %edi, %edi\n"
         ".Lf410ae_00041590:\n"
@@ -11767,7 +11767,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm5, %xmm0\n" /* line 1437 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_000411fc\n"
         ".Lf410ae_000415ec:\n"
@@ -11846,7 +11846,7 @@ void XAnimProcessClientNotify(void)
         "jae .Lf410ae_000411bc\n"
         "movl -0x54(%ebp), %eax\n" /* state, info */
         "movss 4(%eax), %xmm1\n" /* info */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "movss 4(%edi), %xmm2\n" /* line 1600 | notetrackName, time */
         /* { scope 2 */
         "ucomiss %xmm5, %xmm1\n" /* line 1422 */
@@ -11860,7 +11860,7 @@ void XAnimProcessClientNotify(void)
         "jbe .Lf410ae_000419ce\n"
         "movaps %xmm2, %xmm0\n" /* line 1428 */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004161f\n"
         /* } scope */
@@ -11941,7 +11941,7 @@ void XAnimProcessClientNotify(void)
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf410ae_000411bc\n"
         "movss 4(%ebx), %xmm1\n" /* i */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         "movss 4(%edi), %xmm3\n" /* notetrackName */
         "ucomiss %xmm5, %xmm1\n" /* line 1422 */
         "je .Lf410ae_0004174e\n"
@@ -11953,7 +11953,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1428 */
         "movl -0x54(%ebp), %eax\n" /* state */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041757\n"
         ".Lf410ae_00041883:\n"
@@ -11984,7 +11984,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1437 */
         "movl -0x54(%ebp), %eax\n" /* state */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041757\n"
         ".Lf410ae_000418e4:\n"
@@ -11999,7 +11999,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1437 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041304\n"
         /* { scope 2 */
@@ -12015,7 +12015,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm2, %xmm0\n" /* line 1437 */
         "movl -0x54(%ebp), %eax\n" /* state */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004161f\n"
         /* } scope */
@@ -12027,7 +12027,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1428 */
         "movl -0x54(%ebp), %eax\n" /* state */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004148a\n"
         ".Lf410ae_00041984:\n"
@@ -12036,7 +12036,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1431 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041757\n"
         ".Lf410ae_000419a9:\n"
@@ -12045,7 +12045,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1431 */
         "movl -0x54(%ebp), %eax\n" /* state */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041304\n"
         /* { scope 2 */
@@ -12055,7 +12055,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm2, %xmm0\n" /* line 1431 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004161f\n"
         /* } scope */
@@ -12071,7 +12071,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1437 */
         "movl -0x54(%ebp), %eax\n" /* state */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004148a\n"
         ".Lf410ae_00041a2c:\n"
@@ -12083,7 +12083,7 @@ void XAnimProcessClientNotify(void)
         "jbe .Lf410ae_000411bc\n"
         "leal 0x14(%edi), %ebx\n" /* notetrackName, i */
         "movl %ebx, -0x20(%ebp)\n" /* i */
-        "movss 0x2ed5d0, %xmm5\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* 1.0f */
         ".Lf410ae_00041a52:\n"
         "movl -0x54(%ebp), %eax\n" /* line 1422 | state */
         "movss 4(%eax), %xmm0\n"
@@ -12163,7 +12163,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm1, %xmm0\n" /* line 1428 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "addss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041a6c\n"
         ".Lf410ae_00041b70:\n"
@@ -12178,7 +12178,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm1, %xmm0\n" /* line 1437 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041a6c\n"
         ".Lf410ae_00041ba9:\n"
@@ -12187,7 +12187,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm1, %xmm0\n" /* line 1431 */
         "movl -0x54(%ebp), %eax\n" /* state */
         "subss 4(%eax), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_00041a6c\n"
         ".Lf410ae_00041bce:\n"
@@ -12201,7 +12201,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm5, %xmm0\n" /* line 1431 */
         "movl -0x54(%ebp), %ecx\n" /* state */
         "subss 4(%ecx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004112a\n"
         ".Lf410ae_00041c07:\n"
@@ -12210,7 +12210,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm3, %xmm0\n" /* line 1431 */
         "movl -0x54(%ebp), %ebx\n" /* state */
         "subss 4(%ebx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_0004148a\n"
         ".Lf410ae_00041c2c:\n"
@@ -12219,7 +12219,7 @@ void XAnimProcessClientNotify(void)
         "movaps %xmm5, %xmm0\n" /* line 1431 */
         "movl -0x54(%ebp), %ecx\n" /* state */
         "subss 4(%ecx), %xmm0\n"
-        "addss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "addss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "divss %xmm4, %xmm0\n"
         "jmp .Lf410ae_000411fc\n"
         ".Lf410ae_00041c51:\n"
@@ -12874,7 +12874,7 @@ void XAnimUpdateInfoInternal(const XAnimTree *tree, float dtime)
         "movaps %xmm3, %xmm2\n" /* line 1725 */
         "addss 4(%esi), %xmm2\n" /* state */
         "movzwl 8(%esi), %ebx\n" /* line 1726 | state */
-        "movss 0x2ed5d0, %xmm0\n" /* line 1730 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1730 | 1.0f */
         "ucomiss %xmm0, %xmm2\n"
         "jb .Lf4235a_00042410\n"
         "cmpb $0, 2(%eax)\n" /* line 1732 */
@@ -13015,7 +13015,7 @@ void XAnimUpdateInfoInternal(const XAnimTree *tree, float dtime)
         "movaps %xmm0, %xmm2\n" /* line 1781 */
         "addss 4(%esi), %xmm2\n" /* state */
         "movzwl 0xa(%esi), %ebx\n" /* line 1782 | state */
-        "movss 0x2ed5d0, %xmm1\n" /* line 1786 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 1786 | 1.0f */
         "movaps %xmm1, %xmm0\n"
         "ucomiss %xmm1, %xmm2\n"
         "jb .Lf4235a_000425c4\n"
@@ -13288,7 +13288,7 @@ float XAnimGetNotifyFracServer(const XAnimState *syncState, const XAnimState *ne
         "jne .Lf42892_00042922\n"
         "movl 0xc(%ebp), %eax\n" /* line 1422 | nextSyncState */
         "movss 4(%eax), %xmm2\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         "ucomiss %xmm4, %xmm2\n"
         "jp .Lf42892_000428d9\n"
         ".Lf42892_000428d3:\n"
@@ -13311,7 +13311,7 @@ float XAnimGetNotifyFracServer(const XAnimState *syncState, const XAnimState *ne
         "jmp .Lf42892_0004291a\n"
         /* { scope 2 */
         ".Lf42892_00042912:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 1437 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 1437 | 1.0f */
         /* } scope */
         /* } scope */
         ".Lf42892_0004291a:\n"
@@ -13331,7 +13331,7 @@ float XAnimGetNotifyFracServer(const XAnimState *syncState, const XAnimState *ne
         "movl %edi, %eax\n" /* parts */
         "cmpw $0, 2(%esi)\n" /* line 1472 | info */
         "js .Lf42892_000429ca\n"
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         ".Lf42892_00042943:\n"
         "movswl 2(%esi), %edx\n" /* line 1478 | info */
         "movl 0x1c(%edi), %eax\n" /* parts */
@@ -13396,7 +13396,7 @@ float XAnimGetNotifyFracServer(const XAnimState *syncState, const XAnimState *ne
         /* } scope */
         ".Lf42892_000429ca:\n"
         "movss 0xc(%esi), %xmm0\n" /* line 4176 | info */
-        "movss 0x2ed5d0, %xmm4\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm4\n" /* 1.0f */
         "ucomiss %xmm4, %xmm0\n"
         "jp .Lf42892_000429de\n"
         "je .Lf42892_00042a17\n"
@@ -13458,7 +13458,7 @@ float XAnimGetNotifyFracServer(const XAnimState *syncState, const XAnimState *ne
         ".Lf42892_00042a79:\n"
         "movl %edx, %ecx\n" /* line 1391 */
         "movl $0, -0x10(%ebp)\n" /* bestNotifyInfo */
-        "movss 0x2ed62c, %xmm2\n" /* 2.0f */
+        "movss lit4_002ed62c, %xmm2\n" /* 2.0f */
         "xorl %ebx, %ebx\n" /* notifyInfoIndex */
         ".Lf42892_00042a8c:\n"
         "movss 4(%ecx), %xmm1\n" /* line 1393 */
@@ -14053,7 +14053,7 @@ float XAnimFindServerNoteTrack(float dtime)
         "movzwl 0xa(%ebx), %ecx\n" /* line 2140 | state */
         "cmpb $0, 2(%eax)\n" /* line 2144 */
         "jne .Lf4302e_000432d6\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 2146 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 2146 | 1.0f */
         "ucomiss %xmm5, %xmm2\n"
         "jb .Lf4302e_000430e2\n"
         "movaps %xmm5, %xmm2\n"
@@ -14073,7 +14073,7 @@ float XAnimFindServerNoteTrack(float dtime)
         ".Lf4302e_00043108:\n"
         "jp .Lf4302e_0004328d\n" /* line 2217 */
         ".Lf4302e_0004310e:\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 2222 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 2222 | 1.0f */
         /* } scope */
         ".Lf4302e_00043116:\n"
         "movaps %xmm1, %xmm0\n" /* line 2230 */
@@ -14110,7 +14110,7 @@ float XAnimFindServerNoteTrack(float dtime)
         "movl -0x50(%ebp), %eax\n" /* line 2185 | anim */
         "testb $2, 4(%eax)\n"
         "je .Lf4302e_00043410\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 2188 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 2188 | 1.0f */
         "ucomiss %xmm5, %xmm2\n"
         "jb .Lf4302e_0004318a\n"
         "movaps %xmm5, %xmm2\n"
@@ -14198,7 +14198,7 @@ float XAnimFindServerNoteTrack(float dtime)
         "movl -0x58(%ebp), %eax\n" /* line 2222 | numAnims */
         "testl %eax, %eax\n"
         "jle .Lf4302e_0004310e\n"
-        "movss 0x2ed5d0, %xmm1\n" /* line 2217 | 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* line 2217 | 1.0f */
         "xorl %ebx, %ebx\n" /* state */
         ".Lf4302e_000432a2:\n"
         "movl -0x50(%ebp), %eax\n" /* line 2224 | anim */
@@ -14216,7 +14216,7 @@ float XAnimFindServerNoteTrack(float dtime)
         "jne .Lf4302e_000432a2\n"
         "jmp .Lf4302e_00043116\n"
         ".Lf4302e_000432d6:\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 2151 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 2151 | 1.0f */
         "ucomiss %xmm5, %xmm2\n"
         "jb .Lf4302e_000430e2\n"
         ".Lf4302e_000432e7:\n"
@@ -14309,7 +14309,7 @@ float XAnimFindServerNoteTrack(float dtime)
         "jmp .Lf4302e_0004334c\n"
         /* } scope */
         ".Lf4302e_00043410:\n"
-        "movss 0x2ed5d0, %xmm5\n" /* line 2194 | 1.0f */
+        "movss lit4_002ed5d0, %xmm5\n" /* line 2194 | 1.0f */
         "ucomiss %xmm5, %xmm2\n"
         "jb .Lf4302e_0004318a\n"
         ".Lf4302e_00043421:\n"
@@ -14351,12 +14351,12 @@ int DObjUpdateServerInfo(DObj *obj, float dtime, int bNotify)
         "movss %xmm1, -0x18(%ebp)\n"
         "calll XAnimFindServerNoteTrack\n"
         "movss -0x18(%ebp), %xmm1\n" /* line 3172 */
-        "ucomiss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jp .Lf43448_00043483\n"
         "je .Lf43448_00043494\n"
         ".Lf43448_00043483:\n"
         "mulss %xmm1, %xmm0\n" /* line 3174 */
-        "addss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "addss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "ucomiss %xmm0, %xmm1\n" /* line 3175 */
         "jae .Lf43448_000434c1\n"
         ".Lf43448_00043494:\n"

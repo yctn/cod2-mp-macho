@@ -19,8 +19,8 @@ extern const dvar_t *cl_stanceHoldTime; /* 0x0 */
 extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
 extern void UI_MouseEvent(int dx, int dy);
-static kbutton_t playersKb[1][28]; /* 0xf2ee80 */
-static kbutton_t *kb; /* 0x313180 */
+static kbutton_t playersKb[1][28]; /* playersKb */
+static kbutton_t *kb; /* kb */
 
 void IN_MLookDown(void);
 void IN_CenterView(void);
@@ -117,7 +117,7 @@ void IN_MLookDown(void)
 /* line 654 */
 void IN_CenterView(void)
 {
-    byte *cl = *(byte **)*(void **)0x195ee78;
+    byte *cl = *(byte **)*(void **)imp_cl;
     *(float *)(cl + 0x861c) = (float)*(int *)(cl + 0x88) * -0.0054931640625f;
 }
 
@@ -174,7 +174,7 @@ void IN_KeyDown(kbutton_t *b)
         "calll atoi\n"
         "jmp .Lf1854c8_001854e8\n"
         ".Lf1854c8_00185539:\n"
-        "movl $0x2af610, 8(%ebp)\n" /* line 146 | b */
+        "movl $str_002af610, 8(%ebp)\n" /* line 146 | b */
         /* } scope */
         "addl $0x14, %esp\n" /* line 161 */
         "popl %ebx\n"
@@ -231,7 +231,7 @@ void IN_KeyUp(kbutton_t *b)
         "calll atoi\n"
         "testl %eax, %eax\n" /* line 205 */
         "jne .Lf18554a_001855d7\n"
-        "movl 0x195f638, %eax\n" /* line 211 */
+        "movl imp_frame_msec, %eax\n" /* line 211 */
         "movl (%eax), %eax\n"
         "shrl $1, %eax\n"
         "addl %eax, 0xc(%ebx)\n" /* b */
@@ -265,7 +265,7 @@ void IN_UpDown(void)
         "jne .Lf1855e6_0018562a\n"
         "cmpb $0, 0xec(%edx)\n"
         "jne .Lf1855e6_0018562a\n"
-        "movl 0x195ecb4, %eax\n" /* line 290 */
+        "movl imp_legacyHacks, %eax\n" /* line 290 */
         "movl (%eax), %eax\n"
         "cmpl $1, 8(%eax)\n"
         "jle .Lf1855e6_0018562c\n"
@@ -583,14 +583,14 @@ void IN_Stance_Down(void)
         "jne .Lf185b48_00185ba0\n"
         "cmpb $0, 0xec(%eax)\n"
         "jne .Lf185b48_00185ba0\n"
-        "movl 0x195ee78, %eax\n" /* line 621 */
+        "movl imp_cl, %eax\n" /* line 621 */
         "movl (%eax), %edx\n"
         "movb $1, 0x85ec(%edx)\n"
-        "movl 0x195ecb4, %ecx\n" /* line 622 */
+        "movl imp_legacyHacks, %ecx\n" /* line 622 */
         "movl (%ecx), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, 0x85f0(%edx)\n"
-        "movl 0x195f2d8, %eax\n" /* line 623 */
+        "movl imp_com_frameTime, %eax\n" /* line 623 */
         "movl (%eax), %eax\n"
         "movl %eax, 0x85f4(%edx)\n"
         "cmpl $1, 0x85f0(%edx)\n" /* line 625 */
@@ -609,11 +609,11 @@ void IN_Stance_Up(void)
     byte *ptr;
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
         return;
-    ptr = *(byte **)(*(void **)0x195ee78);
+    ptr = *(byte **)(*(void **)imp_cl);
     if (*(byte *)(ptr + 0x85ec) && *(int *)(ptr + 0x85f0) == 1)
     {
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 8) = 0;
-        ptr = *(byte **)(*(void **)0x195ee78);
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 8) = 0;
+        ptr = *(byte **)(*(void **)imp_cl);
     }
     *(byte *)(ptr + 0x85ec) = 0;
 }
@@ -621,14 +621,14 @@ void IN_Stance_Up(void)
 /* line 660 */
 void IN_ToggleADS(void)
 {
-    byte *p = (byte *)(*(int *)(*(int *)0x195ee78)) + 0xb;
+    byte *p = (byte *)(*(int *)(*(int *)imp_cl)) + 0xb;
     *p = (*p == 0) ? 1 : 0;
 }
 
 /* line 666 */
 void IN_LeaveADS(void)
 {
-    *(byte *)(*(int *)(*(int *)0x195ee78) + 0xb) = 0;
+    *(byte *)(*(int *)(*(int *)imp_cl) + 0xb) = 0;
 }
 
 /* line 672 */
@@ -638,7 +638,7 @@ void IN_LowerStance(void)
     int val;
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
         return;
-    statePtr = (int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 8);
+    statePtr = (int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 8);
     val = *statePtr;
     if (val <= 0)
         *statePtr = 1;
@@ -651,7 +651,7 @@ void IN_RaiseStance(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    int *stance = (int *)(*(byte **)*(void **)0x195ecb4 + 8);
+    int *stance = (int *)(*(byte **)*(void **)imp_legacyHacks + 8);
     if (*stance > 1)
         *stance = 1;
     else if (*stance == 1)
@@ -663,7 +663,7 @@ void IN_ToggleCrouch(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    int *stance = (int *)(*(byte **)*(void **)0x195ecb4 + 8);
+    int *stance = (int *)(*(byte **)*(void **)imp_legacyHacks + 8);
     *stance = (*stance != 1) ? 1 : 0;
 }
 
@@ -672,7 +672,7 @@ void IN_ToggleProne(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    int *stance = (int *)(*(byte **)*(void **)0x195ecb4 + 8);
+    int *stance = (int *)(*(byte **)*(void **)imp_legacyHacks + 8);
     *stance = (*stance != 2) ? 2 : 0;
 }
 
@@ -681,7 +681,7 @@ void IN_GoProne(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    *(int *)(*(byte **)*(void **)0x195ecb4 + 8) = 2;
+    *(int *)(*(byte **)*(void **)imp_legacyHacks + 8) = 2;
 }
 
 /* line 760 */
@@ -689,7 +689,7 @@ void IN_GoCrouch(void)
 {
     if (*(byte *)((byte *)kb + 0x204) != 0 || *(byte *)((byte *)kb + 0xec) != 0)
         return;
-    *(int *)(*(byte **)*(void **)0x195ecb4 + 8) = 1;
+    *(int *)(*(byte **)*(void **)imp_legacyHacks + 8) = 1;
 }
 
 /* line 776 */
@@ -704,7 +704,7 @@ void IN_GoStandDown(void)
         "addl $0xf0, %eax\n"
         "movl %eax, (%esp)\n"
         "calll IN_KeyDown\n"
-        "movl 0x195ecb4, %eax\n" /* line 781 */
+        "movl imp_legacyHacks, %eax\n" /* line 781 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -755,7 +755,7 @@ Bool IsTalking(void)
 /* line 1006 */
 void CL_MouseEvent(const int dx, const int dy)
 {
-    byte *ptr = *(byte **)(*(void **)0x195ee78);
+    byte *ptr = *(byte **)(*(void **)imp_cl);
     int index;
     if (!(*(byte *)(ptr + 4) & 8) || *(byte *)((byte *)cl_bypassMouseInput + 8))
     {
@@ -781,7 +781,7 @@ void CL_WriteVoicePacket(void)
         "pushl %ebx\n"
         "subl $0x406c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ee8c, %eax\n" /* line 1468 */
+        "movl imp_clc, %eax\n" /* line 1468 */
         "movl (%eax), %ebx\n"
         "movl 0x407a0(%ebx), %esi\n"
         "testl %esi, %esi\n"
@@ -807,7 +807,7 @@ void CL_WriteVoicePacket(void)
         "leal -0x3c(%ebp), %eax\n" /* msg */
         "movl %eax, (%esp)\n"
         "calll MSG_Init\n"
-        "movl $0x2a9440, 4(%esp)\n" /* line 1475 */
+        "movl $str_002a9440, 4(%esp)\n" /* line 1475 */
         "leal -0x3c(%ebp), %eax\n" /* msg */
         "movl %eax, (%esp)\n"
         "calll MSG_WriteString\n"
@@ -816,7 +816,7 @@ void CL_WriteVoicePacket(void)
         "leal -0x3c(%ebp), %eax\n" /* msg */
         "movl %eax, (%esp)\n"
         "calll MSG_WriteShort\n"
-        "movl 0x195ee78, %esi\n" /* line 1481 */
+        "movl imp_cl, %esi\n" /* line 1481 */
         "movl (%esi), %ebx\n"
         "movzbl 0x179c0c(%ebx), %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -827,12 +827,12 @@ void CL_WriteVoicePacket(void)
         "movl 0x179c0c(%ebx), %ebx\n"
         "testl %ebx, %ebx\n"
         "jg .Lf185e60_00185f5d\n"
-        "movl 0x195f618, %eax\n" /* line 1499 */
+        "movl imp_cl_showSend, %eax\n" /* line 1499 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf185e60_00185fca\n"
         ".Lf185e60_00185f11:\n"
-        "movl 0x195ee8c, %eax\n" /* line 1506 */
+        "movl imp_clc, %eax\n" /* line 1506 */
         "movl (%eax), %edx\n"
         "movl 0x14(%edx), %esi\n"
         "movl %esi, -0x24(%ebp)\n"
@@ -882,14 +882,14 @@ void CL_WriteVoicePacket(void)
         "movl %ebx, %eax\n"
         "cmpl 0x179c0c(%ebx), %edi\n" /* voicePacket */
         "jl .Lf185e60_00185f67\n"
-        "movl 0x195f618, %eax\n" /* line 1499 */
+        "movl imp_cl_showSend, %eax\n" /* line 1499 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf185e60_00185f11\n"
         ".Lf185e60_00185fca:\n"
         "movl -0x30(%ebp), %eax\n" /* line 1501 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2af630, (%esp)\n" /* "voice: %i
+        "movl $str_002af630, (%esp)\n" /* "voice: %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf185e60_00185f11\n"
@@ -908,7 +908,7 @@ void CL_WritePacket(void)
         "pushl %ebx\n"
         "subl $0x806c, %esp\n"
         /* { scope 1 */
-        "movl 0x195ee8c, %edi\n" /* line 1547 | compressedSize */
+        "movl imp_clc, %edi\n" /* line 1547 | compressedSize */
         "movl (%edi), %esi\n" /* compressedSize, i */
         "movl 0x407a0(%esi), %eax\n" /* i */
         "testl %eax, %eax\n"
@@ -920,7 +920,7 @@ void CL_WritePacket(void)
         "je .Lf185fe2_0018627d\n"
         "leal -0x4c(%ebp), %eax\n" /* line 1552 | nullcmd */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ee78, %eax\n"
+        "movl imp_cl, %eax\n"
         "movl (%eax), %ebx\n" /* cmd */
         "leal 0x34(%ebx), %eax\n" /* cmd */
         "movl %eax, (%esp)\n"
@@ -952,9 +952,9 @@ void CL_WritePacket(void)
         "cmpl 0x130(%ebx), %esi\n" /* cmd, i */
         "jle .Lf185fe2_00186288\n"
         ".Lf185fe2_001860a4:\n"
-        "movl 0x195ee78, %eax\n" /* line 1582 */
+        "movl imp_cl, %eax\n" /* line 1582 */
         "movl (%eax), %ecx\n"
-        "movl 0x195f60c, %eax\n"
+        "movl imp_cl_packetdup, %eax\n"
         "movl (%eax), %edx\n"
         "movl 0x407c8(%ebx), %eax\n" /* cmd */
         "subl 8(%edx), %eax\n"
@@ -968,16 +968,16 @@ void CL_WritePacket(void)
         "testl %edi, %edi\n" /* line 1588 | compressedSize */
         "jle .Lf185fe2_00186405\n"
         ".Lf185fe2_001860e2:\n"
-        "movl 0x195f618, %eax\n" /* line 1590 */
+        "movl imp_cl_showSend, %eax\n" /* line 1590 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf185fe2_0018637b\n"
         ".Lf185fe2_001860f3:\n"
-        "movl 0x195f61c, %eax\n" /* line 1596 */
+        "movl imp_cl_nodelta, %eax\n" /* line 1596 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf185fe2_00186112\n"
-        "movl 0x195ee78, %eax\n"
+        "movl imp_cl, %eax\n"
         "movl (%eax), %edx\n"
         "movl 0x18(%edx), %ebx\n" /* cmd */
         "testl %ebx, %ebx\n" /* cmd */
@@ -993,7 +993,7 @@ void CL_WritePacket(void)
         "leal -0x30(%ebp), %edx\n" /* buf */
         "movl %edx, (%esp)\n"
         "calll MSG_WriteByte\n"
-        "movl 0x195ee8c, %eax\n" /* line 1609 */
+        "movl imp_clc, %eax\n" /* line 1609 */
         "movl (%eax), %edx\n"
         "movl 0x20138(%edx), %eax\n" /* line 1611 */
         "movl %eax, -0x8060(%ebp)\n"
@@ -1033,15 +1033,15 @@ void CL_WritePacket(void)
         "movl %edx, (%esp)\n"
         "calll MSG_WriteBitsCompress\n"
         "leal 9(%eax), %edi\n" /* compressedSize */
-        "movl 0x195ee8c, %edx\n" /* line 1641 */
+        "movl imp_clc, %edx\n" /* line 1641 */
         "movl (%edx), %esi\n" /* i */
         "movl 0x407c8(%esi), %eax\n" /* i */
         "andl $0x1f, %eax\n"
-        "movl 0x195ee78, %edx\n" /* line 1642 */
+        "movl imp_cl, %edx\n" /* line 1642 */
         "movl (%edx), %ebx\n" /* cmd */
         "leal (%eax, %eax, 2), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n" /* cmd */
-        "movl 0x195ecac, %ecx\n"
+        "movl imp_cls, %ecx\n"
         "movl 0x118(%ecx), %edx\n"
         "movl %edx, 0x49468(%eax)\n"
         "movl -0x805c(%ebp), %edx\n" /* line 1643 */
@@ -1051,7 +1051,7 @@ void CL_WritePacket(void)
         "movl %edx, 0x49460(%eax)\n"
         "movl 0x118(%ecx), %eax\n" /* line 1645 */
         "movl %eax, 0xc(%esi)\n" /* i */
-        "movl 0x195f618, %eax\n" /* line 1647 */
+        "movl imp_cl_showSend, %eax\n" /* line 1647 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf185fe2_00186350\n"
@@ -1099,7 +1099,7 @@ void CL_WritePacket(void)
         "jle .Lf185fe2_00186288\n"
         "jmp .Lf185fe2_001860a4\n"
         ".Lf185fe2_001862e2:\n"
-        "movl 0x195ee8c, %ebx\n" /* cmd */
+        "movl imp_clc, %ebx\n" /* cmd */
         ".Lf185fe2_001862e8:\n"
         "addl $0x407c8, %eax\n" /* line 1659 */
         "movl %eax, (%esp)\n"
@@ -1117,7 +1117,7 @@ void CL_WritePacket(void)
         "retl\n"
         /* { scope 1 */
         ".Lf185fe2_0018630c:\n"
-        "movl 0x195ee8c, %eax\n" /* line 1596 */
+        "movl imp_clc, %eax\n" /* line 1596 */
         "movl (%eax), %eax\n"
         "movl 0x407a8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -1133,23 +1133,23 @@ void CL_WritePacket(void)
         "jmp .Lf185fe2_0018612d\n"
         ".Lf185fe2_00186350:\n"
         "movl %edi, 4(%esp)\n" /* line 1649 | compressedSize */
-        "movl $0x217fac, (%esp)\n" /* "%i " */
+        "movl $str_00217fac, (%esp)\n" /* "%i " */
         "calll Com_Printf\n"
         "jmp .Lf185fe2_00186255\n"
         ".Lf185fe2_00186365:\n"
-        "movl $0x2af63c, (%esp)\n" /* line 1586 */
+        "movl $str_002af63c, (%esp)\n" /* line 1586 */
         "calll Com_Printf\n"
         "movl $0x20, %edi\n" /* compressedSize */
         "jmp .Lf185fe2_001860e2\n"
         ".Lf185fe2_0018637b:\n"
         "movl %edi, 4(%esp)\n" /* line 1592 | compressedSize */
-        "movl $0x2af654, (%esp)\n" /* "(%i)" */
+        "movl $str_002af654, (%esp)\n" /* "(%i)" */
         "calll Com_Printf\n"
         "jmp .Lf185fe2_001860f3\n"
         ".Lf185fe2_00186390:\n"
         "leal -0x4c(%ebp), %ecx\n" /* line 1623 | nullcmd */
         "xorl %esi, %esi\n" /* i */
-        "movl 0x195ee78, %eax\n"
+        "movl imp_cl, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, -0x8064(%ebp)\n"
         "movl %eax, %edx\n"
@@ -1195,231 +1195,231 @@ void CL_InitInput(void)
         "movl %esp, %ebp\n"
         "subl $0x28, %esp\n"
         "movl $IN_CenterView, 4(%esp)\n" /* line 1732 */
-        "movl $0x2abfcc, (%esp)\n" /* "centerview" */
+        "movl $str_002abfcc, (%esp)\n" /* "centerview" */
         "calll Cmd_AddCommand\n"
         "movl $IN_UpDown, 4(%esp)\n" /* line 1734 */
-        "movl $0x2abf84, (%esp)\n" /* "+moveup" */
+        "movl $str_002abf84, (%esp)\n" /* "+moveup" */
         "calll Cmd_AddCommand\n"
         "movl $IN_UpUp, 4(%esp)\n" /* line 1735 */
-        "movl $0x2af65c, (%esp)\n" /* "-moveup" */
+        "movl $str_002af65c, (%esp)\n" /* "-moveup" */
         "calll Cmd_AddCommand\n"
         "movl $IN_DownDown, 4(%esp)\n" /* line 1736 */
-        "movl $0x2abf8c, (%esp)\n" /* "+movedown" */
+        "movl $str_002abf8c, (%esp)\n" /* "+movedown" */
         "calll Cmd_AddCommand\n"
         "movl $IN_DownUp, 4(%esp)\n" /* line 1737 */
-        "movl $0x2af664, (%esp)\n" /* "-movedown" */
+        "movl $str_002af664, (%esp)\n" /* "-movedown" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LeftDown, 4(%esp)\n" /* line 1738 */
-        "movl $0x2abf98, (%esp)\n" /* "+left" */
+        "movl $str_002abf98, (%esp)\n" /* "+left" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LeftUp, 4(%esp)\n" /* line 1739 */
-        "movl $0x2af670, (%esp)\n" /* "-left" */
+        "movl $str_002af670, (%esp)\n" /* "-left" */
         "calll Cmd_AddCommand\n"
         "movl $IN_RightDown, 4(%esp)\n" /* line 1740 */
-        "movl $0x2abfa0, (%esp)\n" /* "+right" */
+        "movl $str_002abfa0, (%esp)\n" /* "+right" */
         "calll Cmd_AddCommand\n"
         "movl $IN_RightUp, 4(%esp)\n" /* line 1741 */
-        "movl $0x2af678, (%esp)\n" /* "-right" */
+        "movl $str_002af678, (%esp)\n" /* "-right" */
         "calll Cmd_AddCommand\n"
         "movl $IN_ForwardDown, 4(%esp)\n" /* line 1742 */
-        "movl $0x2abf58, (%esp)\n" /* "+forward" */
+        "movl $str_002abf58, (%esp)\n" /* "+forward" */
         "calll Cmd_AddCommand\n"
         "movl $IN_ForwardUp, 4(%esp)\n" /* line 1743 */
-        "movl $0x2af680, (%esp)\n" /* "-forward" */
+        "movl $str_002af680, (%esp)\n" /* "-forward" */
         "calll Cmd_AddCommand\n"
         "movl $IN_BackDown, 4(%esp)\n" /* line 1744 */
-        "movl $0x2abf64, (%esp)\n" /* "+back" */
+        "movl $str_002abf64, (%esp)\n" /* "+back" */
         "calll Cmd_AddCommand\n"
         "movl $IN_BackUp, 4(%esp)\n" /* line 1745 */
-        "movl $0x2af68c, (%esp)\n" /* "-back" */
+        "movl $str_002af68c, (%esp)\n" /* "-back" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LookupDown, 4(%esp)\n" /* line 1746 */
-        "movl $0x2abfb0, (%esp)\n" /* "+lookup" */
+        "movl $str_002abfb0, (%esp)\n" /* "+lookup" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LookupUp, 4(%esp)\n" /* line 1747 */
-        "movl $0x2af694, (%esp)\n" /* "-lookup" */
+        "movl $str_002af694, (%esp)\n" /* "-lookup" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LookdownDown, 4(%esp)\n" /* line 1748 */
-        "movl $0x2abfb8, (%esp)\n" /* "+lookdown" */
+        "movl $str_002abfb8, (%esp)\n" /* "+lookdown" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LookdownUp, 4(%esp)\n" /* line 1749 */
-        "movl $0x2af69c, (%esp)\n" /* "-lookdown" */
+        "movl $str_002af69c, (%esp)\n" /* "-lookdown" */
         "calll Cmd_AddCommand\n"
         "movl $IN_StrafeDown, 4(%esp)\n" /* line 1750 */
-        "movl $0x2abfa8, (%esp)\n" /* "+strafe" */
+        "movl $str_002abfa8, (%esp)\n" /* "+strafe" */
         "calll Cmd_AddCommand\n"
         "movl $IN_StrafeUp, 4(%esp)\n" /* line 1751 */
-        "movl $0x2af6a8, (%esp)\n" /* "-strafe" */
+        "movl $str_002af6a8, (%esp)\n" /* "-strafe" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MoveleftDown, 4(%esp)\n" /* line 1752 */
-        "movl $0x2abf6c, (%esp)\n" /* "+moveleft" */
+        "movl $str_002abf6c, (%esp)\n" /* "+moveleft" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MoveleftUp, 4(%esp)\n" /* line 1753 */
-        "movl $0x2af6b0, (%esp)\n" /* "-moveleft" */
+        "movl $str_002af6b0, (%esp)\n" /* "-moveleft" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MoverightDown, 4(%esp)\n" /* line 1754 */
-        "movl $0x2abf78, (%esp)\n" /* "+moveright" */
+        "movl $str_002abf78, (%esp)\n" /* "+moveright" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MoverightUp, 4(%esp)\n" /* line 1755 */
-        "movl $0x2af6bc, (%esp)\n" /* "-moveright" */
+        "movl $str_002af6bc, (%esp)\n" /* "-moveright" */
         "calll Cmd_AddCommand\n"
         "movl $IN_SpeedDown, 4(%esp)\n" /* line 1756 */
-        "movl $0x2abf50, (%esp)\n" /* "+speed" */
+        "movl $str_002abf50, (%esp)\n" /* "+speed" */
         "calll Cmd_AddCommand\n"
         "movl $IN_SpeedUp, 4(%esp)\n" /* line 1757 */
-        "movl $0x2af6c8, (%esp)\n" /* "-speed" */
+        "movl $str_002af6c8, (%esp)\n" /* "-speed" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Attack_Down, 4(%esp)\n" /* line 1759 */
-        "movl $0x2abfd8, (%esp)\n" /* "+attack" */
+        "movl $str_002abfd8, (%esp)\n" /* "+attack" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Attack_Up, 4(%esp)\n" /* line 1760 */
-        "movl $0x2af6d0, (%esp)\n" /* "-attack" */
+        "movl $str_002af6d0, (%esp)\n" /* "-attack" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Melee_Down, 4(%esp)\n" /* line 1762 */
-        "movl $0x2ac0cc, (%esp)\n" /* "+melee" */
+        "movl $str_002ac0cc, (%esp)\n" /* "+melee" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Melee_Up, 4(%esp)\n" /* line 1763 */
-        "movl $0x2af6d8, (%esp)\n" /* "-melee" */
+        "movl $str_002af6d8, (%esp)\n" /* "-melee" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Breath_Down, 4(%esp)\n" /* line 1765 */
-        "movl $0x2ac0d4, (%esp)\n" /* "+holdbreath" */
+        "movl $str_002ac0d4, (%esp)\n" /* "+holdbreath" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Breath_Up, 4(%esp)\n" /* line 1766 */
-        "movl $0x2af6e0, (%esp)\n" /* "-holdbreath" */
+        "movl $str_002af6e0, (%esp)\n" /* "-holdbreath" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MeleeBreath_Down, 4(%esp)\n" /* line 1768 */
-        "movl $0x2ac0e0, (%esp)\n" /* "+melee_breath" */
+        "movl $str_002ac0e0, (%esp)\n" /* "+melee_breath" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MeleeBreath_Up, 4(%esp)\n" /* line 1769 */
-        "movl $0x2af6ec, (%esp)\n" /* "-melee_breath" */
+        "movl $str_002af6ec, (%esp)\n" /* "-melee_breath" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Frag_Down, 4(%esp)\n" /* line 1771 */
-        "movl $0x2abff8, (%esp)\n" /* "+frag" */
+        "movl $str_002abff8, (%esp)\n" /* "+frag" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Frag_Up, 4(%esp)\n" /* line 1772 */
-        "movl $0x2af6fc, (%esp)\n" /* "-frag" */
+        "movl $str_002af6fc, (%esp)\n" /* "-frag" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Smoke_Down, 4(%esp)\n" /* line 1774 */
-        "movl $0x2ac000, (%esp)\n" /* "+smoke" */
+        "movl $str_002ac000, (%esp)\n" /* "+smoke" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Smoke_Up, 4(%esp)\n" /* line 1775 */
-        "movl $0x2af704, (%esp)\n" /* "-smoke" */
+        "movl $str_002af704, (%esp)\n" /* "-smoke" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Binoculars_Down, 4(%esp)\n" /* line 1777 */
-        "movl $0x2ac0ac, (%esp)\n" /* "+binoculars" */
+        "movl $str_002ac0ac, (%esp)\n" /* "+binoculars" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Binoculars_Up, 4(%esp)\n" /* line 1778 */
-        "movl $0x2af70c, (%esp)\n" /* "-binoculars" */
+        "movl $str_002af70c, (%esp)\n" /* "-binoculars" */
         "calll Cmd_AddCommand\n"
         "movl $IN_BreathBinoculars_Down, 4(%esp)\n" /* line 1780 */
-        "movl $0x2ac0b8, (%esp)\n" /* "+breath_binoculars" */
+        "movl $str_002ac0b8, (%esp)\n" /* "+breath_binoculars" */
         "calll Cmd_AddCommand\n"
         "movl $IN_BreathBinoculars_Up, 4(%esp)\n" /* line 1781 */
-        "movl $0x2af718, (%esp)\n" /* "-breath_binoculars" */
+        "movl $str_002af718, (%esp)\n" /* "-breath_binoculars" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Activate_Down, 4(%esp)\n" /* line 1783 */
-        "movl $0x2ac020, (%esp)\n" /* "+activate" */
+        "movl $str_002ac020, (%esp)\n" /* "+activate" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Activate_Up, 4(%esp)\n" /* line 1784 */
-        "movl $0x2af72c, (%esp)\n" /* "-activate" */
+        "movl $str_002af72c, (%esp)\n" /* "-activate" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Reload_Down, 4(%esp)\n" /* line 1786 */
-        "movl $0x2ac02c, (%esp)\n" /* "+reload" */
+        "movl $str_002ac02c, (%esp)\n" /* "+reload" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Reload_Up, 4(%esp)\n" /* line 1787 */
-        "movl $0x2af738, (%esp)\n" /* "-reload" */
+        "movl $str_002af738, (%esp)\n" /* "-reload" */
         "calll Cmd_AddCommand\n"
         "movl $IN_UseReload_Down, 4(%esp)\n" /* line 1789 */
-        "movl $0x2ac054, (%esp)\n" /* "+usereload" */
+        "movl $str_002ac054, (%esp)\n" /* "+usereload" */
         "calll Cmd_AddCommand\n"
         "movl $IN_UseReload_Up, 4(%esp)\n" /* line 1790 */
-        "movl $0x2af740, (%esp)\n" /* "-usereload" */
+        "movl $str_002af740, (%esp)\n" /* "-usereload" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LeanLeft_Down, 4(%esp)\n" /* line 1792 */
-        "movl $0x2ac03c, (%esp)\n" /* "+leanleft" */
+        "movl $str_002ac03c, (%esp)\n" /* "+leanleft" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LeanLeft_Up, 4(%esp)\n" /* line 1793 */
-        "movl $0x2af74c, (%esp)\n" /* "-leanleft" */
+        "movl $str_002af74c, (%esp)\n" /* "-leanleft" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LeanRight_Down, 4(%esp)\n" /* line 1795 */
-        "movl $0x2ac048, (%esp)\n" /* "+leanright" */
+        "movl $str_002ac048, (%esp)\n" /* "+leanright" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LeanRight_Up, 4(%esp)\n" /* line 1796 */
-        "movl $0x2af758, (%esp)\n" /* "-leanright" */
+        "movl $str_002af758, (%esp)\n" /* "-leanright" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Prone_Down, 4(%esp)\n" /* line 1798 */
-        "movl $0x2ac0f0, (%esp)\n" /* "+prone" */
+        "movl $str_002ac0f0, (%esp)\n" /* "+prone" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Prone_Up, 4(%esp)\n" /* line 1799 */
-        "movl $0x2af764, (%esp)\n" /* "-prone" */
+        "movl $str_002af764, (%esp)\n" /* "-prone" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Stance_Down, 4(%esp)\n" /* line 1801 */
-        "movl $0x2ac0f8, (%esp)\n" /* "+stance" */
+        "movl $str_002ac0f8, (%esp)\n" /* "+stance" */
         "calll Cmd_AddCommand\n"
         "movl $IN_Stance_Up, 4(%esp)\n" /* line 1802 */
-        "movl $0x2af76c, (%esp)\n" /* "-stance" */
+        "movl $str_002af76c, (%esp)\n" /* "-stance" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MLookDown, 4(%esp)\n" /* line 1804 */
-        "movl $0x2abfc4, (%esp)\n" /* "+mlook" */
+        "movl $str_002abfc4, (%esp)\n" /* "+mlook" */
         "calll Cmd_AddCommand\n"
         "movl $IN_MLookUp, 4(%esp)\n" /* line 1805 */
-        "movl $0x2af774, (%esp)\n" /* "-mlook" */
+        "movl $str_002af774, (%esp)\n" /* "-mlook" */
         "calll Cmd_AddCommand\n"
         "movl $IN_ToggleADS, 4(%esp)\n" /* line 1807 */
-        "movl $0x2ac154, (%esp)\n" /* "toggleads" */
+        "movl $str_002ac154, (%esp)\n" /* "toggleads" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LeaveADS, 4(%esp)\n" /* line 1808 */
-        "movl $0x2ac160, (%esp)\n" /* "leaveads" */
+        "movl $str_002ac160, (%esp)\n" /* "leaveads" */
         "calll Cmd_AddCommand\n"
         "movl $IN_LowerStance, 4(%esp)\n" /* line 1810 */
-        "movl $0x2ac100, (%esp)\n" /* "lowerstance" */
+        "movl $str_002ac100, (%esp)\n" /* "lowerstance" */
         "calll Cmd_AddCommand\n"
         "movl $IN_RaiseStance, 4(%esp)\n" /* line 1812 */
-        "movl $0x2ac10c, (%esp)\n" /* "raisestance" */
+        "movl $str_002ac10c, (%esp)\n" /* "raisestance" */
         "calll Cmd_AddCommand\n"
         "movl $IN_ToggleCrouch, 4(%esp)\n" /* line 1814 */
-        "movl $0x2ac118, (%esp)\n" /* "togglecrouch" */
+        "movl $str_002ac118, (%esp)\n" /* "togglecrouch" */
         "calll Cmd_AddCommand\n"
         "movl $IN_ToggleProne, 4(%esp)\n" /* line 1816 */
-        "movl $0x2ac128, (%esp)\n" /* "toggleprone" */
+        "movl $str_002ac128, (%esp)\n" /* "toggleprone" */
         "calll Cmd_AddCommand\n"
         "movl $IN_GoProne, 4(%esp)\n" /* line 1818 */
-        "movl $0x2ac134, (%esp)\n" /* "goprone" */
+        "movl $str_002ac134, (%esp)\n" /* "goprone" */
         "calll Cmd_AddCommand\n"
         "movl $IN_GoCrouch, 4(%esp)\n" /* line 1819 */
-        "movl $0x2ac13c, (%esp)\n" /* "gocrouch" */
+        "movl $str_002ac13c, (%esp)\n" /* "gocrouch" */
         "calll Cmd_AddCommand\n"
         "movl $IN_GoStandDown, 4(%esp)\n" /* line 1820 */
-        "movl $0x2ac148, (%esp)\n" /* "+gostand" */
+        "movl $str_002ac148, (%esp)\n" /* "+gostand" */
         "calll Cmd_AddCommand\n"
         "movl $IN_GoStandUp, 4(%esp)\n" /* line 1821 */
-        "movl $0x2af77c, (%esp)\n" /* "-gostand" */
+        "movl $str_002af77c, (%esp)\n" /* "-gostand" */
         "calll Cmd_AddCommand\n"
         "movl $IN_TalkDown, 4(%esp)\n" /* line 1831 */
-        "movl $0x2ac16c, (%esp)\n" /* "+talk" */
+        "movl $str_002ac16c, (%esp)\n" /* "+talk" */
         "calll Cmd_AddCommand\n"
         "movl $IN_TalkUp, 4(%esp)\n" /* line 1832 */
-        "movl $0x2af788, (%esp)\n" /* "-talk" */
+        "movl $str_002af788, (%esp)\n" /* "-talk" */
         "calll Cmd_AddCommand\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 1835 */
         "movl $0x3f800000, 0xc(%esp)\n"
         "movl $0x38d1b717, 8(%esp)\n"
         "movl $0x3f4ccccd, 4(%esp)\n"
-        "movl $0x2af790, (%esp)\n" /* "cl_analog_attack_threshold" */
+        "movl $str_002af790, (%esp)\n" /* "cl_analog_attack_threshold" */
         "calll Dvar_RegisterFloat\n"
         "movl %eax, cl_analog_attack_threshold\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 1836 */
         "movl $0x3e8, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0x12c, 4(%esp)\n"
-        "movl $0x2af7ac, (%esp)\n" /* "cl_stanceHoldTime" */
+        "movl $str_002af7ac, (%esp)\n" /* "cl_stanceHoldTime" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, cl_stanceHoldTime\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 1837 */
         "movl $0, 4(%esp)\n"
-        "movl $0x2af7c0, (%esp)\n" /* "cl_nodelta" */
+        "movl $str_002af7c0, (%esp)\n" /* "cl_nodelta" */
         "calll Dvar_RegisterBool\n"
-        "movl 0x195f61c, %edx\n"
+        "movl imp_cl_nodelta, %edx\n"
         "movl %eax, (%edx)\n"
         "leave\n" /* line 1838 */
         "retl\n"
@@ -1434,143 +1434,143 @@ void CL_ShutdownInput(void)
         "pushl %ebp\n" /* line 1846 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl $0x2abfcc, (%esp)\n" /* line 1848 */
+        "movl $str_002abfcc, (%esp)\n" /* line 1848 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf84, (%esp)\n" /* line 1850 */
+        "movl $str_002abf84, (%esp)\n" /* line 1850 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af65c, (%esp)\n" /* line 1851 */
+        "movl $str_002af65c, (%esp)\n" /* line 1851 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf8c, (%esp)\n" /* line 1852 */
+        "movl $str_002abf8c, (%esp)\n" /* line 1852 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af664, (%esp)\n" /* line 1853 */
+        "movl $str_002af664, (%esp)\n" /* line 1853 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf98, (%esp)\n" /* line 1854 */
+        "movl $str_002abf98, (%esp)\n" /* line 1854 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af670, (%esp)\n" /* line 1855 */
+        "movl $str_002af670, (%esp)\n" /* line 1855 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abfa0, (%esp)\n" /* line 1856 */
+        "movl $str_002abfa0, (%esp)\n" /* line 1856 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af678, (%esp)\n" /* line 1857 */
+        "movl $str_002af678, (%esp)\n" /* line 1857 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf58, (%esp)\n" /* line 1858 */
+        "movl $str_002abf58, (%esp)\n" /* line 1858 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af680, (%esp)\n" /* line 1859 */
+        "movl $str_002af680, (%esp)\n" /* line 1859 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf64, (%esp)\n" /* line 1860 */
+        "movl $str_002abf64, (%esp)\n" /* line 1860 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af68c, (%esp)\n" /* line 1861 */
+        "movl $str_002af68c, (%esp)\n" /* line 1861 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abfb0, (%esp)\n" /* line 1862 */
+        "movl $str_002abfb0, (%esp)\n" /* line 1862 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af694, (%esp)\n" /* line 1863 */
+        "movl $str_002af694, (%esp)\n" /* line 1863 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abfb8, (%esp)\n" /* line 1864 */
+        "movl $str_002abfb8, (%esp)\n" /* line 1864 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af69c, (%esp)\n" /* line 1865 */
+        "movl $str_002af69c, (%esp)\n" /* line 1865 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abfa8, (%esp)\n" /* line 1866 */
+        "movl $str_002abfa8, (%esp)\n" /* line 1866 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6a8, (%esp)\n" /* line 1867 */
+        "movl $str_002af6a8, (%esp)\n" /* line 1867 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf6c, (%esp)\n" /* line 1868 */
+        "movl $str_002abf6c, (%esp)\n" /* line 1868 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6b0, (%esp)\n" /* line 1869 */
+        "movl $str_002af6b0, (%esp)\n" /* line 1869 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf78, (%esp)\n" /* line 1870 */
+        "movl $str_002abf78, (%esp)\n" /* line 1870 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6bc, (%esp)\n" /* line 1871 */
+        "movl $str_002af6bc, (%esp)\n" /* line 1871 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abf50, (%esp)\n" /* line 1872 */
+        "movl $str_002abf50, (%esp)\n" /* line 1872 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6c8, (%esp)\n" /* line 1873 */
+        "movl $str_002af6c8, (%esp)\n" /* line 1873 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abfd8, (%esp)\n" /* line 1875 */
+        "movl $str_002abfd8, (%esp)\n" /* line 1875 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6d0, (%esp)\n" /* line 1876 */
+        "movl $str_002af6d0, (%esp)\n" /* line 1876 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac0cc, (%esp)\n" /* line 1878 */
+        "movl $str_002ac0cc, (%esp)\n" /* line 1878 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6d8, (%esp)\n" /* line 1879 */
+        "movl $str_002af6d8, (%esp)\n" /* line 1879 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac0d4, (%esp)\n" /* line 1881 */
+        "movl $str_002ac0d4, (%esp)\n" /* line 1881 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6e0, (%esp)\n" /* line 1882 */
+        "movl $str_002af6e0, (%esp)\n" /* line 1882 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac0e0, (%esp)\n" /* line 1884 */
+        "movl $str_002ac0e0, (%esp)\n" /* line 1884 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6ec, (%esp)\n" /* line 1885 */
+        "movl $str_002af6ec, (%esp)\n" /* line 1885 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abff8, (%esp)\n" /* line 1887 */
+        "movl $str_002abff8, (%esp)\n" /* line 1887 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af6fc, (%esp)\n" /* line 1888 */
+        "movl $str_002af6fc, (%esp)\n" /* line 1888 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac000, (%esp)\n" /* line 1890 */
+        "movl $str_002ac000, (%esp)\n" /* line 1890 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af704, (%esp)\n" /* line 1891 */
+        "movl $str_002af704, (%esp)\n" /* line 1891 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac0ac, (%esp)\n" /* line 1893 */
+        "movl $str_002ac0ac, (%esp)\n" /* line 1893 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af70c, (%esp)\n" /* line 1894 */
+        "movl $str_002af70c, (%esp)\n" /* line 1894 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac0b8, (%esp)\n" /* line 1896 */
+        "movl $str_002ac0b8, (%esp)\n" /* line 1896 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af718, (%esp)\n" /* line 1897 */
+        "movl $str_002af718, (%esp)\n" /* line 1897 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac020, (%esp)\n" /* line 1899 */
+        "movl $str_002ac020, (%esp)\n" /* line 1899 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af72c, (%esp)\n" /* line 1900 */
+        "movl $str_002af72c, (%esp)\n" /* line 1900 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac02c, (%esp)\n" /* line 1902 */
+        "movl $str_002ac02c, (%esp)\n" /* line 1902 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af738, (%esp)\n" /* line 1903 */
+        "movl $str_002af738, (%esp)\n" /* line 1903 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac054, (%esp)\n" /* line 1905 */
+        "movl $str_002ac054, (%esp)\n" /* line 1905 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af740, (%esp)\n" /* line 1906 */
+        "movl $str_002af740, (%esp)\n" /* line 1906 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac03c, (%esp)\n" /* line 1908 */
+        "movl $str_002ac03c, (%esp)\n" /* line 1908 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af74c, (%esp)\n" /* line 1909 */
+        "movl $str_002af74c, (%esp)\n" /* line 1909 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac048, (%esp)\n" /* line 1911 */
+        "movl $str_002ac048, (%esp)\n" /* line 1911 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af758, (%esp)\n" /* line 1912 */
+        "movl $str_002af758, (%esp)\n" /* line 1912 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac0f0, (%esp)\n" /* line 1914 */
+        "movl $str_002ac0f0, (%esp)\n" /* line 1914 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af764, (%esp)\n" /* line 1915 */
+        "movl $str_002af764, (%esp)\n" /* line 1915 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac0f8, (%esp)\n" /* line 1917 */
+        "movl $str_002ac0f8, (%esp)\n" /* line 1917 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af76c, (%esp)\n" /* line 1918 */
+        "movl $str_002af76c, (%esp)\n" /* line 1918 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2abfc4, (%esp)\n" /* line 1920 */
+        "movl $str_002abfc4, (%esp)\n" /* line 1920 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af774, (%esp)\n" /* line 1921 */
+        "movl $str_002af774, (%esp)\n" /* line 1921 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac154, (%esp)\n" /* line 1923 */
+        "movl $str_002ac154, (%esp)\n" /* line 1923 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac160, (%esp)\n" /* line 1924 */
+        "movl $str_002ac160, (%esp)\n" /* line 1924 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac100, (%esp)\n" /* line 1926 */
+        "movl $str_002ac100, (%esp)\n" /* line 1926 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac10c, (%esp)\n" /* line 1928 */
+        "movl $str_002ac10c, (%esp)\n" /* line 1928 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac118, (%esp)\n" /* line 1930 */
+        "movl $str_002ac118, (%esp)\n" /* line 1930 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac128, (%esp)\n" /* line 1932 */
+        "movl $str_002ac128, (%esp)\n" /* line 1932 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac134, (%esp)\n" /* line 1934 */
+        "movl $str_002ac134, (%esp)\n" /* line 1934 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac13c, (%esp)\n" /* line 1935 */
+        "movl $str_002ac13c, (%esp)\n" /* line 1935 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac148, (%esp)\n" /* line 1936 */
+        "movl $str_002ac148, (%esp)\n" /* line 1936 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af77c, (%esp)\n" /* line 1937 */
+        "movl $str_002af77c, (%esp)\n" /* line 1937 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2ac16c, (%esp)\n" /* line 1947 */
+        "movl $str_002ac16c, (%esp)\n" /* line 1947 */
         "calll Cmd_RemoveCommand\n"
-        "movl $0x2af788, (%esp)\n" /* line 1948 */
+        "movl $str_002af788, (%esp)\n" /* line 1948 */
         "calll Cmd_RemoveCommand\n"
         "leave\n" /* line 1950 */
         "retl\n"
@@ -1675,7 +1675,7 @@ void CL_CmdButtons(usercmd_t *cmd)
         "orl $0x400, (%esi)\n" /* line 1063 */
         ".Lf186d4a_00186e91:\n"
         "movb $0, 0x11(%eax)\n" /* line 1066 */
-        "movl 0x195ee78, %ebx\n" /* line 1278 */
+        "movl imp_cl, %ebx\n" /* line 1278 */
         "movl (%ebx), %eax\n"
         "cmpl $0, 4(%eax)\n"
         "je .Lf186d4a_00186eb0\n"
@@ -1723,16 +1723,16 @@ void CL_MouseMove(usercmd_t *cmd)
         "movl %esp, %ebp\n"
         "subl $0x58, %esp\n"
         /* { scope 1 */
-        "movl 0x195f630, %eax\n" /* line 1177 */
+        "movl imp_m_filter, %eax\n" /* line 1177 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf186ef6_00186f76\n"
-        "movl 0x195ee78, %ecx\n" /* line 1179 */
+        "movl imp_cl, %ecx\n" /* line 1179 */
         "movl (%ecx), %edx\n"
         "movl 0x85d8(%edx), %eax\n"
         "addl 0x85dc(%edx), %eax\n"
         "cvtsi2ssl %eax, %xmm4\n"
-        "movss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "mulss %xmm0, %xmm4\n"
         "movl 0x85e0(%edx), %eax\n" /* line 1180 */
         "addl 0x85e4(%edx), %eax\n"
@@ -1745,7 +1745,7 @@ void CL_MouseMove(usercmd_t *cmd)
         "movl %edx, 0x85e8(%eax)\n"
         "movl $0, 0x85d8(%eax, %edx, 4)\n" /* line 1188 */
         "movl $0, 0x85e0(%eax, %edx, 4)\n" /* line 1189 */
-        "movl 0x195f638, %eax\n" /* line 1191 */
+        "movl imp_frame_msec, %eax\n" /* line 1191 */
         "movl (%eax), %edx\n"
         "cmpl $0, %edx\n"
         "jne .Lf186ef6_00186f98\n"
@@ -1755,7 +1755,7 @@ void CL_MouseMove(usercmd_t *cmd)
         "retl\n"
         /* { scope 1 */
         ".Lf186ef6_00186f76:\n"
-        "movl 0x195ee78, %ecx\n" /* line 1184 */
+        "movl imp_cl, %ecx\n" /* line 1184 */
         "movl (%ecx), %eax\n"
         "movl 0x85e8(%eax), %edx\n"
         "cvtsi2ssl 0x85d8(%eax, %edx, 4), %xmm4\n"
@@ -1773,20 +1773,20 @@ void CL_MouseMove(usercmd_t *cmd)
         ".Lf186ef6_00186fb8:\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "movl 0x195f614, %eax\n" /* line 1195 */
+        "movl imp_cl_sensitivity, %eax\n" /* line 1195 */
         "movl (%eax), %edx\n"
-        "movl 0x195f620, %eax\n"
+        "movl imp_cl_mouseAccel, %eax\n"
         "movl (%eax), %eax\n"
         "movaps %xmm1, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
         "addss 8(%edx), %xmm2\n"
         "movl (%ecx), %eax\n" /* line 1198 */
         "mulss 0x8604(%eax), %xmm2\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 1199 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 1199 | 0.0f */
         "jp .Lf186ef6_00186fef\n"
         "je .Lf186ef6_00187004\n"
         ".Lf186ef6_00186fef:\n"
-        "movl 0x195f62c, %eax\n"
+        "movl imp_cl_showMouseRate, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf186ef6_001871ba\n"
@@ -1800,7 +1800,7 @@ void CL_MouseMove(usercmd_t *cmd)
         "testl $0x300, 0xd4(%edx)\n" /* line 1206 */
         "je .Lf186ef6_001871aa\n"
         "movaps %xmm4, %xmm0\n" /* line 1208 */
-        "mulss 0x2ed6c0, %xmm0\n" /* 2.5f */
+        "mulss lit4_002ed6c0, %xmm0\n" /* 2.5f */
         "addss %xmm3, %xmm3\n" /* line 1209 */
         ".Lf186ef6_00187030:\n"
         "pxor %xmm4, %xmm4\n" /* line 1217 */
@@ -1814,7 +1814,7 @@ void CL_MouseMove(usercmd_t *cmd)
         "movl kb, %eax\n" /* line 1221 */
         "cmpb $0, 0xb0(%eax)\n"
         "jne .Lf186ef6_00187244\n"
-        "movl 0x195f628, %eax\n" /* line 1227 */
+        "movl imp_m_yaw, %eax\n" /* line 1227 */
         "movl (%eax), %eax\n"
         "movaps %xmm0, %xmm2\n"
         "mulss 8(%eax), %xmm2\n"
@@ -1823,14 +1823,14 @@ void CL_MouseMove(usercmd_t *cmd)
         "jp .Lf186ef6_00187076\n"
         "je .Lf186ef6_001870d2\n"
         ".Lf186ef6_00187076:\n"
-        "movl 0x195f638, %eax\n" /* line 1230 */
+        "movl imp_frame_msec, %eax\n" /* line 1230 */
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
         "js .Lf186ef6_0018727a\n"
         "cvtsi2ssl %ecx, %xmm0\n"
         ".Lf186ef6_00187089:\n"
         "mulss %xmm1, %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movaps %xmm2, %xmm1\n" /* line 45 */
         "subss %xmm0, %xmm1\n"
         "movaps %xmm2, %xmm5\n"
@@ -1839,7 +1839,7 @@ void CL_MouseMove(usercmd_t *cmd)
         "andnps %xmm0, %xmm1\n"
         "orps %xmm5, %xmm1\n"
         "movaps %xmm1, %xmm2\n"
-        "xorps 0x302d40, %xmm0\n" /* line 1231 */
+        "xorps g_color_table+544, %xmm0\n" /* line 1231 */
         "movaps %xmm0, %xmm1\n" /* line 45 */
         "subss %xmm2, %xmm1\n"
         "movaps %xmm2, %xmm5\n"
@@ -1856,7 +1856,7 @@ void CL_MouseMove(usercmd_t *cmd)
         "movl kb, %edx\n" /* line 1236 */
         "cmpb $0, 0x114(%edx)\n"
         "jne .Lf186ef6_00187106\n"
-        "movl 0x195f624, %eax\n"
+        "movl imp_cl_freelook, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf186ef6_00187205\n"
@@ -1864,11 +1864,11 @@ void CL_MouseMove(usercmd_t *cmd)
         "cmpb $0, 0xb0(%edx)\n"
         "jne .Lf186ef6_00187205\n"
         /* { scope 2 */
-        "movl 0x195f634, %eax\n" /* line 1238 */
+        "movl imp_m_pitch, %eax\n" /* line 1238 */
         "movl (%eax), %eax\n"
         "movaps %xmm3, %xmm2\n" /* delta */
         "mulss 8(%eax), %xmm2\n" /* delta */
-        "movl 0x195ee78, %eax\n" /* line 1240 */
+        "movl imp_cl, %eax\n" /* line 1240 */
         "movl (%eax), %ecx\n"
         "movss 0x8608(%ecx), %xmm1\n"
         "pxor %xmm4, %xmm4\n"
@@ -1876,14 +1876,14 @@ void CL_MouseMove(usercmd_t *cmd)
         "jp .Lf186ef6_0018713c\n"
         "je .Lf186ef6_00187198\n"
         ".Lf186ef6_0018713c:\n"
-        "movl 0x195f638, %eax\n" /* line 1242 */
+        "movl imp_frame_msec, %eax\n" /* line 1242 */
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
         "js .Lf186ef6_00187290\n"
         "cvtsi2ssl %edx, %xmm0\n"
         ".Lf186ef6_0018714f:\n"
         "mulss %xmm1, %xmm0\n"
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "movaps %xmm2, %xmm1\n" /* line 45 */
         "subss %xmm0, %xmm1\n"
         "movaps %xmm2, %xmm3\n"
@@ -1892,7 +1892,7 @@ void CL_MouseMove(usercmd_t *cmd)
         "andnps %xmm0, %xmm1\n"
         "orps %xmm3, %xmm1\n"
         "movaps %xmm1, %xmm2\n"
-        "xorps 0x302d40, %xmm0\n" /* line 1243 */
+        "xorps g_color_table+544, %xmm0\n" /* line 1243 */
         "movaps %xmm0, %xmm1\n" /* line 45 */
         "subss %xmm2, %xmm1\n"
         "movaps %xmm2, %xmm5\n"
@@ -1919,13 +1919,13 @@ void CL_MouseMove(usercmd_t *cmd)
         "movsd %xmm1, 0xc(%esp)\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2af7cc, (%esp)\n" /* "%f : %f
+        "movl $str_002af7cc, (%esp)\n" /* "%f : %f
 " */
         "movss %xmm2, -0x18(%ebp)\n"
         "movss %xmm3, -0x28(%ebp)\n"
         "movss %xmm4, -0x38(%ebp)\n"
         "calll Com_Printf\n"
-        "movl 0x195ee78, %ecx\n"
+        "movl imp_cl, %ecx\n"
         "movss -0x38(%ebp), %xmm4\n"
         "movss -0x28(%ebp), %xmm3\n"
         "movss -0x18(%ebp), %xmm2\n"
@@ -1934,7 +1934,7 @@ void CL_MouseMove(usercmd_t *cmd)
         ".Lf186ef6_00187205:\n"
         "movl 8(%ebp), %eax\n" /* line 1249 | cmd */
         "movsbl 0x18(%eax), %edx\n"
-        "movl 0x195f610, %eax\n"
+        "movl imp_m_forward, %eax\n"
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm3\n"
         "cvttss2si %xmm3, %eax\n"
@@ -1958,7 +1958,7 @@ void CL_MouseMove(usercmd_t *cmd)
         ".Lf186ef6_00187244:\n"
         "movl 8(%ebp), %eax\n" /* line 1223 | cmd */
         "movsbl 0x19(%eax), %edx\n"
-        "movl 0x195f608, %eax\n"
+        "movl imp_m_side, %eax\n"
         "movl (%eax), %eax\n"
         "mulss 8(%eax), %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
@@ -1995,9 +1995,9 @@ void IN_DownDown(void)
 {
     IN_KeyDown((kbutton_t *)((byte *)kb + 0xdc));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
 }
 
 /* line 315 */
@@ -2005,9 +2005,9 @@ void IN_DownUp(void)
 {
     IN_KeyUp((kbutton_t *)((byte *)kb + 0xdc));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
 }
 
 /* line 602 */
@@ -2015,9 +2015,9 @@ void IN_Prone_Down(void)
 {
     IN_KeyDown((kbutton_t *)((byte *)kb + 0x1f4));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
 }
 
 /* line 609 */
@@ -2025,17 +2025,17 @@ void IN_Prone_Up(void)
 {
     IN_KeyUp((kbutton_t *)((byte *)kb + 0x1f4));
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 1;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 1;
     else
-        *(int *)((byte *)(*(void **)(*(void **)0x195ecb4)) + 0xc) = 0;
+        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 0xc) = 0;
 }
 
 /* line 108 */
 void IN_MLookUp(void)
 {
     *(byte *)((byte *)kb + 0x114) = 0;
-    if (*(byte *)(*(byte **)*(void **)0x195f624 + 8) == 0) {
-        byte *cl = *(byte **)*(void **)0x195ee78;
+    if (*(byte *)(*(byte **)*(void **)imp_cl_freelook + 8) == 0) {
+        byte *cl = *(byte **)*(void **)imp_cl;
         *(float *)(cl + 0x861c) = (float)*(int *)(cl + 0x88) * -0.0054931640625f;
     }
 }
@@ -2055,15 +2055,15 @@ void CL_AdjustAngles(void)
         "movl kb, %esi\n" /* line 883 */
         "cmpb $0, 0xc4(%esi)\n"
         "je .Lf187424_00187671\n"
-        "movl 0x195ecac, %eax\n" /* line 884 */
+        "movl imp_cls, %eax\n" /* line 884 */
         "cvtsi2ssl 0x114(%eax), %xmm2\n"
-        "mulss 0x2ed658, %xmm2\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm2\n" /* 0.0010000000474974513f */
         "movl cl_anglespeedkey, %eax\n"
         "mulss 8(%eax), %xmm2\n"
         ".Lf187424_0018745f:\n"
         "cmpb $0, 0xb0(%esi)\n" /* line 888 */
         "jne .Lf187424_0018754c\n"
-        "movl 0x195ee78, %eax\n" /* line 890 */
+        "movl imp_cl, %eax\n" /* line 890 */
         "movl (%eax), %edi\n"
         "movss 0x8620(%edi), %xmm1\n"
         "movl cl_yawspeed, %eax\n"
@@ -2080,7 +2080,7 @@ void CL_AdjustAngles(void)
         "testl %ecx, %ecx\n"
         "jle .Lf187424_001874cd\n"
         ".Lf187424_001874a7:\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jae .Lf187424_00187741\n"
@@ -2097,7 +2097,7 @@ void CL_AdjustAngles(void)
         "mulss %xmm4, %xmm0\n" /* line 890 */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, 0x8620(%edi)\n"
-        "movl 0x195ee78, %edi\n" /* line 891 */
+        "movl imp_cl, %edi\n" /* line 891 */
         "movl (%edi), %ebx\n"
         "movss 0x8620(%ebx), %xmm1\n"
         "movl cl_yawspeed, %eax\n"
@@ -2112,7 +2112,7 @@ void CL_AdjustAngles(void)
         "testl %ecx, %ecx\n"
         "jle .Lf187424_0018753c\n"
         ".Lf187424_00187516:\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jae .Lf187424_0018774e\n"
@@ -2129,7 +2129,7 @@ void CL_AdjustAngles(void)
         "addss %xmm0, %xmm1\n"
         "movss %xmm1, 0x8620(%ebx)\n"
         ".Lf187424_0018754c:\n"
-        "movl 0x195ee78, %ebx\n" /* line 894 */
+        "movl imp_cl, %ebx\n" /* line 894 */
         "movl (%ebx), %edi\n"
         "movss 0x861c(%edi), %xmm1\n"
         "movl cl_pitchspeed, %eax\n"
@@ -2145,19 +2145,19 @@ void CL_AdjustAngles(void)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "je .Lf187424_001876fc\n"
-        "movl 0x195f2d8, %eax\n" /* line 241 */
+        "movl imp_com_frameTime, %eax\n" /* line 241 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x10(%ebp)\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
-        "movl 0x195f2d8, %ebx\n"
+        "movl imp_com_frameTime, %ebx\n"
         "movl (%ebx), %eax\n" /* line 243 */
         "movl %eax, 8(%edx)\n"
         ".Lf187424_001875a0:\n"
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf187424_001875ce\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jae .Lf187424_0018768b\n"
@@ -2174,7 +2174,7 @@ void CL_AdjustAngles(void)
         "mulss %xmm4, %xmm0\n" /* line 894 */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, 0x861c(%edi)\n"
-        "movl 0x195ee78, %eax\n" /* line 895 */
+        "movl imp_cl, %eax\n" /* line 895 */
         "movl (%eax), %edi\n"
         "movss 0x861c(%edi), %xmm1\n"
         "movl cl_pitchspeed, %eax\n"
@@ -2190,7 +2190,7 @@ void CL_AdjustAngles(void)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "je .Lf187424_0018770f\n"
-        "movl 0x195f2d8, %esi\n" /* line 241 */
+        "movl imp_com_frameTime, %esi\n" /* line 241 */
         "movl (%esi), %eax\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
@@ -2201,7 +2201,7 @@ void CL_AdjustAngles(void)
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf187424_00187659\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jae .Lf187424_00187721\n"
@@ -2227,14 +2227,14 @@ void CL_AdjustAngles(void)
         "retl\n"
         /* { scope 1 */
         ".Lf187424_00187671:\n"
-        "movl 0x195ecac, %eax\n" /* line 886 */
+        "movl imp_cls, %eax\n" /* line 886 */
         "cvtsi2ssl 0x114(%eax), %xmm2\n"
-        "mulss 0x2ed658, %xmm2\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm2\n" /* 0.0010000000474974513f */
         "jmp .Lf187424_0018745f\n"
         /* { scope 2 */
         /* { scope 3 */
         ".Lf187424_0018768b:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 255 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 255 | 1.0f */
         "jmp .Lf187424_001875ce\n"
         /* } scope */
         /* } scope */
@@ -2243,7 +2243,7 @@ void CL_AdjustAngles(void)
         "movl 8(%esi), %edx\n" /* line 235 */
         "testl %edx, %edx\n"
         "je .Lf187424_0018776a\n"
-        "movl 0x195f2d8, %edi\n" /* line 241 */
+        "movl imp_com_frameTime, %edi\n" /* line 241 */
         "movl (%edi), %eax\n"
         "subl %edx, %eax\n"
         "addl %eax, %ecx\n"
@@ -2262,12 +2262,12 @@ void CL_AdjustAngles(void)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "je .Lf187424_0018775b\n"
-        "movl 0x195f2d8, %eax\n" /* line 241 */
+        "movl imp_com_frameTime, %eax\n" /* line 241 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x10(%ebp)\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
-        "movl 0x195f2d8, %ebx\n"
+        "movl imp_com_frameTime, %ebx\n"
         "movl (%ebx), %eax\n" /* line 243 */
         "movl %eax, 8(%edx)\n"
         ".Lf187424_001876eb:\n"
@@ -2280,7 +2280,7 @@ void CL_AdjustAngles(void)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf187424_001876fc:\n"
-        "movl 0x195f2d8, %eax\n" /* line 237 */
+        "movl imp_com_frameTime, %eax\n" /* line 237 */
         "movl (%eax), %ecx\n"
         "movl %eax, %ebx\n"
         "movl (%ebx), %eax\n" /* line 243 */
@@ -2291,13 +2291,13 @@ void CL_AdjustAngles(void)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf187424_0018770f:\n"
-        "movl 0x195f2d8, %ebx\n" /* line 237 */
+        "movl imp_com_frameTime, %ebx\n" /* line 237 */
         "movl (%ebx), %ecx\n"
         "movl (%ebx), %eax\n" /* line 243 */
         "movl %eax, 8(%edx)\n"
         "jmp .Lf187424_0018762b\n"
         ".Lf187424_00187721:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 255 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 255 | 1.0f */
         /* } scope */
         /* } scope */
         "mulss %xmm3, %xmm0\n" /* line 895 */
@@ -2314,19 +2314,19 @@ void CL_AdjustAngles(void)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf187424_00187741:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 255 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 255 | 1.0f */
         "jmp .Lf187424_001874cd\n"
         /* } scope */
         /* } scope */
         /* { scope 2 */
         ".Lf187424_0018774e:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "jmp .Lf187424_0018753c\n"
         /* } scope */
         /* { scope 2 */
         /* { scope 3 */
         ".Lf187424_0018775b:\n"
-        "movl 0x195f2d8, %ebx\n" /* line 237 */
+        "movl imp_com_frameTime, %ebx\n" /* line 237 */
         "movl (%ebx), %ecx\n"
         "movl (%ebx), %eax\n" /* line 243 */
         "movl %eax, 8(%edx)\n"
@@ -2335,7 +2335,7 @@ void CL_AdjustAngles(void)
         /* } scope */
         /* { scope 2 */
         ".Lf187424_0018776a:\n"
-        "movl 0x195f2d8, %eax\n" /* line 237 */
+        "movl imp_com_frameTime, %eax\n" /* line 237 */
         "movl (%eax), %ecx\n"
         "movl %eax, %edx\n"
         "movl (%edx), %eax\n" /* line 243 */
@@ -2423,7 +2423,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "orb $0x20, %dh\n" /* line 945 */
         "movl 8(%ebp), %edi\n" /* cmd */
         "movl %edx, 4(%edi)\n"
-        "movl 0x195ee78, %esi\n" /* side */
+        "movl imp_cl, %esi\n" /* side */
         "movl (%esi), %ecx\n" /* line 976 | side */
         "cmpb $0, 0xb(%ecx)\n"
         "sete %al\n"
@@ -2457,7 +2457,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "jne .Lf1877d6_00187bf5\n"
-        "movl 0x195f2d8, %ebx\n" /* line 237 */
+        "movl imp_com_frameTime, %ebx\n" /* line 237 */
         "movl (%ebx), %ecx\n"
         ".Lf1877d6_0018789e:\n"
         "movl (%ebx), %eax\n" /* line 243 */
@@ -2466,11 +2466,11 @@ void CL_KeyMove(usercmd_t *cmd)
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf1877d6_001878c2\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jb .Lf1877d6_00187b56\n"
-        "movss 0x2ed718, %xmm0\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm0\n" /* 127.0f */
         /* } scope */
         /* } scope */
         ".Lf1877d6_001878c2:\n"
@@ -2486,7 +2486,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "jne .Lf1877d6_00187c0e\n"
-        "movl 0x195f2d8, %eax\n" /* line 237 */
+        "movl imp_com_frameTime, %eax\n" /* line 237 */
         "movl (%eax), %ecx\n"
         "movl %eax, %ebx\n"
         ".Lf1877d6_001878ef:\n"
@@ -2496,11 +2496,11 @@ void CL_KeyMove(usercmd_t *cmd)
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf1877d6_00187913\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jb .Lf1877d6_00187b7a\n"
-        "movss 0x2ed718, %xmm0\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm0\n" /* 127.0f */
         /* } scope */
         /* } scope */
         ".Lf1877d6_00187913:\n"
@@ -2517,7 +2517,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "jne .Lf1877d6_00187bcf\n"
-        "movl 0x195f2d8, %esi\n" /* line 237 */
+        "movl imp_com_frameTime, %esi\n" /* line 237 */
         "movl (%esi), %ecx\n"
         "movl %esi, %ebx\n"
         ".Lf1877d6_00187944:\n"
@@ -2527,11 +2527,11 @@ void CL_KeyMove(usercmd_t *cmd)
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf1877d6_00187968\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jb .Lf1877d6_00187b9e\n"
-        "movss 0x2ed718, %xmm0\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm0\n" /* 127.0f */
         /* } scope */
         /* } scope */
         ".Lf1877d6_00187968:\n"
@@ -2546,7 +2546,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "jne .Lf1877d6_00187be2\n"
-        "movl 0x195f2d8, %edi\n" /* line 237 */
+        "movl imp_com_frameTime, %edi\n" /* line 237 */
         "movl (%edi), %ecx\n"
         "movl %edi, %ebx\n"
         ".Lf1877d6_00187994:\n"
@@ -2556,7 +2556,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf1877d6_001879cf\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jae .Lf1877d6_00187bc2\n"
@@ -2567,7 +2567,7 @@ void CL_KeyMove(usercmd_t *cmd)
         ".Lf1877d6_001879c0:\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         /* } scope */
         /* } scope */
         ".Lf1877d6_001879cf:\n"
@@ -2606,7 +2606,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "movl 8(%edx), %ebx\n" /* line 235 */
         "testl %ebx, %ebx\n"
         "je .Lf1877d6_00187ca3\n"
-        "movl 0x195f2d8, %esi\n" /* line 241 */
+        "movl imp_com_frameTime, %esi\n" /* line 241 */
         "movl (%esi), %eax\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
@@ -2617,7 +2617,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf1877d6_00187a7d\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jae .Lf1877d6_00187c3c\n"
@@ -2628,7 +2628,7 @@ void CL_KeyMove(usercmd_t *cmd)
         ".Lf1877d6_00187a6e:\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         /* } scope */
         /* } scope */
         ".Lf1877d6_00187a7d:\n"
@@ -2641,7 +2641,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "movl 8(%edi), %edx\n" /* line 235 */
         "testl %edx, %edx\n"
         "je .Lf1877d6_00187c8f\n"
-        "movl 0x195f2d8, %esi\n" /* line 241 */
+        "movl imp_com_frameTime, %esi\n" /* line 241 */
         "movl (%esi), %eax\n"
         "subl %edx, %eax\n"
         "addl %eax, %ecx\n"
@@ -2652,7 +2652,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "pxor %xmm0, %xmm0\n" /* line 253 */
         "testl %ecx, %ecx\n"
         "jle .Lf1877d6_00187ae5\n"
-        "movl 0x195f638, %eax\n" /* line 255 */
+        "movl imp_frame_msec, %eax\n" /* line 255 */
         "movl (%eax), %edx\n"
         "cmpl %edx, %ecx\n"
         "jae .Lf1877d6_00187c27\n"
@@ -2663,7 +2663,7 @@ void CL_KeyMove(usercmd_t *cmd)
         ".Lf1877d6_00187ad6:\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         /* } scope */
         ".Lf1877d6_00187ae5:\n"
         "cvttss2si %xmm0, %eax\n" /* line 987 */
@@ -2671,12 +2671,12 @@ void CL_KeyMove(usercmd_t *cmd)
         "subl %eax, %esi\n" /* side */
         "jmp .Lf1877d6_00187875\n"
         ".Lf1877d6_00187af2:\n"
-        "movl 0x195ee78, %esi\n" /* line 903 */
+        "movl imp_cl, %esi\n" /* line 903 */
         "movl (%esi), %ecx\n"
         "cmpb $0, 0x85ec(%ecx)\n"
         "jne .Lf1877d6_00187c49\n"
         ".Lf1877d6_00187b07:\n"
-        "movl 0x195ecb4, %edx\n"
+        "movl imp_legacyHacks, %edx\n"
         ".Lf1877d6_00187b0d:\n"
         "movl (%edx), %eax\n" /* line 951 */
         "movl 8(%eax), %eax\n"
@@ -2710,7 +2710,7 @@ void CL_KeyMove(usercmd_t *cmd)
         ".Lf1877d6_00187b66:\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         "jmp .Lf1877d6_001878c2\n"
         /* } scope */
         /* } scope */
@@ -2724,7 +2724,7 @@ void CL_KeyMove(usercmd_t *cmd)
         ".Lf1877d6_00187b8a:\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         "jmp .Lf1877d6_00187913\n"
         /* } scope */
         /* } scope */
@@ -2738,21 +2738,21 @@ void CL_KeyMove(usercmd_t *cmd)
         ".Lf1877d6_00187bae:\n"
         "divss %xmm0, %xmm1\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed718, %xmm0\n" /* 127.0f */
+        "mulss lit4_002ed718, %xmm0\n" /* 127.0f */
         "jmp .Lf1877d6_00187968\n"
         /* } scope */
         /* } scope */
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1877d6_00187bc2:\n"
-        "movss 0x2ed718, %xmm0\n" /* 127.0f */
+        "movss lit4_002ed718, %xmm0\n" /* 127.0f */
         "jmp .Lf1877d6_001879cf\n"
         /* } scope */
         /* } scope */
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1877d6_00187bcf:\n"
-        "movl 0x195f2d8, %esi\n" /* line 241 */
+        "movl imp_com_frameTime, %esi\n" /* line 241 */
         "movl (%esi), %eax\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
@@ -2763,7 +2763,7 @@ void CL_KeyMove(usercmd_t *cmd)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1877d6_00187be2:\n"
-        "movl 0x195f2d8, %edi\n"
+        "movl imp_com_frameTime, %edi\n"
         "movl (%edi), %eax\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
@@ -2774,30 +2774,30 @@ void CL_KeyMove(usercmd_t *cmd)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1877d6_00187bf5:\n"
-        "movl 0x195f2d8, %eax\n"
+        "movl imp_com_frameTime, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, -0x2c(%ebp)\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
-        "movl 0x195f2d8, %ebx\n"
+        "movl imp_com_frameTime, %ebx\n"
         "jmp .Lf1877d6_0018789e\n"
         /* } scope */
         /* } scope */
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1877d6_00187c0e:\n"
-        "movl 0x195f2d8, %eax\n"
+        "movl imp_com_frameTime, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, -0x2c(%ebp)\n"
         "subl %ebx, %eax\n"
         "addl %eax, %ecx\n"
-        "movl 0x195f2d8, %ebx\n"
+        "movl imp_com_frameTime, %ebx\n"
         "jmp .Lf1877d6_001878ef\n"
         /* } scope */
         /* } scope */
         /* { scope 2 */
         ".Lf1877d6_00187c27:\n"
-        "movss 0x2ed718, %xmm0\n" /* line 255 | 127.0f */
+        "movss lit4_002ed718, %xmm0\n" /* line 255 | 127.0f */
         /* } scope */
         "cvttss2si %xmm0, %eax\n" /* line 987 */
         "movl %ebx, %esi\n" /* side */
@@ -2806,12 +2806,12 @@ void CL_KeyMove(usercmd_t *cmd)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1877d6_00187c3c:\n"
-        "movss 0x2ed718, %xmm0\n" /* line 255 | 127.0f */
+        "movss lit4_002ed718, %xmm0\n" /* line 255 | 127.0f */
         "jmp .Lf1877d6_00187a7d\n"
         /* } scope */
         /* } scope */
         ".Lf1877d6_00187c49:\n"
-        "movl 0x195f2d8, %eax\n" /* line 906 */
+        "movl imp_com_frameTime, %eax\n" /* line 906 */
         "movl (%eax), %eax\n"
         "subl 0x85f4(%ecx), %eax\n"
         "movl cl_stanceHoldTime, %edx\n"
@@ -2819,7 +2819,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "jl .Lf1877d6_00187b07\n"
         "cmpl $2, 0x85f0(%ecx)\n" /* line 909 */
         "je .Lf1877d6_00187d36\n"
-        "movl 0x195ecb4, %edx\n" /* line 912 */
+        "movl imp_legacyHacks, %edx\n" /* line 912 */
         "movl (%edx), %eax\n"
         "movl $2, 8(%eax)\n"
         ".Lf1877d6_00187c81:\n"
@@ -2828,7 +2828,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "jmp .Lf1877d6_00187b0d\n"
         /* { scope 2 */
         ".Lf1877d6_00187c8f:\n"
-        "movl 0x195f2d8, %esi\n" /* line 237 */
+        "movl imp_com_frameTime, %esi\n" /* line 237 */
         "movl (%esi), %ecx\n"
         "movl %esi, %edx\n"
         "movl (%edx), %eax\n" /* line 243 */
@@ -2838,7 +2838,7 @@ void CL_KeyMove(usercmd_t *cmd)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf1877d6_00187ca3:\n"
-        "movl 0x195f2d8, %eax\n" /* line 237 */
+        "movl imp_com_frameTime, %eax\n" /* line 237 */
         "movl (%eax), %ecx\n"
         "movl %eax, %ebx\n"
         "movl (%ebx), %eax\n" /* line 243 */
@@ -2909,7 +2909,7 @@ void CL_KeyMove(usercmd_t *cmd)
         "movl %edx, 4(%edi)\n"
         "jmp .Lf1877d6_00187b30\n"
         ".Lf1877d6_00187d36:\n"
-        "movl 0x195ecb4, %edx\n" /* line 910 */
+        "movl imp_legacyHacks, %edx\n" /* line 910 */
         "movl (%edx), %eax\n"
         "movl $0, 8(%eax)\n"
         "jmp .Lf1877d6_00187c81\n"
@@ -2949,7 +2949,7 @@ usercmd_t CL_CreateCmd(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %esi\n"
-        "movl 0x195ee78, %eax\n" /* line 199 */
+        "movl imp_cl, %eax\n" /* line 199 */
         "movl (%eax), %ebx\n"
         "movss 0x861c(%ebx), %xmm0\n"
         "movss %xmm0, -0x1c(%ebp)\n"
@@ -2968,13 +2968,13 @@ usercmd_t CL_CreateCmd(void)
         "movss 0x861c(%ebx), %xmm1\n" /* line 1348 */
         "movaps %xmm1, %xmm0\n"
         "subss -0x1c(%ebp), %xmm0\n"
-        "ucomiss 0x2ed5f8, %xmm0\n" /* 90.0f */
+        "ucomiss lit4_002ed5f8, %xmm0\n" /* 90.0f */
         "jbe .Lf187d76_00187e6a\n"
         "movss -0x1c(%ebp), %xmm0\n" /* line 1350 */
-        "addss 0x2ed5f8, %xmm0\n" /* 90.0f */
+        "addss lit4_002ed5f8, %xmm0\n" /* 90.0f */
         "movss %xmm0, 0x861c(%ebx)\n"
         ".Lf187d76_00187df1:\n"
-        "movl 0x195ee78, %eax\n" /* line 1305 */
+        "movl imp_cl, %eax\n" /* line 1305 */
         "movl (%eax), %ecx\n"
         "movl 0x85f8(%ecx), %eax\n"
         "movb %al, 8(%esi)\n"
@@ -2989,7 +2989,7 @@ usercmd_t CL_CreateCmd(void)
         "cmovgel %eax, %edx\n"
         "movl %edx, (%esi)\n"
         "movl %esi, %edx\n"
-        "movss 0x2ed644, %xmm1\n" /* 182.04444885253906f */
+        "movss lit4_002ed644, %xmm1\n" /* 182.04444885253906f */
         "leal 0xc(%esi), %ebx\n"
         ".Lf187d76_00187e34:\n"
         "movss 0x861c(%ecx), %xmm0\n" /* line 1313 */
@@ -3012,10 +3012,10 @@ usercmd_t CL_CreateCmd(void)
         ".Lf187d76_00187e6a:\n"
         "movss -0x1c(%ebp), %xmm0\n" /* line 1352 */
         "subss %xmm1, %xmm0\n"
-        "ucomiss 0x2ed5f8, %xmm0\n" /* 90.0f */
+        "ucomiss lit4_002ed5f8, %xmm0\n" /* 90.0f */
         "jbe .Lf187d76_00187df1\n"
         "movss -0x1c(%ebp), %xmm0\n" /* line 1354 */
-        "subss 0x2ed5f8, %xmm0\n" /* 90.0f */
+        "subss lit4_002ed5f8, %xmm0\n" /* 90.0f */
         "movss %xmm0, 0x861c(%ebx)\n"
         "jmp .Lf187d76_00187df1\n"
     );
@@ -3031,7 +3031,7 @@ void CL_SendCmdInternal(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x40, %esp\n"
-        "movl 0x195ee8c, %eax\n" /* line 1376 */
+        "movl imp_clc, %eax\n" /* line 1376 */
         "movl (%eax), %esi\n"
         "cmpl $6, (%esi)\n"
         "jg .Lf187e9a_00187f81\n"
@@ -3053,7 +3053,7 @@ void CL_SendCmdInternal(void)
         "jbe .Lf187e9a_00187f00\n"
         "testb %cl, %cl\n"
         "jne .Lf187e9a_00187f00\n"
-        "movl 0x195ecac, %eax\n"
+        "movl imp_cls, %eax\n"
         "movl 0x118(%eax), %eax\n"
         "subl 0xc(%esi), %eax\n"
         "cmpl $0x3e7, %eax\n"
@@ -3080,13 +3080,13 @@ void CL_SendCmdInternal(void)
         "popl %ebp\n"
         "jmp CL_WritePacket\n" /* line 1684 */
         ".Lf187e9a_00187f47:\n"
-        "movl 0x195ecac, %eax\n" /* line 1412 */
+        "movl imp_cls, %eax\n" /* line 1412 */
         "movl 0x118(%eax), %eax\n"
         "subl 0xc(%esi), %eax\n"
         "cmpl $0x31, %eax\n"
         "jg .Lf187e9a_00187edf\n"
         ".Lf187e9a_00187f5a:\n"
-        "movl 0x195f618, %eax\n" /* line 1678 */
+        "movl imp_cl_showSend, %eax\n" /* line 1678 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf187e9a_00187f6e\n"
@@ -3096,7 +3096,7 @@ void CL_SendCmdInternal(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf187e9a_00187f6e:\n"
-        "movl $0x2af7d8, (%esp)\n" /* line 1679 */
+        "movl $str_002af7d8, (%esp)\n" /* line 1679 */
         "calll Com_Printf\n"
         "leal -8(%ebp), %esp\n" /* line 1685 */
         "popl %ebx\n"
@@ -3104,7 +3104,7 @@ void CL_SendCmdInternal(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf187e9a_00187f81:\n"
-        "movl 0x195ee78, %eax\n" /* line 1382 */
+        "movl imp_cl, %eax\n" /* line 1382 */
         "movl (%eax), %eax\n"
         "movl 0x4945c(%eax), %ebx\n"
         "addl $1, %ebx\n"
@@ -3134,19 +3134,19 @@ void CL_SendCmdInternal(void)
         "movl %eax, 0x24(%ebx)\n"
         "jmp .Lf187e9a_00187eb2\n"
         ".Lf187e9a_00187fea:\n"
-        "movl 0x195ee8c, %eax\n" /* line 1443 */
+        "movl imp_clc, %eax\n" /* line 1443 */
         "movl (%eax), %eax\n"
         "movl 0x407c8(%eax), %eax\n"
         "subl $1, %eax\n"
         "andl $0x1f, %eax\n"
         "leal (%eax, %eax, 2), %eax\n"
         "shll $2, %eax\n"
-        "movl 0x195ee78, %edx\n"
+        "movl imp_cl, %edx\n"
         "addl (%edx), %eax\n"
-        "movl 0x195ecac, %edx\n"
+        "movl imp_cls, %edx\n"
         "movl 0x118(%edx), %ecx\n"
         "subl 0x49468(%eax), %ecx\n"
-        "movl 0x195f604, %eax\n"
+        "movl imp_cl_maxpackets, %eax\n"
         "movl (%eax), %ebx\n"
         "movl $0x3e8, %eax\n"
         "cltd\n"
@@ -3160,7 +3160,7 @@ void CL_SendCmdInternal(void)
 /* line 1713 */
 void CL_Input(void)
 {
-    if (*(int *)(*(void **)(*(void **)0x195ee8c)) != 8)
+    if (*(int *)(*(void **)(*(void **)imp_clc)) != 8)
         return;
     CL_SyncGpu();
     CL_SendCmdInternal();
@@ -3169,7 +3169,7 @@ void CL_Input(void)
 /* line 1693 */
 void CL_SendCmd(void)
 {
-    int state = *(int *)(*(void **)(*(void **)0x195ee8c));
+    int state = *(int *)(*(void **)(*(void **)imp_clc));
     if (state <= 4 || state == 8)
         return;
     CL_SendCmdInternal();

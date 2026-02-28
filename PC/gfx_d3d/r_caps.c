@@ -6,10 +6,10 @@
 
 extern void MacDisplay_GetVideoMemoryInfo(int *videoMemory, int *textureMemory);
 extern void R_Error(int level, const char *fmt, ...);
-extern refimport_t *ri; /* 0x195eee0 */
+extern refimport_t *ri; /* imp_ri */
 
-static const DxCapsCheckBits s_capsCheckBits[36]; /* 0x3304a0 */
-static const DxCapsCheckInteger s_capsCheckInt[8]; /* 0x330400 */
+static const DxCapsCheckBits s_capsCheckBits[36]; /* s_capsCheckBits */
+static const DxCapsCheckInteger s_capsCheckInt[8]; /* s_capsCheckInt */
 
 static void R_HandleCapsResponse(int response, const char *msg, int *allowedPaths)
 {

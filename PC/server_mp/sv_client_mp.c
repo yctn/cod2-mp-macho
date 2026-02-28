@@ -4,8 +4,8 @@
 #include "common_types.h"
 #include "imports.h"
 
-static int botport; /* 0xf13100 */
-static ucmd_t ucmds[12]; /* 0x312ca0 */
+static int botport; /* botport */
+static ucmd_t ucmds[12]; /* ucmds */
 
 extern float FX_GetServerVisibility(const vec_t *start, const vec_t *end);
 extern void Com_DPrintf(const char *fmt, ...);
@@ -68,13 +68,13 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
         "movb %al, -0x439(%ebp)\n"
         "movzbl 0xf(%ebp), %edi\n"
         /* { scope 1 */
-        "movl 0x195f284, %eax\n" /* line 146 */
+        "movl imp_svs, %eax\n" /* line 146 */
         "cmpl $1, 0xa068(%eax)\n"
         "je .Lf17ad28_0017ae88\n"
         "movb $0, -0x430(%ebp)\n" /* line 149 | game */
         "movl $0x101c, 8(%esp)\n" /* line 150 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x216d64, (%esp)\n" /* "fs_game" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_00216d64, (%esp)\n" /* "fs_game" */
         "calll Dvar_RegisterString\n"
         "testl %eax, %eax\n" /* line 151 */
         "je .Lf17ad28_0017ada1\n"
@@ -99,10 +99,10 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
         "movl %eax, 8(%esp)\n"
         "calll NET_AdrToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adef4, (%esp)\n" /* "sending getIpAuthorize for %s
+        "movl $str_002adef4, (%esp)\n" /* "sending getIpAuthorize for %s
 " */
         "calll Com_DPrintf\n"
-        "movl $0x2a718c, (%esp)\n" /* line 155 */
+        "movl $str_002a718c, (%esp)\n" /* line 155 */
         "calll Dvar_GetBool\n"
         "movzbl %al, %eax\n" /* line 158 */
         "movl %eax, 0x1c(%esp)\n"
@@ -119,9 +119,9 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
         "movl %eax, 8(%esp)\n"
         "movl 0x14(%ebp), %eax\n" /* challenge */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adf14, (%esp)\n" /* "getIpAuthorize %i %i.%i.%i.%i %s %i" */
+        "movl $str_002adf14, (%esp)\n" /* "getIpAuthorize %i %i.%i.%i.%i %s %i" */
         "calll va\n"
-        "movl 0x195f284, %edx\n"
+        "movl imp_svs, %edx\n"
         "movl 0xa068(%edx), %ebx\n"
         "movl %ebx, -0x24(%ebp)\n"
         "movl 0xa06c(%edx), %ecx\n"
@@ -179,7 +179,7 @@ qboolean SV_IsBannedGuid(void)
         ".Lf17aeaa_0017aec3:\n"
         "leal -0xc(%ebp), %eax\n" /* line 193 | file */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adf38, (%esp)\n" /* "ban.txt" */
+        "movl $str_002adf38, (%esp)\n" /* "ban.txt" */
         "calll FS_ReadFile\n"
         "testl %eax, %eax\n" /* line 194 */
         "js .Lf17aeaa_0017aeb8\n"
@@ -229,7 +229,7 @@ void SV_BanGuidBriefly(int guid)
         "pushl %esi\n"
         "pushl %ebx\n"
         /* { scope 1 */
-        "movl 0x195f284, %edi\n" /* line 225 */
+        "movl imp_svs, %edi\n" /* line 225 */
         "movl 0xa078(%edi), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf17af24_0017af57\n"
@@ -282,7 +282,7 @@ void SV_UnbanClient(const char *name)
         /* { scope 1 */
         "leal -0x1c(%ebp), %eax\n" /* line 293 | file */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adf38, (%esp)\n" /* "ban.txt" */
+        "movl $str_002adf38, (%esp)\n" /* "ban.txt" */
         "calll FS_ReadFile\n"
         "movl %eax, %esi\n" /* fileSize */
         "testl %eax, %eax\n" /* line 294 */
@@ -362,7 +362,7 @@ void SV_UnbanClient(const char *name)
         "movl %esi, 8(%esp)\n" /* line 323 | fileSize */
         "movl -0x1c(%ebp), %eax\n" /* file */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adf38, (%esp)\n" /* "ban.txt" */
+        "movl $str_002adf38, (%esp)\n" /* "ban.txt" */
         "calll FS_WriteFile\n"
         "movl -0x1c(%ebp), %eax\n" /* line 324 | file */
         "movl %eax, (%esp)\n"
@@ -372,7 +372,7 @@ void SV_UnbanClient(const char *name)
         "jne .Lf17af86_0017b100\n"
         "leal -0x60(%ebp), %ecx\n" /* line 329 | cleanName */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x2adf60, (%esp)\n" /* "no banned user has name %s
+        "movl $str_002adf60, (%esp)\n" /* "no banned user has name %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -415,7 +415,7 @@ void SV_UnbanClient(const char *name)
         "movl %eax, 8(%esp)\n"
         "movl -0x6c(%ebp), %edx\n" /* found */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2adf40, (%esp)\n" /* "unbanned %i user(s) named %s
+        "movl $str_002adf40, (%esp)\n" /* "unbanned %i user(s) named %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -441,7 +441,7 @@ void SV_AuthorizeIpPacket(netadr_t from)
         "subl $0x50c, %esp\n"
         "movl 8(%ebp), %esi\n" /* from */
         /* { scope 1 */
-        "movl 0x195f284, %edi\n" /* line 350 | r */
+        "movl imp_svs, %edi\n" /* line 350 | r */
         "movl 0xa068(%edi), %ebx\n" /* r, s */
         "movl %ebx, -0xcc(%ebp)\n" /* s */
         "movl 0xa06c(%edi), %ecx\n" /* r */
@@ -470,7 +470,7 @@ void SV_AuthorizeIpPacket(netadr_t from)
         "calll NET_CompareBaseAdr\n"
         "testl %eax, %eax\n"
         "jne .Lf17b122_0017b1d6\n"
-        "movl $0x2adf7c, (%esp)\n" /* line 352 */
+        "movl $str_002adf7c, (%esp)\n" /* line 352 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf17b122_0017b1cb:\n"
@@ -500,9 +500,9 @@ void SV_AuthorizeIpPacket(netadr_t from)
         "leal (%esi, %esi, 4), %eax\n" /* line 370 | i */
         "shll $3, %eax\n"
         "movl %eax, -0x4ec(%ebp)\n"
-        "addl 0x195f284, %eax\n"
+        "addl imp_svs, %eax\n"
         "movl %eax, -0x4f0(%ebp)\n"
-        "movl 0x195f284, %edx\n"
+        "movl imp_svs, %edx\n"
         "movl 4(%edx), %eax\n"
         "movl -0x4f0(%ebp), %edx\n"
         "movl %eax, 0x70(%edx)\n"
@@ -512,13 +512,13 @@ void SV_AuthorizeIpPacket(netadr_t from)
         "movl $3, (%esp)\n" /* line 372 */
         "calll SV_Cmd_Argv\n"
         "movl %eax, %edi\n" /* r */
-        "movl $0x2a9080, 4(%esp)\n" /* line 374 */
+        "movl $str_002a9080, 4(%esp)\n" /* line 374 */
         "movl %ebx, (%esp)\n" /* s */
         "calll I_stricmp\n"
         "movl %eax, -0x4e8(%ebp)\n"
         "testl %eax, %eax\n"
         "jne .Lf17b122_0017b2d9\n"
-        "movl $0x216d6c, (%esp)\n" /* line 376 */
+        "movl $str_00216d6c, (%esp)\n" /* line 376 */
         "calll Dvar_GetBool\n"
         "testb %al, %al\n"
         "je .Lf17b122_0017b3bf\n"
@@ -526,7 +526,7 @@ void SV_AuthorizeIpPacket(netadr_t from)
         "addl $0x50, %ebx\n" /* s */
         "movl 0x18(%ebx), %eax\n" /* s */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adfdc, (%esp)\n" /* "challengeResponse %i" */
+        "movl $str_002adfdc, (%esp)\n" /* "challengeResponse %i" */
         "calll va\n"
         "movl 0xc(%ebx), %esi\n" /* s, i */
         "movl %esi, -0xb4(%ebp)\n" /* i */
@@ -550,13 +550,13 @@ void SV_AuthorizeIpPacket(netadr_t from)
         "retl\n"
         /* { scope 1 */
         ".Lf17b122_0017b2d9:\n"
-        "movl $0x2ae014, 4(%esp)\n" /* line 389 */
+        "movl $str_002ae014, 4(%esp)\n" /* line 389 */
         "movl %ebx, (%esp)\n" /* s */
         "calll I_stricmp\n"
         "movl %eax, -0x4e4(%ebp)\n"
         "testl %eax, %eax\n"
         "je .Lf17b122_0017b340\n"
-        "movl $0x2ae088, 4(%esp)\n" /* line 413 */
+        "movl $str_002ae088, 4(%esp)\n" /* line 413 */
         "movl %ebx, (%esp)\n" /* guid */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -574,7 +574,7 @@ void SV_AuthorizeIpPacket(netadr_t from)
         "movl %edx, -0x74(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x70(%ebp)\n"
-        "movl $0x2ae090, 0x10(%esp)\n" /* "error
+        "movl $str_002ae090, 0x10(%esp)\n" /* "error
 EXE_ERR_CDKEY_IN_USE" */
         "jmp .Lf17b122_0017b45c\n"
         ".Lf17b122_0017b340:\n"
@@ -592,7 +592,7 @@ EXE_ERR_CDKEY_IN_USE" */
         /* { scope 2 */
         "testl %ebx, %ebx\n" /* line 165 */
         "jne .Lf17b122_0017b495\n"
-        "movl 0x195f284, %edx\n"
+        "movl imp_svs, %edx\n"
         /* } scope */
         ".Lf17b122_0017b37e:\n"
         "leal (%esi, %esi, 4), %eax\n" /* line 404 | i */
@@ -603,7 +603,7 @@ EXE_ERR_CDKEY_IN_USE" */
         "leal 0x50(%eax), %ebx\n" /* line 407 | guid */
         "movl 0x18(%ebx), %eax\n" /* guid */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adfdc, (%esp)\n" /* "challengeResponse %i" */
+        "movl $str_002adfdc, (%esp)\n" /* "challengeResponse %i" */
         "calll va\n"
         "movl 0xc(%ebx), %esi\n" /* guid, i */
         "movl %esi, -0x84(%ebp)\n" /* i */
@@ -621,7 +621,7 @@ EXE_ERR_CDKEY_IN_USE" */
         "movl %edx, -0xa4(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0xa0(%ebp)\n"
-        "movl $0x2adff4, 0x10(%esp)\n" /* "error
+        "movl $str_002adff4, 0x10(%esp)\n" /* "error
 EXE_ERR_NOT_A_DEMO_SERVER" */
         "movl %ecx, 4(%esp)\n"
         "movl %edx, 8(%esp)\n"
@@ -629,7 +629,7 @@ EXE_ERR_NOT_A_DEMO_SERVER" */
         "movl $1, (%esp)\n"
         "calll NET_OutOfBandPrint\n"
         "movl -0x4ec(%ebp), %eax\n" /* line 385 */
-        "movl 0x195f284, %edx\n"
+        "movl imp_svs, %edx\n"
         "leal 0x5c(%eax, %edx), %edi\n" /* r */
         "cld\n"
         "movl $0xa, %ecx\n"
@@ -657,7 +657,7 @@ EXE_ERR_NOT_A_DEMO_SERVER" */
         "movl %edx, -0x2c(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x28(%ebp)\n"
-        "movl $0x2ae0f0, 0x10(%esp)\n" /* "error
+        "movl $str_002ae0f0, 0x10(%esp)\n" /* "error
 EXE_ERR_BAD_CDKEY" */
         ".Lf17b122_0017b45c:\n"
         "movl %ecx, 4(%esp)\n"
@@ -667,7 +667,7 @@ EXE_ERR_BAD_CDKEY" */
         "calll NET_OutOfBandPrint\n"
         ".Lf17b122_0017b474:\n"
         "leal (%esi, %esi, 4), %edi\n" /* line 459 | i, r */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "leal 0x5c(%eax, %edi, 8), %edi\n" /* r */
         "cld\n"
         "movl $0xa, %ecx\n"
@@ -683,14 +683,14 @@ EXE_ERR_BAD_CDKEY" */
         /* { scope 1 */
         /* { scope 2 */
         ".Lf17b122_0017b495:\n"
-        "movl 0x195f284, %edx\n" /* line 172 */
+        "movl imp_svs, %edx\n" /* line 172 */
         "movl 4(%edx), %edx\n"
         "movl %edx, -0x4e0(%ebp)\n"
-        "movl 0x195f2f0, %eax\n"
+        "movl imp_sv_kickBanTime, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, -0x4dc(%ebp)\n"
-        "movl 0x195f284, %ecx\n"
-        "movss 0x2ed5c8, %xmm2\n" /* 1000.0f */
+        "movl imp_svs, %ecx\n"
+        "movss lit4_002ed5c8, %xmm2\n" /* 1000.0f */
         "movl %ecx, %edi\n"
         "jmp .Lf17b122_0017b4d6\n"
         ".Lf17b122_0017b4c3:\n"
@@ -712,10 +712,10 @@ EXE_ERR_BAD_CDKEY" */
         "ja .Lf17b122_0017b4c3\n"
         /* } scope */
         "movl %ebx, 4(%esp)\n" /* line 400 | guid */
-        "movl $0x2ae114, (%esp)\n" /* "rejected connection from temporarily banned GUID %i
+        "movl $str_002ae114, (%esp)\n" /* "rejected connection from temporarily banned GUID %i
 " */
         "calll Com_Printf\n"
-        "movl 0x195f284, %ebx\n" /* line 401 | guid */
+        "movl imp_svs, %ebx\n" /* line 401 | guid */
         "leal (%esi, %esi, 4), %edi\n" /* i, r */
         "shll $3, %edi\n" /* r */
         "leal 0x50(%edi, %ebx), %eax\n" /* r */
@@ -725,7 +725,7 @@ EXE_ERR_BAD_CDKEY" */
         "movl %ecx, -0x8c(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x88(%ebp)\n"
-        "movl $0x2ae14c, 0x10(%esp)\n" /* "error
+        "movl $str_002ae14c, 0x10(%esp)\n" /* "error
 You are temporarily banned from this server" */
         "movl %edx, 4(%esp)\n"
         "movl %ecx, 8(%esp)\n"
@@ -740,7 +740,7 @@ EXE_ERR_BAD_CDKEY" */
         "jmp .Lf17b122_0017b1cb\n"
         ".Lf17b122_0017b570:\n"
         "movl %edi, 8(%esp)\n" /* line 455 | r */
-        "movl $0x2ae108, 4(%esp)\n" /* "error
+        "movl $str_002ae108, 4(%esp)\n" /* "error
 %s" */
         "leal -0x4cc(%ebp), %ebx\n" /* ret, guid */
         "movl %ebx, (%esp)\n" /* guid */
@@ -762,7 +762,7 @@ EXE_ERR_BAD_CDKEY" */
         "calll NET_OutOfBandPrint\n"
         "jmp .Lf17b122_0017b474\n"
         ".Lf17b122_0017b5c6:\n"
-        "movl $0x2ae0ac, 4(%esp)\n" /* line 419 */
+        "movl $str_002ae0ac, 4(%esp)\n" /* line 419 */
         "movl %edi, (%esp)\n" /* r */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -775,12 +775,12 @@ EXE_ERR_BAD_CDKEY" */
         "movl %ecx, -0x68(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x64(%ebp)\n"
-        "movl $0x2a95ac, 0x10(%esp)\n" /* "needcdkey" */
+        "movl $str_002a95ac, 0x10(%esp)\n" /* "needcdkey" */
         "jmp .Lf17b122_0017b5a9\n"
         ".Lf17b122_0017b603:\n"
         "movl 0x10(%ebx), %eax\n" /* line 394 | s */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae01c, (%esp)\n" /* "rejected connection from permanently banned GUID %i
+        "movl $str_002ae01c, (%esp)\n" /* "rejected connection from permanently banned GUID %i
 " */
         "calll Com_Printf\n"
         "movl -0x4f0(%ebp), %eax\n" /* line 395 */
@@ -791,7 +791,7 @@ EXE_ERR_BAD_CDKEY" */
         "movl %edx, -0x98(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x94(%ebp)\n"
-        "movl $0x2ae054, 0x10(%esp)\n" /* "error
+        "movl $str_002ae054, 0x10(%esp)\n" /* "error
 You are permanently banned from this server" */
         "movl %ecx, 4(%esp)\n"
         "movl %edx, 8(%esp)\n"
@@ -799,7 +799,7 @@ EXE_ERR_BAD_CDKEY" */
         "movl $1, (%esp)\n"
         "calll NET_OutOfBandPrint\n"
         "movl -0x4ec(%ebp), %edx\n" /* line 396 */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "leal 0x5c(%edx, %eax), %edi\n" /* r */
         "cld\n"
         "movl $0xa, %ecx\n"
@@ -807,11 +807,11 @@ EXE_ERR_BAD_CDKEY" */
         "rep stosl %eax, %es:(%edi)\n" /* r */
         "jmp .Lf17b122_0017b1cb\n"
         ".Lf17b122_0017b67c:\n"
-        "movl $0x2adfb0, (%esp)\n" /* line 365 */
+        "movl $str_002adfb0, (%esp)\n" /* line 365 */
         "calll Com_Printf\n"
         "jmp .Lf17b122_0017b1cb\n"
         ".Lf17b122_0017b68d:\n"
-        "movl $0x2ae0c4, 4(%esp)\n" /* line 423 */
+        "movl $str_002ae0c4, 4(%esp)\n" /* line 423 */
         "movl %edi, (%esp)\n" /* r */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -824,10 +824,10 @@ EXE_ERR_BAD_CDKEY" */
         "movl %ecx, -0x5c(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x58(%ebp)\n"
-        "movl $0x2a95ac, 0x10(%esp)\n" /* "needcdkey" */
+        "movl $str_002a95ac, 0x10(%esp)\n" /* "needcdkey" */
         "jmp .Lf17b122_0017b5a9\n"
         ".Lf17b122_0017b6c9:\n"
-        "movl $0x2ae0d0, 4(%esp)\n" /* line 427 */
+        "movl $str_002ae0d0, 4(%esp)\n" /* line 427 */
         "movl %edi, (%esp)\n" /* r */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -840,11 +840,11 @@ EXE_ERR_BAD_CDKEY" */
         "movl %ecx, -0x50(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x4c(%ebp)\n"
-        "movl $0x2ae090, 0x10(%esp)\n" /* "error
+        "movl $str_002ae090, 0x10(%esp)\n" /* "error
 EXE_ERR_CDKEY_IN_USE" */
         "jmp .Lf17b122_0017b5a9\n"
         ".Lf17b122_0017b705:\n"
-        "movl $0x2ae0e0, 4(%esp)\n" /* line 433 */
+        "movl $str_002ae0e0, 4(%esp)\n" /* line 433 */
         "movl %edi, (%esp)\n" /* r */
         "calll I_stricmp\n"
         "testl %eax, %eax\n"
@@ -857,7 +857,7 @@ EXE_ERR_CDKEY_IN_USE" */
         "movl %ecx, -0x44(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x40(%ebp)\n"
-        "movl $0x2ae0f0, 0x10(%esp)\n" /* "error
+        "movl $str_002ae0f0, 0x10(%esp)\n" /* "error
 EXE_ERR_BAD_CDKEY" */
         "jmp .Lf17b122_0017b5a9\n"
         ".Lf17b122_0017b741:\n"
@@ -869,7 +869,7 @@ EXE_ERR_BAD_CDKEY" */
         "movl %ecx, -0x38(%ebp)\n"
         "movl 0x14(%eax), %eax\n"
         "movl %eax, -0x34(%ebp)\n"
-        "movl $0x2ae0f0, 0x10(%esp)\n" /* "error
+        "movl $str_002ae0f0, 0x10(%esp)\n" /* "error
 EXE_ERR_BAD_CDKEY" */
         "jmp .Lf17b122_0017b5a9\n"
     );
@@ -888,7 +888,7 @@ void SV_UserinfoChanged(client_t *cl)
         "movl 8(%ebp), %ebx\n" /* cl */
         /* { scope 1 */
         "leal 0xc(%ebx), %esi\n" /* line 1579 | cl */
-        "movl $0x2194b4, 4(%esp)\n" /* "name" */
+        "movl $str_002194b4, 4(%esp)\n" /* "name" */
         "movl %esi, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl $0x20, 8(%esp)\n"
@@ -908,13 +908,13 @@ void SV_UserinfoChanged(client_t *cl)
         "calll Sys_IsLANAddress\n"
         "testl %eax, %eax\n"
         "je .Lf17b76a_0017b842\n"
-        "movl 0x195ec98, %eax\n"
+        "movl imp_com_dedicated, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
         "je .Lf17b76a_0017b842\n"
         "movl $0x1869f, 0x6e5a8(%ebx)\n" /* line 1587 | cl */
         ".Lf17b76a_0017b7e8:\n"
-        "movl $0x2a8f98, 4(%esp)\n" /* line 1615 */
+        "movl $str_002a8f98, 4(%esp)\n" /* line 1615 */
         "movl %esi, (%esp)\n"
         "calll Info_ValueForKey\n"
         "cmpb $0, (%eax)\n" /* line 1616 */
@@ -922,7 +922,7 @@ void SV_UserinfoChanged(client_t *cl)
         ".Lf17b76a_0017b7fd:\n"
         "movl $0x32, 0x6e5ac(%ebx)\n" /* line 1631 | cl */
         ".Lf17b76a_0017b807:\n"
-        "movl $0x2a8d5c, 4(%esp)\n" /* line 1635 */
+        "movl $str_002a8d5c, 4(%esp)\n" /* line 1635 */
         "movl %esi, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n" /* line 1636 */
@@ -941,13 +941,13 @@ void SV_UserinfoChanged(client_t *cl)
         "retl\n"
         /* { scope 1 */
         ".Lf17b76a_0017b842:\n"
-        "movl $0x2a8c54, 4(%esp)\n" /* line 1591 */
+        "movl $str_002a8c54, 4(%esp)\n" /* line 1591 */
         "movl %esi, (%esp)\n"
         "calll Info_ValueForKey\n"
         "cmpb $0, (%eax)\n" /* line 1592 */
         "jne .Lf17b76a_0017b899\n"
         "movl $0x1388, 0x6e5a8(%ebx)\n" /* line 1607 | cl */
-        "movl $0x2a8f98, 4(%esp)\n" /* line 1615 */
+        "movl $str_002a8f98, 4(%esp)\n" /* line 1615 */
         "movl %esi, (%esp)\n"
         "calll Info_ValueForKey\n"
         "cmpb $0, (%eax)\n" /* line 1616 */
@@ -1001,9 +1001,9 @@ void SV_FreeClientScriptPers(void)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f284, %eax\n" /* line 803 */
+        "movl imp_svs, %eax\n" /* line 803 */
         "movl 0xc(%eax), %ebx\n" /* cl */
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %esi\n" /* i */
         "testl %esi, %esi\n" /* i */
@@ -1083,11 +1083,11 @@ void SV_SendClientGameState(client_t *client)
         "movl 8(%ebp), %ebx\n" /* line 946 | client */
         "addl $0x20c48, %ebx\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x2ae180, (%esp)\n" /* "SV_SendClientGameState() for %s
+        "movl $str_002ae180, (%esp)\n" /* "SV_SendClientGameState() for %s
 " */
         "calll Com_DPrintf\n"
         "movl %ebx, 4(%esp)\n" /* line 947 */
-        "movl $0x2ae1a4, (%esp)\n" /* "Going from CS_CONNECTED to CS_PRIMED for %s
+        "movl $str_002ae1a4, (%esp)\n" /* "Going from CS_CONNECTED to CS_PRIMED for %s
 " */
         "calll Com_DPrintf\n"
         "movl 8(%ebp), %edx\n" /* line 948 | client */
@@ -1122,7 +1122,7 @@ void SV_SendClientGameState(client_t *client)
         "movl %eax, (%esp)\n"
         "calll MSG_WriteLong\n"
         "xorl %esi, %esi\n" /* msgBuffer */
-        "movl 0x195ee80, %ebx\n"
+        "movl imp_sv, %ebx\n"
         "jmp .Lf17b95e_0017ba7c\n"
         ".Lf17b95e_0017ba6e:\n"
         "addl $1, %esi\n" /* line 973 | msgBuffer */
@@ -1157,7 +1157,7 @@ void SV_SendClientGameState(client_t *client)
         "movl %eax, (%esp)\n"
         "calll memset\n"
         "xorl %edi, %edi\n" /* start */
-        "movl 0x195ee80, %edx\n"
+        "movl imp_sv, %edx\n"
         "movl %edx, -0x12c(%ebp)\n"
         "movl %edx, %ebx\n"
         "addl $0x2410, %ebx\n"
@@ -1192,7 +1192,7 @@ void SV_SendClientGameState(client_t *client)
         "leal -0x34(%ebp), %edx\n" /* msg */
         "movl %edx, (%esp)\n"
         "calll MSG_WriteByte\n"
-        "movl 0x195f284, %ebx\n" /* line 998 */
+        "movl imp_svs, %ebx\n" /* line 998 */
         "movl 8(%ebp), %eax\n" /* client */
         "subl 0xc(%ebx), %eax\n"
         "sarl $2, %eax\n"
@@ -1218,7 +1218,7 @@ void SV_SendClientGameState(client_t *client)
         "movl %eax, 8(%esp)\n"
         "movl -0x28(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae1d4, (%esp)\n" /* "Sending %i bytes in gamestate to client: %i
+        "movl $str_002ae1d4, (%esp)\n" /* "Sending %i bytes in gamestate to client: %i
 " */
         "calll Com_DPrintf\n"
         "movl 8(%ebp), %eax\n" /* line 1009 | client */
@@ -1262,12 +1262,12 @@ void SV_ClientEnterWorld(client_t *client, const dvar_t * (*cmd)[4])
         /* { scope 1 */
         "leal 0x20c48(%ebx), %eax\n" /* line 1023 | client */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
+        "movl $str_002ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
 " */
         "calll Com_DPrintf\n"
         "movl $4, (%ebx)\n" /* line 1024 | client */
         "movl %ebx, %esi\n" /* line 1027 | client */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "subl 0xc(%eax), %esi\n"
         "sarl $2, %esi\n"
         "imull $0x3789a4eb, %esi, %esi\n"
@@ -1276,7 +1276,7 @@ void SV_ClientEnterWorld(client_t *client, const dvar_t * (*cmd)[4])
         "movl %esi, (%eax)\n" /* line 1029 */
         "movl %eax, 0x20c44(%ebx)\n" /* line 1030 | client */
         "movl $0xffffffff, 0x20d08(%ebx)\n" /* line 1032 | client */
-        "movl 0x195f284, %edx\n" /* line 1033 */
+        "movl imp_svs, %edx\n" /* line 1033 */
         "movl 4(%edx), %eax\n"
         "movl %eax, 0x20d18(%ebx)\n" /* client */
         "movl (%edi), %eax\n" /* line 1034 | cmd */
@@ -1353,7 +1353,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         "je .Lf17bd48_0017c07e\n"
         ".Lf17bd48_0017bd9b:\n"
         "movl 0x6e5a8(%esi), %ebx\n" /* line 1323 | cl, rate */
-        "movl 0x195f268, %edi\n" /* line 1324 */
+        "movl imp_sv_maxRate, %edi\n" /* line 1324 */
         "movl (%edi), %edx\n"
         "movl 8(%edx), %eax\n"
         "testl %eax, %eax\n"
@@ -1392,7 +1392,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         "xorl %edi, %edi\n" /* line 1351 */
         "jmp .Lf17bd48_0017bf07\n"
         ".Lf17bd48_0017be1e:\n"
-        "movl 0x195f284, %eax\n" /* line 1359 */
+        "movl imp_svs, %eax\n" /* line 1359 */
         "movl 4(%eax), %eax\n"
         "subl 0x20d04(%esi), %eax\n" /* cl */
         "cmpl $0x3e8, %eax\n"
@@ -1426,13 +1426,13 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         ".Lf17bd48_0017bea6:\n"
         "movl 0x20cbc(%esi), %eax\n" /* line 1381 | cl */
         "movl %eax, 8(%esp)\n"
-        "movl 0x195f284, %ebx\n" /* rate */
+        "movl imp_svs, %ebx\n" /* rate */
         "movl %esi, %eax\n" /* cl */
         "subl 0xc(%ebx), %eax\n" /* rate */
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae388, (%esp)\n" /* "clientDownload: %d : writing block %d
+        "movl $str_002ae388, (%esp)\n" /* "clientDownload: %d : writing block %d
 " */
         "calll Com_DPrintf\n"
         "addl $1, 0x20cbc(%esi)\n" /* line 1385 | cl */
@@ -1459,21 +1459,21 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         ".Lf17bd48_0017bf33:\n"
         "leal 0x20c68(%esi), %ebx\n" /* line 1216 | cl, rate */
         "movl %ebx, 8(%esp)\n" /* rate */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl %esi, %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae24c, (%esp)\n" /* "clientDownload: %d : begining "%s"
+        "movl $str_002ae24c, (%esp)\n" /* "clientDownload: %d : begining "%s"
 " */
         "calll Com_Printf\n"
-        "movl $0x216f3c, 4(%esp)\n" /* line 1218 */
+        "movl $str_00216f3c, 4(%esp)\n" /* line 1218 */
         "movl %ebx, (%esp)\n" /* rate */
         "calll FS_iwIwd\n"
         "movl %eax, %edx\n"
-        "movl 0x195f2b4, %ecx\n" /* line 1248 */
+        "movl imp_sv_allowDownload, %ecx\n" /* line 1248 */
         "movl (%ecx), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf17bd48_0017c168\n"
@@ -1481,18 +1481,18 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         "je .Lf17bd48_0017c27f\n"
         ".Lf17bd48_0017bf8e:\n"
         "movl %ebx, 8(%esp)\n" /* line 1253 | rate */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl %esi, %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae270, (%esp)\n" /* "clientDownload: %d : "%s" cannot download iwd files
+        "movl $str_002ae270, (%esp)\n" /* "clientDownload: %d : "%s" cannot download iwd files
 " */
         "calll Com_Printf\n"
         "movl %ebx, 0xc(%esp)\n" /* line 1254 | rate */
-        "movl $0x2ae2a8, 8(%esp)\n" /* "EXE_CANTAUTODLGAMEIWD%s" */
+        "movl $str_002ae2a8, 8(%esp)\n" /* "EXE_CANTAUTODLGAMEIWD%s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* errorMessage, rate */
         "movl %ebx, (%esp)\n" /* rate */
@@ -1604,21 +1604,21 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         "cmpb $0, 8(%eax)\n"
         "jne .Lf17bd48_0017c217\n"
         "movl %ebx, 8(%esp)\n" /* line 1258 | rate */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl %esi, %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae2c4, (%esp)\n" /* "clientDownload: %d : "%s" download disabled" */
+        "movl $str_002ae2c4, (%esp)\n" /* "clientDownload: %d : "%s" download disabled" */
         "calll Com_Printf\n"
-        "movl 0x195f2e0, %eax\n" /* line 1260 */
+        "movl imp_sv_pure, %eax\n" /* line 1260 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf17bd48_0017c2d2\n"
         "movl %ebx, 0xc(%esp)\n" /* line 1261 | rate */
-        "movl $0x2ae2f0, 8(%esp)\n" /* "EXE_AUTODL_SERVERDISABLED_PURE%s" */
+        "movl $str_002ae2f0, 8(%esp)\n" /* "EXE_AUTODL_SERVERDISABLED_PURE%s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* errorMessage, rate */
         "movl %ebx, (%esp)\n" /* rate */
@@ -1640,18 +1640,18 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         "jmp .Lf17bd48_0017c0eb\n"
         ".Lf17bd48_0017c217:\n"
         "movl %ebx, 8(%esp)\n" /* line 1268 | rate */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl %esi, %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae334, (%esp)\n" /* "clientDownload: %d : "%s" file not found on server
+        "movl $str_002ae334, (%esp)\n" /* "clientDownload: %d : "%s" file not found on server
 " */
         "calll Com_Printf\n"
         "movl %ebx, 0xc(%esp)\n" /* line 1269 | rate */
-        "movl $0x2ae368, 8(%esp)\n" /* "EXE_AUTODL_FILENOTONSERVER%s" */
+        "movl $str_002ae368, 8(%esp)\n" /* "EXE_AUTODL_FILENOTONSERVER%s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* errorMessage, rate */
         "movl %ebx, (%esp)\n" /* rate */
@@ -1680,7 +1680,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         "jmp .Lf17bd48_0017bd72\n"
         ".Lf17bd48_0017c2d2:\n"
         "movl %ebx, 0xc(%esp)\n" /* line 1264 | rate */
-        "movl $0x2ae314, 8(%esp)\n" /* "EXE_AUTODL_SERVERDISABLED%s" */
+        "movl $str_002ae314, 8(%esp)\n" /* "EXE_AUTODL_SERVERDISABLED%s" */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* errorMessage, rate */
         "movl %ebx, (%esp)\n" /* rate */
@@ -1692,7 +1692,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
         "addl $1, %eax\n"
         "jmp .Lf17bd48_0017c0b0\n"
         ".Lf17bd48_0017c307:\n"
-        "movl 0x195f2b4, %ecx\n"
+        "movl imp_sv_allowDownload, %ecx\n"
         "jmp .Lf17bd48_0017c170\n"
         ".Lf17bd48_0017c312:\n"
         "subl $1, %eax\n" /* line 1342 */
@@ -1782,7 +1782,7 @@ void SV_VerifyIwds_f(client_t *cl)
         "cmpl %edi, %ecx\n"
         "jne .Lf17c32a_0017c3cd\n"
         ".Lf17c32a_0017c3f5:\n"
-        "movl 0x195ee80, %eax\n" /* line 1525 */
+        "movl imp_sv, %eax\n" /* line 1525 */
         "movl 0xc(%eax), %edx\n"
         "testl %edi, %edi\n" /* line 1526 */
         "jle .Lf17c32a_0017c411\n"
@@ -1866,7 +1866,7 @@ void SV_UpdateUserinfo_f(client_t *cl)
         "calll I_strncpyz\n"
         "movl %ebx, (%esp)\n" /* line 1698 | cl */
         "calll SV_UserinfoChanged\n"
-        "movl 0x195f284, %eax\n" /* line 1700 */
+        "movl imp_svs, %eax\n" /* line 1700 */
         "subl 0xc(%eax), %ebx\n" /* cl */
         "sarl $2, %ebx\n" /* cl */
         "imull $0x3789a4eb, %ebx, %ebx\n" /* cl */
@@ -1901,7 +1901,7 @@ void SV_MutePlayer_f(client_t *cl)
         /* { scope 1 */
         ".Lf17c506_0017c532:\n"
         "movl %eax, 4(%esp)\n" /* line 1717 */
-        "movl $0x2ae3b0, (%esp)\n" /* "Invalid mute client %i
+        "movl $str_002ae3b0, (%esp)\n" /* "Invalid mute client %i
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -1933,7 +1933,7 @@ void SV_UnmutePlayer_f(client_t *cl)
         /* { scope 1 */
         ".Lf17c544_0017c570:\n"
         "movl %eax, 4(%esp)\n" /* line 1735 */
-        "movl $0x2ae3c8, (%esp)\n" /* "Invalid unmute client %i
+        "movl $str_002ae3c8, (%esp)\n" /* "Invalid unmute client %i
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -2006,7 +2006,7 @@ void SV_ExecuteClientCommand(client_t *cl, const char *s, qboolean clientOK)
         "calll SV_Loaded\n" /* line 1814 */
         "testb %al, %al\n"
         "je .Lf17c58c_0017c5e7\n"
-        "movl 0x195f284, %eax\n" /* line 1815 */
+        "movl imp_svs, %eax\n" /* line 1815 */
         "movl 0xc(%eax), %edx\n"
         "subl %edx, -0x1c(%ebp)\n" /* cl */
         "sarl $2, -0x1c(%ebp)\n" /* cl */
@@ -2057,7 +2057,7 @@ void SV_ClientThink(client_t *cl, const dvar_t * (*cmd)[4])
         ".Lf17c630_0017c688:\n"
         "movl (%edx), %eax\n" /* line 1906 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195f284, %ebx\n"
+        "movl imp_svs, %ebx\n"
         "movl %esi, %eax\n" /* cl */
         "subl 0xc(%ebx), %eax\n"
         "sarl $2, %eax\n"
@@ -2101,10 +2101,10 @@ void SV_GetChallenge(netadr_t from)
         "movl %edx, -0x84(%ebp)\n"
         "movl $0, -0x8c(%ebp)\n" /* oldest */
         "movl $0x7fffffff, -0x88(%ebp)\n" /* oldestTime */
-        "movl 0x195f284, %edi\n"
+        "movl imp_svs, %edi\n"
         "addl $0x5c, %edi\n"
         "xorl %esi, %esi\n"
-        "movl 0x195f284, %ebx\n"
+        "movl imp_svs, %ebx\n"
         "addl $0x7c, %ebx\n"
         "jmp .Lf17c6c4_0017c752\n"
         /* { scope 1 */
@@ -2154,23 +2154,23 @@ void SV_GetChallenge(netadr_t from)
         "testl %eax, %eax\n"
         "je .Lf17c6c4_0017c726\n"
         ".Lf17c6c4_0017c7c1:\n"
-        "movl 0x195f354, %eax\n" /* line 90 */
+        "movl imp_net_lanauthorize, %eax\n" /* line 90 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf17c6c4_0017c9a5\n"
         ".Lf17c6c4_0017c7d2:\n"
-        "movl 0x195f284, %ebx\n" /* line 99 */
+        "movl imp_svs, %ebx\n" /* line 99 */
         "cmpb $0, 0xa06c(%ebx)\n"
         "jne .Lf17c6c4_0017c875\n"
         "cmpl $1, 0xa068(%ebx)\n"
         "je .Lf17c6c4_0017c875\n"
-        "movl $0x2a9298, 4(%esp)\n" /* line 101 */
-        "movl $0x2a92b4, (%esp)\n" /* "Resolving %s
+        "movl $str_002a9298, 4(%esp)\n" /* line 101 */
+        "movl $str_002a92b4, (%esp)\n" /* "Resolving %s
 " */
         "calll Com_Printf\n"
         "leal 0xa068(%ebx), %eax\n" /* line 102 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a9298, (%esp)\n" /* "cod2master.activision.com" */
+        "movl $str_002a9298, (%esp)\n" /* "cod2master.activision.com" */
         "calll NET_StringToAdr\n"
         "testl %eax, %eax\n"
         "je .Lf17c6c4_0017ca62\n"
@@ -2184,8 +2184,8 @@ void SV_GetChallenge(netadr_t from)
         "movl %eax, 0xc(%esp)\n"
         "movzbl 0xa06c(%ebx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a9298, 4(%esp)\n" /* "cod2master.activision.com" */
-        "movl $0x2a92e0, (%esp)\n" /* "%s resolved to %i.%i.%i.%i:%i
+        "movl $str_002a9298, 4(%esp)\n" /* "cod2master.activision.com" */
+        "movl $str_002a92e0, (%esp)\n" /* "%s resolved to %i.%i.%i.%i:%i
 " */
         "calll Com_Printf\n"
         ".Lf17c6c4_0017c875:\n"
@@ -2255,13 +2255,13 @@ void SV_GetChallenge(netadr_t from)
         "calll NET_CompareAdr\n"
         "testl %eax, %eax\n"
         "jne .Lf17c6c4_0017c882\n"
-        "movl $0x2ae3e4, (%esp)\n" /* line 118 */
+        "movl $str_002ae3e4, (%esp)\n" /* line 118 */
         "calll Com_DPrintf\n"
         "movl 4(%ebx), %eax\n" /* line 120 */
         "movl %eax, 0x14(%edi)\n" /* challenge */
         "movl 0xc(%edi), %eax\n" /* line 121 | challenge */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adfdc, (%esp)\n" /* "challengeResponse %i" */
+        "movl $str_002adfdc, (%esp)\n" /* "challengeResponse %i" */
         "calll va\n"
         "movl (%edi), %ecx\n" /* challenge */
         "movl %ecx, -0x30(%ebp)\n"
@@ -2304,12 +2304,12 @@ void SV_GetChallenge(netadr_t from)
         "calll Sys_IsLANAddress\n"
         "testl %eax, %eax\n"
         "je .Lf17c6c4_0017c7d2\n"
-        "movl 0x195f284, %eax\n" /* line 92 */
+        "movl imp_svs, %eax\n" /* line 92 */
         "movl 4(%eax), %eax\n"
         "movl %eax, 0x14(%edi)\n" /* challenge */
         "movl 0xc(%edi), %eax\n" /* line 93 | challenge */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adfdc, (%esp)\n" /* "challengeResponse %i" */
+        "movl $str_002adfdc, (%esp)\n" /* "challengeResponse %i" */
         "calll va\n"
         "movzwl -0x7a(%ebp), %edx\n"
         "movw %dx, -0x4c(%ebp)\n"
@@ -2333,7 +2333,7 @@ void SV_GetChallenge(netadr_t from)
         "calll NET_OutOfBandPrint\n"
         "jmp .Lf17c6c4_0017c8d0\n"
         ".Lf17c6c4_0017ca62:\n"
-        "movl $0x2a92c4, 8(%ebp)\n" /* line 104 | from */
+        "movl $str_002a92c4, 8(%ebp)\n" /* line 104 | from */
         /* } scope */
         "addl $0xac, %esp\n" /* line 135 */
         "popl %ebx\n"
@@ -2345,7 +2345,7 @@ void SV_GetChallenge(netadr_t from)
         ".Lf17c6c4_0017ca78:\n"
         "movl -0x8c(%ebp), %edx\n" /* line 76 | oldest */
         "leal (%edx, %edx, 4), %esi\n" /* i */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl %eax, -0x90(%ebp)\n"
         "leal 0x50(%eax, %esi, 8), %esi\n" /* i */
         "leal 0xc(%esi), %edi\n" /* i, challenge */
@@ -2415,7 +2415,7 @@ void SV_FreeClient(client_t *cl)
         "calll SV_Loaded\n" /* line 479 */
         "testb %al, %al\n"
         "je .Lf17cb08_0017cb84\n"
-        "movl 0x195f284, %eax\n" /* line 483 */
+        "movl imp_svs, %eax\n" /* line 483 */
         "movl %edi, %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
@@ -2424,8 +2424,8 @@ void SV_FreeClient(client_t *cl)
         "movl %eax, (%esp)\n"
         "calll ClientDisconnect\n"
         ".Lf17cb08_0017cb84:\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 487 */
-        "movl 0x195f284, %eax\n"
+        "movl $str_002157b8, 4(%esp)\n" /* line 487 */
+        "movl imp_svs, %eax\n"
         "movl %edi, %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
@@ -2472,7 +2472,7 @@ void SV_DropClient(client_t *drop, const char *reason)
         "addl $0x20c48, %eax\n"
         "movl %eax, -0x40(%ebp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae400, (%esp)\n" /* "Going to CS_ZOMBIE for %s
+        "movl $str_002ae400, (%esp)\n" /* "Going to CS_ZOMBIE for %s
 " */
         "calll Com_DPrintf\n"
         "movl -0x44(%ebp), %ecx\n" /* line 844 | drop */
@@ -2481,7 +2481,7 @@ void SV_DropClient(client_t *drop, const char *reason)
         "testl %eax, %eax\n"
         "je .Lf17cbc6_0017cd57\n"
         ".Lf17cbc6_0017cc25:\n"
-        "movl $0x215fa4, 4(%esp)\n" /* line 862 */
+        "movl $str_00215fa4, 4(%esp)\n" /* line 862 */
         "movl -0x48(%ebp), %eax\n" /* reason */
         "movl %eax, (%esp)\n"
         "calll I_stricmp\n"
@@ -2492,13 +2492,13 @@ void SV_DropClient(client_t *drop, const char *reason)
         "movl %ecx, 0xc(%esp)\n"
         "movl -0x40(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x195f284, %esi\n"
+        "movl imp_svs, %esi\n"
         "movl -0x44(%ebp), %eax\n" /* drop */
         "subl 0xc(%esi), %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae42c, (%esp)\n" /* "%i:%s %s
+        "movl $str_002ae42c, (%esp)\n" /* "%i:%s %s
 " */
         "calll Com_Printf\n"
         "movl -0x44(%ebp), %eax\n" /* line 867 | drop */
@@ -2507,19 +2507,19 @@ void SV_DropClient(client_t *drop, const char *reason)
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl $0x4a, 0xc(%esp)\n"
-        "movl $0x2ae438, 8(%esp)\n" /* "%c %d" */
+        "movl $str_002ae438, 8(%esp)\n" /* "%c %d" */
         "movl $1, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll SV_SendServerCommand\n"
         "movl -0x48(%ebp), %ecx\n" /* line 871 | reason */
         "movl %ecx, 0x10(%esp)\n"
         "movl $0x77, 0xc(%esp)\n"
-        "movl $0x2a737c, 8(%esp)\n" /* "%c "%s"" */
+        "movl $str_002a737c, 8(%esp)\n" /* "%c "%s"" */
         "movl $1, 4(%esp)\n"
         "movl -0x44(%ebp), %eax\n" /* drop */
         "movl %eax, (%esp)\n"
         "calll SV_SendServerCommand\n"
-        "movl 0x195f290, %eax\n" /* line 877 */
+        "movl imp_sv_maxclients, %eax\n" /* line 877 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
@@ -2554,7 +2554,7 @@ void SV_DropClient(client_t *drop, const char *reason)
         "movl -0x40(%ebp), %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl $0x65, 0xc(%esp)\n"
-        "movl $0x2ae41c, 8(%esp)\n" /* "%c "%s^7 %s"" */
+        "movl $str_002ae41c, 8(%esp)\n" /* "%c "%s^7 %s"" */
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll SV_SendServerCommand\n"
@@ -2572,7 +2572,7 @@ void SV_DropClient(client_t *drop, const char *reason)
         "jle .Lf17cbc6_0017cd41\n"
         "jmp .Lf17cbc6_0017ccfa\n"
         ".Lf17cbc6_0017cd57:\n"
-        "movl 0x195f284, %eax\n" /* line 846 */
+        "movl imp_svs, %eax\n" /* line 846 */
         "movl %eax, %edx\n"
         "addl $0x5c, %eax\n"
         "movl %eax, -0x3c(%ebp)\n" /* challenge */
@@ -2646,7 +2646,7 @@ void SV_BanClient(client_t *cl)
         "je .Lf17ce08_0017ce63\n"
         "movl 0x765ec(%esi), %eax\n" /* line 265 | cl */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae45c, (%esp)\n" /* "This GUID (%i) is already banned
+        "movl $str_002ae45c, (%esp)\n" /* "This GUID (%i) is already banned
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -2657,7 +2657,7 @@ void SV_BanClient(client_t *cl)
         "retl\n"
         /* { scope 1 */
         ".Lf17ce08_0017ce50:\n"
-        "movl $0x2ae440, (%esp)\n" /* line 259 */
+        "movl $str_002ae440, (%esp)\n" /* line 259 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf17ce08_0017ce5c:\n"
@@ -2671,7 +2671,7 @@ void SV_BanClient(client_t *cl)
         "movl $2, 8(%esp)\n" /* line 269 */
         "leal -0xc(%ebp), %eax\n" /* file */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2adf38, (%esp)\n" /* "ban.txt" */
+        "movl $str_002adf38, (%esp)\n" /* "ban.txt" */
         "calll FS_FOpenFileByMode\n"
         "testl %eax, %eax\n"
         "js .Lf17ce08_0017ce5c\n"
@@ -2686,7 +2686,7 @@ void SV_BanClient(client_t *cl)
         "movl %ebx, 0xc(%esp)\n" /* line 273 */
         "movl 0x765ec(%esi), %eax\n" /* cl */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2ae480, 4(%esp)\n" /* "%i %s
+        "movl $str_002ae480, 4(%esp)\n" /* "%i %s
 " */
         "movl -0xc(%ebp), %eax\n" /* file */
         "movl %eax, (%esp)\n"
@@ -2694,10 +2694,10 @@ void SV_BanClient(client_t *cl)
         "movl -0xc(%ebp), %eax\n" /* line 274 | file */
         "movl %eax, (%esp)\n"
         "calll FS_FCloseFile\n"
-        "movl $0x2ac4ec, 4(%esp)\n" /* line 276 */
+        "movl $str_002ac4ec, 4(%esp)\n" /* line 276 */
         "movl %esi, (%esp)\n" /* cl */
         "calll SV_DropClient\n"
-        "movl 0x195f284, %eax\n" /* line 277 */
+        "movl imp_svs, %eax\n" /* line 277 */
         "movl 4(%eax), %eax\n"
         "movl %eax, 0x20d10(%esi)\n" /* cl */
         /* } scope */
@@ -2709,7 +2709,7 @@ void SV_BanClient(client_t *cl)
         /* { scope 1 */
         ".Lf17ce08_0017cef8:\n"
         "movl $0x65, 0xc(%esp)\n" /* line 253 */
-        "movl $0x2ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
+        "movl $str_002ac4cc, 8(%esp)\n" /* "%c "EXE_CANNOTKICKHOSTPLAYER"" */
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
         "calll SV_SendServerCommand\n"
@@ -2745,7 +2745,7 @@ void SV_DirectConnect(netadr_t from)
         "movl 0x10(%ebp), %eax\n"
         "movw %ax, -0x516(%ebp)\n"
         /* { scope 1 */
-        "movl $0x2ae488, (%esp)\n" /* line 540 */
+        "movl $str_002ae488, (%esp)\n" /* line 540 */
         "calll Com_DPrintf\n"
         "movl $1, (%esp)\n" /* line 542 */
         "calll SV_Cmd_Argv\n"
@@ -2754,7 +2754,7 @@ void SV_DirectConnect(netadr_t from)
         "leal -0x4fc(%ebp), %edx\n" /* userinfo */
         "movl %edx, (%esp)\n"
         "calll I_strncpyz\n"
-        "movl $0x2a7118, 4(%esp)\n" /* line 546 */
+        "movl $str_002a7118, 4(%esp)\n" /* line 546 */
         "leal -0x4fc(%ebp), %eax\n" /* userinfo */
         "movl %eax, (%esp)\n"
         "calll Info_ValueForKey\n"
@@ -2763,8 +2763,8 @@ void SV_DirectConnect(netadr_t from)
         "movl %eax, %ebx\n" /* version */
         "cmpl $0x73, %eax\n" /* line 547 */
         "je .Lf17cf24_0017d067\n"
-        "movl $0x2167d8, 4(%esp)\n" /* line 551 */
-        "movl $0x2ae49c, (%esp)\n" /* "error
+        "movl $str_002167d8, 4(%esp)\n" /* line 551 */
+        "movl $str_002ae49c, (%esp)\n" /* "error
 EXE_SERVER_IS_DIFFERENT_VER%s
 " */
         "calll va\n"
@@ -2789,7 +2789,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "calll NET_OutOfBandPrint\n"
         "movl $0x73, 8(%esp)\n" /* line 552 */
         "movl %ebx, 4(%esp)\n" /* version */
-        "movl $0x2ae4c4, (%esp)\n" /* "    rejected connect from protocol version %i (should be %i)" */
+        "movl $str_002ae4c4, (%esp)\n" /* "    rejected connect from protocol version %i (should be %i)" */
         "calll Com_DPrintf\n"
         /* } scope */
         ".Lf17cf24_0017d05c:\n"
@@ -2801,23 +2801,23 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "retl\n"
         /* { scope 1 */
         ".Lf17cf24_0017d067:\n"
-        "movl $0x2a9338, 4(%esp)\n" /* line 557 */
+        "movl $str_002a9338, 4(%esp)\n" /* line 557 */
         "leal -0x4fc(%ebp), %eax\n" /* userinfo */
         "movl %eax, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movl %eax, -0x524(%ebp)\n" /* challenge */
-        "movl $0x2a9344, 4(%esp)\n" /* line 559 */
+        "movl $str_002a9344, 4(%esp)\n" /* line 559 */
         "leal -0x4fc(%ebp), %edx\n" /* userinfo */
         "movl %edx, (%esp)\n"
         "calll Info_ValueForKey\n"
         "movl %eax, (%esp)\n"
         "calll atoi\n"
         "movl %eax, -0x528(%ebp)\n" /* qport */
-        "movl 0x195f284, %eax\n" /* line 565 */
+        "movl imp_svs, %eax\n" /* line 565 */
         "movl 0xc(%eax), %ebx\n" /* version */
-        "movl 0x195f290, %eax\n"
+        "movl imp_sv_maxclients, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %esi\n" /* count */
         "testl %esi, %esi\n" /* count */
@@ -2861,7 +2861,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         ".Lf17cf24_0017d189:\n"
         "addl $1, %esi\n" /* line 565 | count */
         "addl $0x78f0c, %ebx\n" /* version */
-        "movl 0x195f290, %eax\n"
+        "movl imp_sv_maxclients, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl 8(%eax), %esi\n" /* count */
         "jl .Lf17cf24_0017d0cb\n"
@@ -2889,9 +2889,9 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "movl $0, -0x52c(%ebp)\n" /* line 636 | guid */
         /* } scope */
         ".Lf17cf24_0017d218:\n"
-        "movl 0x195f284, %eax\n" /* line 642 */
+        "movl imp_svs, %eax\n" /* line 642 */
         "movl 0xc(%eax), %ebx\n" /* ping */
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -2943,18 +2943,18 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "cmpw %ax, 0x6e5cc(%ebx)\n" /* ping */
         "je .Lf17cf24_0017daa6\n"
         ".Lf17cf24_0017d2ee:\n"
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "addl $1, %esi\n" /* line 642 | count */
         "addl $0x78f0c, %ebx\n" /* ping */
         "movl (%edx), %eax\n"
         "cmpl %esi, 8(%eax)\n" /* count */
         "jg .Lf17cf24_0017d24b\n"
         ".Lf17cf24_0017d308:\n"
-        "movl $0x2a8fa0, 4(%esp)\n" /* line 675 */
+        "movl $str_002a8fa0, 4(%esp)\n" /* line 675 */
         "leal -0x4fc(%ebp), %eax\n" /* userinfo */
         "movl %eax, (%esp)\n"
         "calll Info_ValueForKey\n"
-        "movl 0x195f280, %edx\n" /* line 676 */
+        "movl imp_sv_privatePassword, %edx\n" /* line 676 */
         "movl (%edx), %edx\n"
         "movl 8(%edx), %edx\n"
         "movl %edx, 4(%esp)\n"
@@ -2965,7 +2965,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "movl $0, -0x520(%ebp)\n" /* startIndex */
         "movl -0x520(%ebp), %edx\n" /* startIndex */
         ".Lf17cf24_0017d34d:\n"
-        "movl 0x195f290, %eax\n" /* line 687 */
+        "movl imp_sv_maxclients, %eax\n" /* line 687 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x510(%ebp)\n"
@@ -2980,7 +2980,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "leal (, %eax, 4), %edx\n"
         "subl %eax, %edx\n"
         "shll $2, %edx\n"
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "addl 0xc(%eax), %edx\n"
         "movl (%edx), %eax\n" /* line 690 */
         "testl %eax, %eax\n"
@@ -3008,7 +3008,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "movl %ebx, (%esp)\n" /* ping */
         "calll memset\n"
         "movl %ebx, %eax\n" /* line 716 | ping */
-        "movl 0x195f284, %edx\n"
+        "movl imp_svs, %edx\n"
         "subl 0xc(%edx), %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
@@ -3061,7 +3061,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "testl %eax, %eax\n" /* line 747 */
         "je .Lf17cf24_0017d983\n"
         "movl %eax, 4(%esp)\n" /* line 749 */
-        "movl $0x2ae108, (%esp)\n" /* "error
+        "movl $str_002ae108, (%esp)\n" /* "error
 %s" */
         "calll va\n"
         "movzbl -0x511(%ebp), %edx\n"
@@ -3085,7 +3085,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "calll NET_OutOfBandPrint\n"
         "movl -0x51c(%ebp), %eax\n" /* line 750 | denied */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae618, (%esp)\n" /* "Game rejected a connection: %s.
+        "movl $str_002ae618, (%esp)\n" /* "Game rejected a connection: %s.
 " */
         "calll Com_DPrintf\n"
         "movl %ebx, (%esp)\n" /* line 751 | ping */
@@ -3100,7 +3100,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         /* { scope 1 */
         ".Lf17cf24_0017d58f:\n"
         "movl $0, -0x50c(%ebp)\n" /* line 588 */
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl %eax, -0x534(%ebp)\n"
         "movl %eax, %ebx\n" /* version */
         "xorl %esi, %esi\n" /* count */
@@ -3178,13 +3178,13 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "movl %ebx, 8(%esp)\n" /* ping */
         "movl -0x50c(%ebp), %edx\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2ae540, (%esp)\n" /* "Client %i connecting with %i challenge ping from %s
+        "movl $str_002ae540, (%esp)\n" /* "Client %i connecting with %i challenge ping from %s
 " */
         "calll Com_Printf\n"
         "movl -0x50c(%ebp), %edx\n" /* line 621 */
         "leal (%edx, %edx, 4), %eax\n"
         "shll $3, %eax\n"
-        "addl 0x195f284, %eax\n"
+        "addl imp_svs, %eax\n"
         "movl $1, 0x7c(%eax)\n"
         "movzbl -0x511(%ebp), %eax\n" /* line 624 */
         "movb %al, -0x89(%ebp)\n"
@@ -3205,7 +3205,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "calll Sys_IsLANAddress\n"
         "testl %eax, %eax\n"
         "jne .Lf17cf24_0017d218\n"
-        "movl 0x195f2e8, %eax\n" /* line 626 */
+        "movl imp_sv_minPing, %eax\n" /* line 626 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -3213,7 +3213,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "cmpl %eax, %ebx\n" /* ping */
         "jl .Lf17cf24_0017db18\n"
         ".Lf17cf24_0017d7b4:\n"
-        "movl 0x195f298, %eax\n" /* line 632 */
+        "movl imp_sv_maxPing, %eax\n" /* line 632 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -3231,7 +3231,7 @@ EXE_SERVER_IS_DIFFERENT_VER%s
         "movl %edi, -0x78(%ebp)\n"
         "movzwl -0x516(%ebp), %edx\n"
         "movw %dx, -0x70(%ebp)\n"
-        "movl $0x2ae5c0, 0x10(%esp)\n" /* "error
+        "movl $str_002ae5c0, 0x10(%esp)\n" /* "error
 EXE_ERR_LOW_PING_ONLY" */
         "movl %edi, 4(%esp)\n"
         "movl -0x74(%ebp), %eax\n"
@@ -3243,13 +3243,13 @@ EXE_ERR_LOW_PING_ONLY" */
         "movl %ebx, 8(%esp)\n" /* line 635 | ping */
         "movl -0x50c(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae5dc, (%esp)\n" /* "Client %i rejected on a too high ping: %i
+        "movl $str_002ae5dc, (%esp)\n" /* "Client %i rejected on a too high ping: %i
 " */
         "calll Com_DPrintf\n"
         "jmp .Lf17cf24_0017d05c\n"
         /* } scope */
         ".Lf17cf24_0017d849:\n"
-        "movl 0x195f2c0, %eax\n" /* line 683 */
+        "movl imp_sv_privateClients, %eax\n" /* line 683 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "movl %eax, -0x520(%ebp)\n" /* startIndex */
@@ -3267,7 +3267,7 @@ EXE_ERR_LOW_PING_ONLY" */
         "movl %edi, -0x48(%ebp)\n"
         "movzwl -0x516(%ebp), %edx\n"
         "movw %dx, -0x40(%ebp)\n"
-        "movl $0x2ae678, 0x10(%esp)\n" /* "error
+        "movl $str_002ae678, 0x10(%esp)\n" /* "error
 EXE_SERVERISFULL" */
         "movl %edi, 4(%esp)\n"
         "movl -0x44(%ebp), %eax\n"
@@ -3276,7 +3276,7 @@ EXE_SERVERISFULL" */
         "movl %eax, 0xc(%esp)\n"
         "movl $1, (%esp)\n"
         "calll NET_OutOfBandPrint\n"
-        "movl $0x2ae690, (%esp)\n" /* line 703 */
+        "movl $str_002ae690, (%esp)\n" /* line 703 */
         "calll Com_DPrintf\n"
         /* } scope */
         "addl $0x54c, %esp\n" /* line 789 */
@@ -3290,10 +3290,10 @@ EXE_SERVERISFULL" */
         "movl -0x520(%ebp), %esi\n" /* line 687 | startIndex, count */
         "jmp .Lf17cf24_0017d3c7\n"
         ".Lf17cf24_0017d8de:\n"
-        "movl 0x195f284, %eax\n" /* line 577 */
+        "movl imp_svs, %eax\n" /* line 577 */
         "movl 4(%eax), %edx\n"
         "subl 0x20d14(%ebx), %edx\n" /* version */
-        "movl 0x195f2a0, %eax\n"
+        "movl imp_sv_reconnectlimit, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %eax\n"
         "leal (%eax, %eax, 4), %eax\n"
@@ -3320,7 +3320,7 @@ EXE_SERVERISFULL" */
         "movl %eax, 8(%esp)\n"
         "calll NET_AdrToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae504, (%esp)\n" /* "%s:reconnect rejected : too soon
+        "movl $str_002ae504, (%esp)\n" /* "%s:reconnect rejected : too soon
 " */
         "calll Com_DPrintf\n"
         "jmp .Lf17cf24_0017d05c\n"
@@ -3331,11 +3331,11 @@ EXE_SERVERISFULL" */
         "movl %eax, 8(%esp)\n"
         "leal 0x20c48(%ebx), %eax\n" /* ping */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae63c, (%esp)\n" /* "Going from CS_FREE to CS_CONNECTED for %s (num %i guid %i)
+        "movl $str_002ae63c, (%esp)\n" /* "Going from CS_FREE to CS_CONNECTED for %s (num %i guid %i)
 " */
         "calll Com_Printf\n"
         "movl $2, (%ebx)\n" /* line 757 | ping */
-        "movl 0x195f284, %edx\n" /* line 758 */
+        "movl imp_svs, %edx\n" /* line 758 */
         "movl 4(%edx), %eax\n"
         "movl %eax, 0x20d18(%ebx)\n" /* ping */
         "movl 4(%edx), %eax\n" /* line 759 */
@@ -3345,7 +3345,7 @@ EXE_SERVERISFULL" */
         "movl %ebx, (%esp)\n" /* line 762 | ping */
         "calll SV_UserinfoChanged\n"
         "leal (%esi, %esi, 4), %eax\n" /* line 765 | count */
-        "movl 0x195f284, %edx\n"
+        "movl imp_svs, %edx\n"
         "movl $0, 0x78(%edx, %eax, 8)\n"
         "movzbl -0x511(%ebp), %eax\n" /* line 768 */
         "movb %al, -0x1d(%ebp)\n"
@@ -3358,7 +3358,7 @@ EXE_SERVERISFULL" */
         "movl %edi, -0x24(%ebp)\n"
         "movzwl -0x516(%ebp), %eax\n"
         "movw %ax, -0x1c(%ebp)\n"
-        "movl $0x2a949c, 0x10(%esp)\n" /* "connectResponse" */
+        "movl $str_002a949c, 0x10(%esp)\n" /* "connectResponse" */
         "movl %edi, 4(%esp)\n"
         "movl -0x20(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -3367,7 +3367,7 @@ EXE_SERVERISFULL" */
         "movl $1, (%esp)\n"
         "calll NET_OutOfBandPrint\n"
         "movl $0xffffffff, 0x2081c(%ebx)\n" /* line 773 | ping */
-        "movl 0x195f290, %eax\n" /* line 778 */
+        "movl imp_sv_maxclients, %eax\n" /* line 778 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* ping */
         "testl %ebx, %ebx\n" /* ping */
@@ -3379,7 +3379,7 @@ EXE_SERVERISFULL" */
         "calll SV_Heartbeat_f\n" /* line 787 */
         "jmp .Lf17cf24_0017d05c\n"
         ".Lf17cf24_0017da75:\n"
-        "movl 0x195f284, %eax\n" /* line 778 */
+        "movl imp_svs, %eax\n" /* line 778 */
         "movl 0xc(%eax), %edx\n"
         "xorl %ecx, %ecx\n"
         "xorl %esi, %esi\n" /* count */
@@ -3414,7 +3414,7 @@ EXE_SERVERISFULL" */
         "movl %eax, 8(%esp)\n"
         "calll NET_AdrToString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae608, (%esp)\n" /* "%s:reconnect
+        "movl $str_002ae608, (%esp)\n" /* "%s:reconnect
 " */
         "calll Com_Printf\n"
         "cmpl $1, (%ebx)\n" /* line 655 | ping */
@@ -3435,7 +3435,7 @@ EXE_SERVERISFULL" */
         "movl %edi, -0x84(%ebp)\n"
         "movzwl -0x516(%ebp), %eax\n"
         "movw %ax, -0x7c(%ebp)\n"
-        "movl $0x2ae578, 0x10(%esp)\n" /* "error
+        "movl $str_002ae578, 0x10(%esp)\n" /* "error
 EXE_ERR_HIGH_PING_ONLY" */
         "movl %edi, 4(%esp)\n"
         "movl -0x80(%ebp), %eax\n"
@@ -3446,7 +3446,7 @@ EXE_ERR_HIGH_PING_ONLY" */
         "calll NET_OutOfBandPrint\n"
         "movl -0x50c(%ebp), %edx\n" /* line 629 */
         "movl %edx, 4(%esp)\n"
-        "movl $0x2ae598, (%esp)\n" /* "Client %i rejected on a too low ping
+        "movl $str_002ae598, (%esp)\n" /* "Client %i rejected on a too low ping
 " */
         "calll Com_DPrintf\n"
         "jmp .Lf17cf24_0017d05c\n"
@@ -3462,7 +3462,7 @@ EXE_ERR_HIGH_PING_ONLY" */
         "movl %edi, -0xa8(%ebp)\n"
         "movzwl -0x516(%ebp), %eax\n"
         "movw %ax, -0xa0(%ebp)\n"
-        "movl $0x2ae528, 0x10(%esp)\n" /* "error
+        "movl $str_002ae528, 0x10(%esp)\n" /* "error
 EXE_BAD_CHALLENGE" */
         "movl %edi, 4(%esp)\n"
         "movl -0xa4(%ebp), %eax\n"
@@ -3487,9 +3487,9 @@ void SV_FreeClients(void)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f284, %ecx\n" /* line 504 */
+        "movl imp_svs, %ecx\n" /* line 504 */
         "movl 0xc(%ecx), %ebx\n" /* cl */
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %edi\n"
         "testl %edi, %edi\n"
@@ -3508,7 +3508,7 @@ void SV_FreeClients(void)
         "movl (%edx), %eax\n"
         "cmpl 8(%eax), %esi\n" /* i */
         "jl .Lf17dc0c_0017dc31\n"
-        "movl 0x195f284, %ecx\n"
+        "movl imp_svs, %ecx\n"
         "movl 0xc(%ecx), %eax\n"
         "movl %eax, (%esp)\n" /* line 510 */
         "calll Z_VirtualFreeInternal\n"
@@ -3573,14 +3573,14 @@ void SV_StopDownload_f(client_t *cl)
         ".Lf17dc7c_0017dcdb:\n"
         "leal 0x20c68(%ebx), %eax\n" /* line 1093 | cl */
         "movl %eax, 8(%esp)\n"
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl %ebx, %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae6a8, (%esp)\n" /* "clientDownload: %d : file "%s" aborted
+        "movl $str_002ae6a8, (%esp)\n" /* "clientDownload: %d : file "%s" aborted
 " */
         "calll Com_DPrintf\n"
         "movl 0x20ca8(%ebx), %eax\n" /* line 1063 */
@@ -3611,7 +3611,7 @@ void SV_NextDownload_f(client_t *cl)
         "calll atoi\n"
         "cmpl 0x20cb4(%ebx), %eax\n" /* line 1146 | cl */
         "je .Lf17dd22_0017dd60\n"
-        "movl $0x2ae734, 4(%esp)\n" /* line 1166 */
+        "movl $str_002ae734, 4(%esp)\n" /* line 1166 */
         "movl %ebx, (%esp)\n" /* cl */
         "calll SV_DropClient\n"
         /* } scope */
@@ -3623,13 +3623,13 @@ void SV_NextDownload_f(client_t *cl)
         /* { scope 1 */
         ".Lf17dd22_0017dd60:\n"
         "movl %eax, 8(%esp)\n" /* line 1148 */
-        "movl 0x195f284, %esi\n"
+        "movl imp_svs, %esi\n"
         "movl %ebx, %eax\n" /* cl */
         "subl 0xc(%esi), %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae6d0, (%esp)\n" /* "clientDownload: %d : client acknowledge of block %d
+        "movl $str_002ae6d0, (%esp)\n" /* "clientDownload: %d : client acknowledge of block %d
 " */
         "calll Com_DPrintf\n"
         "movl 0x20cb4(%ebx), %edx\n" /* line 1151 | cl */
@@ -3647,7 +3647,7 @@ void SV_NextDownload_f(client_t *cl)
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae708, (%esp)\n" /* "clientDownload: %d : file "%s" completed
+        "movl $str_002ae708, (%esp)\n" /* "clientDownload: %d : file "%s" completed
 " */
         "calll Com_Printf\n"
         "movl 0x20ca8(%ebx), %eax\n" /* line 1063 */
@@ -3799,7 +3799,7 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "jle .Lf17ded4_0017e288\n"
         "cmpl $0x20, -0x3c0(%ebp)\n" /* line 1953 | cmdCount */
         "jle .Lf17ded4_0017df6f\n"
-        "movl $0x2ae754, (%esp)\n" /* line 1956 */
+        "movl $str_002ae754, (%esp)\n" /* line 1956 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x3cc, %esp\n" /* line 2142 */
@@ -3813,7 +3813,7 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "movl 8(%ebp), %eax\n" /* line 1963 | cl */
         "movl 0x20818(%eax), %eax\n"
         "movl %eax, -0x3bc(%ebp)\n"
-        "movl 0x195ee80, %eax\n"
+        "movl imp_sv, %eax\n"
         "movl 0xc(%eax), %edx\n"
         "xorl %edx, -0x3bc(%ebp)\n"
         "movl $0x20, 4(%esp)\n" /* line 1965 */
@@ -3827,7 +3827,7 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "movl %eax, (%esp)\n"
         "calll Com_HashKey\n"
         "xorl %eax, -0x3bc(%ebp)\n"
-        "movl 0x195f284, %eax\n" /* line 1975 */
+        "movl imp_svs, %eax\n" /* line 1975 */
         "movl 8(%ebp), %edx\n" /* cl */
         "subl 0xc(%eax), %edx\n"
         "movl %edx, %eax\n"
@@ -3885,14 +3885,14 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "subl %ecx, %eax\n"
         "shll $4, %eax\n"
         "addl %edx, %eax\n"
-        "movl 0x195f284, %esi\n" /* ps */
+        "movl imp_svs, %esi\n" /* ps */
         "movl 4(%esi), %edx\n" /* ps */
         "movl 8(%ebp), %ecx\n" /* cl */
         "movl %edx, 0x233e0(%ecx, %eax, 4)\n"
         "cmpl $3, (%ecx)\n" /* line 2094 */
         "je .Lf17ded4_0017e1c5\n"
         ".Lf17ded4_0017e0a9:\n"
-        "movl 0x195f2e0, %eax\n" /* line 2104 */
+        "movl imp_sv_pure, %eax\n" /* line 2104 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf17ded4_0017e0e3\n"
@@ -3959,14 +3959,14 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "jne .Lf17ded4_0017e10f\n"
         "movl %edx, 4(%esp)\n" /* line 1906 */
         "movl %ecx, %eax\n"
-        "movl 0x195f284, %edx\n"
+        "movl imp_svs, %edx\n"
         "subl 0xc(%edx), %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
         "movl %eax, (%esp)\n"
         "calll G_SetLastServerTime\n"
         "movl 8(%ebp), %eax\n" /* line 1908 | cl */
-        "movl 0x195f284, %ecx\n"
+        "movl imp_svs, %ecx\n"
         "subl 0xc(%ecx), %eax\n"
         "sarl $2, %eax\n"
         "imull $0x3789a4eb, %eax, %eax\n"
@@ -3978,7 +3978,7 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "movl %ecx, %eax\n" /* line 1023 */
         "addl $0x20c48, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
+        "movl $str_002ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
 " */
         "calll Com_DPrintf\n"
         "movl 8(%ebp), %eax\n" /* line 1024 | cl */
@@ -4018,11 +4018,11 @@ void SV_UserMove(client_t *cl, msg_t *msg, qboolean delta)
         "jmp .Lf17ded4_0017e0a9\n"
         /* } scope */
         ".Lf17ded4_0017e288:\n"
-        "movl $0x2ae744, (%esp)\n" /* line 1949 */
+        "movl $str_002ae744, (%esp)\n" /* line 1949 */
         "calll Com_Printf\n"
         "jmp .Lf17ded4_0017df0a\n"
         ".Lf17ded4_0017e299:\n"
-        "movl $0x2ae774, 4(%esp)\n" /* line 2106 */
+        "movl $str_002ae774, 4(%esp)\n" /* line 2106 */
         "movl %ecx, (%esp)\n"
         "calll SV_DropClient\n"
         "jmp .Lf17ded4_0017df0a\n"
@@ -4059,7 +4059,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "calll MSG_ReadBitsCompress\n"
         "movl %eax, -0x3c(%ebp)\n"
         "movl 0x765f8(%edi), %edx\n" /* line 2183 | cl */
-        "movl 0x195f5dc, %eax\n"
+        "movl imp_sv_serverId_value, %eax\n"
         "movl (%eax), %eax\n"
         "cmpl %eax, %edx\n"
         "je .Lf17e2ae_0017e319\n"
@@ -4086,7 +4086,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "movl %eax, %esi\n" /* s */
         "cmpl 0x20840(%edi), %ebx\n" /* line 1836 | seq */
         "jle .Lf17e2ae_0017e437\n"
-        "movl 0x195f2cc, %eax\n" /* line 1841 */
+        "movl imp_sv_showCommands, %eax\n" /* line 1841 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf17e2ae_0017e50e\n"
@@ -4100,10 +4100,10 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "movl %eax, 8(%esp)\n"
         "leal 0x20c48(%edi), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae7d0, (%esp)\n" /* "Client %s lost %i clientCommands
+        "movl $str_002ae7d0, (%esp)\n" /* "Client %s lost %i clientCommands
 " */
         "calll Com_Printf\n"
-        "movl $0x2ae7f4, 4(%esp)\n" /* line 1848 */
+        "movl $str_002ae7f4, 4(%esp)\n" /* line 1848 */
         "movl %edi, (%esp)\n"
         "calll SV_DropClient\n"
         /* } scope */
@@ -4120,14 +4120,14 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         ".Lf17e2ae_0017e3be:\n"
         "movl $5, 8(%esp)\n" /* line 1853 */
         "movl %esi, 4(%esp)\n" /* s */
-        "movl $0x2ae810, (%esp)\n" /* "team " */
+        "movl $str_002ae810, (%esp)\n" /* "team " */
         "calll I_strncmp\n"
         "testl %eax, %eax\n"
         "jne .Lf17e2ae_0017e5a4\n"
         ".Lf17e2ae_0017e3de:\n"
         "xorl %edx, %edx\n"
         ".Lf17e2ae_0017e3e0:\n"
-        "movl 0x195ecb4, %eax\n" /* line 1866 */
+        "movl imp_legacyHacks, %eax\n" /* line 1866 */
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -4144,7 +4144,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "calll SV_ExecuteClientCommand\n"
         "movl %ebx, 0x20840(%edi)\n" /* line 1880 | seq */
         "movl %esi, 0xc(%esp)\n" /* line 1881 | s */
-        "movl $0x216058, 8(%esp)\n" /* "%s" */
+        "movl $str_00216058, 8(%esp)\n" /* "%s" */
         "movl $0x400, 4(%esp)\n"
         "leal 0x20844(%edi), %eax\n"
         "movl %eax, (%esp)\n"
@@ -4171,12 +4171,12 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "jle .Lf17e2ae_0017e3b3\n"
         "leal 0x20c48(%edi), %eax\n" /* line 2198 | cl */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae794, (%esp)\n" /* "%s : dropped gamestate, resending
+        "movl $str_002ae794, (%esp)\n" /* "%s : dropped gamestate, resending
 " */
         "calll Com_DPrintf\n"
         "movl %edi, (%esp)\n" /* line 2199 | cl */
         "calll SV_SendClientGameState\n"
-        "movl 0x195f354, %eax\n" /* line 2201 */
+        "movl imp_net_lanauthorize, %eax\n" /* line 2201 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf17e2ae_0017e4ce\n"
@@ -4217,18 +4217,18 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         ".Lf17e2ae_0017e50e:\n"
         "movl %esi, 8(%esp)\n" /* line 1842 | s */
         "movl %ebx, 4(%esp)\n" /* seq */
-        "movl $0x2ae7b8, (%esp)\n" /* "clientCommand: %i : %s
+        "movl $str_002ae7b8, (%esp)\n" /* "clientCommand: %i : %s
 " */
         "calll Com_Printf\n"
         "jmp .Lf17e2ae_0017e377\n"
         ".Lf17e2ae_0017e527:\n"
         "cmpl $3, (%edi)\n" /* line 1866 */
         "jle .Lf17e2ae_0017e3f2\n"
-        "movl 0x195f2dc, %eax\n"
+        "movl imp_sv_floodProtect, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf17e2ae_0017e3f2\n"
-        "movl 0x195f284, %eax\n"
+        "movl imp_svs, %eax\n"
         "movl 4(%eax), %eax\n"
         "cmpl 0x20d0c(%edi), %eax\n"
         "jge .Lf17e2ae_0017e3f2\n"
@@ -4239,7 +4239,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "movl %eax, 8(%esp)\n"
         "leal 0x20c48(%edi), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae824, (%esp)\n" /* "client text ignored for %s: %s
+        "movl $str_002ae824, (%esp)\n" /* "client text ignored for %s: %s
 " */
         "calll Com_DPrintf\n"
         "xorl %edx, %edx\n"
@@ -4247,7 +4247,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         ".Lf17e2ae_0017e587:\n"
         "movl $1, %edx\n" /* line 1875 */
         ".Lf17e2ae_0017e58c:\n"
-        "movl 0x195f284, %eax\n" /* line 1876 */
+        "movl imp_svs, %eax\n" /* line 1876 */
         "movl 4(%eax), %eax\n"
         "addl $0x320, %eax\n"
         "movl %eax, 0x20d0c(%edi)\n"
@@ -4255,13 +4255,13 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         ".Lf17e2ae_0017e5a4:\n"
         "movl $6, 8(%esp)\n" /* line 1853 */
         "movl %esi, 4(%esp)\n" /* s */
-        "movl $0x2ae818, (%esp)\n" /* "score " */
+        "movl $str_002ae818, (%esp)\n" /* "score " */
         "calll I_strncmp\n"
         "testl %eax, %eax\n"
         "je .Lf17e2ae_0017e3de\n"
         "movl $3, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* s */
-        "movl $0x2ae820, (%esp)\n" /* "mr " */
+        "movl $str_002ae820, (%esp)\n" /* "mr " */
         "calll I_strncmp\n"
         "testl %eax, %eax\n"
         "je .Lf17e2ae_0017e3de\n"
@@ -4274,11 +4274,11 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         /* { scope 2 */
         "leal 0x20c48(%edi), %eax\n" /* line 1023 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
+        "movl $str_002ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
 " */
         "calll Com_DPrintf\n"
         "movl $4, (%edi)\n" /* line 1024 */
-        "movl 0x195f284, %esi\n" /* line 1027 */
+        "movl imp_svs, %esi\n" /* line 1027 */
         "movl %edi, %ebx\n"
         "subl 0xc(%esi), %ebx\n"
         "sarl $2, %ebx\n"
@@ -4298,7 +4298,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "jmp .Lf17e2ae_0017e3b3\n"
         /* } scope */
         ".Lf17e2ae_0017e663:\n"
-        "movl 0x195f2e0, %eax\n" /* line 2224 */
+        "movl imp_sv_pure, %eax\n" /* line 2224 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf17e2ae_0017e6b0\n"
@@ -4309,13 +4309,13 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "je .Lf17e2ae_0017e6e9\n"
         "cmpl $3, %esi\n" /* line 2239 | c */
         "je .Lf17e2ae_0017e3b3\n"
-        "movl 0x195f284, %eax\n" /* line 2240 */
+        "movl imp_svs, %eax\n" /* line 2240 */
         "subl 0xc(%eax), %edi\n" /* cl */
         "sarl $2, %edi\n" /* cl */
         "imull $0x3789a4eb, %edi, %eax\n" /* cl */
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* c */
-        "movl $0x2ae860, (%esp)\n" /* "WARNING: bad command byte %i for client %i
+        "movl $str_002ae860, (%esp)\n" /* "WARNING: bad command byte %i for client %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf17e2ae_0017e3b3\n"
@@ -4323,7 +4323,7 @@ void SV_ExecuteClientMessage(client_t *cl, msg_t *msg)
         "cmpl $2, 0x6e5b0(%edi)\n" /* line 2224 | cl */
         "jne .Lf17e2ae_0017e670\n"
         "movl $0xffffffff, 0x20d18(%edi)\n" /* line 2226 | cl */
-        "movl $0x2ae844, 4(%esp)\n" /* line 2227 */
+        "movl $str_002ae844, 4(%esp)\n" /* line 2227 */
         "movl %edi, (%esp)\n" /* cl */
         "calll SV_DropClient\n"
         "movl $4, (%edi)\n" /* line 2228 | cl */
@@ -4360,9 +4360,9 @@ gentity_t * SV_AddTestClient(void)
         "pushl %ebx\n"
         "subl $0x48c, %esp\n"
         /* { scope 1 */
-        "movl 0x195f284, %eax\n" /* line 2260 */
+        "movl imp_svs, %eax\n" /* line 2260 */
         "movl 0xc(%eax), %edx\n"
-        "movl 0x195f290, %eax\n"
+        "movl imp_sv_maxclients, %eax\n"
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
@@ -4384,7 +4384,7 @@ gentity_t * SV_AddTestClient(void)
         "movl $0x73, 0xc(%esp)\n" /* line 2271 */
         "movl botport, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2ae88c, 4(%esp)\n" /* "connect "\cg_predictItems\1\cl_anonymous\0\color\4\head\defa" */
+        "movl $str_002ae88c, 4(%esp)\n" /* "connect "\cg_predictItems\1\cl_anonymous\0\color\4\head\defa" */
         "leal -0x464(%ebp), %ebx\n" /* file */
         "movl %ebx, (%esp)\n"
         "calll sprintf\n"
@@ -4405,10 +4405,10 @@ gentity_t * SV_AddTestClient(void)
         "movl $0, 4(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "calll SV_DirectConnect\n"
-        "movl 0x195f284, %eax\n" /* line 2281 */
+        "movl imp_svs, %eax\n" /* line 2281 */
         "movl 0xc(%eax), %eax\n"
         "movl %eax, -0x470(%ebp)\n"
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl 8(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
@@ -4432,12 +4432,12 @@ gentity_t * SV_AddTestClient(void)
         "movl -0x470(%ebp), %eax\n" /* line 1023 */
         "addl $0x20c48, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
+        "movl $str_002ae204, (%esp)\n" /* "Going from CS_PRIMED to CS_ACTIVE for %s
 " */
         "calll Com_DPrintf\n"
         "movl -0x470(%ebp), %eax\n" /* line 1024 */
         "movl $4, (%eax)\n"
-        "movl 0x195f284, %esi\n" /* line 1027 */
+        "movl imp_svs, %esi\n" /* line 1027 */
         "movl %eax, %ebx\n"
         "subl 0xc(%esi), %ebx\n"
         "sarl $2, %ebx\n"
@@ -4544,7 +4544,7 @@ gentity_t * SV_AddTestClient(void)
         "movl %ecx, %edx\n"
         "jmp .Lf17e722_0017e821\n"
         ".Lf17e722_0017e9f0:\n"
-        "movl 0x195f290, %edx\n"
+        "movl imp_sv_maxclients, %edx\n"
         "movl (%edx), %eax\n"
         "movl -0x46c(%ebp), %edx\n"
         "jmp .Lf17e722_0017e821\n"

@@ -9,13 +9,13 @@
  */
 
 extern game_hudelem_t g_hudelems[1024]; /* 0x0 */
-static const game_hudelem_field_t fields[16]; /* 0x333500 */
-static const char * g_he_font[3]; /* 0x3144d8 */
-static const char * g_he_alignx[3]; /* 0x3144cc */
-static const char * g_he_aligny[3]; /* 0x3144c0 */
-static const char * g_he_horzalign[8]; /* 0x3144a0 */
-static const char * g_he_vertalign[8]; /* 0x314480 */
-static const BuiltinMethodDef methods[18]; /* 0x333420 */
+static const game_hudelem_field_t fields[16]; /* fields */
+static const char * g_he_font[3]; /* g_he_font */
+static const char * g_he_alignx[3]; /* g_he_alignx */
+static const char * g_he_aligny[3]; /* g_he_aligny */
+static const char * g_he_horzalign[8]; /* g_he_horzalign */
+static const char * g_he_vertalign[8]; /* g_he_vertalign */
+static const BuiltinMethodDef methods[18]; /* methods */
 
 extern void Scr_AddFloat(float value);
 extern float Scr_GetFloat(unsigned int index);
@@ -115,7 +115,7 @@ void HudElem_SetEnumString(const char * *names, int nameCount)
         "movl (%edi), %eax\n" /* line 306 | f, hud */
         "movl %eax, 0xc(%esp)\n" /* hud */
         "movl %esi, 8(%esp)\n" /* selectedName */
-        "movl $0x2b4d54, 4(%esp)\n" /* ""%s" is not a valid value for hudelem field "%s"
+        "movl $str_002b4d54, 4(%esp)\n" /* ""%s" is not a valid value for hudelem field "%s"
 Should be o" */
         "leal -0x818(%ebp), %esi\n" /* errormsg, selectedName */
         "movl %esi, (%esp)\n" /* selectedName */
@@ -140,7 +140,7 @@ Should be o" */
         "movl -0x820(%ebp), %edx\n" /* line 309 */
         "movl (%edx, %ebx, 4), %eax\n" /* hud */
         "movl %eax, 4(%esp)\n" /* hud */
-        "movl $0x2abc2c, (%esp)\n" /* " %s" */
+        "movl $str_002abc2c, (%esp)\n" /* " %s" */
         "calll va\n"
         "movl $0x800, 8(%esp)\n"
         "movl %eax, 4(%esp)\n" /* hud */
@@ -467,7 +467,7 @@ void Scr_FreeHudElemConstStrings(game_hudelem_t *hud)
         "movl fields, %ecx\n" /* line 624 */
         "testl %ecx, %ecx\n"
         "je .Lf1b0e1e_001b0e68\n"
-        "movl $0x333508, %ebx\n"
+        "movl $fields+8, %ebx\n"
         "jmp .Lf1b0e1e_001b0e44\n"
         ".Lf1b0e1e_001b0e3a:\n"
         "movl 0x14(%ebx), %eax\n"
@@ -510,7 +510,7 @@ void GScr_AddFieldsForHudElems(void)
         "testl %ebx, %ebx\n"
         "je .Lf1b0e70_001b0ecb\n"
         "xorl %edi, %edi\n" /* line 713 */
-        "movl $0x33351c, %esi\n"
+        "movl $fields+28, %esi\n"
         ".Lf1b0e70_001b0e8a:\n"
         "movl %edi, %ecx\n" /* line 721 */
         "sarl $2, %ecx\n"
@@ -591,7 +591,7 @@ BuiltinMethod HudElem_GetMethod(const char * *pName)
         "movl methods(%edi), %eax\n" /* line 1228 */
         "movl 8(%ebp), %edx\n" /* pName */
         "movl %eax, (%edx)\n"
-        "movl 0x333424(%edi), %eax\n" /* line 1229 */
+        "movl methods+4(%edi), %eax\n" /* line 1229 */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1234 */
         "popl %ebx\n"
@@ -627,11 +627,11 @@ void HudElem_UpdateClient(gclient_t *client, int clientNum, hudelem_update_t whi
         "testb %al, %al\n"
         "je .Lf1b0f38_001b10fc\n"
         "xorl %esi, %esi\n" /* line 1279 | currentCount */
-        "movl $0x1937f88, %ebx\n" /* which */
+        "movl $g_hudelems+136, %ebx\n" /* which */
         "jmp .Lf1b0f38_001b0f7d\n"
         ".Lf1b0f38_001b0f6f:\n"
         "addl $0x8c, %ebx\n" /* line 1265 | which */
-        "cmpl $0x195af88, %ebx\n" /* line 1263 | which */
+        "cmpl $__ZN12UI_Component1gE+104, %ebx\n" /* line 1263 | which */
         "je .Lf1b0f38_001b0fe7\n"
         ".Lf1b0f38_001b0f7d:\n"
         "movl -0x88(%ebx), %eax\n" /* line 1265 | which */
@@ -664,7 +664,7 @@ void HudElem_UpdateClient(gclient_t *client, int clientNum, hudelem_update_t whi
         "movl %edx, (%esp)\n"
         "calll memcpy\n"
         "addl $0x8c, %ebx\n" /* line 1265 | which */
-        "cmpl $0x195af88, %ebx\n" /* line 1263 | which */
+        "cmpl $__ZN12UI_Component1gE+104, %ebx\n" /* line 1263 | which */
         "jne .Lf1b0f38_001b0f7d\n"
         /* } scope */
         ".Lf1b0f38_001b0fe7:\n"
@@ -695,11 +695,11 @@ void HudElem_UpdateClient(gclient_t *client, int clientNum, hudelem_update_t whi
         "je .Lf1b0f38_001b10d8\n"
         "movl $0, -0x1c(%ebp)\n" /* line 1267 | archivalCount */
         "xorl %esi, %esi\n" /* currentCount */
-        "movl $0x1937f88, %ebx\n" /* which */
+        "movl $g_hudelems+136, %ebx\n" /* which */
         "jmp .Lf1b0f38_001b105f\n"
         ".Lf1b0f38_001b1051:\n"
         "addl $0x8c, %ebx\n" /* line 1265 | which */
-        "cmpl $0x195af88, %ebx\n" /* line 1263 | which */
+        "cmpl $__ZN12UI_Component1gE+104, %ebx\n" /* line 1263 | which */
         "je .Lf1b0f38_001b0fe7\n"
         ".Lf1b0f38_001b105f:\n"
         "movl -0x88(%ebx), %eax\n" /* line 1265 | which */
@@ -744,21 +744,21 @@ void HudElem_UpdateClient(gclient_t *client, int clientNum, hudelem_update_t whi
         "jmp .Lf1b0f38_001b10a4\n"
         ".Lf1b0f38_001b10d8:\n"
         "xorl %esi, %esi\n" /* line 1295 | currentCount */
-        "movl $0x1937f88, %ebx\n" /* which */
+        "movl $g_hudelems+136, %ebx\n" /* which */
         ".Lf1b0f38_001b10df:\n"
         "movl -0x88(%ebx), %eax\n" /* line 1265 | which */
         "testl %eax, %eax\n"
         "jne .Lf1b0f38_001b1112\n"
         ".Lf1b0f38_001b10e9:\n"
         "addl $0x8c, %ebx\n" /* which */
-        "cmpl $0x195af88, %ebx\n" /* line 1263 | which */
+        "cmpl $__ZN12UI_Component1gE+104, %ebx\n" /* line 1263 | which */
         "jne .Lf1b0f38_001b10df\n"
         "jmp .Lf1b0f38_001b0fe7\n"
         ".Lf1b0f38_001b10fc:\n"
-        "movl $0x1937f88, %eax\n" /* line 1258 */
+        "movl $g_hudelems+136, %eax\n" /* line 1258 */
         ".Lf1b0f38_001b1101:\n"
         "addl $0x8c, %eax\n"
-        "cmpl $0x195af88, %eax\n" /* line 1263 */
+        "cmpl $__ZN12UI_Component1gE+104, %eax\n" /* line 1263 */
         "jne .Lf1b0f38_001b1101\n"
         "jmp .Lf1b0f38_001b0fe7\n"
         ".Lf1b0f38_001b1112:\n"
@@ -810,12 +810,12 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         "calll Scr_GetVector\n"
         "movss -0x14(%ebp), %xmm1\n" /* line 382 | color */
         "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "pxor %xmm2, %xmm2\n"
         "ucomiss %xmm0, %xmm2\n"
         "ja .Lf1b1164_001b12f0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         /* { scope 2 */
         ".Lf1b1164_001b11ae:\n"
         "ucomiss %xmm0, %xmm2\n"
@@ -823,7 +823,7 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         "movaps %xmm2, %xmm0\n"
         /* } scope */
         ".Lf1b1164_001b11ba:\n"
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm2, -0x38(%ebp)\n"
         "calll floorf\n"
@@ -832,12 +832,12 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         "movb %al, 0x20(%ebx)\n" /* hud */
         "movss -0x10(%ebp), %xmm1\n" /* line 383 */
         "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss -0x38(%ebp), %xmm2\n"
         "ucomiss %xmm0, %xmm2\n"
         "ja .Lf1b1164_001b12d4\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         /* { scope 2 */
         ".Lf1b1164_001b120a:\n"
         "ucomiss %xmm0, %xmm2\n"
@@ -845,7 +845,7 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         "movaps %xmm2, %xmm0\n"
         /* } scope */
         ".Lf1b1164_001b1216:\n"
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "movss %xmm2, -0x38(%ebp)\n"
         "calll floorf\n"
@@ -854,19 +854,19 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         "movb %al, 0x21(%ebx)\n" /* hud */
         "movss -0xc(%ebp), %xmm1\n" /* line 384 */
         "movaps %xmm1, %xmm0\n" /* line 45 */
-        "subss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "subss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss -0x38(%ebp), %xmm2\n"
         "ucomiss %xmm0, %xmm2\n"
         "ja .Lf1b1164_001b12bb\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         /* { scope 2 */
         ".Lf1b1164_001b1262:\n"
         "ucomiss %xmm0, %xmm2\n"
         "ja .Lf1b1164_001b128d\n"
         "movaps %xmm2, %xmm0\n"
         /* } scope */
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x24(%ebp)\n"
@@ -881,9 +881,9 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         /* { scope 2 */
         ".Lf1b1164_001b128d:\n"
         "movaps %xmm1, %xmm0\n" /* line 45 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         /* } scope */
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x24(%ebp)\n"
@@ -902,7 +902,7 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         /* { scope 2 */
         ".Lf1b1164_001b12c4:\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "jmp .Lf1b1164_001b1216\n"
         /* } scope */
         ".Lf1b1164_001b12d4:\n"
@@ -912,7 +912,7 @@ void HudElem_SetColor(game_hudelem_t *hud, int offset)
         /* { scope 2 */
         ".Lf1b1164_001b12e0:\n"
         "movaps %xmm1, %xmm0\n"
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "jmp .Lf1b1164_001b11ba\n"
         /* } scope */
         ".Lf1b1164_001b12f0:\n"
@@ -935,19 +935,19 @@ void HudElem_SetAlpha(game_hudelem_t *hud, int offset)
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n"
         "movss -0x1c(%ebp), %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 45 | 1.0f */
         "movaps %xmm1, %xmm0\n"
         "subss %xmm3, %xmm0\n"
         "pxor %xmm2, %xmm2\n"
         "ucomiss %xmm0, %xmm2\n"
         "ja .Lf1b12fc_001b1390\n"
         "movaps %xmm3, %xmm1\n"
-        "movss 0x2ed5dc, %xmm0\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm0\n" /* -1.0f */
         ".Lf1b12fc_001b1339:\n"
         "ucomiss %xmm0, %xmm2\n"
         "ja .Lf1b12fc_001b1363\n"
         "movaps %xmm2, %xmm0\n"
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc(%ebp)\n"
@@ -960,8 +960,8 @@ void HudElem_SetAlpha(game_hudelem_t *hud, int offset)
         /* { scope 1 */
         ".Lf1b12fc_001b1363:\n"
         "movaps %xmm1, %xmm0\n" /* line 45 */
-        "mulss 0x2ed5d4, %xmm0\n" /* 255.0f */
-        "addss 0x2ed5d8, %xmm0\n" /* line 428 | 0.5f */
+        "mulss lit4_002ed5d4, %xmm0\n" /* 255.0f */
+        "addss lit4_002ed5d8, %xmm0\n" /* line 428 | 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0xc(%ebp)\n"
@@ -1118,7 +1118,7 @@ void HudElem_ClientDisconnect(gentity_t *ent)
         "jmp .Lf1b1494_001b14b4\n"
         ".Lf1b1494_001b14a6:\n"
         "addl $0x8c, %ebx\n" /* line 232 */
-        "cmpl $0x195af00, %ebx\n" /* line 246 */
+        "cmpl $g_hudelems+143360, %ebx\n" /* line 246 */
         "je .Lf1b1494_001b14e0\n"
         ".Lf1b1494_001b14b4:\n"
         "movl (%ebx), %ecx\n" /* line 248 */
@@ -1131,7 +1131,7 @@ void HudElem_ClientDisconnect(gentity_t *ent)
         "calll Scr_FreeHudElem\n"
         "movl $0, (%ebx)\n" /* line 232 */
         "addl $0x8c, %ebx\n"
-        "cmpl $0x195af00, %ebx\n" /* line 246 */
+        "cmpl $g_hudelems+143360, %ebx\n" /* line 246 */
         "jne .Lf1b1494_001b14b4\n"
         ".Lf1b1494_001b14e0:\n"
         "addl $0x10, %esp\n" /* line 253 */
@@ -1155,7 +1155,7 @@ void HudElem_DestroyAll(void)
         "jmp .Lf1b14e8_001b1504\n"
         ".Lf1b14e8_001b14f6:\n"
         "addl $0x8c, %ebx\n" /* line 232 */
-        "cmpl $0x195af00, %ebx\n" /* line 266 */
+        "cmpl $g_hudelems+143360, %ebx\n" /* line 266 */
         "je .Lf1b14e8_001b1526\n"
         ".Lf1b14e8_001b1504:\n"
         "movl (%ebx), %eax\n" /* line 268 */
@@ -1165,7 +1165,7 @@ void HudElem_DestroyAll(void)
         "calll Scr_FreeHudElem\n"
         "movl $0, (%ebx)\n" /* line 232 */
         "addl $0x8c, %ebx\n"
-        "cmpl $0x195af00, %ebx\n" /* line 266 */
+        "cmpl $g_hudelems+143360, %ebx\n" /* line 266 */
         "jne .Lf1b14e8_001b1504\n"
         ".Lf1b14e8_001b1526:\n"
         "movl $0x23000, 8(%esp)\n" /* line 273 */
@@ -1194,7 +1194,7 @@ void HECmd_Destroy(struct scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b1548_001b157f\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "movl %ebx, (%esp)\n" /* line 231 */
@@ -1238,7 +1238,7 @@ void HECmd_SetText(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b15aa_001b1653\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         ".Lf1b15aa_001b15d1:\n"
@@ -1295,7 +1295,7 @@ void HECmd_SetPlayerNameString(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b166e_001b172d\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         ".Lf1b166e_001b1695:\n"
@@ -1340,7 +1340,7 @@ void HECmd_SetPlayerNameString(scr_entref_t entref)
         "leal g_hudelems(, %edx, 4), %ebx\n"
         "jmp .Lf1b166e_001b1695\n"
         ".Lf1b166e_001b1748:\n"
-        "movl $0x2b4dd0, 8(%ebp)\n" /* line 775 | entref */
+        "movl $str_002b4dd0, 8(%ebp)\n" /* line 775 | entref */
         /* } scope */
         "addl $0x14, %esp\n" /* line 788 */
         "popl %ebx\n"
@@ -1348,7 +1348,7 @@ void HECmd_SetPlayerNameString(scr_entref_t entref)
         /* { scope 1 */
         "jmp Com_Printf\n" /* line 775 */
         ".Lf1b166e_001b1759:\n"
-        "movl $0x2b4e08, 8(%ebp)\n" /* line 781 | entref */
+        "movl $str_002b4e08, 8(%ebp)\n" /* line 781 | entref */
         /* } scope */
         "addl $0x14, %esp\n" /* line 788 */
         "popl %ebx\n"
@@ -1374,7 +1374,7 @@ void HECmd_SetMapNameString(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b176a_001b1842\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "movl $0, (%esp)\n" /* line 825 */
@@ -1387,7 +1387,7 @@ void HECmd_SetMapNameString(scr_entref_t entref)
         "calll SV_MapExists\n"
         "testl %eax, %eax\n"
         "jne .Lf1b176a_001b17c6\n"
-        "movl $0x2b4e90, 8(%ebp)\n" /* line 835 | entref */
+        "movl $str_002b4e90, 8(%ebp)\n" /* line 835 | entref */
         /* } scope */
         "addl $0x10, %esp\n" /* line 843 */
         "popl %ebx\n"
@@ -1435,7 +1435,7 @@ void HECmd_SetMapNameString(scr_entref_t entref)
         "testl %eax, %eax\n" /* line 827 */
         "jne .Lf1b176a_001b17a8\n"
         ".Lf1b176a_001b186e:\n"
-        "movl $0x2b4e58, 8(%ebp)\n" /* line 829 | entref */
+        "movl $str_002b4e58, 8(%ebp)\n" /* line 829 | entref */
         /* } scope */
         "addl $0x10, %esp\n" /* line 843 */
         "popl %ebx\n"
@@ -1462,7 +1462,7 @@ void HECmd_SetGameTypeString(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b1880_001b194e\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "movl $0, (%esp)\n" /* line 797 */
@@ -1514,7 +1514,7 @@ void HECmd_SetGameTypeString(scr_entref_t entref)
         "testl %eax, %eax\n" /* line 799 */
         "jne .Lf1b1880_001b18be\n"
         ".Lf1b1880_001b197a:\n"
-        "movl $0x2b4ed8, 8(%ebp)\n" /* line 801 | entref */
+        "movl $str_002b4ed8, 8(%ebp)\n" /* line 801 | entref */
         /* } scope */
         "addl $0x10, %esp\n" /* line 816 */
         "popl %ebx\n"
@@ -1524,7 +1524,7 @@ void HECmd_SetGameTypeString(scr_entref_t entref)
         "jmp Com_Printf\n" /* line 801 */
         ".Lf1b1880_001b198c:\n"
         "movl %esi, 4(%esp)\n" /* line 807 | gametype */
-        "movl $0x2b4f10, (%esp)\n" /* "Invalid gametype '%s'
+        "movl $str_002b4f10, (%esp)\n" /* "Invalid gametype '%s'
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -1553,7 +1553,7 @@ void HECmd_SetShader(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b19a4_001b1a9a\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         ".Lf1b19a4_001b19cd:\n"
@@ -1563,7 +1563,7 @@ void HECmd_SetShader(scr_entref_t entref)
         "je .Lf1b19a4_001b19ea\n"
         "cmpl $3, %eax\n"
         "je .Lf1b19a4_001b19ea\n"
-        "movl $0x2b4f28, (%esp)\n" /* line 863 */
+        "movl $str_002b4f28, (%esp)\n" /* line 863 */
         "calll Scr_Error\n"
         ".Lf1b19a4_001b19ea:\n"
         "movl $0, (%esp)\n" /* line 865 */
@@ -1624,7 +1624,7 @@ void HECmd_SetShader(scr_entref_t entref)
         "jmp .Lf1b19a4_001b1a36\n"
         ".Lf1b19a4_001b1abf:\n"
         "movl %eax, 4(%esp)\n" /* line 878 */
-        "movl $0x2b4f88, (%esp)\n" /* "height %i < 0" */
+        "movl $str_002b4f88, (%esp)\n" /* "height %i < 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $2, (%esp)\n"
@@ -1632,7 +1632,7 @@ void HECmd_SetShader(scr_entref_t entref)
         "jmp .Lf1b19a4_001b1a36\n"
         ".Lf1b19a4_001b1ae4:\n"
         "movl %eax, 4(%esp)\n" /* line 875 */
-        "movl $0x2b4f78, (%esp)\n" /* "width %i < 0" */
+        "movl $str_002b4f78, (%esp)\n" /* "width %i < 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -1659,7 +1659,7 @@ void HECmd_SetTimer_Internal(void)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b1b0a_001b1c03\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         ".Lf1b1b0a_001b1b34:\n"
@@ -1667,7 +1667,7 @@ void HECmd_SetTimer_Internal(void)
         "subl $1, %eax\n" /* entref */
         "je .Lf1b1b0a_001b1b56\n"
         "movl %esi, 4(%esp)\n" /* line 905 | time */
-        "movl $0x2b4f98, (%esp)\n" /* "USAGE: <hudelem> %s(time_in_seconds);
+        "movl $str_002b4f98, (%esp)\n" /* "USAGE: <hudelem> %s(time_in_seconds);
 " */
         "calll va\n"
         "movl %eax, (%esp)\n" /* entref */
@@ -1677,7 +1677,7 @@ void HECmd_SetTimer_Internal(void)
         "calll Scr_GetFloat\n"
         "fstps -0x2c(%ebp)\n"
         "movss -0x2c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 458 | 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 458 | 1000.0f */
         "movss %xmm0, (%esp)\n"
         "calll ceilf\n"
         "fstps -0x1c(%ebp)\n"
@@ -1702,7 +1702,7 @@ void HECmd_SetTimer_Internal(void)
         "movl %eax, 0x70(%ebx)\n" /* line 157 */
         "movl $0, 0x74(%ebx)\n" /* line 158 */
         "movl %edi, (%ebx)\n" /* line 912 | type, hud */
-        "movl 0x195f6a0, %eax\n" /* line 913 | entref */
+        "movl imp_level, %eax\n" /* line 913 | entref */
         "addl 0x1ec(%eax), %esi\n" /* entref, time */
         "movl %esi, 0x68(%ebx)\n" /* time, hud */
         /* } scope */
@@ -1724,10 +1724,10 @@ void HECmd_SetTimer_Internal(void)
         "cmpl $8, %edi\n" /* line 908 | type */
         "je .Lf1b1b0a_001b1b8c\n"
         "cvtsi2ssl %esi, %xmm0\n" /* line 909 | time */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b4fc0, (%esp)\n" /* "time %g should be > 0" */
+        "movl $str_002b4fc0, (%esp)\n" /* "time %g should be > 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n" /* entref */
         "movl $0, (%esp)\n"
@@ -1744,7 +1744,7 @@ void HECmd_SetTenthsTimerUp(scr_entref_t entref)
         "pushl %ebp\n" /* line 1011 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* entref */
-        "movl $0x2b4fd8, %ecx\n" /* line 1013 */
+        "movl $str_002b4fd8, %ecx\n" /* line 1013 */
         "movl $0xa, %edx\n"
         "popl %ebp\n" /* line 1014 */
         "jmp HECmd_SetTimer_Internal\n" /* line 1013 */
@@ -1759,7 +1759,7 @@ void HECmd_SetTenthsTimer(scr_entref_t entref)
         "pushl %ebp\n" /* line 1000 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* entref */
-        "movl $0x2b4fec, %ecx\n" /* line 1002 */
+        "movl $str_002b4fec, %ecx\n" /* line 1002 */
         "movl $9, %edx\n"
         "popl %ebp\n" /* line 1003 */
         "jmp HECmd_SetTimer_Internal\n" /* line 1002 */
@@ -1774,7 +1774,7 @@ void HECmd_SetTimerUp(scr_entref_t entref)
         "pushl %ebp\n" /* line 989 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* entref */
-        "movl $0x2b4ffc, %ecx\n" /* line 991 */
+        "movl $str_002b4ffc, %ecx\n" /* line 991 */
         "movl $8, %edx\n"
         "popl %ebp\n" /* line 992 */
         "jmp HECmd_SetTimer_Internal\n" /* line 991 */
@@ -1789,7 +1789,7 @@ void HECmd_SetTimer(scr_entref_t entref)
         "pushl %ebp\n" /* line 978 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* entref */
-        "movl $0x2b5008, %ecx\n" /* line 980 */
+        "movl $str_002b5008, %ecx\n" /* line 980 */
         "movl $7, %edx\n"
         "popl %ebp\n" /* line 981 */
         "jmp HECmd_SetTimer_Internal\n" /* line 980 */
@@ -1814,7 +1814,7 @@ void HECmd_SetClock_Internal(he_type_t type)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b1cb6_001b1e55\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         ".Lf1b1cb6_001b1ce1:\n"
@@ -1825,7 +1825,7 @@ void HECmd_SetClock_Internal(he_type_t type)
         "cmpl $5, %eax\n" /* entref */
         "je .Lf1b1cb6_001b1d0a\n"
         "movl %edi, 4(%esp)\n" /* line 937 | time */
-        "movl $0x2b5014, (%esp)\n" /* "USAGE: <hudelem> %s(time_in_seconds, total_clock_time_in_sec" */
+        "movl $str_002b5014, (%esp)\n" /* "USAGE: <hudelem> %s(time_in_seconds, total_clock_time_in_sec" */
         "calll va\n"
         "movl %eax, (%esp)\n" /* entref */
         "calll Scr_Error\n"
@@ -1834,7 +1834,7 @@ void HECmd_SetClock_Internal(he_type_t type)
         "calll Scr_GetFloat\n"
         "fstps -0x3c(%ebp)\n"
         "movss -0x3c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 458 | 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 458 | 1000.0f */
         "movss %xmm0, (%esp)\n"
         "calll ceilf\n"
         "fstps -0x2c(%ebp)\n"
@@ -1846,7 +1846,7 @@ void HECmd_SetClock_Internal(he_type_t type)
         "calll Scr_GetFloat\n"
         "fstps -0x3c(%ebp)\n"
         "movss -0x3c(%ebp), %xmm0\n"
-        "mulss 0x2ed5c8, %xmm0\n" /* line 458 | 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* line 458 | 1000.0f */
         "movss %xmm0, (%esp)\n"
         "calll ceilf\n"
         "fstps -0x30(%ebp)\n"
@@ -1892,7 +1892,7 @@ void HECmd_SetClock_Internal(he_type_t type)
         "movl $0, 0x74(%ebx)\n" /* line 158 */
         "movl -0x28(%ebp), %eax\n" /* line 964 | entref */
         "movl %eax, (%ebx)\n" /* entref, hud */
-        "movl 0x195f6a0, %eax\n" /* line 965 | entref */
+        "movl imp_level, %eax\n" /* line 965 | entref */
         "addl 0x1ec(%eax), %edi\n" /* entref, time */
         "movl %edi, 0x68(%ebx)\n" /* time, hud */
         "movl -0x24(%ebp), %eax\n" /* line 966 | duration, entref */
@@ -1925,10 +1925,10 @@ void HECmd_SetClock_Internal(he_type_t type)
         "cmpl $0xc, -0x28(%ebp)\n" /* line 940 */
         "je .Lf1b1cb6_001b1d40\n"
         "cvtsi2ssl %edi, %xmm0\n" /* line 941 | time */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b4fc0, (%esp)\n" /* "time %g should be > 0" */
+        "movl $str_002b4fc0, (%esp)\n" /* "time %g should be > 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n" /* entref */
         "movl $0, (%esp)\n"
@@ -1936,7 +1936,7 @@ void HECmd_SetClock_Internal(he_type_t type)
         "jmp .Lf1b1cb6_001b1d40\n"
         ".Lf1b1cb6_001b1ec0:\n"
         "movl %eax, 4(%esp)\n" /* line 960 | entref */
-        "movl $0x2b4f88, (%esp)\n" /* "height %i < 0" */
+        "movl $str_002b4f88, (%esp)\n" /* "height %i < 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n" /* entref */
         "movl $4, (%esp)\n"
@@ -1944,10 +1944,10 @@ void HECmd_SetClock_Internal(he_type_t type)
         "jmp .Lf1b1cb6_001b1dc6\n"
         ".Lf1b1cb6_001b1ee5:\n"
         "cvtsi2ssl %eax, %xmm0\n" /* line 945 | entref */
-        "mulss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b5078, (%esp)\n" /* "duration %g should be > 0" */
+        "movl $str_002b5078, (%esp)\n" /* "duration %g should be > 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n" /* entref */
         "movl $1, (%esp)\n"
@@ -1955,7 +1955,7 @@ void HECmd_SetClock_Internal(he_type_t type)
         "jmp .Lf1b1cb6_001b1d79\n"
         ".Lf1b1cb6_001b1f1c:\n"
         "movl %eax, 4(%esp)\n" /* line 957 | entref */
-        "movl $0x2b4f78, (%esp)\n" /* "width %i < 0" */
+        "movl $str_002b4f78, (%esp)\n" /* "width %i < 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n" /* entref */
         "movl $3, (%esp)\n"
@@ -1972,7 +1972,7 @@ void HECmd_SetClockUp(scr_entref_t entref)
         "pushl %ebp\n" /* line 1033 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* entref */
-        "movl $0x2b5094, %ecx\n" /* line 1035 */
+        "movl $str_002b5094, %ecx\n" /* line 1035 */
         "movl $0xc, %edx\n"
         "popl %ebp\n" /* line 1036 */
         "jmp HECmd_SetClock_Internal\n" /* line 1035 */
@@ -1987,7 +1987,7 @@ void HECmd_SetClock(scr_entref_t entref)
         "pushl %ebp\n" /* line 1022 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* entref */
-        "movl $0x2b50a0, %ecx\n" /* line 1024 */
+        "movl $str_002b50a0, %ecx\n" /* line 1024 */
         "movl $0xb, %edx\n"
         "popl %ebp\n" /* line 1025 */
         "jmp HECmd_SetClock_Internal\n" /* line 1024 */
@@ -2009,7 +2009,7 @@ void HECmd_SetValue(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b1f6e_001b200c\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         ".Lf1b1f6e_001b1f95:\n"
@@ -2063,7 +2063,7 @@ void HECmd_SetWaypoint(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b2028_001b206c\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "movl $0, (%esp)\n" /* line 1067 */
@@ -2111,26 +2111,26 @@ void HECmd_FadeOverTime(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b20a4_001b2166\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "movl $0, (%esp)\n" /* line 1085 */
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n" /* fadeTime */
         "movss -0xc(%ebp), %xmm0\n" /* line 1086 | fadeTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf1b20a4_001b219d\n"
         ".Lf1b20a4_001b20ec:\n"
-        "ucomiss 0x2ed7c8, %xmm0\n" /* line 1088 | 60.0f */
+        "ucomiss lit4_002ed7c8, %xmm0\n" /* line 1088 | 60.0f */
         "ja .Lf1b20a4_001b213e\n"
         ".Lf1b20a4_001b20f5:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1091 */
+        "movl imp_level, %eax\n" /* line 1091 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x28(%ebx)\n" /* hud */
         "movss -0xc(%ebp), %xmm0\n" /* line 428 | fadeTime */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "movss %xmm0, -0xc(%ebp)\n" /* fadeTime */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x10(%ebp)\n"
@@ -2147,7 +2147,7 @@ void HECmd_FadeOverTime(scr_entref_t entref)
         ".Lf1b20a4_001b213e:\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 1089 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b50c0, (%esp)\n" /* "fade time %g > 60" */
+        "movl $str_002b50c0, (%esp)\n" /* "fade time %g > 60" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2163,13 +2163,13 @@ void HECmd_FadeOverTime(scr_entref_t entref)
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n" /* fadeTime */
         "movss -0xc(%ebp), %xmm0\n" /* line 1086 | fadeTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "ja .Lf1b20a4_001b20ec\n"
         ".Lf1b20a4_001b219d:\n"
         "jp .Lf1b20a4_001b20ec\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 1087 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b50ac, (%esp)\n" /* "fade time %g <= 0" */
+        "movl $str_002b50ac, (%esp)\n" /* "fade time %g <= 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2195,24 +2195,24 @@ void HECmd_ScaleOverTime(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b21ce_001b22d5\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %edi, %edi\n"
         ".Lf1b21ce_001b21f7:\n"
         "calll Scr_GetNumParam\n" /* line 1113 */
         "cmpl $3, %eax\n"
         "je .Lf1b21ce_001b220d\n"
-        "movl $0x2b50d4, (%esp)\n" /* line 1114 */
+        "movl $str_002b50d4, (%esp)\n" /* line 1114 */
         "calll Scr_Error\n"
         ".Lf1b21ce_001b220d:\n"
         "movl $0, (%esp)\n" /* line 1116 */
         "calll Scr_GetFloat\n"
         "fstps -0x1c(%ebp)\n" /* scaleTime */
         "movss -0x1c(%ebp), %xmm0\n" /* line 1117 | scaleTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf1b21ce_001b22f0\n"
         ".Lf1b21ce_001b222e:\n"
-        "ucomiss 0x2ed7c8, %xmm0\n" /* line 1119 | 60.0f */
+        "ucomiss lit4_002ed7c8, %xmm0\n" /* line 1119 | 60.0f */
         "ja .Lf1b21ce_001b22aa\n"
         ".Lf1b21ce_001b2237:\n"
         "movl $1, (%esp)\n" /* line 1122 */
@@ -2221,13 +2221,13 @@ void HECmd_ScaleOverTime(scr_entref_t entref)
         "movl $2, (%esp)\n" /* line 1123 */
         "calll Scr_GetInt\n"
         "movl %eax, %ebx\n" /* height */
-        "movl 0x195f6a0, %eax\n" /* line 1125 */
+        "movl imp_level, %eax\n" /* line 1125 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x48(%edi)\n" /* hud */
         "movss -0x1c(%ebp), %xmm0\n" /* line 428 | scaleTime */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "movss %xmm0, -0x1c(%ebp)\n" /* scaleTime */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x20(%ebp)\n"
@@ -2250,7 +2250,7 @@ void HECmd_ScaleOverTime(scr_entref_t entref)
         ".Lf1b21ce_001b22aa:\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 1120 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b5128, (%esp)\n" /* "scale time %g > 60" */
+        "movl $str_002b5128, (%esp)\n" /* "scale time %g > 60" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2267,7 +2267,7 @@ void HECmd_ScaleOverTime(scr_entref_t entref)
         "jp .Lf1b21ce_001b222e\n" /* line 1117 */
         "cvtss2sd %xmm0, %xmm0\n" /* line 1118 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b5114, (%esp)\n" /* "scale time %g <= 0" */
+        "movl $str_002b5114, (%esp)\n" /* "scale time %g <= 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2291,26 +2291,26 @@ void HECmd_MoveOverTime(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b2322_001b23f9\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %ebx, %ebx\n"
         "movl $0, (%esp)\n" /* line 1146 */
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n" /* moveTime */
         "movss -0xc(%ebp), %xmm0\n" /* line 1147 | moveTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lf1b2322_001b2430\n"
         ".Lf1b2322_001b236a:\n"
-        "ucomiss 0x2ed7c8, %xmm0\n" /* line 1149 | 60.0f */
+        "ucomiss lit4_002ed7c8, %xmm0\n" /* line 1149 | 60.0f */
         "ja .Lf1b2322_001b23ce\n"
         ".Lf1b2322_001b2373:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1152 */
+        "movl imp_level, %eax\n" /* line 1152 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x60(%ebx)\n" /* hud */
         "movss -0xc(%ebp), %xmm0\n" /* line 428 | moveTime */
-        "mulss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "mulss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "movss %xmm0, -0xc(%ebp)\n" /* moveTime */
-        "addss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "addss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, (%esp)\n"
         "calll floorf\n"
         "fstps -0x10(%ebp)\n"
@@ -2333,7 +2333,7 @@ void HECmd_MoveOverTime(scr_entref_t entref)
         ".Lf1b2322_001b23ce:\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 1150 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b5150, (%esp)\n" /* "move time %g > 60" */
+        "movl $str_002b5150, (%esp)\n" /* "move time %g > 60" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2349,13 +2349,13 @@ void HECmd_MoveOverTime(scr_entref_t entref)
         "calll Scr_GetFloat\n"
         "fstps -0xc(%ebp)\n" /* moveTime */
         "movss -0xc(%ebp), %xmm0\n" /* line 1147 | moveTime */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "ja .Lf1b2322_001b236a\n"
         ".Lf1b2322_001b2430:\n"
         "jp .Lf1b2322_001b236a\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 1148 */
         "movsd %xmm0, 4(%esp)\n"
-        "movl $0x2b513c, (%esp)\n" /* "move time %g <= 0" */
+        "movl $str_002b513c, (%esp)\n" /* "move time %g <= 0" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2378,7 +2378,7 @@ void HECmd_Reset(scr_entref_t entref)
         "shrl $0x10, %eax\n" /* line 734 */
         "subw $1, %ax\n"
         "je .Lf1b2462_001b254b\n"
-        "movl $0x2b4dbc, (%esp)\n" /* line 740 */
+        "movl $str_002b4dbc, (%esp)\n" /* line 740 */
         "calll Scr_ObjectError\n"
         "xorl %edx, %edx\n"
         ".Lf1b2462_001b2488:\n"
@@ -2486,8 +2486,8 @@ void GScr_NewHudElem(void)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $2, %eax\n"
-        "movl $0x3ff, 0x1937f80(%eax)\n"
-        "movl $0, 0x1937f84(%eax)\n" /* line 209 */
+        "movl $0x3ff, g_hudelems+128(%eax)\n"
+        "movl $0, g_hudelems+132(%eax)\n" /* line 209 */
         /* } scope */
         ".Lf1b2566_001b267b:\n"
         "movl %ecx, (%esp)\n" /* line 644 */
@@ -2514,7 +2514,7 @@ void GScr_NewHudElem(void)
         "jmp .Lf1b2566_001b257e\n"
         /* } scope */
         ".Lf1b2566_001b26b2:\n"
-        "movl $0x2b5164, (%esp)\n" /* line 643 */
+        "movl $str_002b5164, (%esp)\n" /* line 643 */
         "calll Scr_Error\n"
         "xorl %ecx, %ecx\n"
         "jmp .Lf1b2566_001b267b\n"
@@ -2589,8 +2589,8 @@ void GScr_NewClientHudElem(void)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $2, %eax\n"
-        "movl %esi, 0x1937f80(%eax)\n"
-        "movl $0, 0x1937f84(%eax)\n" /* line 209 */
+        "movl %esi, g_hudelems+128(%eax)\n"
+        "movl $0, g_hudelems+132(%eax)\n" /* line 209 */
         /* } scope */
         /* } scope */
         ".Lf1b26c2_001b27f2:\n"
@@ -2621,12 +2621,12 @@ void GScr_NewClientHudElem(void)
         /* } scope */
         /* } scope */
         ".Lf1b26c2_001b282a:\n"
-        "movl $0x2b5174, 4(%esp)\n" /* line 662 */
+        "movl $str_002b5174, 4(%esp)\n" /* line 662 */
         "movl $0, (%esp)\n"
         "calll Scr_ParamError\n"
         "jmp .Lf1b26c2_001b26e6\n"
         ".Lf1b26c2_001b2843:\n"
-        "movl $0x2b5164, (%esp)\n" /* line 666 */
+        "movl $str_002b5164, (%esp)\n" /* line 666 */
         "calll Scr_Error\n"
         "xorl %ecx, %ecx\n"
         "jmp .Lf1b26c2_001b27f2\n"
@@ -2646,7 +2646,7 @@ void GScr_NewTeamHudElem(void)
         /* { scope 1 */
         "movl $0, (%esp)\n" /* line 682 */
         "calll Scr_GetConstString\n"
-        "movl 0x195f5bc, %edx\n" /* line 683 */
+        "movl imp_scr_const, %edx\n" /* line 683 */
         "cmpw 2(%edx), %ax\n"
         "je .Lf1b2854_001b2a0e\n"
         "cmpw 4(%edx), %ax\n" /* line 687 */
@@ -2656,7 +2656,7 @@ void GScr_NewTeamHudElem(void)
         "movl $0, (%esp)\n" /* line 697 */
         "calll Scr_GetString\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5184, (%esp)\n" /* "team "%s" should be "allies", "axis", or "spectator"" */
+        "movl $str_002b5184, (%esp)\n" /* "team "%s" should be "allies", "axis", or "spectator"" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -2712,8 +2712,8 @@ void GScr_NewTeamHudElem(void)
         "leal (, %edx, 8), %eax\n"
         "subl %edx, %eax\n"
         "shll $2, %eax\n"
-        "movl $0x3ff, 0x1937f80(%eax)\n"
-        "movl %esi, 0x1937f84(%eax)\n" /* line 209 */
+        "movl $0x3ff, g_hudelems+128(%eax)\n"
+        "movl %esi, g_hudelems+132(%eax)\n" /* line 209 */
         /* } scope */
         ".Lf1b2854_001b29c4:\n"
         "movl %ecx, (%esp)\n" /* line 704 */
@@ -2752,7 +2752,7 @@ void GScr_NewTeamHudElem(void)
         "movl $1, %esi\n" /* line 687 | team */
         "jmp .Lf1b2854_001b28ba\n"
         ".Lf1b2854_001b2a22:\n"
-        "movl $0x2b5164, (%esp)\n" /* line 703 */
+        "movl $str_002b5164, (%esp)\n" /* line 703 */
         "calll Scr_Error\n"
         "xorl %ecx, %ecx\n"
         "jmp .Lf1b2854_001b29c4\n"

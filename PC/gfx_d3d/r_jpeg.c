@@ -20,10 +20,10 @@ extern void jpeg_read_scanlines(void *cinfo, byte **scanlines, int num_lines);
 extern void jpeg_finish_decompress(void *cinfo);
 extern void jpeg_destroy_decompress(void *cinfo);
 
-extern byte *r_sys_ptr;     /* 0x195eee0 - renderer system vtable */
-extern byte *r_limits_ptr;  /* 0x195eeec - renderer limits */
+extern byte *r_sys_ptr;     /* imp_ri - renderer system vtable */
+extern byte *r_limits_ptr;  /* imp_vidConfig - renderer limits */
 
-static int hackSize; /* 0xff1e00 */
+static int hackSize; /* hackSize */
 
 static void init_destination(j_compress_ptr cinfo);
 boolean empty_output_buffer(j_compress_ptr cinfo);

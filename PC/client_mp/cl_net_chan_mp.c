@@ -6,13 +6,13 @@
 
 /*
  * Client-side globals accessed by absolute address in the original binary.
- * 0x195ee8c -> pointer to clientConnection_t* (clc)
- * 0x195ee78 -> pointer to clientActive_t* (cl)
- * 0x195f67c -> pointer to net profiling dvar
+ * imp_clc -> pointer to clientConnection_t* (clc)
+ * imp_cl -> pointer to clientActive_t* (cl)
+ * imp_net_profile -> pointer to net profiling dvar
  */
-extern byte *clc_ptr;          /* 0x195ee8c */
-extern byte *cl_ptr;           /* 0x195ee78 */
-extern byte *net_profile_dvar; /* 0x195f67c */
+extern byte *clc_ptr;          /* imp_clc */
+extern byte *cl_ptr;           /* imp_cl */
+extern byte *net_profile_dvar; /* imp_net_profile */
 
 /* clientConnection_t field offsets (verified against struct layout) */
 #define CLC_CHALLENGE_OFF            0x128

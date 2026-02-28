@@ -4,7 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern void **g_dxCaps;         /* 0x195eec0 */
+extern void **g_dxCaps;         /* imp_r_rendererInUse */
 extern void *Image_Register(const char *name, int trackType, int filter);
 extern void ClearBounds(vec3_t mins, vec3_t maxs);
 extern void ExpandBounds(vec3_t mins, vec3_t maxs, vec3_t boundsMin, vec3_t boundsMax);
@@ -16,9 +16,9 @@ extern void Image_Generate2D(void *image, byte *data, int width, int height, int
 extern void *Hunk_AllocateTempMemoryInternal(int size);
 extern void Hunk_FreeTempMemory(void *buf);
 
-static const int outdoorMapSize[3]; /* 0x2f30a0 */
+static const int outdoorMapSize[3]; /* outdoorMapSize */
 
-static OutdoorGlob outdoorGlob; /* 0xce7180 */
+static OutdoorGlob outdoorGlob; /* outdoorGlob */
 
 void R_RegisterOutdoorImage(GfxWorld *world)
 {

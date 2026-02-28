@@ -27,14 +27,14 @@ extern float cosf(float x);
 extern char *va(const char *fmt, ...);
 extern void Com_Printf(const char *fmt, ...);
 
-extern byte *cg_ptr;           /* 0x195f584 */
-extern byte *cg_weapinfo_ptr;  /* 0x195f5c8 */
-extern byte *cg_hud_ptr;       /* 0x195f730 */
-extern byte *cg_tags_ptr;      /* 0x195f5bc */
+extern byte *cg_ptr;           /* imp_cg */
+extern byte *cg_weapinfo_ptr;  /* imp_cg_weapons */
+extern byte *cg_hud_ptr;       /* imp_hud_fade_offhand */
+extern byte *cg_tags_ptr;      /* imp_scr_const */
 
-static const char * offhandStrings[3]; /* 0x314500 */
-static const dvar_t *hud_flash_time_offhand; /* 0xfdf304 */
-static const dvar_t *hud_flash_period_offhand; /* 0xfdf300 */
+static const char * offhandStrings[3]; /* offhandStrings */
+static const dvar_t *hud_flash_time_offhand; /* hud_flash_time_offhand */
+static const dvar_t *hud_flash_period_offhand; /* hud_flash_period_offhand */
 
 void CG_OffhandRegisterDvars(void);
 void CG_DrawOffHandName(rectDef_s *rect, struct Font_s *font, float scale, vec_t *color, int textStyle, int weaponType);

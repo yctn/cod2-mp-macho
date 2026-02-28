@@ -20,11 +20,11 @@ extern int historyLine; /* 0x0 */
 extern keyname_t keynames[99]; /* 0x0 */
 extern keyname_t keynames_localized[99]; /* 0x0 */
 extern char * frenchNumberKeysMap[10]; /* 0x0 */
-static char tinystr[5]; /* 0xceba08 */
-static const char *completionString; /* 0xceba04 */
-static Bool hasExactMatch; /* 0xceb580 */
-static char shortestMatch[1024]; /* 0xceb600 */
-static int matchCount; /* 0xceba00 */
+static char tinystr[5]; /* tinystr */
+static const char *completionString; /* completionString */
+static Bool hasExactMatch; /* hasExactMatch */
+static char shortestMatch[1024]; /* shortestMatch */
+static int matchCount; /* matchCount */
 
 qboolean Key_GetOverstrikeMode(void);
 void Field_AdjustScroll(field_t *edit);
@@ -72,7 +72,7 @@ void Field_AdjustScroll(field_t *edit)
         /* { scope 1 */
         "movl 8(%ebp), %eax\n" /* line 461 | edit */
         "movss 0x10(%eax), %xmm0\n"
-        "divss 0x2ed6b8, %xmm0\n" /* 48.0f */
+        "divss lit4_002ed6b8, %xmm0\n" /* 48.0f */
         "movss %xmm0, -0x24(%ebp)\n" /* fontScale */
         "cvtsi2ssl 0xc(%eax), %xmm1\n" /* line 462 */
         "movss %xmm1, -0x1c(%ebp)\n" /* lineWidth */
@@ -86,11 +86,11 @@ void Field_AdjustScroll(field_t *edit)
         "movss %xmm0, (%esp)\n"
         "calll GetVirtualHeightFromRealHeight\n"
         "fstps -0x1c(%ebp)\n" /* lineWidth */
-        "movl 0x195ecac, %eax\n" /* line 468 */
-        "movl 0x2a0a60(%eax), %eax\n"
+        "movl imp_cls, %eax\n" /* line 468 */
+        "movl str_002a0938+296(%eax), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* font */
         ".Lf13fac6_0013fb26:\n"
-        "movl 0x195eca8, %ebx\n" /* line 475 */
+        "movl imp_re, %ebx\n" /* line 475 */
         "movss -0x24(%ebp), %xmm0\n" /* fontScale */
         "movss %xmm0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
@@ -109,7 +109,7 @@ void Field_AdjustScroll(field_t *edit)
         "movss -0x1c(%ebp), %xmm1\n" /* lineWidth */
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf13fac6_0013fd33\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* line 487 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* line 487 | 0.0f */
         "jbe .Lf13fac6_0013fc72\n"
         "movl 8(%ebp), %eax\n" /* edit */
         "movl 4(%eax), %ebx\n"
@@ -123,7 +123,7 @@ void Field_AdjustScroll(field_t *edit)
         "movl -0x2c(%ebp), %edi\n"
         "leal -1(%edi, %eax), %eax\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eca8, %eax\n"
+        "movl imp_re, %eax\n"
         "calll *0x114(%eax)\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "mulss -0x20(%ebp), %xmm0\n" /* actualScale */
@@ -138,7 +138,7 @@ void Field_AdjustScroll(field_t *edit)
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf13fac6_0013fb90\n"
         ".Lf13fac6_0013fbe3:\n"
-        "movl 0x195eca8, %esi\n" /* line 497 | textLen */
+        "movl imp_re, %esi\n" /* line 497 | textLen */
         "movl -0x28(%ebp), %edi\n" /* font */
         "movl %edi, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
@@ -242,7 +242,7 @@ void Field_AdjustScroll(field_t *edit)
         "movl -0x2c(%ebp), %eax\n"
         "addl %ebx, %eax\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eca8, %eax\n"
+        "movl imp_re, %eax\n"
         "calll *0x114(%eax)\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "mulss -0x20(%ebp), %xmm0\n" /* actualScale */
@@ -402,7 +402,7 @@ void PrintMatches(const char *s)
         "testl %eax, %eax\n"
         "jne .Lf13fe5c_0013fea3\n"
         "movl %ebx, 4(%esp)\n" /* line 745 | s */
-        "movl $0x217190, (%esp)\n" /* "    %s
+        "movl $str_00217190, (%esp)\n" /* "    %s
 " */
         "calll Com_Printf\n"
         ".Lf13fe5c_0013fea3:\n"
@@ -430,9 +430,9 @@ void keyConcatArgs(void)
         "cmpl %eax, %esi\n" /* i */
         "jge .Lf13feaa_0013ff52\n"
         ".Lf13feaa_0013fec4:\n"
-        "movl $0x217914, 8(%esp)\n" /* line 756 */
+        "movl $str_00217914, 8(%esp)\n" /* line 756 */
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncat\n"
         "movl %esi, (%esp)\n" /* line 757 | i */
         "calll Cmd_Argv\n"
@@ -449,16 +449,16 @@ void keyConcatArgs(void)
         ".Lf13feaa_0013fefd:\n"
         "cmpb $0x20, %al\n" /* line 760 */
         "jne .Lf13feaa_0013fef3\n"
-        "movl $0x222120, 8(%esp)\n" /* line 762 */
+        "movl $str_00222120, 8(%esp)\n" /* line 762 */
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncat\n"
         ".Lf13feaa_0013ff1d:\n"
         "movl %esi, (%esp)\n" /* line 767 | i */
         "calll Cmd_Argv\n"
         "movl %eax, 8(%esp)\n"
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncat\n"
         "cmpb $0x20, (%ebx)\n" /* line 768 | arg */
         "je .Lf13feaa_0013ff59\n"
@@ -476,9 +476,9 @@ void keyConcatArgs(void)
         "retl\n"
         /* { scope 1 */
         ".Lf13feaa_0013ff59:\n"
-        "movl $0x222120, 8(%esp)\n" /* line 770 */
+        "movl $str_00222120, 8(%esp)\n" /* line 770 */
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncat\n"
         "addl $1, %esi\n" /* line 754 | i */
         "jmp .Lf13feaa_0013ff45\n"
@@ -645,14 +645,14 @@ char * Key_KeynumToString(int keynum, qboolean translate)
         "movl %ebx, (%esp)\n" /* line 1288 | keynum */
         "calll ___toupper\n"
         "movb %al, tinystr\n"
-        "movb $0, 0xceba09\n" /* line 1289 */
+        "movb $0, tinystr+1\n" /* line 1289 */
         "cmpl $0x3b, %ebx\n" /* line 1290 | keynum */
         "je .Lf140050_001400e3\n"
         ".Lf140050_001400ce:\n"
         "movl $tinystr, %ecx\n" /* line 1336 */
         "jmp .Lf140050_001400a6\n"
         ".Lf140050_001400d5:\n"
-        "movl $0x2a6ec0, %ecx\n" /* line 1278 */
+        "movl $str_002a6ec0, %ecx\n" /* line 1278 */
         /* } scope */
         "movl %ecx, %eax\n" /* line 1337 */
         "addl $0x10, %esp\n"
@@ -675,7 +675,7 @@ char * Key_KeynumToString(int keynum, qboolean translate)
         "jle .Lf140050_00140073\n"
         "cmpl $0x39, %ebx\n" /* keynum */
         "jg .Lf140050_00140073\n"
-        "movl 0x311400(, %ebx, 4), %ecx\n" /* line 1283 */
+        "movl virtualKeyConvert+224(, %ebx, 4), %ecx\n" /* line 1283 */
         "jmp .Lf140050_001400a6\n"
         ".Lf140050_00140117:\n"
         "movl %ebx, %edx\n" /* line 1327 | keynum */
@@ -683,18 +683,18 @@ char * Key_KeynumToString(int keynum, qboolean translate)
         "movl %ebx, %eax\n" /* line 1328 | keynum */
         "andl $0xf, %eax\n"
         "movb $0x30, tinystr\n" /* line 1330 */
-        "movb $0x78, 0xceba09\n" /* line 1331 */
+        "movb $0x78, tinystr+1\n" /* line 1331 */
         "cmpl $9, %edx\n" /* line 1332 */
         "jle .Lf140050_00140171\n"
         "addb $0x57, %dl\n"
         ".Lf140050_00140137:\n"
-        "movb %dl, 0xceba0a\n"
+        "movb %dl, tinystr+2\n"
         "cmpl $9, %eax\n" /* line 1333 */
         "jle .Lf140050_0014016d\n"
         "addb $0x57, %al\n"
         ".Lf140050_00140144:\n"
-        "movb %al, 0xceba0b\n"
-        "movb $0, 0xceba0c\n" /* line 1334 */
+        "movb %al, tinystr+3\n"
+        "movb $0, tinystr+4\n" /* line 1334 */
         "movl $tinystr, %ecx\n"
         /* } scope */
         "movl %ecx, %eax\n" /* line 1337 */
@@ -705,7 +705,7 @@ char * Key_KeynumToString(int keynum, qboolean translate)
         "retl\n"
         /* { scope 1 */
         ".Lf140050_0014015f:\n"
-        "movl $0x2a6eb0, %ecx\n" /* line 1275 */
+        "movl $str_002a6eb0, %ecx\n" /* line 1275 */
         /* } scope */
         "movl %ecx, %eax\n" /* line 1337 */
         "addl $0x10, %esp\n"
@@ -729,7 +729,7 @@ void Key_SetBinding(int keynum, const char *binding)
     if (keynum == -1)
         return;
     ReplaceStringInternal((char **)((byte *)keys + keynum * 12 + 8), binding);
-    *(int *)(*(int *)0x195ec9c) |= 1;
+    *(int *)(*(int *)imp_dvar_modifiedFlags) |= 1;
 }
 
 /* line 1366 */
@@ -813,8 +813,8 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
         "movl 0x14(%esi), %eax\n" /* line 402 | edit */
         "testl %eax, %eax\n"
         "je .Lf14026c_001403e8\n"
-        "movl 0x195ecac, %eax\n" /* line 404 */
-        "movl 0x2a0a60(%eax), %eax\n"
+        "movl imp_cls, %eax\n" /* line 404 */
+        "movl str_002a0938+296(%eax), %eax\n"
         "movl %eax, -0x43c(%ebp)\n" /* font */
         "movl key_overstrikeMode, %eax\n" /* line 409 */
         "movl (%eax), %eax\n"
@@ -829,7 +829,7 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
         "movss %xmm0, -0x434(%ebp)\n" /* xAdj */
         "movl -0x43c(%ebp), %eax\n" /* line 436 | font */
         "movl %eax, (%esp)\n"
-        "movl 0x195eca8, %eax\n"
+        "movl imp_re, %eax\n"
         "movss %xmm2, -0x468(%ebp)\n"
         "calll *0x118(%eax)\n"
         "cvtsi2ssl 0x10(%ebp), %xmm1\n" /* y */
@@ -881,7 +881,7 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
         "jmp .Lf14026c_001402fd\n"
         ".Lf14026c_001403e8:\n"
         "movss 0x10(%esi), %xmm0\n" /* line 416 | edit */
-        "divss 0x2ed6b8, %xmm0\n" /* 48.0f */
+        "divss lit4_002ed6b8, %xmm0\n" /* 48.0f */
         "movss %xmm0, 4(%esp)\n" /* line 417 */
         "movl $0, (%esp)\n"
         "movss %xmm0, -0x458(%ebp)\n"
@@ -890,7 +890,7 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
         "movss -0x458(%ebp), %xmm0\n" /* line 418 */
         "movss %xmm0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eca8, %eax\n"
+        "movl imp_re, %eax\n"
         "calll *0x110(%eax)\n"
         "fstps -0x42c(%ebp)\n"
         "cmpl $5, 0x18(%ebp)\n" /* line 419 | vertAlign */
@@ -936,7 +936,7 @@ void Key_Unbind_f(void)
         "calll Cmd_Argc\n" /* line 1410 */
         "cmpl $2, %eax\n"
         "je .Lf1404be_001404dc\n"
-        "movl $0x2a6ef8, (%esp)\n" /* line 1412 */
+        "movl $str_002a6ef8, (%esp)\n" /* line 1412 */
         "calll Com_Printf\n"
         /* } scope */
         "leave\n" /* line 1424 */
@@ -948,13 +948,13 @@ void Key_Unbind_f(void)
         "calll Key_StringToKeynum\n"
         "cmpl $-1, %eax\n" /* line 1417 */
         "je .Lf1404be_00140519\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 1353 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 1353 */
         "leal (%eax, %eax, 2), %eax\n"
         "movl keys, %edx\n"
         "leal 8(%edx, %eax, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll ReplaceStringInternal\n"
-        "movl 0x195ec9c, %eax\n" /* line 1357 */
+        "movl imp_dvar_modifiedFlags, %eax\n" /* line 1357 */
         "orl $1, (%eax)\n"
         /* } scope */
         "leave\n" /* line 1424 */
@@ -964,7 +964,7 @@ void Key_Unbind_f(void)
         "movl $1, (%esp)\n" /* line 1419 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a6f24, (%esp)\n" /* ""%s" isn't a valid key
+        "movl $str_002a6f24, (%esp)\n" /* ""%s" isn't a valid key
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -986,7 +986,7 @@ void Key_Unbindall_f(void)
         "subl $0x1c, %esp\n"
         "xorl %ebx, %ebx\n"
         "xorl %esi, %esi\n"
-        "movl 0x195ec9c, %edi\n"
+        "movl imp_dvar_modifiedFlags, %edi\n"
         /* { scope 1 */
         ".Lf140538_0014054b:\n"
         "movl %esi, %eax\n" /* line 1437 */
@@ -996,7 +996,7 @@ void Key_Unbindall_f(void)
         "je .Lf140538_00140575\n"
         "cmpl $-1, %ebx\n" /* line 1347 */
         "je .Lf140538_00140575\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 1353 */
+        "movl $str_002157b8, 4(%esp)\n" /* line 1353 */
         "addl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll ReplaceStringInternal\n"
@@ -1059,7 +1059,7 @@ void Key_Bind_f(void)
         "calll I_strncat\n"
         "cmpl -0x420(%ebp), %ebx\n" /* line 1489 | i */
         "je .Lf14058c_00140641\n"
-        "movl $0x217914, 8(%esp)\n" /* line 1490 */
+        "movl $str_00217914, 8(%esp)\n" /* line 1490 */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %edx\n" /* cmd */
         "movl %edx, (%esp)\n"
@@ -1079,7 +1079,7 @@ void Key_Bind_f(void)
         "leal 8(%edx, %eax, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll ReplaceStringInternal\n"
-        "movl 0x195ec9c, %eax\n" /* line 1357 */
+        "movl imp_dvar_modifiedFlags, %eax\n" /* line 1357 */
         "orl $1, (%eax)\n"
         /* } scope */
         ".Lf14058c_0014067e:\n"
@@ -1094,7 +1094,7 @@ void Key_Bind_f(void)
         "movl $1, (%esp)\n" /* line 1463 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a6f24, (%esp)\n" /* ""%s" isn't a valid key
+        "movl $str_002a6f24, (%esp)\n" /* ""%s" isn't a valid key
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -1106,7 +1106,7 @@ void Key_Bind_f(void)
         "retl\n"
         /* { scope 1 */
         ".Lf14058c_001406b0:\n"
-        "movl $0x2a6f3c, (%esp)\n" /* line 1457 */
+        "movl $str_002a6f3c, (%esp)\n" /* line 1457 */
         "calll Com_Printf\n"
         /* } scope */
         "addl $0x42c, %esp\n" /* line 1494 */
@@ -1117,7 +1117,7 @@ void Key_Bind_f(void)
         "retl\n"
         /* { scope 1 */
         ".Lf14058c_001406c7:\n"
-        "movl $0x222120, 8(%esp)\n" /* line 1488 */
+        "movl $str_00222120, 8(%esp)\n" /* line 1488 */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %edx\n" /* cmd */
         "movl %edx, (%esp)\n"
@@ -1125,7 +1125,7 @@ void Key_Bind_f(void)
         ".Lf14058c_001406e5:\n"
         "cmpl -0x420(%ebp), %ebx\n" /* line 1489 | i */
         "je .Lf14058c_0014070b\n"
-        "movl $0x217914, 8(%esp)\n" /* line 1490 */
+        "movl $str_00217914, 8(%esp)\n" /* line 1490 */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %eax\n" /* cmd */
         "movl %eax, (%esp)\n"
@@ -1142,7 +1142,7 @@ void Key_Bind_f(void)
         "calll strchr\n"
         "testl %eax, %eax\n"
         "je .Lf14058c_001407c5\n"
-        "movl $0x222120, 8(%esp)\n" /* line 1485 */
+        "movl $str_00222120, 8(%esp)\n" /* line 1485 */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %eax\n" /* cmd */
         "movl %eax, (%esp)\n"
@@ -1170,7 +1170,7 @@ void Key_Bind_f(void)
         "calll Cmd_Argv\n"
         "movl %ebx, 8(%esp)\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a6f70, (%esp)\n" /* ""%s" = "%s"
+        "movl $str_002a6f70, (%esp)\n" /* ""%s" = "%s"
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -1188,7 +1188,7 @@ void Key_Bind_f(void)
         "movl $1, (%esp)\n" /* line 1475 */
         "calll Cmd_Argv\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2a6f80, (%esp)\n" /* ""%s" is not bound
+        "movl $str_002a6f80, (%esp)\n" /* ""%s" is not bound
 " */
         "calll Com_Printf\n"
         "jmp .Lf14058c_0014067e\n"
@@ -1372,7 +1372,7 @@ void CL_CharEvent(int key)
         "je .Lf14097a_001409b0\n"
         "cmpl $0x7e, %edx\n"
         "je .Lf14097a_001409b0\n"
-        "movl 0x195ee78, %eax\n" /* line 1994 */
+        "movl imp_cl, %eax\n" /* line 1994 */
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "testb $1, %al\n"
@@ -1381,7 +1381,7 @@ void CL_CharEvent(int key)
         "jne .Lf14097a_001409c4\n"
         "testb $0x10, %al\n" /* line 2002 */
         "jne .Lf14097a_001409d9\n"
-        "movl 0x195ee8c, %eax\n" /* line 2006 */
+        "movl imp_clc, %eax\n" /* line 2006 */
         "movl (%eax), %eax\n"
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
@@ -1462,7 +1462,7 @@ void Field_KeyDownEvent(field_t *edit, int key)
         "cmpl $0xa1, %ebx\n" /* line 618 | key */
         "je .Lf1409ee_00140c50\n"
         ".Lf1409ee_00140a93:\n"
-        "movl 0x195ecac, %eax\n" /* line 623 */
+        "movl imp_cls, %eax\n" /* line 623 */
         "movl 0x110(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1409ee_00140b0e\n"
@@ -1718,7 +1718,7 @@ void Message_Key(int key)
         "cmpb $0, 0x18(%edx)\n"
         "jne .Lf140ce2_00140d47\n"
         ".Lf140ce2_00140d26:\n"
-        "movl 0x195ee78, %eax\n" /* line 1141 */
+        "movl imp_cl, %eax\n" /* line 1141 */
         "movl (%eax), %eax\n"
         "andl $0xffffffef, 4(%eax)\n"
         "movl chatField, %eax\n" /* line 1142 */
@@ -1731,7 +1731,7 @@ void Message_Key(int key)
         "retl\n"
         /* { scope 1 */
         ".Lf140ce2_00140d47:\n"
-        "movl 0x195ee8c, %eax\n" /* line 1132 */
+        "movl imp_clc, %eax\n" /* line 1132 */
         "movl (%eax), %eax\n"
         "cmpl $8, (%eax)\n"
         "jne .Lf140ce2_00140d26\n"
@@ -1741,7 +1741,7 @@ void Message_Key(int key)
         "je .Lf140ce2_00140d8d\n"
         "leal 0x18(%edx), %eax\n" /* line 1135 */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a6f94, 8(%esp)\n" /* "say_team "%s"
+        "movl $str_002a6f94, 8(%esp)\n" /* "say_team "%s"
 " */
         "movl $0x400, 4(%esp)\n"
         "leal -0x408(%ebp), %ebx\n" /* buffer */
@@ -1754,7 +1754,7 @@ void Message_Key(int key)
         ".Lf140ce2_00140d8d:\n"
         "leal 0x18(%edx), %eax\n" /* line 1137 */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a6fa4, 8(%esp)\n" /* "say "%s"
+        "movl $str_002a6fa4, 8(%esp)\n" /* "say "%s"
 " */
         "movl $0x400, 4(%esp)\n"
         "leal -0x408(%ebp), %ebx\n" /* buffer */
@@ -1828,34 +1828,34 @@ void Console_Key(int key)
         "popl %ebp\n"
         "retl\n"
         ".Lf140db4_00140e9f:\n"
-        "movl 0x195ee8c, %eax\n" /* line 955 */
+        "movl imp_clc, %eax\n" /* line 955 */
         "movl (%eax), %eax\n"
         "cmpl $8, (%eax)\n"
         "je .Lf140db4_00140eff\n"
-        "movzbl 0x1219d58, %eax\n"
+        "movzbl g_consoleField+24, %eax\n"
         "cmpb $0x5c, %al\n"
         "je .Lf140db4_00140eff\n"
         "cmpb $0x2f, %al\n"
         "je .Lf140db4_00140eff\n"
         /* { scope 1 */
         "movl $0x400, 8(%esp)\n" /* line 959 */
-        "movl $0x1219d58, 4(%esp)\n"
+        "movl $g_consoleField+24, 4(%esp)\n"
         "leal -0x51c(%ebp), %ebx\n" /* temp, key */
         "movl %ebx, (%esp)\n" /* key */
         "calll I_strncpyz\n"
         "movl %ebx, 0xc(%esp)\n" /* line 960 | key */
-        "movl $0x2a6fb8, 8(%esp)\n" /* "\%s" */
+        "movl $str_002a6fb8, 8(%esp)\n" /* "\%s" */
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll Com_sprintf\n"
         "addl $1, g_consoleField\n" /* line 961 */
         /* } scope */
         ".Lf140db4_00140eff:\n"
-        "movl $0x1219d58, 4(%esp)\n" /* line 965 */
-        "movl $0x222d28, (%esp)\n" /* "]%s
+        "movl $g_consoleField+24, 4(%esp)\n" /* line 965 */
+        "movl $str_00222d28, (%esp)\n" /* "]%s
 " */
         "calll Com_Printf\n"
-        "movzbl 0x1219d58, %eax\n" /* line 974 */
+        "movzbl g_consoleField+24, %eax\n" /* line 974 */
         "cmpb $0x5c, %al\n"
         "je .Lf140db4_001410f4\n"
         "cmpb $0x2f, %al\n"
@@ -1863,13 +1863,13 @@ void Console_Key(int key)
         "testb %al, %al\n" /* line 982 */
         "je .Lf140db4_00140e94\n"
         "movl $4, 8(%esp)\n" /* line 927 */
-        "movl $0x2a6fbc, 4(%esp)\n" /* "rcon" */
-        "movl $0x1219d58, (%esp)\n"
+        "movl $str_002a6fbc, 4(%esp)\n" /* "rcon" */
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncmp\n"
         "testl %eax, %eax\n" /* line 986 */
         "jne .Lf140db4_001412e2\n"
         ".Lf140db4_00140f56:\n"
-        "cmpb $0, 0x1219d58\n" /* line 995 */
+        "cmpb $0, g_consoleField+24\n" /* line 995 */
         "je .Lf140db4_00140faa\n"
         "movl nextHistoryLine, %ebx\n" /* line 997 | key */
         "movl %ebx, %eax\n" /* key */
@@ -1890,13 +1890,13 @@ void Console_Key(int key)
         ".Lf140db4_00140faa:\n"
         "movl $g_consoleField, (%esp)\n" /* line 1007 */
         "calll Field_Clear\n"
-        "movl 0x195f260, %eax\n" /* line 1009 */
+        "movl imp_g_console_field_width, %eax\n" /* line 1009 */
         "movl (%eax), %eax\n"
-        "movl %eax, 0x1219d4c\n"
-        "movl 0x195f258, %eax\n" /* line 1010 */
+        "movl %eax, g_consoleField+12\n"
+        "movl imp_g_console_char_height, %eax\n" /* line 1010 */
         "movl (%eax), %eax\n"
-        "movl %eax, 0x1219d50\n"
-        "movl $1, 0x1219d54\n" /* line 1011 */
+        "movl %eax, g_consoleField+16\n"
+        "movl $1, g_consoleField+20\n" /* line 1011 */
         "calll CL_AllLocalClientsDisconnected\n" /* line 1013 */
         "testb %al, %al\n"
         "je .Lf140db4_00140e94\n"
@@ -1912,7 +1912,7 @@ void Console_Key(int key)
         "movl 0x774(%eax), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf140db4_00140e02\n"
-        "movl $0x2a6fb0, (%esp)\n" /* line 943 */
+        "movl $str_002a6fb0, (%esp)\n" /* line 943 */
         "calll Cbuf_AddText\n"
         "jmp .Lf140db4_00140e94\n"
         ".Lf140db4_00141019:\n"
@@ -1976,9 +1976,9 @@ void Console_Key(int key)
         "addl $1, %eax\n"
         "jmp .Lf140db4_00141050\n"
         ".Lf140db4_001410f4:\n"
-        "movl $0x1219d59, (%esp)\n" /* line 976 */
+        "movl $g_consoleField+25, (%esp)\n" /* line 976 */
         "calll Cbuf_AddText\n"
-        "movl $0x2160e8, (%esp)\n" /* line 977 */
+        "movl $str_002160e8, (%esp)\n" /* line 977 */
         "calll Cbuf_AddText\n"
         "jmp .Lf140db4_00140f56\n"
         ".Lf140db4_00141111:\n"
@@ -2032,9 +2032,9 @@ void Console_Key(int key)
         "je .Lf140db4_00141353\n"
         ".Lf140db4_001411e0:\n"
         "movl $shortestMatch, 0xc(%esp)\n" /* line 888 */
-        "movl $0x2a6fb8, 8(%esp)\n" /* "\%s" */
+        "movl $str_002a6fb8, 8(%esp)\n" /* "\%s" */
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll Com_sprintf\n"
         "calll Cmd_Argc\n" /* line 890 */
         "subl $1, %eax\n"
@@ -2056,7 +2056,7 @@ void Console_Key(int key)
         "leal -1(%ecx, %edx), %ecx\n"
         "movl %ecx, 8(%esp)\n"
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncat\n"
         ".Lf140db4_0014125b:\n"
         "calll Cmd_Argc\n" /* line 897 */
@@ -2066,7 +2066,7 @@ void Console_Key(int key)
         "cld\n" /* line 905 */
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
-        "movl $0x1219d58, %edi\n"
+        "movl $g_consoleField+24, %edi\n"
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "subl $1, %ecx\n"
@@ -2095,11 +2095,11 @@ void Console_Key(int key)
         "calll Con_PageDown\n" /* line 1085 */
         "jmp .Lf140db4_00140e94\n"
         ".Lf140db4_001412e2:\n"
-        "movl $0x2a6fc4, (%esp)\n" /* line 988 */
+        "movl $str_002a6fc4, (%esp)\n" /* line 988 */
         "calll Cbuf_AddText\n"
-        "movl $0x1219d58, (%esp)\n" /* line 989 */
+        "movl $g_consoleField+24, (%esp)\n" /* line 989 */
         "calll Cbuf_AddText\n"
-        "movl $0x2160e8, (%esp)\n" /* line 990 */
+        "movl $str_002160e8, (%esp)\n" /* line 990 */
         "calll Cbuf_AddText\n"
         "jmp .Lf140db4_00140f56\n"
         ".Lf140db4_0014130b:\n"
@@ -2123,11 +2123,11 @@ void Console_Key(int key)
         "jmp .Lf140db4_00140e94\n"
         ".Lf140db4_00141353:\n"
         "movl $shortestMatch, 0xc(%esp)\n" /* line 911 */
-        "movl $0x2a6fb8, 8(%esp)\n" /* "\%s" */
+        "movl $str_002a6fb8, 8(%esp)\n" /* "\%s" */
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll Com_sprintf\n"
-        "movl $0x1219d58, %edi\n" /* line 912 */
+        "movl $g_consoleField+24, %edi\n" /* line 912 */
         "xorl %esi, %esi\n"
         "cld\n"
         "movl $0xffffffff, %ecx\n"
@@ -2153,13 +2153,13 @@ void Console_Key(int key)
         "leal -1(%ecx, %edx), %ecx\n"
         "movl %ecx, 8(%esp)\n"
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncat\n"
         ".Lf140db4_001413db:\n"
         "movl $g_consoleField, (%esp)\n" /* line 914 */
         "calll Field_AdjustScroll\n"
-        "movl $0x1219d58, 4(%esp)\n" /* line 916 */
-        "movl $0x222d28, (%esp)\n" /* "]%s
+        "movl $g_consoleField+24, 4(%esp)\n" /* line 916 */
+        "movl $str_00222d28, (%esp)\n" /* "]%s
 " */
         "calll Com_Printf\n"
         "movl $PrintMatches, (%esp)\n" /* line 918 */
@@ -2171,9 +2171,9 @@ void Console_Key(int key)
         "calll keyConcatArgs\n" /* line 783 */
         "jmp .Lf140db4_001413db\n"
         ".Lf140db4_0014141f:\n"
-        "movl $0x217914, 8(%esp)\n" /* line 892 */
+        "movl $str_00217914, 8(%esp)\n" /* line 892 */
         "movl $0x100, 4(%esp)\n"
-        "movl $0x1219d58, (%esp)\n"
+        "movl $g_consoleField+24, (%esp)\n"
         "calll I_strncat\n"
         "jmp .Lf140db4_00141269\n"
         ".Lf140db4_00141440:\n"
@@ -2212,7 +2212,7 @@ void Console_Key(int key)
         "cmpb $0, -0x11c(%ebp)\n" /* line 798 */
         "je .Lf140db4_00141269\n"
         "movl %edx, %ecx\n" /* line 801 */
-        "movl $0x1219d58, %edi\n"
+        "movl $g_consoleField+24, %edi\n"
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movl %ecx, %eax\n" /* line 802 */
@@ -2229,7 +2229,7 @@ void Console_Key(int key)
         "movl %eax, 8(%esp)\n"
         "leal -0x11c(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "addl $0x1219d58, %edx\n"
+        "addl $g_consoleField+24, %edx\n"
         "movl %edx, (%esp)\n"
         "calll I_strncpyz\n"
         "jmp .Lf140db4_00141269\n"
@@ -2279,7 +2279,7 @@ void Console_Key(int key)
         "cmpb $0, -0x11c(%ebp)\n" /* line 798 */
         "je .Lf140db4_00141269\n"
         "movl %edx, %ecx\n" /* line 801 */
-        "movl $0x1219d58, %edi\n"
+        "movl $g_consoleField+24, %edi\n"
         "repne scasb %es:(%edi), %al\n"
         "notl %ecx\n"
         "movl %ecx, %eax\n" /* line 802 */
@@ -2293,7 +2293,7 @@ void Console_Key(int key)
         "jmp .Lf140db4_001414f6\n"
         ".Lf140db4_001415ff:\n"
         "leal 0xf(%ecx), %eax\n" /* line 802 */
-        "leal 0x1219d48(%eax), %esi\n"
+        "leal g_consoleField+8(%eax), %esi\n"
         "movl -0x534(%ebp), %ebx\n"
         "movl $0, -0x52c(%ebp)\n"
         "subl %eax, %ecx\n"
@@ -2321,7 +2321,7 @@ void Console_Key(int key)
         "jmp .Lf140db4_00141623\n"
         ".Lf140db4_00141673:\n"
         "leal 0xf(%ecx), %eax\n"
-        "leal 0x1219d48(%eax), %esi\n"
+        "leal g_consoleField+8(%eax), %esi\n"
         "movl -0x53c(%ebp), %ebx\n"
         "movl $0, -0x530(%ebp)\n"
         "subl %eax, %ecx\n"
@@ -2384,7 +2384,7 @@ void Key_WriteBindings(fileHandle_t f)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl $0x2162f4, 4(%esp)\n" /* line 1509 */
+        "movl $str_002162f4, 4(%esp)\n" /* line 1509 */
         "movl 8(%ebp), %eax\n" /* f */
         "movl %eax, (%esp)\n"
         "calll FS_Printf\n"
@@ -2402,11 +2402,11 @@ void Key_WriteBindings(fileHandle_t f)
         "je .Lf141724_001418bd\n"
         "cmpl $0xff, %esi\n" /* line 1278 */
         "jbe .Lf141724_00141817\n"
-        "movl $0x2a6ec0, %ecx\n" /* "<OUT OF RANGE>" */
+        "movl $str_002a6ec0, %ecx\n" /* "<OUT OF RANGE>" */
         /* } scope */
         ".Lf141724_00141778:\n"
         "movl %ecx, 8(%esp)\n" /* line 1515 */
-        "movl $0x2a6fd0, 4(%esp)\n" /* "bind %s "" */
+        "movl $str_002a6fd0, 4(%esp)\n" /* "bind %s "" */
         "movl 8(%ebp), %eax\n" /* f */
         "movl %eax, (%esp)\n"
         "calll FS_Printf\n"
@@ -2420,7 +2420,7 @@ void Key_WriteBindings(fileHandle_t f)
         ".Lf141724_001417a3:\n"
         "movsbl %al, %eax\n" /* line 1521 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a6fe0, 4(%esp)\n" /* "%c" */
+        "movl $str_002a6fe0, 4(%esp)\n" /* "%c" */
         "movl 8(%ebp), %eax\n" /* f */
         "movl %eax, (%esp)\n"
         "calll FS_Printf\n"
@@ -2431,7 +2431,7 @@ void Key_WriteBindings(fileHandle_t f)
         ".Lf141724_001417c8:\n"
         "cmpb $0x22, %al\n" /* line 1518 */
         "jne .Lf141724_001417a3\n"
-        "movl $0x2a6fdc, 4(%esp)\n" /* line 1519 */
+        "movl $str_002a6fdc, 4(%esp)\n" /* line 1519 */
         "movl 8(%ebp), %eax\n" /* f */
         "movl %eax, (%esp)\n"
         "calll FS_Printf\n"
@@ -2440,7 +2440,7 @@ void Key_WriteBindings(fileHandle_t f)
         "testb %al, %al\n"
         "jne .Lf141724_001417c8\n"
         ".Lf141724_001417ea:\n"
-        "movl $0x2a6fe4, 4(%esp)\n" /* line 1523 */
+        "movl $str_002a6fe4, 4(%esp)\n" /* line 1523 */
         "movl 8(%ebp), %eax\n" /* f */
         "movl %eax, (%esp)\n"
         "calll FS_Printf\n"
@@ -2467,7 +2467,7 @@ void Key_WriteBindings(fileHandle_t f)
         "movl %esi, (%esp)\n" /* line 1288 */
         "calll ___toupper\n"
         "movb %al, tinystr\n"
-        "movb $0, 0xceba09\n" /* line 1289 */
+        "movb $0, tinystr+1\n" /* line 1289 */
         "cmpl $0x3b, %esi\n" /* line 1290 */
         "je .Lf141724_00141848\n"
         "movl $tinystr, %ecx\n" /* line 1334 */
@@ -2476,9 +2476,9 @@ void Key_WriteBindings(fileHandle_t f)
         "movl keynames, %ecx\n" /* line 1320 */
         "testl %ecx, %ecx\n"
         "je .Lf141724_00141879\n"
-        "cmpl %esi, 0x311824\n" /* line 1322 */
+        "cmpl %esi, keynames+4\n" /* line 1322 */
         "je .Lf141724_00141778\n"
-        "movl $0x311828, %edx\n" /* line 1504 */
+        "movl $keynames+8, %edx\n" /* line 1504 */
         "jmp .Lf141724_00141873\n"
         ".Lf141724_00141865:\n"
         "movl 4(%edx), %eax\n" /* line 1322 */
@@ -2495,22 +2495,22 @@ void Key_WriteBindings(fileHandle_t f)
         "movl %esi, %edx\n" /* line 1328 */
         "andl $0xf, %edx\n"
         "movb $0x30, tinystr\n" /* line 1330 */
-        "movb $0x78, 0xceba09\n" /* line 1331 */
+        "movb $0x78, tinystr+1\n" /* line 1331 */
         "cmpl $9, %eax\n" /* line 1332 */
         "jle .Lf141724_001418cc\n"
         "addb $0x57, %al\n"
         ".Lf141724_00141898:\n"
-        "movb %al, 0xceba0a\n"
+        "movb %al, tinystr+2\n"
         "cmpl $9, %edx\n" /* line 1333 */
         "jle .Lf141724_001418c7\n"
         "leal 0x57(%edx), %eax\n"
         ".Lf141724_001418a6:\n"
-        "movb %al, 0xceba0b\n"
-        "movb $0, 0xceba0c\n" /* line 1334 */
+        "movb %al, tinystr+3\n"
+        "movb $0, tinystr+4\n" /* line 1334 */
         "movl $tinystr, %ecx\n"
         "jmp .Lf141724_00141778\n"
         ".Lf141724_001418bd:\n"
-        "movl $0x2a6eb0, %ecx\n" /* line 1275 */
+        "movl $str_002a6eb0, %ecx\n" /* line 1275 */
         "jmp .Lf141724_00141778\n"
         ".Lf141724_001418c7:\n"
         "leal 0x30(%edx), %eax\n" /* line 1333 */
@@ -2538,12 +2538,12 @@ void Key_Bindlist_f(void)
         /* { scope 1 */
         /* { scope 2 */
         ".Lf1418d0_001418df:\n"
-        "movl $0x2a6ec0, %ecx\n" /* line 1278 */
+        "movl $str_002a6ec0, %ecx\n" /* line 1278 */
         /* } scope */
         ".Lf1418d0_001418e4:\n"
         "movl %ebx, 8(%esp)\n" /* line 1600 */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x219570, (%esp)\n" /* "%s "%s"
+        "movl $str_00219570, (%esp)\n" /* "%s "%s"
 " */
         "calll Com_Printf\n"
         ".Lf1418d0_001418f8:\n"
@@ -2571,7 +2571,7 @@ void Key_Bindlist_f(void)
         "movl %esi, (%esp)\n" /* line 1288 */
         "calll ___toupper\n"
         "movb %al, tinystr\n"
-        "movb $0, 0xceba09\n" /* line 1289 */
+        "movb $0, tinystr+1\n" /* line 1289 */
         "cmpl $0x3b, %esi\n" /* line 1290 */
         "je .Lf1418d0_0014195b\n"
         "movl $tinystr, %ecx\n" /* line 1334 */
@@ -2580,9 +2580,9 @@ void Key_Bindlist_f(void)
         "movl keynames, %ecx\n" /* line 1320 */
         "testl %ecx, %ecx\n"
         "je .Lf1418d0_0014198c\n"
-        "cmpl %esi, 0x311824\n" /* line 1322 */
+        "cmpl %esi, keynames+4\n" /* line 1322 */
         "je .Lf1418d0_001418e4\n"
-        "movl $0x311828, %edx\n" /* line 1592 */
+        "movl $keynames+8, %edx\n" /* line 1592 */
         "jmp .Lf1418d0_00141986\n"
         ".Lf1418d0_00141978:\n"
         "movl 4(%edx), %eax\n" /* line 1322 */
@@ -2599,22 +2599,22 @@ void Key_Bindlist_f(void)
         "movl %esi, %edx\n" /* line 1328 */
         "andl $0xf, %edx\n"
         "movb $0x30, tinystr\n" /* line 1330 */
-        "movb $0x78, 0xceba09\n" /* line 1331 */
+        "movb $0x78, tinystr+1\n" /* line 1331 */
         "cmpl $9, %eax\n" /* line 1332 */
         "jle .Lf1418d0_001419df\n"
         "addb $0x57, %al\n"
         ".Lf1418d0_001419ab:\n"
-        "movb %al, 0xceba0a\n"
+        "movb %al, tinystr+2\n"
         "cmpl $9, %edx\n" /* line 1333 */
         "jle .Lf1418d0_001419da\n"
         "leal 0x57(%edx), %eax\n"
         ".Lf1418d0_001419b9:\n"
-        "movb %al, 0xceba0b\n"
-        "movb $0, 0xceba0c\n" /* line 1334 */
+        "movb %al, tinystr+3\n"
+        "movb $0, tinystr+4\n" /* line 1334 */
         "movl $tinystr, %ecx\n"
         "jmp .Lf1418d0_001418e4\n"
         ".Lf1418d0_001419d0:\n"
-        "movl $0x2a6eb0, %ecx\n" /* line 1275 */
+        "movl $str_002a6eb0, %ecx\n" /* line 1275 */
         "jmp .Lf1418d0_001418e4\n"
         ".Lf1418d0_001419da:\n"
         "leal 0x30(%edx), %eax\n" /* line 1333 */
@@ -2665,7 +2665,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "je .Lf1419ec_00141a50\n"
         "cmpl $0x7e, %esi\n" /* key */
         "je .Lf1419ec_00141a50\n"
-        "movl 0x195ee78, %edx\n"
+        "movl imp_cl, %edx\n"
         "movl (%edx), %eax\n"
         "testb $1, 4(%eax)\n"
         "je .Lf1419ec_00141b8a\n"
@@ -2676,7 +2676,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         ".Lf1419ec_00141a5d:\n"
         "cmpl $1, 4(%ebx, %eax)\n"
         "jle .Lf1419ec_00141b51\n"
-        "movl 0x195ee78, %edx\n" /* line 1690 */
+        "movl imp_cl, %edx\n" /* line 1690 */
         "movl (%edx), %eax\n"
         "movl 4(%eax), %eax\n"
         "testb $0x11, %al\n"
@@ -2700,7 +2700,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "cmpl $0x7f, %esi\n" /* line 1807 | key */
         "jg .Lf1419ec_00141cc3\n"
         ".Lf1419ec_00141ac4:\n"
-        "movl 0x195ee8c, %eax\n"
+        "movl imp_clc, %eax\n"
         "movl (%eax), %eax\n"
         "movl 0x407a0(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -2714,7 +2714,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "cmpl $0x1b, %esi\n" /* line 1815 | key */
         "je .Lf1419ec_00141d21\n"
         ".Lf1419ec_00141af6:\n"
-        "movl 0x195ee78, %edx\n" /* line 1881 */
+        "movl imp_cl, %edx\n" /* line 1881 */
         "movl (%edx), %eax\n"
         "cmpb $0, 9(%eax)\n"
         "jne .Lf1419ec_00141ce1\n"
@@ -2728,11 +2728,11 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "cmpb $0x2b, (%eax)\n"
         "je .Lf1419ec_00141ea1\n"
         ".Lf1419ec_00141b26:\n"
-        "movl 0x195ee78, %eax\n" /* line 1901 */
+        "movl imp_cl, %eax\n" /* line 1901 */
         "movl (%eax), %eax\n"
         "testb $8, 4(%eax)\n"
         "je .Lf1419ec_00141b46\n"
-        "movl 0x195ecac, %eax\n"
+        "movl imp_cls, %eax\n"
         "movl 0x110(%eax), %ebx\n"
         "testl %ebx, %ebx\n"
         "jne .Lf1419ec_00141db7\n"
@@ -2765,7 +2765,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl 8(%ebx, %eax), %eax\n"
         "testl %eax, %eax\n" /* line 1664 */
         "je .Lf1419ec_00141a50\n"
-        "movl $0x227174, 4(%esp)\n" /* "devgui" */
+        "movl $str_00227174, 4(%esp)\n" /* "devgui" */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -2783,7 +2783,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         ".Lf1419ec_00141bdd:\n"
         "testl %edi, %edi\n" /* line 1778 | down */
         "je .Lf1419ec_00141b46\n"
-        "movl 0x195ee78, %eax\n" /* line 1784 */
+        "movl imp_cl, %eax\n" /* line 1784 */
         "movl (%eax), %eax\n"
         "testb $1, 4(%eax)\n"
         "je .Lf1419ec_00141cfa\n"
@@ -2798,7 +2798,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "calll Con_ToggleConsoleOutput\n" /* line 1793 */
         "jmp .Lf1419ec_00141b46\n"
         ".Lf1419ec_00141c20:\n"
-        "movl 0x195f254, %eax\n" /* line 1910 */
+        "movl imp_cl_bypassMouseInput, %eax\n" /* line 1910 */
         "movl (%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1419ec_00141da6\n"
@@ -2810,7 +2810,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         ".Lf1419ec_00141c48:\n"
         "movl $1, %edx\n" /* line 1916 */
         ".Lf1419ec_00141c4d:\n"
-        "movl 0x195ee78, %eax\n" /* line 1923 */
+        "movl imp_cl, %eax\n" /* line 1923 */
         "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "testb $1, %al\n"
@@ -2822,7 +2822,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         ".Lf1419ec_00141c6b:\n"
         "testb $0x10, %al\n" /* line 1937 */
         "jne .Lf1419ec_00141e83\n"
-        "movl 0x195ee8c, %eax\n" /* line 1941 */
+        "movl imp_clc, %eax\n" /* line 1941 */
         "movl (%eax), %eax\n"
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -2835,7 +2835,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "je .Lf1419ec_00141ede\n"
         "movl %eax, (%esp)\n" /* line 1968 */
         "calll Cbuf_AddText\n"
-        "movl $0x2160e8, (%esp)\n" /* line 1969 */
+        "movl $str_002160e8, (%esp)\n" /* line 1969 */
         "calll Cbuf_AddText\n"
         "jmp .Lf1419ec_00141b46\n"
         ".Lf1419ec_00141cb7:\n"
@@ -2844,7 +2844,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         ".Lf1419ec_00141cc3:\n"
         "cmpl $0xc8, %esi\n" /* line 1807 | key */
         "je .Lf1419ec_00141ac4\n"
-        "movl 0x195ee78, %edx\n" /* line 1881 */
+        "movl imp_cl, %edx\n" /* line 1881 */
         "movl (%edx), %eax\n"
         "cmpb $0, 9(%eax)\n"
         "je .Lf1419ec_00141b08\n"
@@ -2856,11 +2856,11 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "je .Lf1419ec_00141b08\n"
         "jmp .Lf1419ec_00141b46\n"
         ".Lf1419ec_00141cfa:\n"
-        "movl 0x195ecbc, %eax\n" /* line 1784 */
+        "movl imp_com_sv_running, %eax\n" /* line 1784 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1419ec_00141bf6\n"
-        "movl 0x195f264, %eax\n"
+        "movl imp_sv_disableClientConsole, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf1419ec_00141b46\n"
@@ -2869,27 +2869,27 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "testl %edi, %edi\n" /* line 1815 | down */
         "je .Lf1419ec_00141af6\n"
         ".Lf1419ec_00141d29:\n"
-        "movl 0x195ee78, %edx\n" /* line 1828 */
+        "movl imp_cl, %edx\n" /* line 1828 */
         "movl (%edx), %eax\n"
         "movl 4(%eax), %eax\n"
         "testb $0x10, %al\n"
         "jne .Lf1419ec_00141e90\n"
         "testb $8, %al\n" /* line 1835 */
         "jne .Lf1419ec_00141ddb\n"
-        "movl 0x195ee8c, %eax\n" /* line 1837 */
+        "movl imp_clc, %eax\n" /* line 1837 */
         "movl (%eax), %edx\n"
         "cmpl $8, (%edx)\n"
         "ja .Lf1419ec_00141e01\n"
         "movl (%edx), %eax\n"
-        "jmpl *0x302520(, %eax, 4)\n"
+        "jmpl *yy_ec+2112(, %eax, 4)\n"
         ".Lf1419ec_00141d5d:\n"
-        "movl 0x195ee78, %edx\n" /* line 1807 */
+        "movl imp_cl, %edx\n" /* line 1807 */
         "movl (%edx), %eax\n"
         "movl 4(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf1419ec_00141aed\n"
-        "movl $0x2157b8, 4(%esp)\n" /* line 1810 */
-        "movl 0x195f25c, %eax\n"
+        "movl $str_002157b8, 4(%esp)\n" /* line 1810 */
+        "movl imp_nextdemo, %eax\n"
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetString\n"
@@ -2929,7 +2929,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "calll UI_KeyEvent\n"
         "jmp .Lf1419ec_00141b46\n"
         ".Lf1419ec_00141e01:\n"
-        "movl 0x195ecac, %eax\n" /* line 1869 */
+        "movl imp_cls, %eax\n" /* line 1869 */
         "movl 0x110(%eax), %esi\n" /* key */
         "testl %esi, %esi\n" /* key */
         "je .Lf1419ec_00141b46\n"
@@ -2940,7 +2940,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl 0x407a0(%edx), %edi\n" /* line 1840 | down */
         "testl %edi, %edi\n" /* down */
         "jne .Lf1419ec_00141e14\n"
-        "movl 0x195ecb4, %eax\n" /* line 1843 */
+        "movl imp_legacyHacks, %eax\n" /* line 1843 */
         "movl (%eax), %eax\n"
         "cmpb $0, 0xdc(%eax)\n"
         "jne .Lf1419ec_00141e14\n"
@@ -2950,11 +2950,11 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "calll CL_StopLogoOrCinematic\n" /* line 1856 */
         "jmp .Lf1419ec_00141b46\n"
         "calll CL_Disconnect\n" /* line 1862 */
-        "movl 0x195ecbc, %eax\n" /* line 1864 */
+        "movl imp_com_sv_running, %eax\n" /* line 1864 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lf1419ec_00141b46\n"
-        "movl 0x195ecb4, %eax\n" /* line 1865 */
+        "movl imp_legacyHacks, %eax\n" /* line 1865 */
         "movl (%eax), %eax\n"
         "movb $1, 0xdd(%eax)\n"
         "jmp .Lf1419ec_00141b46\n"
@@ -2972,7 +2972,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl %esi, 0x10(%esp)\n" /* key */
         "addl $1, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a6fe8, 8(%esp)\n" /* "-%s %i %i
+        "movl $str_002a6fe8, 8(%esp)\n" /* "-%s %i %i
 " */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* cmd */
@@ -2986,7 +2986,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl %edx, 0x14(%esp)\n"
         "movl %esi, 0x10(%esp)\n" /* key */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a7020, 8(%esp)\n" /* "%s %i %i
+        "movl $str_002a7020, 8(%esp)\n" /* "%s %i %i
 " */
         "movl $0x400, 4(%esp)\n"
         "leal -0x418(%ebp), %ebx\n" /* cmd */
@@ -3001,11 +3001,11 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         /* { scope 2 */
         "cmpl $0xff, %esi\n" /* line 1278 */
         "jbe .Lf1419ec_00141f46\n"
-        "movl $0x2a6ec0, %ecx\n" /* "<OUT OF RANGE>" */
+        "movl $str_002a6ec0, %ecx\n" /* "<OUT OF RANGE>" */
         /* } scope */
         ".Lf1419ec_00141f31:\n"
         "movl %ecx, 4(%esp)\n" /* line 1955 */
-        "movl $0x2a6ff4, (%esp)\n" /* "%s is unbound, use controls menu to set.
+        "movl $str_002a6ff4, (%esp)\n" /* "%s is unbound, use controls menu to set.
 " */
         "calll Com_Printf\n"
         "jmp .Lf1419ec_00141b46\n"
@@ -3017,9 +3017,9 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl keynames, %ecx\n" /* line 1320 */
         "testl %ecx, %ecx\n"
         "je .Lf1419ec_00141f77\n"
-        "cmpl 0x311824, %esi\n" /* line 1322 */
+        "cmpl keynames+4, %esi\n" /* line 1322 */
         "je .Lf1419ec_00141f31\n"
-        "movl $0x311828, %edx\n" /* line 1628 */
+        "movl $keynames+8, %edx\n" /* line 1628 */
         "jmp .Lf1419ec_00141f71\n"
         ".Lf1419ec_00141f67:\n"
         "movl 4(%edx), %eax\n" /* line 1322 */
@@ -3036,25 +3036,25 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl %esi, %eax\n" /* line 1328 */
         "andl $0xf, %eax\n"
         "movb $0x30, tinystr\n" /* line 1330 */
-        "movb $0x78, 0xceba09\n" /* line 1331 */
+        "movb $0x78, tinystr+1\n" /* line 1331 */
         "cmpl $9, %edx\n" /* line 1332 */
         "jle .Lf1419ec_00141fde\n"
         "addb $0x57, %dl\n"
         ".Lf1419ec_00141f97:\n"
-        "movb %dl, 0xceba0a\n"
+        "movb %dl, tinystr+2\n"
         "cmpl $9, %eax\n" /* line 1333 */
         "jle .Lf1419ec_00141fda\n"
         "addb $0x57, %al\n"
         ".Lf1419ec_00141fa4:\n"
-        "movb %al, 0xceba0b\n"
-        "movb $0, 0xceba0c\n" /* line 1334 */
+        "movb %al, tinystr+3\n"
+        "movb $0, tinystr+4\n" /* line 1334 */
         "movl $tinystr, %ecx\n"
         "jmp .Lf1419ec_00141f31\n"
         ".Lf1419ec_00141fbb:\n"
         "movl %esi, (%esp)\n" /* line 1288 */
         "calll ___toupper\n"
         "movb %al, tinystr\n"
-        "movb $0, 0xceba09\n" /* line 1289 */
+        "movb $0, tinystr+1\n" /* line 1289 */
         "movl $tinystr, %ecx\n"
         "jmp .Lf1419ec_00141f31\n"
         ".Lf1419ec_00141fda:\n"

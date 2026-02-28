@@ -16,7 +16,7 @@ extern void Com_Error(int level, const char *fmt, ...);
 extern void *CM_Hunk_Alloc(int size, const char *name, int align);
 extern int sscanf(const char *str, const char *fmt, ...);
 
-extern byte *cm_global; /* 0x195eda4 */
+extern byte *cm_global; /* imp_cm */
 
 void CM_LoadStaticModels(void)
 {

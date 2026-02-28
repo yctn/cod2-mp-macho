@@ -225,7 +225,7 @@ int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2)
 unsigned int FindNextSibling(unsigned int id)
 {
     unsigned int nextIdx = *(unsigned short *)(0x104cf0e + id * 16);
-    unsigned int sibling = *(unsigned short *)(0x104cf00 + nextIdx * 16);
+    unsigned int sibling = *(unsigned short *)((byte *)&scrVarGlob + nextIdx * 16);
     if (sibling == id || (*(unsigned int *)(0x104cf08 + sibling * 16) & 0x1f) > 0xe)
         return 0;
     return sibling;
@@ -260,20 +260,20 @@ JCOEF Var_Init(void)
         "movw %cx, 0xc(%edx)\n" /* line 647 */
         "movzwl %si, %eax\n" /* line 648 */
         "shll $4, %eax\n"
-        "movw %cx, 0x104cf04(%eax)\n"
+        "movw %cx, scrVarGlob+4(%eax)\n"
         "movw %si, 2(%edx)\n" /* line 649 */
         "addl $1, %ecx\n" /* line 640 */
         "cmpl $0xfffe, %ecx\n"
         "jne .Lf88b4c_00088b5a\n"
-        "movl $0, 0x104cf08\n" /* line 664 */
+        "movl $0, scrVarGlob+8\n" /* line 664 */
         "movw $0, scrVarGlob\n" /* line 665 */
-        "movw $0, 0x104cf0c\n" /* line 666 */
+        "movw $0, scrVarGlob+12\n" /* line 666 */
         "movzwl %bx, %eax\n" /* line 667 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf04(%eax)\n"
-        "movw %bx, 0x104cf02\n" /* line 668 */
-        "movl $0x30aa42, %eax\n"
-        "movl $0x30aa72, %edx\n"
+        "movw $0, scrVarGlob+4(%eax)\n"
+        "movw %bx, scrVarGlob+2\n" /* line 668 */
+        "movl $g_classMap+2, %eax\n"
+        "movl $g_classMap+50, %edx\n"
         ".Lf88b4c_00088bd3:\n"
         "movw $0, (%eax)\n" /* line 689 */
         "movw $0, -2(%eax)\n" /* line 690 */
@@ -413,19 +413,19 @@ JCOEF RemoveRefToEmptyObject(unsigned int id)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         "popl %ebx\n" /* line 1826 */
@@ -492,7 +492,7 @@ unsigned int Scr_EvalVariableObject(unsigned int id)
             return objectId;
     }
 
-    Scr_Error(va((const char *)0x21d344, var_typename[type])); /* "%s is not a field object" */
+    Scr_Error(va((const char *)str_0021d344, var_typename[type])); /* "%s is not a field object" */
     return 0;
 }
 
@@ -725,7 +725,7 @@ int Scr_GetOffset(int classnum, const char *name)
         "testw %ax, %ax\n" /* line 3764 */
         "je .Lf8910a_000891e4\n"
         "shll $4, %edx\n"
-        "movl 0x104cf04(%edx), %eax\n"
+        "movl scrVarGlob+4(%edx), %eax\n"
         /* } scope */
         "addl $0x1c, %esp\n" /* line 3765 */
         "popl %ebx\n"
@@ -788,10 +788,10 @@ unsigned int FindEntityId(int entnum, int classnum)
         "movl 0xc(%ebp), %eax\n" /* classnum */
         /* { scope 1 */
         "movl 8(%ebp), %esi\n" /* line 1980 | entnum, name */
-        "addl $0x800000, %esi\n" /* name */
-        "andl $0xffffff, %esi\n" /* name */
+        "addl $s_debugFrameGlob+57728, %esi\n" /* name */
+        "andl $g_effectVisArray+4351, %esi\n" /* name */
         "leal (%eax, %eax, 2), %eax\n" /* line 801 */
-        "movzwl 0x30aa42(, %eax, 4), %ecx\n" /* index */
+        "movzwl g_classMap+2(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
         "movl $0x80018005, %edx\n"
         "movl %ecx, %eax\n" /* index */
@@ -828,7 +828,7 @@ unsigned int FindEntityId(int entnum, int classnum)
         "testw %ax, %ax\n" /* line 3780 */
         "je .Lf891f2_000892c8\n"
         "shll $4, %edx\n" /* line 3788 */
-        "movl 0x104cf04(%edx), %eax\n"
+        "movl scrVarGlob+4(%edx), %eax\n"
         /* } scope */
         "popl %ebx\n" /* line 3789 */
         "popl %esi\n"
@@ -887,8 +887,8 @@ unsigned int FindArrayVariable(unsigned int parentId, int intValue)
         "pushl %esi\n"
         "pushl %ebx\n"
         "movl 0xc(%ebp), %esi\n" /* line 1980 | intValue, name */
-        "addl $0x800000, %esi\n" /* name */
-        "andl $0xffffff, %esi\n" /* name */
+        "addl $s_debugFrameGlob+57728, %esi\n" /* name */
+        "andl $g_effectVisArray+4351, %esi\n" /* name */
         "movl 8(%ebp), %ecx\n" /* line 801 | parentId, index */
         "addl %esi, %ecx\n" /* name, index */
         "movl $0x80018005, %edx\n"
@@ -1167,7 +1167,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         "movl %eax, 0xc(%esp)\n"
         "movl 8(%ebp), %eax\n" /* path */
         "movl %eax, 8(%esp)\n"
-        "movl $0x216e18, 4(%esp)\n" /* "%s/%s" */
+        "movl $str_00216e18, 4(%esp)\n" /* "%s/%s" */
         "leal -0x64(%ebp), %edx\n" /* filename */
         "movl %edx, (%esp)\n"
         "calll sprintf\n"
@@ -1196,7 +1196,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         "movl %eax, (%esp)\n"
         "calll FS_FCloseFile\n"
         "movl %ebx, -0x20(%ebp)\n" /* line 4449 | targetPos, sourcePos */
-        "movl $0x21d374, (%esp)\n" /* line 4451 */
+        "movl $str_0021d374, (%esp)\n" /* line 4451 */
         "calll Com_BeginParseSession\n"
         "leal -0x20(%ebp), %ecx\n" /* line 4455 | sourcePos */
         "movl %ecx, (%esp)\n"
@@ -1206,7 +1206,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         "testl %eax, %eax\n"
         "je .Lf894c8_0008970e\n"
         ".Lf894c8_00089601:\n"
-        "movl $0x21d274, %edi\n" /* line 4459 */
+        "movl $str_0021d274, %edi\n" /* line 4459 */
         "movl $6, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* targetPos, len */
@@ -1219,7 +1219,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         ".Lf894c8_00089621:\n"
         "testl %edx, %edx\n"
         "je .Lf894c8_00089790\n"
-        "movl $0x21d27c, %edi\n" /* line 4461 */
+        "movl $str_0021d27c, %edi\n" /* line 4461 */
         "movl $4, %ecx\n"
         "movl %ebx, %esi\n" /* targetPos, len */
         "repe cmpsb %es:(%edi), (%esi)\n" /* len */
@@ -1333,7 +1333,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         "movl %edx, 0xc(%esp)\n"
         "movl -0x6c(%ebp), %ecx\n"
         "movl %ecx, 8(%esp)\n"
-        "movl $0x21d3bc, 4(%esp)\n" /* "duplicate key '%s' in '%s'" */
+        "movl $str_0021d3bc, 4(%esp)\n" /* "duplicate key '%s' in '%s'" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf894c8_000896c0\n"
@@ -1349,7 +1349,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         ".Lf894c8_000897b0:\n"
         "leal -0x64(%ebp), %ecx\n" /* line 4475 | filename */
         "movl %ecx, 4(%esp)\n"
-        "movl $0x21d3a0, (%esp)\n" /* "missing field name in '%s'" */
+        "movl $str_0021d3a0, (%esp)\n" /* "missing field name in '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -1357,7 +1357,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         "movl -0x6c(%ebp), %edi\n"
         "jmp .Lf894c8_00089672\n"
         ".Lf894c8_000897db:\n"
-        "movl $0x21d250, %edi\n" /* line 4463 */
+        "movl $str_0021d250, %edi\n" /* line 4463 */
         "movl $7, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* targetPos, len */
@@ -1373,7 +1373,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         "movl $2, -0x74(%ebp)\n" /* type */
         "jmp .Lf894c8_00089657\n"
         ".Lf894c8_0008980b:\n"
-        "movl $0x21d26c, %edi\n" /* line 4465 */
+        "movl $str_0021d26c, %edi\n" /* line 4465 */
         "movl $7, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* targetPos, len */
@@ -1391,7 +1391,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         ".Lf894c8_0008983b:\n"
         "leal -0x64(%ebp), %edx\n" /* line 4441 | filename */
         "movl %edx, 4(%esp)\n"
-        "movl $0x21d360, (%esp)\n" /* "cannot find '%s'" */
+        "movl $str_0021d360, (%esp)\n" /* "cannot find '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -1401,7 +1401,7 @@ JCOEF Scr_AddFields(const char *path, const char *extension)
         "leal -0x64(%ebp), %eax\n" /* line 4469 | filename */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* targetPos */
-        "movl $0x21d384, (%esp)\n" /* "unknown type '%s' in '%s'" */
+        "movl $str_0021d384, (%esp)\n" /* "unknown type '%s' in '%s'" */
         "calll va\n"
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
@@ -1475,7 +1475,7 @@ VariableValue Scr_EvalVariable(unsigned int id)
         "jne .Lf89890_000898d9\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1748 */
         "shll $4, %eax\n"
-        "addw $1, 0x104cf04(%eax)\n"
+        "addw $1, scrVarGlob+4(%eax)\n"
         "movl -0x1c(%ebp), %ebx\n"
         "jmp .Lf89890_000898c8\n"
         ".Lf89890_00089913:\n"
@@ -1530,10 +1530,10 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "movzwl scrVarGlob(%eax), %eax\n"
         "shll $4, %eax\n"
         "movl -0x20(%ebp), %ebx\n" /* newIndex */
-        "movw %bx, 0x104cf04(%eax)\n" /* newIndex */
+        "movw %bx, scrVarGlob+4(%eax)\n" /* newIndex */
         "movzwl %bx, %eax\n" /* line 852 | newIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "movl $0x40, 8(%ecx)\n" /* line 854 */
         "movl -0x24(%ebp), %eax\n" /* line 855 */
         "movw %ax, 0xc(%ecx)\n"
@@ -1576,9 +1576,9 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf04(%eax)\n"
+        "movw %dx, scrVarGlob+4(%eax)\n"
         "shll $4, %edx\n" /* line 924 */
-        "movw %cx, 0x104cf02(%edx)\n"
+        "movw %cx, scrVarGlob+2(%edx)\n"
         "movl %esi, %ecx\n" /* entry */
         ".Lf89918_00089a52:\n"
         "movzwl 0xe(%edi), %eax\n" /* line 947 | entryValue */
@@ -1586,9 +1586,9 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "shll $4, %edx\n"
         "movzwl scrVarGlob(%edx), %edx\n"
         "shll $4, %edx\n"
-        "movw %bx, 0x104cf0e(%edx)\n" /* newIndex */
+        "movw %bx, scrVarGlob+14(%edx)\n" /* newIndex */
         "shll $4, %eax\n" /* line 949 */
-        "movw %bx, 0x104cf02(%eax)\n" /* newIndex */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* newIndex */
         "cmpl $0x20, -0x28(%ebp)\n" /* line 951 | type */
         "je .Lf89918_00089c88\n"
         "movw %bx, 0xc(%edi)\n" /* line 971 | newIndex, entryValue */
@@ -1618,7 +1618,7 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "movl %esi, %ecx\n" /* entry */
         "jmp .Lf89918_00089992\n"
         ".Lf89918_00089ae2:\n"
-        "movzwl 0x104cf04, %ebx\n" /* line 929 | newIndex */
+        "movzwl scrVarGlob+4, %ebx\n" /* line 929 | newIndex */
         "testw %bx, %bx\n" /* line 930 | newIndex */
         "je .Lf89918_00089d29\n"
         ".Lf89918_00089af2:\n"
@@ -1630,9 +1630,9 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl 4(%ecx), %eax\n" /* line 938 */
-        "movw %ax, 0x104cf04\n" /* line 939 */
+        "movw %ax, scrVarGlob+4\n" /* line 939 */
         "shll $4, %eax\n" /* line 940 */
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "jmp .Lf89918_00089a52\n"
         ".Lf89918_00089b2c:\n"
         "testb $0x60, 8(%esi)\n" /* line 862 | entry */
@@ -1650,10 +1650,10 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf04(%eax)\n"
+        "movw %dx, scrVarGlob+4(%eax)\n"
         "shll $4, %edx\n" /* line 872 */
         "movzwl -0x22(%ebp), %eax\n"
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movzwl -0x2e(%ebp), %edx\n" /* line 874 */
         "movw %dx, scrVarGlob(%ecx)\n"
         "movl -0x44(%ebp), %ecx\n" /* line 875 */
@@ -1665,10 +1665,10 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "movzwl scrVarGlob(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl -0x1e(%ebp), %edx\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "movzwl 0xe(%edi), %eax\n" /* line 879 | entryValue */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "movl 8(%edi), %eax\n" /* line 882 | entryValue */
         "andl $0xffffff9f, %eax\n"
         "orl $0x20, %eax\n"
@@ -1738,7 +1738,7 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         /* { scope 2 */
         ".Lf89918_00089c70:\n"
         "movl -0x40(%ebp), %ebx\n" /* line 2172 | newIndex */
-        "subl $0x800000, %ebx\n" /* newIndex */
+        "subl $s_debugFrameGlob+57728, %ebx\n" /* newIndex */
         "movl %ebx, -0x38(%ebp)\n" /* newIndex, value */
         "movl $6, %eax\n"
         "movl %ebx, %edx\n" /* newIndex */
@@ -1750,7 +1750,7 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "movzwl scrVarGlob(%eax), %edx\n"
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
-        "movzwl 0x104cf0c(%eax), %eax\n"
+        "movzwl scrVarGlob+12(%eax), %eax\n"
         "cmpl %eax, -0x44(%ebp)\n"
         "je .Lf89918_00089cc2\n"
         ".Lf89918_00089ca7:\n"
@@ -1758,15 +1758,15 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "movzwl scrVarGlob(%eax), %edx\n"
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
-        "movzwl 0x104cf0c(%eax), %eax\n"
+        "movzwl scrVarGlob+12(%eax), %eax\n"
         "cmpl -0x44(%ebp), %eax\n"
         "jne .Lf89918_00089ca7\n"
         ".Lf89918_00089cc2:\n"
         "shll $4, %edx\n" /* line 965 */
-        "movw %bx, 0x104cf0c(%edx)\n" /* newIndex */
+        "movw %bx, scrVarGlob+12(%edx)\n" /* newIndex */
         "jmp .Lf89918_00089a86\n"
         ".Lf89918_00089cd1:\n"
-        "movzwl 0x104cf04, %eax\n" /* line 889 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 889 */
         "movzwl %ax, %ecx\n"
         "movl %ecx, -0x44(%ebp)\n"
         "testw %ax, %ax\n" /* line 890 */
@@ -1778,9 +1778,9 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl 4(%ecx), %eax\n" /* line 898 */
-        "movw %ax, 0x104cf04\n" /* line 899 */
+        "movw %ax, scrVarGlob+4\n" /* line 899 */
         "shll $4, %eax\n" /* line 900 */
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movl $0x20, 8(%ecx)\n" /* line 902 */
         "movzwl 0xc(%edi), %eax\n" /* line 903 | entryValue */
         "movw %ax, 0xc(%ecx)\n"
@@ -1788,7 +1788,7 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "movw %bx, 0xc(%edi)\n" /* newIndex, entryValue */
         "jmp .Lf89918_000899cb\n"
         ".Lf89918_00089d29:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 931 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 931 */
         "calll Scr_TerminalError\n"
         "jmp .Lf89918_00089af2\n"
         /* { scope 2 */
@@ -1796,11 +1796,11 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         "subl $1, %eax\n" /* line 1928 */
         "jne .Lf89918_000899f6\n"
         "shll $4, %ecx\n" /* line 1748 */
-        "addw $1, 0x104cf04(%ecx)\n"
+        "addw $1, scrVarGlob+4(%ecx)\n"
         "jmp .Lf89918_000899f6\n"
         /* } scope */
         ".Lf89918_00089d53:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 891 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 891 */
         "calll Scr_TerminalError\n"
         "movl -0x44(%ebp), %eax\n"
         "jmp .Lf89918_00089ce5\n"
@@ -1842,7 +1842,7 @@ unsigned int GetNewObjectVariableReverse(unsigned int parentId, unsigned int id)
         "addl $scrVarGlob, %edi\n" /* parentValue */
         "movzwl 0xe(%edi), %eax\n" /* line 1068 | parentValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf02(%eax), %ecx\n"
+        "movzwl scrVarGlob+2(%eax), %ecx\n"
         "shll $4, %ecx\n"
         "addl $scrVarGlob, %ecx\n"
         "movzwl 2(%ecx), %eax\n" /* line 1070 */
@@ -1858,14 +1858,14 @@ unsigned int GetNewObjectVariableReverse(unsigned int parentId, unsigned int id)
         "movl %eax, %ebx\n"
         "shll $4, %ebx\n"
         "movzwl 0xc(%edi), %edx\n" /* parentValue */
-        "movw %dx, 0x104cf0e(%ebx)\n"
+        "movw %dx, scrVarGlob+14(%ebx)\n"
         "movl -0x1c(%ebp), %edx\n" /* line 1077 */
         "movw %dx, 2(%ecx)\n"
         "movzwl -0x1e(%ebp), %ecx\n" /* line 1079 | siblingIndex */
-        "movw %cx, 0x104cf02(%esi)\n"
+        "movw %cx, scrVarGlob+2(%esi)\n"
         "movl -0x1c(%ebp), %ecx\n" /* line 1080 */
         "movl -0x24(%ebp), %edx\n"
-        "movw %cx, 0x104cf0e(%edx)\n"
+        "movw %cx, scrVarGlob+14(%edx)\n"
         /* } scope */
         /* } scope */
         "addl $0x1c, %esp\n" /* line 2259 */
@@ -1915,11 +1915,11 @@ unsigned int GetNewObjectVariable(unsigned int parentId, unsigned int id)
         "movzwl scrVarGlob(%esi), %edi\n" /* line 1043 */
         "movl %edi, %ecx\n"
         "shll $4, %ecx\n"
-        "movw %dx, 0x104cf0e(%ecx)\n"
+        "movw %dx, scrVarGlob+14(%ecx)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ebx), %edx\n" /* line 1046 | parentValue */
-        "movw %dx, 0x104cf02(%esi)\n"
+        "movw %dx, scrVarGlob+2(%esi)\n"
         "movw %ax, 0xe(%ebx)\n" /* line 1047 | parentValue */
         /* } scope */
         /* } scope */
@@ -1952,8 +1952,8 @@ JCOEF SetVariableEntityFieldValue(unsigned int entId, unsigned int fieldName, Va
         "movl 8(%eax), %edi\n" /* line 2468 */
         "shrl $8, %edi\n"
         "movl 0xc(%ebp), %esi\n" /* line 1980 | fieldName, name */
-        "addl $0x800000, %esi\n" /* name */
-        "andl $0xffffff, %esi\n" /* name */
+        "addl $s_debugFrameGlob+57728, %esi\n" /* name */
+        "andl $g_effectVisArray+4351, %esi\n" /* name */
         "leal (%edi, %edi, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -1995,7 +1995,7 @@ JCOEF SetVariableEntityFieldValue(unsigned int entId, unsigned int fieldName, Va
         "movl 0x10(%ebp), %ecx\n" /* line 2471 | value */
         "movl %ecx, 0xc(%esp)\n"
         "shll $4, %edx\n"
-        "movl 0x104cf04(%edx), %eax\n"
+        "movl scrVarGlob+4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x20(%ebp), %esi\n" /* entValue, name */
         "movzwl 6(%esi), %eax\n" /* name */
@@ -2028,12 +2028,12 @@ JCOEF SetVariableEntityFieldValue(unsigned int entId, unsigned int fieldName, Va
         "shll $4, %ebx\n" /* entryValue */
         "movzwl scrVarGlob(%ebx), %ecx\n" /* line 1043 | entryValue */
         "shll $4, %ecx\n"
-        "movw %dx, 0x104cf0e(%ecx)\n"
+        "movw %dx, scrVarGlob+14(%ecx)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movl -0x20(%ebp), %esi\n" /* line 1046 | entValue, name */
         "movzwl 0xc(%esi), %edx\n" /* name */
-        "movw %dx, 0x104cf02(%ebx)\n" /* entryValue */
+        "movw %dx, scrVarGlob+2(%ebx)\n" /* entryValue */
         "movw %ax, 0xe(%esi)\n" /* line 1047 | name */
         /* } scope */
         /* } scope */
@@ -2102,8 +2102,8 @@ JCOEF Scr_AddClassField(int classnum, const char *name, unsigned int offset)
         "movl %eax, -0x1c(%ebp)\n" /* classId */
         "movl %edi, (%esp)\n" /* line 3732 | name */
         "calll SL_GetCanonicalString\n"
-        "leal 0x800000(%eax), %esi\n" /* line 2014 | name */
-        "andl $0xffffff, %esi\n" /* name */
+        "leal s_debugFrameGlob+57728(%eax), %esi\n" /* line 2014 | name */
+        "andl $g_effectVisArray+4351, %esi\n" /* name */
         "movl -0x1c(%ebp), %ecx\n" /* line 1096 | classId */
         "addl %esi, %ecx\n" /* parentValue */
         "movl $0x80018005, %eax\n"
@@ -2129,11 +2129,11 @@ JCOEF Scr_AddClassField(int classnum, const char *name, unsigned int offset)
         "shll $4, %ebx\n"
         "movzwl scrVarGlob(%ebx), %ecx\n" /* line 1043 */
         "shll $4, %ecx\n"
-        "movw %dx, 0x104cf0e(%ecx)\n"
+        "movw %dx, scrVarGlob+14(%ecx)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%esi), %edx\n" /* line 1046 | parentValue */
-        "movw %dx, 0x104cf02(%ebx)\n"
+        "movw %dx, scrVarGlob+2(%ebx)\n"
         "movw %ax, 0xe(%esi)\n" /* line 1047 | parentValue */
         /* } scope */
         /* } scope */
@@ -2171,11 +2171,11 @@ JCOEF Scr_AddClassField(int classnum, const char *name, unsigned int offset)
         "shll $4, %ecx\n"
         "movzwl scrVarGlob(%ecx), %ebx\n" /* line 1043 */
         "shll $4, %ebx\n"
-        "movw %dx, 0x104cf0e(%ebx)\n"
+        "movw %dx, scrVarGlob+14(%ebx)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%esi), %edx\n" /* line 1046 | parentValue */
-        "movw %dx, 0x104cf02(%ecx)\n"
+        "movw %dx, scrVarGlob+2(%ecx)\n"
         "movw %ax, 0xe(%esi)\n" /* line 1047 | parentValue */
         /* } scope */
         /* } scope */
@@ -2211,8 +2211,8 @@ unsigned int GetNewArrayVariable(unsigned int parentId, unsigned int unsignedVal
         "subl $0xc, %esp\n"
         "movl 8(%ebp), %ebx\n" /* parentId */
         "movl 0xc(%ebp), %edi\n" /* line 2014 | unsignedValue, name */
-        "addl $0x800000, %edi\n" /* name */
-        "andl $0xffffff, %edi\n" /* name */
+        "addl $s_debugFrameGlob+57728, %edi\n" /* name */
+        "andl $g_effectVisArray+4351, %edi\n" /* name */
         "leal (%ebx, %edi), %ecx\n" /* line 1096 | parentValue */
         "movl $0x80018005, %eax\n"
         "mull %ecx\n"
@@ -2237,11 +2237,11 @@ unsigned int GetNewArrayVariable(unsigned int parentId, unsigned int unsignedVal
         "movzwl scrVarGlob(%esi), %edi\n" /* line 1043 */
         "movl %edi, %ecx\n"
         "shll $4, %ecx\n"
-        "movw %dx, 0x104cf0e(%ecx)\n"
+        "movw %dx, scrVarGlob+14(%ecx)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ebx), %edx\n" /* line 1046 | parentValue */
-        "movw %dx, 0x104cf02(%esi)\n"
+        "movw %dx, scrVarGlob+2(%esi)\n"
         "movw %ax, 0xe(%ebx)\n" /* line 1047 | parentValue */
         /* } scope */
         /* } scope */
@@ -2292,11 +2292,11 @@ unsigned int GetNewVariable(unsigned int parentId, unsigned int unsignedValue)
         "movzwl scrVarGlob(%esi), %edi\n" /* line 1043 */
         "movl %edi, %ecx\n"
         "shll $4, %ecx\n"
-        "movw %dx, 0x104cf0e(%ecx)\n"
+        "movw %dx, scrVarGlob+14(%ecx)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ebx), %edx\n" /* line 1046 | parentValue */
-        "movw %dx, 0x104cf02(%esi)\n"
+        "movw %dx, scrVarGlob+2(%esi)\n"
         "movw %ax, 0xe(%ebx)\n" /* line 1047 | parentValue */
         /* } scope */
         /* } scope */
@@ -2325,7 +2325,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 1 */
         "movl %eax, %edx\n" /* line 2654 */
         "shll $4, %edx\n"
-        "movzwl 0x104cf0e(%edx), %edx\n"
+        "movzwl scrVarGlob+14(%edx), %edx\n"
         "shll $4, %edx\n"
         "movzwl scrVarGlob(%edx), %edx\n"
         "movzwl %dx, %ebx\n"
@@ -2333,13 +2333,13 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a431\n"
         "movl %ebx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a431\n"
         "testw %dx, %dx\n" /* line 4325 */
         "je .Lf8a2a6_0008a431\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm3\n"
         "movl %ebx, %eax\n" /* line 4326 | id, entryValue */
         "shll $4, %eax\n" /* entryValue */
@@ -2361,7 +2361,7 @@ float Scr_GetObjectUsage(void)
         "addss %xmm0, %xmm2\n" /* line 4326 */
         "movl %ebx, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2369,7 +2369,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a439\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a439\n"
@@ -2396,7 +2396,7 @@ float Scr_GetObjectUsage(void)
         "cmpl $0x16, %eax\n"
         "jne .Lf8a2a6_0008a316\n"
         /* { scope 5 */
-        "movzwl 0x104cf0e(%edx), %eax\n" /* line 2654 */
+        "movzwl scrVarGlob+14(%edx), %eax\n" /* line 2654 */
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %esi\n"
@@ -2404,7 +2404,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a5ea\n"
         "movl %esi, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a5ea\n"
@@ -2433,7 +2433,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 6 */
         "movl %esi, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2441,7 +2441,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a5ed\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a5ed\n"
@@ -2455,7 +2455,7 @@ float Scr_GetObjectUsage(void)
         /* } scope */
         /* } scope */
         ".Lf8a2a6_0008a431:\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         /* } scope */
         ".Lf8a2a6_0008a439:\n"
         "movaps %xmm2, %xmm0\n" /* line 4329 */
@@ -2485,7 +2485,7 @@ float Scr_GetObjectUsage(void)
         "jne .Lf8a2a6_0008a3e5\n"
         /* { scope 9: id */
         "movl -0xcc(%ebp), %edx\n" /* line 2654 */
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %eax\n"
@@ -2493,7 +2493,7 @@ float Scr_GetObjectUsage(void)
         "cmpl %eax, %ecx\n" /* line 2660 */
         "je .Lf8a2a6_0008a609\n"
         "shll $4, %eax\n" /* line 2665 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a609\n"
@@ -2523,7 +2523,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 10 */
         "movl -0x1c(%ebp), %eax\n" /* line 2654 | id */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2531,7 +2531,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a637\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a630\n"
@@ -2556,7 +2556,7 @@ float Scr_GetObjectUsage(void)
         "jne .Lf8a2a6_0008a4c6\n"
         /* { scope 13: id */
         "movl -0xcc(%ebp), %edx\n" /* line 2654 */
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %eax\n"
@@ -2564,7 +2564,7 @@ float Scr_GetObjectUsage(void)
         "cmpl %eax, %ecx\n" /* line 2660 */
         "je .Lf8a2a6_0008a63c\n"
         "shll $4, %eax\n" /* line 2665 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a63c\n"
@@ -2594,7 +2594,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 14 */
         "movl -0x20(%ebp), %eax\n" /* line 2654 | id */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2602,7 +2602,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a641\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a641\n"
@@ -2682,7 +2682,7 @@ float Scr_GetObjectUsage(void)
         "jne .Lf8a2a6_0008a5a1\n"
         /* { scope 17: id */
         "movl -0xcc(%ebp), %edx\n" /* line 2654 */
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %eax\n"
@@ -2690,7 +2690,7 @@ float Scr_GetObjectUsage(void)
         "cmpl %eax, %ecx\n" /* line 2660 */
         "je .Lf8a2a6_0008a726\n"
         "shll $4, %eax\n" /* line 2665 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a726\n"
@@ -2720,7 +2720,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 18 */
         "movl -0x24(%ebp), %eax\n" /* line 2654 | id */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2728,7 +2728,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a72b\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a72b\n"
@@ -2764,7 +2764,7 @@ float Scr_GetObjectUsage(void)
         "jne .Lf8a2a6_0008a6dd\n"
         /* { scope 21: id */
         "movl -0xcc(%ebp), %edx\n" /* line 2654 */
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %eax\n"
@@ -2772,7 +2772,7 @@ float Scr_GetObjectUsage(void)
         "cmpl %eax, %ecx\n" /* line 2660 */
         "je .Lf8a2a6_0008a810\n"
         "shll $4, %eax\n" /* line 2665 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a810\n"
@@ -2802,7 +2802,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 22 */
         "movl -0x28(%ebp), %eax\n" /* line 2654 | id */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2810,7 +2810,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a815\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a815\n"
@@ -2846,7 +2846,7 @@ float Scr_GetObjectUsage(void)
         "jne .Lf8a2a6_0008a7c7\n"
         /* { scope 25: id */
         "movl -0xcc(%ebp), %edx\n" /* line 2654 */
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %eax\n"
@@ -2854,7 +2854,7 @@ float Scr_GetObjectUsage(void)
         "cmpl %eax, %ecx\n" /* line 2660 */
         "je .Lf8a2a6_0008a8f2\n"
         "shll $4, %eax\n" /* line 2665 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a8f2\n"
@@ -2883,7 +2883,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 26 */
         "movl -0x2c(%ebp), %eax\n" /* line 2654 | id */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2891,7 +2891,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a8f5\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a8f5\n"
@@ -2926,7 +2926,7 @@ float Scr_GetObjectUsage(void)
         "jne .Lf8a2a6_0008a8af\n"
         /* { scope 29: id */
         "movl -0xcc(%ebp), %edx\n" /* line 2654 */
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %eax\n"
@@ -2934,7 +2934,7 @@ float Scr_GetObjectUsage(void)
         "cmpl %eax, %ecx\n" /* line 2660 */
         "je .Lf8a2a6_0008a9cd\n"
         "shll $4, %eax\n" /* line 2665 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a9cd\n"
@@ -2963,7 +2963,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 30 */
         "movl -0x30(%ebp), %eax\n" /* line 2654 | id */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -2971,7 +2971,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008a9d0\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008a9d0\n"
@@ -3006,7 +3006,7 @@ float Scr_GetObjectUsage(void)
         "jne .Lf8a2a6_0008a98a\n"
         /* { scope 33: id */
         "movl -0xcc(%ebp), %edx\n" /* line 2654 */
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %eax\n"
@@ -3014,7 +3014,7 @@ float Scr_GetObjectUsage(void)
         "cmpl %eax, %ecx\n" /* line 2660 */
         "je .Lf8a2a6_0008aaa8\n"
         "shll $4, %eax\n" /* line 2665 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008aaa8\n"
@@ -3043,7 +3043,7 @@ float Scr_GetObjectUsage(void)
         /* { scope 34 */
         "movl -0x34(%ebp), %eax\n" /* line 2654 | id */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3051,7 +3051,7 @@ float Scr_GetObjectUsage(void)
         "je .Lf8a2a6_0008aaab\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8a2a6_0008aaab\n"
@@ -3093,7 +3093,7 @@ float Scr_GetObjectUsage(void)
         "movl -0x38(%ebp), %edx\n" /* parentValue */
         "movzwl 4(%edx), %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "addss %xmm3, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "addss %xmm3, %xmm0\n"
@@ -3118,14 +3118,14 @@ JCOEF Scr_DumpScriptThreads(void)
         "pushl %ebx\n"
         "subl $0x13c, %esp\n"
         /* { scope 1: endonUsage, i */
-        "movl $0x8bfee8, (%esp)\n" /* line 404 */
+        "movl $s_debugFrameGlob+843880, (%esp)\n" /* line 404 */
         "calll Z_TryMallocInternal\n"
         "movl %eax, -0x108(%ebp)\n" /* infoArray */
         "testl %eax, %eax\n" /* line 405 */
         "je .Lf8ab58_0008b9d3\n"
         "movl $0, -0x104(%ebp)\n" /* line 408 | num */
         "movl $1, -0x10c(%ebp)\n" /* id */
-        "movl $0x104cf10, -0x114(%ebp)\n"
+        "movl $scrVarGlob+16, -0x114(%ebp)\n"
         "movl -0x108(%ebp), %eax\n" /* infoArray */
         "movl %eax, -0x118(%ebp)\n"
         "jmp .Lf8ab58_0008abc8\n"
@@ -3177,7 +3177,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movzwl 8(%ecx), %edx\n"
         "movl %edx, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %ebx\n" /* entryValue */
@@ -3185,13 +3185,13 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008ad9c\n"
         "movl %ebx, %eax\n" /* line 2665 | entryValue */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008ad9c\n"
         "testw %cx, %cx\n" /* line 4325 */
         "je .Lf8ab58_0008ad9c\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "movss %xmm3, -0xe0(%ebp)\n" /* usage */
         "movl $0x3f800000, %edi\n" /* entry */
         "movl %ebx, %eax\n" /* line 4326 | id, entryValue */
@@ -3216,7 +3216,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 4: entry */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3224,7 +3224,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b755\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b72b\n"
@@ -3265,12 +3265,12 @@ JCOEF Scr_DumpScriptThreads(void)
         /* } scope */
         /* } scope */
         ".Lf8ab58_0008ad9c:\n"
-        "movss 0x2ed5d0, %xmm3\n" /* line 4325 | 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* line 4325 | 1.0f */
         "movss %xmm3, -0xe0(%ebp)\n" /* usage */
         ".Lf8ab58_0008adac:\n"
         "leal 0x10000(%edx), %esi\n" /* line 1998 | name */
         "movl %esi, %ecx\n" /* line 801 | name, index */
-        "addl 0x100cec0, %ecx\n" /* index */
+        "addl scrVarPub+32, %ecx\n" /* index */
         "movl $0x80018005, %edx\n"
         "movl %ecx, %eax\n" /* index */
         "mull %edx\n"
@@ -3310,13 +3310,13 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008af60\n"
         /* { scope 4: entry */
         "shll $4, %edx\n" /* line 2743 */
-        "movl 0x104cf04(%edx), %edx\n"
+        "movl scrVarGlob+4(%edx), %edx\n"
         /* } scope */
         /* { scope 4: entry */
         /* { scope 5 */
         "movl %edx, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %ebx\n" /* entryValue */
@@ -3324,7 +3324,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b723\n"
         "movl %ebx, %eax\n" /* line 2665 | entryValue */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b723\n"
@@ -3353,7 +3353,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 5 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3362,7 +3362,7 @@ JCOEF Scr_DumpScriptThreads(void)
         ".Lf8ab58_0008aeb2:\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008af60\n"
@@ -3407,7 +3407,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 5 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3481,7 +3481,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movl -0x108(%ebp), %ecx\n" /* infoArray */
         "movl %ecx, (%esp)\n"
         "calll qsort\n"
-        "movl $0x217c60, (%esp)\n" /* line 455 */
+        "movl $str_00217c60, (%esp)\n" /* line 455 */
         "calll Com_Printf\n"
         "movl -0x104(%ebp), %eax\n" /* line 458 | num */
         "testl %eax, %eax\n"
@@ -3577,7 +3577,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "cmpl $0x16, %eax\n"
         "jne .Lf8ab58_0008afad\n"
         /* { scope 5 */
-        "movzwl 0x104cf0e(%edx), %eax\n" /* line 2654 */
+        "movzwl scrVarGlob+14(%edx), %eax\n" /* line 2654 */
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %ebx\n" /* entryValue */
@@ -3585,7 +3585,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b73a\n"
         "movl %ebx, %eax\n" /* line 2665 | entryValue */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b73a\n"
@@ -3612,7 +3612,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 6 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3621,7 +3621,7 @@ JCOEF Scr_DumpScriptThreads(void)
         ".Lf8ab58_0008b273:\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b326\n"
@@ -3655,7 +3655,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movl -0xdc(%ebp), %edx\n" /* parentValue */
         "movzwl 4(%edx), %eax\n"
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "addss %xmm3, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "addss %xmm3, %xmm0\n"
@@ -3667,7 +3667,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 6 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3686,13 +3686,13 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 4: entry */
         ".Lf8ab58_0008b33e:\n"
         "shll $4, %edi\n" /* line 1399 | entry */
-        "movl 0x104cf08(%edi), %edi\n" /* entry */
+        "movl scrVarGlob+8(%edi), %edi\n" /* entry */
         "shrl $8, %edi\n" /* entry */
         /* } scope */
         /* { scope 4: entry */
         "movl %edi, %eax\n" /* line 2654 | entry */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %ebx\n" /* entryValue */
@@ -3700,7 +3700,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b6be\n"
         "movl %ebx, %eax\n" /* line 2665 | entryValue */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b6be\n"
@@ -3727,7 +3727,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 5 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3736,7 +3736,7 @@ JCOEF Scr_DumpScriptThreads(void)
         ".Lf8ab58_0008b3ce:\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b476\n"
@@ -3768,7 +3768,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "calll Scr_GetObjectUsage\n"
         "movzwl 4(%esi), %eax\n" /* parentValue */
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "addss %xmm3, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "addss %xmm3, %xmm0\n"
@@ -3780,7 +3780,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 5 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3796,7 +3796,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movss %xmm0, -0xe8(%ebp)\n"
         "leal 0x10000(%edi), %esi\n" /* line 1998 | entry, name */
         "movl %esi, %ecx\n" /* line 801 | name, index */
-        "addl 0x100cec0, %ecx\n" /* index */
+        "addl scrVarPub+32, %ecx\n" /* index */
         "movl $0x80018005, %edx\n"
         "movl %ecx, %eax\n" /* index */
         "mull %edx\n"
@@ -3837,13 +3837,13 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b647\n"
         /* { scope 4: entry */
         "shll $4, %edx\n" /* line 2743 */
-        "movl 0x104cf04(%edx), %edx\n"
+        "movl scrVarGlob+4(%edx), %edx\n"
         /* } scope */
         /* { scope 4: entry */
         /* { scope 5 */
         "movl %edx, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %ebx\n" /* entryValue */
@@ -3851,7 +3851,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b709\n"
         "movl %ebx, %eax\n" /* line 2665 | entryValue */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b709\n"
@@ -3879,7 +3879,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 5 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -3888,7 +3888,7 @@ JCOEF Scr_DumpScriptThreads(void)
         ".Lf8ab58_0008b59f:\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b647\n"
@@ -3920,7 +3920,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "calll Scr_GetObjectUsage\n"
         "movzwl 4(%esi), %eax\n" /* parentValue */
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "addss %xmm3, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "addss %xmm3, %xmm0\n"
@@ -3932,7 +3932,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 5 */
         "movl %ebx, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -4078,7 +4078,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movl %eax, 8(%esp)\n"
         "movl -0xfc(%ebp), %eax\n" /* count */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d46c, (%esp)\n" /* "count: %d, var usage: %d, endon usage: %d
+        "movl $str_0021d46c, (%esp)\n" /* "count: %d, var usage: %d, endon usage: %d
 " */
         "calll Com_Printf\n"
         "movl $0, 8(%esp)\n" /* line 473 */
@@ -4096,7 +4096,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movl -0x108(%ebp), %eax\n" /* line 482 | infoArray */
         "movl %eax, (%esp)\n"
         "calll Z_FreeInternal\n"
-        "movl $0x217c60, (%esp)\n" /* line 484 */
+        "movl $str_00217c60, (%esp)\n" /* line 484 */
         "calll Com_Printf\n"
         "movl $g_classMap, -0xcc(%ebp)\n"
         ".Lf8ab58_0008b85f:\n"
@@ -4108,7 +4108,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 2: buf, usage */
         "movl %edx, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edi\n" /* entry */
@@ -4116,7 +4116,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b9c2\n"
         "movl %edi, %eax\n" /* line 2665 | entry */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b9c2\n"
@@ -4130,14 +4130,14 @@ JCOEF Scr_DumpScriptThreads(void)
         "addl $1, -0xac(%ebp)\n" /* line 495 */
         "movl %edi, %edx\n" /* line 496 | entId */
         "shll $4, %edx\n"
-        "movl 0x104cf08(%edx), %eax\n"
+        "movl scrVarGlob+8(%edx), %eax\n"
         "andl $0x1f, %eax\n"
         "subl $1, %eax\n"
         "je .Lf8ab58_0008b9e1\n"
         ".Lf8ab58_0008b8ea:\n"
         "movl %edi, %eax\n" /* line 2654 | entry */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -4145,7 +4145,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008b923\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008b923\n"
@@ -4162,15 +4162,15 @@ JCOEF Scr_DumpScriptThreads(void)
         "movl -0xcc(%ebp), %edx\n"
         "movl 8(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d440, (%esp)\n" /* "ent type '%s'... count: %d, var usage: %d
+        "movl $str_0021d440, (%esp)\n" /* "ent type '%s'... count: %d, var usage: %d
 " */
         "calll Com_Printf\n"
         ".Lf8ab58_0008b952:\n"
         "addl $0xc, -0xcc(%ebp)\n"
-        "movl $0x30aa70, %ecx\n" /* line 486 */
+        "movl $g_classMap+48, %ecx\n" /* line 486 */
         "cmpl -0xcc(%ebp), %ecx\n"
         "jne .Lf8ab58_0008b85f\n"
-        "movl $0x217c60, (%esp)\n" /* line 504 */
+        "movl $str_00217c60, (%esp)\n" /* line 504 */
         "calll Com_Printf\n"
         /* } scope */
         ".Lf8ab58_0008b976:\n"
@@ -4185,7 +4185,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movl %edi, %esi\n" /* line 475 | entId */
         "movl $1, %ebx\n" /* j */
         ".Lf8ab58_0008b988:\n"
-        "movl $0x21d430, (%esp)\n" /* line 477 */
+        "movl $str_0021d430, (%esp)\n" /* line 477 */
         "calll Com_Printf\n"
         "movl $0, 8(%esp)\n" /* line 478 */
         "movl 4(%esi), %eax\n"
@@ -4202,16 +4202,16 @@ JCOEF Scr_DumpScriptThreads(void)
         "xorl %eax, %eax\n"
         "jmp .Lf8ab58_0008b92b\n"
         ".Lf8ab58_0008b9d3:\n"
-        "movl $0x21d404, (%esp)\n" /* line 407 */
+        "movl $str_0021d404, (%esp)\n" /* line 407 */
         "calll Com_Printf\n"
         "jmp .Lf8ab58_0008b976\n"
         ".Lf8ab58_0008b9e1:\n"
-        "movl 0x104cf04(%edx), %edx\n" /* line 498 */
+        "movl scrVarGlob+4(%edx), %edx\n" /* line 498 */
         /* { scope 2: buf, usage */
         /* { scope 3 */
         "movl %edx, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %esi\n" /* name */
@@ -4219,14 +4219,14 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008ba7f\n"
         "movl %esi, %eax\n" /* line 2665 | name */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008ba7f\n"
         /* } scope */
         "testw %cx, %cx\n" /* line 4325 */
         "je .Lf8ab58_0008ba7f\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "movaps %xmm2, %xmm3\n"
         ".Lf8ab58_0008ba27:\n"
         "movl %esi, %eax\n" /* line 4326 | id, entryValue */
@@ -4250,7 +4250,7 @@ JCOEF Scr_DumpScriptThreads(void)
         /* { scope 3 */
         "movl %esi, %eax\n" /* line 2654 | name */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -4258,7 +4258,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "je .Lf8ab58_0008ba87\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8ab58_0008ba87\n"
@@ -4268,7 +4268,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "movl %edx, %esi\n" /* id */
         "jmp .Lf8ab58_0008ba27\n"
         ".Lf8ab58_0008ba7f:\n"
-        "movss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         /* } scope */
         ".Lf8ab58_0008ba87:\n"
         "addss -0xb8(%ebp), %xmm2\n" /* line 498 */
@@ -4291,7 +4291,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "calll Scr_GetObjectUsage\n"
         "movzwl 4(%ebx), %eax\n" /* parentValue */
         "cvtsi2ssl %eax, %xmm1\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "addss %xmm3, %xmm1\n"
         "divss %xmm1, %xmm0\n"
         "addss %xmm3, %xmm0\n"
@@ -4314,10 +4314,10 @@ unsigned int Scr_GetEntityId(int entnum, int classnum)
         /* { scope 1: entry, entnum */
         "movl 0xc(%ebp), %edx\n" /* line 3801 | classnum */
         "leal (%edx, %edx, 2), %eax\n"
-        "movzwl 0x30aa42(, %eax, 4), %edi\n" /* entArrayId */
+        "movzwl g_classMap+2(, %eax, 4), %edi\n" /* entArrayId */
         "movl 8(%ebp), %ebx\n" /* line 2006 | entnum, name */
-        "addl $0x800000, %ebx\n" /* name */
-        "andl $0xffffff, %ebx\n" /* name */
+        "addl $s_debugFrameGlob+57728, %ebx\n" /* name */
+        "andl $g_effectVisArray+4351, %ebx\n" /* name */
         "leal (%edi, %ebx), %ecx\n" /* line 1138 */
         "movl $0x80018005, %edx\n"
         "movl %ecx, %eax\n"
@@ -4357,11 +4357,11 @@ unsigned int Scr_GetEntityId(int entnum, int classnum)
         "shll $4, %ebx\n"
         "movzwl scrVarGlob(%ebx), %eax\n" /* line 1043 */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %si, 0x104cf02(%edx)\n" /* entryValue */
+        "movw %si, scrVarGlob+2(%edx)\n" /* entryValue */
         "movzwl 0xc(%ecx), %eax\n" /* line 1046 */
-        "movw %ax, 0x104cf02(%ebx)\n"
+        "movw %ax, scrVarGlob+2(%ebx)\n"
         "movw %si, 0xe(%ecx)\n" /* line 1047 | entryValue */
         /* } scope */
         /* } scope */
@@ -4388,7 +4388,7 @@ unsigned int Scr_GetEntityId(int entnum, int classnum)
         "movw %cx, -0x1e(%ebp)\n" /* entnum */
         /* { scope 2 */
         /* { scope 3 */
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8baea_0008bd31\n"
         ".Lf8baea_0008bbe3:\n"
@@ -4418,10 +4418,10 @@ unsigned int Scr_GetEntityId(int entnum, int classnum)
         "movl %esi, %ecx\n" /* entryValue */
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8baea_0008bc4e:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%esi)\n" /* line 1531 | entryValue */
@@ -4493,7 +4493,7 @@ unsigned int Scr_GetEntityId(int entnum, int classnum)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf8baea_0008bd31:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8baea_0008bbe3\n"
         ".Lf8baea_0008bd42:\n"
@@ -4531,7 +4531,7 @@ unsigned int Scr_EvalArrayIndex(unsigned int parentId, VariableValue *index)
         "je .Lf8bd58_0008bda0\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 3844 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d4b4, (%esp)\n" /* "%s is not an array index" */
+        "movl $str_0021d4b4, (%esp)\n" /* "%s is not an array index" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -4590,11 +4590,11 @@ unsigned int Scr_EvalArrayIndex(unsigned int parentId, VariableValue *index)
         "shll $4, %ebx\n" /* entryValue */
         "movzwl scrVarGlob(%ebx), %eax\n" /* line 1043 | entryValue */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %si, 0x104cf02(%edx)\n"
+        "movw %si, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ecx), %eax\n" /* line 1046 */
-        "movw %ax, 0x104cf02(%ebx)\n" /* entryValue */
+        "movw %ax, scrVarGlob+2(%ebx)\n" /* entryValue */
         "movw %si, 0xe(%ecx)\n" /* line 1047 */
         "movl 0xc(%ebp), %eax\n" /* index */
         "movl (%eax), %edi\n"
@@ -4616,11 +4616,11 @@ unsigned int Scr_EvalArrayIndex(unsigned int parentId, VariableValue *index)
         /* { scope 1: entry, entry */
         ".Lf8bd58_0008be62:\n"
         "movl (%edx), %edx\n" /* line 3831 */
-        "leal 0x7e0002(%edx), %eax\n"
-        "cmpl $0xfe0001, %eax\n"
+        "leal vq8+462882(%edx), %eax\n"
+        "cmpl $pushed+2177, %eax\n"
         "ja .Lf8bd58_0008bfe7\n"
-        "leal 0x800000(%edx), %edi\n" /* line 2006 | name */
-        "andl $0xffffff, %edi\n" /* name */
+        "leal s_debugFrameGlob+57728(%edx), %edi\n" /* line 2006 | name */
+        "andl $g_effectVisArray+4351, %edi\n" /* name */
         "movl 8(%ebp), %ecx\n" /* line 1138 | parentId */
         "addl %edi, %ecx\n"
         "movl $0x80018005, %edx\n"
@@ -4662,11 +4662,11 @@ unsigned int Scr_EvalArrayIndex(unsigned int parentId, VariableValue *index)
         "shll $4, %ebx\n" /* entryValue */
         "movzwl scrVarGlob(%ebx), %eax\n" /* line 1043 | entryValue */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %si, 0x104cf02(%edx)\n"
+        "movw %si, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ecx), %eax\n" /* line 1046 */
-        "movw %ax, 0x104cf02(%ebx)\n" /* entryValue */
+        "movw %ax, scrVarGlob+2(%ebx)\n" /* entryValue */
         "movw %si, 0xe(%ecx)\n" /* line 1047 */
         /* } scope */
         /* } scope */
@@ -4746,7 +4746,7 @@ unsigned int Scr_EvalArrayIndex(unsigned int parentId, VariableValue *index)
         "jmp .Lf8bd58_0008bdf5\n"
         ".Lf8bd58_0008bfe7:\n"
         "movl %edx, 4(%esp)\n" /* line 3833 */
-        "movl $0x21d498, (%esp)\n" /* "array index %d out of range" */
+        "movl $str_0021d498, (%esp)\n" /* "array index %d out of range" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -4823,11 +4823,11 @@ unsigned int Scr_GetVariableField(unsigned int parentId, unsigned int name)
         "shll $4, %ecx\n"
         "movzwl scrVarGlob(%ecx), %eax\n" /* line 1043 */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %bx, 0x104cf02(%edx)\n" /* entryValue */
+        "movw %bx, scrVarGlob+2(%edx)\n" /* entryValue */
         "movzwl 0xc(%edi), %eax\n" /* line 1046 | entry */
-        "movw %ax, 0x104cf02(%ecx)\n"
+        "movw %ax, scrVarGlob+2(%ecx)\n"
         "movw %bx, 0xe(%edi)\n" /* line 1047 | entryValue, entry */
         /* } scope */
         /* } scope */
@@ -4849,7 +4849,7 @@ unsigned int Scr_GetVariableField(unsigned int parentId, unsigned int name)
         "je .Lf8c016_0008c115\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 2043 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d4d0, (%esp)\n" /* "cannot set field of %s" */
+        "movl $str_0021d4d0, (%esp)\n" /* "cannot set field of %s" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -4901,8 +4901,8 @@ unsigned int Scr_GetVariableField(unsigned int parentId, unsigned int name)
         "testw %ax, %ax\n" /* line 2035 */
         "jne .Lf8c016_0008c0db\n"
         "movl 8(%ebp), %edx\n" /* line 2038 | parentId */
-        "movl %edx, 0x100cee0\n"
-        "movl %esi, 0x100cee4\n" /* line 2039 | name */
+        "movl %edx, scrVarPub+64\n"
+        "movl %esi, scrVarPub+68\n" /* line 2039 | name */
         "movl $0xfffe, %edx\n"
         /* } scope */
         "movl %edx, %eax\n" /* line 2045 */
@@ -4996,8 +4996,8 @@ unsigned int GetArrayVariable(unsigned int parentId, unsigned int unsignedValue)
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %edi\n" /* parentId */
         "movl 0xc(%ebp), %ebx\n" /* line 2006 | unsignedValue, name */
-        "addl $0x800000, %ebx\n" /* name */
-        "andl $0xffffff, %ebx\n" /* name */
+        "addl $s_debugFrameGlob+57728, %ebx\n" /* name */
+        "andl $g_effectVisArray+4351, %ebx\n" /* name */
         "leal (%edi, %ebx), %ecx\n" /* line 1138 */
         "movl $0x80018005, %edx\n"
         "movl %ecx, %eax\n"
@@ -5037,11 +5037,11 @@ unsigned int GetArrayVariable(unsigned int parentId, unsigned int unsignedValue)
         "shll $4, %ebx\n"
         "movzwl scrVarGlob(%ebx), %eax\n" /* line 1043 */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %si, 0x104cf02(%edx)\n" /* entryValue */
+        "movw %si, scrVarGlob+2(%edx)\n" /* entryValue */
         "movzwl 0xc(%ecx), %eax\n" /* line 1046 */
-        "movw %ax, 0x104cf02(%ebx)\n"
+        "movw %ax, scrVarGlob+2(%ebx)\n"
         "movw %si, 0xe(%ecx)\n" /* line 1047 | entryValue */
         "shll $4, %esi\n" /* entryValue */
         "movzwl scrVarGlob(%esi), %eax\n" /* entryValue */
@@ -5164,11 +5164,11 @@ unsigned int GetVariable(unsigned int parentId, unsigned int unsignedValue)
         "shll $4, %ebx\n" /* entryValue */
         "movzwl scrVarGlob(%ebx), %eax\n" /* line 1043 | entryValue */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %si, 0x104cf02(%edx)\n"
+        "movw %si, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ecx), %eax\n" /* line 1046 */
-        "movw %ax, 0x104cf02(%ebx)\n" /* entryValue */
+        "movw %ax, scrVarGlob+2(%ebx)\n" /* entryValue */
         "movw %si, 0xe(%ecx)\n" /* line 1047 */
         "shll $4, %esi\n"
         "movzwl scrVarGlob(%esi), %eax\n"
@@ -5294,11 +5294,11 @@ unsigned int GetObjectVariable(unsigned int parentId, unsigned int id)
         "shll $4, %ebx\n" /* entryValue */
         "movzwl scrVarGlob(%ebx), %eax\n" /* line 1043 | entryValue */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %si, 0x104cf02(%edx)\n"
+        "movw %si, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ecx), %eax\n" /* line 1046 */
-        "movw %ax, 0x104cf02(%ebx)\n" /* entryValue */
+        "movw %ax, scrVarGlob+2(%ebx)\n" /* entryValue */
         "movw %si, 0xe(%ecx)\n" /* line 1047 */
         "shll $4, %esi\n"
         "movzwl scrVarGlob(%esi), %eax\n"
@@ -5385,7 +5385,7 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         "movl %edx, -0x3c(%ebp)\n"
         /* { scope 1: entry */
         "shll $4, %eax\n" /* line 2357 */
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x2c(%ebp)\n" /* id */
@@ -5469,12 +5469,12 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         "shll $4, %ecx\n"
         "movzwl scrVarGlob(%ecx), %eax\n" /* line 1043 */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf0e(%eax)\n"
+        "movw %dx, scrVarGlob+14(%eax)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %bx, 0x104cf02(%edx)\n"
+        "movw %bx, scrVarGlob+2(%edx)\n"
         "movl -0x24(%ebp), %edx\n" /* line 1046 | parentValue */
         "movzwl 0xc(%edx), %eax\n"
-        "movw %ax, 0x104cf02(%ecx)\n"
+        "movw %ax, scrVarGlob+2(%ecx)\n"
         "movw %bx, 0xe(%edx)\n" /* line 1047 */
         /* } scope */
         /* } scope */
@@ -5500,7 +5500,7 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         ".Lf8c64a_0008c7cc:\n"
         "shll $4, -0x2c(%ebp)\n" /* line 2395 | id */
         "movl -0x2c(%ebp), %ecx\n" /* id */
-        "movzwl 0x104cf0e(%ecx), %eax\n"
+        "movzwl scrVarGlob+14(%ecx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x2c(%ebp)\n" /* id */
@@ -5535,7 +5535,7 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         "movl 4(%ecx), %edx\n"
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0x16, %eax\n"
         "je .Lf8c64a_0008c870\n"
@@ -5545,7 +5545,7 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         /* { scope 2: parentValue */
         ".Lf8c64a_0008c842:\n"
         "shll $4, %eax\n" /* line 1748 */
-        "addw $1, 0x104cf04(%eax)\n"
+        "addw $1, scrVarGlob+4(%eax)\n"
         "jmp .Lf8c64a_0008c7cc\n"
         /* } scope */
         ".Lf8c64a_0008c852:\n"
@@ -5556,7 +5556,7 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         "addw $1, -4(%eax)\n" /* line 1894 */
         "jmp .Lf8c64a_0008c7cc\n"
         ".Lf8c64a_0008c870:\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1503 */
         "movw %ax, -0x1c(%ebp)\n"
         "testw %ax, %ax\n" /* line 1504 */
         "je .Lf8c64a_0008c960\n"
@@ -5588,10 +5588,10 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         "movl %esi, %ecx\n" /* name */
         "movzwl -0x1a(%ebp), %edx\n"
         ".Lf8c64a_0008c8f4:\n"
-        "movw %dx, 0x104cf04\n" /* line 1526 */
+        "movw %dx, scrVarGlob+4\n" /* line 1526 */
         "movzwl %dx, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1529 */
         "movw %ax, 0xc(%ecx)\n"
         "movw %ax, 0xe(%ecx)\n" /* line 1530 */
@@ -5616,7 +5616,7 @@ JCOEF CopyArray(unsigned int parentId, unsigned int newParentId)
         "movzwl -0x1a(%ebp), %edx\n"
         "jmp .Lf8c64a_0008c8f4\n"
         ".Lf8c64a_0008c960:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8c64a_0008c884\n"
         ".Lf8c64a_0008c971:\n"
@@ -5636,7 +5636,7 @@ JCOEF Scr_SetClassMap(int classnum)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8c978_0008cb1e\n"
         ".Lf8c978_0008c991:\n"
@@ -5656,10 +5656,10 @@ JCOEF Scr_SetClassMap(int classnum)
         "je .Lf8c978_0008caeb\n"
         "movzwl -0x1e(%ebp), %eax\n"
         ".Lf8c978_0008c9ce:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -5672,8 +5672,8 @@ JCOEF Scr_SetClassMap(int classnum)
         "movw $0, 6(%eax)\n" /* line 1663 */
         "movl 8(%ebp), %ecx\n" /* line 3690 | classnum */
         "leal (%ecx, %ecx, 2), %eax\n"
-        "movw %dx, 0x30aa42(, %eax, 4)\n"
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movw %dx, g_classMap+2(, %eax, 4)\n"
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8c978_0008cb2f\n"
         ".Lf8c978_0008ca2d:\n"
@@ -5703,10 +5703,10 @@ JCOEF Scr_SetClassMap(int classnum)
         "movl %ebx, %ecx\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8c978_0008ca94:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -5740,11 +5740,11 @@ JCOEF Scr_SetClassMap(int classnum)
         "movzwl -0x1e(%ebp), %eax\n"
         "jmp .Lf8c978_0008c9ce\n"
         ".Lf8c978_0008cb1e:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8c978_0008c991\n"
         ".Lf8c978_0008cb2f:\n"
-        "movl $0x21d3d8, (%esp)\n" /* "exceeded maximum number of script variables" */
+        "movl $str_0021d3d8, (%esp)\n" /* "exceeded maximum number of script variables" */
         "calll Scr_TerminalError\n"
         "jmp .Lf8c978_0008ca2d\n"
         ".Lf8c978_0008cb40:\n"
@@ -5775,7 +5775,7 @@ unsigned int GetArray(unsigned int id)
         "jne .Lf8cb4a_0008cc08\n"
         "orl $1, %eax\n" /* line 2724 */
         "movl %eax, 8(%edx)\n"
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8cb4a_0008cc49\n"
         ".Lf8cb4a_0008cb84:\n"
@@ -5795,10 +5795,10 @@ unsigned int GetArray(unsigned int id)
         "je .Lf8cb4a_0008cc16\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8cb4a_0008cbc1:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -5836,7 +5836,7 @@ unsigned int GetArray(unsigned int id)
         "movzwl -0x1a(%ebp), %eax\n"
         "jmp .Lf8cb4a_0008cbc1\n"
         ".Lf8cb4a_0008cc49:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8cb4a_0008cb84\n"
         ".Lf8cb4a_0008cc5a:\n"
@@ -5867,7 +5867,7 @@ unsigned int GetObjectA(unsigned int id)
         "jne .Lf8cc62_0008cd1a\n"
         "orl $1, %eax\n" /* line 2702 */
         "movl %eax, 8(%edx)\n"
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8cc62_0008cd58\n"
         ".Lf8cc62_0008cc9c:\n"
@@ -5887,10 +5887,10 @@ unsigned int GetObjectA(unsigned int id)
         "je .Lf8cc62_0008cd28\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8cc62_0008ccd9:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -5927,7 +5927,7 @@ unsigned int GetObjectA(unsigned int id)
         "movzwl -0x1a(%ebp), %eax\n"
         "jmp .Lf8cc62_0008ccd9\n"
         ".Lf8cc62_0008cd58:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8cc62_0008cc9c\n"
         ".Lf8cc62_0008cd69:\n"
@@ -5948,7 +5948,7 @@ unsigned int AllocValue(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8cd70_0008ce27\n"
         ".Lf8cd70_0008cd89:\n"
@@ -5978,17 +5978,17 @@ unsigned int AllocValue(void)
         "movl %ebx, %ecx\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8cd70_0008cdec:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
         "movzwl (%ebx), %eax\n" /* line 1600 */
         "movl %eax, %edx\n" /* line 1601 */
         "shll $4, %edx\n"
-        "movl $0x60, 0x104cf08(%edx)\n" /* line 1602 */
+        "movl $0x60, scrVarGlob+8(%edx)\n" /* line 1602 */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1607 */
         "popl %ebx\n"
@@ -5998,7 +5998,7 @@ unsigned int AllocValue(void)
         "retl\n"
         /* { scope 1 */
         ".Lf8cd70_0008ce27:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8cd70_0008cd89\n"
         ".Lf8cd70_0008ce38:\n"
@@ -6019,7 +6019,7 @@ unsigned int AllocObject(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8ce3e_0008cf02\n"
         ".Lf8ce3e_0008ce57:\n"
@@ -6049,10 +6049,10 @@ unsigned int AllocObject(void)
         "movl %ebx, %ecx\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8ce3e_0008cebe:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -6071,7 +6071,7 @@ unsigned int AllocObject(void)
         "retl\n"
         /* { scope 1 */
         ".Lf8ce3e_0008cf02:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8ce3e_0008ce57\n"
         ".Lf8ce3e_0008cf13:\n"
@@ -6092,7 +6092,7 @@ unsigned int Scr_AllocArray(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8cf1a_0008cfe4\n"
         ".Lf8cf1a_0008cf33:\n"
@@ -6122,10 +6122,10 @@ unsigned int Scr_AllocArray(void)
         "movl %ebx, %ecx\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8cf1a_0008cf9a:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -6145,7 +6145,7 @@ unsigned int Scr_AllocArray(void)
         "retl\n"
         /* { scope 1 */
         ".Lf8cf1a_0008cfe4:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8cf1a_0008cf33\n"
         ".Lf8cf1a_0008cff5:\n"
@@ -6166,7 +6166,7 @@ unsigned int AllocThread(unsigned int self)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8cffc_0008d0c7\n"
         ".Lf8cffc_0008d015:\n"
@@ -6196,10 +6196,10 @@ unsigned int AllocThread(unsigned int self)
         "movl %ebx, %ecx\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8cffc_0008d07c:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -6220,7 +6220,7 @@ unsigned int AllocThread(unsigned int self)
         "retl\n"
         /* { scope 1 */
         ".Lf8cffc_0008d0c7:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8cffc_0008d015\n"
         ".Lf8cffc_0008d0d8:\n"
@@ -6241,7 +6241,7 @@ unsigned int AllocChildThread(unsigned int self, unsigned int parentLocalId)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movzwl 0x104cf04, %edi\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8d0de_0008d1b4\n"
         ".Lf8d0de_0008d0f7:\n"
@@ -6271,10 +6271,10 @@ unsigned int AllocChildThread(unsigned int self, unsigned int parentLocalId)
         "movl %ebx, %ecx\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8d0de_0008d162:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -6298,7 +6298,7 @@ unsigned int AllocChildThread(unsigned int self, unsigned int parentLocalId)
         "retl\n"
         /* { scope 1 */
         ".Lf8d0de_0008d1b4:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8d0de_0008d0f7\n"
         ".Lf8d0de_0008d1c5:\n"
@@ -6360,7 +6360,7 @@ JCOEF MakeVariableExternal(void)
         "shll $4, %eax\n"
         "movl -0x20(%ebp), %ecx\n" /* entryValue */
         "movzwl 0xc(%ecx), %edx\n"
-        "movw %dx, 0x104cf0c(%eax)\n"
+        "movw %dx, scrVarGlob+12(%eax)\n"
         "movl -0x2c(%ebp), %edi\n"
         "movl %ecx, %eax\n"
         ".Lf8d1d0_0008d261:\n"
@@ -6428,18 +6428,18 @@ JCOEF MakeVariableExternal(void)
         "movzwl 0xe(%edi), %eax\n" /* line 1199 */
         "shll $4, %eax\n"
         "movl -0x2c(%ebp), %edi\n"
-        "movw %di, 0x104cf02(%eax)\n"
+        "movw %di, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1200 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %di, 0x104cf0e(%eax)\n"
+        "movw %di, scrVarGlob+14(%eax)\n"
         "movl -0x1c(%ebp), %edi\n" /* line 1201 */
         "shll $4, %ecx\n"
-        "movw %di, 0x104cf02(%ecx)\n"
+        "movw %di, scrVarGlob+2(%ecx)\n"
         "shll $4, %ebx\n" /* line 1202 | prevSiblingIndex */
         "movzwl scrVarGlob(%ebx), %eax\n" /* prevSiblingIndex */
         "shll $4, %eax\n"
-        "movw %di, 0x104cf0e(%eax)\n"
+        "movw %di, scrVarGlob+14(%eax)\n"
         "movl (%esi), %edx\n" /* line 1204 | entry */
         "movl -0x30(%ebp), %ecx\n" /* line 1205 */
         "movl scrVarGlob(%ecx), %eax\n"
@@ -6487,7 +6487,7 @@ JCOEF MakeVariableExternal(void)
         /* } scope */
         /* { scope 2 */
         ".Lf8d1d0_0008d3dd:\n"
-        "subl $0x800000, %eax\n" /* line 2172 */
+        "subl $s_debugFrameGlob+57728, %eax\n" /* line 2172 */
         "movl %eax, -0x28(%ebp)\n" /* value */
         "movl $6, %eax\n"
         "jmp .Lf8d1d0_0008d29c\n"
@@ -6562,7 +6562,7 @@ JCOEF RemoveRefToObject(unsigned int id)
         "movzwl scrVarGlob(%eax), %ebx\n" /* index */
         "cmpl %ebx, 8(%ebp)\n" /* index, id */
         "je .Lf8d434_0008d5ea\n"
-        "addw $1, 0x104cf04(%edx)\n" /* line 1748 */
+        "addw $1, scrVarGlob+4(%edx)\n" /* line 1748 */
         /* { scope 2 */
         "leal scrVarGlob(%eax), %ecx\n" /* line 1249 */
         ".Lf8d434_0008d4a4:\n"
@@ -6570,7 +6570,7 @@ JCOEF RemoveRefToObject(unsigned int id)
         "movl %ecx, %eax\n"
         "calll MakeVariableExternal\n"
         "shll $4, %ebx\n" /* line 1254 | nextId */
-        "movzwl 0x104cf0e(%ebx), %eax\n" /* nextId */
+        "movzwl scrVarGlob+14(%ebx), %eax\n" /* nextId */
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl scrVarGlob(%eax), %ebx\n" /* line 1255 | nextId */
@@ -6602,19 +6602,19 @@ JCOEF RemoveRefToObject(unsigned int id)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -6625,7 +6625,7 @@ JCOEF RemoveRefToObject(unsigned int id)
         ".Lf8d434_0008d570:\n"
         "movl %eax, %edx\n" /* line 1262 */
         "shll $4, %edx\n"
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -6671,20 +6671,20 @@ JCOEF RemoveRefToObject(unsigned int id)
         "movzwl 0xe(%eax), %esi\n" /* nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl -0x20(%ebp), %edx\n" /* line 1586 | entryValue */
         "movl $0, 8(%edx)\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edx)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1799 */
@@ -6717,20 +6717,20 @@ JCOEF RemoveRefToObject(unsigned int id)
         "movzwl 0xe(%eax), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl -0x20(%ebp), %edx\n" /* line 1586 | entryValue */
         "movl $0, 8(%edx)\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edx)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         "movl -0x20(%ebp), %ecx\n" /* entryValue */
         "jmp .Lf8d434_0008d5ea\n"
         /* } scope */
@@ -6745,12 +6745,12 @@ JCOEF RemoveRefToObject(unsigned int id)
         "orl $0x14, %eax\n"
         "movl %eax, 8(%ecx)\n"
         "movzwl 6(%ecx), %edx\n" /* line 2318 */
-        "addl $0x800000, %edx\n"
-        "andl $0xffffff, %edx\n"
+        "addl $s_debugFrameGlob+57728, %edx\n"
+        "andl $g_effectVisArray+4351, %edx\n"
         "movl %edx, 4(%esp)\n"
         "shrl $8, %eax\n"
         "leal (%eax, %eax, 2), %eax\n"
-        "movzwl 0x30aa42(, %eax, 4), %eax\n"
+        "movzwl g_classMap+2(, %eax, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RemoveVariable\n"
         "jmp .Lf8d434_0008d474\n"
@@ -6793,11 +6793,11 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         "je .Lf8d760_0008d7fa\n"
         "subl $1, %eax\n"
         "je .Lf8d760_0008d82d\n"
-        "movl $1, 0x100ceb4\n" /* line 3955 */
+        "movl $1, scrVarPub+20\n" /* line 3955 */
         "movl 4(%esi), %eax\n" /* line 3956 | value */
         "movl var_typename(, %eax, 4), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d574, (%esp)\n" /* "%s is not an array, string, or vector" */
+        "movl $str_0021d574, (%esp)\n" /* "%s is not an array, string, or vector" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6814,7 +6814,7 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         "je .Lf8d760_0008d874\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 3914 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d508, (%esp)\n" /* "%s is not a string index" */
+        "movl $str_0021d508, (%esp)\n" /* "%s is not a string index" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6830,7 +6830,7 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         "je .Lf8d760_0008d8c1\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 3932 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d544, (%esp)\n" /* "%s is not a vector index" */
+        "movl $str_0021d544, (%esp)\n" /* "%s is not a vector index" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6844,14 +6844,14 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         "movl (%esi), %edx\n" /* line 3936 | value */
         "movl %edx, %edi\n" /* line 3941 | entryValue */
         "shll $4, %edi\n" /* entryValue */
-        "movl 0x104cf08(%edi), %eax\n" /* entryValue */
+        "movl scrVarGlob+8(%edi), %eax\n" /* entryValue */
         "andl $0x1f, %eax\n"
         "cmpl $0x16, %eax\n"
         "je .Lf8d760_0008d902\n"
-        "movl $1, 0x100ceb4\n" /* line 3943 */
+        "movl $1, scrVarPub+20\n" /* line 3943 */
         "movl var_typename(, %eax, 4), %eax\n" /* line 3944 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d560, (%esp)\n" /* "%s is not an array" */
+        "movl $str_0021d560, (%esp)\n" /* "%s is not an array" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6878,7 +6878,7 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         ".Lf8d760_0008d89f:\n"
         "movl (%ebx), %eax\n" /* line 3910 | index */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d4e8, (%esp)\n" /* "string index %d out of range" */
+        "movl $str_0021d4e8, (%esp)\n" /* "string index %d out of range" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -6916,12 +6916,12 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         "je .Lf8d760_0008d991\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 3869 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d4b4, (%esp)\n" /* "%s is not an array index" */
+        "movl $str_0021d4b4, (%esp)\n" /* "%s is not an array index" */
         ".Lf8d760_0008d925:\n"
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
-        "addw $1, 0x104cf04(%edi)\n" /* line 1748 | entryValue */
+        "addw $1, scrVarGlob+4(%edi)\n" /* line 1748 | entryValue */
         "xorl %edi, %edi\n" /* entryValue */
         /* { scope 1: value, entry, entry */
         /* { scope 2 */
@@ -7060,19 +7060,19 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         /* } scope */
         ".Lf8d760_0008daba:\n"
         "movl %edx, 4(%esp)\n" /* line 3928 */
-        "movl $0x21d524, (%esp)\n" /* "vector index %d out of range" */
+        "movl $str_0021d524, (%esp)\n" /* "vector index %d out of range" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         "jmp .Lf8d760_0008d7bf\n"
         ".Lf8d760_0008dad7:\n"
         "movl (%ebx), %ecx\n" /* line 3855 */
-        "leal 0x7e0002(%ecx), %eax\n"
-        "cmpl $0xfe0001, %eax\n"
+        "leal vq8+462882(%ecx), %eax\n"
+        "cmpl $pushed+2177, %eax\n"
         "ja .Lf8d760_0008dbdb\n"
-        "addl $0x800000, %ecx\n" /* line 1980 */
+        "addl $s_debugFrameGlob+57728, %ecx\n" /* line 1980 */
         "movl %ecx, -0x3c(%ebp)\n" /* name */
-        "andl $0xffffff, -0x3c(%ebp)\n" /* name */
+        "andl $g_effectVisArray+4351, -0x3c(%ebp)\n" /* name */
         "movl -0x3c(%ebp), %eax\n" /* line 801 | name */
         "leal (%edx, %eax), %ecx\n" /* index */
         "movl $0x80018005, %edx\n"
@@ -7151,14 +7151,14 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         "jne .Lf8d760_0008da50\n"
         "movl -0x2c(%ebp), %eax\n" /* line 1748 */
         "shll $4, %eax\n"
-        "addw $1, 0x104cf04(%eax)\n"
+        "addw $1, scrVarGlob+4(%eax)\n"
         "movl -0x2c(%ebp), %edx\n"
         "jmp .Lf8d760_0008d971\n"
         /* } scope */
         /* } scope */
         ".Lf8d760_0008dbdb:\n"
         "movl %ecx, 4(%esp)\n" /* line 3857 */
-        "movl $0x21d498, (%esp)\n" /* "array index %d out of range" */
+        "movl $str_0021d498, (%esp)\n" /* "array index %d out of range" */
         "jmp .Lf8d760_0008d925\n"
         ".Lf8d760_0008dbeb:\n"
         "movl %eax, %edx\n"
@@ -7175,15 +7175,15 @@ JCOEF Scr_RemoveClassMap(int classnum)
         "movl %esp, %ebp\n"
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
-        "cmpb $0, 0x100ced8\n" /* line 3704 */
+        "cmpb $0, scrVarPub+56\n" /* line 3704 */
         "je .Lf8dbf2_0008dc3b\n"
         "movl 8(%ebp), %eax\n" /* line 3710 | classnum */
         "leal (%eax, %eax, 2), %ebx\n"
         "shll $2, %ebx\n"
-        "movzwl 0x30aa42(%ebx), %eax\n"
+        "movzwl g_classMap+2(%ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RemoveRefToObject\n"
-        "movw $0, 0x30aa42(%ebx)\n" /* line 3711 */
+        "movw $0, g_classMap+2(%ebx)\n" /* line 3711 */
         "movzwl g_classMap(%ebx), %eax\n" /* line 3716 */
         "movl %eax, (%esp)\n"
         "calll RemoveRefToObject\n"
@@ -7213,8 +7213,8 @@ VariableValue Scr_EvalVariableEntityField(void)
         "movl %eax, -0x28(%ebp)\n" /* entId, entValue */
         "movl 8(%eax), %edi\n" /* line 2566 | entId */
         "shrl $8, %edi\n"
-        "leal 0x800000(%edx), %esi\n" /* line 1980 | name */
-        "andl $0xffffff, %esi\n" /* name */
+        "leal s_debugFrameGlob+57728(%edx), %esi\n" /* line 1980 | name */
+        "andl $g_effectVisArray+4351, %esi\n" /* name */
         "leal (%edi, %edi, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -7296,7 +7296,7 @@ VariableValue Scr_EvalVariableEntityField(void)
         /* } scope */
         ".Lf8dc42_0008dd2b:\n"
         "shll $4, %edx\n" /* line 2569 */
-        "movl 0x104cf04(%edx), %eax\n" /* entId */
+        "movl scrVarGlob+4(%edx), %eax\n" /* entId */
         "movl %eax, 8(%esp)\n" /* entId */
         "movl -0x28(%ebp), %edx\n" /* entValue */
         "movzwl 6(%edx), %eax\n" /* entId */
@@ -7321,7 +7321,7 @@ VariableValue Scr_EvalVariableEntityField(void)
         ".Lf8dc42_0008dd80:\n"
         "movl %ebx, (%esp)\n" /* line 2579 | value */
         "calll RemoveRefToObject\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1503 */
         "movw %ax, -0x1c(%ebp)\n"
         "testw %ax, %ax\n" /* line 1504 */
         "je .Lf8dc42_0008de72\n"
@@ -7356,10 +7356,10 @@ VariableValue Scr_EvalVariableEntityField(void)
         "movl %edi, %ecx\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8dc42_0008de14:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movl -0x1c(%ebp), %edx\n" /* line 1529 */
         "movw %dx, 0xc(%ecx)\n"
         "movw %dx, 0xe(%ecx)\n" /* line 1530 */
@@ -7380,7 +7380,7 @@ VariableValue Scr_EvalVariableEntityField(void)
         "movzwl -0x1a(%ebp), %eax\n" /* entId */
         "jmp .Lf8dc42_0008de14\n"
         ".Lf8dc42_0008de72:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8dc42_0008dd9c\n"
         ".Lf8dc42_0008de83:\n"
@@ -7444,8 +7444,8 @@ VariableValue Scr_EvalVariableField(unsigned int id)
         "jmp .Lf8de88_0008dec7\n"
         /* } scope */
         ".Lf8de88_0008def0:\n"
-        "movl 0x100cee4, %edx\n" /* line 2594 */
-        "movl 0x100cee0, %eax\n"
+        "movl scrVarPub+68, %edx\n" /* line 2594 */
+        "movl scrVarPub+64, %eax\n"
         "calll Scr_EvalVariableEntityField\n"
         "addl $0x2c, %esp\n" /* line 2595 */
         "popl %ebx\n"
@@ -7459,7 +7459,7 @@ VariableValue Scr_EvalVariableField(unsigned int id)
         "jne .Lf8de88_0008ded8\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1748 */
         "shll $4, %eax\n"
-        "addw $1, 0x104cf04(%eax)\n"
+        "addw $1, scrVarGlob+4(%eax)\n"
         "movl -0x1c(%ebp), %ebx\n"
         "jmp .Lf8de88_0008dec7\n"
         ".Lf8de88_0008df20:\n"
@@ -7550,7 +7550,7 @@ VariableValue Scr_FindVariableField(unsigned int parentId, unsigned int name)
         ".Lf8df24_0008dfe7:\n"
         "movl %edi, %eax\n" /* line 2064 | parentId */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0x15, %eax\n"
         "je .Lf8df24_0008e087\n"
@@ -7623,7 +7623,7 @@ VariableValue Scr_FindVariableField(unsigned int parentId, unsigned int name)
         "jne .Lf8df24_0008dfd3\n"
         "movl %esi, %eax\n" /* line 1748 */
         "shll $4, %eax\n"
-        "addw $1, 0x104cf04(%eax)\n"
+        "addw $1, scrVarGlob+4(%eax)\n"
         "jmp .Lf8df24_0008dfd3\n"
     );
 }
@@ -7715,7 +7715,7 @@ JCOEF Scr_FreeEntityList(void)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         /* { scope 1 */
-        "movl 0x100ced0, %eax\n" /* line 3648 */
+        "movl scrVarPub+48, %eax\n" /* line 3648 */
         "movl %eax, -0x20(%ebp)\n"
         "testl %eax, %eax\n"
         "jne .Lf8e152_0008e186\n"
@@ -7732,7 +7732,7 @@ JCOEF Scr_FreeEntityList(void)
         "movl -0x20(%ebp), %eax\n" /* line 3660 */
         "movl %eax, (%esp)\n"
         "calll RemoveRefToObject\n"
-        "movl 0x100ced0, %eax\n" /* line 3648 */
+        "movl scrVarPub+48, %eax\n" /* line 3648 */
         "movl %eax, -0x20(%ebp)\n"
         "testl %eax, %eax\n"
         "je .Lf8e152_0008e167\n"
@@ -7740,7 +7740,7 @@ JCOEF Scr_FreeEntityList(void)
         "shll $4, %eax\n" /* line 3651 */
         "leal scrVarGlob(%eax), %esi\n" /* entryValue */
         "movzwl 6(%esi), %eax\n" /* line 3652 | entryValue */
-        "movl %eax, 0x100ced0\n"
+        "movl %eax, scrVarPub+48\n"
         "movw $0, 6(%esi)\n" /* line 3654 | entryValue */
         "movl -0x20(%ebp), %eax\n" /* line 3656 */
         "movl %eax, (%esp)\n"
@@ -7758,7 +7758,7 @@ JCOEF Scr_FreeEntityList(void)
         "movl %ecx, %eax\n"
         "calll MakeVariableExternal\n"
         "shll $4, %ebx\n" /* line 1254 | nextId */
-        "movzwl 0x104cf0e(%ebx), %eax\n" /* nextId */
+        "movzwl scrVarGlob+14(%ebx), %eax\n" /* nextId */
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl scrVarGlob(%eax), %ebx\n" /* line 1255 | nextId */
@@ -7789,19 +7789,19 @@ JCOEF Scr_FreeEntityList(void)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -7811,7 +7811,7 @@ JCOEF Scr_FreeEntityList(void)
         ".Lf8e152_0008e28e:\n"
         "movl %eax, %edx\n" /* line 1262 */
         "shll $4, %edx\n"
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -7959,19 +7959,19 @@ JCOEF SafeRemoveVariable(unsigned int parentId, unsigned int unsignedValue)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -8024,7 +8024,7 @@ JCOEF RemoveNextVariable(unsigned int parentId)
         "movl 8(%ebp), %edx\n" /* parentId */
         /* { scope 1 */
         "shll $4, %edx\n" /* line 2290 */
-        "movzwl 0x104cf0e(%edx), %ecx\n"
+        "movzwl scrVarGlob+14(%edx), %ecx\n"
         "shll $4, %ecx\n"
         "leal scrVarGlob(%ecx), %eax\n"
         "movzwl scrVarGlob(%ecx), %ebx\n" /* line 2291 | id */
@@ -8054,19 +8054,19 @@ JCOEF RemoveNextVariable(unsigned int parentId)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -8178,19 +8178,19 @@ JCOEF RemoveVariable(unsigned int parentId, unsigned int unsignedValue)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -8278,7 +8278,7 @@ int Scr_MakeValuePrimitive(void)
         "movl %eax, %esi\n" /* parentId */
         /* { scope 1 */
         "shll $4, %eax\n" /* line 4576 */
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0x16, %eax\n"
         "je .Lf8e7c6_0008e835\n"
@@ -8294,7 +8294,7 @@ int Scr_MakeValuePrimitive(void)
         ".Lf8e7c6_0008e7ec:\n"
         "movl %ebx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8e7c6_0008e852\n"
@@ -8321,7 +8321,7 @@ int Scr_MakeValuePrimitive(void)
         ".Lf8e7c6_0008e835:\n"
         "movl %esi, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %edx\n"
         "movzwl %dx, %ebx\n"
@@ -8345,7 +8345,7 @@ int Scr_MakeValuePrimitive(void)
         ".Lf8e7c6_0008e86b:\n"
         "movl %ebx, %eax\n" /* line 2654 */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "movzwl %cx, %edx\n"
@@ -8353,7 +8353,7 @@ int Scr_MakeValuePrimitive(void)
         "je .Lf8e7c6_0008e852\n"
         "movl %edx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
         "ja .Lf8e7c6_0008e852\n"
@@ -8379,7 +8379,7 @@ JCOEF Scr_FreeGameVariable(int bComplete)
         "testl %ebx, %ebx\n" /* index */
         "je .Lf8e8a8_0008e98f\n"
         /* { scope 1 */
-        "movl 0x100cec8, %eax\n" /* line 1721 */
+        "movl scrVarPub+40, %eax\n" /* line 1721 */
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %edi\n" /* entryValue */
         "movl 4(%edi), %edx\n" /* line 1727 | entryValue */
@@ -8403,22 +8403,22 @@ JCOEF Scr_FreeGameVariable(int bComplete)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
-        "movl $0, 0x100cec8\n" /* line 4654 */
+        "movl $0, scrVarPub+40\n" /* line 4654 */
         "addl $0x1c, %esp\n" /* line 4661 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -8442,9 +8442,9 @@ JCOEF Scr_FreeGameVariable(int bComplete)
         /* } scope */
         /* } scope */
         ".Lf8e8a8_0008e98f:\n"
-        "movl 0x100cec8, %eax\n" /* line 4660 */
+        "movl scrVarPub+40, %eax\n" /* line 4660 */
         "shll $4, %eax\n"
-        "movl 0x104cf04(%eax), %eax\n"
+        "movl scrVarGlob+4(%eax), %eax\n"
         "calll Scr_MakeValuePrimitive\n"
         "addl $0x1c, %esp\n" /* line 4661 */
         "popl %ebx\n"
@@ -8482,13 +8482,13 @@ JCOEF Scr_FreeEntityNum(int entnum, int classnum)
         "movl 8(%ebp), %edx\n" /* entnum */
         "movl 0xc(%ebp), %eax\n" /* classnum */
         /* { scope 1 */
-        "cmpb $0, 0x100ced8\n" /* line 3600 */
+        "cmpb $0, scrVarPub+56\n" /* line 3600 */
         "je .Lf8e9d6_0008ea66\n"
         "leal (%eax, %eax, 2), %eax\n" /* line 3603 */
-        "movzwl 0x30aa42(, %eax, 4), %eax\n"
+        "movzwl g_classMap+2(, %eax, 4), %eax\n"
         "movl %eax, -0x10(%ebp)\n" /* entArrayId */
-        "leal 0x800000(%edx), %esi\n" /* line 1980 | name */
-        "andl $0xffffff, %esi\n" /* name */
+        "leal s_debugFrameGlob+57728(%edx), %esi\n" /* line 1980 | name */
+        "andl $g_effectVisArray+4351, %esi\n" /* name */
         "movl %eax, %ecx\n" /* line 801 | index */
         "addl %esi, %ecx\n" /* name, index */
         "movl $0x80018005, %edx\n"
@@ -8536,7 +8536,7 @@ JCOEF Scr_FreeEntityNum(int entnum, int classnum)
         /* { scope 1 */
         ".Lf8e9d6_0008ea6e:\n"
         "shll $4, %edx\n" /* line 2743 */
-        "movl 0x104cf04(%edx), %ebx\n" /* entryValue */
+        "movl scrVarGlob+4(%edx), %ebx\n" /* entryValue */
         "movl %ebx, %edx\n" /* line 3613 | entId */
         "shll $4, %edx\n"
         "leal scrVarGlob(%edx), %ecx\n"
@@ -8544,10 +8544,10 @@ JCOEF Scr_FreeEntityNum(int entnum, int classnum)
         "andl $0xffffffe0, %eax\n"
         "orl $0x14, %eax\n"
         "movl %eax, 8(%ecx)\n"
-        "addw $1, 0x104cf04(%edx)\n" /* line 1748 */
-        "movl 0x100ced0, %eax\n" /* line 3623 */
+        "addw $1, scrVarGlob+4(%edx)\n" /* line 1748 */
+        "movl scrVarPub+48, %eax\n" /* line 3623 */
         "movw %ax, 6(%ecx)\n"
-        "movl %ebx, 0x100ced0\n" /* line 3629 | entId */
+        "movl %ebx, scrVarPub+48\n" /* line 3629 | entId */
         "movl %esi, 0xc(%ebp)\n" /* line 2318 | name, classnum */
         "movl -0x10(%ebp), %eax\n" /* entArrayId */
         "movl %eax, 8(%ebp)\n" /* entnum */
@@ -8658,8 +8658,8 @@ JCOEF ClearVariableField(unsigned int parentId, unsigned int name, VariableValue
         ".Lf8eb1e_0008eba4:\n"
         "shrl $8, %edx\n" /* line 2203 */
         "movl %edx, -0x20(%ebp)\n" /* classnum */
-        "leal 0x800000(%edi), %esi\n" /* line 1980 | entry, name */
-        "andl $0xffffff, %esi\n" /* name */
+        "leal s_debugFrameGlob+57728(%edi), %esi\n" /* line 1980 | entry, name */
+        "andl $g_effectVisArray+4351, %esi\n" /* name */
         "leal (%edx, %edx, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -8702,7 +8702,7 @@ JCOEF ClearVariableField(unsigned int parentId, unsigned int name, VariableValue
         "movl $0, 4(%eax)\n" /* line 2209 */
         "movl %eax, 0xc(%esp)\n" /* line 2210 */
         "shll $4, %edx\n"
-        "movl 0x104cf04(%edx), %eax\n"
+        "movl scrVarGlob+4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x24(%ebp), %edx\n" /* parentValue */
         "movzwl 6(%edx), %eax\n"
@@ -8814,7 +8814,7 @@ JCOEF Var_Shutdown(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
-        "movl 0x100cec8, %eax\n" /* line 697 */
+        "movl scrVarPub+40, %eax\n" /* line 697 */
         "testl %eax, %eax\n"
         "je .Lf8ed5e_0008ee13\n"
         /* { scope 1 */
@@ -8841,22 +8841,22 @@ JCOEF Var_Shutdown(void)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
-        "movl $0, 0x100cec8\n" /* line 700 */
+        "movl $0, scrVarPub+40\n" /* line 700 */
         ".Lf8ed5e_0008ee13:\n"
         "addl $0x1c, %esp\n" /* line 712 */
         "popl %ebx\n"
@@ -8905,7 +8905,7 @@ JCOEF Scr_FreeObjects(void)
         "subl $0x2c, %esp\n"
         "movl $1, -0x24(%ebp)\n" /* id */
         "movl $scrVarGlob, -0x20(%ebp)\n"
-        "movl $0x104cf10, -0x28(%ebp)\n"
+        "movl $scrVarGlob+16, -0x28(%ebp)\n"
         "jmp .Lf8ee6e_0008eea7\n"
         /* { scope 1 */
         ".Lf8ee6e_0008ee8e:\n"
@@ -8942,7 +8942,7 @@ JCOEF Scr_FreeObjects(void)
         "movl %ecx, %eax\n"
         "calll MakeVariableExternal\n"
         "shll $4, %ebx\n" /* line 1254 | nextId */
-        "movzwl 0x104cf0e(%ebx), %eax\n" /* nextId */
+        "movzwl scrVarGlob+14(%ebx), %eax\n" /* nextId */
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl scrVarGlob(%eax), %ebx\n" /* line 1255 | nextId */
@@ -8975,19 +8975,19 @@ JCOEF Scr_FreeObjects(void)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -8998,7 +8998,7 @@ JCOEF Scr_FreeObjects(void)
         ".Lf8ee6e_0008efba:\n"
         "movl %eax, %edx\n" /* line 1262 */
         "shll $4, %edx\n"
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -9068,20 +9068,20 @@ JCOEF Scr_FreeObjects(void)
         "movzwl 0xe(%eax), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl -0x28(%ebp), %edx\n" /* line 1586 */
         "movl $0, 8(%edx)\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edx)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         "jmp .Lf8ee6e_0008ee8e\n"
         /* } scope */
         /* { scope 2 */
@@ -9120,7 +9120,7 @@ JCOEF Scr_EvalBoolNot(VariableValue *value)
         "movl $0, 4(%esi)\n" /* line 2818 | value */
         "movl var_typename(, %ebx, 4), %eax\n" /* line 2819 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d59c, (%esp)\n" /* "cannot cast %s to Bool" */
+        "movl $str_0021d59c, (%esp)\n" /* "cannot cast %s to Bool" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -9245,9 +9245,9 @@ JCOEF SetVariableFieldValue(unsigned int id, VariableValue *value)
         /* } scope */
         ".Lf8f1ce_0008f247:\n"
         "movl %esi, 8(%esp)\n" /* line 2508 | value */
-        "movl 0x100cee4, %eax\n"
+        "movl scrVarPub+68, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x100cee0, %eax\n"
+        "movl scrVarPub+64, %eax\n"
         "movl %eax, (%esp)\n"
         "calll SetVariableEntityFieldValue\n"
         "addl $0x10, %esp\n" /* line 2509 */
@@ -9286,10 +9286,10 @@ JCOEF Scr_AllocGameVariable(void)
         "subl $0x3c, %esp\n"
         "movl $0, -0x30(%ebp)\n" /* tempValue */
         "movl $0, -0x2c(%ebp)\n"
-        "movl 0x100cec8, %esi\n" /* line 4624 */
+        "movl scrVarPub+40, %esi\n" /* line 4624 */
         "testl %esi, %esi\n"
         "jne .Lf8f292_0008f409\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1503 */
         "movw %ax, -0x1e(%ebp)\n"
         "testw %ax, %ax\n" /* line 1504 */
         "je .Lf8f292_0008f477\n"
@@ -9308,10 +9308,10 @@ JCOEF Scr_AllocGameVariable(void)
         "testb $0x60, 8(%ebx)\n"
         "je .Lf8f292_0008f411\n"
         ".Lf8f292_0008f301:\n"
-        "movw %di, 0x104cf04\n" /* line 1526 */
+        "movw %di, scrVarGlob+4\n" /* line 1526 */
         "movzwl %di, %esi\n" /* line 1527 */
         "shll $4, %esi\n"
-        "movw $0, 0x104cf02(%esi)\n"
+        "movw $0, scrVarGlob+2(%esi)\n"
         "movzwl -0x1e(%ebp), %edx\n" /* line 1529 */
         "movw %dx, 0xc(%ecx)\n"
         "movw %dx, 0xe(%ecx)\n" /* line 1530 */
@@ -9322,7 +9322,7 @@ JCOEF Scr_AllocGameVariable(void)
         "addl $scrVarGlob, %eax\n"
         "movl %eax, -0x24(%ebp)\n"
         "movl $0x60, 8(%eax)\n" /* line 1602 */
-        "movl %edx, 0x100cec8\n" /* line 4632 */
+        "movl %edx, scrVarPub+40\n" /* line 4632 */
         /* { scope 1 */
         "testw %di, %di\n" /* line 1504 */
         "je .Lf8f292_0008f488\n"
@@ -9341,10 +9341,10 @@ JCOEF Scr_AllocGameVariable(void)
         "je .Lf8f292_0008f444\n"
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8f292_0008f388:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 */
         "movw %di, 0xe(%ecx)\n" /* line 1530 */
         "movw %di, 2(%ebx)\n" /* line 1531 */
@@ -9414,12 +9414,12 @@ JCOEF Scr_AllocGameVariable(void)
         "jmp .Lf8f292_0008f388\n"
         /* } scope */
         ".Lf8f292_0008f477:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8f292_0008f2cb\n"
         /* { scope 1 */
         ".Lf8f292_0008f488:\n"
-        "movl $0x21d3d8, (%esp)\n" /* "exceeded maximum number of script variables" */
+        "movl $str_0021d3d8, (%esp)\n" /* "exceeded maximum number of script variables" */
         "calll Scr_TerminalError\n"
         "jmp .Lf8f292_0008f34d\n"
         /* { scope 2 */
@@ -9487,7 +9487,7 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "movl -0x30(%ebp), %edx\n" /* parentValue */
         "orl $1, %eax\n" /* line 4012 */
         "movl %eax, 8(%edx)\n"
-        "movzwl 0x104cf04, %edi\n" /* line 1503 | name */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 | name */
         "testw %di, %di\n" /* line 1504 | name */
         "je .Lf8f504_0008f805\n"
         ".Lf8f504_0008f54d:\n"
@@ -9517,10 +9517,10 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "movl %ebx, %ecx\n" /* parentValue */
         "movl -0x20(%ebp), %eax\n"
         ".Lf8f504_0008f5b8:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movw %di, 0xc(%ecx)\n" /* line 1529 | name */
         "movw %di, 0xe(%ecx)\n" /* line 1530 | name */
         "movw %di, 2(%ebx)\n" /* line 1531 | name, parentValue */
@@ -9550,7 +9550,7 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "cmpl $1, %ebx\n" /* line 4021 | parentValue */
         "je .Lf8f504_0008f8c2\n"
         ".Lf8f504_0008f618:\n"
-        "movl $1, 0x100ceb4\n" /* line 4025 */
+        "movl $1, scrVarPub+20\n" /* line 4025 */
         "cmpl $2, %ebx\n" /* line 4027 | parentValue */
         "je .Lf8f504_0008f8f7\n"
         "cmpl $4, %ebx\n" /* parentValue */
@@ -9558,7 +9558,7 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "movl var_typename(, %ebx, 4), %eax\n" /* line 4038 */
         ".Lf8f504_0008f63b:\n"
         "movl %eax, 4(%esp)\n" /* line 4051 */
-        "movl $0x21d560, (%esp)\n" /* "%s is not an array" */
+        "movl $str_0021d560, (%esp)\n" /* "%s is not an array" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -9573,7 +9573,7 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "retl\n"
         /* { scope 1 */
         ".Lf8f504_0008f65f:\n"
-        "movl 0x100cee0, %ebx\n" /* line 3971 | parentValue */
+        "movl scrVarPub+64, %ebx\n" /* line 3971 | parentValue */
         "movl %ebx, %eax\n" /* parentValue */
         "shll $4, %eax\n"
         "addl $scrVarGlob, %eax\n"
@@ -9581,11 +9581,11 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "movl 8(%eax), %eax\n" /* line 3974 */
         "shrl $8, %eax\n"
         "movl %eax, -0x38(%ebp)\n"
-        "movl 0x100cee4, %edx\n" /* line 1980 */
+        "movl scrVarPub+68, %edx\n" /* line 1980 */
         "movl %edx, -0x40(%ebp)\n"
         "movl %edx, %edi\n" /* name */
-        "addl $0x800000, %edi\n" /* name */
-        "andl $0xffffff, %edi\n" /* name */
+        "addl $s_debugFrameGlob+57728, %edi\n" /* name */
+        "andl $g_effectVisArray+4351, %edi\n" /* name */
         "leal (%eax, %eax, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %edi, %ecx\n" /* name, index */
@@ -9625,7 +9625,7 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "testw %ax, %ax\n" /* line 3975 */
         "je .Lf8f504_0008f77b\n"
         "shll $4, %edx\n" /* line 3977 */
-        "movl 0x104cf04(%edx), %eax\n"
+        "movl scrVarGlob+4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x2c(%ebp), %edx\n" /* entValue */
         "movzwl 6(%edx), %eax\n"
@@ -9690,11 +9690,11 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "shll $4, %esi\n" /* entryValue */
         "movzwl scrVarGlob(%esi), %ecx\n" /* line 1043 | entryValue */
         "shll $4, %ecx\n"
-        "movw %dx, 0x104cf0e(%ecx)\n"
+        "movw %dx, scrVarGlob+14(%ecx)\n"
         "shll $4, %edx\n" /* line 1044 */
-        "movw %ax, 0x104cf02(%edx)\n"
+        "movw %ax, scrVarGlob+2(%edx)\n"
         "movzwl 0xc(%ebx), %edx\n" /* line 1046 | parentValue */
-        "movw %dx, 0x104cf02(%esi)\n" /* entryValue */
+        "movw %dx, scrVarGlob+2(%esi)\n" /* entryValue */
         "movw %ax, 0xe(%ebx)\n" /* line 1047 | parentValue */
         /* } scope */
         /* } scope */
@@ -9704,11 +9704,11 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "movl %ecx, %edx\n"
         "orl $1, %eax\n" /* line 4012 */
         "movl %eax, 8(%edx)\n"
-        "movzwl 0x104cf04, %edi\n" /* line 1503 | name */
+        "movzwl scrVarGlob+4, %edi\n" /* line 1503 | name */
         "testw %di, %di\n" /* line 1504 | name */
         "jne .Lf8f504_0008f54d\n"
         ".Lf8f504_0008f805:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8f504_0008f54d\n"
         /* { scope 2: entry */
@@ -9750,13 +9750,13 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         /* } scope */
         /* } scope */
         ".Lf8f504_0008f88f:\n"
-        "movl $0x21d60c, (%esp)\n" /* line 4034 */
+        "movl $str_0021d60c, (%esp)\n" /* line 4034 */
         "calll Scr_Error\n"
         "xorl %edx, %edx\n"
         "jmp .Lf8f504_0008f5ff\n"
         ".Lf8f504_0008f8a2:\n"
         "shll $4, %eax\n" /* line 3982 */
-        "cmpw $0, 0x104cf04(%eax)\n"
+        "cmpw $0, scrVarGlob+4(%eax)\n"
         "je .Lf8f504_0008fa42\n"
         ".Lf8f504_0008f8b3:\n"
         "movl %esi, (%esp)\n" /* line 1949 | entryValue */
@@ -9771,20 +9771,20 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "andl $0x1f, %edx\n"
         "cmpl $0x16, %edx\n"
         "je .Lf8f504_0008f920\n"
-        "movl $1, 0x100ceb4\n" /* line 4050 */
+        "movl $1, scrVarPub+20\n" /* line 4050 */
         "movl var_typename(, %edx, 4), %eax\n" /* line 4051 */
         "jmp .Lf8f504_0008f63b\n"
         ".Lf8f504_0008f8f0:\n"
         "movl %edx, %eax\n"
         "jmp .Lf8f504_0008f5b8\n"
         ".Lf8f504_0008f8f7:\n"
-        "movl $0x21d5d8, (%esp)\n" /* line 4030 */
+        "movl $str_0021d5d8, (%esp)\n" /* line 4030 */
         "calll Scr_Error\n"
         "xorl %edx, %edx\n"
         "jmp .Lf8f504_0008f5ff\n"
         ".Lf8f504_0008f90a:\n"
-        "movl 0x100cee0, %ebx\n" /* parentValue */
-        "movl 0x100cee4, %edx\n"
+        "movl scrVarPub+64, %ebx\n" /* parentValue */
+        "movl scrVarPub+68, %edx\n"
         "movl %edx, -0x40(%ebp)\n"
         "movl %edx, %ecx\n"
         "jmp .Lf8f504_0008f77e\n"
@@ -9804,7 +9804,7 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         ".Lf8f504_0008f94b:\n"
         "movl %esi, (%esp)\n" /* line 4058 | varValue */
         "calll RemoveRefToObject\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1503 */
         "movw %ax, -0x1c(%ebp)\n"
         "testw %ax, %ax\n" /* line 1504 */
         "je .Lf8f504_0008fa75\n"
@@ -9839,10 +9839,10 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "movl %ebx, %ecx\n" /* parentValue */
         "movzwl -0x1a(%ebp), %eax\n"
         ".Lf8f504_0008f9df:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movl -0x1c(%ebp), %edx\n" /* line 1529 */
         "movw %dx, 0xc(%ecx)\n"
         "movw %dx, 0xe(%ecx)\n" /* line 1530 */
@@ -9868,8 +9868,8 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         ".Lf8f504_0008fa42:\n"
         "movl %esi, (%esp)\n" /* line 1949 | entryValue */
         "calll RemoveRefToObject\n"
-        "movl $1, 0x100ceb4\n" /* line 3985 */
-        "movl $0x21d5b4, (%esp)\n" /* line 3986 */
+        "movl $1, scrVarPub+20\n" /* line 3985 */
+        "movl $str_0021d5b4, (%esp)\n" /* line 3986 */
         "calll Scr_Error\n"
         "xorl %edx, %edx\n"
         "jmp .Lf8f504_0008f5ff\n"
@@ -9878,7 +9878,7 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "jne .Lf8f504_0008f93f\n"
         "jmp .Lf8f504_0008f8b3\n"
         ".Lf8f504_0008fa75:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf8f504_0008f967\n"
         ".Lf8f504_0008fa86:\n"
@@ -9926,7 +9926,7 @@ JCOEF Scr_StopThread(unsigned int threadId)
         "movl %ecx, %eax\n"
         "calll MakeVariableExternal\n"
         "shll $4, %ebx\n" /* line 1254 | nextId */
-        "movzwl 0x104cf0e(%ebx), %eax\n" /* nextId */
+        "movzwl scrVarGlob+14(%ebx), %eax\n" /* nextId */
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl scrVarGlob(%eax), %ebx\n" /* line 1255 | nextId */
@@ -9958,19 +9958,19 @@ JCOEF Scr_StopThread(unsigned int threadId)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -9980,7 +9980,7 @@ JCOEF Scr_StopThread(unsigned int threadId)
         ".Lf8faa8_0008fba8:\n"
         "movl %eax, %edx\n" /* line 1262 */
         "shll $4, %edx\n"
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -10013,12 +10013,12 @@ JCOEF Scr_StopThread(unsigned int threadId)
         "movl %eax, (%esp)\n"
         "calll RemoveRefToObject\n"
         /* } scope */
-        "movl 0x100cec4, %eax\n" /* line 1316 */
+        "movl scrVarPub+36, %eax\n" /* line 1316 */
         "shll $4, 8(%ebp)\n" /* threadId */
         "movl 8(%ebp), %edx\n" /* threadId */
-        "movw %ax, 0x104cf06(%edx)\n"
+        "movw %ax, scrVarGlob+6(%edx)\n"
         "shll $4, %eax\n" /* line 1748 */
-        "addw $1, 0x104cf04(%eax)\n"
+        "addw $1, scrVarGlob+4(%eax)\n"
         "addl $0x2c, %esp\n" /* line 1318 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -10056,7 +10056,7 @@ JCOEF ClearObject(unsigned int parentId)
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %eax\n" /* line 1748 | parentId */
         "shll $4, %eax\n"
-        "addw $1, 0x104cf04(%eax)\n"
+        "addw $1, scrVarGlob+4(%eax)\n"
         /* { scope 1 */
         "addl $scrVarGlob, %eax\n" /* line 1245 */
         "movl %eax, -0x20(%ebp)\n" /* parentValue */
@@ -10072,7 +10072,7 @@ JCOEF ClearObject(unsigned int parentId)
         "movl %ecx, %eax\n"
         "calll MakeVariableExternal\n"
         "shll $4, %ebx\n" /* line 1254 | nextId */
-        "movzwl 0x104cf0e(%ebx), %eax\n" /* nextId */
+        "movzwl scrVarGlob+14(%ebx), %eax\n" /* nextId */
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl scrVarGlob(%eax), %ebx\n" /* line 1255 | nextId */
@@ -10105,19 +10105,19 @@ JCOEF ClearObject(unsigned int parentId)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -10128,7 +10128,7 @@ JCOEF ClearObject(unsigned int parentId)
         ".Lf8fc64_0008fd6a:\n"
         "movl %eax, %edx\n" /* line 1262 */
         "shll $4, %edx\n"
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -10190,20 +10190,20 @@ JCOEF ClearObject(unsigned int parentId)
         "movzwl 0xe(%eax), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl -0x20(%ebp), %edx\n" /* line 1586 | parentValue */
         "movl $0, 8(%edx)\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edx)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1276 */
         "popl %ebx\n"
@@ -10251,7 +10251,7 @@ JCOEF Scr_KillThread(unsigned int parentId)
         "movl %ecx, %eax\n"
         "calll MakeVariableExternal\n"
         "shll $4, %ebx\n" /* line 1254 | nextId */
-        "movzwl 0x104cf0e(%ebx), %eax\n" /* nextId */
+        "movzwl scrVarGlob+14(%ebx), %eax\n" /* nextId */
         "shll $4, %eax\n"
         "leal scrVarGlob(%eax), %ecx\n"
         "movzwl scrVarGlob(%eax), %ebx\n" /* line 1255 | nextId */
@@ -10283,19 +10283,19 @@ JCOEF Scr_KillThread(unsigned int parentId)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | selfNameId, nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 | selfNameId */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n" /* selfNameId */
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         /* } scope */
@@ -10305,7 +10305,7 @@ JCOEF Scr_KillThread(unsigned int parentId)
         ".Lf8fe86_0008ff86:\n"
         "movl %eax, %edx\n" /* line 1262 */
         "shll $4, %edx\n"
-        "movzwl 0x104cf0e(%edx), %eax\n"
+        "movzwl scrVarGlob+14(%edx), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n"
@@ -10340,7 +10340,7 @@ JCOEF Scr_KillThread(unsigned int parentId)
         "movl 8(%ebp), %eax\n" /* line 1998 | parentId */
         "addl $0x10000, %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* name */
-        "movl 0x100cec0, %esi\n" /* line 801 | entryValue */
+        "movl scrVarPub+32, %esi\n" /* line 801 | entryValue */
         "movl %eax, %ecx\n" /* index */
         "addl %esi, %ecx\n" /* entryValue, index */
         "movl $0x80018005, %edx\n"
@@ -10378,10 +10378,10 @@ JCOEF Scr_KillThread(unsigned int parentId)
         "testw %ax, %ax\n" /* line 1444 */
         "je .Lf8fe86_00090197\n"
         "shll $4, %edx\n" /* line 2743 */
-        "movl 0x104cf04(%edx), %edi\n" /* entryValue */
+        "movl scrVarGlob+4(%edx), %edi\n" /* entryValue */
         "movl %edi, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "cmpl %ecx, %edi\n" /* line 2660 | entryValue */
@@ -10389,7 +10389,7 @@ JCOEF Scr_KillThread(unsigned int parentId)
         ".Lf8fe86_00090093:\n"
         "movl %ecx, %eax\n" /* line 2665 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %edx\n"
+        "movl scrVarGlob+8(%eax), %edx\n"
         "movl %edx, %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0xe, %eax\n"
@@ -10435,7 +10435,7 @@ JCOEF Scr_KillThread(unsigned int parentId)
         "shll $4, %ecx\n"
         "movzwl scrVarGlob(%ecx), %eax\n"
         "shll $4, %eax\n"
-        "movl 0x104cf04(%eax), %eax\n"
+        "movl scrVarGlob+4(%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll VM_CancelNotify\n"
         /* { scope 2: entry */
@@ -10455,13 +10455,13 @@ JCOEF Scr_KillThread(unsigned int parentId)
         "calll RemoveVariable\n"
         "movl %edi, %eax\n" /* line 2654 | entryValue */
         "shll $4, %eax\n"
-        "movzwl 0x104cf0e(%eax), %eax\n"
+        "movzwl scrVarGlob+14(%eax), %eax\n"
         "shll $4, %eax\n"
         "movzwl scrVarGlob(%eax), %ecx\n"
         "cmpl %edi, %ecx\n" /* line 2660 | entryValue */
         "jne .Lf8fe86_00090093\n"
         ".Lf8fe86_00090182:\n"
-        "movl 0x100cec0, %esi\n" /* nextSiblingIndex */
+        "movl scrVarPub+32, %esi\n" /* nextSiblingIndex */
         ".Lf8fe86_00090188:\n"
         "movl -0x28(%ebp), %edx\n" /* line 2302 | name */
         "movl %edx, 4(%esp)\n"
@@ -10601,7 +10601,7 @@ unsigned int Scr_EvalFieldObject(unsigned int tempVariable, VariableValue *value
         ".Lf902b0_000902eb:\n"
         "movl var_typename(, %ebx, 4), %eax\n" /* line 2978 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d344, (%esp)\n" /* "%s is not a field object" */
+        "movl $str_0021d344, (%esp)\n" /* "%s is not a field object" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -10631,7 +10631,7 @@ unsigned int Scr_EvalFieldObject(unsigned int tempVariable, VariableValue *value
         "movl %esi, %edx\n"
         "movl %esi, %eax\n"
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %ebx\n" /* type */
+        "movl scrVarGlob+8(%eax), %ebx\n" /* type */
         "andl $0x1f, %ebx\n" /* type */
         "cmpl $0x15, %ebx\n" /* line 2966 | type */
         "jg .Lf902b0_000903a1\n"
@@ -10738,9 +10738,9 @@ Bool Scr_CastString(VariableValue *value)
         "je .Lf90410_000904b1\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 2853 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d640, (%esp)\n" /* "cannot cast %s to string" */
+        "movl $str_0021d640, (%esp)\n" /* "cannot cast %s to string" */
         "calll va\n"
-        "movl %eax, 0x100ceb0\n"
+        "movl %eax, scrVarPub+16\n"
         "movl (%esi), %edx\n" /* line 252 */
         "movl 4(%esi), %eax\n" /* type */
         /* { scope 2 */
@@ -10867,7 +10867,7 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         "movl 4(%esi), %eax\n" /* line 2866 | value */
         "cmpl $0xb, %eax\n"
         "ja .Lf90568_00090582\n"
-        "jmpl *0x2f1440(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+3392(, %eax, 4)\n"
         ".Lf90568_00090582:\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 2889 */
         ".Lf90568_00090589:\n"
@@ -10938,7 +10938,7 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         /* { scope 1 */
         "movl (%esi), %eax\n" /* line 2885 | value */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "movl var_typename(, %eax, 4), %eax\n"
         "jmp .Lf90568_00090589\n"
@@ -10971,7 +10971,7 @@ JCOEF Scr_UnmatchingTypesError(VariableValue *value1, VariableValue *value2)
         "movl 8(%ebp), %edi\n" /* value1 */
         "movl 0xc(%ebp), %esi\n" /* value2 */
         /* { scope 1 */
-        "movl 0x100ceb0, %eax\n" /* line 2989 */
+        "movl scrVarPub+16, %eax\n" /* line 2989 */
         "testl %eax, %eax\n"
         "je .Lf90672_0009074c\n"
         "xorl %ebx, %ebx\n" /* error_message */
@@ -11077,7 +11077,7 @@ JCOEF Scr_UnmatchingTypesError(VariableValue *value1, VariableValue *value2)
         "movl %edx, 0xc(%esp)\n"
         "movl %ebx, 8(%esp)\n" /* error_message */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d65c, (%esp)\n" /* "pair '%s' and '%s' has unmatching types '%s' and '%s'" */
+        "movl $str_0021d65c, (%esp)\n" /* "pair '%s' and '%s' has unmatching types '%s' and '%s'" */
         "calll va\n"
         "movl %eax, %ebx\n" /* error_message */
         "jmp .Lf90672_00090690\n"
@@ -11131,7 +11131,7 @@ JCOEF Scr_EvalMod(VariableValue *value1, VariableValue *value2)
         "retl\n"
         ".Lf907e6_0009081b:\n"
         "movl $0, (%ecx)\n" /* line 3498 */
-        "movl $0x21d694, 8(%ebp)\n" /* line 3499 | value1 */
+        "movl $str_0021d694, 8(%ebp)\n" /* line 3499 | value1 */
         "popl %ebx\n" /* line 3504 */
         "popl %ebp\n"
         "jmp Scr_Error\n" /* line 3499 */
@@ -11187,7 +11187,7 @@ JCOEF Scr_EvalDivide(VariableValue *value1, VariableValue *value2)
         /* } scope */
         ".Lf90830_00090890:\n"
         "movss (%esi), %xmm1\n" /* line 3475 | value2 */
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jp .Lf90830_0009089f\n"
         "je .Lf90830_000908ef\n"
         ".Lf90830_0009089f:\n"
@@ -11225,7 +11225,7 @@ JCOEF Scr_EvalDivide(VariableValue *value1, VariableValue *value2)
         "retl\n"
         ".Lf90830_000908ef:\n"
         "movl $0, (%ebx)\n" /* line 3480 | value1 */
-        "movl $0x21d694, 8(%ebp)\n" /* line 3481 | value1 */
+        "movl $str_0021d694, 8(%ebp)\n" /* line 3481 | value1 */
         "addl $0x10, %esp\n" /* line 3486 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -11478,7 +11478,7 @@ JCOEF Scr_EvalPlus(VariableValue *value1, VariableValue *value2)
         "movl -0x201c(%ebp), %eax\n" /* line 3374 | s2 */
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* s1 */
-        "movl $0x21d6a0, (%esp)\n" /* "cannot concat "%s" and "%s" - max string length exceeded" */
+        "movl $str_0021d6a0, (%esp)\n" /* "cannot concat "%s" and "%s" - max string length exceeded" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -11924,16 +11924,16 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         "cmpl $0xb, 4(%esi)\n" /* line 3180 | value1 */
         "ja .Lf90f4e_00090fb3\n"
         "movl 4(%esi), %eax\n" /* value1 */
-        "jmpl *0x2f1480(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+3456(, %eax, 4)\n"
         "movl (%esi), %edx\n" /* line 3214 | value1 */
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0x16, %eax\n"
         "jne .Lf90f4e_000910ce\n"
         ".Lf90f4e_00090fa6:\n"
-        "cmpb $0, 0x100ceac\n" /* line 3216 */
+        "cmpb $0, scrVarPub+12\n" /* line 3216 */
         "jne .Lf90f4e_000910e5\n"
         ".Lf90f4e_00090fb3:\n"
         "movl %edi, 0xc(%ebp)\n" /* line 3237 | value2 */
@@ -12010,8 +12010,8 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         "movl $6, 4(%esi)\n" /* line 3192 | value1 */
         "movss (%esi), %xmm0\n" /* line 3193 | value1 */
         "subss (%edi), %xmm0\n" /* value2 */
-        "andps 0x2f1470, %xmm0\n"
-        "movss 0x2ed7e8, %xmm1\n" /* 9.999999974752427e-07f */
+        "andps CorrectSolidDeltas+3440, %xmm0\n"
+        "movss lit4_002ed7e8, %xmm1\n" /* 9.999999974752427e-07f */
         "xorl %eax, %eax\n"
         "ucomiss %xmm0, %xmm1\n"
         "seta %al\n"
@@ -12035,7 +12035,7 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         ".Lf90f4e_000910ce:\n"
         "movl (%edi), %eax\n" /* line 3214 | value2 */
         "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %eax\n"
+        "movl scrVarGlob+8(%eax), %eax\n"
         "andl $0x1f, %eax\n"
         "cmpl $0x16, %eax\n"
         "je .Lf90f4e_00090fa6\n"
@@ -12448,7 +12448,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "subl $0x66, %eax\n"
         "cmpl $0xf, %eax\n"
         "ja .Lf91450_000914c3\n"
-        "jmpl *0x2f14b0(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+3504(, %eax, 4)\n"
         /* { scope 1 */
         "movl 4(%esi), %eax\n" /* line 3021 */
         "movl 4(%ebx), %edx\n" /* line 3022 */
@@ -12824,7 +12824,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "jmp .Lf91450_000914c3\n"
         ".Lf91450_000918cb:\n"
         "movl $0, (%esi)\n" /* line 3498 */
-        "movl $0x21d694, 8(%ebp)\n" /* line 3499 | op */
+        "movl $str_0021d694, 8(%ebp)\n" /* line 3499 | op */
         "addl $0x10, %esp\n" /* line 3575 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -12937,7 +12937,7 @@ JCOEF Scr_CastBool(VariableValue *value)
         "movl $0, 4(%esi)\n" /* line 2818 | value */
         "movl var_typename(, %ebx, 4), %eax\n" /* line 2819 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d59c, (%esp)\n" /* "cannot cast %s to Bool" */
+        "movl $str_0021d59c, (%esp)\n" /* "cannot cast %s to Bool" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* value */
         "addl $0x10, %esp\n" /* line 2820 */
@@ -13024,7 +13024,7 @@ JCOEF Scr_EvalBoolComplement(VariableValue *value)
         "movl $0, 4(%esi)\n" /* line 2794 | value */
         "movl var_typename(, %ebx, 4), %eax\n" /* line 2795 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d6dc, (%esp)\n" /* "~ cannot be applied to "%s"" */
+        "movl $str_0021d6dc, (%esp)\n" /* "~ cannot be applied to "%s"" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* value */
         "addl $0x10, %esp\n" /* line 2796 */
@@ -13085,7 +13085,7 @@ JCOEF Scr_EvalSizeValue(VariableValue *value)
         "je .Lf91afa_00091bb9\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 2625 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d6f8, (%esp)\n" /* "size cannot be applied to %s" */
+        "movl $str_0021d6f8, (%esp)\n" /* "size cannot be applied to %s" */
         "calll va\n"
         "movl %eax, %ebx\n" /* error_message */
         "movl (%esi), %edx\n" /* line 252 */
@@ -13264,7 +13264,7 @@ JCOEF Scr_CastVector(VariableValue *value)
         "movl %eax, (%ecx)\n"
         "jmp .Lf91c42_00091c7c\n"
         ".Lf91c42_00091cdb:\n"
-        "movl %edi, 0x100ceb4\n" /* line 2946 */
+        "movl %edi, scrVarPub+20\n" /* line 2946 */
         "movl -0x2c(%ebp), %ebx\n"
         "movl $3, %edi\n"
         ".Lf91c42_00091ce9:\n"
@@ -13286,7 +13286,7 @@ JCOEF Scr_CastVector(VariableValue *value)
         "movl $0, 4(%eax)\n"
         "movl var_typename(, %esi, 4), %eax\n" /* line 2948 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21cea0, (%esp)\n" /* "type %s is not a float" */
+        "movl $str_0021cea0, (%esp)\n" /* "type %s is not a float" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* value */
         /* } scope */
@@ -13360,19 +13360,19 @@ JCOEF FreeValue(unsigned int id)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n"
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         /* } scope */
         /* } scope */
         "addl $0x1c, %esp\n" /* line 1734 */
@@ -13573,10 +13573,10 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "cmpl $1, %ebx\n" /* line 4121 | id */
         "je .Lf91f96_000920bd\n"
         ".Lf91f96_00091fcc:\n"
-        "movl $1, 0x100ceb4\n" /* line 4126 */
+        "movl $1, scrVarPub+20\n" /* line 4126 */
         "movl var_typename(, %ebx, 4), %eax\n" /* line 4127 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d560, (%esp)\n" /* "%s is not an array" */
+        "movl $str_0021d560, (%esp)\n" /* "%s is not an array" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* parentId */
         /* } scope */
@@ -13589,15 +13589,15 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         /* { scope 1 */
         "jmp Scr_Error\n" /* line 4127 */
         ".Lf91f96_00091ffc:\n"
-        "movl 0x100cee0, %eax\n" /* line 4081 */
+        "movl scrVarPub+64, %eax\n" /* line 4081 */
         "shll $4, %eax\n"
         "addl $scrVarGlob, %eax\n"
         "movl %eax, -0x30(%ebp)\n" /* entValue */
         "movl 8(%eax), %edi\n" /* line 4084 | parentId */
         "shrl $8, %edi\n" /* parentId */
-        "movl 0x100cee4, %esi\n" /* line 1980 | nextSiblingIndex */
-        "addl $0x800000, %esi\n" /* nextSiblingIndex */
-        "andl $0xffffff, %esi\n" /* nextSiblingIndex */
+        "movl scrVarPub+68, %esi\n" /* line 1980 | nextSiblingIndex */
+        "addl $s_debugFrameGlob+57728, %esi\n" /* nextSiblingIndex */
+        "andl $g_effectVisArray+4351, %esi\n" /* nextSiblingIndex */
         "leal (%edi, %edi, 2), %eax\n" /* line 801 | entry */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -13643,7 +13643,7 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         /* } scope */
         ".Lf91f96_0009209d:\n"
         "shll $4, %eax\n" /* line 4092 */
-        "cmpw $0, 0x104cf04(%eax)\n"
+        "cmpw $0, scrVarGlob+4(%eax)\n"
         "je .Lf91f96_000925f3\n"
         ".Lf91f96_000920ae:\n"
         "movl %esi, (%esp)\n" /* line 1949 | nextSiblingIndex */
@@ -13658,10 +13658,10 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "andl $0x1f, %edx\n"
         "cmpl $0x16, %edx\n"
         "je .Lf91f96_00092105\n"
-        "movl $1, 0x100ceb4\n" /* line 4138 */
+        "movl $1, scrVarPub+20\n" /* line 4138 */
         "movl var_typename(, %edx, 4), %eax\n" /* line 4139 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d560, (%esp)\n" /* "%s is not an array" */
+        "movl $str_0021d560, (%esp)\n" /* "%s is not an array" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* parentId */
         /* } scope */
@@ -13684,13 +13684,13 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "je .Lf91f96_00092360\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 4171 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21d4b4, (%esp)\n" /* "%s is not an array index" */
+        "movl $str_0021d4b4, (%esp)\n" /* "%s is not an array index" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* parentId */
         "jmp .Lf91f96_00091ff0\n"
         ".Lf91f96_00092147:\n"
         "shll $4, %edx\n" /* line 4087 */
-        "movl 0x104cf04(%edx), %eax\n"
+        "movl scrVarGlob+4(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl -0x30(%ebp), %ecx\n" /* entValue */
         "movzwl 6(%ecx), %eax\n"
@@ -13744,7 +13744,7 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         ".Lf91f96_000921fc:\n"
         "movl %esi, (%esp)\n" /* line 4146 | varValue */
         "calll RemoveRefToObject\n"
-        "movzwl 0x104cf04, %eax\n" /* line 1503 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1503 */
         "movw %ax, -0x24(%ebp)\n"
         "testw %ax, %ax\n" /* line 1504 */
         "je .Lf91f96_0009250e\n"
@@ -13779,10 +13779,10 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "movl %ebx, %ecx\n" /* newEntryValue */
         "movzwl -0x22(%ebp), %eax\n"
         ".Lf91f96_0009228c:\n"
-        "movw %ax, 0x104cf04\n" /* line 1526 */
+        "movw %ax, scrVarGlob+4\n" /* line 1526 */
         "movzwl %ax, %eax\n" /* line 1527 */
         "shll $4, %eax\n"
-        "movw $0, 0x104cf02(%eax)\n"
+        "movw $0, scrVarGlob+2(%eax)\n"
         "movl -0x24(%ebp), %edx\n" /* line 1529 */
         "movw %dx, 0xc(%ecx)\n"
         "movw %dx, 0xe(%ecx)\n" /* line 1530 */
@@ -13803,12 +13803,12 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "jmp .Lf91f96_00092110\n"
         ".Lf91f96_000922e7:\n"
         "movl (%edx), %edx\n" /* line 4155 */
-        "leal 0x7e0002(%edx), %eax\n"
-        "cmpl $0xfe0001, %eax\n"
+        "leal vq8+462882(%edx), %eax\n"
+        "cmpl $pushed+2177, %eax\n"
         "ja .Lf91f96_0009251f\n"
         "movl %esi, %edi\n" /* line 4157 | varValue, parentId */
-        "leal 0x800000(%edx), %esi\n" /* line 2310 | nextSiblingIndex */
-        "andl $0xffffff, %esi\n" /* nextSiblingIndex */
+        "leal s_debugFrameGlob+57728(%edx), %esi\n" /* line 2310 | nextSiblingIndex */
+        "andl $g_effectVisArray+4351, %esi\n" /* nextSiblingIndex */
         /* { scope 2: entry */
         /* { scope 3: name */
         "leal (%edi, %esi), %ecx\n" /* line 801 | entry, index */
@@ -13949,19 +13949,19 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "movzwl 0xe(%edi), %esi\n" /* line 1582 | entry, nextSiblingIndex */
         "movzwl %si, %eax\n" /* line 1583 | nextSiblingIndex */
         "shll $4, %eax\n"
-        "movw %dx, 0x104cf02(%eax)\n"
+        "movw %dx, scrVarGlob+2(%eax)\n"
         "shll $4, %edx\n" /* line 1584 */
         "movzwl scrVarGlob(%edx), %eax\n"
         "shll $4, %eax\n"
-        "movw %si, 0x104cf0e(%eax)\n" /* nextSiblingIndex */
+        "movw %si, scrVarGlob+14(%eax)\n" /* nextSiblingIndex */
         "movl $0, 8(%edi)\n" /* line 1586 | entry */
-        "movzwl 0x104cf04, %eax\n" /* line 1587 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1587 */
         "movw %ax, 4(%edi)\n" /* entry */
         "movw $0, 2(%ecx)\n" /* line 1588 */
-        "movzwl 0x104cf04, %eax\n" /* line 1590 */
+        "movzwl scrVarGlob+4, %eax\n" /* line 1590 */
         "shll $4, %eax\n"
-        "movw %bx, 0x104cf02(%eax)\n" /* index */
-        "movw %bx, 0x104cf04\n" /* line 1591 | index */
+        "movw %bx, scrVarGlob+2(%eax)\n" /* index */
+        "movw %bx, scrVarGlob+4\n" /* line 1591 | index */
         "jmp .Lf91f96_00092358\n"
         /* } scope */
         /* } scope */
@@ -13996,12 +13996,12 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         /* } scope */
         /* } scope */
         ".Lf91f96_0009250e:\n"
-        "movl $0x21d3d8, (%esp)\n" /* line 1505 */
+        "movl $str_0021d3d8, (%esp)\n" /* line 1505 */
         "calll Scr_TerminalError\n"
         "jmp .Lf91f96_00092218\n"
         ".Lf91f96_0009251f:\n"
         "movl %edx, 4(%esp)\n" /* line 4160 */
-        "movl $0x21d498, (%esp)\n" /* "array index %d out of range" */
+        "movl $str_0021d498, (%esp)\n" /* "array index %d out of range" */
         "calll va\n"
         "movl %eax, 8(%ebp)\n" /* parentId */
         "jmp .Lf91f96_00091ff0\n"
@@ -14074,8 +14074,8 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         ".Lf91f96_000925f3:\n"
         "movl %esi, (%esp)\n" /* line 1949 | nextSiblingIndex */
         "calll RemoveRefToObject\n"
-        "movl $1, 0x100ceb4\n" /* line 4095 */
-        "movl $0x21d5b4, 8(%ebp)\n" /* line 4096 | parentId */
+        "movl $1, scrVarPub+20\n" /* line 4095 */
+        "movl $str_0021d5b4, 8(%ebp)\n" /* line 4096 | parentId */
         "jmp .Lf91f96_00091ff0\n"
         ".Lf91f96_00092611:\n"
         "cmpl $1, %edx\n" /* line 1946 */

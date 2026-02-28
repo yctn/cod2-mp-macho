@@ -15,10 +15,10 @@ extern const dvar_t *net_lanauthorize; /* 0x0 */
 extern const dvar_t *showpackets; /* 0x0 */
 extern const dvar_t *showdrop; /* 0x0 */
 extern const dvar_t *packetDebug; /* 0x0 */
-static char s[64]; /* 0xedada0 */
-static char * netsrcString[2]; /* 0x312044 */
-static int net_iProfilingOn; /* 0xedad90 */
-static loopback_t loopbacks[2]; /* 0xecfd80 */
+static char s[64]; /* s */
+static char * netsrcString[2]; /* netsrcString */
+static int net_iProfilingOn; /* net_iProfilingOn */
+static loopback_t loopbacks[2]; /* loopbacks */
 
 extern void Com_Printf(const char *fmt, ...);
 extern void SV_Netchan_PrintProfileStats(int bDumpRecvStats);
@@ -89,7 +89,7 @@ void NetProf_PrepProfiling(netProfileInfo_t * *pProf)
         "popl %ebp\n"
         "retl\n"
         ".Lf157828_0015787a:\n"
-        "movl 0x195ecbc, %eax\n" /* line 162 */
+        "movl imp_com_sv_running, %eax\n" /* line 162 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lf157828_001578d6\n"
@@ -99,7 +99,7 @@ void NetProf_PrepProfiling(netProfileInfo_t * *pProf)
         "movl net_iProfilingOn, %eax\n" /* line 173 */
         "movl g_qport(, %eax, 4), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab038, (%esp)\n" /* "Net Profiling turned on: %s
+        "movl $str_002ab038, (%esp)\n" /* "Net Profiling turned on: %s
 " */
         "calll Com_Printf\n"
         "movl (%ebx), %edx\n" /* line 177 | pProf */
@@ -108,14 +108,14 @@ void NetProf_PrepProfiling(netProfileInfo_t * *pProf)
         "jmp .Lf157828_001578f5\n"
         ".Lf157828_001578b5:\n"
         "movl $0, net_iProfilingOn\n" /* line 187 */
-        "movl $0x2ab058, (%esp)\n" /* line 188 */
+        "movl $str_002ab058, (%esp)\n" /* line 188 */
         "calll Com_Printf\n"
         "movl (%ebx), %eax\n" /* line 191 | pProf */
         "testl %eax, %eax\n"
         "jne .Lf157828_00157866\n"
         "jmp .Lf157828_00157851\n"
         ".Lf157828_001578d6:\n"
-        "movl 0x195ecb4, %eax\n" /* line 162 */
+        "movl imp_legacyHacks, %eax\n" /* line 162 */
         "movl (%eax), %eax\n"
         "movl 4(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -344,7 +344,7 @@ void NetProf_UpdateStatistics(netProfileStream_t *pStream)
         ".Lf15797c_00157b70:\n"
         "cvtsi2ssl -0x24(%ebp), %xmm0\n" /* line 370 | iTotalBytes */
         "cvtsi2ssl %edx, %xmm1\n"
-        "mulss 0x2ed658, %xmm1\n" /* 0.0010000000474974513f */
+        "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
         "divss %xmm1, %xmm0\n"
         "cvttss2si %xmm0, %eax\n"
         "movl 8(%ebp), %ecx\n" /* pStream */
@@ -392,17 +392,17 @@ void Netchan_Init(int port)
         "subl $0x28, %esp\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 839 */
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab0c0, (%esp)\n" /* "showpackets" */
+        "movl $str_002ab0c0, (%esp)\n" /* "showpackets" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, showpackets\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 840 */
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab0cc, (%esp)\n" /* "showdrop" */
+        "movl $str_002ab0cc, (%esp)\n" /* "showdrop" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, showdrop\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 841 */
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab0d8, (%esp)\n" /* "packetDebug" */
+        "movl $str_002ab0d8, (%esp)\n" /* "packetDebug" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, packetDebug\n"
         "movzwl 8(%ebp), %eax\n" /* line 845 | port */
@@ -411,23 +411,23 @@ void Netchan_Init(int port)
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab0e4, (%esp)\n" /* "net_profile" */
+        "movl $str_002ab0e4, (%esp)\n" /* "net_profile" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, net_profile\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 849 */
         "movl $3, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab0f0, (%esp)\n" /* "net_showprofile" */
+        "movl $str_002ab0f0, (%esp)\n" /* "net_showprofile" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, net_showprofile\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 851 */
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab100, (%esp)\n" /* "net_lanauthorize" */
+        "movl $str_002ab100, (%esp)\n" /* "net_lanauthorize" */
         "calll Dvar_RegisterBool\n"
         "movl %eax, net_lanauthorize\n"
         "movl $Net_DumpProfile_f, 4(%esp)\n" /* line 865 */
-        "movl $0x2ab114, (%esp)\n" /* "net_dumpprofile" */
+        "movl $str_002ab114, (%esp)\n" /* "net_dumpprofile" */
         "calll Cmd_AddCommand\n"
         "leave\n" /* line 870 */
         "retl\n"
@@ -523,7 +523,7 @@ int NET_CompareAdrSigned(netadr_t *a, netadr_t *b)
         "je .Lf157db4_00157dee\n"
         "cmpl $4, %eax\n" /* line 1260 */
         "je .Lf157db4_00157e00\n"
-        "movl $0x2ab150, (%esp)\n" /* line 1276 */
+        "movl $str_002ab150, (%esp)\n" /* line 1276 */
         "calll Com_Printf\n"
         ".Lf157db4_00157dee:\n"
         "movl $0, -0x2c(%ebp)\n"
@@ -630,7 +630,7 @@ const char * NET_AdrToString(netadr_t a)
         "movl %edi, %edx\n"
         "movzbl %dl, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
+        "movl $str_002a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -644,7 +644,7 @@ const char * NET_AdrToString(netadr_t a)
         "retl\n"
         /* { scope 1 */
         ".Lf157e76_00157efe:\n"
-        "movl $0x2ab178, 8(%esp)\n" /* line 132 */
+        "movl $str_002ab178, 8(%esp)\n" /* line 132 */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -672,7 +672,7 @@ qboolean NET_StringToAdr(const char *s, netadr_t *a)
         "subl $0x41c, %esp\n"
         "movl 0xc(%ebp), %ebx\n" /* a */
         /* { scope 1 */
-        "movl $0x2a8ab8, %edi\n" /* line 1623 */
+        "movl $str_002a8ab8, %edi\n" /* line 1623 */
         "movl $0xa, %ecx\n"
         "cld\n"
         "movl 8(%ebp), %esi\n" /* s, port */
@@ -872,7 +872,7 @@ Bool NET_SendPacket(netsrc_t sock, int length, const void *data, netadr_t to)
         "movl 0xc(%ebp), %eax\n" /* line 1393 | length */
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab184, (%esp)\n" /* "[client %i] send packet %4i
+        "movl $str_002ab184, (%esp)\n" /* "[client %i] send packet %4i
 " */
         "calll Com_Printf\n"
         "jmp .Lf158022_00158062\n"
@@ -1126,7 +1126,7 @@ Bool NET_OutOfBandPrint(netsrc_t sock, netadr_t adr, const char *data)
         "cmpb $0, 8(%eax)\n"
         "je .Lf1583aa_00158429\n"
         "movl %esi, 4(%esp)\n" /* line 1479 | iLength */
-        "movl $0x2ab1a4, (%esp)\n" /* "OOB Print: %s
+        "movl $str_002ab1a4, (%esp)\n" /* "OOB Print: %s
 " */
         "calll Com_DPrintf\n"
         ".Lf1583aa_00158429:\n"
@@ -1140,7 +1140,7 @@ Bool NET_OutOfBandPrint(netsrc_t sock, netadr_t adr, const char *data)
         "cmpl $0x3ffc, %ecx\n"
         "jbe .Lf1583aa_00158469\n"
         "movl %eax, 4(%esp)\n" /* line 1484 */
-        "movl $0x2ab1b4, (%esp)\n" /* "OOB Packet is %i bytes - too large to send
+        "movl $str_002ab1b4, (%esp)\n" /* "OOB Packet is %i bytes - too large to send
 " */
         "calll Com_DPrintf\n"
         "xorl %ebx, %ebx\n" /* line 1509 | string */
@@ -1257,7 +1257,7 @@ qboolean NET_CompareAdr(netadr_t a, netadr_t b)
         "je .Lf15852c_0015856b\n"
         "cmpl $4, %eax\n" /* line 1260 */
         "je .Lf15852c_00158583\n"
-        "movl $0x2ab150, (%esp)\n" /* line 1276 */
+        "movl $str_002ab150, (%esp)\n" /* line 1276 */
         "calll Com_Printf\n"
         ".Lf15852c_0015856b:\n"
         "movl $0, -0x2c(%ebp)\n"
@@ -1341,7 +1341,7 @@ qboolean NET_CompareBaseAdr(netadr_t a, netadr_t b)
         "je .Lf1585d4_00158620\n"
         "cmpl $4, %edx\n" /* line 1226 */
         "je .Lf1585d4_0015863a\n"
-        "movl $0x2ab124, (%esp)\n" /* line 1234 */
+        "movl $str_002ab124, (%esp)\n" /* line 1234 */
         "calll Com_Printf\n"
         "movl $0, -0x2c(%ebp)\n"
         "jmp .Lf1585d4_001585ec\n"
@@ -1578,7 +1578,7 @@ Bool Netchan_TransmitNextFragment(netchan_t *chan)
         "movl netsrcString(, %eax, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
-        "movl $0x2ab210, (%esp)\n" /* "[client %i] %s send %4i : s=%i fragment=%i,%i
+        "movl $str_002ab210, (%esp)\n" /* "[client %i] %s send %4i : s=%i fragment=%i,%i
 " */
         "calll Com_Printf\n"
         "jmp .Lf15871e_0015883c\n"
@@ -1617,11 +1617,11 @@ Bool Netchan_TransmitNextFragment(netchan_t *chan)
         "je .Lf15871e_00158831\n"
         "movl -0x5bc(%ebp), %eax\n" /* line 238 | iSize */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2ab1e0, 8(%esp)\n" /* " fragment" */
+        "movl $str_002ab1e0, 8(%esp)\n" /* " fragment" */
         "movl 4(%edi), %eax\n"
         "movl netsrcString(, %eax, 4), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab1ec, (%esp)\n" /* "%s send%s: %i
+        "movl $str_002ab1ec, (%esp)\n" /* "%s send%s: %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf15871e_00158831\n"
@@ -1745,7 +1745,7 @@ Bool Netchan_Transmit(netchan_t *chan, int length, const byte *data)
         /* { scope 1: iSize */
         ".Lf1589a4_00158b05:\n"
         "movl %ebx, 8(%esp)\n" /* line 985 | length */
-        "movl $0x2ab240, 4(%esp)\n" /* "Netchan_Transmit: length = %i" */
+        "movl $str_002ab240, 4(%esp)\n" /* "Netchan_Transmit: length = %i" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1589a4_001589c2\n"
@@ -1761,7 +1761,7 @@ Bool Netchan_Transmit(netchan_t *chan, int length, const byte *data)
         "movl netsrcString(, %eax, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2ab29c, (%esp)\n" /* "[client %i] %s send %4i : s=%i ack=%i
+        "movl $str_002ab29c, (%esp)\n" /* "[client %i] %s send %4i : s=%i ack=%i
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n" /* line 1042 */
@@ -1770,7 +1770,7 @@ Bool Netchan_Transmit(netchan_t *chan, int length, const byte *data)
         "jmp .Lf1589a4_00158afa\n"
         ".Lf1589a4_00158b69:\n"
         "movl %ebx, 4(%esp)\n" /* line 1019 | length */
-        "movl $0x2ab260, (%esp)\n" /* "Adding %i byte payload to packet
+        "movl $str_002ab260, (%esp)\n" /* "Adding %i byte payload to packet
 " */
         "calll Com_Printf\n"
         "movl %ebx, 8(%esp)\n" /* line 1021 | length */
@@ -1784,7 +1784,7 @@ Bool Netchan_Transmit(netchan_t *chan, int length, const byte *data)
         ".Lf1589a4_00158b9b:\n"
         "movl -0x30(%ebp), %eax\n" /* line 1024 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab284, (%esp)\n" /* "Sending %i byte packet
+        "movl $str_002ab284, (%esp)\n" /* "Sending %i byte packet
 " */
         "calll Com_Printf\n"
         "jmp .Lf1589a4_00158a8d\n"
@@ -1823,11 +1823,11 @@ Bool Netchan_Transmit(netchan_t *chan, int length, const byte *data)
         "je .Lf1589a4_00158ae3\n"
         "movl -0x5bc(%ebp), %eax\n" /* line 238 | iSize */
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2157b8, 8(%esp)\n"
+        "movl $str_002157b8, 8(%esp)\n"
         "movl 4(%edi), %eax\n"
         "movl netsrcString(, %eax, 4), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab1ec, (%esp)\n" /* "%s send%s: %i
+        "movl $str_002ab1ec, (%esp)\n" /* "%s send%s: %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf1589a4_00158ae3\n"
@@ -1897,7 +1897,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl netsrcString(, %eax, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2ab2f4, (%esp)\n" /* "[client %i] %s recv %4i : s=%i
+        "movl $str_002ab2f4, (%esp)\n" /* "[client %i] %s recv %4i : s=%i
 " */
         "calll Com_Printf\n"
         ".Lf158c62_00158d27:\n"
@@ -1926,7 +1926,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl %ecx, 0xc(%esp)\n"
         "movl $s, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2ab314, (%esp)\n" /* "[client %i] %s:Out of order packet %i at %i
+        "movl $str_002ab314, (%esp)\n" /* "[client %i] %s:Out of order packet %i at %i
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -1968,7 +1968,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl %ebx, 0xc(%esp)\n" /* pPacket */
         "movl $s, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2ab344, (%esp)\n" /* "[client %i] %s: Dropped %i packets at %i
+        "movl $str_002ab344, (%esp)\n" /* "[client %i] %s: Dropped %i packets at %i
 " */
         "calll Com_Printf\n"
         ".Lf158c62_00158e12:\n"
@@ -2019,7 +2019,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl -0x34(%ebp), %ecx\n" /* line 1154 | sequence */
         "movl %ecx, 8(%esp)\n"
         "movl $s, 4(%esp)\n"
-        "movl $0x2ab370, (%esp)\n" /* "%s:Dropped a message fragment
+        "movl $str_002ab370, (%esp)\n" /* "%s:Dropped a message fragment
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -2059,7 +2059,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl netsrcString(, %eax, 4), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
-        "movl $0x2ab2c4, (%esp)\n" /* "[client %i] %s recv %4i : s=%i fragment=%i,%i
+        "movl $str_002ab2c4, (%esp)\n" /* "[client %i] %s recv %4i : s=%i fragment=%i,%i
 " */
         "calll Com_Printf\n"
         "jmp .Lf158c62_00158d27\n"
@@ -2098,9 +2098,9 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl net_showprofile, %eax\n" /* line 257 */
         "testb $2, 8(%eax)\n"
         "je .Lf158c62_00158cde\n"
-        "movl $0x2ab1e0, %edx\n" /* line 258 */
+        "movl $str_002ab1e0, %edx\n" /* line 258 */
         "testl %ecx, %ecx\n"
-        "movl $0x2157b8, %eax\n"
+        "movl $str_002157b8, %eax\n"
         "cmovel %eax, %edx\n"
         "movl -0x24(%ebp), %eax\n" /* iSize */
         "movl %eax, 0xc(%esp)\n"
@@ -2108,7 +2108,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl 4(%edi), %eax\n"
         "movl netsrcString(, %eax, 4), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x2ab1fc, (%esp)\n" /* "%s recieve%s: %i
+        "movl $str_002ab1fc, (%esp)\n" /* "%s recieve%s: %i
 " */
         "calll Com_Printf\n"
         "jmp .Lf158c62_00158cde\n"
@@ -2185,7 +2185,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         ".Lf158c62_001590b7:\n"
         "movl %ebx, 8(%esp)\n" /* line 1180 | pPacket */
         "movl $s, 4(%esp)\n"
-        "movl $0x2ab3ac, (%esp)\n" /* "%s:fragmentLength %i > msg->maxsize
+        "movl $str_002ab3ac, (%esp)\n" /* "%s:fragmentLength %i > msg->maxsize
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
@@ -2208,13 +2208,13 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "je .Lf158c62_001592a5\n"
         ".Lf158c62_00159111:\n"
         "movl $s, 4(%esp)\n" /* line 1164 */
-        "movl $0x2ab390, (%esp)\n" /* "%s:illegal fragment length
+        "movl $str_002ab390, (%esp)\n" /* "%s:illegal fragment length
 " */
         "calll Com_Printf\n"
         "xorl %eax, %eax\n"
         "jmp .Lf158c62_00158d96\n"
         ".Lf158c62_0015912c:\n"
-        "movl $0x2ab178, 8(%esp)\n" /* line 132 */
+        "movl $str_002ab178, 8(%esp)\n" /* line 132 */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -2232,7 +2232,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl %eax, 0x10(%esp)\n"
         "movzbl -0x20(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
+        "movl $str_002a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -2243,13 +2243,13 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "jne .Lf158c62_001590e5\n"
         "jmp .Lf158c62_00158ec0\n"
         ".Lf158c62_001591ad:\n"
-        "movl $0x2ab178, 8(%esp)\n" /* line 132 */
+        "movl $str_002ab178, 8(%esp)\n" /* line 132 */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
         "jmp .Lf158c62_00159111\n"
         ".Lf158c62_001591ce:\n"
-        "movl $0x2ab178, 8(%esp)\n" /* "loopback" */
+        "movl $str_002ab178, 8(%esp)\n" /* "loopback" */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -2267,13 +2267,13 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl %eax, 0x10(%esp)\n"
         "movzbl -0x1e(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
+        "movl $str_002a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
         "jmp .Lf158c62_00158deb\n"
         ".Lf158c62_00159239:\n"
-        "movl $0x2ab178, 8(%esp)\n" /* line 132 */
+        "movl $str_002ab178, 8(%esp)\n" /* line 132 */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -2291,7 +2291,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl %eax, 0x10(%esp)\n"
         "movzbl -0x1c(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
+        "movl $str_002a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -2309,7 +2309,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl %eax, 0x10(%esp)\n"
         "movzbl -0x1b(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
+        "movl $str_002a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -2338,7 +2338,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "calll MSG_ReadLong\n"
         "jmp .Lf158c62_00158e19\n"
         ".Lf158c62_0015933e:\n"
-        "movl $0x2ab178, 8(%esp)\n" /* line 132 */
+        "movl $str_002ab178, 8(%esp)\n" /* line 132 */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"
@@ -2356,7 +2356,7 @@ qboolean Netchan_Process(netchan_t *chan, msg_t *msg)
         "movl %eax, 0x10(%esp)\n"
         "movzbl -0x1a(%ebp), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
+        "movl $str_002a91dc, 8(%esp)\n" /* "%i.%i.%i.%i:%i" */
         "movl $0x40, 4(%esp)\n"
         "movl $s, (%esp)\n"
         "calll Com_sprintf\n"

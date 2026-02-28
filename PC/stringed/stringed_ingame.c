@@ -5,9 +5,9 @@
 #include "imports.h"
 
 extern CStringEdPackage *TheStringPackage; /* 0x0 */
-static char sString[64]; /* 0x482f00 */
-static char sString_00482f80[64]; /* 0x482f80 */
-static char sTemp[64]; /* 0x482fc0 */
+static char sString[64]; /* sString */
+static char sString_00482f80[64]; /* sString */
+static char sTemp[64]; /* sTemp */
 
 qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * *psParsePos, char *psDest);
 double CStringEdPackage_SetupNewFileParse(const CStringEdPackage * _this, const char *psFileName);
@@ -92,7 +92,7 @@ qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * 
         ".Lf48cbe_00048d2e:\n"
         "movsbl %al, %eax\n" /* line 487 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x218068, (%esp)\n" /* "
+        "movl $str_00218068, (%esp)\n" /* "
 " */
         "calll strchr\n"
         "testl %eax, %eax\n"
@@ -134,7 +134,7 @@ qboolean CStringEdPackage_ReadLine(const CStringEdPackage * _this, const char * 
         ".Lf48cbe_00048d93:\n"
         "xorl %ebx, %ebx\n" /* iCharsToCopy */
         ".Lf48cbe_00048d95:\n"
-        "movl $0x218064, 4(%esp)\n" /* line 125 */
+        "movl $str_00218064, 4(%esp)\n" /* line 125 */
         "movl %esi, (%esp)\n"
         "calll strstr\n"
         "movl %eax, %edi\n"
@@ -345,14 +345,14 @@ const char * SE_GetFoundFile(LocalizeString *strResult)
         "movl %eax, 4(%esp)\n"
         "movl $sTemp, (%esp)\n"
         "calll strncpy\n"
-        "movb $0, 0x482fff\n" /* line 720 */
+        "movb $0, sTemp+63\n" /* line 720 */
         "movl $0x3b, 4(%esp)\n" /* line 107 */
         "movl $sTemp, (%esp)\n"
         "calll strchr\n"
         "testl %eax, %eax\n" /* line 724 */
         "je .Lf48f74_00048ffd\n"
         "movb $0, (%eax)\n" /* line 726 */
-        "subl $0x482fbf, %eax\n" /* line 728 */
+        "subl $sString+63, %eax\n" /* line 728 */
         /* { scope 2 */
         "movl (%ebx), %edx\n" /* line 585 */
         "movl -0xc(%edx), %edx\n"
@@ -433,7 +433,7 @@ LocalizeString CStringEdPackage_ConvertCRLiterals_Read(const CStringEdPackage * 
         ".Lf4900c_0004907e:\n"
         "movl $2, 0xc(%esp)\n" /* line 1570 */
         "movl $0, 8(%esp)\n"
-        "movl $0x218080, 4(%esp)\n" /* "\n" */
+        "movl $str_00218080, 4(%esp)\n" /* "\n" */
         "movl %esi, (%esp)\n" /* str */
         "calll __ZNKSs4findEPKcmm\n"
         "movl %eax, %ebx\n" /* __off */
@@ -450,7 +450,7 @@ LocalizeString CStringEdPackage_ConvertCRLiterals_Read(const CStringEdPackage * 
         /* { scope 1 */
         /* { scope 2 */
         ".Lf4900c_000490b1:\n"
-        "movl $0x21806c, (%esp)\n" /* line 300 */
+        "movl $str_0021806c, (%esp)\n" /* line 300 */
         "calll __ZSt20__throw_out_of_rangePKc\n"
         "movl %eax, -0x2c(%ebp)\n"
         /* } scope */
@@ -501,7 +501,7 @@ LocalizeString CStringEdPackage_InsideQuotes(const CStringEdPackage * _this, con
         "movl 8(%ebp), %edx\n" /* str */
         "movl %esi, (%edx)\n"
         "movl $0, 8(%esp)\n" /* line 906 */
-        "movl $0x2157b8, 4(%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll __ZNSs6assignEPKcm\n"
         ".Lf490fe_00049134:\n"
@@ -617,7 +617,7 @@ LocalizeString CStringEdPackage_InsideQuotes(const CStringEdPackage * _this, con
         "jmp .Lf490fe_00049178\n"
         /* { scope 1 */
         ".Lf490fe_0004924a:\n"
-        "movl $0x21806c, (%esp)\n" /* line 300 */
+        "movl $str_0021806c, (%esp)\n" /* line 300 */
         "calll __ZSt20__throw_out_of_rangePKc\n"
         "movl %eax, %esi\n"
         /* } scope */
@@ -666,7 +666,7 @@ double CStringEdPackage_AddEntry(const CStringEdPackage * _this, const char *psL
         "movl 0xc(%ebp), %ecx\n" /* line 670 | psLocalReference */
         "movl %ecx, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
-        "movl $0x218084, (%esp)\n" /* "%s_%s" */
+        "movl $str_00218084, (%esp)\n" /* "%s_%s" */
         "calll va\n"
         "leal -0x21(%ebp), %edx\n"
         "movl %edx, 8(%esp)\n"
@@ -704,7 +704,7 @@ double CStringEdPackage_AddEntry(const CStringEdPackage * _this, const char *psL
         "movl 0xc(%ebp), %edx\n" /* line 675 | psLocalReference, this */
         "movl %edx, 8(%esp)\n" /* this */
         "movl %eax, 4(%esp)\n"
-        "movl $0x218084, (%esp)\n" /* "%s_%s" */
+        "movl $str_00218084, (%esp)\n" /* "%s_%s" */
         "calll va\n"
         "leal -0x20(%ebp), %edx\n" /* this */
         "movl %edx, 8(%esp)\n" /* this */
@@ -1094,7 +1094,7 @@ double CStringEdPackage_SetString(const CStringEdPackage * _this, const char *ps
         "movl 0xc(%ebp), %eax\n" /* line 683 | psLocalReference, this */
         "movl %eax, 8(%esp)\n" /* this */
         "movl %edx, 4(%esp)\n"
-        "movl $0x218084, (%esp)\n" /* "%s_%s" */
+        "movl $str_00218084, (%esp)\n" /* "%s_%s" */
         "calll va\n"
         "leal -0x1a(%ebp), %edx\n"
         "movl %edx, 8(%esp)\n"
@@ -1159,7 +1159,7 @@ double CStringEdPackage_SetString(const CStringEdPackage * _this, const char *ps
         "retl\n"
         /* { scope 1 */
         ".Lf497c6_0004988d:\n"
-        "movl $0x21808c, 4(%esp)\n" /* line 700 */
+        "movl $str_0021808c, 4(%esp)\n" /* line 700 */
         "movl %esi, (%esp)\n" /* psNewString */
         "calll stricmp\n"
         "testl %eax, %eax\n"
@@ -1238,13 +1238,13 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         "je .Lf49924_000499c0\n"
         "movl $7, 8(%esp)\n" /* line 315 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x218094, (%esp)\n" /* "VERSION" */
+        "movl $str_00218094, (%esp)\n" /* "VERSION" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "je .Lf49924_000499cc\n"
         "movl $6, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x218150, (%esp)\n" /* "CONFIG" */
+        "movl $str_00218150, (%esp)\n" /* "CONFIG" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "jne .Lf49924_0004998a\n"
@@ -1261,7 +1261,7 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         ".Lf49924_0004998a:\n"
         "movl $9, 8(%esp)\n" /* line 315 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x218134, (%esp)\n" /* "FILENOTES" */
+        "movl $str_00218134, (%esp)\n" /* "FILENOTES" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "jne .Lf49924_00049a6b\n"
@@ -1311,7 +1311,7 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         "je .Lf49924_00049a67\n"
         "movl $1, 8(%esp)\n" /* line 580 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21809c, (%esp)\n" /* "Unexpected version number %d, expecting %d!
+        "movl $str_0021809c, (%esp)\n" /* "Unexpected version number %d, expecting %d!
 " */
         "calll va\n"
         "movl %eax, %ebx\n" /* psErrorMessage */
@@ -1343,7 +1343,7 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         ".Lf49924_00049a6b:\n"
         "movl $5, 8(%esp)\n" /* line 315 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x218140, (%esp)\n" /* "NOTES" */
+        "movl $str_00218140, (%esp)\n" /* "NOTES" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "jne .Lf49924_00049a9e\n"
@@ -1360,7 +1360,7 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         ".Lf49924_00049a9e:\n"
         "movl $5, 8(%esp)\n" /* line 315 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x218148, (%esp)\n" /* "FLAGS" */
+        "movl $str_00218148, (%esp)\n" /* "FLAGS" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "jne .Lf49924_00049ad1\n"
@@ -1377,19 +1377,19 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         ".Lf49924_00049ad1:\n"
         "movl $9, 8(%esp)\n" /* line 315 */
         "movl %ebx, 4(%esp)\n"
-        "movl $0x218158, (%esp)\n" /* "REFERENCE" */
+        "movl $str_00218158, (%esp)\n" /* "REFERENCE" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "je .Lf49924_00049d35\n"
         "movl $9, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n"
-        "movl $0x218164, (%esp)\n" /* "ENDMARKER" */
+        "movl $str_00218164, (%esp)\n" /* "ENDMARKER" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "je .Lf49924_00049db6\n"
         "movl $5, 8(%esp)\n" /* line 600 */
         "movl %ebx, 4(%esp)\n" /* psErrorMessage */
-        "movl $0x218170, (%esp)\n" /* "LANG_" */
+        "movl $str_00218170, (%esp)\n" /* "LANG_" */
         "calll strnicmp\n"
         "testl %eax, %eax\n"
         "jne .Lf49924_00049de5\n"
@@ -1454,7 +1454,7 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         "movl $0, -0x2d(%ebp)\n" /* line 340 | args */
         "movl $0, -0x29(%ebp)\n"
         "movb $0, -0x25(%ebp)\n"
-        "movl $0x216c3c, 4(%esp)\n" /* line 342 */
+        "movl $str_00216c3c, 4(%esp)\n" /* line 342 */
         "movl %ebx, (%esp)\n"
         "calll strstr\n"
         "movl %eax, %ecx\n"
@@ -1467,12 +1467,12 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         /* } scope */
         ".Lf49924_00049c44:\n"
         "movl %ebx, 4(%esp)\n" /* line 628 | psErrorMessage */
-        "movl $0x2180f4, (%esp)\n" /* "Illegal string format "%s"
+        "movl $str_002180f4, (%esp)\n" /* "Illegal string format "%s"
 " */
         "calll va\n"
         "movl %eax, %ebx\n" /* psErrorMessage */
         ".Lf49924_00049c56:\n"
-        "movl $0x21699c, 4(%esp)\n" /* line 632 */
+        "movl $str_0021699c, 4(%esp)\n" /* line 632 */
         "leal -0x42d(%ebp), %eax\n" /* sThisLanguage */
         "movl %eax, (%esp)\n"
         "calll stricmp\n"
@@ -1531,7 +1531,7 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         "jne .Lf49924_00049c44\n"
         "movb $1, -0x2d(%ebp, %eax)\n" /* line 355 */
         "leal 3(%ecx), %eax\n" /* line 356 */
-        "movl $0x216c3c, 4(%esp)\n" /* line 357 */
+        "movl $str_00216c3c, 4(%esp)\n" /* line 357 */
         "movl %eax, (%esp)\n"
         "calll strstr\n"
         "movl %eax, %ecx\n"
@@ -1603,12 +1603,12 @@ const char * CStringEdPackage_ParseLine(const CStringEdPackage * _this, const ch
         "jmp .Lf49924_000499c2\n"
         /* { scope 2: sThisLanguage, sentence */
         ".Lf49924_00049ddb:\n"
-        "movl $0x2180cc, %ebx\n" /* line 606 | psErrorMessage */
+        "movl $str_002180cc, %ebx\n" /* line 606 | psErrorMessage */
         "jmp .Lf49924_000499c2\n"
         /* } scope */
         ".Lf49924_00049de5:\n"
         "movl %ebx, 4(%esp)\n" /* line 647 | psErrorMessage */
-        "movl $0x218110, (%esp)\n" /* "Unknown keyword at linestart: "%s"
+        "movl $str_00218110, (%esp)\n" /* "Unknown keyword at linestart: "%s"
 " */
         "calll va\n"
         "movl %eax, %ebx\n" /* psErrorMessage */
@@ -1814,8 +1814,8 @@ const char * SE_Load(const char *psFileName, int forceEnglish)
         "retl\n"
         /* { scope 1 */
         ".Lf49f78_0004a045:\n"
-        "movl $0x218164, 4(%esp)\n" /* line 772 */
-        "movl $0x218190, (%esp)\n" /* "Truncated file, failed to find "%s" at file end!" */
+        "movl $str_00218164, 4(%esp)\n" /* line 772 */
+        "movl $str_00218190, (%esp)\n" /* "Truncated file, failed to find "%s" at file end!" */
         "calll va\n"
         "movl %eax, %ebx\n" /* psErrorMessage */
         /* } scope */
@@ -1829,7 +1829,7 @@ const char * SE_Load(const char *psFileName, int forceEnglish)
         /* { scope 1 */
         ".Lf49f78_0004a068:\n"
         "movl %ebx, 4(%esp)\n" /* line 755 | psErrorMessage */
-        "movl $0x218178, (%esp)\n" /* "Unable to load "%s"!" */
+        "movl $str_00218178, (%esp)\n" /* "Unable to load "%s"!" */
         "calll va\n"
         "movl %eax, %ebx\n" /* psErrorMessage */
         /* } scope */
@@ -1936,12 +1936,12 @@ double CStringEdPackage_Clear(const CStringEdPackage * _this)
         "movl $0, 0x14(%ebx)\n" /* line 670 */
         "movl $0, (%esi)\n" /* line 210 | this */
         "movl $0, 8(%esp)\n" /* line 906 */
-        "movl $0x2157b8, 4(%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n"
         "leal 4(%esi), %eax\n" /* this */
         "movl %eax, (%esp)\n"
         "calll __ZNSs6assignEPKcm\n"
         "movl $0, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
+        "movl $str_002157b8, 4(%esp)\n"
         "addl $8, %esi\n" /* this */
         "movl %esi, (%esp)\n" /* this */
         "calll __ZNSs6assignEPKcm\n"
@@ -1975,7 +1975,7 @@ const char * SE_LoadLanguage(int forceEnglish)
         "calll CStringEdPackage_Clear\n"
         "leal -0x20(%ebp), %edi\n" /* line 836 | strResults */
         "movl %edi, 4(%esp)\n"
-        "movl $0x2181c4, (%esp)\n" /* "localizedstrings" */
+        "movl $str_002181c4, (%esp)\n" /* "localizedstrings" */
         "calll SE_BuildFileList\n"
         "xorl %esi, %esi\n" /* psErrorMessage */
         "movzbl %bl, %ebx\n" /* forceEnglish */

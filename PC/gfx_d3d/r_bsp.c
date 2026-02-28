@@ -20,17 +20,17 @@ extern void *Hunk_AllocInternal(int size);
 extern void R_InitStaticModelDynamicData(int index);
 extern void *Image_Register(const char *name, int flag1, int flag2);
 
-extern byte *r_glob_ptr;         /* 0x195eebc */
-extern byte *r_device_ptr;       /* 0x195eec0 */
-extern byte *r_vtable_ptr;       /* 0x195eee0 */
-extern byte *r_frontEndData_ptr; /* 0x195eec8 */
-extern byte *r_dvar_ef30;        /* 0x195ef30 */
-extern byte *r_dvar_ef34;        /* 0x195ef34 */
-extern byte *r_dvar_ef38;        /* 0x195ef38 */
-extern byte *r_dvar_ef3c;        /* 0x195ef3c */
-extern byte *r_dvar_ef44;        /* 0x195ef44 */
-extern byte *r_dvar_ef48;        /* 0x195ef48 */
-extern byte *r_dvar_ef4c;        /* 0x195ef4c */
+extern byte *r_glob_ptr;         /* imp_rgp */
+extern byte *r_device_ptr;       /* imp_r_rendererInUse */
+extern byte *r_vtable_ptr;       /* imp_ri */
+extern byte *r_frontEndData_ptr; /* imp_rg */
+extern byte *r_dvar_ef30;        /* imp_r_lightTweakSunColor */
+extern byte *r_dvar_ef34;        /* imp_r_lightTweakDiffuseFraction */
+extern byte *r_dvar_ef38;        /* imp_r_lightTweakAmbient */
+extern byte *r_dvar_ef3c;        /* imp_r_lightTweakAmbientColor */
+extern byte *r_dvar_ef44;        /* imp_r_lightTweakSunDiffuseColor */
+extern byte *r_dvar_ef48;        /* imp_r_lightTweakSunLight */
+extern byte *r_dvar_ef4c;        /* imp_r_lightTweakSunDirection */
 
 extern vec3_t vec3_colorintensity; /* 0x0 */
 

@@ -13,21 +13,21 @@
  */
 
 /* External globals (pointers-to-pointers, accessed via absolute addresses in binary) */
-extern char **cg_glob;            /* 0x195f584 -- pointer to cg_t base */
-extern char **cgs_glob;           /* 0x195f5c4 -- pointer to cgs_t base */
-extern char **cg_weaponDefs;      /* 0x195f5c8 -- pointer to weapon defs base */
-extern char **cg_entities_glob;   /* 0x195f5cc -- pointer to centity array base */
-extern char **cg_itemDefs;        /* 0x195f5d0 -- pointer to item defs base */
-extern char **cg_dvar_debug;      /* 0x195f964 -- debug event dvar */
-extern char **cg_dvar_footsteps;  /* 0x195f960 -- footstep dvar */
-extern char **cg_eventNames;      /* 0x195f95c -- event name strings array */
-extern char **cg_uiglob;          /* 0x195ecb4 -- pointer to UI globals base */
-extern char **cg_dvar_shellshock_min; /* 0x195ee10 -- shellshock min dvar */
-extern char **cg_dvar_shellshock_max; /* 0x195ede4 -- shellshock max dvar */
-extern int  **cg_itemCount;       /* 0x195edac -- max item count */
-extern char **cg_itemInfo;        /* 0x195eda8 -- item info base */
-extern char **cg_dvar1;           /* 0x195f788 */
-extern char **cg_dvar2;           /* 0x195f78c */
+extern char **cg_glob;            /* imp_cg -- pointer to cg_t base */
+extern char **cgs_glob;           /* imp_cgs -- pointer to cgs_t base */
+extern char **cg_weaponDefs;      /* imp_cg_weapons -- pointer to weapon defs base */
+extern char **cg_entities_glob;   /* imp_cg_entities -- pointer to centity array base */
+extern char **cg_itemDefs;        /* imp_cg_items -- pointer to item defs base */
+extern char **cg_dvar_debug;      /* imp_cg_debugEvents -- debug event dvar */
+extern char **cg_dvar_footsteps;  /* imp_cg_footsteps -- footstep dvar */
+extern char **cg_eventNames;      /* imp_eventnames -- event name strings array */
+extern char **cg_uiglob;          /* imp_legacyHacks -- pointer to UI globals base */
+extern char **cg_dvar_shellshock_min; /* imp_bg_fallDamageMinHeight -- shellshock min dvar */
+extern char **cg_dvar_shellshock_max; /* imp_bg_fallDamageMaxHeight -- shellshock max dvar */
+extern int  **cg_itemCount;       /* imp_bg_numItems -- max item count */
+extern char **cg_itemInfo;        /* imp_bg_itemlist -- item info base */
+extern char **cg_dvar1;           /* imp_cg_nopredict */
+extern char **cg_dvar2;           /* imp_cg_synchronousClients */
 
 /* External function declarations */
 extern void Com_Printf(const char *msg, ...);
@@ -235,7 +235,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         cg = *((char **)cg_dvar_debug);
         if (*(char *)(cg + 8) != 0) {
             /* "CG_EntityEvent: NULL\n" */
-            Com_Printf((const char *)0x2b83c8);
+            Com_Printf((const char *)str_002b83c8);
         }
         return;
     }
@@ -264,13 +264,13 @@ void CG_EntityEvent(centity_t *cent, int event)
     cg = *((char **)cg_dvar_debug);
     if (*(char *)(cg + 8) != 0) {
         /* "ent:%3i  event:%3i " */
-        Com_Printf((const char *)0x2b83e4, *(int *)(es + ES_NUMBER), event);
+        Com_Printf((const char *)str_002b83e4, *(int *)(es + ES_NUMBER), event);
         /* line 380 */
         cg = *((char **)cg_dvar_debug);
         if (*(char *)(cg + 8) != 0) {
             /* "CG_EntityEvent:%s\n" */
             char **eventNames = (char **)(*cg_eventNames);
-            Com_Printf((const char *)0x2b83f8, eventNames[event]);
+            Com_Printf((const char *)str_002b83f8, eventNames[event]);
         }
     }
 
@@ -517,7 +517,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             /* line 859: unknown event */
             char **eventNames = (char **)(*cg_eventNames);
             /* "Unknown event: '%s'" */
-            Com_Error(1, (const char *)0x2b84e8, eventNames[event]);
+            Com_Error(1, (const char *)str_002b84e8, eventNames[event]);
             return;
         }
 
@@ -541,7 +541,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
                 /* "Event %s just for client %i was sent to other clients\n" */
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x230), clientNum);
+                Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x230), clientNum);
                 return;
             }
             /* line 492 */
@@ -559,7 +559,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             cg = *cg_glob;
             if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x234), clientNum);
+                Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x234), clientNum);
                 return;
             }
             /* line 501 */
@@ -577,7 +577,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             cg = *cg_glob;
             if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x238), clientNum);
+                Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x238), clientNum);
                 return;
             }
             /* line 510 */
@@ -595,7 +595,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             cg = *cg_glob;
             if (clientNum != *(int *)(cg + CG_CLIENTNUM)) {
                 char **eventNames2 = (char **)(*cg_eventNames);
-                Com_DPrintf((const char *)0x2b840c, *(char **)(((char *)eventNames2) + 0x23c), clientNum);
+                Com_DPrintf((const char *)str_002b840c, *(char **)(((char *)eventNames2) + 0x23c), clientNum);
                 return;
             }
             /* line 523 */
@@ -1462,7 +1462,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 if (*killIcon == '\0') {
                     /* Default icon */
                     iconWidth = f_1_4;
-                    iconShader = (const char *)0x2a763c;
+                    iconShader = (const char *)str_002a763c;
                     iconHorzFlip = 0;
                 } else {
                     /* line 102 */
@@ -1483,38 +1483,38 @@ void CG_EntityEvent(centity_t *cent, int event)
                 if ((unsigned int)mod > 5) {
                     /* default icon */
                     iconWidth = f_1_4;
-                    iconShader = (const char *)0x2a763c;
+                    iconShader = (const char *)str_002a763c;
                     iconHorzFlip = 0;
                 } else {
                     switch (mod) {
                     case 0: /* line 105 - melee icon */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)0x2a75fc;
+                        iconShader = (const char *)str_002a75fc;
                         iconHorzFlip = 0;
                         break;
                     case 1: /* line 116 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)0x2a762c;
+                        iconShader = (const char *)str_002a762c;
                         iconHorzFlip = 0;
                         break;
                     case 2: /* line 121 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)0x2a89d8;
+                        iconShader = (const char *)str_002a89d8;
                         iconHorzFlip = 0;
                         break;
                     case 3: /* line 125 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)0x2a760c;
+                        iconShader = (const char *)str_002a760c;
                         iconHorzFlip = 0;
                         break;
                     case 4: /* line 129 */
                         iconWidth = f_1_4;
-                        iconShader = (const char *)0x2a761c;
+                        iconShader = (const char *)str_002a761c;
                         iconHorzFlip = 0;
                         break;
                     default:
                         iconWidth = f_1_4;
-                        iconShader = (const char *)0x2a763c;
+                        iconShader = (const char *)str_002a763c;
                         iconHorzFlip = 0;
                         break;
                     }
@@ -1524,7 +1524,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             /* line 144: validate target */
             if ((unsigned int)target > 63) {
                 /* line 145 */
-                Com_Error(1, (const char *)0x2b8444);
+                Com_Error(1, (const char *)str_002b8444);
             }
 
             /* line 146: get victim client info */
@@ -1548,7 +1548,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 /* line 150 */
                 I_strncpyz(targetName, clientInfoBase + 0x20, 0x20);
                 /* line 151 */
-                I_strncat(targetName, 0x22, (const char *)0x2b3b48);
+                I_strncat(targetName, 0x22, (const char *)str_002b3b48);
                 /* line 152 */
                 CG_DrawScoreboard_GetTeamColor(*(int *)(victimCI + 0x30 - 0x14), victimColor);
 
@@ -1572,7 +1572,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                 /* line 169 */
                 I_strncpyz(attackerName, atkInfoBase + 0x20, 0x20);
                 /* line 170 */
-                I_strncat(attackerName, 0x22, (const char *)0x2b3b48);
+                I_strncat(attackerName, 0x22, (const char *)str_002b3b48);
                 /* line 171 */
                 CG_DrawScoreboard_GetTeamColor(*(int *)(attackerCI + 0x30 - 0x14), attackerColor);
 
@@ -1606,7 +1606,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                         int atkTeam = *(int *)(attackerCI + 0x30 - 0x14);
                         if (atkTeam != 0 && atkTeam == *(int *)(victimCI + 0x30 - 0x14)) {
                             /* line 186: team kill */
-                            const char *msg = va((const char *)0x2b8478, targetName, (const char *)0x2b8468);
+                            const char *msg = va((const char *)str_002b8478, targetName, (const char *)str_002b8468);
                             /* line 205 */
                             cg = *cg_glob;
                             if (*(int *)(cg + CG_DEATHFADE) == 0) {
@@ -1615,7 +1615,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         } else {
                             /* line 188 */
-                            const char *msg = va((const char *)0x2b8498, targetName);
+                            const char *msg = va((const char *)str_002b8498, targetName);
                             cg = *cg_glob;
                             if (*(int *)(cg + CG_DEATHFADE) == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1623,7 +1623,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         }
                     } else {
-                        const char *msg = va((const char *)0x2b8498, targetName);
+                        const char *msg = va((const char *)str_002b8498, targetName);
                         cg = *cg_glob;
                         if (*(int *)(cg + CG_DEATHFADE) == 0) {
                             CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1636,7 +1636,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                         int atkTeam = *(int *)(attackerCI + 0x30 - 0x14);
                         if (atkTeam != 0 && atkTeam == *(int *)(victimCI + 0x30 - 0x14)) {
                             /* line 202 */
-                            const char *msg = va((const char *)0x2b84ac, attackerName, (const char *)0x2b8468);
+                            const char *msg = va((const char *)str_002b84ac, attackerName, (const char *)str_002b8468);
                             cg = *cg_glob;
                             if (*(int *)(cg + CG_DEATHFADE) == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1644,7 +1644,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         } else {
                             /* line 204 */
-                            const char *msg = va((const char *)0x2b84d0, attackerName);
+                            const char *msg = va((const char *)str_002b84d0, attackerName);
                             cg = *cg_glob;
                             if (*(int *)(cg + CG_DEATHFADE) == 0) {
                                 CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1652,7 +1652,7 @@ void CG_EntityEvent(centity_t *cent, int event)
                             cg = *cg_glob;
                         }
                     } else {
-                        const char *msg = va((const char *)0x2b84d0, attackerName);
+                        const char *msg = va((const char *)str_002b84d0, attackerName);
                         cg = *cg_glob;
                         if (*(int *)(cg + CG_DEATHFADE) == 0) {
                             CG_PriorityCenterPrint(msg, 9.6f, 1);
@@ -1683,7 +1683,7 @@ void CG_EntityEvent(centity_t *cent, int event)
             int fxIdx = fxIndex - 1;
             if ((unsigned int)fxIdx > 62) {
                 /* line 295 */
-                Com_Printf((const char *)0x2abd90, fxIndex);
+                Com_Printf((const char *)str_002abd90, fxIndex);
                 return;
             }
 
@@ -1740,7 +1740,7 @@ void CG_EntityEvent(centity_t *cent, int event)
         {
             /* line 859: unknown event */
             char **eventNames3 = (char **)(*cg_eventNames);
-            Com_Error(1, (const char *)0x2b84e8, eventNames3[event]);
+            Com_Error(1, (const char *)str_002b84e8, eventNames3[event]);
             return;
         }
 

@@ -10,11 +10,11 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static vec4_t color; /* 0x2f2b60 */
-static int dpvsConfig; /* 0xc96e00 */
-static struct DpvsScene dpvsScene; /* 0xc96f00 */
-static int dpvsGlob; /* 0xc96e20 */
-static vec4_t standardFrustumSidePlanes[4]; /* 0x2f2b20 */
+static vec4_t color; /* color */
+static int dpvsConfig; /* dpvsConfig */
+static struct DpvsScene dpvsScene; /* dpvsScene */
+static int dpvsGlob; /* dpvsGlob */
+static vec4_t standardFrustumSidePlanes[4]; /* standardFrustumSidePlanes */
 
 extern void R_UpdateXModelBounds(void *sceneEnt, void *ent);
 extern void R_SkinSceneEnt(void *sceneEnt, void *ent);
@@ -43,7 +43,7 @@ void R_DrawModel(int entIndex)
     if (!*(byte *)0xc96e87)
         return;
 
-    byte *base = *(byte **)0x195f0f4;
+    byte *base = *(byte **)imp_scene;
     byte *sceneEnt = base + 0x5c4 + entIndex * 52;
     byte *ent = *(byte **)(base + 0x10) + entIndex * 116;
 
@@ -56,10 +56,10 @@ void R_DrawModel(int entIndex)
 /* line 2343 */
 float R_GetFarPlaneDist(void)
 {
-    float farPlaneDist = *(float *)(*(int *)(*(int *)0x195f1c4) + 8);
+    float farPlaneDist = *(float *)(*(int *)(*(int *)imp_r_zfar) + 8);
 
     if (farPlaneDist == 0.0f) {
-        byte *scene = *(byte **)0x195eec8;
+        byte *scene = *(byte **)imp_rg;
         if (*(int *)(scene + 0x150c) && *(byte *)(scene + 0x14c8) && *(int *)(scene + 0x14ac) == 1) {
             farPlaneDist = *(float *)(scene + 0x14c0);
         }
@@ -74,7 +74,7 @@ void R_ClearDpvsScene(void)
 {
     *(int *)0xcb6f00 = 0;
 
-    byte *globals = *(byte **)0x195eebc;
+    byte *globals = *(byte **)imp_rgp;
     byte *world = *(byte **)(globals + 0x109c);
     if (!world)
         return;
@@ -113,7 +113,7 @@ int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
         "je .Lfeedbe_000eeea7\n"
         "testl %ecx, %ecx\n" /* line 1280 */
         "js .Lfeedbe_000eee6b\n"
-        "movl 0x195eebc, %eax\n" /* line 1283 */
+        "movl imp_rgp, %eax\n" /* line 1283 */
         "movl 0x109c(%eax), %edx\n"
         "leal (, %ecx, 4), %eax\n"
         "movl %ecx, %ebx\n" /* cell */
@@ -122,7 +122,7 @@ int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
         "addl 0x100(%edx), %ebx\n" /* cell */
         /* { scope 2 */
         /* { scope 3 */
-        "movl 0xcb6f00, %eax\n" /* line 1245 */
+        "movl dpvsScene+131072, %eax\n" /* line 1245 */
         "cmpl $__mh_execute_header, %eax\n"
         "je .Lfeedbe_000eeee4\n"
         "movl 0x38(%ebx), %edx\n" /* line 1252 */
@@ -133,7 +133,7 @@ int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
         "shll $5, %edx\n"
         "leal dpvsScene(%edx), %ecx\n"
         "addl $1, %eax\n" /* line 1263 */
-        "movl %eax, 0xcb6f00\n"
+        "movl %eax, dpvsScene+131072\n"
         "movl %esi, dpvsScene(%edx)\n" /* line 1265 */
         "leal 4(%ecx), %edx\n" /* line 1266 | to */
         /* { scope 4 */
@@ -225,10 +225,10 @@ int R_FilterEntityIntoCells_r(mnode_t *node, const vec_t *maxs)
         /* { scope 3 */
         ".Lfeedbe_000eeee4:\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 1247 */
-        "movl $0x2259ac, 4(%esp)\n" /* "^1Max xmodel refs (%i) exceeded
+        "movl $str_002259ac, 4(%esp)\n" /* "^1Max xmodel refs (%i) exceeded
 " */
         "movl $1, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *(%eax)\n"
         "movl -0x3c(%ebp), %eax\n"
         "movl 8(%eax), %ecx\n"
@@ -325,7 +325,7 @@ int R_CellForPoint(const vec_t *origin)
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* origin */
         /* { scope 1 */
-        "movl 0x195eebc, %esi\n" /* line 931 */
+        "movl imp_rgp, %esi\n" /* line 931 */
         "movl 0x109c(%esi), %eax\n"
         "testl %eax, %eax\n"
         "je .Lfeefe2_000ef057\n"
@@ -365,7 +365,7 @@ int R_CellForPoint(const vec_t *origin)
         "movl 0x14(%edx), %edx\n" /* line 942 */
         "jmp .Lfeefe2_000ef00a\n"
         ".Lfeefe2_000ef057:\n"
-        "movl $0x2259d0, 4(%esp)\n" /* line 932 */
+        "movl $str_002259d0, 4(%esp)\n" /* line 932 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lfeefe2_000eeffd\n"
@@ -397,8 +397,8 @@ vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut
         "movl $0, -0x2b4(%ebp)\n" /* frontCount */
         "xorl %esi, %esi\n"
         "xorl %ecx, %ecx\n"
-        "movss 0x2ed658, %xmm6\n" /* 0.0010000000474974513f */
-        "movss 0x2ed670, %xmm7\n" /* -0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm6\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed670, %xmm7\n" /* -0.0010000000474974513f */
         "jmp .Lfef06e_000ef0d5\n"
         ".Lfef06e_000ef0c5:\n"
         "movb $1, (%eax)\n" /* line 1010 */
@@ -425,7 +425,7 @@ vec3_t * R_ChopPortalWinding(vec3_t *vertsIn, int *vertexCount, vec3_t *vertsOut
         "movb $2, (%eax)\n" /* line 1007 */
         "ucomiss %xmm1, %xmm7\n" /* line 1008 */
         "ja .Lfef06e_000ef0c5\n"
-        "ucomiss 0x2ed658, %xmm1\n" /* line 1013 | 0.0010000000474974513f */
+        "ucomiss lit4_002ed658, %xmm1\n" /* line 1013 | 0.0010000000474974513f */
         "jbe .Lfef06e_000ef0cb\n"
         "movb $0, (%eax)\n" /* line 1015 */
         "addl $1, -0x2b4(%ebp)\n" /* line 1016 | frontCount */
@@ -592,7 +592,7 @@ void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
         "movl %ecx, -0x638(%ebp)\n"
         /* { scope 1 */
         "pxor %xmm0, %xmm0\n" /* line 255 */
-        "ucomiss 0xc96e74, %xmm0\n"
+        "ucomiss dpvsGlob+84, %xmm0\n"
         "jne .Lfef30c_000ef35b\n"
         "jp .Lfef30c_000ef35b\n"
         "movl -0x634(%ebp), %edx\n" /* line 269 */
@@ -614,9 +614,9 @@ void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
         "testl %eax, %eax\n"
         "jle .Lfef30c_000ef3c5\n"
         /* { scope 2 */
-        "movss 0xc96e68, %xmm3\n" /* line 248 */
-        "movss 0xc96e6c, %xmm2\n" /* line 249 */
-        "movss 0xc96e70, %xmm1\n" /* line 250 */
+        "movss dpvsGlob+72, %xmm3\n" /* line 248 */
+        "movss dpvsGlob+76, %xmm2\n" /* line 249 */
+        "movss dpvsGlob+80, %xmm1\n" /* line 250 */
         "movl -0x630(%ebp), %ecx\n"
         "xorl %edx, %edx\n"
         /* } scope */
@@ -707,7 +707,7 @@ void R_GetSidePlaneNormals(vec3_t *winding, int vertexCount, vec3_t *normals)
         "movl %ebx, 8(%esp)\n"
         "leal -0x624(%ebp), %eax\n" /* delta */
         "movl %eax, 4(%esp)\n"
-        "movl $0xc96e68, (%esp)\n"
+        "movl $dpvsGlob+72, (%esp)\n"
         "calll Vec3Cross\n"
         "movl %ebx, (%esp)\n" /* line 273 */
         "calll Vec3Normalize\n"
@@ -744,16 +744,16 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         "movl 8(%ebp), %eax\n" /* stackLevel */
         "movl %eax, -0x2c(%ebp)\n" /* stackLevel */
         /* { scope 1: occluderIndex */
-        "movl 0x195eec8, %esi\n" /* line 1590 | entIndex */
+        "movl imp_rg, %esi\n" /* line 1590 | entIndex */
         "movl 0x3194(%esi), %eax\n" /* entIndex */
         "movl -0x24(%ebp), %edx\n"
         "leal (%eax, %edx, 8), %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* smodelDync */
         "movl (%eax), %eax\n" /* line 1591 */
-        "movl 0x195f0f4, %edx\n"
+        "movl imp_scene, %edx\n"
         "cmpl (%edx), %eax\n"
         "je .Lfef4ee_000ef654\n"
-        "movl 0x195eebc, %eax\n" /* line 1594 */
+        "movl imp_rgp, %eax\n" /* line 1594 */
         "movl 0x109c(%eax), %eax\n"
         "movl -0x24(%ebp), %ecx\n"
         "leal (%ecx, %ecx, 2), %edi\n" /* smodelInst */
@@ -796,14 +796,14 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         "cmpl %edx, -0x28(%ebp)\n"
         "jne .Lfef4ee_000ef567\n"
         ".Lfef4ee_000ef5be:\n"
-        "movl 0xc96e58, %edx\n" /* line 355 */
+        "movl dpvsGlob+56, %edx\n" /* line 355 */
         "testl %edx, %edx\n"
         "jle .Lfef4ee_000ef65c\n"
         "movl $0, -0x1c(%ebp)\n" /* occluderIndex */
         "pxor %xmm3, %xmm3\n"
         "movl -0x1c(%ebp), %edx\n" /* occluderIndex */
         ".Lfef4ee_000ef5da:\n"
-        "movl 0xc96e5c, %eax\n" /* line 357 */
+        "movl dpvsGlob+60, %eax\n" /* line 357 */
         "movl (%eax, %edx, 4), %ebx\n" /* occluder */
         "movl -0x2c(%ebp), %ecx\n" /* line 358 | stackLevel */
         "cmpl 0x18(%ebx), %ecx\n" /* occluder */
@@ -851,11 +851,11 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         "retl\n"
         /* { scope 1: occluderIndex */
         ".Lfef4ee_000ef65c:\n"
-        "movl 0x195f0f4, %edx\n" /* line 1610 */
+        "movl imp_scene, %edx\n" /* line 1610 */
         "movl (%edx), %eax\n"
         "movl -0x20(%ebp), %ecx\n" /* smodelDync */
         "movl %eax, (%ecx)\n"
-        "movl 0x195f1d0, %eax\n" /* line 1617 */
+        "movl imp_r_showSModelNames, %eax\n" /* line 1617 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfef4ee_000ef73e\n"
@@ -868,7 +868,7 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         "js .Lfef4ee_000ef654\n"
         "leal (%eax, %eax, 2), %ebx\n" /* line 1624 | sceneEnt */
         "leal (%eax, %ebx, 4), %ebx\n" /* sceneEnt */
-        "movl 0x195f0f4, %edx\n"
+        "movl imp_scene, %edx\n"
         "leal 0x5c4(%edx, %ebx, 4), %ebx\n" /* sceneEnt */
         "movl -0x24(%ebp), %ecx\n" /* line 1625 */
         "movl %ecx, 8(%esp)\n"
@@ -894,7 +894,7 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         ".Lfef4ee_000ef6d9:\n"
         "addl $1, -0x1c(%ebp)\n" /* line 355 | occluderIndex */
         "movl -0x1c(%ebp), %eax\n" /* occluderIndex */
-        "cmpl 0xc96e58, %eax\n"
+        "cmpl dpvsGlob+56, %eax\n"
         "jge .Lfef4ee_000ef65c\n"
         "movl %eax, %edx\n"
         "jmp .Lfef4ee_000ef5da\n"
@@ -911,7 +911,7 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         "addss 0x318c(%esi), %xmm0\n" /* entIndex */
         "ucomiss (%edi), %xmm0\n" /* smodelInst */
         "jbe .Lfef4ee_000ef557\n"
-        "movl 0x195f0f4, %edx\n" /* line 1602 */
+        "movl imp_scene, %edx\n" /* line 1602 */
         "movl (%edx), %eax\n"
         "movl -0x20(%ebp), %ecx\n" /* smodelDync */
         "movl %eax, (%ecx)\n"
@@ -929,13 +929,13 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         "calll XModelGetName\n"
         "movl %eax, 0x10(%esp)\n"
         "movl $0x3e99999a, 0xc(%esp)\n"
-        "movl 0x195ed2c, %eax\n"
+        "movl imp_colorWhite, %eax\n"
         "movl %eax, 8(%esp)\n"
         "leal 4(%edi), %eax\n" /* smodelInst */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -962,7 +962,7 @@ void R_FrustumClipPlanes(const D3DMATRIX *viewProjMtx, vec4_t *sidePlanes, int s
         "movl 0x14(%ebp), %ecx\n" /* frustumPlanes */
         "movl 0xc(%ebp), %esi\n" /* sidePlanes */
         "xorl %edi, %edi\n" /* planeIndex */
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         ".Lfef77e_000ef79f:\n"
         "movl %ecx, %edx\n"
         "xorl %ebx, %ebx\n" /* term */
@@ -1057,22 +1057,22 @@ void R_AddWorldSurfaceWithCull(int stackLevel)
         /* { scope 1: occluderIndex */
         "leal (, %eax, 4), %eax\n" /* line 1072 */
         "movl %eax, -0x20(%ebp)\n"
-        "movl 0x195eec8, %esi\n" /* minmax */
+        "movl imp_rg, %esi\n" /* minmax */
         "movl 0x3198(%esi), %eax\n" /* minmax */
         "movl -0x20(%ebp), %esi\n" /* minmax */
         "movl (%eax, %esi), %eax\n"
-        "movl 0x195f0f4, %esi\n" /* minmax */
+        "movl imp_scene, %esi\n" /* minmax */
         "cmpl (%esi), %eax\n" /* minmax */
         "je .Lfef8a0_000efa54\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 1075 | tris */
         "shll $2, %eax\n"
         "movl %eax, -0x24(%ebp)\n"
-        "movl 0x195eebc, %ebx\n" /* tris */
+        "movl imp_rgp, %ebx\n" /* tris */
         "movl 0x109c(%ebx), %eax\n" /* tris */
         "movl 0x14(%eax), %eax\n"
         "movl -0x24(%ebp), %esi\n" /* minmax */
         "movl 8(%eax, %esi), %ebx\n" /* tris */
-        "movl 0x195f19c, %eax\n" /* line 1076 */
+        "movl imp_r_portalFineCull, %eax\n" /* line 1076 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lfef8a0_000efa13\n"
@@ -1107,14 +1107,14 @@ void R_AddWorldSurfaceWithCull(int stackLevel)
         "cmpl %ebx, %ecx\n" /* occluder */
         "jne .Lfef8a0_000ef915\n"
         ".Lfef8a0_000ef96a:\n"
-        "movl 0xc96e58, %eax\n" /* line 355 */
+        "movl dpvsGlob+56, %eax\n" /* line 355 */
         "testl %eax, %eax\n"
         "jle .Lfef8a0_000efa13\n"
         "movl $0, -0x1c(%ebp)\n" /* occluderIndex */
         "pxor %xmm3, %xmm3\n"
         "movl -0x1c(%ebp), %edx\n" /* occluderIndex */
         ".Lfef8a0_000ef985:\n"
-        "movl 0xc96e5c, %eax\n" /* line 357 */
+        "movl dpvsGlob+60, %eax\n" /* line 357 */
         "movl (%eax, %edx, 4), %ebx\n" /* occluder */
         "cmpl 0x18(%ebx), %edi\n" /* line 358 | occluder */
         "jg .Lfef8a0_000ef9fd\n"
@@ -1154,20 +1154,20 @@ void R_AddWorldSurfaceWithCull(int stackLevel)
         ".Lfef8a0_000ef9fd:\n"
         "addl $1, -0x1c(%ebp)\n" /* line 355 | occluderIndex */
         "movl -0x1c(%ebp), %ecx\n" /* occluderIndex */
-        "cmpl 0xc96e58, %ecx\n"
+        "cmpl dpvsGlob+56, %ecx\n"
         "jge .Lfef8a0_000efa13\n"
         "movl %ecx, %edx\n"
         "jmp .Lfef8a0_000ef985\n"
         /* } scope */
         /* { scope 2 */
         ".Lfef8a0_000efa13:\n"
-        "movl 0x195eec8, %ebx\n" /* line 580 | occluder */
+        "movl imp_rg, %ebx\n" /* line 580 | occluder */
         "movl 0x3198(%ebx), %edx\n" /* occluder */
-        "movl 0x195f0f4, %esi\n" /* minmax */
+        "movl imp_scene, %esi\n" /* minmax */
         "movl (%esi), %eax\n" /* minmax */
         "movl -0x20(%ebp), %ecx\n"
         "movl %eax, (%ecx, %edx)\n"
-        "movl 0x195eebc, %ebx\n" /* line 581 | occluder */
+        "movl imp_rgp, %ebx\n" /* line 581 | occluder */
         "movl 0x109c(%ebx), %eax\n" /* occluder */
         "movl -0x24(%ebp), %edx\n"
         "addl 0x14(%eax), %edx\n"
@@ -1235,13 +1235,13 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "cmpl %ecx, -0x40(%ebp)\n"
         "jne .Lfefa5c_000efa7a\n"
         ".Lfefa5c_000efad0:\n"
-        "movl 0xc96e58, %eax\n" /* line 424 */
+        "movl dpvsGlob+56, %eax\n" /* line 424 */
         "testl %eax, %eax\n"
         "jle .Lfefa5c_000efb98\n"
         "movl $0, -0x2c(%ebp)\n" /* occluderIndex */
         "pxor %xmm3, %xmm3\n"
         ".Lfefa5c_000efae8:\n"
-        "movl 0xc96e5c, %eax\n" /* line 426 */
+        "movl dpvsGlob+60, %eax\n" /* line 426 */
         "movl -0x2c(%ebp), %edx\n" /* occluderIndex */
         "movl (%eax, %edx, 4), %ecx\n"
         "cmpl 0x18(%ecx), %esi\n" /* line 427 */
@@ -1294,7 +1294,7 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         ".Lfefa5c_000efb85:\n"
         "addl $1, -0x2c(%ebp)\n" /* line 424 | occluderIndex */
         "movl -0x2c(%ebp), %edx\n" /* occluderIndex */
-        "cmpl %edx, 0xc96e58\n"
+        "cmpl %edx, dpvsGlob+56\n"
         "jg .Lfefa5c_000efae8\n"
         /* } scope */
         /* { scope 2 */
@@ -1365,10 +1365,10 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         /* { scope 1: occluded, occluderIndex, recursionNeeded, smodelIndex */
         /* { scope 2 */
         ".Lfefa5c_000efc3e:\n"
-        "movl 0xc96e58, %ecx\n" /* line 470 */
+        "movl dpvsGlob+56, %ecx\n" /* line 470 */
         "testl %ecx, %ecx\n"
         "jle .Lfefa5c_000efc68\n"
-        "movl 0xc96e5c, %ebx\n" /* line 472 */
+        "movl dpvsGlob+60, %ebx\n" /* line 472 */
         "movl (%ebx), %eax\n" /* line 473 */
         "cmpl 0x18(%eax), %esi\n"
         "jle .Lfefa5c_000efc26\n"
@@ -1384,7 +1384,7 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "jne .Lfefa5c_000efc59\n"
         /* } scope */
         ".Lfefa5c_000efc68:\n"
-        "cmpb $0, 0xc96e86\n" /* line 1107 */
+        "cmpb $0, dpvsGlob+102\n" /* line 1107 */
         "je .Lfefa5c_000efe0b\n"
         "movl 0x20(%edi), %eax\n" /* line 1109 | tree */
         "testl %eax, %eax\n"
@@ -1395,7 +1395,7 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         /* { scope 2 */
         /* { scope 3 */
         ".Lfefa5c_000efc8c:\n"
-        "movl 0x195f1d0, %eax\n" /* line 1568 */
+        "movl imp_r_showSModelNames, %eax\n" /* line 1568 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lfefa5c_000efeba\n"
@@ -1408,7 +1408,7 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "js .Lfefa5c_000efcf5\n"
         "leal (%eax, %eax, 2), %ebx\n" /* line 1575 | sceneEnt */
         "leal (%eax, %ebx, 4), %ebx\n" /* sceneEnt */
-        "movl 0x195f0f4, %edx\n"
+        "movl imp_scene, %edx\n"
         "leal 0x5c4(%edx, %ebx, 4), %ebx\n" /* sceneEnt */
         "movl -0x28(%ebp), %eax\n" /* line 1576 | smodelIndex */
         "movl %eax, 8(%esp)\n"
@@ -1436,16 +1436,16 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "movl %eax, -0x28(%ebp)\n" /* smodelIndex */
         /* { scope 2 */
         /* { scope 3 */
-        "movl 0x195eec8, %esi\n" /* line 1549 | entIndex */
+        "movl imp_rg, %esi\n" /* line 1549 | entIndex */
         "movl 0x3194(%esi), %eax\n" /* entIndex */
         "movl -0x28(%ebp), %ecx\n" /* smodelIndex */
         "leal (%eax, %ecx, 8), %edx\n"
-        "movl 0x195f0f4, %eax\n" /* line 1550 */
+        "movl imp_scene, %eax\n" /* line 1550 */
         "movl (%eax), %eax\n"
         "cmpl %eax, (%edx)\n"
         "je .Lfefa5c_000efcf5\n"
         "movl %eax, (%edx)\n" /* line 1552 */
-        "movl 0x195eebc, %eax\n" /* line 1554 */
+        "movl imp_rgp, %eax\n" /* line 1554 */
         "movl 0x109c(%eax), %eax\n"
         "leal (%ecx, %ecx, 2), %ebx\n" /* sceneEnt */
         "shll $5, %ebx\n" /* sceneEnt */
@@ -1470,7 +1470,7 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         /* } scope */
         /* } scope */
         ".Lfefa5c_000efd8e:\n"
-        "cmpb $0, 0xc96e86\n" /* line 1133 */
+        "cmpb $0, dpvsGlob+102\n" /* line 1133 */
         "je .Lfefa5c_000efda2\n"
         "movl 0x20(%edi), %eax\n" /* line 1135 | tree */
         "testl %eax, %eax\n"
@@ -1524,15 +1524,15 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "movl $0, -0x38(%ebp)\n" /* surfNodeIndex */
         ".Lfefa5c_000efe31:\n"
         "movl %ebx, %edx\n" /* line 1115 | surfIndex */
-        "movl 0x195eec8, %ecx\n"
+        "movl imp_rg, %ecx\n"
         "addl 0x3198(%ecx), %edx\n"
-        "movl 0x195f0f4, %ecx\n"
+        "movl imp_scene, %ecx\n"
         "movl (%ecx), %eax\n"
         "cmpl %eax, (%edx)\n"
         "je .Lfefa5c_000efe73\n"
         /* { scope 2 */
         "movl %eax, (%edx)\n" /* line 580 */
-        "movl 0x195eebc, %edx\n" /* line 581 */
+        "movl imp_rgp, %edx\n" /* line 581 */
         "movl 0x109c(%edx), %eax\n"
         "movl %esi, %edx\n"
         "addl 0x14(%eax), %edx\n"
@@ -1577,13 +1577,13 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "calll XModelGetName\n"
         "movl %eax, 0x10(%esp)\n"
         "movl $0x3e99999a, 0xc(%esp)\n"
-        "movl 0x195ed2c, %eax\n"
+        "movl imp_colorWhite, %eax\n"
         "movl %eax, 8(%esp)\n"
         "leal 4(%ebx), %eax\n" /* sceneEnt */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -1657,15 +1657,15 @@ int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes
         "jne .Lfefefa_000eff4b\n"
         "leal 8(%ebx), %eax\n" /* line 220 */
         "movss 8(%ebx), %xmm1\n" /* line 1816 */
-        "mulss 0xc96e68, %xmm1\n"
+        "mulss dpvsGlob+72, %xmm1\n"
         "movss 4(%eax), %xmm0\n"
-        "mulss 0xc96e6c, %xmm0\n"
+        "mulss dpvsGlob+76, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 8(%eax), %xmm0\n"
-        "mulss 0xc96e70, %xmm0\n"
+        "mulss dpvsGlob+80, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 0xc(%eax), %xmm0\n"
-        "mulss 0xc96e74, %xmm0\n"
+        "mulss dpvsGlob+84, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "pxor %xmm3, %xmm3\n"
         "ucomiss %xmm3, %xmm1\n"
@@ -1717,11 +1717,11 @@ int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes
         "jne .Lfefefa_000efff1\n"
         /* { scope 2: planeCount */
         ".Lfefefa_000f0050:\n"
-        "movl 0xc96e58, %ecx\n" /* line 1658 */
+        "movl dpvsGlob+56, %ecx\n" /* line 1658 */
         "movl %ecx, -0x60(%ebp)\n"
         "testl %ecx, %ecx\n"
         "jle .Lfefefa_000f0136\n"
-        "movl 0xc96e5c, %eax\n" /* line 1660 */
+        "movl dpvsGlob+60, %eax\n" /* line 1660 */
         "movl %eax, -0x5c(%ebp)\n"
         "movl $0, -0x58(%ebp)\n" /* occluderIndex */
         "movl %eax, %ecx\n"
@@ -1807,7 +1807,7 @@ int R_GetFurtherCellList_r(const DpvsPlane *parentPlane, const DpvsPlane *planes
         "movl -0x1c(%ebp), %eax\n" /* line 1842 | vertCount */
         "testl %eax, %eax\n"
         "je .Lfefefa_000eff4b\n"
-        "movl 0xc96e4c, %ecx\n" /* line 1847 */
+        "movl dpvsGlob+44, %ecx\n" /* line 1847 */
         "testl %ecx, %ecx\n"
         "je .Lfefefa_000f019b\n"
         "movl $0x600, %eax\n" /* line 1849 */
@@ -1957,14 +1957,14 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "movl %edx, -0x58(%ebp)\n"
         "movl %ecx, -0x5c(%ebp)\n"
         /* { scope 1: sceneEnt, ent, count */
-        "cmpb $0, 0xc96e84\n" /* line 1491 */
+        "cmpb $0, dpvsGlob+100\n" /* line 1491 */
         "je .Lff02fa_000f0363\n"
         "movl 0x1c(%eax), %edi\n" /* line 1493 | tree */
         "movl 0x28(%edi), %edx\n" /* line 1495 | tree */
         "testl %edx, %edx\n"
         "jne .Lff02fa_000f073f\n"
         ".Lff02fa_000f0323:\n"
-        "cmpb $0, 0xc96e86\n" /* line 1502 */
+        "cmpb $0, dpvsGlob+102\n" /* line 1502 */
         "je .Lff02fa_000f0355\n"
         "movl 0x20(%edi), %ebx\n" /* line 1504 | tree, smodelChildIndex */
         "testl %ebx, %ebx\n" /* smodelChildIndex */
@@ -1986,7 +1986,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "testl %eax, %eax\n"
         "jg .Lff02fa_000f0a9e\n"
         ".Lff02fa_000f0363:\n"
-        "cmpb $0, 0xc96e85\n" /* line 1513 */
+        "cmpb $0, dpvsGlob+101\n" /* line 1513 */
         "je .Lff02fa_000f037a\n"
         /* { scope 2: occluderIndex, occluderIndex, occluder, occluderIndex, ... */
         "movl -0x54(%ebp), %eax\n" /* line 1176 */
@@ -1996,7 +1996,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         /* } scope */
         /* } scope */
         ".Lff02fa_000f037a:\n"
-        "cmpb $0, 0xc96e84\n" /* line 1649 */
+        "cmpb $0, dpvsGlob+100\n" /* line 1649 */
         "je .Lff02fa_000f04ac\n"
         /* { scope 1: sceneEnt, ent, count */
         "movl -0x54(%ebp), %ebx\n" /* line 1637 | smodelChildIndex */
@@ -2013,14 +2013,14 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "movl (%ecx), %edx\n"
         "leal (, %edx, 4), %ebx\n" /* smodelChildIndex */
         "movl %ebx, -0x30(%ebp)\n" /* smodelChildIndex */
-        "movl 0x195eec8, %ecx\n"
+        "movl imp_rg, %ecx\n"
         "movl 0x319c(%ecx), %eax\n"
         "movl (%eax, %ebx), %eax\n"
-        "movl 0x195f0f4, %ebx\n" /* smodelChildIndex */
+        "movl imp_scene, %ebx\n" /* smodelChildIndex */
         "cmpl (%ebx), %eax\n" /* smodelChildIndex */
         "je .Lff02fa_000f0498\n"
         /* { scope 2: occluderIndex, occluderIndex, occluder, occluderIndex, ... */
-        "movl 0x195eebc, %eax\n" /* line 1526 */
+        "movl imp_rgp, %eax\n" /* line 1526 */
         "movl 0x109c(%eax), %eax\n"
         "movl %edx, %esi\n" /* group */
         "shll $5, %esi\n" /* group */
@@ -2090,7 +2090,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         /* { scope 1: sceneEnt, ent, count */
         /* { scope 2: occluderIndex, occluderIndex, occluder, occluderIndex, ... */
         ".Lff02fa_000f04b4:\n"
-        "cmpb $0, 0xc96e87\n" /* line 1187 */
+        "cmpb $0, dpvsGlob+103\n" /* line 1187 */
         "je .Lff02fa_000f05f1\n"
         "movl 0xc(%ebx), %eax\n" /* line 1189 | planeIndex */
         "subl $1, %eax\n"
@@ -2103,13 +2103,13 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "testl %eax, %eax\n"
         "jg .Lff02fa_000f09ed\n"
         ".Lff02fa_000f04de:\n"
-        "movl 0xc96e58, %ebx\n" /* line 390 | planeIndex */
+        "movl dpvsGlob+56, %ebx\n" /* line 390 | planeIndex */
         "testl %ebx, %ebx\n" /* planeIndex */
         "jle .Lff02fa_000f05bd\n"
         "movl $0, -0x40(%ebp)\n" /* occluderIndex */
         "movl -0x40(%ebp), %edx\n" /* occluderIndex */
         ".Lff02fa_000f04f6:\n"
-        "movl 0xc96e5c, %eax\n" /* line 392 */
+        "movl dpvsGlob+60, %eax\n" /* line 392 */
         "movl (%eax, %edx, 4), %eax\n"
         "movl %eax, -0x3c(%ebp)\n" /* occluder */
         "movl 0x20(%eax), %edx\n" /* line 394 */
@@ -2163,7 +2163,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         ".Lff02fa_000f05aa:\n"
         "addl $1, -0x40(%ebp)\n" /* line 390 | occluderIndex */
         "movl -0x40(%ebp), %edx\n" /* occluderIndex */
-        "cmpl 0xc96e58, %edx\n"
+        "cmpl dpvsGlob+56, %edx\n"
         "jl .Lff02fa_000f04f6\n"
         /* } scope */
         ".Lff02fa_000f05bd:\n"
@@ -2189,7 +2189,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "movl (%edi), %edx\n" /* line 1178 | modelRef */
         "leal (%edx, %edx, 2), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
-        "movl 0x195f0f4, %ecx\n"
+        "movl imp_scene, %ecx\n"
         "leal 0x5c4(%ecx, %eax, 4), %eax\n"
         "movl %eax, -0x50(%ebp)\n" /* sceneEnt */
         "movl %eax, %ebx\n" /* line 1181 | planeIndex */
@@ -2207,7 +2207,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "jle .Lff02fa_000f04b4\n"
         "cmpl $3, %eax\n" /* line 1206 */
         "jne .Lff02fa_000f05f1\n"
-        "cmpb $0, 0xc96e88\n" /* line 1208 */
+        "cmpb $0, dpvsGlob+104\n" /* line 1208 */
         "je .Lff02fa_000f05f1\n"
         "leal 4(%edi), %esi\n" /* line 1209 | modelRef, minmax */
         /* { scope 3 */
@@ -2215,13 +2215,13 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "testl %eax, %eax\n"
         "jg .Lff02fa_000f0941\n"
         ".Lff02fa_000f065a:\n"
-        "movl 0xc96e58, %eax\n" /* line 390 */
+        "movl dpvsGlob+56, %eax\n" /* line 390 */
         "testl %eax, %eax\n"
         "jle .Lff02fa_000f0ac4\n"
         "movl $0, -0x38(%ebp)\n" /* occluderIndex */
         "movl -0x38(%ebp), %ecx\n" /* occluderIndex */
         ".Lff02fa_000f0671:\n"
-        "movl 0xc96e5c, %eax\n" /* line 392 */
+        "movl dpvsGlob+60, %eax\n" /* line 392 */
         "movl (%eax, %ecx, 4), %eax\n"
         "movl %eax, -0x34(%ebp)\n" /* occluder */
         "movl 0x20(%eax), %edx\n" /* line 394 */
@@ -2275,14 +2275,14 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         ".Lff02fa_000f0725:\n"
         "addl $1, -0x38(%ebp)\n" /* line 390 | occluderIndex */
         "movl -0x38(%ebp), %edx\n" /* occluderIndex */
-        "cmpl 0xc96e58, %edx\n"
+        "cmpl dpvsGlob+56, %edx\n"
         "jge .Lff02fa_000f0ac4\n"
         "movl %edx, %ecx\n"
         "jmp .Lff02fa_000f0671\n"
         /* } scope */
         /* } scope */
         ".Lff02fa_000f073f:\n"
-        "movl 0x195f19c, %eax\n" /* line 1495 */
+        "movl imp_r_portalFineCull, %eax\n" /* line 1495 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lff02fa_000f0323\n"
@@ -2307,13 +2307,13 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         /* { scope 2: occluderIndex, occluderIndex, occluder, occluderIndex, ... */
         /* { scope 3 */
         ".Lff02fa_000f0783:\n"
-        "movl 0xc96e58, %eax\n" /* line 390 */
+        "movl dpvsGlob+56, %eax\n" /* line 390 */
         "testl %eax, %eax\n"
         "jle .Lff02fa_000f085e\n"
         "movl $0, -0x20(%ebp)\n" /* occluderIndex */
         "movl -0x20(%ebp), %ecx\n" /* occluderIndex */
         ".Lff02fa_000f079a:\n"
-        "movl 0xc96e5c, %eax\n" /* line 392 */
+        "movl dpvsGlob+60, %eax\n" /* line 392 */
         "movl (%eax, %ecx, 4), %edi\n" /* occluder */
         "movl 0x20(%edi), %edx\n" /* line 394 | occluder */
         "movl 0x1c(%edi), %eax\n" /* occluder */
@@ -2361,20 +2361,20 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         ".Lff02fa_000f0848:\n"
         "addl $1, -0x20(%ebp)\n" /* line 390 | occluderIndex */
         "movl -0x20(%ebp), %ebx\n" /* occluderIndex, planeIndex */
-        "cmpl 0xc96e58, %ebx\n" /* planeIndex */
+        "cmpl dpvsGlob+56, %ebx\n" /* planeIndex */
         "jge .Lff02fa_000f085e\n"
         "movl %ebx, %ecx\n" /* planeIndex */
         "jmp .Lff02fa_000f079a\n"
         /* } scope */
         ".Lff02fa_000f085e:\n"
-        "movl 0x195f198, %eax\n" /* line 1531 */
+        "movl imp_r_showPortals, %eax\n" /* line 1531 */
         "movl (%eax), %eax\n"
         "testb $1, 8(%eax)\n"
         "jne .Lff02fa_000f0914\n"
         ".Lff02fa_000f086f:\n"
-        "movl 0x195eec8, %eax\n" /* line 1534 */
+        "movl imp_rg, %eax\n" /* line 1534 */
         "movl 0x319c(%eax), %edx\n"
-        "movl 0x195f0f4, %ecx\n"
+        "movl imp_scene, %ecx\n"
         "movl (%ecx), %eax\n"
         "movl -0x30(%ebp), %ebx\n" /* smodelChildIndex */
         "movl %eax, (%ebx, %edx)\n" /* smodelChildIndex */
@@ -2389,12 +2389,12 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         /* { scope 3 */
         /* { scope 4 */
         ".Lff02fa_000f08ae:\n"
-        "movl 0x195eec8, %eax\n" /* line 580 */
+        "movl imp_rg, %eax\n" /* line 580 */
         "movl 0x3198(%eax), %edx\n"
-        "movl 0x195f0f4, %ecx\n"
+        "movl imp_scene, %ecx\n"
         "movl (%ecx), %eax\n"
         "movl %eax, (%edx, %edi)\n"
-        "movl 0x195eebc, %eax\n" /* line 581 */
+        "movl imp_rgp, %eax\n" /* line 581 */
         "movl 0x109c(%eax), %eax\n"
         "movl %ebx, %edx\n" /* planeIndex */
         "addl 0x14(%eax), %edx\n"
@@ -2420,14 +2420,14 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "jmp .Lff02fa_000f04ac\n"
         /* { scope 2: occluderIndex, occluderIndex, occluder, occluderIndex, ... */
         ".Lff02fa_000f0914:\n"
-        "movl 0x195f1cc, %eax\n" /* line 1532 */
+        "movl imp_colorLtYellow, %eax\n" /* line 1532 */
         "movl %eax, 0xc(%esp)\n"
         "leal 0xc(%esi), %eax\n" /* group */
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* group */
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -2559,13 +2559,13 @@ DP4 oPos.z," */
         "testl %eax, %eax\n"
         "jg .Lff02fa_000f0bcd\n"
         ".Lff02fa_000f0ae8:\n"
-        "movl 0xc96e58, %eax\n" /* line 390 */
+        "movl dpvsGlob+56, %eax\n" /* line 390 */
         "testl %eax, %eax\n"
         "jle .Lff02fa_000f0c78\n"
         "movl $0, -0x48(%ebp)\n" /* occluderIndex */
         "movl -0x48(%ebp), %ebx\n" /* occluderIndex, planeIndex */
         ".Lff02fa_000f0aff:\n"
-        "movl 0xc96e5c, %eax\n" /* line 392 */
+        "movl dpvsGlob+60, %eax\n" /* line 392 */
         "movl (%eax, %ebx, 4), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* occluder */
         "movl 0x20(%eax), %edx\n" /* line 394 */
@@ -2619,7 +2619,7 @@ DP4 oPos.z," */
         ".Lff02fa_000f0bb3:\n"
         "addl $1, -0x48(%ebp)\n" /* line 390 | occluderIndex */
         "movl -0x48(%ebp), %edx\n" /* occluderIndex */
-        "cmpl 0xc96e58, %edx\n"
+        "cmpl dpvsGlob+56, %edx\n"
         "jge .Lff02fa_000f0c78\n"
         "movl %edx, %ebx\n" /* planeIndex */
         "jmp .Lff02fa_000f0aff\n"
@@ -2698,8 +2698,8 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl %ecx, -0x1cb0(%ebp)\n"
         /* { scope 1: occluderIndex, edgeIndex, occluderIndex, cellList, ... */
         /* { scope 2: occluder, delta, planeCount, planeIndex, ... */
-        "movl $0, 0xc96e58\n" /* line 874 */
-        "movl $0, 0xc96e60\n" /* line 875 */
+        "movl $0, dpvsGlob+56\n" /* line 874 */
+        "movl $0, dpvsGlob+64\n" /* line 875 */
         "movl 0x30(%eax), %edx\n" /* line 876 */
         "testl %edx, %edx\n"
         "jle .Lff0c9e_000f0f42\n"
@@ -2710,7 +2710,7 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl 0x34(%edx), %eax\n" /* line 878 */
         "movl (%eax, %ecx, 4), %eax\n"
         "movl %eax, -0x1c98(%ebp)\n" /* occluder */
-        "movl 0xc96e48, %eax\n" /* line 850 */
+        "movl dpvsGlob+40, %eax\n" /* line 850 */
         "testl %eax, %eax\n"
         "je .Lff0c9e_000f0d5d\n"
         /* { scope 3: v */
@@ -2775,20 +2775,20 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "cmpl %esi, 0xc(%ebp)\n" /* line 853 | plane, planeCount */
         "jne .Lff0c9e_000f0d72\n"
         ".Lff0c9e_000f0dd1:\n"
-        "cmpl $0x400, 0xc96e58\n" /* line 882 */
+        "cmpl $0x400, dpvsGlob+56\n" /* line 882 */
         "je .Lff0c9e_000f14ed\n"
         ".Lff0c9e_000f0de1:\n"
-        "movl 0xc96e58, %edx\n" /* line 884 */
-        "movl 0xc96e5c, %eax\n"
+        "movl dpvsGlob+56, %edx\n" /* line 884 */
+        "movl dpvsGlob+60, %eax\n"
         "movl -0x1c98(%ebp), %ecx\n" /* occluder */
         "movl %ecx, (%eax, %edx, 4)\n"
-        "addl $1, 0xc96e58\n" /* line 885 */
+        "addl $1, dpvsGlob+56\n" /* line 885 */
         "movl $0x7fffffff, 0x18(%ecx)\n" /* line 888 */
-        "movl 0xc96e60, %eax\n" /* line 889 */
+        "movl dpvsGlob+64, %eax\n" /* line 889 */
         "movl %eax, 0x1c(%ecx)\n"
-        "movl 0xc96e60, %eax\n" /* line 890 */
+        "movl dpvsGlob+64, %eax\n" /* line 890 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movl 0xc96e64, %edx\n"
+        "movl dpvsGlob+68, %edx\n"
         "leal (%edx, %eax, 4), %eax\n"
         "movl %eax, 0x20(%ecx)\n"
         "movl (%ecx), %eax\n" /* line 892 */
@@ -2799,8 +2799,8 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl -0x1c98(%ebp), %ebx\n" /* occluder, i1 */
         "jmp .Lff0c9e_000f0e92\n"
         ".Lff0c9e_000f0e35:\n"
-        "movl 0xc96e60, %eax\n" /* line 900 */
-        "movl 0xc96e64, %ebx\n" /* i1 */
+        "movl dpvsGlob+64, %eax\n" /* line 900 */
+        "movl dpvsGlob+68, %ebx\n" /* i1 */
         "leal (%eax, %eax, 4), %eax\n"
         "shll $2, %eax\n"
         "movl -0x1c98(%ebp), %edx\n" /* occluder */
@@ -2815,7 +2815,7 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl %edx, 0xc(%eax, %ebx)\n"
         "movl 0x10(%ecx, %esi), %edx\n"
         "movl %edx, 0x10(%eax, %ebx)\n"
-        "addl $1, 0xc96e60\n" /* line 901 */
+        "addl $1, dpvsGlob+64\n" /* line 901 */
         ".Lff0c9e_000f0e7c:\n"
         "addl $1, %edi\n" /* line 892 | planeIndex */
         "addl $0x14, %esi\n" /* plane */
@@ -2829,29 +2829,29 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl %esi, %eax\n" /* line 895 | plane */
         "addl 4(%ebx), %eax\n" /* i1 */
         "movss (%eax), %xmm1\n"
-        "mulss 0xc96e68, %xmm1\n"
+        "mulss dpvsGlob+72, %xmm1\n"
         "movss 4(%eax), %xmm0\n"
-        "mulss 0xc96e6c, %xmm0\n"
+        "mulss dpvsGlob+76, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 8(%eax), %xmm0\n"
-        "mulss 0xc96e70, %xmm0\n"
+        "mulss dpvsGlob+80, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 0xc(%eax), %xmm0\n"
-        "mulss 0xc96e74, %xmm0\n"
+        "mulss dpvsGlob+84, %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed5e8, %xmm1\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm1\n" /* 0.0f */
         "jbe .Lff0c9e_000f0e7c\n"
         "movb $1, 0x13(%eax)\n" /* line 897 */
-        "cmpl $0x1800, 0xc96e60\n" /* line 898 */
+        "cmpl $0x1800, dpvsGlob+64\n" /* line 898 */
         "jne .Lff0c9e_000f0e35\n"
-        "movl $0x225a10, 4(%esp)\n" /* line 899 */
+        "movl $str_00225a10, 4(%esp)\n" /* line 899 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lff0c9e_000f0e35\n"
         ".Lff0c9e_000f0f14:\n"
         "movl %edx, %ebx\n" /* i1 */
         ".Lff0c9e_000f0f16:\n"
-        "movl 0xc96e60, %eax\n" /* line 920 */
+        "movl dpvsGlob+64, %eax\n" /* line 920 */
         "subl 0x1c(%ebx), %eax\n" /* i1 */
         "movl %eax, 0x1c(%ebx)\n" /* i1 */
         ".Lff0c9e_000f0f21:\n"
@@ -2905,15 +2905,15 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "jne .Lff0c9e_000f0f98\n"
         "leal 8(%ebx), %eax\n" /* line 220 */
         "movss 8(%ebx), %xmm1\n" /* line 1816 | i1 */
-        "mulss 0xc96e68, %xmm1\n"
+        "mulss dpvsGlob+72, %xmm1\n"
         "movss 4(%eax), %xmm0\n"
-        "mulss 0xc96e6c, %xmm0\n"
+        "mulss dpvsGlob+76, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 8(%eax), %xmm0\n"
-        "mulss 0xc96e70, %xmm0\n"
+        "mulss dpvsGlob+80, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 0xc(%eax), %xmm0\n"
-        "mulss 0xc96e74, %xmm0\n"
+        "mulss dpvsGlob+84, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "pxor %xmm7, %xmm7\n"
         "ucomiss %xmm7, %xmm1\n"
@@ -2974,7 +2974,7 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl %esi, 8(%esp)\n" /* line 238 | plane */
         "leal -0xc1c(%ebp), %ecx\n" /* delta */
         "movl %ecx, 4(%esp)\n"
-        "movl $0xc96e68, (%esp)\n"
+        "movl $dpvsGlob+72, (%esp)\n"
         "calll Vec3Cross\n"
         ".Lff0c9e_000f10d1:\n"
         "movl %esi, (%esp)\n" /* line 241 | plane */
@@ -3014,7 +3014,7 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         /* } scope */
         "movb $0xff, 0x13(%esi)\n" /* line 243 | plane */
         /* } scope */
-        "addl $1, 0xc96e60\n" /* line 917 */
+        "addl $1, dpvsGlob+64\n" /* line 917 */
         ".Lff0c9e_000f1159:\n"
         "addl $1, -0x1c9c(%ebp)\n" /* line 906 | edgeIndex */
         "movl -0x1c9c(%ebp), %ecx\n" /* edgeIndex */
@@ -3032,7 +3032,7 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movzbl 0x13(%eax), %eax\n"
         "cmpb 0x13(%edx), %al\n"
         "je .Lff0c9e_000f1159\n"
-        "movl 0x195f198, %eax\n" /* line 911 */
+        "movl imp_r_showPortals, %eax\n" /* line 911 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edi\n" /* planeIndex */
         "testl %edi, %edi\n" /* planeIndex */
@@ -3041,9 +3041,9 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "leal (%esi, %ecx), %ecx\n" /* line 914 | plane */
         "movl (%ecx), %eax\n"
         "movzbl 0x13(%eax), %ebx\n" /* i1 */
-        "movl 0xc96e60, %eax\n" /* line 916 */
+        "movl dpvsGlob+64, %eax\n" /* line 916 */
         "leal (%eax, %eax, 4), %eax\n"
-        "movl 0xc96e64, %edx\n"
+        "movl dpvsGlob+68, %edx\n"
         "leal (%edx, %eax, 4), %esi\n" /* plane */
         "cmpl $1, %ebx\n" /* i1 */
         "sbbl %eax, %eax\n"
@@ -3052,30 +3052,30 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl 8(%ecx, %ebx, 4), %eax\n"
         /* { scope 3: v */
         "pxor %xmm0, %xmm0\n" /* line 229 */
-        "ucomiss 0xc96e74, %xmm0\n"
+        "ucomiss dpvsGlob+84, %xmm0\n"
         "jp .Lff0c9e_000f11df\n"
         "je .Lff0c9e_000f1077\n"
         ".Lff0c9e_000f11df:\n"
         "movss (%edi), %xmm0\n" /* line 248 */
-        "subss 0xc96e68, %xmm0\n"
+        "subss dpvsGlob+72, %xmm0\n"
         "movss %xmm0, -0xc1c(%ebp)\n" /* delta */
         "leal 4(%edi), %edx\n" /* line 249 */
         "movl %edx, -0x1c44(%ebp)\n"
         "movss 4(%edi), %xmm0\n"
-        "subss 0xc96e6c, %xmm0\n"
+        "subss dpvsGlob+76, %xmm0\n"
         "movss %xmm0, -0xc18(%ebp)\n"
         "leal 8(%edi), %ebx\n" /* line 250 */
         "movss 8(%edi), %xmm0\n"
-        "subss 0xc96e70, %xmm0\n"
+        "subss dpvsGlob+80, %xmm0\n"
         "movss %xmm0, -0xc14(%ebp)\n"
         "movss (%eax), %xmm0\n" /* line 248 */
-        "subss 0xc96e68, %xmm0\n"
+        "subss dpvsGlob+72, %xmm0\n"
         "movss %xmm0, -0xc10(%ebp)\n"
         "movss 4(%eax), %xmm0\n" /* line 249 */
-        "subss 0xc96e6c, %xmm0\n"
+        "subss dpvsGlob+76, %xmm0\n"
         "movss %xmm0, -0xc0c(%ebp)\n"
         "movss 8(%eax), %xmm0\n" /* line 250 */
-        "subss 0xc96e70, %xmm0\n"
+        "subss dpvsGlob+80, %xmm0\n"
         "movss %xmm0, -0xc08(%ebp)\n"
         "movl %esi, 8(%esp)\n" /* line 233 | plane */
         "leal -0xc1c(%ebp), %ecx\n" /* delta */
@@ -3086,15 +3086,15 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "jmp .Lff0c9e_000f10d1\n"
         /* } scope */
         ".Lff0c9e_000f1288:\n"
-        "movl 0x195f1a4, %eax\n" /* line 912 */
+        "movl imp_colorMagenta, %eax\n" /* line 912 */
         "movl %eax, 0xc(%esp)\n"
         "movl 0xc(%ebx), %eax\n" /* i1 */
         "movl %eax, 8(%esp)\n"
         "movl 8(%ebx), %eax\n" /* i1 */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -3137,11 +3137,11 @@ DP4 oPos.z," */
         "jne .Lff0c9e_000f1506\n"
         /* { scope 2: occluder, delta, planeCount, planeIndex, ... */
         ".Lff0c9e_000f1315:\n"
-        "movl 0xc96e58, %esi\n" /* line 1658 | plane */
+        "movl dpvsGlob+56, %esi\n" /* line 1658 | plane */
         "movl %esi, -0x1c80(%ebp)\n" /* plane */
         "testl %esi, %esi\n" /* plane */
         "jle .Lff0c9e_000f15bd\n"
-        "movl 0xc96e5c, %eax\n" /* line 1660 */
+        "movl dpvsGlob+60, %eax\n" /* line 1660 */
         "movl %eax, -0x1c7c(%ebp)\n"
         "movl $0, -0x1c78(%ebp)\n" /* occluderIndex */
         "movl -0x1c78(%ebp), %edx\n" /* occluderIndex */
@@ -3276,7 +3276,7 @@ DP4 oPos.z," */
         /* } scope */
         /* } scope */
         ".Lff0c9e_000f14ed:\n"
-        "movl $0x2259ec, 4(%esp)\n" /* line 883 */
+        "movl $str_002259ec, 4(%esp)\n" /* line 883 */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lff0c9e_000f0de1\n"
@@ -3327,24 +3327,24 @@ DP4 oPos.z," */
         "jmp .Lff0c9e_000f1315\n"
         ".Lff0c9e_000f15bd:\n"
         "pxor %xmm0, %xmm0\n" /* line 1992 */
-        "ucomiss 0xc96e74, %xmm0\n"
+        "ucomiss dpvsGlob+84, %xmm0\n"
         "jp .Lff0c9e_000f15cc\n"
         "je .Lff0c9e_000f1622\n"
         ".Lff0c9e_000f15cc:\n"
         "leal 8(%ebx), %edx\n" /* portal */
         "movl %edx, -0x1ca4(%ebp)\n"
         "movss 8(%ebx), %xmm1\n" /* portal */
-        "mulss 0xc96e68, %xmm1\n"
+        "mulss dpvsGlob+72, %xmm1\n"
         "movss 4(%edx), %xmm0\n"
-        "mulss 0xc96e6c, %xmm0\n"
+        "mulss dpvsGlob+76, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 8(%edx), %xmm0\n"
-        "mulss 0xc96e70, %xmm0\n"
+        "mulss dpvsGlob+80, %xmm0\n"
         "addss %xmm0, %xmm1\n"
         "movss 0xc(%edx), %xmm0\n"
-        "mulss 0xc96e74, %xmm0\n"
+        "mulss dpvsGlob+84, %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed880, %xmm1\n" /* -0.125f */
+        "ucomiss lit4_002ed880, %xmm1\n" /* -0.125f */
         "ja .Lff0c9e_000f176d\n"
         /* { scope 2: occluder, delta, planeCount, planeIndex, ... */
         /* { scope 3: v */
@@ -3360,7 +3360,7 @@ DP4 oPos.z," */
         "movl -0x1c(%ebp), %edx\n" /* line 1842 | vertCount */
         "testl %edx, %edx\n"
         "je .Lff0c9e_000f100a\n"
-        "movl 0xc96e4c, %ecx\n" /* line 1847 */
+        "movl dpvsGlob+44, %ecx\n" /* line 1847 */
         "testl %ecx, %ecx\n"
         "je .Lff0c9e_000f167e\n"
         "leal -0x1c1c(%ebp), %esi\n" /* line 1849 | cellList, plane */
@@ -3455,7 +3455,7 @@ DP4 oPos.z," */
         /* } scope */
         /* } scope */
         ".Lff0c9e_000f176d:\n"
-        "movl $0xc96e68, 0xc(%esp)\n" /* line 1997 */
+        "movl $dpvsGlob+72, 0xc(%esp)\n" /* line 1997 */
         "movl %edx, 8(%esp)\n"
         "movzbl 0x24(%ebx), %eax\n" /* portal */
         "movl %eax, 4(%esp)\n"
@@ -3565,7 +3565,7 @@ DP4 oPos.z," */
         "movl 0x28(%ebx), %edx\n" /* line 1789 | i1 */
         "testl %edx, %edx\n"
         "jne .Lff0c9e_000f1871\n"
-        "movl 0xc96e80, %ecx\n" /* line 1768 */
+        "movl dpvsGlob+96, %ecx\n" /* line 1768 */
         "movl %ecx, -0x1c50(%ebp)\n"
         "movl %ecx, %eax\n"
         "testl %ecx, %ecx\n" /* line 1769 */
@@ -3573,7 +3573,7 @@ DP4 oPos.z," */
         "movl %ecx, %edx\n"
         ".Lff0c9e_000f1938:\n"
         "movl (%eax), %eax\n" /* line 1772 */
-        "movl %eax, 0xc96e80\n"
+        "movl %eax, dpvsGlob+96\n"
         "movl %edx, 0x28(%ebx)\n" /* line 1791 | i1 */
         "movb $0, 0x25(%ebx)\n" /* line 1792 | i1 */
         "jmp .Lff0c9e_000f187b\n"
@@ -3585,7 +3585,7 @@ DP4 oPos.z," */
         "movl -0x1cac(%ebp), %eax\n" /* line 2013 */
         "movl %eax, 4(%ebx)\n" /* portal */
         /* { scope 2: occluder, delta, planeCount, planeIndex, ... */
-        "cmpl $0xff, 0xc96e78\n" /* line 1707 */
+        "cmpl $0xff, dpvsGlob+88\n" /* line 1707 */
         "jg .Lff0c9e_000f1ca1\n"
         ".Lff0c9e_000f196d:\n"
         "movb $1, (%ebx)\n" /* line 1710 | i1 */
@@ -3595,9 +3595,9 @@ DP4 oPos.z," */
         /* { scope 3: v */
         /* { scope 4 */
         "movss dpvsGlob, %xmm6\n" /* line 304 */
-        "movss 0xc96e24, %xmm5\n"
-        "movss 0xc96e28, %xmm4\n"
-        "movss 0xc96e2c, %xmm7\n" /* line 42 */
+        "movss dpvsGlob+4, %xmm5\n"
+        "movss dpvsGlob+8, %xmm4\n"
+        "movss dpvsGlob+12, %xmm7\n" /* line 42 */
         "movaps %xmm6, %xmm3\n"
         "mulss (%ecx), %xmm3\n"
         "movaps %xmm5, %xmm0\n"
@@ -3701,7 +3701,7 @@ DP4 oPos.z," */
         /* } scope */
         /* } scope */
         ".Lff0c9e_000f1af4:\n"
-        "movl 0xc96e78, %ecx\n" /* line 1713 */
+        "movl dpvsGlob+88, %ecx\n" /* line 1713 */
         "movl %ecx, -0x1c30(%ebp)\n"
         /* { scope 3: v */
         "movl %ecx, %eax\n" /* line 1671 */
@@ -3710,7 +3710,7 @@ DP4 oPos.z," */
         "sarl $1, %eax\n" /* line 1717 */
         "movl %eax, -0x1ccc(%ebp)\n" /* heapIndex */
         "js .Lff0c9e_000f1ce3\n"
-        "movl 0xc96e7c, %edx\n"
+        "movl dpvsGlob+92, %edx\n"
         "movl %edx, -0x1cd0(%ebp)\n"
         "movl -0x1ccc(%ebp), %ecx\n" /* heapIndex */
         "leal (%edx, %ecx, 8), %ecx\n"
@@ -3743,7 +3743,7 @@ DP4 oPos.z," */
         "sarl $1, %eax\n" /* line 1717 */
         "movl %eax, -0x1ccc(%ebp)\n" /* heapIndex */
         "js .Lff0c9e_000f1d20\n"
-        "movl 0xc96e7c, %esi\n" /* plane */
+        "movl dpvsGlob+92, %esi\n" /* plane */
         "movl %esi, -0x1cd0(%ebp)\n" /* plane */
         "leal (%esi, %eax, 8), %eax\n" /* plane */
         "movl %eax, -0x1cec(%ebp)\n"
@@ -3754,9 +3754,9 @@ DP4 oPos.z," */
         "shll $3, %edx\n"
         "movl -0x1cd0(%ebp), %ecx\n"
         "movl %ebx, (%ecx, %edx)\n" /* i1 */
-        "movl 0xc96e7c, %eax\n" /* line 1724 */
+        "movl dpvsGlob+92, %eax\n" /* line 1724 */
         "movss %xmm3, 4(%edx, %eax)\n"
-        "addl $1, 0xc96e78\n" /* line 1725 */
+        "addl $1, dpvsGlob+88\n" /* line 1725 */
         "movl -0x1ca8(%ebp), %eax\n"
         "jmp .Lff0c9e_000f0f9a\n"
         /* } scope */
@@ -3816,7 +3816,7 @@ DP4 oPos.z," */
         /* } scope */
         ".Lff0c9e_000f1ca1:\n"
         "movl $0x100, 8(%esp)\n" /* line 1708 */
-        "movl $0x225a84, 4(%esp)\n" /* "More than %i queued portals" */
+        "movl $str_00225a84, 4(%esp)\n" /* "More than %i queued portals" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lff0c9e_000f196d\n"
@@ -3825,25 +3825,25 @@ DP4 oPos.z," */
         /* { scope 3: v */
         ".Lff0c9e_000f1cc2:\n"
         "movl $0x40, 8(%esp)\n" /* line 1800 */
-        "movl $0x225a4c, 4(%esp)\n" /* "More than %i points on a clipped portal's convex hull
+        "movl $str_00225a4c, 4(%esp)\n" /* "More than %i points on a clipped portal's convex hull
 " */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
         "jmp .Lff0c9e_000f1abc\n"
         ".Lff0c9e_000f1ce3:\n"
-        "movl 0xc96e7c, %edx\n"
+        "movl dpvsGlob+92, %edx\n"
         "movl %edx, -0x1cd0(%ebp)\n"
         "jmp .Lff0c9e_000f1bb8\n"
         ".Lff0c9e_000f1cf4:\n"
         "movl $0x100, 8(%esp)\n" /* line 1770 */
-        "movl $0x225a30, 4(%esp)\n" /* "more than %i queued portals" */
+        "movl $str_00225a30, 4(%esp)\n" /* "more than %i queued portals" */
         "movl $1, (%esp)\n"
         "calll R_Error\n"
-        "movl 0xc96e80, %eax\n"
+        "movl dpvsGlob+96, %eax\n"
         "movl -0x1c50(%ebp), %edx\n"
         "jmp .Lff0c9e_000f1938\n"
         ".Lff0c9e_000f1d20:\n"
-        "movl 0xc96e7c, %eax\n"
+        "movl dpvsGlob+92, %eax\n"
         "movl %eax, -0x1cd0(%ebp)\n"
         "jmp .Lff0c9e_000f1bb8\n"
     );
@@ -3879,10 +3879,10 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "cmpl $MacBuilder_SetControlFontStyle, %ebx\n" /* line 2044 | bevelVertIndex */
         "jne .Lff1d30_000f1d64\n"
         "movl $0, 0x1fe00(%eax)\n" /* line 2046 */
-        "movl %eax, 0xc96e80\n" /* line 2047 */
+        "movl %eax, dpvsGlob+96\n" /* line 2047 */
         "leal -0x18ac(%ebp), %ebx\n" /* line 2048 | portalQueue, bevelVertIndex */
-        "movl %ebx, 0xc96e7c\n" /* bevelVertIndex */
-        "movl $0, 0xc96e78\n" /* line 2049 */
+        "movl %ebx, dpvsGlob+92\n" /* bevelVertIndex */
+        "movl $0, dpvsGlob+88\n" /* line 2049 */
         "movl $1, 8(%esp)\n" /* line 2051 */
         "movl 0x14(%ebp), %eax\n" /* planeCount */
         "movl %eax, 4(%esp)\n"
@@ -3894,22 +3894,22 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "calll R_VisitPortalsForCell\n"
         "movl $0, -0x18e8(%ebp)\n" /* iteration */
         ".Lff1d30_000f1dce:\n"
-        "movl 0xc96e78, %ebx\n" /* line 2053 | bevelVertIndex */
+        "movl dpvsGlob+88, %ebx\n" /* line 2053 | bevelVertIndex */
         "testl %ebx, %ebx\n" /* bevelVertIndex */
         "je .Lff1d30_000f235d\n"
         ".Lff1d30_000f1ddc:\n"
-        "movl 0xc96e7c, %eax\n" /* line 1739 */
+        "movl dpvsGlob+92, %eax\n" /* line 1739 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x18f0(%ebp)\n" /* portal */
         "movb $0, (%eax)\n" /* line 1740 */
-        "movl 0xc96e78, %eax\n" /* line 1742 */
+        "movl dpvsGlob+88, %eax\n" /* line 1742 */
         "subl $1, %eax\n"
-        "movl %eax, 0xc96e78\n"
+        "movl %eax, dpvsGlob+88\n"
         "testl %eax, %eax\n" /* line 1747 */
         "jg .Lff1d30_000f2373\n"
         "leal (, %eax, 8), %edx\n"
         "xorl %esi, %esi\n" /* windingVertIndex */
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         ".Lff1d30_000f1e10:\n"
         "movl (%ebx, %edx), %eax\n" /* line 1756 | bevelVertIndex */
         "movl 4(%ebx, %edx), %edx\n" /* bevelVertIndex */
@@ -3927,22 +3927,22 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "movl -0x18f0(%ebp), %ecx\n" /* line 2063 | portal */
         "movl 0x28(%ecx), %edx\n" /* hullPoints */
         /* { scope 2: screenSpaceWinding, forceBevels */
-        "movl 0xc96e80, %eax\n" /* line 1779 */
+        "movl dpvsGlob+96, %eax\n" /* line 1779 */
         "movl %eax, (%edx)\n"
-        "movl %edx, 0xc96e80\n" /* line 1780 */
+        "movl %edx, dpvsGlob+96\n" /* line 1780 */
         /* } scope */
         "movl $0, 0x28(%ecx)\n" /* line 2064 */
         "testl %edi, %edi\n" /* line 2065 | hullPointCount */
         "je .Lff1d30_000f1dce\n"
         "addl $1, -0x18e8(%ebp)\n" /* line 2068 | iteration */
-        "movl 0x195f1b8, %eax\n" /* line 2069 */
+        "movl imp_r_portalWalkLimit, %eax\n" /* line 2069 */
         "movl (%eax), %eax\n"
         "movl -0x18e8(%ebp), %ebx\n" /* iteration, bevelVertIndex */
         "cmpl 8(%eax), %ebx\n" /* bevelVertIndex */
         "je .Lff1d30_000f2b21\n"
         "movl -0x18f0(%ebp), %ecx\n" /* line 2083 | portal */
         "movss 0x14(%ecx), %xmm0\n" /* scale */
-        "xorps 0x2f2b70, %xmm0\n" /* scale */
+        "xorps color+16, %xmm0\n" /* scale */
         "addl $8, %ecx\n"
         "movl %ecx, -0x18f4(%ebp)\n"
         /* { scope 2: screenSpaceWinding, forceBevels */
@@ -3999,12 +3999,12 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "cmpl %ecx, %edi\n" /* hullPointCount */
         "jne .Lff1d30_000f1edc\n"
         ".Lff1d30_000f1f6b:\n"
-        "movl 0x195f198, %eax\n" /* line 2091 */
+        "movl imp_r_showPortals, %eax\n" /* line 2091 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %esi\n" /* windingVertIndex */
         "testl %esi, %esi\n" /* windingVertIndex */
         "je .Lff1d30_000f1f8a\n"
-        "movl 0x195f1ac, %eax\n"
+        "movl imp_r_portalBevelsOnly, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lff1d30_000f2a76\n"
@@ -4014,7 +4014,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "setle -0x18d1(%ebp)\n" /* useNormalPlanes */
         "cmpb $0, -0x18d1(%ebp)\n" /* line 786 | useNormalPlanes */
         "je .Lff1d30_000f1fae\n"
-        "movl 0x195f1ac, %eax\n"
+        "movl imp_r_portalBevelsOnly, %eax\n"
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lff1d30_000f28f1\n"
@@ -4028,10 +4028,10 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "calll R_GetSidePlaneNormals\n"
         "cmpb $0, -0x18d9(%ebp)\n" /* line 791 */
         "jne .Lff1d30_000f1ff4\n"
-        "movl 0x195f1d4, %eax\n"
+        "movl imp_r_portalMinClipArea, %eax\n"
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lff1d30_000f2af2\n"
         /* { scope 3: bevelVerts, bevelNormals */
         ".Lff1d30_000f1ff4:\n"
@@ -4039,14 +4039,14 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "jg .Lff1d30_000f26de\n"
         "movl $0x3f800000, -0x18c8(%ebp)\n"
         "movl $0x3f800000, -0x18cc(%ebp)\n"
-        "movss 0x2ed5dc, %xmm6\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm6\n" /* -1.0f */
         "movaps %xmm6, %xmm7\n"
-        "movss 0x2ed628, %xmm0\n" /* -2.0f */
+        "movss lit4_002ed628, %xmm0\n" /* -2.0f */
         "movaps %xmm0, %xmm1\n"
         ".Lff1d30_000f2026:\n"
         "mulss %xmm0, %xmm1\n" /* line 692 */
-        "mulss 0x2ed604, %xmm1\n" /* 0.25f */
-        "movl 0x195f1d4, %ebx\n"
+        "mulss lit4_002ed604, %xmm1\n" /* 0.25f */
+        "movl imp_r_portalMinClipArea, %ebx\n"
         "movl (%ebx), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss %xmm1, %xmm0\n"
@@ -4065,7 +4065,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "movl $0, -0x18d8(%ebp)\n" /* line 803 | windingVertIndex */
         "leal -0x68c(%ebp), %esi\n" /* portalVerts, windingVertIndex */
         "pxor %xmm4, %xmm4\n"
-        "movss 0x2ed658, %xmm5\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm5\n" /* 0.0010000000474974513f */
         "leal -0x10ac(%ebp), %ecx\n" /* normals */
         "movl -0x18ec(%ebp), %ebx\n" /* childPlaneCount, bevelVertIndex */
         "leal (%ebx, %ebx, 4), %eax\n" /* bevelVertIndex */
@@ -4125,7 +4125,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "cmpl -0x18d8(%ebp), %edi\n" /* windingVertIndex */
         "jne .Lff1d30_000f20b0\n"
         ".Lff1d30_000f217f:\n"
-        "movl 0xc96e48, %edx\n" /* line 816 */
+        "movl dpvsGlob+40, %edx\n" /* line 816 */
         "testl %edx, %edx\n"
         "je .Lff1d30_000f22cc\n"
         "movl -0x18ec(%ebp), %ecx\n" /* line 818 | childPlaneCount */
@@ -4207,14 +4207,14 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "jbe .Lff1d30_000f227d\n"
         /* } scope */
         ".Lff1d30_000f22b3:\n"
-        "ucomiss 0x2ed5e8, %xmm3\n" /* line 820 | 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm3\n" /* line 820 | 0.0f */
         "jbe .Lff1d30_000f22c5\n"
         "subss %xmm3, %xmm4\n" /* line 821 */
         "movss %xmm4, 0xc(%esi)\n" /* windingVertIndex */
         ".Lff1d30_000f22c5:\n"
         "addl $1, -0x18ec(%ebp)\n" /* line 822 | childPlaneCount */
         ".Lff1d30_000f22cc:\n"
-        "movl 0xc96e4c, %ecx\n" /* line 824 */
+        "movl dpvsGlob+44, %ecx\n" /* line 824 */
         "testl %ecx, %ecx\n"
         "je .Lff1d30_000f2a6b\n"
         "movl -0x18ec(%ebp), %ebx\n" /* line 826 | childPlaneCount, bevelVertIndex */
@@ -4245,7 +4245,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "movl -0x18f4(%ebp), %ecx\n"
         "movl %edi, %edx\n" /* hullPointCount */
         "calll R_VisitPortalsForCell\n"
-        "movl 0xc96e78, %ebx\n" /* line 2053 | bevelVertIndex */
+        "movl dpvsGlob+88, %ebx\n" /* line 2053 | bevelVertIndex */
         "testl %ebx, %ebx\n" /* bevelVertIndex */
         "jne .Lff1d30_000f1ddc\n"
         ".Lff1d30_000f235d:\n"
@@ -4267,7 +4267,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "jmp .Lff1d30_000f23d2\n"
         ".Lff1d30_000f2386:\n"
         "leal (, %ecx, 8), %esi\n" /* line 1749 | windingVertIndex */
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         ".Lff1d30_000f2393:\n"
         "leal (, %eax, 8), %edx\n" /* line 1751 */
         "leal (%esi, %ebx), %eax\n" /* windingVertIndex */
@@ -4282,7 +4282,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "movl %edx, 4(%ebx, %edi, 8)\n" /* bevelVertIndex */
         "leal (%ecx, %ecx), %edi\n" /* line 1677 */
         "leal 1(%edi), %edx\n"
-        "movl 0xc96e78, %eax\n" /* line 1747 */
+        "movl dpvsGlob+88, %eax\n" /* line 1747 */
         "cmpl %edx, %eax\n"
         "jl .Lff1d30_000f241e\n"
         "movl %ecx, -0x18c0(%ebp)\n" /* line 1748 */
@@ -4290,7 +4290,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         ".Lff1d30_000f23d2:\n"
         "cmpl %eax, %ecx\n" /* line 1749 */
         "jge .Lff1d30_000f2386\n"
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         "leal (, %ecx, 8), %esi\n" /* windingVertIndex */
         "movss 4(%ebx, %esi), %xmm0\n" /* bevelVertIndex */
         "ucomiss 0xc(%ebx, %esi), %xmm0\n" /* bevelVertIndex */
@@ -4308,12 +4308,12 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "jmp .Lff1d30_000f1e10\n"
         ".Lff1d30_000f241e:\n"
         "leal (, %eax, 8), %edx\n" /* line 1748 */
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         "jmp .Lff1d30_000f1e10\n"
         /* { scope 2: screenSpaceWinding, forceBevels */
         ".Lff1d30_000f2430:\n"
         "xorl %ebx, %ebx\n" /* line 794 | bevelVertIndex */
-        "movl 0xc96e54, %edx\n"
+        "movl dpvsGlob+52, %edx\n"
         /* { scope 3: bevelVerts, bevelNormals */
         /* { scope 4 */
         ".Lff1d30_000f2438:\n"
@@ -4342,7 +4342,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "mulss 0x1c(%edx), %xmm1\n"
         "addss %xmm1, %xmm0\n"
         "addss 0x3c(%edx), %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "divss %xmm0, %xmm1\n"
         "mulss (%edx), %xmm4\n" /* line 731 */
         "mulss 0x10(%edx), %xmm5\n"
@@ -4402,7 +4402,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "jne .Lff1d30_000f2638\n"
         "testl %edi, %edi\n" /* line 745 */
         "jle .Lff1d30_000f2638\n"
-        "movl 0x195f1b0, %eax\n" /* line 747 */
+        "movl imp_r_portalBevels, %eax\n" /* line 747 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm5\n"
         "movaps %xmm3, %xmm1\n"
@@ -4415,7 +4415,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "ucomiss %xmm5, %xmm1\n"
         "jbe .Lff1d30_000f25fc\n"
         ".Lff1d30_000f25cc:\n"
-        "movl 0x195f198, %eax\n" /* line 749 */
+        "movl imp_r_showPortals, %eax\n" /* line 749 */
         "movl (%eax), %eax\n"
         "testb $2, 8(%eax)\n"
         "jne .Lff1d30_000f2aa5\n"
@@ -4450,7 +4450,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "cmpl %ecx, %edi\n"
         "jne .Lff1d30_000f2606\n"
         ".Lff1d30_000f2638:\n"
-        "movl 0x195f198, %eax\n" /* line 756 */
+        "movl imp_r_showPortals, %eax\n" /* line 756 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -4467,7 +4467,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "movss 8(%esi), %xmm0\n"
         "mulss 8(%eax), %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "movss 0x2ed658, %xmm0\n" /* 0.0010000000474974513f */
+        "movss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "subss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esi)\n"
         "movl $0xc, %eax\n" /* line 19 */
@@ -4497,7 +4497,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         /* { scope 3: bevelVerts, bevelNormals */
         ".Lff1d30_000f26de:\n"
         "movss -0x68c(%ebp), %xmm5\n" /* line 667 | portalVerts */
-        "movl 0xc96e50, %ecx\n"
+        "movl dpvsGlob+48, %ecx\n"
         "movss -0x688(%ebp), %xmm4\n"
         "movss -0x684(%ebp), %xmm3\n"
         "movaps %xmm3, %xmm2\n"
@@ -4509,7 +4509,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "addss %xmm1, %xmm0\n"
         "addss %xmm0, %xmm2\n"
         "addss 0x3c(%ecx), %xmm2\n"
-        "ucomiss 0x2ed610, %xmm2\n" /* line 668 | 0.125f */
+        "ucomiss lit4_002ed610, %xmm2\n" /* line 668 | 0.125f */
         "jp .Lff1d30_000f2928\n"
         "jae .Lff1d30_000f2928\n"
         ".Lff1d30_000f2734:\n"
@@ -4517,14 +4517,14 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "movl $0xbf800000, -0x18cc(%ebp)\n"
         "movss -0x18cc(%ebp), %xmm1\n"
         "movss %xmm1, -0x18c8(%ebp)\n"
-        "movss 0x2ed5d0, %xmm6\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm6\n" /* 1.0f */
         "movaps %xmm6, %xmm7\n"
         "jmp .Lff1d30_000f2052\n"
         /* } scope */
         /* { scope 3: bevelVerts, bevelNormals */
         /* { scope 4 */
         ".Lff1d30_000f2768:\n"
-        "movl 0x195f1bc, %eax\n" /* line 757 */
+        "movl imp_colorLtCyan, %eax\n" /* line 757 */
         "movl %eax, 0xc(%esp)\n"
         "movl -0x18c4(%ebp), %ebx\n" /* bevelVertIndex */
         "leal (%ebx, %ebx, 2), %eax\n" /* bevelVertIndex */
@@ -4534,9 +4534,9 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "leal -0xaac(%ebp), %edx\n" /* screenSpaceWinding */
         "leal (%edx, %eax), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4633,7 +4633,7 @@ DP4 oPos.z," */
         "cmpl %edx, %edi\n" /* line 701 */
         "jge .Lff1d30_000f289f\n"
         "movaps %xmm2, %xmm1\n"
-        "mulss 0x2ed610, %xmm1\n" /* 0.125f */
+        "mulss lit4_002ed610, %xmm1\n" /* 0.125f */
         ".Lff1d30_000f28d7:\n"
         "movl (%ebx), %eax\n"
         "movss 8(%eax), %xmm0\n"
@@ -4644,10 +4644,10 @@ DP4 oPos.z," */
         "jmp .Lff1d30_000f2052\n"
         /* } scope */
         ".Lff1d30_000f28f1:\n"
-        "movl 0x195f1b0, %eax\n" /* line 787 */
+        "movl imp_r_portalBevels, %eax\n" /* line 787 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jbe .Lff1d30_000f2b0b\n"
         "movb $1, -0x18d9(%ebp)\n" /* line 786 */
         "movl $0, -0x18d0(%ebp)\n" /* forceBevels */
@@ -4662,7 +4662,7 @@ DP4 oPos.z," */
         "xorl %esi, %esi\n" /* line 668 | windingVertIndex */
         "movl $0x3f800000, -0x18c8(%ebp)\n"
         "movl $0x3f800000, -0x18cc(%ebp)\n"
-        "movss 0x2ed5dc, %xmm6\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm6\n" /* -1.0f */
         "movaps %xmm6, %xmm7\n"
         "leal -0x68c(%ebp), %ebx\n" /* portalVerts */
         "jmp .Lff1d30_000f2999\n"
@@ -4680,11 +4680,11 @@ DP4 oPos.z," */
         "addss %xmm0, %xmm2\n"
         "addss 0x3c(%ecx), %xmm2\n"
         "addl $0xc, %ebx\n"
-        "movss 0x2ed610, %xmm0\n" /* line 668 | 0.125f */
+        "movss lit4_002ed610, %xmm0\n" /* line 668 | 0.125f */
         "ucomiss %xmm2, %xmm0\n"
         "ja .Lff1d30_000f2734\n"
         ".Lff1d30_000f2999:\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 678 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 678 | 1.0f */
         "divss %xmm2, %xmm0\n"
         "movaps %xmm0, %xmm2\n"
         "movaps %xmm5, %xmm1\n" /* line 679 */
@@ -4741,9 +4741,9 @@ DP4 oPos.z," */
         "movl %eax, 0xc(%esp)\n"
         "movl %edi, 8(%esp)\n" /* hullPointCount */
         "movl $color, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4757,7 +4757,7 @@ DP4 oPos.z," */
         ".Lff1d30_000f2aa5:\n"
         "movl -0x18c4(%ebp), %ebx\n" /* line 750 | bevelVertIndex */
         "addl $1, %ebx\n" /* bevelVertIndex */
-        "movl 0x195f1d8, %eax\n"
+        "movl imp_colorMdCyan, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* bevelVertIndex */
         "leal -0xaac(%ebp, %eax, 4), %eax\n"
@@ -4766,9 +4766,9 @@ DP4 oPos.z," */
         "leal (%ecx, %ecx, 2), %eax\n"
         "leal -0xaac(%ebp, %eax, 4), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195eef4, %eax\n"
+        "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $0x249d18, %eax\n" /* "x;
+        "addl $str_00249a1c+764, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4787,14 +4787,14 @@ DP4 oPos.z," */
         "jmp .Lff1d30_000f1fbf\n"
         /* } scope */
         ".Lff1d30_000f2b21:\n"
-        "movl 0xc96e78, %ecx\n" /* line 2071 */
+        "movl dpvsGlob+88, %ecx\n" /* line 2071 */
         "testl %ecx, %ecx\n"
         "jne .Lff1d30_000f2b7e\n"
         "jmp .Lff1d30_000f2c5c\n"
         ".Lff1d30_000f2b30:\n"
         "leal (, %eax, 8), %edx\n" /* line 1747 */
         "xorl %esi, %esi\n" /* windingVertIndex */
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         ".Lff1d30_000f2b3f:\n"
         "movl (%edx, %ebx), %eax\n" /* line 1756 */
         "movl 4(%edx, %ebx), %edx\n"
@@ -4803,23 +4803,23 @@ DP4 oPos.z," */
         "movl -0x18bc(%ebp), %eax\n" /* line 2074 */
         "movl 0x28(%eax), %edx\n" /* hullPoints */
         /* { scope 2: screenSpaceWinding, forceBevels */
-        "movl 0xc96e80, %eax\n" /* line 1779 */
+        "movl dpvsGlob+96, %eax\n" /* line 1779 */
         "movl %eax, (%edx)\n"
-        "movl %edx, 0xc96e80\n" /* line 1780 */
+        "movl %edx, dpvsGlob+96\n" /* line 1780 */
         /* } scope */
         "movl -0x18bc(%ebp), %edx\n" /* line 2075 */
         "movl $0, 0x28(%edx)\n"
-        "movl 0xc96e78, %edi\n" /* line 2071 | hullPointCount */
+        "movl dpvsGlob+88, %edi\n" /* line 2071 | hullPointCount */
         "testl %edi, %edi\n" /* hullPointCount */
         "je .Lff1d30_000f2c5c\n"
         ".Lff1d30_000f2b7e:\n"
-        "movl 0xc96e7c, %eax\n" /* line 1739 */
+        "movl dpvsGlob+92, %eax\n" /* line 1739 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x18bc(%ebp)\n"
         "movb $0, (%eax)\n" /* line 1740 */
-        "movl 0xc96e78, %eax\n" /* line 1742 */
+        "movl dpvsGlob+88, %eax\n" /* line 1742 */
         "subl $1, %eax\n"
-        "movl %eax, 0xc96e78\n"
+        "movl %eax, dpvsGlob+88\n"
         "testl %eax, %eax\n" /* line 1747 */
         "jle .Lff1d30_000f2b30\n"
         "movl $0, -0x18e0(%ebp)\n"
@@ -4828,7 +4828,7 @@ DP4 oPos.z," */
         "jmp .Lff1d30_000f2bfe\n"
         ".Lff1d30_000f2bb2:\n"
         "leal (, %ecx, 8), %esi\n" /* line 1749 | windingVertIndex */
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         ".Lff1d30_000f2bbf:\n"
         "leal (, %eax, 8), %edx\n" /* line 1751 */
         "leal (%esi, %ebx), %eax\n" /* windingVertIndex */
@@ -4843,7 +4843,7 @@ DP4 oPos.z," */
         "movl %edx, 4(%ebx, %edi, 8)\n" /* bevelVertIndex */
         "leal (%ecx, %ecx), %edi\n" /* line 1677 */
         "leal 1(%edi), %edx\n"
-        "movl 0xc96e78, %eax\n" /* line 1747 */
+        "movl dpvsGlob+88, %eax\n" /* line 1747 */
         "cmpl %eax, %edx\n"
         "jg .Lff1d30_000f2c4a\n"
         "movl %ecx, -0x18e0(%ebp)\n" /* line 1748 */
@@ -4851,7 +4851,7 @@ DP4 oPos.z," */
         ".Lff1d30_000f2bfe:\n"
         "cmpl %ecx, %eax\n" /* line 1749 */
         "jle .Lff1d30_000f2bb2\n"
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         "leal (, %ecx, 8), %esi\n" /* windingVertIndex */
         "movss 4(%ebx, %esi), %xmm0\n" /* bevelVertIndex */
         "ucomiss 0xc(%ebx, %esi), %xmm0\n" /* bevelVertIndex */
@@ -4869,7 +4869,7 @@ DP4 oPos.z," */
         "jmp .Lff1d30_000f2b3f\n"
         ".Lff1d30_000f2c4a:\n"
         "leal (, %eax, 8), %edx\n" /* line 1748 */
-        "movl 0xc96e7c, %ebx\n" /* bevelVertIndex */
+        "movl dpvsGlob+92, %ebx\n" /* bevelVertIndex */
         "jmp .Lff1d30_000f2b3f\n"
         ".Lff1d30_000f2c5c:\n"
         "leal -0x1c(%ebp), %eax\n" /* line 2101 | hullPointsPool_large_local */
@@ -4919,17 +4919,17 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "leal -0x1c(%ebp), %edx\n" /* occluderPlaneBuffer_large_local */
         "movl %edx, (%esp)\n"
         "calll LargeLocal_GetBuf\n"
-        "movl %ebx, 0xc96e5c\n" /* line 2307 | dlightIndex */
-        "movl %eax, 0xc96e64\n" /* line 2308 */
-        "movl 0x195f1b4, %eax\n" /* line 2310 */
+        "movl %ebx, dpvsGlob+60\n" /* line 2307 | dlightIndex */
+        "movl %eax, dpvsGlob+68\n" /* line 2308 */
+        "movl imp_r_drawWorld, %eax\n" /* line 2310 */
         "movl (%eax), %eax\n"
         "movzbl 8(%eax), %eax\n"
-        "movb %al, 0xc96e84\n"
-        "movl 0x195eeb8, %eax\n" /* line 2311 */
+        "movb %al, dpvsGlob+100\n"
+        "movl imp_r_drawEntities, %eax\n" /* line 2311 */
         "movl (%eax), %eax\n"
         "movzbl 8(%eax), %edx\n"
-        "movb %dl, 0xc96e85\n"
-        "movl 0x195eefc, %eax\n" /* line 2312 */
+        "movb %dl, dpvsGlob+101\n"
+        "movl imp_r_drawBModels, %eax\n" /* line 2312 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lff2c88_000f2d14\n"
@@ -4938,34 +4938,34 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         ".Lff2c88_000f2d14:\n"
         "xorl %eax, %eax\n"
         ".Lff2c88_000f2d16:\n"
-        "movb %al, 0xc96e88\n"
-        "movl 0x195f1a0, %eax\n" /* line 2313 */
+        "movb %al, dpvsGlob+104\n"
+        "movl imp_r_drawSModels, %eax\n" /* line 2313 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lff2c88_000f2d36\n"
-        "cmpb $0, 0xc96e85\n"
+        "cmpb $0, dpvsGlob+101\n"
         "jne .Lff2c88_000f364c\n"
         ".Lff2c88_000f2d36:\n"
         "xorl %eax, %eax\n"
         ".Lff2c88_000f2d38:\n"
-        "movb %al, 0xc96e86\n"
-        "movl 0x195f1c0, %eax\n" /* line 2314 */
+        "movb %al, dpvsGlob+102\n"
+        "movl imp_r_drawXModels, %eax\n" /* line 2314 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "je .Lff2c88_000f2d58\n"
-        "cmpb $0, 0xc96e85\n"
+        "cmpb $0, dpvsGlob+101\n"
         "jne .Lff2c88_000f3656\n"
         ".Lff2c88_000f2d58:\n"
         "xorl %eax, %eax\n"
         ".Lff2c88_000f2d5a:\n"
-        "movb %al, 0xc96e87\n"
-        "movl $0, 0xc96e58\n" /* line 2151 */
+        "movb %al, dpvsGlob+103\n"
+        "movl $0, dpvsGlob+56\n" /* line 2151 */
         "movl 8(%ebp), %edx\n" /* line 2153 | viewParms */
         "addl $0xc8, %edx\n"
-        "movl %edx, 0xc96e50\n"
+        "movl %edx, dpvsGlob+48\n"
         "movl 8(%ebp), %eax\n" /* line 2154 | viewParms */
         "addl $0x108, %eax\n"
-        "movl %eax, 0xc96e54\n"
+        "movl %eax, dpvsGlob+52\n"
         "leal -0xc8(%ebp), %eax\n" /* line 2155 | frustumPlanes */
         "movl %eax, 0xc(%esp)\n"
         "movl $4, 8(%esp)\n"
@@ -4978,12 +4978,12 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "jne .Lff2c88_000f2fbf\n"
         "jp .Lff2c88_000f2fbf\n"
         "movl (%edx), %eax\n" /* line 199 */
-        "movl %eax, 0xc96e68\n"
+        "movl %eax, dpvsGlob+72\n"
         "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 0xc96e6c\n"
+        "movl %eax, dpvsGlob+76\n"
         "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 0xc96e70\n"
-        "movl $0x3f800000, 0xc96e74\n" /* line 2110 */
+        "movl %eax, dpvsGlob+80\n"
+        "movl $0x3f800000, dpvsGlob+84\n" /* line 2110 */
         "movl %edx, %esi\n" /* line 2113 | from */
         "addl $0xc, %esi\n" /* from */
         /* { scope 2: entityCount */
@@ -4992,146 +4992,146 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "movl %edx, %ebx\n" /* line 200 */
         "addl $0x10, %ebx\n"
         "movss 0x10(%edx), %xmm2\n"
-        "movss %xmm2, 0xc96e24\n"
+        "movss %xmm2, dpvsGlob+4\n"
         "movl %edx, %ecx\n" /* line 201 */
         "addl $0x14, %ecx\n"
         "movss 0x14(%edx), %xmm0\n"
-        "movss %xmm0, 0xc96e28\n"
+        "movss %xmm0, dpvsGlob+8\n"
         /* } scope */
-        "mulss 0xc96e68, %xmm1\n" /* line 27 */
-        "mulss 0xc96e6c, %xmm2\n"
+        "mulss dpvsGlob+72, %xmm1\n" /* line 27 */
+        "mulss dpvsGlob+76, %xmm2\n"
         "addss %xmm2, %xmm1\n"
-        "mulss 0xc96e70, %xmm0\n"
+        "mulss dpvsGlob+80, %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "movss 0x2ed7d0, %xmm0\n" /* 0.10000000149011612f */
+        "movss lit4_002ed7d0, %xmm0\n" /* 0.10000000149011612f */
         "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0xc96e2c\n"
+        "movss %xmm0, dpvsGlob+12\n"
         "movl $0xc, %eax\n" /* line 19 */
         "movl dpvsGlob, %edx\n"
         "testl %edx, %edx\n"
         "movl $0, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e30\n"
+        "movb %al, dpvsGlob+16\n"
         "movl $0x10, %eax\n" /* line 20 */
-        "movl 0xc96e24, %edi\n"
+        "movl dpvsGlob+4, %edi\n"
         "testl %edi, %edi\n"
         "movl $4, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e31\n"
+        "movb %al, dpvsGlob+17\n"
         "movl $0x14, %eax\n" /* line 21 */
-        "movl 0xc96e28, %edx\n"
+        "movl dpvsGlob+8, %edx\n"
         "testl %edx, %edx\n"
         "movl $8, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e32\n"
-        "movb $0xff, 0xc96e33\n" /* line 2115 */
-        "movl $dpvsGlob, 0xc96e48\n" /* line 2116 */
-        "movl 0x195f1c4, %eax\n" /* line 2347 */
+        "movb %al, dpvsGlob+18\n"
+        "movb $0xff, dpvsGlob+19\n" /* line 2115 */
+        "movl $dpvsGlob, dpvsGlob+40\n" /* line 2116 */
+        "movl imp_r_zfar, %eax\n" /* line 2347 */
         "movl (%eax), %eax\n"
         "movss 8(%eax), %xmm0\n"
         "ucomiss %xmm3, %xmm0\n" /* line 2348 */
         "je .Lff2c88_000f360b\n"
         ".Lff2c88_000f2ec4:\n"
-        "movl 0x195eec8, %edi\n" /* bmodel */
+        "movl imp_rg, %edi\n" /* bmodel */
         ".Lff2c88_000f2eca:\n"
         "movss dpvsConfig, %xmm4\n" /* line 2350 */
         "maxss %xmm0, %xmm4\n"
         "ucomiss %xmm4, %xmm3\n" /* line 2120 */
         "jae .Lff2c88_000f3ac7\n"
-        "movss 0x2f2b80, %xmm0\n" /* line 216 */
+        "movss color+32, %xmm0\n" /* line 216 */
         "movss (%esi), %xmm3\n"
         "xorps %xmm0, %xmm3\n"
-        "movss %xmm3, 0xc96e34\n"
+        "movss %xmm3, dpvsGlob+20\n"
         "movss (%ebx), %xmm1\n" /* line 217 */
         "xorps %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc96e38\n"
+        "movss %xmm1, dpvsGlob+24\n"
         "movss (%ecx), %xmm2\n" /* line 218 */
         "xorps %xmm0, %xmm2\n"
-        "movss %xmm2, 0xc96e3c\n"
+        "movss %xmm2, dpvsGlob+28\n"
         /* { scope 2: entityCount */
-        "mulss 0xc96e68, %xmm3\n" /* line 27 */
-        "mulss 0xc96e6c, %xmm1\n"
+        "mulss dpvsGlob+72, %xmm3\n" /* line 27 */
+        "mulss dpvsGlob+76, %xmm1\n"
         "addss %xmm1, %xmm3\n"
-        "mulss 0xc96e70, %xmm2\n"
+        "mulss dpvsGlob+80, %xmm2\n"
         "addss %xmm2, %xmm3\n"
         "subss %xmm3, %xmm4\n"
-        "movss %xmm4, 0xc96e40\n"
+        "movss %xmm4, dpvsGlob+32\n"
         /* } scope */
         "movl $0xc, %eax\n" /* line 19 */
-        "movl 0xc96e34, %ebx\n"
+        "movl dpvsGlob+20, %ebx\n"
         "testl %ebx, %ebx\n"
         "movl $0, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e44\n"
+        "movb %al, dpvsGlob+36\n"
         "movl $0x10, %eax\n" /* line 20 */
-        "movl 0xc96e38, %ecx\n"
+        "movl dpvsGlob+24, %ecx\n"
         "testl %ecx, %ecx\n"
         "movl $4, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e45\n"
+        "movb %al, dpvsGlob+37\n"
         "movl $0x14, %eax\n" /* line 21 */
-        "movl 0xc96e3c, %edx\n"
+        "movl dpvsGlob+28, %edx\n"
         "testl %edx, %edx\n"
         "movl $8, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e46\n"
-        "movb $0xff, 0xc96e47\n" /* line 2128 */
-        "movl $0xc96e34, 0xc96e4c\n" /* line 2129 */
-        "movl 0xc96e48, %edx\n" /* line 325 */
+        "movb %al, dpvsGlob+38\n"
+        "movb $0xff, dpvsGlob+39\n" /* line 2128 */
+        "movl $dpvsGlob+20, dpvsGlob+44\n" /* line 2129 */
+        "movl dpvsGlob+40, %edx\n" /* line 325 */
         "testl %edx, %edx\n"
         "jne .Lff2c88_000f30d5\n"
         ".Lff2c88_000f2fb0:\n"
         "movl $4, -0xe4(%ebp)\n" /* frustumPlaneCount */
         "jmp .Lff2c88_000f30fc\n"
         ".Lff2c88_000f2fbf:\n"
-        "movss 0x2f2b80, %xmm0\n" /* line 216 */
+        "movss color+32, %xmm0\n" /* line 216 */
         "movss 0xc(%edx), %xmm1\n"
         "xorps %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc96e68\n"
+        "movss %xmm1, dpvsGlob+72\n"
         "movss 0x10(%edx), %xmm1\n" /* line 217 */
         "xorps %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc96e6c\n"
+        "movss %xmm1, dpvsGlob+76\n"
         "movss 0x14(%edx), %xmm1\n" /* line 218 */
         "xorps %xmm0, %xmm1\n"
-        "movss %xmm1, 0xc96e70\n"
-        "movl $0, 0xc96e74\n" /* line 2137 */
+        "movss %xmm1, dpvsGlob+80\n"
+        "movl $0, dpvsGlob+84\n" /* line 2137 */
         "movss 0xc(%edx), %xmm1\n" /* line 199 */
         "movss %xmm1, dpvsGlob\n"
         "movss 0x10(%edx), %xmm0\n" /* line 200 */
-        "movss %xmm0, 0xc96e24\n"
+        "movss %xmm0, dpvsGlob+4\n"
         "movss 0x14(%edx), %xmm2\n" /* line 201 */
-        "movss %xmm2, 0xc96e28\n"
-        "mulss 0xc96e68, %xmm1\n" /* line 27 */
-        "mulss 0xc96e6c, %xmm0\n"
+        "movss %xmm2, dpvsGlob+8\n"
+        "mulss dpvsGlob+72, %xmm1\n" /* line 27 */
+        "mulss dpvsGlob+76, %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "mulss 0xc96e70, %xmm2\n"
+        "mulss dpvsGlob+80, %xmm2\n"
         "addss %xmm2, %xmm1\n"
-        "movss 0x2ed864, %xmm0\n" /* 262144.0f */
+        "movss lit4_002ed864, %xmm0\n" /* 262144.0f */
         "subss %xmm1, %xmm0\n"
-        "movss %xmm0, 0xc96e2c\n"
+        "movss %xmm0, dpvsGlob+12\n"
         "movl $0xc, %eax\n" /* line 19 */
         "movl dpvsGlob, %esi\n"
         "testl %esi, %esi\n"
         "movl $0, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e30\n"
+        "movb %al, dpvsGlob+16\n"
         "movl $0x10, %eax\n" /* line 20 */
-        "movl 0xc96e24, %ebx\n"
+        "movl dpvsGlob+4, %ebx\n"
         "testl %ebx, %ebx\n"
         "movl $4, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e31\n"
+        "movb %al, dpvsGlob+17\n"
         "movl $0x14, %eax\n" /* line 21 */
-        "movl 0xc96e28, %ecx\n"
+        "movl dpvsGlob+8, %ecx\n"
         "testl %ecx, %ecx\n"
         "movl $8, %edx\n"
         "cmovlel %edx, %eax\n"
-        "movb %al, 0xc96e32\n"
-        "movl $0, 0xc96e48\n" /* line 2142 */
-        "movl $0, 0xc96e4c\n" /* line 2145 */
-        "movl 0x195eec8, %edi\n" /* bmodel */
+        "movb %al, dpvsGlob+18\n"
+        "movl $0, dpvsGlob+40\n" /* line 2142 */
+        "movl $0, dpvsGlob+44\n" /* line 2145 */
+        "movl imp_rg, %edi\n" /* bmodel */
         ".Lff2c88_000f30c7:\n"
-        "movl 0xc96e48, %edx\n" /* line 325 */
+        "movl dpvsGlob+40, %edx\n" /* line 325 */
         "testl %edx, %edx\n"
         "je .Lff2c88_000f2fb0\n"
         ".Lff2c88_000f30d5:\n"
@@ -5147,7 +5147,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "movl %eax, -0x68(%ebp)\n"
         "movl $5, -0xe4(%ebp)\n" /* frustumPlaneCount */
         ".Lff2c88_000f30fc:\n"
-        "movl 0xc96e4c, %ecx\n" /* line 330 */
+        "movl dpvsGlob+44, %ecx\n" /* line 330 */
         "testl %ecx, %ecx\n"
         "je .Lff2c88_000f314a\n"
         "movl -0xe4(%ebp), %edx\n" /* line 332 | frustumPlaneCount */
@@ -5169,7 +5169,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "movl %eax, 0x3190(%edi)\n" /* bmodel */
         /* { scope 2: entityCount */
         /* { scope 3: entIndex, bounds, sceneEnt */
-        "movl 0x195f0f4, %edi\n" /* line 1469 | bmodel */
+        "movl imp_scene, %edi\n" /* line 1469 | bmodel */
         "movl 0xc(%edi), %edx\n" /* bmodel */
         "movl %edx, -0xe0(%ebp)\n" /* entityCount */
         "testl %edx, %edx\n" /* line 1470 */
@@ -5183,7 +5183,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "movl -0xd4(%ebp), %eax\n" /* entIndex */
         "cmpl %eax, -0xe0(%ebp)\n" /* entityCount */
         "je .Lff2c88_000f3455\n"
-        "movl 0x195f0f4, %edi\n" /* bmodel */
+        "movl imp_scene, %edi\n" /* bmodel */
         ".Lff2c88_000f31a6:\n"
         "movl -0xcc(%ebp), %ebx\n" /* line 1472 | ent */
         "addl 0x10(%edi), %ebx\n" /* bmodel, ent */
@@ -5294,12 +5294,12 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "testl %eax, %eax\n"
         "jg .Lff2c88_000f3540\n"
         ".Lff2c88_000f333b:\n"
-        "movl 0xc96e58, %eax\n" /* line 390 */
+        "movl dpvsGlob+56, %eax\n" /* line 390 */
         "testl %eax, %eax\n"
         "jle .Lff2c88_000f340d\n"
         "xorl %edi, %edi\n" /* occluder */
         ".Lff2c88_000f334a:\n"
-        "movl 0xc96e5c, %eax\n" /* line 392 */
+        "movl dpvsGlob+60, %eax\n" /* line 392 */
         "movl (%eax, %edi, 4), %esi\n" /* occluder */
         "movl 0x20(%esi), %edx\n" /* line 394 | occluder */
         "movl 0x1c(%esi), %eax\n" /* occluder */
@@ -5350,11 +5350,11 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "jbe .Lff2c88_000f33ab\n"
         ".Lff2c88_000f33fe:\n"
         "addl $1, %edi\n" /* line 390 | occluder */
-        "cmpl 0xc96e58, %edi\n" /* occluder */
+        "cmpl dpvsGlob+56, %edi\n" /* occluder */
         "jl .Lff2c88_000f334a\n"
         /* } scope */
         ".Lff2c88_000f340d:\n"
-        "movl 0x195eebc, %eax\n" /* line 1450 */
+        "movl imp_rgp, %eax\n" /* line 1450 */
         "movl 0x109c(%eax), %eax\n"
         "movl 0xc(%eax), %eax\n"
         "leal -0x44(%ebp), %edx\n"
@@ -5374,14 +5374,14 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         /* } scope */
         /* } scope */
         ".Lff2c88_000f3455:\n"
-        "movl 0x195f1a8, %eax\n" /* line 2172 */
+        "movl imp_r_skipPvs, %eax\n" /* line 2172 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lff2c88_000f34c1\n"
         "movl 0xc(%ebp), %eax\n" /* line 2175 | cameraCellIndex */
         "testl %eax, %eax\n"
         "js .Lff2c88_000f3a18\n"
-        "movl 0x195eebc, %eax\n" /* line 2177 */
+        "movl imp_rgp, %eax\n" /* line 2177 */
         "movl 0x109c(%eax), %edx\n"
         "movl 0xc(%ebp), %eax\n" /* cameraCellIndex */
         "shll $2, %eax\n"
@@ -5389,7 +5389,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "shll $6, %ebx\n" /* cell */
         "subl %eax, %ebx\n" /* cell */
         "addl 0x100(%edx), %ebx\n" /* cell */
-        "movl 0x195f1c8, %eax\n" /* line 2179 */
+        "movl imp_r_singleCell, %eax\n" /* line 2179 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
         "jne .Lff2c88_000f3973\n"
@@ -5403,10 +5403,10 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         /* } scope */
         /* { scope 2: entityCount */
         ".Lff2c88_000f34c1:\n"
-        "movl 0xc96e4c, %edi\n" /* line 2227 | bmodel */
+        "movl dpvsGlob+44, %edi\n" /* line 2227 | bmodel */
         "testl %edi, %edi\n" /* bmodel */
         "je .Lff2c88_000f34e1\n"
-        "movl 0x195eebc, %eax\n" /* line 2231 */
+        "movl imp_rgp, %eax\n" /* line 2231 */
         "movl 0x109c(%eax), %eax\n"
         "movl 0x18(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -5414,13 +5414,13 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         /* } scope */
         /* { scope 2: entityCount */
         ".Lff2c88_000f34e1:\n"
-        "movl 0x195f0f4, %edi\n" /* line 2281 | bmodel */
+        "movl imp_scene, %edi\n" /* line 2281 | bmodel */
         "movl 0x14(%edi), %esi\n" /* bmodel, cellIndex */
         "testl %esi, %esi\n" /* cellIndex */
         "jg .Lff2c88_000f38e0\n"
         /* } scope */
         ".Lff2c88_000f34f2:\n"
-        "movl 0x195f18c, %eax\n" /* line 2334 */
+        "movl imp_r_vc_makelog, %eax\n" /* line 2334 */
         "movl (%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* dlightIndex */
         "testl %ebx, %ebx\n" /* dlightIndex */
@@ -5502,7 +5502,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         /* } scope */
         ".Lff2c88_000f360b:\n"
         "jp .Lff2c88_000f2ec4\n" /* line 2348 */
-        "movl 0x195eec8, %edi\n" /* bmodel */
+        "movl imp_rg, %edi\n" /* bmodel */
         "movl 0x150c(%edi), %eax\n" /* bmodel */
         "testl %eax, %eax\n"
         "je .Lff2c88_000f2eca\n"
@@ -5539,7 +5539,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "leal -0x2c(%ebp), %edx\n" /* transformed */
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
+        "movl imp_ri, %eax\n"
         "calll *0x1b0(%eax)\n"
         "movss 0x38(%ebx), %xmm1\n" /* line 1236 | planeIndex, scale */
         /* { scope 6: transformed */
@@ -5616,13 +5616,13 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "cmpl -0xe4(%ebp), %esi\n" /* line 383 | frustumPlaneCount, occluder */
         "jne .Lff2c88_000f3799\n"
         ".Lff2c88_000f37ef:\n"
-        "movl 0xc96e58, %eax\n" /* line 390 */
+        "movl dpvsGlob+56, %eax\n" /* line 390 */
         "testl %eax, %eax\n"
         "jle .Lff2c88_000f3995\n"
         "movl $0, -0xd8(%ebp)\n" /* occluderIndex */
         "movl -0xd8(%ebp), %edx\n" /* occluderIndex */
         ".Lff2c88_000f380c:\n"
-        "movl 0xc96e5c, %eax\n" /* line 392 */
+        "movl dpvsGlob+60, %eax\n" /* line 392 */
         "movl (%eax, %edx, 4), %edi\n" /* occluder */
         "movl 0x20(%edi), %edx\n" /* line 394 | occluder */
         "movl 0x1c(%edi), %eax\n" /* occluder */
@@ -5670,7 +5670,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         ".Lff2c88_000f38c0:\n"
         "addl $1, -0xd8(%ebp)\n" /* line 390 | occluderIndex */
         "movl -0xd8(%ebp), %eax\n" /* occluderIndex */
-        "cmpl 0xc96e58, %eax\n"
+        "cmpl dpvsGlob+56, %eax\n"
         "jge .Lff2c88_000f3995\n"
         "movl %eax, %edx\n"
         "jmp .Lff2c88_000f380c\n"
@@ -5684,7 +5684,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "movl %edi, %esi\n" /* bmodel, cellIndex */
         "jmp .Lff2c88_000f38ec\n"
         ".Lff2c88_000f38e6:\n"
-        "movl 0x195f0f4, %edi\n" /* bmodel */
+        "movl imp_scene, %edi\n" /* bmodel */
         ".Lff2c88_000f38ec:\n"
         "leal (%ebx, %ebx, 4), %eax\n" /* line 2283 | dlightIndex */
         "leal (%ebx, %eax, 2), %eax\n" /* dlightIndex */
@@ -5719,7 +5719,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "leal -0xc8(%ebp), %edx\n" /* frustumPlanes */
         "calll R_AddWorldSurfaceWithCull\n"
         "addl $1, %ebx\n" /* line 2231 | surfIndex */
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x109c(%eax), %eax\n"
         "cmpl 0x18(%eax), %ebx\n" /* surfIndex */
         "jl .Lff2c88_000f3941\n"
@@ -5727,7 +5727,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         /* } scope */
         /* { scope 2: entityCount */
         ".Lff2c88_000f3973:\n"
-        "movl $0, 0xc96e4c\n" /* line 2181 */
+        "movl $0, dpvsGlob+44\n" /* line 2181 */
         "movl -0xe4(%ebp), %ecx\n" /* line 2182 | frustumPlaneCount */
         "leal -0xc8(%ebp), %edx\n" /* frustumPlanes */
         "movl %ebx, %eax\n" /* cell */
@@ -5738,11 +5738,11 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         ".Lff2c88_000f3995:\n"
         "movss -0x44(%ebp), %xmm0\n" /* line 1337 */
         "subss -0x50(%ebp), %xmm0\n" /* bounds */
-        "ucomiss 0x2ed884, %xmm0\n" /* 1536.0f */
+        "ucomiss lit4_002ed884, %xmm0\n" /* 1536.0f */
         "jbe .Lff2c88_000f3a6d\n"
         "movss -0x40(%ebp), %xmm0\n" /* line 1339 */
         "subss -0x4c(%ebp), %xmm0\n"
-        "ucomiss 0x2ed884, %xmm0\n" /* 1536.0f */
+        "ucomiss lit4_002ed884, %xmm0\n" /* 1536.0f */
         "jbe .Lff2c88_000f3a80\n"
         ".Lff2c88_000f39c3:\n"
         "movl %ebx, 4(%esp)\n" /* line 1388 | planeIndex */
@@ -5766,7 +5766,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         /* } scope */
         /* } scope */
         ".Lff2c88_000f3a18:\n"
-        "movl 0x195eebc, %eax\n" /* line 2193 */
+        "movl imp_rgp, %eax\n" /* line 2193 */
         "movl 0x109c(%eax), %eax\n"
         "movl 0xfc(%eax), %ecx\n"
         "testl %ecx, %ecx\n"
@@ -5780,7 +5780,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "leal -0xc8(%ebp), %edx\n" /* frustumPlanes */
         "calll R_AddVisibleSurfacesInCell\n"
         "addl $1, %esi\n" /* line 2193 | cellIndex */
-        "movl 0x195eebc, %eax\n"
+        "movl imp_rgp, %eax\n"
         "movl 0x109c(%eax), %eax\n"
         "addl $0x3c, %ebx\n" /* cell */
         "cmpl %esi, 0xfc(%eax)\n" /* cellIndex */
@@ -5791,15 +5791,15 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         ".Lff2c88_000f3a6d:\n"
         "movss -0x40(%ebp), %xmm0\n" /* line 1344 */
         "subss -0x4c(%ebp), %xmm0\n"
-        "ucomiss 0x2ed884, %xmm0\n" /* 1536.0f */
+        "ucomiss lit4_002ed884, %xmm0\n" /* 1536.0f */
         "jbe .Lff2c88_000f3a97\n"
         ".Lff2c88_000f3a80:\n"
         "movss -0x3c(%ebp), %xmm0\n"
         "subss -0x48(%ebp), %xmm0\n"
-        "ucomiss 0x2ed884, %xmm0\n" /* 1536.0f */
+        "ucomiss lit4_002ed884, %xmm0\n" /* 1536.0f */
         "ja .Lff2c88_000f39c3\n"
         ".Lff2c88_000f3a97:\n"
-        "movl 0x195eebc, %eax\n" /* line 1386 */
+        "movl imp_rgp, %eax\n" /* line 1386 */
         "movl 0x109c(%eax), %eax\n"
         "movl 0xc(%eax), %eax\n"
         "leal -0x44(%ebp), %edx\n"
@@ -5814,7 +5814,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         /* } scope */
         /* } scope */
         ".Lff2c88_000f3ac7:\n"
-        "movl $0, 0xc96e4c\n" /* line 2122 */
+        "movl $0, dpvsGlob+44\n" /* line 2122 */
         "jmp .Lff2c88_000f30c7\n"
         "movl %eax, %ebx\n" /* ent */
         "leal -0x1c(%ebp), %edx\n" /* line 2335 | occluderPlaneBuffer_large_local */

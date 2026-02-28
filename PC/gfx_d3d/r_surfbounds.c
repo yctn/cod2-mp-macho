@@ -7,10 +7,10 @@
 extern void GetRotatedBounds(const vec_t *surfBounds, const vec_t *entityOrigin, const vec_t *entityAxis, vec_t *out);
 
 extern const vec_t * (*R_BoundsForDrawSurfTable[8])(); /* 0x0 */
-static vec3_t surfBoundsGlob[2]; /* 0xce7000 */
+static vec3_t surfBoundsGlob[2]; /* surfBoundsGlob */
 
-extern GfxScene *gfxScene; /* 0x195f0f4 */
-extern r_global_permanent_t *rgp; /* 0x195eebc */
+extern GfxScene *gfxScene; /* imp_scene */
+extern r_global_permanent_t *rgp; /* imp_rgp */
 
 const vec_t *R_BoundsForSurf_Triangles(const GfxDrawSurf *drawSurf, int entIndex)
 {

@@ -13,7 +13,7 @@ extern unsigned int Com_BlockChecksum(const void *buffer, int length);
 extern void Com_Error(int code, const char *fmt, ...);
 extern char *va(const char *fmt, ...);
 
-static dheader_t *comBspGlob; /* 0xceb380 */
+static dheader_t *comBspGlob; /* comBspGlob */
 static int comBspFileSize; /* 0xceb384 */
 static unsigned int comBspChecksum; /* 0xceb388 */
 

@@ -76,7 +76,7 @@ void SourceError(source_t *source, char *str)
         "movl 0x5c(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2220ac, (%esp)\n" /* "^1Error: file %s, line %d: %s
+        "movl $str_002220ac, (%esp)\n" /* "^1Error: file %s, line %d: %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -112,7 +112,7 @@ void SourceWarning(source_t *source, char *str)
         "movl 0x5c(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl $0x2220cc, (%esp)\n" /* "^3Warning: file %s, line %d: %s
+        "movl $str_002220cc, (%esp)\n" /* "^3Warning: file %s, line %d: %s
 " */
         "calll Com_Printf\n"
         /* } scope */
@@ -178,7 +178,7 @@ int PC_StringizeTokens(token_t *tokens, token_t *token)
         "movl $0x401, %eax\n"
         "subl %ecx, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x222120, 4(%esp)\n" /* """ */
+        "movl $str_00222120, 4(%esp)\n" /* """ */
         "movl %esi, (%esp)\n" /* token */
         "calll strncat\n"
         /* } scope */
@@ -203,7 +203,7 @@ int PC_OperatorPriority(int op)
         "subl $5, %eax\n"
         "cmpl $0x26, %eax\n"
         "ja .Lfbe16e_000be183\n"
-        "jmpl *0x2f1de0(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+5856(, %eax, 4)\n"
         ".Lfbe16e_000be183:\n"
         "xorl %eax, %eax\n"
         "popl %ebp\n" /* line 1545 */
@@ -379,7 +379,7 @@ int PC_ReadSourceToken(source_t *source, token_t *token)
         "movl 8(%edx), %eax\n"
         "cmpl 0x84(%ebx), %eax\n" /* source */
         "jne .Lfbe272_000be2cb\n"
-        "movl $0x222144, 4(%esp)\n" /* line 198 */
+        "movl $str_00222144, 4(%esp)\n" /* line 198 */
         "movl %ebx, (%esp)\n" /* source */
         "calll SourceWarning\n"
         /* { scope 2 */
@@ -420,7 +420,7 @@ int PC_Directive_error(source_t *source)
         "movl %esi, (%esp)\n" /* source */
         "calll PC_ReadSourceToken\n"
         "movl %ebx, 8(%esp)\n" /* line 2331 */
-        "movl $0x222154, 4(%esp)\n" /* "#error directive: %s" */
+        "movl $str_00222154, 4(%esp)\n" /* "#error directive: %s" */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
         /* } scope */
@@ -455,7 +455,7 @@ int PC_Directive_else(source_t *source)
         "je .Lfbe3cc_000be407\n"
         /* } scope */
         ".Lfbe3cc_000be3ed:\n"
-        "movl $0x22216c, 4(%esp)\n" /* line 1435 */
+        "movl $str_0022216c, 4(%esp)\n" /* line 1435 */
         "movl %ebx, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -500,7 +500,7 @@ int PC_Directive_else(source_t *source)
         "movl $1, %eax\n"
         "jmp .Lfbe3cc_000be3ff\n"
         ".Lfbe3cc_000be476:\n"
-        "movl $0x22217c, 4(%esp)\n" /* line 1440 */
+        "movl $str_0022217c, 4(%esp)\n" /* line 1440 */
         "movl %ebx, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -529,7 +529,7 @@ int PC_Directive_endif(source_t *source)
         "je .Lfbe48e_000be4c7\n"
         /* } scope */
         ".Lfbe48e_000be4ae:\n"
-        "movl $0x222190, 4(%esp)\n" /* line 1461 */
+        "movl $str_00222190, 4(%esp)\n" /* line 1461 */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -606,7 +606,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "cmpl $3, %eax\n"
         "je .Lfbe4f4_000be92e\n"
         "movl %ebx, 8(%esp)\n" /* line 1816 | t */
-        "movl $0x222358, 4(%esp)\n" /* "unknown %s in #if/#elif" */
+        "movl $str_00222358, 4(%esp)\n" /* "unknown %s in #if/#elif" */
         "movl 8(%ebp), %edi\n" /* source */
         "movl %edi, (%esp)\n"
         "calll SourceError\n"
@@ -679,7 +679,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "jne .Lfbe4f4_000bef98\n"
         "testl %ecx, %ecx\n"
         "jne .Lfbe4f4_000bef98\n"
-        "movl $0x2221c0, %edi\n" /* line 1609 */
+        "movl $str_002221c0, %edi\n" /* line 1609 */
         "movl $8, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* t, tokens */
@@ -693,7 +693,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "testl %edx, %edx\n"
         "jne .Lfbe4f4_000befbb\n"
         "movl 0x430(%ebx), %ebx\n" /* line 1615 | t */
-        "movl $0x2221e8, %edi\n" /* line 1616 */
+        "movl $str_002221e8, %edi\n" /* line 1616 */
         "movl $2, %ecx\n"
         "movl %ebx, %esi\n" /* t, tokens */
         "repe cmpsb %es:(%edi), (%esi)\n" /* tokens */
@@ -774,11 +774,11 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "movl 0x430(%ebx), %ebx\n" /* line 1649 | t */
         "testl %ebx, %ebx\n" /* line 1650 | t */
         "je .Lfbe4f4_000befd7\n"
-        "movl $0x222224, -0xb4c(%ebp)\n" /* ")" */
+        "movl $str_00222224, -0xb4c(%ebp)\n" /* ")" */
         "movl $2, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* t, definehash */
-        "movl $0x222224, %edi\n" /* ")" */
+        "movl $str_00222224, %edi\n" /* ")" */
         "repe cmpsb %es:(%edi), (%esi)\n" /* definehash */
         "movl $0, %edx\n"
         "je .Lfbe4f4_000be7e6\n"
@@ -840,7 +840,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "leal -5(%edx), %eax\n"
         "cmpl $0x26, %eax\n"
         "ja .Lfbe4f4_000bebba\n"
-        "jmpl *0x2f1e90(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+6032(, %eax, 4)\n"
         ".Lfbe4f4_000be8a5:\n"
         "testl %ecx, %ecx\n" /* line 1698 */
         "jne .Lfbe4f4_000bf023\n"
@@ -870,7 +870,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "subl $5, %eax\n" /* line 1729 */
         "cmpl $0x26, %eax\n"
         "ja .Lfbe4f4_000bea4f\n"
-        "jmpl *0x2f1f2c(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+6188(, %eax, 4)\n"
         ".Lfbe4f4_000be91e:\n"
         "movl $1, %eax\n" /* line 2048 */
         /* } scope */
@@ -900,7 +900,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "fldl -0xb20(%ebp)\n"
         "fstpl -0xb60(%ebp)\n"
         "movsd -0xb60(%ebp), %xmm0\n"
-        "xorpd 0x2f1e80, %xmm0\n"
+        "xorpd CorrectSolidDeltas+6016, %xmm0\n"
         "movsd %xmm0, 4(%edx)\n"
         ".Lfbe4f4_000be999:\n"
         "movl -0xb34(%ebp), %eax\n" /* line 1682 | parentheses */
@@ -951,14 +951,14 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         ".Lfbe4f4_000bea2a:\n"
         "subl $1, -0xb34(%ebp)\n" /* line 1712 | parentheses */
         "jns .Lfbe4f4_000be801\n"
-        "movl $0x22226c, 4(%esp)\n" /* line 1714 */
+        "movl $str_0022226c, 4(%esp)\n" /* line 1714 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000bea4f:\n"
         "movl %ebx, 8(%esp)\n" /* line 1792 | t */
-        "movl $0x22231c, 4(%esp)\n" /* "invalid operator %s in #if/#elif" */
+        "movl $str_0022231c, 4(%esp)\n" /* "invalid operator %s in #if/#elif" */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
@@ -967,7 +967,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "movl $0, -0xb48(%ebp)\n" /* line 1597 | firstoperator */
         "movl $0, -0xb40(%ebp)\n" /* firstvalue */
         ".Lfbe4f4_000bea7f:\n"
-        "movl $0x222370, 4(%esp)\n" /* line 1828 */
+        "movl $str_00222370, 4(%esp)\n" /* line 1828 */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
@@ -984,7 +984,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         ".Lfbe4f4_000beac2:\n"
         "movl %eax, -0xb40(%ebp)\n" /* line 1642 | firstvalue */
         "jmp .Lfbe4f4_000be7a4\n"
-        "movl $0x2222d8, 4(%esp)\n" /* line 1745 */
+        "movl $str_002222d8, 4(%esp)\n" /* line 1745 */
         "movl 8(%ebp), %edi\n" /* source */
         "movl %edi, (%esp)\n"
         "calll SourceError\n"
@@ -1002,10 +1002,10 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "subl $5, %eax\n"
         "cmpl $0x26, %eax\n"
         "ja .Lfbe4f4_000bec14\n"
-        "jmpl *0x2f1fc8(, %eax, 4)\n"
+        "jmpl *CorrectSolidDeltas+6344(, %eax, 4)\n"
         "testl %edx, %edx\n" /* line 1734 */
         "je .Lfbe4f4_000beae0\n"
-        "movl $0x2222b8, 4(%esp)\n" /* line 1736 */
+        "movl $str_002222b8, 4(%esp)\n" /* line 1736 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -1013,7 +1013,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "testl %edx, %edx\n" /* line 1782 */
         "jne .Lfbe4f4_000beae0\n"
         "movl %ebx, 8(%esp)\n" /* line 1784 | t */
-        "movl $0x2222f4, 4(%esp)\n" /* "operator %s after operator in #if/#elif" */
+        "movl $str_002222f4, 4(%esp)\n" /* "operator %s after operator in #if/#elif" */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -1136,7 +1136,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "ucomisd 4(%edi), %xmm0\n"
         "jb .Lfbe4f4_000bebaf\n"
         ".Lfbe4f4_000becf5:\n"
-        "movsd 0x307c10, %xmm0\n" /* line 1945 | 1.0 */
+        "movsd lit8_00307c10, %xmm0\n" /* line 1945 | 1.0 */
         "jmp .Lfbe4f4_000bebb3\n"
         "movl (%ebx), %eax\n" /* line 1944 | t */
         "cmpl (%edi), %eax\n"
@@ -1302,13 +1302,13 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "movl $1, %edx\n"
         "jmp .Lfbe4f4_000be801\n"
         ".Lfbe4f4_000bef2b:\n"
-        "movl $0x2223a8, 4(%esp)\n" /* line 1865 */
+        "movl $str_002223a8, 4(%esp)\n" /* line 1865 */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000bef43:\n"
-        "movl $0x222390, 4(%esp)\n" /* line 1833 */
+        "movl $str_00222390, 4(%esp)\n" /* line 1833 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -1325,13 +1325,13 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "movl %esi, %eax\n" /* definehash */
         "jmp .Lfbe4f4_000bebf8\n"
         ".Lfbe4f4_000bef80:\n"
-        "movl $0x2221ec, 4(%esp)\n" /* line 1623 */
+        "movl $str_002221ec, 4(%esp)\n" /* line 1623 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000bef98:\n"
-        "movl $0x2221a4, 4(%esp)\n" /* line 1605 */
+        "movl $str_002221a4, 4(%esp)\n" /* line 1605 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -1341,45 +1341,45 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "jmp .Lfbe4f4_000bebdd\n"
         ".Lfbe4f4_000befbb:\n"
         "movl %ebx, 8(%esp)\n" /* line 1611 | t */
-        "movl $0x2221c8, 4(%esp)\n" /* "undefined name %s in #if/#elif" */
+        "movl $str_002221c8, 4(%esp)\n" /* "undefined name %s in #if/#elif" */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000befd7:\n"
-        "movl $0x222228, 4(%esp)\n" /* line 1652 */
+        "movl $str_00222228, 4(%esp)\n" /* line 1652 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000befef:\n"
-        "movl $0x222210, 4(%esp)\n" /* line 1628 */
+        "movl $str_00222210, 4(%esp)\n" /* line 1628 */
         "movl 8(%ebp), %edi\n" /* source */
         "movl %edi, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000bf007:\n"
         "movl %ebx, 8(%esp)\n" /* line 1724 | t */
-        "movl $0x222288, 4(%esp)\n" /* "illigal operator %s on floating point operands
+        "movl $str_00222288, 4(%esp)\n" /* "illigal operator %s on floating point operands
 " */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000bf023:\n"
-        "movl $0x222248, 4(%esp)\n" /* line 1700 */
+        "movl $str_00222248, 4(%esp)\n" /* line 1700 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000bf03b:\n"
-        "movl $0x222210, 4(%esp)\n" /* line 1671 */
+        "movl $str_00222210, 4(%esp)\n" /* line 1671 */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbe4f4_000be5b6\n"
         ".Lfbe4f4_000bf053:\n"
-        "movl $0x2221a4, 4(%esp)\n" /* line 1666 */
+        "movl $str_002221a4, 4(%esp)\n" /* line 1666 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -1388,7 +1388,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "xorl %eax, %eax\n" /* line 1916 */
         "jmp .Lfbe4f4_000bedc3\n"
         ".Lfbe4f4_000bf072:\n"
-        "movl $0x222340, 4(%esp)\n" /* line 1799 */
+        "movl $str_00222340, 4(%esp)\n" /* line 1799 */
         "movl 8(%ebp), %edi\n" /* source */
         "movl %edi, (%esp)\n"
         "calll SourceError\n"
@@ -1396,14 +1396,14 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         ".Lfbe4f4_000bf08a:\n"
         "jp .Lfbe4f4_000bee88\n" /* line 1889 */
         ".Lfbe4f4_000bf090:\n"
-        "movl $0x2223c4, 4(%esp)\n" /* line 1891 */
+        "movl $str_002223c4, 4(%esp)\n" /* line 1891 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
         "movl $1, %edx\n"
         "jmp .Lfbe4f4_000be5bb\n"
         ".Lfbe4f4_000bf0ad:\n"
-        "movl $0x222400, 4(%esp)\n" /* line 1987 */
+        "movl $str_00222400, 4(%esp)\n" /* line 1987 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -1412,7 +1412,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "movl $1, %eax\n" /* line 1920 */
         "jmp .Lfbe4f4_000beb8b\n"
         ".Lfbe4f4_000bf0cf:\n"
-        "movl $0x2223c4, 4(%esp)\n" /* line 1901 */
+        "movl $str_002223c4, 4(%esp)\n" /* line 1901 */
         "movl 8(%ebp), %edi\n" /* source */
         "movl %edi, (%esp)\n"
         "calll SourceError\n"
@@ -1431,7 +1431,7 @@ int PC_EvaluateTokens(source_t *source, token_t *tokens, long int *intvalue, dou
         "movl (%esi), %edx\n" /* definehash */
         "jmp .Lfbe4f4_000bebba\n"
         ".Lfbe4f4_000bf11e:\n"
-        "movl $0x2223e4, 4(%esp)\n" /* line 1966 */
+        "movl $str_002223e4, 4(%esp)\n" /* line 1966 */
         "movl 8(%ebp), %edi\n" /* source */
         "movl %edi, (%esp)\n"
         "calll SourceError\n"
@@ -1643,7 +1643,7 @@ int PC_ReadDollarDirective(source_t *source)
         "movl %eax, 0x430(%ebx)\n" /* t */
         "movl %ebx, 0x88(%edi)\n" /* line 232 | t */
         /* } scope */
-        "movl $0x222430, 4(%esp)\n" /* line 2593 */
+        "movl $str_00222430, 4(%esp)\n" /* line 2593 */
         "movl %edi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -1680,7 +1680,7 @@ int PC_ReadDollarDirective(source_t *source)
         /* } scope */
         "leal -0x458(%ebp), %edx\n" /* line 2609 | token */
         "movl %edx, 8(%esp)\n"
-        "movl $0x222448, 4(%esp)\n" /* "unknown precompiler directive %s" */
+        "movl $str_00222448, 4(%esp)\n" /* "unknown precompiler directive %s" */
         "movl %edi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -1693,7 +1693,7 @@ int PC_ReadDollarDirective(source_t *source)
         "retl\n"
         /* { scope 1 */
         ".Lfbf2d2_000bf3f6:\n"
-        "movl $0x222418, 4(%esp)\n" /* line 2586 */
+        "movl $str_00222418, 4(%esp)\n" /* line 2586 */
         "movl %edi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -1726,21 +1726,21 @@ int PC_ReadDollarDirective(source_t *source)
         "jmp .Lfbf2d2_000bf37c\n"
         /* { scope 2 */
         ".Lfbf2d2_000bf44f:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbf2d2_000bf343\n"
         /* } scope */
         /* { scope 2 */
         ".Lfbf2d2_000bf468:\n"
-        "movl $0x222108, 4(%esp)\n" /* "EXE_ERR_OUT_OF_MEMORY" */
+        "movl $str_00222108, 4(%esp)\n" /* "EXE_ERR_OUT_OF_MEMORY" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbf2d2_000bf3bd\n"
         /* } scope */
         ".Lfbf2d2_000bf481:\n"
         "movl %edi, (%esp)\n" /* line 2604 | source */
-        "calll *0x310ca4(, %esi, 8)\n"
+        "calll *dollardirectives+4(, %esi, 8)\n"
         "jmp .Lfbf2d2_000bf367\n"
     );
 }
@@ -1785,7 +1785,7 @@ int PC_ReadDirective(source_t *source)
         "movl %eax, 0x430(%ebx)\n" /* t */
         "movl %ebx, 0x88(%edi)\n" /* line 232 | t */
         /* } scope */
-        "movl $0x222484, 4(%esp)\n" /* line 2483 */
+        "movl $str_00222484, 4(%esp)\n" /* line 2483 */
         "movl %edi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -1804,7 +1804,7 @@ int PC_ReadDirective(source_t *source)
         ".Lfbf490_000bf536:\n"
         "leal -0x458(%ebp), %eax\n" /* line 2498 | token */
         "movl %eax, 8(%esp)\n"
-        "movl $0x222448, 4(%esp)\n" /* "unknown precompiler directive %s" */
+        "movl $str_00222448, 4(%esp)\n" /* "unknown precompiler directive %s" */
         "movl %edi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -1817,7 +1817,7 @@ int PC_ReadDirective(source_t *source)
         "retl\n"
         /* { scope 1 */
         ".Lfbf490_000bf55d:\n"
-        "movl $0x22246c, 4(%esp)\n" /* line 2476 */
+        "movl $str_0022246c, 4(%esp)\n" /* line 2476 */
         "movl %edi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -1850,14 +1850,14 @@ int PC_ReadDirective(source_t *source)
         "jmp .Lfbf490_000bf536\n"
         /* { scope 2 */
         ".Lfbf490_000bf5af:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbf490_000bf501\n"
         /* } scope */
         ".Lfbf490_000bf5c8:\n"
         "movl %edi, (%esp)\n" /* line 2494 | source */
-        "calll *0x310d44(, %esi, 8)\n"
+        "calll *directives+4(, %esi, 8)\n"
         "jmp .Lfbf490_000bf525\n"
     );
 }
@@ -1902,7 +1902,7 @@ int PC_Directive_include(source_t *source)
         "testl %eax, %eax\n"
         "jle .Lfbf5d8_000bf63b\n"
         ".Lfbf5d8_000bf61e:\n"
-        "movl $0x22249c, 4(%esp)\n" /* line 892 */
+        "movl $str_0022249c, 4(%esp)\n" /* line 892 */
         "movl %ebx, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -1953,7 +1953,7 @@ int PC_Directive_include(source_t *source)
         ".Lfbf5d8_000bf6bc:\n"
         "cmpb $0x3e, -0x498(%ebp)\n" /* line 878 | token */
         "je .Lfbf5d8_000bf6d5\n"
-        "movl $0x2224b8, 4(%esp)\n" /* line 880 */
+        "movl $str_002224b8, 4(%esp)\n" /* line 880 */
         "movl %ebx, (%esp)\n" /* source */
         "calll SourceWarning\n"
         ".Lfbf5d8_000bf6d5:\n"
@@ -2106,7 +2106,7 @@ int PC_Directive_include(source_t *source)
         "jne .Lfbf5d8_000bf7d7\n"
         "leal -0x58(%ebp), %eax\n" /* line 898 | path */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2224fc, 4(%esp)\n" /* "file %s not found" */
+        "movl $str_002224fc, 4(%esp)\n" /* "file %s not found" */
         "movl %ebx, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -2114,7 +2114,7 @@ int PC_Directive_include(source_t *source)
         /* { scope 2 */
         ".Lfbf5d8_000bf859:\n"
         "movl %edi, 8(%esp)\n" /* line 128 */
-        "movl $0x2220f0, 4(%esp)\n" /* "%s recursively included" */
+        "movl $str_002220f0, 4(%esp)\n" /* "%s recursively included" */
         "movl %ebx, (%esp)\n"
         "calll SourceError\n"
         "jmp .Lfbf5d8_000bf5f1\n"
@@ -2140,7 +2140,7 @@ int PC_Directive_include(source_t *source)
         "jmp .Lfbf5d8_000bf6bc\n"
         /* } scope */
         ".Lfbf5d8_000bf8ca:\n"
-        "movl $0x2224d4, 4(%esp)\n" /* line 884 */
+        "movl $str_002224d4, 4(%esp)\n" /* line 884 */
         "movl %ebx, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -2163,7 +2163,7 @@ int PC_Directive_include(source_t *source)
         "jmp .Lfbf5d8_000bf837\n"
         /* { scope 2 */
         ".Lfbf5d8_000bf91a:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbf5d8_000bf8b3\n"
@@ -2207,7 +2207,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "movl $2, %ecx\n" /* line 263 */
         "cld\n"
         "movl %ebx, %esi\n" /* t */
-        "movl $0x2221e8, %edi\n" /* "(" */
+        "movl $str_002221e8, %edi\n" /* "(" */
         "repe cmpsb %es:(%edi), (%esi)\n" /* t */
         "movl $0, %eax\n"
         "je .Lfbf932_000bf9a5\n"
@@ -2246,7 +2246,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "calll PC_ReadSourceToken\n"
         "testl %eax, %eax\n"
         "je .Lfbf932_000bfbfe\n"
-        "movl $0x21f88c, %edi\n" /* line 294 */
+        "movl $str_0021f88c, %edi\n" /* line 294 */
         "movl $2, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* t */
@@ -2266,7 +2266,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "movl $2, %ecx\n" /* line 306 */
         "cld\n"
         "movl %ebx, %esi\n" /* t */
-        "movl $0x2221e8, %edi\n" /* "(" */
+        "movl $str_002221e8, %edi\n" /* "(" */
         "repe cmpsb %es:(%edi), (%esi)\n" /* t */
         "movl $0, %eax\n"
         "je .Lfbf932_000bfa82\n"
@@ -2276,7 +2276,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         ".Lfbf932_000bfa82:\n"
         "testl %eax, %eax\n"
         "je .Lfbf932_000bfa08\n"
-        "movl $0x222224, %edi\n" /* line 311 */
+        "movl $str_00222224, %edi\n" /* line 311 */
         "movl $2, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* t */
@@ -2321,7 +2321,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         ".Lfbf932_000bfb3b:\n"
         "movl 0x14(%ebp), %eax\n" /* line 256 | maxparms */
         "movl %eax, 8(%esp)\n"
-        "movl $0x222528, 4(%esp)\n" /* "define with more than %d parameters" */
+        "movl $str_00222528, 4(%esp)\n" /* "define with more than %d parameters" */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
@@ -2358,7 +2358,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "movl 0xc(%ebp), %edx\n" /* line 266 | define */
         "movl (%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x222510, 4(%esp)\n" /* "define %s missing parms" */
+        "movl $str_00222510, 4(%esp)\n" /* "define %s missing parms" */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -2376,7 +2376,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         ".Lfbf932_000bfbde:\n"
         "movl (%edx), %eax\n" /* line 279 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x22256c, 4(%esp)\n" /* "define %s has too many parms" */
+        "movl $str_0022256c, 4(%esp)\n" /* "define %s has too many parms" */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceWarning\n"
@@ -2386,7 +2386,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "movl 0xc(%ebp), %edx\n" /* line 290 | define */
         "movl (%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x22258c, 4(%esp)\n" /* "define %s incomplete" */
+        "movl $str_0022258c, 4(%esp)\n" /* "define %s incomplete" */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -2403,7 +2403,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "movl 0xc(%ebp), %edx\n" /* line 274 | define */
         "movl (%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x22254c, 4(%esp)\n" /* "define %s with too many parms" */
+        "movl $str_0022254c, 4(%esp)\n" /* "define %s with too many parms" */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -2440,19 +2440,19 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "movl %esi, -0x46c(%ebp)\n" /* t, last */
         "jmp .Lfbf932_000bfa0f\n"
         ".Lfbf932_000bfc9c:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbf932_000bfb0c\n"
         ".Lfbf932_000bfcb5:\n"
-        "movl $0x2225a4, 4(%esp)\n" /* line 299 */
+        "movl $str_002225a4, 4(%esp)\n" /* line 299 */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceWarning\n"
         "jmp .Lfbf932_000bfc5a\n"
         /* { scope 2 */
         ".Lfbf932_000bfcca:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbf932_000bfb9d\n"
@@ -2470,7 +2470,7 @@ int PC_ReadDefineParms(source_t *source, define_t *define, token_t * *parms, int
         "movl $1, %eax\n" /* line 270 */
         "jmp .Lfbf932_000bfb57\n"
         ".Lfbf932_000bfd08:\n"
-        "movl $0x2225b8, 4(%esp)\n" /* line 317 */
+        "movl $str_002225b8, 4(%esp)\n" /* line 317 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceWarning\n"
@@ -2600,7 +2600,7 @@ int PC_ExpandBuiltinDefine(source_t *source, token_t *deftoken, define_t *define
         "retl\n"
         /* { scope 1 */
         ".Lfbfd26_000bfe8f:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbfd26_000bfd6d\n"
@@ -2642,7 +2642,7 @@ int PC_ExpandBuiltinDefine(source_t *source, token_t *deftoken, define_t *define
         ".Lfbfd26_000bff30:\n"
         "movl 0x428(%ebx), %eax\n" /* line 576 | deftoken */
         "movl %eax, 8(%esp)\n"
-        "movl $0x215a64, 4(%esp)\n" /* "%d" */
+        "movl $str_00215a64, 4(%esp)\n" /* "%d" */
         "movl %esi, (%esp)\n" /* token */
         "calll sprintf\n"
         "movl 0x428(%ebx), %eax\n" /* line 577 | deftoken */
@@ -2721,7 +2721,7 @@ int PC_ExpandDefine(source_t *source, token_t *deftoken, define_t *define, token
         "jne .Lfbff8e_000c0007\n"
         /* } scope */
         ".Lfbff8e_000c002e:\n"
-        "movl $0x2225e8, 4(%esp)\n" /* line 710 */
+        "movl $str_002225e8, 4(%esp)\n" /* line 710 */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceWarning\n"
@@ -2799,7 +2799,7 @@ int PC_ExpandDefine(source_t *source, token_t *deftoken, define_t *define, token
         ".Lfbff8e_000c00ff:\n"
         "movl %esi, 0xc(%esp)\n" /* line 741 | t2 */
         "movl %ebx, 8(%esp)\n" /* parmnum */
-        "movl $0x222618, 4(%esp)\n" /* "can't merge %s with %s" */
+        "movl $str_00222618, 4(%esp)\n" /* "can't merge %s with %s" */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
@@ -2908,7 +2908,7 @@ int PC_ExpandDefine(source_t *source, token_t *deftoken, define_t *define, token
         "testl %eax, %eax\n" /* line 149 */
         "jne .Lfbff8e_000c023f\n"
         ".Lfbff8e_000c02aa:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl $0, 0x430(%edi)\n" /* line 677 | nextpt */
@@ -2923,7 +2923,7 @@ int PC_ExpandDefine(source_t *source, token_t *deftoken, define_t *define, token
         "movl %edi, -0x664(%ebp)\n" /* nextpt, first */
         "jmp .Lfbff8e_000c0041\n"
         ".Lfbff8e_000c02eb:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfbff8e_000c01b4\n"
@@ -2981,7 +2981,7 @@ int PC_ExpandDefine(source_t *source, token_t *deftoken, define_t *define, token
         "calll strcat\n"
         "jmp .Lfbff8e_000c0433\n"
         ".Lfbff8e_000c03cb:\n"
-        "movl $0x2225d0, 4(%esp)\n" /* line 703 */
+        "movl $str_002225d0, 4(%esp)\n" /* line 703 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -2989,7 +2989,7 @@ int PC_ExpandDefine(source_t *source, token_t *deftoken, define_t *define, token
         "xorl %eax, %eax\n"
         "jmp .Lfbff8e_000c00d2\n"
         ".Lfbff8e_000c03e5:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl -0x65c(%ebp), %esi\n"
@@ -3083,7 +3083,7 @@ int PC_ReadLine(source_t *source, token_t *token)
         "jne .Lfc0478_000c04d8\n"
         /* } scope */
         ".Lfc0478_000c04f1:\n"
-        "movl $0x222630, %edi\n" /* line 920 */
+        "movl $str_00222630, %edi\n" /* line 920 */
         "movl $2, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* token, define */
@@ -3190,7 +3190,7 @@ int PC_ReadLine(source_t *source, token_t *token)
         "xorl %eax, %eax\n"
         "jmp .Lfc0478_000c054b\n"
         ".Lfc0478_000c060f:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0478_000c05f3\n"
@@ -3284,7 +3284,7 @@ int PC_Directive_pragma(source_t *source)
         "subl $0x450, %esp\n"
         "movl 8(%ebp), %esi\n" /* source */
         /* { scope 1 */
-        "movl $0x222634, 4(%esp)\n" /* line 2346 */
+        "movl $str_00222634, 4(%esp)\n" /* line 2346 */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceWarning\n"
         "leal -0x448(%ebp), %ebx\n" /* token */
@@ -3343,7 +3343,7 @@ int PC_Directive_if_def(source_t *source, int type)
         "movl %ebx, 0x88(%esi)\n" /* line 232 | t */
         /* } scope */
         "movl %edi, 8(%esp)\n" /* line 1387 */
-        "movl $0x222668, 4(%esp)\n" /* "expected name after #ifdef, found %s" */
+        "movl $str_00222668, 4(%esp)\n" /* "expected name after #ifdef, found %s" */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -3414,7 +3414,7 @@ int PC_Directive_if_def(source_t *source, int type)
         "retl\n"
         /* { scope 1 */
         ".Lfc0708_000c083e:\n"
-        "movl $0x222654, 4(%esp)\n" /* line 1381 */
+        "movl $str_00222654, 4(%esp)\n" /* line 1381 */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -3448,7 +3448,7 @@ int PC_Directive_if_def(source_t *source, int type)
         /* } scope */
         /* { scope 2 */
         ".Lfc0708_000c0885:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0708_000c0772\n"
@@ -3523,7 +3523,7 @@ int PC_Directive_undef(source_t *source)
         /* } scope */
         "leal -0x458(%ebp), %eax\n" /* line 999 | token */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2226a4, 4(%esp)\n" /* "expected name, found %s" */
+        "movl $str_002226a4, 4(%esp)\n" /* "expected name, found %s" */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -3565,7 +3565,7 @@ int PC_Directive_undef(source_t *source)
         "jne .Lfc08d6_000c09cb\n"
         "jmp .Lfc08d6_000c08ef\n"
         ".Lfc08d6_000c09f3:\n"
-        "movl $0x222690, 4(%esp)\n" /* line 993 */
+        "movl $str_00222690, 4(%esp)\n" /* line 993 */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -3634,7 +3634,7 @@ int PC_Directive_undef(source_t *source)
         "jmp .Lfc08d6_000c08f4\n"
         /* { scope 2 */
         ".Lfc08d6_000c0aa9:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc08d6_000c0960\n"
@@ -3642,7 +3642,7 @@ int PC_Directive_undef(source_t *source)
         ".Lfc08d6_000c0ac2:\n"
         "leal -0x458(%ebp), %eax\n" /* line 1010 | token */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2226bc, 4(%esp)\n" /* "can't undef %s" */
+        "movl $str_002226bc, 4(%esp)\n" /* "can't undef %s" */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceWarning\n"
         "jmp .Lfc08d6_000c08ef\n"
@@ -3860,14 +3860,14 @@ int PC_ReadToken(source_t *source, token_t *token)
         "jmp .Lfc0af2_000c0b30\n"
         /* { scope 3 */
         ".Lfc0af2_000c0d46:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0af2_000c0c46\n"
         /* } scope */
         ".Lfc0af2_000c0d5f:\n"
         "movl $0x400, 8(%esp)\n" /* line 2655 */
-        "movl $0x2226cc, 4(%esp)\n" /* "string longer than MAX_TOKEN %d
+        "movl $str_002226cc, 4(%esp)\n" /* "string longer than MAX_TOKEN %d
 " */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
@@ -4008,7 +4008,7 @@ int PC_Directive_define(source_t *source)
         /* } scope */
         "leal -0x458(%ebp), %ecx\n" /* line 1051 | token */
         "movl %ecx, 8(%esp)\n"
-        "movl $0x222708, 4(%esp)\n" /* "expected name after #define, found %s" */
+        "movl $str_00222708, 4(%esp)\n" /* "expected name after #define, found %s" */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -4141,12 +4141,12 @@ int PC_Directive_define(source_t *source)
         "movl %eax, %esi\n"
         "testl %eax, %eax\n" /* line 149 */
         "jne .Lfc0e22_000c0ff6\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0e22_000c1021\n"
         ".Lfc0e22_000c10b2:\n"
-        "movl $0x2226f0, 4(%esp)\n" /* line 1045 */
+        "movl $str_002226f0, 4(%esp)\n" /* line 1045 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -4173,7 +4173,7 @@ int PC_Directive_define(source_t *source)
         /* } scope */
         /* } scope */
         ".Lfc0e22_000c10f9:\n"
-        "movl $0x2221e8, %edi\n" /* line 1083 | last */
+        "movl $str_002221e8, %edi\n" /* line 1083 | last */
         "movl $2, %ecx\n"
         "cld\n"
         "repe cmpsb %es:(%edi), (%esi)\n" /* last, i */
@@ -4257,7 +4257,7 @@ int PC_Directive_define(source_t *source)
         "calll PC_ReadLine\n"
         "testl %eax, %eax\n"
         "je .Lfc0e22_000c15e2\n"
-        "movl $0x222224, %edi\n" /* line 1125 | last */
+        "movl $str_00222224, %edi\n" /* line 1125 | last */
         "movl $2, %ecx\n"
         "cld\n"
         "leal -0x458(%ebp), %esi\n" /* token, i */
@@ -4270,7 +4270,7 @@ int PC_Directive_define(source_t *source)
         ".Lfc0e22_000c125d:\n"
         "testl %edx, %edx\n"
         "je .Lfc0e22_000c12bf\n"
-        "movl $0x21f88c, %edi\n" /* line 1128 | last */
+        "movl $str_0021f88c, %edi\n" /* line 1128 | last */
         "movl $2, %ecx\n"
         "leal -0x458(%ebp), %esi\n" /* token, i */
         "repe cmpsb %es:(%edi), (%esi)\n" /* last, i */
@@ -4286,7 +4286,7 @@ int PC_Directive_define(source_t *source)
         "jmp .Lfc0e22_000c113e\n"
         /* { scope 2 */
         ".Lfc0e22_000c1293:\n"
-        "movl $0x222224, %edi\n" /* line 2817 | last */
+        "movl $str_00222224, %edi\n" /* line 2817 | last */
         "movl $2, %ecx\n"
         "cld\n"
         "leal -0x898(%ebp), %esi\n" /* tok, i */
@@ -4322,7 +4322,7 @@ int PC_Directive_define(source_t *source)
         "calll strcmp\n"
         "testl %eax, %eax\n"
         "jne .Lfc0e22_000c102e\n"
-        "movl $0x2227ec, 4(%esp)\n" /* line 1145 */
+        "movl $str_002227ec, 4(%esp)\n" /* line 1145 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -4335,7 +4335,7 @@ int PC_Directive_define(source_t *source)
         "movl %esi, -0x8ac(%ebp)\n" /* i */
         "movl $3, %ecx\n"
         "cld\n"
-        "movl $0x222814, %edi\n" /* last */
+        "movl $str_00222814, %edi\n" /* last */
         "repe cmpsb %es:(%edi), (%esi)\n" /* last, i */
         "movl $0, %eax\n"
         "je .Lfc0e22_000c135a\n"
@@ -4347,7 +4347,7 @@ int PC_Directive_define(source_t *source)
         "je .Lfc0e22_000c1385\n"
         "movl $3, %ecx\n"
         "movl %ebx, %esi\n" /* definehash, i */
-        "movl $0x222814, %edi\n" /* last */
+        "movl $str_00222814, %edi\n" /* last */
         "repe cmpsb %es:(%edi), (%esi)\n" /* last, i */
         "movl $0, %eax\n"
         "je .Lfc0e22_000c137d\n"
@@ -4358,7 +4358,7 @@ int PC_Directive_define(source_t *source)
         "testl %eax, %eax\n"
         "jne .Lfc0e22_000c0e3b\n"
         ".Lfc0e22_000c1385:\n"
-        "movl $0x222818, 4(%esp)\n" /* line 1162 */
+        "movl $str_00222818, 4(%esp)\n" /* line 1162 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -4391,7 +4391,7 @@ int PC_Directive_define(source_t *source)
         "je .Lfc0e22_000c140c\n"
         "leal -0x458(%ebp), %edx\n" /* line 1061 | token */
         "movl %edx, 8(%esp)\n"
-        "movl $0x222730, 4(%esp)\n" /* "can't redefine %s" */
+        "movl $str_00222730, 4(%esp)\n" /* "can't redefine %s" */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -4399,7 +4399,7 @@ int PC_Directive_define(source_t *source)
         "jmp .Lfc0e22_000c0e40\n"
         /* { scope 2 */
         ".Lfc0e22_000c13f3:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0e22_000c0eac\n"
@@ -4407,7 +4407,7 @@ int PC_Directive_define(source_t *source)
         ".Lfc0e22_000c140c:\n"
         "leal -0x458(%ebp), %esi\n" /* line 1064 | token, i */
         "movl %esi, 8(%esp)\n" /* i */
-        "movl $0x222744, 4(%esp)\n" /* "redefinition of %s" */
+        "movl $str_00222744, 4(%esp)\n" /* "redefinition of %s" */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceWarning\n"
@@ -4485,7 +4485,7 @@ int PC_Directive_define(source_t *source)
         /* } scope */
         /* { scope 2 */
         ".Lfc0e22_000c150f:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0e22_000c146a\n"
@@ -4493,7 +4493,7 @@ int PC_Directive_define(source_t *source)
         ".Lfc0e22_000c1528:\n"
         "testl %esi, %esi\n" /* line 1103 | i */
         "js .Lfc0e22_000c119b\n"
-        "movl $0x222790, 4(%esp)\n" /* line 1105 */
+        "movl $str_00222790, 4(%esp)\n" /* line 1105 */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
@@ -4504,12 +4504,12 @@ int PC_Directive_define(source_t *source)
         "movl %ebx, 0x10(%esi)\n" /* definehash, i */
         "jmp .Lfc0e22_000c1212\n"
         ".Lfc0e22_000c1558:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0e22_000c11dc\n"
         ".Lfc0e22_000c1571:\n"
-        "movl $0x2227d4, 4(%esp)\n" /* line 1130 */
+        "movl $str_002227d4, 4(%esp)\n" /* line 1130 */
         "movl 8(%ebp), %esi\n" /* source, i */
         "movl %esi, (%esp)\n" /* i */
         "calll SourceError\n"
@@ -4539,7 +4539,7 @@ int PC_Directive_define(source_t *source)
         /* } scope */
         /* } scope */
         ".Lfc0e22_000c15e2:\n"
-        "movl $0x2227b0, 4(%esp)\n" /* line 1121 */
+        "movl $str_002227b0, 4(%esp)\n" /* line 1121 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -4548,21 +4548,21 @@ int PC_Directive_define(source_t *source)
         /* { scope 2 */
         /* { scope 3 */
         ".Lfc0e22_000c15fc:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc0e22_000c15c8\n"
         /* } scope */
         /* } scope */
         ".Lfc0e22_000c1612:\n"
-        "movl $0x222774, 4(%esp)\n" /* line 1099 */
+        "movl $str_00222774, 4(%esp)\n" /* line 1099 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
         "xorl %eax, %eax\n"
         "jmp .Lfc0e22_000c0e40\n"
         ".Lfc0e22_000c162c:\n"
-        "movl $0x222758, 4(%esp)\n" /* line 1093 */
+        "movl $str_00222758, 4(%esp)\n" /* line 1093 */
         "movl 8(%ebp), %esi\n" /* source, i */
         "movl %esi, (%esp)\n" /* i */
         "calll SourceError\n"
@@ -4641,7 +4641,7 @@ define_t * PC_CopyDefine(source_t *source, define_t *define)
         "movl %eax, %ebx\n"
         "testl %eax, %eax\n" /* line 149 */
         "jne .Lfc1646_000c16c2\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl $0, 0x430(%ebx)\n" /* line 1326 | newtoken */
@@ -4685,7 +4685,7 @@ define_t * PC_CopyDefine(source_t *source, define_t *define)
         "movl %eax, %ebx\n"
         "testl %eax, %eax\n" /* line 149 */
         "jne .Lfc1646_000c1767\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "movl $0, 0x430(%ebx)\n" /* line 1338 | newtoken */
@@ -5025,7 +5025,7 @@ int PC_Evaluate(source_t *source, long int *intvalue, double *floatvalue, int in
         "xorl %edi, %edi\n" /* defined */
         "jmp .Lfc19b0_000c1a95\n"
         ".Lfc19b0_000c1b8b:\n"
-        "movl $0x2221c0, %edi\n" /* line 2099 | defined */
+        "movl $str_002221c0, %edi\n" /* line 2099 | defined */
         "movl $8, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* define */
@@ -5069,7 +5069,7 @@ int PC_Evaluate(source_t *source, long int *intvalue, double *floatvalue, int in
         /* } scope */
         ".Lfc19b0_000c1bfe:\n"
         "movl %ebx, 8(%esp)\n" /* line 2116 */
-        "movl $0x222864, 4(%esp)\n" /* "can't evaluate %s, not defined" */
+        "movl $str_00222864, 4(%esp)\n" /* "can't evaluate %s, not defined" */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
@@ -5088,12 +5088,12 @@ int PC_Evaluate(source_t *source, long int *intvalue, double *floatvalue, int in
         "movl %esi, -0x46c(%ebp)\n" /* definehash, lasttoken */
         "jmp .Lfc19b0_000c1a95\n"
         ".Lfc19b0_000c1c33:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc19b0_000c1a6b\n"
         ".Lfc19b0_000c1c4c:\n"
-        "movl $0x222834, 4(%esp)\n" /* line 2078 */
+        "movl $str_00222834, 4(%esp)\n" /* line 2078 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -5149,7 +5149,7 @@ int PC_Evaluate(source_t *source, long int *intvalue, double *floatvalue, int in
         "movl $1, %edi\n" /* defined */
         "jmp .Lfc19b0_000c1a95\n"
         ".Lfc19b0_000c1d05:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc19b0_000c1b5a\n"
@@ -5187,7 +5187,7 @@ int PC_Evaluate(source_t *source, long int *intvalue, double *floatvalue, int in
         "jmp .Lfc19b0_000c1a95\n"
         ".Lfc19b0_000c1d8f:\n"
         "movl %ebx, 8(%esp)\n" /* line 2136 */
-        "movl $0x222850, 4(%esp)\n" /* "can't evaluate %s" */
+        "movl $str_00222850, 4(%esp)\n" /* "can't evaluate %s" */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -5199,7 +5199,7 @@ int PC_Evaluate(source_t *source, long int *intvalue, double *floatvalue, int in
         "movl $1, %edi\n" /* defined */
         "jmp .Lfc19b0_000c1a95\n"
         ".Lfc19b0_000c1dc3:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc19b0_000c1cd1\n"
@@ -5245,10 +5245,10 @@ int PC_Directive_evalfloat(source_t *source)
         "movl %eax, -0x44(%ebp)\n"
         "movl $0, -0x3c(%ebp)\n" /* line 2417 */
         "cvtsd2ss -0x20(%ebp), %xmm0\n" /* line 2418 | value */
-        "andps 0x2f2070, %xmm0\n"
+        "andps CorrectSolidDeltas+6512, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x222884, 4(%esp)\n" /* "%1.2f" */
+        "movl $str_00222884, 4(%esp)\n" /* "%1.2f" */
         "leal -0x468(%ebp), %edi\n" /* token */
         "movl %edi, (%esp)\n"
         "calll sprintf\n"
@@ -5324,7 +5324,7 @@ int PC_Directive_evalfloat(source_t *source)
         /* } scope */
         /* { scope 2 */
         ".Lfc1ddc_000c1f7b:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc1ddc_000c1ead\n"
@@ -5332,7 +5332,7 @@ int PC_Directive_evalfloat(source_t *source)
         /* { scope 2 */
         /* { scope 3 */
         ".Lfc1ddc_000c1f94:\n"
-        "movl $0x222108, 4(%esp)\n" /* "EXE_ERR_OUT_OF_MEMORY" */
+        "movl $str_00222108, 4(%esp)\n" /* "EXE_ERR_OUT_OF_MEMORY" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc1ddc_000c1f5f\n"
@@ -5383,7 +5383,7 @@ int PC_Directive_eval(source_t *source)
         "cmpl $-1, %eax\n"
         "cmovlel %edx, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x215a64, 4(%esp)\n" /* "%d" */
+        "movl $str_00215a64, 4(%esp)\n" /* "%d" */
         "leal -0x468(%ebp), %edi\n" /* token */
         "movl %edi, (%esp)\n"
         "calll sprintf\n"
@@ -5459,7 +5459,7 @@ int PC_Directive_eval(source_t *source)
         /* } scope */
         /* { scope 2 */
         ".Lfc1faa_000c2140:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc1faa_000c2076\n"
@@ -5467,7 +5467,7 @@ int PC_Directive_eval(source_t *source)
         /* { scope 2 */
         /* { scope 3 */
         ".Lfc1faa_000c2159:\n"
-        "movl $0x222108, 4(%esp)\n" /* "EXE_ERR_OUT_OF_MEMORY" */
+        "movl $str_00222108, 4(%esp)\n" /* "EXE_ERR_OUT_OF_MEMORY" */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc1faa_000c2124\n"
@@ -5539,7 +5539,7 @@ int PC_Directive_elif(source_t *source)
         "je .Lfc21e6_000c221f\n"
         /* } scope */
         ".Lfc21e6_000c2206:\n"
-        "movl $0x22288c, 4(%esp)\n" /* line 2276 */
+        "movl $str_0022288c, 4(%esp)\n" /* line 2276 */
         "movl %esi, (%esp)\n" /* source */
         "calll SourceError\n"
         "xorl %eax, %eax\n"
@@ -5624,7 +5624,7 @@ int PC_DollarEvaluate(source_t *source, long int *intvalue, double *floatvalue, 
         "calll PC_ReadSourceToken\n"
         "testl %eax, %eax\n"
         "jne .Lfc22b4_000c2320\n"
-        "movl $0x22289c, 4(%esp)\n" /* line 2174 */
+        "movl $str_0022289c, 4(%esp)\n" /* line 2174 */
         "movl 8(%ebp), %eax\n" /* source */
         "movl %eax, (%esp)\n"
         "calll SourceError\n"
@@ -5762,7 +5762,7 @@ int PC_DollarEvaluate(source_t *source, long int *intvalue, double *floatvalue, 
         "addl $1, -0x474(%ebp)\n" /* line 2229 | indent */
         "jmp .Lfc22b4_000c239a\n"
         ".Lfc22b4_000c250b:\n"
-        "movl $0x2221c0, %edi\n" /* line 2201 | defined */
+        "movl $str_002221c0, %edi\n" /* line 2201 | defined */
         "movl $8, %ecx\n"
         "cld\n"
         "movl %ebx, %esi\n" /* define */
@@ -5806,7 +5806,7 @@ int PC_DollarEvaluate(source_t *source, long int *intvalue, double *floatvalue, 
         /* } scope */
         ".Lfc22b4_000c257e:\n"
         "movl %ebx, 8(%esp)\n" /* line 2218 */
-        "movl $0x222864, 4(%esp)\n" /* "can't evaluate %s, not defined" */
+        "movl $str_00222864, 4(%esp)\n" /* "can't evaluate %s, not defined" */
         "movl 8(%ebp), %edx\n" /* source */
         "movl %edx, (%esp)\n"
         "calll SourceError\n"
@@ -5825,12 +5825,12 @@ int PC_DollarEvaluate(source_t *source, long int *intvalue, double *floatvalue, 
         "movl %esi, -0x46c(%ebp)\n" /* definehash, lasttoken */
         "jmp .Lfc22b4_000c2409\n"
         ".Lfc22b4_000c25b3:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc22b4_000c23df\n"
         ".Lfc22b4_000c25cc:\n"
-        "movl $0x2228c4, 4(%esp)\n" /* line 2179 */
+        "movl $str_002228c4, 4(%esp)\n" /* line 2179 */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
@@ -5913,7 +5913,7 @@ int PC_DollarEvaluate(source_t *source, long int *intvalue, double *floatvalue, 
         "jmp .Lfc22b4_000c2409\n"
         /* } scope */
         ".Lfc22b4_000c26e3:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc22b4_000c24ce\n"
@@ -5924,14 +5924,14 @@ int PC_DollarEvaluate(source_t *source, long int *intvalue, double *floatvalue, 
         "jmp .Lfc22b4_000c2409\n"
         ".Lfc22b4_000c270f:\n"
         "movl %ebx, 8(%esp)\n" /* line 2244 */
-        "movl $0x222850, 4(%esp)\n" /* "can't evaluate %s" */
+        "movl $str_00222850, 4(%esp)\n" /* "can't evaluate %s" */
         "movl 8(%ebp), %ecx\n" /* source */
         "movl %ecx, (%esp)\n"
         "calll SourceError\n"
         "xorl %eax, %eax\n"
         "jmp .Lfc22b4_000c2315\n"
         ".Lfc22b4_000c272d:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc22b4_000c2627\n"
@@ -5983,10 +5983,10 @@ int PC_DollarDirective_evalfloat(source_t *source)
         "movl %eax, -0x44(%ebp)\n"
         "movl $0, -0x3c(%ebp)\n" /* line 2549 */
         "cvtsd2ss -0x20(%ebp), %xmm0\n" /* line 2550 | value */
-        "andps 0x2f2080, %xmm0\n"
+        "andps CorrectSolidDeltas+6528, %xmm0\n"
         "cvtss2sd %xmm0, %xmm0\n"
         "movsd %xmm0, 8(%esp)\n"
-        "movl $0x222884, 4(%esp)\n" /* "%1.2f" */
+        "movl $str_00222884, 4(%esp)\n" /* "%1.2f" */
         "leal -0x468(%ebp), %edi\n" /* token */
         "movl %edi, (%esp)\n"
         "calll sprintf\n"
@@ -6039,7 +6039,7 @@ int PC_DollarDirective_evalfloat(source_t *source)
         /* { scope 1: token */
         /* { scope 2 */
         ".Lfc275c_000c288f:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc275c_000c2862\n"
@@ -6077,7 +6077,7 @@ int PC_DollarDirective_evalfloat(source_t *source)
         "movl $1, %eax\n"
         "jmp .Lfc275c_000c278e\n"
         ".Lfc275c_000c2946:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc275c_000c292a\n"
@@ -6129,7 +6129,7 @@ int PC_DollarDirective_evalint(source_t *source)
         "cmpl $-1, %eax\n"
         "cmovlel %edx, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x215a64, 4(%esp)\n" /* "%d" */
+        "movl $str_00215a64, 4(%esp)\n" /* "%d" */
         "leal -0x468(%ebp), %edi\n" /* token */
         "movl %edi, (%esp)\n"
         "calll sprintf\n"
@@ -6176,7 +6176,7 @@ int PC_DollarDirective_evalint(source_t *source)
         /* { scope 1: token */
         /* { scope 2 */
         ".Lfc295c_000c2a5d:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc295c_000c2a34\n"
@@ -6214,7 +6214,7 @@ int PC_DollarDirective_evalint(source_t *source)
         "movl $1, %eax\n"
         "jmp .Lfc295c_000c298e\n"
         ".Lfc295c_000c2b14:\n"
-        "movl $0x222108, 4(%esp)\n" /* line 151 */
+        "movl $str_00222108, 4(%esp)\n" /* line 151 */
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lfc295c_000c2af8\n"

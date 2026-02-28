@@ -28,18 +28,18 @@ extern void G_Trigger(gentity_t *self, gentity_t *other);
 extern void *BG_GetWeaponDef(int weapon);
 
 /* Extern global pointers (binary addresses) */
-extern byte *g_entities_ptr;    /* 0x195f688 */
-extern byte *level_ptr;         /* 0x195f6a0 */
-extern byte *scr_const_ptr;     /* 0x195f5bc */
-extern byte *entityHandlers_ptr; /* 0x195f6b4 */
-extern byte *vec3_origin_ptr;   /* 0x195ed4c */
-extern byte *bg_itemlist_ptr;   /* 0x195eda8 */
-extern byte *g_useActivateHoldTime; /* 0x195f774 */
-extern byte *g_useActivateReuseTime; /* 0x195f77c */
-extern byte *pPriorityMap;      /* 0x195f734 */
-extern byte *pPriorityMapAlt;   /* 0x195f760 */
-extern byte *g_friendlylookDist; /* 0x195f778 */
-extern byte *g_enemylookDist;   /* 0x195f770 */
+extern byte *g_entities_ptr;    /* imp_g_entities */
+extern byte *level_ptr;         /* imp_level */
+extern byte *scr_const_ptr;     /* imp_scr_const */
+extern byte *entityHandlers_ptr; /* imp_entityHandlers */
+extern byte *vec3_origin_ptr;   /* imp_vec3_origin */
+extern byte *bg_itemlist_ptr;   /* imp_bg_itemlist */
+extern byte *g_useActivateHoldTime; /* imp_g_useholdspawndelay */
+extern byte *g_useActivateReuseTime; /* imp_g_useholdtime */
+extern byte *pPriorityMap;      /* imp_bulletPriorityMap */
+extern byte *pPriorityMapAlt;   /* imp_riflePriorityMap */
+extern byte *g_friendlylookDist; /* imp_g_friendlyNameDist */
+extern byte *g_enemylookDist;   /* imp_g_friendlyfireDist */
 
 /* Function declarations */
 void Player_UpdateActivate(gentity_t *ent);

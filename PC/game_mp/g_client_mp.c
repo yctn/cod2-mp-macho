@@ -53,17 +53,17 @@ extern void Com_Error(int level, const char *fmt, ...);
 extern vec3_t playerMins; /* 0x0 */
 extern vec3_t playerMaxs; /* 0x0 */
 
-extern byte *g_entities_ptr; /* 0x195f688 - g_entities base */
-extern byte *level_ptr; /* 0x195f6a0 */
-extern byte *g_scr_data_ptr; /* 0x195f5bc */
-extern byte *g_sv_running_ptr; /* 0x195f684 */
-extern byte *g_deadChat_ptr; /* 0x195f690 */
-extern byte *g_voiceChatsAllowed_ptr; /* 0x195f69c */
-extern byte *g_voiceChatTalkingDuration_ptr; /* 0x195f694 */
-extern byte *g_password_ptr; /* 0x195f698 */
-extern byte *g_bobMax_ptr; /* 0x195f680 */
+extern byte *g_entities_ptr; /* imp_g_entities - g_entities base */
+extern byte *level_ptr; /* imp_level */
+extern byte *g_scr_data_ptr; /* imp_scr_const */
+extern byte *g_sv_running_ptr; /* imp_voice_global */
+extern byte *g_deadChat_ptr; /* imp_voice_deadChat */
+extern byte *g_voiceChatsAllowed_ptr; /* imp_voice_localEcho */
+extern byte *g_voiceChatTalkingDuration_ptr; /* imp_g_inactivity */
+extern byte *g_password_ptr; /* imp_g_password */
+extern byte *g_bobMax_ptr; /* imp_bg_bobMax */
 extern int __mh_execute_header;
-extern int g_time; /* 0x195f68c */
+extern int g_time; /* imp_level_bgs */
 
 void G_GetPlayerViewDirection(const gentity_t *ent, vec_t *forward, vec_t *right, vec_t *up);
 void ClientBegin(int clientNum);

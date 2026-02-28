@@ -14,19 +14,19 @@ extern void speex_encode_int(void *state, short *in, SpeexBits *bits);
 extern int speex_bits_write(SpeexBits *bits, char *bytes, int max_len);
 extern void Com_Printf(const char *fmt, ...);
 
-extern const void *speex_nb_mode_ptr;   /* 0x195f99c */
-extern const void *speex_wb_mode_ptr;   /* 0x195f998 */
-extern const void *speex_uwb_mode_ptr;  /* 0x195f9a4 */
+extern const void *speex_nb_mode_ptr;   /* imp_speex_nb_mode */
+extern const void *speex_wb_mode_ptr;   /* imp_speex_wb_mode */
+extern const void *speex_uwb_mode_ptr;  /* imp_speex_uwb_mode */
 
 extern int g_encoder_quality; /* 0x0 */
 extern int g_encoder_samplerate; /* 0x0 */
 extern int g_current_bandwidth_setting; /* 0x0 */
 extern int g_frame_size; /* 0x0 */
 extern int g_speex_initialized; /* 0x0 */
-static void *g_encoder; /* 0xff21a4 */
-static struct SpeexBits encodeBits; /* 0xff2180 */
+static void *g_encoder; /* g_encoder */
+static struct SpeexBits encodeBits; /* encodeBits */
 
-extern void *speex_quality_ptr; /* dvar pointer at 0x195f2d0 */
+extern void *speex_quality_ptr; /* dvar pointer at imp_sv_voiceQuality */
 
 void Encode_SetOptions(int frequency, int quality)
 {

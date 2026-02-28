@@ -23,7 +23,7 @@ extern void SetClientViewAngle(gentity_t *ent, vec_t *angles);
 extern void BG_PlayerStateToEntityState(playerState_t *ps, gentity_t *ent, qboolean snap, qboolean forceSnap);
 extern void G_AddEvent(gentity_t *ent, int event, int eventParm);
 
-static turretInfo_t turretInfo[32]; /* 0xfe7800 */
+static turretInfo_t turretInfo[32]; /* turretInfo */
 
 void SP_info_null(gentity_t *self);
 void SP_info_notnull(gentity_t *self);
@@ -93,7 +93,7 @@ void turret_think(gentity_t *self)
         "pushl %ebx\n"
         "subl $0x5c, %esp\n"
         "movl 8(%ebp), %esi\n" /* self */
-        "movl 0x195f6a0, %eax\n" /* line 732 */
+        "movl imp_level, %eax\n" /* line 732 */
         "movl 0x1ec(%eax), %eax\n"
         "addl $0x32, %eax\n"
         "movl %eax, 0x190(%esi)\n" /* self */
@@ -108,7 +108,7 @@ void turret_think(gentity_t *self)
         "leal (, %eax, 8), %edx\n"
         "subl %eax, %edx\n"
         "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
+        "movl imp_g_entities, %eax\n"
         "movl 0x158(%eax, %edx), %edx\n"
         "testl %edx, %edx\n"
         "je .Lf1b9b0a_001b9b69\n"
@@ -159,7 +159,7 @@ void turret_think(gentity_t *self)
         "leal -0x28(%ebp), %eax\n" /* fSpeed */
         "addl %edx, %eax\n"
         "movss -4(%eax), %xmm0\n" /* line 640 */
-        "mulss 0x2ed72c, %xmm0\n" /* 0.05000000074505806f */
+        "mulss lit4_002ed72c, %xmm0\n" /* 0.05000000074505806f */
         "movss %xmm0, -4(%eax)\n"
         "movl 0x68(%ebx), %eax\n" /* line 642 */
         "movl %eax, 4(%esp)\n"
@@ -172,7 +172,7 @@ void turret_think(gentity_t *self)
         "movss -0x2c(%ebp), %xmm1\n"
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf1b9b0a_001b9c38\n"
-        "xorps 0x303240, %xmm0\n" /* line 648 */
+        "xorps sign+320, %xmm0\n" /* line 648 */
         "maxss %xmm1, %xmm0\n"
         ".Lf1b9b0a_001b9c38:\n"
         "addss 0x68(%ebx), %xmm0\n" /* line 653 */
@@ -204,7 +204,7 @@ void turret_think(gentity_t *self)
         "movss -0x28(%ebp), %xmm0\n" /* line 678 | fSpeed */
         "ucomiss %xmm0, %xmm1\n"
         "ja .Lf1b9b0a_001b9ca8\n"
-        "xorps 0x303240, %xmm0\n" /* line 683 */
+        "xorps sign+320, %xmm0\n" /* line 683 */
         "maxss %xmm1, %xmm0\n"
         ".Lf1b9b0a_001b9ca8:\n"
         "movaps %xmm0, %xmm1\n"
@@ -255,7 +255,7 @@ void turret_controller(gentity_t *self, int *partBits)
 {
     vec3_t angles;
     DObj_s *obj;
-    unsigned short *tagNames = (unsigned short *)*(int *)0x195f5bc;
+    unsigned short *tagNames = (unsigned short *)*(int *)imp_scr_const;
 
     angles[0] = *(float *)((byte *)self + 0x68);
     angles[1] = *(float *)((byte *)self + 0x6c);
@@ -329,7 +329,7 @@ void G_ClientStopUsingTurret(gentity_t *self)
         "leal (, %eax, 8), %ebx\n" /* owner */
         "subl %eax, %ebx\n" /* owner */
         "shll $4, %ebx\n" /* owner */
-        "addl 0x195f688, %ebx\n" /* owner */
+        "addl imp_g_entities, %ebx\n" /* owner */
         "movl $0, 0x28(%esi)\n" /* line 539 | pTurretInfo */
         "movl $0, 0x84(%edi)\n" /* line 540 | self */
         "movl 0x24(%esi), %eax\n" /* line 542 | pTurretInfo */
@@ -394,7 +394,7 @@ void G_FreeTurret(gentity_t *self)
 
     /* Check if owner entity has a client (entity stride 560 = 0x230, field 0x158 = client) */
     ownerNum = *(int *)((byte *)self + 0x150);
-    g_ents = *(gentity_t **)0x195f688;
+    g_ents = *(gentity_t **)imp_g_entities;
     if (*(int *)((byte *)g_ents + ownerNum * 560 + 0x158))
         G_ClientStopUsingTurret(self);
 
@@ -419,11 +419,11 @@ void turret_think_init(gentity_t *self)
         "movl 0x15c(%edi), %eax\n" /* line 759 | self */
         "movl %eax, -0xe8(%ebp)\n" /* pTurretInfo */
         "movb $0xe, 0x166(%edi)\n" /* line 769 | self */
-        "movl 0x195f6a0, %eax\n" /* line 770 */
+        "movl imp_level, %eax\n" /* line 770 */
         "movl 0x1ec(%eax), %eax\n"
         "addl $0x32, %eax\n"
         "movl %eax, 0x190(%edi)\n" /* self */
-        "movl 0x195f5bc, %esi\n" /* line 773 | weaponMtx */
+        "movl imp_scr_const, %esi\n" /* line 773 | weaponMtx */
         "movzwl 0x9e(%esi), %eax\n" /* weaponMtx */
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* self */
@@ -477,7 +477,7 @@ void turret_think_init(gentity_t *self)
         "movl -0xec(%ebp), %eax\n"
         "movl %eax, (%esp)\n"
         "calll MatrixTransformVector43\n"
-        "movl 0x195f734, %edx\n"
+        "movl imp_bulletPriorityMap, %edx\n"
         "movl %edx, -0xdc(%ebp)\n"
         "xorl %ebx, %ebx\n" /* i */
         "leal -0x30(%ebp), %esi\n" /* end, weaponMtx */
@@ -488,7 +488,7 @@ void turret_think_init(gentity_t *self)
         "je .Lf1ba01a_001ba246\n"
         ".Lf1ba01a_001ba155:\n"
         "cvtsi2ssl %ebx, %xmm0\n" /* line 789 | i */
-        "mulss 0x2ed9a8, %xmm0\n" /* -3.0f */
+        "mulss lit4_002ed9a8, %xmm0\n" /* -3.0f */
         "movss %xmm0, -0x3c(%ebp)\n" /* angles */
         "movl $0, -0x38(%ebp)\n" /* line 790 */
         "movl $0, -0x34(%ebp)\n" /* line 791 */
@@ -533,7 +533,7 @@ void turret_think_init(gentity_t *self)
         "leal -0x78(%ebp), %eax\n" /* trace */
         "movl %eax, (%esp)\n"
         "calll G_LocationalTrace\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 800 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 800 | 1.0f */
         "ucomiss -0x78(%ebp), %xmm0\n" /* trace */
         "jbe .Lf1ba01a_001ba149\n"
         "movl -0x3c(%ebp), %eax\n" /* line 802 | angles */
@@ -570,14 +570,14 @@ qboolean G_IsTurretUsable(gentity_t *self, gentity_t *owner)
         "je .Lf1ba252_001ba3d4\n"
         /* { scope 1 */
         "movss 0x10(%eax), %xmm2\n" /* line 840 */
-        "movss 0x303250, %xmm0\n" /* line 841 */
+        "movss sign+336, %xmm0\n" /* line 841 */
         "movaps %xmm2, %xmm1\n"
         "andps %xmm0, %xmm1\n"
         "movss %xmm1, -0x3c(%ebp)\n" /* yawSpan */
         "movss 0x18(%eax), %xmm1\n"
         "andps %xmm0, %xmm1\n"
         "addss -0x3c(%ebp), %xmm1\n" /* yawSpan */
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss %xmm1, -0x3c(%ebp)\n" /* yawSpan */
         "addss 0x148(%esi), %xmm2\n" /* line 842 */
         "addss %xmm1, %xmm2\n"
@@ -610,7 +610,7 @@ qboolean G_IsTurretUsable(gentity_t *self, gentity_t *owner)
         "movss -0x28(%ebp), %xmm0\n"
         "mulss -0x1c(%ebp), %xmm0\n"
         "addss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 45 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 45 | 1.0f */
         "movaps %xmm1, %xmm2\n"
         "subss %xmm0, %xmm2\n"
         "pxor %xmm4, %xmm4\n"
@@ -619,7 +619,7 @@ qboolean G_IsTurretUsable(gentity_t *self, gentity_t *owner)
         "andps %xmm2, %xmm3\n"
         "andnps %xmm1, %xmm2\n"
         "orps %xmm3, %xmm2\n"
-        "movss 0x2ed5dc, %xmm3\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm3\n" /* -1.0f */
         "movaps %xmm3, %xmm0\n"
         "subss %xmm1, %xmm0\n"
         "movaps %xmm2, %xmm1\n"
@@ -632,7 +632,7 @@ qboolean G_IsTurretUsable(gentity_t *self, gentity_t *owner)
         "fstps -0x40(%ebp)\n"
         /* } scope */
         "cvtss2sd -0x40(%ebp), %xmm0\n" /* line 883 */
-        "mulsd 0x307c40, %xmm0\n" /* 57.29577951308232 */
+        "mulsd lit8_00307c40, %xmm0\n" /* 57.29577951308232 */
         "cvtsd2ss %xmm0, %xmm0\n"
         "ucomiss -0x3c(%ebp), %xmm0\n" /* yawSpan */
         "ja .Lf1ba252_001ba3d4\n"
@@ -782,7 +782,7 @@ void turret_use(gentity_t *self, gentity_t *owner, gentity_t *activator)
         "calll AngleSubtract\n"
         "fstps -0x2c(%ebp)\n"
         "movss -0x2c(%ebp), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0x114(%edi)\n" /* ps */
         "movl 8(%ebp), %eax\n" /* line 962 | self */
         "movss 0x144(%eax), %xmm0\n"
@@ -799,7 +799,7 @@ void turret_use(gentity_t *self, gentity_t *owner, gentity_t *activator)
         "calll AngleSubtract\n"
         "fstps -0x2c(%ebp)\n"
         "movss -0x2c(%ebp), %xmm0\n"
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "movss %xmm0, 0x118(%edi)\n" /* ps */
         "movl 8(%ebp), %edx\n" /* line 966 | self */
         "movss 0x148(%edx), %xmm0\n"
@@ -890,12 +890,12 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "je .Lf1ba672_001ba717\n"
         "movl -0x1c(%ebp), %eax\n" /* line 998 | weaponinfoname */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b58d0, (%esp)\n" /* "G_SpawnTurret: weapon '%s' isn't a turret. This usually indi" */
+        "movl $str_002b58d0, (%esp)\n" /* "G_SpawnTurret: weapon '%s' isn't a turret. This usually indi" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
         ".Lf1ba672_001ba717:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1001 */
+        "movl imp_level, %eax\n" /* line 1001 */
         "movl 0x1c(%eax), %eax\n"
         "testl %eax, %eax\n"
         "je .Lf1ba672_001baa73\n"
@@ -936,7 +936,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "jne .Lf1ba672_001ba9b7\n"
         ".Lf1ba672_001ba79d:\n"
         "movb $0, 0x43(%esi)\n" /* line 1029 | pTurretInfo */
-        "movl 0x195f6a0, %eax\n" /* line 1031 */
+        "movl imp_level, %eax\n" /* line 1031 */
         "cmpb $0, 0x1348(%eax)\n"
         "jne .Lf1ba672_001ba9d4\n"
         ".Lf1ba672_001ba7b3:\n"
@@ -944,14 +944,14 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "movl %eax, 0x10(%esi)\n" /* pTurretInfo */
         ".Lf1ba672_001ba7bc:\n"
         "movss 0x10(%esi), %xmm0\n" /* line 1033 | pTurretInfo */
-        "xorps 0x303260, %xmm0\n"
+        "xorps sign+352, %xmm0\n"
         "movss %xmm0, 0x10(%esi)\n" /* pTurretInfo */
         "pxor %xmm1, %xmm1\n" /* line 1034 */
         "ucomiss %xmm1, %xmm0\n"
         "jbe .Lf1ba672_001ba7db\n"
         "movss %xmm1, 0x10(%esi)\n" /* line 1035 | pTurretInfo */
         ".Lf1ba672_001ba7db:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1037 */
+        "movl imp_level, %eax\n" /* line 1037 */
         "cmpb $0, 0x1348(%eax)\n"
         "jne .Lf1ba672_001bab74\n"
         ".Lf1ba672_001ba7ed:\n"
@@ -960,7 +960,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "ucomiss 0x18(%esi), %xmm1\n" /* line 1039 | pTurretInfo */
         "ja .Lf1ba672_001babab\n"
         ".Lf1ba672_001ba800:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1042 */
+        "movl imp_level, %eax\n" /* line 1042 */
         "cmpb $0, 0x1348(%eax)\n"
         "jne .Lf1ba672_001bab44\n"
         ".Lf1ba672_001ba812:\n"
@@ -968,13 +968,13 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "movl %eax, 0xc(%esi)\n" /* pTurretInfo */
         ".Lf1ba672_001ba81b:\n"
         "movss 0xc(%esi), %xmm0\n" /* line 1044 | pTurretInfo */
-        "xorps 0x303260, %xmm0\n"
+        "xorps sign+352, %xmm0\n"
         "movaps %xmm1, %xmm2\n" /* line 1046 */
         "cmpnltss %xmm0, %xmm2\n"
         "andps %xmm0, %xmm2\n"
         "movaps %xmm2, %xmm0\n"
         "movss %xmm0, 0xc(%esi)\n" /* pTurretInfo */
-        "movl 0x195f6a0, %eax\n" /* line 1048 */
+        "movl imp_level, %eax\n" /* line 1048 */
         "cmpb $0, 0x1348(%eax)\n"
         "jne .Lf1ba672_001bab14\n"
         ".Lf1ba672_001ba84c:\n"
@@ -990,7 +990,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "jne .Lf1ba672_001ba87a\n"
         "movl $0x64, 0x194(%edi)\n" /* line 1056 | self */
         ".Lf1ba672_001ba87a:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1058 */
+        "movl imp_level, %eax\n" /* line 1058 */
         "cmpb $0, 0x1348(%eax)\n"
         "jne .Lf1ba672_001baad1\n"
         ".Lf1ba672_001ba88c:\n"
@@ -1000,7 +1000,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "testl %ecx, %ecx\n"
         "js .Lf1ba672_001bab05\n"
         ".Lf1ba672_001ba8a6:\n"
-        "movl 0x195f6a0, %eax\n" /* line 1064 */
+        "movl imp_level, %eax\n" /* line 1064 */
         "cmpb $0, 0x1348(%eax)\n"
         "jne .Lf1ba672_001baaa9\n"
         ".Lf1ba672_001ba8b8:\n"
@@ -1049,7 +1049,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "movl $0, 8(%eax)\n" /* line 185 */
         /* } scope */
         "movb $0xd, 0x166(%edi)\n" /* line 1086 | self */
-        "movl 0x195f6a0, %eax\n" /* line 1087 */
+        "movl imp_level, %eax\n" /* line 1087 */
         "movl 0x1ec(%eax), %eax\n"
         "addl $0x32, %eax\n"
         "movl %eax, 0x190(%edi)\n" /* self */
@@ -1068,14 +1068,14 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "movl %eax, (%esp)\n" /* line 1027 */
         "calll G_SoundAliasIndex\n"
         "movb %al, 0x43(%esi)\n" /* pTurretInfo */
-        "movl 0x195f6a0, %eax\n" /* line 1031 */
+        "movl imp_level, %eax\n" /* line 1031 */
         "cmpb $0, 0x1348(%eax)\n"
         "je .Lf1ba672_001ba7b3\n"
         ".Lf1ba672_001ba9d4:\n"
         "leal 0x10(%esi), %eax\n" /* pTurretInfo */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2b5950, (%esp)\n" /* "rightarc" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_002b5950, (%esp)\n" /* "rightarc" */
         "calll G_SpawnFloat\n"
         "testl %eax, %eax\n"
         "jne .Lf1ba672_001ba7bc\n"
@@ -1097,14 +1097,14 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "jmp .Lf1ba672_001ba75c\n"
         ".Lf1ba672_001baa2c:\n"
         "movl $0x20, 8(%esp)\n" /* line 986 */
-        "movl $0x2b5870, 4(%esp)\n" /* "G_SpawnTurret: max number of turrets (%d) exceeded" */
+        "movl $str_002b5870, 4(%esp)\n" /* "G_SpawnTurret: max number of turrets (%d) exceeded" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1ba672_001ba6ab\n"
         ".Lf1ba672_001baa4d:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 994 | weaponinfoname */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b58a4, 4(%esp)\n" /* "bad weaponinfo '%s' specified for turret" */
+        "movl $str_002b58a4, 4(%esp)\n" /* "bad weaponinfo '%s' specified for turret" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "movl 0xc8(%edi), %eax\n" /* self */
@@ -1117,7 +1117,7 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         "jne .Lf1ba672_001ba727\n"
         "movl -0x1c(%ebp), %eax\n" /* line 1002 | weaponinfoname */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2b5934, (%esp)\n" /* "turret '%s' not precached" */
+        "movl $str_002b5934, (%esp)\n" /* "turret '%s' not precached" */
         "calll va\n"
         "movl %eax, (%esp)\n"
         "calll Scr_Error\n"
@@ -1125,8 +1125,8 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         ".Lf1ba672_001baaa9:\n"
         "leal 0x38(%esi), %eax\n" /* line 1064 | pTurretInfo */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2162ac, 4(%esp)\n" /* "1" */
-        "movl $0x2218bc, (%esp)\n" /* "playerSpread" */
+        "movl $str_002162ac, 4(%esp)\n" /* "1" */
+        "movl $str_002218bc, (%esp)\n" /* "playerSpread" */
         "calll G_SpawnFloat\n"
         "testl %eax, %eax\n"
         "jne .Lf1ba672_001ba8c1\n"
@@ -1134,8 +1134,8 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         ".Lf1ba672_001baad1:\n"
         "leal 0x19c(%edi), %eax\n" /* line 1058 | self */
         "movl %eax, 8(%esp)\n"
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
-        "movl $0x22096c, (%esp)\n" /* "damage" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
+        "movl $str_0022096c, (%esp)\n" /* "damage" */
         "calll G_SpawnInt\n"
         "testl %eax, %eax\n"
         "je .Lf1ba672_001ba88c\n"
@@ -1148,8 +1148,8 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         ".Lf1ba672_001bab14:\n"
         "leal 0x14(%esi), %eax\n" /* line 1048 | pTurretInfo */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2b596c, (%esp)\n" /* "bottomarc" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_002b596c, (%esp)\n" /* "bottomarc" */
         "calll G_SpawnFloat\n"
         "pxor %xmm1, %xmm1\n"
         "testl %eax, %eax\n"
@@ -1159,8 +1159,8 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         ".Lf1ba672_001bab44:\n"
         "leal 0xc(%esi), %eax\n" /* line 1042 | pTurretInfo */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2b5964, (%esp)\n" /* "toparc" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_002b5964, (%esp)\n" /* "toparc" */
         "calll G_SpawnFloat\n"
         "pxor %xmm1, %xmm1\n"
         "testl %eax, %eax\n"
@@ -1170,8 +1170,8 @@ void G_SpawnTurret(gentity_t *self, const char *weaponinfoname)
         ".Lf1ba672_001bab74:\n"
         "leal 0x18(%esi), %eax\n" /* line 1037 | pTurretInfo */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x2b595c, (%esp)\n" /* "leftarc" */
+        "movl $str_002157b8, 4(%esp)\n"
+        "movl $str_002b595c, (%esp)\n" /* "leftarc" */
         "movss %xmm1, -0x38(%ebp)\n"
         "calll G_SpawnFloat\n"
         "testl %eax, %eax\n"
@@ -1218,7 +1218,7 @@ void turret_think_client(gentity_t *self)
         "leal (, %eax, 8), %esi\n"
         "subl %eax, %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195f688, %esi\n"
+        "addl imp_g_entities, %esi\n"
         "cmpb $1, 0x162(%esi)\n" /* line 585 */
         "je .Lf1bac12_001bac58\n"
         ".Lf1bac12_001bac45:\n"
@@ -1320,7 +1320,7 @@ void turret_think_client(gentity_t *self)
         "shll $4, %edx\n"
         "subl %ecx, %edx\n"
         "leal (%eax, %edx, 2), %edx\n"
-        "movl 0x195f68c, %ecx\n"
+        "movl imp_level_bgs, %ecx\n"
         "movl %ecx, -0x1a8(%ebp)\n"
         "leal 0xb3bf0(%ecx, %edx, 8), %edx\n"
         "leal 0xc(%edx), %eax\n"
@@ -1376,7 +1376,7 @@ void turret_think_client(gentity_t *self)
         /* { scope 2: i, numVertChildren, iPrevBlend, ci, ... */
         /* { scope 3: xx, yy, zw, flashTag, ... */
         ".Lf1bac12_001bae7a:\n"
-        "movl 0x195f5bc, %eax\n" /* line 245 */
+        "movl imp_scr_const, %eax\n" /* line 245 */
         "movzwl 0x98(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n"
@@ -1428,7 +1428,7 @@ void turret_think_client(gentity_t *self)
         "movss %xmm1, -0x1b0(%ebp)\n" /* zw */
         "movss -0x148(%ebp), %xmm0\n" /* line 320 | yy */
         "addss %xmm2, %xmm0\n"
-        "movss 0x2ed5d0, %xmm1\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm1\n" /* 1.0f */
         "subss %xmm0, %xmm1\n"
         "movss %xmm1, -0x8c(%ebp)\n" /* tagAxis */
         "movss -0x1b0(%ebp), %xmm0\n" /* line 321 | zw */
@@ -1440,7 +1440,7 @@ void turret_think_client(gentity_t *self)
         "subss -0x1b0(%ebp), %xmm4\n" /* line 324 | zw */
         "movss %xmm4, -0x80(%ebp)\n"
         "addss -0x14c(%ebp), %xmm2\n" /* line 325 | xx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, -0x7c(%ebp)\n"
         "movaps %xmm3, %xmm0\n" /* line 326 */
@@ -1452,7 +1452,7 @@ void turret_think_client(gentity_t *self)
         "movss %xmm5, -0x70(%ebp)\n"
         "movss -0x14c(%ebp), %xmm2\n" /* line 330 | xx */
         "addss -0x148(%ebp), %xmm2\n" /* yy */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "subss %xmm2, %xmm0\n"
         "movss %xmm0, -0x6c(%ebp)\n"
         /* } scope */
@@ -1528,7 +1528,7 @@ void turret_think_client(gentity_t *self)
         "movl %edx, (%esp)\n"
         "calll XAnimGetChildAt\n"
         "movl %eax, -0x158(%ebp)\n" /* leafAnim1 */
-        "movss 0x2ed5d0, %xmm0\n" /* line 303 | 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* line 303 | 1.0f */
         "subss -0x13c(%ebp), %xmm0\n"
         "movss %xmm0, -0x19c(%ebp)\n"
         "movl $0, 0x1c(%esp)\n"
@@ -1542,7 +1542,7 @@ void turret_think_client(gentity_t *self)
         "movl %eax, (%esp)\n"
         "calll XAnimSetGoalWeight\n"
         "movss -0x13c(%ebp), %xmm0\n" /* line 305 */
-        "ucomiss 0x2ed5e8, %xmm0\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm0\n" /* 0.0f */
         "jp .Lf1bac12_001bb553\n"
         "jne .Lf1bac12_001bb553\n"
         ".Lf1bac12_001bb203:\n"
@@ -1596,7 +1596,7 @@ void turret_think_client(gentity_t *self)
         "je .Lf1bac12_001bb5c5\n"
         ".Lf1bac12_001bb306:\n"
         "cvtsi2ssl %ebx, %xmm1\n" /* line 292 | pLerpAnim */
-        "mulss 0x2ed5d8, %xmm1\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "movss -0x180(%ebp), %xmm0\n" /* localYaw */
         "movl -0x184(%ebp), %ecx\n" /* weapDef */
         "divss 0x564(%ecx), %xmm0\n"
@@ -1630,7 +1630,7 @@ void turret_think_client(gentity_t *self)
         "testl %eax, %eax\n"
         "je .Lf1bac12_001bb54a\n"
         /* { scope 3: xx, yy, zw, flashTag, ... */
-        "movl 0x195f688, %edx\n" /* line 170 */
+        "movl imp_g_entities, %edx\n" /* line 170 */
         "leal 0x8bdd0(%edx), %eax\n"
         "cmpl %eax, %esi\n"
         "je .Lf1bac12_001bbeeb\n"
@@ -1639,7 +1639,7 @@ void turret_think_client(gentity_t *self)
         ".Lf1bac12_001bb3bc:\n"
         "leal -0xbc(%ebp), %eax\n" /* line 140 | turretAxis */
         "movl %eax, 8(%esp)\n"
-        "movl 0x195f5bc, %eax\n"
+        "movl imp_scr_const, %eax\n"
         "movzwl 0x8c(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n"
@@ -1700,7 +1700,7 @@ void turret_think_client(gentity_t *self)
         "movl 0x78(%eax), %eax\n" /* line 176 */
         "testl %eax, %eax\n"
         "jne .Lf1bac12_001bbe55\n"
-        "movl 0x195f6a0, %eax\n" /* line 179 */
+        "movl imp_level, %eax\n" /* line 179 */
         "movl 0x1ec(%eax), %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl %edi, 0xc(%esp)\n"
@@ -1752,7 +1752,7 @@ void turret_think_client(gentity_t *self)
         "movl %edx, (%esp)\n"
         "calll XAnimGetAnimDebugName\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
+        "movl $str_002b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1bac12_001bb306\n"
@@ -1779,16 +1779,16 @@ void turret_think_client(gentity_t *self)
         "fstps -0x1ac(%ebp)\n"
         "movss -0x1ac(%ebp), %xmm2\n"
         "subss -0x19c(%ebp), %xmm2\n"
-        "andps 0x303270, %xmm2\n"
-        "movl 0x195f6a0, %eax\n"
+        "andps sign+368, %xmm2\n"
+        "movl imp_level, %eax\n"
         "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "divss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm0, %xmm0\n" /* line 325 */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bac12_001bb6a2\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm2, %xmm0\n"
         ".Lf1bac12_001bb6a2:\n"
         "movl $0, 0x1c(%esp)\n"
@@ -1823,17 +1823,17 @@ void turret_think_client(gentity_t *self)
         "calll XAnimGetWeight\n"
         "fstps -0x1ac(%ebp)\n"
         "movss -0x1ac(%ebp), %xmm2\n"
-        "subss 0x2ed5d0, %xmm2\n" /* 1.0f */
-        "andps 0x303270, %xmm2\n"
-        "movl 0x195f6a0, %eax\n"
+        "subss lit4_002ed5d0, %xmm2\n" /* 1.0f */
+        "andps sign+368, %xmm2\n"
+        "movl imp_level, %eax\n"
         "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "divss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm0, %xmm0\n" /* line 337 */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bac12_001bb78c\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm2, %xmm0\n"
         ".Lf1bac12_001bb78c:\n"
         "movl $0, 0x1c(%esp)\n"
@@ -1920,14 +1920,14 @@ void turret_think_client(gentity_t *self)
         "movl 0x158(%esi), %eax\n" /* line 382 */
         "addss 0xf8(%eax), %xmm1\n"
         "movss %xmm1, -0x30(%ebp)\n"
-        "subss 0x2ed7c8, %xmm0\n" /* line 383 | 60.0f */
+        "subss lit4_002ed7c8, %xmm0\n" /* line 383 | 60.0f */
         "movss %xmm0, -0x3c(%ebp)\n"
         "movl $0x2810011, 0x18(%esp)\n" /* line 385 */
         "movl (%esi), %eax\n"
         "movl %eax, 0x14(%esp)\n"
         "leal -0x44(%ebp), %eax\n" /* end */
         "movl %eax, 0x10(%esp)\n"
-        "movl 0x195ed4c, %eax\n"
+        "movl imp_vec3_origin, %eax\n"
         "movl %eax, 0xc(%esp)\n"
         "movl %eax, 8(%esp)\n"
         "leal -0x38(%ebp), %eax\n" /* start */
@@ -1936,7 +1936,7 @@ void turret_think_client(gentity_t *self)
         "movl %eax, (%esp)\n"
         "calll G_TraceCapsule\n"
         "movss -0x68(%ebp), %xmm2\n" /* line 386 | trace */
-        "ucomiss 0x2ed5d0, %xmm2\n" /* 1.0f */
+        "ucomiss lit4_002ed5d0, %xmm2\n" /* 1.0f */
         "jb .Lf1bac12_001bbe85\n"
         ".Lf1bac12_001bb964:\n"
         "movl $1, 0xc(%esp)\n" /* line 393 */
@@ -1981,16 +1981,16 @@ void turret_think_client(gentity_t *self)
         "fstps -0x1ac(%ebp)\n"
         "movss -0x1ac(%ebp), %xmm2\n"
         "subss -0x170(%ebp), %xmm2\n" /* fHeightRatio */
-        "andps 0x303270, %xmm2\n"
-        "movl 0x195f6a0, %eax\n"
+        "andps sign+368, %xmm2\n"
+        "movl imp_level, %eax\n"
         "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "divss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm0, %xmm0\n" /* line 346 */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bac12_001bba6b\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm2, %xmm0\n"
         ".Lf1bac12_001bba6b:\n"
         "movl $0, 0x1c(%esp)\n"
@@ -2025,16 +2025,16 @@ void turret_think_client(gentity_t *self)
         "movss -0x1ac(%ebp), %xmm3\n"
         "subss -0x170(%ebp), %xmm3\n" /* fHeightRatio */
         "subss %xmm3, %xmm2\n"
-        "andps 0x303270, %xmm2\n"
-        "movl 0x195f6a0, %eax\n"
+        "andps sign+368, %xmm2\n"
+        "movl imp_level, %eax\n"
         "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "divss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm0, %xmm0\n" /* line 351 */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bac12_001bbb56\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm2, %xmm0\n"
         ".Lf1bac12_001bbb56:\n"
         "movl $0, 0x1c(%esp)\n"
@@ -2062,19 +2062,19 @@ void turret_think_client(gentity_t *self)
         "calll XAnimGetWeight\n"
         "fstps -0x1ac(%ebp)\n"
         "movss -0x1ac(%ebp), %xmm2\n"
-        "movss 0x2ed5d0, %xmm3\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm3\n" /* 1.0f */
         "subss -0x174(%ebp), %xmm3\n" /* fPrevBlend */
         "subss %xmm3, %xmm2\n"
-        "andps 0x303270, %xmm2\n"
-        "movl 0x195f6a0, %eax\n"
+        "andps sign+368, %xmm2\n"
+        "movl imp_level, %eax\n"
         "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "divss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm0, %xmm0\n" /* line 355 */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bac12_001bbc2b\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm2, %xmm0\n"
         ".Lf1bac12_001bbc2b:\n"
         "movl $0, 0x1c(%esp)\n"
@@ -2109,16 +2109,16 @@ void turret_think_client(gentity_t *self)
         "fstps -0x1ac(%ebp)\n"
         "movss -0x1ac(%ebp), %xmm2\n"
         "subss -0x174(%ebp), %xmm2\n" /* fPrevBlend */
-        "andps 0x303270, %xmm2\n"
-        "movl 0x195f6a0, %eax\n"
+        "andps sign+368, %xmm2\n"
+        "movl imp_level, %eax\n"
         "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "divss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm0, %xmm0\n" /* line 361 */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bac12_001bbd08\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm2, %xmm0\n"
         ".Lf1bac12_001bbd08:\n"
         "movl $0, 0x1c(%esp)\n"
@@ -2144,7 +2144,7 @@ void turret_think_client(gentity_t *self)
         "movl %eax, (%esp)\n"
         "calll XAnimGetAnimDebugName\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x2b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
+        "movl $str_002b59fc, 4(%esp)\n" /* "Player anim '%s' has no children" */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf1bac12_001bb121\n"
@@ -2157,16 +2157,16 @@ void turret_think_client(gentity_t *self)
         "fstps -0x1ac(%ebp)\n"
         "movss -0x1ac(%ebp), %xmm2\n"
         "subss -0x13c(%ebp), %xmm2\n"
-        "andps 0x303270, %xmm2\n"
-        "movl 0x195f6a0, %eax\n"
+        "andps sign+368, %xmm2\n"
+        "movl imp_level, %eax\n"
         "cvtsi2ssl 0x1f4(%eax), %xmm1\n"
-        "movss 0x2ed5c8, %xmm0\n" /* 1000.0f */
+        "movss lit4_002ed5c8, %xmm0\n" /* 1000.0f */
         "divss %xmm1, %xmm0\n"
         "mulss %xmm0, %xmm2\n"
         "pxor %xmm0, %xmm0\n" /* line 330 */
         "ucomiss %xmm0, %xmm2\n"
         "jbe .Lf1bac12_001bbe04\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm2, %xmm0\n"
         ".Lf1bac12_001bbe04:\n"
         "movl $0, 0x1c(%esp)\n"
@@ -2194,7 +2194,7 @@ void turret_think_client(gentity_t *self)
         /* } scope */
         /* { scope 3: xx, yy, zw, flashTag, ... */
         ".Lf1bac12_001bbe74:\n"
-        "movl $0x2b59a8, (%esp)\n" /* line 248 */
+        "movl $str_002b59a8, (%esp)\n" /* line 248 */
         "calll Com_Printf\n"
         "jmp .Lf1bac12_001bade0\n"
         ".Lf1bac12_001bbe85:\n"
@@ -2217,8 +2217,8 @@ void turret_think_client(gentity_t *self)
         "movl %eax, 0x10(%esp)\n"
         "movl (%edi), %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movl $0x2b5a20, 8(%esp)\n" /* "tag_flash" */
-        "movl $0x2b5a2c, 4(%esp)\n" /* "Couldn't find %s on turret (entity %d, classname '%s').
+        "movl $str_002b5a20, 8(%esp)\n" /* "tag_flash" */
+        "movl $str_002b5a2c, 4(%esp)\n" /* "Couldn't find %s on turret (entity %d, classname '%s').
 " */
         "movl $1, (%esp)\n"
         "calll Com_Error\n"

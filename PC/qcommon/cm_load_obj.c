@@ -11,7 +11,7 @@ extern float sqrtf(float x);
  *   #include "PC/universal/com_vector.h"
  */
 
-/* cml is a static block; the BSS has 124 bytes at 0x4ea684.
+/* cml is a static block; the BSS has 124 bytes at cml.
  * Only the first 12 bytes are used in this file:
  *   offset 0: numPlanes (int)
  *   offset 4: planes (cplane_t *)
@@ -24,9 +24,9 @@ typedef struct cml_s {
     char _pad[124 - 12];
 } cml_t;
 
-static cml_t cml; /* 0x4ea684 */
+static cml_t cml; /* cml */
 
-/* Global clipMap_t pointer stored at 0x195eda4 */
+/* Global clipMap_t pointer stored at imp_cm */
 extern clipMap_t cm;
 #define cm_ptr (*(clipMap_t **)&cm)
 
