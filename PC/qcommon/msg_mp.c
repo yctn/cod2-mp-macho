@@ -508,37 +508,17 @@ void MSG_WriteData(msg_t *buf, const void *data, int length)
 }
 
 /* line 1133 */
-__attribute__((naked))
 int MSG_ReadByte(msg_t *msg)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1133 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* msg */
-        /* { scope 1 */
-        "movl 0x10(%ecx), %edx\n" /* line 1137 */
-        "cmpl 0xc(%ecx), %edx\n"
-        "jge .Lf171ee2_00171f03\n"
-        "movl 4(%ecx), %eax\n" /* line 1139 */
-        "movzbl (%eax, %edx), %ebx\n" /* c */
-        "leal 1(%edx), %eax\n" /* line 1140 */
-        "movl %eax, 0x10(%ecx)\n"
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1145 | c */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf171ee2_00171f03:\n"
-        "movl $1, (%ecx)\n" /* line 1143 */
-        "movl $0xffffffff, %ebx\n" /* c */
-        /* } scope */
-        "movl %ebx, %eax\n" /* line 1145 | c */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int readcount = msg->readcount;
+
+    if (readcount >= msg->cursize) {
+        msg->overflowed = 1;
+        return -1;
+    }
+
+    msg->readcount = readcount + 1;
+    return (unsigned char)msg->data[readcount];
 }
 
 /* line 1148 */
