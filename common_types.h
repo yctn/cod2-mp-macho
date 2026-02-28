@@ -2741,10 +2741,15 @@ typedef int CGImage;  /* opaque */
 typedef int CSpecArray;  /* opaque */
 typedef int Exop;  /* opaque */
 typedef int FxImpactEntry;  /* opaque */
+typedef int HighPart;  /* opaque */
 typedef int LocalizeEntry;  /* opaque */
+typedef int LowPart;  /* opaque */
 typedef int MarkVertAssemblyBuffer;  /* opaque */
 typedef int MediaType;  /* opaque */
 typedef int MovieType;  /* opaque */
+typedef int MultiSampleCaps;  /* opaque */
+typedef int Offset;  /* opaque */
+typedef int OffsetHigh;  /* opaque */
 typedef int OpaqueAEDataStorageType;  /* opaque */
 typedef int OpaqueAUGraph;  /* opaque */
 typedef int OpaqueAudioConverter;  /* opaque */
@@ -2761,10 +2766,27 @@ typedef int OpaqueMenuRef;  /* opaque */
 typedef int OpaqueRgnHandle;  /* opaque */
 typedef int OpaqueTXNObject;  /* opaque */
 typedef int OpaqueWindowPtr;  /* opaque */
+typedef int Pointer;  /* opaque */
 typedef int RawFile;  /* opaque */
 typedef int SndDriverGlobals;  /* opaque */
 typedef int TrackType;  /* opaque */
 typedef int UINT;  /* opaque */
+typedef int _11;  /* opaque */
+typedef int _12;  /* opaque */
+typedef int _13;  /* opaque */
+typedef int _14;  /* opaque */
+typedef int _21;  /* opaque */
+typedef int _22;  /* opaque */
+typedef int _23;  /* opaque */
+typedef int _24;  /* opaque */
+typedef int _31;  /* opaque */
+typedef int _32;  /* opaque */
+typedef int _33;  /* opaque */
+typedef int _34;  /* opaque */
+typedef int _41;  /* opaque */
+typedef int _42;  /* opaque */
+typedef int _43;  /* opaque */
+typedef int _44;  /* opaque */
 typedef int _CGDirectDisplayID;  /* opaque */
 typedef int _CGLContextObject;  /* opaque */
 typedef int _CGLPixelFormatObject;  /* opaque */
@@ -2784,10 +2806,24 @@ typedef int __EventLoopTimer;  /* opaque */
 typedef int __sFILEX;  /* opaque */
 typedef int _telldir;  /* opaque */
 typedef int activeOccluderBuffer_t;  /* opaque */
+typedef int allocatedVerts;  /* opaque */
+typedef int archival;  /* opaque */
+typedef int baseCoords;  /* opaque */
+typedef int baseIndex;  /* opaque */
+typedef int baseVertex;  /* opaque */
 typedef int bb;  /* opaque */
 typedef int blens;  /* opaque */
 typedef int bool;  /* opaque */
 typedef int boolean;  /* opaque */
+typedef int bound;  /* opaque */
+typedef int brushmodel;  /* opaque */
+typedef int buf;  /* opaque */
+typedef int bufRate;  /* opaque */
+typedef int bufReady;  /* opaque */
+typedef int bufSize;  /* opaque */
+typedef int bufUsed;  /* opaque */
+typedef int buffer;  /* opaque */
+typedef int byteLen;  /* opaque */
 typedef int bytes_left;  /* opaque */
 typedef int bytes_used;  /* opaque */
 typedef int centityArray_t;  /* opaque */
@@ -2795,35 +2831,186 @@ typedef int cg_eachClientLocalEntities_t;  /* opaque */
 typedef int cg_itemsArray_t;  /* opaque */
 typedef int cg_solidEntities_t;  /* opaque */
 typedef int cg_weaponsArray_t;  /* opaque */
+typedef int channels;  /* opaque */
+typedef int channelvolume;  /* opaque */
 typedef int check;  /* opaque */
+typedef int classnum;  /* opaque */
 typedef int code;  /* opaque */
 typedef int codes;  /* opaque */
+typedef int color;  /* opaque */
+typedef int colorForDir;  /* opaque */
 typedef int copy;  /* opaque */
+typedef int corpse;  /* opaque */
+typedef int current;  /* opaque */
+typedef int data;  /* opaque */
+typedef int day;  /* opaque */
+typedef int dayOfWeek;  /* opaque */
+typedef int dayOfYear;  /* opaque */
+typedef int ddckCKDestOverlay;  /* opaque */
+typedef int ddpfPixelFormat;  /* opaque */
 typedef int decode;  /* opaque */
+typedef int density;  /* opaque */
 typedef int dist;  /* opaque */
+typedef int drylevel;  /* opaque */
+typedef int duration;  /* opaque */
+typedef int dwAlphaBitDepth;  /* opaque */
+typedef int dwBBitMask;  /* opaque */
+typedef int dwBackBufferCount;  /* opaque */
+typedef int dwBumpBitCount;  /* opaque */
+typedef int dwBumpDuBitMask;  /* opaque */
+typedef int dwBumpDvBitMask;  /* opaque */
+typedef int dwBumpLuminanceBitMask;  /* opaque */
+typedef int dwCaps4;  /* opaque */
+typedef int dwDepth;  /* opaque */
+typedef int dwEmptyFaceColor;  /* opaque */
+typedef int dwFVF;  /* opaque */
+typedef int dwGBitMask;  /* opaque */
+typedef int dwLinearSize;  /* opaque */
+typedef int dwLuminanceAlphaBitMask;  /* opaque */
+typedef int dwLuminanceBitCount;  /* opaque */
+typedef int dwLuminanceBitMask;  /* opaque */
+typedef int dwMipMapCount;  /* opaque */
+typedef int dwOperations;  /* opaque */
+typedef int dwPrivateFormatBitCount;  /* opaque */
+typedef int dwRBitMask;  /* opaque */
+typedef int dwRGBAlphaBitMask;  /* opaque */
+typedef int dwRGBBitCount;  /* opaque */
+typedef int dwRGBZBitMask;  /* opaque */
+typedef int dwRefreshRate;  /* opaque */
+typedef int dwSrcVBHandle;  /* opaque */
+typedef int dwStencilBitDepth;  /* opaque */
+typedef int dwStencilBitMask;  /* opaque */
+typedef int dwUBitMask;  /* opaque */
+typedef int dwVBitMask;  /* opaque */
+typedef int dwVolumeDepth;  /* opaque */
+typedef int dwYBitMask;  /* opaque */
+typedef int dwYUVAlphaBitMask;  /* opaque */
+typedef int dwYUVBitCount;  /* opaque */
+typedef int dwYUVZBitMask;  /* opaque */
+typedef int dwZBitMask;  /* opaque */
+typedef int dwZBufferBitDepth;  /* opaque */
+typedef int dx7;  /* opaque */
+typedef int dx9;  /* opaque */
 typedef int effectClusterArray_t;  /* opaque */
 typedef int effectListArray_t;  /* opaque */
+typedef int effectTime;  /* opaque */
+typedef int end;  /* opaque */
+typedef int entnum;  /* opaque */
+typedef int era;  /* opaque */
+typedef int eraAlt;  /* opaque */
+typedef int eventParm2;  /* opaque */
+typedef int fadeInTime;  /* opaque */
+typedef int fadeOutTime;  /* opaque */
+typedef int fadeTime;  /* opaque */
+typedef int firstChildIndex;  /* opaque */
+typedef int generic;  /* opaque */
 typedef int get;  /* opaque */
+typedef int grenade;  /* opaque */
+typedef int handle;  /* opaque */
+typedef int hour;  /* opaque */
+typedef int iNumGameTypes;  /* opaque */
+typedef int item;  /* opaque */
+typedef int kickRadius;  /* opaque */
+typedef int kickRate;  /* opaque */
+typedef int lPitch;  /* opaque */
 typedef int left;  /* opaque */
+typedef int legs;  /* opaque */
+typedef int list;  /* opaque */
 typedef int lit;  /* opaque */
+typedef int loopEndDelay;  /* opaque */
+typedef int loopFadeTime;  /* opaque */
+typedef int main;  /* opaque */
 typedef int marker;  /* opaque */
+typedef int max;  /* opaque */
+typedef int maxPitchSpeed;  /* opaque */
+typedef int maxYawSpeed;  /* opaque */
+typedef int menuItemIndex;  /* opaque */
+typedef int menuRef;  /* opaque */
 typedef int method;  /* opaque */
+typedef int min;  /* opaque */
+typedef int minute;  /* opaque */
+typedef int modEndDelay;  /* opaque */
+typedef int mode;  /* opaque */
+typedef int month;  /* opaque */
+typedef int mover;  /* opaque */
+typedef int name;  /* opaque */
 typedef int need;  /* opaque */
 typedef int next;  /* opaque */
+typedef int nextEntId;  /* opaque */
+typedef int nextFree;  /* opaque */
+typedef int notifyName;  /* opaque */
 typedef int offset;  /* opaque */
+typedef int oldDate;  /* opaque */
+typedef int origin;  /* opaque */
 typedef int pad;  /* opaque */
+typedef int parent;  /* opaque */
+typedef int parentLocalId;  /* opaque */
+typedef int partitionIndex;  /* opaque */
+typedef int parts;  /* opaque */
 typedef int pathnode_t;  /* opaque */
 typedef int pathnode_tree_t;  /* opaque */
+typedef int planeNum;  /* opaque */
 typedef int playerAnims_t;  /* opaque */
+typedef int playerconnect;  /* opaque */
+typedef int playerdamage;  /* opaque */
+typedef int playerdisconnect;  /* opaque */
+typedef int playerkilled;  /* opaque */
+typedef int playervote;  /* opaque */
+typedef int pm;  /* opaque */
+typedef int prev;  /* opaque */
+typedef int prevSibling;  /* opaque */
+typedef int rate;  /* opaque */
+typedef int readBuf;  /* opaque */
+typedef int refCount;  /* opaque */
+typedef int res1;  /* opaque */
+typedef int res2;  /* opaque */
+typedef int res3;  /* opaque */
+typedef int roomtype;  /* opaque */
+typedef int root;  /* opaque */
+typedef int sampleTime;  /* opaque */
+typedef int scale;  /* opaque */
 typedef int script_t;  /* opaque */
+typedef int second;  /* opaque */
+typedef int self;  /* opaque */
+typedef int sensitivity;  /* opaque */
+typedef int size;  /* opaque */
+typedef int start;  /* opaque */
+typedef int startupgametype;  /* opaque */
+typedef int status;  /* opaque */
+typedef int str;  /* opaque */
 typedef int stride;  /* opaque */
+typedef int stringCount;  /* opaque */
+typedef int strings;  /* opaque */
+typedef int sunVisibility;  /* opaque */
 typedef int table;  /* opaque */
 typedef int tb;  /* opaque */
+typedef int tess;  /* opaque */
+typedef int torso;  /* opaque */
 typedef int tree;  /* opaque */
 typedef int trees;  /* opaque */
+typedef int trigger;  /* opaque */
+typedef int tris;  /* opaque */
+typedef int turning;  /* opaque */
+typedef int type;  /* opaque */
+typedef int use;  /* opaque */
+typedef int usedVerts;  /* opaque */
+typedef int user;  /* opaque */
+typedef int variant;  /* opaque */
 typedef int vb;  /* opaque */
+typedef int vertexStride;  /* opaque */
+typedef int votecalled;  /* opaque */
+typedef int wBltMSTypes;  /* opaque */
+typedef int wFlipMSTypes;  /* opaque */
+typedef int waitTime;  /* opaque */
 typedef int was;  /* opaque */
+typedef int weekOfYear;  /* opaque */
+typedef int wetlevel;  /* opaque */
 typedef int what;  /* opaque */
+typedef int width;  /* opaque */
+typedef int world;  /* opaque */
+typedef int writeBuf;  /* opaque */
+typedef int xmodel;  /* opaque */
+typedef int year;  /* opaque */
 
 typedef struct AEDesc AEDesc;
 typedef struct AEDescList AEDescList;
@@ -5504,7 +5691,7 @@ struct DiskCollAabbTree {
     vec3_t halfSize;
     short unsigned int materialIndex;
     short unsigned int childCount;
-    int u;
+    union { int firstChildIndex; int partitionIndex; } u;
 };
 
 struct DiskCollBorder {
@@ -5640,10 +5827,10 @@ struct DpvsPlane {
 };
 
 union DvarLimits {
-    int enumeration;
-    int integer;
-    int value;
-    int vector;
+    struct { int stringCount; const char * *strings; } enumeration;
+    struct { int min; int max; } integer;
+    struct { float min; float max; } value;
+    struct { vec_t min; vec_t max; } vector;
 };
 
 union DvarValue {
@@ -6254,7 +6441,7 @@ struct GfxDrawPrimArgs {
     int firstVertexFromBase;
     int vertexCount;
     int primCount;
-    int u;
+    union { struct { int baseVertex; int baseIndex; } buf; struct { int vertexStride; } tess; } u;
 };
 
 struct GfxDrawSurf {
@@ -6397,7 +6584,7 @@ struct GfxModelRigidSurface {
 struct GfxModelSkinnedSurface {
     struct GfxModelSurface surf;
     int skinnedCachedOffset;
-    int skinnedVert;
+    union { void *variant; GfxVertexDx7 *dx7; GfxVertex *dx9; } skinnedVert;
 };
 
 struct GfxOccluder {
@@ -6588,6 +6775,7 @@ struct GfxSurface {
     const Material *material;
     short unsigned int lightmapIndex;
     short unsigned int sortGroup;
+    union { surfaceType_t *data; srfTriangles_t *tris; };
 };
 
 struct GfxSurfaceDynamic {
@@ -6676,7 +6864,7 @@ struct HDC__ {
 struct HICommand {
     UInt32 attributes;
     UInt32 commandID;
-    int menu;
+    struct { MenuRef menuRef; MenuItemIndex menuItemIndex; } menu;
 };
 
 struct HINSTANCE__ {
@@ -6717,7 +6905,7 @@ struct GfxWindowTarget {
 
 struct HashEntry {
     HashIndex status_next;
-    int u;
+    union { HashIndex prev; HashIndex str; } u;
 };
 
 struct ID3DXBuffer {
@@ -6977,9 +7165,9 @@ struct LocalDateTime {
 };
 
 union LongDateRec {
-    int ld;
+    struct { short int era; short int year; short int month; short int day; short int hour; short int minute; short int second; short int dayOfWeek; short int dayOfYear; short int weekOfYear; short int pm; short int res1; short int res2; short int res3; } ld;
     short int list[14];
-    int od;
+    struct { short int eraAlt; DateTimeRec oldDate; } od;
 };
 
 struct MD4_CTX {
@@ -7184,7 +7372,7 @@ struct GfxCmdDrawTextInSpace {
 struct GfxEntity {
     refEntityType_t reType;
     int renderFxFlags;
-    int lighting;
+    union { struct { FxMemMgr_Emitter * (*colorForDir)[2]; float sunVisibility; } dx7; vec3_t baseCoords; vec3_t origin; } lighting;
     vec3_t axis[3];
     float scale;
     vec3_t origin;
@@ -7442,7 +7630,7 @@ struct MssLocal {
     HSAMPLE handle_2D[8];
     void * handle_3D[32];
     HSTREAM handle_stream[13];
-    int raw;
+    struct { HSAMPLE handle; int rate; int width; int channels; byte *buf; byte bufReady[32]; int bufSize; int bufUsed; int readBuf; int writeBuf; double sampleTime; double bufRate; } raw;
 };
 
 struct MtlStateMapBitGroup {
@@ -7478,7 +7666,7 @@ struct NumVersion {
 
 struct ObjectInfo {
     short unsigned int refCount;
-    int u;
+    union { short unsigned int size; short unsigned int entnum; short unsigned int nextEntId; short unsigned int self; } u;
 };
 
 struct OpaqueContextRef {
@@ -7957,6 +8145,7 @@ struct RTL_CRITICAL_SECTION {
 };
 
 struct RefString {
+    union { struct { unsigned int byteLen; unsigned int user; unsigned int refCount; }; };
     char str[1];
 };
 
@@ -8160,7 +8349,7 @@ struct ShadowCookieGlob {
 
 struct SkinBuffers {
     DObjSkelMat matArrayBuf[128];
-    int verts;
+    union { GfxSModelCachedVertexDx7 dx7[512]; GfxSModelCachedVertex dx9[512]; } verts;
 };
 
 struct SkinRigidXModelCmd {
@@ -8740,7 +8929,7 @@ struct VBRState {
 
 struct Variable {
     short unsigned int id;
-    int u;
+    union { short unsigned int prev; short unsigned int prevSibling; } u;
 };
 
 struct VariableStackBuffer {
@@ -8765,9 +8954,9 @@ union VariableUnion {
 
 struct VariableValueInternal {
     struct Variable hash;
-    int u;
-    int w;
-    int v;
+    union { short unsigned int next; union VariableUnion u; struct ObjectInfo o; } u;
+    union { unsigned int status; unsigned int type; unsigned int name; unsigned int classnum; unsigned int notifyName; unsigned int waitTime; unsigned int parentLocalId; } w;
+    union { short unsigned int next; short unsigned int index; } v;
     short unsigned int nextSibling;
 };
 
@@ -9228,12 +9417,6 @@ struct XAnimDeltaPartTrans {
     union XAnimDeltaPartTransData u;
 };
 
-struct XAnimEntry {
-    short unsigned int numAnims;
-    short unsigned int parent;
-    int u;
-};
-
 struct XAnimNotifyInfo {
     ScriptString name;
     float time;
@@ -9248,6 +9431,12 @@ struct XAnimNotify_s {
 struct XAnimParent {
     short unsigned int flags;
     short unsigned int children;
+};
+
+struct XAnimEntry {
+    short unsigned int numAnims;
+    short unsigned int parent;
+    union { XAnimParts *parts; struct XAnimParent s; } u;
 };
 
 struct XAnimPart {
@@ -9626,7 +9815,7 @@ struct _D3DMATERIAL9 {
 };
 
 struct _D3DMATRIX {
-    int _placeholder;
+    union { struct { float _11; float _12; float _13; float _14; float _21; float _22; float _23; float _24; float _31; float _32; float _33; float _34; float _41; float _42; float _43; float _44; }; float m[4][4]; };
 };
 
 struct CRectList {
@@ -9662,6 +9851,7 @@ struct GfxCodeMatrices {
 };
 
 union IDirect3DVertexBuffer9 {
+    struct { float _11; float _12; float _13; float _14; float _21; float _22; float _23; float _24; float _31; float _32; float _33; float _34; float _41; float _42; float _43; float _44; };
     D3DMATRIX m[4];
 };
 
@@ -9830,7 +10020,7 @@ struct DxState {
     D3DCOLOR textureFactor;
     D3DCOLOR ambientColor;
     int clipPlaneCount;
-    int fog;
+    struct { union GfxColor color; D3DFOGMODE mode; float start; float end; float density; } fog;
 };
 
 struct GfxViewParms {
@@ -10019,12 +10209,18 @@ struct _DDPIXELFORMAT {
     DWORD dwSize;
     DWORD dwFlags;
     DWORD dwFourCC;
+    union { DWORD dwRGBBitCount; DWORD dwYUVBitCount; DWORD dwZBufferBitDepth; DWORD dwAlphaBitDepth; DWORD dwLuminanceBitCount; DWORD dwBumpBitCount; DWORD dwPrivateFormatBitCount; };
+    union { DWORD dwRBitMask; DWORD dwYBitMask; DWORD dwStencilBitDepth; DWORD dwLuminanceBitMask; DWORD dwBumpDuBitMask; DWORD dwOperations; };
+    union { DWORD dwGBitMask; DWORD dwUBitMask; DWORD dwZBitMask; DWORD dwBumpDvBitMask; struct { WORD wFlipMSTypes; WORD wBltMSTypes; } MultiSampleCaps; };
+    union { DWORD dwBBitMask; DWORD dwVBitMask; DWORD dwStencilBitMask; DWORD dwBumpLuminanceBitMask; };
+    union { DWORD dwRGBAlphaBitMask; DWORD dwYUVAlphaBitMask; DWORD dwLuminanceAlphaBitMask; DWORD dwRGBZBitMask; DWORD dwYUVZBitMask; };
 };
 
 struct _DDSCAPS2 {
     DWORD dwCaps;
     DWORD dwCaps2;
     DWORD dwCaps3;
+    union { DWORD dwCaps4; DWORD dwVolumeDepth; };
 };
 
 struct _DDSURFACEDESC2 {
@@ -10032,12 +10228,17 @@ struct _DDSURFACEDESC2 {
     DWORD dwFlags;
     DWORD dwHeight;
     DWORD dwWidth;
+    union { LONG lPitch; DWORD dwLinearSize; };
+    union { DWORD dwBackBufferCount; DWORD dwDepth; };
+    union { DWORD dwMipMapCount; DWORD dwRefreshRate; DWORD dwSrcVBHandle; };
     DWORD dwAlphaBitDepth;
     DWORD dwReserved;
     void *lpSurface;
+    union { DDCOLORKEY ddckCKDestOverlay; DWORD dwEmptyFaceColor; };
     DDCOLORKEY ddckCKDestBlt;
     DDCOLORKEY ddckCKSrcOverlay;
     DDCOLORKEY ddckCKSrcBlt;
+    union { DDPIXELFORMAT ddpfPixelFormat; DWORD dwFVF; };
     DDSCAPS2 ddsCaps;
     DWORD dwTextureStage;
 };
@@ -10069,7 +10270,8 @@ struct _GUID {
 };
 
 union _LARGE_INTEGER {
-    int u;
+    struct { DWORD LowPart; LONG HighPart; };
+    struct { DWORD LowPart; LONG HighPart; } u;
     LONGLONG QuadPart;
 };
 
@@ -10155,7 +10357,8 @@ struct _SYSTEMTIME {
 };
 
 union _ULARGE_INTEGER {
-    int u;
+    struct { DWORD LowPart; DWORD HighPart; };
+    struct { DWORD LowPart; DWORD HighPart; } u;
     ULONGLONG QuadPart;
 };
 
@@ -10664,7 +10867,7 @@ struct cin_cache {
 };
 
 struct cinematics_t {
-    int linbuf;
+    byte linbuf[2097152];
     byte file[65536];
     short int sqrTable[256];
     unsigned int mcomp[256];
@@ -10822,7 +11025,7 @@ struct complex_s {
 };
 
 struct WaterGlob {
-    int H;
+    complex_t H[16384];
     byte pixels[65536];
 };
 
@@ -10869,7 +11072,7 @@ struct dbrush_t {
 };
 
 struct dbrushside_t {
-    int u;
+    union { int planeNum; float bound; } u;
     int materialNum;
 };
 
@@ -11110,6 +11313,7 @@ struct grenade_ent_t {
 };
 
 union hudelem_color_t {
+    struct { byte r; byte g; byte b; byte a; };
     int rgba;
 };
 
@@ -11292,6 +11496,7 @@ struct _MEMORY_BASIC_INFORMATION {
 struct _OVERLAPPED {
     ULONG_PTR Internal;
     ULONG_PTR InternalHigh;
+    union { struct { DWORD Offset; DWORD OffsetHigh; }; PVOID Pointer; };
     HANDLE hEvent;
 };
 
@@ -11525,7 +11730,7 @@ struct jpeg_error_mgr {
     void (*format_message)();
     void (*reset_error_mgr)();
     int msg_code;
-    int msg_parm;
+    union { int i[8]; char s[80]; } msg_parm;
     int trace_level;
     long int num_warnings;
     const const char * *jpeg_message_table;
@@ -11956,7 +12161,7 @@ struct mapInfo {
 };
 
 struct materialCommands_t {
-    int verts;
+    union { union { GfxVertex generic[5450]; GfxWorldVertex world[5450]; } dx9; union { GfxVertexDx7 generic[5450]; GfxWorldVertexDx7 world[5450]; } dx7; } verts;
     r_index_t *indices;
     r_index_t *optimizedIndices;
     GfxOptimizedVertexSource optimizedVertexSource;
@@ -12634,7 +12839,7 @@ struct playerState_s {
     int shellshockDuration;
     objective_t objective[16];
     int deltaTime;
-    int hud;
+    struct { hudelem_t current[31]; hudelem_t archival[31]; } hud;
 };
 
 struct cachedClient_s {
@@ -13319,7 +13524,7 @@ struct scrCompilePub_t {
 };
 
 struct scrMemTreeGlob_t {
-    int nodes;
+    MemoryNode nodes[65536];
     unsigned char leftBits[256];
     unsigned char numBits[256];
     unsigned char logBits[256];
@@ -13356,7 +13561,7 @@ struct scrParserPub_t {
 };
 
 struct scrStringGlob_t {
-    int hashTable;
+    HashEntry hashTable[16384];
     Bool inited;
     HashEntry *nextFreeEntry;
 };
@@ -13366,7 +13571,7 @@ struct scrVarDebugPub_t {
 };
 
 struct scrVarGlob_t {
-    int variableList;
+    VariableValueInternal variableList[65534];
 };
 
 struct scrVarPub_t {
@@ -13458,7 +13663,7 @@ struct animScriptData_t {
 
 struct bgs_t {
     struct animScriptData_t animScriptData;
-    int generic_human;
+    struct { scr_animtree_t tree; scr_anim_t root; scr_anim_t torso; scr_anim_t legs; scr_anim_t turning; } generic_human;
     int time;
     int latestSnapshotTime;
     int frametime;
@@ -13583,7 +13788,7 @@ struct scr_const_t {
 struct scr_data_t {
     scr_func_t levelscript;
     scr_func_t gametypescript;
-    int gametype;
+    struct { scr_func_t main; scr_func_t startupgametype; scr_func_t playerconnect; scr_func_t playerdisconnect; scr_func_t playerdamage; scr_func_t playerkilled; scr_func_t votecalled; scr_func_t playervote; int iNumGameTypes; gameTypeScript_t list[32]; } gametype;
     scr_func_t delete_;
     scr_func_t initstructs;
     scr_func_t createstruct;
@@ -13734,10 +13939,10 @@ struct sharedUiInfo_t {
 };
 
 struct shellshock_parms_t {
-    int view;
-    int screenBlend;
-    int sound;
-    int mouse;
+    struct { int fadeTime; float kickRate; float kickRadius; } view;
+    struct { int fadeTime; int effectTime; } screenBlend;
+    struct { qboolean use; int fadeInTime; int fadeOutTime; float drylevel; float wetlevel; char roomtype[16]; float channelvolume[11]; int modEndDelay; int loopFadeTime; int loopEndDelay; } sound;
+    struct { qboolean use; int fadeTime; float sensitivity; float maxPitchSpeed; float maxYawSpeed; } mouse;
 };
 
 struct cgs_t {
@@ -14000,7 +14205,7 @@ struct snd_local_t {
     float timescale;
     int pausetime;
     int cpu;
-    int restore;
+    struct { byte *buffer; int size; } restore;
     float volume;
     snd_volume_info_t mastervol;
     snd_channelvolgroup channelVolGroups[4];
@@ -14045,15 +14250,15 @@ struct srfPoly_t {
 struct GfxBackEndData {
     int frameCount;
     int drawSurfCount;
-    int drawSurfs;
+    GfxDrawSurf drawSurfs[65536];
     int surfPos;
     byte surfsBuffer[131072];
     int entityCount;
-    int entities;
+    GfxEntity entities[8184];
     int polyCount;
     srfPoly_t polys[2048];
     int polyVertCount;
-    int polyVerts;
+    GfxWorldVertex polyVerts[8192];
     r_vb_state_t *skinnedCacheVb;
     int viewParmCount;
     GfxViewParms viewParms[25];
@@ -14110,7 +14315,7 @@ struct static_model_cache_t {
     static_model_tree_t trees[128];
     static_model_node_list_t freelist[5];
     static_model_tree_list_t usedlist;
-    int stats;
+    struct { int allocatedVerts; int usedVerts; } stats;
 };
 
 struct staticmodeltrace_t {
@@ -14611,7 +14816,7 @@ struct entityState_s {
     int constantLight;
     int loopSound;
     int surfType;
-    int index;
+    union { int brushmodel; int item; int xmodel; } index;
     int clientNum;
     int iHeadIcon;
     int iHeadIconTeam;
@@ -14624,12 +14829,12 @@ struct entityState_s {
     int legsAnim;
     int torsoAnim;
     float leanf;
+    union { int scale; int eventParm2; };
     int dmgFlags;
     int animMovetype;
     float fTorsoHeight;
     float fTorsoPitch;
     float fWaistPitch;
-    int _pad;  /* padding to match binary sizeof(entityState_t) = 0xf0 */
 };
 
 struct archivedEntity_s {
@@ -14654,44 +14859,6 @@ struct centity_s {
     int voiceChatSpriteTime;
     struct XAnimTree_s *tree;
     int localClientNum;
-};
-
-struct gentity_s {
-    entityState_t s;
-    struct entityShared_t r;
-    gclient_t *client;
-    turretInfo_t *pTurretInfo;
-    byte physicsObject;
-    byte takedamage;
-    byte active;
-    byte nopickup;
-    byte model;
-    byte attachIgnoreCollision;
-    byte handler;
-    byte team;
-    scr_string_t classname;
-    scr_string_t target;
-    scr_string_t targetname;
-    int spawnflags;
-    int flags;
-    int eventTime;
-    qboolean freeAfterEvent;
-    qboolean unlinkAfterEvent;
-    int clipmask;
-    int processedFrame;
-    int parent;
-    int nextthink;
-    int health;
-    int maxHealth;
-    int damage;
-    int count;
-    int chain;
-    int tagInfo;
-    int tagChildren;
-    byte attachModelNames[7];
-    scr_string_t attachTagNames[7];
-    int useCount;
-    int nextFree;
 };
 
 struct localEntity_s {
@@ -14764,6 +14931,45 @@ struct trigger_ent_t {
     int accumulate;
     int timestamp;
     int singleUserEntIndex;
+};
+
+struct gentity_s {
+    entityState_t s;
+    struct entityShared_t r;
+    gclient_t *client;
+    turretInfo_t *pTurretInfo;
+    byte physicsObject;
+    byte takedamage;
+    byte active;
+    byte nopickup;
+    byte model;
+    byte attachIgnoreCollision;
+    byte handler;
+    byte team;
+    scr_string_t classname;
+    scr_string_t target;
+    scr_string_t targetname;
+    int spawnflags;
+    int flags;
+    int eventTime;
+    qboolean freeAfterEvent;
+    qboolean unlinkAfterEvent;
+    int clipmask;
+    int processedFrame;
+    int parent;
+    int nextthink;
+    int health;
+    int maxHealth;
+    int damage;
+    int count;
+    int chain;
+    union { struct item_ent_t item; struct trigger_ent_t trigger; struct mover_ent_t mover; struct corpse_ent_t corpse; struct grenade_ent_t grenade; };
+    int tagInfo;
+    int tagChildren;
+    byte attachModelNames[7];
+    scr_string_t attachTagNames[7];
+    int useCount;
+    int nextFree;
 };
 
 struct trigger_info_t {
@@ -15278,7 +15484,7 @@ struct clientStatic_t {
     serverInfo_t localServers[128];
     qboolean waitglobalserverresponse;
     int numglobalservers;
-    int globalServers;
+    serverInfo_t globalServers[20000];
     int numfavoriteservers;
     serverInfo_t favoriteServers[128];
     int pingUpdateSource;
@@ -15488,7 +15694,7 @@ struct cg_t {
     int offhandFlashTime;
     compassactor_t compassActors[64];
     struct shellshock_t shellshock;
-    int testShock;
+    struct { int time; int duration; } testShock;
     int holdBreathTime;
     int holdBreathInTime;
     int holdBreathDelay;
@@ -15685,7 +15891,7 @@ struct worldContents_s {
 struct worldTree_s {
     float dist;
     short unsigned int axis;
-    int u;
+    union { short unsigned int parent; short unsigned int nextFree; } u;
     short unsigned int child[2];
 };
 

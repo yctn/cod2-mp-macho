@@ -822,7 +822,7 @@ struct GfxCmdDrawFullScreenColoredQuad {
 struct GfxEntity {
     refEntityType_t reType;
     int renderFxFlags;
-    int lighting;
+    union { struct { FxMemMgr_Emitter * (*colorForDir)[2]; float sunVisibility; } dx7; vec3_t baseCoords; vec3_t origin; } lighting;
     vec3_t axis[3];
     float scale;
     vec3_t origin;
@@ -993,6 +993,7 @@ struct IDirect3DTexture9 {
 };
 
 union IDirect3DVertexBuffer9 {
+    struct { float _11; float _12; float _13; float _14; float _21; float _22; float _23; float _24; float _31; float _32; float _33; float _34; float _41; float _42; float _43; float _44; };
     D3DMATRIX m[4];
 };
 
@@ -1393,7 +1394,7 @@ struct _D3DMATERIAL9 {
 };
 
 struct _D3DMATRIX {
-    int _placeholder;
+    union { struct { float _11; float _12; float _13; float _14; float _21; float _22; float _23; float _24; float _31; float _32; float _33; float _34; float _41; float _42; float _43; float _44; }; float m[4][4]; };
 };
 
 struct _D3DPRESENT_PARAMETERS_ {
@@ -1519,7 +1520,8 @@ struct _GUID {
 };
 
 union _LARGE_INTEGER {
-    int u;
+    struct { DWORD LowPart; LONG HighPart; };
+    struct { DWORD LowPart; LONG HighPart; } u;
     LONGLONG QuadPart;
 };
 
