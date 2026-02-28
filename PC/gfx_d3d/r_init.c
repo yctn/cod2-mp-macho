@@ -20,6 +20,12 @@ extern vidConfig_t vidConfig; /* 0x0 */
 extern const char * DXGetErrorDescription9A(HRESULT hr);
 extern void Material_FinishLoading(void);
 extern void R_AddCmdTouchAllImages(void);
+extern void R_InitImages(void);
+extern void Material_Init(void);
+extern int R_InitFonts(void);
+extern void R_InitLightDefs(void);
+extern void R_ClearFogs(void);
+extern void R_InitDebug(void);
 extern void R_EndDrawGroupLoop(int section, int viewIndex);
 extern void R_EndDrawGroupSection(int section);
 extern void R_IssueDrawGroups(void);
@@ -871,24 +877,16 @@ void R_GammaCorrect(byte *buffer, int bufSize)
 }
 
 /* line 830 */
-static __attribute__((naked))
-void R_InitSystems(void)
+static void R_InitSystems(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 830 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "calll R_InitImages\n" /* line 833 */
-        "calll Material_Init\n" /* line 834 */
-        "calll R_InitFonts\n" /* line 835 */
-        "movl $0, 0x1181928\n" /* line 1825 */
-        "calll R_InitLightDefs\n" /* line 838 */
-        "calll R_ClearFogs\n" /* line 839 */
-        "calll R_InitDebug\n" /* line 841 */
-        "movb $1, rg\n" /* line 848 */
-        "leave\n" /* line 855 */
-        "retl\n"
-    );
+    R_InitImages();
+    Material_Init();
+    R_InitFonts();
+    *(int *)0x1181928 = 0;
+    R_InitLightDefs();
+    R_ClearFogs();
+    R_InitDebug();
+    *(char *)&rg = 1;
 }
 
 /* line 140 */

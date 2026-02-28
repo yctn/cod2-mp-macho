@@ -55,16 +55,9 @@ qboolean G_SpawnString(const char *key, const char *defaultString, const char * 
 }
 
 /* line 47 */
-static __attribute__((naked))
-my_upsampler Scr_ReadOnlyField(gentity_t *ent, int offset)
+static my_upsampler Scr_ReadOnlyField(gentity_t *ent, int offset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 47 */
-        "movl %esp, %ebp\n"
-        "movl $0x2b33d0, 8(%ebp)\n" /* line 49 | ent */
-        "popl %ebp\n" /* line 50 */
-        "jmp Scr_Error\n" /* line 49 */
-    );
+    Scr_Error((const char *)0x2b33d0);
 }
 
 /* line 160 */

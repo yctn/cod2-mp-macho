@@ -65,6 +65,11 @@ extern int BG_GetMaxPickupableAmmo(const playerState_t *ps, int weapon);
 extern qboolean BG_WeaponIsClipOnly(int weapon);
 extern void Com_Error(errorParm_t code, const char *fmt, ...);
 extern const char *va(const char *format, ...);
+extern const dvar_t *Dvar_RegisterFloat(const char *dvarName, float value, float min, float max, unsigned int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *dvarName, int value, int min, int max, unsigned int flags);
+extern const dvar_t *Dvar_RegisterBool(const char *dvarName, qboolean value, unsigned int flags);
+extern void Jump_RegisterDvars(void);
+extern void Mantle_RegisterDvars(void);
 
 void BG_RegisterDvars(void);
 const gitem_t * BG_FindItemForWeapon(int weapon);
@@ -79,332 +84,54 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result);
 qboolean BG_PlayerTouchesItem(playerState_t *ps, entityState_t *item, int atTime);
 
 /* line 341 */
-__attribute__((naked))
 void BG_RegisterDvars(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 341 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 355 */
-        "movl $0x42b40000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x42aa0000, %edi\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $0x21b9d8, (%esp)\n" /* "player_view_pitch_up" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_view_pitch_up\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 356 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $0x21b9f0, (%esp)\n" /* "player_view_pitch_down" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_view_pitch_down\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 359 */
-        "movl $0x43b40000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x42c80000, 4(%esp)\n"
-        "movl $0x21ba08, (%esp)\n" /* "bg_ladder_yawcap" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_ladder_yawcap\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 360 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $0x21ba1c, (%esp)\n" /* "bg_prone_yawcap" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_prone_yawcap\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 362 */
-        "movl $0x7f7fffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x42200000, 4(%esp)\n"
-        "movl $0x21ba2c, (%esp)\n" /* "bg_foliagesnd_minspeed" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_foliagesnd_minspeed\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 363 */
-        "movl $0x7f7fffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x43340000, 4(%esp)\n"
-        "movl $0x21ba44, (%esp)\n" /* "bg_foliagesnd_maxspeed" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_foliagesnd_maxspeed\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 364 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x5dc, 4(%esp)\n"
-        "movl $0x21ba5c, (%esp)\n" /* "bg_foliagesnd_slowinterval" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, bg_foliagesnd_slowinterval\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 365 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x1f4, 4(%esp)\n"
-        "movl $0x21ba78, (%esp)\n" /* "bg_foliagesnd_fastinterval" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, bg_foliagesnd_fastinterval\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 366 */
-        "movl $0x7fffffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x1f4, 4(%esp)\n"
-        "movl $0x21ba94, (%esp)\n" /* "bg_foliagesnd_resetinterval" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, bg_foliagesnd_resetinterval\n"
-        "movl $0x1188, 0x10(%esp)\n" /* line 369 */
-        "movl $0x7f7fffff, 0xc(%esp)\n"
-        "movl $0x3f800000, %edi\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $0x43800000, 4(%esp)\n"
-        "movl $0x21bab0, (%esp)\n" /* "bg_fallDamageMinHeight" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_fallDamageMinHeight\n"
-        "movl $0x1188, 0x10(%esp)\n" /* line 370 */
-        "movl $0x7f7fffff, 0xc(%esp)\n"
-        "movl %edi, 8(%esp)\n"
-        "movl $0x43f00000, 4(%esp)\n"
-        "movl $0x21bac8, (%esp)\n" /* "bg_fallDamageMaxHeight" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_fallDamageMaxHeight\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 376 */
-        "movl $0x447a0000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x42480000, 4(%esp)\n"
-        "movl $0x21bae0, (%esp)\n" /* "inertiaMax" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, inertiaMax\n"
-        "movl $0x1180, 8(%esp)\n" /* line 377 */
-        "movl $0, 4(%esp)\n"
-        "movl $0x21baec, (%esp)\n" /* "inertiaDebug" */
-        "calll Dvar_RegisterBool\n"
-        "movl %eax, inertiaDebug\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 379 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0xbf800000, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0x21bafc, (%esp)\n" /* "inertiaAngle" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, inertiaAngle\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 384 */
-        "movl $0x42c80000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x40b00000, 4(%esp)\n"
-        "movl $0x21bb0c, (%esp)\n" /* "friction" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, friction\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 385 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x42c80000, 4(%esp)\n"
-        "movl $0x21bb18, (%esp)\n" /* "stopspeed" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, stopspeed\n"
-        "movl $0x1080, 0x10(%esp)\n" /* line 387 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3e4ccccd, 4(%esp)\n"
-        "movl $0x21bb24, (%esp)\n" /* "bg_swingSpeed" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_swingSpeed\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 389 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3be56042, 4(%esp)\n"
-        "movl $0x21bb34, (%esp)\n" /* "bg_bobAmplitudeStanding" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_bobAmplitudeStanding\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 390 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3bf5c28f, 4(%esp)\n"
-        "movl $0x21bb4c, (%esp)\n" /* "bg_bobAmplitudeDucked" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_bobAmplitudeDucked\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 391 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3cf5c28f, 4(%esp)\n"
-        "movl $0x21bb64, (%esp)\n" /* "bg_bobAmplitudeProne" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_bobAmplitudeProne\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 392 */
-        "movl $0x42100000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x41000000, 4(%esp)\n"
-        "movl $0x21bb7c, (%esp)\n" /* "bg_bobMax" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_bobMax\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 394 */
-        "movl $0x43960000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x41300000, 4(%esp)\n"
-        "movl $0x21bb88, (%esp)\n" /* "bg_aimSpreadMoveSpeedThreshold" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, bg_aimSpreadMoveSpeedThreshold\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 396 */
-        "movl $0x41f00000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x40900000, %ebx\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $0x21bba8, (%esp)\n" /* "player_breath_hold_time" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_hold_time\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 397 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $0x21bbc0, (%esp)\n" /* "player_breath_gasp_time" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_gasp_time\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 398 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0x21bbd8, (%esp)\n" /* "player_breath_fire_delay" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_fire_delay\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 399 */
-        "movl $0x42480000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl $0x21bbf4, (%esp)\n" /* "player_breath_gasp_scale" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_gasp_scale\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 400 */
-        "movl $0x42480000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x40800000, 4(%esp)\n"
-        "movl $0x21bc10, (%esp)\n" /* "player_breath_hold_lerp" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_hold_lerp\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 401 */
-        "movl $0x42480000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x40c00000, 4(%esp)\n"
-        "movl $0x21bc28, (%esp)\n" /* "player_breath_gasp_lerp" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_gasp_lerp\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 402 */
-        "movl $0x42c80000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x40000000, 4(%esp)\n"
-        "movl $0x21bc40, (%esp)\n" /* "player_breath_snd_lerp" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_snd_lerp\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 403 */
-        "movl $0x40000000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n"
-        "movl $0x21bc58, (%esp)\n" /* "player_breath_snd_delay" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_breath_snd_delay\n"
-        "movl $0x1100, 8(%esp)\n" /* line 408 */
-        "movl $1, 4(%esp)\n"
-        "movl $0x21bc70, (%esp)\n" /* "player_toggleBinoculars" */
-        "calll Dvar_RegisterBool\n"
-        "movl %eax, player_toggleBinoculars\n"
-        "movl $0x1180, 8(%esp)\n" /* line 410 */
-        "movl $0, 4(%esp)\n"
-        "movl $0x21bc88, (%esp)\n" /* "player_scopeExitOnDamage" */
-        "calll Dvar_RegisterBool\n"
-        "movl %eax, player_scopeExitOnDamage\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 411 */
-        "movl $0x3e8, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0x21bca4, (%esp)\n" /* "player_adsExitDelay" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, player_adsExitDelay\n"
-        "movl $0x11c0, 0x10(%esp)\n" /* line 419 */
-        "movl $0x41a00000, %esi\n"
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0x322bcc77, 8(%esp)\n"
-        "movl $0x41200000, 4(%esp)\n"
-        "movl $0x21bcb8, (%esp)\n" /* "player_moveThreshhold" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_moveThreshhold\n"
-        "movl $0x11c0, 0x10(%esp)\n" /* line 420 */
-        "movl $0x47435000, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0x21bcd0, (%esp)\n" /* "player_footstepsThreshhold" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_footstepsThreshhold\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 427 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3f4ccccd, 4(%esp)\n"
-        "movl $0x21bcec, (%esp)\n" /* "player_strafeSpeedScale" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_strafeSpeedScale\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 428 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x3f333333, 4(%esp)\n"
-        "movl $0x21bd04, (%esp)\n" /* "player_backSpeedScale" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_backSpeedScale\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 430 */
-        "movl %esi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x40000000, 4(%esp)\n"
-        "movl $0x21bd1c, (%esp)\n" /* "player_spectateSpeedScale" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_spectateSpeedScale\n"
-        "movl $0x1180, 8(%esp)\n" /* line 432 */
-        "movl $0, 4(%esp)\n"
-        "movl $0x21bd38, (%esp)\n" /* "player_turnAnims" */
-        "calll Dvar_RegisterBool\n"
-        "movl %eax, player_turnAnims\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 442 */
-        "movl $0x7f7fffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x42c80000, 4(%esp)\n"
-        "movl $0x21bd4c, (%esp)\n" /* "player_dmgtimer_timePerPoint" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_dmgtimer_timePerPoint\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 443 */
-        "movl $0x7f7fffff, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x443b8000, 4(%esp)\n"
-        "movl $0x21bd6c, (%esp)\n" /* "player_dmgtimer_maxTime" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_dmgtimer_maxTime\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 444 */
-        "movl %edi, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0x21bd84, (%esp)\n" /* "player_dmgtimer_minScale" */
-        "calll Dvar_RegisterFloat\n"
-        "movl %eax, player_dmgtimer_minScale\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 445 */
-        "movl $0x7d0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x1f4, 4(%esp)\n"
-        "movl $0x21bda0, (%esp)\n" /* "player_dmgtimer_stumbleTime" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, player_dmgtimer_stumbleTime\n"
-        "movl $0x1180, 0x10(%esp)\n" /* line 446 */
-        "movl $0x7d0, 0xc(%esp)\n"
-        "movl $0, 8(%esp)\n"
-        "movl $0x1f4, 4(%esp)\n"
-        "movl $0x21bdbc, (%esp)\n" /* "player_dmgtimer_flinchTime" */
-        "calll Dvar_RegisterInt\n"
-        "movl %eax, player_dmgtimer_flinchTime\n"
-        "calll Jump_RegisterDvars\n" /* line 452 */
-        "addl $0x2c, %esp\n" /* line 454 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp Mantle_RegisterDvars\n" /* line 453 */
-    );
+    player_view_pitch_up = Dvar_RegisterFloat("player_view_pitch_up", 85.0f, 0.0f, 90.0f, 0x1180);
+    player_view_pitch_down = Dvar_RegisterFloat("player_view_pitch_down", 85.0f, 0.0f, 90.0f, 0x1180);
+    bg_ladder_yawcap = Dvar_RegisterFloat("bg_ladder_yawcap", 100.0f, 0.0f, 360.0f, 0x1180);
+    bg_prone_yawcap = Dvar_RegisterFloat("bg_prone_yawcap", 85.0f, 0.0f, 360.0f, 0x1180);
+    bg_foliagesnd_minspeed = Dvar_RegisterFloat("bg_foliagesnd_minspeed", 40.0f, 0.0f, 3.4028235e+38f, 0x1180);
+    bg_foliagesnd_maxspeed = Dvar_RegisterFloat("bg_foliagesnd_maxspeed", 180.0f, 0.0f, 3.4028235e+38f, 0x1180);
+    bg_foliagesnd_slowinterval = Dvar_RegisterInt("bg_foliagesnd_slowinterval", 1500, 0, 0x7fffffff, 0x1180);
+    bg_foliagesnd_fastinterval = Dvar_RegisterInt("bg_foliagesnd_fastinterval", 500, 0, 0x7fffffff, 0x1180);
+    bg_foliagesnd_resetinterval = Dvar_RegisterInt("bg_foliagesnd_resetinterval", 500, 0, 0x7fffffff, 0x1180);
+    bg_fallDamageMinHeight = Dvar_RegisterFloat("bg_fallDamageMinHeight", 256.0f, 1.0f, 3.4028235e+38f, 0x1188);
+    bg_fallDamageMaxHeight = Dvar_RegisterFloat("bg_fallDamageMaxHeight", 480.0f, 1.0f, 3.4028235e+38f, 0x1188);
+    inertiaMax = Dvar_RegisterFloat("inertiaMax", 50.0f, 0.0f, 1000.0f, 0x1180);
+    inertiaDebug = Dvar_RegisterBool("inertiaDebug", 0, 0x1180);
+    inertiaAngle = Dvar_RegisterFloat("inertiaAngle", 0.0f, -1.0f, 1.0f, 0x1180);
+    friction = Dvar_RegisterFloat("friction", 5.5f, 0.0f, 100.0f, 0x1180);
+    stopspeed = Dvar_RegisterFloat("stopspeed", 100.0f, 0.0f, 1000.0f, 0x1180);
+    bg_swingSpeed = Dvar_RegisterFloat("bg_swingSpeed", 0.2f, 0.0f, 1.0f, 0x1080);
+    bg_bobAmplitudeStanding = Dvar_RegisterFloat("bg_bobAmplitudeStanding", 0.007f, 0.0f, 1.0f, 0x1180);
+    bg_bobAmplitudeDucked = Dvar_RegisterFloat("bg_bobAmplitudeDucked", 0.0075f, 0.0f, 1.0f, 0x1180);
+    bg_bobAmplitudeProne = Dvar_RegisterFloat("bg_bobAmplitudeProne", 0.03f, 0.0f, 1.0f, 0x1180);
+    bg_bobMax = Dvar_RegisterFloat("bg_bobMax", 8.0f, 0.0f, 36.0f, 0x1180);
+    bg_aimSpreadMoveSpeedThreshold = Dvar_RegisterFloat("bg_aimSpreadMoveSpeedThreshold", 11.0f, 0.0f, 300.0f, 0x1180);
+    player_breath_hold_time = Dvar_RegisterFloat("player_breath_hold_time", 4.5f, 0.0f, 30.0f, 0x1180);
+    player_breath_gasp_time = Dvar_RegisterFloat("player_breath_gasp_time", 1.0f, 0.0f, 30.0f, 0x1180);
+    player_breath_fire_delay = Dvar_RegisterFloat("player_breath_fire_delay", 0.0f, 0.0f, 30.0f, 0x1180);
+    player_breath_gasp_scale = Dvar_RegisterFloat("player_breath_gasp_scale", 4.5f, 0.0f, 50.0f, 0x1180);
+    player_breath_hold_lerp = Dvar_RegisterFloat("player_breath_hold_lerp", 4.0f, 0.0f, 50.0f, 0x1180);
+    player_breath_gasp_lerp = Dvar_RegisterFloat("player_breath_gasp_lerp", 6.0f, 0.0f, 50.0f, 0x1180);
+    player_breath_snd_lerp = Dvar_RegisterFloat("player_breath_snd_lerp", 2.0f, 0.0f, 100.0f, 0x1180);
+    player_breath_snd_delay = Dvar_RegisterFloat("player_breath_snd_delay", 1.0f, 0.0f, 2.0f, 0x1180);
+    player_toggleBinoculars = Dvar_RegisterBool("player_toggleBinoculars", 1, 0x1100);
+    player_scopeExitOnDamage = Dvar_RegisterBool("player_scopeExitOnDamage", 0, 0x1180);
+    player_adsExitDelay = Dvar_RegisterInt("player_adsExitDelay", 0, 0, 1000, 0x1180);
+    player_moveThreshhold = Dvar_RegisterFloat("player_moveThreshhold", 10.0f, 1.0e-8f, 20.0f, 0x11c0);
+    player_footstepsThreshhold = Dvar_RegisterFloat("player_footstepsThreshhold", 0.0f, 0.0f, 50000.0f, 0x11c0);
+    player_strafeSpeedScale = Dvar_RegisterFloat("player_strafeSpeedScale", 0.8f, 0.0f, 20.0f, 0x1180);
+    player_backSpeedScale = Dvar_RegisterFloat("player_backSpeedScale", 0.7f, 0.0f, 20.0f, 0x1180);
+    player_spectateSpeedScale = Dvar_RegisterFloat("player_spectateSpeedScale", 2.0f, 0.0f, 20.0f, 0x1180);
+    player_turnAnims = Dvar_RegisterBool("player_turnAnims", 0, 0x1180);
+    player_dmgtimer_timePerPoint = Dvar_RegisterFloat("player_dmgtimer_timePerPoint", 100.0f, 0.0f, 3.4028235e+38f, 0x1180);
+    player_dmgtimer_maxTime = Dvar_RegisterFloat("player_dmgtimer_maxTime", 750.0f, 0.0f, 3.4028235e+38f, 0x1180);
+    player_dmgtimer_minScale = Dvar_RegisterFloat("player_dmgtimer_minScale", 0.0f, 0.0f, 1.0f, 0x1180);
+    player_dmgtimer_stumbleTime = Dvar_RegisterInt("player_dmgtimer_stumbleTime", 500, 0, 2000, 0x1180);
+    player_dmgtimer_flinchTime = Dvar_RegisterInt("player_dmgtimer_flinchTime", 500, 0, 2000, 0x1180);
+    Jump_RegisterDvars();
+    Mantle_RegisterDvars();
 }
 
 /* line 463 */

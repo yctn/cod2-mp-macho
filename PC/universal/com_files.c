@@ -1514,23 +1514,11 @@ int FS_FTell(fileHandle_t f)
 }
 
 /* line 4051 */
-__attribute__((naked))
 float FS_Flush(fileHandle_t f)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4051 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* f */
-        "leal (%eax, %eax, 8), %edx\n" /* line 4053 */
-        "shll $3, %edx\n"
-        "subl %eax, %edx\n"
-        "movl fsh(, %edx, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll fflush\n"
-        "leave\n" /* line 4054 */
-        "retl\n"
-    );
+    /* fsh stride: f*72 - f = f*71; fsh[f*71] is the FILE* */
+    fflush(*(FILE **)((byte *)&fsh + f * 71 * 4));
+    return 0;
 }
 
 /* line 1270 */

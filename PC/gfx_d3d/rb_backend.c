@@ -24,6 +24,7 @@ static const void (*rb_tessTable[8])(); /* 0x3303e0 */
 static const void (*RB_RenderCommandTable[34])(); /* 0x330340 */
 
 extern FontHandle R_RegisterFont(const char *fontName, int imageTrack);
+extern void RB_TouchAllImages(void);
 
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w);
 static void RB_GotoCmd(GfxRenderCommandExecState *execState);
@@ -169,25 +170,13 @@ void RB_SetGammaRamp(const GfxGammaRamp *gammaTable)
 }
 
 /* line 2430 */
-static __attribute__((naked))
-void RB_TouchAllImagesCmd(GfxRenderCommandExecState *execState)
+static void RB_TouchAllImagesCmd(GfxRenderCommandExecState *execState)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2430 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* execState */
-        "calll RB_TouchAllImages\n" /* line 2432 */
-        "movl (%ebx), %edx\n" /* line 169 */
-        "movzwl 2(%edx), %eax\n"
-        "addl %edx, %eax\n"
-        "movl %eax, (%ebx)\n"
-        "addl $4, %esp\n" /* line 2435 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    unsigned char *cmd;
+
+    RB_TouchAllImages();
+    cmd = *(unsigned char **)execState;
+    *(unsigned char **)execState = cmd + *(unsigned short *)(cmd + 2);
 }
 
 /* line 3300 */

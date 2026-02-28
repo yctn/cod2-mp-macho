@@ -19,6 +19,10 @@ static const BuiltinMethodDef methods[18]; /* 0x333420 */
 
 extern void Scr_AddFloat(float value);
 extern float Scr_GetFloat(unsigned int index);
+extern int Scr_GetInt(unsigned int index);
+extern int Scr_GetIString(unsigned int index);
+extern int G_LocalizedStringIndex(int str);
+extern void Scr_AddVector(vec_t *vec);
 extern void Scr_Error(const char *msg);
 extern const char *va(const char *fmt, ...);
 
@@ -170,93 +174,38 @@ Should be o" */
 }
 
 /* line 343 */
-static __attribute__((naked))
-void HudElem_SetLocalizedString(game_hudelem_t *hud, int offset)
+static void HudElem_SetLocalizedString(game_hudelem_t *hud, int offset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 343 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* hud */
-        "movl 0xc(%ebp), %ebx\n" /* offset */
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 349 */
-        "calll Scr_GetIString\n"
-        "leal (, %ebx, 4), %edx\n" /* line 350 */
-        "shll $5, %ebx\n" /* offset */
-        "subl %edx, %ebx\n" /* offset */
-        "addl 0x333504(%ebx), %esi\n" /* offset, hud */
-        "movl %eax, (%esp)\n"
-        "calll G_LocalizedStringIndex\n"
-        "movl %eax, (%esi)\n" /* hud */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 351 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int str;
+    int fieldOffset;
+    int idx;
+
+    str = Scr_GetIString(0);
+    fieldOffset = *(int *)((char *)&fields + offset * 28 + 4);
+    idx = G_LocalizedStringIndex(str);
+    *(int *)((byte *)hud + fieldOffset) = idx;
 }
 
 /* line 359 */
-static __attribute__((naked))
-void HudElem_SetBoolean(game_hudelem_t *hud, int offset)
+static void HudElem_SetBoolean(game_hudelem_t *hud, int offset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 359 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0xc(%ebp), %ebx\n" /* offset */
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 365 */
-        "calll Scr_GetInt\n"
-        "leal (, %ebx, 4), %edx\n" /* line 366 */
-        "shll $5, %ebx\n" /* offset */
-        "subl %edx, %ebx\n" /* offset */
-        "movl 0x333504(%ebx), %ecx\n" /* offset */
-        "movl 8(%ebp), %edx\n" /* hud */
-        "movl %eax, (%ecx, %edx)\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 367 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int value;
+    int fieldOffset;
+
+    value = Scr_GetInt(0);
+    fieldOffset = *(int *)((char *)&fields + offset * 28 + 4);
+    *(int *)((byte *)hud + fieldOffset) = value;
 }
 
 /* line 393 */
-static __attribute__((naked))
-void HudElem_GetColor(game_hudelem_t *hud, int offset)
+static void HudElem_GetColor(game_hudelem_t *hud, int offset)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 393 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %edx\n" /* hud */
-        /* { scope 1 */
-        "movzbl 0x20(%edx), %eax\n" /* line 399 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "movss 0x2ed5cc, %xmm1\n" /* 0.003921568859368563f */
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n" /* color */
-        "movzbl 0x21(%edx), %eax\n" /* line 400 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n"
-        "movzbl 0x22(%edx), %eax\n" /* line 401 */
-        "cvtsi2ssl %eax, %xmm0\n"
-        "mulss %xmm1, %xmm0\n"
-        "movss %xmm0, -0xc(%ebp)\n"
-        "leal -0x14(%ebp), %eax\n" /* line 402 | color */
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddVector\n"
-        /* } scope */
-        "leave\n" /* line 403 */
-        "retl\n"
-    );
+    vec3_t color;
+
+    color[0] = (float)*(unsigned char *)((byte *)hud + 0x20) * (1.0f / 255.0f);
+    color[1] = (float)*(unsigned char *)((byte *)hud + 0x21) * (1.0f / 255.0f);
+    color[2] = (float)*(unsigned char *)((byte *)hud + 0x22) * (1.0f / 255.0f);
+    Scr_AddVector(color);
 }
 
 /* line 427 */

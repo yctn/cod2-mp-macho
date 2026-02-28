@@ -8,6 +8,10 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+extern int I_stricmp(const char *s1, const char *s2);
+extern int R_Error(int code, const char *fmt, ...);
+extern FontHandle R_LoadFont(const char *fontName, int imageTrack);
+
 static int registeredFontCount; /* 0xc96d00 */
 static Font * registeredFont[16]; /* 0xc96d20 */
 
@@ -61,187 +65,70 @@ const Glyph * R_GetCharacterGlyph(FontHandle font, unsigned int letter)
 }
 
 /* line 57 */
-__attribute__((naked))
 FontHandle R_RegisterFont(const char *fontName, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 57 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* fontName */
-        /* { scope 1 */
-        "movl registeredFontCount, %eax\n" /* line 64 */
-        "testl %eax, %eax\n"
-        "jg .Lfecbda_000ecc27\n"
-        ".Lfecbda_000ecbef:\n"
-        "cmpl $0xf, %eax\n" /* line 70 */
-        "jg .Lfecbda_000ecc5c\n"
-        "movl 0xc(%ebp), %eax\n" /* line 76 | imageTrack */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* fontName */
-        "calll R_LoadFont\n"
-        "movl %eax, %ebx\n" /* font */
-        "testl %eax, %eax\n" /* line 77 */
-        "je .Lfecbda_000ecc74\n"
-        ".Lfecbda_000ecc09:\n"
-        "movl registeredFontCount, %eax\n" /* line 80 */
-        "movl %ebx, registeredFont(, %eax, 4)\n" /* font */
-        "addl $1, %eax\n" /* line 81 */
-        "movl %eax, registeredFontCount\n"
-        /* } scope */
-        ".Lfecbda_000ecc1d:\n"
-        "movl %ebx, %eax\n" /* line 83 | font */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfecbda_000ecc27:\n"
-        "xorl %esi, %esi\n" /* line 64 | fontIndex */
-        "movl $registeredFont, %ebx\n" /* font */
-        "jmp .Lfecbda_000ecc3f\n"
-        ".Lfecbda_000ecc30:\n"
-        "addl $1, %esi\n" /* fontIndex */
-        "movl registeredFontCount, %eax\n"
-        "addl $4, %ebx\n" /* font */
-        "cmpl %esi, %eax\n" /* fontIndex */
-        "jle .Lfecbda_000ecbef\n"
-        ".Lfecbda_000ecc3f:\n"
-        "movl (%ebx), %eax\n" /* line 66 | font */
-        "movl (%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* fontName */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lfecbda_000ecc30\n"
-        "movl registeredFont(, %esi, 4), %ebx\n" /* line 67 | font */
-        "jmp .Lfecbda_000ecc1d\n"
-        ".Lfecbda_000ecc5c:\n"
-        "movl $0x225884, 4(%esp)\n" /* line 72 */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "xorl %ebx, %ebx\n" /* font */
-        "jmp .Lfecbda_000ecc1d\n"
-        ".Lfecbda_000ecc74:\n"
-        "movl %edi, 8(%esp)\n" /* line 78 | fontName */
-        "movl $0x2258b8, 4(%esp)\n" /* "R_RegisterFont: Error while reading font '%s'" */
-        "movl $1, (%esp)\n"
-        "calll R_Error\n"
-        "jmp .Lfecbda_000ecc09\n"
-    );
+    int fontIndex;
+    FontHandle font;
+
+    for (fontIndex = 0; fontIndex < registeredFontCount; fontIndex++) {
+        if (I_stricmp(fontName, *(const char **)registeredFont[fontIndex]) == 0) {
+            return registeredFont[fontIndex];
+        }
+    }
+
+    if (registeredFontCount > 15) {
+        R_Error(1, (const char *)0x225884);
+        return 0;
+    }
+
+    font = R_LoadFont(fontName, imageTrack);
+    if (!font) {
+        R_Error(1, (const char *)0x2258b8, fontName);
+    }
+
+    registeredFont[registeredFontCount] = font;
+    registeredFontCount++;
+
+    return font;
 }
 
 /* line 100 */
-__attribute__((naked))
 int R_DuplicateFont(FontHandle fontCopy, const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 100 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* fontCopy */
-        "movl 0xc(%ebp), %eax\n" /* name */
-        "movl %eax, -0x20(%ebp)\n" /* name */
-        /* { scope 1 */
-        "movl registeredFontCount, %eax\n" /* line 109 */
-        "testl %eax, %eax\n"
-        "jg .Lfecc92_000ecd46\n"
-        "movl $0, -0x1c(%ebp)\n" /* fontIndex */
-        ".Lfecc92_000eccb8:\n"
-        "cmpl $0xf, %eax\n" /* line 120 */
-        "jg .Lfecc92_000ecd2c\n"
-        "movl 0x195eee0, %esi\n" /* line 126 */
-        "movl $0x14, (%esp)\n"
-        "calll *0xc(%esi)\n"
-        "movl %eax, %ebx\n"
-        "movl (%edi), %eax\n" /* line 127 | fontCopy */
-        "movl %eax, (%ebx)\n"
-        "movl 4(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 8(%ebx)\n"
-        "movl 0xc(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 0xc(%ebx)\n"
-        "movl 0x10(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 0x10(%ebx)\n"
-        "cld\n" /* line 129 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl -0x20(%ebp), %edi\n" /* name, fontCopy */
-        "repne scasb %es:(%edi), %al\n" /* fontCopy */
-        "notl %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll *0xc(%esi)\n"
-        "movl %eax, %esi\n"
-        "movl -0x20(%ebp), %eax\n" /* line 130 | name */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n"
-        "calll strcpy\n"
-        "movl %esi, (%ebx)\n" /* line 131 */
-        "movl -0x1c(%ebp), %eax\n" /* line 133 | fontIndex */
-        "movl %ebx, registeredFont(, %eax, 4)\n"
-        "addl $1, registeredFontCount\n" /* line 134 */
-        /* } scope */
-        ".Lfecc92_000ecd24:\n"
-        "addl $0x2c, %esp\n" /* line 135 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfecc92_000ecd2c:\n"
-        "movl $0x2258e8, 0xc(%ebp)\n" /* line 122 | name */
-        "movl $1, 8(%ebp)\n" /* fontCopy */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 135 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        /* { scope 1 */
-        "jmp R_Error\n" /* line 122 */
-        ".Lfecc92_000ecd46:\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 109 | fontIndex */
-        "movl $registeredFont, %esi\n"
-        "jmp .Lfecc92_000ecd69\n"
-        ".Lfecc92_000ecd54:\n"
-        "addl $1, -0x1c(%ebp)\n" /* fontIndex */
-        "movl registeredFontCount, %eax\n"
-        "addl $4, %esi\n"
-        "cmpl %eax, -0x1c(%ebp)\n" /* fontIndex */
-        "jge .Lfecc92_000eccb8\n"
-        ".Lfecc92_000ecd69:\n"
-        "movl (%esi), %ebx\n" /* line 111 */
-        "movl (%ebx), %eax\n" /* line 112 */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* name */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lfecc92_000ecd54\n"
-        "movl (%ebx), %edx\n" /* line 114 */
-        "movl (%edi), %eax\n" /* line 115 | fontCopy */
-        "movl %eax, (%ebx)\n"
-        "movl 4(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 4(%ebx)\n"
-        "movl 8(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 8(%ebx)\n"
-        "movl 0xc(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 0xc(%ebx)\n"
-        "movl 0x10(%edi), %eax\n" /* fontCopy */
-        "movl %eax, 0x10(%ebx)\n"
-        "movl %edx, (%ebx)\n" /* line 116 */
-        "jmp .Lfecc92_000ecd24\n"
-    );
+    int fontIndex;
+    FontHandle existing;
+    FontHandle newFont;
+    char *nameCopy;
+    const char *oldName;
+    typedef void *(*AllocFunc)(int);
+    AllocFunc alloc = *(AllocFunc *)((byte *)*(int *)0x195eee0 + 0xc);
+
+    for (fontIndex = 0; fontIndex < registeredFontCount; fontIndex++) {
+        existing = registeredFont[fontIndex];
+        if (I_stricmp(name, *(const char **)existing) == 0) {
+            /* Found existing font with same name - copy data, preserve name ptr */
+            oldName = *(const char **)existing;
+            memcpy(existing, fontCopy, 0x14);
+            *(const char **)existing = oldName;
+            return 0;
+        }
+    }
+
+    if (registeredFontCount > 15) {
+        return R_Error(1, (const char *)0x2258e8);
+    }
+
+    newFont = alloc(0x14);
+    memcpy(newFont, fontCopy, 0x14);
+
+    nameCopy = (char *)alloc(strlen(name) + 1);
+    strcpy(nameCopy, name);
+    *(const char **)newFont = nameCopy;
+
+    registeredFont[fontIndex] = newFont;
+    registeredFontCount++;
+
+    return 0;
 }
 
 /* line 138 */

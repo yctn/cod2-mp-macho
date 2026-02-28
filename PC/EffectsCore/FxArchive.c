@@ -21,45 +21,27 @@ void FxArchive_ArchiveFxBoltInfo(const FxArchive * _this, FxBoltInfo *bolt);
 void FxArchive_ArchiveFxGfxEntity(const FxArchive * _this, FxGfxEntity *entity);
 
 /* line 22 */
-__attribute__((naked))
 void FxArchive_FxArchive(const FxArchive * _this)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 22 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl $0, (%eax)\n" /* line 24 */
-        "movb $0, 4(%eax)\n" /* line 25 */
-        "movb $0, 5(%eax)\n" /* line 26 */
-        "movl $0, 8(%eax)\n" /* line 27 */
-        "movl $0, 0x14(%eax)\n" /* line 29 */
-        "movl $0, 0xc(%eax)\n" /* line 30 */
-        "movl $0, 0x10(%eax)\n" /* line 31 */
-        "popl %ebp\n" /* line 32 */
-        "retl\n"
-    );
+    *(int *)((byte *)_this + 0) = 0;
+    *(char *)((byte *)_this + 4) = 0;
+    *(char *)((byte *)_this + 5) = 0;
+    *(int *)((byte *)_this + 8) = 0;
+    *(int *)((byte *)_this + 0x14) = 0;
+    *(int *)((byte *)_this + 0xc) = 0;
+    *(int *)((byte *)_this + 0x10) = 0;
 }
 
 /* line 35 */
-__attribute__((naked))
 void FxArchive_BeginReading(const FxArchive * _this, MemoryFile *memFile)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 35 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* this */
-        "movl 0xc(%ebp), %edx\n" /* memFile */
-        "movl %edx, (%eax)\n" /* line 38 */
-        "movb $1, 4(%eax)\n" /* line 40 */
-        "movb $0, 5(%eax)\n" /* line 41 */
-        "movl $0, 8(%eax)\n" /* line 42 */
-        "movl 8(%edx), %edx\n" /* line 44 */
-        "movl %edx, 0x14(%eax)\n"
-        "movl $0, 0xc(%eax)\n" /* line 45 */
-        "movl $0, 0x10(%eax)\n" /* line 46 */
-        "popl %ebp\n" /* line 47 */
-        "retl\n"
-    );
+    *(MemoryFile **)((byte *)_this + 0) = memFile;
+    *(char *)((byte *)_this + 4) = 1;
+    *(char *)((byte *)_this + 5) = 0;
+    *(int *)((byte *)_this + 8) = 0;
+    *(int *)((byte *)_this + 0x14) = *(int *)((byte *)memFile + 8);
+    *(int *)((byte *)_this + 0xc) = 0;
+    *(int *)((byte *)_this + 0x10) = 0;
 }
 
 /* line 123 */

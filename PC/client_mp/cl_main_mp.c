@@ -303,24 +303,10 @@ void CL_ShutdownDemo(void)
 }
 
 /* line 1272 */
-__attribute__((naked))
 int CL_GetSkelTimeStamp(int localClientNum)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1272 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* localClientNum */
-        "leal (%ecx, %ecx, 2), %edx\n"
-        "shll $9, %edx\n"
-        "subl %ecx, %edx\n" /* localClientNum */
-        "movl %edx, %eax\n"
-        "shll $6, %eax\n"
-        "subl %edx, %eax\n"
-        "leal (%ecx, %eax, 4), %eax\n"
-        "movl 0x151228c(, %eax, 4), %eax\n"
-        "popl %ebp\n" /* line 1276 */
-        "retl\n"
-    );
+    /* stride: localClientNum * 386821 * 4 = localClientNum * 1547284 */
+    return *(int *)(0x151228c + (unsigned)localClientNum * 386821 * 4);
 }
 
 /* line 1279 */

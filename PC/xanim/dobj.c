@@ -659,24 +659,11 @@ int DObjHasContents(DObj *obj, int contentmask)
 }
 
 /* line 2362 */
-__attribute__((naked))
 void DObjSetModel(DObj *obj, const XModel *model)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2362 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* obj */
-        "movl 0xc(%ebp), %edx\n" /* model */
-        "movl (%edx), %eax\n" /* line 2364 */
-        "addl $0x14, %eax\n"
-        "movl %eax, 4(%ecx)\n"
-        "movl (%edx), %eax\n" /* line 2365 */
-        "movzwl (%eax), %eax\n"
-        "movb %al, 0x19(%ecx)\n"
-        "movl %edx, 0x1c(%ecx)\n" /* line 2366 */
-        "popl %ebp\n" /* line 2367 */
-        "retl\n"
-    );
+    *(int *)((byte *)obj + 4) = *(int *)model + 0x14;
+    *(unsigned char *)((byte *)obj + 0x19) = (unsigned char)*(unsigned short *)*(int *)model;
+    *(const XModel **)((byte *)obj + 0x1c) = model;
 }
 
 /* line 1323 */
