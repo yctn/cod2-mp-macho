@@ -295,24 +295,9 @@ void Material_PreLoadSingleShaderText(const char *filename, const char *subdir, 
 }
 
 /* line 3589 */
-static __attribute__((naked))
-Bool Material_CachedShaderTextLess(const GfxCachedShaderText *cached0, const GfxCachedShaderText *cached1)
+static Bool Material_CachedShaderTextLess(const GfxCachedShaderText *cached0, const GfxCachedShaderText *cached1)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3589 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 3591 | cached1 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* cached0 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll strcmp\n"
-        "shrl $0x1f, %eax\n"
-        "leave\n" /* line 3592 */
-        "retl\n"
-    );
+    return strcmp(*(const char **)cached0, *(const char **)cached1) < 0;
 }
 
 /* line 897 */

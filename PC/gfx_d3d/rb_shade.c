@@ -30,28 +30,18 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
 void RB_EndSurface(void);
 
 /* line 1587 */
-__attribute__((naked))
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1587 */
-        "movl %esp, %ebp\n"
-        "movl 0x195f160, %eax\n" /* line 1602 */
-        "movl $0, 0x5a7cc(%eax)\n"
-        "movl $0, 0x5a7b8(%eax)\n" /* line 1603 */
-        "movl $0, 0x5a7d0(%eax)\n" /* line 1604 */
-        "movl $0, 0x5a7d4(%eax)\n" /* line 1605 */
-        "movl $0, 0x5a7d8(%eax)\n" /* line 1606 */
-        "movl $0, 0x5a7dc(%eax)\n" /* line 1607 */
-        "movl 8(%ebp), %edx\n" /* line 1608 | material */
-        "movl %edx, 0x5a7bc(%eax)\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1609 | techType */
-        "movl %edx, 0x5a7c0(%eax)\n"
-        "movl 0x10(%ebp), %edx\n" /* line 1610 | lmapIndex */
-        "movl %edx, 0x5a7c4(%eax)\n"
-        "popl %ebp\n" /* line 1611 */
-        "retl\n"
-    );
+    char *tess = *(char **)0x195f160;
+    *(int *)(tess + 0x5a7cc) = 0;
+    *(int *)(tess + 0x5a7b8) = 0;
+    *(int *)(tess + 0x5a7d0) = 0;
+    *(int *)(tess + 0x5a7d4) = 0;
+    *(int *)(tess + 0x5a7d8) = 0;
+    *(int *)(tess + 0x5a7dc) = 0;
+    *(const Material **)(tess + 0x5a7bc) = material;
+    *(MaterialTechniqueType *)(tess + 0x5a7c0) = techType;
+    *(int *)(tess + 0x5a7c4) = lmapIndex;
 }
 
 /* line 132 */

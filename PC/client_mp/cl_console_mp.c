@@ -10,6 +10,7 @@
  *   #include "PC/universal/q_shared.h"
  */
 
+extern void Field_Clear(void *field);
 extern int g_console_field_width; /* 0x0 */
 extern float g_console_char_height; /* 0x0 */
 extern const dvar_t *con_gamemessagetime; /* 0x0 */
@@ -137,112 +138,49 @@ const char * CL_GetHudMsgIconMaterialName(int index)
 }
 
 /* line 265 */
-__attribute__((naked))
 void Con_ToggleConsole_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 265 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl con_restricted, %eax\n" /* line 269 */
-        "cmpb $0, 8(%eax)\n"
-        "je .Lf15b674_0015b697\n"
-        "movl 0x195f5a0, %eax\n"
-        "movl (%eax), %eax\n"
-        "movl 0x780(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf15b674_0015b6d2\n"
-        ".Lf15b674_0015b697:\n"
-        "movl 0x195f480, %ebx\n" /* line 272 */
-        "movl %ebx, (%esp)\n"
-        "calll Field_Clear\n"
-        "movl g_console_field_width, %eax\n" /* line 273 */
-        "movl %eax, 0xc(%ebx)\n"
-        "movl g_console_char_height, %eax\n" /* line 274 */
-        "movl %eax, 0x10(%ebx)\n"
-        "movl $1, 0x14(%ebx)\n" /* line 275 */
-        "movb $0, 0xefb21c\n" /* line 277 */
-        "movl 0x195f5a8, %eax\n" /* line 285 */
-        "xorl $1, 4(%eax)\n"
-        "addl $0x14, %esp\n" /* line 291 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf15b674_0015b6d2:\n"
-        "movl 0x195ee78, %eax\n" /* line 269 */
-        "movl (%eax), %eax\n"
-        "testb $1, 4(%eax)\n"
-        "jne .Lf15b674_0015b697\n"
-        "addl $0x14, %esp\n" /* line 291 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *field;
+    if (!*(byte *)((char *)con_restricted + 8)) {
+        if (*(int *)((char *)*(void **)0x195f5a0 + 0x780))
+            goto toggle;
+        if (!(*(int *)((char *)*(void **)0x195ee78 + 4) & 1))
+            return;
+    }
+toggle:
+    field = *(char **)0x195f480;
+    Field_Clear(field);
+    *(int *)(field + 0xc) = g_console_field_width;
+    *(int *)(field + 0x10) = *(int *)&g_console_char_height;
+    *(int *)(field + 0x14) = 1;
+    *(byte *)0xefb21c = 0;
+    *(int *)((char *)*(void **)0x195f5a8 + 4) ^= 1;
 }
 
 /* line 319 */
-static __attribute__((naked))
-void Con_ChatModePublic_f(void)
+static void Con_ChatModePublic_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 319 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0x195f5a4, %eax\n" /* line 321 */
-        "movl (%eax), %eax\n"
-        "movl $0, (%eax)\n"
-        "movl 0x195f5ac, %ebx\n" /* line 322 */
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Field_Clear\n"
-        "movl (%ebx), %eax\n" /* line 323 */
-        "movl $0x24c, 0xc(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 324 */
-        "movl $0x41200000, 0x10(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 325 */
-        "movl $0, 0x14(%eax)\n"
-        "movl 0x195ee78, %eax\n" /* line 327 */
-        "movl (%eax), %eax\n"
-        "xorl $0x10, 4(%eax)\n"
-        "addl $0x14, %esp\n" /* line 328 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *field;
+    **(int **)0x195f5a4 = 0;
+    field = *(char **)*(int **)0x195f5ac;
+    Field_Clear(field);
+    *(int *)(field + 0xc) = 0x24c;
+    *(int *)(field + 0x10) = 0x41200000;
+    *(int *)(field + 0x14) = 0;
+    *(int *)((char *)*(void **)0x195ee78 + 4) ^= 0x10;
 }
 
 /* line 331 */
-static __attribute__((naked))
-void Con_ChatModeTeam_f(void)
+static void Con_ChatModeTeam_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 331 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0x195f5a4, %eax\n" /* line 333 */
-        "movl (%eax), %eax\n"
-        "movl $1, (%eax)\n"
-        "movl 0x195f5ac, %ebx\n" /* line 334 */
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Field_Clear\n"
-        "movl (%ebx), %eax\n" /* line 335 */
-        "movl $0x21f, 0xc(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 336 */
-        "movl $0x41200000, 0x10(%eax)\n"
-        "movl (%ebx), %eax\n" /* line 337 */
-        "movl $0, 0x14(%eax)\n"
-        "movl 0x195ee78, %eax\n" /* line 339 */
-        "movl (%eax), %eax\n"
-        "xorl $0x10, 4(%eax)\n"
-        "addl $0x14, %esp\n" /* line 340 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *field;
+    **(int **)0x195f5a4 = 1;
+    field = *(char **)*(int **)0x195f5ac;
+    Field_Clear(field);
+    *(int *)(field + 0xc) = 0x21f;
+    *(int *)(field + 0x10) = 0x41200000;
+    *(int *)(field + 0x14) = 0;
+    *(int *)((char *)*(void **)0x195ee78 + 4) ^= 0x10;
 }
 
 /* line 2032 */

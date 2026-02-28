@@ -13,6 +13,7 @@ extern struct XModel * CL_RegisterModel(const char *name);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void * Hunk_AllocInternal(int size);
 extern void CL_ConsolePrint(int channel, const char *msg, int duration, int width);
+extern void AnglesToAxis(const vec_t *angles, vec3_t *axis);
 extern void Cmd_ArgvBuffer(int arg, char *buffer, int bufferLength);
 
 extern const centity_t * cg_entities; /* 0x0 */
@@ -218,38 +219,14 @@ static void CG_RegisterSounds(void);
 void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum);
 
 /* line 716 */
-__attribute__((naked))
 void CG_GetEntityOrientation(int entnum, vec_t *origin_out, vec3_t *axis_out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 716 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* entnum */
-        "movl 0xc(%ebp), %ecx\n" /* origin_out */
-        "movl %edx, %eax\n" /* line 722 */
-        "shll $4, %eax\n"
-        "addl %edx, %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "movl cg_entities, %edx\n"
-        "leal (%edx, %eax, 4), %eax\n"
-        "leal 0x1ec(%eax), %ebx\n" /* from */
-        /* { scope 1 */
-        "movl 0x1ec(%eax), %edx\n" /* line 199 */
-        "movl %edx, (%ecx)\n"
-        "movl 4(%ebx), %edx\n" /* line 200 */
-        "movl %edx, 4(%ecx)\n"
-        "movl 8(%ebx), %edx\n" /* line 201 */
-        "movl %edx, 8(%ecx)\n"
-        /* } scope */
-        "movl 0x10(%ebp), %edx\n" /* line 723 | axis_out */
-        "movl %edx, 0xc(%ebp)\n" /* origin_out */
-        "addl $0x1f8, %eax\n"
-        "movl %eax, 8(%ebp)\n" /* entnum */
-        "popl %ebx\n" /* line 724 */
-        "popl %ebp\n"
-        "jmp AnglesToAxis\n" /* line 723 */
-    );
+    char *ent = (char *)cg_entities + entnum * 548;
+    vec_t *origin = (vec_t *)(ent + 0x1ec);
+    origin_out[0] = origin[0];
+    origin_out[1] = origin[1];
+    origin_out[2] = origin[2];
+    AnglesToAxis((vec_t *)(ent + 0x1f8), axis_out);
 }
 
 /* line 727 */

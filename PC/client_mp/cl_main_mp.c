@@ -310,71 +310,28 @@ int CL_GetSkelTimeStamp(int localClientNum)
 }
 
 /* line 1279 */
-__attribute__((naked))
 char * CL_AllocSkelMemory(int localClientNum, unsigned int size)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1279 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* localClientNum */
-        /* { scope 1 */
-        "leal (%edx, %edx, 2), %eax\n" /* line 1288 */
-        "shll $9, %eax\n"
-        "subl %edx, %eax\n"
-        "movl %eax, %ecx\n"
-        "shll $6, %ecx\n"
-        "subl %eax, %ecx\n"
-        "leal (%edx, %ecx, 4), %ecx\n"
-        "leal clients(, %ecx, 4), %ecx\n"
-        "movl 0x8650(%ecx), %ebx\n" /* line 1300 */
-        "movl %ebx, %eax\n"
-        "addl 0x48654(%ecx), %eax\n"
-        "movl 0xc(%ebp), %edx\n" /* line 1301 | size */
-        "addl $0xf, %edx\n"
-        "andl $0xfffffff0, %edx\n"
-        "addl %ebx, %edx\n"
-        "movl %edx, 0x8650(%ecx)\n" /* line 1302 */
-        "cmpl $0x3fff1, %edx\n" /* line 1307 */
-        "movl $0, %edx\n"
-        "cmovgel %edx, %eax\n"
-        /* } scope */
-        "popl %ebx\n" /* line 1315 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *client = (char *)&clients + (unsigned)localClientNum * 386821 * 4;
+    int pos = *(int *)(client + 0x8650);
+    char *buf = (char *)(pos + *(int *)(client + 0x48654));
+    int newPos = pos + ((size + 15) & ~15);
+    *(int *)(client + 0x8650) = newPos;
+    if (newPos >= 0x3fff1)
+        return 0;
+    return buf;
 }
 
 /* line 1318 */
-__attribute__((naked))
 void CL_ResetSkeletonCache(int localClientNum)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1318 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* localClientNum */
-        /* { scope 1 */
-        "leal (%ecx, %ecx, 2), %eax\n" /* line 1325 */
-        "shll $9, %eax\n"
-        "subl %ecx, %eax\n"
-        "movl %eax, %edx\n"
-        "shll $6, %edx\n"
-        "subl %eax, %edx\n"
-        "leal (%ecx, %edx, 4), %edx\n"
-        "leal clients(, %edx, 4), %edx\n"
-        "movl $1, %eax\n" /* line 1329 */
-        "movl 0x864c(%edx), %ecx\n"
-        "addl $1, %ecx\n"
-        "cmovnel %ecx, %eax\n"
-        "movl %eax, 0x864c(%edx)\n"
-        "leal 0x8663(%edx), %eax\n" /* line 1331 */
-        "andl $0xfffffff0, %eax\n"
-        "movl %eax, 0x48654(%edx)\n"
-        "movl $0, 0x8650(%edx)\n" /* line 1332 */
-        /* } scope */
-        "popl %ebp\n" /* line 1333 */
-        "retl\n"
-    );
+    char *client = (char *)&clients + (unsigned)localClientNum * 386821 * 4;
+    unsigned int count = *(unsigned int *)(client + 0x864c) + 1;
+    if (!count)
+        count = 1;
+    *(unsigned int *)(client + 0x864c) = count;
+    *(int *)(client + 0x48654) = ((int)(client + 0x8663)) & ~15;
+    *(int *)(client + 0x8650) = 0;
 }
 
 /* line 1343 */

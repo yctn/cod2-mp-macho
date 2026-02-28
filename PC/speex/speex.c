@@ -18,136 +18,57 @@ int wb_mode_query(const float *mode, int request, float *ptr);
 int speex_encode_int(float *state, const SpeexMode (*in)[4], SpeexBits *bits);
 
 /* line 50 */
-__attribute__((naked))
 float * speex_encoder_init(const SpeexMode *mode)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 50 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* mode */
-        "movl 0x14(%eax), %ecx\n" /* line 52 */
-        "popl %ebp\n" /* line 53 */
-        "jmpl *%ecx\n" /* line 52 */
-    );
+    return ((float *(*)(const SpeexMode *))*(void **)((char *)mode + 0x14))(mode);
 }
 
 /* line 55 */
-__attribute__((naked))
 float * speex_decoder_init(const SpeexMode *mode)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 55 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* mode */
-        "movl 0x20(%eax), %ecx\n" /* line 57 */
-        "popl %ebp\n" /* line 58 */
-        "jmpl *%ecx\n" /* line 57 */
-    );
+    return ((float *(*)(const SpeexMode *))*(void **)((char *)mode + 0x20))(mode);
 }
 
 /* line 60 */
-__attribute__((naked))
 float speex_encoder_destroy(float *state)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 60 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* state */
-        "movl (%eax), %edx\n" /* line 62 */
-        "movl 0x18(%edx), %ecx\n"
-        "popl %ebp\n" /* line 63 */
-        "jmpl *%ecx\n" /* line 62 */
-    );
+    return ((float (*)(float *))*(void **)((char *)*(void **)state + 0x18))(state);
 }
 
 /* line 65 */
-__attribute__((naked))
 float speex_decoder_destroy(float *state)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 65 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* state */
-        "movl (%eax), %edx\n" /* line 67 */
-        "movl 0x24(%edx), %ecx\n"
-        "popl %ebp\n" /* line 68 */
-        "jmpl *%ecx\n" /* line 67 */
-    );
+    return ((float (*)(float *))*(void **)((char *)*(void **)state + 0x24))(state);
 }
 
 /* line 72 */
-__attribute__((naked))
 int speex_encode_native(float *state, spx_word16_t *in, SpeexBits *bits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 72 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl (%edx), %ecx\n" /* line 74 */
-        "movl 0x1c(%ecx), %ecx\n"
-        "popl %ebp\n" /* line 75 */
-        "jmpl *%ecx\n" /* line 74 */
-    );
+    return ((int (*)(float *, spx_word16_t *, SpeexBits *))*(void **)((char *)*(void **)state + 0x1c))(state, in, bits);
 }
 
 /* line 77 */
-__attribute__((naked))
 int speex_decode_native(float *state, SpeexBits *bits, spx_word16_t *out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 77 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl (%edx), %ecx\n" /* line 79 */
-        "movl 0x28(%ecx), %ecx\n"
-        "popl %ebp\n" /* line 80 */
-        "jmpl *%ecx\n" /* line 79 */
-    );
+    return ((int (*)(float *, SpeexBits *, spx_word16_t *))*(void **)((char *)*(void **)state + 0x28))(state, bits, out);
 }
 
 /* line 175 */
-__attribute__((naked))
 int speex_encoder_ctl(float *state, int request, float *ptr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 175 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl (%edx), %ecx\n" /* line 177 */
-        "movl 0x2c(%ecx), %ecx\n"
-        "popl %ebp\n" /* line 178 */
-        "jmpl *%ecx\n" /* line 177 */
-    );
+    return ((int (*)(float *, int, float *))*(void **)((char *)*(void **)state + 0x2c))(state, request, ptr);
 }
 
 /* line 147 */
-__attribute__((naked))
 int speex_decode(float *state, SpeexBits *bits, float *out)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 147 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl (%edx), %ecx\n" /* line 149 */
-        "movl 0x28(%ecx), %ecx\n"
-        "popl %ebp\n" /* line 150 */
-        "jmpl *%ecx\n" /* line 149 */
-    );
+    return ((int (*)(float *, SpeexBits *, float *))*(void **)((char *)*(void **)state + 0x28))(state, bits, out);
 }
 
 /* line 180 */
-__attribute__((naked))
 int speex_decoder_ctl(float *state, int request, float *ptr)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 180 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %edx\n" /* state */
-        "movl (%edx), %ecx\n" /* line 182 */
-        "movl 0x30(%ecx), %ecx\n"
-        "popl %ebp\n" /* line 183 */
-        "jmpl *%ecx\n" /* line 182 */
-    );
+    return ((int (*)(float *, int, float *))*(void **)((char *)*(void **)state + 0x30))(state, request, ptr);
 }
 
 /* line 187 */

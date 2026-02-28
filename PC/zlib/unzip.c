@@ -67,51 +67,22 @@ unzFile unzReOpen(const char *path, unzFile file)
 }
 
 /* line 472 */
-__attribute__((naked))
 int unzGetGlobalInfo(unzFile file, unz_global_info *pglobal_info)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 472 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* file */
-        "testl %eax, %eax\n" /* line 477 */
-        "je .Lf279b2_000279ce\n"
-        "movl 8(%eax), %edx\n" /* line 480 */
-        "movl 4(%eax), %eax\n"
-        "movl 0xc(%ebp), %ecx\n" /* pglobal_info */
-        "movl %eax, (%ecx)\n"
-        "movl %edx, 4(%ecx)\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 482 */
-        "retl\n"
-        ".Lf279b2_000279ce:\n"
-        "movl $0xffffff9a, %eax\n" /* line 477 */
-        "popl %ebp\n" /* line 482 */
-        "retl\n"
-    );
+    if (!file)
+        return -102;
+    *(int *)pglobal_info = *(int *)((char *)file + 4);
+    *(int *)((char *)pglobal_info + 4) = *(int *)((char *)file + 8);
+    return 0;
 }
 
 /* line 757 */
-__attribute__((naked))
 int unzGetCurrentFileInfoPosition(unzFile file, long unsigned int *pos)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 757 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* file */
-        "testl %eax, %eax\n" /* line 761 */
-        "je .Lf279d6_000279ec\n"
-        "movl 0x14(%eax), %eax\n" /* line 765 */
-        "movl 0xc(%ebp), %edx\n" /* pos */
-        "movl %eax, (%edx)\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n" /* line 767 */
-        "retl\n"
-        ".Lf279d6_000279ec:\n"
-        "movl $0xffffff9a, %eax\n" /* line 761 */
-        "popl %ebp\n" /* line 767 */
-        "retl\n"
-    );
+    if (!file)
+        return -102;
+    *pos = *(long unsigned int *)((char *)file + 0x14);
+    return 0;
 }
 
 /* line 1043 */

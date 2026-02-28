@@ -841,43 +841,22 @@ int R_BeginDelayedDrawing(void)
 }
 
 /* line 1013 */
-__attribute__((naked))
 void R_EndDelayedDrawing(int marker)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1013 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %edx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %edx, %eax\n"
-        "cmpl $3, %eax\n"
-        "jg .Lfc8718_000c8749\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        "leal (%ecx, %edx), %edx\n" /* line 1029 */
-        "movl 8(%ebp), %eax\n" /* marker */
-        "movl %edx, 4(%ecx, %eax)\n"
-        "popl %ebp\n" /* line 1034 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc8718_000c8749:\n"
-        "leal (%ecx, %edx), %eax\n" /* line 960 */
-        "addl $4, %edx\n" /* line 961 */
-        "movl %edx, 0x30000(%ecx)\n"
-        "addl $4, 0x30004(%ecx)\n" /* line 962 */
-        "movl %eax, 0x30008(%ecx)\n" /* line 963 */
-        "movw $3, (%eax)\n" /* line 964 */
-        "movw $4, 2(%eax)\n" /* line 965 */
-        "movl 0x30000(%ecx), %edx\n"
-        /* } scope */
-        "leal (%ecx, %edx), %edx\n" /* line 1029 */
-        "movl 8(%ebp), %eax\n" /* marker */
-        "movl %edx, 4(%ecx, %eax)\n"
-        "popl %ebp\n" /* line 1034 */
-        "retl\n"
-    );
+    char *cmdList = (char *)s_cmdList;
+    int used = *(int *)(cmdList + 0x30000);
+    if (0x30000 - used > 3) {
+        char *cmd = cmdList + used;
+        *(int *)(cmdList + 0x30000) = used + 4;
+        *(int *)(cmdList + 0x30004) += 4;
+        *(int *)(cmdList + 0x30008) = (int)cmd;
+        *(short *)cmd = 3;
+        *(short *)(cmd + 2) = 4;
+        used = *(int *)(cmdList + 0x30000);
+    } else {
+        *(int *)(cmdList + 0x30008) = 0;
+    }
+    *(int *)(cmdList + 4 + marker) = (int)(cmdList + used);
 }
 
 /* line 1037 */

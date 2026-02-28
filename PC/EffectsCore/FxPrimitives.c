@@ -11183,7 +11183,7 @@ void Light_Archive(const Light * _this, FxArchive *arch)
 }
 
 /* line 2311 */
-__attribute__((naked))
+
 void Flash_Archive(const Flash * _this, FxArchive *arch)
 {
     Light_Archive((const Light *)_this, arch);
@@ -12153,7 +12153,7 @@ void Tail_Archive(const Tail * _this, FxArchive *arch)
 }
 
 /* line 1794 */
-__attribute__((naked))
+
 void Cylinder_Archive(const Cylinder * _this, FxArchive *arch)
 {
     Tail_Archive((const Tail *)_this, arch);

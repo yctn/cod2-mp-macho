@@ -33,38 +33,16 @@ static int CompareStaticModels(const int *smodel0, const int *smodel1)
 }
 
 /* line 449 */
-__attribute__((naked))
 int R_ScaleStaticModelLighting(float directLightScale, float indirectLightScale, float *sunVisibility, vec4_t *colorForDir)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 449 */
-        "movl %esp, %ebp\n"
-        "movss 8(%ebp), %xmm0\n" /* directLightScale */
-        "movss 0xc(%ebp), %xmm1\n" /* indirectLightScale */
-        "movl 0x10(%ebp), %eax\n" /* sunVisibility */
-        "mulss (%eax), %xmm0\n" /* line 456 */
-        "movss %xmm0, (%eax)\n"
-        "movl 0x14(%ebp), %eax\n" /* colorForDir */
-        "movl $6, %edx\n"
-        ".Lf107214_00107234:\n"
-        "movaps %xmm1, %xmm0\n" /* line 519 */
-        "mulss (%eax), %xmm0\n"
-        "movss %xmm0, (%eax)\n"
-        "movaps %xmm1, %xmm0\n" /* line 520 */
-        "mulss 4(%eax), %xmm0\n"
-        "movss %xmm0, 4(%eax)\n"
-        "movaps %xmm1, %xmm0\n" /* line 521 */
-        "mulss 8(%eax), %xmm0\n"
-        "movss %xmm0, 8(%eax)\n"
-        "movaps %xmm1, %xmm0\n" /* line 522 */
-        "mulss 0xc(%eax), %xmm0\n"
-        "movss %xmm0, 0xc(%eax)\n"
-        "addl $0x10, %eax\n"
-        "subl $1, %edx\n" /* line 458 */
-        "jne .Lf107214_00107234\n"
-        "popl %ebp\n" /* line 460 */
-        "retl\n"
-    );
+    int i;
+    *sunVisibility *= directLightScale;
+    for (i = 0; i < 6; i++) {
+        colorForDir[i][0] *= indirectLightScale;
+        colorForDir[i][1] *= indirectLightScale;
+        colorForDir[i][2] *= indirectLightScale;
+        colorForDir[i][3] *= indirectLightScale;
+    }
 }
 
 /* line 533 */

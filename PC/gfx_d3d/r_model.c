@@ -25,6 +25,9 @@ static int warnCount_00c85b10; /* 0xc85b10 */
 static int warnCount_00c85b10; /* 0xc85b10 */
 extern void * Hunk_AllocInternal(int size);
 extern void DB_EnumXAssets(int type, void (*func)(XAssetHeader, void *), void *data, qboolean overrides);
+extern int XModelBad(union XAssetHeader header);
+extern void XModelUnoptimize(union XAssetHeader header);
+extern void XModelOptimize(union XAssetHeader header);
 static const int boxVerts[24][3]; /* 0x2f24c0 */
 
 static void * Hunk_AllocXModelPrecache(int size);
@@ -272,56 +275,19 @@ void R_DObjReplaceMaterial(struct DObj_s *obj, int lod, int surfaceIndex, Materi
 }
 
 /* line 2917 */
-static __attribute__((naked))
-void R_ReleaseModel(union XAssetHeader header, void *data)
+static void R_ReleaseModel(union XAssetHeader header, void *data)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2917 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* header */
-        "movl %ebx, (%esp)\n" /* line 2919 | header */
-        "calll XModelBad\n"
-        "testl %eax, %eax\n"
-        "je .Lfd0242_000d025e\n"
-        "addl $0x14, %esp\n" /* line 2922 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd0242_000d025e:\n"
-        "movl %ebx, 8(%ebp)\n" /* line 2921 | header */
-        "addl $0x14, %esp\n" /* line 2922 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp XModelUnoptimize\n" /* line 2921 */
-    );
+    if (XModelBad(header))
+        return;
+    XModelUnoptimize(header);
 }
 
 /* line 2949 */
-__attribute__((naked))
 void R_OptimizeAllModels(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2949 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x195f0e8, %eax\n" /* line 2951 */
-        "movl (%eax), %eax\n"
-        "movl 8(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "jne .Lfd026c_000d0282\n"
-        "leave\n" /* line 2953 */
-        "retl\n"
-        ".Lfd026c_000d0282:\n"
-        "movl $1, 0xc(%esp)\n" /* line 2952 */
-        "movl $0, 8(%esp)\n"
-        "movl $R_OptimizeModel, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll DB_EnumXAssets\n"
-        "leave\n" /* line 2953 */
-        "retl\n"
-    );
+    if (!*(int *)((char *)(*(void **)0x195f0e8) + 8))
+        return;
+    DB_EnumXAssets(1, R_OptimizeModel, 0, 1);
 }
 
 /* line 2925 */
@@ -337,30 +303,11 @@ void * Model_Alloc(int size)
 }
 
 /* line 2941 */
-static __attribute__((naked))
-void R_OptimizeModel(XAssetHeader header, void *data)
+static void R_OptimizeModel(XAssetHeader header, void *data)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2941 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* header */
-        "movl %ebx, (%esp)\n" /* line 2943 | header */
-        "calll XModelBad\n"
-        "testl %eax, %eax\n"
-        "je .Lfd02de_000d02fa\n"
-        "addl $0x14, %esp\n" /* line 2946 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd02de_000d02fa:\n"
-        "movl %ebx, 8(%ebp)\n" /* line 2945 | header */
-        "addl $0x14, %esp\n" /* line 2946 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp XModelOptimize\n" /* line 2945 */
-    );
+    if (XModelBad(header))
+        return;
+    XModelOptimize(header);
 }
 
 /* line 1696 */

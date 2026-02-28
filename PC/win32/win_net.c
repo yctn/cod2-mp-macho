@@ -1579,18 +1579,8 @@ jpeg_alloc NET_Init(void)
 }
 
 /* line 1366 */
-__attribute__((naked))
 jpeg_alloc NET_Restart(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1366 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl networkingEnabled, %eax\n" /* line 1368 */
-        "movl %eax, (%esp)\n"
-        "calll NET_Config\n"
-        "leave\n" /* line 1369 */
-        "retl\n"
-    );
+    NET_Config(networkingEnabled);
 }
 

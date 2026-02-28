@@ -11,6 +11,7 @@
 
 static XAnimInfo g_xAnimInfo[4096]; /* 0x3be000 */
 static unsigned int g_end; /* 0x3e6620 */
+extern void SL_RemoveRefToString(unsigned int stringValue);
 static XAnimNotify g_notifyList[128]; /* 0x3e6020 */
 static int g_notifyListSize; /* 0x3e6000 */
 static Bool g_anim_developer; /* 0x3e6625 */
@@ -154,25 +155,12 @@ void XAnimInit(void)
 }
 
 /* line 155 */
-__attribute__((naked))
 void XAnimShutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 155 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl g_end, %eax\n" /* line 157 */
-        "testl %eax, %eax\n"
-        "jne .Lf38e94_00038ea5\n"
-        "leave\n" /* line 166 */
-        "retl\n"
-        ".Lf38e94_00038ea5:\n"
-        "movl %eax, (%esp)\n" /* line 163 */
-        "calll SL_RemoveRefToString\n"
-        "movl $0, g_end\n" /* line 164 */
-        "leave\n" /* line 166 */
-        "retl\n"
-    );
+    if (!g_end)
+        return;
+    SL_RemoveRefToString(g_end);
+    g_end = 0;
 }
 
 /* line 169 */

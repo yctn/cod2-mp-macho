@@ -10,6 +10,10 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+extern void Image_Setup(GfxImage *image, int width, int height, int depth, int semantic, int flags, int imageFormat);
+extern int Image_CubemapFace(int face);
+extern void Image_UploadData(GfxImage *image, int imageFormat, int face, int mipLevel, byte *pixels);
+extern void Image_Create2DTexture(GfxImage *image, int width, int height, int depth, int flags, int format, int unused);
 static vec3_t lightGridLookupMatrix[3]; /* 0x2f2f20 */
 static const int faceAxis[6][3]; /* 0x2f2f60 */
 
@@ -31,125 +35,31 @@ static jpeg_alloc Image_LoadLightmapWeights(GfxImage *image);
 GfxImage * Image_Load(const char *name, int semantic, int imageTrack);
 
 /* line 560 */
-__attribute__((naked))
 jpeg_alloc Image_Generate2D(GfxImage *image, byte *pixels, int width, int height, int imageFormat)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 560 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* image */
-        "movl 0xc(%ebp), %edi\n" /* pixels */
-        "movl 0x18(%ebp), %ebx\n" /* imageFormat */
-        "movl %ebx, 0x18(%esp)\n" /* line 570 | imageFormat */
-        "movl $0, 0x14(%esp)\n"
-        "movl $3, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* height */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* width */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* image */
-        "calll Image_Setup\n"
-        "movl $0, (%esp)\n" /* line 575 */
-        "calll Image_CubemapFace\n"
-        "movl %edi, 0x18(%ebp)\n" /* pixels, imageFormat */
-        "movl $0, 0x14(%ebp)\n" /* height */
-        "movl %eax, 0x10(%ebp)\n" /* width */
-        "movl %ebx, 0xc(%ebp)\n" /* imageFormat, pixels */
-        "movl %esi, 8(%ebp)\n" /* image */
-        "addl $0x2c, %esp\n" /* line 595 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp Image_UploadData\n" /* line 575 */
-    );
+    int face;
+    Image_Setup(image, width, height, 1, 3, 0, imageFormat);
+    face = Image_CubemapFace(0);
+    Image_UploadData(image, imageFormat, face, 0, pixels);
 }
 
 /* line 598 */
-__attribute__((naked))
 jpeg_alloc Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int depth, D3DFORMAT imageFormat)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 598 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* image */
-        "movl 0xc(%ebp), %edi\n" /* pixels */
-        "movl 0x1c(%ebp), %ebx\n" /* imageFormat */
-        "movl %ebx, 0x18(%esp)\n" /* line 609 | imageFormat */
-        "movl $0, 0x14(%esp)\n"
-        "movl $0xb, 0x10(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* depth */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* height */
-        "movl %eax, 8(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* width */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* image */
-        "calll Image_Setup\n"
-        "movl $0, (%esp)\n" /* line 614 */
-        "calll Image_CubemapFace\n"
-        "movl %edi, 0x18(%ebp)\n" /* pixels, depth */
-        "movl $0, 0x14(%ebp)\n" /* height */
-        "movl %eax, 0x10(%ebp)\n" /* width */
-        "movl %ebx, 0xc(%ebp)\n" /* imageFormat, pixels */
-        "movl %esi, 8(%ebp)\n" /* image */
-        "addl $0x2c, %esp\n" /* line 633 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp Image_UploadData\n" /* line 614 */
-    );
+    int face;
+    Image_Setup(image, width, height, depth, 0xb, 0, imageFormat);
+    face = Image_CubemapFace(0);
+    Image_UploadData(image, imageFormat, face, 0, pixels);
 }
 
 /* line 1180 */
-__attribute__((naked))
 jpeg_alloc Image_BuildWaterMap(GfxImage *image)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1180 */
-        "movl %esp, %ebp\n"
-        "subl $0x28, %esp\n"
-        "movl 8(%ebp), %edx\n" /* image */
-        "movl 0x195eec0, %eax\n" /* line 1190 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lffc7b4_000fc804\n"
-        "movl $0, 0x18(%esp)\n" /* line 1197 */
-        "movl $0x32, 0x14(%esp)\n"
-        "movl $0x200, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movzwl 0x1a(%edx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movzwl 0x18(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Image_Create2DTexture\n"
-        "leave\n" /* line 1199 */
-        "retl\n"
-        ".Lffc7b4_000fc804:\n"
-        "movl $0, 0x18(%esp)\n" /* line 1192 */
-        "movl $0x16, 0x14(%esp)\n"
-        "movl $0x200, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movzwl 0x1a(%edx), %eax\n" /* line 1197 */
-        "movl %eax, 8(%esp)\n"
-        "movzwl 0x18(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Image_Create2DTexture\n"
-        "leave\n" /* line 1199 */
-        "retl\n"
-    );
+    if (*(int *)((char *)(*(void **)0x195eec0) + 8) == 2) {
+        Image_Create2DTexture(image, *(unsigned short *)((char *)image + 0x18), *(unsigned short *)((char *)image + 0x1a), 1, 0x200, 0x16, 0);
+    } else {
+        Image_Create2DTexture(image, *(unsigned short *)((char *)image + 0x18), *(unsigned short *)((char *)image + 0x1a), 0, 0x200, 0x32, 0);
+    }
 }
 
 /* line 195 */

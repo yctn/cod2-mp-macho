@@ -95,36 +95,15 @@ int DObjSkelIsBoneUpToDate(DObj *obj, int boneIndex)
 }
 
 /* line 598 */
-__attribute__((naked))
 int DObjSkelAreBonesUpToDate(const DObj *obj, int *partBits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 598 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 0xc(%ebp), %ebx\n" /* partBits */
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl 4(%eax), %edx\n"
-        "movl $1, %ecx\n"
-        ".Lf745f8_0007460a:\n"
-        "movl 0x20(%edx), %eax\n" /* line 610 */
-        "notl %eax\n"
-        "testl %eax, -4(%ebx, %ecx, 4)\n" /* partBits */
-        "jne .Lf745f8_00074628\n"
-        "addl $1, %ecx\n"
-        "addl $4, %edx\n"
-        "cmpl $5, %ecx\n" /* line 608 */
-        "jne .Lf745f8_0007460a\n"
-        "movl $1, %eax\n"
-        "popl %ebx\n" /* line 615 */
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf745f8_00074628:\n"
-        "xorl %eax, %eax\n" /* line 610 */
-        "popl %ebx\n" /* line 615 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int i;
+    int *skel = *(int **)((char *)obj + 4);
+    for (i = 0; i < 4; i++) {
+        if (~*(int *)((char *)skel + 0x24 + i * 4) & partBits[i])
+            return 0;
+    }
+    return 1;
 }
 
 /* line 1142 */
@@ -199,29 +178,16 @@ void DObjSkelClear(const DObj *obj)
 }
 
 /* line 1273 */
-__attribute__((naked))
 void DObjCreateSkel(const DObj *obj, char *buf, int timeStamp)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1273 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl 0xc(%ebp), %ecx\n" /* buf */
-        "movl %ecx, 4(%eax)\n" /* line 1282 */
-        "movl 0x10(%ebp), %edx\n" /* line 1283 | timeStamp */
-        "movl %edx, 8(%eax)\n"
-        "movl %ecx, %eax\n"
-        "movl $4, %edx\n"
-        ".Lf746e8_00074701:\n"
-        "movl $0, (%eax)\n" /* line 1287 */
-        "movl $0, 0x10(%eax)\n" /* line 1288 */
-        "movl $0, 0x20(%eax)\n" /* line 1289 */
-        "addl $4, %eax\n"
-        "subl $1, %edx\n" /* line 1285 */
-        "jne .Lf746e8_00074701\n"
-        "popl %ebp\n" /* line 1293 */
-        "retl\n"
-    );
+    int i;
+    *(char **)((char *)obj + 4) = buf;
+    *(int *)((char *)obj + 8) = timeStamp;
+    for (i = 0; i < 4; i++) {
+        *(int *)(buf + i * 4) = 0;
+        *(int *)(buf + i * 4 + 0x10) = 0;
+        *(int *)(buf + i * 4 + 0x20) = 0;
+    }
 }
 
 /* line 1301 */
@@ -372,25 +338,13 @@ int DObjGetNumSurfaces(const DObj *obj, char *lods)
 }
 
 /* line 1509 */
-__attribute__((naked))
 struct XSurface_s * DObjGetSurface(const DObj *obj, int modelIndex, int subMatIndex, int lod)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1509 */
-        "movl %esp, %ebp\n"
-        "movl 0x14(%ebp), %eax\n" /* lod, subMatIndex */
-        "leal (%eax, %eax, 4), %eax\n" /* subMatIndex */
-        "shll $2, %eax\n" /* subMatIndex */
-        "movl 8(%ebp), %ecx\n" /* obj */
-        "movl 0xc(%ebp), %edx\n" /* modelIndex */
-        "addl 0x1c(%ecx, %edx, 4), %eax\n" /* subMatIndex */
-        "movl 0x14(%eax), %eax\n" /* subMatIndex */
-        "movl (%eax), %edx\n" /* modelIndex */
-        "movl 0x10(%ebp), %eax\n" /* subMatIndex */
-        "movl (%edx, %eax, 4), %eax\n" /* subMatIndex */
-        "popl %ebp\n" /* line 1514 */
-        "retl\n"
-    );
+    char *model = (char *)(*(int *)((char *)obj + 0x1c + modelIndex * 4));
+    char *lodInfo = model + lod * 20;
+    int *surfs = *(int **)(lodInfo + 0x14);
+    int *surfList = *(int **)surfs;
+    return (struct XSurface_s *)*(int *)(surfList + subMatIndex);
 }
 
 /* line 1522 */

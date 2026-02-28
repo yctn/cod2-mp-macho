@@ -11,6 +11,7 @@
 extern int I_stricmp(const char *s1, const char *s2);
 extern int R_Error(int code, const char *fmt, ...);
 extern FontHandle R_LoadFont(const char *fontName, int imageTrack);
+extern void R_AddCmdDrawTextWithCursor(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style, int cursorPos, int cursor);
 
 static int registeredFontCount; /* 0xc96d00 */
 static Font * registeredFont[16]; /* 0xc96d20 */
@@ -155,37 +156,9 @@ int R_TextHeight(FontHandle font)
 }
 
 /* line 209 */
-__attribute__((naked))
 int R_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 209 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        "movl $0, 0x28(%esp)\n" /* line 211 */
-        "movl $0xffffffff, 0x24(%esp)\n"
-        "movl 0x28(%ebp), %eax\n" /* style */
-        "movl %eax, 0x20(%esp)\n"
-        "movl 0x24(%ebp), %eax\n" /* color */
-        "movl %eax, 0x1c(%esp)\n"
-        "movl 0x20(%ebp), %eax\n" /* yScale */
-        "movl %eax, 0x18(%esp)\n"
-        "movl 0x1c(%ebp), %eax\n" /* xScale */
-        "movl %eax, 0x14(%esp)\n"
-        "movl 0x18(%ebp), %eax\n" /* y */
-        "movl %eax, 0x10(%esp)\n"
-        "movl 0x14(%ebp), %eax\n" /* x */
-        "movl %eax, 0xc(%esp)\n"
-        "movl 0x10(%ebp), %eax\n" /* font */
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* maxChars */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* text */
-        "movl %eax, (%esp)\n"
-        "calll R_AddCmdDrawTextWithCursor\n"
-        "leave\n" /* line 212 */
-        "retl\n"
-    );
+    R_AddCmdDrawTextWithCursor(text, maxChars, font, x, y, xScale, yScale, color, style, -1, 0);
 }
 
 /* line 218 */

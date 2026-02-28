@@ -10,6 +10,7 @@
  */
 
 extern void FS_FCloseFile(int f);
+extern int FS_FOpenFileReadStream(const char *filename, long unsigned int *handle, int uniqueFILE);
 extern int AIL_digital_CPU_percent(void *dig);
 extern int AIL_sample_playback_rate(void *S);
 extern void AIL_set_sample_playback_rate(void *S, int rate);
@@ -81,26 +82,9 @@ void SND_SetStreamChannelFromSaveInfo(int index, snd_save_stream_t *info);
 void SND_DriverPostUpdate(int frametime);
 
 /* line 114 */
-static __attribute__((naked))
-long unsigned int MSS_FileOpenCallback(const char *pszFilename, long unsigned int *phFileHandle)
+static long unsigned int MSS_FileOpenCallback(const char *pszFilename, long unsigned int *phFileHandle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 114 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $1, 8(%esp)\n" /* line 118 */
-        "movl 0xc(%ebp), %eax\n" /* phFileHandle */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* pszFilename */
-        "movl %eax, (%esp)\n"
-        "calll FS_FOpenFileReadStream\n"
-        "shrl $0x1f, %eax\n"
-        "xorl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 122 */
-        "retl\n"
-    );
+    return FS_FOpenFileReadStream(pszFilename, phFileHandle, 1) >= 0;
 }
 
 /* line 125 */

@@ -6,6 +6,7 @@
 
 extern void * Hunk_AllocateTempMemoryInternal(int size, const char *name);
 extern void * Hunk_AllocInternal(int size);
+extern float GraphGetValueFromFraction(int knotCount, float *knots, float fraction);
 
 extern struct g_sa_type g_sa; /* 0x0 */
 
@@ -31,24 +32,9 @@ snd_alias_t * SND_GetAliasWithOffset(const char *name, int offset);
 snd_alias_t * Com_PickSoundAlias(const char *aliasname);
 
 /* line 296 */
-__attribute__((naked))
 float Com_GetVolumeFalloffCurveValue(SndCurve *volumeFalloffCurve, float fraction)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 296 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* volumeFalloffCurve */
-        "movl 0xc(%ebp), %eax\n" /* line 298 | fraction */
-        "movl %eax, 8(%esp)\n"
-        "leal 8(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 4(%edx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll GraphGetValueFromFraction\n"
-        "leave\n" /* line 299 */
-        "retl\n"
-    );
+    return GraphGetValueFromFraction(*(int *)((char *)volumeFalloffCurve + 4), (float *)((char *)volumeFalloffCurve + 8), fraction);
 }
 
 /* line 874 */

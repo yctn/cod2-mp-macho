@@ -9,6 +9,7 @@
  *   #include "PC/universal/com_math.h"
  */
 
+extern void * Sys_GetValue(int key);
 cmodel_t * CM_ClipHandleToModel(clipHandle_t handle);
 static int CM_TestInLeafBrushNode_r(void);
 static int CM_SightTraceThroughBrush(cbrush_t *brush);
@@ -31,29 +32,13 @@ int CM_TransformedBoxTraceExternal(trace_t *results, const vec_t *start, const v
 int CM_TransformedBoxSightTrace(int hitNum, const vec_t *start, const vec_t *end, const vec_t *mins, const vec_t *maxs, clipHandle_t model, int brushmask, const vec_t *origin, const vec_t *angles);
 
 /* line 79 */
-__attribute__((naked))
 cmodel_t * CM_ClipHandleToModel(clipHandle_t handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 79 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* handle */
-        "movl 0x195eda4, %ecx\n" /* line 85 */
-        "cmpl %eax, 0x74(%ecx)\n"
-        "jle .Lf62dec_00062e0b\n"
-        "leal (%eax, %eax, 8), %edx\n" /* line 86 */
-        "movl 0x78(%ecx), %eax\n"
-        "leal (%eax, %edx, 8), %eax\n"
-        "leave\n" /* line 92 */
-        "retl\n"
-        ".Lf62dec_00062e0b:\n"
-        "movl $3, (%esp)\n" /* line 43 */
-        "calll Sys_GetValue\n"
-        "movl 0x14(%eax), %eax\n" /* line 47 */
-        "leave\n" /* line 92 */
-        "retl\n"
-    );
+    char *cm = *(char **)0x195eda4;
+    if (handle < *(int *)(cm + 0x74)) {
+        return (cmodel_t *)(*(char **)(cm + 0x78) + handle * 72);
+    }
+    return *(cmodel_t **)((char *)Sys_GetValue(3) + 0x14);
 }
 
 /* line 254 */

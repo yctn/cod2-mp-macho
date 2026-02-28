@@ -88,29 +88,13 @@ static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState);
 static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState);
 
 /* line 4245 */
-__attribute__((naked))
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4245 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* constant, z */
-        "shll $4, %eax\n" /* line 4249 */
-        "subl $0x800, %eax\n"
-        "leal backEnd(%eax), %ecx\n" /* v */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 447 | x */
-        "movl %edx, backEnd(%eax)\n"
-        "movl 0x10(%ebp), %eax\n" /* line 448 | y */
-        "movl %eax, 4(%ecx)\n"
-        "movl 0x14(%ebp), %eax\n" /* line 449 | z */
-        "movl %eax, 8(%ecx)\n"
-        "movl 0x18(%ebp), %eax\n" /* line 450 | w */
-        "movl %eax, 0xc(%ecx)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 4250 */
-        "retl\n"
-    );
+    vec_t *v = (vec_t *)((char *)&backEnd + constant * 16 - 0x800);
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+    v[3] = w;
 }
 
 /* line 577 */
