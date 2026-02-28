@@ -26,83 +26,38 @@ int R_ConsoleTextWidth(const short int *string, int maxChars, FontHandle font);
 int R_DrawConsoleText(const short int *string, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style);
 
 /* line 17 */
-__attribute__((naked))
 const Glyph * R_GetCharacterGlyph(FontHandle font, unsigned int letter)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 17 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ecx\n" /* font */
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 23 | letter */
-        "subl $0x20, %eax\n"
-        "cmpl $0x5f, %eax\n"
-        "ja .Lfecb48_000ecb71\n"
-        "movl 0xc(%ebp), %eax\n" /* line 26 | letter */
-        "leal (%eax, %eax, 2), %edx\n"
-        "movl 0x10(%ecx), %eax\n"
-        "leal -0x300(%eax, %edx, 8), %eax\n"
-        /* } scope */
-        ".Lfecb48_000ecb6c:\n"
-        "popl %ebx\n" /* line 42 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfecb48_000ecb71:\n"
-        "movl 8(%ecx), %eax\n" /* line 29 */
-        "leal -1(%eax), %esi\n" /* top */
-        "cmpl $0x5f, %esi\n" /* line 31 | top */
-        "jg .Lfecb48_000ecb8a\n"
-        "movl 0x10(%ecx), %edi\n"
-        ".Lfecb48_000ecb7f:\n"
-        "leal 0x150(%edi), %eax\n" /* line 41 */
-        /* } scope */
-        "popl %ebx\n" /* line 42 */
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfecb48_000ecb8a:\n"
-        "addl $0x5f, %eax\n" /* line 33 */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "movl 0x10(%ecx), %edi\n" /* line 34 */
-        "leal (%edx, %edx, 2), %eax\n"
-        "leal (%edi, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ecx, 0xc(%ebp)\n" /* letter */
-        "je .Lfecb48_000ecb6c\n"
-        "movl $0x60, %ebx\n" /* bot */
-        "jmp .Lfecb48_000ecbcf\n"
-        ".Lfecb48_000ecbae:\n"
-        "leal 1(%edx), %ebx\n" /* line 37 | bot */
-        ".Lfecb48_000ecbb1:\n"
-        "cmpl %ebx, %esi\n" /* line 31 | bot, top */
-        "jl .Lfecb48_000ecb7f\n"
-        "leal (%esi, %ebx), %eax\n" /* line 33 | top */
-        "movl %eax, %edx\n"
-        "shrl $0x1f, %edx\n"
-        "addl %eax, %edx\n"
-        "sarl $1, %edx\n"
-        "leal (%edx, %edx, 2), %eax\n" /* line 34 */
-        "leal (%edi, %eax, 8), %eax\n"
-        "movzwl (%eax), %ecx\n"
-        "cmpl %ecx, 0xc(%ebp)\n" /* letter */
-        "je .Lfecb48_000ecb6c\n"
-        ".Lfecb48_000ecbcf:\n"
-        "cmpl %ecx, 0xc(%ebp)\n" /* line 36 | letter */
-        "ja .Lfecb48_000ecbae\n"
-        "leal -1(%edx), %esi\n" /* line 39 | top */
-        "jmp .Lfecb48_000ecbb1\n"
-    );
+    Glyph *glyphs = *(Glyph **)((byte *)font + 0x10);
+    int numGlyphs, top, bot, mid;
+
+    /* Fast path for printable ASCII (0x20..0x7F) */
+    if (letter - 0x20 <= 0x5F)
+        return &glyphs[letter - 0x20];
+
+    /* Binary search through extended glyphs */
+    numGlyphs = *(int *)((byte *)font + 8);
+    top = numGlyphs - 1;
+    bot = 0x60;
+
+    if (top <= 0x5F)
+        return &glyphs[14]; /* fallback glyph (period) */
+
+    mid = (numGlyphs + 0x5F - 1) / 2;
+    if (*(unsigned short *)&glyphs[mid] == letter)
+        return (const Glyph *)&glyphs[mid];
+
+    while (top >= bot) {
+        mid = (top + bot) / 2;
+        if (*(unsigned short *)&glyphs[mid] == letter)
+            return (const Glyph *)&glyphs[mid];
+        if (letter > *(unsigned short *)&glyphs[mid])
+            bot = mid + 1;
+        else
+            top = mid - 1;
+    }
+
+    return &glyphs[14]; /* fallback glyph */
 }
 
 /* line 57 */

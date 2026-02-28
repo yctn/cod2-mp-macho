@@ -15,6 +15,13 @@ extern void G_FreeEntity(gentity_t *ent);
 extern void G_SetOrigin(gentity_t *ent, const vec_t *origin);
 extern qboolean G_SpawnString(const char *key, const char *defaultString, const char **out);
 extern void Com_Error(int code, const char *fmt, ...);
+extern DObj_s * Com_GetServerDObj(int entNum);
+extern void DObjSetControlTagAngles(DObj_s *obj, int *partBits, unsigned short tag, vec_t *angles);
+extern void SV_UnlinkEntity(gentity_t *ent);
+extern void SV_LinkEntity(gentity_t *ent);
+extern void SetClientViewAngle(gentity_t *ent, vec_t *angles);
+extern void BG_PlayerStateToEntityState(playerState_t *ps, gentity_t *ent, qboolean snap, qboolean forceSnap);
+extern void G_AddEvent(gentity_t *ent, int event, int eventParm);
 
 static turretInfo_t turretInfo[32]; /* 0xfe7800 */
 
@@ -244,135 +251,63 @@ void turret_think(gentity_t *self)
 }
 
 /* line 809 */
-__attribute__((naked))
 void turret_controller(gentity_t *self, int *partBits)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 809 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %edx\n" /* line 814 | self */
-        "movl 0x6c(%edx), %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        "movl 0x68(%edx), %eax\n" /* line 815 */
-        "movl %eax, -0x24(%ebp)\n" /* angles */
-        "movl $0, -0x1c(%ebp)\n" /* line 816 */
-        "movl (%edx), %eax\n" /* line 818 */
-        "movl %eax, (%esp)\n"
-        "calll Com_GetServerDObj\n"
-        "movl %eax, %edi\n" /* obj */
-        "leal -0x24(%ebp), %esi\n" /* line 821 | angles */
-        "movl %esi, 0xc(%esp)\n"
-        "movl 0x195f5bc, %ebx\n"
-        "movzwl 0x9e(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* partBits */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* obj */
-        "calll DObjSetControlTagAngles\n"
-        "movl %esi, 0xc(%esp)\n" /* line 822 */
-        "movzwl 0xa0(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %edx\n" /* partBits */
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* obj */
-        "calll DObjSetControlTagAngles\n"
-        "movl 8(%ebp), %edx\n" /* line 824 | self */
-        "movl 0x70(%edx), %eax\n"
-        "movl %eax, -0x24(%ebp)\n" /* angles */
-        "movl $0, -0x20(%ebp)\n" /* line 825 */
-        "movl %esi, 0xc(%esp)\n" /* line 827 */
-        "movzwl 0x8c(%ebx), %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* partBits */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* obj */
-        "calll DObjSetControlTagAngles\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 828 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    vec3_t angles;
+    DObj_s *obj;
+    unsigned short *tagNames = (unsigned short *)*(int *)0x195f5bc;
+
+    angles[0] = *(float *)((byte *)self + 0x68);
+    angles[1] = *(float *)((byte *)self + 0x6c);
+    angles[2] = 0;
+
+    obj = Com_GetServerDObj(*(int *)self);
+
+    DObjSetControlTagAngles(obj, partBits, tagNames[0x9e / 2], angles);
+    DObjSetControlTagAngles(obj, partBits, tagNames[0xa0 / 2], angles);
+
+    angles[0] = *(float *)((byte *)self + 0x70);
+    angles[1] = 0;
+
+    DObjSetControlTagAngles(obj, partBits, tagNames[0x8c / 2], angles);
 }
 
 /* line 42 */
-__attribute__((naked))
 void TeleportPlayer(gentity_t *player, vec_t *origin, vec_t *angles)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 42 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* player */
-        "movl 0xc(%ebp), %ebx\n" /* origin */
-        "movl 0x10(%ebp), %esi\n" /* angles */
-        "movzbl 0xf0(%edi), %eax\n" /* line 49 | player */
-        "movb %al, -0x19(%ebp)\n"
-        "movl %edi, (%esp)\n" /* line 51 | player */
-        "calll SV_UnlinkEntity\n"
-        "movl 0x158(%edi), %edx\n" /* line 53 | player */
-        "leal 0x14(%edx), %ecx\n" /* to */
-        /* { scope 1 */
-        "movl (%ebx), %eax\n" /* line 199 | origin */
-        "movl %eax, 0x14(%edx)\n"
-        "movl 4(%ebx), %eax\n" /* line 200 | origin */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%ebx), %eax\n" /* line 201 | origin */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "movl 0x158(%edi), %eax\n" /* line 54 | player */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
-        "addss 0x1c(%eax), %xmm0\n"
-        "movss %xmm0, 0x1c(%eax)\n"
-        "movl 0x158(%edi), %eax\n" /* line 57 | player */
-        "xorl $2, 0xa0(%eax)\n"
-        "movl %esi, 4(%esp)\n" /* line 60 | angles */
-        "movl %edi, (%esp)\n" /* player */
-        "calll SetClientViewAngle\n"
-        "movl $1, 0xc(%esp)\n" /* line 63 */
-        "movl $1, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* player */
-        "movl 0x158(%edi), %eax\n" /* player */
-        "movl %eax, (%esp)\n"
-        "calll BG_PlayerStateToEntityState\n"
-        "leal 0x138(%edi), %ecx\n" /* line 66 | player, to */
-        "movl 0x158(%edi), %eax\n" /* player */
-        "leal 0x14(%eax), %edx\n" /* from */
-        /* { scope 1 */
-        "movl 0x14(%eax), %eax\n" /* line 199 */
-        "movl %eax, 0x138(%edi)\n" /* player */
-        "movl 4(%edx), %eax\n" /* line 200 */
-        "movl %eax, 4(%ecx)\n"
-        "movl 8(%edx), %eax\n" /* line 201 */
-        "movl %eax, 8(%ecx)\n"
-        /* } scope */
-        "cmpb $0, -0x19(%ebp)\n" /* line 68 */
-        "jne .Lf1b9dc6_001b9e89\n"
-        "addl $0x2c, %esp\n" /* line 72 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1b9dc6_001b9e89:\n"
-        "movl %edi, 8(%ebp)\n" /* line 70 | player */
-        "addl $0x2c, %esp\n" /* line 72 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "jmp SV_LinkEntity\n" /* line 70 */
-    );
+    unsigned char linked;
+    playerState_t *ps;
+
+    linked = *(unsigned char *)((byte *)player + 0xf0);
+
+    SV_UnlinkEntity(player);
+
+    /* VectorCopy origin to ps->origin */
+    ps = *(playerState_t **)((byte *)player + 0x158);
+    *(float *)((byte *)ps + 0x14) = origin[0];
+    *(float *)((byte *)ps + 0x18) = origin[1];
+    *(float *)((byte *)ps + 0x1c) = origin[2];
+
+    /* Increment origin[2] by 1.0 */
+    ps = *(playerState_t **)((byte *)player + 0x158);
+    *(float *)((byte *)ps + 0x1c) += 1.0f;
+
+    /* Toggle EF_TELEPORT_BIT */
+    ps = *(playerState_t **)((byte *)player + 0x158);
+    *(int *)((byte *)ps + 0xa0) ^= 2;
+
+    SetClientViewAngle(player, angles);
+
+    BG_PlayerStateToEntityState(*(playerState_t **)((byte *)player + 0x158), player, 1, 1);
+
+    /* VectorCopy ps->origin to currentOrigin */
+    ps = *(playerState_t **)((byte *)player + 0x158);
+    *(float *)((byte *)player + 0x138) = *(float *)((byte *)ps + 0x14);
+    *(float *)((byte *)player + 0x13c) = *(float *)((byte *)ps + 0x18);
+    *(float *)((byte *)player + 0x140) = *(float *)((byte *)ps + 0x1c);
+
+    if (linked)
+        SV_LinkEntity(player);
 }
 
 /* line 528 */
@@ -452,36 +387,20 @@ void G_ClientStopUsingTurret(gentity_t *self)
 }
 
 /* line 861 */
-__attribute__((naked))
 void G_FreeTurret(gentity_t *self)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 861 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* self */
-        "movl 0x150(%ebx), %eax\n" /* line 869 | self */
-        "leal (%eax, %eax, 4), %eax\n"
-        "leal (, %eax, 8), %edx\n"
-        "subl %eax, %edx\n"
-        "shll $4, %edx\n"
-        "movl 0x195f688, %eax\n"
-        "movl 0x158(%eax, %edx), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf1b9fc0_001b9ff7\n"
-        "movl %ebx, (%esp)\n" /* line 870 | self */
-        "calll G_ClientStopUsingTurret\n"
-        ".Lf1b9fc0_001b9ff7:\n"
-        "movb $0, 0x162(%ebx)\n" /* line 872 | self */
-        "movl 0x15c(%ebx), %eax\n" /* line 873 | self */
-        "movl $0, (%eax)\n"
-        "movl $0, 0x15c(%ebx)\n" /* line 874 | self */
-        "addl $0x14, %esp\n" /* line 875 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int ownerNum;
+    gentity_t *g_ents;
+
+    /* Check if owner entity has a client (entity stride 560 = 0x230, field 0x158 = client) */
+    ownerNum = *(int *)((byte *)self + 0x150);
+    g_ents = *(gentity_t **)0x195f688;
+    if (*(int *)((byte *)g_ents + ownerNum * 560 + 0x158))
+        G_ClientStopUsingTurret(self);
+
+    *(unsigned char *)((byte *)self + 0x162) = 0;
+    **(int **)((byte *)self + 0x15c) = 0;
+    *(int *)((byte *)self + 0x15c) = 0;
 }
 
 /* line 756 */

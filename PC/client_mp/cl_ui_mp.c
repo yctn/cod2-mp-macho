@@ -16,6 +16,11 @@ extern void UI_Component_Init(void);
 extern const char *Key_KeynumToString(int keynum, int translate);
 extern const char *Key_GetBinding(int keynum);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
+extern const dvar_t * Dvar_RegisterString(const char *dvarName, const char *value, unsigned int flags);
+extern void Com_WriteCDKey(void);
+extern void Com_PumpMessageLoop(void);
+extern void Com_UnloadSoundAliases(int zone);
+extern void UI_Shutdown(void);
 
 void GetClientState(uiClientState_t *state);
 void LAN_ResetPings(int source);
@@ -45,45 +50,17 @@ int LAN_CompareHostname(const char *hostName1, const char *hostName2);
 int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2);
 
 /* line 23 */
-__attribute__((naked))
 void GetClientState(uiClientState_t *state)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 23 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* state */
-        "movl 0x195ee8c, %eax\n" /* line 25 */
-        "movl (%eax), %ebx\n"
-        "movl 0x24(%ebx), %eax\n"
-        "movl %eax, 4(%esi)\n" /* state */
-        "movl (%ebx), %eax\n" /* line 26 */
-        "movl %eax, (%esi)\n" /* state */
-        "movl $0x400, 8(%esp)\n" /* line 27 */
-        "movl 0x195ecac, %eax\n"
-        "addl $8, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "leal 0xc(%esi), %eax\n" /* state */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl $0x400, 8(%esp)\n" /* line 31 */
-        "addl $0x28, %ebx\n"
-        "movl %ebx, 4(%esp)\n"
-        "leal 0x40c(%esi), %eax\n" /* state */
-        "movl %eax, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl 0x195ee78, %eax\n" /* line 32 */
-        "movl (%eax), %eax\n"
-        "movl 0x100(%eax), %eax\n"
-        "movl %eax, 8(%esi)\n" /* state */
-        "addl $0x10, %esp\n" /* line 33 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *cls = *(byte **)0x195ee8c;
+    byte *clc = *(byte **)0x195ecac;
+    byte *cl = *(byte **)0x195ee78;
+
+    *(int *)((byte *)state + 4) = *(int *)(cls + 0x24);
+    *(int *)state = *(int *)cls;
+    I_strncpyz((char *)state + 0xc, (const char *)(clc + 8), 0x400);
+    I_strncpyz((char *)state + 0x40c, (const char *)(cls + 0x28), 0x400);
+    *(int *)((byte *)state + 8) = *(int *)(cl + 0x100);
 }
 
 /* line 41 */
@@ -675,69 +652,35 @@ void Key_SetCatcher(int catcher)
 }
 
 /* line 611 */
-__attribute__((naked))
 void CLUI_GetCDKey(char *buf, int buflen, char *buf2, int buf2len)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 611 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* buf */
-        "movl 0x10(%ebp), %esi\n" /* buf2 */
-        "movl $0x101c, 8(%esp)\n" /* line 616 */
-        "movl $0x2157b8, 4(%esp)\n"
-        "movl $0x216d64, (%esp)\n" /* "fs_game" */
-        "calll Dvar_RegisterString\n"
-        "movl 0x195f4e4, %edx\n" /* line 618 */
-        "movl (%edx), %eax\n"
-        "movl %eax, (%ebx)\n" /* buf */
-        "movl 4(%edx), %eax\n"
-        "movl %eax, 4(%ebx)\n" /* buf */
-        "movl 8(%edx), %eax\n"
-        "movl %eax, 8(%ebx)\n" /* buf */
-        "movl 0xc(%edx), %eax\n"
-        "movl %eax, 0xc(%ebx)\n" /* buf */
-        "movb $0, 0x10(%ebx)\n" /* line 619 | buf */
-        "movl 0x195f314, %eax\n" /* line 621 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%esi)\n" /* buf2 */
-        "movb $0, 4(%esi)\n" /* line 622 | buf2 */
-        "addl $0x10, %esp\n" /* line 623 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char *cdkey;
+    char *cdkey2;
+
+    Dvar_RegisterString((const char *)0x216d64, (const char *)0x2157b8, 0x101c); /* "fs_game" */
+
+    cdkey = *(char **)0x195f4e4;
+    memcpy(buf, cdkey, 16);
+    buf[16] = '\0';
+
+    cdkey2 = *(char **)0x195f314;
+    memcpy(buf2, cdkey2, 4);
+    buf2[4] = '\0';
 }
 
 /* line 631 */
-__attribute__((naked))
 void CLUI_SetCDKey(char *buf, char *buf2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 631 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %ecx\n" /* buf */
-        "movl 0x195f4e4, %edx\n" /* line 633 */
-        "movl (%ecx), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movl 4(%ecx), %eax\n"
-        "movl %eax, 4(%edx)\n"
-        "movl 8(%ecx), %eax\n"
-        "movl %eax, 8(%edx)\n"
-        "movl 0xc(%ecx), %eax\n"
-        "movl %eax, 0xc(%edx)\n"
-        "movb $0, 0x10(%edx)\n" /* line 634 */
-        "movl 0x195f314, %edx\n" /* line 635 */
-        "movl 0xc(%ebp), %eax\n" /* buf2 */
-        "movl (%eax), %eax\n"
-        "movl %eax, (%edx)\n"
-        "movb $0, 4(%edx)\n" /* line 636 */
-        "popl %ebp\n" /* line 639 */
-        "jmp Com_WriteCDKey\n" /* line 638 */
-    );
+    char *cdkey = *(char **)0x195f4e4;
+    char *cdkey2 = *(char **)0x195f314;
+
+    memcpy(cdkey, buf, 16);
+    cdkey[16] = '\0';
+
+    memcpy(cdkey2, buf2, 4);
+    cdkey2[4] = '\0';
+
+    Com_WriteCDKey();
 }
 
 /* line 647 */
@@ -834,42 +777,26 @@ qboolean UI_ClientIsInGame(void)
 }
 
 /* line 899 */
-__attribute__((naked))
 qboolean CL_ShutdownUI(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 899 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0x195ecac, %ebx\n" /* line 903 */
-        "movl 0x110(%ebx), %edx\n"
-        "testl %edx, %edx\n"
-        "jne .Lf17f94a_0017f969\n"
-        "xorl %eax, %eax\n"
-        "addl $0x14, %esp\n" /* line 926 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf17f94a_0017f969:\n"
-        "movl $0, (%esp)\n" /* line 907 */
-        "calll Com_UnloadSoundAliases\n"
-        "movl 0x195ee78, %eax\n" /* line 910 */
-        "movl (%eax), %eax\n"
-        "andl $0xfffffff7, 4(%eax)\n"
-        "movb $0, 8(%eax)\n" /* line 911 */
-        "movl $0, (%esp)\n" /* line 917 */
-        "calll CL_SwitchToLocalClient\n"
-        "calll UI_Shutdown\n" /* line 919 */
-        "movl $0, (%esp)\n" /* line 922 */
-        "calll CL_SwitchToLocalClient\n"
-        "movl $0, 0x110(%ebx)\n" /* line 924 */
-        "movl $1, %eax\n"
-        "addl $0x14, %esp\n" /* line 926 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *clc = *(byte **)0x195ecac;
+    byte *cl;
+
+    if (!*(int *)(clc + 0x110))
+        return 0;
+
+    Com_UnloadSoundAliases(0);
+
+    cl = *(byte **)*(int *)0x195ee78;
+    *(int *)(cl + 4) &= ~8;
+    *(byte *)(cl + 8) = 0;
+
+    CL_SwitchToLocalClient(0);
+    UI_Shutdown();
+    CL_SwitchToLocalClient(0);
+
+    *(int *)(clc + 0x110) = 0;
+    return 1;
 }
 
 /* line 935 */

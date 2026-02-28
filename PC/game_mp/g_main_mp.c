@@ -4,6 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 #include <stdlib.h>
+#include <stdarg.h>
 
 extern entityHandler_t entityHandlers[20]; /* 0x0 */
 extern struct bgs_t level_bgs; /* 0x0 */
@@ -76,6 +77,21 @@ extern void SV_GameSendServerCommand(int clientNum, int svscmd_type, const char 
 extern void SV_SetConfigstring(int index, const char *val);
 extern char * va(const char *format, ...);
 extern void Com_Error(int code, const char *fmt, ...);
+extern void Com_Printf(const char *fmt, ...);
+extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern void FS_Write(const void *buffer, int len, fileHandle_t h);
+extern void FS_FCloseFile(fileHandle_t f);
+extern void G_FreeEntity(gentity_t *ent);
+extern void HudElem_DestroyAll(void);
+extern qboolean Scr_IsSystemActive(int inst);
+extern void Scr_ShutdownSystem(int inst, qboolean freeScripts);
+extern void SV_FreeClientScriptPers(void);
+extern void Z_FreeInternal(void *ptr);
+extern void Mantle_ShutdownAnims(void);
+extern void GScr_FreeScripts(void);
+extern void Scr_FreeScripts(int inst);
+extern void XAnimFreeTree(struct XAnimTree_s *tree, int inst);
+extern void Hunk_ClearToMarkLow(int mark);
 
 /* Zero vector for locational trace functions */
 static vec3_t vec3_zero = {0.0f, 0.0f, 0.0f};
@@ -91,7 +107,7 @@ static int G_CreateDObj(DObjModel_s *dobjModels, int numModels, struct XAnimTree
 int * Hunk_AllocXAnimServer(int size);
 static int SortRanks(const int *a, const int *b);
 int CalculateRanks(void);
-int G_LogPrintf(const char *fmt);
+int G_LogPrintf(const char *fmt, ...);
 int ExitLevel(void);
 int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean savepersist);
 int CheckVote(void);
@@ -240,91 +256,30 @@ int CalculateRanks(void)
 }
 
 /* line 1159 */
-__attribute__((naked))
-int G_LogPrintf(const char *fmt)
+int G_LogPrintf(const char *fmt, ...)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1159 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x83c, %esp\n"
-        /* { scope 1 */
-        "movl 0x1934498, %edx\n" /* line 1167 */
-        "testl %edx, %edx\n"
-        "je .Lf1aba1e_001abb0e\n"
-        "leal 0xc(%ebp), %eax\n" /* line 1172 */
-        "movl %eax, -0x1c(%ebp)\n" /* argptr */
-        "movl %eax, 0xc(%esp)\n" /* line 1173 */
-        "movl 8(%ebp), %eax\n" /* fmt */
-        "movl %eax, 8(%esp)\n"
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x81c(%ebp), %ebx\n" /* string2 */
-        "movl %ebx, (%esp)\n"
-        "calll vsnprintf\n"
-        "movl 0x193466c, %ecx\n" /* line 1176 */
-        "movl $0x10624dd3, %esi\n" /* sec */
-        "movl %ecx, %eax\n"
-        "imull %esi\n" /* sec */
-        "movl %edx, %esi\n" /* sec */
-        "sarl $6, %esi\n" /* sec */
-        "movl %ecx, %eax\n"
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %esi\n" /* sec */
-        "movl $0x88888889, %ecx\n" /* line 1178 */
-        "movl %ecx, %eax\n"
-        "imull %esi\n" /* sec */
-        "leal (%edx, %esi), %edi\n" /* min */
-        "sarl $5, %edi\n" /* min */
-        "movl %esi, %eax\n" /* sec */
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %edi\n" /* min */
-        "leal (, %edi, 4), %ecx\n" /* line 1179 */
-        "movl %edi, %eax\n" /* min */
-        "shll $6, %eax\n"
-        "subl %ecx, %eax\n"
-        "subl %eax, %esi\n" /* sec */
-        "movl $0x66666667, %eax\n" /* line 1180 */
-        "imull %esi\n" /* sec */
-        "movl %edx, %ecx\n"
-        "sarl $2, %ecx\n"
-        "movl %esi, %eax\n" /* sec */
-        "sarl $0x1f, %eax\n"
-        "subl %eax, %ecx\n"
-        "movl %ebx, 0x18(%esp)\n" /* line 1183 */
-        "leal (%ecx, %ecx, 4), %eax\n"
-        "addl %eax, %eax\n"
-        "subl %eax, %esi\n" /* sec */
-        "movl %esi, 0x14(%esp)\n" /* sec */
-        "movl %ecx, 0x10(%esp)\n"
-        "movl %edi, 0xc(%esp)\n" /* min */
-        "movl $0x2b446c, 8(%esp)\n" /* "%3i:%i%i %s" */
-        "movl $0x400, 4(%esp)\n"
-        "leal -0x41c(%ebp), %ebx\n" /* string */
-        "movl %ebx, (%esp)\n"
-        "calll Com_sprintf\n"
-        "movl 0x1934498, %eax\n" /* line 1184 */
-        "movl %eax, 8(%esp)\n"
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n" /* min */
-        "repne scasb %es:(%edi), %al\n" /* min */
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll FS_Write\n"
-        /* } scope */
-        ".Lf1aba1e_001abb0e:\n"
-        "addl $0x83c, %esp\n" /* line 1186 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char string[1024];
+    char string2[1024];
+    va_list argptr;
+    int min, sec, tens, ones;
+
+    if (!*(int *)0x1934498)
+        return 0;
+
+    va_start(argptr, fmt);
+    vsnprintf(string2, 1024, fmt, argptr);
+    va_end(argptr);
+
+    sec = *(int *)0x193466c / 1000;
+    min = sec / 60;
+    sec %= 60;
+    tens = sec / 10;
+    ones = sec % 10;
+
+    Com_sprintf(string, 1024, "%3i:%i%i %s", min, tens, ones, string2);
+    FS_Write(string, strlen(string), *(int *)0x1934498);
+
+    return 0;
 }
 
 /* line 1118 */
@@ -1150,143 +1105,83 @@ int G_AddDebugString(const vec_t *xyz, const vec_t *color, float scale, const ch
 }
 
 /* line 923 */
-__attribute__((naked))
 int G_ShutdownGame(qboolean freeScripts)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 923 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl $0x2b4950, (%esp)\n" /* line 927 */
-        "calll Com_Printf\n"
-        "movl 0x1934498, %ecx\n" /* line 929 */
-        "testl %ecx, %ecx\n"
-        "jne .Lf1acce6_001ace17\n"
-        ".Lf1acce6_001acd08:\n"
-        "movl 0x195edb4, %eax\n" /* line 936 */
-        "movl $0, (%eax)\n"
-        "movl 0x193448c, %edx\n" /* line 659 */
-        "testl %edx, %edx\n"
-        "jle .Lf1acce6_001acd59\n"
-        "movl $g_entities, %esi\n"
-        "xorl %ebx, %ebx\n"
-        "jmp .Lf1acce6_001acd37\n"
-        ".Lf1acce6_001acd26:\n"
-        "addl $1, %ebx\n"
-        "addl $0x230, %esi\n"
-        "cmpl 0x193448c, %ebx\n"
-        "jge .Lf1acce6_001acd59\n"
-        ".Lf1acce6_001acd37:\n"
-        "cmpb $0, 0xfc(%esi)\n" /* line 661 */
-        "je .Lf1acce6_001acd26\n"
-        "movl %esi, (%esp)\n" /* line 664 */
-        "calll G_FreeEntity\n"
-        "addl $1, %ebx\n" /* line 659 */
-        "addl $0x230, %esi\n"
-        "cmpl 0x193448c, %ebx\n"
-        "jl .Lf1acce6_001acd37\n"
-        ".Lf1acce6_001acd59:\n"
-        "cmpb $0, 0x186d71c\n" /* line 667 */
-        "jne .Lf1acce6_001ace06\n"
-        ".Lf1acce6_001acd66:\n"
-        "movl $0, 0x193448c\n" /* line 672 */
-        "movl $0, 0x1934490\n" /* line 673 */
-        "movl $0, 0x1934494\n" /* line 674 */
-        "calll HudElem_DestroyAll\n" /* line 939 */
-        "movl $1, (%esp)\n" /* line 941 */
-        "calll Scr_IsSystemActive\n"
-        "testl %eax, %eax\n"
-        "je .Lf1acce6_001acda6\n"
-        "movl 0x19361d4, %eax\n" /* line 943 */
-        "testl %eax, %eax\n"
-        "je .Lf1acce6_001acedf\n"
-        ".Lf1acce6_001acda6:\n"
-        "xorl %eax, %eax\n" /* line 947 */
-        "cmpl $0, 0x19361d4\n"
-        "sete %al\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $1, (%esp)\n"
-        "calll Scr_ShutdownSystem\n"
-        "movl 8(%ebp), %eax\n" /* line 949 | freeScripts */
-        "testl %eax, %eax\n"
-        "jne .Lf1acce6_001ace41\n"
-        ".Lf1acce6_001acdc9:\n"
-        "movl 0x1937a8c, %eax\n" /* line 962 */
-        "testl %eax, %eax\n"
-        "je .Lf1acce6_001acdda\n"
-        "movl %eax, (%esp)\n" /* line 963 */
-        "calll Z_FreeInternal\n"
-        ".Lf1acce6_001acdda:\n"
-        "movl $0, 0x1937a8c\n" /* line 964 */
-        "movl 0x1937a88, %eax\n" /* line 966 */
-        "testl %eax, %eax\n"
-        "js .Lf1acce6_001acdf5\n"
-        "movl %eax, (%esp)\n" /* line 967 */
-        "calll FS_FCloseFile\n"
-        ".Lf1acce6_001acdf5:\n"
-        "movl $0xffffffff, 0x1937a88\n" /* line 969 */
-        "addl $0x10, %esp\n" /* line 975 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1acce6_001ace06:\n"
-        "movl $0x186d620, (%esp)\n" /* line 668 */
-        "calll G_FreeEntity\n"
-        "jmp .Lf1acce6_001acd66\n"
-        ".Lf1acce6_001ace17:\n"
-        "movl $0x2b4968, (%esp)\n" /* line 931 */
-        "calll G_LogPrintf\n"
-        "movl $0x2b4898, (%esp)\n" /* line 932 */
-        "calll G_LogPrintf\n"
-        "movl 0x1934498, %eax\n" /* line 933 */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "jmp .Lf1acce6_001acd08\n"
-        ".Lf1acce6_001ace41:\n"
-        "calll Mantle_ShutdownAnims\n" /* line 951 */
-        "calll GScr_FreeScripts\n" /* line 953 */
-        "movl $1, (%esp)\n" /* line 954 */
-        "calll Scr_FreeScripts\n"
-        "movl $level_bgs, %ebx\n"
-        ".Lf1acce6_001ace5c:\n"
-        "movl 0xb40a0(%ebx), %eax\n" /* line 725 */
-        "testl %eax, %eax\n"
-        "je .Lf1acce6_001ace80\n"
-        "movl $0, 4(%esp)\n" /* line 727 */
-        "movl %eax, (%esp)\n"
-        "calll XAnimFreeTree\n"
-        "movl $0, 0xb40a0(%ebx)\n" /* line 728 */
-        ".Lf1acce6_001ace80:\n"
-        "addl $0x4b8, %ebx\n"
-        "cmpl $0x1880880, %ebx\n" /* line 723 */
-        "jne .Lf1acce6_001ace5c\n"
-        "movl 0x195f6d0, %ebx\n"
-        "movl %ebx, %edx\n"
-        "movl %ebx, %esi\n"
-        ".Lf1acce6_001ace98:\n"
-        "movl 0x10b8(%ebx), %eax\n" /* line 735 */
-        "testl %eax, %eax\n"
-        "je .Lf1acce6_001acebe\n"
-        "movl $0, 4(%esp)\n" /* line 737 */
-        "movl %eax, (%esp)\n"
-        "calll XAnimFreeTree\n"
-        "movl $0, 0x10b8(%ebx)\n" /* line 738 */
-        "movl %esi, %edx\n"
-        ".Lf1acce6_001acebe:\n"
-        "addl $0x4c8, %ebx\n"
-        "leal 0x2640(%edx), %eax\n" /* line 923 */
-        "cmpl %ebx, %eax\n" /* line 733 */
-        "jne .Lf1acce6_001ace98\n"
-        "movl $0, (%esp)\n" /* line 957 */
-        "calll Hunk_ClearToMarkLow\n"
-        "jmp .Lf1acce6_001acdc9\n"
-        ".Lf1acce6_001acedf:\n"
-        "calll SV_FreeClientScriptPers\n" /* line 944 */
-        "jmp .Lf1acce6_001acda6\n"
-    );
+    int i;
+    char *ptr;
+
+    Com_Printf((const char *)0x2b4950);
+
+    if (*(int *)0x1934498) {
+        G_LogPrintf((const char *)0x2b4968);
+        G_LogPrintf((const char *)0x2b4898);
+        FS_FCloseFile(*(int *)0x1934498);
+    }
+
+    *(int *)*(int *)0x195edb4 = 0;
+
+    for (i = 0; i < *(int *)0x193448c; i++) {
+        if (*(char *)((char *)&g_entities[i] + 0xfc))
+            G_FreeEntity(&g_entities[i]);
+    }
+
+    if (*(char *)0x186d71c)
+        G_FreeEntity((gentity_t *)0x186d620);
+
+    *(int *)0x193448c = 0;
+    *(int *)0x1934490 = 0;
+    *(int *)0x1934494 = 0;
+
+    HudElem_DestroyAll();
+
+    if (Scr_IsSystemActive(1)) {
+        if (!*(int *)0x19361d4)
+            SV_FreeClientScriptPers();
+    }
+
+    Scr_ShutdownSystem(1, *(int *)0x19361d4 == 0);
+
+    if (freeScripts) {
+        Mantle_ShutdownAnims();
+        GScr_FreeScripts();
+        Scr_FreeScripts(1);
+
+        /* Free XAnimTrees in level_bgs (stride 0x4b8) */
+        for (ptr = (char *)&level_bgs; ptr != (char *)0x1880880; ptr += 0x4b8) {
+            struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0xb40a0);
+            if (tree) {
+                XAnimFreeTree(tree, 0);
+                *(struct XAnimTree_s **)(ptr + 0xb40a0) = NULL;
+            }
+        }
+
+        /* Free XAnimTrees in clients (stride 0x4c8) */
+        {
+            char *clients_base = (char *)*(int *)0x195f6d0;
+            char *clients_end = clients_base + 0x2640;
+            for (ptr = clients_base; ptr != clients_end; ptr += 0x4c8) {
+                struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0x10b8);
+                if (tree) {
+                    XAnimFreeTree(tree, 0);
+                    *(struct XAnimTree_s **)(ptr + 0x10b8) = NULL;
+                }
+            }
+        }
+
+        Hunk_ClearToMarkLow(0);
+    }
+
+    if (*(void **)0x1937a8c) {
+        Z_FreeInternal(*(void **)0x1937a8c);
+    }
+    *(int *)0x1937a8c = 0;
+
+    if (*(int *)0x1937a88 >= 0) {
+        FS_FCloseFile(*(int *)0x1937a88);
+    }
+    *(int *)0x1937a88 = -1;
+
+    return 0;
 }
 
 /* line 1384 */

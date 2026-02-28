@@ -8,6 +8,10 @@
  *   #include "PC/universal/com_vector.h"
  */
 
+extern struct Material * CL_RegisterMaterialNoMip(const char *name, int imageTrack);
+extern const char * Dvar_GetString(const char *dvarName);
+extern void Dvar_GetUnpackedColorByName(const char *dvarName, vec_t *color);
+
 static int lastLeadTeam; /* 0x314640 */
 static const listColumnInfo_t columnInfo[6]; /* 0x333b60 */
 
@@ -58,186 +62,66 @@ float CG_ScrollScoreboardDown(void)
 }
 
 /* line 1427 */
-__attribute__((naked))
 float CG_RegisterScoreboardGraphics(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1427 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $7, 4(%esp)\n" /* line 1431 */
-        "movl $0x224184, (%esp)\n" /* "white" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1432 */
-        "movl $0x224184, (%esp)\n" /* "white" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1433 */
-        "movl $0x226ec8, (%esp)\n" /* "black" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1434 */
-        "movl $0x224184, (%esp)\n" /* "white" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1435 */
-        "movl $0x224184, (%esp)\n" /* "white" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1436 */
-        "movl $0x226ec8, (%esp)\n" /* "black" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1438 */
-        "movl $0x2b6834, (%esp)\n" /* "hudscoreboardscroll_uparrow" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1439 */
-        "movl $0x2b6850, (%esp)\n" /* "hudscoreboardscroll_upkey" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1440 */
-        "movl $0x2b686c, (%esp)\n" /* "hudscoreboardscroll_downarrow" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1441 */
-        "movl $0x2b688c, (%esp)\n" /* "hudscoreboardscroll_downkey" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $0x2b4730, (%esp)\n" /* line 1443 */
-        "calll Dvar_GetString\n"
-        "movl $7, 4(%esp)\n" /* line 1444 */
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $0x2b46e8, (%esp)\n" /* line 1446 */
-        "calll Dvar_GetString\n"
-        "movl $7, 4(%esp)\n" /* line 1447 */
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $0x2b46c0, (%esp)\n" /* line 1448 */
-        "calll Dvar_GetString\n"
-        "movl $7, 4(%esp)\n" /* line 1449 */
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $0x2b4708, (%esp)\n" /* line 1451 */
-        "calll Dvar_GetString\n"
-        "movl $7, 4(%esp)\n" /* line 1452 */
-        "movl %eax, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1455 */
-        "movl $0x2aa96c, (%esp)\n" /* "voice_on" */
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl $7, 4(%esp)\n" /* line 1456 */
-        "movl $0x2b68a8, (%esp)\n" /* "voice_off" */
-        "calll CL_RegisterMaterialNoMip\n"
-        /* } scope */
-        "leave\n" /* line 1458 */
-        "retl\n"
-    );
+    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)0x226ec8, 7); /* "black" */
+    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)0x224184, 7); /* "white" */
+    CL_RegisterMaterialNoMip((const char *)0x226ec8, 7); /* "black" */
+    CL_RegisterMaterialNoMip((const char *)0x2b6834, 7); /* "hudscoreboardscroll_uparrow" */
+    CL_RegisterMaterialNoMip((const char *)0x2b6850, 7); /* "hudscoreboardscroll_upkey" */
+    CL_RegisterMaterialNoMip((const char *)0x2b686c, 7); /* "hudscoreboardscroll_downarrow" */
+    CL_RegisterMaterialNoMip((const char *)0x2b688c, 7); /* "hudscoreboardscroll_downkey" */
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b4730), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b46e8), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b46c0), 7);
+    CL_RegisterMaterialNoMip(Dvar_GetString((const char *)0x2b4708), 7);
+    CL_RegisterMaterialNoMip((const char *)0x2aa96c, 7); /* "voice_on" */
+    CL_RegisterMaterialNoMip((const char *)0x2b68a8, 7); /* "voice_off" */
+    return 0;
 }
 
 /* line 322 */
-__attribute__((naked))
 int CalcBorderLines(sbpicinfo_t *backdropBorderLines)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 322 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %edx\n" /* backdropBorderLines */
-        "movl $0x42f60000, %ecx\n" /* line 325 */
-        "movl %ecx, (%edx)\n"
-        "movl $0x41c80000, 4(%edx)\n" /* line 326 */
-        "movl $0x43c50000, %esi\n" /* line 327 */
-        "movl %esi, 8(%edx)\n"
-        "movl $0x40000000, %ebx\n" /* line 328 */
-        "movl %ebx, 0xc(%edx)\n"
-        "leal 0x10(%edx), %eax\n" /* line 331 */
-        "movl %ecx, 0x10(%edx)\n"
-        "movl $0x43df8000, 4(%eax)\n" /* line 332 */
-        "movl %esi, 8(%eax)\n" /* line 333 */
-        "movl %ebx, 0xc(%eax)\n" /* line 334 */
-        "leal 0x20(%edx), %eax\n" /* line 337 */
-        "movl %ecx, 0x20(%edx)\n"
-        "movl $0x41d80000, %esi\n" /* line 338 */
-        "movl %esi, 4(%eax)\n"
-        "movl %ebx, 8(%eax)\n" /* line 339 */
-        "movl $0x43d20000, %ecx\n" /* line 340 */
-        "movl %ecx, 0xc(%eax)\n"
-        "leal 0x30(%edx), %eax\n" /* line 343 */
-        "movl $0x4400c000, 0x30(%edx)\n"
-        "movl %esi, 4(%eax)\n" /* line 344 */
-        "movl %ebx, 8(%eax)\n" /* line 345 */
-        "movl %ecx, 0xc(%eax)\n" /* line 346 */
-        "leal 0x40(%edx), %eax\n" /* line 349 */
-        "movl $0x42fa0000, %esi\n"
-        "movl %esi, 0x40(%edx)\n"
-        "movl $0x424c0000, 4(%eax)\n" /* line 350 */
-        "movl $0x43c30000, %ebx\n" /* line 351 */
-        "movl %ebx, 8(%eax)\n"
-        "movl $0x3f800000, %ecx\n" /* line 352 */
-        "movl %ecx, 0xc(%eax)\n"
-        "leal 0x50(%edx), %eax\n" /* line 359 */
-        "movl %esi, 0x50(%edx)\n"
-        "movl $0x43d80000, 4(%eax)\n" /* line 360 */
-        "movl %ebx, 8(%eax)\n" /* line 361 */
-        "movl %ecx, 0xc(%eax)\n" /* line 362 */
-        "movl $6, %eax\n" /* line 366 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    /* sbpicinfo_t has fields: x, y, w, h (4 floats) */
+    float *p = (float *)backdropBorderLines;
+
+    /* Line 0: top border */
+    p[0] = 123.0f; p[1] = 25.0f; p[2] = 394.0f; p[3] = 2.0f;
+    /* Line 1: bottom border */
+    p[4] = 123.0f; p[5] = 447.0f; p[6] = 394.0f; p[7] = 2.0f;
+    /* Line 2: left border */
+    p[8] = 123.0f; p[9] = 27.0f; p[10] = 2.0f; p[11] = 420.0f;
+    /* Line 3: right border */
+    p[12] = 515.0f; p[13] = 27.0f; p[14] = 2.0f; p[15] = 420.0f;
+    /* Line 4: inner top */
+    p[16] = 125.0f; p[17] = 51.0f; p[18] = 390.0f; p[19] = 1.0f;
+    /* Line 5: inner bottom */
+    p[20] = 125.0f; p[21] = 432.0f; p[22] = 390.0f; p[23] = 1.0f;
+
+    return 6;
 }
 
 /* line 843 */
-__attribute__((naked))
 float CG_DrawScoreboard_GetTeamColor(int team, vec_t *color)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 843 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %eax\n" /* team */
-        "movl 0xc(%ebp), %edx\n" /* color */
-        /* { scope 1 */
-        "leal 0xc(%edx), %esi\n" /* line 847 */
-        "movl 0xc(%edx), %ebx\n" /* savedAlpha */
-        "cmpl $1, %eax\n" /* line 848 */
-        "je .Lf1c2f74_001c2fa8\n"
-        "cmpl $2, %eax\n"
-        "je .Lf1c2f74_001c2fc1\n"
-        "movl $0x3f800000, %eax\n" /* line 191 */
-        "movl %eax, (%edx)\n"
-        "movl %eax, 4(%edx)\n" /* line 192 */
-        "movl %eax, 8(%edx)\n" /* line 193 */
-        "movl %ebx, (%esi)\n" /* line 860 | savedAlpha */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 861 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1c2f74_001c2fa8:\n"
-        "movl %edx, 4(%esp)\n" /* line 851 */
-        "movl $0x2addd4, (%esp)\n" /* "g_TeamColor_Axis" */
-        "calll Dvar_GetUnpackedColorByName\n"
-        "movl %ebx, (%esi)\n" /* line 860 | savedAlpha */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 861 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1c2f74_001c2fc1:\n"
-        "movl %edx, 4(%esp)\n" /* line 854 */
-        "movl $0x2addc0, (%esp)\n" /* "g_TeamColor_Allies" */
-        "calll Dvar_GetUnpackedColorByName\n"
-        "movl %ebx, (%esi)\n" /* line 860 | savedAlpha */
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 861 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    float savedAlpha = color[3];
+
+    if (team == 1) {
+        Dvar_GetUnpackedColorByName((const char *)0x2addd4, color); /* "g_TeamColor_Axis" */
+    } else if (team == 2) {
+        Dvar_GetUnpackedColorByName((const char *)0x2addc0, color); /* "g_TeamColor_Allies" */
+    } else {
+        color[0] = 1.0f;
+        color[1] = 1.0f;
+        color[2] = 1.0f;
+    }
+
+    color[3] = savedAlpha;
+    return 0;
 }
 
 /* line 958 */
