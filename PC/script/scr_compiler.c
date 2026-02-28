@@ -9,6 +9,7 @@
  */
 
 extern struct scrCompilePub_t scrCompilePub; /* 0x0 */
+extern void Z_FreeInternal(void *ptr);
 static struct scrCompileGlob_t scrCompileGlob; /* 0x4ece00 */
 
 static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]);
@@ -252,51 +253,22 @@ unsigned int SpecifyThreadPosition(int type)
 }
 
 /* line 3973 */
-__attribute__((naked))
 int CompareCaseInfo(const unsigned int *elem1, const unsigned int *elem2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3973 */
-        "movl %esp, %ebp\n"
-        "movl 0xc(%ebp), %eax\n" /* line 3975 | elem2 */
-        "movl (%eax), %edx\n"
-        "movl 8(%ebp), %eax\n" /* elem1 */
-        "cmpl %edx, (%eax)\n"
-        "ja .Lf92862_00092879\n"
-        "setb %al\n" /* line 3977 */
-        "movzbl %al, %eax\n"
-        "popl %ebp\n" /* line 3980 */
-        "retl\n"
-        ".Lf92862_00092879:\n"
-        "movl $0xffffffff, %eax\n" /* line 3975 */
-        "popl %ebp\n" /* line 3980 */
-        "retl\n"
-    );
+    if (*elem1 > *elem2)
+        return -1;
+    return *elem1 < *elem2;
 }
 
 /* line 5088 */
-__attribute__((naked))
 unsigned int Scr_CompileShutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 5088 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 0x4ece58, %edx\n" /* line 5092 */
-        "testl %edx, %edx\n"
-        "je .Lf92880_000928aa\n"
-        ".Lf92880_00092890:\n"
-        "movl 8(%edx), %eax\n" /* line 5095 */
-        "movl %eax, 0x4ece58\n"
-        "movl %edx, (%esp)\n" /* line 5096 */
-        "calll Z_FreeInternal\n"
-        "movl 0x4ece58, %edx\n" /* line 5092 */
-        "testl %edx, %edx\n"
-        "jne .Lf92880_00092890\n"
-        ".Lf92880_000928aa:\n"
-        "leave\n" /* line 5098 */
-        "retl\n"
-    );
+    void *node;
+    while ((node = *(void **)0x4ece58) != 0) {
+        *(void **)0x4ece58 = *(void **)((char *)node + 8);
+        Z_FreeInternal(node);
+    }
+    return 0;
 }
 
 /* line 2913 */

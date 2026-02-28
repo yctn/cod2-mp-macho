@@ -681,32 +681,14 @@ Bool BG_DoesWeaponRequireSlot(int weaponIndex)
 }
 
 /* line 920 */
-__attribute__((naked))
 Bool BG_DoesWeaponNeedSlot(int weapIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 920 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 521 | weapIndex */
-        "movl bg_weaponDefs(, %eax, 4), %eax\n"
-        "cmpl $9, 0x7c(%eax)\n" /* line 926 */
-        "je .Lf7ade2_0007adff\n"
-        "movl 0x84(%eax), %eax\n" /* line 929 */
-        "testl %eax, %eax\n"
-        "je .Lf7ade2_0007ae03\n"
-        ".Lf7ade2_0007adff:\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 933 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf7ade2_0007ae03:\n"
-        "movl $1, %eax\n" /* line 929 */
-        /* } scope */
-        "popl %ebp\n" /* line 933 */
-        "retl\n"
-    );
+    void *weapDef = *(void **)((char *)&bg_weaponDefs + weapIndex * 4);
+    if (*(int *)((char *)weapDef + 0x7c) == 9)
+        return 0;
+    if (*(int *)((char *)weapDef + 0x84) == 0)
+        return 1;
+    return 0;
 }
 
 /* line 1097 */

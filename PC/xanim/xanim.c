@@ -455,59 +455,21 @@ float XAnimGetLength(const XAnim *anims, unsigned int animIndex)
 }
 
 /* line 2868 */
-__attribute__((naked))
 float XAnimGetTime(const XAnimTree *tree, unsigned int animIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2868 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 2876 | animIndex */
-        "movl 8(%ebp), %eax\n" /* tree */
-        "movzwl 8(%eax, %edx, 2), %eax\n"
-        "testw %ax, %ax\n" /* line 2878 */
-        "je .Lf39118_0003913a\n"
-        "movzwl %ax, %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "flds 0x3be00c(, %eax, 8)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 2879 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf39118_0003913a:\n"
-        "fldz\n" /* line 2878 */
-        /* } scope */
-        "popl %ebp\n" /* line 2879 */
-        "retl\n"
-    );
+    unsigned short info = *(unsigned short *)((char *)tree + 8 + animIndex * 2);
+    if (!info)
+        return 0.0f;
+    return *(float *)((char *)&g_xAnimInfo[0] + info * 40 + 0x0c);
 }
 
 /* line 2887 */
-__attribute__((naked))
 float XAnimGetWeight(const XAnimTree *tree, unsigned int animIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2887 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 2895 | animIndex */
-        "movl 8(%ebp), %eax\n" /* tree */
-        "movzwl 8(%eax, %edx, 2), %eax\n"
-        "testw %ax, %ax\n" /* line 2897 */
-        "je .Lf3913e_00039160\n"
-        "movzwl %ax, %eax\n"
-        "leal (%eax, %eax, 4), %eax\n"
-        "flds 0x3be020(, %eax, 8)\n"
-        /* } scope */
-        "popl %ebp\n" /* line 2898 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf3913e_00039160:\n"
-        "fldz\n" /* line 2897 */
-        /* } scope */
-        "popl %ebp\n" /* line 2898 */
-        "retl\n"
-    );
+    unsigned short info = *(unsigned short *)((char *)tree + 8 + animIndex * 2);
+    if (!info)
+        return 0.0f;
+    return *(float *)((char *)&g_xAnimInfo[0] + info * 40 + 0x20);
 }
 
 /* line 2906 */
@@ -564,31 +526,12 @@ unsigned int XAnimGetChildAt(const XAnim *anims, unsigned int animIndex, unsigne
 }
 
 /* line 2959 */
-__attribute__((naked))
 const char * XAnimGetAnimName(const XAnim *anims, unsigned int animIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2959 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %eax\n" /* line 2966 | animIndex */
-        "shll $3, %eax\n"
-        "addl 8(%ebp), %eax\n" /* anims */
-        "leal 0xc(%eax), %edx\n"
-        "cmpw $0, 0xc(%eax)\n" /* line 2967 */
-        "jne .Lf391da_000391f8\n"
-        "movl 4(%edx), %eax\n"
-        "movl 0x24(%eax), %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 2968 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf391da_000391f8:\n"
-        "movl $0x2157b8, %eax\n" /* line 2967 */
-        /* } scope */
-        "popl %ebp\n" /* line 2968 */
-        "retl\n"
-    );
+    char *entry = (char *)anims + animIndex * 8 + 0xc;
+    if (*(unsigned short *)entry != 0)
+        return (const char *)0x2157b8;
+    return *(const char **)(*(void **)(entry + 4) + 0x24);
 }
 
 /* line 3021 */
@@ -660,32 +603,12 @@ void XAnimSetAnimRate(XAnimTree *tree, unsigned int animIndex, float rate)
 }
 
 /* line 4279 */
-__attribute__((naked))
 Bool XAnimIsLooped(const XAnim *anims, unsigned int animIndex)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4279 */
-        "movl %esp, %ebp\n"
-        /* { scope 1 */
-        "movl 0xc(%ebp), %edx\n" /* line 4283 | animIndex */
-        "shll $3, %edx\n"
-        "addl 8(%ebp), %edx\n" /* anims */
-        "leal 0xc(%edx), %eax\n"
-        "cmpw $0, 0xc(%edx)\n" /* line 4285 */
-        "je .Lf392bc_000392db\n"
-        "movzwl 4(%eax), %eax\n" /* line 4286 */
-        "andl $1, %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 4289 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf392bc_000392db:\n"
-        "movl 4(%eax), %eax\n" /* line 4288 */
-        "movzbl 2(%eax), %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 4289 */
-        "retl\n"
-    );
+    char *entry = (char *)anims + animIndex * 8 + 0xc;
+    if (*(unsigned short *)entry != 0)
+        return *(unsigned short *)(entry + 4) & 1;
+    return *(unsigned char *)(*(char **)(entry + 4) + 2);
 }
 
 /* line 4292 */

@@ -14,6 +14,7 @@
 
 extern int XModelGetLodForDist(XModel *model, float dist);
 extern void SL_RemoveRefToStringOfLen(unsigned int stringValue, int len);
+extern unsigned int SL_GetStringOfLen(void *duplicatePartBits, int user, int len, int flag);
 
 static unsigned int g_empty; /* 0x4e9580 */
 
@@ -59,30 +60,10 @@ void DObjCalcSkel(const DObj *obj, int *partBits);
 void DObjTraceline(DObj *obj, vec_t *start, vec_t *end, unsigned char *priorityMap, DObjTrace *trace);
 
 /* line 23 */
-__attribute__((naked))
 void DObjInit(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 23 */
-        "movl %esp, %ebp\n"
-        "subl $0x38, %esp\n"
-        /* { scope 1 */
-        "leal -0x1c(%ebp), %eax\n" /* line 27 | duplicatePartBits */
-        "movl $0, -0x1c(%ebp)\n" /* duplicatePartBits */
-        "movl $0, -0x18(%ebp)\n"
-        "movl $0, -0x14(%ebp)\n"
-        "movl $0, -0x10(%ebp)\n"
-        "movl $0, -0xc(%ebp)\n"
-        "movl $0xc, 0xc(%esp)\n" /* line 28 */
-        "movl $0x11, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll SL_GetStringOfLen\n"
-        "movl %eax, g_empty\n"
-        /* } scope */
-        "leave\n" /* line 29 */
-        "retl\n"
-    );
+    int duplicatePartBits[5] = {0, 0, 0, 0, 0};
+    g_empty = SL_GetStringOfLen(duplicatePartBits, 0, 0x11, 0xc);
 }
 
 /* line 37 */

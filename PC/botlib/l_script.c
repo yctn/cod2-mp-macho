@@ -5,6 +5,7 @@
 #include "imports.h"
 
 extern punctuation_t default_punctuations[53]; /* 0x0 */
+extern void FreeMemory(void *ptr);
 
 void PS_CreatePunctuationTable(script_t *script, punctuation_t *punctuations);
 void ScriptError(script_t *script, char *str);
@@ -882,27 +883,11 @@ int EndOfScript(script_t *script)
 }
 
 /* line 1457 */
-__attribute__((naked))
 void FreeScript(script_t *script)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1457 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* script */
-        "movl 0x70(%ebx), %eax\n" /* line 1459 | script */
-        "testl %eax, %eax\n"
-        "je .Lfc33ea_000c3403\n"
-        "movl %eax, (%esp)\n" /* line 1460 */
-        "calll FreeMemory\n"
-        ".Lfc33ea_000c3403:\n"
-        "movl %ebx, 8(%ebp)\n" /* line 1461 | script */
-        "addl $0x14, %esp\n" /* line 1462 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "jmp FreeMemory\n" /* line 1461 */
-    );
+    if (*(void **)((char *)script + 0x70))
+        FreeMemory(*(void **)((char *)script + 0x70));
+    FreeMemory(script);
 }
 
 /* line 1371 */
