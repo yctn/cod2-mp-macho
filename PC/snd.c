@@ -81,7 +81,7 @@ void StatMon_Warning(int severity, int timeout, const char *msg);
 void SND_DriverPreUpdate(int frametime);
 void SND_DriverPostUpdate(int frametime);
 float Com_GetTimescaleForSnd(void);
-void MemFile_InitForReading(MemoryFile *memFile, int a, int b);
+void MemFile_InitForReading(MemoryFile *memFile, int size, void *buffer);
 void MemFile_WriteData(MemoryFile *memFile, int bytes, const void *data);
 void MemFile_ReadData(MemoryFile *memFile, int bytes, void *data);
 void MemFile_WriteCString(MemoryFile *memFile, const char *str);
@@ -649,9 +649,9 @@ void SND_UpdateReverbs(void)
 
 void SND_ErrorCleanup(void)
 {
-    if (g_snd.restore) {
-        Z_FreeInternal((void *)g_snd.restore);
-        g_snd.restore = 0;
+    if (g_snd.restore.buffer) {
+        Z_FreeInternal((void *)g_snd.restore.buffer);
+        g_snd.restore.buffer = 0;
     }
 }
 
@@ -1680,8 +1680,8 @@ void SND_ShutdownChannels(void)
 void SND_Shutdown(void)
 {
     Voice_Shutdown();
-    if (g_snd.restore) {
-        Z_FreeInternal((void *)g_snd.restore);
+    if (g_snd.restore.buffer) {
+        Z_FreeInternal((void *)g_snd.restore.buffer);
     }
     if (!g_snd.Initialized2d) {
         return;
@@ -2201,11 +2201,11 @@ void SND_Update(void)
     /* If paused, skip game logic updates */
     if (!g_snd.paused) {
         /* Restore saved sound state if available */
-        if (g_snd.restore) {
-            MemFile_InitForReading(&memFile, *(int *)((char *)&g_snd + 0x20), g_snd.restore);
+        if (g_snd.restore.buffer) {
+            MemFile_InitForReading(&memFile, g_snd.restore.size, g_snd.restore.buffer);
             SND_Restore(&memFile);
-            Z_FreeInternal((void *)(long)g_snd.restore);
-            g_snd.restore = 0;
+            Z_FreeInternal((void *)g_snd.restore.buffer);
+            g_snd.restore.buffer = 0;
             *(int *)((char *)&g_snd + 0x20) = 0;
         }
 

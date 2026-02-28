@@ -111,10 +111,10 @@ int CG_PointContents(const vec_t *point, int passEntityNum, int contentmask)
             continue;
         if (ent->solid != 0xffffff)
             continue;
-        if (ent->index == 0)
+        if (ent->index.brushmodel == 0)
             continue;
 
-        contents |= CM_TransformedPointContents(point, ent->index,
+        contents |= CM_TransformedPointContents(point, ent->index.brushmodel,
                                                  cent->lerpOrigin,
                                                  cent->lerpAngles);
     }
@@ -423,13 +423,13 @@ void CG_PredictPlayerState(void)
                             /* Predict item pickup */
                             cent->nextState.eFlags |= 0x20; /* EF_NODRAW predicted */
                             cent->miscTime = cg_time;
-                            BG_AddPredictableEventToPlayerstate(0x90, cent->nextState.index, ps);
+                            BG_AddPredictableEventToPlayerstate(0x90, cent->nextState.index.item, ps);
                             continue;
                         }
 
                         /* Brush model trigger: point trace */
                         if (ent->solid == 0xffffff) {
-                            unsigned int cmodel = ent->index;
+                            unsigned int cmodel = ent->index.brushmodel;
                             if (cmodel != 0) {
                                 trace_t trace;
                                 cg = *cg_glob;
@@ -588,7 +588,7 @@ void CG_ClipMoveToEntities(const vec_t *start, const vec_t *mins, const vec_t *m
 
         if (ent->solid == 0xffffff) {
             /* SOLID_BMODEL */
-            cmodel = ent->index;
+            cmodel = ent->index.brushmodel;
 
             /* Check contents match */
             if (!(CM_ContentsOfModel(cmodel) & mask))
@@ -726,7 +726,7 @@ void CG_BuildSolidList(void)
         if (ent->solid == 0xffffff) {
             if (ent->eFlags & 1)
                 continue;
-            if (CM_ContentsOfModel(ent->index) == 0)
+            if (CM_ContentsOfModel(ent->index.brushmodel) == 0)
                 continue;
         }
 

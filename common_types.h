@@ -2817,12 +2817,12 @@ typedef int bool;  /* opaque */
 typedef int boolean;  /* opaque */
 typedef int bound;  /* opaque */
 typedef int brushmodel;  /* opaque */
-typedef int buf;  /* opaque */
+/* typedef int buf; */ /* removed: conflicts with variable name */
 typedef int bufRate;  /* opaque */
 typedef int bufReady;  /* opaque */
 typedef int bufSize;  /* opaque */
 typedef int bufUsed;  /* opaque */
-typedef int buffer;  /* opaque */
+/* typedef int buffer; */ /* removed: conflicts with variable name */
 typedef int byteLen;  /* opaque */
 typedef int bytes_left;  /* opaque */
 typedef int bytes_used;  /* opaque */
@@ -2837,7 +2837,7 @@ typedef int check;  /* opaque */
 typedef int classnum;  /* opaque */
 typedef int code;  /* opaque */
 typedef int codes;  /* opaque */
-typedef int color;  /* opaque */
+/* typedef int color; */ /* removed: conflicts with variable name */
 typedef int colorForDir;  /* opaque */
 typedef int copy;  /* opaque */
 typedef int corpse;  /* opaque */
@@ -2933,7 +2933,7 @@ typedef int modEndDelay;  /* opaque */
 typedef int mode;  /* opaque */
 typedef int month;  /* opaque */
 typedef int mover;  /* opaque */
-typedef int name;  /* opaque */
+/* typedef int name; */ /* removed: conflicts with variable name */
 typedef int need;  /* opaque */
 typedef int next;  /* opaque */
 typedef int nextEntId;  /* opaque */
@@ -2974,17 +2974,17 @@ typedef int second;  /* opaque */
 typedef int self;  /* opaque */
 typedef int sensitivity;  /* opaque */
 typedef int size;  /* opaque */
-typedef int start;  /* opaque */
+/* typedef int start; */ /* removed: conflicts with variable name */
 typedef int startupgametype;  /* opaque */
 typedef int status;  /* opaque */
-typedef int str;  /* opaque */
+/* typedef int str; */ /* removed: conflicts with variable name */
 typedef int stride;  /* opaque */
 typedef int stringCount;  /* opaque */
 typedef int strings;  /* opaque */
 typedef int sunVisibility;  /* opaque */
 typedef int table;  /* opaque */
 typedef int tb;  /* opaque */
-typedef int tess;  /* opaque */
+/* typedef int tess; */ /* removed: conflicts with variable name */
 typedef int torso;  /* opaque */
 typedef int tree;  /* opaque */
 typedef int trees;  /* opaque */
@@ -8442,9 +8442,9 @@ struct SpawnVar {
 };
 
 struct SpeexBits {
-    char *chars;
+    char *bytes;
     int nbBits;
-    int charPtr;
+    int bytePtr;
     int bitPtr;
     int owner;
     int overflow;
@@ -8452,6 +8452,10 @@ struct SpeexBits {
     int reserved1;
     void *reserved2;
 };
+
+#ifndef MAX_BYTES_PER_FRAME
+#define MAX_BYTES_PER_FRAME 2000
+#endif
 
 struct SpeexCallback {
     int callback_id;
