@@ -301,16 +301,16 @@ void RB_InitSceneViewport(void);
 void RB_InitBackendGlobalStructs(void)
 {
     memset(&backEnd, 0, 0x36e90);
-    *(int *)0x11e1a48 = 3;
-    *(int *)0x11e4484 = 0xe;
-    *(int *)0x11e4488 = 0xe;
+    *(int *)((char *)&backEnd + 1096) = 3;
+    *(int *)((char *)&backEnd + 11908) = 0xe;
+    *(int *)((char *)&backEnd + 11912) = 0xe;
     RB_InitSceneViewport();
 }
 
 /* line 4234 */
 void RB_RegisterBackendAssets(void)
 {
-    *(FontHandle *)0x1218488 = R_RegisterFont("fonts/smalldevfont", 1);
+    *(FontHandle *)((char *)&backEnd + 224904) = R_RegisterFont("fonts/smalldevfont", 1);
 }
 
 /* line 2828 */
@@ -320,9 +320,9 @@ void RB_LookupColor(int c, byte *color)
     if (idx <= 7) {
         *(unsigned int *)color = ((const unsigned int *)color_table)[idx];
     } else if ((byte)c == '8') {
-        *(unsigned int *)color = *(unsigned int *)0x11e1ac4;
+        *(unsigned int *)color = *(unsigned int *)((char *)&backEnd + 1220);
     } else if ((byte)c == '9') {
-        *(unsigned int *)color = *(unsigned int *)0x11e1ac0;
+        *(unsigned int *)color = *(unsigned int *)((char *)&backEnd + 1216);
     } else {
         color[0] = 0xff;
         color[1] = 0xff;

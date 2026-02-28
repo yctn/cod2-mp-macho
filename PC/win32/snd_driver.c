@@ -584,21 +584,21 @@ void SND_GetStreamChannelSaveInfo(int index, snd_save_stream_t *info)
 /* line 1328 */
 void SND_EndRawSamples(void)
 {
-    if (*(void **)0x4a3c5c != NULL) {
-        AIL_end_sample(*(void **)0x4a3c5c);
-        AIL_release_sample_handle(*(void **)0x4a3c5c);
-        *(void **)0x4a3c5c = NULL;
-        Z_FreeInternal(*(void **)0x4a3c6c);
+    if (*(void * *)((char *)&milesGlob + 220) != NULL) {
+        AIL_end_sample(*(void * *)((char *)&milesGlob + 220));
+        AIL_release_sample_handle(*(void * *)((char *)&milesGlob + 220));
+        *(void * *)((char *)&milesGlob + 220) = NULL;
+        Z_FreeInternal(*(void * *)((char *)&milesGlob + 236));
     }
 }
 
 /* line 1340 */
 int SND_RawSamplesTime(void)
 {
-    if (*(void **)0x4a3c5c != NULL) {
-        long unsigned int pos = AIL_sample_position(*(void **)0x4a3c5c);
+    if (*(void * *)((char *)&milesGlob + 220) != NULL) {
+        long unsigned int pos = AIL_sample_position(*(void * *)((char *)&milesGlob + 220));
         double dpos = (double)(unsigned long long)pos;
-        return (int)(dpos * *(double *)0x4a3ca8 + *(double *)0x4a3ca0);
+        return (int)(dpos * *(double *)((char *)&milesGlob + 296) + *(double *)((char *)&milesGlob + 288));
     }
     return 0;
 }
@@ -613,16 +613,16 @@ void SND_RawSamples(int samples, int rate, int width, int s_channels, const byte
         return;
     }
 
-    if (*(void **)0x4a3c5c == NULL) {
+    if (*(void * *)((char *)&milesGlob + 220) == NULL) {
         /* Initialize raw sample handle */
-        *(void **)0x4a3c5c = AIL_allocate_sample_handle(*(void **)&milesGlob);
-        if (*(void **)0x4a3c5c == NULL) {
+        *(void * *)((char *)&milesGlob + 220) = AIL_allocate_sample_handle(*(void **)&milesGlob);
+        if (*(void * *)((char *)&milesGlob + 220) == NULL) {
             Com_Error(1, (const char *)str_0021992c);
         }
-        *(int *)0x4a3c60 = rate;
-        *(int *)0x4a3c64 = width;
-        *(int *)0x4a3c68 = s_channels;
-        AIL_init_sample(*(void **)0x4a3c5c);
+        *(int *)((char *)&milesGlob + 224) = rate;
+        *(int *)((char *)&milesGlob + 228) = width;
+        *(int *)((char *)&milesGlob + 232) = s_channels;
+        AIL_init_sample(*(void * *)((char *)&milesGlob + 220));
         /* Determine format based on channels and width */
         if (s_channels == 1) {
             if (width == 1) {
@@ -641,51 +641,51 @@ void SND_RawSamples(int samples, int rate, int width, int s_channels, const byte
                 format = 0;
             }
         }
-        AIL_set_sample_type(*(void **)0x4a3c5c, format, 0);
-        AIL_set_sample_playback_rate(*(void **)0x4a3c5c, rate);
+        AIL_set_sample_type(*(void * *)((char *)&milesGlob + 220), format, 0);
+        AIL_set_sample_playback_rate(*(void * *)((char *)&milesGlob + 220), rate);
         vol = 0.5f * *(float *)(*(byte **)imp_g_snd + 0x24);
-        AIL_set_sample_volume_levels(*(void **)0x4a3c5c, vol, vol);
+        AIL_set_sample_volume_levels(*(void * *)((char *)&milesGlob + 220), vol, vol);
         bufSize = AIL_minimum_sample_buffer_size(*(void **)&milesGlob, rate, format);
         if (bufSize < 0x2001) {
             bufSize = 0x2000;
         }
-        *(int *)0x4a3c90 = bufSize;
-        *(void **)0x4a3c6c = Z_MallocInternal(bufSize * 32);
-        memset((void *)0x4a3c70, 0, 32);
-        *(int *)0x4a3c98 = 0;
-        *(int *)0x4a3c9c = 0;
-        *(int *)0x4a3c94 = 0;
-        *(int *)0x4a3ca0 = 0;
-        *(int *)0x4a3ca4 = 0;
+        *(int *)((char *)&milesGlob + 272) = bufSize;
+        *(void * *)((char *)&milesGlob + 236) = Z_MallocInternal(bufSize * 32);
+        memset((void *)((char *)&milesGlob + 240), 0, 32);
+        *(int *)((char *)&milesGlob + 280) = 0;
+        *(int *)((char *)&milesGlob + 284) = 0;
+        *(int *)((char *)&milesGlob + 276) = 0;
+        *(int *)((char *)&milesGlob + 288) = 0;
+        *(int *)((char *)&milesGlob + 292) = 0;
         {
-            float bytesPerMs = 1000.0f / (float)(*(int *)0x4a3c60 * *(int *)0x4a3c64 * *(int *)0x4a3c68);
-            *(double *)0x4a3ca8 = (double)bytesPerMs;
+            float bytesPerMs = 1000.0f / (float)(*(int *)((char *)&milesGlob + 224) * *(int *)((char *)&milesGlob + 228) * *(int *)((char *)&milesGlob + 232));
+            *(double *)((char *)&milesGlob + 296) = (double)bytesPerMs;
         }
     }
 
-    if (*(void **)0x4a3c5c == NULL) {
+    if (*(void * *)((char *)&milesGlob + 220) == NULL) {
         return;
     }
 
     bytes = width * samples * s_channels;
     while (bytes != 0) {
-        while (*(byte *)(0x4a3c70 + *(int *)0x4a3c9c) != 0) {
+        while (*(byte *)(0x4a3c70 + *(int *)((char *)&milesGlob + 284)) != 0) {
             SND_Update();
         }
-        copy = *(int *)0x4a3c90 - *(int *)0x4a3c94;
+        copy = *(int *)((char *)&milesGlob + 272) - *(int *)((char *)&milesGlob + 276);
         if (bytes < copy) {
             copy = bytes;
             bytes = 0;
         } else {
             bytes -= copy;
         }
-        Com_Memcpy((void *)(*(byte **)0x4a3c6c + *(int *)0x4a3c9c * *(int *)0x4a3c90 + *(int *)0x4a3c94), (void *)data, copy);
+        Com_Memcpy((void *)(*(byte * *)((char *)&milesGlob + 236) + *(int *)((char *)&milesGlob + 284) * *(int *)((char *)&milesGlob + 272) + *(int *)((char *)&milesGlob + 276)), (void *)data, copy);
         data += copy;
-        *(int *)0x4a3c94 += copy;
-        if (*(int *)0x4a3c94 == *(int *)0x4a3c90) {
-            *(int *)0x4a3c94 = 0;
-            *(byte *)(0x4a3c70 + *(int *)0x4a3c9c) = 1;
-            *(int *)0x4a3c9c = (*(int *)0x4a3c9c + 1) % 32;
+        *(int *)((char *)&milesGlob + 276) += copy;
+        if (*(int *)((char *)&milesGlob + 276) == *(int *)((char *)&milesGlob + 272)) {
+            *(int *)((char *)&milesGlob + 276) = 0;
+            *(byte *)(0x4a3c70 + *(int *)((char *)&milesGlob + 284)) = 1;
+            *(int *)((char *)&milesGlob + 284) = (*(int *)((char *)&milesGlob + 284) + 1) % 32;
         }
     }
 }
@@ -708,7 +708,7 @@ void SND_SetRoomtype(int roomtype)
     AIL_set_digital_master_room_type(*(void **)&milesGlob, roomtype);
     reverbLevel = *(float *)(*(byte **)(*(byte **)imp_g_snd + 0x2d8) + 0x10);
     AIL_set_digital_master_reverb_levels(*(void **)&milesGlob, 1.0f, reverbLevel);
-    AIL_set_3D_room_type(*(void **)0x4a3b84, roomtype);
+    AIL_set_3D_room_type(*(void * *)((char *)&milesGlob + 4), roomtype);
 }
 
 /* line 1140 */
@@ -2122,7 +2122,7 @@ Bool SND_InitDriver(void)
         } while (AIL_enumerate_3D_providers(&providerIter, &handle, &name));
     }
 
-    *(void **)0x4a3b84 = NULL;
+    *(void * *)((char *)&milesGlob + 4) = NULL;
 
     /* Try to open wanted provider */
     if (wantedHandle != NULL) {
@@ -2130,12 +2130,12 @@ Bool SND_InitDriver(void)
             Com_Printf((const char *)str_00219c08, wantedName, AIL_last_error());
             /* provider stays NULL */
         } else {
-            *(void **)0x4a3b84 = wantedHandle;
+            *(void * *)((char *)&milesGlob + 4) = wantedHandle;
         }
     }
 
     /* If provider is open, skip to configure */
-    if (*(void **)0x4a3b84 != NULL) {
+    if (*(void * *)((char *)&milesGlob + 4) != NULL) {
         goto configure_provider;
     }
 
@@ -2153,13 +2153,13 @@ Bool SND_InitDriver(void)
 
     if (AIL_open_3D_provider(defaultHandle) != 0) {
         Com_Printf((const char *)str_00219c08, (const char *)str_00219ae4, AIL_last_error());
-        if (*(void **)0x4a3b84 == NULL) {
+        if (*(void * *)((char *)&milesGlob + 4) == NULL) {
             goto shutdown_and_fail;
         }
     } else {
-        *(void **)0x4a3b84 = defaultHandle;
+        *(void * *)((char *)&milesGlob + 4) = defaultHandle;
         Dvar_SetString(mss_3d_provider, (const char *)str_00219ae4);
-        if (*(void **)0x4a3b84 == NULL) {
+        if (*(void * *)((char *)&milesGlob + 4) == NULL) {
             goto shutdown_and_fail;
         }
     }
@@ -2168,16 +2168,16 @@ configure_provider:
     /* Configure 3D provider */
     sndGlob = *(byte **)imp_g_snd;
     *(byte *)(sndGlob + 1) = 1;
-    AIL_3D_provider_attribute(*(void **)0x4a3b84, (const char *)str_00219c6c, (void *)(sndGlob + 0x13c8));
+    AIL_3D_provider_attribute(*(void * *)((char *)&milesGlob + 4), (const char *)str_00219c6c, (void *)(sndGlob + 0x13c8));
     if (*(int *)(sndGlob + 0x13c8) > 0x20) {
         *(int *)(sndGlob + 0x13c8) = 0x20;
     }
     Com_Printf((const char *)str_00219c88, *(int *)(sndGlob + 0x13c8));
     {
         int distFactor = 0x3cd013a9;
-        AIL_set_3D_distance_factor(*(void **)0x4a3b84, *(float *)&distFactor);
+        AIL_set_3D_distance_factor(*(void * *)((char *)&milesGlob + 4), *(float *)&distFactor);
     }
-    AIL_set_3D_rolloff_factor(*(void **)0x4a3b84, 0.0f);
+    AIL_set_3D_rolloff_factor(*(void * *)((char *)&milesGlob + 4), 0.0f);
 
     /* Allocate 2D sample handles */
     sndGlob = *(byte **)imp_g_snd;
@@ -2191,7 +2191,7 @@ configure_provider:
     /* Allocate 3D sample handles */
     sndGlob = *(byte **)imp_g_snd;
     for (i = 0; i < *(int *)(sndGlob + 0x13c8); i++) {
-        *(void **)(0x4a3ba8 + i * 4) = AIL_allocate_3D_sample_handle(*(void **)0x4a3b84);
+        *(void **)(0x4a3ba8 + i * 4) = AIL_allocate_3D_sample_handle(*(void * *)((char *)&milesGlob + 4));
         if (*(void **)(0x4a3ba8 + i * 4) == NULL) {
             Com_Error(1, (const char *)str_00219cd4, i + 1);
         }
@@ -2637,7 +2637,7 @@ void SND_DriverPostUpdate(int frametime)
     float vol;
     int bufNum;
 
-    rawHandle = *(void **)0x4a3c5c;
+    rawHandle = *(void * *)((char *)&milesGlob + 220);
     if (rawHandle == NULL) {
         return;
     }
@@ -2645,22 +2645,22 @@ void SND_DriverPostUpdate(int frametime)
     vol = 0.5f * *(float *)(*(byte **)imp_g_snd + 0x24);
     AIL_set_sample_volume_levels(rawHandle, vol, vol);
 
-    if (*(byte *)(0x4a3c70 + *(int *)0x4a3c98) == 0) {
+    if (*(byte *)(0x4a3c70 + *(int *)((char *)&milesGlob + 280)) == 0) {
         return;
     }
 
-    bufNum = AIL_sample_buffer_ready(*(void **)0x4a3c5c);
+    bufNum = AIL_sample_buffer_ready(*(void * *)((char *)&milesGlob + 220));
     if (bufNum == -1) {
         return;
     }
 
-    *(double *)0x4a3ca0 += (double)(*(int *)0x4a3c90) * *(double *)0x4a3ca8;
+    *(double *)((char *)&milesGlob + 288) += (double)(*(int *)((char *)&milesGlob + 272)) * *(double *)((char *)&milesGlob + 296);
 
-    AIL_load_sample_buffer(*(void **)0x4a3c5c, bufNum,
-        (void *)(*(byte **)0x4a3c6c + *(int *)0x4a3c98 * *(int *)0x4a3c90),
-        *(int *)0x4a3c90);
+    AIL_load_sample_buffer(*(void * *)((char *)&milesGlob + 220), bufNum,
+        (void *)(*(byte * *)((char *)&milesGlob + 236) + *(int *)((char *)&milesGlob + 280) * *(int *)((char *)&milesGlob + 272)),
+        *(int *)((char *)&milesGlob + 272));
 
-    *(byte *)(0x4a3c70 + *(int *)0x4a3c98) = 0;
-    *(int *)0x4a3c98 = (*(int *)0x4a3c98 + 1) % 32;
+    *(byte *)(0x4a3c70 + *(int *)((char *)&milesGlob + 280)) = 0;
+    *(int *)((char *)&milesGlob + 280) = (*(int *)((char *)&milesGlob + 280) + 1) % 32;
 }
 

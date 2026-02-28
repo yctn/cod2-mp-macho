@@ -40,7 +40,7 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex);
 /* line 1145 */
 void R_DrawModel(int entIndex)
 {
-    if (!*(byte *)0xc96e87)
+    if (!*(byte *)((char *)&dpvsGlob + 103))
         return;
 
     byte *base = *(byte **)imp_scene;
@@ -72,7 +72,7 @@ float R_GetFarPlaneDist(void)
 /* line 2262 */
 void R_ClearDpvsScene(void)
 {
-    *(int *)0xcb6f00 = 0;
+    *(int *)((char *)&dpvsScene + 131072) = 0;
 
     byte *globals = *(byte **)imp_rgp;
     byte *world = *(byte **)(globals + 0x109c);

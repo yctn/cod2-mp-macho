@@ -1908,7 +1908,7 @@ long int SV_FreeClientScriptId(client_t *cl)
 long int SV_RunFrame(void)
 {
     SV_ResetSkeletonCache();
-    G_RunFrame(*(int *)0x1700484);
+    G_RunFrame(*(int *)((char *)&svs + 4));
     return 0;
 }
 

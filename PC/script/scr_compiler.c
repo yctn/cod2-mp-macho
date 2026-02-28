@@ -264,8 +264,8 @@ int CompareCaseInfo(const unsigned int *elem1, const unsigned int *elem2)
 unsigned int Scr_CompileShutdown(void)
 {
     void *node;
-    while ((node = *(void **)0x4ece58) != 0) {
-        *(void **)0x4ece58 = *(void **)((char *)node + 8);
+    while ((node = *(void * *)((char *)&scrCompileGlob + 88)) != 0) {
+        *(void * *)((char *)&scrCompileGlob + 88) = *(void **)((char *)node + 8);
         Z_FreeInternal(node);
     }
     return 0;

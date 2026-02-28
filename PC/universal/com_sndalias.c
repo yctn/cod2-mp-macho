@@ -357,7 +357,7 @@ SndCurve * Com_RegisterSoundAliasVolumeFalloffCurve(const char *filename, const 
 /* line 1322 */
 SndCurve * Com_GetDefaultSoundAliasVolumeFalloffCurve(void)
 {
-    return (SndCurve *)0x114f534;
+    return (SndCurve *)((char *)&g_sa + 4244);
 }
 
 /* line 1346 */

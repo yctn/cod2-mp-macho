@@ -106,7 +106,7 @@ static Bool Material_Compare(const Material *mtl0, const Material *mtl1)
 /* line 581 */
 void Material_SetTechnique(const char *name, MaterialTechnique *technique)
 {
-    if (*(int *)0xc86e88 == 0x3ff) {
+    if (*(int *)((char *)&materialGlobals + 4872) == 0x3ff) {
         R_Error(1, "More than %i techniques in use", 0x3ff);
     }
 
@@ -118,7 +118,7 @@ void Material_SetTechnique(const char *name, MaterialTechnique *technique)
         hash = (hash + 1) & 0x3ff;
     }
 
-    (*(int *)0xc86e88)++;
+    (*(int *)((char *)&materialGlobals + 4872))++;
     *(MaterialTechnique **)(0xc86e8c + hash * 4) = technique;
 }
 
@@ -153,8 +153,8 @@ void Material_SetStateMap(const char *name, MaterialStateMap *stateMap)
 /* line 793 */
 void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion, MaterialShader *mtlShader)
 {
-    (*(int *)0xc88118)++;
-    if (*(int *)0xc88118 == 0x100) {
+    (*(int *)((char *)&materialGlobals + 9624))++;
+    if (*(int *)((char *)&materialGlobals + 9624) == 0x100) {
         R_Error(1, "More than %i unique pixel and vertex shaders", 0xff);
     }
 
@@ -707,12 +707,12 @@ MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *rout
 MaterialStateMap * Material_FindStateMap(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x1f;
-    MaterialStateMap *entry = ((MaterialStateMap **)0xc87f94)[hash];
+    MaterialStateMap *entry = ((MaterialStateMap * *)((char *)&materialGlobals + 9236))[hash];
     while (entry) {
         if (strcmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x1f;
-        entry = ((MaterialStateMap **)0xc87f94)[hash];
+        entry = ((MaterialStateMap * *)((char *)&materialGlobals + 9236))[hash];
     }
     return NULL;
 }
@@ -721,12 +721,12 @@ MaterialStateMap * Material_FindStateMap(const char *name)
 MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x3ff;
-    MaterialTechniqueSet *entry = ((MaterialTechniqueSet **)0xc85e88)[hash];
+    MaterialTechniqueSet *entry = ((MaterialTechniqueSet * *)((char *)&materialGlobals + 776))[hash];
     while (entry) {
         if (stricmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x3ff;
-        entry = ((MaterialTechniqueSet **)0xc85e88)[hash];
+        entry = ((MaterialTechniqueSet * *)((char *)&materialGlobals + 776))[hash];
     }
     return NULL;
 }
@@ -735,12 +735,12 @@ MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 MaterialTechnique * Material_FindTechnique(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x3ff;
-    MaterialTechnique *entry = ((MaterialTechnique **)0xc86e8c)[hash];
+    MaterialTechnique *entry = ((MaterialTechnique * *)((char *)&materialGlobals + 4876))[hash];
     while (entry) {
         if (stricmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x3ff;
-        entry = ((MaterialTechnique **)0xc86e8c)[hash];
+        entry = ((MaterialTechnique * *)((char *)&materialGlobals + 4876))[hash];
     }
     return NULL;
 }
@@ -749,12 +749,12 @@ MaterialTechnique * Material_FindTechnique(const char *name)
 MaterialShader * Material_FindShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion)
 {
     int hash = (R_HashAssetName(shaderName) + shaderType * 97 + shaderVersion) & 0xff;
-    MaterialShader *entry = ((MaterialShader **)0xc8811c)[hash];
+    MaterialShader *entry = ((MaterialShader * *)((char *)&materialGlobals + 9628))[hash];
     while (entry) {
         if (entry->shaderType == shaderType && entry->shaderVersion == shaderVersion && strcmp(entry->name, shaderName) == 0)
             return entry;
         hash = (hash + 1) & 0xff;
-        entry = ((MaterialShader **)0xc8811c)[hash];
+        entry = ((MaterialShader * *)((char *)&materialGlobals + 9628))[hash];
     }
     return NULL;
 }

@@ -69,7 +69,7 @@ void R_GetImageList(ImageList *imageList)
 /* line 255 */
 int R_GetMinSpecImageMemory(void)
 {
-    return *(int *)0xc96bd0;
+    return *(int *)((char *)&imageGlobals + 8208);
 }
 
 /* line 637 */

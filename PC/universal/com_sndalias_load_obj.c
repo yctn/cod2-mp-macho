@@ -35,13 +35,13 @@ void Com_LoadSoundAliasFile(const char *loadspec, const char *loadspecCurGame, c
 void Com_InitSoundAlias(void)
 {
     *(int *)&saLoadObjGlob = 0;
-    *(int *)0x1150524 = 0;
+    *(int *)((char *)&saLoadObjGlob + 4) = 0;
 }
 
 /* line 873 */
 static void Com_RefreshVolumeModGroups_f(void)
 {
-    *(byte *)0x1150da8 = 0;
+    *(byte *)((char *)&saLoadObjGlob + 2184) = 0;
 }
 
 /* line 1013 */

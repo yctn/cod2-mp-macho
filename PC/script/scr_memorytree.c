@@ -26,14 +26,14 @@ unsigned int MT_FinishForceAlloc(byte *allocBits);
 /* line 218 */
 unsigned int Scr_GetStringUsage(void)
 {
-    return *(unsigned int *)0x476a28;
+    return *(unsigned int *)((char *)&scrMemTreeGlob + 525096);
 }
 
 /* line 755 */
 byte * MT_InitForceAlloc(void)
 {
-    *(int *)0x476a24 = 0;
-    *(int *)0x476a28 = 0;
+    *(int *)((char *)&scrMemTreeGlob + 525092) = 0;
+    *(int *)((char *)&scrMemTreeGlob + 525096) = 0;
     return Z_VirtualAllocInternal(0x2000);
 }
 

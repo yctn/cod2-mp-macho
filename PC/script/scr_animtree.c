@@ -28,7 +28,7 @@ void Scr_LoadAnimTreeAtIndex(int index, Alloc_t Alloc, int user);
 /* line 60 */
 void SetAnimCheck(int bAnimCheck)
 {
-    *(int *)0x4ed208 = bAnimCheck;
+    *(int *)((char *)&scrAnimGlob + 520) = bAnimCheck;
 }
 
 /* line 315 */

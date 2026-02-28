@@ -232,9 +232,9 @@ void CG_GetEntityOrientation(int entnum, vec_t *origin_out, vec3_t *axis_out)
 /* line 727 */
 int CG_CrosshairPlayer(void)
 {
-    if (*(int *)0xdb8c30 > *(int *)0xdbee50 + 0x3e8)
+    if (*(int *)((char *)&cgArray + 154544) > *(int *)((char *)&cgArray + 179664) + 0x3e8)
         return -1;
-    return *(int *)0xdbee4c;
+    return *(int *)((char *)&cgArray + 179660);
 }
 
 /* line 737 */

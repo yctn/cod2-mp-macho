@@ -205,9 +205,9 @@ unsigned int CG_CalculateFPS(void)
 unsigned int CG_AddLagometerFrameInfo(void)
 {
     byte *cg = *(byte **)(*(int *)imp_cg);
-    int index = *(int *)0x195b380;
+    int index = *(int *)((char *)&lagometer + 512);
     lagometer.frameSamples[index & 0x7f] = *(int *)(cg + 0x25bb0) - *(int *)(cg + 0x1c);
-    *(int *)0x195b380 = index + 1;
+    *(int *)((char *)&lagometer + 512) = index + 1;
     return 0;
 }
 
@@ -217,15 +217,15 @@ unsigned int CG_AddLagometerSnapshotInfo(snapshot_t *snap)
     int index;
     if (!snap)
     {
-        index = *(int *)0x195b784;
-        ((int *)0x195b584)[index & 0x7f] = -1;
-        *(int *)0x195b784 = index + 1;
+        index = *(int *)((char *)&lagometer + 1540);
+        ((int *)((char *)&lagometer + 1028))[index & 0x7f] = -1;
+        *(int *)((char *)&lagometer + 1540) = index + 1;
         return 0;
     }
-    index = *(int *)0x195b784;
-    ((int *)0x195b584)[index & 0x7f] = *(int *)((byte *)snap + 4);
-    ((int *)0x195b384)[index & 0x7f] = *(int *)snap;
-    *(int *)0x195b784 = index + 1;
+    index = *(int *)((char *)&lagometer + 1540);
+    ((int *)((char *)&lagometer + 1028))[index & 0x7f] = *(int *)((byte *)snap + 4);
+    ((int *)((char *)&lagometer + 516))[index & 0x7f] = *(int *)snap;
+    *(int *)((char *)&lagometer + 1540) = index + 1;
     return 0;
 }
 

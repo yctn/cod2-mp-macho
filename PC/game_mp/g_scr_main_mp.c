@@ -5267,7 +5267,7 @@ const char * Scr_GetGameTypeNameForScript(const char *pszGameTypeScript)
 /* line 6341 */
 unsigned int Scr_LoadGameType(void)
 {
-    unsigned int threadId = Scr_ExecThread(*(unsigned int *)0x17dda88, 0);
+    unsigned int threadId = Scr_ExecThread(*(unsigned int *)((char *)&g_scr_data + 8), 0);
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }
@@ -5275,7 +5275,7 @@ unsigned int Scr_LoadGameType(void)
 /* line 6356 */
 unsigned int Scr_StartupGameType(void)
 {
-    unsigned int threadId = Scr_ExecThread(*(unsigned int *)0x17dda8c, 0);
+    unsigned int threadId = Scr_ExecThread(*(unsigned int *)((char *)&g_scr_data + 12), 0);
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }
@@ -5283,7 +5283,7 @@ unsigned int Scr_StartupGameType(void)
 /* line 6370 */
 unsigned int Scr_PlayerConnect(gentity_t *self)
 {
-    unsigned int threadId = Scr_ExecEntThread(self, *(unsigned int *)0x17dda90, 0);
+    unsigned int threadId = Scr_ExecEntThread(self, *(unsigned int *)((char *)&g_scr_data + 16), 0);
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }
@@ -5291,7 +5291,7 @@ unsigned int Scr_PlayerConnect(gentity_t *self)
 /* line 6384 */
 unsigned int Scr_PlayerDisconnect(gentity_t *self)
 {
-    unsigned int threadId = Scr_ExecEntThread(self, *(unsigned int *)0x17dda94, 0);
+    unsigned int threadId = Scr_ExecEntThread(self, *(unsigned int *)((char *)&g_scr_data + 20), 0);
     Scr_FreeThread(threadId & 0xffff);
     return 0;
 }

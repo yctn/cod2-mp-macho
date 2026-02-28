@@ -67,7 +67,7 @@ void R_FatalInitError(const char *msg)
     printFunc(0, (const char *)str_00223938);
     printFunc(0, (const char *)str_00223994);
     printFunc(0, "\n%s\n", msg);
-    ((void (*)(void))*(void **)0x1180708)();
+    ((void (*)(void))*(void * *)((char *)&ri + 72))();
 }
 
 /* line 169 */
@@ -442,9 +442,9 @@ HRESULT R_CreateDevice(HWND hwnd, DWORD behavior)
 void R_UpdateGpuSyncType(void)
 {
     if (*(byte *)(*(int *)(*(int *)imp_r_multiGpu) + 8)) {
-        *(int *)0x11804c0 = 0;
+        *(int *)((char *)&dx + 11296) = 0;
     } else {
-        *(int *)0x11804c0 = *(int *)(*(int *)(*(int *)imp_r_gpuSync) + 8);
+        *(int *)((char *)&dx + 11296) = *(int *)(*(int *)(*(int *)imp_r_gpuSync) + 8);
     }
 }
 
@@ -471,7 +471,7 @@ static void R_DoneRenderingViews(void)
 /* line 2038 */
 static void R_TrackStatistics(trStatistics_t *stats)
 {
-    *(trStatistics_t **)0x1183a78 = stats;
+    *(trStatistics_t * *)((char *)&rg + 12664) = stats;
 }
 
 /* line 2097 */
@@ -825,7 +825,7 @@ static void R_InitSystems(void)
     R_InitImages();
     Material_Init();
     R_InitFonts();
-    *(int *)0x1181928 = 0;
+    *(int *)((char *)&rg + 4136) = 0;
     R_InitLightDefs();
     R_ClearFogs();
     R_InitDebug();
@@ -838,7 +838,7 @@ void R_FatalLockError(HRESULT hr)
     void (*printFunc)(int, const char *, ...) = *(void (**)(int, const char *, ...))&ri;
     printFunc(0, (const char *)str_00223a4c);
     printFunc(0, "********** error information:  %s\n", DXGetErrorDescription9A(hr));
-    ((void (*)(void))*(void **)0x1180708)();
+    ((void (*)(void))*(void * *)((char *)&ri + 72))();
 }
 
 /* line 1920 */

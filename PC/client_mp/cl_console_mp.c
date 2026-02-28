@@ -153,7 +153,7 @@ toggle:
     *(int *)(field + 0xc) = g_console_field_width;
     *(int *)(field + 0x10) = *(int *)&g_console_char_height;
     *(int *)(field + 0x14) = 1;
-    *(byte *)0xefb21c = 0;
+    *(byte *)((char *)&con + 131100) = 0;
     *(int *)((char *)*(void **)imp_clients + 4) ^= 1;
 }
 
@@ -186,7 +186,7 @@ static void Con_ChatModeTeam_f(void)
 /* line 2032 */
 void Con_Bottom(void)
 {
-    *(int *)0xefb20c = *(int *)0xefb204;
+    *(int *)((char *)&con + 131084) = *(int *)((char *)&con + 131076);
 }
 
 /* line 354 */
@@ -1070,7 +1070,7 @@ void Con_DrawSay(int y)
 /* line 1873 */
 void Con_ToggleConsoleOutput(void)
 {
-    *(byte *)0xefb21c = (*(byte *)0xefb21c == 0) ? 1 : 0;
+    *(byte *)((char *)&con + 131100) = (*(byte *)((char *)&con + 131100) == 0) ? 1 : 0;
 }
 
 /* line 1952 */
@@ -3447,7 +3447,7 @@ void CL_ConsolePrint(print_msg_type_t type, const char *txt, int duration, int l
 void CL_ConsoleFixPosition(void)
 {
     CL_ConsolePrint(0, "\n", 0, 0);
-    *(int *)0xefb20c = *(int *)0xefb204 - 1;
+    *(int *)((char *)&con + 131084) = *(int *)((char *)&con + 131076) - 1;
 }
 
 /* line 1363 */

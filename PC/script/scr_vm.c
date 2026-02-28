@@ -92,7 +92,7 @@ void Scr_ClearErrorMessage(void)
 {
     byte *p = *(byte **)imp_scrVarPub;
     *(int *)(p + 0x10) = 0;
-    *(int *)0x4ead90 = 0;
+    *(int *)((char *)&scrVmGlob + 16) = 0;
     *(int *)(p + 0x14) = 0;
 }
 
@@ -102,7 +102,7 @@ void Scr_Settings(int developer, int developer_script, int abort_on_error)
     byte *p = *(byte **)imp_scrVarPub;
     *(byte *)(p + 0xa) = developer != 0;
     *(byte *)(p + 0xb) = developer_script != 0;
-    *(byte *)0x1008215 = abort_on_error != 0;
+    *(byte *)((char *)&scrVmPub + 21) = abort_on_error != 0;
 }
 
 /* line 192 */
@@ -154,7 +154,7 @@ void Scr_Abort(void)
 /* line 211 */
 void Scr_SetLoading(int bLoading)
 {
-    *(int *)0x4ead94 = bLoading;
+    *(int *)((char *)&scrVmGlob + 20) = bLoading;
 }
 
 /* line 267 */
@@ -944,7 +944,7 @@ int Scr_IsSystemActive(int sys)
 /* line 4743 */
 unsigned int Scr_GetNumParam(void)
 {
-    return *(unsigned int *)0x100821c;
+    return *(unsigned int *)((char *)&scrVmPub + 28);
 }
 
 /* line 4883 */

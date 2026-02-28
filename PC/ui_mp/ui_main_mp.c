@@ -546,7 +546,7 @@ void UI_UpdateTime(int realtime)
 void UI_Shutdown(void)
 {
     Menus_CloseAll(uiInfo);
-    *(int *)0x1684ae0 = 0;
+    *(int *)((char *)&sharedUiInfo + 32) = 0;
     LAN_SaveServersToCache();
 }
 

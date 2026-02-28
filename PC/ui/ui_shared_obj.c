@@ -978,7 +978,7 @@ void Menu_PostParse(menuDef_t *menu)
     int size = *(int *)((char *)menu + 0x218) * 4;
     void *items = UI_Alloc(size, 4);
     *(void **)((char *)menu + 0x27c) = items;
-    memcpy(items, (void *)0xf39bc0, size);
+    memcpy(items, (void *)((char *)&g_load + 64), size);
     if (*(int *)((char *)menu + 0x214)) {
         rectDef_t rect;
         rect.x = 0.0f;

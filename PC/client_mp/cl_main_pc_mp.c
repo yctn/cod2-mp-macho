@@ -783,7 +783,7 @@ int CL_SortGlobalServers(void)
 int CL_RconInit(void)
 {
     *(byte *)&rconGlob = 0;
-    *(int *)0xf006d8 = 1;
+    *(int *)((char *)&rconGlob + 24) = 1;
 }
 
 /* line 750 */

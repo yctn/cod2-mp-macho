@@ -263,21 +263,21 @@ int G_LogPrintf(const char *fmt, ...)
     va_list argptr;
     int min, sec, tens, ones;
 
-    if (!*(int *)0x1934498)
+    if (!*(int *)((char *)&level + 24))
         return 0;
 
     va_start(argptr, fmt);
     vsnprintf(string2, 1024, fmt, argptr);
     va_end(argptr);
 
-    sec = *(int *)0x193466c / 1000;
+    sec = *(int *)((char *)&level + 492) / 1000;
     min = sec / 60;
     sec %= 60;
     tens = sec / 10;
     ones = sec % 10;
 
     Com_sprintf(string, 1024, "%3i:%i%i %s", min, tens, ones, string2);
-    FS_Write(string, strlen(string), *(int *)0x1934498);
+    FS_Write(string, strlen(string), *(int *)((char *)&level + 24));
 
     return 0;
 }
@@ -1112,34 +1112,34 @@ int G_ShutdownGame(qboolean freeScripts)
 
     Com_Printf((const char *)str_002b4950);
 
-    if (*(int *)0x1934498) {
+    if (*(int *)((char *)&level + 24)) {
         G_LogPrintf((const char *)str_002b4968);
         G_LogPrintf((const char *)str_002b4898);
-        FS_FCloseFile(*(int *)0x1934498);
+        FS_FCloseFile(*(int *)((char *)&level + 24));
     }
 
     *(int *)*(int *)imp_bgs = 0;
 
-    for (i = 0; i < *(int *)0x193448c; i++) {
+    for (i = 0; i < *(int *)((char *)&level + 12); i++) {
         if (*(char *)((char *)&g_entities[i] + 0xfc))
             G_FreeEntity(&g_entities[i]);
     }
 
-    if (*(char *)0x186d71c)
-        G_FreeEntity((gentity_t *)0x186d620);
+    if (*(char *)((char *)&g_entities + 572572))
+        G_FreeEntity((gentity_t *)((char *)&g_entities + 572320));
 
-    *(int *)0x193448c = 0;
-    *(int *)0x1934490 = 0;
-    *(int *)0x1934494 = 0;
+    *(int *)((char *)&level + 12) = 0;
+    *(int *)((char *)&level + 16) = 0;
+    *(int *)((char *)&level + 20) = 0;
 
     HudElem_DestroyAll();
 
     if (Scr_IsSystemActive(1)) {
-        if (!*(int *)0x19361d4)
+        if (!*(int *)((char *)&level + 7508))
             SV_FreeClientScriptPers();
     }
 
-    Scr_ShutdownSystem(1, *(int *)0x19361d4 == 0);
+    Scr_ShutdownSystem(1, *(int *)((char *)&level + 7508) == 0);
 
     if (freeScripts) {
         Mantle_ShutdownAnims();
@@ -1147,7 +1147,7 @@ int G_ShutdownGame(qboolean freeScripts)
         Scr_FreeScripts(1);
 
         /* Free XAnimTrees in level_bgs (stride 0x4b8) */
-        for (ptr = (char *)&level_bgs; ptr != (char *)0x1880880; ptr += 0x4b8) {
+        for (ptr = (char *)&level_bgs; ptr != (char *)((char *)&level_bgs + 77312); ptr += 0x4b8) {
             struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0xb40a0);
             if (tree) {
                 XAnimFreeTree(tree, 0);
@@ -1171,15 +1171,15 @@ int G_ShutdownGame(qboolean freeScripts)
         Hunk_ClearToMarkLow(0);
     }
 
-    if (*(void **)0x1937a8c) {
-        Z_FreeInternal(*(void **)0x1937a8c);
+    if (*(void * *)((char *)&level + 13836)) {
+        Z_FreeInternal(*(void * *)((char *)&level + 13836));
     }
-    *(int *)0x1937a8c = 0;
+    *(int *)((char *)&level + 13836) = 0;
 
-    if (*(int *)0x1937a88 >= 0) {
-        FS_FCloseFile(*(int *)0x1937a88);
+    if (*(int *)((char *)&level + 13832) >= 0) {
+        FS_FCloseFile(*(int *)((char *)&level + 13832));
     }
-    *(int *)0x1937a88 = -1;
+    *(int *)((char *)&level + 13832) = -1;
 
     return 0;
 }

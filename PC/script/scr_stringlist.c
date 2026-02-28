@@ -45,7 +45,7 @@ unsigned int SL_ConvertFromString(const char *str)
 /* line 299 */
 unsigned int SL_Shutdown(void)
 {
-    *(byte *)0x3f6680 = 0;
+    *(byte *)((char *)&scrStringGlob + 65536) = 0;
 }
 
 /* line 151 */

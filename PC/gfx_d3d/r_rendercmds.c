@@ -62,7 +62,7 @@ void R_AddCmdBlendSavedScreen(int fadeMsec);
 /* line 158 */
 void R_ShutdownBackendData(void)
 {
-    R_ShutdownDebugEntry((void *)0xc85918);
+    R_ShutdownDebugEntry((void *)((char *)&s_backEndData + 2399512));
 }
 
 /* line 253 */
@@ -155,13 +155,13 @@ void R_BeginDebugFrame(void)
     if (!*(char *)*(int *)imp_rg)
         return;
     *(GfxCmdArray **)&s_debugFrameGlob = s_cmdList;
-    *(GfxBackEndData **)0x7f1e84 = frontEndDataOut;
+    *(GfxBackEndData * *)((char *)&s_debugFrameGlob + 4) = frontEndDataOut;
     if (*(int *)((char *)*(int *)imp_dx + 0x2dc0)) {
-        *(char *)0x7f1e88 = 1;
+        *(char *)((char *)&s_debugFrameGlob + 8) = 1;
         R_UnlockSkinnedCache();
     }
-    s_cmdList = (GfxCmdArray *)0xa0bb98;
-    frontEndDataOut = (GfxBackEndData *)0x7f1e8c;
+    s_cmdList = (GfxCmdArray *)((char *)&s_debugFrameGlob + 2202904);
+    frontEndDataOut = (GfxBackEndData *)((char *)&s_debugFrameGlob + 12);
 }
 
 /* line 2102 */
