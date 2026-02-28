@@ -6378,7 +6378,7 @@ void Pmove(pmove_t *pm)
         "cmpl $7, 4(%esi)\n" /* line 4488 */
         "ja .Lf713e6_00071734\n"
         "movl 4(%esi), %eax\n"
-        "jmpl *CorrectSolidDeltas+592(, %eax, 4)\n"
+        "jmpl *.Ljt_713e6_0(, %eax, 4)\n"
         ".Lf713e6_00071734:\n"
         "testl $0x300, 0xa0(%esi)\n" /* line 4569 */
         "je .Lf713e6_0007188b\n"
@@ -6588,6 +6588,7 @@ void Pmove(pmove_t *pm)
         "movl %esi, (%esp)\n" /* line 4374 */
         "calll PM_ExitAimDownSight\n"
         "jmp .Lf713e6_00071544\n"
+        ".Lf713e6_00071a17:\n"
         "movl 0xc(%esi), %ecx\n" /* line 4008 */
         "testb $0x20, %cl\n"
         "je .Lf713e6_00071a28\n"
@@ -6606,6 +6607,7 @@ void Pmove(pmove_t *pm)
         "movl %edi, (%esp)\n"
         "calll PM_UpdateAimDownSightLerp\n"
         "jmp .Lf713e6_00071946\n"
+        ".Lf713e6_00071a57:\n"
         "movl 0xc(%esi), %ecx\n" /* line 4008 */
         "testb $0x20, %cl\n"
         "je .Lf713e6_00071a68\n"
@@ -6675,6 +6677,7 @@ void Pmove(pmove_t *pm)
         "movl %edi, (%esp)\n"
         "calll PM_Weapon\n"
         "jmp .Lf713e6_00071946\n"
+        ".Lf713e6_00071b4d:\n"
         "movl 0xc(%esi), %ecx\n" /* line 4008 */
         "testb $0x20, %cl\n"
         "je .Lf713e6_00071b5e\n"
@@ -6882,6 +6885,7 @@ void Pmove(pmove_t *pm)
         "movl %edi, (%esp)\n"
         "calll PM_UpdateAimDownSightLerp\n"
         "jmp .Lf713e6_00071946\n"
+        ".Lf713e6_00071e3b:\n"
         "movl 0xc(%esi), %ecx\n" /* line 4008 */
         "testb $0x20, %cl\n"
         "je .Lf713e6_00071e4c\n"
@@ -7075,6 +7079,7 @@ void Pmove(pmove_t *pm)
         "jmp .Lf713e6_00071dc7\n"
         /* } scope */
         /* } scope */
+        ".Lf713e6_00072124:\n"
         "movl 0xc(%esi), %ecx\n" /* line 4008 */
         "testb $0x20, %cl\n"
         "je .Lf713e6_00072135\n"
@@ -8979,6 +8984,18 @@ void Pmove(pmove_t *pm)
         "mulss lit4_002ed768, %xmm3\n" /* 0.6499999761581421f */
         "subss %xmm0, %xmm1\n"
         "jmp .Lf713e6_00073a3f\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_713e6_0:\n"
+        ".long .Lf713e6_00071734\n"
+        ".long .Lf713e6_00071a57\n"
+        ".long .Lf713e6_00071b4d\n"
+        ".long .Lf713e6_00071e3b\n"
+        ".long .Lf713e6_00072124\n"
+        ".long .Lf713e6_00071a17\n"
+        ".long .Lf713e6_00071734\n"
+        ".long .Lf713e6_00071a57\n"
+        ".text\n"
     );
 }
 

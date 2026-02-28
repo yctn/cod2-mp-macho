@@ -2881,7 +2881,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "cmpl $8, (%edx)\n"
         "ja .Lf1419ec_00141e01\n"
         "movl (%edx), %eax\n"
-        "jmpl *yy_ec+2112(, %eax, 4)\n"
+        "jmpl *.Ljt_1419ec_0(, %eax, 4)\n"
         ".Lf1419ec_00141d5d:\n"
         "movl imp_cl, %edx\n" /* line 1807 */
         "movl (%edx), %eax\n"
@@ -2937,6 +2937,7 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl $1, (%esp)\n" /* line 1870 */
         "calll UI_SetActiveMenu\n"
         "jmp .Lf1419ec_00141b46\n"
+        ".Lf1419ec_00141e25:\n"
         "movl 0x407a0(%edx), %edi\n" /* line 1840 | down */
         "testl %edi, %edi\n" /* down */
         "jne .Lf1419ec_00141e14\n"
@@ -2947,8 +2948,10 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         "movl $2, (%esp)\n" /* line 1846 */
         "calll UI_SetActiveMenu\n"
         "jmp .Lf1419ec_00141b46\n"
+        ".Lf1419ec_00141e50:\n"
         "calll CL_StopLogoOrCinematic\n" /* line 1856 */
         "jmp .Lf1419ec_00141b46\n"
+        ".Lf1419ec_00141e5a:\n"
         "calll CL_Disconnect\n" /* line 1862 */
         "movl imp_com_sv_running, %eax\n" /* line 1864 */
         "movl (%eax), %eax\n"
@@ -3063,6 +3066,19 @@ void CL_KeyEvent(int key, const qboolean down, const unsigned int time)
         ".Lf1419ec_00141fde:\n"
         "addb $0x30, %dl\n" /* line 1332 */
         "jmp .Lf1419ec_00141f97\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_1419ec_0:\n"
+        ".long .Lf1419ec_00141e01\n"
+        ".long .Lf1419ec_00141e50\n"
+        ".long .Lf1419ec_00141e50\n"
+        ".long .Lf1419ec_00141e5a\n"
+        ".long .Lf1419ec_00141e5a\n"
+        ".long .Lf1419ec_00141e5a\n"
+        ".long .Lf1419ec_00141e01\n"
+        ".long .Lf1419ec_00141e01\n"
+        ".long .Lf1419ec_00141e25\n"
+        ".text\n"
     );
 }
 

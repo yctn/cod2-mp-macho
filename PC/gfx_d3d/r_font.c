@@ -434,7 +434,7 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "subl $0xd, %eax\n"
         "cmpl $6, %eax\n"
         "ja .Lfed016_000ed1c5\n"
-        "jmpl *gridBasisDirs+128(, %eax, 4)\n"
+        "jmpl *.Ljt_ed016_0(, %eax, 4)\n"
         ".Lfed016_000ed196:\n"
         "xorl %ebx, %ebx\n" /* line 324 | i */
         ".Lfed016_000ed198:\n"
@@ -444,7 +444,8 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "subl $0xd, %eax\n"
         "cmpl $6, %eax\n"
         "ja .Lfed016_000ed1fa\n"
-        "jmpl *gridBasisDirs+156(, %eax, 4)\n"
+        "jmpl *.Ljt_ed016_1(, %eax, 4)\n"
+        ".Lfed016_000ed1b1:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 337 */
         "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %eax\n" /* color */
@@ -454,11 +455,13 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "cmpl (%esi), %ebx\n" /* maxChars, i */
         "jl .Lfed016_000ed17d\n"
         "jmp .Lfed016_000ed088\n"
+        ".Lfed016_000ed1d1:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 341 */
         "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %edx\n" /* color */
         "movss %xmm0, 8(%edx)\n"
         "jmp .Lfed016_000ed1c5\n"
+        ".Lfed016_000ed1e7:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 333 */
         "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %eax\n" /* color */
@@ -468,21 +471,25 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "cmpl (%esi), %ebx\n" /* maxChars, i */
         "jl .Lfed016_000ed198\n"
         "jmp .Lfed016_000ed088\n"
+        ".Lfed016_000ed206:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 337 */
         "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %edx\n" /* color */
         "movss %xmm0, 4(%edx)\n"
         "jmp .Lfed016_000ed1fa\n"
+        ".Lfed016_000ed21c:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 341 */
         "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %eax\n" /* color */
         "movss %xmm0, 8(%eax)\n"
         "jmp .Lfed016_000ed1fa\n"
+        ".Lfed016_000ed232:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 345 */
         "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "mulss (%ecx), %xmm0\n" /* iconWidth */
         "movss %xmm0, (%ecx)\n" /* iconWidth */
         "jmp .Lfed016_000ed1fa\n"
+        ".Lfed016_000ed248:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 349 */
         "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "mulss (%ecx), %xmm0\n" /* iconWidth */
@@ -490,28 +497,54 @@ const short int * R_GetConsoleIcon(const short int *string, int *maxChars, float
         "movl 0x14(%ebp), %edx\n" /* line 351 | iconHorzFlip */
         "movb $1, (%edx)\n"
         "jmp .Lfed016_000ed1fa\n"
+        ".Lfed016_000ed264:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 355 */
         "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "movl 8(%ebp), %eax\n" /* iconHeight */
         "mulss (%eax), %xmm0\n"
         "movss %xmm0, (%eax)\n"
         "jmp .Lfed016_000ed1fa\n"
+        ".Lfed016_000ed280:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 333 */
         "mulss lit4_002ed5cc, %xmm0\n" /* 0.003921568859368563f */
         "movl 0x10(%ebp), %edx\n" /* color */
         "movss %xmm0, (%edx)\n"
         "jmp .Lfed016_000ed1c5\n"
+        ".Lfed016_000ed298:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 349 */
         "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "mulss (%ecx), %xmm0\n" /* iconWidth */
         "movss %xmm0, (%ecx)\n" /* iconWidth */
         "jmp .Lfed016_000ed1c5\n"
+        ".Lfed016_000ed2b1:\n"
         "cvtsi2ssl %edx, %xmm0\n" /* line 355 */
         "mulss lit4_002ed878, %xmm0\n" /* 0.03125f */
         "movl 8(%ebp), %eax\n" /* iconHeight */
         "mulss (%eax), %xmm0\n"
         "movss %xmm0, (%eax)\n"
         "jmp .Lfed016_000ed1c5\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_ed016_0:\n"
+        ".long .Lfed016_000ed280\n"
+        ".long .Lfed016_000ed1b1\n"
+        ".long .Lfed016_000ed1d1\n"
+        ".long .Lfed016_000ed298\n"
+        ".long .Lfed016_000ed2b1\n"
+        ".long .Lfed016_000ed0c3\n"
+        ".long .Lfed016_000ed298\n"
+        ".text\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_ed016_1:\n"
+        ".long .Lfed016_000ed1e7\n"
+        ".long .Lfed016_000ed206\n"
+        ".long .Lfed016_000ed21c\n"
+        ".long .Lfed016_000ed232\n"
+        ".long .Lfed016_000ed264\n"
+        ".long .Lfed016_000ed0c3\n"
+        ".long .Lfed016_000ed248\n"
+        ".text\n"
     );
 }
 

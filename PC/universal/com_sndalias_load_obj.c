@@ -1432,7 +1432,8 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movb $1, (%eax)\n" /* line 529 */
         "cmpl $0x17, %edx\n" /* line 534 */
         "ja .Lfb7faa_000b8076\n"
-        "jmpl *CorrectSolidDeltas+5728(, %edx, 4)\n"
+        "jmpl *.Ljt_b7faa_0(, %edx, 4)\n"
+        ".Lfb7faa_000b7ff1:\n"
         "cld\n" /* line 537 */
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
@@ -1499,6 +1500,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "popl %ebp\n"
         "retl\n"
         /* { scope 1: list, loadlist, len */
+        ".Lfb7faa_000b80b7:\n"
         "movl 8(%ebp), %eax\n" /* line 663 | token */
         "movl %eax, (%esp)\n"
         "calll atof\n"
@@ -1524,6 +1526,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %eax\n" /* line 663 | alias */
         "movss %xmm0, 0x13c(%eax)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b811f:\n"
         "movl $str_0021f6b0, 4(%esp)\n" /* line 500 */
         "movl 8(%ebp), %eax\n" /* token */
         "movl %eax, (%esp)\n"
@@ -1542,12 +1545,14 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edi\n" /* line 504 | alias */
         "movb $1, 0x148(%edi)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b816a:\n"
         "movl 8(%ebp), %ecx\n" /* line 652 | token */
         "movl %ecx, (%esp)\n"
         "calll atoi\n"
         "movl 0x14(%ebp), %edi\n" /* alias */
         "movl %eax, 0x140(%edi)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b8183:\n"
         "movl -0x4078(%ebp), %edi\n" /* line 649 */
         "movl %edi, 4(%esp)\n"
         "movl 8(%ebp), %eax\n" /* token */
@@ -1556,6 +1561,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* alias */
         "movl %eax, 0x130(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b81a6:\n"
         "cld\n" /* line 552 */
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
@@ -1596,6 +1602,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %ecx\n" /* line 561 | alias */
         "movb $1, 0x149(%ecx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b8230:\n"
         "movl $str_0021f64c, 4(%esp)\n" /* line 472 */
         "movl 8(%ebp), %ecx\n" /* token */
         "movl %ecx, (%esp)\n"
@@ -1607,6 +1614,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movb $0, 0x146(%edi)\n" /* line 475 */
         "jmp .Lfb7faa_000b8076\n"
         /* { scope 2 */
+        ".Lfb7faa_000b8261:\n"
         "cld\n" /* line 428 */
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
@@ -1636,6 +1644,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* line 643 | alias */
         "movb %al, 0x14a(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b82d1:\n"
         "movl 8(%ebp), %ecx\n" /* line 640 | token */
         "movl %ecx, (%esp)\n"
         "calll atof\n"
@@ -1644,6 +1653,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edi\n" /* alias */
         "movss %xmm0, 0x138(%edi)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b82fa:\n"
         "movl $str_0021f59c, 4(%esp)\n" /* line 392 */
         "movl 8(%ebp), %ecx\n" /* token */
         "movl %ecx, (%esp)\n"
@@ -1653,6 +1663,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* line 394 | alias */
         "movb $1, 0x144(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b8324:\n"
         "movl 8(%ebp), %edi\n" /* line 622 | token */
         "movl %edi, (%esp)\n"
         "calll atof\n"
@@ -1661,6 +1672,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %eax\n" /* alias */
         "movss %xmm0, 0x11c(%eax)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b834d:\n"
         "movl $str_0021ec78, 4(%esp)\n" /* line 356 */
         "movl 8(%ebp), %edx\n" /* token */
         "movl %edx, (%esp)\n"
@@ -1670,6 +1682,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %ecx\n" /* line 358 | alias */
         "movl $2, 0x12c(%ecx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b837a:\n"
         "xorl %esi, %esi\n" /* line 629 | i */
         "movl $g_pszChannelNames, %ebx\n" /* loadspec */
         /* { scope 2 */
@@ -1715,6 +1728,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "addl $2, %ebx\n" /* len */
         "jmp .Lfb7faa_000b83ba\n"
         /* } scope */
+        ".Lfb7faa_000b8404:\n"
         "movl 8(%ebp), %eax\n" /* line 628 | token */
         "movl %eax, (%esp)\n"
         "calll atof\n"
@@ -1723,6 +1737,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* alias */
         "movss %xmm0, 0x124(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b842d:\n"
         "movl 8(%ebp), %eax\n" /* line 625 | token */
         "movl %eax, (%esp)\n"
         "calll atof\n"
@@ -1731,6 +1746,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* alias */
         "movss %xmm0, 0x120(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b8456:\n"
         "movl 8(%ebp), %ecx\n" /* line 594 | token */
         "movl %ecx, (%esp)\n"
         "calll atof\n"
@@ -1758,6 +1774,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* line 598 | alias */
         "movb $1, 0x149(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b84e1:\n"
         "movl 8(%ebp), %edx\n" /* line 579 | token */
         "movzbl (%edx), %eax\n"
         "cmpb $0, %al\n"
@@ -1786,6 +1803,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* line 584 | alias */
         "movb $1, 0x149(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b8548:\n"
         "cld\n" /* line 570 */
         "movl $0xffffffff, %ecx\n"
         "xorl %eax, %eax\n"
@@ -1802,12 +1820,14 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl %eax, (%esp)\n"
         "calll strcpy\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b857f:\n"
         "movl 8(%ebp), %edi\n" /* line 567 | token */
         "movl %edi, (%esp)\n"
         "calll atoi\n"
         "movl 0x14(%ebp), %edx\n" /* alias */
         "movl %eax, 0xc4(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b8598:\n"
         "xorl %esi, %esi\n" /* line 610 | i */
         "movl $saLoadObjGlob+8, %ebx\n" /* loadspec */
         "xorl %edi, %edi\n"
@@ -1832,6 +1852,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edi\n" /* line 614 | alias */
         "movl %eax, 0x114(%edi)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b85dc:\n"
         "movl 8(%ebp), %eax\n" /* line 605 | token */
         "movl %eax, (%esp)\n"
         "calll atof\n"
@@ -1859,6 +1880,7 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edi\n" /* line 609 | alias */
         "movb $1, 0x149(%edi)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".Lfb7faa_000b8667:\n"
         "movl 8(%ebp), %eax\n" /* line 617 | token */
         "movl %eax, (%esp)\n"
         "calll atof\n"
@@ -2278,6 +2300,34 @@ void Com_LoadSoundAliasField(const char *loadspecCurGame, const char *sourceFile
         "movl 0x14(%ebp), %edx\n" /* line 377 | alias */
         "movb $1, 0x149(%edx)\n"
         "jmp .Lfb7faa_000b8076\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_b7faa_0:\n"
+        ".long .Lfb7faa_000b8076\n"
+        ".long .Lfb7faa_000b7ff1\n"
+        ".long .Lfb7faa_000b857f\n"
+        ".long .Lfb7faa_000b8548\n"
+        ".long .Lfb7faa_000b84e1\n"
+        ".long .Lfb7faa_000b8456\n"
+        ".long .Lfb7faa_000b85dc\n"
+        ".long .Lfb7faa_000b8598\n"
+        ".long .Lfb7faa_000b8667\n"
+        ".long .Lfb7faa_000b8324\n"
+        ".long .Lfb7faa_000b842d\n"
+        ".long .Lfb7faa_000b8404\n"
+        ".long .Lfb7faa_000b837a\n"
+        ".long .Lfb7faa_000b834d\n"
+        ".long .Lfb7faa_000b82fa\n"
+        ".long .Lfb7faa_000b82d1\n"
+        ".long .Lfb7faa_000b8261\n"
+        ".long .Lfb7faa_000b8230\n"
+        ".long .Lfb7faa_000b81a6\n"
+        ".long .Lfb7faa_000b8183\n"
+        ".long .Lfb7faa_000b816a\n"
+        ".long .Lfb7faa_000b8076\n"
+        ".long .Lfb7faa_000b811f\n"
+        ".long .Lfb7faa_000b80b7\n"
+        ".text\n"
     );
 }
 

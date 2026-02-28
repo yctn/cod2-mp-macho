@@ -457,7 +457,8 @@ void CG_MenuShowNotify(int menuToShow)
         /* { scope 1 */
         "cmpl $5, %eax\n" /* line 829 */
         "ja .Lf1dfd68_001dfddb\n"
-        "jmpl *iSlotPreferenceOrder+256(, %eax, 4)\n"
+        "jmpl *.Ljt_1dfd68_0(, %eax, 4)\n"
+        ".Lf1dfd68_001dfd7d:\n"
         "movl $4, (%esp)\n" /* line 844 */
         "calll CG_MenuShowNotify\n"
         "movl imp_cg, %eax\n" /* line 846 */
@@ -484,6 +485,7 @@ void CG_MenuShowNotify(int menuToShow)
         "leave\n" /* line 905 */
         "retl\n"
         /* { scope 1 */
+        ".Lf1dfd68_001dfddd:\n"
         "movl imp_cg, %eax\n" /* line 832 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
@@ -498,6 +500,7 @@ void CG_MenuShowNotify(int menuToShow)
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
+        ".Lf1dfd68_001dfe1d:\n"
         "movl imp_cg, %eax\n" /* line 894 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
@@ -509,6 +512,7 @@ void CG_MenuShowNotify(int menuToShow)
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
+        ".Lf1dfd68_001dfe52:\n"
         "movl imp_cg, %eax\n" /* line 882 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
@@ -523,6 +527,7 @@ void CG_MenuShowNotify(int menuToShow)
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
+        ".Lf1dfd68_001dfe99:\n"
         "movl imp_cg, %eax\n" /* line 870 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
@@ -537,6 +542,7 @@ void CG_MenuShowNotify(int menuToShow)
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
+        ".Lf1dfd68_001dfedc:\n"
         "movl imp_cg, %eax\n" /* line 858 */
         "movl (%eax), %eax\n"
         "movl 0x25bb0(%eax), %edx\n"
@@ -581,6 +587,16 @@ void CG_MenuShowNotify(int menuToShow)
         "movl %eax, (%esp)\n"
         "calll Menus_FindByName\n"
         "jmp .Lf1dfd68_001dfdc7\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_1dfd68_0:\n"
+        ".long .Lf1dfd68_001dfddd\n"
+        ".long .Lf1dfd68_001dfd7d\n"
+        ".long .Lf1dfd68_001dfedc\n"
+        ".long .Lf1dfd68_001dfe99\n"
+        ".long .Lf1dfd68_001dfe52\n"
+        ".long .Lf1dfd68_001dfe1d\n"
+        ".text\n"
     );
 }
 
@@ -897,7 +913,7 @@ void CG_ServerCommand(void)
         "movsbl (%eax), %eax\n" /* line 1201 */
         "cmpl $0x76, %eax\n"
         "ja .Lf1e07d0_001e08ae\n"
-        "jmpl *iSlotPreferenceOrder+280(, %eax, 4)\n"
+        "jmpl *.Ljt_1e07d0_0(, %eax, 4)\n"
         ".Lf1e07d0_001e07fb:\n"
         "cmpl $5, %ebx\n" /* line 470 */
         "je .Lf1e07d0_001e14b5\n"
@@ -981,6 +997,7 @@ void CG_ServerCommand(void)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf1e07d0_001e0924:\n"
         "movl $1, (%esp)\n" /* line 1230 */
         "calll CG_Argv\n"
         "leal -0x1b2(%ebp), %ebx\n"
@@ -991,6 +1008,7 @@ void CG_ServerCommand(void)
         "movl %ebx, (%esp)\n" /* line 1231 */
         "calll CG_GameMessage\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0957:\n"
         "movl $1, (%esp)\n" /* line 1327 */
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
@@ -1007,12 +1025,16 @@ void CG_ServerCommand(void)
         "movl %ebx, (%esp)\n" /* line 1329 | weapIndex */
         "calll CG_SetEquippedOffHand\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0994:\n"
         "calll CG_DeactivateReverbCmd\n" /* line 1284 */
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e099e:\n"
         "calll CG_SetChannelVolCmd\n" /* line 1288 */
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e09a8:\n"
         "calll CG_DeactivateChannelVolCmd\n" /* line 1292 */
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e09b2:\n"
         "movl $1, (%esp)\n" /* line 1345 */
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
@@ -1023,6 +1045,7 @@ void CG_ServerCommand(void)
         "movl %eax, 0x63b8(%edx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         /* } scope */
+        ".Lf1e07d0_001e09d9:\n"
         "movl $1, (%esp)\n" /* line 1349 */
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
@@ -1033,6 +1056,7 @@ void CG_ServerCommand(void)
         "movl %eax, 0x63bc(%edx)\n"
         "jmp .Lf1e07d0_001e08a3\n"
         /* } scope */
+        ".Lf1e07d0_001e0a00:\n"
         "movl $1, (%esp)\n" /* line 1353 */
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
@@ -1040,6 +1064,7 @@ void CG_ServerCommand(void)
         "movl %eax, (%esp)\n"
         "calll CG_MenuShowNotify\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0a21:\n"
         "movl $1, (%esp)\n" /* line 1334 */
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
@@ -1047,8 +1072,10 @@ void CG_ServerCommand(void)
         "movl %eax, (%esp)\n"
         "calll CL_ResetPlayerMuting\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0a42:\n"
         "calll CL_CloseInGameMenu\n" /* line 1308 */
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0a4c:\n"
         "movl $1, (%esp)\n" /* line 1208 */
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
@@ -1056,9 +1083,11 @@ void CG_ServerCommand(void)
         "movl %eax, (%esp)\n"
         "calll CG_SelectWeaponIndex\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0a6d:\n"
         "movl $0, (%esp)\n" /* line 1323 */
         "calll CG_MapRestart\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0a7e:\n"
         "movl $1, (%esp)\n" /* line 434 */
         "calll CG_Argv\n"
         "movl %eax, (%esp)\n"
@@ -1102,6 +1131,7 @@ void CG_ServerCommand(void)
         "cmpb $0, (%eax)\n" /* line 184 */
         "jne .Lf1e07d0_001e0aee\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0b28:\n"
         "movl imp_cg, %esi\n" /* line 44 */
         "movl (%esi), %ebx\n"
         "movl $1, (%esp)\n"
@@ -1166,6 +1196,7 @@ void CG_ServerCommand(void)
         "cmpl $4, %ebx\n"
         "jne .Lf1e07d0_001e0c32\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0c69:\n"
         "movl $1, (%esp)\n" /* line 1216 */
         "calll CG_Argv\n"
         "leal -0x1b2(%ebp), %ebx\n"
@@ -1176,6 +1207,7 @@ void CG_ServerCommand(void)
         "movl %ebx, (%esp)\n" /* line 1217 */
         "calll CG_BoldGameMessage\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0c9c:\n"
         "movl $1, (%esp)\n" /* line 1235 */
         "calll CG_Argv\n"
         "leal -0x1b2(%ebp), %ebx\n"
@@ -1186,6 +1218,7 @@ void CG_ServerCommand(void)
         "movl %ebx, (%esp)\n" /* line 1236 */
         "calll CG_BoldGameMessage\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0ccf:\n"
         "movl imp_cg_teamChatsOnly, %eax\n" /* line 1240 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
@@ -1230,6 +1263,7 @@ void CG_ServerCommand(void)
         "movl $str_00215bbc, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0d70:\n"
         "movl $1, (%esp)\n" /* line 1252 */
         "calll CG_Argv\n"
         "movl $0, 8(%esp)\n"
@@ -1259,6 +1293,7 @@ void CG_ServerCommand(void)
         "jne .Lf1e07d0_001e0dc1\n"
         "jmp .Lf1e07d0_001e0d4a\n"
         /* } scope */
+        ".Lf1e07d0_001e0ddf:\n"
         "calll CG_PlaySoundOnFirstClient\n" /* line 1265 */
         "testb %al, %al\n"
         "je .Lf1e07d0_001e08a3\n"
@@ -1270,6 +1305,7 @@ void CG_ServerCommand(void)
         "movl %eax, (%esp)\n"
         "calll SND_PlayMusicAlias\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0e15:\n"
         "calll CG_PlaySoundOnFirstClient\n" /* line 1270 */
         "testb %al, %al\n"
         "je .Lf1e07d0_001e08a3\n"
@@ -1280,6 +1316,7 @@ void CG_ServerCommand(void)
         "movl %eax, (%esp)\n"
         "calll SND_StopMusic\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0e43:\n"
         "calll CG_PlaySoundOnFirstClient\n" /* line 1275 */
         "testb %al, %al\n"
         "je .Lf1e07d0_001e08a3\n"
@@ -1298,6 +1335,7 @@ void CG_ServerCommand(void)
         "movss %xmm0, (%esp)\n"
         "calll SND_FadeAllSounds\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0e9b:\n"
         "calll Cmd_Argc\n" /* line 1026 */
         "cmpl $6, %eax\n" /* line 1027 */
         "je .Lf1e07d0_001e1167\n"
@@ -1305,6 +1343,7 @@ void CG_ServerCommand(void)
         "movl $str_002b8298, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0ebe:\n"
         "calll Cmd_Argc\n" /* line 1127 */
         "cmpl $2, %eax\n" /* line 1128 */
         "je .Lf1e07d0_001e1274\n"
@@ -1312,6 +1351,7 @@ void CG_ServerCommand(void)
         "movl $str_002b82d0, (%esp)\n"
         "calll Com_Printf\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0ee1:\n"
         "movl $str_002adc84, (%esp)\n" /* line 808 */
         "calll CL_ClosePopup\n"
         "movl $str_002adc98, (%esp)\n" /* line 809 */
@@ -1332,8 +1372,10 @@ void CG_ServerCommand(void)
         "movl (%edx), %eax\n" /* line 818 */
         "movb $0, 0x4ec(%eax)\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0f4c:\n"
         "calll CG_OpenScriptMenu\n" /* line 1300 */
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0f56:\n"
         "movl $1, (%esp)\n" /* line 1312 */
         "calll CG_Argv\n"
         "movl $0x96, 8(%esp)\n"
@@ -1347,6 +1389,7 @@ void CG_ServerCommand(void)
         "movl %ebx, %eax\n"
         "calll CG_SetClientDvarFromServer\n"
         "jmp .Lf1e07d0_001e08a3\n"
+        ".Lf1e07d0_001e0f96:\n"
         "movl $1, (%esp)\n" /* line 1261 */
         "calll CG_MapRestart\n"
         "jmp .Lf1e07d0_001e08a3\n"
@@ -1696,6 +1739,129 @@ void CG_ServerCommand(void)
         ".Lf1e07d0_001e152f:\n"
         "calll CG_ParseFog\n" /* line 500 */
         "jmp .Lf1e07d0_001e08a3\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_1e07d0_0:\n"
+        ".long .Lf1e07d0_001e08a3\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e0a6d\n"
+        ".long .Lf1e07d0_001e0957\n"
+        ".long .Lf1e07d0_001e0994\n"
+        ".long .Lf1e07d0_001e099e\n"
+        ".long .Lf1e07d0_001e09a8\n"
+        ".long .Lf1e07d0_001e09b2\n"
+        ".long .Lf1e07d0_001e09d9\n"
+        ".long .Lf1e07d0_001e0a00\n"
+        ".long .Lf1e07d0_001e0a21\n"
+        ".long .Lf1e07d0_001e0a42\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e0a4c\n"
+        ".long .Lf1e07d0_001e0b28\n"
+        ".long .Lf1e07d0_001e0c69\n"
+        ".long .Lf1e07d0_001e0a7e\n"
+        ".long .Lf1e07d0_001e0924\n"
+        ".long .Lf1e07d0_001e0924\n"
+        ".long .Lf1e07d0_001e0c9c\n"
+        ".long .Lf1e07d0_001e0ccf\n"
+        ".long .Lf1e07d0_001e0d70\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e08ae\n"
+        ".long .Lf1e07d0_001e0f96\n"
+        ".long .Lf1e07d0_001e0ddf\n"
+        ".long .Lf1e07d0_001e0e15\n"
+        ".long .Lf1e07d0_001e0e43\n"
+        ".long .Lf1e07d0_001e0e9b\n"
+        ".long .Lf1e07d0_001e0ebe\n"
+        ".long .Lf1e07d0_001e0f4c\n"
+        ".long .Lf1e07d0_001e0ee1\n"
+        ".long .Lf1e07d0_001e0f56\n"
+        ".text\n"
     );
 }
 

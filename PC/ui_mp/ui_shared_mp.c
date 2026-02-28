@@ -4401,7 +4401,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "cmpl $7, %eax\n" /* line 240 */
         "ja .Lf166dd2_00166ef2\n"
         ".Lf166dd2_00166e83:\n"
-        "jmpl *boxVerts+368(, %eax, 4)\n"
+        "jmpl *.Ljt_166dd2_0(, %eax, 4)\n"
         ".Lf166dd2_00166e8a:\n"
         "cmpl $4, 0xd0(%ebx)\n" /* line 303 | w */
         "je .Lf166dd2_00166fb2\n"
@@ -4504,6 +4504,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movl $0x3f800000, -0xc(%ebp)\n" /* line 317 */
         "leal -0x18(%ebp), %eax\n" /* line 318 | color */
         "jmp .Lf166dd2_00166e9d\n"
+        ".Lf166dd2_00166fe8:\n"
         "movl 0x20c(%ebx), %eax\n" /* line 291 | w */
         "testl %eax, %eax\n"
         "je .Lf166dd2_00166ef2\n"
@@ -4514,6 +4515,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movl %eax, 0x1c(%esp)\n" /* line 294 */
         "movl %edx, 0x18(%esp)\n"
         "jmp .Lf166dd2_001670f3\n"
+        ".Lf166dd2_00167012:\n"
         "testb $1, 0xea(%ebx)\n" /* line 268 | w */
         "jne .Lf166dd2_0016720e\n"
         "xorl %edx, %edx\n"
@@ -4535,6 +4537,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movss %xmm0, (%esp)\n"
         "calll UI_DrawLoadBar\n"
         "jmp .Lf166dd2_00166ef2\n"
+        ".Lf166dd2_00167072:\n"
         "movl 0x20c(%ebx), %eax\n" /* line 244 | w */
         "testl %eax, %eax\n"
         "je .Lf166dd2_001672c1\n"
@@ -4582,6 +4585,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movss %xmm0, (%esp)\n"
         "calll UI_DrawHandlePic\n"
         "jmp .Lf166dd2_00166ef2\n"
+        ".Lf166dd2_00167136:\n"
         "testb $1, 0xea(%ebx)\n" /* line 263 | w */
         "jne .Lf166dd2_00167203\n"
         "xorl %edx, %edx\n"
@@ -4590,6 +4594,7 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movl %eax, 0x1c(%esp)\n"
         "movl %edx, 0x18(%esp)\n"
         "jmp .Lf166dd2_001670f3\n"
+        ".Lf166dd2_00167155:\n"
         "cmpl $-1, 0xcc(%ebx)\n" /* line 273 | w */
         "je .Lf166dd2_0016723b\n"
         "movl 0xcc(%ebx), %eax\n" /* w */
@@ -4695,6 +4700,18 @@ void Window_Paint(displayContextDef_t *dc, float (*w)[4][32], float fadeAmount, 
         "movss %xmm0, (%esp)\n"
         "calll UI_FillRect\n"
         "jmp .Lf166dd2_00166ef2\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_166dd2_0:\n"
+        ".long .Lf166dd2_00166ef2\n"
+        ".long .Lf166dd2_00167072\n"
+        ".long .Lf166dd2_00166ef2\n"
+        ".long .Lf166dd2_00167136\n"
+        ".long .Lf166dd2_00166ef2\n"
+        ".long .Lf166dd2_00167155\n"
+        ".long .Lf166dd2_00166fe8\n"
+        ".long .Lf166dd2_00167012\n"
+        ".text\n"
     );
 }
 
@@ -10584,7 +10601,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "popl %ebp\n"
         "retl\n"
         ".Lf16c07e_0016c0d6:\n"
-        "jmpl *boxVerts+400(, %eax, 4)\n" /* line 3087 */
+        "jmpl *.Ljt_16c07e_0(, %eax, 4)\n" /* line 3087 */
         ".Lf16c07e_0016c0dd:\n"
         "testl %edi, %edi\n" /* line 3080 | down */
         "je .Lf16c07e_0016c0c9\n"
@@ -10676,6 +10693,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "movl %esi, itemCapture\n" /* line 3013 */
         "jmp .Lf16c07e_0016c0bb\n"
         /* } scope */
+        ".Lf16c07e_0016c25e:\n"
         "movl %edi, 0xc(%esp)\n" /* line 3114 | down */
         "movl 0x10(%ebp), %ecx\n" /* key */
         "movl %ecx, 8(%esp)\n"
@@ -10684,6 +10702,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "movl %eax, (%esp)\n"
         "calll Item_Bind_HandleKey\n"
         "jmp .Lf16c07e_0016c0cb\n"
+        ".Lf16c07e_0016c27d:\n"
         "movl 0x10(%ebp), %ecx\n" /* line 3106 | key */
         "movl %ecx, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* item */
@@ -10691,6 +10710,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "movl %eax, (%esp)\n"
         "calll Item_YesNo_HandleKey\n"
         "jmp .Lf16c07e_0016c0cb\n"
+        ".Lf16c07e_0016c298:\n"
         "movl %edi, 0xc(%esp)\n" /* line 3116 | down */
         "movl 0x10(%ebp), %ecx\n" /* key */
         "movl %ecx, 8(%esp)\n"
@@ -10699,6 +10719,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "movl %eax, (%esp)\n"
         "calll Item_Slider_HandleKey\n"
         "jmp .Lf16c07e_0016c0cb\n"
+        ".Lf16c07e_0016c2b7:\n"
         "movl 0x10(%ebp), %eax\n" /* line 1924 | key */
         "movl %eax, 0xc(%esp)\n"
         "leal 0x2d8(%esi), %eax\n"
@@ -10709,6 +10730,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "movl %eax, (%esp)\n"
         "calll UI_OwnerDrawHandleKey\n"
         "jmp .Lf16c07e_0016c0cb\n"
+        ".Lf16c07e_0016c2e5:\n"
         "movl $0, 0x10(%esp)\n" /* line 3104 */
         "movl %edi, 0xc(%esp)\n" /* down */
         "movl 0x10(%ebp), %ecx\n" /* key */
@@ -10719,6 +10741,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "calll Item_ListBox_HandleKey\n"
         "jmp .Lf16c07e_0016c0cb\n"
         /* { scope 1: y, x, enumString, string */
+        ".Lf16c07e_0016c30c:\n"
         "movl 0xe8(%esi), %eax\n" /* line 143 */
         "testb $4, %al\n" /* line 155 */
         "je .Lf16c07e_0016c0c9\n"
@@ -10760,6 +10783,7 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "jmp .Lf16c07e_0016c4aa\n"
         /* } scope */
         /* { scope 1: y, x, enumString, string */
+        ".Lf16c07e_0016c386:\n"
         "movl %esi, (%esp)\n" /* line 2478 */
         "calll Item_GetMultiDef\n"
         "movl %eax, -0x54(%ebp)\n" /* multiPtr */
@@ -11151,6 +11175,19 @@ qboolean Item_HandleKey(displayContextDef_t *dc, itemDef_t *item, int key, qbool
         "cmpl %ecx, 0x180(%ebx)\n"
         "jg .Lf16c07e_0016c8c9\n"
         "jmp .Lf16c07e_0016c3fb\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_16c07e_0:\n"
+        ".long .Lf16c07e_0016c2e5\n"
+        ".long .Lf16c07e_0016c0c9\n"
+        ".long .Lf16c07e_0016c2b7\n"
+        ".long .Lf16c07e_0016c0c9\n"
+        ".long .Lf16c07e_0016c298\n"
+        ".long .Lf16c07e_0016c27d\n"
+        ".long .Lf16c07e_0016c386\n"
+        ".long .Lf16c07e_0016c30c\n"
+        ".long .Lf16c07e_0016c25e\n"
+        ".text\n"
     );
 }
 
@@ -13608,7 +13645,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "cmpl $0x12, 0x270(%ecx)\n" /* line 5332 */
         "ja .Lf16e76c_0016e833\n"
         "movl 0x270(%ecx), %eax\n"
-        "jmpl *boxVerts+436(, %eax, 4)\n"
+        "jmpl *.Ljt_16e76c_0(, %eax, 4)\n"
         /* { scope 2: enumDvar, enumString */
         ".Lf16e76c_0016e98b:\n"
         "addl 0x1b8(%ebx), %eax\n" /* line 5156 | done */
@@ -13909,30 +13946,35 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %edx, (%esp)\n"
         "calll Menu_HandleKey\n"
         "jmp .Lf16e76c_0016e833\n"
+        ".Lf16e76c_0016ee33:\n"
         "movl 0xc(%ebp), %ebx\n" /* line 5350 | item, done */
         "movl %ebx, 4(%esp)\n" /* done */
         "movl 8(%ebp), %eax\n" /* dc */
         "movl %eax, (%esp)\n"
         "calll Item_TextField_Paint\n"
         "jmp .Lf16e76c_0016e833\n"
+        ".Lf16e76c_0016ee4a:\n"
         "movl 0xc(%ebp), %ebx\n" /* line 5367 | item, done */
         "movl %ebx, 4(%esp)\n" /* done */
         "movl 8(%ebp), %eax\n" /* dc */
         "movl %eax, (%esp)\n"
         "calll Item_Bind_Paint\n"
         "jmp .Lf16e76c_0016e833\n"
+        ".Lf16e76c_0016ee61:\n"
         "movl 0xc(%ebp), %ebx\n" /* line 5335 | item, done */
         "movl %ebx, 4(%esp)\n" /* done */
         "movl 8(%ebp), %eax\n" /* dc */
         "movl %eax, (%esp)\n"
         "calll Item_OwnerDraw_Paint\n"
         "jmp .Lf16e76c_0016e833\n"
+        ".Lf16e76c_0016ee78:\n"
         "movl 0xc(%ebp), %edx\n" /* line 5355 | item */
         "movl %edx, 4(%esp)\n"
         "movl 8(%ebp), %ecx\n" /* dc */
         "movl %ecx, (%esp)\n"
         "calll Item_ListBox_Paint\n"
         "jmp .Lf16e76c_0016e833\n"
+        ".Lf16e76c_0016ee8f:\n"
         "movl 0xc(%ebp), %edx\n" /* line 5339 | item */
         "movl %edx, 4(%esp)\n"
         "movl 8(%ebp), %ecx\n" /* dc */
@@ -13940,6 +13982,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll Item_Text_Paint\n"
         "jmp .Lf16e76c_0016e833\n"
         /* { scope 2: enumDvar, enumString */
+        ".Lf16e76c_0016eea6:\n"
         "movl 0xc(%ebp), %ecx\n" /* line 2436 | item */
         "movl 0x2ec(%ecx), %eax\n"
         "testl %eax, %eax\n"
@@ -13957,6 +14000,7 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "calll Item_List_Paint\n"
         "jmp .Lf16e76c_0016e833\n"
         /* { scope 2: enumDvar, enumString */
+        ".Lf16e76c_0016eee0:\n"
         "movl 0xc(%ebp), %edx\n" /* line 2378 | item */
         "movl %edx, (%esp)\n"
         "calll Item_GetMultiDef\n"
@@ -13980,12 +14024,14 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl $str_002157b8, %ecx\n" /* line 2443 */
         "jmp .Lf16e76c_0016eed0\n"
         /* } scope */
+        ".Lf16e76c_0016ef28:\n"
         "movl 0xc(%ebp), %ebx\n" /* line 5358 | item, done */
         "movl %ebx, 4(%esp)\n" /* done */
         "movl 8(%ebp), %eax\n" /* dc */
         "movl %eax, (%esp)\n"
         "calll Item_YesNo_Paint\n"
         "jmp .Lf16e76c_0016e833\n"
+        ".Lf16e76c_0016ef3f:\n"
         "movl 0xc(%ebp), %edx\n" /* line 5370 | item */
         "movl %edx, 4(%esp)\n"
         "movl 8(%ebp), %ecx\n" /* dc */
@@ -14130,6 +14176,29 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "cmpl %ecx, 0x14(%edx)\n"
         "jg .Lf16e76c_0016f0a1\n"
         "jmp .Lf16e76c_0016f01f\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_16e76c_0:\n"
+        ".long .Lf16e76c_0016ee8f\n"
+        ".long .Lf16e76c_0016ee8f\n"
+        ".long .Lf16e76c_0016e833\n"
+        ".long .Lf16e76c_0016e833\n"
+        ".long .Lf16e76c_0016ee33\n"
+        ".long .Lf16e76c_0016e833\n"
+        ".long .Lf16e76c_0016ee78\n"
+        ".long .Lf16e76c_0016e833\n"
+        ".long .Lf16e76c_0016ee61\n"
+        ".long .Lf16e76c_0016ee33\n"
+        ".long .Lf16e76c_0016ef3f\n"
+        ".long .Lf16e76c_0016ef28\n"
+        ".long .Lf16e76c_0016eee0\n"
+        ".long .Lf16e76c_0016eea6\n"
+        ".long .Lf16e76c_0016ee4a\n"
+        ".long .Lf16e76c_0016e833\n"
+        ".long .Lf16e76c_0016ee33\n"
+        ".long .Lf16e76c_0016ee33\n"
+        ".long .Lf16e76c_0016ee33\n"
+        ".text\n"
     );
 }
 

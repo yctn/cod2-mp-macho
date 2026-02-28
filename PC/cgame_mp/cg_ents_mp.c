@@ -2321,8 +2321,9 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "movl 0xf4(%esi), %eax\n" /* line 1366 | cent */
         "cmpl $9, %eax\n"
         "ja .Lf16358c_00163692\n"
-        "jmpl *boxVerts+304(, %eax, 4)\n"
+        "jmpl *.Ljt_16358c_0(, %eax, 4)\n"
         /* { scope 1 */
+        ".Lf16358c_001635b9:\n"
         "movl imp_cg, %edi\n" /* line 950 | fx */
         "movl (%edi), %ebx\n" /* fx, s1 */
         "movl 0x25bb0(%ebx), %eax\n" /* s1 */
@@ -2386,10 +2387,12 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf16358c_001636b5:\n"
         "movl %esi, (%esp)\n" /* line 1377 | cent */
         "calll CG_General\n"
         "jmp .Lf16358c_00163687\n"
         /* { scope 1 */
+        ".Lf16358c_001636bf:\n"
         "leal 0xf0(%esi), %ebx\n" /* line 353 | s1 */
         "testb $0x20, 8(%ebx)\n" /* line 356 | s1 */
         "jne .Lf16358c_00163687\n"
@@ -2446,21 +2449,27 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "jmp .Lf16358c_00163687\n"
         /* } scope */
         /* } scope */
+        ".Lf16358c_001637b4:\n"
         "movl %esi, (%esp)\n" /* line 1395 | cent */
         "calll CG_SoundBlend\n"
         "jmp .Lf16358c_00163687\n"
+        ".Lf16358c_001637c1:\n"
         "movl %esi, (%esp)\n" /* line 1392 | cent */
         "calll CG_ScriptMover\n"
         "jmp .Lf16358c_00163687\n"
+        ".Lf16358c_001637ce:\n"
         "movl %esi, (%esp)\n" /* line 1389 | cent */
         "calll CG_Missile\n"
         "jmp .Lf16358c_00163687\n"
+        ".Lf16358c_001637db:\n"
         "movl %esi, (%esp)\n" /* line 1386 | cent */
         "calll CG_Item\n"
         "jmp .Lf16358c_00163687\n"
+        ".Lf16358c_001637e8:\n"
         "movl %esi, (%esp)\n" /* line 1383 | cent */
         "calll CG_Corpse\n"
         "jmp .Lf16358c_00163687\n"
+        ".Lf16358c_001637f5:\n"
         "movl %esi, (%esp)\n" /* line 1380 | cent */
         "calll CG_Player\n"
         "jmp .Lf16358c_00163687\n"
@@ -2552,6 +2561,20 @@ long unsigned int CG_ProcessEntity(centity_t *cent)
         "movl %eax, (%esp)\n" /* line 1454 */
         "calll R_UpdateXModelBoundsDelayed\n"
         "jmp .Lf16358c_00163687\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_16358c_0:\n"
+        ".long .Lf16358c_001636b5\n"
+        ".long .Lf16358c_001637f5\n"
+        ".long .Lf16358c_001637e8\n"
+        ".long .Lf16358c_001637db\n"
+        ".long .Lf16358c_001637ce\n"
+        ".long .Lf16358c_00163687\n"
+        ".long .Lf16358c_001637c1\n"
+        ".long .Lf16358c_001637b4\n"
+        ".long .Lf16358c_001635b9\n"
+        ".long .Lf16358c_001636bf\n"
+        ".text\n"
     );
 }
 

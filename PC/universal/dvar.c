@@ -286,17 +286,19 @@ Bool Dvar_ValuesEqual(DvarValue val0, DvarValue val1)
         "movzbl %al, %eax\n" /* line 840 | type */
         "cmpl $8, %eax\n" /* type */
         "ja .Lf515e0_000515fb\n"
-        "jmpl *dvarDigitStrings+56(, %eax, 4)\n"
+        "jmpl *.Ljt_515e0_0(, %eax, 4)\n"
         ".Lf515e0_000515fb:\n"
         "xorl %eax, %eax\n" /* type */
         "leave\n" /* line 876 */
         "retl\n"
+        ".Lf515e0_000515ff:\n"
         "movl -0xc(%ebp), %eax\n" /* line 864 */
         "cmpl -0x10(%ebp), %eax\n"
         "sete %al\n"
         "movzbl %al, %eax\n"
         "leave\n" /* line 876 */
         "retl\n"
+        ".Lf515e0_0005160d:\n"
         "movss -0xc(%ebp), %xmm0\n" /* line 849 */
         "ucomiss -0x10(%ebp), %xmm0\n"
         "sete %al\n" /* type */
@@ -305,6 +307,7 @@ Bool Dvar_ValuesEqual(DvarValue val0, DvarValue val1)
         "movzbl %al, %eax\n" /* type */
         "leave\n" /* line 876 */
         "retl\n"
+        ".Lf515e0_00051623:\n"
         "movl -0xc(%ebp), %eax\n" /* line 855 | a */
         "movl -0x10(%ebp), %edx\n" /* b */
         /* { scope 1 */
@@ -331,6 +334,7 @@ Bool Dvar_ValuesEqual(DvarValue val0, DvarValue val1)
         ".Lf515e0_0005165e:\n"
         "leave\n" /* line 876 */
         "retl\n"
+        ".Lf515e0_00051660:\n"
         "movl -0xc(%ebp), %eax\n" /* line 852 | a */
         "movl -0x10(%ebp), %edx\n" /* b */
         /* { scope 1 */
@@ -350,12 +354,14 @@ Bool Dvar_ValuesEqual(DvarValue val0, DvarValue val1)
         "xorl %eax, %eax\n" /* line 561 */
         "jmp .Lf515e0_0005165b\n"
         /* } scope */
+        ".Lf515e0_0005168d:\n"
         "movzbl -0xc(%ebp), %eax\n" /* line 843 | type */
         "cmpb -0x10(%ebp), %al\n" /* type */
         "sete %al\n" /* type */
         "movzbl %al, %eax\n" /* type */
         "leave\n" /* line 876 */
         "retl\n"
+        ".Lf515e0_0005169c:\n"
         "movl -0x10(%ebp), %eax\n" /* line 869 */
         "movl %eax, 4(%esp)\n"
         "movl -0xc(%ebp), %eax\n"
@@ -365,6 +371,7 @@ Bool Dvar_ValuesEqual(DvarValue val0, DvarValue val1)
         "sete %al\n"
         "movzbl %al, %eax\n"
         "jmp .Lf515e0_0005165e\n"
+        ".Lf515e0_000516b8:\n"
         "movl -0xc(%ebp), %eax\n" /* line 849 | type */
         "movl -0x10(%ebp), %edx\n"
         /* { scope 1 */
@@ -383,6 +390,19 @@ Bool Dvar_ValuesEqual(DvarValue val0, DvarValue val1)
         /* } scope */
         "movzbl %al, %eax\n" /* line 869 */
         "jmp .Lf515e0_0005165e\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_515e0_0:\n"
+        ".long .Lf515e0_0005168d\n"
+        ".long .Lf515e0_0005160d\n"
+        ".long .Lf515e0_000516b8\n"
+        ".long .Lf515e0_00051660\n"
+        ".long .Lf515e0_00051623\n"
+        ".long .Lf515e0_000515ff\n"
+        ".long .Lf515e0_000515ff\n"
+        ".long .Lf515e0_0005169c\n"
+        ".long .Lf515e0_000515ff\n"
+        ".text\n"
     );
 }
 
@@ -718,7 +738,7 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "movzbl %al, %eax\n" /* line 447 | type */
         "cmpl $8, %eax\n" /* type */
         "ja .Lf51a2e_00051a4c\n"
-        "jmpl *dvarDigitStrings+92(, %eax, 4)\n"
+        "jmpl *.Ljt_51a2e_0(, %eax, 4)\n"
         ".Lf51a2e_00051a4c:\n"
         "movl $0, -0x1c(%ebp)\n" /* line 488 | value */
         "movl -0x1c(%ebp), %eax\n" /* value, type */
@@ -731,6 +751,7 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf51a2e_00051a5e:\n"
         "movl 8(%ebp), %eax\n" /* line 336 | string */
         "movl %eax, (%esp)\n"
         "calll atoi\n"
@@ -738,15 +759,18 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "setne -0x1c(%ebp)\n" /* value */
         "movl -0x1c(%ebp), %eax\n" /* value, type */
         "jmp .Lf51a2e_00051a56\n"
+        ".Lf51a2e_00051a74:\n"
         "leal -0x1c(%ebp), %edx\n" /* line 482 | value */
         "movl 8(%ebp), %eax\n" /* string, type */
         "calll Dvar_StringToColor\n"
         "movl -0x1c(%ebp), %eax\n" /* value, type */
         "jmp .Lf51a2e_00051a56\n"
+        ".Lf51a2e_00051a84:\n"
         "movl 8(%ebp), %eax\n" /* line 478 | string, type */
         "movl %eax, -0x1c(%ebp)\n" /* type, value */
         "jmp .Lf51a2e_00051a56\n"
         /* { scope 2 */
+        ".Lf51a2e_00051a8c:\n"
         "movl -0x40(%ebp), %edx\n" /* line 402 */
         "movl %edx, -0x2c(%ebp)\n"
         "testl %edx, %edx\n"
@@ -787,11 +811,13 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf51a2e_00051ae6:\n"
         "movl 8(%ebp), %edx\n" /* line 343 | string */
         "movl %edx, (%esp)\n"
         "calll atoi\n"
         "movl %eax, -0x1c(%ebp)\n" /* line 454 | type, value */
         "jmp .Lf51a2e_00051a56\n"
+        ".Lf51a2e_00051af9:\n"
         "movl dvarVectorIndex, %ecx\n" /* line 110 */
         "leal 4(%ecx), %eax\n"
         "cmpl $0xc, %eax\n"
@@ -822,6 +848,7 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "movl %ebx, -0x1c(%ebp)\n" /* line 470 | stringIndex, value */
         "movl %ebx, %eax\n" /* stringIndex, type */
         "jmp .Lf51a2e_00051a56\n"
+        ".Lf51a2e_00051b67:\n"
         "movl dvarVectorIndex, %ecx\n" /* line 110 */
         "leal 3(%ecx), %eax\n"
         "cmpl $0xc, %eax\n"
@@ -849,6 +876,7 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "movl %ebx, -0x1c(%ebp)\n" /* line 466 | stringIndex, value */
         "movl %ebx, %eax\n" /* stringIndex, type */
         "jmp .Lf51a2e_00051a56\n"
+        ".Lf51a2e_00051bcc:\n"
         "movl dvarVectorIndex, %ecx\n" /* line 110 */
         "leal 2(%ecx), %eax\n"
         "cmpl $0xc, %eax\n"
@@ -873,6 +901,7 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "movl %ebx, -0x1c(%ebp)\n" /* line 462 | stringIndex, value */
         "movl %ebx, %eax\n" /* stringIndex, type */
         "jmp .Lf51a2e_00051ade\n"
+        ".Lf51a2e_00051c23:\n"
         "movl 8(%ebp), %eax\n" /* line 350 | string */
         "movl %eax, (%esp)\n"
         "calll atof\n"
@@ -945,6 +974,19 @@ DvarValue Dvar_StringToValue(const DvarLimits domain, const char *string)
         "testl %ebx, %ebx\n" /* line 414 | stringIndex */
         "js .Lf51a2e_00051c7e\n"
         "jmp .Lf51a2e_00051c75\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_51a2e_0:\n"
+        ".long .Lf51a2e_00051a5e\n"
+        ".long .Lf51a2e_00051c23\n"
+        ".long .Lf51a2e_00051bcc\n"
+        ".long .Lf51a2e_00051b67\n"
+        ".long .Lf51a2e_00051af9\n"
+        ".long .Lf51a2e_00051ae6\n"
+        ".long .Lf51a2e_00051a8c\n"
+        ".long .Lf51a2e_00051a84\n"
+        ".long .Lf51a2e_00051a74\n"
+        ".text\n"
     );
 }
 
@@ -2183,7 +2225,8 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
         "movzbl 6(%esi), %eax\n" /* line 587 */
         "cmpl $6, %eax\n"
         "ja .Lf5272c_00052786\n"
-        "jmpl *dvarDigitStrings+128(, %eax, 4)\n"
+        "jmpl *.Ljt_5272c_0(, %eax, 4)\n"
+        ".Lf5272c_00052778:\n"
         "cmpl %edx, %ebx\n" /* line 595 */
         "jl .Lf5272c_000528d3\n"
         "cmpl %ecx, %ebx\n" /* line 597 */
@@ -2202,11 +2245,13 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
         "retl\n"
         /* { scope 1 */
         /* { scope 2 */
+        ".Lf5272c_00052794:\n"
         "testb %bl, %bl\n" /* line 590 */
         "movl %ebx, %eax\n"
         "setne %al\n"
         "movl %eax, %edi\n"
         "jmp .Lf5272c_00052786\n"
+        ".Lf5272c_0005279f:\n"
         "testl %ebx, %ebx\n" /* line 625 */
         "js .Lf5272c_000527a7\n"
         "cmpl %edx, %ebx\n"
@@ -2214,6 +2259,7 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
         ".Lf5272c_000527a7:\n"
         "movl -0x10(%ebp), %edi\n" /* line 627 */
         "jmp .Lf5272c_00052786\n"
+        ".Lf5272c_000527ac:\n"
         "movl %ecx, -0x14(%ebp)\n" /* line 617 */
         "movss -0x14(%ebp), %xmm1\n" /* min */
         "movaps %xmm1, %xmm2\n" /* min, max */
@@ -2242,6 +2288,7 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
         "movss %xmm2, -4(%eax)\n" /* line 565 */
         "jmp .Lf5272c_000527d9\n"
         /* } scope */
+        ".Lf5272c_000527fa:\n"
         "movl %ecx, -0x14(%ebp)\n" /* line 613 */
         "movss -0x14(%ebp), %xmm1\n" /* min */
         "movaps %xmm1, %xmm2\n" /* min, max */
@@ -2270,6 +2317,7 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
         "movss %xmm2, -4(%eax)\n" /* line 565 */
         "jmp .Lf5272c_00052827\n"
         /* } scope */
+        ".Lf5272c_0005284c:\n"
         "movl %ecx, -0x14(%ebp)\n" /* line 609 */
         "movss -0x14(%ebp), %xmm0\n"
         "movaps %xmm0, %xmm2\n" /* max */
@@ -2291,6 +2339,7 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
         "jne .Lf5272c_0005286a\n"
         "jmp .Lf5272c_00052786\n"
         /* } scope */
+        ".Lf5272c_00052889:\n"
         "movl %ebx, -0x14(%ebp)\n" /* line 602 */
         "movss -0x14(%ebp), %xmm1\n"
         "movaps %xmm1, %xmm0\n"
@@ -2322,6 +2371,17 @@ void Dvar_UpdateEnumDomain(const dvar_t *dvar, const char * *stringTable)
         ".Lf5272c_000528d3:\n"
         "movl %edx, %edi\n" /* line 596 */
         "jmp .Lf5272c_00052786\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_5272c_0:\n"
+        ".long .Lf5272c_00052794\n"
+        ".long .Lf5272c_00052889\n"
+        ".long .Lf5272c_0005284c\n"
+        ".long .Lf5272c_000527fa\n"
+        ".long .Lf5272c_000527ac\n"
+        ".long .Lf5272c_00052778\n"
+        ".long .Lf5272c_0005279f\n"
+        ".text\n"
     );
 }
 
@@ -2352,7 +2412,7 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "movzbl %al, %eax\n" /* line 729 */
         "cmpl $8, %eax\n"
         "ja .Lf528da_00052912\n"
-        "jmpl *dvarDigitStrings+156(, %eax, 4)\n"
+        "jmpl *.Ljt_528da_0(, %eax, 4)\n"
         ".Lf528da_00052912:\n"
         "movb $0, (%edi)\n" /* line 809 | outBuffer */
         ".Lf528da_00052915:\n"
@@ -2367,21 +2427,25 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf528da_00052926:\n"
         "movl $str_0021957c, 8(%esp)\n" /* line 732 */
         "movl %edx, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* outBuffer */
         "calll snprintf\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_0005293c:\n"
         "movl $str_0021979c, 8(%esp)\n" /* line 803 */
         "movl %edx, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* outBuffer */
         "calll snprintf\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_00052952:\n"
         "movl $str_0021975c, 8(%esp)\n" /* line 782 */
         "movl %edx, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* outBuffer */
         "calll snprintf\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_00052968:\n"
         "movl $str_00219770, 8(%esp)\n" /* line 786 */
         "movl -0x1c(%ebp), %eax\n" /* outBufferEnd */
         "subl %edi, %eax\n" /* outBuffer */
@@ -2416,6 +2480,7 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "cmpl %ebx, -0x20(%ebp)\n" /* stringIndex */
         "jne .Lf528da_0005299b\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_000529d6:\n"
         "cmpl $0x80000000, %ebx\n" /* line 736 | stringIndex */
         "je .Lf528da_00052cbb\n"
         "cmpl $0x7fffffff, %esi\n" /* line 738 */
@@ -2427,6 +2492,7 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "movl %edi, (%esp)\n" /* outBuffer */
         "calll snprintf\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_00052a0f:\n"
         "movl %ebx, -0x2c(%ebp)\n" /* line 699 */
         "movss -0x2c(%ebp), %xmm2\n"
         "movaps %xmm2, %xmm0\n"
@@ -2448,6 +2514,7 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "movl %edi, (%esp)\n"
         "calll snprintf\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_00052a72:\n"
         "movl %ebx, -0x2c(%ebp)\n" /* line 699 */
         "movss -0x2c(%ebp), %xmm2\n"
         "movaps %xmm2, %xmm0\n"
@@ -2469,6 +2536,7 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "movl %edi, (%esp)\n"
         "calll snprintf\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_00052ad5:\n"
         "movl %ebx, -0x2c(%ebp)\n" /* line 699 */
         "movss -0x2c(%ebp), %xmm2\n"
         "movaps %xmm2, %xmm0\n"
@@ -2490,6 +2558,7 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "movl %edi, (%esp)\n"
         "calll snprintf\n"
         "jmp .Lf528da_00052915\n"
+        ".Lf528da_00052b38:\n"
         "movl %ebx, -0x2c(%ebp)\n" /* line 753 | stringIndex */
         "movss -0x2c(%ebp), %xmm1\n"
         "movaps %xmm1, %xmm0\n"
@@ -2687,6 +2756,19 @@ const char * Dvar_DomainToString_Internal(char *outBuffer, int outBufferLen, int
         "cmpl -0x20(%ebp), %ebx\n" /* stringIndex */
         "jne .Lf528da_00052e3c\n"
         "jmp .Lf528da_00052915\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_528da_0:\n"
+        ".long .Lf528da_00052926\n"
+        ".long .Lf528da_00052b38\n"
+        ".long .Lf528da_00052ad5\n"
+        ".long .Lf528da_00052a72\n"
+        ".long .Lf528da_00052a0f\n"
+        ".long .Lf528da_000529d6\n"
+        ".long .Lf528da_00052968\n"
+        ".long .Lf528da_00052952\n"
+        ".long .Lf528da_0005293c\n"
+        ".text\n"
     );
 }
 
@@ -3422,7 +3504,7 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "jmp .Lf5332a_000533a9\n"
         /* { scope 2 */
         ".Lf5332a_00053596:\n"
-        "jmpl *dvarDigitStrings+192(, %eax, 4)\n" /* line 587 */
+        "jmpl *.Ljt_5332a_0(, %eax, 4)\n" /* line 587 */
         /* } scope */
         ".Lf5332a_0005359d:\n"
         "cmpb $0x2f, %dl\n" /* line 181 */
@@ -3524,6 +3606,7 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "retl\n"
         /* { scope 1 */
         /* { scope 2 */
+        ".Lf5332a_000536b3:\n"
         "movss 0x14(%ebp), %xmm2\n" /* line 613 | max */
         "movss 0x10(%ebp), %xmm1\n" /* domain, min */
         "movl $1, %ecx\n"
@@ -3544,6 +3627,7 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "movl %edx, %ebx\n" /* line 1468 | value, castValue */
         "jmp .Lf5332a_00053373\n"
         /* { scope 2 */
+        ".Lf5332a_000536ea:\n"
         "movss 0x14(%ebp), %xmm2\n" /* line 617 | max */
         "movss 0x10(%ebp), %xmm1\n" /* domain, min */
         "movl $1, %ecx\n"
@@ -3564,6 +3648,7 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "movl %edx, %ebx\n" /* line 1468 | value, castValue */
         "jmp .Lf5332a_00053373\n"
         /* { scope 2 */
+        ".Lf5332a_00053721:\n"
         "movl %ebx, -0x2c(%ebp)\n" /* line 602 */
         "movss -0x2c(%ebp), %xmm1\n"
         "movaps %xmm1, %xmm0\n"
@@ -3575,6 +3660,7 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "movl %edx, %ebx\n" /* line 1468 | value, castValue */
         "jmp .Lf5332a_00053373\n"
         /* { scope 2 */
+        ".Lf5332a_00053746:\n"
         "cmpl 0x10(%ebp), %ebx\n" /* line 595 | domain */
         "jge .Lf5332a_000537fd\n"
         "movl 0x10(%ebp), %edx\n" /* line 596 | domain */
@@ -3582,12 +3668,14 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "movl %edx, %ebx\n" /* line 1468 | value, castValue */
         "jmp .Lf5332a_00053373\n"
         /* { scope 2 */
+        ".Lf5332a_00053759:\n"
         "testb %bl, %bl\n" /* line 590 */
         "setne %dl\n"
         /* } scope */
         "movl %edx, %ebx\n" /* line 1468 | value, castValue */
         "jmp .Lf5332a_00053373\n"
         /* { scope 2 */
+        ".Lf5332a_00053765:\n"
         "testl %ebx, %ebx\n" /* line 625 */
         "js .Lf5332a_00053772\n"
         "cmpl 0x10(%ebp), %ebx\n" /* domain */
@@ -3598,6 +3686,7 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "movl %edx, %ebx\n" /* line 1468 | value, castValue */
         "jmp .Lf5332a_00053373\n"
         /* { scope 2 */
+        ".Lf5332a_0005377c:\n"
         "movss 0x14(%ebp), %xmm2\n" /* line 609 | max */
         "movss 0x10(%ebp), %xmm1\n" /* domain, min */
         "movl $1, %ecx\n"
@@ -3704,6 +3793,17 @@ void Dvar_MakeExplicitType(int flags, DvarValue resetValue, DvarLimits domain)
         "movl dvarOnOffStrings, %eax\n" /* line 168 */
         "movl %eax, 8(%esi)\n" /* line 220 */
         "jmp .Lf5332a_00053427\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_5332a_0:\n"
+        ".long .Lf5332a_00053759\n"
+        ".long .Lf5332a_00053721\n"
+        ".long .Lf5332a_0005377c\n"
+        ".long .Lf5332a_000536b3\n"
+        ".long .Lf5332a_000536ea\n"
+        ".long .Lf5332a_00053746\n"
+        ".long .Lf5332a_00053765\n"
+        ".text\n"
     );
 }
 

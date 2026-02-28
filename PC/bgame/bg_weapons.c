@@ -4413,7 +4413,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "ja .Lf7d332_0007dbe9\n"
         "movl 0xd8(%edi), %edx\n" /* ps */
         "movl %edx, -0x5c(%ebp)\n" /* reloadRequested */
-        "jmpl *CorrectSolidDeltas+784(, %edx, 4)\n"
+        "jmpl *.Ljt_7d332_0(, %edx, 4)\n"
         /* { scope 2: weapCount */
         ".Lf7d332_0007db2a:\n"
         "testl $0x10, %esi\n" /* line 790 */
@@ -4441,6 +4441,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl 0xd0(%ebx), %eax\n" /* line 792 */
         "jmp .Lf7d332_0007d3b3\n"
         /* } scope */
+        ".Lf7d332_0007db83:\n"
         "andl $0xfffff7ef, %ebx\n" /* line 3305 | weapDef */
         "movl %ebx, 0xc(%edi)\n" /* weapDef, iWeapon */
         "movl -0x5c(%ebp), %eax\n" /* line 3307 | reloadRequested */
@@ -4484,6 +4485,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl $0, 0xd8(%eax)\n" /* line 2899 */
         "jmp .Lf7d332_0007d361\n"
         /* { scope 2: weapCount */
+        ".Lf7d332_0007dc2d:\n"
         "movl -0x54(%ebp), %eax\n" /* line 3383 | pm */
         "movl (%eax), %ebx\n" /* weapDef */
         "testl $0x30000, 0x24(%eax)\n" /* line 3388 */
@@ -4546,6 +4548,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         /* { scope 2: weapCount */
         "jmp PM_AddEvent\n" /* line 2645 */
         /* } scope */
+        ".Lf7d332_0007dd2a:\n"
         "movl 0xd4(%edi), %eax\n" /* line 3421 | iWeapon */
         "testl %eax, %eax\n"
         "jne .Lf7d332_0007ecc9\n"
@@ -4557,6 +4560,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl %ebx, 0xc(%edi)\n" /* ps, iWeapon */
         "jmp .Lf7d332_0007d361\n"
         /* { scope 2: weapCount */
+        ".Lf7d332_0007dd5e:\n"
         "movl 0xd4(%edi), %eax\n" /* line 521 */
         "movl bg_weaponDefs(, %eax, 4), %eax\n"
         "movl $0x12, 0xd8(%edi)\n" /* line 3608 | iWeapon */
@@ -4573,6 +4577,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "jmp .Lf7d332_0007d361\n"
         /* } scope */
         /* { scope 2: weapCount */
+        ".Lf7d332_0007ddab:\n"
         "movl 0xd4(%edi), %eax\n" /* line 521 */
         "movl bg_weaponDefs(, %eax, 4), %eax\n"
         "movl 0x214(%eax), %edx\n" /* line 3160 */
@@ -4599,6 +4604,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         /* { scope 2: weapCount */
         "jmp PM_SetProneMovementOverride\n" /* line 2248 */
         /* } scope */
+        ".Lf7d332_0007ddf5:\n"
         "movl 0x5d0(%edi), %eax\n" /* line 499 */
         "testl $0xfffffdff, %eax\n"
         "je .Lf7d332_0007de16\n"
@@ -4611,6 +4617,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl $0, 0xd8(%edi)\n" /* line 3202 | iWeapon */
         "jmp .Lf7d332_0007d361\n"
         /* { scope 2: weapCount */
+        ".Lf7d332_0007de25:\n"
         "movl 0xd0(%edi), %eax\n" /* line 521 */
         "movl bg_weaponDefs(, %eax, 4), %eax\n"
         "movl $0xd, 0xd8(%edi)\n" /* line 3347 | iWeapon */
@@ -4634,6 +4641,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "jmp .Lf7d332_0007dde6\n"
         /* } scope */
         /* { scope 2: weapCount */
+        ".Lf7d332_0007de92:\n"
         "movl 0xd0(%edi), %eax\n" /* line 521 */
         "movl bg_weaponDefs(, %eax, 4), %eax\n"
         "movl $0xe, 0xd8(%edi)\n" /* line 3368 | iWeapon */
@@ -4646,6 +4654,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "jmp .Lf7d332_0007d361\n"
         /* } scope */
         /* { scope 2: weapCount */
+        ".Lf7d332_0007decb:\n"
         "movl bg_iNumWeapons, %esi\n" /* line 771 */
         "testl %esi, %esi\n"
         "jle .Lf7d332_0007eb8b\n"
@@ -4682,10 +4691,12 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "jle .Lf7d332_0007dbbd\n"
         "jmp .Lf7d332_0007d361\n"
         /* } scope */
+        ".Lf7d332_0007df57:\n"
         "movl $0x14, 0xd8(%edi)\n" /* line 3637 | iWeapon */
         "movl $0, 0x34(%edi)\n" /* line 3638 | iWeapon */
         "movl $0, 0x38(%edi)\n" /* line 3639 | iWeapon */
         "jmp .Lf7d332_0007d361\n"
+        ".Lf7d332_0007df74:\n"
         "movl -0x54(%ebp), %edx\n" /* line 3668 | pm */
         "movl (%edx), %ebx\n" /* weapDef */
         "movl $0x16, 0xd8(%ebx)\n" /* line 3671 | weapDef */
@@ -4701,6 +4712,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl $1, 0x38(%ebx)\n" /* line 3678 | weapDef */
         "jmp .Lf7d332_0007d361\n"
         /* { scope 2: weapCount */
+        ".Lf7d332_0007dfba:\n"
         "movl -0x54(%ebp), %eax\n" /* line 2198 | pm */
         "movl (%eax), %esi\n" /* weapDef */
         "movl %esi, (%esp)\n" /* line 2205 | weapDef */
@@ -4758,6 +4770,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "jmp .Lf7d332_0007dde9\n"
         /* } scope */
         /* { scope 2: weapCount */
+        ".Lf7d332_0007e07e:\n"
         "movl 0xd4(%edi), %esi\n" /* line 521 */
         "movl bg_weaponDefs(, %esi, 4), %ebx\n"
         "movl -0x50(%ebp), %eax\n" /* line 2478 | delayedAction */
@@ -4806,6 +4819,7 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "jmp .Lf7d332_0007dd1e\n"
         /* } scope */
         /* { scope 2: weapCount */
+        ".Lf7d332_0007e12c:\n"
         "movl 0xd4(%edi), %esi\n" /* line 521 */
         "movl bg_weaponDefs(, %esi, 4), %ebx\n"
         "movl -0x50(%ebp), %eax\n" /* line 2437 | delayedAction */
@@ -6276,6 +6290,33 @@ void PM_Weapon(pmove_t *pm, pml_t *pml)
         "movl $1, 0x38(%ebx)\n" /* line 3678 | weapDef */
         "movl (%eax), %esi\n" /* weapDef */
         "jmp .Lf7d332_0007d6f9\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_7d332_0:\n"
+        ".long .Lf7d332_0007dbe9\n"
+        ".long .Lf7d332_0007dba9\n"
+        ".long .Lf7d332_0007dfba\n"
+        ".long .Lf7d332_0007dbe9\n"
+        ".long .Lf7d332_0007dbe9\n"
+        ".long .Lf7d332_0007e07e\n"
+        ".long .Lf7d332_0007e07e\n"
+        ".long .Lf7d332_0007e12c\n"
+        ".long .Lf7d332_0007e12c\n"
+        ".long .Lf7d332_0007dba9\n"
+        ".long .Lf7d332_0007ddab\n"
+        ".long .Lf7d332_0007ddf5\n"
+        ".long .Lf7d332_0007de25\n"
+        ".long .Lf7d332_0007de92\n"
+        ".long .Lf7d332_0007dc2d\n"
+        ".long .Lf7d332_0007dd2a\n"
+        ".long .Lf7d332_0007db83\n"
+        ".long .Lf7d332_0007dd5e\n"
+        ".long .Lf7d332_0007decb\n"
+        ".long .Lf7d332_0007df57\n"
+        ".long .Lf7d332_0007d361\n"
+        ".long .Lf7d332_0007df74\n"
+        ".long .Lf7d332_0007db83\n"
+        ".text\n"
     );
 }
 

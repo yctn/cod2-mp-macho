@@ -1677,7 +1677,8 @@ void RB_TessEntity(const GfxEntity *re)
         "subl $4, %eax\n"
         "cmpl $5, %eax\n"
         "ja .Lfffc70_000ffe08\n"
-        "jmpl *faceAxis+176(, %eax, 4)\n"
+        "jmpl *.Ljt_ffc70_0(, %eax, 4)\n"
+        ".Lfffc70_000ffc98:\n"
         "testb $0x20, 5(%edi)\n" /* line 514 */
         "jne .Lfffc70_00100586\n"
         /* { scope 1: from, screenOffset, b, a, ... */
@@ -1791,6 +1792,7 @@ void RB_TessEntity(const GfxEntity *re)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lfffc70_000ffe13:\n"
         "movl imp_r_rendererInUse, %eax\n" /* line 1173 */
         "movl (%eax), %eax\n"
         "cmpl $2, 8(%eax)\n"
@@ -1993,6 +1995,7 @@ void RB_TessEntity(const GfxEntity *re)
         "jmp .Lfffc70_000ffe08\n"
         /* } scope */
         /* { scope 1: from, screenOffset, b, a, ... */
+        ".Lfffc70_00100177:\n"
         "movb 0x5b(%edi), %bl\n" /* line 1130 | color */
         "movzbl 0x58(%edi), %eax\n" /* line 1131 */
         "movb %al, %bh\n" /* color */
@@ -2046,6 +2049,7 @@ void RB_TessEntity(const GfxEntity *re)
         "jmp .Lfffc70_000ffe08\n"
         /* } scope */
         /* { scope 1: from, screenOffset, b, a, ... */
+        ".Lfffc70_00100228:\n"
         "movss 0x64(%edi), %xmm0\n" /* line 535 */
         "movss %xmm0, -0xc4(%ebp)\n" /* scale */
         "movss 0x68(%edi), %xmm0\n" /* line 536 */
@@ -2132,10 +2136,12 @@ void RB_TessEntity(const GfxEntity *re)
         "calll RB_AddQuadStamp\n"
         "jmp .Lfffc70_000ffe08\n"
         /* } scope */
+        ".Lfffc70_00100379:\n"
         "movl %edi, (%esp)\n" /* line 1182 | re */
         "calll RB_TessParticleCloud\n"
         "jmp .Lfffc70_000ffe08\n"
         /* { scope 1: from, screenOffset, b, a, ... */
+        ".Lfffc70_00100386:\n"
         "leal 0x3c(%edi), %ebx\n" /* line 945 | from */
         "leal 0x48(%edi), %edx\n" /* line 946 */
         /* { scope 2: worldOffset */
@@ -2942,6 +2948,16 @@ void RB_TessEntity(const GfxEntity *re)
         "cvtsi2ssl %ecx, %xmm0\n"
         "movss %xmm0, -0x54(%ebp)\n"
         "jmp .Lfffc70_00100abd\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_ffc70_0:\n"
+        ".long .Lfffc70_000ffc98\n"
+        ".long .Lfffc70_00100386\n"
+        ".long .Lfffc70_00100379\n"
+        ".long .Lfffc70_00100228\n"
+        ".long .Lfffc70_00100177\n"
+        ".long .Lfffc70_000ffe13\n"
+        ".text\n"
     );
 }
 

@@ -663,89 +663,120 @@ jpeg_alloc Image_LoadFromData(GfxImage *image, GfxImageFileHeader *fileHeader, c
         "movzbl 4(%edx), %eax\n" /* line 324 */
         "cmpl $0xd, %eax\n"
         "ja .Lffce9e_000fcec2\n"
-        "jmpl *lightGridLookupMatrix+640(, %eax, 4)\n"
+        "jmpl *.Ljt_fce9e_0(, %eax, 4)\n"
         ".Lffce9e_000fcec2:\n"
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "retl\n"
+        ".Lffce9e_000fcec5:\n"
         "movl $4, 0xc(%ebp)\n" /* line 327 | fileHeader */
         "movl $0x15, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadBitmap\n" /* line 327 */
+        ".Lffce9e_000fcedc:\n"
         "movl $3, 0xc(%ebp)\n" /* line 330 | fileHeader */
         "movl $0x16, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadBitmap\n" /* line 330 */
+        ".Lffce9e_000fcef3:\n"
         "movl $2, 0xc(%ebp)\n" /* line 333 | fileHeader */
         "movl $0x33, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadBitmap\n" /* line 333 */
+        ".Lffce9e_000fcf0a:\n"
         "movl $1, 0xc(%ebp)\n" /* line 336 | fileHeader */
         "movl $0x32, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadBitmap\n" /* line 336 */
+        ".Lffce9e_000fcf21:\n"
         "movl $1, 0xc(%ebp)\n" /* line 339 | fileHeader */
         "movl $0x1c, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadBitmap\n" /* line 339 */
+        ".Lffce9e_000fcf38:\n"
         "movl $4, 0xc(%ebp)\n" /* line 343 | fileHeader */
         "movl $0x15, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadWavelet\n" /* line 343 */
+        ".Lffce9e_000fcf4f:\n"
         "movl $3, 0xc(%ebp)\n" /* line 346 | fileHeader */
         "movl $0x16, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadWavelet\n" /* line 346 */
+        ".Lffce9e_000fcf66:\n"
         "movl $2, 0xc(%ebp)\n" /* line 349 | fileHeader */
         "movl $0x33, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadWavelet\n" /* line 349 */
+        ".Lffce9e_000fcf7d:\n"
         "movl $1, 0xc(%ebp)\n" /* line 352 | fileHeader */
         "movl $0x32, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadWavelet\n" /* line 352 */
+        ".Lffce9e_000fcf94:\n"
         "movl $1, 0xc(%ebp)\n" /* line 355 | fileHeader */
         "movl $0x1c, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadWavelet\n" /* line 355 */
+        ".Lffce9e_000fcfab:\n"
         "movl $8, 0xc(%ebp)\n" /* line 359 | fileHeader */
         "movl $0x31545844, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadDxtc\n" /* line 359 */
+        ".Lffce9e_000fcfc2:\n"
         "movl $0x10, 0xc(%ebp)\n" /* line 362 | fileHeader */
         "movl $0x33545844, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadDxtc\n" /* line 362 */
+        ".Lffce9e_000fcfd9:\n"
         "movl $0x10, 0xc(%ebp)\n" /* line 365 | fileHeader */
         "movl $0x35545844, 8(%ebp)\n" /* image */
         "movl %ebx, %eax\n" /* image */
         "popl %ebx\n" /* line 376 */
         "popl %ebp\n"
         "jmp Image_LoadDxtc\n" /* line 365 */
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_fce9e_0:\n"
+        ".long .Lffce9e_000fcec2\n"
+        ".long .Lffce9e_000fcec5\n"
+        ".long .Lffce9e_000fcedc\n"
+        ".long .Lffce9e_000fcef3\n"
+        ".long .Lffce9e_000fcf0a\n"
+        ".long .Lffce9e_000fcf21\n"
+        ".long .Lffce9e_000fcf38\n"
+        ".long .Lffce9e_000fcf4f\n"
+        ".long .Lffce9e_000fcf66\n"
+        ".long .Lffce9e_000fcf7d\n"
+        ".long .Lffce9e_000fcf94\n"
+        ".long .Lffce9e_000fcfab\n"
+        ".long .Lffce9e_000fcfc2\n"
+        ".long .Lffce9e_000fcfd9\n"
+        ".text\n"
     );
 }
 

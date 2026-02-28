@@ -330,7 +330,8 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         /* { scope 1 */
         ".Lf617ce_00061880:\n"
         "movl 0x40(%ebx), %eax\n" /* line 631 */
-        "jmpl *__ZZN17PrimitiveTemplate15ParseGroupFlagsEPKcPiE5C.148+128(, %eax, 4)\n"
+        "jmpl *.Ljt_617ce_0(, %eax, 4)\n"
+        ".Lf617ce_0006188a:\n"
         "movl 0x24(%ebp), %eax\n" /* line 634 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -342,6 +343,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddParticle\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_000618b0:\n"
         "movl 0x24(%ebp), %eax\n" /* line 678 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -353,6 +355,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddCloud\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_000618d6:\n"
         "movl 0x24(%ebp), %eax\n" /* line 674 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -364,6 +367,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddFlash\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_000618ff:\n"
         "movl 0x24(%ebp), %eax\n" /* line 670 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -375,6 +379,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddCameraShake\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_00061928:\n"
         "movl 0x24(%ebp), %eax\n" /* line 666 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -386,6 +391,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddLight\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_00061951:\n"
         "movl 0x24(%ebp), %eax\n" /* line 662 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -397,6 +403,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddFxRunner\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_0006197a:\n"
         "movl 0x24(%ebp), %eax\n" /* line 658 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -408,6 +415,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddOrientedParticle\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_000619a3:\n"
         "movl 0x24(%ebp), %eax\n" /* line 654 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -419,6 +427,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddDecal\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_000619cc:\n"
         "movl 0x24(%ebp), %eax\n" /* line 650 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -430,6 +439,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddEmitter\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_000619f5:\n"
         "movl 0x24(%ebp), %eax\n" /* line 646 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -441,6 +451,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddCylinder\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_00061a1e:\n"
         "movl 0x24(%ebp), %eax\n" /* line 642 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -452,6 +463,7 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         "movl %eax, (%esp)\n"
         "calll FX_AddTail\n"
         "jmp .Lf617ce_00061869\n"
+        ".Lf617ce_00061a47:\n"
         "movl 0x24(%ebp), %eax\n" /* line 638 | indexInBatch */
         "movl %eax, 0x10(%esp)\n"
         "movl 0x20(%ebp), %eax\n" /* lateTime */
@@ -472,6 +484,23 @@ void FxScheduler_CreateEffect(const FxScheduler * _this, const EffectTemplate *f
         ".Lf617ce_00061a81:\n"
         "movl %ebx, (%esp)\n"
         "calll __Unwind_Resume\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_617ce_0:\n"
+        ".long .Lf617ce_00061869\n"
+        ".long .Lf617ce_0006188a\n"
+        ".long .Lf617ce_00061a47\n"
+        ".long .Lf617ce_00061a1e\n"
+        ".long .Lf617ce_000619f5\n"
+        ".long .Lf617ce_000619cc\n"
+        ".long .Lf617ce_000619a3\n"
+        ".long .Lf617ce_0006197a\n"
+        ".long .Lf617ce_00061951\n"
+        ".long .Lf617ce_00061928\n"
+        ".long .Lf617ce_000618ff\n"
+        ".long .Lf617ce_000618d6\n"
+        ".long .Lf617ce_000618b0\n"
+        ".text\n"
     );
 }
 

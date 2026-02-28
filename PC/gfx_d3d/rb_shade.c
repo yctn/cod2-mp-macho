@@ -167,7 +167,7 @@ void RB_GetTextureFromCode(void)
         "movl %ecx, %edi\n" /* samplerState */
         "cmpl $0x17, %eax\n" /* line 527 */
         "ja .Lff6f78_000f6f93\n"
-        "jmpl *lightGridLookupMatrix+64(, %eax, 4)\n"
+        "jmpl *.Ljt_f6f78_0(, %eax, 4)\n"
         ".Lff6f78_000f6f93:\n"
         "movb $0, (%ecx)\n" /* line 659 */
         "movl $0, (%edx)\n" /* line 660 */
@@ -178,26 +178,31 @@ void RB_GetTextureFromCode(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lff6f78_000f6fa4:\n"
         "movl imp_rgp, %eax\n" /* line 530 */
         "movl 0x100c(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $1, (%ecx)\n" /* line 531 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f6fb6:\n"
         "movl imp_rgp, %eax\n" /* line 535 */
         "movl 0x1008(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $1, (%ecx)\n" /* line 536 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f6fc8:\n"
         "movl imp_rgp, %eax\n" /* line 540 */
         "movl 0x1010(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $1, (%ecx)\n" /* line 541 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f6fda:\n"
         "movl imp_rgp, %eax\n" /* line 545 */
         "movl 0x1014(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 546 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f6fec:\n"
         "movl imp_rgp, %ebx\n" /* line 550 | codeTexture */
         "movl 0x109c(%ebx), %eax\n" /* codeTexture */
         "testl %eax, %eax\n"
@@ -211,16 +216,19 @@ void RB_GetTextureFromCode(void)
         "movl %eax, (%esi)\n" /* image */
         "movb $0x72, (%edi)\n" /* line 553 | samplerState */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f7024:\n"
         "movl imp_rgp, %eax\n" /* line 558 */
         "movl 0x1008(%eax, %ebx, 4), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 559 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f703a:\n"
         "movl imp_rgp, %eax\n" /* line 563 */
         "movl 0x1018(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 564 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f704f:\n"
         "movl imp_tess, %eax\n" /* line 572 */
         "cmpl $0x1f, 0x5a7c4(%eax)\n"
         "je .Lff6f78_000f729d\n"
@@ -248,16 +256,19 @@ void RB_GetTextureFromCode(void)
         "movl %eax, (%esi)\n"
         "movb $1, (%edi)\n" /* line 465 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f70bd:\n"
         "movl imp_dx, %eax\n" /* line 595 */
         "movl 0x2c80(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 596 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f70d2:\n"
         "movl imp_backEnd, %eax\n" /* line 609 */
         "movl 0x2e8c(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%ecx)\n" /* line 610 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f70e7:\n"
         "movl imp_backEnd, %eax\n" /* line 614 */
         "movl 0x2e84(%eax), %eax\n"
         ".Lff6f78_000f70f2:\n"
@@ -274,9 +285,11 @@ void RB_GetTextureFromCode(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lff6f78_000f7111:\n"
         "movl imp_backEnd, %eax\n" /* line 619 */
         "movl 0x2e88(%eax), %eax\n"
         "jmp .Lff6f78_000f70f2\n"
+        ".Lff6f78_000f711e:\n"
         "movl imp_rgp, %ebx\n" /* line 624 | codeTexture */
         "movl 0x109c(%ebx), %eax\n" /* codeTexture */
         "testl %eax, %eax\n"
@@ -292,6 +305,7 @@ void RB_GetTextureFromCode(void)
         "movzbl 0x24(%eax), %eax\n"
         "movb %al, (%edi)\n" /* samplerState */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f7159:\n"
         "shll $6, %eax\n" /* line 634 */
         "leal -0x484(%eax, %ebx, 4), %eax\n"
         "addl imp_backEnd, %eax\n"
@@ -302,6 +316,7 @@ void RB_GetTextureFromCode(void)
         "movzbl 0x10(%eax), %eax\n"
         "movb %al, (%ecx)\n"
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f7185:\n"
         "movl imp_rgp, %ebx\n" /* line 588 | codeTexture */
         "movl 0x109c(%ebx), %eax\n" /* codeTexture */
         "testl %eax, %eax\n"
@@ -315,9 +330,11 @@ void RB_GetTextureFromCode(void)
         "movl %eax, (%esi)\n" /* image */
         "movb $0x32, (%edi)\n" /* line 591 | samplerState */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f71bd:\n"
         "movl $0, (%edx)\n" /* line 640 */
         "movb $0x31, (%ecx)\n" /* line 641 */
         "jmp .Lff6f78_000f6f9c\n"
+        ".Lff6f78_000f71cb:\n"
         "movl imp_sc_enable, %eax\n" /* line 600 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
@@ -334,11 +351,13 @@ void RB_GetTextureFromCode(void)
         "movl %eax, (%esi)\n" /* image */
         "movb $0x32, (%edi)\n" /* line 648 | samplerState */
         "jmp .Lff6f78_000f7109\n"
+        ".Lff6f78_000f7203:\n"
         "movl imp_rgp, %eax\n" /* line 652 */
         "movl 0x10a0(%eax), %eax\n"
         "movl %eax, (%edx)\n"
         "movb $0x32, (%edi)\n" /* line 648 | samplerState */
         "jmp .Lff6f78_000f7109\n"
+        ".Lff6f78_000f7218:\n"
         "movl imp_rgp, %eax\n" /* line 647 */
         "movl 0x10a4(%eax), %eax\n"
         "movl %eax, (%edx)\n"
@@ -379,6 +398,34 @@ void RB_GetTextureFromCode(void)
         "calll R_Error\n"
         "movl imp_tess, %edx\n"
         "jmp .Lff6f78_000f7063\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_f6f78_0:\n"
+        ".long .Lff6f78_000f6fa4\n"
+        ".long .Lff6f78_000f6fb6\n"
+        ".long .Lff6f78_000f6fc8\n"
+        ".long .Lff6f78_000f6fda\n"
+        ".long .Lff6f78_000f6fec\n"
+        ".long .Lff6f78_000f7024\n"
+        ".long .Lff6f78_000f7024\n"
+        ".long .Lff6f78_000f703a\n"
+        ".long .Lff6f78_000f704f\n"
+        ".long .Lff6f78_000f704f\n"
+        ".long .Lff6f78_000f704f\n"
+        ".long .Lff6f78_000f704f\n"
+        ".long .Lff6f78_000f70bd\n"
+        ".long .Lff6f78_000f70d2\n"
+        ".long .Lff6f78_000f70e7\n"
+        ".long .Lff6f78_000f7111\n"
+        ".long .Lff6f78_000f711e\n"
+        ".long .Lff6f78_000f7159\n"
+        ".long .Lff6f78_000f7159\n"
+        ".long .Lff6f78_000f71cb\n"
+        ".long .Lff6f78_000f7185\n"
+        ".long .Lff6f78_000f71bd\n"
+        ".long .Lff6f78_000f7203\n"
+        ".long .Lff6f78_000f7218\n"
+        ".text\n"
     );
 }
 
@@ -763,7 +810,8 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "subl $0x14, %eax\n"
         "cmpl $0x30, %eax\n"
         "ja .Lff76c0_000f7795\n"
-        "jmpl *lightGridLookupMatrix+160(, %eax, 4)\n"
+        "jmpl *.Ljt_f76c0_0(, %eax, 4)\n"
+        ".Lff76c0_000f7779:\n"
         "movl -0xd8(%ebp), %edx\n" /* line 324 | totalSize */
         "movl %edx, 8(%esp)\n"
         "movl 0xc(%ebp), %ebx\n" /* data, x */
@@ -824,6 +872,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "jmp .Lff76c0_000f77e4\n"
         /* } scope */
         /* { scope 2: y, color, tx, ty, ... */
+        ".Lff76c0_000f782e:\n"
         "movl -0xe0(%ebp), %eax\n" /* line 388 */
         "testl %eax, %eax\n"
         "je .Lff76c0_000f7795\n"
@@ -923,6 +972,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "jmp .Lff76c0_000f7795\n"
         /* } scope */
         /* { scope 2: y, color, tx, ty, ... */
+        ".Lff76c0_000f798f:\n"
         "movl -0xe0(%ebp), %edi\n" /* line 347 | z */
         "testl %edi, %edi\n" /* z */
         "je .Lff76c0_000f7795\n"
@@ -1017,6 +1067,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "jmp .Lff76c0_000f7795\n"
         /* } scope */
         /* { scope 2: y, color, tx, ty, ... */
+        ".Lff76c0_000f7af9:\n"
         "movl -0xe0(%ebp), %esi\n" /* line 274 */
         "testl %esi, %esi\n"
         "je .Lff76c0_000f7795\n"
@@ -1080,6 +1131,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "jmp .Lff76c0_000f7795\n"
         /* } scope */
         /* { scope 2: y, color, tx, ty, ... */
+        ".Lff76c0_000f7bfb:\n"
         "movl -0xe0(%ebp), %ecx\n" /* line 300 */
         "testl %ecx, %ecx\n"
         "je .Lff76c0_000f7795\n"
@@ -1139,6 +1191,7 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "jmp .Lff76c0_000f7795\n"
         /* } scope */
         /* { scope 2: y, color, tx, ty, ... */
+        ".Lff76c0_000f7ce7:\n"
         "movl -0xe0(%ebp), %edx\n" /* line 327 */
         "testl %edx, %edx\n"
         "je .Lff76c0_000f7795\n"
@@ -1199,6 +1252,59 @@ void RB_SetVertexData(unsigned int streamIndex, const void *data, int vertexCoun
         "movl %eax, %edx\n"
         "movl -0xdc(%ebp), %ebx\n" /* dxVb */
         "jmp .Lff76c0_000f77e4\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_f76c0_0:\n"
+        ".long .Lff76c0_000f7779\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7ce7\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7bfb\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7af9\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f798f\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f7795\n"
+        ".long .Lff76c0_000f782e\n"
+        ".text\n"
     );
 }
 
@@ -1233,7 +1339,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "subl $0xbc, %eax\n"
         "cmpl $0x30, %eax\n"
         "ja .Lff7dca_000f7e26\n"
-        "jmpl *lightGridLookupMatrix+384(, %eax, 4)\n"
+        "jmpl *.Ljt_f7dca_0(, %eax, 4)\n"
         ".Lff7dca_000f7e26:\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -1244,6 +1350,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1: OGLWorld, OGLView, OGLWorldView, OGLProjection, ... */
+        ".Lff7dca_000f7e33:\n"
         "movl -0x134(%ebp), %eax\n" /* line 729 | activeMatrices */
         "addl $0x10, %eax\n"
         "movl %eax, -0x130(%ebp)\n" /* codeMatrix */
@@ -1285,16 +1392,19 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1: OGLWorld, OGLView, OGLWorldView, OGLProjection, ... */
+        ".Lff7dca_000f7ec6:\n"
         "movl -0x134(%ebp), %edx\n" /* line 733 | activeMatrices */
         "addl $0x230, %edx\n"
         "movl %edx, -0x130(%ebp)\n" /* codeMatrix */
         "movl %edx, %eax\n"
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f7edf:\n"
         "movl -0x134(%ebp), %ecx\n" /* line 737 | activeMatrices, rowCount */
         "addl $0x340, %ecx\n" /* rowCount */
         "movl %ecx, -0x130(%ebp)\n" /* rowCount, codeMatrix */
         "movl %ecx, %eax\n" /* rowCount */
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f7ef8:\n"
         "movl -0x134(%ebp), %eax\n" /* line 741 | activeMatrices */
         "addl $0x450, %eax\n"
         "movl %eax, -0x130(%ebp)\n" /* codeMatrix */
@@ -1313,6 +1423,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movb $1, 0x100(%edx)\n"
         "movl -0x130(%ebp), %eax\n" /* codeMatrix */
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f7f52:\n"
         "movl -0x134(%ebp), %ecx\n" /* line 750 | activeMatrices, rowCount */
         "addl $0x670, %ecx\n" /* rowCount */
         "movl %ecx, -0x130(%ebp)\n" /* rowCount, codeMatrix */
@@ -1321,6 +1432,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         ".Lff7dca_000f7f71:\n"
         "movl %ecx, %eax\n" /* rowCount */
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f7f78:\n"
         "movl -0x134(%ebp), %edx\n" /* line 759 | activeMatrices */
         "addl $0x780, %edx\n"
         "movl %edx, -0x130(%ebp)\n" /* codeMatrix */
@@ -1342,6 +1454,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movb $1, 0x100(%eax)\n"
         "movl -0x130(%ebp), %eax\n" /* codeMatrix */
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f7fe5:\n"
         "movl -0x134(%ebp), %edx\n" /* line 774 | activeMatrices */
         "addl $0xcd0, %edx\n"
         "movl %edx, -0x130(%ebp)\n" /* codeMatrix */
@@ -1497,6 +1610,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movl -0x130(%ebp), %eax\n" /* codeMatrix */
         "jmp .Lff7dca_000f7e42\n"
         /* } scope */
+        ".Lff7dca_000f826e:\n"
         "movl -0x134(%ebp), %eax\n" /* line 822 | activeMatrices */
         "addl $0x560, %eax\n"
         "movl %eax, -0x130(%ebp)\n" /* codeMatrix */
@@ -1557,6 +1671,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movb $1, 0x100(%ecx)\n" /* line 817 | rowCount */
         "movl -0x130(%ebp), %eax\n" /* codeMatrix */
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f8365:\n"
         "movl -0x134(%ebp), %eax\n" /* line 832 | activeMatrices */
         "addl $0x9a0, %eax\n"
         "movl %eax, -0x130(%ebp)\n" /* codeMatrix */
@@ -1565,6 +1680,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movl %eax, 8(%esp)\n" /* line 835 */
         "leal 0x36e48(%ebx), %eax\n"
         "jmp .Lff7dca_000f7f25\n"
+        ".Lff7dca_000f8392:\n"
         "movl -0x134(%ebp), %ecx\n" /* line 841 | activeMatrices, rowCount */
         "addl $0xab0, %ecx\n" /* rowCount */
         "movl %ecx, -0x130(%ebp)\n" /* rowCount, codeMatrix */
@@ -1583,6 +1699,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movb $1, 0x100(%ecx)\n" /* rowCount */
         "movl -0x130(%ebp), %eax\n" /* codeMatrix */
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f83f4:\n"
         "movl -0x134(%ebp), %eax\n" /* line 851 | activeMatrices */
         "addl $0xbc0, %eax\n"
         "movl %eax, -0x130(%ebp)\n" /* codeMatrix */
@@ -1657,6 +1774,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movb $1, 0x100(%ecx)\n" /* rowCount */
         "movl -0x130(%ebp), %eax\n" /* codeMatrix */
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f854f:\n"
         "movl -0x134(%ebp), %edx\n" /* line 802 | activeMatrices */
         "addl $0x120, %edx\n"
         "movl %edx, -0x130(%ebp)\n" /* codeMatrix */
@@ -1665,6 +1783,7 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         ".Lff7dca_000f856a:\n"
         "movl %edx, %eax\n"
         "jmp .Lff7dca_000f7e42\n"
+        ".Lff7dca_000f8571:\n"
         "movl -0x134(%ebp), %eax\n" /* line 812 | activeMatrices */
         "addl $0x560, %eax\n"
         "movl %eax, -0x130(%ebp)\n" /* codeMatrix */
@@ -1759,6 +1878,59 @@ const float * RB_GetCodeMatrix(int source, int firstRow)
         "movb $1, 0x550(%eax)\n"
         "movl -0x134(%ebp), %eax\n" /* activeMatrices */
         "jmp .Lff7dca_000f7fb2\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_f7dca_0:\n"
+        ".long .Lff7dca_000f7e33\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7ec6\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7edf\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7ef8\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7f52\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7f78\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7fe5\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f854f\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f8571\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f826e\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f8365\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f8392\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f7e26\n"
+        ".long .Lff7dca_000f83f4\n"
+        ".text\n"
     );
 }
 
@@ -2170,7 +2342,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movzwl (%ebx), %eax\n" /* codeConst */
         "cmpl $4, %eax\n"
         "ja .Lff8708_000f9357\n"
-        "jmpl *lightGridLookupMatrix+580(, %eax, 4)\n"
+        "jmpl *.Ljt_f8708_0(, %eax, 4)\n"
         /* } scope */
         /* } scope */
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
@@ -2699,6 +2871,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* } scope */
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         /* { scope 5: destIndex, literalName, destIndex, rule, ... */
+        ".Lff8708_000f9303:\n"
         "movl -0x88(%ebp), %eax\n" /* line 1178 | routingData */
         "movl 4(%eax), %ebx\n" /* data */
         "movzwl 2(%eax), %edx\n"
@@ -2763,6 +2936,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         /* { scope 3: ruleSetIndex, routingCount, routingCount, routingData, ... */
         /* { scope 4: refStateBits, routingIndex, rowCount, data, ... */
         /* { scope 5: destIndex, literalName, destIndex, rule, ... */
+        ".Lff8708_000f93d5:\n"
         "movl -0x88(%ebp), %ebx\n" /* line 1182 | routingData, codeConst */
         "addl $4, %ebx\n" /* codeConst */
         /* { scope 6 */
@@ -2844,6 +3018,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "jmp .Lff8708_000f9357\n"
         /* } scope */
         /* } scope */
+        ".Lff8708_000f94cb:\n"
         "leal -0x19(%ebp), %ecx\n" /* line 1192 | samplerState */
         "leal -0x20(%ebp), %edx\n" /* image */
         "movl -0x88(%ebp), %ebx\n" /* routingData, codeConst */
@@ -2857,6 +3032,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, (%esp)\n"
         "calll RB_SetSampler\n"
         "jmp .Lff8708_000f9357\n"
+        ".Lff8708_000f94ff:\n"
         "movl -0x88(%ebp), %eax\n" /* line 1197 | routingData */
         "movl 4(%eax), %eax\n"
         "movl %eax, -0x60(%ebp)\n" /* textureName */
@@ -2907,6 +3083,7 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %eax, (%esp)\n"
         "calll RB_SetSampler\n"
         "jmp .Lff8708_000f9357\n"
+        ".Lff8708_000f9590:\n"
         "movl -0x88(%ebp), %ebx\n" /* line 1187 | routingData, codeConst */
         "movl 4(%ebx), %ebx\n" /* codeConst */
         "movl %ebx, -0x6c(%ebp)\n" /* codeConst, literalName */
@@ -3584,6 +3761,15 @@ void RB_DrawSingleTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPr
         "movl %edx, -0x20(%ebp)\n" /* image */
         "movb $1, -0x19(%ebp)\n" /* line 458 | samplerState */
         "jmp .Lff8708_000f956d\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_f8708_0:\n"
+        ".long .Lff8708_000f9303\n"
+        ".long .Lff8708_000f93d5\n"
+        ".long .Lff8708_000f9590\n"
+        ".long .Lff8708_000f94cb\n"
+        ".long .Lff8708_000f94ff\n"
+        ".text\n"
     );
 }
 

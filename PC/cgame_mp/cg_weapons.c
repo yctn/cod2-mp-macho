@@ -5253,6 +5253,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "cmpl $0x13, %eax\n"
         "jbe .Lf1d9cf8_001d9e83\n"
         /* { scope 2 */
+        ".Lf1d9cf8_001d9d94:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5320,7 +5321,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "retl\n"
         /* { scope 1 */
         ".Lf1d9cf8_001d9e83:\n"
-        "jmpl *iSlotPreferenceOrder+8(, %eax, 4)\n" /* line 171 */
+        "jmpl *.Ljt_1d9cf8_0(, %eax, 4)\n" /* line 171 */
         ".Lf1d9cf8_001d9e8a:\n"
         "movl $1, %edx\n" /* line 149 */
         "jmp .Lf1d9cf8_001d9d45\n"
@@ -5341,6 +5342,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         ".Lf1d9cf8_001d9ec0:\n"
         "movl 8(%ebp), %edx\n" /* ps */
         "jmp .Lf1d9cf8_001d9d38\n"
+        ".Lf1d9cf8_001d9ec8:\n"
         "movl $1, %esi\n" /* line 171 | i */
         "jmp .Lf1d9cf8_001d9edb\n"
         ".Lf1d9cf8_001d9ecf:\n"
@@ -5358,6 +5360,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "movl $0xffffffff, 0xa0(%eax)\n"
         "jmp .Lf1d9cf8_001d9e7b\n"
         /* { scope 2 */
+        ".Lf1d9cf8_001d9f00:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5401,6 +5404,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001d9f5b\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001d9fb4:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5444,6 +5448,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da00f\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da068:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5487,6 +5492,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da0c3\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da11c:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5530,6 +5536,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da177\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da1d0:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5573,6 +5580,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da22b\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da284:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5616,6 +5624,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da2df\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da338:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5659,6 +5668,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da393\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da3ec:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5702,6 +5712,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da447\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da4a0:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5745,6 +5756,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da4fb\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da554:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5788,6 +5800,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da5af\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da608:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5831,6 +5844,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da663\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da6bc:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5874,6 +5888,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da717\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da770:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5917,6 +5932,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da7cb\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001da824:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -5959,6 +5975,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "calll XAnimSetGoalWeight\n"
         "jmp .Lf1d9cf8_001da87f\n"
         /* } scope */
+        ".Lf1d9cf8_001da8d8:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -6001,6 +6018,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "calll XAnimSetGoalWeight\n"
         "jmp .Lf1d9cf8_001da933\n"
         /* { scope 2 */
+        ".Lf1d9cf8_001da98c:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -6044,6 +6062,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "jmp .Lf1d9cf8_001da9e7\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf1d9cf8_001daa40:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -6086,6 +6105,7 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "calll XAnimSetGoalWeight\n"
         "jmp .Lf1d9cf8_001daa9b\n"
         /* } scope */
+        ".Lf1d9cf8_001daaf4:\n"
         "leal (%ebx, %ebx, 2), %eax\n" /* line 43 */
         "leal (%eax, %eax, 8), %eax\n"
         "leal (%ebx, %eax, 4), %eax\n"
@@ -6217,6 +6237,30 @@ void CG_WeaponRunXModelAnims(weapProjExposion_t (*ps)[8], weaponInfo_t *weapInfo
         "movl %eax, (%esp)\n"
         "calll XAnimSetGoalWeight\n"
         "jmp .Lf1d9cf8_001dacd0\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_1d9cf8_0:\n"
+        ".long .Lf1d9cf8_001d9ec8\n"
+        ".long .Lf1d9cf8_001d9d94\n"
+        ".long .Lf1d9cf8_001daaf4\n"
+        ".long .Lf1d9cf8_001daa40\n"
+        ".long .Lf1d9cf8_001da98c\n"
+        ".long .Lf1d9cf8_001da8d8\n"
+        ".long .Lf1d9cf8_001da824\n"
+        ".long .Lf1d9cf8_001da770\n"
+        ".long .Lf1d9cf8_001da6bc\n"
+        ".long .Lf1d9cf8_001da608\n"
+        ".long .Lf1d9cf8_001da554\n"
+        ".long .Lf1d9cf8_001da4a0\n"
+        ".long .Lf1d9cf8_001da3ec\n"
+        ".long .Lf1d9cf8_001da338\n"
+        ".long .Lf1d9cf8_001da284\n"
+        ".long .Lf1d9cf8_001da1d0\n"
+        ".long .Lf1d9cf8_001da11c\n"
+        ".long .Lf1d9cf8_001da068\n"
+        ".long .Lf1d9cf8_001d9fb4\n"
+        ".long .Lf1d9cf8_001d9f00\n"
+        ".text\n"
     );
 }
 

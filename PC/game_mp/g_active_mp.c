@@ -999,7 +999,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "leal -0x9e(%edx), %eax\n" /* line 409 */
         "cmpl $0x27, %eax\n"
         "ja .Lf1a0d88_001a0e40\n"
-        "jmpl *sign+32(, %eax, 4)\n"
+        "jmpl *.Ljt_1a0d88_0(, %eax, 4)\n"
         /* } scope */
         ".Lf1a0d88_001a0e7c:\n"
         "addl $0x3c, %esp\n" /* line 477 */
@@ -1012,9 +1012,11 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         ".Lf1a0d88_001a0e84:\n"
         "movss lit4_002ed808, %xmm1\n" /* line 393 | 1.100000023841858f */
         "jmp .Lf1a0d88_001a0de4\n"
+        ".Lf1a0d88_001a0e91:\n"
         "movl %edi, (%esp)\n" /* line 426 | ent */
         "calll FireWeaponMelee\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0e9b:\n"
         "movl 0x158(%edi), %eax\n" /* line 465 | ent */
         "testl %eax, %eax\n"
         "je .Lf1a0d88_001a0e40\n"
@@ -1033,6 +1035,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll player_die\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0f07:\n"
         "movl imp_g_antilag, %eax\n" /* line 415 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
@@ -1043,6 +1046,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll FireWeaponAntiLag\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0f34:\n"
         "movl $0, 8(%esp)\n" /* line 461 */
         "movl imp_scr_const, %eax\n"
         "movzwl 0x6a(%eax), %eax\n"
@@ -1050,6 +1054,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0f56:\n"
         "movl $0, 8(%esp)\n" /* line 456 */
         "movl imp_scr_const, %eax\n"
         "movzwl 0x68(%eax), %eax\n"
@@ -1057,6 +1062,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0f78:\n"
         "movl $0, 8(%esp)\n" /* line 451 */
         "movl imp_scr_const, %eax\n"
         "movzwl 0x66(%eax), %eax\n"
@@ -1064,6 +1070,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0f9a:\n"
         "movl $0, 8(%esp)\n" /* line 446 */
         "movl imp_scr_const, %eax\n"
         "movzwl 0x64(%eax), %eax\n"
@@ -1071,6 +1078,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0fbc:\n"
         "movl $0, 8(%esp)\n" /* line 441 */
         "movl imp_scr_const, %eax\n"
         "movzwl 0x62(%eax), %eax\n"
@@ -1078,6 +1086,7 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll Scr_Notify\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".Lf1a0d88_001a0fde:\n"
         "movl %edi, (%esp)\n" /* line 433 | ent */
         "calll G_UseOffHand\n"
         "jmp .Lf1a0d88_001a0e40\n"
@@ -1087,6 +1096,50 @@ void ClientEvents(gentity_t *ent, int oldEventSequence)
         "movl %edi, (%esp)\n" /* ent */
         "calll FireWeaponAntiLag\n"
         "jmp .Lf1a0d88_001a0e40\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_1a0d88_0:\n"
+        ".long .Lf1a0d88_001a0f07\n"
+        ".long .Lf1a0d88_001a0f07\n"
+        ".long .Lf1a0d88_001a0f07\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e91\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0fde\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0fbc\n"
+        ".long .Lf1a0d88_001a0f9a\n"
+        ".long .Lf1a0d88_001a0f78\n"
+        ".long .Lf1a0d88_001a0f56\n"
+        ".long .Lf1a0d88_001a0f34\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0f07\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e40\n"
+        ".long .Lf1a0d88_001a0e9b\n"
+        ".text\n"
     );
 }
 

@@ -571,7 +571,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "movl (%ebx), %eax\n" /* line 691 | tr */
         "cmpl $8, %eax\n"
         "ja .Lf6a9ee_0006aa0d\n"
-        "jmpl *singleClientEvents+48(, %eax, 4)\n"
+        "jmpl *.Ljt_6a9ee_0(, %eax, 4)\n"
         ".Lf6a9ee_0006aa0d:\n"
         "movl %eax, 0x10(%ebp)\n" /* line 739 | result */
         "movl $str_0021bdd8, 0xc(%ebp)\n" /* atTime */
@@ -583,6 +583,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "popl %ebp\n"
         /* { scope 1 */
         "jmp Com_Error\n" /* line 739 */
+        ".Lf6a9ee_0006aa29:\n"
         "movl 4(%ebx), %ecx\n" /* line 730 | tr */
         "movl %ecx, %eax\n"
         "addl 8(%ebx), %eax\n" /* tr */
@@ -601,10 +602,12 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf6a9ee_0006aa4a:\n"
         "movl 4(%ebx), %eax\n" /* line 707 | tr */
         "addl 8(%ebx), %eax\n" /* tr */
         "cmpl %eax, %edx\n"
         "jg .Lf6a9ee_0006aa39\n"
+        ".Lf6a9ee_0006aa54:\n"
         "leal 0x18(%ebx), %edx\n" /* line 712 | tr, from */
         /* { scope 2 */
         "movl 0x18(%ebx), %eax\n" /* line 199 */
@@ -615,6 +618,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "movl %eax, 8(%esi)\n"
         "jmp .Lf6a9ee_0006aa43\n"
         /* } scope */
+        ".Lf6a9ee_0006aa6a:\n"
         "movl 4(%ebx), %ecx\n" /* line 720 | tr */
         "movl %ecx, %eax\n"
         "addl 8(%ebx), %eax\n" /* tr */
@@ -625,6 +629,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "mulss %xmm0, %xmm0\n" /* line 727 */
         "jmp .Lf6a9ee_0006aaf5\n"
+        ".Lf6a9ee_0006aa8a:\n"
         "subl 4(%ebx), %edx\n" /* line 715 | tr */
         "cvtsi2ssl %edx, %xmm0\n"
         "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
@@ -639,6 +644,7 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "addss 8(%edx), %xmm0\n"
         "movss %xmm0, 8(%esi)\n" /* result */
         "jmp .Lf6a9ee_0006aa43\n"
+        ".Lf6a9ee_0006aabb:\n"
         "subl 4(%ebx), %edx\n" /* line 702 | tr */
         "cvtsi2ssl %edx, %xmm0\n"
         "cvtsi2ssl 8(%ebx), %xmm1\n" /* tr */
@@ -675,6 +681,19 @@ void BG_EvaluateTrajectoryDelta(const trajectory_t *tr, int atTime, vec_t *resul
         "cvtsi2ssl %edx, %xmm0\n"
         "mulss lit4_002ed658, %xmm0\n" /* 0.0010000000474974513f */
         "jmp .Lf6a9ee_0006aaf5\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_6a9ee_0:\n"
+        ".long .Lf6a9ee_0006aa39\n"
+        ".long .Lf6a9ee_0006aa39\n"
+        ".long .Lf6a9ee_0006aa54\n"
+        ".long .Lf6a9ee_0006aa4a\n"
+        ".long .Lf6a9ee_0006aabb\n"
+        ".long .Lf6a9ee_0006aa8a\n"
+        ".long .Lf6a9ee_0006aa0d\n"
+        ".long .Lf6a9ee_0006aa6a\n"
+        ".long .Lf6a9ee_0006aa29\n"
+        ".text\n"
     );
 }
 
@@ -1511,7 +1530,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "movl (%esi), %eax\n" /* line 606 | tr */
         "cmpl $8, %eax\n"
         "ja .Lf6b9ca_0006b9ea\n"
-        "jmpl *singleClientEvents+112(, %eax, 4)\n"
+        "jmpl *.Ljt_6b9ca_0(, %eax, 4)\n"
         ".Lf6b9ca_0006b9ea:\n"
         "movl %eax, 0x10(%ebp)\n" /* line 668 | result */
         "movl $str_0021be6c, 0xc(%ebp)\n" /* atTime */
@@ -1524,6 +1543,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "popl %ebp\n"
         /* { scope 1 */
         "jmp Com_Error\n" /* line 668 */
+        ".Lf6b9ca_0006ba07:\n"
         "subl 4(%esi), %ebx\n" /* line 614 | tr, atTime */
         "cvtsi2ssl %ebx, %xmm1\n" /* atTime */
         "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
@@ -1553,6 +1573,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf6b9ca_0006ba56:\n"
         "movl 4(%esi), %edx\n" /* line 653 | tr */
         "movl 8(%esi), %ecx\n" /* tr */
         "leal (%edx, %ecx), %eax\n"
@@ -1613,6 +1634,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "movss %xmm4, 8(%edi)\n"
         "jmp .Lf6b9ca_0006ba4e\n"
         /* } scope */
+        ".Lf6b9ca_0006bb38:\n"
         "movl 4(%esi), %edx\n" /* line 640 | tr */
         "movl 8(%esi), %ecx\n" /* tr */
         "leal (%edx, %ecx), %eax\n"
@@ -1663,6 +1685,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "movss %xmm1, 8(%edi)\n"
         "jmp .Lf6b9ca_0006ba4e\n"
         /* } scope */
+        ".Lf6b9ca_0006bbf9:\n"
         "leal 0xc(%esi), %edx\n" /* line 611 | tr, from */
         /* { scope 2 */
         "movl 0xc(%esi), %eax\n" /* line 199 */
@@ -1673,6 +1696,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "movl %eax, 8(%edi)\n"
         "jmp .Lf6b9ca_0006ba4e\n"
         /* } scope */
+        ".Lf6b9ca_0006bc12:\n"
         "subl 4(%esi), %ebx\n" /* line 635 | tr, atTime */
         "cvtsi2ssl %ebx, %xmm1\n" /* atTime */
         "mulss lit4_002ed658, %xmm1\n" /* 0.0010000000474974513f */
@@ -1697,6 +1721,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 8(%edi)\n" /* result */
         "jmp .Lf6b9ca_0006ba4e\n"
+        ".Lf6b9ca_0006bc74:\n"
         "subl 4(%esi), %ebx\n" /* line 619 | tr, atTime */
         "cvtsi2ssl %ebx, %xmm0\n" /* atTime */
         "cvtsi2ssl 8(%esi), %xmm1\n" /* tr */
@@ -1709,6 +1734,7 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "fstpl -0x20(%ebp)\n"
         "cvtsd2ss -0x20(%ebp), %xmm1\n"
         "jmp .Lf6b9ca_0006ba16\n"
+        ".Lf6b9ca_0006bcab:\n"
         "movl 4(%esi), %edx\n" /* line 623 | tr */
         "movl %edx, %eax\n"
         "addl 8(%esi), %eax\n" /* tr */
@@ -1723,6 +1749,19 @@ void BG_EvaluateTrajectory(const trajectory_t *tr, int atTime, vec_t *result)
         "leal 0x18(%esi), %eax\n" /* line 632 | tr */
         "leal 0xc(%esi), %edx\n" /* tr */
         "jmp .Lf6b9ca_0006ba1f\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_6b9ca_0:\n"
+        ".long .Lf6b9ca_0006bbf9\n"
+        ".long .Lf6b9ca_0006bbf9\n"
+        ".long .Lf6b9ca_0006ba07\n"
+        ".long .Lf6b9ca_0006bcab\n"
+        ".long .Lf6b9ca_0006bc74\n"
+        ".long .Lf6b9ca_0006bc12\n"
+        ".long .Lf6b9ca_0006bbf9\n"
+        ".long .Lf6b9ca_0006bb38\n"
+        ".long .Lf6b9ca_0006ba56\n"
+        ".text\n"
     );
 }
 

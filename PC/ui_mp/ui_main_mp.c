@@ -2867,7 +2867,8 @@ qboolean UI_SetActiveMenu(int menu)
         "retl\n"
         /* { scope 1 */
         ".Lf150e32_00150e71:\n"
-        "jmpl *yy_ec+2176(, %ebx, 4)\n" /* line 4406 */
+        "jmpl *.Ljt_150e32_0(, %ebx, 4)\n" /* line 4406 */
+        ".Lf150e32_00150e78:\n"
         "calll Key_GetCatcher\n" /* line 4409 */
         "andl $0xfffffff7, %eax\n"
         "movl %eax, (%esp)\n"
@@ -2880,6 +2881,7 @@ qboolean UI_SetActiveMenu(int menu)
         "calll Menus_CloseAll\n"
         "movl $1, %eax\n"
         "jmp .Lf150e32_00150e69\n"
+        ".Lf150e32_00150eb0:\n"
         "movl $8, (%esp)\n" /* line 4629 */
         "calll Key_SetCatcher\n"
         "movl $str_002aa750, 4(%esp)\n" /* line 4630 */
@@ -2893,6 +2895,7 @@ qboolean UI_SetActiveMenu(int menu)
         "movl $1, %eax\n"
         "jmp .Lf150e32_00150e69\n"
         /* { scope 2 */
+        ".Lf150e32_00150eef:\n"
         "movl uiInfo, %eax\n" /* line 4474 */
         "movl %eax, (%esp)\n"
         "calll Menu_GetFocused\n"
@@ -2949,6 +2952,7 @@ qboolean UI_SetActiveMenu(int menu)
         "movl $1, %eax\n"
         "jmp .Lf150e32_00150e69\n"
         /* } scope */
+        ".Lf150e32_00150fd0:\n"
         "movl uiInfo, %eax\n" /* line 4456 */
         "movl $0x27f, 0xc(%eax)\n"
         "movl uiInfo, %eax\n" /* line 4457 */
@@ -2967,6 +2971,7 @@ qboolean UI_SetActiveMenu(int menu)
         "calll Menus_OpenByName\n"
         "movl $1, %eax\n"
         "jmp .Lf150e32_00150e69\n"
+        ".Lf150e32_0015102b:\n"
         "movl $8, (%esp)\n" /* line 4431 */
         "calll Key_SetCatcher\n"
         "movl $str_002aa728, 4(%esp)\n" /* line 4432 */
@@ -2975,6 +2980,7 @@ qboolean UI_SetActiveMenu(int menu)
         "calll Menus_OpenByName\n"
         "movl $1, %eax\n"
         "jmp .Lf150e32_00150e69\n"
+        ".Lf150e32_00151056:\n"
         "movl $8, (%esp)\n" /* line 4442 */
         "calll Key_SetCatcher\n"
         "movl $str_002aa738, 4(%esp)\n" /* line 4443 */
@@ -2983,6 +2989,7 @@ qboolean UI_SetActiveMenu(int menu)
         "calll Menus_OpenByName\n"
         "movl $1, %eax\n"
         "jmp .Lf150e32_00150e69\n"
+        ".Lf150e32_00151081:\n"
         "movl $8, (%esp)\n" /* line 4437 */
         "calll Key_SetCatcher\n"
         "movl $str_002aa730, 4(%esp)\n" /* line 4438 */
@@ -2991,6 +2998,7 @@ qboolean UI_SetActiveMenu(int menu)
         "calll Menus_OpenByName\n"
         "movl $1, %eax\n"
         "jmp .Lf150e32_00150e69\n"
+        ".Lf150e32_001510ac:\n"
         "movl $8, (%esp)\n" /* line 4448 */
         "calll Key_SetCatcher\n"
         "movl uiInfo, %eax\n" /* line 4449 */
@@ -3008,6 +3016,7 @@ qboolean UI_SetActiveMenu(int menu)
         ".Lf150e32_001510e6:\n"
         "movl $1, %eax\n" /* line 4634 */
         "jmp .Lf150e32_00150e69\n"
+        ".Lf150e32_001510f0:\n"
         "movl $8, (%esp)\n" /* line 4415 */
         "calll Key_SetCatcher\n"
         "movl $str_00216f3c, 4(%esp)\n" /* line 4416 */
@@ -3042,6 +3051,22 @@ qboolean UI_SetActiveMenu(int menu)
         "movl uiInfo, %eax\n" /* line 4491 */
         "movl $0x1df, 0x10(%eax)\n"
         "jmp .Lf150e32_00150f5f\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_150e32_0:\n"
+        ".long .Lf150e32_00150e78\n"
+        ".long .Lf150e32_001510f0\n"
+        ".long .Lf150e32_001510ac\n"
+        ".long .Lf150e32_00151081\n"
+        ".long .Lf150e32_00151056\n"
+        ".long .Lf150e32_0015102b\n"
+        ".long .Lf150e32_00150e67\n"
+        ".long .Lf150e32_00150e67\n"
+        ".long .Lf150e32_00150fd0\n"
+        ".long .Lf150e32_00150eef\n"
+        ".long .Lf150e32_00150eef\n"
+        ".long .Lf150e32_00150eb0\n"
+        ".text\n"
     );
 }
 
@@ -4597,8 +4622,9 @@ qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key
         "subl $0xcd, %eax\n"
         "cmpl $0x30, %eax\n"
         "ja .Lf152582_001525c7\n"
-        "jmpl *yy_ec+2224(, %eax, 4)\n"
+        "jmpl *.Ljt_152582_0(, %eax, 4)\n"
         /* { scope 1 */
+        ".Lf152582_0015259f:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1307 | key */
         "subl $0xc8, %eax\n"
         "cmpl $1, %eax\n"
@@ -4618,6 +4644,7 @@ qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf152582_001525d1:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1392 | key */
         "subl $0xc8, %eax\n"
         "cmpl $1, %eax\n"
@@ -4644,6 +4671,7 @@ qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key
         "movl $1, %eax\n"
         "jmp .Lf152582_001525c9\n"
         /* } scope */
+        ".Lf152582_00152633:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1447 | key */
         "subl $0xc8, %eax\n"
         "cmpl $1, %eax\n"
@@ -4669,6 +4697,7 @@ qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key
         "xorl %eax, %eax\n"
         "jmp .Lf152582_001525c9\n"
         /* { scope 1 */
+        ".Lf152582_00152693:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1352 | key */
         "subl $0xc8, %eax\n"
         "cmpl $1, %eax\n"
@@ -4766,6 +4795,7 @@ qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf152582_001527f1:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1418 | key */
         "subl $0xc8, %eax\n"
         "cmpl $1, %eax\n"
@@ -4986,6 +5016,59 @@ qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, int key
         ".Lf152582_00152aa8:\n"
         "xorl %ebx, %ebx\n" /* line 2601 | nextNetSource */
         "jmp .Lf152582_001527a1\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_152582_0:\n"
+        ".long .Lf152582_0015259f\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001527f1\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_00152633\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_00152693\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525c7\n"
+        ".long .Lf152582_001525d1\n"
+        ".text\n"
     );
 }
 
@@ -5163,7 +5246,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         "jmp UI_SafeTranslateString\n" /* line 3769 */
         /* { scope 2 */
         ".Lf152ab0_00152cdd:\n"
-        "jmpl *yy_ec+2420(, %ebx, 4)\n" /* line 3610 */
+        "jmpl *.Ljt_152ab0_0(, %ebx, 4)\n" /* line 3610 */
         /* } scope */
         ".Lf152ab0_00152ce4:\n"
         "jp .Lf152ab0_00152c8b\n" /* line 3696 */
@@ -5187,6 +5270,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         "cmpl lastTime, %eax\n"
         "jge .Lf152ab0_00152c18\n"
         "jmp .Lf152ab0_00152bda\n"
+        ".Lf152ab0_00152d38:\n"
         "movl $str_002a9cf4, 4(%esp)\n" /* line 3631 */
         ".Lf152ab0_00152d40:\n"
         "movl $info, (%esp)\n" /* line 3626 */
@@ -5198,6 +5282,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         "movl $str_002157b8, %eax\n"
         "cmovel %eax, %ebx\n" /* column */
         "jmp .Lf152ab0_00152b16\n"
+        ".Lf152ab0_00152d68:\n"
         "testl %eax, %eax\n" /* line 3664 */
         "jle .Lf152ab0_00152f5d\n"
         "movl $str_002a90f4, 0xc(%ebp)\n" /* line 3670 | index */
@@ -5213,8 +5298,10 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         /* { scope 1 */
         /* { scope 2 */
         "jmp Info_ValueForKey\n" /* line 3660 */
+        ".Lf152ab0_00152d8a:\n"
         "movl $str_002a9af0, 4(%esp)\n" /* line 3614 */
         "jmp .Lf152ab0_00152d40\n"
+        ".Lf152ab0_00152d94:\n"
         "movl $str_002a70dc, 4(%esp)\n" /* line 3656 */
         "movl $info, (%esp)\n"
         "calll Info_ValueForKey\n"
@@ -5230,6 +5317,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         "calll Com_sprintf\n"
         "movl $clientBuff, %ebx\n" /* pszMap */
         "jmp .Lf152ab0_00152b16\n"
+        ".Lf152ab0_00152dec:\n"
         "movl $str_002aa884, 4(%esp)\n" /* line 3659 */
         "movl $info, (%esp)\n"
         "calll Info_ValueForKey\n"
@@ -5245,10 +5333,13 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         "movl $str_0022292c, %ebx\n" /* line 3778 | pszMap */
         "jmp .Lf152ab0_00152b16\n"
         /* { scope 2 */
+        ".Lf152ab0_00152e2b:\n"
         "movl $str_0021ec00, 4(%esp)\n" /* line 3637 */
         "jmp .Lf152ab0_00152d40\n"
+        ".Lf152ab0_00152e38:\n"
         "movl $str_002aa870, 4(%esp)\n" /* line 3626 */
         "jmp .Lf152ab0_00152d40\n"
+        ".Lf152ab0_00152e45:\n"
         "testl %eax, %eax\n" /* line 3644 */
         "jle .Lf152ab0_00152f67\n"
         "movl $str_002aa89c, 4(%esp)\n" /* line 3650 */
@@ -5260,6 +5351,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         "calll I_strncpyz\n"
         "movl $clientBuff, %ebx\n" /* column */
         "jmp .Lf152ab0_00152b16\n"
+        ".Lf152ab0_00152e83:\n"
         "movl $str_002a7124, 4(%esp)\n" /* line 3654 */
         "movl $info, (%esp)\n"
         "calll Info_ValueForKey\n"
@@ -5290,6 +5382,7 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         "jmp .Lf152ab0_00152b16\n"
         /* } scope */
         /* } scope */
+        ".Lf152ab0_00152eec:\n"
         "movl $str_002aa878, 4(%esp)\n" /* line 3619 */
         "movl $info, (%esp)\n"
         "calll Info_ValueForKey\n"
@@ -5324,6 +5417,20 @@ const char * UI_FeederItemText(float feederID, int index, int column, MaterialHa
         ".Lf152ab0_00152f67:\n"
         "movl $str_002aa858, 0xc(%ebp)\n" /* line 3646 | index */
         "jmp .Lf152ab0_00152d77\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_152ab0_0:\n"
+        ".long .Lf152ab0_00152d8a\n"
+        ".long .Lf152ab0_00152eec\n"
+        ".long .Lf152ab0_00152e45\n"
+        ".long .Lf152ab0_00152e83\n"
+        ".long .Lf152ab0_00152d94\n"
+        ".long .Lf152ab0_00152dec\n"
+        ".long .Lf152ab0_00152e2b\n"
+        ".long .Lf152ab0_00152e38\n"
+        ".long .Lf152ab0_00152d38\n"
+        ".long .Lf152ab0_00152d68\n"
+        ".text\n"
     );
 }
 
@@ -5602,8 +5709,9 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "leal -0xcd(%ebx), %eax\n" /* line 1204 | ownerDraw */
         "cmpl $0x41, %eax\n"
         "ja .Lf1532d0_001533ac\n"
-        "jmpl *yy_ec+2460(, %eax, 4)\n"
+        "jmpl *.Ljt_1532d0_0(, %eax, 4)\n"
         /* { scope 2: actualScale, lowLight, newColor, buff */
+        ".Lf1532d0_0015333c:\n"
         "movl imp_sv_voice, %eax\n" /* line 1058 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
@@ -5682,12 +5790,14 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss -0xe8(%ebp), %xmm1\n"
         "movss -0xd8(%ebp), %xmm0\n"
         "jmp .Lf1532d0_00153300\n"
+        ".Lf1532d0_00153460:\n"
         "leal -0x50(%ebp), %eax\n" /* line 727 | rect */
         "movl $1, %ecx\n"
         "movl 0x40(%ebp), %edx\n" /* color */
         "movss 0x3c(%ebp), %xmm0\n" /* scale */
         "calll UI_DrawMapPreview\n"
         "jmp .Lf1532d0_001533ac\n"
+        ".Lf1532d0_0015347a:\n"
         "cmpl $-2, sharedUiInfo+27524\n" /* line 683 */
         "jle .Lf1532d0_001533ac\n"
         "movl $0xa, 0x14(%esp)\n" /* line 685 */
@@ -5719,10 +5829,12 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CIN_DrawCinematic\n"
         "jmp .Lf1532d0_001533ac\n"
+        ".Lf1532d0_0015351b:\n"
         "leal -0x50(%ebp), %eax\n" /* line 1253 | rect */
         "movl %eax, (%esp)\n"
         "calll UI_DrawRecordLevel\n"
         "jmp .Lf1532d0_001533ac\n"
+        ".Lf1532d0_0015352b:\n"
         "leal -0x10b(%ebx), %edi\n" /* line 1263 | ownerDraw, w */
         "xorl %esi, %esi\n" /* vertAlign */
         "xorl %ebx, %ebx\n" /* ownerDraw */
@@ -5829,6 +5941,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jmp .Lf1532d0_001533ac\n"
         /* } scope */
         /* { scope 2: actualScale, lowLight, newColor, buff */
+        ".Lf1532d0_00153696:\n"
         "movl ui_gametype, %eax\n" /* line 636 */
         "movl 8(%eax), %eax\n"
         "movl sharedUiInfo+4432(, %eax, 8), %eax\n"
@@ -5870,6 +5983,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "retl\n"
         /* { scope 1 */
         /* { scope 2: actualScale, lowLight, newColor, buff */
+        ".Lf1532d0_0015370f:\n"
         "movl ui_netSource, %eax\n" /* line 780 */
         "movl 8(%eax), %eax\n"
         "movl netSources(, %eax, 4), %eax\n"
@@ -5886,6 +6000,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %edx, 0x20(%esp)\n"
         "jmp .Lf1532d0_001536c6\n"
         /* } scope */
+        ".Lf1532d0_00153759:\n"
         "movl sharedUiInfo+108680, %eax\n" /* line 734 */
         "testl %eax, %eax\n"
         "je .Lf1532d0_00153bf6\n"
@@ -5895,6 +6010,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %esi, 0x14(%esp)\n"
         "jmp .Lf1532d0_00153385\n"
         /* { scope 2: actualScale, lowLight, newColor, buff */
+        ".Lf1532d0_0015377a:\n"
         "xorl %eax, %eax\n" /* line 769 */
         "cmpl $2, ui_serverFilterType\n"
         "cmovbl ui_serverFilterType, %eax\n"
@@ -5913,6 +6029,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %edi, 0x20(%esp)\n"
         "jmp .Lf1532d0_001536c6\n"
         /* } scope */
+        ".Lf1532d0_001537d1:\n"
         "leal -0x50(%ebp), %eax\n" /* line 727 | rect */
         "xorl %ecx, %ecx\n"
         "movl 0x40(%ebp), %edx\n" /* color */
@@ -5920,6 +6037,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll UI_DrawMapPreview\n"
         "jmp .Lf1532d0_001533ac\n"
         /* { scope 2: actualScale, lowLight, newColor, buff */
+        ".Lf1532d0_001537e8:\n"
         "movl ui_netGameType, %edx\n" /* line 650 */
         "movl 8(%edx), %eax\n"
         "cmpl sharedUiInfo+4424, %eax\n"
@@ -5938,6 +6056,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %edx, 0x20(%esp)\n"
         "jmp .Lf1532d0_001536c6\n"
         /* } scope */
+        ".Lf1532d0_0015382a:\n"
         "movl ui_currentNetMap, %edx\n" /* line 747 */
         "movl 8(%edx), %eax\n"
         "cmpl sharedUiInfo+4944, %eax\n"
@@ -5963,6 +6082,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CIN_DrawCinematic\n"
         "jmp .Lf1532d0_001533ac\n"
+        ".Lf1532d0_00153897:\n"
         "calll Display_KeyBindPending\n" /* line 963 */
         "movl $str_002aa900, %edx\n" /* "EXE_KEYWAIT" */
         "testl %eax, %eax\n"
@@ -5988,6 +6108,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss %xmm2, 0xc(%esp)\n"
         "jmp .Lf1532d0_001536ed\n"
         /* { scope 2: actualScale, lowLight, newColor, buff */
+        ".Lf1532d0_00153901:\n"
         "movl ui_joinGameType, %edx\n" /* line 670 */
         "movl 8(%edx), %eax\n"
         "cmpl sharedUiInfo+4684, %eax\n"
@@ -5997,6 +6118,7 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jmp .Lf1532d0_00153804\n"
         /* } scope */
         /* { scope 2: actualScale, lowLight, newColor, buff */
+        ".Lf1532d0_00153922:\n"
         "movl sharedUiInfo+28652, %eax\n" /* line 925 */
         "testl %eax, %eax\n"
         "je .Lf1532d0_00153ac1\n"
@@ -6211,6 +6333,76 @@ void UI_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         ".Lf1532d0_00153c30:\n"
         "movl $0xffffffff, %edi\n" /* line 1093 */
         "jmp .Lf1532d0_00153583\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_1532d0_0:\n"
+        ".long .Lf1532d0_00153696\n"
+        ".long .Lf1532d0_00153460\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_0015370f\n"
+        ".long .Lf1532d0_00153759\n"
+        ".long .Lf1532d0_0015377a\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001537d1\n"
+        ".long .Lf1532d0_001537e8\n"
+        ".long .Lf1532d0_0015382a\n"
+        ".long .Lf1532d0_00153922\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_00153897\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_00153901\n"
+        ".long .Lf1532d0_0015347a\n"
+        ".long .Lf1532d0_00153460\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_001533ac\n"
+        ".long .Lf1532d0_0015351b\n"
+        ".long .Lf1532d0_0015333c\n"
+        ".long .Lf1532d0_0015352b\n"
+        ".long .Lf1532d0_0015352b\n"
+        ".long .Lf1532d0_0015352b\n"
+        ".long .Lf1532d0_0015352b\n"
+        ".text\n"
     );
 }
 

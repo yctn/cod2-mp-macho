@@ -348,7 +348,7 @@ Bool Dvar_ToggleInternal(void)
         "retl\n"
         /* { scope 1 */
         ".Lf502ba_000503cc:\n"
-        "jmpl *__ZZN16CStringEdPackage9ParseLineEPKchE5C.208+1056(, %eax, 4)\n" /* line 115 */
+        "jmpl *.Ljt_502ba_0(, %eax, 4)\n" /* line 115 */
         ".Lf502ba_000503d3:\n"
         "movl -0x20(%ebp), %eax\n" /* line 198 | dvarName */
         "movl %eax, 4(%esp)\n"
@@ -384,6 +384,7 @@ Bool Dvar_ToggleInternal(void)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf502ba_00050424:\n"
         "movl $1, 8(%esp)\n" /* line 118 */
         "xorl %eax, %eax\n"
         "cmpb $0, 8(%edi)\n"
@@ -394,6 +395,7 @@ Bool Dvar_ToggleInternal(void)
         "movl $1, %eax\n"
         "movzbl %al, %eax\n" /* line 203 */
         "jmp .Lf502ba_0005039e\n"
+        ".Lf502ba_0005044e:\n"
         "movss 0x14(%edi), %xmm1\n" /* line 139 */
         "pxor %xmm2, %xmm2\n"
         "ucomiss %xmm1, %xmm2\n"
@@ -412,6 +414,7 @@ Bool Dvar_ToggleInternal(void)
         "movl $1, %eax\n"
         "movzbl %al, %eax\n" /* line 203 */
         "jmp .Lf502ba_0005039e\n"
+        ".Lf502ba_000504a1:\n"
         "movl 0x14(%edi), %eax\n" /* line 122 */
         "testl %eax, %eax\n"
         "jle .Lf502ba_000505b3\n"
@@ -425,6 +428,7 @@ Bool Dvar_ToggleInternal(void)
         "movl $1, %eax\n"
         "movzbl %al, %eax\n" /* line 203 */
         "jmp .Lf502ba_0005039e\n"
+        ".Lf502ba_000504d6:\n"
         "movl 0x14(%edi), %edx\n" /* line 164 */
         "testl %edx, %edx\n"
         "jne .Lf502ba_00050503\n"
@@ -432,6 +436,7 @@ Bool Dvar_ToggleInternal(void)
         ".Lf502ba_000504e2:\n"
         "movzbl %al, %eax\n" /* line 203 */
         "jmp .Lf502ba_0005039e\n"
+        ".Lf502ba_000504ea:\n"
         "movl (%edi), %eax\n" /* line 160 */
         "movl %eax, 4(%esp)\n"
         "movl $str_00219104, (%esp)\n" /* "'toggle' with no arguments makes no sense for dvar '%s'
@@ -517,6 +522,19 @@ Bool Dvar_ToggleInternal(void)
         "movl $1, %eax\n"
         "movzbl %al, %eax\n" /* line 203 */
         "jmp .Lf502ba_0005039e\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_502ba_0:\n"
+        ".long .Lf502ba_00050424\n"
+        ".long .Lf502ba_0005044e\n"
+        ".long .Lf502ba_000504ea\n"
+        ".long .Lf502ba_000504ea\n"
+        ".long .Lf502ba_000504ea\n"
+        ".long .Lf502ba_000504a1\n"
+        ".long .Lf502ba_000504d6\n"
+        ".long .Lf502ba_000504ea\n"
+        ".long .Lf502ba_000504ea\n"
+        ".text\n"
     );
 }
 

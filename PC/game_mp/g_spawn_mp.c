@@ -167,7 +167,8 @@ my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
         "cmpl $8, (%ebx)\n" /* line 348 */
         "ja .Lf19e380_0019e3b5\n"
         "movl (%ebx), %eax\n"
-        "jmpl *color+672(, %eax, 4)\n"
+        "jmpl *.Ljt_19e380_0(, %eax, 4)\n"
+        ".Lf19e380_0019e3ab:\n"
         "movl -4(%ebx), %edx\n" /* line 363 */
         "movzbl (%esi, %edx), %eax\n" /* source */
         "movb %al, (%edi, %edx)\n" /* dest */
@@ -183,6 +184,7 @@ my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf19e380_0019e3c7:\n"
         "movl -4(%ebx), %edx\n" /* line 357 */
         "movl (%esi, %edx), %eax\n" /* source */
         "movl %eax, (%edi, %edx)\n" /* dest */
@@ -191,6 +193,7 @@ my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
         "testl %eax, %eax\n"
         "jne .Lf19e380_0019e39d\n"
         "jmp .Lf19e380_0019e3bf\n"
+        ".Lf19e380_0019e3dc:\n"
         "movl -4(%ebx), %edx\n" /* line 360 */
         "movl (%esi, %edx), %eax\n" /* source */
         "movl %eax, (%edi, %edx)\n" /* dest */
@@ -199,6 +202,7 @@ my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
         "testl %eax, %eax\n"
         "jne .Lf19e380_0019e39d\n"
         "jmp .Lf19e380_0019e3bf\n"
+        ".Lf19e380_0019e3f1:\n"
         "movl -4(%ebx), %eax\n" /* line 351 */
         "movzwl (%esi, %eax), %edx\n" /* source */
         "movl %edx, 4(%esp)\n"
@@ -210,6 +214,7 @@ my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
         "testl %eax, %eax\n"
         "jne .Lf19e380_0019e39d\n"
         "jmp .Lf19e380_0019e3bf\n"
+        ".Lf19e380_0019e413:\n"
         "movl -4(%ebx), %eax\n" /* line 354 | from */
         "leal (%edi, %eax), %ecx\n" /* dest, to */
         "leal (%esi, %eax), %eax\n" /* source, from */
@@ -226,6 +231,19 @@ my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
         "testl %eax, %eax\n"
         "jne .Lf19e380_0019e39d\n"
         "jmp .Lf19e380_0019e3bf\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_19e380_0:\n"
+        ".long .Lf19e380_0019e3c7\n"
+        ".long .Lf19e380_0019e3dc\n"
+        ".long .Lf19e380_0019e3b5\n"
+        ".long .Lf19e380_0019e3f1\n"
+        ".long .Lf19e380_0019e413\n"
+        ".long .Lf19e380_0019e3b5\n"
+        ".long .Lf19e380_0019e3b5\n"
+        ".long .Lf19e380_0019e3b5\n"
+        ".long .Lf19e380_0019e3ab\n"
+        ".text\n"
     );
 }
 
@@ -609,7 +627,8 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "cmpl $8, 8(%ebx)\n" /* line 239 */
         "ja .Lf19e73a_0019e77e\n"
         "movl 8(%ebx), %eax\n"
-        "jmpl *color+708(, %eax, 4)\n"
+        "jmpl *.Ljt_19e73a_0(, %eax, 4)\n"
+        ".Lf19e73a_0019e7b7:\n"
         "movl 4(%ebx), %eax\n" /* line 253 */
         "addl %eax, -0x34(%ebp)\n"
         "movl %edi, (%esp)\n" /* value */
@@ -617,6 +636,7 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "movl -0x34(%ebp), %edx\n"
         "movl %eax, (%edx)\n"
         "jmp .Lf19e73a_0019e77e\n"
+        ".Lf19e73a_0019e7cc:\n"
         "movl 4(%ebx), %ecx\n" /* line 256 */
         "addl %ecx, -0x34(%ebp)\n"
         "movl %edi, (%esp)\n" /* value */
@@ -626,6 +646,7 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "movl -0x34(%ebp), %eax\n"
         "movss %xmm0, (%eax)\n"
         "jmp .Lf19e73a_0019e77e\n"
+        ".Lf19e73a_0019e7eb:\n"
         "movl $0, 4(%esp)\n" /* line 242 */
         "movl -0x34(%ebp), %eax\n"
         "addl 4(%ebx), %eax\n"
@@ -638,6 +659,7 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "movl -0x34(%ebp), %edx\n"
         "movw %ax, (%edx)\n"
         "jmp .Lf19e73a_0019e77e\n"
+        ".Lf19e73a_0019e81a:\n"
         "xorl %eax, %eax\n" /* line 183 */
         "movl %eax, -0x24(%ebp)\n" /* vec */
         "movl %eax, -0x20(%ebp)\n" /* line 184 */
@@ -662,6 +684,7 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "movl -0x1c(%ebp), %eax\n"
         "movl %eax, 8(%ecx, %edx)\n"
         "jmp .Lf19e73a_0019e77e\n"
+        ".Lf19e73a_0019e86f:\n"
         "cmpb $0x2a, (%edi)\n" /* line 259 | value */
         "je .Lf19e73a_0019e888\n"
         "movl %edi, 4(%esp)\n" /* line 267 | value */
@@ -677,6 +700,19 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
         "movl -0x34(%ebp), %edx\n"
         "movl %eax, 0x8c(%edx)\n"
         "jmp .Lf19e73a_0019e77e\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_19e73a_0:\n"
+        ".long .Lf19e73a_0019e7b7\n"
+        ".long .Lf19e73a_0019e7cc\n"
+        ".long .Lf19e73a_0019e77e\n"
+        ".long .Lf19e73a_0019e7eb\n"
+        ".long .Lf19e73a_0019e81a\n"
+        ".long .Lf19e73a_0019e77e\n"
+        ".long .Lf19e73a_0019e77e\n"
+        ".long .Lf19e73a_0019e77e\n"
+        ".long .Lf19e73a_0019e86f\n"
+        ".text\n"
     );
 }
 
@@ -693,7 +729,8 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         /* { scope 1 */
         "cmpl $8, %eax\n" /* line 696 */
         "ja .Lf19e8a4_0019e8d4\n"
-        "jmpl *color+744(, %eax, 4)\n"
+        "jmpl *.Ljt_19e8a4_0(, %eax, 4)\n"
+        ".Lf19e8a4_0019e8ba:\n"
         "movl 0x10(%ebp), %ecx\n" /* line 732 | ofs */
         "movl 8(%ebp), %ebx\n" /* b */
         "movzbl (%ecx, %ebx), %eax\n"
@@ -708,12 +745,14 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf19e8a4_0019e8da:\n"
         "movl 8(%ebp), %ebx\n" /* line 711 | b */
         "movl 0x10(%ebp), %edx\n" /* ofs */
         "movl (%ebx, %edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_AddInt\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".Lf19e8a4_0019e8ed:\n"
         "movl 8(%ebp), %ebx\n" /* line 727 | b */
         "movl 0x10(%ebp), %edx\n" /* ofs */
         "movzwl (%ebx, %edx), %eax\n"
@@ -723,6 +762,7 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         "movl %eax, (%esp)\n"
         "calll Scr_AddObject\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".Lf19e8a4_0019e909:\n"
         "xorl %eax, %eax\n" /* line 717 */
         "movl %eax, -0x14(%ebp)\n" /* vec */
         "movl 8(%ebp), %ecx\n" /* line 718 | b */
@@ -734,6 +774,7 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         "movl %eax, (%esp)\n"
         "calll Scr_AddVector\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".Lf19e8a4_0019e92a:\n"
         "movl 8(%ebp), %edx\n" /* line 723 | b */
         "movl 0x10(%ebp), %ecx\n" /* ofs */
         "movl (%edx, %ecx), %eax\n"
@@ -744,11 +785,13 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         "movl %eax, (%esp)\n"
         "calll Scr_AddEntityNum\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".Lf19e8a4_0019e94b:\n"
         "movl 8(%ebp), %eax\n" /* line 708 | b */
         "addl 0x10(%ebp), %eax\n" /* ofs */
         "movl %eax, (%esp)\n"
         "calll Scr_AddVector\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".Lf19e8a4_0019e95e:\n"
         "movl 8(%ebp), %edx\n" /* line 699 | b */
         "movl 0x10(%ebp), %ecx\n" /* ofs */
         "movzwl (%edx, %ecx), %eax\n"
@@ -758,17 +801,32 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
         "movl %eax, (%esp)\n"
         "calll Scr_AddConstString\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".Lf19e8a4_0019e981:\n"
         "movl 8(%ebp), %eax\n" /* line 705 | b */
         "addl 0x10(%ebp), %eax\n" /* ofs */
         "movl %eax, (%esp)\n"
         "calll Scr_AddString\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".Lf19e8a4_0019e994:\n"
         "movl 8(%ebp), %ecx\n" /* line 714 | b */
         "movl 0x10(%ebp), %ebx\n" /* ofs */
         "movl (%ecx, %ebx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_AddFloat\n"
         "jmp .Lf19e8a4_0019e8d4\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_19e8a4_0:\n"
+        ".long .Lf19e8a4_0019e8da\n"
+        ".long .Lf19e8a4_0019e994\n"
+        ".long .Lf19e8a4_0019e981\n"
+        ".long .Lf19e8a4_0019e95e\n"
+        ".long .Lf19e8a4_0019e94b\n"
+        ".long .Lf19e8a4_0019e92a\n"
+        ".long .Lf19e8a4_0019e909\n"
+        ".long .Lf19e8a4_0019e8ed\n"
+        ".long .Lf19e8a4_0019e8ba\n"
+        ".text\n"
     );
 }
 
@@ -1330,7 +1388,8 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         /* { scope 1 */
         "cmpl $6, %eax\n" /* line 598 */
         "ja .Lf19f034_0019f084\n"
-        "jmpl *color+780(, %eax, 4)\n"
+        "jmpl *.Ljt_19f034_0(, %eax, 4)\n"
+        ".Lf19f034_0019f04a:\n"
         "movl 0x10(%ebp), %ebx\n" /* line 620 | ofs */
         "addl 8(%ebp), %ebx\n" /* b */
         "movl $0, (%esp)\n" /* line 833 */
@@ -1353,12 +1412,14 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf19f034_0019f08a:\n"
         "movl $0, (%esp)\n" /* line 610 */
         "calll Scr_GetInt\n"
         "movl 8(%ebp), %edx\n" /* b */
         "movl 0x10(%ebp), %ecx\n" /* ofs */
         "movl %eax, (%edx, %ecx)\n"
         "jmp .Lf19f034_0019f084\n"
+        ".Lf19f034_0019f0a1:\n"
         "leal -0x14(%ebp), %eax\n" /* line 616 | vec */
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -1368,6 +1429,7 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         "movl 0x10(%ebp), %edx\n" /* ofs */
         "movl %eax, (%ecx, %edx)\n"
         "jmp .Lf19f034_0019f084\n"
+        ".Lf19f034_0019f0c2:\n"
         "leal -0x14(%ebp), %eax\n" /* line 604 | vec */
         "movl %eax, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -1381,6 +1443,7 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         "movl -0xc(%ebp), %eax\n" /* line 607 */
         "movl %eax, 8(%edx)\n"
         "jmp .Lf19f034_0019f084\n"
+        ".Lf19f034_0019f0ee:\n"
         "movl $0, (%esp)\n" /* line 601 */
         "calll Scr_GetConstStringIncludeNull\n"
         "movl %eax, 4(%esp)\n"
@@ -1389,6 +1452,7 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         "movl %eax, (%esp)\n"
         "calll Scr_SetString\n"
         "jmp .Lf19f034_0019f084\n"
+        ".Lf19f034_0019f111:\n"
         "movl $0, (%esp)\n" /* line 613 */
         "calll Scr_GetFloat\n"
         "movl 8(%ebp), %eax\n" /* b */
@@ -1402,6 +1466,17 @@ my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
         "xorl %edx, %edx\n"
         "movl %edx, (%ebx)\n" /* line 620 */
         "jmp .Lf19f034_0019f084\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_19f034_0:\n"
+        ".long .Lf19f034_0019f08a\n"
+        ".long .Lf19f034_0019f111\n"
+        ".long .Lf19f034_0019f084\n"
+        ".long .Lf19f034_0019f0ee\n"
+        ".long .Lf19f034_0019f0c2\n"
+        ".long .Lf19f034_0019f04a\n"
+        ".long .Lf19f034_0019f0a1\n"
+        ".text\n"
     );
 }
 

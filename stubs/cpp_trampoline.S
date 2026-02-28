@@ -67,9 +67,14 @@ TRAMPOLINE __ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_, _
 __ZNSs4_Rep11_S_terminalE:
     .long 0
 
+# Import pointer: code does "movl __ZNSs4_Rep20_S_empty_rep_storageE, %edx"
+# which loads the VALUE here (a pointer filled by Mach-O dyld). On ELF,
+# we make it a pointer to the actual libstdc++ _S_empty_rep_storage.
+.data
 .globl __ZNSs4_Rep20_S_empty_rep_storageE
 __ZNSs4_Rep20_S_empty_rep_storageE:
-    .space 32, 0
+    .long _ZNSs4_Rep20_S_empty_rep_storageE
+.text
 
 .globl __ZTIl
 __ZTIl:

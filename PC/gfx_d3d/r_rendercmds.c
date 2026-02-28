@@ -75,18 +75,21 @@ void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread)
         "subl $0x18, %esp\n"
         "cmpl $7, %eax\n" /* line 255 | type */
         "ja .Lfc7d30_000c7d4e\n"
-        "jmpl *CorrectSolidDeltas+6912(, %eax, 4)\n"
+        "jmpl *.Ljt_c7d30_0(, %eax, 4)\n"
+        ".Lfc7d30_000c7d42:\n"
         "movl %ecx, 4(%esp)\n" /* line 271 | context */
         "movl %edx, (%esp)\n" /* data */
         "calll R_SkinXModelCmd\n"
         ".Lfc7d30_000c7d4e:\n"
         "leave\n" /* line 298 */
         "retl\n"
+        ".Lfc7d30_000c7d50:\n"
         "movl (%edx), %eax\n" /* line 258 | data, type */
         "movl %eax, (%esp)\n" /* type */
         "calll R_UpdateGfxEntityBounds\n"
         "leave\n" /* line 298 */
         "retl\n"
+        ".Lfc7d30_000c7d5c:\n"
         "leal (%ecx, %ecx, 4), %eax\n" /* line 276 | context, type */
         "shll $0xd, %eax\n" /* type */
         "addl $g_skinBuffers, %eax\n" /* type */
@@ -95,19 +98,35 @@ void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread)
         "calll R_SkinStaticModelCachedCmd\n"
         "leave\n" /* line 298 */
         "retl\n"
+        ".Lfc7d30_000c7d75:\n"
         "leave\n"
         "jmp FX_UpdateScheduledEffectsBolt\n" /* line 281 */
+        ".Lfc7d30_000c7d7b:\n"
         "leave\n" /* line 298 */
         "jmp FX_UpdateScheduledEffectsNonBolt\n" /* line 288 */
+        ".Lfc7d30_000c7d81:\n"
         "movl %edx, (%esp)\n" /* line 266 | data */
         "calll R_SkinRigidXModelCmd\n"
         "leave\n" /* line 298 */
         "retl\n"
+        ".Lfc7d30_000c7d8b:\n"
         "movl (%edx), %eax\n" /* line 262 | data, type */
         "movl %eax, (%esp)\n" /* type */
         "calll R_SkinGfxEntity\n"
         "leave\n" /* line 298 */
         "retl\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_c7d30_0:\n"
+        ".long .Lfc7d30_000c7d50\n"
+        ".long .Lfc7d30_000c7d8b\n"
+        ".long .Lfc7d30_000c7d81\n"
+        ".long .Lfc7d30_000c7d7b\n"
+        ".long .Lfc7d30_000c7d75\n"
+        ".long .Lfc7d30_000c7d5c\n"
+        ".long .Lfc7d30_000c7d42\n"
+        ".long .Lfc7d30_000c7d42\n"
+        ".text\n"
     );
 }
 

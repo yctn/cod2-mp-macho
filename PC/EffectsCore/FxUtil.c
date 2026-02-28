@@ -5161,8 +5161,9 @@ int FX_Restore(MemoryFile *memFile)
         "movzbl %bl, %eax\n" /* line 902 | effect */
         "cmpl $0xc, %eax\n"
         "ja .Lf5d1b8_0005d2a8\n"
-        "jmpl *dvarDigitStrings+352(, %eax, 4)\n"
+        "jmpl *.Ljt_5d1b8_0(, %eax, 4)\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d2eb:\n"
         "movl $0x24c, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5226,6 +5227,7 @@ int FX_Restore(MemoryFile *memFile)
         "retl\n"
         /* { scope 1 */
         /* { scope 2 */
+        ".Lf5d1b8_0005d3b8:\n"
         "movl $0x258, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5255,6 +5257,7 @@ int FX_Restore(MemoryFile *memFile)
         "calll *4(%eax)\n"
         "jmp .Lf5d1b8_0005d2a8\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d412:\n"
         "movl $0x278, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5270,6 +5273,7 @@ int FX_Restore(MemoryFile *memFile)
         "calll Tail_Tail\n"
         "jmp .Lf5d1b8_0005d31d\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d449:\n"
         "movl $0x278, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5285,6 +5289,7 @@ int FX_Restore(MemoryFile *memFile)
         "calll Cylinder_Cylinder\n"
         "jmp .Lf5d1b8_0005d31d\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d480:\n"
         "movl $0x29c, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5300,6 +5305,7 @@ int FX_Restore(MemoryFile *memFile)
         "calll Emitter_Emitter\n"
         "jmp .Lf5d1b8_0005d31d\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d4b7:\n"
         "movl $0x258, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5315,6 +5321,7 @@ int FX_Restore(MemoryFile *memFile)
         "calll OrientedParticle_OrientedParticle\n"
         "jmp .Lf5d1b8_0005d31d\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d4ee:\n"
         "movl $0xfc, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5330,6 +5337,7 @@ int FX_Restore(MemoryFile *memFile)
         "calll Light_Light\n"
         "jmp .Lf5d1b8_0005d31d\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d525:\n"
         "movl $0xfc, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5348,6 +5356,7 @@ int FX_Restore(MemoryFile *memFile)
         "movl %eax, (%ebx)\n" /* ptr */
         "jmp .Lf5d1b8_0005d31d\n"
         /* { scope 2 */
+        ".Lf5d1b8_0005d566:\n"
         "movl $0x27c, (%esp)\n" /* line 24 */
         "calll __Znam\n"
         "movl %eax, %ebx\n" /* ptr */
@@ -5385,6 +5394,23 @@ int FX_Restore(MemoryFile *memFile)
         "jmp .Lf5d1b8_0005d5be\n"
         "jmp .Lf5d1b8_0005d5be\n"
         "jmp .Lf5d1b8_0005d5be\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_5d1b8_0:\n"
+        ".long .Lf5d1b8_0005d2a8\n"
+        ".long .Lf5d1b8_0005d2eb\n"
+        ".long .Lf5d1b8_0005d3b8\n"
+        ".long .Lf5d1b8_0005d412\n"
+        ".long .Lf5d1b8_0005d449\n"
+        ".long .Lf5d1b8_0005d480\n"
+        ".long .Lf5d1b8_0005d2a8\n"
+        ".long .Lf5d1b8_0005d4b7\n"
+        ".long .Lf5d1b8_0005d2a8\n"
+        ".long .Lf5d1b8_0005d4ee\n"
+        ".long .Lf5d1b8_0005d2a8\n"
+        ".long .Lf5d1b8_0005d525\n"
+        ".long .Lf5d1b8_0005d566\n"
+        ".text\n"
     );
 }
 

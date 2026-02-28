@@ -635,7 +635,7 @@ Bool EvalPrimitiveExpression(void)
         "subl $7, %edx\n"
         "cmpl $0x42, %edx\n"
         "ja .Lf92c54_00092c70\n"
-        "jmpl *CorrectSolidDeltas+3584(, %edx, 4)\n"
+        "jmpl *.Ljt_92c54_0(, %edx, 4)\n"
         ".Lf92c54_00092c70:\n"
         "xorl %eax, %eax\n" /* expr */
         ".Lf92c54_00092c72:\n"
@@ -645,6 +645,7 @@ Bool EvalPrimitiveExpression(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf92c54_00092c7a:\n"
         "movl 8(%eax), %esi\n" /* line 2602 */
         "movl 4(%eax), %eax\n" /* value */
         /* { scope 1: vec */
@@ -654,6 +655,7 @@ Bool EvalPrimitiveExpression(void)
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
         /* } scope */
+        ".Lf92c54_00092c93:\n"
         "movl 8(%eax), %esi\n" /* line 2606 */
         "movl 4(%eax), %eax\n" /* value */
         /* { scope 1: vec */
@@ -663,6 +665,7 @@ Bool EvalPrimitiveExpression(void)
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
         /* } scope */
+        ".Lf92c54_00092cac:\n"
         "movl 8(%eax), %esi\n" /* line 2610 */
         "movl 4(%eax), %eax\n"
         "negl %eax\n"
@@ -671,6 +674,7 @@ Bool EvalPrimitiveExpression(void)
         "movl %esi, 8(%ebx)\n" /* line 664 */
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
+        ".Lf92c54_00092cc7:\n"
         "movl 8(%eax), %esi\n" /* line 2614 */
         "movl 4(%eax), %eax\n"
         "xorl $0x80000000, %eax\n"
@@ -679,6 +683,7 @@ Bool EvalPrimitiveExpression(void)
         "movl %esi, 8(%ebx)\n" /* line 726 */
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
+        ".Lf92c54_00092ce5:\n"
         "movl 8(%eax), %esi\n" /* line 2618 */
         "movl 4(%eax), %eax\n" /* value */
         /* { scope 1: vec */
@@ -688,6 +693,7 @@ Bool EvalPrimitiveExpression(void)
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
         /* } scope */
+        ".Lf92c54_00092d01:\n"
         "movl 8(%eax), %esi\n" /* line 2622 */
         "movl 4(%eax), %eax\n" /* value */
         /* { scope 1: vec */
@@ -697,11 +703,13 @@ Bool EvalPrimitiveExpression(void)
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
         /* } scope */
+        ".Lf92c54_00092d1d:\n"
         "movl 4(%eax), %eax\n" /* line 2626 */
         "movl $0, 4(%ebx)\n" /* line 646 */
         "movl %eax, 8(%ebx)\n" /* line 647 */
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
+        ".Lf92c54_00092d34:\n"
         "movl 8(%eax), %esi\n" /* line 2599 | expr */
         "movl 4(%eax), %eax\n" /* expr */
         /* { scope 1: vec */
@@ -731,12 +739,14 @@ Bool EvalPrimitiveExpression(void)
         /* } scope */
         "movzbl %al, %eax\n" /* line 2599 | expr */
         "jmp .Lf92c54_00092c72\n"
+        ".Lf92c54_00092d71:\n"
         "movl 4(%eax), %eax\n" /* line 2630 */
         "movl $6, 4(%ebx)\n" /* line 662 */
         "movl $0, (%ebx)\n" /* line 663 */
         "movl %eax, 8(%ebx)\n" /* line 664 */
         "movl $1, %eax\n"
         "jmp .Lf92c54_00092c72\n"
+        ".Lf92c54_00092d8e:\n"
         "movl 4(%eax), %eax\n" /* line 2634 */
         "movl $6, 4(%ebx)\n" /* line 662 */
         "movl $1, (%ebx)\n" /* line 663 */
@@ -862,6 +872,77 @@ Bool EvalPrimitiveExpression(void)
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf92c54_00092e85\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_92c54_0:\n"
+        ".long .Lf92c54_00092c7a\n"
+        ".long .Lf92c54_00092c93\n"
+        ".long .Lf92c54_00092cac\n"
+        ".long .Lf92c54_00092cc7\n"
+        ".long .Lf92c54_00092ce5\n"
+        ".long .Lf92c54_00092d01\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092d1d\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092d34\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092c70\n"
+        ".long .Lf92c54_00092d71\n"
+        ".long .Lf92c54_00092d8e\n"
+        ".text\n"
     );
 }
 
@@ -996,7 +1077,8 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "cmpl $0x40, (%eax)\n" /* line 4594 */
         "ja .Lf9300e_000931ad\n"
         "movl (%eax), %eax\n"
-        "jmpl *CorrectSolidDeltas+3852(, %eax, 4)\n"
+        "jmpl *.Ljt_9300e_0(, %eax, 4)\n"
+        ".Lf9300e_00093034:\n"
         "movl 8(%ebx), %edi\n" /* line 4644 | val, abortLevel */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         "movl scrCompileGlob+60, %esi\n" /* line 4141 | currentBlock */
@@ -1117,6 +1199,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf9300e_000931b8:\n"
         "movl 4(%ebx), %esi\n" /* line 4597 | val, currentBlock */
         "movl (%esi), %eax\n" /* line 2915 | j */
         "cmpl $4, %eax\n"
@@ -1131,12 +1214,14 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl -0x174(%ebp), %edx\n"
         "calll Scr_CalcLocalVarsVariableExpressionRef\n"
         "jmp .Lf9300e_000931ad\n"
+        ".Lf9300e_000931e3:\n"
         "movl -0x174(%ebp), %esi\n" /* line 4602 | currentBlock */
         "movl (%esi), %eax\n" /* currentBlock */
         "testl %eax, %eax\n"
         "jne .Lf9300e_000931ad\n"
         "movl $3, (%esi)\n" /* line 4603 | currentBlock */
         "jmp .Lf9300e_000931ad\n"
+        ".Lf9300e_000931f7:\n"
         "movl 8(%ebx), %edi\n" /* line 4607 | val, abortLevel */
         "movl 0x10(%ebx), %eax\n" /* line 924 */
         "testl %eax, %eax\n"
@@ -1239,6 +1324,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "movl -0xa8(%ebp), %ecx\n"
         "jmp .Lf9300e_00093294\n"
         /* } scope */
+        ".Lf9300e_0009338d:\n"
         "leal 0x1c(%ebx), %esi\n" /* line 4611 | val, elseStatBlock */
         "movl 0xc(%ebx), %eax\n" /* val */
         "movl %eax, -0x170(%ebp)\n"
@@ -1415,6 +1501,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* } scope */
         /* } scope */
+        ".Lf9300e_00093621:\n"
         "leal 0x14(%ebx), %edx\n" /* line 4615 | val */
         "movl %edx, -0x14c(%ebp)\n" /* whileStatBlock */
         "movl 8(%ebx), %edi\n" /* val, abortLevel */
@@ -1558,6 +1645,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* } scope */
         /* } scope */
+        ".Lf9300e_000937f9:\n"
         "leal 0x20(%ebx), %eax\n" /* line 4619 | val */
         "movl %eax, -0x11c(%ebp)\n" /* forStatPostBlock */
         "leal 0x1c(%ebx), %edx\n" /* val */
@@ -1726,6 +1814,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         /* } scope */
         /* } scope */
         /* } scope */
+        ".Lf9300e_00093a27:\n"
         "movl 4(%ebx), %esi\n" /* line 4624 | val, elseStatBlock */
         "movl (%esi), %eax\n" /* line 2915 | j */
         "cmpl $4, %eax\n"
@@ -1753,6 +1842,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "jne .Lf9300e_00093a60\n"
         "jmp .Lf9300e_000931ad\n"
         /* } scope */
+        ".Lf9300e_00093a7a:\n"
         "movl 4(%ebx), %esi\n" /* line 4628 | val, elseStatBlock */
         "movl (%esi), %eax\n" /* line 2915 | j */
         "cmpl $4, %eax\n"
@@ -1780,6 +1870,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "jne .Lf9300e_00093ab3\n"
         "jmp .Lf9300e_000931ad\n"
         /* } scope */
+        ".Lf9300e_00093acd:\n"
         "movl 4(%ebx), %esi\n" /* line 4632 | val, elseStatBlock */
         /* { scope 1: childCount, childBlocks, childCount, childBlocks, ... */
         "movl (%esi), %eax\n" /* line 4679 | elseStatBlock */
@@ -1795,6 +1886,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "jne .Lf9300e_00093add\n"
         "jmp .Lf9300e_000931ad\n"
         /* } scope */
+        ".Lf9300e_00093af6:\n"
         "movl 8(%ebx), %edi\n" /* line 4640 | val, abortLevel */
         "movl (%edi), %eax\n" /* line 3881 | i */
         "movl 4(%eax), %ebx\n" /* block */
@@ -1838,6 +1930,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "jmp .Lf9300e_00093afe\n"
         /* } scope */
         /* } scope */
+        ".Lf9300e_00093b5b:\n"
         "leal 0xc(%ebx), %ecx\n" /* line 4636 | val */
         "movl %ecx, -0xdc(%ebp)\n" /* devStatBlock */
         "movl 4(%ebx), %esi\n" /* val, elseStatBlock */
@@ -1958,6 +2051,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "jmp .Lf9300e_00093c12\n"
         /* } scope */
         /* } scope */
+        ".Lf9300e_00093cfc:\n"
         "movl -0x174(%ebp), %esi\n" /* line 3286 | j */
         "movl (%esi), %edi\n" /* j, i */
         "testl %edi, %edi\n" /* i */
@@ -1982,6 +2076,7 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         "jne .Lf9300e_000931ad\n"
         "movl $2, (%esi)\n" /* line 4650 | elseStatBlock */
         "jmp .Lf9300e_000931ad\n"
+        ".Lf9300e_00093d5a:\n"
         "movl -0x174(%ebp), %eax\n" /* line 3298 */
         "movl (%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -3543,6 +3638,75 @@ unsigned int Scr_CalcLocalVarsStatement(scr_block_t *block)
         ".Lf9300e_0009500c:\n"
         "movl -0x28(%ebp), %edx\n"
         "jmp .Lf9300e_00094f22\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_9300e_0:\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931b8\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931e3\n"
+        ".long .Lf9300e_000931e3\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931f7\n"
+        ".long .Lf9300e_0009338d\n"
+        ".long .Lf9300e_00093621\n"
+        ".long .Lf9300e_000937f9\n"
+        ".long .Lf9300e_00093a27\n"
+        ".long .Lf9300e_00093a27\n"
+        ".long .Lf9300e_00093a7a\n"
+        ".long .Lf9300e_00093acd\n"
+        ".long .Lf9300e_00093b5b\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_00093af6\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_00093034\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_000931ad\n"
+        ".long .Lf9300e_00093cfc\n"
+        ".long .Lf9300e_00093d5a\n"
+        ".text\n"
     );
 }
 
@@ -3561,7 +3725,8 @@ unsigned int EmitValue(void)
         "cmpl $6, 4(%eax)\n" /* line 1185 */
         "ja .Lf95014_00095093\n"
         "movl 4(%eax), %eax\n"
-        "jmpl *CorrectSolidDeltas+4112(, %eax, 4)\n"
+        "jmpl *.Ljt_95014_0(, %eax, 4)\n"
+        ".Lf95014_0009502f:\n"
         "movl 8(%ecx), %esi\n" /* line 1204 | constValue */
         "movl (%ecx), %ebx\n" /* constValue, value */
         "xorl %ecx, %ecx\n" /* line 1161 */
@@ -3591,6 +3756,7 @@ unsigned int EmitValue(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf95014_0009509b:\n"
         "movl 8(%ecx), %esi\n" /* line 1188 | constValue */
         "xorl %ecx, %ecx\n" /* line 653 */
         "movl $1, %edx\n"
@@ -3600,6 +3766,7 @@ unsigned int EmitValue(void)
         "movl %esi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf95014_00095093\n"
+        ".Lf95014_000950c1:\n"
         "movl 8(%ecx), %esi\n" /* line 1192 | constValue */
         "movl %esi, %edx\n"
         "movl (%ecx), %eax\n" /* constValue */
@@ -3609,6 +3776,7 @@ unsigned int EmitValue(void)
         "popl %edi\n"
         "popl %ebp\n"
         "jmp EmitGetInteger\n" /* line 1192 */
+        ".Lf95014_000950d4:\n"
         "movl 8(%ecx), %esi\n" /* line 1196 | constValue */
         "movl (%ecx), %ebx\n" /* constValue, value */
         "xorl %ecx, %ecx\n" /* line 732 */
@@ -3625,6 +3793,7 @@ unsigned int EmitValue(void)
         "movl %ebx, (%eax)\n" /* line 624 | stringValue */
         "jmp .Lf95014_00095093\n"
         /* } scope */
+        ".Lf95014_0009510f:\n"
         "movl 8(%ecx), %esi\n" /* line 1208 | constValue */
         "movl (%ecx), %edi\n" /* constValue, value */
         /* { scope 1 */
@@ -3651,6 +3820,7 @@ unsigned int EmitValue(void)
         "calll RemoveRefToVector\n"
         "jmp .Lf95014_00095093\n"
         /* } scope */
+        ".Lf95014_00095166:\n"
         "movl 8(%ecx), %esi\n" /* line 1200 | constValue */
         "movl (%ecx), %ebx\n" /* constValue, value */
         "xorl %ecx, %ecx\n" /* line 1142 */
@@ -3669,6 +3839,17 @@ unsigned int EmitValue(void)
         "movl %ebx, (%esp)\n" /* line 267 | stringValue */
         "calll SL_AddRefToString\n"
         "jmp .Lf95014_00095083\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_95014_0:\n"
+        ".long .Lf95014_0009509b\n"
+        ".long .Lf95014_00095093\n"
+        ".long .Lf95014_00095166\n"
+        ".long .Lf95014_0009502f\n"
+        ".long .Lf95014_0009510f\n"
+        ".long .Lf95014_000950d4\n"
+        ".long .Lf95014_000950c1\n"
+        ".text\n"
     );
 }
 
@@ -3754,7 +3935,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "retl\n"
         /* { scope 1 */
         ".Lf951a4_00095289:\n"
-        "jmpl *CorrectSolidDeltas+4140(, %eax, 4)\n" /* line 352 */
+        "jmpl *.Ljt_951a4_0(, %eax, 4)\n" /* line 352 */
         ".Lf951a4_00095290:\n"
         "xorl %esi, %esi\n" /* line 329 | valueIndex */
         "movl $scrCompileGlob+92, %ebx\n" /* index */
@@ -3766,6 +3947,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "cmpl %esi, %edi\n" /* valueIndex */
         "jne .Lf951a4_00095297\n"
         "jmp .Lf951a4_000951d1\n"
+        ".Lf951a4_000952ad:\n"
         "movzbl (%edx), %eax\n" /* line 355 */
         "cmpb $0x1e, %al\n"
         "je .Lf951a4_000954a4\n"
@@ -3781,12 +3963,14 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "movl %eax, scrCompileGlob\n"
         "movb %bl, (%eax)\n" /* line 617 | index */
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_000952e5:\n"
         "cmpb $0x5c, (%edx)\n" /* line 558 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 560 */
         "movl scrCompilePub+44, %eax\n" /* line 561 */
         "movb $0x5f, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_000952fd:\n"
         "movzbl (%edx), %eax\n" /* line 541 */
         "cmpb $0x1e, %al\n"
         "je .Lf951a4_0009546a\n"
@@ -3800,16 +3984,19 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "movl %eax, scrCompileGlob\n"
         "movb %bl, (%eax)\n" /* line 617 | index */
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_00095332:\n"
         "cmpb $0xf, (%edx)\n" /* line 532 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 534 */
         "movl scrCompilePub+44, %eax\n" /* line 535 */
         "movb $0x54, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_0009534d:\n"
         "cmpb $0x16, (%edx)\n" /* line 449 */
         "jne .Lf951a4_0009525f\n"
         "movb $0x30, (%edx)\n" /* line 451 */
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_0009535e:\n"
         "movzbl (%edx), %eax\n" /* line 422 */
         "cmpb $0x26, %al\n"
         "je .Lf951a4_00095472\n"
@@ -3819,6 +4006,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "jne .Lf951a4_0009525f\n"
         "movb $0x2c, (%edx)\n" /* line 440 */
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_00095381:\n"
         "movzbl (%edx), %eax\n" /* line 395 */
         "cmpb $0x26, %al\n"
         "je .Lf951a4_0009547a\n"
@@ -3828,6 +4016,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "jne .Lf951a4_0009525f\n"
         "movb $0x28, (%edx)\n" /* line 413 */
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_000953a4:\n"
         "movzbl (%edx), %eax\n" /* line 374 */
         "cmpb $0x37, %al\n"
         "je .Lf951a4_00095492\n"
@@ -3837,10 +4026,12 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "movl scrCompilePub+44, %eax\n" /* line 386 */
         "movb $0x21, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_000953c9:\n"
         "cmpb $0x4e, (%edx)\n" /* line 505 */
         "jne .Lf951a4_0009525f\n"
         "movb $0x4f, (%edx)\n" /* line 507 */
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_000953da:\n"
         "cmpb $0xf, (%edx)\n" /* line 513 */
         "jne .Lf951a4_0009525f\n"
         "calll RemoveOpcodePos\n" /* line 515 */
@@ -3859,6 +4050,7 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "movl %eax, scrCompileGlob\n" /* line 524 */
         "movb $0x4f, -1(%edx)\n" /* line 525 */
         "jmp .Lf951a4_00095281\n"
+        ".Lf951a4_00095431:\n"
         "movzbl (%edx), %eax\n" /* line 457 */
         "cmpb $0x37, %al\n"
         "je .Lf951a4_000954b6\n"
@@ -3919,6 +4111,73 @@ unsigned int EmitOpcode(unsigned int op, int offset, int callType)
         "movl scrCompilePub+44, %eax\n" /* line 487 */
         "movb $0x38, (%eax)\n"
         "jmp .Lf951a4_00095281\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_951a4_0:\n"
+        ".long .Lf951a4_000952ad\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_000953a4\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_00095381\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009535e\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009534d\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_00095431\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_000953c9\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_000953da\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_00095332\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_000952fd\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_0009525f\n"
+        ".long .Lf951a4_000952e5\n"
+        ".text\n"
     );
 }
 
@@ -5109,7 +5368,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "subl $0x11, %edx\n"
         "cmpl $0x39, %edx\n"
         "ja .Lf962cc_000962ea\n"
-        "jmpl *CorrectSolidDeltas+4392(, %edx, 4)\n"
+        "jmpl *.Ljt_962cc_0(, %edx, 4)\n"
         ".Lf962cc_000962ea:\n"
         "movl %edi, %edx\n" /* line 2694 | constValue */
         "calll EvalPrimitiveExpression\n"
@@ -5122,12 +5381,14 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf962cc_000962fc:\n"
         "movl 4(%eax), %esi\n" /* line 2654 | expr */
         "movl %ecx, %edx\n"
         "movl %esi, %eax\n" /* expr */
         "calll EmitVariableExpression\n"
         "xorl %eax, %eax\n" /* expr */
         "jmp .Lf962cc_000962f4\n"
+        ".Lf962cc_0009630c:\n"
         "movl 8(%eax), %edx\n" /* line 2678 | expr */
         "movl %edx, -0x48(%ebp)\n"
         "movl 4(%eax), %esi\n" /* expr */
@@ -5144,6 +5405,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "calll EmitFunction\n"
         "xorl %eax, %eax\n"
         "jmp .Lf962cc_000962f4\n"
+        ".Lf962cc_00096347:\n"
         "movl 4(%eax), %esi\n" /* line 2650 | expr */
         "movl (%esi), %eax\n" /* line 2429 */
         "cmpl $0x17, %eax\n"
@@ -5153,6 +5415,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         ".Lf962cc_0009635e:\n"
         "xorl %eax, %eax\n" /* line 2694 | expr */
         "jmp .Lf962cc_000962f4\n"
+        ".Lf962cc_00096362:\n"
         "movl 4(%eax), %esi\n" /* line 2658 | expr */
         "xorl %ecx, %ecx\n" /* line 1268 */
         "movl $1, %edx\n"
@@ -5169,21 +5432,25 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf962cc_00096390:\n"
         "movl 4(%eax), %esi\n" /* line 2662 | expr */
         "xorl %ecx, %ecx\n" /* line 1275 */
         "movl $1, %edx\n"
         "movl $0x10, %eax\n"
         "jmp .Lf962cc_00096371\n"
+        ".Lf962cc_000963a1:\n"
         "movl 4(%eax), %esi\n" /* line 2666 | expr */
         "xorl %ecx, %ecx\n" /* line 1282 */
         "movl $1, %edx\n"
         "movl $0x11, %eax\n"
         "jmp .Lf962cc_00096371\n"
+        ".Lf962cc_000963b2:\n"
         "movl 4(%eax), %esi\n" /* line 2670 | expr */
         "xorl %ecx, %ecx\n" /* line 1289 */
         "movl $1, %edx\n"
         "movl $0x12, %eax\n"
         "jmp .Lf962cc_00096371\n"
+        ".Lf962cc_000963c3:\n"
         "movl 8(%eax), %edx\n" /* line 2647 | expr */
         "movl %edx, -0x48(%ebp)\n"
         "movl 4(%eax), %esi\n" /* expr */
@@ -5255,6 +5522,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "jmp .Lf962cc_00096455\n"
         /* } scope */
         /* } scope */
+        ".Lf962cc_0009648b:\n"
         "movl 8(%eax), %edx\n" /* line 2674 | expr */
         "movl %edx, -0x48(%ebp)\n"
         "movl 4(%eax), %esi\n" /* expr */
@@ -5277,11 +5545,13 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "calll AddOpcodePos\n"
         "xorl %eax, %eax\n"
         "jmp .Lf962cc_000962f4\n"
+        ".Lf962cc_000964d0:\n"
         "movl 4(%eax), %esi\n" /* line 2682 | expr */
         "xorl %ecx, %ecx\n" /* line 1424 */
         "movl $1, %edx\n"
         "movl $0x25, %eax\n"
         "jmp .Lf962cc_00096371\n"
+        ".Lf962cc_000964e4:\n"
         "movl 8(%eax), %edx\n" /* line 2686 | expr */
         "movl %edx, -0x48(%ebp)\n"
         "movl 4(%eax), %esi\n" /* expr */
@@ -5309,6 +5579,7 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "calll SL_RemoveRefToString\n"
         "xorl %eax, %eax\n"
         "jmp .Lf962cc_000962f4\n"
+        ".Lf962cc_0009655c:\n"
         "movl 4(%eax), %esi\n" /* line 2690 | expr */
         "movl imp_scrAnimPub, %eax\n" /* line 740 */
         "movl 0x414(%eax), %eax\n"
@@ -5456,6 +5727,68 @@ Bool EmitOrEvalPrimitiveExpression(void)
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf962cc_0009666f\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_962cc_0:\n"
+        ".long .Lf962cc_000962fc\n"
+        ".long .Lf962cc_0009630c\n"
+        ".long .Lf962cc_00096347\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_00096362\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_00096390\n"
+        ".long .Lf962cc_000963a1\n"
+        ".long .Lf962cc_000963b2\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000963c3\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_0009648b\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000964d0\n"
+        ".long .Lf962cc_000964e4\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_000962ea\n"
+        ".long .Lf962cc_0009655c\n"
+        ".text\n"
     );
 }
 
@@ -5478,7 +5811,8 @@ Bool EmitOrEvalExpression(void)
         "subl $6, %eax\n"
         "cmpl $0x2d, %eax\n"
         "ja .Lf9671a_00096776\n"
-        "jmpl *CorrectSolidDeltas+4624(, %eax, 4)\n"
+        "jmpl *.Ljt_9671a_0(, %eax, 4)\n"
+        ".Lf9671a_0009673a:\n"
         "movl 4(%ebx), %eax\n" /* line 2870 | expr */
         /* { scope 1: constValue, constValue */
         "leal -0x24(%ebp), %edi\n" /* line 2883 | constValue */
@@ -5507,10 +5841,12 @@ Bool EmitOrEvalExpression(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf9671a_00096780:\n"
         "movl 4(%ebx), %eax\n" /* line 2851 | expr */
         "calll EmitOrEvalPrimitiveExpression\n"
         "movzbl %al, %eax\n"
         "jmp .Lf9671a_00096778\n"
+        ".Lf9671a_0009678d:\n"
         "movl 4(%ebx), %eax\n" /* line 2865 | expr */
         /* { scope 1: constValue, constValue */
         "leal -0x3c(%ebp), %edi\n" /* line 2883 | constValue */
@@ -5532,6 +5868,7 @@ Bool EmitOrEvalExpression(void)
         "calll AddOpcodePos\n"
         "xorl %eax, %eax\n"
         "jmp .Lf9671a_00096778\n"
+        ".Lf9671a_000967cd:\n"
         "movl 0x10(%ebx), %eax\n" /* line 2862 | expr */
         "movl %eax, -0x5c(%ebp)\n"
         "movl 0xc(%ebx), %edx\n" /* expr */
@@ -5579,6 +5916,7 @@ Bool EmitOrEvalExpression(void)
         /* } scope */
         "movzbl %al, %eax\n" /* line 2862 */
         "jmp .Lf9671a_00096778\n"
+        ".Lf9671a_0009686d:\n"
         "movl 0x10(%ebx), %eax\n" /* line 2858 | expr */
         "movl %eax, -0x5c(%ebp)\n"
         "movl 0xc(%ebx), %edx\n" /* expr */
@@ -5637,6 +5975,7 @@ Bool EmitOrEvalExpression(void)
         "xorl %eax, %eax\n"
         "jmp .Lf9671a_00096778\n"
         /* } scope */
+        ".Lf9671a_00096934:\n"
         "movl 0x10(%ebx), %eax\n" /* line 2854 | expr */
         "movl %eax, -0x5c(%ebp)\n"
         "movl 0xc(%ebx), %edx\n" /* expr */
@@ -5797,6 +6136,56 @@ Bool EmitOrEvalExpression(void)
         /* } scope */
         "movzbl %al, %eax\n" /* line 2862 */
         "jmp .Lf9671a_00096778\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_9671a_0:\n"
+        ".long .Lf9671a_00096780\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096776\n"
+        ".long .Lf9671a_00096934\n"
+        ".long .Lf9671a_0009686d\n"
+        ".long .Lf9671a_000967cd\n"
+        ".long .Lf9671a_0009678d\n"
+        ".long .Lf9671a_0009673a\n"
+        ".text\n"
     );
 }
 
@@ -6448,7 +6837,8 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "subl $0x11, %eax\n"
         "cmpl $0x1d, %eax\n"
         "ja .Lf971d6_00097206\n"
-        "jmpl *CorrectSolidDeltas+4808(, %eax, 4)\n"
+        "jmpl *.Ljt_971d6_0(, %eax, 4)\n"
+        ".Lf971d6_000971f2:\n"
         "movl 4(%ebx), %esi\n" /* line 2963 | expr */
         /* { scope 1 */
         "movl (%esi), %eax\n" /* line 1638 */
@@ -6469,6 +6859,7 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf971d6_0009721e:\n"
         "movl 4(%ebx), %esi\n" /* line 2971 | expr */
         "movl %ecx, %edx\n" /* block, sourcePos */
         "movl %esi, %eax\n"
@@ -6483,6 +6874,7 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "movl %ebx, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf971d6_00097216\n"
+        ".Lf971d6_00097250:\n"
         "movl 4(%ebx), %esi\n" /* line 2984 | expr */
         "xorl %ecx, %ecx\n" /* line 1316 */
         "xorl %edx, %edx\n"
@@ -6492,6 +6884,7 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "movl %esi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf971d6_00097216\n"
+        ".Lf971d6_00097273:\n"
         "movl 4(%ebx), %esi\n" /* line 2980 | expr */
         "xorl %ecx, %ecx\n" /* line 1306 */
         "xorl %edx, %edx\n"
@@ -6501,6 +6894,7 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "movl %esi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf971d6_00097216\n"
+        ".Lf971d6_00097296:\n"
         "movl 4(%ebx), %esi\n" /* line 2976 | expr */
         "xorl %ecx, %ecx\n" /* line 1296 */
         "xorl %edx, %edx\n"
@@ -6510,6 +6904,7 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "movl %esi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf971d6_00097216\n"
+        ".Lf971d6_000972bc:\n"
         "movl 4(%ebx), %esi\n" /* line 2967 | expr */
         "movl (%esi), %eax\n" /* line 2444 */
         "cmpl $0x17, %eax\n"
@@ -6562,6 +6957,40 @@ unsigned int EmitPrimitiveExpressionFieldObject(void)
         "movl %edi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf971d6_00097216\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_971d6_0:\n"
+        ".long .Lf971d6_0009721e\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_000972bc\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097296\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097273\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097250\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_00097206\n"
+        ".long .Lf971d6_000971f2\n"
+        ".text\n"
     );
 }
 
@@ -7060,7 +7489,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "cmpl $0x4d, (%eax)\n" /* line 4479 */
         "ja .Lf978e6_000979be\n"
         "movl (%eax), %eax\n"
-        "jmpl *CorrectSolidDeltas+4928(, %eax, 4)\n"
+        "jmpl *.Ljt_978e6_0(, %eax, 4)\n"
         ".Lf978e6_00097905:\n"
         "movl 4(%ecx), %eax\n" /* line 3051 */
         "cmpl $0x1f, (%eax)\n" /* line 3082 */
@@ -7120,6 +7549,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "popl %edi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf978e6_000979c6:\n"
         "movl 0x10(%ebx), %eax\n" /* line 4482 | val */
         "movl %eax, -0x44(%ebp)\n"
         "movl 0xc(%ebx), %edx\n" /* val, lastStatement */
@@ -7152,6 +7582,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %ecx, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097a2b:\n"
         "movl 4(%ebx), %edi\n" /* line 4486 | val */
         "movl (%edi), %eax\n" /* line 2429 */
         "cmpl $0x17, %eax\n"
@@ -7169,6 +7600,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %ebx, %eax\n" /* index */
         "calll EmitMethod\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097a68:\n"
         "movl 8(%ebx), %eax\n" /* line 4490 | val */
         "movl %eax, -0x3c(%ebp)\n"
         "movl 4(%ebx), %edi\n" /* val */
@@ -7198,6 +7630,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %ecx, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097ac4:\n"
         "movl 0x14(%ebx), %ecx\n" /* line 4506 | val */
         "movl 0x10(%ebx), %eax\n" /* val */
         "movl %eax, -0x44(%ebp)\n"
@@ -7223,6 +7656,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, %eax\n"
         "calll EmitIfElseStatement\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097b18:\n"
         "movl 0x10(%ebx), %ecx\n" /* line 4510 | val */
         "movl 0xc(%ebx), %esi\n" /* val, endSourcePos */
         "movl 8(%ebx), %eax\n" /* val */
@@ -7238,6 +7672,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, %eax\n"
         "calll EmitWhileStatement\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097b49:\n"
         "movl 0xc(%ebx), %eax\n" /* line 4498 | val */
         "movl %eax, -0x40(%ebp)\n"
         "movl 8(%ebx), %edx\n" /* val, lastStatement */
@@ -7270,6 +7705,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %eax, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097bbe:\n"
         "movl 0xc(%ebx), %ecx\n" /* line 4502 | val */
         "movl %ecx, -0x40(%ebp)\n"
         "movl 8(%ebx), %eax\n" /* val */
@@ -7287,6 +7723,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, %eax\n"
         "calll EmitIfStatement\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097bf7:\n"
         "movl 4(%ebx), %edi\n" /* line 4494 | val */
         "movl 8(%ebp), %esi\n" /* line 3118 | block */
         "movl (%esi), %eax\n"
@@ -7302,6 +7739,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097c29:\n"
         "movl 0x18(%ebx), %eax\n" /* line 4514 | val */
         "movl 0x14(%ebx), %ecx\n" /* val */
         "movl 0x10(%ebx), %esi\n" /* val, endSourcePos */
@@ -7325,6 +7763,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, %eax\n"
         "calll EmitForStatement\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097c75:\n"
         "movl 8(%ebx), %esi\n" /* line 4518 | val, endSourcePos */
         "movl 4(%ebx), %edi\n" /* val */
         "movb $1, scrCompileGlob+80\n" /* line 3791 */
@@ -7347,6 +7786,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %esi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097cda:\n"
         "movl 8(%ebx), %eax\n" /* line 4522 | val */
         "movl %eax, -0x3c(%ebp)\n"
         "movl 4(%ebx), %edi\n" /* val */
@@ -7367,6 +7807,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl $0xffffffff, %edx\n"
         "movl $0x39, %eax\n"
         "jmp .Lf978e6_00097aa7\n"
+        ".Lf978e6_00097d30:\n"
         "movl 0x10(%ebx), %esi\n" /* line 4526 | val, endSourcePos */
         "movl %esi, -0x44(%ebp)\n" /* endSourcePos */
         "movl 0xc(%ebx), %eax\n" /* val */
@@ -7409,6 +7850,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %esi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097dcb:\n"
         "movl 4(%ebx), %edi\n" /* line 4530 | val */
         "movb %dl, -0x2d(%ebp)\n" /* lastStatement */
         /* { scope 1: constValue */
@@ -7448,6 +7890,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "jmp .Lf978e6_00097dde\n"
         /* } scope */
         /* } scope */
+        ".Lf978e6_00097e32:\n"
         "movl 0x10(%ebx), %eax\n" /* line 4554 | val */
         "movl %eax, -0x44(%ebp)\n"
         "movl 0xc(%ebx), %edx\n" /* val, lastStatement */
@@ -7487,6 +7930,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %eax, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097eaf:\n"
         "movl 0xc(%ebx), %ecx\n" /* line 4558 | val */
         "movl %ecx, -0x40(%ebp)\n"
         "movl 8(%ebx), %eax\n" /* val */
@@ -7502,6 +7946,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, %eax\n"
         "calll EmitSwitchStatement\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00097ee1:\n"
         "movl 0x10(%ebx), %eax\n" /* line 4538 | val */
         "movl %eax, -0x44(%ebp)\n"
         "movl 0xc(%ebx), %edx\n" /* val, lastStatement */
@@ -7590,6 +8035,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "calll EmitOpcode\n"
         "jmp .Lf978e6_000979be\n"
         /* } scope */
+        ".Lf978e6_00097ff1:\n"
         "movl 0x10(%ebx), %ecx\n" /* line 4542 | val */
         "movl %ecx, -0x44(%ebp)\n"
         "movl 0xc(%ebx), %esi\n" /* val, endSourcePos */
@@ -7624,6 +8070,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "jmp .Lf978e6_0009801a\n"
         /* } scope */
         /* } scope */
+        ".Lf978e6_00098045:\n"
         "movl 4(%ebx), %edi\n" /* line 4546 | val */
         "xorl %ecx, %ecx\n" /* line 3138 */
         "xorl %edx, %edx\n"
@@ -7636,6 +8083,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, (%esp)\n"
         "calll AddOpcodePos\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_0009807b:\n"
         "movl 0x10(%ebx), %ecx\n" /* line 4550 | val */
         "movl %ecx, -0x44(%ebp)\n"
         "movl 0xc(%ebx), %esi\n" /* val, endSourcePos */
@@ -7677,16 +8125,19 @@ unsigned int EmitStatement(scr_block_t *block)
         "jmp .Lf978e6_000980c2\n"
         /* } scope */
         /* } scope */
+        ".Lf978e6_000980ef:\n"
         "movl 4(%ebx), %edi\n" /* line 4570 | val */
         "movl 8(%ebp), %edx\n" /* block, lastStatement */
         "movl %edi, %eax\n"
         "calll EmitBreakStatement\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00098101:\n"
         "movl 4(%ebx), %edi\n" /* line 4574 | val */
         "movl 8(%ebp), %edx\n" /* block, lastStatement */
         "movl %edi, %eax\n"
         "calll EmitContinueStatement\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00098113:\n"
         "movl 4(%ebx), %edi\n" /* line 4582 | val */
         "movl imp_scrVarPub, %eax\n" /* line 4410 */
         "cmpb $0, 0xb(%eax)\n"
@@ -7704,6 +8155,7 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %eax, scrCompileGlob\n"
         "movb $0, (%eax)\n" /* line 617 */
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00098155:\n"
         "movl 4(%ebx), %edi\n" /* line 4586 | val */
         "movl imp_scrVarPub, %eax\n" /* line 4410 */
         "cmpb $0, 0xb(%eax)\n"
@@ -7714,16 +8166,19 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %edi, (%esp)\n" /* line 206 */
         "calll SL_RemoveRefToString\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00098181:\n"
         "movl $str_0021da5c, 4(%esp)\n" /* line 4562 */
         "movl 8(%ebx), %eax\n" /* val */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_00098199:\n"
         "movl $str_0021da74, 4(%esp)\n" /* line 4566 */
         "movl 4(%ebx), %eax\n" /* val */
         "movl %eax, (%esp)\n"
         "calll CompileError\n"
         "jmp .Lf978e6_000979be\n"
+        ".Lf978e6_000981b1:\n"
         "movl 8(%ebx), %esi\n" /* line 4534 | val, endSourcePos */
         "movl 4(%ebx), %edi\n" /* val */
         "leal 0xc(%ebx), %eax\n" /* val */
@@ -8013,6 +8468,88 @@ unsigned int EmitStatement(scr_block_t *block)
         "movl %ebx, %eax\n" /* index */
         "calll EmitVariableExpressionRef\n"
         "jmp .Lf978e6_00097987\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_978e6_0:\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979c6\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_00097a2b\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_00097a68\n"
+        ".long .Lf978e6_00097bf7\n"
+        ".long .Lf978e6_00097b49\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_00097bbe\n"
+        ".long .Lf978e6_00097ac4\n"
+        ".long .Lf978e6_00097b18\n"
+        ".long .Lf978e6_00097c29\n"
+        ".long .Lf978e6_00097c75\n"
+        ".long .Lf978e6_00097cda\n"
+        ".long .Lf978e6_00097d30\n"
+        ".long .Lf978e6_00097dcb\n"
+        ".long .Lf978e6_000981b1\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_00097ee1\n"
+        ".long .Lf978e6_00097ff1\n"
+        ".long .Lf978e6_00098045\n"
+        ".long .Lf978e6_0009807b\n"
+        ".long .Lf978e6_00097e32\n"
+        ".long .Lf978e6_00097eaf\n"
+        ".long .Lf978e6_00098181\n"
+        ".long .Lf978e6_00098199\n"
+        ".long .Lf978e6_000980ef\n"
+        ".long .Lf978e6_00098101\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_000979be\n"
+        ".long .Lf978e6_00098113\n"
+        ".long .Lf978e6_00098155\n"
+        ".text\n"
     );
 }
 

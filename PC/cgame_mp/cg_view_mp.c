@@ -837,7 +837,7 @@ void CG_CalcViewValues(void)
         "cmpl $6, 0xc(%esi)\n" /* line 527 */
         "ja .Lf1d1694_001d1d07\n"
         "movl 0xc(%esi), %eax\n"
-        "jmpl *colorWhiteFaded+80(, %eax, 4)\n"
+        "jmpl *.Ljt_1d1694_0(, %eax, 4)\n"
         ".Lf1d1694_001d1ded:\n"
         "leal 0x28588(%edi), %ecx\n" /* line 717 | to */
         "leal 0x25bd8(%edi), %edx\n" /* from */
@@ -1116,6 +1116,7 @@ void CG_CalcViewValues(void)
         "addss 0x28590(%ecx), %xmm0\n"
         "movss %xmm0, 0x28590(%ecx)\n"
         "jmp .Lf1d1694_001d1b74\n"
+        ".Lf1d1694_001d22ab:\n"
         "leal 0x28594(%esi), %eax\n" /* line 530 */
         "xorl %edx, %edx\n" /* line 191 */
         "movl %edx, 0x28594(%esi)\n"
@@ -1133,6 +1134,7 @@ void CG_CalcViewValues(void)
         "movl %edx, 4(%ecx)\n" /* line 192 */
         "movl %edx, 8(%ecx)\n" /* line 193 */
         "jmp .Lf1d1694_001d1d07\n"
+        ".Lf1d1694_001d22f8:\n"
         "leal 0x28594(%esi), %eax\n" /* line 535 */
         "xorl %edx, %edx\n" /* line 191 */
         "movl %edx, 0x28594(%esi)\n"
@@ -1150,6 +1152,7 @@ void CG_CalcViewValues(void)
         "movl %edx, 4(%ecx)\n" /* line 192 */
         "movl %edx, 8(%ecx)\n" /* line 193 */
         "jmp .Lf1d1694_001d1d07\n"
+        ".Lf1d1694_001d2345:\n"
         "leal 0x28594(%esi), %eax\n" /* line 540 */
         "movl $0xbf800000, %ebx\n" /* line 191 */
         "movl %ebx, 0x28594(%esi)\n"
@@ -1167,6 +1170,7 @@ void CG_CalcViewValues(void)
         "movl %edx, 4(%ecx)\n" /* line 192 */
         "movl $0x3f800000, 8(%ecx)\n" /* line 193 */
         "jmp .Lf1d1694_001d1d07\n"
+        ".Lf1d1694_001d2392:\n"
         "leal 0x28594(%esi), %eax\n" /* line 545 */
         "movl $0x3f800000, %ebx\n" /* line 191 */
         "movl %ebx, 0x28594(%esi)\n"
@@ -1185,6 +1189,7 @@ void CG_CalcViewValues(void)
         "movl %edx, 4(%ecx)\n" /* line 192 */
         "movl %ebx, 8(%ecx)\n" /* line 193 */
         "jmp .Lf1d1694_001d1d07\n"
+        ".Lf1d1694_001d23db:\n"
         "leal 0x28594(%esi), %eax\n" /* line 550 */
         "xorl %edx, %edx\n" /* line 191 */
         "movl %edx, 0x28594(%esi)\n"
@@ -1197,6 +1202,7 @@ void CG_CalcViewValues(void)
         "movl %ebx, 0x285a0(%eax)\n"
         "movl %edx, 4(%ecx)\n" /* line 192 */
         "jmp .Lf1d1694_001d23c1\n"
+        ".Lf1d1694_001d2410:\n"
         "leal 0x28594(%esi), %eax\n" /* line 555 */
         "xorl %edx, %edx\n" /* line 191 */
         "movl %edx, 0x28594(%esi)\n"
@@ -1248,6 +1254,17 @@ void CG_CalcViewValues(void)
         "leal -0x1c2(%edx), %eax\n" /* line 358 */
         "movl %eax, 0x284dc(%ebx)\n"
         "jmp .Lf1d1694_001d1b41\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_1d1694_0:\n"
+        ".long .Lf1d1694_001d1d07\n"
+        ".long .Lf1d1694_001d22ab\n"
+        ".long .Lf1d1694_001d22f8\n"
+        ".long .Lf1d1694_001d2345\n"
+        ".long .Lf1d1694_001d2392\n"
+        ".long .Lf1d1694_001d23db\n"
+        ".long .Lf1d1694_001d2410\n"
+        ".text\n"
     );
 }
 

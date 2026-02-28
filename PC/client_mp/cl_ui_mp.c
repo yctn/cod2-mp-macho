@@ -629,7 +629,7 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "cmpl $9, 0xc(%ebp)\n" /* line 333 | sortKey */
         "ja .Lf17fb24_0017fc33\n"
         "movl 0xc(%ebp), %eax\n" /* sortKey */
-        "jmpl *g_color_table+384(, %eax, 4)\n"
+        "jmpl *.Ljt_17fb24_0(, %eax, 4)\n"
         ".Lf17fb24_0017fbc5:\n"
         "testl %edx, %edx\n" /* line 254 */
         "js .Lf17fb24_0017fbdb\n"
@@ -649,12 +649,14 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "leal 0x4540(%eax, %ecx, 8), %eax\n"
         "leal 4(%eax, %edx), %ebx\n"
         "jmp .Lf17fb24_0017fba5\n"
+        ".Lf17fb24_0017fc01:\n"
         "movzbl 0x17(%esi), %edx\n" /* line 359 | server1 */
         "movzbl 0x17(%ebx), %eax\n" /* server2 */
         "subl %eax, %edx\n" /* line 360 */
         "jne .Lf17fb24_0017fc20\n"
         ".Lf17fb24_0017fc0d:\n"
         "movl $0, 0x10(%ebp)\n" /* line 391 | sortDir */
+        ".Lf17fb24_0017fc14:\n"
         "movswl 0x1e(%esi), %edx\n" /* line 400 | server1 */
         "movswl 0x1e(%ebx), %eax\n" /* server2 */
         "subl %eax, %edx\n" /* line 401 */
@@ -731,6 +733,7 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "calll LAN_CompareHostname\n"
         "movl %eax, %edx\n"
         "jmp .Lf17fb24_0017fc20\n"
+        ".Lf17fb24_0017fcce:\n"
         "leal 0x78(%ebx), %eax\n" /* line 390 | server2 */
         "movl %eax, 4(%esp)\n"
         "leal 0x78(%esi), %eax\n" /* server1 */
@@ -741,15 +744,18 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "testl %eax, %eax\n" /* line 391 */
         "jne .Lf17fb24_0017fc20\n"
         "jmp .Lf17fb24_0017fc0d\n"
+        ".Lf17fb24_0017fcef:\n"
         "movzbl 0xd(%esi), %edx\n" /* line 385 | server1 */
         "movzbl 0xd(%ebx), %eax\n" /* server2 */
         "subl %eax, %edx\n" /* line 386 */
         "je .Lf17fb24_0017fc0d\n"
         "jmp .Lf17fb24_0017fc20\n"
+        ".Lf17fb24_0017fd04:\n"
         "leal 0x40(%ebx), %eax\n" /* line 380 | server2 */
         "movl %eax, 4(%esp)\n"
         "leal 0x40(%esi), %eax\n" /* server1 */
         "jmp .Lf17fb24_0017fcd8\n"
+        ".Lf17fb24_0017fd10:\n"
         "leal 0x20(%ebx), %eax\n" /* line 375 | server2 */
         "movl %eax, 4(%esp)\n"
         "leal 0x20(%esi), %eax\n" /* server1 */
@@ -759,6 +765,7 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "testl %eax, %eax\n" /* line 376 */
         "je .Lf17fb24_0017fc0d\n"
         "jmp .Lf17fb24_0017fc20\n"
+        ".Lf17fb24_0017fd31:\n"
         "movzbl 0x16(%esi), %edi\n" /* line 344 | server1 */
         "movzbl 0x16(%ebx), %ecx\n" /* server2 */
         "movl %edi, %eax\n"
@@ -772,16 +779,19 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "jne .Lf17fb24_0017fc20\n"
         "movl $0xffffffff, %edx\n"
         "jmp .Lf17fb24_0017fc20\n"
+        ".Lf17fb24_0017fd60:\n"
         "movzbl 0x11(%esi), %edx\n" /* line 337 | server1 */
         "movzbl 0x11(%ebx), %eax\n" /* server2 */
         "subl %eax, %edx\n" /* line 338 */
         "je .Lf17fb24_0017fc0d\n"
         "jmp .Lf17fb24_0017fc20\n"
+        ".Lf17fb24_0017fd75:\n"
         "movzbl 0x12(%esi), %edx\n" /* line 369 | server1 */
         "movzbl 0x12(%ebx), %eax\n" /* server2 */
         "subl %eax, %edx\n" /* line 370 */
         "je .Lf17fb24_0017fc0d\n"
         "jmp .Lf17fb24_0017fc20\n"
+        ".Lf17fb24_0017fd8a:\n"
         "movzbl 0x18(%esi), %edx\n" /* line 364 | server1 */
         "movzbl 0x18(%ebx), %eax\n" /* server2 */
         "subl %eax, %edx\n" /* line 365 */
@@ -793,6 +803,20 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
         "jne .Lf17fb24_0017fc20\n"
         "movl $1, %edx\n"
         "jmp .Lf17fb24_0017fc20\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_17fb24_0:\n"
+        ".long .Lf17fb24_0017fd60\n"
+        ".long .Lf17fb24_0017fd31\n"
+        ".long .Lf17fb24_0017fd10\n"
+        ".long .Lf17fb24_0017fd04\n"
+        ".long .Lf17fb24_0017fcef\n"
+        ".long .Lf17fb24_0017fcce\n"
+        ".long .Lf17fb24_0017fd8a\n"
+        ".long .Lf17fb24_0017fd75\n"
+        ".long .Lf17fb24_0017fc01\n"
+        ".long .Lf17fb24_0017fc14\n"
+        ".text\n"
     );
 }
 

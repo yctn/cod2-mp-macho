@@ -1127,27 +1127,174 @@ void Scr_TraverseScript(const char *pos)
         "movzbl (%edx), %eax\n" /* line 5282 */
         "cmpl $0x86, %eax\n"
         "ja .Lf8215c_00082176\n"
-        "jmpl *CorrectSolidDeltas+928(, %eax, 4)\n"
+        "jmpl *.Ljt_8215c_0(, %eax, 4)\n"
         ".Lf8215c_00082176:\n"
         "popl %ebp\n" /* line 5457 */
         "retl\n"
+        ".Lf8215c_00082178:\n"
         "addl $5, %edx\n" /* line 157 */
         "jmp .Lf8215c_00082162\n"
+        ".Lf8215c_0008217d:\n"
         "addl $3, %edx\n" /* line 144 */
         "jmp .Lf8215c_00082162\n"
+        ".Lf8215c_00082182:\n"
         "addl $4, %edx\n"
         "jmp .Lf8215c_00082162\n"
+        ".Lf8215c_00082187:\n"
         "addl $2, %edx\n" /* line 5440 */
         "jmp .Lf8215c_00082162\n"
+        ".Lf8215c_0008218c:\n"
         "movl %ecx, %edx\n" /* line 5274 | pos */
         "jmp .Lf8215c_00082162\n"
+        ".Lf8215c_00082190:\n"
         "movzwl (%ecx), %eax\n" /* line 183 */
         "leal 3(%edx, %eax, 8), %edx\n"
         "jmp .Lf8215c_00082162\n"
+        ".Lf8215c_00082199:\n"
         "addl $0xd, %edx\n" /* line 170 */
         "jmp .Lf8215c_00082162\n"
+        ".Lf8215c_0008219e:\n"
         "addl $9, %edx\n" /* line 157 */
         "jmp .Lf8215c_00082162\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_8215c_0:\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_00082199\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_00082182\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_00082182\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008219e\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008219e\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_0008217d\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082178\n"
+        ".long .Lf8215c_00082190\n"
+        ".long .Lf8215c_0008218c\n"
+        ".long .Lf8215c_00082176\n"
+        ".long .Lf8215c_00082176\n"
+        ".long .Lf8215c_00082176\n"
+        ".long .Lf8215c_00082176\n"
+        ".long .Lf8215c_00082176\n"
+        ".long .Lf8215c_00082176\n"
+        ".long .Lf8215c_00082187\n"
+        ".long .Lf8215c_00082187\n"
+        ".text\n"
     );
 }
 
@@ -1176,7 +1323,7 @@ const char * Scr_GetNextCodepos(VariableValue *top, const char *pos, int opcode,
         ".Lf821a4_000821c9:\n"
         "cmpl $0x86, %edx\n" /* line 2339 */
         "ja .Lf821a4_000821d8\n"
-        "jmpl *CorrectSolidDeltas+1468(, %edx, 4)\n"
+        "jmpl *.Ljt_821a4_0(, %edx, 4)\n"
         ".Lf821a4_000821d8:\n"
         "movl imp_scrVarPub, %edx\n"
         ".Lf821a4_000821de:\n"
@@ -1201,21 +1348,25 @@ const char * Scr_GetNextCodepos(VariableValue *top, const char *pos, int opcode,
         "leal -0x4f(%edx), %eax\n" /* line 2301 */
         "cmpl $8, %eax\n"
         "ja .Lf821a4_000821c9\n"
-        "jmpl *CorrectSolidDeltas+2008(, %eax, 4)\n"
+        "jmpl *.Ljt_821a4_1(, %eax, 4)\n"
         ".Lf821a4_00082219:\n"
         "movl %esi, %ebx\n" /* line 2610 | pos */
         "jmp .Lf821a4_000821c0\n"
+        ".Lf821a4_0008221d:\n"
         "leal 3(%ebx), %esi\n" /* line 144 */
         "movl imp_scrVarPub, %edx\n"
         "jmp .Lf821a4_000821de\n"
+        ".Lf821a4_00082228:\n"
         "movl 8(%ebp), %eax\n" /* line 2305 | top */
         "cmpl $1, 4(%eax)\n"
         "jne .Lf821a4_000821c9\n"
+        ".Lf821a4_00082231:\n"
         "cmpl $0x1f, scrVmPub+8\n" /* line 2313 */
         "jg .Lf821a4_000821c9\n"
         "movl $0, (%edi)\n" /* line 2316 | localId */
         "movl (%esi), %esi\n" /* line 215 */
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_00082244:\n"
         "movl 8(%ebp), %eax\n" /* top */
         ".Lf821a4_00082247:\n"
         "cmpl $9, 4(%eax)\n" /* line 2328 */
@@ -1225,11 +1376,13 @@ const char * Scr_GetNextCodepos(VariableValue *top, const char *pos, int opcode,
         "movl $0, (%edi)\n" /* line 2334 | localId */
         "movl (%eax), %esi\n" /* line 2335 */
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_00082268:\n"
         "movl 8(%ebp), %ecx\n" /* line 2321 | top */
         "cmpl $1, -4(%ecx)\n"
         "jne .Lf821a4_000821c9\n"
         "movl %ecx, %eax\n"
         "jmp .Lf821a4_00082247\n"
+        ".Lf821a4_00082279:\n"
         "movl 8(%ebp), %ecx\n" /* line 2363 | top */
         "movl (%ecx), %eax\n"
         "movl 4(%ecx), %edx\n"
@@ -1256,9 +1409,11 @@ const char * Scr_GetNextCodepos(VariableValue *top, const char *pos, int opcode,
         "je .Lf821a4_00082200\n"
         "addl %eax, %esi\n" /* line 2373 */
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_000822cd:\n"
         "movl (%esi), %eax\n" /* line 2379 */
         "leal 4(%esi, %eax), %esi\n"
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_000822d8:\n"
         "movl (%esi), %eax\n" /* line 2387 */
         "leal 4(%esi, %eax), %eax\n"
         "leal 2(%eax), %esi\n" /* line 144 */
@@ -1273,14 +1428,17 @@ const char * Scr_GetNextCodepos(VariableValue *top, const char *pos, int opcode,
         ".Lf821a4_000822ff:\n"
         "leal (%esi, %ebx, 8), %esi\n" /* line 2410 */
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_00082307:\n"
         "leal 5(%ebx), %esi\n" /* line 157 */
         "movl imp_scrVarPub, %edx\n"
         "jmp .Lf821a4_000821de\n"
+        ".Lf821a4_00082315:\n"
         "leal 2(%esi), %edx\n" /* line 2383 */
         "movzwl (%esi), %eax\n"
         "movl %edx, %esi\n"
         "subl %eax, %esi\n"
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_00082324:\n"
         "movl 8(%ebp), %ecx\n" /* line 2347 | top */
         "movl (%ecx), %eax\n"
         "movl 4(%ecx), %edx\n"
@@ -1307,23 +1465,29 @@ const char * Scr_GetNextCodepos(VariableValue *top, const char *pos, int opcode,
         "jne .Lf821a4_00082200\n"
         "addl %eax, %esi\n" /* line 2373 */
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_00082378:\n"
         "leal 4(%ebx), %esi\n" /* line 144 */
         "movl imp_scrVarPub, %edx\n"
         "jmp .Lf821a4_000821de\n"
+        ".Lf821a4_00082386:\n"
         "leal 0xd(%ebx), %esi\n" /* line 170 */
         "movl imp_scrVarPub, %edx\n"
         "jmp .Lf821a4_000821de\n"
+        ".Lf821a4_00082394:\n"
         "movzwl (%esi), %eax\n" /* line 183 */
         "leal 2(%esi, %eax, 8), %esi\n"
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_000823a0:\n"
         "leal 9(%ebx), %esi\n" /* line 157 */
         "movl imp_scrVarPub, %edx\n"
         "jmp .Lf821a4_000821de\n"
+        ".Lf821a4_000823ae:\n"
         "cmpl $1, scrVmPub+8\n" /* line 2262 */
         "jg .Lf821a4_000823cc\n"
         ".Lf821a4_000823b7:\n"
         "xorl %esi, %esi\n" /* line 2610 */
         "jmp .Lf821a4_00082200\n"
+        ".Lf821a4_000823be:\n"
         "leal 2(%ebx), %esi\n" /* line 2530 | pos */
         "movl imp_scrVarPub, %edx\n"
         "jmp .Lf821a4_000821de\n"
@@ -1372,6 +1536,158 @@ const char * Scr_GetNextCodepos(VariableValue *top, const char *pos, int opcode,
         "movl (%edx), %eax\n" /* line 2406 */
         "movl %eax, -0x2c(%ebp)\n" /* caseValue */
         "jmp .Lf821a4_0008240b\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_821a4_0:\n"
+        ".long .Lf821a4_000823ae\n"
+        ".long .Lf821a4_000823ae\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_00082386\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_00082378\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_00082378\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823a0\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_000823a0\n"
+        ".long .Lf821a4_00082307\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_00082324\n"
+        ".long .Lf821a4_00082279\n"
+        ".long .Lf821a4_00082324\n"
+        ".long .Lf821a4_00082279\n"
+        ".long .Lf821a4_000822cd\n"
+        ".long .Lf821a4_00082315\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000822d8\n"
+        ".long .Lf821a4_00082394\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000821d8\n"
+        ".long .Lf821a4_000823a0\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_0008221d\n"
+        ".long .Lf821a4_000823be\n"
+        ".long .Lf821a4_000823be\n"
+        ".text\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_821a4_1:\n"
+        ".long .Lf821a4_00082231\n"
+        ".long .Lf821a4_00082231\n"
+        ".long .Lf821a4_00082244\n"
+        ".long .Lf821a4_00082228\n"
+        ".long .Lf821a4_00082268\n"
+        ".long .Lf821a4_00082231\n"
+        ".long .Lf821a4_00082244\n"
+        ".long .Lf821a4_00082228\n"
+        ".long .Lf821a4_00082268\n"
+        ".text\n"
     );
 }
 
@@ -3635,7 +3951,8 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpl $0x86, %edi\n" /* line 412 | opcode */
         "ja .Lf840ae_00084155\n"
         ".Lf840ae_0008412a:\n"
-        "jmpl *CorrectSolidDeltas+2044(, %edi, 4)\n"
+        "jmpl *.Ljt_840ae_0(, %edi, 4)\n"
+        ".Lf840ae_00084131:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1676 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -3649,6 +3966,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         ".Lf840ae_00084155:\n"
         "movl 0x18(%ebp), %edx\n"
         "jmp .Lf840ae_000849a4\n"
+        ".Lf840ae_0008415d:\n"
         "movzbl (%esi), %eax\n" /* line 1011 | builtinIndex */
         "movl %eax, scrVmPub+28\n"
         "addl $1, 8(%ebp)\n" /* line 1012 | fs */
@@ -3786,6 +4104,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $8, 0x14(%ebp)\n" /* line 1889 */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084335:\n"
         "movzbl (%esi), %eax\n" /* line 928 | builtinIndex */
         "movl %eax, scrVmPub+28\n"
         "addl $1, 8(%ebp)\n" /* line 929 | fs */
@@ -3939,10 +4258,12 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl $0, 4(%eax)\n" /* line 975 */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084546:\n"
         "movl imp_scrVarPub, %eax\n" /* line 779 */
         "movl 0x2c(%eax), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* objectId */
         /* { scope 2 */
+        ".Lf840ae_00084551:\n"
         "movl 8(%ebp), %eax\n" /* line 143 | fs */
         "movzwl (%eax), %edx\n"
         "addl $2, %eax\n" /* line 144 */
@@ -3955,10 +4276,12 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084577:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1140 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
         "movl $8, 4(%eax)\n" /* line 1142 */
+        ".Lf840ae_00084587:\n"
         "cmpl $0x1e, scrVmPub+8\n" /* line 1146 */
         "jle .Lf840ae_000862da\n"
         "movl imp_scrVarPub, %edx\n" /* line 4922 */
@@ -4254,6 +4577,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl $8, 4(%eax)\n"
         "addl $1, -0x3c(%ebp)\n" /* line 1843 | thread_count */
         "jmp .Lf840ae_0008470a\n"
+        ".Lf840ae_000849ca:\n"
         "movzbl (%esi), %eax\n" /* line 126 */
         "shll $2, %eax\n"
         "movl scrVmPub, %edx\n"
@@ -4265,6 +4589,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, 8(%ebp)\n" /* fs */
         "movl %eax, %ecx\n"
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000849ea:\n"
         "movl scrVmPub, %ebx\n" /* line 796 | parentLocalId */
         "leal 4(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, scrVmPub\n"
@@ -4280,6 +4605,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, (%esp)\n"
         "calll GetNewVariable\n"
         "movl %eax, 4(%ebx)\n" /* parentLocalId */
+        ".Lf840ae_00084a1a:\n"
         "movl 0x14(%ebp), %eax\n" /* line 803 */
         "cmpl $8, 4(%eax)\n"
         "je .Lf840ae_00084116\n"
@@ -4293,6 +4619,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "subl $8, 0x14(%ebp)\n" /* line 2136 */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084a46:\n"
         "movl 0xc(%ebp), %eax\n" /* line 756 */
         "movl %eax, (%esp)\n"
         "calll Scr_GetSelf\n"
@@ -4301,6 +4628,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll IsFieldObject\n"
         "testb %al, %al\n"
         "je .Lf840ae_00086f27\n"
+        ".Lf840ae_00084a64:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 769 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
@@ -4318,6 +4646,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, 0xc(%ebx)\n" /* parentLocalId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084a96:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 699 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
@@ -4332,6 +4661,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, 8(%ebx)\n" /* parentLocalId */
         "movl %edx, 0xc(%ebx)\n" /* parentLocalId */
         "addl $1, 8(%ebp)\n" /* line 702 | fs */
+        ".Lf840ae_00084ac3:\n"
         "movl 0x14(%ebp), %edx\n" /* line 706 */
         "leal -8(%edx), %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -4371,6 +4701,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, (%esp)\n"
         "calll Scr_EvalOr\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00084b58:\n"
         "movl 0x14(%ebp), %eax\n" /* line 823 */
         "cmpl $7, 4(%eax)\n"
         "jne .Lf840ae_0008533e\n"
@@ -4426,6 +4757,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "jne .Lf840ae_00084ada\n"
         "subl $1, (%eax)\n" /* line 1460 */
         "addl $1, 8(%ebp)\n" /* line 1462 | fs */
+        ".Lf840ae_00084c20:\n"
         "movl -0x48(%ebp), %edx\n" /* fieldValueId */
         ".Lf840ae_00084c23:\n"
         "movl 0x14(%ebp), %eax\n" /* line 881 */
@@ -4433,6 +4765,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%esp)\n"
         "calll SetVariableFieldValue\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00084c37:\n"
         "movl 0x14(%ebp), %eax\n" /* line 845 */
         "cmpl $8, 4(%eax)\n"
         "je .Lf840ae_000866c3\n"
@@ -4462,6 +4795,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084ca5:\n"
         "movl -0x38(%ebp), %ebx\n" /* line 2212 | caseCount, pos */
         "testl %ebx, %ebx\n" /* pos */
         "je .Lf840ae_00084cd0\n"
@@ -4547,6 +4881,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $1, 8(%ebp)\n" /* line 1448 | fs */
         "movl -0x48(%ebp), %edx\n" /* fieldValueId */
         "jmp .Lf840ae_00084c23\n"
+        ".Lf840ae_00084db0:\n"
         "movl -0x48(%ebp), %edx\n" /* fieldValueId */
         ".Lf840ae_00084db3:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 720 | parentLocalId */
@@ -4557,6 +4892,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll Scr_EvalArrayIndex\n"
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00084dd2:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 1753 | pos */
         "leal 8(%ebx), %eax\n" /* pos */
         "movl %eax, 0x14(%ebp)\n"
@@ -4611,6 +4947,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         ".Lf840ae_00084e9d:\n"
         "movl $1, 4(%eax)\n" /* line 1765 */
         "jmp .Lf840ae_00085162\n"
+        ".Lf840ae_00084ea9:\n"
         "movl 0x14(%ebp), %ecx\n" /* line 1774 */
         "leal 8(%ecx), %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4622,6 +4959,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         /* } scope */
         "movl %edx, 8(%ecx)\n" /* line 1776 */
         "jmp .Lf840ae_00084e9a\n"
+        ".Lf840ae_00084ec3:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 1781 | pos */
         "leal 8(%ebx), %eax\n" /* pos */
         "movl %eax, 0x14(%ebp)\n"
@@ -4643,6 +4981,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
         /* { scope 2 */
+        ".Lf840ae_00084efd:\n"
         "movzwl (%esi), %eax\n" /* line 143 */
         "leal 3(%ecx), %edx\n" /* line 144 */
         "movl %edx, 8(%ebp)\n" /* fs */
@@ -4689,6 +5028,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $1, 8(%ebp)\n" /* line 830 | fs */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084fba:\n"
         "movl 0x14(%ebp), %eax\n" /* line 493 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4700,6 +5040,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $1, 8(%ebp)\n" /* line 497 | fs */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00084fe1:\n"
         "movl 0x14(%ebp), %eax\n" /* line 511 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4714,6 +5055,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%eax)\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_0008500a:\n"
         "movl 0x14(%ebp), %eax\n" /* line 519 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4729,6 +5071,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%eax)\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085035:\n"
         "movl 0x14(%ebp), %eax\n" /* line 527 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4744,6 +5087,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%eax)\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_0008505d:\n"
         "movl 0x14(%ebp), %eax\n" /* line 535 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4758,6 +5102,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%eax)\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085085:\n"
         "movl 0x14(%ebp), %eax\n" /* line 502 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4770,6 +5115,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $1, 8(%ebp)\n" /* line 506 | fs */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000850ae:\n"
         "movl 0x14(%ebp), %eax\n" /* line 543 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4789,11 +5135,13 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll SL_AddRefToString\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000850e4:\n"
         "movl 0x14(%ebp), %eax\n" /* line 552 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
         "movl $3, 4(%eax)\n" /* line 554 */
         "jmp .Lf840ae_000850be\n"
+        ".Lf840ae_000850f6:\n"
         "movl 0x14(%ebp), %eax\n" /* line 561 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4805,16 +5153,19 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%eax)\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_0008511c:\n"
         "movl imp_scrVarPub, %eax\n" /* line 568 */
         "movl 0x24(%eax), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* objectId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_0008512f:\n"
         "movl imp_scrVarPub, %eax\n" /* line 572 */
         "movl 0x2c(%eax), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* objectId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085142:\n"
         "movl 0x14(%ebp), %eax\n" /* line 577 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4831,6 +5182,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll AddRefToObject\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085177:\n"
         "movl 0x14(%ebp), %eax\n" /* line 586 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4844,12 +5196,14 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll AddRefToObject\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000851a8:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 595 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
         "movl imp_scrVarPub, %eax\n" /* line 597 */
         "movl 0x28(%eax), %eax\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_000851be:\n"
         "movl 0x14(%ebp), %eax\n" /* line 602 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -4863,21 +5217,25 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll AddRefToObject\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000851ef:\n"
         "movl 0x14(%ebp), %eax\n" /* line 611 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
         "movl $0xb, 4(%eax)\n" /* line 613 */
         "jmp .Lf840ae_00085045\n"
+        ".Lf840ae_00085204:\n"
         "movl imp_scrVarPub, %eax\n" /* line 618 */
         "movl 0x28(%eax), %eax\n"
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085217:\n"
         "movl 0x14(%ebp), %eax\n" /* line 623 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
         "movl $9, 4(%eax)\n" /* line 625 */
         "jmp .Lf840ae_00085045\n"
+        ".Lf840ae_0008522c:\n"
         "movl scrVmPub, %ebx\n" /* line 630 | parentLocalId */
         "leal 4(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, scrVmPub\n"
@@ -4895,6 +5253,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, 4(%ebx)\n" /* parentLocalId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085264:\n"
         "movzbl (%esi), %esi\n" /* line 636 | builtinIndex */
         "leal 2(%ecx), %eax\n" /* line 637 */
         "movl %eax, 8(%ebp)\n" /* fs */
@@ -4916,18 +5275,21 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addb %bl, %al\n" /* parentLocalId */
         "jne .Lf840ae_0008528e\n"
         "jmp .Lf840ae_00084116\n"
+        ".Lf840ae_000852a7:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 649 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
         "movl scrVmPub, %eax\n" /* line 651 */
         "movl (%eax), %eax\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_000852bc:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 656 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
         "movl scrVmPub, %eax\n" /* line 658 */
         "movl -4(%eax), %eax\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_000852d2:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 870 | parentLocalId */
         /* { scope 2 */
         "movzwl (%esi), %eax\n" /* line 143 */
@@ -4944,18 +5306,21 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, (%esp)\n"
         "calll SetVariableValue\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085303:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1476 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalAnd\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_0008531a:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1480 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalEquality\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085331:\n"
         "movl 0x14(%ebp), %eax\n" /* line 812 */
         "cmpl $8, 4(%eax)\n"
         "je .Lf840ae_000849dd\n"
@@ -4970,6 +5335,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll SetVariableValue\n"
         "addl $1, 8(%ebp)\n" /* line 826 | fs */
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085363:\n"
         "movl 0x14(%ebp), %eax\n" /* line 835 */
         "movl 4(%eax), %edx\n"
         "cmpl $7, %edx\n"
@@ -4986,6 +5352,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpl $7, %edx\n"
         "jne .Lf840ae_00085372\n"
         "jmp .Lf840ae_00084116\n"
+        ".Lf840ae_00085396:\n"
         "movl 0xc(%ebp), %eax\n" /* line 783 */
         "movl %eax, (%esp)\n"
         "calll Scr_GetSelf\n"
@@ -5003,6 +5370,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000853ca:\n"
         "movl imp_scrVarPub, %eax\n" /* line 775 */
         "movl 0x24(%eax), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* objectId */
@@ -5019,11 +5387,13 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000853fb:\n"
         "movl scrVmPub, %eax\n" /* line 710 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "movl %eax, %edx\n"
         "jmp .Lf840ae_00084db3\n"
+        ".Lf840ae_0008540c:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 691 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
@@ -5040,30 +5410,35 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $1, 8(%ebp)\n" /* line 694 | fs */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085441:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 663 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
         "movl scrVmPub, %eax\n" /* line 665 */
         "movl -8(%eax), %eax\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_00085457:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 670 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
         "movl scrVmPub, %eax\n" /* line 672 */
         "movl -0xc(%eax), %eax\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_0008546d:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 677 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
         "movl scrVmPub, %eax\n" /* line 679 */
         "movl -0x10(%eax), %eax\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_00085483:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 684 | parentLocalId */
         "leal 8(%ebx), %eax\n" /* parentLocalId */
         "movl %eax, 0x14(%ebp)\n"
         "movl scrVmPub, %eax\n" /* line 686 */
         "movl -0x14(%eax), %eax\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_00085499:\n"
         "movl 0xc(%ebp), %eax\n" /* line 735 */
         "movl %eax, (%esp)\n"
         "calll Scr_GetSelf\n"
@@ -5073,6 +5448,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "testb %al, %al\n"
         "jne .Lf840ae_00084116\n"
         "jmp .Lf840ae_00086f2f\n"
+        ".Lf840ae_000854bc:\n"
         "movl imp_scrVarPub, %eax\n" /* line 741 */
         "movl 0x24(%eax), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* objectId */
@@ -5091,16 +5467,19 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%esp)\n"
         "calll FindVariable\n"
         "jmp .Lf840ae_00084ee7\n"
+        ".Lf840ae_000854f0:\n"
         "movl imp_scrVarPub, %eax\n" /* line 752 */
         "movl 0x2c(%eax), %eax\n"
         "movl %eax, -0x44(%ebp)\n" /* objectId */
         "jmp .Lf840ae_000854c7\n"
+        ".Lf840ae_000854fd:\n"
         "movl 0x14(%ebp), %eax\n" /* line 725 */
         "movl %eax, 4(%esp)\n"
         "movl -0x48(%ebp), %eax\n" /* fieldValueId */
         "movl %eax, (%esp)\n"
         "calll ClearArray\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085514:\n"
         "movl 0x14(%ebp), %eax\n" /* line 729 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -5110,6 +5489,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, (%ebx)\n" /* parentLocalId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085536:\n"
         "movzbl (%esi), %eax\n" /* line 126 */
         "shll $2, %eax\n"
         "movl scrVmPub, %edx\n"
@@ -5119,6 +5499,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "leal 2(%ecx), %eax\n" /* line 715 */
         "movl %eax, 8(%ebp)\n" /* fs */
         "jmp .Lf840ae_00084db3\n"
+        ".Lf840ae_00085554:\n"
         "movl 0x14(%ebp), %eax\n" /* line 485 */
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -5128,6 +5509,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
         /* { scope 2 */
+        ".Lf840ae_00085575:\n"
         "movzwl (%esi), %eax\n" /* line 143 */
         "leal 3(%ecx), %edx\n" /* line 144 */
         "movl %edx, 8(%ebp)\n" /* fs */
@@ -5140,11 +5522,13 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll ClearVariableField\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_0008559c:\n"
         "movl (%esi), %eax\n" /* line 1373 | builtinIndex */
         "leal 5(%ecx, %eax), %eax\n"
         "movl %eax, 8(%ebp)\n" /* fs */
         "movl %eax, %ecx\n"
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000855ac:\n"
         "rdtsc\n" /* line 33 */
         "shrl $2, %eax\n" /* line 1377 */
         "subl scrVmGlob+24, %eax\n"
@@ -5156,6 +5540,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, 8(%ebp)\n" /* fs */
         "movl %eax, %ecx\n"
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000855d4:\n"
         "movl 0xc(%ebp), %eax\n" /* line 449 */
         "movl %eax, (%esp)\n"
         "calll GetSafeParentLocalId\n"
@@ -5201,6 +5586,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "testl %edi, %edi\n" /* opcode */
         "jne .Lf840ae_000842f1\n"
         "jmp .Lf840ae_0008451c\n"
+        ".Lf840ae_00085668:\n"
         "movl 0xc(%ebp), %eax\n" /* line 415 */
         "movl %eax, (%esp)\n"
         "calll GetSafeParentLocalId\n"
@@ -5245,6 +5631,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %ebx, 0xc(%ebp)\n" /* line 445 | parentLocalId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000856fd:\n"
         "movzbl (%esi), %eax\n" /* line 1319 | builtinIndex */
         "shll $2, %eax\n"
         "movl scrVmPub, %edx\n"
@@ -5256,21 +5643,25 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $1, 8(%ebp)\n" /* line 1320 | fs */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085724:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1324 */
         "movl %eax, (%esp)\n"
         "calll Scr_CastBool\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085737:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1328 */
         "movl %eax, (%esp)\n"
         "calll Scr_EvalBoolNot\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_0008574a:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1332 */
         "movl %eax, (%esp)\n"
         "calll Scr_EvalBoolComplement\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_0008575d:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1336 */
         "movl %eax, (%esp)\n"
         "calll Scr_CastBool\n"
@@ -5288,6 +5679,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "leal (%ecx, %edx), %eax\n" /* line 1350 */
         "movl %eax, 8(%ebp)\n" /* fs */
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_0008578c:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1345 */
         "movl %eax, (%esp)\n"
         "calll Scr_CastBool\n"
@@ -5302,6 +5694,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "testl %eax, %eax\n"
         "je .Lf840ae_00084a3a\n"
         "jmp .Lf840ae_00085781\n"
+        ".Lf840ae_000857b2:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1354 */
         "movl %eax, (%esp)\n"
         "calll Scr_CastBool\n"
@@ -5320,6 +5713,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, 8(%ebp)\n" /* fs */
         "movl %eax, %ecx\n"
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_000857e3:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1363 */
         "movl %eax, (%esp)\n"
         "calll Scr_CastBool\n"
@@ -5334,83 +5728,97 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "testl %eax, %eax\n"
         "je .Lf840ae_00084a3a\n"
         "jmp .Lf840ae_000857d6\n"
+        ".Lf840ae_00085809:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1484 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalInequality\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085820:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1488 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalLess\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085837:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1492 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalGreater\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_0008584e:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1496 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalLessEqual\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085865:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1500 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalGreaterEqual\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_0008587c:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1504 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalShiftLeft\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085893:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1508 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalShiftRight\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_000858aa:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1512 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalPlus\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_000858c1:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1516 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalMinus\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_000858d8:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1520 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalMultiply\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_000858ef:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1524 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalDivide\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085906:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1528 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalMod\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_0008591d:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1532 */
         "movl %eax, (%esp)\n"
         "calll Scr_EvalSizeValue\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085930:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1539 */
         "cmpl $1, 4(%eax)\n"
         "jne .Lf840ae_00086bf4\n"
@@ -5482,6 +5890,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, (%esp)\n"
         "calll Scr_SetThreadNotifyName\n"
         "jmp .Lf840ae_000842dc\n"
+        ".Lf840ae_00085a41:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1590 */
         "cmpl $1, 4(%eax)\n"
         "jne .Lf840ae_00086bf4\n"
@@ -5527,6 +5936,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpl $8, %edx\n"
         "jne .Lf840ae_00085ab8\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085adc:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1630 */
         "cmpl $1, 4(%eax)\n"
         "jne .Lf840ae_00086e60\n"
@@ -5588,12 +5998,16 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "subl $0x10, 0x14(%ebp)\n" /* line 1661 */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085bc9:\n"
         "movl $1, scrVmPub+28\n" /* line 903 */
         "jmp .Lf840ae_00084341\n"
+        ".Lf840ae_00085bd8:\n"
         "movl $4, scrVmPub+28\n" /* line 918 */
         "jmp .Lf840ae_00084341\n"
+        ".Lf840ae_00085be7:\n"
         "movl $5, scrVmPub+28\n" /* line 923 */
         "jmp .Lf840ae_00084341\n"
+        ".Lf840ae_00085bf6:\n"
         "movl $1, scrVmPub+28\n" /* line 986 */
         "movl 0x14(%ebp), %ecx\n" /* line 1019 */
         "leal -8(%ecx), %eax\n"
@@ -5650,16 +6064,22 @@ unsigned int VM_Execute(struct function_stack_t fs)
         ".Lf840ae_00085cbf:\n"
         "movl 0x14(%ebp), %eax\n"
         "jmp .Lf840ae_0008418e\n"
+        ".Lf840ae_00085cc7:\n"
         "movl $2, scrVmPub+28\n" /* line 991 */
         "jmp .Lf840ae_00084169\n"
+        ".Lf840ae_00085cd6:\n"
         "movl $3, scrVmPub+28\n" /* line 996 */
         "jmp .Lf840ae_00084169\n"
+        ".Lf840ae_00085ce5:\n"
         "movl $4, scrVmPub+28\n" /* line 1001 */
         "jmp .Lf840ae_00084169\n"
+        ".Lf840ae_00085cf4:\n"
         "movl $2, scrVmPub+28\n" /* line 908 */
         "jmp .Lf840ae_00084341\n"
+        ".Lf840ae_00085d03:\n"
         "movl $3, scrVmPub+28\n" /* line 913 */
         "jmp .Lf840ae_00084341\n"
+        ".Lf840ae_00085d12:\n"
         "movl 0x14(%ebp), %ebx\n" /* line 885 | parentLocalId */
         /* { scope 2 */
         "movzwl (%esi), %eax\n" /* line 143 */
@@ -5671,6 +6091,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl 0x2c(%eax), %eax\n"
         "jmp .Lf840ae_000852ea\n"
         /* { scope 2 */
+        ".Lf840ae_00085d2f:\n"
         "movzwl (%esi), %ebx\n" /* line 143 | result */
         "leal 3(%ecx), %eax\n" /* line 144 */
         "movl %eax, 8(%ebp)\n" /* fs */
@@ -5685,8 +6106,10 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %eax, -0x48(%ebp)\n" /* fieldValueId */
         "movl %eax, %edx\n"
         "jmp .Lf840ae_00084c23\n"
+        ".Lf840ae_00085d5c:\n"
         "movl 0x14(%ebp), %eax\n" /* line 889 */
         "jmp .Lf840ae_00084a27\n"
+        ".Lf840ae_00085d64:\n"
         "movl 0x14(%ebp), %eax\n" /* line 893 */
         "movl %eax, 4(%esp)\n"
         "movzbl (%esi), %edx\n" /* builtinIndex */
@@ -5698,12 +6121,14 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll SetVariableValue\n"
         "addl $1, 8(%ebp)\n" /* line 894 | fs */
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085d8b:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1472 */
         "movl %eax, 4(%esp)\n"
         "subl $8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Scr_EvalExOr\n"
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085da2:\n"
         "movl (%esi), %eax\n" /* line 1683 | builtinIndex */
         "leal 5(%ecx, %eax), %eax\n"
         "movl %eax, 8(%ebp)\n" /* fs */
@@ -5785,12 +6210,14 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "je .Lf840ae_00086943\n"
         "movl $0, -0x38(%ebp)\n" /* line 1729 | caseCount */
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00085ec3:\n"
         "movzwl (%esi), %esi\n" /* line 1736 | builtinIndex */
         "movl %esi, -0x38(%ebp)\n" /* builtinIndex, caseCount */
         "leal 3(%ecx, %esi, 8), %eax\n" /* line 183 */
         "movl %eax, 8(%ebp)\n" /* fs */
         "movl %eax, %ecx\n"
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085ed7:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1741 */
         "subl $0x10, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
@@ -5798,6 +6225,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll Scr_CastVector\n"
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00085ef0:\n"
         "subl $1, g_script_error_level\n" /* line 1747 */
         "xorl %eax, %eax\n"
         /* } scope */
@@ -5808,8 +6236,10 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf840ae_00085f01:\n"
         "movl $5, scrVmPub+28\n" /* line 1006 */
         "jmp .Lf840ae_00084169\n"
+        ".Lf840ae_00085f10:\n"
         "movl 0x14(%ebp), %edx\n" /* line 1196 */
         "movl 4(%edx), %ecx\n"
         "cmpl $9, %ecx\n"
@@ -5833,6 +6263,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, (%eax)\n"
         "movl %ebx, 8(%ebp)\n" /* line 1207 | parentLocalId, fs */
         "jmp .Lf840ae_0008470a\n"
+        ".Lf840ae_00085f69:\n"
         "movl 0x14(%ebp), %edx\n" /* line 1282 */
         "movl 4(%edx), %ecx\n"
         "cmpl $9, %ecx\n"
@@ -5859,6 +6290,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, 0x10(%eax)\n"
         "movl %ebx, 8(%ebp)\n" /* line 1294 | parentLocalId, fs */
         "jmp .Lf840ae_0008498b\n"
+        ".Lf840ae_00085fcb:\n"
         "movl 0x14(%ebp), %eax\n" /* line 1315 */
         "movl %eax, 4(%esp)\n"
         "movl imp_scrVarPub, %eax\n"
@@ -6305,6 +6737,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %esi, 8(%ebp)\n" /* line 1250 | builtinIndex, fs */
         "movl 0x14(%ebp), %ecx\n" /* line 1251 */
         "jmp .Lf840ae_0008498b\n"
+        ".Lf840ae_00086699:\n"
         "movl 0x14(%ebp), %eax\n" /* line 2149 */
         "movl 4(%eax), %edx\n"
         "cmpl $8, %edx\n"
@@ -6589,7 +7022,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "leal -0x1f(%edi), %eax\n" /* line 2019 | opcode */
         "cmpl $0x65, %eax\n"
         "ja .Lf840ae_00084116\n"
-        "jmpl *CorrectSolidDeltas+2584(, %eax, 4)\n"
+        "jmpl *.Ljt_840ae_1(, %eax, 4)\n"
         ".Lf840ae_00086afb:\n"
         "movl %eax, 0x10(%edx)\n" /* line 4923 */
         "jmp .Lf840ae_00085dfd\n"
@@ -6693,7 +7126,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "leal -0x21(%edi), %eax\n" /* line 1963 | opcode */
         "cmpl $0x63, %eax\n"
         "ja .Lf840ae_00086aa8\n"
-        "jmpl *CorrectSolidDeltas+2992(, %eax, 4)\n"
+        "jmpl *.Ljt_840ae_2(, %eax, 4)\n"
         ".Lf840ae_00086c78:\n"
         "movl %eax, 0x10(%edx)\n" /* line 4923 */
         "jmp .Lf840ae_00086c2b\n"
@@ -6713,6 +7146,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpb $0, scrVmPub+20\n"
         "je .Lf840ae_00086c45\n"
         "jmp .Lf840ae_000861be\n"
+        ".Lf840ae_00086cbc:\n"
         "movl imp_scrVarPub, %ecx\n" /* line 1993 */
         "movl 0x14(%ecx), %edx\n"
         "testl %edx, %edx\n"
@@ -6722,6 +7156,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $1, %eax\n"
         "movl %eax, 0x14(%ecx)\n"
         "jmp .Lf840ae_00086aa8\n"
+        ".Lf840ae_00086cdf:\n"
         "movl imp_scrVarPub, %ecx\n" /* line 2007 */
         "movl 0x14(%ecx), %edx\n"
         "cmpl $0, %edx\n"
@@ -6731,9 +7166,11 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $2, %eax\n"
         "movl %eax, 0x14(%ecx)\n"
         "jmp .Lf840ae_00086aa8\n"
+        ".Lf840ae_00086cff:\n"
         "movl imp_scrVarPub, %eax\n" /* line 1982 */
         "movl $0, 0x14(%eax)\n"
         "jmp .Lf840ae_00086aa8\n"
+        ".Lf840ae_00086d10:\n"
         "movl imp_scrVarPub, %eax\n" /* line 1971 */
         "movl 0x14(%eax), %edx\n"
         "testl %edx, %edx\n"
@@ -6744,6 +7181,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "jge .Lf840ae_00086aa8\n" /* line 2009 */
         "movl $1, 0x14(%ecx)\n" /* line 2010 */
         "jmp .Lf840ae_00086aa8\n"
+        ".Lf840ae_00086d3e:\n"
         "movl imp_scrVarPub, %ebx\n" /* line 297 | result */
         "movl 0x34(%ebx), %eax\n" /* result */
         "movl %eax, (%esp)\n"
@@ -6751,6 +7189,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl 0x34(%ebx), %ebx\n" /* line 298 | result */
         "movl %ebx, -0x48(%ebp)\n" /* result, fieldValueId */
         "jmp .Lf840ae_00084ce4\n"
+        ".Lf840ae_00086d5a:\n"
         "movl 0x14(%ebp), %edx\n" /* line 2141 | value */
         /* { scope 2 */
         "movl (%edx), %eax\n" /* line 252 */
@@ -6767,6 +7206,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl 4(%edx), %eax\n"
         "movl %eax, (%esp)\n"
         "calll RemoveRefToValue\n"
+        ".Lf840ae_00086d89:\n"
         "movl 0x14(%ebp), %eax\n" /* line 2144 */
         ".Lf840ae_00086d8c:\n"
         "movl $0, 4(%eax)\n" /* line 2096 */
@@ -6865,7 +7305,9 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpb $0, scrVmPub+20\n"
         "jne .Lf840ae_000861be\n"
         "jmp .Lf840ae_00086e40\n"
+        ".Lf840ae_00086efc:\n"
         "addl $1, 8(%ebp)\n" /* line 2041 | fs */
+        ".Lf840ae_00086f00:\n"
         "movl imp_scrVarPub, %ebx\n" /* line 290 | result */
         "movl 0x34(%ebx), %eax\n" /* result */
         "movl %eax, (%esp)\n"
@@ -6894,6 +7336,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "jne .Lf840ae_00086dbc\n"
         "movl $str_0021d0ac, 0x10(%edx)\n" /* line 4923 */
         "jmp .Lf840ae_00086dbc\n"
+        ".Lf840ae_00086f68:\n"
         "movl imp_scrVarPub, %ebx\n" /* line 297 | result */
         "movl 0x34(%ebx), %eax\n" /* result */
         "movl %eax, (%esp)\n"
@@ -6902,6 +7345,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %ebx, -0x48(%ebp)\n" /* result, fieldValueId */
         "movl 8(%ebp), %ecx\n" /* fs */
         "jmp .Lf840ae_00084119\n"
+        ".Lf840ae_00086f87:\n"
         "movl scrVmPub+28, %eax\n" /* line 2054 */
         "testl %eax, %eax\n"
         "je .Lf840ae_00084116\n"
@@ -6969,9 +7413,11 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpb $0, scrVmPub+20\n"
         "jne .Lf840ae_000861be\n"
         "jmp .Lf840ae_00086fd8\n"
+        ".Lf840ae_00087092:\n"
         "movl scrVmPub+28, %edi\n" /* line 2069 | opcode */
         "testl %edi, %edi\n" /* opcode */
         "je .Lf840ae_00084a3a\n"
+        ".Lf840ae_000870a0:\n"
         "movl 0x14(%ebp), %eax\n" /* line 2074 | value */
         /* { scope 2 */
         "movl (%eax), %edx\n" /* line 252 */
@@ -6982,6 +7428,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         /* } scope */
         "movl $0, scrVmPub+28\n" /* line 2075 */
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_000870c3:\n"
         "movl scrVmPub+28, %ecx\n" /* line 279 */
         "testl %ecx, %ecx\n"
         "jne .Lf840ae_00087114\n"
@@ -6990,7 +7437,9 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
         "jmp .Lf840ae_00086d8c\n"
+        ".Lf840ae_000870dd:\n"
         "addl $4, 8(%ebp)\n" /* line 157 | fs */
+        ".Lf840ae_000870e1:\n"
         "movl 0x14(%ebp), %eax\n" /* line 2167 */
         "movl 4(%eax), %edx\n"
         "cmpl $8, %edx\n"
@@ -7021,8 +7470,10 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "testl %eax, %eax\n" /* line 279 */
         "jne .Lf840ae_00087114\n"
         "jmp .Lf840ae_000870cd\n"
+        ".Lf840ae_00087145:\n"
         "addl $4, 8(%ebp)\n" /* line 157 | fs */
         /* { scope 2 */
+        ".Lf840ae_00087149:\n"
         "movl 8(%ebp), %eax\n" /* line 156 | fs */
         "movl (%eax), %edx\n"
         "addl $4, %eax\n" /* line 157 */
@@ -7036,6 +7487,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebp)\n"
         "jmp .Lf840ae_00086d8c\n"
+        ".Lf840ae_0008716c:\n"
         "movl imp_scrVarPub, %ebx\n" /* line 290 | result */
         "movl 0x34(%ebx), %eax\n" /* result */
         "movl %eax, (%esp)\n"
@@ -7045,7 +7497,9 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "calll GetObjectA\n"
         "movl %eax, -0x44(%ebp)\n" /* objectId */
         "jmp .Lf840ae_00084a3a\n"
+        ".Lf840ae_00087190:\n"
         "addl $1, 8(%ebp)\n" /* line 2105 | fs */
+        ".Lf840ae_00087194:\n"
         "movl 0x14(%ebp), %eax\n" /* line 2110 | value */
         /* { scope 2 */
         "movl (%eax), %edx\n" /* line 252 */
@@ -7056,6 +7510,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         /* } scope */
         "subl $8, 0x14(%ebp)\n" /* line 2111 */
         "jmp .Lf840ae_00084ce4\n"
+        ".Lf840ae_000871b1:\n"
         "movl 0x14(%ebp), %eax\n" /* line 2203 */
         "movl 4(%eax), %edx\n"
         "cmpl $8, %edx\n"
@@ -7072,6 +7527,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpl $8, %edx\n"
         "jne .Lf840ae_000871c0\n"
         "jmp .Lf840ae_00084ce4\n"
+        ".Lf840ae_000871e4:\n"
         "addl $2, 8(%ebp)\n" /* line 144 | fs */
         "jmp .Lf840ae_00084a3a\n"
         ".Lf840ae_000871ed:\n"
@@ -7090,6 +7546,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "cmpl %ebx, %esi\n" /* line 2184 | pos, builtinIndex */
         "jne .Lf840ae_000871ef\n"
         "jmp .Lf840ae_0008715e\n"
+        ".Lf840ae_00087213:\n"
         "movl 8(%ebp), %eax\n" /* line 143 | fs */
         "leal 2(%eax), %edx\n" /* line 2101 */
         "movzwl (%eax), %eax\n"
@@ -7097,6 +7554,355 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl %edx, 8(%ebp)\n" /* fs */
         "movl %edx, %ecx\n"
         "jmp .Lf840ae_00084119\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_840ae_0:\n"
+        ".long .Lf840ae_00085668\n"
+        ".long .Lf840ae_000855d4\n"
+        ".long .Lf840ae_0008452e\n"
+        ".long .Lf840ae_00085554\n"
+        ".long .Lf840ae_00084fba\n"
+        ".long .Lf840ae_00085085\n"
+        ".long .Lf840ae_00084fe1\n"
+        ".long .Lf840ae_0008500a\n"
+        ".long .Lf840ae_00085035\n"
+        ".long .Lf840ae_0008505d\n"
+        ".long .Lf840ae_000850ae\n"
+        ".long .Lf840ae_000850e4\n"
+        ".long .Lf840ae_000850f6\n"
+        ".long .Lf840ae_0008511c\n"
+        ".long .Lf840ae_0008512f\n"
+        ".long .Lf840ae_00085142\n"
+        ".long .Lf840ae_00085177\n"
+        ".long .Lf840ae_000851a8\n"
+        ".long .Lf840ae_000851be\n"
+        ".long .Lf840ae_000851ef\n"
+        ".long .Lf840ae_00085204\n"
+        ".long .Lf840ae_00085217\n"
+        ".long .Lf840ae_0008522c\n"
+        ".long .Lf840ae_00085264\n"
+        ".long .Lf840ae_000852a7\n"
+        ".long .Lf840ae_000852bc\n"
+        ".long .Lf840ae_00085441\n"
+        ".long .Lf840ae_00085457\n"
+        ".long .Lf840ae_0008546d\n"
+        ".long .Lf840ae_00085483\n"
+        ".long .Lf840ae_0008540c\n"
+        ".long .Lf840ae_00084a96\n"
+        ".long .Lf840ae_00084ac3\n"
+        ".long .Lf840ae_000853fb\n"
+        ".long .Lf840ae_00085536\n"
+        ".long .Lf840ae_00084db0\n"
+        ".long .Lf840ae_000854fd\n"
+        ".long .Lf840ae_00085514\n"
+        ".long .Lf840ae_00085499\n"
+        ".long .Lf840ae_000854bc\n"
+        ".long .Lf840ae_000854f0\n"
+        ".long .Lf840ae_00084a46\n"
+        ".long .Lf840ae_00084a64\n"
+        ".long .Lf840ae_000853ca\n"
+        ".long .Lf840ae_00084546\n"
+        ".long .Lf840ae_00085396\n"
+        ".long .Lf840ae_00084551\n"
+        ".long .Lf840ae_00085575\n"
+        ".long .Lf840ae_000849ea\n"
+        ".long .Lf840ae_00084a1a\n"
+        ".long .Lf840ae_00085331\n"
+        ".long .Lf840ae_00084b58\n"
+        ".long .Lf840ae_00085363\n"
+        ".long .Lf840ae_00084c37\n"
+        ".long .Lf840ae_00084c93\n"
+        ".long .Lf840ae_000849ca\n"
+        ".long .Lf840ae_000852d2\n"
+        ".long .Lf840ae_00084c20\n"
+        ".long .Lf840ae_00085d12\n"
+        ".long .Lf840ae_00085d2f\n"
+        ".long .Lf840ae_00085d5c\n"
+        ".long .Lf840ae_00085d64\n"
+        ".long .Lf840ae_00084341\n"
+        ".long .Lf840ae_00085bc9\n"
+        ".long .Lf840ae_00085cf4\n"
+        ".long .Lf840ae_00085d03\n"
+        ".long .Lf840ae_00085bd8\n"
+        ".long .Lf840ae_00085be7\n"
+        ".long .Lf840ae_00084335\n"
+        ".long .Lf840ae_00084169\n"
+        ".long .Lf840ae_00085bf6\n"
+        ".long .Lf840ae_00085cc7\n"
+        ".long .Lf840ae_00085cd6\n"
+        ".long .Lf840ae_00085ce5\n"
+        ".long .Lf840ae_00085f01\n"
+        ".long .Lf840ae_0008415d\n"
+        ".long .Lf840ae_0008420d\n"
+        ".long .Lf840ae_0008448d\n"
+        ".long .Lf840ae_00084131\n"
+        ".long .Lf840ae_00084577\n"
+        ".long .Lf840ae_00084587\n"
+        ".long .Lf840ae_000845e3\n"
+        ".long .Lf840ae_000846bc\n"
+        ".long .Lf840ae_00085f10\n"
+        ".long .Lf840ae_000847fa\n"
+        ".long .Lf840ae_0008485d\n"
+        ".long .Lf840ae_00084936\n"
+        ".long .Lf840ae_00085f69\n"
+        ".long .Lf840ae_00084ce4\n"
+        ".long .Lf840ae_00085fcb\n"
+        ".long .Lf840ae_000856fd\n"
+        ".long .Lf840ae_00085724\n"
+        ".long .Lf840ae_00085737\n"
+        ".long .Lf840ae_0008574a\n"
+        ".long .Lf840ae_0008575d\n"
+        ".long .Lf840ae_0008578c\n"
+        ".long .Lf840ae_000857b2\n"
+        ".long .Lf840ae_000857e3\n"
+        ".long .Lf840ae_0008559c\n"
+        ".long .Lf840ae_000855ac\n"
+        ".long .Lf840ae_00084d78\n"
+        ".long .Lf840ae_00084bf0\n"
+        ".long .Lf840ae_00084b41\n"
+        ".long .Lf840ae_00085d8b\n"
+        ".long .Lf840ae_00085303\n"
+        ".long .Lf840ae_0008531a\n"
+        ".long .Lf840ae_00085809\n"
+        ".long .Lf840ae_00085820\n"
+        ".long .Lf840ae_00085837\n"
+        ".long .Lf840ae_0008584e\n"
+        ".long .Lf840ae_00085865\n"
+        ".long .Lf840ae_0008587c\n"
+        ".long .Lf840ae_00085893\n"
+        ".long .Lf840ae_000858aa\n"
+        ".long .Lf840ae_000858c1\n"
+        ".long .Lf840ae_000858d8\n"
+        ".long .Lf840ae_000858ef\n"
+        ".long .Lf840ae_00085906\n"
+        ".long .Lf840ae_0008591d\n"
+        ".long .Lf840ae_00085930\n"
+        ".long .Lf840ae_00085930\n"
+        ".long .Lf840ae_00085a41\n"
+        ".long .Lf840ae_00085adc\n"
+        ".long .Lf840ae_00084131\n"
+        ".long .Lf840ae_00085da2\n"
+        ".long .Lf840ae_00085ec3\n"
+        ".long .Lf840ae_00085ed7\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00085ef0\n"
+        ".long .Lf840ae_00084dd2\n"
+        ".long .Lf840ae_00084ea9\n"
+        ".long .Lf840ae_00084ec3\n"
+        ".long .Lf840ae_00084efd\n"
+        ".long .Lf840ae_00084b7d\n"
+        ".long .Lf840ae_000849dd\n"
+        ".text\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_840ae_1:\n"
+        ".long .Lf840ae_00086d5a\n"
+        ".long .Lf840ae_00086d5a\n"
+        ".long .Lf840ae_00086d3e\n"
+        ".long .Lf840ae_00086d3e\n"
+        ".long .Lf840ae_00086d3e\n"
+        ".long .Lf840ae_00084ce4\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00086f00\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00086d89\n"
+        ".long .Lf840ae_00086d89\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00086f68\n"
+        ".long .Lf840ae_00086f68\n"
+        ".long .Lf840ae_00086f87\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00086699\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00087092\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_000870a0\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_000870c3\n"
+        ".long .Lf840ae_00084ce4\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_000870dd\n"
+        ".long .Lf840ae_000870dd\n"
+        ".long .Lf840ae_000870e1\n"
+        ".long .Lf840ae_000870dd\n"
+        ".long .Lf840ae_000870e1\n"
+        ".long .Lf840ae_00087145\n"
+        ".long .Lf840ae_00087149\n"
+        ".long .Lf840ae_00087145\n"
+        ".long .Lf840ae_00087149\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_0008716c\n"
+        ".long .Lf840ae_00086efc\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_000871e4\n"
+        ".long .Lf840ae_000871e4\n"
+        ".long .Lf840ae_000871e4\n"
+        ".long .Lf840ae_000871e4\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00087213\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084a3a\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00087190\n"
+        ".long .Lf840ae_00087194\n"
+        ".long .Lf840ae_000871b1\n"
+        ".long .Lf840ae_00087194\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084ca5\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00084116\n"
+        ".long .Lf840ae_00086d3e\n"
+        ".text\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_840ae_2:\n"
+        ".long .Lf840ae_00086d10\n"
+        ".long .Lf840ae_00086d10\n"
+        ".long .Lf840ae_00086d10\n"
+        ".long .Lf840ae_00086d10\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086cff\n"
+        ".long .Lf840ae_00086cff\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086cff\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086cff\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086cff\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086cbc\n"
+        ".long .Lf840ae_00086cbc\n"
+        ".long .Lf840ae_00086cbc\n"
+        ".long .Lf840ae_00086cbc\n"
+        ".long .Lf840ae_00086cbc\n"
+        ".long .Lf840ae_00086cbc\n"
+        ".long .Lf840ae_00086cbc\n"
+        ".long .Lf840ae_00086cdf\n"
+        ".long .Lf840ae_00086cdf\n"
+        ".long .Lf840ae_00086cdf\n"
+        ".long .Lf840ae_00086cdf\n"
+        ".long .Lf840ae_00086cdf\n"
+        ".long .Lf840ae_00086cdf\n"
+        ".long .Lf840ae_00086cdf\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086cff\n"
+        ".long .Lf840ae_00086cff\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086aa8\n"
+        ".long .Lf840ae_00086d10\n"
+        ".text\n"
     );
 }
 

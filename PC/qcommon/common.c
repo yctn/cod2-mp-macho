@@ -2654,7 +2654,8 @@ int Com_EventLoop(void)
         "cmpl $5, %esi\n" /* line 1516 */
         "ja .Lf30736_00030909\n"
         ".Lf30736_000307d0:\n"
-        "jmpl *vec2_origin+516(, %esi, 4)\n"
+        "jmpl *.Ljt_30736_0(, %esi, 4)\n"
+        ".Lf30736_000307d7:\n"
         "leal -0x58(%ebp), %ebx\n" /* evFrom */
         "jmp .Lf30736_0003080c\n"
         ".Lf30736_000307dc:\n"
@@ -2705,6 +2706,7 @@ int Com_EventLoop(void)
         "movl %eax, 8(%esp)\n"
         "calll SV_PacketEvent\n"
         "jmp .Lf30736_0003082a\n"
+        ".Lf30736_00030891:\n"
         "movl %edi, 8(%esp)\n" /* line 1594 */
         "movl %ecx, 4(%esp)\n"
         "movl %ebx, (%esp)\n"
@@ -2738,9 +2740,11 @@ int Com_EventLoop(void)
         "movl $0, (%esp)\n"
         "calll Com_Error\n"
         "jmp .Lf30736_0003077a\n"
+        ".Lf30736_00030926:\n"
         "movl %ebx, (%esp)\n" /* line 1606 */
         "calll CL_CharEvent\n"
         "jmp .Lf30736_0003077a\n"
+        ".Lf30736_00030933:\n"
         "movl $0, (%esp)\n" /* line 1641 */
         "calll CL_SwitchToLocalClient\n"
         "movl -0xac(%ebp), %edx\n" /* line 1644 */
@@ -2752,6 +2756,7 @@ int Com_EventLoop(void)
         "movl $str_002160e8, (%esp)\n" /* line 1646 */
         "calll Cbuf_AddText\n"
         "jmp .Lf30736_0003077a\n"
+        ".Lf30736_0003096c:\n"
         "movl -0xac(%ebp), %ebx\n" /* line 1652 */
         "movl (%ebx), %eax\n"
         "movl %eax, -0x58(%ebp)\n" /* evFrom */
@@ -2833,6 +2838,16 @@ int Com_EventLoop(void)
         "calll ZN10LargeLocalD1Ev\n"
         "movl %ebx, (%esp)\n"
         "calll __Unwind_Resume\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_30736_0:\n"
+        ".long .Lf30736_000307d7\n"
+        ".long .Lf30736_00030891\n"
+        ".long .Lf30736_00030926\n"
+        ".long .Lf30736_0003077a\n"
+        ".long .Lf30736_00030933\n"
+        ".long .Lf30736_0003096c\n"
+        ".text\n"
     );
 }
 
@@ -2866,7 +2881,8 @@ qboolean Debug_EventLoop(void)
         "cmpl $5, %ebx\n" /* line 1727 */
         "ja .Lf30a84_00030b49\n"
         ".Lf30a84_00030ad6:\n"
-        "jmpl *vec2_origin+540(, %ebx, 4)\n"
+        "jmpl *.Ljt_30a84_0(, %ebx, 4)\n"
+        ".Lf30a84_00030add:\n"
         "movl %edi, (%esp)\n" /* line 1764 */
         "calll Cbuf_AddText\n"
         "movl %edi, (%esp)\n" /* line 1765 */
@@ -2874,6 +2890,7 @@ qboolean Debug_EventLoop(void)
         "movl $str_002160e8, (%esp)\n" /* line 1766 */
         "calll Cbuf_AddText\n"
         /* } scope */
+        ".Lf30a84_00030af9:\n"
         "movl $1, -0x5c(%ebp)\n" /* line 1716 | newEvent */
         /* { scope 1 */
         ".Lf30a84_00030b00:\n"
@@ -2910,11 +2927,13 @@ qboolean Debug_EventLoop(void)
         "movl $1, -0x5c(%ebp)\n" /* line 1716 | newEvent */
         "jmp .Lf30a84_00030b00\n"
         /* { scope 1 */
+        ".Lf30a84_00030b6a:\n"
         "movl %edi, (%esp)\n" /* line 1772 */
         "calll Z_FreeInternal\n"
         /* } scope */
         "movl $1, -0x5c(%ebp)\n" /* line 1716 | newEvent */
         "jmp .Lf30a84_00030b00\n"
+        ".Lf30a84_00030b7b:\n"
         "movl -0x5c(%ebp), %eax\n" /* line 1779 | newEvent */
         "leal -0xc(%ebp), %esp\n"
         "popl %ebx\n"
@@ -2923,6 +2942,7 @@ qboolean Debug_EventLoop(void)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf30a84_00030b86:\n"
         "movl %eax, 8(%esp)\n" /* line 1744 */
         "movl %edx, 4(%esp)\n"
         "movl %ecx, (%esp)\n"
@@ -2931,11 +2951,22 @@ qboolean Debug_EventLoop(void)
         "movl $1, -0x5c(%ebp)\n" /* line 1716 | newEvent */
         "jmp .Lf30a84_00030b00\n"
         /* { scope 1 */
+        ".Lf30a84_00030ba2:\n"
         "movl %ecx, (%esp)\n" /* line 1750 */
         "calll CL_CharEvent\n"
         /* } scope */
         "movl $1, -0x5c(%ebp)\n" /* line 1716 | newEvent */
         "jmp .Lf30a84_00030b00\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_30a84_0:\n"
+        ".long .Lf30a84_00030b7b\n"
+        ".long .Lf30a84_00030b86\n"
+        ".long .Lf30a84_00030ba2\n"
+        ".long .Lf30a84_00030af9\n"
+        ".long .Lf30a84_00030add\n"
+        ".long .Lf30a84_00030b6a\n"
+        ".text\n"
     );
 }
 

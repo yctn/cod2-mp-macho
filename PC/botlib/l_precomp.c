@@ -203,47 +203,102 @@ int PC_OperatorPriority(int op)
         "subl $5, %eax\n"
         "cmpl $0x26, %eax\n"
         "ja .Lfbe16e_000be183\n"
-        "jmpl *CorrectSolidDeltas+5856(, %eax, 4)\n"
+        "jmpl *.Ljt_be16e_0(, %eax, 4)\n"
         ".Lfbe16e_000be183:\n"
         "xorl %eax, %eax\n"
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be187:\n"
         "movl $7, %eax\n" /* line 1492 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be18e:\n"
         "movl $6, %eax\n" /* line 1506 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be195:\n"
         "movl $0xb, %eax\n" /* line 1535 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be19c:\n"
         "movl $0xd, %eax\n" /* line 1535 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1a3:\n"
         "movl $0xf, %eax\n" /* line 1535 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1aa:\n"
         "movl $0xe, %eax\n" /* line 1535 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1b1:\n"
         "movl $0xa, %eax\n" /* line 1508 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1b8:\n"
         "movl $8, %eax\n" /* line 1531 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1bf:\n"
         "movl $9, %eax\n" /* line 1533 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1c6:\n"
         "movl $0x10, %eax\n" /* line 1535 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1cd:\n"
         "movl $0xc, %eax\n" /* line 1535 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".Lfbe16e_000be1d4:\n"
         "movl $5, %eax\n" /* line 1492 */
         "popl %ebp\n" /* line 1545 */
         "retl\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_be16e_0:\n"
+        ".long .Lfbe16e_000be187\n"
+        ".long .Lfbe16e_000be18e\n"
+        ".long .Lfbe16e_000be1cd\n"
+        ".long .Lfbe16e_000be1cd\n"
+        ".long .Lfbe16e_000be195\n"
+        ".long .Lfbe16e_000be195\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be19c\n"
+        ".long .Lfbe16e_000be19c\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be1a3\n"
+        ".long .Lfbe16e_000be1a3\n"
+        ".long .Lfbe16e_000be1a3\n"
+        ".long .Lfbe16e_000be1aa\n"
+        ".long .Lfbe16e_000be1aa\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be1b1\n"
+        ".long .Lfbe16e_000be1b8\n"
+        ".long .Lfbe16e_000be1bf\n"
+        ".long .Lfbe16e_000be1c6\n"
+        ".long .Lfbe16e_000be1c6\n"
+        ".long .Lfbe16e_000be1cd\n"
+        ".long .Lfbe16e_000be1cd\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be183\n"
+        ".long .Lfbe16e_000be1d4\n"
+        ".long .Lfbe16e_000be1d4\n"
+        ".text\n"
     );
 }
 

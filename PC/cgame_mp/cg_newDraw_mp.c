@@ -2926,8 +2926,9 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "subl $5, %eax\n"
         "cmpl $0x68, %eax\n"
         "ja .Lf18aa9c_0018adab\n"
-        "jmpl *color+48(, %eax, 4)\n"
+        "jmpl *.Ljt_18aa9c_0(, %eax, 4)\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018aae2:\n"
         "movl imp_cg_drawHealth, %eax\n" /* line 775 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
@@ -3114,6 +3115,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "popl %ebp\n"
         "retl\n"
         /* { scope 1: drawColor, y, w, centerX, ... */
+        ".Lf18aa9c_0018adb6:\n"
         "leal -0x54(%ebp), %eax\n" /* line 1812 | rect */
         "movl $0, 8(%esp)\n"
         ".Lf18aa9c_0018adc1:\n"
@@ -3127,6 +3129,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawPlayerAmmoValue\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018ade0:\n"
         "movl imp_cg, %eax\n" /* line 240 */
         "movl (%eax), %ebx\n"
         "movl 0x25c98(%ebx), %esi\n"
@@ -3198,6 +3201,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll UI_DrawHandlePic\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* } scope */
+        ".Lf18aa9c_0018aeda:\n"
         "movl 0x48(%ebp), %edi\n" /* line 1827 | textStyle, vertAlign */
         "movl %edi, 0x10(%esp)\n" /* vertAlign */
         "movss 0x3c(%ebp), %xmm0\n" /* scale */
@@ -3211,6 +3215,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawPlayerStance\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018af0a:\n"
         "movl 0x40(%ebp), %edi\n" /* line 466 | color, displayStartTime */
         "addl $0xc, %edi\n" /* displayStartTime */
         "movl imp_cg, %eax\n"
@@ -3282,6 +3287,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jmp .Lf18aa9c_0018aea3\n"
         /* } scope */
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018afe8:\n"
         "movl 0x40(%ebp), %edx\n" /* line 1133 | color */
         "addl $0xc, %edx\n"
         "movl %edx, -0xf8(%ebp)\n"
@@ -3364,6 +3370,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawRotatedPic\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* } scope */
+        ".Lf18aa9c_0018b14d:\n"
         "movl 0x40(%ebp), %eax\n" /* line 1866 | color */
         "movl %eax, 8(%esp)\n"
         "movl 0x44(%ebp), %edx\n" /* material */
@@ -3373,6 +3380,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawPlayerCompassBack\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018b16b:\n"
         "movl hud_fade_compass, %esi\n" /* line 1206 | objNum */
         "movss lit4_002ed5c8, %xmm0\n" /* line 428 | 1000.0f */
         "mulss 8(%esi), %xmm0\n" /* weapInfo */
@@ -3615,6 +3623,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll UI_DrawHandlePic\n"
         "jmp .Lf18aa9c_0018b2a5\n"
         /* } scope */
+        ".Lf18aa9c_0018b58c:\n"
         "movl 0x40(%ebp), %ebx\n" /* line 1881 | color, x */
         "movl %ebx, 8(%esp)\n" /* x */
         "movl 0x44(%ebp), %edi\n" /* material, vertAlign */
@@ -3623,6 +3632,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_DrawCompassFriendlies\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018b5aa:\n"
         "movl 0x44(%ebp), %ebx\n" /* line 1788 | material, x */
         "movl %ebx, 0x2c(%esp)\n" /* x */
         "movl 0x40(%ebp), %eax\n" /* color */
@@ -3648,6 +3658,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CL_DrawStretchPic\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018b5ff:\n"
         "movl imp_cg_drawHealth, %eax\n" /* line 864 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
@@ -3809,6 +3820,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CL_DrawStretchPic\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* } scope */
+        ".Lf18aa9c_0018b8ce:\n"
         "movl $1, 0x10(%esp)\n" /* line 1894 */
         "movl 0x44(%ebp), %edx\n" /* material */
         "movl %edx, 0xc(%esp)\n"
@@ -3821,12 +3833,14 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_DrawOffHandIcon\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018b8ff:\n"
         "movl $2, 0x10(%esp)\n"
         "movl 0x44(%ebp), %eax\n" /* material */
         "movl %eax, 0xc(%esp)\n"
         "movl 0x40(%ebp), %edx\n" /* color */
         "movl %edx, 8(%esp)\n"
         "jmp .Lf18aa9c_0018b8e4\n"
+        ".Lf18aa9c_0018b917:\n"
         "movl $1, 0x14(%esp)\n" /* line 1897 */
         ".Lf18aa9c_0018b91f:\n"
         "movl 0x48(%ebp), %eax\n" /* line 1909 | textStyle */
@@ -3841,8 +3855,10 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_DrawOffHandAmmo\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018b94f:\n"
         "movl $2, 0x14(%esp)\n"
         "jmp .Lf18aa9c_0018b91f\n"
+        ".Lf18aa9c_0018b959:\n"
         "movl $1, 0x14(%esp)\n" /* line 1900 */
         ".Lf18aa9c_0018b961:\n"
         "movl 0x48(%ebp), %edx\n" /* line 1912 | textStyle */
@@ -3857,8 +3873,10 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_DrawOffHandName\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018b991:\n"
         "movl $2, 0x14(%esp)\n"
         "jmp .Lf18aa9c_0018b961\n"
+        ".Lf18aa9c_0018b99b:\n"
         "movl $1, 0x10(%esp)\n" /* line 1903 */
         ".Lf18aa9c_0018b9a3:\n"
         "movl 0x44(%ebp), %edx\n" /* line 1915 | material */
@@ -3871,9 +3889,11 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_DrawOffHandHighlight\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018b9cc:\n"
         "movl $2, 0x10(%esp)\n"
         "jmp .Lf18aa9c_0018b9a3\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018b9d6:\n"
         "movl imp_cg, %eax\n" /* line 743 */
         "movl (%eax), %eax\n"
         "movl 0x24(%eax), %eax\n"
@@ -3942,6 +3962,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, 0x14(%esp)\n"
         "jmp .Lf18aa9c_0018b5d3\n"
         /* } scope */
+        ".Lf18aa9c_0018bae9:\n"
         "movl imp_cgs, %eax\n" /* line 1758 */
         "movl (%eax), %eax\n"
         "movl 0x63bc(%eax), %eax\n"
@@ -3972,9 +3993,11 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll UI_DrawText\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018bb73:\n"
         "leal -0x54(%ebp), %eax\n" /* line 1824 | rect */
         "movl $1, 8(%esp)\n"
         "jmp .Lf18aa9c_0018adc1\n"
+        ".Lf18aa9c_0018bb83:\n"
         "movl 0x48(%ebp), %edi\n" /* line 1815 | textStyle, vertAlign */
         "movl %edi, 0xc(%esp)\n" /* vertAlign */
         "movss 0x3c(%ebp), %xmm0\n" /* scale */
@@ -3985,12 +4008,14 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_DrawHoldBreathHint\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018bbac:\n"
         "leal -0x54(%ebp), %eax\n" /* line 1821 | rect */
         "movl 0x48(%ebp), %ecx\n" /* textStyle */
         "movss 0x3c(%ebp), %xmm0\n" /* scale */
         "movl 0x38(%ebp), %edx\n" /* font */
         "calll CG_DrawCursorhint\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018bbc4:\n"
         "movl 0x48(%ebp), %edx\n" /* line 1818 | textStyle */
         "movl %edx, 0xc(%esp)\n"
         "movss 0x3c(%ebp), %xmm0\n" /* scale */
@@ -4002,6 +4027,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawMantleHint\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018bbed:\n"
         "movl $0x2bc, 8(%esp)\n" /* line 392 */
         "movl $0x708, 4(%esp)\n"
         "movl imp_cg, %eax\n"
@@ -4097,6 +4123,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "jmp .Lf18aa9c_0018adab\n"
         /* } scope */
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018bd5f:\n"
         "movl imp_cg, %eax\n" /* line 432 */
         "movl (%eax), %ebx\n" /* weapIndex */
         "movl 0x2be54(%ebx), %edi\n" /* weapIndex, displayStartTime */
@@ -4207,6 +4234,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll UI_DrawHandlePic\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* } scope */
+        ".Lf18aa9c_0018bee6:\n"
         "movl imp_cg, %eax\n" /* line 1688 */
         "movl (%eax), %ebx\n" /* x */
         "movl 0x24(%ebx), %eax\n" /* x */
@@ -4235,6 +4263,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %eax, (%esp)\n"
         "calll CG_DrawTeamBackground\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018bf4d:\n"
         "leal -0x54(%ebp), %edx\n" /* line 1830 | rect */
         "movl 0x48(%ebp), %ebx\n" /* textStyle, x */
         "movl %ebx, 8(%esp)\n" /* x */
@@ -4248,6 +4277,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "calll CG_DrawScore\n"
         "jmp .Lf18aa9c_0018adab\n"
         /* { scope 2: duration, displayStartTime, duration, duration, ... */
+        ".Lf18aa9c_0018bf78:\n"
         "movl imp_cg, %eax\n" /* line 1657 */
         "movl (%eax), %ebx\n" /* x */
         "movl 0x24(%ebx), %eax\n" /* x */
@@ -4282,6 +4312,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl %edx, 0xc(%esp)\n"
         "jmp .Lf18aa9c_0018bb57\n"
         /* } scope */
+        ".Lf18aa9c_0018bff8:\n"
         "leal -0x54(%ebp), %edx\n" /* line 1833 | rect */
         "movl 0x48(%ebp), %ebx\n" /* textStyle, x */
         "movl %ebx, 8(%esp)\n" /* x */
@@ -4294,6 +4325,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movl $1, %eax\n"
         "calll CG_DrawScore\n"
         "jmp .Lf18aa9c_0018adab\n"
+        ".Lf18aa9c_0018c026:\n"
         "movl imp_cg, %eax\n" /* line 1740 */
         "movl (%eax), %eax\n"
         "cmpb $0, 0x2b54c(%eax)\n"
@@ -4333,6 +4365,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "mulss lit4_002ed5d8, %xmm1\n" /* 0.5f */
         "addss -0x100(%ebp), %xmm1\n"
         "jmp .Lf18aa9c_0018bd3d\n"
+        ".Lf18aa9c_0018c0e9:\n"
         "movl imp_cgs, %eax\n" /* line 1758 */
         "movl (%eax), %eax\n"
         "movl 0x63b8(%eax), %eax\n"
@@ -4357,6 +4390,7 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "movss -0xa0(%ebp), %xmm1\n"
         "movss %xmm1, 0xc(%esp)\n"
         "jmp .Lf18aa9c_0018bb57\n"
+        ".Lf18aa9c_0018c15c:\n"
         "movl 0x48(%ebp), %eax\n" /* line 1779 | textStyle */
         "movl %eax, 0x24(%esp)\n"
         "movl 0x40(%ebp), %edx\n" /* color */
@@ -4883,6 +4917,115 @@ void CG_OwnerDraw(float x, float y, float w, float h, int horzAlign, int vertAli
         "fstps -0x120(%ebp)\n"
         "cvttss2si -0x120(%ebp), %ecx\n"
         "jmp .Lf18aa9c_0018b7ff\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_18aa9c_0:\n"
+        ".long .Lf18aa9c_0018adb6\n"
+        ".long .Lf18aa9c_0018ade0\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018aeda\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018bff8\n"
+        ".long .Lf18aa9c_0018bf4d\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018bf78\n"
+        ".long .Lf18aa9c_0018bee6\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018c15c\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018c026\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018c0e9\n"
+        ".long .Lf18aa9c_0018bae9\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018bb73\n"
+        ".long .Lf18aa9c_0018bb83\n"
+        ".long .Lf18aa9c_0018bbac\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018aae2\n"
+        ".long .Lf18aa9c_0018bbc4\n"
+        ".long .Lf18aa9c_0018bbed\n"
+        ".long .Lf18aa9c_0018bd5f\n"
+        ".long .Lf18aa9c_0018af0a\n"
+        ".long .Lf18aa9c_0018afe8\n"
+        ".long .Lf18aa9c_0018b14d\n"
+        ".long .Lf18aa9c_0018b16b\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018b58c\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018b5aa\n"
+        ".long .Lf18aa9c_0018b5ff\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018b8ce\n"
+        ".long .Lf18aa9c_0018b8ff\n"
+        ".long .Lf18aa9c_0018b917\n"
+        ".long .Lf18aa9c_0018b94f\n"
+        ".long .Lf18aa9c_0018b959\n"
+        ".long .Lf18aa9c_0018b991\n"
+        ".long .Lf18aa9c_0018b99b\n"
+        ".long .Lf18aa9c_0018b9cc\n"
+        ".long .Lf18aa9c_0018adab\n"
+        ".long .Lf18aa9c_0018b9d6\n"
+        ".text\n"
     );
 }
 

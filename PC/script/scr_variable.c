@@ -10867,7 +10867,7 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         "movl 4(%esi), %eax\n" /* line 2866 | value */
         "cmpl $0xb, %eax\n"
         "ja .Lf90568_00090582\n"
-        "jmpl *CorrectSolidDeltas+3392(, %eax, 4)\n"
+        "jmpl *.Ljt_90568_0(, %eax, 4)\n"
         ".Lf90568_00090582:\n"
         "movl var_typename(, %eax, 4), %eax\n" /* line 2889 */
         ".Lf90568_00090589:\n"
@@ -10910,6 +10910,7 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         "movw %ax, -4(%edx)\n"
         "jmp .Lf90568_000905be\n"
         /* } scope */
+        ".Lf90568_000905ee:\n"
         "movl (%esi), %eax\n" /* line 2880 | value */
         "movzwl %ax, %ebx\n" /* line 2881 | stringValue */
         "shrl $0x10, %eax\n"
@@ -10919,6 +10920,7 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         "movl %eax, (%esp)\n"
         "calll XAnimGetAnimDebugName\n"
         "jmp .Lf90568_00090589\n"
+        ".Lf90568_0009060f:\n"
         "movl %esi, (%esp)\n" /* line 2872 | value */
         "calll Scr_CastString\n"
         /* } scope */
@@ -10928,6 +10930,7 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf90568_0009061e:\n"
         "movl $2, 4(%esi)\n" /* line 2876 | value */
         /* } scope */
         "addl $0x10, %esp\n" /* line 2897 */
@@ -10936,6 +10939,7 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf90568_0009062c:\n"
         "movl (%esi), %eax\n" /* line 2885 | value */
         "shll $4, %eax\n"
         "movl scrVarGlob+8(%eax), %eax\n"
@@ -10954,6 +10958,22 @@ JCOEF Scr_CastDebugString(VariableValue *value)
         "movl %ecx, (%esp)\n"
         "calll MT_Free\n"
         "jmp .Lf90568_000905be\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_90568_0:\n"
+        ".long .Lf90568_00090582\n"
+        ".long .Lf90568_0009062c\n"
+        ".long .Lf90568_0009060f\n"
+        ".long .Lf90568_0009061e\n"
+        ".long .Lf90568_0009060f\n"
+        ".long .Lf90568_0009060f\n"
+        ".long .Lf90568_0009060f\n"
+        ".long .Lf90568_00090582\n"
+        ".long .Lf90568_00090582\n"
+        ".long .Lf90568_00090582\n"
+        ".long .Lf90568_00090582\n"
+        ".long .Lf90568_000905ee\n"
+        ".text\n"
     );
 }
 
@@ -11924,7 +11944,8 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         "cmpl $0xb, 4(%esi)\n" /* line 3180 | value1 */
         "ja .Lf90f4e_00090fb3\n"
         "movl 4(%esi), %eax\n" /* value1 */
-        "jmpl *CorrectSolidDeltas+3456(, %eax, 4)\n"
+        "jmpl *.Ljt_90f4e_0(, %eax, 4)\n"
+        ".Lf90f4e_00090f8d:\n"
         "movl (%esi), %edx\n" /* line 3214 | value1 */
         "movl %edx, %eax\n"
         "shll $4, %eax\n"
@@ -11962,7 +11983,9 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         "movss %xmm0, (%esi)\n"
         "jmp .Lf90f4e_00090f7d\n"
         /* } scope */
+        ".Lf90f4e_00090ff1:\n"
         "movl $6, 4(%esi)\n" /* line 3232 | value1 */
+        ".Lf90f4e_00090ff8:\n"
         "movl (%esi), %eax\n" /* line 3233 | value1 */
         "cmpl (%edi), %eax\n" /* value2 */
         "sete %al\n"
@@ -11977,6 +12000,7 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf90f4e_0009100c:\n"
         "movl $6, 4(%esi)\n" /* line 3206 | value1 */
         "movl (%esi), %edx\n" /* line 3207 | value1 */
         "movl (%edi), %ecx\n" /* value2 */
@@ -12007,6 +12031,7 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         ".Lf90f4e_00091062:\n"
         "movl %ebx, (%esi)\n" /* line 3223 | tempInt, value1 */
         "jmp .Lf90f4e_00091004\n"
+        ".Lf90f4e_00091066:\n"
         "movl $6, 4(%esi)\n" /* line 3192 | value1 */
         "movss (%esi), %xmm0\n" /* line 3193 | value1 */
         "subss (%edi), %xmm0\n" /* value2 */
@@ -12017,9 +12042,11 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         "seta %al\n"
         "movl %eax, (%esi)\n" /* value1 */
         "jmp .Lf90f4e_00091004\n"
+        ".Lf90f4e_00091093:\n"
         "movl $6, 4(%esi)\n" /* line 3183 | value1 */
         "movl $1, (%esi)\n" /* line 3184 | value1 */
         "jmp .Lf90f4e_00091004\n"
+        ".Lf90f4e_000910a5:\n"
         "movl $6, 4(%esi)\n" /* line 3198 | value1 */
         "movl (%esi), %eax\n" /* line 3199 | value1 */
         "xorl %ebx, %ebx\n" /* tempInt */
@@ -12075,6 +12102,22 @@ JCOEF Scr_EvalEquality(VariableValue *value1, VariableValue *value2)
         "calll MT_Free\n"
         "movl %ebx, (%esi)\n" /* line 3223 | tempInt, value1 */
         "jmp .Lf90f4e_00091004\n"
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_90f4e_0:\n"
+        ".long .Lf90f4e_00091093\n"
+        ".long .Lf90f4e_00090f8d\n"
+        ".long .Lf90f4e_000910a5\n"
+        ".long .Lf90f4e_000910a5\n"
+        ".long .Lf90f4e_0009100c\n"
+        ".long .Lf90f4e_00091066\n"
+        ".long .Lf90f4e_00090ff8\n"
+        ".long .Lf90f4e_00090fb3\n"
+        ".long .Lf90f4e_00090fb3\n"
+        ".long .Lf90f4e_00090ff1\n"
+        ".long .Lf90f4e_00090fb3\n"
+        ".long .Lf90f4e_00090ff1\n"
+        ".text\n"
     );
 }
 
@@ -12448,8 +12491,9 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "subl $0x66, %eax\n"
         "cmpl $0xf, %eax\n"
         "ja .Lf91450_000914c3\n"
-        "jmpl *CorrectSolidDeltas+3504(, %eax, 4)\n"
+        "jmpl *.Ljt_91450_0(, %eax, 4)\n"
         /* { scope 1 */
+        ".Lf91450_00091470:\n"
         "movl 4(%esi), %eax\n" /* line 3021 */
         "movl 4(%ebx), %edx\n" /* line 3022 */
         "cmpl %edx, %eax\n" /* line 3024 */
@@ -12484,6 +12528,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "popl %esi\n"
         "popl %ebp\n"
         "retl\n"
+        ".Lf91450_000914ca:\n"
         "cmpl $6, 4(%esi)\n" /* line 3138 */
         "jne .Lf91450_000914da\n"
         "cmpl $6, 4(%ebx)\n"
@@ -12496,6 +12541,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "popl %esi\n"
         "popl %ebp\n"
         "jmp Scr_UnmatchingTypesError\n" /* line 3503 */
+        ".Lf91450_000914eb:\n"
         "cmpl $6, 4(%esi)\n" /* line 3314 */
         "jne .Lf91450_000914da\n"
         "cmpl $6, 4(%ebx)\n"
@@ -12503,6 +12549,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movl (%ebx), %ecx\n" /* line 3316 */
         "shll %cl, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
+        ".Lf91450_000914fd:\n"
         "movl %ebx, 4(%esp)\n" /* line 3243 */
         "movl %esi, (%esp)\n"
         "calll Scr_EvalEquality\n"
@@ -12512,6 +12559,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movl %eax, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
         /* { scope 1 */
+        ".Lf91450_00091515:\n"
         "movl 4(%esi), %eax\n" /* line 3021 */
         "movl 4(%ebx), %edx\n" /* line 3022 */
         "cmpl %edx, %eax\n" /* line 3024 */
@@ -12538,6 +12586,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movl %eax, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
         /* { scope 1 */
+        ".Lf91450_0009155f:\n"
         "movl 4(%esi), %eax\n" /* line 3021 */
         "movl 4(%ebx), %edx\n" /* line 3022 */
         "cmpl %edx, %eax\n" /* line 3024 */
@@ -12563,6 +12612,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movzbl %al, %eax\n"
         "movl %eax, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
+        ".Lf91450_000915ad:\n"
         "movl %ebx, 0xc(%ebp)\n" /* line 3560 | value2, value1 */
         "movl %esi, 8(%ebp)\n" /* value1, op */
         "addl $0x10, %esp\n" /* line 3575 */
@@ -12570,6 +12620,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "popl %esi\n"
         "popl %ebp\n"
         "jmp Scr_EvalMinus\n" /* line 3560 */
+        ".Lf91450_000915be:\n"
         "cmpl $6, 4(%esi)\n" /* line 3162 */
         "jne .Lf91450_000914da\n"
         "cmpl $6, 4(%ebx)\n"
@@ -12578,6 +12629,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "andl (%ebx), %eax\n"
         "movl %eax, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
+        ".Lf91450_000915dd:\n"
         "movl %ebx, 0xc(%ebp)\n" /* line 3524 | value2, value1 */
         "movl %esi, 8(%ebp)\n" /* value1, op */
         "addl $0x10, %esp\n" /* line 3575 */
@@ -12585,6 +12637,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "popl %esi\n"
         "popl %ebp\n"
         "jmp Scr_EvalEquality\n" /* line 3524 */
+        ".Lf91450_000915ee:\n"
         "cmpl $6, 4(%esi)\n" /* line 3150 */
         "jne .Lf91450_000914da\n"
         "cmpl $6, 4(%ebx)\n"
@@ -12594,6 +12647,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movl %eax, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
         /* { scope 1 */
+        ".Lf91450_0009160d:\n"
         "movl 4(%esi), %eax\n" /* line 3021 */
         "movl 4(%ebx), %edx\n" /* line 3022 */
         "cmpl %edx, %eax\n" /* line 3024 */
@@ -12619,6 +12673,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movzbl %al, %eax\n"
         "movl %eax, (%esi)\n"
         "jmp .Lf91450_000914b9\n"
+        ".Lf91450_0009165b:\n"
         "cmpl $6, 4(%esi)\n" /* line 3326 */
         "jne .Lf91450_000914da\n"
         "cmpl $6, 4(%ebx)\n"
@@ -12626,6 +12681,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movl (%ebx), %ecx\n" /* line 3328 */
         "sarl %cl, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
+        ".Lf91450_00091678:\n"
         "movl %ebx, 0xc(%ebp)\n" /* line 3568 | value2, value1 */
         "movl %esi, 8(%ebp)\n" /* value1, op */
         "addl $0x10, %esp\n" /* line 3575 */
@@ -12633,6 +12689,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "popl %esi\n"
         "popl %ebp\n"
         "jmp Scr_EvalDivide\n" /* line 3568 */
+        ".Lf91450_00091689:\n"
         "cmpl $6, 4(%esi)\n" /* line 3491 */
         "jne .Lf91450_000914da\n"
         "cmpl $6, 4(%ebx)\n"
@@ -12647,6 +12704,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "movl %edx, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
         /* { scope 1 */
+        ".Lf91450_000916b5:\n"
         "movl 4(%esi), %eax\n" /* line 3021 */
         "movl 4(%ebx), %edx\n" /* line 3022 */
         "cmpl %edx, %eax\n" /* line 3024 */
@@ -12670,6 +12728,7 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "imull (%ebx), %eax\n"
         "movl %eax, (%esi)\n"
         "jmp .Lf91450_000914c3\n"
+        ".Lf91450_000916fe:\n"
         "movl %ebx, 0xc(%ebp)\n" /* line 3556 | value2, value1 */
         "movl %esi, 8(%ebp)\n" /* value1, op */
         "addl $0x10, %esp\n" /* line 3575 */
@@ -12830,6 +12889,26 @@ JCOEF Scr_EvalBinaryOperator(int op, VariableValue *value1, VariableValue *value
         "popl %esi\n"
         "popl %ebp\n"
         "jmp Scr_Error\n" /* line 3499 */
+        ".section .rodata\n"
+        ".balign 4\n"
+        ".Ljt_91450_0:\n"
+        ".long .Lf91450_000914ca\n"
+        ".long .Lf91450_000915ee\n"
+        ".long .Lf91450_000915be\n"
+        ".long .Lf91450_000915dd\n"
+        ".long .Lf91450_000914fd\n"
+        ".long .Lf91450_00091515\n"
+        ".long .Lf91450_0009155f\n"
+        ".long .Lf91450_0009160d\n"
+        ".long .Lf91450_00091470\n"
+        ".long .Lf91450_000914eb\n"
+        ".long .Lf91450_0009165b\n"
+        ".long .Lf91450_000916fe\n"
+        ".long .Lf91450_000915ad\n"
+        ".long .Lf91450_000916b5\n"
+        ".long .Lf91450_00091678\n"
+        ".long .Lf91450_00091689\n"
+        ".text\n"
     );
 }
 
