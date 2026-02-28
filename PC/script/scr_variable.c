@@ -13,6 +13,13 @@ extern struct scrVarPub_t scrVarPub; /* 0x0 */
 extern scr_classStruct_t g_classMap[4]; /* 0x0 */
 extern struct scrVarGlob_t scrVarGlob; /* 0x0 */
 
+extern void * MT_Alloc(int size, int type);
+extern void MT_Free(void *ptr, int type);
+extern char * va(const char *format, ...);
+extern void Scr_Error(const char *msg);
+extern void SL_AddRefToString(unsigned int stringValue);
+extern void SL_RemoveRefToString(unsigned int stringValue);
+
 int GetVarType(unsigned int id);
 static int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2);
 unsigned int FindNextSibling(unsigned int id);
@@ -33,7 +40,7 @@ unsigned int FindObject(unsigned int id);
 VariableUnion * GetVariableValueAddress(unsigned int id);
 JCOEF RemoveRefToEmptyObject(unsigned int id);
 unsigned int Scr_GetSelf(unsigned int threadId);
-JCOEF RemoveRefToVector(const float *vectorValue);
+void RemoveRefToVector(const float *vectorValue);
 Bool IsValidArrayIndex(unsigned int unsignedValue);
 unsigned int GetInternalVariableIndex(unsigned int unsignedValue);
 void SetNewVariableValue(unsigned int id, VariableValue *value);
@@ -46,8 +53,8 @@ Bool IsVarFree(unsigned int id);
 struct scr_entref_t Scr_GetEntityIdRef(unsigned int entId);
 unsigned int Scr_FindField(const char *name, int *type);
 int Scr_GetClassnumForCharId(int charId);
-JCOEF Scr_RemoveThreadNotifyName(unsigned int startLocalId);
-JCOEF AddRefToValue(int type, VariableUnion u);
+void Scr_RemoveThreadNotifyName(unsigned int startLocalId);
+void AddRefToValue(int type, VariableUnion u);
 const float * Scr_AllocVector(const float *v);
 int Scr_GetOffset(int classnum, const char *name);
 unsigned int FindEntityId(int entnum, int classnum);
@@ -436,32 +443,19 @@ unsigned int Scr_GetSelf(unsigned int threadId)
 }
 
 /* line 1899 */
-__attribute__((naked))
-JCOEF RemoveRefToVector(const float *vectorValue)
+void RemoveRefToVector(const float *vectorValue)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1899 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* vectorValue */
-        "cmpb $0, -1(%edx)\n" /* line 1901 */
-        "jne .Lf88e1e_00088e40\n"
-        "leal -4(%edx), %ecx\n" /* line 1916 */
-        "movzwl -4(%edx), %eax\n"
-        "testw %ax, %ax\n"
-        "je .Lf88e1e_00088e42\n"
-        "subl $1, %eax\n" /* line 1918 */
-        "movw %ax, -4(%edx)\n"
-        ".Lf88e1e_00088e40:\n"
-        "leave\n" /* line 1923 */
-        "retl\n"
-        ".Lf88e1e_00088e42:\n"
-        "movl $0x10, 4(%esp)\n" /* line 1922 */
-        "movl %ecx, (%esp)\n"
-        "calll MT_Free\n"
-        "leave\n" /* line 1923 */
-        "retl\n"
-    );
+    unsigned short *refCount;
+
+    if (*((unsigned char *)vectorValue - 1))
+        return;
+
+    refCount = (unsigned short *)((byte *)vectorValue - 4);
+    if (*refCount == 0) {
+        MT_Free(refCount, 0x10);
+    } else {
+        *refCount -= 1;
+    }
 }
 
 /* line 1962 */
@@ -485,47 +479,21 @@ void SetNewVariableValue(unsigned int id, VariableValue *value)
 }
 
 /* line 2529 */
-__attribute__((naked))
 unsigned int Scr_EvalVariableObject(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2529 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        /* { scope 1 */
-        "shll $4, %eax\n" /* line 2534 */
-        "addl $scrVarGlob, %eax\n"
-        "movl 8(%eax), %edx\n" /* line 2537 */
-        "andl $0x1f, %edx\n"
-        "cmpl $1, %edx\n" /* line 2538 */
-        "je .Lf88ea0_00088ee1\n"
-        ".Lf88ea0_00088ebc:\n"
-        "movl var_typename(, %edx, 4), %eax\n" /* line 2548 */
-        "movl %eax, 4(%esp)\n"
-        "movl $0x21d344, (%esp)\n" /* "%s is not a field object" */
-        "calll va\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_Error\n"
-        "xorl %ecx, %ecx\n"
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 2550 */
-        "leave\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf88ea0_00088ee1:\n"
-        "movl 4(%eax), %ecx\n" /* line 2540 */
-        "movl %ecx, %eax\n"
-        "shll $4, %eax\n"
-        "movl 0x104cf08(%eax), %edx\n"
-        "andl $0x1f, %edx\n"
-        "cmpl $0x15, %edx\n" /* line 2541 */
-        "jg .Lf88ea0_00088ebc\n"
-        /* } scope */
-        "movl %ecx, %eax\n" /* line 2550 */
-        "leave\n"
-        "retl\n"
-    );
+    byte *entry = (byte *)&scrVarGlob + id * 16;
+    unsigned int type = *(unsigned int *)(entry + 8) & 0x1f;
+    unsigned int objectId;
+
+    if (type == 1) {
+        objectId = *(unsigned int *)(entry + 4);
+        type = *(unsigned int *)(0x104cf08 + objectId * 16) & 0x1f;
+        if (type <= 0x15)
+            return objectId;
+    }
+
+    Scr_Error(va((const char *)0x21d344, var_typename[type])); /* "%s is not a field object" */
+    return 0;
 }
 
 /* line 2634 */
@@ -535,33 +503,18 @@ unsigned int GetArraySize(unsigned int id)
 }
 
 /* line 2669 */
-__attribute__((naked))
 unsigned int FindPrevSibling(unsigned int id)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2669 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* id */
-        /* { scope 1 */
-        "shll $4, %eax\n" /* line 2676 */
-        "movzwl 0x104cf0e(%eax), %eax\n"
-        "shll $4, %eax\n"
-        "movzwl 0x104cf02(%eax), %eax\n"
-        "shll $4, %eax\n"
-        "movzwl 0x104cf02(%eax), %eax\n"
-        "shll $4, %eax\n"
-        "movzwl scrVarGlob(%eax), %eax\n"
-        "movl %eax, %edx\n" /* line 2677 */
-        "shll $4, %edx\n"
-        "movl 0x104cf08(%edx), %edx\n"
-        "andl $0x1f, %edx\n"
-        "cmpl $0xf, %edx\n"
-        "movl $0, %edx\n"
-        "cmovael %edx, %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 2678 */
-        "retl\n"
-    );
+    unsigned int next, result;
+
+    next = *(unsigned short *)(0x104cf0e + id * 16);      /* nextSibling */
+    next = *(unsigned short *)(0x104cf02 + next * 16);     /* hash.u (prevSibling) */
+    next = *(unsigned short *)(0x104cf02 + next * 16);     /* hash.u (prevSibling) */
+    result = *(unsigned short *)((byte *)&scrVarGlob + next * 16); /* hash.id */
+
+    if ((*(unsigned int *)(0x104cf08 + result * 16) & 0x1f) >= 0xf)
+        return 0;
+    return result;
 }
 
 /* line 2681 */
@@ -674,100 +627,47 @@ int Scr_GetClassnumForCharId(int charId)
 }
 
 /* line 1321 */
-__attribute__((naked))
-JCOEF Scr_RemoveThreadNotifyName(unsigned int startLocalId)
+void Scr_RemoveThreadNotifyName(unsigned int startLocalId)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1321 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %eax\n" /* startLocalId */
-        /* { scope 1 */
-        "shll $4, %eax\n" /* line 1326 */
-        "leal scrVarGlob(%eax), %ebx\n" /* entryValue */
-        "movzwl 0x104cf09(%eax), %eax\n" /* line 1332 */
-        "movl %eax, (%esp)\n"
-        "calll SL_RemoveRefToString\n"
-        "movl 8(%ebx), %eax\n" /* line 1334 | entryValue */
-        "andl $0xffffffe0, %eax\n"
-        "orl $0xf, %eax\n"
-        "movl %eax, 8(%ebx)\n" /* entryValue */
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1335 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *entry = (byte *)&scrVarGlob + startLocalId * 16;
+    unsigned int notifyName = *(unsigned short *)(0x104cf09 + startLocalId * 16);
+
+    SL_RemoveRefToString(notifyName);
+
+    /* Clear type bits (low 5) and set to 0xf (free) */
+    *(unsigned int *)(entry + 8) = (*(unsigned int *)(entry + 8) & 0xffffffe0) | 0xf;
 }
 
 /* line 1926 */
-__attribute__((naked))
-JCOEF AddRefToValue(int type, VariableUnion u)
+void AddRefToValue(int type, VariableUnion u)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1926 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* type */
-        "movl 0xc(%ebp), %edx\n" /* u */
-        "cmpl $3, %eax\n" /* line 1928 */
-        "jg .Lf89086_000890a2\n"
-        "cmpl $2, %eax\n"
-        "jl .Lf89086_000890b6\n"
-        "movl %edx, 8(%ebp)\n" /* line 1935 | type */
-        "popl %ebp\n" /* line 1941 */
-        "jmp SL_AddRefToString\n" /* line 1935 */
-        ".Lf89086_000890a2:\n"
-        "cmpl $4, %eax\n" /* line 1928 */
-        "je .Lf89086_000890a9\n"
-        ".Lf89086_000890a7:\n"
-        "popl %ebp\n" /* line 1941 */
-        "retl\n"
-        ".Lf89086_000890a9:\n"
-        "cmpb $0, -1(%edx)\n" /* line 1879 */
-        "jne .Lf89086_000890a7\n"
-        "addw $1, -4(%edx)\n" /* line 1894 */
-        "popl %ebp\n" /* line 1941 */
-        "retl\n"
-        ".Lf89086_000890b6:\n"
-        "subl $1, %eax\n" /* line 1928 */
-        "jne .Lf89086_000890a7\n"
-        "shll $4, %edx\n" /* line 1748 */
-        "addw $1, 0x104cf04(%edx)\n"
-        "popl %ebp\n" /* line 1941 */
-        "retl\n"
-    );
+    switch (type) {
+    case 1: /* object */
+        *(unsigned short *)(0x104cf04 + u.intValue * 16) += 1;
+        break;
+    case 2: /* string */
+    case 3: /* localized string */
+        SL_AddRefToString(u.intValue);
+        break;
+    case 4: /* vector */
+        if (*((byte *)u.intValue - 1) == 0)
+            *(unsigned short *)((byte *)u.intValue - 4) += 1;
+        break;
+    }
 }
 
 /* line 1865 */
-__attribute__((naked))
 const float * Scr_AllocVector(const float *v)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1865 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* v */
-        /* { scope 1 */
-        "movl $2, 4(%esp)\n" /* line 1846 */
-        "movl $0x10, (%esp)\n"
-        "calll MT_Alloc\n"
-        "movl %eax, %ecx\n"
-        "leal 4(%eax), %eax\n"
-        "movl $0, -4(%eax)\n" /* line 1848 */
-        "movl (%ebx), %edx\n" /* line 1870 | v */
-        "movl %edx, 4(%ecx)\n"
-        "movl 4(%ebx), %edx\n" /* line 1871 | v */
-        "movl %edx, 4(%eax)\n"
-        "movl 8(%ebx), %edx\n" /* line 1872 | v */
-        "movl %edx, 8(%eax)\n"
-        /* } scope */
-        "addl $0x14, %esp\n" /* line 1874 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *mem = (byte *)MT_Alloc(0x10, 2);
+    float *vec = (float *)(mem + 4);
+
+    *(int *)mem = 0; /* refcount = 0 */
+    vec[0] = v[0];
+    vec[1] = v[1];
+    vec[2] = v[2];
+
+    return vec;
 }
 
 /* line 3757 */
