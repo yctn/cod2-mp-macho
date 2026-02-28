@@ -14,6 +14,8 @@
 
 static static_model_cache_t s_cache; /* 0xc88580 */
 
+extern refimport_t *ri; /* 0x195eee0 */
+
 void R_InitStaticModelIndexCache(void);
 void R_StaticModelCacheStats_f(void);
 void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf);
@@ -34,43 +36,14 @@ void R_InitStaticModelIndexCache(void)
 }
 
 /* line 819 */
-__attribute__((naked))
 void R_StaticModelCacheStats_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 819 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 0x195eee0, %ebx\n" /* line 821 */
-        "cvtsi2ssl 0xc949b0, %xmm0\n"
-        "mulss 0x2ed798, %xmm0\n" /* 100.0f */
-        "mulss 0x2ed854, %xmm0\n" /* 1.52587890625e-05f */
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224aa0, 4(%esp)\n" /* "%.2f%% of cache is currently allocated.
-" */
-        "movl $0, (%esp)\n"
-        "calll *(%ebx)\n"
-        "movl 0xc949b0, %eax\n" /* line 822 */
-        "testl %eax, %eax\n"
-        "je .Lfe031c_000e0398\n"
-        "cvtsi2ssl 0xc949b4, %xmm0\n" /* line 823 */
-        "mulss 0x2ed798, %xmm0\n" /* 100.0f */
-        "cvtsi2ssl %eax, %xmm1\n"
-        "divss %xmm1, %xmm0\n"
-        "cvtss2sd %xmm0, %xmm0\n"
-        "movsd %xmm0, 8(%esp)\n"
-        "movl $0x224acc, 4(%esp)\n" /* "%.2f%% allocated cache vertices are used.
-" */
-        "movl $0, (%esp)\n"
-        "calll *(%ebx)\n"
-        ".Lfe031c_000e0398:\n"
-        "addl $0x14, %esp\n" /* line 824 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    ri->Printf(0, "%.2f%% of cache is currently allocated.\n",
+               (double)((float)s_cache.stats.allocatedVerts * 100.0f * (1.0f / 65536.0f)));
+    if (s_cache.stats.allocatedVerts) {
+        ri->Printf(0, "%.2f%% allocated cache vertices are used.\n",
+                   (double)((float)s_cache.stats.usedVerts * 100.0f / (float)s_cache.stats.allocatedVerts));
+    }
 }
 
 /* line 713 */

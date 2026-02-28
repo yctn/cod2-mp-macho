@@ -29,6 +29,13 @@ extern int XModelBad(union XAssetHeader header);
 extern void XModelUnoptimize(union XAssetHeader header);
 extern void XModelOptimize(union XAssetHeader header);
 extern void DObjSetModel(struct DObj_s *obj, void *model);
+extern int DObjGetNumModels(const struct DObj_s *obj);
+extern int DObjGetSurfaces(const struct DObj_s *obj, DSurface_s *surfaces, int *partBits, char *lods);
+extern struct XModel * DObjGetModel(const struct DObj_s *obj, int modelIndex);
+extern const struct trXSkin_t * XModelGetSkins(const struct XModel *model);
+extern struct XModel * XModelPrecache(const char *name, Alloc_t Alloc, Alloc_t AllocColl);
+extern Bool R_ValidXModelName(const char *name);
+extern refimport_t *ri; /* 0x195eee0 */
 static const int boxVerts[24][3]; /* 0x2f24c0 */
 
 static void * Hunk_AllocXModelPrecache(int size);
@@ -78,41 +85,13 @@ static void * Hunk_AllocXModelPrecacheColl(int size)
 }
 
 /* line 188 */
-__attribute__((naked))
 struct XModel * R_RegisterModel(const char *name)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 188 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* name */
-        "movl %ebx, (%esp)\n" /* line 190 | name */
-        "calll R_ValidXModelName\n"
-        "testb %al, %al\n"
-        "je .Lfd0080_000d00b7\n"
-        "movl $Hunk_AllocXModelPrecacheColl, 8(%esp)\n" /* line 196 */
-        "movl $Hunk_AllocXModelPrecache, 4(%esp)\n"
-        "leal 7(%ebx), %eax\n" /* name */
-        "movl %eax, (%esp)\n"
-        "calll XModelPrecache\n"
-        "addl $0x14, %esp\n" /* line 197 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd0080_000d00b7:\n"
-        "movl %ebx, 8(%esp)\n" /* line 192 | name */
-        "movl $0x223f34, 4(%esp)\n" /* "R_RegisterModel: Invalid model name '%s'
-" */
-        "movl $2, (%esp)\n"
-        "movl 0x195eee0, %eax\n"
-        "calll *(%eax)\n"
-        "xorl %eax, %eax\n"
-        "addl $0x14, %esp\n" /* line 197 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!R_ValidXModelName(name)) {
+        ri->Printf(2, "R_RegisterModel: Invalid model name '%s'\n", name);
+        return NULL;
+    }
+    return XModelPrecache(name + 7, Hunk_AllocXModelPrecache, Hunk_AllocXModelPrecacheColl);
 }
 
 /* line 200 */
@@ -186,67 +165,26 @@ struct DObj_s * R_GetGfxEntityDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 }
 
 /* line 2877 */
-__attribute__((naked))
 void R_DObjReplaceMaterial(struct DObj_s *obj, int lod, int surfaceIndex, MaterialHandle material)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2877 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x13c, %esp\n"
-        "movl 8(%ebp), %esi\n" /* obj */
-        "movl 0x10(%ebp), %edi\n" /* surfaceIndex */
-        /* { scope 1 */
-        "movl %esi, (%esp)\n" /* line 2890 | obj */
-        "calll DObjGetNumModels\n"
-        "testl %eax, %eax\n" /* line 2893 */
-        "jle .Lfd01ac_000d023d\n"
-        "movzbl 0xc(%ebp), %ecx\n" /* lod */
-        "xorl %edx, %edx\n"
-        "leal -0x20(%ebp), %ebx\n" /* lods */
-        ".Lfd01ac_000d01d3:\n"
-        "movb %cl, (%edx, %ebx)\n" /* line 2894 */
-        "addl $1, %edx\n" /* line 2893 */
-        "cmpl %edx, %eax\n"
-        "jne .Lfd01ac_000d01d3\n"
-        ".Lfd01ac_000d01dd:\n"
-        "movl %ebx, 0xc(%esp)\n" /* line 2896 */
-        "leal -0x30(%ebp), %eax\n" /* partBits */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x130(%ebp), %eax\n" /* surfaces */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* obj */
-        "calll DObjGetSurfaces\n"
-        "movswl -0x130(%ebp, %edi, 4), %ebx\n" /* line 2898 */
-        /* { scope 2 */
-        "movl %ebx, 4(%esp)\n" /* line 1830 */
-        "movl %esi, (%esp)\n"
-        "calll DObjGetModel\n"
-        "movl %eax, (%esp)\n" /* line 1832 */
-        "calll XModelGetSkins\n"
-        "movl %eax, %ecx\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 2900 */
-        "je .Lfd01ac_000d0232\n"
-        "movsbl -0x20(%ebp, %ebx), %eax\n" /* line 2905 */
-        "movswl -0x12e(%ebp, %edi, 4), %edx\n"
-        "movl (%ecx, %eax, 4), %eax\n"
-        "movl 0x14(%ebp), %ecx\n" /* material */
-        "movl %ecx, (%eax, %edx, 4)\n"
-        /* } scope */
-        ".Lfd01ac_000d0232:\n"
-        "addl $0x13c, %esp\n" /* line 2906 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd01ac_000d023d:\n"
-        "leal -0x20(%ebp), %ebx\n" /* lods */
-        "jmp .Lfd01ac_000d01dd\n"
-    );
+    char lods[16];
+    int partBits[4];
+    DSurface_s surfaces[64];
+    int numModels = DObjGetNumModels(obj);
+
+    for (int i = 0; i < numModels; i++)
+        lods[i] = (char)lod;
+
+    DObjGetSurfaces(obj, surfaces, partBits, lods);
+
+    short modelIndex = surfaces[surfaceIndex].modelIndex;
+    const struct trXSkin_t *skins = XModelGetSkins(DObjGetModel(obj, modelIndex));
+    if (!skins)
+        return;
+
+    char lodVal = lods[modelIndex];
+    short subMatIndex = surfaces[surfaceIndex].subMatIndex;
+    ((MaterialHandle **)skins)[lodVal][subMatIndex] = material;
 }
 
 /* line 2917 */
@@ -547,86 +485,29 @@ void R_FinishLoadingModels(void)
 }
 
 /* line 2838 */
-__attribute__((naked))
 void R_DObjGetSurfMaterials(struct DObj_s *obj, int lod, MaterialHandle *matHandleArray)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2838 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x14c, %esp\n"
-        /* { scope 1 */
-        "movl 8(%ebp), %eax\n" /* line 2852 | obj */
-        "movl %eax, (%esp)\n"
-        "calll DObjGetNumModels\n"
-        "testl %eax, %eax\n" /* line 2855 */
-        "jle .Lfd06fe_000d0761\n"
-        "movzbl 0xc(%ebp), %ecx\n" /* lod */
-        "xorl %edx, %edx\n"
-        "leal -0x20(%ebp), %ebx\n" /* lods */
-        ".Lfd06fe_000d0722:\n"
-        "movb %cl, (%edx, %ebx)\n" /* line 2856 */
-        "addl $1, %edx\n" /* line 2855 */
-        "cmpl %edx, %eax\n"
-        "jne .Lfd06fe_000d0722\n"
-        ".Lfd06fe_000d072c:\n"
-        "movl %ebx, 0xc(%esp)\n" /* line 2858 */
-        "leal -0x30(%ebp), %eax\n" /* partBits */
-        "movl %eax, 8(%esp)\n"
-        "leal -0x130(%ebp), %edx\n" /* surfaces */
-        "movl %edx, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* obj */
-        "movl %eax, (%esp)\n"
-        "calll DObjGetSurfaces\n"
-        "movl %eax, -0x13c(%ebp)\n" /* surfaceCount */
-        "testl %eax, %eax\n" /* line 2860 */
-        "jg .Lfd06fe_000d0766\n"
-        /* } scope */
-        ".Lfd06fe_000d0756:\n"
-        "addl $0x14c, %esp\n" /* line 2874 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfd06fe_000d0761:\n"
-        "leal -0x20(%ebp), %ebx\n" /* lods */
-        "jmp .Lfd06fe_000d072c\n"
-        /* { scope 1 */
-        ".Lfd06fe_000d0766:\n"
-        "xorl %esi, %esi\n" /* line 2860 | surfaceIndex */
-        "jmp .Lfd06fe_000d078e\n"
-        ".Lfd06fe_000d076a:\n"
-        "movsbl -0x20(%ebp, %ebx), %eax\n" /* line 2872 */
-        "movswl -0x12e(%ebp, %edi), %edx\n"
-        "movl (%ecx, %eax, 4), %eax\n"
-        "movl (%eax, %edx, 4), %eax\n"
-        "movl 0x10(%ebp), %edx\n" /* matHandleArray */
-        "movl %eax, (%edx, %esi, 4)\n"
-        ".Lfd06fe_000d0783:\n"
-        "addl $1, %esi\n" /* line 2860 | surfaceIndex */
-        "cmpl %esi, -0x13c(%ebp)\n" /* surfaceIndex, surfaceCount */
-        "je .Lfd06fe_000d0756\n"
-        ".Lfd06fe_000d078e:\n"
-        "leal (, %esi, 4), %edi\n" /* line 2862 */
-        "movswl -0x130(%ebp, %edi), %ebx\n"
-        /* { scope 2 */
-        "movl %ebx, 4(%esp)\n" /* line 1830 */
-        "movl 8(%ebp), %edx\n" /* obj */
-        "movl %edx, (%esp)\n"
-        "calll DObjGetModel\n"
-        "movl %eax, (%esp)\n" /* line 1832 */
-        "calll XModelGetSkins\n"
-        "movl %eax, %ecx\n"
-        /* } scope */
-        "testl %eax, %eax\n" /* line 2866 */
-        "jne .Lfd06fe_000d076a\n"
-        "movl 0x10(%ebp), %eax\n" /* line 2868 | matHandleArray */
-        "movl $0, (%eax, %esi, 4)\n"
-        "jmp .Lfd06fe_000d0783\n"
-    );
+    char lods[16];
+    int partBits[4];
+    DSurface_s surfaces[64];
+    int numModels = DObjGetNumModels(obj);
+
+    for (int i = 0; i < numModels; i++)
+        lods[i] = (char)lod;
+
+    int surfaceCount = DObjGetSurfaces(obj, surfaces, partBits, lods);
+
+    for (int surfaceIndex = 0; surfaceIndex < surfaceCount; surfaceIndex++) {
+        short modelIndex = surfaces[surfaceIndex].modelIndex;
+        const struct trXSkin_t *skins = XModelGetSkins(DObjGetModel(obj, modelIndex));
+        if (skins) {
+            char lodVal = lods[modelIndex];
+            short subMatIndex = surfaces[surfaceIndex].subMatIndex;
+            matHandleArray[surfaceIndex] = ((MaterialHandle **)skins)[lodVal][subMatIndex];
+        } else {
+            matHandleArray[surfaceIndex] = 0;
+        }
+    }
 }
 
 /* line 257 */
@@ -2521,29 +2402,12 @@ void R_SkinStaticModel(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelIndex
 }
 
 /* line 2639 */
-__attribute__((naked))
 void R_SkinSceneEnt(GfxSceneEntity *sceneEnt, GfxEntity *ent)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2639 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* sceneEnt */
-        "movl 0xc(%ebp), %eax\n" /* ent */
-        "cmpl $1, (%eax)\n" /* line 2641 */
-        "je .Lfd2112_000d212f\n"
-        "movl %eax, 0xc(%ebp)\n" /* line 2647 | ent */
-        "movl %edx, 8(%ebp)\n" /* sceneEnt */
-        "leave\n" /* line 2648 */
-        "jmp R_SkinSceneDObj\n" /* line 2647 */
-        ".Lfd2112_000d212f:\n"
-        "movl $0xffffffff, 8(%esp)\n" /* line 2643 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll R_SkinXModel\n"
-        "leave\n" /* line 2648 */
-        "retl\n"
-    );
+    if (*(int *)ent == 1)
+        R_SkinXModel(sceneEnt, ent, -1);
+    else
+        R_SkinSceneDObj(sceneEnt, ent);
 }
 
 /* line 1735 */

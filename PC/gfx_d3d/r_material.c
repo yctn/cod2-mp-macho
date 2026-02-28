@@ -18,6 +18,7 @@ static const stream_dest_info_t s_streamDestInfo[12]; /* 0x2f2634 */
 
 extern int R_HashAssetName(const char *name);
 extern int stricmp(const char *s1, const char *s2);
+extern r_global_permanent_t *rgp; /* 0x195eebc */
 
 void * Material_Alloc(int size);
 const float * Material_RegisterLiteral(const vec_t *literal);
@@ -47,8 +48,8 @@ void Material_ReloadAll(void);
 void Load_BuildVertexDecl(MaterialVertexDeclaration * *mtlVertDecl);
 void R_Cmd_ReloadMaterialTextures(void);
 _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name);
-_ValueType Material_Register(const char *name, int imageTrack);
-_ValueType Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack);
+MaterialHandle Material_Register(const char *name, int imageTrack);
+MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack);
 void Material_Init(void);
 void ZSt13__adjust_heapIPP8MaterialiS1_PFhPKS0_S4_EEvT_T0_S8_T1_T2_(void); /* void std___adjust_heap<Material**, int, Material*, unsigned char (*)(Material const*, Material const*)> */
 void ZSt16__insertion_sortIPP8MaterialPFhPKS0_S4_EEvT_S7_T0_(void); /* void std___insertion_sort<Material**, unsigned char (*)(Material const*, Material const*)> */
@@ -1828,7 +1829,7 @@ _ValueType Material_Duplicate(_ValueType mtlCopy, const char *name)
 
 /* line 1019 */
 __attribute__((naked))
-_ValueType Material_Register(const char *name, int imageTrack)
+MaterialHandle Material_Register(const char *name, int imageTrack)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1019 */
@@ -1951,30 +1952,11 @@ _ValueType Material_Register(const char *name, int imageTrack)
 }
 
 /* line 1119 */
-__attribute__((naked))
-_ValueType Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack)
+MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1119 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* name */
-        "movl 0x10(%ebp), %edx\n" /* imageTrack */
-        /* { scope 1 */
-        "cmpb $0, (%eax)\n" /* line 1126 */
-        "jne .Lfd4662_000d467d\n"
-        "movl 0x195eebc, %eax\n" /* line 1127 */
-        "movl 0x102c(%eax), %eax\n"
-        /* } scope */
-        "popl %ebp\n" /* line 1131 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lfd4662_000d467d:\n"
-        "movl %edx, 0xc(%ebp)\n" /* line 1129 | baseImageFlags */
-        /* } scope */
-        "popl %ebp\n" /* line 1131 */
-        /* { scope 1 */
-        "jmp Material_Register\n" /* line 1129 */
-    );
+    if (*name == '\0')
+        return rgp->defaultMaterial;
+    return Material_Register(name, imageTrack);
 }
 
 /* line 1345 */

@@ -331,48 +331,24 @@ void R_AddLightToScene(const vec_t *org, float radius, float r, float g, float b
 }
 
 /* line 424 */
-__attribute__((naked))
 void R_DefaultVertexFrames(int vertCount, GfxWorldVertex *verts)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 424 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %ebx\n" /* vertCount */
-        /* { scope 1 */
-        "testl %ebx, %ebx\n" /* line 429 | vertCount */
-        "jle .Lfc5840_000c58a2\n"
-        "movl 0xc(%ebp), %edx\n" /* verts */
-        "xorl %ecx, %ecx\n"
-        ".Lfc5840_000c5850:\n"
-        "leal 0xc(%edx), %eax\n" /* line 431 | v */
-        /* { scope 2 */
-        "movl $0, 0xc(%edx)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0x3f800000, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "leal 0x2c(%edx), %eax\n" /* line 432 | v */
-        /* { scope 2 */
-        "movl $0, 0x2c(%edx)\n" /* line 191 */
-        "movl $0x3f800000, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "leal 0x38(%edx), %eax\n" /* line 433 | v */
-        /* { scope 2 */
-        "movl $0x3f800000, 0x38(%edx)\n" /* line 191 */
-        "movl $0, 4(%eax)\n" /* line 192 */
-        "movl $0, 8(%eax)\n" /* line 193 */
-        /* } scope */
-        "addl $1, %ecx\n" /* line 429 */
-        "addl $0x44, %edx\n"
-        "cmpl %ecx, %ebx\n" /* vertCount */
-        "jne .Lfc5840_000c5850\n"
-        /* } scope */
-        ".Lfc5840_000c58a2:\n"
-        "popl %ebx\n" /* line 444 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    byte *v = (byte *)verts;
+    for (int i = 0; i < vertCount; i++) {
+        /* tangent = (0, 0, 1) */
+        *(float *)(v + 0x0C) = 0.0f;
+        *(float *)(v + 0x10) = 0.0f;
+        *(float *)(v + 0x14) = 1.0f;
+        /* binormal = (0, 1, 0) */
+        *(float *)(v + 0x2C) = 0.0f;
+        *(float *)(v + 0x30) = 1.0f;
+        *(float *)(v + 0x34) = 0.0f;
+        /* normal = (1, 0, 0) */
+        *(float *)(v + 0x38) = 1.0f;
+        *(float *)(v + 0x3C) = 0.0f;
+        *(float *)(v + 0x40) = 0.0f;
+        v += 0x44;
+    }
 }
 
 /* line 731 */

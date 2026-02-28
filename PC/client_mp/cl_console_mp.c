@@ -1248,49 +1248,27 @@ void Con_DrawOuputWindow(void)
 }
 
 /* line 2008 */
-__attribute__((naked))
 void Con_PageUp(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2008 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 0xefb20c, %eax\n" /* line 2010 */
-        "subl $2, %eax\n"
-        "movl %eax, 0xefb20c\n"
-        "movl 0xefb204, %edx\n" /* line 2011 */
-        "movl 0xefb218, %ecx\n"
-        "movl %edx, %ebx\n"
-        "subl %eax, %ebx\n"
-        "cmpl %ecx, %ebx\n"
-        "jl .Lf15c502_0015c531\n"
-        "subl %ecx, %edx\n" /* line 2012 */
-        "leal 1(%edx), %eax\n"
-        "movl %eax, 0xefb20c\n"
-        ".Lf15c502_0015c531:\n"
-        "popl %ebx\n" /* line 2013 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    con.display -= 2;
+    if (con.currentLine - con.display >= con.totallines)
+        con.display = con.currentLine - con.totallines + 1;
 }
 
 /* line 2016 */
 void Con_PageDown(void)
 {
-    *(int *)0xefb20c += 2;
-    if (*(int *)0xefb20c > *(int *)0xefb204)
-        *(int *)0xefb20c = *(int *)0xefb204;
+    con.display += 2;
+    if (con.display > con.currentLine)
+        con.display = con.currentLine;
 }
 
 /* line 2024 */
 void Con_Top(void)
 {
-    int top = *(int *)0xefb218;
-    int current = *(int *)0xefb204;
-
-    *(int *)0xefb20c = top;
-    if (current - top >= top)
-        *(int *)0xefb20c = current - top + 1;
+    con.display = con.totallines;
+    if (con.currentLine - con.totallines >= con.totallines)
+        con.display = con.currentLine - con.totallines + 1;
 }
 
 /* line 2060 */
@@ -4142,30 +4120,14 @@ void Con_DrawInput(void)
 }
 
 /* line 1998 */
-__attribute__((naked))
 void Con_DrawConsole(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1998 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "calll Con_CheckResize\n" /* line 2001 */
-        "movl 0x195ee78, %eax\n" /* line 2003 */
-        "movl (%eax), %eax\n"
-        "testb $1, 4(%eax)\n"
-        "je .Lf15ee68_0015ee9a\n"
-        "cmpb $0, 0xefb21c\n" /* line 1990 */
-        "jne .Lf15ee68_0015ee8f\n"
-        "leave\n" /* line 2005 */
-        "jmp Con_DrawInput\n" /* line 1994 */
-        ".Lf15ee68_0015ee8f:\n"
-        "calll Con_DrawOuputWindow\n" /* line 1991 */
-        "leave\n" /* line 2005 */
-        "jmp Con_DrawInput\n" /* line 1994 */
-        ".Lf15ee68_0015ee9a:\n"
-        "leave\n" /* line 2005 */
-        "retl\n"
-    );
+    Con_CheckResize();
+    if (!(*(int *)(*(int *)(*(int *)0x195ee78) + 4) & 1))
+        return;
+    if (con.outputVisible)
+        Con_DrawOuputWindow();
+    Con_DrawInput();
 }
 
 /* line 555 */

@@ -14,6 +14,7 @@ extern void Image_Setup(GfxImage *image, int width, int height, int depth, int s
 extern int Image_CubemapFace(int face);
 extern void Image_UploadData(GfxImage *image, int imageFormat, int face, int mipLevel, byte *pixels);
 extern void Image_Create2DTexture(GfxImage *image, int width, int height, int depth, int flags, int format, int unused);
+extern GfxImage * Image_Alloc(const char *name, int category, int semantic, int imageTrack);
 static vec3_t lightGridLookupMatrix[3]; /* 0x2f2f20 */
 static const int faceAxis[6][3]; /* 0x2f2f60 */
 
@@ -1207,73 +1208,19 @@ Bool Image_LoadFromFile(GfxImage *image)
 }
 
 /* line 1202 */
-__attribute__((naked))
 GfxImage * R_CreateWaterMap(char *name, int imageWidth, int imageHeight)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1202 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x4c, %esp\n"
-        "movl 0xc(%ebp), %esi\n" /* imageWidth */
-        "movl 0x10(%ebp), %ebx\n" /* imageHeight */
-        "movw %bx, -0x2a(%ebp)\n" /* imageHeight */
-        /* { scope 1 */
-        "movw $0, -0x1a(%ebp)\n" /* line 1207 | picmip */
-        "movl $9, 0xc(%esp)\n" /* line 1209 */
-        "movl $5, 8(%esp)\n"
-        "movl $5, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* name */
-        "movl %eax, (%esp)\n"
-        "calll Image_Alloc\n"
-        "movl %eax, %edi\n" /* image */
-        "movw %si, 0x18(%eax)\n" /* line 1212 */
-        "movw %bx, 0x1a(%eax)\n" /* line 1213 */
-        "movl 0x195eec0, %eax\n" /* line 1190 */
-        "movl (%eax), %eax\n"
-        "cmpl $2, 8(%eax)\n"
-        "je .Lffd572_000fd607\n"
-        "movl $0, 0x18(%esp)\n" /* line 1197 */
-        "movl $0x32, 0x14(%esp)\n"
-        "movl $0x200, 0x10(%esp)\n"
-        "movl $0, 0xc(%esp)\n"
-        "movzwl -0x2a(%ebp), %eax\n" /* imageHeight */
-        "movl %eax, 8(%esp)\n"
-        "movzwl 0x18(%edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Image_Create2DTexture\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 1218 | image */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lffd572_000fd607:\n"
-        "movl $0, 0x18(%esp)\n" /* line 1192 */
-        "movl $0x16, 0x14(%esp)\n"
-        "movl $0x200, 0x10(%esp)\n"
-        "movl $1, 0xc(%esp)\n"
-        "movzwl -0x2a(%ebp), %eax\n" /* line 1197 | imageHeight */
-        "movl %eax, 8(%esp)\n"
-        "movzwl 0x18(%edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Image_Create2DTexture\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 1218 | image */
-        "addl $0x4c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GfxImage *image = Image_Alloc(name, 5, 5, 9);
+    image->width = (unsigned short)imageWidth;
+    image->height = (unsigned short)imageHeight;
+
+    int *dvar = *(int **)0x195eec0;
+    if (*(int *)(dvar + 2) == 2)
+        Image_Create2DTexture(image, image->width, imageHeight, 1, 0x200, 0x16, 0);
+    else
+        Image_Create2DTexture(image, image->width, imageHeight, 0, 0x200, 0x32, 0);
+
+    return image;
 }
 
 /* line 856 */

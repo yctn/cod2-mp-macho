@@ -11,6 +11,7 @@
 extern serverStatus_t cl_serverStatusList[16]; /* 0x0 */
 static Bool s_playerMute[64]; /* 0xf00680 */
 extern int NET_CompareAdrSigned(const int *a, const int *b);
+extern void qsort(void *base, unsigned int nmemb, unsigned int size, int (*compar)(const void *, const void *));
 
 static int rconGlob; /* 0xf006c0 */
 
@@ -770,24 +771,12 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
 }
 
 /* line 432 */
-__attribute__((naked))
 int CL_SortGlobalServers(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 432 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl $CL_CompareAdrSigned, 0xc(%esp)\n" /* line 434 */
-        "movl $0x88, 8(%esp)\n"
-        "movl 0x195ecac, %eax\n"
-        "movl 0x4540(%eax), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "addl $0x4544, %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll qsort\n"
-        "leave\n" /* line 435 */
-        "retl\n"
-    );
+    byte *base = *(byte **)0x195ecac;
+    int count = *(int *)(base + 0x4540);
+    qsort(base + 0x4544, count, 0x88, (int (*)(const void *, const void *))CL_CompareAdrSigned);
+    return 0;
 }
 
 /* line 677 */
