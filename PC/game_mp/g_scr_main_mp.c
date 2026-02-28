@@ -19,6 +19,8 @@ extern int Scr_GetInt(int argIndex);
 extern void Scr_AddEntity(void *ent);
 extern void Scr_AddUndefined(void);
 extern int SV_AddTestClient(void);
+extern int SV_MapExists(const char *name);
+extern float Vec3Normalize(vec3_t v);
 extern void SV_EnableArchivedSnapshot(int enable);
 extern void Scr_Error(const char *msg);
 extern const char *va(const char *fmt, ...);
@@ -1790,37 +1792,16 @@ unsigned int Scr_PhysicsTrace(void)
 }
 
 /* line 2941 */
-static __attribute__((naked))
-unsigned int Scr_RandomInt(void)
+static unsigned int Scr_RandomInt(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2941 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 2943 */
-        "calll Scr_GetInt\n"
-        "testl %eax, %eax\n" /* line 2945 */
-        "jle .Lf196508_00196538\n"
-        "movl %eax, 4(%esp)\n" /* line 2951 */
-        "movl $0, (%esp)\n"
-        "calll irand\n"
-        "movl %eax, (%esp)\n"
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 2952 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf196508_00196538:\n"
-        "movl %eax, 4(%esp)\n" /* line 2947 */
-        "movl $0x2b1590, (%esp)\n" /* "RandomInt parm: %d  " */
-        "calll Com_Printf\n"
-        "movl $0x2b15a8, (%esp)\n" /* line 2948 */
-        "calll Scr_Error\n"
-        /* } scope */
-        "leave\n" /* line 2952 */
-        "retl\n"
-    );
+    int max = Scr_GetInt(0);
+    if (max <= 0) {
+        Com_Printf("RandomInt parm: %d  ", max);
+        Scr_Error("RandomInt parm must be a positive integer");
+        return 0;
+    }
+    Scr_AddInt(irand(0, max));
+    return 0;
 }
 
 /* line 2960 */
@@ -3108,31 +3089,14 @@ unsigned int GScr_IsPlayer(void)
 }
 
 /* line 4149 */
-static __attribute__((naked))
-unsigned int GScr_IsPlayerNumber(void)
+static unsigned int GScr_IsPlayerNumber(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4149 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 4151 */
-        "calll Scr_GetInt\n"
-        "cmpl $0x3f, %eax\n" /* line 4153 */
-        "jbe .Lf197a02_00197a27\n"
-        "movl $0, (%esp)\n" /* line 4154 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 4157 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf197a02_00197a27:\n"
-        "movl $1, (%esp)\n" /* line 4156 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 4157 */
-        "retl\n"
-    );
+    int num = Scr_GetInt(0);
+    if ((unsigned int)num > 0x3f)
+        Scr_AddInt(0);
+    else
+        Scr_AddInt(1);
+    return 0;
 }
 
 /* line 4165 */
@@ -3868,74 +3832,26 @@ static unsigned int GScr_AddTestClient(void)
 }
 
 /* line 4887 */
-static __attribute__((naked))
-unsigned int GScr_AllClientsPrint(void)
+static unsigned int GScr_AllClientsPrint(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4887 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll Scr_GetNumParam\n" /* line 4891 */
-        "testl %eax, %eax\n"
-        "jne .Lf19829c_001982ad\n"
-        /* } scope */
-        "leave\n" /* line 4897 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf19829c_001982ad:\n"
-        "movl $0, (%esp)\n" /* line 4894 */
-        "calll Scr_GetString\n"
-        "movl %eax, 8(%esp)\n" /* line 4896 */
-        "movl $0x65, 4(%esp)\n"
-        "movl $0x2a737c, (%esp)\n" /* "%c "%s"" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0xffffffff, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        /* } scope */
-        "leave\n" /* line 4897 */
-        "retl\n"
-    );
+    if (!Scr_GetNumParam())
+        return 0;
+    const char *msg = Scr_GetString(0);
+    SV_GameSendServerCommand(-1, 0, va("%c \"%s\"", 0x65, msg));
+    return 0;
 }
 
 /* line 4906 */
-static __attribute__((naked))
-unsigned int GScr_MapExists(void)
+static unsigned int GScr_MapExists(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4906 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        /* { scope 1 */
-        "calll Scr_GetNumParam\n" /* line 4910 */
-        "testl %eax, %eax\n"
-        "jne .Lf1982ec_001982fd\n"
-        /* } scope */
-        "leave\n" /* line 4919 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1982ec_001982fd:\n"
-        "movl $0, (%esp)\n" /* line 4913 */
-        "calll Scr_GetString\n"
-        "movl %eax, (%esp)\n" /* line 4915 */
-        "calll SV_MapExists\n"
-        "testl %eax, %eax\n"
-        "je .Lf1982ec_00198323\n"
-        "movl $1, (%esp)\n" /* line 4916 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 4919 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1982ec_00198323:\n"
-        "movl $0, (%esp)\n" /* line 4918 */
-        "calll Scr_AddInt\n"
-        /* } scope */
-        "leave\n" /* line 4919 */
-        "retl\n"
-    );
+    if (!Scr_GetNumParam())
+        return 0;
+    const char *name = Scr_GetString(0);
+    if (SV_MapExists(name))
+        Scr_AddInt(1);
+    else
+        Scr_AddInt(0);
+    return 0;
 }
 
 /* line 4950 */
@@ -5710,37 +5626,16 @@ unsigned int GScr_SpawnTurret(void)
 }
 
 /* line 3220 */
-static __attribute__((naked))
-unsigned int Scr_VectorNormalize(void)
+static unsigned int Scr_VectorNormalize(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3220 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x34, %esp\n"
-        /* { scope 1 */
-        "leal -0x14(%ebp), %eax\n" /* line 3225 | a */
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_GetVector\n"
-        "movl -0x14(%ebp), %eax\n" /* line 199 | a */
-        "movl %eax, -0x20(%ebp)\n" /* b */
-        "movl -0x10(%ebp), %eax\n" /* line 200 */
-        "movl %eax, -0x1c(%ebp)\n"
-        "movl -0xc(%ebp), %eax\n" /* line 201 */
-        "movl %eax, -0x18(%ebp)\n"
-        "leal -0x20(%ebp), %ebx\n" /* line 3227 | b */
-        "movl %ebx, (%esp)\n"
-        "calll Vec3Normalize\n"
-        "fstp %st(0)\n"
-        "movl %ebx, (%esp)\n" /* line 3228 */
-        "calll Scr_AddVector\n"
-        /* } scope */
-        "addl $0x34, %esp\n" /* line 3229 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    vec3_t a, b;
+    Scr_GetVector(0, a);
+    b[0] = a[0];
+    b[1] = a[1];
+    b[2] = a[2];
+    Vec3Normalize(b);
+    Scr_AddVector(b);
+    return 0;
 }
 
 /* line 3679 */
@@ -7387,38 +7282,13 @@ unsigned int GScr_ClientAnnouncement(void)
 }
 
 /* line 4228 */
-static __attribute__((naked))
-unsigned int GScr_Announcement(void)
+static unsigned int GScr_Announcement(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 4228 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x424, %esp\n"
-        /* { scope 1 */
-        "calll Scr_GetNumParam\n" /* line 4232 */
-        "movl $0x400, 0x10(%esp)\n"
-        "leal -0x408(%ebp), %ebx\n" /* string */
-        "movl %ebx, 0xc(%esp)\n"
-        "movl $0x2b27dc, 8(%esp)\n" /* "Announcement" */
-        "subl $1, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $0, (%esp)\n"
-        "calll Scr_ConstructMessageString\n"
-        "movl %ebx, 8(%esp)\n" /* line 4233 */
-        "movl $0x63, 4(%esp)\n"
-        "movl $0x2b27ec, (%esp)\n" /* "%c "%s" 2" */
-        "calll va\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $0, 4(%esp)\n"
-        "movl $0xffffffff, (%esp)\n"
-        "calll SV_GameSendServerCommand\n"
-        /* } scope */
-        "addl $0x424, %esp\n" /* line 4234 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char string[0x400];
+    int numParams = Scr_GetNumParam();
+    Scr_ConstructMessageString(0, numParams - 1, "Announcement", string, 0x400);
+    SV_GameSendServerCommand(-1, 0, va("%c \"%s\" 2", 0x63, string));
+    return 0;
 }
 
 /* line 778 */

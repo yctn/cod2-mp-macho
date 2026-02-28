@@ -20,6 +20,15 @@ static char menuBuf1[4096]; /* 0xf3a9c0 */
 void UI_MapLoadInfo(const char *filename);
 void PC_SourceError(int handle, char *format);
 qboolean PC_Script_Parse(int handle, const char * *out);
+void Window_SetStaticFlags(void *item, int flags);
+qboolean PC_ReadTokenHandle(int handle, void *token);
+const char *String_Alloc(const char *str);
+void I_strncpyz(char *dest, const char *src, int destsize);
+void I_strlwr(char *str);
+void *CL_RegisterMaterialNoMip(const char *name, int imageTrack);
+void *UI_Alloc(int size, int align);
+void Window_SetRect(menuDef_t *menu, rectDef_t *rect);
+void Menu_UpdatePosition(menuDef_t *menu);
 void Item_InitControls(const char (*item)[4]);
 qboolean MenuParse_onOpen(const char (*item)[4], int handle);
 qboolean MenuParse_onClose(const char (*item)[4], int handle);
@@ -450,69 +459,21 @@ void Item_InitControls(const char (*item)[4])
 }
 
 /* line 632 */
-__attribute__((naked))
 qboolean MenuParse_onOpen(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 632 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 636 | item */
-        "addl $0x244, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 641 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x244)) != 0;
 }
 
 /* line 644 */
-__attribute__((naked))
 qboolean MenuParse_onClose(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 644 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 648 | item */
-        "addl $0x248, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 653 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x248)) != 0;
 }
 
 /* line 656 */
-__attribute__((naked))
 qboolean MenuParse_onESC(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 656 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 660 | item */
-        "addl $0x24c, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 665 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x24c)) != 0;
 }
 
 /* line 875 */
@@ -644,19 +605,11 @@ Move the type defin" */
 }
 
 /* line 1201 */
-__attribute__((naked))
 qboolean ItemParse_textsavegame(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1201 */
-        "movl %esp, %ebp\n"
-        "movl 8(%ebp), %eax\n" /* item */
-        "movl $0x2b4164, 0x294(%eax)\n" /* line 1204 */
-        "movl $1, 0x298(%eax)\n" /* line 1205 */
-        "movl $1, %eax\n" /* line 1207 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    *(const char **)((char *)item + 0x294) = (const char *)0x2b4164;
+    *(int *)((char *)item + 0x298) = 1;
+    return 1;
 }
 
 /* line 1272 */
@@ -730,23 +683,10 @@ qboolean ItemParse_noScrollBars(const char (*item)[4], int handle)
 }
 
 /* line 1327 */
-__attribute__((naked))
 qboolean ItemParse_horizontalscroll(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1327 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl 0xe4(%edx), %eax\n" /* line 1332 */
-        "orl $0x200000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetStaticFlags\n"
-        "movl $1, %eax\n" /* line 1334 */
-        "leave\n"
-        "retl\n"
-    );
+    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x200000);
+    return 1;
 }
 
 /* line 1681 */
@@ -799,179 +739,51 @@ qboolean ItemParse_doubleClick(const char (*item)[4], int handle)
 }
 
 /* line 1703 */
-__attribute__((naked))
 qboolean ItemParse_onFocus(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1703 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1705 | item */
-        "addl $0x2b8, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1710 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2b8)) != 0;
 }
 
 /* line 1713 */
-__attribute__((naked))
 qboolean ItemParse_leaveFocus(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1713 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1715 | item */
-        "addl $0x2bc, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1720 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2bc)) != 0;
 }
 
 /* line 1723 */
-__attribute__((naked))
 qboolean ItemParse_mouseEnter(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1723 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1725 | item */
-        "addl $0x2a8, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1730 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2a8)) != 0;
 }
 
 /* line 1733 */
-__attribute__((naked))
 qboolean ItemParse_mouseExit(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1733 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1735 | item */
-        "addl $0x2ac, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1740 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2ac)) != 0;
 }
 
 /* line 1743 */
-__attribute__((naked))
 qboolean ItemParse_mouseEnterText(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1743 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1745 | item */
-        "addl $0x2a0, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1750 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2a0)) != 0;
 }
 
 /* line 1753 */
-__attribute__((naked))
 qboolean ItemParse_mouseExitText(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1753 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1755 | item */
-        "addl $0x2a4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1760 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2a4)) != 0;
 }
 
 /* line 1763 */
-__attribute__((naked))
 qboolean ItemParse_action(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1763 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1765 | item */
-        "addl $0x2b0, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1770 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2b0)) != 0;
 }
 
 /* line 1774 */
-__attribute__((naked))
 qboolean ItemParse_accept(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1774 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %eax\n" /* line 1776 | item */
-        "addl $0x2b4, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "leave\n" /* line 1781 */
-        "retl\n"
-    );
+    return PC_Script_Parse(handle, (const char **)((char *)item + 0x2b4)) != 0;
 }
 
 /* line 1851 */
@@ -1116,308 +928,108 @@ qboolean ItemParse_dvarStrList(const char (*item)[4], int handle)
 }
 
 /* line 2049 */
-__attribute__((naked))
 qboolean ItemParse_enableDvar(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2049 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        "leal 0x2cc(%ebx), %eax\n" /* line 2051 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a697e_001a69ad\n"
-        "orl $1, 0x2d0(%ebx)\n" /* line 2053 | item */
-        "movl $1, %eax\n"
-        ".Lf1a697e_001a69ad:\n"
-        "addl $0x14, %esp\n" /* line 2057 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+        return 0;
+    *(int *)((char *)item + 0x2d0) |= 1;
+    return 1;
 }
 
 /* line 2060 */
-__attribute__((naked))
 qboolean ItemParse_disableDvar(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2060 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        "leal 0x2cc(%ebx), %eax\n" /* line 2062 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a69b4_001a69e3\n"
-        "orl $2, 0x2d0(%ebx)\n" /* line 2064 | item */
-        "movl $1, %eax\n"
-        ".Lf1a69b4_001a69e3:\n"
-        "addl $0x14, %esp\n" /* line 2068 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+        return 0;
+    *(int *)((char *)item + 0x2d0) |= 2;
+    return 1;
 }
 
 /* line 2071 */
-__attribute__((naked))
 qboolean ItemParse_showDvar(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2071 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        "leal 0x2cc(%ebx), %eax\n" /* line 2073 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a69ea_001a6a19\n"
-        "orl $4, 0x2d0(%ebx)\n" /* line 2075 | item */
-        "movl $1, %eax\n"
-        ".Lf1a69ea_001a6a19:\n"
-        "addl $0x14, %esp\n" /* line 2079 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+        return 0;
+    *(int *)((char *)item + 0x2d0) |= 4;
+    return 1;
 }
 
 /* line 2082 */
-__attribute__((naked))
 qboolean ItemParse_hideDvar(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2082 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        "leal 0x2cc(%ebx), %eax\n" /* line 2084 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a6a20_001a6a4f\n"
-        "orl $8, 0x2d0(%ebx)\n" /* line 2086 | item */
-        "movl $1, %eax\n"
-        ".Lf1a6a20_001a6a4f:\n"
-        "addl $0x14, %esp\n" /* line 2090 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+        return 0;
+    *(int *)((char *)item + 0x2d0) |= 8;
+    return 1;
 }
 
 /* line 2093 */
-__attribute__((naked))
 qboolean ItemParse_focusDvar(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2093 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* item */
-        "leal 0x2cc(%ebx), %eax\n" /* line 2095 | item */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_Script_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a6a56_001a6a85\n"
-        "orl $0x10, 0x2d0(%ebx)\n" /* line 2097 | item */
-        "movl $1, %eax\n"
-        ".Lf1a6a56_001a6a85:\n"
-        "addl $0x14, %esp\n" /* line 2101 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    if (!PC_Script_Parse(handle, (const char **)((char *)item + 0x2cc)))
+        return 0;
+    *(int *)((char *)item + 0x2d0) |= 0x10;
+    return 1;
 }
 
 /* line 2483 */
-__attribute__((naked))
 void Menu_PostParse(menuDef_t *menu)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2483 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x30, %esp\n"
-        "movl 8(%ebp), %esi\n" /* menu */
-        /* { scope 1 */
-        "movl 0x218(%esi), %ebx\n" /* line 2491 | menu, size */
-        "shll $2, %ebx\n" /* size */
-        "movl $4, 4(%esp)\n" /* line 2492 */
-        "movl %ebx, (%esp)\n" /* size */
-        "calll UI_Alloc\n"
-        "movl %eax, 0x27c(%esi)\n" /* menu */
-        "movl %ebx, 8(%esp)\n" /* line 2493 | size */
-        "movl $0xf39bc0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movl 0x214(%esi), %eax\n" /* line 2495 | menu */
-        "testl %eax, %eax\n"
-        "je .Lf1a6a8c_001a6b05\n"
-        "movl 0x10(%esi), %eax\n" /* line 2498 | menu */
-        "movl %eax, -0x10(%ebp)\n"
-        "movl 0x14(%esi), %eax\n" /* menu */
-        "movl %eax, -0xc(%ebp)\n"
-        "xorl %eax, %eax\n" /* line 2499 */
-        "movl %eax, -0x20(%ebp)\n" /* rect */
-        "movl %eax, -0x1c(%ebp)\n" /* line 2500 */
-        "movl $0x44200000, -0x18(%ebp)\n" /* line 2501 */
-        "movl $0x43f00000, -0x14(%ebp)\n" /* line 2502 */
-        "leal -0x20(%ebp), %eax\n" /* line 2504 | rect */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* menu */
-        "calll Window_SetRect\n"
-        ".Lf1a6a8c_001a6b05:\n"
-        "movl %esi, (%esp)\n" /* line 2506 | menu */
-        "calll Menu_UpdatePosition\n"
-        /* } scope */
-        "addl $0x30, %esp\n" /* line 2507 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int size = *(int *)((char *)menu + 0x218) * 4;
+    void *items = UI_Alloc(size, 4);
+    *(void **)((char *)menu + 0x27c) = items;
+    memcpy(items, (void *)0xf39bc0, size);
+    if (*(int *)((char *)menu + 0x214)) {
+        rectDef_t rect;
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        rect.w = 640.0f;
+        rect.h = 480.0f;
+        Window_SetRect(menu, &rect);
+    }
+    Menu_UpdatePosition(menu);
 }
 
 /* line 853 */
-__attribute__((naked))
 qboolean MenuParse_popup(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 853 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl 0xe4(%edx), %eax\n" /* line 859 */
-        "orl $0x1000000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetStaticFlags\n"
-        "movl $1, %eax\n" /* line 861 */
-        "leave\n"
-        "retl\n"
-    );
+    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x1000000);
+    return 1;
 }
 
 /* line 864 */
-__attribute__((naked))
 qboolean MenuParse_outOfBounds(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 864 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl 0xe4(%edx), %eax\n" /* line 870 */
-        "orl $0x2000000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetStaticFlags\n"
-        "movl $1, %eax\n" /* line 872 */
-        "leave\n"
-        "retl\n"
-    );
+    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x2000000);
+    return 1;
 }
 
 /* line 1021 */
-__attribute__((naked))
 qboolean MenuParse_legacySplitScreenScale(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1021 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl 0xe4(%edx), %eax\n" /* line 1029 */
-        "orl $0x4000000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetStaticFlags\n"
-        "movl $1, %eax\n" /* line 1031 */
-        "leave\n"
-        "retl\n"
-    );
+    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x4000000);
+    return 1;
 }
 
 /* line 1261 */
-__attribute__((naked))
 qboolean ItemParse_decoration(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1261 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl 0xe4(%edx), %eax\n" /* line 1266 */
-        "orl $0x100000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetStaticFlags\n"
-        "movl $1, %eax\n" /* line 1268 */
-        "leave\n"
-        "retl\n"
-    );
+    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x100000);
+    return 1;
 }
 
 /* line 1305 */
-__attribute__((naked))
 qboolean ItemParse_wrapped(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1305 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl 0xe4(%edx), %eax\n" /* line 1310 */
-        "orl $0x400000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetStaticFlags\n"
-        "movl $1, %eax\n" /* line 1312 */
-        "leave\n"
-        "retl\n"
-    );
+    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x400000);
+    return 1;
 }
 
 /* line 1316 */
-__attribute__((naked))
 qboolean ItemParse_autowrapped(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1316 */
-        "movl %esp, %ebp\n"
-        "subl $0x18, %esp\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl 0xe4(%edx), %eax\n" /* line 1321 */
-        "orl $0x800000, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll Window_SetStaticFlags\n"
-        "movl $1, %eax\n" /* line 1323 */
-        "leave\n"
-        "retl\n"
-    );
+    Window_SetStaticFlags((void *)item, *(int *)((char *)item + 0xe4) | 0x800000);
+    return 1;
 }
 
 /* line 957 */
@@ -2287,156 +1899,46 @@ void Menu_SetupKeywordHash(void)
 }
 
 /* line 567 */
-__attribute__((naked))
 qboolean MenuParse_name(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 567 */
-        "movl %esp, %ebp\n"
-        "subl $0x428, %esp\n"
-        /* { scope 1 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a764e_001a7672\n"
-        /* } scope */
-        "leave\n" /* line 572 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a764e_001a7672:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0xc0(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 572 */
-        "retl\n"
-    );
+    char token[0x418];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    *(const char **)((char *)item + 0xc0) = String_Alloc(token + 0x10);
+    return 1;
 }
 
 /* line 798 */
-__attribute__((naked))
 qboolean MenuParse_background(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 798 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x464, %esp\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        "leal -0x458(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7690_001a76bc\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x464, %esp\n" /* line 811 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a7690_001a76bc:\n"
-        "leal -0x448(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        /* } scope */
-        "movl $0x40, 8(%esp)\n" /* line 807 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x48(%ebp), %ebx\n" /* name */
-        "movl %ebx, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl %ebx, (%esp)\n" /* line 808 */
-        "calll I_strlwr\n"
-        "movl 8(%ebp), %edx\n" /* line 809 | item */
-        "movl 0x258(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0x20c(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x464, %esp\n" /* line 811 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char token[0x418];
+    char name[0x40];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    I_strncpyz(name, String_Alloc(token + 0x10), 0x40);
+    I_strlwr(name);
+    *(void **)((char *)item + 0x20c) = CL_RegisterMaterialNoMip(name, *(int *)((char *)item + 0x258));
+    return 1;
 }
 
 /* line 814 */
-__attribute__((naked))
 qboolean MenuParse_cinematic(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 814 */
-        "movl %esp, %ebp\n"
-        "subl $0x428, %esp\n"
-        /* { scope 1 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7716_001a773a\n"
-        /* } scope */
-        "leave\n" /* line 823 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a7716_001a773a:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0xc8(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 823 */
-        "retl\n"
-    );
+    char token[0x418];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    *(const char **)((char *)item + 0xc8) = String_Alloc(token + 0x10);
+    return 1;
 }
 
 /* line 1159 */
-__attribute__((naked))
 qboolean ItemParse_name(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1159 */
-        "movl %esp, %ebp\n"
-        "subl $0x428, %esp\n"
-        /* { scope 1 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7758_001a777c\n"
-        /* } scope */
-        "leave\n" /* line 1162 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a7758_001a777c:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0xc0(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1162 */
-        "retl\n"
-    );
+    char token[0x418];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    *(const char **)((char *)item + 0xc0) = String_Alloc(token + 0x10);
+    return 1;
 }
 
 /* line 1166 */
@@ -2479,189 +1981,56 @@ qboolean ItemParse_focusSound(const char (*item)[4], int handle)
 }
 
 /* line 1178 */
-__attribute__((naked))
 qboolean ItemParse_text(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1178 */
-        "movl %esp, %ebp\n"
-        "subl $0x428, %esp\n"
-        /* { scope 1 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a77e4_001a7808\n"
-        /* } scope */
-        "leave\n" /* line 1181 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a77e4_001a7808:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0x294(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1181 */
-        "retl\n"
-    );
+    char token[0x418];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    *(const char **)((char *)item + 0x294) = String_Alloc(token + 0x10);
+    return 1;
 }
 
 /* line 1211 */
-__attribute__((naked))
 qboolean ItemParse_group(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1211 */
-        "movl %esp, %ebp\n"
-        "subl $0x428, %esp\n"
-        /* { scope 1 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7826_001a784a\n"
-        /* } scope */
-        "leave\n" /* line 1214 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a7826_001a784a:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0xc4(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1214 */
-        "retl\n"
-    );
+    char token[0x418];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    *(const char **)((char *)item + 0xc4) = String_Alloc(token + 0x10);
+    return 1;
 }
 
 /* line 1656 */
-__attribute__((naked))
 qboolean ItemParse_background(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1656 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x464, %esp\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        "leal -0x458(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7868_001a7894\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x464, %esp\n" /* line 1668 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a7868_001a7894:\n"
-        "leal -0x448(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        /* } scope */
-        "movl $0x40, 8(%esp)\n" /* line 1664 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x48(%ebp), %ebx\n" /* name */
-        "movl %ebx, (%esp)\n"
-        "calll I_strncpyz\n"
-        "movl %ebx, (%esp)\n" /* line 1665 */
-        "calll I_strlwr\n"
-        "movl 8(%ebp), %edx\n" /* line 1666 | item */
-        "movl 0x2f0(%edx), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll CL_RegisterMaterialNoMip\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0x20c(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x464, %esp\n" /* line 1668 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char token[0x418];
+    char name[0x40];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    I_strncpyz(name, String_Alloc(token + 0x10), 0x40);
+    I_strlwr(name);
+    *(void **)((char *)item + 0x20c) = CL_RegisterMaterialNoMip(name, *(int *)((char *)item + 0x2f0));
+    return 1;
 }
 
 /* line 1671 */
-__attribute__((naked))
 qboolean ItemParse_cinematic(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1671 */
-        "movl %esp, %ebp\n"
-        "subl $0x428, %esp\n"
-        /* { scope 1 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a78ee_001a7912\n"
-        /* } scope */
-        "leave\n" /* line 1678 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a78ee_001a7912:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0xc8(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1678 */
-        "retl\n"
-    );
+    char token[0x418];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    *(const char **)((char *)item + 0xc8) = String_Alloc(token + 0x10);
+    return 1;
 }
 
 /* line 1796 */
-__attribute__((naked))
 qboolean ItemParse_dvarTest(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1796 */
-        "movl %esp, %ebp\n"
-        "subl $0x428, %esp\n"
-        /* { scope 1 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7930_001a7954\n"
-        /* } scope */
-        "leave\n" /* line 1803 */
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a7930_001a7954:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl 8(%ebp), %edx\n" /* item */
-        "movl %eax, 0x2c4(%edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "leave\n" /* line 1803 */
-        "retl\n"
-    );
+    char token[0x418];
+    if (!PC_ReadTokenHandle(handle, token))
+        return 0;
+    *(const char **)((char *)item + 0x2c4) = String_Alloc(token + 0x10);
+    return 1;
 }
 
 /* line 1806 */

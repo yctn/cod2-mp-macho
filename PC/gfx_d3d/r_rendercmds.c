@@ -12,6 +12,7 @@ extern SkinBuffers g_skinBuffers[1]; /* 0x0 */
 extern GfxBackEndData *frontEndDataOut; /* 0x0 */
 static byte g_dummyBuf[1]; /* 0xc8596c */
 extern void R_ShutdownDebugEntry(void *entry);
+extern void R_UnlockSkinnedCache(void);
 
 static GfxBackEndData s_backEndData[1]; /* 0xa3bc00 */
 static GfxCmdArray *s_cmdList; /* 0x7f1e00 */
@@ -131,90 +132,42 @@ void R_SyncRenderThread(void)
 }
 
 /* line 1140 */
-__attribute__((naked))
 GfxViewParms * R_AllocViewParms(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1140 */
-        "movl %esp, %ebp\n"
-        "movl frontEndDataOut, %ecx\n" /* line 1147 */
-        "movl 0x217c7c(%ecx), %edx\n"
-        "leal 1(%edx), %eax\n" /* line 1148 */
-        "movl %eax, 0x217c7c(%ecx)\n"
-        "leal (%edx, %edx, 4), %eax\n"
-        "leal (%edx, %eax, 8), %eax\n"
-        "leal (%edx, %eax, 2), %eax\n"
-        "leal 0x217c80(%ecx, %eax, 4), %eax\n"
-        "popl %ebp\n" /* line 1150 */
-        "retl\n"
-    );
+    int index = *(int *)((char *)frontEndDataOut + 0x217c7c);
+    *(int *)((char *)frontEndDataOut + 0x217c7c) = index + 1;
+    return (GfxViewParms *)((char *)frontEndDataOut + 0x217c80 + index * 332);
 }
 
 /* line 1806 */
-__attribute__((naked))
 void R_BeginDebugFrame(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1806 */
-        "movl %esp, %ebp\n"
-        "subl $8, %esp\n"
-        "movl 0x195eec8, %eax\n" /* line 1813 */
-        "cmpb $0, (%eax)\n"
-        "je .Lfc7ddc_000c7e2f\n"
-        "movl s_cmdList, %eax\n" /* line 1817 */
-        "movl %eax, s_debugFrameGlob\n"
-        "movl frontEndDataOut, %eax\n" /* line 1818 */
-        "movl %eax, 0x7f1e84\n"
-        "movl 0x195eed0, %eax\n" /* line 1821 */
-        "movl 0x2dc0(%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lfc7ddc_000c7e1b\n"
-        "movb $1, 0x7f1e88\n" /* line 1824 */
-        "calll R_UnlockSkinnedCache\n" /* line 1825 */
-        ".Lfc7ddc_000c7e1b:\n"
-        "movl $0xa0bb98, s_cmdList\n" /* line 1829 */
-        "movl $0x7f1e8c, frontEndDataOut\n" /* line 1830 */
-        ".Lfc7ddc_000c7e2f:\n"
-        "leave\n" /* line 1835 */
-        "retl\n"
-    );
+    if (!*(char *)*(int *)0x195eec8)
+        return;
+    *(GfxCmdArray **)&s_debugFrameGlob = s_cmdList;
+    *(GfxBackEndData **)0x7f1e84 = frontEndDataOut;
+    if (*(int *)((char *)*(int *)0x195eed0 + 0x2dc0)) {
+        *(char *)0x7f1e88 = 1;
+        R_UnlockSkinnedCache();
+    }
+    s_cmdList = (GfxCmdArray *)0xa0bb98;
+    frontEndDataOut = (GfxBackEndData *)0x7f1e8c;
 }
 
 /* line 2102 */
-__attribute__((naked))
 void R_AddCmdTouchAllImages(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2102 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        /* { scope 1 */
-        "movl s_cmdList, %ecx\n" /* line 950 */
-        "movl 0x30000(%ecx), %ebx\n"
-        "movl $0x30000, %eax\n" /* line 953 */
-        "subl %ebx, %eax\n"
-        "addl 0x30004(%ecx), %eax\n"
-        "subl $0x2000, %eax\n"
-        "cmpl $3, %eax\n"
-        "jg .Lfc7e32_000c7e66\n"
-        "movl $0, 0x30008(%ecx)\n" /* line 956 */
-        /* } scope */
-        "popl %ebx\n" /* line 2108 */
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc7e32_000c7e66:\n"
-        "leal (%ecx, %ebx), %edx\n" /* line 960 */
-        "leal 4(%ebx), %eax\n" /* line 961 */
-        "movl %eax, 0x30000(%ecx)\n"
-        "movl %edx, 0x30008(%ecx)\n" /* line 963 */
-        "movw $0x21, (%edx)\n" /* line 964 */
-        "movw $4, 2(%edx)\n" /* line 965 */
-        /* } scope */
-        "popl %ebx\n" /* line 2108 */
-        "popl %ebp\n"
-        "retl\n"
-    );
+    int usedBytes = *(int *)((char *)s_cmdList + 0x30000);
+    int availBytes = 0x30000 - usedBytes + *(int *)((char *)s_cmdList + 0x30004) - 0x2000;
+    if (availBytes <= 3) {
+        *(int *)((char *)s_cmdList + 0x30008) = 0;
+        return;
+    }
+    char *cmdBuf = (char *)s_cmdList + usedBytes;
+    *(int *)((char *)s_cmdList + 0x30000) = usedBytes + 4;
+    *(void **)((char *)s_cmdList + 0x30008) = cmdBuf;
+    *(short *)cmdBuf = 0x21;
+    *(short *)(cmdBuf + 2) = 4;
 }
 
 /* line 889 */
