@@ -2413,7 +2413,7 @@ void FX_AddFlash(EffectPrimitive *prim, vec3_t *ax, const vec_t *origin, const i
         ".Lf5b1d4_0005b20d:\n"
         "movl %ebx, (%esp)\n" /* line 281 | ptr */
         "calll Light_Light\n"
-        "movl imp___ZTV5Flash, %eax\n"
+        "movl imp__ZTV5Flash, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* ptr */
         "movl %esi, %ecx\n" /* line 2076 | origin */
@@ -5343,7 +5343,7 @@ int FX_Restore(MemoryFile *memFile)
         ".Lf5d1b8_0005d54f:\n"
         "movl %ebx, (%esp)\n" /* line 281 | ptr */
         "calll Light_Light\n"
-        "movl imp___ZTV5Flash, %eax\n"
+        "movl imp__ZTV5Flash, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* ptr */
         "jmp .Lf5d1b8_0005d31d\n"

@@ -25,7 +25,7 @@ extern qboolean OnSameTeam(gentity_t *ent1, gentity_t *ent2);
 
 /* External globals */
 extern struct level_locals_t level;
-extern void *bg_weaponInfoMem; /* imp___Z16G_RegisterWeaponi - weapon info memory ptr */
+extern void *bg_weaponInfoMem; /* imp_G_RegisterWeapon - weapon info memory ptr */
 
 /* Entity/client field access macros */
 #define ENT_TAKEDAMAGE(e)    ((e)->takedamage)
@@ -1163,7 +1163,7 @@ void G_SetupWeaponDef(void)
         "calll SV_SetWeaponInfoMemory\n" /* line 946 */
         "calll ClearRegisteredItems\n" /* line 947 */
         "calll BG_ClearWeaponDef\n" /* line 948 */
-        "movl imp___Z16G_RegisterWeaponi, %ebx\n" /* line 950 */
+        "movl imp_G_RegisterWeapon, %ebx\n" /* line 950 */
         "movl %ebx, (%esp)\n"
         "calll BG_FillInAmmoItems\n"
         "movl imp_level, %eax\n" /* line 965 */

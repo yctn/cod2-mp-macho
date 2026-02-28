@@ -1758,7 +1758,7 @@ my_upsampler G_CallSpawn(void)
         "retl\n"
         /* { scope 1: i */
         ".Lf19f322_0019f49f:\n"
-        "movl imp___Z12G_FreeEntityP9gentity_s, %eax\n" /* line 458 */
+        "movl imp_G_FreeEntity, %eax\n" /* line 458 */
         "cmpl %eax, 4(%ebx)\n" /* s */
         "je .Lf19f322_0019f3b5\n"
         "calll G_Spawn\n" /* line 460 */

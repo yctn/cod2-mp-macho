@@ -9,19 +9,26 @@ LDFLAGS = -m32 -no-pie
 LIBS = -lGL -lm -lpthread -ldl -lstdc++ $(SDL2_LIBS)
 TARGET = cod2_linux
 
-# Find all .c files recursively
-SRCS = $(shell find . -name '*.c' | sort)
-OBJS = $(SRCS:.c=.o)
+# Find all .c and .S files recursively
+C_SRCS = $(shell find . -name '*.c' | sort)
+S_SRCS = $(shell find . -name '*.S' | sort)
+C_OBJS = $(C_SRCS:.c=.o)
+S_OBJS = $(S_SRCS:.S=.o)
+OBJS = $(C_OBJS) $(S_OBJS)
 
 # Default target
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ -Wl,--allow-multiple-definition $(LIBS)
 
 # Compile .c to .o
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Assemble .S to .o
+%.o: %.S
+	$(CC) -m32 -c -o $@ $<
 
 # Clean build artifacts
 clean:

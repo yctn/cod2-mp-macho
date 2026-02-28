@@ -1080,21 +1080,21 @@ void CL_InitRef(void)
         /* { scope 1 */
         "movl $str_002a8c88, (%esp)\n" /* line 3432 */
         "calll Com_Printf\n"
-        "movl imp___Z14Cmd_AddCommandPKcPFvvE, %eax\n" /* line 3439 */
+        "movl imp_Cmd_AddCommand, %eax\n" /* line 3439 */
         "movl %eax, -0x12c(%ebp)\n"
-        "movl imp___Z17Cmd_RemoveCommandPKc, %eax\n" /* line 3440 */
+        "movl imp_Cmd_RemoveCommand, %eax\n" /* line 3440 */
         "movl %eax, -0x128(%ebp)\n"
-        "movl imp___Z8Cmd_Argcv, %eax\n" /* line 3441 */
+        "movl imp_Cmd_Argc, %eax\n" /* line 3441 */
         "movl %eax, -0x124(%ebp)\n"
-        "movl imp___Z8Cmd_Argvi, %eax\n" /* line 3442 */
+        "movl imp_Cmd_Argv, %eax\n" /* line 3442 */
         "movl %eax, -0x120(%ebp)\n"
-        "movl imp___Z16Cbuf_ExecuteTextiPKc, %eax\n" /* line 3443 */
+        "movl imp_Cbuf_ExecuteText, %eax\n" /* line 3443 */
         "movl %eax, -0x11c(%ebp)\n"
         "movl $CL_RefPrintf, -0x224(%ebp)\n" /* line 3444 | ri */
         "movl imp_Com_Error, %eax\n" /* line 3445 */
         "movl %eax, -0x220(%ebp)\n"
         "movl $CL_ScaledMilliseconds, -0x21c(%ebp)\n" /* line 3446 */
-        "movl imp___Z18Hunk_AllocInternali, %eax\n" /* line 3458 */
+        "movl imp_Hunk_AllocInternal, %eax\n" /* line 3458 */
         "movl %eax, -0x218(%ebp)\n"
         "movl imp_Hunk_AllocateTempMemoryInternal, %eax\n" /* line 3459 */
         "movl %eax, -0x214(%ebp)\n"
@@ -1102,7 +1102,7 @@ void CL_InitRef(void)
         "movl %eax, -0x210(%ebp)\n"
         "movl imp_Z_FreeInternal, %eax\n" /* line 3461 */
         "movl %eax, -0x20c(%ebp)\n"
-        "movl imp___Z23Hunk_AllocAlignInternalii, %eax\n" /* line 3462 */
+        "movl imp_Hunk_AllocAlignInternal, %eax\n" /* line 3462 */
         "movl %eax, -0x208(%ebp)\n"
         "movl imp_Z_VirtualReserveInternal, %eax\n" /* line 3463 */
         "movl %eax, -0x204(%ebp)\n"
@@ -1120,221 +1120,221 @@ void CL_InitRef(void)
         "movl %eax, -0x1f0(%ebp)\n"
         "movl imp_Hunk_ClearTempMemoryHigh, %eax\n" /* line 3479 */
         "movl %eax, -0x1e0(%ebp)\n"
-        "movl imp___Z21Sys_DirectXFatalErrorv, %eax\n" /* line 3494 */
+        "movl imp_Sys_DirectXFatalError, %eax\n" /* line 3494 */
         "movl %eax, -0x1dc(%ebp)\n"
-        "movl imp___Z20Sys_ShowSplashWindowv, %eax\n" /* line 3495 */
+        "movl imp_Sys_ShowSplashWindow, %eax\n" /* line 3495 */
         "movl %eax, -0x1d8(%ebp)\n"
-        "movl imp___Z20Sys_HideSplashWindowv, %eax\n" /* line 3496 */
+        "movl imp_Sys_HideSplashWindow, %eax\n" /* line 3496 */
         "movl %eax, -0x1d4(%ebp)\n"
-        "movl imp___Z20Sys_LoadingKeepAlivev, %eax\n" /* line 3499 */
+        "movl imp_Sys_LoadingKeepAlive, %eax\n" /* line 3499 */
         "movl %eax, -0x1d0(%ebp)\n"
         "movl imp_FS_ReadFile, %eax\n" /* line 3500 */
         "movl %eax, -0xfc(%ebp)\n"
         "movl imp_FS_FreeFile, %eax\n" /* line 3501 */
         "movl %eax, -0xf8(%ebp)\n"
-        "movl imp___Z16FS_FOpenFileReadPKcPii, %eax\n" /* line 3502 */
+        "movl imp_FS_FOpenFileRead, %eax\n" /* line 3502 */
         "movl %eax, -0xf4(%ebp)\n"
-        "movl imp___Z12FS_WriteFilePKcPKvi, %eax\n" /* line 3503 */
+        "movl imp_FS_WriteFile, %eax\n" /* line 3503 */
         "movl %eax, -0xe4(%ebp)\n"
         "movl imp_FS_FreeFileList, %eax\n" /* line 3505 */
         "movl %eax, -0xec(%ebp)\n"
         "movl imp_FS_ListFiles, %eax\n" /* line 3506 */
         "movl %eax, -0xf0(%ebp)\n"
-        "movl imp___Z13FS_FileExistsPKc, %eax\n" /* line 3507 */
+        "movl imp_FS_FileExists, %eax\n" /* line 3507 */
         "movl %eax, -0xe8(%ebp)\n"
-        "movl imp___Z18FS_FOpenFileByModePKcPi8fsMode_t, %eax\n" /* line 3509 */
+        "movl imp_FS_FOpenFileByMode, %eax\n" /* line 3509 */
         "movl %eax, -0xe0(%ebp)\n"
-        "movl imp___Z13FS_FCloseFilei, %eax\n" /* line 3510 */
+        "movl imp_FS_FCloseFile, %eax\n" /* line 3510 */
         "movl %eax, -0xdc(%ebp)\n"
-        "movl imp___Z7FS_ReadPvii, %eax\n" /* line 3511 */
+        "movl imp_FS_Read, %eax\n" /* line 3511 */
         "movl %eax, -0xd8(%ebp)\n"
-        "movl imp___Z8FS_WritePKvii, %eax\n" /* line 3512 */
+        "movl imp_FS_Write, %eax\n" /* line 3512 */
         "movl %eax, -0xd4(%ebp)\n"
-        "movl imp___Z11CM_SaveLumpiPhiPi, %eax\n" /* line 3515 */
+        "movl imp_CM_SaveLump, %eax\n" /* line 3515 */
         "movl %eax, -0xd0(%ebp)\n"
-        "movl imp___Z11CM_BoxTraceP7trace_tPKfS2_S2_S2_ii, %eax\n" /* line 3518 */
+        "movl imp_CM_BoxTrace, %eax\n" /* line 3518 */
         "movl %eax, -0xcc(%ebp)\n"
-        "movl imp___Z16CM_BoxSightTraceiPKfS0_S0_S0_ii, %eax\n" /* line 3519 */
+        "movl imp_CM_BoxSightTrace, %eax\n" /* line 3519 */
         "movl %eax, -0xc8(%ebp)\n"
-        "movl imp___Z17Dvar_RegisterBoolPKcht, %eax\n" /* line 3521 */
+        "movl imp_Dvar_RegisterBool, %eax\n" /* line 3521 */
         "movl %eax, -0x1cc(%ebp)\n"
-        "movl imp___Z16Dvar_RegisterIntPKciiit, %eax\n" /* line 3522 */
+        "movl imp_Dvar_RegisterInt, %eax\n" /* line 3522 */
         "movl %eax, -0x1c8(%ebp)\n"
-        "movl imp___Z18Dvar_RegisterFloatPKcffft, %eax\n" /* line 3523 */
+        "movl imp_Dvar_RegisterFloat, %eax\n" /* line 3523 */
         "movl %eax, -0x1c4(%ebp)\n"
-        "movl imp___Z19Dvar_RegisterStringPKcS0_t, %eax\n" /* line 3524 */
+        "movl imp_Dvar_RegisterString, %eax\n" /* line 3524 */
         "movl %eax, -0x1c0(%ebp)\n"
-        "movl imp___Z17Dvar_RegisterEnumPKcPS0_it, %eax\n" /* line 3525 */
+        "movl imp_Dvar_RegisterEnum, %eax\n" /* line 3525 */
         "movl %eax, -0x1bc(%ebp)\n"
-        "movl imp___Z18Dvar_RegisterColorPKcfffft, %eax\n" /* line 3526 */
+        "movl imp_Dvar_RegisterColor, %eax\n" /* line 3526 */
         "movl %eax, -0x1b8(%ebp)\n"
-        "movl imp___Z17Dvar_RegisterVec2PKcfffft, %eax\n" /* line 3527 */
+        "movl imp_Dvar_RegisterVec2, %eax\n" /* line 3527 */
         "movl %eax, -0x1b4(%ebp)\n"
-        "movl imp___Z17Dvar_RegisterVec3PKcffffft, %eax\n" /* line 3528 */
+        "movl imp_Dvar_RegisterVec3, %eax\n" /* line 3528 */
         "movl %eax, -0x1b0(%ebp)\n"
-        "movl imp___Z17Dvar_RegisterVec4PKcfffffft, %eax\n" /* line 3529 */
+        "movl imp_Dvar_RegisterVec4, %eax\n" /* line 3529 */
         "movl %eax, -0x1ac(%ebp)\n"
-        "movl imp___Z18Dvar_ClearModifiedPK6dvar_s, %eax\n" /* line 3530 */
+        "movl imp_Dvar_ClearModified, %eax\n" /* line 3530 */
         "movl %eax, -0x19c(%ebp)\n"
-        "movl imp___Z16Dvar_SetModifiedPK6dvar_s, %eax\n" /* line 3531 */
+        "movl imp_Dvar_SetModified, %eax\n" /* line 3531 */
         "movl %eax, -0x198(%ebp)\n"
-        "movl imp___Z21Dvar_UpdateEnumDomainPK6dvar_sPPKc, %eax\n" /* line 3532 */
+        "movl imp_Dvar_UpdateEnumDomain, %eax\n" /* line 3532 */
         "movl %eax, -0x194(%ebp)\n"
-        "movl imp___Z21Dvar_UnregisterSystemi, %eax\n" /* line 3533 */
+        "movl imp_Dvar_UnregisterSystem, %eax\n" /* line 3533 */
         "movl %eax, -0x1a8(%ebp)\n"
-        "movl imp___Z21Dvar_ChangeResetValuePK6dvar_s9DvarValue, %eax\n" /* line 3534 */
+        "movl imp_Dvar_ChangeResetValue, %eax\n" /* line 3534 */
         "movl %eax, -0x1a4(%ebp)\n"
-        "movl imp___Z21Dvar_IsAtDefaultValuePK6dvar_s, %eax\n" /* line 3535 */
+        "movl imp_Dvar_IsAtDefaultValue, %eax\n" /* line 3535 */
         "movl %eax, -0x1a0(%ebp)\n"
-        "movl imp___Z12Dvar_SetBoolPK6dvar_sh, %eax\n" /* line 3536 */
+        "movl imp_Dvar_SetBool, %eax\n" /* line 3536 */
         "movl %eax, -0x190(%ebp)\n"
-        "movl imp___Z11Dvar_SetIntPK6dvar_si, %eax\n" /* line 3537 */
+        "movl imp_Dvar_SetInt, %eax\n" /* line 3537 */
         "movl %eax, -0x18c(%ebp)\n"
-        "movl imp___Z13Dvar_SetFloatPK6dvar_sf, %eax\n" /* line 3538 */
+        "movl imp_Dvar_SetFloat, %eax\n" /* line 3538 */
         "movl %eax, -0x188(%ebp)\n"
-        "movl imp___Z14Dvar_SetStringPK6dvar_sPKc, %eax\n" /* line 3539 */
+        "movl imp_Dvar_SetString, %eax\n" /* line 3539 */
         "movl %eax, -0x184(%ebp)\n"
-        "movl imp___Z13Dvar_SetColorPK6dvar_sffff, %eax\n" /* line 3540 */
+        "movl imp_Dvar_SetColor, %eax\n" /* line 3540 */
         "movl %eax, -0x180(%ebp)\n"
-        "movl imp___Z12Dvar_SetVec2PK6dvar_sff, %eax\n" /* line 3541 */
+        "movl imp_Dvar_SetVec2, %eax\n" /* line 3541 */
         "movl %eax, -0x17c(%ebp)\n"
-        "movl imp___Z12Dvar_SetVec3PK6dvar_sfff, %eax\n" /* line 3542 */
+        "movl imp_Dvar_SetVec3, %eax\n" /* line 3542 */
         "movl %eax, -0x178(%ebp)\n"
-        "movl imp___Z12Dvar_SetVec4PK6dvar_sffff, %eax\n" /* line 3543 */
+        "movl imp_Dvar_SetVec4, %eax\n" /* line 3543 */
         "movl %eax, -0x174(%ebp)\n"
-        "movl imp___Z18Dvar_SetFromStringPK6dvar_sPKc, %eax\n" /* line 3544 */
+        "movl imp_Dvar_SetFromString, %eax\n" /* line 3544 */
         "movl %eax, -0x170(%ebp)\n"
-        "movl imp___Z18Dvar_SetBoolByNamePKch, %eax\n" /* line 3545 */
+        "movl imp_Dvar_SetBoolByName, %eax\n" /* line 3545 */
         "movl %eax, -0x16c(%ebp)\n"
-        "movl imp___Z17Dvar_SetIntByNamePKci, %eax\n" /* line 3546 */
+        "movl imp_Dvar_SetIntByName, %eax\n" /* line 3546 */
         "movl %eax, -0x168(%ebp)\n"
-        "movl imp___Z19Dvar_SetFloatByNamePKcf, %eax\n" /* line 3547 */
+        "movl imp_Dvar_SetFloatByName, %eax\n" /* line 3547 */
         "movl %eax, -0x164(%ebp)\n"
-        "movl imp___Z20Dvar_SetStringByNamePKcS0_, %eax\n" /* line 3548 */
+        "movl imp_Dvar_SetStringByName, %eax\n" /* line 3548 */
         "movl %eax, -0x160(%ebp)\n"
-        "movl imp___Z19Dvar_SetColorByNamePKchhhh, %eax\n" /* line 3549 */
+        "movl imp_Dvar_SetColorByName, %eax\n" /* line 3549 */
         "movl %eax, -0x15c(%ebp)\n"
-        "movl imp___Z18Dvar_SetVec2ByNamePKcff, %eax\n" /* line 3550 */
+        "movl imp_Dvar_SetVec2ByName, %eax\n" /* line 3550 */
         "movl %eax, -0x158(%ebp)\n"
-        "movl imp___Z18Dvar_SetVec3ByNamePKcfff, %eax\n" /* line 3551 */
+        "movl imp_Dvar_SetVec3ByName, %eax\n" /* line 3551 */
         "movl %eax, -0x154(%ebp)\n"
-        "movl imp___Z18Dvar_SetVec4ByNamePKcffff, %eax\n" /* line 3552 */
+        "movl imp_Dvar_SetVec4ByName, %eax\n" /* line 3552 */
         "movl %eax, -0x150(%ebp)\n"
-        "movl imp___Z24Dvar_SetFromStringByNamePKcS0_, %eax\n" /* line 3553 */
+        "movl imp_Dvar_SetFromStringByName, %eax\n" /* line 3553 */
         "movl %eax, -0x14c(%ebp)\n"
-        "movl imp___Z12Dvar_GetBoolPKc, %eax\n" /* line 3554 */
+        "movl imp_Dvar_GetBool, %eax\n" /* line 3554 */
         "movl %eax, -0x148(%ebp)\n"
-        "movl imp___Z11Dvar_GetIntPKc, %eax\n" /* line 3555 */
+        "movl imp_Dvar_GetInt, %eax\n" /* line 3555 */
         "movl %eax, -0x144(%ebp)\n"
-        "movl imp___Z13Dvar_GetFloatPKc, %eax\n" /* line 3556 */
+        "movl imp_Dvar_GetFloat, %eax\n" /* line 3556 */
         "movl %eax, -0x140(%ebp)\n"
-        "movl imp___Z14Dvar_GetStringPKc, %eax\n" /* line 3557 */
+        "movl imp_Dvar_GetString, %eax\n" /* line 3557 */
         "movl %eax, -0x13c(%ebp)\n"
-        "movl imp___Z21Dvar_GetVariantStringPKc, %eax\n" /* line 3558 */
+        "movl imp_Dvar_GetVariantString, %eax\n" /* line 3558 */
         "movl %eax, -0x138(%ebp)\n"
-        "movl imp___Z17Dvar_EnumToStringPK6dvar_s, %eax\n" /* line 3559 */
+        "movl imp_Dvar_EnumToString, %eax\n" /* line 3559 */
         "movl %eax, -0x134(%ebp)\n"
-        "movl imp___Z10Dvar_ResetPK6dvar_s13DvarSetSource, %eax\n" /* line 3560 */
+        "movl imp_Dvar_Reset, %eax\n" /* line 3560 */
         "movl %eax, -0x130(%ebp)\n"
-        "movl imp___Z21Com_SaveDvarsToBufferPPKciPci, %eax\n" /* line 3562 */
+        "movl imp_Com_SaveDvarsToBuffer, %eax\n" /* line 3562 */
         "movl %eax, -0x118(%ebp)\n"
-        "movl imp___Z23Com_LoadDvarsFromBufferPPKciS0_S0_, %eax\n" /* line 3563 */
+        "movl imp_Com_LoadDvarsFromBuffer, %eax\n" /* line 3563 */
         "movl %eax, -0x114(%ebp)\n"
-        "movl imp___Z10Com_GetBspPiPj, %eax\n" /* line 3565 */
+        "movl imp_Com_GetBsp, %eax\n" /* line 3565 */
         "movl %eax, -0x110(%ebp)\n"
-        "movl imp___Z22SEH_ReadCharFromStringPPKcPi, %eax\n" /* line 3570 */
+        "movl imp_SEH_ReadCharFromString, %eax\n" /* line 3570 */
         "movl %eax, -0x10c(%ebp)\n"
         "movl $CL_UpdateDebugData, -0x108(%ebp)\n" /* line 3572 */
         "movl $CL_FlushDebugData, -0x104(%ebp)\n" /* line 3573 */
-        "movl imp___Z15StatMon_WarningiiPKc, %eax\n" /* line 3574 */
+        "movl imp_StatMon_Warning, %eax\n" /* line 3574 */
         "movl %eax, -0x100(%ebp)\n"
-        "movl imp___Z14XModelPrecachePKcPFPviES3_, %eax\n" /* line 3587 */
+        "movl imp_XModelPrecache, %eax\n" /* line 3587 */
         "movl %eax, -0xc0(%ebp)\n"
-        "movl imp___Z17XModelGetSurfacesPK6XModelPPP10XSurface_siPPi, %eax\n" /* line 3588 */
+        "movl imp_XModelGetSurfaces, %eax\n" /* line 3588 */
         "movl %eax, -0xbc(%ebp)\n"
-        "movl imp___Z9XModelBadPK6XModel, %eax\n" /* line 3589 */
+        "movl imp_XModelBad, %eax\n" /* line 3589 */
         "movl %eax, -0xb8(%ebp)\n"
         "movl imp_Hunk_OverrideDataForFile, %eax\n" /* line 3590 */
         "movl %eax, -0xb4(%ebp)\n"
-        "movl imp___Z16XModelGetNumLodsPK6XModel, %eax\n" /* line 3591 */
+        "movl imp_XModelGetNumLods, %eax\n" /* line 3591 */
         "movl %eax, -0xb0(%ebp)\n"
-        "movl imp___Z17XModelSetTestLodsif, %eax\n" /* line 3592 */
+        "movl imp_XModelSetTestLods, %eax\n" /* line 3592 */
         "movl %eax, -0xac(%ebp)\n"
-        "movl imp___Z19XModelGetLodForDistPK6XModelf, %eax\n" /* line 3593 */
+        "movl imp_XModelGetLodForDist, %eax\n" /* line 3593 */
         "movl %eax, -0xa8(%ebp)\n"
-        "movl imp___Z19XModelGetLodOutDistPK6XModel, %eax\n" /* line 3594 */
+        "movl imp_XModelGetLodOutDist, %eax\n" /* line 3594 */
         "movl %eax, -0xa4(%ebp)\n"
-        "movl imp___Z20XModelGetSurfaceNamePK6XModelii, %eax\n" /* line 3595 */
+        "movl imp_XModelGetSurfaceName, %eax\n" /* line 3595 */
         "movl %eax, -0xa0(%ebp)\n"
-        "movl imp___Z13XModelGetNamePK6XModel, %eax\n" /* line 3596 */
+        "movl imp_XModelGetName, %eax\n" /* line 3596 */
         "movl %eax, -0x9c(%ebp)\n"
-        "movl imp___Z14XModelGetFlagsPK6XModel, %eax\n" /* line 3597 */
+        "movl imp_XModelGetFlags, %eax\n" /* line 3597 */
         "movl %eax, -0x98(%ebp)\n"
-        "movl imp___Z14XModelNumBonesPK6XModel, %eax\n" /* line 3598 */
+        "movl imp_XModelNumBones, %eax\n" /* line 3598 */
         "movl %eax, -0x94(%ebp)\n"
-        "movl imp___Z14XModelGetSkinsPK6XModel, %eax\n" /* line 3599 */
+        "movl imp_XModelGetSkins, %eax\n" /* line 3599 */
         "movl %eax, -0x90(%ebp)\n"
-        "movl imp___Z17XModelGetMemUsagePK6XModel, %eax\n" /* line 3600 */
+        "movl imp_XModelGetMemUsage, %eax\n" /* line 3600 */
         "movl %eax, -0x8c(%ebp)\n"
-        "movl imp___Z16XModelGetLodNamePK6XModeli, %eax\n" /* line 3602 */
+        "movl imp_XModelGetLodName, %eax\n" /* line 3602 */
         "movl %eax, -0x88(%ebp)\n"
-        "movl imp___Z17XModelGetBasePosePK6XModel, %eax\n" /* line 3603 */
+        "movl imp_XModelGetBasePose, %eax\n" /* line 3603 */
         "movl %eax, -0x84(%ebp)\n"
-        "movl imp___Z21XModelGetBasePoseBonePK6XModeli, %eax\n" /* line 3604 */
+        "movl imp_XModelGetBasePoseBone, %eax\n" /* line 3604 */
         "movl %eax, -0x80(%ebp)\n"
-        "movl imp___Z7DObjBadPK6DObj_s, %eax\n" /* line 3607 */
+        "movl imp_DObjBad, %eax\n" /* line 3607 */
         "movl %eax, -0x7c(%ebp)\n"
-        "movl imp___Z13DObjGetBoundsPK6DObj_sPfS2_, %eax\n" /* line 3610 */
+        "movl imp_DObjGetBounds, %eax\n" /* line 3610 */
         "movl %eax, -0x74(%ebp)\n"
-        "movl imp___Z14DObjGetSurfacePK6DObj_siii, %eax\n" /* line 3611 */
+        "movl imp_DObjGetSurface, %eax\n" /* line 3611 */
         "movl %eax, -0x70(%ebp)\n"
-        "movl imp___Z16DObjGetNumModelsPK6DObj_s, %eax\n" /* line 3612 */
+        "movl imp_DObjGetNumModels, %eax\n" /* line 3612 */
         "movl %eax, -0x6c(%ebp)\n"
-        "movl imp___Z18DObjGetNumSurfacesPK6DObj_sPc, %eax\n" /* line 3613 */
+        "movl imp_DObjGetNumSurfaces, %eax\n" /* line 3613 */
         "movl %eax, -0x68(%ebp)\n"
-        "movl imp___Z15DObjGetSurfacesPK6DObj_sP10DSurface_sPiPc, %eax\n" /* line 3614 */
+        "movl imp_DObjGetSurfaces, %eax\n" /* line 3614 */
         "movl %eax, -0x64(%ebp)\n"
-        "movl imp___Z12DObjGetModelPK6DObj_si, %eax\n" /* line 3616 */
+        "movl imp_DObjGetModel, %eax\n" /* line 3616 */
         "movl %eax, -0x50(%ebp)\n"
-        "movl imp___Z18DObjGetSurfaceNameP6DObj_siii, %eax\n" /* line 3617 */
+        "movl imp_DObjGetSurfaceName, %eax\n" /* line 3617 */
         "movl %eax, -0x4c(%ebp)\n"
-        "movl imp___Z10DObjCreateP11DObjModel_sjP11XAnimTree_sPcj, %eax\n" /* line 3618 */
+        "movl imp_DObjCreate, %eax\n" /* line 3618 */
         "movl %eax, -0x48(%ebp)\n"
-        "movl imp___Z20DObjGetAllocSkelSizePK6DObj_s, %eax\n" /* line 3619 */
+        "movl imp_DObjGetAllocSkelSize, %eax\n" /* line 3619 */
         "movl %eax, -0x44(%ebp)\n"
-        "movl imp___Z14DObjCreateSkelPK6DObj_sPci, %eax\n" /* line 3620 */
+        "movl imp_DObjCreateSkel, %eax\n" /* line 3620 */
         "movl %eax, -0x40(%ebp)\n"
-        "movl imp___Z12DObjCalcAnimPK6DObj_sPi, %eax\n" /* line 3621 */
+        "movl imp_DObjCalcAnim, %eax\n" /* line 3621 */
         "movl %eax, -0x3c(%ebp)\n"
-        "movl imp___Z12DObjCalcSkelPK6DObj_sPi, %eax\n" /* line 3622 */
+        "movl imp_DObjCalcSkel, %eax\n" /* line 3622 */
         "movl %eax, -0x38(%ebp)\n"
-        "movl imp___Z20DObjGetRotTransArrayPK6DObj_s, %eax\n" /* line 3623 */
+        "movl imp_DObjGetRotTransArray, %eax\n" /* line 3623 */
         "movl %eax, -0x5c(%ebp)\n"
-        "movl imp___Z24DObjSkelAreBonesUpToDatePK6DObj_sPi, %eax\n" /* line 3624 */
+        "movl imp_DObjSkelAreBonesUpToDate, %eax\n" /* line 3624 */
         "movl %eax, -0x58(%ebp)\n"
-        "movl imp___Z16DObjGetMatOffsetPK6DObj_si, %eax\n" /* line 3625 */
+        "movl imp_DObjGetMatOffset, %eax\n" /* line 3625 */
         "movl %eax, -0x54(%ebp)\n"
-        "movl imp___Z12DObjNumBonesPK6DObj_s, %eax\n" /* line 3626 */
+        "movl imp_DObjNumBones, %eax\n" /* line 3626 */
         "movl %eax, -0x34(%ebp)\n"
-        "movl imp___Z15DObjGetBoneInfoPK6DObj_sPP11XBoneInfo_s, %eax\n" /* line 3627 */
+        "movl imp_DObjGetBoneInfo, %eax\n" /* line 3627 */
         "movl %eax, -0x30(%ebp)\n"
-        "movl imp___Z17DObjGetLodForDistPK6DObj_sif, %eax\n" /* line 3628 */
+        "movl imp_DObjGetLodForDist, %eax\n" /* line 3628 */
         "movl %eax, -0x2c(%ebp)\n"
-        "movl imp___Z17DObjGetLodOutDistPK6DObj_s, %eax\n" /* line 3629 */
+        "movl imp_DObjGetLodOutDist, %eax\n" /* line 3629 */
         "movl %eax, -0x28(%ebp)\n"
-        "movl imp___Z25DObjCompleteHierarchyBitsPK6DObj_sPi, %eax\n" /* line 3630 */
+        "movl imp_DObjCompleteHierarchyBits, %eax\n" /* line 3630 */
         "movl %eax, -0x24(%ebp)\n"
-        "movl imp___Z12DObjSetModelP6DObj_sPK6XModel, %eax\n" /* line 3631 */
+        "movl imp_DObjSetModel, %eax\n" /* line 3631 */
         "movl %eax, -0x20(%ebp)\n"
-        "movl imp___Z19CIN_UploadCinematici, %eax\n" /* line 3634 */
+        "movl imp_CIN_UploadCinematic, %eax\n" /* line 3634 */
         "movl %eax, -0x1c(%ebp)\n"
-        "movl imp___Z17CIN_PlayCinematicPKciiiii, %eax\n" /* line 3635 */
+        "movl imp_CIN_PlayCinematic, %eax\n" /* line 3635 */
         "movl %eax, -0x18(%ebp)\n"
-        "movl imp___Z16CIN_RunCinematici, %eax\n" /* line 3636 */
+        "movl imp_CIN_RunCinematic, %eax\n" /* line 3636 */
         "movl %eax, -0x14(%ebp)\n"
-        "movl imp___Z15CG_DObjCalcPosePK9centity_sPK6DObj_sPi, %eax\n" /* line 3638 */
+        "movl imp_CG_DObjCalcPose, %eax\n" /* line 3638 */
         "movl %eax, -0x10(%ebp)\n"
-        "movl imp___Z28CL_GetHudMsgIconMaterialNameh, %eax\n" /* line 3708 */
+        "movl imp_CL_GetHudMsgIconMaterialName, %eax\n" /* line 3708 */
         "movl %eax, -0xc(%ebp)\n"
         "leal -0x224(%ebp), %eax\n" /* line 3727 | ri */
         "movl %eax, 4(%esp)\n"
@@ -1843,7 +1843,7 @@ void CL_InitOnceForAllClients(void)
         "movl $str_002a909c, 4(%esp)\n" /* "demos" */
         "movl $str_002a9088, (%esp)\n" /* "timedemo" */
         "calll Cmd_SetAutoComplete\n"
-        "movl imp___Z18CL_PlayCinematic_fv, %eax\n" /* line 4137 */
+        "movl imp_CL_PlayCinematic_f, %eax\n" /* line 4137 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a90a4, (%esp)\n" /* "cinematic" */
         "calll Cmd_AddCommand\n"
@@ -1854,7 +1854,7 @@ void CL_InitOnceForAllClients(void)
         "movl $CL_PlayLogo_f, 4(%esp)\n" /* line 4145 */
         "movl $str_002a90b8, (%esp)\n" /* "logo" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z12CL_Connect_fv, %eax\n" /* line 4146 */
+        "movl imp_CL_Connect_f, %eax\n" /* line 4146 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a90c0, (%esp)\n" /* "connect" */
         "calll Cmd_AddCommand\n"
@@ -1864,20 +1864,20 @@ void CL_InitOnceForAllClients(void)
         "movl $CL_LocalServers_f, 4(%esp)\n" /* line 4148 */
         "movl $str_002a90d4, (%esp)\n" /* "localservers" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z18CL_GlobalServers_fv, %eax\n" /* line 4150 */
+        "movl imp_CL_GlobalServers_f, %eax\n" /* line 4150 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a90e4, (%esp)\n" /* "globalservers" */
         "calll Cmd_AddCommand\n"
         "calll CL_RconInit\n" /* line 4153 */
-        "movl imp___Z9CL_Rcon_fv, %eax\n" /* line 4154 */
+        "movl imp_CL_Rcon_f, %eax\n" /* line 4154 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a6fbc, (%esp)\n" /* "rcon" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z9CL_Ping_fv, %eax\n" /* line 4157 */
+        "movl imp_CL_Ping_f, %eax\n" /* line 4157 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a90f4, (%esp)\n" /* "ping" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z17CL_ServerStatus_fv, %eax\n" /* line 4158 */
+        "movl imp_CL_ServerStatus_f, %eax\n" /* line 4158 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a90fc, (%esp)\n" /* "serverstatus" */
         "calll Cmd_AddCommand\n"
@@ -1896,11 +1896,11 @@ void CL_InitOnceForAllClients(void)
         "movl $CL_ReferencedIWDList_f, 4(%esp)\n" /* line 4167 */
         "movl $str_002a9138, (%esp)\n" /* "fs_referencedList" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z23CL_UpdateLevelHunkUsagev, %eax\n" /* line 4171 */
+        "movl imp_CL_UpdateLevelHunkUsage, %eax\n" /* line 4171 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a914c, (%esp)\n" /* "updatehunkusage" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z16SCR_UpdateScreenv, %eax\n" /* line 4173 */
+        "movl imp_SCR_UpdateScreen, %eax\n" /* line 4173 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a915c, (%esp)\n" /* "updatescreen" */
         "calll Cmd_AddCommand\n"
@@ -1910,22 +1910,22 @@ void CL_InitOnceForAllClients(void)
         "movl $CL_SetRecommended_f, 4(%esp)\n" /* line 4178 */
         "movl $str_002a9180, (%esp)\n" /* "setRecommended" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z16CL_CubemapShot_fv, %eax\n" /* line 4187 */
+        "movl imp_CL_CubemapShot_f, %eax\n" /* line 4187 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a9190, (%esp)\n" /* "cubemapShot" */
         "calll Cmd_AddCommand\n"
         "movl $CL_OpenScriptMenu_f, 4(%esp)\n" /* line 4191 */
         "movl $str_002a919c, (%esp)\n" /* "openScriptMenu" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z33Com_WriteLocalizedSoundAliasFilesv, %eax\n" /* line 4195 */
+        "movl imp_Com_WriteLocalizedSoundAliasFiles, %eax\n" /* line 4195 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a91ac, (%esp)\n" /* "localizeSoundAliasFiles" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z13UI_OpenMenu_fv, %eax\n" /* line 4198 */
+        "movl imp_UI_OpenMenu_f, %eax\n" /* line 4198 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a91c4, (%esp)\n" /* "openmenu" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z14UI_CloseMenu_fv, %eax\n" /* line 4199 */
+        "movl imp_UI_CloseMenu_f, %eax\n" /* line 4199 */
         "movl %eax, 4(%esp)\n"
         "movl $str_002a91d0, (%esp)\n" /* "closemenu" */
         "calll Cmd_AddCommand\n"

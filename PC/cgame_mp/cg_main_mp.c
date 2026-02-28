@@ -3462,13 +3462,13 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movb $0, 0x2a9fc(%eax)\n"
         "calll CG_OffhandRegisterDvars\n" /* line 643 */
         "calll BG_RegisterDvars\n" /* line 644 */
-        "movl imp___Z18Com_FindSoundAliasPKc, %eax\n" /* line 1730 */
+        "movl imp_Com_FindSoundAlias, %eax\n" /* line 1730 */
         "movl cg, %edx\n"
         "movl %eax, 0xe08d8(%edx)\n"
         "movl $CG_PlayEntitySoundAlias, 0xe08dc(%edx)\n" /* line 1731 */
         "movl $CG_GetXModel, 0xe0904(%edx)\n" /* line 1733 */
         "movl $CG_CreateDObj, 0xe0908(%edx)\n" /* line 1734 */
-        "movl imp___Z22Com_SafeClientDObjFreei, %eax\n" /* line 1735 */
+        "movl imp_Com_SafeClientDObjFree, %eax\n" /* line 1735 */
         "movl %eax, 0xe090c(%edx)\n"
         "movl $Hunk_AllocXAnimClient, 0xe0910(%edx)\n" /* line 1736 */
         "movl $0, 0xe0900(%edx)\n" /* line 1737 */

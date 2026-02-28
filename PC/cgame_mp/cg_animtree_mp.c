@@ -10,7 +10,7 @@ extern void XAnimFreeTree(void *tree, void *allocInfo);
 
 extern char **cg_glob; /* imp_cg — pointer to cg_t base */
 extern centity_s **cg_entities; /* imp_cg_entities — pointer to centity array */
-extern void *cg_xanimInfo; /* imp___Z7MT_FreePvi — XAnim allocator */
+extern void *cg_xanimInfo; /* imp_MT_Free — XAnim allocator */
 
 /* cg_t field offsets (from $_3724 in STABS) */
 #define CG_ENTITY_LAST_TYPE    0x285f8

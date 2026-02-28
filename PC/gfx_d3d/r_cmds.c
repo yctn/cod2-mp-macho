@@ -8,12 +8,12 @@ extern void R_ScreenshotCommand(int type);
 extern void Material_UpdatePicmipAll(void);
 
 extern refimport_t *ri; /* imp_ri */
-extern void (*R_ImageList_f)(void); /* imp___Z13R_ImageList_fv */
-extern void (*R_ReloadMaterialTextures_f)(void); /* imp___Z28R_Cmd_ReloadMaterialTexturesv */
-extern void (*R_LoadSun_f)(void); /* imp___Z13R_Cmd_LoadSunv */
-extern void (*R_SaveSun_f)(void); /* imp___Z13R_Cmd_SaveSunv */
-extern void (*R_SmcStats_f)(void); /* imp___Z25R_StaticModelCacheStats_fv */
-extern void (*R_SmcFlush_f)(void); /* imp___Z25R_StaticModelCacheFlush_fv */
+extern void (*R_ImageList_f)(void); /* imp_R_ImageList_f */
+extern void (*R_ReloadMaterialTextures_f)(void); /* imp_R_Cmd_ReloadMaterialTextures */
+extern void (*R_LoadSun_f)(void); /* imp_R_Cmd_LoadSun */
+extern void (*R_SaveSun_f)(void); /* imp_R_Cmd_SaveSun */
+extern void (*R_SmcStats_f)(void); /* imp_R_StaticModelCacheStats_f */
+extern void (*R_SmcFlush_f)(void); /* imp_R_StaticModelCacheFlush_f */
 
 static void R_Cmd_ApplyPicmip(void)
 {

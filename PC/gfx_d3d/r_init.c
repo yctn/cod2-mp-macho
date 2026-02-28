@@ -496,172 +496,172 @@ refexport_t * GetRefAPI(int apiVersion, refimport_t *rimp)
         "jne .Lfcb074_000cb42f\n"
         "movl $R_Shutdown, re\n" /* line 2115 */
         "movl $R_BeginRegistration, re+4\n" /* line 2117 */
-        "movl imp___Z15R_RegisterModelPKc, %eax\n" /* line 2118 */
+        "movl imp_R_RegisterModel, %eax\n" /* line 2118 */
         "movl %eax, re+8\n"
-        "movl imp___Z21R_RegisterInlineModeli, %eax\n" /* line 2119 */
+        "movl imp_R_RegisterInlineModel, %eax\n" /* line 2119 */
         "movl %eax, re+12\n"
-        "movl imp___Z23R_GetMinSpecImageMemoryv, %eax\n" /* line 2124 */
+        "movl imp_R_GetMinSpecImageMemory, %eax\n" /* line 2124 */
         "movl %eax, re+48\n"
-        "movl imp___Z23Material_RegisterHandlePKcii, %eax\n" /* line 2133 */
+        "movl imp_Material_RegisterHandle, %eax\n" /* line 2133 */
         "movl %eax, re+16\n"
-        "movl imp___Z18R_RegisterRawImagePKcii, %eax\n" /* line 2134 */
+        "movl imp_R_RegisterRawImage, %eax\n" /* line 2134 */
         "movl %eax, re+20\n"
-        "movl imp___Z18Material_IsDefaultPK8Material, %eax\n" /* line 2135 */
+        "movl imp_Material_IsDefault, %eax\n" /* line 2135 */
         "movl %eax, re+24\n"
-        "movl imp___Z11R_LoadWorldPKcPi, %eax\n" /* line 2136 */
+        "movl imp_R_LoadWorld, %eax\n" /* line 2136 */
         "movl %eax, re+28\n"
-        "movl imp___Z16R_GetWorldBoundsPfS_, %eax\n" /* line 2137 */
+        "movl imp_R_GetWorldBounds, %eax\n" /* line 2137 */
         "movl %eax, re+32\n"
-        "movl imp___Z21R_FinishLoadingModelsv, %eax\n" /* line 2139 */
+        "movl imp_R_FinishLoadingModels, %eax\n" /* line 2139 */
         "movl %eax, re+36\n"
-        "movl imp___Z25R_SetIgnorePrecacheErrorsi, %eax\n" /* line 2141 */
+        "movl imp_R_SetIgnorePrecacheErrors, %eax\n" /* line 2141 */
         "movl %eax, re+40\n"
-        "movl imp___Z25R_GetIgnorePrecacheErrorsv, %eax\n" /* line 2142 */
+        "movl imp_R_GetIgnorePrecacheErrors, %eax\n" /* line 2142 */
         "movl %eax, re+44\n"
         "movl $R_EndRegistration, re+68\n" /* line 2143 */
-        "movl imp___Z17R_GetMaterialNameP8Material, %eax\n" /* line 2144 */
+        "movl imp_R_GetMaterialName, %eax\n" /* line 2144 */
         "movl %eax, re+52\n"
-        "movl imp___Z26R_GetMaterialSubimageCountP8Material, %eax\n" /* line 2145 */
+        "movl imp_R_GetMaterialSubimageCount, %eax\n" /* line 2145 */
         "movl %eax, re+56\n"
-        "movl imp___Z22R_IsMaterialRefractiveP8Material, %eax\n" /* line 2146 */
+        "movl imp_R_IsMaterialRefractive, %eax\n" /* line 2146 */
         "movl %eax, re+60\n"
-        "movl imp___Z17R_GetFarPlaneDistv, %eax\n" /* line 2147 */
+        "movl imp_R_GetFarPlaneDist, %eax\n" /* line 2147 */
         "movl %eax, re+64\n"
-        "movl imp___Z12R_BeginFramev, %eax\n" /* line 2149 */
+        "movl imp_R_BeginFrame, %eax\n" /* line 2149 */
         "movl %eax, re+168\n"
-        "movl imp___Z10R_EndFramev, %eax\n" /* line 2150 */
+        "movl imp_R_EndFrame, %eax\n" /* line 2150 */
         "movl %eax, re+172\n"
-        "movl imp___Z17R_BeginDebugFramev, %eax\n" /* line 2152 */
+        "movl imp_R_BeginDebugFrame, %eax\n" /* line 2152 */
         "movl %eax, re+176\n"
-        "movl imp___Z15R_EndDebugFramev, %eax\n" /* line 2153 */
+        "movl imp_R_EndDebugFrame, %eax\n" /* line 2153 */
         "movl %eax, re+180\n"
         "movl $R_EndView, re+184\n" /* line 2155 */
         "movl $R_DoneRenderingViews, re+188\n" /* line 2156 */
-        "movl imp___Z18R_AddCmdSaveScreenv, %eax\n" /* line 2158 */
+        "movl imp_R_AddCmdSaveScreen, %eax\n" /* line 2158 */
         "movl %eax, re+192\n"
-        "movl imp___Z24R_AddCmdBlendSavedScreeni, %eax\n" /* line 2159 */
+        "movl imp_R_AddCmdBlendSavedScreen, %eax\n" /* line 2159 */
         "movl %eax, re+196\n"
-        "movl imp___Z19R_AddCmdClearScreeniPKffh, %eax\n" /* line 2160 */
+        "movl imp_R_AddCmdClearScreen, %eax\n" /* line 2160 */
         "movl %eax, re+200\n"
-        "movl imp___Z19R_AddCmdSetViewportiiii, %eax\n" /* line 2161 */
+        "movl imp_R_AddCmdSetViewport, %eax\n" /* line 2161 */
         "movl %eax, re+204\n"
-        "movl imp___Z15R_MarkFragmentsPA3_KfPS_S1_fiP14GfxWorldVertexiP15GfxMarkFragmentP8Material, %eax\n" /* line 2163 */
+        "movl imp_R_MarkFragments, %eax\n" /* line 2163 */
         "movl %eax, re+208\n"
-        "movl imp___Z13R_ModelBoundsP13GfxBrushModelPfS1_, %eax\n" /* line 2164 */
+        "movl imp_R_ModelBounds, %eax\n" /* line 2164 */
         "movl %eax, re+212\n"
-        "movl imp___Z12R_ClearScenev, %eax\n" /* line 2166 */
+        "movl imp_R_ClearScene, %eax\n" /* line 2166 */
         "movl %eax, re+72\n"
-        "movl imp___Z21R_DefaultVertexFramesiP14GfxWorldVertex, %eax\n" /* line 2177 */
+        "movl imp_R_DefaultVertexFrames, %eax\n" /* line 2177 */
         "movl %eax, re+76\n"
-        "movl imp___Z16R_AddPolyToSceneP8MaterialttPK14GfxWorldVertex, %eax\n" /* line 2178 */
+        "movl imp_R_AddPolyToScene, %eax\n" /* line 2178 */
         "movl %eax, re+80\n"
-        "movl imp___Z17R_AddLightToScenePKfffff, %eax\n" /* line 2179 */
+        "movl imp_R_AddLightToScene, %eax\n" /* line 2179 */
         "movl %eax, re+84\n"
-        "movl imp___Z30R_InterpretSunLightParseParamsP19SunLightParseParams, %eax\n" /* line 2180 */
+        "movl imp_R_InterpretSunLightParseParams, %eax\n" /* line 2180 */
         "movl %eax, re+88\n"
-        "movl imp___Z26R_ResetSunLightParseParamsv, %eax\n" /* line 2181 */
+        "movl imp_R_ResetSunLightParseParams, %eax\n" /* line 2181 */
         "movl %eax, re+92\n"
-        "movl imp___Z13R_SetCullDistf, %eax\n" /* line 2182 */
+        "movl imp_R_SetCullDist, %eax\n" /* line 2182 */
         "movl %eax, re+96\n"
-        "movl imp___Z8R_SetFogiffhhhf, %eax\n" /* line 2183 */
+        "movl imp_R_SetFog, %eax\n" /* line 2183 */
         "movl %eax, re+100\n"
-        "movl imp___Z11R_SwitchFogiii, %eax\n" /* line 2184 */
+        "movl imp_R_SwitchFog, %eax\n" /* line 2184 */
         "movl %eax, re+104\n"
-        "movl imp___Z17R_ArchiveFogStateP10MemoryFile, %eax\n" /* line 2185 */
+        "movl imp_R_ArchiveFogState, %eax\n" /* line 2185 */
         "movl %eax, re+108\n"
-        "movl imp___Z11R_ClearFogsv, %eax\n" /* line 2186 */
+        "movl imp_R_ClearFogs, %eax\n" /* line 2186 */
         "movl %eax, re+112\n"
-        "movl imp___Z21R_SetSunLightOverridePKf, %eax\n" /* line 2187 */
+        "movl imp_R_SetSunLightOverride, %eax\n" /* line 2187 */
         "movl %eax, re+116\n"
-        "movl imp___Z23R_ResetSunLightOverridev, %eax\n" /* line 2188 */
+        "movl imp_R_ResetSunLightOverride, %eax\n" /* line 2188 */
         "movl %eax, re+120\n"
-        "movl imp___Z13R_RenderScenePK8refdef_s, %eax\n" /* line 2190 */
+        "movl imp_R_RenderScene, %eax\n" /* line 2190 */
         "movl %eax, re+124\n"
-        "movl imp___Z21R_BeginDelayedDrawingv, %eax\n" /* line 2192 */
+        "movl imp_R_BeginDelayedDrawing, %eax\n" /* line 2192 */
         "movl %eax, re+128\n"
-        "movl imp___Z19R_EndDelayedDrawingi, %eax\n" /* line 2193 */
+        "movl imp_R_EndDelayedDrawing, %eax\n" /* line 2193 */
         "movl %eax, re+132\n"
-        "movl imp___Z21R_IssueDelayedDrawingi, %eax\n" /* line 2194 */
+        "movl imp_R_IssueDelayedDrawing, %eax\n" /* line 2194 */
         "movl %eax, re+136\n"
-        "movl imp___Z13R_ClearFlaresv, %eax\n" /* line 2196 */
+        "movl imp_R_ClearFlares, %eax\n" /* line 2196 */
         "movl %eax, re+140\n"
-        "movl imp___Z22R_AddCmdDrawStretchPicffffffffPKfP8Material, %eax\n" /* line 2198 */
+        "movl imp_R_AddCmdDrawStretchPic, %eax\n" /* line 2198 */
         "movl %eax, re+148\n"
-        "movl imp___Z28R_AddCmdDrawStretchPicRotatefffffffffPKfP8Material, %eax\n" /* line 2199 */
+        "movl imp_R_AddCmdDrawStretchPicRotate, %eax\n" /* line 2199 */
         "movl %eax, re+152\n"
-        "movl imp___Z22R_AddCmdDrawStretchRawiiiiiiPKhii, %eax\n" /* line 2200 */
+        "movl imp_R_AddCmdDrawStretchRaw, %eax\n" /* line 2200 */
         "movl %eax, re+156\n"
-        "movl imp___Z19R_AddCmdDrawQuadPicPA2_KfPS_P8Material, %eax\n" /* line 2201 */
+        "movl imp_R_AddCmdDrawQuadPic, %eax\n" /* line 2201 */
         "movl %eax, re+160\n"
-        "movl imp___Z18R_AddCmdDrawSpriteP8MaterialPKhPKfffi, %eax\n" /* line 2202 */
+        "movl imp_R_AddCmdDrawSprite, %eax\n" /* line 2202 */
         "movl %eax, re+164\n"
-        "movl imp___Z24R_AddCmdSetMaterialColorPKf, %eax\n" /* line 2204 */
+        "movl imp_R_AddCmdSetMaterialColor, %eax\n" /* line 2204 */
         "movl %eax, re+144\n"
-        "movl imp___Z14R_RegisterFontPKci, %eax\n" /* line 2206 */
+        "movl imp_R_RegisterFont, %eax\n" /* line 2206 */
         "movl %eax, re+224\n"
-        "movl imp___Z23R_ResetImageAllocationsv, %eax\n" /* line 2207 */
+        "movl imp_R_ResetImageAllocations, %eax\n" /* line 2207 */
         "movl %eax, re+228\n"
-        "movl imp___Z22R_FreeImageAllocationsv, %eax\n" /* line 2208 */
+        "movl imp_R_FreeImageAllocations, %eax\n" /* line 2208 */
         "movl %eax, re+232\n"
-        "movl imp___Z18R_BeginCubemapShotii, %eax\n" /* line 2210 */
+        "movl imp_R_BeginCubemapShot, %eax\n" /* line 2210 */
         "movl %eax, re+236\n"
-        "movl imp___Z16R_EndCubemapShot11CubemapShot, %eax\n" /* line 2211 */
+        "movl imp_R_EndCubemapShot, %eax\n" /* line 2211 */
         "movl %eax, re+240\n"
-        "movl imp___Z17R_SaveCubemapShotPKc11CubemapShotff, %eax\n" /* line 2212 */
+        "movl imp_R_SaveCubemapShot, %eax\n" /* line 2212 */
         "movl %eax, re+244\n"
-        "movl imp___Z26R_LightingFromCubemapShotsPKf, %eax\n" /* line 2213 */
+        "movl imp_R_LightingFromCubemapShots, %eax\n" /* line 2213 */
         "movl %eax, re+248\n"
-        "movl imp___Z20R_LocateDebugStringsP15trDebugString_tii, %eax\n" /* line 2215 */
+        "movl imp_R_LocateDebugStrings, %eax\n" /* line 2215 */
         "movl %eax, re+252\n"
-        "movl imp___Z18R_LocateDebugLinesP13trDebugLine_tii, %eax\n" /* line 2216 */
+        "movl imp_R_LocateDebugLines, %eax\n" /* line 2216 */
         "movl %eax, re+256\n"
-        "movl imp___Z10R_AddPlumePKfiS0_i, %eax\n" /* line 2217 */
+        "movl imp_R_AddPlume, %eax\n" /* line 2217 */
         "movl %eax, re+260\n"
-        "movl imp___Z15R_ShutdownDebugv, %eax\n" /* line 2218 */
+        "movl imp_R_ShutdownDebug, %eax\n" /* line 2218 */
         "movl %eax, re+264\n"
         "movl $R_TrackStatistics, re+216\n" /* line 2220 */
-        "movl imp___Z14R_PickMaterialPKfS0_PcS1_S1_i, %eax\n" /* line 2221 */
+        "movl imp_R_PickMaterial, %eax\n" /* line 2221 */
         "movl %eax, re+220\n"
-        "movl imp___Z14RB_UpdateColorPKfS0_, %eax\n" /* line 2223 */
+        "movl imp_RB_UpdateColor, %eax\n" /* line 2223 */
         "movl %eax, re+268\n"
-        "movl imp___Z21R_NormalizedTextScaleP6Font_sf, %eax\n" /* line 2224 */
+        "movl imp_R_NormalizedTextScale, %eax\n" /* line 2224 */
         "movl %eax, re+272\n"
-        "movl imp___Z11R_TextWidthPKciP6Font_s, %eax\n" /* line 2225 */
+        "movl imp_R_TextWidth, %eax\n" /* line 2225 */
         "movl %eax, re+276\n"
-        "movl imp___Z12R_TextHeightP6Font_s, %eax\n" /* line 2226 */
+        "movl imp_R_TextHeight, %eax\n" /* line 2226 */
         "movl %eax, re+280\n"
-        "movl imp___Z10R_DrawTextPKciP6Font_sffffPKfi, %eax\n" /* line 2227 */
+        "movl imp_R_DrawText, %eax\n" /* line 2227 */
         "movl %eax, re+284\n"
-        "movl imp___Z23R_AddCmdDrawTextInSpacePKcP6Font_sPKfS4_S4_S4_, %eax\n" /* line 2228 */
+        "movl imp_R_AddCmdDrawTextInSpace, %eax\n" /* line 2228 */
         "movl %eax, re+288\n"
-        "movl imp___Z18R_ConsoleTextWidthPKsiP6Font_s, %eax\n" /* line 2229 */
+        "movl imp_R_ConsoleTextWidth, %eax\n" /* line 2229 */
         "movl %eax, re+292\n"
-        "movl imp___Z17R_DrawConsoleTextPKsiP6Font_sffffPKfi, %eax\n" /* line 2230 */
+        "movl imp_R_DrawConsoleText, %eax\n" /* line 2230 */
         "movl %eax, re+296\n"
-        "movl imp___Z26R_AddCmdDrawTextWithCursorPKciP6Font_sffffPKfiic, %eax\n" /* line 2231 */
+        "movl imp_R_AddCmdDrawTextWithCursor, %eax\n" /* line 2231 */
         "movl %eax, re+300\n"
-        "movl imp___Z22R_DObjGetSurfMaterialsP6DObj_siPP8Material, %eax\n" /* line 2233 */
+        "movl imp_R_DObjGetSurfMaterials, %eax\n" /* line 2233 */
         "movl %eax, re+304\n"
-        "movl imp___Z21R_DObjReplaceMaterialP6DObj_siiP8Material, %eax\n" /* line 2234 */
+        "movl imp_R_DObjReplaceMaterial, %eax\n" /* line 2234 */
         "movl %eax, re+308\n"
-        "movl imp___Z15R_ParseSunLightP19SunLightParseParamsPKc, %eax\n" /* line 2237 */
+        "movl imp_R_ParseSunLight, %eax\n" /* line 2237 */
         "movl %eax, re+312\n"
-        "movl imp___Z18Material_DuplicateP8MaterialPKc, %eax\n" /* line 2287 */
+        "movl imp_Material_Duplicate, %eax\n" /* line 2287 */
         "movl %eax, re+316\n"
-        "movl imp___Z15R_DuplicateFontP6Font_sPKc, %eax\n" /* line 2288 */
+        "movl imp_R_DuplicateFont, %eax\n" /* line 2288 */
         "movl %eax, re+320\n"
         "movb $1, re+324\n" /* line 2318 */
-        "movl imp___Z18R_SyncRenderThreadv, %eax\n" /* line 2321 */
+        "movl imp_R_SyncRenderThread, %eax\n" /* line 2321 */
         "movl %eax, re+328\n"
-        "movl imp___Z21R_AbortRenderCommandsv, %eax\n" /* line 2322 */
+        "movl imp_R_AbortRenderCommands, %eax\n" /* line 2322 */
         "movl %eax, re+332\n"
-        "movl imp___Z21RB_IsGpuFenceFinishedv, %eax\n" /* line 2330 */
+        "movl imp_RB_IsGpuFenceFinished, %eax\n" /* line 2330 */
         "movl %eax, re+336\n"
-        "movl imp___Z22RB_AdaptiveGpuSyncWaitv, %eax\n" /* line 2331 */
+        "movl imp_RB_AdaptiveGpuSyncWait, %eax\n" /* line 2331 */
         "movl %eax, re+340\n"
-        "movl imp___Z12RB_GpuWaitedi, %eax\n" /* line 2332 */
+        "movl imp_RB_GpuWaited, %eax\n" /* line 2332 */
         "movl %eax, re+344\n"
-        "movl imp___Z14R_SetLodOriginPK8refdef_s, %eax\n" /* line 2334 */
+        "movl imp_R_SetLodOrigin, %eax\n" /* line 2334 */
         "movl %eax, re+348\n"
         "movl $re, %eax\n"
         /* } scope */

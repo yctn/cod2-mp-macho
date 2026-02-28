@@ -58,7 +58,7 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
         "movl %eax, (%esp)\n"
         "calll BG_GetWeaponDef\n"
         "movl %eax, %esi\n" /* weapDef */
-        "movl imp___Z21Hunk_AllocXAnimClienti, %eax\n" /* line 261 */
+        "movl imp_Hunk_AllocXAnimClient, %eax\n" /* line 261 */
         "movl %eax, 8(%esp)\n"
         "movl $3, 4(%esp)\n"
         "movl $str_002abcf4, (%esp)\n" /* "MG42" */
@@ -71,7 +71,7 @@ struct XAnim_s * CG_GetMG42Anims(centity_t *cent)
         "movl $0, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll XAnimBlend\n"
-        "movl imp___Z23Hunk_AllocXAnimPrecachei, %edi\n" /* line 269 */
+        "movl imp_Hunk_AllocXAnimPrecache, %edi\n" /* line 269 */
         "movl %edi, 4(%esp)\n"
         "movl 0x18(%esi), %eax\n" /* weapDef */
         "movl %eax, (%esp)\n"

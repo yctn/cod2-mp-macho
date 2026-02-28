@@ -352,10 +352,10 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "je .Lf1abbfa_001abf7c\n"
         ".Lf1abbfa_001abcac:\n"
         "calll G_ProcessIPBans\n" /* line 791 */
-        "movl imp___Z12SV_XModelGetPKc, %eax\n" /* line 793 */
+        "movl imp_SV_XModelGet, %eax\n" /* line 793 */
         "movl %eax, level_bgs+736236\n"
         "movl $G_CreateDObj, level_bgs+736240\n" /* line 794 */
-        "movl imp___Z22Com_SafeServerDObjFreei, %eax\n" /* line 795 */
+        "movl imp_Com_SafeServerDObjFree, %eax\n" /* line 795 */
         "movl %eax, level_bgs+736244\n"
         "movl $Hunk_AllocXAnimServer, level_bgs+736248\n" /* line 796 */
         "movl $1, level_bgs+736232\n" /* line 797 */

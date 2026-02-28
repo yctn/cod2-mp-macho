@@ -787,11 +787,11 @@ double FS_AddCommands(void)
         "pushl %ebp\n" /* line 875 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl imp___Z9FS_Path_fv, %eax\n" /* line 877 */
+        "movl imp_FS_Path_f, %eax\n" /* line 877 */
         "movl %eax, 4(%esp)\n"
         "movl $str_00216da8, (%esp)\n" /* "path" */
         "calll Cmd_AddCommand\n"
-        "movl imp___Z13FS_FullPath_fv, %eax\n" /* line 878 */
+        "movl imp_FS_FullPath_f, %eax\n" /* line 878 */
         "movl %eax, 4(%esp)\n"
         "movl $str_00216db0, (%esp)\n" /* "fullpath" */
         "calll Cmd_AddCommand\n"

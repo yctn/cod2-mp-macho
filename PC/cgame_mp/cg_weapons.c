@@ -1006,7 +1006,7 @@ void CG_RegisterWeapon(int weaponNum)
         "cmpb $0, (%eax)\n"
         "je .Lf1d5ef8_001d6b50\n"
         ".Lf1d5ef8_001d6097:\n"
-        "movl imp___Z21Hunk_AllocXAnimClienti, %eax\n" /* line 471 */
+        "movl imp_Hunk_AllocXAnimClient, %eax\n" /* line 471 */
         "movl %eax, 8(%esp)\n"
         "movl $0x17, 4(%esp)\n"
         "movl $str_002b7c54, (%esp)\n" /* "VIEWMODEL" */
@@ -1023,7 +1023,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl $1, %esi\n" /* i */
         "jmp .Lf1d5ef8_001d6123\n"
         ".Lf1d5ef8_001d60f0:\n"
-        "movl imp___Z23Hunk_AllocXAnimPrecachei, %edx\n" /* line 484 */
+        "movl imp_Hunk_AllocXAnimPrecache, %edx\n" /* line 484 */
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll XAnimPrecache\n"
@@ -1041,7 +1041,7 @@ void CG_RegisterWeapon(int weaponNum)
         "movl 0x18(%ebx), %eax\n" /* line 481 | dobjHandle */
         "cmpb $0, (%eax)\n"
         "jne .Lf1d5ef8_001d60f0\n"
-        "movl imp___Z23Hunk_AllocXAnimPrecachei, %eax\n" /* line 492 */
+        "movl imp_Hunk_AllocXAnimPrecache, %eax\n" /* line 492 */
         "movl %eax, 4(%esp)\n"
         "movl 0x18(%edi), %eax\n" /* weapDef */
         "movl %eax, (%esp)\n"
@@ -1057,7 +1057,7 @@ void CG_RegisterWeapon(int weaponNum)
         "cmpl $0x17, %esi\n" /* i */
         "jne .Lf1d5ef8_001d6123\n"
         ".Lf1d5ef8_001d6160:\n"
-        "movl imp___Z21Hunk_AllocXAnimClienti, %eax\n" /* line 499 */
+        "movl imp_Hunk_AllocXAnimClient, %eax\n" /* line 499 */
         "movl %eax, 4(%esp)\n"
         "movl -0x7c(%ebp), %ecx\n" /* pAnims */
         "movl %ecx, (%esp)\n"
