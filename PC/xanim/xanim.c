@@ -56,7 +56,7 @@ void XAnimGetAbsDelta(const XAnim *anims, unsigned int animIndex, vec_t *rot, ve
 static void XAnimCalcRelDeltaParts(const float time1, const float time2);
 void XAnimGetRelDelta(const XAnim *anims, unsigned int animIndex, vec_t *rot, vec_t *trans, float time1, float time2);
 static void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex);
-static void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat, XAnimSimpleRotPos *rotPos);
+void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat, XAnimSimpleRotPos *rotPos);
 void XAnimCalcAbsDelta(XAnimTree *tree, unsigned int animIndex, vec_t *rot, vec_t *trans);
 void XAnimCalcDelta(XAnimTree *tree, unsigned int animIndex, vec_t *rot, vec_t *trans, int bUseGoalWeight);
 static void XAnimResetTime(XAnimTree *tree);
@@ -67,7 +67,7 @@ void XAnimSetCompleteGoalWeight(XAnimTree *tree, unsigned int animIndex, float g
 void XAnimCloneAnimTree(const XAnimTree *from, XAnimTree *to);
 void XAnimFreeTree(XAnimTree *tree, Free_t Free);
 void XAnimClearTree(XAnimTree *tree);
-static void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnimPart (*rotTransArray)(), int bClear, int bNormQuat, XAnimCalcAnimInfo *info, int rotTransArrayIndex);
+void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnimPart (*rotTransArray)(), int bClear, int bNormQuat, XAnimCalcAnimInfo *info, int rotTransArrayIndex);
 void DObjCalcAnim(const DObj *obj, int *partBits);
 static float XAnimGetAverageRateFrequency(void);
 void XAnimClearTreeGoalWeights(XAnimTree *tree, unsigned int animIndex, float blendTime);
@@ -2197,7 +2197,7 @@ void XAnimGetAbsDelta(const XAnim *anims, unsigned int animIndex, vec_t *rot, ve
 }
 
 /* line 1216 */
-static __attribute__((naked))
+__attribute__((naked))
 void XAnimCalcRelDeltaParts(const float time1, const float time2)
 {
     __asm__ __volatile__ (
@@ -3055,7 +3055,7 @@ void XAnimClearTreeWeights(XAnimTree *tree, unsigned int animIndex)
 }
 
 /* line 2675 */
-static __attribute__((naked))
+__attribute__((naked))
 void XAnimCalcDeltaTree(const XAnimTree *tree, const Bool bClear, int bNormQuat, XAnimSimpleRotPos *rotPos)
 {
     __asm__ __volatile__ (
@@ -5365,7 +5365,7 @@ void XAnimClearTree(XAnimTree *tree)
 }
 
 /* line 2372 */
-static __attribute__((naked))
+__attribute__((naked))
 void XAnimCalc(const DObj *obj, unsigned int animIndex, float weightScale, XAnimPart (*rotTransArray)(), int bClear, int bNormQuat, XAnimCalcAnimInfo *info, int rotTransArrayIndex)
 {
     __asm__ __volatile__ (

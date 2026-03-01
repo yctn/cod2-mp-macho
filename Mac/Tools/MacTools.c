@@ -28,7 +28,7 @@ Boolean MacTools_QuestionAlert(CFStringRef inMessage1, CFStringRef inMessage2);
 void ZN12StShowCursorD1Ev(void); /* StShowCursor_~StShowCursor */
 void MacTools_MessageAlert(CFStringRef inMessage1, CFStringRef inMessage2, int inStop);
 void MacTools_MessageAlertFromKey(CFStringRef inKeyRef, int inStop);
-static Boolean SearchForApplication(OSType inCreator, FSRef *outAppRef);
+Boolean SearchForApplication(OSType inCreator, FSRef *outAppRef);
 void StShowCursor_StShowCursor(const StShowCursor * _this);
 void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS0_S2_EERKS0_(void); /* std_vector<FSRef, std_allocator<FSRef> >__M_insert_aux */
 
@@ -1169,7 +1169,7 @@ void MacTools_MessageAlertFromKey(CFStringRef inKeyRef, int inStop)
 }
 
 /* line 156 */
-static __attribute__((naked))
+__attribute__((naked))
 Boolean SearchForApplication(OSType inCreator, FSRef *outAppRef)
 {
     __asm__ __volatile__ (

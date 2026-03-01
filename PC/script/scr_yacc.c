@@ -470,8 +470,7 @@ int yyparse(void)
         ".Lf10c71a_0010cd25:\n"
         "movl $str_00215bbc, 4(%esp)\n" /* "%s
 " */
-        "movl ___sF, %eax\n"
-        "addl $0xb0, %eax\n"
+        "movl stderr, %eax\n"
         "movl %eax, (%esp)\n"
         "calll fprintf\n"
         "movl $2, (%esp)\n" /* line 2109 */
@@ -518,7 +517,7 @@ int yyparse(void)
         "movl %edx, -0x2858(%ebp)\n" /* yystate */
         "jmp .Lf10c71a_0010c782\n"
         ".Lf10c71a_0010ce06:\n"
-        "movl ___sF, %eax\n" /* line 788 */
+        "movl stdin, %eax\n" /* line 788 */
         "movl %eax, yyin\n"
         "jmp .Lf10c71a_0010cbb4\n"
         ".Lf10c71a_0010ce15:\n"
@@ -3751,8 +3750,7 @@ int yyparse(void)
         "movl %eax, %edi\n"
         "jmp .Lf10c71a_0010ca55\n"
         ".Lf10c71a_00110255:\n"
-        "movl ___sF, %eax\n" /* line 791 */
-        "addl $0x58, %eax\n"
+        "movl stdout, %eax\n" /* line 791 */
         "movl %eax, yyout\n"
         "jmp .Lf10c71a_0010cbc1\n"
         ".Lf10c71a_00110267:\n"

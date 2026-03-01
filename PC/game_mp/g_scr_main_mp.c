@@ -80,131 +80,131 @@ static BuiltinMethodDef methods[59]; /* methods */
 unsigned int GScr_AllocString(const char *s);
 unsigned int Scr_LoadLevel(void);
 unsigned int GScr_FreeScripts(void);
-static unsigned int ScrCmd_GetClanId(struct scr_entref_t entref);
-static unsigned int ScrCmd_GetClanName(scr_entref_t entref);
-static unsigned int ScrCmd_GetClanMotto(scr_entref_t entref);
-static unsigned int ScrCmd_GetClanDescription(scr_entref_t entref);
-static unsigned int ScrCmd_GetClanURL(scr_entref_t entref);
-static unsigned int print(void);
-static unsigned int assertCmd(void);
-static unsigned int assertexCmd(void);
-static unsigned int assertmsgCmd(void);
-static unsigned int GScr_IsDefined(void);
-static unsigned int GScr_IsString(void);
-static unsigned int GScr_IsAlive(void);
-static unsigned int GScr_GetDvar(void);
-static unsigned int GScr_GetDvarInt(void);
-static unsigned int GScr_GetDvarFloat(void);
-static unsigned int GScr_GetTime(void);
-static unsigned int Scr_GetEntByNum(void);
-static unsigned int Scr_GetWeaponModel(void);
-static unsigned int GScr_GetAnimLength(void);
-static unsigned int GScr_AnimHasNotetrack(void);
-static unsigned int GScr_PrecacheTurret(void);
-static unsigned int ScrCmd_SoundExists(void);
-static unsigned int ScrCmd_PlayRumble(scr_entref_t entref);
-static unsigned int ScrCmd_PlayLoopRumble(scr_entref_t entref);
-static unsigned int ScrCmd_StopRumble(scr_entref_t entref);
+unsigned int ScrCmd_GetClanId(struct scr_entref_t entref);
+unsigned int ScrCmd_GetClanName(scr_entref_t entref);
+unsigned int ScrCmd_GetClanMotto(scr_entref_t entref);
+unsigned int ScrCmd_GetClanDescription(scr_entref_t entref);
+unsigned int ScrCmd_GetClanURL(scr_entref_t entref);
+unsigned int print(void);
+unsigned int assertCmd(void);
+unsigned int assertexCmd(void);
+unsigned int assertmsgCmd(void);
+unsigned int GScr_IsDefined(void);
+unsigned int GScr_IsString(void);
+unsigned int GScr_IsAlive(void);
+unsigned int GScr_GetDvar(void);
+unsigned int GScr_GetDvarInt(void);
+unsigned int GScr_GetDvarFloat(void);
+unsigned int GScr_GetTime(void);
+unsigned int Scr_GetEntByNum(void);
+unsigned int Scr_GetWeaponModel(void);
+unsigned int GScr_GetAnimLength(void);
+unsigned int GScr_AnimHasNotetrack(void);
+unsigned int GScr_PrecacheTurret(void);
+unsigned int ScrCmd_SoundExists(void);
+unsigned int ScrCmd_PlayRumble(scr_entref_t entref);
+unsigned int ScrCmd_PlayLoopRumble(scr_entref_t entref);
+unsigned int ScrCmd_StopRumble(scr_entref_t entref);
 qboolean G_GetHintStringIndex(int *piIndex, const char *pszString);
-static unsigned int SetObjectiveIcon(void);
-static unsigned int Scr_Objective_Icon(void);
-static unsigned int Scr_Objective_OnEntity(void);
-static unsigned int Scr_Objective_Current(void);
-static unsigned int GScr_Objective_Team(void);
-static unsigned int GScr_LogPrint(void);
-static unsigned int GScr_WorldEntNumber(void);
-static unsigned int GScr_Obituary(void);
-static unsigned int GScr_getStartTime(void);
-static unsigned int GScr_PrecacheMenu(void);
+unsigned int SetObjectiveIcon(void);
+unsigned int Scr_Objective_Icon(void);
+unsigned int Scr_Objective_OnEntity(void);
+unsigned int Scr_Objective_Current(void);
+unsigned int GScr_Objective_Team(void);
+unsigned int GScr_LogPrint(void);
+unsigned int GScr_WorldEntNumber(void);
+unsigned int GScr_Obituary(void);
+unsigned int GScr_getStartTime(void);
+unsigned int GScr_PrecacheMenu(void);
 int GScr_GetScriptMenuIndex(const char *pszMenu);
-static unsigned int GScr_PrecacheStatusIcon(void);
+unsigned int GScr_PrecacheStatusIcon(void);
 int GScr_GetStatusIconIndex(const char *pszIcon);
-static unsigned int GScr_PrecacheHeadIcon(void);
+unsigned int GScr_PrecacheHeadIcon(void);
 int GScr_GetHeadIconIndex(const char *pszIcon);
-static unsigned int Scr_BulletTracePassed(void);
+unsigned int Scr_BulletTracePassed(void);
 unsigned int Scr_SightTracePassed(void);
-static unsigned int Scr_PhysicsTrace(void);
-static unsigned int Scr_RandomInt(void);
-static unsigned int Scr_RandomFloat(void);
-static unsigned int Scr_RandomIntRange(void);
-static unsigned int Scr_RandomFloatRange(void);
-static unsigned int GScr_sin(void);
-static unsigned int GScr_cos(void);
-static unsigned int GScr_tan(void);
-static unsigned int GScr_asin(void);
-static unsigned int GScr_acos(void);
-static unsigned int GScr_atan(void);
-static unsigned int GScr_CastInt(void);
-static unsigned int Scr_Distance(void);
-static unsigned int Scr_DistanceSquared(void);
-static unsigned int Scr_LengthSquared(void);
-static unsigned int Scr_Closer(void);
-static unsigned int Scr_VectorDot(void);
-static unsigned int Scr_VectorToAngles(void);
-static unsigned int Scr_AnglesToUp(void);
-static unsigned int Scr_AnglesToRight(void);
-static unsigned int Scr_AnglesToForward(void);
-static unsigned int Scr_IsSubStr(void);
-static unsigned int Scr_GetSubStr(void);
-static unsigned int Scr_ToLower(void);
-static unsigned int Scr_StrTok(void);
-static unsigned int Scr_MusicPlay(void);
-static unsigned int Scr_SoundFade(void);
-static unsigned int Scr_PrecacheModel(void);
-static unsigned int Scr_PrecacheShellShock(void);
-static unsigned int Scr_PrecacheItem(void);
-static unsigned int Scr_PrecacheShader(void);
-static unsigned int Scr_PrecacheString(void);
-static unsigned int Scr_PrecacheRumble(void);
-static unsigned int GScr_RadiusDamage(void);
-static unsigned int GScr_SetPlayerIgnoreRadiusDamage(void);
-static unsigned int GScr_GetMoveDelta(void);
-static unsigned int GScr_GetAngleDelta(void);
-static unsigned int GScr_GetNorthYaw(void);
-static unsigned int Scr_LoadFX(void);
-static unsigned int Scr_PlayFXOnTag(void);
-static unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, float fGreen, float fBlue, float fTime);
-static unsigned int Scr_SetLinearFog(void);
-static unsigned int Scr_SetExponentialFog(void);
-static unsigned int GScr_IsPlayer(void);
-static unsigned int GScr_IsPlayerNumber(void);
-static unsigned int GScr_SetWinningPlayer(void);
-static unsigned int GScr_SetWinningTeam(void);
-static unsigned int GScr_GetTeamScore(void);
-static unsigned int GScr_SetTeamScore(void);
-static unsigned int GScr_SetClientNameMode(void);
-static unsigned int GScr_UpdateClientNames(void);
-static unsigned int GScr_GetTeamPlayersAlive(void);
+unsigned int Scr_PhysicsTrace(void);
+unsigned int Scr_RandomInt(void);
+unsigned int Scr_RandomFloat(void);
+unsigned int Scr_RandomIntRange(void);
+unsigned int Scr_RandomFloatRange(void);
+unsigned int GScr_sin(void);
+unsigned int GScr_cos(void);
+unsigned int GScr_tan(void);
+unsigned int GScr_asin(void);
+unsigned int GScr_acos(void);
+unsigned int GScr_atan(void);
+unsigned int GScr_CastInt(void);
+unsigned int Scr_Distance(void);
+unsigned int Scr_DistanceSquared(void);
+unsigned int Scr_LengthSquared(void);
+unsigned int Scr_Closer(void);
+unsigned int Scr_VectorDot(void);
+unsigned int Scr_VectorToAngles(void);
+unsigned int Scr_AnglesToUp(void);
+unsigned int Scr_AnglesToRight(void);
+unsigned int Scr_AnglesToForward(void);
+unsigned int Scr_IsSubStr(void);
+unsigned int Scr_GetSubStr(void);
+unsigned int Scr_ToLower(void);
+unsigned int Scr_StrTok(void);
+unsigned int Scr_MusicPlay(void);
+unsigned int Scr_SoundFade(void);
+unsigned int Scr_PrecacheModel(void);
+unsigned int Scr_PrecacheShellShock(void);
+unsigned int Scr_PrecacheItem(void);
+unsigned int Scr_PrecacheShader(void);
+unsigned int Scr_PrecacheString(void);
+unsigned int Scr_PrecacheRumble(void);
+unsigned int GScr_RadiusDamage(void);
+unsigned int GScr_SetPlayerIgnoreRadiusDamage(void);
+unsigned int GScr_GetMoveDelta(void);
+unsigned int GScr_GetAngleDelta(void);
+unsigned int GScr_GetNorthYaw(void);
+unsigned int Scr_LoadFX(void);
+unsigned int Scr_PlayFXOnTag(void);
+unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, float fGreen, float fBlue, float fTime);
+unsigned int Scr_SetLinearFog(void);
+unsigned int Scr_SetExponentialFog(void);
+unsigned int GScr_IsPlayer(void);
+unsigned int GScr_IsPlayerNumber(void);
+unsigned int GScr_SetWinningPlayer(void);
+unsigned int GScr_SetWinningTeam(void);
+unsigned int GScr_GetTeamScore(void);
+unsigned int GScr_SetTeamScore(void);
+unsigned int GScr_SetClientNameMode(void);
+unsigned int GScr_UpdateClientNames(void);
+unsigned int GScr_GetTeamPlayersAlive(void);
 unsigned int GScr_GetNumParts(void);
 unsigned int GScr_GetPartName(void);
-static unsigned int GScr_Earthquake(void);
-static unsigned int GScr_MapRestart(void);
-static unsigned int GScr_LoadMap(void);
-static unsigned int GScr_ExitLevel(void);
-static unsigned int GScr_AddTestClient(void);
-static unsigned int GScr_AllClientsPrint(void);
-static unsigned int GScr_MapExists(void);
-static unsigned int GScr_SetVoteString(void);
-static unsigned int GScr_SetVoteTime(void);
-static unsigned int GScr_SetVoteYesCount(void);
-static unsigned int GScr_SetVoteNoCount(void);
-static unsigned int GScr_KickPlayer(void);
-static unsigned int GScr_BanPlayer(void);
-static unsigned int GScr_ClientPrint(void);
-static unsigned int GScr_OpenFile(void);
-static unsigned int GScr_CloseFile(void);
-static unsigned int GScr_FPrintln(void);
-static unsigned int GScr_FReadLn(void);
-static unsigned int GScr_FGetArg(void);
-static unsigned int GScr_SetArchive(void);
-static unsigned int Scr_PlayRumbleOnPos(void);
-static unsigned int Scr_PlayLoopRumbleOnPos(void);
-static unsigned int Scr_StopAllRumbles(void);
-static unsigned int Scr_IsSplitscreen(void);
-static unsigned int GScr_MatchEnd(void);
-static unsigned int GScr_SetPlayerTeamRank(void);
-static unsigned int GScr_SendXboxLiveRanks(void);
-static unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref);
+unsigned int GScr_Earthquake(void);
+unsigned int GScr_MapRestart(void);
+unsigned int GScr_LoadMap(void);
+unsigned int GScr_ExitLevel(void);
+unsigned int GScr_AddTestClient(void);
+unsigned int GScr_AllClientsPrint(void);
+unsigned int GScr_MapExists(void);
+unsigned int GScr_SetVoteString(void);
+unsigned int GScr_SetVoteTime(void);
+unsigned int GScr_SetVoteYesCount(void);
+unsigned int GScr_SetVoteNoCount(void);
+unsigned int GScr_KickPlayer(void);
+unsigned int GScr_BanPlayer(void);
+unsigned int GScr_ClientPrint(void);
+unsigned int GScr_OpenFile(void);
+unsigned int GScr_CloseFile(void);
+unsigned int GScr_FPrintln(void);
+unsigned int GScr_FReadLn(void);
+unsigned int GScr_FGetArg(void);
+unsigned int GScr_SetArchive(void);
+unsigned int Scr_PlayRumbleOnPos(void);
+unsigned int Scr_PlayLoopRumbleOnPos(void);
+unsigned int Scr_StopAllRumbles(void);
+unsigned int Scr_IsSplitscreen(void);
+unsigned int GScr_MatchEnd(void);
+unsigned int GScr_SetPlayerTeamRank(void);
+unsigned int GScr_SendXboxLiveRanks(void);
+unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref);
 BuiltinFunction Scr_GetFunction(const char * *pName, int *type);
 BuiltinMethod Scr_GetMethod(const char * *pName, int *type);
 unsigned int Scr_SetOrigin(gentity_t *ent, int offset);
@@ -219,34 +219,34 @@ unsigned int Scr_PlayerConnect(gentity_t *self);
 unsigned int Scr_PlayerDisconnect(gentity_t *self);
 unsigned int Scr_VoteCalled(gentity_t *self, char *command, char *param1, char *param2);
 unsigned int Scr_PlayerVote(gentity_t *self, char *option);
-static unsigned int GScr_print3d(void);
-static unsigned int GScr_line(void);
-static unsigned int GScr_Spawn(void);
-static unsigned int GScr_SpawnTurret(void);
-static unsigned int Scr_VectorNormalize(void);
-static unsigned int Scr_GrenadeExplosionEffect(void);
-static unsigned int Scr_Objective_Position(void);
-static unsigned int GScr_positionWouldTelefrag(void);
-static unsigned int GScr_GetBrushModelCenter(void);
-static unsigned int Scr_Objective_Delete(void);
+unsigned int GScr_print3d(void);
+unsigned int GScr_line(void);
+unsigned int GScr_Spawn(void);
+unsigned int GScr_SpawnTurret(void);
+unsigned int Scr_VectorNormalize(void);
+unsigned int Scr_GrenadeExplosionEffect(void);
+unsigned int Scr_Objective_Position(void);
+unsigned int GScr_positionWouldTelefrag(void);
+unsigned int GScr_GetBrushModelCenter(void);
+unsigned int Scr_Objective_Delete(void);
 unsigned int G_InitObjectives(void);
-static unsigned int Scr_BulletTrace(void);
-static unsigned int Scr_Objective_Add(void);
-static unsigned int Scr_Objective_State(void);
-static unsigned int Scr_MusicStop(void);
-static unsigned int Scr_AmbientPlay(void);
-static unsigned int Scr_AmbientStop(void);
-static unsigned int Scr_PlayLoopedFX(void);
+unsigned int Scr_BulletTrace(void);
+unsigned int Scr_Objective_Add(void);
+unsigned int Scr_Objective_State(void);
+unsigned int Scr_MusicStop(void);
+unsigned int Scr_AmbientPlay(void);
+unsigned int Scr_AmbientStop(void);
+unsigned int Scr_PlayLoopedFX(void);
 unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, const char *errorContext, char *string, int stringLimit);
-static unsigned int GScr_MakeDvarServerInfo(void);
-static unsigned int GScr_ClientAnnouncement(void);
-static unsigned int GScr_Announcement(void);
-static unsigned int GScr_SetDvar(void);
+unsigned int GScr_MakeDvarServerInfo(void);
+unsigned int GScr_ClientAnnouncement(void);
+unsigned int GScr_Announcement(void);
+unsigned int GScr_SetDvar(void);
 unsigned int Scr_MakeGameMessage(int iClientNum, const char *pszCmd);
-static unsigned int GScr_IsValidGameType(void);
+unsigned int GScr_IsValidGameType(void);
 qboolean Scr_IsValidGameType(const char *pszGameType);
-static unsigned int Scr_Length(void);
-static unsigned int println(void);
+unsigned int Scr_Length(void);
+unsigned int println(void);
 unsigned int Scr_PlayerDamage(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int dflags, int meansOfDeath, int iWeapon, const vec_t *vPoint, const vec_t *vDir, const hitLocation_t hitLoc, int timeOffset);
 unsigned int Scr_PlayerKilled(gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath, int iWeapon, const vec_t *vDir, const hitLocation_t hitLoc, int psTimeOffset, int deathAnimDuration);
 unsigned int ScrCmd_Show(scr_entref_t entref);
@@ -258,51 +258,51 @@ unsigned int GScr_EnableGrenadeBounce(scr_entref_t entref);
 unsigned int GScr_DisableGrenadeBounce(scr_entref_t entref);
 unsigned int GScr_EnableAimAssist(scr_entref_t entref);
 unsigned int GScr_DisableAimAssist(scr_entref_t entref);
-static unsigned int ScrCmd_attach(scr_entref_t entref);
-static unsigned int ScrCmd_detach(scr_entref_t entref);
-static unsigned int ScrCmd_detachAll(scr_entref_t entref);
-static unsigned int ScrCmd_GetAttachSize(scr_entref_t entref);
-static unsigned int ScrCmd_GetAttachModelName(scr_entref_t entref);
-static unsigned int ScrCmd_GetAttachTagName(scr_entref_t entref);
-static unsigned int ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref);
-static unsigned int ScrCmd_LinkTo(scr_entref_t entref);
-static unsigned int ScrCmd_Unlink(scr_entref_t entref);
-static unsigned int ScrCmd_EnableLinkTo(scr_entref_t entref);
-static unsigned int ScrCmd_GetOrigin(scr_entref_t entref);
-static unsigned int ScrCmd_GetEye(scr_entref_t entref);
-static unsigned int ScrCmd_UseBy(scr_entref_t entref);
-static unsigned int Scr_SetStableMissile(scr_entref_t entref);
-static unsigned int ScrCmd_IsTouching(scr_entref_t entref);
-static unsigned int ScrCmd_PlaySound(scr_entref_t entref);
-static unsigned int ScrCmd_PlaySoundAsMaster(scr_entref_t entref);
-static unsigned int ScrCmd_PlayLoopSound(scr_entref_t entref);
-static unsigned int ScrCmd_StopLoopSound(scr_entref_t entref);
-static unsigned int ScrCmd_Delete(scr_entref_t entref);
-static unsigned int ScrCmd_SetModel(scr_entref_t entref);
-static unsigned int ScrCmd_GetNormalHealth(scr_entref_t entref);
-static unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref);
-static unsigned int ScrCmd_SetContents(scr_entref_t entref);
-static unsigned int GScr_SetCursorHint(scr_entref_t entref);
-static unsigned int GScr_SetHintString(scr_entref_t entref);
+unsigned int ScrCmd_attach(scr_entref_t entref);
+unsigned int ScrCmd_detach(scr_entref_t entref);
+unsigned int ScrCmd_detachAll(scr_entref_t entref);
+unsigned int ScrCmd_GetAttachSize(scr_entref_t entref);
+unsigned int ScrCmd_GetAttachModelName(scr_entref_t entref);
+unsigned int ScrCmd_GetAttachTagName(scr_entref_t entref);
+unsigned int ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref);
+unsigned int ScrCmd_LinkTo(scr_entref_t entref);
+unsigned int ScrCmd_Unlink(scr_entref_t entref);
+unsigned int ScrCmd_EnableLinkTo(scr_entref_t entref);
+unsigned int ScrCmd_GetOrigin(scr_entref_t entref);
+unsigned int ScrCmd_GetEye(scr_entref_t entref);
+unsigned int ScrCmd_UseBy(scr_entref_t entref);
+unsigned int Scr_SetStableMissile(scr_entref_t entref);
+unsigned int ScrCmd_IsTouching(scr_entref_t entref);
+unsigned int ScrCmd_PlaySound(scr_entref_t entref);
+unsigned int ScrCmd_PlaySoundAsMaster(scr_entref_t entref);
+unsigned int ScrCmd_PlayLoopSound(scr_entref_t entref);
+unsigned int ScrCmd_StopLoopSound(scr_entref_t entref);
+unsigned int ScrCmd_Delete(scr_entref_t entref);
+unsigned int ScrCmd_SetModel(scr_entref_t entref);
+unsigned int ScrCmd_GetNormalHealth(scr_entref_t entref);
+unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref);
+unsigned int ScrCmd_SetContents(scr_entref_t entref);
+unsigned int GScr_SetCursorHint(scr_entref_t entref);
+unsigned int GScr_SetHintString(scr_entref_t entref);
 static gentity_t * GetPlayerEntity(void);
-static unsigned int GScr_ViewKick(scr_entref_t entref);
-static unsigned int GScr_StopShellShock(scr_entref_t entref);
-static unsigned int GScr_ShellShock(scr_entref_t entref);
-static unsigned int GScr_GetAmmoCount(scr_entref_t entref);
-static unsigned int GScr_LocalToWorldCoords(scr_entref_t entref);
-static unsigned int GScr_SetRightArc(scr_entref_t entref);
-static unsigned int GScr_SetLeftArc(scr_entref_t entref);
-static unsigned int GScr_SetTopArc(scr_entref_t entref);
-static unsigned int GScr_SetBottomArc(scr_entref_t entref);
-static unsigned int GScr_GetEntityNumber(scr_entref_t entref);
-static unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref);
-static unsigned int GScr_UpdateScores(scr_entref_t entref);
-static unsigned int GScr_SetTeamForTrigger(scr_entref_t entref);
-static unsigned int GScr_ClientClaimTrigger(scr_entref_t entref);
-static unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref);
-static unsigned int Scr_PlayFX(void);
-static unsigned int iprintln(void);
-static unsigned int iprintlnbold(void);
+unsigned int GScr_ViewKick(scr_entref_t entref);
+unsigned int GScr_StopShellShock(scr_entref_t entref);
+unsigned int GScr_ShellShock(scr_entref_t entref);
+unsigned int GScr_GetAmmoCount(scr_entref_t entref);
+unsigned int GScr_LocalToWorldCoords(scr_entref_t entref);
+unsigned int GScr_SetRightArc(scr_entref_t entref);
+unsigned int GScr_SetLeftArc(scr_entref_t entref);
+unsigned int GScr_SetTopArc(scr_entref_t entref);
+unsigned int GScr_SetBottomArc(scr_entref_t entref);
+unsigned int GScr_GetEntityNumber(scr_entref_t entref);
+unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref);
+unsigned int GScr_UpdateScores(scr_entref_t entref);
+unsigned int GScr_SetTeamForTrigger(scr_entref_t entref);
+unsigned int GScr_ClientClaimTrigger(scr_entref_t entref);
+unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref);
+unsigned int Scr_PlayFX(void);
+unsigned int iprintln(void);
+unsigned int iprintlnbold(void);
 unsigned int GScr_LoadGameTypeScript(void);
 unsigned int GScr_LoadScripts(void);
 
@@ -334,42 +334,42 @@ unsigned int GScr_FreeScripts(void)
 }
 
 /* line 208 */
-static unsigned int ScrCmd_GetClanId(struct scr_entref_t entref)
+unsigned int ScrCmd_GetClanId(struct scr_entref_t entref)
 {
     Scr_AddString("0");
     return 0;
 }
 
 /* line 230 */
-static unsigned int ScrCmd_GetClanName(scr_entref_t entref)
+unsigned int ScrCmd_GetClanName(scr_entref_t entref)
 {
     Scr_AddString("");
     return 0;
 }
 
 /* line 251 */
-static unsigned int ScrCmd_GetClanMotto(scr_entref_t entref)
+unsigned int ScrCmd_GetClanMotto(scr_entref_t entref)
 {
     Scr_AddString("");
     return 0;
 }
 
 /* line 272 */
-static unsigned int ScrCmd_GetClanDescription(scr_entref_t entref)
+unsigned int ScrCmd_GetClanDescription(scr_entref_t entref)
 {
     Scr_AddString("");
     return 0;
 }
 
 /* line 293 */
-static unsigned int ScrCmd_GetClanURL(scr_entref_t entref)
+unsigned int ScrCmd_GetClanURL(scr_entref_t entref)
 {
     Scr_AddString("");
     return 0;
 }
 
 /* line 315 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int print(void)
 {
     __asm__ __volatile__ (
@@ -416,7 +416,7 @@ unsigned int print(void)
 }
 
 /* line 623 */
-static unsigned int assertCmd(void)
+unsigned int assertCmd(void)
 {
     if (!Scr_GetInt(0))
         Scr_Error("assert fail");
@@ -424,7 +424,7 @@ static unsigned int assertCmd(void)
 }
 
 /* line 637 */
-static unsigned int assertexCmd(void)
+unsigned int assertexCmd(void)
 {
     if (!Scr_GetInt(0))
         Scr_Error(va("assert fail: %s", Scr_GetString(1)));
@@ -432,14 +432,14 @@ static unsigned int assertexCmd(void)
 }
 
 /* line 651 */
-static unsigned int assertmsgCmd(void)
+unsigned int assertmsgCmd(void)
 {
     Scr_Error(va("assert fail: %s", Scr_GetString(0)));
     return 0;
 }
 
 /* line 663 */
-static unsigned int GScr_IsDefined(void)
+unsigned int GScr_IsDefined(void)
 {
     int type = Scr_GetType(0);
 
@@ -457,14 +457,14 @@ static unsigned int GScr_IsDefined(void)
 }
 
 /* line 688 */
-static unsigned int GScr_IsString(void)
+unsigned int GScr_IsString(void)
 {
     Scr_AddInt(Scr_GetType(0) == 2);
     return 0;
 }
 
 /* line 700 */
-static unsigned int GScr_IsAlive(void)
+unsigned int GScr_IsAlive(void)
 {
     if (Scr_GetType(0) == 1 && Scr_GetPointerType(0) == 0x15) {
         gentity_t *ent = Scr_GetEntity(0);
@@ -478,35 +478,35 @@ static unsigned int GScr_IsAlive(void)
 }
 
 /* line 730 */
-static unsigned int GScr_GetDvar(void)
+unsigned int GScr_GetDvar(void)
 {
     Scr_AddString(Dvar_GetVariantString(Scr_GetString(0)));
     return 0;
 }
 
 /* line 746 */
-static unsigned int GScr_GetDvarInt(void)
+unsigned int GScr_GetDvarInt(void)
 {
     Scr_AddInt(atoi(Dvar_GetVariantString(Scr_GetString(0))));
     return 0;
 }
 
 /* line 762 */
-static unsigned int GScr_GetDvarFloat(void)
+unsigned int GScr_GetDvarFloat(void)
 {
     Scr_AddFloat((float)atof(Dvar_GetVariantString(Scr_GetString(0))));
     return 0;
 }
 
 /* line 836 */
-static unsigned int GScr_GetTime(void)
+unsigned int GScr_GetTime(void)
 {
     Scr_AddInt(*(int *)((byte *)*(void **)imp_level + 0x1ec));
     return 0;
 }
 
 /* line 847 */
-static unsigned int Scr_GetEntByNum(void)
+unsigned int Scr_GetEntByNum(void)
 {
     unsigned int num = Scr_GetInt(0);
     gentity_t *ent;
@@ -520,7 +520,7 @@ static unsigned int Scr_GetEntByNum(void)
 }
 
 /* line 867 */
-static unsigned int Scr_GetWeaponModel(void)
+unsigned int Scr_GetWeaponModel(void)
 {
     const char *pszWeaponName = Scr_GetString(0);
     int weaponIndex = G_GetWeaponIndexForName(pszWeaponName);
@@ -537,7 +537,7 @@ static unsigned int Scr_GetWeaponModel(void)
 }
 
 /* line 916 */
-static unsigned int GScr_GetAnimLength(void)
+unsigned int GScr_GetAnimLength(void)
 {
     unsigned int anim = Scr_GetAnim(0, 0);
     void *anims = Scr_GetAnims(anim >> 16);
@@ -550,7 +550,7 @@ static unsigned int GScr_GetAnimLength(void)
 }
 
 /* line 934 */
-static unsigned int GScr_AnimHasNotetrack(void)
+unsigned int GScr_AnimHasNotetrack(void)
 {
     unsigned int anim = Scr_GetAnim(0, 0);
     unsigned int treeIndex = anim >> 16;
@@ -563,7 +563,7 @@ static unsigned int GScr_AnimHasNotetrack(void)
 }
 
 /* line 1031 */
-static unsigned int GScr_PrecacheTurret(void)
+unsigned int GScr_PrecacheTurret(void)
 {
     if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
         Scr_Error("PrecacheTurret must be called before any wait statements in the gametype or level script");
@@ -572,26 +572,26 @@ static unsigned int GScr_PrecacheTurret(void)
 }
 
 /* line 1411 */
-static unsigned int ScrCmd_SoundExists(void)
+unsigned int ScrCmd_SoundExists(void)
 {
     Scr_AddBool(Com_FindSoundAlias(Scr_GetString(0)) != 0);
     return 0;
 }
 
 /* line 1543 */
-static unsigned int ScrCmd_PlayRumble(scr_entref_t entref)
+unsigned int ScrCmd_PlayRumble(scr_entref_t entref)
 {
     return 0;
 }
 
 /* line 1556 */
-static unsigned int ScrCmd_PlayLoopRumble(scr_entref_t entref)
+unsigned int ScrCmd_PlayLoopRumble(scr_entref_t entref)
 {
     return 0;
 }
 
 /* line 1569 */
-static unsigned int ScrCmd_StopRumble(scr_entref_t entref)
+unsigned int ScrCmd_StopRumble(scr_entref_t entref)
 {
     return 0;
 }
@@ -673,7 +673,7 @@ qboolean G_GetHintStringIndex(int *piIndex, const char *pszString)
 }
 
 /* line 2109 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int SetObjectiveIcon(void)
 {
     __asm__ __volatile__ (
@@ -743,7 +743,7 @@ unsigned int SetObjectiveIcon(void)
 }
 
 /* line 2232 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Objective_Icon(void)
 {
     __asm__ __volatile__ (
@@ -779,7 +779,7 @@ unsigned int Scr_Objective_Icon(void)
 }
 
 /* line 2274 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Objective_OnEntity(void)
 {
     __asm__ __volatile__ (
@@ -844,7 +844,7 @@ unsigned int Scr_Objective_OnEntity(void)
 }
 
 /* line 2301 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Objective_Current(void)
 {
     __asm__ __volatile__ (
@@ -924,7 +924,7 @@ unsigned int Scr_Objective_Current(void)
 }
 
 /* line 2340 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_Objective_Team(void)
 {
     __asm__ __volatile__ (
@@ -1005,7 +1005,7 @@ unsigned int GScr_Objective_Team(void)
 }
 
 /* line 2370 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_LogPrint(void)
 {
     __asm__ __volatile__ (
@@ -1071,14 +1071,14 @@ unsigned int GScr_LogPrint(void)
 }
 
 /* line 2407 */
-static unsigned int GScr_WorldEntNumber(void)
+unsigned int GScr_WorldEntNumber(void)
 {
     Scr_AddInt(0x3fe);
     return 0;
 }
 
 /* line 2418 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_Obituary(void)
 {
     __asm__ __volatile__ (
@@ -1161,14 +1161,14 @@ unsigned int GScr_Obituary(void)
 }
 
 /* line 2541 */
-static unsigned int GScr_getStartTime(void)
+unsigned int GScr_getStartTime(void)
 {
     Scr_AddInt(*(int *)((byte *)*(void **)imp_level + 0x1f8));
     return 0;
 }
 
 /* line 2552 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_PrecacheMenu(void)
 {
     __asm__ __volatile__ (
@@ -1316,7 +1316,7 @@ int GScr_GetScriptMenuIndex(const char *pszMenu)
 }
 
 /* line 2619 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_PrecacheStatusIcon(void)
 {
     __asm__ __volatile__ (
@@ -1454,7 +1454,7 @@ int GScr_GetStatusIconIndex(const char *pszIcon)
 }
 
 /* line 2690 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_PrecacheHeadIcon(void)
 {
     __asm__ __volatile__ (
@@ -1592,7 +1592,7 @@ int GScr_GetHeadIconIndex(const char *pszIcon)
 }
 
 /* line 2845 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_BulletTracePassed(void)
 {
     __asm__ __volatile__ (
@@ -1730,7 +1730,7 @@ unsigned int Scr_SightTracePassed(void)
 }
 
 /* line 2918 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_PhysicsTrace(void)
 {
     __asm__ __volatile__ (
@@ -1792,7 +1792,7 @@ unsigned int Scr_PhysicsTrace(void)
 }
 
 /* line 2941 */
-static unsigned int Scr_RandomInt(void)
+unsigned int Scr_RandomInt(void)
 {
     int max = Scr_GetInt(0);
     if (max <= 0) {
@@ -1805,7 +1805,7 @@ static unsigned int Scr_RandomInt(void)
 }
 
 /* line 2960 */
-static unsigned int Scr_RandomFloat(void)
+unsigned int Scr_RandomFloat(void)
 {
     float max = Scr_GetFloat(0);
 
@@ -1814,7 +1814,7 @@ static unsigned int Scr_RandomFloat(void)
 }
 
 /* line 2973 */
-static unsigned int Scr_RandomIntRange(void)
+unsigned int Scr_RandomIntRange(void)
 {
     int iMin = Scr_GetInt(0);
     int iMax = Scr_GetInt(1);
@@ -1828,7 +1828,7 @@ static unsigned int Scr_RandomIntRange(void)
 }
 
 /* line 2992 */
-static unsigned int Scr_RandomFloatRange(void)
+unsigned int Scr_RandomFloatRange(void)
 {
     float fMin = Scr_GetFloat(0);
     float fMax = Scr_GetFloat(1);
@@ -1842,7 +1842,7 @@ static unsigned int Scr_RandomFloatRange(void)
 }
 
 /* line 3011 */
-static unsigned int GScr_sin(void)
+unsigned int GScr_sin(void)
 {
     float val = Scr_GetFloat(0);
 
@@ -1851,7 +1851,7 @@ static unsigned int GScr_sin(void)
 }
 
 /* line 3022 */
-static unsigned int GScr_cos(void)
+unsigned int GScr_cos(void)
 {
     float val = Scr_GetFloat(0);
 
@@ -1860,7 +1860,7 @@ static unsigned int GScr_cos(void)
 }
 
 /* line 3033 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_tan(void)
 {
     __asm__ __volatile__ (
@@ -1907,7 +1907,7 @@ unsigned int GScr_tan(void)
 }
 
 /* line 3049 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_asin(void)
 {
     __asm__ __volatile__ (
@@ -1949,7 +1949,7 @@ unsigned int GScr_asin(void)
 }
 
 /* line 3065 */
-static unsigned int GScr_acos(void)
+unsigned int GScr_acos(void)
 {
     float x = Scr_GetFloat(0);
     if (x < -1.0f || x > 1.0f)
@@ -1961,7 +1961,7 @@ static unsigned int GScr_acos(void)
 }
 
 /* line 3081 */
-static unsigned int GScr_atan(void)
+unsigned int GScr_atan(void)
 {
     float val = Scr_GetFloat(0);
     Scr_AddFloat((float)((double)atanf(val) * 57.29577951308232));
@@ -1969,7 +1969,7 @@ static unsigned int GScr_atan(void)
 }
 
 /* line 3092 */
-static unsigned int GScr_CastInt(void)
+unsigned int GScr_CastInt(void)
 {
     int type = Scr_GetType(0);
     switch (type)
@@ -1991,7 +1991,7 @@ static unsigned int GScr_CastInt(void)
 }
 
 /* line 3120 */
-static unsigned int Scr_Distance(void)
+unsigned int Scr_Distance(void)
 {
     float v0[3], v1[3];
     Scr_GetVector(0, v0);
@@ -2001,7 +2001,7 @@ static unsigned int Scr_Distance(void)
 }
 
 /* line 3136 */
-static unsigned int Scr_DistanceSquared(void)
+unsigned int Scr_DistanceSquared(void)
 {
     float v0[3], v1[3];
     Scr_GetVector(0, v0);
@@ -2011,7 +2011,7 @@ static unsigned int Scr_DistanceSquared(void)
 }
 
 /* line 3166 */
-static unsigned int Scr_LengthSquared(void)
+unsigned int Scr_LengthSquared(void)
 {
     float v[3];
     Scr_GetVector(0, v);
@@ -2020,7 +2020,7 @@ static unsigned int Scr_LengthSquared(void)
 }
 
 /* line 3180 */
-static unsigned int Scr_Closer(void)
+unsigned int Scr_Closer(void)
 {
     float vRef[3], vA[3], vB[3];
     float fDistASqrd, fDistBSqrd;
@@ -2034,7 +2034,7 @@ static unsigned int Scr_Closer(void)
 }
 
 /* line 3204 */
-static unsigned int Scr_VectorDot(void)
+unsigned int Scr_VectorDot(void)
 {
     float a[3], b[3];
     Scr_GetVector(0, a);
@@ -2044,7 +2044,7 @@ static unsigned int Scr_VectorDot(void)
 }
 
 /* line 3237 */
-static unsigned int Scr_VectorToAngles(void)
+unsigned int Scr_VectorToAngles(void)
 {
     float vec[3], angles[3];
     Scr_GetVector(0, vec);
@@ -2054,7 +2054,7 @@ static unsigned int Scr_VectorToAngles(void)
 }
 
 /* line 3254 */
-static unsigned int Scr_AnglesToUp(void)
+unsigned int Scr_AnglesToUp(void)
 {
     float angles[3], up[3];
     Scr_GetVector(0, angles);
@@ -2064,7 +2064,7 @@ static unsigned int Scr_AnglesToUp(void)
 }
 
 /* line 3270 */
-static unsigned int Scr_AnglesToRight(void)
+unsigned int Scr_AnglesToRight(void)
 {
     float angles[3], right[3];
     Scr_GetVector(0, angles);
@@ -2074,7 +2074,7 @@ static unsigned int Scr_AnglesToRight(void)
 }
 
 /* line 3286 */
-static unsigned int Scr_AnglesToForward(void)
+unsigned int Scr_AnglesToForward(void)
 {
     float angles[3], forward[3];
     Scr_GetVector(0, angles);
@@ -2084,7 +2084,7 @@ static unsigned int Scr_AnglesToForward(void)
 }
 
 /* line 3302 */
-static unsigned int Scr_IsSubStr(void)
+unsigned int Scr_IsSubStr(void)
 {
     const char *sub = Scr_GetString(1);
     const char *s = Scr_GetString(0);
@@ -2093,7 +2093,7 @@ static unsigned int Scr_IsSubStr(void)
 }
 
 /* line 3315 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_GetSubStr(void)
 {
     __asm__ __volatile__ (
@@ -2158,7 +2158,7 @@ unsigned int Scr_GetSubStr(void)
 }
 
 /* line 3350 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_ToLower(void)
 {
     __asm__ __volatile__ (
@@ -2206,7 +2206,7 @@ unsigned int Scr_ToLower(void)
 }
 
 /* line 3379 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_StrTok(void)
 {
     __asm__ __volatile__ (
@@ -2301,14 +2301,14 @@ unsigned int Scr_StrTok(void)
 }
 
 /* line 3445 */
-static unsigned int Scr_MusicPlay(void)
+unsigned int Scr_MusicPlay(void)
 {
     SV_GameSendServerCommand(-1, 1, va("%c %s", 'o', Scr_GetString(0)));
     return 0;
 }
 
 /* line 3485 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_SoundFade(void)
 {
     __asm__ __volatile__ (
@@ -2351,7 +2351,7 @@ unsigned int Scr_SoundFade(void)
 }
 
 /* line 3506 */
-static unsigned int Scr_PrecacheModel(void)
+unsigned int Scr_PrecacheModel(void)
 {
     if (!*(int *)(*(byte **)imp_level + 0x1c))
         Scr_Error("precacheModel must be called before any wait statements in the gametype or level script\n");
@@ -2360,7 +2360,7 @@ static unsigned int Scr_PrecacheModel(void)
 }
 
 /* line 3520 */
-static unsigned int Scr_PrecacheShellShock(void)
+unsigned int Scr_PrecacheShellShock(void)
 {
     if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
         Scr_Error("PrecacheShellShock must be called before any wait statements in the gametype or level script");
@@ -2369,7 +2369,7 @@ static unsigned int Scr_PrecacheShellShock(void)
 }
 
 /* line 3534 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_PrecacheItem(void)
 {
     __asm__ __volatile__ (
@@ -2440,7 +2440,7 @@ unsigned int Scr_PrecacheItem(void)
 }
 
 /* line 3558 */
-static unsigned int Scr_PrecacheShader(void)
+unsigned int Scr_PrecacheShader(void)
 {
     const char *shaderName;
     if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
@@ -2453,7 +2453,7 @@ static unsigned int Scr_PrecacheShader(void)
 }
 
 /* line 3578 */
-static unsigned int Scr_PrecacheString(void)
+unsigned int Scr_PrecacheString(void)
 {
     const char *s;
     if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
@@ -2465,13 +2465,13 @@ static unsigned int Scr_PrecacheString(void)
 }
 
 /* line 3596 */
-static unsigned int Scr_PrecacheRumble(void)
+unsigned int Scr_PrecacheRumble(void)
 {
     return 0;
 }
 
 /* line 3711 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_RadiusDamage(void)
 {
     __asm__ __volatile__ (
@@ -2520,14 +2520,14 @@ unsigned int GScr_RadiusDamage(void)
 }
 
 /* line 3734 */
-static unsigned int GScr_SetPlayerIgnoreRadiusDamage(void)
+unsigned int GScr_SetPlayerIgnoreRadiusDamage(void)
 {
     *(int *)((byte *)*(void **)imp_level + 0x35f8) = Scr_GetInt(0);
     return 0;
 }
 
 /* line 3747 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_GetMoveDelta(void)
 {
     __asm__ __volatile__ (
@@ -2613,7 +2613,7 @@ unsigned int GScr_GetMoveDelta(void)
 }
 
 /* line 3787 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_GetAngleDelta(void)
 {
     __asm__ __volatile__ (
@@ -2701,7 +2701,7 @@ unsigned int GScr_GetAngleDelta(void)
 }
 
 /* line 3827 */
-static unsigned int GScr_GetNorthYaw(void)
+unsigned int GScr_GetNorthYaw(void)
 {
     char northYawString[32];
     SV_GetConfigstring(11, northYawString, 32);
@@ -2710,7 +2710,7 @@ static unsigned int GScr_GetNorthYaw(void)
 }
 
 /* line 3839 */
-static unsigned int Scr_LoadFX(void)
+unsigned int Scr_LoadFX(void)
 {
     int id;
     id = G_EffectIndex(Scr_GetString(0));
@@ -2721,7 +2721,7 @@ static unsigned int Scr_LoadFX(void)
 }
 
 /* line 3941 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_PlayFXOnTag(void)
 {
     __asm__ __volatile__ (
@@ -2830,7 +2830,7 @@ unsigned int Scr_PlayFXOnTag(void)
 }
 
 /* line 4052 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, float fGreen, float fBlue, float fTime)
 {
     __asm__ __volatile__ (
@@ -2943,7 +2943,7 @@ unsigned int Scr_SetFog(float fNear, float fFar, float fDensity, float fRed, flo
 }
 
 /* line 4067 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_SetLinearFog(void)
 {
     __asm__ __volatile__ (
@@ -2992,7 +2992,7 @@ unsigned int Scr_SetLinearFog(void)
 }
 
 /* line 4090 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_SetExponentialFog(void)
 {
     __asm__ __volatile__ (
@@ -3051,7 +3051,7 @@ unsigned int Scr_SetExponentialFog(void)
 }
 
 /* line 4123 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_IsPlayer(void)
 {
     __asm__ __volatile__ (
@@ -3089,7 +3089,7 @@ unsigned int GScr_IsPlayer(void)
 }
 
 /* line 4149 */
-static unsigned int GScr_IsPlayerNumber(void)
+unsigned int GScr_IsPlayerNumber(void)
 {
     int num = Scr_GetInt(0);
     if ((unsigned int)num > 0x3f)
@@ -3100,7 +3100,7 @@ static unsigned int GScr_IsPlayerNumber(void)
 }
 
 /* line 4165 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetWinningPlayer(void)
 {
     __asm__ __volatile__ (
@@ -3149,7 +3149,7 @@ unsigned int GScr_SetWinningPlayer(void)
 }
 
 /* line 4191 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetWinningTeam(void)
 {
     __asm__ __volatile__ (
@@ -3229,7 +3229,7 @@ unsigned int GScr_SetWinningTeam(void)
 }
 
 /* line 4258 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_GetTeamScore(void)
 {
     __asm__ __volatile__ (
@@ -3284,7 +3284,7 @@ unsigned int GScr_GetTeamScore(void)
 }
 
 /* line 4284 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetTeamScore(void)
 {
     __asm__ __volatile__ (
@@ -3345,7 +3345,7 @@ unsigned int GScr_SetTeamScore(void)
 }
 
 /* line 4320 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetClientNameMode(void)
 {
     __asm__ __volatile__ (
@@ -3383,7 +3383,7 @@ unsigned int GScr_SetClientNameMode(void)
 }
 
 /* line 4338 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_UpdateClientNames(void)
 {
     __asm__ __volatile__ (
@@ -3457,7 +3457,7 @@ unsigned int GScr_UpdateClientNames(void)
 }
 
 /* line 4368 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_GetTeamPlayersAlive(void)
 {
     __asm__ __volatile__ (
@@ -3596,7 +3596,7 @@ unsigned int GScr_GetPartName(void)
 }
 
 /* line 4446 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_Earthquake(void)
 {
     __asm__ __volatile__ (
@@ -3673,7 +3673,7 @@ unsigned int GScr_Earthquake(void)
 }
 
 /* line 4744 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_MapRestart(void)
 {
     __asm__ __volatile__ (
@@ -3712,7 +3712,7 @@ unsigned int GScr_MapRestart(void)
 }
 
 /* line 4762 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_LoadMap(void)
 {
     __asm__ __volatile__ (
@@ -3786,7 +3786,7 @@ unsigned int GScr_LoadMap(void)
 }
 
 /* line 4797 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ExitLevel(void)
 {
     __asm__ __volatile__ (
@@ -3823,7 +3823,7 @@ unsigned int GScr_ExitLevel(void)
 }
 
 /* line 4817 */
-static unsigned int GScr_AddTestClient(void)
+unsigned int GScr_AddTestClient(void)
 {
     void *ent = (void *)SV_AddTestClient();
     if (ent)
@@ -3832,7 +3832,7 @@ static unsigned int GScr_AddTestClient(void)
 }
 
 /* line 4887 */
-static unsigned int GScr_AllClientsPrint(void)
+unsigned int GScr_AllClientsPrint(void)
 {
     if (!Scr_GetNumParam())
         return 0;
@@ -3842,7 +3842,7 @@ static unsigned int GScr_AllClientsPrint(void)
 }
 
 /* line 4906 */
-static unsigned int GScr_MapExists(void)
+unsigned int GScr_MapExists(void)
 {
     if (!Scr_GetNumParam())
         return 0;
@@ -3855,7 +3855,7 @@ static unsigned int GScr_MapExists(void)
 }
 
 /* line 4950 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetVoteString(void)
 {
     __asm__ __volatile__ (
@@ -3904,7 +3904,7 @@ unsigned int GScr_SetVoteString(void)
 }
 
 /* line 4972 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetVoteTime(void)
 {
     __asm__ __volatile__ (
@@ -3949,7 +3949,7 @@ unsigned int GScr_SetVoteTime(void)
 }
 
 /* line 4994 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetVoteYesCount(void)
 {
     __asm__ __volatile__ (
@@ -3988,7 +3988,7 @@ unsigned int GScr_SetVoteYesCount(void)
 }
 
 /* line 5014 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetVoteNoCount(void)
 {
     __asm__ __volatile__ (
@@ -4019,7 +4019,7 @@ unsigned int GScr_SetVoteNoCount(void)
 }
 
 /* line 5033 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_KickPlayer(void)
 {
     __asm__ __volatile__ (
@@ -4051,7 +4051,7 @@ unsigned int GScr_KickPlayer(void)
 }
 
 /* line 5052 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_BanPlayer(void)
 {
     __asm__ __volatile__ (
@@ -4083,7 +4083,7 @@ unsigned int GScr_BanPlayer(void)
 }
 
 /* line 5071 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ClientPrint(void)
 {
     __asm__ __volatile__ (
@@ -4121,7 +4121,7 @@ unsigned int GScr_ClientPrint(void)
 }
 
 /* line 5092 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_OpenFile(void)
 {
     __asm__ __volatile__ (
@@ -4280,7 +4280,7 @@ unsigned int GScr_OpenFile(void)
 }
 
 /* line 5184 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_CloseFile(void)
 {
     __asm__ __volatile__ (
@@ -4360,7 +4360,7 @@ unsigned int GScr_CloseFile(void)
 }
 
 /* line 5232 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_FPrintln(void)
 {
     __asm__ __volatile__ (
@@ -4467,7 +4467,7 @@ unsigned int GScr_FPrintln(void)
 }
 
 /* line 5279 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_FReadLn(void)
 {
     __asm__ __volatile__ (
@@ -4575,7 +4575,7 @@ unsigned int GScr_FReadLn(void)
 }
 
 /* line 5354 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_FGetArg(void)
 {
     __asm__ __volatile__ (
@@ -4687,57 +4687,57 @@ unsigned int GScr_FGetArg(void)
 }
 
 /* line 5420 */
-static unsigned int GScr_SetArchive(void)
+unsigned int GScr_SetArchive(void)
 {
     SV_EnableArchivedSnapshot(Scr_GetInt(0));
     return 0;
 }
 
 /* line 5448 */
-static unsigned int Scr_PlayRumbleOnPos(void)
+unsigned int Scr_PlayRumbleOnPos(void)
 {
     return 0;
 }
 
 /* line 5459 */
-static unsigned int Scr_PlayLoopRumbleOnPos(void)
+unsigned int Scr_PlayLoopRumbleOnPos(void)
 {
     return 0;
 }
 
 /* line 5470 */
-static unsigned int Scr_StopAllRumbles(void)
+unsigned int Scr_StopAllRumbles(void)
 {
     return 0;
 }
 
 /* line 5484 */
-static unsigned int Scr_IsSplitscreen(void)
+unsigned int Scr_IsSplitscreen(void)
 {
     Scr_AddInt(0);
     return 0;
 }
 
 /* line 5497 */
-static unsigned int GScr_MatchEnd(void)
+unsigned int GScr_MatchEnd(void)
 {
     return 0;
 }
 
 /* line 5581 */
-static unsigned int GScr_SetPlayerTeamRank(void)
+unsigned int GScr_SetPlayerTeamRank(void)
 {
     return 0;
 }
 
 /* line 5586 */
-static unsigned int GScr_SendXboxLiveRanks(void)
+unsigned int GScr_SendXboxLiveRanks(void)
 {
     return 0;
 }
 
 /* line 5678 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -5340,7 +5340,7 @@ unsigned int Scr_PlayerVote(gentity_t *self, char *option)
 }
 
 /* line 533 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_print3d(void)
 {
     __asm__ __volatile__ (
@@ -5415,7 +5415,7 @@ unsigned int GScr_print3d(void)
 }
 
 /* line 578 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_line(void)
 {
     __asm__ __volatile__ (
@@ -5494,7 +5494,7 @@ unsigned int GScr_line(void)
 }
 
 /* line 967 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_Spawn(void)
 {
     __asm__ __volatile__ (
@@ -5573,7 +5573,7 @@ unsigned int GScr_Spawn(void)
 }
 
 /* line 1005 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SpawnTurret(void)
 {
     __asm__ __volatile__ (
@@ -5626,7 +5626,7 @@ unsigned int GScr_SpawnTurret(void)
 }
 
 /* line 3220 */
-static unsigned int Scr_VectorNormalize(void)
+unsigned int Scr_VectorNormalize(void)
 {
     vec3_t a, b;
     Scr_GetVector(0, a);
@@ -5639,7 +5639,7 @@ static unsigned int Scr_VectorNormalize(void)
 }
 
 /* line 3679 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_GrenadeExplosionEffect(void)
 {
     __asm__ __volatile__ (
@@ -5706,7 +5706,7 @@ unsigned int Scr_GrenadeExplosionEffect(void)
 }
 
 /* line 2251 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Objective_Position(void)
 {
     __asm__ __volatile__ (
@@ -5779,7 +5779,7 @@ unsigned int Scr_Objective_Position(void)
 }
 
 /* line 2506 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_positionWouldTelefrag(void)
 {
     __asm__ __volatile__ (
@@ -5865,7 +5865,7 @@ unsigned int GScr_positionWouldTelefrag(void)
 }
 
 /* line 950 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_GetBrushModelCenter(void)
 {
     __asm__ __volatile__ (
@@ -5904,7 +5904,7 @@ unsigned int GScr_GetBrushModelCenter(void)
 }
 
 /* line 2182 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Objective_Delete(void)
 {
     __asm__ __volatile__ (
@@ -6010,7 +6010,7 @@ unsigned int G_InitObjectives(void)
 }
 
 /* line 2766 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_BulletTrace(void)
 {
     __asm__ __volatile__ (
@@ -6180,7 +6180,7 @@ unsigned int Scr_BulletTrace(void)
 }
 
 /* line 2136 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Objective_Add(void)
 {
     __asm__ __volatile__ (
@@ -6317,7 +6317,7 @@ unsigned int Scr_Objective_Add(void)
 }
 
 /* line 2201 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Objective_State(void)
 {
     __asm__ __volatile__ (
@@ -6424,7 +6424,7 @@ unsigned int Scr_Objective_State(void)
 }
 
 /* line 3456 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_MusicStop(void)
 {
     __asm__ __volatile__ (
@@ -6487,7 +6487,7 @@ unsigned int Scr_MusicStop(void)
 }
 
 /* line 3612 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_AmbientPlay(void)
 {
     __asm__ __volatile__ (
@@ -6572,7 +6572,7 @@ unsigned int Scr_AmbientPlay(void)
 }
 
 /* line 3647 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_AmbientStop(void)
 {
     __asm__ __volatile__ (
@@ -6635,7 +6635,7 @@ unsigned int Scr_AmbientStop(void)
 }
 
 /* line 3978 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_PlayLoopedFX(void)
 {
     __asm__ __volatile__ (
@@ -7145,7 +7145,7 @@ unsigned int Scr_ConstructMessageString(int firstParmIndex, int lastParmIndex, c
 }
 
 /* line 4834 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_MakeDvarServerInfo(void)
 {
     __asm__ __volatile__ (
@@ -7241,7 +7241,7 @@ unsigned int GScr_MakeDvarServerInfo(void)
 }
 
 /* line 4242 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ClientAnnouncement(void)
 {
     __asm__ __volatile__ (
@@ -7282,7 +7282,7 @@ unsigned int GScr_ClientAnnouncement(void)
 }
 
 /* line 4228 */
-static unsigned int GScr_Announcement(void)
+unsigned int GScr_Announcement(void)
 {
     char string[0x400];
     int numParams = Scr_GetNumParam();
@@ -7292,7 +7292,7 @@ static unsigned int GScr_Announcement(void)
 }
 
 /* line 778 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetDvar(void)
 {
     __asm__ __volatile__ (
@@ -7444,7 +7444,7 @@ unsigned int Scr_MakeGameMessage(int iClientNum, const char *pszCmd)
 }
 
 /* line 4928 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_IsValidGameType(void)
 {
     __asm__ __volatile__ (
@@ -7568,7 +7568,7 @@ qboolean Scr_IsValidGameType(const char *pszGameType)
 }
 
 /* line 3152 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_Length(void)
 {
     __asm__ __volatile__ (
@@ -7598,7 +7598,7 @@ unsigned int Scr_Length(void)
 }
 
 /* line 335 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int println(void)
 {
     __asm__ __volatile__ (
@@ -8267,7 +8267,7 @@ unsigned int GScr_DisableAimAssist(scr_entref_t entref)
 }
 
 /* line 1048 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_attach(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8372,7 +8372,7 @@ unsigned int ScrCmd_attach(scr_entref_t entref)
 }
 
 /* line 1075 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_detach(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8486,7 +8486,7 @@ unsigned int ScrCmd_detach(scr_entref_t entref)
 }
 
 /* line 1110 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_detachAll(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8523,7 +8523,7 @@ unsigned int ScrCmd_detachAll(scr_entref_t entref)
 }
 
 /* line 1124 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_GetAttachSize(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8567,7 +8567,7 @@ unsigned int ScrCmd_GetAttachSize(scr_entref_t entref)
 }
 
 /* line 1146 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_GetAttachModelName(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8621,7 +8621,7 @@ unsigned int ScrCmd_GetAttachModelName(scr_entref_t entref)
 }
 
 /* line 1166 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_GetAttachTagName(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8673,7 +8673,7 @@ unsigned int ScrCmd_GetAttachTagName(scr_entref_t entref)
 }
 
 /* line 1187 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8728,7 +8728,7 @@ unsigned int ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref)
 }
 
 /* line 1207 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_LinkTo(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8909,7 +8909,7 @@ unsigned int ScrCmd_LinkTo(scr_entref_t entref)
 }
 
 /* line 1271 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_Unlink(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -8946,7 +8946,7 @@ unsigned int ScrCmd_Unlink(scr_entref_t entref)
 }
 
 /* line 1286 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_EnableLinkTo(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9005,7 +9005,7 @@ unsigned int ScrCmd_EnableLinkTo(scr_entref_t entref)
 }
 
 /* line 1309 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_GetOrigin(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9063,7 +9063,7 @@ unsigned int ScrCmd_GetOrigin(scr_entref_t entref)
 }
 
 /* line 1326 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_GetEye(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9109,7 +9109,7 @@ unsigned int ScrCmd_GetEye(scr_entref_t entref)
 }
 
 /* line 1345 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_UseBy(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9170,7 +9170,7 @@ unsigned int ScrCmd_UseBy(scr_entref_t entref)
 }
 
 /* line 1791 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_SetStableMissile(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9228,7 +9228,7 @@ unsigned int Scr_SetStableMissile(scr_entref_t entref)
 }
 
 /* line 1369 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_IsTouching(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9329,7 +9329,7 @@ unsigned int ScrCmd_IsTouching(scr_entref_t entref)
 }
 
 /* line 1425 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_PlaySound(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9380,7 +9380,7 @@ unsigned int ScrCmd_PlaySound(scr_entref_t entref)
 }
 
 /* line 1447 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_PlaySoundAsMaster(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9431,7 +9431,7 @@ unsigned int ScrCmd_PlaySoundAsMaster(scr_entref_t entref)
 }
 
 /* line 1469 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_PlayLoopSound(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9474,7 +9474,7 @@ unsigned int ScrCmd_PlayLoopSound(scr_entref_t entref)
 }
 
 /* line 1490 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_StopLoopSound(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9518,7 +9518,7 @@ unsigned int ScrCmd_StopLoopSound(scr_entref_t entref)
 }
 
 /* line 1611 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_Delete(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9576,7 +9576,7 @@ unsigned int ScrCmd_Delete(scr_entref_t entref)
 }
 
 /* line 1636 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_SetModel(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9620,7 +9620,7 @@ unsigned int ScrCmd_SetModel(scr_entref_t entref)
 }
 
 /* line 1656 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_GetNormalHealth(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9676,7 +9676,7 @@ unsigned int ScrCmd_GetNormalHealth(scr_entref_t entref)
 }
 
 /* line 1681 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9769,7 +9769,7 @@ unsigned int ScrCmd_SetNormalHealth(scr_entref_t entref)
 }
 
 /* line 1775 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int ScrCmd_SetContents(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9815,7 +9815,7 @@ unsigned int ScrCmd_SetContents(scr_entref_t entref)
 }
 
 /* line 1817 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetCursorHint(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -9948,7 +9948,7 @@ unsigned int GScr_SetCursorHint(scr_entref_t entref)
 }
 
 /* line 1894 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetHintString(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10075,7 +10075,7 @@ unsigned int GScr_SetHintString(scr_entref_t entref)
 }
 
 /* line 189 */
-static __attribute__((naked))
+__attribute__((naked))
 gentity_t * GetPlayerEntity(void)
 {
     __asm__ __volatile__ (
@@ -10162,7 +10162,7 @@ gentity_t * GetPlayerEntity(void)
 }
 
 /* line 4548 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ViewKick(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10240,7 +10240,7 @@ unsigned int GScr_ViewKick(scr_entref_t entref)
 }
 
 /* line 4528 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_StopShellShock(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10273,7 +10273,7 @@ unsigned int GScr_StopShellShock(scr_entref_t entref)
 }
 
 /* line 4481 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ShellShock(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10388,7 +10388,7 @@ unsigned int GScr_ShellShock(scr_entref_t entref)
 }
 
 /* line 890 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_GetAmmoCount(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10429,7 +10429,7 @@ unsigned int GScr_GetAmmoCount(scr_entref_t entref)
 }
 
 /* line 4573 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_LocalToWorldCoords(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10498,7 +10498,7 @@ unsigned int GScr_LocalToWorldCoords(scr_entref_t entref)
 }
 
 /* line 4595 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetRightArc(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10553,7 +10553,7 @@ unsigned int GScr_SetRightArc(scr_entref_t entref)
 }
 
 /* line 4618 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetLeftArc(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10615,7 +10615,7 @@ unsigned int GScr_SetLeftArc(scr_entref_t entref)
 }
 
 /* line 4641 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetTopArc(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10670,7 +10670,7 @@ unsigned int GScr_SetTopArc(scr_entref_t entref)
 }
 
 /* line 4664 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetBottomArc(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10732,7 +10732,7 @@ unsigned int GScr_SetBottomArc(scr_entref_t entref)
 }
 
 /* line 1934 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_GetEntityNumber(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10771,7 +10771,7 @@ unsigned int GScr_GetEntityNumber(scr_entref_t entref)
 }
 
 /* line 4688 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10927,7 +10927,7 @@ unsigned int GScr_PlaceSpawnPoint(scr_entref_t entref)
 }
 
 /* line 4720 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_UpdateScores(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -10984,7 +10984,7 @@ unsigned int GScr_UpdateScores(scr_entref_t entref)
 }
 
 /* line 5600 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_SetTeamForTrigger(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -11101,7 +11101,7 @@ unsigned int GScr_SetTeamForTrigger(scr_entref_t entref)
 }
 
 /* line 5626 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ClientClaimTrigger(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -11197,7 +11197,7 @@ unsigned int GScr_ClientClaimTrigger(scr_entref_t entref)
 }
 
 /* line 5652 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref)
 {
     __asm__ __volatile__ (
@@ -11276,7 +11276,7 @@ unsigned int GScr_ClientReleaseTrigger(scr_entref_t entref)
 }
 
 /* line 3868 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int Scr_PlayFX(void)
 {
     __asm__ __volatile__ (
@@ -11544,7 +11544,7 @@ unsigned int Scr_PlayFX(void)
 }
 
 /* line 509 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int iprintln(void)
 {
     __asm__ __volatile__ (
@@ -11585,7 +11585,7 @@ unsigned int iprintln(void)
 }
 
 /* line 521 */
-static __attribute__((naked))
+__attribute__((naked))
 unsigned int iprintlnbold(void)
 {
     __asm__ __volatile__ (

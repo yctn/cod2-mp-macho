@@ -34,7 +34,7 @@ qboolean MenuParse_onOpen(const char (*item)[4], int handle);
 qboolean MenuParse_onClose(const char (*item)[4], int handle);
 qboolean MenuParse_onESC(const char (*item)[4], int handle);
 qboolean MenuParse_soundLoop(const char (*item)[4], int handle);
-static void Item_ValidateTypeData(void);
+void Item_ValidateTypeData(void);
 qboolean ItemParse_textsavegame(const char (*item)[4], int handle);
 qboolean ItemParse_notselectable(const char (*item)[4], int handle);
 qboolean ItemParse_noScrollBars(const char (*item)[4], int handle);
@@ -512,7 +512,7 @@ qboolean MenuParse_soundLoop(const char (*item)[4], int handle)
 }
 
 /* line 1117 */
-static __attribute__((naked))
+__attribute__((naked))
 void Item_ValidateTypeData(void)
 {
     __asm__ __volatile__ (

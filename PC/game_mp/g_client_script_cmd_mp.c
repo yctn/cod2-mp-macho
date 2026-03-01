@@ -37,7 +37,7 @@ static void PlayerCmd_SetWeaponSlotClipAmmo(scr_entref_t entref);
 static void PlayerCmd_SetWeaponClipAmmo(scr_entref_t entref);
 static void iclientprintln(scr_entref_t entref);
 static void iclientprintlnbold(scr_entref_t entref);
-static void PlayerCmd_spawn(scr_entref_t entref);
+void PlayerCmd_spawn(scr_entref_t entref);
 static void PlayerCmd_setEnterTime(scr_entref_t entref);
 void BodyEnd(gentity_t *ent);
 static void PlayerCmd_SetClientDvar(scr_entref_t entref);
@@ -2160,7 +2160,7 @@ void iclientprintlnbold(scr_entref_t entref)
 }
 
 /* line 1350 */
-static __attribute__((naked))
+__attribute__((naked))
 void PlayerCmd_spawn(scr_entref_t entref)
 {
     __asm__ __volatile__ (

@@ -84,7 +84,5 @@ __ZTIl:
 __mh_execute_header:
     .long 0
 
-.globl __DefaultRuneLocale
-__DefaultRuneLocale:
-    .space 1024, 0
+/* __DefaultRuneLocale is now in macos_compat.c with proper BSD ctype data */
 

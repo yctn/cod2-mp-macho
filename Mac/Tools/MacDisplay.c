@@ -71,7 +71,7 @@ short unsigned int MacDisplay_SetGammaRamp(const _D3DGAMMARAMP *inRamp);
 short unsigned int MacDisplay_LocalToGlobal(Point *ioPoint);
 short unsigned int MacDisplay_GlobalToLocal(Point *ioPoint);
 int MacDisplay_GetNumModes(void);
-static short unsigned int UserPaneDrawProc(ControlRef theControl);
+short unsigned int UserPaneDrawProc(ControlRef theControl);
 static ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStartPt);
 void ZN16OpaqueContextRefD1Ev(void); /* OpaqueContextRef_~OpaqueContextRef */
 short unsigned int MacDisplay_ReleaseContext(ContextRef *ioContextRef);
@@ -1281,7 +1281,7 @@ int MacDisplay_GetNumModes(void)
 }
 
 /* line 2671 */
-static __attribute__((naked))
+__attribute__((naked))
 short unsigned int UserPaneDrawProc(ControlRef theControl)
 {
     __asm__ __volatile__ (

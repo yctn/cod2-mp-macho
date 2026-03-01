@@ -19,7 +19,7 @@ bool WinIcon_Load(const WinIcon * _this, const UInt8 *inIcon);
 HCURSOR SetWinCursor(HCURSOR hCursor);
 void SwitchToWinCursor(void);
 void SwitchToMacCursor(void);
-static void CursorTimerProc(void);
+void CursorTimerProc(void);
 static void __static_initialization_and_destruction_0(void);
 static void GLOBAL__D_LoadCursorFromFileA(void); /* global destructors keyed to LoadCursorFromFileA */
 static void GLOBAL__I_LoadCursorFromFileA(void); /* global constructors keyed to LoadCursorFromFileA */
@@ -456,7 +456,7 @@ void SwitchToMacCursor(void)
 }
 
 /* line 112 */
-static __attribute__((naked))
+__attribute__((naked))
 void CursorTimerProc(void)
 {
     __asm__ __volatile__ (
@@ -515,7 +515,7 @@ void CursorTimerProc(void)
 }
 
 /* line 898 */
-static __attribute__((naked))
+__attribute__((naked))
 void __static_initialization_and_destruction_0(void)
 {
     __asm__ __volatile__ (
@@ -602,7 +602,7 @@ void __static_initialization_and_destruction_0(void)
 }
 
 /* line 900 */
-static __attribute__((naked))
+__attribute__((naked))
 void GLOBAL__D_LoadCursorFromFileA(void) /* global destructors keyed to LoadCursorFromFileA */
 {
     __asm__ __volatile__ (
@@ -616,7 +616,7 @@ void GLOBAL__D_LoadCursorFromFileA(void) /* global destructors keyed to LoadCurs
 }
 
 /* line 899 */
-static __attribute__((naked))
+__attribute__((naked))
 void GLOBAL__I_LoadCursorFromFileA(void) /* global constructors keyed to LoadCursorFromFileA */
 {
     __asm__ __volatile__ (

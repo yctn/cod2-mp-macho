@@ -25,18 +25,18 @@ void SV_ClientEnterWorld(client_t *client, const dvar_t * (*cmd)[4]);
 void SV_DoneDownload_f(client_t *cl);
 void SV_RetransmitDownload_f(client_t *cl);
 void SV_WriteDownloadToClient(client_t *cl, msg_t *msg);
-static void SV_VerifyIwds_f(client_t *cl);
-static void SV_ResetPureClient_f(client_t *cl);
-static void SV_UpdateUserinfo_f(client_t *cl);
-static void SV_MutePlayer_f(client_t *cl);
-static void SV_UnmutePlayer_f(client_t *cl);
+void SV_VerifyIwds_f(client_t *cl);
+void SV_ResetPureClient_f(client_t *cl);
+void SV_UpdateUserinfo_f(client_t *cl);
+void SV_MutePlayer_f(client_t *cl);
+void SV_UnmutePlayer_f(client_t *cl);
 float SV_FX_GetVisibility(const vec_t *start, const vec_t *end);
 void SV_ExecuteClientCommand(client_t *cl, const char *s, qboolean clientOK);
 void SV_ClientThink(client_t *cl, const dvar_t * (*cmd)[4]);
 void SV_GetChallenge(netadr_t from);
 void SV_FreeClient(client_t *cl);
 void SV_DropClient(client_t *drop, const char *reason);
-static void SV_Disconnect_f(client_t *cl);
+void SV_Disconnect_f(client_t *cl);
 void SV_BanClient(client_t *cl);
 void SV_DirectConnect(netadr_t from);
 void SV_FreeClients(void);
@@ -153,7 +153,7 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
 }
 
 /* line 182 */
-static __attribute__((naked))
+__attribute__((naked))
 qboolean SV_IsBannedGuid(void)
 {
     __asm__ __volatile__ (
@@ -1704,7 +1704,7 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 }
 
 /* line 1426 */
-static __attribute__((naked))
+__attribute__((naked))
 void SV_VerifyIwds_f(client_t *cl)
 {
     __asm__ __volatile__ (
@@ -1842,13 +1842,13 @@ void SV_VerifyIwds_f(client_t *cl)
 }
 
 /* line 1553 */
-static void SV_ResetPureClient_f(client_t *cl)
+void SV_ResetPureClient_f(client_t *cl)
 {
     *(int *)((byte *)cl + 0x6e5b0) = 0;
 }
 
 /* line 1694 */
-static __attribute__((naked))
+__attribute__((naked))
 void SV_UpdateUserinfo_f(client_t *cl)
 {
     __asm__ __volatile__ (
@@ -1879,7 +1879,7 @@ void SV_UpdateUserinfo_f(client_t *cl)
 }
 
 /* line 1710 */
-static __attribute__((naked))
+__attribute__((naked))
 void SV_MutePlayer_f(client_t *cl)
 {
     __asm__ __volatile__ (
@@ -1911,7 +1911,7 @@ void SV_MutePlayer_f(client_t *cl)
 }
 
 /* line 1728 */
-static __attribute__((naked))
+__attribute__((naked))
 void SV_UnmutePlayer_f(client_t *cl)
 {
     __asm__ __volatile__ (
@@ -2619,7 +2619,7 @@ void SV_DropClient(client_t *drop, const char *reason)
 }
 
 /* line 1402 */
-static void SV_Disconnect_f(client_t *cl)
+void SV_Disconnect_f(client_t *cl)
 {
     SV_DropClient(cl, "EXE_DISCONNECTED");
 }
