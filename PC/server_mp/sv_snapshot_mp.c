@@ -9,8 +9,8 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-static int startOffset; /* startOffset */
-static int endOffset; /* endOffset */
+extern int startOffset; /* startOffset */
+extern int endOffset; /* endOffset */
 
 /* Global pointers accessed by absolute address */
 extern byte *svs_ptr;              /* imp_svs - serverStatic_t */

@@ -15,7 +15,7 @@ extern const char * Com_ParseOnLine(const char **p);
 extern void * Hunk_AllocAlignInternal(int size, int alignment);
 extern void Com_Printf(const char *fmt, ...);
 
-static const char *staticNULL; /* staticNULL */
+extern const char *staticNULL; /* staticNULL */
 static stringDef_t * g_strHandle[2048]; /* g_strHandle */
 
 void Window_SetStaticFlags(Window *w, const int flags);

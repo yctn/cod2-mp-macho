@@ -215,7 +215,7 @@ qboolean RB_IsGpuFenceFinished(void)
 /* line 3214 */
 void RB_GpuWaited(int ticks)
 {
-    *(int *)((byte *)*(void **)imp_dx + 0x2d64) = ticks;
+    *(int *)((byte *)(void *)imp_dx + 0x2d64) = ticks;
 }
 
 /* line 3710 */
@@ -6922,7 +6922,7 @@ void RB_DrawTextWithCursor(const char *text, int maxChars, FontHandle font, floa
         "orl %eax, %edi\n" /* newColor */
         "movzbl -0x1a(%ebp), %eax\n" /* line 2975 */
         "shll $0x18, %eax\n"
-        "andl $g_effectVisArray+4351, %edi\n" /* newColor */
+        "andl $0x00FFFFFF, %edi\n" /* newColor */
         "orl %eax, %edi\n" /* newColor */
         ".Lfda33c_000da630:\n"
         "movl -0x2c(%ebp), %eax\n" /* line 2986 */
@@ -7785,7 +7785,7 @@ void RB_ApplyLatePostEffectsCmd(GfxRenderCommandExecState *execState)
         "mulss %xmm0, %xmm1\n" /* line 1531 */
         "movss %xmm1, -0x54(%ebp)\n"
         "mulss %xmm2, %xmm0\n" /* line 1532 */
-        "orl $cg_eachClientLocalEntities+21120, %ebx\n" /* line 655 */
+        "orl $0x00FF0000, %ebx\n" /* line 655 */
         "movb $0, %bh\n" /* line 656 */
         "xorb %bl, %bl\n" /* line 657 */
         "orl $0xff000000, %ebx\n" /* line 658 */

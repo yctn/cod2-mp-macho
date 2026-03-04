@@ -11,10 +11,10 @@
  */
 
 extern pmoveHandler_t pmoveHandlers[2]; /* 0x0 */
-static viewLerpWaypoint_t viewLerp_StandCrouch[9]; /* viewLerp_StandCrouch */
-static viewLerpWaypoint_t viewLerp_CrouchStand[9]; /* viewLerp_CrouchStand */
-static viewLerpWaypoint_t viewLerp_CrouchProne[11]; /* viewLerp_CrouchProne */
-static viewLerpWaypoint_t viewLerp_ProneCrouch[8]; /* viewLerp_ProneCrouch */
+extern viewLerpWaypoint_t viewLerp_StandCrouch[9]; /* viewLerp_StandCrouch */
+extern viewLerpWaypoint_t viewLerp_CrouchStand[9]; /* viewLerp_CrouchStand */
+extern viewLerpWaypoint_t viewLerp_CrouchProne[11]; /* viewLerp_CrouchProne */
+extern viewLerpWaypoint_t viewLerp_ProneCrouch[8]; /* viewLerp_ProneCrouch */
 static vec3_t CorrectSolidDeltas[26]; /* CorrectSolidDeltas */
 
 void PM_trace(pmove_t *pm, trace_t *results, const vec_t *start, const vec_t *mins, const vec_t *maxs, const vec_t *end, int passEntityNum, int contentMask);

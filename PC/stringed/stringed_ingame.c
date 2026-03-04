@@ -352,7 +352,7 @@ const char * SE_GetFoundFile(LocalizeString *strResult)
         "testl %eax, %eax\n" /* line 724 */
         "je .Lf48f74_00048ffd\n"
         "movb $0, (%eax)\n" /* line 726 */
-        "subl $sString+63, %eax\n" /* line 728 */
+        "subl $sTemp-1, %eax\n" /* line 728 — was subl $0x482fbf (= sTemp-1) */
         /* { scope 2 */
         "movl (%ebx), %edx\n" /* line 585 */
         "movl -0xc(%edx), %edx\n"

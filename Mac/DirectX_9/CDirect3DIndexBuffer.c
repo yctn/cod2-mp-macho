@@ -51,7 +51,7 @@ void ZN20CDirect3DIndexBufferD1Ev(void) /* CDirect3DIndexBuffer_~CDirect3DIndexB
         "pushl %ebp\n" /* line 44 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f9a8, (%eax)\n"
+        "movl $vtbl_CDirect3DIndexBuffer, (%eax)\n"
         "addl $0xc, %eax\n" /* line 47 */
         "movl %eax, 8(%ebp)\n" /* this */
         "popl %ebp\n"
@@ -69,7 +69,7 @@ void ZN20CDirect3DIndexBufferD0Ev(void) /* CDirect3DIndexBuffer_~CDirect3DIndexB
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32f9a8, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DIndexBuffer, (%ebx)\n" /* this */
         "leal 0xc(%ebx), %eax\n" /* line 47 | this */
         "movl %eax, (%esp)\n"
         "calll ZN13CMemoryBufferD1Ev\n"
@@ -211,7 +211,7 @@ J_COLOR_SPACE CDirect3DIndexBuffer_CDirect3DIndexBuffer(const CDirect3DIndexBuff
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32f9a8, (%ebx)\n" /* line 33 | this */
+        "movl $vtbl_CDirect3DIndexBuffer, (%ebx)\n" /* line 33 | this */
         "movl $0, 4(%ebx)\n" /* this */
         "movl 0xc(%ebp), %eax\n" /* line 147 | Length */
         "addl $3, %eax\n"

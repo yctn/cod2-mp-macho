@@ -10,11 +10,11 @@
 
 extern game_hudelem_t g_hudelems[1024]; /* 0x0 */
 static const game_hudelem_field_t fields[16]; /* fields */
-static const char * g_he_font[3]; /* g_he_font */
-static const char * g_he_alignx[3]; /* g_he_alignx */
-static const char * g_he_aligny[3]; /* g_he_aligny */
-static const char * g_he_horzalign[8]; /* g_he_horzalign */
-static const char * g_he_vertalign[8]; /* g_he_vertalign */
+extern const char * g_he_font[3]; /* g_he_font */
+extern const char * g_he_alignx[3]; /* g_he_alignx */
+extern const char * g_he_aligny[3]; /* g_he_aligny */
+extern const char * g_he_horzalign[8]; /* g_he_horzalign */
+extern const char * g_he_vertalign[8]; /* g_he_vertalign */
 static const BuiltinMethodDef methods[18]; /* methods */
 
 extern void Scr_AddFloat(float value);

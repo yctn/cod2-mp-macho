@@ -11,7 +11,7 @@
 extern void DObjUpdateClientInfo(struct DObj_s *obj, float timescale);
 extern void * MT_Alloc(int size, int type);
 
-static const int boxVerts[24][3]; /* boxVerts */
+extern const int boxVerts[24][3]; /* boxVerts */
 
 struct XAnim_s * CG_GetMG42Anims(centity_t *cent);
 static long unsigned int CG_mg42_DoControllers(const centity_t *cent, int *partBits);
@@ -1149,7 +1149,7 @@ long unsigned int CG_EntityEffects(centity_t *cent)
         "movl 0x174(%esi), %ebx\n" /* line 203 | cent */
         "testl %ebx, %ebx\n"
         "je .Lf162788_001627d7\n"
-        "cmpl $g_effectVisArray+4351, 0x18c(%esi)\n" /* line 205 | cent */
+        "cmpl $0x00FFFFFF, 0x18c(%esi)\n" /* line 205 | cent */
         "je .Lf162788_0016284c\n"
         "leal 0x24e(%ebx), %eax\n" /* line 216 */
         "movl %eax, (%esp)\n"
@@ -2182,7 +2182,7 @@ long unsigned int CG_ScriptMover(centity_t *cent)
         "movl %eax, (%esp)\n"
         "calll AnglesToAxis\n"
         "movl $0x40, -0x88(%ebp)\n" /* line 475 */
-        "cmpl $g_effectVisArray+4351, 0x9c(%ebx)\n" /* line 477 | s1 */
+        "cmpl $0x00FFFFFF, 0x9c(%ebx)\n" /* line 477 | s1 */
         "je .Lf16332a_001634f8\n"
         "movl imp_cgs, %eax\n" /* line 479 */
         "movl (%eax), %edx\n"

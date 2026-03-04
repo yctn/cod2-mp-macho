@@ -8,9 +8,9 @@
  *   #include "Mac/DirectX 9/MacOpenGLUtils.h"
  */
 
-static UINT32 sD3DTextureOpToOpenGL[15]; /* 0x308360 */
-static UINT8 FastTranslateTbl[8]; /* 0x308340 */
-static UINT32 sDeclarationTable[8]; /* 0x308320 */
+extern UINT32 sD3DTextureOpToOpenGL[15]; /* 0x308360 */
+extern UINT8 FastTranslateTbl[8]; /* 0x308340 */
+extern UINT32 sDeclarationTable[8]; /* 0x308320 */
 
 bool MacOpenGLUtils_IsGLExtensionSupported(const char * pExtension);
 bool MacOpenGLUtils_AreMatricesDifferent4x4(const int * pA, const int * pB);

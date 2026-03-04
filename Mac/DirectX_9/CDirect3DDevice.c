@@ -1023,7 +1023,7 @@ long unsigned int CDirect3DDevice_SetAlphaFuncAndRef(const CDirect3DDevice * _th
         "js .Lf143c6_0001443c\n"
         "cvtsi2ssl %edx, %xmm0\n"
         ".Lf143c6_000143e9:\n"
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "movss %xmm0, 0x3a8(%ecx)\n"
         "movl $1, %eax\n"
         ".Lf143c6_000143fe:\n"
@@ -1043,7 +1043,20 @@ long unsigned int CDirect3DDevice_SetAlphaFuncAndRef(const CDirect3DDevice * _th
         /* { scope 1 */
         "jmp glAlphaFunc\n" /* line 2755 */
         ".Lf143c6_0001442a:\n"
-        "jmpl *0x2edf00(, %ebx, 4)\n" /* line 2737 */
+        "jmpl *.Ljt_2edf00(, %ebx, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2edf00:\n"
+        ".long .Lf143c6_00014411\n"
+        ".long .Lf143c6_0001444f\n"
+        ".long .Lf143c6_000144a9\n"
+        ".long .Lf143c6_0001449a\n"
+        ".long .Lf143c6_0001448b\n"
+        ".long .Lf143c6_0001447f\n"
+        ".long .Lf143c6_00014473\n"
+        ".long .Lf143c6_00014467\n"
+        ".long .Lf143c6_0001445b\n"
+        ".popsection\n"
         ".Lf143c6_00014431:\n"
         "testb %al, %al\n" /* line 2753 */
         "jne .Lf143c6_00014411\n"
@@ -1063,20 +1076,28 @@ long unsigned int CDirect3DDevice_SetAlphaFuncAndRef(const CDirect3DDevice * _th
         "cvtsi2ssl %eax, %xmm0\n"
         "addss %xmm0, %xmm0\n"
         "jmp .Lf143c6_000143e9\n"
+        ".Lf143c6_0001444f:\n"
         "movl $0x200, 0x3ac(%ecx)\n" /* line 2739 */
         "jmp .Lf143c6_00014411\n"
+        ".Lf143c6_0001445b:\n"
         "movl $0x207, 0x3ac(%ecx)\n" /* line 2746 */
         "jmp .Lf143c6_00014411\n"
+        ".Lf143c6_00014467:\n"
         "movl $0x206, 0x3ac(%ecx)\n" /* line 2745 */
         "jmp .Lf143c6_00014411\n"
+        ".Lf143c6_00014473:\n"
         "movl $0x205, 0x3ac(%ecx)\n" /* line 2744 */
         "jmp .Lf143c6_00014411\n"
+        ".Lf143c6_0001447f:\n"
         "movl $0x204, 0x3ac(%ecx)\n" /* line 2743 */
         "jmp .Lf143c6_00014411\n"
+        ".Lf143c6_0001448b:\n"
         "movl $0x203, 0x3ac(%ecx)\n" /* line 2742 */
         "jmp .Lf143c6_00014411\n"
+        ".Lf143c6_0001449a:\n"
         "movl $0x202, 0x3ac(%ecx)\n" /* line 2741 */
         "jmp .Lf143c6_00014411\n"
+        ".Lf143c6_000144a9:\n"
         "movl $0x201, 0x3ac(%ecx)\n" /* line 2740 */
         "jmp .Lf143c6_00014411\n"
     );
@@ -1093,43 +1114,63 @@ GLenum CDirect3DDevice_GetStencilOpFunc(const CDirect3DDevice * _this, UINT32 Va
         /* { scope 1 */
         "cmpl $8, %eax\n" /* line 2769 */
         "ja .Lf144b8_000144ca\n"
-        "jmpl *0x2edf24(, %eax, 4)\n"
+        "jmpl *.Ljt_2edf24(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2edf24:\n"
+        ".long .Lf144b8_000144ca\n"
+        ".long .Lf144b8_000144ce\n"
+        ".long .Lf144b8_000144ca\n"
+        ".long .Lf144b8_000144f8\n"
+        ".long .Lf144b8_000144f1\n"
+        ".long .Lf144b8_000144ea\n"
+        ".long .Lf144b8_000144e3\n"
+        ".long .Lf144b8_000144dc\n"
+        ".long .Lf144b8_000144d5\n"
+        ".popsection\n"
         ".Lf144b8_000144ca:\n"
         "xorl %eax, %eax\n"
         /* } scope */
         "popl %ebp\n" /* line 2788 */
         "retl\n"
         /* { scope 1 */
+        ".Lf144b8_000144ce:\n"
         "movl $0x1e00, %eax\n" /* line 2769 */
         /* } scope */
         "popl %ebp\n" /* line 2788 */
         "retl\n"
         /* { scope 1 */
+        ".Lf144b8_000144d5:\n"
         "movl $0x8508, %eax\n" /* line 2769 */
         /* } scope */
         "popl %ebp\n" /* line 2788 */
         "retl\n"
         /* { scope 1 */
+        ".Lf144b8_000144dc:\n"
         "movl $0x8507, %eax\n" /* line 2776 */
         /* } scope */
         "popl %ebp\n" /* line 2788 */
         "retl\n"
         /* { scope 1 */
+        ".Lf144b8_000144e3:\n"
         "movl $0x150a, %eax\n" /* line 2775 */
         /* } scope */
         "popl %ebp\n" /* line 2788 */
         "retl\n"
         /* { scope 1 */
+        ".Lf144b8_000144ea:\n"
         "movl $0x1e03, %eax\n" /* line 2774 */
         /* } scope */
         "popl %ebp\n" /* line 2788 */
         "retl\n"
         /* { scope 1 */
+        ".Lf144b8_000144f1:\n"
         "movl $0x1e02, %eax\n" /* line 2773 */
         /* } scope */
         "popl %ebp\n" /* line 2788 */
         "retl\n"
         /* { scope 1 */
+        ".Lf144b8_000144f8:\n"
         "movl $0x1e01, %eax\n" /* line 2771 */
         /* } scope */
         "popl %ebp\n" /* line 2788 */
@@ -1403,7 +1444,7 @@ HRESULT CDirect3DDevice_CreateDepthStencilSurface(const CDirect3DDevice * _this,
         "subl $0x4c, %esp\n"
         "movl 0x10(%ebp), %edi\n" /* Height */
         /* { scope 1 */
-        "movl 0x195ec5c, %eax\n" /* line 309 */
+        "movl imp_g_NoTextureID, %eax\n" /* line 309 */
         "cmpb $0, (%eax)\n"
         "je .Lf1474c_000147e9\n"
         "xorl %ebx, %ebx\n" /* p */
@@ -1513,7 +1554,7 @@ HRESULT CDirect3DDevice_CreateRenderTarget(const CDirect3DDevice * _this, UINT W
         "subl $0x4c, %esp\n"
         "movl 0x10(%ebp), %edi\n" /* Height */
         /* { scope 1 */
-        "movl 0x195ec5c, %eax\n" /* line 338 */
+        "movl imp_g_NoTextureID, %eax\n" /* line 338 */
         "cmpb $0, (%eax)\n"
         "je .Lf14876_00014913\n"
         "xorl %ebx, %ebx\n" /* p */
@@ -1928,7 +1969,7 @@ HRESULT CDirect3DDevice_Clear(const CDirect3DDevice * _this, DWORD Count, const 
         "js .Lf14b2c_00014dfc\n"
         ".Lf14b2c_00014d20:\n"
         "cvtsi2ssl %edx, %xmm0\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* 255.0f */
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
         "movl %esi, %eax\n" /* Mask */
@@ -1992,7 +2033,7 @@ HRESULT CDirect3DDevice_Clear(const CDirect3DDevice * _this, DWORD Count, const 
         "orl %edx, %eax\n"
         "cvtsi2ssl %eax, %xmm0\n"
         "addss %xmm0, %xmm0\n"
-        "movss 0x2ed5d4, %xmm1\n" /* 255.0f */
+        "movss lit4_002ed5d4, %xmm1\n" /* 255.0f */
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
         "movl %esi, %eax\n" /* Mask */
@@ -2083,7 +2124,7 @@ HRESULT CDirect3DDevice_SetMaterial(const CDirect3DDevice * _this, const D3DMATE
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
-        "movl 0x195ec0c, %eax\n" /* line 2569 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 2569 */
         "cmpb $0, 0x800(%eax)\n"
         "je .Lf14f42_00014f82\n"
         "movl 8(%ebp), %eax\n" /* line 2571 | this */
@@ -2183,7 +2224,7 @@ HRESULT CDirect3DDevice_LightEnable(const CDirect3DDevice * _this, DWORD Index, 
         "cmpb 4(%eax), %cl\n"
         "je .Lf15068_000150b7\n"
         "movb %cl, 4(%eax)\n" /* line 2699 */
-        "movl 0x195ec0c, %eax\n" /* line 2704 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 2704 */
         "cmpb $0, 0x800(%eax)\n"
         "jne .Lf15068_000150b7\n"
         /* { scope 1 */
@@ -2304,7 +2345,7 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "calll glLoadIdentity\n" /* line 5444 */
         "pxor %xmm1, %xmm1\n" /* line 5445 */
         "movsd %xmm1, 0x18(%esp)\n"
-        "movsd 0x307c10, %xmm0\n" /* 1.0 */
+        "movsd lit8_00307c10, %xmm0\n" /* 1.0 */
         "movsd %xmm0, 0x10(%esp)\n"
         "movsd %xmm0, 8(%esp)\n"
         "movsd %xmm1, (%esp)\n"
@@ -2433,7 +2474,6 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "subl $1, %ebx\n" /* line 5500 | i */
         "cmpl %ebx, %esi\n" /* i */
         "je .Lf150d0_000154fe\n"
-        ".Lf150d0_000154bd:\n"
         "leal 0x84c0(%ebx), %eax\n" /* line 5502 | i */
         "movl %eax, (%esp)\n"
         "calll glActiveTextureARB\n"
@@ -2449,9 +2489,9 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "cmpl %ebx, %esi\n" /* i */
         "jne .Lf150d0_000154bd\n"
         /* { scope 3: Dx, Dy */
-        ".Lf150d0_000154fe:\n"
         "movl g_NumBlurShadowPasses, %eax\n" /* line 5538 */
         "addl %eax, %eax\n"
+        ".Lf150d0_000154bd:\n"
         "testl %eax, %eax\n"
         "jne .Lf150d0_00015b30\n"
         /* } scope */
@@ -2468,6 +2508,7 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "movl 8(%ebp), %edx\n" /* line 5609 | this */
         "movl 0x54c(%edx), %eax\n"
         "testl %eax, %eax\n"
+        ".Lf150d0_000154fe:\n"
         "je .Lf150d0_00015956\n"
         "movl 0x3a0(%edx), %eax\n" /* line 5611 */
         "movl %eax, 0xc(%esp)\n"
@@ -2585,7 +2626,7 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "cmpl %esi, %edx\n"
         "je .Lf150d0_0001589e\n"
         ".Lf150d0_000156e4:\n"
-        "movl 0x195ec0c, %eax\n" /* line 654 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 654 */
         "movl 0x65c(%eax), %ebx\n"
         "addl %edi, %ebx\n"
         "leal 0x84c0(%esi), %eax\n" /* line 5688 */
@@ -2652,29 +2693,28 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "movl $0xd1c, 4(%esp)\n"
         "movl $0x2300, (%esp)\n"
         "calll glTexEnvf\n"
-        ".Lf150d0_00015846:\n"
         "cmpb $0, 1(%ebx)\n" /* line 5722 | i */
         "je .Lf150d0_000156ba\n"
         "movl $0xde1, (%esp)\n" /* line 5724 */
         "calll glEnable\n"
         "cmpb $0, 2(%ebx)\n" /* line 5727 | i */
         "je .Lf150d0_000156c4\n"
-        ".Lf150d0_00015866:\n"
         "movl $0x806f, (%esp)\n" /* line 5729 */
         "calll glEnable\n"
+        ".Lf150d0_00015846:\n"
         "cmpb $0, 3(%ebx)\n" /* line 5731 | i */
         "je .Lf150d0_000156ce\n"
-        ".Lf150d0_0001587c:\n"
         "movl $0x8513, (%esp)\n" /* line 5733 */
         "calll glEnable\n"
         "subl $1, %esi\n" /* line 5684 */
         "subl $0x130, %edi\n"
+        ".Lf150d0_00015866:\n"
         "movl $0xffffffff, %edx\n"
         "cmpl %esi, %edx\n"
         "jne .Lf150d0_000156e4\n"
         /* } scope */
-        ".Lf150d0_0001589e:\n"
         "movl $0, 4(%esp)\n" /* line 5739 */
+        ".Lf150d0_0001587c:\n"
         "movl $0xcf2, (%esp)\n"
         "calll glPixelStorei\n"
         "movl $0, 4(%esp)\n" /* line 5740 */
@@ -2682,6 +2722,7 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "calll glPixelStorei\n"
         "movl -0x20(%ebp), %eax\n" /* line 5743 | CurrentID */
         "movl %eax, 4(%esp)\n"
+        ".Lf150d0_0001589e:\n"
         "movl $0xde1, (%esp)\n"
         "calll glBindTexture\n"
         "movl -0x1c(%ebp), %eax\n" /* line 5744 | CurrentActiveTexture */
@@ -2696,182 +2737,183 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "retl\n"
         /* { scope 1: FirstTextureMatrix */
         /* { scope 2: Passes */
-        ".Lf150d0_000158ef:\n"
         "movl $1, %edx\n" /* line 144 */
         "movl $0x20, %eax\n"
-        ".Lf150d0_000158f9:\n"
         "addl %edx, %edx\n"
         "cmpl %edx, %ecx\n"
         "jbe .Lf150d0_00015904\n"
         "subl $1, %eax\n"
         "jne .Lf150d0_000158f9\n"
-        ".Lf150d0_00015904:\n"
         "movl %edx, %ebx\n"
         "jmp .Lf150d0_00015149\n"
-        ".Lf150d0_0001590b:\n"
         "movl %eax, %edx\n"
+        ".Lf150d0_000158ef:\n"
         "jmp .Lf150d0_000151f6\n"
         /* } scope */
         /* { scope 2: Passes */
-        ".Lf150d0_00015912:\n"
         "movl $0xc63, (%esp)\n" /* line 5706 */
+        ".Lf150d0_000158f9:\n"
         "calll glEnable\n"
         "jmp .Lf150d0_0001573b\n"
-        ".Lf150d0_00015923:\n"
         "movl $0xc62, (%esp)\n" /* line 5702 */
         "calll glEnable\n"
         "jmp .Lf150d0_0001572e\n"
-        ".Lf150d0_00015934:\n"
+        ".Lf150d0_00015904:\n"
         "movl $0xc61, (%esp)\n" /* line 5698 */
         "calll glEnable\n"
+        ".Lf150d0_0001590b:\n"
         "jmp .Lf150d0_00015721\n"
-        ".Lf150d0_00015945:\n"
         "movl $0xc60, (%esp)\n" /* line 5694 */
+        ".Lf150d0_00015912:\n"
         "calll glEnable\n"
         "jmp .Lf150d0_00015714\n"
-        ".Lf150d0_00015956:\n"
         "movl 0x39c(%edx), %eax\n" /* line 5615 */
+        ".Lf150d0_00015923:\n"
         "movl %eax, 4(%esp)\n"
         "movl 0x394(%edx), %eax\n"
         "movl %eax, (%esp)\n"
+        ".Lf150d0_00015934:\n"
         "calll glBlendFunc\n"
         "movl 8(%ebp), %eax\n" /* line 5618 | this */
         "movl 0x584(%eax), %edi\n"
+        ".Lf150d0_00015945:\n"
         "testl %edi, %edi\n"
         "je .Lf150d0_00015588\n"
-        ".Lf150d0_0001597f:\n"
         "movl $0xb50, (%esp)\n" /* line 5620 */
+        ".Lf150d0_00015956:\n"
         "calll glEnable\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl 0x548(%edx), %esi\n" /* line 5622 */
         "testl %esi, %esi\n"
         "jne .Lf150d0_00015598\n"
-        ".Lf150d0_0001599c:\n"
         "movl $0xbe2, (%esp)\n" /* line 5624 */
         "calll glDisable\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl 0x50c(%eax), %ebx\n" /* line 5626 | i */
+        ".Lf150d0_0001597f:\n"
         "testl %ebx, %ebx\n" /* i */
         "je .Lf150d0_000155a8\n"
-        ".Lf150d0_000159b9:\n"
         "movl $0xbc0, (%esp)\n" /* line 5628 */
         "calll glEnable\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl 0x53c(%edx), %ecx\n" /* line 5630 */
+        ".Lf150d0_0001599c:\n"
         "testl %ecx, %ecx\n"
         "je .Lf150d0_000155b8\n"
-        ".Lf150d0_000159d6:\n"
         "movl $0xb71, (%esp)\n" /* line 5632 */
         "calll glEnable\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl 0x57c(%eax), %edx\n" /* line 5634 */
+        ".Lf150d0_000159b9:\n"
         "testl %edx, %edx\n"
         "je .Lf150d0_000155c8\n"
-        ".Lf150d0_000159f3:\n"
         "movl $0xbd0, (%esp)\n" /* line 5636 */
         "calll glEnable\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl 0x574(%edx), %eax\n" /* line 5638 */
+        ".Lf150d0_000159d6:\n"
         "testl %eax, %eax\n"
         "je .Lf150d0_000155d8\n"
-        ".Lf150d0_00015a10:\n"
         "movl %eax, (%esp)\n" /* line 5640 */
         "calll glStencilMask\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl 0x590(%eax), %edx\n" /* line 5643 */
+        ".Lf150d0_000159f3:\n"
         "cmpl $0xf, %edx\n"
         "jne .Lf150d0_000155e9\n"
-        ".Lf150d0_00015a2a:\n"
         "movl %eax, %edx\n"
         "movl 0x544(%edx), %eax\n" /* line 5653 */
         "testl %eax, %eax\n"
         "je .Lf150d0_00015628\n"
-        ".Lf150d0_00015a3a:\n"
+        ".Lf150d0_00015a10:\n"
         "movl $1, (%esp)\n" /* line 5655 */
         "calll glDepthMask\n"
         "movl 8(%ebp), %eax\n" /* this */
         "cmpl $1, 0x538(%eax)\n" /* line 5658 */
         "jne .Lf150d0_00015637\n"
-        ".Lf150d0_00015a56:\n"
         "movl %eax, %edx\n"
+        ".Lf150d0_00015a2a:\n"
         "movl 0x580(%edx), %edi\n" /* line 5663 */
         "testl %edi, %edi\n"
         "je .Lf150d0_00015654\n"
-        ".Lf150d0_00015a66:\n"
         "movl $0xb60, (%esp)\n" /* line 5665 */
+        ".Lf150d0_00015a3a:\n"
         "calll glEnable\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl 0x554(%eax), %esi\n" /* line 5668 */
         "testl %esi, %esi\n"
         "je .Lf150d0_00015664\n"
-        ".Lf150d0_00015a83:\n"
+        ".Lf150d0_00015a56:\n"
         "movl $0xb90, (%esp)\n" /* line 5670 */
         "calll glEnable\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl 0xbb4(%edx), %ebx\n" /* line 5673 | i */
+        ".Lf150d0_00015a66:\n"
         "testl %ebx, %ebx\n" /* i */
         "jne .Lf150d0_00015674\n"
-        ".Lf150d0_00015aa0:\n"
         "movl %edx, %eax\n"
         "movl 0xbb8(%eax), %ecx\n" /* line 5678 */
         "testl %ecx, %ecx\n"
         "jne .Lf150d0_00015691\n"
-        ".Lf150d0_00015ab0:\n"
+        ".Lf150d0_00015a83:\n"
         "movl %eax, %edx\n"
         "jmp .Lf150d0_000156a0\n"
-        ".Lf150d0_00015ab7:\n"
         "movl %eax, %edx\n"
         "movl 0x580(%edx), %ecx\n" /* line 5487 */
         "testl %ecx, %ecx\n"
         "je .Lf150d0_00015331\n"
-        ".Lf150d0_00015ac7:\n"
+        ".Lf150d0_00015aa0:\n"
         "movl $0xb60, (%esp)\n" /* line 5489 */
         "calll glDisable\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl 0x554(%eax), %edx\n" /* line 5492 */
+        ".Lf150d0_00015ab0:\n"
         "testl %edx, %edx\n"
         "je .Lf150d0_00015341\n"
-        ".Lf150d0_00015ae4:\n"
+        ".Lf150d0_00015ab7:\n"
         "movl $0xb90, (%esp)\n" /* line 5494 */
         "calll glDisable\n"
         "movl 8(%ebp), %edx\n" /* this */
         "jmp .Lf150d0_00015343\n"
-        ".Lf150d0_00015af8:\n"
+        ".Lf150d0_00015ac7:\n"
         "movl %eax, %edx\n"
         "movl 0x544(%edx), %ebx\n" /* line 5477 */
         "testl %ebx, %ebx\n"
         "je .Lf150d0_00015305\n"
-        ".Lf150d0_00015b08:\n"
         "movl $0, (%esp)\n" /* line 5479 */
         "calll glDepthMask\n"
+        ".Lf150d0_00015ae4:\n"
         "movl 8(%ebp), %eax\n" /* this */
         "jmp .Lf150d0_00015307\n"
-        ".Lf150d0_00015b1c:\n"
         "movl $0, (%esp)\n" /* line 5469 */
         "calll glStencilMask\n"
+        ".Lf150d0_00015af8:\n"
         "movl 8(%ebp), %eax\n" /* this */
         "jmp .Lf150d0_000152c3\n"
         /* { scope 3: Dx, Dy */
-        ".Lf150d0_00015b30:\n"
         "movl $0, -0x9c(%ebp)\n" /* line 5538 | Passes */
         /* { scope 4: BaseX, BaseY */
         ".Lf150d0_00015b3a:\n"
         "movl $0, 4(%esp)\n" /* line 5542 */
+        ".Lf150d0_00015b08:\n"
         "movl $1, (%esp)\n"
         "calll glBlendFunc\n"
         "movl $7, (%esp)\n" /* line 5546 */
         "calll glBegin\n"
         /* { scope 5 */
+        ".Lf150d0_00015b5a:\n"
+        ".Lf150d0_00015b1c:\n"
         "pxor %xmm1, %xmm1\n" /* line 5549 */
         "movss %xmm1, -0x94(%ebp)\n" /* Dy */
         "movss %xmm1, -0x98(%ebp)\n" /* Dx */
         "xorl %esi, %esi\n"
+        ".Lf150d0_00015b30:\n"
         "movl $GaussianBlurWeights, %edi\n"
         "movaps %xmm1, %xmm2\n"
         ".Lf150d0_00015b78:\n"
         "movss (%edi), %xmm0\n" /* line 5558 | Weight */
-        "divss 0x2ed5e0, %xmm0\n" /* 6.0f, Weight */
-        "movss 0x2ed5e4, %xmm1\n" /* line 5565 | 0.0078125f */
+        "divss lit4_002ed5e0, %xmm0\n" /* 6.0f, Weight */
+        "movss lit4_002ed5e4, %xmm1\n" /* line 5565 | 0.0078125f */
         "mulss %xmm1, %xmm2\n"
         "movss %xmm2, -0x90(%ebp)\n" /* BaseX */
         "movss -0x94(%ebp), %xmm2\n" /* line 5566 | Dy */
@@ -2895,7 +2937,7 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         "movl $0x3f800000, 4(%esp)\n" /* line 5576 */
         "movl $0x3f800000, (%esp)\n"
         "calll glTexCoord2f\n"
-        "movss 0x2ed5d0, %xmm2\n" /* line 5577 | 1.0f */
+        "movss lit4_002ed5d0, %xmm2\n" /* line 5577 | 1.0f */
         "addss -0x90(%ebp), %xmm2\n" /* BaseX */
         "movss %xmm2, -0xa8(%ebp)\n"
         "movl %ebx, 8(%esp)\n" /* i */
@@ -2931,32 +2973,45 @@ long unsigned int CDirect3DDevice_CopyColorToRenderTargetTexture(const CDirect3D
         /* { scope 5 */
         "cmpl $4, %esi\n" /* line 5549 */
         "ja .Lf150d0_00015d19\n"
-        "jmpl *0x2edf80(, %esi, 4)\n"
+        "jmpl *.Ljt_2edf80(, %esi, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2edf80:\n"
+        ".long .Lf150d0_00015b5a\n"
+        ".long .Lf150d0_00015cdc\n"
+        ".long .Lf150d0_00015d29\n"
+        ".long .Lf150d0_00015d65\n"
+        ".long .Lf150d0_00015d4b\n"
+        ".popsection\n"
+        ".Lf150d0_00015cdc:\n"
         "calll glEnd\n" /* line 5552 */
         "movl $1, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll glBlendFunc\n"
         "movl $7, (%esp)\n"
         "calll glBegin\n"
-        "movss 0x2ed5dc, %xmm2\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm2\n" /* -1.0f */
         "movss %xmm2, -0x94(%ebp)\n" /* Dy */
         "movss %xmm2, -0x98(%ebp)\n" /* Dx */
         ".Lf150d0_00015d19:\n"
         "addl $4, %edi\n" /* line 5553 */
         "movss -0x98(%ebp), %xmm2\n" /* Dx */
         "jmp .Lf150d0_00015b78\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 5552 | 1.0f */
+        ".Lf150d0_00015d29:\n"
+        "movss lit4_002ed5d0, %xmm0\n" /* line 5552 | 1.0f */
         "movss %xmm0, -0x98(%ebp)\n" /* Dx */
-        "movss 0x2ed5dc, %xmm1\n" /* -1.0f */
+        "movss lit4_002ed5dc, %xmm1\n" /* -1.0f */
         "movss %xmm1, -0x94(%ebp)\n" /* Dy */
         "jmp .Lf150d0_00015d19\n"
-        "movss 0x2ed5d0, %xmm0\n" /* line 5549 | 1.0f */
+        ".Lf150d0_00015d4b:\n"
+        "movss lit4_002ed5d0, %xmm0\n" /* line 5549 | 1.0f */
         "movss %xmm0, -0x94(%ebp)\n" /* Dy */
         "movss %xmm0, -0x98(%ebp)\n" /* Dx */
         "jmp .Lf150d0_00015d19\n"
-        "movss 0x2ed5dc, %xmm2\n" /* line 5553 | -1.0f */
+        ".Lf150d0_00015d65:\n"
+        "movss lit4_002ed5dc, %xmm2\n" /* line 5553 | -1.0f */
         "movss %xmm2, -0x98(%ebp)\n" /* Dx */
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "movss %xmm0, -0x94(%ebp)\n" /* Dy */
         "jmp .Lf150d0_00015d19\n"
         /* } scope */
@@ -3107,7 +3162,39 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         "cmpl $0x1a, 0x2c(%ecx)\n" /* line 5257 */
         "ja .Lf15f0c_00015f43\n"
         "movl 0x2c(%ecx), %eax\n"
-        "jmpl *0x2edf94(, %eax, 4)\n"
+        "jmpl *.Ljt_2edf94(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2edf94:\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015f3d\n"
+        ".long .Lf15f0c_00015f98\n"
+        ".long .Lf15f0c_00016044\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015fdd\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015f43\n"
+        ".long .Lf15f0c_00015fb6\n"
+        ".long .Lf15f0c_00016009\n"
+        ".long .Lf15f0c_00016009\n"
+        ".popsection\n"
+        ".Lf15f0c_00015f3d:\n"
         "movl 0xc(%ebp), %eax\n" /* line 5295 | UsesTexFactor */
         "movb $0, (%eax)\n"
         ".Lf15f0c_00015f43:\n"
@@ -3144,10 +3231,69 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         /* { scope 1 */
         ".Lf15f0c_00015f84:\n"
         "movl 0x3c(%ecx), %eax\n" /* line 5309 */
-        "jmpl *0x2ee000(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee000(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee000:\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_0001605a\n"
+        ".long .Lf15f0c_00016067\n"
+        ".long .Lf15f0c_0001609a\n"
+        ".long .Lf15f0c_000160a8\n"
+        ".long .Lf15f0c_000160a8\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_000160a8\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_000160a8\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00015f5b\n"
+        ".long .Lf15f0c_00016075\n"
+        ".popsection\n"
         ".Lf15f0c_00015f8e:\n"
         "movl 0x3c(%ecx), %eax\n" /* line 5346 */
-        "jmpl *0x2ee064(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee064(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee064:\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_000160c4\n"
+        ".long .Lf15f0c_000160cf\n"
+        ".long .Lf15f0c_000160dd\n"
+        ".long .Lf15f0c_000160eb\n"
+        ".long .Lf15f0c_000160eb\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_000160eb\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_000160eb\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00015f7d\n"
+        ".long .Lf15f0c_00016103\n"
+        ".popsection\n"
+        ".Lf15f0c_00015f98:\n"
         "cmpl $2, %edx\n" /* line 5274 */
         "sete %al\n"
         "movl %eax, %edi\n" /* UsesTexture */
@@ -3161,6 +3307,7 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         ".Lf15f0c_00015faf:\n"
         "movl $1, %edi\n" /* line 5331 | UsesTexture */
         "jmp .Lf15f0c_00015f5d\n"
+        ".Lf15f0c_00015fb6:\n"
         "cmpl $2, %edx\n" /* line 5269 */
         "je .Lf15f0c_00016132\n"
         "cmpl $2, %ebx\n" /* Source2 */
@@ -3176,6 +3323,7 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         "movl 0xc(%ebp), %edx\n" /* UsesTexFactor */
         "movb %al, (%edx)\n"
         "jmp .Lf15f0c_00015fa9\n"
+        ".Lf15f0c_00015fdd:\n"
         "cmpl $3, %edx\n" /* line 5285 */
         "je .Lf15f0c_00016128\n"
         "cmpl $3, %ebx\n" /* Source2 */
@@ -3188,6 +3336,7 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         "movb %al, (%edx)\n"
         "movl $1, %edi\n" /* UsesTexture */
         "jmp .Lf15f0c_00015f5d\n"
+        ".Lf15f0c_00016009:\n"
         "cmpl $2, %edx\n" /* line 5290 */
         "je .Lf15f0c_0001611e\n"
         "cmpl $2, %ebx\n" /* Source2 */
@@ -3207,6 +3356,7 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         "movl 0xc(%ebp), %edx\n" /* UsesTexFactor */
         "movb %al, (%edx)\n"
         "jmp .Lf15f0c_00015fa9\n"
+        ".Lf15f0c_00016044:\n"
         "cmpl $2, %ebx\n" /* line 5279 | Source2 */
         "sete %al\n"
         "movl %eax, %edi\n" /* UsesTexture */
@@ -3214,14 +3364,17 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         "movl 0xc(%ebp), %edx\n" /* UsesTexFactor */
         "sete (%edx)\n"
         "jmp .Lf15f0c_00015fa9\n"
+        ".Lf15f0c_0001605a:\n"
         "movl 0xc(%ebp), %eax\n" /* line 5331 | UsesTexFactor */
         "movb $0, (%eax)\n"
         "xorl %edi, %edi\n" /* UsesTexture */
         "jmp .Lf15f0c_00015f5d\n"
+        ".Lf15f0c_00016067:\n"
         "cmpl $2, %edx\n" /* line 5315 */
         "sete %al\n"
         "movzbl %al, %edi\n" /* UsesTexture */
         "jmp .Lf15f0c_00015f5d\n"
+        ".Lf15f0c_00016075:\n"
         "cmpl $2, %edx\n" /* line 5327 */
         "je .Lf15f0c_00015faf\n"
         "cmpl $2, %ebx\n" /* Source2 */
@@ -3230,27 +3383,33 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         "jne .Lf15f0c_00015f5b\n"
         "movl $1, %edi\n" /* line 5331 | UsesTexture */
         "jmp .Lf15f0c_00015f5d\n"
+        ".Lf15f0c_0001609a:\n"
         "cmpl $2, %ebx\n" /* line 5320 | Source2 */
         "sete %al\n"
         "movzbl %al, %edi\n" /* UsesTexture */
         "jmp .Lf15f0c_00015f5d\n"
+        ".Lf15f0c_000160a8:\n"
         "cmpl $2, %edx\n" /* line 5315 */
         "je .Lf15f0c_00015faf\n"
         "cmpl $2, %ebx\n" /* Source2 */
         "jne .Lf15f0c_00015f5b\n"
         "movl $1, %edi\n" /* line 5331 | UsesTexture */
         "jmp .Lf15f0c_00015f5d\n"
+        ".Lf15f0c_000160c4:\n"
         "movl 0xc(%ebp), %eax\n" /* line 5368 | UsesTexFactor */
         "movb $0, (%eax)\n"
         "jmp .Lf15f0c_00015f7d\n"
+        ".Lf15f0c_000160cf:\n"
         "cmpl $3, %edx\n" /* line 5356 */
         "movl 0xc(%ebp), %eax\n" /* UsesTexFactor */
         "sete (%eax)\n"
         "jmp .Lf15f0c_00015f7d\n"
+        ".Lf15f0c_000160dd:\n"
         "cmpl $3, %ebx\n" /* line 5360 | Source2 */
         "movl 0xc(%ebp), %edx\n" /* UsesTexFactor */
         "sete (%edx)\n"
         "jmp .Lf15f0c_00015f7d\n"
+        ".Lf15f0c_000160eb:\n"
         "cmpl $3, %edx\n" /* line 5352 */
         "je .Lf15f0c_00016112\n"
         "cmpl $3, %ebx\n" /* Source2 */
@@ -3268,6 +3427,7 @@ bool CDirect3DDevice_CTexStage_GetUsesTexture(const CTexStage * _this, bool *Use
         "popl %ebp\n"
         "retl\n"
         /* { scope 1 */
+        ".Lf15f0c_00016103:\n"
         "cmpl $2, %edx\n" /* line 5364 */
         "je .Lf15f0c_00016112\n"
         "cmpl $2, %ebx\n" /* Source2 */
@@ -3300,7 +3460,7 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice * _this, const RECT *pSour
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
         "movl g_showtexid, %edx\n" /* line 1184 */
-        "movl 0x195ec64, %eax\n" /* line 674 */
+        "movl imp___ZN7COpenGL14sShowTextureIDE, %eax\n" /* line 674 */
         "movl %edx, (%eax)\n"
         "testl %edx, %edx\n" /* line 1185 */
         "jne .Lf1613c_00016180\n"
@@ -3314,7 +3474,7 @@ HRESULT CDirect3DDevice_Present(const CDirect3DDevice * _this, const RECT *pSour
         "movl %eax, (%esp)\n"
         "calll MacDisplay_SwapContext\n"
         "calll CMemoryBuffer_Update\n" /* line 1211 */
-        "movl 0x195ec60, %eax\n" /* line 669 */
+        "movl imp___ZN7COpenGL11sFrameCountE, %eax\n" /* line 669 */
         "addl $1, (%eax)\n"
         "xorl %eax, %eax\n" /* line 1215 */
         "leave\n"
@@ -3435,7 +3595,7 @@ HRESULT CDirect3DDevice_SetLight(const CDirect3DDevice * _this, DWORD Index, con
         "movl %eax, 0x70(%esi)\n" /* SaveEnable */
         "cmpl $2, (%edx)\n" /* line 2624 */
         "je .Lf1618a_00016305\n"
-        "movl 0x195ec0c, %ebx\n" /* line 2655 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 2655 */
         "cmpb $0, 0x800(%ebx)\n"
         "je .Lf1618a_000162f2\n"
         ".Lf1618a_000162b4:\n"
@@ -3470,13 +3630,13 @@ HRESULT CDirect3DDevice_SetLight(const CDirect3DDevice * _this, DWORD Index, con
         "movl $0x43340000, 0x64(%edx)\n" /* line 2659 */
         "jmp .Lf1618a_000162b4\n"
         ".Lf1618a_00016305:\n"
-        "movl 0x195ec0c, %ebx\n" /* line 2626 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 2626 */
         "cmpb $0, 0x800(%ebx)\n"
         "jne .Lf1618a_000163c6\n"
         /* { scope 2 */
         "movl 0x10(%ebp), %eax\n" /* line 2636 | pLight */
         "movss 0x50(%eax), %xmm2\n"
-        "ucomiss 0x2ed5e8, %xmm2\n" /* 0.0f */
+        "ucomiss lit4_002ed5e8, %xmm2\n" /* 0.0f */
         "je .Lf1618a_00016360\n"
         ".Lf1618a_00016329:\n"
         "movss 0x60(%eax), %xmm0\n" /* line 2642 */
@@ -3485,14 +3645,14 @@ HRESULT CDirect3DDevice_SetLight(const CDirect3DDevice * _this, DWORD Index, con
         "addss %xmm2, %xmm2\n"
         "divss %xmm2, %xmm1\n"
         "addss %xmm0, %xmm1\n"
-        "ucomiss 0x2ed5f0, %xmm1\n" /* line 2645 | 9.999999747378752e-05f */
+        "ucomiss lit4_002ed5f0, %xmm1\n" /* line 2645 | 9.999999747378752e-05f */
         "jae .Lf1618a_00016430\n"
         "jp .Lf1618a_00016430\n"
-        "movss 0x2ed5f4, %xmm0\n" /* 4.999999873689376e-05f */
+        "movss lit4_002ed5f4, %xmm0\n" /* 4.999999873689376e-05f */
         "jmp .Lf1618a_0001636a\n"
         ".Lf1618a_00016360:\n"
         "jp .Lf1618a_00016329\n" /* line 2636 */
-        "movss 0x2ed5ec, %xmm0\n" /* 3.140000104904175f */
+        "movss lit4_002ed5ec, %xmm0\n" /* 3.140000104904175f */
         ".Lf1618a_0001636a:\n"
         "cvtss2sd %xmm0, %xmm0\n" /* line 2647 */
         "movsd %xmm0, (%esp)\n"
@@ -3501,20 +3661,20 @@ HRESULT CDirect3DDevice_SetLight(const CDirect3DDevice * _this, DWORD Index, con
         "calll log\n"
         "fstpl -0x40(%ebp)\n"
         "movsd -0x40(%ebp), %xmm0\n"
-        "mulsd 0x307c18, %xmm0\n" /* -0.30000001192092896 */
+        "mulsd lit8_00307c18, %xmm0\n" /* -0.30000001192092896 */
         "cvtsd2ss %xmm0, %xmm1\n"
         "movl -0x1c(%ebp), %esi\n" /* l, SaveEnable */
         "movss %xmm1, 0x60(%esi)\n" /* SaveEnable */
-        "movss 0x2ed5f8, %xmm0\n" /* line 2650 | 90.0f */
+        "movss lit4_002ed5f8, %xmm0\n" /* line 2650 | 90.0f */
         "movl 0x10(%ebp), %eax\n" /* pLight */
         "mulss 0x64(%eax), %xmm0\n"
-        "divss 0x2ed5fc, %xmm0\n" /* 3.141592502593994f */
-        "divss 0x2ed600, %xmm0\n" /* 1.5f */
+        "divss lit4_002ed5fc, %xmm0\n" /* 3.141592502593994f */
+        "divss lit4_002ed600, %xmm0\n" /* 1.5f */
         "movss %xmm0, 0x64(%esi)\n" /* SaveEnable */
         "jmp .Lf1618a_000162b4\n"
         /* } scope */
         ".Lf1618a_000163c6:\n"
-        "movss 0x2ed5d8, %xmm0\n" /* line 2628 | 0.5f */
+        "movss lit4_002ed5d8, %xmm0\n" /* line 2628 | 0.5f */
         "mulss %xmm0, %xmm1\n"
         "movss %xmm1, (%esp)\n"
         "movss %xmm0, -0x38(%ebp)\n"
@@ -3529,14 +3689,14 @@ HRESULT CDirect3DDevice_SetLight(const CDirect3DDevice * _this, DWORD Index, con
         "movss %xmm0, 0xac(%esi)\n" /* SaveEnable */
         "movss 0xa8(%esi), %xmm1\n" /* line 2631 | SaveEnable */
         "subss %xmm0, %xmm1\n"
-        "movss 0x2ed5d0, %xmm0\n" /* 1.0f */
+        "movss lit4_002ed5d0, %xmm0\n" /* 1.0f */
         "divss %xmm1, %xmm0\n"
         "movss %xmm0, 0xb0(%esi)\n" /* SaveEnable */
         "jmp .Lf1618a_000162b4\n"
         /* { scope 2 */
         ".Lf1618a_00016430:\n"
         "movaps %xmm1, %xmm0\n" /* line 2645 */
-        "mulss 0x2ed5d8, %xmm0\n" /* 0.5f */
+        "mulss lit4_002ed5d8, %xmm0\n" /* 0.5f */
         "jmp .Lf1618a_0001636a\n"
     );
 }
@@ -3592,25 +3752,49 @@ HRESULT CDirect3DDevice_SetSamplerState(const CDirect3DDevice * _this, DWORD Sam
         "cmpl $0xa, 0x10(%ebp)\n" /* line 4057 | Type */
         "ja .Lf16440_0001646e\n"
         "movl 0x10(%ebp), %edx\n" /* Type */
-        "jmpl *0x2ee0c8(, %edx, 4)\n"
+        "jmpl *.Ljt_2ee0c8(, %edx, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee0c8:\n"
+        ".long .Lf16440_0001646e\n"
+        ".long .Lf16440_000164c7\n"
+        ".long .Lf16440_000164cc\n"
+        ".long .Lf16440_000164d1\n"
+        ".long .Lf16440_000164d6\n"
+        ".long .Lf16440_000164db\n"
+        ".long .Lf16440_000164e0\n"
+        ".long .Lf16440_000164e5\n"
+        ".long .Lf16440_000164ea\n"
+        ".long .Lf16440_0001646e\n"
+        ".long .Lf16440_00016501\n"
+        ".popsection\n"
+        ".Lf16440_000164c7:\n"
         "movl %eax, 8(%edi)\n" /* line 141 */
         "jmp .Lf16440_0001646e\n"
+        ".Lf16440_000164cc:\n"
         "movl %eax, 0xc(%edi)\n" /* line 146 */
         "jmp .Lf16440_0001646e\n"
+        ".Lf16440_000164d1:\n"
         "movl %eax, 0x10(%edi)\n" /* line 151 */
         "jmp .Lf16440_0001646e\n"
+        ".Lf16440_000164d6:\n"
         "movl %eax, 0x28(%edi)\n" /* line 153 */
         "jmp .Lf16440_0001646e\n"
+        ".Lf16440_000164db:\n"
         "movl %eax, 0x18(%edi)\n" /* line 166 */
         "jmp .Lf16440_0001646e\n"
+        ".Lf16440_000164e0:\n"
         "movl %eax, 0x14(%edi)\n" /* line 161 */
         "jmp .Lf16440_0001646e\n"
+        ".Lf16440_000164e5:\n"
         "movl %eax, 0x1c(%edi)\n" /* line 171 */
         "jmp .Lf16440_0001646e\n"
-        "movss 0x2ed604, %xmm0\n" /* line 175 | 0.25f */
+        ".Lf16440_000164ea:\n"
+        "movss lit4_002ed604, %xmm0\n" /* line 175 | 0.25f */
         "mulss 0x14(%ebp), %xmm0\n" /* Value */
         "movss %xmm0, 0x24(%edi)\n"
         "jmp .Lf16440_0001646e\n"
+        ".Lf16440_00016501:\n"
         "calll MacDisplay_GetSupportsAnisotropicFiltering\n" /* line 4092 */
         "testb %al, %al\n"
         "je .Lf16440_00016515\n"
@@ -3659,11 +3843,28 @@ HRESULT CDirect3DDevice_GetSamplerState(const CDirect3DDevice * _this, DWORD Sam
         "retl\n"
         ".Lf16522_0001656d:\n"
         "movl 0x10(%ebp), %edx\n" /* line 3983 | Type */
-        "jmpl *0x2ee0f4(, %edx, 4)\n"
+        "jmpl *.Ljt_2ee0f4(, %edx, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee0f4:\n"
+        ".long .Lf16522_00016564\n"
+        ".long .Lf16522_00016577\n"
+        ".long .Lf16522_00016617\n"
+        ".long .Lf16522_0001660a\n"
+        ".long .Lf16522_000165fd\n"
+        ".long .Lf16522_000165f0\n"
+        ".long .Lf16522_000165e3\n"
+        ".long .Lf16522_000165d9\n"
+        ".long .Lf16522_000165a4\n"
+        ".long .Lf16522_00016564\n"
+        ".long .Lf16522_00016581\n"
+        ".popsection\n"
+        ".Lf16522_00016577:\n"
         "movl 8(%eax), %eax\n" /* line 3986 */
         "movl 0x14(%ebp), %ecx\n" /* pValue */
         "movl %eax, (%ecx)\n"
         "jmp .Lf16522_00016564\n"
+        ".Lf16522_00016581:\n"
         "flds 0x20(%eax)\n" /* line 4013 */
         "fnstcw -0xa(%ebp)\n"
         "movzwl -0xa(%ebp), %eax\n"
@@ -3676,7 +3877,8 @@ HRESULT CDirect3DDevice_GetSamplerState(const CDirect3DDevice * _this, DWORD Sam
         "movl 0x14(%ebp), %ecx\n" /* pValue */
         "movl %eax, (%ecx)\n"
         "jmp .Lf16522_00016564\n"
-        "movss 0x2ed608, %xmm0\n" /* line 4007 | 4.0f */
+        ".Lf16522_000165a4:\n"
+        "movss lit4_002ed608, %xmm0\n" /* line 4007 | 4.0f */
         "mulss 0x24(%eax), %xmm0\n"
         "fnstcw -0xa(%ebp)\n"
         "movzwl -0xa(%ebp), %eax\n"
@@ -3691,26 +3893,32 @@ HRESULT CDirect3DDevice_GetSamplerState(const CDirect3DDevice * _this, DWORD Sam
         "movl 0x14(%ebp), %ecx\n" /* pValue */
         "movl %eax, (%ecx)\n"
         "jmp .Lf16522_00016564\n"
+        ".Lf16522_000165d9:\n"
         "movl 0x1c(%eax), %eax\n" /* line 4004 */
         "movl 0x14(%ebp), %ecx\n" /* pValue */
         "movl %eax, (%ecx)\n"
         "jmp .Lf16522_00016564\n"
+        ".Lf16522_000165e3:\n"
         "movl 0x14(%eax), %eax\n" /* line 4001 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "jmp .Lf16522_00016564\n"
+        ".Lf16522_000165f0:\n"
         "movl 0x18(%eax), %eax\n" /* line 3998 */
         "movl 0x14(%ebp), %ecx\n" /* pValue */
         "movl %eax, (%ecx)\n"
         "jmp .Lf16522_00016564\n"
+        ".Lf16522_000165fd:\n"
         "movl 0x28(%eax), %eax\n" /* line 3995 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "jmp .Lf16522_00016564\n"
+        ".Lf16522_0001660a:\n"
         "movl 0x10(%eax), %eax\n" /* line 3992 */
         "movl 0x14(%ebp), %ecx\n" /* pValue */
         "movl %eax, (%ecx)\n"
         "jmp .Lf16522_00016564\n"
+        ".Lf16522_00016617:\n"
         "movl 0xc(%eax), %eax\n" /* line 3989 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
@@ -3760,36 +3968,78 @@ HRESULT CDirect3DDevice_SetTextureStageState(const CDirect3DDevice * _this, DWOR
         "cmpl $0x1b, 0x10(%ebp)\n" /* line 3896 | Type */
         "ja .Lf16624_0001663a\n"
         "movl 0x10(%ebp), %eax\n" /* Type */
-        "jmpl *0x2ee120(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee120(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee120:\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_00016692\n"
+        ".long .Lf16624_0001669a\n"
+        ".long .Lf16624_000166a2\n"
+        ".long .Lf16624_000166aa\n"
+        ".long .Lf16624_000166b2\n"
+        ".long .Lf16624_000166ba\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_000166c5\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_000166d7\n"
+        ".long .Lf16624_0001663a\n"
+        ".long .Lf16624_000166e9\n"
+        ".long .Lf16624_000166f4\n"
+        ".popsection\n"
+        ".Lf16624_00016692:\n"
         "movl 0x14(%ebp), %eax\n" /* line 129 | Value */
         "movl %eax, 0x2c(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_0001669a:\n"
         "movl 0x14(%ebp), %eax\n" /* line 131 | Value */
         "movl %eax, 0x34(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166a2:\n"
         "movl 0x14(%ebp), %eax\n" /* line 132 | Value */
         "movl %eax, 0x38(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166aa:\n"
         "movl 0x14(%ebp), %eax\n" /* line 133 | Value */
         "movl %eax, 0x3c(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166b2:\n"
         "movl 0x14(%ebp), %eax\n" /* line 135 | Value */
         "movl %eax, 0x44(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166ba:\n"
         "movl 0x14(%ebp), %eax\n" /* line 136 | Value */
         "movl %eax, 0x48(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166c5:\n"
         "movb $1, __ZN15CDirect3DDevice30mNeedsTransformationValidationE\n" /* line 645 */
         "movl 0x14(%ebp), %eax\n" /* line 156 | Value */
         "movl %eax, 0x50(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166d7:\n"
         "movb $1, __ZN15CDirect3DDevice30mNeedsTransformationValidationE\n" /* line 645 */
         "movl 0x14(%ebp), %eax\n" /* line 155 | Value */
         "movl %eax, 0x4c(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166e9:\n"
         "movl 0x14(%ebp), %eax\n" /* line 130 | Value */
         "movl %eax, 0x30(%esi)\n"
         "jmp .Lf16624_0001663a\n"
+        ".Lf16624_000166f4:\n"
         "movl 0x14(%ebp), %eax\n" /* line 134 | Value */
         "movl %eax, 0x40(%esi)\n"
         "jmp .Lf16624_0001663a\n"
@@ -3819,49 +4069,86 @@ HRESULT CDirect3DDevice_GetTextureStageState(const CDirect3DDevice * _this, DWOR
         "retl\n"
         ".Lf16700_0001672a:\n"
         "movl 0x10(%ebp), %edx\n" /* line 3782 | Type */
-        "jmpl *0x2ee190(, %edx, 4)\n"
+        "jmpl *.Ljt_2ee190(, %edx, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee190:\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016734\n"
+        ".long .Lf16700_00016788\n"
+        ".long .Lf16700_0001677c\n"
+        ".long .Lf16700_00016770\n"
+        ".long .Lf16700_00016764\n"
+        ".long .Lf16700_00016758\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_0001674c\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016726\n"
+        ".long .Lf16700_00016740\n"
+        ".popsection\n"
+        ".Lf16700_00016734:\n"
         "movl 0x2c(%eax), %eax\n" /* line 3785 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "xorl %eax, %eax\n" /* line 3816 */
         "popl %ebp\n"
         "retl\n"
+        ".Lf16700_00016740:\n"
         "movl 0x4c(%eax), %eax\n" /* line 3806 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "xorl %eax, %eax\n" /* line 3816 */
         "popl %ebp\n"
         "retl\n"
+        ".Lf16700_0001674c:\n"
         "movl 0x50(%eax), %eax\n" /* line 3803 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "xorl %eax, %eax\n" /* line 3816 */
         "popl %ebp\n"
         "retl\n"
+        ".Lf16700_00016758:\n"
         "movl 0x48(%eax), %eax\n" /* line 3800 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "xorl %eax, %eax\n" /* line 3816 */
         "popl %ebp\n"
         "retl\n"
+        ".Lf16700_00016764:\n"
         "movl 0x44(%eax), %eax\n" /* line 3797 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "xorl %eax, %eax\n" /* line 3816 */
         "popl %ebp\n"
         "retl\n"
+        ".Lf16700_00016770:\n"
         "movl 0x3c(%eax), %eax\n" /* line 3794 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "xorl %eax, %eax\n" /* line 3816 */
         "popl %ebp\n"
         "retl\n"
+        ".Lf16700_0001677c:\n"
         "movl 0x38(%eax), %eax\n" /* line 3791 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
         "xorl %eax, %eax\n" /* line 3816 */
         "popl %ebp\n"
         "retl\n"
+        ".Lf16700_00016788:\n"
         "movl 0x34(%eax), %eax\n" /* line 3788 */
         "movl 0x14(%ebp), %edx\n" /* pValue */
         "movl %eax, (%edx)\n"
@@ -3888,8 +4175,216 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "subl $7, %eax\n"
         "cmpl $0xca, %eax\n"
         "ja .Lf16794_0001688a\n"
-        "jmpl *0x2ee1f4(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee1f4(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee1f4:\n"
+        ".long .Lf16794_00016894\n"
+        ".long .Lf16794_000168c5\n"
+        ".long .Lf16794_00016a96\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_000169f9\n"
+        ".long .Lf16794_00016f77\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_000169ae\n"
+        ".long .Lf16794_00016ad1\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016a2f\n"
+        ".long .Lf16794_00016a70\n"
+        ".long .Lf16794_00016905\n"
+        ".long .Lf16794_00016d29\n"
+        ".long .Lf16794_0001694f\n"
+        ".long .Lf16794_00016976\n"
+        ".long .Lf16794_000169c8\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017003\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016fa8\n"
+        ".long .Lf16794_000170d2\n"
+        ".long .Lf16794_00016aeb\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016b03\n"
+        ".long .Lf16794_00017129\n"
+        ".long .Lf16794_00017158\n"
+        ".long .Lf16794_00016fde\n"
+        ".long .Lf16794_000171fd\n"
+        ".long .Lf16794_00017187\n"
+        ".long .Lf16794_000171c2\n"
+        ".long .Lf16794_00016b49\n"
+        ".long .Lf16794_000167b8\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_00016cda\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016ce6\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016b7b\n"
+        ".long .Lf16794_00016c7c\n"
+        ".long .Lf16794_00016cb0\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016cbe\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016d4f\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017295\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017223\n"
+        ".long .Lf16794_000172e2\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017108\n"
+        ".long .Lf16794_00017274\n"
+        ".long .Lf16794_0001723b\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001725c\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016d9c\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016de4\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016e81\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016f17\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00016e46\n"
+        ".long .Lf16794_00016e67\n"
+        ".long .Lf16794_00016ee1\n"
+        ".long .Lf16794_00016efb\n"
+        ".popsection\n"
         /* { scope 2 */
+        ".Lf16794_000167b8:\n"
         "movl 0x10(%ebp), %ecx\n" /* line 3337 | Value */
         "movl %ecx, 0x578(%ebx)\n" /* this */
         "movl $0, -0x34(%ebp)\n" /* line 3343 | rgba */
@@ -3923,7 +4418,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "js .Lf16794_00017c72\n"
         "cvtsi2ssl %esi, %xmm2\n" /* m */
         ".Lf16794_0001683a:\n"
-        "movss 0x2ed5cc, %xmm1\n" /* line 3345 | 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm1\n" /* line 3345 | 0.003921568859368563f */
         "movss -0x34(%ebp), %xmm0\n" /* rgba */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n" /* rgba */
@@ -3953,6 +4448,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "popl %ebp\n"
         "retl\n"
         /* { scope 1: rgba, f */
+        ".Lf16794_00016894:\n"
         "movl 0x10(%ebp), %eax\n" /* line 2810 | Value */
         "cmpl %eax, 0x53c(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -3966,6 +4462,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0xb71, (%esp)\n"
         "calll glDisable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000168c5:\n"
         "movl 0x10(%ebp), %eax\n" /* line 2822 | Value */
         "cmpl %eax, 0x588(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -3982,6 +4479,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x408, (%esp)\n"
         "calll glPolygonMode\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016905:\n"
         "movl 0x10(%ebp), %edx\n" /* line 3043 | Value */
         "cmpl %edx, 0x510(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -3990,23 +4488,25 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "js .Lf16794_00017d90\n"
         "cvtsi2ssl %edx, %xmm0\n"
         ".Lf16794_00016926:\n"
-        "divss 0x2ed5d4, %xmm0\n" /* 255.0f */
+        "divss lit4_002ed5d4, %xmm0\n" /* 255.0f */
         "movss %xmm0, 0x3a8(%ebx)\n" /* this */
         "movss %xmm0, 4(%esp)\n" /* line 3047 */
         "movl 0x3ac(%ebx), %eax\n" /* this */
         "movl %eax, (%esp)\n"
         "calll glAlphaFunc\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001694f:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3072 | Value */
         "movl %eax, 0x57c(%ebx)\n" /* this */
         "testl %eax, %eax\n" /* line 3073 */
         "setne %al\n"
         "movzbl %al, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetDither\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016976:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3076 | Value */
         "cmpl %eax, 0x548(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4018,11 +4518,29 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0xbe2, (%esp)\n"
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000169ae:\n"
         "movl 0x10(%ebp), %eax\n" /* line 2880 | Value */
         "movl %eax, 0x51c(%ebx)\n" /* this */
         "cmpl $0xb, 0x10(%ebp)\n" /* line 2882 | Value */
         "ja .Lf16794_0001688a\n"
-        "jmpl *0x2ee520(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee520(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee520:\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017935\n"
+        ".long .Lf16794_000176ab\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_000176ba\n"
+        ".long .Lf16794_000176c9\n"
+        ".long .Lf16794_000176d8\n"
+        ".long .Lf16794_000176e7\n"
+        ".long .Lf16794_000176f6\n"
+        ".long .Lf16794_00017705\n"
+        ".long .Lf16794_00017714\n"
+        ".popsection\n"
+        ".Lf16794_000169c8:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3198 | Value */
         "cmpl %eax, 0x580(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4033,6 +4551,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0xb60, (%esp)\n"
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000169f9:\n"
         "movl 0x10(%ebp), %eax\n" /* line 2855 | Value */
         "cmpl %eax, 0x544(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4046,6 +4565,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl %eax, (%esp)\n"
         "calll glDepthMask\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016a2f:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3006 | Value */
         "cmpl %eax, 0x538(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4059,13 +4579,28 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0xb44, (%esp)\n" /* line 3012 */
         "calll glDisable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016a70:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3020 | Value */
         "cmpl %eax, 0x540(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
         "movl %eax, 0x540(%ebx)\n" /* line 3022 | this */
         "cmpl $8, 0x10(%ebp)\n" /* line 3023 | Value */
         "ja .Lf16794_00017465\n"
-        "jmpl *0x2ee550(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee550(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee550:\n"
+        ".long .Lf16794_00017465\n"
+        ".long .Lf16794_0001792b\n"
+        ".long .Lf16794_00017606\n"
+        ".long .Lf16794_00017610\n"
+        ".long .Lf16794_0001761a\n"
+        ".long .Lf16794_00017624\n"
+        ".long .Lf16794_000175f2\n"
+        ".long .Lf16794_000175fc\n"
+        ".long .Lf16794_000175e8\n"
+        ".popsection\n"
+        ".Lf16794_00016a96:\n"
         "movl 0x10(%ebp), %eax\n" /* line 2839 | Value */
         "cmpl %eax, 0x58c(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4080,22 +4615,41 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl %edx, (%esp)\n" /* line 2851 */
         "calll glShadeModel\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016ad1:\n"
         "movl 0x10(%ebp), %eax\n" /* line 2903 | Value */
         "movl %eax, 0x524(%ebx)\n" /* this */
         "cmpl $0xb, 0x10(%ebp)\n" /* line 2905 | Value */
         "ja .Lf16794_0001688a\n"
-        "jmpl *0x2ee574(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee574(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee574:\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001778c\n"
+        ".long .Lf16794_0001779b\n"
+        ".long .Lf16794_000177b9\n"
+        ".long .Lf16794_000177c8\n"
+        ".long .Lf16794_000177d7\n"
+        ".long .Lf16794_000177e6\n"
+        ".long .Lf16794_000177f5\n"
+        ".long .Lf16794_00017804\n"
+        ".long .Lf16794_00017813\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017822\n"
+        ".popsection\n"
+        ".Lf16794_00016aeb:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3242 | Value */
         "movl %eax, 4(%esp)\n"
         "movl $0xb62, (%esp)\n"
         "calll glFogf\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016b03:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3254 | Value */
         "cmpl %eax, 0x554(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
         "movl %eax, 0x554(%ebx)\n" /* line 3256 | this */
         "movl $0, 4(%esp)\n" /* line 3257 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl 0x10(%ebp), %ecx\n" /* line 3258 | Value */
@@ -4104,6 +4658,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0xb90, (%esp)\n"
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016b49:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3324 | Value */
         "cmpl %eax, 0x574(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4116,6 +4671,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "calll glStencilMask\n"
         "jmp .Lf16794_0001688a\n"
         /* { scope 2 */
+        ".Lf16794_00016b7b:\n"
         "movl $0, -0x34(%ebp)\n" /* line 3394 | rgba */
         "movl $0, -0x30(%ebp)\n"
         "movl $0, -0x2c(%ebp)\n"
@@ -4148,7 +4704,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "js .Lf16794_00017c0c\n"
         "cvtsi2ssl %esi, %xmm4\n" /* m */
         ".Lf16794_00016bf7:\n"
-        "movss 0x2ed5cc, %xmm0\n" /* line 3396 | 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm0\n" /* line 3396 | 0.003921568859368563f */
         "movss -0x34(%ebp), %xmm3\n" /* rgba */
         "mulss %xmm0, %xmm3\n"
         "movss %xmm3, -0x34(%ebp)\n" /* rgba */
@@ -4164,7 +4720,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movss %xmm2, 0x5a0(%ebx)\n" /* line 3402 | this */
         "movss %xmm1, 0x5a4(%ebx)\n" /* line 3403 | this */
         "movss %xmm0, 0x5a8(%ebx)\n" /* line 3404 | this */
-        "movl 0x195ec0c, %eax\n" /* line 3406 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 3406 */
         "cmpb $0, 0x800(%eax)\n"
         "jne .Lf16794_0001688a\n"
         "leal -0x34(%ebp), %eax\n" /* line 3408 | rgba */
@@ -4173,6 +4729,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "calll glLightModelfv\n"
         "jmp .Lf16794_0001688a\n"
         /* } scope */
+        ".Lf16794_00016c7c:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3413 | Value */
         "cmpl $2, %eax\n"
         "je .Lf16794_00017b3b\n"
@@ -4183,18 +4740,22 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0xb65, (%esp)\n"
         "calll glFogf\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016cb0:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3423 | Value */
         "movl %eax, 0x52c(%ebx)\n" /* this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016cbe:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3430 | Value */
         "testl %eax, %eax\n"
         "je .Lf16794_00017a53\n"
         "movl $0xba1, (%esp)\n"
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016cda:\n"
         "movb $1, __ZN15CDirect3DDevice29mNeedsRasterizationValidationE\n" /* line 646 */
         "jmp .Lf16794_0001688a\n"
-        "movl 0x195ec0c, %eax\n" /* line 3377 */
+        ".Lf16794_00016ce6:\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 3377 */
         "cmpb $0, 0x800(%eax)\n"
         "jne .Lf16794_00017a45\n"
         "movl 0x10(%ebp), %eax\n" /* line 3379 | Value */
@@ -4207,13 +4768,28 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0xb50, (%esp)\n"
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016d29:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3051 | Value */
         "cmpl %eax, 0x514(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
         "movl %eax, 0x514(%ebx)\n" /* line 3053 | this */
         "cmpl $8, 0x10(%ebp)\n" /* line 3054 | Value */
         "ja .Lf16794_00017356\n"
-        "jmpl *0x2ee5a4(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee5a4(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee5a4:\n"
+        ".long .Lf16794_00017356\n"
+        ".long .Lf16794_000177aa\n"
+        ".long .Lf16794_000178d1\n"
+        ".long .Lf16794_000178e0\n"
+        ".long .Lf16794_000178ef\n"
+        ".long .Lf16794_000178fe\n"
+        ".long .Lf16794_0001790d\n"
+        ".long .Lf16794_0001791c\n"
+        ".long .Lf16794_0001734c\n"
+        ".popsection\n"
+        ".Lf16794_00016d4f:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3444 | Value */
         "cmpl %eax, 0x534(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4225,10 +4801,11 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $1, 0x530(%ebx)\n" /* line 3462 | this */
         "je .Lf16794_00017db0\n"
         "movl $0, 4(%esp)\n" /* line 3469 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016d9c:\n"
         "movl 0x10(%ebp), %edx\n" /* line 3579 | Value */
         "cmpl %edx, 0x590(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4249,6 +4826,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl %edx, (%esp)\n"
         "calll glColorMask\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016de4:\n"
         "movl 0x10(%ebp), %ecx\n" /* Value */
         ".Lf16794_00016de7:\n"
         "cmpl %ecx, 0x594(%ebx)\n" /* line 3611 | this */
@@ -4262,7 +4840,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "leal -4(%ecx), %eax\n" /* line 3637 */
         "cmpl $1, %eax\n"
         "ja .Lf16794_0001688a\n"
-        "movl 0x195ec0c, %eax\n" /* line 3639 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 3639 */
         "cmpb $0, 0x80a(%eax)\n"
         "je .Lf16794_0001688a\n"
         "xorl %eax, %eax\n" /* line 3641 */
@@ -4272,17 +4850,36 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl %eax, (%esp)\n"
         "calll glBlendEquationEXT\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016e46:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3085 | Value */
         "cmpl %eax, 0x54c(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
         "movl %eax, 0x54c(%ebx)\n" /* line 3087 | this */
         "movb $1, 0x518(%ebx)\n" /* line 3088 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016e67:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3093 | Value */
         "movl %eax, 0x520(%ebx)\n" /* this */
         "cmpl $0xb, 0x10(%ebp)\n" /* line 3095 | Value */
         "ja .Lf16794_0001688a\n"
-        "jmpl *0x2ee5c8(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee5c8(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee5c8:\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001764c\n"
+        ".long .Lf16794_000179bc\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_000179cb\n"
+        ".long .Lf16794_000179da\n"
+        ".long .Lf16794_000179e9\n"
+        ".long .Lf16794_000179f8\n"
+        ".long .Lf16794_00017a07\n"
+        ".long .Lf16794_00017a16\n"
+        ".long .Lf16794_00017a25\n"
+        ".popsection\n"
+        ".Lf16794_00016e81:\n"
         "movss 0x10(%ebp), %xmm0\n" /* line 3669 | Value */
         "movss %xmm0, 0xbc4(%ebx)\n" /* this */
         "mulss g_scale1, %xmm0\n" /* line 3670 */
@@ -4302,17 +4899,36 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x8037, (%esp)\n" /* line 3674 */
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016ee1:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3115 | Value */
         "movl %eax, 0x528(%ebx)\n" /* this */
         "cmpl $0xb, 0x10(%ebp)\n" /* line 3117 | Value */
         "ja .Lf16794_0001688a\n"
-        "jmpl *0x2ee5f8(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee5f8(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee5f8:\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017944\n"
+        ".long .Lf16794_00017953\n"
+        ".long .Lf16794_00017962\n"
+        ".long .Lf16794_0001688a\n"
+        ".long .Lf16794_00017971\n"
+        ".long .Lf16794_00017980\n"
+        ".long .Lf16794_0001798f\n"
+        ".long .Lf16794_0001799e\n"
+        ".long .Lf16794_000179ad\n"
+        ".long .Lf16794_0001762e\n"
+        ".long .Lf16794_0001763d\n"
+        ".popsection\n"
+        ".Lf16794_00016efb:\n"
         "movl 0x54c(%ebx), %eax\n" /* line 3596 | this */
         "testl %eax, %eax\n"
         "je .Lf16794_0001688a\n"
         "movl 0x10(%ebp), %ecx\n" /* line 3602 | Value */
         "movl %ecx, 0x598(%ebx)\n" /* this */
         "jmp .Lf16794_00016de7\n"
+        ".Lf16794_00016f17:\n"
         "movss 0x10(%ebp), %xmm0\n" /* line 3656 | Value */
         "movss %xmm0, 0xbc8(%ebx)\n" /* this */
         "mulss g_scale2, %xmm0\n" /* line 3657 */
@@ -4332,6 +4948,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x8037, (%esp)\n" /* line 3661 */
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00016f77:\n"
         "movl 0x10(%ebp), %eax\n" /* line 2867 | Value */
         "cmpl %eax, 0x50c(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4343,6 +4960,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "calll glEnable\n"
         "jmp .Lf16794_0001688a\n"
         /* { scope 2 */
+        ".Lf16794_00016fa8:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3227 | Value */
         "movl %eax, -0x24(%ebp)\n" /* f */
         "pxor %xmm0, %xmm0\n" /* line 3228 */
@@ -4360,6 +4978,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "calll glFogf\n"
         "jmp .Lf16794_0001688a\n"
         /* } scope */
+        ".Lf16794_00016fde:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3276 | Value */
         "cmpl %eax, 0x560(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4367,9 +4986,23 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         /* { scope 2 */
         "cmpl $8, %eax\n" /* line 2769 */
         "ja .Lf16794_0001741e\n"
-        "jmpl *0x2ee628(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee628(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee628:\n"
+        ".long .Lf16794_0001741e\n"
+        ".long .Lf16794_00017683\n"
+        ".long .Lf16794_0001741e\n"
+        ".long .Lf16794_0001768d\n"
+        ".long .Lf16794_00017697\n"
+        ".long .Lf16794_000176a1\n"
+        ".long .Lf16794_0001766f\n"
+        ".long .Lf16794_00017679\n"
+        ".long .Lf16794_0001758e\n"
+        ".popsection\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_00017003:\n"
         "movl $0, -0x34(%ebp)\n" /* line 3211 | rgba */
         "movl $0, -0x30(%ebp)\n"
         "movl $0, -0x2c(%ebp)\n"
@@ -4402,7 +5035,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "js .Lf16794_00017cc7\n"
         "cvtsi2ssl %ebx, %xmm2\n" /* this */
         ".Lf16794_0001707f:\n"
-        "movss 0x2ed5cc, %xmm1\n" /* line 3213 | 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm1\n" /* line 3213 | 0.003921568859368563f */
         "movss -0x34(%ebp), %xmm0\n" /* rgba */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x34(%ebp)\n" /* rgba */
@@ -4421,6 +5054,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "jmp .Lf16794_0001688a\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_000170d2:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3234 | Value */
         "movl %eax, -0x24(%ebp)\n" /* f */
         "pxor %xmm0, %xmm0\n" /* line 3235 */
@@ -4438,12 +5072,14 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "calll glFogf\n"
         "jmp .Lf16794_0001688a\n"
         /* } scope */
+        ".Lf16794_00017108:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3549 | Value */
         "movl %eax, sPointScale\n"
         "movl $sPointScale, 4(%esp)\n" /* line 3550 */
         "movl $0x8129, (%esp)\n"
         "calll glPointParameterfvARB\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017129:\n"
         "movl 0x10(%ebp), %edx\n" /* line 3262 | Value */
         "cmpl %edx, 0x558(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4452,8 +5088,22 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $8, 0x560(%ebx)\n" /* line 2769 */
         "ja .Lf16794_000173a4\n"
         "movl 0x560(%ebx), %eax\n"
-        "jmpl *0x2ee64c(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee64c(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee64c:\n"
+        ".long .Lf16794_000173a4\n"
+        ".long .Lf16794_000174ee\n"
+        ".long .Lf16794_000173a4\n"
+        ".long .Lf16794_000174f8\n"
+        ".long .Lf16794_00017502\n"
+        ".long .Lf16794_0001750c\n"
+        ".long .Lf16794_0001749e\n"
+        ".long .Lf16794_000174a8\n"
+        ".long .Lf16794_00017831\n"
+        ".popsection\n"
         /* } scope */
+        ".Lf16794_00017158:\n"
         "movl 0x10(%ebp), %edx\n" /* line 3269 | Value */
         "cmpl %edx, 0x55c(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4462,8 +5112,22 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $8, 0x560(%ebx)\n" /* line 2769 */
         "ja .Lf16794_000173e1\n"
         "movl 0x560(%ebx), %eax\n"
-        "jmpl *0x2ee670(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee670(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee670:\n"
+        ".long .Lf16794_000173e1\n"
+        ".long .Lf16794_000178a9\n"
+        ".long .Lf16794_000173e1\n"
+        ".long .Lf16794_000178b3\n"
+        ".long .Lf16794_000178bd\n"
+        ".long .Lf16794_000178c7\n"
+        ".long .Lf16794_00017895\n"
+        ".long .Lf16794_0001789f\n"
+        ".long .Lf16794_0001788b\n"
+        ".popsection\n"
         /* } scope */
+        ".Lf16794_00017187:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3308 | Value */
         "cmpl %eax, 0x56c(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4476,6 +5140,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl %eax, (%esp)\n"
         "calll glStencilFunc\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000171c2:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3317 | Value */
         "cmpl %eax, 0x570(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4488,35 +5153,54 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl %eax, (%esp)\n"
         "calll glStencilFunc\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000171fd:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3285 | Value */
         "cmpl %eax, 0x564(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
         "movl %eax, 0x564(%ebx)\n" /* line 3287 | this */
         "cmpl $8, 0x10(%ebp)\n" /* line 3288 | Value */
         "ja .Lf16794_0001737d\n"
-        "jmpl *0x2ee694(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee694(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee694:\n"
+        ".long .Lf16794_0001737d\n"
+        ".long .Lf16794_00017723\n"
+        ".long .Lf16794_00017750\n"
+        ".long .Lf16794_0001775f\n"
+        ".long .Lf16794_0001776e\n"
+        ".long .Lf16794_0001777d\n"
+        ".long .Lf16794_00017732\n"
+        ".long .Lf16794_00017741\n"
+        ".long .Lf16794_00017373\n"
+        ".popsection\n"
+        ".Lf16794_00017223:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3535 | Value */
         "movl %eax, 4(%esp)\n"
         "movl $0x8126, (%esp)\n"
         "calll glPointParameterfARB\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001723b:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3557 | Value */
         "movl %eax, 0x334e08\n"
         "movl $sPointScale, 4(%esp)\n" /* line 3558 */
         "movl $0x8129, (%esp)\n"
         "calll glPointParameterfvARB\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001725c:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3573 | Value */
         "movl %eax, 4(%esp)\n"
         "movl $0x8127, (%esp)\n"
         "calll glPointParameterfARB\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017274:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3553 | Value */
         "movl %eax, 0x334e04\n"
         "movl $sPointScale, 4(%esp)\n" /* line 3554 */
         "movl $0x8129, (%esp)\n"
         "calll glPointParameterfvARB\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017295:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3486 | Value */
         "cmpl %eax, 0x530(%ebx)\n" /* this */
         "je .Lf16794_0001688a\n"
@@ -4528,10 +5212,11 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $1, 0x534(%ebx)\n" /* line 3504 | this */
         "je .Lf16794_00017dde\n"
         "movl $0, 4(%esp)\n" /* line 3511 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000172e2:\n"
         "movl 0x10(%ebp), %eax\n" /* line 3538 | Value */
         "testl %eax, %eax\n"
         "je .Lf16794_00017a34\n"
@@ -4543,7 +5228,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "testl %eax, %eax\n"
         "je .Lf16794_0001688a\n"
         "xorl %esi, %esi\n" /* i */
-        "movl 0x195ec0c, %edi\n" /* i */
+        "movl imp___ZN7COpenGL7sOpenGLE, %edi\n" /* i */
         ".Lf16794_0001730f:\n"
         "movl %esi, 4(%esp)\n" /* line 3542 | i */
         "movl %edi, (%esp)\n" /* i */
@@ -4560,6 +5245,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "ja .Lf16794_0001730f\n"
         "jmp .Lf16794_0001688a\n"
         /* } scope */
+        ".Lf16794_0001734c:\n"
         "movl $0x207, 0x3ac(%ebx)\n" /* line 3063 | this */
         ".Lf16794_00017356:\n"
         "movl 0x3a8(%ebx), %eax\n" /* line 3068 | this */
@@ -4568,6 +5254,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl %eax, (%esp)\n"
         "calll glAlphaFunc\n"
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017373:\n"
         "movl $0x207, 0x568(%ebx)\n" /* line 3297 | this */
         ".Lf16794_0001737d:\n"
         "movl 0x570(%ebx), %eax\n" /* line 3302 | this */
@@ -4587,7 +5274,20 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $8, 0x55c(%ebx)\n"
         "ja .Lf16794_000173bc\n"
         "movl 0x55c(%ebx), %eax\n"
-        "jmpl *0x2ee6b8(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee6b8(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee6b8:\n"
+        ".long .Lf16794_000173bc\n"
+        ".long .Lf16794_0001783b\n"
+        ".long .Lf16794_000173bc\n"
+        ".long .Lf16794_00017845\n"
+        ".long .Lf16794_0001784f\n"
+        ".long .Lf16794_00017859\n"
+        ".long .Lf16794_00017863\n"
+        ".long .Lf16794_0001786d\n"
+        ".long .Lf16794_00017877\n"
+        ".popsection\n"
         ".Lf16794_000173bc:\n"
         "xorl %ecx, %ecx\n"
         /* } scope */
@@ -4595,7 +5295,20 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         ".Lf16794_000173be:\n"
         "cmpl $8, %edx\n"
         "ja .Lf16794_000173ca\n"
-        "jmpl *0x2ee6dc(, %edx, 4)\n"
+        "jmpl *.Ljt_2ee6dc(, %edx, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee6dc:\n"
+        ".long .Lf16794_000173ca\n"
+        ".long .Lf16794_00017881\n"
+        ".long .Lf16794_000173ca\n"
+        ".long .Lf16794_000174b2\n"
+        ".long .Lf16794_000174bc\n"
+        ".long .Lf16794_000174c6\n"
+        ".long .Lf16794_000174d0\n"
+        ".long .Lf16794_000174da\n"
+        ".long .Lf16794_000174e4\n"
+        ".popsection\n"
         ".Lf16794_000173ca:\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -4613,7 +5326,20 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         ".Lf16794_000173e3:\n"
         "cmpl $8, %edx\n"
         "ja .Lf16794_000173ef\n"
-        "jmpl *0x2ee700(, %edx, 4)\n"
+        "jmpl *.Ljt_2ee700(, %edx, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee700:\n"
+        ".long .Lf16794_000173ef\n"
+        ".long .Lf16794_0001753e\n"
+        ".long .Lf16794_000173ef\n"
+        ".long .Lf16794_0001765b\n"
+        ".long .Lf16794_00017665\n"
+        ".long .Lf16794_00017516\n"
+        ".long .Lf16794_00017520\n"
+        ".long .Lf16794_0001752a\n"
+        ".long .Lf16794_00017534\n"
+        ".popsection\n"
         ".Lf16794_000173ef:\n"
         "xorl %edx, %edx\n"
         /* } scope */
@@ -4622,7 +5348,20 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $8, 0x558(%ebx)\n"
         "ja .Lf16794_00017407\n"
         "movl 0x558(%ebx), %eax\n"
-        "jmpl *0x2ee724(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee724(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee724:\n"
+        ".long .Lf16794_00017407\n"
+        ".long .Lf16794_00017548\n"
+        ".long .Lf16794_00017407\n"
+        ".long .Lf16794_00017552\n"
+        ".long .Lf16794_0001755c\n"
+        ".long .Lf16794_00017566\n"
+        ".long .Lf16794_00017570\n"
+        ".long .Lf16794_0001757a\n"
+        ".long .Lf16794_00017584\n"
+        ".popsection\n"
         ".Lf16794_00017407:\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -4641,7 +5380,20 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $8, 0x55c(%ebx)\n"
         "ja .Lf16794_00017436\n"
         "movl 0x55c(%ebx), %eax\n"
-        "jmpl *0x2ee748(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee748(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee748:\n"
+        ".long .Lf16794_00017436\n"
+        ".long .Lf16794_00017598\n"
+        ".long .Lf16794_00017436\n"
+        ".long .Lf16794_000175a2\n"
+        ".long .Lf16794_000175ac\n"
+        ".long .Lf16794_000175b6\n"
+        ".long .Lf16794_000175c0\n"
+        ".long .Lf16794_000175ca\n"
+        ".long .Lf16794_000175d4\n"
+        ".popsection\n"
         ".Lf16794_00017436:\n"
         "xorl %edx, %edx\n"
         /* } scope */
@@ -4650,7 +5402,20 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "cmpl $8, 0x558(%ebx)\n"
         "ja .Lf16794_0001744e\n"
         "movl 0x558(%ebx), %eax\n"
-        "jmpl *0x2ee76c(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee76c(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee76c:\n"
+        ".long .Lf16794_0001744e\n"
+        ".long .Lf16794_000175de\n"
+        ".long .Lf16794_0001744e\n"
+        ".long .Lf16794_00017474\n"
+        ".long .Lf16794_0001747b\n"
+        ".long .Lf16794_00017482\n"
+        ".long .Lf16794_00017489\n"
+        ".long .Lf16794_00017490\n"
+        ".long .Lf16794_00017497\n"
+        ".popsection\n"
         ".Lf16794_0001744e:\n"
         "xorl %eax, %eax\n"
         /* } scope */
@@ -4667,279 +5432,402 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "calll glDepthFunc\n"
         "jmp .Lf16794_0001688a\n"
         /* { scope 2 */
+        ".Lf16794_00017474:\n"
         "movl $0x1e01, %eax\n" /* line 2771 */
         "jmp .Lf16794_00017450\n"
+        ".Lf16794_0001747b:\n"
         "movl $0x1e02, %eax\n" /* line 2773 */
         "jmp .Lf16794_00017450\n"
+        ".Lf16794_00017482:\n"
         "movl $0x1e03, %eax\n" /* line 2774 */
         "jmp .Lf16794_00017450\n"
+        ".Lf16794_00017489:\n"
         "movl $0x150a, %eax\n" /* line 2775 */
         "jmp .Lf16794_00017450\n"
+        ".Lf16794_00017490:\n"
         "movl $0x8507, %eax\n" /* line 2776 */
         "jmp .Lf16794_00017450\n"
+        ".Lf16794_00017497:\n"
         "movl $0x8508, %eax\n" /* line 2769 */
         "jmp .Lf16794_00017450\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_0001749e:\n"
         "movl $0x150a, %esi\n" /* line 2775 | m */
         "jmp .Lf16794_000173a6\n"
+        ".Lf16794_000174a8:\n"
         "movl $0x8507, %esi\n" /* line 2776 | m */
         "jmp .Lf16794_000173a6\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_000174b2:\n"
         "movl $0x1e01, %eax\n" /* line 2771 */
         "jmp .Lf16794_000173cc\n"
+        ".Lf16794_000174bc:\n"
         "movl $0x1e02, %eax\n" /* line 2773 */
         "jmp .Lf16794_000173cc\n"
+        ".Lf16794_000174c6:\n"
         "movl $0x1e03, %eax\n" /* line 2774 */
         "jmp .Lf16794_000173cc\n"
+        ".Lf16794_000174d0:\n"
         "movl $0x150a, %eax\n" /* line 2775 */
         "jmp .Lf16794_000173cc\n"
+        ".Lf16794_000174da:\n"
         "movl $0x8507, %eax\n" /* line 2776 */
         "jmp .Lf16794_000173cc\n"
+        ".Lf16794_000174e4:\n"
         "movl $0x8508, %eax\n" /* line 2769 */
         "jmp .Lf16794_000173cc\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_000174ee:\n"
         "movl $0x1e00, %esi\n" /* m */
         "jmp .Lf16794_000173a6\n"
+        ".Lf16794_000174f8:\n"
         "movl $0x1e01, %esi\n" /* line 2771 | m */
         "jmp .Lf16794_000173a6\n"
+        ".Lf16794_00017502:\n"
         "movl $0x1e02, %esi\n" /* line 2773 | m */
         "jmp .Lf16794_000173a6\n"
+        ".Lf16794_0001750c:\n"
         "movl $0x1e03, %esi\n" /* line 2774 | m */
         "jmp .Lf16794_000173a6\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_00017516:\n"
         "movl $0x1e03, %edx\n"
         "jmp .Lf16794_000173f1\n"
+        ".Lf16794_00017520:\n"
         "movl $0x150a, %edx\n" /* line 2775 */
         "jmp .Lf16794_000173f1\n"
+        ".Lf16794_0001752a:\n"
         "movl $0x8507, %edx\n" /* line 2776 */
         "jmp .Lf16794_000173f1\n"
+        ".Lf16794_00017534:\n"
         "movl $0x8508, %edx\n" /* line 2769 */
         "jmp .Lf16794_000173f1\n"
+        ".Lf16794_0001753e:\n"
         "movl $0x1e00, %edx\n"
         "jmp .Lf16794_000173f1\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_00017548:\n"
         "movl $0x1e00, %eax\n"
         "jmp .Lf16794_00017409\n"
+        ".Lf16794_00017552:\n"
         "movl $0x1e01, %eax\n" /* line 2771 */
         "jmp .Lf16794_00017409\n"
+        ".Lf16794_0001755c:\n"
         "movl $0x1e02, %eax\n" /* line 2773 */
         "jmp .Lf16794_00017409\n"
+        ".Lf16794_00017566:\n"
         "movl $0x1e03, %eax\n" /* line 2774 */
         "jmp .Lf16794_00017409\n"
+        ".Lf16794_00017570:\n"
         "movl $0x150a, %eax\n" /* line 2775 */
         "jmp .Lf16794_00017409\n"
+        ".Lf16794_0001757a:\n"
         "movl $0x8507, %eax\n" /* line 2776 */
         "jmp .Lf16794_00017409\n"
+        ".Lf16794_00017584:\n"
         "movl $0x8508, %eax\n" /* line 2769 */
         "jmp .Lf16794_00017409\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_0001758e:\n"
         "movl $0x8508, %ecx\n"
         "jmp .Lf16794_00017420\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_00017598:\n"
         "movl $0x1e00, %edx\n"
         "jmp .Lf16794_00017438\n"
+        ".Lf16794_000175a2:\n"
         "movl $0x1e01, %edx\n" /* line 2771 */
         "jmp .Lf16794_00017438\n"
+        ".Lf16794_000175ac:\n"
         "movl $0x1e02, %edx\n" /* line 2773 */
         "jmp .Lf16794_00017438\n"
+        ".Lf16794_000175b6:\n"
         "movl $0x1e03, %edx\n" /* line 2774 */
         "jmp .Lf16794_00017438\n"
+        ".Lf16794_000175c0:\n"
         "movl $0x150a, %edx\n" /* line 2775 */
         "jmp .Lf16794_00017438\n"
+        ".Lf16794_000175ca:\n"
         "movl $0x8507, %edx\n" /* line 2776 */
         "jmp .Lf16794_00017438\n"
+        ".Lf16794_000175d4:\n"
         "movl $0x8508, %edx\n" /* line 2769 */
         "jmp .Lf16794_00017438\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_000175de:\n"
         "movl $0x1e00, %eax\n"
         "jmp .Lf16794_00017450\n"
         /* } scope */
+        ".Lf16794_000175e8:\n"
         "movl $0x207, %eax\n" /* line 3023 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_000175f2:\n"
         "movl $0x205, %eax\n" /* line 3029 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_000175fc:\n"
         "movl $0x206, %eax\n" /* line 3030 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_00017606:\n"
         "movl $0x201, %eax\n" /* line 3025 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_00017610:\n"
         "movl $0x202, %eax\n" /* line 3026 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_0001761a:\n"
         "movl $0x203, %eax\n" /* line 3027 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_00017624:\n"
         "movl $0x204, %eax\n" /* line 3028 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_0001762e:\n"
         "movl $0x307, 0x3a0(%ebx)\n" /* line 3127 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001763d:\n"
         "movl $0x308, 0x3a0(%ebx)\n" /* line 3128 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001764c:\n"
         "movl $0, 0x398(%ebx)\n" /* line 3097 | this */
         "jmp .Lf16794_0001688a\n"
         /* { scope 2 */
+        ".Lf16794_0001765b:\n"
         "movl $0x1e01, %edx\n" /* line 2771 */
         "jmp .Lf16794_000173f1\n"
+        ".Lf16794_00017665:\n"
         "movl $0x1e02, %edx\n" /* line 2773 */
         "jmp .Lf16794_000173f1\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_0001766f:\n"
         "movl $0x150a, %ecx\n" /* line 2775 */
         "jmp .Lf16794_00017420\n"
+        ".Lf16794_00017679:\n"
         "movl $0x8507, %ecx\n" /* line 2776 */
         "jmp .Lf16794_00017420\n"
+        ".Lf16794_00017683:\n"
         "movl $0x1e00, %ecx\n" /* line 2769 */
         "jmp .Lf16794_00017420\n"
+        ".Lf16794_0001768d:\n"
         "movl $0x1e01, %ecx\n" /* line 2771 */
         "jmp .Lf16794_00017420\n"
+        ".Lf16794_00017697:\n"
         "movl $0x1e02, %ecx\n" /* line 2773 */
         "jmp .Lf16794_00017420\n"
+        ".Lf16794_000176a1:\n"
         "movl $0x1e03, %ecx\n" /* line 2774 */
         "jmp .Lf16794_00017420\n"
         /* } scope */
+        ".Lf16794_000176ab:\n"
         "movl $1, 0x394(%ebx)\n" /* line 2885 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000176ba:\n"
         "movl $0x302, 0x394(%ebx)\n" /* line 2886 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000176c9:\n"
         "movl $0x303, 0x394(%ebx)\n" /* line 2887 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000176d8:\n"
         "movl $0x304, 0x394(%ebx)\n" /* line 2888 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000176e7:\n"
         "movl $0x305, 0x394(%ebx)\n" /* line 2889 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000176f6:\n"
         "movl $0x306, 0x394(%ebx)\n" /* line 2890 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017705:\n"
         "movl $0x307, 0x394(%ebx)\n" /* line 2891 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017714:\n"
         "movl $0x308, 0x394(%ebx)\n" /* line 2892 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017723:\n"
         "movl $0x200, 0x568(%ebx)\n" /* line 3290 | this */
         "jmp .Lf16794_0001737d\n"
+        ".Lf16794_00017732:\n"
         "movl $0x205, 0x568(%ebx)\n" /* line 3295 | this */
         "jmp .Lf16794_0001737d\n"
+        ".Lf16794_00017741:\n"
         "movl $0x206, 0x568(%ebx)\n" /* line 3296 | this */
         "jmp .Lf16794_0001737d\n"
+        ".Lf16794_00017750:\n"
         "movl $0x201, 0x568(%ebx)\n" /* line 3291 | this */
         "jmp .Lf16794_0001737d\n"
+        ".Lf16794_0001775f:\n"
         "movl $0x202, 0x568(%ebx)\n" /* line 3292 | this */
         "jmp .Lf16794_0001737d\n"
+        ".Lf16794_0001776e:\n"
         "movl $0x203, 0x568(%ebx)\n" /* line 3293 | this */
         "jmp .Lf16794_0001737d\n"
+        ".Lf16794_0001777d:\n"
         "movl $0x204, 0x568(%ebx)\n" /* line 3294 | this */
         "jmp .Lf16794_0001737d\n"
+        ".Lf16794_0001778c:\n"
         "movl $0, 0x39c(%ebx)\n" /* line 2907 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001779b:\n"
         "movl $1, 0x39c(%ebx)\n" /* line 2908 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000177aa:\n"
         "movl $0x200, 0x3ac(%ebx)\n" /* line 3056 | this */
         "jmp .Lf16794_00017356\n"
+        ".Lf16794_000177b9:\n"
         "movl $0x300, 0x39c(%ebx)\n" /* line 2909 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000177c8:\n"
         "movl $0x301, 0x39c(%ebx)\n" /* line 2910 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000177d7:\n"
         "movl $0x302, 0x39c(%ebx)\n" /* line 2911 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000177e6:\n"
         "movl $0x303, 0x39c(%ebx)\n" /* line 2912 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000177f5:\n"
         "movl $0x304, 0x39c(%ebx)\n" /* line 2913 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017804:\n"
         "movl $0x305, 0x39c(%ebx)\n" /* line 2914 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017813:\n"
         "movl $0x306, 0x39c(%ebx)\n" /* line 2915 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017822:\n"
         "movl $0x308, 0x39c(%ebx)\n" /* line 2916 | this */
         "jmp .Lf16794_0001688a\n"
         /* { scope 2 */
+        ".Lf16794_00017831:\n"
         "movl $0x8508, %esi\n" /* line 2769 | m */
         "jmp .Lf16794_000173a6\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_0001783b:\n"
         "movl $0x1e00, %ecx\n"
         "jmp .Lf16794_000173be\n"
+        ".Lf16794_00017845:\n"
         "movl $0x1e01, %ecx\n" /* line 2771 */
         "jmp .Lf16794_000173be\n"
+        ".Lf16794_0001784f:\n"
         "movl $0x1e02, %ecx\n" /* line 2773 */
         "jmp .Lf16794_000173be\n"
+        ".Lf16794_00017859:\n"
         "movl $0x1e03, %ecx\n" /* line 2774 */
         "jmp .Lf16794_000173be\n"
+        ".Lf16794_00017863:\n"
         "movl $0x150a, %ecx\n" /* line 2775 */
         "jmp .Lf16794_000173be\n"
+        ".Lf16794_0001786d:\n"
         "movl $0x8507, %ecx\n" /* line 2776 */
         "jmp .Lf16794_000173be\n"
+        ".Lf16794_00017877:\n"
         "movl $0x8508, %ecx\n" /* line 2769 */
         "jmp .Lf16794_000173be\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_00017881:\n"
         "movl $0x1e00, %eax\n"
         "jmp .Lf16794_000173cc\n"
         /* } scope */
         /* { scope 2 */
+        ".Lf16794_0001788b:\n"
         "movl $0x8508, %ecx\n"
         "jmp .Lf16794_000173e3\n"
+        ".Lf16794_00017895:\n"
         "movl $0x150a, %ecx\n" /* line 2775 */
         "jmp .Lf16794_000173e3\n"
+        ".Lf16794_0001789f:\n"
         "movl $0x8507, %ecx\n" /* line 2776 */
         "jmp .Lf16794_000173e3\n"
+        ".Lf16794_000178a9:\n"
         "movl $0x1e00, %ecx\n" /* line 2769 */
         "jmp .Lf16794_000173e3\n"
+        ".Lf16794_000178b3:\n"
         "movl $0x1e01, %ecx\n" /* line 2771 */
         "jmp .Lf16794_000173e3\n"
+        ".Lf16794_000178bd:\n"
         "movl $0x1e02, %ecx\n" /* line 2773 */
         "jmp .Lf16794_000173e3\n"
+        ".Lf16794_000178c7:\n"
         "movl $0x1e03, %ecx\n" /* line 2774 */
         "jmp .Lf16794_000173e3\n"
         /* } scope */
+        ".Lf16794_000178d1:\n"
         "movl $0x201, 0x3ac(%ebx)\n" /* line 3057 | this */
         "jmp .Lf16794_00017356\n"
+        ".Lf16794_000178e0:\n"
         "movl $0x202, 0x3ac(%ebx)\n" /* line 3058 | this */
         "jmp .Lf16794_00017356\n"
+        ".Lf16794_000178ef:\n"
         "movl $0x203, 0x3ac(%ebx)\n" /* line 3059 | this */
         "jmp .Lf16794_00017356\n"
+        ".Lf16794_000178fe:\n"
         "movl $0x204, 0x3ac(%ebx)\n" /* line 3060 | this */
         "jmp .Lf16794_00017356\n"
+        ".Lf16794_0001790d:\n"
         "movl $0x205, 0x3ac(%ebx)\n" /* line 3061 | this */
         "jmp .Lf16794_00017356\n"
+        ".Lf16794_0001791c:\n"
         "movl $0x206, 0x3ac(%ebx)\n" /* line 3062 | this */
         "jmp .Lf16794_00017356\n"
+        ".Lf16794_0001792b:\n"
         "movl $0x200, %eax\n" /* line 3023 */
         "jmp .Lf16794_00017467\n"
+        ".Lf16794_00017935:\n"
         "movl $0, 0x394(%ebx)\n" /* line 2884 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017944:\n"
         "movl $0, 0x3a0(%ebx)\n" /* line 3119 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017953:\n"
         "movl $1, 0x3a0(%ebx)\n" /* line 3120 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017962:\n"
         "movl $0x300, 0x3a0(%ebx)\n" /* line 3121 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017971:\n"
         "movl $0x302, 0x3a0(%ebx)\n" /* line 3122 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017980:\n"
         "movl $0x303, 0x3a0(%ebx)\n" /* line 3123 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001798f:\n"
         "movl $0x304, 0x3a0(%ebx)\n" /* line 3124 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_0001799e:\n"
         "movl $0x305, 0x3a0(%ebx)\n" /* line 3125 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000179ad:\n"
         "movl $0x306, 0x3a0(%ebx)\n" /* line 3126 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000179bc:\n"
         "movl $1, 0x398(%ebx)\n" /* line 3098 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000179cb:\n"
         "movl $0x302, 0x398(%ebx)\n" /* line 3099 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000179da:\n"
         "movl $0x303, 0x398(%ebx)\n" /* line 3100 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000179e9:\n"
         "movl $0x304, 0x398(%ebx)\n" /* line 3101 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_000179f8:\n"
         "movl $0x305, 0x398(%ebx)\n" /* line 3102 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017a07:\n"
         "movl $0x306, 0x398(%ebx)\n" /* line 3103 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017a16:\n"
         "movl $0x307, 0x398(%ebx)\n" /* line 3104 | this */
         "jmp .Lf16794_0001688a\n"
+        ".Lf16794_00017a25:\n"
         "movl $0x308, 0x398(%ebx)\n" /* line 3105 | this */
         "jmp .Lf16794_0001688a\n"
         ".Lf16794_00017a34:\n"
@@ -4967,7 +5855,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "calll glDisable\n"
         "jmp .Lf16794_0001688a\n"
         ".Lf16794_00017a97:\n"
-        "movl 0x195ec0c, %eax\n" /* line 3617 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 3617 */
         "cmpb $0, 0x809(%eax)\n"
         "jne .Lf16794_00017ab2\n"
         "cmpb $0, 0x80a(%eax)\n"
@@ -5037,7 +5925,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x408, (%esp)\n"
         "calll glColorMaterial\n"
         "movl $1, 4(%esp)\n" /* line 3457 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
@@ -5048,7 +5936,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x408, (%esp)\n"
         "calll glColorMaterial\n"
         "movl $1, 4(%esp)\n" /* line 3499 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
@@ -5164,7 +6052,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         /* } scope */
         /* } scope */
         ".Lf16794_00017d24:\n"
-        "movl 0x195ec0c, %eax\n" /* line 3628 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 3628 */
         "cmpb $0, 0x809(%eax)\n"
         "je .Lf16794_0001688a\n"
         "xorl %eax, %eax\n" /* line 3630 */
@@ -5210,7 +6098,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x408, (%esp)\n"
         "calll glColorMaterial\n"
         "movl $1, 4(%esp)\n" /* line 3465 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
@@ -5219,7 +6107,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x408, (%esp)\n"
         "calll glColorMaterial\n"
         "movl $1, 4(%esp)\n" /* line 3507 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
@@ -5228,7 +6116,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x408, (%esp)\n"
         "calll glColorMaterial\n"
         "movl $1, 4(%esp)\n" /* line 3494 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
@@ -5237,7 +6125,7 @@ HRESULT CDirect3DDevice_SetRenderState(const CDirect3DDevice * _this, D3DRENDERS
         "movl $0x408, (%esp)\n"
         "calll glColorMaterial\n"
         "movl $1, 4(%esp)\n" /* line 3452 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetColorMaterialEnable\n"
         "jmp .Lf16794_0001688a\n"
@@ -5592,6 +6480,7 @@ long unsigned int CDirect3DDevice_EndPixelOneToOneState(const CDirect3DDevice * 
         "je .Lf182a0_00018560\n"
         /* { scope 2 */
         "jbe .Lf182a0_0001849c\n" /* line 2228 */
+        ".Lf182a0_00018336:\n"
         "xorl %eax, %eax\n"
         ".Lf182a0_00018338:\n"
         "movl %eax, (%esp)\n" /* line 2240 */
@@ -5639,7 +6528,7 @@ long unsigned int CDirect3DDevice_EndPixelOneToOneState(const CDirect3DDevice * 
         "leal (%esi, %esi, 8), %eax\n" /* line 2197 */
         "leal (%esi, %eax, 2), %ebx\n"
         "shll $4, %ebx\n"
-        "movl 0x195ec0c, %edi\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edi\n"
         "jmp .Lf182a0_000183ec\n"
         ".Lf182a0_000183cc:\n"
         "cmpb $0, 2(%eax, %ebx)\n" /* line 2281 */
@@ -5707,7 +6596,13 @@ long unsigned int CDirect3DDevice_EndPixelOneToOneState(const CDirect3DDevice * 
         "jmp glEnable\n" /* line 2302 */
         /* { scope 2 */
         ".Lf182a0_0001849c:\n"
-        "jmpl *0x2ee790(, %eax, 4)\n" /* line 2228 */
+        "jmpl *.Ljt_2ee790(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee790:\n"
+        ".long .Lf182a0_00018336\n"
+        ".long .Lf182a0_000185a0\n"
+        ".popsection\n"
         ".Lf182a0_000184a3:\n"
         "movl %eax, %edx\n"
         /* } scope */
@@ -5786,6 +6681,7 @@ long unsigned int CDirect3DDevice_EndPixelOneToOneState(const CDirect3DDevice * 
         "movl -0x1c(%ebp), %edx\n" /* this */
         "jmp .Lf182a0_0001839c\n"
         /* { scope 2 */
+        ".Lf182a0_000185a0:\n"
         "movl $0x200, %eax\n" /* line 2228 */
         "jmp .Lf182a0_00018338\n"
         "movl $0x205, %eax\n" /* line 2234 */
@@ -5906,9 +6802,9 @@ HRESULT CDirect3DDevice_StretchRect(const CDirect3DDevice * _this, IDirect3DSurf
         "testl %edx, %edx\n"
         "je .Lf185f0_00018adb\n"
         "movl $0xfffffffe, 0xc(%esp)\n"
-        "movl 0x195ec58, %eax\n"
+        "movl imp___ZTI14COpenGLTexture, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x195ec4c, %eax\n"
+        "movl imp___ZTI17IDirect3DTexture9, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll ___dynamic_cast\n"
@@ -6009,7 +6905,7 @@ HRESULT CDirect3DDevice_StretchRect(const CDirect3DDevice * _this, IDirect3DSurf
         "movl $0xbf800000, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll glScalef\n"
-        "movsd 0x307c10, %xmm1\n" /* line 1763 | 1.0 */
+        "movsd lit8_00307c10, %xmm1\n" /* line 1763 | 1.0 */
         "movsd %xmm1, 0x18(%esp)\n"
         "pxor %xmm0, %xmm0\n"
         "movsd %xmm0, 0x10(%esp)\n"
@@ -6322,9 +7218,9 @@ HRESULT CDirect3DDevice_StretchRect(const CDirect3DDevice * _this, IDirect3DSurf
         "testl %edx, %edx\n"
         "je .Lf185f0_000194ad\n"
         "movl $0xfffffffe, 0xc(%esp)\n"
-        "movl 0x195ec58, %eax\n"
+        "movl imp___ZTI14COpenGLTexture, %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl 0x195ec4c, %eax\n"
+        "movl imp___ZTI17IDirect3DTexture9, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll ___dynamic_cast\n"
@@ -7278,7 +8174,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "jne .Lf19ca0_00019d4b\n"
         "xorl %ebx, %ebx\n" /* UseOutputTexTransform */
         ".Lf19ca0_00019cce:\n"
-        "movl 0x195ec18, %eax\n" /* line 4898 */
+        "movl imp___ZN10CVAOPacket10sVAOStatusE, %eax\n" /* line 4898 */
         "cmpl $1, (%eax)\n"
         "je .Lf19ca0_0001a005\n"
         ".Lf19ca0_00019cdc:\n"
@@ -7288,7 +8184,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "leal -0x78(%ebp), %eax\n" /* line 5224 | OutputTexTransform */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* TexUnit */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexMatrix\n"
         /* } scope */
@@ -7307,11 +8203,11 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "cmpl $0x10000, %ecx\n" /* line 5026 */
         "je .Lf19ca0_00019e5b\n"
         ".Lf19ca0_00019d27:\n"
-        "movl 0x195ec30, %eax\n" /* line 672 */
+        "movl imp___ZN7COpenGL9sDrawFlagE, %eax\n" /* line 672 */
         "movb $0, (%eax)\n"
         ".Lf19ca0_00019d2f:\n"
         "movl %edi, 4(%esp)\n" /* line 5228 | TexUnit */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexMatrixIdentity\n"
         /* } scope */
@@ -7373,7 +8269,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "xorl %ebx, %ebx\n" /* line 99 */
         /* } scope */
         ".Lf19ca0_00019dde:\n"
-        "movl 0x195ec18, %eax\n" /* line 4967 */
+        "movl imp___ZN10CVAOPacket10sVAOStatusE, %eax\n" /* line 4967 */
         "cmpl $1, (%eax)\n"
         "jne .Lf19ca0_00019cdc\n"
         "movl 0x18(%ebp), %edx\n" /* line 162 | VSize */
@@ -7385,7 +8281,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "movl $0x1406, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
         "leal (%edi, %edi, 2), %eax\n"
-        "movl 0x195ec54, %edx\n"
+        "movl imp_g_CurrentGenericPacket, %edx\n"
         "movl (%edx), %edx\n"
         "leal 0x70(%edx, %eax, 8), %eax\n"
         "movl %eax, (%esp)\n"
@@ -7398,7 +8294,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "movl 0x18(%ebp), %eax\n" /* VSize */
         "movl %eax, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* TexUnit */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_EnableTexCoordArray\n"
         "jmp .Lf19ca0_00019cdc\n"
@@ -7440,7 +8336,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "leal 0x430(%edx), %ebx\n"
         ".Lf19ca0_00019ed5:\n"
         "movl %edi, 4(%esp)\n" /* line 5046 | TexUnit */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl 8(%ebp), %edx\n" /* line 5047 | this */
@@ -7528,7 +8424,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "movl $0x1406, 8(%esp)\n"
         "movl $1, 4(%esp)\n"
         "leal (%edi, %edi, 2), %eax\n"
-        "movl 0x195ec54, %edx\n"
+        "movl imp_g_CurrentGenericPacket, %edx\n"
         "movl (%edx), %edx\n"
         "leal 0x70(%edx, %eax, 8), %eax\n"
         "movl %eax, (%esp)\n"
@@ -7541,7 +8437,7 @@ long unsigned int CDirect3DDevice_SetTextureCoordStream(const CDirect3DDevice * 
         "movl 0x18(%ebp), %edx\n" /* VSize */
         "movl %edx, 8(%esp)\n"
         "movl %edi, 4(%esp)\n" /* TexUnit */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_EnableTexCoordArray\n"
         "jmp .Lf19ca0_00019cdc\n"
@@ -7890,7 +8786,7 @@ void ZN15CDirect3DDeviceD0Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32f7a8, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DDevice, (%ebx)\n" /* this */
         "movl 0xec(%ebx), %edx\n" /* line 143 | this */
         "testl %edx, %edx\n"
         "je .Lf1a50e_0001a531\n"
@@ -7926,7 +8822,7 @@ void ZN15CDirect3DDeviceD0Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         ".Lf1a50e_0001a573:\n"
-        "movl 0x195ec0c, %eax\n" /* line 173 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 173 */
         "movl %eax, (%esp)\n"
         "calll COpenGL_Shutdown\n"
         "leal 8(%ebx), %eax\n" /* line 176 | this */
@@ -8013,7 +8909,7 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "calll glDrawBuffer\n"
         "movl $0x405, (%esp)\n" /* line 830 */
         "calll glReadBuffer\n"
-        "movl 0x195ec0c, %eax\n" /* line 834 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 834 */
         "movl %eax, (%esp)\n"
         "calll COpenGL_Shutdown\n"
         ".Lf1a5f8_0001a641:\n"
@@ -8094,7 +8990,22 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "subl $0x46, %eax\n"
         "cmpl $0xa, %eax\n"
         "ja .Lf1a5f8_0001a750\n"
-        "jmpl *0x2ee7b4(, %eax, 4)\n"
+        "jmpl *.Ljt_2ee7b4(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ee7b4:\n"
+        ".long .Lf1a5f8_0001b0cf\n"
+        ".long .Lf1a5f8_0001a79d\n"
+        ".long .Lf1a5f8_0001a750\n"
+        ".long .Lf1a5f8_0001a750\n"
+        ".long .Lf1a5f8_0001a750\n"
+        ".long .Lf1a5f8_0001b0d9\n"
+        ".long .Lf1a5f8_0001a750\n"
+        ".long .Lf1a5f8_0001b0d9\n"
+        ".long .Lf1a5f8_0001a750\n"
+        ".long .Lf1a5f8_0001a750\n"
+        ".long .Lf1a5f8_0001b0cf\n"
+        ".popsection\n"
         /* { scope 2: TexStage */
         ".Lf1a5f8_0001a750:\n"
         "movl $0x88760869, %eax\n" /* line 99 */
@@ -8128,6 +9039,7 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "movl %eax, 0xc(%esp)\n"
         "movl $0x20, 8(%esp)\n"
         "jmp .Lf1a5f8_0001a723\n"
+        ".Lf1a5f8_0001a79d:\n"
         "movl $0x20, %edx\n" /* line 900 */
         ".Lf1a5f8_0001a7a2:\n"
         "leal -0x19(%ebp), %eax\n" /* line 925 | hasAuxBuffer */
@@ -8154,7 +9066,7 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "movl 0x504(%esi), %eax\n" /* this */
         "movl %eax, 8(%esp)\n"
         "movl $2, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_Init\n"
         "movl 8(%esi), %eax\n" /* line 946 | this */
@@ -8215,7 +9127,7 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "jne .Lf1a5f8_0001a883\n"
         /* } scope */
         ".Lf1a5f8_0001a8e4:\n"
-        "movl 0x195ec5c, %ebx\n" /* line 964 */
+        "movl imp_g_NoTextureID, %ebx\n" /* line 964 */
         "movb $1, (%ebx)\n"
         "movl (%esi), %edx\n" /* line 965 | this */
         "movl $0, 0x20(%esp)\n"
@@ -8267,15 +9179,15 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "testl %eax, %eax\n"
         "je .Lf1a5f8_0001aa36\n"
         "xorl %ebx, %ebx\n" /* i */
-        "movl 0x195ec0c, %edi\n" /* i */
+        "movl imp___ZN7COpenGL7sOpenGLE, %edi\n" /* i */
         ".Lf1a5f8_0001a9e5:\n"
         "movl 0xf0(%esi), %eax\n" /* line 981 | this */
         "testl %eax, %eax\n"
         "je .Lf1a5f8_0001aa13\n"
         "movl $0xfffffffe, 0xc(%esp)\n"
-        "movl 0x195ec58, %edx\n"
+        "movl imp___ZTI14COpenGLTexture, %edx\n"
         "movl %edx, 8(%esp)\n"
-        "movl 0x195ec4c, %ecx\n"
+        "movl imp___ZTI17IDirect3DTexture9, %ecx\n"
         "movl %ecx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll ___dynamic_cast\n"
@@ -8605,9 +9517,11 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "retl\n"
         /* { scope 1: L, VideoMemory, TextureMemory */
         /* { scope 2: TexStage */
+        ".Lf1a5f8_0001b0cf:\n"
         "movl $0x10, %edx\n" /* line 99 */
         "jmp .Lf1a5f8_0001a7a2\n"
         /* } scope */
+        ".Lf1a5f8_0001b0d9:\n"
         "movl $0x18, %edx\n" /* line 900 */
         "jmp .Lf1a5f8_0001a7a2\n"
         /* { scope 2: TexStage */
@@ -8652,7 +9566,7 @@ long unsigned int CDirect3DDevice_CDirect3DDevice(const CDirect3DDevice * _this,
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32f7a8, (%ebx)\n" /* line 125 | this */
+        "movl $vtbl_CDirect3DDevice, (%ebx)\n" /* line 125 | this */
         "movl $0, 4(%ebx)\n" /* this */
         "movl 0x14(%ebp), %eax\n" /* Context */
         "movl %eax, 8(%ebx)\n" /* this */
@@ -8826,7 +9740,7 @@ void ZN15CDirect3DDeviceD2Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32f7a8, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DDevice, (%ebx)\n" /* this */
         "movl 0xec(%ebx), %edx\n" /* line 143 | this */
         "testl %edx, %edx\n"
         "je .Lf1b886_0001b8a9\n"
@@ -8862,7 +9776,7 @@ void ZN15CDirect3DDeviceD2Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         ".Lf1b886_0001b8eb:\n"
-        "movl 0x195ec0c, %eax\n" /* line 173 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 173 */
         "movl %eax, (%esp)\n"
         "calll COpenGL_Shutdown\n"
         "leal 8(%ebx), %eax\n" /* line 176 | this */
@@ -8942,7 +9856,7 @@ void ZN15CDirect3DDeviceD1Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32f7a8, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DDevice, (%ebx)\n" /* this */
         "movl 0xec(%ebx), %edx\n" /* line 143 | this */
         "testl %edx, %edx\n"
         "je .Lf1b96e_0001b991\n"
@@ -8978,7 +9892,7 @@ void ZN15CDirect3DDeviceD1Ev(void) /* CDirect3DDevice_~CDirect3DDevice */
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         ".Lf1b96e_0001b9d3:\n"
-        "movl 0x195ec0c, %eax\n" /* line 173 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 173 */
         "movl %eax, (%esp)\n"
         "calll COpenGL_Shutdown\n"
         "leal 8(%ebx), %eax\n" /* line 176 | this */
@@ -10477,7 +11391,7 @@ long unsigned int CDirect3DDevice_CTexStage_Init(const CTexStage * _this, UINT32
         "movl -0x1c(%ebp), %eax\n"
         "movl %eax, 0xc(%edx)\n"
         "movl %ecx, 0x20(%edi)\n" /* line 183 */
-        "movl 0x195ec50, %eax\n" /* line 221 */
+        "movl imp___ZN13COpenGLMatrix9sIdentityE, %eax\n" /* line 221 */
         "movl (%eax), %edx\n"
         "movl %edx, -0x9c(%ebp)\n"
         "movl 4(%eax), %ecx\n"

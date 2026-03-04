@@ -35,7 +35,7 @@ static YY_BUFFER_STATE yy_current_buffer; /* yy_current_buffer */
 static char yy_hold_char; /* yy_hold_char */
 static int yy_n_chars; /* yy_n_chars */
 static char *yy_c_buf_p; /* yy_c_buf_p */
-static int yy_init; /* yy_init */
+extern int yy_init; /* yy_init */
 static int yy_start; /* yy_start */
 static int yy_did_buffer_switch_on_eof; /* yy_did_buffer_switch_on_eof */
 static const short int yy_accept[256]; /* yy_accept */

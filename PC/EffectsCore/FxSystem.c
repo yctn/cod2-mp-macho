@@ -43,7 +43,7 @@ void FxHelper_CalcFrustumPlanes(const FxHelper * _this, refdef_t *refdef, float 
 void FxHelper_AdjustCamera(const FxHelper * _this, refdef_t *refdef, float zfar);
 void FxHelper_Archive(const FxHelper * _this, FxArchive *arch);
 
-#define RE        (*(refexport_t **)imp_re)
+#define RE        ((refexport_t *)imp_re)
 #define FX_HELPER (*(FxHelper **)imp_theFxHelper)
 
 /* line 28 */

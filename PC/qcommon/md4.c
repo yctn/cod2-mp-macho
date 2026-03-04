@@ -8,7 +8,7 @@
 extern long int Com_Memcpy(long int *dest, const long int *src, int count);
 extern long int Com_Memset(long int *dest, const int val, int count);
 
-static unsigned char PADDING[64]; /* PADDING */
+extern unsigned char PADDING[64]; /* PADDING */
 
 static void MD4Transform(UINT4 *state, const unsigned char *block);
 void MD4Update(MD4_CTX *context, const unsigned char *input, unsigned int inputLen);

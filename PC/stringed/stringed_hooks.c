@@ -14,10 +14,10 @@ extern const dvar_t *loc_warningsAsErrors; /* 0x0 */
 static char szErrorString[1024]; /* szErrorString */
 static int iCurrString; /* iCurrString */
 static char szStrings[2][1024]; /* szStrings */
-static languageInfo_t g_languages[14]; /* g_languages */
+extern languageInfo_t g_languages[14]; /* g_languages */
 static qboolean g_currentAsian; /* g_currentAsian */
 
-extern const dvar_t **com_developer; /* imp_fs_ignoreLocalized */
+extern const dvar_t *com_developer; /* imp_fs_ignoreLocalized */
 extern int __mh_execute_header;
 extern byte *__DefaultRuneLocale;
 
@@ -134,7 +134,7 @@ static qboolean SEH_StringEd_SetLanguageStrings(int iLanguage) {
         return 1;
     }
 
-    if ((*com_developer)->current.enabled) {
+    if (com_developer->current.enabled) {
         return 0;
     }
     if (!loc_warnings->current.enabled) {

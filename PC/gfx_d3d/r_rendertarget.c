@@ -4,11 +4,11 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern void **g_dx;          /* imp_dx */
-extern void **g_vidConfig;   /* imp_vidConfig */
-extern void **g_ri;          /* imp_ri */
-extern void **g_dxIter;      /* imp_alwaysfails */
-extern byte *g_creatingTexture; /* imp_g_NoTextureID */
+extern void *imp_dx;          /* import pointer: address of dx BSS struct */
+extern void *imp_vidConfig;   /* import pointer: address of vidConfig BSS struct */
+extern void *imp_ri;          /* import pointer: address of ri BSS struct */
+extern void *imp_alwaysfails; /* import pointer: always-false flag */
+extern void *imp_g_NoTextureID; /* import pointer */
 
 /* Function declarations */
 extern const char *va(const char *fmt, ...);
@@ -37,13 +37,13 @@ extern void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format
  *   0x00 = width
  *   0x04 = height
  *
- * refimport_t (via g_ri):
+ * refimport_t (via imp_ri):
  *   0x00 = Printf function pointer
  */
 
 /* Helper to get DxGlobals byte pointer */
-#define DX()          (*(byte **)g_dx)
-#define VIDCONFIG()   (*(byte **)g_vidConfig)
+#define DX()          ((byte *)imp_dx)
+#define VIDCONFIG()   ((byte *)imp_vidConfig)
 
 /* DxGlobals field accessors */
 #define DX_DEVICE(dx)                     (*(void **)((dx) + 0x08))
@@ -199,11 +199,11 @@ static IDirect3DSurface9 *R_CreateSmallDepthStencil(byte *dxPtr)
         IDirect3DSurface9 *newSurface = NULL;
         HRESULT hr;
 
-        *g_creatingTexture = 1;
+        *(byte *)imp_g_NoTextureID = 1;
         hr = ((D3DDevice_CreateDepthStencilFn)vtable[0x74 / 4])(
             device, 128, 128, D3DFMT_D24S8, 0, 0, 0,
             &newSurface, NULL);
-        *g_creatingTexture = 0;
+        *(byte *)imp_g_NoTextureID = 0;
 
         if (hr < 0) {
             const char *desc = R_ErrorDescription(hr);
@@ -306,7 +306,7 @@ long int R_InitRenderTargets(void)
             device, 0, 0, 0, dxPtr + 0x2c34);
 
         /* Check if iteration needed */
-    } while (*(int *)g_dxIter != 0);
+    } while (*(int *)imp_alwaysfails != 0);
 
     /* line 108-109: Get full screen dimensions from vidConfig */
     vidCfg = VIDCONFIG();
@@ -315,7 +315,7 @@ long int R_InitRenderTargets(void)
 
     /* line 223-226: Create main depth stencil surface */
     {
-        byte *creatingTex = g_creatingTexture;
+        byte *creatingTex = (byte *)imp_g_NoTextureID;
         *creatingTex = 1;
 
         dxPtr = DX();
@@ -337,7 +337,7 @@ long int R_InitRenderTargets(void)
 
     /* line 491: Print requested frame buffer format */
     {
-        void (*riPrintf)() = *(void (**)())g_ri;
+        void (*riPrintf)() = *(void (**)())imp_ri;
         riPrintf(0, "Requested frame buffer to be %s\n", "24-bit color with 8-bit alpha");
 
         /* line 492: Get the actual format of the color surface */
@@ -353,7 +353,7 @@ long int R_InitRenderTargets(void)
         *(D3DFORMAT *)(dxPtr + 0x10) = surfaceFormat;
 
         /* line 495: Print actual format */
-        riPrintf = *(void (**)())g_ri;
+        riPrintf = *(void (**)())imp_ri;
         riPrintf(0, "DirectX returned a frame buffer that is %s\n", R_DescribeFormat(surfaceFormat));
     }
 

@@ -183,9 +183,9 @@ static cg_weaponsArray_t cg_weaponsArray; /* cg_weaponsArray */
 static cg_itemsArray_t cg_itemsArray; /* cg_itemsArray */
 static Bool g_ambientStarted; /* g_ambientStarted */
 static Bool g_mapLoaded; /* g_mapLoaded */
-static const char * cg_soundRoomTypes[27]; /* cg_soundRoomTypes */
-static const char * cg_drawSoundOverlayStrings[5]; /* cg_drawSoundOverlayStrings */
-static const char * cg_drawFpsNames[5]; /* cg_drawFpsNames */
+extern const char * cg_soundRoomTypes[27]; /* cg_soundRoomTypes */
+extern const char * cg_drawSoundOverlayStrings[5]; /* cg_drawSoundOverlayStrings */
+extern const char * cg_drawFpsNames[5]; /* cg_drawFpsNames */
 
 void CG_GetEntityOrientation(int entnum, vec_t *origin_out, vec3_t *axis_out);
 int CG_CrosshairPlayer(void);

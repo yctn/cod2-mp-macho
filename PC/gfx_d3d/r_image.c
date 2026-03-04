@@ -12,8 +12,8 @@
 extern const char * g_platform_name[2]; /* 0x0 */
 static int imageGlobals; /* imageGlobals */
 static GfxImage g_imageProgs[12]; /* g_imageProgs */
-static const char * g_imageProgNames[12]; /* g_imageProgNames */
-static const char * imageTypeName[10]; /* imageTypeName */
+extern const char * g_imageProgNames[12]; /* g_imageProgNames */
+extern const char * imageTypeName[10]; /* imageTypeName */
 
 static void R_AddImageToList(union XAssetHeader header, void *data);
 extern void DB_EnumXAssets(int type, void (*func)(union XAssetHeader, void *), void *data, int overrides);

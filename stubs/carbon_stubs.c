@@ -145,3 +145,262 @@ int CFURLGetFileSystemRepresentation(CFURLRef url, int resolveAgainstBase, unsig
 void CFRelease(CFTypeRef cf)
 {
 }
+
+/* Window management stubs - called by MacDisplay_SetMode and other Mac windowing code */
+
+Boolean IsWindowVisible(WindowRef window)
+{
+    return 0; /* not visible - skip bounds checking in SetMode */
+}
+
+void SizeWindow(WindowRef window, short w, short h, Boolean fUpdate)
+{
+}
+
+CGrafPtr GetWindowPortBounds(WindowRef window, Rect *bounds)
+{
+    if (bounds) {
+        bounds->top = 0;
+        bounds->left = 0;
+        bounds->bottom = 480;
+        bounds->right = 640;
+    }
+    return (CGrafPtr)0;
+}
+
+void SetPortWindowPort(WindowRef window)
+{
+}
+
+void ForeColor(int color)
+{
+}
+
+void PaintRect(const Rect *r)
+{
+}
+
+void ClipRect(const Rect *r)
+{
+}
+
+void FrameRoundRect(const Rect *r, short ovalWidth, short ovalHeight)
+{
+}
+
+void PaintRoundRect(const Rect *r, short ovalWidth, short ovalHeight)
+{
+}
+
+void RGBForeColor(const void *color)
+{
+}
+
+void OpenRgn(void)
+{
+}
+
+void CloseRgn(void *rgn)
+{
+}
+
+void SetClip(void *rgn)
+{
+}
+
+void *NewRgn(void)
+{
+    return (void *)0;
+}
+
+void DisposeRgn(void *rgn)
+{
+}
+
+Boolean EqualRect(const Rect *a, const Rect *b)
+{
+    return 0;
+}
+
+void NormalizeThemeDrawingState(void)
+{
+}
+
+int DrawThemeMenuBarBackground(const Rect *r, int style, int erase)
+{
+    return 0;
+}
+
+WindowRef GetControlOwner(ControlRef control)
+{
+    return (WindowRef)0;
+}
+
+/* Display Manager stubs */
+GDHandle DMGetFirstScreenDevice(int activeOnly)
+{
+    return (GDHandle)0;
+}
+
+GDHandle DMGetNextScreenDevice(GDHandle dev, int activeOnly)
+{
+    return (GDHandle)0;
+}
+
+/* Window creation and management */
+OSStatus CreateNewWindow(unsigned int wClass, unsigned int attrs, const Rect *bounds, WindowRef *outWindow)
+{
+    if (outWindow) *outWindow = (WindowRef)0;
+    return 0;
+}
+
+void MoveWindow(WindowRef window, short h, short v, Boolean front)
+{
+}
+
+void SetWindowContentColor(WindowRef window, const void *color)
+{
+}
+
+void SetWindowTitleWithCFString(WindowRef window, CFStringRef title)
+{
+}
+
+OSStatus GetAvailableWindowPositioningBounds(GDHandle device, Rect *bounds)
+{
+    if (bounds) {
+        bounds->top = 0;
+        bounds->left = 0;
+        bounds->bottom = 1080;
+        bounds->right = 1920;
+    }
+    return 0;
+}
+
+void SetSystemUIMode(unsigned int mode, unsigned int options)
+{
+}
+
+void HideMenuBar(void)
+{
+}
+
+void ShowMenuBar(void)
+{
+}
+
+void InvalMenuBar(void)
+{
+}
+
+/* Menu stubs */
+MenuRef NewMenu(short menuID, const void *menuTitle)
+{
+    return (MenuRef)0;
+}
+
+void InsertMenu(MenuRef menu, short beforeID)
+{
+}
+
+/* QuickDraw geometry stubs */
+void InsetRect(Rect *r, short dh, short dv)
+{
+    if (r) {
+        r->top += dv;
+        r->left += dh;
+        r->bottom -= dv;
+        r->right -= dh;
+    }
+}
+
+void OffsetRect(Rect *r, short dh, short dv)
+{
+    if (r) {
+        r->top += dv;
+        r->left += dh;
+        r->bottom += dv;
+        r->right += dh;
+    }
+}
+
+void MapRect(Rect *r, const Rect *srcRect, const Rect *dstRect)
+{
+}
+
+Boolean PtInRect(Point pt, const Rect *r)
+{
+    return 0;
+}
+
+void QDGlobalToLocalPoint(CGrafPtr port, Point *pt)
+{
+}
+
+void QDLocalToGlobalPoint(CGrafPtr port, Point *pt)
+{
+}
+
+/* Theme drawing */
+OSStatus DrawThemeFocusRect(const Rect *r, Boolean hasFocus)
+{
+    return 0;
+}
+
+/* Icon stubs */
+OSStatus GetIconRefFromFileInfo(const void *ref, int nameLen, const void *name, unsigned int inWhich, unsigned int inFlags, void *iconLabel, void **outIcon)
+{
+    if (outIcon) *outIcon = (void *)0;
+    return 0;
+}
+
+void PlotIconRef(const Rect *r, short align, short transform, unsigned int usage, void *iconRef)
+{
+}
+
+void ReleaseIconRef(void *iconRef)
+{
+}
+
+/* Keyboard */
+unsigned int GetCurrentKeyModifiers(void)
+{
+    return 0;
+}
+
+/* QuickTime/Movie stubs */
+void CloseMovieFile(short refNum)
+{
+}
+
+void EndMediaEdits(void *media)
+{
+}
+
+long GetMediaDuration(void *media)
+{
+    return 0;
+}
+
+OSErr InsertMediaIntoTrack(void *track, int trackStart, int mediaTime, int mediaDuration, int mediaRate)
+{
+    return 0;
+}
+
+/* OpenGL utility */
+unsigned char gluCheckExtension(const unsigned char *extName, const unsigned char *extString)
+{
+    return 0;
+}
+
+/* IOKit stubs */
+int IOObjectConformsTo(unsigned int object, const char *className)
+{
+    return 0;
+}
+
+int IORegistryEntryGetParentEntry(unsigned int entry, const char *plane, unsigned int *parent)
+{
+    if (parent) *parent = 0;
+    return -1;
+}

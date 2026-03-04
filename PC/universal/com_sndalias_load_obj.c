@@ -10,8 +10,8 @@
 
 extern struct saLoadObjGlob_type saLoadObjGlob; /* 0x0 */
 static char szReference[1024]; /* szReference */
-static const char * g_pszSndAliasKeyNames[24]; /* g_pszSndAliasKeyNames */
-static const char * g_pszChannelNames[11]; /* g_pszChannelNames */
+extern const char * g_pszSndAliasKeyNames[24]; /* g_pszSndAliasKeyNames */
+extern const char * g_pszChannelNames[11]; /* g_pszChannelNames */
 
 extern int I_stricmp(const char *s0, const char *s1);
 

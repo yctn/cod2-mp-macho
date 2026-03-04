@@ -69,4 +69,25 @@ CFURLRef CFBundleCopyBundleURL(CFBundleRef bundle);
 int CFURLGetFileSystemRepresentation(CFURLRef url, int resolveAgainstBase, unsigned char *buffer, int maxBufLen);
 void CFRelease(CFTypeRef cf);
 
+/* Window management stubs (Mac Carbon Window Manager) */
+Boolean IsWindowVisible(WindowRef window);
+void SizeWindow(WindowRef window, short w, short h, Boolean fUpdate);
+CGrafPtr GetWindowPortBounds(WindowRef window, Rect *bounds);
+void SetPortWindowPort(WindowRef window);
+void ForeColor(int color);
+void PaintRect(const Rect *r);
+void ClipRect(const Rect *r);
+void FrameRoundRect(const Rect *r, short ovalWidth, short ovalHeight);
+void PaintRoundRect(const Rect *r, short ovalWidth, short ovalHeight);
+void RGBForeColor(const void *color);
+void OpenRgn(void);
+void CloseRgn(void *rgn);
+void SetClip(void *rgn);
+void *NewRgn(void);
+void DisposeRgn(void *rgn);
+Boolean EqualRect(const Rect *a, const Rect *b);
+void NormalizeThemeDrawingState(void);
+int DrawThemeMenuBarBackground(const Rect *r, int style, int erase);
+WindowRef GetControlOwner(ControlRef control);
+
 #endif /* STUBS_CARBON_H */

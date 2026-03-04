@@ -32,7 +32,7 @@ extern byte *cg_weapinfo_ptr;  /* imp_cg_weapons */
 extern byte *cg_hud_ptr;       /* imp_hud_fade_offhand */
 extern byte *cg_tags_ptr;      /* imp_scr_const */
 
-static const char * offhandStrings[3]; /* offhandStrings */
+extern const char * offhandStrings[3]; /* offhandStrings */
 static const dvar_t *hud_flash_time_offhand; /* hud_flash_time_offhand */
 static const dvar_t *hud_flash_period_offhand; /* hud_flash_period_offhand */
 

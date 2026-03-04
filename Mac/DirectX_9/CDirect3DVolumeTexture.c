@@ -687,7 +687,7 @@ void ZN22CDirect3DVolumeTextureD0Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "leal 0x4c(%edi), %eax\n" /* line 432 | this */
         "movl %eax, (%esp)\n"
         "calll ZN13CMemoryBufferD1Ev\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, 4(%edi)\n"
         "movl 8(%edi), %eax\n" /* line 99 */
@@ -703,7 +703,7 @@ void ZN22CDirect3DVolumeTextureD0Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "jmp __ZdlPv\n"
         ".Lf11827e_0011830e:\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         "movl %edi, 8(%ebp)\n" /* line 432 | this */
@@ -715,7 +715,7 @@ void ZN22CDirect3DVolumeTextureD0Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "jmp __ZdlPv\n"
         "movl %eax, %ebx\n"
         ".Lf11827e_00118330:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, 4(%edi)\n"
         "movl 8(%edi), %eax\n" /* line 99 */
@@ -723,7 +723,7 @@ void ZN22CDirect3DVolumeTextureD0Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "testl %esi, %esi\n"
         "je .Lf11827e_00118355\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf11827e_00118355:\n"
@@ -1036,14 +1036,14 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "pushl %ebx\n"
         "subl $0x5c, %esp\n"
         "movl 0x14(%ebp), %edi\n" /* Depth */
-        "movl 0x195ec38, %eax\n" /* line 77 */
+        "movl imp___ZTV8IUnknown, %eax\n" /* line 77 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, (%edx)\n"
-        "movl 0x195ec48, %eax\n" /* line 852 */
+        "movl imp___ZTV18IDirect3DResource9, %eax\n" /* line 852 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x195ec40, %eax\n" /* line 1020 */
+        "movl imp___ZTV21IDirect3DBaseTexture9, %eax\n" /* line 1020 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "movl 0x195f250, %eax\n" /* line 1192 */
@@ -1051,7 +1051,7 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "movl %eax, (%edx)\n"
         "addl $4, %edx\n" /* line 355 */
         "movl %edx, -0x3c(%ebp)\n"
-        "movl 0x195ec3c, %eax\n" /* line 91 | this */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 91 | this */
         "addl $8, %eax\n" /* this */
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n" /* this */
@@ -1062,7 +1062,7 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "movl %eax, 4(%esp)\n" /* line 565 */
         "movl $1, (%esp)\n"
         "calll glGenTextures\n"
-        "movl 0x195ec0c, %esi\n" /* line 597 | pSurfaceMemory */
+        "movl imp___ZN7COpenGL7sOpenGLE, %esi\n" /* line 597 | pSurfaceMemory */
         "addl $0x66c, %esi\n" /* pSurfaceMemory */
         /* { scope 2: CreateOpenGLResources */
         "movl $0xc, (%esp)\n" /* line 88 */
@@ -1304,7 +1304,7 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "jmp .Lf1185fa_00118768\n"
         "movl %eax, %esi\n" /* pSurfaceMemory */
         ".Lf1185fa_0011898a:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -1314,7 +1314,7 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "testl %edx, %edx\n"
         "je .Lf1185fa_001189b5\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf1185fa_001189b5:\n"
@@ -1411,7 +1411,7 @@ void ZN22CDirect3DVolumeTextureD2Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "addl $0x4c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll ZN13CMemoryBufferD1Ev\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -1420,7 +1420,7 @@ void ZN22CDirect3DVolumeTextureD2Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "testl %edx, %edx\n"
         "je .Lf118dfa_00118e93\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf118dfa_00118e93:\n"
@@ -1432,7 +1432,7 @@ void ZN22CDirect3DVolumeTextureD2Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "retl\n"
         "movl %eax, %ebx\n"
         ".Lf118dfa_00118e9d:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -1441,7 +1441,7 @@ void ZN22CDirect3DVolumeTextureD2Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "testl %ecx, %ecx\n"
         "je .Lf118dfa_00118ec5\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf118dfa_00118ec5:\n"
@@ -1529,7 +1529,7 @@ void ZN22CDirect3DVolumeTextureD1Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "addl $0x4c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll ZN13CMemoryBufferD1Ev\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -1538,7 +1538,7 @@ void ZN22CDirect3DVolumeTextureD1Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "testl %ebx, %ebx\n"
         "je .Lf118efe_00118f97\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf118efe_00118f97:\n"
@@ -1550,7 +1550,7 @@ void ZN22CDirect3DVolumeTextureD1Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "retl\n"
         "movl %eax, %ebx\n"
         ".Lf118efe_00118fa1:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -1559,7 +1559,7 @@ void ZN22CDirect3DVolumeTextureD1Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "testl %esi, %esi\n"
         "je .Lf118efe_00118fc9\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf118efe_00118fc9:\n"

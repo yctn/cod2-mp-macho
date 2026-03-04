@@ -18,8 +18,8 @@ static const dvar_t *mantle_check_range; /* mantle_check_range */
 static const dvar_t *mantle_check_radius; /* mantle_check_radius */
 static const dvar_t *mantle_check_angle; /* mantle_check_angle */
 static const dvar_t *mantle_view_yawcap; /* mantle_view_yawcap */
-static MantleAnimTransition s_mantleTrans[7]; /* s_mantleTrans */
-static char * s_mantleAnimNames[11]; /* s_mantleAnimNames */
+extern MantleAnimTransition s_mantleTrans[7]; /* s_mantleTrans */
+extern char * s_mantleAnimNames[11]; /* s_mantleAnimNames */
 static char (*s_mantleAnims)[64]; /* s_mantleAnims */
 
 extern const dvar_t *Dvar_RegisterBool(const char *name, int value, int flags);

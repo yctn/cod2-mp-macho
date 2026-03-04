@@ -43,8 +43,8 @@ void ZN21CDirect3DVertexShaderD1Ev(void) /* CDirect3DVertexShader_~CDirect3DVert
         "pushl %ebp\n" /* line 28 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fce8, (%eax)\n"
-        "movl $0x32fd0c, 4(%eax)\n"
+        "movl $vtbl_CDirect3DVertexShader, (%eax)\n"
+        "movl $vtbl_CDirect3DVertexShader_secondary, 4(%eax)\n"
         "addl $4, %eax\n" /* line 29 */
         "movl %eax, 8(%ebp)\n" /* this */
         "popl %ebp\n"
@@ -62,8 +62,8 @@ void ZN21CDirect3DVertexShaderD0Ev(void) /* CDirect3DVertexShader_~CDirect3DVert
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fce8, (%ebx)\n" /* this */
-        "movl $0x32fd0c, 4(%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DVertexShader, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DVertexShader_secondary, 4(%ebx)\n" /* this */
         "leal 4(%ebx), %eax\n" /* line 29 | this */
         "movl %eax, (%esp)\n"
         "calll ZN20COpenGLVertexProgramD2Ev\n"
@@ -145,10 +145,10 @@ unsigned char CDirect3DVertexShader_CDirect3DVertexShader(const CDirect3DVertexS
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x195ec38, %eax\n" /* line 77 */
+        "movl imp___ZTV8IUnknown, %eax\n" /* line 77 */
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* this */
-        "movl 0x195ec74, %eax\n" /* line 942 */
+        "movl imp___ZTV22IDirect3DVertexShader9, %eax\n" /* line 942 */
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* this */
         "movl 0xc(%ebp), %eax\n" /* line 21 | pSrcData */
@@ -156,8 +156,8 @@ unsigned char CDirect3DVertexShader_CDirect3DVertexShader(const CDirect3DVertexS
         "leal 4(%ebx), %eax\n" /* this */
         "movl %eax, (%esp)\n"
         "calll COpenGLVertexProgram_COpenGLVertexProgram\n"
-        "movl $0x32fce8, (%ebx)\n" /* this */
-        "movl $0x32fd0c, 4(%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DVertexShader, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DVertexShader_secondary, 4(%ebx)\n" /* this */
         "movb $0, 0x198(%ebx)\n" /* this */
         "movl $1, 0x194(%ebx)\n" /* line 50 | this */
         "addl $0x14, %esp\n" /* line 24 */

@@ -1819,8 +1819,7 @@ faceAxis: .space 72, 0  /* 6x3 floats */
 .globl iSlotPreferenceOrder
 iSlotPreferenceOrder: .space 64, 0
 
-.globl RB_RenderCommandTable
-RB_RenderCommandTable: .space 256, 0
+/* RB_RenderCommandTable moved to r_material.c (must be contiguous with s_builtInMaterials) */
 
 .globl refEntIsInWorldSpace
 refEntIsInWorldSpace: .long 0
@@ -1837,17 +1836,45 @@ __ZTI17IDirect3DTexture9: .space 16, 0
 .globl __ZTV10COpenGLVAO
 __ZTV10COpenGLVAO: .space 128, 0
 .globl __ZTV11CColorArray
-__ZTV11CColorArray: .space 128, 0
+__ZTV11CColorArray:
+    .long 0                          /* [0] offset-to-top */
+    .long 0                          /* [1] typeinfo (stub) */
+    .long ZN11CColorArrayD1Ev        /* [2] destructor D1 */
+    .long ZN11CColorArrayD0Ev        /* [3] destructor D0 */
+    .long CColorArray_Enable         /* [4] Enable */
+    .long CColorArray_Disable        /* [5] Disable */
+    .space 104, 0
 .globl __ZTV12CNormalArray
-__ZTV12CNormalArray: .space 128, 0
+__ZTV12CNormalArray:
+    .long 0                          /* [0] offset-to-top */
+    .long 0                          /* [1] typeinfo (stub) */
+    .long ZN12CNormalArrayD1Ev       /* [2] destructor D1 */
+    .long ZN12CNormalArrayD0Ev       /* [3] destructor D0 */
+    .long CNormalArray_Enable        /* [4] Enable */
+    .long CNormalArray_Disable       /* [5] Disable */
+    .space 104, 0
 .globl __ZTV12CVertexArray
-__ZTV12CVertexArray: .space 128, 0
+__ZTV12CVertexArray:
+    .long 0                          /* [0] offset-to-top */
+    .long 0                          /* [1] typeinfo (stub) */
+    .long ZN12CVertexArrayD1Ev       /* [2] destructor D1 */
+    .long ZN12CVertexArrayD0Ev       /* [3] destructor D0 */
+    .long CVertexArray_Enable        /* [4] Enable */
+    .long CVertexArray_Disable       /* [5] Disable */
+    .space 104, 0
 .globl __ZTV12IncludeClass
 __ZTV12IncludeClass: .space 128, 0
 .globl __ZTV14COpenGLTexture
 __ZTV14COpenGLTexture: .space 128, 0
 .globl __ZTV14CTexCoordArray
-__ZTV14CTexCoordArray: .space 128, 0
+__ZTV14CTexCoordArray:
+    .long 0                              /* [0] offset-to-top */
+    .long 0                              /* [1] typeinfo (stub) */
+    .long ZN14CTexCoordArrayD1Ev         /* [2] destructor D1 */
+    .long ZN14CTexCoordArrayD0Ev         /* [3] destructor D0 */
+    .long CTexCoordArray_Enable          /* [4] Enable */
+    .long CTexCoordArray_Disable         /* [5] Disable */
+    .space 104, 0
 .globl __ZTV15CCacheInfoBlock
 __ZTV15CCacheInfoBlock: .space 128, 0
 .globl __ZTV15CColorConverter
@@ -1859,7 +1886,14 @@ __ZTV17IDirect3DTexture9: .space 128, 0
 .globl __ZTV18IDirect3DResource9
 __ZTV18IDirect3DResource9: .space 128, 0
 .globl __ZTV20CSecondaryColorArray
-__ZTV20CSecondaryColorArray: .space 128, 0
+__ZTV20CSecondaryColorArray:
+    .long 0                                  /* [0] offset-to-top */
+    .long 0                                  /* [1] typeinfo (stub) */
+    .long ZN20CSecondaryColorArrayD1Ev       /* [2] destructor D1 */
+    .long ZN20CSecondaryColorArrayD0Ev       /* [3] destructor D0 */
+    .long CSecondaryColorArray_Enable        /* [4] Enable */
+    .long CSecondaryColorArray_Disable       /* [5] Disable */
+    .space 104, 0
 .globl __ZTV21IDirect3DBaseTexture9
 __ZTV21IDirect3DBaseTexture9: .space 128, 0
 .globl __ZTV21IDirect3DCubeTexture9
@@ -1883,7 +1917,14 @@ __ZTV5Flash: .space 128, 0
 .globl __ZTV6Effect
 __ZTV6Effect: .space 128, 0
 .globl __ZTV7CBaseVA
-__ZTV7CBaseVA: .space 128, 0
+__ZTV7CBaseVA:
+    .long 0                          /* [0] offset-to-top */
+    .long 0                          /* [1] typeinfo (stub) */
+    .long ZN7CBaseVAD1Ev             /* [2] destructor D1 */
+    .long ZN7CBaseVAD0Ev             /* [3] destructor D0 */
+    .long 0                          /* [4] Enable (pure virtual) */
+    .long 0                          /* [5] Disable (pure virtual) */
+    .space 104, 0
 .globl __ZTV7Emitter
 __ZTV7Emitter: .space 128, 0
 .globl __ZTV8Cylinder

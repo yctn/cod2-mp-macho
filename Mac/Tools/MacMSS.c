@@ -8,7 +8,7 @@
  *   #include "Mac/Tools/MacSwap.h"
  */
 
-static const char *kHighQualityKey; /* 0x311480 */
+extern const char *kHighQualityKey; /* 0x311480 */
 static Boolean sHighQualityEngine; /* 0xceb304 */
 static CSoundEngine *sSoundEngine; /* 0xceb300 */
 
@@ -91,8 +91,17 @@ void AIL_3D_position(H3DPOBJECT obj, float *X, float *Y, float *Z);
 long int AIL_WAV_info(const void *data, long int (*info)());
 
 /* line 42 */
-__attribute__((naked))
+/* Skip macOS Core Audio engine init on Linux — return 0 to disable sound.
+   Original code throws C++ exception from CSoundEngine constructor when no
+   macOS audio units are found, and naked ASM lacks EH tables for unwinding. */
 long int AIL_startup(long unsigned int bus_count)
+{
+    return 0;
+}
+
+#if 0 /* original naked ASM */
+__attribute__((naked))
+long int AIL_startup_original(long unsigned int bus_count)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 42 */
@@ -140,6 +149,7 @@ long int AIL_startup(long unsigned int bus_count)
         "jmp .Lf110af8_00110b66\n"
     );
 }
+#endif /* original naked ASM */
 
 /* line 64 */
 __attribute__((naked))

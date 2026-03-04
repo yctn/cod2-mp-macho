@@ -157,7 +157,7 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 void RB_DecideDefaultSamplerState(void)
 {
     int idx = *(int *)((byte *)*(void **)*(void **)imp_r_textureMode + 8);
-    *((byte *)*(void **)imp_backEnd + 0x4be) = defaultSamplerStateTable[idx];
+    *((byte *)(void *)imp_backEnd + 0x4be) = defaultSamplerStateTable[idx];
 }
 
 /* line 907 */
@@ -659,7 +659,7 @@ void RB_ChangeGenTexCoords(int samplerIndex, int genTexCoords)
 /* line 1059 */
 D3DMATRIX * RB_GetActiveWorldMatrix(void)
 {
-    byte *base = *(byte **)imp_backEnd;
+    byte *base = (byte *)imp_backEnd;
     int index = *(int *)(base + 0x2e80);
     return (D3DMATRIX *)(base + 0x4f0 + index * 3552);
 }
@@ -1463,10 +1463,10 @@ void RB_PopMatrixStack(void)
 /* line 1472 */
 void RB_InitSceneViewport(void)
 {
-    void *ecx = *(void **)imp_backEnd;
-    void *edx = *(void **)imp_vidConfig;
-    *(int *)((byte *)ecx + 0x3e8) = *(int *)edx;
-    *(int *)((byte *)ecx + 0x3ec) = *(int *)((byte *)edx + 4);
+    byte *ecx = (byte *)imp_backEnd;
+    byte *edx = (byte *)imp_vidConfig;
+    *(int *)(ecx + 0x3e8) = *(int *)edx;
+    *(int *)(ecx + 0x3ec) = *(int *)(edx + 4);
 }
 
 /* line 1480 */
@@ -2216,10 +2216,10 @@ void RB_BindDefaultImages(void)
 /* line 1030 */
 void RB_UnbindAllImages(void)
 {
-    if (*(byte *)(*(byte **)imp_dx + 0x2d3c))
+    if (*(byte *)((byte *)imp_dx + 0x2d3c))
         return;
 
-    int count = *(int *)(*(byte **)imp_vidConfig + 0x1c);
+    int count = *(int *)((byte *)imp_vidConfig + 0x1c);
     for (int i = 0; i < count; i++) {
         RB_SetSampler(i, 0, NULL);
     }
@@ -2228,7 +2228,7 @@ void RB_UnbindAllImages(void)
 /* line 1020 */
 void RB_UnbindImage(const GfxImage *image)
 {
-    int count = *(int *)(*(byte **)imp_vidConfig + 0x1c);
+    int count = *(int *)((byte *)imp_vidConfig + 0x1c);
 
     for (int i = 0; i < count; i++) {
         if (*(const GfxImage **)((byte *)&dxState + 0x20f4 + i * 4) == image) {
@@ -2887,7 +2887,7 @@ void RB_ChangeState_0(int stateBits0)
         "orl %eax, %edi\n" /* stateBits0 */
         "andl $0xf800ffff, -0x24(%ebp)\n" /* line 581 | changedBits */
         ".Lfcf2d0_000cf551:\n"
-        "testl $cg_eachClientLocalEntities+21120, -0x24(%ebp)\n" /* line 589 | changedBits */
+        "testl $0x00FF0000, -0x24(%ebp)\n" /* line 589 | changedBits */
         "je .Lfcf2d0_000cf5e6\n"
         "testl $0xf0000, -0x24(%ebp)\n" /* line 591 | changedBits */
         "je .Lfcf2d0_000cf5a2\n"
@@ -2908,7 +2908,7 @@ void RB_ChangeState_0(int stateBits0)
         "testl %eax, %eax\n"
         "jne .Lfcf2d0_000cf57c\n"
         ".Lfcf2d0_000cf5a2:\n"
-        "testl $con+151040, -0x24(%ebp)\n" /* line 598 | changedBits */
+        "testl $0x00F00000, -0x24(%ebp)\n" /* line 598 | changedBits */
         "je .Lfcf2d0_000cf5e6\n"
         "movl %edi, %eax\n" /* stateBits0 */
         "sarl $0x14, %eax\n"

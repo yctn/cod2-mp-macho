@@ -18,7 +18,7 @@ static int s_vc_log; /* s_vc_log */
 extern int s_vc_logCount; /* 0xc96c84 */
 
 /* Global pointers used in this file */
-extern r_global_permanent_t *rgp;       /* imp_rgp */
+extern r_global_permanent_t rgp;        /* imp_rgp */
 extern r_backEndGlobals_t *backEnd;     /* imp_backEnd */
 extern void **g_viewParms;              /* imp_backEndData */
 extern const dvar_t **r_lightGridSunDir;      /* imp_vec3_colorintensity — pointer to sun direction floats */
@@ -140,7 +140,7 @@ void RB_SaveLightVisHistory(void)
     if (!s_vc_log)
         return;
 
-    world = rgp->world;
+    world = rgp.world;
     if (!world)
         return;
 
@@ -257,7 +257,7 @@ int RB_DeriveEntityLights(vec4_t *colorForDir, float sunVisibility, const Materi
         lights[0].Range = 1.0f;
 
         /* Second light: sun contribution */
-        world = rgp->world;
+        world = rgp.world;
         sunColorR = sunVisibility * world->sunLight.color[0] + world->sunLight.u.dir.ambientColor[0];
         sunColorG = sunVisibility * world->sunLight.color[1] + world->sunLight.u.dir.ambientColor[1];
         sunColorB = sunVisibility * world->sunLight.color[2] + world->sunLight.u.dir.ambientColor[2];
@@ -454,7 +454,7 @@ fallback:
         int prevCount = lightCount - 1;
         sunLight = &lights[prevCount];
 
-        world = rgp->world;
+        world = rgp.world;
 
         sunLight->Type = 3;
         sunLight->Ambient.r = world->sunLight.u.dir.ambientColor[0] * 0.5f;
@@ -874,7 +874,7 @@ float RB_GetLightingAtPoint(const GfxLightGrid *lightGrid, const vec_t *samplePo
         nearZ = z0 + (wz1 > 0.5f ? 1 : 0);
 
         /* Check if world exists and has points */
-        world = rgp->world;
+        world = rgp.world;
         if (world) {
             doDebug = **(char **)r_lightGridUseTweakedValues;
             if (doDebug) {
@@ -1032,7 +1032,7 @@ void RB_SetupEntityLighting(const GfxEntity *ent, GfxEntityLighting *lighting)
         lightOrigin[2] = *(float *)(entBytes + 0x44) + 4.0f;
     }
 
-    world = rgp->world;
+    world = rgp.world;
     lighting->sunVisibility = RB_GetLightingAtPoint(&world->lightGrid, lightOrigin, lighting->colorForDir);
 }
 

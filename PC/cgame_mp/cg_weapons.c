@@ -12,7 +12,7 @@
 extern vec3_t ejectBrassCasingOrigin; /* 0x0 */
 extern int removeMeWhenMPStopsCrashingInHere; /* 0x0 */
 static const int iSlotPreferenceOrder[2]; /* iSlotPreferenceOrder */
-static weapSlot_t (*s_barrelTags[4])[64]; /* s_barrelTags */
+extern weapSlot_t (*s_barrelTags[4])[64]; /* s_barrelTags */
 
 static void CG_PlayADSAnim(void);
 int CG_WeaponDObjHandle(int weaponNum);

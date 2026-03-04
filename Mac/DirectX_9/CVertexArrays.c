@@ -30,7 +30,7 @@ void CBaseVA_CBaseVA(const CBaseVA * _this)
         "pushl %ebp\n" /* line 14 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec84, %edx\n" /* line 20 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 20 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movb $0, 4(%eax)\n"

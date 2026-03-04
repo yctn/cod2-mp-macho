@@ -1029,7 +1029,7 @@ void SND_LoadSoundFile(SoundFile *soundFile)
     int procFormat;
 
     sndGlob = *(byte **)imp_g_snd;
-    if (*(byte *)sndGlob == 0) {
+    if (!sndGlob || *(byte *)sndGlob == 0) {
         *(void **)((byte *)soundFile + 4) = NULL;
         return;
     }

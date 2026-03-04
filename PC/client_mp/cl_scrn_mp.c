@@ -14,7 +14,7 @@
 
 extern qboolean scr_initialized; /* 0x0 */
 extern Bool updateScreenCalled; /* 0x0 */
-static const char * szShotName[6]; /* szShotName */
+extern const char * szShotName[6]; /* szShotName */
 
 /* Global pointers */
 extern byte *re_ptr_195eca8;     /* imp_re - renderer export function table */

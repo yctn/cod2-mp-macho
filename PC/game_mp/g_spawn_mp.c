@@ -19,34 +19,34 @@ extern spawn_t spawns[22]; /* 0x0 */
 static const ent_field_t fields[11]; /* fields */
 
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out);
-static my_upsampler Scr_ReadOnlyField(gentity_t *ent, int offset);
+static void Scr_ReadOnlyField(gentity_t *ent, int offset);
 static unsigned int G_SetEntityScriptVariableInternal(void);
-my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source);
+void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source);
 static const gitem_t * G_GetItemForClassname(void);
 qboolean G_CallSpawnEntity(gentity_t *ent);
-my_upsampler GScr_AddFieldsForEntity(void);
-my_upsampler GScr_AddFieldsForRadiant(void);
-my_upsampler Scr_AddEntity(gentity_t *ent);
+void GScr_AddFieldsForEntity(void);
+void GScr_AddFieldsForRadiant(void);
+void Scr_AddEntity(gentity_t *ent);
 gentity_t * Scr_GetEntity(unsigned int index);
-my_upsampler Scr_FreeHudElem(game_hudelem_t *hud);
-my_upsampler Scr_AddHudElem(game_hudelem_t *hud);
+void Scr_FreeHudElem(game_hudelem_t *hud);
+void Scr_AddHudElem(game_hudelem_t *hud);
 scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int paramcount);
-my_upsampler Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount);
-static my_upsampler G_ParseEntityField(gentity_t *ent);
-my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs);
-my_upsampler Scr_GetEnt(void);
-my_upsampler Scr_GetEntArray(void);
+void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount);
+static void G_ParseEntityField(gentity_t *ent);
+void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs);
+void Scr_GetEnt(void);
+void Scr_GetEntArray(void);
 qboolean G_SpawnFloat(const char *key, const char *defaultString, float *out);
 qboolean G_SpawnInt(const char *key, const char *defaultString, int *out);
 qboolean G_SpawnVector(const char *key, const char *defaultString, float *out);
-my_upsampler SP_worldspawn(void);
-my_upsampler G_LoadStructs(void);
-my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs);
+void SP_worldspawn(void);
+void G_LoadStructs(void);
+void Scr_SetGenericField(byte *b, fieldtype_t type, int ofs);
 qboolean Scr_SetObjectField(unsigned int classnum, int entnum, int offset);
-my_upsampler Scr_GetObjectField(unsigned int classnum, int entnum, int offset);
-my_upsampler Scr_FreeEntity(gentity_t *ent);
-my_upsampler G_CallSpawn(void);
-my_upsampler G_SpawnEntitiesFromString(void);
+void Scr_GetObjectField(unsigned int classnum, int entnum, int offset);
+void Scr_FreeEntity(gentity_t *ent);
+void G_CallSpawn(void);
+void G_SpawnEntitiesFromString(void);
 
 /* line 7 */
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out)
@@ -55,7 +55,7 @@ qboolean G_SpawnString(const char *key, const char *defaultString, const char * 
 }
 
 /* line 47 */
-static my_upsampler Scr_ReadOnlyField(gentity_t *ent, int offset)
+static void Scr_ReadOnlyField(gentity_t *ent, int offset)
 {
     Scr_Error((const char *)str_002b33d0);
 }
@@ -148,7 +148,7 @@ unsigned int G_SetEntityScriptVariableInternal(void)
 
 /* line 337 */
 __attribute__((naked))
-my_upsampler G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
+void G_DuplicateEntityFields(gentity_t *dest, const gentity_t *source)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 337 */
@@ -421,7 +421,7 @@ qboolean G_CallSpawnEntity(gentity_t *ent)
 
 /* line 523 */
 __attribute__((naked))
-my_upsampler GScr_AddFieldsForEntity(void)
+void GScr_AddFieldsForEntity(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 523 */
@@ -457,13 +457,13 @@ my_upsampler GScr_AddFieldsForEntity(void)
 }
 
 /* line 543 */
-my_upsampler GScr_AddFieldsForRadiant(void)
+void GScr_AddFieldsForRadiant(void)
 {
     Scr_AddFields("radiant", (const void *)str_002b3448);
 }
 
 /* line 814 */
-my_upsampler Scr_AddEntity(gentity_t *ent)
+void Scr_AddEntity(gentity_t *ent)
 {
     Scr_AddEntityNum(*(int *)ent, 0);
 }
@@ -507,7 +507,7 @@ gentity_t * Scr_GetEntity(unsigned int index)
 
 /* line 849 */
 __attribute__((naked))
-my_upsampler Scr_FreeHudElem(game_hudelem_t *hud)
+void Scr_FreeHudElem(game_hudelem_t *hud)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 849 */
@@ -532,7 +532,7 @@ my_upsampler Scr_FreeHudElem(game_hudelem_t *hud)
 
 /* line 865 */
 __attribute__((naked))
-my_upsampler Scr_AddHudElem(game_hudelem_t *hud)
+void Scr_AddHudElem(game_hudelem_t *hud)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 865 */
@@ -557,14 +557,14 @@ scr_thread_t Scr_ExecEntThread(gentity_t *ent, scr_func_t handle, unsigned int p
 }
 
 /* line 930 */
-my_upsampler Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
+void Scr_Notify(gentity_t *ent, int stringValue, unsigned int paramcount)
 {
     Scr_NotifyNum(*(int *)ent, 0, (unsigned short)stringValue, paramcount);
 }
 
 /* line 225 */
 static __attribute__((naked))
-my_upsampler G_ParseEntityField(gentity_t *ent)
+void G_ParseEntityField(gentity_t *ent)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 225 */
@@ -718,7 +718,7 @@ my_upsampler G_ParseEntityField(gentity_t *ent)
 
 /* line 689 */
 __attribute__((naked))
-my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
+void Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 689 */
@@ -832,7 +832,7 @@ my_upsampler Scr_GetGenericField(byte *b, fieldtype_t type, int ofs)
 
 /* line 945 */
 __attribute__((naked))
-my_upsampler Scr_GetEnt(void)
+void Scr_GetEnt(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 945 */
@@ -917,7 +917,7 @@ my_upsampler Scr_GetEnt(void)
 
 /* line 998 */
 __attribute__((naked))
-my_upsampler Scr_GetEntArray(void)
+void Scr_GetEntArray(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 998 */
@@ -1141,7 +1141,7 @@ qboolean G_SpawnVector(const char *key, const char *defaultString, float *out)
 
 /* line 1063 */
 __attribute__((naked))
-my_upsampler SP_worldspawn(void)
+void SP_worldspawn(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1063 */
@@ -1283,7 +1283,7 @@ my_upsampler SP_worldspawn(void)
 
 /* line 1137 */
 __attribute__((naked))
-my_upsampler G_LoadStructs(void)
+void G_LoadStructs(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1137 */
@@ -1377,7 +1377,7 @@ my_upsampler G_LoadStructs(void)
 
 /* line 594 */
 __attribute__((naked))
-my_upsampler Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
+void Scr_SetGenericField(byte *b, fieldtype_t type, int ofs)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 594 */
@@ -1564,7 +1564,7 @@ qboolean Scr_SetObjectField(unsigned int classnum, int entnum, int offset)
 
 /* line 746 */
 __attribute__((naked))
-my_upsampler Scr_GetObjectField(unsigned int classnum, int entnum, int offset)
+void Scr_GetObjectField(unsigned int classnum, int entnum, int offset)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 746 */
@@ -1628,7 +1628,7 @@ my_upsampler Scr_GetObjectField(unsigned int classnum, int entnum, int offset)
 
 /* line 798 */
 __attribute__((naked))
-my_upsampler Scr_FreeEntity(gentity_t *ent)
+void Scr_FreeEntity(gentity_t *ent)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 798 */
@@ -1692,7 +1692,7 @@ my_upsampler Scr_FreeEntity(gentity_t *ent)
 
 /* line 429 */
 __attribute__((naked))
-my_upsampler G_CallSpawn(void)
+void G_CallSpawn(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 429 */
@@ -1878,7 +1878,7 @@ my_upsampler G_CallSpawn(void)
 
 /* line 1115 */
 __attribute__((naked))
-my_upsampler G_SpawnEntitiesFromString(void)
+void G_SpawnEntitiesFromString(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1115 */

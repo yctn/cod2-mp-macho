@@ -14,12 +14,10 @@
 
 static static_model_cache_t s_cache; /* s_cache */
 
-extern refimport_t *ri; /* imp_ri */
+extern refimport_t ri; /* imp_ri */
 extern GfxBackEndData **gfxBuf; /* imp_frontEndDataOut */
-extern void **g_dxCaps; /* imp_r_rendererInUse */
-extern byte *g_dx; /* imp_dx */
-extern volatile int *g_dxIter; /* imp_alwaysfails */
-extern r_global_permanent_t *rgp; /* imp_rgp */
+/* g_dxCaps was imp_r_rendererInUse, g_dx was imp_dx, g_dxIter was imp_alwaysfails */
+extern r_global_permanent_t rgp; /* imp_rgp */
 
 void R_AddFrontendCmd(int type, void *data);
 void R_InitStaticModelIndexCache(void);
@@ -44,10 +42,10 @@ void R_InitStaticModelIndexCache(void)
 /* line 819 */
 void R_StaticModelCacheStats_f(void)
 {
-    ri->Printf(0, "%.2f%% of cache is currently allocated.\n",
+    ri.Printf(0, "%.2f%% of cache is currently allocated.\n",
                (double)((float)s_cache.stats.allocatedVerts * 100.0f * (1.0f / 65536.0f)));
     if (s_cache.stats.allocatedVerts) {
-        ri->Printf(0, "%.2f%% allocated cache vertices are used.\n",
+        ri.Printf(0, "%.2f%% allocated cache vertices are used.\n",
                    (double)((float)s_cache.stats.usedVerts * 100.0f / (float)s_cache.stats.allocatedVerts));
     }
 }
@@ -875,17 +873,17 @@ void R_InitStaticModelCache(void)
 
     /* Determine VB size based on device caps */
     size = 0x240000;
-    if (((int *)*(void **)g_dxCaps)[2] != 2) {
+    if (((int *)*(void **)imp_r_rendererInUse)[2] != 2) {
         size = 0x400000;
     }
 
     /* Create vertex buffer (retry loop for device lost) */
     do {
-        device = *(void **)(g_dx + 8);
+        device = *(void **)((byte *)imp_dx + 8);
         vtable = *(void ***)device;
-        ((int (__attribute__((stdcall)) *)(void *, int, int, int, int, void *, int))vtable[0x68 / 4])(
-            device, size, 0x400208, 0, 0, (void *)(g_dx + 0x2dc4), 0);
-    } while (*g_dxIter != 0);
+        ((int (*)(void *, int, int, int, int, void *, int))vtable[0x68 / 4])(
+            device, size, 0x400208, 0, 0, (void *)((byte *)imp_dx + 0x2dc4), 0);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 
     /* Reset the cache */
     memset(&s_cache, 0, sizeof(s_cache));
@@ -1735,14 +1733,14 @@ void R_ShutdownStaticModelCache(void)
 
 release_vb:
     /* Release the smodel cache vertex buffer */
-    vb = *(void **)(g_dx + 0x2dc4);
+    vb = *(void **)((byte *)imp_dx + 0x2dc4);
     if (vb) {
         do {
-            vb = *(void **)(g_dx + 0x2dc4);
+            vb = *(void **)((byte *)imp_dx + 0x2dc4);
             vtable = *(void ***)vb;
-            ((int (__attribute__((stdcall)) *)(void *))vtable[8 / 4])(vb);
-            *(void **)(g_dx + 0x2dc4) = NULL;
-        } while (*g_dxIter != 0);
+            ((int (*)(void *))vtable[8 / 4])(vb);
+            *(void **)((byte *)imp_dx + 0x2dc4) = NULL;
+        } while (*(volatile int *)imp_alwaysfails != 0);
     }
 }
 
@@ -1887,7 +1885,7 @@ GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *static
     SkinStaticModelCachedCmd skinCmd;
 
     /* Check if device is lost */
-    if (g_dx[0x2d3c] != 0)
+    if (*((byte *)imp_dx + 0x2d3c) != 0)
         return NULL;
 
     /* Check vertex count limit */
@@ -1973,7 +1971,7 @@ GfxStaticModelSurfaceCached * R_CacheStaticModelSurface(GfxStaticSurface *static
     /* Copy and offset indices */
     twoBaseOffsets = (baseVertIndex << 16) | (baseVertIndex & 0xFFFF);
     twoSrcIndices = (int *)xsurf->triIndices;
-    twoDstIndices = (int *)(*(int *)(g_dx + 0x2dc8) + baseVertIndex * 12);
+    twoDstIndices = (int *)(*(int *)((byte *)imp_dx + 0x2dc8) + baseVertIndex * 12);
     numTriPairs = (short)((xsurf->triCount + (((unsigned short)xsurf->triCount) >> 15)) >> 1);
 
     for (i = 0; i < numTriPairs; i++) {

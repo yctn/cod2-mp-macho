@@ -4698,7 +4698,7 @@ typedef char io_name_t[128];
 typedef jpeg_common_struct * j_common_ptr;
 typedef jpeg_compress_struct * j_compress_ptr;
 typedef jpeg_decompress_struct * j_decompress_ptr;
-typedef int jmp_buf[18];
+typedef int jmp_buf[39]; /* Linux i386: 156 bytes (Mac was 18/72 bytes) */
 typedef boolean (*jpeg_marker_parser_method)();
 typedef jpeg_marker_struct * jpeg_saved_marker_ptr;
 typedef struct jvirt_barray_control * jvirt_barray_ptr;

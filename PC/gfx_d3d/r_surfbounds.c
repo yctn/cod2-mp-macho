@@ -10,7 +10,7 @@ extern const vec_t * (*R_BoundsForDrawSurfTable[8])(); /* 0x0 */
 static vec3_t surfBoundsGlob[2]; /* surfBoundsGlob */
 
 extern GfxScene *gfxScene; /* imp_scene */
-extern r_global_permanent_t *rgp; /* imp_rgp */
+extern r_global_permanent_t rgp; /* imp_rgp */
 
 const vec_t *R_BoundsForSurf_Triangles(const GfxDrawSurf *drawSurf, int entIndex)
 {
@@ -33,7 +33,7 @@ const vec_t *R_BoundsForSurf_StaticModelCached(const GfxDrawSurf *drawSurf, int 
 {
     GfxStaticModelCachedSurface *cached = (GfxStaticModelCachedSurface *)drawSurf->surface;
     int smodelIndex = cached->surface->smodelIndex;
-    return rgp->world->smodelInsts[smodelIndex].mins;
+    return rgp.world->smodelInsts[smodelIndex].mins;
 }
 
 const vec_t *R_BoundsForDrawSurf(const GfxDrawSurf *surf)

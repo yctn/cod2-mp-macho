@@ -788,8 +788,8 @@ unsigned int FindEntityId(int entnum, int classnum)
         "movl 0xc(%ebp), %eax\n" /* classnum */
         /* { scope 1 */
         "movl 8(%ebp), %esi\n" /* line 1980 | entnum, name */
-        "addl $s_debugFrameGlob+57728, %esi\n" /* name */
-        "andl $g_effectVisArray+4351, %esi\n" /* name */
+        "addl $0x00800000, %esi\n" /* name */
+        "andl $0x00FFFFFF, %esi\n" /* name */
         "leal (%eax, %eax, 2), %eax\n" /* line 801 */
         "movzwl g_classMap+2(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -887,8 +887,8 @@ unsigned int FindArrayVariable(unsigned int parentId, int intValue)
         "pushl %esi\n"
         "pushl %ebx\n"
         "movl 0xc(%ebp), %esi\n" /* line 1980 | intValue, name */
-        "addl $s_debugFrameGlob+57728, %esi\n" /* name */
-        "andl $g_effectVisArray+4351, %esi\n" /* name */
+        "addl $0x00800000, %esi\n" /* name */
+        "andl $0x00FFFFFF, %esi\n" /* name */
         "movl 8(%ebp), %ecx\n" /* line 801 | parentId, index */
         "addl %esi, %ecx\n" /* name, index */
         "movl $0x80018005, %edx\n"
@@ -1738,7 +1738,7 @@ unsigned int GetNewVariableIndexInternal3(unsigned int parentId, unsigned int na
         /* { scope 2 */
         ".Lf89918_00089c70:\n"
         "movl -0x40(%ebp), %ebx\n" /* line 2172 | newIndex */
-        "subl $s_debugFrameGlob+57728, %ebx\n" /* newIndex */
+        "subl $0x00800000, %ebx\n" /* newIndex */
         "movl %ebx, -0x38(%ebp)\n" /* newIndex, value */
         "movl $6, %eax\n"
         "movl %ebx, %edx\n" /* newIndex */
@@ -1952,8 +1952,8 @@ JCOEF SetVariableEntityFieldValue(unsigned int entId, unsigned int fieldName, Va
         "movl 8(%eax), %edi\n" /* line 2468 */
         "shrl $8, %edi\n"
         "movl 0xc(%ebp), %esi\n" /* line 1980 | fieldName, name */
-        "addl $s_debugFrameGlob+57728, %esi\n" /* name */
-        "andl $g_effectVisArray+4351, %esi\n" /* name */
+        "addl $0x00800000, %esi\n" /* name */
+        "andl $0x00FFFFFF, %esi\n" /* name */
         "leal (%edi, %edi, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -2103,7 +2103,7 @@ JCOEF Scr_AddClassField(int classnum, const char *name, unsigned int offset)
         "movl %edi, (%esp)\n" /* line 3732 | name */
         "calll SL_GetCanonicalString\n"
         "leal s_debugFrameGlob+57728(%eax), %esi\n" /* line 2014 | name */
-        "andl $g_effectVisArray+4351, %esi\n" /* name */
+        "andl $0x00FFFFFF, %esi\n" /* name */
         "movl -0x1c(%ebp), %ecx\n" /* line 1096 | classId */
         "addl %esi, %ecx\n" /* parentValue */
         "movl $0x80018005, %eax\n"
@@ -2211,8 +2211,8 @@ unsigned int GetNewArrayVariable(unsigned int parentId, unsigned int unsignedVal
         "subl $0xc, %esp\n"
         "movl 8(%ebp), %ebx\n" /* parentId */
         "movl 0xc(%ebp), %edi\n" /* line 2014 | unsignedValue, name */
-        "addl $s_debugFrameGlob+57728, %edi\n" /* name */
-        "andl $g_effectVisArray+4351, %edi\n" /* name */
+        "addl $0x00800000, %edi\n" /* name */
+        "andl $0x00FFFFFF, %edi\n" /* name */
         "leal (%ebx, %edi), %ecx\n" /* line 1096 | parentValue */
         "movl $0x80018005, %eax\n"
         "mull %ecx\n"
@@ -3118,7 +3118,7 @@ JCOEF Scr_DumpScriptThreads(void)
         "pushl %ebx\n"
         "subl $0x13c, %esp\n"
         /* { scope 1: endonUsage, i */
-        "movl $s_debugFrameGlob+843880, (%esp)\n" /* line 404 */
+        "movl $0x008BFEE8, (%esp)\n" /* line 404 */
         "calll Z_TryMallocInternal\n"
         "movl %eax, -0x108(%ebp)\n" /* infoArray */
         "testl %eax, %eax\n" /* line 405 */
@@ -4316,8 +4316,8 @@ unsigned int Scr_GetEntityId(int entnum, int classnum)
         "leal (%edx, %edx, 2), %eax\n"
         "movzwl g_classMap+2(, %eax, 4), %edi\n" /* entArrayId */
         "movl 8(%ebp), %ebx\n" /* line 2006 | entnum, name */
-        "addl $s_debugFrameGlob+57728, %ebx\n" /* name */
-        "andl $g_effectVisArray+4351, %ebx\n" /* name */
+        "addl $0x00800000, %ebx\n" /* name */
+        "andl $0x00FFFFFF, %ebx\n" /* name */
         "leal (%edi, %ebx), %ecx\n" /* line 1138 */
         "movl $0x80018005, %edx\n"
         "movl %ecx, %eax\n"
@@ -4620,7 +4620,7 @@ unsigned int Scr_EvalArrayIndex(unsigned int parentId, VariableValue *index)
         "cmpl $pushed+2177, %eax\n"
         "ja .Lf8bd58_0008bfe7\n"
         "leal s_debugFrameGlob+57728(%edx), %edi\n" /* line 2006 | name */
-        "andl $g_effectVisArray+4351, %edi\n" /* name */
+        "andl $0x00FFFFFF, %edi\n" /* name */
         "movl 8(%ebp), %ecx\n" /* line 1138 | parentId */
         "addl %edi, %ecx\n"
         "movl $0x80018005, %edx\n"
@@ -4996,8 +4996,8 @@ unsigned int GetArrayVariable(unsigned int parentId, unsigned int unsignedValue)
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %edi\n" /* parentId */
         "movl 0xc(%ebp), %ebx\n" /* line 2006 | unsignedValue, name */
-        "addl $s_debugFrameGlob+57728, %ebx\n" /* name */
-        "andl $g_effectVisArray+4351, %ebx\n" /* name */
+        "addl $0x00800000, %ebx\n" /* name */
+        "andl $0x00FFFFFF, %ebx\n" /* name */
         "leal (%edi, %ebx), %ecx\n" /* line 1138 */
         "movl $0x80018005, %edx\n"
         "movl %ecx, %eax\n"
@@ -6487,7 +6487,7 @@ JCOEF MakeVariableExternal(void)
         /* } scope */
         /* { scope 2 */
         ".Lf8d1d0_0008d3dd:\n"
-        "subl $s_debugFrameGlob+57728, %eax\n" /* line 2172 */
+        "subl $0x00800000, %eax\n" /* line 2172 */
         "movl %eax, -0x28(%ebp)\n" /* value */
         "movl $6, %eax\n"
         "jmp .Lf8d1d0_0008d29c\n"
@@ -6745,8 +6745,8 @@ JCOEF RemoveRefToObject(unsigned int id)
         "orl $0x14, %eax\n"
         "movl %eax, 8(%ecx)\n"
         "movzwl 6(%ecx), %edx\n" /* line 2318 */
-        "addl $s_debugFrameGlob+57728, %edx\n"
-        "andl $g_effectVisArray+4351, %edx\n"
+        "addl $0x00800000, %edx\n"
+        "andl $0x00FFFFFF, %edx\n"
         "movl %edx, 4(%esp)\n"
         "shrl $8, %eax\n"
         "leal (%eax, %eax, 2), %eax\n"
@@ -7070,9 +7070,9 @@ JCOEF Scr_EvalArray(VariableValue *value, VariableValue *index)
         "leal vq8+462882(%ecx), %eax\n"
         "cmpl $pushed+2177, %eax\n"
         "ja .Lf8d760_0008dbdb\n"
-        "addl $s_debugFrameGlob+57728, %ecx\n" /* line 1980 */
+        "addl $0x00800000, %ecx\n" /* line 1980 */
         "movl %ecx, -0x3c(%ebp)\n" /* name */
-        "andl $g_effectVisArray+4351, -0x3c(%ebp)\n" /* name */
+        "andl $0x00FFFFFF, -0x3c(%ebp)\n" /* name */
         "movl -0x3c(%ebp), %eax\n" /* line 801 | name */
         "leal (%edx, %eax), %ecx\n" /* index */
         "movl $0x80018005, %edx\n"
@@ -7214,7 +7214,7 @@ VariableValue Scr_EvalVariableEntityField(void)
         "movl 8(%eax), %edi\n" /* line 2566 | entId */
         "shrl $8, %edi\n"
         "leal s_debugFrameGlob+57728(%edx), %esi\n" /* line 1980 | name */
-        "andl $g_effectVisArray+4351, %esi\n" /* name */
+        "andl $0x00FFFFFF, %esi\n" /* name */
         "leal (%edi, %edi, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -8488,7 +8488,7 @@ JCOEF Scr_FreeEntityNum(int entnum, int classnum)
         "movzwl g_classMap+2(, %eax, 4), %eax\n"
         "movl %eax, -0x10(%ebp)\n" /* entArrayId */
         "leal s_debugFrameGlob+57728(%edx), %esi\n" /* line 1980 | name */
-        "andl $g_effectVisArray+4351, %esi\n" /* name */
+        "andl $0x00FFFFFF, %esi\n" /* name */
         "movl %eax, %ecx\n" /* line 801 | index */
         "addl %esi, %ecx\n" /* name, index */
         "movl $0x80018005, %edx\n"
@@ -8659,7 +8659,7 @@ JCOEF ClearVariableField(unsigned int parentId, unsigned int name, VariableValue
         "shrl $8, %edx\n" /* line 2203 */
         "movl %edx, -0x20(%ebp)\n" /* classnum */
         "leal s_debugFrameGlob+57728(%edi), %esi\n" /* line 1980 | entry, name */
-        "andl $g_effectVisArray+4351, %esi\n" /* name */
+        "andl $0x00FFFFFF, %esi\n" /* name */
         "leal (%edx, %edx, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -9584,8 +9584,8 @@ unsigned int Scr_EvalArrayRef(unsigned int parentId)
         "movl scrVarPub+68, %edx\n" /* line 1980 */
         "movl %edx, -0x40(%ebp)\n"
         "movl %edx, %edi\n" /* name */
-        "addl $s_debugFrameGlob+57728, %edi\n" /* name */
-        "andl $g_effectVisArray+4351, %edi\n" /* name */
+        "addl $0x00800000, %edi\n" /* name */
+        "andl $0x00FFFFFF, %edi\n" /* name */
         "leal (%eax, %eax, 2), %eax\n" /* line 801 */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %edi, %ecx\n" /* name, index */
@@ -13675,8 +13675,8 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "movl 8(%eax), %edi\n" /* line 4084 | parentId */
         "shrl $8, %edi\n" /* parentId */
         "movl scrVarPub+68, %esi\n" /* line 1980 | nextSiblingIndex */
-        "addl $s_debugFrameGlob+57728, %esi\n" /* nextSiblingIndex */
-        "andl $g_effectVisArray+4351, %esi\n" /* nextSiblingIndex */
+        "addl $0x00800000, %esi\n" /* nextSiblingIndex */
+        "andl $0x00FFFFFF, %esi\n" /* nextSiblingIndex */
         "leal (%edi, %edi, 2), %eax\n" /* line 801 | entry */
         "movzwl g_classMap(, %eax, 4), %ecx\n" /* index */
         "addl %esi, %ecx\n" /* name, index */
@@ -13887,7 +13887,7 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value)
         "ja .Lf91f96_0009251f\n"
         "movl %esi, %edi\n" /* line 4157 | varValue, parentId */
         "leal s_debugFrameGlob+57728(%edx), %esi\n" /* line 2310 | nextSiblingIndex */
-        "andl $g_effectVisArray+4351, %esi\n" /* nextSiblingIndex */
+        "andl $0x00FFFFFF, %esi\n" /* nextSiblingIndex */
         /* { scope 2: entry */
         /* { scope 3: name */
         "leal (%edi, %esi), %ecx\n" /* line 801 | entry, index */

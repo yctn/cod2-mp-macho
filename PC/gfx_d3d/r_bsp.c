@@ -21,7 +21,7 @@ extern void R_InitStaticModelDynamicData(int index);
 extern void *Image_Register(const char *name, int flag1, int flag2);
 
 extern byte *r_glob_ptr;         /* imp_rgp */
-extern byte *r_device_ptr;       /* imp_r_rendererInUse */
+/* r_device_ptr was imp_r_rendererInUse */
 extern byte *r_vtable_ptr;       /* imp_ri */
 extern byte *r_frontEndData_ptr; /* imp_rg */
 extern byte *r_dvar_ef30;        /* imp_r_lightTweakSunColor */
@@ -100,7 +100,7 @@ void R_InterpretSunLightParseParams(SunLightParseParams *sunParse)
 /* line 261 */
 void R_SetSunLightOverride(const vec_t *sunColor)
 {
-    byte *device = *(byte **)r_device_ptr;
+    byte *device = *(byte **)imp_r_rendererInUse;
 
     if (*(int *)(device + 8) == 2)
         return;
@@ -124,7 +124,7 @@ IDirect3DVertexBuffer9 * R_CreateWorldVertexBuffer(GfxWorldVertex *vertices, int
     int vertIndex;
     byte *device;
 
-    device = *(byte **)r_device_ptr;
+    device = *(byte **)imp_r_rendererInUse;
     sizeVerts = 0x20;
     if (*(int *)(device + 8) != 2)
         sizeVerts = 0x44;
@@ -132,7 +132,7 @@ IDirect3DVertexBuffer9 * R_CreateWorldVertexBuffer(GfxWorldVertex *vertices, int
 
     dataPtr = (byte *)R_AllocStaticVertexBuffer(&worldVb, sizeVerts);
 
-    device = *(byte **)r_device_ptr;
+    device = *(byte **)imp_r_rendererInUse;
     if (*(int *)(device + 8) != 2) {
         /* Non-DX9: direct memcpy */
         Com_Memcpy(dataPtr, vertices, sizeVerts);
@@ -341,7 +341,7 @@ void R_LoadWorld(const char *name, int *checksum)
 
     /* Register sun half-angle image for DX9 */
     {
-        byte *device = *(byte **)r_device_ptr;
+        byte *device = *(byte **)imp_r_rendererInUse;
         if (*(int *)(device + 8) == 2) {
             *(void **)(r_glob_ptr + 0x10a0) =
                 Image_Register("$sunhalfangle", 1, 0);

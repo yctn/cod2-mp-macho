@@ -90,3 +90,13 @@ OSStatus AudioHardwareGetProperty(unsigned int propID, unsigned int *size, void 
 {
     return 0;
 }
+
+/* Override AIL_startup to skip macOS Core Audio engine init.
+   The CSoundEngine constructor throws a C++ exception when FindNextComponent
+   returns 0 (no macOS audio units), and naked ASM functions lack EH tables
+   so the exception goes to std::terminate instead of the catch handler.
+   Returning 0 makes SND_InitDriver gracefully disable sound. */
+long int AIL_startup(unsigned long bus_count)
+{
+    return 0;
+}

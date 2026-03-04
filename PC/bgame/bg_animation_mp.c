@@ -12,7 +12,7 @@
 
 extern bgs_t *bgs; /* 0x0 */
 static animScriptData_t *globalScriptData; /* globalScriptData */
-static char *globalFilename; /* globalFilename */
+extern char *globalFilename; /* globalFilename */
 static int numDefines[9]; /* numDefines */
 static char defineStrings[10000]; /* defineStrings */
 static int defineStringsOffset; /* defineStringsOffset */
@@ -25,18 +25,18 @@ static int *g_piNumLoadAnims; /* g_piNumLoadAnims */
 static char input[100000]; /* input */
 static qboolean bScriptFileLoaded; /* bScriptFileLoaded */
 static animStringItem_t weaponStrings[128]; /* weaponStrings */
-static animStringItem_t animStateStr[5]; /* animStateStr */
-static animStringItem_t animMoveTypesStr[42]; /* animMoveTypesStr */
-static animStringItem_t animEventTypesStr[20]; /* animEventTypesStr */
-static animStringItem_t animBodyPartsStr[5]; /* animBodyPartsStr */
-static animStringItem_t animConditionMountedStr[3]; /* animConditionMountedStr */
-static animStringItem_t animWeaponClassStr[11]; /* animWeaponClassStr */
-static animStringItem_t animWeaponPositionStr[3]; /* animWeaponPositionStr */
-static animStringItem_t animStrafeStateStr[4]; /* animStrafeStateStr */
-static animStringItem_t animConditionsStr[10]; /* animConditionsStr */
-static animConditionTable_t animConditionsTable[9]; /* animConditionsTable */
-static void *(*controller_names[6])(); /* controller_names */
-static animStringItem_t animParseModesStr[6]; /* animParseModesStr */
+extern animStringItem_t animStateStr[5]; /* animStateStr */
+extern animStringItem_t animMoveTypesStr[42]; /* animMoveTypesStr */
+extern animStringItem_t animEventTypesStr[20]; /* animEventTypesStr */
+extern animStringItem_t animBodyPartsStr[5]; /* animBodyPartsStr */
+extern animStringItem_t animConditionMountedStr[3]; /* animConditionMountedStr */
+extern animStringItem_t animWeaponClassStr[11]; /* animWeaponClassStr */
+extern animStringItem_t animWeaponPositionStr[3]; /* animWeaponPositionStr */
+extern animStringItem_t animStrafeStateStr[4]; /* animStrafeStateStr */
+extern animStringItem_t animConditionsStr[10]; /* animConditionsStr */
+extern animConditionTable_t animConditionsTable[9]; /* animConditionsTable */
+extern void *(*controller_names[6])(); /* controller_names */
+extern animStringItem_t animParseModesStr[6]; /* animParseModesStr */
 
 void BG_AnimParseError(const char *msg);
 void BG_InitWeaponStrings(void);

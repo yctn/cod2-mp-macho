@@ -8,8 +8,8 @@ extern int XModelGetNumLods(struct XModel *xmodel);
 extern int XModelGetSurfaces(struct XModel *xmodel, void *xsurfs, int lodIndex, void *partBits);
 extern void *Hunk_AllocAlignInternal(int size, int alignment);
 
-extern r_globals_t *rg; /* imp_rg */
-extern r_global_permanent_t *rgp; /* imp_rgp */
+extern r_globals_t rg; /* imp_rg */
+extern r_global_permanent_t rgp; /* imp_rgp */
 
 long unsigned int R_InitStaticModelDynamicData(int smodelIndex)
 {
@@ -20,8 +20,8 @@ long unsigned int R_InitStaticModelDynamicData(int smodelIndex)
     int instanceSize;
     void *buffer;
 
-    GfxStaticModelDynamic *smodelDync = &rg->smodelDyncs[smodelIndex];
-    struct XModel *xmodel = rgp->world->smodelInsts[smodelIndex].model;
+    GfxStaticModelDynamic *smodelDync = &rg.smodelDyncs[smodelIndex];
+    struct XModel *xmodel = rgp.world->smodelInsts[smodelIndex].model;
 
     int lodCount = XModelGetNumLods(xmodel);
     maxSurfs = 0;

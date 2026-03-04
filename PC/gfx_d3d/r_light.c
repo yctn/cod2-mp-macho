@@ -5,9 +5,9 @@
 #include "imports.h"
 
 extern struct lightGlob_type lightGlob; /* 0x0 */
-extern refimport_t *ri;                 /* imp_ri */
-extern r_global_permanent_t *rgp;       /* imp_rgp */
-extern r_globals_t *rg;                 /* imp_rg */
+extern refimport_t ri;                 /* imp_ri */
+extern r_global_permanent_t rgp;       /* rgp IS the struct, not a pointer */
+extern r_globals_t rg;                 /* imp_rg */
 extern GfxScene *gfxScene;             /* imp_scene */
 extern const dvar_t *r_dlightLimit;    /* imp_r_dlightLimit */
 extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
@@ -43,10 +43,10 @@ GfxLightDef * R_RegisterLightDef(const char *name)
         /* Not found in existing defs */
         if (lightGlob.defCount == 64) {
             /* Too many light defs loaded - print them all */
-            ri->Printf(0, "Exceeded %i light defs. Currently loaded light defs:\n");
+            ri.Printf(0, "Exceeded %i light defs. Currently loaded light defs:\n");
             if (lightGlob.defCount > 0) {
                 for (defIndex = 0; defIndex < lightGlob.defCount; defIndex++) {
-                    ri->Printf(0, "  %s\n", lightGlob.defs[defIndex]->name);
+                    ri.Printf(0, "  %s\n", lightGlob.defs[defIndex]->name);
                 }
             }
             R_Error(1, "Can't load light def %s; %i unique light defs already loaded", name, lightGlob.defCount);
@@ -72,7 +72,7 @@ GfxLightDef * R_RegisterLightDef(const char *name)
 /* line 62 */
 long unsigned int R_InitLightDefs(void)
 {
-    rgp->dlightDef = R_RegisterLightDef("default");
+    rgp.dlightDef = R_RegisterLightDef("default");
     return 0;
 }
 
@@ -272,7 +272,7 @@ int R_GetPointLightPartitions(const GfxDrawSurf *drawSurfs, int drawSurfCount, P
 
     /* line 228: If we have more visible lights than the limit, select the best ones */
     if (visibleLimit < visibleCount) {
-        R_SelectClosestLights(visibleLights, visibleCount, visibleLimit, &rg->viewOrg[0]);
+        R_SelectClosestLights(visibleLights, visibleCount, visibleLimit, &rg.viewOrg[0]);
         visibleCount = visibleLimit;
     }
 

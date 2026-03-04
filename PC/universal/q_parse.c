@@ -11,8 +11,8 @@ extern void Com_Printf(const char *fmt, ...);
 extern void Com_Error(int level, const char *fmt, ...);
 extern void I_strncpyz(char *dest, const char *src, int destsize);
 
-static const char * punctuation[15]; /* punctuation */
-static ParseThreadInfo g_parse[1]; /* g_parse */
+extern const char * punctuation[15]; /* punctuation */
+extern ParseThreadInfo g_parse[1]; /* g_parse */
 
 int Com_Compress(char *data_p);
 void Com_BeginParseSession(const char *filename);

@@ -44,8 +44,8 @@ extern int SV_SvEntityForGentity(const gentity_t *gEnt);
  *   #include "PC/universal/com_math.h"
  */
 
-static vec3_t actorLocationalMins; /* actorLocationalMins */
-static vec3_t actorLocationalMaxs; /* actorLocationalMaxs */
+extern vec3_t actorLocationalMins; /* actorLocationalMins */
+extern vec3_t actorLocationalMaxs; /* actorLocationalMaxs */
 
 clipHandle_t SV_ClipHandleForEntity(const gentity_t *ent);
 int SV_UnlinkEntity(gentity_t *gEnt);
@@ -661,7 +661,7 @@ int SV_LinkEntity(gentity_t *gEnt)
         "movl %eax, -0x23c(%ebp)\n" /* ent */
         "cmpb $0, 0xf1(%edi)\n" /* line 103 | gEnt */
         "je .Lf1bc6e8_001bc9e3\n"
-        "movl $g_effectVisArray+4351, 0x9c(%edi)\n" /* line 105 | gEnt */
+        "movl $0x00FFFFFF, 0x9c(%edi)\n" /* line 105 | gEnt */
         ".Lf1bc6e8_001bc71c:\n"
         "leal 0x144(%edi), %eax\n" /* line 138 | gEnt */
         "movl %eax, -0x240(%ebp)\n" /* angles */
@@ -852,7 +852,7 @@ int SV_LinkEntity(gentity_t *gEnt)
         "jle .Lf1bc6e8_001bcd3a\n"
         "cmpl $0xff, %eax\n" /* line 127 */
         "jle .Lf1bc6e8_001bccbd\n"
-        "movl $cg_eachClientLocalEntities+21120, %eax\n"
+        "movl $0x00FF0000, %eax\n"
         ".Lf1bc6e8_001bca74:\n"
         "orl %ecx, %eax\n" /* line 130 */
         "orl %eax, %edx\n"

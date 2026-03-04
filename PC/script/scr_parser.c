@@ -1184,7 +1184,7 @@ void RuntimeError(const char *codePos, unsigned int index, const char *msg, cons
         "cmpb $0, 0x14(%ebx)\n" /* line 1198 */
         "jne .Lf9c12e_0009c228\n"
         ".Lf9c12e_0009c160:\n"
-        "testl $g_effectVisArray+4096, 0x14(%ebx)\n" /* line 1206 */
+        "testl $0x00FFFF00, 0x14(%ebx)\n" /* line 1206 */
         "setne -0x1d(%ebp)\n" /* abort_on_error */
         "cmpb $1, -0x1d(%ebp)\n" /* line 1208 | abort_on_error */
         "sbbl %esi, %esi\n" /* type */

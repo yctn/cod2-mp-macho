@@ -79,7 +79,7 @@ extern void DObjCreateSkel(void *obj, char *buf, int timeStamp);
 
 extern qboolean gameInitialized; /* 0x0 */
 static int warnCount; /* warnCount */
-static int boxVerts[24][3]; /* boxVerts */
+extern int boxVerts[24][3]; /* boxVerts */
 static char g_sv_skel_memory[262144]; /* g_sv_skel_memory */
 static char *g_sv_skel_memory_start; /* g_sv_skel_memory_start */
 

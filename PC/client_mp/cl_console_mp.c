@@ -154,7 +154,7 @@ toggle:
     *(int *)(field + 0x10) = *(int *)&g_console_char_height;
     *(int *)(field + 0x14) = 1;
     *(byte *)((char *)&con + 131100) = 0;
-    *(int *)((char *)*(void **)imp_clients + 4) ^= 1;
+    *(int *)((char *)imp_clients + 4) ^= 1;
 }
 
 /* line 319 */
@@ -1274,7 +1274,7 @@ void Con_Top(void)
 /* line 2060 */
 Bool Con_IsActive(void)
 {
-    return (*(int *)(*(int *)(*(int *)imp_cl) + 4) & 1) != 0;
+    return (*(int *)((char *)*(void **)imp_cl + 4) & 1) != 0;
 }
 
 /* line 343 */
@@ -4123,7 +4123,7 @@ void Con_DrawInput(void)
 void Con_DrawConsole(void)
 {
     Con_CheckResize();
-    if (!(*(int *)(*(int *)(*(int *)imp_cl) + 4) & 1))
+    if (!(*(int *)((char *)*(void **)imp_cl + 4) & 1))
         return;
     if (con.outputVisible)
         Con_DrawOuputWindow();

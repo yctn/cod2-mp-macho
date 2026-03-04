@@ -28,14 +28,14 @@ extern void I_strlwr(char *s);
 static WeaponDef bg_defaultWeaponDefs; /* bg_defaultWeaponDefs */
 static int g_playerAnimTypeNamesCount; /* g_playerAnimTypeNamesCount */
 static char * g_playerAnimTypeNames[64]; /* g_playerAnimTypeNames */
-static char * szWeapTypeNames[4]; /* szWeapTypeNames */
-static char * szWeapSlotNames[3]; /* szWeapSlotNames */
-static char * szProjectileExplosionNames[3]; /* szProjectileExplosionNames */
-static char * szWeapOverlayReticleNames[5]; /* szWeapOverlayReticleNames */
-static char * szWeapClassNames[10]; /* szWeapClassNames */
-static char * szWeapStanceNames[3]; /* szWeapStanceNames */
-static char * offhandClassNames[3]; /* offhandClassNames */
-static cspField_t weaponDefFields[366]; /* weaponDefFields */
+extern char * szWeapTypeNames[4]; /* szWeapTypeNames */
+extern char * szWeapSlotNames[3]; /* szWeapSlotNames */
+extern char * szProjectileExplosionNames[3]; /* szProjectileExplosionNames */
+extern char * szWeapOverlayReticleNames[5]; /* szWeapOverlayReticleNames */
+extern char * szWeapClassNames[10]; /* szWeapClassNames */
+extern char * szWeapStanceNames[3]; /* szWeapStanceNames */
+extern char * offhandClassNames[3]; /* offhandClassNames */
+extern cspField_t weaponDefFields[366]; /* weaponDefFields */
 
 int BG_GetWeaponSlotForName(const char *pszSlotName);
 const char * BG_GetWeaponSlotNameForIndex(int iSlot);

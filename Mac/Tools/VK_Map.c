@@ -7,7 +7,7 @@
 extern UInt8 sFrench_ISO_VK_Map[128]; /* 0x0 */
 extern UInt8 sGerman_ISO_VK_Map[128]; /* 0x0 */
 static UInt8 *sCachedVKMap; /* 0x334c80 */
-static UInt8 sANSI_VK_Map[128]; /* 0x3081c0 */
+extern UInt8 sANSI_VK_Map[128]; /* 0x3081c0 */
 
 UInt8 TranslateKeyCodeToVK(UInt32 inKeyCode);
 

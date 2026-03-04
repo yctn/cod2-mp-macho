@@ -23,7 +23,7 @@ extern vec3_t bytedirs[162];
 extern vec2_t vec2_origin;
 extern vec3_t vec3_origin;
 extern const float identityMatrix44[4][4];
-static long unsigned int holdrand;
+extern long unsigned int holdrand;
 
 /* Forward declarations */
 const qboolean VecNCompareCustomEpsilon(const vec_t *v0, const vec_t *v1, vec_t epsilon, int coordCount);

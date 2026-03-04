@@ -4,8 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern void **g_dx;       /* imp_dx - DxGlobals pointer */
-extern int *g_dxIter;     /* imp_alwaysfails - device lost indicator */
+/* g_dx was imp_dx, g_dxIter was imp_alwaysfails */
 
 extern const char *va(const char *fmt, ...);
 extern void R_FatalInitError(const char *msg);
@@ -46,7 +45,7 @@ void * R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 * *vb, int sizeInBytes)
     void **vtable;
     HRESULT hr;
 
-    dxPtr = *(byte **)g_dx;
+    dxPtr = (byte *)imp_dx;
     device = *(void **)(dxPtr + 8);
     vtable = VTABLE(device);
 
@@ -71,7 +70,7 @@ void R_FinishStaticVertexBuffer(IDirect3DVertexBuffer9 *vb)
     /* IDirect3DVertexBuffer9::Unlock, retrying while device is lost */
     do {
         ((BufferUnlockFn)VTABLE(vb)[0x30 / 4])((void *)vb);
-    } while (*g_dxIter != 0);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
 /* line 128 */
@@ -81,7 +80,7 @@ void R_FreeStaticVertexBuffer(IDirect3DVertexBuffer9 *vb)
     do {
         ((ReleaseFn)VTABLE(vb)[0x08 / 4])((void *)vb);
         vb = NULL;
-    } while (*g_dxIter != 0);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
 /* line 134 */
@@ -93,7 +92,7 @@ void * R_AllocStaticIndexBuffer(IDirect3DIndexBuffer9 * *ib, int sizeInBytes)
     void **devVtable;
     HRESULT hr;
 
-    dxPtr = *(byte **)g_dx;
+    dxPtr = (byte *)imp_dx;
     device = *(void **)(dxPtr + 8);
     devVtable = VTABLE(device);
 
@@ -120,7 +119,7 @@ void R_FinishStaticIndexBuffer(IDirect3DIndexBuffer9 *ib)
     /* IDirect3DIndexBuffer9::Unlock, retrying while device is lost */
     do {
         ((BufferUnlockFn)VTABLE(ib)[0x30 / 4])((void *)ib);
-    } while (*g_dxIter != 0);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }
 
 /* line 164 */
@@ -130,5 +129,5 @@ void R_FreeStaticIndexBuffer(IDirect3DIndexBuffer9 *ib)
     do {
         ((ReleaseFn)VTABLE(ib)[0x08 / 4])((void *)ib);
         ib = NULL;
-    } while (*g_dxIter != 0);
+    } while (*(volatile int *)imp_alwaysfails != 0);
 }

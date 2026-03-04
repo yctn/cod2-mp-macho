@@ -187,7 +187,7 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_Disable(const COpenGLARBFragmentProgram 
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 350 */
         "movl %esp, %ebp\n"
-        "movl 0x195ec0c, %eax\n" /* line 354 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 354 */
         "cmpb $0, 0x820(%eax)\n"
         "jne .Lf1c0cc_0001c0df\n"
         "popl %ebp\n" /* line 359 */
@@ -247,26 +247,26 @@ void ZN20CDirect3DPixelShaderD0Ev(void) /* CDirect3DPixelShader_~CDirect3DPixelS
         "pushl %ebp\n" /* line 29 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl $0x32fa08, (%edx)\n"
-        "movl 0x195ec0c, %eax\n" /* line 33 */
+        "movl $vtbl_CDirect3DPixelShader_base, (%edx)\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 33 */
         "cmpl %edx, 0x818(%eax)\n"
         "je .Lf1c138_0001c172\n"
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "movl %edx, 8(%ebp)\n" /* line 43 | this */
         "popl %ebp\n"
         "jmp __ZdlPv\n"
         ".Lf1c138_0001c172:\n"
         "movl $0, 0x818(%eax)\n" /* line 345 */
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "movl %edx, 8(%ebp)\n" /* line 43 | this */
         "popl %ebp\n"
@@ -286,7 +286,7 @@ J_COLOR_SPACE COpenGLATITextFragmentShader_Enable(const COpenGLATITextFragmentSh
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
         "movl 0xc(%esi), %eax\n" /* line 125 | this */
-        "movl 0x195ec0c, %ebx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n"
         "cmpl %eax, 0x81c(%ebx)\n"
         "je .Lf1c19e_0001c1d3\n"
         "movl %eax, 4(%esp)\n" /* line 127 */
@@ -320,7 +320,7 @@ J_COLOR_SPACE COpenGLATITextFragmentShader_Disable(const COpenGLATITextFragmentS
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 140 */
         "movl %esp, %ebp\n"
-        "movl 0x195ec0c, %eax\n" /* line 144 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 144 */
         "cmpb $0, 0x820(%eax)\n"
         "jne .Lf1c1fc_0001c20f\n"
         "popl %ebp\n" /* line 149 */
@@ -341,7 +341,7 @@ J_COLOR_SPACE COpenGLNVidiaRegisterCombinersProgram_Disable(const COpenGLNVidiaR
         "pushl %ebp\n" /* line 231 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl 0x195ec0c, %eax\n" /* line 235 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 235 */
         "cmpb $0, 0x820(%eax)\n"
         "jne .Lf1c224_0001c23a\n"
         "leave\n" /* line 241 */
@@ -368,7 +368,7 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_Enable(const COpenGLARBFragmentProgram *
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
         "movl 0x14(%esi), %eax\n" /* line 334 | this */
-        "movl 0x195ec0c, %ebx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n"
         "cmpl %eax, 0x81c(%ebx)\n"
         "je .Lf1c25a_0001c28f\n"
         "movl %eax, 4(%esp)\n" /* line 336 */
@@ -403,25 +403,25 @@ void ZN20CDirect3DPixelShaderD2Ev(void) /* CDirect3DPixelShader_~CDirect3DPixelS
         "pushl %ebp\n" /* line 29 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fa08, (%eax)\n"
-        "movl 0x195ec0c, %edx\n" /* line 33 */
+        "movl $vtbl_CDirect3DPixelShader_base, (%eax)\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n" /* line 33 */
         "cmpl %eax, 0x818(%edx)\n"
         "je .Lf1c2b8_0001c2ec\n"
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "popl %ebp\n" /* line 43 */
         "retl\n"
         ".Lf1c2b8_0001c2ec:\n"
         "movl $0, 0x818(%edx)\n" /* line 345 */
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "popl %ebp\n" /* line 43 */
         "retl\n"
@@ -436,25 +436,25 @@ void ZN20CDirect3DPixelShaderD1Ev(void) /* CDirect3DPixelShader_~CDirect3DPixelS
         "pushl %ebp\n" /* line 29 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fa08, (%eax)\n"
-        "movl 0x195ec0c, %edx\n" /* line 33 */
+        "movl $vtbl_CDirect3DPixelShader_base, (%eax)\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n" /* line 33 */
         "cmpl %eax, 0x818(%edx)\n"
         "je .Lf1c310_0001c344\n"
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "popl %ebp\n" /* line 43 */
         "retl\n"
         ".Lf1c310_0001c344:\n"
         "movl $0, 0x818(%edx)\n" /* line 345 */
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "popl %ebp\n" /* line 43 */
         "retl\n"
@@ -472,8 +472,8 @@ void ZN28COpenGLATITextFragmentShaderD1Ev(void) /* COpenGLATITextFragmentShader_
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fa48, (%esi)\n" /* this */
-        "movl 0x195ec0c, %eax\n" /* line 108 */
+        "movl $vtbl_CDirect3DPixelShader_ATI, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 108 */
         "cmpl %esi, 0x818(%eax)\n" /* this */
         "je .Lf1c368_0001c3a7\n"
         ".Lf1c368_0001c386:\n"
@@ -513,8 +513,8 @@ void ZN28COpenGLATITextFragmentShaderD0Ev(void) /* COpenGLATITextFragmentShader_
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fa48, (%esi)\n" /* this */
-        "movl 0x195ec0c, %eax\n" /* line 108 */
+        "movl $vtbl_CDirect3DPixelShader_ATI, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 108 */
         "cmpl %esi, 0x818(%eax)\n" /* this */
         "je .Lf1c3d8_0001c41f\n"
         ".Lf1c3d8_0001c3f6:\n"
@@ -560,7 +560,7 @@ J_COLOR_SPACE COpenGLATITextFragmentShader_COpenGLATITextFragmentShader(const CO
         "movl 0xc(%ebp), %ebx\n" /* pSrcData */
         "movl $0, 8(%esi)\n" /* line 22 */
         "movl $1, 4(%esi)\n" /* line 64 */
-        "movl $0x32fa48, (%esi)\n" /* line 85 | this */
+        "movl $vtbl_CDirect3DPixelShader_ATI, (%esi)\n" /* line 85 | this */
         "movl $0, 0xc(%esi)\n" /* this */
         /* { scope 1 */
         "leal -0x1c(%ebp), %eax\n" /* line 90 | CurrentProgram */
@@ -619,7 +619,7 @@ J_COLOR_SPACE COpenGLNVidiaRegisterCombinersProgram_COpenGLNVidiaRegisterCombine
         "movl 8(%ebp), %eax\n" /* this */
         "movl $0, 8(%eax)\n" /* line 22 */
         "movl $1, 4(%eax)\n" /* line 64 */
-        "movl $0x32fa88, (%eax)\n" /* line 171 */
+        "movl $vtbl_CDirect3DPixelShader_NVidia, (%eax)\n" /* line 171 */
         "movl 0xc(%ebp), %edx\n" /* pSrcData */
         "movl %edx, 0xc(%eax)\n"
         "movl $0, 0x10(%eax)\n"
@@ -639,8 +639,8 @@ void ZN37COpenGLNVidiaRegisterCombinersProgramD2Ev(void) /* COpenGLNVidiaRegiste
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fa88, (%esi)\n" /* this */
-        "movl 0x195ec0c, %eax\n" /* line 182 */
+        "movl $vtbl_CDirect3DPixelShader_NVidia, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 182 */
         "cmpl %esi, 0x818(%eax)\n" /* this */
         "je .Lf1c608_0001c634\n"
         ".Lf1c608_0001c626:\n"
@@ -683,8 +683,8 @@ void ZN37COpenGLNVidiaRegisterCombinersProgramD1Ev(void) /* COpenGLNVidiaRegiste
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fa88, (%esi)\n" /* this */
-        "movl 0x195ec0c, %eax\n" /* line 182 */
+        "movl $vtbl_CDirect3DPixelShader_NVidia, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 182 */
         "cmpl %esi, 0x818(%eax)\n" /* this */
         "je .Lf1c67c_0001c6a8\n"
         ".Lf1c67c_0001c69a:\n"
@@ -727,8 +727,8 @@ void ZN37COpenGLNVidiaRegisterCombinersProgramD0Ev(void) /* COpenGLNVidiaRegiste
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fa88, (%esi)\n" /* this */
-        "movl 0x195ec0c, %eax\n" /* line 182 */
+        "movl $vtbl_CDirect3DPixelShader_NVidia, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 182 */
         "cmpl %esi, 0x818(%eax)\n" /* this */
         "je .Lf1c6f0_0001c724\n"
         ".Lf1c6f0_0001c70e:\n"
@@ -778,7 +778,7 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(const COpenGLA
         "movl 8(%ebp), %eax\n" /* line 22 | this */
         "movl $0, 8(%eax)\n"
         "movl $1, 4(%eax)\n" /* line 64 */
-        "movl $0x32fac8, (%eax)\n" /* line 277 */
+        "movl $vtbl_CDirect3DPixelShader_ARB, (%eax)\n" /* line 277 */
         "movl %eax, %edx\n"
         "addl $0xc, %edx\n"
         "movl 0xc(%ebp), %eax\n" /* Name */
@@ -1207,8 +1207,8 @@ void ZN25COpenGLARBFragmentProgramD2Ev(void) /* COpenGLARBFragmentProgram_~COpen
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fac8, (%esi)\n" /* this */
-        "movl 0x195ec0c, %ebx\n" /* line 313 */
+        "movl $vtbl_CDirect3DPixelShader_ARB, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 313 */
         "cmpl %esi, 0x818(%ebx)\n" /* this */
         "je .Lf1d21c_0001d284\n"
         ".Lf1d21c_0001d23c:\n"
@@ -1355,8 +1355,8 @@ void ZN25COpenGLARBFragmentProgramD1Ev(void) /* COpenGLARBFragmentProgram_~COpen
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fac8, (%esi)\n" /* this */
-        "movl 0x195ec0c, %ebx\n" /* line 313 */
+        "movl $vtbl_CDirect3DPixelShader_ARB, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 313 */
         "cmpl %esi, 0x818(%ebx)\n" /* this */
         "je .Lf1d3b0_0001d418\n"
         ".Lf1d3b0_0001d3d0:\n"
@@ -1503,8 +1503,8 @@ void ZN25COpenGLARBFragmentProgramD0Ev(void) /* COpenGLARBFragmentProgram_~COpen
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fac8, (%esi)\n" /* this */
-        "movl 0x195ec0c, %ebx\n" /* line 313 */
+        "movl $vtbl_CDirect3DPixelShader_ARB, (%esi)\n" /* this */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 313 */
         "cmpl %esi, 0x818(%ebx)\n" /* this */
         "je .Lf1d544_0001d5b4\n"
         ".Lf1d544_0001d564:\n"

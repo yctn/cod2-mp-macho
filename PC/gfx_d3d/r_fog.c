@@ -6,17 +6,17 @@
 
 typedef void (*ArchiveProc)(MemoryFile *, int, void *);
 
-extern r_globals_t *rg; /* imp_rg */
+extern r_globals_t rg; /* imp_rg */
 
 void R_ClearFogs(void)
 {
-    memset(rg->fogSettings, 0, sizeof(rg->fogSettings));
-    rg->fogIndex = 0;
+    memset(rg.fogSettings, 0, sizeof(rg.fogSettings));
+    rg.fogIndex = 0;
 }
 
 void R_SetFog(int fogvar, float start, float end, int r, int g, int b, float density)
 {
-    GfxFog *fog = &rg->fogSettings[fogvar];
+    GfxFog *fog = &rg.fogSettings[fogvar];
 
     fog->color.array[0] = (byte)b;
     fog->color.array[1] = (byte)g;
@@ -43,29 +43,29 @@ void R_SetFog(int fogvar, float start, float end, int r, int g, int b, float den
 
 void R_SwitchFog(int fogvar, int startTime, int transitionTime)
 {
-    rg->fogIndex = fogvar;
+    rg.fogIndex = fogvar;
 
-    if (rg->fogSettings[2].registered) {
-        rg->fogSettings[3] = rg->fogSettings[2];
+    if (rg.fogSettings[2].registered) {
+        rg.fogSettings[3] = rg.fogSettings[2];
     } else {
-        rg->fogSettings[3] = rg->fogSettings[fogvar];
+        rg.fogSettings[3] = rg.fogSettings[fogvar];
         transitionTime = 0;
     }
 
-    rg->fogSettings[4] = rg->fogSettings[rg->fogIndex];
+    rg.fogSettings[4] = rg.fogSettings[rg.fogIndex];
 
     if (transitionTime == 0) {
-        rg->fogSettings[4].startTime = 0;
-        rg->fogSettings[4].finishTime = 0;
+        rg.fogSettings[4].startTime = 0;
+        rg.fogSettings[4].finishTime = 0;
     } else {
-        rg->fogSettings[4].startTime = startTime;
-        rg->fogSettings[4].finishTime = startTime + transitionTime;
+        rg.fogSettings[4].startTime = startTime;
+        rg.fogSettings[4].finishTime = startTime + transitionTime;
     }
 }
 
 void R_ArchiveFogState(MemoryFile *memFile)
 {
-    ((ArchiveProc)memFile->archiveProc)(memFile, sizeof(rg->fogSettings), rg->fogSettings);
-    ((ArchiveProc)memFile->archiveProc)(memFile, sizeof(rg->fogIndex), &rg->fogIndex);
+    ((ArchiveProc)memFile->archiveProc)(memFile, sizeof(rg.fogSettings), rg.fogSettings);
+    ((ArchiveProc)memFile->archiveProc)(memFile, sizeof(rg.fogIndex), &rg.fogIndex);
 }
 

@@ -200,7 +200,7 @@ void R_AbortRenderCommands(void)
         ".Lfc7e86_000c7e9d:\n"
         "calll R_UnlockSkinnedCache\n" /* line 903 */
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
+        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
 " */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
@@ -530,13 +530,13 @@ void R_InitBackendData(void)
         "pushl %ebp\n" /* line 135 */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
-        "movl $0xc85918, (%esp)\n" /* line 140 */
+        "movl $s_backEndData + 2399512, (%esp)\n" /* line 140 */
         "calll R_InitDebugEntry\n"
         "calll RB_CreateDynamicBuffers\n" /* line 143 */
         "movl frontEndDataOut, %eax\n" /* line 146 */
         "testl %eax, %eax\n"
         "je .Lfc8308_000c834d\n"
-        "addl $str_00219d0c, %eax\n" /* line 656 */
+        "addl $0x219d0c, %eax\n" /* line 656 */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
         "movl $0, 0x30008(%eax)\n" /* line 659 */
@@ -560,12 +560,12 @@ void R_InitBackendData(void)
         "leal (%eax, %eax, 2), %eax\n" /* line 1085 */
         "leal 0x2d90(%edx, %eax, 4), %eax\n"
         "movl frontEndDataOut, %edx\n"
-        "movl %eax, str_00217c60+24(%edx)\n"
+        "movl %eax, 0x217c78(%edx)\n"
         "movl frontEndDataOut, %eax\n" /* line 1093 */
-        "movl str_00217c60+24(%eax), %eax\n"
+        "movl 0x217c78(%eax), %eax\n"
         "movl $0, (%eax)\n"
         "movl frontEndDataOut, %edx\n" /* line 1095 */
-        "leal str_00219d0c(%edx), %eax\n"
+        "leal 0x219d0c(%edx), %eax\n"
         "movl %eax, s_cmdList\n"
         "movl $0, 4(%edx)\n" /* line 1120 */
         "movl frontEndDataOut, %eax\n" /* line 1121 */
@@ -577,9 +577,9 @@ void R_InitBackendData(void)
         "movl frontEndDataOut, %eax\n" /* line 1124 */
         "movl $0, 0x18fc74(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1130 */
-        "movl $0, str_00217c60+28(%eax)\n"
+        "movl $0, 0x217c7c(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1132 */
-        "addl $str_00249a1c+764, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -619,7 +619,7 @@ void R_EndFrame(void)
         "movl imp_ri, %eax\n" /* line 1785 */
         "calll *0x11c(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1787 */
-        "addl $str_00249a1c+764, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -634,7 +634,7 @@ DP4 oPos.z," */
         "movl $0, 0x30008(%ecx)\n" /* line 956 */
         ".Lfc844a_000c84ae:\n"
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
+        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
 " */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
@@ -660,12 +660,12 @@ DP4 oPos.z," */
         "leal (%eax, %eax, 2), %eax\n" /* line 1085 */
         "leal 0x2d90(%ebx, %eax, 4), %eax\n"
         "movl frontEndDataOut, %edx\n"
-        "movl %eax, str_00217c60+24(%edx)\n"
+        "movl %eax, 0x217c78(%edx)\n"
         "movl frontEndDataOut, %eax\n" /* line 1093 */
-        "movl str_00217c60+24(%eax), %eax\n"
+        "movl 0x217c78(%eax), %eax\n"
         "movl $0, (%eax)\n"
         "movl frontEndDataOut, %edx\n" /* line 1095 */
-        "leal str_00219d0c(%edx), %eax\n"
+        "leal 0x219d0c(%edx), %eax\n"
         "movl %eax, s_cmdList\n"
         "movl $0, 4(%edx)\n" /* line 1120 */
         "movl frontEndDataOut, %eax\n" /* line 1121 */
@@ -677,9 +677,9 @@ DP4 oPos.z," */
         "movl frontEndDataOut, %eax\n" /* line 1124 */
         "movl $0, 0x18fc74(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1130 */
-        "movl $0, str_00217c60+28(%eax)\n"
+        "movl $0, 0x217c7c(%eax)\n"
         "movl frontEndDataOut, %eax\n" /* line 1132 */
-        "addl $str_00249a1c+764, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -1927,7 +1927,7 @@ void R_EndDebugFrame(void)
         "movl $0, 0x30008(%ecx)\n" /* line 956 */
         ".Lfc9240_000c9277:\n"
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
+        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
 " */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */

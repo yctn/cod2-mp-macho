@@ -36,7 +36,7 @@ void CMemoryBuffer_CMemoryBuffer(const CMemoryBuffer * _this, UINT32 Length)
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
         "movl 0xc(%ebp), %ebx\n" /* Length */
-        "movl $0x32fd28, (%esi)\n" /* line 36 | this */
+        "movl $vtbl_CMemoryBuffer, (%esi)\n" /* line 36 | this */
         "testl %ebx, %ebx\n" /* Length */
         "jne .Lf204ee_00020528\n"
         "xorl %edx, %edx\n"
@@ -116,7 +116,7 @@ void ZN13CMemoryBufferD1Ev(void) /* CMemoryBuffer_~CMemoryBuffer */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fd28, (%ebx)\n" /* this */
+        "movl $vtbl_CMemoryBuffer, (%ebx)\n" /* this */
         "movl 0x10(%ebx), %ecx\n" /* line 24 */
         "testl %ecx, %ecx\n"
         "jne .Lf20596_000205bc\n"
@@ -145,7 +145,7 @@ void ZN13CMemoryBufferD0Ev(void) /* CMemoryBuffer_~CMemoryBuffer */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fd28, (%ebx)\n" /* this */
+        "movl $vtbl_CMemoryBuffer, (%ebx)\n" /* this */
         "movl 0x10(%ebx), %eax\n" /* line 24 */
         "testl %eax, %eax\n"
         "jne .Lf205d0_000205f6\n"

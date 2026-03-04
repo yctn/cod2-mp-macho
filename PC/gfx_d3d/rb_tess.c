@@ -116,7 +116,7 @@ void RB_TessParticleCloud(const GfxEntity *re)
         scaledWorldUp[2] = worldUp[2] * scale;
 
         /* Copy camera view axis (3x3 matrix at backEnd->viewParms+0x48) */
-        backEnd = *(char **)imp_backEnd;
+        backEnd = (char *)imp_backEnd;
         camAxis = (float *)(*(char **)(backEnd + 0x3c8) + 0x48);
         localViewAxis[0] = camAxis[0];
         localViewAxis[1] = camAxis[1];
@@ -168,7 +168,7 @@ void RB_TessParticleCloud(const GfxEntity *re)
     }
 
     /* Store viewAxis to backEnd+0x310 */
-    backEnd = *(char **)imp_backEnd;
+    backEnd = (char *)imp_backEnd;
     *(float *)(backEnd + 0x310) = viewAxis[0];
     *(float *)(backEnd + 0x314) = viewAxis[1];
     *(float *)(backEnd + 0x318) = viewAxis[2];
@@ -181,9 +181,9 @@ void RB_TessParticleCloud(const GfxEntity *re)
     *(float *)(backEnd + 0x30c) = (float)re->materialRGBA[3] * oneOver255;
 
     /* Set up index and vertex buffers from DxGlobals */
-    dxGlobals = *(char **)imp_dx;
+    dxGlobals = (char *)imp_dx;
     ib = *(IDirect3DIndexBuffer9 **)(dxGlobals + 0x2dbc);
-    backEndData = *(char **)imp_dxState;
+    backEndData = (char *)imp_dxState;
     if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
         RB_ChangeIndices(ib);
     }
@@ -232,7 +232,7 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
 
     /* Change index buffer if needed */
     ib = xsurf->indexBuffer;
-    backEndData = *(char **)imp_dxState;
+    backEndData = (char *)imp_dxState;
     if (ib != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
         RB_ChangeIndices(ib);
     }
@@ -257,7 +257,7 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
     /* Push matrix and set up world transform from boneAxis */
     RB_PushMatrixStack();
 
-    entity = *(char **)((byte *)*(void **)imp_backEnd + 0x440);
+    entity = *(char **)((byte *)(void *)imp_backEnd + 0x440);
     boneAxis = (float *)((byte *)surfType + 8);
 
     worldMatrix = RB_GetActiveWorldMatrix();
@@ -1928,7 +1928,7 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, -0xd0(%ebp)\n" /* mtlColor */
         "movzbl 3(%edx), %eax\n" /* line 658 */
         "shll $0x18, %eax\n"
-        "andl $g_effectVisArray+4351, -0xd0(%ebp)\n" /* mtlColor */
+        "andl $0x00FFFFFF, -0xd0(%ebp)\n" /* mtlColor */
         "orl %eax, -0xd0(%ebp)\n" /* mtlColor */
         /* } scope */
         "movss lit4_002ed5d0, %xmm0\n" /* line 627 | 1.0f */
@@ -2005,7 +2005,7 @@ void RB_TessEntity(const GfxEntity *re)
         "orl %eax, %ebx\n" /* color */
         "movzbl 0x5a(%edi), %eax\n" /* line 1133 */
         "shll $0x18, %eax\n"
-        "andl $g_effectVisArray+4351, %ebx\n" /* color */
+        "andl $0x00FFFFFF, %ebx\n" /* color */
         "orl %eax, %ebx\n" /* color */
         /* { scope 2: worldOffset */
         "movl 0x54(%edi), %eax\n" /* line 207 */
@@ -2167,7 +2167,7 @@ void RB_TessEntity(const GfxEntity *re)
         "orl %eax, %ecx\n"
         "movzbl 0x5a(%edi), %eax\n" /* line 954 */
         "shll $0x18, %eax\n"
-        "andl $g_effectVisArray+4351, %ecx\n"
+        "andl $0x00FFFFFF, %ecx\n"
         "orl %eax, %ecx\n"
         "movl imp_r_rendererInUse, %eax\n" /* line 960 */
         "movl (%eax), %eax\n"
@@ -2658,7 +2658,7 @@ void RB_TessEntity(const GfxEntity *re)
         "movl %eax, -0xcc(%ebp)\n" /* mtlColor */
         "movzbl 3(%edx), %eax\n" /* line 658 */
         "shll $0x18, %eax\n"
-        "andl $g_effectVisArray+4351, -0xcc(%ebp)\n" /* mtlColor */
+        "andl $0x00FFFFFF, -0xcc(%ebp)\n" /* mtlColor */
         "orl %eax, -0xcc(%ebp)\n" /* mtlColor */
         /* } scope */
         "movss lit4_002ed5d0, %xmm0\n" /* line 725 | 1.0f */
@@ -2964,7 +2964,7 @@ void RB_TessEntity(const GfxEntity *re)
 /* line 1193 */
 void RB_TessBackEndEntity(const surfaceType_t *surfType)
 {
-    RB_TessEntity((const GfxEntity *)*(void **)((byte *)*(void **)imp_backEnd + 0x440));
+    RB_TessEntity((const GfxEntity *)*(void **)((byte *)(void *)imp_backEnd + 0x440));
 }
 
 /* line 75 */
@@ -3121,7 +3121,7 @@ void RB_TessStaticModelCached(const surfaceType_t *surfType)
     *(int *)(tess + 0x5a7e0) = baseVertIndex + triIndexCount;
 
     /* Copy cached triangle data from DxGlobals static model cache */
-    src = *(char **)(*(char **)imp_dx + 0x2dc8) + *(int *)(*(void **)((byte *)surfType + 8)) * 12;
+    src = *(char **)((char *)imp_dx + 0x2dc8) + *(int *)(*(void **)((byte *)surfType + 8)) * 12;
     Com_Memcpy(dest, src, triIndexCount * 2);
 }
 
@@ -3168,13 +3168,13 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         args.primCount = (int)xsurf->triCount;
 
         /* Change index buffer if needed */
-        backEndData = *(char **)imp_dxState;
+        backEndData = (char *)imp_dxState;
         if (xsurf->indexBuffer != *(IDirect3DIndexBuffer9 **)(backEndData + 0x20cc)) {
             RB_ChangeIndices(xsurf->indexBuffer);
         }
 
         /* Get skinned vertex buffer from viewParms */
-        vb = *(IDirect3DVertexBuffer9 **)((byte *)*(void **)(*(char **)imp_backEndData) + 0x217c78 + 8);
+        vb = *(IDirect3DVertexBuffer9 **)((byte *)*(void **)((char *)imp_backEndData) + 0x217c78 + 8);
 
         /* Change stream source if needed */
         if (vb != *(IDirect3DVertexBuffer9 **)(backEndData + 0x20d0) ||

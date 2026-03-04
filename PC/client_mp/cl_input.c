@@ -20,7 +20,7 @@ extern void CL_SyncGpu(void);
 extern void CL_SendCmdInternal(void);
 extern void UI_MouseEvent(int dx, int dy);
 static kbutton_t playersKb[1][28]; /* playersKb */
-static kbutton_t *kb; /* kb */
+extern kbutton_t *kb; /* kb */
 
 void IN_MLookDown(void);
 void IN_CenterView(void);
@@ -117,7 +117,7 @@ void IN_MLookDown(void)
 /* line 654 */
 void IN_CenterView(void)
 {
-    byte *cl = *(byte **)*(void **)imp_cl;
+    byte *cl = (byte *)*(void **)imp_cl;
     *(float *)(cl + 0x861c) = (float)*(int *)(cl + 0x88) * -0.0054931640625f;
 }
 
@@ -609,11 +609,11 @@ void IN_Stance_Up(void)
     byte *ptr;
     if (*(byte *)((byte *)kb + 0x204) || *(byte *)((byte *)kb + 0xec))
         return;
-    ptr = *(byte **)(*(void **)imp_cl);
+    ptr = (byte *)*(void **)imp_cl;
     if (*(byte *)(ptr + 0x85ec) && *(int *)(ptr + 0x85f0) == 1)
     {
-        *(int *)((byte *)(*(void **)(*(void **)imp_legacyHacks)) + 8) = 0;
-        ptr = *(byte **)(*(void **)imp_cl);
+        *(int *)((byte *)(*(void **)imp_legacyHacks) + 8) = 0;
+        ptr = (byte *)*(void **)imp_cl;
     }
     *(byte *)(ptr + 0x85ec) = 0;
 }
@@ -621,14 +621,14 @@ void IN_Stance_Up(void)
 /* line 660 */
 void IN_ToggleADS(void)
 {
-    byte *p = (byte *)(*(int *)(*(int *)imp_cl)) + 0xb;
+    byte *p = (byte *)*(void **)imp_cl + 0xb;
     *p = (*p == 0) ? 1 : 0;
 }
 
 /* line 666 */
 void IN_LeaveADS(void)
 {
-    *(byte *)(*(int *)(*(int *)imp_cl) + 0xb) = 0;
+    *(byte *)((char *)*(void **)imp_cl + 0xb) = 0;
 }
 
 /* line 672 */
@@ -755,7 +755,7 @@ Bool IsTalking(void)
 /* line 1006 */
 void CL_MouseEvent(const int dx, const int dy)
 {
-    byte *ptr = *(byte **)(*(void **)imp_cl);
+    byte *ptr = (byte *)*(void **)imp_cl;
     int index;
     if (!(*(byte *)(ptr + 4) & 8) || *(byte *)((byte *)cl_bypassMouseInput + 8))
     {
@@ -2035,7 +2035,7 @@ void IN_MLookUp(void)
 {
     *(byte *)((byte *)kb + 0x114) = 0;
     if (*(byte *)(*(byte **)*(void **)imp_cl_freelook + 8) == 0) {
-        byte *cl = *(byte **)*(void **)imp_cl;
+        byte *cl = (byte *)*(void **)imp_cl;
         *(float *)(cl + 0x861c) = (float)*(int *)(cl + 0x88) * -0.0054931640625f;
     }
 }
@@ -3160,7 +3160,7 @@ void CL_SendCmdInternal(void)
 /* line 1713 */
 void CL_Input(void)
 {
-    if (*(int *)(*(void **)(*(void **)imp_clc)) != 8)
+    if (*(int *)*(void **)imp_clc != 8)
         return;
     CL_SyncGpu();
     CL_SendCmdInternal();
@@ -3169,7 +3169,7 @@ void CL_Input(void)
 /* line 1693 */
 void CL_SendCmd(void)
 {
-    int state = *(int *)(*(void **)(*(void **)imp_clc));
+    int state = *(int *)*(void **)imp_clc;
     if (state <= 4 || state == 8)
         return;
     CL_SendCmdInternal();

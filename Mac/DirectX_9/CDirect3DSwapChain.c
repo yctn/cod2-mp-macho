@@ -48,7 +48,7 @@ void ZN18CDirect3DSwapChainD1Ev(void) /* CDirect3DSwapChain_~CDirect3DSwapChain 
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fb68, (%eax)\n"
+        "movl $vtbl_CDirect3DSwapChain, (%eax)\n"
         "movl 8(%eax), %edx\n" /* line 29 */
         "testl %edx, %edx\n"
         "je .Lf1e1ca_0001e1e8\n"
@@ -71,7 +71,7 @@ void ZN18CDirect3DSwapChainD0Ev(void) /* CDirect3DSwapChain_~CDirect3DSwapChain 
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fb68, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DSwapChain, (%ebx)\n" /* this */
         "movl 8(%ebx), %edx\n" /* line 29 | this */
         "testl %edx, %edx\n"
         "je .Lf1e1ea_0001e209\n"
@@ -183,7 +183,7 @@ int CDirect3DSwapChain_CDirect3DSwapChain(const CDirect3DSwapChain * _this)
         "pushl %ebp\n" /* line 18 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fb68, (%eax)\n" /* line 20 */
+        "movl $vtbl_CDirect3DSwapChain, (%eax)\n" /* line 20 */
         "movl $0, 8(%eax)\n"
         "movl $1, 4(%eax)\n" /* line 54 */
         "popl %ebp\n" /* line 23 */

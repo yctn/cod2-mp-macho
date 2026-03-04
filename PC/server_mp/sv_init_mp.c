@@ -55,11 +55,11 @@ extern byte *sv_mapRotation_dvar;  /* imp_sv_mapRotation */
 extern byte *sv_mapRotationCurrent_dvar; /* imp_sv_mapRotationCurrent */
 extern byte *sv_debugRate_dvar;    /* imp_sv_debugRate */
 extern byte *sv_debugReliableCmds_dvar; /* imp_sv_debugReliableCmds */
-extern byte *nextmap_dvar;         /* imp_nextmap */
+extern int nextmap;                /* imp_nextmap — BSS dvar pointer */
 extern byte *com_dvarflags_ptr;    /* imp_dvar_modifiedFlags */
 extern byte *com_checksumFeed_dvar; /* imp_com_frameTime */
 extern byte *com_errorEntered_ptr; /* imp_bgs */
-extern byte *sv_dedicated_dvar2;   /* imp_com_dedicated */
+/* sv_dedicated_dvar2 removed - use imp_com_dedicated directly */
 extern byte *sv_com_dvarDump_ptr;  /* imp_cl_paused */
 
 extern void Com_Error(int code, const char *fmt, ...);
@@ -407,7 +407,7 @@ void SV_Init(void)
 
     /* line 1273 */
     {
-        byte *svDedicated = *(byte **)&sv_dedicated_dvar2;
+        byte *svDedicated = (byte *)imp_com_dedicated;
         byte *dvar = *(byte **)svDedicated;
         *(char *)(dvar + 0xdd) = 0;
     }
@@ -421,7 +421,7 @@ void SV_Init(void)
     *(dvar_t **)&sv_mapRotationCurrent_dvar = Dvar_RegisterString("sv_mapRotationCurrent", "", (int)&__mh_execute_header);
     *(dvar_t **)&sv_debugRate_dvar = Dvar_RegisterBool("sv_debugRate", 0, (int)&__mh_execute_header);
     *(dvar_t **)&sv_debugReliableCmds_dvar = Dvar_RegisterBool("sv_debugReliableCmds", 0, (int)&__mh_execute_header);
-    *(dvar_t **)&nextmap_dvar = Dvar_RegisterString("nextmap", "", (int)&__mh_execute_header);
+    *(dvar_t **)&nextmap = Dvar_RegisterString("nextmap", "", (int)&__mh_execute_header);
     *(dvar_t **)&sv_expectedHunkUsage_dvar = Dvar_RegisterInt("com_expectedHunkUsage", 0, 0, 0x7fffffff, 0x1040);
 }
 
@@ -619,7 +619,7 @@ next_client1:
 
     /* If FX system exists, free it */
     {
-        byte *dedicated = *(byte **)&sv_dedicated_dvar2;
+        byte *dedicated = (byte *)imp_com_dedicated;
         if (*(int *)(*(byte **)dedicated + 8)) {
             FX_FreeSystem();
         }
@@ -673,7 +673,7 @@ void SV_Startup(void)
     }
 
     /* Allocate snapshot entities */
-    isDedicated = *(int *)(*(byte **)&sv_dedicated_dvar2 + 8);
+    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
     maxclients = *(dvar_t **)&sv_maxclients_dvar;
     numClients = *(int *)((byte *)maxclients + 8);
     if (isDedicated) {
@@ -771,7 +771,7 @@ void SV_ChangeMaxClients(void)
     Hunk_FreeTempMemory(oldClients);
 
     /* Update snapshot entity counts */
-    isDedicated = *(int *)(*(byte **)&sv_dedicated_dvar2 + 8);
+    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
     numClients = *(int *)(*(byte **)&sv_maxclients_dvar + 8);
     svs = *(byte **)&svs_ptr;
     if (isDedicated) {
@@ -851,7 +851,7 @@ void SV_SpawnServer(const char *server)
     }
 
     /* Free FX system if dedicated */
-    isDedicated = *(int *)(*(byte **)&sv_dedicated_dvar2 + 8);
+    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
     if (isDedicated) {
         FX_FreeSystem();
     }
@@ -931,7 +931,7 @@ void SV_SpawnServer(const char *server)
     *(int *)(svs + SVS_SNAPFLAGBIT_OFF) ^= 4;
 
     /* Set "nextmap" dvar */
-    Dvar_SetString(*(dvar_t **)&nextmap_dvar, "map_restart");
+    Dvar_SetString(*(dvar_t **)&nextmap, "map_restart");
 
     /* Clear a dvar */
     Dvar_SetInt(*(dvar_t **)&sv_com_dvarDump_ptr, 0);
@@ -968,7 +968,7 @@ void SV_SpawnServer(const char *server)
     SV_InitGameProgs(savepersist);
 
     /* Init FX system */
-    isDedicated = *(int *)(*(byte **)&sv_dedicated_dvar2 + 8);
+    isDedicated = *(int *)((byte *)*(void **)imp_com_dedicated + 8);
     if (isDedicated) {
         FX_InitSystem(0);
         FX_CreateDefaultEffect();

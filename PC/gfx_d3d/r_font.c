@@ -15,7 +15,7 @@ extern void R_AddCmdDrawTextWithCursor(const char *text, int maxChars, FontHandl
 extern void R_AddCmdDrawStretchPic(float x, float y, float w, float h, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material);
 extern unsigned char ColorIndex(int c);
 extern MaterialHandle Material_RegisterHandle(const char *name, int lightmapIndex, int imageTrack);
-extern refimport_t *ri; /* imp_ri */
+extern refimport_t ri; /* imp_ri */
 
 static int registeredFontCount; /* registeredFontCount */
 static Font * registeredFont[16]; /* registeredFont */
@@ -568,7 +568,7 @@ int R_TextWidth(const char *text, int maxChars, FontHandle font)
     count = 0;
 
     while (*text && count <= maxChars) {
-        letter = ri->SEH_ReadCharFromString(&text, 0);
+        letter = ri.SEH_ReadCharFromString(&text, 0);
         if (letter == '\n') {
             lineWidth = 0;
             continue;

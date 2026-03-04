@@ -12,7 +12,7 @@ extern struct Material * CL_RegisterMaterialNoMip(const char *name, int imageTra
 extern const char * Dvar_GetString(const char *dvarName);
 extern void Dvar_GetUnpackedColorByName(const char *dvarName, vec_t *color);
 
-static int lastLeadTeam; /* lastLeadTeam */
+extern int lastLeadTeam; /* lastLeadTeam */
 static const listColumnInfo_t columnInfo[6]; /* columnInfo */
 
 qboolean CG_ScoreboardDisplayed(void);

@@ -207,8 +207,8 @@ void ZN20CDirect3DCubeTextureD0Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
-        "movl $0x32f728, (%edi)\n" /* this */
-        "movl $0x32f790, 4(%edi)\n" /* this */
+        "movl $vtbl_CDirect3DCubeTexture, (%edi)\n" /* this */
+        "movl $vtbl_CDirect3DCubeTexture_secondary, 4(%edi)\n" /* this */
         "leal 0x70(%edi), %eax\n" /* line 93 | this */
         "movl %eax, -0x1c(%ebp)\n"
         "movl 0x70(%edi), %eax\n" /* line 334 | this */
@@ -249,7 +249,7 @@ void ZN20CDirect3DCubeTextureD0Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "leal 0x5c(%edi), %eax\n" /* line 97 | this */
         "movl %eax, (%esp)\n"
         "calll ZN13CMemoryBufferD1Ev\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, 4(%edi)\n" /* this */
         "movl 8(%edi), %eax\n" /* line 99 | this */
@@ -265,7 +265,7 @@ void ZN20CDirect3DCubeTextureD0Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "jmp __ZdlPv\n"
         ".Lf12f4c_00012fdc:\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         "movl %edi, 8(%ebp)\n" /* line 97 | this */
@@ -277,7 +277,7 @@ void ZN20CDirect3DCubeTextureD0Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "jmp __ZdlPv\n"
         "movl %eax, %ebx\n"
         ".Lf12f4c_00012ffe:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, 4(%edi)\n" /* this */
         "movl 8(%edi), %eax\n" /* line 99 | this */
@@ -285,7 +285,7 @@ void ZN20CDirect3DCubeTextureD0Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "testl %esi, %esi\n"
         "je .Lf12f4c_00013023\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf12f4c_00013023:\n"
@@ -477,8 +477,8 @@ void ZN20CDirect3DCubeTextureD1Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f728, (%eax)\n"
-        "movl $0x32f790, 4(%eax)\n"
+        "movl $vtbl_CDirect3DCubeTexture, (%eax)\n"
+        "movl $vtbl_CDirect3DCubeTexture_secondary, 4(%eax)\n"
         "movl %eax, %edi\n" /* line 93 */
         "addl $0x70, %edi\n"
         "movl 8(%ebp), %edx\n" /* line 334 | this */
@@ -521,7 +521,7 @@ void ZN20CDirect3DCubeTextureD1Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "addl $0x5c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll ZN13CMemoryBufferD1Ev\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -530,7 +530,7 @@ void ZN20CDirect3DCubeTextureD1Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "testl %edi, %edi\n"
         "je .Lf1316c_00013205\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf1316c_00013205:\n"
@@ -542,7 +542,7 @@ void ZN20CDirect3DCubeTextureD1Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "retl\n"
         "movl %eax, %ebx\n"
         ".Lf1316c_0001320f:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -551,7 +551,7 @@ void ZN20CDirect3DCubeTextureD1Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "testl %edx, %edx\n"
         "je .Lf1316c_00013237\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf1316c_00013237:\n"
@@ -595,8 +595,8 @@ void ZN20CDirect3DCubeTextureD2Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f728, (%eax)\n"
-        "movl $0x32f790, 4(%eax)\n"
+        "movl $vtbl_CDirect3DCubeTexture, (%eax)\n"
+        "movl $vtbl_CDirect3DCubeTexture_secondary, 4(%eax)\n"
         "movl %eax, %edi\n" /* line 93 */
         "addl $0x70, %edi\n"
         "movl 8(%ebp), %edx\n" /* line 334 | this */
@@ -639,7 +639,7 @@ void ZN20CDirect3DCubeTextureD2Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "addl $0x5c, %eax\n"
         "movl %eax, (%esp)\n"
         "calll ZN13CMemoryBufferD1Ev\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -648,7 +648,7 @@ void ZN20CDirect3DCubeTextureD2Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "testl %ecx, %ecx\n"
         "je .Lf13270_00013309\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf13270_00013309:\n"
@@ -660,7 +660,7 @@ void ZN20CDirect3DCubeTextureD2Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "retl\n"
         "movl %eax, %ebx\n"
         ".Lf13270_00013313:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -669,7 +669,7 @@ void ZN20CDirect3DCubeTextureD2Ev(void) /* CDirect3DCubeTexture_~CDirect3DCubeTe
         "testl %esi, %esi\n"
         "je .Lf13270_0001333b\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf13270_0001333b:\n"
@@ -712,22 +712,22 @@ void CDirect3DCubeTexture_CDirect3DCubeTexture(const CDirect3DCubeTexture * _thi
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x7c, %esp\n"
-        "movl 0x195ec38, %eax\n" /* line 77 */
+        "movl imp___ZTV8IUnknown, %eax\n" /* line 77 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, (%edx)\n"
-        "movl 0x195ec48, %eax\n" /* line 852 */
+        "movl imp___ZTV18IDirect3DResource9, %eax\n" /* line 852 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x195ec40, %eax\n" /* line 1020 */
+        "movl imp___ZTV21IDirect3DBaseTexture9, %eax\n" /* line 1020 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x195ec44, %eax\n" /* line 1294 */
+        "movl imp___ZTV21IDirect3DCubeTexture9, %eax\n" /* line 1294 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "addl $4, %edx\n" /* line 31 */
         "movl %edx, -0x4c(%ebp)\n"
-        "movl 0x195ec3c, %eax\n" /* line 91 | this */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 91 | this */
         "addl $8, %eax\n" /* this */
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n" /* this */
@@ -738,7 +738,7 @@ void CDirect3DCubeTexture_CDirect3DCubeTexture(const CDirect3DCubeTexture * _thi
         "movl %eax, 4(%esp)\n" /* line 565 */
         "movl $1, (%esp)\n"
         "calll glGenTextures\n"
-        "movl 0x195ec0c, %esi\n" /* line 597 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %esi\n" /* line 597 */
         "addl $0x66c, %esi\n"
         /* { scope 2: Level */
         "movl $0xc, (%esp)\n" /* line 88 */
@@ -769,8 +769,8 @@ void CDirect3DCubeTexture_CDirect3DCubeTexture(const CDirect3DCubeTexture * _thi
         "movl %edx, 0x2c(%eax)\n"
         "movl $1, 0x30(%eax)\n"
         "movl 8(%ebp), %eax\n" /* line 31 | this */
-        "movl $0x32f728, (%eax)\n"
-        "movl $0x32f790, 4(%eax)\n"
+        "movl $vtbl_CDirect3DCubeTexture, (%eax)\n"
+        "movl $vtbl_CDirect3DCubeTexture_secondary, 4(%eax)\n"
         "movl $0, 0x38(%eax)\n"
         "movl %edx, 0x3c(%eax)\n"
         "movl $0, 0x40(%eax)\n"
@@ -960,7 +960,7 @@ void CDirect3DCubeTexture_CDirect3DCubeTexture(const CDirect3DCubeTexture * _thi
         "movl %eax, %ebx\n"
         /* } scope */
         ".Lf13374_000136e1:\n"
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movl %eax, 4(%edx)\n"
@@ -970,7 +970,7 @@ void CDirect3DCubeTexture_CDirect3DCubeTexture(const CDirect3DCubeTexture * _thi
         "testl %edi, %edi\n"
         "je .Lf13374_0001370c\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf13374_0001370c:\n"
@@ -1260,7 +1260,7 @@ void ZN14COpenGLTextureD1Ev(void) /* COpenGLTexture_~COpenGLTexture */
         "movl %esp, %ebp\n"
         "subl $0x18, %esp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "movl 4(%edx), %eax\n" /* line 99 */
@@ -1271,7 +1271,7 @@ void ZN14COpenGLTextureD1Ev(void) /* COpenGLTexture_~COpenGLTexture */
         "retl\n"
         ".Lf2bcf08_002bcf26:\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         "leave\n" /* line 103 */
@@ -1289,7 +1289,7 @@ void ZN14COpenGLTextureD0Ev(void) /* COpenGLTexture_~COpenGLTexture */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x195ec3c, %eax\n" /* line 95 */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* this */
         "movl 4(%ebx), %eax\n" /* line 99 | this */
@@ -1297,7 +1297,7 @@ void ZN14COpenGLTextureD0Ev(void) /* COpenGLTexture_~COpenGLTexture */
         "testl %ecx, %ecx\n"
         "je .Lf2bcf3a_002bcf68\n"
         "movl %eax, 4(%esp)\n" /* line 101 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseTextureBinding\n"
         ".Lf2bcf3a_002bcf68:\n"

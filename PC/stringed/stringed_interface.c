@@ -23,7 +23,7 @@ extern void *__ZNSs6assignEPKcm(void *_this, const char *s, unsigned int n) __as
 extern char __ZNSs4_Rep11_S_terminalE __asm__("__ZNSs4_Rep11_S_terminalE");
 
 unsigned char * SE_LoadFileData(const char *psFileName);
-my_upsampler SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile);
+void SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile);
 static void SE_R_ListFiles(const char *psExtension, const char *psDir, LocalizeString *strResults) __attribute__((regparm(3)));
 int SE_BuildFileList(const char *psStartDir, LocalizeString *strResults);
 
@@ -39,7 +39,7 @@ unsigned char * SE_LoadFileData(const char *psFileName)
 }
 
 /* line 43 */
-my_upsampler SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile)
+void SE_FreeFileDataAfterLoad(unsigned char *psLoadedFile)
 {
     FS_FreeFile(psLoadedFile);
 }

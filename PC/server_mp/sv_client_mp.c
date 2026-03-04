@@ -5,7 +5,7 @@
 #include "imports.h"
 
 static int botport; /* botport */
-static ucmd_t ucmds[12]; /* ucmds */
+extern ucmd_t ucmds[12]; /* ucmds */
 
 extern float FX_GetServerVisibility(const vec_t *start, const vec_t *end);
 extern void Com_DPrintf(const char *fmt, ...);

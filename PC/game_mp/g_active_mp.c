@@ -508,7 +508,7 @@ void SpectatorThink(gentity_t *ent, usercmd_t *ucmd)
         "movl %eax, -0xf8(%ebp)\n"
         "movl 0x18(%edi), %eax\n" /* ucmd */
         "movl %eax, -0xf4(%ebp)\n"
-        "movl $s_debugFrameGlob+59793, -0xd4(%ebp)\n" /* line 293 */
+        "movl $0x00800811, -0xd4(%ebp)\n" /* line 293 */
         "movb $1, -0x2c(%ebp)\n" /* line 294 */
         "movl %ebx, (%esp)\n" /* line 296 */
         "calll Pmove\n"
@@ -668,7 +668,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
         "testb $4, %al\n" /* line 1178 */
         "jne .Lf1a0862_001a09e2\n"
         ".Lf1a0862_001a09ce:\n"
-        "orl $g_effectVisArray+4352, %edx\n" /* line 1179 */
+        "orl $0x01000000, %edx\n" /* line 1179 */
         "movl %edx, 0xc(%esi)\n" /* client */
         /* } scope */
         ".Lf1a0862_001a09d7:\n"
@@ -714,7 +714,7 @@ void SpectatorClientEndFrame(gentity_t *ent)
         "movl 0xc(%esi), %edx\n" /* line 1142 | client */
         "andl $0xff7fffff, %edx\n"
         "movl %edx, %eax\n" /* line 1143 */
-        "orl $scrMemTreeGlob+39168, %eax\n"
+        "orl $0x00400000, %eax\n"
         "movl %eax, 0xc(%esi)\n" /* client */
         "movl 0x26ac(%esi), %ecx\n" /* line 1145 | client */
         "testl %ecx, %ecx\n"
@@ -1903,7 +1903,7 @@ void ClientThink_real(gentity_t *ent, usercmd_t *ucmd)
         "movl %eax, -0x1d8(%ebp)\n"
         "movl 0x26fc(%edi), %eax\n" /* client */
         "movl %eax, -0x1d4(%ebp)\n"
-        "movl $s_debugFrameGlob+123281, %eax\n" /* line 796 */
+        "movl $0x00810011, %eax\n" /* line 796 */
         "cmpl $6, 4(%edi)\n" /* client */
         "movl $0x2810011, %edx\n"
         "cmovll %edx, %eax\n"
@@ -2656,7 +2656,7 @@ void ClientEndFrame(gentity_t *ent)
         "movb $1, 0x161(%edi)\n" /* line 1464 */
         "movl -0x64(%ebp), %ecx\n" /* line 1466 | client */
         "movl 0xc(%ecx), %eax\n"
-        "orl $s_debugFrameGlob+57728, %eax\n"
+        "orl $0x00800000, %eax\n"
         "andl $0xfcffffff, %eax\n"
         "movl %eax, 0xc(%ecx)\n"
         "movl 0x273c(%ecx), %eax\n" /* line 1468 */
@@ -2759,7 +2759,7 @@ void ClientEndFrame(gentity_t *ent)
         "movl imp_g_entities, %eax\n"
         "testb $0x40, 0xa(%edx, %eax)\n"
         "je .Lf1a2444_001a2b8e\n"
-        "orl $s_debugFrameGlob+57728, 0xa0(%edi)\n" /* line 1547 */
+        "orl $0x00800000, 0xa0(%edi)\n" /* line 1547 */
         ".Lf1a2444_001a28d7:\n"
         "movl 8(%ebp), %edi\n" /* line 1554 | ent */
         "cmpl $1, 4(%edi)\n"

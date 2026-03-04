@@ -4,7 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern void **g_dxCaps;         /* imp_r_rendererInUse */
+/* g_dxCaps was imp_r_rendererInUse */
 extern void *Image_Register(const char *name, int trackType, int filter);
 extern void ClearBounds(vec3_t mins, vec3_t maxs);
 extern void ExpandBounds(vec3_t mins, vec3_t maxs, vec3_t boundsMin, vec3_t boundsMax);
@@ -22,7 +22,7 @@ static OutdoorGlob outdoorGlob; /* outdoorGlob */
 
 void R_RegisterOutdoorImage(GfxWorld *world)
 {
-    byte *dxCaps = *(byte **)g_dxCaps;
+    byte *dxCaps = *(byte **)imp_r_rendererInUse;
     if (*(int *)(dxCaps + 8) == 2) {
         *(void **)((byte *)world + 0x200) = NULL;
         return;

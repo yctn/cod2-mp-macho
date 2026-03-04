@@ -386,10 +386,10 @@ z_streamp z;            /* for messages */
 local int fixed_built = 0;
 #define FIXEDH 544      /* number of hufts used by fixed tables */
 local inflate_huft fixed_mem[FIXEDH];
-local uInt fixed_bl;
-local uInt fixed_bd;
-local inflate_huft *fixed_tl;
-local inflate_huft *fixed_td;
+extern local uInt fixed_bl;
+extern local uInt fixed_bd;
+extern local inflate_huft *fixed_tl;
+extern local inflate_huft *fixed_td;
 #else
 #include "inffixed.h"
 #endif

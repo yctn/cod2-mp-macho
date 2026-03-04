@@ -10,16 +10,57 @@
  */
 
 static const D3DVERTEXELEMENT9 declEnd; /* declEnd */
-static const BuiltInMaterialTable s_builtInMaterials[28]; /* s_builtInMaterials */
 static const BuiltInMaterialTable s_fillTestMaterials[12]; /* s_fillTestMaterials */
-static int materialGlobals; /* materialGlobals */
+extern unsigned char materialGlobals[]; /* materialGlobals — 10752 bytes in bss.c */
 static const stream_source_info_t s_streamSourceInfo[4][7]; /* s_streamSourceInfo */
 static const stream_dest_info_t s_streamDestInfo[12]; /* s_streamDestInfo */
+
+/* s_builtInMaterials + RB_RenderCommandTable must be contiguous in memory.
+   Material_Init loops from s_builtInMaterials to RB_RenderCommandTable. */
+__asm__(
+    ".section .data\n"
+    ".globl s_builtInMaterials\n"
+    ".align 4\n"
+    "s_builtInMaterials:\n"
+    ".long str_00224168, rgp+0x102c\n"  /* $default */
+    ".long str_00224174, rgp+0x1034\n"  /* stencil_plane */
+    ".long str_00224184, rgp+0x1038\n"  /* white */
+    ".long str_0022418c, rgp+0x103c\n"  /* $additive */
+    ".long str_00224198, rgp+0x1058\n"  /* $glare_blind */
+    ".long str_002241a8, rgp+0x1040\n"  /* $point */
+    ".long str_002241b0, rgp+0x1044\n"  /* $line */
+    ".long str_002241b8, rgp+0x1048\n"  /* clear_alpha_stencil */
+    ".long str_002241cc, rgp+0x104c\n"  /* shadowclear */
+    ".long str_002241d8, rgp+0x1050\n"  /* shadowcookieoverlay */
+    ".long str_002241ec, rgp+0x1054\n"  /* shadowcookieblur */
+    ".long str_002182a8, rgp+0x10d0\n"  /* shellshock */
+    ".long str_00224200, rgp+0x108c\n"  /* color_channel_mixer */
+    ".long str_00224214, rgp+0x1090\n"  /* frame_color_debug */
+    ".long str_00224228, rgp+0x1094\n"  /* frame_alpha_debug */
+    ".long str_0022423c, rgp+0x10ac\n"  /* feedbackblend */
+    ".long str_0022424c, rgp+0x10a8\n"  /* feedbackreplace */
+    ".long str_0022425c, rgp+0x10d4\n"  /* glow_setup */
+    ".long str_00224268, rgp+0x10dc\n"  /* glow_apply_bloom */
+    ".long str_0022427c, rgp+0x10d8\n"  /* glow_apply_sky_bleed */
+    ".long str_00224294, rgp+0x10b0\n"  /* filter_symmetric_1 */
+    ".long str_002242a8, rgp+0x10b4\n"  /* filter_symmetric_2 */
+    ".long str_002242bc, rgp+0x10b8\n"  /* filter_symmetric_3 */
+    ".long str_002242d0, rgp+0x10bc\n"  /* filter_symmetric_4 */
+    ".long str_002242e4, rgp+0x10c0\n"  /* filter_symmetric_5 */
+    ".long str_002242f8, rgp+0x10c4\n"  /* filter_symmetric_6 */
+    ".long str_0022430c, rgp+0x10c8\n"  /* filter_symmetric_7 */
+    ".long str_00224320, rgp+0x10cc\n"  /* filter_symmetric_8 */
+    /* RB_RenderCommandTable must follow immediately — loop terminator */
+    ".globl RB_RenderCommandTable\n"
+    "RB_RenderCommandTable:\n"
+    ".space 136, 0\n"  /* 34 entries * 4 bytes, filled at runtime or later */
+    ".previous\n"
+);
 
 extern int R_HashAssetName(const char *name);
 extern int stricmp(const char *s1, const char *s2);
 extern void R_Error(int errorLevel, const char *msg, ...);
-extern r_global_permanent_t *rgp; /* imp_rgp */
+extern r_global_permanent_t rgp; /* imp_rgp */
 
 void * Material_Alloc(int size);
 const float * Material_RegisterLiteral(const vec_t *literal);
@@ -59,14 +100,14 @@ void ZSt16__introsort_loopIPP8MaterialiPFhPKS0_S4_EEvT_S7_T0_T1_(void); /* void 
 /* line 218 */
 void * Material_Alloc(int size)
 {
-    return ((void *(*)(int))(*(void **)(*(int *)imp_ri + 0xc)))(size);
+    return ((void *(*)(int))(*(void **)((char *)imp_ri + 0xc)))(size);
 }
 
 /* line 314 */
 const float * Material_RegisterLiteral(const vec_t *literal)
 {
-    int literalCount = *(int *)((byte *)&materialGlobals + 0x230c);
-    float *literals = (float *)((byte *)&materialGlobals + 0x2310);
+    int literalCount = *(int *)((byte *)materialGlobals + 0x230c);
+    float *literals = (float *)((byte *)materialGlobals + 0x2310);
     int i;
 
     for (i = 0; i < literalCount; i++) {
@@ -106,20 +147,20 @@ static Bool Material_Compare(const Material *mtl0, const Material *mtl1)
 /* line 581 */
 void Material_SetTechnique(const char *name, MaterialTechnique *technique)
 {
-    if (*(int *)((char *)&materialGlobals + 4872) == 0x3ff) {
+    if (*(int *)((char *)materialGlobals + 4872) == 0x3ff) {
         R_Error(1, "More than %i techniques in use", 0x3ff);
     }
 
     int hash = R_HashAssetName(name) & 0x3ff;
 
-    while (*(void **)(0xc86e8c + hash * 4) != NULL) {
-        if (stricmp(*(char **)(0xc86e8c + hash * 4), name) == 0)
+    while (*(void **)((char *)materialGlobals + 0x130C + hash * 4) != NULL) {
+        if (stricmp(*(char **)((char *)materialGlobals + 0x130C + hash * 4), name) == 0)
             break;
         hash = (hash + 1) & 0x3ff;
     }
 
-    (*(int *)((char *)&materialGlobals + 4872))++;
-    *(MaterialTechnique **)(0xc86e8c + hash * 4) = technique;
+    (*(int *)((char *)materialGlobals + 4872))++;
+    *(MaterialTechnique **)((char *)materialGlobals + 0x130C + hash * 4) = technique;
 }
 
 /* line 647 */
@@ -127,13 +168,13 @@ void Material_SetTechniqueSet(const char *name, MaterialTechniqueSet *techniqueS
 {
     int hash = R_HashAssetName(name) & 0x3ff;
 
-    while (*(void **)(0xc85e88 + hash * 4) != NULL) {
-        if (stricmp(*(char **)(0xc85e88 + hash * 4), name) == 0)
+    while (*(void **)((char *)materialGlobals + 0x308 + hash * 4) != NULL) {
+        if (stricmp(*(char **)((char *)materialGlobals + 0x308 + hash * 4), name) == 0)
             break;
         hash = (hash + 1) & 0x3ff;
     }
 
-    *(MaterialTechniqueSet **)(0xc85e88 + hash * 4) = techniqueSet;
+    *(MaterialTechniqueSet **)((char *)materialGlobals + 0x308 + hash * 4) = techniqueSet;
 }
 
 /* line 709 */
@@ -141,37 +182,37 @@ void Material_SetStateMap(const char *name, MaterialStateMap *stateMap)
 {
     int hash = R_HashAssetName(name) & 0x1f;
 
-    while (*(void **)(0xc87f94 + hash * 4) != NULL) {
-        if (strcmp(*(char **)(0xc87f94 + hash * 4), name) == 0)
+    while (*(void **)((char *)materialGlobals + 0x2414 + hash * 4) != NULL) {
+        if (strcmp(*(char **)((char *)materialGlobals + 0x2414 + hash * 4), name) == 0)
             break;
         hash = (hash + 1) & 0x1f;
     }
 
-    *(MaterialStateMap **)(0xc87f94 + hash * 4) = stateMap;
+    *(MaterialStateMap **)((char *)materialGlobals + 0x2414 + hash * 4) = stateMap;
 }
 
 /* line 793 */
 void Material_SetShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion, MaterialShader *mtlShader)
 {
-    (*(int *)((char *)&materialGlobals + 9624))++;
-    if (*(int *)((char *)&materialGlobals + 9624) == 0x100) {
+    (*(int *)((char *)materialGlobals + 9624))++;
+    if (*(int *)((char *)materialGlobals + 9624) == 0x100) {
         R_Error(1, "More than %i unique pixel and vertex shaders", 0xff);
     }
 
     int hash = R_HashAssetName(shaderName);
     hash = ((int)shaderType * 97 + shaderVersion + hash) & 0xff;
 
-    void *entry = *(void **)(0xc8811c + hash * 4);
+    void *entry = *(void **)((char *)materialGlobals + 0x259C + hash * 4);
     while (entry != NULL) {
         if (*(byte *)((byte *)entry + 0xa) == (byte)shaderType &&
             *(byte *)((byte *)entry + 0xb) == (byte)shaderVersion &&
             strcmp(*(char **)entry, shaderName) == 0)
             break;
         hash = (hash + 1) & 0xff;
-        entry = *(void **)(0xc8811c + hash * 4);
+        entry = *(void **)((char *)materialGlobals + 0x259C + hash * 4);
     }
 
-    *(MaterialShader **)(0xc8811c + hash * 4) = mtlShader;
+    *(MaterialShader **)((char *)materialGlobals + 0x259C + hash * 4) = mtlShader;
 }
 
 /* line 981 */
@@ -707,12 +748,12 @@ MaterialVertexDeclaration * Material_AllocVertexDecl(MaterialStreamRouting *rout
 MaterialStateMap * Material_FindStateMap(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x1f;
-    MaterialStateMap *entry = ((MaterialStateMap * *)((char *)&materialGlobals + 9236))[hash];
+    MaterialStateMap *entry = ((MaterialStateMap * *)((char *)materialGlobals + 9236))[hash];
     while (entry) {
         if (strcmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x1f;
-        entry = ((MaterialStateMap * *)((char *)&materialGlobals + 9236))[hash];
+        entry = ((MaterialStateMap * *)((char *)materialGlobals + 9236))[hash];
     }
     return NULL;
 }
@@ -721,12 +762,12 @@ MaterialStateMap * Material_FindStateMap(const char *name)
 MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x3ff;
-    MaterialTechniqueSet *entry = ((MaterialTechniqueSet * *)((char *)&materialGlobals + 776))[hash];
+    MaterialTechniqueSet *entry = ((MaterialTechniqueSet * *)((char *)materialGlobals + 776))[hash];
     while (entry) {
         if (stricmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x3ff;
-        entry = ((MaterialTechniqueSet * *)((char *)&materialGlobals + 776))[hash];
+        entry = ((MaterialTechniqueSet * *)((char *)materialGlobals + 776))[hash];
     }
     return NULL;
 }
@@ -735,12 +776,12 @@ MaterialTechniqueSet * Material_FindTechniqueSet(const char *name)
 MaterialTechnique * Material_FindTechnique(const char *name)
 {
     int hash = R_HashAssetName(name) & 0x3ff;
-    MaterialTechnique *entry = ((MaterialTechnique * *)((char *)&materialGlobals + 4876))[hash];
+    MaterialTechnique *entry = ((MaterialTechnique * *)((char *)materialGlobals + 4876))[hash];
     while (entry) {
         if (stricmp(entry->name, name) == 0)
             return entry;
         hash = (hash + 1) & 0x3ff;
-        entry = ((MaterialTechnique * *)((char *)&materialGlobals + 4876))[hash];
+        entry = ((MaterialTechnique * *)((char *)materialGlobals + 4876))[hash];
     }
     return NULL;
 }
@@ -749,12 +790,12 @@ MaterialTechnique * Material_FindTechnique(const char *name)
 MaterialShader * Material_FindShader(const char *shaderName, MaterialShaderType shaderType, int shaderVersion)
 {
     int hash = (R_HashAssetName(shaderName) + shaderType * 97 + shaderVersion) & 0xff;
-    MaterialShader *entry = ((MaterialShader * *)((char *)&materialGlobals + 9628))[hash];
+    MaterialShader *entry = ((MaterialShader * *)((char *)materialGlobals + 9628))[hash];
     while (entry) {
         if (entry->shaderType == shaderType && entry->shaderVersion == shaderVersion && strcmp(entry->name, shaderName) == 0)
             return entry;
         hash = (hash + 1) & 0xff;
-        entry = ((MaterialShader * *)((char *)&materialGlobals + 9628))[hash];
+        entry = ((MaterialShader * *)((char *)materialGlobals + 9628))[hash];
     }
     return NULL;
 }
@@ -1738,7 +1779,7 @@ MaterialHandle Material_Register(const char *name, int imageTrack)
 MaterialHandle Material_RegisterHandle(const char *name, int baseImageFlags, int imageTrack)
 {
     if (*name == '\0')
-        return rgp->defaultMaterial;
+        return rgp.defaultMaterial;
     return Material_Register(name, imageTrack);
 }
 

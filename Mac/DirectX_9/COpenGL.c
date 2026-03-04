@@ -54,7 +54,7 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this);
 void ZN7COpenGLD1Ev(void); /* COpenGL_~COpenGL */
 static unsigned int __static_initialization_and_destruction_0(void);
 static void GLOBAL__D__ZN7COpenGL7sOpenGLE(void); /* global destructors keyed to COpenGL_sOpenGL */
-static void GLOBAL__I__ZN7COpenGL7sOpenGLE(void); /* global constructors keyed to COpenGL_sOpenGL */
+void GLOBAL__I__ZN7COpenGL7sOpenGLE(void); /* global constructors keyed to COpenGL_sOpenGL */
 unsigned int COpenGLVertexProgram_COpenGLVertexProgram(const COpenGLVertexProgram * _this, const char * pSrcData);
 void ZN20COpenGLVertexProgramD2Ev(void); /* COpenGLVertexProgram_~COpenGLVertexProgram */
 void ZN20COpenGLVertexProgramD1Ev(void); /* COpenGLVertexProgram_~COpenGLVertexProgram */
@@ -597,7 +597,7 @@ unsigned int COpenGL_CTexUnit_Reset(const CTexUnit * _this, int SupportsAnisotro
         /* { scope 1 */
         "movzbl 0x14(%ebp), %eax\n" /* line 152 | IsProgramableOnly */
         "movb %al, (%esi)\n"
-        "movl 0x195ec90, %ebx\n" /* line 201 */
+        "movl imp_g_InhibitOpenGLErrors, %ebx\n" /* line 201 */
         "movb $1, (%ebx)\n"
         "movl $0xde0, (%esp)\n" /* line 202 */
         "calll glDisable\n"
@@ -897,7 +897,7 @@ unsigned int COpenGL_CTexUnit_Reset(const CTexUnit * _this, int SupportsAnisotro
         "jmp .Lf20ca4_00020d81\n"
         ".Lf20ca4_000213e9:\n"
         "leal 0xc4(%esi), %ecx\n" /* line 223 | this */
-        "movl 0x195ec50, %eax\n"
+        "movl imp___ZN13COpenGLMatrix9sIdentityE, %eax\n"
         "movl (%eax), %edx\n"
         "movl %edx, 0xc4(%esi)\n" /* this */
         "movl 4(%eax), %edx\n"
@@ -1973,7 +1973,7 @@ unsigned int COpenGL_SetTexMatrixIdentity(const COpenGL * _this, UINT32 Unit)
         "movl %edi, %eax\n"
         "movl -0x1c(%ebp), %edx\n" /* this */
         "addl 0x65c(%edx), %eax\n"
-        "movl 0x195ec50, %esi\n" /* line 741 */
+        "movl imp___ZN13COpenGLMatrix9sIdentityE, %esi\n" /* line 741 */
         "movl %esi, 4(%esp)\n"
         "addl $0xc4, %eax\n"
         "movl %eax, (%esp)\n"
@@ -3042,7 +3042,7 @@ unsigned int COpenGL_Init(const COpenGL * _this, UINT32 Buffers, UINT32 MaxTextu
         "leal -0x9c(%ebp), %eax\n" /* line 117 */
         "movl %eax, (%esp)\n"
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec88, %edx\n" /* i */
+        "movl imp___ZTV14CTexCoordArray, %edx\n" /* i */
         "addl $8, %edx\n" /* i */
         "movl %edx, -0x1b8(%ebp)\n" /* i */
         "movl %edx, -0x9c(%ebp)\n" /* i */
@@ -3079,7 +3079,7 @@ unsigned int COpenGL_Init(const COpenGL * _this, UINT32 Buffers, UINT32 MaxTextu
         "leal 0x130(%ebx), %eax\n" /* line 607 */
         "movl %eax, 4(%edi)\n"
         ".Lf2258c_00022ef4:\n"
-        "movl 0x195ec84, %eax\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %eax\n" /* line 32 */
         "addl $8, %eax\n"
         "movl %eax, -0x9c(%ebp)\n"
         /* } scope */
@@ -3326,7 +3326,7 @@ unsigned int COpenGL_Init(const COpenGL * _this, UINT32 Buffers, UINT32 MaxTextu
         "movl %eax, %edx\n"
         /* { scope 2: NextUnit */
         /* { scope 3 */
-        "movl 0x195ec84, %eax\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %eax\n" /* line 32 */
         "addl $8, %eax\n"
         "movl %eax, -0x9c(%ebp)\n"
         "movl %edx, (%esp)\n" /* line 223 */
@@ -3346,7 +3346,7 @@ void ZN7COpenGLD0Ev(void) /* COpenGL_~COpenGL */
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fd48, (%esi)\n" /* this */
+        "movl $vtbl_COpenGL, (%esi)\n" /* this */
         "leal 0x674(%esi), %edi\n" /* line 392 | this */
         /* { scope 1 */
         "movl 0x674(%esi), %eax\n" /* line 72 */
@@ -3394,7 +3394,7 @@ void ZN7COpenGLD0Ev(void) /* COpenGL_~COpenGL */
         /* { scope 2 */
         "cmpl %eax, %edx\n" /* line 173 */
         "je .Lf232cc_0002334d\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         "addl $8, %ecx\n"
         /* { scope 3 */
         ".Lf232cc_0002333e:\n"
@@ -3414,10 +3414,10 @@ void ZN7COpenGLD0Ev(void) /* COpenGL_~COpenGL */
         /* } scope */
         /* } scope */
         ".Lf232cc_0002335b:\n"
-        "movl 0x195ec80, %eax\n" /* line 95 */
+        "movl imp___ZTV12CNormalArray, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, 0x5c(%esi)\n"
-        "movl 0x195ec84, %eax\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %eax\n" /* line 32 */
         "addl $8, %eax\n"
         "movl %eax, 0x5c(%esi)\n"
         "movl %eax, 0x44(%esi)\n"
@@ -3445,13 +3445,13 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this)
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fd48, (%ebx)\n" /* line 1952 | this */
+        "movl $vtbl_COpenGL, (%ebx)\n" /* line 1952 | this */
         "leal 0x14(%ebx), %eax\n" /* this */
         "movl %eax, -0x20(%ebp)\n" /* this */
         /* { scope 1 */
         "movl %eax, (%esp)\n" /* line 74 */
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec8c, %eax\n"
+        "movl imp___ZTV11CColorArray, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, 0x14(%ebx)\n"
         /* } scope */
@@ -3460,7 +3460,7 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this)
         /* { scope 1 */
         "movl %ecx, (%esp)\n" /* line 85 */
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec7c, %eax\n"
+        "movl imp___ZTV20CSecondaryColorArray, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, 0x2c(%ebx)\n"
         /* } scope */
@@ -3468,7 +3468,7 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this)
         /* { scope 1 */
         "movl %edi, (%esp)\n" /* line 106 */
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec78, %eax\n"
+        "movl imp___ZTV12CVertexArray, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, 0x44(%ebx)\n"
         /* } scope */
@@ -3476,7 +3476,7 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this)
         /* { scope 1 */
         "movl %esi, (%esp)\n" /* line 95 */
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec80, %eax\n"
+        "movl imp___ZTV12CNormalArray, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, 0x5c(%ebx)\n"
         /* } scope */
@@ -3524,7 +3524,7 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this)
         "popl %ebp\n"
         "retl\n"
         "movl %eax, %edx\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         ".Lf2338a_0002349f:\n"
         "leal 8(%ecx), %eax\n" /* line 32 */
         "movl -0x20(%ebp), %ecx\n" /* this */
@@ -3532,10 +3532,10 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this)
         "movl %edx, (%esp)\n" /* line 74 */
         "calll __Unwind_Resume\n"
         "movl %eax, %edx\n"
-        "movl 0x195ec80, %eax\n" /* line 95 */
+        "movl imp___ZTV12CNormalArray, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, (%esi)\n"
-        "movl 0x195ec84, %ecx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %ecx\n" /* line 32 */
         "leal 8(%ecx), %eax\n"
         "movl %eax, (%esi)\n"
         ".Lf2338a_000234c6:\n"
@@ -3547,10 +3547,10 @@ unsigned int COpenGL_COpenGL(const COpenGL * _this)
         "movl %eax, (%ebx)\n"
         "jmp .Lf2338a_0002349f\n"
         "movl %eax, %edx\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         "jmp .Lf2338a_000234c6\n"
         "movl %eax, %edx\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         "jmp .Lf2338a_000234cb\n"
     );
 }
@@ -3569,7 +3569,7 @@ void ZN7COpenGLD1Ev(void) /* COpenGL_~COpenGL */
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
-        "movl $0x32fd48, (%edi)\n" /* this */
+        "movl $vtbl_COpenGL, (%edi)\n" /* this */
         "leal 0x674(%edi), %esi\n" /* line 392 | this */
         /* { scope 1 */
         "movl 0x674(%edi), %eax\n" /* line 72 */
@@ -3617,7 +3617,7 @@ void ZN7COpenGLD1Ev(void) /* COpenGL_~COpenGL */
         /* { scope 2 */
         "cmpl %eax, %edx\n" /* line 173 */
         "je .Lf2364c_000236cd\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         "addl $8, %ecx\n"
         /* { scope 3 */
         ".Lf2364c_000236be:\n"
@@ -3637,10 +3637,10 @@ void ZN7COpenGLD1Ev(void) /* COpenGL_~COpenGL */
         /* } scope */
         /* } scope */
         ".Lf2364c_000236db:\n"
-        "movl 0x195ec80, %eax\n" /* line 95 */
+        "movl imp___ZTV12CNormalArray, %eax\n" /* line 95 */
         "addl $8, %eax\n"
         "movl %eax, 0x5c(%edi)\n"
-        "movl 0x195ec84, %eax\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %eax\n" /* line 32 */
         "addl $8, %eax\n"
         "movl %eax, 0x5c(%edi)\n"
         "movl %eax, 0x44(%edi)\n"
@@ -3700,7 +3700,7 @@ void GLOBAL__D__ZN7COpenGL7sOpenGLE(void) /* global destructors keyed to COpenGL
 }
 
 /* line 2454 */
-static __attribute__((naked))
+__attribute__((naked))
 void GLOBAL__I__ZN7COpenGL7sOpenGLE(void) /* global constructors keyed to COpenGL_sOpenGL */
 {
     __asm__ __volatile__ (
@@ -3725,7 +3725,7 @@ unsigned int COpenGLVertexProgram_COpenGLVertexProgram(const COpenGLVertexProgra
         "pushl %ebx\n"
         "subl $0x4c, %esp\n"
         "movl 8(%ebp), %eax\n" /* line 2277 | this */
-        "movl $0x32fd58, (%eax)\n"
+        "movl $vtbl_COpenGLVertexProgram, (%eax)\n"
         "movl __ZNSs4_Rep20_S_empty_rep_storageE, %edx\n" /* line 178 */
         "movl %edx, -0x3c(%ebp)\n" /* this */
         /* { scope 1 */
@@ -4033,7 +4033,7 @@ void ZN20COpenGLVertexProgramD2Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
-        "movl $0x32fd58, (%edi)\n" /* this */
+        "movl $vtbl_COpenGLVertexProgram, (%edi)\n" /* this */
         /* { scope 1 */
         "movl 0xc(%edi), %eax\n" /* line 108 */
         "movl %eax, -0x20(%ebp)\n" /* line 2306 | ProgramID */
@@ -4045,11 +4045,11 @@ void ZN20COpenGLVertexProgramD2Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "cmpl -0x20(%ebp), %eax\n" /* ProgramID */
         "je .Lf23eb4_00023f23\n"
         ".Lf23eb4_00023ee9:\n"
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         /* } scope */
         "movl 8(%edi), %eax\n" /* line 269 */
@@ -4182,7 +4182,7 @@ void ZN20COpenGLVertexProgramD1Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
-        "movl $0x32fd58, (%edi)\n" /* this */
+        "movl $vtbl_COpenGLVertexProgram, (%edi)\n" /* this */
         /* { scope 1 */
         "movl 0xc(%edi), %eax\n" /* line 108 */
         "movl %eax, -0x20(%ebp)\n" /* line 2306 | ProgramID */
@@ -4194,11 +4194,11 @@ void ZN20COpenGLVertexProgramD1Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "cmpl -0x20(%ebp), %eax\n" /* ProgramID */
         "je .Lf24030_0002409f\n"
         ".Lf24030_00024065:\n"
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         /* } scope */
         "movl 8(%edi), %eax\n" /* line 269 */
@@ -4331,7 +4331,7 @@ void ZN20COpenGLVertexProgramD0Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
-        "movl $0x32fd58, (%esi)\n" /* this */
+        "movl $vtbl_COpenGLVertexProgram, (%esi)\n" /* this */
         /* { scope 1 */
         "movl 0xc(%esi), %eax\n" /* line 108 */
         "movl %eax, -0x20(%ebp)\n" /* line 2306 | ProgramID */
@@ -4343,11 +4343,11 @@ void ZN20COpenGLVertexProgramD0Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "cmpl -0x20(%ebp), %eax\n" /* ProgramID */
         "je .Lf241ac_00024223\n"
         ".Lf241ac_000241e1:\n"
-        "movl 0x195ec20, %eax\n" /* line 644 */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %eax\n" /* line 644 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         /* } scope */
         "movl 8(%esi), %eax\n" /* line 269 */
@@ -4477,7 +4477,7 @@ void ZN7CBaseVAD1Ev(void) /* CBaseVA_~CBaseVA */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 32 */
         "movl %esp, %ebp\n"
-        "movl 0x195ec84, %edx\n"
+        "movl imp___ZTV7CBaseVA, %edx\n"
         "addl $8, %edx\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl %edx, (%eax)\n"
@@ -4494,7 +4494,7 @@ void ZN7CBaseVAD0Ev(void) /* CBaseVA_~CBaseVA */
         "pushl %ebp\n" /* line 32 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl 0x195ec84, %eax\n"
+        "movl imp___ZTV7CBaseVA, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "movl %edx, 8(%ebp)\n" /* this */
@@ -4681,10 +4681,10 @@ void ZN14CTexCoordArrayD1Ev(void) /* CTexCoordArray_~CTexCoordArray */
         "pushl %ebp\n" /* line 117 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec88, %edx\n"
+        "movl imp___ZTV14CTexCoordArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "popl %ebp\n" /* line 117 */
@@ -4700,10 +4700,10 @@ void ZN11CColorArrayD0Ev(void) /* CColorArray_~CColorArray */
         "pushl %ebp\n" /* line 74 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec8c, %edx\n"
+        "movl imp___ZTV11CColorArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 74 | this */
@@ -4720,10 +4720,10 @@ void ZN11CColorArrayD1Ev(void) /* CColorArray_~CColorArray */
         "pushl %ebp\n" /* line 74 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec8c, %edx\n"
+        "movl imp___ZTV11CColorArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "popl %ebp\n" /* line 74 */
@@ -4739,10 +4739,10 @@ void ZN20CSecondaryColorArrayD0Ev(void) /* CSecondaryColorArray_~CSecondaryColor
         "pushl %ebp\n" /* line 85 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec7c, %edx\n"
+        "movl imp___ZTV20CSecondaryColorArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 85 | this */
@@ -4759,10 +4759,10 @@ void ZN20CSecondaryColorArrayD1Ev(void) /* CSecondaryColorArray_~CSecondaryColor
         "pushl %ebp\n" /* line 85 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec7c, %edx\n"
+        "movl imp___ZTV20CSecondaryColorArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "popl %ebp\n" /* line 85 */
@@ -4778,10 +4778,10 @@ void ZN12CVertexArrayD0Ev(void) /* CVertexArray_~CVertexArray */
         "pushl %ebp\n" /* line 106 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec78, %edx\n"
+        "movl imp___ZTV12CVertexArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 106 | this */
@@ -4798,10 +4798,10 @@ void ZN12CVertexArrayD1Ev(void) /* CVertexArray_~CVertexArray */
         "pushl %ebp\n" /* line 106 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec78, %edx\n"
+        "movl imp___ZTV12CVertexArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "popl %ebp\n" /* line 106 */
@@ -4817,10 +4817,10 @@ void ZN12CNormalArrayD0Ev(void) /* CNormalArray_~CNormalArray */
         "pushl %ebp\n" /* line 95 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec80, %edx\n"
+        "movl imp___ZTV12CNormalArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 95 | this */
@@ -4837,10 +4837,10 @@ void ZN12CNormalArrayD1Ev(void) /* CNormalArray_~CNormalArray */
         "pushl %ebp\n" /* line 95 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec80, %edx\n"
+        "movl imp___ZTV12CNormalArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "popl %ebp\n" /* line 95 */
@@ -4856,10 +4856,10 @@ void ZN14CTexCoordArrayD0Ev(void) /* CTexCoordArray_~CTexCoordArray */
         "pushl %ebp\n" /* line 117 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl 0x195ec88, %edx\n"
+        "movl imp___ZTV14CTexCoordArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
-        "movl 0x195ec84, %edx\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %edx\n" /* line 32 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 117 | this */
@@ -4918,7 +4918,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         /* { scope 2 */
         "movl %eax, (%esp)\n" /* line 117 */
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec88, %eax\n"
+        "movl imp___ZTV14CTexCoordArray, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, 0x104(%ebx)\n"
         /* } scope */
@@ -4937,7 +4937,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "leal -0x44(%ebp), %eax\n" /* line 117 */
         "movl %eax, (%esp)\n"
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec88, %eax\n"
+        "movl imp___ZTV14CTexCoordArray, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x44(%ebp)\n"
         "movl $0x130, 8(%esp)\n" /* line 108 */
@@ -4985,7 +4985,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "movl 0xc(%ebp), %edx\n" /* __position */
         "movl %edx, (%esp)\n"
         "calll memcpy\n"
-        "movl 0x195ec84, %eax\n" /* line 32 */
+        "movl imp___ZTV7CBaseVA, %eax\n" /* line 32 */
         "addl $8, %eax\n"
         "movl %eax, -0x44(%ebp)\n"
         /* } scope */
@@ -5030,7 +5030,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "je .Lf2be3e0_002be5e8\n"
         "movl %eax, %ebx\n"
         "movl %edi, %esi\n"
-        "movl 0x195ec88, %eax\n"
+        "movl imp___ZTV14CTexCoordArray, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x170(%ebp)\n"
         "jmp .Lf2be3e0_002be59d\n"
@@ -5066,7 +5066,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         /* { scope 2 */
         "movl %eax, (%esp)\n" /* line 117 */
         "calll CBaseVA_CBaseVA\n"
-        "movl 0x195ec88, %eax\n"
+        "movl imp___ZTV14CTexCoordArray, %eax\n"
         "addl $8, %eax\n"
         "movl -0x158(%ebp), %edx\n"
         "movl %eax, 0x104(%edx)\n"
@@ -5094,7 +5094,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "je .Lf2be3e0_002be6d1\n"
         "movl %eax, %ebx\n"
         "movl %esi, %edi\n"
-        "movl 0x195ec88, %edx\n"
+        "movl imp___ZTV14CTexCoordArray, %edx\n"
         "addl $8, %edx\n"
         "movl %edx, -0x174(%ebp)\n"
         "jmp .Lf2be3e0_002be685\n"
@@ -5129,7 +5129,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "movl %edx, %eax\n"
         "cmpl %ecx, %edx\n" /* line 173 */
         "je .Lf2be3e0_002be701\n"
-        "movl 0x195ec84, %edx\n"
+        "movl imp___ZTV7CBaseVA, %edx\n"
         "addl $8, %edx\n"
         ".Lf2be3e0_002be6ed:\n"
         "movl %edx, 0x104(%eax)\n" /* line 32 */
@@ -5187,7 +5187,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "cmpl %edx, %eax\n"
         "je .Lf2be3e0_002be7bb\n"
         "movl %eax, %edx\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         "addl $8, %ecx\n"
         ".Lf2be3e0_002be79b:\n"
         "movl %ecx, 0x104(%eax)\n" /* line 32 */
@@ -5216,7 +5216,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "cmpl %edx, %eax\n"
         "je .Lf2be3e0_002be83f\n"
         "movl %eax, %edx\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         "addl $8, %ecx\n"
         ".Lf2be3e0_002be7e5:\n"
         "movl %ecx, 0x104(%edx)\n" /* line 32 */
@@ -5233,7 +5233,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "cmpl %edx, %eax\n"
         "je .Lf2be3e0_002be85c\n"
         "movl %eax, %edx\n"
-        "movl 0x195ec84, %ecx\n"
+        "movl imp___ZTV7CBaseVA, %ecx\n"
         "addl $8, %ecx\n"
         ".Lf2be3e0_002be81f:\n"
         "movl %ecx, 0x104(%edx)\n" /* line 32 */
@@ -5318,7 +5318,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE5eraseEN9__gnu_cxx17__normal_iterato
         "cmpl %esi, %ecx\n" /* line 173 */
         "je .Lf2be870_002be904\n"
         "movl %esi, %edx\n"
-        "movl 0x195ec84, %ebx\n"
+        "movl imp___ZTV7CBaseVA, %ebx\n"
         "addl $8, %ebx\n"
         "jmp .Lf2be870_002be8f4\n"
         ".Lf2be870_002be8f2:\n"

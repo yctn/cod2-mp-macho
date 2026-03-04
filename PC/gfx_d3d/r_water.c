@@ -14,8 +14,8 @@ static struct WaterGlob waterGlob; /* waterGlob */
 
 /* Extern globals */
 extern void **g_viewParms;          /* imp_backEndData */
-extern void **g_dxCaps;             /* imp_r_rendererInUse */
-extern r_globals_t *rg;             /* imp_rg */
+/* g_dxCaps was imp_r_rendererInUse */
+extern r_globals_t rg;             /* imp_rg */
 extern r_backEndGlobals_t *backEnd; /* imp_backEnd */
 extern void **g_unknown_195f22c;    /* imp_g_WarmOff - upload lock flag */
 extern void **g_unknown_195f230;    /* imp_r_drawWater - water enabled check */
@@ -96,10 +96,10 @@ void RB_UploadWaterTexture(GfxImage *image, water_t *water)
 
                 /* line 150: Modulate H0 by trig table */
                 cosPhase = (phase + 255) & 0x3ff;
-                waterData[vecKIndex].real = water->H0[vecKIndex].real * rg->sinTable[cosPhase];
+                waterData[vecKIndex].real = water->H0[vecKIndex].real * rg.sinTable[cosPhase];
 
                 /* line 151 */
-                waterData[vecKIndex].imag = water->H0[vecKIndex].imag * rg->sinTable[phase];
+                waterData[vecKIndex].imag = water->H0[vecKIndex].imag * rg.sinTable[phase];
             }
 
             vecKIndex++;
@@ -133,7 +133,7 @@ void RB_UploadWaterTexture(GfxImage *image, water_t *water)
         int waterIndex;
         for (waterIndex = 0; waterIndex < water->N; waterIndex++) {
             FFT(&waterData[waterIndex * water->M], log2_m, 1,
-                rg->fftBitswap, rg->fftTrigTable);
+                rg.fftBitswap, rg.fftTrigTable);
         }
         M = water->M;
     }
@@ -144,14 +144,14 @@ void RB_UploadWaterTexture(GfxImage *image, water_t *water)
         complex_t *ptr = waterData;
         for (fftIndex = 0; fftIndex < water->M; fftIndex++) {
             FFT(ptr, log2_n, water->M,
-                rg->fftBitswap, rg->fftTrigTable);
+                rg.fftBitswap, rg.fftTrigTable);
             ptr++;
         }
     }
 
     /* line 406: Check if DX caps indicate normalmap generation */
     {
-        int *capsPtr = *(int **)g_dxCaps;
+        int *capsPtr = *(int **)imp_r_rendererInUse;
         if (capsPtr[2] == 2) {
             goto normalmap_path;
         }

@@ -104,7 +104,7 @@ static inline int float_seconds_to_ms(float val) {
     return (int)floorf(val * 1000.0f + 0.5f);
 }
 
-static const char * cg_shock_dvar_names[29]; /* cg_shock_dvar_names */
+extern const char * cg_shock_dvar_names[29]; /* cg_shock_dvar_names */
 static vec2_t cg_perturbations[131]; /* cg_perturbations */
 
 void CG_PerturbCamera(void);

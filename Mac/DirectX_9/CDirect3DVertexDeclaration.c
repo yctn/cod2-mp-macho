@@ -42,7 +42,7 @@ void ZN26CDirect3DVertexDeclarationD1Ev(void) /* CDirect3DVertexDeclaration_~CDi
         "pushl %ebp\n" /* line 60 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fca8, (%eax)\n"
+        "movl $vtbl_CDirect3DVertexDeclaration, (%eax)\n"
         "movl 0xc(%eax), %eax\n" /* line 62 */
         "testl %eax, %eax\n"
         "je .Lf1fee4_0001ff00\n"
@@ -65,7 +65,7 @@ void ZN26CDirect3DVertexDeclarationD0Ev(void) /* CDirect3DVertexDeclaration_~CDi
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fca8, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DVertexDeclaration, (%ebx)\n" /* this */
         "movl 0xc(%ebx), %eax\n" /* line 62 | this */
         "testl %eax, %eax\n"
         "je .Lf1ff02_0001ff21\n"
@@ -250,7 +250,20 @@ jpeg_alloc CDirect3DVertexDeclaration_GetShaderDeclaration(const CDirect3DVertex
         "movzbl 4(%ebx), %eax\n" /* line 177 | Element */
         "cmpl $7, %eax\n"
         "ja .Lf1ffae_0002007a\n"
-        "jmpl *0x2ef7e0(, %eax, 4)\n"
+        "jmpl *.Ljt_2ef7e0(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ef7e0:\n"
+        ".long .Lf1ffae_00020077\n"
+        ".long .Lf1ffae_000200ea\n"
+        ".long .Lf1ffae_000200f4\n"
+        ".long .Lf1ffae_00020101\n"
+        ".long .Lf1ffae_0002010e\n"
+        ".long .Lf1ffae_0002011b\n"
+        ".long .Lf1ffae_00020128\n"
+        ".long .Lf1ffae_00020135\n"
+        ".popsection\n"
+        ".Lf1ffae_00020077:\n"
         "addl $4, %edi\n" /* line 181 | CurrentOffset */
         ".Lf1ffae_0002007a:\n"
         "xorl %esi, %esi\n" /* EmitStreamToken */
@@ -259,10 +272,26 @@ jpeg_alloc CDirect3DVertexDeclaration_GetShaderDeclaration(const CDirect3DVertex
         "movzbl %dl, %eax\n"
         "cmpl $0xa, %eax\n"
         "ja .Lf1ffae_0002008f\n"
-        "jmpl *0x2ef800(, %eax, 4)\n"
+        "jmpl *.Ljt_2ef800(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ef800:\n"
+        ".long .Lf1ffae_00020094\n"
+        ".long .Lf1ffae_00020142\n"
+        ".long .Lf1ffae_0002014c\n"
+        ".long .Lf1ffae_00020153\n"
+        ".long .Lf1ffae_0002015d\n"
+        ".long .Lf1ffae_00020167\n"
+        ".long .Lf1ffae_00020173\n"
+        ".long .Lf1ffae_0002008f\n"
+        ".long .Lf1ffae_0002008f\n"
+        ".long .Lf1ffae_00020094\n"
+        ".long .Lf1ffae_0002017d\n"
+        ".popsection\n"
         ".Lf1ffae_0002008f:\n"
         "cmpb $2, %dl\n" /* line 265 */
         "je .Lf1ffae_000200da\n"
+        ".Lf1ffae_00020094:\n"
         "xorl %eax, %eax\n"
         ".Lf1ffae_00020096:\n"
         "movb $1, -0x28(%ebp, %eax)\n" /* line 272 */
@@ -298,40 +327,54 @@ jpeg_alloc CDirect3DVertexDeclaration_GetShaderDeclaration(const CDirect3DVertex
         "je .Lf1ffae_00020096\n"
         "movl $6, %eax\n"
         "jmp .Lf1ffae_0002009b\n"
+        ".Lf1ffae_000200ea:\n"
         "addl $8, %edi\n" /* line 185 | CurrentOffset */
         "movl $0x10000, %esi\n" /* EmitStreamToken */
         "jmp .Lf1ffae_0002007c\n"
+        ".Lf1ffae_000200f4:\n"
         "addl $0xc, %edi\n" /* line 189 | CurrentOffset */
         "movl $0x20000, %esi\n" /* EmitStreamToken */
         "jmp .Lf1ffae_0002007c\n"
+        ".Lf1ffae_00020101:\n"
         "addl $0x10, %edi\n" /* line 193 | CurrentOffset */
         "movl $0x30000, %esi\n" /* EmitStreamToken */
         "jmp .Lf1ffae_0002007c\n"
+        ".Lf1ffae_0002010e:\n"
         "addl $4, %edi\n" /* line 197 | CurrentOffset */
         "movl $0x40000, %esi\n" /* EmitStreamToken */
         "jmp .Lf1ffae_0002007c\n"
+        ".Lf1ffae_0002011b:\n"
         "addl $4, %edi\n" /* line 201 | CurrentOffset */
         "movl $0x50000, %esi\n" /* EmitStreamToken */
         "jmp .Lf1ffae_0002007c\n"
+        ".Lf1ffae_00020128:\n"
         "addl $4, %edi\n" /* line 205 | CurrentOffset */
         "movl $0x60000, %esi\n" /* EmitStreamToken */
         "jmp .Lf1ffae_0002007c\n"
+        ".Lf1ffae_00020135:\n"
         "addl $8, %edi\n" /* line 209 | CurrentOffset */
         "movl $0x70000, %esi\n" /* EmitStreamToken */
         "jmp .Lf1ffae_0002007c\n"
+        ".Lf1ffae_00020142:\n"
         "movl $1, %eax\n" /* line 216 */
         "jmp .Lf1ffae_00020096\n"
+        ".Lf1ffae_0002014c:\n"
         "movl $2, %eax\n"
         "jmp .Lf1ffae_000200dc\n"
+        ".Lf1ffae_00020153:\n"
         "movl $3, %eax\n" /* line 223 */
         "jmp .Lf1ffae_00020096\n"
+        ".Lf1ffae_0002015d:\n"
         "movl $4, %eax\n" /* line 229 */
         "jmp .Lf1ffae_00020096\n"
+        ".Lf1ffae_00020167:\n"
         "movzbl 7(%ebx), %eax\n" /* line 234 | Element */
         "addl $8, %eax\n"
         "jmp .Lf1ffae_00020096\n"
+        ".Lf1ffae_00020173:\n"
         "movl $7, %eax\n" /* line 235 */
         "jmp .Lf1ffae_00020096\n"
+        ".Lf1ffae_0002017d:\n"
         "movl $5, %eax\n" /* line 216 */
         "jmp .Lf1ffae_00020096\n"
         /* } scope */
@@ -362,7 +405,7 @@ jpeg_alloc CDirect3DVertexDeclaration_CDirect3DVertexDeclaration(const CDirect3D
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
         "movl 0xc(%ebp), %ebx\n" /* pVertexElements */
-        "movl $0x32fca8, (%edi)\n" /* line 41 | this */
+        "movl $vtbl_CDirect3DVertexDeclaration, (%edi)\n" /* line 41 | this */
         "movl $0, 8(%edi)\n" /* this */
         "movl $0, 0xc(%edi)\n" /* this */
         "movl $1, 4(%edi)\n" /* line 84 | this */

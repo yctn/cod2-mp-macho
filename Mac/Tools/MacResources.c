@@ -4,7 +4,7 @@
 #include "common_types.h"
 #include "imports.h"
 
-static CFStringRef sResult; /* 0x334b00 */
+extern CFStringRef sResult; /* 0x334b00 */
 static CFStringRef sResult_00334b04; /* 0x334b04 */
 static CFStringRef sResult_00334b04; /* 0x334b04 */
 static CFStringRef sResult_00334b08; /* 0x334b08 */

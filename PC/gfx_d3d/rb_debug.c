@@ -9,9 +9,9 @@
  *   #include "PC/gfx_d3d/rb_backend.h"
  */
 
-extern refimport_t *ri;                 /* imp_ri */
-extern r_global_permanent_t *rgp;       /* imp_rgp */
-extern void **g_dxCaps;                 /* imp_r_rendererInUse */
+extern refimport_t ri;                 /* imp_ri */
+extern r_global_permanent_t rgp;        /* imp_rgp */
+/* g_dxCaps was imp_r_rendererInUse */
 extern r_backEndGlobals_t *backEnd;     /* imp_backEnd */
 extern void **g_drawSurf;              /* imp_tess */
 extern void **g_viewParms;             /* imp_backEndData */
@@ -169,13 +169,13 @@ static JCOEF RB_DrawPolyOutlines(void)
     int polyOffset;
 
     /* Allocate temp vertex buffer: 0xaa50 bytes = 2730 GfxPointVertex (16 bytes each) */
-    verts = (GfxPointVertex *)ri->Z_MallocInternal(0xaa50);
+    verts = (GfxPointVertex *)ri.Z_MallocInternal(0xaa50);
 
     data = *(byte **)g_viewParms;
     polyCount = *(int *)(data + DBGGLOB_OFF + 0x10); /* debugGlobals.polyCount */
 
     if (polyCount <= 0) {
-        ri->Z_FreeInternal(verts);
+        ri.Z_FreeInternal(verts);
         return 0;
     }
 
@@ -232,7 +232,7 @@ static JCOEF RB_DrawPolyOutlines(void)
         }
     }
 
-    ri->Z_FreeInternal(verts);
+    ri.Z_FreeInternal(verts);
 
     return 0;
 }
@@ -265,7 +265,7 @@ static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount)
     }
 
     /* Allocate temp vertex buffer */
-    verts = (GfxPointVertex *)ri->Z_MallocInternal(0xaa50);
+    verts = (GfxPointVertex *)ri.Z_MallocInternal(0xaa50);
 
     /* Initialize depthTest from first line */
     depthTest = (lines->depthTest != 0) ? 1 : 0;
@@ -315,7 +315,7 @@ static JCOEF RB_DrawDebugLines(trDebugLine_t *lines, int lineCount)
         }
     }
 
-    ri->Z_FreeInternal(verts);
+    ri.Z_FreeInternal(verts);
 
     return 0;
 }
@@ -335,7 +335,7 @@ static JCOEF RB_DrawPolyInteriors(void)
     int polyOffset;
 
     /* Begin surface with white material, technique type 3, no lightmap */
-    RB_BeginSurface(rgp->whiteMaterial, 3, 0);
+    RB_BeginSurface(rgp.whiteMaterial, 3, 0);
 
     data = *(byte **)g_viewParms;
     polyCount = *(int *)(data + DBGGLOB_OFF + 0x10); /* debugGlobals.polyCount */
@@ -399,7 +399,7 @@ static JCOEF RB_DrawPolyInteriors(void)
 
         /* Emit vertices */
         if (polyVertCount > 0) {
-            byte *dxCapsData = *(byte **)g_dxCaps;
+            byte *dxCapsData = *(byte **)imp_r_rendererInUse;
             int surfaceType = *(int *)(dxCapsData + 8);
             vec3_t *pv = polyVerts;
 

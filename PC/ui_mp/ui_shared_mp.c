@@ -25,7 +25,7 @@ static itemDef_t *itemCapture; /* itemCapture */
 static itemDef_t *g_bindItem; /* g_bindItem */
 static qboolean debugMode; /* debugMode */
 static int lastListBoxClickTime; /* lastListBoxClickTime */
-static bind_t g_bindings[56]; /* g_bindings */
+extern bind_t g_bindings[56]; /* g_bindings */
 
 void LerpColor(vec_t *a, vec_t *b, vec_t *c, float t);
 qboolean String_Parse(const char * *p, char *out, int len);
@@ -1824,7 +1824,7 @@ int GetKeyBindings(const char *command, char (*bindings)[128])
         "movl 0xc(%ebp), %eax\n" /* line 4548 | bindings */
         "movl $0x5f59454b, (%eax)\n"
         "movl $0x4f424e55, 4(%eax)\n"
-        "movl $scrMemTreeGlob+321365, 8(%eax)\n"
+        "movl $0x00444E55, 8(%eax)\n"
         "xorl %eax, %eax\n"
         /* } scope */
         ".Lf164aae_00164b65:\n"
@@ -6012,9 +6012,9 @@ void Item_Text_Paint(displayContextDef_t *dc, itemDef_t *item)
         "movl %esi, (%esp)\n" /* item */
         "calll Item_SetTextExtents\n"
         "movl 0xe4(%esi), %eax\n" /* line 3999 | item */
-        "testl $scrMemTreeGlob+39168, %eax\n"
+        "testl $0x00400000, %eax\n"
         "jne .Lf1680e2_00168289\n"
-        "testl $s_debugFrameGlob+57728, %eax\n" /* line 4003 */
+        "testl $0x00800000, %eax\n" /* line 4003 */
         "jne .Lf1680e2_0016821e\n"
         "movl 0x290(%esi), %eax\n" /* line 4011 | item */
         "movl %eax, -0x44c(%ebp)\n"

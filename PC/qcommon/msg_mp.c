@@ -12,7 +12,7 @@ static char string_00f0ec60[8192]; /* string */
 static char string_00f10c60[1024]; /* string */
 static struct huffman_t msgHuff; /* msgHuff */
 static qboolean msgInit; /* msgInit */
-static unsigned int kbitmask[33]; /* kbitmask */
+extern unsigned int kbitmask[33]; /* kbitmask */
 static const NetField entityStateFields[59]; /* entityStateFields */
 static const NetField archivedEntityFields[68]; /* archivedEntityFields */
 static const NetField clientStateFields[22]; /* clientStateFields */

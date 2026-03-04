@@ -6,7 +6,7 @@
 
 extern void MacDisplay_GetVideoMemoryInfo(int *videoMemory, int *textureMemory);
 extern void R_Error(int level, const char *fmt, ...);
-extern refimport_t *ri; /* imp_ri */
+extern refimport_t ri; /* imp_ri */
 
 static const DxCapsCheckBits s_capsCheckBits[36]; /* s_capsCheckBits */
 static const DxCapsCheckInteger s_capsCheckInt[8]; /* s_capsCheckInt */
@@ -22,14 +22,14 @@ static void R_HandleCapsResponse(int response, const char *msg, int *allowedPath
     }
 
     typedef void (*PrintfFn)(int, const char *, ...);
-    ((PrintfFn)(*(void **)ri))(printLevel, "Video card or driver %s.\n", msg);
+    ((PrintfFn)ri.Printf)(printLevel, "Video card or driver %s.\n", msg);
 
     if (response == 3) {
         *allowedPaths &= ~4;
-        ((PrintfFn)(*(void **)ri))(printLevel, "  Disabling DirectX 9.0c codepath.\n");
+        ((PrintfFn)ri.Printf)(printLevel, "  Disabling DirectX 9.0c codepath.\n");
     } else if (response == 4) {
         *allowedPaths &= ~2;
-        ((PrintfFn)(*(void **)ri))(printLevel, "  Disabling DirectX 9.0b codepath.\n");
+        ((PrintfFn)ri.Printf)(printLevel, "  Disabling DirectX 9.0b codepath.\n");
     } else if (response == 0) {
         R_Error(0, "Video card or driver %s.\n", msg);
     }
@@ -58,6 +58,10 @@ int R_CheckDxCaps(const D3DCAPS9 *caps)
         int response = *(int *)((byte *)&s_capsCheckBits[i] + 0xc);
         const char *msg = *(const char **)((byte *)&s_capsCheckBits[i] + 0x10);
 
+        /* Skip empty table entries (uninitialized data) */
+        if (requiredBits == 0 && disallowedBits == 0)
+            continue;
+
         int capsValue = *(int *)((byte *)caps + capsOffset);
 
         /* Check disallowed bits */
@@ -82,6 +86,10 @@ int R_CheckDxCaps(const D3DCAPS9 *caps)
         int maxVal = *(int *)((byte *)&s_capsCheckInt[i] + 8);
         int response = *(int *)((byte *)&s_capsCheckInt[i] + 0xc);
         const char *msg = *(const char **)((byte *)&s_capsCheckInt[i] + 0x10);
+
+        /* Skip empty table entries (uninitialized data) */
+        if (minVal == 0 && maxVal == 0 && response == 0)
+            continue;
 
         int capsValue = *(int *)((byte *)caps + capsOffset);
 

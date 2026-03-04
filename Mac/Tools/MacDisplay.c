@@ -8,24 +8,24 @@
  *   #include "Mac/Tools/MacMemory.h"
  */
 
-static const char *kFirstTimeKey; /* 0x30804c */
-static const char *kDisplayIndexKey; /* 0x308048 */
-static const char *kDisplayRectKey; /* 0x308044 */
+extern const char *kFirstTimeKey; /* 0x30804c */
+extern const char *kDisplayIndexKey; /* 0x308048 */
+extern const char *kDisplayRectKey; /* 0x308044 */
 static Boolean sInitialized; /* 0x3348f0 */
 static CGDirectDisplayID sDisplayID; /* 0x3348c8 */
-static size_t sDisplayIndex; /* 0x3348e8 */
+size_t sDisplayIndex; /* 0x3348e8 */
 static CGRect sDisplayRect; /* 0x3348f4 */
 static SInt32 sDisplayDepth; /* 0x3348e4 */
 static SInt32 sDisplayRefreshRate; /* 0x3348e0 */
-static Boolean sInWindowMode; /* 0x3348d8 */
+Boolean sInWindowMode; /* 0x3348d8 */
 static ContextRef sScreenContext; /* 0x3348dc */
-static Boolean sEnableSwap; /* 0x308040 */
+extern Boolean sEnableSwap; /* 0x308040 */
 static UInt32 sSwapCount; /* 0x334798 */
 static WindowRef sMainWindow; /* 0x3347a4 */
 static CGGammaValue *sSystemGammaRed; /* 0x3348d4 */
 static CGGammaValue *sSystemGammaGreen; /* 0x3348d0 */
 static CGGammaValue *sSystemGammaBlue; /* 0x3348cc */
-static CDisplayList sDisplayList; /* 0x33478c */
+CDisplayList sDisplayList; /* 0x33478c */
 static CGDirectDisplayID sMainDisplayID; /* 0x334904 */
 static Str255 sCaptureName; /* 0x3347c0 */
 static SInt16 sCaptureRefNum; /* 0x3348c4 */
@@ -44,8 +44,8 @@ GDHandle MacDisplay_GetDeviceHandle(void);
 Boolean MacDisplay_IsWindowMode(void);
 Boolean MacDisplay_PointInWindow(struct Point inPoint);
 short unsigned int MacDisplay_CenterRectInDisplay(MacRect *ioRect);
-short unsigned int MacDisplay_FadeIn(float inInterval);
-short unsigned int MacDisplay_FadeOut(float inInterval);
+static short unsigned int MacDisplay_FadeIn_orig(float inInterval);
+static short unsigned int MacDisplay_FadeOut_orig(float inInterval);
 short unsigned int MacDisplay_GetCurrentDimensions(int *outWidth, int *outHeight);
 int MacDisplay_GetCurrentDepth(void);
 short unsigned int MacDisplay_SwapContext(ContextRef inContextRef);
@@ -76,7 +76,7 @@ static ControlPartCode UserPaneTrackingProc(ControlRef theControl, Point theStar
 void ZN16OpaqueContextRefD1Ev(void); /* OpaqueContextRef_~OpaqueContextRef */
 short unsigned int MacDisplay_ReleaseContext(ContextRef *ioContextRef);
 short unsigned int MacDisplay_ReleaseDisplay(void);
-ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer);
+static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer);
 short unsigned int MacDisplay_GetCurrentMode(int *outWidth, int *outHeight, int *outDepth, int *outRefreshRate);
 short unsigned int MacDisplay_SetMode(int inWidth, int inHeight, int inDepth, int inRefreshRate);
 void ZN12CDisplayInfoaSERKS_(void); /* CDisplayInfo_operator= */
@@ -321,7 +321,7 @@ short unsigned int MacDisplay_CenterRectInDisplay(MacRect *ioRect)
 
 /* line 638 */
 __attribute__((naked))
-short unsigned int MacDisplay_FadeIn(float inInterval)
+static short unsigned int MacDisplay_FadeIn_orig(float inInterval)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 638 */
@@ -358,7 +358,7 @@ short unsigned int MacDisplay_FadeIn(float inInterval)
 
 /* line 658 */
 __attribute__((naked))
-short unsigned int MacDisplay_FadeOut(float inInterval)
+static short unsigned int MacDisplay_FadeOut_orig(float inInterval)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 658 */
@@ -1971,7 +1971,7 @@ short unsigned int MacDisplay_ReleaseDisplay(void)
 
 /* line 1101 */
 __attribute__((naked))
-ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer)
+static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUseStencil, int inMultiSampleType, int inMultiSampleQuality, int inPresentationInterval, Boolean *outHasAuxBuffer)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1101 */

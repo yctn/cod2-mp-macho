@@ -13,7 +13,7 @@ extern void RB_DrawStretchPic(MaterialHandle material, float x, float y, float w
 extern void RB_EndSurface(void);
 
 extern r_backEndGlobals_t *backEnd; /* imp_backEnd */
-extern r_global_permanent_t *rgp;  /* imp_rgp */
+extern r_global_permanent_t rgp;   /* imp_rgp */
 
 static int RB_CompareTouchImages(const void *e0, const void *e1)
 {
@@ -49,7 +49,7 @@ int RB_TouchAllImages(void)
             continue;
 
         backEnd->currentFeedbackImage = image;
-        RB_DrawStretchPic(rgp->feedbackReplaceMaterial, 0.0f, 0.0f, 8.0f, 8.0f,
+        RB_DrawStretchPic(rgp.feedbackReplaceMaterial, 0.0f, 0.0f, 8.0f, 8.0f,
                           0.0f, 0.0f, 1.0f, 1.0f, 0xFFFFFFFF, 0xa);
         RB_EndSurface();
     }

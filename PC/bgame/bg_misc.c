@@ -808,7 +808,7 @@ qboolean BG_CheckProneValid(int passEntityNum, const vec_t *vPos, const float fS
         "cmpl $1, 0x38(%ebp)\n" /* line 1027 | proneCheckType */
         "sbbl %esi, %esi\n" /* iTraceMask */
         "xorw %si, %si\n" /* iTraceMask */
-        "addl $s_debugFrameGlob+188817, %esi\n" /* iTraceMask */
+        "addl $0x00820011, %esi\n" /* iTraceMask */
         "movl 0x28(%ebp), %eax\n" /* line 1035 | bAlreadyProne */
         "testl %eax, %eax\n"
         "je .Lf6ac9c_0006b150\n"

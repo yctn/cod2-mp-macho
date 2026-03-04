@@ -32,7 +32,7 @@ enum {
     DVAR_TYPE_COUNT = 9
 };
 static const char dvarDigitStrings[10][2]; /* dvarDigitStrings */
-static const char * dvarOnOffStrings[2]; /* dvarOnOffStrings */
+extern const char * dvarOnOffStrings[2]; /* dvarOnOffStrings */
 static Bool isDvarSystemActive; /* isDvarSystemActive */
 static Bool isLoadingAutoExecGlobalFlag; /* isLoadingAutoExecGlobalFlag */
 
@@ -4747,7 +4747,7 @@ void Dvar_SetColorFromSource(const dvar_t *dvar, float r, float g, float b, floa
         "fstps -0x98(%ebp)\n"
         "cvttss2si -0x98(%ebp), %eax\n"
         "shll $0x18, %eax\n"
-        "andl $g_effectVisArray+4351, %ebx\n"
+        "andl $0x00FFFFFF, %ebx\n"
         "orl %eax, %ebx\n"
         "movl 0x1c(%ebp), %ecx\n" /* line 2086 | source */
         "movl %ebx, %edx\n" /* newValue */
@@ -5583,7 +5583,7 @@ const dvar_t * Dvar_RegisterColor(const char *dvarName, float r, float g, float 
         "fstps -0x28(%ebp)\n"
         "cvttss2si -0x28(%ebp), %eax\n"
         "shll $0x18, %eax\n"
-        "andl $g_effectVisArray+4351, %ebx\n"
+        "andl $0x00FFFFFF, %ebx\n"
         "orl %eax, %ebx\n"
         "movl $0, -0x10(%ebp)\n" /* line 1835 | dvarDomain */
         "movl $0, -0xc(%ebp)\n"

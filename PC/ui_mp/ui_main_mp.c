@@ -44,23 +44,23 @@ static qboolean bypassKeyClear; /* bypassKeyClear */
 static int numclean; /* numclean */
 static char info_00ecf960[1024]; /* info */
 static char clientBuff[32]; /* clientBuff */
-static int lastColumn; /* lastColumn */
+extern int lastColumn; /* lastColumn */
 static int lastTime; /* lastTime */
 static char info_00ecf960[1024]; /* info */
 static char info_00ecf960[1024]; /* info */
 static char info_00ecf960[1024]; /* info */
 static int numFound; /* numFound */
 static int numTimeOuts; /* numTimeOuts */
-static char dlText[16]; /* dlText */
-static char etaText[18]; /* etaText */
-static char xferText[15]; /* xferText */
-static int tleEstimates[80]; /* tleEstimates */
+extern char dlText[16]; /* dlText */
+extern char etaText[18]; /* etaText */
+extern char xferText[15]; /* xferText */
+extern int tleEstimates[80]; /* tleEstimates */
 static int tleIndex; /* tleIndex */
 static char g_mapname[64]; /* g_mapname */
 static char g_gametype[64]; /* g_gametype */
 static Bool g_ingameMenusLoaded; /* g_ingameMenusLoaded */
-static const char * MonthAbbrev[12]; /* MonthAbbrev */
-static const char * netSources[3]; /* netSources */
+extern const char * MonthAbbrev[12]; /* MonthAbbrev */
+extern const char * netSources[3]; /* netSources */
 static const serverFilter_t serverFilters[1]; /* serverFilters */
 static char menuBuf2[32768]; /* menuBuf2 */
 static int ui_serverFilterType; /* ui_serverFilterType */

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <math.h>
+#include <SDL2/SDL.h>
 
 /* Forward declaration for ___maskrune */
 static unsigned int bsd_rune_data[13 + 256];
@@ -118,4 +119,167 @@ static void init_rune_locale(void) {
         rt[i] = 0x2000 | 0x0800 | 0x40000 | 0x10;
     for (i = '{'; i <= '~'; i++)
         rt[i] = 0x2000 | 0x0800 | 0x40000 | 0x10;
+}
+
+/*
+ * sDisplayList initialization for Linux.
+ * On Mac, MacDisplay_Initialize populates sDisplayList via CGGetActiveDisplayList.
+ * On Linux, we provide a dummy display entry with standard display modes.
+ *
+ * sDisplayList is a CDisplayList (std::vector-like): { CDisplayInfo *data; CDisplayInfo *end; CDisplayInfo *capacity; }
+ * Each CDisplayInfo entry is 100 bytes with fields accessed by MacDisplay_Get* at known offsets:
+ *   0x14: pointer to mode array start
+ *   0x18: pointer to mode array end  (numModes = (end - start) / 16)
+ *   0x2c: card type
+ *   0x30: GL vendor string pointer
+ *   0x34: GL renderer string pointer
+ *   0x38: GL extensions string pointer
+ *   0x3c: video memory (bytes)
+ *   0x40: texture memory (bytes)
+ *   0x44: max texture units
+ *   0x48: max texture image units
+ *
+ * Each display mode is 16 bytes: { uint32 width, height, depth, refreshRate }
+ */
+extern unsigned char sDisplayList[12]; /* from bss.c */
+extern int sInWindowMode; /* from bss.c - force windowed mode to avoid GDHandle NULL deref */
+
+/* Display mode: { width, height, depth, refreshRate } - 16 bytes each */
+struct DisplayMode {
+    unsigned int width;
+    unsigned int height;
+    unsigned int depth;
+    unsigned int refreshRate;
+};
+
+static struct DisplayMode dummy_modes[] = {
+    {  640,  480, 32, 60 },
+    {  800,  600, 32, 60 },
+    { 1024,  768, 32, 60 },
+    { 1152,  864, 32, 60 },
+    { 1280,  720, 32, 60 },
+    { 1280,  800, 32, 60 },
+    { 1280, 1024, 32, 60 },
+    { 1440,  900, 32, 60 },
+    { 1600, 1200, 32, 60 },
+    { 1680, 1050, 32, 60 },
+    { 1920, 1080, 32, 60 },
+    { 1920, 1200, 32, 60 },
+};
+
+static const char dummy_gl_vendor[] = "Linux";
+static const char dummy_gl_renderer[] = "Software";
+static const char dummy_gl_extensions[] = "";
+
+static unsigned char dummy_display_entry[100];
+
+__attribute__((constructor))
+static void init_display_list(void) {
+    int i;
+    int num_modes = sizeof(dummy_modes) / sizeof(dummy_modes[0]);
+
+    /* Zero the entry first */
+    for (i = 0; i < 100; i++)
+        dummy_display_entry[i] = 0;
+
+    /* Mode array pointers (offset 0x14 and 0x18) */
+    *(void **)&dummy_display_entry[0x14] = &dummy_modes[0];
+    *(void **)&dummy_display_entry[0x18] = &dummy_modes[num_modes];
+
+    /* Card type (offset 0x2c) - 0 = unknown, safe */
+
+    /* GL strings (offset 0x30, 0x34, 0x38) - avoid NULL dereference */
+    *(const char **)&dummy_display_entry[0x30] = dummy_gl_vendor;
+    *(const char **)&dummy_display_entry[0x34] = dummy_gl_renderer;
+    *(const char **)&dummy_display_entry[0x38] = dummy_gl_extensions;
+
+    /* Video/texture memory in bytes (offset 0x3c, 0x40) - 256MB */
+    *(unsigned int *)&dummy_display_entry[0x3c] = 256 * 1024 * 1024;
+    *(unsigned int *)&dummy_display_entry[0x40] = 256 * 1024 * 1024;
+
+    /* Max texture units (offset 0x44, 0x48) */
+    *(unsigned int *)&dummy_display_entry[0x44] = 8;
+    *(unsigned int *)&dummy_display_entry[0x48] = 8;
+
+    /* Force windowed mode to avoid NULL GDHandle dereference in CenterWindowOnDisplay */
+    sInWindowMode = 1;
+
+    /* sDisplayList vector: { data, end, capacity } */
+    *(void **)&sDisplayList[0] = dummy_display_entry;
+    *(void **)&sDisplayList[4] = dummy_display_entry + 100;
+    *(void **)&sDisplayList[8] = dummy_display_entry + 100;
+}
+
+/*
+ * MacDisplay_CreateScreenContext replacement for Linux.
+ * Creates an SDL OpenGL window and context instead of using macOS CGL.
+ * The context ref is a 16-byte struct: { void *glContext, void *unused1, void *unused2, char hasAux }
+ */
+static SDL_Window *sdl_gl_window = NULL;
+static SDL_GLContext sdl_gl_context = NULL;
+
+typedef void *ContextRef;
+typedef int Boolean;
+
+ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
+    int inMultiSampleType, int inMultiSampleQuality,
+    int inPresentationInterval, Boolean *outHasAuxBuffer)
+{
+    unsigned char *ctx;
+
+    if (outHasAuxBuffer)
+        *outHasAuxBuffer = 0;
+
+    /* Set OpenGL attributes */
+    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, inDepthSize ? inDepthSize : 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, inUseStencil ? 8 : 0);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    if (!sdl_gl_window) {
+        sdl_gl_window = SDL_CreateWindow("CoD2",
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            640, 480,
+            SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+        if (!sdl_gl_window)
+            return (ContextRef)0;
+    }
+
+    sdl_gl_context = SDL_GL_CreateContext(sdl_gl_window);
+    if (!sdl_gl_context)
+        return (ContextRef)0;
+
+    /* Allocate a fake 16-byte context struct (matches what the Mac code allocates) */
+    ctx = (unsigned char *)calloc(1, 16);
+    /* Store the SDL context pointer so we can use it later */
+    *(void **)&ctx[0] = sdl_gl_context;
+
+    return (ContextRef)ctx;
+}
+
+void MacDisplay_SwapContext(ContextRef ctx)
+{
+    if (sdl_gl_window)
+        SDL_GL_SwapWindow(sdl_gl_window);
+}
+
+void MacDisplay_ReleaseContext(ContextRef *ctx)
+{
+}
+
+void MacDisplay_FadeIn(float duration)
+{
+}
+
+void MacDisplay_FadeOut(float duration)
+{
+}
+
+void MacDisplay_GetCurrentDimensions(int *outWidth, int *outHeight)
+{
+    if (outWidth) *outWidth = 640;
+    if (outHeight) *outHeight = 480;
 }

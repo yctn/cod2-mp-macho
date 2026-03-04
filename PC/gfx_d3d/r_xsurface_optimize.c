@@ -18,7 +18,7 @@
  * imp_alwaysfails - gpu_fence_flag: GPU fence / pending-release flag
  */
 #define DX_CONFIG        (*(void **)imp_r_rendererInUse)
-#define DX_DEVICE_WRAP   (*(void **)imp_dx)
+#define DX_DEVICE_WRAP   ((void *)imp_dx)
 #define XMODEL_VTABLE    (*(char **)imp_ri)
 #define GPU_FENCE_FLAG   (*(volatile int **)imp_alwaysfails)
 

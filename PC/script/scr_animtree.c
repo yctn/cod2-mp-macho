@@ -6,7 +6,7 @@
 
 extern struct scrAnimPub_t scrAnimPub; /* 0x0 */
 static struct scrAnimGlob_t scrAnimGlob; /* scrAnimGlob */
-static const char * propertyNames[3]; /* propertyNames */
+extern const char * propertyNames[3]; /* propertyNames */
 
 extern void * Hunk_AllocAlignInternal(int size, int align);
 

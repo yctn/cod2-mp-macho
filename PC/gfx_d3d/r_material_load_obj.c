@@ -3639,13 +3639,13 @@ Bool Material_LoadPassStateMap(MaterialStateMap * *stateMap)
         "movl 0x14(%edx), %edx\n" /* line 1263 */
         "movl %edx, %eax\n"
         "andl $0x7000000, %eax\n"
-        "cmpl $g_effectVisArray+4352, %eax\n"
+        "cmpl $0x01000000, %eax\n"
         "jbe .Lf103e44_00104245\n"
         "orl $0x7ff0000, %ebx\n" /* line 1266 */
         "movl -0x6c(%ebp), %eax\n"
         "movl %ebx, 0x1c(%eax)\n"
         "andl $0xf800ffff, %edx\n" /* line 1270 */
-        "orl $scrVarGlob+798976, %edx\n"
+        "orl $0x01110000, %edx\n"
         "movl %edx, 0x14(%eax)\n"
         ".Lf103e44_00104245:\n"
         "addl $1, -0x70(%ebp)\n" /* line 1258 | ruleIndex */

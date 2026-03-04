@@ -94,10 +94,10 @@ static int warnCount_00f13084; /* warnCount */
 static char bigConfigString[8192]; /* bigConfigString */
 static vec4_t g_color_table[8]; /* g_color_table */
 
-#define RE         (*(refexport_t **)imp_re)
-#define CLS        (*(char **)imp_cls)
-#define CL_LOCAL   (*(char **)*(void **)imp_cl)
-#define CLUI_STATE (*(char **)*(void **)imp_clc)
+#define RE         ((refexport_t *)imp_re)
+#define CLS        ((char *)imp_cls)
+#define CL_LOCAL   ((char *)*(void **)imp_cl)
+#define CLUI_STATE ((char *)*(void **)imp_clc)
 
 void CL_GetScreenDimensions(int *width, int *height, float *aspect);
 qboolean CL_GetUserCmd(int cmdNumber, usercmd_t *ucmd);

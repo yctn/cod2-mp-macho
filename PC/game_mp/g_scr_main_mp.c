@@ -501,7 +501,7 @@ unsigned int GScr_GetDvarFloat(void)
 /* line 836 */
 unsigned int GScr_GetTime(void)
 {
-    Scr_AddInt(*(int *)((byte *)*(void **)imp_level + 0x1ec));
+    Scr_AddInt(*(int *)((byte *)(void *)imp_level + 0x1ec));
     return 0;
 }
 
@@ -565,7 +565,7 @@ unsigned int GScr_AnimHasNotetrack(void)
 /* line 1031 */
 unsigned int GScr_PrecacheTurret(void)
 {
-    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
+    if (!*(int *)((byte *)(void *)imp_level + 0x1c))
         Scr_Error("PrecacheTurret must be called before any wait statements in the gametype or level script");
     G_GetWeaponIndexForName(Scr_GetString(0));
     return 0;
@@ -1163,7 +1163,7 @@ unsigned int GScr_Obituary(void)
 /* line 2541 */
 unsigned int GScr_getStartTime(void)
 {
-    Scr_AddInt(*(int *)((byte *)*(void **)imp_level + 0x1f8));
+    Scr_AddInt(*(int *)((byte *)(void *)imp_level + 0x1f8));
     return 0;
 }
 
@@ -1748,7 +1748,7 @@ unsigned int Scr_PhysicsTrace(void)
         "movl %ebx, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll Scr_GetVector\n"
-        "movl $s_debugFrameGlob+188817, 0x18(%esp)\n" /* line 2928 */
+        "movl $0x00820011, 0x18(%esp)\n" /* line 2928 */
         "movl $0x3ff, 0x14(%esp)\n"
         "movl %ebx, 0x10(%esp)\n"
         "movl imp_vec3_origin, %eax\n"
@@ -2353,7 +2353,7 @@ unsigned int Scr_SoundFade(void)
 /* line 3506 */
 unsigned int Scr_PrecacheModel(void)
 {
-    if (!*(int *)(*(byte **)imp_level + 0x1c))
+    if (!*(int *)((byte *)imp_level + 0x1c))
         Scr_Error("precacheModel must be called before any wait statements in the gametype or level script\n");
     G_ModelIndex(Scr_GetString(0));
     return 0;
@@ -2362,7 +2362,7 @@ unsigned int Scr_PrecacheModel(void)
 /* line 3520 */
 unsigned int Scr_PrecacheShellShock(void)
 {
-    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
+    if (!*(int *)((byte *)(void *)imp_level + 0x1c))
         Scr_Error("PrecacheShellShock must be called before any wait statements in the gametype or level script");
     G_ShellShockIndex(Scr_GetString(0));
     return 0;
@@ -2443,7 +2443,7 @@ unsigned int Scr_PrecacheItem(void)
 unsigned int Scr_PrecacheShader(void)
 {
     const char *shaderName;
-    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
+    if (!*(int *)((byte *)(void *)imp_level + 0x1c))
         Scr_Error("PrecacheShader must be called before any wait statements in the gametype or level script");
     shaderName = Scr_GetString(0);
     if (!shaderName[0])
@@ -2456,7 +2456,7 @@ unsigned int Scr_PrecacheShader(void)
 unsigned int Scr_PrecacheString(void)
 {
     const char *s;
-    if (!*(int *)((byte *)*(void **)imp_level + 0x1c))
+    if (!*(int *)((byte *)(void *)imp_level + 0x1c))
         Scr_Error("PrecacheString must be called before any wait statements in the gametype or level script");
     s = Scr_GetIString(0);
     if (s[0])
@@ -2522,7 +2522,7 @@ unsigned int GScr_RadiusDamage(void)
 /* line 3734 */
 unsigned int GScr_SetPlayerIgnoreRadiusDamage(void)
 {
-    *(int *)((byte *)*(void **)imp_level + 0x35f8) = Scr_GetInt(0);
+    *(int *)((byte *)(void *)imp_level + 0x35f8) = Scr_GetInt(0);
     return 0;
 }
 
@@ -2714,7 +2714,7 @@ unsigned int Scr_LoadFX(void)
 {
     int id;
     id = G_EffectIndex(Scr_GetString(0));
-    if (!id && !*(int *)((byte *)*(void **)imp_level + 0x1c))
+    if (!id && !*(int *)((byte *)(void *)imp_level + 0x1c))
         Scr_Error("loadfx must be called before any wait statements in the gametype or level script");
     Scr_AddInt(id);
     return 0;
@@ -5335,7 +5335,7 @@ unsigned int Scr_VoteCalled(gentity_t *self, char *command, char *param1, char *
 unsigned int Scr_PlayerVote(gentity_t *self, char *option)
 {
     Scr_AddString(option);
-    Scr_Notify(self, *(unsigned short *)(*(byte **)imp_scr_const + 0x80), 1);
+    Scr_Notify(self, *(unsigned short *)((byte *)imp_scr_const + 0x80), 1);
     return 0;
 }
 

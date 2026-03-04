@@ -996,7 +996,7 @@ const CColorConverter * CColorConverter_GetColorConverter(Format SrcFormat)
         "popl %ebp\n"
         "retl\n"
         ".Lfdf4a_0000df75:\n"
-        "movl 0x195ec0c, %eax\n" /* line 32 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 32 */
         "cmpb $0, 0x800(%eax)\n"
         "je .Lfdf4a_0000df5e\n"
         "movl $sATI4CompsConverterARGB, %edx\n" /* line 34 */
@@ -1028,7 +1028,7 @@ void __static_initialization_and_destruction_0(void)
         "je .Lfdf9a_0000dfce\n"
         "testl %eax, %eax\n" /* line 22 */
         "jne .Lfdf9a_0000dfa5\n"
-        "movl 0x195ec10, %eax\n" /* line 38 */
+        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
         "addl $8, %eax\n"
         "movl %eax, sATI4CompsConverterABGR\n"
         "movl %eax, sATI4CompsConverterARGB\n"
@@ -1037,10 +1037,10 @@ void __static_initialization_and_destruction_0(void)
         "popl %ebp\n" /* line 839 */
         "retl\n"
         ".Lfdf9a_0000dfce:\n"
-        "movl $0x32f5c8, sStdConverterARGB\n" /* line 81 */
-        "movl $0x32f608, sStdConverterABGR\n" /* line 98 */
-        "movl $0x32f648, sATI4CompsConverterARGB\n" /* line 47 */
-        "movl $0x32f688, sATI4CompsConverterABGR\n" /* line 64 */
+        "movl $vtbl_StdConverterARGB, sStdConverterARGB\n" /* line 81 */
+        "movl $vtbl_StdConverterABGR, sStdConverterABGR\n" /* line 98 */
+        "movl $vtbl_ATI4CompsConverterARGB, sATI4CompsConverterARGB\n" /* line 47 */
+        "movl $vtbl_ATI4CompsConverterABGR, sATI4CompsConverterABGR\n" /* line 64 */
         "popl %ebp\n" /* line 839 */
         "retl\n"
     );
@@ -1142,7 +1142,7 @@ void ZN15CColorConverterD1Ev(void) /* CColorConverter_~CColorConverter */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 38 */
         "movl %esp, %ebp\n"
-        "movl 0x195ec10, %edx\n"
+        "movl imp___ZTV15CColorConverter, %edx\n"
         "addl $8, %edx\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl %edx, (%eax)\n"
@@ -1159,7 +1159,7 @@ void ZN15CColorConverterD0Ev(void) /* CColorConverter_~CColorConverter */
         "pushl %ebp\n" /* line 38 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl 0x195ec10, %eax\n"
+        "movl imp___ZTV15CColorConverter, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "movl %edx, 8(%ebp)\n" /* this */
@@ -1228,8 +1228,8 @@ void ZN16StdConverterARGBD1Ev(void) /* StdConverterARGB_~StdConverterARGB */
         "pushl %ebp\n" /* line 82 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl $0x32f5c8, (%edx)\n"
-        "movl 0x195ec10, %eax\n" /* line 38 */
+        "movl $vtbl_StdConverterARGB, (%edx)\n"
+        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "popl %ebp\n" /* line 82 */
@@ -1245,8 +1245,8 @@ void ZN16StdConverterARGBD0Ev(void) /* StdConverterARGB_~StdConverterARGB */
         "pushl %ebp\n" /* line 82 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f5c8, (%eax)\n"
-        "movl 0x195ec10, %edx\n" /* line 38 */
+        "movl $vtbl_StdConverterARGB, (%eax)\n"
+        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 82 | this */
@@ -1263,8 +1263,8 @@ void ZN16StdConverterABGRD1Ev(void) /* StdConverterABGR_~StdConverterABGR */
         "pushl %ebp\n" /* line 99 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl $0x32f608, (%edx)\n"
-        "movl 0x195ec10, %eax\n" /* line 38 */
+        "movl $vtbl_StdConverterABGR, (%edx)\n"
+        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "popl %ebp\n" /* line 99 */
@@ -1280,8 +1280,8 @@ void ZN16StdConverterABGRD0Ev(void) /* StdConverterABGR_~StdConverterABGR */
         "pushl %ebp\n" /* line 99 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f608, (%eax)\n"
-        "movl 0x195ec10, %edx\n" /* line 38 */
+        "movl $vtbl_StdConverterABGR, (%eax)\n"
+        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 99 | this */
@@ -1298,8 +1298,8 @@ void ZN22ATI4CompsConverterARGBD1Ev(void) /* ATI4CompsConverterARGB_~ATI4CompsCo
         "pushl %ebp\n" /* line 48 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl $0x32f648, (%edx)\n"
-        "movl 0x195ec10, %eax\n" /* line 38 */
+        "movl $vtbl_ATI4CompsConverterARGB, (%edx)\n"
+        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "popl %ebp\n" /* line 48 */
@@ -1315,8 +1315,8 @@ void ZN22ATI4CompsConverterARGBD0Ev(void) /* ATI4CompsConverterARGB_~ATI4CompsCo
         "pushl %ebp\n" /* line 48 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f648, (%eax)\n"
-        "movl 0x195ec10, %edx\n" /* line 38 */
+        "movl $vtbl_ATI4CompsConverterARGB, (%eax)\n"
+        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 48 | this */
@@ -1333,8 +1333,8 @@ void ZN22ATI4CompsConverterABGRD1Ev(void) /* ATI4CompsConverterABGR_~ATI4CompsCo
         "pushl %ebp\n" /* line 65 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl $0x32f688, (%edx)\n"
-        "movl 0x195ec10, %eax\n" /* line 38 */
+        "movl $vtbl_ATI4CompsConverterABGR, (%edx)\n"
+        "movl imp___ZTV15CColorConverter, %eax\n" /* line 38 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "popl %ebp\n" /* line 65 */
@@ -1350,8 +1350,8 @@ void ZN22ATI4CompsConverterABGRD0Ev(void) /* ATI4CompsConverterABGR_~ATI4CompsCo
         "pushl %ebp\n" /* line 65 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f688, (%eax)\n"
-        "movl 0x195ec10, %edx\n" /* line 38 */
+        "movl $vtbl_ATI4CompsConverterABGR, (%eax)\n"
+        "movl imp___ZTV15CColorConverter, %edx\n" /* line 38 */
         "addl $8, %edx\n"
         "movl %edx, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 65 | this */

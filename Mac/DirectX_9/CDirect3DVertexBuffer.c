@@ -150,7 +150,7 @@ void ZN16CStaticCacheInfoD0Ev(void) /* CStaticCacheInfo_~CStaticCacheInfo */
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
-        "movl $0x32fc28, (%edi)\n" /* this */
+        "movl $vtbl_CStaticCacheInfo, (%edi)\n" /* this */
         "leal 0x10(%edi), %eax\n" /* line 31 | this */
         "movl %eax, -0x1c(%ebp)\n" /* this */
         /* { scope 1 */
@@ -227,7 +227,7 @@ void CStaticCacheInfo_Flush(const CStaticCacheInfo * _this, void (*pStart)(), vo
         "js .Lf1f35a_0001f41e\n"
         "cvtsi2ssl %edx, %xmm0\n"
         ".Lf1f35a_0001f37f:\n"
-        "mulss 0x2ed60c, %xmm0\n" /* 0.0009765625f */
+        "mulss lit4_002ed60c, %xmm0\n" /* 0.0009765625f */
         "movss %xmm0, (%esp)\n"
         "calll ceilf\n"
         "fnstcw -0x1a(%ebp)\n"
@@ -307,7 +307,7 @@ void CDirect3DVertexBuffer_WaitFence(const CDirect3DVertexBuffer * _this, const 
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edx\n" /* this */
         /* { scope 1 */
-        "movl 0x195ec60, %eax\n" /* line 668 */
+        "movl imp___ZN7COpenGL11sFrameCountE, %eax\n" /* line 668 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* CurrentTime */
         "leal 0x30(%edx), %edi\n" /* line 289 */
@@ -326,7 +326,7 @@ void CDirect3DVertexBuffer_WaitFence(const CDirect3DVertexBuffer * _this, const 
         ".Lf1f434_0001f462:\n"
         "testl %ebx, %ebx\n" /* line 330 | pFence */
         "je .Lf1f434_0001f48d\n"
-        "movl 0x195ec70, %ecx\n" /* line 604 */
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %ecx\n" /* line 604 */
         "movl 4(%ecx), %edx\n"
         "cmpl 8(%ecx), %edx\n"
         "je .Lf1f434_0001f4c1\n"
@@ -481,7 +481,7 @@ HRESULT CDirect3DVertexBuffer_Lock(const CDirect3DVertexBuffer * _this, UINT Off
         "js .Lf1f4e2_0001f609\n"
         "cvtsi2ssl %edx, %xmm0\n"
         ".Lf1f4e2_0001f5ab:\n"
-        "mulss 0x2ed60c, %xmm0\n" /* 0.0009765625f */
+        "mulss lit4_002ed60c, %xmm0\n" /* 0.0009765625f */
         "movss %xmm0, (%esp)\n"
         "calll ceilf\n"
         "fnstcw -0x1a(%ebp)\n"
@@ -534,7 +534,7 @@ void ZN21CDirect3DVertexBufferD0Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
-        "movl $0x32fc48, (%edi)\n" /* this */
+        "movl $vtbl_CDirect3DVertexBuffer, (%edi)\n" /* this */
         "movl 0x38(%edi), %edx\n" /* line 106 | this */
         "testl %edx, %edx\n"
         "je .Lf1f61c_0001f646\n"
@@ -560,7 +560,7 @@ void ZN21CDirect3DVertexBufferD0Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "testl %edx, %edx\n" /* line 120 */
         "je .Lf1f61c_0001f6a6\n"
         /* { scope 1 */
-        "movl 0x195ec70, %ecx\n" /* line 604 */
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %ecx\n" /* line 604 */
         "movl 4(%ecx), %edx\n"
         "cmpl 8(%ecx), %edx\n"
         "je .Lf1f61c_0001f728\n"
@@ -569,7 +569,7 @@ void ZN21CDirect3DVertexBufferD0Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "movl -0x20(%ebp), %ecx\n" /* this */
         "movl (%ecx), %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x195ec70, %eax\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %eax\n"
         "movl 4(%eax), %edx\n"
         "movl %eax, %ecx\n"
         ".Lf1f61c_0001f695:\n"
@@ -643,14 +643,14 @@ void ZN21CDirect3DVertexBufferD0Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "calll CVAOPacket_ReleaseBuffer\n"
         "jmp .Lf1f61c_0001f656\n"
         ".Lf1f61c_0001f71d:\n"
-        "movl 0x195ec70, %ecx\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %ecx\n"
         "jmp .Lf1f61c_0001f695\n"
         /* { scope 1 */
         ".Lf1f61c_0001f728:\n"
         "movl -0x20(%ebp), %eax\n" /* line 610 | this */
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec70, %edx\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll ZNSt6vectorImSaImEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPmS1_EERKm\n"
         "jmp .Lf1f61c_0001f69b\n"
@@ -692,7 +692,7 @@ void ZN21CDirect3DVertexBufferD1Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fc48, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DVertexBuffer, (%ebx)\n" /* this */
         "movl 0x38(%ebx), %edx\n" /* line 106 | this */
         "testl %edx, %edx\n"
         "je .Lf1f77a_0001f7a4\n"
@@ -718,7 +718,7 @@ void ZN21CDirect3DVertexBufferD1Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "testl %edx, %edx\n" /* line 120 */
         "je .Lf1f77a_0001f804\n"
         /* { scope 1 */
-        "movl 0x195ec70, %ecx\n" /* line 604 */
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %ecx\n" /* line 604 */
         "movl 4(%ecx), %edx\n"
         "cmpl 8(%ecx), %edx\n"
         "je .Lf1f77a_0001f87e\n"
@@ -727,7 +727,7 @@ void ZN21CDirect3DVertexBufferD1Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "movl -0x1c(%ebp), %ecx\n" /* this */
         "movl (%ecx), %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x195ec70, %eax\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %eax\n"
         "movl 4(%eax), %edx\n"
         "movl %eax, %ecx\n"
         ".Lf1f77a_0001f7f3:\n"
@@ -799,14 +799,14 @@ void ZN21CDirect3DVertexBufferD1Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "calll CVAOPacket_ReleaseBuffer\n"
         "jmp .Lf1f77a_0001f7b4\n"
         ".Lf1f77a_0001f873:\n"
-        "movl 0x195ec70, %ecx\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %ecx\n"
         "jmp .Lf1f77a_0001f7f3\n"
         /* { scope 1 */
         ".Lf1f77a_0001f87e:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 610 | this */
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec70, %edx\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll ZNSt6vectorImSaImEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPmS1_EERKm\n"
         "jmp .Lf1f77a_0001f7f9\n"
@@ -847,7 +847,7 @@ void ZN21CDirect3DVertexBufferD2Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fc48, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DVertexBuffer, (%ebx)\n" /* this */
         "movl 0x38(%ebx), %edx\n" /* line 106 | this */
         "testl %edx, %edx\n"
         "je .Lf1f8cc_0001f8f6\n"
@@ -873,7 +873,7 @@ void ZN21CDirect3DVertexBufferD2Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "testl %edx, %edx\n" /* line 120 */
         "je .Lf1f8cc_0001f956\n"
         /* { scope 1 */
-        "movl 0x195ec70, %ecx\n" /* line 604 */
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %ecx\n" /* line 604 */
         "movl 4(%ecx), %edx\n"
         "cmpl 8(%ecx), %edx\n"
         "je .Lf1f8cc_0001f9d0\n"
@@ -882,7 +882,7 @@ void ZN21CDirect3DVertexBufferD2Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "movl -0x1c(%ebp), %ecx\n" /* this */
         "movl (%ecx), %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x195ec70, %eax\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %eax\n"
         "movl 4(%eax), %edx\n"
         "movl %eax, %ecx\n"
         ".Lf1f8cc_0001f945:\n"
@@ -954,14 +954,14 @@ void ZN21CDirect3DVertexBufferD2Ev(void) /* CDirect3DVertexBuffer_~CDirect3DVert
         "calll CVAOPacket_ReleaseBuffer\n"
         "jmp .Lf1f8cc_0001f906\n"
         ".Lf1f8cc_0001f9c5:\n"
-        "movl 0x195ec70, %ecx\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %ecx\n"
         "jmp .Lf1f8cc_0001f945\n"
         /* { scope 1 */
         ".Lf1f8cc_0001f9d0:\n"
         "movl -0x1c(%ebp), %eax\n" /* line 610 | this */
         "movl %eax, 8(%esp)\n"
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec70, %edx\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll ZNSt6vectorImSaImEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPmS1_EERKm\n"
         "jmp .Lf1f8cc_0001f94b\n"
@@ -1007,13 +1007,13 @@ void CDirect3DVertexBuffer_SetFence(const CDirect3DVertexBuffer * _this, const v
         "movl 0x10(%ebp), %eax\n" /* SizeInBytes */
         "movl %eax, -0x28(%ebp)\n" /* SizeInBytes */
         /* { scope 1 */
-        "movl 0x195ec60, %eax\n" /* line 668 */
+        "movl imp___ZN7COpenGL11sFrameCountE, %eax\n" /* line 668 */
         "movl (%eax), %eax\n"
         "movl %eax, -0x20(%ebp)\n" /* CurrentTime */
         "leal 0x30(%edx), %eax\n" /* line 349 */
         "movl %eax, -0x1c(%ebp)\n"
         "movl 0x30(%edx), %esi\n" /* line 580 */
-        "movl 0x195ec70, %edi\n"
+        "movl imp___ZN6CFence15sUnusedFenceIDsE, %edi\n"
         "cmpl %esi, -0x1c(%ebp)\n" /* line 349 */
         "je .Lf1fa1e_0001faa5\n"
         /* { scope 2 */
@@ -1073,7 +1073,7 @@ void CDirect3DVertexBuffer_CDirect3DVertexBuffer(const CDirect3DVertexBuffer * _
         "movl 8(%ebp), %edi\n" /* this */
         "movl 0xc(%ebp), %esi\n" /* Length */
         "movl 0x10(%ebp), %ebx\n" /* Usage */
-        "movl $0x32fc48, (%edi)\n" /* line 88 | this */
+        "movl $vtbl_CDirect3DVertexBuffer, (%edi)\n" /* line 88 | this */
         "movl $0, 4(%edi)\n" /* this */
         "movl %esi, 8(%edi)\n" /* Length, this */
         "leal 0xc(%edi), %eax\n" /* this */
@@ -1109,7 +1109,7 @@ void CDirect3DVertexBuffer_CDirect3DVertexBuffer(const CDirect3DVertexBuffer * _
         "calll __Znwm\n"
         "movl %eax, %ebx\n" /* this */
         /* { scope 1 */
-        "movl $0x32fc28, (%eax)\n" /* line 23 */
+        "movl $vtbl_CStaticCacheInfo, (%eax)\n" /* line 23 */
         "movl %esi, 4(%eax)\n"
         "movl -0x2c(%ebp), %edx\n" /* pBuffer */
         "movl %edx, 8(%eax)\n"
@@ -1117,7 +1117,7 @@ void CDirect3DVertexBuffer_CDirect3DVertexBuffer(const CDirect3DVertexBuffer * _
         "js .Lf1fb96_0001fc80\n"
         "cvtsi2ssl %esi, %xmm0\n"
         ".Lf1fb96_0001fc34:\n"
-        "mulss 0x2ed60c, %xmm0\n" /* 0.0009765625f */
+        "mulss lit4_002ed60c, %xmm0\n" /* 0.0009765625f */
         "movss %xmm0, (%esp)\n"
         "calll ceilf\n"
         "fnstcw -0x1a(%ebp)\n"
@@ -1197,7 +1197,7 @@ void ZN16CStaticCacheInfoD2Ev(void) /* CStaticCacheInfo_~CStaticCacheInfo */
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fc28, (%eax)\n"
+        "movl $vtbl_CStaticCacheInfo, (%eax)\n"
         "leal 0x10(%eax), %edi\n" /* line 31 | this */
         /* { scope 1 */
         "movl 4(%edi), %esi\n" /* line 273 | this, __last */
@@ -1267,7 +1267,7 @@ void ZN16CStaticCacheInfoD1Ev(void) /* CStaticCacheInfo_~CStaticCacheInfo */
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fc28, (%eax)\n"
+        "movl $vtbl_CStaticCacheInfo, (%eax)\n"
         "leal 0x10(%eax), %edi\n" /* line 31 | this */
         /* { scope 1 */
         "movl 4(%edi), %esi\n" /* line 273 | this, __last */
@@ -1332,7 +1332,7 @@ void ZN15CCacheInfoBlockD1Ev(void) /* CCacheInfoBlock_~CCacheInfoBlock */
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 39 */
         "movl %esp, %ebp\n"
-        "movl 0x195ec6c, %edx\n"
+        "movl imp___ZTV15CCacheInfoBlock, %edx\n"
         "addl $8, %edx\n"
         "movl 8(%ebp), %eax\n" /* this */
         "movl %edx, (%eax)\n"
@@ -1349,7 +1349,7 @@ void ZN15CCacheInfoBlockD0Ev(void) /* CCacheInfoBlock_~CCacheInfoBlock */
         "pushl %ebp\n" /* line 39 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl 0x195ec6c, %eax\n"
+        "movl imp___ZTV15CCacheInfoBlock, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "movl %edx, 8(%ebp)\n" /* this */
@@ -1517,7 +1517,7 @@ void ZNSt6vectorI15CCacheInfoBlockSaIS0_EEC1Em(void) /* std_vector<CCacheInfoBlo
         "testl %edi, %edi\n" /* line 193 */
         "je .Lf2bdec4_002bdf32\n"
         "xorl %edx, %edx\n"
-        "movl 0x195ec6c, %ecx\n"
+        "movl imp___ZTV15CCacheInfoBlock, %ecx\n"
         "addl $8, %ecx\n"
         /* { scope 2 */
         ".Lf2bdec4_002bdf1c:\n"

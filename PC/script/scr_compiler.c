@@ -7263,7 +7263,7 @@ unsigned int EmitVariableExpression(void)
         "ja .Lf97358_000974e9\n"
         "movl $1, %eax\n"
         "shll %cl, %eax\n"
-        "testl $s_debugFrameGlob+549248, %eax\n"
+        "testl $0x00878000, %eax\n"
         "je .Lf97358_000974e9\n"
         "xorl %ecx, %ecx\n" /* line 1502 */
         "movl $1, %edx\n"

@@ -9,7 +9,7 @@
  *   #include "Mac/Tools/MacMemory.h"
  */
 
-static Boolean sSystemCursorVisible; /* 0x308080 */
+extern Boolean sSystemCursorVisible; /* 0x308080 */
 static Point sGlobalMouse; /* 0x334b80 */
 
 void MacTools_SetCursorID(int inCursorID);

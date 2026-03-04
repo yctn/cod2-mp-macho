@@ -20,7 +20,7 @@ extern void *r_glob;                                    /* imp_rgp - GfxGlobals 
 extern void *r_frontEndDataOut;                         /* imp_backEnd */
 extern void *gfx_buf;                                   /* imp_tess - tess globals */
 extern void *r_dvar_sunEnable;                          /* imp_r_drawSun */
-extern void *r_rendererGlob;                            /* imp_r_rendererInUse */
+/* r_rendererGlob was imp_r_rendererInUse */
 extern unsigned int r_defaultColor;                     /* imp_colorWhite */
 extern void *r_videoConfig;                             /* imp_vidConfig */
 extern void *r_phys;                                    /* imp_ri */
@@ -337,7 +337,7 @@ static unsigned char RB_TessSunBillboard(float widthInClipSpace, float heightInC
     /* Compiler passes color in eax, widthInClipSpace in xmm0, heightInClipSpace in xmm1 */
     /* In the naked asm, eax = color, xmm0 = widthInClipSpace, xmm1 = heightInClipSpace */
 
-    rendererGlob = *(void **)r_rendererGlob;
+    rendererGlob = *(void **)imp_r_rendererInUse;
     if (FIELD(rendererGlob, 8, int) == 2) {
         /* Dx7 path */
         void *frontEnd = r_frontEndDataOut;
@@ -970,7 +970,7 @@ after_sun_trace:
 
         /* Draw sun corona */
         {
-            void *rendererGlob = *(void **)r_rendererGlob;
+            void *rendererGlob = *(void **)imp_r_rendererInUse;
 
             if (FIELD(rendererGlob, 8, int) == 2) {
                 /* Dx7 path */

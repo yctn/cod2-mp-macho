@@ -16,7 +16,7 @@ extern const dvar_t *showpackets; /* 0x0 */
 extern const dvar_t *showdrop; /* 0x0 */
 extern const dvar_t *packetDebug; /* 0x0 */
 static char s[64]; /* s */
-static char * netsrcString[2]; /* netsrcString */
+extern char * netsrcString[2]; /* netsrcString */
 static int net_iProfilingOn; /* net_iProfilingOn */
 static loopback_t loopbacks[2]; /* loopbacks */
 

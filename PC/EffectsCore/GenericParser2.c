@@ -13,12 +13,12 @@ static char token[1024]; /* token */
 static char * GetToken(Bool readUntilEOL);
 const char * GPValue_GetTopValue(const GPValue * _this);
 Bool GPValue_IsList(const GPValue * _this);
-my_upsampler GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *unsortedList, GPObject * *sortedList, GPObject * *lastObject);
-my_upsampler GPGroup_Clean(const GPGroup * _this);
-my_upsampler GenericParser2_GenericParser2(const GenericParser2 * _this);
+void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *unsortedList, GPObject * *sortedList, GPObject * *lastObject);
+void GPGroup_Clean(const GPGroup * _this);
+void GenericParser2_GenericParser2(const GenericParser2 * _this);
 char * TextPool_AllocText(const TextPool * _this, char *text, int addNULL, TextPool * *poolPtr);
 GPGroup * GPGroup_AddGroup(const GPGroup * _this, const char *name, TextPool * *textPool);
-my_upsampler GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *textPool);
+void GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *textPool);
 GPValue * GPGroup_AddPair(const GPGroup * _this, const char *name, const char *value, TextPool * *textPool);
 void ZN14GenericParser2D2Ev(void); /* GenericParser2_~GenericParser2 */
 void ZN14GenericParser2D1Ev(void); /* GenericParser2_~GenericParser2 */
@@ -300,7 +300,7 @@ Bool GPValue_IsList(const GPValue * _this)
 
 /* line 568 */
 __attribute__((naked))
-my_upsampler GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *unsortedList, GPObject * *sortedList, GPObject * *lastObject)
+void GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObject * *unsortedList, GPObject * *sortedList, GPObject * *lastObject)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 568 */
@@ -393,7 +393,7 @@ my_upsampler GPGroup_SortObject(const GPGroup * _this, GPObject *object, GPObjec
 
 /* line 505 */
 __attribute__((naked))
-my_upsampler GPGroup_Clean(const GPGroup * _this)
+void GPGroup_Clean(const GPGroup * _this)
 {
     __asm__ __volatile__ (
         ".Lfac26a_000ac26a:\n"
@@ -488,7 +488,7 @@ my_upsampler GPGroup_Clean(const GPGroup * _this)
 
 /* line 818 */
 __attribute__((naked))
-my_upsampler GenericParser2_GenericParser2(const GenericParser2 * _this)
+void GenericParser2_GenericParser2(const GenericParser2 * _this)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 818 */
@@ -676,7 +676,7 @@ GPGroup * GPGroup_AddGroup(const GPGroup * _this, const char *name, TextPool * *
 
 /* line 346 */
 __attribute__((naked))
-my_upsampler GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *textPool)
+void GPValue_AddValue(const GPValue * _this, const char *newValue, TextPool * *textPool)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 346 */

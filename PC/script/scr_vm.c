@@ -90,7 +90,7 @@ extern void RemoveRefToObject(unsigned int id);
 /* line 86 */
 void Scr_ClearErrorMessage(void)
 {
-    byte *p = *(byte **)imp_scrVarPub;
+    byte *p = (byte *)imp_scrVarPub;
     *(int *)(p + 0x10) = 0;
     *(int *)((char *)&scrVmGlob + 16) = 0;
     *(int *)(p + 0x14) = 0;
@@ -99,7 +99,7 @@ void Scr_ClearErrorMessage(void)
 /* line 182 */
 void Scr_Settings(int developer, int developer_script, int abort_on_error)
 {
-    byte *p = *(byte **)imp_scrVarPub;
+    byte *p = (byte *)imp_scrVarPub;
     *(byte *)(p + 0xa) = developer != 0;
     *(byte *)(p + 0xb) = developer_script != 0;
     *(byte *)((char *)&scrVmPub + 21) = abort_on_error != 0;
@@ -146,7 +146,7 @@ void Scr_Shutdown(void)
 /* line 204 */
 void Scr_Abort(void)
 {
-    byte *p = *(byte **)imp_scrVarPub;
+    byte *p = (byte *)imp_scrVarPub;
     *(int *)(p + 0x1c) = 0;
     *(byte *)(p + 0x38) = 0;
 }
@@ -938,7 +938,7 @@ void Scr_ShutdownSystem(int sys, int bComplete)
 /* line 4388 */
 int Scr_IsSystemActive(int sys)
 {
-    return *(int *)(*(byte **)imp_scrVarPub + 0x1c) != 0;
+    return *(int *)((byte *)imp_scrVarPub + 0x1c) != 0;
 }
 
 /* line 4743 */
@@ -4029,7 +4029,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "shll $2, %eax\n"
         "movl %eax, -0x40(%ebp)\n" /* waitTime */
         ".Lf840ae_00084230:\n"
-        "cmpl $g_effectVisArray+4350, %eax\n" /* line 1082 */
+        "cmpl $0x00FFFFFE, %eax\n" /* line 1082 */
         "ja .Lf840ae_000843dd\n"
         "movl -0x40(%ebp), %edi\n" /* line 1084 | waitTime, opcode */
         "testl %edi, %edi\n" /* opcode */
@@ -4042,7 +4042,7 @@ unsigned int VM_Execute(struct function_stack_t fs)
         "movl imp_scrVarPub, %ebx\n" /* line 1086 | parentLocalId */
         "movl 0x18(%ebx), %eax\n" /* parentLocalId */
         "addl %eax, -0x40(%ebp)\n" /* waitTime */
-        "andl $g_effectVisArray+4351, -0x40(%ebp)\n" /* waitTime */
+        "andl $0x00FFFFFF, -0x40(%ebp)\n" /* waitTime */
         "movl 0x14(%ebp), %ecx\n" /* line 1087 */
         "subl $8, %ecx\n"
         "movl %ecx, 0x14(%ebp)\n"
@@ -8219,7 +8219,7 @@ void Scr_IncTime(void)
         "movl imp_scrVarPub, %edx\n" /* line 5067 */
         "movl 0x18(%edx), %eax\n"
         "addl $1, %eax\n"
-        "andl $g_effectVisArray+4351, %eax\n"
+        "andl $0x00FFFFFF, %eax\n"
         "movl %eax, 0x18(%edx)\n"
         "addl $0x14, %esp\n" /* line 5072 */
         "popl %ebx\n"
@@ -8244,7 +8244,7 @@ void Scr_IncTime(void)
         "movl imp_scrVarPub, %edx\n" /* line 5067 */
         "movl 0x18(%edx), %eax\n"
         "addl $1, %eax\n"
-        "andl $g_effectVisArray+4351, %eax\n"
+        "andl $0x00FFFFFF, %eax\n"
         "movl %eax, 0x18(%edx)\n"
         "addl $0x14, %esp\n" /* line 5072 */
         "popl %ebx\n"

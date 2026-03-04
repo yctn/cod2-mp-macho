@@ -14,18 +14,17 @@ extern struct GfxScene scene; /* 0x0 */
 static int warnCount; /* warnCount */
 static int warnCount_007f1dd0; /* warnCount */
 static GfxViewParms lockPvsViewParms; /* lockPvsViewParms */
-static surfaceType_t s_entitySurface; /* s_entitySurface */
-static byte s_XModelSurfaceSize[8]; /* s_XModelSurfaceSize */
+extern surfaceType_t s_entitySurface; /* s_entitySurface */
+extern byte s_XModelSurfaceSize[8]; /* s_XModelSurfaceSize */
 
 extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
-extern r_global_permanent_t *rgp;      /* imp_rgp */
-extern r_globals_t *rg;                /* imp_rg */
-extern refimport_t *ri;                /* imp_ri */
+extern r_global_permanent_t rgp;       /* imp_rgp */
+extern r_globals_t rg;                /* imp_rg */
+extern refimport_t ri;                /* imp_ri */
 extern const dvar_t **r_dlightLimit;   /* imp_r_dlightLimit */
-extern void **g_dxCaps;                /* imp_r_rendererInUse */
+/* g_dxCaps was imp_r_rendererInUse */
 extern const float *colorWhite;        /* imp_colorWhite */
-extern const dvar_t **fx_sort_ptr;     /* imp_fx_sort */
-extern const dvar_t **com_statmon_ptr; /* imp_com_statmon */
+/* fx_sort and com_statmon accessed via imp_fx_sort, imp_com_statmon */
 
 void R_UpdateXModelBounds(GfxSceneEntity *sceneEnt, GfxEntity *ent);
 void R_SkinSceneDObj(GfxSceneEntity *sceneEnt, GfxEntity *ent);
@@ -160,9 +159,9 @@ void R_AddLightToScene(const vec_t *org, float radius, float r, float g, float b
     GfxLight *light;
     int dlightCount;
 
-    if (!rg->registered)
+    if (!rg.registered)
         return;
-    if (!rgp->world)
+    if (!rgp.world)
         return;
     if (!(radius > 0.0f))
         return;
@@ -173,7 +172,7 @@ void R_AddLightToScene(const vec_t *org, float radius, float r, float g, float b
 
     light = &scene.dlights[dlightCount];
     scene.dlightCount = dlightCount + 1;
-    light->def = rgp->dlightDef;
+    light->def = rgp.dlightDef;
     light->position[0] = org[0];
     light->position[1] = org[1];
     light->position[2] = org[2];
@@ -608,7 +607,7 @@ void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex)
         return;
 
     for (count = 0; count < bmodel->surfaceCount; count++) {
-        surf = &rgp->world->surfaces[bmodel->startSurfIndex + count];
+        surf = &rgp.world->surfaces[bmodel->startSurfIndex + count];
         lmapIndex = surf->lightmapIndex;
         material = surf->material;
         surface = surf->data;
@@ -620,7 +619,7 @@ void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex)
         drawSurf = &buf->drawSurfs[buf->drawSurfCount];
         surfType = *surface;
 
-        if (surfType == 2 && (*fx_sort_ptr)->current.integer) {
+        if (surfType == 2 && (*(const dvar_t **)imp_fx_sort)->current.integer) {
             sortValue = (material->info.sortedIndex << 9) + ((entIndex << 19) + 0x80000002) + (lmapIndex << 4);
         } else {
             sortValue = surfType + (entIndex << 4) + (material->info.sortedIndex << 21) + (lmapIndex << 16);
@@ -645,11 +644,11 @@ void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCoun
     int surfType;
     int vc;
 
-    if (!rg->registered)
+    if (!rg.registered)
         return;
 
     if (!materialHandle)
-        materialHandle = rgp->defaultMaterial;
+        materialHandle = rgp.defaultMaterial;
 
     buf = *gfxBuf;
     vc = (unsigned short)vertCount;
@@ -676,7 +675,7 @@ void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCoun
         drawSurf = &buf->drawSurfs[buf->drawSurfCount];
         surfType = poly->surfaceType;
 
-        if (surfType == 2 && (*fx_sort_ptr)->current.integer) {
+        if (surfType == 2 && (*(const dvar_t **)imp_fx_sort)->current.integer) {
             sortValue = (entIndex << 19) | (materialHandle->info.sortedIndex << 9) | 0x80000002 | (lmapIndex << 4);
         } else {
             sortValue = surfType + (entIndex << 4) + (materialHandle->info.sortedIndex << 21) + (lmapIndex << 16);
@@ -715,7 +714,7 @@ void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex)
     drawSurf = &buf->drawSurfs[buf->drawSurfCount];
     surfType = *surface;
 
-    if (surfType == 2 && (*fx_sort_ptr)->current.integer) {
+    if (surfType == 2 && (*(const dvar_t **)imp_fx_sort)->current.integer) {
         sortValue = (entIndex << 19) | (material->info.sortedIndex << 9) | 0x80000002 | (lmapIndex << 4);
     } else {
         sortValue = surfType + (entIndex << 4) + (material->info.sortedIndex << 21) + (lmapIndex << 16);

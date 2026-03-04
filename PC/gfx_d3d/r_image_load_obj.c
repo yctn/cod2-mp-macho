@@ -1156,7 +1156,7 @@ Bool Image_LoadFromFile(GfxImage *image)
         "movb $1, 0xb(%esi)\n" /* line 505 | image */
         ".Lffd42c_000fd49b:\n"
         "movl (%edx), %eax\n" /* line 28 */
-        "andl $g_effectVisArray+4351, %eax\n"
+        "andl $0x00FFFFFF, %eax\n"
         "cmpl $0x695749, %eax\n"
         "je .Lffd42c_000fd4f1\n"
         "movl %ebx, 4(%esp)\n" /* line 30 */
@@ -2097,8 +2097,8 @@ GfxImage * Image_Load(const char *name, int semantic, int imageTrack)
         "movl -0x6020(%ebp), %ecx\n" /* color */
         "movb $0x33, %ch\n"
         "andl $0xff00ffff, %ecx\n"
-        "orl $scrMemTreeGlob+39168, %ecx\n"
-        "andl $g_effectVisArray+4351, %ecx\n"
+        "orl $0x00400000, %ecx\n"
+        "andl $0x00FFFFFF, %ecx\n"
         "movl %ecx, -0x6020(%ebp)\n" /* color */
         "orl $0x4d000000, %ecx\n"
         "movl $Image_GetWaterColorForVector, 0x10(%esp)\n" /* line 1069 */

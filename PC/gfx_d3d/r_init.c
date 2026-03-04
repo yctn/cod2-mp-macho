@@ -1048,9 +1048,9 @@ Bool R_CreateForInitOrReset(void)
         ".Lfcb866_000cb93c:\n"
         "movl imp_r_rendererInUse, %eax\n" /* line 1067 | d3dpp */
         "movl (%eax), %eax\n" /* d3dpp */
-        "movl $info3+5504, %ebx\n" /* viewIndex */
+        "movl $0x00480000, %ebx\n" /* viewIndex */
         "cmpl $2, 8(%eax)\n" /* d3dpp */
-        "movl $s_debugFrameGlob+57728, %eax\n" /* d3dpp */
+        "movl $0x00800000, %eax\n" /* d3dpp */
         "cmovnel %eax, %ebx\n" /* d3dpp, viewIndex */
         "movl $0, dx(%esi)\n" /* line 538 */
         "movl %ebx, dx+4(%esi)\n" /* line 539 */

@@ -970,11 +970,11 @@ void CL_InitRenderer(void)
         "pushl %ebp\n" /* line 3236 */
         "movl %esp, %ebp\n"
         "subl $0x28, %esp\n"
-        "movl $0x14c13c4, (%esp)\n" /* line 3240 */
+        "movl $cls+0x2a0a64, (%esp)\n" /* line 3240 */
         "calll *re+4\n"
-        "movl 0x14c13c8, %eax\n" /* line 3244 */
+        "movl cls+0x2a0a68, %eax\n" /* line 3244 */
         "movl %eax, 0x14(%esp)\n"
-        "movl 0x14c13c4, %eax\n"
+        "movl cls+0x2a0a64, %eax\n"
         "movl %eax, 0x10(%esp)\n"
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
@@ -986,17 +986,17 @@ void CL_InitRenderer(void)
         "movl $3, 4(%esp)\n"
         "movl $str_00224184, (%esp)\n" /* "white" */
         "calll *re+16\n"
-        "movl %eax, 0x14c13b8\n"
+        "movl %eax, cls+0x2a0a58\n"
         "movl $3, 8(%esp)\n" /* line 3248 */
         "movl $3, 4(%esp)\n"
         "movl $str_002a8c6c, (%esp)\n" /* "console" */
         "calll *re+16\n"
-        "movl %eax, 0x14c13bc\n"
+        "movl %eax, cls+0x2a0a5c\n"
         "movl $3, 4(%esp)\n" /* line 3249 */
         "movl $str_002a8c74, (%esp)\n" /* "fonts/consoleFont" */
         "calll *re+224\n"
-        "movl %eax, 0x14c13c0\n"
-        "movl 0x14c13c4, %ecx\n" /* line 3250 */
+        "movl %eax, cls+0x2a0a60\n"
+        "movl cls+0x2a0a64, %ecx\n" /* line 3250 */
         "subl $0x20, %ecx\n"
         "movl imp_g_console_field_width, %eax\n"
         "movl %ecx, (%eax)\n"
@@ -1948,42 +1948,42 @@ void CL_ShutdownDebugData(void)
         "movl %esp, %ebp\n"
         "pushl %edi\n"
         "subl $0x14, %esp\n"
-        "movl 0x14c1408, %eax\n" /* line 4939 */
+        "movl cls+0x2a0aa8, %eax\n" /* line 4939 */
         "testl %eax, %eax\n"
         "je .Lf149428_0014944a\n"
         "movl %eax, (%esp)\n" /* line 4941 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x14c1408\n" /* line 4942 */
+        "movl $0, cls+0x2a0aa8\n" /* line 4942 */
         ".Lf149428_0014944a:\n"
-        "movl 0x14c140c, %eax\n" /* line 4944 */
+        "movl cls+0x2a0aac, %eax\n" /* line 4944 */
         "testl %eax, %eax\n"
         "je .Lf149428_00149465\n"
         "movl %eax, (%esp)\n" /* line 4946 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x14c140c\n" /* line 4947 */
+        "movl $0, cls+0x2a0aac\n" /* line 4947 */
         ".Lf149428_00149465:\n"
-        "movl 0x14c1410, %eax\n" /* line 4949 */
+        "movl cls+0x2a0ab0, %eax\n" /* line 4949 */
         "testl %eax, %eax\n"
         "je .Lf149428_00149480\n"
         "movl %eax, (%esp)\n" /* line 4951 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x14c1410\n" /* line 4952 */
+        "movl $0, cls+0x2a0ab0\n" /* line 4952 */
         ".Lf149428_00149480:\n"
-        "movl 0x14c13f8, %eax\n" /* line 4954 */
+        "movl cls+0x2a0a98, %eax\n" /* line 4954 */
         "testl %eax, %eax\n"
         "je .Lf149428_0014949b\n"
         "movl %eax, (%esp)\n" /* line 4956 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x14c13f8\n" /* line 4957 */
+        "movl $0, cls+0x2a0a98\n" /* line 4957 */
         ".Lf149428_0014949b:\n"
-        "movl 0x14c13fc, %eax\n" /* line 4959 */
+        "movl cls+0x2a0a9c, %eax\n" /* line 4959 */
         "testl %eax, %eax\n"
         "je .Lf149428_001494b6\n"
         "movl %eax, (%esp)\n" /* line 4961 */
         "calll Z_FreeInternal\n"
-        "movl $0, 0x14c13fc\n" /* line 4962 */
+        "movl $0, cls+0x2a0a9c\n" /* line 4962 */
         ".Lf149428_001494b6:\n"
-        "movl $0x14c13f0, %edi\n" /* line 4965 */
+        "movl $cls+0x2a0a90, %edi\n" /* line 4965 */
         "cld\n"
         "movl $9, %ecx\n"
         "xorl %eax, %eax\n"
@@ -2162,16 +2162,16 @@ void CL_FlushDebugData(qboolean fromServer)
         "movl cls+264, %eax\n" /* line 4848 */
         "testl %eax, %eax\n"
         "je .Lf14967c_00149722\n"
-        "movl 0x14c13f8, %eax\n" /* line 4852 */
+        "movl cls+0x2a0a98, %eax\n" /* line 4852 */
         "testl %eax, %eax\n"
         "je .Lf14967c_001496de\n"
         "xorl %ebx, %ebx\n" /* i */
-        "movl 0x14c13f4, %ecx\n"
+        "movl cls+0x2a0a94, %ecx\n"
         ".Lf14967c_001496a6:\n"
         "cmpl %ecx, %ebx\n" /* line 4858 | i */
         "jge .Lf14967c_001496c3\n"
         ".Lf14967c_001496aa:\n"
-        "movl 0x14c13fc, %edx\n" /* line 4860 */
+        "movl cls+0x2a0a9c, %edx\n" /* line 4860 */
         "movzbl (%edx, %ebx), %eax\n"
         "cmpl %eax, %edi\n" /* fromServer */
         "je .Lf14967c_00149753\n"
@@ -2179,23 +2179,23 @@ void CL_FlushDebugData(qboolean fromServer)
         "cmpl %ecx, %ebx\n" /* line 4858 | i */
         "jl .Lf14967c_001496aa\n"
         ".Lf14967c_001496c3:\n"
-        "movl 0x14c13f0, %eax\n" /* line 4872 */
+        "movl cls+0x2a0a90, %eax\n" /* line 4872 */
         "movl %eax, 8(%esp)\n"
         "movl %ecx, 4(%esp)\n"
-        "movl 0x14c13f8, %eax\n"
+        "movl cls+0x2a0a98, %eax\n"
         "movl %eax, (%esp)\n"
         "calll *re+252\n"
         ".Lf14967c_001496de:\n"
-        "movl 0x14c1408, %eax\n" /* line 4876 */
+        "movl cls+0x2a0aa8, %eax\n" /* line 4876 */
         "testl %eax, %eax\n"
         "je .Lf14967c_00149722\n"
         "xorl %esi, %esi\n"
-        "movl 0x14c1404, %ecx\n"
+        "movl cls+0x2a0aa4, %ecx\n"
         ".Lf14967c_001496ef:\n"
         "cmpl %ecx, %esi\n" /* line 4882 */
         "jge .Lf14967c_00149707\n"
         ".Lf14967c_001496f3:\n"
-        "movl 0x14c140c, %eax\n" /* line 4884 */
+        "movl cls+0x2a0aac, %eax\n" /* line 4884 */
         "movzbl (%eax, %esi), %eax\n"
         "cmpl %edi, %eax\n" /* fromServer */
         "je .Lf14967c_0014972a\n"
@@ -2204,10 +2204,10 @@ void CL_FlushDebugData(qboolean fromServer)
         "cmpl %ecx, %esi\n" /* line 4882 */
         "jl .Lf14967c_001496f3\n"
         ".Lf14967c_00149707:\n"
-        "movl 0x14c1400, %eax\n" /* line 4899 */
+        "movl cls+0x2a0aa0, %eax\n" /* line 4899 */
         "movl %eax, 8(%esp)\n"
         "movl %ecx, 4(%esp)\n"
-        "movl 0x14c1408, %eax\n"
+        "movl cls+0x2a0aa8, %eax\n"
         "movl %eax, (%esp)\n"
         "calll *re+256\n"
         /* } scope */
@@ -2222,24 +2222,24 @@ void CL_FlushDebugData(qboolean fromServer)
         ".Lf14967c_0014972a:\n"
         "leal (, %esi, 4), %ebx\n" /* line 4886 | i */
         "movl %ebx, %eax\n" /* i */
-        "addl 0x14c1410, %eax\n"
+        "addl cls+0x2a0ab0, %eax\n"
         "subl $1, (%eax)\n"
-        "movl 0x14c1410, %eax\n" /* line 4887 */
+        "movl cls+0x2a0ab0, %eax\n" /* line 4887 */
         "movl (%ebx, %eax), %eax\n" /* i */
         "testl %eax, %eax\n"
         "jle .Lf14967c_00149799\n"
-        "movl 0x14c1404, %ecx\n"
+        "movl cls+0x2a0aa4, %ecx\n"
         "addl $1, %esi\n" /* line 4896 */
         "jmp .Lf14967c_00149703\n"
         ".Lf14967c_00149753:\n"
         "subl $1, %ecx\n" /* line 4862 */
-        "movl %ecx, 0x14c13f4\n"
+        "movl %ecx, cls+0x2a0a94\n"
         "movzbl (%edx, %ecx), %eax\n" /* line 4863 */
         "movb %al, (%ebx, %edx)\n" /* i */
-        "movl 0x14c13f8, %ecx\n" /* line 4864 */
+        "movl cls+0x2a0a98, %ecx\n" /* line 4864 */
         "movl %ebx, %edx\n" /* i */
         "shll $7, %edx\n"
-        "movl 0x14c13f4, %eax\n"
+        "movl cls+0x2a0a94, %eax\n"
         "shll $7, %eax\n"
         "addl %ecx, %edx\n"
         "addl %ecx, %eax\n"
@@ -2247,24 +2247,24 @@ void CL_FlushDebugData(qboolean fromServer)
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll memcpy\n"
-        "movl 0x14c13f4, %ecx\n"
+        "movl cls+0x2a0a94, %ecx\n"
         "jmp .Lf14967c_001496a6\n"
         ".Lf14967c_00149799:\n"
-        "movl 0x14c1404, %ecx\n" /* line 4889 */
+        "movl cls+0x2a0aa4, %ecx\n" /* line 4889 */
         "subl $1, %ecx\n"
-        "movl %ecx, 0x14c1404\n"
-        "movl 0x14c140c, %edx\n" /* line 4890 */
+        "movl %ecx, cls+0x2a0aa4\n"
+        "movl cls+0x2a0aac, %edx\n" /* line 4890 */
         "movzbl (%edx, %ecx), %eax\n"
         "movb %al, (%esi, %edx)\n"
-        "movl 0x14c1410, %edx\n" /* line 4891 */
-        "movl 0x14c1404, %eax\n"
+        "movl cls+0x2a0ab0, %edx\n" /* line 4891 */
+        "movl cls+0x2a0aa4, %eax\n"
         "movl (%edx, %eax, 4), %eax\n"
         "movl %eax, (%ebx, %edx)\n" /* i */
-        "movl 0x14c1408, %edx\n" /* line 4892 */
+        "movl cls+0x2a0aa8, %edx\n" /* line 4892 */
         "addl %esi, %ebx\n" /* i */
         "leal (%esi, %ebx, 2), %ebx\n" /* i */
         "shll $2, %ebx\n" /* i */
-        "movl 0x14c1404, %eax\n"
+        "movl cls+0x2a0aa4, %eax\n"
         "leal (%eax, %eax, 4), %ecx\n"
         "leal (%eax, %ecx, 2), %ecx\n"
         "shll $2, %ecx\n"
@@ -2290,7 +2290,7 @@ void CL_FlushDebugData(qboolean fromServer)
         "movl %eax, 0x24(%ebx, %edx)\n" /* i */
         "movl 0x28(%ecx, %edx), %eax\n"
         "movl %eax, 0x28(%ebx, %edx)\n" /* i */
-        "movl 0x14c1404, %ecx\n"
+        "movl cls+0x2a0aa4, %ecx\n"
         "jmp .Lf14967c_001496ef\n"
     );
 }
@@ -2306,22 +2306,22 @@ void CL_UpdateDebugData(void)
         "movl cls+264, %eax\n" /* line 4911 */
         "testl %eax, %eax\n"
         "je .Lf149844_0014989d\n"
-        "movl 0x14c13f8, %edx\n" /* line 4914 */
+        "movl cls+0x2a0a98, %edx\n" /* line 4914 */
         "testl %edx, %edx\n"
         "je .Lf149844_00149878\n"
-        "movl 0x14c13f0, %eax\n" /* line 4919 */
+        "movl cls+0x2a0a90, %eax\n" /* line 4919 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x14c13f4, %eax\n"
+        "movl cls+0x2a0a94, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *re+252\n"
         ".Lf149844_00149878:\n"
-        "movl 0x14c1408, %edx\n" /* line 4922 */
+        "movl cls+0x2a0aa8, %edx\n" /* line 4922 */
         "testl %edx, %edx\n"
         "je .Lf149844_0014989d\n"
-        "movl 0x14c1400, %eax\n" /* line 4927 */
+        "movl cls+0x2a0aa0, %eax\n" /* line 4927 */
         "movl %eax, 8(%esp)\n"
-        "movl 0x14c1404, %eax\n"
+        "movl cls+0x2a0aa4, %eax\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll *re+256\n"
@@ -2885,9 +2885,9 @@ void CL_DrawLogo(void)
         "movss %xmm1, -0x14(%ebp)\n" /* line 3803 */
         "movss %xmm1, -0x10(%ebp)\n" /* line 3804 */
         "movl $0x3f800000, -0xc(%ebp)\n" /* line 3805 */
-        "cvtsi2ssl 0x14c13c4, %xmm0\n" /* line 3807 */
+        "cvtsi2ssl cls+0x2a0a64, %xmm0\n" /* line 3807 */
         "movss %xmm0, -0x1c(%ebp)\n" /* w */
-        "cvtsi2ssl 0x14c13c8, %xmm0\n" /* line 3808 */
+        "cvtsi2ssl cls+0x2a0a68, %xmm0\n" /* line 3808 */
         "movaps %xmm0, %xmm1\n"
         "addss %xmm0, %xmm1\n"
         "divss lit4_002ed720, %xmm1\n" /* 3.0f */
@@ -3009,18 +3009,18 @@ void CL_AddDebugLine(const vec_t *start, const vec_t *end, const vec_t *color, q
         "movl cls+264, %eax\n" /* line 4809 */
         "testl %eax, %eax\n"
         "je .Lf14a114_0014a1da\n"
-        "movl $__mh_execute_header, 0x14c1400\n" /* line 4812 */
-        "movl 0x14c1404, %ecx\n" /* line 4813 */
+        "movl $__mh_execute_header, cls+0x2a0aa0\n" /* line 4812 */
+        "movl cls+0x2a0aa4, %ecx\n" /* line 4813 */
         "leal 1(%ecx), %eax\n"
         "cmpl $__mh_execute_header, %eax\n"
         "jg .Lf14a114_0014a1da\n"
-        "movl 0x14c1408, %eax\n" /* line 4817 */
+        "movl cls+0x2a0aa8, %eax\n" /* line 4817 */
         "testl %eax, %eax\n"
         "je .Lf14a114_0014a1e2\n"
         ".Lf14a114_0014a15e:\n"
         "leal (%ecx, %ecx, 4), %edx\n" /* line 4826 */
         "leal (%ecx, %edx, 2), %edx\n"
-        "movl 0x14c1408, %eax\n"
+        "movl cls+0x2a0aa8, %eax\n"
         "leal (%eax, %edx, 4), %edx\n"
         "movl (%ebx), %eax\n" /* line 199 */
         "movl %eax, (%edx)\n"
@@ -3050,15 +3050,15 @@ void CL_AddDebugLine(const vec_t *start, const vec_t *end, const vec_t *color, q
         /* } scope */
         "movl 0x14(%ebp), %eax\n" /* line 4830 | depthTest */
         "movl %eax, 0x28(%edx)\n"
-        "movl 0x14c140c, %edx\n" /* line 4832 */
-        "movl 0x14c1404, %eax\n"
+        "movl cls+0x2a0aac, %edx\n" /* line 4832 */
+        "movl cls+0x2a0aa4, %eax\n"
         "movzbl 0x1c(%ebp), %ecx\n" /* fromServer */
         "movb %cl, (%edx, %eax)\n"
-        "movl 0x14c1404, %edx\n" /* line 4833 */
-        "movl 0x14c1410, %eax\n"
+        "movl cls+0x2a0aa4, %edx\n" /* line 4833 */
+        "movl cls+0x2a0ab0, %eax\n"
         "movl 0x18(%ebp), %ecx\n" /* duration */
         "movl %ecx, (%eax, %edx, 4)\n"
-        "addl $1, 0x14c1404\n" /* line 4835 */
+        "addl $1, cls+0x2a0aa4\n" /* line 4835 */
         /* } scope */
         ".Lf14a114_0014a1da:\n"
         "addl $0x1c, %esp\n" /* line 4836 */
@@ -3071,18 +3071,18 @@ void CL_AddDebugLine(const vec_t *start, const vec_t *end, const vec_t *color, q
         ".Lf14a114_0014a1e2:\n"
         "movl $0x2c000, (%esp)\n" /* line 4819 */
         "calll Z_MallocInternal\n"
-        "movl %eax, 0x14c1408\n"
-        "movl 0x14c1400, %eax\n" /* line 4820 */
+        "movl %eax, cls+0x2a0aa8\n"
+        "movl cls+0x2a0aa0, %eax\n" /* line 4820 */
         "movl %eax, (%esp)\n"
         "calll Z_MallocInternal\n"
-        "movl %eax, 0x14c140c\n"
-        "movl 0x14c1400, %eax\n" /* line 4821 */
+        "movl %eax, cls+0x2a0aac\n"
+        "movl cls+0x2a0aa0, %eax\n" /* line 4821 */
         "shll $2, %eax\n"
         "movl %eax, (%esp)\n"
         "calll Z_MallocInternal\n"
-        "movl %eax, 0x14c1410\n"
+        "movl %eax, cls+0x2a0ab0\n"
         "xorl %ecx, %ecx\n" /* line 4822 */
-        "movl $0, 0x14c1404\n"
+        "movl $0, cls+0x2a0aa4\n"
         "jmp .Lf14a114_0014a15e\n"
     );
 }
@@ -3104,18 +3104,18 @@ void CL_AddDebugString(const vec_t *xyz, const vec_t *color, float scale, const 
         "movl cls+264, %eax\n" /* line 4770 */
         "testl %eax, %eax\n"
         "je .Lf14a22c_0014a2e1\n"
-        "movl $0x100, 0x14c13f0\n" /* line 4773 */
-        "movl 0x14c13f4, %edx\n" /* line 4774 */
+        "movl $0x100, cls+0x2a0a90\n" /* line 4773 */
+        "movl cls+0x2a0a94, %edx\n" /* line 4774 */
         "leal 1(%edx), %eax\n"
         "cmpl $0x100, %eax\n"
         "jg .Lf14a22c_0014a2e1\n"
-        "movl 0x14c13f8, %eax\n" /* line 4778 */
+        "movl cls+0x2a0a98, %eax\n" /* line 4778 */
         "testl %eax, %eax\n"
         "je .Lf14a22c_0014a2e9\n"
         ".Lf14a22c_0014a26b:\n"
         "movl %edx, %ebx\n" /* line 4786 | string */
         "shll $7, %ebx\n" /* string */
-        "addl 0x14c13f8, %ebx\n" /* string */
+        "addl cls+0x2a0a98, %ebx\n" /* string */
         "movl (%esi), %eax\n" /* line 199 */
         "movl %eax, (%ebx)\n"
         "movl 4(%esi), %eax\n" /* line 200 */
@@ -3142,11 +3142,11 @@ void CL_AddDebugString(const vec_t *xyz, const vec_t *color, float scale, const 
         "movl %eax, (%esp)\n"
         "calll strncpy\n"
         "movb $0, 0x7f(%ebx)\n" /* line 4791 | string */
-        "movl 0x14c13fc, %edx\n" /* line 4793 */
-        "movl 0x14c13f4, %eax\n"
+        "movl cls+0x2a0a9c, %edx\n" /* line 4793 */
+        "movl cls+0x2a0a94, %eax\n"
         "movzbl 0x18(%ebp), %ecx\n" /* fromServer */
         "movb %cl, (%edx, %eax)\n"
-        "addl $1, 0x14c13f4\n" /* line 4795 */
+        "addl $1, cls+0x2a0a94\n" /* line 4795 */
         /* } scope */
         ".Lf14a22c_0014a2e1:\n"
         "addl $0x1c, %esp\n" /* line 4796 */
@@ -3159,13 +3159,13 @@ void CL_AddDebugString(const vec_t *xyz, const vec_t *color, float scale, const 
         ".Lf14a22c_0014a2e9:\n"
         "movl $0x8000, (%esp)\n" /* line 4780 */
         "calll Z_MallocInternal\n"
-        "movl %eax, 0x14c13f8\n"
-        "movl 0x14c13f0, %eax\n" /* line 4781 */
+        "movl %eax, cls+0x2a0a98\n"
+        "movl cls+0x2a0a90, %eax\n" /* line 4781 */
         "movl %eax, (%esp)\n"
         "calll Z_MallocInternal\n"
-        "movl %eax, 0x14c13fc\n"
+        "movl %eax, cls+0x2a0a9c\n"
         "xorl %edx, %edx\n" /* line 4782 */
-        "movl $0, 0x14c13f4\n"
+        "movl $0, cls+0x2a0a94\n"
         "jmp .Lf14a22c_0014a26b\n"
     );
 }
@@ -3189,9 +3189,9 @@ void CL_RequestAuthorization(void)
         "calll CL_CDKeyValidate\n"
         "testl %eax, %eax\n"
         "je .Lf14a31e_0014a495\n"
-        "cmpw $0, 0x14c13b4\n" /* line 1587 */
+        "cmpw $0, cls+0x2a0a54\n" /* line 1587 */
         "je .Lf14a31e_0014a402\n"
-        "cmpl $1, 0x14c13ac\n" /* line 1599 */
+        "cmpl $1, cls+0x2a0a4c\n" /* line 1599 */
         "je .Lf14a31e_0014a3fa\n"
         ".Lf14a31e_0014a360:\n"
         "movl $str_00216d6c, (%esp)\n" /* line 1604 */
@@ -3213,11 +3213,11 @@ void CL_RequestAuthorization(void)
         "movl %eax, 4(%esp)\n"
         "movl $str_002a9310, (%esp)\n" /* "getKeyAuthorize %i %s" */
         "calll va\n"
-        "movl 0x14c13ac, %ebx\n" /* i */
+        "movl cls+0x2a0a4c, %ebx\n" /* i */
         "movl %ebx, -0x24(%ebp)\n" /* i */
-        "movl 0x14c13b0, %ecx\n"
+        "movl cls+0x2a0a50, %ecx\n"
         "movl %ecx, -0x20(%ebp)\n"
-        "movl 0x14c13b4, %edx\n"
+        "movl cls+0x2a0a54, %edx\n"
         "movl %edx, -0x1c(%ebp)\n"
         "movl %eax, 0x10(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* i */
@@ -3239,26 +3239,26 @@ void CL_RequestAuthorization(void)
         "movl $str_002a92b4, (%esp)\n" /* "Resolving %s
 " */
         "calll Com_Printf\n"
-        "movl $0x14c13ac, 4(%esp)\n" /* line 1590 */
+        "movl $cls+0x2a0a4c, 4(%esp)\n" /* line 1590 */
         "movl $str_002a9298, (%esp)\n" /* "cod2master.activision.com" */
         "calll NET_StringToAdr\n"
         "testl %eax, %eax\n"
         "je .Lf14a31e_0014a4de\n"
-        "movw $0xdc50, 0x14c13b4\n" /* line 1596 */
+        "movw $0xdc50, cls+0x2a0a54\n" /* line 1596 */
         "movl $0x50dc, 0x18(%esp)\n" /* line 1597 */
-        "movzbl 0x14c13b3, %eax\n"
+        "movzbl cls+0x2a0a53, %eax\n"
         "movl %eax, 0x14(%esp)\n"
-        "movzbl 0x14c13b2, %eax\n"
+        "movzbl cls+0x2a0a52, %eax\n"
         "movl %eax, 0x10(%esp)\n"
-        "movzbl 0x14c13b1, %eax\n"
+        "movzbl cls+0x2a0a51, %eax\n"
         "movl %eax, 0xc(%esp)\n"
-        "movzbl 0x14c13b0, %eax\n"
+        "movzbl cls+0x2a0a50, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl $str_002a9298, 4(%esp)\n" /* "cod2master.activision.com" */
         "movl $str_002a92e0, (%esp)\n" /* "%s resolved to %i.%i.%i.%i:%i
 " */
         "calll Com_Printf\n"
-        "cmpl $1, 0x14c13ac\n" /* line 1599 */
+        "cmpl $1, cls+0x2a0a4c\n" /* line 1599 */
         "jne .Lf14a31e_0014a360\n"
         "jmp .Lf14a31e_0014a3fa\n"
         ".Lf14a31e_0014a495:\n"
@@ -3500,7 +3500,7 @@ void CL_LocalServers_f(void)
         "movl $str_002a9370, (%esp)\n" /* line 4407 */
         "calll Com_Printf\n"
         "movl $0, cls+312\n" /* line 4410 */
-        "movl $0, 0x14c13a8\n" /* line 4411 */
+        "movl $0, cls+0x2a0a48\n" /* line 4411 */
         "movl $0, -0x3c(%ebp)\n" /* i */
         "movl $cls, %esi\n"
         "movl $cls+316, %edi\n"
@@ -3708,7 +3708,7 @@ qboolean CL_UpdateDirtyPings_f(int source)
         "jne .Lf14aa5e_0014ac6e\n"
         "cmpl $2, %edx\n" /* line 4584 */
         "ja .Lf14aa5e_0014ac6e\n"
-        "movl %edx, 0x14c13a8\n" /* line 4589 */
+        "movl %edx, cls+0x2a0a48\n" /* line 4589 */
         "movl $0, -0x45c(%ebp)\n" /* slots */
         "movl $cl_pinglist+8, %eax\n"
         ".Lf14aa5e_0014aa99:\n"
@@ -4908,9 +4908,9 @@ void CL_ShutdownAll(void)
         ".Lf14bbfc_0014bc35:\n"
         "calll CL_ShutdownCGame\n" /* line 1115 */
         "calll CL_ShutdownUI\n" /* line 1118 */
-        "movl $0, 0x14c13b8\n" /* line 3267 */
-        "movl $0, 0x14c13bc\n" /* line 3268 */
-        "movl $0, 0x14c13c0\n" /* line 3269 */
+        "movl $0, cls+0x2a0a58\n" /* line 3267 */
+        "movl $0, cls+0x2a0a5c\n" /* line 3268 */
+        "movl $0, cls+0x2a0a60\n" /* line 3269 */
         "movl $0, cls+4\n" /* line 1130 */
         "jmp .Lf14bbfc_0014bc17\n"
     );
@@ -5293,9 +5293,9 @@ void CL_Vid_Restart_f(void)
         ".Lf14beac_0014c1db:\n"
         "calll CL_ShutdownCGame\n" /* line 1115 */
         "calll CL_ShutdownUI\n" /* line 1118 */
-        "movl $0, 0x14c13b8\n" /* line 3267 */
-        "movl $0, 0x14c13bc\n" /* line 3268 */
-        "movl $0, 0x14c13c0\n" /* line 3269 */
+        "movl $0, cls+0x2a0a58\n" /* line 3267 */
+        "movl $0, cls+0x2a0a5c\n" /* line 3268 */
+        "movl $0, cls+0x2a0a60\n" /* line 3269 */
         "movl $0, cls+4\n" /* line 1130 */
         "jmp .Lf14beac_0014bf1a\n"
         ".Lf14beac_0014c212:\n"
@@ -5703,9 +5703,9 @@ void CL_Shutdown(void)
         ".Lf14c5ac_0014c85a:\n"
         "calll CL_ShutdownCGame\n" /* line 1115 */
         "calll CL_ShutdownUI\n" /* line 1118 */
-        "movl $0, 0x14c13b8\n" /* line 3267 */
-        "movl $0, 0x14c13bc\n" /* line 3268 */
-        "movl $0, 0x14c13c0\n" /* line 3269 */
+        "movl $0, cls+0x2a0a58\n" /* line 3267 */
+        "movl $0, cls+0x2a0a5c\n" /* line 3268 */
+        "movl $0, cls+0x2a0a60\n" /* line 3269 */
         "movl $0, cls+4\n" /* line 1130 */
         "jmp .Lf14c5ac_0014c603\n"
     );
@@ -6509,9 +6509,9 @@ void CL_DownloadsComplete(void)
         ".Lf14d0be_0014d2fe:\n"
         "calll CL_ShutdownCGame\n" /* line 1115 */
         "calll CL_ShutdownUI\n" /* line 1118 */
-        "movl $0, 0x14c13b8\n" /* line 3267 */
-        "movl $0, 0x14c13bc\n" /* line 3268 */
-        "movl $0, 0x14c13c0\n" /* line 3269 */
+        "movl $0, cls+0x2a0a58\n" /* line 3267 */
+        "movl $0, cls+0x2a0a5c\n" /* line 3268 */
+        "movl $0, cls+0x2a0a60\n" /* line 3269 */
         "movl $0, cls+4\n" /* line 1130 */
         "jmp .Lf14d0be_0014d25b\n"
         ".Lf14d0be_0014d335:\n"

@@ -127,7 +127,7 @@ void ZN9CDirect3DD1Ev(void) /* CDirect3D_~CDirect3D */
         "pushl %ebp\n" /* line 3153 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f6c8, (%eax)\n"
+        "movl $vtbl_CDirect3D, (%eax)\n"
         "movl $0, sDirect3DInterface\n" /* line 3155 */
         "popl %ebp\n" /* line 3156 */
         "retl\n"
@@ -142,7 +142,7 @@ void ZN9CDirect3DD0Ev(void) /* CDirect3D_~CDirect3D */
         "pushl %ebp\n" /* line 3153 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32f6c8, (%eax)\n"
+        "movl $vtbl_CDirect3D, (%eax)\n"
         "movl $0, sDirect3DInterface\n" /* line 3155 */
         "movl %eax, 8(%ebp)\n" /* line 3156 | this */
         "popl %ebp\n"
@@ -809,7 +809,7 @@ HRESULT CDirect3DDevice_SetDepthStencilSurface(const CDirect3DDevice * _this, ID
         "retl\n"
         ".Lfe65c_0000e728:\n"
         "movl $0, 4(%esp)\n" /* line 546 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0xb90, (%esp)\n" /* line 547 */
@@ -834,7 +834,7 @@ HRESULT CDirect3DDevice_SetDepthStencilSurface(const CDirect3DDevice * _this, ID
         "jmp .Lfe65c_0000e6e3\n"
         ".Lfe65c_0000e793:\n"
         "movl $0, 4(%esp)\n" /* line 520 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0xb90, (%esp)\n" /* line 521 */
@@ -863,13 +863,13 @@ void CDirect3DDevice_CreateAndSetGenericProgrammableVAO(const CDirect3DDevice * 
         "pushl %ebx\n"
         "subl $0x3c, %esp\n"
         /* { scope 1: i */
-        "movl 0x195ec34, %eax\n" /* line 58 */
+        "movl imp___ZN10CVAOPacket14sCurrentPacketE, %eax\n" /* line 58 */
         "movl (%eax), %edx\n"
         "leal (%edx, %edx, 4), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
         "leal (%edx, %eax, 2), %esi\n"
         "shll $4, %esi\n"
-        "addl 0x195ec14, %esi\n"
+        "addl imp___ZN10CVAOPacket14sGenericPacketE, %esi\n"
         "movl %esi, g_CurrentGenericPacket\n" /* line 2429 */
         "movl $0, 4(%esp)\n" /* line 2433 */
         "movl $0, (%esp)\n"
@@ -892,7 +892,7 @@ void CDirect3DDevice_CreateAndSetGenericProgrammableVAO(const CDirect3DDevice * 
         "movl %edi, 0xc(%esi)\n"
         "movl %edi, 8(%esp)\n" /* line 2464 | Size */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %ebx\n" /* VType */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* VType */
         "movl %ebx, (%esp)\n" /* VType */
         "calll COpenGL_SetVARInfo\n"
         "cmpb $0, 0x668(%ebx)\n" /* line 2466 | VType */
@@ -947,7 +947,7 @@ void CDirect3DDevice_CreateAndSetGenericProgrammableVAO(const CDirect3DDevice * 
         "movl %eax, 8(%esp)\n"
         "movl -0x20(%ebp), %edx\n" /* i */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetVertexProgramStreamInfo\n"
         /* } scope */
@@ -981,7 +981,7 @@ void CDirect3DDevice_CreateAndSetGenericProgrammableVAO(const CDirect3DDevice * 
         /* } scope */
         "movl -0x20(%ebp), %eax\n" /* line 2500 | i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_DisableVertexProgramStream\n"
         /* } scope */
@@ -1079,7 +1079,7 @@ void COpenGL_SetTexBorderColor(const COpenGL * _this, UINT32 Unit, GLenum Target
         ".Lfe9a0_0000ea6f:\n"
         "cvtsi2ssl %edx, %xmm2\n"
         ".Lfe9a0_0000ea73:\n"
-        "movss 0x2ed5cc, %xmm1\n" /* line 161 | 0.003921568859368563f */
+        "movss lit4_002ed5cc, %xmm1\n" /* line 161 | 0.003921568859368563f */
         "movss -0x28(%ebp), %xmm0\n" /* rgba */
         "mulss %xmm1, %xmm0\n"
         "movss %xmm0, -0x28(%ebp)\n" /* rgba */
@@ -1209,7 +1209,7 @@ HRESULT CDirect3DDevice_SetTexture(const CDirect3DDevice * _this, DWORD Stage, I
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
         ".Lfeb9e_0000ebf6:\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "movl %edi, 4(%ebx)\n" /* line 128 */
         "testl %edi, %edi\n" /* line 593 | pTexture */
@@ -1442,14 +1442,14 @@ void CDirect3DDevice_CreateAndSetGenericFixedFunctionVAO(const CDirect3DDevice *
         "movzbl 0x1c(%ebp), %eax\n" /* NeedsNormals */
         "movb %al, -0x25(%ebp)\n" /* NeedsNormals */
         /* { scope 1 */
-        "movl 0x195ec34, %eax\n" /* line 58 */
+        "movl imp___ZN10CVAOPacket14sCurrentPacketE, %eax\n" /* line 58 */
         "movl (%eax), %edx\n"
         "leal (%edx, %edx, 4), %eax\n"
         "leal (%edx, %eax, 4), %eax\n"
         "leal (%edx, %eax, 2), %eax\n"
         "shll $4, %eax\n"
         "movl %eax, -0x24(%ebp)\n"
-        "movl 0x195ec14, %edx\n"
+        "movl imp___ZN10CVAOPacket14sGenericPacketE, %edx\n"
         "addl %edx, %eax\n"
         "movl %eax, -0x24(%ebp)\n"
         "movl %eax, g_CurrentGenericPacket\n" /* line 2926 */
@@ -1473,7 +1473,7 @@ void CDirect3DDevice_CreateAndSetGenericFixedFunctionVAO(const CDirect3DDevice *
         "movl %edi, 0xc(%eax)\n"
         "movl %edi, 8(%esp)\n" /* line 2959 | Size */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec0c, %ebx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll COpenGL_SetVARInfo\n"
         "cmpb $0, 0x668(%ebx)\n" /* line 2962 */
@@ -1506,7 +1506,7 @@ void CDirect3DDevice_CreateAndSetGenericFixedFunctionVAO(const CDirect3DDevice *
         "movl %eax, 8(%esp)\n"
         "movl 0x2c8(%esi), %eax\n" /* this */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %ebx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll COpenGL_EnableVertexArray\n"
         "cmpb $0, -0x25(%ebp)\n" /* line 2986 | NeedsNormals */
@@ -1554,7 +1554,7 @@ void CDirect3DDevice_CreateAndSetGenericFixedFunctionVAO(const CDirect3DDevice *
         "movl %eax, 0x10(%ebp)\n" /* NumVertices */
         "movl 0x2fc(%esi), %eax\n" /* this */
         "movl %eax, 0xc(%ebp)\n" /* StartVertex */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, 8(%ebp)\n" /* this */
         /* } scope */
         "addl $0x3c, %esp\n" /* line 3009 */
@@ -1594,7 +1594,7 @@ void CDirect3DDevice_CreateAndSetGenericFixedFunctionVAO(const CDirect3DDevice *
         "addl $0x10, %eax\n"
         "movl %eax, (%esp)\n"
         "calll CColorArray_SetGuard\n"
-        "movl 0x195ec0c, %eax\n" /* line 3005 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 3005 */
         "movl %eax, 8(%ebp)\n" /* this */
         /* } scope */
         "addl $0x3c, %esp\n" /* line 3009 */
@@ -1629,7 +1629,7 @@ void CDirect3DDevice_ValidateLighting(const CDirect3DDevice * _this)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0xcc, %esp\n"
-        "movl 0x195ec0c, %eax\n" /* line 612 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 612 */
         "cmpb $0, 0x800(%eax)\n"
         "jne .Lff100_0000f25c\n"
         "movl 8(%ebp), %edx\n" /* line 617 | this */
@@ -1651,7 +1651,7 @@ void CDirect3DDevice_ValidateLighting(const CDirect3DDevice * _this)
         "addl $0x614, %ebx\n" /* pLI */
         "movb $0, -0xb9(%ebp)\n" /* LightingMatrixCalculated */
         "movl $0x4000, %edi\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "addl $0x78, %eax\n"
         "movl %eax, -0xc0(%ebp)\n"
         "jmp .Lff100_0000f1c0\n"
@@ -2109,7 +2109,7 @@ void CDirect3DDevice_ValidateModelViewMatrix(const CDirect3DDevice * _this)
         "movl %eax, 4(%esp)\n"
         "movl %esi, (%esp)\n"
         "calll D3DXMatrixMultiply\n"
-        "movl 0x195ec0c, %ebx\n" /* line 427 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 427 */
         "cmpl $0x1700, 0x74(%ebx)\n"
         "je .Lff64e_0000f6b1\n"
         "movl $0x1700, 0x74(%ebx)\n" /* line 429 */
@@ -2235,7 +2235,7 @@ HRESULT CDirect3DDevice_SetTransform(const CDirect3DDevice * _this, D3DTRANSFORM
         "movl %eax, 0x38(%edx)\n"
         "movl 0x3c(%edi), %eax\n" /* pMatrix */
         "movl %eax, 0x3c(%edx)\n"
-        "movl 0x195ec24, %eax\n" /* line 646 */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %eax\n" /* line 646 */
         "movb $1, (%eax)\n"
         "xorl %eax, %eax\n" /* line 156 */
         "addl $0x5c, %esp\n"
@@ -2390,7 +2390,7 @@ HRESULT CDirect3DDevice_SetTransform(const CDirect3DDevice * _this, D3DTRANSFORM
         "calll MacOpenGLUtils_AreMatricesDifferent4x4\n"
         "testb %al, %al\n"
         "je .Lff752_0000f794\n"
-        "movl 0x195ec0c, %eax\n" /* line 427 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 427 */
         "cmpl $0x1701, 0x74(%eax)\n"
         "je .Lff752_0000fa49\n"
         "movl $0x1701, 0x74(%eax)\n" /* line 429 */
@@ -2506,7 +2506,7 @@ CDirect3D * CDirect3D_GetDirect3DInterface(void)
         ".Lffb50_0000fb6f:\n"
         "movl $0xc, (%esp)\n" /* line 3165 */
         "calll __Znwm\n"
-        "movl $0x32f6c8, (%eax)\n" /* line 3146 */
+        "movl $vtbl_CDirect3D, (%eax)\n" /* line 3146 */
         "movl $0, 8(%eax)\n"
         "movl $1, 4(%eax)\n" /* line 3194 */
         "movl %eax, sDirect3DInterface\n" /* line 3165 */
@@ -2546,7 +2546,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "leal -0x2cc(%ebp), %edx\n" /* line 63 | v */
         "movl %edx, (%esp)\n"
         "calll CVAOPacket_CVAOPacket\n"
-        "movl 0x195ec2c, %eax\n"
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x2cc(%ebp)\n" /* v */
         "movl 8(%ebp), %ecx\n" /* line 2634 | this */
@@ -2651,7 +2651,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl %eax, 8(%esp)\n"
         "movl -0x26c(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %ebx\n" /* Size */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* Size */
         "movl %ebx, (%esp)\n" /* Size */
         "calll COpenGL_EnableVertexArray\n"
         "cmpb $0, -0x59d(%ebp)\n" /* line 2718 | NeedsNormals */
@@ -2699,7 +2699,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl %eax, 8(%esp)\n"
         "movl -0x2b4(%ebp), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_EnableColorArray\n"
         ".Lffba4_0000fe52:\n"
@@ -2755,7 +2755,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl 8(%ebx), %eax\n" /* TexCoordStride */
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* pVAStart */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_EnableTexCoordArray\n"
         /* } scope */
@@ -2781,7 +2781,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "testb %al, %al\n" /* line 2750 */
         "jne .Lffba4_0000fe8f\n"
         "movl %esi, 4(%esp)\n" /* line 2772 | pVAStart */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_DisableTexCoordArray\n"
         "jmp .Lffba4_0000ff38\n"
@@ -2794,7 +2794,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "leal -0x57c(%ebp), %ecx\n" /* line 63 | VirginVAO */
         "movl %ecx, (%esp)\n"
         "calll CVAOPacket_CVAOPacket\n"
-        "movl 0x195ec2c, %eax\n"
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x57c(%ebp)\n" /* VirginVAO */
         "leal -0x57c(%ebp), %eax\n" /* line 2784 | VirginVAO */
@@ -2907,7 +2907,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl %edx, (%esp)\n"
         "calll CVAOPacket_Cache\n"
         ".Lffba4_00010170:\n"
-        "movl 0x195ec2c, %eax\n" /* line 63 */
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n" /* line 63 */
         "addl $8, %eax\n"
         "movl %eax, -0x2cc(%ebp)\n" /* v */
         "leal -0x2cc(%ebp), %edx\n" /* v */
@@ -2928,7 +2928,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl -0x570(%ebp), %ebx\n" /* line 143 */
         "movl %ebx, 8(%esp)\n" /* line 2851 | TexCoordStride */
         "movl %esi, 4(%esp)\n" /* pBuffer */
-        "movl 0x195ec0c, %edi\n" /* i */
+        "movl imp___ZN7COpenGL7sOpenGLE, %edi\n" /* i */
         "movl %edi, (%esp)\n" /* i */
         "calll COpenGL_SetVARInfo\n"
         "cmpb $0, 0x668(%edi)\n" /* line 2852 | i */
@@ -2980,7 +2980,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl 8(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* pBuffer */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_EnableTexCoordArray\n"
         /* } scope */
@@ -3015,7 +3015,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl $0x1406, 0xc(%esp)\n"
         "movl $3, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* pBuffer */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_EnableTexCoordArray\n"
         "jmp .Lffba4_0001028d\n"
@@ -3024,7 +3024,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "leal -0x57c(%ebp), %eax\n" /* line 2910 | VirginVAO */
         "movl %eax, (%esp)\n"
         "calll CVAOPacket_Cache\n"
-        "movl 0x195ec2c, %eax\n" /* line 63 */
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n" /* line 63 */
         "addl $8, %eax\n"
         "movl %eax, -0x57c(%ebp)\n" /* VirginVAO */
         "leal -0x57c(%ebp), %ecx\n" /* VirginVAO */
@@ -3033,7 +3033,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "jmp .Lffba4_00010170\n"
         /* } scope */
         ".Lffba4_0001033b:\n"
-        "movl 0x195ec0c, %eax\n" /* line 2735 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 2735 */
         "movl %eax, (%esp)\n"
         "calll COpenGL_DisableColorArray\n"
         "jmp .Lffba4_0000fe52\n"
@@ -3062,7 +3062,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl $0x1406, 0xc(%esp)\n"
         "movl $3, 8(%esp)\n"
         "movl %esi, 4(%esp)\n" /* pVAStart */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_EnableTexCoordArray\n"
         "jmp .Lffba4_0000ff38\n"
@@ -3125,7 +3125,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "movl 0xc(%ebp), %ecx\n" /* line 2661 | CanUseVAO */
         "movb $0, (%ecx)\n"
         /* } scope */
-        "movl 0x195ec2c, %eax\n" /* line 63 */
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n" /* line 63 */
         "addl $8, %eax\n"
         "movl %eax, -0x2cc(%ebp)\n" /* v */
         "leal -0x2cc(%ebp), %eax\n" /* v */
@@ -3134,7 +3134,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "jmp .Lffba4_0001018c\n"
         "movl %eax, %ebx\n"
         /* { scope 2: UsesTexFactor */
-        "movl 0x195ec2c, %eax\n"
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x57c(%ebp)\n" /* VirginVAO */
         "leal -0x57c(%ebp), %edx\n" /* VirginVAO */
@@ -3142,7 +3142,7 @@ void CDirect3DDevice_CreateAndSetFixedFunctionVAO(const CDirect3DDevice * _this,
         "calll ZN10CVAOPacketD2Ev\n"
         /* } scope */
         ".Lffba4_000104ff:\n"
-        "movl 0x195ec2c, %eax\n"
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, -0x2cc(%ebp)\n" /* v */
         "leal -0x2cc(%ebp), %eax\n" /* v */
@@ -3170,7 +3170,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "leal -0x2c8(%ebp), %eax\n" /* line 70 | v, VType */
         "movl %eax, (%esp)\n" /* VType */
         "calll CVAOPacket_CVAOPacket\n"
-        "movl 0x195ec28, %edi\n"
+        "movl imp___ZTV22CVAOPacketProgrammable, %edi\n"
         "addl $8, %edi\n"
         "movl %edi, -0x2c8(%ebp)\n" /* v */
         "movl 8(%ebp), %edx\n" /* line 2321 | this */
@@ -3230,7 +3230,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "movl %edx, 8(%esp)\n"
         "movl -0x57c(%ebp), %ebx\n" /* Stride */
         "movl %ebx, 4(%esp)\n" /* Stride */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetVertexProgramStreamInfo\n"
         /* } scope */
@@ -3262,7 +3262,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         /* } scope */
         "movl -0x57c(%ebp), %edx\n" /* line 2357 */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec0c, %ebx\n" /* Stride */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* Stride */
         "movl %ebx, (%esp)\n" /* Stride */
         "calll COpenGL_DisableVertexProgramStream\n"
         /* } scope */
@@ -3275,7 +3275,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "leal -0x2c8(%ebp), %eax\n" /* line 2362 | v */
         "movl %eax, (%esp)\n"
         "calll CVAOPacket_Cache\n"
-        "movl 0x195ec28, %eax\n" /* line 70 | VType */
+        "movl imp___ZTV22CVAOPacketProgrammable, %eax\n" /* line 70 | VType */
         "addl $8, %eax\n" /* VType */
         "movl %eax, -0x2c8(%ebp)\n" /* VType, v */
         "leal -0x2c8(%ebp), %edx\n" /* v */
@@ -3306,7 +3306,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "movl %ebx, -0x56c(%ebp)\n"
         "movl %ebx, 8(%esp)\n" /* line 2379 | Stride */
         "movl %esi, 4(%esp)\n" /* pVAStart */
-        "movl 0x195ec0c, %edi\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edi\n"
         "movl %edi, (%esp)\n"
         "calll COpenGL_SetVARInfo\n"
         "cmpb $0, 0x668(%edi)\n" /* line 2380 */
@@ -3360,7 +3360,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "movl %esi, 8(%esp)\n" /* pVAStart */
         "movl -0x580(%ebp), %edx\n" /* i */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetVertexProgramStreamInfo\n"
         /* } scope */
@@ -3373,14 +3373,14 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "leal -0x578(%ebp), %ebx\n" /* line 2415 | VirginVAO, Stride */
         "movl %ebx, (%esp)\n" /* Stride */
         "calll CVAOPacket_Cache\n"
-        "movl 0x195ec28, %eax\n" /* line 70 | VType */
+        "movl imp___ZTV22CVAOPacketProgrammable, %eax\n" /* line 70 | VType */
         "addl $8, %eax\n" /* VType */
         "movl %eax, -0x578(%ebp)\n" /* VType, VirginVAO */
         "leal -0x578(%ebp), %edx\n" /* VirginVAO */
         "movl %edx, (%esp)\n"
         "calll ZN10CVAOPacketD2Ev\n"
         /* } scope */
-        "movl 0x195ec28, %eax\n" /* VType */
+        "movl imp___ZTV22CVAOPacketProgrammable, %eax\n" /* VType */
         "addl $8, %eax\n" /* VType */
         "movl %eax, -0x2c8(%ebp)\n" /* VType, v */
         "leal -0x2c8(%ebp), %edx\n" /* v */
@@ -3403,7 +3403,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "movl %eax, %ebx\n" /* Stride */
         /* } scope */
         ".Lf10528_00010876:\n"
-        "movl 0x195ec28, %eax\n" /* line 70 | VType */
+        "movl imp___ZTV22CVAOPacketProgrammable, %eax\n" /* line 70 | VType */
         "addl $8, %eax\n" /* VType */
         "movl %eax, -0x2c8(%ebp)\n" /* VType, v */
         "leal -0x2c8(%ebp), %eax\n" /* v, VType */
@@ -3413,7 +3413,7 @@ void CDirect3DDevice_CreateAndSetProgrammableVAO(const CDirect3DDevice * _this, 
         "calll __Unwind_Resume\n"
         "movl %eax, %ebx\n" /* VType */
         /* { scope 2: VSize */
-        "movl 0x195ec28, %eax\n" /* VType */
+        "movl imp___ZTV22CVAOPacketProgrammable, %eax\n" /* VType */
         "addl $8, %eax\n" /* VType */
         "movl %eax, -0x578(%ebp)\n" /* VType, VirginVAO */
         "leal -0x578(%ebp), %eax\n" /* VirginVAO, VType */
@@ -3609,7 +3609,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl %ecx, 8(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTex\n"
         "cmpl $3, %edi\n" /* line 951 | TextureType */
@@ -3643,7 +3643,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "leal (%edx, %eax, 2), %esi\n"
         "shll $4, %esi\n"
         "movl %esi, %edi\n"
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "addl 0x65c(%ecx), %edi\n"
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_00010b6c\n"
@@ -3658,7 +3658,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00010bc9\n"
         "movl 0x10(%ebp), %eax\n" /* line 808 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl %ebx, 8(%esp)\n" /* line 154 */
@@ -3694,7 +3694,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "xorl %ebx, %ebx\n" /* togl */
         ".Lf10a4a_00010bf8:\n"
         "movl %esi, %edi\n" /* line 654 */
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "addl 0x65c(%ecx), %edi\n"
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_00010c29\n"
@@ -3709,7 +3709,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00010c86\n"
         "movl 0x10(%ebp), %eax\n" /* line 818 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl %ebx, 8(%esp)\n" /* line 155 */
@@ -3741,7 +3741,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "xorl %ebx, %ebx\n" /* togl */
         ".Lf10a4a_00010caf:\n"
         "movl %esi, %edi\n" /* line 654 */
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "addl 0x65c(%ecx), %edi\n"
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_00010ce0\n"
@@ -3756,7 +3756,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00010d3d\n"
         "movl 0x10(%ebp), %eax\n" /* line 828 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl %ebx, 8(%esp)\n" /* line 156 */
@@ -3820,7 +3820,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl $0x2601, %ebx\n" /* togl */
         ".Lf10a4a_00010db0:\n"
         "movl %esi, %edi\n" /* line 654 */
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "addl 0x65c(%ecx), %edi\n"
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_00010de1\n"
@@ -3835,7 +3835,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00010e3e\n"
         "movl 0x10(%ebp), %eax\n" /* line 858 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl %ebx, 8(%esp)\n" /* line 170 */
@@ -3871,7 +3871,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "cmpl $1, %edx\n" /* line 1137 */
         "jbe .Lf10a4a_000111de\n"
         "movl %esi, %ebx\n" /* line 654 | TexID */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "addl 0x65c(%eax), %ebx\n" /* TexID */
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_00010ea0\n"
@@ -3886,7 +3886,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00010f09\n"
         "movl 0x10(%ebp), %edx\n" /* line 848 | Stage */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0x2601, 8(%esp)\n" /* line 169 */
@@ -3908,7 +3908,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl -0x34(%ebp), %edx\n" /* line 60 | this */
         "movl $0x2601, 0x14(%edx)\n"
         ".Lf10a4a_00010f13:\n"
-        "movl 0x195ec0c, %edx\n" /* line 1182 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n" /* line 1182 */
         "cmpb $0, 0x808(%edx)\n"
         "je .Lf10a4a_0001105b\n"
         "movl -0x54(%ebp), %ecx\n" /* line 121 */
@@ -3919,7 +3919,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "ucomiss 0xc0(%ebx), %xmm0\n" /* line 888 | TexID */
         "jp .Lf10a4a_000114b3\n"
         "jne .Lf10a4a_000114b3\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         ".Lf10a4a_00010f53:\n"
         "movl %esi, %ebx\n" /* line 654 | TexID */
         "addl 0x65c(%eax), %ebx\n" /* TexID */
@@ -3937,7 +3937,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00010fe3\n"
         "movl 0x10(%ebp), %ecx\n" /* line 868 | Stage */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl -0x2c(%ebp), %edx\n" /* line 172 */
@@ -3961,7 +3961,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl -0x38(%ebp), %eax\n" /* line 62 | LastLevel */
         "movl -0x34(%ebp), %ecx\n" /* this */
         "movl %eax, 0x1c(%ecx)\n"
-        "movl 0x195ec0c, %edx\n" /* line 1191 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n" /* line 1191 */
         "cmpb $0, 0x802(%edx)\n"
         "je .Lf10a4a_00011053\n"
         "movl -0x54(%ebp), %ecx\n" /* line 124 */
@@ -4017,7 +4017,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl %ecx, 8(%esp)\n"
         "movl 0x10(%ebp), %eax\n" /* Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexBorderColor\n"
         "movl -0x54(%ebp), %edx\n" /* line 59 */
@@ -4033,7 +4033,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "movl %eax, 4(%esp)\n" /* line 565 */
         "movl $1, (%esp)\n"
         "calll glGenTextures\n"
-        "movl 0x195ec0c, %esi\n" /* line 597 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %esi\n" /* line 597 */
         "addl $0x66c, %esi\n"
         /* { scope 3 */
         "movl $0xc, (%esp)\n" /* line 88 */
@@ -4081,7 +4081,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         ".Lf10a4a_00011191:\n"
         "movl 0x10(%ebp), %eax\n" /* line 955 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movzbl %bl, %eax\n" /* line 956 | RecreateTextureData */
@@ -4102,7 +4102,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "jmp .Lf10a4a_00010caf\n"
         ".Lf10a4a_000111de:\n"
         "movl %esi, %ebx\n" /* line 654 | TexID */
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "addl 0x65c(%edx), %ebx\n" /* TexID */
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_0001120f\n"
@@ -4117,7 +4117,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00011277\n"
         "movl 0x10(%ebp), %ecx\n" /* line 848 | Stage */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0x2600, 8(%esp)\n" /* line 169 */
@@ -4178,7 +4178,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         ".Lf10a4a_000112fe:\n"
         "movl 0x10(%ebp), %eax\n" /* line 964 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movzbl %bl, %eax\n" /* line 965 | RecreateTextureData */
@@ -4200,7 +4200,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         ".Lf10a4a_0001134b:\n"
         "movl 0x10(%ebp), %eax\n" /* line 879 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movss -0x58(%ebp), %xmm0\n" /* line 171 */
@@ -4314,7 +4314,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "calll glTexEnvf\n"
         "movss -0x30(%ebp), %xmm0\n" /* Value */
         "movss %xmm0, 0xc0(%ebx)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "jmp .Lf10a4a_00010f53\n"
         /* } scope */
         ".Lf10a4a_000114f8:\n"
@@ -4335,7 +4335,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         ".Lf10a4a_00011524:\n"
         "movl 0x10(%ebp), %eax\n" /* line 972 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movzbl %bl, %eax\n" /* line 973 | RecreateTextureData */
@@ -4417,7 +4417,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "cmpl $1, %edx\n" /* line 1150 */
         "jbe .Lf10a4a_000116ed\n"
         "movl %esi, %ebx\n" /* line 654 | TexID */
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "addl 0x65c(%edx), %ebx\n" /* TexID */
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_00011670\n"
@@ -4432,7 +4432,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_000116d0\n"
         "movl 0x10(%ebp), %ecx\n" /* line 848 | Stage */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0x2702, 8(%esp)\n" /* line 169 */
@@ -4462,7 +4462,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "jmp .Lf10a4a_000116c8\n"
         ".Lf10a4a_000116ed:\n"
         "movl %esi, %ebx\n" /* line 654 | TexID */
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "addl 0x65c(%ecx), %ebx\n" /* TexID */
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_0001171e\n"
@@ -4477,7 +4477,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00011787\n"
         "movl 0x10(%ebp), %eax\n" /* line 848 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0x2700, 8(%esp)\n" /* line 169 */
@@ -4503,7 +4503,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "cmpl $1, %edx\n" /* line 1163 */
         "jbe .Lf10a4a_00011848\n"
         "movl %esi, %ebx\n" /* line 654 | TexID */
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "addl 0x65c(%ecx), %ebx\n" /* TexID */
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_000117d0\n"
@@ -4518,7 +4518,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_00011839\n"
         "movl 0x10(%ebp), %eax\n" /* line 848 | Stage */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0x2703, 8(%esp)\n" /* line 169 */
@@ -4542,7 +4542,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "jmp .Lf10a4a_00010f13\n"
         ".Lf10a4a_00011848:\n"
         "movl %esi, %ebx\n" /* line 654 | TexID */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "addl 0x65c(%eax), %ebx\n" /* TexID */
         "cmpl $0xde1, -0x40(%ebp)\n" /* line 87 | Target */
         "je .Lf10a4a_00011878\n"
@@ -4557,7 +4557,7 @@ void CDirect3DDevice_SynchronizeD3DAndOpenGLTextureState(const CDirect3DDevice *
         "je .Lf10a4a_000118d9\n"
         "movl 0x10(%ebp), %edx\n" /* line 848 | Stage */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         "movl $0x2701, 8(%esp)\n" /* line 169 */
@@ -4637,7 +4637,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "subl $0x8c, %esp\n"
         /* { scope 1: IsFixedFunctionStage, Source0, Source1, Source2, ... */
         "movb $0, -0x19(%ebp)\n" /* line 1209 | UsesTexFactor */
-        "movl 0x195ec0c, %ebx\n" /* line 332 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 332 */
         "movl 0x818(%ebx), %ecx\n"
         "movl 8(%ebp), %eax\n" /* line 1213 | this */
         "movl 0xbb8(%eax), %edx\n"
@@ -4868,7 +4868,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0xde1, 8(%esp)\n"
         "movl -0x54(%ebp), %ecx\n" /* i */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTex\n"
         "movl 8(%ebp), %ebx\n" /* line 1607 | this, ModulateFactor */
@@ -4899,7 +4899,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0xde1, 8(%esp)\n"
         "movl -0x54(%ebp), %eax\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %ebx\n" /* ModulateFactor */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* ModulateFactor */
         "movl %ebx, (%esp)\n" /* ModulateFactor */
         "calll COpenGL_SetTex\n"
         "movl $0x3f800000, %esi\n" /* line 1619 | UsesTexNormalMap */
@@ -4926,7 +4926,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         ".Lf1196e_00011d84:\n"
         "movl -0x54(%ebp), %ebx\n" /* line 1321 | i, Tci */
         "movl %ebx, 4(%esp)\n" /* Tci */
-        "movl 0x195ec0c, %ebx\n" /* Tci */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* Tci */
         "movl %ebx, (%esp)\n" /* Tci */
         "calll COpenGL_SetActiveTexUnit\n"
         "cmpl $0x1702, 0x74(%ebx)\n" /* line 427 */
@@ -4953,7 +4953,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         /* { scope 2: UsesTexCoordStream, UsesTexReflection */
         /* { scope 3: pRGBA */
         ".Lf1196e_00011dda:\n"
-        "movl 0x195ec18, %eax\n" /* line 1399 */
+        "movl imp___ZN10CVAOPacket10sVAOStatusE, %eax\n" /* line 1399 */
         "cmpl $3, (%eax)\n"
         "jne .Lf1196e_00011ece\n"
         "movl %esi, %eax\n" /* UsesTexNormalMap */
@@ -4967,7 +4967,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl %eax, 8(%esp)\n"
         "movl -0x54(%ebp), %esi\n" /* i, UsesTexNormalMap */
         "movl %esi, 4(%esp)\n" /* UsesTexNormalMap */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexGenEnable\n"
         "jmp .Lf1196e_00011b0c\n"
@@ -4982,7 +4982,24 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "cmpl $0xc, 0x3c(%esi)\n" /* line 1538 | UsesTexNormalMap */
         "ja .Lf1196e_00012038\n"
         "movl 0x3c(%esi), %eax\n" /* UsesTexNormalMap */
-        "jmpl *0x2ede60(, %eax, 4)\n"
+        "jmpl *.Ljt_2ede60(, %eax, 4)\n"
+        ".pushsection .rodata\n"
+        ".align 4\n"
+        ".Ljt_2ede60:\n"
+        ".long .Lf1196e_00012038\n"
+        ".long .Lf1196e_000120dc\n"
+        ".long .Lf1196e_00012115\n"
+        ".long .Lf1196e_00012168\n"
+        ".long .Lf1196e_000121bb\n"
+        ".long .Lf1196e_00011fc0\n"
+        ".long .Lf1196e_00012038\n"
+        ".long .Lf1196e_00012235\n"
+        ".long .Lf1196e_00012038\n"
+        ".long .Lf1196e_00012038\n"
+        ".long .Lf1196e_00012038\n"
+        ".long .Lf1196e_00012038\n"
+        ".long .Lf1196e_0001229e\n"
+        ".popsection\n"
         /* } scope */
         /* } scope */
         ".Lf1196e_00011e3e:\n"
@@ -5009,14 +5026,14 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         ".Lf1196e_00011e71:\n"
         "movl -0x54(%ebp), %ebx\n" /* line 1641 | i, ModulateFactor */
         "movl %ebx, 4(%esp)\n" /* ModulateFactor */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_DisableTexCoordArray\n"
         /* } scope */
         ".Lf1196e_00011e85:\n"
         "movl -0x54(%ebp), %esi\n" /* line 1643 | i, UsesTexNormalMap */
         "movl %esi, 4(%esp)\n" /* UsesTexNormalMap */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_DisableTexUnit\n"
         "addl $1, %esi\n" /* line 1631 | UsesTexNormalMap */
@@ -5025,7 +5042,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "cmpl 0x504(%eax), %esi\n" /* UsesTexNormalMap */
         "jae .Lf1196e_00011a1b\n"
         ".Lf1196e_00011eae:\n"
-        "movl 0x195ec18, %eax\n" /* line 50 */
+        "movl imp___ZN10CVAOPacket10sVAOStatusE, %eax\n" /* line 50 */
         "movl (%eax), %eax\n"
         "cmpl $3, %eax\n" /* line 1633 */
         "je .Lf1196e_00011e85\n"
@@ -5050,7 +5067,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "calll CTexCoordArray_SetGuard\n"
         "movl -0x54(%ebp), %ecx\n" /* line 1404 | i */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_DisableTexCoordArray\n"
         "movl %esi, %ebx\n" /* UsesTexNormalMap, Tci */
@@ -5109,6 +5126,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         ".Lf1196e_00011fb6:\n"
         "movl 0x2c(%edx), %eax\n" /* line 1422 */
         "jmpl *0x2ede94(, %eax, 4)\n"
+        ".Lf1196e_00011fc0:\n"
         "movl -0x60(%ebp), %edx\n" /* line 1563 */
         "movl 0x44(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -5138,7 +5156,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         ".Lf1196e_00012024:\n"
         "movl -0x54(%ebp), %ebx\n" /* i, ModulateFactor */
         "movl %ebx, 4(%esp)\n" /* ModulateFactor */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerAlpha2\n"
         ".Lf1196e_00012038:\n"
@@ -5148,7 +5166,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "addl $0x54, %ebx\n"
         /* { scope 4: pSrc2Coords */
         "movl -0x3c(%ebp), %esi\n" /* line 654 */
-        "movl 0x195ec0c, %ecx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %ecx\n"
         "addl 0x65c(%ecx), %esi\n"
         "movl %esi, -0x64(%ebp)\n"
         "addl $0xb0, %esi\n" /* line 140 */
@@ -5167,7 +5185,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "je .Lf1196e_00011b4d\n"
         "movl -0x54(%ebp), %eax\n" /* line 556 | i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %edx\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %edx\n"
         "movl %edx, (%esp)\n"
         "calll COpenGL_SetActiveTexUnit\n"
         /* { scope 5 */
@@ -5189,16 +5207,18 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "jmp .Lf1196e_00011b4d\n"
         /* } scope */
         /* } scope */
+        ".Lf1196e_000120dc:\n"
         "movl $0x3f800000, 0x14(%esp)\n" /* line 1575 */
         "movl $0x302, 0x10(%esp)\n"
         "movl $0x8578, 0xc(%esp)\n"
         "movl $0x1e01, 8(%esp)\n"
         "movl -0x54(%ebp), %edx\n" /* i */
         "movl %edx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerAlpha1\n"
         "jmp .Lf1196e_00012038\n"
+        ".Lf1196e_00012115:\n"
         "movl -0x60(%ebp), %esi\n" /* line 1547 | UsesTexNormalMap */
         "movl 0x44(%esi), %eax\n" /* UsesTexNormalMap */
         "movl %eax, 8(%esp)\n"
@@ -5215,10 +5235,11 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x1e01, 8(%esp)\n"
         "movl -0x54(%ebp), %eax\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerAlpha1\n"
         "jmp .Lf1196e_00012038\n"
+        ".Lf1196e_00012168:\n"
         "movl -0x60(%ebp), %edx\n" /* line 1552 */
         "movl 0x48(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -5235,10 +5256,11 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x1e01, 8(%esp)\n"
         "movl -0x54(%ebp), %ecx\n" /* i */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerAlpha1\n"
         "jmp .Lf1196e_00012038\n"
+        ".Lf1196e_000121bb:\n"
         "movl -0x60(%ebp), %ebx\n" /* line 1557 | ModulateFactor */
         "movl 0x44(%ebx), %eax\n" /* ModulateFactor */
         "movl %eax, 8(%esp)\n"
@@ -5266,10 +5288,11 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x2100, 8(%esp)\n"
         "movl -0x54(%ebp), %esi\n" /* i, UsesTexNormalMap */
         "movl %esi, 4(%esp)\n" /* UsesTexNormalMap */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerAlpha2\n"
         "jmp .Lf1196e_00012038\n"
+        ".Lf1196e_00012235:\n"
         "movl -0x60(%ebp), %edx\n" /* line 1541 */
         "movl 0x44(%edx), %eax\n"
         "movl %eax, 8(%esp)\n"
@@ -5297,6 +5320,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl %eax, 0xc(%esp)\n"
         "movl $0x104, 8(%esp)\n"
         "jmp .Lf1196e_00012024\n"
+        ".Lf1196e_0001229e:\n"
         "movl -0x60(%ebp), %esi\n" /* line 1569 | UsesTexNormalMap */
         "movl 0x44(%esi), %eax\n" /* UsesTexNormalMap */
         "movl %eax, 8(%esp)\n"
@@ -5326,7 +5350,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x8575, 8(%esp)\n"
         "movl -0x54(%ebp), %eax\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerAlpha3\n"
         "jmp .Lf1196e_00012038\n"
@@ -5346,7 +5370,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x1e01, 8(%esp)\n"
         "movl -0x54(%ebp), %eax\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB1\n"
         "movl -0x60(%ebp), %esi\n" /* UsesTexNormalMap */
@@ -5367,7 +5391,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x1e01, 8(%esp)\n"
         "movl -0x54(%ebp), %ecx\n" /* i */
         "movl %ecx, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB1\n"
         "movl -0x60(%ebp), %esi\n" /* UsesTexNormalMap */
@@ -5403,7 +5427,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         ".Lf1196e_00012439:\n"
         "movl -0x54(%ebp), %ebx\n" /* line 1485 | i, ModulateFactor */
         "movl %ebx, 4(%esp)\n" /* ModulateFactor */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB2\n"
         "movl -0x60(%ebp), %esi\n" /* UsesTexNormalMap */
@@ -5440,7 +5464,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x104, 8(%esp)\n"
         "movl -0x54(%ebp), %esi\n" /* i, UsesTexNormalMap */
         "movl %esi, 4(%esp)\n" /* UsesTexNormalMap */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB2\n"
         "movl -0x60(%ebp), %esi\n" /* UsesTexNormalMap */
@@ -5503,7 +5527,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x8575, 8(%esp)\n"
         "movl -0x54(%ebp), %ebx\n" /* i, ModulateFactor */
         "movl %ebx, 4(%esp)\n" /* ModulateFactor */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB3\n"
         "movl -0x60(%ebp), %esi\n" /* UsesTexNormalMap */
@@ -5538,7 +5562,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         ".Lf1196e_00012653:\n"
         "movl -0x54(%ebp), %esi\n" /* line 1510 | i, UsesTexNormalMap */
         "movl %esi, 4(%esp)\n" /* UsesTexNormalMap */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB3\n"
         "movl -0x60(%ebp), %esi\n" /* UsesTexNormalMap */
@@ -5594,7 +5618,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         ".Lf1196e_00012735:\n"
         "movl -0x54(%ebp), %eax\n" /* i */
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB3\n"
         "movl -0x60(%ebp), %esi\n" /* UsesTexNormalMap */
@@ -5670,7 +5694,7 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
         "movl $0x86af, 8(%esp)\n"
         "movl -0x54(%ebp), %ebx\n" /* i, ModulateFactor */
         "movl %ebx, 4(%esp)\n" /* ModulateFactor */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetTexCombinerRGB2\n"
         "jmp .Lf1196e_00012038\n"
@@ -5809,7 +5833,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "cmpl %edi, 0xa8(%esi)\n" /* line 1790 | BaseVertexIndex, this */
         "je .Lf12a10_00012a3d\n"
         "movl %edi, 0xa8(%esi)\n" /* line 1792 | BaseVertexIndex, this */
-        "movl 0x195ec1c, %eax\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 645 */
         "movb $1, (%eax)\n"
         ".Lf12a10_00012a3d:\n"
         "movl 0xa4(%esi), %eax\n" /* line 1801 | this */
@@ -5839,9 +5863,9 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "subl %edx, %eax\n" /* line 1821 */
         "addl $1, %eax\n"
         "movl %eax, -0x3c(%ebp)\n"
-        "movl 0x195ec1c, %ecx\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %ecx\n" /* line 645 */
         "movb $1, (%ecx)\n"
-        "movl 0x195ec30, %edx\n" /* line 671 */
+        "movl imp___ZN7COpenGL9sDrawFlagE, %edx\n" /* line 671 */
         "movzbl (%edx), %eax\n"
         "cmpl $4, %ebx\n" /* line 1856 | Mode */
         "je .Lf12a10_00012bb4\n"
@@ -5870,7 +5894,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl (%edx), %eax\n" /* line 2007 */
         "movl %edx, (%esp)\n"
         "calll *8(%eax)\n"
-        "movl 0x195ec30, %edx\n"
+        "movl imp___ZN7COpenGL9sDrawFlagE, %edx\n"
         /* } scope */
         ".Lf12a10_00012b0b:\n"
         "movb $1, (%edx)\n" /* line 672 */
@@ -5916,7 +5940,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl 0xbb4(%esi), %ebx\n" /* line 1961 | this, Mode */
         "testl %ebx, %ebx\n" /* Mode */
         "jne .Lf12a10_00012acd\n"
-        "movl 0x195ec30, %edx\n"
+        "movl imp___ZN7COpenGL9sDrawFlagE, %edx\n"
         "jmp .Lf12a10_00012b0b\n"
         ".Lf12a10_00012b7f:\n"
         "movl %eax, 0xc(%esp)\n" /* line 1812 */
@@ -5935,22 +5959,22 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "addl -0x20(%ebp), %eax\n" /* High */
         "jmp .Lf12a10_00012a90\n"
         ".Lf12a10_00012bb4:\n"
-        "movl 0x195ec20, %ebx\n" /* line 1858 | Mode */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %ebx\n" /* line 1858 | Mode */
         "cmpb $0, (%ebx)\n" /* Mode */
         "jne .Lf12a10_00012d15\n"
         ".Lf12a10_00012bc3:\n"
-        "movl 0x195ec1c, %eax\n" /* line 1863 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n" /* line 1863 */
         "cmpb $0, (%eax)\n"
         "jne .Lf12a10_00012d80\n"
         ".Lf12a10_00012bd1:\n"
-        "movl 0x195ec30, %edx\n" /* line 1872 */
+        "movl imp___ZN7COpenGL9sDrawFlagE, %edx\n" /* line 1872 */
         "cmpb $0, (%edx)\n"
         "je .Lf12a10_00012b0b\n"
         /* { scope 2 */
-        "movl 0x195ec24, %ebx\n" /* line 1874 | Mode */
+        "movl imp___ZN15CDirect3DDevice29mNeedsRasterizationValidationE, %ebx\n" /* line 1874 | Mode */
         "cmpb $0, (%ebx)\n" /* Mode */
         "jne .Lf12a10_00012bf5\n"
-        "movl 0x195ec1c, %eax\n"
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %eax\n"
         "cmpb $0, (%eax)\n"
         "je .Lf12a10_00012c16\n"
         ".Lf12a10_00012bf5:\n"
@@ -5960,7 +5984,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl %edi, 4(%esp)\n" /* BaseVertexIndex */
         "movl %esi, (%esp)\n" /* this */
         "calll CDirect3DDevice_ValidateRasterization\n"
-        "movl 0x195ec1c, %ecx\n" /* line 645 */
+        "movl imp___ZN15CDirect3DDevice30mNeedsTransformationValidationE, %ecx\n" /* line 645 */
         "movb $0, (%ecx)\n"
         "movb $0, (%ebx)\n" /* line 646 */
         ".Lf12a10_00012c16:\n"
@@ -5979,7 +6003,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl %eax, 8(%esp)\n"
         "movzbl 0x518(%esi), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetBlendEXT\n"
         ".Lf12a10_00012c6c:\n"
@@ -6041,7 +6065,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "testl %eax, %eax\n"
         "je .Lf12a10_00012e14\n"
         /* { scope 2 */
-        "movl 0x195ec0c, %ebx\n" /* line 587 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n" /* line 587 */
         "cmpb $0, 0x80d(%ebx)\n"
         "je .Lf12a10_00012da6\n"
         ".Lf12a10_00012d32:\n"
@@ -6050,7 +6074,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl %eax, 4(%esp)\n" /* line 3024 */
         "movl %ebx, (%esp)\n" /* Mode */
         "calll COpenGL_SetVertexProgram\n"
-        "movl 0x195ec20, %ebx\n" /* Mode */
+        "movl imp___ZN15CDirect3DDevice28mNeedsVertexShaderValidationE, %ebx\n" /* Mode */
         /* } scope */
         ".Lf12a10_00012d47:\n"
         "movb $0, (%ebx)\n" /* line 644 */
@@ -6063,7 +6087,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl %eax, 8(%esp)\n"
         "movzbl 0x518(%esi), %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetBlend\n"
         "jmp .Lf12a10_00012c6c\n"
@@ -6113,7 +6137,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "jmp .Lf12a10_00012afd\n"
         /* } scope */
         ".Lf12a10_00012e14:\n"
-        "movl 0x195ec0c, %eax\n" /* line 596 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 596 */
         "cmpb $0, 0x80d(%eax)\n"
         "je .Lf12a10_00012d47\n"
         "movb $0, 0x80d(%eax)\n" /* line 598 */
@@ -6210,7 +6234,7 @@ void ZN22CVAOPacketProgrammableD1Ev(void) /* CVAOPacketProgrammable_~CVAOPacketP
         "pushl %ebp\n" /* line 70 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl 0x195ec28, %eax\n"
+        "movl imp___ZTV22CVAOPacketProgrammable, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "movl %edx, 8(%ebp)\n" /* this */
@@ -6229,7 +6253,7 @@ void ZN22CVAOPacketProgrammableD0Ev(void) /* CVAOPacketProgrammable_~CVAOPacketP
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x195ec28, %eax\n"
+        "movl imp___ZTV22CVAOPacketProgrammable, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
@@ -6250,7 +6274,7 @@ void ZN23CVAOPacketFixedFunctionD1Ev(void) /* CVAOPacketFixedFunction_~CVAOPacke
         "pushl %ebp\n" /* line 63 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
-        "movl 0x195ec2c, %eax\n"
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "movl %edx, 8(%ebp)\n" /* this */
@@ -6269,7 +6293,7 @@ void ZN23CVAOPacketFixedFunctionD0Ev(void) /* CVAOPacketFixedFunction_~CVAOPacke
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x195ec2c, %eax\n"
+        "movl imp___ZTV23CVAOPacketFixedFunction, %eax\n"
         "addl $8, %eax\n"
         "movl %eax, (%ebx)\n" /* this */
         "movl %ebx, (%esp)\n" /* this */

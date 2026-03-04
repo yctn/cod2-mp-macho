@@ -11,8 +11,8 @@
  *   #include "PC/xanim/xanim_public.h"
  */
 
-static vec3_t mins; /* mins */
-static vec3_t maxs; /* maxs */
+extern vec3_t mins; /* mins */
+extern vec3_t maxs; /* maxs */
 
 extern void Com_Printf(const char *fmt, ...);
 extern void FX_FreeSystem(void);

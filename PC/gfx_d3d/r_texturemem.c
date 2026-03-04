@@ -6,8 +6,8 @@
 
 extern void MacDisplay_GetVideoMemoryInfo(int *vidMemMB, int *totalVidMem);
 
-extern char *d3d_context; /* imp_dx — D3D device wrapper */
-extern refimport_t *ri; /* imp_ri */
+extern unsigned char dx[];  /* DxGlobals BSS struct */
+extern refimport_t ri; /* imp_ri */
 
 unsigned int R_AvailableTextureMemory(void)
 {
@@ -18,18 +18,18 @@ unsigned int R_AvailableTextureMemory(void)
     MacDisplay_GetVideoMemoryInfo(&vidMemInMegs, &vidMem2);
 
     /* IDirect3DDevice9::GetAvailableTextureMem() via COM vtable */
-    char *device = *(char **)(d3d_context + 8);
+    char *device = *(char **)(dx + 8);
     void **vtable = *(void ***)device;
     unsigned int texMem = ((unsigned int (*)(void *))vtable[4])(device);
     texMemInMegs = texMem >> 20;
 
     if (vidMemInMegs == 0) {
-        ri->Printf(0, "DirectX reports %i MB of available texture memory, but wouldn't tell available video memory.\n", texMemInMegs);
+        ri.Printf(0, "DirectX reports %i MB of available texture memory, but wouldn't tell available video memory.\n", texMemInMegs);
     } else {
-        ri->Printf(0, "DirectX reports %i MB of video memory and %i MB of available texture memory.\n", vidMemInMegs, texMemInMegs);
+        ri.Printf(0, "DirectX reports %i MB of video memory and %i MB of available texture memory.\n", vidMemInMegs, texMemInMegs);
         if ((unsigned int)vidMemInMegs < texMemInMegs) {
             texMemInMegs = vidMemInMegs - 16;
-            ri->Printf(0, "Using video memory size to cap used texture memory at %i MB.\n", texMemInMegs);
+            ri.Printf(0, "Using video memory size to cap used texture memory at %i MB.\n", texMemInMegs);
         }
     }
     return texMemInMegs;

@@ -63,7 +63,7 @@ void ZN16CDirect3DSurfaceD1Ev(void) /* CDirect3DSurface_~CDirect3DSurface */
         "pushl %ebp\n" /* line 280 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x32fb08, (%eax)\n"
+        "movl $vtbl_CDirect3DSurface, (%eax)\n"
         "cmpb $0, 0x2c(%eax)\n" /* line 282 */
         "je .Lf1d6f4_0001d718\n"
         "movl 0x28(%eax), %edx\n" /* line 284 */
@@ -90,7 +90,7 @@ void ZN16CDirect3DSurfaceD0Ev(void) /* CDirect3DSurface_~CDirect3DSurface */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x32fb08, (%ebx)\n" /* this */
+        "movl $vtbl_CDirect3DSurface, (%ebx)\n" /* this */
         "cmpb $0, 0x2c(%ebx)\n" /* line 282 | this */
         "je .Lf1d71a_0001d73f\n"
         "movl 0x28(%ebx), %edx\n" /* line 284 | this */
@@ -472,7 +472,7 @@ void CDirect3DSurface_CDirect3DSurface(const CDirect3DSurface * _this, SurfaceTy
         "movl 8(%ebp), %ebx\n" /* this */
         "movl 0x18(%ebp), %ecx\n" /* Width */
         "movl 0x28(%ebp), %esi\n" /* pOpenGLTextureInfo */
-        "movl $0x32fb08, (%ebx)\n" /* line 251 | this */
+        "movl $vtbl_CDirect3DSurface, (%ebx)\n" /* line 251 | this */
         "movl $0, 4(%ebx)\n" /* this */
         "movl 0xc(%ebp), %eax\n" /* s */
         "movl %eax, 8(%ebx)\n" /* this */
@@ -544,7 +544,7 @@ void CDirect3DSurface_CDirect3DSurface(const CDirect3DSurface * _this, SurfaceTy
         "calll __Znwm\n"
         "movl %eax, %esi\n" /* this */
         /* { scope 2 */
-        "movl 0x195ec3c, %eax\n" /* line 91 | this */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 91 | this */
         "addl $8, %eax\n" /* this */
         "movl %eax, (%esi)\n" /* this */
         /* { scope 3 */
@@ -554,7 +554,7 @@ void CDirect3DSurface_CDirect3DSurface(const CDirect3DSurface * _this, SurfaceTy
         "movl %eax, 4(%esp)\n" /* line 565 */
         "movl $1, (%esp)\n"
         "calll glGenTextures\n"
-        "movl 0x195ec0c, %eax\n" /* line 597 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 597 */
         "addl $0x66c, %eax\n"
         "movl %eax, -0x2c(%ebp)\n"
         /* { scope 4 */
@@ -699,7 +699,7 @@ void CDirect3DSurface_RecreateSurface(const CDirect3DSurface * _this)
         "calll __Znwm\n"
         "movl %eax, %esi\n" /* this */
         /* { scope 2 */
-        "movl 0x195ec3c, %eax\n" /* line 91 | this */
+        "movl imp___ZTV14COpenGLTexture, %eax\n" /* line 91 | this */
         "addl $8, %eax\n" /* this */
         "movl %eax, (%esi)\n" /* this */
         /* { scope 3 */
@@ -709,7 +709,7 @@ void CDirect3DSurface_RecreateSurface(const CDirect3DSurface * _this)
         "movl %eax, 4(%esp)\n" /* line 565 */
         "movl $1, (%esp)\n"
         "calll glGenTextures\n"
-        "movl 0x195ec0c, %eax\n" /* line 597 */
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n" /* line 597 */
         "addl $0x66c, %eax\n"
         "movl %eax, -0x2c(%ebp)\n"
         /* { scope 4 */

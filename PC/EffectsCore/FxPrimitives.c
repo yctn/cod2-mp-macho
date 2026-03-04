@@ -6405,7 +6405,7 @@ void Particle_ApplyImpact(const Particle * _this, const orientation_t *or_, floa
         ".Lfa4d30_000a4ec2:\n"
         "movl 0xa8(%ebx), %eax\n" /* line 616 */
         "andl $0xfffff7df, %eax\n"
-        "orl $g_effectVisArray+4352, %eax\n" /* line 617 */
+        "orl $0x01000000, %eax\n" /* line 617 */
         "movl %eax, 0xa8(%ebx)\n"
         /* } scope */
         "addl $0x34, %esp\n" /* line 657 */

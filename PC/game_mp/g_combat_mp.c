@@ -43,7 +43,7 @@ extern unsigned char bulletPriorityMap[19]; /* 0x0 */
 extern unsigned char riflePriorityMap[19]; /* 0x0 */
 extern char * modNames[15]; /* 0x0 */
 extern float g_fHitLocDamageMult[19]; /* 0x0 */
-static const char * g_HitLocNames[19]; /* g_HitLocNames */
+extern const char * g_HitLocNames[19]; /* g_HitLocNames */
 static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
 
 extern byte *g_entities_ptr; /* imp_g_entities - g_entities base */

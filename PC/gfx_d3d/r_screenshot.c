@@ -19,9 +19,9 @@ static int cubeShotGlob; /* cubeShotGlob */
 
 extern DxGlobals *dx;               /* imp_dx */
 extern volatile int *dxIter;        /* imp_alwaysfails */
-extern refimport_t *ri;             /* imp_ri */
+extern refimport_t ri;             /* imp_ri */
 extern vidConfig_t *vidConfig;      /* imp_vidConfig */
-extern r_global_permanent_t *rgp;   /* imp_rgp */
+extern r_global_permanent_t rgp;    /* imp_rgp */
 extern int **r_gammaSetting;        /* imp_r_overbrightBits */
 
 void R_BeginCubemapShot(const int pixelWidthHeight, const int pixelBorder);
@@ -193,7 +193,7 @@ void R_EndCubemapShot(const CubemapShot shotIndex)
 
     res = dx->cubemapShotRes;
     bufferSizeInBytes = res * res * 4;
-    buffer = (byte *)ri->Z_MallocInternal(bufferSizeInBytes);
+    buffer = (byte *)ri.Z_MallocInternal(bufferSizeInBytes);
 
     ((byte **)&cubeShotGlob)[shotIndex - 1] = buffer;
 
@@ -340,10 +340,10 @@ static byte * R_TakeResampledScreenshot(int width, int height, int bytesPerPixel
     }
 
     allocSize = maxWidth * maxHeight * bytesPerPixel + headerSize;
-    buffer = (byte *)ri->Z_MallocInternal(allocSize);
+    buffer = (byte *)ri.Z_MallocInternal(allocSize);
 
     if (!R_GetFrontBufferData(vidConfig->width, vidConfig->height, bytesPerPixel, buffer + headerSize)) {
-        ri->Z_FreeInternal(buffer);
+        ri.Z_FreeInternal(buffer);
         buffer = NULL;
         return buffer;
     }
@@ -415,8 +415,8 @@ void R_LevelShot(void)
     char checkname[256];
     byte *buffer;
 
-    if (rgp->world) {
-        sprintf(checkname, "levelshots/%s.tga", rgp->world->baseName);
+    if (rgp.world) {
+        sprintf(checkname, "levelshots/%s.tga", rgp.world->baseName);
     } else {
         sprintf(checkname, "levelshots/%s.tga", "screenshot");
     }
@@ -434,9 +434,9 @@ void R_LevelShot(void)
         buffer[14] = 128;    /* height low byte */
         buffer[16] = 24;     /* bits per pixel */
 
-        ri->FS_WriteFile(checkname, buffer, 0xC012);
-        ri->Z_FreeInternal(buffer);
-        ri->Printf(0, "Wrote %s\n", checkname);
+        ri.FS_WriteFile(checkname, buffer, 0xC012);
+        ri.Z_FreeInternal(buffer);
+        ri.Printf(0, "Wrote %s\n", checkname);
     }
 }
 
@@ -456,7 +456,7 @@ void R_SaveCubemapShot(const char *filename, const CubemapShot shotIndex, const 
 
     res = dx->cubemapShotRes;
     fileSize = res * res * 4 + 18;
-    targa = (byte *)ri->Z_MallocInternal(fileSize);
+    targa = (byte *)ri.Z_MallocInternal(fileSize);
 
     res = dx->cubemapShotRes;
 
@@ -536,9 +536,9 @@ void R_SaveCubemapShot(const char *filename, const CubemapShot shotIndex, const 
         }
     }
 
-    ri->FS_WriteFile(filename, targa, fileSize);
-    ri->Z_FreeInternal(targa);
-    ri->Z_FreeInternal(((byte **)&cubeShotGlob)[imgIndex]);
+    ri.FS_WriteFile(filename, targa, fileSize);
+    ri.Z_FreeInternal(targa);
+    ri.Z_FreeInternal(((byte **)&cubeShotGlob)[imgIndex]);
 }
 
 /* line 962 */
@@ -561,7 +561,7 @@ void R_LightingFromCubemapShots(const vec_t *baseColor)
     float heightF;
 
     pixelsPerFace = (int)dx->cubemapShotRes * (int)dx->cubemapShotRes;
-    linearColors = (float *)ri->Z_MallocInternal(pixelsPerFace * 9 * 8);
+    linearColors = (float *)ri.Z_MallocInternal(pixelsPerFace * 9 * 8);
 
     faceColors[0] = linearColors + pixelsPerFace * 3;
     faceColors[1] = faceColors[0] + pixelsPerFace * 3;
@@ -725,7 +725,7 @@ void R_LightingFromCubemapShots(const vec_t *baseColor)
         }
     }
 
-    ri->Z_FreeInternal(linearColors);
+    ri.Z_FreeInternal(linearColors);
 }
 
 /* line 566 */
@@ -750,36 +750,36 @@ void R_ScreenshotCommand(GfxScreenshotType type)
     }
 
     /* Check for "levelshot" argument */
-    arg = ri->Cmd_Argv(1);
+    arg = ri.Cmd_Argv(1);
     if (strcmp(arg, "levelshot") == 0) {
         R_LevelShot();
         return;
     }
 
     /* Check for "savegame" argument with custom filename */
-    arg = ri->Cmd_Argv(1);
-    if (strcmp(arg, "savegame") == 0 && ri->Cmd_Argc() >= 3) {
-        arg = ri->Cmd_Argv(2);
+    arg = ri.Cmd_Argv(1);
+    if (strcmp(arg, "savegame") == 0 && ri.Cmd_Argc() >= 3) {
+        arg = ri.Cmd_Argv(2);
         if (arg[0] != '\0') {
             /* Save as JPG with custom name */
-            sprintf(jpgFilename, "%s.jpg", ri->Cmd_Argv(2));
+            sprintf(jpgFilename, "%s.jpg", ri.Cmd_Argv(2));
             pixels = R_TakeResampledScreenshot(512, 512, 3, 0);
             if (!pixels) {
                 return;
             }
             R_SaveJpg(jpgFilename, 90, 512, 512, pixels);
-            ri->Z_FreeInternal(pixels);
+            ri.Z_FreeInternal(pixels);
             return;
         }
     }
 
     /* Check for "silent" argument */
-    arg = ri->Cmd_Argv(1);
+    arg = ri.Cmd_Argv(1);
     silent = (strcmp(arg, "silent") == 0);
 
     /* Check for custom filename (argc == 2) */
-    if (ri->Cmd_Argc() == 2 && !silent) {
-        Com_sprintf(filename, 256, "screenshots/%s.%s", ri->Cmd_Argv(1), extension);
+    if (ri.Cmd_Argc() == 2 && !silent) {
+        Com_sprintf(filename, 256, "screenshots/%s.%s", ri.Cmd_Argv(1), extension);
     } else {
         /* Auto-number screenshots */
         int num = lastNumber;
@@ -790,7 +790,7 @@ void R_ScreenshotCommand(GfxScreenshotType type)
                 } else {
                     Com_sprintf(filename, 256, "screenshots/shot%04i.%s", num, extension);
                 }
-                if (!ri->FS_FileExists(filename)) {
+                if (!ri.FS_FileExists(filename)) {
                     break;
                 }
                 num++;
@@ -799,7 +799,7 @@ void R_ScreenshotCommand(GfxScreenshotType type)
         }
 
         if (lastNumber > 9998) {
-            ri->Printf(0, "ScreenShot: Couldn't create a file\n");
+            ri.Printf(0, "ScreenShot: Couldn't create a file\n");
             return;
         }
         lastNumber++;
@@ -810,18 +810,18 @@ void R_ScreenshotCommand(GfxScreenshotType type)
         width = vidConfig->width;
         height = vidConfig->height;
 
-        buffer = (byte *)ri->Z_MallocInternal(width * height * 3);
+        buffer = (byte *)ri.Z_MallocInternal(width * height * 3);
         if (R_GetFrontBufferData(width, height, 3, buffer)) {
             R_SaveJpg(filename, 90, width, height, buffer);
         }
-        ri->Z_FreeInternal(buffer);
+        ri.Z_FreeInternal(buffer);
     } else if (type == 1) {
         /* TGA screenshot */
         width = vidConfig->width;
         height = vidConfig->height;
 
         fileSize = width * height * 3 + 18;
-        buffer = (byte *)ri->Z_MallocInternal(fileSize);
+        buffer = (byte *)ri.Z_MallocInternal(fileSize);
 
         /* Write TGA header */
         *(int *)(buffer + 0) = 0;
@@ -838,12 +838,12 @@ void R_ScreenshotCommand(GfxScreenshotType type)
         buffer[17] = 32;
 
         if (R_GetFrontBufferData(width, height, 3, buffer + 18)) {
-            ri->FS_WriteFile(filename, buffer, fileSize);
+            ri.FS_WriteFile(filename, buffer, fileSize);
         }
-        ri->Z_FreeInternal(buffer);
+        ri.Z_FreeInternal(buffer);
     }
 
     if (!silent) {
-        ri->Printf(0, "Wrote %s\n", filename);
+        ri.Printf(0, "Wrote %s\n", filename);
     }
 }

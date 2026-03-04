@@ -685,7 +685,7 @@ void PlayerCmd_pingPlayer(scr_entref_t entref)
         "je .Lf1be036_001be0ae\n"
         ".Lf1be036_001be06c:\n"
         "movl 0x158(%ebx), %eax\n" /* line 549 | pSelf */
-        "orl $scrMemTreeGlob+39168, 0xa0(%eax)\n"
+        "orl $0x00400000, 0xa0(%eax)\n"
         "movl 0x158(%ebx), %edx\n" /* line 550 | pSelf */
         "movl imp_level, %eax\n"
         "movl 0x1ec(%eax), %eax\n"

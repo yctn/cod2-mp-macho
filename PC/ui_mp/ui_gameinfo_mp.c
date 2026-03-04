@@ -23,7 +23,7 @@ extern void Com_BeginParseSession(const char *name);
 extern void Com_EndParseSession(void);
 extern int I_stricmp(const char *s1, const char *s2);
 
-extern byte *uiInfo_ptr; /* imp_sharedUiInfo */
+extern unsigned char sharedUiInfo[]; /* BSS 115392-byte struct */
 
 static int ui_numArenas; /* ui_numArenas */
 static char * ui_arenaInfos[64]; /* ui_arenaInfos */
@@ -122,7 +122,7 @@ inflate_blocks_statef UI_LoadArenas(void)
 
     ui_numArenas = 0;
 
-    uiInfo = *(byte **)&uiInfo_ptr;
+    uiInfo = (byte *)sharedUiInfo;
     *(int *)(uiInfo + 0x1350) = 0;
 
     /* Get list of arena files */
@@ -159,7 +159,7 @@ inflate_blocks_statef UI_LoadArenas(void)
         return *(inflate_blocks_statef *)&uiInfo;
 
     /* Process each arena */
-    uiInfo = *(byte **)&uiInfo_ptr;
+    uiInfo = (byte *)sharedUiInfo;
     for (n = 0; n < ui_numArenas; n++) {
         arenaIdx = *(int *)(uiInfo + 0x1350);
 
@@ -252,7 +252,7 @@ inflate_blocks_statef UI_LoadArenas(void)
             }
         }
 
-        uiInfo = *(byte **)&uiInfo_ptr;
+        uiInfo = (byte *)sharedUiInfo;
         arenaIdx = *(int *)(uiInfo + 0x1350);
         *(int *)(uiInfo + 0x1350) = arenaIdx + 1;
         if (arenaIdx + 1 > 0x7f)

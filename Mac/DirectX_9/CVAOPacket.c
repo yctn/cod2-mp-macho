@@ -49,7 +49,7 @@ void CVAOPacket_CVAOPacket(const CVAOPacket * _this)
         "movl 8(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll COpenGLVAO_COpenGLVAO\n"
-        "movl $0x3322a8, (%ebx)\n" /* this */
+        "movl $vtbl_CVAOPacket, (%ebx)\n" /* this */
         "addl $0x14, %esp\n" /* line 31 */
         "popl %ebx\n"
         "popl %ebp\n"
@@ -65,7 +65,7 @@ void ZN10CVAOPacketD2Ev(void) /* CVAOPacket_~CVAOPacket */
         "pushl %ebp\n" /* line 35 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x3322a8, (%eax)\n"
+        "movl $vtbl_CVAOPacket, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 37 | this */
         "popl %ebp\n"
         "jmp ZN10COpenGLVAOD2Ev\n"
@@ -80,7 +80,7 @@ void ZN10CVAOPacketD1Ev(void) /* CVAOPacket_~CVAOPacket */
         "pushl %ebp\n" /* line 35 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x3322a8, (%eax)\n"
+        "movl $vtbl_CVAOPacket, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 37 | this */
         "popl %ebp\n"
         "jmp ZN10COpenGLVAOD2Ev\n"
@@ -97,7 +97,7 @@ void ZN10CVAOPacketD0Ev(void) /* CVAOPacket_~CVAOPacket */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x3322a8, (%ebx)\n" /* this */
+        "movl $vtbl_CVAOPacket, (%ebx)\n" /* this */
         "movl %ebx, (%esp)\n" /* line 37 | this */
         "calll ZN10COpenGLVAOD2Ev\n"
         "movl %ebx, 8(%ebp)\n" /* this */
@@ -131,7 +131,7 @@ void CVAOPacket_SetVAO(const CVAOPacket * _this, int bIsCached)
         "movzbl %al, %eax\n"
         "movl %eax, 8(%esp)\n"
         "movl %ebx, 4(%esp)\n" /* this */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetVAO\n"
         "addl $0x14, %esp\n" /* line 169 */
@@ -161,7 +161,7 @@ void CVAOPacket_SetGenericVAO(int IsFixedFunction, int ForceValidation)
         "shll $4, %eax\n"
         "addl $__ZN10CVAOPacket14sGenericPacketE, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetVAO\n"
         "movl __ZN10CVAOPacket14sCurrentPacketE, %edx\n" /* line 198 */
@@ -186,19 +186,19 @@ void CVAOPacket_InitializeGenericVAO(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
-        "movl $0, 0x1218c84\n" /* line 64 */
-        "movl $0, 0x1218c88\n" /* line 72 */
-        "movl $0, 0x1218c8c\n" /* line 73 */
-        "movl $0x1218c90, (%esp)\n" /* line 75 */
+        "movl $0, __ZN10CVAOPacket14sGenericPacketE+4\n" /* line 64 */
+        "movl $0, __ZN10CVAOPacket14sGenericPacketE+8\n" /* line 72 */
+        "movl $0, __ZN10CVAOPacket14sGenericPacketE+12\n" /* line 73 */
+        "movl $__ZN10CVAOPacket14sGenericPacketE+16, (%esp)\n" /* line 75 */
         "calll CBaseVA_Reset\n"
-        "movl $0x1218ca8, (%esp)\n" /* line 76 */
+        "movl $__ZN10CVAOPacket14sGenericPacketE+40, (%esp)\n" /* line 76 */
         "calll CBaseVA_Reset\n"
-        "movl $0x1218cc0, (%esp)\n" /* line 77 */
+        "movl $__ZN10CVAOPacket14sGenericPacketE+64, (%esp)\n" /* line 77 */
         "calll CBaseVA_Reset\n"
-        "movl $0x1218cd8, (%esp)\n" /* line 78 */
+        "movl $__ZN10CVAOPacket14sGenericPacketE+88, (%esp)\n" /* line 78 */
         "calll CBaseVA_Reset\n"
         "xorl %esi, %esi\n"
-        "movl $0x1218cf0, %ebx\n"
+        "movl $__ZN10CVAOPacket14sGenericPacketE+112, %ebx\n"
         ".Lf113cb4_00113d11:\n"
         "movl %ebx, (%esp)\n" /* line 83 */
         "calll CBaseVA_Reset\n"
@@ -210,12 +210,12 @@ void CVAOPacket_InitializeGenericVAO(void)
         "movl $0x130, %eax\n"
         ".Lf113cb4_00113d2b:\n"
         "movb $1, __ZN10CVAOPacket14sGenericPacketE(%eax)\n" /* line 95 */
-        "movb $0, 0x1218c81(%eax)\n" /* line 44 */
-        "movl $4, 0x1218c84(%eax)\n" /* line 45 */
-        "movl $0x1406, 0x1218c88(%eax)\n" /* line 46 */
-        "movb $0, 0x1218c8c(%eax)\n" /* line 47 */
-        "movl $0, 0x1218c90(%eax)\n" /* line 48 */
-        "movl $0, 0x1218c94(%eax)\n" /* line 49 */
+        "movb $0, __ZN10CVAOPacket14sGenericPacketE+1(%eax)\n" /* line 44 */
+        "movl $4, __ZN10CVAOPacket14sGenericPacketE+4(%eax)\n" /* line 45 */
+        "movl $0x1406, __ZN10CVAOPacket14sGenericPacketE+8(%eax)\n" /* line 46 */
+        "movb $0, __ZN10CVAOPacket14sGenericPacketE+12(%eax)\n" /* line 47 */
+        "movl $0, __ZN10CVAOPacket14sGenericPacketE+16(%eax)\n" /* line 48 */
+        "movl $0, __ZN10CVAOPacket14sGenericPacketE+20(%eax)\n" /* line 49 */
         "addl $1, %edx\n" /* line 88 */
         "addl $0x18, %eax\n"
         "cmpl $0x10, %edx\n"
@@ -233,7 +233,7 @@ void CVAOPacket_InitializeGenericVAO(void)
         "shll $4, %eax\n"
         "addl $__ZN10CVAOPacket14sGenericPacketE, %eax\n"
         "movl %eax, 4(%esp)\n"
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_SetVAO\n"
         "movl __ZN10CVAOPacket14sCurrentPacketE, %edx\n" /* line 198 */
@@ -269,10 +269,10 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length)
         "movl 0xc(%ebp), %eax\n" /* line 229 | Length */
         "addl %edi, %eax\n" /* p */
         "movl %eax, -0x1c(%ebp)\n" /* pEnd */
-        "movl 0x1218f3c, %esi\n" /* line 582 */
+        "movl __ZN10CVAOPacket11sAllPacketsE+12, %esi\n" /* line 582 */
         /* { scope 2 */
         ".Lf113df2_00113e0c:\n"
-        "movl $0x1218f34, %eax\n" /* line 231 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, %eax\n" /* line 231 */
         "cmpl %esi, %eax\n"
         "je .Lf113df2_00113e55\n"
         /* { scope 3 */
@@ -303,7 +303,7 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length)
         "calll __ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base\n"
         "movl %eax, %esi\n"
         /* } scope */
-        "movl $0x1218f34, %eax\n" /* line 231 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, %eax\n" /* line 231 */
         "cmpl %esi, %eax\n"
         "jne .Lf113df2_00113e15\n"
         /* } scope */
@@ -319,14 +319,14 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length)
         /* { scope 2 */
         /* { scope 3 */
         ".Lf113df2_00113e5d:\n"
-        "movl 0x195f24c, %ecx\n" /* line 286 */
+        "movl imp_g_VAOID, %ecx\n" /* line 286 */
         "movl 4(%ebx), %edx\n" /* Packet */
         "movl (%ecx), %eax\n"
         "cmpl (%edx), %eax\n"
         "je .Lf113df2_00113ec8\n"
         ".Lf113df2_00113e6c:\n"
         "movl %edx, 4(%esp)\n" /* line 290 */
-        "movl 0x195ec0c, %eax\n"
+        "movl imp___ZN7COpenGL7sOpenGLE, %eax\n"
         "movl %eax, (%esp)\n"
         "calll COpenGL_ReleaseVAOBinding\n"
         "movl $0, 4(%ebx)\n" /* line 292 | Packet */
@@ -334,13 +334,13 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length)
         "movl %esi, (%esp)\n" /* line 189 */
         "calll __ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base\n"
         "movl %eax, %esi\n"
-        "movl $0x1218f34, 4(%esp)\n" /* line 994 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, 4(%esp)\n" /* line 994 */
         "movl %ebx, (%esp)\n" /* __p */
         "calll __ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_\n"
         "movl %eax, %ebx\n" /* __p */
         "leal 0x14(%eax), %eax\n" /* line 69 | this */
         /* { scope 4 */
-        "movl $0x3322a8, 0x14(%ebx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%ebx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -348,7 +348,7 @@ void CVAOPacket_ReleaseBuffer(const void * p, UINT32 Length)
         "movl %ebx, (%esp)\n" /* line 94 */
         "calll __ZdlPv\n"
         /* } scope */
-        "subl $1, 0x1218f44\n" /* line 996 */
+        "subl $1, __ZN10CVAOPacket11sAllPacketsE+20\n" /* line 996 */
         "jmp .Lf113df2_00113e0c\n"
         ".Lf113df2_00113ec8:\n"
         "movl $0xffffffff, (%ecx)\n" /* line 288 */
@@ -538,13 +538,13 @@ bool CVAOPacket_IsCached(CVAOPacket *v)
         "addl $0x18, %edx\n"
         "subl $1, %ebx\n" /* line 99 | j */
         "jne .Lf113edc_00114072\n"
-        "movl $0x1218f34, 4(%esp)\n" /* line 994 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, 4(%esp)\n" /* line 994 */
         "movl %esi, (%esp)\n"
         "calll __ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_\n"
         "movl %eax, %ebx\n" /* __p */
         "leal 0x14(%eax), %eax\n" /* line 69 | this */
         /* { scope 3 */
-        "movl $0x3322a8, 0x14(%ebx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%ebx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -552,7 +552,7 @@ bool CVAOPacket_IsCached(CVAOPacket *v)
         "movl %ebx, (%esp)\n" /* line 94 | j */
         "calll __ZdlPv\n"
         /* } scope */
-        "subl $1, 0x1218f44\n" /* line 996 */
+        "subl $1, __ZN10CVAOPacket11sAllPacketsE+20\n" /* line 996 */
         "movl $1, %eax\n"
         /* } scope */
         /* } scope */
@@ -599,10 +599,10 @@ void CVAOPacket_Cache(CVAOPacket *v)
         "movl %ebx, 4(%esp)\n" /* line 348 | v */
         "movl $__ZN10CVAOPacket11sAllPacketsE, (%esp)\n"
         "calll ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE12insert_equalERKS3_\n"
-        "movl $0x3322a8, -0x2c8(%ebp)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, -0x2c8(%ebp)\n" /* line 35 */
         "movl %esi, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
-        "movl $0x3322a8, -0x57c(%ebp)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, -0x57c(%ebp)\n" /* line 35 */
         "movl %edi, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -614,11 +614,11 @@ void CVAOPacket_Cache(CVAOPacket *v)
         "retl\n"
         "movl %eax, %ebx\n" /* v */
         /* { scope 1 */
-        "movl $0x3322a8, -0x2c8(%ebp)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, -0x2c8(%ebp)\n" /* line 35 */
         "movl %esi, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         ".Lf11410e_001141b4:\n"
-        "movl $0x3322a8, -0x57c(%ebp)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, -0x57c(%ebp)\n" /* line 35 */
         "movl %edi, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         "movl %ebx, (%esp)\n" /* line 69 */
@@ -638,7 +638,7 @@ void CVAOPacket_Shutdown(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
-        "movl 0x1218f38, %ebx\n" /* line 462 */
+        "movl __ZN10CVAOPacket11sAllPacketsE+8, %ebx\n" /* line 462 */
         "testl %ebx, %ebx\n" /* line 1054 */
         "jne .Lf1141d2_001141e8\n"
         "jmp .Lf1141d2_0011421c\n"
@@ -651,7 +651,7 @@ void CVAOPacket_Shutdown(void)
         "calll ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE8_M_eraseEPSt13_Rb_tree_nodeIS3_E\n"
         "movl 8(%ebx), %esi\n" /* line 489 */
         "leal 0x14(%ebx), %eax\n" /* line 69 */
-        "movl $0x3322a8, 0x14(%ebx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%ebx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         "movl %ebx, (%esp)\n" /* line 94 */
@@ -659,10 +659,10 @@ void CVAOPacket_Shutdown(void)
         "testl %esi, %esi\n" /* line 1054 */
         "jne .Lf1141d2_001141e6\n"
         ".Lf1141d2_0011421c:\n"
-        "movl $0x1218f34, 0x1218f3c\n" /* line 667 */
-        "movl $0, 0x1218f38\n" /* line 668 */
-        "movl $0x1218f34, 0x1218f40\n" /* line 669 */
-        "movl $0, 0x1218f44\n" /* line 670 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+12\n" /* line 667 */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+8\n" /* line 668 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+16\n" /* line 669 */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+20\n" /* line 670 */
         "movl $0, __ZN10CVAOPacket10sVAOStatusE\n" /* line 51 */
         "addl $0x10, %esp\n" /* line 214 */
         "popl %ebx\n"
@@ -700,7 +700,7 @@ void __static_initialization_and_destruction_0(void)
         "movl $__ZN10CVAOPacket14sGenericPacketE, (%esp)\n"
         "movl __ZN10CVAOPacket14sGenericPacketE, %eax\n"
         "calll *(%eax)\n"
-        "movl 0x1218f38, %ebx\n" /* line 462 */
+        "movl __ZN10CVAOPacket11sAllPacketsE+8, %ebx\n" /* line 462 */
         "testl %ebx, %ebx\n" /* line 1054 */
         "jne .Lf11425e_0011429a\n"
         "jmp .Lf11425e_0011426e\n"
@@ -713,7 +713,7 @@ void __static_initialization_and_destruction_0(void)
         "calll ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE8_M_eraseEPSt13_Rb_tree_nodeIS3_E\n"
         "movl 8(%ebx), %esi\n" /* line 489 */
         "leal 0x14(%ebx), %eax\n" /* line 69 */
-        "movl $0x3322a8, 0x14(%ebx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%ebx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         "movl %ebx, (%esp)\n" /* line 94 */
@@ -726,14 +726,14 @@ void __static_initialization_and_destruction_0(void)
         "popl %ebp\n"
         "retl\n"
         ".Lf11425e_001142d5:\n"
-        "movl $0, 0x1218f44\n" /* line 404 */
-        "movl $0, 0x1218f34\n" /* line 406 */
-        "movl $0, 0x1218f38\n" /* line 407 */
-        "movl $0x1218f34, 0x1218f3c\n" /* line 408 */
-        "movl $0x1218f34, 0x1218f40\n" /* line 409 */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+20\n" /* line 404 */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+4\n" /* line 406 */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+8\n" /* line 407 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+12\n" /* line 408 */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+16\n" /* line 409 */
         "movl $__ZN10CVAOPacket14sGenericPacketE, (%esp)\n" /* line 29 */
         "calll COpenGLVAO_COpenGLVAO\n"
-        "movl $0x3322a8, __ZN10CVAOPacket14sGenericPacketE\n"
+        "movl $vtbl_CVAOPacket, __ZN10CVAOPacket14sGenericPacketE\n"
         "addl $0x10, %esp\n" /* line 300 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -1049,7 +1049,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl 8(%ebx), %esi\n" /* line 489 | __p */
         "leal 0x14(%ebx), %eax\n" /* line 69 | this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%ebx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%ebx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1063,7 +1063,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl 8(%edi), %ebx\n" /* line 489 | __p */
         "leal 0x14(%edi), %eax\n" /* line 69 | this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%edi)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%edi)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1082,7 +1082,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "addl $0x14, %eax\n" /* line 69 | this */
         /* { scope 2 */
         "movl -0x30(%ebp), %edx\n" /* line 35 | __p */
-        "movl $0x3322a8, 0x14(%edx)\n"
+        "movl $vtbl_CVAOPacket, 0x14(%edx)\n"
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1102,7 +1102,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl %edx, %eax\n" /* line 69 | this */
         "addl $0x14, %eax\n" /* this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%edx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%edx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1122,7 +1122,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl %edx, %eax\n" /* line 69 | this */
         "addl $0x14, %eax\n" /* this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%edx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%edx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1147,7 +1147,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl %edx, %eax\n" /* line 69 | this */
         "addl $0x14, %eax\n" /* this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%edx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%edx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1166,7 +1166,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl %edx, %eax\n" /* line 69 | this */
         "addl $0x14, %eax\n" /* this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%edx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%edx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1187,7 +1187,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl %edx, %eax\n" /* line 69 | this */
         "addl $0x14, %eax\n" /* this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%edx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%edx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */
@@ -1206,7 +1206,7 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "movl %edx, %eax\n" /* line 69 | this */
         "addl $0x14, %eax\n" /* this */
         /* { scope 2 */
-        "movl $0x3322a8, 0x14(%edx)\n" /* line 35 */
+        "movl $vtbl_CVAOPacket, 0x14(%edx)\n" /* line 35 */
         "movl %eax, (%esp)\n" /* line 37 */
         "calll ZN10COpenGLVAOD2Ev\n"
         /* } scope */

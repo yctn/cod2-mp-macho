@@ -35,8 +35,8 @@ extern struct XModel * DObjGetModel(const struct DObj_s *obj, int modelIndex);
 extern const struct trXSkin_t * XModelGetSkins(const struct XModel *model);
 extern struct XModel * XModelPrecache(const char *name, Alloc_t Alloc, Alloc_t AllocColl);
 extern Bool R_ValidXModelName(const char *name);
-extern refimport_t *ri; /* imp_ri */
-static const int boxVerts[24][3]; /* boxVerts */
+extern refimport_t ri; /* imp_ri */
+extern const int boxVerts[24][3]; /* boxVerts */
 
 static void * Hunk_AllocXModelPrecache(int size);
 static void * Hunk_AllocXModelPrecacheColl(int size);
@@ -88,7 +88,7 @@ static void * Hunk_AllocXModelPrecacheColl(int size)
 struct XModel * R_RegisterModel(const char *name)
 {
     if (!R_ValidXModelName(name)) {
-        ri->Printf(2, "R_RegisterModel: Invalid model name '%s'\n", name);
+        ri.Printf(2, "R_RegisterModel: Invalid model name '%s'\n", name);
         return NULL;
     }
     return XModelPrecache(name + 7, Hunk_AllocXModelPrecache, Hunk_AllocXModelPrecacheColl);

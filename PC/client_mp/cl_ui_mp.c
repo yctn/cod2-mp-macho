@@ -56,7 +56,7 @@ int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2);
 void GetClientState(uiClientState_t *state)
 {
     byte *cls = *(byte **)imp_clc;
-    byte *clc = *(byte **)imp_cls;
+    byte *clc = (byte *)imp_cls;
     byte *cl = *(byte **)imp_cl;
 
     *(int *)((byte *)state + 4) = *(int *)(cls + 0x24);
@@ -69,7 +69,7 @@ void GetClientState(uiClientState_t *state)
 /* line 41 */
 void LAN_ResetPings(int source)
 {
-    byte *base = *(byte **)imp_cls;
+    byte *base = (byte *)imp_cls;
     byte *server;
     int count;
 
@@ -97,7 +97,7 @@ void LAN_ResetPings(int source)
 /* line 82 */
 int LAN_GetServerCount(int source)
 {
-    byte *base = *(byte **)imp_cls;
+    byte *base = (byte *)imp_cls;
     if (source == 0)
         return *(int *)(base + 0x138);
     if (source == 1)
@@ -112,14 +112,14 @@ qboolean LAN_WaitServerResponse(int source)
 {
     if (source != 1)
         return 0;
-    return *(int *)(*(byte **)imp_cls + 0x453c);
+    return *(int *)((byte *)imp_cls + 0x453c);
 }
 
 /* line 124 */
 void LAN_GetServerInfo(int source, int n, char *buf, int buflen)
 {
     char info[1024];
-    byte *base = *(byte **)imp_cls;
+    byte *base = (byte *)imp_cls;
     byte *server = NULL;
 
     info[0] = '\0';
@@ -176,7 +176,7 @@ fail:
 /* line 200 */
 int LAN_GetServerPing(int source, int n)
 {
-    byte *base = *(byte **)imp_cls;
+    byte *base = (byte *)imp_cls;
     byte *server;
 
     if (source == 0) {
@@ -203,7 +203,7 @@ int LAN_GetServerPing(int source, int n)
 /* line 419 */
 void LAN_MarkServerDirty(int source, int n, qboolean dirty)
 {
-    byte *base = *(byte **)imp_cls;
+    byte *base = (byte *)imp_cls;
     int count;
     byte *ptr;
     int i;
@@ -246,7 +246,7 @@ void LAN_MarkServerDirty(int source, int n, qboolean dirty)
 /* line 490 */
 int LAN_ServerIsDirty(int source, int n)
 {
-    byte *base = *(byte **)imp_cls;
+    byte *base = (byte *)imp_cls;
 
     if (source == 0) {
         if ((unsigned)n > 0x7f)
@@ -297,18 +297,18 @@ void Key_GetBindingBuf(int keynum, char *buf, int buflen)
 /* line 582 */
 int Key_GetCatcher(void)
 {
-    return *(int *)(*(int *)(*(int *)imp_cl) + 4);
+    return *(int *)((char *)*(void **)imp_cl + 4);
 }
 
 /* line 593 */
 void Key_SetCatcher(int catcher)
 {
-    byte *ptr = *(byte **)(*(int *)imp_cl);
+    byte *ptr = (byte *)*(void **)imp_cl;
     if (*(int *)(ptr + 4) & 1)
         *(int *)(ptr + 4) = catcher | 1;
     else
         *(int *)(ptr + 4) = catcher;
-    ptr = *(byte **)(*(int *)imp_cl);
+    ptr = (byte *)*(void **)imp_cl;
     if (!(*(int *)(ptr + 4) & 8))
         *(byte *)(ptr + 8) = 0;
 }
@@ -355,7 +355,7 @@ qboolean GetClientname(int index, char *buf, int size)
 
     *buf = '\0';
 
-    cl = *(byte **)*(int *)imp_cl;
+    cl = (byte *)*(void **)imp_cl;
     if (!*(int *)(cl + 0x18))
         return 0;
 
@@ -394,13 +394,13 @@ int UI_PlayLocalSoundAliasByName(const char *aliasname)
 /* line 884 */
 qboolean UI_ClientIsInGame(void)
 {
-    return *(int *)(*(int *)(*(int *)imp_clc)) == 8;
+    return *(int *)*(void **)imp_clc == 8;
 }
 
 /* line 899 */
 qboolean CL_ShutdownUI(void)
 {
-    byte *clc = *(byte **)imp_cls;
+    byte *clc = (byte *)imp_cls;
     byte *cl;
 
     if (!*(int *)(clc + 0x110))
@@ -408,7 +408,7 @@ qboolean CL_ShutdownUI(void)
 
     Com_UnloadSoundAliases(0);
 
-    cl = *(byte **)*(int *)imp_cl;
+    cl = (byte *)*(void **)imp_cl;
     *(int *)(cl + 4) &= ~8;
     *(byte *)(cl + 8) = 0;
 
@@ -423,7 +423,7 @@ qboolean CL_ShutdownUI(void)
 /* line 935 */
 void CL_InitUI(void)
 {
-    *(int *)(*(byte **)imp_cls + 0x110) = 1;
+    *(int *)((byte *)imp_cls + 0x110) = 1;
     CL_SwitchToLocalClient(0);
     UI_Init();
     CL_SwitchToLocalClient(0);
@@ -433,7 +433,7 @@ void CL_InitUI(void)
 /* line 963 */
 qboolean UI_checkKeyExec(int key)
 {
-    if (!*(int *)(*(byte **)imp_cls + 0x110))
+    if (!*(int *)((byte *)imp_cls + 0x110))
         return 0;
     return UI_CheckExecKey(key);
 }

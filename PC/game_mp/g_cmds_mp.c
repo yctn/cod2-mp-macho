@@ -10,7 +10,7 @@
  */
 
 static char line[1024]; /* line */
-static char * gc_orders[7]; /* gc_orders */
+extern char * gc_orders[7]; /* gc_orders */
 
 void DeathmatchScoreboardMessage(gentity_t *ent);
 void Cmd_Score_f(gentity_t *ent);
@@ -1853,7 +1853,7 @@ void StopFollowing(gentity_t *ent)
         "movl %eax, -0x6c(%ebp)\n" /* vMaxs */
         "movl %eax, -0x68(%ebp)\n" /* line 192 */
         "movl %eax, -0x64(%ebp)\n" /* line 193 */
-        "movl $s_debugFrameGlob+123281, 0x18(%esp)\n" /* line 700 */
+        "movl $0x00810011, 0x18(%esp)\n" /* line 700 */
         "movl $0x3ff, 0x14(%esp)\n"
         "leal -0x54(%ebp), %eax\n" /* vEnd */
         "movl %eax, 0x10(%esp)\n"

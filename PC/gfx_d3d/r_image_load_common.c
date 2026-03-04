@@ -11,8 +11,7 @@ extern void Image_Create3DTexture(GfxImage *image, int width, int height, int de
 extern void Image_CreateCubeTexture(GfxImage *image, int edgeLen, int mipmapCount, DWORD usage, D3DFORMAT imageFormat, D3DPOOL memPool);
 extern void Image_TrackTexture(GfxImage *image, int imageFlags, D3DFORMAT format, int width, int height, int depth);
 
-extern int *g_dxIter;   /* imp_alwaysfails - pointer to device lost indicator */
-extern byte *g_dx;       /* imp_dx - DxGlobals pointer */
+/* g_dxIter was imp_alwaysfails, g_dx was imp_dx */
 
 /* Vtable indices for D3D9 texture interfaces (i386 32-bit) */
 #define VTABLE_LOCKRECT    19  /* 0x4C / 4 */
@@ -329,7 +328,7 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
             texture = (void *)image->texture.volmap;
             vtable = *(void ***)texture;
             ((LockBoxFn)vtable[VTABLE_LOCKRECT])(texture, mipLevel, &lockedBox, 0, 0);
-        } while (*g_dxIter);
+        } while (*(volatile int *)imp_alwaysfails);
 
         dst = (byte *)lockedBox.pBits;
 
@@ -381,14 +380,14 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
             texture = (void *)image->texture.volmap;
             vtable = *(void ***)texture;
             ((UnlockBoxFn)vtable[VTABLE_UNLOCKRECT])(texture, mipLevel);
-        } while (*g_dxIter);
+        } while (*(volatile int *)imp_alwaysfails);
 
         return;
     }
 
     if (image->mapType == 5) {
         /* line 305: Skip non-zero mip levels if device doesn't support them */
-        if (mipLevel != 0 && *(byte *)((*(int *)(void *)g_dx) + 0x2d7b) == 0) {
+        if (mipLevel != 0 && *(byte *)((*(int *)imp_dx) + 0x2d7b) == 0) {
             return;
         }
         /* Fall through to default 2D/cube upload path */
@@ -404,14 +403,14 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
             texture = (void *)image->texture.map;
             vtable = *(void ***)texture;
             ((LockRectFn)vtable[VTABLE_LOCKRECT])(texture, mipLevel, &lockedRect, 0, 0);
-        } while (*g_dxIter);
+        } while (*(volatile int *)imp_alwaysfails);
     } else {
         /* line 141: Cubemap/default path - LockRect with face parameter */
         do {
             texture = (void *)image->texture.cubemap;
             vtable = *(void ***)texture;
             ((LockRectCubeFn)vtable[VTABLE_LOCKRECT])(texture, face, mipLevel, &lockedRect, 0, 0);
-        } while (*g_dxIter);
+        } while (*(volatile int *)imp_alwaysfails);
     }
 
     dst = (byte *)lockedRect.pBits;
@@ -457,13 +456,13 @@ unlock_2d:
             texture = (void *)image->texture.map;
             vtable = *(void ***)texture;
             ((UnlockRectFn)vtable[VTABLE_UNLOCKRECT])(texture, mipLevel);
-        } while (*g_dxIter);
+        } while (*(volatile int *)imp_alwaysfails);
     } else {
         /* Cubemap UnlockRect with face */
         do {
             texture = (void *)image->texture.cubemap;
             vtable = *(void ***)texture;
             ((UnlockRectCubeFn)vtable[VTABLE_UNLOCKRECT])(texture, face, mipLevel);
-        } while (*g_dxIter);
+        } while (*(volatile int *)imp_alwaysfails);
     }
 }

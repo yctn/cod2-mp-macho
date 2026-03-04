@@ -9,7 +9,7 @@ extern void CL_DrawStretchPicPhysical(float x, float y, float w, float h, float 
 extern int Dvar_GetInt(const char *dvarName);
 extern int Hunk_Used(void);
 
-extern byte *uiInfo_ptr; /* imp_sharedUiInfo */
+extern unsigned char sharedUiInfo[]; /* BSS 115392-byte struct */
 
 float UI_DrawHandlePic(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle hMaterial);
 float UI_DrawLoadBar(float x, float y, float w, float h, int horzAlign, int vertAlign, const vec_t *color, MaterialHandle material);
@@ -85,7 +85,7 @@ float UI_FillRectPhysical(float x, float y, float width, float height, const vec
     MaterialHandle whiteMaterial;
 
     /* line 140 */
-    whiteMaterial = *(MaterialHandle *)(uiInfo_ptr + 0x20);
+    whiteMaterial = *(MaterialHandle *)((byte *)sharedUiInfo + 0x20);
 
     if (whiteMaterial)
     {
@@ -100,7 +100,7 @@ float UI_FillRect(float x, float y, float width, float height, int horzAlign, in
     MaterialHandle whiteMaterial;
 
     /* line 154 */
-    whiteMaterial = *(MaterialHandle *)(uiInfo_ptr + 0x20);
+    whiteMaterial = *(MaterialHandle *)((byte *)sharedUiInfo + 0x20);
 
     if (whiteMaterial)
     {

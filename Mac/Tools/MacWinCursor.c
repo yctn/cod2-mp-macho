@@ -9,8 +9,8 @@
  */
 
 static EventLoopTimerRef sTimerRef; /* 0x334c14 */
-static HCURSOR sCurrentWinCursor; /* 0x3080a4 */
-static bool sVisibleCursor; /* 0x3080a0 */
+extern HCURSOR sCurrentWinCursor; /* 0x3080a4 */
+extern bool sVisibleCursor; /* 0x3080a0 */
 static TCursorList sCursorList; /* 0x334c00 */
 static WinCursor *sCurrentCursor; /* 0x334c0c */
 static HCURSOR sSavedWinCursor; /* 0x334c10 */

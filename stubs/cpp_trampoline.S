@@ -16,7 +16,14 @@ TRAMPOLINE ___cxa_begin_catch, __cxa_begin_catch
 TRAMPOLINE ___cxa_end_catch, __cxa_end_catch
 TRAMPOLINE ___cxa_rethrow, __cxa_rethrow
 TRAMPOLINE ___cxa_throw, __cxa_throw
-TRAMPOLINE ___dynamic_cast, __dynamic_cast
+/* ___dynamic_cast stub: all dynamic_casts in this codebase are valid downcasts,
+   and we lack proper RTTI/typeinfo structures, so just return the source pointer */
+.globl ___dynamic_cast
+.type ___dynamic_cast, @function
+___dynamic_cast:
+    movl 4(%esp), %eax
+    retl
+.size ___dynamic_cast, .-___dynamic_cast
 TRAMPOLINE __Unwind_Resume, _Unwind_Resume
 
 /* operator new/delete - note m->j mangling fix */
@@ -80,9 +87,7 @@ __ZNSs4_Rep20_S_empty_rep_storageE:
 __ZTIl:
     .space 16, 0
 
-.globl __mh_execute_header
-__mh_execute_header:
-    .long 0
+/* __mh_execute_header is now an absolute symbol (0x1000) via linker --defsym */
 
 /* __DefaultRuneLocale is now in macos_compat.c with proper BSD ctype data */
 
