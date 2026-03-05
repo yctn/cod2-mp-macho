@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "Mac/Tools/MacMemory.h"
@@ -488,7 +489,7 @@ int MacDisplay_GetCurrentDepth(void)
 
 /* line 1417 */
 __attribute__((naked))
-short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
+static short unsigned int MacDisplay_SwapContext_impl(ContextRef inContextRef)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1417 */
@@ -507,6 +508,20 @@ short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
         "leave\n" /* line 1435 */
         "retl\n"
     );
+}
+
+short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
+{
+    static int call_count = 0;
+    call_count++;
+    if (call_count <= 5 || call_count % 60 == 0) {
+        fprintf(stderr, "[SwapCtx #%d] sEnableSwap=%d ctx=%p *(ctx)=%p\n",
+            call_count, (int)sEnableSwap,
+            (void*)inContextRef,
+            inContextRef ? (void*)(*(void**)inContextRef) : (void*)0);
+        fflush(stderr);
+    }
+    return MacDisplay_SwapContext_impl(inContextRef);
 }
 
 /* line 1747 */

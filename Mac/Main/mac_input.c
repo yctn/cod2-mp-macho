@@ -4,6 +4,8 @@
 
 /* SDL2 must come first to avoid __m128 typedef conflict */
 #include <SDL2/SDL.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Prevent common_types.h from redefining __m128 */
 #define __m128 __m128_cod2
@@ -37,7 +39,23 @@ void IN_Frame(void)
     while (SDL_PollEvent(&ev)) {
         switch (ev.type) {
         case SDL_QUIT:
-            Sys_QueEvent(0, (sysEventType_t)0, 0, 0, 0, NULL);
+            /* Queue a "quit" console command so the engine shuts down cleanly */
+            {
+                static char quit_cmd[] = "quit\n";
+                char *buf = (char *)malloc(sizeof(quit_cmd));
+                memcpy(buf, quit_cmd, sizeof(quit_cmd));
+                Sys_QueEvent(0, (sysEventType_t)4, 0, 0, sizeof(quit_cmd), buf);
+            }
+            break;
+
+        case SDL_WINDOWEVENT:
+            if (ev.window.event == SDL_WINDOWEVENT_FOCUS_LOST) {
+                SDL_SetRelativeMouseMode(SDL_FALSE);
+                mouse_active = 0;
+            } else if (ev.window.event == SDL_WINDOWEVENT_FOCUS_GAINED) {
+                SDL_SetRelativeMouseMode(SDL_TRUE);
+                mouse_active = 1;
+            }
             break;
 
         case SDL_KEYDOWN:

@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -1208,7 +1209,7 @@ Bool R_CreateForInitOrReset(void)
 
 /* line 1985 */
 __attribute__((naked))
-void R_BeginRegistration(vidConfig_t *vidConfigOut)
+static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1985 */
@@ -2233,6 +2234,15 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
         "leal (, %ebx, 4), %eax\n" /* line 995 */
         "jmp .Lfcbc3e_000cca59\n"
     );
+}
+
+void R_BeginRegistration(vidConfig_t *vidConfigOut)
+{
+    R_BeginRegistration_impl(vidConfigOut);
+    /* Set rg.registered = 1 so R_EndFrame doesn't early-return */
+    *(char *)&rg = 1;
+    fprintf(stderr, "[R_BeginRegistration] rg.registered set to 1\n");
+    fflush(stderr);
 }
 
 /* line 2408 */

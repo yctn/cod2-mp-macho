@@ -598,7 +598,7 @@ DP4 oPos.z," */
 
 /* line 1771 */
 __attribute__((naked))
-void R_EndFrame(void)
+static void R_EndFrame_impl(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1771 */
@@ -714,6 +714,20 @@ DP4 oPos.z," */
         "addl $1, %eax\n"
         "jmp .Lfc844a_000c8525\n"
     );
+}
+
+#include <stdio.h>
+static int s_endframe_count = 0;
+void R_EndFrame(void)
+{
+    if (s_endframe_count < 5 || s_endframe_count % 300 == 0) {
+        extern unsigned char rg[];
+        fprintf(stderr, "[R_EndFrame #%d] rg[0]=%d s_cmdList=%p\n",
+            s_endframe_count, rg[0], (void*)s_cmdList);
+        fflush(stderr);
+    }
+    s_endframe_count++;
+    R_EndFrame_impl();
 }
 
 /* line 1506 */

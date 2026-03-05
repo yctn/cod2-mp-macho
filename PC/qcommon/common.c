@@ -1575,6 +1575,14 @@ void Com_Frame_Try_Block_Function(void)
 {
     int msec, rawMsec, minMsec, maxMsec;
     qboolean useTimescale;
+    {
+        static int frame_dbg = 0;
+        if (frame_dbg < 5 || (frame_dbg % 60 == 0)) {
+            fprintf(stderr, "[frame %d]\n", frame_dbg);
+            fflush(stderr);
+        }
+        frame_dbg++;
+    }
 
     /* Write player profile if dvar flags changed */
     if (com_fullyInitialized && (dvar_modifiedFlags & 1)) {

@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <math.h>
 #include <SDL2/SDL.h>
+#include <GL/gl.h>
 
 /* Forward declaration for ___maskrune */
 static unsigned int bsd_rune_data[13 + 256];
@@ -167,8 +168,8 @@ static struct DisplayMode dummy_modes[] = {
     { 1920, 1200, 32, 60 },
 };
 
-static const char dummy_gl_vendor[] = "Linux";
-static const char dummy_gl_renderer[] = "Software";
+static const char dummy_gl_vendor[] = "Linux OpenGL";
+static const char dummy_gl_renderer[] = "OpenGL";
 static const char dummy_gl_extensions[] = "";
 
 static unsigned char dummy_display_entry[100];
@@ -201,6 +202,10 @@ static void init_display_list(void) {
     *(unsigned int *)&dummy_display_entry[0x44] = 8;
     *(unsigned int *)&dummy_display_entry[0x48] = 8;
 
+    /* PC pixel shader version (offset 0x4c) - D3DPS_VERSION(2,0) = 0xffff0200
+     * Report PS 2.0 so the renderer uses the shader path instead of the no-shader fallback */
+    *(unsigned int *)&dummy_display_entry[0x4c] = 0xffff0200;
+
     /* Force windowed mode to avoid NULL GDHandle dereference in CenterWindowOnDisplay */
     sInWindowMode = 1;
 
@@ -215,7 +220,7 @@ static void init_display_list(void) {
  * Creates an SDL OpenGL window and context instead of using macOS CGL.
  * The context ref is a 16-byte struct: { void *glContext, void *unused1, void *unused2, char hasAux }
  */
-static SDL_Window *sdl_gl_window = NULL;
+SDL_Window *sdl_gl_window = NULL;
 static SDL_GLContext sdl_gl_context = NULL;
 
 typedef void *ContextRef;
@@ -231,10 +236,15 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
         *outHasAuxBuffer = 0;
 
     /* Set OpenGL attributes */
+    /* Request compatibility profile — game uses ARB_fragment_program / ARB_vertex_program
+     * which are not available in core profile contexts */
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0); /* no alpha = no compositor transparency */
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, inDepthSize ? inDepthSize : 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, inUseStencil ? 8 : 0);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -251,6 +261,11 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
     sdl_gl_context = SDL_GL_CreateContext(sdl_gl_window);
     if (!sdl_gl_context)
         return (ContextRef)0;
+
+    /* Initial clear to solid black so the window isn't transparent garbage */
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    SDL_GL_SwapWindow(sdl_gl_window);
 
     /* Allocate a fake 16-byte context struct (matches what the Mac code allocates) */
     ctx = (unsigned char *)calloc(1, 16);
