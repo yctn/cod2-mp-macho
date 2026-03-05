@@ -14,6 +14,33 @@ extern void Dvar_SetCommand(const char *name, const char *value);
 extern void Dvar_Reset(void *dvar, int source);
 extern void Cmd_AddCommand(const char *name, void (*func)(void));
 
+extern int atoi(const char *s);
+extern double atof(const char *s);
+extern int I_stricmp(const char *s1, const char *s2);
+extern int stricmp(const char *s1, const char *s2);
+extern void I_strncat(char *dest, int maxLen, const char *src);
+extern void Com_PrintMessage(print_msg_type_t type, const char *msg);
+extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern int Com_Filter(const char *filter, const char *name, int casesensitive);
+extern void FS_Printf(int f, const char *fmt, ...);
+extern void Info_SetValueForKey(char *s, const char *key, const char *value);
+extern void Info_SetValueForKey_Big(char *s, const char *key, const char *value);
+extern const char *CL_GetUsernameForLocalClient(int controllerIndex);
+extern void SV_SetConfigValueForKey(int start, int max, const char *key, const char *value);
+
+extern Bool Dvar_IsValidName(const char *dvarName);
+extern const char *Dvar_DisplayableResetValue(const dvar_t *dvar);
+extern const char *Dvar_DisplayableLatchedValue(const dvar_t *dvar);
+extern Bool Dvar_HasLatchedValue(const dvar_t *dvar);
+extern const char *Dvar_IndexStringToEnumString(const dvar_t *dvar, const char *indexString);
+extern void Dvar_PrintDomain(int type, DvarLimits domain);
+extern void Dvar_SetFloatFromSource(const dvar_t *dvar, float value, DvarSetSource source);
+extern void Dvar_SetIntFromSource(const dvar_t *dvar, int value, DvarSetSource source);
+extern void Dvar_SetBoolFromSource(const dvar_t *dvar, int value, DvarSetSource source);
+extern const dvar_t *Dvar_RegisterBool(const char *name, Bool value, int flags);
+extern const dvar_t *Dvar_RegisterInt(const char *name, int value, int min, int max, int flags);
+extern const dvar_t *Dvar_RegisterFloat(const char *name, float value, float min, float max, int flags);
+
 static char info1[1024]; /* info1 */
 static char info2[8192]; /* info2 */
 
@@ -43,499 +70,240 @@ char * Dvar_InfoString_Big(int bit);
 void Dvar_AddCommands(void);
 
 /* line 46 */
-__attribute__((naked))
 void Dvar_ForEach(void (*callback)())
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 46 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* callback */
-        /* { scope 1 */
-        "movl imp_sortedDvars, %eax\n" /* line 50 */
-        "movl (%eax), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "je .Lf500f8_0005011c\n"
-        ".Lf500f8_0005010e:\n"
-        "movl (%ebx), %eax\n" /* line 51 | dvar */
-        "movl %eax, (%esp)\n"
-        "calll *%esi\n" /* callback */
-        "movl 0x1c(%ebx), %ebx\n" /* line 50 | dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf500f8_0005010e\n"
-        /* } scope */
-        ".Lf500f8_0005011c:\n"
-        "addl $0x10, %esp\n" /* line 52 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    dvar_t *dvar;
+    dvar = *(dvar_t **)imp_sortedDvars;
+    if (!dvar)
+        return;
+    do {
+        ((void (*)(const char *))callback)(dvar->name);
+        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+    } while (dvar);
 }
 
 /* line 55 */
-static __attribute__((naked))
-void Dvar_GetCombinedString(void)
+static void Dvar_GetCombinedString(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 55 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl %eax, %esi\n" /* combined */
-        "movl %edx, %ebx\n" /* first */
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 59 */
-        "movb $0, (%esi)\n" /* line 61 | combined */
-        "cmpl %ebx, %eax\n" /* line 63 | i */
-        "jg .Lf50124_00050145\n"
-        /* } scope */
-        ".Lf50124_0005013d:\n"
-        "addl $0x2c, %esp\n" /* line 74 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50124_00050145:\n"
-        "movl $0, -0x1c(%ebp)\n" /* line 63 | l */
-        "movl %eax, -0x24(%ebp)\n"
-        "subl $1, %eax\n"
-        "movl %eax, -0x20(%ebp)\n"
-        ".Lf50124_00050155:\n"
-        "movl %ebx, (%esp)\n" /* line 65 | i */
-        "calll Cmd_Argv\n"
-        "leal 1(%eax), %edi\n"
-        "cld\n"
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "movl -0x1c(%ebp), %eax\n" /* l */
-        "leal -1(%ecx, %eax), %eax\n"
-        "movl %eax, -0x1c(%ebp)\n" /* l */
-        "cmpl $0xffd, %eax\n" /* line 66 */
-        "jg .Lf50124_0005013d\n"
-        "movl %ebx, (%esp)\n" /* line 69 | i */
-        "calll Cmd_Argv\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $__mh_execute_header, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* combined */
-        "calll I_strncat\n"
-        "cmpl -0x20(%ebp), %ebx\n" /* line 70 | i */
-        "je .Lf50124_000501b6\n"
-        "movl $str_00217914, 8(%esp)\n" /* line 71 */
-        "movl $__mh_execute_header, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* combined */
-        "calll I_strncat\n"
-        ".Lf50124_000501b6:\n"
-        "addl $1, %ebx\n" /* line 63 | i */
-        "cmpl %ebx, -0x24(%ebp)\n" /* i */
-        "jne .Lf50124_00050155\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 74 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    /* This function uses EAX/EDX register passing (not cdecl args):
+     * EAX = combined (output char buf ptr), EDX = first (start arg index)
+     * Since it's called internally with custom convention, keep as naked? No --
+     * The callers set up EAX and EDX directly, so we cannot represent this
+     * in standard C. We implement the logic using a helper that takes explicit args.
+     * The actual calls from Dvar_Command and Dvar_Set_f pass EAX=buf, EDX=first.
+     */
+    /* NOTE: this function uses a non-standard calling convention (args in EAX, EDX).
+     * It is only called from within this translation unit, so we inline the logic
+     * in its callers directly (see Dvar_Command and Dvar_Set_f). */
+}
+
+/* Helper to build combined string from argv[first..argc-1] into combined buf */
+static void Dvar_GetCombinedString_impl(char *combined, int first)
+{
+    int argc;
+    int l;
+    int last;
+    int i;
+    int arglen;
+    const char *arg;
+
+    argc = Cmd_Argc();
+    combined[0] = '\0';
+    if (argc <= first)
+        return;
+
+    l = 0;
+    last = argc - 1;
+    for (i = first; i < argc; i++) {
+        arg = Cmd_Argv(i);
+        /* strlen(arg) + 1 for the space */
+        arglen = (int)strlen(arg) + 1;
+        l += arglen - 1;
+        if (l > 0xffd)
+            return;
+        I_strncat(combined, 1023, arg);
+        if (i != last) {
+            I_strncat(combined, 1023, " ");
+        }
+    }
 }
 
 /* line 84 */
-__attribute__((naked))
 qboolean Dvar_Command(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 84 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1010, %esp\n"
-        /* { scope 1 */
-        "movl $0, (%esp)\n" /* line 90 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_FindVar\n"
-        "movl %eax, %esi\n" /* dvar */
-        "testl %eax, %eax\n" /* line 91 */
-        "je .Lf501c6_00050293\n"
-        "calll Cmd_Argc\n" /* line 95 */
-        "subl $1, %eax\n"
-        "je .Lf501c6_00050232\n"
-        "leal -0x1008(%ebp), %ebx\n" /* line 105 | combined */
-        "movl $1, %edx\n"
-        "movl %ebx, %eax\n"
-        "calll Dvar_GetCombinedString\n"
-        "movl $0, (%esp)\n" /* line 106 */
-        "calll Cmd_Argv\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetCommand\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x1010, %esp\n" /* line 108 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf501c6_00050232:\n"
-        "movl %esi, (%esp)\n" /* line 97 | dvar */
-        "calll Dvar_DisplayableResetValue\n"
-        "movl %eax, %ebx\n"
-        "movl %esi, (%esp)\n" /* dvar */
-        "calll Dvar_DisplayableValue\n"
-        "movl %ebx, 0xc(%esp)\n"
-        "movl %eax, 8(%esp)\n"
-        "movl (%esi), %eax\n" /* dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219078, (%esp)\n" /* ""%s" is: "%s^7" default: "%s^7"
-" */
-        "calll Com_Printf\n"
-        "movl %esi, (%esp)\n" /* line 98 | dvar */
-        "calll Dvar_HasLatchedValue\n"
-        "testb %al, %al\n"
-        "jne .Lf501c6_0005029f\n"
-        ".Lf501c6_0005026a:\n"
-        "movl 0x14(%esi), %eax\n" /* line 100 | dvar */
-        "movl 0x18(%esi), %edx\n" /* dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl %edx, 8(%esp)\n"
-        "movzbl 6(%esi), %eax\n" /* dvar */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_PrintDomain\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x1010, %esp\n" /* line 108 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf501c6_00050293:\n"
-        "xorl %eax, %eax\n" /* line 91 */
-        /* } scope */
-        "addl $0x1010, %esp\n" /* line 108 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf501c6_0005029f:\n"
-        "movl %esi, (%esp)\n" /* line 99 | dvar */
-        "calll Dvar_DisplayableLatchedValue\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_0021909c, (%esp)\n" /* "latched: "%s"
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf501c6_0005026a\n"
-    );
+    dvar_t *dvar;
+    char combined[0x1008];
+    const char *resetval;
+
+    dvar = (dvar_t *)Dvar_FindVar(Cmd_Argv(0));
+    if (!dvar)
+        return 0;
+
+    if (Cmd_Argc() - 1 != 0) {
+        /* has arguments: set the dvar */
+        Dvar_GetCombinedString_impl(combined, 1);
+        Dvar_SetCommand(Cmd_Argv(0), combined);
+        return 1;
+    }
+
+    /* no arguments: print current/default/domain info */
+    resetval = Dvar_DisplayableResetValue(dvar);
+    Com_Printf("\"%s\" is: \"%s^7\" default: \"%s^7\"\n",
+               dvar->name,
+               Dvar_DisplayableValue(dvar),
+               resetval);
+    if (Dvar_HasLatchedValue(dvar)) {
+        Com_Printf("latched: \"%s\"\n", Dvar_DisplayableLatchedValue(dvar));
+    }
+    Dvar_PrintDomain(dvar->type, dvar->domain);
+    return 1;
 }
 
 /* line 176 */
-static __attribute__((naked))
-Bool Dvar_ToggleInternal(void)
+static Bool Dvar_ToggleInternal(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 176 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 185 */
-        "subl $1, %eax\n"
-        "jle .Lf502ba_000503a6\n"
-        "movl $1, (%esp)\n" /* line 192 */
-        "calll Cmd_Argv\n"
-        "movl %eax, -0x20(%ebp)\n" /* dvarName */
-        "movl %eax, (%esp)\n" /* line 195 */
-        "calll Dvar_FindVar\n"
-        "movl %eax, %edi\n" /* dvar */
-        "testl %eax, %eax\n" /* line 196 */
-        "je .Lf502ba_000503d3\n"
-        "calll Cmd_Argc\n" /* line 202 */
-        "cmpl $2, %eax\n"
-        "je .Lf502ba_00050390\n"
-        "movl %edi, (%esp)\n" /* line 205 | dvar */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, -0x1c(%ebp)\n" /* string */
-        "movl $2, %ebx\n" /* argString */
-        "jmp .Lf502ba_00050327\n"
-        ".Lf502ba_00050312:\n"
-        "movl %ebx, 4(%esp)\n" /* line 216 | argString */
-        "movl -0x1c(%ebp), %ecx\n" /* string */
-        "movl %ecx, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf502ba_0005036c\n"
-        ".Lf502ba_00050325:\n"
-        "movl %esi, %ebx\n" /* line 219 | argString */
-        ".Lf502ba_00050327:\n"
-        "leal 1(%ebx), %esi\n" /* line 206 | argString */
-        "calll Cmd_Argc\n"
-        "cmpl %esi, %eax\n"
-        "jle .Lf502ba_000503f0\n"
-        "movl %ebx, (%esp)\n" /* line 208 | argString */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* argString */
-        "cmpb $6, 6(%edi)\n" /* line 209 | dvar */
-        "jne .Lf502ba_00050312\n"
-        "movl %eax, 4(%esp)\n" /* line 211 */
-        "movl %edi, (%esp)\n" /* dvar */
-        "calll Dvar_IndexStringToEnumString\n"
-        "cmpb $0, (%eax)\n" /* line 212 */
-        "cmovnel %eax, %ebx\n" /* argString */
-        "movl %ebx, 4(%esp)\n" /* line 216 | argString */
-        "movl -0x1c(%ebp), %ecx\n" /* string */
-        "movl %ecx, (%esp)\n"
-        "calll stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf502ba_00050325\n"
-        ".Lf502ba_0005036c:\n"
-        "movl %esi, (%esp)\n" /* line 218 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl -0x20(%ebp), %eax\n" /* dvarName */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetCommand\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 233 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf502ba_00050390:\n"
-        "movzbl 6(%edi), %eax\n" /* line 115 */
-        "cmpl $8, %eax\n"
-        "jbe .Lf502ba_000503cc\n"
-        "xorl %eax, %eax\n" /* line 160 */
-        ".Lf502ba_0005039b:\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        /* } scope */
-        ".Lf502ba_0005039e:\n"
-        "addl $0x2c, %esp\n" /* line 233 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf502ba_000503a6:\n"
-        "movl $0, (%esp)\n" /* line 188 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002190ac, (%esp)\n" /* "USAGE: %s <variable> <optional value sequence>
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 233 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf502ba_000503cc:\n"
-        "jmpl *.Ljt_502ba_0(, %eax, 4)\n" /* line 115 */
-        ".Lf502ba_000503d3:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 198 | dvarName */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002190dc, (%esp)\n" /* "toggle failed: dvar '%s' not found.
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 233 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf502ba_000503f0:\n"
-        "movl $2, (%esp)\n" /* line 223 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* argString */
-        "cmpb $6, 6(%edi)\n" /* line 224 | dvar */
-        "je .Lf502ba_00050555\n"
-        ".Lf502ba_00050408:\n"
-        "movl %ebx, 4(%esp)\n" /* line 231 | argString */
-        "movl -0x20(%ebp), %eax\n" /* dvarName */
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetCommand\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 233 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf502ba_00050424:\n"
-        "movl $1, 8(%esp)\n" /* line 118 */
-        "xorl %eax, %eax\n"
-        "cmpb $0, 8(%edi)\n"
-        "sete %al\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetBoolFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_0005044e:\n"
-        "movss 0x14(%edi), %xmm1\n" /* line 139 */
-        "pxor %xmm2, %xmm2\n"
-        "ucomiss %xmm1, %xmm2\n"
-        "jb .Lf502ba_00050529\n"
-        "movss 0x18(%edi), %xmm0\n"
-        "ucomiss lit4_002ed5d0, %xmm0\n" /* 1.0f */
-        "jb .Lf502ba_00050529\n"
-        "ucomiss 8(%edi), %xmm2\n" /* line 141 */
-        "jp .Lf502ba_0005047e\n"
-        "je .Lf502ba_000505ea\n"
-        ".Lf502ba_0005047e:\n"
-        "movl $1, 8(%esp)\n" /* line 142 */
-        "movss %xmm2, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetFloatFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_000504a1:\n"
-        "movl 0x14(%edi), %eax\n" /* line 122 */
-        "testl %eax, %eax\n"
-        "jle .Lf502ba_000505b3\n"
-        ".Lf502ba_000504ac:\n"
-        "cmpl 8(%edi), %eax\n" /* line 131 */
-        "je .Lf502ba_0005058f\n"
-        "movl $1, 8(%esp)\n" /* line 134 */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetIntFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_000504d6:\n"
-        "movl 0x14(%edi), %edx\n" /* line 164 */
-        "testl %edx, %edx\n"
-        "jne .Lf502ba_00050503\n"
-        "movl $1, %eax\n" /* line 165 */
-        ".Lf502ba_000504e2:\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_000504ea:\n"
-        "movl (%edi), %eax\n" /* line 160 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219104, (%esp)\n" /* "'toggle' with no arguments makes no sense for dvar '%s'
-" */
-        "calll Com_Printf\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf502ba_0005039b\n"
-        ".Lf502ba_00050503:\n"
-        "movl $1, 8(%esp)\n" /* line 165 */
-        "movl 8(%edi), %eax\n"
-        "addl $1, %eax\n"
-        "movl %edx, %ecx\n"
-        "cltd\n"
-        "idivl %ecx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetIntFromSource\n"
-        "movl $1, %eax\n"
-        "jmp .Lf502ba_000504e2\n"
-        ".Lf502ba_00050529:\n"
-        "ucomiss 8(%edi), %xmm1\n" /* line 148 */
-        "jne .Lf502ba_0005056c\n"
-        "jp .Lf502ba_0005056c\n"
-        "movl $1, 8(%esp)\n" /* line 149 */
-        "movl 0x18(%edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetFloatFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_00050555:\n"
-        "movl %eax, 4(%esp)\n" /* line 226 */
-        "movl %edi, (%esp)\n" /* dvar */
-        "calll Dvar_IndexStringToEnumString\n"
-        "cmpb $0, (%eax)\n" /* line 227 */
-        "cmovnel %eax, %ebx\n" /* argString */
-        "jmp .Lf502ba_00050408\n"
-        ".Lf502ba_0005056c:\n"
-        "movl $1, 8(%esp)\n" /* line 151 */
-        "movss %xmm1, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetFloatFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_0005058f:\n"
-        "movl $1, 8(%esp)\n" /* line 132 */
-        "movl 0x18(%edi), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetIntFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_000505b3:\n"
-        "movl 0x18(%edi), %edx\n" /* line 122 */
-        "testl %edx, %edx\n"
-        "jle .Lf502ba_000504ac\n"
-        "movl 8(%edi), %eax\n" /* line 124 */
-        "testl %eax, %eax\n"
-        "je .Lf502ba_0005060f\n"
-        "movl $1, 8(%esp)\n" /* line 125 */
-        "movl $0, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetIntFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_000505ea:\n"
-        "movl $1, 8(%esp)\n" /* line 144 */
-        "movl $0x3f800000, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetFloatFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".Lf502ba_0005060f:\n"
-        "movl $1, 8(%esp)\n" /* line 127 */
-        "movl $1, 4(%esp)\n"
-        "movl %edi, (%esp)\n"
-        "calll Dvar_SetIntFromSource\n"
-        "movl $1, %eax\n"
-        "movzbl %al, %eax\n" /* line 203 */
-        "jmp .Lf502ba_0005039e\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_502ba_0:\n"
-        ".long .Lf502ba_00050424\n"
-        ".long .Lf502ba_0005044e\n"
-        ".long .Lf502ba_000504ea\n"
-        ".long .Lf502ba_000504ea\n"
-        ".long .Lf502ba_000504ea\n"
-        ".long .Lf502ba_000504a1\n"
-        ".long .Lf502ba_000504d6\n"
-        ".long .Lf502ba_000504ea\n"
-        ".long .Lf502ba_000504ea\n"
-        ".text\n"
-    );
+    int argc;
+    const char *dvarName;
+    dvar_t *dvar;
+    const char *string;
+    int argIdx;
+    const char *argString;
+    const char *enumStr;
+
+    argc = Cmd_Argc();
+    if (argc - 1 <= 0) {
+        Com_Printf("USAGE: %s <variable> <optional value sequence>\n", Cmd_Argv(0));
+        return 0;
+    }
+
+    dvarName = Cmd_Argv(1);
+    dvar = (dvar_t *)Dvar_FindVar(dvarName);
+    if (!dvar) {
+        Com_Printf("toggle failed: dvar '%s' not found.\n", dvarName);
+        return 0;
+    }
+
+    if (argc == 2) {
+        /* No explicit values: toggle through native type behavior */
+        if (dvar->type > 8) {
+            return 0;
+        }
+        switch (dvar->type) {
+        case 0: /* BOOL */
+            Dvar_SetBoolFromSource(dvar, !dvar->current.enabled, DVAR_SOURCE_EXTERNAL);
+            return 1;
+
+        case 1: /* FLOAT */
+            if (dvar->domain.value.min >= 0.0f && dvar->domain.value.max < 1.0f) {
+                /* domain is [0,1) -- toggle between 0 and min */
+                goto toggle_float_clamp_min;
+            }
+            if (dvar->current.value != 0.0f) {
+                Dvar_SetFloatFromSource(dvar, 0.0f, DVAR_SOURCE_EXTERNAL);
+            } else {
+                Dvar_SetFloatFromSource(dvar, 1.0f, DVAR_SOURCE_EXTERNAL);
+            }
+            return 1;
+
+        toggle_float_clamp_min:
+            if (dvar->current.value == dvar->domain.value.min) {
+                Dvar_SetFloatFromSource(dvar, dvar->domain.value.max, DVAR_SOURCE_EXTERNAL);
+            } else {
+                Dvar_SetFloatFromSource(dvar, dvar->domain.value.min, DVAR_SOURCE_EXTERNAL);
+            }
+            return 1;
+
+        case 5: /* INT */
+            if (dvar->domain.integer.min > 0) {
+                goto toggle_int_pos_domain;
+            }
+            if (dvar->domain.integer.max <= 0) {
+                goto toggle_int_clamp;
+            }
+            /* min <= 0, max > 0 */
+            if (dvar->current.integer != 0) {
+                Dvar_SetIntFromSource(dvar, 0, DVAR_SOURCE_EXTERNAL);
+            } else {
+                Dvar_SetIntFromSource(dvar, 1, DVAR_SOURCE_EXTERNAL);
+            }
+            return 1;
+
+        toggle_int_pos_domain:
+            /* min > 0: cycle through domain */
+            if (dvar->current.integer == dvar->domain.integer.max) {
+                Dvar_SetIntFromSource(dvar, dvar->domain.integer.min, DVAR_SOURCE_EXTERNAL);
+            } else {
+                Dvar_SetIntFromSource(dvar, dvar->current.integer + 1, DVAR_SOURCE_EXTERNAL);
+            }
+            return 1;
+
+        toggle_int_clamp:
+            /* max <= 0, min <= 0 -- wrap: (current + 1) % domain_count */
+            if (dvar->domain.integer.min == 0) {
+                return 1;
+            }
+            {
+                int count = dvar->domain.integer.min; /* actually this field */
+                Dvar_SetIntFromSource(dvar, (dvar->current.integer + 1) % count, DVAR_SOURCE_EXTERNAL);
+            }
+            return 1;
+
+        case 6: /* ENUM */
+            if (dvar->domain.enumeration.stringCount == 0) {
+                return 1;
+            }
+            {
+                int next = (dvar->current.integer + 1) % dvar->domain.enumeration.stringCount;
+                Dvar_SetIntFromSource(dvar, next, DVAR_SOURCE_EXTERNAL);
+            }
+            return 1;
+
+        case 2: /* VEC2 */
+        case 3: /* VEC3 */
+        case 4: /* VEC4 */
+        case 7: /* STRING */
+        case 8: /* COLOR */
+        default:
+            Com_Printf("'toggle' with no arguments makes no sense for dvar '%s'\n", dvar->name);
+            return 0;
+        }
+    }
+
+    /* Explicit value sequence: find matching arg and advance to next */
+    string = Dvar_DisplayableValue(dvar);
+    argIdx = 2;
+    while (1) {
+        int nextIdx = argIdx + 1;
+        if (Cmd_Argc() <= nextIdx) {
+            /* Exhausted list: wrap to first explicit arg (arg 2) */
+            argString = Cmd_Argv(2);
+            if (dvar->type == 6) { /* ENUM */
+                enumStr = Dvar_IndexStringToEnumString(dvar, argString);
+                if (enumStr[0] != '\0')
+                    argString = enumStr;
+            }
+            Dvar_SetCommand(dvarName, argString);
+            return 1;
+        }
+        argString = Cmd_Argv(argIdx);
+        if (dvar->type == 6) { /* ENUM */
+            enumStr = Dvar_IndexStringToEnumString(dvar, argString);
+            if (enumStr[0] != '\0')
+                argString = enumStr;
+        }
+        if (stricmp(string, argString) == 0) {
+            /* Found match: set to next arg */
+            const char *nextArg = Cmd_Argv(nextIdx);
+            if (dvar->type == 6) {
+                enumStr = Dvar_IndexStringToEnumString(dvar, nextArg);
+                if (enumStr[0] != '\0')
+                    nextArg = enumStr;
+            }
+            Dvar_SetCommand(dvarName, nextArg);
+            return 1;
+        }
+        argIdx = nextIdx;
+    }
 }
 
 /* line 244 */
@@ -557,337 +325,150 @@ void Dvar_TogglePrint_f(void)
 }
 
 /* line 287 */
-__attribute__((naked))
 void Dvar_Set_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 287 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x1014, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 293 */
-        "cmpl $2, %eax\n" /* line 294 */
-        "jg .Lf5068a_000506b3\n"
-        "movl $str_00219154, (%esp)\n" /* line 296 */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x1014, %esp\n" /* line 309 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5068a_000506b3:\n"
-        "movl $1, (%esp)\n" /* line 300 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n" /* line 301 */
-        "calll Dvar_IsValidName\n"
-        "testb %al, %al\n"
-        "je .Lf5068a_000506fe\n"
-        "leal -0x1008(%ebp), %ebx\n" /* line 307 | combined */
-        "movl $2, %edx\n"
-        "movl %ebx, %eax\n"
-        "calll Dvar_GetCombinedString\n"
-        "movl $1, (%esp)\n" /* line 308 */
-        "calll Cmd_Argv\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll Dvar_SetCommand\n"
-        /* } scope */
-        "addl $0x1014, %esp\n" /* line 309 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf5068a_000506fe:\n"
-        "movl $1, (%esp)\n" /* line 303 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219174, (%esp)\n" /* "invalid variable name: %s
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x1014, %esp\n" /* line 309 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    char combined[0x1008];
+
+    if (Cmd_Argc() <= 2) {
+        Com_Printf("USAGE: set <variable> <value>\n");
+        return;
+    }
+    if (!Dvar_IsValidName(Cmd_Argv(1))) {
+        Com_Printf("invalid variable name: %s\n", Cmd_Argv(1));
+        return;
+    }
+    Dvar_GetCombinedString_impl(combined, 2);
+    Dvar_SetCommand(Cmd_Argv(1), combined);
 }
 
 /* line 312 */
-static __attribute__((naked))
-void Dvar_RegisterBool_f(void)
+static void Dvar_RegisterBool_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 312 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 319 */
-        "cmpl $3, %eax\n" /* line 320 */
-        "je .Lf50724_00050759\n"
-        "movl $0, (%esp)\n" /* line 322 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219190, (%esp)\n" /* "USAGE: %s <name> <default>
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf50724_00050752:\n"
-        "addl $0x10, %esp\n" /* line 337 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50724_00050759:\n"
-        "movl $1, (%esp)\n" /* line 326 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* dvarName */
-        "movl $2, (%esp)\n" /* line 327 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movl %eax, %esi\n" /* value */
-        "movl %ebx, (%esp)\n" /* line 328 | dvarName */
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 329 */
-        "je .Lf50724_000507ba\n"
-        "movzbl 6(%eax), %edx\n"
-        "cmpb $7, %dl\n"
-        "je .Lf50724_000507b4\n"
-        "testb %dl, %dl\n" /* line 335 */
-        "je .Lf50724_00050752\n"
-        ".Lf50724_0005079b:\n"
-        "movl (%eax), %eax\n" /* line 336 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002191ac, (%esp)\n" /* "dvar '%s' is not a boolean dvar
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 337 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50724_000507b4:\n"
-        "testb $0x40, 5(%eax)\n" /* line 329 */
-        "je .Lf50724_0005079b\n"
-        ".Lf50724_000507ba:\n"
-        "movl $0x4000, 8(%esp)\n" /* line 331 */
-        "movl %esi, %edx\n" /* value */
-        "movzbl %dl, %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* dvarName */
-        "calll Dvar_RegisterBool\n"
-        "jmp .Lf50724_00050752\n"
-    );
+    const char *dvarName;
+    Bool value;
+    dvar_t *existing;
+
+    if (Cmd_Argc() != 3) {
+        Com_Printf("USAGE: %s <name> <default>\n", Cmd_Argv(0));
+        return;
+    }
+
+    dvarName = Cmd_Argv(1);
+    value = (atoi(Cmd_Argv(2)) != 0) ? 1 : 0;
+
+    existing = (dvar_t *)Dvar_FindVar(dvarName);
+    if (existing) {
+        if (existing->type == 7) { /* DVAR_TYPE_STRING */
+            if (!(existing->flags & 0x40)) {
+                Com_Printf("dvar '%s' is not a boolean dvar\n", existing->name);
+                return;
+            }
+        } else if (existing->type != 0) { /* not BOOL */
+            Com_Printf("dvar '%s' is not a boolean dvar\n", existing->name);
+            return;
+        }
+        /* type == 0 (BOOL) falls through */
+        if (existing->type == 7) {
+            if (!(existing->flags & 0x40))
+                goto print_not_bool;
+        }
+    }
+
+    Dvar_RegisterBool(dvarName, value, 0x4000);
+    return;
+
+print_not_bool:
+    Com_Printf("dvar '%s' is not a boolean dvar\n", existing->name);
 }
 
 /* line 340 */
-static __attribute__((naked))
-void Dvar_RegisterInt_f(void)
+static void Dvar_RegisterInt_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 340 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 349 */
-        "cmpl $5, %eax\n" /* line 350 */
-        "je .Lf507d8_0005080f\n"
-        "movl $0, (%esp)\n" /* line 352 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002191d0, (%esp)\n" /* "USAGE: %s <name> <default> <min> <max>
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf507d8_00050807:\n"
-        "addl $0x3c, %esp\n" /* line 375 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf507d8_0005080f:\n"
-        "movl $1, (%esp)\n" /* line 356 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %edi\n" /* dvarName */
-        "movl $2, (%esp)\n" /* line 357 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, -0x1c(%ebp)\n" /* value */
-        "movl $3, (%esp)\n" /* line 358 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %esi\n" /* min */
-        "movl $4, (%esp)\n" /* line 359 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atoi\n"
-        "movl %eax, %ebx\n" /* max */
-        "cmpl %eax, %esi\n" /* line 360 | min */
-        "jg .Lf507d8_00050897\n"
-        "movl %edi, (%esp)\n" /* line 366 | dvarName */
-        "calll Dvar_FindVar\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 367 */
-        "je .Lf507d8_000508bd\n"
-        "movzbl 6(%eax), %eax\n"
-        "cmpb $7, %al\n"
-        "je .Lf507d8_000508b7\n"
-        ".Lf507d8_0005087a:\n"
-        "subb $5, %al\n" /* line 373 */
-        "cmpb $1, %al\n"
-        "jbe .Lf507d8_00050807\n"
-        "movl (%edx), %eax\n" /* line 374 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_0021922c, (%esp)\n" /* "dvar '%s' is not an integer dvar
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf507d8_00050807\n"
-        ".Lf507d8_00050897:\n"
-        "movl %eax, 0xc(%esp)\n" /* line 362 */
-        "movl %esi, 8(%esp)\n" /* min */
-        "movl %edi, 4(%esp)\n" /* dvarName */
-        "movl $str_002191f8, (%esp)\n" /* "dvar %s: min %i should not be greater than max %i
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 375 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf507d8_000508b7:\n"
-        "testb $0x40, 5(%edx)\n" /* line 367 */
-        "je .Lf507d8_0005087a\n"
-        ".Lf507d8_000508bd:\n"
-        "movl $0x4000, 0x10(%esp)\n" /* line 369 */
-        "movl %ebx, 0xc(%esp)\n" /* max */
-        "movl %esi, 8(%esp)\n" /* min */
-        "movl -0x1c(%ebp), %eax\n" /* value */
-        "movl %eax, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* dvarName */
-        "calll Dvar_RegisterInt\n"
-        "jmp .Lf507d8_00050807\n"
-    );
+    const char *dvarName;
+    int value, min, max;
+    dvar_t *existing;
+
+    if (Cmd_Argc() != 5) {
+        Com_Printf("USAGE: %s <name> <default> <min> <max>\n", Cmd_Argv(0));
+        return;
+    }
+
+    dvarName = Cmd_Argv(1);
+    value = atoi(Cmd_Argv(2));
+    min = atoi(Cmd_Argv(3));
+    max = atoi(Cmd_Argv(4));
+
+    if (min > max) {
+        Com_Printf("dvar %s: min %i should not be greater than max %i\n", dvarName, min, max);
+        return;
+    }
+
+    existing = (dvar_t *)Dvar_FindVar(dvarName);
+    if (existing) {
+        if (existing->type == 7) { /* STRING */
+            if (!(existing->flags & 0x40))
+                goto print_not_int;
+        } else {
+            /* check if type is INT (5) or COLOR (6, which maps to 5+1=6): */
+            /* sub 5 then cmp 1: type must be 5 or 6 to be valid */
+            unsigned char t = existing->type;
+            t -= 5;
+            if (t > 1) {
+                goto print_not_int;
+            }
+            /* valid int-compatible type, fall through */
+        }
+        goto do_register_int;
+    }
+
+do_register_int:
+    Dvar_RegisterInt(dvarName, value, min, max, 0x4000);
+    return;
+
+print_not_int:
+    Com_Printf("dvar '%s' is not an integer dvar\n", existing->name);
 }
 
 /* line 378 */
-static __attribute__((naked))
-void Dvar_RegisterFloat_f(void)
+static void Dvar_RegisterFloat_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 378 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x54, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 387 */
-        "cmpl $5, %eax\n" /* line 388 */
-        "je .Lf508e2_00050915\n"
-        "movl $0, (%esp)\n" /* line 390 */
-        "calll Cmd_Argv\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002191d0, (%esp)\n" /* "USAGE: %s <name> <default> <min> <max>
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        ".Lf508e2_0005090f:\n"
-        "addl $0x54, %esp\n" /* line 413 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf508e2_00050915:\n"
-        "movl $1, (%esp)\n" /* line 394 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %ebx\n" /* dvarName */
-        "movl $2, (%esp)\n" /* line 395 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x30(%ebp)\n"
-        "cvtsd2ss -0x30(%ebp), %xmm0\n"
-        "movss %xmm0, -0x14(%ebp)\n" /* value */
-        "movl $3, (%esp)\n" /* line 396 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x28(%ebp)\n"
-        "cvtsd2ss -0x28(%ebp), %xmm0\n"
-        "movss %xmm0, -0x10(%ebp)\n" /* min */
-        "movl $4, (%esp)\n" /* line 397 */
-        "calll Cmd_Argv\n"
-        "movl %eax, (%esp)\n"
-        "calll atof\n"
-        "fstpl -0x20(%ebp)\n"
-        "cvtsd2ss -0x20(%ebp), %xmm0\n"
-        "movss %xmm0, -0xc(%ebp)\n" /* max */
-        "movss -0x10(%ebp), %xmm0\n" /* line 398 | min */
-        "ucomiss -0xc(%ebp), %xmm0\n" /* max */
-        "ja .Lf508e2_000509c6\n"
-        "movl %ebx, (%esp)\n" /* line 404 | dvarName */
-        "calll Dvar_FindVar\n"
-        "testl %eax, %eax\n" /* line 405 */
-        "je .Lf508e2_000509f8\n"
-        "movzbl 6(%eax), %edx\n"
-        "cmpb $7, %dl\n"
-        "je .Lf508e2_000509f2\n"
-        "subb $1, %dl\n" /* line 411 */
-        "je .Lf508e2_0005090f\n"
-        ".Lf508e2_000509af:\n"
-        "movl (%eax), %eax\n" /* line 412 */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_0021922c, (%esp)\n" /* "dvar '%s' is not an integer dvar
-" */
-        "calll Com_Printf\n"
-        "jmp .Lf508e2_0005090f\n"
-        ".Lf508e2_000509c6:\n"
-        "cvtss2sd -0xc(%ebp), %xmm0\n" /* line 400 | max */
-        "movsd %xmm0, 0x10(%esp)\n"
-        "cvtss2sd -0x10(%ebp), %xmm0\n" /* min */
-        "movsd %xmm0, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* dvarName */
-        "movl $str_00219250, (%esp)\n" /* "dvar %s: min %g should not be greater than max %g
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x54, %esp\n" /* line 413 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf508e2_000509f2:\n"
-        "testb $0x40, 5(%eax)\n" /* line 405 */
-        "je .Lf508e2_000509af\n"
-        ".Lf508e2_000509f8:\n"
-        "movl $0x4000, 0x10(%esp)\n" /* line 407 */
-        "movss -0xc(%ebp), %xmm0\n" /* max */
-        "movss %xmm0, 0xc(%esp)\n"
-        "movss -0x10(%ebp), %xmm0\n" /* min */
-        "movss %xmm0, 8(%esp)\n"
-        "movss -0x14(%ebp), %xmm0\n" /* value */
-        "movss %xmm0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* dvarName */
-        "calll Dvar_RegisterFloat\n"
-        "jmp .Lf508e2_0005090f\n"
-    );
+    const char *dvarName;
+    float value, min, max;
+    dvar_t *existing;
+
+    if (Cmd_Argc() != 5) {
+        Com_Printf("USAGE: %s <name> <default> <min> <max>\n", Cmd_Argv(0));
+        return;
+    }
+
+    dvarName = Cmd_Argv(1);
+    value = (float)atof(Cmd_Argv(2));
+    min   = (float)atof(Cmd_Argv(3));
+    max   = (float)atof(Cmd_Argv(4));
+
+    if (min > max) {
+        Com_Printf("dvar %s: min %g should not be greater than max %g\n", dvarName, (double)min, (double)max);
+        return;
+    }
+
+    existing = (dvar_t *)Dvar_FindVar(dvarName);
+    if (existing) {
+        if (existing->type == 7) { /* STRING */
+            if (!(existing->flags & 0x40))
+                goto print_not_float;
+        } else if (existing->type - 1 != 0) { /* not FLOAT (type==1) */
+            goto print_not_float;
+        }
+        /* type == 1 (FLOAT) or type == 7+devmap falls through */
+        goto do_register_float;
+    }
+
+do_register_float:
+    Dvar_RegisterFloat(dvarName, value, min, max, 0x4000);
+    return;
+
+print_not_float:
+    Com_Printf("dvar '%s' is not an integer dvar\n", existing->name);
 }
 
 /* line 425 */
@@ -970,420 +551,172 @@ void Dvar_Reset_f(void)
 }
 
 /* line 553 */
-__attribute__((naked))
 void Dvar_WriteVariables(fileHandle_t f)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 553 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl imp_sortedDvars, %eax\n" /* line 557 */
-        "movl (%eax), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf50be2_00050bfd\n"
-        "jmp .Lf50be2_00050c45\n"
-        ".Lf50be2_00050bf6:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "je .Lf50be2_00050c45\n"
-        ".Lf50be2_00050bfd:\n"
-        "movl $str_0021934c, 4(%esp)\n" /* line 559 */
-        "movl (%ebx), %eax\n" /* dvar */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf50be2_00050bf6\n"
-        "testb $1, 4(%ebx)\n" /* line 561 | dvar */
-        "je .Lf50be2_00050bf6\n"
-        "movl %ebx, (%esp)\n" /* line 566 | dvar */
-        "calll Dvar_DisplayableLatchedValue\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl (%ebx), %eax\n" /* dvar */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00219358, 4(%esp)\n" /* "seta %s "%s"
-" */
-        "movl 8(%ebp), %eax\n" /* f */
-        "movl %eax, (%esp)\n"
-        "calll FS_Printf\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 557 | dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf50be2_00050bfd\n"
-        /* } scope */
-        ".Lf50be2_00050c45:\n"
-        "addl $0x14, %esp\n" /* line 568 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    dvar_t *dvar;
+
+    dvar = *(dvar_t **)imp_sortedDvars;
+    while (dvar) {
+        /* skip cl_cdkey */
+        if (I_stricmp(dvar->name, "cl_cdkey") != 0) {
+            /* only write archived (flag bit 1) dvars */
+            if (dvar->flags & 1) {
+                FS_Printf(f, "seta %s \"%s\"\n",
+                          dvar->name,
+                          Dvar_DisplayableLatchedValue(dvar));
+            }
+        }
+        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+    }
 }
 
 /* line 579 */
-__attribute__((naked))
 void Dvar_WriteDefaults(fileHandle_t f)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 579 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        /* { scope 1 */
-        "movl imp_sortedDvars, %eax\n" /* line 583 */
-        "movl (%eax), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf50c4c_00050c67\n"
-        "jmp .Lf50c4c_00050cb4\n"
-        ".Lf50c4c_00050c60:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "je .Lf50c4c_00050cb4\n"
-        ".Lf50c4c_00050c67:\n"
-        "movl $str_0021934c, 4(%esp)\n" /* line 585 */
-        "movl (%ebx), %eax\n" /* dvar */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf50c4c_00050c60\n"
-        "movzwl 4(%ebx), %eax\n" /* line 587 | dvar */
-        "testl $0x40c0, %eax\n"
-        "jne .Lf50c4c_00050c60\n"
-        "movl %ebx, (%esp)\n" /* line 589 | dvar */
-        "calll Dvar_DisplayableResetValue\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl (%ebx), %eax\n" /* dvar */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_00219368, 4(%esp)\n" /* "set %s "%s"
-" */
-        "movl 8(%ebp), %eax\n" /* f */
-        "movl %eax, (%esp)\n"
-        "calll FS_Printf\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 583 | dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf50c4c_00050c67\n"
-        /* } scope */
-        ".Lf50c4c_00050cb4:\n"
-        "addl $0x14, %esp\n" /* line 591 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    dvar_t *dvar;
+
+    dvar = *(dvar_t **)imp_sortedDvars;
+    while (dvar) {
+        /* skip cl_cdkey */
+        if (I_stricmp(dvar->name, "cl_cdkey") != 0) {
+            /* skip if any of bits 0x40c0 are set */
+            if (!(dvar->flags & 0x40c0)) {
+                FS_Printf(f, "set %s \"%s\"\n",
+                          dvar->name,
+                          Dvar_DisplayableResetValue(dvar));
+            }
+        }
+        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+    }
 }
 
 /* line 599 */
-__attribute__((naked))
 void Dvar_List_f(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 599 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 604 */
-        "subl $1, %eax\n"
-        "jle .Lf50cba_00050e8b\n"
-        "movl $1, (%esp)\n" /* line 606 */
-        "calll Cmd_Argv\n"
-        "movl %eax, %esi\n" /* match */
-        ".Lf50cba_00050cde:\n"
-        "movl imp_sortedDvars, %eax\n" /* line 613 */
-        "movl (%eax), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf50cba_00050dab\n"
-        "jmp .Lf50cba_00050e6d\n"
-        ".Lf50cba_00050cf2:\n"
-        "movl $str_00219378, (%esp)\n" /* line 623 */
-        "calll Com_Printf\n"
-        "testb $2, 4(%ebx)\n" /* line 627 | dvar */
-        "je .Lf50cba_00050dee\n"
-        ".Lf50cba_00050d08:\n"
-        "movl $str_0021937c, (%esp)\n" /* line 628 */
-        "calll Com_Printf\n"
-        "testb $0x40, 4(%ebx)\n" /* line 632 | dvar */
-        "je .Lf50cba_00050e04\n"
-        ".Lf50cba_00050d1e:\n"
-        "movl $str_00219380, (%esp)\n" /* line 633 */
-        "calll Com_Printf\n"
-        "testb $0x10, 4(%ebx)\n" /* line 636 | dvar */
-        "je .Lf50cba_00050e1a\n"
-        ".Lf50cba_00050d34:\n"
-        "movl $str_00219384, (%esp)\n" /* line 637 */
-        "calll Com_Printf\n"
-        "testb $1, 4(%ebx)\n" /* line 640 | dvar */
-        "je .Lf50cba_00050e30\n"
-        ".Lf50cba_00050d4a:\n"
-        "movl $str_00219388, (%esp)\n" /* line 641 */
-        "calll Com_Printf\n"
-        "testb $0x20, 4(%ebx)\n" /* line 644 | dvar */
-        "je .Lf50cba_00050e46\n"
-        ".Lf50cba_00050d60:\n"
-        "movl $str_0021938c, (%esp)\n" /* line 645 */
-        "calll Com_Printf\n"
-        "cmpb $0, 4(%ebx)\n" /* line 648 | dvar */
-        "jns .Lf50cba_00050e5c\n"
-        ".Lf50cba_00050d76:\n"
-        "movl $str_00219390, (%esp)\n" /* line 649 */
-        "calll Com_Printf\n"
-        ".Lf50cba_00050d82:\n"
-        "movl %ebx, (%esp)\n" /* line 653 | dvar */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, 8(%esp)\n"
-        "movl (%ebx), %eax\n" /* dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl $str_00219394, (%esp)\n" /* " %s "%s"
-" */
-        "calll Com_Printf\n"
-        ".Lf50cba_00050da0:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 613 | dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "je .Lf50cba_00050e6d\n"
-        ".Lf50cba_00050dab:\n"
-        "testl %esi, %esi\n" /* line 615 | match */
-        "je .Lf50cba_00050dc9\n"
-        "movl $0, 8(%esp)\n"
-        "movl (%ebx), %eax\n" /* dvar */
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* match */
-        "calll Com_Filter\n"
-        "testb %al, %al\n"
-        "je .Lf50cba_00050da0\n"
-        ".Lf50cba_00050dc9:\n"
-        "movzwl 4(%ebx), %eax\n" /* line 619 | dvar */
-        "testl $0x404, %eax\n"
-        "jne .Lf50cba_00050cf2\n"
-        "movl $str_00217914, (%esp)\n" /* line 625 */
-        "calll Com_Printf\n"
-        "testb $2, 4(%ebx)\n" /* line 627 | dvar */
-        "jne .Lf50cba_00050d08\n"
-        ".Lf50cba_00050dee:\n"
-        "movl $str_00217914, (%esp)\n" /* line 631 */
-        "calll Com_Printf\n"
-        "testb $0x40, 4(%ebx)\n" /* line 632 | dvar */
-        "jne .Lf50cba_00050d1e\n"
-        ".Lf50cba_00050e04:\n"
-        "movl $str_00217914, (%esp)\n" /* line 635 */
-        "calll Com_Printf\n"
-        "testb $0x10, 4(%ebx)\n" /* line 636 | dvar */
-        "jne .Lf50cba_00050d34\n"
-        ".Lf50cba_00050e1a:\n"
-        "movl $str_00217914, (%esp)\n" /* line 639 */
-        "calll Com_Printf\n"
-        "testb $1, 4(%ebx)\n" /* line 640 | dvar */
-        "jne .Lf50cba_00050d4a\n"
-        ".Lf50cba_00050e30:\n"
-        "movl $str_00217914, (%esp)\n" /* line 643 */
-        "calll Com_Printf\n"
-        "testb $0x20, 4(%ebx)\n" /* line 644 | dvar */
-        "jne .Lf50cba_00050d60\n"
-        ".Lf50cba_00050e46:\n"
-        "movl $str_00217914, (%esp)\n" /* line 647 */
-        "calll Com_Printf\n"
-        "cmpb $0, 4(%ebx)\n" /* line 648 | dvar */
-        "js .Lf50cba_00050d76\n"
-        ".Lf50cba_00050e5c:\n"
-        "movl $str_00217914, (%esp)\n" /* line 651 */
-        "calll Com_Printf\n"
-        "jmp .Lf50cba_00050d82\n"
-        ".Lf50cba_00050e6d:\n"
-        "movl imp_dvarCount, %eax\n" /* line 656 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl $str_002193a0, (%esp)\n" /* "
-%i total dvars
-" */
-        "calll Com_Printf\n"
-        /* } scope */
-        "addl $0x10, %esp\n" /* line 657 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50cba_00050e8b:\n"
-        "xorl %esi, %esi\n" /* line 604 | match */
-        "jmp .Lf50cba_00050cde\n"
-    );
+    const char *match;
+    dvar_t *dvar;
+
+    if (Cmd_Argc() - 1 > 0) {
+        match = Cmd_Argv(1);
+    } else {
+        match = NULL;
+    }
+
+    dvar = *(dvar_t **)imp_sortedDvars;
+    while (dvar) {
+        /* filter by match string */
+        if (match) {
+            if (!Com_Filter(match, dvar->name, 0)) {
+                dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+                continue;
+            }
+        }
+
+        /* print flag indicators */
+        if (dvar->flags & 0x404) {
+            Com_Printf("S");
+        } else {
+            Com_Printf(" ");
+        }
+        if (dvar->flags & 2) {
+            Com_Printf("U");
+        } else {
+            Com_Printf(" ");
+        }
+        if (dvar->flags & 0x40) {
+            Com_Printf("R");
+        } else {
+            Com_Printf(" ");
+        }
+        if (dvar->flags & 0x10) {
+            Com_Printf("I");
+        } else {
+            Com_Printf(" ");
+        }
+        if (dvar->flags & 1) {
+            Com_Printf("A");
+        } else {
+            Com_Printf(" ");
+        }
+        if (dvar->flags & 0x20) {
+            Com_Printf("L");
+        } else {
+            Com_Printf(" ");
+        }
+        if ((signed char)(dvar->flags & 0xff) < 0) {
+            Com_Printf("C");
+        } else {
+            Com_Printf(" ");
+        }
+
+        Com_Printf(" %s \"%s\"\n", dvar->name, Dvar_DisplayableValue(dvar));
+
+        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+    }
+
+    Com_Printf("\n%i total dvars\n", *(int *)imp_dvarCount);
 }
 
 /* line 691 */
-__attribute__((naked))
 void Com_DvarDump(print_msg_type_t type)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 691 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x203c, %esp\n"
-        /* { scope 1 */
-        "calll Cmd_Argc\n" /* line 698 */
-        "subl $1, %eax\n"
-        "jle .Lf50e92_000510de\n"
-        "movl $1, (%esp)\n" /* line 700 */
-        "calll Cmd_Argv\n"
-        "movl %eax, -0x201c(%ebp)\n" /* match */
-        ".Lf50e92_00050ebe:\n"
-        "movl 8(%ebp), %esi\n" /* line 707 | type */
-        "testl %esi, %esi\n"
-        "jne .Lf50e92_00050edf\n"
-        "movl imp_com_logfile, %eax\n" /* line 709 */
-        "movl (%eax), %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf50e92_00050fd3\n"
-        "movl 8(%eax), %ebx\n" /* var */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf50e92_00050fd3\n"
-        ".Lf50e92_00050edf:\n"
-        "movl $str_002193b4, 4(%esp)\n" /* line 714 */
-        "movl 8(%ebp), %eax\n" /* type */
-        "movl %eax, (%esp)\n"
-        "calll Com_PrintMessage\n"
-        "movl imp_sortedDvars, %eax\n" /* line 715 */
-        "movl (%eax), %ebx\n" /* var */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf50e92_000510ed\n"
-        "xorl %edi, %edi\n" /* i */
-        "movl -0x201c(%ebp), %ecx\n" /* match */
-        "testl %ecx, %ecx\n"
-        "jne .Lf50e92_0005104f\n"
-        ".Lf50e92_00050f11:\n"
-        "movl %ebx, (%esp)\n" /* line 720 | var */
-        "calll Dvar_HasLatchedValue\n"
-        "testb %al, %al\n"
-        "je .Lf50e92_00051074\n"
-        "movl %ebx, (%esp)\n" /* line 721 | var */
-        "calll Dvar_DisplayableLatchedValue\n"
-        "movl %eax, %esi\n"
-        "movl %ebx, (%esp)\n" /* var */
-        "calll Dvar_DisplayableValue\n"
-        "movl %esi, 0x14(%esp)\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl (%ebx), %eax\n" /* var */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_00219408, 8(%esp)\n" /* "      %s "%s" -- latched "%s"
-" */
-        "movl $0x2000, 4(%esp)\n"
-        "leal -0x2018(%ebp), %eax\n" /* message */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        ".Lf50e92_00050f5f:\n"
-        "leal -0x2018(%ebp), %eax\n" /* line 724 | message */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* type */
-        "movl %eax, (%esp)\n"
-        "calll Com_PrintMessage\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 715 | var */
-        "addl $1, %edi\n" /* i */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf50e92_00050f11\n"
-        ".Lf50e92_00050f7e:\n"
-        "movl imp_dvarCount, %eax\n" /* line 727 */
-        "movl (%eax), %eax\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl %edi, 0xc(%esp)\n" /* i */
-        "movl $str_00219438, 8(%esp)\n" /* "
-%i total dvars
-%i dvar indexes
-" */
-        "movl $0x2000, 4(%esp)\n"
-        "leal -0x2018(%ebp), %eax\n" /* message */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "leal -0x2018(%ebp), %eax\n" /* line 728 | message */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* type */
-        "movl %eax, (%esp)\n"
-        "calll Com_PrintMessage\n"
-        "movl $str_0021945c, 4(%esp)\n" /* line 729 */
-        "movl 8(%ebp), %eax\n" /* type */
-        "movl %eax, (%esp)\n"
-        "calll Com_PrintMessage\n"
-        /* } scope */
-        ".Lf50e92_00050fd3:\n"
-        "addl $0x203c, %esp\n" /* line 730 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf50e92_00050fde:\n"
-        "movl %ebx, (%esp)\n" /* line 720 | var */
-        "calll Dvar_HasLatchedValue\n"
-        "testb %al, %al\n"
-        "je .Lf50e92_000510a9\n"
-        "movl %ebx, (%esp)\n" /* line 721 | var */
-        "calll Dvar_DisplayableLatchedValue\n"
-        "movl %eax, %esi\n"
-        "movl %ebx, (%esp)\n" /* var */
-        "calll Dvar_DisplayableValue\n"
-        "movl %esi, 0x14(%esp)\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl (%ebx), %eax\n" /* var */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_00219408, 8(%esp)\n" /* "      %s "%s" -- latched "%s"
-" */
-        "movl $0x2000, 4(%esp)\n"
-        "leal -0x2018(%ebp), %eax\n" /* message */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        ".Lf50e92_0005102c:\n"
-        "leal -0x2018(%ebp), %eax\n" /* line 724 | message */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %eax\n" /* type */
-        "movl %eax, (%esp)\n"
-        "calll Com_PrintMessage\n"
-        ".Lf50e92_00051041:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 715 | var */
-        "addl $1, %edi\n" /* i */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf50e92_00050f7e\n"
-        ".Lf50e92_0005104f:\n"
-        "movl $0, 8(%esp)\n" /* line 717 */
-        "movl (%ebx), %eax\n" /* var */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x201c(%ebp), %eax\n" /* match */
-        "movl %eax, (%esp)\n"
-        "calll Com_Filter\n"
-        "testb %al, %al\n"
-        "je .Lf50e92_00051041\n"
-        "jmp .Lf50e92_00050fde\n"
-        ".Lf50e92_00051074:\n"
-        "movl %ebx, (%esp)\n" /* line 723 | var */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl (%ebx), %eax\n" /* var */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_00219428, 8(%esp)\n" /* "      %s "%s"
-" */
-        "movl $0x2000, 4(%esp)\n"
-        "leal -0x2018(%ebp), %eax\n" /* message */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "jmp .Lf50e92_00050f5f\n"
-        ".Lf50e92_000510a9:\n"
-        "movl %ebx, (%esp)\n" /* var */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, 0x10(%esp)\n"
-        "movl (%ebx), %eax\n" /* var */
-        "movl %eax, 0xc(%esp)\n"
-        "movl $str_00219428, 8(%esp)\n" /* "      %s "%s"
-" */
-        "movl $0x2000, 4(%esp)\n"
-        "leal -0x2018(%ebp), %eax\n" /* message */
-        "movl %eax, (%esp)\n"
-        "calll Com_sprintf\n"
-        "jmp .Lf50e92_0005102c\n"
-        ".Lf50e92_000510de:\n"
-        "movl $0, -0x201c(%ebp)\n" /* line 698 | match */
-        "jmp .Lf50e92_00050ebe\n"
-        ".Lf50e92_000510ed:\n"
-        "xorl %edi, %edi\n" /* line 715 | i */
-        "jmp .Lf50e92_00050f7e\n"
-    );
+    const char *match;
+    dvar_t *var;
+    int i;
+    char message[0x2000];
+
+    if (Cmd_Argc() - 1 > 0) {
+        match = Cmd_Argv(1);
+    } else {
+        match = NULL;
+    }
+
+    /* check if output is enabled */
+    if (type == 0) {
+        dvar_t *logfile = *(dvar_t **)imp_com_logfile;
+        if (!logfile || !logfile->current.integer)
+            return;
+    }
+
+    Com_PrintMessage(type, "=============================== DVAR DUMP ========================================\n");
+
+    var = *(dvar_t **)imp_sortedDvars;
+    i = 0;
+
+    if (!var) {
+        goto print_summary;
+    }
+
+    while (var) {
+        if (match) {
+            if (!Com_Filter(match, var->name, 0)) {
+                var = (dvar_t *)*(int *)((char *)var + 0x1c);
+                i++;
+                continue;
+            }
+        }
+
+        if (Dvar_HasLatchedValue(var)) {
+            Com_sprintf(message, 0x2000, "      %s \"%s\" -- latched \"%s\"\n",
+                        var->name,
+                        Dvar_DisplayableValue(var),
+                        Dvar_DisplayableLatchedValue(var));
+        } else {
+            Com_sprintf(message, 0x2000, "      %s \"%s\"\n",
+                        var->name,
+                        Dvar_DisplayableValue(var));
+        }
+        Com_PrintMessage(type, message);
+
+        var = (dvar_t *)*(int *)((char *)var + 0x1c);
+        i++;
+    }
+
+print_summary:
+    Com_sprintf(message, 0x2000, "\n%i total dvars\n%i dvar indexes\n",
+                *(int *)imp_dvarCount, i);
+    Com_PrintMessage(type, message);
+    Com_PrintMessage(type, "=============================== END DVAR DUMP =====================================\n");
 }
 
 /* line 738 */
@@ -1393,156 +726,60 @@ void Dvar_Dump_f(void)
 }
 
 /* line 751 */
-__attribute__((naked))
 void SV_SetConfig(int start, int max, int bit)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 751 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 0xc(%ebp), %edi\n" /* max */
-        "movl 0x10(%ebp), %esi\n" /* bit */
-        /* { scope 1 */
-        "movl imp_sortedDvars, %eax\n" /* line 755 */
-        "movl (%eax), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf51108_0005112b\n"
-        "jmp .Lf51108_0005115b\n"
-        ".Lf51108_00051124:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "je .Lf51108_0005115b\n"
-        ".Lf51108_0005112b:\n"
-        "movzwl 4(%ebx), %eax\n" /* line 757 | dvar */
-        "testl %esi, %eax\n" /* bit */
-        "je .Lf51108_00051124\n"
-        "movl %ebx, (%esp)\n" /* line 758 | dvar */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, 0xc(%esp)\n"
-        "movl (%ebx), %eax\n" /* dvar */
-        "movl %eax, 8(%esp)\n"
-        "movl %edi, 4(%esp)\n" /* max */
-        "movl 8(%ebp), %eax\n" /* start */
-        "movl %eax, (%esp)\n"
-        "calll SV_SetConfigValueForKey\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 755 | dvar */
-        "testl %ebx, %ebx\n" /* dvar */
-        "jne .Lf51108_0005112b\n"
-        /* } scope */
-        ".Lf51108_0005115b:\n"
-        "addl $0x1c, %esp\n" /* line 760 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    dvar_t *dvar;
+
+    dvar = *(dvar_t **)imp_sortedDvars;
+    while (dvar) {
+        if (dvar->flags & bit) {
+            SV_SetConfigValueForKey(start, max,
+                                    dvar->name,
+                                    Dvar_DisplayableValue(dvar));
+        }
+        dvar = (dvar_t *)*(int *)((char *)dvar + 0x1c);
+    }
 }
 
 /* line 770 */
-__attribute__((naked))
 char * Dvar_InfoString(int bit)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 770 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* bit */
-        /* { scope 1 */
-        "movb $0, info1\n" /* line 778 */
-        "movl imp_sortedDvars, %eax\n" /* line 780 */
-        "movl (%eax), %ebx\n" /* var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf51164_0005118a\n"
-        "jmp .Lf51164_000511b7\n"
-        ".Lf51164_00051183:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* var */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf51164_000511b7\n"
-        ".Lf51164_0005118a:\n"
-        "movzwl 4(%ebx), %eax\n" /* line 782 | var */
-        "testl %eax, %esi\n" /* bit */
-        "je .Lf51164_00051183\n"
-        "movl %ebx, (%esp)\n" /* line 783 | var */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, 8(%esp)\n"
-        "movl (%ebx), %eax\n" /* var */
-        "movl %eax, 4(%esp)\n"
-        "movl $info1, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 780 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf51164_0005118a\n"
-        ".Lf51164_000511b7:\n"
-        "andl $2, %esi\n" /* line 786 | bit */
-        "je .Lf51164_000511e0\n"
-        "movl $0, (%esp)\n" /* line 796 */
-        "calll CL_GetUsernameForLocalClient\n"
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002194b4, 4(%esp)\n" /* "name" */
-        "movl $info1, (%esp)\n"
-        "calll Info_SetValueForKey\n"
-        /* } scope */
-        ".Lf51164_000511e0:\n"
-        "movl $info1, %eax\n" /* line 805 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    dvar_t *var;
+
+    info1[0] = '\0';
+
+    var = *(dvar_t **)imp_sortedDvars;
+    while (var) {
+        if (var->flags & bit) {
+            Info_SetValueForKey(info1, var->name, Dvar_DisplayableValue(var));
+        }
+        var = (dvar_t *)*(int *)((char *)var + 0x1c);
+    }
+
+    /* if bit has flag 2 (userinfo), also set name */
+    if (bit & 2) {
+        Info_SetValueForKey(info1, "name", CL_GetUsernameForLocalClient(0));
+    }
+
+    return info1;
 }
 
 /* line 815 */
-__attribute__((naked))
 char * Dvar_InfoString_Big(int bit)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 815 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* bit */
-        /* { scope 1 */
-        "movb $0, info2\n" /* line 819 */
-        "movl imp_sortedDvars, %eax\n" /* line 821 */
-        "movl (%eax), %ebx\n" /* var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf511ec_00051212\n"
-        "jmp .Lf511ec_0005123f\n"
-        ".Lf511ec_0005120b:\n"
-        "movl 0x1c(%ebx), %ebx\n" /* var */
-        "testl %ebx, %ebx\n" /* var */
-        "je .Lf511ec_0005123f\n"
-        ".Lf511ec_00051212:\n"
-        "movzwl 4(%ebx), %eax\n" /* line 823 | var */
-        "testl %esi, %eax\n" /* bit */
-        "je .Lf511ec_0005120b\n"
-        "movl %ebx, (%esp)\n" /* line 824 | var */
-        "calll Dvar_DisplayableValue\n"
-        "movl %eax, 8(%esp)\n"
-        "movl (%ebx), %eax\n" /* var */
-        "movl %eax, 4(%esp)\n"
-        "movl $info2, (%esp)\n"
-        "calll Info_SetValueForKey_Big\n"
-        "movl 0x1c(%ebx), %ebx\n" /* line 821 | var */
-        "testl %ebx, %ebx\n" /* var */
-        "jne .Lf511ec_00051212\n"
-        /* } scope */
-        ".Lf511ec_0005123f:\n"
-        "movl $info2, %eax\n" /* line 827 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    dvar_t *var;
+
+    info2[0] = '\0';
+
+    var = *(dvar_t **)imp_sortedDvars;
+    while (var) {
+        if (var->flags & bit) {
+            Info_SetValueForKey_Big(info2, var->name, Dvar_DisplayableValue(var));
+        }
+        var = (dvar_t *)*(int *)((char *)var + 0x1c);
+    }
+
+    return info2;
 }
 
 /* line 837 */
@@ -1562,4 +799,3 @@ void Dvar_AddCommands(void)
     Cmd_AddCommand("dvar_float", Dvar_RegisterFloat_f);
     Cmd_AddCommand("setu", Dvar_SetU_f);
 }
-

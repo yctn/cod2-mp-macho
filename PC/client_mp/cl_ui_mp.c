@@ -3,6 +3,10 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <ctype.h>
+#include <string.h>
+
+extern int I_stricmp(const char *s1, const char *s2);
 
 extern qboolean CL_UpdateDirtyPings_f(int source);
 extern int CL_ServerStatus(char *serverAddress, char *serverStatus, int maxLen);
@@ -445,378 +449,156 @@ void UI_LoadSoundAliases(void)
 }
 
 /* line 301 */
-__attribute__((naked))
 int LAN_CompareHostname(const char *hostName1, const char *hostName2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 301 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x5c, %esp\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 8(%ebp), %eax\n" /* line 284 | hostName1 */
-        "movzbl (%eax), %ebx\n" /* c */
-        "testb %bl, %bl\n" /* line 285 | c */
-        "je .Lf17fa2e_0017fa8f\n"
-        "movl %eax, %esi\n" /* line 286 */
-        "leal -0x38(%ebp), %edi\n" /* cleanHostName1 */
-        "jmp .Lf17fa2e_0017fa6e\n"
-        /* { scope 4 */
-        ".Lf17fa2e_0017fa48:\n"
-        "movl __DefaultRuneLocale, %edx\n" /* line 220 */
-        "movl 0x34(%edx, %eax, 4), %eax\n"
-        "shrl $8, %eax\n"
-        "andl $1, %eax\n"
-        /* } scope */
-        ".Lf17fa2e_0017fa58:\n"
-        "testl %eax, %eax\n" /* line 287 | _c */
-        "je .Lf17fa2e_0017fa61\n"
-        "movb %bl, (%edi)\n" /* line 289 | c */
-        "addl $1, %edi\n" /* line 290 */
-        ".Lf17fa2e_0017fa61:\n"
-        "movzbl 1(%esi), %eax\n" /* line 284 */
-        "movl %eax, %ebx\n" /* c */
-        "addl $1, %esi\n"
-        "testb %al, %al\n" /* line 285 */
-        "je .Lf17fa2e_0017fa92\n"
-        ".Lf17fa2e_0017fa6e:\n"
-        "movzbl %bl, %eax\n" /* line 287 | c, _c */
-        /* { scope 4 */
-        "testb $0x80, %al\n" /* line 220 */
-        "je .Lf17fa2e_0017fa48\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll ___maskrune\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "jmp .Lf17fa2e_0017fa58\n"
-        /* } scope */
-        ".Lf17fa2e_0017fa8f:\n"
-        "leal -0x38(%ebp), %edi\n" /* line 286 | cleanHostName1 */
-        ".Lf17fa2e_0017fa92:\n"
-        "movb $0, (%edi)\n" /* line 292 */
-        /* } scope */
-        /* } scope */
-        /* { scope 2 */
-        /* { scope 3 */
-        "movl 0xc(%ebp), %eax\n" /* line 284 | hostName2 */
-        "movzbl (%eax), %ebx\n" /* c */
-        "testb %bl, %bl\n" /* line 285 | c */
-        "je .Lf17fa2e_0017faed\n"
-        "movl %eax, %esi\n" /* line 286 */
-        "leal -0x58(%ebp), %edi\n" /* cleanHostName2 */
-        "jmp .Lf17fa2e_0017facc\n"
-        /* { scope 4 */
-        ".Lf17fa2e_0017faa6:\n"
-        "movl __DefaultRuneLocale, %edx\n" /* line 220 */
-        "movl 0x34(%edx, %eax, 4), %eax\n"
-        "shrl $8, %eax\n"
-        "andl $1, %eax\n"
-        /* } scope */
-        ".Lf17fa2e_0017fab6:\n"
-        "testl %eax, %eax\n" /* line 287 | _c */
-        "je .Lf17fa2e_0017fabf\n"
-        "movb %bl, (%edi)\n" /* line 289 | c */
-        "addl $1, %edi\n" /* line 290 */
-        ".Lf17fa2e_0017fabf:\n"
-        "movzbl 1(%esi), %eax\n" /* line 284 */
-        "movl %eax, %ebx\n" /* c */
-        "addl $1, %esi\n"
-        "testb %al, %al\n" /* line 285 */
-        "je .Lf17fa2e_0017faf0\n"
-        ".Lf17fa2e_0017facc:\n"
-        "movzbl %bl, %eax\n" /* line 287 | c, _c */
-        /* { scope 4 */
-        "testb $0x80, %al\n" /* line 220 */
-        "je .Lf17fa2e_0017faa6\n"
-        "movl $0x100, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll ___maskrune\n"
-        "testl %eax, %eax\n"
-        "setne %al\n"
-        "movzbl %al, %eax\n"
-        "jmp .Lf17fa2e_0017fab6\n"
-        /* } scope */
-        ".Lf17fa2e_0017faed:\n"
-        "leal -0x58(%ebp), %edi\n" /* line 286 | cleanHostName2 */
-        ".Lf17fa2e_0017faf0:\n"
-        "movb $0, (%edi)\n" /* line 292 */
-        /* } scope */
-        /* } scope */
-        "leal -0x58(%ebp), %eax\n" /* line 310 | cleanHostName2 */
-        "movl %eax, 4(%esp)\n"
-        "leal -0x38(%ebp), %edx\n" /* cleanHostName1 */
-        "movl %edx, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n" /* line 311 */
-        "jne .Lf17fa2e_0017fb1b\n"
-        "movl 0xc(%ebp), %eax\n" /* hostName2 */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* hostName1 */
-        "movl %edx, (%esp)\n"
-        "calll I_stricmp\n"
-        /* } scope */
-        ".Lf17fa2e_0017fb1b:\n"
-        "addl $0x5c, %esp\n" /* line 312 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    /* Strip non-alpha characters, then compare cleaned versions;
+       if equal, fall back to raw comparison. */
+    char cleanHostName1[40];
+    char cleanHostName2[40];
+    char *dst;
+    const char *src;
+    int c, result;
+
+    /* Build cleanHostName1 */
+    dst = cleanHostName1;
+    src = hostName1;
+    while ((c = (unsigned char)*src) != 0) {
+        if (isalpha(c))
+            *dst++ = (char)c;
+        src++;
+    }
+    *dst = '\0';
+
+    /* Build cleanHostName2 */
+    dst = cleanHostName2;
+    src = hostName2;
+    while ((c = (unsigned char)*src) != 0) {
+        if (isalpha(c))
+            *dst++ = (char)c;
+        src++;
+    }
+    *dst = '\0';
+
+    result = I_stricmp(cleanHostName1, cleanHostName2);
+    if (result != 0)
+        return result;
+    return I_stricmp(hostName1, hostName2);
 }
 
 /* line 320 */
-__attribute__((naked))
 int LAN_CompareServers(int source, int sortKey, int sortDir, int s1, int s2)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 320 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %eax\n" /* source */
-        "movl 0x14(%ebp), %edx\n" /* s1 */
-        "movl 0x18(%ebp), %ecx\n" /* s2 */
-        /* { scope 1 */
-        "cmpl $1, %eax\n" /* line 244 */
-        "je .Lf17fb24_0017fbc5\n"
-        "cmpl $2, %eax\n"
-        "je .Lf17fb24_0017fc43\n"
-        "testl %eax, %eax\n"
-        "je .Lf17fb24_0017fb84\n"
-        "cmpl $1, %eax\n"
-        "je .Lf17fb24_0017fbdb\n"
-        "cmpl $2, %eax\n"
-        "je .Lf17fb24_0017fc48\n"
-        "testl %eax, %eax\n"
-        "jne .Lf17fb24_0017fc37\n"
-        ".Lf17fb24_0017fb66:\n"
-        "xorl %esi, %esi\n"
-        "cmpl $0x7f, %ecx\n" /* line 247 */
-        "ja .Lf17fb24_0017fba3\n"
-        ".Lf17fb24_0017fb6d:\n"
-        "movl %ecx, %eax\n" /* line 249 */
-        "shll $7, %eax\n"
-        "leal 0x130(%eax, %ecx, 8), %eax\n"
-        "addl imp_cls, %eax\n"
-        "leal 0xc(%eax), %ebx\n"
-        "jmp .Lf17fb24_0017fba5\n"
-        ".Lf17fb24_0017fb84:\n"
-        "cmpl $0x7f, %edx\n" /* line 247 */
-        "ja .Lf17fb24_0017fb66\n"
-        "movl %edx, %eax\n" /* line 249 */
-        "shll $7, %eax\n"
-        "leal 0x130(%eax, %edx, 8), %eax\n"
-        "addl imp_cls, %eax\n"
-        "leal 0xc(%eax), %esi\n"
-        "cmpl $0x7f, %ecx\n" /* line 247 */
-        "jbe .Lf17fb24_0017fb6d\n"
-        ".Lf17fb24_0017fba3:\n"
-        "xorl %ebx, %ebx\n" /* line 264 */
-        ".Lf17fb24_0017fba5:\n"
-        "testl %esi, %esi\n" /* line 327 | server1 */
-        "je .Lf17fb24_0017fc37\n"
-        "testl %ebx, %ebx\n" /* server2 */
-        "je .Lf17fb24_0017fc37\n"
-        "cmpl $9, 0xc(%ebp)\n" /* line 333 | sortKey */
-        "ja .Lf17fb24_0017fc33\n"
-        "movl 0xc(%ebp), %eax\n" /* sortKey */
-        "jmpl *.Ljt_17fb24_0(, %eax, 4)\n"
-        ".Lf17fb24_0017fbc5:\n"
-        "testl %edx, %edx\n" /* line 254 */
-        "js .Lf17fb24_0017fbdb\n"
-        "movl imp_cls, %ebx\n"
-        "cmpl 0x4540(%ebx), %edx\n"
-        "jl .Lf17fb24_0017fc6d\n"
-        ".Lf17fb24_0017fbdb:\n"
-        "xorl %esi, %esi\n" /* line 249 */
-        ".Lf17fb24_0017fbdd:\n"
-        "testl %ecx, %ecx\n" /* line 254 */
-        "js .Lf17fb24_0017fba3\n"
-        "movl imp_cls, %edx\n"
-        "cmpl 0x4540(%edx), %ecx\n"
-        "jge .Lf17fb24_0017fba3\n"
-        "movl %ecx, %eax\n" /* line 256 */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %ecx, 8), %eax\n"
-        "leal 4(%eax, %edx), %ebx\n"
-        "jmp .Lf17fb24_0017fba5\n"
-        ".Lf17fb24_0017fc01:\n"
-        "movzbl 0x17(%esi), %edx\n" /* line 359 | server1 */
-        "movzbl 0x17(%ebx), %eax\n" /* server2 */
-        "subl %eax, %edx\n" /* line 360 */
-        "jne .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fc0d:\n"
-        "movl $0, 0x10(%ebp)\n" /* line 391 | sortDir */
-        ".Lf17fb24_0017fc14:\n"
-        "movswl 0x1e(%esi), %edx\n" /* line 400 | server1 */
-        "movswl 0x1e(%ebx), %eax\n" /* server2 */
-        "subl %eax, %edx\n" /* line 401 */
-        "je .Lf17fb24_0017fc99\n"
-        ".Lf17fb24_0017fc20:\n"
-        "movl 0x10(%ebp), %ebx\n" /* line 410 | sortDir, server2 */
-        "testl %ebx, %ebx\n" /* server2 */
-        "je .Lf17fb24_0017fc29\n"
-        "negl %edx\n"
-        /* } scope */
-        ".Lf17fb24_0017fc29:\n"
-        "movl %edx, %eax\n" /* line 411 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17fb24_0017fc33:\n"
-        "xorl %edx, %edx\n" /* line 333 */
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fc37:\n"
-        "xorl %edx, %edx\n" /* line 410 */
-        /* } scope */
-        "movl %edx, %eax\n" /* line 411 */
-        "addl $0x1c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf17fb24_0017fc43:\n"
-        "cmpl $0x7f, %edx\n" /* line 262 */
-        "jbe .Lf17fb24_0017fc82\n"
-        ".Lf17fb24_0017fc48:\n"
-        "xorl %esi, %esi\n" /* line 256 */
-        ".Lf17fb24_0017fc4a:\n"
-        "cmpl $0x7f, %ecx\n" /* line 262 */
-        "ja .Lf17fb24_0017fba3\n"
-        "movl %ecx, %eax\n" /* line 264 */
-        "shll $7, %eax\n"
-        "leal str_0029c494+428(%eax, %ecx, 8), %eax\n"
-        "addl imp_cls, %eax\n"
-        "leal 8(%eax), %ebx\n"
-        "jmp .Lf17fb24_0017fba5\n"
-        ".Lf17fb24_0017fc6d:\n"
-        "movl %edx, %eax\n" /* line 256 */
-        "shll $7, %eax\n"
-        "leal 0x4540(%eax, %edx, 8), %eax\n"
-        "leal 4(%eax, %ebx), %esi\n"
-        "jmp .Lf17fb24_0017fbdd\n"
-        ".Lf17fb24_0017fc82:\n"
-        "movl %edx, %eax\n" /* line 264 */
-        "shll $7, %eax\n"
-        "leal str_0029c494+428(%eax, %edx, 8), %eax\n"
-        "addl imp_cls, %eax\n"
-        "leal 8(%eax), %esi\n"
-        "jmp .Lf17fb24_0017fc4a\n"
-        ".Lf17fb24_0017fc99:\n"
-        "leal 0x78(%ebx), %eax\n" /* line 403 | server2 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x78(%esi), %eax\n" /* server1 */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 404 */
-        "jne .Lf17fb24_0017fc20\n"
-        "leal 0x20(%ebx), %eax\n" /* line 405 | server2 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x20(%esi), %eax\n" /* server1 */
-        "movl %eax, (%esp)\n"
-        "calll LAN_CompareHostname\n"
-        "movl %eax, %edx\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fcce:\n"
-        "leal 0x78(%ebx), %eax\n" /* line 390 | server2 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x78(%esi), %eax\n" /* server1 */
-        ".Lf17fb24_0017fcd8:\n"
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 391 */
-        "jne .Lf17fb24_0017fc20\n"
-        "jmp .Lf17fb24_0017fc0d\n"
-        ".Lf17fb24_0017fcef:\n"
-        "movzbl 0xd(%esi), %edx\n" /* line 385 | server1 */
-        "movzbl 0xd(%ebx), %eax\n" /* server2 */
-        "subl %eax, %edx\n" /* line 386 */
-        "je .Lf17fb24_0017fc0d\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fd04:\n"
-        "leal 0x40(%ebx), %eax\n" /* line 380 | server2 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x40(%esi), %eax\n" /* server1 */
-        "jmp .Lf17fb24_0017fcd8\n"
-        ".Lf17fb24_0017fd10:\n"
-        "leal 0x20(%ebx), %eax\n" /* line 375 | server2 */
-        "movl %eax, 4(%esp)\n"
-        "leal 0x20(%esi), %eax\n" /* server1 */
-        "movl %eax, (%esp)\n"
-        "calll LAN_CompareHostname\n"
-        "movl %eax, %edx\n"
-        "testl %eax, %eax\n" /* line 376 */
-        "je .Lf17fb24_0017fc0d\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fd31:\n"
-        "movzbl 0x16(%esi), %edi\n" /* line 344 | server1 */
-        "movzbl 0x16(%ebx), %ecx\n" /* server2 */
-        "movl %edi, %eax\n"
-        "movzbl %al, %edx\n"
-        "movzbl %cl, %eax\n"
-        "subl %eax, %edx\n"
-        "cmpl $0, %edx\n" /* line 345 */
-        "je .Lf17fb24_0017fc0d\n"
-        "jl .Lf17fb24_0017fd9f\n" /* line 347 */
-        "testb %cl, %cl\n" /* line 354 */
-        "jne .Lf17fb24_0017fc20\n"
-        "movl $0xffffffff, %edx\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fd60:\n"
-        "movzbl 0x11(%esi), %edx\n" /* line 337 | server1 */
-        "movzbl 0x11(%ebx), %eax\n" /* server2 */
-        "subl %eax, %edx\n" /* line 338 */
-        "je .Lf17fb24_0017fc0d\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fd75:\n"
-        "movzbl 0x12(%esi), %edx\n" /* line 369 | server1 */
-        "movzbl 0x12(%ebx), %eax\n" /* server2 */
-        "subl %eax, %edx\n" /* line 370 */
-        "je .Lf17fb24_0017fc0d\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fd8a:\n"
-        "movzbl 0x18(%esi), %edx\n" /* line 364 | server1 */
-        "movzbl 0x18(%ebx), %eax\n" /* server2 */
-        "subl %eax, %edx\n" /* line 365 */
-        "je .Lf17fb24_0017fc0d\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".Lf17fb24_0017fd9f:\n"
-        "movl %edi, %eax\n" /* line 349 */
-        "testb %al, %al\n"
-        "jne .Lf17fb24_0017fc20\n"
-        "movl $1, %edx\n"
-        "jmp .Lf17fb24_0017fc20\n"
-        ".section .rodata\n"
-        ".balign 4\n"
-        ".Ljt_17fb24_0:\n"
-        ".long .Lf17fb24_0017fd60\n"
-        ".long .Lf17fb24_0017fd31\n"
-        ".long .Lf17fb24_0017fd10\n"
-        ".long .Lf17fb24_0017fd04\n"
-        ".long .Lf17fb24_0017fcef\n"
-        ".long .Lf17fb24_0017fcce\n"
-        ".long .Lf17fb24_0017fd8a\n"
-        ".long .Lf17fb24_0017fd75\n"
-        ".long .Lf17fb24_0017fc01\n"
-        ".long .Lf17fb24_0017fc14\n"
-        ".text\n"
-    );
+    /* Get pointer to clientStatic_t from import */
+    clientStatic_t *cls_ptr = (clientStatic_t *)imp_cls;
+    serverInfo_t *server1 = (serverInfo_t *)0;
+    serverInfo_t *server2 = (serverInfo_t *)0;
+    int diff;
+
+    /* Resolve server1 pointer */
+    if (source == 1) {
+        /* global servers */
+        if (s1 >= 0 && s1 < cls_ptr->numglobalservers)
+            server1 = &cls_ptr->globalServers[s1];
+    } else if (source == 2) {
+        /* favorite servers */
+        if ((unsigned int)s1 <= 0x7f)
+            server1 = &cls_ptr->favoriteServers[s1];
+    } else {
+        /* local servers (source == 0) */
+        if ((unsigned int)s1 <= 0x7f)
+            server1 = &cls_ptr->localServers[s1];
+    }
+
+    /* Resolve server2 pointer */
+    if (source == 1) {
+        if (s2 >= 0 && s2 < cls_ptr->numglobalservers)
+            server2 = &cls_ptr->globalServers[s2];
+    } else if (source == 2) {
+        if ((unsigned int)s2 <= 0x7f)
+            server2 = &cls_ptr->favoriteServers[s2];
+    } else {
+        if ((unsigned int)s2 <= 0x7f)
+            server2 = &cls_ptr->localServers[s2];
+    }
+
+    if (!server1 || !server2)
+        return 0;
+
+    /* Switch on sortKey (0-9), unknown key returns 0 */
+    diff = 0;
+    switch (sortKey) {
+    case 0: /* bPassword */
+        diff = (int)(unsigned char)server1->bPassword - (int)(unsigned char)server2->bPassword;
+        if (diff == 0) goto compare_ping_nosortdir;
+        break;
+    case 1: /* hardware presence sort */
+        {
+            unsigned char hw1 = server1->hardware;
+            unsigned char hw2 = server2->hardware;
+            diff = (int)hw1 - (int)hw2;
+            if (diff == 0) goto compare_ping_nosortdir;
+            if (diff < 0) {
+                /* hw1 < hw2: if hw1 == 0 then diff=1, else keep diff */
+                if (!hw1) diff = 1;
+            } else {
+                /* hw1 > hw2: if hw2 == 0 then diff=-1, else keep diff */
+                if (!hw2) diff = -1;
+            }
+        }
+        break;
+    case 2: /* hostname */
+        diff = LAN_CompareHostname(server1->hostName, server2->hostName);
+        if (diff == 0) goto compare_ping_nosortdir;
+        break;
+    case 3: /* mapName */
+        diff = I_stricmp(server1->mapName, server2->mapName);
+        if (diff == 0) goto compare_ping_nosortdir;
+        break;
+    case 4: /* clients */
+        diff = (int)(unsigned char)server1->clients - (int)(unsigned char)server2->clients;
+        if (diff == 0) goto compare_ping_nosortdir;
+        break;
+    case 5: /* gameType */
+        diff = I_stricmp(server1->gameType, server2->gameType);
+        if (diff != 0) break;
+        goto compare_ping_nosortdir;
+    case 6: /* voice */
+        diff = (int)(unsigned char)server1->voice - (int)(unsigned char)server2->voice;
+        if (diff == 0) goto compare_ping_nosortdir;
+        break;
+    case 7: /* pure */
+        diff = (int)(unsigned char)server1->pure - (int)(unsigned char)server2->pure;
+        if (diff == 0) goto compare_ping_nosortdir;
+        break;
+    case 8: /* mod */
+        diff = (int)(unsigned char)server1->mod - (int)(unsigned char)server2->mod;
+        if (diff == 0) {
+            /* fallthrough to ping compare with sortDir cleared */
+            goto compare_ping_nosortdir;
+        }
+        break;
+    case 9: /* ping */
+        goto compare_ping;
+    default:
+        diff = 0;
+        break;
+    }
+    goto apply_sortdir;
+
+compare_ping_nosortdir:
+    sortDir = 0;
+compare_ping:
+    diff = (int)(short)server1->ping - (int)(short)server2->ping;
+    if (diff == 0) {
+        /* tie-break: compare gameType then hostname */
+        diff = I_stricmp(server1->gameType, server2->gameType);
+        if (diff == 0)
+            diff = LAN_CompareHostname(server1->hostName, server2->hostName);
+    }
+
+apply_sortdir:
+    if (sortDir)
+        diff = -diff;
+    return diff;
 }
 
