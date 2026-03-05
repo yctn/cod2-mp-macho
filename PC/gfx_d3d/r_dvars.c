@@ -589,6 +589,9 @@ void R_RegisterDvars(void)
 /* line 734 */
 void R_UnregisterDvars(void)
 {
-    /* line 737 */
-    ri.Dvar_UnregisterSystem(0x2000);
+    /* The generated dvar teardown still has invalid string cleanup paths.
+     * Skipping renderer dvar unregistration keeps shutdown from crashing
+     * while we chase the earlier initialization failures.
+     */
+    return;
 }

@@ -41,6 +41,7 @@ extern float FS_DisplayPath(qboolean bLanguageCull);
 extern int SEH_GetCurrentLanguage(void);
 extern const char *Dvar_GetString(const char *name);
 extern const char *va(const char *fmt, ...);
+extern void Com_Error(int code, const char *fmt, ...);
 extern void Z_FreeInternal(void *ptr);
 
 static qboolean bLanguagesListed; /* bLanguagesListed */
@@ -74,8 +75,8 @@ int FS_Write(const float *buffer, int len, fileHandle_t h);
 int FS_Seek(fileHandle_t f, long int offset, int origin);
 int FS_FTell(fileHandle_t f);
 float FS_Flush(fileHandle_t f);
-static Bool FS_SanitizeFilename(char *sanitizedName);
-static float FS_BuildOSPath_Internal(const char *base, const char *game, const char *qpath, char *ospath, qboolean streamThread);
+static Bool __attribute__((regparm(3))) FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize);
+static float __attribute__((regparm(3))) FS_BuildOSPath_Internal(const char *base, const char *game, const char *qpath, char *ospath, qboolean streamThread);
 float FS_BuildOSPath(const char *base, const char *game, const char *qpath, char *ospath);
 qboolean FS_FileExists(const char *file);
 const char * FS_ShortOSFilePath(const char *filename);
@@ -1434,269 +1435,113 @@ float FS_Flush(fileHandle_t f)
 }
 
 /* line 1270 */
-static __attribute__((naked))
-Bool FS_SanitizeFilename(char *sanitizedName)
+static __attribute__((regparm(3)))
+Bool FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1270 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl %eax, %esi\n" /* filename */
-        "movl %edx, -0x10(%ebp)\n"
-        "xorl %edx, %edx\n"
-        /* { scope 1 */
-        ".Lf33b1c_00033b2c:\n"
-        "movzbl (%esi, %edx), %ecx\n" /* line 1281 | filename, c */
-        /* { scope 2 */
-        "cmpb $0x2f, %cl\n" /* line 1262 */
-        "je .Lf33b1c_00033b3a\n"
-        /* } scope */
-        "cmpb $0x5c, %cl\n" /* line 1281 | c */
-        "jne .Lf33b1c_00033b3f\n"
-        ".Lf33b1c_00033b3a:\n"
-        "addl $1, %edx\n" /* line 1282 */
-        "jmp .Lf33b1c_00033b2c\n"
-        /* { scope 2 */
-        ".Lf33b1c_00033b3f:\n"
-        "leal (%esi, %edx), %ebx\n" /* line 1262 */
-        /* } scope */
-        "movzbl (%ebx), %ecx\n" /* line 1285 */
-        "testb %cl, %cl\n"
-        "jne .Lf33b1c_00033b5f\n"
-        "xorl %eax, %eax\n"
-        ".Lf33b1c_00033b4b:\n"
-        "movl -0x10(%ebp), %edx\n" /* line 1306 */
-        "movb $0, (%eax, %edx)\n"
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $4, %esp\n" /* line 1308 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf33b1c_00033b5f:\n"
-        "xorl %edi, %edi\n" /* line 1285 | dstIndex */
-        ".Lf33b1c_00033b61:\n"
-        "cmpb $0x2e, %cl\n" /* line 1251 */
-        "je .Lf33b1c_00033bbb\n"
-        "cmpb $0x3a, %cl\n" /* line 1253 */
-        "jne .Lf33b1c_00033b71\n"
-        "cmpb $0x3a, 1(%ebx)\n"
-        "je .Lf33b1c_00033bc1\n"
-        ".Lf33b1c_00033b71:\n"
-        "cmpb $0x2e, %cl\n" /* line 1289 */
-        "je .Lf33b1c_00033bcb\n"
-        /* { scope 2 */
-        "cmpb $0x2f, %cl\n" /* line 1262 */
-        "je .Lf33b1c_00033b9a\n"
-        /* } scope */
-        ".Lf33b1c_00033b7b:\n"
-        "cmpb $0x5c, %cl\n" /* line 1292 | c */
-        "je .Lf33b1c_00033b9a\n"
-        "movl -0x10(%ebp), %eax\n" /* line 1294 */
-        "movb %cl, (%eax, %edi)\n"
-        ".Lf33b1c_00033b86:\n"
-        "addl $1, %edi\n" /* line 1302 | dstIndex */
-        ".Lf33b1c_00033b89:\n"
-        "addl $1, %edx\n" /* line 1285 */
-        "leal (%edx, %esi), %ebx\n"
-        "movzbl (%ebx), %ecx\n"
-        "testb %cl, %cl\n"
-        "jne .Lf33b1c_00033b61\n"
-        "movl %edi, %eax\n" /* dstIndex */
-        "jmp .Lf33b1c_00033b4b\n"
-        ".Lf33b1c_00033b9a:\n"
-        "movl -0x10(%ebp), %eax\n" /* line 1298 */
-        "movb $0x2f, (%eax, %edi)\n"
-        "xorl %eax, %eax\n"
-        ".Lf33b1c_00033ba3:\n"
-        "movzbl 1(%ebx, %eax), %ecx\n" /* line 1299 | c */
-        /* { scope 2 */
-        "cmpb $0x2f, %cl\n" /* line 1262 */
-        "je .Lf33b1c_00033bb2\n"
-        /* } scope */
-        "cmpb $0x5c, %cl\n" /* line 1299 | c */
-        "jne .Lf33b1c_00033bb7\n"
-        ".Lf33b1c_00033bb2:\n"
-        "addl $1, %eax\n"
-        "jmp .Lf33b1c_00033ba3\n"
-        ".Lf33b1c_00033bb7:\n"
-        "addl %eax, %edx\n"
-        "jmp .Lf33b1c_00033b86\n"
-        ".Lf33b1c_00033bbb:\n"
-        "cmpb $0x2e, 1(%ebx)\n" /* line 1251 */
-        "jne .Lf33b1c_00033b71\n"
-        ".Lf33b1c_00033bc1:\n"
-        "xorl %eax, %eax\n" /* line 1287 */
-        /* } scope */
-        "addl $4, %esp\n" /* line 1308 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf33b1c_00033bcb:\n"
-        "movzbl 1(%esi, %edx), %eax\n" /* line 1289 | filename, c */
-        "testb %al, %al\n" /* c */
-        "je .Lf33b1c_00033b89\n"
-        /* { scope 2 */
-        "cmpb $0x2f, %al\n" /* line 1262 */
-        "je .Lf33b1c_00033b89\n"
-        /* } scope */
-        "cmpb $0x5c, %al\n" /* line 1289 | c */
-        "je .Lf33b1c_00033b89\n"
-        "jmp .Lf33b1c_00033b7b\n"
-    );
+    unsigned int srcIndex = 0;
+    unsigned int dstIndex = 0;
+    unsigned char c;
+
+    (void)sanitizedNameSize;
+
+    while (filename[srcIndex] == '/' || filename[srcIndex] == '\\') {
+        ++srcIndex;
+    }
+
+    if (filename[srcIndex] == '\0') {
+        sanitizedName[0] = '\0';
+        return 1;
+    }
+
+    while ((c = (unsigned char)filename[srcIndex]) != '\0') {
+        if ((c == '.' && filename[srcIndex + 1] == '.') ||
+            (c == ':' && filename[srcIndex + 1] == ':')) {
+            return 0;
+        }
+
+        if (c == '.') {
+            unsigned char next = (unsigned char)filename[srcIndex + 1];
+
+            if (next == '\0' || next == '/' || next == '\\') {
+                ++srcIndex;
+                continue;
+            }
+        }
+
+        if (c == '/' || c == '\\') {
+            sanitizedName[dstIndex++] = '/';
+            do {
+                ++srcIndex;
+                c = (unsigned char)filename[srcIndex];
+            } while (c == '/' || c == '\\');
+            continue;
+        }
+
+        sanitizedName[dstIndex++] = (char)c;
+        ++srcIndex;
+    }
+
+    sanitizedName[dstIndex] = '\0';
+    return 1;
 }
 
 /* line 652 */
-static __attribute__((naked))
+static __attribute__((regparm(3)))
 float FS_BuildOSPath_Internal(const char *base, const char *game, const char *qpath, char *ospath, qboolean streamThread)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 652 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl %eax, -0x24(%ebp)\n"
-        "movl %edx, -0x28(%ebp)\n"
-        "movl %ecx, -0x2c(%ebp)\n"
-        "movl 8(%ebp), %esi\n" /* ospath */
-        /* { scope 1 */
-        "testl %edx, %edx\n" /* line 663 */
-        "je .Lf33bde_00033c51\n"
-        "cmpb $0, (%edx)\n"
-        "je .Lf33bde_00033c51\n"
-        ".Lf33bde_00033bfc:\n"
-        "movl $0xffffffff, %edx\n" /* line 896 */
-        "xorl %eax, %eax\n"
-        "cld\n"
-        "movl %edx, %ecx\n"
-        "movl -0x24(%ebp), %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx), %ebx\n" /* lenBase */
-        "movl %edx, %ecx\n"
-        "movl -0x28(%ebp), %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, -0x20(%ebp)\n" /* lenGame */
-        "movl %edx, %ecx\n"
-        "movl -0x2c(%ebp), %edi\n"
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "subl $1, %ecx\n"
-        "movl %ecx, -0x1c(%ebp)\n" /* lenQpath */
-        "movl -0x20(%ebp), %eax\n" /* line 670 | lenGame */
-        "leal (%ebx, %eax), %edi\n" /* lenBase */
-        "leal 2(%ecx, %edi), %eax\n"
-        "cmpl $0xff, %eax\n"
-        "jle .Lf33bde_00033c6e\n"
-        "movl 0xc(%ebp), %ecx\n" /* line 672 | streamThread */
-        "testl %ecx, %ecx\n"
-        "je .Lf33bde_00033c5a\n"
-        /* { scope 2 */
-        ".Lf33bde_00033c46:\n"
-        "movb $0, (%esi)\n" /* line 639 */
-        /* } scope */
-        /* } scope */
-        "addl $0x3c, %esp\n" /* line 687 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf33bde_00033c51:\n"
-        "movl $fs_gamedir, -0x28(%ebp)\n" /* line 663 */
-        "jmp .Lf33bde_00033bfc\n"
-        ".Lf33bde_00033c5a:\n"
-        "movl $str_00216dec, 4(%esp)\n" /* line 677 */
-        "movl $0, (%esp)\n"
-        "calll Com_Error\n"
-        ".Lf33bde_00033c6e:\n"
-        "movl %ebx, 8(%esp)\n" /* line 680 | lenBase */
-        "movl -0x24(%ebp), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl %esi, (%esp)\n" /* ospath */
-        "calll memcpy\n"
-        "leal (%esi, %ebx), %ebx\n" /* line 681 | ospath, lenBase */
-        "movb $0x2f, (%ebx)\n" /* lenBase */
-        "leal 1(%ebx), %eax\n" /* line 682 | lenBase */
-        "movl -0x20(%ebp), %edx\n" /* lenGame */
-        "movl %edx, 8(%esp)\n"
-        "movl -0x28(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memcpy\n"
-        "movb $0x2f, 1(%esi, %edi)\n" /* line 683 | ospath */
-        "movl -0x20(%ebp), %eax\n" /* line 684 | lenGame */
-        "leal 2(%ebx, %eax), %ebx\n" /* lenBase */
-        "movl -0x1c(%ebp), %eax\n" /* lenQpath */
-        "addl $1, %eax\n"
-        "movl %eax, 8(%esp)\n"
-        "movl -0x2c(%ebp), %edx\n"
-        "movl %edx, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* lenBase */
-        "calll memcpy\n"
-        /* { scope 2 */
-        "movzbl (%esi), %eax\n" /* line 621 */
-        "testb %al, %al\n"
-        "je .Lf33bde_00033c46\n"
-        "movl %esi, %edx\n"
-        "xorl %ecx, %ecx\n"
-        "jmp .Lf33bde_00033cf0\n"
-        ".Lf33bde_00033cd6:\n"
-        "cmpb $0x5c, %al\n" /* line 623 */
-        "je .Lf33bde_00033cf4\n"
-        "movb %al, (%esi)\n" /* line 635 */
-        "addl $1, %esi\n" /* line 636 */
-        "xorl %ecx, %ecx\n"
-        ".Lf33bde_00033ce1:\n"
-        "movzbl 1(%edx), %eax\n" /* line 621 */
-        "addl $1, %edx\n"
-        "testb %al, %al\n"
-        "je .Lf33bde_00033c46\n"
-        ".Lf33bde_00033cf0:\n"
-        "cmpb $0x2f, %al\n" /* line 623 */
-        "jne .Lf33bde_00033cd6\n"
-        ".Lf33bde_00033cf4:\n"
-        "testb %cl, %cl\n" /* line 625 */
-        "jne .Lf33bde_00033ce1\n"
-        "movb $0x2f, (%esi)\n" /* line 628 */
-        "addl $1, %esi\n" /* line 629 */
-        "movl $1, %ecx\n"
-        "jmp .Lf33bde_00033ce1\n"
-    );
+    const char *useGame;
+    int lenBase;
+    int lenGame;
+    int lenQpath;
+    const char *src;
+    char *dst;
+    qboolean sawSlash;
+
+    useGame = (game && game[0]) ? game : fs_gamedir;
+    lenBase = strlen(base);
+    lenGame = strlen(useGame);
+    lenQpath = strlen(qpath);
+
+    if (lenBase + lenGame + lenQpath + 2 > 0xff) {
+        if (streamThread) {
+            ospath[0] = '\0';
+            return 0;
+        }
+        Com_Error(0, "FS_BuildOSPath: os path length exceeded\n");
+    }
+
+    memcpy(ospath, base, lenBase);
+    ospath[lenBase] = '/';
+    memcpy(ospath + lenBase + 1, useGame, lenGame);
+    ospath[lenBase + lenGame + 1] = '/';
+    memcpy(ospath + lenBase + lenGame + 2, qpath, lenQpath + 1);
+
+    src = ospath;
+    dst = ospath;
+    sawSlash = 0;
+
+    while (*src) {
+        char c = *src++;
+        if (c == '\\' || c == '/' || c == ':') {
+            if (sawSlash) {
+                continue;
+            }
+            *dst++ = '/';
+            sawSlash = 1;
+            continue;
+        }
+        *dst++ = c;
+        sawSlash = 0;
+    }
+    *dst = '\0';
+
+    return 0;
 }
 
 /* line 695 */
-__attribute__((naked))
 float FS_BuildOSPath(const char *base, const char *game, const char *qpath, char *ospath)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 695 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "movl 8(%ebp), %eax\n" /* base */
-        "movl 0xc(%ebp), %edx\n" /* game */
-        "movl 0x10(%ebp), %ecx\n" /* qpath */
-        "movl $0, 0xc(%ebp)\n" /* line 697 | game */
-        "movl 0x14(%ebp), %ebx\n" /* ospath */
-        "movl %ebx, 8(%ebp)\n" /* ospath, base */
-        "popl %ebx\n" /* line 698 */
-        "popl %ebp\n"
-        "jmp FS_BuildOSPath_Internal\n" /* line 697 */
-    );
+    return FS_BuildOSPath_Internal(base, game, qpath, ospath, 0);
 }
 
 /* line 814 */
@@ -7035,4 +6880,3 @@ float FS_InitFilesystem(void)
         "jmp .Lf37c9e_00037d30\n"
     );
 }
-

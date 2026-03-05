@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
 
 extern int numtokens; /* 0x0 */
 extern define_t *globaldefines; /* 0x0 */
@@ -50,6 +51,7 @@ int PC_Directive_elif(source_t *source);
 int PC_DollarEvaluate(source_t *source, long int *intvalue, double *floatvalue, int integer);
 int PC_DollarDirective_evalfloat(source_t *source);
 int PC_DollarDirective_evalint(source_t *source);
+void StripDoubleQuotes(char *string);
 
 /* line 35 */
 __attribute__((naked))
@@ -3932,78 +3934,48 @@ int PC_ReadToken(source_t *source, token_t *token)
 }
 
 /* line 3094 */
-__attribute__((naked))
 int PC_ReadTokenHandle(int handle, pc_token_t *pc_token)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 3094 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x46c, %esp\n"
-        "movl 8(%ebp), %edx\n" /* handle */
-        "movl 0xc(%ebp), %esi\n" /* pc_token */
-        /* { scope 1 */
-        "leal -1(%edx), %eax\n" /* line 3099 */
-        "cmpl $0x3e, %eax\n"
-        "ja .Lfc0d7e_000c0df5\n"
-        "movl sourceFiles(, %edx, 4), %eax\n" /* line 3101 */
-        "testl %eax, %eax\n"
-        "je .Lfc0d7e_000c0df5\n"
-        "leal -0x458(%ebp), %ebx\n" /* line 3104 | token */
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll PC_ReadToken\n"
-        "movl %eax, %edi\n" /* ret */
-        "leal 0x10(%esi), %eax\n" /* line 3105 | pc_token */
-        "movl %eax, -0x460(%ebp)\n"
-        "movl %ebx, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll strcpy\n"
-        "movl -0x58(%ebp), %eax\n" /* line 3106 */
-        "movl %eax, (%esi)\n" /* pc_token */
-        "movl -0x54(%ebp), %eax\n" /* line 3107 */
-        "movl %eax, 4(%esi)\n" /* pc_token */
-        "movl -0x50(%ebp), %eax\n" /* line 3108 */
-        "movl %eax, 8(%esi)\n" /* pc_token */
-        "fldt -0x48(%ebp)\n" /* line 3109 */
-        "fstps 0xc(%esi)\n" /* pc_token */
-        "cmpl $1, (%esi)\n" /* line 3110 | pc_token */
-        "je .Lfc0d7e_000c0e04\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 3113 | ret */
-        "addl $0x46c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc0d7e_000c0df5:\n"
-        "xorl %edi, %edi\n" /* line 3111 | ret */
-        /* } scope */
-        "movl %edi, %eax\n" /* line 3113 | ret */
-        "addl $0x46c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lfc0d7e_000c0e04:\n"
-        "movl -0x460(%ebp), %eax\n" /* line 3111 */
-        "movl %eax, (%esp)\n"
-        "calll StripDoubleQuotes\n"
-        /* } scope */
-        "movl %edi, %eax\n" /* line 3113 | ret */
-        "addl $0x46c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    source_t *source;
+    struct script_s *script;
+    token_t token;
+    int ret;
+
+    if (handle <= 0 || handle >= 64) {
+        return 0;
+    }
+
+    if (!sourceFiles[handle]) {
+        return 0;
+    }
+
+    for (;;) {
+        ret = PC_ReadToken(sourceFiles[handle], &token);
+        if (ret) {
+            strcpy(pc_token->string, token.string);
+            pc_token->type = token.type;
+            pc_token->subtype = token.subtype;
+            pc_token->intvalue = token.intvalue;
+            pc_token->floatvalue = token.floatvalue;
+            if (pc_token->type == 1) {
+                StripDoubleQuotes(pc_token->string);
+            }
+            return ret;
+        }
+
+        source = sourceFiles[handle];
+        if (!source) {
+            return 0;
+        }
+
+        script = (struct script_s *)source->scriptstack;
+        if (!script || !script->script_p || script->script_p >= script->end_p ||
+            *script->script_p != '`') {
+            return 0;
+        }
+
+        ++script->script_p;
+    }
 }
 
 /* line 1035 */
@@ -6275,4 +6247,3 @@ int PC_DollarDirective_evalint(source_t *source)
         "jmp .Lfc295c_000c2af8\n"
     );
 }
-

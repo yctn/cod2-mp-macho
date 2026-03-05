@@ -3,6 +3,8 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdint.h>
+#include <string.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/ui/ui_utils.h"
@@ -12,13 +14,12 @@ extern keywordHash_t * itemParseKeywordHash[512]; /* 0x0 */
 extern keywordHash_t menuParseKeywords[33]; /* 0x0 */
 extern keywordHash_t itemParseKeywords[66]; /* 0x0 */
 static char string_00f3b9c0[4096]; /* string */
-static int g_load; /* g_load */
+static unsigned char g_load[0x640]; /* g_load */
 static char menuBuf[32768]; /* menuBuf */
 static keywordHash_t * menuParseKeywordHash[512]; /* menuParseKeywordHash */
 static char menuBuf1[4096]; /* menuBuf1 */
-
 void UI_MapLoadInfo(const char *filename);
-void PC_SourceError(int handle, char *format);
+void PC_SourceError(int handle, char *format, ...);
 qboolean PC_Script_Parse(int handle, const char * *out);
 void Window_SetStaticFlags(void *item, int flags);
 qboolean PC_ReadTokenHandle(int handle, void *token);
@@ -34,7 +35,9 @@ qboolean MenuParse_onOpen(const char (*item)[4], int handle);
 qboolean MenuParse_onClose(const char (*item)[4], int handle);
 qboolean MenuParse_onESC(const char (*item)[4], int handle);
 qboolean MenuParse_soundLoop(const char (*item)[4], int handle);
-void Item_ValidateTypeData(void);
+void __attribute__((regparm(2))) Item_ValidateTypeData(itemDef_t *item, int handle);
+qboolean Item_IsEditFieldDef(itemDef_t *item);
+editFieldDef_t *Item_GetEditFieldDef(itemDef_t *item);
 qboolean ItemParse_textsavegame(const char (*item)[4], int handle);
 qboolean ItemParse_notselectable(const char (*item)[4], int handle);
 qboolean ItemParse_noScrollBars(const char (*item)[4], int handle);
@@ -65,7 +68,19 @@ qboolean ItemParse_autowrapped(const char (*item)[4], int handle);
 qboolean MenuParse_execKey(const char (*item)[4], int handle);
 qboolean ItemParse_execKey(const char (*item)[4], int handle);
 qboolean ItemParse_textfile(const char (*item)[4], int handle);
-static Bool Menu_New(int handle);
+int FS_FOpenFileByMode(const char *qpath, fileHandle_t *f, fsMode_t mode);
+int FS_Read(void *buffer, int len, fileHandle_t h);
+void FS_FCloseFile(fileHandle_t h);
+int Com_Compress(char *data_p);
+void Com_BeginParseSession(const char *filename);
+void Com_EndParseSession(void);
+const char *Com_Parse(const char **data_p);
+int I_stricmp(const char *s1, const char *s2);
+Bool I_isupper(int c);
+void Com_Printf(const char *fmt, ...);
+void Com_Error(errorParm_t code, const char *fmt, ...);
+void Menu_SetCursorItem(menuDef_t *menu, int cursorItem);
+static Bool __attribute__((regparm(2))) Menu_New(int handle, int imageTrack);
 qboolean Item_Parse(int handle, const char (*item)[4]);
 qboolean MenuParse_itemDef(const char (*item)[4], int handle);
 void Item_SetupKeywordHash(void);
@@ -134,9 +149,58 @@ qboolean ItemParse_maxChars(const char (*item)[4], int handle);
 qboolean ItemParse_maxPaintChars(const char (*item)[4], int handle);
 qboolean ItemParse_ownerdrawFlag(const char (*item)[4], int handle);
 qboolean ItemParse_execKeyInt(const char (*item)[4], int handle);
-static Bool UI_ParseMenuInternal(int imageTrack);
+static Bool __attribute__((regparm(2))) UI_ParseMenuInternal(const char *menuFile, int imageTrack);
 MenuList * UI_LoadMenus(const char *menuFile, int imageTrack);
 MenuList * UI_LoadMenu(const char *menuFile, int imageTrack);
+
+static loadAssets_t *UI_LoadAssets(void)
+{
+    return (loadAssets_t *)g_load;
+}
+
+static MenuList *UI_MenuList(void)
+{
+    return (MenuList *)(g_load + sizeof(loadAssets_t));
+}
+
+static itemDef_t **UI_MenuItemStorage(void)
+{
+    return (itemDef_t **)(g_load + 64);
+}
+
+static menuDef_t **UI_MenuStorage(void)
+{
+    return (menuDef_t **)(g_load + 1088);
+}
+
+static keywordHash_t *UI_KeywordHashNext(keywordHash_t *hash)
+{
+    return (keywordHash_t *)(uintptr_t)hash->next;
+}
+
+static unsigned int UI_KeywordHashKey(const char *keyword)
+{
+    int hash;
+    int weight;
+    unsigned char c;
+
+    hash = 0;
+    weight = 0x77;
+    c = (unsigned char)*keyword;
+
+    while (c != '\0') {
+        int ch = (char)c;
+
+        if (I_isupper(ch))
+            ch += 0x20;
+
+        hash += ch * weight;
+        weight += 1;
+        c = (unsigned char)*++keyword;
+    }
+
+    return (unsigned int)((hash ^ (hash >> 10) ^ (hash >> 20)) & 0x1ff);
+}
 
 /* line 103 */
 __attribute__((naked))
@@ -277,7 +341,7 @@ void UI_MapLoadInfo(const char *filename)
 
 /* line 159 */
 __attribute__((naked))
-void PC_SourceError(int handle, char *format)
+void PC_SourceError(int handle, char *format, ...)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 159 */
@@ -512,96 +576,69 @@ qboolean MenuParse_soundLoop(const char (*item)[4], int handle)
 }
 
 /* line 1117 */
-__attribute__((naked))
-void Item_ValidateTypeData(void)
+void __attribute__((regparm(2))) Item_ValidateTypeData(itemDef_t *item, int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1117 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "movl %eax, %ebx\n" /* item */
-        "movl 0x2ec(%eax), %ecx\n" /* line 1119 */
-        "testl %ecx, %ecx\n"
-        "je .Lf1a6484_001a64c5\n"
-        "movl 0x274(%eax), %ecx\n" /* line 1121 */
-        "movl 0x270(%eax), %eax\n"
-        "cmpl %eax, %ecx\n"
-        "je .Lf1a6484_001a64bf\n"
-        "movl %eax, 0xc(%esp)\n" /* line 1122 */
-        "movl %ecx, 8(%esp)\n"
-        "movl $str_002b4104, 4(%esp)\n" /* "Attempting to change type from %d to %d.
-Move the type defin" */
-        "movl %edx, (%esp)\n" /* handle */
-        "calll PC_SourceError\n"
-        ".Lf1a6484_001a64bf:\n"
-        "addl $0x14, %esp\n" /* line 1149 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1a6484_001a64c5:\n"
-        "movl 0x270(%eax), %eax\n" /* line 1126 */
-        "movl %eax, 0x274(%ebx)\n" /* item */
-        "cmpl $6, %eax\n" /* line 1127 */
-        "je .Lf1a6484_001a6583\n"
-        "cmpl $4, %eax\n" /* line 1131 */
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $9, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $0x10, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $0x12, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $0xb, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $0xe, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $0xa, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $0x11, %eax\n"
-        "je .Lf1a6484_001a6527\n"
-        "cmpl $0xc, %eax\n" /* line 1145 */
-        "jne .Lf1a6484_001a64bf\n"
-        "movl $4, 4(%esp)\n" /* line 1147 */
-        "movl $0x188, (%esp)\n"
-        "calll UI_Alloc\n"
-        "movl %eax, 0x2ec(%ebx)\n" /* item */
-        "jmp .Lf1a6484_001a64bf\n"
-        ".Lf1a6484_001a6527:\n"
-        "movl $4, 4(%esp)\n" /* line 1133 */
-        "movl $0x20, (%esp)\n"
-        "calll UI_Alloc\n"
-        "movl %eax, 0x2ec(%ebx)\n" /* item */
-        "movl 0x270(%ebx), %eax\n" /* line 1134 | item */
-        "cmpl $4, %eax\n"
-        "je .Lf1a6484_001a6564\n"
-        "cmpl $0x10, %eax\n"
-        "je .Lf1a6484_001a6564\n"
-        "cmpl $9, %eax\n"
-        "je .Lf1a6484_001a6564\n"
-        "cmpl $0x12, %eax\n"
-        "je .Lf1a6484_001a6564\n"
-        "cmpl $0x11, %eax\n"
-        "jne .Lf1a6484_001a64bf\n"
-        /* { scope 1 */
-        ".Lf1a6484_001a6564:\n"
-        "movl %ebx, (%esp)\n" /* line 1136 | item */
-        "calll Item_GetEditFieldDef\n"
-        "movl 0x18(%eax), %edx\n" /* line 1139 | handle */
-        "testl %edx, %edx\n" /* handle */
-        "jne .Lf1a6484_001a64bf\n"
-        "movl $0x100, 0x18(%eax)\n" /* line 1141 */
-        "jmp .Lf1a6484_001a64bf\n"
-        /* } scope */
-        ".Lf1a6484_001a6583:\n"
-        "movl $4, 4(%esp)\n" /* line 1129 */
-        "movl $0x110, (%esp)\n"
-        "calll UI_Alloc\n"
-        "movl %eax, 0x2ec(%ebx)\n" /* item */
-        "jmp .Lf1a6484_001a64bf\n"
-    );
+    editFieldDef_t *editDef;
+
+    if (item->typeData.data) {
+        if (item->dataType != item->type) {
+            PC_SourceError(handle,
+                "Attempting to change type from %d to %d.\nMove the type definition higher up in the itemDef.\n",
+                item->dataType, item->type);
+        }
+        return;
+    }
+
+    item->dataType = item->type;
+
+    switch (item->type) {
+    case 6:
+        item->typeData.listBox = UI_Alloc(sizeof(listBoxDef_t), 4);
+        return;
+
+    case 4:
+    case 9:
+    case 0x10:
+    case 0x12:
+    case 0xb:
+    case 0xe:
+    case 0xa:
+    case 0:
+    case 0x11:
+        item->typeData.editField = UI_Alloc(sizeof(editFieldDef_t), 4);
+        if (item->type != 4 && item->type != 0x10 && item->type != 9 &&
+            item->type != 0x12 && item->type != 0x11) {
+            return;
+        }
+
+        editDef = Item_GetEditFieldDef(item);
+        if (editDef && !editDef->maxPaintChars) {
+            editDef->maxPaintChars = 0x100;
+        }
+        return;
+
+    case 0xc:
+        item->typeData.multi = UI_Alloc(sizeof(multiDef_t), 4);
+        return;
+    }
+}
+
+static void Item_InitDvarEditField(itemDef_t *item)
+{
+    editFieldDef_t *editDef;
+
+    if (!item->dvar || !item->typeData.data || !Item_IsEditFieldDef(item)) {
+        return;
+    }
+
+    editDef = Item_GetEditFieldDef(item);
+    if (!editDef) {
+        return;
+    }
+
+    editDef->minVal = -1.0f;
+    editDef->maxVal = -1.0f;
+    editDef->defVal = -1.0f;
 }
 
 /* line 1201 */
@@ -978,7 +1015,7 @@ void Menu_PostParse(menuDef_t *menu)
     int size = *(int *)((char *)menu + 0x218) * 4;
     void *items = UI_Alloc(size, 4);
     *(void **)((char *)menu + 0x27c) = items;
-    memcpy(items, (void *)((char *)&g_load + 64), size);
+    memcpy(items, (void *)(g_load + 64), size);
     if (*(int *)((char *)menu + 0x214)) {
         rectDef_t rect;
         rect.x = 0.0f;
@@ -1212,460 +1249,159 @@ qboolean ItemParse_textfile(const char (*item)[4], int handle)
 }
 
 /* line 2515 */
-static __attribute__((naked))
-Bool Menu_New(int handle)
+static Bool __attribute__((regparm(2))) Menu_New(int handle, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2515 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x43c, %esp\n"
-        "movl %eax, -0x434(%ebp)\n"
-        "movl %edx, %ebx\n" /* imageTrack */
-        /* { scope 1: token */
-        "movl $4, 4(%esp)\n" /* line 2519 */
-        "movl $0x280, (%esp)\n"
-        "calll UI_Alloc\n"
-        "movl %eax, -0x430(%ebp)\n" /* menu */
-        "movl $0x280, 8(%esp)\n" /* line 430 */
-        "movl $0, 4(%esp)\n"
-        "movl %eax, (%esp)\n"
-        "calll memset\n"
-        "movl $0xffffffff, 4(%esp)\n" /* line 431 */
-        "movl -0x430(%ebp), %eax\n" /* menu */
-        "movl %eax, (%esp)\n"
-        "calll Menu_SetCursorItem\n"
-        "movl g_load+20, %eax\n" /* line 432 */
-        "movl -0x430(%ebp), %edx\n" /* menu */
-        "movl %eax, 0x238(%edx)\n"
-        "movl g_load+24, %eax\n" /* line 433 */
-        "movl %eax, 0x23c(%edx)\n"
-        "movl g_load+12, %eax\n" /* line 434 */
-        "movl %eax, 0x234(%edx)\n"
-        "movl g_load+16, %eax\n" /* line 435 */
-        "movl %eax, 0x230(%edx)\n"
-        "movl %ebx, 0x258(%edx)\n" /* line 436 */
-        "movl $g_load+64, 0x27c(%edx)\n" /* line 437 */
-        "movl $0x210, 8(%esp)\n" /* line 421 */
-        "movl $0, 4(%esp)\n"
-        "movl %edx, (%esp)\n"
-        "calll memset\n"
-        "movl $0x3f800000, %eax\n" /* line 422 */
-        "movl -0x430(%ebp), %ecx\n" /* menu */
-        "movl %eax, 0xe0(%ecx)\n"
-        "movl %eax, 0x1d8(%ecx)\n" /* line 423 */
-        "movl %eax, 0x1d4(%ecx)\n"
-        "movl %eax, 0x1d0(%ecx)\n"
-        "movl %eax, 0x1cc(%ecx)\n"
-        "movl $0xffffffff, 0xcc(%ecx)\n" /* line 424 */
-        /* { scope 2 */
-        "leal -0x428(%ebp), %eax\n" /* line 2451 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x434(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a6dba_001a6ec8\n"
-        "cmpb $0x7b, -0x418(%ebp)\n" /* line 2453 */
-        "je .Lf1a6dba_001a6ef5\n"
-        ".Lf1a6dba_001a6ec8:\n"
-        "xorl %eax, %eax\n" /* line 2461 */
-        /* } scope */
-        /* } scope */
-        ".Lf1a6dba_001a6eca:\n"
-        "addl $0x43c, %esp\n" /* line 2546 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a6dba_001a6ed5:\n"
-        "leal -0x418(%ebp), %eax\n" /* line 2471 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002b4208, 4(%esp)\n" /* "unknown menu keyword %s" */
-        "movl -0x434(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll PC_SourceError\n"
-        ".Lf1a6dba_001a6ef5:\n"
-        "movl $0x410, 8(%esp)\n" /* line 2458 */
-        "movl $0, 4(%esp)\n"
-        "leal -0x428(%ebp), %ecx\n" /* token */
-        "movl %ecx, (%esp)\n"
-        "calll memset\n"
-        "leal -0x428(%ebp), %eax\n" /* line 2459 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl -0x434(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a6dba_001a7076\n"
-        "cmpb $0x7d, -0x418(%ebp)\n" /* line 2465 */
-        "je .Lf1a6dba_001a7091\n"
-        /* { scope 3 */
-        "movzbl -0x418(%ebp), %eax\n" /* line 461 */
-        "testb %al, %al\n"
-        "jne .Lf1a6dba_001a6fee\n"
-        "xorl %ebx, %ebx\n" /* hash */
-        "xorl %edx, %edx\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        ".Lf1a6dba_001a6f55:\n"
-        "xorl %edx, %ebx\n" /* line 489 | hash */
-        "xorl %eax, %ebx\n" /* hash */
-        "andl $0x1ff, %ebx\n" /* hash */
-        "movl menuParseKeywordHash(, %ebx, 4), %ebx\n" /* hash */
-        "testl %ebx, %ebx\n" /* hash */
-        "je .Lf1a6dba_001a6ed5\n"
-        "leal -0x418(%ebp), %eax\n" /* line 491 */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n" /* hash */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a6dba_001a6fa9\n"
-        ".Lf1a6dba_001a6f86:\n"
-        "movl 8(%ebx), %ebx\n" /* line 489 | hash */
-        "testl %ebx, %ebx\n" /* hash */
-        "je .Lf1a6dba_001a6ed5\n"
-        "leal -0x418(%ebp), %eax\n" /* line 491 */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n" /* hash */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a6dba_001a6f86\n"
-        ".Lf1a6dba_001a6fa9:\n"
-        "movl -0x434(%ebp), %edx\n" /* line 2474 */
-        "movl %edx, 4(%esp)\n"
-        "movl -0x430(%ebp), %ecx\n" /* menu */
-        "movl %ecx, (%esp)\n"
-        "calll *4(%ebx)\n" /* key */
-        "testl %eax, %eax\n"
-        "jne .Lf1a6dba_001a6ef5\n"
-        "leal -0x418(%ebp), %eax\n" /* line 2476 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002b41b0, 4(%esp)\n" /* "couldn't parse menu keyword %s" */
-        "movl -0x434(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll PC_SourceError\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf1a6dba_001a6eca\n"
-        /* { scope 3 */
-        ".Lf1a6dba_001a6fee:\n"
-        "leal -0x417(%ebp), %ecx\n" /* line 461 */
-        "movl %ecx, -0x42c(%ebp)\n"
-        "xorl %ebx, %ebx\n" /* hash */
-        "leal -0x418(%ebp), %esi\n"
-        "movl $0x77, %edi\n"
-        "jmp .Lf1a6dba_001a7032\n"
-        ".Lf1a6dba_001a7009:\n"
-        "movsbl (%esi), %eax\n" /* line 464 */
-        "addl $0x20, %eax\n"
-        "imull %edi, %eax\n"
-        "addl %eax, %ebx\n" /* hash */
-        "movl -0x42c(%ebp), %esi\n" /* line 466 */
-        "movzbl -0x48e(%ebp, %edi), %eax\n" /* line 461 */
-        "leal 1(%esi), %ecx\n"
-        "movl %ecx, -0x42c(%ebp)\n"
-        "addl $1, %edi\n"
-        "testb %al, %al\n"
-        "je .Lf1a6dba_001a7067\n"
-        ".Lf1a6dba_001a7032:\n"
-        "movsbl %al, %eax\n" /* line 463 */
-        "movl %eax, (%esp)\n"
-        "calll I_isupper\n"
-        "testb %al, %al\n"
-        "jne .Lf1a6dba_001a7009\n"
-        "movsbl (%esi), %eax\n" /* line 466 */
-        "imull %edi, %eax\n"
-        "addl %eax, %ebx\n" /* hash */
-        "movl -0x42c(%ebp), %esi\n"
-        "movzbl -0x48e(%ebp, %edi), %eax\n" /* line 461 */
-        "leal 1(%esi), %ecx\n"
-        "movl %ecx, -0x42c(%ebp)\n"
-        "addl $1, %edi\n"
-        "testb %al, %al\n"
-        "jne .Lf1a6dba_001a7032\n"
-        ".Lf1a6dba_001a7067:\n"
-        "movl %ebx, %edx\n" /* hash */
-        "sarl $0xa, %edx\n"
-        "movl %ebx, %eax\n" /* hash */
-        "sarl $0x14, %eax\n"
-        "jmp .Lf1a6dba_001a6f55\n"
-        /* } scope */
-        ".Lf1a6dba_001a7076:\n"
-        "movl $str_002b4194, 4(%esp)\n" /* line 2461 */
-        "movl -0x434(%ebp), %edx\n"
-        "movl %edx, (%esp)\n"
-        "calll PC_SourceError\n"
-        "jmp .Lf1a6dba_001a6ec8\n"
-        /* } scope */
-        ".Lf1a6dba_001a7091:\n"
-        "movl -0x430(%ebp), %eax\n" /* line 2524 | menu */
-        "movl 0xc0(%eax), %edx\n"
-        "testl %edx, %edx\n"
-        "je .Lf1a6dba_001a70ed\n"
-        "movl %eax, (%esp)\n" /* line 2538 */
-        "calll Menu_PostParse\n"
-        "cmpl $0x7f, g_load+56\n" /* line 2540 */
-        "jg .Lf1a6dba_001a70d7\n"
-        ".Lf1a6dba_001a70b2:\n"
-        "movl g_load+56, %edx\n" /* line 2543 */
-        "movl g_load+60, %eax\n"
-        "movl -0x430(%ebp), %ecx\n" /* menu */
-        "movl %ecx, (%eax, %edx, 4)\n"
-        "addl $1, g_load+56\n" /* line 2544 */
-        "movl $1, %eax\n"
-        "jmp .Lf1a6dba_001a6eca\n"
-        ".Lf1a6dba_001a70d7:\n"
-        "movl $str_002b41e4, 4(%esp)\n" /* line 2541 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1a6dba_001a70b2\n"
-        ".Lf1a6dba_001a70ed:\n"
-        "movl $str_002b41d0, 4(%esp)\n" /* line 2526 */
-        "movl -0x434(%ebp), %ecx\n"
-        "movl %ecx, (%esp)\n"
-        "calll PC_SourceError\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf1a6dba_001a6eca\n"
-    );
+    loadAssets_t *load;
+    MenuList *menuList;
+    menuDef_t *menu;
+    keywordHash_t *hash;
+    pc_token_t token;
+    byte *menuBytes;
+
+    load = UI_LoadAssets();
+    menuList = UI_MenuList();
+
+    menu = (menuDef_t *)UI_Alloc(0x280, 4);
+    memset(menu, 0, 0x280);
+    Menu_SetCursorItem(menu, -1);
+
+    menuBytes = (byte *)menu;
+    *(float *)(menuBytes + 0x238) = load->fadeAmount;
+    *(float *)(menuBytes + 0x23c) = load->fadeInAmount;
+    *(float *)(menuBytes + 0x234) = load->fadeClamp;
+    *(int *)(menuBytes + 0x230) = load->fadeCycle;
+    *(int *)(menuBytes + 0x258) = imageTrack;
+    *(itemDef_t ***)(menuBytes + 0x27c) = UI_MenuItemStorage();
+
+    memset(menu, 0, 0x210);
+    *(float *)(menuBytes + 0xe0) = 1.0f;
+    *(float *)(menuBytes + 0x1d8) = 1.0f;
+    *(float *)(menuBytes + 0x1d4) = 1.0f;
+    *(float *)(menuBytes + 0x1d0) = 1.0f;
+    *(float *)(menuBytes + 0x1cc) = 1.0f;
+    *(int *)(menuBytes + 0xcc) = -1;
+
+    if (!PC_ReadTokenHandle(handle, &token) || token.string[0] != '{')
+        return 0;
+
+    for (;;) {
+        memset(&token, 0, sizeof(token));
+
+        if (!PC_ReadTokenHandle(handle, &token)) {
+            PC_SourceError(handle, "end of file inside menu");
+            return 0;
+        }
+
+        if (token.string[0] == '}')
+            break;
+
+        hash = menuParseKeywordHash[UI_KeywordHashKey(token.string)];
+        while (hash != NULL && I_stricmp(hash->keyword, token.string) != 0)
+            hash = UI_KeywordHashNext(hash);
+
+        if (hash == NULL) {
+            PC_SourceError(handle, "unknown menu keyword %s", token.string);
+            continue;
+        }
+
+        if (!((qboolean (*)(menuDef_t *, int))hash->func)(menu, handle)) {
+            PC_SourceError(handle, "couldn't parse menu keyword %s", token.string);
+            return 0;
+        }
+    }
+
+    if (*(const char **)(menuBytes + 0xc0) == NULL) {
+        PC_SourceError(handle, "menu has no name");
+        return 0;
+    }
+
+    Menu_PostParse(menu);
+
+    if (menuList->menuCount > 0x7f)
+        Com_Error(ERR_DROP, "too many menus");
+
+    menuList->menus[menuList->menuCount] = menu;
+    menuList->menuCount += 1;
+    return 1;
 }
 
 /* line 503 */
-__attribute__((naked))
 qboolean Item_Parse(int handle, const char (*item)[4])
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 503 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x43c, %esp\n"
-        /* { scope 1 */
-        "leal -0x428(%ebp), %eax\n" /* line 508 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* handle */
-        "movl %edx, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a710a_001a7138\n"
-        "cmpb $0x7b, -0x418(%ebp)\n" /* line 510 */
-        "je .Lf1a710a_001a7162\n"
-        ".Lf1a710a_001a7138:\n"
-        "xorl %eax, %eax\n" /* line 534 */
-        /* } scope */
-        ".Lf1a710a_001a713a:\n"
-        "addl $0x43c, %esp\n" /* line 537 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf1a710a_001a7145:\n"
-        "leal -0x418(%ebp), %edx\n" /* line 528 */
-        "movl %edx, 8(%esp)\n"
-        "movl $str_002b4244, 4(%esp)\n" /* "unknown menu item keyword %s" */
-        "movl 8(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_SourceError\n"
-        ".Lf1a710a_001a7162:\n"
-        "leal -0x428(%ebp), %eax\n" /* line 516 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl 8(%ebp), %edx\n" /* handle */
-        "movl %edx, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a710a_001a72b4\n"
-        "cmpb $0x7d, -0x418(%ebp)\n" /* line 522 */
-        "je .Lf1a710a_001a72ce\n"
-        /* { scope 2 */
-        "movzbl -0x418(%ebp), %eax\n" /* line 461 */
-        "testb %al, %al\n"
-        "jne .Lf1a710a_001a722c\n"
-        "xorl %edi, %edi\n" /* hash */
-        "xorl %eax, %eax\n"
-        "xorl %edx, %edx\n"
-        /* } scope */
-        ".Lf1a710a_001a71a1:\n"
-        "xorl %edi, %eax\n" /* line 489 | hash */
-        "xorl %edx, %eax\n"
-        "andl $0x1ff, %eax\n"
-        "movl itemParseKeywordHash(, %eax, 4), %ebx\n"
-        "testl %ebx, %ebx\n"
-        "je .Lf1a710a_001a7145\n"
-        "leal -0x418(%ebp), %eax\n" /* line 491 */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a710a_001a71f0\n"
-        ".Lf1a710a_001a71cd:\n"
-        "movl 8(%ebx), %ebx\n" /* line 489 */
-        "testl %ebx, %ebx\n"
-        "je .Lf1a710a_001a7145\n"
-        "leal -0x418(%ebp), %eax\n" /* line 491 */
-        "movl %eax, 4(%esp)\n"
-        "movl (%ebx), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a710a_001a71cd\n"
-        ".Lf1a710a_001a71f0:\n"
-        "movl 8(%ebp), %edx\n" /* line 531 | handle */
-        "movl %edx, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* item */
-        "movl %eax, (%esp)\n"
-        "calll *4(%ebx)\n" /* key */
-        "testl %eax, %eax\n"
-        "jne .Lf1a710a_001a7162\n"
-        "leal -0x418(%ebp), %edx\n" /* line 533 */
-        "movl %edx, 8(%esp)\n"
-        "movl $str_002b4220, 4(%esp)\n" /* "couldn't parse menu item keyword %s" */
-        "movl 8(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_SourceError\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf1a710a_001a713a\n"
-        /* { scope 2 */
-        ".Lf1a710a_001a722c:\n"
-        "leal -0x417(%ebp), %edx\n" /* line 461 */
-        "movl %edx, -0x42c(%ebp)\n"
-        "leal -0x418(%ebp), %esi\n"
-        "xorl %edi, %edi\n" /* hash */
-        "movl $0x77, %ebx\n"
-        "jmp .Lf1a710a_001a7270\n"
-        ".Lf1a710a_001a7247:\n"
-        "movsbl (%esi), %eax\n" /* line 464 */
-        "addl $0x20, %eax\n"
-        "imull %ebx, %eax\n"
-        "addl %eax, %edi\n" /* hash */
-        "movl -0x42c(%ebp), %esi\n" /* line 466 */
-        "movzbl -0x48e(%ebp, %ebx), %eax\n" /* line 461 */
-        "leal 1(%esi), %edx\n"
-        "movl %edx, -0x42c(%ebp)\n"
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "je .Lf1a710a_001a72a5\n"
-        ".Lf1a710a_001a7270:\n"
-        "movsbl %al, %eax\n" /* line 463 */
-        "movl %eax, (%esp)\n"
-        "calll I_isupper\n"
-        "testb %al, %al\n"
-        "jne .Lf1a710a_001a7247\n"
-        "movsbl (%esi), %eax\n" /* line 466 */
-        "imull %ebx, %eax\n"
-        "addl %eax, %edi\n" /* hash */
-        "movl -0x42c(%ebp), %esi\n"
-        "movzbl -0x48e(%ebp, %ebx), %eax\n" /* line 461 */
-        "leal 1(%esi), %edx\n"
-        "movl %edx, -0x42c(%ebp)\n"
-        "addl $1, %ebx\n"
-        "testb %al, %al\n"
-        "jne .Lf1a710a_001a7270\n"
-        ".Lf1a710a_001a72a5:\n"
-        "movl %edi, %eax\n" /* hash */
-        "sarl $0xa, %eax\n"
-        "movl %edi, %edx\n" /* hash */
-        "sarl $0x14, %edx\n"
-        "jmp .Lf1a710a_001a71a1\n"
-        /* } scope */
-        ".Lf1a710a_001a72b4:\n"
-        "movl $str_002b4174, 4(%esp)\n" /* line 518 */
-        "movl 8(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll PC_SourceError\n"
-        "xorl %eax, %eax\n"
-        "jmp .Lf1a710a_001a713a\n"
-        ".Lf1a710a_001a72ce:\n"
-        "movl $1, %eax\n" /* line 522 */
-        "jmp .Lf1a710a_001a713a\n"
-    );
+    keywordHash_t *hash;
+    pc_token_t token;
+
+    if (!PC_ReadTokenHandle(handle, &token) || token.string[0] != '{')
+        return 0;
+
+    for (;;) {
+        memset(&token, 0, sizeof(token));
+
+        if (!PC_ReadTokenHandle(handle, &token)) {
+            PC_SourceError(handle, "end of file inside menu item");
+            return 0;
+        }
+
+        if (token.string[0] == '}')
+            return 1;
+
+        hash = itemParseKeywordHash[UI_KeywordHashKey(token.string)];
+        while (hash != NULL && I_stricmp(hash->keyword, token.string) != 0)
+            hash = UI_KeywordHashNext(hash);
+
+        if (hash == NULL) {
+            PC_SourceError(handle, "unknown menu item keyword %s", token.string);
+            continue;
+        }
+
+        if (!((qboolean (*)(const char (*)[4], int))hash->func)(item, handle)) {
+            PC_SourceError(handle, "couldn't parse menu item keyword %s", token.string);
+            return 0;
+        }
+    }
 }
 
 /* line 938 */
-__attribute__((naked))
 qboolean MenuParse_itemDef(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 938 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* item */
-        "movl 0x218(%edi), %edx\n" /* line 942 | item */
-        "cmpl $0xff, %edx\n"
-        "jle .Lf1a72d8_001a72ff\n"
-        ".Lf1a72d8_001a72f2:\n"
-        "movl $1, %eax\n" /* line 951 */
-        ".Lf1a72d8_001a72f7:\n"
-        "addl $0x1c, %esp\n" /* line 954 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1a72d8_001a72ff:\n"
-        "movl 0x27c(%edi), %eax\n" /* line 944 | item */
-        "leal (%eax, %edx, 4), %ebx\n"
-        "movl $4, 4(%esp)\n"
-        "movl $0x2f4, (%esp)\n"
-        "calll UI_Alloc\n"
-        "movl %eax, (%ebx)\n"
-        "movl 0x258(%edi), %esi\n" /* line 945 | item, imageTrack */
-        "movl 0x218(%edi), %edx\n" /* item */
-        "movl 0x27c(%edi), %eax\n" /* item */
-        "movl (%eax, %edx, 4), %ebx\n" /* item */
-        /* { scope 1 */
-        "movl $0x2f4, 8(%esp)\n" /* line 444 */
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll memset\n"
-        "movl $0x3f0ccccd, 0x28c(%ebx)\n" /* line 445 */
-        "movl %esi, 0x2f0(%ebx)\n" /* line 446 */
-        "movl $0x210, 8(%esp)\n" /* line 421 */
-        "movl $0, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll memset\n"
-        "movl $0x3f800000, %eax\n" /* line 422 */
-        "movl %eax, 0xe0(%ebx)\n"
-        "movl %eax, 0x1d8(%ebx)\n" /* line 423 */
-        "movl %eax, 0x1d4(%ebx)\n"
-        "movl %eax, 0x1d0(%ebx)\n"
-        "movl %eax, 0x1cc(%ebx)\n"
-        "movl $0xffffffff, 0xcc(%ebx)\n" /* line 424 */
-        /* } scope */
-        "movl 0x218(%edi), %edx\n" /* line 946 | item */
-        "movl 0x27c(%edi), %eax\n" /* item */
-        "movl (%eax, %edx, 4), %eax\n"
-        "movl %eax, 4(%esp)\n"
-        "movl 0xc(%ebp), %eax\n" /* handle */
-        "movl %eax, (%esp)\n"
-        "calll Item_Parse\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a72d8_001a72f7\n"
-        "movl 0x218(%edi), %edx\n" /* line 950 | item */
-        "movl 0x27c(%edi), %eax\n" /* item */
-        "movl (%eax, %edx, 4), %eax\n"
-        "movl %eax, (%esp)\n"
-        "calll Item_InitControls\n"
-        "movl 0x218(%edi), %eax\n" /* line 951 | item */
-        "movl 0x27c(%edi), %edx\n" /* item */
-        "movl (%edx, %eax, 4), %edx\n"
-        "movl %edi, 0x29c(%edx)\n" /* item */
-        "addl $1, %eax\n"
-        "movl %eax, 0x218(%edi)\n" /* item */
-        "jmp .Lf1a72d8_001a72f2\n"
-    );
+    itemDef_t *itemDef;
+    itemDef_t **items;
+    byte *menuBytes;
+    byte *itemBytes;
+    int itemCount;
+    int imageTrack;
+
+    menuBytes = (byte *)item;
+    itemCount = *(int *)(menuBytes + 0x218);
+    if (itemCount > 0xff)
+        return 1;
+
+    items = *(itemDef_t ***)(menuBytes + 0x27c);
+    itemDef = (itemDef_t *)UI_Alloc(0x2f4, 4);
+    items[itemCount] = itemDef;
+
+    imageTrack = *(int *)(menuBytes + 0x258);
+    itemBytes = (byte *)itemDef;
+    memset(itemDef, 0, 0x2f4);
+    *(float *)(itemBytes + 0x28c) = 0.55f;
+    *(int *)(itemBytes + 0x2f0) = imageTrack;
+
+    memset(itemDef, 0, 0x210);
+    *(float *)(itemBytes + 0xe0) = 1.0f;
+    *(float *)(itemBytes + 0x1d8) = 1.0f;
+    *(float *)(itemBytes + 0x1d4) = 1.0f;
+    *(float *)(itemBytes + 0x1d0) = 1.0f;
+    *(float *)(itemBytes + 0x1cc) = 1.0f;
+    *(int *)(itemBytes + 0xcc) = -1;
+
+    if (!Item_Parse(handle, (const char (*)[4])itemDef))
+        return 0;
+
+    Item_InitControls((const char (*)[4])itemDef);
+
+    *(const char (**)[4])(itemBytes + 0x29c) = item;
+    *(int *)(menuBytes + 0x218) = itemCount + 1;
+    return 1;
 }
 
 /* line 2225 */
@@ -2034,74 +1770,19 @@ qboolean ItemParse_dvarTest(const char (*item)[4], int handle)
 }
 
 /* line 1806 */
-__attribute__((naked))
 qboolean ItemParse_dvar(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1806 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x420, %esp\n"
-        "movl 8(%ebp), %esi\n" /* item */
-        "movl 0xc(%ebp), %ebx\n" /* handle */
-        /* { scope 1: token */
-        "movl %ebx, %edx\n" /* line 1810 | handle */
-        "movl %esi, %eax\n" /* item */
-        "calll Item_ValidateTypeData\n"
-        /* { scope 2 */
-        "leal -0x418(%ebp), %eax\n" /* line 341 | token */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7972_001a79ac\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x420, %esp\n" /* line 1827 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a7972_001a79ac:\n"
-        "leal -0x408(%ebp), %eax\n" /* line 344 */
-        "movl %eax, (%esp)\n"
-        "calll String_Alloc\n"
-        "movl %eax, 0x2c0(%esi)\n"
-        /* } scope */
-        "movl 0x2ec(%esi), %eax\n" /* line 1815 | item */
-        "testl %eax, %eax\n"
-        "je .Lf1a7972_001a79d6\n"
-        "movl %esi, (%esp)\n" /* line 1817 | item */
-        "calll Item_IsEditFieldDef\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a7972_001a79e5\n"
-        ".Lf1a7972_001a79d6:\n"
-        "movl $1, %eax\n" /* line 1823 */
-        /* } scope */
-        "addl $0x420, %esp\n" /* line 1827 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        ".Lf1a7972_001a79e5:\n"
-        "movl %esi, (%esp)\n" /* line 1819 | item */
-        "calll Item_GetEditFieldDef\n"
-        "movl $0xbf800000, %edx\n" /* line 1821 */
-        "movl %edx, (%eax)\n"
-        "movl %edx, 4(%eax)\n" /* line 1822 */
-        "movl %edx, 8(%eax)\n" /* line 1823 */
-        "movl $1, %eax\n"
-        /* } scope */
-        "addl $0x420, %esp\n" /* line 1827 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    itemDef_t *itemDef;
+    pc_token_t token;
+
+    itemDef = (itemDef_t *)item;
+    if (!PC_ReadTokenHandle(handle, &token)) {
+        return 0;
+    }
+
+    itemDef->dvar = String_Alloc(token.string);
+    Item_InitDvarEditField(itemDef);
+    return 1;
 }
 
 /* line 2022 */
@@ -6007,106 +5688,39 @@ qboolean ItemParse_style(const char (*item)[4], int handle)
 }
 
 /* line 1338 */
-__attribute__((naked))
 qboolean ItemParse_type(const char (*item)[4], int handle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1338 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x43c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* item */
-        "movl 0xc(%ebp), %ebx\n" /* handle */
-        "leal 0x270(%edi), %eax\n" /* line 1340 | item */
-        "movl %eax, -0x42c(%ebp)\n" /* i */
-        /* { scope 1: token */
-        /* { scope 2 */
-        "leal -0x428(%ebp), %esi\n" /* line 280 | token */
-        "movl %esi, 4(%esp)\n"
-        "movl %ebx, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "je .Lf1a9c38_001a9cb7\n"
-        "cmpb $0x2d, -0x418(%ebp)\n" /* line 284 */
-        "je .Lf1a9c38_001a9ca7\n"
-        "xorl %edx, %edx\n"
-        ".Lf1a9c38_001a9c77:\n"
-        "cmpl $3, -0x428(%ebp)\n" /* line 290 | token */
-        "je .Lf1a9c38_001a9cc4\n"
-        "leal -0x418(%ebp), %eax\n" /* line 292 */
-        "movl %eax, 8(%esp)\n"
-        "movl $str_002b40e4, 4(%esp)\n" /* "expected integer but found %s
-" */
-        "movl %ebx, (%esp)\n"
-        "calll PC_SourceError\n"
-        "xorl %eax, %eax\n"
-        /* } scope */
-        /* } scope */
-        "addl $0x43c, %esp\n" /* line 1346 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a9c38_001a9ca7:\n"
-        "movl %esi, 4(%esp)\n" /* line 286 */
-        "movl %ebx, (%esp)\n"
-        "calll PC_ReadTokenHandle\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1a9c38_001a9d03\n"
-        ".Lf1a9c38_001a9cb7:\n"
-        "xorl %eax, %eax\n" /* line 297 */
-        /* } scope */
-        /* } scope */
-        "addl $0x43c, %esp\n" /* line 1346 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a9c38_001a9cc4:\n"
-        "movl -0x420(%ebp), %eax\n" /* line 295 */
-        "movl -0x42c(%ebp), %ecx\n" /* i */
-        "movl %eax, (%ecx)\n"
-        "testl %edx, %edx\n" /* line 296 */
-        "jne .Lf1a9c38_001a9cef\n"
-        /* } scope */
-        /* } scope */
-        "movl %ebx, %edx\n" /* line 1344 | handle */
-        "movl %edi, %eax\n" /* item */
-        "calll Item_ValidateTypeData\n"
-        "movl $1, %eax\n"
-        ".Lf1a9c38_001a9ce4:\n"
-        "addl $0x43c, %esp\n" /* line 1346 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a9c38_001a9cef:\n"
-        "negl %eax\n" /* line 297 */
-        "movl %eax, (%ecx)\n"
-        /* } scope */
-        /* } scope */
-        "movl %ebx, %edx\n" /* line 1344 | handle */
-        "movl %edi, %eax\n" /* item */
-        "calll Item_ValidateTypeData\n"
-        "movl $1, %eax\n"
-        "jmp .Lf1a9c38_001a9ce4\n"
-        /* { scope 1: token */
-        /* { scope 2 */
-        ".Lf1a9c38_001a9d03:\n"
-        "movl $1, %edx\n" /* line 286 */
-        "jmp .Lf1a9c38_001a9c77\n"
-    );
+    itemDef_t *itemDef;
+    pc_token_t token;
+    qboolean negative;
+
+    itemDef = (itemDef_t *)item;
+    negative = 0;
+
+    if (!PC_ReadTokenHandle(handle, &token)) {
+        return 0;
+    }
+
+    if (token.string[0] == '-' && token.string[1] == '\0') {
+        negative = 1;
+        if (!PC_ReadTokenHandle(handle, &token)) {
+            return 0;
+        }
+    }
+
+    if (token.type != 3) {
+        PC_SourceError(handle, "expected integer but found %s\n", token.string);
+        return 0;
+    }
+
+    itemDef->type = token.intvalue;
+    if (negative) {
+        itemDef->type = -itemDef->type;
+    }
+
+    Item_ValidateTypeData(itemDef, handle);
+    Item_InitDvarEditField(itemDef);
+    return 1;
 }
 
 /* line 1398 */
@@ -7482,8 +7096,8 @@ qboolean ItemParse_execKeyInt(const char (*item)[4], int handle)
 }
 
 /* line 2549 */
-static __attribute__((naked))
-Bool UI_ParseMenuInternal(int imageTrack)
+static __attribute__((naked, regparm(2)))
+Bool UI_ParseMenuInternal(const char *menuFile, int imageTrack)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 2549 */
@@ -8368,188 +7982,77 @@ Bool UI_ParseMenuInternal(int imageTrack)
 }
 
 /* line 2640 */
-__attribute__((naked))
 MenuList * UI_LoadMenus(const char *menuFile, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2640 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x3c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* menuFile */
-        /* { scope 1 */
-        "movl $0x640, 8(%esp)\n" /* line 2647 */
-        "movl $0, 4(%esp)\n"
-        "movl $g_load, (%esp)\n"
-        "calll memset\n"
-        "movl $g_load+1088, g_load+60\n" /* line 2650 */
-        "movl $0, 8(%esp)\n" /* line 2657 */
-        "leal -0x20(%ebp), %esi\n" /* f */
-        "movl %esi, 4(%esp)\n"
-        "movl %edi, (%esp)\n" /* menuFile */
-        "calll FS_FOpenFileByMode\n"
-        "movl %eax, %ebx\n" /* len */
-        "movl -0x20(%ebp), %eax\n" /* line 2658 | f */
-        "testl %eax, %eax\n"
-        "je .Lf1ab5b0_001ab6ef\n"
-        ".Lf1ab5b0_001ab606:\n"
-        "cmpl $0x7fff, %ebx\n" /* line 2666 | len */
-        "jg .Lf1ab5b0_001ab73d\n"
-        ".Lf1ab5b0_001ab612:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 2672 | f */
-        "movl %eax, 8(%esp)\n"
-        "movl %ebx, 4(%esp)\n" /* len */
-        "movl $menuBuf, (%esp)\n"
-        "calll FS_Read\n"
-        "movb $0, menuBuf(%ebx)\n" /* line 2673 | len */
-        "movl -0x20(%ebp), %eax\n" /* line 2674 | f */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl $menuBuf, (%esp)\n" /* line 2676 */
-        "calll Com_Compress\n"
-        "movl $menuBuf, -0x1c(%ebp)\n" /* line 2678 | p */
-        "movl %edi, (%esp)\n" /* line 2679 | menuFile */
-        "calll Com_BeginParseSession\n"
-        "leal -0x1c(%ebp), %esi\n" /* p */
-        ".Lf1ab5b0_001ab659:\n"
-        "movl %esi, (%esp)\n" /* line 2683 */
-        "calll Com_Parse\n"
-        "movl %eax, %ebx\n" /* len */
-        "testl %eax, %eax\n" /* line 2684 */
-        "je .Lf1ab5b0_001ab6a7\n"
-        "movzbl (%eax), %eax\n"
-        "testb %al, %al\n"
-        "je .Lf1ab5b0_001ab6a7\n"
-        "cmpb $0x7d, %al\n"
-        "je .Lf1ab5b0_001ab6a7\n"
-        "movl $str_0021e508, 4(%esp)\n" /* line 2687 */
-        "movl %ebx, (%esp)\n" /* len */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "je .Lf1ab5b0_001ab6a7\n"
-        "movl $str_002b4460, 4(%esp)\n" /* line 2690 */
-        "movl %ebx, (%esp)\n" /* len */
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1ab5b0_001ab659\n"
-        /* { scope 2 */
-        "movl %esi, (%esp)\n" /* line 2620 */
-        "calll Com_Parse\n"
-        "cmpb $0x7b, (%eax)\n" /* line 2622 */
-        "je .Lf1ab5b0_001ab6cc\n"
-        /* } scope */
-        ".Lf1ab5b0_001ab6a7:\n"
-        "calll Com_EndParseSession\n" /* line 2699 */
-        /* } scope */
-        "movl $g_load+56, %eax\n" /* line 2708 */
-        "addl $0x3c, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        /* { scope 2 */
-        ".Lf1ab5b0_001ab6b9:\n"
-        "testl %ebx, %ebx\n" /* line 2632 */
-        "je .Lf1ab5b0_001ab6a7\n"
-        "cmpb $0, (%ebx)\n"
-        "je .Lf1ab5b0_001ab6a7\n"
-        "movl 0xc(%ebp), %edx\n" /* line 2635 | imageTrack */
-        "movl %ebx, %eax\n"
-        "calll UI_ParseMenuInternal\n"
-        ".Lf1ab5b0_001ab6cc:\n"
-        "movl %esi, (%esp)\n" /* line 2627 */
-        "calll Com_Parse\n"
-        "movl %eax, %ebx\n"
-        "movl $str_0021e508, 4(%esp)\n" /* line 2629 */
-        "movl %eax, (%esp)\n"
-        "calll I_stricmp\n"
-        "testl %eax, %eax\n"
-        "jne .Lf1ab5b0_001ab6b9\n"
-        "jmp .Lf1ab5b0_001ab659\n"
-        /* } scope */
-        ".Lf1ab5b0_001ab6ef:\n"
-        "movl %edi, 4(%esp)\n" /* line 2660 | menuFile */
-        "movl $str_002b43ac, (%esp)\n" /* "^3WARNING: menu file not found: %s
-" */
-        "calll Com_Printf\n"
-        "movl $0, 8(%esp)\n" /* line 2661 */
-        "movl %esi, 4(%esp)\n"
-        "movl $str_002b43d0, (%esp)\n" /* "ui/default.menu" */
-        "calll FS_FOpenFileByMode\n"
-        "movl %eax, %ebx\n" /* len */
-        "movl -0x20(%ebp), %esi\n" /* line 2662 | f */
-        "testl %esi, %esi\n"
-        "jne .Lf1ab5b0_001ab606\n"
-        "movl $str_002b43e0, 4(%esp)\n" /* line 2663 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1ab5b0_001ab606\n"
-        ".Lf1ab5b0_001ab73d:\n"
-        "movl -0x20(%ebp), %eax\n" /* line 2668 | f */
-        "movl %eax, (%esp)\n"
-        "calll FS_FCloseFile\n"
-        "movl $0x8000, 0x10(%esp)\n" /* line 2669 */
-        "movl %ebx, 0xc(%esp)\n" /* len */
-        "movl %edi, 8(%esp)\n" /* menuFile */
-        "movl $str_002b442c, 4(%esp)\n" /* "^1menu file too large: %s is %i, max allowed is %i" */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "jmp .Lf1ab5b0_001ab612\n"
-    );
+    const char *p;
+    const char *token;
+    fileHandle_t f;
+    int len;
+
+    memset(g_load, 0, sizeof(g_load));
+    UI_MenuList()->menus = UI_MenuStorage();
+
+    len = FS_FOpenFileByMode(menuFile, &f, FS_READ);
+    if (!f) {
+        Com_Printf("^3WARNING: menu file not found: %s\n", menuFile);
+        len = FS_FOpenFileByMode("ui/default.menu", &f, FS_READ);
+        if (!f)
+            Com_Error(ERR_DROP, "default menu file not found");
+    }
+
+    if (len > 0x7fff) {
+        FS_FCloseFile(f);
+        Com_Error(ERR_DROP, "^1menu file too large: %s is %i, max allowed is %i",
+                  menuFile, len, 0x8000);
+    }
+
+    FS_Read(menuBuf, len, f);
+    menuBuf[len] = '\0';
+    FS_FCloseFile(f);
+    Com_Compress(menuBuf);
+
+    p = menuBuf;
+    Com_BeginParseSession(menuFile);
+
+    for (;;) {
+        token = Com_Parse(&p);
+        if (token == NULL || token[0] == '\0' || token[0] == '}')
+            break;
+
+        if (I_stricmp(token, "loadmenu") != 0)
+            continue;
+
+        token = Com_Parse(&p);
+        if (token == NULL || token[0] != '{')
+            break;
+
+        for (;;) {
+            token = Com_Parse(&p);
+            if (token == NULL || token[0] == '\0')
+                goto done;
+            if (I_stricmp(token, "}") == 0)
+                break;
+
+            UI_ParseMenuInternal(token, imageTrack);
+        }
+    }
+
+done:
+    Com_EndParseSession();
+    return UI_MenuList();
 }
 
 /* line 2587 */
-__attribute__((naked))
 MenuList * UI_LoadMenu(const char *menuFile, int imageTrack)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 2587 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %esi\n" /* menuFile */
-        "movl 0xc(%ebp), %ebx\n" /* imageTrack */
-        "movl $0x640, 8(%esp)\n" /* line 2589 */
-        "movl $0, 4(%esp)\n"
-        "movl $g_load, (%esp)\n"
-        "calll memset\n"
-        "movl $g_load+1088, g_load+60\n" /* line 2592 */
-        "movl %ebx, %edx\n" /* line 2599 | imageTrack */
-        "movl %esi, %eax\n" /* menuFile */
-        "calll UI_ParseMenuInternal\n"
-        "testb %al, %al\n"
-        "je .Lf1ab772_001ab7bf\n"
-        ".Lf1ab772_001ab7b3:\n"
-        "movl $g_load+56, %eax\n" /* line 2613 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf1ab772_001ab7bf:\n"
-        "movl %esi, 4(%esp)\n" /* line 2601 | menuFile */
-        "movl $str_002b43ac, (%esp)\n" /* "^3WARNING: menu file not found: %s
-" */
-        "calll Com_Printf\n"
-        "movl %ebx, %edx\n" /* line 2602 | imageTrack */
-        "movl $str_002b43d0, %eax\n" /* "ui/default.menu" */
-        "calll UI_ParseMenuInternal\n"
-        "testb %al, %al\n"
-        "jne .Lf1ab772_001ab7b3\n"
-        "movl $str_002b43e0, 4(%esp)\n" /* line 2603 */
-        "movl $1, (%esp)\n"
-        "calll Com_Error\n"
-        "movl $g_load+56, %eax\n" /* line 2613 */
-        "addl $0x10, %esp\n"
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
-}
+    memset(g_load, 0, sizeof(g_load));
+    UI_MenuList()->menus = UI_MenuStorage();
 
+    if (!UI_ParseMenuInternal(menuFile, imageTrack)) {
+        Com_Printf("^3WARNING: menu file not found: %s\n", menuFile);
+        if (!UI_ParseMenuInternal("ui/default.menu", imageTrack))
+            Com_Error(ERR_DROP, "default menu file not found");
+    }
+
+    return UI_MenuList();
+}

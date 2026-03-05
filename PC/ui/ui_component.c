@@ -6,24 +6,24 @@
 #include <string.h>
 
 extern UI_Component_data_t UI_Component_g; /* __ZN12UI_Component1gE */
-extern byte *ui_globals_195ecac;  /* imp_cls */
-extern byte *ui_vtable_195eca8;   /* imp_re */
-extern byte *ui_maxclients_195ecc0; /* imp_com_developer */
+extern void *imp_cls;
+extern void *imp_re;
+extern void *imp_com_developer;
 
-inflate_huft UI_Component_Init(void);
+void UI_Component_Init(void);
 
 /* line 31 */
-inflate_huft UI_Component_Init(void)
+void UI_Component_Init(void)
 {
     byte *globals;
     byte *vtable;
-    MaterialHandle mat;
+    byte *developerDvar;
 
-    globals = *(byte **)&ui_globals_195ecac;
+    globals = (byte *)imp_cls;
 
     /* Check if initialized */
     if (*(int *)(globals + 0x110) == 0)
-        return *(inflate_huft *)&globals; /* early return, value unused */
+        return;
 
     /* Clear component data */
     memset(&UI_Component_g, 0, 0xac);
@@ -37,16 +37,15 @@ inflate_huft UI_Component_Init(void)
     UI_Component_g.charHeight = 16.0f;
     UI_Component_g.scrollBarSize = 16.0f;
 
-    /* Check if clients exist */
+    /* This component layer is only active when developer mode is enabled. */
     {
-        int *ptr = *(int **)&ui_maxclients_195ecc0;
-        int maxClients = *(int *)(*(int *)ptr + 8);
-        if (maxClients == 0)
-            return *(inflate_huft *)&globals;
+        developerDvar = *(byte **)imp_com_developer;
+        if (*(int *)(developerDvar + 8) == 0)
+            return;
     }
 
     /* Register UI materials */
-    vtable = *(byte **)&ui_vtable_195eca8;
+    vtable = (byte *)imp_re;
     {
         typedef MaterialHandle (*RegisterMaterialFn)(const char *, int, int);
         RegisterMaterialFn registerMat = *(RegisterMaterialFn *)(vtable + 0x10);

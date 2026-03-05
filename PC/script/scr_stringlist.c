@@ -68,7 +68,7 @@ unsigned int Scr_CreateCanonicalFilename(const char *filename);
 /* line 206 */
 unsigned int SL_ConvertFromString(const char *str)
 {
-    return (int)((byte *)str - 4 - *(byte **)*(void **)imp_scrMemTreePub) >> 3;
+    return (int)((byte *)str - 4 - *(byte **)imp_scrMemTreePub) >> 3;
 }
 
 /* line 299 */
@@ -83,13 +83,13 @@ const char * SL_ConvertToString(unsigned int stringValue)
 {
     if (!stringValue)
         return 0;
-    return (const char *)(*(byte **)*(void **)imp_scrMemTreePub + stringValue * 8 + 4);
+    return (const char *)(*(byte **)imp_scrMemTreePub + stringValue * 8 + 4);
 }
 
 /* line 759 */
 unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 {
-    byte *entry = *(byte **)*(void **)imp_scrMemTreePub + stringValue * 8;
+    byte *entry = *(byte **)imp_scrMemTreePub + stringValue * 8;
     if (entry[1] & user)
     {
         *(unsigned short *)(entry + 2) -= 1;
@@ -104,7 +104,7 @@ unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 /* line 810 */
 unsigned int SL_AddRefToString(unsigned int stringValue)
 {
-    byte *base = *(byte **)*(void **)imp_scrMemTreePub;
+    byte *base = *(byte **)imp_scrMemTreePub;
     *(unsigned short *)(base + stringValue * 8 + 2) += 1;
     return 0;
 }
@@ -216,7 +216,7 @@ static unsigned int get_entry_strlen(byte *entry)
  */
 unsigned int SL_RemoveRefToStringOfLen(unsigned int stringValue, unsigned int len)
 {
-    byte *base = *(byte **)*(void **)imp_scrMemTreePub;
+    byte *base = *(byte **)imp_scrMemTreePub;
     byte *entry = base + stringValue * 8;
     unsigned short ref;
     unsigned int esi; /* hash slot index */
@@ -333,7 +333,7 @@ add_to_freelist:
 /* line 190 */
 int SL_GetStringLen(unsigned int stringValue)
 {
-    byte *base = *(byte **)*(void **)imp_scrMemTreePub;
+    byte *base = *(byte **)imp_scrMemTreePub;
     byte *entry = base + stringValue * 8;
     unsigned int ecx;
     byte *edx_ptr;
@@ -400,7 +400,7 @@ unsigned int SL_FindStringOfLen(const char *str, unsigned int len)
 
     /* Occupied: get stringValue and base */
     stringValue = (unsigned int)entry[1];
-    base = *(byte **)*(void **)imp_scrMemTreePub;
+    base = *(byte **)imp_scrMemTreePub;
     byteLen = len & 0xff;
 
     /* Check head entry */
@@ -620,7 +620,7 @@ loop_top:
             {
                 /* Occupied head: search chain */
                 /* .Lf43a06_00043c21: */
-                base = *(byte **)*(void **)imp_scrMemTreePub;
+                base = *(byte **)imp_scrMemTreePub;
                 {
                     unsigned int sv_head = sw1_val; /* -0x44(%ebp) */
                     byte *refEntry = base + sv_head * 8;
@@ -791,7 +791,7 @@ loop_top:
             {
                 /* Empty slot (freelist). Allocate. */
                 /* .Lf43a06_00043bcf: */
-                base = *(byte **)*(void **)imp_scrMemTreePub;
+                base = *(byte **)imp_scrMemTreePub;
 
                 {
                     unsigned int newIndex2 = (unsigned int)SG_W0(0);
@@ -851,7 +851,7 @@ loop_top:
                 }
                 /* cur_search is now the node that points to hash */
 
-                base = *(byte **)*(void **)imp_scrMemTreePub;
+                base = *(byte **)imp_scrMemTreePub;
 
                 /* Get freelist head */
                 {
@@ -922,7 +922,7 @@ store_and_return:
     entry_ptr[1] = (unsigned short)esi_sv;
 
     {
-        byte *newMem = *(byte **)*(void **)imp_scrMemTreePub + esi_sv * 8;
+        byte *newMem = *(byte **)imp_scrMemTreePub + esi_sv * 8;
         memcpy(newMem + 4, str, len);
         newMem[1] = (byte)user;
         *(unsigned short *)(newMem + 2) = 1;
@@ -1137,7 +1137,7 @@ unsigned int SL_GetString_(const char *str, unsigned int user, int type)
  */
 unsigned int SL_RemoveRefToString(unsigned int stringValue)
 {
-    byte *base = *(byte **)*(void **)imp_scrMemTreePub;
+    byte *base = *(byte **)imp_scrMemTreePub;
     byte *entry = base + stringValue * 8;
     unsigned int ecx_len;  /* strlen */
     unsigned int len;
@@ -1360,7 +1360,7 @@ unsigned int SL_ShutdownSystem(unsigned int user)
             continue;
 
         sv = (unsigned int)entry_ptr[1];
-        base = *(byte **)*(void **)imp_scrMemTreePub;
+        base = *(byte **)imp_scrMemTreePub;
         mem = base + sv * 8;
 
         if (!((unsigned char)mem[1] & (unsigned char)user))
@@ -1387,7 +1387,7 @@ unsigned int Scr_SetString(scr_string_t *to, unsigned int from)
 {
     if (from)
     {
-        byte *base = *(byte **)*(void **)imp_scrMemTreePub;
+        byte *base = *(byte **)imp_scrMemTreePub;
         *(unsigned short *)(base + from * 8 + 2) += 1;
     }
 
@@ -1453,7 +1453,7 @@ unsigned int Scr_SetString(scr_string_t *to, unsigned int from)
 unsigned int SL_ConvertToLowercase(unsigned int stringValue, unsigned int user, int type)
 {
     char newStr[0x2000];
-    byte *base = *(byte **)*(void **)imp_scrMemTreePub;
+    byte *base = *(byte **)imp_scrMemTreePub;
     byte *entry = base + stringValue * 8;
     unsigned int ecx_prev;
     unsigned int esi_len;
@@ -1524,7 +1524,7 @@ unsigned int Scr_ShutdownGameStrings(void)
             continue;
 
         sv = (unsigned int)entry_ptr[1];
-        base = *(byte **)*(void **)imp_scrMemTreePub;
+        base = *(byte **)imp_scrMemTreePub;
         mem = base + sv * 8;
 
         if (!(mem[1] & 1))
@@ -1615,7 +1615,7 @@ unsigned int SL_Init(void)
 
             SG_RESTART = (void *)0;
             sv2 = (unsigned int)SG_W1(idx);
-            base2 = *(byte **)*(void **)imp_scrMemTreePub;
+            base2 = *(byte **)imp_scrMemTreePub;
             mem2 = base2 + sv2 * 8;
 
             if (mem2[1] & 4)
@@ -1763,7 +1763,7 @@ unsigned int SL_Init(void)
 
                 {
                     unsigned int sv3 = (unsigned int)SG_W1(i2);
-                    byte *base3 = *(byte **)*(void **)imp_scrMemTreePub;
+                    byte *base3 = *(byte **)imp_scrMemTreePub;
                     byte *mem3 = base3 + sv3 * 8;
 
                     if (!(mem3[1] & 4))

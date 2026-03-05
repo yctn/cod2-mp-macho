@@ -10,13 +10,20 @@ extern int FS_ReadFile(const char *path, void **buffer);
 extern void FS_FreeFile(void *buffer);
 extern void *Hunk_AllocInternal(int size);
 extern void I_strlwr(char *s);
+extern int stricmp(const char *s1, const char *s2);
 
 GfxLightDef *R_LoadLightDef(const char *name)
 {
     void *file;
     GfxLightDef *def;
+    const char *loadName;
 
-    int fileLen = FS_ReadFile(va("lights/%s", name), &file);
+    loadName = name;
+    int fileLen = FS_ReadFile(va("lights/%s", loadName), &file);
+    if (fileLen < 0 && stricmp(name, "default") == 0) {
+        loadName = "light_dynamic";
+        fileLen = FS_ReadFile(va("lights/%s", loadName), &file);
+    }
     if (fileLen < 0) {
         def = NULL;
         return def;
@@ -59,4 +66,3 @@ GfxLightDef *R_LoadLightDef(const char *name)
     FS_FreeFile(file);
     return def;
 }
-

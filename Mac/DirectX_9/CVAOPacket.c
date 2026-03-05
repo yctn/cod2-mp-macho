@@ -186,6 +186,11 @@ void CVAOPacket_InitializeGenericVAO(void)
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         /* { scope 1 */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+20\n" /* missing static ctor: size = 0 */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+4\n" /* sentinel parent */
+        "movl $0, __ZN10CVAOPacket11sAllPacketsE+8\n" /* root */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+12\n" /* leftmost */
+        "movl $__ZN10CVAOPacket11sAllPacketsE+4, __ZN10CVAOPacket11sAllPacketsE+16\n" /* rightmost */
         "movl $0, __ZN10CVAOPacket14sGenericPacketE+4\n" /* line 64 */
         "movl $0, __ZN10CVAOPacket14sGenericPacketE+8\n" /* line 72 */
         "movl $0, __ZN10CVAOPacket14sGenericPacketE+12\n" /* line 73 */
@@ -1229,4 +1234,3 @@ void ZNSt8_Rb_treeIjSt4pairIKj10CVAOPacketESt10_Select1stIS3_ESt4lessIjESaIS3_EE
         "jmp .Lf2c0c78_002c0df5\n"
     );
 }
-

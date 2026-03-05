@@ -10,7 +10,7 @@
  */
 
 extern const char * g_platform_name[2]; /* 0x0 */
-static int imageGlobals; /* imageGlobals */
+static int imageGlobals[2064]; /* imageGlobals */
 static GfxImage g_imageProgs[12]; /* g_imageProgs */
 extern const char * g_imageProgNames[12]; /* g_imageProgNames */
 extern const char * imageTypeName[10]; /* imageTypeName */
@@ -2900,4 +2900,3 @@ void ZSt16__introsort_loopIPP8GfxImageiPFiS1_S1_EEvT_S5_T0_T1_(void) /* void std
         "jmp .Lf2bfe18_002bff4b\n"
     );
 }
-

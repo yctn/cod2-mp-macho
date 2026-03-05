@@ -79,7 +79,7 @@ extern void Sys_Error(const char *error, ...);
 extern int setjmp(jmp_buf env);
 extern void longjmp(jmp_buf env, int val);
 extern const dvar_t **com_dedicated; /* import pointer */
-extern int *dvar_modifiedFlags; /* import pointer */
+extern int dvar_modifiedFlags;
 extern int *com_fileAccessed; /* import pointer */
 extern void Dvar_ClearModified(const dvar_t *dvar);
 extern void SetAnimCheck(int enabled);
@@ -540,59 +540,42 @@ void Com_WriteCDKey(void)
 static int Com_GpuStringCompare(const char *wild, const char *s)
 {
     for (;;) {
-        char charWild = *wild++;
+        char charWild = *wild;
+
+        if (charWild == '\0')
+            return *s == '\0' ? 0 : 1;
+
         if (charWild == '*') {
+            wild++;
             if (*wild == '\0')
-                return 0; /* trailing * matches all */
-            if (*s == '\0') {
-                /* advance past * and retry */
-                wild = wild - 1;
-                continue;
-            }
-            if (Com_GpuStringCompare(wild - 1, s + 1) == 0)
                 return 0;
-            /* advance past * */
-            wild = wild - 1;
-            continue;
+            do {
+                if (Com_GpuStringCompare(wild, s) == 0)
+                    return 0;
+            } while (*s++ != '\0');
+            return 1;
         }
+
         if (charWild == ' ') {
-            if (*s == '\0') {
-                wild = wild - 1;
-                continue;
-            }
-            {
-                signed char c = (signed char)*s;
-                if ((unsigned char)c > 0xff) {
-                    if (Com_GpuStringCompare(wild - 1, s + 1) == 0)
-                        return 0;
-                    wild = wild - 1;
-                    continue;
-                }
-                if (isspace((unsigned char)*s)) {
-                    wild = wild - 1;
-                    continue;
-                }
-                if (Com_GpuStringCompare(wild - 1, s + 1) == 0)
+            wild++;
+            if (Com_GpuStringCompare(wild, s) == 0)
+                return 0;
+            while (*s && !isdigit((unsigned char)*s)) {
+                s++;
+                if (Com_GpuStringCompare(wild, s) == 0)
                     return 0;
-                wild = wild - 1;
-                continue;
             }
+            return 1;
         }
-        {
-            char charRef = *s++;
-            if (charWild == charRef || charWild == '?') {
-                if (charWild == '\0')
-                    return 0;
-                continue;
-            }
-            {
-                int diff = tolower((unsigned char)charWild) - tolower((unsigned char)charRef);
-                if (diff != 0)
-                    return diff > 0 ? 1 : -1;
-                if (charWild == '\0')
-                    return 0;
-            }
-        }
+
+        if (*s == '\0')
+            return 1;
+
+        if (charWild != '?' && tolower((unsigned char)charWild) != tolower((unsigned char)*s))
+            return 1;
+
+        wild++;
+        s++;
     }
 }
 
@@ -709,6 +692,14 @@ static void Com_SetConfigureDvars(int dvarCount, const char *dvarNames, const ch
             Dvar_AddFlags(dvar, 1);
         }
     }
+}
+
+static void Com_SkipConfigureBlankLines(const char **text)
+{
+    extern void Com_SkipRestOfLine(const char **text);
+
+    while (*text && **text && (**text == '\r' || **text == '\n'))
+        Com_SkipRestOfLine(text);
 }
 
 /* line 2931 */
@@ -882,10 +873,8 @@ void Com_SetRecommended(qboolean restart)
     extern void FS_FreeFile(void *buffer);
     extern void Com_BeginParseSession(const char *name);
     extern void Com_SetCSV(int csv);
-    extern const char *Com_Parse(const char **text);
     extern const char *Com_ParseOnLine(const char **text);
     extern void Com_SkipRestOfLine(const char **text);
-    extern void Com_UngetToken(void);
     extern void Com_EndParseSession(void);
     extern void Sys_ArchiveInfo(int checksum);
     extern int stricmp(const char *s1, const char *s2);
@@ -917,10 +906,13 @@ void Com_SetRecommended(qboolean restart)
     /* GPU match */
     int gpuDvarCount;
     char gpuDvarNames[0x40 * 0x20];
+    qboolean foundGpuSection;
     qboolean foundGpuMatch;
 
     Com_Printf("========= autoconfigure\n");
     Sys_GetInfo(&info);
+    /* Startup code can leave MMX state live, which breaks the first x87 double op. */
+    __builtin_ia32_emms();
     info.cpuGHz *= 1.02;
     if (info.sysMB <= 0x7f)
         info.sysMB = 0x80;
@@ -938,126 +930,101 @@ void Com_SetRecommended(qboolean restart)
     bestMHz = -1.0;
     bestMB = 0;
     memset(&best, 0, sizeof(best));
+    gpuDvarCount = 0;
+    foundGpuSection = 0;
+    foundGpuMatch = 0;
 
-    /* Parse loop 1: find "cpu ghz" header and "sys mb" column, then scan CPU rows */
     for (;;) {
-        const char *token = Com_Parse(&text);
+        const char *token;
+        double rowGHz;
+        int rowMB;
+
+        Com_SkipConfigureBlankLines(&text);
+        if (!text || !*text)
+            break;
+
+        token = Com_ParseOnLine(&text);
         if (!*token || *token == '#') {
             Com_SkipRestOfLine(&text);
-            if (!text) break;
             continue;
         }
+
+        if (!dvarCount) {
+            const char *col2;
+
+            if (stricmp(token, "cpu ghz") != 0)
+                Com_Error(0, "\x15configure_mp.csv: \"cpu ghz\" should be the first column\n");
+
+            col2 = Com_ParseOnLine(&text);
+            if (stricmp(col2, "sys mb") != 0)
+                Com_Error(0, "\x15configure_mp.csv: \"sys mb\" should be the second column\n");
+
+            dvarCount = Com_GetConfigureDvarNames(&text, dvarNames);
+            Com_SkipRestOfLine(&text);
+            continue;
+        }
+
         if (stricmp(token, "gpu") == 0) {
-            Com_UngetToken();
+            gpuDvarCount = Com_GetConfigureDvarNames(&text, gpuDvarNames);
+            Com_SkipRestOfLine(&text);
+            foundGpuSection = 1;
             break;
         }
-        if (!dvarCount) {
-            if (stricmp(token, "cpu ghz") == 0) {
-                /* Read "sys mb" column header */
-                const char *col2 = Com_ParseOnLine(&text);
-                if (stricmp(col2, "sys mb") != 0)
-                    Com_Error(0, "\x15configure_mp.csv: \"sys mb\" should be the second column\n");
-                /* Read dvar names header row */
-                {
-                    const char *tmp = text;
-                    /* pass text ptr by address */
-                    dvarCount = Com_GetConfigureDvarNames(&text, dvarNames);
-                }
-                continue;
+
+        rowGHz = atof(token);
+        if (rowGHz < 0.0)
+            Com_Error(0, "configure_mp.csv: cpu ghz %g not allowed to be less than 0\n", rowGHz);
+
+        token = Com_ParseOnLine(&text);
+        rowMB = atoi(token);
+        if (rowMB <= 0x7f)
+            Com_Error(0, "configure_mp.csv: sys mb %i not allowed to be less than 128", rowMB);
+
+        if (info.cpuGHz >= rowGHz && rowMB <= info.sysMB) {
+            if (rowGHz > bestMHz || (rowGHz == bestMHz && rowMB > bestMB)) {
+                best.MHz = rowGHz;
+                best.MB = rowMB;
+                bestMHz = rowGHz;
+                bestMB = rowMB;
+                Com_GetConfigureDvarValues(dvarCount, &text, best.dvarValues);
+                foundCpuMatch = 1;
             } else {
-                /* First column should be "cpu ghz" */
-                if (stricmp(token, "cpu ghz") != 0)
-                    Com_Error(0, "\x15configure_mp.csv: \"cpu ghz\" should be the first column\n");
-                /* Read "sys mb" */
-                {
-                    const char *col2 = Com_ParseOnLine(&text);
-                    if (stricmp(col2, "sys mb") != 0)
-                        Com_Error(0, "\x15configure_mp.csv: \"sys mb\" should be the second column\n");
-                    dvarCount = Com_GetConfigureDvarNames(&text, dvarNames);
-                    continue;
-                }
+                Com_GetConfigureDvarValues(dvarCount, &text, 0);
             }
-        }
-        /* dvarCount > 0: this is a CPU data row. token is MHz value */
-        {
-            double rowMHz;
-            int rowMB;
-            /* parse MHz */
-            rowMHz = atof(token);
-            if (rowMHz < 0.0) {
-                Com_Error(0, "configure_mp.csv: cpu ghz %g not allowed to be less than 0\n", rowMHz);
-            }
-            /* parse MB */
-            {
-                const char *mbstr = Com_ParseOnLine(&text);
-                rowMB = atoi(mbstr);
-                if (rowMB <= 0x7f)
-                    Com_Error(0, "configure_mp.csv: sys mb %i not allowed to be less than 128", rowMB);
-            }
-            /* Check if this row fits our system and is a better match */
-            if (info.cpuGHz >= rowMHz && rowMB <= info.sysMB) {
-                if (rowMHz > bestMHz || (rowMHz == bestMHz && rowMB > bestMB)) {
-                    /* This is the best match so far */
-                    best.MHz = rowMHz;
-                    best.MB = rowMB;
-                    bestMHz = rowMHz;
-                    bestMB = rowMB;
-                    Com_GetConfigureDvarValues(dvarCount, &text, best.dvarValues);
-                    foundCpuMatch = 1;
-                    continue;
-                }
-            }
-            /* Not a match - drain remaining columns */
+        } else {
             Com_GetConfigureDvarValues(dvarCount, &text, 0);
         }
+
+        Com_SkipRestOfLine(&text);
     }
 
-    /* If no CPU match found, error */
     if (!foundCpuMatch) {
         Sys_GetInfo(&info);
         Com_Error(0, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE %.0f GHz %i MB", info.cpuGHz, info.sysMB);
     }
 
-    /* Apply CPU config */
-    {
-        Com_Printf("configure_mp.csv: using CPU configuration %.0f GHz %i MB\n", bestMHz, bestMB);
-        Cbuf_AddText("exec configure_mp.cfg");
-        Cbuf_Execute();
-        Com_SetConfigureDvars(dvarCount, dvarNames, best.dvarValues);
-    }
+    Com_Printf("configure_mp.csv: using CPU configuration %.0f GHz %i MB\n", bestMHz, bestMB);
+    Cbuf_AddText("exec configure_mp.cfg");
+    Cbuf_Execute();
+    Com_SetConfigureDvars(dvarCount, dvarNames, best.dvarValues);
 
-    /* Parse loop 2: find "gpu" section */
+    if (!foundGpuSection)
+        Com_Error(0, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE \"%s\"\n", info.gpuDescription);
+
     for (;;) {
-        const char *token = Com_Parse(&text);
-        if (stricmp(token, "gpu") == 0)
-            break;
-        Com_UngetToken();
-        /* Not found gpu - error with GPU string */
-        {
-            Com_Error(0, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE \"%s\"\n", info.gpuDescription);
-        }
-        break;
-    }
+        const char *find;
 
-    /* Read GPU dvar names */
-    gpuDvarCount = Com_GetConfigureDvarNames(&text, gpuDvarNames);
-    foundGpuMatch = 0;
-
-    /* Scan GPU rows */
-    for (;;) {
-        const char *find = Com_Parse(&text);
-        if (!text) {
-            if (!foundGpuMatch) {
-                Com_Error(0, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE \"%s\"\n", info.gpuDescription);
-            }
+        Com_SkipConfigureBlankLines(&text);
+        if (!text || !*text)
             break;
-        }
+
+        find = Com_ParseOnLine(&text);
         if (!*find || *find == '#') {
             Com_SkipRestOfLine(&text);
             continue;
         }
+
         if (!foundGpuMatch) {
-            /* Build wildcard template from find token and match against GPU string */
             char wildcardTemplate[0x400];
             int wildcardLen = 1;
             wildcardTemplate[0] = '*';
@@ -1083,16 +1050,12 @@ void Com_SetRecommended(qboolean restart)
                     }
                 }
             }
-            {
-                int wl = wildcardLen - 1;
-                if (wildcardTemplate[wl] == '*') {
-                    wildcardLen = wl;
-                }
-                wildcardTemplate[wildcardLen] = '*';
-                wildcardTemplate[wildcardLen+1] = '\0';
-            }
+            if (wildcardTemplate[wildcardLen - 1] == '*')
+                wildcardLen--;
+            wildcardTemplate[wildcardLen] = '*';
+            wildcardTemplate[wildcardLen + 1] = '\0';
+
             if (Com_GpuStringCompare(wildcardTemplate, info.gpuDescription) == 0) {
-                /* Match! */
                 Com_Printf("configure_mp.csv: using GPU configuration \"%s\"\n", find);
                 {
                     char gpuDvarValues[0x40 * 0x20];
@@ -1100,25 +1063,29 @@ void Com_SetRecommended(qboolean restart)
                     Com_SetConfigureDvars(gpuDvarCount, gpuDvarNames, gpuDvarValues);
                 }
                 foundGpuMatch = 1;
-                continue;
+            } else {
+                Com_GetConfigureDvarValues(gpuDvarCount, &text, 0);
             }
+        } else {
+            Com_GetConfigureDvarValues(gpuDvarCount, &text, 0);
         }
-        /* Drain this row */
-        Com_GetConfigureDvarValues(gpuDvarCount, &text, 0);
+
+        Com_SkipRestOfLine(&text);
     }
+
+    if (!foundGpuMatch)
+        Com_Error(0, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE \"%s\"\n", info.gpuDescription);
 
     Com_EndParseSession();
 
-    /* Compute checksum and free file */
     {
         int checksum = 0;
-        if (filesize > 0) {
-            int i;
-            for (i = 0; i < filesize; i++) {
-                checksum = (int)((char *)csv)[i] + checksum * 1000000007;
-            }
-            checksum &= 0xfffffff;
-        }
+        int i;
+
+        for (i = 0; i < filesize; i++)
+            checksum = (int)((char *)csv)[i] + checksum * 1000000007;
+
+        checksum &= 0xfffffff;
         FS_FreeFile(csv);
         Sys_ArchiveInfo(checksum + 1);
     }
@@ -1610,8 +1577,8 @@ void Com_Frame_Try_Block_Function(void)
     qboolean useTimescale;
 
     /* Write player profile if dvar flags changed */
-    if (com_fullyInitialized && (*dvar_modifiedFlags & 1)) {
-        *dvar_modifiedFlags &= ~1;
+    if (com_fullyInitialized && (dvar_modifiedFlags & 1)) {
+        dvar_modifiedFlags &= ~1;
         if (Com_HasPlayerProfile()) {
             char path[64];
             Com_BuildPlayerProfilePath(path, 64, "");
@@ -2264,4 +2231,3 @@ void Com_Init(char *commandLine)
 
     Com_Init_Try_Block_Function(commandLine);
 }
-

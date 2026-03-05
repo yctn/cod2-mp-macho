@@ -106,7 +106,7 @@ int R_DuplicateFont(FontHandle fontCopy, const char *name)
     char *nameCopy;
     const char *oldName;
     typedef void *(*AllocFunc)(int);
-    AllocFunc alloc = *(AllocFunc *)((byte *)*(int *)imp_ri + 0xc);
+    AllocFunc alloc = (AllocFunc)ri.Hunk_AllocInternal;
 
     for (fontIndex = 0; fontIndex < registeredFontCount; fontIndex++) {
         existing = registeredFont[fontIndex];
@@ -689,4 +689,3 @@ int R_DrawConsoleText(const short int *string, int maxChars, FontHandle font, fl
 
     return 0;
 }
-

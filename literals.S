@@ -1876,7 +1876,14 @@ __ZTV14CTexCoordArray:
     .long CTexCoordArray_Disable         /* [5] Disable */
     .space 104, 0
 .globl __ZTV15CCacheInfoBlock
-__ZTV15CCacheInfoBlock: .space 128, 0
+.type __ZTV15CCacheInfoBlock, @object
+__ZTV15CCacheInfoBlock:
+    .long 0                              /* [0] offset-to-top */
+    .long 0                              /* [1] typeinfo (stub) */
+    .long ZN15CCacheInfoBlockD1Ev        /* [2] destructor D1 */
+    .long ZN15CCacheInfoBlockD0Ev        /* [3] destructor D0 */
+    .space 112, 0
+.size __ZTV15CCacheInfoBlock, .-__ZTV15CCacheInfoBlock
 .globl __ZTV15CColorConverter
 __ZTV15CColorConverter: .space 128, 0
 .globl __ZTV16OrientedParticle

@@ -43,8 +43,8 @@ float CG_AlignHudElemY(int alignOrg, float y, float height);
 int compare_hudelems(const inflate_huft *pe0, const inflate_huft *pe1);
 static void CG_DrawHudElemString(const char *text, const hudelem_t *elem, cg_hudelem_t *cghe);
 static void CG_GetHudElemInfo(const hudelem_t *elem, cg_hudelem_t *cghe, char *hudElemString);
-inflate_huft CG_Draw2dHudElems(qboolean foreground);
-inflate_huft CG_Draw3dHudElems(void);
+void CG_Draw2dHudElems(qboolean foreground);
+void CG_Draw3dHudElems(void);
 
 /* Helper: get cg base pointer */
 static char *cg_base(void) {
@@ -656,9 +656,8 @@ skip_font_setup:
 }
 
 /* line 780 */
-inflate_huft CG_Draw2dHudElems(qboolean foreground)
+void CG_Draw2dHudElems(qboolean foreground)
 {
-    inflate_huft dummy;
     hudelem_t *elems[64];
     cg_hudelem_t cghe;
     char hudElemString[256];
@@ -699,9 +698,8 @@ inflate_huft CG_Draw2dHudElems(qboolean foreground)
 
     qsort(elems, elemCount, 4, (int (*)(const void *, const void *))compare_hudelems);
 
-    if (elemCount <= 0) {
-        return dummy;
-    }
+    if (elemCount <= 0)
+        return;
 
     for (i = 0; i < elemCount; i++) {
         hudelem_t *elem = elems[i];
@@ -854,13 +852,12 @@ inflate_huft CG_Draw2dHudElems(qboolean foreground)
         }
     }
 
-    return dummy;
+    return;
 }
 
 /* line 806 */
-inflate_huft CG_Draw3dHudElems(void)
+void CG_Draw3dHudElems(void)
 {
-    inflate_huft dummy;
     hudelem_t *elems[64];
     cg_hudelem_t cghe;
     char hudElemString[256];
@@ -869,7 +866,7 @@ inflate_huft CG_Draw3dHudElems(void)
 
     /* Check if HUD elems are hidden */
     if (CG_AreHudElemsHidden())
-        return dummy;
+        return;
 
     /* Collect elements */
     char *snap = cg_snap();
@@ -904,7 +901,7 @@ inflate_huft CG_Draw3dHudElems(void)
     qsort(elems, elemCount, 4, (int (*)(const void *, const void *))compare_hudelems);
 
     if (elemCount <= 0)
-        return dummy;
+        return;
 
     for (i = 0; i < elemCount; i++) {
         hudelem_t *elem = elems[i];
@@ -970,5 +967,5 @@ inflate_huft CG_Draw3dHudElems(void)
         CL_DrawSprite(material, rgbaColor, height, pos, 0.0f, renderFxFlags);
     }
 
-    return dummy;
+    return;
 }

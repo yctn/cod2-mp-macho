@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <string.h>
 
 extern punctuation_t default_punctuations[53]; /* 0x0 */
 extern void FreeMemory(void *ptr);
@@ -941,42 +942,23 @@ int PS_ReadNumber(script_t *script, token_t *token)
 }
 
 /* line 1179 */
-__attribute__((naked))
 void StripDoubleQuotes(char *string)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 1179 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* string */
-        "cmpb $0x22, (%ebx)\n" /* line 1181 | string */
-        "je .Lfc3390_000c33c3\n"
-        ".Lfc3390_000c33a0:\n"
-        "cld\n" /* line 1185 */
-        "movl $0xffffffff, %ecx\n"
-        "xorl %eax, %eax\n"
-        "movl %ebx, %edi\n" /* string */
-        "repne scasb %es:(%edi), %al\n"
-        "notl %ecx\n"
-        "leal -1(%ecx, %ebx), %eax\n"
-        "cmpb $0x22, -1(%eax)\n"
-        "jne .Lfc3390_000c33bc\n"
-        "movb $0, -1(%eax)\n" /* line 1187 */
-        ".Lfc3390_000c33bc:\n"
-        "addl $0x10, %esp\n" /* line 1189 */
-        "popl %ebx\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lfc3390_000c33c3:\n"
-        "leal 1(%ebx), %eax\n" /* line 1183 | string */
-        "movl %eax, 4(%esp)\n"
-        "movl %ebx, (%esp)\n" /* string */
-        "calll strcpy\n"
-        "jmp .Lfc3390_000c33a0\n"
-    );
+    size_t len;
+
+    if (string == NULL) {
+        return;
+    }
+
+    if (string[0] == '"') {
+        len = strlen(string + 1);
+        memmove(string, string + 1, len + 1);
+    }
+
+    len = strlen(string);
+    if (len > 0 && string[len - 1] == '"') {
+        string[len - 1] = '\0';
+    }
 }
 
 /* line 1318 */
@@ -1630,4 +1612,3 @@ int PS_ReadToken(script_t *script, token_t *token)
         "jmp .Lfc375a_000c3920\n"
     );
 }
-

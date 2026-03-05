@@ -8,8 +8,43 @@
  *   #include "Mac/DirectX 9/CMemoryBuffer.h"
  */
 
-extern int CMemoryBuffer_sDelayedFreeRequests; /* 0x0 */
-extern UINT32 CMemoryBuffer_sMemoryDesignatedForDelayedFree; /* 0x0 */
+extern int CMemoryBuffer_sDelayedFreeRequests __asm__("__ZN13CMemoryBuffer20sDelayedFreeRequestsE"); /* 0x0 */
+extern UINT32 CMemoryBuffer_sMemoryDesignatedForDelayedFree __asm__("__ZN13CMemoryBuffer31sMemoryDesignatedForDelayedFreeE"); /* 0x0 */
+
+typedef struct {
+    int vptr;
+    byte *allocation;
+    byte *data;
+    UINT32 length;
+    int freedLater;
+} CMemoryBufferImpl;
+
+typedef struct CMemoryBufferFreeRequestNode {
+    struct CMemoryBufferFreeRequestNode *next;
+    struct CMemoryBufferFreeRequestNode *prev;
+    byte *allocation;
+    UINT32 length;
+    UINT32 frames;
+} CMemoryBufferFreeRequestNode;
+
+void *__Znwm(unsigned int size);
+void __ZdlPv(void *ptr);
+void __ZdaPv(void *ptr);
+
+static CMemoryBufferFreeRequestNode *CMemoryBuffer_GetDelayedFreeHead(void)
+{
+    return (CMemoryBufferFreeRequestNode *)&CMemoryBuffer_sDelayedFreeRequests;
+}
+
+static void CMemoryBuffer_EnsureDelayedFreeListInitialized(void)
+{
+    CMemoryBufferFreeRequestNode *head = CMemoryBuffer_GetDelayedFreeHead();
+
+    if (head->next == NULL || head->prev == NULL) {
+        head->next = head;
+        head->prev = head;
+    }
+}
 
 void CMemoryBuffer_CMemoryBuffer(const CMemoryBuffer * _this, UINT32 Length);
 void CMemoryBuffer_Recreate(const CMemoryBuffer * _this);
@@ -208,151 +243,93 @@ void CMemoryBuffer_Resize(const CMemoryBuffer * _this, UINT32 Length)
 }
 
 /* line 84 */
-__attribute__((naked))
 void CMemoryBuffer_FreeLater(const CMemoryBuffer * _this, UINT32 Frames)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 84 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x1c, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* this */
-        "movl 0x10(%ebx), %eax\n" /* line 87 | this */
-        "testl %eax, %eax\n"
-        "je .Lf20672_0002068d\n"
-        "addl $0x1c, %esp\n" /* line 99 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        ".Lf20672_0002068d:\n"
-        "movl 0xc(%ebx), %edi\n" /* line 61 */
-        "movl 4(%ebx), %esi\n" /* line 89 | this */
-        /* { scope 1 */
-        "movl $0x14, (%esp)\n" /* line 88 */
-        "calll __Znwm\n"
-        "movl %eax, %edx\n" /* line 104 */
-        "addl $8, %edx\n"
-        "je .Lf20672_000206b2\n"
-        "movl 0xc(%ebp), %ecx\n" /* Frames */
-        "movl %ecx, 8(%edx)\n"
-        "movl %edi, 4(%edx)\n"
-        "movl %esi, 8(%eax)\n"
-        ".Lf20672_000206b2:\n"
-        "movl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, 4(%esp)\n" /* line 1152 */
-        "movl %eax, (%esp)\n"
-        "calll __ZNSt15_List_node_base4hookEPS_\n"
-        /* } scope */
-        "movl 0xc(%ebx), %eax\n" /* line 92 | this */
-        "addl %eax, __ZN13CMemoryBuffer31sMemoryDesignatedForDelayedFreeE\n"
-        "movl $0, 8(%ebx)\n" /* line 96 | this */
-        "movl $0, 4(%ebx)\n" /* this */
-        "movl $1, 0x10(%ebx)\n" /* line 97 | this */
-        "addl $0x1c, %esp\n" /* line 99 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CMemoryBufferImpl *buffer;
+    CMemoryBufferFreeRequestNode *head;
+    CMemoryBufferFreeRequestNode *node;
+
+    buffer = (CMemoryBufferImpl *)_this;
+    if (buffer->freedLater) {
+        return;
+    }
+
+    CMemoryBuffer_EnsureDelayedFreeListInitialized();
+    head = CMemoryBuffer_GetDelayedFreeHead();
+
+    node = (CMemoryBufferFreeRequestNode *)__Znwm(sizeof(*node));
+    if (node) {
+        node->allocation = buffer->allocation;
+        node->length = buffer->length;
+        node->frames = Frames;
+
+        node->next = head;
+        node->prev = head->prev;
+        head->prev->next = node;
+        head->prev = node;
+    }
+
+    CMemoryBuffer_sMemoryDesignatedForDelayedFree += buffer->length;
+    buffer->data = NULL;
+    buffer->allocation = NULL;
+    buffer->freedLater = 1;
 }
 
 /* line 104 */
-__attribute__((naked))
 void CMemoryBuffer_Update(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 104 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x10, %esp\n"
-        "movl __ZN13CMemoryBuffer20sDelayedFreeRequestsE, %esi\n" /* line 580 */
-        ".Lf206e8_000206f6:\n"
-        "cmpl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, %esi\n" /* line 110 */
-        "je .Lf206e8_00020740\n"
-        /* { scope 1 */
-        ".Lf206e8_000206fe:\n"
-        "leal 8(%esi), %ebx\n" /* line 131 | fr */
-        "movl 8(%ebx), %eax\n" /* line 114 | fr */
-        "testl %eax, %eax\n"
-        "jne .Lf206e8_00020747\n"
-        "movl 8(%esi), %eax\n" /* line 117 */
-        "testl %eax, %eax\n"
-        "je .Lf206e8_00020717\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf206e8_00020717:\n"
-        "movl __ZN13CMemoryBuffer31sMemoryDesignatedForDelayedFreeE, %eax\n" /* line 118 */
-        "subl 4(%ebx), %eax\n" /* fr */
-        "movl %eax, __ZN13CMemoryBuffer31sMemoryDesignatedForDelayedFreeE\n"
-        "movl (%esi), %ebx\n" /* line 97 */
-        "movl %esi, (%esp)\n" /* line 1159 */
-        "calll __ZNSt15_List_node_base6unhookEv\n"
-        "movl %esi, (%esp)\n" /* line 94 */
-        "calll __ZdlPv\n"
-        "movl %ebx, %esi\n" /* line 120 | fr */
-        /* } scope */
-        "cmpl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, %esi\n" /* line 110 */
-        "jne .Lf206e8_000206fe\n"
-        ".Lf206e8_00020740:\n"
-        "addl $0x10, %esp\n" /* line 128 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf206e8_00020747:\n"
-        "subl $1, %eax\n" /* line 124 */
-        "movl %eax, 8(%ebx)\n" /* fr */
-        "movl (%esi), %esi\n" /* line 140 */
-        "jmp .Lf206e8_000206f6\n"
-    );
+    CMemoryBufferFreeRequestNode *head;
+    CMemoryBufferFreeRequestNode *node;
+    CMemoryBufferFreeRequestNode *next;
+
+    CMemoryBuffer_EnsureDelayedFreeListInitialized();
+    head = CMemoryBuffer_GetDelayedFreeHead();
+
+    for (node = head->next; node != head; node = next) {
+        next = node->next;
+
+        if (node->frames) {
+            --node->frames;
+            continue;
+        }
+
+        if (node->allocation) {
+            __ZdaPv(node->allocation);
+        }
+
+        CMemoryBuffer_sMemoryDesignatedForDelayedFree -= node->length;
+
+        node->prev->next = node->next;
+        node->next->prev = node->prev;
+        __ZdlPv(node);
+    }
 }
 
 /* line 133 */
-__attribute__((naked))
 void CMemoryBuffer_Reset(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 133 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $0x14, %esp\n"
-        "calll glFinish\n" /* line 138 */
-        "movl __ZN13CMemoryBuffer20sDelayedFreeRequestsE, %edx\n" /* line 580 */
-        "cmpl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, %edx\n" /* line 140 */
-        "je .Lf20752_00020798\n"
-        "movl %edx, %ebx\n"
-        "jmp .Lf20752_00020772\n"
-        ".Lf20752_00020770:\n"
-        "movl %ebx, %edx\n"
-        ".Lf20752_00020772:\n"
-        "movl __ZN13CMemoryBuffer31sMemoryDesignatedForDelayedFreeE, %eax\n" /* line 142 */
-        "subl 0xc(%edx), %eax\n"
-        "movl %eax, __ZN13CMemoryBuffer31sMemoryDesignatedForDelayedFreeE\n"
-        "movl 8(%edx), %eax\n" /* line 143 */
-        "testl %eax, %eax\n"
-        "je .Lf20752_0002078e\n"
-        "movl %eax, (%esp)\n"
-        "calll __ZdaPv\n"
-        ".Lf20752_0002078e:\n"
-        "movl (%ebx), %ebx\n" /* line 140 */
-        "cmpl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, %ebx\n"
-        "jne .Lf20752_00020770\n"
-        ".Lf20752_00020798:\n"
-        "movl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, (%esp)\n" /* line 912 */
-        "calll ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv\n"
-        "movl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, __ZN13CMemoryBuffer20sDelayedFreeRequestsE\n" /* line 340 */
-        "movl $__ZN13CMemoryBuffer20sDelayedFreeRequestsE, 0xff2d84\n" /* line 341 */
-        "addl $0x14, %esp\n" /* line 148 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CMemoryBufferFreeRequestNode *head;
+    CMemoryBufferFreeRequestNode *node;
+    CMemoryBufferFreeRequestNode *next;
+
+    glFinish();
+
+    CMemoryBuffer_EnsureDelayedFreeListInitialized();
+    head = CMemoryBuffer_GetDelayedFreeHead();
+
+    for (node = head->next; node != head; node = next) {
+        next = node->next;
+        CMemoryBuffer_sMemoryDesignatedForDelayedFree -= node->length;
+
+        if (node->allocation) {
+            __ZdaPv(node->allocation);
+        }
+
+        __ZdlPv(node);
+    }
+
+    head->next = head;
+    head->prev = head;
 }
 
 /* line 148 */
@@ -446,4 +423,3 @@ void ZNSt10_List_baseIN13CMemoryBuffer11FreeRequestESaIS1_EE8_M_clearEv(void) /*
         "retl\n"
     );
 }
-

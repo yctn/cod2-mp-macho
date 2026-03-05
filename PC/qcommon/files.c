@@ -12,6 +12,11 @@ static char info4[8192]; /* info4 */
 static char info5[8192]; /* info5 */
 static char info6[8192]; /* info6 */
 static char info8[8192]; /* info8 */
+extern fileHandleData_t fsh[74];
+extern const dvar_t *fs_basepath;
+extern const dvar_t *fs_cdpath;
+extern const dvar_t *fs_debug;
+extern const dvar_t *fs_homepath;
 
 fileHandle_t FS_SV_FOpenFileWrite(const char *filename);
 int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp);
@@ -87,35 +92,40 @@ extern int FS_FileRead(void *buf, int len, int count, FILE *f);
 extern FILE * FS_FileClose(FILE *f);
 extern void Com_sprintf(char *dest, int destsize, const char *fmt, ...);
 
+static void FS_SV_BuildOSPath(const char *base, const char *filename, char *ospath, size_t ospathSize)
+{
+    if (base != NULL && base[0] != '\0') {
+        Com_sprintf(ospath, (int)ospathSize, "%s/%s", base, filename);
+    } else {
+        Com_sprintf(ospath, (int)ospathSize, "%s", filename);
+    }
+    FS_ConvertPath(ospath);
+}
+
 /* line 94 */
 fileHandle_t FS_SV_FOpenFileWrite(const char *filename)
 {
     char ospath[260];
     fileHandle_t f;
-    int fshOffset;
-    char *fshEntry;
+    fileHandleData_t *entry;
 
     FS_CheckFileSystemStarted(); /* line 99 */
 
     /* line 101 | build ospath using fs_homepath */
     {
-        const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
-        FS_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), filename, "", ospath);
+        const dvar_t *homepath_dvar = fs_homepath;
+        FS_SV_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), filename, ospath, sizeof(ospath));
     }
-    /* null-terminate ospath by trimming trailing char (strlen-based) */
-    ospath[strlen(ospath) - 1] = '\0';
 
     f = FS_HandleForFile(0); /* line 104 */
-
-    /* line 105 | compute fsh offset for handle f */
-    fshOffset = ((f * 9) * 8 - f) * 4;
-    fshEntry = (char *)*(void **)imp_fsh + fshOffset;
-
-    *(int *)(fshEntry + 0x14) = 0; /* line 106 */
+    entry = &fsh[f];
+    entry->zipFile = NULL;
+    entry->zipFilePos = 0;
+    entry->streamed = 0;
 
     /* line 107 | if fs_debug, print */
     {
-        const dvar_t *debug_dvar = *(const dvar_t **)*(void **)imp_fs_debug;
+        const dvar_t *debug_dvar = fs_debug;
         if (*(int *)((char *)debug_dvar + 8)) {
             Com_Printf("FS_SV_FOpenFileWrite: %s\n", ospath); /* line 108 */
         }
@@ -131,16 +141,16 @@ fileHandle_t FS_SV_FOpenFileWrite(const char *filename)
     Com_DPrintf("writing to: %s\n", ospath);
 
     /* line 114 | open file for writing */
-    *(FILE **)fshEntry = FS_FileOpen(ospath, "wb");
+    entry->handleFiles.file.o = FS_FileOpen(ospath, "wb");
 
     /* line 116 | store filename in fsh */
-    I_strncpyz(fshEntry + 0x1c, filename, 0x100);
+    I_strncpyz(entry->name, filename, sizeof(entry->name));
 
     /* line 118 */
-    *(int *)(fshEntry + 8) = 0;
+    entry->handleSync = 0;
 
     /* line 119 | if open failed, return 0 */
-    if (*(FILE **)fshEntry == NULL) {
+    if (entry->handleFiles.file.o == NULL) {
         return 0;
     }
 
@@ -152,51 +162,49 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
 {
     char ospath[260];
     fileHandle_t f;
-    int fshOffset;
-    char *fshEntry;
-    char *fshBase;
+    fileHandleData_t *entry;
+    FILE *file;
 
     FS_CheckFileSystemStarted(); /* line 139 */
 
     f = FS_HandleForFile(0); /* line 141 */
-
-    fshBase = (char *)*(void **)imp_fsh;
-    fshOffset = ((f * 9) * 8 - f) * 4;
-    fshEntry = fshBase + fshOffset;
-
-    *(int *)(fshEntry + 0x14) = 0; /* line 142 */
+    entry = &fsh[f];
+    entry->zipFile = NULL;
+    entry->zipFilePos = 0;
+    entry->streamed = 0;
+    entry->handleSync = 0;
+    entry->handleFiles.file.o = NULL;
 
     /* line 144 | copy filename into fsh entry */
-    I_strncpyz(fshBase + fshOffset + 0x1c, filename, 0x100);
+    I_strncpyz(entry->name, filename, sizeof(entry->name));
 
     /* line 147 | try homepath */
     {
-        const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
-        FS_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), filename, "", ospath);
+        const dvar_t *homepath_dvar = fs_homepath;
+        FS_SV_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), filename, ospath, sizeof(ospath));
     }
-    ospath[strlen(ospath) - 1] = '\0'; /* line 149 */
 
     /* line 151 | if fs_debug, print */
     {
-        const dvar_t *debug_dvar = *(const dvar_t **)*(void **)imp_fs_debug;
+        const dvar_t *debug_dvar = fs_debug;
         if (*(int *)((char *)debug_dvar + 8)) {
             Com_Printf("FS_SV_FOpenFileRead (fs_homepath): %s\n", ospath); /* line 152 */
         }
     }
 
     /* line 154 | try opening from homepath */
-    *(FILE **)fshEntry = FS_FileOpen(ospath, "rb");
-    *(int *)(fshEntry + 8) = 0; /* line 155 */
+    file = FS_FileOpen(ospath, "rb");
+    entry->handleFiles.file.o = file;
 
     /* line 156 */
-    if (*(FILE **)fshEntry != NULL) {
+    if (file != NULL) {
         goto done; /* file opened successfully */
     }
 
     /* file not found on homepath; check if homepath == basepath */
     {
-        const dvar_t *basepath_dvar = *(const dvar_t **)*(void **)imp_fs_basepath;
-        const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
+        const dvar_t *basepath_dvar = fs_basepath;
+        const dvar_t *homepath_dvar = fs_homepath;
         const char *basepath_str = *(const char **)((char *)basepath_dvar + 8);
         const char *homepath_str = *(const char **)((char *)homepath_dvar + 8);
 
@@ -204,60 +212,51 @@ int FS_SV_FOpenFileRead(const char *filename, fileHandle_t *fp)
         if (I_stricmp(homepath_str, basepath_str) != 0) {
             /* homepath != basepath; try basepath */
             /* line 162 */
-            FS_BuildOSPath(basepath_str, filename, "", ospath);
-            ospath[strlen(ospath) - 1] = '\0'; /* line 163 */
+            FS_SV_BuildOSPath(basepath_str, filename, ospath, sizeof(ospath));
 
             /* line 165 */
             {
-                const dvar_t *debug_dvar = *(const dvar_t **)*(void **)imp_fs_debug;
+                const dvar_t *debug_dvar = fs_debug;
                 if (*(int *)((char *)debug_dvar + 8)) {
                     Com_Printf("FS_SV_FOpenFileRead (fs_basepath): %s\n", ospath); /* line 166 */
                 }
             }
 
             /* line 168 */
-            *(FILE **)fshEntry = FS_FileOpen(ospath, "rb");
-            *(int *)(fshEntry + 8) = 0; /* line 169 */
+            file = FS_FileOpen(ospath, "rb");
+            entry->handleFiles.file.o = file;
 
             /* line 171 */
-            if (*(FILE **)fshEntry != NULL) {
+            if (file != NULL) {
                 goto done;
             }
-
-            f = 0; /* line 178 | not found */
         }
     }
 
     /* line 178 | if fsh slot has no file, try cdpath */
-    if (*(FILE **)fshEntry != NULL) {
+    if (entry->handleFiles.file.o != NULL) {
         goto done;
     }
 
     /* line 181 | try cdpath */
     {
-        const dvar_t *cdpath_dvar = *(const dvar_t **)*(void **)imp_fs_cdpath;
-        FS_BuildOSPath(*(const char **)((char *)cdpath_dvar + 8), filename, "", ospath);
+        const dvar_t *cdpath_dvar = fs_cdpath;
+        FS_SV_BuildOSPath(*(const char **)((char *)cdpath_dvar + 8), filename, ospath, sizeof(ospath));
     }
-    ospath[strlen(ospath) - 1] = '\0'; /* line 182 */
 
     /* line 184 */
     {
-        const dvar_t *debug_dvar = *(const dvar_t **)*(void **)imp_fs_debug;
+        const dvar_t *debug_dvar = fs_debug;
         if (*(int *)((char *)debug_dvar + 8)) {
             Com_Printf("FS_SV_FOpenFileRead (fs_cdpath) : %s\n", ospath); /* line 185 */
         }
     }
 
     /* line 187 | try cdpath open */
-    {
-        FILE *cdfile = FS_FileOpen(ospath, "rb");
-        *(FILE **)(fshBase + fshOffset) = cdfile;
-        *(int *)(fshBase + fshOffset + 8) = 0; /* line 188 */
-
-        /* line 190 */
-        if (cdfile == NULL) {
-            f = 0;
-        }
+    file = FS_FileOpen(ospath, "rb");
+    entry->handleFiles.file.o = file;
+    if (file == NULL) {
+        f = 0;
     }
 
 done:
@@ -282,13 +281,13 @@ double FS_SV_Rename(const char *from, const char *to)
 
     /* line 219 | build from_ospath using fs_homepath */
     {
-        const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
+        const dvar_t *homepath_dvar = fs_homepath;
         FS_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), from, "", from_ospath);
     }
 
     /* line 220 | build to_ospath using fs_homepath */
     {
-        const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
+        const dvar_t *homepath_dvar = fs_homepath;
         FS_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), to, "", to_ospath);
     }
 
@@ -297,7 +296,7 @@ double FS_SV_Rename(const char *from, const char *to)
 
     /* line 224 | if fs_debug, print */
     {
-        const dvar_t *debug_dvar = *(const dvar_t **)*(void **)imp_fs_debug;
+        const dvar_t *debug_dvar = fs_debug;
         if (*(int *)((char *)debug_dvar + 8)) {
             Com_Printf("FS_SV_Rename: %s --> %s\n", from_ospath, to_ospath); /* line 225 */
         }
@@ -499,7 +498,7 @@ double FS_SetRestrictions(void)
 
     /* line 901 | check fs_restrict */
     {
-        const dvar_t *restrict_dvar = *(const dvar_t **)*(void **)imp_fs_restrict;
+        const dvar_t *restrict_dvar = *(const dvar_t **)imp_fs_restrict;
         if (*(char *)((char *)restrict_dvar + 8) == 0) {
             return 0.0; /* line 936 */
         }
@@ -994,19 +993,19 @@ int FS_GetModList(char *listbuf, int bufsize)
 
     /* line 484 | list directories in homepath */
     {
-        const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
+        const dvar_t *homepath_dvar = fs_homepath;
         pFiles0 = Sys_ListFiles(*(const char **)((char *)homepath_dvar + 8), NULL, NULL, &dummy, 1);
     }
 
     /* line 485 | list directories in basepath */
     {
-        const dvar_t *basepath_dvar = *(const dvar_t **)*(void **)imp_fs_basepath;
+        const dvar_t *basepath_dvar = fs_basepath;
         pFiles1 = Sys_ListFiles(*(const char **)((char *)basepath_dvar + 8), NULL, NULL, &dummy, 1);
     }
 
     /* line 486 | list directories in cdpath if set */
     {
-        const dvar_t *cdpath_dvar = *(const dvar_t **)*(void **)imp_fs_cdpath;
+        const dvar_t *cdpath_dvar = fs_cdpath;
         const char *cdpath_str = *(const char **)((char *)cdpath_dvar + 8);
         if (cdpath_str == NULL || cdpath_str[0] == '\0') {
             pFiles2 = NULL; /* line 487 */
@@ -1105,7 +1104,7 @@ int FS_GetModList(char *listbuf, int bufsize)
 
         /* line 523 | build path for this mod dir using basepath */
         {
-            const dvar_t *basepath_dvar = *(const dvar_t **)*(void **)imp_fs_basepath;
+            const dvar_t *basepath_dvar = fs_basepath;
             FS_BuildOSPath(*(const char **)((char *)basepath_dvar + 8), name, "", path);
         }
 
@@ -1116,7 +1115,7 @@ int FS_GetModList(char *listbuf, int bufsize)
         if (nIwds <= 0) { /* line 529 */
             /* try cdpath */
             {
-                const dvar_t *cdpath_dvar = *(const dvar_t **)*(void **)imp_fs_cdpath;
+                const dvar_t *cdpath_dvar = fs_cdpath;
                 FS_BuildOSPath(*(const char **)((char *)cdpath_dvar + 8), name, "", path);
             }
             nIwds = 0;
@@ -1125,7 +1124,7 @@ int FS_GetModList(char *listbuf, int bufsize)
             if (nIwds <= 0) { /* line 538 */
                 /* try homepath */
                 {
-                    const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
+                    const dvar_t *homepath_dvar = fs_homepath;
                     FS_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), name, "", path);
                 }
                 nIwds = 0;
@@ -1263,7 +1262,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
             /* line 836 | build testpath and check if file exists locally */
             {
                 char *iwdFile = va("%s.iwd", iwdName);
-                const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
+                const dvar_t *homepath_dvar = fs_homepath;
                 FS_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), iwdFile, "", testpath);
                 testpath[strlen(testpath) - 1] = '\0'; /* line 76 */
 
@@ -1290,7 +1289,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
             /* line 816 | build checksum filename */
             {
                 char *iwdFile = va("%s.iwd", iwdName);
-                const dvar_t *homepath_dvar = *(const dvar_t **)*(void **)imp_fs_homepath;
+                const dvar_t *homepath_dvar = fs_homepath;
                 FS_BuildOSPath(*(const char **)((char *)homepath_dvar + 8), iwdFile, "", testpath);
                 testpath[strlen(testpath) - 1] = '\0';
 

@@ -29,7 +29,7 @@ static int ui_numArenas; /* ui_numArenas */
 static char * ui_arenaInfos[64]; /* ui_arenaInfos */
 
 int UI_ParseInfos(const char *buf, int max, char * *infos);
-inflate_blocks_statef UI_LoadArenas(void);
+void UI_LoadArenas(void);
 
 /* line 43 */
 int UI_ParseInfos(const char *buf, int max, char **infos)
@@ -99,7 +99,7 @@ int UI_ParseInfos(const char *buf, int max, char **infos)
 }
 
 /* line 159 */
-inflate_blocks_statef UI_LoadArenas(void)
+void UI_LoadArenas(void)
 {
     char dirlist[0x400];
     int numdirs;
@@ -156,7 +156,7 @@ inflate_blocks_statef UI_LoadArenas(void)
     }
 
     if (ui_numArenas <= 0)
-        return *(inflate_blocks_statef *)&uiInfo;
+        return;
 
     /* Process each arena */
     uiInfo = (byte *)sharedUiInfo;
@@ -256,6 +256,6 @@ inflate_blocks_statef UI_LoadArenas(void)
         arenaIdx = *(int *)(uiInfo + 0x1350);
         *(int *)(uiInfo + 0x1350) = arenaIdx + 1;
         if (arenaIdx + 1 > 0x7f)
-            return *(inflate_blocks_statef *)&uiInfo;
+            return;
     }
 }

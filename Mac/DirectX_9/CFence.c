@@ -4,7 +4,53 @@
 #include "common_types.h"
 #include "imports.h"
 
-extern const const GLuint * CFence_sUnusedFenceIDs; /* 0x0 */
+typedef struct {
+    GLuint *begin;
+    GLuint *end;
+    GLuint *capacity;
+} CFenceUnusedIdsVector;
+
+typedef struct {
+    GLuint id;
+    const void *start;
+    UINT32 sizeInBytes;
+    UINT32 frameCount;
+} CFenceImpl;
+
+extern CFenceUnusedIdsVector CFence_sUnusedFenceIDs __asm__("__ZN6CFence15sUnusedFenceIDsE"); /* 0x0 */
+
+void *__Znam(unsigned int size);
+void __ZdaPv(void *ptr);
+
+static void CFence_EnsureUnusedIdCapacity(unsigned int additional)
+{
+    unsigned int size;
+    unsigned int capacity;
+    unsigned int newCapacity;
+    GLuint *newIds;
+
+    size = (unsigned int)(CFence_sUnusedFenceIDs.end - CFence_sUnusedFenceIDs.begin);
+    capacity = (unsigned int)(CFence_sUnusedFenceIDs.capacity - CFence_sUnusedFenceIDs.begin);
+
+    if (capacity - size >= additional) {
+        return;
+    }
+
+    newCapacity = capacity ? capacity : 256;
+    while (newCapacity < size + additional) {
+        newCapacity *= 2;
+    }
+
+    newIds = (GLuint *)__Znam(newCapacity * sizeof(GLuint));
+    if (CFence_sUnusedFenceIDs.begin) {
+        memcpy(newIds, CFence_sUnusedFenceIDs.begin, size * sizeof(GLuint));
+        __ZdaPv(CFence_sUnusedFenceIDs.begin);
+    }
+
+    CFence_sUnusedFenceIDs.begin = newIds;
+    CFence_sUnusedFenceIDs.end = newIds + size;
+    CFence_sUnusedFenceIDs.capacity = newIds + newCapacity;
+}
 
 void CFence_CFence(const CFence * _this, const void * Start, UINT32 SizeInBytes, UINT32 FrameCount);
 void CFence_Shutdown(void);
@@ -14,132 +60,47 @@ static void GLOBAL__I__ZN6CFence15sUnusedFenceIDsE(void); /* global constructors
 void ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_(void); /* std_vector<unsigned long, std_allocator<unsigned long> >_erase */
 
 /* line 19 */
-__attribute__((naked))
 void CFence_CFence(const CFence * _this, const void * Start, UINT32 SizeInBytes, UINT32 FrameCount)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 19 */
-        "movl %esp, %ebp\n"
-        "pushl %edi\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x2c, %esp\n"
-        "movl 8(%ebp), %edi\n" /* this */
-        "movl 0xc(%ebp), %eax\n" /* line 22 | Start */
-        "movl %eax, 4(%edi)\n" /* this */
-        "movl 0x10(%ebp), %eax\n" /* SizeInBytes */
-        "movl %eax, 8(%edi)\n" /* this */
-        "movl 0x14(%ebp), %eax\n" /* FrameCount */
-        "movl %eax, 0xc(%edi)\n" /* this */
-        /* { scope 1: NewFenceID */
-        "movl 0xff2d04, %edx\n" /* line 361 */
-        "movl %edx, %eax\n" /* line 28 */
-        "subl __ZN6CFence15sUnusedFenceIDsE, %eax\n"
-        "sarl $2, %eax\n"
-        "testl %eax, %eax\n"
-        "je .Lf2033c_0002038b\n"
-        "movl -4(%edx), %eax\n" /* line 58 | NewFreeID */
-        "movl %eax, (%edi)\n" /* line 59 | this */
-        "movl %eax, (%esp)\n" /* line 61 */
-        "calll glSetFenceAPPLE\n"
-        "subl $4, 0xff2d04\n" /* line 625 */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 74 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1: NewFenceID */
-        ".Lf2033c_0002038b:\n"
-        "movl $0x100, %ebx\n" /* line 28 */
-        "leal -0x1c(%ebp), %esi\n" /* NewFenceID */
-        "jmp .Lf2033c_000203b2\n"
-        /* { scope 2 */
-        ".Lf2033c_00020395:\n"
-        "testl %edx, %edx\n" /* line 104 */
-        "je .Lf2033c_000203a4\n"
-        "movl -0x1c(%ebp), %eax\n" /* NewFenceID */
-        "movl %eax, (%edx)\n"
-        "movl 0xff2d04, %edx\n"
-        ".Lf2033c_000203a4:\n"
-        "addl $4, %edx\n" /* line 607 */
-        "movl %edx, 0xff2d04\n"
-        /* } scope */
-        "subl $1, %ebx\n" /* line 32 */
-        "je .Lf2033c_000203e9\n"
-        /* { scope 2 */
-        ".Lf2033c_000203b2:\n"
-        "movl %esi, 4(%esp)\n" /* line 36 */
-        "movl $1, (%esp)\n"
-        "calll glGenFencesAPPLE\n"
-        "movl 0xff2d04, %edx\n" /* line 604 */
-        "cmpl 0xff2d08, %edx\n"
-        "jne .Lf2033c_00020395\n"
-        "movl %esi, 8(%esp)\n" /* line 610 */
-        "movl %edx, 4(%esp)\n"
-        "movl $__ZN6CFence15sUnusedFenceIDsE, (%esp)\n"
-        "calll ZNSt6vectorImSaImEE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPmS1_EERKm\n"
-        /* } scope */
-        "subl $1, %ebx\n" /* line 32 */
-        "jne .Lf2033c_000203b2\n"
-        ".Lf2033c_000203e9:\n"
-        "movl 0xff2d04, %edx\n"
-        "movl -4(%edx), %eax\n" /* line 58 | NewFreeID */
-        "movl %eax, (%edi)\n" /* line 59 | this */
-        "movl %eax, (%esp)\n" /* line 61 */
-        "calll glSetFenceAPPLE\n"
-        "subl $4, 0xff2d04\n" /* line 625 */
-        /* } scope */
-        "addl $0x2c, %esp\n" /* line 74 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %edi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CFenceImpl *fence;
+    unsigned int i;
+
+    fence = (CFenceImpl *)_this;
+    fence->start = Start;
+    fence->sizeInBytes = SizeInBytes;
+    fence->frameCount = FrameCount;
+
+    if (CFence_sUnusedFenceIDs.end == CFence_sUnusedFenceIDs.begin) {
+        CFence_EnsureUnusedIdCapacity(256);
+
+        for (i = 0; i < 256; ++i) {
+            GLuint newFenceId;
+
+            glGenFencesAPPLE(1, &newFenceId);
+            *CFence_sUnusedFenceIDs.end++ = newFenceId;
+        }
+    }
+
+    fence->id = *--CFence_sUnusedFenceIDs.end;
+    glSetFenceAPPLE(fence->id);
 }
 
 /* line 79 */
-__attribute__((naked))
 void CFence_Shutdown(void)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 79 */
-        "movl %esp, %ebp\n"
-        "pushl %esi\n"
-        "pushl %ebx\n"
-        "subl $0x20, %esp\n"
-        "movl __ZN6CFence15sUnusedFenceIDsE, %edx\n" /* line 334 */
-        "movl %edx, %ebx\n" /* line 84 */
-        "movl 0xff2d04, %eax\n" /* line 603 */
-        "cmpl %eax, %edx\n" /* line 85 */
-        "je .Lf2040c_0002044f\n"
-        "leal -0xc(%ebp), %esi\n" /* FenceID */
-        /* { scope 1 */
-        ".Lf2040c_00020428:\n"
-        "movl (%ebx), %eax\n" /* line 87 */
-        "movl %eax, -0xc(%ebp)\n" /* FenceID */
-        "movl %esi, 4(%esp)\n" /* line 89 */
-        "movl $1, (%esp)\n"
-        "calll glDeleteFencesAPPLE\n"
-        "addl $4, %ebx\n" /* line 623 */
-        /* } scope */
-        "movl 0xff2d04, %eax\n" /* line 603 */
-        "cmpl %eax, %ebx\n" /* line 85 */
-        "jne .Lf2040c_00020428\n"
-        "movl __ZN6CFence15sUnusedFenceIDsE, %edx\n"
-        ".Lf2040c_0002044f:\n"
-        "movl %eax, 8(%esp)\n" /* line 749 */
-        "movl %edx, 4(%esp)\n"
-        "movl $__ZN6CFence15sUnusedFenceIDsE, (%esp)\n"
-        "calll ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_\n"
-        "addl $0x20, %esp\n" /* line 103 */
-        "popl %ebx\n"
-        "popl %esi\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    GLuint *id;
+
+    for (id = CFence_sUnusedFenceIDs.begin; id != CFence_sUnusedFenceIDs.end; ++id) {
+        glDeleteFencesAPPLE(1, id);
+    }
+
+    if (CFence_sUnusedFenceIDs.begin) {
+        __ZdaPv(CFence_sUnusedFenceIDs.begin);
+    }
+
+    CFence_sUnusedFenceIDs.begin = NULL;
+    CFence_sUnusedFenceIDs.end = NULL;
+    CFence_sUnusedFenceIDs.capacity = NULL;
 }
 
 /* line 103 */
@@ -259,4 +220,3 @@ void ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_(void) /
         "retl\n"
     );
 }
-
