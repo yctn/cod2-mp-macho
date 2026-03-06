@@ -2756,12 +2756,8 @@ void UI_KeyEvent_impl(int key, qboolean down)
     );
 }
 
-extern void Com_Printf(const char *fmt, ...);
 void UI_KeyEvent(int key, qboolean down)
 {
-    if (key >= 0xc8 && key <= 0xce) {
-        Com_Printf("UI_KeyEvent: key=0x%x down=%d\n", key, down);
-    }
     UI_KeyEvent_impl(key, down);
 }
 
