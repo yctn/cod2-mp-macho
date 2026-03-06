@@ -33,7 +33,7 @@ extern void R_IssueDrawGroups(void);
 
 static vec2_t cornerTexCoords[4]; /* cornerTexCoords */
 static const r_index_t quadIndices[6]; /* quadIndices */
-static refexport_t re; /* re */
+refexport_t re; /* re */
 
 void R_FatalInitError(const char *msg);
 const char * R_ErrorDescription(HRESULT hr);
@@ -2241,8 +2241,6 @@ void R_BeginRegistration(vidConfig_t *vidConfigOut)
     R_BeginRegistration_impl(vidConfigOut);
     /* Set rg.registered = 1 so R_EndFrame doesn't early-return */
     *(char *)&rg = 1;
-    fprintf(stderr, "[R_BeginRegistration] rg.registered set to 1\n");
-    fflush(stderr);
 }
 
 /* line 2408 */
@@ -3042,4 +3040,3 @@ void ZSt16__introsort_loopIP15_D3DDISPLAYMODEiPFhRKS0_S3_EEvT_S6_T0_T1_(void) /*
         "jmp .Lf2bf5f2_002bf7bf\n"
     );
 }
-

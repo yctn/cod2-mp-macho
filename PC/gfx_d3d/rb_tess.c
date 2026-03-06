@@ -36,6 +36,11 @@ extern float sinf(float x);
 extern float cosf(float x);
 extern float floorf(float x);
 
+static inline char *RB_TessBase(void)
+{
+    return (char *)imp_tess;
+}
+
 void RB_TessBad(const surfaceType_t *surfType);
 void RB_TessParticleCloud(const GfxEntity *re);
 void RB_TessXModelRigid(const surfaceType_t *surfType);
@@ -82,7 +87,7 @@ void RB_TessParticleCloud(const GfxEntity *re)
     }
 
     /* Flush if surface has existing data */
-    tess = *(char **)imp_tess;
+    tess = RB_TessBase();
     if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
         RB_EndSurface();
     }
@@ -213,7 +218,7 @@ void RB_TessXModelRigid(const surfaceType_t *surfType)
     float *boneAxis;
     char *entity;
 
-    tess = *(char **)imp_tess;
+    tess = RB_TessBase();
 
     /* Flush if surface has existing data */
     if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
@@ -2982,14 +2987,14 @@ void RB_TessPoly(const surfaceType_t *surfType)
     char *dest;
     unsigned short *indices;
 
-    tess = *(char **)imp_tess;
+    tess = RB_TessBase();
 
     /* Check if sorted index matches (poly mode = 1) */
     if (*(int *)(tess + 0x5a7cc) != 1) {
         if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
             RB_EndSurface();
         }
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         *(int *)(tess + 0x5a7cc) = 1;
     }
 
@@ -3001,17 +3006,17 @@ void RB_TessPoly(const surfaceType_t *surfType)
         indexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
         sortedIndex = *(int *)(tess + 0x5a7cc);
         RB_EndSurface();
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         RB_BeginSurface(
             *(const Material **)(tess + 0x5a7bc),
             *(MaterialTechniqueType *)(tess + 0x5a7c0),
             *(int *)(tess + 0x5a7c4));
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
             if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                 RB_EndSurface();
             }
-            tess = *(char **)imp_tess;
+            tess = RB_TessBase();
             *(int *)(tess + 0x5a7cc) = sortedIndex;
             vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
         }
@@ -3026,7 +3031,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
         src = *(char **)((byte *)surfType + 0xc);
         for (i = 0; i < vertCount; i++) {
             char *srcVert = src + i * 0x44;
-            tess = *(char **)imp_tess;
+            tess = RB_TessBase();
             vertBase = *(int *)(tess + 0x5a7d4);
             dest = tess + (vertBase + i) * 32;
 
@@ -3048,7 +3053,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
         }
     } else {
         /* DX9 mode: memcpy with stride 68 (0x44) */
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         vertBase = *(int *)(tess + 0x5a7d4);
         dest = tess + vertBase * 68;
         src = *(char **)((byte *)surfType + 0xc);
@@ -3058,7 +3063,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
     /* Generate triangle fan indices */
     triCount = vertCount - 2;
     if (triCount > 0) {
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         for (i = 0; i < triCount; i++) {
             int idxOff = *(int *)(tess + 0x5a7d0);
             indices = (unsigned short *)(*(char **)(tess + 0x5a7b0) + idxOff * 2);
@@ -3073,7 +3078,7 @@ void RB_TessPoly(const surfaceType_t *surfType)
 
     /* Update vertex count */
     vertCount = (int)*(unsigned short *)((byte *)surfType + 0xa);
-    tess = *(char **)imp_tess;
+    tess = RB_TessBase();
     *(int *)(tess + 0x5a7d4) += vertCount;
 }
 
@@ -3090,7 +3095,7 @@ void RB_TessStaticModelCached(const surfaceType_t *surfType)
     /* surfType[1] is a pointer (XSurface*), triCount is signed short at offset 4 */
     triIndexCount = (int)(*(short *)((byte *)*(void **)((byte *)surfType + 4) + 4)) * 3;
 
-    tess = *(char **)imp_tess;
+    tess = RB_TessBase();
 
     /* RB_CheckOverflow for cached triangles */
     if (triIndexCount + *(int *)(tess + 0x5a7e0) > 0x100000) {
@@ -3100,11 +3105,11 @@ void RB_TessStaticModelCached(const surfaceType_t *surfType)
             *(const Material **)(tess + 0x5a7bc),
             *(MaterialTechniqueType *)(tess + 0x5a7c0),
             *(int *)(tess + 0x5a7c4));
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
             if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                 RB_EndSurface();
-                tess = *(char **)imp_tess;
+                tess = RB_TessBase();
             }
             *(int *)(tess + 0x5a7cc) = sortedIndex;
         }
@@ -3147,7 +3152,7 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
     /* Check if skinnedCachedOffset >= 0 (hardware skinning path) */
     if (skinSurf->skinnedCachedOffset >= 0) {
         /* Hardware skinning path: use pre-computed buffers */
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
 
         /* Flush if surface has existing data */
         if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
@@ -3190,22 +3195,22 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         triIndexCount = XSurfaceGetNumTris(xsurf) * 3;
 
         /* RB_CheckOverflow */
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         if (vertexCount + *(int *)(tess + 0x5a7d4) > 0x154a ||
             triIndexCount + *(int *)(tess + 0x5a7d0) > 0x100000) {
             sortedIndex = *(int *)(tess + 0x5a7cc);
             RB_EndSurface();
-            tess = *(char **)imp_tess;
+            tess = RB_TessBase();
             RB_BeginSurface(
                 *(const Material **)(tess + 0x5a7bc),
                 *(MaterialTechniqueType *)(tess + 0x5a7c0),
                 *(int *)(tess + 0x5a7c4));
-            tess = *(char **)imp_tess;
+            tess = RB_TessBase();
             if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
                 if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                     RB_EndSurface();
                 }
-                tess = *(char **)imp_tess;
+                tess = RB_TessBase();
                 *(int *)(tess + 0x5a7cc) = sortedIndex;
             }
         }
@@ -3214,17 +3219,17 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         if (*(int *)(tess + 0x5a7d0) & 1) {
             sortedIndex = *(int *)(tess + 0x5a7cc);
             RB_EndSurface();
-            tess = *(char **)imp_tess;
+            tess = RB_TessBase();
             RB_BeginSurface(
                 *(const Material **)(tess + 0x5a7bc),
                 *(MaterialTechniqueType *)(tess + 0x5a7c0),
                 *(int *)(tess + 0x5a7c4));
-            tess = *(char **)imp_tess;
+            tess = RB_TessBase();
             if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
                 if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                     RB_EndSurface();
                 }
-                tess = *(char **)imp_tess;
+                tess = RB_TessBase();
                 *(int *)(tess + 0x5a7cc) = sortedIndex;
             }
         }
@@ -3243,7 +3248,7 @@ void RB_TessXModelSkinned(const surfaceType_t *surfType)
         }
 
         /* Update vertex count */
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         *(int *)(tess + 0x5a7d4) += vertexCount;
 
         /* Copy triangle indices with vertex offset */
@@ -3263,7 +3268,7 @@ void RB_TessTriangles(const surfaceType_t *surfType)
     int sortedIndex;
     srfTriangles_t *tri = (srfTriangles_t *)surfType;
 
-    tess = *(char **)imp_tess;
+    tess = RB_TessBase();
 
     /* Check if we need to flush existing cached data due to buffer mismatch */
     if (*(int *)(tess + 0x5a7e0) != 0) {
@@ -3280,7 +3285,7 @@ void RB_TessTriangles(const surfaceType_t *surfType)
                 if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                     RB_EndSurface();
                 }
-                tess = *(char **)imp_tess;
+                tess = RB_TessBase();
                 *(int *)(tess + 0x5a7cc) = sortedIndex;
             }
         }
@@ -3294,11 +3299,11 @@ void RB_TessTriangles(const surfaceType_t *surfType)
             *(const Material **)(tess + 0x5a7bc),
             *(MaterialTechniqueType *)(tess + 0x5a7c0),
             *(int *)(tess + 0x5a7c4));
-        tess = *(char **)imp_tess;
+        tess = RB_TessBase();
         if (sortedIndex != *(int *)(tess + 0x5a7cc)) {
             if (*(int *)(tess + 0x5a7d0) != 0 || *(int *)(tess + 0x5a7e0) != 0) {
                 RB_EndSurface();
-                tess = *(char **)imp_tess;
+                tess = RB_TessBase();
             }
             *(int *)(tess + 0x5a7cc) = sortedIndex;
         }
@@ -3318,4 +3323,3 @@ void RB_TessTriangles(const surfaceType_t *surfType)
     *(int *)(tess + 0x5a7e8) = tri->firstVertex;
     *(int *)(tess + 0x5a7e4) = (int)tri->vertexCount;
 }
-

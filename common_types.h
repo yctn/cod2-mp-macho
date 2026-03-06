@@ -10846,10 +10846,10 @@ struct cin_cache {
     long int samplesPerLine;
     unsigned int roq_id;
     long int screenDelta;
-    inflate_blocks_statef (*VQ0)();
-    inflate_blocks_statef (*VQ1)();
-    inflate_blocks_statef (*VQNormal)();
-    inflate_blocks_statef (*VQBuffer)();
+    void (*VQ0)(byte **status, unsigned char *data);
+    void (*VQ1)(byte **status, unsigned char *data);
+    void (*VQNormal)(byte **status, unsigned char *data);
+    void (*VQBuffer)(byte **status, unsigned char *data);
     long int samplesPerPixel;
     byte *gray;
     unsigned int xsize;

@@ -17,6 +17,11 @@ static vec4_t debugShaderConsts[5]; /* debugShaderConsts */
 static const GfxStateOverride overrideEnableRenormalize; /* overrideEnableRenormalize */
 static const DWORD s_fvfForVertDeclType[4]; /* s_fvfForVertDeclType */
 
+static inline char *RB_TessBase(void)
+{
+    return (char *)imp_tess;
+}
+
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex);
 int RB_SetIndexData(const r_index_t *indices, int indexCount);
 static void RB_GetTextureFromCode(void);
@@ -32,7 +37,7 @@ void RB_EndSurface(void);
 /* line 1587 */
 void RB_BeginSurface(const Material *material, MaterialTechniqueType techType, int lmapIndex)
 {
-    char *tess = *(char **)imp_tess;
+    char *tess = RB_TessBase();
     *(int *)(tess + 0x5a7cc) = 0;
     *(int *)(tess + 0x5a7b8) = 0;
     *(int *)(tess + 0x5a7d0) = 0;
@@ -4189,4 +4194,3 @@ void RB_EndSurface(void)
         "jmp .Lff9de4_000fa200\n"
     );
 }
-

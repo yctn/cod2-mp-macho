@@ -7,14 +7,14 @@
 extern e_status ROQ_StopCinematicFromHandle(int handle);
 extern e_status ROQ_RunCinematicFromHandle(int handle);
 extern int ROQ_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBits);
-extern long int ROQ_SetExtentsFromHandle(int handle, int x, int y, int w, int h);
-extern long int ROQ_DrawCinematicFromHandle(int handle);
-extern long int ROQ_PlayCinematic_f(void);
-extern long int ROQ_DrawCinematic(void);
-extern long int ROQ_RunCinematic(void);
-extern long int ROQ_StopCinematic(void);
-extern long int ROQ_UploadCinematicFromHandle(int handle);
-extern long int ROQ_CloseAllVideos(void);
+extern void ROQ_SetExtentsFromHandle(int handle, int x, int y, int w, int h);
+extern void ROQ_DrawCinematicFromHandle(int handle);
+extern void ROQ_PlayCinematic_f(void);
+extern void ROQ_DrawCinematic(void);
+extern void ROQ_RunCinematic(void);
+extern void ROQ_StopCinematic(void);
+extern void ROQ_UploadCinematicFromHandle(int handle);
+extern void ROQ_CloseAllVideos(void);
 
 e_status CIN_StopCinematic(int handle)
 {
@@ -31,42 +31,42 @@ int CIN_PlayCinematic(const char *arg, int x, int y, int w, int h, int systemBit
     return ROQ_PlayCinematic(arg, x, y, w, h, systemBits);
 }
 
-long int CIN_SetExtents(int handle, int x, int y, int w, int h)
+void CIN_SetExtents(int handle, int x, int y, int w, int h)
 {
-    return ROQ_SetExtentsFromHandle(handle, x, y, w, h);
+    ROQ_SetExtentsFromHandle(handle, x, y, w, h);
 }
 
-long int CIN_DrawCinematic(int handle)
+void CIN_DrawCinematic(int handle)
 {
-    return ROQ_DrawCinematicFromHandle(handle);
+    ROQ_DrawCinematicFromHandle(handle);
 }
 
-long int CL_PlayCinematic_f(void)
+void CL_PlayCinematic_f(void)
 {
-    return ROQ_PlayCinematic_f();
+    ROQ_PlayCinematic_f();
 }
 
-long int SCR_DrawCinematic(void)
+void SCR_DrawCinematic(void)
 {
-    return ROQ_DrawCinematic();
+    ROQ_DrawCinematic();
 }
 
-long int SCR_RunCinematic(void)
+void SCR_RunCinematic(void)
 {
-    return ROQ_RunCinematic();
+    ROQ_RunCinematic();
 }
 
-long int SCR_StopCinematic(void)
+void SCR_StopCinematic(void)
 {
-    return ROQ_StopCinematic();
+    ROQ_StopCinematic();
 }
 
-long int CIN_UploadCinematic(int handle)
+void CIN_UploadCinematic(int handle)
 {
-    return ROQ_UploadCinematicFromHandle(handle);
+    ROQ_UploadCinematicFromHandle(handle);
 }
 
-long int CIN_CloseAllVideos(void)
+void CIN_CloseAllVideos(void)
 {
-    return ROQ_CloseAllVideos();
+    ROQ_CloseAllVideos();
 }

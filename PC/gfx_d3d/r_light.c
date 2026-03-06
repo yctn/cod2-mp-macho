@@ -10,7 +10,7 @@ extern r_global_permanent_t rgp;       /* rgp IS the struct, not a pointer */
 extern r_globals_t rg;                 /* imp_rg */
 extern GfxScene *gfxScene;             /* imp_scene */
 extern const dvar_t *r_dlightLimit;    /* imp_r_dlightLimit */
-extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
+extern GfxBackEndData *frontEndDataOut;
 
 extern GfxLightDef *R_LoadLightDef(const char *name);
 extern void R_Error(int level, const char *fmt, ...);
@@ -234,7 +234,7 @@ static void R_AddDrawSurfsForLight(const GfxLight *light, const GfxDrawSurf *dra
 
                 /* Increment both scene and backend draw surf counts */
                 gfxScene->drawSurfCount++;
-                (*gfxBuf)->drawSurfCount++;
+                frontEndDataOut->drawSurfCount++;
             }
         }
         surf--;

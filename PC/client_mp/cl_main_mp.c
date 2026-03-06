@@ -774,11 +774,12 @@ void CL_VoiceTransmit(void)
         "pushl %ebp\n" /* line 2894 */
         "movl %esp, %ebp\n"
         "subl $8, %esp\n"
-        "movl 0x168384c, %edx\n" /* line 2896 */
+        "movl cl, %ecx\n" /* line 2896 */
+        "movl 0x179c0c(%ecx), %edx\n"
         "testl %edx, %edx\n"
         "jle .Lf147eba_00147f01\n"
         "movl clients+9968, %eax\n" /* line 2899 */
-        "subl 0x1683850, %eax\n"
+        "subl 0x179c10(%ecx), %eax\n"
         "cmpl $0xc7, %eax\n"
         "jg .Lf147eba_00147ee1\n"
         "cmpl $9, %edx\n"
@@ -3995,10 +3996,12 @@ int Client_SendVoiceData(int bytes, char *enc_buffer)
         "movl 8(%ebp), %esi\n" /* bytes */
         "testl %esi, %esi\n" /* line 2913 | bytes */
         "jle .Lf14ae54_0014aeed\n"
-        "movl 0x168384c, %edx\n" /* line 2915 */
+        "movl cl, %ecx\n" /* line 2915 */
+        "movl 0x179c0c(%ecx), %edx\n"
         "movl %edx, %eax\n"
         "shll $8, %eax\n"
-        "leal 0x1682e28(%eax, %edx, 4), %edx\n"
+        "leal (%ecx, %eax), %ecx\n"
+        "leal 0x1791e8(%ecx, %edx, 4), %edx\n"
         "movl %esi, 8(%esp)\n" /* bytes */
         "movl 0xc(%ebp), %eax\n" /* enc_buffer */
         "movl %eax, 4(%esp)\n"
@@ -4939,10 +4942,12 @@ void CL_Frame(int msec)
         "popl %ebp\n"
         "retl\n"
         ".Lf14bc6a_0014bc89:\n"
-        "movl 0x168384c, %eax\n" /* line 2944 */
+        "movl cl, %ecx\n" /* line 2944 */
+        "movl 0x179c0c(%ecx), %eax\n"
         "movl %eax, %edx\n"
         "shll $8, %edx\n"
-        "leal 0x1682e24(%edx, %eax, 4), %eax\n"
+        "leal (%ecx, %edx), %edx\n"
+        "leal 0x1791e4(%edx, %eax, 4), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Voice_GetLocalVoiceData\n"
         "calll Voice_Playback\n" /* line 2945 */
@@ -6755,4 +6760,3 @@ WARNING: You are missing some files referenced by the serve" */
         "jmp .Lf14d570_0014d5ce\n"
     );
 }
-

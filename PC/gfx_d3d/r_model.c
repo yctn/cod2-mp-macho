@@ -131,7 +131,7 @@ void R_UnlockSkinnedCache(void)
         "movl $0, 0x2dc0(%eax)\n" /* line 593 */
         "movl imp_frontEndDataOut, %eax\n" /* line 1005 */
         "movl (%eax), %eax\n"
-        "movl str_00217c60+24(%eax), %eax\n"
+        "movl 0x217c78(%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* vb */
         "movl imp_alwaysfails, %esi\n"
         ".Lfd0120_000d0157:\n"
@@ -423,7 +423,7 @@ void R_LockSkinnedCache(GfxLockType lockType)
         /* { scope 1 */
         "movl imp_frontEndDataOut, %eax\n" /* line 1005 */
         "movl (%eax), %eax\n"
-        "movl str_00217c60+24(%eax), %eax\n"
+        "movl 0x217c78(%eax), %eax\n"
         "movl 8(%eax), %ebx\n" /* vb */
         "movl imp_dx, %esi\n" /* line 569 */
         "movl 0x2c20(%esi), %eax\n"
@@ -3390,4 +3390,3 @@ void R_SkinRigidXModelCmd(SkinRigidXModelCmd *skinRigidCmd)
         "jmp .Lfd2c30_000d2d98\n"
     );
 }
-

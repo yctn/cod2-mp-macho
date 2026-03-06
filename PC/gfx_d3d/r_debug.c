@@ -13,7 +13,7 @@ static const int iEdgePairs[12][2] = {
 static DebugGlobals debugGlobals;
 
 extern refimport_t ri;                /* imp_ri */
-extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
+extern GfxBackEndData *frontEndDataOut;
 extern GfxScene *gfxScene;             /* imp_scene */
 extern int __mh_execute_header;
 
@@ -102,7 +102,7 @@ void R_ShutdownDebug(void) {
 }
 
 void R_LocateDebugStrings(trDebugString_t *strings, int stringCount, int maxStringCount) {
-    DebugGlobals *debugGlobalsEntry = &(*gfxBuf)->debugGlobals;
+    DebugGlobals *debugGlobalsEntry = &frontEndDataOut->debugGlobals;
 
     if (strings) {
         if (!debugGlobalsEntry->externStrings) {
@@ -114,7 +114,7 @@ void R_LocateDebugStrings(trDebugString_t *strings, int stringCount, int maxStri
 }
 
 void R_LocateDebugLines(trDebugLine_t *lines, int lineCount, int maxLineCount) {
-    DebugGlobals *debugGlobalsEntry = &(*gfxBuf)->debugGlobals;
+    DebugGlobals *debugGlobalsEntry = &frontEndDataOut->debugGlobals;
 
     if (lines) {
         if (!debugGlobalsEntry->externLines) {

@@ -22,11 +22,22 @@ extern UINT32 g_showtexid; /* 0x0 */
 extern float g_scale1; /* 0x0 */
 extern float g_scale2; /* 0x0 */
 extern bool g_InhibitCopy; /* 0x0 */
+extern bool g_NoTextureID; /* 0x0 */
 extern bool CDirect3DDevice_mNeedsVertexShaderValidation; /* 0x0 */
 extern bool CDirect3DDevice_mNeedsTransformationValidation; /* 0x0 */
 extern bool CDirect3DDevice_mNeedsRasterizationValidation; /* 0x0 */
 static const float GaussianBlurWeights[5]; /* 0x2edf6c */
 static float sPointScale[3]; /* 0x334e00 */
+
+extern UINT32 MacOpenGLUtils_GetImageSizeInBytes(UINT32 Width, UINT32 Height, UINT32 Depth, UINT32 LevelCount, const D3DFORMAT *f);
+extern UINT32 MacOpenGLUtils_GetPCPixelShaderVersion(void);
+extern int MacDisplay_GetCardType(void);
+extern void *SDL_GL_GetProcAddress(const char *proc);
+extern void *malloc(unsigned int size);
+extern void glDrawPixels(GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels);
+extern void glPixelZoom(GLfloat xfactor, GLfloat yfactor);
+extern void CDirect3DSurface_CDirect3DSurface(const CDirect3DSurface * _this, SurfaceType s, GLenum CubemapID, UINT32 Level, UINT32 Width, UINT32 Height, D3DFORMAT Format, const void * pSurfaceMemory, COpenGLTexture *pOpenGLTextureInfo);
+extern void CDirect3DSurface_UpdateOpenGLSurfaceObject(const CDirect3DSurface * _this, int bRecreateSurface);
 
 ULONG CDirect3DDevice_AddRef(const CDirect3DDevice * _this);
 HRESULT CDirect3DDevice_QueryInterface(const CDirect3DDevice * _this, const IID *iid, LPVOID *ppvObj);
@@ -6701,9 +6712,299 @@ long unsigned int CDirect3DDevice_EndPixelOneToOneState(const CDirect3DDevice * 
     );
 }
 
+static UINT32 d3d_u32(const void *base, unsigned int offset)
+{
+    return *(const UINT32 *)((const char *)base + offset);
+}
+
+static void *d3d_ptr(const void *base, unsigned int offset)
+{
+    return *(void * const *)((const char *)base + offset);
+}
+
+typedef void (*PFNGLWINDOWPOS2IPROC)(GLint x, GLint y);
+
+static PFNGLWINDOWPOS2IPROC d3d_get_window_pos2i(void)
+{
+    static PFNGLWINDOWPOS2IPROC s_windowPos2i;
+    static int s_windowPosLookedUp;
+
+    if (!s_windowPosLookedUp) {
+        s_windowPosLookedUp = 1;
+        s_windowPos2i = (PFNGLWINDOWPOS2IPROC)SDL_GL_GetProcAddress("glWindowPos2i");
+        if (s_windowPos2i == NULL) {
+            s_windowPos2i = (PFNGLWINDOWPOS2IPROC)SDL_GL_GetProcAddress("glWindowPos2iARB");
+        }
+        if (s_windowPos2i == NULL) {
+            s_windowPos2i = (PFNGLWINDOWPOS2IPROC)SDL_GL_GetProcAddress("glWindowPos2iMESA");
+        }
+    }
+
+    return s_windowPos2i;
+}
+
+static GLuint d3d_surface_texture_name(const void *surface)
+{
+    void *textureInfo;
+    GLuint *textureNamePtr;
+
+    textureInfo = d3d_ptr(surface, 0x28);
+    if (textureInfo == NULL) {
+        return 0;
+    }
+
+    textureNamePtr = *(GLuint **)((char *)textureInfo + 4);
+    if (textureNamePtr == NULL) {
+        return 0;
+    }
+
+    return *textureNamePtr;
+}
+
+static GLenum d3d_surface_target(const void *surface)
+{
+    if (d3d_u32(surface, 0x8) == 1) {
+        return d3d_u32(surface, 0xc);
+    }
+
+    return 0xde1;
+}
+
+static HRESULT CDirect3DDevice_StretchRectToBackBuffer(
+    const CDirect3DDevice * _this,
+    IDirect3DSurface9 *pSourceSurface,
+    const RECT *pSourceRect,
+    IDirect3DSurface9 *pDestSurface,
+    const RECT *pDestRect,
+    D3DTEXTUREFILTERTYPE Filter)
+{
+    RECT sourceRect;
+    RECT destRect;
+    GLenum sourceTarget;
+    GLuint textureName;
+    UINT32 sourceWidth;
+    UINT32 sourceHeight;
+    UINT32 destWidth;
+    UINT32 destHeight;
+    const void *surfaceMemory;
+    GLenum surfaceFormat;
+    GLenum surfaceType;
+    GLint textureStageCount;
+    GLint stageIndex;
+    GLint filterMode;
+    GLfloat savedTextureMatrices[16][16];
+    GLfloat whiteRgba[4];
+    GLfloat texLeft;
+    GLfloat texTop;
+    GLfloat texRight;
+    GLfloat texBottom;
+    GLfloat ndcLeft;
+    GLfloat ndcTop;
+    GLfloat ndcRight;
+    GLfloat ndcBottom;
+    PFNGLWINDOWPOS2IPROC windowPos2i;
+
+    sourceTarget = d3d_surface_target(pSourceSurface);
+    textureName = d3d_surface_texture_name(pSourceSurface);
+    if (textureName == 0) {
+        return 0;
+    }
+
+    sourceWidth = d3d_u32(pSourceSurface, 0x14);
+    sourceHeight = d3d_u32(pSourceSurface, 0x18);
+    destWidth = d3d_u32(pDestSurface, 0x14);
+    destHeight = d3d_u32(pDestSurface, 0x18);
+    surfaceMemory = d3d_ptr(pSourceSurface, 0x20);
+    surfaceFormat = d3d_u32(pSourceSurface, 0x34);
+    surfaceType = d3d_u32(pSourceSurface, 0x38);
+    if (sourceWidth == 0 || sourceHeight == 0 || destWidth == 0 || destHeight == 0) {
+        return 0;
+    }
+
+    if (pSourceRect == NULL) {
+        sourceRect.left = 0;
+        sourceRect.top = 0;
+        sourceRect.right = sourceWidth;
+        sourceRect.bottom = sourceHeight;
+        pSourceRect = &sourceRect;
+    }
+
+    if (pDestRect == NULL) {
+        destRect.left = 0;
+        destRect.top = 0;
+        destRect.right = destWidth;
+        destRect.bottom = destHeight;
+        pDestRect = &destRect;
+    }
+
+    filterMode = 0x2601;
+    if (Filter == D3DTEXF_POINT) {
+        filterMode = 0x2600;
+    }
+
+    whiteRgba[0] = 1.0f;
+    whiteRgba[1] = 1.0f;
+    whiteRgba[2] = 1.0f;
+    whiteRgba[3] = 1.0f;
+
+    glPushAttrib(0xfffff);
+    glPushClientAttrib(0xffffffff);
+
+    glDisable(0x8620);
+    if (MacDisplay_GetCardType() == 2) {
+        glDisable(0x86de);
+        glDisable(0x8522);
+    } else if (MacDisplay_GetCardType() == 1) {
+        glDisable(0x8200);
+    }
+    if (MacOpenGLUtils_GetPCPixelShaderVersion() > 0xffff01ff) {
+        glDisable(0x8804);
+    }
+
+    CDirect3DDevice_StartPixelOneToOneState(_this);
+
+    glDrawBuffer(0x405);
+    glReadBuffer(0x405);
+
+    windowPos2i = d3d_get_window_pos2i();
+    if (surfaceMemory != NULL && windowPos2i != NULL) {
+        GLfloat sourceRectWidth;
+        GLfloat sourceRectHeight;
+        GLfloat destRectWidth;
+        GLfloat destRectHeight;
+
+        sourceRectWidth = (GLfloat)(pSourceRect->right - pSourceRect->left);
+        sourceRectHeight = (GLfloat)(pSourceRect->bottom - pSourceRect->top);
+        destRectWidth = (GLfloat)(pDestRect->right - pDestRect->left);
+        destRectHeight = (GLfloat)(pDestRect->bottom - pDestRect->top);
+        if (sourceRectWidth > 0.0f && sourceRectHeight > 0.0f &&
+            destRectWidth > 0.0f && destRectHeight > 0.0f) {
+            glPixelStorei(0xcf5, 4);
+            glPixelStorei(0xcf2, sourceWidth);
+            glPixelStorei(0xcf3, pSourceRect->top);
+            glPixelStorei(0xcf4, pSourceRect->left);
+            glPixelZoom(destRectWidth / sourceRectWidth, -(destRectHeight / sourceRectHeight));
+            windowPos2i(pDestRect->left, (GLint)destHeight - pDestRect->top);
+            glDrawPixels(
+                (GLsizei)sourceRectWidth,
+                (GLsizei)sourceRectHeight,
+                surfaceFormat,
+                surfaceType,
+                surfaceMemory);
+            glPixelZoom(1.0f, 1.0f);
+            glPopClientAttrib();
+            glPopAttrib();
+            return 0;
+        }
+    }
+
+    glActiveTextureARB(0x84c0);
+    glClientActiveTextureARB(0x84c0);
+    glBindTexture(sourceTarget, textureName);
+    CDirect3DSurface_UpdateOpenGLSurfaceObject((const CDirect3DSurface *)pSourceSurface, 0);
+    glTexParameteri(sourceTarget, 0x2801, filterMode);
+    glTexParameteri(sourceTarget, 0x2800, filterMode);
+    glTexParameteri(sourceTarget, 0x2802, 0x2900);
+    glTexParameteri(sourceTarget, 0x2803, 0x2900);
+    glTexParameteri(sourceTarget, 0x813d, 0);
+
+    textureStageCount = (GLint)d3d_u32(_this, 0x504);
+    if (textureStageCount > 16) {
+        textureStageCount = 16;
+    }
+
+    glMatrixMode(0x1702);
+    for (stageIndex = textureStageCount - 1; stageIndex >= 0; --stageIndex) {
+        glActiveTextureARB(0x84c0 + stageIndex);
+        glGetFloatv(0xba8, savedTextureMatrices[stageIndex]);
+        glLoadIdentity();
+        glDisable(0xde0);
+        glDisable(0xc60);
+        glDisable(0xc61);
+        glDisable(0xc62);
+        glDisable(0xc63);
+        if (stageIndex == 0) {
+            glEnable(0xde1);
+            glDisable(0x806f);
+            glDisable(0x8513);
+            glDisable(0x84f5);
+            glTexEnvfv(0x2300, 0x2201, whiteRgba);
+            glTexEnvi(0x2300, 0x2200, 0x8570);
+            glTexEnvi(0x2300, 0x8571, 0x2100);
+            glTexEnvi(0x2300, 0x8580, 0x1702);
+            glTexEnvi(0x2300, 0x8590, 0x300);
+            glTexEnvi(0x2300, 0x8581, 0x8578);
+            glTexEnvi(0x2300, 0x8591, 0x300);
+            glTexEnvi(0x2300, 0x8582, 0x8576);
+            glTexEnvi(0x2300, 0x8592, 0x302);
+            glTexEnvf(0x2300, 0x8573, 1.0f);
+            glTexEnvi(0x2300, 0x8572, 0x2100);
+            glTexEnvi(0x2300, 0x8588, 0x1702);
+            glTexEnvi(0x2300, 0x8598, 0x302);
+            glTexEnvi(0x2300, 0x8589, 0x8578);
+            glTexEnvi(0x2300, 0x8599, 0x302);
+            glTexEnvi(0x2300, 0x858a, 0x8576);
+            glTexEnvi(0x2300, 0x859a, 0x302);
+            glTexEnvf(0x2300, 0xd1c, 1.0f);
+        } else {
+            glDisable(0xde0);
+            glDisable(0xde1);
+            glDisable(0x806f);
+            glDisable(0x8513);
+            glDisable(0x84f5);
+        }
+    }
+
+    texLeft = (GLfloat)pSourceRect->left / (GLfloat)sourceWidth;
+    texTop = (GLfloat)pSourceRect->top / (GLfloat)sourceHeight;
+    texRight = (GLfloat)pSourceRect->right / (GLfloat)sourceWidth;
+    texBottom = (GLfloat)pSourceRect->bottom / (GLfloat)sourceHeight;
+
+    ndcLeft = ((2.0f * (GLfloat)pDestRect->left) / (GLfloat)destWidth) - 1.0f;
+    ndcTop = 1.0f - ((2.0f * (GLfloat)pDestRect->top) / (GLfloat)destHeight);
+    ndcRight = ((2.0f * (GLfloat)pDestRect->right) / (GLfloat)destWidth) - 1.0f;
+    ndcBottom = 1.0f - ((2.0f * (GLfloat)pDestRect->bottom) / (GLfloat)destHeight);
+
+    glMatrixMode(0x1701);
+    glPushMatrix();
+    glLoadIdentity();
+    glMatrixMode(0x1700);
+    glPushMatrix();
+    glLoadIdentity();
+
+    glBegin(7);
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    glTexCoord2f(texLeft, texTop);
+    glVertex2f(ndcLeft, ndcTop);
+    glTexCoord2f(texRight, texTop);
+    glVertex2f(ndcRight, ndcTop);
+    glTexCoord2f(texRight, texBottom);
+    glVertex2f(ndcRight, ndcBottom);
+    glTexCoord2f(texLeft, texBottom);
+    glVertex2f(ndcLeft, ndcBottom);
+    glEnd();
+
+    glMatrixMode(0x1700);
+    glPopMatrix();
+    glMatrixMode(0x1701);
+    glPopMatrix();
+
+    glMatrixMode(0x1702);
+    for (stageIndex = 0; stageIndex < textureStageCount; ++stageIndex) {
+        glActiveTextureARB(0x84c0 + stageIndex);
+        glLoadMatrixf(savedTextureMatrices[stageIndex]);
+    }
+    glActiveTextureARB(0x84c0);
+    glClientActiveTextureARB(0x84c0);
+
+    glPopClientAttrib();
+    glPopAttrib();
+    return 0;
+}
+
 /* line 1394 */
 __attribute__((naked))
-HRESULT CDirect3DDevice_StretchRect(const CDirect3DDevice * _this, IDirect3DSurface9 *pSourceSurface, const RECT *pSourceRect, IDirect3DSurface9 *pDestSurface, const RECT *pDestRect, D3DTEXTUREFILTERTYPE Filter)
+static HRESULT CDirect3DDevice_StretchRect_impl(const CDirect3DDevice * _this, IDirect3DSurface9 *pSourceSurface, const RECT *pSourceRect, IDirect3DSurface9 *pDestSurface, const RECT *pDestRect, D3DTEXTUREFILTERTYPE Filter)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1394 */
@@ -10378,6 +10679,18 @@ HRESULT CDirect3DDevice_CreateAdditionalSwapChain(const CDirect3DDevice * _this,
     );
 }
 
+HRESULT CDirect3DDevice_StretchRect(const CDirect3DDevice * _this, IDirect3DSurface9 *pSourceSurface, const RECT *pSourceRect, IDirect3DSurface9 *pDestSurface, const RECT *pDestRect, D3DTEXTUREFILTERTYPE Filter)
+{
+    void *backBuffer;
+
+    backBuffer = d3d_ptr(_this, 0x1c);
+    if (pSourceSurface != backBuffer && pDestSurface == backBuffer) {
+        return CDirect3DDevice_StretchRectToBackBuffer(_this, pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
+    }
+
+    return CDirect3DDevice_StretchRect_impl(_this, pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
+}
+
 /* line 398 */
 __attribute__((naked))
 HRESULT CDirect3DDevice_GetSwapChain(const CDirect3DDevice * _this, UINT iSwapChain, IDirect3DSwapChain9 * *pSwapChain)
@@ -10492,16 +10805,50 @@ HRESULT CDirect3DDevice_ColorFill(const CDirect3DDevice * _this, IDirect3DSurfac
 }
 
 /* line 426 */
-__attribute__((naked))
 HRESULT CDirect3DDevice_CreateOffscreenPlainSurface(const CDirect3DDevice * _this, UINT Width, UINT Height, D3DFORMAT Format, D3DPOOL Pool, IDirect3DSurface9 * *ppSurface, HANDLE *pSharedHandle)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 426 */
-        "movl %esp, %ebp\n"
-        "xorl %eax, %eax\n"
-        "popl %ebp\n"
-        "retl\n"
-    );
+    CDirect3DSurface *surface;
+    void *surfaceMemory;
+    int currentTexture;
+    UINT allocWidth;
+    UINT allocHeight;
+    UINT imageSize;
+
+    (void)_this;
+    (void)Pool;
+
+    surfaceMemory = NULL;
+    currentTexture = 0;
+
+    glGetIntegerv(0x8069, &currentTexture);
+
+    if (!g_NoTextureID) {
+        allocWidth = 1;
+        while (allocWidth < Width) {
+            allocWidth <<= 1;
+        }
+
+        allocHeight = 1;
+        while (allocHeight < Height) {
+            allocHeight <<= 1;
+        }
+
+        imageSize = MacOpenGLUtils_GetImageSizeInBytes(allocWidth, allocHeight, 1, 1, &Format);
+        surfaceMemory = malloc(imageSize);
+    }
+
+    surface = (CDirect3DSurface *)malloc(0x3c);
+    CDirect3DSurface_CDirect3DSurface(surface, 0, 0, 0, Width, Height, Format, surfaceMemory, 0);
+
+    if (ppSurface != NULL) {
+        *ppSurface = (IDirect3DSurface9 *)surface;
+    }
+    if (pSharedHandle != NULL) {
+        *pSharedHandle = 0;
+    }
+
+    glBindTexture(0xde1, currentTexture);
+    return 0;
 }
 
 /* line 428 */
@@ -11750,4 +12097,3 @@ void ZNSt6vectorIN15CDirect3DDevice9CTexStageESaIS1_EE13_M_insert_auxEN9__gnu_cx
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
-

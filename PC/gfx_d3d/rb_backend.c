@@ -20,8 +20,25 @@ extern const GfxBackEndData *backEndData; /* 0x0 */
 extern GLuint g_FenceID; /* 0x0 */
 static const byte color_table[8][4]; /* color_table */
 static const Bool refEntIsInWorldSpace[10]; /* refEntIsInWorldSpace */
-static const void (*rb_tessTable[8])(); /* rb_tessTable */
-static const void (*RB_RenderCommandTable[34])(); /* RB_RenderCommandTable */
+
+extern void RB_TessBad(const surfaceType_t *surfType);
+extern void RB_TessPoly(const surfaceType_t *surfType);
+extern void RB_TessBackEndEntity(const surfaceType_t *surfType);
+extern void RB_TessXModelSkinned(const surfaceType_t *surfType);
+extern void RB_TessXModelRigid(const surfaceType_t *surfType);
+extern void RB_TessStaticModelCached(const surfaceType_t *surfType);
+extern void RB_TessTriangles(const surfaceType_t *surfType);
+
+static void (*const rb_tessTable[8])(const surfaceType_t *) = {
+    RB_TessBad,               /* SF_BAD */
+    RB_TessPoly,              /* SF_POLY */
+    RB_TessBackEndEntity,     /* SF_ENTITY */
+    RB_TessXModelSkinned,     /* SF_XMODEL_SKINNED */
+    RB_TessXModelRigid,       /* SF_XMODEL_RIGID */
+    RB_TessStaticModelCached, /* SF_STATICMODEL_CACHED */
+    RB_TessTriangles,         /* SF_TRIANGLES */
+    RB_TessBad                /* SF_RAW_GEOMETRY */
+}; /* rb_tessTable */
 
 extern FontHandle R_RegisterFont(const char *fontName, int imageTrack);
 extern void RB_TouchAllImages(void);
@@ -87,6 +104,43 @@ void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depth
 static void RB_DrawLinesCmd(GfxRenderCommandExecState *execState);
 static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState);
 static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState);
+
+static void (*const RB_RenderCommandTable[34])(GfxRenderCommandExecState *execState) = {
+    NULL,
+    RB_GotoCmd,
+    RB_CallCmd,
+    RB_ReturnCmd,
+    RB_SetMaterialColorCmd,
+    RB_SetLightPropertiesCmd,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    RB_SaveScreenCmd,
+    RB_ClearScreenCmd,
+    RB_BeginViewCmd,
+    RB_SetViewportCmd,
+    RB_SetRenderTargetCmd,
+    RB_StretchPicCmd,
+    RB_StretchPicRotateCmd,
+    RB_StretchRawCmd,
+    RB_DrawQuadPicCmd,
+    RB_DrawSpriteCmd,
+    RB_DrawFullScreenColoredQuadCmd,
+    RB_DrawTextCmd,
+    RB_DrawTextInSpaceCmd,
+    RB_DrawSurfsCmd,
+    RB_DrawSunCmd,
+    RB_ApplyEarlyPostEffectsCmd,
+    RB_ApplyLatePostEffectsCmd,
+    RB_DrawSunPostEffectsCmd,
+    NULL,
+    RB_BlendSavedScreenCmd,
+    NULL,
+    NULL,
+    NULL,
+    RB_TouchAllImagesCmd,
+};
 
 /* line 4245 */
 void RB_SetCodeConstant(int constant, vec_t x, vec_t y, vec_t z, vec_t w)
@@ -5599,10 +5653,10 @@ void RB_ExecuteRenderCommands(const void *data)
         "cmpb $0, 8(%eax)\n"
         "jne .Lfd9182_000d9594\n"
         "movl backEndData, %edx\n" /* line 3970 */
-        "leal str_00219d0c(%edx), %eax\n"
+        "leal 0x219d0c(%edx), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* execState */
         "movl $0, -0x24(%ebp)\n" /* line 3971 */
-        "movzwl str_00219d0c(%edx), %eax\n" /* line 3980 */
+        "movzwl 0x219d0c(%edx), %eax\n" /* line 3980 */
         "testw %ax, %ax\n"
         "jne .Lfd9182_000d9c52\n"
         ".Lfd9182_000d92b6:\n"
@@ -11279,4 +11333,3 @@ void RB_DrawPointsCmd(GfxRenderCommandExecState *execState)
         "jmp .Lfdd8e2_000dde99\n"
     );
 }
-

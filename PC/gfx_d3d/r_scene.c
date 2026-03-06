@@ -17,7 +17,7 @@ static GfxViewParms lockPvsViewParms; /* lockPvsViewParms */
 extern surfaceType_t s_entitySurface; /* s_entitySurface */
 extern byte s_XModelSurfaceSize[8]; /* s_XModelSurfaceSize */
 
-extern GfxBackEndData **gfxBuf;        /* imp_frontEndDataOut */
+extern GfxBackEndData *frontEndDataOut;
 extern r_global_permanent_t rgp;       /* imp_rgp */
 extern r_globals_t rg;                /* imp_rg */
 extern refimport_t ri;                /* imp_ri */
@@ -66,8 +66,8 @@ static int R_CompareDumpSceneEntities(const void *e0, const void *e1)
 
     index0 = *(const int *)e0;
     index1 = *(const int *)e1;
-    ent0 = &(*gfxBuf)->entities[index0];
-    ent1 = &(*gfxBuf)->entities[index1];
+    ent0 = &frontEndDataOut->entities[index0];
+    ent1 = &frontEndDataOut->entities[index1];
 
     type = ent0->reType;
     if (type != (int)ent1->reType)
@@ -144,7 +144,7 @@ void R_ClearScene(void)
     scene.viewCount++;
     scene.dlightCount = 0;
     scene.drawSurfCount = 0;
-    buf = *gfxBuf;
+    buf = frontEndDataOut;
     scene.drawSurfs = &buf->drawSurfs[buf->drawSurfCount];
     scene.polyCount = 0;
     scene.def.entityCount = 0;
@@ -612,7 +612,7 @@ void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex)
         material = surf->material;
         surface = surf->data;
 
-        buf = *gfxBuf;
+        buf = frontEndDataOut;
         if (buf->drawSurfCount > 0xffff)
             continue;
 
@@ -628,7 +628,7 @@ void R_AddBModelSurfaces(GfxSceneEntity *sceneEnt, int entIndex)
         drawSurf->sort = sortValue;
         drawSurf->surface = surface;
         scene.drawSurfCount++;
-        (*gfxBuf)->drawSurfCount++;
+        frontEndDataOut->drawSurfCount++;
     }
 }
 
@@ -650,7 +650,7 @@ void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCoun
     if (!materialHandle)
         materialHandle = rgp.defaultMaterial;
 
-    buf = *gfxBuf;
+    buf = frontEndDataOut;
     vc = (unsigned short)vertCount;
 
     if (vc + buf->polyVertCount > 0x2000)
@@ -670,7 +670,7 @@ void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCoun
 
     entIndex = (scene.polyCount & 0x7FF) + 0x800;
 
-    buf = *gfxBuf;
+    buf = frontEndDataOut;
     if (buf->drawSurfCount <= 0xffff) {
         drawSurf = &buf->drawSurfs[buf->drawSurfCount];
         surfType = poly->surfaceType;
@@ -684,11 +684,11 @@ void R_AddPolyToScene(MaterialHandle materialHandle, int lmapIndex, int vertCoun
         drawSurf->sort = sortValue;
         drawSurf->surface = (const surfaceType_t *)poly;
         scene.drawSurfCount++;
-        (*gfxBuf)->drawSurfCount++;
+        frontEndDataOut->drawSurfCount++;
     }
 
-    (*gfxBuf)->polyCount++;
-    (*gfxBuf)->polyVertCount += vc;
+    frontEndDataOut->polyCount++;
+    frontEndDataOut->polyVertCount += vc;
     scene.polyCount++;
 }
 
@@ -707,7 +707,7 @@ void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex)
     material = surf->material;
     surface = surf->data;
 
-    buf = *gfxBuf;
+    buf = frontEndDataOut;
     if (buf->drawSurfCount > 0xffff)
         return;
 
@@ -723,7 +723,7 @@ void R_AddDrawSurfForSurface(GfxSurface *surf, int entIndex)
     drawSurf->sort = sortValue;
     drawSurf->surface = surface;
     scene.drawSurfCount++;
-    (*gfxBuf)->drawSurfCount++;
+    frontEndDataOut->drawSurfCount++;
 }
 
 /* line 1410 */
@@ -2384,4 +2384,3 @@ GfxEntity * R_AddRefEntityToScene(const GfxEntity *refEnt, GfxModel sceneModel, 
         "jmp .Lfc7574_000c7749\n"
     );
 }
-

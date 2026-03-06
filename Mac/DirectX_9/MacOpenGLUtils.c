@@ -28,6 +28,7 @@ UINT32 MacOpenGLUtils_GetLevelSizeInBytes(UINT32 Width, UINT32 Height, UINT32 De
 float MacOpenGLUtils_SquareRootLowPrecision(float fp0);
 int MacOpenGLUtils_ConvertD3DProjectionMatrixToOpenGL(float *m, float ViewportWidth, float ViewportHeight);
 UINT32 MacOpenGLUtils_GetImageSizeInBytes(UINT32 Width, UINT32 Height, UINT32 Depth, UINT32 LevelCount, const D3DFORMAT *f);
+int MacDisplay_GetCardType(void);
 
 /* line 104 */
 __attribute__((naked))
@@ -820,87 +821,40 @@ float MacOpenGLUtils_SquareRootLowPrecision(float fp0)
 }
 
 /* line 737 */
-__attribute__((naked))
 int MacOpenGLUtils_ConvertD3DProjectionMatrixToOpenGL(float *m, float ViewportWidth, float ViewportHeight)
 {
-    __asm__ __volatile__ (
-        "pushl %ebp\n" /* line 737 */
-        "movl %esp, %ebp\n"
-        "pushl %ebx\n"
-        "subl $4, %esp\n"
-        "movl 8(%ebp), %ebx\n" /* m */
-        /* { scope 1 */
-        "calll MacDisplay_GetCardType\n" /* line 179 */
-        "cmpl $2, %eax\n" /* line 587 */
-        "je .Lf25e72_00025f9d\n"
-        "movss 0x2ed620, %xmm2\n" /* -0.15000000596046448f */
-        "movss 0x2ed624, %xmm3\n" /* -0.07500000298023224f */
-        ".Lf25e72_00025e9a:\n"
-        "divss 0xc(%ebp), %xmm2\n" /* line 742 | ViewportWidth, x */
-        "divss 0x10(%ebp), %xmm3\n" /* line 743 | ViewportHeight, y */
-        "movaps %xmm2, %xmm0\n" /* line 749 */
-        "mulss 0xc(%ebx), %xmm0\n" /* m */
-        "addss (%ebx), %xmm0\n" /* m */
-        "movss %xmm0, (%ebx)\n" /* m */
-        "movaps %xmm3, %xmm0\n" /* line 750 */
-        "mulss 0xc(%ebx), %xmm0\n" /* m */
-        "addss 4(%ebx), %xmm0\n" /* m */
-        "movss %xmm0, 4(%ebx)\n" /* m */
-        "movss 8(%ebx), %xmm0\n" /* line 751 | m */
-        "addss %xmm0, %xmm0\n"
-        "subss 0xc(%ebx), %xmm0\n" /* m */
-        "movss %xmm0, 8(%ebx)\n" /* m */
-        "movaps %xmm2, %xmm0\n" /* line 753 */
-        "mulss 0x1c(%ebx), %xmm0\n" /* m */
-        "addss 0x10(%ebx), %xmm0\n" /* m */
-        "movss %xmm0, 0x10(%ebx)\n" /* m */
-        "movaps %xmm3, %xmm0\n" /* line 754 */
-        "mulss 0x1c(%ebx), %xmm0\n" /* m */
-        "addss 0x14(%ebx), %xmm0\n" /* m */
-        "movss %xmm0, 0x14(%ebx)\n" /* m */
-        "movss 0x18(%ebx), %xmm0\n" /* line 755 | m */
-        "addss %xmm0, %xmm0\n"
-        "subss 0x1c(%ebx), %xmm0\n" /* m */
-        "movss %xmm0, 0x18(%ebx)\n" /* m */
-        "movaps %xmm2, %xmm0\n" /* line 757 */
-        "mulss 0x2c(%ebx), %xmm0\n" /* m */
-        "addss 0x20(%ebx), %xmm0\n" /* m */
-        "movss 0x2ef8a0, %xmm1\n"
-        "xorps %xmm1, %xmm0\n"
-        "movss %xmm0, 0x20(%ebx)\n" /* m */
-        "movaps %xmm3, %xmm0\n" /* line 758 */
-        "mulss 0x2c(%ebx), %xmm0\n" /* m */
-        "addss 0x24(%ebx), %xmm0\n" /* m */
-        "xorps %xmm1, %xmm0\n"
-        "movss %xmm0, 0x24(%ebx)\n" /* m */
-        "movss 0x2ed628, %xmm0\n" /* line 759 | -2.0f */
-        "mulss 0x28(%ebx), %xmm0\n" /* m */
-        "addss 0x2c(%ebx), %xmm0\n" /* m */
-        "movss %xmm0, 0x28(%ebx)\n" /* m */
-        "movss 0x2c(%ebx), %xmm0\n" /* line 760 | m */
-        "xorps %xmm1, %xmm0\n"
-        "movss %xmm0, 0x2c(%ebx)\n" /* m */
-        "mulss 0x3c(%ebx), %xmm2\n" /* line 762 | m */
-        "addss 0x30(%ebx), %xmm2\n" /* m */
-        "movss %xmm2, 0x30(%ebx)\n" /* m */
-        "mulss 0x3c(%ebx), %xmm3\n" /* line 763 | m */
-        "addss 0x34(%ebx), %xmm3\n" /* m */
-        "movss %xmm3, 0x34(%ebx)\n" /* m */
-        "movss 0x38(%ebx), %xmm0\n" /* line 764 | m */
-        "addss %xmm0, %xmm0\n"
-        "subss 0x3c(%ebx), %xmm0\n" /* m */
-        "movss %xmm0, 0x38(%ebx)\n" /* m */
-        /* } scope */
-        "addl $4, %esp\n" /* line 800 */
-        "popl %ebx\n"
-        "popl %ebp\n"
-        "retl\n"
-        /* { scope 1 */
-        ".Lf25e72_00025f9d:\n"
-        "movss 0x2ed61c, %xmm3\n" /* line 587 | -0.30000001192092896f */
-        "movaps %xmm3, %xmm2\n"
-        "jmp .Lf25e72_00025e9a\n"
-    );
+    float x;
+    float y;
+
+    if (MacDisplay_GetCardType() == 2) {
+        x = -0.30000001192092896f;
+        y = -0.30000001192092896f;
+    } else {
+        x = -0.15000000596046448f;
+        y = -0.07500000298023224f;
+    }
+
+    x /= ViewportWidth;
+    y /= ViewportHeight;
+
+    m[0] += x * m[3];
+    m[1] += y * m[3];
+    m[2] = 2.0f * m[2] - m[3];
+
+    m[4] += x * m[7];
+    m[5] += y * m[7];
+    m[6] = 2.0f * m[6] - m[7];
+
+    m[8] = -(m[8] + x * m[11]);
+    m[9] = -(m[9] + y * m[11]);
+    m[10] = m[11] - 2.0f * m[10];
+    m[11] = -m[11];
+
+    m[12] += x * m[15];
+    m[13] += y * m[15];
+    m[14] = 2.0f * m[14] - m[15];
+
+    return 0;
 }
 
 /* line 315 */
@@ -1164,4 +1118,3 @@ UINT32 MacOpenGLUtils_GetImageSizeInBytes(UINT32 Width, UINT32 Height, UINT32 De
         "jmp .Lf25fae_00026070\n"
     );
 }
-

@@ -27,12 +27,14 @@ void R_BeginDebugFrame(void);
 void R_AddCmdTouchAllImages(void);
 void R_AbortRenderCommands(void);
 void R_BeginFrame(void);
+static void R_BeginFrame_impl(void);
 void R_UpdateEffectsBolt(void);
 void R_UpdateEffectsNonBolt(void);
 void R_UpdateXModelBoundsDelayed(GfxEntity *ent);
 void R_SkinGfxEntityDelayed(GfxEntity *ent);
 void R_InitBackendData(void);
 void R_EndFrame(void);
+static void R_EndFrame_impl(void);
 void R_AddCmdDrawSurfs(GfxDrawSurf *drawSurfs, int drawSurfCount, MaterialTechniqueType techType);
 int R_BeginDelayedDrawing(void);
 void R_EndDelayedDrawing(int marker);
@@ -58,6 +60,17 @@ void R_AddCmdDrawSunPostEffects(int viewIndex);
 void R_AddCmdClearScreen(int whichToClear, const vec_t *color, float depth, int stencil);
 void R_AddCmdSaveScreen(void);
 void R_AddCmdBlendSavedScreen(int fadeMsec);
+
+static void R_ResetCmdListState(void)
+{
+    if (s_cmdList == NULL) {
+        return;
+    }
+
+    s_cmdList->usedTotal = 0;
+    s_cmdList->usedCritical = 0;
+    s_cmdList->lastCmd = NULL;
+}
 
 /* line 158 */
 void R_ShutdownBackendData(void)
@@ -224,7 +237,7 @@ void R_AbortRenderCommands(void)
 
 /* line 1739 */
 __attribute__((naked))
-void R_BeginFrame(void)
+static void R_BeginFrame_impl(void)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1739 */
@@ -498,6 +511,12 @@ void R_BeginFrame(void)
     );
 }
 
+void R_BeginFrame(void)
+{
+    R_BeginFrame_impl();
+    R_ResetCmdListState();
+}
+
 /* line 594 */
 void R_UpdateEffectsBolt(void)
 {
@@ -633,12 +652,6 @@ DP4 oPos.z," */
         "jg .Lfc844a_000c8607\n"
         "movl $0, 0x30008(%ecx)\n" /* line 956 */
         ".Lfc844a_000c84ae:\n"
-        "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
-" */
-        "movl $0, 0x30000(%eax)\n" /* line 657 */
-        "movl $0, 0x30004(%eax)\n" /* line 658 */
-        "movl $0, 0x30008(%eax)\n" /* line 659 */
         "movl frontEndDataOut, %eax\n" /* line 864 */
         "movl %eax, (%esp)\n"
         "calll RB_ExecuteRenderCommands\n"
@@ -716,18 +729,10 @@ DP4 oPos.z," */
     );
 }
 
-#include <stdio.h>
-static int s_endframe_count = 0;
 void R_EndFrame(void)
 {
-    if (s_endframe_count < 5 || s_endframe_count % 300 == 0) {
-        extern unsigned char rg[];
-        fprintf(stderr, "[R_EndFrame #%d] rg[0]=%d s_cmdList=%p\n",
-            s_endframe_count, rg[0], (void*)s_cmdList);
-        fflush(stderr);
-    }
-    s_endframe_count++;
     R_EndFrame_impl();
+    R_ResetCmdListState();
 }
 
 /* line 1506 */
@@ -1940,12 +1945,6 @@ void R_EndDebugFrame(void)
         "jg .Lfc9240_000c92e8\n"
         "movl $0, 0x30008(%ecx)\n" /* line 956 */
         ".Lfc9240_000c9277:\n"
-        "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
-" */
-        "movl $0, 0x30000(%eax)\n" /* line 657 */
-        "movl $0, 0x30004(%eax)\n" /* line 658 */
-        "movl $0, 0x30008(%eax)\n" /* line 659 */
         "movl frontEndDataOut, %eax\n" /* line 1848 */
         "movl %eax, (%esp)\n"
         "calll RB_ExecuteRenderCommands\n"
@@ -2244,4 +2243,3 @@ void R_AddCmdBlendSavedScreen(int fadeMsec)
         "retl\n"
     );
 }
-

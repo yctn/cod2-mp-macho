@@ -15,7 +15,7 @@
 static static_model_cache_t s_cache; /* s_cache */
 
 extern refimport_t ri; /* imp_ri */
-extern GfxBackEndData **gfxBuf; /* imp_frontEndDataOut */
+extern GfxBackEndData *frontEndDataOut;
 /* g_dxCaps was imp_r_rendererInUse, g_dx was imp_dx, g_dxIter was imp_alwaysfails */
 extern r_global_permanent_t rgp; /* imp_rgp */
 
@@ -59,7 +59,7 @@ void R_UsedCachedStaticModelSurface(GfxStaticModelSurfaceCached *surf)
     static_model_tree_t *tree = &s_cache.trees[treeIndex];
 
     /* Update frame count */
-    tree->frameCount = (*gfxBuf)->frameCount;
+    tree->frameCount = frontEndDataOut->frameCount;
 
     /* Remove tree from its current usedlist position */
     ((static_model_tree_list_t *)tree->usedlist.next)->prev = tree->usedlist.prev;
@@ -1765,7 +1765,7 @@ Bool SMC_GetFreeBlockOfSize(static_model_cache_t *cache, int listIndex)
         tree = (static_model_tree_t *)cache->usedlist.prev;
 
         /* Check if tree was used recently enough */
-        if ((*gfxBuf)->frameCount - tree->frameCount <= 2)
+        if (frontEndDataOut->frameCount - tree->frameCount <= 2)
             return (Bool)0;
 
         freenode = &tree->leafs[0].freenode;
@@ -2070,4 +2070,3 @@ void R_FlushStaticModelCache(void)
         ((static_model_node_list_t *)freenode->next)->prev = (int)freenode;
     }
 }
-

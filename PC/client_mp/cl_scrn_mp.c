@@ -17,13 +17,14 @@ extern Bool updateScreenCalled; /* 0x0 */
 extern const char * szShotName[6]; /* szShotName */
 
 /* Global pointers */
-extern byte *re_ptr_195eca8;     /* imp_re - renderer export function table */
-extern byte *cls_ptr_195ecac;    /* imp_cls - pointer to clientStatic_t */
-extern byte *dvar_ptr_195ee78;   /* imp_cl - dvar pointer (cl_paused/sv_running) */
-extern byte *clc_ptr_195ee8c;    /* imp_clc - client connection pointer */
-extern byte *ptr_195eea4;        /* imp_com_errorEntered - loading/rendering guard */
-extern byte *ptr_195f58c;        /* imp_colorBlack - material handle */
-extern byte *ptr_195f5e0;        /* imp_net_showprofile - net profile struct */
+/* decompiler alias for imp_re; use the live import pointer rather than the zeroed stub */
+#define re_ptr_195eca8 ((byte *)imp_re)
+#define cls_ptr_195ecac ((byte *)imp_cls)
+#define dvar_ptr_195ee78 ((byte *)imp_cl)
+#define clc_ptr_195ee8c ((byte *)imp_clc)
+#define ptr_195eea4 ((byte *)imp_com_errorEntered)
+#define ptr_195f58c ((byte *)imp_colorBlack)
+#define ptr_195f5e0 ((byte *)imp_net_showprofile)
 
 /* Renderer function table call helpers */
 typedef void (*re_void_func)(void);
@@ -439,7 +440,7 @@ void SCR_UpdateScreenInternal(void)
     if (!scr_initialized)
         return;
 
-    byte *guard = *(byte **)ptr_195eea4;
+    byte *guard = ptr_195eea4;
     if (*(int *)guard)
         return;
 
@@ -462,7 +463,7 @@ void SCR_UpdateScreen(void)
     if (!scr_initialized)
         return;
 
-    byte *guard = *(byte **)ptr_195eea4;
+    byte *guard = ptr_195eea4;
     if (*(int *)guard)
         return;
 

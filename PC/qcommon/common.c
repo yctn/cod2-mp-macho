@@ -78,7 +78,7 @@ extern void *Sys_GetValue(int valueIndex);
 extern void Sys_Error(const char *error, ...);
 extern int setjmp(jmp_buf env);
 extern void longjmp(jmp_buf env, int val);
-extern const dvar_t **com_dedicated; /* import pointer */
+extern dvar_t *com_dedicated;
 extern int dvar_modifiedFlags;
 extern int *com_fileAccessed; /* import pointer */
 extern void Dvar_ClearModified(const dvar_t *dvar);
@@ -219,22 +219,8 @@ void Com_PrintMessage(print_msg_type_t type, const char *msg)
         return;
     }
 
-    if (type != 4) {
-        /* com_dedicated is an import-pointer-style global: the dvar_t* is stored
-           at the address of the symbol, accessed via single dereference from imp_ */
-        int dedicated_val;
-        __asm__ __volatile__ (
-            "movl imp_com_dedicated, %%eax\n"
-            "movl (%%eax), %%eax\n"
-            "testl %%eax, %%eax\n"
-            "je 1f\n"
-            "movl 8(%%eax), %%eax\n"
-            "1:\n"
-            : "=a"(dedicated_val) :: "memory"
-        );
-        if (dedicated_val == 0) {
-            CL_ConsolePrint(type, msg, 0, 0);
-        }
+    if (type != 4 && (!com_dedicated || !com_dedicated->current.integer)) {
+        CL_ConsolePrint(type, msg, 0, 0);
     }
 
     /* strip color codes */
@@ -1575,14 +1561,6 @@ void Com_Frame_Try_Block_Function(void)
 {
     int msec, rawMsec, minMsec, maxMsec;
     qboolean useTimescale;
-    {
-        static int frame_dbg = 0;
-        if (frame_dbg < 5 || (frame_dbg % 60 == 0)) {
-            fprintf(stderr, "[frame %d]\n", frame_dbg);
-            fflush(stderr);
-        }
-        frame_dbg++;
-    }
 
     /* Write player profile if dvar flags changed */
     if (com_fullyInitialized && (dvar_modifiedFlags & 1)) {
@@ -1596,7 +1574,7 @@ void Com_Frame_Try_Block_Function(void)
 
     /* Handle viewlog changes */
     if (com_viewlog->modified) {
-        if (!(*com_dedicated)->current.integer) {
+        if (!com_dedicated->current.integer) {
             Sys_ShowConsole(com_viewlog->current.integer, 0);
         }
         Dvar_ClearModified(com_viewlog);
@@ -1605,7 +1583,7 @@ void Com_Frame_Try_Block_Function(void)
     SetAnimCheck(com_animCheck->current.enabled);
 
     /* Calculate minimum frame time from maxfps */
-    if (com_maxfps->current.integer > 0 && !(*com_dedicated)->current.integer) {
+    if (com_maxfps->current.integer > 0 && !com_dedicated->current.integer) {
         minMsec = 1000 / com_maxfps->current.integer;
         if (minMsec == 0)
             minMsec = 1;
@@ -1645,7 +1623,7 @@ void Com_Frame_Try_Block_Function(void)
         msec = 1;
 
     /* Determine max frame msec */
-    if ((*com_dedicated)->current.integer) {
+    if (com_dedicated->current.integer) {
         /* Dedicated: hitch warning for 501+ ms frames */
         if (msec >= 501 && msec <= 499999) {
             Com_Printf("Hitch warning: %i msec frame time\n", msec);
@@ -1673,13 +1651,13 @@ void Com_Frame_Try_Block_Function(void)
     SV_Frame(maxMsec);
 
     /* Handle dedicated mode switch */
-    if (!((*com_dedicated)->flags & 0x40)) {
-        if ((*com_dedicated)->latched.integer != (*com_dedicated)->current.integer) {
-            *com_dedicated = Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1020);
-            if ((*com_dedicated)->current.integer) {
-                *com_dedicated = Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1040);
+    if (!(com_dedicated->flags & 0x40)) {
+        if (com_dedicated->latched.integer != com_dedicated->current.integer) {
+            com_dedicated = Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1020);
+            if (com_dedicated->current.integer) {
+                com_dedicated = Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1040);
             }
-            Dvar_ClearModified(*com_dedicated);
+            Dvar_ClearModified(com_dedicated);
             CL_SwitchToLocalClient(0);
             CL_Shutdown();
             CL_SwitchToLocalClient(0);
@@ -1690,7 +1668,7 @@ void Com_Frame_Try_Block_Function(void)
     }
 
     /* If dedicated, skip client frame */
-    if ((*com_dedicated)->current.integer)
+    if (com_dedicated->current.integer)
         return;
 
     /* Client frame */
@@ -1747,7 +1725,7 @@ static void Com_StartHunkUsers(void)
     CL_StartHunkUsers();
     Com_EventLoop();
 
-    if (*com_dedicated && !(*com_dedicated)->current.integer) {
+    if (com_dedicated && !com_dedicated->current.integer) {
         UI_SetActiveMenu(1);
     }
 }
@@ -2008,14 +1986,9 @@ void Com_Init_Try_Block_Function(char *commandLine)
 
     /* Register dedicated dvar */
     {
-        const dvar_t *ded = Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1020);
         int dedicated_val;
-        __asm__ __volatile__ (
-            "movl imp_com_dedicated, %%ecx\n"
-            "movl %1, (%%ecx)\n"
-            "movl 8(%1), %%eax\n"
-            : "=a"(dedicated_val) : "r"(ded) : "ecx", "memory"
-        );
+        com_dedicated = Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1020);
+        dedicated_val = com_dedicated->current.integer;
         if (dedicated_val) {
             Dvar_RegisterInt("dedicated", 0, 0, 2, 0x1040);
         }
@@ -2047,14 +2020,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
 
     /* If dedicated and viewlog == 0, force viewlog to 1 */
     {
-        int dedicated_val;
-        __asm__ __volatile__ (
-            "movl imp_com_dedicated, %%eax\n"
-            "movl (%%eax), %%eax\n"
-            "movl 8(%%eax), %%eax\n"
-            : "=a"(dedicated_val) :: "memory"
-        );
-        if (dedicated_val) {
+        if (com_dedicated->current.integer) {
             if (com_viewlog->current.integer == 0) {
                 Dvar_SetInt(com_viewlog, 1);
             }
@@ -2074,14 +2040,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
 
     /* If dedicated, show console and exit splash */
     {
-        int dedicated_val;
-        __asm__ __volatile__ (
-            "movl imp_com_dedicated, %%eax\n"
-            "movl (%%eax), %%eax\n"
-            "movl 8(%%eax), %%eax\n"
-            : "=a"(dedicated_val) :: "memory"
-        );
-        if (dedicated_val) {
+        if (com_dedicated->current.integer) {
             Sys_HideSplashWindow();
             Sys_ShowConsole(1, 1);
             Sys_NormalExit();
@@ -2138,11 +2097,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
     {
         const dvar_t *ded;
         int dedicated_val;
-        __asm__ __volatile__ (
-            "movl imp_com_dedicated, %%eax\n"
-            "movl (%%eax), %%eax\n"
-            : "=a"(ded) :: "memory"
-        );
+        ded = com_dedicated;
         Dvar_ClearModified(ded);
         dedicated_val = ded->current.integer;
         if (!dedicated_val) {
@@ -2168,12 +2123,7 @@ void Com_Init_Try_Block_Function(char *commandLine)
 
     {
         int dedicated_val;
-        __asm__ __volatile__ (
-            "movl imp_com_dedicated, %%eax\n"
-            "movl (%%eax), %%eax\n"
-            "movl 8(%%eax), %%eax\n"
-            : "=a"(dedicated_val) :: "memory"
-        );
+        dedicated_val = com_dedicated->current.integer;
         if (dedicated_val) {
             /* Dedicated server */
             Sys_LoadingKeepAlive();
@@ -2189,24 +2139,14 @@ void Com_Init_Try_Block_Function(char *commandLine)
             SND_Init();
             Sys_LoadingKeepAlive();
 
-            __asm__ __volatile__ (
-                "movl imp_com_dedicated, %%eax\n"
-                "movl (%%eax), %%eax\n"
-                "movl 8(%%eax), %%eax\n"
-                : "=a"(dedicated_val) :: "memory"
-            );
+            dedicated_val = com_dedicated->current.integer;
             if (!dedicated_val) {
                 Sys_ShowConsole(com_viewlog->current.integer, 0);
             }
         }
 
         /* Intro cinematic (non-dedicated only) */
-        __asm__ __volatile__ (
-            "movl imp_com_dedicated, %%eax\n"
-            "movl (%%eax), %%eax\n"
-            "movl 8(%%eax), %%eax\n"
-            : "=a"(dedicated_val) :: "memory"
-        );
+        dedicated_val = com_dedicated->current.integer;
         if (!dedicated_val) {
             if (!com_introPlayed->current.enabled) {
                 Cbuf_AddText("cinematic atvi\n");

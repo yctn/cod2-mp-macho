@@ -608,8 +608,10 @@ void SND_RawSamples(int samples, int rate, int width, int s_channels, const byte
 {
     int bytes, copy, format, bufSize;
     float vol;
+    byte *sndGlob;
 
-    if (*(byte *)(*(byte **)imp_g_snd) == 0) {
+    sndGlob = *(byte **)imp_g_snd;
+    if (sndGlob == NULL || *sndGlob == 0) {
         return;
     }
 
@@ -643,7 +645,7 @@ void SND_RawSamples(int samples, int rate, int width, int s_channels, const byte
         }
         AIL_set_sample_type(*(void * *)((char *)&milesGlob + 220), format, 0);
         AIL_set_sample_playback_rate(*(void * *)((char *)&milesGlob + 220), rate);
-        vol = 0.5f * *(float *)(*(byte **)imp_g_snd + 0x24);
+        vol = 0.5f * *(float *)(sndGlob + 0x24);
         AIL_set_sample_volume_levels(*(void * *)((char *)&milesGlob + 220), vol, vol);
         bufSize = AIL_minimum_sample_buffer_size(*(void **)&milesGlob, rate, format);
         if (bufSize < 0x2001) {
@@ -2663,4 +2665,3 @@ void SND_DriverPostUpdate(int frametime)
     *(byte *)(0x4a3c70 + *(int *)((char *)&milesGlob + 280)) = 0;
     *(int *)((char *)&milesGlob + 280) = (*(int *)((char *)&milesGlob + 280) + 1) % 32;
 }
-

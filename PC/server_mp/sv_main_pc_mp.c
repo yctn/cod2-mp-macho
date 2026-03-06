@@ -23,8 +23,8 @@ extern long int SVC_GameCompleteStatus(netadr_t from);
 
 /* Global pointers accessed by absolute address in the original binary */
 extern byte *svs_ptr;                /* imp_svs - pointer to serverStatic_t */
-extern const dvar_t **sv_dedicated_dvar; /* imp_com_dedicated */
-extern const dvar_t **rcon_password_dvar; /* imp_rcon_password */
+extern const dvar_t *sv_dedicated_dvar;
+extern const dvar_t *rcon_password_dvar;
 
 /* serverStatic_t field offsets */
 #define SVS_TIME_OFF              0x4
@@ -107,7 +107,7 @@ void SVC_RemoteCommand(struct netadr_t from, msg_t *msg)
 
     password = SV_Cmd_Argv(1);
 
-    rcon_dvar = *rcon_password_dvar;
+    rcon_dvar = rcon_password_dvar;
     if (rcon_dvar->current.string[0] != '\0' && strcmp(password, rcon_dvar->current.string) == 0) {
         /* Valid rcon */
         cmd = SV_Cmd_Argv(2);
@@ -125,7 +125,7 @@ void SVC_RemoteCommand(struct netadr_t from, msg_t *msg)
 
     Com_BeginRedirect(sv_outputbuf, 0x3ff0, SV_FlushRedirect);
 
-    rcon_dvar = *rcon_password_dvar;
+    rcon_dvar = rcon_password_dvar;
     if (rcon_dvar->current.string[0] == '\0') {
         /* No rcon password set on the server */
         Com_Printf("No rconpassword set on the server.\n");
@@ -194,7 +194,7 @@ void SV_MasterGameCompleteStatus(void)
     const netadr_t *master;
     netadr_t addr;
 
-    dedicated = *sv_dedicated_dvar;
+    dedicated = sv_dedicated_dvar;
     if (!dedicated || dedicated->current.integer != 2) {
         return;
     }
@@ -221,7 +221,7 @@ void SV_MasterHeartbeat(const char *hbname)
 
     svs = *(byte **)&svs_ptr;
 
-    dedicated = *sv_dedicated_dvar;
+    dedicated = sv_dedicated_dvar;
     if (!dedicated || dedicated->current.integer != 2) {
         return;
     }

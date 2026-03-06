@@ -19,6 +19,8 @@ static vec4_t standardFrustumSidePlanes[4]; /* standardFrustumSidePlanes */
 extern void R_UpdateXModelBounds(void *sceneEnt, void *ent);
 extern void R_SkinSceneEnt(void *sceneEnt, void *ent);
 extern void R_AddXModelSurfaces(int entIndex);
+extern r_globals_t rg;
+extern r_global_permanent_t rgp;
 void R_DrawModel(int entIndex);
 float R_GetFarPlaneDist(void);
 void R_ClearDpvsScene(void);
@@ -59,7 +61,7 @@ float R_GetFarPlaneDist(void)
     float farPlaneDist = *(float *)(*(int *)(*(int *)imp_r_zfar) + 8);
 
     if (farPlaneDist == 0.0f) {
-        byte *scene = *(byte **)imp_rg;
+        byte *scene = (byte *)&rg;
         if (*(int *)(scene + 0x150c) && *(byte *)(scene + 0x14c8) && *(int *)(scene + 0x14ac) == 1) {
             farPlaneDist = *(float *)(scene + 0x14c0);
         }
@@ -74,7 +76,7 @@ void R_ClearDpvsScene(void)
 {
     *(int *)((char *)&dpvsScene + 131072) = 0;
 
-    byte *globals = *(byte **)imp_rgp;
+    byte *globals = (byte *)&rgp;
     byte *world = *(byte **)(globals + 0x109c);
     if (!world)
         return;
@@ -5830,4 +5832,3 @@ void R_AddWorldSurfacesDpvs(const GfxViewParms *viewParms, int cameraCellIndex)
         "jmp .Lff2c88_000f3ae3\n"
     );
 }
-

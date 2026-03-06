@@ -1,8 +1,8 @@
 /* Platform stubs for agl (macOS → Linux) */
 #include "agl_stubs.h"
 #include <GL/gl.h>
-#include <stdio.h>
 #include <dlfcn.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 static long long get_ms(void) {
@@ -94,29 +94,10 @@ typedef void (*PFNGLBLITFRAMEBUFFEREXTPROC)(int srcX0, int srcY0, int srcX1, int
     int dstX0, int dstY0, int dstX1, int dstY1, unsigned int mask, unsigned int filter);
 extern void *SDL_GL_GetProcAddress(const char *proc);
 
-static int swap_count = 0;
-static long long last_swap_ms = 0;
-
 void aglSwapBuffers(AGLContext ctx)
 {
     if (!sdl_gl_window)
         return;
-
-    {
-        long long now = get_ms();
-        long long delta = last_swap_ms ? (now - last_swap_ms) : 0;
-        last_swap_ms = now;
-
-        if (swap_count < 200) {
-            int fbo = 0;
-            unsigned int err = glGetError();
-            glGetIntegerv(0x8CA6 /* GL_DRAW_FRAMEBUFFER_BINDING */, &fbo);
-            fprintf(stderr, "[swap %d] t+%lldms FBO=%d glerr=%u\n",
-                swap_count, delta, fbo, err);
-            fflush(stderr);
-        }
-    }
-    swap_count++;
 
     SDL_GL_SwapWindow(sdl_gl_window);
 }

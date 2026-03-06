@@ -11,7 +11,7 @@ extern char * svc_strings[256]; /* 0x0 */
 /* Global pointer externs - these are indirect pointers to game structures */
 extern byte **cls_ptr;          /* imp_cl - clientStatic_t** */
 extern byte **clc_ptr;          /* imp_clc - clientConnection_t** */
-extern byte **com_dedicated;    /* imp_com_sv_running - dvar_t** */
+extern dvar_t *com_dedicated;
 extern byte **cl_paused;        /* imp_net_lanauthorize - dvar_t** */
 extern byte **cl_packetdelay;   /* imp_cl_paused - dvar_t** */
 extern byte *com_frameTime;     /* imp_cls */
@@ -122,7 +122,7 @@ void CL_SystemInfoChanged(void)
     FS_PureServerSetReferencedIwds(s, Info_ValueForKey(systemInfo, "sv_referencedIwdNames"));
 
     /* line 606 */
-    if (*(byte *)((*com_dedicated) + 8) == 0) {
+    if (!com_dedicated->current.integer) {
         /* line 609 - iterate info string pairs */
         s = systemInfo;
         while (s) {

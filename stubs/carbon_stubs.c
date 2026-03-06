@@ -1,6 +1,8 @@
 /* Platform stubs for carbon (macOS → Linux) */
 #include "carbon_stubs.h"
 
+extern void glOrtho(double left, double right, double bottom, double top, double zNear, double zFar);
+
 void RunApplicationEventLoop(void)
 {
     /* TODO */
@@ -391,6 +393,11 @@ OSErr InsertMediaIntoTrack(void *track, int trackStart, int mediaTime, int media
 unsigned char gluCheckExtension(const unsigned char *extName, const unsigned char *extString)
 {
     return 0;
+}
+
+void gluOrtho2D(double left, double right, double bottom, double top)
+{
+    glOrtho(left, right, bottom, top, -1.0, 1.0);
 }
 
 /* IOKit stubs */

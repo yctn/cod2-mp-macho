@@ -3,7 +3,6 @@
 
 #include "common_types.h"
 #include "imports.h"
-#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "Mac/Tools/MacMemory.h"
@@ -512,15 +511,6 @@ static short unsigned int MacDisplay_SwapContext_impl(ContextRef inContextRef)
 
 short unsigned int MacDisplay_SwapContext(ContextRef inContextRef)
 {
-    static int call_count = 0;
-    call_count++;
-    if (call_count <= 5 || call_count % 60 == 0) {
-        fprintf(stderr, "[SwapCtx #%d] sEnableSwap=%d ctx=%p *(ctx)=%p\n",
-            call_count, (int)sEnableSwap,
-            (void*)inContextRef,
-            inContextRef ? (void*)(*(void**)inContextRef) : (void*)0);
-        fflush(stderr);
-    }
     return MacDisplay_SwapContext_impl(inContextRef);
 }
 
@@ -7268,4 +7258,3 @@ void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_ite
         "jmp .Lf2bb652_002bbffd\n"
     );
 }
-

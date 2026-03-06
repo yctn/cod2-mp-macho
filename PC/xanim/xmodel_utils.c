@@ -16,7 +16,7 @@ int XModelGetNumLods(const XModel *model);
 int XModelNumBones(const XModel *model);
 const DObjAnimMat * XModelGetBasePose(const XModel *model);
 const DObjAnimMat * XModelGetBasePoseBone(const XModel *model, int skelMatBoneOffset);
-jpeg_scan_info XModelSetTestLods(int lodLevel, float dist);
+void XModelSetTestLods(int lodLevel, float dist);
 float XModelGetLodOutDist(const XModel *model);
 int XModelGetLodForDist(const XModel *model, float dist);
 
@@ -77,7 +77,7 @@ const DObjAnimMat *XModelGetBasePoseBone(const XModel *model, int skelMatBoneOff
 }
 
 /* line 175 */
-jpeg_scan_info XModelSetTestLods(int lodLevel, float dist)
+void XModelSetTestLods(int lodLevel, float dist)
 {
     *(float *)((byte *)&g_testLods[lodLevel] + 4) = dist;
     *(byte *)&g_testLods[lodLevel] = (dist >= 0.0f) ? 1 : 0;
