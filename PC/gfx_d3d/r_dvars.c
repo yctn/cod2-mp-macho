@@ -577,7 +577,7 @@ void R_RegisterDvars(void)
     r_monitor = ri.Dvar_RegisterInt("r_monitor", 0, 0, 8, 0x2021);
 
     /* line 708 */
-    r_rendererPreference = ri.Dvar_RegisterEnum("r_rendererPreference", s_technologyNames, 0, 0x2021);
+    r_rendererPreference = ri.Dvar_RegisterEnum("r_rendererPreference", s_technologyNames, 1, 0x2021); /* default to "dx9" (index 1) instead of "none" (0) which falls to DX7 */
 
     /* line 709 */
     r_rendererInUse = ri.Dvar_RegisterEnum("r_rendererInUse", s_technologyNames, 0, 0x2040);

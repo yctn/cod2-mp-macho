@@ -2270,7 +2270,7 @@ static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUse
         "addl sDisplayList, %eax\n"
         "movl 0x38(%eax), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2158b8, (%esp)\n" /* "GL_NV_multisample_filter_hint" */
+        "movl $str_002158b8, (%esp)\n" /* "GL_NV_multisample_filter_hint" */
         "calll gluCheckExtension\n"
         "testb %al, %al\n" /* line 1305 */
         "jne .Lf57ca_00005cc4\n"
@@ -2348,7 +2348,7 @@ static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUse
         ".Lf57ca_00005d0a:\n"
         "cmpl $1, 0x10(%ebp)\n" /* line 1163 | inMultiSampleType */
         "jle .Lf57ca_00005ca5\n"
-        "movl $0x2158a0, (%esp)\n" /* line 1165 */
+        "movl $str_002158a0, (%esp)\n" /* line 1165 */
         "calll game_dprintf\n"
         "movl 0x1c(%ebp), %ecx\n" /* line 1167 | outHasAuxBuffer */
         "movzbl (%ecx), %eax\n" /* inUseAuxBuffer */
@@ -2414,7 +2414,7 @@ static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUse
         "addl sDisplayList, %eax\n"
         "movl 0x38(%eax), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215870, (%esp)\n" /* "GL_ARB_multisample" */
+        "movl $str_00215870, (%esp)\n" /* "GL_ARB_multisample" */
         "calll gluCheckExtension\n"
         "testb %al, %al\n" /* line 1133 */
         "jne .Lf57ca_00005817\n"
@@ -2523,7 +2523,7 @@ static ContextRef MacDisplay_CreateScreenContext_orig(int inDepthSize, int inUse
         /* } scope */
         /* } scope */
         ".Lf57ca_00005f7f:\n"
-        "movl $0x215884, (%esp)\n" /* line 1157 */
+        "movl $str_00215884, (%esp)\n" /* line 1157 */
         "calll game_dprintf\n"
         "movl 0x1c(%ebp), %ecx\n" /* line 1159 | outHasAuxBuffer */
         "movzbl (%ecx), %eax\n" /* inUseAuxBuffer */
@@ -3334,7 +3334,7 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         "movl $0, 0x48(%ebx)\n" /* line 2223 | this */
         "movl 0x38(%ebx), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21595c, (%esp)\n" /* "GL_ARB_fragment_program" */
+        "movl $str_0021595c, (%esp)\n" /* "GL_ARB_fragment_program" */
         "calll gluCheckExtension\n"
         "testb %al, %al\n" /* line 2225 */
         "je .Lf64da_000069be\n"
@@ -3368,7 +3368,7 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         "movl %eax, (%esp)\n"
         "calll strlwr\n"
         "movl -0x434(%ebp), %esi\n" /* line 269 | attrib */
-        "movl $0x215974, 4(%esp)\n" /* line 2248 */
+        "movl $str_00215974, 4(%esp)\n" /* line 2248 */
         "movl %esi, (%esp)\n" /* currContext */
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -3381,12 +3381,12 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         ".Lf64da_00006a44:\n"
         "movl 0x38(%ebx), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215984, (%esp)\n" /* "GL_EXT_blend_func_separate" */
+        "movl $str_00215984, (%esp)\n" /* "GL_EXT_blend_func_separate" */
         "calll gluCheckExtension\n"
         "movb %al, 0x51(%ebx)\n" /* line 2287 | this */
         "movl 0x38(%ebx), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2159a0, (%esp)\n" /* "GL_EXT_texture_filter_anisotropic" */
+        "movl $str_002159a0, (%esp)\n" /* "GL_EXT_texture_filter_anisotropic" */
         "calll gluCheckExtension\n"
         "movzbl %al, %eax\n" /* line 2288 */
         "movb %al, 0x52(%ebx)\n" /* this */
@@ -3402,7 +3402,7 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         ".Lf64da_00006a97:\n"
         "movl 0x38(%ebx), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x21595c, (%esp)\n" /* "GL_ARB_fragment_program" */
+        "movl $str_0021595c, (%esp)\n" /* "GL_ARB_fragment_program" */
         "calll gluCheckExtension\n"
         "testb %al, %al\n" /* line 2314 */
         "je .Lf64da_00006ac0\n"
@@ -3532,7 +3532,7 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         /* } scope */
         /* { scope 2: numModes, newContext */
         ".Lf64da_00006c7b:\n"
-        "movl $0x2158f8, 4(%esp)\n" /* line 2129 */
+        "movl $str_002158f8, 4(%esp)\n" /* line 2129 */
         "movl %eax, (%esp)\n"
         "calll IOObjectConformsTo\n"
         "testl %eax, %eax\n"
@@ -3541,12 +3541,12 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         "movl $0, -0x30(%ebp)\n" /* line 2134 | depth */
         "leal -0x30(%ebp), %esi\n" /* line 2135 | depth, width */
         "movl %esi, 8(%esp)\n" /* width */
-        "movl $0x215908, 4(%esp)\n" /* "IOService" */
+        "movl $str_00215908, 4(%esp)\n" /* "IOService" */
         "movl %edi, (%esp)\n" /* port */
         "calll IORegistryEntryGetParentEntry\n"
         "testl %eax, %eax\n" /* line 2136 */
         "jne .Lf64da_0000682e\n"
-        "movl $0x215914, 4(%esp)\n" /* line 2138 */
+        "movl $str_00215914, 4(%esp)\n" /* line 2138 */
         "movl -0x30(%ebp), %eax\n" /* depth */
         "movl %eax, (%esp)\n"
         "calll IOObjectConformsTo\n"
@@ -3616,13 +3616,13 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         ".Lf64da_00006d7c:\n"
         "movl 0x38(%ebx), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2159c4, (%esp)\n" /* "GL_NV_texture_shader" */
+        "movl $str_002159c4, (%esp)\n" /* "GL_NV_texture_shader" */
         "calll gluCheckExtension\n"
         "testb %al, %al\n" /* line 2301 */
         "je .Lf64da_00006a97\n"
         "movl 0x38(%ebx), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2159dc, (%esp)\n" /* "GL_NV_register_combiners2" */
+        "movl $str_002159dc, (%esp)\n" /* "GL_NV_register_combiners2" */
         "calll gluCheckExtension\n"
         "testb %al, %al\n" /* line 2301 */
         "je .Lf64da_00006a97\n"
@@ -3636,7 +3636,7 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         ".Lf64da_00006dd1:\n"
         "movl 0x38(%ebx), %eax\n" /* line 147 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x2159f8, (%esp)\n" /* "GL_ATI_text_fragment_shader" */
+        "movl $str_002159f8, (%esp)\n" /* "GL_ATI_text_fragment_shader" */
         "calll gluCheckExtension\n"
         "testb %al, %al\n" /* line 2308 */
         "je .Lf64da_00006a97\n"
@@ -3649,7 +3649,7 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         "movl $0x2582, 0x28(%ebx)\n" /* line 2273 | this */
         "jmp .Lf64da_00006a44\n"
         ".Lf64da_00006e10:\n"
-        "movl $0x21597c, 4(%esp)\n" /* line 2252 */
+        "movl $str_0021597c, 4(%esp)\n" /* line 2252 */
         "movl %esi, (%esp)\n" /* currContext */
         "calll strstr\n"
         "cmpl $1, %eax\n" /* line 2254 */
@@ -3693,20 +3693,20 @@ short unsigned int CDisplayInfo_CDisplayInfo(const CDisplayInfo * _this, CGDirec
         /* { scope 2: numModes, newContext */
         /* { scope 3: memory, fullscreen, accelerated, depth, ... */
         ".Lf64da_00006e77:\n"
-        "movl $0x215920, 4(%esp)\n" /* line 2138 */
+        "movl $str_00215920, 4(%esp)\n" /* line 2138 */
         "movl -0x30(%ebp), %eax\n" /* depth */
         "movl %eax, (%esp)\n"
         "calll IOObjectConformsTo\n"
         "testl %eax, %eax\n"
         "jne .Lf64da_00006cd4\n"
-        "movl $0x215a14, 4(%esp)\n" /* line 2144 */
+        "movl $str_00215a14, 4(%esp)\n" /* line 2144 */
         "movl -0x30(%ebp), %eax\n" /* depth */
         "movl %eax, (%esp)\n"
         "calll IOObjectConformsTo\n"
         "testl %eax, %eax\n"
         "je .Lf64da_0000682e\n"
         "movl %esi, 8(%esp)\n" /* line 2149 | width */
-        "movl $0x21592c, 4(%esp)\n" /* "IODeviceTree" */
+        "movl $str_0021592c, 4(%esp)\n" /* "IODeviceTree" */
         "movl -0x30(%ebp), %eax\n" /* depth */
         "movl %eax, (%esp)\n"
         "calll IORegistryEntryGetParentEntry\n"
@@ -3795,7 +3795,7 @@ OSStatus MacDisplay_Initialize(void)
         "imull $0xc28f5c29, %eax, %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf7e9a_00007f4a\n"
-        "movl $0x215a24, (%esp)\n" /* line 225 */
+        "movl $str_00215a24, (%esp)\n" /* line 225 */
         "calll game_dprintf\n"
         "movl $0x3ec, %eax\n"
         /* } scope */
@@ -5934,7 +5934,7 @@ void ZNSt6vectorI7MacRectSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorI
         "movl %eax, %ecx\n"
         "jmp .Lf2bb10e_002bb227\n"
         ".Lf2bb10e_002bb28c:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
@@ -6154,7 +6154,7 @@ void ZNSt6vectorI8CResInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iterator
         "movl $0xfffffff, %edx\n" /* line 272 */
         "jmp .Lf2bb298_002bb37c\n"
         ".Lf2bb298_002bb47e:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
@@ -6696,7 +6696,7 @@ void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_ite
         /* } scope */
         /* { scope 1 */
         ".Lf2bb652_002bb9cd:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
         "movl %eax, -0x9c(%ebp)\n"
         /* } scope */
@@ -7258,3 +7258,4 @@ void ZNSt6vectorI12CDisplayInfoSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_ite
         "jmp .Lf2bb652_002bbffd\n"
     );
 }
+

@@ -1972,7 +1972,7 @@ void ZNSt6vectorIP15CDirect3DVolumeSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal
         "movl $0x3fffffff, %edx\n" /* line 272 */
         "jmp .Lf2c1142_002c11b9\n"
         ".Lf2c1142_002c1268:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }
@@ -2061,7 +2061,7 @@ void ZNSt6vectorIP15CDirect3DVolumeSaIS1_EE7reserveEm(void) /* std_vector<CDirec
         "popl %ebp\n"
         "retl\n"
         ".Lf2c1274_002c131b:\n"
-        "movl $0x215c24, (%esp)\n" /* line 72 */
+        "movl $str_00215c24, (%esp)\n" /* line 72 */
         "calll __ZSt20__throw_length_errorPKc\n"
         /* { scope 1 */
         ".Lf2c1274_002c1327:\n"

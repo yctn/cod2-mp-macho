@@ -1389,7 +1389,7 @@ HRESULT CDirect3DDevice_CreateVertexShader(const CDirect3DDevice * _this, const 
         "movl $0x8874, (%esp)\n" /* line 4189 */
         "calll glGetString\n"
         "movl %eax, 8(%esp)\n" /* line 4192 */
-        "movl $0x215bbc, 4(%esp)\n" /* "%s
+        "movl $str_00215bbc, 4(%esp)\n" /* "%s
 " */
         "leal -0x40c(%ebp), %eax\n" /* MyError */
         "movl %eax, (%esp)\n"
@@ -6723,6 +6723,33 @@ static void *d3d_ptr(const void *base, unsigned int offset)
 }
 
 typedef void (*PFNGLWINDOWPOS2IPROC)(GLint x, GLint y);
+typedef void (*PFNGLGENFRAMEBUFFERSPROC)(GLsizei n, GLuint *framebuffers);
+typedef void (*PFNGLDELETEFRAMEBUFFERSPROC)(GLsizei n, const GLuint *framebuffers);
+typedef void (*PFNGLBINDFRAMEBUFFERPROC)(GLenum target, GLuint framebuffer);
+typedef void (*PFNGLFRAMEBUFFERTEXTURE2DPROC)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+typedef void (*PFNGLBLITFRAMEBUFFERPROC)(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+typedef GLenum (*PFNGLCHECKFRAMEBUFFERSTATUSPROC)(GLenum target);
+
+static PFNGLGENFRAMEBUFFERSPROC    s_glGenFramebuffers;
+static PFNGLDELETEFRAMEBUFFERSPROC s_glDeleteFramebuffers;
+static PFNGLBINDFRAMEBUFFERPROC    s_glBindFramebuffer;
+static PFNGLFRAMEBUFFERTEXTURE2DPROC s_glFramebufferTexture2D;
+static PFNGLBLITFRAMEBUFFERPROC    s_glBlitFramebuffer;
+
+static int d3d_load_fbo_procs(void)
+{
+    static int loaded = 0;
+    if (!loaded) {
+        loaded = 1;
+        s_glGenFramebuffers    = (PFNGLGENFRAMEBUFFERSPROC)SDL_GL_GetProcAddress("glGenFramebuffers");
+        s_glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)SDL_GL_GetProcAddress("glDeleteFramebuffers");
+        s_glBindFramebuffer    = (PFNGLBINDFRAMEBUFFERPROC)SDL_GL_GetProcAddress("glBindFramebuffer");
+        s_glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)SDL_GL_GetProcAddress("glFramebufferTexture2D");
+        s_glBlitFramebuffer    = (PFNGLBLITFRAMEBUFFERPROC)SDL_GL_GetProcAddress("glBlitFramebuffer");
+    }
+    return s_glGenFramebuffers && s_glDeleteFramebuffers &&
+           s_glBindFramebuffer && s_glFramebufferTexture2D && s_glBlitFramebuffer;
+}
 
 static PFNGLWINDOWPOS2IPROC d3d_get_window_pos2i(void)
 {
@@ -6866,42 +6893,69 @@ static HRESULT CDirect3DDevice_StretchRectToBackBuffer(
     glDrawBuffer(0x405);
     glReadBuffer(0x405);
 
-    windowPos2i = d3d_get_window_pos2i();
-    if (surfaceMemory != NULL && windowPos2i != NULL) {
-        GLfloat sourceRectWidth;
-        GLfloat sourceRectHeight;
-        GLfloat destRectWidth;
-        GLfloat destRectHeight;
+    /* Use FBO blit to copy GPU render target directly — no CPU re-upload needed */
+    if (d3d_load_fbo_procs()) {
+        GLuint fbo;
+        GLenum fboStatus;
+        /* src rect in GL texture coords (Y=0 at bottom of texture, opposite of D3D) */
+        GLint srcY0 = (GLint)sourceHeight - pSourceRect->bottom;
+        GLint srcY1 = (GLint)sourceHeight - pSourceRect->top;
+        /* dst rect in window coords (Y=0 at bottom) */
+        GLint dstY0 = (GLint)destHeight - pDestRect->bottom;
+        GLint dstY1 = (GLint)destHeight - pDestRect->top;
+        GLenum blitFilter = (Filter == 1 /*D3DTEXF_LINEAR*/) ? 0x2601 /*GL_LINEAR*/ : 0x2600 /*GL_NEAREST*/;
 
-        sourceRectWidth = (GLfloat)(pSourceRect->right - pSourceRect->left);
-        sourceRectHeight = (GLfloat)(pSourceRect->bottom - pSourceRect->top);
-        destRectWidth = (GLfloat)(pDestRect->right - pDestRect->left);
-        destRectHeight = (GLfloat)(pDestRect->bottom - pDestRect->top);
-        if (sourceRectWidth > 0.0f && sourceRectHeight > 0.0f &&
-            destRectWidth > 0.0f && destRectHeight > 0.0f) {
-            glPixelStorei(0xcf5, 4);
-            glPixelStorei(0xcf2, sourceWidth);
-            glPixelStorei(0xcf3, pSourceRect->top);
-            glPixelStorei(0xcf4, pSourceRect->left);
-            glPixelZoom(destRectWidth / sourceRectWidth, -(destRectHeight / sourceRectHeight));
-            windowPos2i(pDestRect->left, (GLint)destHeight - pDestRect->top);
-            glDrawPixels(
-                (GLsizei)sourceRectWidth,
-                (GLsizei)sourceRectHeight,
-                surfaceFormat,
-                surfaceType,
-                surfaceMemory);
-            glPixelZoom(1.0f, 1.0f);
-            glPopClientAttrib();
-            glPopAttrib();
-            return 0;
+        static int diag_count = 0;
+        if (diag_count < 3) {
+            fprintf(stderr, "[StretchRect#%d] tex=%u target=0x%x src=(%d,%d,%d,%d) srcH=%u dst=(%d,%d,%d,%d) dstH=%u srcGL=(%d,%d,%d,%d) dstGL=(%d,%d,%d,%d)\n",
+                diag_count, textureName, sourceTarget,
+                pSourceRect->left, pSourceRect->top, pSourceRect->right, pSourceRect->bottom, sourceHeight,
+                pDestRect->left,   pDestRect->top,   pDestRect->right,   pDestRect->bottom,   destHeight,
+                pSourceRect->left, srcY0, pSourceRect->right, srcY1,
+                pDestRect->left,   dstY0, pDestRect->right,   dstY1);
         }
+
+        s_glGenFramebuffers(1, &fbo);
+        s_glBindFramebuffer(0x8ca8 /*GL_READ_FRAMEBUFFER*/, fbo);
+        s_glFramebufferTexture2D(0x8ca8, 0x8ce0 /*GL_COLOR_ATTACHMENT0*/, sourceTarget, textureName, 0);
+        fboStatus = ((PFNGLCHECKFRAMEBUFFERSTATUSPROC)SDL_GL_GetProcAddress("glCheckFramebufferStatus"))(0x8ca8);
+        if (diag_count < 3) {
+            unsigned char spx[4] = {0};
+            glReadBuffer(0x8ce0 /*GL_COLOR_ATTACHMENT0*/);
+            glReadPixels((pSourceRect->left + pSourceRect->right)/2,
+                         (srcY0 + srcY1)/2, 1, 1, 0x1908, 0x1401, spx);
+            fprintf(stderr, "[StretchRect#%d] FBO status=0x%x src_center_px=(%d,%d,%d,%d) err=0x%x\n",
+                    diag_count, fboStatus, spx[0],spx[1],spx[2],spx[3], glGetError());
+            diag_count++;
+        }
+        if (fboStatus != 0x8cd5 /*GL_FRAMEBUFFER_COMPLETE*/) {
+            s_glBindFramebuffer(0x8d40 /*GL_FRAMEBUFFER*/, 0);
+            s_glDeleteFramebuffers(1, &fbo);
+            goto texture_path;
+        }
+        s_glBindFramebuffer(0x8ca9 /*GL_DRAW_FRAMEBUFFER*/, 0);
+        glDisable(0xc11); /* GL_SCISSOR_TEST */
+        s_glBlitFramebuffer(
+            pSourceRect->left, srcY0, pSourceRect->right, srcY1,
+            pDestRect->left,   dstY0, pDestRect->right,   dstY1,
+            0x4000 /*GL_COLOR_BUFFER_BIT*/, blitFilter);
+        s_glBindFramebuffer(0x8d40 /*GL_FRAMEBUFFER*/, 0);
+        s_glDeleteFramebuffers(1, &fbo);
+
+        glPopClientAttrib();
+        glPopAttrib();
+        return 0;
     }
+    texture_path:;
+
+    windowPos2i = d3d_get_window_pos2i(); (void)windowPos2i;
 
     glActiveTextureARB(0x84c0);
     glClientActiveTextureARB(0x84c0);
     glBindTexture(sourceTarget, textureName);
-    CDirect3DSurface_UpdateOpenGLSurfaceObject((const CDirect3DSurface *)pSourceSurface, 0);
+    /* Do NOT call UpdateOpenGLSurfaceObject here: the source is a GPU render target,
+       its texture already contains the rendered frame. Re-uploading from the CPU
+       shadow buffer (offset 0x20) would overwrite the rendered content. */
     glTexParameteri(sourceTarget, 0x2801, filterMode);
     glTexParameteri(sourceTarget, 0x2800, filterMode);
     glTexParameteri(sourceTarget, 0x2802, 0x2900);
@@ -9794,15 +9848,15 @@ HRESULT CDirect3DDevice_Reset(const CDirect3DDevice * _this, D3DPRESENT_PARAMETE
         "calll glGetIntegerv\n"
         "calll MacDisplay_GetGLVendor\n" /* line 1095 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bc0, (%esp)\n" /* "GL_VENDOR = %s" */
+        "movl $str_00215bc0, (%esp)\n" /* "GL_VENDOR = %s" */
         "calll game_dprintf\n"
         "calll MacDisplay_GetGLRenderer\n" /* line 1096 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215bd0, (%esp)\n" /* "GL_RENDERER = %s" */
+        "movl $str_00215bd0, (%esp)\n" /* "GL_RENDERER = %s" */
         "calll game_dprintf\n"
         "calll MacDisplay_GetGLExtensions\n" /* line 1097 */
         "movl %eax, 4(%esp)\n"
-        "movl $0x215be4, (%esp)\n" /* "GL_EXTENSIONS = %s" */
+        "movl $str_00215be4, (%esp)\n" /* "GL_EXTENSIONS = %s" */
         "calll game_dprintf\n"
         "movb $1, __ZN15CDirect3DDevice28mNeedsVertexShaderValidationE\n" /* line 644 */
         "movb $1, __ZN15CDirect3DDevice30mNeedsTransformationValidationE\n" /* line 645 */
@@ -10284,7 +10338,7 @@ HRESULT CDirect3DDevice_CreatePixelShaderOpenGL(const CDirect3DDevice * _this, O
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "movl $2, 0xc(%esp)\n" /* line 1570 */
         "movl $0, 8(%esp)\n"
-        "movl $0x215bf8, 4(%esp)\n" /* "::" */
+        "movl $str_00215bf8, 4(%esp)\n" /* "::" */
         "movl %esi, (%esp)\n"
         "calll __ZNKSs4findEPKcmm\n"
         "movl %eax, %ebx\n"
@@ -10334,7 +10388,7 @@ HRESULT CDirect3DDevice_CreatePixelShaderOpenGL(const CDirect3DDevice * _this, O
         "movl $0x8874, (%esp)\n" /* line 4452 */
         "calll glGetString\n"
         "movl %eax, 8(%esp)\n" /* line 4455 */
-        "movl $0x215bbc, 4(%esp)\n" /* "%s
+        "movl $str_00215bbc, 4(%esp)\n" /* "%s
 " */
         "leal -0x42c(%ebp), %eax\n" /* MyError */
         "movl %eax, (%esp)\n"
@@ -10397,7 +10451,7 @@ HRESULT CDirect3DDevice_CreatePixelShaderOpenGL(const CDirect3DDevice * _this, O
         "jmp .Lf1ba56_0001bb63\n"
         /* { scope 2 */
         ".Lf1ba56_0001bbef:\n"
-        "movl $0x215bfc, (%esp)\n" /* line 300 */
+        "movl $str_00215bfc, (%esp)\n" /* line 300 */
         "calll __ZSt20__throw_out_of_rangePKc\n"
         /* } scope */
         /* { scope 2 */
@@ -10571,7 +10625,7 @@ HRESULT CDirect3DDevice_CreatePixelShader(const CDirect3DDevice * _this, const D
         "movl $0x8874, (%esp)\n" /* line 4258 */
         "calll glGetString\n"
         "movl %eax, 8(%esp)\n" /* line 4261 */
-        "movl $0x215bbc, 4(%esp)\n" /* "%s
+        "movl $str_00215bbc, 4(%esp)\n" /* "%s
 " */
         "leal -0x40c(%ebp), %eax\n" /* MyError */
         "movl %eax, (%esp)\n"
@@ -12093,7 +12147,7 @@ void ZNSt6vectorIN15CDirect3DDevice9CTexStageESaIS1_EE13_M_insert_auxEN9__gnu_cx
         "movl $0x18f9c18, %edx\n" /* line 272 */
         "jmp .Lf2bd872_002bd986\n"
         ".Lf2bd872_002bdac3:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }

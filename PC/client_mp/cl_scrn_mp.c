@@ -71,7 +71,7 @@ extern qboolean Sys_IsMainThread(void);
 extern void Sys_LoadingKeepAlive(void);
 extern void Net_DisplayProfile(void);
 extern int FS_FTell(int fh);
-extern float CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
+extern void CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
 
 void SCR_DrawSmallStringExt(int x, int y, const char *string, const vec_t *setColor);
 void SCR_DrawConsoleString(int x, int y, const short int *string, int maxChars, const vec_t *setColor);
@@ -269,6 +269,13 @@ static void SCR_UpdateFrame(void)
     byte *cls = cls_ptr_195ecac;
     int gameLoaded = CLS_CONN_STATE_FLAG(cls);
 
+    static int frame_diag = 0;
+    if (frame_diag < 3) {
+        fprintf(stderr, "[frame#%d] gameLoaded=%d cls=%p cls+0x110=%p val=%d\n",
+                frame_diag, gameLoaded, cls, cls+0x110, *(int*)(cls+0x110));
+        frame_diag++;
+    }
+
     if (!gameLoaded) {
         RE_FUNC(re, 0xc8, re_int4_func)(1, (int)(unsigned int)ptr_195f58c, 0, 0);
         goto end_frame;
@@ -392,6 +399,15 @@ check_ui:
     /* Draw UI if conditions met */
     {
         byte *dv = *(byte **)dvar_ptr_195ee78;
+        static int ui_diag = 0;
+        if (ui_diag < 3) {
+            byte *clc2 = *(byte **)clc_ptr_195ee8c;
+            int cs = *(int *)clc2;
+            int fs = UI_IsFullscreen();
+            fprintf(stderr, "[ui#%d] dv_flag=0x%x connstate=%d fullscr=%d\n",
+                    ui_diag, *(byte *)(dv + 4), cs, fs);
+            ui_diag++;
+        }
         if (*(byte *)(dv + 4) & 8) {
             byte *clc2 = *(byte **)clc_ptr_195ee8c;
             if (*(int *)clc2 != 1) {
@@ -429,6 +445,13 @@ end_frame:
 /* line 403 */
 void SCR_UpdateScreenInternal(void)
 {
+    static int scr_diag = 0;
+    if (scr_diag < 3) {
+        fprintf(stderr, "[scr#%d] reent=%d init=%d guard=%d\n",
+                scr_diag, updateScreenCalled, scr_initialized, *(int *)ptr_195eea4);
+        scr_diag++;
+    }
+
     if (updateScreenCalled)
         return;
 

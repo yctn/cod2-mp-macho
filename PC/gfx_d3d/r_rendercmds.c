@@ -213,7 +213,7 @@ void R_AbortRenderCommands(void)
         ".Lfc7e86_000c7e9d:\n"
         "calll R_UnlockSkinnedCache\n" /* line 903 */
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $0x219d0c, %eax\n" /* "Active    FX: %i
+        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
 " */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
@@ -555,7 +555,7 @@ void R_InitBackendData(void)
         "movl frontEndDataOut, %eax\n" /* line 146 */
         "testl %eax, %eax\n"
         "je .Lfc8308_000c834d\n"
-        "addl $0x219d0c, %eax\n" /* line 656 */
+        "addl $str_00219d0c, %eax\n" /* line 656 */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
         "movl $0, 0x30008(%eax)\n" /* line 659 */
@@ -892,12 +892,31 @@ void R_IssueDelayedDrawing(int marker)
 }
 
 /* line 1153 */
+int g_addcmd_count = 0; /* diagnostic */
+static int g_addcmd_diag = 0;
+void diag_addcmd_hex(unsigned int xi, unsigned int yi) {
+    extern int printf(const char *, ...);
+    if (g_addcmd_diag < 10) {
+        printf("ADDCMD[%d] x=0x%08x y=0x%08x ra=%p\n",
+               g_addcmd_diag, xi, yi, __builtin_return_address(1));
+        g_addcmd_diag++;
+    }
+}
 __attribute__((naked))
 void R_AddCmdDrawStretchPic(float x, float y, float w, float h, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1153 */
         "movl %esp, %ebp\n"
+        "incl g_addcmd_count\n"
+        /* DIAGNOSTIC: dump x,y,retaddr */
+        "pushal\n"
+        "pushl 4(%ebp)\n"
+        "pushl 0xc(%ebp)\n"
+        "pushl 8(%ebp)\n"
+        "calll diag_addcmd\n"
+        "addl $12, %esp\n"
+        "popal\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"

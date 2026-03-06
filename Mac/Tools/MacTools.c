@@ -351,7 +351,7 @@ SInt16 MacTools_FindDiscVolume(CFStringRef inVolumeName, char *outVolumePath)
         "leal -0x24(%ebp), %eax\n" /* line 403 | iter */
         "movl %eax, 0xc(%esp)\n"
         "movl $3, 8(%esp)\n"
-        "movl $0x215908, 4(%esp)\n" /* "IOService" */
+        "movl $str_00215908, 4(%esp)\n" /* "IOService" */
         "movl -0x4ac(%ebp), %edx\n"
         "movl %edx, (%esp)\n"
         "calll IORegistryEntryCreateIterator\n"
@@ -427,7 +427,7 @@ SInt16 MacTools_FindDiscVolume(CFStringRef inVolumeName, char *outVolumePath)
         "movl %edx, -0x4b0(%ebp)\n" /* service */
         /* { scope 8: service */
         ".Lfa892_0000ab21:\n"
-        "movl $0x215b54, 4(%esp)\n" /* line 355 */
+        "movl $str_00215b54, 4(%esp)\n" /* line 355 */
         "movl -0x4b0(%ebp), %eax\n" /* service */
         "movl %eax, (%esp)\n"
         "calll IOObjectConformsTo\n"
@@ -482,13 +482,13 @@ SInt16 MacTools_FindDiscVolume(CFStringRef inVolumeName, char *outVolumePath)
         /* } scope */
         "testb %bl, %bl\n" /* line 370 | isWholeMedia */
         "je .Lfa892_0000ab3b\n"
-        "movl $0x215b64, 4(%esp)\n" /* line 374 */
+        "movl $str_00215b64, 4(%esp)\n" /* line 374 */
         "movl -0x4b0(%ebp), %eax\n" /* service */
         "movl %eax, (%esp)\n"
         "calll IOObjectConformsTo\n"
         "testl %eax, %eax\n"
         "jne .Lfa892_0000abf3\n"
-        "movl $0x215b70, 4(%esp)\n" /* line 378 */
+        "movl $str_00215b70, 4(%esp)\n" /* line 378 */
         "movl -0x4b0(%ebp), %edx\n" /* service */
         "movl %edx, (%esp)\n"
         "calll IOObjectConformsTo\n"
@@ -500,7 +500,7 @@ SInt16 MacTools_FindDiscVolume(CFStringRef inVolumeName, char *outVolumePath)
         "leal -0x20(%ebp), %eax\n" /* line 297 | iter */
         "movl %eax, 0xc(%esp)\n"
         "movl $3, 8(%esp)\n"
-        "movl $0x215908, 4(%esp)\n" /* "IOService" */
+        "movl $str_00215908, 4(%esp)\n" /* "IOService" */
         "movl -0x4b0(%ebp), %eax\n" /* service */
         "movl %eax, (%esp)\n"
         "calll IORegistryEntryCreateIterator\n"
@@ -1683,7 +1683,7 @@ void ZNSt6vectorI5FSRefSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS
         "movl $0x3333333, %edx\n" /* line 272 */
         "jmp .Lf2bc012_002bc132\n"
         ".Lf2bc012_002bc240:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }

@@ -1580,7 +1580,7 @@ void ZNSt6vectorIP16CDirect3DSurfaceSaIS1_EE14_M_fill_insertEN9__gnu_cxx17__norm
         /* } scope */
         /* { scope 1 */
         ".Lf2bcf8a_002bd1cc:\n"
-        "movl $0x215ba4, (%esp)\n" /* line 350 */
+        "movl $str_00215ba4, (%esp)\n" /* line 350 */
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }

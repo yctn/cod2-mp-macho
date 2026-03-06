@@ -1748,3 +1748,22 @@ imp_voice_localEcho: .long voice_localEcho
 imp_zcalloc: .long zcalloc
 .globl imp_zcfree
 imp_zcfree: .long zcfree
+
+/* Decompiler alias → import pointer mappings
+ * Double-deref vars (extern void **X; *(byte**)X): store ADDRESS of import pointer
+ * Single-deref vars (extern void *X; (char*)X): alias directly to import pointer
+ */
+.globl g_drawSurf
+g_drawSurf: .long imp_tess
+.globl g_viewParms
+g_viewParms: .long imp_backEndData
+.globl g_viewInfo
+g_viewInfo: .long imp_r_zfar
+.globl g_backEndData
+g_backEndData: .long imp_dxState
+.globl g_renderState
+g_renderState: .long imp_r_fog
+.globl gfx_buf
+.set gfx_buf, imp_tess
+.globl gfxScene
+.set gfxScene, imp_scene

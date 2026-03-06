@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <math.h>
 #include <SDL2/SDL.h>
@@ -221,6 +222,13 @@ static void init_display_list(void) {
  * The context ref is a 16-byte struct: { void *glContext, void *unused1, void *unused2, char hasAux }
  */
 SDL_Window *sdl_gl_window = NULL;
+
+static int sdl_quit_watch(void *ud, SDL_Event *e)
+{
+    (void)ud;
+    if (e->type == SDL_QUIT) _exit(0);
+    return 0;
+}
 static SDL_GLContext sdl_gl_context = NULL;
 
 typedef void *ContextRef;
@@ -256,6 +264,8 @@ ContextRef MacDisplay_CreateScreenContext(int inDepthSize, int inUseStencil,
             SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
         if (!sdl_gl_window)
             return (ContextRef)0;
+        /* Exit immediately on window close regardless of game loop speed */
+        SDL_AddEventWatch(sdl_quit_watch, NULL);
     }
 
     sdl_gl_context = SDL_GL_CreateContext(sdl_gl_window);

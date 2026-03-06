@@ -653,7 +653,7 @@ void WinIcon_WinIcon(const WinIcon * _this)
         "leal 1(%edx), %eax\n"
         "movl %eax, __ZZN7WinIconC4EvE7sNextID\n"
         "movl %edx, 8(%esp)\n"
-        "movl $0x215b90, 4(%esp)\n" /* "icon-%d" */
+        "movl $str_00215b90, 4(%esp)\n" /* "icon-%d" */
         "leal -0x99(%ebp), %eax\n" /* temp */
         "movl %eax, (%esp)\n"
         "calll sprintf\n"
@@ -1062,7 +1062,7 @@ bool WinCursor_Load(const WinCursor * _this, const char *inFileName)
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         /* { scope 1 */
-        "movl $0x215b98, 4(%esp)\n" /* line 617 */
+        "movl $str_00215b98, 4(%esp)\n" /* line 617 */
         "movl 0xc(%ebp), %eax\n" /* inFileName */
         "movl %eax, (%esp)\n"
         "calll fopen\n"
@@ -1159,7 +1159,7 @@ HCURSOR LoadCursorFromFileA(LPCSTR lpFileName)
         "calll MacFiles_CleanPath\n"
         "movl %ebx, (%esp)\n" /* line 133 */
         "calll strlwr\n"
-        "movl $0x215b9c, 4(%esp)\n" /* line 137 */
+        "movl $str_00215b9c, 4(%esp)\n" /* line 137 */
         "movl %ebx, (%esp)\n"
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -2167,7 +2167,7 @@ void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iterato
         "movl $0x3c3c3c3, %edx\n" /* line 272 */
         "jmp .Lf2bc4b0_002bc779\n"
         ".Lf2bc4b0_002bca88:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
         "movl %eax, -0x88(%ebp)\n"
         /* } scope */
@@ -2307,4 +2307,5 @@ void ZNSt6vectorI9WinCursorSaIS0_EE13_M_insert_auxEN9__gnu_cxx17__normal_iterato
         "jmp .Lf2bc4b0_002bcbb5\n"
     );
 }
+
 

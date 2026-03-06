@@ -9,10 +9,10 @@
  *   #include "Mac/DirectX 9/MacOpenGLUtils.h"
  */
 
-static const StdConverterARGB sStdConverterARGB; /* 0x334d0c */
-static const StdConverterABGR sStdConverterABGR; /* 0x334d08 */
-static const ATI4CompsConverterARGB sATI4CompsConverterARGB; /* 0x334d04 */
-static const ATI4CompsConverterABGR sATI4CompsConverterABGR; /* 0x334d00 */
+extern unsigned char sStdConverterARGB[]; /* writable BSS — vtable set by global ctor */
+extern unsigned char sStdConverterABGR[]; /* writable BSS */
+extern unsigned char sATI4CompsConverterARGB[]; /* writable BSS */
+extern unsigned char sATI4CompsConverterABGR[]; /* writable BSS */
 
 void StdConverterARGB_Convert(const StdConverterARGB * _this, const void * pDst, const void * pSrc);
 void StdConverterABGR_Convert4ub4f(const StdConverterABGR * _this, const void * pDst, const float *Src);
@@ -1360,3 +1360,6 @@ void ZN22ATI4CompsConverterABGRD0Ev(void) /* ATI4CompsConverterABGR_~ATI4CompsCo
     );
 }
 
+
+/* Register global constructor in .init_array */
+__asm__(".section .init_array,\"aw\",@init_array\n.long GLOBAL__I__ZN15CColorConverter17GetColorConverterENS_6FormatE\n.section .text\n");

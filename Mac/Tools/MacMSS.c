@@ -204,7 +204,7 @@ char * AIL_last_error(void)
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 91 */
         "movl %esp, %ebp\n"
-        "movl $0x228dd4, %eax\n" /* line 95 */
+        "movl $str_00228dd4, %eax\n" /* line 95 */
         "popl %ebp\n"
         "retl\n"
     );
@@ -1063,7 +1063,7 @@ HSTREAM AIL_open_stream(HDIGDRIVER dig, const char *filename, long int stream_me
         /* { scope 1 */
         "testl %esi, %esi\n" /* line 462 | filename */
         "je .Lf111106_0011113d\n"
-        "movl $0x228de4, 4(%esp)\n" /* line 468 */
+        "movl $str_00228de4, 4(%esp)\n" /* line 468 */
         "movl %esi, (%esp)\n" /* filename */
         "calll strstr\n"
         "testl %eax, %eax\n"
@@ -1106,7 +1106,7 @@ HSTREAM AIL_open_stream(HDIGDRIVER dig, const char *filename, long int stream_me
         "retl\n"
         /* { scope 1 */
         ".Lf111106_00111172:\n"
-        "movl $0x228dec, 4(%esp)\n" /* line 476 */
+        "movl $str_00228dec, 4(%esp)\n" /* line 476 */
         "movl %esi, (%esp)\n" /* filename */
         "calll strstr\n"
         "testl %eax, %eax\n"

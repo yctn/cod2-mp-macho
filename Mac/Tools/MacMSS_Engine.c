@@ -2261,7 +2261,7 @@ void ZNSt6vectorIP12CSoundObjectSaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_it
         "movl $0x3fffffff, %edx\n" /* line 272 */
         "jmp .Lf2c0f6c_002c0fe3\n"
         ".Lf2c0f6c_002c1092:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
     );
 }

@@ -9,56 +9,58 @@
  */
 
 static int mtlLoadGlob; /* mtlLoadGlob */
-static const Bool g_useTechnique[34]; /* g_useTechnique */
-static const CodeSamplerSource s_lightSamplers[2]; /* s_lightSamplers */
-static const CodeSamplerSource s_lightmapSamplers[7]; /* s_lightmapSamplers */
-static const CodeSamplerSource s_lightGridSamplers[2]; /* s_lightGridSamplers */
-static const CodeSamplerSource s_codeSamplers[18]; /* s_codeSamplers */
-static const CodeSamplerSource s_defaultCodeSamplers[15]; /* s_defaultCodeSamplers */
-static const CodeConstantSource s_lightConsts[5]; /* s_lightConsts */
-static const CodeConstantSource s_cameraConsts[5]; /* s_cameraConsts */
-static const CodeConstantSource s_nearPlaneConsts[4]; /* s_nearPlaneConsts */
-static const CodeConstantSource s_lightGridConsts[4]; /* s_lightGridConsts */
-static const CodeConstantSource s_codeConsts[79]; /* s_codeConsts */
-static const CodeConstantSource s_defaultCodeConsts[22]; /* s_defaultCodeConsts */
-static const MtlStateMapBitName s_alphaTestBitNames[5]; /* s_alphaTestBitNames */
-static const MtlStateMapBitName s_blendOpRgbBitNames[7]; /* s_blendOpRgbBitNames */
-static const MtlStateMapBitName s_srcBlendRgbBitNames[13]; /* s_srcBlendRgbBitNames */
-static const MtlStateMapBitName s_dstBlendRgbBitNames[13]; /* s_dstBlendRgbBitNames */
-static const MtlStateMapBitName s_blendOpAlphaBitNames[7]; /* s_blendOpAlphaBitNames */
-static const MtlStateMapBitName s_srcBlendAlphaBitNames[13]; /* s_srcBlendAlphaBitNames */
-static const MtlStateMapBitName s_dstBlendAlphaBitNames[13]; /* s_dstBlendAlphaBitNames */
-static const MtlStateMapBitName s_cullFaceBitNames[4]; /* s_cullFaceBitNames */
-static const MtlStateMapBitName s_depthTestBitNames[5]; /* s_depthTestBitNames */
-static const MtlStateMapBitName s_depthWriteBitNames[3]; /* s_depthWriteBitNames */
-static const MtlStateMapBitName s_colorWriteRgbBitNames[3]; /* s_colorWriteRgbBitNames */
-static const MtlStateMapBitName s_colorWriteAlphaBitNames[3]; /* s_colorWriteAlphaBitNames */
-static const MtlStateMapBitName s_fogBitNames[3]; /* s_fogBitNames */
-static const MtlStateMapBitName s_polygonOffsetBitNames[4]; /* s_polygonOffsetBitNames */
-static const MtlStateMapBitName s_wireframeBitNames[3]; /* s_wireframeBitNames */
-static const MtlStateMapBitName s_stencilBitNames[4]; /* s_stencilBitNames */
-static const MtlStateMapBitName s_stencilOpFrontPassBitNames[9]; /* s_stencilOpFrontPassBitNames */
-static const MtlStateMapBitName s_stencilOpFrontFailBitNames[9]; /* s_stencilOpFrontFailBitNames */
-static const MtlStateMapBitName s_stencilOpFrontZFailBitNames[9]; /* s_stencilOpFrontZFailBitNames */
-static const MtlStateMapBitName s_stencilFuncFrontBitNames[9]; /* s_stencilFuncFrontBitNames */
-static const MtlStateMapBitName s_stencilOpBackPassBitNames[9]; /* s_stencilOpBackPassBitNames */
-static const MtlStateMapBitName s_stencilOpBackFailBitNames[9]; /* s_stencilOpBackFailBitNames */
-static const MtlStateMapBitName s_stencilOpBackZFailBitNames[9]; /* s_stencilOpBackZFailBitNames */
-static const MtlStateMapBitName s_stencilFuncBackBitNames[9]; /* s_stencilFuncBackBitNames */
-static const MtlStateMapBitGroup s_stateMapSrcBitGroup[24]; /* s_stateMapSrcBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstAlphaTestBitGroup[2]; /* s_stateMapDstAlphaTestBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstBlendFuncRgbBitGroup[4]; /* s_stateMapDstBlendFuncRgbBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstBlendFuncAlphaBitGroup[4]; /* s_stateMapDstBlendFuncAlphaBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstCullFaceBitGroup[2]; /* s_stateMapDstCullFaceBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstDepthTestBitGroup[2]; /* s_stateMapDstDepthTestBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstDepthWriteBitGroup[2]; /* s_stateMapDstDepthWriteBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstColorWriteBitGroup[3]; /* s_stateMapDstColorWriteBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstFogBitGroup[2]; /* s_stateMapDstFogBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstPolygonOffsetBitGroup[2]; /* s_stateMapDstPolygonOffsetBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstWireframeBitGroup[2]; /* s_stateMapDstWireframeBitGroup */
-static const MtlStateMapBitGroup s_stateMapDstStencilBitGroup[10]; /* s_stateMapDstStencilBitGroup */
-static const MtlTextureFunctionDx7 s_textureFuncsDx7[21]; /* s_textureFuncsDx7 */
-static const PassOptionDx7 s_passOptionsDx7[5]; /* s_passOptionsDx7 */
+extern const unsigned char g_useTechnique[]; /* g_useTechnique — defined in rodata.c */
+/* Static data tables — defined in r_material_load_obj_data.h (extracted from binary) */
+#include "r_material_load_obj_data.h"
+extern const CodeSamplerSource s_lightSamplers[];
+extern const CodeSamplerSource s_lightmapSamplers[];
+extern const CodeSamplerSource s_lightGridSamplers[];
+extern const CodeSamplerSource s_codeSamplers[];
+extern const CodeSamplerSource s_defaultCodeSamplers[];
+extern const CodeConstantSource s_lightConsts[];
+extern const CodeConstantSource s_cameraConsts[];
+extern const CodeConstantSource s_nearPlaneConsts[];
+extern const CodeConstantSource s_lightGridConsts[];
+extern const CodeConstantSource s_codeConsts[];
+extern const CodeConstantSource s_defaultCodeConsts[];
+extern const MtlStateMapBitName s_alphaTestBitNames[];
+extern const MtlStateMapBitName s_blendOpRgbBitNames[];
+extern const MtlStateMapBitName s_srcBlendRgbBitNames[];
+extern const MtlStateMapBitName s_dstBlendRgbBitNames[];
+extern const MtlStateMapBitName s_blendOpAlphaBitNames[];
+extern const MtlStateMapBitName s_srcBlendAlphaBitNames[];
+extern const MtlStateMapBitName s_dstBlendAlphaBitNames[];
+extern const MtlStateMapBitName s_cullFaceBitNames[];
+extern const MtlStateMapBitName s_depthTestBitNames[];
+extern const MtlStateMapBitName s_depthWriteBitNames[];
+extern const MtlStateMapBitName s_colorWriteRgbBitNames[];
+extern const MtlStateMapBitName s_colorWriteAlphaBitNames[];
+extern const MtlStateMapBitName s_fogBitNames[];
+extern const MtlStateMapBitName s_polygonOffsetBitNames[];
+extern const MtlStateMapBitName s_wireframeBitNames[];
+extern const MtlStateMapBitName s_stencilBitNames[];
+extern const MtlStateMapBitName s_stencilOpFrontPassBitNames[];
+extern const MtlStateMapBitName s_stencilOpFrontFailBitNames[];
+extern const MtlStateMapBitName s_stencilOpFrontZFailBitNames[];
+extern const MtlStateMapBitName s_stencilFuncFrontBitNames[];
+extern const MtlStateMapBitName s_stencilOpBackPassBitNames[];
+extern const MtlStateMapBitName s_stencilOpBackFailBitNames[];
+extern const MtlStateMapBitName s_stencilOpBackZFailBitNames[];
+extern const MtlStateMapBitName s_stencilFuncBackBitNames[];
+extern const MtlStateMapBitGroup s_stateMapSrcBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstAlphaTestBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstBlendFuncRgbBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstBlendFuncAlphaBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstCullFaceBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstDepthTestBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstDepthWriteBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstColorWriteBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstFogBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstPolygonOffsetBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstWireframeBitGroup[];
+extern const MtlStateMapBitGroup s_stateMapDstStencilBitGroup[];
+static const MtlTextureFunctionDx7 s_textureFuncsDx7[21]; /* s_textureFuncsDx7 — unused in DX9 path */
+static const PassOptionDx7 s_passOptionsDx7[5]; /* s_passOptionsDx7 — unused in DX9 path */
 
 HRESULT IncludeClass_Close(const IncludeClass * _this, LPCVOID data);
 static Bool Material_ValidatePassArguments(const MaterialObj *material, const char *techniqueSetName, const char *techniqueName, int argCount, const MaterialShaderArgument *args);

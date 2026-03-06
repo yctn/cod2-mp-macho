@@ -25,7 +25,7 @@ extern bool g_special; /* 0x0 */
 extern CVAOPacket *g_CurrentGenericPacket; /* 0x0 */
 extern UINT32 g_Low; /* 0x0 */
 extern UINT32 g_High; /* 0x0 */
-static GLenum D3DToOpenGLPrimitive[7]; /* 0x30824c */
+extern GLenum D3DToOpenGLPrimitive[7]; /* 0x30824c */
 static CDirect3D *sDirect3DInterface; /* 0x334d80 */
 
 HRESULT CDirect3DDevice_DrawPrimitive(const CDirect3DDevice * _this, D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
@@ -5815,12 +5815,14 @@ void CDirect3DDevice_ValidateRasterization(const CDirect3DDevice * _this, UINT32
 }
 
 /* line 1774 */
+int g_draw_count = 0; /* diagnostic draw call counter */
 __attribute__((naked))
 HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinIndex, UINT NumVertices, UINT StartIndex, UINT PrimitiveCount)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 1774 */
         "movl %esp, %ebp\n"
+        "incl g_draw_count\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
@@ -5842,12 +5844,14 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "leal (%edx, %eax, 2), %eax\n"
         "movl %eax, -0x48(%ebp)\n" /* p16Indices */
         "movl 0xc(%ebp), %eax\n" /* line 1803 | PrimitiveType */
+        "movl %eax, g_dip_last_mode\n" /* save D3D PrimType before lookup */
         "movl D3DToOpenGLPrimitive(, %eax, 4), %ebx\n" /* Mode */
         "movl 0x20(%ebp), %eax\n" /* line 1804 | PrimitiveCount */
         "movl %eax, 4(%esp)\n"
         "movl %ebx, (%esp)\n" /* Mode */
         "calll MacOpenGLUtils_GetElementCount\n"
         "movl %eax, -0x44(%ebp)\n" /* NumElements */
+        "movl %eax, g_dip_last_numelems\n"
         "cmpb $0, g_special\n" /* line 1808 */
         "jne .Lf12a10_00012b7f\n"
         "movl 0x14(%ebp), %edx\n" /* line 1819 | MinIndex */
@@ -5868,7 +5872,10 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl imp___ZN7COpenGL9sDrawFlagE, %edx\n" /* line 671 */
         "movzbl (%edx), %eax\n"
         "cmpl $4, %ebx\n" /* line 1856 | Mode */
-        "je .Lf12a10_00012bb4\n"
+        "jne .Lf12a10_not_tri\n"
+        "incl g_dip_is_tri\n"
+        "jmp .Lf12a10_00012bb4\n"
+        ".Lf12a10_not_tri:\n"
         "testb %al, %al\n" /* line 1955 */
         "je .Lf12a10_00012b0b\n"
         ".Lf12a10_00012abf:\n"
@@ -5897,6 +5904,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl imp___ZN7COpenGL9sDrawFlagE, %edx\n"
         /* } scope */
         ".Lf12a10_00012b0b:\n"
+        "incl g_dip_drawflag_zero\n"
         "movb $1, (%edx)\n" /* line 672 */
         /* } scope */
         "xorl %eax, %eax\n" /* line 2021 */
@@ -6020,6 +6028,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl %eax, -0x28(%ebp)\n" /* pVBInterface */
         "testl %eax, %eax\n" /* line 1909 */
         "jne .Lf12a10_00012d02\n"
+        "incl g_dip_numelems_zero\n"
         ".Lf12a10_00012c9d:\n"
         "cmpb $0, -0x3d(%ebp)\n" /* line 1942 | RunVPInSoftware */
         "je .Lf12a10_00012abf\n"
@@ -6043,6 +6052,7 @@ HRESULT CDirect3DDevice_DrawIndexedPrimitive(const CDirect3DDevice * _this, D3DP
         "movl -0x1c(%ebp), %eax\n" /* Low */
         "movl %eax, 4(%esp)\n"
         "movl $4, (%esp)\n"
+        "incl g_dip_gl_draw\n"
         "calll glDrawRangeElements\n"
         "movl -0x48(%ebp), %eax\n" /* line 1939 | p16Indices */
         "leal (%eax, %ebx, 2), %eax\n"

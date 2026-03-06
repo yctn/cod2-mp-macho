@@ -1356,7 +1356,9 @@ static void R_BeginRegistration_impl(vidConfig_t *vidConfigOut)
         "movl (%eax), %eax\n"
         "movl 8(%eax), %edi\n"
         "testl %edi, %edi\n"
-        "je .Lfcbc3e_000ccbc1\n"
+        "jne .Lnone_fix_skip\n"
+        "movl $1, %edi\n" /* treat "none" as "dx9" preference */
+        ".Lnone_fix_skip:\n"
         "movl %edi, %ecx\n" /* line 466 */
         "sarl %cl, %edx\n"
         "andb $1, %dl\n"

@@ -247,7 +247,7 @@ char fx_time_dst1[64] __attribute__((aligned(4))) = {0};
 char fx_time_dst2[64] __attribute__((aligned(4))) = {0};
 char fx_time_src1[64] __attribute__((aligned(4))) = {0};
 char fx_time_src2[64] __attribute__((aligned(4))) = {0};
-char g_backEndData[64] __attribute__((aligned(4))) = {0};
+/* g_backEndData: decompiler alias for imp_dxState — now a symbol alias in import_pointers.S */
 char g_banIPs_dvar[64] __attribute__((aligned(4))) = {0};
 char g_bobMax_ptr[64] __attribute__((aligned(4))) = {0};
 char g_cheats_dvar[64] __attribute__((aligned(4))) = {0};
@@ -255,7 +255,7 @@ char g_clients_ptr[64] __attribute__((aligned(4))) = {0};
 char g_creatingTexture[64] __attribute__((aligned(4))) = {0};
 char g_deadChat_ptr[64] __attribute__((aligned(4))) = {0};
 char g_debug_damage_ptr[64] __attribute__((aligned(4))) = {0};
-char g_drawSurf[64] __attribute__((aligned(4))) = {0};
+/* g_drawSurf: decompiler alias for imp_tess — now a symbol alias in import_pointers.S */
 /* g_dx: decompiler alias for BSS 'dx' — now a symbol alias in stubs/symbol_aliases.S */
 /* g_dxCaps: decompiler alias for BSS 'r_rendererInUse' — now a symbol alias in stubs/symbol_aliases.S */
 /* g_dxIter: decompiler alias for 'alwaysfails' — now a symbol alias in stubs/symbol_aliases.S */
@@ -292,16 +292,16 @@ char GetWindowPortBounds[64] __attribute__((aligned(4))) = {0};
 char GetWindowResizeLimits[64] __attribute__((aligned(4))) = {0};
 char GetWRefCon[64] __attribute__((aligned(4))) = {0};
 char g_friendlylookDist[64] __attribute__((aligned(4))) = {0};
-char gfx_buf[64] __attribute__((aligned(4))) = {0};
+/* gfx_buf: decompiler alias for imp_tess — now a symbol alias in import_pointers.S */
 char gfxBuf[64] __attribute__((aligned(4))) = {0};
-char gfxScene[64] __attribute__((aligned(4))) = {0};
+/* gfxScene: decompiler alias for imp_scene — now a symbol alias in import_pointers.S */
 char GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE[64] __attribute__((aligned(4))) = {0};
 char GoToBeginningOfMovie[64] __attribute__((aligned(4))) = {0};
 char g_password_ptr[64] __attribute__((aligned(4))) = {0};
 char g_phys_world[64] __attribute__((aligned(4))) = {0};
 char G_RegisterDvars[64] __attribute__((aligned(4))) = {0};
 char g_renderer_ptr[64] __attribute__((aligned(4))) = {0};
-char g_renderState[64] __attribute__((aligned(4))) = {0};
+/* g_renderState: decompiler alias for imp_r_fog — now a symbol alias in import_pointers.S */
 char g_ri[64] __attribute__((aligned(4))) = {0};
 char g_scr_data_ptr[64] __attribute__((aligned(4))) = {0};
 char GScr_LoadAnimScripts[64] __attribute__((aligned(4))) = {0};
@@ -317,8 +317,8 @@ char g_unknown_195f230[64] __attribute__((aligned(4))) = {0};
 char g_useActivateHoldTime[64] __attribute__((aligned(4))) = {0};
 char g_useActivateReuseTime[64] __attribute__((aligned(4))) = {0};
 char g_vidConfig[64] __attribute__((aligned(4))) = {0};
-char g_viewInfo[64] __attribute__((aligned(4))) = {0};
-char g_viewParms[64] __attribute__((aligned(4))) = {0};
+/* g_viewInfo: decompiler alias for imp_r_zfar — now a symbol alias in import_pointers.S */
+/* g_viewParms: decompiler alias for imp_backEndData — now a symbol alias in import_pointers.S */
 char g_voiceChatsAllowed_ptr[64] __attribute__((aligned(4))) = {0};
 char g_voiceChatTalkingDuration_ptr[64] __attribute__((aligned(4))) = {0};
 char HandleControlKey[64] __attribute__((aligned(4))) = {0};
@@ -383,8 +383,10 @@ char pPriorityMap[64] __attribute__((aligned(4))) = {0};
 char pPriorityMapAlt[64] __attribute__((aligned(4))) = {0};
 char PrerollMovie[64] __attribute__((aligned(4))) = {0};
 char PtInRect[64] __attribute__((aligned(4))) = {0};
-char ptr_195ecb4[64] __attribute__((aligned(4))) = {0};
-char ptr_195ecbc[64] __attribute__((aligned(4))) = {0};
+/* ptr_195ecb4 = Mac GOT entry for legacyHacks (double-deref pattern, stores &legacyHacks) */
+__asm__(".section .data\n.globl ptr_195ecb4\nptr_195ecb4: .long legacyHacks\n.space 60\n.previous\n");
+/* ptr_195ecbc = Mac GOT entry for com_sv_running (double-deref pattern, stores &com_sv_running) */
+__asm__(".section .data\n.globl ptr_195ecbc\nptr_195ecbc: .long com_sv_running\n.space 60\n.previous\n");
 char ptr_195eea4[64] __attribute__((aligned(4))) = {0};
 char ptr_195f58c[64] __attribute__((aligned(4))) = {0};
 char ptr_195f5e0[64] __attribute__((aligned(4))) = {0};

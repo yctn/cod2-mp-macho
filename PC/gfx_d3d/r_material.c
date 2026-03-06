@@ -9,11 +9,11 @@
  *   #include "PC/gfx_d3d/r_material.h"
  */
 
-static const D3DVERTEXELEMENT9 declEnd; /* declEnd */
+extern const D3DVERTEXELEMENT9 declEnd; /* declEnd — defined in rodata.c */
 static const BuiltInMaterialTable s_fillTestMaterials[12]; /* s_fillTestMaterials */
 extern unsigned char materialGlobals[]; /* materialGlobals — 10752 bytes in bss.c */
-static const stream_source_info_t s_streamSourceInfo[4][7]; /* s_streamSourceInfo */
-static const stream_dest_info_t s_streamDestInfo[12]; /* s_streamDestInfo */
+extern const stream_source_info_t s_streamSourceInfo[]; /* s_streamSourceInfo — defined in rodata.c */
+extern const stream_dest_info_t s_streamDestInfo[]; /* s_streamDestInfo — defined in rodata.c */
 
 /* s_builtInMaterials + RB_RenderCommandTable must be contiguous in memory.
    Material_Init loops from s_builtInMaterials to RB_RenderCommandTable. */

@@ -3857,6 +3857,10 @@ void RB_DrawTechnique(MaterialVertexDeclType vertDeclType, const GfxDrawPrimArgs
     );
 }
 
+int g_rb_endsurface_count = 0; /* diagnostic */
+int g_rb_endsurface_notechnique = 0; /* diagnostic: technique==NULL */
+int g_rb_endsurface_dxstate = 0; /* diagnostic: dxState+0x20c8 non-zero */
+int g_rb_endsurface_draw = 0; /* diagnostic: reached RB_DrawSingleTechnique */
 /* line 1712 */
 __attribute__((naked))
 void RB_EndSurface(void)
@@ -3874,8 +3878,12 @@ void RB_EndSurface(void)
         "movl 0x5a7c0(%edi), %eax\n"
         "movl 4(%edx, %eax, 4), %ebx\n"
         /* { scope 1 */
+        "incl g_rb_endsurface_count\n" /* diagnostic */
         "testl %ebx, %ebx\n" /* line 1695 */
-        "je .Lff9de4_000f9e2b\n"
+        "jne .Lff9de4_diag_has_tech\n"
+        "incl g_rb_endsurface_notechnique\n" /* diagnostic: no technique */
+        "jmp .Lff9de4_000f9e2b\n"
+        ".Lff9de4_diag_has_tech:\n"
         "movl imp_backEnd, %esi\n" /* line 1698 */
         "cmpb $0, 0x4bc(%esi)\n"
         "jne .Lff9de4_000f9fa6\n"
@@ -3883,6 +3891,7 @@ void RB_EndSurface(void)
         "movl imp_dxState, %eax\n" /* line 1700 */
         "cmpb $0, 0x20c8(%eax)\n"
         "je .Lff9de4_000f9e51\n"
+        "incl g_rb_endsurface_dxstate\n" /* diagnostic: dxState caused skip */
         /* } scope */
         ".Lff9de4_000f9e2b:\n"
         "movl $0, 0x5a7e0(%edi)\n" /* line 1725 */
@@ -3982,6 +3991,7 @@ void RB_EndSurface(void)
         "movl 0x5a7c0(%ebx), %eax\n"
         "movl %edx, (%esp)\n"
         "movl %esi, %edx\n"
+        "incl g_rb_endsurface_draw\n" /* diagnostic: reached draw */
         "calll RB_DrawSingleTechnique\n"
         "movl $0, 0x5a7d0(%ebx)\n" /* line 1686 */
         "movl $0, 0x5a7d4(%ebx)\n" /* line 1687 */

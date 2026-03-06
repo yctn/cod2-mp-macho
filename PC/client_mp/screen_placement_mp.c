@@ -3,6 +3,7 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/com_vector.h"
@@ -22,11 +23,11 @@ float GetRealWidthFromVirtualWidth(float width);
 float GetRealHeightFromVirtualHeight(float height);
 float GetVirtualWidthFromRealWidth(float width);
 float GetVirtualHeightFromRealHeight(float height);
-float CalcScreenX(float *x, int horzAlign);
-float CalcScreenY(float *y, int vertAlign);
-float CalcSplitScreenTextOffset(FontHandle font, float *y);
-float SetScreenScaling(float safeAreaRatioHorizontal, float safeAreaRatioVertical, int viewportX, int viewportY, int viewportWidth, int viewportHeight);
-float CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
+void CalcScreenX(float *x, int horzAlign);
+void CalcScreenY(float *y, int vertAlign);
+void CalcSplitScreenTextOffset(FontHandle font, float *y);
+void SetScreenScaling(float safeAreaRatioHorizontal, float safeAreaRatioVertical, int viewportX, int viewportY, int viewportWidth, int viewportHeight);
+void CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, int vertAlign);
 
 /* line 141 */
 float GetRealWidthFromVirtualWidth(float width)
@@ -53,7 +54,7 @@ float GetVirtualHeightFromRealHeight(float height)
 }
 
 /* line 165 */
-float CalcScreenX(float *x, int horzAlign)
+void CalcScreenX(float *x, int horzAlign)
 {
     switch (horzAlign) {
     default:
@@ -82,7 +83,7 @@ float CalcScreenX(float *x, int horzAlign)
 }
 
 /* line 200 */
-float CalcScreenY(float *y, int vertAlign)
+void CalcScreenY(float *y, int vertAlign)
 {
     switch (vertAlign) {
     default:
@@ -111,15 +112,22 @@ float CalcScreenY(float *y, int vertAlign)
 }
 
 /* line 235 */
-float CalcSplitScreenTextOffset(FontHandle font, float *y)
+void CalcSplitScreenTextOffset(FontHandle font, float *y)
 {
     /* Empty function - split screen text offset not used on PC */
 }
 
 /* line 135 */
-float SetScreenScaling(float safeAreaRatioHorizontal, float safeAreaRatioVertical,
+void SetScreenScaling(float safeAreaRatioHorizontal, float safeAreaRatioVertical,
                        int viewportX, int viewportY, int viewportWidth, int viewportHeight)
 {
+    {
+        static int ssc_count = 0;
+        fprintf(stderr, "SetScreenScaling[%d]: safe=(%f,%f) vp=(%d,%d,%d,%d) ra=%p\n",
+                ssc_count++, safeAreaRatioHorizontal, safeAreaRatioVertical,
+                viewportX, viewportY, viewportWidth, viewportHeight,
+                __builtin_return_address(0));
+    }
     float fViewportHeight = (float)viewportHeight;
     float fViewportWidth = (float)viewportWidth;
     float fViewportY = (float)viewportY;
@@ -170,10 +178,15 @@ float SetScreenScaling(float safeAreaRatioHorizontal, float safeAreaRatioVertica
 
     spGlob.subScreenLeft = 0.5f * horzAspectPixelDiff;
     spGlob.virtualScreenOffsetX = 640.0f - adjustedRealWidth * spGlob.scaleRealToVirtual[0];
+    fprintf(stderr, "  result: scaleVToR={%f,%f} scaleVToF={%f,%f} scaleRToV={%f,%f} subLeft=%f vscreenOfsX=%f spGlob@%p\n",
+           spGlob.scaleVirtualToReal[0], spGlob.scaleVirtualToReal[1],
+           spGlob.scaleVirtualToFull[0], spGlob.scaleVirtualToFull[1],
+           spGlob.scaleRealToVirtual[0], spGlob.scaleRealToVirtual[1],
+           spGlob.subScreenLeft, spGlob.virtualScreenOffsetX, &spGlob);
 }
 
 /* line 285 */
-float CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, int vertAlign)
+void CalcScreenPlacement(float *x, float *y, float *w, float *h, int horzAlign, int vertAlign)
 {
     switch (horzAlign) {
     default:

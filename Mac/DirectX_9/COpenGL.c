@@ -243,6 +243,7 @@ unsigned int COpenGL_SetVertexProgram(const COpenGL * _this, const COpenGLVertex
         "pushl %ebp\n" /* line 2174 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %edx\n" /* this */
+        "incl g_vp_enable_count\n"
         /* { scope 1 */
         "movl 0xc(%ebp), %eax\n" /* line 108 | pOGLVertexProgramInfo */
         "movl 0xc(%eax), %eax\n"
@@ -2610,39 +2611,39 @@ unsigned int COpenGL_Init(const COpenGL * _this, UINT32 Buffers, UINT32 MaxTextu
         "subl $0x1cc, %esp\n"
         /* { scope 1 */
         "movl $0, __ZN7COpenGL11sFrameCountE\n" /* line 670 */
-        "movl $0x215c34, (%esp)\n" /* line 1541 */
+        "movl $str_00215c34, (%esp)\n" /* line 1541 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movb %al, 0x809(%edx)\n"
-        "movl $0x215c4c, (%esp)\n" /* line 1542 */
+        "movl $str_00215c4c, (%esp)\n" /* line 1542 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "movl 8(%ebp), %ecx\n" /* this */
         "movb %al, 0x80a(%ecx)\n"
-        "movl $0x215c60, (%esp)\n" /* line 1543 */
+        "movl $str_00215c60, (%esp)\n" /* line 1543 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movb %al, 0x800(%edx)\n"
         "movb $0, 0x801(%edx)\n" /* line 1544 */
-        "movl $0x215984, (%esp)\n" /* line 1545 */
+        "movl $str_00215984, (%esp)\n" /* line 1545 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "movl 8(%ebp), %ecx\n" /* this */
         "movb %al, 0x80b(%ecx)\n"
-        "movl $0x215c84, (%esp)\n" /* line 1547 */
+        "movl $str_00215c84, (%esp)\n" /* line 1547 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movb %al, 0x80c(%edx)\n"
-        "movl $0x2159a0, (%esp)\n" /* line 1549 */
+        "movl $str_002159a0, (%esp)\n" /* line 1549 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "movl 8(%ebp), %ecx\n" /* this */
         "movb %al, 0x802(%ecx)\n"
         "testb %al, %al\n" /* line 1550 */
         "jne .Lf2258c_000231a6\n"
         ".Lf2258c_0002262f:\n"
-        "movl $0x215c98, (%esp)\n" /* line 1554 */
+        "movl $str_00215c98, (%esp)\n" /* line 1554 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "movl 8(%ebp), %edx\n" /* this */
         "movb %al, 0x808(%edx)\n"
-        "movl $0x215cb0, (%esp)\n" /* line 1560 */
+        "movl $str_00215cb0, (%esp)\n" /* line 1560 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "testb %al, %al\n"
         "jne .Lf2258c_00023159\n"
@@ -3241,11 +3242,11 @@ unsigned int COpenGL_Init(const COpenGL * _this, UINT32 Buffers, UINT32 MaxTextu
         "jmp .Lf2258c_00022e01\n"
         /* } scope */
         ".Lf2258c_00023159:\n"
-        "movl $0x215cd0, (%esp)\n" /* line 1560 */
+        "movl $str_00215cd0, (%esp)\n" /* line 1560 */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "testb %al, %al\n"
         "je .Lf2258c_00022658\n"
-        "movl $0x215ce0, (%esp)\n" /* "GL_APPLE_element_array" */
+        "movl $str_00215ce0, (%esp)\n" /* "GL_APPLE_element_array" */
         "calll MacOpenGLUtils_IsGLExtensionSupported\n"
         "testb %al, %al\n"
         "je .Lf2258c_00022658\n"
@@ -3764,7 +3765,7 @@ unsigned int COpenGLVertexProgram_COpenGLVertexProgram(const COpenGLVertexProgra
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "movl $2, 0xc(%esp)\n" /* line 1570 */
         "movl $0, 8(%esp)\n"
-        "movl $0x215bf8, 4(%esp)\n" /* "::" */
+        "movl $str_00215bf8, 4(%esp)\n" /* "::" */
         "movl %ebx, (%esp)\n"
         "calll __ZNKSs4findEPKcmm\n"
         "movl %eax, %esi\n" /* this */
@@ -3862,7 +3863,7 @@ unsigned int COpenGLVertexProgram_COpenGLVertexProgram(const COpenGLVertexProgra
         /* { scope 1 */
         /* { scope 2 */
         ".Lf2375c_00023923:\n"
-        "movl $0x215bfc, (%esp)\n" /* line 300 */
+        "movl $str_00215bfc, (%esp)\n" /* line 300 */
         "calll __ZSt20__throw_out_of_rangePKc\n"
         /* } scope */
         /* { scope 2 */
@@ -5177,7 +5178,7 @@ void ZNSt6vectorIN7COpenGL8CTexUnitESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__norma
         "movl $0xd79435, %edx\n" /* line 272 */
         "jmp .Lf2be3e0_002be554\n"
         ".Lf2be3e0_002be76c:\n"
-        "movl $0x215858, (%esp)\n" /* line 266 */
+        "movl $str_00215858, (%esp)\n" /* line 266 */
         "calll __ZSt20__throw_length_errorPKc\n"
         "movl %eax, (%esp)\n" /* line 89 */
         "calll ___cxa_begin_catch\n"

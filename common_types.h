@@ -13222,11 +13222,11 @@ struct refexport_t {
     void (*ClearScene)();
     void (*DefaultVertexFrames)();
     void (*AddPolyToScene)();
-    void (*AddLightToScene)();
+    void (*AddLightToScene)(const vec_t *org, float radius, float r, float g, float b);
     void (*InterpretSunLightParseParams)();
     void (*ResetSunLightParseParams)();
     void (*SetCullDist)();
-    void (*SetFog)();
+    void (*SetFog)(int fogvar, float start, float end, int r, int g, int b, float density);
     void (*SwitchFog)();
     void (*ArchiveFogState)();
     void (*ClearFogs)();
@@ -13238,11 +13238,11 @@ struct refexport_t {
     void (*IssueDelayedDrawing)();
     void (*ClearFlares)();
     void (*SetMaterialColor)();
-    void (*DrawStretchPic)();
-    void (*DrawStretchPicRotate)();
+    void (*DrawStretchPic)(float x, float y, float w, float h, float s0, float t0, float s1, float t1, const vec_t *color, MaterialHandle material);
+    void (*DrawStretchPicRotate)(float x, float y, float w, float h, float s0, float t0, float s1, float t1, float angle, const vec_t *color, MaterialHandle material);
     void (*DrawStretchRaw)();
     void (*DrawQuadPic)();
-    void (*DrawSprite)();
+    void (*DrawSprite)(MaterialHandle material, const unsigned char *rgbaColor, const vec_t *pos, float radius, float minScreenRadius, int renderFxFlags);
     void (*BeginFrame)();
     void (*EndFrame)();
     void (*BeginDebugFrame)();
@@ -14678,7 +14678,9 @@ struct token_s {
     int type;
     int subtype;
     long unsigned int intvalue;
+    int _pad_fv;                /* Mac x86 aligns long double to 16 bytes */
     long double floatvalue;
+    int _pad_after_fv;          /* Mac long double is 16 bytes, Linux is 12 */
     char *whitespace_p;
     char *endwhitespace_p;
     int line;

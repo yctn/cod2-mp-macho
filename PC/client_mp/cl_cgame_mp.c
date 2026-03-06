@@ -1307,6 +1307,7 @@ void CL_SetFullScreenViewport(void)
 /* line 1007 */
 void CL_DrawStretchPic(float x, float y, float w, float h, int horzAlign, int vertAlign, float s1, float t1, float s2, float t2, const vec_t *color, MaterialHandle material)
 {
+    __asm__ volatile("emms");
     CalcScreenPlacement(&x, &y, &w, &h, horzAlign, vertAlign);
     RE->DrawStretchPic(x, y, w, h, s1, t1, s2, t2, color, material);
 }

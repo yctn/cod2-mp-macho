@@ -121,7 +121,7 @@ void __static_initialization_and_destruction_0(void)
         "je .Lf2046a_000204aa\n"
         "testl %eax, %eax\n"
         "jne .Lf2046a_00020478\n"
-        "movl 0xff2d04, %edx\n" /* line 273 | __priority */
+        "movl __ZN6CFence15sUnusedFenceIDsE+4, %edx\n" /* line 273 | __priority */
         "movl __ZN6CFence15sUnusedFenceIDsE, %ecx\n"
         "movl %ecx, %eax\n" /* __initialize_p */
         "cmpl %ecx, %edx\n" /* line 173 | __priority */
@@ -139,8 +139,8 @@ void __static_initialization_and_destruction_0(void)
         "retl\n"
         ".Lf2046a_000204aa:\n"
         "movl $0, __ZN6CFence15sUnusedFenceIDsE\n" /* line 85 */
-        "movl $0, 0xff2d04\n"
-        "movl $0, 0xff2d08\n"
+        "movl $0, __ZN6CFence15sUnusedFenceIDsE+4\n"
+        "movl $0, __ZN6CFence15sUnusedFenceIDsE+8\n"
         "leave\n" /* line 103 */
         "retl\n"
     );
@@ -220,3 +220,4 @@ void ZNSt6vectorImSaImEE5eraseEN9__gnu_cxx17__normal_iteratorIPmS1_EES5_(void) /
         "retl\n"
     );
 }
+

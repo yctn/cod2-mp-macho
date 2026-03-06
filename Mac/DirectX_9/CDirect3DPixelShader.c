@@ -367,10 +367,12 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_Enable(const COpenGLARBFragmentProgram *
         "pushl %ebx\n"
         "subl $0x10, %esp\n"
         "movl 8(%ebp), %esi\n" /* this */
+        "incl g_fp_enable_count\n"
         "movl 0x14(%esi), %eax\n" /* line 334 | this */
         "movl imp___ZN7COpenGL7sOpenGLE, %ebx\n"
         "cmpl %eax, 0x81c(%ebx)\n"
         "je .Lf1c25a_0001c28f\n"
+        "incl g_fp_bind_count\n"
         "movl %eax, 4(%esp)\n" /* line 336 */
         "movl $0x8804, (%esp)\n"
         "calll glBindProgramARB\n"
@@ -808,7 +810,7 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(const COpenGLA
         ".Lf1c774_0001c7f1:\n"
         "leal -0x22(%ebp), %edx\n" /* line 290 */
         "movl %edx, 8(%esp)\n"
-        "movl $0x215c14, 4(%esp)\n" /* " ]" */
+        "movl $str_00215c14, 4(%esp)\n" /* " ]" */
         "leal -0x34(%ebp), %ecx\n"
         "movl %ecx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -821,7 +823,7 @@ J_COLOR_SPACE COpenGLARBFragmentProgram_COpenGLARBFragmentProgram(const COpenGLA
         "movl %eax, %esi\n"
         "leal -0x21(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x215c18, 4(%esp)\n" /* "texture[ " */
+        "movl $str_00215c18, 4(%esp)\n" /* "texture[ " */
         "leal -0x3c(%ebp), %edi\n"
         "movl %edi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"

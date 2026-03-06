@@ -58,7 +58,7 @@ int DSOUNDRecord_Start(recordingSample_t *pRecSample)
         "leave\n" /* line 63 */
         "retl\n"
         ".Lf1f5d18_001f5d56:\n"
-        "movl $0x2b920c, (%esp)\n" /* line 56 */
+        "movl $str_002b920c, (%esp)\n" /* line 56 */
         "calll Com_Printf\n"
         "movl $0xffffffff, %eax\n"
         "jmp .Lf1f5d18_001f5d2c\n"

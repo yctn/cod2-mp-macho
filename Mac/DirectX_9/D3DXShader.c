@@ -9,7 +9,16 @@
  */
 
 static bool sInit; /* 0xceb518 */
-static _D3DSWAPEFFECT sShaderPrograms[3]; /* 0xceb500 */
+static unsigned char sShaderPrograms[24] __attribute__((aligned(4))); /* std::map<string,string> — 24 bytes */
+
+/* Initialize sShaderPrograms as an empty std::map before first use.
+   GCC std::map layout (32-bit): offset 12,16 = left,right pointers → must point to &map+4 (header sentinel) */
+__attribute__((constructor))
+static void init_sShaderPrograms(void) {
+    unsigned int *p = (unsigned int *)sShaderPrograms;
+    p[3] = (unsigned int)(sShaderPrograms + 4); /* _M_left = &_M_header */
+    p[4] = (unsigned int)(sShaderPrograms + 4); /* _M_right = &_M_header */
+}
 
 ULONG CD3DXBuffer_AddRef(const CD3DXBuffer * _this);
 void ZN11CD3DXBufferD1Ev(void); /* CD3DXBuffer_~CD3DXBuffer */
@@ -82,7 +91,7 @@ void ZN11CD3DXBufferD1Ev(void) /* CD3DXBuffer_~CD3DXBuffer */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x332428, (%ebx)\n" /* this */
+        "movl $vtbl_CD3DXBuffer, (%ebx)\n" /* this */
         "movl 0xc(%ebx), %eax\n" /* line 60 | this */
         "testl %eax, %eax\n"
         "je .Lf119016_00119035\n"
@@ -107,7 +116,7 @@ void ZN11CD3DXBufferD0Ev(void) /* CD3DXBuffer_~CD3DXBuffer */
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x332428, (%ebx)\n" /* this */
+        "movl $vtbl_CD3DXBuffer, (%ebx)\n" /* this */
         "movl 0xc(%ebx), %eax\n" /* line 60 | this */
         "testl %eax, %eax\n"
         "je .Lf119042_00119061\n"
@@ -196,7 +205,7 @@ void ZN18CD3DXConstantTableD1Ev(void) /* CD3DXConstantTable_~CD3DXConstantTable 
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x332468, (%ebx)\n" /* this */
+        "movl $vtbl_CD3DXConstantTable, (%ebx)\n" /* this */
         "movl 0xc(%ebx), %eax\n" /* line 327 | this */
         "testl %eax, %eax\n"
         "je .Lf1190ca_001190e9\n"
@@ -221,7 +230,7 @@ void ZN18CD3DXConstantTableD0Ev(void) /* CD3DXConstantTable_~CD3DXConstantTable 
         "pushl %ebx\n"
         "subl $0x14, %esp\n"
         "movl 8(%ebp), %ebx\n" /* this */
-        "movl $0x332468, (%ebx)\n" /* this */
+        "movl $vtbl_CD3DXConstantTable, (%ebx)\n" /* this */
         "movl 0xc(%ebx), %eax\n" /* line 327 | this */
         "testl %eax, %eax\n"
         "je .Lf1190f6_00119115\n"
@@ -436,14 +445,14 @@ HRESULT D3DXCompileShader(LPCSTR pSrcData, UINT SrcDataLen, const D3DXMACRO *pDe
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
-        "subl $__dyld_func_lookup, %esp\n"
+        "subl $0x28ec, %esp\n"
         "movl 8(%ebp), %edi\n" /* pSrcData */
         /* { scope 1: nameAndShader */
         "cmpb $0, sInit\n" /* line 118 */
         "jne .Lf119296_00134919\n"
         "leal -0x83d(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x228f48, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00228f48, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28e0(%ebp), %esi\n"
@@ -451,7 +460,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x83b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x229160, 4(%esp)\n" /* "color_channel_mixer.vsa" */
+        "movl $str_00229160, 4(%esp)\n" /* "color_channel_mixer.vsa" */
         "leal -0x28dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -469,7 +478,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x839(%ebp), %eax\n" /* line 46 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x229178, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00229178, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28d8(%ebp), %esi\n"
@@ -477,7 +486,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x837(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2295b0, 4(%esp)\n" /* "debug_normals.vsa" */
+        "movl $str_002295b0, 4(%esp)\n" /* "debug_normals.vsa" */
         "leal -0x28d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -495,7 +504,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x835(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2295c4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002295c4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28d0(%ebp), %esi\n"
@@ -503,7 +512,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x833(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x229b9c, 4(%esp)\n" /* "distortion.vsa" */
+        "movl $str_00229b9c, 4(%esp)\n" /* "distortion.vsa" */
         "leal -0x28cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -521,7 +530,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x831(%ebp), %eax\n" /* line 65 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x229bac, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00229bac, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28c8(%ebp), %esi\n"
@@ -529,7 +538,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x82f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22a180, 4(%esp)\n" /* "distortion_floatz.vsa" */
+        "movl $str_0022a180, 4(%esp)\n" /* "distortion_floatz.vsa" */
         "leal -0x28c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -547,7 +556,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x82d(%ebp), %eax\n" /* line 33 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22a198, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022a198, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28c0(%ebp), %esi\n"
@@ -555,7 +564,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x82b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22a49c, 4(%esp)\n" /* "fakelight_normal.vsa" */
+        "movl $str_0022a49c, 4(%esp)\n" /* "fakelight_normal.vsa" */
         "leal -0x28bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -573,7 +582,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x829(%ebp), %eax\n" /* line 34 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22a4b4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022a4b4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28b8(%ebp), %esi\n"
@@ -581,7 +590,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x827(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22a7dc, 4(%esp)\n" /* "fakelight_view.vsa" */
+        "movl $str_0022a7dc, 4(%esp)\n" /* "fakelight_view.vsa" */
         "leal -0x28b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -599,7 +608,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x825(%ebp), %eax\n" /* line 27 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22a7f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022a7f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28b0(%ebp), %esi\n"
@@ -607,7 +616,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x823(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22aa6c, 4(%esp)\n" /* "filter_symmetric_1.vsa" */
+        "movl $str_0022aa6c, 4(%esp)\n" /* "filter_symmetric_1.vsa" */
         "leal -0x28ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -625,7 +634,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x821(%ebp), %eax\n" /* line 33 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22aa84, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022aa84, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28a8(%ebp), %esi\n"
@@ -633,7 +642,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x81f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22ada0, 4(%esp)\n" /* "filter_symmetric_2.vsa" */
+        "movl $str_0022ada0, 4(%esp)\n" /* "filter_symmetric_2.vsa" */
         "leal -0x28a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -651,7 +660,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x81d(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22adb8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022adb8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x28a0(%ebp), %esi\n"
@@ -659,7 +668,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x81b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22b164, 4(%esp)\n" /* "filter_symmetric_3.vsa" */
+        "movl $str_0022b164, 4(%esp)\n" /* "filter_symmetric_3.vsa" */
         "leal -0x289c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -677,7 +686,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x819(%ebp), %eax\n" /* line 45 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22b17c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022b17c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2898(%ebp), %esi\n"
@@ -685,7 +694,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x817(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22b5b4, 4(%esp)\n" /* "filter_symmetric_4.vsa" */
+        "movl $str_0022b5b4, 4(%esp)\n" /* "filter_symmetric_4.vsa" */
         "leal -0x2894(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -703,7 +712,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x815(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22b5cc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022b5cc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2890(%ebp), %esi\n"
@@ -711,7 +720,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x813(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22b9d8, 4(%esp)\n" /* "filter_symmetric_5.vsa" */
+        "movl $str_0022b9d8, 4(%esp)\n" /* "filter_symmetric_5.vsa" */
         "leal -0x288c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -729,7 +738,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x811(%ebp), %eax\n" /* line 45 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22b9f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022b9f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2888(%ebp), %esi\n"
@@ -737,7 +746,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x80f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22be64, 4(%esp)\n" /* "filter_symmetric_6.vsa" */
+        "movl $str_0022be64, 4(%esp)\n" /* "filter_symmetric_6.vsa" */
         "leal -0x2884(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -755,7 +764,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x80d(%ebp), %eax\n" /* line 49 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22be7c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022be7c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2880(%ebp), %esi\n"
@@ -763,7 +772,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x80b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22c358, 4(%esp)\n" /* "filter_symmetric_7.vsa" */
+        "movl $str_0022c358, 4(%esp)\n" /* "filter_symmetric_7.vsa" */
         "leal -0x287c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -781,7 +790,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x809(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22c370, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022c370, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2878(%ebp), %esi\n"
@@ -789,7 +798,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x807(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22c8b4, 4(%esp)\n" /* "filter_symmetric_8.vsa" */
+        "movl $str_0022c8b4, 4(%esp)\n" /* "filter_symmetric_8.vsa" */
         "leal -0x2874(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -807,7 +816,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x805(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22c8cc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022c8cc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2870(%ebp), %esi\n"
@@ -815,7 +824,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x803(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22caf0, 4(%esp)\n" /* "floatz_build.vsa" */
+        "movl $str_0022caf0, 4(%esp)\n" /* "floatz_build.vsa" */
         "leal -0x286c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -833,7 +842,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x801(%ebp), %eax\n" /* line 27 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22cb04, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022cb04, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2868(%ebp), %esi\n"
@@ -841,7 +850,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7ff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22cd80, 4(%esp)\n" /* "floatz_build_atest.vsa" */
+        "movl $str_0022cd80, 4(%esp)\n" /* "floatz_build_atest.vsa" */
         "leal -0x2864(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -859,7 +868,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7fd(%ebp), %eax\n" /* line 29 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22cd98, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022cd98, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2860(%ebp), %esi\n"
@@ -867,7 +876,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7fb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22d04c, 4(%esp)\n" /* "floatz_build_atest_scroll.vsa" */
+        "movl $str_0022d04c, 4(%esp)\n" /* "floatz_build_atest_scroll.vsa" */
         "leal -0x285c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -885,7 +894,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7f9(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x228f48, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00228f48, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2858(%ebp), %esi\n"
@@ -893,7 +902,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7f7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22d06c, 4(%esp)\n" /* "glow_apply_bloom.vsa" */
+        "movl $str_0022d06c, 4(%esp)\n" /* "glow_apply_bloom.vsa" */
         "leal -0x2854(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -911,7 +920,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7f5(%ebp), %eax\n" /* line 33 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22d084, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022d084, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2850(%ebp), %esi\n"
@@ -919,7 +928,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7f3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22d39c, 4(%esp)\n" /* "glow_apply_sky_bleed.vsa" */
+        "movl $str_0022d39c, 4(%esp)\n" /* "glow_apply_sky_bleed.vsa" */
         "leal -0x284c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -937,7 +946,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7f1(%ebp), %eax\n" /* line 35 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22d3b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022d3b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2848(%ebp), %esi\n"
@@ -945,7 +954,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7ef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22d714, 4(%esp)\n" /* "glow_setup.vsa" */
+        "movl $str_0022d714, 4(%esp)\n" /* "glow_setup.vsa" */
         "leal -0x2844(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -963,7 +972,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ed(%ebp), %eax\n" /* line 36 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22d724, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022d724, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2840(%ebp), %esi\n"
@@ -971,7 +980,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7eb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22da70, 4(%esp)\n" /* "grain_overlay.vsa" */
+        "movl $str_0022da70, 4(%esp)\n" /* "grain_overlay.vsa" */
         "leal -0x283c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -989,7 +998,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7e9(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22da84, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022da84, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2838(%ebp), %esi\n"
@@ -997,7 +1006,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7e7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22dfe0, 4(%esp)\n" /* "lmap.vsa" */
+        "movl $str_0022dfe0, 4(%esp)\n" /* "lmap.vsa" */
         "leal -0x2834(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1015,7 +1024,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7e5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22da84, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022da84, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2830(%ebp), %esi\n"
@@ -1023,7 +1032,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7e3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22dfec, 4(%esp)\n" /* "lmap_a.vsa" */
+        "movl $str_0022dfec, 4(%esp)\n" /* "lmap_a.vsa" */
         "leal -0x282c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1041,7 +1050,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7e1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22da84, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022da84, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2828(%ebp), %esi\n"
@@ -1049,7 +1058,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7df(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22dff8, 4(%esp)\n" /* "lmap_a_dtl.vsa" */
+        "movl $str_0022dff8, 4(%esp)\n" /* "lmap_a_dtl.vsa" */
         "leal -0x2824(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1067,7 +1076,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7dd(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22e008, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022e008, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2820(%ebp), %esi\n"
@@ -1075,7 +1084,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7db(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22e63c, 4(%esp)\n" /* "lmap_a_dtl_pfog.vsa" */
+        "movl $str_0022e63c, 4(%esp)\n" /* "lmap_a_dtl_pfog.vsa" */
         "leal -0x281c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1093,7 +1102,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7d9(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22e650, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022e650, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2818(%ebp), %esi\n"
@@ -1101,7 +1110,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7d7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22ecc8, 4(%esp)\n" /* "lmap_a_efog.vsa" */
+        "movl $str_0022ecc8, 4(%esp)\n" /* "lmap_a_efog.vsa" */
         "leal -0x2814(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1119,7 +1128,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7d5(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22ecd8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022ecd8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2810(%ebp), %esi\n"
@@ -1127,7 +1136,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7d3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22f30c, 4(%esp)\n" /* "lmap_a_lfog.vsa" */
+        "movl $str_0022f30c, 4(%esp)\n" /* "lmap_a_lfog.vsa" */
         "leal -0x280c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1145,7 +1154,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7d1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22e008, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022e008, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2808(%ebp), %esi\n"
@@ -1153,7 +1162,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7cf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22f31c, 4(%esp)\n" /* "lmap_a_pfog.vsa" */
+        "movl $str_0022f31c, 4(%esp)\n" /* "lmap_a_pfog.vsa" */
         "leal -0x2804(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1171,7 +1180,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7cd(%ebp), %eax\n" /* line 76 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22f32c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022f32c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2800(%ebp), %esi\n"
@@ -1179,7 +1188,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7cb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22fa0c, 4(%esp)\n" /* "lmap_a_s.vsa" */
+        "movl $str_0022fa0c, 4(%esp)\n" /* "lmap_a_s.vsa" */
         "leal -0x27fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1197,7 +1206,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7c9(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22f32c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022f32c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27f8(%ebp), %esi\n"
@@ -1205,7 +1214,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7c7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22fa1c, 4(%esp)\n" /* "lmap_a_s_dtl.vsa" */
+        "movl $str_0022fa1c, 4(%esp)\n" /* "lmap_a_s_dtl.vsa" */
         "leal -0x27f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1223,7 +1232,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7c5(%ebp), %eax\n" /* line 85 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22fa30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022fa30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27f0(%ebp), %esi\n"
@@ -1231,7 +1240,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7c3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2301ec, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.vsa" */
+        "movl $str_002301ec, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.vsa" */
         "leal -0x27ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1249,7 +1258,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7c1(%ebp), %eax\n" /* line 87 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x230204, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00230204, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27e8(%ebp), %esi\n"
@@ -1257,7 +1266,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7bf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2309e4, 4(%esp)\n" /* "lmap_a_s_efog.vsa" */
+        "movl $str_002309e4, 4(%esp)\n" /* "lmap_a_s_efog.vsa" */
         "leal -0x27e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1275,7 +1284,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7bd(%ebp), %eax\n" /* line 85 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2309f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002309f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27e0(%ebp), %esi\n"
@@ -1283,7 +1292,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7bb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2311b0, 4(%esp)\n" /* "lmap_a_s_lfog.vsa" */
+        "movl $str_002311b0, 4(%esp)\n" /* "lmap_a_s_lfog.vsa" */
         "leal -0x27dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1301,7 +1310,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7b9(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22fa30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022fa30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27d8(%ebp), %esi\n"
@@ -1309,7 +1318,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7b7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2311c4, 4(%esp)\n" /* "lmap_a_s_pfog.vsa" */
+        "movl $str_002311c4, 4(%esp)\n" /* "lmap_a_s_pfog.vsa" */
         "leal -0x27d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1327,7 +1336,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7b5(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22da84, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022da84, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27d0(%ebp), %esi\n"
@@ -1335,7 +1344,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7b3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2311d8, 4(%esp)\n" /* "lmap_dtl.vsa" */
+        "movl $str_002311d8, 4(%esp)\n" /* "lmap_dtl.vsa" */
         "leal -0x27cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1353,7 +1362,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7b1(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22e008, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022e008, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27c8(%ebp), %esi\n"
@@ -1361,7 +1370,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7af(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2311e8, 4(%esp)\n" /* "lmap_dtl_pfog.vsa" */
+        "movl $str_002311e8, 4(%esp)\n" /* "lmap_dtl_pfog.vsa" */
         "leal -0x27c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1379,7 +1388,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ad(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22e650, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022e650, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27c0(%ebp), %esi\n"
@@ -1387,7 +1396,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7ab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2311fc, 4(%esp)\n" /* "lmap_efog.vsa" */
+        "movl $str_002311fc, 4(%esp)\n" /* "lmap_efog.vsa" */
         "leal -0x27bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1405,7 +1414,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7a9(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22ecd8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022ecd8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27b8(%ebp), %esi\n"
@@ -1413,7 +1422,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7a7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23120c, 4(%esp)\n" /* "lmap_lfog.vsa" */
+        "movl $str_0023120c, 4(%esp)\n" /* "lmap_lfog.vsa" */
         "leal -0x27b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1431,7 +1440,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7a5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22e008, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022e008, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27b0(%ebp), %esi\n"
@@ -1439,7 +1448,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7a3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23121c, 4(%esp)\n" /* "lmap_pfog.vsa" */
+        "movl $str_0023121c, 4(%esp)\n" /* "lmap_pfog.vsa" */
         "leal -0x27ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1457,7 +1466,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7a1(%ebp), %eax\n" /* line 76 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22f32c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022f32c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27a8(%ebp), %esi\n"
@@ -1465,7 +1474,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x79f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23122c, 4(%esp)\n" /* "lmap_s.vsa" */
+        "movl $str_0023122c, 4(%esp)\n" /* "lmap_s.vsa" */
         "leal -0x27a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1483,7 +1492,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x79d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22f32c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022f32c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x27a0(%ebp), %esi\n"
@@ -1491,7 +1500,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x79b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x231238, 4(%esp)\n" /* "lmap_s_dtl.vsa" */
+        "movl $str_00231238, 4(%esp)\n" /* "lmap_s_dtl.vsa" */
         "leal -0x279c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1509,7 +1518,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x799(%ebp), %eax\n" /* line 85 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22fa30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022fa30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2798(%ebp), %esi\n"
@@ -1517,7 +1526,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x797(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x231248, 4(%esp)\n" /* "lmap_s_dtl_pfog.vsa" */
+        "movl $str_00231248, 4(%esp)\n" /* "lmap_s_dtl_pfog.vsa" */
         "leal -0x2794(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1535,7 +1544,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x795(%ebp), %eax\n" /* line 87 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x230204, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00230204, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2790(%ebp), %esi\n"
@@ -1543,7 +1552,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x793(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23125c, 4(%esp)\n" /* "lmap_s_efog.vsa" */
+        "movl $str_0023125c, 4(%esp)\n" /* "lmap_s_efog.vsa" */
         "leal -0x278c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1561,7 +1570,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x791(%ebp), %eax\n" /* line 85 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2309f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002309f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2788(%ebp), %esi\n"
@@ -1569,7 +1578,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x78f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23126c, 4(%esp)\n" /* "lmap_s_lfog.vsa" */
+        "movl $str_0023126c, 4(%esp)\n" /* "lmap_s_lfog.vsa" */
         "leal -0x2784(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1587,7 +1596,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x78d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x22fa30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0022fa30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2780(%ebp), %esi\n"
@@ -1595,7 +1604,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x78b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23127c, 4(%esp)\n" /* "lmap_s_pfog.vsa" */
+        "movl $str_0023127c, 4(%esp)\n" /* "lmap_s_pfog.vsa" */
         "leal -0x277c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1613,7 +1622,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x789(%ebp), %eax\n" /* line 55 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23128c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023128c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2778(%ebp), %esi\n"
@@ -1621,7 +1630,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x787(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x231788, 4(%esp)\n" /* "lprobe.vsa" */
+        "movl $str_00231788, 4(%esp)\n" /* "lprobe.vsa" */
         "leal -0x2774(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1639,7 +1648,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x785(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23128c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023128c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2770(%ebp), %esi\n"
@@ -1647,7 +1656,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x783(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x231794, 4(%esp)\n" /* "lprobe_a.vsa" */
+        "movl $str_00231794, 4(%esp)\n" /* "lprobe_a.vsa" */
         "leal -0x276c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1665,7 +1674,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x781(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23128c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023128c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2768(%ebp), %esi\n"
@@ -1673,7 +1682,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x77f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2317a4, 4(%esp)\n" /* "lprobe_a_dtl.vsa" */
+        "movl $str_002317a4, 4(%esp)\n" /* "lprobe_a_dtl.vsa" */
         "leal -0x2764(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1691,7 +1700,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x77d(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2317b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002317b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2760(%ebp), %esi\n"
@@ -1699,7 +1708,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x77b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x231dc0, 4(%esp)\n" /* "lprobe_a_dtl_pfog.vsa" */
+        "movl $str_00231dc0, 4(%esp)\n" /* "lprobe_a_dtl_pfog.vsa" */
         "leal -0x275c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1717,7 +1726,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x779(%ebp), %eax\n" /* line 67 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x231dd8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00231dd8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2758(%ebp), %esi\n"
@@ -1725,7 +1734,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x777(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2323f0, 4(%esp)\n" /* "lprobe_a_efog.vsa" */
+        "movl $str_002323f0, 4(%esp)\n" /* "lprobe_a_efog.vsa" */
         "leal -0x2754(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1743,7 +1752,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x775(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x232404, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00232404, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2750(%ebp), %esi\n"
@@ -1751,7 +1760,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x773(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2329d8, 4(%esp)\n" /* "lprobe_a_lfog.vsa" */
+        "movl $str_002329d8, 4(%esp)\n" /* "lprobe_a_lfog.vsa" */
         "leal -0x274c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1769,7 +1778,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x771(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2317b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002317b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2748(%ebp), %esi\n"
@@ -1777,7 +1786,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x76f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2329ec, 4(%esp)\n" /* "lprobe_a_pfog.vsa" */
+        "movl $str_002329ec, 4(%esp)\n" /* "lprobe_a_pfog.vsa" */
         "leal -0x2744(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1795,7 +1804,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x76d(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x232a00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00232a00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2740(%ebp), %esi\n"
@@ -1803,7 +1812,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x76b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233080, 4(%esp)\n" /* "lprobe_a_s.vsa" */
+        "movl $str_00233080, 4(%esp)\n" /* "lprobe_a_s.vsa" */
         "leal -0x273c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1821,7 +1830,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x769(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x232a00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00232a00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2738(%ebp), %esi\n"
@@ -1829,7 +1838,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x767(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233090, 4(%esp)\n" /* "lprobe_a_s_dtl.vsa" */
+        "movl $str_00233090, 4(%esp)\n" /* "lprobe_a_s_dtl.vsa" */
         "leal -0x2734(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1847,7 +1856,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x765(%ebp), %eax\n" /* line 83 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2330a4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002330a4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2730(%ebp), %esi\n"
@@ -1855,7 +1864,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x763(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233830, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.vsa" */
+        "movl $str_00233830, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.vsa" */
         "leal -0x272c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1873,7 +1882,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x761(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233848, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00233848, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2728(%ebp), %esi\n"
@@ -1881,7 +1890,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x75f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233fcc, 4(%esp)\n" /* "lprobe_a_s_efog.vsa" */
+        "movl $str_00233fcc, 4(%esp)\n" /* "lprobe_a_s_efog.vsa" */
         "leal -0x2724(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1899,7 +1908,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x75d(%ebp), %eax\n" /* line 81 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233fe0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00233fe0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2720(%ebp), %esi\n"
@@ -1907,7 +1916,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x75b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23473c, 4(%esp)\n" /* "lprobe_a_s_lfog.vsa" */
+        "movl $str_0023473c, 4(%esp)\n" /* "lprobe_a_s_lfog.vsa" */
         "leal -0x271c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1925,7 +1934,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x759(%ebp), %eax\n" /* line 83 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2330a4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002330a4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2718(%ebp), %esi\n"
@@ -1933,7 +1942,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x757(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234750, 4(%esp)\n" /* "lprobe_a_s_pfog.vsa" */
+        "movl $str_00234750, 4(%esp)\n" /* "lprobe_a_s_pfog.vsa" */
         "leal -0x2714(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1951,7 +1960,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x755(%ebp), %eax\n" /* line 55 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23128c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023128c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2710(%ebp), %esi\n"
@@ -1959,7 +1968,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x753(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234764, 4(%esp)\n" /* "lprobe_dtl.vsa" */
+        "movl $str_00234764, 4(%esp)\n" /* "lprobe_dtl.vsa" */
         "leal -0x270c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -1977,7 +1986,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x751(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2317b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002317b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2708(%ebp), %esi\n"
@@ -1985,7 +1994,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x74f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234774, 4(%esp)\n" /* "lprobe_dtl_pfog.vsa" */
+        "movl $str_00234774, 4(%esp)\n" /* "lprobe_dtl_pfog.vsa" */
         "leal -0x2704(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2003,7 +2012,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x74d(%ebp), %eax\n" /* line 67 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x231dd8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00231dd8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2700(%ebp), %esi\n"
@@ -2011,7 +2020,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x74b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234788, 4(%esp)\n" /* "lprobe_efog.vsa" */
+        "movl $str_00234788, 4(%esp)\n" /* "lprobe_efog.vsa" */
         "leal -0x26fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2029,7 +2038,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x749(%ebp), %eax\n" /* line 159 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234798, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00234798, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26f8(%ebp), %esi\n" /* size */
@@ -2037,7 +2046,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x747(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23571c, 4(%esp)\n" /* "lprobe_flag_a_s.vsa" */
+        "movl $str_0023571c, 4(%esp)\n" /* "lprobe_flag_a_s.vsa" */
         "leal -0x26f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2055,7 +2064,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x745(%ebp), %eax\n" /* line 170 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x235730, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00235730, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26f0(%ebp), %esi\n" /* size */
@@ -2063,7 +2072,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x743(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2367c8, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.vsa" */
+        "movl $str_002367c8, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.vsa" */
         "leal -0x26ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2081,7 +2090,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x741(%ebp), %eax\n" /* line 159 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234798, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00234798, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26e8(%ebp), %esi\n" /* size */
@@ -2089,7 +2098,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x73f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2367e4, 4(%esp)\n" /* "lprobe_flag_s.vsa" */
+        "movl $str_002367e4, 4(%esp)\n" /* "lprobe_flag_s.vsa" */
         "leal -0x26e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2107,7 +2116,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x73d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234798, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00234798, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26e0(%ebp), %esi\n" /* size */
@@ -2115,7 +2124,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x73b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2367f8, 4(%esp)\n" /* "lprobe_flag_sm_a_s.vsa" */
+        "movl $str_002367f8, 4(%esp)\n" /* "lprobe_flag_sm_a_s.vsa" */
         "leal -0x26dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2133,7 +2142,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x739(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x234798, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00234798, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26d8(%ebp), %esi\n" /* size */
@@ -2141,7 +2150,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x737(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x236810, 4(%esp)\n" /* "lprobe_flag_sm_s.vsa" */
+        "movl $str_00236810, 4(%esp)\n" /* "lprobe_flag_sm_s.vsa" */
         "leal -0x26d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2159,7 +2168,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x735(%ebp), %eax\n" /* line 170 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x236828, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00236828, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26d0(%ebp), %esi\n" /* size */
@@ -2167,7 +2176,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x733(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2378c0, 4(%esp)\n" /* "lprobe_flag_s_efog.vsa" */
+        "movl $str_002378c0, 4(%esp)\n" /* "lprobe_flag_s_efog.vsa" */
         "leal -0x26cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2185,7 +2194,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x731(%ebp), %eax\n" /* line 168 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2378d8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002378d8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26c8(%ebp), %esi\n" /* size */
@@ -2193,7 +2202,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x72f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x238940, 4(%esp)\n" /* "lprobe_flag_s_lfog.vsa" */
+        "movl $str_00238940, 4(%esp)\n" /* "lprobe_flag_s_lfog.vsa" */
         "leal -0x26c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2211,7 +2220,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x72d(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x232404, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00232404, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26c0(%ebp), %esi\n"
@@ -2219,7 +2228,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x72b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x238958, 4(%esp)\n" /* "lprobe_lfog.vsa" */
+        "movl $str_00238958, 4(%esp)\n" /* "lprobe_lfog.vsa" */
         "leal -0x26bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2237,7 +2246,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x729(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2317b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002317b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26b8(%ebp), %esi\n"
@@ -2245,7 +2254,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x727(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x238968, 4(%esp)\n" /* "lprobe_pfog.vsa" */
+        "movl $str_00238968, 4(%esp)\n" /* "lprobe_pfog.vsa" */
         "leal -0x26b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2263,7 +2272,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x725(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x232a00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00232a00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26b0(%ebp), %esi\n"
@@ -2271,7 +2280,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x723(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x238978, 4(%esp)\n" /* "lprobe_s.vsa" */
+        "movl $str_00238978, 4(%esp)\n" /* "lprobe_s.vsa" */
         "leal -0x26ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2289,7 +2298,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x721(%ebp), %eax\n" /* line 57 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x238988, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00238988, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26a8(%ebp), %esi\n"
@@ -2297,7 +2306,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x71f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x238ebc, 4(%esp)\n" /* "lprobe_scroll.vsa" */
+        "movl $str_00238ebc, 4(%esp)\n" /* "lprobe_scroll.vsa" */
         "leal -0x26a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2315,7 +2324,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x71d(%ebp), %eax\n" /* line 69 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x238ed0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00238ed0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x26a0(%ebp), %esi\n"
@@ -2323,7 +2332,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x71b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x239520, 4(%esp)\n" /* "lprobe_scroll_efog.vsa" */
+        "movl $str_00239520, 4(%esp)\n" /* "lprobe_scroll_efog.vsa" */
         "leal -0x269c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2341,7 +2350,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x719(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x239538, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00239538, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2698(%ebp), %esi\n"
@@ -2349,7 +2358,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x717(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x239b44, 4(%esp)\n" /* "lprobe_scroll_lfog.vsa" */
+        "movl $str_00239b44, 4(%esp)\n" /* "lprobe_scroll_lfog.vsa" */
         "leal -0x2694(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2367,7 +2376,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x715(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x239b5c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00239b5c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2690(%ebp), %esi\n"
@@ -2375,7 +2384,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x713(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a020, 4(%esp)\n" /* "lprobe_sm.vsa" */
+        "movl $str_0023a020, 4(%esp)\n" /* "lprobe_sm.vsa" */
         "leal -0x268c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2393,7 +2402,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x711(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a030, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a030, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2688(%ebp), %esi\n"
@@ -2401,7 +2410,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x70f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a52c, 4(%esp)\n" /* "lprobe_smc.vsa" */
+        "movl $str_0023a52c, 4(%esp)\n" /* "lprobe_smc.vsa" */
         "leal -0x2684(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2419,7 +2428,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x70d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a030, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a030, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2680(%ebp), %esi\n"
@@ -2427,7 +2436,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x70b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a53c, 4(%esp)\n" /* "lprobe_smc_a.vsa" */
+        "movl $str_0023a53c, 4(%esp)\n" /* "lprobe_smc_a.vsa" */
         "leal -0x267c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2445,7 +2454,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x709(%ebp), %eax\n" /* line 33 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a550, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a550, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2678(%ebp), %esi\n"
@@ -2453,7 +2462,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x707(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a870, 4(%esp)\n" /* "lprobe_smc_amb.vsa" */
+        "movl $str_0023a870, 4(%esp)\n" /* "lprobe_smc_amb.vsa" */
         "leal -0x2674(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2471,7 +2480,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x705(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a550, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a550, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2670(%ebp), %esi\n"
@@ -2479,7 +2488,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x703(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a884, 4(%esp)\n" /* "lprobe_smc_amb_a.vsa" */
+        "movl $str_0023a884, 4(%esp)\n" /* "lprobe_smc_amb_a.vsa" */
         "leal -0x266c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2497,7 +2506,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x701(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a550, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a550, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2668(%ebp), %esi\n"
@@ -2505,7 +2514,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6ff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a89c, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.vsa" */
+        "movl $str_0023a89c, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.vsa" */
         "leal -0x2664(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2523,7 +2532,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6fd(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a8b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a8b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2660(%ebp), %esi\n"
@@ -2531,7 +2540,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6fb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ace0, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.vsa" */
+        "movl $str_0023ace0, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.vsa" */
         "leal -0x265c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2549,7 +2558,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6f9(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ad00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023ad00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2658(%ebp), %esi\n"
@@ -2557,7 +2566,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6f7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b120, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.vsa" */
+        "movl $str_0023b120, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.vsa" */
         "leal -0x2654(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2575,7 +2584,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6f5(%ebp), %eax\n" /* line 42 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b13c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023b13c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2650(%ebp), %esi\n"
@@ -2583,7 +2592,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6f3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b534, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.vsa" */
+        "movl $str_0023b534, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.vsa" */
         "leal -0x264c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2601,7 +2610,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6f1(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a8b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a8b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2648(%ebp), %esi\n"
@@ -2609,7 +2618,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6ef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b550, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.vsa" */
+        "movl $str_0023b550, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.vsa" */
         "leal -0x2644(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2627,7 +2636,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ed(%ebp), %eax\n" /* line 33 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a550, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a550, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2640(%ebp), %esi\n"
@@ -2635,7 +2644,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6eb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b56c, 4(%esp)\n" /* "lprobe_smc_amb_dtl.vsa" */
+        "movl $str_0023b56c, 4(%esp)\n" /* "lprobe_smc_amb_dtl.vsa" */
         "leal -0x263c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2653,7 +2662,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6e9(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a8b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a8b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2638(%ebp), %esi\n"
@@ -2661,7 +2670,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6e7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b584, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.vsa" */
+        "movl $str_0023b584, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.vsa" */
         "leal -0x2634(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2679,7 +2688,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6e5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ad00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023ad00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2630(%ebp), %esi\n"
@@ -2687,7 +2696,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6e3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b5a0, 4(%esp)\n" /* "lprobe_smc_amb_efog.vsa" */
+        "movl $str_0023b5a0, 4(%esp)\n" /* "lprobe_smc_amb_efog.vsa" */
         "leal -0x262c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2705,7 +2714,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6e1(%ebp), %eax\n" /* line 42 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b13c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023b13c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2628(%ebp), %esi\n"
@@ -2713,7 +2722,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6df(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b5b8, 4(%esp)\n" /* "lprobe_smc_amb_lfog.vsa" */
+        "movl $str_0023b5b8, 4(%esp)\n" /* "lprobe_smc_amb_lfog.vsa" */
         "leal -0x2624(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2731,7 +2740,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6dd(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a8b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a8b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2620(%ebp), %esi\n"
@@ -2739,7 +2748,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6db(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b5d0, 4(%esp)\n" /* "lprobe_smc_amb_pfog.vsa" */
+        "movl $str_0023b5d0, 4(%esp)\n" /* "lprobe_smc_amb_pfog.vsa" */
         "leal -0x261c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2757,7 +2766,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6d9(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a030, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a030, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2618(%ebp), %esi\n"
@@ -2765,7 +2774,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6d7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b5e8, 4(%esp)\n" /* "lprobe_smc_a_dtl.vsa" */
+        "movl $str_0023b5e8, 4(%esp)\n" /* "lprobe_smc_a_dtl.vsa" */
         "leal -0x2614(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2783,7 +2792,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6d5(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b600, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023b600, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2610(%ebp), %esi\n"
@@ -2791,7 +2800,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6d3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23bc08, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.vsa" */
+        "movl $str_0023bc08, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.vsa" */
         "leal -0x260c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2809,7 +2818,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6d1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23bc24, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023bc24, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2608(%ebp), %esi\n"
@@ -2817,7 +2826,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6cf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c224, 4(%esp)\n" /* "lprobe_smc_a_efog.vsa" */
+        "movl $str_0023c224, 4(%esp)\n" /* "lprobe_smc_a_efog.vsa" */
         "leal -0x2604(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2835,7 +2844,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6cd(%ebp), %eax\n" /* line 62 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c23c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023c23c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2600(%ebp), %esi\n"
@@ -2843,7 +2852,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6cb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c814, 4(%esp)\n" /* "lprobe_smc_a_lfog.vsa" */
+        "movl $str_0023c814, 4(%esp)\n" /* "lprobe_smc_a_lfog.vsa" */
         "leal -0x25fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2861,7 +2870,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6c9(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b600, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023b600, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25f8(%ebp), %esi\n"
@@ -2869,7 +2878,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6c7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c82c, 4(%esp)\n" /* "lprobe_smc_a_pfog.vsa" */
+        "movl $str_0023c82c, 4(%esp)\n" /* "lprobe_smc_a_pfog.vsa" */
         "leal -0x25f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2887,7 +2896,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6c5(%ebp), %eax\n" /* line 69 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c844, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023c844, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25f0(%ebp), %esi\n"
@@ -2895,7 +2904,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6c3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ceac, 4(%esp)\n" /* "lprobe_smc_a_s.vsa" */
+        "movl $str_0023ceac, 4(%esp)\n" /* "lprobe_smc_a_s.vsa" */
         "leal -0x25ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2913,7 +2922,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6c1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c844, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023c844, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25e8(%ebp), %esi\n"
@@ -2921,7 +2930,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6bf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23cec0, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.vsa" */
+        "movl $str_0023cec0, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.vsa" */
         "leal -0x25e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2939,7 +2948,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6bd(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ced8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023ced8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25e0(%ebp), %esi\n"
@@ -2947,7 +2956,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6bb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23d648, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.vsa" */
+        "movl $str_0023d648, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.vsa" */
         "leal -0x25dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2965,7 +2974,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6b9(%ebp), %eax\n" /* line 81 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23d664, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023d664, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25d8(%ebp), %esi\n"
@@ -2973,7 +2982,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6b7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23dde8, 4(%esp)\n" /* "lprobe_smc_a_s_efog.vsa" */
+        "movl $str_0023dde8, 4(%esp)\n" /* "lprobe_smc_a_s_efog.vsa" */
         "leal -0x25d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -2991,7 +3000,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6b5(%ebp), %eax\n" /* line 78 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23de00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023de00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25d0(%ebp), %esi\n"
@@ -2999,7 +3008,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6b3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e540, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.vsa" */
+        "movl $str_0023e540, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.vsa" */
         "leal -0x25cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3017,7 +3026,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6b1(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ced8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023ced8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25c8(%ebp), %esi\n"
@@ -3025,7 +3034,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6af(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e558, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.vsa" */
+        "movl $str_0023e558, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.vsa" */
         "leal -0x25c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3043,7 +3052,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ad(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23a030, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023a030, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25c0(%ebp), %esi\n"
@@ -3051,7 +3060,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6ab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e570, 4(%esp)\n" /* "lprobe_smc_dtl.vsa" */
+        "movl $str_0023e570, 4(%esp)\n" /* "lprobe_smc_dtl.vsa" */
         "leal -0x25bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3069,7 +3078,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6a9(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b600, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023b600, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25b8(%ebp), %esi\n"
@@ -3077,7 +3086,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6a7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e584, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.vsa" */
+        "movl $str_0023e584, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.vsa" */
         "leal -0x25b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3095,7 +3104,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6a5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23bc24, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023bc24, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25b0(%ebp), %esi\n"
@@ -3103,7 +3112,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6a3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e59c, 4(%esp)\n" /* "lprobe_smc_efog.vsa" */
+        "movl $str_0023e59c, 4(%esp)\n" /* "lprobe_smc_efog.vsa" */
         "leal -0x25ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3121,7 +3130,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6a1(%ebp), %eax\n" /* line 62 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c23c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023c23c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25a8(%ebp), %esi\n"
@@ -3129,7 +3138,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x69f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e5b0, 4(%esp)\n" /* "lprobe_smc_lfog.vsa" */
+        "movl $str_0023e5b0, 4(%esp)\n" /* "lprobe_smc_lfog.vsa" */
         "leal -0x25a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3147,7 +3156,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x69d(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23b600, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023b600, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x25a0(%ebp), %esi\n"
@@ -3155,7 +3164,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x69b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e5c4, 4(%esp)\n" /* "lprobe_smc_pfog.vsa" */
+        "movl $str_0023e5c4, 4(%esp)\n" /* "lprobe_smc_pfog.vsa" */
         "leal -0x259c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3173,7 +3182,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x699(%ebp), %eax\n" /* line 69 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c844, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023c844, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2598(%ebp), %esi\n"
@@ -3181,7 +3190,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x697(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e5d8, 4(%esp)\n" /* "lprobe_smc_s.vsa" */
+        "movl $str_0023e5d8, 4(%esp)\n" /* "lprobe_smc_s.vsa" */
         "leal -0x2594(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3199,7 +3208,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x695(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23c844, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023c844, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2590(%ebp), %esi\n"
@@ -3207,7 +3216,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x693(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e5ec, 4(%esp)\n" /* "lprobe_smc_s_dtl.vsa" */
+        "movl $str_0023e5ec, 4(%esp)\n" /* "lprobe_smc_s_dtl.vsa" */
         "leal -0x258c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3225,7 +3234,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x691(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ced8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023ced8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2588(%ebp), %esi\n"
@@ -3233,7 +3242,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x68f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e604, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.vsa" */
+        "movl $str_0023e604, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.vsa" */
         "leal -0x2584(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3251,7 +3260,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x68d(%ebp), %eax\n" /* line 81 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23d664, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023d664, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2580(%ebp), %esi\n"
@@ -3259,7 +3268,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x68b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e620, 4(%esp)\n" /* "lprobe_smc_s_efog.vsa" */
+        "movl $str_0023e620, 4(%esp)\n" /* "lprobe_smc_s_efog.vsa" */
         "leal -0x257c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3277,7 +3286,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x689(%ebp), %eax\n" /* line 78 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23de00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023de00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2578(%ebp), %esi\n"
@@ -3285,7 +3294,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x687(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e638, 4(%esp)\n" /* "lprobe_smc_s_lfog.vsa" */
+        "movl $str_0023e638, 4(%esp)\n" /* "lprobe_smc_s_lfog.vsa" */
         "leal -0x2574(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3303,7 +3312,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x685(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ced8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023ced8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2570(%ebp), %esi\n"
@@ -3311,7 +3320,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x683(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e650, 4(%esp)\n" /* "lprobe_smc_s_pfog.vsa" */
+        "movl $str_0023e650, 4(%esp)\n" /* "lprobe_smc_s_pfog.vsa" */
         "leal -0x256c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3329,7 +3338,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x681(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x239b5c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00239b5c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2568(%ebp), %esi\n"
@@ -3337,7 +3346,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x67f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e668, 4(%esp)\n" /* "lprobe_sm_a.vsa" */
+        "movl $str_0023e668, 4(%esp)\n" /* "lprobe_sm_a.vsa" */
         "leal -0x2564(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3355,7 +3364,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x67d(%ebp), %eax\n" /* line 32 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e678, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e678, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2560(%ebp), %esi\n"
@@ -3363,7 +3372,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x67b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e95c, 4(%esp)\n" /* "lprobe_sm_amb.vsa" */
+        "movl $str_0023e95c, 4(%esp)\n" /* "lprobe_sm_amb.vsa" */
         "leal -0x255c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3381,7 +3390,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x679(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e678, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e678, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2558(%ebp), %esi\n"
@@ -3389,7 +3398,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x677(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e970, 4(%esp)\n" /* "lprobe_sm_amb_a.vsa" */
+        "movl $str_0023e970, 4(%esp)\n" /* "lprobe_sm_amb_a.vsa" */
         "leal -0x2554(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3407,7 +3416,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x675(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e678, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e678, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2550(%ebp), %esi\n"
@@ -3415,7 +3424,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x673(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e984, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.vsa" */
+        "movl $str_0023e984, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.vsa" */
         "leal -0x254c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3433,7 +3442,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x671(%ebp), %eax\n" /* line 43 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e99c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e99c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2548(%ebp), %esi\n"
@@ -3441,7 +3450,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x66f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23ed8c, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.vsa" */
+        "movl $str_0023ed8c, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.vsa" */
         "leal -0x2544(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3459,7 +3468,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x66d(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23edac, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023edac, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2540(%ebp), %esi\n"
@@ -3467,7 +3476,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x66b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f1ac, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.vsa" */
+        "movl $str_0023f1ac, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.vsa" */
         "leal -0x253c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3485,7 +3494,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x669(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f1c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023f1c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2538(%ebp), %esi\n"
@@ -3493,7 +3502,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x667(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f584, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.vsa" */
+        "movl $str_0023f584, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.vsa" */
         "leal -0x2534(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3511,7 +3520,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x665(%ebp), %eax\n" /* line 43 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e99c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e99c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2530(%ebp), %esi\n"
@@ -3519,7 +3528,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x663(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f5a0, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.vsa" */
+        "movl $str_0023f5a0, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.vsa" */
         "leal -0x252c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3537,7 +3546,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x661(%ebp), %eax\n" /* line 32 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e678, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e678, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2528(%ebp), %esi\n"
@@ -3545,7 +3554,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x65f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f5bc, 4(%esp)\n" /* "lprobe_sm_amb_dtl.vsa" */
+        "movl $str_0023f5bc, 4(%esp)\n" /* "lprobe_sm_amb_dtl.vsa" */
         "leal -0x2524(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3563,7 +3572,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x65d(%ebp), %eax\n" /* line 43 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e99c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e99c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2520(%ebp), %esi\n"
@@ -3571,7 +3580,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x65b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f5d4, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.vsa" */
+        "movl $str_0023f5d4, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.vsa" */
         "leal -0x251c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3589,7 +3598,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x659(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23edac, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023edac, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2518(%ebp), %esi\n"
@@ -3597,7 +3606,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x657(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f5f0, 4(%esp)\n" /* "lprobe_sm_amb_efog.vsa" */
+        "movl $str_0023f5f0, 4(%esp)\n" /* "lprobe_sm_amb_efog.vsa" */
         "leal -0x2514(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3615,7 +3624,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x655(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f1c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023f1c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2510(%ebp), %esi\n"
@@ -3623,7 +3632,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x653(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f608, 4(%esp)\n" /* "lprobe_sm_amb_lfog.vsa" */
+        "movl $str_0023f608, 4(%esp)\n" /* "lprobe_sm_amb_lfog.vsa" */
         "leal -0x250c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3641,7 +3650,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x651(%ebp), %eax\n" /* line 43 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23e99c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023e99c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2508(%ebp), %esi\n"
@@ -3649,7 +3658,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x64f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f620, 4(%esp)\n" /* "lprobe_sm_amb_pfog.vsa" */
+        "movl $str_0023f620, 4(%esp)\n" /* "lprobe_sm_amb_pfog.vsa" */
         "leal -0x2504(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3667,7 +3676,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x64d(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x239b5c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00239b5c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2500(%ebp), %esi\n"
@@ -3675,7 +3684,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x64b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f638, 4(%esp)\n" /* "lprobe_sm_a_dtl.vsa" */
+        "movl $str_0023f638, 4(%esp)\n" /* "lprobe_sm_a_dtl.vsa" */
         "leal -0x24fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3693,7 +3702,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x649(%ebp), %eax\n" /* line 63 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f64c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023f64c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24f8(%ebp), %esi\n"
@@ -3701,7 +3710,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x647(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23fc18, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.vsa" */
+        "movl $str_0023fc18, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.vsa" */
         "leal -0x24f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3719,7 +3728,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x645(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23fc34, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023fc34, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24f0(%ebp), %esi\n"
@@ -3727,7 +3736,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x643(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x240214, 4(%esp)\n" /* "lprobe_sm_a_efog.vsa" */
+        "movl $str_00240214, 4(%esp)\n" /* "lprobe_sm_a_efog.vsa" */
         "leal -0x24ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3745,7 +3754,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x641(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24022c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024022c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24e8(%ebp), %esi\n"
@@ -3753,7 +3762,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x63f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2407c8, 4(%esp)\n" /* "lprobe_sm_a_lfog.vsa" */
+        "movl $str_002407c8, 4(%esp)\n" /* "lprobe_sm_a_lfog.vsa" */
         "leal -0x24e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3771,7 +3780,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x63d(%ebp), %eax\n" /* line 63 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f64c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023f64c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24e0(%ebp), %esi\n"
@@ -3779,7 +3788,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x63b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2407e0, 4(%esp)\n" /* "lprobe_sm_a_pfog.vsa" */
+        "movl $str_002407e0, 4(%esp)\n" /* "lprobe_sm_a_pfog.vsa" */
         "leal -0x24dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3797,7 +3806,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x639(%ebp), %eax\n" /* line 69 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2407f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002407f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24d8(%ebp), %esi\n"
@@ -3805,7 +3814,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x637(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x240e40, 4(%esp)\n" /* "lprobe_sm_a_s.vsa" */
+        "movl $str_00240e40, 4(%esp)\n" /* "lprobe_sm_a_s.vsa" */
         "leal -0x24d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3823,7 +3832,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x635(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2407f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002407f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24d0(%ebp), %esi\n"
@@ -3831,7 +3840,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x633(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x240e54, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.vsa" */
+        "movl $str_00240e54, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.vsa" */
         "leal -0x24cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3849,7 +3858,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x631(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x240e6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00240e6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24c8(%ebp), %esi\n"
@@ -3857,7 +3866,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x62f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2415bc, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.vsa" */
+        "movl $str_002415bc, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.vsa" */
         "leal -0x24c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3875,7 +3884,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x62d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2415d8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002415d8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24c0(%ebp), %esi\n"
@@ -3883,7 +3892,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x62b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x241d20, 4(%esp)\n" /* "lprobe_sm_a_s_efog.vsa" */
+        "movl $str_00241d20, 4(%esp)\n" /* "lprobe_sm_a_s_efog.vsa" */
         "leal -0x24bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3901,7 +3910,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x629(%ebp), %eax\n" /* line 78 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x241d38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00241d38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24b8(%ebp), %esi\n"
@@ -3909,7 +3918,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x627(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242458, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.vsa" */
+        "movl $str_00242458, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.vsa" */
         "leal -0x24b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3927,7 +3936,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x625(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x240e6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00240e6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24b0(%ebp), %esi\n"
@@ -3935,7 +3944,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x623(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242470, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.vsa" */
+        "movl $str_00242470, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.vsa" */
         "leal -0x24ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3953,7 +3962,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x621(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x239b5c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00239b5c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24a8(%ebp), %esi\n"
@@ -3961,7 +3970,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x61f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242488, 4(%esp)\n" /* "lprobe_sm_dtl.vsa" */
+        "movl $str_00242488, 4(%esp)\n" /* "lprobe_sm_dtl.vsa" */
         "leal -0x24a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -3979,7 +3988,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x61d(%ebp), %eax\n" /* line 63 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f64c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023f64c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x24a0(%ebp), %esi\n"
@@ -3987,7 +3996,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x61b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24249c, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.vsa" */
+        "movl $str_0024249c, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.vsa" */
         "leal -0x249c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4005,7 +4014,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x619(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23fc34, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023fc34, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2498(%ebp), %esi\n"
@@ -4013,7 +4022,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x617(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2424b4, 4(%esp)\n" /* "lprobe_sm_efog.vsa" */
+        "movl $str_002424b4, 4(%esp)\n" /* "lprobe_sm_efog.vsa" */
         "leal -0x2494(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4031,7 +4040,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x615(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24022c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024022c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2490(%ebp), %esi\n"
@@ -4039,7 +4048,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x613(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2424c8, 4(%esp)\n" /* "lprobe_sm_lfog.vsa" */
+        "movl $str_002424c8, 4(%esp)\n" /* "lprobe_sm_lfog.vsa" */
         "leal -0x248c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4057,7 +4066,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x611(%ebp), %eax\n" /* line 63 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x23f64c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0023f64c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2488(%ebp), %esi\n"
@@ -4065,7 +4074,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x60f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2424dc, 4(%esp)\n" /* "lprobe_sm_pfog.vsa" */
+        "movl $str_002424dc, 4(%esp)\n" /* "lprobe_sm_pfog.vsa" */
         "leal -0x2484(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4083,7 +4092,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x60d(%ebp), %eax\n" /* line 69 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2407f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002407f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2480(%ebp), %esi\n"
@@ -4091,7 +4100,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x60b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2424f0, 4(%esp)\n" /* "lprobe_sm_s.vsa" */
+        "movl $str_002424f0, 4(%esp)\n" /* "lprobe_sm_s.vsa" */
         "leal -0x247c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4109,7 +4118,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x609(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2407f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002407f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2478(%ebp), %esi\n"
@@ -4117,7 +4126,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x607(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242500, 4(%esp)\n" /* "lprobe_sm_s_dtl.vsa" */
+        "movl $str_00242500, 4(%esp)\n" /* "lprobe_sm_s_dtl.vsa" */
         "leal -0x2474(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4135,7 +4144,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x605(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x240e6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00240e6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2470(%ebp), %esi\n"
@@ -4143,7 +4152,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x603(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242514, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.vsa" */
+        "movl $str_00242514, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.vsa" */
         "leal -0x246c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4161,7 +4170,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x601(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2415d8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002415d8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2468(%ebp), %esi\n"
@@ -4169,7 +4178,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5ff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242530, 4(%esp)\n" /* "lprobe_sm_s_efog.vsa" */
+        "movl $str_00242530, 4(%esp)\n" /* "lprobe_sm_s_efog.vsa" */
         "leal -0x2464(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4187,7 +4196,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5fd(%ebp), %eax\n" /* line 78 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x241d38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00241d38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2460(%ebp), %esi\n"
@@ -4195,7 +4204,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5fb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242548, 4(%esp)\n" /* "lprobe_sm_s_lfog.vsa" */
+        "movl $str_00242548, 4(%esp)\n" /* "lprobe_sm_s_lfog.vsa" */
         "leal -0x245c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4213,7 +4222,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5f9(%ebp), %eax\n" /* line 80 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x240e6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00240e6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2458(%ebp), %esi\n"
@@ -4221,7 +4230,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5f7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242560, 4(%esp)\n" /* "lprobe_sm_s_pfog.vsa" */
+        "movl $str_00242560, 4(%esp)\n" /* "lprobe_sm_s_pfog.vsa" */
         "leal -0x2454(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4239,7 +4248,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5f5(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x232a00, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00232a00, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2450(%ebp), %esi\n"
@@ -4247,7 +4256,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5f3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242578, 4(%esp)\n" /* "lprobe_s_dtl.vsa" */
+        "movl $str_00242578, 4(%esp)\n" /* "lprobe_s_dtl.vsa" */
         "leal -0x244c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4265,7 +4274,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5f1(%ebp), %eax\n" /* line 83 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2330a4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002330a4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2448(%ebp), %esi\n"
@@ -4273,7 +4282,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5ef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24258c, 4(%esp)\n" /* "lprobe_s_dtl_pfog.vsa" */
+        "movl $str_0024258c, 4(%esp)\n" /* "lprobe_s_dtl_pfog.vsa" */
         "leal -0x2444(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4291,7 +4300,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ed(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233848, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00233848, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2440(%ebp), %esi\n"
@@ -4299,7 +4308,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5eb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2425a4, 4(%esp)\n" /* "lprobe_s_efog.vsa" */
+        "movl $str_002425a4, 4(%esp)\n" /* "lprobe_s_efog.vsa" */
         "leal -0x243c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4317,7 +4326,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5e9(%ebp), %eax\n" /* line 81 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x233fe0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00233fe0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2438(%ebp), %esi\n"
@@ -4325,7 +4334,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5e7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2425b8, 4(%esp)\n" /* "lprobe_s_lfog.vsa" */
+        "movl $str_002425b8, 4(%esp)\n" /* "lprobe_s_lfog.vsa" */
         "leal -0x2434(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4343,7 +4352,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5e5(%ebp), %eax\n" /* line 83 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2330a4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002330a4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2430(%ebp), %esi\n"
@@ -4351,7 +4360,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5e3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2425cc, 4(%esp)\n" /* "lprobe_s_pfog.vsa" */
+        "movl $str_002425cc, 4(%esp)\n" /* "lprobe_s_pfog.vsa" */
         "leal -0x242c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4369,7 +4378,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5e1(%ebp), %eax\n" /* line 74 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2425e0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002425e0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2428(%ebp), %esi\n"
@@ -4377,7 +4386,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5df(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242c98, 4(%esp)\n" /* "lprobe_s_scroll.vsa" */
+        "movl $str_00242c98, 4(%esp)\n" /* "lprobe_s_scroll.vsa" */
         "leal -0x2424(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4395,7 +4404,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5dd(%ebp), %eax\n" /* line 85 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x242cac, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00242cac, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2420(%ebp), %esi\n"
@@ -4403,7 +4412,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5db(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x243464, 4(%esp)\n" /* "lprobe_s_scroll_efog.vsa" */
+        "movl $str_00243464, 4(%esp)\n" /* "lprobe_s_scroll_efog.vsa" */
         "leal -0x241c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4421,7 +4430,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5d9(%ebp), %eax\n" /* line 83 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x243480, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00243480, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2418(%ebp), %esi\n"
@@ -4429,7 +4438,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5d7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x243c10, 4(%esp)\n" /* "lprobe_s_scroll_lfog.vsa" */
+        "movl $str_00243c10, 4(%esp)\n" /* "lprobe_s_scroll_lfog.vsa" */
         "leal -0x2414(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4447,7 +4456,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5d5(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x243c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00243c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2410(%ebp), %esi\n"
@@ -4455,7 +4464,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5d3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2441b8, 4(%esp)\n" /* "l_point.vsa" */
+        "movl $str_002441b8, 4(%esp)\n" /* "l_point.vsa" */
         "leal -0x240c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4473,7 +4482,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5d1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x243c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00243c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2408(%ebp), %esi\n"
@@ -4481,7 +4490,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5cf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2441c4, 4(%esp)\n" /* "l_point_blend.vsa" */
+        "movl $str_002441c4, 4(%esp)\n" /* "l_point_blend.vsa" */
         "leal -0x2404(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4499,7 +4508,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5cd(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x243c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00243c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2400(%ebp), %esi\n"
@@ -4507,7 +4516,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5cb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2441d8, 4(%esp)\n" /* "l_point_blend_dtl.vsa" */
+        "movl $str_002441d8, 4(%esp)\n" /* "l_point_blend_dtl.vsa" */
         "leal -0x23fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4525,7 +4534,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5c9(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2441f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002441f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23f8(%ebp), %esi\n"
@@ -4533,7 +4542,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5c7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x244884, 4(%esp)\n" /* "l_point_blend_dtl_pfog.vsa" */
+        "movl $str_00244884, 4(%esp)\n" /* "l_point_blend_dtl_pfog.vsa" */
         "leal -0x23f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4551,7 +4560,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5c5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2448a0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002448a0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23f0(%ebp), %esi\n"
@@ -4559,7 +4568,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5c3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x244f2c, 4(%esp)\n" /* "l_point_blend_efog.vsa" */
+        "movl $str_00244f2c, 4(%esp)\n" /* "l_point_blend_efog.vsa" */
         "leal -0x23ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4577,7 +4586,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5c1(%ebp), %eax\n" /* line 70 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x244f44, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00244f44, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23e8(%ebp), %esi\n"
@@ -4585,7 +4594,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5bf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2455a8, 4(%esp)\n" /* "l_point_blend_lfog.vsa" */
+        "movl $str_002455a8, 4(%esp)\n" /* "l_point_blend_lfog.vsa" */
         "leal -0x23e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4603,7 +4612,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5bd(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2441f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002441f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23e0(%ebp), %esi\n"
@@ -4611,7 +4620,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5bb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2455c0, 4(%esp)\n" /* "l_point_blend_pfog.vsa" */
+        "movl $str_002455c0, 4(%esp)\n" /* "l_point_blend_pfog.vsa" */
         "leal -0x23dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4629,7 +4638,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5b9(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x243c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00243c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23d8(%ebp), %esi\n"
@@ -4637,7 +4646,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5b7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2455d8, 4(%esp)\n" /* "l_point_dtl.vsa" */
+        "movl $str_002455d8, 4(%esp)\n" /* "l_point_dtl.vsa" */
         "leal -0x23d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4655,7 +4664,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5b5(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2441f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002441f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23d0(%ebp), %esi\n"
@@ -4663,7 +4672,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5b3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2455e8, 4(%esp)\n" /* "l_point_dtl_pfog.vsa" */
+        "movl $str_002455e8, 4(%esp)\n" /* "l_point_dtl_pfog.vsa" */
         "leal -0x23cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4681,7 +4690,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5b1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2448a0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002448a0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23c8(%ebp), %esi\n"
@@ -4689,7 +4698,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5af(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x245600, 4(%esp)\n" /* "l_point_efog.vsa" */
+        "movl $str_00245600, 4(%esp)\n" /* "l_point_efog.vsa" */
         "leal -0x23c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4707,7 +4716,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ad(%ebp), %eax\n" /* line 148 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x245614, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00245614, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23c0(%ebp), %esi\n" /* size */
@@ -4715,7 +4724,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5ab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2464ac, 4(%esp)\n" /* "l_point_flag.vsa" */
+        "movl $str_002464ac, 4(%esp)\n" /* "l_point_flag.vsa" */
         "leal -0x23bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4733,7 +4742,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5a9(%ebp), %eax\n" /* line 159 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2464c0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002464c0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23b8(%ebp), %esi\n" /* size */
@@ -4741,7 +4750,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5a7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x247460, 4(%esp)\n" /* "l_point_flag_efog.vsa" */
+        "movl $str_00247460, 4(%esp)\n" /* "l_point_flag_efog.vsa" */
         "leal -0x23b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4759,7 +4768,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5a5(%ebp), %eax\n" /* line 157 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x247478, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00247478, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23b0(%ebp), %esi\n" /* size */
@@ -4767,7 +4776,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5a3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2483f0, 4(%esp)\n" /* "l_point_flag_lfog.vsa" */
+        "movl $str_002483f0, 4(%esp)\n" /* "l_point_flag_lfog.vsa" */
         "leal -0x23ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4785,7 +4794,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5a1(%ebp), %eax\n" /* line 159 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x248408, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00248408, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23a8(%ebp), %esi\n" /* size */
@@ -4793,7 +4802,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x59f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2493b0, 4(%esp)\n" /* "l_point_flag_pfog.vsa" */
+        "movl $str_002493b0, 4(%esp)\n" /* "l_point_flag_pfog.vsa" */
         "leal -0x23a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4811,7 +4820,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x59d(%ebp), %eax\n" /* line 70 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x244f44, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00244f44, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x23a0(%ebp), %esi\n"
@@ -4819,7 +4828,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x59b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2493c8, 4(%esp)\n" /* "l_point_lfog.vsa" */
+        "movl $str_002493c8, 4(%esp)\n" /* "l_point_lfog.vsa" */
         "leal -0x239c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4837,7 +4846,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x599(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2441f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002441f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2398(%ebp), %esi\n"
@@ -4845,7 +4854,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x597(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2493dc, 4(%esp)\n" /* "l_point_pfog.vsa" */
+        "movl $str_002493dc, 4(%esp)\n" /* "l_point_pfog.vsa" */
         "leal -0x2394(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4863,7 +4872,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x595(%ebp), %eax\n" /* line 25 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2493f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002493f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2390(%ebp), %esi\n"
@@ -4871,7 +4880,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x593(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249630, 4(%esp)\n" /* "mul.vsa" */
+        "movl $str_00249630, 4(%esp)\n" /* "mul.vsa" */
         "leal -0x238c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4889,7 +4898,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x591(%ebp), %eax\n" /* line 42 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249638, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00249638, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2388(%ebp), %esi\n"
@@ -4897,7 +4906,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x58f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249a0c, 4(%esp)\n" /* "mul_efog.vsa" */
+        "movl $str_00249a0c, 4(%esp)\n" /* "mul_efog.vsa" */
         "leal -0x2384(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4915,7 +4924,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x58d(%ebp), %eax\n" /* line 40 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249a1c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00249a1c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2380(%ebp), %esi\n"
@@ -4923,7 +4932,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x58b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249dc8, 4(%esp)\n" /* "mul_lfog.vsa" */
+        "movl $str_00249dc8, 4(%esp)\n" /* "mul_lfog.vsa" */
         "leal -0x237c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4941,7 +4950,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x589(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249a1c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00249a1c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2378(%ebp), %esi\n"
@@ -4949,7 +4958,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x587(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249dd8, 4(%esp)\n" /* "mul_pfog.vsa" */
+        "movl $str_00249dd8, 4(%esp)\n" /* "mul_pfog.vsa" */
         "leal -0x2374(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4967,7 +4976,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x585(%ebp), %eax\n" /* line 15 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249de8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00249de8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2370(%ebp), %esi\n"
@@ -4975,7 +4984,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x583(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249f24, 4(%esp)\n" /* "null.vsa" */
+        "movl $str_00249f24, 4(%esp)\n" /* "null.vsa" */
         "leal -0x236c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -4993,7 +5002,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x581(%ebp), %eax\n" /* line 30 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x249f30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00249f30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2368(%ebp), %esi\n"
@@ -5001,7 +5010,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x57f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24a204, 4(%esp)\n" /* "objective_base.vsa" */
+        "movl $str_0024a204, 4(%esp)\n" /* "objective_base.vsa" */
         "leal -0x2364(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5019,7 +5028,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x57d(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24a218, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024a218, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2360(%ebp), %esi\n"
@@ -5027,7 +5036,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x57b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24a63c, 4(%esp)\n" /* "particle_cloud.vsa" */
+        "movl $str_0024a63c, 4(%esp)\n" /* "particle_cloud.vsa" */
         "leal -0x235c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5045,7 +5054,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x579(%ebp), %eax\n" /* line 50 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24a650, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024a650, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2358(%ebp), %esi\n"
@@ -5053,7 +5062,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x577(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24ab14, 4(%esp)\n" /* "particle_cloud_outdoor.vsa" */
+        "movl $str_0024ab14, 4(%esp)\n" /* "particle_cloud_outdoor.vsa" */
         "leal -0x2354(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5071,7 +5080,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x575(%ebp), %eax\n" /* line 37 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24ab30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024ab30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2350(%ebp), %esi\n"
@@ -5079,7 +5088,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x573(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24ae88, 4(%esp)\n" /* "shadowcookie_blur.vsa" */
+        "movl $str_0024ae88, 4(%esp)\n" /* "shadowcookie_blur.vsa" */
         "leal -0x234c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5097,7 +5106,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x571(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24aea0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024aea0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2348(%ebp), %esi\n"
@@ -5105,7 +5114,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x56f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b0c8, 4(%esp)\n" /* "shadowcookie_caster.vsa" */
+        "movl $str_0024b0c8, 4(%esp)\n" /* "shadowcookie_caster.vsa" */
         "leal -0x2344(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5123,7 +5132,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x56d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x228f48, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00228f48, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2340(%ebp), %esi\n"
@@ -5131,7 +5140,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x56b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b0e0, 4(%esp)\n" /* "shadowcookie_display.vsa" */
+        "movl $str_0024b0e0, 4(%esp)\n" /* "shadowcookie_display.vsa" */
         "leal -0x233c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5149,7 +5158,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x569(%ebp), %eax\n" /* line 25 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b0fc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024b0fc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2338(%ebp), %esi\n"
@@ -5157,7 +5166,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x567(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b354, 4(%esp)\n" /* "shadowcookie_receiver.vsa" */
+        "movl $str_0024b354, 4(%esp)\n" /* "shadowcookie_receiver.vsa" */
         "leal -0x2334(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5175,7 +5184,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x565(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2493f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002493f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2330(%ebp), %esi\n"
@@ -5183,7 +5192,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x563(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b370, 4(%esp)\n" /* "shell_shock.vsa" */
+        "movl $str_0024b370, 4(%esp)\n" /* "shell_shock.vsa" */
         "leal -0x232c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5201,7 +5210,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x561(%ebp), %eax\n" /* line 24 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b380, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024b380, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2328(%ebp), %esi\n"
@@ -5209,7 +5218,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x55f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b5ac, 4(%esp)\n" /* "sky.vsa" */
+        "movl $str_0024b5ac, 4(%esp)\n" /* "sky.vsa" */
         "leal -0x2324(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5227,7 +5236,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x55d(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x228f48, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00228f48, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2320(%ebp), %esi\n"
@@ -5235,7 +5244,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x55b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b5b4, 4(%esp)\n" /* "textured_simple.vsa" */
+        "movl $str_0024b5b4, 4(%esp)\n" /* "textured_simple.vsa" */
         "leal -0x231c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5253,7 +5262,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x559(%ebp), %eax\n" /* line 19 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b5c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024b5c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2318(%ebp), %esi\n"
@@ -5261,7 +5270,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x557(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b780, 4(%esp)\n" /* "transform_only.vsa" */
+        "movl $str_0024b780, 4(%esp)\n" /* "transform_only.vsa" */
         "leal -0x2314(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5279,7 +5288,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x555(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b794, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024b794, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2310(%ebp), %esi\n"
@@ -5287,7 +5296,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x553(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24bba0, 4(%esp)\n" /* "vertcol_eyeofs.vsa" */
+        "movl $str_0024bba0, 4(%esp)\n" /* "vertcol_eyeofs.vsa" */
         "leal -0x230c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5305,7 +5314,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x551(%ebp), %eax\n" /* line 55 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24bbb4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024bbb4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2308(%ebp), %esi\n"
@@ -5313,7 +5322,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x54f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24c0c0, 4(%esp)\n" /* "vertcol_eyeofs_efog.vsa" */
+        "movl $str_0024c0c0, 4(%esp)\n" /* "vertcol_eyeofs_efog.vsa" */
         "leal -0x2304(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5331,7 +5340,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x54d(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24c0d8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024c0d8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2300(%ebp), %esi\n"
@@ -5339,7 +5348,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x54b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24c5bc, 4(%esp)\n" /* "vertcol_eyeofs_lfog.vsa" */
+        "movl $str_0024c5bc, 4(%esp)\n" /* "vertcol_eyeofs_lfog.vsa" */
         "leal -0x22fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5357,7 +5366,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x549(%ebp), %eax\n" /* line 25 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2493f0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002493f0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22f8(%ebp), %esi\n"
@@ -5365,7 +5374,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x547(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24c5d4, 4(%esp)\n" /* "vertcol_simple.vsa" */
+        "movl $str_0024c5d4, 4(%esp)\n" /* "vertcol_simple.vsa" */
         "leal -0x22f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5383,7 +5392,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x545(%ebp), %eax\n" /* line 37 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24c5e8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024c5e8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22f0(%ebp), %esi\n"
@@ -5391,7 +5400,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x543(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24c944, 4(%esp)\n" /* "vertcol_simple_efog.vsa" */
+        "movl $str_0024c944, 4(%esp)\n" /* "vertcol_simple_efog.vsa" */
         "leal -0x22ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5409,7 +5418,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x541(%ebp), %eax\n" /* line 34 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24c95c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024c95c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22e8(%ebp), %esi\n"
@@ -5417,7 +5426,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x53f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24cc78, 4(%esp)\n" /* "vertcol_simple_lfog.vsa" */
+        "movl $str_0024cc78, 4(%esp)\n" /* "vertcol_simple_lfog.vsa" */
         "leal -0x22e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5435,7 +5444,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x53d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24cc90, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024cc90, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22e0(%ebp), %esi\n"
@@ -5443,7 +5452,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x53b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24cfac, 4(%esp)\n" /* "vertcol_simple_pfog.vsa" */
+        "movl $str_0024cfac, 4(%esp)\n" /* "vertcol_simple_pfog.vsa" */
         "leal -0x22dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5461,7 +5470,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x539(%ebp), %eax\n" /* line 27 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24cfc4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024cfc4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22d8(%ebp), %esi\n"
@@ -5469,7 +5478,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x537(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24d23c, 4(%esp)\n" /* "vertcol_simple_scroll.vsa" */
+        "movl $str_0024d23c, 4(%esp)\n" /* "vertcol_simple_scroll.vsa" */
         "leal -0x22d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5487,7 +5496,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x535(%ebp), %eax\n" /* line 21 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24d258, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024d258, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22d0(%ebp), %esi\n"
@@ -5495,7 +5504,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x533(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24d43c, 4(%esp)\n" /* "vertcol_untextured.vsa" */
+        "movl $str_0024d43c, 4(%esp)\n" /* "vertcol_untextured.vsa" */
         "leal -0x22cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5513,7 +5522,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x531(%ebp), %eax\n" /* line 33 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24d454, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024d454, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22c8(%ebp), %esi\n"
@@ -5521,7 +5530,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x52f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24d760, 4(%esp)\n" /* "water_l_sun.vsa" */
+        "movl $str_0024d760, 4(%esp)\n" /* "water_l_sun.vsa" */
         "leal -0x22c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5539,7 +5548,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x52d(%ebp), %eax\n" /* line 45 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24d770, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024d770, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22c0(%ebp), %esi\n"
@@ -5547,7 +5556,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x52b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24db98, 4(%esp)\n" /* "water_l_sun_efog.vsa" */
+        "movl $str_0024db98, 4(%esp)\n" /* "water_l_sun_efog.vsa" */
         "leal -0x22bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5565,7 +5574,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x529(%ebp), %eax\n" /* line 42 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24dbb0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024dbb0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22b8(%ebp), %esi\n"
@@ -5573,7 +5582,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x527(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24df94, 4(%esp)\n" /* "water_l_sun_lfog.vsa" */
+        "movl $str_0024df94, 4(%esp)\n" /* "water_l_sun_lfog.vsa" */
         "leal -0x22b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5591,7 +5600,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x525(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24dfac, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024dfac, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22b0(%ebp), %esi\n"
@@ -5599,7 +5608,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x523(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24e3c0, 4(%esp)\n" /* "water_l_sun_pfog.vsa" */
+        "movl $str_0024e3c0, 4(%esp)\n" /* "water_l_sun_pfog.vsa" */
         "leal -0x22ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5617,7 +5626,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x521(%ebp), %eax\n" /* line 43 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24e3d8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024e3d8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22a8(%ebp), %esi\n"
@@ -5625,7 +5634,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x51f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24e7cc, 4(%esp)\n" /* "zfeather.vsa" */
+        "movl $str_0024e7cc, 4(%esp)\n" /* "zfeather.vsa" */
         "leal -0x22a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5643,7 +5652,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x51d(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24e7dc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024e7dc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x22a0(%ebp), %esi\n"
@@ -5651,7 +5660,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x51b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24ecd4, 4(%esp)\n" /* "zfeather_efog.vsa" */
+        "movl $str_0024ecd4, 4(%esp)\n" /* "zfeather_efog.vsa" */
         "leal -0x229c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5669,7 +5678,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x519(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24ece8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024ece8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2298(%ebp), %esi\n"
@@ -5677,7 +5686,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x517(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24f1b8, 4(%esp)\n" /* "zfeather_lfog.vsa" */
+        "movl $str_0024f1b8, 4(%esp)\n" /* "zfeather_lfog.vsa" */
         "leal -0x2294(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5695,7 +5704,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x515(%ebp), %eax\n" /* line 49 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24f1cc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024f1cc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2290(%ebp), %esi\n"
@@ -5703,7 +5712,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x513(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24f660, 4(%esp)\n" /* "zfeather_outdoor.vsa" */
+        "movl $str_0024f660, 4(%esp)\n" /* "zfeather_outdoor.vsa" */
         "leal -0x228c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5721,7 +5730,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x511(%ebp), %eax\n" /* line 60 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24f678, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024f678, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2288(%ebp), %esi\n"
@@ -5729,7 +5738,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x50f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24fc0c, 4(%esp)\n" /* "zfeather_outdoor_efog.vsa" */
+        "movl $str_0024fc0c, 4(%esp)\n" /* "zfeather_outdoor_efog.vsa" */
         "leal -0x2284(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5747,7 +5756,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x50d(%ebp), %eax\n" /* line 58 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24fc28, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024fc28, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2280(%ebp), %esi\n"
@@ -5755,7 +5764,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x50b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250194, 4(%esp)\n" /* "zfeather_outdoor_lfog.vsa" */
+        "movl $str_00250194, 4(%esp)\n" /* "zfeather_outdoor_lfog.vsa" */
         "leal -0x227c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5773,7 +5782,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x509(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2501b0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002501b0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2278(%ebp), %esi\n"
@@ -5781,7 +5790,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x507(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25071c, 4(%esp)\n" /* "zfeather_outdoor_pfog.vsa" */
+        "movl $str_0025071c, 4(%esp)\n" /* "zfeather_outdoor_pfog.vsa" */
         "leal -0x2274(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5799,7 +5808,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x505(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250738, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00250738, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2270(%ebp), %esi\n"
@@ -5807,7 +5816,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x503(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250c08, 4(%esp)\n" /* "zfeather_pfog.vsa" */
+        "movl $str_00250c08, 4(%esp)\n" /* "zfeather_pfog.vsa" */
         "leal -0x226c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5825,7 +5834,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x501(%ebp), %eax\n" /* line 19 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x24b5c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0024b5c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2268(%ebp), %esi\n"
@@ -5833,7 +5842,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4ff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250c1c, 4(%esp)\n" /* "zprepass.vsa" */
+        "movl $str_00250c1c, 4(%esp)\n" /* "zprepass.vsa" */
         "leal -0x2264(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5851,7 +5860,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4fd(%ebp), %eax\n" /* line 21 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00250c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2260(%ebp), %esi\n"
@@ -5859,7 +5868,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4fb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250e18, 4(%esp)\n" /* "color_channel_mixer.vsn" */
+        "movl $str_00250e18, 4(%esp)\n" /* "color_channel_mixer.vsn" */
         "leal -0x225c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5877,7 +5886,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4f9(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250e30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00250e30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2258(%ebp), %esi\n"
@@ -5885,7 +5894,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4f7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x251210, 4(%esp)\n" /* "debug_normals.vsn" */
+        "movl $str_00251210, 4(%esp)\n" /* "debug_normals.vsn" */
         "leal -0x2254(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5903,7 +5912,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4f5(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x251224, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00251224, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2250(%ebp), %esi\n"
@@ -5911,7 +5920,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4f3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2517a4, 4(%esp)\n" /* "distortion.vsn" */
+        "movl $str_002517a4, 4(%esp)\n" /* "distortion.vsn" */
         "leal -0x224c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5929,7 +5938,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4f1(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2517b4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002517b4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2248(%ebp), %esi\n"
@@ -5937,7 +5946,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4ef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x251d20, 4(%esp)\n" /* "distortion_floatz.vsn" */
+        "movl $str_00251d20, 4(%esp)\n" /* "distortion_floatz.vsn" */
         "leal -0x2244(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5955,7 +5964,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ed(%ebp), %eax\n" /* line 31 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x251d38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00251d38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2240(%ebp), %esi\n"
@@ -5963,7 +5972,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4eb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252010, 4(%esp)\n" /* "fakelight_normal.vsn" */
+        "movl $str_00252010, 4(%esp)\n" /* "fakelight_normal.vsn" */
         "leal -0x223c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -5981,7 +5990,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4e9(%ebp), %eax\n" /* line 32 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252028, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00252028, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2238(%ebp), %esi\n"
@@ -5989,7 +5998,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4e7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252324, 4(%esp)\n" /* "fakelight_view.vsn" */
+        "movl $str_00252324, 4(%esp)\n" /* "fakelight_view.vsn" */
         "leal -0x2234(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6007,7 +6016,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4e5(%ebp), %eax\n" /* line 24 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252338, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00252338, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2230(%ebp), %esi\n"
@@ -6015,7 +6024,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4e3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252578, 4(%esp)\n" /* "filter_symmetric_1.vsn" */
+        "movl $str_00252578, 4(%esp)\n" /* "filter_symmetric_1.vsn" */
         "leal -0x222c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6033,7 +6042,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4e1(%ebp), %eax\n" /* line 28 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252590, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00252590, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2228(%ebp), %esi\n"
@@ -6041,7 +6050,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4df(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252850, 4(%esp)\n" /* "filter_symmetric_2.vsn" */
+        "movl $str_00252850, 4(%esp)\n" /* "filter_symmetric_2.vsn" */
         "leal -0x2224(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6059,7 +6068,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4dd(%ebp), %eax\n" /* line 32 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252868, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00252868, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2220(%ebp), %esi\n"
@@ -6067,7 +6076,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4db(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252b9c, 4(%esp)\n" /* "filter_symmetric_3.vsn" */
+        "movl $str_00252b9c, 4(%esp)\n" /* "filter_symmetric_3.vsn" */
         "leal -0x221c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6085,7 +6094,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4d9(%ebp), %eax\n" /* line 36 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252bb4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00252bb4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2218(%ebp), %esi\n"
@@ -6093,7 +6102,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4d7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252f58, 4(%esp)\n" /* "filter_symmetric_4.vsn" */
+        "movl $str_00252f58, 4(%esp)\n" /* "filter_symmetric_4.vsn" */
         "leal -0x2214(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6111,7 +6120,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4d5(%ebp), %eax\n" /* line 35 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x252f70, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00252f70, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2210(%ebp), %esi\n"
@@ -6119,7 +6128,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4d3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x253314, 4(%esp)\n" /* "filter_symmetric_5.vsn" */
+        "movl $str_00253314, 4(%esp)\n" /* "filter_symmetric_5.vsn" */
         "leal -0x220c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6137,7 +6146,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4d1(%ebp), %eax\n" /* line 38 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25332c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025332c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2208(%ebp), %esi\n"
@@ -6145,7 +6154,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4cf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x253728, 4(%esp)\n" /* "filter_symmetric_6.vsn" */
+        "movl $str_00253728, 4(%esp)\n" /* "filter_symmetric_6.vsn" */
         "leal -0x2204(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6163,7 +6172,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4cd(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x253740, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00253740, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2200(%ebp), %esi\n"
@@ -6171,7 +6180,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4cb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x253b98, 4(%esp)\n" /* "filter_symmetric_7.vsn" */
+        "movl $str_00253b98, 4(%esp)\n" /* "filter_symmetric_7.vsn" */
         "leal -0x21fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6189,7 +6198,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4c9(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x253bb0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00253bb0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21f8(%ebp), %esi\n"
@@ -6197,7 +6206,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4c7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254060, 4(%esp)\n" /* "filter_symmetric_8.vsn" */
+        "movl $str_00254060, 4(%esp)\n" /* "filter_symmetric_8.vsn" */
         "leal -0x21f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6215,7 +6224,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4c5(%ebp), %eax\n" /* line 21 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254078, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00254078, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21f0(%ebp), %esi\n"
@@ -6223,7 +6232,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4c3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254270, 4(%esp)\n" /* "floatz_build.vsn" */
+        "movl $str_00254270, 4(%esp)\n" /* "floatz_build.vsn" */
         "leal -0x21ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6241,7 +6250,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4c1(%ebp), %eax\n" /* line 25 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254284, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00254284, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21e8(%ebp), %esi\n"
@@ -6249,7 +6258,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4bf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2544d4, 4(%esp)\n" /* "floatz_build_atest.vsn" */
+        "movl $str_002544d4, 4(%esp)\n" /* "floatz_build_atest.vsn" */
         "leal -0x21e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6267,7 +6276,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4bd(%ebp), %eax\n" /* line 27 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2544ec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002544ec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21e0(%ebp), %esi\n"
@@ -6275,7 +6284,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4bb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254774, 4(%esp)\n" /* "floatz_build_atest_scroll.vsn" */
+        "movl $str_00254774, 4(%esp)\n" /* "floatz_build_atest_scroll.vsn" */
         "leal -0x21dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6293,7 +6302,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4b9(%ebp), %eax\n" /* line 21 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00250c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21d8(%ebp), %esi\n"
@@ -6301,7 +6310,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4b7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254794, 4(%esp)\n" /* "glow_apply_bloom.vsn" */
+        "movl $str_00254794, 4(%esp)\n" /* "glow_apply_bloom.vsn" */
         "leal -0x21d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6319,7 +6328,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4b5(%ebp), %eax\n" /* line 30 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2547ac, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002547ac, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21d0(%ebp), %esi\n"
@@ -6327,7 +6336,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4b3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254a88, 4(%esp)\n" /* "glow_apply_sky_bleed.vsn" */
+        "movl $str_00254a88, 4(%esp)\n" /* "glow_apply_sky_bleed.vsn" */
         "leal -0x21cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6345,7 +6354,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4b1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254aa4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00254aa4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21c8(%ebp), %esi\n"
@@ -6353,7 +6362,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4af(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254da8, 4(%esp)\n" /* "glow_setup.vsn" */
+        "movl $str_00254da8, 4(%esp)\n" /* "glow_setup.vsn" */
         "leal -0x21c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6371,7 +6380,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ad(%ebp), %eax\n" /* line 34 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x254db8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00254db8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21c0(%ebp), %esi\n"
@@ -6379,7 +6388,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4ab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2550d8, 4(%esp)\n" /* "grain_overlay.vsn" */
+        "movl $str_002550d8, 4(%esp)\n" /* "grain_overlay.vsn" */
         "leal -0x21bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6397,7 +6406,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4a9(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2550ec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002550ec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21b8(%ebp), %esi\n"
@@ -6405,7 +6414,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4a7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2555d0, 4(%esp)\n" /* "lmap.vsn" */
+        "movl $str_002555d0, 4(%esp)\n" /* "lmap.vsn" */
         "leal -0x21b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6423,7 +6432,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4a5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2550ec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002550ec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21b0(%ebp), %esi\n"
@@ -6431,7 +6440,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4a3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2555dc, 4(%esp)\n" /* "lmap_a.vsn" */
+        "movl $str_002555dc, 4(%esp)\n" /* "lmap_a.vsn" */
         "leal -0x21ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6449,7 +6458,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4a1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2550ec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002550ec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21a8(%ebp), %esi\n"
@@ -6457,7 +6466,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x49f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2555e8, 4(%esp)\n" /* "lmap_a_dtl.vsn" */
+        "movl $str_002555e8, 4(%esp)\n" /* "lmap_a_dtl.vsn" */
         "leal -0x21a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6475,7 +6484,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x49d(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2555f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002555f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x21a0(%ebp), %esi\n"
@@ -6483,7 +6492,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x49b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x255bb8, 4(%esp)\n" /* "lmap_a_dtl_pfog.vsn" */
+        "movl $str_00255bb8, 4(%esp)\n" /* "lmap_a_dtl_pfog.vsn" */
         "leal -0x219c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6501,7 +6510,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x499(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x255bcc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00255bcc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2198(%ebp), %esi\n"
@@ -6509,7 +6518,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x497(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2561cc, 4(%esp)\n" /* "lmap_a_efog.vsn" */
+        "movl $str_002561cc, 4(%esp)\n" /* "lmap_a_efog.vsn" */
         "leal -0x2194(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6527,7 +6536,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x495(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2561dc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002561dc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2190(%ebp), %esi\n"
@@ -6535,7 +6544,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x493(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x256798, 4(%esp)\n" /* "lmap_a_lfog.vsn" */
+        "movl $str_00256798, 4(%esp)\n" /* "lmap_a_lfog.vsn" */
         "leal -0x218c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6553,7 +6562,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x491(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2555f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002555f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2188(%ebp), %esi\n"
@@ -6561,7 +6570,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x48f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2567a8, 4(%esp)\n" /* "lmap_a_pfog.vsn" */
+        "movl $str_002567a8, 4(%esp)\n" /* "lmap_a_pfog.vsn" */
         "leal -0x2184(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6579,7 +6588,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x48d(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2567b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002567b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2180(%ebp), %esi\n"
@@ -6587,7 +6596,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x48b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x256e14, 4(%esp)\n" /* "lmap_a_s.vsn" */
+        "movl $str_00256e14, 4(%esp)\n" /* "lmap_a_s.vsn" */
         "leal -0x217c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6605,7 +6614,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x489(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2567b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002567b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2178(%ebp), %esi\n"
@@ -6613,7 +6622,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x487(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x256e24, 4(%esp)\n" /* "lmap_a_s_dtl.vsn" */
+        "movl $str_00256e24, 4(%esp)\n" /* "lmap_a_s_dtl.vsn" */
         "leal -0x2174(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6631,7 +6640,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x485(%ebp), %eax\n" /* line 77 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x256e38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00256e38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2170(%ebp), %esi\n"
@@ -6639,7 +6648,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x483(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25756c, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.vsn" */
+        "movl $str_0025756c, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.vsn" */
         "leal -0x216c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6657,7 +6666,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x481(%ebp), %eax\n" /* line 79 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x257584, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00257584, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2168(%ebp), %esi\n"
@@ -6665,7 +6674,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x47f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x257ce0, 4(%esp)\n" /* "lmap_a_s_efog.vsn" */
+        "movl $str_00257ce0, 4(%esp)\n" /* "lmap_a_s_efog.vsn" */
         "leal -0x2164(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6683,7 +6692,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x47d(%ebp), %eax\n" /* line 77 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x257cf4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00257cf4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2160(%ebp), %esi\n"
@@ -6691,7 +6700,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x47b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258428, 4(%esp)\n" /* "lmap_a_s_lfog.vsn" */
+        "movl $str_00258428, 4(%esp)\n" /* "lmap_a_s_lfog.vsn" */
         "leal -0x215c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6709,7 +6718,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x479(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x256e38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00256e38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2158(%ebp), %esi\n"
@@ -6717,7 +6726,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x477(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25843c, 4(%esp)\n" /* "lmap_a_s_pfog.vsn" */
+        "movl $str_0025843c, 4(%esp)\n" /* "lmap_a_s_pfog.vsn" */
         "leal -0x2154(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6735,7 +6744,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x475(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2550ec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002550ec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2150(%ebp), %esi\n"
@@ -6743,7 +6752,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x473(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258450, 4(%esp)\n" /* "lmap_dtl.vsn" */
+        "movl $str_00258450, 4(%esp)\n" /* "lmap_dtl.vsn" */
         "leal -0x214c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6761,7 +6770,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x471(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2555f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002555f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2148(%ebp), %esi\n"
@@ -6769,7 +6778,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x46f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258460, 4(%esp)\n" /* "lmap_dtl_pfog.vsn" */
+        "movl $str_00258460, 4(%esp)\n" /* "lmap_dtl_pfog.vsn" */
         "leal -0x2144(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6787,7 +6796,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x46d(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x255bcc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00255bcc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2140(%ebp), %esi\n"
@@ -6795,7 +6804,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x46b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258474, 4(%esp)\n" /* "lmap_efog.vsn" */
+        "movl $str_00258474, 4(%esp)\n" /* "lmap_efog.vsn" */
         "leal -0x213c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6813,7 +6822,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x469(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2561dc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002561dc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2138(%ebp), %esi\n"
@@ -6821,7 +6830,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x467(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258484, 4(%esp)\n" /* "lmap_lfog.vsn" */
+        "movl $str_00258484, 4(%esp)\n" /* "lmap_lfog.vsn" */
         "leal -0x2134(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6839,7 +6848,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x465(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2555f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002555f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2130(%ebp), %esi\n"
@@ -6847,7 +6856,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x463(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258494, 4(%esp)\n" /* "lmap_pfog.vsn" */
+        "movl $str_00258494, 4(%esp)\n" /* "lmap_pfog.vsn" */
         "leal -0x212c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6865,7 +6874,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x461(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2567b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002567b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2128(%ebp), %esi\n"
@@ -6873,7 +6882,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x45f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2584a4, 4(%esp)\n" /* "lmap_s.vsn" */
+        "movl $str_002584a4, 4(%esp)\n" /* "lmap_s.vsn" */
         "leal -0x2124(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6891,7 +6900,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x45d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2567b8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002567b8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2120(%ebp), %esi\n"
@@ -6899,7 +6908,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x45b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2584b0, 4(%esp)\n" /* "lmap_s_dtl.vsn" */
+        "movl $str_002584b0, 4(%esp)\n" /* "lmap_s_dtl.vsn" */
         "leal -0x211c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6917,7 +6926,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x459(%ebp), %eax\n" /* line 77 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x256e38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00256e38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2118(%ebp), %esi\n"
@@ -6925,7 +6934,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x457(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2584c0, 4(%esp)\n" /* "lmap_s_dtl_pfog.vsn" */
+        "movl $str_002584c0, 4(%esp)\n" /* "lmap_s_dtl_pfog.vsn" */
         "leal -0x2114(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6943,7 +6952,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x455(%ebp), %eax\n" /* line 79 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x257584, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00257584, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2110(%ebp), %esi\n"
@@ -6951,7 +6960,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x453(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2584d4, 4(%esp)\n" /* "lmap_s_efog.vsn" */
+        "movl $str_002584d4, 4(%esp)\n" /* "lmap_s_efog.vsn" */
         "leal -0x210c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6969,7 +6978,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x451(%ebp), %eax\n" /* line 77 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x257cf4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00257cf4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2108(%ebp), %esi\n"
@@ -6977,7 +6986,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x44f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2584e4, 4(%esp)\n" /* "lmap_s_lfog.vsn" */
+        "movl $str_002584e4, 4(%esp)\n" /* "lmap_s_lfog.vsn" */
         "leal -0x2104(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -6995,7 +7004,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x44d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x256e38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00256e38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2100(%ebp), %esi\n"
@@ -7003,7 +7012,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x44b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2584f4, 4(%esp)\n" /* "lmap_s_pfog.vsn" */
+        "movl $str_002584f4, 4(%esp)\n" /* "lmap_s_pfog.vsn" */
         "leal -0x20fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7021,7 +7030,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x449(%ebp), %eax\n" /* line 49 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258504, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00258504, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20f8(%ebp), %esi\n"
@@ -7029,7 +7038,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x447(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258998, 4(%esp)\n" /* "lprobe.vsn" */
+        "movl $str_00258998, 4(%esp)\n" /* "lprobe.vsn" */
         "leal -0x20f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7047,7 +7056,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x445(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258504, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00258504, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20f0(%ebp), %esi\n"
@@ -7055,7 +7064,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x443(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2589a4, 4(%esp)\n" /* "lprobe_a.vsn" */
+        "movl $str_002589a4, 4(%esp)\n" /* "lprobe_a.vsn" */
         "leal -0x20ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7073,7 +7082,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x441(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258504, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00258504, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20e8(%ebp), %esi\n"
@@ -7081,7 +7090,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x43f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2589b4, 4(%esp)\n" /* "lprobe_a_dtl.vsn" */
+        "movl $str_002589b4, 4(%esp)\n" /* "lprobe_a_dtl.vsn" */
         "leal -0x20e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7099,7 +7108,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x43d(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2589c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002589c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20e0(%ebp), %esi\n"
@@ -7107,7 +7116,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x43b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258f58, 4(%esp)\n" /* "lprobe_a_dtl_pfog.vsn" */
+        "movl $str_00258f58, 4(%esp)\n" /* "lprobe_a_dtl_pfog.vsn" */
         "leal -0x20dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7125,7 +7134,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x439(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258f70, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00258f70, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20d8(%ebp), %esi\n"
@@ -7133,7 +7142,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x437(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259520, 4(%esp)\n" /* "lprobe_a_efog.vsn" */
+        "movl $str_00259520, 4(%esp)\n" /* "lprobe_a_efog.vsn" */
         "leal -0x20d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7151,7 +7160,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x435(%ebp), %eax\n" /* line 58 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259534, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00259534, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20d0(%ebp), %esi\n"
@@ -7159,7 +7168,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x433(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259aa0, 4(%esp)\n" /* "lprobe_a_lfog.vsn" */
+        "movl $str_00259aa0, 4(%esp)\n" /* "lprobe_a_lfog.vsn" */
         "leal -0x20cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7177,7 +7186,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x431(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2589c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002589c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20c8(%ebp), %esi\n"
@@ -7185,7 +7194,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x42f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259ab4, 4(%esp)\n" /* "lprobe_a_pfog.vsn" */
+        "movl $str_00259ab4, 4(%esp)\n" /* "lprobe_a_pfog.vsn" */
         "leal -0x20c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7203,7 +7212,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x42d(%ebp), %eax\n" /* line 65 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259ac8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00259ac8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20c0(%ebp), %esi\n"
@@ -7211,7 +7220,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x42b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a0d4, 4(%esp)\n" /* "lprobe_a_s.vsn" */
+        "movl $str_0025a0d4, 4(%esp)\n" /* "lprobe_a_s.vsn" */
         "leal -0x20bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7229,7 +7238,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x429(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259ac8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00259ac8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20b8(%ebp), %esi\n"
@@ -7237,7 +7246,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x427(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a0e4, 4(%esp)\n" /* "lprobe_a_s_dtl.vsn" */
+        "movl $str_0025a0e4, 4(%esp)\n" /* "lprobe_a_s_dtl.vsn" */
         "leal -0x20b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7255,7 +7264,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x425(%ebp), %eax\n" /* line 75 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a0f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025a0f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20b0(%ebp), %esi\n"
@@ -7263,7 +7272,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x423(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a7fc, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.vsn" */
+        "movl $str_0025a7fc, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.vsn" */
         "leal -0x20ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7281,7 +7290,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x421(%ebp), %eax\n" /* line 76 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a814, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025a814, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20a8(%ebp), %esi\n"
@@ -7289,7 +7298,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x41f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25af20, 4(%esp)\n" /* "lprobe_a_s_efog.vsn" */
+        "movl $str_0025af20, 4(%esp)\n" /* "lprobe_a_s_efog.vsn" */
         "leal -0x20a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7307,7 +7316,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x41d(%ebp), %eax\n" /* line 74 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25af34, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025af34, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x20a0(%ebp), %esi\n"
@@ -7315,7 +7324,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x41b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b618, 4(%esp)\n" /* "lprobe_a_s_lfog.vsn" */
+        "movl $str_0025b618, 4(%esp)\n" /* "lprobe_a_s_lfog.vsn" */
         "leal -0x209c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7333,7 +7342,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x419(%ebp), %eax\n" /* line 75 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a0f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025a0f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2098(%ebp), %esi\n"
@@ -7341,7 +7350,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x417(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b62c, 4(%esp)\n" /* "lprobe_a_s_pfog.vsn" */
+        "movl $str_0025b62c, 4(%esp)\n" /* "lprobe_a_s_pfog.vsn" */
         "leal -0x2094(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7359,7 +7368,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x415(%ebp), %eax\n" /* line 49 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258504, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00258504, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2090(%ebp), %esi\n"
@@ -7367,7 +7376,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x413(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b640, 4(%esp)\n" /* "lprobe_dtl.vsn" */
+        "movl $str_0025b640, 4(%esp)\n" /* "lprobe_dtl.vsn" */
         "leal -0x208c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7385,7 +7394,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x411(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2589c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002589c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2088(%ebp), %esi\n"
@@ -7393,7 +7402,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x40f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b650, 4(%esp)\n" /* "lprobe_dtl_pfog.vsn" */
+        "movl $str_0025b650, 4(%esp)\n" /* "lprobe_dtl_pfog.vsn" */
         "leal -0x2084(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7411,7 +7420,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x40d(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x258f70, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00258f70, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2080(%ebp), %esi\n"
@@ -7419,7 +7428,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x40b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b664, 4(%esp)\n" /* "lprobe_efog.vsn" */
+        "movl $str_0025b664, 4(%esp)\n" /* "lprobe_efog.vsn" */
         "leal -0x207c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7437,7 +7446,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x409(%ebp), %eax\n" /* line 152 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b674, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025b674, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2078(%ebp), %esi\n" /* size */
@@ -7445,7 +7454,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x407(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25c580, 4(%esp)\n" /* "lprobe_flag_a_s.vsn" */
+        "movl $str_0025c580, 4(%esp)\n" /* "lprobe_flag_a_s.vsn" */
         "leal -0x2074(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7463,7 +7472,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x405(%ebp), %eax\n" /* line 162 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25c594, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025c594, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2070(%ebp), %esi\n" /* size */
@@ -7471,7 +7480,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x403(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25d5a8, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.vsn" */
+        "movl $str_0025d5a8, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.vsn" */
         "leal -0x206c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7489,7 +7498,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x401(%ebp), %eax\n" /* line 152 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b674, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025b674, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2068(%ebp), %esi\n" /* size */
@@ -7497,7 +7506,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3ff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25d5c4, 4(%esp)\n" /* "lprobe_flag_s.vsn" */
+        "movl $str_0025d5c4, 4(%esp)\n" /* "lprobe_flag_s.vsn" */
         "leal -0x2064(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7515,7 +7524,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3fd(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b674, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025b674, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2060(%ebp), %esi\n" /* size */
@@ -7523,7 +7532,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3fb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25d5d8, 4(%esp)\n" /* "lprobe_flag_sm_a_s.vsn" */
+        "movl $str_0025d5d8, 4(%esp)\n" /* "lprobe_flag_sm_a_s.vsn" */
         "leal -0x205c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7541,7 +7550,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3f9(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25b674, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025b674, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2058(%ebp), %esi\n" /* size */
@@ -7549,7 +7558,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3f7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25d5f0, 4(%esp)\n" /* "lprobe_flag_sm_s.vsn" */
+        "movl $str_0025d5f0, 4(%esp)\n" /* "lprobe_flag_sm_s.vsn" */
         "leal -0x2054(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7567,7 +7576,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3f5(%ebp), %eax\n" /* line 163 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25d608, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025d608, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2050(%ebp), %esi\n" /* size */
@@ -7575,7 +7584,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3f3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25e628, 4(%esp)\n" /* "lprobe_flag_s_efog.vsn" */
+        "movl $str_0025e628, 4(%esp)\n" /* "lprobe_flag_s_efog.vsn" */
         "leal -0x204c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7593,7 +7602,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3f1(%ebp), %eax\n" /* line 161 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25e640, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025e640, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2048(%ebp), %esi\n" /* size */
@@ -7601,7 +7610,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3ef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25f630, 4(%esp)\n" /* "lprobe_flag_s_lfog.vsn" */
+        "movl $str_0025f630, 4(%esp)\n" /* "lprobe_flag_s_lfog.vsn" */
         "leal -0x2044(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7619,7 +7628,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ed(%ebp), %eax\n" /* line 58 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259534, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00259534, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2040(%ebp), %esi\n"
@@ -7627,7 +7636,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3eb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25f648, 4(%esp)\n" /* "lprobe_lfog.vsn" */
+        "movl $str_0025f648, 4(%esp)\n" /* "lprobe_lfog.vsn" */
         "leal -0x203c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7645,7 +7654,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3e9(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2589c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002589c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2038(%ebp), %esi\n"
@@ -7653,7 +7662,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3e7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25f658, 4(%esp)\n" /* "lprobe_pfog.vsn" */
+        "movl $str_0025f658, 4(%esp)\n" /* "lprobe_pfog.vsn" */
         "leal -0x2034(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7671,7 +7680,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3e5(%ebp), %eax\n" /* line 65 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259ac8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00259ac8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2030(%ebp), %esi\n"
@@ -7679,7 +7688,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3e3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25f668, 4(%esp)\n" /* "lprobe_s.vsn" */
+        "movl $str_0025f668, 4(%esp)\n" /* "lprobe_s.vsn" */
         "leal -0x202c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7697,7 +7706,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3e1(%ebp), %eax\n" /* line 51 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25f678, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025f678, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2028(%ebp), %esi\n"
@@ -7705,7 +7714,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3df(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25fb44, 4(%esp)\n" /* "lprobe_scroll.vsn" */
+        "movl $str_0025fb44, 4(%esp)\n" /* "lprobe_scroll.vsn" */
         "leal -0x2024(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7723,7 +7732,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3dd(%ebp), %eax\n" /* line 63 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25fb58, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025fb58, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2020(%ebp), %esi\n"
@@ -7731,7 +7740,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3db(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260140, 4(%esp)\n" /* "lprobe_scroll_efog.vsn" */
+        "movl $str_00260140, 4(%esp)\n" /* "lprobe_scroll_efog.vsn" */
         "leal -0x201c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7749,7 +7758,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3d9(%ebp), %eax\n" /* line 60 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260158, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260158, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2018(%ebp), %esi\n"
@@ -7757,7 +7766,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3d7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2606fc, 4(%esp)\n" /* "lprobe_scroll_lfog.vsn" */
+        "movl $str_002606fc, 4(%esp)\n" /* "lprobe_scroll_lfog.vsn" */
         "leal -0x2014(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7775,7 +7784,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3d5(%ebp), %eax\n" /* line 46 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260714, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260714, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2010(%ebp), %esi\n"
@@ -7783,7 +7792,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3d3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260b70, 4(%esp)\n" /* "lprobe_sm.vsn" */
+        "movl $str_00260b70, 4(%esp)\n" /* "lprobe_sm.vsn" */
         "leal -0x200c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7801,7 +7810,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3d1(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260b80, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260b80, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2008(%ebp), %esi\n"
@@ -7809,7 +7818,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3cf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261014, 4(%esp)\n" /* "lprobe_smc.vsn" */
+        "movl $str_00261014, 4(%esp)\n" /* "lprobe_smc.vsn" */
         "leal -0x2004(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7827,7 +7836,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3cd(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260b80, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260b80, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x2000(%ebp), %esi\n"
@@ -7835,7 +7844,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3cb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261024, 4(%esp)\n" /* "lprobe_smc_a.vsn" */
+        "movl $str_00261024, 4(%esp)\n" /* "lprobe_smc_a.vsn" */
         "leal -0x1ffc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7853,7 +7862,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3c9(%ebp), %eax\n" /* line 30 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261038, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261038, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ff8(%ebp), %esi\n"
@@ -7861,7 +7870,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3c7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26131c, 4(%esp)\n" /* "lprobe_smc_amb.vsn" */
+        "movl $str_0026131c, 4(%esp)\n" /* "lprobe_smc_amb.vsn" */
         "leal -0x1ff4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7879,7 +7888,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3c5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261038, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261038, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ff0(%ebp), %esi\n"
@@ -7887,7 +7896,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3c3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261330, 4(%esp)\n" /* "lprobe_smc_amb_a.vsn" */
+        "movl $str_00261330, 4(%esp)\n" /* "lprobe_smc_amb_a.vsn" */
         "leal -0x1fec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7905,7 +7914,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3c1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261038, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261038, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fe8(%ebp), %esi\n"
@@ -7913,7 +7922,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3bf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261348, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.vsn" */
+        "movl $str_00261348, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.vsn" */
         "leal -0x1fe4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7931,7 +7940,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3bd(%ebp), %eax\n" /* line 40 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261364, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261364, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fe0(%ebp), %esi\n"
@@ -7939,7 +7948,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3bb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261744, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.vsn" */
+        "movl $str_00261744, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.vsn" */
         "leal -0x1fdc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7957,7 +7966,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3b9(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261764, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261764, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fd8(%ebp), %esi\n"
@@ -7965,7 +7974,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3b7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261b48, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.vsn" */
+        "movl $str_00261b48, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.vsn" */
         "leal -0x1fd4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -7983,7 +7992,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3b5(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261b64, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261b64, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fd0(%ebp), %esi\n"
@@ -7991,7 +8000,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3b3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261f20, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.vsn" */
+        "movl $str_00261f20, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.vsn" */
         "leal -0x1fcc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8009,7 +8018,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3b1(%ebp), %eax\n" /* line 40 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261364, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261364, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fc8(%ebp), %esi\n"
@@ -8017,7 +8026,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3af(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261f3c, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.vsn" */
+        "movl $str_00261f3c, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.vsn" */
         "leal -0x1fc4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8035,7 +8044,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ad(%ebp), %eax\n" /* line 30 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261038, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261038, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fc0(%ebp), %esi\n"
@@ -8043,7 +8052,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3ab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261f58, 4(%esp)\n" /* "lprobe_smc_amb_dtl.vsn" */
+        "movl $str_00261f58, 4(%esp)\n" /* "lprobe_smc_amb_dtl.vsn" */
         "leal -0x1fbc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8061,7 +8070,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3a9(%ebp), %eax\n" /* line 40 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261364, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261364, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fb8(%ebp), %esi\n"
@@ -8069,7 +8078,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3a7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261f70, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.vsn" */
+        "movl $str_00261f70, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.vsn" */
         "leal -0x1fb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8087,7 +8096,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3a5(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261764, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261764, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fb0(%ebp), %esi\n"
@@ -8095,7 +8104,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3a3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261f8c, 4(%esp)\n" /* "lprobe_smc_amb_efog.vsn" */
+        "movl $str_00261f8c, 4(%esp)\n" /* "lprobe_smc_amb_efog.vsn" */
         "leal -0x1fac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8113,7 +8122,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3a1(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261b64, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261b64, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fa8(%ebp), %esi\n"
@@ -8121,7 +8130,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x39f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261fa4, 4(%esp)\n" /* "lprobe_smc_amb_lfog.vsn" */
+        "movl $str_00261fa4, 4(%esp)\n" /* "lprobe_smc_amb_lfog.vsn" */
         "leal -0x1fa4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8139,7 +8148,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x39d(%ebp), %eax\n" /* line 40 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261364, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261364, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1fa0(%ebp), %esi\n"
@@ -8147,7 +8156,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x39b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261fbc, 4(%esp)\n" /* "lprobe_smc_amb_pfog.vsn" */
+        "movl $str_00261fbc, 4(%esp)\n" /* "lprobe_smc_amb_pfog.vsn" */
         "leal -0x1f9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8165,7 +8174,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x399(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260b80, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260b80, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f98(%ebp), %esi\n"
@@ -8173,7 +8182,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x397(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261fd4, 4(%esp)\n" /* "lprobe_smc_a_dtl.vsn" */
+        "movl $str_00261fd4, 4(%esp)\n" /* "lprobe_smc_a_dtl.vsn" */
         "leal -0x1f94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8191,7 +8200,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x395(%ebp), %eax\n" /* line 57 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261fec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261fec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f90(%ebp), %esi\n"
@@ -8199,7 +8208,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x393(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26257c, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.vsn" */
+        "movl $str_0026257c, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.vsn" */
         "leal -0x1f8c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8217,7 +8226,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x391(%ebp), %eax\n" /* line 58 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x262598, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00262598, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f88(%ebp), %esi\n"
@@ -8225,7 +8234,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x38f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x262b30, 4(%esp)\n" /* "lprobe_smc_a_efog.vsn" */
+        "movl $str_00262b30, 4(%esp)\n" /* "lprobe_smc_a_efog.vsn" */
         "leal -0x1f84(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8243,7 +8252,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x38d(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x262b48, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00262b48, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f80(%ebp), %esi\n"
@@ -8251,7 +8260,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x38b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2630b8, 4(%esp)\n" /* "lprobe_smc_a_lfog.vsn" */
+        "movl $str_002630b8, 4(%esp)\n" /* "lprobe_smc_a_lfog.vsn" */
         "leal -0x1f7c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8269,7 +8278,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x389(%ebp), %eax\n" /* line 57 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261fec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261fec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f78(%ebp), %esi\n"
@@ -8277,7 +8286,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x387(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2630d0, 4(%esp)\n" /* "lprobe_smc_a_pfog.vsn" */
+        "movl $str_002630d0, 4(%esp)\n" /* "lprobe_smc_a_pfog.vsn" */
         "leal -0x1f74(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8295,7 +8304,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x385(%ebp), %eax\n" /* line 62 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2630e8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002630e8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f70(%ebp), %esi\n"
@@ -8303,7 +8312,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x383(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2636d8, 4(%esp)\n" /* "lprobe_smc_a_s.vsn" */
+        "movl $str_002636d8, 4(%esp)\n" /* "lprobe_smc_a_s.vsn" */
         "leal -0x1f6c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8321,7 +8330,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x381(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2630e8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002630e8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f68(%ebp), %esi\n"
@@ -8329,7 +8338,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x37f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2636ec, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.vsn" */
+        "movl $str_002636ec, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.vsn" */
         "leal -0x1f64(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8347,7 +8356,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x37d(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x263704, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00263704, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f60(%ebp), %esi\n"
@@ -8355,7 +8364,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x37b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x263df0, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.vsn" */
+        "movl $str_00263df0, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.vsn" */
         "leal -0x1f5c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8373,7 +8382,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x379(%ebp), %eax\n" /* line 74 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x263e0c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00263e0c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f58(%ebp), %esi\n"
@@ -8381,7 +8390,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x377(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264518, 4(%esp)\n" /* "lprobe_smc_a_s_efog.vsn" */
+        "movl $str_00264518, 4(%esp)\n" /* "lprobe_smc_a_s_efog.vsn" */
         "leal -0x1f54(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8399,7 +8408,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x375(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264530, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00264530, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f50(%ebp), %esi\n"
@@ -8407,7 +8416,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x373(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264bf8, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.vsn" */
+        "movl $str_00264bf8, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.vsn" */
         "leal -0x1f4c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8425,7 +8434,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x371(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x263704, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00263704, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f48(%ebp), %esi\n"
@@ -8433,7 +8442,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x36f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264c10, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.vsn" */
+        "movl $str_00264c10, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.vsn" */
         "leal -0x1f44(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8451,7 +8460,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x36d(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260b80, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260b80, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f40(%ebp), %esi\n"
@@ -8459,7 +8468,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x36b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264c28, 4(%esp)\n" /* "lprobe_smc_dtl.vsn" */
+        "movl $str_00264c28, 4(%esp)\n" /* "lprobe_smc_dtl.vsn" */
         "leal -0x1f3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8477,7 +8486,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x369(%ebp), %eax\n" /* line 57 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261fec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261fec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f38(%ebp), %esi\n"
@@ -8485,7 +8494,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x367(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264c3c, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.vsn" */
+        "movl $str_00264c3c, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.vsn" */
         "leal -0x1f34(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8503,7 +8512,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x365(%ebp), %eax\n" /* line 58 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x262598, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00262598, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f30(%ebp), %esi\n"
@@ -8511,7 +8520,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x363(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264c54, 4(%esp)\n" /* "lprobe_smc_efog.vsn" */
+        "movl $str_00264c54, 4(%esp)\n" /* "lprobe_smc_efog.vsn" */
         "leal -0x1f2c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8529,7 +8538,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x361(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x262b48, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00262b48, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f28(%ebp), %esi\n"
@@ -8537,7 +8546,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x35f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264c68, 4(%esp)\n" /* "lprobe_smc_lfog.vsn" */
+        "movl $str_00264c68, 4(%esp)\n" /* "lprobe_smc_lfog.vsn" */
         "leal -0x1f24(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8555,7 +8564,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x35d(%ebp), %eax\n" /* line 57 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x261fec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00261fec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f20(%ebp), %esi\n"
@@ -8563,7 +8572,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x35b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264c7c, 4(%esp)\n" /* "lprobe_smc_pfog.vsn" */
+        "movl $str_00264c7c, 4(%esp)\n" /* "lprobe_smc_pfog.vsn" */
         "leal -0x1f1c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8581,7 +8590,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x359(%ebp), %eax\n" /* line 62 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2630e8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002630e8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f18(%ebp), %esi\n"
@@ -8589,7 +8598,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x357(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264c90, 4(%esp)\n" /* "lprobe_smc_s.vsn" */
+        "movl $str_00264c90, 4(%esp)\n" /* "lprobe_smc_s.vsn" */
         "leal -0x1f14(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8607,7 +8616,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x355(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2630e8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002630e8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f10(%ebp), %esi\n"
@@ -8615,7 +8624,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x353(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264ca4, 4(%esp)\n" /* "lprobe_smc_s_dtl.vsn" */
+        "movl $str_00264ca4, 4(%esp)\n" /* "lprobe_smc_s_dtl.vsn" */
         "leal -0x1f0c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8633,7 +8642,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x351(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x263704, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00263704, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f08(%ebp), %esi\n"
@@ -8641,7 +8650,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x34f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264cbc, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.vsn" */
+        "movl $str_00264cbc, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.vsn" */
         "leal -0x1f04(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8659,7 +8668,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x34d(%ebp), %eax\n" /* line 74 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x263e0c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00263e0c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1f00(%ebp), %esi\n"
@@ -8667,7 +8676,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x34b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264cd8, 4(%esp)\n" /* "lprobe_smc_s_efog.vsn" */
+        "movl $str_00264cd8, 4(%esp)\n" /* "lprobe_smc_s_efog.vsn" */
         "leal -0x1efc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8685,7 +8694,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x349(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264530, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00264530, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ef8(%ebp), %esi\n"
@@ -8693,7 +8702,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x347(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264cf0, 4(%esp)\n" /* "lprobe_smc_s_lfog.vsn" */
+        "movl $str_00264cf0, 4(%esp)\n" /* "lprobe_smc_s_lfog.vsn" */
         "leal -0x1ef4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8711,7 +8720,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x345(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x263704, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00263704, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ef0(%ebp), %esi\n"
@@ -8719,7 +8728,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x343(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264d08, 4(%esp)\n" /* "lprobe_smc_s_pfog.vsn" */
+        "movl $str_00264d08, 4(%esp)\n" /* "lprobe_smc_s_pfog.vsn" */
         "leal -0x1eec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8737,7 +8746,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x341(%ebp), %eax\n" /* line 46 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260714, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260714, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ee8(%ebp), %esi\n"
@@ -8745,7 +8754,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x33f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264d20, 4(%esp)\n" /* "lprobe_sm_a.vsn" */
+        "movl $str_00264d20, 4(%esp)\n" /* "lprobe_sm_a.vsn" */
         "leal -0x1ee4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8763,7 +8772,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x33d(%ebp), %eax\n" /* line 29 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264d30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00264d30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ee0(%ebp), %esi\n"
@@ -8771,7 +8780,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x33b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264fd8, 4(%esp)\n" /* "lprobe_sm_amb.vsn" */
+        "movl $str_00264fd8, 4(%esp)\n" /* "lprobe_sm_amb.vsn" */
         "leal -0x1edc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8789,7 +8798,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x339(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264d30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00264d30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ed8(%ebp), %esi\n"
@@ -8797,7 +8806,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x337(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264fec, 4(%esp)\n" /* "lprobe_sm_amb_a.vsn" */
+        "movl $str_00264fec, 4(%esp)\n" /* "lprobe_sm_amb_a.vsn" */
         "leal -0x1ed4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8815,7 +8824,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x335(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264d30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00264d30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ed0(%ebp), %esi\n"
@@ -8823,7 +8832,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x333(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265000, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.vsn" */
+        "movl $str_00265000, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.vsn" */
         "leal -0x1ecc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8841,7 +8850,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x331(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265018, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265018, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ec8(%ebp), %esi\n"
@@ -8849,7 +8858,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x32f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2653bc, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.vsn" */
+        "movl $str_002653bc, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.vsn" */
         "leal -0x1ec4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8867,7 +8876,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x32d(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2653dc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002653dc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ec0(%ebp), %esi\n"
@@ -8875,7 +8884,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x32b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2657a0, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.vsn" */
+        "movl $str_002657a0, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.vsn" */
         "leal -0x1ebc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8893,7 +8902,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x329(%ebp), %eax\n" /* line 38 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2657bc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002657bc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1eb8(%ebp), %esi\n"
@@ -8901,7 +8910,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x327(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265b40, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.vsn" */
+        "movl $str_00265b40, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.vsn" */
         "leal -0x1eb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8919,7 +8928,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x325(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265018, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265018, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1eb0(%ebp), %esi\n"
@@ -8927,7 +8936,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x323(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265b5c, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.vsn" */
+        "movl $str_00265b5c, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.vsn" */
         "leal -0x1eac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8945,7 +8954,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x321(%ebp), %eax\n" /* line 29 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x264d30, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00264d30, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ea8(%ebp), %esi\n"
@@ -8953,7 +8962,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x31f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265b78, 4(%esp)\n" /* "lprobe_sm_amb_dtl.vsn" */
+        "movl $str_00265b78, 4(%esp)\n" /* "lprobe_sm_amb_dtl.vsn" */
         "leal -0x1ea4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8971,7 +8980,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x31d(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265018, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265018, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ea0(%ebp), %esi\n"
@@ -8979,7 +8988,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x31b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265b90, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.vsn" */
+        "movl $str_00265b90, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.vsn" */
         "leal -0x1e9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -8997,7 +9006,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x319(%ebp), %eax\n" /* line 41 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2653dc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002653dc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e98(%ebp), %esi\n"
@@ -9005,7 +9014,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x317(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265bac, 4(%esp)\n" /* "lprobe_sm_amb_efog.vsn" */
+        "movl $str_00265bac, 4(%esp)\n" /* "lprobe_sm_amb_efog.vsn" */
         "leal -0x1e94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9023,7 +9032,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x315(%ebp), %eax\n" /* line 38 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2657bc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002657bc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e90(%ebp), %esi\n"
@@ -9031,7 +9040,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x313(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265bc4, 4(%esp)\n" /* "lprobe_sm_amb_lfog.vsn" */
+        "movl $str_00265bc4, 4(%esp)\n" /* "lprobe_sm_amb_lfog.vsn" */
         "leal -0x1e8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9049,7 +9058,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x311(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265018, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265018, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e88(%ebp), %esi\n"
@@ -9057,7 +9066,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x30f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265bdc, 4(%esp)\n" /* "lprobe_sm_amb_pfog.vsn" */
+        "movl $str_00265bdc, 4(%esp)\n" /* "lprobe_sm_amb_pfog.vsn" */
         "leal -0x1e84(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9075,7 +9084,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x30d(%ebp), %eax\n" /* line 46 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260714, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260714, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e80(%ebp), %esi\n"
@@ -9083,7 +9092,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x30b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265bf4, 4(%esp)\n" /* "lprobe_sm_a_dtl.vsn" */
+        "movl $str_00265bf4, 4(%esp)\n" /* "lprobe_sm_a_dtl.vsn" */
         "leal -0x1e7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9101,7 +9110,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x309(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265c08, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265c08, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e78(%ebp), %esi\n"
@@ -9109,7 +9118,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x307(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26615c, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.vsn" */
+        "movl $str_0026615c, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.vsn" */
         "leal -0x1e74(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9127,7 +9136,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x305(%ebp), %eax\n" /* line 58 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266178, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266178, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e70(%ebp), %esi\n"
@@ -9135,7 +9144,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x303(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2666f0, 4(%esp)\n" /* "lprobe_sm_a_efog.vsn" */
+        "movl $str_002666f0, 4(%esp)\n" /* "lprobe_sm_a_efog.vsn" */
         "leal -0x1e6c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9153,7 +9162,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x301(%ebp), %eax\n" /* line 55 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266708, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266708, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e68(%ebp), %esi\n"
@@ -9161,7 +9170,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2ff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266c3c, 4(%esp)\n" /* "lprobe_sm_a_lfog.vsn" */
+        "movl $str_00266c3c, 4(%esp)\n" /* "lprobe_sm_a_lfog.vsn" */
         "leal -0x1e64(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9179,7 +9188,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2fd(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265c08, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265c08, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e60(%ebp), %esi\n"
@@ -9187,7 +9196,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2fb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266c54, 4(%esp)\n" /* "lprobe_sm_a_pfog.vsn" */
+        "movl $str_00266c54, 4(%esp)\n" /* "lprobe_sm_a_pfog.vsn" */
         "leal -0x1e5c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9205,7 +9214,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2f9(%ebp), %eax\n" /* line 62 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266c6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266c6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e58(%ebp), %esi\n"
@@ -9213,7 +9222,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2f7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26723c, 4(%esp)\n" /* "lprobe_sm_a_s.vsn" */
+        "movl $str_0026723c, 4(%esp)\n" /* "lprobe_sm_a_s.vsn" */
         "leal -0x1e54(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9231,7 +9240,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2f5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266c6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266c6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e50(%ebp), %esi\n"
@@ -9239,7 +9248,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2f3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267250, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.vsn" */
+        "movl $str_00267250, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.vsn" */
         "leal -0x1e4c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9257,7 +9266,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2f1(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267268, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00267268, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e48(%ebp), %esi\n"
@@ -9265,7 +9274,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2ef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267934, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.vsn" */
+        "movl $str_00267934, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.vsn" */
         "leal -0x1e44(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9283,7 +9292,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ed(%ebp), %eax\n" /* line 73 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267950, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00267950, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e40(%ebp), %esi\n"
@@ -9291,7 +9300,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2eb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268020, 4(%esp)\n" /* "lprobe_sm_a_s_efog.vsn" */
+        "movl $str_00268020, 4(%esp)\n" /* "lprobe_sm_a_s_efog.vsn" */
         "leal -0x1e3c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9309,7 +9318,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2e9(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268038, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00268038, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e38(%ebp), %esi\n"
@@ -9317,7 +9326,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2e7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2686e0, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.vsn" */
+        "movl $str_002686e0, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.vsn" */
         "leal -0x1e34(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9335,7 +9344,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2e5(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267268, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00267268, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e30(%ebp), %esi\n"
@@ -9343,7 +9352,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2e3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2686f8, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.vsn" */
+        "movl $str_002686f8, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.vsn" */
         "leal -0x1e2c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9361,7 +9370,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2e1(%ebp), %eax\n" /* line 46 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x260714, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00260714, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e28(%ebp), %esi\n"
@@ -9369,7 +9378,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2df(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268710, 4(%esp)\n" /* "lprobe_sm_dtl.vsn" */
+        "movl $str_00268710, 4(%esp)\n" /* "lprobe_sm_dtl.vsn" */
         "leal -0x1e24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9387,7 +9396,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2dd(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265c08, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265c08, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e20(%ebp), %esi\n"
@@ -9395,7 +9404,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2db(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268724, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.vsn" */
+        "movl $str_00268724, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.vsn" */
         "leal -0x1e1c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9413,7 +9422,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2d9(%ebp), %eax\n" /* line 58 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266178, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266178, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e18(%ebp), %esi\n"
@@ -9421,7 +9430,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2d7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26873c, 4(%esp)\n" /* "lprobe_sm_efog.vsn" */
+        "movl $str_0026873c, 4(%esp)\n" /* "lprobe_sm_efog.vsn" */
         "leal -0x1e14(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9439,7 +9448,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2d5(%ebp), %eax\n" /* line 55 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266708, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266708, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e10(%ebp), %esi\n"
@@ -9447,7 +9456,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2d3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268750, 4(%esp)\n" /* "lprobe_sm_lfog.vsn" */
+        "movl $str_00268750, 4(%esp)\n" /* "lprobe_sm_lfog.vsn" */
         "leal -0x1e0c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9465,7 +9474,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2d1(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x265c08, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00265c08, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e08(%ebp), %esi\n"
@@ -9473,7 +9482,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2cf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268764, 4(%esp)\n" /* "lprobe_sm_pfog.vsn" */
+        "movl $str_00268764, 4(%esp)\n" /* "lprobe_sm_pfog.vsn" */
         "leal -0x1e04(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9491,7 +9500,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2cd(%ebp), %eax\n" /* line 62 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266c6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266c6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1e00(%ebp), %esi\n"
@@ -9499,7 +9508,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2cb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268778, 4(%esp)\n" /* "lprobe_sm_s.vsn" */
+        "movl $str_00268778, 4(%esp)\n" /* "lprobe_sm_s.vsn" */
         "leal -0x1dfc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9517,7 +9526,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2c9(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x266c6c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00266c6c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1df8(%ebp), %esi\n"
@@ -9525,7 +9534,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2c7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268788, 4(%esp)\n" /* "lprobe_sm_s_dtl.vsn" */
+        "movl $str_00268788, 4(%esp)\n" /* "lprobe_sm_s_dtl.vsn" */
         "leal -0x1df4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9543,7 +9552,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2c5(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267268, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00267268, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1df0(%ebp), %esi\n"
@@ -9551,7 +9560,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2c3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26879c, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.vsn" */
+        "movl $str_0026879c, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.vsn" */
         "leal -0x1dec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9569,7 +9578,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2c1(%ebp), %eax\n" /* line 73 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267950, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00267950, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1de8(%ebp), %esi\n"
@@ -9577,7 +9586,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2bf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2687b8, 4(%esp)\n" /* "lprobe_sm_s_efog.vsn" */
+        "movl $str_002687b8, 4(%esp)\n" /* "lprobe_sm_s_efog.vsn" */
         "leal -0x1de4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9595,7 +9604,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2bd(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268038, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00268038, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1de0(%ebp), %esi\n"
@@ -9603,7 +9612,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2bb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2687d0, 4(%esp)\n" /* "lprobe_sm_s_lfog.vsn" */
+        "movl $str_002687d0, 4(%esp)\n" /* "lprobe_sm_s_lfog.vsn" */
         "leal -0x1ddc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9621,7 +9630,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2b9(%ebp), %eax\n" /* line 72 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x267268, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00267268, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1dd8(%ebp), %esi\n"
@@ -9629,7 +9638,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2b7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2687e8, 4(%esp)\n" /* "lprobe_sm_s_pfog.vsn" */
+        "movl $str_002687e8, 4(%esp)\n" /* "lprobe_sm_s_pfog.vsn" */
         "leal -0x1dd4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9647,7 +9656,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2b5(%ebp), %eax\n" /* line 65 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x259ac8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00259ac8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1dd0(%ebp), %esi\n"
@@ -9655,7 +9664,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2b3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268800, 4(%esp)\n" /* "lprobe_s_dtl.vsn" */
+        "movl $str_00268800, 4(%esp)\n" /* "lprobe_s_dtl.vsn" */
         "leal -0x1dcc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9673,7 +9682,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2b1(%ebp), %eax\n" /* line 75 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a0f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025a0f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1dc8(%ebp), %esi\n"
@@ -9681,7 +9690,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2af(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268814, 4(%esp)\n" /* "lprobe_s_dtl_pfog.vsn" */
+        "movl $str_00268814, 4(%esp)\n" /* "lprobe_s_dtl_pfog.vsn" */
         "leal -0x1dc4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9699,7 +9708,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ad(%ebp), %eax\n" /* line 76 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a814, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025a814, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1dc0(%ebp), %esi\n"
@@ -9707,7 +9716,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2ab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26882c, 4(%esp)\n" /* "lprobe_s_efog.vsn" */
+        "movl $str_0026882c, 4(%esp)\n" /* "lprobe_s_efog.vsn" */
         "leal -0x1dbc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9725,7 +9734,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2a9(%ebp), %eax\n" /* line 74 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25af34, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025af34, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1db8(%ebp), %esi\n"
@@ -9733,7 +9742,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2a7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268840, 4(%esp)\n" /* "lprobe_s_lfog.vsn" */
+        "movl $str_00268840, 4(%esp)\n" /* "lprobe_s_lfog.vsn" */
         "leal -0x1db4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9751,7 +9760,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2a5(%ebp), %eax\n" /* line 75 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x25a0f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0025a0f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1db0(%ebp), %esi\n"
@@ -9759,7 +9768,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2a3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268854, 4(%esp)\n" /* "lprobe_s_pfog.vsn" */
+        "movl $str_00268854, 4(%esp)\n" /* "lprobe_s_pfog.vsn" */
         "leal -0x1dac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9777,7 +9786,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2a1(%ebp), %eax\n" /* line 67 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268868, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00268868, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1da8(%ebp), %esi\n"
@@ -9785,7 +9794,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x29f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268ea8, 4(%esp)\n" /* "lprobe_s_scroll.vsn" */
+        "movl $str_00268ea8, 4(%esp)\n" /* "lprobe_s_scroll.vsn" */
         "leal -0x1da4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9803,7 +9812,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x29d(%ebp), %eax\n" /* line 78 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x268ebc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00268ebc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1da0(%ebp), %esi\n"
@@ -9811,7 +9820,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x29b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x269600, 4(%esp)\n" /* "lprobe_s_scroll_efog.vsn" */
+        "movl $str_00269600, 4(%esp)\n" /* "lprobe_s_scroll_efog.vsn" */
         "leal -0x1d9c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9829,7 +9838,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x299(%ebp), %eax\n" /* line 76 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26961c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026961c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d98(%ebp), %esi\n"
@@ -9837,7 +9846,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x297(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x269d38, 4(%esp)\n" /* "lprobe_s_scroll_lfog.vsn" */
+        "movl $str_00269d38, 4(%esp)\n" /* "lprobe_s_scroll_lfog.vsn" */
         "leal -0x1d94(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9855,7 +9864,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x295(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x269d54, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00269d54, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d90(%ebp), %esi\n"
@@ -9863,7 +9872,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x293(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a268, 4(%esp)\n" /* "l_point.vsn" */
+        "movl $str_0026a268, 4(%esp)\n" /* "l_point.vsn" */
         "leal -0x1d8c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9881,7 +9890,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x291(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x269d54, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00269d54, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d88(%ebp), %esi\n"
@@ -9889,7 +9898,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x28f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a274, 4(%esp)\n" /* "l_point_blend.vsn" */
+        "movl $str_0026a274, 4(%esp)\n" /* "l_point_blend.vsn" */
         "leal -0x1d84(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9907,7 +9916,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x28d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x269d54, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00269d54, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d80(%ebp), %esi\n"
@@ -9915,7 +9924,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x28b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a288, 4(%esp)\n" /* "l_point_blend_dtl.vsn" */
+        "movl $str_0026a288, 4(%esp)\n" /* "l_point_blend_dtl.vsn" */
         "leal -0x1d7c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9933,7 +9942,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x289(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a2a0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026a2a0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d78(%ebp), %esi\n"
@@ -9941,7 +9950,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x287(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a8b0, 4(%esp)\n" /* "l_point_blend_dtl_pfog.vsn" */
+        "movl $str_0026a8b0, 4(%esp)\n" /* "l_point_blend_dtl_pfog.vsn" */
         "leal -0x1d74(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9959,7 +9968,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x285(%ebp), %eax\n" /* line 65 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a8cc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026a8cc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d70(%ebp), %esi\n"
@@ -9967,7 +9976,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x283(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26aee0, 4(%esp)\n" /* "l_point_blend_efog.vsn" */
+        "movl $str_0026aee0, 4(%esp)\n" /* "l_point_blend_efog.vsn" */
         "leal -0x1d6c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -9985,7 +9994,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x281(%ebp), %eax\n" /* line 63 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26aef8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026aef8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d68(%ebp), %esi\n"
@@ -9993,7 +10002,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x27f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26b4e4, 4(%esp)\n" /* "l_point_blend_lfog.vsn" */
+        "movl $str_0026b4e4, 4(%esp)\n" /* "l_point_blend_lfog.vsn" */
         "leal -0x1d64(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10011,7 +10020,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x27d(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a2a0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026a2a0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d60(%ebp), %esi\n"
@@ -10019,7 +10028,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x27b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26b4fc, 4(%esp)\n" /* "l_point_blend_pfog.vsn" */
+        "movl $str_0026b4fc, 4(%esp)\n" /* "l_point_blend_pfog.vsn" */
         "leal -0x1d5c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10037,7 +10046,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x279(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x269d54, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00269d54, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d58(%ebp), %esi\n"
@@ -10045,7 +10054,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x277(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26b514, 4(%esp)\n" /* "l_point_dtl.vsn" */
+        "movl $str_0026b514, 4(%esp)\n" /* "l_point_dtl.vsn" */
         "leal -0x1d54(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10063,7 +10072,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x275(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a2a0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026a2a0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d50(%ebp), %esi\n"
@@ -10071,7 +10080,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x273(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26b524, 4(%esp)\n" /* "l_point_dtl_pfog.vsn" */
+        "movl $str_0026b524, 4(%esp)\n" /* "l_point_dtl_pfog.vsn" */
         "leal -0x1d4c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10089,7 +10098,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x271(%ebp), %eax\n" /* line 65 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a8cc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026a8cc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d48(%ebp), %esi\n"
@@ -10097,7 +10106,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x26f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26b53c, 4(%esp)\n" /* "l_point_efog.vsn" */
+        "movl $str_0026b53c, 4(%esp)\n" /* "l_point_efog.vsn" */
         "leal -0x1d44(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10115,7 +10124,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x26d(%ebp), %eax\n" /* line 141 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26b550, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026b550, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d40(%ebp), %esi\n" /* size */
@@ -10123,7 +10132,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x26b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26c370, 4(%esp)\n" /* "l_point_flag.vsn" */
+        "movl $str_0026c370, 4(%esp)\n" /* "l_point_flag.vsn" */
         "leal -0x1d3c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10141,7 +10150,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x269(%ebp), %eax\n" /* line 152 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26c384, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026c384, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d38(%ebp), %esi\n" /* size */
@@ -10149,7 +10158,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x267(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26d2ac, 4(%esp)\n" /* "l_point_flag_efog.vsn" */
+        "movl $str_0026d2ac, 4(%esp)\n" /* "l_point_flag_efog.vsn" */
         "leal -0x1d34(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10167,7 +10176,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x265(%ebp), %eax\n" /* line 150 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26d2c4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026d2c4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d30(%ebp), %esi\n" /* size */
@@ -10175,7 +10184,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x263(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26e1c4, 4(%esp)\n" /* "l_point_flag_lfog.vsn" */
+        "movl $str_0026e1c4, 4(%esp)\n" /* "l_point_flag_lfog.vsn" */
         "leal -0x1d2c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10193,7 +10202,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x261(%ebp), %eax\n" /* line 151 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26e1dc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026e1dc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d28(%ebp), %esi\n" /* size */
@@ -10201,7 +10210,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x25f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f100, 4(%esp)\n" /* "l_point_flag_pfog.vsn" */
+        "movl $str_0026f100, 4(%esp)\n" /* "l_point_flag_pfog.vsn" */
         "leal -0x1d24(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10219,7 +10228,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x25d(%ebp), %eax\n" /* line 63 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26aef8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026aef8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d20(%ebp), %esi\n"
@@ -10227,7 +10236,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x25b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f118, 4(%esp)\n" /* "l_point_lfog.vsn" */
+        "movl $str_0026f118, 4(%esp)\n" /* "l_point_lfog.vsn" */
         "leal -0x1d1c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10245,7 +10254,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x259(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26a2a0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026a2a0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d18(%ebp), %esi\n"
@@ -10253,7 +10262,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x257(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f12c, 4(%esp)\n" /* "l_point_pfog.vsn" */
+        "movl $str_0026f12c, 4(%esp)\n" /* "l_point_pfog.vsn" */
         "leal -0x1d14(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10271,7 +10280,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x255(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f140, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026f140, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d10(%ebp), %esi\n"
@@ -10279,7 +10288,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x253(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f354, 4(%esp)\n" /* "mul.vsn" */
+        "movl $str_0026f354, 4(%esp)\n" /* "mul.vsn" */
         "leal -0x1d0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10297,7 +10306,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x251(%ebp), %eax\n" /* line 40 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f35c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026f35c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d08(%ebp), %esi\n"
@@ -10305,7 +10314,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x24f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f704, 4(%esp)\n" /* "mul_efog.vsn" */
+        "movl $str_0026f704, 4(%esp)\n" /* "mul_efog.vsn" */
         "leal -0x1d04(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10323,7 +10332,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x24d(%ebp), %eax\n" /* line 38 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f714, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026f714, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1d00(%ebp), %esi\n"
@@ -10331,7 +10340,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x24b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26fa94, 4(%esp)\n" /* "mul_lfog.vsn" */
+        "movl $str_0026fa94, 4(%esp)\n" /* "mul_lfog.vsn" */
         "leal -0x1cfc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10349,7 +10358,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x249(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f714, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026f714, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cf8(%ebp), %esi\n"
@@ -10357,7 +10366,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x247(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26faa4, 4(%esp)\n" /* "mul_pfog.vsn" */
+        "movl $str_0026faa4, 4(%esp)\n" /* "mul_pfog.vsn" */
         "leal -0x1cf4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10375,7 +10384,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x245(%ebp), %eax\n" /* line 14 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26fab4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026fab4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cf0(%ebp), %esi\n"
@@ -10383,7 +10392,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x243(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26fbd4, 4(%esp)\n" /* "null.vsn" */
+        "movl $str_0026fbd4, 4(%esp)\n" /* "null.vsn" */
         "leal -0x1cec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10401,7 +10410,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x241(%ebp), %eax\n" /* line 27 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26fbe0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026fbe0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ce8(%ebp), %esi\n"
@@ -10409,7 +10418,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x23f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26fe78, 4(%esp)\n" /* "objective_base.vsn" */
+        "movl $str_0026fe78, 4(%esp)\n" /* "objective_base.vsn" */
         "leal -0x1ce4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10427,7 +10436,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x23d(%ebp), %eax\n" /* line 42 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26fe8c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026fe8c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ce0(%ebp), %esi\n"
@@ -10435,7 +10444,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x23b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270284, 4(%esp)\n" /* "particle_cloud.vsn" */
+        "movl $str_00270284, 4(%esp)\n" /* "particle_cloud.vsn" */
         "leal -0x1cdc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10453,7 +10462,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x239(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270298, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00270298, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cd8(%ebp), %esi\n"
@@ -10461,7 +10470,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x237(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270720, 4(%esp)\n" /* "particle_cloud_outdoor.vsn" */
+        "movl $str_00270720, 4(%esp)\n" /* "particle_cloud_outdoor.vsn" */
         "leal -0x1cd4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10479,7 +10488,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x235(%ebp), %eax\n" /* line 32 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27073c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0027073c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cd0(%ebp), %esi\n"
@@ -10487,7 +10496,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x233(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270a3c, 4(%esp)\n" /* "shadowcookie_blur.vsn" */
+        "movl $str_00270a3c, 4(%esp)\n" /* "shadowcookie_blur.vsn" */
         "leal -0x1ccc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10505,7 +10514,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x231(%ebp), %eax\n" /* line 21 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270a54, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00270a54, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cc8(%ebp), %esi\n"
@@ -10513,7 +10522,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x22f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270c50, 4(%esp)\n" /* "shadowcookie_caster.vsn" */
+        "movl $str_00270c50, 4(%esp)\n" /* "shadowcookie_caster.vsn" */
         "leal -0x1cc4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10531,7 +10540,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x22d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00250c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cc0(%ebp), %esi\n"
@@ -10539,7 +10548,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x22b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270c68, 4(%esp)\n" /* "shadowcookie_display.vsn" */
+        "movl $str_00270c68, 4(%esp)\n" /* "shadowcookie_display.vsn" */
         "leal -0x1cbc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10557,7 +10566,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x229(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270c84, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00270c84, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cb8(%ebp), %esi\n"
@@ -10565,7 +10574,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x227(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270eb0, 4(%esp)\n" /* "shadowcookie_receiver.vsn" */
+        "movl $str_00270eb0, 4(%esp)\n" /* "shadowcookie_receiver.vsn" */
         "leal -0x1cb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10583,7 +10592,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x225(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f140, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026f140, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1cb0(%ebp), %esi\n"
@@ -10591,7 +10600,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x223(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270ecc, 4(%esp)\n" /* "shell_shock.vsn" */
+        "movl $str_00270ecc, 4(%esp)\n" /* "shell_shock.vsn" */
         "leal -0x1cac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10609,7 +10618,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x221(%ebp), %eax\n" /* line 22 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x270edc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00270edc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ca8(%ebp), %esi\n"
@@ -10617,7 +10626,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x21f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2710dc, 4(%esp)\n" /* "sky.vsn" */
+        "movl $str_002710dc, 4(%esp)\n" /* "sky.vsn" */
         "leal -0x1ca4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10635,7 +10644,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x21d(%ebp), %eax\n" /* line 21 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x250c2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00250c2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1ca0(%ebp), %esi\n"
@@ -10643,7 +10652,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x21b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2710e4, 4(%esp)\n" /* "textured_simple.vsn" */
+        "movl $str_002710e4, 4(%esp)\n" /* "textured_simple.vsn" */
         "leal -0x1c9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10661,7 +10670,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x219(%ebp), %eax\n" /* line 18 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2710f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002710f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c98(%ebp), %esi\n"
@@ -10669,7 +10678,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x217(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x271294, 4(%esp)\n" /* "transform_only.vsn" */
+        "movl $str_00271294, 4(%esp)\n" /* "transform_only.vsn" */
         "leal -0x1c94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10687,7 +10696,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x215(%ebp), %eax\n" /* line 42 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2712a8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002712a8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c90(%ebp), %esi\n"
@@ -10695,7 +10704,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x213(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x271688, 4(%esp)\n" /* "vertcol_eyeofs.vsn" */
+        "movl $str_00271688, 4(%esp)\n" /* "vertcol_eyeofs.vsn" */
         "leal -0x1c8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10713,7 +10722,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x211(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27169c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0027169c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c88(%ebp), %esi\n"
@@ -10721,7 +10730,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x20f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x271b7c, 4(%esp)\n" /* "vertcol_eyeofs_efog.vsn" */
+        "movl $str_00271b7c, 4(%esp)\n" /* "vertcol_eyeofs_efog.vsn" */
         "leal -0x1c84(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10739,7 +10748,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x20d(%ebp), %eax\n" /* line 51 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x271b94, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00271b94, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c80(%ebp), %esi\n"
@@ -10747,7 +10756,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x20b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27204c, 4(%esp)\n" /* "vertcol_eyeofs_lfog.vsn" */
+        "movl $str_0027204c, 4(%esp)\n" /* "vertcol_eyeofs_lfog.vsn" */
         "leal -0x1c7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10765,7 +10774,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x209(%ebp), %eax\n" /* line 23 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x26f140, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0026f140, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c78(%ebp), %esi\n"
@@ -10773,7 +10782,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x207(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x272064, 4(%esp)\n" /* "vertcol_simple.vsn" */
+        "movl $str_00272064, 4(%esp)\n" /* "vertcol_simple.vsn" */
         "leal -0x1c74(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10791,7 +10800,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x205(%ebp), %eax\n" /* line 35 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x272078, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00272078, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c70(%ebp), %esi\n"
@@ -10799,7 +10808,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x203(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2723a8, 4(%esp)\n" /* "vertcol_simple_efog.vsn" */
+        "movl $str_002723a8, 4(%esp)\n" /* "vertcol_simple_efog.vsn" */
         "leal -0x1c6c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10817,7 +10826,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x201(%ebp), %eax\n" /* line 32 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2723c0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002723c0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c68(%ebp), %esi\n"
@@ -10825,7 +10834,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1ff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2726b0, 4(%esp)\n" /* "vertcol_simple_lfog.vsn" */
+        "movl $str_002726b0, 4(%esp)\n" /* "vertcol_simple_lfog.vsn" */
         "leal -0x1c64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10843,7 +10852,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1fd(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2726c8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002726c8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c60(%ebp), %esi\n"
@@ -10851,7 +10860,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1fb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2729b8, 4(%esp)\n" /* "vertcol_simple_pfog.vsn" */
+        "movl $str_002729b8, 4(%esp)\n" /* "vertcol_simple_pfog.vsn" */
         "leal -0x1c5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10869,7 +10878,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1f9(%ebp), %eax\n" /* line 25 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2729d0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002729d0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c58(%ebp), %esi\n"
@@ -10877,7 +10886,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1f7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x272c1c, 4(%esp)\n" /* "vertcol_simple_scroll.vsn" */
+        "movl $str_00272c1c, 4(%esp)\n" /* "vertcol_simple_scroll.vsn" */
         "leal -0x1c54(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10895,7 +10904,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1f5(%ebp), %eax\n" /* line 20 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x272c38, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00272c38, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c50(%ebp), %esi\n"
@@ -10903,7 +10912,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1f3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x272e00, 4(%esp)\n" /* "vertcol_untextured.vsn" */
+        "movl $str_00272e00, 4(%esp)\n" /* "vertcol_untextured.vsn" */
         "leal -0x1c4c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10921,7 +10930,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1f1(%ebp), %eax\n" /* line 30 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x272e18, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00272e18, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c48(%ebp), %esi\n"
@@ -10929,7 +10938,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1ef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2730e8, 4(%esp)\n" /* "water_l_sun.vsn" */
+        "movl $str_002730e8, 4(%esp)\n" /* "water_l_sun.vsn" */
         "leal -0x1c44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10947,7 +10956,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ed(%ebp), %eax\n" /* line 42 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2730f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002730f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c40(%ebp), %esi\n"
@@ -10955,7 +10964,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1eb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2734e4, 4(%esp)\n" /* "water_l_sun_efog.vsn" */
+        "movl $str_002734e4, 4(%esp)\n" /* "water_l_sun_efog.vsn" */
         "leal -0x1c3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10973,7 +10982,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1e9(%ebp), %eax\n" /* line 39 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2734fc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002734fc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c38(%ebp), %esi\n"
@@ -10981,7 +10990,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1e7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2738a4, 4(%esp)\n" /* "water_l_sun_lfog.vsn" */
+        "movl $str_002738a4, 4(%esp)\n" /* "water_l_sun_lfog.vsn" */
         "leal -0x1c34(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -10999,7 +11008,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1e5(%ebp), %eax\n" /* line 40 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2738bc, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002738bc, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c30(%ebp), %esi\n"
@@ -11007,7 +11016,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1e3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x273c88, 4(%esp)\n" /* "water_l_sun_pfog.vsn" */
+        "movl $str_00273c88, 4(%esp)\n" /* "water_l_sun_pfog.vsn" */
         "leal -0x1c2c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11025,7 +11034,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1e1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x273ca0, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00273ca0, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c28(%ebp), %esi\n"
@@ -11033,7 +11042,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1df(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27405c, 4(%esp)\n" /* "zfeather.vsn" */
+        "movl $str_0027405c, 4(%esp)\n" /* "zfeather.vsn" */
         "leal -0x1c24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11051,7 +11060,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1dd(%ebp), %eax\n" /* line 51 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27406c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0027406c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c20(%ebp), %esi\n"
@@ -11059,7 +11068,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1db(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x274528, 4(%esp)\n" /* "zfeather_efog.vsn" */
+        "movl $str_00274528, 4(%esp)\n" /* "zfeather_efog.vsn" */
         "leal -0x1c1c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11077,7 +11086,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1d9(%ebp), %eax\n" /* line 49 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27453c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_0027453c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c18(%ebp), %esi\n"
@@ -11085,7 +11094,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1d7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2749d0, 4(%esp)\n" /* "zfeather_lfog.vsn" */
+        "movl $str_002749d0, 4(%esp)\n" /* "zfeather_lfog.vsn" */
         "leal -0x1c14(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11103,7 +11112,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1d5(%ebp), %eax\n" /* line 45 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2749e4, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002749e4, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c10(%ebp), %esi\n"
@@ -11111,7 +11120,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1d3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x274e2c, 4(%esp)\n" /* "zfeather_outdoor.vsn" */
+        "movl $str_00274e2c, 4(%esp)\n" /* "zfeather_outdoor.vsn" */
         "leal -0x1c0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11129,7 +11138,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1d1(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x274e44, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00274e44, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c08(%ebp), %esi\n"
@@ -11137,7 +11146,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1cf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x275390, 4(%esp)\n" /* "zfeather_outdoor_efog.vsn" */
+        "movl $str_00275390, 4(%esp)\n" /* "zfeather_outdoor_efog.vsn" */
         "leal -0x1c04(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11155,7 +11164,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1cd(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2753ac, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002753ac, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1c00(%ebp), %esi\n"
@@ -11163,7 +11172,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1cb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2758d0, 4(%esp)\n" /* "zfeather_outdoor_lfog.vsn" */
+        "movl $str_002758d0, 4(%esp)\n" /* "zfeather_outdoor_lfog.vsn" */
         "leal -0x1bfc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11181,7 +11190,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1c9(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2758ec, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002758ec, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1bf8(%ebp), %esi\n"
@@ -11189,7 +11198,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1c7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x275e10, 4(%esp)\n" /* "zfeather_outdoor_pfog.vsn" */
+        "movl $str_00275e10, 4(%esp)\n" /* "zfeather_outdoor_pfog.vsn" */
         "leal -0x1bf4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11207,7 +11216,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1c5(%ebp), %eax\n" /* line 49 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x275e2c, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_00275e2c, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1bf0(%ebp), %esi\n"
@@ -11215,7 +11224,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1c3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2762c0, 4(%esp)\n" /* "zfeather_pfog.vsn" */
+        "movl $str_002762c0, 4(%esp)\n" /* "zfeather_pfog.vsn" */
         "leal -0x1bec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11233,7 +11242,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1c1(%ebp), %eax\n" /* line 18 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2710f8, 4(%esp)\n" /* "!!ARBvp1.0
+        "movl $str_002710f8, 4(%esp)\n" /* "!!ARBvp1.0
 OUTPUT oPos = result.position;
 OUTPUT oD0 = resul" */
         "leal -0x1be8(%ebp), %esi\n"
@@ -11241,7 +11250,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1bf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2762d4, 4(%esp)\n" /* "zprepass.vsn" */
+        "movl $str_002762d4, 4(%esp)\n" /* "zprepass.vsn" */
         "leal -0x1be4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11259,7 +11268,7 @@ OUTPUT oD0 = resul" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1bd(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2762e4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002762e4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1be0(%ebp), %esi\n"
@@ -11267,7 +11276,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1bb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2764e8, 4(%esp)\n" /* "color_channel_mixer.pse" */
+        "movl $str_002764e8, 4(%esp)\n" /* "color_channel_mixer.pse" */
         "leal -0x1bdc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11285,7 +11294,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1b9(%ebp), %eax\n" /* line 90 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x276500, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00276500, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1bd8(%ebp), %esi\n"
@@ -11293,7 +11302,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1b7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2768e4, 4(%esp)\n" /* "debug_normals.pse" */
+        "movl $str_002768e4, 4(%esp)\n" /* "debug_normals.pse" */
         "leal -0x1bd4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11311,7 +11320,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1b5(%ebp), %eax\n" /* line 78 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2768f8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002768f8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1bd0(%ebp), %esi\n"
@@ -11319,7 +11328,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1b3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x276c10, 4(%esp)\n" /* "distortion.pse" */
+        "movl $str_00276c10, 4(%esp)\n" /* "distortion.pse" */
         "leal -0x1bcc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11337,7 +11346,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1b1(%ebp), %eax\n" /* line 83 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x276c20, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00276c20, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1bc8(%ebp), %esi\n"
@@ -11345,7 +11354,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1af(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x276f84, 4(%esp)\n" /* "distortion_floatz.pse" */
+        "movl $str_00276f84, 4(%esp)\n" /* "distortion_floatz.pse" */
         "leal -0x1bc4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11363,7 +11372,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ad(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x276f9c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00276f9c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1bc0(%ebp), %esi\n"
@@ -11371,7 +11380,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1ab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x277180, 4(%esp)\n" /* "filter_symmetric_1.pse" */
+        "movl $str_00277180, 4(%esp)\n" /* "filter_symmetric_1.pse" */
         "leal -0x1bbc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11389,7 +11398,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1a9(%ebp), %eax\n" /* line 81 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x277198, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00277198, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1bb8(%ebp), %esi\n"
@@ -11397,7 +11406,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1a7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x277498, 4(%esp)\n" /* "filter_symmetric_2.pse" */
+        "movl $str_00277498, 4(%esp)\n" /* "filter_symmetric_2.pse" */
         "leal -0x1bb4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11415,7 +11424,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1a5(%ebp), %eax\n" /* line 101 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2774b0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002774b0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1bb0(%ebp), %esi\n"
@@ -11423,7 +11432,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1a3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2778bc, 4(%esp)\n" /* "filter_symmetric_3.pse" */
+        "movl $str_002778bc, 4(%esp)\n" /* "filter_symmetric_3.pse" */
         "leal -0x1bac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11441,7 +11450,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1a1(%ebp), %eax\n" /* line 121 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2778d4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002778d4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1ba8(%ebp), %esi\n"
@@ -11449,7 +11458,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x19f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x277df0, 4(%esp)\n" /* "filter_symmetric_4.pse" */
+        "movl $str_00277df0, 4(%esp)\n" /* "filter_symmetric_4.pse" */
         "leal -0x1ba4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11467,7 +11476,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x19d(%ebp), %eax\n" /* line 131 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x277e08, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00277e08, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1ba0(%ebp), %esi\n"
@@ -11475,7 +11484,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x19b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27837c, 4(%esp)\n" /* "filter_symmetric_5.pse" */
+        "movl $str_0027837c, 4(%esp)\n" /* "filter_symmetric_5.pse" */
         "leal -0x1b9c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11493,7 +11502,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x199(%ebp), %eax\n" /* line 149 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x278394, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00278394, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1b98(%ebp), %esi\n" /* size */
@@ -11501,7 +11510,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x197(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2789f4, 4(%esp)\n" /* "filter_symmetric_6.pse" */
+        "movl $str_002789f4, 4(%esp)\n" /* "filter_symmetric_6.pse" */
         "leal -0x1b94(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11519,7 +11528,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x195(%ebp), %eax\n" /* line 167 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x278a0c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00278a0c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1b90(%ebp), %esi\n" /* size */
@@ -11527,7 +11536,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x193(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279158, 4(%esp)\n" /* "filter_symmetric_7.pse" */
+        "movl $str_00279158, 4(%esp)\n" /* "filter_symmetric_7.pse" */
         "leal -0x1b8c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11545,7 +11554,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x191(%ebp), %eax\n" /* line 185 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279170, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00279170, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1b88(%ebp), %esi\n" /* size */
@@ -11553,7 +11562,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x18f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2799a4, 4(%esp)\n" /* "filter_symmetric_8.pse" */
+        "movl $str_002799a4, 4(%esp)\n" /* "filter_symmetric_8.pse" */
         "leal -0x1b84(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11571,7 +11580,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x18d(%ebp), %eax\n" /* line 29 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2799bc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002799bc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b80(%ebp), %esi\n"
@@ -11579,7 +11588,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x18b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279b24, 4(%esp)\n" /* "floatz_build.pse" */
+        "movl $str_00279b24, 4(%esp)\n" /* "floatz_build.pse" */
         "leal -0x1b7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11597,7 +11606,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x189(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279b38, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00279b38, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b78(%ebp), %esi\n"
@@ -11605,7 +11614,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x187(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279d40, 4(%esp)\n" /* "floatz_build_atest.pse" */
+        "movl $str_00279d40, 4(%esp)\n" /* "floatz_build_atest.pse" */
         "leal -0x1b74(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11623,7 +11632,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x185(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279b38, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00279b38, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b70(%ebp), %esi\n"
@@ -11631,7 +11640,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x183(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279d58, 4(%esp)\n" /* "floatz_build_atest_scroll.pse" */
+        "movl $str_00279d58, 4(%esp)\n" /* "floatz_build_atest_scroll.pse" */
         "leal -0x1b6c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11649,7 +11658,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x181(%ebp), %eax\n" /* line 29 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279d78, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00279d78, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b68(%ebp), %esi\n"
@@ -11657,7 +11666,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x17f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279ee0, 4(%esp)\n" /* "floatz_clear.pse" */
+        "movl $str_00279ee0, 4(%esp)\n" /* "floatz_clear.pse" */
         "leal -0x1b64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11675,7 +11684,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x17d(%ebp), %eax\n" /* line 44 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x279ef4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00279ef4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1b60(%ebp), %esi\n"
@@ -11683,7 +11692,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x17b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27a014, 4(%esp)\n" /* "glow_apply_bloom.pse" */
+        "movl $str_0027a014, 4(%esp)\n" /* "glow_apply_bloom.pse" */
         "leal -0x1b5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11701,7 +11710,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x179(%ebp), %eax\n" /* line 57 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27a02c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027a02c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1b58(%ebp), %esi\n"
@@ -11709,7 +11718,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x177(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27a1e4, 4(%esp)\n" /* "glow_apply_sky_bleed.pse" */
+        "movl $str_0027a1e4, 4(%esp)\n" /* "glow_apply_sky_bleed.pse" */
         "leal -0x1b54(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11727,7 +11736,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x175(%ebp), %eax\n" /* line 181 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27a200, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027a200, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1b50(%ebp), %esi\n" /* size */
@@ -11735,7 +11744,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x173(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27aa14, 4(%esp)\n" /* "glow_setup.pse" */
+        "movl $str_0027aa14, 4(%esp)\n" /* "glow_setup.pse" */
         "leal -0x1b4c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11753,7 +11762,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x171(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27aa24, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027aa24, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b48(%ebp), %esi\n"
@@ -11761,7 +11770,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x16f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27abd8, 4(%esp)\n" /* "grain_overlay.pse" */
+        "movl $str_0027abd8, 4(%esp)\n" /* "grain_overlay.pse" */
         "leal -0x1b44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11779,7 +11788,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x16d(%ebp), %eax\n" /* line 135 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27abec, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027abec, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b40(%ebp), %esi\n"
@@ -11787,7 +11796,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x16b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27b138, 4(%esp)\n" /* "lmap.pse" */
+        "movl $str_0027b138, 4(%esp)\n" /* "lmap.pse" */
         "leal -0x1b3c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11805,7 +11814,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x169(%ebp), %eax\n" /* line 133 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27b144, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027b144, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b38(%ebp), %esi\n"
@@ -11813,7 +11822,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x167(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27b67c, 4(%esp)\n" /* "lmap_a.pse" */
+        "movl $str_0027b67c, 4(%esp)\n" /* "lmap_a.pse" */
         "leal -0x1b34(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11831,7 +11840,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x165(%ebp), %eax\n" /* line 147 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27b688, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027b688, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b30(%ebp), %esi\n" /* size */
@@ -11839,7 +11848,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x163(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27bc44, 4(%esp)\n" /* "lmap_a_dtl.pse" */
+        "movl $str_0027bc44, 4(%esp)\n" /* "lmap_a_dtl.pse" */
         "leal -0x1b2c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11857,7 +11866,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x161(%ebp), %eax\n" /* line 153 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27bc54, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027bc54, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b28(%ebp), %esi\n" /* size */
@@ -11865,7 +11874,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x15f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27c248, 4(%esp)\n" /* "lmap_a_dtl_pfog.pse" */
+        "movl $str_0027c248, 4(%esp)\n" /* "lmap_a_dtl_pfog.pse" */
         "leal -0x1b24(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11883,7 +11892,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x15d(%ebp), %eax\n" /* line 136 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27c25c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027c25c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b20(%ebp), %esi\n"
@@ -11891,7 +11900,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x15b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27c77c, 4(%esp)\n" /* "lmap_a_efog.pse" */
+        "movl $str_0027c77c, 4(%esp)\n" /* "lmap_a_efog.pse" */
         "leal -0x1b1c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11909,7 +11918,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x159(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27c25c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027c25c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b18(%ebp), %esi\n"
@@ -11917,7 +11926,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x157(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27c78c, 4(%esp)\n" /* "lmap_a_lfog.pse" */
+        "movl $str_0027c78c, 4(%esp)\n" /* "lmap_a_lfog.pse" */
         "leal -0x1b14(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11935,7 +11944,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x155(%ebp), %eax\n" /* line 139 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27c79c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027c79c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b10(%ebp), %esi\n"
@@ -11943,7 +11952,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x153(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27cd0c, 4(%esp)\n" /* "lmap_a_pfog.pse" */
+        "movl $str_0027cd0c, 4(%esp)\n" /* "lmap_a_pfog.pse" */
         "leal -0x1b0c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11961,7 +11970,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x151(%ebp), %eax\n" /* line 168 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27cd1c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027cd1c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b08(%ebp), %esi\n" /* size */
@@ -11969,7 +11978,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x14f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27d3d4, 4(%esp)\n" /* "lmap_a_s.pse" */
+        "movl $str_0027d3d4, 4(%esp)\n" /* "lmap_a_s.pse" */
         "leal -0x1b04(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -11987,7 +11996,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x14d(%ebp), %eax\n" /* line 185 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27d3e4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027d3e4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1b00(%ebp), %esi\n" /* size */
@@ -11995,7 +12004,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x14b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27db40, 4(%esp)\n" /* "lmap_a_s_dtl.pse" */
+        "movl $str_0027db40, 4(%esp)\n" /* "lmap_a_s_dtl.pse" */
         "leal -0x1afc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12013,7 +12022,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x149(%ebp), %eax\n" /* line 190 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27db54, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027db54, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1af8(%ebp), %esi\n" /* size */
@@ -12021,7 +12030,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x147(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27e2e4, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.pse" */
+        "movl $str_0027e2e4, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.pse" */
         "leal -0x1af4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12039,7 +12048,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x145(%ebp), %eax\n" /* line 173 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27e2fc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027e2fc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1af0(%ebp), %esi\n" /* size */
@@ -12047,7 +12056,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x143(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27e9ac, 4(%esp)\n" /* "lmap_a_s_efog.pse" */
+        "movl $str_0027e9ac, 4(%esp)\n" /* "lmap_a_s_efog.pse" */
         "leal -0x1aec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12065,7 +12074,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x141(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27e2fc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027e2fc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ae8(%ebp), %esi\n" /* size */
@@ -12073,7 +12082,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x13f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27e9c0, 4(%esp)\n" /* "lmap_a_s_lfog.pse" */
+        "movl $str_0027e9c0, 4(%esp)\n" /* "lmap_a_s_lfog.pse" */
         "leal -0x1ae4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12091,7 +12100,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x13d(%ebp), %eax\n" /* line 174 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27e9d4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027e9d4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ae0(%ebp), %esi\n" /* size */
@@ -12099,7 +12108,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x13b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27f0c4, 4(%esp)\n" /* "lmap_a_s_pfog.pse" */
+        "movl $str_0027f0c4, 4(%esp)\n" /* "lmap_a_s_pfog.pse" */
         "leal -0x1adc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12117,7 +12126,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x139(%ebp), %eax\n" /* line 149 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27f0d8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027f0d8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ad8(%ebp), %esi\n" /* size */
@@ -12125,7 +12134,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x137(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27f6a4, 4(%esp)\n" /* "lmap_dtl.pse" */
+        "movl $str_0027f6a4, 4(%esp)\n" /* "lmap_dtl.pse" */
         "leal -0x1ad4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12143,7 +12152,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x135(%ebp), %eax\n" /* line 155 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27f6b4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027f6b4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ad0(%ebp), %esi\n" /* size */
@@ -12151,7 +12160,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x133(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27fcbc, 4(%esp)\n" /* "lmap_dtl_pfog.pse" */
+        "movl $str_0027fcbc, 4(%esp)\n" /* "lmap_dtl_pfog.pse" */
         "leal -0x1acc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12169,7 +12178,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x131(%ebp), %eax\n" /* line 135 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27fcd0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027fcd0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ac8(%ebp), %esi\n"
@@ -12177,7 +12186,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x12f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2801f0, 4(%esp)\n" /* "lmap_efog.pse" */
+        "movl $str_002801f0, 4(%esp)\n" /* "lmap_efog.pse" */
         "leal -0x1ac4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12195,7 +12204,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x12d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27fcd0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027fcd0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ac0(%ebp), %esi\n"
@@ -12203,7 +12212,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x12b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x280200, 4(%esp)\n" /* "lmap_lfog.pse" */
+        "movl $str_00280200, 4(%esp)\n" /* "lmap_lfog.pse" */
         "leal -0x1abc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12221,7 +12230,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x129(%ebp), %eax\n" /* line 140 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x280210, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00280210, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ab8(%ebp), %esi\n"
@@ -12229,7 +12238,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x127(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x280794, 4(%esp)\n" /* "lmap_pfog.pse" */
+        "movl $str_00280794, 4(%esp)\n" /* "lmap_pfog.pse" */
         "leal -0x1ab4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12247,7 +12256,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x125(%ebp), %eax\n" /* line 172 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2807a4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002807a4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1ab0(%ebp), %esi\n" /* size */
@@ -12255,7 +12264,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x123(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x280e88, 4(%esp)\n" /* "lmap_s.pse" */
+        "movl $str_00280e88, 4(%esp)\n" /* "lmap_s.pse" */
         "leal -0x1aac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12273,7 +12282,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x121(%ebp), %eax\n" /* line 186 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x280e94, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00280e94, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1aa8(%ebp), %esi\n" /* size */
@@ -12281,7 +12290,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x11f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x281600, 4(%esp)\n" /* "lmap_s_dtl.pse" */
+        "movl $str_00281600, 4(%esp)\n" /* "lmap_s_dtl.pse" */
         "leal -0x1aa4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12299,7 +12308,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x11d(%ebp), %eax\n" /* line 192 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x281610, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00281610, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1aa0(%ebp), %esi\n" /* size */
@@ -12307,7 +12316,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x11b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x281db4, 4(%esp)\n" /* "lmap_s_dtl_pfog.pse" */
+        "movl $str_00281db4, 4(%esp)\n" /* "lmap_s_dtl_pfog.pse" */
         "leal -0x1a9c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12325,7 +12334,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x119(%ebp), %eax\n" /* line 175 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x281dc8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00281dc8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a98(%ebp), %esi\n" /* size */
@@ -12333,7 +12342,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x117(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x282494, 4(%esp)\n" /* "lmap_s_efog.pse" */
+        "movl $str_00282494, 4(%esp)\n" /* "lmap_s_efog.pse" */
         "leal -0x1a94(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12351,7 +12360,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x115(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x281dc8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00281dc8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a90(%ebp), %esi\n" /* size */
@@ -12359,7 +12368,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x113(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2824a4, 4(%esp)\n" /* "lmap_s_lfog.pse" */
+        "movl $str_002824a4, 4(%esp)\n" /* "lmap_s_lfog.pse" */
         "leal -0x1a8c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12377,7 +12386,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x111(%ebp), %eax\n" /* line 178 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2824b4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002824b4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a88(%ebp), %esi\n" /* size */
@@ -12385,7 +12394,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x10f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x282bd0, 4(%esp)\n" /* "lmap_s_pfog.pse" */
+        "movl $str_00282bd0, 4(%esp)\n" /* "lmap_s_pfog.pse" */
         "leal -0x1a84(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12403,7 +12412,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x10d(%ebp), %eax\n" /* line 146 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x282be0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00282be0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a80(%ebp), %esi\n" /* size */
@@ -12411,7 +12420,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x10b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2831bc, 4(%esp)\n" /* "lprobe.pse" */
+        "movl $str_002831bc, 4(%esp)\n" /* "lprobe.pse" */
         "leal -0x1a7c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12429,7 +12438,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x109(%ebp), %eax\n" /* line 144 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2831c8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002831c8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a78(%ebp), %esi\n" /* size */
@@ -12437,7 +12446,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x107(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x283790, 4(%esp)\n" /* "lprobe_a.pse" */
+        "movl $str_00283790, 4(%esp)\n" /* "lprobe_a.pse" */
         "leal -0x1a74(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12455,7 +12464,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x105(%ebp), %eax\n" /* line 159 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2837a0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002837a0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a70(%ebp), %esi\n" /* size */
@@ -12463,7 +12472,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x103(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x283dec, 4(%esp)\n" /* "lprobe_a_dtl.pse" */
+        "movl $str_00283dec, 4(%esp)\n" /* "lprobe_a_dtl.pse" */
         "leal -0x1a6c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12481,7 +12490,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x101(%ebp), %eax\n" /* line 166 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x283e00, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00283e00, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a68(%ebp), %esi\n" /* size */
@@ -12489,7 +12498,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xff(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2844a8, 4(%esp)\n" /* "lprobe_a_dtl_pfog.pse" */
+        "movl $str_002844a8, 4(%esp)\n" /* "lprobe_a_dtl_pfog.pse" */
         "leal -0x1a64(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12507,7 +12516,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xfd(%ebp), %eax\n" /* line 149 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2844c0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002844c0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a60(%ebp), %esi\n" /* size */
@@ -12515,7 +12524,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xfb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x284a7c, 4(%esp)\n" /* "lprobe_a_efog.pse" */
+        "movl $str_00284a7c, 4(%esp)\n" /* "lprobe_a_efog.pse" */
         "leal -0x1a5c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12533,7 +12542,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xf9(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2844c0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002844c0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a58(%ebp), %esi\n" /* size */
@@ -12541,7 +12550,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xf7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x284a90, 4(%esp)\n" /* "lprobe_a_lfog.pse" */
+        "movl $str_00284a90, 4(%esp)\n" /* "lprobe_a_lfog.pse" */
         "leal -0x1a54(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12559,7 +12568,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xf5(%ebp), %eax\n" /* line 152 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x284aa4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00284aa4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a50(%ebp), %esi\n" /* size */
@@ -12567,7 +12576,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xf3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2850c8, 4(%esp)\n" /* "lprobe_a_pfog.pse" */
+        "movl $str_002850c8, 4(%esp)\n" /* "lprobe_a_pfog.pse" */
         "leal -0x1a4c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12585,7 +12594,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xf1(%ebp), %eax\n" /* line 179 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2850dc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002850dc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a48(%ebp), %esi\n" /* size */
@@ -12593,7 +12602,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xef(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x285824, 4(%esp)\n" /* "lprobe_a_s.pse" */
+        "movl $str_00285824, 4(%esp)\n" /* "lprobe_a_s.pse" */
         "leal -0x1a44(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12611,7 +12620,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xed(%ebp), %eax\n" /* line 196 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x285834, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00285834, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a40(%ebp), %esi\n" /* size */
@@ -12619,7 +12628,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xeb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x286018, 4(%esp)\n" /* "lprobe_a_s_dtl.pse" */
+        "movl $str_00286018, 4(%esp)\n" /* "lprobe_a_s_dtl.pse" */
         "leal -0x1a3c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12637,7 +12646,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xe9(%ebp), %eax\n" /* line 203 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28602c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028602c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a38(%ebp), %esi\n" /* size */
@@ -12645,7 +12654,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xe7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28686c, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.pse" */
+        "movl $str_0028686c, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.pse" */
         "leal -0x1a34(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12663,7 +12672,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xe5(%ebp), %eax\n" /* line 186 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x286884, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00286884, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a30(%ebp), %esi\n" /* size */
@@ -12671,7 +12680,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xe3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x286fd4, 4(%esp)\n" /* "lprobe_a_s_efog.pse" */
+        "movl $str_00286fd4, 4(%esp)\n" /* "lprobe_a_s_efog.pse" */
         "leal -0x1a2c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12689,7 +12698,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xe1(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x286884, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00286884, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a28(%ebp), %esi\n" /* size */
@@ -12697,7 +12706,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xdf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x286fe8, 4(%esp)\n" /* "lprobe_a_s_lfog.pse" */
+        "movl $str_00286fe8, 4(%esp)\n" /* "lprobe_a_s_lfog.pse" */
         "leal -0x1a24(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12715,7 +12724,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xdd(%ebp), %eax\n" /* line 187 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x286ffc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00286ffc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a20(%ebp), %esi\n" /* size */
@@ -12723,7 +12732,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xdb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2877a0, 4(%esp)\n" /* "lprobe_a_s_pfog.pse" */
+        "movl $str_002877a0, 4(%esp)\n" /* "lprobe_a_s_pfog.pse" */
         "leal -0x1a1c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12741,7 +12750,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xd9(%ebp), %eax\n" /* line 160 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2877b4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002877b4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a18(%ebp), %esi\n" /* size */
@@ -12749,7 +12758,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xd7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x287e10, 4(%esp)\n" /* "lprobe_dtl.pse" */
+        "movl $str_00287e10, 4(%esp)\n" /* "lprobe_dtl.pse" */
         "leal -0x1a14(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12767,7 +12776,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xd5(%ebp), %eax\n" /* line 168 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x287e20, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00287e20, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a10(%ebp), %esi\n" /* size */
@@ -12775,7 +12784,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xd3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2884dc, 4(%esp)\n" /* "lprobe_dtl_pfog.pse" */
+        "movl $str_002884dc, 4(%esp)\n" /* "lprobe_dtl_pfog.pse" */
         "leal -0x1a0c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12793,7 +12802,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xd1(%ebp), %eax\n" /* line 149 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2884f0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002884f0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a08(%ebp), %esi\n" /* size */
@@ -12801,7 +12810,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xcf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x288aac, 4(%esp)\n" /* "lprobe_efog.pse" */
+        "movl $str_00288aac, 4(%esp)\n" /* "lprobe_efog.pse" */
         "leal -0x1a04(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12819,7 +12828,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xcd(%ebp), %eax\n" /* line 182 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x288abc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00288abc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1a00(%ebp), %esi\n" /* size */
@@ -12827,7 +12836,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xcb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x289224, 4(%esp)\n" /* "lprobe_flag_a_s.pse" */
+        "movl $str_00289224, 4(%esp)\n" /* "lprobe_flag_a_s.pse" */
         "leal -0x19fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12845,7 +12854,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xc9(%ebp), %eax\n" /* line 189 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x289238, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00289238, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19f8(%ebp), %esi\n" /* size */
@@ -12853,7 +12862,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xc7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2899f8, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.pse" */
+        "movl $str_002899f8, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.pse" */
         "leal -0x19f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12871,7 +12880,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xc5(%ebp), %eax\n" /* line 186 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x289a14, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00289a14, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19f0(%ebp), %esi\n" /* size */
@@ -12879,7 +12888,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xc3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a1a8, 4(%esp)\n" /* "lprobe_flag_s.pse" */
+        "movl $str_0028a1a8, 4(%esp)\n" /* "lprobe_flag_s.pse" */
         "leal -0x19ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12897,7 +12906,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xc1(%ebp), %eax\n" /* line 182 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x288abc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00288abc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19e8(%ebp), %esi\n" /* size */
@@ -12905,7 +12914,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xbf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a1bc, 4(%esp)\n" /* "lprobe_flag_sm_a_s.pse" */
+        "movl $str_0028a1bc, 4(%esp)\n" /* "lprobe_flag_sm_a_s.pse" */
         "leal -0x19e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12923,7 +12932,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xbd(%ebp), %eax\n" /* line 186 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x289a14, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00289a14, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19e0(%ebp), %esi\n" /* size */
@@ -12931,7 +12940,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xbb(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a1d4, 4(%esp)\n" /* "lprobe_flag_sm_s.pse" */
+        "movl $str_0028a1d4, 4(%esp)\n" /* "lprobe_flag_sm_s.pse" */
         "leal -0x19dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12949,7 +12958,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xb9(%ebp), %eax\n" /* line 190 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a1ec, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028a1ec, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19d8(%ebp), %esi\n" /* size */
@@ -12957,7 +12966,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xb7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a974, 4(%esp)\n" /* "lprobe_flag_s_efog.pse" */
+        "movl $str_0028a974, 4(%esp)\n" /* "lprobe_flag_s_efog.pse" */
         "leal -0x19d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -12975,7 +12984,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xb5(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a1ec, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028a1ec, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19d0(%ebp), %esi\n" /* size */
@@ -12983,7 +12992,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xb3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a98c, 4(%esp)\n" /* "lprobe_flag_s_lfog.pse" */
+        "movl $str_0028a98c, 4(%esp)\n" /* "lprobe_flag_s_lfog.pse" */
         "leal -0x19cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13001,7 +13010,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xb1(%ebp), %eax\n" /* line 149 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2884f0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002884f0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19c8(%ebp), %esi\n" /* size */
@@ -13009,7 +13018,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xaf(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a9a4, 4(%esp)\n" /* "lprobe_lfog.pse" */
+        "movl $str_0028a9a4, 4(%esp)\n" /* "lprobe_lfog.pse" */
         "leal -0x19c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13027,7 +13036,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xad(%ebp), %eax\n" /* line 154 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28a9b4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028a9b4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19c0(%ebp), %esi\n" /* size */
@@ -13035,7 +13044,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xab(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28afec, 4(%esp)\n" /* "lprobe_pfog.pse" */
+        "movl $str_0028afec, 4(%esp)\n" /* "lprobe_pfog.pse" */
         "leal -0x19bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13053,7 +13062,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xa9(%ebp), %eax\n" /* line 183 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28affc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028affc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19b8(%ebp), %esi\n" /* size */
@@ -13061,7 +13070,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xa7(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28b770, 4(%esp)\n" /* "lprobe_s.pse" */
+        "movl $str_0028b770, 4(%esp)\n" /* "lprobe_s.pse" */
         "leal -0x19b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13079,7 +13088,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xa5(%ebp), %eax\n" /* line 147 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x282be0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00282be0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19b0(%ebp), %esi\n" /* size */
@@ -13087,7 +13096,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xa3(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28b780, 4(%esp)\n" /* "lprobe_scroll.pse" */
+        "movl $str_0028b780, 4(%esp)\n" /* "lprobe_scroll.pse" */
         "leal -0x19ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13105,7 +13114,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0xa1(%ebp), %eax\n" /* line 149 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2884f0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002884f0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19a8(%ebp), %esi\n" /* size */
@@ -13113,7 +13122,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x9f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28b794, 4(%esp)\n" /* "lprobe_scroll_efog.pse" */
+        "movl $str_0028b794, 4(%esp)\n" /* "lprobe_scroll_efog.pse" */
         "leal -0x19a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13131,7 +13140,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x9d(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2884f0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002884f0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x19a0(%ebp), %esi\n" /* size */
@@ -13139,7 +13148,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x9b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28b7ac, 4(%esp)\n" /* "lprobe_scroll_lfog.pse" */
+        "movl $str_0028b7ac, 4(%esp)\n" /* "lprobe_scroll_lfog.pse" */
         "leal -0x199c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13157,7 +13166,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x99(%ebp), %eax\n" /* line 125 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28b7c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028b7c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1998(%ebp), %esi\n"
@@ -13165,7 +13174,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x97(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28bd64, 4(%esp)\n" /* "lprobe_sm.pse" */
+        "movl $str_0028bd64, 4(%esp)\n" /* "lprobe_sm.pse" */
         "leal -0x1994(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13183,7 +13192,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x95(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28b7c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028b7c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1990(%ebp), %esi\n"
@@ -13191,7 +13200,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x93(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28bd74, 4(%esp)\n" /* "lprobe_smc.pse" */
+        "movl $str_0028bd74, 4(%esp)\n" /* "lprobe_smc.pse" */
         "leal -0x198c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13209,7 +13218,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x91(%ebp), %eax\n" /* line 124 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28bd84, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028bd84, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1988(%ebp), %esi\n"
@@ -13217,7 +13226,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x8f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c314, 4(%esp)\n" /* "lprobe_smc_a.pse" */
+        "movl $str_0028c314, 4(%esp)\n" /* "lprobe_smc_a.pse" */
         "leal -0x1984(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13235,7 +13244,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x8d(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c328, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c328, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1980(%ebp), %esi\n"
@@ -13243,7 +13252,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x8b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c5b4, 4(%esp)\n" /* "lprobe_smc_amb.pse" */
+        "movl $str_0028c5b4, 4(%esp)\n" /* "lprobe_smc_amb.pse" */
         "leal -0x197c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13261,7 +13270,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x89(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c5c8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c5c8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1978(%ebp), %esi\n"
@@ -13269,7 +13278,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x87(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c840, 4(%esp)\n" /* "lprobe_smc_amb_a.pse" */
+        "movl $str_0028c840, 4(%esp)\n" /* "lprobe_smc_amb_a.pse" */
         "leal -0x1974(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13287,7 +13296,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x85(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c5c8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c5c8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1970(%ebp), %esi\n"
@@ -13295,7 +13304,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x83(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c858, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.pse" */
+        "movl $str_0028c858, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.pse" */
         "leal -0x196c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13313,7 +13322,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x81(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c874, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c874, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1968(%ebp), %esi\n"
@@ -13321,7 +13330,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28cb48, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.pse" */
+        "movl $str_0028cb48, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.pse" */
         "leal -0x1964(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13339,7 +13348,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7d(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28cb68, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028cb68, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1960(%ebp), %esi\n"
@@ -13347,7 +13356,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28cdd8, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.pse" */
+        "movl $str_0028cdd8, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.pse" */
         "leal -0x195c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13365,7 +13374,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x79(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28cb68, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028cb68, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1958(%ebp), %esi\n"
@@ -13373,7 +13382,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x77(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28cdf4, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.pse" */
+        "movl $str_0028cdf4, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.pse" */
         "leal -0x1954(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13391,7 +13400,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x75(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c874, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c874, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1950(%ebp), %esi\n"
@@ -13399,7 +13408,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x73(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ce10, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.pse" */
+        "movl $str_0028ce10, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.pse" */
         "leal -0x194c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13417,7 +13426,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x71(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c328, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c328, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1948(%ebp), %esi\n"
@@ -13425,7 +13434,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ce2c, 4(%esp)\n" /* "lprobe_smc_amb_dtl.pse" */
+        "movl $str_0028ce2c, 4(%esp)\n" /* "lprobe_smc_amb_dtl.pse" */
         "leal -0x1944(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13443,7 +13452,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6d(%ebp), %eax\n" /* line 73 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ce44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028ce44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1940(%ebp), %esi\n"
@@ -13451,7 +13460,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d12c, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.pse" */
+        "movl $str_0028d12c, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.pse" */
         "leal -0x193c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13469,7 +13478,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x69(%ebp), %eax\n" /* line 70 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d148, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028d148, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1938(%ebp), %esi\n"
@@ -13477,7 +13486,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x67(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d3cc, 4(%esp)\n" /* "lprobe_smc_amb_efog.pse" */
+        "movl $str_0028d3cc, 4(%esp)\n" /* "lprobe_smc_amb_efog.pse" */
         "leal -0x1934(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13495,7 +13504,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x65(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d148, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028d148, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1930(%ebp), %esi\n"
@@ -13503,7 +13512,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x63(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d3e4, 4(%esp)\n" /* "lprobe_smc_amb_lfog.pse" */
+        "movl $str_0028d3e4, 4(%esp)\n" /* "lprobe_smc_amb_lfog.pse" */
         "leal -0x192c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13521,7 +13530,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x61(%ebp), %eax\n" /* line 73 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ce44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028ce44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1928(%ebp), %esi\n"
@@ -13529,7 +13538,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d3fc, 4(%esp)\n" /* "lprobe_smc_amb_pfog.pse" */
+        "movl $str_0028d3fc, 4(%esp)\n" /* "lprobe_smc_amb_pfog.pse" */
         "leal -0x1924(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13547,7 +13556,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5d(%ebp), %eax\n" /* line 138 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d414, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028d414, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1920(%ebp), %esi\n"
@@ -13555,7 +13564,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28da24, 4(%esp)\n" /* "lprobe_smc_a_dtl.pse" */
+        "movl $str_0028da24, 4(%esp)\n" /* "lprobe_smc_a_dtl.pse" */
         "leal -0x191c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13573,7 +13582,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x59(%ebp), %eax\n" /* line 145 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28da3c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028da3c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1918(%ebp), %esi\n" /* size */
@@ -13581,7 +13590,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x57(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e0a8, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.pse" */
+        "movl $str_0028e0a8, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.pse" */
         "leal -0x1914(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13599,7 +13608,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x55(%ebp), %eax\n" /* line 122 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e0c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028e0c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1910(%ebp), %esi\n"
@@ -13607,7 +13616,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x53(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e610, 4(%esp)\n" /* "lprobe_smc_a_efog.pse" */
+        "movl $str_0028e610, 4(%esp)\n" /* "lprobe_smc_a_efog.pse" */
         "leal -0x190c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13625,7 +13634,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x51(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e0c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028e0c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1908(%ebp), %esi\n"
@@ -13633,7 +13642,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e628, 4(%esp)\n" /* "lprobe_smc_a_lfog.pse" */
+        "movl $str_0028e628, 4(%esp)\n" /* "lprobe_smc_a_lfog.pse" */
         "leal -0x1904(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13651,7 +13660,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4d(%ebp), %eax\n" /* line 131 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e640, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028e640, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1900(%ebp), %esi\n"
@@ -13659,7 +13668,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ec2c, 4(%esp)\n" /* "lprobe_smc_a_pfog.pse" */
+        "movl $str_0028ec2c, 4(%esp)\n" /* "lprobe_smc_a_pfog.pse" */
         "leal -0x18fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13677,7 +13686,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x49(%ebp), %eax\n" /* line 159 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ec44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028ec44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18f8(%ebp), %esi\n" /* size */
@@ -13685,7 +13694,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x47(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28f354, 4(%esp)\n" /* "lprobe_smc_a_s.pse" */
+        "movl $str_0028f354, 4(%esp)\n" /* "lprobe_smc_a_s.pse" */
         "leal -0x18f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13703,7 +13712,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x45(%ebp), %eax\n" /* line 173 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28f368, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028f368, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18f0(%ebp), %esi\n" /* size */
@@ -13711,7 +13720,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x43(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28faf8, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.pse" */
+        "movl $str_0028faf8, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.pse" */
         "leal -0x18ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13729,7 +13738,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x41(%ebp), %eax\n" /* line 180 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28fb10, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028fb10, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18e8(%ebp), %esi\n" /* size */
@@ -13737,7 +13746,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2902fc, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.pse" */
+        "movl $str_002902fc, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.pse" */
         "leal -0x18e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13755,7 +13764,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3d(%ebp), %eax\n" /* line 161 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290318, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00290318, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18e0(%ebp), %esi\n" /* size */
@@ -13763,7 +13772,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290a14, 4(%esp)\n" /* "lprobe_smc_a_s_efog.pse" */
+        "movl $str_00290a14, 4(%esp)\n" /* "lprobe_smc_a_s_efog.pse" */
         "leal -0x18dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13781,7 +13790,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x39(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290318, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00290318, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18d8(%ebp), %esi\n" /* size */
@@ -13789,7 +13798,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x37(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290a2c, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.pse" */
+        "movl $str_00290a2c, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.pse" */
         "leal -0x18d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13807,7 +13816,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x35(%ebp), %eax\n" /* line 166 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290a44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00290a44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18d0(%ebp), %esi\n" /* size */
@@ -13815,7 +13824,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x33(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2911ac, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.pse" */
+        "movl $str_002911ac, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.pse" */
         "leal -0x18cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13833,7 +13842,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x31(%ebp), %eax\n" /* line 140 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2911c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002911c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18c8(%ebp), %esi\n"
@@ -13841,7 +13850,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2917e4, 4(%esp)\n" /* "lprobe_smc_dtl.pse" */
+        "movl $str_002917e4, 4(%esp)\n" /* "lprobe_smc_dtl.pse" */
         "leal -0x18c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13859,7 +13868,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2d(%ebp), %eax\n" /* line 147 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2917f8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002917f8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18c0(%ebp), %esi\n" /* size */
@@ -13867,7 +13876,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x291e78, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.pse" */
+        "movl $str_00291e78, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.pse" */
         "leal -0x18bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13885,7 +13894,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x29(%ebp), %eax\n" /* line 124 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x291e90, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00291e90, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18b8(%ebp), %esi\n"
@@ -13893,7 +13902,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x27(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2923f8, 4(%esp)\n" /* "lprobe_smc_efog.pse" */
+        "movl $str_002923f8, 4(%esp)\n" /* "lprobe_smc_efog.pse" */
         "leal -0x18b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13911,7 +13920,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x25(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x291e90, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00291e90, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18b0(%ebp), %esi\n"
@@ -13919,7 +13928,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x23(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29240c, 4(%esp)\n" /* "lprobe_smc_lfog.pse" */
+        "movl $str_0029240c, 4(%esp)\n" /* "lprobe_smc_lfog.pse" */
         "leal -0x18ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13937,7 +13946,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x21(%ebp), %eax\n" /* line 133 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x292420, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00292420, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18a8(%ebp), %esi\n"
@@ -13945,7 +13954,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x292a20, 4(%esp)\n" /* "lprobe_smc_pfog.pse" */
+        "movl $str_00292a20, 4(%esp)\n" /* "lprobe_smc_pfog.pse" */
         "leal -0x18a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13963,7 +13972,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1d(%ebp), %eax\n" /* line 161 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x292a34, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00292a34, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x18a0(%ebp), %esi\n" /* size */
@@ -13971,7 +13980,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1b(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x293154, 4(%esp)\n" /* "lprobe_smc_s.pse" */
+        "movl $str_00293154, 4(%esp)\n" /* "lprobe_smc_s.pse" */
         "leal -0x189c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -13989,7 +13998,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x840(%ebp), %eax\n" /* line 175 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x293168, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00293168, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1898(%ebp), %esi\n" /* size */
@@ -13997,7 +14006,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x83f(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29390c, 4(%esp)\n" /* "lprobe_smc_s_dtl.pse" */
+        "movl $str_0029390c, 4(%esp)\n" /* "lprobe_smc_s_dtl.pse" */
         "leal -0x1894(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14015,7 +14024,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x83c(%ebp), %eax\n" /* line 182 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x293924, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00293924, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1890(%ebp), %esi\n" /* size */
@@ -14023,7 +14032,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x838(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x294124, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.pse" */
+        "movl $str_00294124, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.pse" */
         "leal -0x188c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14041,7 +14050,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x834(%ebp), %eax\n" /* line 161 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x294140, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00294140, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1888(%ebp), %esi\n" /* size */
@@ -14049,7 +14058,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x830(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29483c, 4(%esp)\n" /* "lprobe_smc_s_efog.pse" */
+        "movl $str_0029483c, 4(%esp)\n" /* "lprobe_smc_s_efog.pse" */
         "leal -0x1884(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14067,7 +14076,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x82c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x294140, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00294140, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1880(%ebp), %esi\n" /* size */
@@ -14075,7 +14084,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x828(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x294854, 4(%esp)\n" /* "lprobe_smc_s_lfog.pse" */
+        "movl $str_00294854, 4(%esp)\n" /* "lprobe_smc_s_lfog.pse" */
         "leal -0x187c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14093,7 +14102,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x824(%ebp), %eax\n" /* line 168 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29486c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029486c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1878(%ebp), %esi\n" /* size */
@@ -14101,7 +14110,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x820(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x294fe8, 4(%esp)\n" /* "lprobe_smc_s_pfog.pse" */
+        "movl $str_00294fe8, 4(%esp)\n" /* "lprobe_smc_s_pfog.pse" */
         "leal -0x1874(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14119,7 +14128,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x81c(%ebp), %eax\n" /* line 124 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28bd84, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028bd84, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1870(%ebp), %esi\n"
@@ -14127,7 +14136,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x818(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295000, 4(%esp)\n" /* "lprobe_sm_a.pse" */
+        "movl $str_00295000, 4(%esp)\n" /* "lprobe_sm_a.pse" */
         "leal -0x186c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14145,7 +14154,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x814(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c328, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c328, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1868(%ebp), %esi\n"
@@ -14153,7 +14162,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x810(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295010, 4(%esp)\n" /* "lprobe_sm_amb.pse" */
+        "movl $str_00295010, 4(%esp)\n" /* "lprobe_sm_amb.pse" */
         "leal -0x1864(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14171,7 +14180,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x80c(%ebp), %eax\n" /* line 64 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c5c8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c5c8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1860(%ebp), %esi\n"
@@ -14179,7 +14188,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x808(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295024, 4(%esp)\n" /* "lprobe_sm_amb_a.pse" */
+        "movl $str_00295024, 4(%esp)\n" /* "lprobe_sm_amb_a.pse" */
         "leal -0x185c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14197,7 +14206,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x804(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c5c8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c5c8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1858(%ebp), %esi\n"
@@ -14205,7 +14214,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x800(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295038, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.pse" */
+        "movl $str_00295038, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.pse" */
         "leal -0x1854(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14223,7 +14232,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7fc(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c874, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c874, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1850(%ebp), %esi\n"
@@ -14231,7 +14240,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7f8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295050, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.pse" */
+        "movl $str_00295050, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.pse" */
         "leal -0x184c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14249,7 +14258,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7f4(%ebp), %eax\n" /* line 68 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28cb68, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028cb68, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1848(%ebp), %esi\n"
@@ -14257,7 +14266,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7f0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295070, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.pse" */
+        "movl $str_00295070, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.pse" */
         "leal -0x1844(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14275,7 +14284,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ec(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28cb68, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028cb68, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1840(%ebp), %esi\n"
@@ -14283,7 +14292,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7e8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29508c, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.pse" */
+        "movl $str_0029508c, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.pse" */
         "leal -0x183c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14301,7 +14310,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7e4(%ebp), %eax\n" /* line 71 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c874, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c874, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1838(%ebp), %esi\n"
@@ -14309,7 +14318,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7e0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2950a8, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.pse" */
+        "movl $str_002950a8, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.pse" */
         "leal -0x1834(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14327,7 +14336,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7dc(%ebp), %eax\n" /* line 66 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28c328, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028c328, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1830(%ebp), %esi\n"
@@ -14335,7 +14344,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7d8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2950c4, 4(%esp)\n" /* "lprobe_sm_amb_dtl.pse" */
+        "movl $str_002950c4, 4(%esp)\n" /* "lprobe_sm_amb_dtl.pse" */
         "leal -0x182c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14353,7 +14362,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7d4(%ebp), %eax\n" /* line 73 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ce44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028ce44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1828(%ebp), %esi\n"
@@ -14361,7 +14370,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7d0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2950dc, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.pse" */
+        "movl $str_002950dc, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.pse" */
         "leal -0x1824(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14379,7 +14388,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7cc(%ebp), %eax\n" /* line 70 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d148, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028d148, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1820(%ebp), %esi\n"
@@ -14387,7 +14396,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7c8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2950f8, 4(%esp)\n" /* "lprobe_sm_amb_efog.pse" */
+        "movl $str_002950f8, 4(%esp)\n" /* "lprobe_sm_amb_efog.pse" */
         "leal -0x181c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14405,7 +14414,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7c4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d148, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028d148, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1818(%ebp), %esi\n"
@@ -14413,7 +14422,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7c0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295110, 4(%esp)\n" /* "lprobe_sm_amb_lfog.pse" */
+        "movl $str_00295110, 4(%esp)\n" /* "lprobe_sm_amb_lfog.pse" */
         "leal -0x1814(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14431,7 +14440,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7bc(%ebp), %eax\n" /* line 73 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ce44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028ce44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1810(%ebp), %esi\n"
@@ -14439,7 +14448,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7b8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295128, 4(%esp)\n" /* "lprobe_sm_amb_pfog.pse" */
+        "movl $str_00295128, 4(%esp)\n" /* "lprobe_sm_amb_pfog.pse" */
         "leal -0x180c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14457,7 +14466,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7b4(%ebp), %eax\n" /* line 138 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28d414, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028d414, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1808(%ebp), %esi\n"
@@ -14465,7 +14474,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7b0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295140, 4(%esp)\n" /* "lprobe_sm_a_dtl.pse" */
+        "movl $str_00295140, 4(%esp)\n" /* "lprobe_sm_a_dtl.pse" */
         "leal -0x1804(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14483,7 +14492,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ac(%ebp), %eax\n" /* line 145 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28da3c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028da3c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1800(%ebp), %esi\n" /* size */
@@ -14491,7 +14500,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7a8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295154, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.pse" */
+        "movl $str_00295154, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.pse" */
         "leal -0x17fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14509,7 +14518,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7a4(%ebp), %eax\n" /* line 122 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e0c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028e0c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17f8(%ebp), %esi\n"
@@ -14517,7 +14526,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7a0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295170, 4(%esp)\n" /* "lprobe_sm_a_efog.pse" */
+        "movl $str_00295170, 4(%esp)\n" /* "lprobe_sm_a_efog.pse" */
         "leal -0x17f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14535,7 +14544,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x79c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e0c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028e0c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17f0(%ebp), %esi\n"
@@ -14543,7 +14552,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x798(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295188, 4(%esp)\n" /* "lprobe_sm_a_lfog.pse" */
+        "movl $str_00295188, 4(%esp)\n" /* "lprobe_sm_a_lfog.pse" */
         "leal -0x17ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14561,7 +14570,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x794(%ebp), %eax\n" /* line 131 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28e640, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028e640, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17e8(%ebp), %esi\n"
@@ -14569,7 +14578,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x790(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2951a0, 4(%esp)\n" /* "lprobe_sm_a_pfog.pse" */
+        "movl $str_002951a0, 4(%esp)\n" /* "lprobe_sm_a_pfog.pse" */
         "leal -0x17e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14587,7 +14596,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x78c(%ebp), %eax\n" /* line 159 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28ec44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028ec44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17e0(%ebp), %esi\n" /* size */
@@ -14595,7 +14604,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x788(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2951b8, 4(%esp)\n" /* "lprobe_sm_a_s.pse" */
+        "movl $str_002951b8, 4(%esp)\n" /* "lprobe_sm_a_s.pse" */
         "leal -0x17dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14613,7 +14622,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x784(%ebp), %eax\n" /* line 173 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28f368, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028f368, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17d8(%ebp), %esi\n" /* size */
@@ -14621,7 +14630,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x780(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2951cc, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.pse" */
+        "movl $str_002951cc, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.pse" */
         "leal -0x17d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14639,7 +14648,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x77c(%ebp), %eax\n" /* line 180 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28fb10, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028fb10, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17d0(%ebp), %esi\n" /* size */
@@ -14647,7 +14656,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x778(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2951e4, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.pse" */
+        "movl $str_002951e4, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.pse" */
         "leal -0x17cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14665,7 +14674,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x774(%ebp), %eax\n" /* line 161 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290318, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00290318, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17c8(%ebp), %esi\n" /* size */
@@ -14673,7 +14682,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x770(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295200, 4(%esp)\n" /* "lprobe_sm_a_s_efog.pse" */
+        "movl $str_00295200, 4(%esp)\n" /* "lprobe_sm_a_s_efog.pse" */
         "leal -0x17c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14691,7 +14700,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x76c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290318, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00290318, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17c0(%ebp), %esi\n" /* size */
@@ -14699,7 +14708,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x768(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295218, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.pse" */
+        "movl $str_00295218, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.pse" */
         "leal -0x17bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14717,7 +14726,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x764(%ebp), %eax\n" /* line 166 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x290a44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00290a44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17b8(%ebp), %esi\n" /* size */
@@ -14725,7 +14734,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x760(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295230, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.pse" */
+        "movl $str_00295230, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.pse" */
         "leal -0x17b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14743,7 +14752,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x75c(%ebp), %eax\n" /* line 140 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2911c4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002911c4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17b0(%ebp), %esi\n"
@@ -14751,7 +14760,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x758(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295248, 4(%esp)\n" /* "lprobe_sm_dtl.pse" */
+        "movl $str_00295248, 4(%esp)\n" /* "lprobe_sm_dtl.pse" */
         "leal -0x17ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14769,7 +14778,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x754(%ebp), %eax\n" /* line 147 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2917f8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002917f8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17a8(%ebp), %esi\n" /* size */
@@ -14777,7 +14786,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x750(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29525c, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.pse" */
+        "movl $str_0029525c, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.pse" */
         "leal -0x17a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14795,7 +14804,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x74c(%ebp), %eax\n" /* line 124 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x291e90, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00291e90, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x17a0(%ebp), %esi\n"
@@ -14803,7 +14812,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x748(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295274, 4(%esp)\n" /* "lprobe_sm_efog.pse" */
+        "movl $str_00295274, 4(%esp)\n" /* "lprobe_sm_efog.pse" */
         "leal -0x179c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14821,7 +14830,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x744(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x291e90, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00291e90, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1798(%ebp), %esi\n"
@@ -14829,7 +14838,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x740(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295288, 4(%esp)\n" /* "lprobe_sm_lfog.pse" */
+        "movl $str_00295288, 4(%esp)\n" /* "lprobe_sm_lfog.pse" */
         "leal -0x1794(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14847,7 +14856,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x73c(%ebp), %eax\n" /* line 133 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x292420, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00292420, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1790(%ebp), %esi\n"
@@ -14855,7 +14864,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x738(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29529c, 4(%esp)\n" /* "lprobe_sm_pfog.pse" */
+        "movl $str_0029529c, 4(%esp)\n" /* "lprobe_sm_pfog.pse" */
         "leal -0x178c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14873,7 +14882,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x734(%ebp), %eax\n" /* line 161 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x292a34, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00292a34, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1788(%ebp), %esi\n" /* size */
@@ -14881,7 +14890,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x730(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2952b0, 4(%esp)\n" /* "lprobe_sm_s.pse" */
+        "movl $str_002952b0, 4(%esp)\n" /* "lprobe_sm_s.pse" */
         "leal -0x1784(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14899,7 +14908,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x72c(%ebp), %eax\n" /* line 175 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x293168, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00293168, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1780(%ebp), %esi\n" /* size */
@@ -14907,7 +14916,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x728(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2952c0, 4(%esp)\n" /* "lprobe_sm_s_dtl.pse" */
+        "movl $str_002952c0, 4(%esp)\n" /* "lprobe_sm_s_dtl.pse" */
         "leal -0x177c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14925,7 +14934,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x724(%ebp), %eax\n" /* line 182 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x293924, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00293924, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1778(%ebp), %esi\n" /* size */
@@ -14933,7 +14942,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x720(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2952d4, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.pse" */
+        "movl $str_002952d4, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.pse" */
         "leal -0x1774(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14951,7 +14960,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x71c(%ebp), %eax\n" /* line 161 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x294140, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00294140, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1770(%ebp), %esi\n" /* size */
@@ -14959,7 +14968,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x718(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2952f0, 4(%esp)\n" /* "lprobe_sm_s_efog.pse" */
+        "movl $str_002952f0, 4(%esp)\n" /* "lprobe_sm_s_efog.pse" */
         "leal -0x176c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -14977,7 +14986,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x714(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x294140, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00294140, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1768(%ebp), %esi\n" /* size */
@@ -14985,7 +14994,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x710(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295308, 4(%esp)\n" /* "lprobe_sm_s_lfog.pse" */
+        "movl $str_00295308, 4(%esp)\n" /* "lprobe_sm_s_lfog.pse" */
         "leal -0x1764(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15003,7 +15012,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x70c(%ebp), %eax\n" /* line 168 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29486c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029486c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1760(%ebp), %esi\n" /* size */
@@ -15011,7 +15020,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x708(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295320, 4(%esp)\n" /* "lprobe_sm_s_pfog.pse" */
+        "movl $str_00295320, 4(%esp)\n" /* "lprobe_sm_s_pfog.pse" */
         "leal -0x175c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15029,7 +15038,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x704(%ebp), %eax\n" /* line 198 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295338, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00295338, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1758(%ebp), %esi\n" /* size */
@@ -15037,7 +15046,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x700(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295b30, 4(%esp)\n" /* "lprobe_s_dtl.pse" */
+        "movl $str_00295b30, 4(%esp)\n" /* "lprobe_s_dtl.pse" */
         "leal -0x1754(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15055,7 +15064,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6fc(%ebp), %eax\n" /* line 205 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x295b44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00295b44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1750(%ebp), %esi\n" /* size */
@@ -15063,7 +15072,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6f8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x296398, 4(%esp)\n" /* "lprobe_s_dtl_pfog.pse" */
+        "movl $str_00296398, 4(%esp)\n" /* "lprobe_s_dtl_pfog.pse" */
         "leal -0x174c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15081,7 +15090,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6f4(%ebp), %eax\n" /* line 188 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2963b0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002963b0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1748(%ebp), %esi\n" /* size */
@@ -15089,7 +15098,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6f0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x296b1c, 4(%esp)\n" /* "lprobe_s_efog.pse" */
+        "movl $str_00296b1c, 4(%esp)\n" /* "lprobe_s_efog.pse" */
         "leal -0x1744(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15107,7 +15116,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ec(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2963b0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002963b0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1740(%ebp), %esi\n" /* size */
@@ -15115,7 +15124,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6e8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x296b30, 4(%esp)\n" /* "lprobe_s_lfog.pse" */
+        "movl $str_00296b30, 4(%esp)\n" /* "lprobe_s_lfog.pse" */
         "leal -0x173c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15133,7 +15142,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6e4(%ebp), %eax\n" /* line 191 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x296b44, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00296b44, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1738(%ebp), %esi\n" /* size */
@@ -15141,7 +15150,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6e0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x297314, 4(%esp)\n" /* "lprobe_s_pfog.pse" */
+        "movl $str_00297314, 4(%esp)\n" /* "lprobe_s_pfog.pse" */
         "leal -0x1734(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15159,7 +15168,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6dc(%ebp), %eax\n" /* line 184 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x28affc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0028affc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1730(%ebp), %esi\n" /* size */
@@ -15167,7 +15176,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6d8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x297328, 4(%esp)\n" /* "lprobe_s_scroll.pse" */
+        "movl $str_00297328, 4(%esp)\n" /* "lprobe_s_scroll.pse" */
         "leal -0x172c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15185,7 +15194,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6d4(%ebp), %eax\n" /* line 188 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2963b0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002963b0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1728(%ebp), %esi\n" /* size */
@@ -15193,7 +15202,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6d0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29733c, 4(%esp)\n" /* "lprobe_s_scroll_efog.pse" */
+        "movl $str_0029733c, 4(%esp)\n" /* "lprobe_s_scroll_efog.pse" */
         "leal -0x1724(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15211,7 +15220,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6cc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2963b0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002963b0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1720(%ebp), %esi\n" /* size */
@@ -15219,7 +15228,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6c8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x297358, 4(%esp)\n" /* "lprobe_s_scroll_lfog.pse" */
+        "movl $str_00297358, 4(%esp)\n" /* "lprobe_s_scroll_lfog.pse" */
         "leal -0x171c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15237,7 +15246,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6c4(%ebp), %eax\n" /* line 107 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x297374, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00297374, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1718(%ebp), %esi\n"
@@ -15245,7 +15254,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6c0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2977e8, 4(%esp)\n" /* "l_point.pse" */
+        "movl $str_002977e8, 4(%esp)\n" /* "l_point.pse" */
         "leal -0x1714(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15263,7 +15272,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6bc(%ebp), %eax\n" /* line 108 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2977f4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_002977f4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1710(%ebp), %esi\n"
@@ -15271,7 +15280,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6b8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x297c68, 4(%esp)\n" /* "l_point_blend.pse" */
+        "movl $str_00297c68, 4(%esp)\n" /* "l_point_blend.pse" */
         "leal -0x170c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15289,7 +15298,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6b4(%ebp), %eax\n" /* line 122 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x297c7c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00297c7c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1708(%ebp), %esi\n"
@@ -15297,7 +15306,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6b0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x298174, 4(%esp)\n" /* "l_point_blend_dtl.pse" */
+        "movl $str_00298174, 4(%esp)\n" /* "l_point_blend_dtl.pse" */
         "leal -0x1704(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15315,7 +15324,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ac(%ebp), %eax\n" /* line 129 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29818c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029818c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1700(%ebp), %esi\n"
@@ -15323,7 +15332,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6a8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2986e4, 4(%esp)\n" /* "l_point_blend_dtl_pfog.pse" */
+        "movl $str_002986e4, 4(%esp)\n" /* "l_point_blend_dtl_pfog.pse" */
         "leal -0x16fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15341,7 +15350,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6a4(%ebp), %eax\n" /* line 110 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x298700, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00298700, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16f8(%ebp), %esi\n"
@@ -15349,7 +15358,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6a0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x298b60, 4(%esp)\n" /* "l_point_blend_efog.pse" */
+        "movl $str_00298b60, 4(%esp)\n" /* "l_point_blend_efog.pse" */
         "leal -0x16f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15367,7 +15376,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x69c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x298700, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00298700, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16f0(%ebp), %esi\n"
@@ -15375,7 +15384,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x698(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x298b78, 4(%esp)\n" /* "l_point_blend_lfog.pse" */
+        "movl $str_00298b78, 4(%esp)\n" /* "l_point_blend_lfog.pse" */
         "leal -0x16ec(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15393,7 +15402,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x694(%ebp), %eax\n" /* line 115 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x298b90, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00298b90, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16e8(%ebp), %esi\n"
@@ -15401,7 +15410,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x690(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299068, 4(%esp)\n" /* "l_point_blend_pfog.pse" */
+        "movl $str_00299068, 4(%esp)\n" /* "l_point_blend_pfog.pse" */
         "leal -0x16e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15419,7 +15428,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x68c(%ebp), %eax\n" /* line 122 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299080, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299080, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16e0(%ebp), %esi\n"
@@ -15427,7 +15436,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x688(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299574, 4(%esp)\n" /* "l_point_dtl.pse" */
+        "movl $str_00299574, 4(%esp)\n" /* "l_point_dtl.pse" */
         "leal -0x16dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15445,7 +15454,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x684(%ebp), %eax\n" /* line 129 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299584, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299584, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16d8(%ebp), %esi\n"
@@ -15453,7 +15462,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x680(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299ad8, 4(%esp)\n" /* "l_point_dtl_pfog.pse" */
+        "movl $str_00299ad8, 4(%esp)\n" /* "l_point_dtl_pfog.pse" */
         "leal -0x16d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15471,7 +15480,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x67c(%ebp), %eax\n" /* line 108 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299af0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299af0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16d0(%ebp), %esi\n"
@@ -15479,7 +15488,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x678(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299f38, 4(%esp)\n" /* "l_point_efog.pse" */
+        "movl $str_00299f38, 4(%esp)\n" /* "l_point_efog.pse" */
         "leal -0x16cc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15497,7 +15506,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x674(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x297374, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00297374, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16c8(%ebp), %esi\n"
@@ -15505,7 +15514,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x670(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299f4c, 4(%esp)\n" /* "l_point_flag.pse" */
+        "movl $str_00299f4c, 4(%esp)\n" /* "l_point_flag.pse" */
         "leal -0x16c4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15523,7 +15532,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x66c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299af0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299af0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16c0(%ebp), %esi\n"
@@ -15531,7 +15540,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x668(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299f60, 4(%esp)\n" /* "l_point_flag_efog.pse" */
+        "movl $str_00299f60, 4(%esp)\n" /* "l_point_flag_efog.pse" */
         "leal -0x16bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15549,7 +15558,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x664(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299af0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299af0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16b8(%ebp), %esi\n"
@@ -15557,7 +15566,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x660(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299f78, 4(%esp)\n" /* "l_point_flag_lfog.pse" */
+        "movl $str_00299f78, 4(%esp)\n" /* "l_point_flag_lfog.pse" */
         "leal -0x16b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15575,7 +15584,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x65c(%ebp), %eax\n" /* line 115 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299f90, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299f90, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16b0(%ebp), %esi\n"
@@ -15583,7 +15592,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x658(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a464, 4(%esp)\n" /* "l_point_flag_pfog.pse" */
+        "movl $str_0029a464, 4(%esp)\n" /* "l_point_flag_pfog.pse" */
         "leal -0x16ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15601,7 +15610,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x654(%ebp), %eax\n" /* line 108 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299af0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299af0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16a8(%ebp), %esi\n"
@@ -15609,7 +15618,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x650(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a47c, 4(%esp)\n" /* "l_point_lfog.pse" */
+        "movl $str_0029a47c, 4(%esp)\n" /* "l_point_lfog.pse" */
         "leal -0x16a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15627,7 +15636,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x64c(%ebp), %eax\n" /* line 115 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x299f90, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_00299f90, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x16a0(%ebp), %esi\n"
@@ -15635,7 +15644,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x648(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a490, 4(%esp)\n" /* "l_point_pfog.pse" */
+        "movl $str_0029a490, 4(%esp)\n" /* "l_point_pfog.pse" */
         "leal -0x169c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15653,7 +15662,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x644(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a4a4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029a4a4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1698(%ebp), %esi\n"
@@ -15661,7 +15670,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x640(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a6b8, 4(%esp)\n" /* "mul.pse" */
+        "movl $str_0029a6b8, 4(%esp)\n" /* "mul.pse" */
         "leal -0x1694(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15679,7 +15688,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x63c(%ebp), %eax\n" /* line 56 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a6c0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029a6c0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1690(%ebp), %esi\n"
@@ -15687,7 +15696,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x638(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a8fc, 4(%esp)\n" /* "mul_pfog.pse" */
+        "movl $str_0029a8fc, 4(%esp)\n" /* "mul_pfog.pse" */
         "leal -0x168c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15705,7 +15714,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x634(%ebp), %eax\n" /* line 28 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29a90c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029a90c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1688(%ebp), %esi\n"
@@ -15713,7 +15722,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x630(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29aa68, 4(%esp)\n" /* "null.pse" */
+        "movl $str_0029aa68, 4(%esp)\n" /* "null.pse" */
         "leal -0x1684(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15731,7 +15740,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x62c(%ebp), %eax\n" /* line 96 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29aa74, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029aa74, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1680(%ebp), %esi\n"
@@ -15739,7 +15748,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x628(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29aec0, 4(%esp)\n" /* "objective_base.pse" */
+        "movl $str_0029aec0, 4(%esp)\n" /* "objective_base.pse" */
         "leal -0x167c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15757,7 +15766,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x624(%ebp), %eax\n" /* line 48 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29aed4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029aed4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1678(%ebp), %esi\n"
@@ -15765,7 +15774,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x620(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b07c, 4(%esp)\n" /* "particle_cloud.pse" */
+        "movl $str_0029b07c, 4(%esp)\n" /* "particle_cloud.pse" */
         "leal -0x1674(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15783,7 +15792,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x61c(%ebp), %eax\n" /* line 61 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b090, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029b090, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1670(%ebp), %esi\n"
@@ -15791,7 +15800,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x618(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b2c8, 4(%esp)\n" /* "particle_cloud_outdoor.pse" */
+        "movl $str_0029b2c8, 4(%esp)\n" /* "particle_cloud_outdoor.pse" */
         "leal -0x166c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15809,7 +15818,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x614(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b2e4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029b2e4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1668(%ebp), %esi\n"
@@ -15817,7 +15826,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x610(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b4fc, 4(%esp)\n" /* "shadowcookie_blur.pse" */
+        "movl $str_0029b4fc, 4(%esp)\n" /* "shadowcookie_blur.pse" */
         "leal -0x1664(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15835,7 +15844,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x60c(%ebp), %eax\n" /* line 29 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b514, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029b514, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1660(%ebp), %esi\n"
@@ -15843,7 +15852,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x608(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b61c, 4(%esp)\n" /* "shadowcookie_caster.pse" */
+        "movl $str_0029b61c, 4(%esp)\n" /* "shadowcookie_caster.pse" */
         "leal -0x165c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15861,7 +15870,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x604(%ebp), %eax\n" /* line 43 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b634, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029b634, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1658(%ebp), %esi\n"
@@ -15869,7 +15878,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x600(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b748, 4(%esp)\n" /* "shadowcookie_display.pse" */
+        "movl $str_0029b748, 4(%esp)\n" /* "shadowcookie_display.pse" */
         "leal -0x1654(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15887,7 +15896,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5fc(%ebp), %eax\n" /* line 52 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b764, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029b764, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1650(%ebp), %esi\n"
@@ -15895,7 +15904,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5f8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b8ec, 4(%esp)\n" /* "shadowcookie_receiver.pse" */
+        "movl $str_0029b8ec, 4(%esp)\n" /* "shadowcookie_receiver.pse" */
         "leal -0x164c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15913,7 +15922,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5f4(%ebp), %eax\n" /* line 57 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29b908, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029b908, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1648(%ebp), %esi\n"
@@ -15921,7 +15930,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5f0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29bb54, 4(%esp)\n" /* "shell_shock.pse" */
+        "movl $str_0029bb54, 4(%esp)\n" /* "shell_shock.pse" */
         "leal -0x1644(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15939,7 +15948,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ec(%ebp), %eax\n" /* line 46 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29bb64, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029bb64, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1640(%ebp), %esi\n"
@@ -15947,7 +15956,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5e8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29bd08, 4(%esp)\n" /* "sky.pse" */
+        "movl $str_0029bd08, 4(%esp)\n" /* "sky.pse" */
         "leal -0x163c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15965,7 +15974,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5e4(%ebp), %eax\n" /* line 43 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29bd10, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029bd10, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1638(%ebp), %esi\n"
@@ -15973,7 +15982,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5e0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29be88, 4(%esp)\n" /* "textured_simple.pse" */
+        "movl $str_0029be88, 4(%esp)\n" /* "textured_simple.pse" */
         "leal -0x1634(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -15991,7 +16000,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5dc(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27aa24, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027aa24, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1630(%ebp), %esi\n"
@@ -15999,7 +16008,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5d8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29be9c, 4(%esp)\n" /* "vertcol_eyeofs.pse" */
+        "movl $str_0029be9c, 4(%esp)\n" /* "vertcol_eyeofs.pse" */
         "leal -0x162c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16017,7 +16026,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5d4(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29beb0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029beb0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1628(%ebp), %esi\n"
@@ -16025,7 +16034,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5d0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c06c, 4(%esp)\n" /* "vertcol_eyeofs_efog.pse" */
+        "movl $str_0029c06c, 4(%esp)\n" /* "vertcol_eyeofs_efog.pse" */
         "leal -0x1624(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16043,7 +16052,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5cc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29beb0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029beb0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1620(%ebp), %esi\n"
@@ -16051,7 +16060,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5c8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c084, 4(%esp)\n" /* "vertcol_eyeofs_lfog.pse" */
+        "movl $str_0029c084, 4(%esp)\n" /* "vertcol_eyeofs_lfog.pse" */
         "leal -0x161c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16069,7 +16078,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5c4(%ebp), %eax\n" /* line 49 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c09c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029c09c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1618(%ebp), %esi\n"
@@ -16077,7 +16086,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5c0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c264, 4(%esp)\n" /* "vertcol_notexalpha.pse" */
+        "movl $str_0029c264, 4(%esp)\n" /* "vertcol_notexalpha.pse" */
         "leal -0x1614(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16095,7 +16104,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5bc(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c27c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029c27c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1610(%ebp), %esi\n"
@@ -16103,7 +16112,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5b8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c480, 4(%esp)\n" /* "vertcol_shaded.pse" */
+        "movl $str_0029c480, 4(%esp)\n" /* "vertcol_shaded.pse" */
         "leal -0x160c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16121,7 +16130,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5b4(%ebp), %eax\n" /* line 70 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c494, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029c494, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1608(%ebp), %esi\n"
@@ -16129,7 +16138,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5b0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c734, 4(%esp)\n" /* "vertcol_shaded_dtl.pse" */
+        "movl $str_0029c734, 4(%esp)\n" /* "vertcol_shaded_dtl.pse" */
         "leal -0x1604(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16147,7 +16156,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ac(%ebp), %eax\n" /* line 75 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29c74c, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029c74c, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1600(%ebp), %esi\n"
@@ -16155,7 +16164,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5a8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ca24, 4(%esp)\n" /* "vertcol_shaded_dtl_pfog.pse" */
+        "movl $str_0029ca24, 4(%esp)\n" /* "vertcol_shaded_dtl_pfog.pse" */
         "leal -0x15fc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16173,7 +16182,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5a4(%ebp), %eax\n" /* line 59 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ca40, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029ca40, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15f8(%ebp), %esi\n"
@@ -16181,7 +16190,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5a0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29cc7c, 4(%esp)\n" /* "vertcol_shaded_pfog.pse" */
+        "movl $str_0029cc7c, 4(%esp)\n" /* "vertcol_shaded_pfog.pse" */
         "leal -0x15f4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16199,7 +16208,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x59c(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27aa24, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027aa24, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15f0(%ebp), %esi\n"
@@ -16207,7 +16216,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x598(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29cc94, 4(%esp)\n" /* "vertcol_simple.pse" */
+        "movl $str_0029cc94, 4(%esp)\n" /* "vertcol_simple.pse" */
         "leal -0x15ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16225,7 +16234,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x594(%ebp), %eax\n" /* line 53 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29beb0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029beb0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15e8(%ebp), %esi\n"
@@ -16233,7 +16242,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x590(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29cca8, 4(%esp)\n" /* "vertcol_simple_efog.pse" */
+        "movl $str_0029cca8, 4(%esp)\n" /* "vertcol_simple_efog.pse" */
         "leal -0x15e4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16251,7 +16260,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x58c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29beb0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029beb0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15e0(%ebp), %esi\n"
@@ -16259,7 +16268,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x588(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ccc0, 4(%esp)\n" /* "vertcol_simple_lfog.pse" */
+        "movl $str_0029ccc0, 4(%esp)\n" /* "vertcol_simple_lfog.pse" */
         "leal -0x15dc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16277,7 +16286,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x584(%ebp), %eax\n" /* line 54 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ccd8, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029ccd8, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15d8(%ebp), %esi\n"
@@ -16285,7 +16294,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x580(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29cee4, 4(%esp)\n" /* "vertcol_simple_pfog.pse" */
+        "movl $str_0029cee4, 4(%esp)\n" /* "vertcol_simple_pfog.pse" */
         "leal -0x15d4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16303,7 +16312,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x57c(%ebp), %eax\n" /* line 47 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x27aa24, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0027aa24, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15d0(%ebp), %esi\n"
@@ -16311,7 +16320,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x578(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29cefc, 4(%esp)\n" /* "vertcol_simple_scroll.pse" */
+        "movl $str_0029cefc, 4(%esp)\n" /* "vertcol_simple_scroll.pse" */
         "leal -0x15cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16329,7 +16338,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x574(%ebp), %eax\n" /* line 27 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29cf18, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029cf18, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15c8(%ebp), %esi\n"
@@ -16337,7 +16346,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x570(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29d070, 4(%esp)\n" /* "vertcol_untextured.pse" */
+        "movl $str_0029d070, 4(%esp)\n" /* "vertcol_untextured.pse" */
         "leal -0x15c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16355,7 +16364,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x56c(%ebp), %eax\n" /* line 179 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29d088, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029d088, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15c0(%ebp), %esi\n" /* size */
@@ -16363,7 +16372,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x568(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29d8d4, 4(%esp)\n" /* "water_l_sun.pse" */
+        "movl $str_0029d8d4, 4(%esp)\n" /* "water_l_sun.pse" */
         "leal -0x15bc(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16381,7 +16390,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x564(%ebp), %eax\n" /* line 171 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29d8e4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029d8e4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15b8(%ebp), %esi\n" /* size */
@@ -16389,7 +16398,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x560(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29e0a4, 4(%esp)\n" /* "water_l_sun_efog.pse" */
+        "movl $str_0029e0a4, 4(%esp)\n" /* "water_l_sun_efog.pse" */
         "leal -0x15b4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16407,7 +16416,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x55c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29d8e4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029d8e4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15b0(%ebp), %esi\n" /* size */
@@ -16415,7 +16424,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x558(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29e0bc, 4(%esp)\n" /* "water_l_sun_lfog.pse" */
+        "movl $str_0029e0bc, 4(%esp)\n" /* "water_l_sun_lfog.pse" */
         "leal -0x15ac(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16433,7 +16442,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x554(%ebp), %eax\n" /* line 186 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29e0d4, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029e0d4, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15a8(%ebp), %esi\n" /* size */
@@ -16441,7 +16450,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x550(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29e97c, 4(%esp)\n" /* "water_l_sun_pfog.pse" */
+        "movl $str_0029e97c, 4(%esp)\n" /* "water_l_sun_pfog.pse" */
         "leal -0x15a4(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16459,7 +16468,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x54c(%ebp), %eax\n" /* line 62 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29e994, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029e994, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x15a0(%ebp), %esi\n"
@@ -16467,7 +16476,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x548(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ebec, 4(%esp)\n" /* "zfeather.pse" */
+        "movl $str_0029ebec, 4(%esp)\n" /* "zfeather.pse" */
         "leal -0x159c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16485,7 +16494,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x544(%ebp), %eax\n" /* line 67 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ebfc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029ebfc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1598(%ebp), %esi\n"
@@ -16493,7 +16502,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x540(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ee4c, 4(%esp)\n" /* "zfeather_efog.pse" */
+        "movl $str_0029ee4c, 4(%esp)\n" /* "zfeather_efog.pse" */
         "leal -0x1594(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16511,7 +16520,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x53c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ebfc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029ebfc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1590(%ebp), %esi\n"
@@ -16519,7 +16528,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x538(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ee60, 4(%esp)\n" /* "zfeather_lfog.pse" */
+        "movl $str_0029ee60, 4(%esp)\n" /* "zfeather_lfog.pse" */
         "leal -0x158c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16537,7 +16546,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x534(%ebp), %eax\n" /* line 79 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ee74, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029ee74, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1588(%ebp), %esi\n"
@@ -16545,7 +16554,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x530(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f178, 4(%esp)\n" /* "zfeather_outdoor.pse" */
+        "movl $str_0029f178, 4(%esp)\n" /* "zfeather_outdoor.pse" */
         "leal -0x1584(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16563,7 +16572,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x52c(%ebp), %eax\n" /* line 83 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f190, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029f190, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1580(%ebp), %esi\n"
@@ -16571,7 +16580,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x528(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f488, 4(%esp)\n" /* "zfeather_outdoor_efog.pse" */
+        "movl $str_0029f488, 4(%esp)\n" /* "zfeather_outdoor_efog.pse" */
         "leal -0x157c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16589,7 +16598,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x524(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f190, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029f190, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1578(%ebp), %esi\n"
@@ -16597,7 +16606,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x520(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f4a4, 4(%esp)\n" /* "zfeather_outdoor_lfog.pse" */
+        "movl $str_0029f4a4, 4(%esp)\n" /* "zfeather_outdoor_lfog.pse" */
         "leal -0x1574(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16615,7 +16624,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x51c(%ebp), %eax\n" /* line 86 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f4c0, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029f4c0, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1570(%ebp), %esi\n"
@@ -16623,7 +16632,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x518(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f81c, 4(%esp)\n" /* "zfeather_outdoor_pfog.pse" */
+        "movl $str_0029f81c, 4(%esp)\n" /* "zfeather_outdoor_pfog.pse" */
         "leal -0x156c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16641,7 +16650,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x514(%ebp), %eax\n" /* line 70 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29f838, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029f838, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0Afte" */
         "leal -0x1568(%ebp), %esi\n"
@@ -16649,7 +16658,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x510(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fae8, 4(%esp)\n" /* "zfeather_pfog.pse" */
+        "movl $str_0029fae8, 4(%esp)\n" /* "zfeather_pfog.pse" */
         "leal -0x1564(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16667,7 +16676,7 @@ OUTPUT oC0Afte" */
         "calll __ZNSsD1Ev\n"
         "leal -0x50c(%ebp), %eax\n" /* line 24 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fafc, 4(%esp)\n" /* "!!ARBfp1.0
+        "movl $str_0029fafc, 4(%esp)\n" /* "!!ARBfp1.0
 OPTION ARB_precision_hint_fastest;
 OUTPUT oC0 = r" */
         "leal -0x1560(%ebp), %esi\n"
@@ -16675,7 +16684,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x508(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fbcc, 4(%esp)\n" /* "zprepass.pse" */
+        "movl $str_0029fbcc, 4(%esp)\n" /* "zprepass.pse" */
         "leal -0x155c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16693,13 +16702,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x504(%ebp), %eax\n" /* line 4 | this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fbdc, 4(%esp)\n" /* "2 materialColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_0029fbdc, 4(%esp)\n" /* "2 materialColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0x1558(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x500(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fc14, 4(%esp)\n" /* "color_channel_mixer.pc" */
+        "movl $str_0029fc14, 4(%esp)\n" /* "color_channel_mixer.pc" */
         "leal -0x1554(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16717,13 +16726,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4fc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fc2c, 4(%esp)\n" /* "2 debugWeights 23 1 1 3 1 normalMapSampler 0 1 4 12 1" */
+        "movl $str_0029fc2c, 4(%esp)\n" /* "2 debugWeights 23 1 1 3 1 normalMapSampler 0 1 4 12 1" */
         "leal -0x1550(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4f8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fc64, 4(%esp)\n" /* "debug_normals.pc" */
+        "movl $str_0029fc64, 4(%esp)\n" /* "debug_normals.pc" */
         "leal -0x154c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16741,13 +16750,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4f4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fc78, 4(%esp)\n" /* "3 renderTargetSize 23 1 1 3 1 colorMapSampler 0 1 4 12 1 nor" */
+        "movl $str_0029fc78, 4(%esp)\n" /* "3 renderTargetSize 23 1 1 3 1 colorMapSampler 0 1 4 12 1 nor" */
         "leal -0x1548(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4f0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fcd0, 4(%esp)\n" /* "distortion.pc" */
+        "movl $str_0029fcd0, 4(%esp)\n" /* "distortion.pc" */
         "leal -0x1544(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16765,13 +16774,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ec(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fce0, 4(%esp)\n" /* "3 colorMapSampler 0 1 4 12 1 normalMapSampler 1 1 4 12 1 flo" */
+        "movl $str_0029fce0, 4(%esp)\n" /* "3 colorMapSampler 0 1 4 12 1 normalMapSampler 1 1 4 12 1 flo" */
         "leal -0x1540(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4e8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fd34, 4(%esp)\n" /* "distortion_floatz.pc" */
+        "movl $str_0029fd34, 4(%esp)\n" /* "distortion_floatz.pc" */
         "leal -0x153c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16789,13 +16798,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4e4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fd4c, 4(%esp)\n" /* "3 filterTap 8 1 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_0029fd4c, 4(%esp)\n" /* "3 filterTap 8 1 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1538(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4e0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fd9c, 4(%esp)\n" /* "filter_symmetric_1.pc" */
+        "movl $str_0029fd9c, 4(%esp)\n" /* "filter_symmetric_1.pc" */
         "leal -0x1534(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16813,13 +16822,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4dc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fdb4, 4(%esp)\n" /* "3 filterTap 8 2 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_0029fdb4, 4(%esp)\n" /* "3 filterTap 8 2 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1530(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4d8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fe04, 4(%esp)\n" /* "filter_symmetric_2.pc" */
+        "movl $str_0029fe04, 4(%esp)\n" /* "filter_symmetric_2.pc" */
         "leal -0x152c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16837,13 +16846,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4d4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fe1c, 4(%esp)\n" /* "3 filterTap 8 3 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_0029fe1c, 4(%esp)\n" /* "3 filterTap 8 3 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1528(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4d0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fe6c, 4(%esp)\n" /* "filter_symmetric_3.pc" */
+        "movl $str_0029fe6c, 4(%esp)\n" /* "filter_symmetric_3.pc" */
         "leal -0x1524(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16861,13 +16870,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4cc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fe84, 4(%esp)\n" /* "3 filterTap 8 4 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_0029fe84, 4(%esp)\n" /* "3 filterTap 8 4 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1520(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4c8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fed4, 4(%esp)\n" /* "filter_symmetric_4.pc" */
+        "movl $str_0029fed4, 4(%esp)\n" /* "filter_symmetric_4.pc" */
         "leal -0x151c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16885,13 +16894,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4c4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29feec, 4(%esp)\n" /* "3 filterTap 8 5 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_0029feec, 4(%esp)\n" /* "3 filterTap 8 5 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1518(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4c0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ff3c, 4(%esp)\n" /* "filter_symmetric_5.pc" */
+        "movl $str_0029ff3c, 4(%esp)\n" /* "filter_symmetric_5.pc" */
         "leal -0x1514(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16909,13 +16918,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4bc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ff54, 4(%esp)\n" /* "3 filterTap 8 6 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_0029ff54, 4(%esp)\n" /* "3 filterTap 8 6 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1510(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4b8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ffa4, 4(%esp)\n" /* "filter_symmetric_6.pc" */
+        "movl $str_0029ffa4, 4(%esp)\n" /* "filter_symmetric_6.pc" */
         "leal -0x150c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16933,13 +16942,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4b4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29ffbc, 4(%esp)\n" /* "3 filterTap 8 7 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_0029ffbc, 4(%esp)\n" /* "3 filterTap 8 7 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1508(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4b0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a000c, 4(%esp)\n" /* "filter_symmetric_7.pc" */
+        "movl $str_002a000c, 4(%esp)\n" /* "filter_symmetric_7.pc" */
         "leal -0x1504(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16957,13 +16966,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ac(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0024, 4(%esp)\n" /* "3 filterTap 8 8 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
+        "movl $str_002a0024, 4(%esp)\n" /* "3 filterTap 8 8 1 3 8 renderTargetSize 23 1 1 3 1 colorMapSa" */
         "leal -0x1500(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4a8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0074, 4(%esp)\n" /* "filter_symmetric_8.pc" */
+        "movl $str_002a0074, 4(%esp)\n" /* "filter_symmetric_8.pc" */
         "leal -0x14fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -16981,13 +16990,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4a4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
         "leal -0x14f8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4a0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a008c, 4(%esp)\n" /* "floatz_build.pc" */
+        "movl $str_002a008c, 4(%esp)\n" /* "floatz_build.pc" */
         "leal -0x14f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17005,13 +17014,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x49c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0x14f0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x498(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a00bc, 4(%esp)\n" /* "floatz_build_atest.pc" */
+        "movl $str_002a00bc, 4(%esp)\n" /* "floatz_build_atest.pc" */
         "leal -0x14ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17029,13 +17038,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x494(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0x14e8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x490(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a00d4, 4(%esp)\n" /* "floatz_build_atest_scroll.pc" */
+        "movl $str_002a00d4, 4(%esp)\n" /* "floatz_build_atest_scroll.pc" */
         "leal -0x14e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17053,13 +17062,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x48c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
         "leal -0x14e0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x488(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a00f4, 4(%esp)\n" /* "floatz_clear.pc" */
+        "movl $str_002a00f4, 4(%esp)\n" /* "floatz_clear.pc" */
         "leal -0x14dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17077,13 +17086,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x484(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0104, 4(%esp)\n" /* "2 glowApply 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a0104, 4(%esp)\n" /* "2 glowApply 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0x14d8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x480(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0138, 4(%esp)\n" /* "glow_apply_bloom.pc" */
+        "movl $str_002a0138, 4(%esp)\n" /* "glow_apply_bloom.pc" */
         "leal -0x14d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17101,13 +17110,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x47c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a014c, 4(%esp)\n" /* "3 glowApply 23 1 1 3 1 colorMapSampler 0 1 4 12 1 skySampler" */
+        "movl $str_002a014c, 4(%esp)\n" /* "3 glowApply 23 1 1 3 1 colorMapSampler 0 1 4 12 1 skySampler" */
         "leal -0x14d0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x478(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0194, 4(%esp)\n" /* "glow_apply_sky_bleed.pc" */
+        "movl $str_002a0194, 4(%esp)\n" /* "glow_apply_sky_bleed.pc" */
         "leal -0x14cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17125,13 +17134,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x474(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a01ac, 4(%esp)\n" /* "4 glowSetup 23 1 1 3 1 renderTargetSize 24 1 1 3 1 colorMapS" */
+        "movl $str_002a01ac, 4(%esp)\n" /* "4 glowSetup 23 1 1 3 1 renderTargetSize 24 1 1 3 1 colorMapS" */
         "leal -0x14c8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x470(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a021c, 4(%esp)\n" /* "glow_setup.pc" */
+        "movl $str_002a021c, 4(%esp)\n" /* "glow_setup.pc" */
         "leal -0x14c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17149,13 +17158,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x46c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0x14c0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x468(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a022c, 4(%esp)\n" /* "grain_overlay.pc" */
+        "movl $str_002a022c, 4(%esp)\n" /* "grain_overlay.pc" */
         "leal -0x14bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17173,13 +17182,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x464(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0240, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 colorMap" */
+        "movl $str_002a0240, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 colorMap" */
         "leal -0x14b8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x460(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0360, 4(%esp)\n" /* "lmap.pc" */
+        "movl $str_002a0360, 4(%esp)\n" /* "lmap.pc" */
         "leal -0x14b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17197,13 +17206,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x45c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0240, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 colorMap" */
+        "movl $str_002a0240, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 colorMap" */
         "leal -0x14b0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x458(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0368, 4(%esp)\n" /* "lmap_a.pc" */
+        "movl $str_002a0368, 4(%esp)\n" /* "lmap_a.pc" */
         "leal -0x14ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17221,13 +17230,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x454(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0374, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 detailSc" */
+        "movl $str_002a0374, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 detailSc" */
         "leal -0x14a8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x450(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a04c8, 4(%esp)\n" /* "lmap_a_dtl.pc" */
+        "movl $str_002a04c8, 4(%esp)\n" /* "lmap_a_dtl.pc" */
         "leal -0x14a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17245,13 +17254,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x44c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a04d8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a04d8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x14a0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x448(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0640, 4(%esp)\n" /* "lmap_a_dtl_pfog.pc" */
+        "movl $str_002a0640, 4(%esp)\n" /* "lmap_a_dtl_pfog.pc" */
         "leal -0x149c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17269,13 +17278,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x444(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x1498(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x440(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0788, 4(%esp)\n" /* "lmap_a_efog.pc" */
+        "movl $str_002a0788, 4(%esp)\n" /* "lmap_a_efog.pc" */
         "leal -0x1494(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17293,13 +17302,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x43c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x1490(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x438(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0798, 4(%esp)\n" /* "lmap_a_lfog.pc" */
+        "movl $str_002a0798, 4(%esp)\n" /* "lmap_a_lfog.pc" */
         "leal -0x148c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17317,13 +17326,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x434(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x1488(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x430(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a07a8, 4(%esp)\n" /* "lmap_a_pfog.pc" */
+        "movl $str_002a07a8, 4(%esp)\n" /* "lmap_a_pfog.pc" */
         "leal -0x1484(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17341,13 +17350,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x42c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a07b8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a07b8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1480(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x428(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a092c, 4(%esp)\n" /* "lmap_a_s.pc" */
+        "movl $str_002a092c, 4(%esp)\n" /* "lmap_a_s.pc" */
         "leal -0x147c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17365,13 +17374,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x424(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0938, 4(%esp)\n" /* "15 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0938, 4(%esp)\n" /* "15 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1478(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x420(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0ae0, 4(%esp)\n" /* "lmap_a_s_dtl.pc" */
+        "movl $str_002a0ae0, 4(%esp)\n" /* "lmap_a_s_dtl.pc" */
         "leal -0x1474(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17389,13 +17398,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x41c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0af0, 4(%esp)\n" /* "16 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0af0, 4(%esp)\n" /* "16 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1470(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x418(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0cac, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.pc" */
+        "movl $str_002a0cac, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.pc" */
         "leal -0x146c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17413,13 +17422,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x414(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1468(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x410(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0e4c, 4(%esp)\n" /* "lmap_a_s_efog.pc" */
+        "movl $str_002a0e4c, 4(%esp)\n" /* "lmap_a_s_efog.pc" */
         "leal -0x1464(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17437,13 +17446,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x40c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1460(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x408(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0e60, 4(%esp)\n" /* "lmap_a_s_lfog.pc" */
+        "movl $str_002a0e60, 4(%esp)\n" /* "lmap_a_s_lfog.pc" */
         "leal -0x145c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17461,13 +17470,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x404(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1458(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x400(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0e74, 4(%esp)\n" /* "lmap_a_s_pfog.pc" */
+        "movl $str_002a0e74, 4(%esp)\n" /* "lmap_a_s_pfog.pc" */
         "leal -0x1454(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17485,13 +17494,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3fc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0374, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 detailSc" */
+        "movl $str_002a0374, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 detailSc" */
         "leal -0x1450(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3f8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0e88, 4(%esp)\n" /* "lmap_dtl.pc" */
+        "movl $str_002a0e88, 4(%esp)\n" /* "lmap_dtl.pc" */
         "leal -0x144c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17509,13 +17518,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3f4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a04d8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a04d8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x1448(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3f0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0e94, 4(%esp)\n" /* "lmap_dtl_pfog.pc" */
+        "movl $str_002a0e94, 4(%esp)\n" /* "lmap_dtl_pfog.pc" */
         "leal -0x1444(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17533,13 +17542,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ec(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x1440(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3e8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0ea8, 4(%esp)\n" /* "lmap_efog.pc" */
+        "movl $str_002a0ea8, 4(%esp)\n" /* "lmap_efog.pc" */
         "leal -0x143c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17557,13 +17566,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3e4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x1438(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3e0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0eb8, 4(%esp)\n" /* "lmap_lfog.pc" */
+        "movl $str_002a0eb8, 4(%esp)\n" /* "lmap_lfog.pc" */
         "leal -0x1434(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17581,13 +17590,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3dc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
+        "movl $str_002a0654, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor" */
         "leal -0x1430(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3d8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0ec8, 4(%esp)\n" /* "lmap_pfog.pc" */
+        "movl $str_002a0ec8, 4(%esp)\n" /* "lmap_pfog.pc" */
         "leal -0x142c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17605,13 +17614,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3d4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a07b8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a07b8, 4(%esp)\n" /* "13 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1428(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3d0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0ed8, 4(%esp)\n" /* "lmap_s.pc" */
+        "movl $str_002a0ed8, 4(%esp)\n" /* "lmap_s.pc" */
         "leal -0x1424(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17629,13 +17638,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3cc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0938, 4(%esp)\n" /* "15 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0938, 4(%esp)\n" /* "15 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1420(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3c8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0ee4, 4(%esp)\n" /* "lmap_s_dtl.pc" */
+        "movl $str_002a0ee4, 4(%esp)\n" /* "lmap_s_dtl.pc" */
         "leal -0x141c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17653,13 +17662,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3c4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0af0, 4(%esp)\n" /* "16 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0af0, 4(%esp)\n" /* "16 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1418(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3c0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0ef4, 4(%esp)\n" /* "lmap_s_dtl_pfog.pc" */
+        "movl $str_002a0ef4, 4(%esp)\n" /* "lmap_s_dtl_pfog.pc" */
         "leal -0x1414(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17677,13 +17686,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3bc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1410(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3b8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0f08, 4(%esp)\n" /* "lmap_s_efog.pc" */
+        "movl $str_002a0f08, 4(%esp)\n" /* "lmap_s_efog.pc" */
         "leal -0x140c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17701,13 +17710,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3b4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1408(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3b0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0f18, 4(%esp)\n" /* "lmap_s_lfog.pc" */
+        "movl $str_002a0f18, 4(%esp)\n" /* "lmap_s_lfog.pc" */
         "leal -0x1404(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17725,13 +17734,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ac(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a0cc4, 4(%esp)\n" /* "14 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1400(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3a8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0f28, 4(%esp)\n" /* "lmap_s_pfog.pc" */
+        "movl $str_002a0f28, 4(%esp)\n" /* "lmap_s_pfog.pc" */
         "leal -0x13fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17749,13 +17758,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3a4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0f38, 4(%esp)\n" /* "13 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a0f38, 4(%esp)\n" /* "13 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13f8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3a0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a10b8, 4(%esp)\n" /* "lprobe.pc" */
+        "movl $str_002a10b8, 4(%esp)\n" /* "lprobe.pc" */
         "leal -0x13f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17773,13 +17782,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x39c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0f38, 4(%esp)\n" /* "13 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a0f38, 4(%esp)\n" /* "13 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13f0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x398(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a10c4, 4(%esp)\n" /* "lprobe_a.pc" */
+        "movl $str_002a10c4, 4(%esp)\n" /* "lprobe_a.pc" */
         "leal -0x13ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17797,13 +17806,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x394(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a10d0, 4(%esp)\n" /* "15 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a10d0, 4(%esp)\n" /* "15 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13e8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x390(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1280, 4(%esp)\n" /* "lprobe_a_dtl.pc" */
+        "movl $str_002a1280, 4(%esp)\n" /* "lprobe_a_dtl.pc" */
         "leal -0x13e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17821,13 +17830,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x38c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1290, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1290, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13e0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x388(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1454, 4(%esp)\n" /* "lprobe_a_dtl_pfog.pc" */
+        "movl $str_002a1454, 4(%esp)\n" /* "lprobe_a_dtl_pfog.pc" */
         "leal -0x13dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17845,13 +17854,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x384(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13d8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x380(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1600, 4(%esp)\n" /* "lprobe_a_efog.pc" */
+        "movl $str_002a1600, 4(%esp)\n" /* "lprobe_a_efog.pc" */
         "leal -0x13d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17869,13 +17878,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x37c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13d0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x378(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1614, 4(%esp)\n" /* "lprobe_a_lfog.pc" */
+        "movl $str_002a1614, 4(%esp)\n" /* "lprobe_a_lfog.pc" */
         "leal -0x13cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17893,13 +17902,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x374(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13c8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x370(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1628, 4(%esp)\n" /* "lprobe_a_pfog.pc" */
+        "movl $str_002a1628, 4(%esp)\n" /* "lprobe_a_pfog.pc" */
         "leal -0x13c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17917,13 +17926,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x36c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13c0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x368(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1810, 4(%esp)\n" /* "lprobe_a_s.pc" */
+        "movl $str_002a1810, 4(%esp)\n" /* "lprobe_a_s.pc" */
         "leal -0x13bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17941,13 +17950,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x364(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1820, 4(%esp)\n" /* "18 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1820, 4(%esp)\n" /* "18 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13b8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x360(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1a28, 4(%esp)\n" /* "lprobe_a_s_dtl.pc" */
+        "movl $str_002a1a28, 4(%esp)\n" /* "lprobe_a_s_dtl.pc" */
         "leal -0x13b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17965,13 +17974,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x35c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1a3c, 4(%esp)\n" /* "19 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1a3c, 4(%esp)\n" /* "19 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13b0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x358(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c58, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.pc" */
+        "movl $str_002a1c58, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.pc" */
         "leal -0x13ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -17989,13 +17998,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x354(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13a8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x350(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1e58, 4(%esp)\n" /* "lprobe_a_s_efog.pc" */
+        "movl $str_002a1e58, 4(%esp)\n" /* "lprobe_a_s_efog.pc" */
         "leal -0x13a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18013,13 +18022,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x34c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x13a0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x348(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1e6c, 4(%esp)\n" /* "lprobe_a_s_lfog.pc" */
+        "movl $str_002a1e6c, 4(%esp)\n" /* "lprobe_a_s_lfog.pc" */
         "leal -0x139c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18037,13 +18046,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x344(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1398(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x340(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1e80, 4(%esp)\n" /* "lprobe_a_s_pfog.pc" */
+        "movl $str_002a1e80, 4(%esp)\n" /* "lprobe_a_s_pfog.pc" */
         "leal -0x1394(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18061,13 +18070,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x33c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a10d0, 4(%esp)\n" /* "15 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a10d0, 4(%esp)\n" /* "15 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1390(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x338(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1e94, 4(%esp)\n" /* "lprobe_dtl.pc" */
+        "movl $str_002a1e94, 4(%esp)\n" /* "lprobe_dtl.pc" */
         "leal -0x138c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18085,13 +18094,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x334(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1290, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1290, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1388(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x330(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1ea4, 4(%esp)\n" /* "lprobe_dtl_pfog.pc" */
+        "movl $str_002a1ea4, 4(%esp)\n" /* "lprobe_dtl_pfog.pc" */
         "leal -0x1384(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18109,13 +18118,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x32c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1380(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x328(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1eb8, 4(%esp)\n" /* "lprobe_efog.pc" */
+        "movl $str_002a1eb8, 4(%esp)\n" /* "lprobe_efog.pc" */
         "leal -0x137c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18133,13 +18142,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x324(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1378(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x320(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1ec8, 4(%esp)\n" /* "lprobe_flag_a_s.pc" */
+        "movl $str_002a1ec8, 4(%esp)\n" /* "lprobe_flag_a_s.pc" */
         "leal -0x1374(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18157,13 +18166,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x31c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1370(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x318(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1edc, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.pc" */
+        "movl $str_002a1edc, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.pc" */
         "leal -0x136c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18181,13 +18190,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x314(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1368(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x310(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1ef4, 4(%esp)\n" /* "lprobe_flag_s.pc" */
+        "movl $str_002a1ef4, 4(%esp)\n" /* "lprobe_flag_s.pc" */
         "leal -0x1364(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18205,13 +18214,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x30c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1360(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x308(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f08, 4(%esp)\n" /* "lprobe_flag_sm_a_s.pc" */
+        "movl $str_002a1f08, 4(%esp)\n" /* "lprobe_flag_sm_a_s.pc" */
         "leal -0x135c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18229,13 +18238,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x304(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1358(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x300(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f20, 4(%esp)\n" /* "lprobe_flag_sm_s.pc" */
+        "movl $str_002a1f20, 4(%esp)\n" /* "lprobe_flag_sm_s.pc" */
         "leal -0x1354(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18253,13 +18262,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2fc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1350(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2f8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f34, 4(%esp)\n" /* "lprobe_flag_s_efog.pc" */
+        "movl $str_002a1f34, 4(%esp)\n" /* "lprobe_flag_s_efog.pc" */
         "leal -0x134c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18277,13 +18286,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2f4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1348(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2f0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f4c, 4(%esp)\n" /* "lprobe_flag_s_lfog.pc" */
+        "movl $str_002a1f4c, 4(%esp)\n" /* "lprobe_flag_s_lfog.pc" */
         "leal -0x1344(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18301,13 +18310,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ec(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1340(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2e8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f64, 4(%esp)\n" /* "lprobe_lfog.pc" */
+        "movl $str_002a1f64, 4(%esp)\n" /* "lprobe_lfog.pc" */
         "leal -0x133c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18325,13 +18334,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2e4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1338(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2e0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f74, 4(%esp)\n" /* "lprobe_pfog.pc" */
+        "movl $str_002a1f74, 4(%esp)\n" /* "lprobe_pfog.pc" */
         "leal -0x1334(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18349,13 +18358,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2dc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1330(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2d8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f84, 4(%esp)\n" /* "lprobe_s.pc" */
+        "movl $str_002a1f84, 4(%esp)\n" /* "lprobe_s.pc" */
         "leal -0x132c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18373,13 +18382,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2d4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a0f38, 4(%esp)\n" /* "13 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a0f38, 4(%esp)\n" /* "13 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1328(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2d0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1f90, 4(%esp)\n" /* "lprobe_scroll.pc" */
+        "movl $str_002a1f90, 4(%esp)\n" /* "lprobe_scroll.pc" */
         "leal -0x1324(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18397,13 +18406,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2cc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1320(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2c8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1fa4, 4(%esp)\n" /* "lprobe_scroll_efog.pc" */
+        "movl $str_002a1fa4, 4(%esp)\n" /* "lprobe_scroll_efog.pc" */
         "leal -0x131c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18421,13 +18430,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2c4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a146c, 4(%esp)\n" /* "14 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1318(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2c0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1fbc, 4(%esp)\n" /* "lprobe_scroll_lfog.pc" */
+        "movl $str_002a1fbc, 4(%esp)\n" /* "lprobe_scroll_lfog.pc" */
         "leal -0x1314(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18445,13 +18454,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2bc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x1310(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2b8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2080, 4(%esp)\n" /* "lprobe_sm.pc" */
+        "movl $str_002a2080, 4(%esp)\n" /* "lprobe_sm.pc" */
         "leal -0x130c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18469,13 +18478,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2b4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x1308(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2b0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2090, 4(%esp)\n" /* "lprobe_smc.pc" */
+        "movl $str_002a2090, 4(%esp)\n" /* "lprobe_smc.pc" */
         "leal -0x1304(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18493,13 +18502,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ac(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x1300(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2a8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20a0, 4(%esp)\n" /* "lprobe_smc_a.pc" */
+        "movl $str_002a20a0, 4(%esp)\n" /* "lprobe_smc_a.pc" */
         "leal -0x12fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18517,13 +18526,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2a4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x12f8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2a0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20f0, 4(%esp)\n" /* "lprobe_smc_amb.pc" */
+        "movl $str_002a20f0, 4(%esp)\n" /* "lprobe_smc_amb.pc" */
         "leal -0x12f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18541,13 +18550,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x29c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x12f0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x298(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2104, 4(%esp)\n" /* "lprobe_smc_amb_a.pc" */
+        "movl $str_002a2104, 4(%esp)\n" /* "lprobe_smc_amb_a.pc" */
         "leal -0x12ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18565,13 +18574,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x294(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x12e8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x290(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2118, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.pc" */
+        "movl $str_002a2118, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.pc" */
         "leal -0x12e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18589,13 +18598,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x28c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12e0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x288(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2184, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.pc" */
+        "movl $str_002a2184, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.pc" */
         "leal -0x12dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18613,13 +18622,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x284(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12d8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x280(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a21a4, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.pc" */
+        "movl $str_002a21a4, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.pc" */
         "leal -0x12d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18637,13 +18646,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x27c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12d0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x278(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a21c0, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.pc" */
+        "movl $str_002a21c0, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.pc" */
         "leal -0x12cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18661,13 +18670,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x274(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12c8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x270(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a21dc, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.pc" */
+        "movl $str_002a21dc, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.pc" */
         "leal -0x12c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18685,13 +18694,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x26c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x12c0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x268(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a21f8, 4(%esp)\n" /* "lprobe_smc_amb_dtl.pc" */
+        "movl $str_002a21f8, 4(%esp)\n" /* "lprobe_smc_amb_dtl.pc" */
         "leal -0x12bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18709,13 +18718,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x264(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12b8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x260(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2210, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.pc" */
+        "movl $str_002a2210, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.pc" */
         "leal -0x12b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18733,13 +18742,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x25c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12b0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x258(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a222c, 4(%esp)\n" /* "lprobe_smc_amb_efog.pc" */
+        "movl $str_002a222c, 4(%esp)\n" /* "lprobe_smc_amb_efog.pc" */
         "leal -0x12ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18757,13 +18766,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x254(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12a8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x250(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2244, 4(%esp)\n" /* "lprobe_smc_amb_lfog.pc" */
+        "movl $str_002a2244, 4(%esp)\n" /* "lprobe_smc_amb_lfog.pc" */
         "leal -0x12a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18781,13 +18790,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x24c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x12a0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x248(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a225c, 4(%esp)\n" /* "lprobe_smc_amb_pfog.pc" */
+        "movl $str_002a225c, 4(%esp)\n" /* "lprobe_smc_amb_pfog.pc" */
         "leal -0x129c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18805,13 +18814,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x244(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x1298(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x240(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2354, 4(%esp)\n" /* "lprobe_smc_a_dtl.pc" */
+        "movl $str_002a2354, 4(%esp)\n" /* "lprobe_smc_a_dtl.pc" */
         "leal -0x1294(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18829,13 +18838,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x23c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1290(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x238(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a245c, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.pc" */
+        "movl $str_002a245c, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.pc" */
         "leal -0x128c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18853,13 +18862,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x234(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1288(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x230(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2538, 4(%esp)\n" /* "lprobe_smc_a_efog.pc" */
+        "movl $str_002a2538, 4(%esp)\n" /* "lprobe_smc_a_efog.pc" */
         "leal -0x1284(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18877,13 +18886,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x22c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1280(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x228(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2550, 4(%esp)\n" /* "lprobe_smc_a_lfog.pc" */
+        "movl $str_002a2550, 4(%esp)\n" /* "lprobe_smc_a_lfog.pc" */
         "leal -0x127c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18901,13 +18910,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x224(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1278(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x220(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2568, 4(%esp)\n" /* "lprobe_smc_a_pfog.pc" */
+        "movl $str_002a2568, 4(%esp)\n" /* "lprobe_smc_a_pfog.pc" */
         "leal -0x1274(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18925,13 +18934,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x21c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
+        "movl $str_002a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
         "leal -0x1270(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x218(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2680, 4(%esp)\n" /* "lprobe_smc_a_s.pc" */
+        "movl $str_002a2680, 4(%esp)\n" /* "lprobe_smc_a_s.pc" */
         "leal -0x126c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18949,13 +18958,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x214(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1268(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x210(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a27c8, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.pc" */
+        "movl $str_002a27c8, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.pc" */
         "leal -0x1264(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18973,13 +18982,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x20c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1260(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x208(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2928, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.pc" */
+        "movl $str_002a2928, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.pc" */
         "leal -0x125c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -18997,13 +19006,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x204(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1258(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x200(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2a5c, 4(%esp)\n" /* "lprobe_smc_a_s_efog.pc" */
+        "movl $str_002a2a5c, 4(%esp)\n" /* "lprobe_smc_a_s_efog.pc" */
         "leal -0x1254(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19021,13 +19030,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1fc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1250(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1f8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2a74, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.pc" */
+        "movl $str_002a2a74, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.pc" */
         "leal -0x124c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19045,13 +19054,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1f4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1248(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1f0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2a8c, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.pc" */
+        "movl $str_002a2a8c, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.pc" */
         "leal -0x1244(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19069,13 +19078,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ec(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x1240(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1e8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2aa4, 4(%esp)\n" /* "lprobe_smc_dtl.pc" */
+        "movl $str_002a2aa4, 4(%esp)\n" /* "lprobe_smc_dtl.pc" */
         "leal -0x123c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19093,13 +19102,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1e4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1238(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1e0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2ab8, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.pc" */
+        "movl $str_002a2ab8, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.pc" */
         "leal -0x1234(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19117,13 +19126,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1dc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1230(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1d8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2ad0, 4(%esp)\n" /* "lprobe_smc_efog.pc" */
+        "movl $str_002a2ad0, 4(%esp)\n" /* "lprobe_smc_efog.pc" */
         "leal -0x122c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19141,13 +19150,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1d4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1228(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1d0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2ae4, 4(%esp)\n" /* "lprobe_smc_lfog.pc" */
+        "movl $str_002a2ae4, 4(%esp)\n" /* "lprobe_smc_lfog.pc" */
         "leal -0x1224(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19165,13 +19174,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1cc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1220(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1c8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2af8, 4(%esp)\n" /* "lprobe_smc_pfog.pc" */
+        "movl $str_002a2af8, 4(%esp)\n" /* "lprobe_smc_pfog.pc" */
         "leal -0x121c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19189,13 +19198,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1c4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
+        "movl $str_002a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
         "leal -0x1218(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1c0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2b0c, 4(%esp)\n" /* "lprobe_smc_s.pc" */
+        "movl $str_002a2b0c, 4(%esp)\n" /* "lprobe_smc_s.pc" */
         "leal -0x1214(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19213,13 +19222,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1bc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1210(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1b8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2b1c, 4(%esp)\n" /* "lprobe_smc_s_dtl.pc" */
+        "movl $str_002a2b1c, 4(%esp)\n" /* "lprobe_smc_s_dtl.pc" */
         "leal -0x120c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19237,13 +19246,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1b4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1208(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1b0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2b30, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.pc" */
+        "movl $str_002a2b30, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.pc" */
         "leal -0x1204(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19261,13 +19270,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ac(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1200(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1a8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2b4c, 4(%esp)\n" /* "lprobe_smc_s_efog.pc" */
+        "movl $str_002a2b4c, 4(%esp)\n" /* "lprobe_smc_s_efog.pc" */
         "leal -0x11fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19285,13 +19294,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1a4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x11f8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1a0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2b64, 4(%esp)\n" /* "lprobe_smc_s_lfog.pc" */
+        "movl $str_002a2b64, 4(%esp)\n" /* "lprobe_smc_s_lfog.pc" */
         "leal -0x11f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19309,13 +19318,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x19c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x11f0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x198(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2b7c, 4(%esp)\n" /* "lprobe_smc_s_pfog.pc" */
+        "movl $str_002a2b7c, 4(%esp)\n" /* "lprobe_smc_s_pfog.pc" */
         "leal -0x11ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19333,13 +19342,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x194(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a1fd4, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x11e8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x190(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2b94, 4(%esp)\n" /* "lprobe_sm_a.pc" */
+        "movl $str_002a2b94, 4(%esp)\n" /* "lprobe_sm_a.pc" */
         "leal -0x11e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19357,13 +19366,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x18c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x11e0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x188(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2ba4, 4(%esp)\n" /* "lprobe_sm_amb.pc" */
+        "movl $str_002a2ba4, 4(%esp)\n" /* "lprobe_sm_amb.pc" */
         "leal -0x11dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19381,13 +19390,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x184(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x11d8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x180(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2bb8, 4(%esp)\n" /* "lprobe_sm_amb_a.pc" */
+        "movl $str_002a2bb8, 4(%esp)\n" /* "lprobe_sm_amb_a.pc" */
         "leal -0x11d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19405,13 +19414,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x17c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x11d0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x178(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2bcc, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.pc" */
+        "movl $str_002a2bcc, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.pc" */
         "leal -0x11cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19429,13 +19438,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x174(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x11c8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x170(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2be4, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.pc" */
+        "movl $str_002a2be4, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.pc" */
         "leal -0x11c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19453,13 +19462,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x16c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x11c0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x168(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2c00, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.pc" */
+        "movl $str_002a2c00, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.pc" */
         "leal -0x11bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19477,13 +19486,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x164(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x11b8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x160(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2c18, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.pc" */
+        "movl $str_002a2c18, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.pc" */
         "leal -0x11b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19501,13 +19510,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x15c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x11b0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x158(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2c30, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.pc" */
+        "movl $str_002a2c30, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.pc" */
         "leal -0x11ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19525,13 +19534,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x154(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
+        "movl $str_002a20b0, 4(%esp)\n" /* "2 smodelLightingSampler 0 1 4 13 1 colorMapSampler 1 1 4 12 " */
         "leal -0x11a8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x150(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2c48, 4(%esp)\n" /* "lprobe_sm_amb_dtl.pc" */
+        "movl $str_002a2c48, 4(%esp)\n" /* "lprobe_sm_amb_dtl.pc" */
         "leal -0x11a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19549,13 +19558,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x14c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x11a0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x148(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2c60, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.pc" */
+        "movl $str_002a2c60, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.pc" */
         "leal -0x119c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19573,13 +19582,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x144(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x1198(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x140(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2c7c, 4(%esp)\n" /* "lprobe_sm_amb_efog.pc" */
+        "movl $str_002a2c7c, 4(%esp)\n" /* "lprobe_sm_amb_efog.pc" */
         "leal -0x1194(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19597,13 +19606,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x13c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x1190(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x138(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2c94, 4(%esp)\n" /* "lprobe_sm_amb_lfog.pc" */
+        "movl $str_002a2c94, 4(%esp)\n" /* "lprobe_sm_amb_lfog.pc" */
         "leal -0x118c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19621,13 +19630,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x134(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
+        "movl $str_002a2130, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 smodelLightingSampler 0 1 4 13 1 color" */
         "leal -0x1188(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x130(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2cac, 4(%esp)\n" /* "lprobe_sm_amb_pfog.pc" */
+        "movl $str_002a2cac, 4(%esp)\n" /* "lprobe_sm_amb_pfog.pc" */
         "leal -0x1184(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19645,13 +19654,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x12c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x1180(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x128(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2cc4, 4(%esp)\n" /* "lprobe_sm_a_dtl.pc" */
+        "movl $str_002a2cc4, 4(%esp)\n" /* "lprobe_sm_a_dtl.pc" */
         "leal -0x117c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19669,13 +19678,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x124(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1178(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x120(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2cd8, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.pc" */
+        "movl $str_002a2cd8, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.pc" */
         "leal -0x1174(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19693,13 +19702,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x11c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1170(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x118(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2cf0, 4(%esp)\n" /* "lprobe_sm_a_efog.pc" */
+        "movl $str_002a2cf0, 4(%esp)\n" /* "lprobe_sm_a_efog.pc" */
         "leal -0x116c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19717,13 +19726,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x114(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1168(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x110(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2d04, 4(%esp)\n" /* "lprobe_sm_a_lfog.pc" */
+        "movl $str_002a2d04, 4(%esp)\n" /* "lprobe_sm_a_lfog.pc" */
         "leal -0x1164(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19741,13 +19750,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x10c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1160(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x108(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2d18, 4(%esp)\n" /* "lprobe_sm_a_pfog.pc" */
+        "movl $str_002a2d18, 4(%esp)\n" /* "lprobe_sm_a_pfog.pc" */
         "leal -0x115c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19765,13 +19774,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x104(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
+        "movl $str_002a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
         "leal -0x1158(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x100(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2d2c, 4(%esp)\n" /* "lprobe_sm_a_s.pc" */
+        "movl $str_002a2d2c, 4(%esp)\n" /* "lprobe_sm_a_s.pc" */
         "leal -0x1154(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19789,13 +19798,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xfc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1150(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xf8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2d40, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.pc" */
+        "movl $str_002a2d40, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.pc" */
         "leal -0x114c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19813,13 +19822,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xf4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1148(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xf0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2d58, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.pc" */
+        "movl $str_002a2d58, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.pc" */
         "leal -0x1144(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19837,13 +19846,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xec(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1140(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xe8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2d74, 4(%esp)\n" /* "lprobe_sm_a_s_efog.pc" */
+        "movl $str_002a2d74, 4(%esp)\n" /* "lprobe_sm_a_s_efog.pc" */
         "leal -0x113c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19861,13 +19870,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xe4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1138(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xe0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2d8c, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.pc" */
+        "movl $str_002a2d8c, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.pc" */
         "leal -0x1134(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19885,13 +19894,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xdc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x1130(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xd8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2da4, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.pc" */
+        "movl $str_002a2da4, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.pc" */
         "leal -0x112c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19909,13 +19918,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xd4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
+        "movl $str_002a2274, 4(%esp)\n" /* "8 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightingL" */
         "leal -0x1128(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xd0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2dbc, 4(%esp)\n" /* "lprobe_sm_dtl.pc" */
+        "movl $str_002a2dbc, 4(%esp)\n" /* "lprobe_sm_dtl.pc" */
         "leal -0x1124(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19933,13 +19942,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xcc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2368, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1120(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xc8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2dd0, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.pc" */
+        "movl $str_002a2dd0, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.pc" */
         "leal -0x111c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19957,13 +19966,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xc4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1118(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xc0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2de8, 4(%esp)\n" /* "lprobe_sm_efog.pc" */
+        "movl $str_002a2de8, 4(%esp)\n" /* "lprobe_sm_efog.pc" */
         "leal -0x1114(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -19981,13 +19990,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xbc(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1110(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xb8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2dfc, 4(%esp)\n" /* "lprobe_sm_lfog.pc" */
+        "movl $str_002a2dfc, 4(%esp)\n" /* "lprobe_sm_lfog.pc" */
         "leal -0x110c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20005,13 +20014,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xb4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a2478, 4(%esp)\n" /* "7 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0x1108(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xb0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e10, 4(%esp)\n" /* "lprobe_sm_pfog.pc" */
+        "movl $str_002a2e10, 4(%esp)\n" /* "lprobe_sm_pfog.pc" */
         "leal -0x1104(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20029,13 +20038,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xac(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
+        "movl $str_002a2580, 4(%esp)\n" /* "9 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpec" */
         "leal -0x1100(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xa8(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e24, 4(%esp)\n" /* "lprobe_sm_s.pc" */
+        "movl $str_002a2e24, 4(%esp)\n" /* "lprobe_sm_s.pc" */
         "leal -0x10fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20053,13 +20062,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xa4(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2694, 4(%esp)\n" /* "11 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x10f8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xa0(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e34, 4(%esp)\n" /* "lprobe_sm_s_dtl.pc" */
+        "movl $str_002a2e34, 4(%esp)\n" /* "lprobe_sm_s_dtl.pc" */
         "leal -0x10f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20077,13 +20086,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x9c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a27e0, 4(%esp)\n" /* "12 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x10f0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x98(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e48, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.pc" */
+        "movl $str_002a2e48, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.pc" */
         "leal -0x10ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20101,13 +20110,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x94(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x10e8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x90(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e60, 4(%esp)\n" /* "lprobe_sm_s_efog.pc" */
+        "movl $str_002a2e60, 4(%esp)\n" /* "lprobe_sm_s_efog.pc" */
         "leal -0x10e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20125,13 +20134,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x8c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x10e0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x88(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e74, 4(%esp)\n" /* "lprobe_sm_s_lfog.pc" */
+        "movl $str_002a2e74, 4(%esp)\n" /* "lprobe_sm_s_lfog.pc" */
         "leal -0x10dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20149,13 +20158,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x84(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
+        "movl $str_002a2944, 4(%esp)\n" /* "10 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 lightSpe" */
         "leal -0x10d8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x80(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e88, 4(%esp)\n" /* "lprobe_sm_s_pfog.pc" */
+        "movl $str_002a2e88, 4(%esp)\n" /* "lprobe_sm_s_pfog.pc" */
         "leal -0x10d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20173,13 +20182,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1820, 4(%esp)\n" /* "18 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1820, 4(%esp)\n" /* "18 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x10d0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x78(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2e9c, 4(%esp)\n" /* "lprobe_s_dtl.pc" */
+        "movl $str_002a2e9c, 4(%esp)\n" /* "lprobe_s_dtl.pc" */
         "leal -0x10cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20197,13 +20206,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x74(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1a3c, 4(%esp)\n" /* "19 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1a3c, 4(%esp)\n" /* "19 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x10c8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x70(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2eac, 4(%esp)\n" /* "lprobe_s_dtl_pfog.pc" */
+        "movl $str_002a2eac, 4(%esp)\n" /* "lprobe_s_dtl_pfog.pc" */
         "leal -0x10c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20221,13 +20230,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x10c0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x68(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2ec4, 4(%esp)\n" /* "lprobe_s_efog.pc" */
+        "movl $str_002a2ec4, 4(%esp)\n" /* "lprobe_s_efog.pc" */
         "leal -0x10bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20245,13 +20254,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x64(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x10b8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x60(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2ed8, 4(%esp)\n" /* "lprobe_s_lfog.pc" */
+        "movl $str_002a2ed8, 4(%esp)\n" /* "lprobe_s_lfog.pc" */
         "leal -0x10b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20269,13 +20278,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x10b0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x58(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2eec, 4(%esp)\n" /* "lprobe_s_pfog.pc" */
+        "movl $str_002a2eec, 4(%esp)\n" /* "lprobe_s_pfog.pc" */
         "leal -0x10ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20293,13 +20302,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x54(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a163c, 4(%esp)\n" /* "16 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x10a8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x50(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2f00, 4(%esp)\n" /* "lprobe_s_scroll.pc" */
+        "movl $str_002a2f00, 4(%esp)\n" /* "lprobe_s_scroll.pc" */
         "leal -0x10a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20317,13 +20326,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x10a0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x48(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2f14, 4(%esp)\n" /* "lprobe_s_scroll_efog.pc" */
+        "movl $str_002a2f14, 4(%esp)\n" /* "lprobe_s_scroll_efog.pc" */
         "leal -0x109c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20341,13 +20350,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x44(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
+        "movl $str_002a1c70, 4(%esp)\n" /* "17 lightGridColorsR0 8 1 1 3 1 lightGridColorsR1 9 1 1 3 1 l" */
         "leal -0x1098(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x40(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2f2c, 4(%esp)\n" /* "lprobe_s_scroll_lfog.pc" */
+        "movl $str_002a2f2c, 4(%esp)\n" /* "lprobe_s_scroll_lfog.pc" */
         "leal -0x1094(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20365,13 +20374,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2f44, 4(%esp)\n" /* "4 lightColor0 17 1 1 3 1 colorMapSampler 0 1 4 12 1 normalMa" */
+        "movl $str_002a2f44, 4(%esp)\n" /* "4 lightColor0 17 1 1 3 1 colorMapSampler 0 1 4 12 1 normalMa" */
         "leal -0x1090(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x38(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2fb4, 4(%esp)\n" /* "l_point.pc" */
+        "movl $str_002a2fb4, 4(%esp)\n" /* "l_point.pc" */
         "leal -0x108c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20389,13 +20398,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x34(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2f44, 4(%esp)\n" /* "4 lightColor0 17 1 1 3 1 colorMapSampler 0 1 4 12 1 normalMa" */
+        "movl $str_002a2f44, 4(%esp)\n" /* "4 lightColor0 17 1 1 3 1 colorMapSampler 0 1 4 12 1 normalMa" */
         "leal -0x1088(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x30(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2fc0, 4(%esp)\n" /* "l_point_blend.pc" */
+        "movl $str_002a2fc0, 4(%esp)\n" /* "l_point_blend.pc" */
         "leal -0x1084(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20413,13 +20422,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2fd4, 4(%esp)\n" /* "6 lightColor0 17 1 1 3 1 detailScale 23 1 1 3 1 colorMapSamp" */
+        "movl $str_002a2fd4, 4(%esp)\n" /* "6 lightColor0 17 1 1 3 1 detailScale 23 1 1 3 1 colorMapSamp" */
         "leal -0x1080(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x28(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3078, 4(%esp)\n" /* "l_point_blend_dtl.pc" */
+        "movl $str_002a3078, 4(%esp)\n" /* "l_point_blend_dtl.pc" */
         "leal -0x107c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20437,13 +20446,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x24(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3090, 4(%esp)\n" /* "7 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 detailScale 23 " */
+        "movl $str_002a3090, 4(%esp)\n" /* "7 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 detailScale 23 " */
         "leal -0x1078(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x20(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3148, 4(%esp)\n" /* "l_point_blend_dtl_pfog.pc" */
+        "movl $str_002a3148, 4(%esp)\n" /* "l_point_blend_dtl_pfog.pc" */
         "leal -0x1074(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20461,13 +20470,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1c(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1070(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x19(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a31e8, 4(%esp)\n" /* "l_point_blend_efog.pc" */
+        "movl $str_002a31e8, 4(%esp)\n" /* "l_point_blend_efog.pc" */
         "leal -0x106c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20485,13 +20494,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x83a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1068(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x832(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3200, 4(%esp)\n" /* "l_point_blend_lfog.pc" */
+        "movl $str_002a3200, 4(%esp)\n" /* "l_point_blend_lfog.pc" */
         "leal -0x1064(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20509,13 +20518,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x82a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1060(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x822(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3218, 4(%esp)\n" /* "l_point_blend_pfog.pc" */
+        "movl $str_002a3218, 4(%esp)\n" /* "l_point_blend_pfog.pc" */
         "leal -0x105c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20533,13 +20542,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x81a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2fd4, 4(%esp)\n" /* "6 lightColor0 17 1 1 3 1 detailScale 23 1 1 3 1 colorMapSamp" */
+        "movl $str_002a2fd4, 4(%esp)\n" /* "6 lightColor0 17 1 1 3 1 detailScale 23 1 1 3 1 colorMapSamp" */
         "leal -0x1058(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x812(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3230, 4(%esp)\n" /* "l_point_dtl.pc" */
+        "movl $str_002a3230, 4(%esp)\n" /* "l_point_dtl.pc" */
         "leal -0x1054(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20557,13 +20566,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x80a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3090, 4(%esp)\n" /* "7 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 detailScale 23 " */
+        "movl $str_002a3090, 4(%esp)\n" /* "7 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 detailScale 23 " */
         "leal -0x1050(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x802(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3240, 4(%esp)\n" /* "l_point_dtl_pfog.pc" */
+        "movl $str_002a3240, 4(%esp)\n" /* "l_point_dtl_pfog.pc" */
         "leal -0x104c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20581,13 +20590,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7fa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1048(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7f2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3254, 4(%esp)\n" /* "l_point_efog.pc" */
+        "movl $str_002a3254, 4(%esp)\n" /* "l_point_efog.pc" */
         "leal -0x1044(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20605,13 +20614,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a2f44, 4(%esp)\n" /* "4 lightColor0 17 1 1 3 1 colorMapSampler 0 1 4 12 1 normalMa" */
+        "movl $str_002a2f44, 4(%esp)\n" /* "4 lightColor0 17 1 1 3 1 colorMapSampler 0 1 4 12 1 normalMa" */
         "leal -0x1040(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7e2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3264, 4(%esp)\n" /* "l_point_flag.pc" */
+        "movl $str_002a3264, 4(%esp)\n" /* "l_point_flag.pc" */
         "leal -0x103c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20629,13 +20638,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7da(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1038(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7d2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3274, 4(%esp)\n" /* "l_point_flag_efog.pc" */
+        "movl $str_002a3274, 4(%esp)\n" /* "l_point_flag_efog.pc" */
         "leal -0x1034(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20653,13 +20662,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1030(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7c2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a328c, 4(%esp)\n" /* "l_point_flag_lfog.pc" */
+        "movl $str_002a328c, 4(%esp)\n" /* "l_point_flag_lfog.pc" */
         "leal -0x102c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20677,13 +20686,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1028(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7b2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a32a4, 4(%esp)\n" /* "l_point_flag_pfog.pc" */
+        "movl $str_002a32a4, 4(%esp)\n" /* "l_point_flag_pfog.pc" */
         "leal -0x1024(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20701,13 +20710,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7aa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1020(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7a2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a32bc, 4(%esp)\n" /* "l_point_lfog.pc" */
+        "movl $str_002a32bc, 4(%esp)\n" /* "l_point_lfog.pc" */
         "leal -0x101c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20725,13 +20734,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x79a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
+        "movl $str_002a3164, 4(%esp)\n" /* "5 lightColor0 17 1 1 3 1 fogColor 21 1 1 3 1 colorMapSampler" */
         "leal -0x1018(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x792(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a32cc, 4(%esp)\n" /* "l_point_pfog.pc" */
+        "movl $str_002a32cc, 4(%esp)\n" /* "l_point_pfog.pc" */
         "leal -0x1014(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20749,13 +20758,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x78a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0x1010(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x782(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a32dc, 4(%esp)\n" /* "mul.pc" */
+        "movl $str_002a32dc, 4(%esp)\n" /* "mul.pc" */
         "leal -0x100c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20773,13 +20782,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x77a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0x1008(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x772(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a32e4, 4(%esp)\n" /* "mul_pfog.pc" */
+        "movl $str_002a32e4, 4(%esp)\n" /* "mul_pfog.pc" */
         "leal -0x1004(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20797,13 +20806,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x76a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
         "leal -0x1000(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x762(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a32f0, 4(%esp)\n" /* "null.pc" */
+        "movl $str_002a32f0, 4(%esp)\n" /* "null.pc" */
         "leal -0xffc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20821,13 +20830,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x75a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a32f8, 4(%esp)\n" /* "2 gameTime 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a32f8, 4(%esp)\n" /* "2 gameTime 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xff8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x752(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a332c, 4(%esp)\n" /* "objective_base.pc" */
+        "movl $str_002a332c, 4(%esp)\n" /* "objective_base.pc" */
         "leal -0xff4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20845,13 +20854,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x74a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3340, 4(%esp)\n" /* "2 particleCloudColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a3340, 4(%esp)\n" /* "2 particleCloudColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xff0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x742(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a337c, 4(%esp)\n" /* "particle_cloud.pc" */
+        "movl $str_002a337c, 4(%esp)\n" /* "particle_cloud.pc" */
         "leal -0xfec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20869,13 +20878,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x73a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3390, 4(%esp)\n" /* "3 particleCloudColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1 o" */
+        "movl $str_002a3390, 4(%esp)\n" /* "3 particleCloudColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1 o" */
         "leal -0xfe8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x732(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a33e8, 4(%esp)\n" /* "particle_cloud_outdoor.pc" */
+        "movl $str_002a33e8, 4(%esp)\n" /* "particle_cloud_outdoor.pc" */
         "leal -0xfe4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20893,13 +20902,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x72a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3404, 4(%esp)\n" /* "1 shadowCookieSampler 0 1 4 12 1" */
+        "movl $str_002a3404, 4(%esp)\n" /* "1 shadowCookieSampler 0 1 4 12 1" */
         "leal -0xfe0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x722(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3428, 4(%esp)\n" /* "shadowcookie_blur.pc" */
+        "movl $str_002a3428, 4(%esp)\n" /* "shadowcookie_blur.pc" */
         "leal -0xfdc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20917,13 +20926,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x71a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
         "leal -0xfd8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x712(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3440, 4(%esp)\n" /* "shadowcookie_caster.pc" */
+        "movl $str_002a3440, 4(%esp)\n" /* "shadowcookie_caster.pc" */
         "leal -0xfd4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20941,13 +20950,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x70a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0xfd0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x702(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3458, 4(%esp)\n" /* "shadowcookie_display.pc" */
+        "movl $str_002a3458, 4(%esp)\n" /* "shadowcookie_display.pc" */
         "leal -0xfcc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20965,13 +20974,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6fa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3470, 4(%esp)\n" /* "2 shadowParms 23 1 1 3 1 shadowCookieSampler 0 1 4 12 1" */
+        "movl $str_002a3470, 4(%esp)\n" /* "2 shadowParms 23 1 1 3 1 shadowCookieSampler 0 1 4 12 1" */
         "leal -0xfc8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6f2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a34a8, 4(%esp)\n" /* "shadowcookie_receiver.pc" */
+        "movl $str_002a34a8, 4(%esp)\n" /* "shadowcookie_receiver.pc" */
         "leal -0xfc4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -20989,13 +20998,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0xfc0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6e2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a34c4, 4(%esp)\n" /* "shell_shock.pc" */
+        "movl $str_002a34c4, 4(%esp)\n" /* "shell_shock.pc" */
         "leal -0xfbc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21013,13 +21022,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6da(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a34d4, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 14 1" */
+        "movl $str_002a34d4, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 14 1" */
         "leal -0xfb8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6d2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a34f4, 4(%esp)\n" /* "sky.pc" */
+        "movl $str_002a34f4, 4(%esp)\n" /* "sky.pc" */
         "leal -0xfb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21037,13 +21046,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0xfb0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6c2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a34fc, 4(%esp)\n" /* "textured_simple.pc" */
+        "movl $str_002a34fc, 4(%esp)\n" /* "textured_simple.pc" */
         "leal -0xfac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21061,13 +21070,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0xfa8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6b2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3510, 4(%esp)\n" /* "vertcol_eyeofs.pc" */
+        "movl $str_002a3510, 4(%esp)\n" /* "vertcol_eyeofs.pc" */
         "leal -0xfa4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21085,13 +21094,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6aa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xfa0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6a2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3558, 4(%esp)\n" /* "vertcol_eyeofs_efog.pc" */
+        "movl $str_002a3558, 4(%esp)\n" /* "vertcol_eyeofs_efog.pc" */
         "leal -0xf9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21109,13 +21118,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x69a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf98(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x692(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3570, 4(%esp)\n" /* "vertcol_eyeofs_lfog.pc" */
+        "movl $str_002a3570, 4(%esp)\n" /* "vertcol_eyeofs_lfog.pc" */
         "leal -0xf94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21133,13 +21142,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x68a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf90(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x682(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3588, 4(%esp)\n" /* "vertcol_notexalpha.pc" */
+        "movl $str_002a3588, 4(%esp)\n" /* "vertcol_notexalpha.pc" */
         "leal -0xf8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21157,13 +21166,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x67a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x29fbdc, 4(%esp)\n" /* "2 materialColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_0029fbdc, 4(%esp)\n" /* "2 materialColor 23 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf88(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x672(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a35a0, 4(%esp)\n" /* "vertcol_shaded.pc" */
+        "movl $str_002a35a0, 4(%esp)\n" /* "vertcol_shaded.pc" */
         "leal -0xf84(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21181,13 +21190,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x66a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a35b4, 4(%esp)\n" /* "4 materialColor 23 1 1 3 1 detailScale 24 1 1 3 1 colorMapSa" */
+        "movl $str_002a35b4, 4(%esp)\n" /* "4 materialColor 23 1 1 3 1 detailScale 24 1 1 3 1 colorMapSa" */
         "leal -0xf80(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x662(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3620, 4(%esp)\n" /* "vertcol_shaded_dtl.pc" */
+        "movl $str_002a3620, 4(%esp)\n" /* "vertcol_shaded_dtl.pc" */
         "leal -0xf7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21205,13 +21214,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x65a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3638, 4(%esp)\n" /* "5 fogColor 21 1 1 3 1 materialColor 23 1 1 3 1 detailScale 2" */
+        "movl $str_002a3638, 4(%esp)\n" /* "5 fogColor 21 1 1 3 1 materialColor 23 1 1 3 1 detailScale 2" */
         "leal -0xf78(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x652(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a36b8, 4(%esp)\n" /* "vertcol_shaded_dtl_pfog.pc" */
+        "movl $str_002a36b8, 4(%esp)\n" /* "vertcol_shaded_dtl_pfog.pc" */
         "leal -0xf74(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21229,13 +21238,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x64a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a36d4, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 materialColor 23 1 1 3 1 colorMapSampl" */
+        "movl $str_002a36d4, 4(%esp)\n" /* "3 fogColor 21 1 1 3 1 materialColor 23 1 1 3 1 colorMapSampl" */
         "leal -0xf70(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x642(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3720, 4(%esp)\n" /* "vertcol_shaded_pfog.pc" */
+        "movl $str_002a3720, 4(%esp)\n" /* "vertcol_shaded_pfog.pc" */
         "leal -0xf6c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21253,13 +21262,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x63a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf68(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x632(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3738, 4(%esp)\n" /* "vertcol_simple.pc" */
+        "movl $str_002a3738, 4(%esp)\n" /* "vertcol_simple.pc" */
         "leal -0xf64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21277,13 +21286,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x62a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf60(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x622(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a374c, 4(%esp)\n" /* "vertcol_simple_efog.pc" */
+        "movl $str_002a374c, 4(%esp)\n" /* "vertcol_simple_efog.pc" */
         "leal -0xf5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21301,13 +21310,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x61a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf58(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x612(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3764, 4(%esp)\n" /* "vertcol_simple_lfog.pc" */
+        "movl $str_002a3764, 4(%esp)\n" /* "vertcol_simple_lfog.pc" */
         "leal -0xf54(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21325,13 +21334,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x60a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a3524, 4(%esp)\n" /* "2 fogColor 21 1 1 3 1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf50(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x602(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a377c, 4(%esp)\n" /* "vertcol_simple_pfog.pc" */
+        "movl $str_002a377c, 4(%esp)\n" /* "vertcol_simple_pfog.pc" */
         "leal -0xf4c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21349,13 +21358,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5fa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
+        "movl $str_002a009c, 4(%esp)\n" /* "1 colorMapSampler 0 1 4 12 1" */
         "leal -0xf48(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5f2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3794, 4(%esp)\n" /* "vertcol_simple_scroll.pc" */
+        "movl $str_002a3794, 4(%esp)\n" /* "vertcol_simple_scroll.pc" */
         "leal -0xf44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21373,13 +21382,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
         "leal -0xf40(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5e2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a37b0, 4(%esp)\n" /* "vertcol_untextured.pc" */
+        "movl $str_002a37b0, 4(%esp)\n" /* "vertcol_untextured.pc" */
         "leal -0xf3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21397,13 +21406,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5da(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a37c8, 4(%esp)\n" /* "5 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 waterColo" */
+        "movl $str_002a37c8, 4(%esp)\n" /* "5 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 waterColo" */
         "leal -0xf38(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5d2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3848, 4(%esp)\n" /* "water_l_sun.pc" */
+        "movl $str_002a3848, 4(%esp)\n" /* "water_l_sun.pc" */
         "leal -0xf34(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21421,13 +21430,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3858, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a3858, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0xf30(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5c2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a38ec, 4(%esp)\n" /* "water_l_sun_efog.pc" */
+        "movl $str_002a38ec, 4(%esp)\n" /* "water_l_sun_efog.pc" */
         "leal -0xf2c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21445,13 +21454,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3858, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a3858, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0xf28(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5b2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3900, 4(%esp)\n" /* "water_l_sun_lfog.pc" */
+        "movl $str_002a3900, 4(%esp)\n" /* "water_l_sun_lfog.pc" */
         "leal -0xf24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21469,13 +21478,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5aa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3858, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
+        "movl $str_002a3858, 4(%esp)\n" /* "6 lightPosition0 16 1 1 3 1 lightColor0 17 1 1 3 1 fogColor " */
         "leal -0xf20(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5a2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3914, 4(%esp)\n" /* "water_l_sun_pfog.pc" */
+        "movl $str_002a3914, 4(%esp)\n" /* "water_l_sun_pfog.pc" */
         "leal -0xf1c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21493,13 +21502,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x59a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3928, 4(%esp)\n" /* "3 featherParms 23 1 1 3 1 colorMapSampler 0 1 4 12 1 floatZS" */
+        "movl $str_002a3928, 4(%esp)\n" /* "3 featherParms 23 1 1 3 1 colorMapSampler 0 1 4 12 1 floatZS" */
         "leal -0xf18(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x592(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3978, 4(%esp)\n" /* "zfeather.pc" */
+        "movl $str_002a3978, 4(%esp)\n" /* "zfeather.pc" */
         "leal -0xf14(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21517,13 +21526,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x58a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3984, 4(%esp)\n" /* "4 fogColor 21 1 1 3 1 featherParms 23 1 1 3 1 colorMapSample" */
+        "movl $str_002a3984, 4(%esp)\n" /* "4 fogColor 21 1 1 3 1 featherParms 23 1 1 3 1 colorMapSample" */
         "leal -0xf10(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x582(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a39e8, 4(%esp)\n" /* "zfeather_efog.pc" */
+        "movl $str_002a39e8, 4(%esp)\n" /* "zfeather_efog.pc" */
         "leal -0xf0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21541,13 +21550,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x57a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3984, 4(%esp)\n" /* "4 fogColor 21 1 1 3 1 featherParms 23 1 1 3 1 colorMapSample" */
+        "movl $str_002a3984, 4(%esp)\n" /* "4 fogColor 21 1 1 3 1 featherParms 23 1 1 3 1 colorMapSample" */
         "leal -0xf08(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x572(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a39fc, 4(%esp)\n" /* "zfeather_lfog.pc" */
+        "movl $str_002a39fc, 4(%esp)\n" /* "zfeather_lfog.pc" */
         "leal -0xf04(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21565,13 +21574,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x56a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3a10, 4(%esp)\n" /* "5 outdoorFeatherParms 23 1 1 3 1 featherParms 24 1 1 3 1 col" */
+        "movl $str_002a3a10, 4(%esp)\n" /* "5 outdoorFeatherParms 23 1 1 3 1 featherParms 24 1 1 3 1 col" */
         "leal -0xf00(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x562(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3a9c, 4(%esp)\n" /* "zfeather_outdoor.pc" */
+        "movl $str_002a3a9c, 4(%esp)\n" /* "zfeather_outdoor.pc" */
         "leal -0xefc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21589,13 +21598,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x55a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3ab0, 4(%esp)\n" /* "6 fogColor 21 1 1 3 1 outdoorFeatherParms 23 1 1 3 1 feather" */
+        "movl $str_002a3ab0, 4(%esp)\n" /* "6 fogColor 21 1 1 3 1 outdoorFeatherParms 23 1 1 3 1 feather" */
         "leal -0xef8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x552(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3b50, 4(%esp)\n" /* "zfeather_outdoor_efog.pc" */
+        "movl $str_002a3b50, 4(%esp)\n" /* "zfeather_outdoor_efog.pc" */
         "leal -0xef4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21613,13 +21622,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x54a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3ab0, 4(%esp)\n" /* "6 fogColor 21 1 1 3 1 outdoorFeatherParms 23 1 1 3 1 feather" */
+        "movl $str_002a3ab0, 4(%esp)\n" /* "6 fogColor 21 1 1 3 1 outdoorFeatherParms 23 1 1 3 1 feather" */
         "leal -0xef0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x542(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3b6c, 4(%esp)\n" /* "zfeather_outdoor_lfog.pc" */
+        "movl $str_002a3b6c, 4(%esp)\n" /* "zfeather_outdoor_lfog.pc" */
         "leal -0xeec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21637,13 +21646,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x53a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3ab0, 4(%esp)\n" /* "6 fogColor 21 1 1 3 1 outdoorFeatherParms 23 1 1 3 1 feather" */
+        "movl $str_002a3ab0, 4(%esp)\n" /* "6 fogColor 21 1 1 3 1 outdoorFeatherParms 23 1 1 3 1 feather" */
         "leal -0xee8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x532(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3b88, 4(%esp)\n" /* "zfeather_outdoor_pfog.pc" */
+        "movl $str_002a3b88, 4(%esp)\n" /* "zfeather_outdoor_pfog.pc" */
         "leal -0xee4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21661,13 +21670,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x52a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3984, 4(%esp)\n" /* "4 fogColor 21 1 1 3 1 featherParms 23 1 1 3 1 colorMapSample" */
+        "movl $str_002a3984, 4(%esp)\n" /* "4 fogColor 21 1 1 3 1 featherParms 23 1 1 3 1 colorMapSample" */
         "leal -0xee0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x522(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3ba4, 4(%esp)\n" /* "zfeather_pfog.pc" */
+        "movl $str_002a3ba4, 4(%esp)\n" /* "zfeather_pfog.pc" */
         "leal -0xedc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21685,13 +21694,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x51a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
         "leal -0xed8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x512(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bb8, 4(%esp)\n" /* "zprepass.pc" */
+        "movl $str_002a3bb8, 4(%esp)\n" /* "zprepass.pc" */
         "leal -0xed4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21709,13 +21718,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x50a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0xed0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x502(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bf4, 4(%esp)\n" /* "color_channel_mixer.vc" */
+        "movl $str_002a3bf4, 4(%esp)\n" /* "color_channel_mixer.vc" */
         "leal -0xecc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21733,13 +21742,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4fa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xec8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4f2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c50, 4(%esp)\n" /* "debug_normals.vc" */
+        "movl $str_002a3c50, 4(%esp)\n" /* "debug_normals.vc" */
         "leal -0xec4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21757,13 +21766,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c64, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
+        "movl $str_002a3c64, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
         "leal -0xec0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4e2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3d14, 4(%esp)\n" /* "distortion.vc" */
+        "movl $str_002a3d14, 4(%esp)\n" /* "distortion.vc" */
         "leal -0xebc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21781,13 +21790,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4da(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c64, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
+        "movl $str_002a3c64, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
         "leal -0xeb8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4d2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3d24, 4(%esp)\n" /* "distortion_floatz.vc" */
+        "movl $str_002a3d24, 4(%esp)\n" /* "distortion_floatz.vc" */
         "leal -0xeb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21805,13 +21814,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0xeb0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4c2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3d3c, 4(%esp)\n" /* "fakelight_normal.vc" */
+        "movl $str_002a3d3c, 4(%esp)\n" /* "fakelight_normal.vc" */
         "leal -0xeac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21829,13 +21838,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3d50, 4(%esp)\n" /* "2 eyePosition 20 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a3d50, 4(%esp)\n" /* "2 eyePosition 20 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xea8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4b2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3d94, 4(%esp)\n" /* "fakelight_view.vc" */
+        "movl $str_002a3d94, 4(%esp)\n" /* "fakelight_view.vc" */
         "leal -0xea4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21853,13 +21862,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4aa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3da8, 4(%esp)\n" /* "2 filterTap 8 1 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a3da8, 4(%esp)\n" /* "2 filterTap 8 1 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xea0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4a2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3dec, 4(%esp)\n" /* "filter_symmetric_1.vc" */
+        "movl $str_002a3dec, 4(%esp)\n" /* "filter_symmetric_1.vc" */
         "leal -0xe9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21877,13 +21886,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x49a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3e04, 4(%esp)\n" /* "2 filterTap 8 2 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a3e04, 4(%esp)\n" /* "2 filterTap 8 2 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xe98(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x492(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3e48, 4(%esp)\n" /* "filter_symmetric_2.vc" */
+        "movl $str_002a3e48, 4(%esp)\n" /* "filter_symmetric_2.vc" */
         "leal -0xe94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21901,13 +21910,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x48a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3e60, 4(%esp)\n" /* "2 filterTap 8 3 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a3e60, 4(%esp)\n" /* "2 filterTap 8 3 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xe90(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x482(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3ea4, 4(%esp)\n" /* "filter_symmetric_3.vc" */
+        "movl $str_002a3ea4, 4(%esp)\n" /* "filter_symmetric_3.vc" */
         "leal -0xe8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21925,13 +21934,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x47a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3ebc, 4(%esp)\n" /* "2 filterTap 8 4 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a3ebc, 4(%esp)\n" /* "2 filterTap 8 4 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xe88(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x472(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3f00, 4(%esp)\n" /* "filter_symmetric_4.vc" */
+        "movl $str_002a3f00, 4(%esp)\n" /* "filter_symmetric_4.vc" */
         "leal -0xe84(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21949,13 +21958,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x46a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3f18, 4(%esp)\n" /* "2 filterTap 8 5 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a3f18, 4(%esp)\n" /* "2 filterTap 8 5 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xe80(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x462(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3f5c, 4(%esp)\n" /* "filter_symmetric_5.vc" */
+        "movl $str_002a3f5c, 4(%esp)\n" /* "filter_symmetric_5.vc" */
         "leal -0xe7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21973,13 +21982,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x45a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3f74, 4(%esp)\n" /* "2 filterTap 8 6 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a3f74, 4(%esp)\n" /* "2 filterTap 8 6 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xe78(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x452(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3fb8, 4(%esp)\n" /* "filter_symmetric_6.vc" */
+        "movl $str_002a3fb8, 4(%esp)\n" /* "filter_symmetric_6.vc" */
         "leal -0xe74(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -21997,13 +22006,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x44a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3fd0, 4(%esp)\n" /* "2 filterTap 8 7 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a3fd0, 4(%esp)\n" /* "2 filterTap 8 7 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xe70(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x442(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4014, 4(%esp)\n" /* "filter_symmetric_7.vc" */
+        "movl $str_002a4014, 4(%esp)\n" /* "filter_symmetric_7.vc" */
         "leal -0xe6c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22021,13 +22030,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x43a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a402c, 4(%esp)\n" /* "2 filterTap 8 8 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
+        "movl $str_002a402c, 4(%esp)\n" /* "2 filterTap 8 8 1 3 8 OpenGLworldViewProjectionMatrix 23 4 3" */
         "leal -0xe68(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x432(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4070, 4(%esp)\n" /* "filter_symmetric_8.vc" */
+        "movl $str_002a4070, 4(%esp)\n" /* "filter_symmetric_8.vc" */
         "leal -0xe64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22045,13 +22054,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x42a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4088, 4(%esp)\n" /* "2 worldViewProjectionMatrix 0 3 3 3 1 OpenGLworldViewProject" */
+        "movl $str_002a4088, 4(%esp)\n" /* "2 worldViewProjectionMatrix 0 3 3 3 1 OpenGLworldViewProject" */
         "leal -0xe60(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x422(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a40dc, 4(%esp)\n" /* "floatz_build.vc" */
+        "movl $str_002a40dc, 4(%esp)\n" /* "floatz_build.vc" */
         "leal -0xe5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22069,13 +22078,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x41a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4088, 4(%esp)\n" /* "2 worldViewProjectionMatrix 0 3 3 3 1 OpenGLworldViewProject" */
+        "movl $str_002a4088, 4(%esp)\n" /* "2 worldViewProjectionMatrix 0 3 3 3 1 OpenGLworldViewProject" */
         "leal -0xe58(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x412(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a40ec, 4(%esp)\n" /* "floatz_build_atest.vc" */
+        "movl $str_002a40ec, 4(%esp)\n" /* "floatz_build_atest.vc" */
         "leal -0xe54(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22093,13 +22102,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x40a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4104, 4(%esp)\n" /* "3 worldViewProjectionMatrix 0 3 3 3 1 OpenGLworldViewProject" */
+        "movl $str_002a4104, 4(%esp)\n" /* "3 worldViewProjectionMatrix 0 3 3 3 1 OpenGLworldViewProject" */
         "leal -0xe50(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x402(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a416c, 4(%esp)\n" /* "floatz_build_atest_scroll.vc" */
+        "movl $str_002a416c, 4(%esp)\n" /* "floatz_build_atest_scroll.vc" */
         "leal -0xe4c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22117,13 +22126,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3fa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0xe48(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3f2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a418c, 4(%esp)\n" /* "glow_apply_bloom.vc" */
+        "movl $str_002a418c, 4(%esp)\n" /* "glow_apply_bloom.vc" */
         "leal -0xe44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22141,13 +22150,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a41a0, 4(%esp)\n" /* "5 OpenGLworldViewProjectionMatrix 23 4 3 3 1 nearPlaneOrg 27" */
+        "movl $str_002a41a0, 4(%esp)\n" /* "5 OpenGLworldViewProjectionMatrix 23 4 3 3 1 nearPlaneOrg 27" */
         "leal -0xe40(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3e2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4234, 4(%esp)\n" /* "glow_apply_sky_bleed.vc" */
+        "movl $str_002a4234, 4(%esp)\n" /* "glow_apply_sky_bleed.vc" */
         "leal -0xe3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22165,13 +22174,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3da(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a424c, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 renderTargetSiz" */
+        "movl $str_002a424c, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 renderTargetSiz" */
         "leal -0xe38(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3d2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4298, 4(%esp)\n" /* "glow_setup.vc" */
+        "movl $str_002a4298, 4(%esp)\n" /* "glow_setup.vc" */
         "leal -0xe34(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22189,13 +22198,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a42a8, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 gameTime 27 1 1" */
+        "movl $str_002a42a8, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 gameTime 27 1 1" */
         "leal -0xe30(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3c2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a42ec, 4(%esp)\n" /* "grain_overlay.vc" */
+        "movl $str_002a42ec, 4(%esp)\n" /* "grain_overlay.vc" */
         "leal -0xe2c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22213,13 +22222,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xe28(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3b2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4384, 4(%esp)\n" /* "lmap.vc" */
+        "movl $str_002a4384, 4(%esp)\n" /* "lmap.vc" */
         "leal -0xe24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22237,13 +22246,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3aa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xe20(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3a2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a438c, 4(%esp)\n" /* "lmap_a.vc" */
+        "movl $str_002a438c, 4(%esp)\n" /* "lmap_a.vc" */
         "leal -0xe1c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22261,13 +22270,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x39a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xe18(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x392(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4398, 4(%esp)\n" /* "lmap_a_dtl.vc" */
+        "movl $str_002a4398, 4(%esp)\n" /* "lmap_a_dtl.vc" */
         "leal -0xe14(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22285,13 +22294,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x38a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xe10(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x382(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a445c, 4(%esp)\n" /* "lmap_a_dtl_pfog.vc" */
+        "movl $str_002a445c, 4(%esp)\n" /* "lmap_a_dtl_pfog.vc" */
         "leal -0xe0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22309,13 +22318,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x37a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xe08(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x372(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4470, 4(%esp)\n" /* "lmap_a_efog.vc" */
+        "movl $str_002a4470, 4(%esp)\n" /* "lmap_a_efog.vc" */
         "leal -0xe04(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22333,13 +22342,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x36a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xe00(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x362(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4480, 4(%esp)\n" /* "lmap_a_lfog.vc" */
+        "movl $str_002a4480, 4(%esp)\n" /* "lmap_a_lfog.vc" */
         "leal -0xdfc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22357,13 +22366,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x35a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xdf8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x352(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4490, 4(%esp)\n" /* "lmap_a_pfog.vc" */
+        "movl $str_002a4490, 4(%esp)\n" /* "lmap_a_pfog.vc" */
         "leal -0xdf4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22381,13 +22390,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x34a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xdf0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x342(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4558, 4(%esp)\n" /* "lmap_a_s.vc" */
+        "movl $str_002a4558, 4(%esp)\n" /* "lmap_a_s.vc" */
         "leal -0xdec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22405,13 +22414,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x33a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xde8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x332(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4564, 4(%esp)\n" /* "lmap_a_s_dtl.vc" */
+        "movl $str_002a4564, 4(%esp)\n" /* "lmap_a_s_dtl.vc" */
         "leal -0xde4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22429,13 +22438,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x32a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xde0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x322(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4658, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.vc" */
+        "movl $str_002a4658, 4(%esp)\n" /* "lmap_a_s_dtl_pfog.vc" */
         "leal -0xddc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22453,13 +22462,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x31a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xdd8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x312(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4670, 4(%esp)\n" /* "lmap_a_s_efog.vc" */
+        "movl $str_002a4670, 4(%esp)\n" /* "lmap_a_s_efog.vc" */
         "leal -0xdd4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22477,13 +22486,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x30a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xdd0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x302(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4684, 4(%esp)\n" /* "lmap_a_s_lfog.vc" */
+        "movl $str_002a4684, 4(%esp)\n" /* "lmap_a_s_lfog.vc" */
         "leal -0xdcc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22501,13 +22510,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2fa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xdc8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2f2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4698, 4(%esp)\n" /* "lmap_a_s_pfog.vc" */
+        "movl $str_002a4698, 4(%esp)\n" /* "lmap_a_s_pfog.vc" */
         "leal -0xdc4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22525,13 +22534,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xdc0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2e2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a46ac, 4(%esp)\n" /* "lmap_dtl.vc" */
+        "movl $str_002a46ac, 4(%esp)\n" /* "lmap_dtl.vc" */
         "leal -0xdbc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22549,13 +22558,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2da(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xdb8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2d2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a46b8, 4(%esp)\n" /* "lmap_dtl_pfog.vc" */
+        "movl $str_002a46b8, 4(%esp)\n" /* "lmap_dtl_pfog.vc" */
         "leal -0xdb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22573,13 +22582,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xdb0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2c2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a46cc, 4(%esp)\n" /* "lmap_efog.vc" */
+        "movl $str_002a46cc, 4(%esp)\n" /* "lmap_efog.vc" */
         "leal -0xdac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22597,13 +22606,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xda8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2b2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a46dc, 4(%esp)\n" /* "lmap_lfog.vc" */
+        "movl $str_002a46dc, 4(%esp)\n" /* "lmap_lfog.vc" */
         "leal -0xda4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22621,13 +22630,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2aa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xda0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2a2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a46ec, 4(%esp)\n" /* "lmap_pfog.vc" */
+        "movl $str_002a46ec, 4(%esp)\n" /* "lmap_pfog.vc" */
         "leal -0xd9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22645,13 +22654,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x29a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xd98(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x292(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a46fc, 4(%esp)\n" /* "lmap_s.vc" */
+        "movl $str_002a46fc, 4(%esp)\n" /* "lmap_s.vc" */
         "leal -0xd94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22669,13 +22678,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x28a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xd90(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x282(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4708, 4(%esp)\n" /* "lmap_s_dtl.vc" */
+        "movl $str_002a4708, 4(%esp)\n" /* "lmap_s_dtl.vc" */
         "leal -0xd8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22693,13 +22702,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x27a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd88(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x272(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4718, 4(%esp)\n" /* "lmap_s_dtl_pfog.vc" */
+        "movl $str_002a4718, 4(%esp)\n" /* "lmap_s_dtl_pfog.vc" */
         "leal -0xd84(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22717,13 +22726,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x26a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd80(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x262(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a472c, 4(%esp)\n" /* "lmap_s_efog.vc" */
+        "movl $str_002a472c, 4(%esp)\n" /* "lmap_s_efog.vc" */
         "leal -0xd7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22741,13 +22750,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x25a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd78(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x252(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a473c, 4(%esp)\n" /* "lmap_s_lfog.vc" */
+        "movl $str_002a473c, 4(%esp)\n" /* "lmap_s_lfog.vc" */
         "leal -0xd74(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22765,13 +22774,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x24a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd70(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x242(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a474c, 4(%esp)\n" /* "lmap_s_pfog.vc" */
+        "movl $str_002a474c, 4(%esp)\n" /* "lmap_s_pfog.vc" */
         "leal -0xd6c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22789,13 +22798,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x23a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xd68(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x232(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a475c, 4(%esp)\n" /* "lprobe.vc" */
+        "movl $str_002a475c, 4(%esp)\n" /* "lprobe.vc" */
         "leal -0xd64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22813,13 +22822,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x22a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xd60(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x222(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4768, 4(%esp)\n" /* "lprobe_a.vc" */
+        "movl $str_002a4768, 4(%esp)\n" /* "lprobe_a.vc" */
         "leal -0xd5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22837,13 +22846,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x21a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xd58(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x212(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4774, 4(%esp)\n" /* "lprobe_a_dtl.vc" */
+        "movl $str_002a4774, 4(%esp)\n" /* "lprobe_a_dtl.vc" */
         "leal -0xd54(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22861,13 +22870,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x20a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd50(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x202(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4784, 4(%esp)\n" /* "lprobe_a_dtl_pfog.vc" */
+        "movl $str_002a4784, 4(%esp)\n" /* "lprobe_a_dtl_pfog.vc" */
         "leal -0xd4c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22885,13 +22894,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1fa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd48(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1f2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a479c, 4(%esp)\n" /* "lprobe_a_efog.vc" */
+        "movl $str_002a479c, 4(%esp)\n" /* "lprobe_a_efog.vc" */
         "leal -0xd44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22909,13 +22918,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd40(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1e2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a47b0, 4(%esp)\n" /* "lprobe_a_lfog.vc" */
+        "movl $str_002a47b0, 4(%esp)\n" /* "lprobe_a_lfog.vc" */
         "leal -0xd3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22933,13 +22942,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1da(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd38(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1d2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a47c4, 4(%esp)\n" /* "lprobe_a_pfog.vc" */
+        "movl $str_002a47c4, 4(%esp)\n" /* "lprobe_a_pfog.vc" */
         "leal -0xd34(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22957,13 +22966,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xd30(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1c2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a47d8, 4(%esp)\n" /* "lprobe_a_s.vc" */
+        "movl $str_002a47d8, 4(%esp)\n" /* "lprobe_a_s.vc" */
         "leal -0xd2c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -22981,13 +22990,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xd28(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1b2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a47e8, 4(%esp)\n" /* "lprobe_a_s_dtl.vc" */
+        "movl $str_002a47e8, 4(%esp)\n" /* "lprobe_a_s_dtl.vc" */
         "leal -0xd24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23005,13 +23014,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1aa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd20(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1a2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a47fc, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.vc" */
+        "movl $str_002a47fc, 4(%esp)\n" /* "lprobe_a_s_dtl_pfog.vc" */
         "leal -0xd1c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23029,13 +23038,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x19a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd18(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x192(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4814, 4(%esp)\n" /* "lprobe_a_s_efog.vc" */
+        "movl $str_002a4814, 4(%esp)\n" /* "lprobe_a_s_efog.vc" */
         "leal -0xd14(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23053,13 +23062,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x18a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd10(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x182(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4828, 4(%esp)\n" /* "lprobe_a_s_lfog.vc" */
+        "movl $str_002a4828, 4(%esp)\n" /* "lprobe_a_s_lfog.vc" */
         "leal -0xd0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23077,13 +23086,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x17a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xd08(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x172(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a483c, 4(%esp)\n" /* "lprobe_a_s_pfog.vc" */
+        "movl $str_002a483c, 4(%esp)\n" /* "lprobe_a_s_pfog.vc" */
         "leal -0xd04(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23101,13 +23110,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x16a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4300, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xd00(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x162(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4850, 4(%esp)\n" /* "lprobe_dtl.vc" */
+        "movl $str_002a4850, 4(%esp)\n" /* "lprobe_dtl.vc" */
         "leal -0xcfc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23125,13 +23134,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x15a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xcf8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x152(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4860, 4(%esp)\n" /* "lprobe_dtl_pfog.vc" */
+        "movl $str_002a4860, 4(%esp)\n" /* "lprobe_dtl_pfog.vc" */
         "leal -0xcf4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23149,13 +23158,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x14a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xcf0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x142(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4874, 4(%esp)\n" /* "lprobe_efog.vc" */
+        "movl $str_002a4874, 4(%esp)\n" /* "lprobe_efog.vc" */
         "leal -0xcec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23173,13 +23182,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x13a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xce8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x132(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4950, 4(%esp)\n" /* "lprobe_flag_a_s.vc" */
+        "movl $str_002a4950, 4(%esp)\n" /* "lprobe_flag_a_s.vc" */
         "leal -0xce4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23197,13 +23206,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x12a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xce0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x122(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4a5c, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.vc" */
+        "movl $str_002a4a5c, 4(%esp)\n" /* "lprobe_flag_a_s_pfog.vc" */
         "leal -0xcdc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23221,13 +23230,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x11a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xcd8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x112(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4a74, 4(%esp)\n" /* "lprobe_flag_s.vc" */
+        "movl $str_002a4a74, 4(%esp)\n" /* "lprobe_flag_s.vc" */
         "leal -0xcd4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23245,13 +23254,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x10a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xcd0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x102(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4a88, 4(%esp)\n" /* "lprobe_flag_sm_a_s.vc" */
+        "movl $str_002a4a88, 4(%esp)\n" /* "lprobe_flag_sm_a_s.vc" */
         "leal -0xccc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23269,13 +23278,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xfa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xcc8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xf2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4aa0, 4(%esp)\n" /* "lprobe_flag_sm_s.vc" */
+        "movl $str_002a4aa0, 4(%esp)\n" /* "lprobe_flag_sm_s.vc" */
         "leal -0xcc4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23293,13 +23302,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xea(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xcc0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xe2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4ab4, 4(%esp)\n" /* "lprobe_flag_s_efog.vc" */
+        "movl $str_002a4ab4, 4(%esp)\n" /* "lprobe_flag_s_efog.vc" */
         "leal -0xcbc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23317,13 +23326,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xda(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xcb8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xd2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4acc, 4(%esp)\n" /* "lprobe_flag_s_lfog.vc" */
+        "movl $str_002a4acc, 4(%esp)\n" /* "lprobe_flag_s_lfog.vc" */
         "leal -0xcb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23341,13 +23350,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xca(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xcb0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xc2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4ae4, 4(%esp)\n" /* "lprobe_lfog.vc" */
+        "movl $str_002a4ae4, 4(%esp)\n" /* "lprobe_lfog.vc" */
         "leal -0xcac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23365,13 +23374,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xba(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a43a8, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xca8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xb2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4af4, 4(%esp)\n" /* "lprobe_pfog.vc" */
+        "movl $str_002a4af4, 4(%esp)\n" /* "lprobe_pfog.vc" */
         "leal -0xca4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23389,13 +23398,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xaa(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xca0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xa2(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4b04, 4(%esp)\n" /* "lprobe_s.vc" */
+        "movl $str_002a4b04, 4(%esp)\n" /* "lprobe_s.vc" */
         "leal -0xc9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23413,13 +23422,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x9a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4b10, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4b10, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xc98(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x92(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4ba8, 4(%esp)\n" /* "lprobe_scroll.vc" */
+        "movl $str_002a4ba8, 4(%esp)\n" /* "lprobe_scroll.vc" */
         "leal -0xc94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23437,13 +23446,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x8a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4bbc, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4bbc, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xc90(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x82(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4c84, 4(%esp)\n" /* "lprobe_scroll_efog.vc" */
+        "movl $str_002a4c84, 4(%esp)\n" /* "lprobe_scroll_efog.vc" */
         "leal -0xc8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23461,13 +23470,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4bbc, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4bbc, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xc88(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x72(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4c9c, 4(%esp)\n" /* "lprobe_scroll_lfog.vc" */
+        "movl $str_002a4c9c, 4(%esp)\n" /* "lprobe_scroll_lfog.vc" */
         "leal -0xc84(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23485,13 +23494,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xc80(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x62(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d18, 4(%esp)\n" /* "lprobe_sm.vc" */
+        "movl $str_002a4d18, 4(%esp)\n" /* "lprobe_sm.vc" */
         "leal -0xc7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23509,13 +23518,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xc78(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x52(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d28, 4(%esp)\n" /* "lprobe_smc.vc" */
+        "movl $str_002a4d28, 4(%esp)\n" /* "lprobe_smc.vc" */
         "leal -0xc74(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23533,13 +23542,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xc70(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x42(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d38, 4(%esp)\n" /* "lprobe_smc_a.vc" */
+        "movl $str_002a4d38, 4(%esp)\n" /* "lprobe_smc_a.vc" */
         "leal -0xc6c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23557,13 +23566,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xc68(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x32(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d8c, 4(%esp)\n" /* "lprobe_smc_amb.vc" */
+        "movl $str_002a4d8c, 4(%esp)\n" /* "lprobe_smc_amb.vc" */
         "leal -0xc64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23581,13 +23590,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xc60(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x22(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4da0, 4(%esp)\n" /* "lprobe_smc_amb_a.vc" */
+        "movl $str_002a4da0, 4(%esp)\n" /* "lprobe_smc_amb_a.vc" */
         "leal -0xc5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23605,13 +23614,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1a(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xc58(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x836(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4db4, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.vc" */
+        "movl $str_002a4db4, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl.vc" */
         "leal -0xc54(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23629,13 +23638,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x826(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc50(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x816(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4e40, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.vc" */
+        "movl $str_002a4e40, 4(%esp)\n" /* "lprobe_smc_amb_a_dtl_pfog.vc" */
         "leal -0xc4c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23653,13 +23662,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x806(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc48(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7f6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4e60, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.vc" */
+        "movl $str_002a4e60, 4(%esp)\n" /* "lprobe_smc_amb_a_efog.vc" */
         "leal -0xc44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23677,13 +23686,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7e6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc40(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7d6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4e7c, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.vc" */
+        "movl $str_002a4e7c, 4(%esp)\n" /* "lprobe_smc_amb_a_lfog.vc" */
         "leal -0xc3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23701,13 +23710,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7c6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc38(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7b6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4e98, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.vc" */
+        "movl $str_002a4e98, 4(%esp)\n" /* "lprobe_smc_amb_a_pfog.vc" */
         "leal -0xc34(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23725,13 +23734,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7a6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a4d48, 4(%esp)\n" /* "2 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xc30(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x796(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4eb4, 4(%esp)\n" /* "lprobe_smc_amb_dtl.vc" */
+        "movl $str_002a4eb4, 4(%esp)\n" /* "lprobe_smc_amb_dtl.vc" */
         "leal -0xc2c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23749,13 +23758,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x786(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc28(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x776(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4ecc, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.vc" */
+        "movl $str_002a4ecc, 4(%esp)\n" /* "lprobe_smc_amb_dtl_pfog.vc" */
         "leal -0xc24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23773,13 +23782,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x766(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc20(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x756(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4ee8, 4(%esp)\n" /* "lprobe_smc_amb_efog.vc" */
+        "movl $str_002a4ee8, 4(%esp)\n" /* "lprobe_smc_amb_efog.vc" */
         "leal -0xc1c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23797,13 +23806,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x746(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc18(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x736(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f00, 4(%esp)\n" /* "lprobe_smc_amb_lfog.vc" */
+        "movl $str_002a4f00, 4(%esp)\n" /* "lprobe_smc_amb_lfog.vc" */
         "leal -0xc14(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23821,13 +23830,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x726(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a4dcc, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xc10(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x716(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f18, 4(%esp)\n" /* "lprobe_smc_amb_pfog.vc" */
+        "movl $str_002a4f18, 4(%esp)\n" /* "lprobe_smc_amb_pfog.vc" */
         "leal -0xc0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23845,13 +23854,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x706(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xc08(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6f6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f30, 4(%esp)\n" /* "lprobe_smc_a_dtl.vc" */
+        "movl $str_002a4f30, 4(%esp)\n" /* "lprobe_smc_a_dtl.vc" */
         "leal -0xc04(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23869,13 +23878,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6e6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xc00(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6d6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4fb8, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.vc" */
+        "movl $str_002a4fb8, 4(%esp)\n" /* "lprobe_smc_a_dtl_pfog.vc" */
         "leal -0xbfc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23893,13 +23902,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6c6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xbf8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6b6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4fd4, 4(%esp)\n" /* "lprobe_smc_a_efog.vc" */
+        "movl $str_002a4fd4, 4(%esp)\n" /* "lprobe_smc_a_efog.vc" */
         "leal -0xbf4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23917,13 +23926,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6a6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xbf0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x696(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4fec, 4(%esp)\n" /* "lprobe_smc_a_lfog.vc" */
+        "movl $str_002a4fec, 4(%esp)\n" /* "lprobe_smc_a_lfog.vc" */
         "leal -0xbec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23941,13 +23950,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x686(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xbe8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x676(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5004, 4(%esp)\n" /* "lprobe_smc_a_pfog.vc" */
+        "movl $str_002a5004, 4(%esp)\n" /* "lprobe_smc_a_pfog.vc" */
         "leal -0xbe4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23965,13 +23974,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x666(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xbe0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x656(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5090, 4(%esp)\n" /* "lprobe_smc_a_s.vc" */
+        "movl $str_002a5090, 4(%esp)\n" /* "lprobe_smc_a_s.vc" */
         "leal -0xbdc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -23989,13 +23998,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x646(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xbd8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x636(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50a4, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.vc" */
+        "movl $str_002a50a4, 4(%esp)\n" /* "lprobe_smc_a_s_dtl.vc" */
         "leal -0xbd4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24013,13 +24022,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x626(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xbd0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x616(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5160, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.vc" */
+        "movl $str_002a5160, 4(%esp)\n" /* "lprobe_smc_a_s_dtl_pfog.vc" */
         "leal -0xbcc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24037,13 +24046,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x606(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xbc8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5f6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a517c, 4(%esp)\n" /* "lprobe_smc_a_s_efog.vc" */
+        "movl $str_002a517c, 4(%esp)\n" /* "lprobe_smc_a_s_efog.vc" */
         "leal -0xbc4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24061,13 +24070,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5e6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xbc0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5d6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5194, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.vc" */
+        "movl $str_002a5194, 4(%esp)\n" /* "lprobe_smc_a_s_lfog.vc" */
         "leal -0xbbc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24085,13 +24094,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5c6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xbb8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5b6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a51ac, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.vc" */
+        "movl $str_002a51ac, 4(%esp)\n" /* "lprobe_smc_a_s_pfog.vc" */
         "leal -0xbb4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24109,13 +24118,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5a6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a3c0c, 4(%esp)\n" /* "2 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xbb0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x596(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a51c4, 4(%esp)\n" /* "lprobe_smc_dtl.vc" */
+        "movl $str_002a51c4, 4(%esp)\n" /* "lprobe_smc_dtl.vc" */
         "leal -0xbac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24133,13 +24142,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x586(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xba8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x576(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a51d8, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.vc" */
+        "movl $str_002a51d8, 4(%esp)\n" /* "lprobe_smc_dtl_pfog.vc" */
         "leal -0xba4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24157,13 +24166,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x566(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xba0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x556(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a51f0, 4(%esp)\n" /* "lprobe_smc_efog.vc" */
+        "movl $str_002a51f0, 4(%esp)\n" /* "lprobe_smc_efog.vc" */
         "leal -0xb9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24181,13 +24190,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x546(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xb98(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x536(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5204, 4(%esp)\n" /* "lprobe_smc_lfog.vc" */
+        "movl $str_002a5204, 4(%esp)\n" /* "lprobe_smc_lfog.vc" */
         "leal -0xb94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24205,13 +24214,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x526(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4f44, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xb90(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x516(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5218, 4(%esp)\n" /* "lprobe_smc_pfog.vc" */
+        "movl $str_002a5218, 4(%esp)\n" /* "lprobe_smc_pfog.vc" */
         "leal -0xb8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24229,13 +24238,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x506(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xb88(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4f6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a522c, 4(%esp)\n" /* "lprobe_smc_s.vc" */
+        "movl $str_002a522c, 4(%esp)\n" /* "lprobe_smc_s.vc" */
         "leal -0xb84(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24253,13 +24262,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4e6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a501c, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xb80(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4d6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a523c, 4(%esp)\n" /* "lprobe_smc_s_dtl.vc" */
+        "movl $str_002a523c, 4(%esp)\n" /* "lprobe_smc_s_dtl.vc" */
         "leal -0xb7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24277,13 +24286,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4c6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xb78(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4b6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5250, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.vc" */
+        "movl $str_002a5250, 4(%esp)\n" /* "lprobe_smc_s_dtl_pfog.vc" */
         "leal -0xb74(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24301,13 +24310,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4a6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xb70(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x496(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a526c, 4(%esp)\n" /* "lprobe_smc_s_efog.vc" */
+        "movl $str_002a526c, 4(%esp)\n" /* "lprobe_smc_s_efog.vc" */
         "leal -0xb6c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24325,13 +24334,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x486(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xb68(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x476(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5284, 4(%esp)\n" /* "lprobe_smc_s_lfog.vc" */
+        "movl $str_002a5284, 4(%esp)\n" /* "lprobe_smc_s_lfog.vc" */
         "leal -0xb64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24349,13 +24358,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x466(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a50bc, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xb60(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x456(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a529c, 4(%esp)\n" /* "lprobe_smc_s_pfog.vc" */
+        "movl $str_002a529c, 4(%esp)\n" /* "lprobe_smc_s_pfog.vc" */
         "leal -0xb5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24373,13 +24382,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x446(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xb58(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x436(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a52b4, 4(%esp)\n" /* "lprobe_sm_a.vc" */
+        "movl $str_002a52b4, 4(%esp)\n" /* "lprobe_sm_a.vc" */
         "leal -0xb54(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24397,13 +24406,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x426(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xb50(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x416(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5328, 4(%esp)\n" /* "lprobe_sm_amb.vc" */
+        "movl $str_002a5328, 4(%esp)\n" /* "lprobe_sm_amb.vc" */
         "leal -0xb4c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24421,13 +24430,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x406(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xb48(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3f6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a533c, 4(%esp)\n" /* "lprobe_sm_amb_a.vc" */
+        "movl $str_002a533c, 4(%esp)\n" /* "lprobe_sm_amb_a.vc" */
         "leal -0xb44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24445,13 +24454,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3e6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xb40(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3d6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5350, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.vc" */
+        "movl $str_002a5350, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl.vc" */
         "leal -0xb3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24469,13 +24478,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3c6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xb38(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3b6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a53fc, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.vc" */
+        "movl $str_002a53fc, 4(%esp)\n" /* "lprobe_sm_amb_a_dtl_pfog.vc" */
         "leal -0xb34(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24493,13 +24502,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3a6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xb30(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x396(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5418, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.vc" */
+        "movl $str_002a5418, 4(%esp)\n" /* "lprobe_sm_amb_a_efog.vc" */
         "leal -0xb2c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24517,13 +24526,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x386(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xb28(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x376(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5430, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.vc" */
+        "movl $str_002a5430, 4(%esp)\n" /* "lprobe_sm_amb_a_lfog.vc" */
         "leal -0xb24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24541,13 +24550,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x366(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xb20(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x356(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5448, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.vc" */
+        "movl $str_002a5448, 4(%esp)\n" /* "lprobe_sm_amb_a_pfog.vc" */
         "leal -0xb1c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24565,13 +24574,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x346(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a52c4, 4(%esp)\n" /* "3 lightColor0 17 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0xb18(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x336(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5460, 4(%esp)\n" /* "lprobe_sm_amb_dtl.vc" */
+        "movl $str_002a5460, 4(%esp)\n" /* "lprobe_sm_amb_dtl.vc" */
         "leal -0xb14(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24589,13 +24598,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x326(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xb10(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x316(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5478, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.vc" */
+        "movl $str_002a5478, 4(%esp)\n" /* "lprobe_sm_amb_dtl_pfog.vc" */
         "leal -0xb0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24613,13 +24622,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x306(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xb08(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2f6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5494, 4(%esp)\n" /* "lprobe_sm_amb_efog.vc" */
+        "movl $str_002a5494, 4(%esp)\n" /* "lprobe_sm_amb_efog.vc" */
         "leal -0xb04(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24637,13 +24646,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2e6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xb00(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2d6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54ac, 4(%esp)\n" /* "lprobe_sm_amb_lfog.vc" */
+        "movl $str_002a54ac, 4(%esp)\n" /* "lprobe_sm_amb_lfog.vc" */
         "leal -0xafc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24661,13 +24670,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2c6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
+        "movl $str_002a5368, 4(%esp)\n" /* "5 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 lightColor0" */
         "leal -0xaf8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2b6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54c4, 4(%esp)\n" /* "lprobe_sm_amb_pfog.vc" */
+        "movl $str_002a54c4, 4(%esp)\n" /* "lprobe_sm_amb_pfog.vc" */
         "leal -0xaf4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24685,13 +24694,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2a6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xaf0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x296(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54dc, 4(%esp)\n" /* "lprobe_sm_a_dtl.vc" */
+        "movl $str_002a54dc, 4(%esp)\n" /* "lprobe_sm_a_dtl.vc" */
         "leal -0xaec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24709,13 +24718,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x286(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xae8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x276(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5580, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.vc" */
+        "movl $str_002a5580, 4(%esp)\n" /* "lprobe_sm_a_dtl_pfog.vc" */
         "leal -0xae4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24733,13 +24742,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x266(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xae0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x256(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5598, 4(%esp)\n" /* "lprobe_sm_a_efog.vc" */
+        "movl $str_002a5598, 4(%esp)\n" /* "lprobe_sm_a_efog.vc" */
         "leal -0xadc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24757,13 +24766,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x246(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xad8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x236(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a55ac, 4(%esp)\n" /* "lprobe_sm_a_lfog.vc" */
+        "movl $str_002a55ac, 4(%esp)\n" /* "lprobe_sm_a_lfog.vc" */
         "leal -0xad4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24781,13 +24790,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x226(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xad0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x216(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a55c0, 4(%esp)\n" /* "lprobe_sm_a_pfog.vc" */
+        "movl $str_002a55c0, 4(%esp)\n" /* "lprobe_sm_a_pfog.vc" */
         "leal -0xacc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24805,13 +24814,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x206(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xac8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1f6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5668, 4(%esp)\n" /* "lprobe_sm_a_s.vc" */
+        "movl $str_002a5668, 4(%esp)\n" /* "lprobe_sm_a_s.vc" */
         "leal -0xac4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24829,13 +24838,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1e6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xac0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1d6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a567c, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.vc" */
+        "movl $str_002a567c, 4(%esp)\n" /* "lprobe_sm_a_s_dtl.vc" */
         "leal -0xabc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24853,13 +24862,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1c6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xab8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1b6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5758, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.vc" */
+        "movl $str_002a5758, 4(%esp)\n" /* "lprobe_sm_a_s_dtl_pfog.vc" */
         "leal -0xab4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24877,13 +24886,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1a6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xab0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x196(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5774, 4(%esp)\n" /* "lprobe_sm_a_s_efog.vc" */
+        "movl $str_002a5774, 4(%esp)\n" /* "lprobe_sm_a_s_efog.vc" */
         "leal -0xaac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24901,13 +24910,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x186(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xaa8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x176(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a578c, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.vc" */
+        "movl $str_002a578c, 4(%esp)\n" /* "lprobe_sm_a_s_lfog.vc" */
         "leal -0xaa4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24925,13 +24934,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x166(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xaa0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x156(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a57a4, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.vc" */
+        "movl $str_002a57a4, 4(%esp)\n" /* "lprobe_sm_a_s_pfog.vc" */
         "leal -0xa9c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24949,13 +24958,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x146(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
+        "movl $str_002a4cb4, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 OpenGLworldViewProjectionMatrix 23 4" */
         "leal -0xa98(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x136(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a57bc, 4(%esp)\n" /* "lprobe_sm_dtl.vc" */
+        "movl $str_002a57bc, 4(%esp)\n" /* "lprobe_sm_dtl.vc" */
         "leal -0xa94(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24973,13 +24982,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x126(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa90(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x116(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a57d0, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.vc" */
+        "movl $str_002a57d0, 4(%esp)\n" /* "lprobe_sm_dtl_pfog.vc" */
         "leal -0xa8c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -24997,13 +25006,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x106(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa88(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xf6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a57e8, 4(%esp)\n" /* "lprobe_sm_efog.vc" */
+        "movl $str_002a57e8, 4(%esp)\n" /* "lprobe_sm_efog.vc" */
         "leal -0xa84(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25021,13 +25030,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xe6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa80(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xd6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a57fc, 4(%esp)\n" /* "lprobe_sm_lfog.vc" */
+        "movl $str_002a57fc, 4(%esp)\n" /* "lprobe_sm_lfog.vc" */
         "leal -0xa7c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25045,13 +25054,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xc6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a54f0, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa78(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xb6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5810, 4(%esp)\n" /* "lprobe_sm_pfog.vc" */
+        "movl $str_002a5810, 4(%esp)\n" /* "lprobe_sm_pfog.vc" */
         "leal -0xa74(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25069,13 +25078,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xa6(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xa70(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x96(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5824, 4(%esp)\n" /* "lprobe_sm_s.vc" */
+        "movl $str_002a5824, 4(%esp)\n" /* "lprobe_sm_s.vc" */
         "leal -0xa6c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25093,13 +25102,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x86(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a55d4, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xa68(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x76(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5834, 4(%esp)\n" /* "lprobe_sm_s_dtl.vc" */
+        "movl $str_002a5834, 4(%esp)\n" /* "lprobe_sm_s_dtl.vc" */
         "leal -0xa64(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25117,13 +25126,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x66(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa60(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x56(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5848, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.vc" */
+        "movl $str_002a5848, 4(%esp)\n" /* "lprobe_sm_s_dtl_pfog.vc" */
         "leal -0xa5c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25141,13 +25150,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x46(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa58(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x36(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5860, 4(%esp)\n" /* "lprobe_sm_s_efog.vc" */
+        "movl $str_002a5860, 4(%esp)\n" /* "lprobe_sm_s_efog.vc" */
         "leal -0xa54(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25165,13 +25174,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x26(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa50(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x83e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5874, 4(%esp)\n" /* "lprobe_sm_s_lfog.vc" */
+        "movl $str_002a5874, 4(%esp)\n" /* "lprobe_sm_s_lfog.vc" */
         "leal -0xa4c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25189,13 +25198,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x81e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5694, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa48(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7fe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5888, 4(%esp)\n" /* "lprobe_sm_s_pfog.vc" */
+        "movl $str_002a5888, 4(%esp)\n" /* "lprobe_sm_s_pfog.vc" */
         "leal -0xa44(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25213,13 +25222,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7de(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a44a0, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xa40(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7be(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a589c, 4(%esp)\n" /* "lprobe_s_dtl.vc" */
+        "movl $str_002a589c, 4(%esp)\n" /* "lprobe_s_dtl.vc" */
         "leal -0xa3c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25237,13 +25246,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x79e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa38(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x77e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a58ac, 4(%esp)\n" /* "lprobe_s_dtl_pfog.vc" */
+        "movl $str_002a58ac, 4(%esp)\n" /* "lprobe_s_dtl_pfog.vc" */
         "leal -0xa34(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25261,13 +25270,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x75e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa30(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x73e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a58c4, 4(%esp)\n" /* "lprobe_s_efog.vc" */
+        "movl $str_002a58c4, 4(%esp)\n" /* "lprobe_s_efog.vc" */
         "leal -0xa2c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25285,13 +25294,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x71e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa28(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6fe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a58d8, 4(%esp)\n" /* "lprobe_s_lfog.vc" */
+        "movl $str_002a58d8, 4(%esp)\n" /* "lprobe_s_lfog.vc" */
         "leal -0xa24(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25309,13 +25318,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6de(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4574, 4(%esp)\n" /* "8 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa20(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6be(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a58ec, 4(%esp)\n" /* "lprobe_s_pfog.vc" */
+        "movl $str_002a58ec, 4(%esp)\n" /* "lprobe_s_pfog.vc" */
         "leal -0xa1c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25333,13 +25342,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x69e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
+        "movl $str_002a4884, 4(%esp)\n" /* "7 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 eyePositio" */
         "leal -0xa18(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x67e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5900, 4(%esp)\n" /* "lprobe_s_scroll.vc" */
+        "movl $str_002a5900, 4(%esp)\n" /* "lprobe_s_scroll.vc" */
         "leal -0xa14(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25357,13 +25366,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x65e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa10(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x63e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5914, 4(%esp)\n" /* "lprobe_s_scroll_efog.vc" */
+        "movl $str_002a5914, 4(%esp)\n" /* "lprobe_s_scroll_efog.vc" */
         "leal -0xa0c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25381,13 +25390,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x61e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a4964, 4(%esp)\n" /* "9 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0xa08(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5fe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a592c, 4(%esp)\n" /* "lprobe_s_scroll_lfog.vc" */
+        "movl $str_002a592c, 4(%esp)\n" /* "lprobe_s_scroll_lfog.vc" */
         "leal -0xa04(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25405,13 +25414,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5de(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
+        "movl $str_002a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
         "leal -0xa00(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x5be(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59a4, 4(%esp)\n" /* "l_point.vc" */
+        "movl $str_002a59a4, 4(%esp)\n" /* "l_point.vc" */
         "leal -0x9fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25429,13 +25438,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x59e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
+        "movl $str_002a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
         "leal -0x9f8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x57e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59b0, 4(%esp)\n" /* "l_point_blend.vc" */
+        "movl $str_002a59b0, 4(%esp)\n" /* "l_point_blend.vc" */
         "leal -0x9f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25453,13 +25462,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x55e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
+        "movl $str_002a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
         "leal -0x9f0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x53e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59c4, 4(%esp)\n" /* "l_point_blend_dtl.vc" */
+        "movl $str_002a59c4, 4(%esp)\n" /* "l_point_blend_dtl.vc" */
         "leal -0x9ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25477,13 +25486,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x51e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9e8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4fe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5a68, 4(%esp)\n" /* "l_point_blend_dtl_pfog.vc" */
+        "movl $str_002a5a68, 4(%esp)\n" /* "l_point_blend_dtl_pfog.vc" */
         "leal -0x9e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25501,13 +25510,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4de(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9e0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4be(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5a84, 4(%esp)\n" /* "l_point_blend_efog.vc" */
+        "movl $str_002a5a84, 4(%esp)\n" /* "l_point_blend_efog.vc" */
         "leal -0x9dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25525,13 +25534,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x49e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9d8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x47e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5a9c, 4(%esp)\n" /* "l_point_blend_lfog.vc" */
+        "movl $str_002a5a9c, 4(%esp)\n" /* "l_point_blend_lfog.vc" */
         "leal -0x9d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25549,13 +25558,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x45e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9d0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x43e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5ab4, 4(%esp)\n" /* "l_point_blend_pfog.vc" */
+        "movl $str_002a5ab4, 4(%esp)\n" /* "l_point_blend_pfog.vc" */
         "leal -0x9cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25573,13 +25582,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x41e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
+        "movl $str_002a5944, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
         "leal -0x9c8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3fe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5acc, 4(%esp)\n" /* "l_point_dtl.vc" */
+        "movl $str_002a5acc, 4(%esp)\n" /* "l_point_dtl.vc" */
         "leal -0x9c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25597,13 +25606,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3de(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9c0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3be(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5adc, 4(%esp)\n" /* "l_point_dtl_pfog.vc" */
+        "movl $str_002a5adc, 4(%esp)\n" /* "l_point_dtl_pfog.vc" */
         "leal -0x9bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25621,13 +25630,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x39e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9b8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x37e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5af0, 4(%esp)\n" /* "l_point_efog.vc" */
+        "movl $str_002a5af0, 4(%esp)\n" /* "l_point_efog.vc" */
         "leal -0x9b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25645,13 +25654,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x35e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5b00, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
+        "movl $str_002a5b00, 4(%esp)\n" /* "4 worldMatrix 4 3 3 3 1 lightPosition0 16 1 1 3 1 OpenGLworl" */
         "leal -0x9b0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x33e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5b74, 4(%esp)\n" /* "l_point_flag.vc" */
+        "movl $str_002a5b74, 4(%esp)\n" /* "l_point_flag.vc" */
         "leal -0x9ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25669,13 +25678,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x31e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5b84, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5b84, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9a8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2fe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c24, 4(%esp)\n" /* "l_point_flag_efog.vc" */
+        "movl $str_002a5c24, 4(%esp)\n" /* "l_point_flag_efog.vc" */
         "leal -0x9a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25693,13 +25702,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2de(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5b84, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5b84, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x9a0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2be(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c3c, 4(%esp)\n" /* "l_point_flag_lfog.vc" */
+        "movl $str_002a5c3c, 4(%esp)\n" /* "l_point_flag_lfog.vc" */
         "leal -0x99c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25717,13 +25726,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x29e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5b84, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a5b84, 4(%esp)\n" /* "6 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x998(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x27e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c54, 4(%esp)\n" /* "l_point_flag_pfog.vc" */
+        "movl $str_002a5c54, 4(%esp)\n" /* "l_point_flag_pfog.vc" */
         "leal -0x994(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25741,13 +25750,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x25e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x990(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x23e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c6c, 4(%esp)\n" /* "l_point_lfog.vc" */
+        "movl $str_002a5c6c, 4(%esp)\n" /* "l_point_lfog.vc" */
         "leal -0x98c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25765,13 +25774,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x21e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a59dc, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x988(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1fe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c7c, 4(%esp)\n" /* "l_point_pfog.vc" */
+        "movl $str_002a5c7c, 4(%esp)\n" /* "l_point_pfog.vc" */
         "leal -0x984(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25789,13 +25798,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1de(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x980(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x1be(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c8c, 4(%esp)\n" /* "mul.vc" */
+        "movl $str_002a5c8c, 4(%esp)\n" /* "mul.vc" */
         "leal -0x97c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25813,13 +25822,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x19e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c94, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 fogColor 21" */
+        "movl $str_002a5c94, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 fogColor 21" */
         "leal -0x978(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x17e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5d04, 4(%esp)\n" /* "mul_efog.vc" */
+        "movl $str_002a5d04, 4(%esp)\n" /* "mul_efog.vc" */
         "leal -0x974(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25837,13 +25846,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x15e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c94, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 fogColor 21" */
+        "movl $str_002a5c94, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 fogColor 21" */
         "leal -0x970(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x13e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5d10, 4(%esp)\n" /* "mul_lfog.vc" */
+        "movl $str_002a5d10, 4(%esp)\n" /* "mul_lfog.vc" */
         "leal -0x96c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25861,13 +25870,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x11e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5c94, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 fogColor 21" */
+        "movl $str_002a5c94, 4(%esp)\n" /* "4 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 fogColor 21" */
         "leal -0x968(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xfe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5d1c, 4(%esp)\n" /* "mul_pfog.vc" */
+        "movl $str_002a5d1c, 4(%esp)\n" /* "mul_pfog.vc" */
         "leal -0x964(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25885,13 +25894,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xde(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x21952c, 4(%esp)\n" /* "0" */
+        "movl $str_0021952c, 4(%esp)\n" /* "0" */
         "leal -0x960(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xbe(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5d28, 4(%esp)\n" /* "null.vc" */
+        "movl $str_002a5d28, 4(%esp)\n" /* "null.vc" */
         "leal -0x95c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25909,13 +25918,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x9e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5d30, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 inverseTranspos" */
+        "movl $str_002a5d30, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 inverseTranspos" */
         "leal -0x958(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x7e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5d88, 4(%esp)\n" /* "objective_base.vc" */
+        "movl $str_002a5d88, 4(%esp)\n" /* "objective_base.vc" */
         "leal -0x954(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25933,13 +25942,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5d9c, 4(%esp)\n" /* "5 worldViewMatrix 8 4 3 3 1 projectionMatrix 23 4 3 3 1 Open" */
+        "movl $str_002a5d9c, 4(%esp)\n" /* "5 worldViewMatrix 8 4 3 3 1 projectionMatrix 23 4 3 3 1 Open" */
         "leal -0x950(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x3e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5e4c, 4(%esp)\n" /* "particle_cloud.vc" */
+        "movl $str_002a5e4c, 4(%esp)\n" /* "particle_cloud.vc" */
         "leal -0x94c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25957,13 +25966,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5e60, 4(%esp)\n" /* "6 worldViewMatrix 8 4 3 3 1 worldOutdoorLookupMatrix 12 3 3 " */
+        "movl $str_002a5e60, 4(%esp)\n" /* "6 worldViewMatrix 8 4 3 3 1 worldOutdoorLookupMatrix 12 3 3 " */
         "leal -0x948(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x80e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5f34, 4(%esp)\n" /* "particle_cloud_outdoor.vc" */
+        "movl $str_002a5f34, 4(%esp)\n" /* "particle_cloud_outdoor.vc" */
         "leal -0x944(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -25981,13 +25990,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a424c, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 renderTargetSiz" */
+        "movl $str_002a424c, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 renderTargetSiz" */
         "leal -0x940(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x78e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5f50, 4(%esp)\n" /* "shadowcookie_blur.vc" */
+        "movl $str_002a5f50, 4(%esp)\n" /* "shadowcookie_blur.vc" */
         "leal -0x93c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26005,13 +26014,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x74e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5f68, 4(%esp)\n" /* "2 shadowLookupMatrix 12 3 3 3 1 OpenGLworldViewProjectionMat" */
+        "movl $str_002a5f68, 4(%esp)\n" /* "2 shadowLookupMatrix 12 3 3 3 1 OpenGLworldViewProjectionMat" */
         "leal -0x938(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x70e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5fb4, 4(%esp)\n" /* "shadowcookie_caster.vc" */
+        "movl $str_002a5fb4, 4(%esp)\n" /* "shadowcookie_caster.vc" */
         "leal -0x934(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26029,13 +26038,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x930(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x68e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5fcc, 4(%esp)\n" /* "shadowcookie_display.vc" */
+        "movl $str_002a5fcc, 4(%esp)\n" /* "shadowcookie_display.vc" */
         "leal -0x92c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26053,13 +26062,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x64e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5f68, 4(%esp)\n" /* "2 shadowLookupMatrix 12 3 3 3 1 OpenGLworldViewProjectionMat" */
+        "movl $str_002a5f68, 4(%esp)\n" /* "2 shadowLookupMatrix 12 3 3 3 1 OpenGLworldViewProjectionMat" */
         "leal -0x928(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x60e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a5fe4, 4(%esp)\n" /* "shadowcookie_receiver.vc" */
+        "movl $str_002a5fe4, 4(%esp)\n" /* "shadowcookie_receiver.vc" */
         "leal -0x924(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26077,13 +26086,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x920(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x58e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6000, 4(%esp)\n" /* "shell_shock.vc" */
+        "movl $str_002a6000, 4(%esp)\n" /* "shell_shock.vc" */
         "leal -0x91c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26101,13 +26110,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x54e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3d50, 4(%esp)\n" /* "2 eyePosition 20 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
+        "movl $str_002a3d50, 4(%esp)\n" /* "2 eyePosition 20 1 1 3 1 OpenGLworldViewProjectionMatrix 23 " */
         "leal -0x918(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x50e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6010, 4(%esp)\n" /* "sky.vc" */
+        "movl $str_002a6010, 4(%esp)\n" /* "sky.vc" */
         "leal -0x914(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26125,13 +26134,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x910(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x48e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6018, 4(%esp)\n" /* "textured_simple.vc" */
+        "movl $str_002a6018, 4(%esp)\n" /* "textured_simple.vc" */
         "leal -0x90c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26149,13 +26158,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x44e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x908(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x40e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a602c, 4(%esp)\n" /* "transform_only.vc" */
+        "movl $str_002a602c, 4(%esp)\n" /* "transform_only.vc" */
         "leal -0x904(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26173,13 +26182,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6040, 4(%esp)\n" /* "3 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
+        "movl $str_002a6040, 4(%esp)\n" /* "3 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
         "leal -0x900(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x38e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a60c0, 4(%esp)\n" /* "vertcol_eyeofs.vc" */
+        "movl $str_002a60c0, 4(%esp)\n" /* "vertcol_eyeofs.vc" */
         "leal -0x8fc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26197,13 +26206,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x34e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a60d4, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a60d4, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x8f8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x30e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6180, 4(%esp)\n" /* "vertcol_eyeofs_efog.vc" */
+        "movl $str_002a6180, 4(%esp)\n" /* "vertcol_eyeofs_efog.vc" */
         "leal -0x8f4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26221,13 +26230,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a60d4, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a60d4, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x8f0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x28e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6198, 4(%esp)\n" /* "vertcol_eyeofs_lfog.vc" */
+        "movl $str_002a6198, 4(%esp)\n" /* "vertcol_eyeofs_lfog.vc" */
         "leal -0x8ec(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26245,13 +26254,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x24e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x8e8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x20e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a61b0, 4(%esp)\n" /* "vertcol_simple.vc" */
+        "movl $str_002a61b0, 4(%esp)\n" /* "vertcol_simple.vc" */
         "leal -0x8e4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26269,13 +26278,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a61c4, 4(%esp)\n" /* "3 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 OpenGLworld" */
+        "movl $str_002a61c4, 4(%esp)\n" /* "3 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 OpenGLworld" */
         "leal -0x8e0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x18e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6220, 4(%esp)\n" /* "vertcol_simple_efog.vc" */
+        "movl $str_002a6220, 4(%esp)\n" /* "vertcol_simple_efog.vc" */
         "leal -0x8dc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26293,13 +26302,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x14e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a61c4, 4(%esp)\n" /* "3 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 OpenGLworld" */
+        "movl $str_002a61c4, 4(%esp)\n" /* "3 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 OpenGLworld" */
         "leal -0x8d8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x10e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6238, 4(%esp)\n" /* "vertcol_simple_lfog.vc" */
+        "movl $str_002a6238, 4(%esp)\n" /* "vertcol_simple_lfog.vc" */
         "leal -0x8d4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26317,13 +26326,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xce(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a61c4, 4(%esp)\n" /* "3 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 OpenGLworld" */
+        "movl $str_002a61c4, 4(%esp)\n" /* "3 worldViewMatrix 8 3 3 3 1 fogConsts 11 1 1 3 1 OpenGLworld" */
         "leal -0x8d0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x8e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6250, 4(%esp)\n" /* "vertcol_simple_pfog.vc" */
+        "movl $str_002a6250, 4(%esp)\n" /* "vertcol_simple_pfog.vc" */
         "leal -0x8cc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26341,13 +26350,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a42a8, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 gameTime 27 1 1" */
+        "movl $str_002a42a8, 4(%esp)\n" /* "2 OpenGLworldViewProjectionMatrix 23 4 3 3 1 gameTime 27 1 1" */
         "leal -0x8c8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x82e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6268, 4(%esp)\n" /* "vertcol_simple_scroll.vc" */
+        "movl $str_002a6268, 4(%esp)\n" /* "vertcol_simple_scroll.vc" */
         "leal -0x8c4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26365,13 +26374,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x7ae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x8c0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x72e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6284, 4(%esp)\n" /* "vertcol_untextured.vc" */
+        "movl $str_002a6284, 4(%esp)\n" /* "vertcol_untextured.vc" */
         "leal -0x8bc(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26389,13 +26398,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a629c, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 eyePosition 20 1 1 3 1 OpenGLworldVi" */
+        "movl $str_002a629c, 4(%esp)\n" /* "3 worldMatrix 4 3 3 3 1 eyePosition 20 1 1 3 1 OpenGLworldVi" */
         "leal -0x8b8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x62e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a62f8, 4(%esp)\n" /* "water_l_sun.vc" */
+        "movl $str_002a62f8, 4(%esp)\n" /* "water_l_sun.vc" */
         "leal -0x8b4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26413,13 +26422,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x5ae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6308, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a6308, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x8b0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x52e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6394, 4(%esp)\n" /* "water_l_sun_efog.vc" */
+        "movl $str_002a6394, 4(%esp)\n" /* "water_l_sun_efog.vc" */
         "leal -0x8ac(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26437,13 +26446,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x4ae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6308, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a6308, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x8a8(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x42e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a63a8, 4(%esp)\n" /* "water_l_sun_lfog.vc" */
+        "movl $str_002a63a8, 4(%esp)\n" /* "water_l_sun_lfog.vc" */
         "leal -0x8a4(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26461,13 +26470,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x3ae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6308, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
+        "movl $str_002a6308, 4(%esp)\n" /* "5 worldMatrix 4 3 3 3 1 worldViewMatrix 8 3 3 3 1 fogConsts " */
         "leal -0x8a0(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x32e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a63bc, 4(%esp)\n" /* "water_l_sun_pfog.vc" */
+        "movl $str_002a63bc, 4(%esp)\n" /* "water_l_sun_pfog.vc" */
         "leal -0x89c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26485,13 +26494,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a63d0, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
+        "movl $str_002a63d0, 4(%esp)\n" /* "5 worldViewProjectionMatrix 0 4 3 3 1 OpenGLworldViewProject" */
         "leal -0x898(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x22e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a647c, 4(%esp)\n" /* "zfeather.vc" */
+        "movl $str_002a647c, 4(%esp)\n" /* "zfeather.vc" */
         "leal -0x894(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26509,13 +26518,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x1ae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6488, 4(%esp)\n" /* "7 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a6488, 4(%esp)\n" /* "7 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x890(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x12e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6564, 4(%esp)\n" /* "zfeather_efog.vc" */
+        "movl $str_002a6564, 4(%esp)\n" /* "zfeather_efog.vc" */
         "leal -0x88c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26533,13 +26542,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0xae(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6488, 4(%esp)\n" /* "7 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a6488, 4(%esp)\n" /* "7 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x888(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x2e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6578, 4(%esp)\n" /* "zfeather_lfog.vc" */
+        "movl $str_002a6578, 4(%esp)\n" /* "zfeather_lfog.vc" */
         "leal -0x884(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26557,13 +26566,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x76e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a658c, 4(%esp)\n" /* "6 worldViewProjectionMatrix 0 4 3 3 1 worldOutdoorLookupMatr" */
+        "movl $str_002a658c, 4(%esp)\n" /* "6 worldViewProjectionMatrix 0 4 3 3 1 worldOutdoorLookupMatr" */
         "leal -0x880(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x66e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a665c, 4(%esp)\n" /* "zfeather_outdoor.vc" */
+        "movl $str_002a665c, 4(%esp)\n" /* "zfeather_outdoor.vc" */
         "leal -0x87c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26581,13 +26590,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x56e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6670, 4(%esp)\n" /* "8 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a6670, 4(%esp)\n" /* "8 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x878(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x46e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6770, 4(%esp)\n" /* "zfeather_outdoor_efog.vc" */
+        "movl $str_002a6770, 4(%esp)\n" /* "zfeather_outdoor_efog.vc" */
         "leal -0x874(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26605,13 +26614,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x36e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6670, 4(%esp)\n" /* "8 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a6670, 4(%esp)\n" /* "8 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x870(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x26e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a678c, 4(%esp)\n" /* "zfeather_outdoor_lfog.vc" */
+        "movl $str_002a678c, 4(%esp)\n" /* "zfeather_outdoor_lfog.vc" */
         "leal -0x86c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26629,13 +26638,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x16e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6670, 4(%esp)\n" /* "8 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a6670, 4(%esp)\n" /* "8 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x868(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x6e(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a67a8, 4(%esp)\n" /* "zfeather_outdoor_pfog.vc" */
+        "movl $str_002a67a8, 4(%esp)\n" /* "zfeather_outdoor_pfog.vc" */
         "leal -0x864(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26653,13 +26662,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x6ee(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a6488, 4(%esp)\n" /* "7 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
+        "movl $str_002a6488, 4(%esp)\n" /* "7 worldViewProjectionMatrix 0 4 3 3 1 worldViewMatrix 8 3 3 " */
         "leal -0x860(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0x4ee(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a67c4, 4(%esp)\n" /* "zfeather_pfog.vc" */
+        "movl $str_002a67c4, 4(%esp)\n" /* "zfeather_pfog.vc" */
         "leal -0x85c(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26677,13 +26686,13 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "leal -0x2ee(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
+        "movl $str_002a3bc4, 4(%esp)\n" /* "1 OpenGLworldViewProjectionMatrix 23 4 3 3 1" */
         "leal -0x858(%ebp), %esi\n"
         "movl %esi, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "leal -0xee(%ebp), %eax\n" /* this */
         "movl %eax, 8(%esp)\n" /* this */
-        "movl $0x2a67d8, 4(%esp)\n" /* "zprepass.vc" */
+        "movl $str_002a67d8, 4(%esp)\n" /* "zprepass.vc" */
         "leal -0x854(%ebp), %ebx\n"
         "movl %ebx, (%esp)\n"
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26701,11 +26710,11 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         "movb $1, sInit\n" /* line 121 */
         ".Lf119296_00134919:\n"
-        "movl $0x228714, 4(%esp)\n" /* line 124 */
+        "movl $str_00228714, 4(%esp)\n" /* line 124 */
         "movl %edi, (%esp)\n" /* pSrcData */
         "calll strstr\n"
         "movl %eax, %ebx\n" /* this */
-        "movl $0x228718, 4(%esp)\n" /* line 125 */
+        "movl $str_00228718, 4(%esp)\n" /* line 125 */
         "movl %edi, (%esp)\n" /* pSrcData */
         "calll strstr\n"
         "movl %eax, %esi\n" /* this */
@@ -26722,7 +26731,7 @@ OUTPUT oC0 = r" */
         "je .Lf119296_00134b23\n"
         "leal -0x1ee(%ebp), %eax\n"
         "movl %eax, 8(%esp)\n"
-        "movl $0x228950, 4(%esp)\n" /* "a" */
+        "movl $str_00228950, 4(%esp)\n" /* "a" */
         "leal -0x850(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26749,7 +26758,7 @@ OUTPUT oC0 = r" */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1ERKSs\n"
         "movl $2, 8(%esp)\n" /* line 813 */
-        "movl $0x215bf8, 4(%esp)\n" /* "::" */
+        "movl $str_00215bf8, 4(%esp)\n" /* "::" */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSs6appendEPKcm\n"
         "movl %ebx, 4(%esp)\n" /* line 2046 | this */
@@ -26769,7 +26778,7 @@ OUTPUT oC0 = r" */
         "calll __Znwm\n"
         "movl %eax, %ebx\n" /* this */
         /* { scope 3 */
-        "movl $0x332428, (%eax)\n" /* line 50 */
+        "movl $vtbl_CD3DXBuffer, (%eax)\n" /* line 50 */
         "movl $0, 4(%eax)\n"
         "movl %esi, 8(%eax)\n"
         "movl %esi, (%esp)\n"
@@ -26799,7 +26808,7 @@ OUTPUT oC0 = r" */
         "calll __ZNSsD1Ev\n"
         /* } scope */
         "xorl %eax, %eax\n" /* line 152 | this */
-        "addl $__dyld_func_lookup, %esp\n"
+        "addl $0x28ec, %esp\n"
         "popl %ebx\n"
         "popl %esi\n"
         "popl %edi\n"
@@ -26811,7 +26820,7 @@ OUTPUT oC0 = r" */
         "je .Lf119296_001349a9\n"
         "leal -0x5ee(%ebp), %eax\n" /* line 134 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a67e8, 4(%esp)\n" /* "e" */
+        "movl $str_002a67e8, 4(%esp)\n" /* "e" */
         "leal -0x84c(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -26834,7 +26843,7 @@ OUTPUT oC0 = r" */
         ".Lf119296_00134b23:\n"
         "leal -0x3ee(%ebp), %eax\n" /* line 130 */
         "movl %eax, 8(%esp)\n"
-        "movl $0x2a67e4, 4(%esp)\n" /* "n" */
+        "movl $str_002a67e4, 4(%esp)\n" /* "n" */
         "leal -0x850(%ebp), %ebx\n" /* this */
         "movl %ebx, (%esp)\n" /* this */
         "calll __ZNSsC1EPKcRKSaIcE\n"
@@ -40444,7 +40453,7 @@ void CD3DXConstantTable_CD3DXConstantTable(const CD3DXConstantTable * _this, con
         "subl $0x4c, %esp\n"
         "movl 0xc(%ebp), %ebx\n" /* pConstantsSource */
         "movl 8(%ebp), %eax\n" /* line 214 | this */
-        "movl $0x332468, (%eax)\n"
+        "movl $vtbl_CD3DXConstantTable, (%eax)\n"
         "movl $0, 4(%eax)\n"
         "movl $0, 8(%eax)\n"
         "movl $0, 0xc(%eax)\n"
@@ -40461,7 +40470,7 @@ void CD3DXConstantTable_CD3DXConstantTable(const CD3DXConstantTable * _this, con
         "movl %ebx, 4(%esp)\n" /* line 228 | pConstantsSource */
         "movl %eax, (%esp)\n"
         "calll strcpy\n"
-        "movl $0x217914, 4(%esp)\n" /* line 231 */
+        "movl $str_00217914, 4(%esp)\n" /* line 231 */
         "movl -0x48(%ebp), %eax\n" /* pWritableConstantInfoText, pToken */
         "movl %eax, (%esp)\n" /* pToken */
         "calll strtok\n"
@@ -40523,7 +40532,7 @@ void CD3DXConstantTable_CD3DXConstantTable(const CD3DXConstantTable * _this, con
         "movl $0, -0x3c(%ebp)\n" /* i */
         /* { scope 4 */
         ".Lf13d648_0013d74d:\n"
-        "movl $0x217914, 4(%esp)\n" /* line 277 */
+        "movl $str_00217914, 4(%esp)\n" /* line 277 */
         "movl $0, (%esp)\n"
         "calll strtok\n"
         "leal -0x1a(%ebp), %edx\n" /* line 278 */
@@ -40535,7 +40544,7 @@ void CD3DXConstantTable_CD3DXConstantTable(const CD3DXConstantTable * _this, con
         "xorl %edi, %edi\n" /* line 105 */
         /* { scope 5 */
         ".Lf13d648_0013d779:\n"
-        "movl $0x217914, 4(%esp)\n" /* line 284 */
+        "movl $str_00217914, 4(%esp)\n" /* line 284 */
         "movl $0, (%esp)\n"
         "calll strtok\n"
         "movl %eax, (%esp)\n" /* line 286 */
@@ -40635,7 +40644,7 @@ HRESULT D3DXGetShaderConstantTable(const DWORD *pFunction, const FLOAT (*ppConst
         "calll __ZNSsC1EPKcRKSaIcE\n"
         "movl $2, 0xc(%esp)\n" /* line 1570 */
         "movl $0, 8(%esp)\n"
-        "movl $0x215bf8, 4(%esp)\n" /* "::" */
+        "movl $str_00215bf8, 4(%esp)\n" /* "::" */
         "movl %esi, (%esp)\n"
         "calll __ZNKSs4findEPKcmm\n"
         "movl %eax, %ebx\n"
@@ -40661,7 +40670,7 @@ HRESULT D3DXGetShaderConstantTable(const DWORD *pFunction, const FLOAT (*ppConst
         "movl -0x28(%ebp), %eax\n" /* line 591 | name */
         "movl -0xc(%eax), %eax\n"
         "movl $1, 0x10(%esp)\n" /* line 1237 */
-        "movl $0x2a67ec, 0xc(%esp)\n" /* "c" */
+        "movl $str_002a67ec, 0xc(%esp)\n" /* "c" */
         "movl $2, 8(%esp)\n"
         "subl $2, %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -40717,7 +40726,7 @@ HRESULT D3DXGetShaderConstantTable(const DWORD *pFunction, const FLOAT (*ppConst
         "jmp .Lf13dac0_0013dbaf\n"
         /* { scope 2 */
         ".Lf13dac0_0013dbf1:\n"
-        "movl $0x215bfc, (%esp)\n" /* line 300 */
+        "movl $str_00215bfc, (%esp)\n" /* line 300 */
         "calll __ZSt20__throw_out_of_rangePKc\n"
         /* } scope */
         /* { scope 2 */
@@ -41526,4 +41535,5 @@ void ZNSt3mapISsSsSt4lessISsESaISt4pairIKSsSsEEEixERS3_(void) /* std_map<std_bas
         "jmp .Lf2c1416_002c15d6\n"
     );
 }
+
 

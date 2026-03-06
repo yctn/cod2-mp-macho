@@ -1467,6 +1467,10 @@ int Com_EventLoop(void)
             ZN10LargeLocalD1Ev(&bufData_ll);
             return evTime;
         case 1: /* SE_KEY */
+            if (evValue < 0 || evValue > 255) {
+                Com_Printf("BAD KEY: evValue=%d evValue2=%d\n", evValue, evValue2);
+                break;
+            }
             CL_KeyEvent(evValue, evValue2, evTime);
             break;
         case 2: /* SE_CHAR */

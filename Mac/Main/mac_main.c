@@ -243,6 +243,14 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     Win_InitLocalization();
     Dvar_Init();
 
+    /* Register sv_disableClientConsole early — CL_KeyEvent dereferences it
+       on console key press, but it's normally only registered on server start */
+    {
+        extern int sv_disableClientConsole;
+        if (!sv_disableClientConsole)
+            sv_disableClientConsole = (int)Dvar_RegisterBool("sv_disableClientConsole", 0, 0x1008);
+    }
+
     sys_info.cpuGHz = Sys_CpuGHz();
     sys_info.sysMB = Sys_SystemMemoryMB();
     Sys_DetectVideoCard(0x200, sys_info.gpuDescription);
@@ -310,6 +318,9 @@ sysEvent_t Sys_GetEvent(void)
     int len;
     msg_t netmsg;
     netadr_t adr;
+
+    extern void IN_Frame(void);
+    IN_Frame();
 
     /* Check for queued events first */
     if (eventTail < eventHead) {

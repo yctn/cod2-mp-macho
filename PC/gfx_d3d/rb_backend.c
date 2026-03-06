@@ -14,6 +14,49 @@
  *   #include "PC/gfx_d3d/rb_state.h"
  */
 
+extern int printf(const char *, ...);
+
+static int diag_rb_frame = 0;
+static int diag_rb_cmds_in_frame = 0;
+static void diag_rb_cmd(int cmdType) {
+    if (diag_rb_frame < 3) {
+        static const char *cmdNames[] = {
+            "NULL", "Goto", "Call", "Return", "SetMaterialColor", "SetLightProps",
+            "?6", "?7", "?8", "?9", "SaveScreen", "ClearScreen",
+            "BeginView", "SetViewport", "SetRenderTarget", "StretchPic",
+            "StretchPicRotate", "StretchRaw", "DrawQuadPic", "DrawSprite",
+            "DrawFullScreenQuad", "DrawText", "DrawTextInSpace", "DrawSurfs",
+            "DrawSun", "EarlyPostFx", "LatePostFx", "DrawSunPost",
+            "?28", "BlendSaved", "?30", "?31", "?32", "TouchAllImages"
+        };
+        const char *name = (cmdType >= 0 && cmdType < 34) ? cmdNames[cmdType] : "???";
+        printf("  cmd[%d] = %d (%s)\n", diag_rb_cmds_in_frame, cmdType, name);
+        diag_rb_cmds_in_frame++;
+    }
+}
+
+static int diag_rb_entry_count = 0;
+static void diag_rb_entry(void) {
+    if (diag_rb_entry_count < 5) {
+        printf("RB_ExecuteRenderCommands ENTERED (#%d)\n", diag_rb_entry_count);
+        diag_rb_entry_count++;
+    }
+}
+
+static void diag_rb_frame_start(void) {
+    if (diag_rb_frame < 3) {
+        printf("=== RB frame %d ===\n", diag_rb_frame);
+        diag_rb_cmds_in_frame = 0;
+    }
+}
+
+static void diag_rb_frame_end(void) {
+    if (diag_rb_frame < 3) {
+        printf("=== RB frame %d end (%d cmds) ===\n", diag_rb_frame, diag_rb_cmds_in_frame);
+    }
+    diag_rb_frame++;
+}
+
 extern struct materialCommands_t tess; /* 0x0 */
 extern struct r_backEndGlobals_t backEnd; /* 0x0 */
 extern const GfxBackEndData *backEndData; /* 0x0 */
@@ -5080,6 +5123,14 @@ void RB_DrawStretchPic(const Material *material, float x, float y, float w, floa
         "je .Lfd89e8_000d8fa9\n"
         "shll $6, %edx\n" /* line 358 */
         "leal tess(%edx), %eax\n" /* v */
+        /* DIAGNOSTIC: dump x,y before tess write */
+        "pushal\n"
+        "pushl 8(%ebp)\n"
+        "pushl 0x10(%ebp)\n"
+        "pushl 0xc(%ebp)\n"
+        "calll diag_rb_draw\n"
+        "addl $12, %esp\n"
+        "popal\n"
         /* { scope 3 */
         "movss 0xc(%ebp), %xmm0\n" /* line 447 | x */
         "movss %xmm0, tess(%edx)\n"
@@ -5571,6 +5622,10 @@ float RB_BenchmarkRepeatedCalls(float width, float height)
     );
 }
 
+int g_rb_exec_count = 0; /* diagnostic */
+int g_rb_dispatch_count = 0; /* diagnostic: how many commands dispatched */
+int g_rb_first_cmd = -1; /* diagnostic: first command word seen */
+int g_rb_skip_reason = 0; /* diagnostic: 1=disableRendering, 2=needToTouch+recover_fail, 3=skipBackEnd, 4=empty_buf */
 /* line 3915 */
 __attribute__((naked))
 void RB_ExecuteRenderCommands(const void *data)
@@ -5578,6 +5633,7 @@ void RB_ExecuteRenderCommands(const void *data)
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 3915 */
         "movl %esp, %ebp\n"
+        "incl g_rb_exec_count\n"
         "pushl %edi\n"
         "pushl %esi\n"
         "pushl %ebx\n"
@@ -5587,7 +5643,10 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl imp_g_disableRendering, %eax\n" /* line 3928 */
         "movl (%eax), %ecx\n"
         "testl %ecx, %ecx\n"
-        "jne .Lfd9182_000d9535\n"
+        "je .Lfd9182_diag_noDisable\n"
+        "movl $1, g_rb_skip_reason\n" /* diagnostic: disableRendering */
+        "jmp .Lfd9182_000d9535\n"
+        ".Lfd9182_diag_noDisable:\n"
         "movl imp_dx, %esi\n" /* line 3932 */
         "cmpb $0, 0x2d3c(%esi)\n"
         "je .Lfd9182_000d956f\n"
@@ -5651,14 +5710,19 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl imp_r_skipBackEnd, %eax\n" /* line 3962 */
         "movl (%eax), %eax\n"
         "cmpb $0, 8(%eax)\n"
-        "jne .Lfd9182_000d9594\n"
+        "je .Lfd9182_diag_noSkip\n"
+        "movl $3, g_rb_skip_reason\n" /* diagnostic: skipBackEnd */
+        "jmp .Lfd9182_000d9594\n"
+        ".Lfd9182_diag_noSkip:\n"
         "movl backEndData, %edx\n" /* line 3970 */
         "leal 0x219d0c(%edx), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* execState */
         "movl $0, -0x24(%ebp)\n" /* line 3971 */
         "movzwl 0x219d0c(%edx), %eax\n" /* line 3980 */
+        "movl %eax, g_rb_first_cmd\n" /* diagnostic: record first cmd */
         "testw %ax, %ax\n"
         "jne .Lfd9182_000d9c52\n"
+        "movl $4, g_rb_skip_reason\n" /* diagnostic: empty buffer */
         ".Lfd9182_000d92b6:\n"
         "movl tess+370640, %eax\n" /* line 261 */
         "testl %eax, %eax\n"
@@ -6217,6 +6281,7 @@ void RB_ExecuteRenderCommands(const void *data)
         "leal -0x28(%ebp), %ebx\n" /* execState */
         ".Lfd9182_000d9c55:\n"
         "movzwl %ax, %eax\n" /* line 3985 */
+        "incl g_rb_dispatch_count\n" /* diagnostic */
         "movl %ebx, (%esp)\n"
         "calll *RB_RenderCommandTable(, %eax, 4)\n"
         "movl -0x28(%ebp), %eax\n" /* line 3980 | execState */
