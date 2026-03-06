@@ -270,22 +270,13 @@ void glTexImage2D(GLenum target, GLint level, GLint internalformat,
 
     static int tex_log_count = 0;
     tex_log_count++;
-    if (tex_log_count <= 20) {
-        /* Check if pixel data is all zeros */
-        int nonzero = 0;
-        if (pixels) {
-            const unsigned char *p = (const unsigned char *)pixels;
-            int total = width * height * 4; /* rough estimate */
-            if (total > 1024) total = 1024;
-            for (int i = 0; i < total; i++) {
-                if (p[i]) { nonzero = 1; break; }
-            }
-        }
+    if (tex_log_count <= 20 || internalformat == 0x1906 || internalformat == 0x190a
+        || (width == 256 && height == 128)) {
         GLint tex_id = 0;
         glGetIntegerv(0x8069, &tex_id);
-        fprintf(stderr, "[teximg#%d] target=0x%x lvl=%d ifmt=0x%x %dx%d fmt=0x%x type=0x%x px=%p nonzero=%d texid=%d\n",
+        fprintf(stderr, "[teximg#%d] target=0x%x lvl=%d ifmt=0x%x %dx%d fmt=0x%x type=0x%x px=%p texid=%d\n",
                 tex_log_count, target, level, internalformat, width, height,
-                format, type, pixels, nonzero, tex_id);
+                format, type, pixels, tex_id);
     }
     real_fn(target, level, internalformat, width, height, border, format, type, pixels);
 }
@@ -301,7 +292,7 @@ void glCompressedTexImage2DARB(GLenum target, GLint level, GLenum internalformat
 
     static int comp_log_count = 0;
     comp_log_count++;
-    if (comp_log_count <= 10) {
+    if (comp_log_count <= 50) {
         int nonzero = 0;
         if (data) {
             const unsigned char *p = (const unsigned char *)data;

@@ -1946,3 +1946,12 @@ imp__ZTV5Flash: .long __ZTV5Flash
 /* Redeclared variable stubs */
 .globl color
 color: .space 16, 0
+
+/* SSE-aligned constants for andps/orps instructions (must be 16-byte aligned) */
+.align 16
+.globl sse_float_abs_mask
+sse_float_abs_mask: .long 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff
+
+.align 16
+.globl sse_float_sign_mask
+sse_float_sign_mask: .long 0x80000000, 0x80000000, 0x80000000, 0x80000000

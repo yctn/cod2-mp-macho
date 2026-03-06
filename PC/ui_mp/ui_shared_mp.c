@@ -1173,7 +1173,7 @@ Bool Script_ExecIfFloatsEqual(const char *dvarValue, const char *testValue)
         "subsd -0x10(%ebp), %xmm0\n"
         "movsd %xmm0, -0x18(%ebp)\n"
         "cvtsd2ss %xmm0, %xmm0\n"
-        "andps boxVerts+352, %xmm0\n"
+        "andps sse_float_abs_mask, %xmm0\n"
         "movss lit4_002ed900, %xmm1\n" /* 9.999999747378752e-06f */
         "xorl %eax, %eax\n"
         "ucomiss %xmm0, %xmm1\n"

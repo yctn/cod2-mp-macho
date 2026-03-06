@@ -493,6 +493,10 @@ int MacOpenGLUtils_GetOpenGLTextureType(bool *CreateOpenGLResources, GLenum *Ope
         "je .Lf25ac4_00025c18\n"
         "cmpl $0x32, %eax\n"
         "je .Lf25ac4_00025c52\n"
+        "cmpl $0x1c, %eax\n"
+        "je .L_handle_D3DFMT_A8\n"
+        "cmpl $0x33, %eax\n"
+        "je .L_handle_D3DFMT_A8L8\n"
         "cmpl $0x19, %eax\n"
         "jne .Lf25ac4_00025b03\n"
         "movl 0xc(%ebp), %eax\n" /* line 646 | OpenGLInternalFormat */
@@ -598,6 +602,26 @@ int MacOpenGLUtils_GetOpenGLTextureType(bool *CreateOpenGLResources, GLenum *Ope
         "movl 0x14(%ebp), %eax\n" /* line 714 | OpenGLElementType */
         "movl $0x1401, (%eax)\n"
         "popl %ebp\n" /* line 732 */
+        "retl\n"
+        /* D3DFMT_A8 (0x1C) → GL_ALPHA / GL_UNSIGNED_BYTE */
+        ".L_handle_D3DFMT_A8:\n"
+        "movl 0xc(%ebp), %eax\n"
+        "movl $0x1906, (%eax)\n"   /* GL_ALPHA */
+        "movl 0x10(%ebp), %eax\n"
+        "movl $0x1906, (%eax)\n"   /* GL_ALPHA */
+        "movl 0x14(%ebp), %eax\n"
+        "movl $0x1401, (%eax)\n"   /* GL_UNSIGNED_BYTE */
+        "popl %ebp\n"
+        "retl\n"
+        /* D3DFMT_A8L8 (0x33) → GL_LUMINANCE_ALPHA / GL_UNSIGNED_BYTE */
+        ".L_handle_D3DFMT_A8L8:\n"
+        "movl 0xc(%ebp), %eax\n"
+        "movl $0x190a, (%eax)\n"   /* GL_LUMINANCE_ALPHA */
+        "movl 0x10(%ebp), %eax\n"
+        "movl $0x190a, (%eax)\n"   /* GL_LUMINANCE_ALPHA */
+        "movl 0x14(%ebp), %eax\n"
+        "movl $0x1401, (%eax)\n"   /* GL_UNSIGNED_BYTE */
+        "popl %ebp\n"
         "retl\n"
     );
 }

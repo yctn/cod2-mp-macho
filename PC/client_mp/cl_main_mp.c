@@ -2351,14 +2351,8 @@ float CL_NormalizedTextScale(FontHandle font, float scale)
 }
 
 /* line 5019 */
-static int dtcount = 0;
 void CL_DrawTextPhysical(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style)
 {
-    if (dtcount < 30 && text && text[0]) {
-        fprintf(stderr, "TEXT[%d] xy=(%.0f,%.0f) s=%.2f '%.*s'\n",
-                dtcount, x, y, xScale, 40, text);
-        dtcount++;
-    }
     ((void (*)(const char *, int, FontHandle, float, float, float, float, const vec_t *, int))*(int *)((char *)&re + 284))(text, maxChars, font, x, y, xScale, yScale, color, style);
 }
 
