@@ -111,9 +111,9 @@ static int sdl_key_to_engine(SDL_Keycode sym)
 void IN_Init(void)
 {
     mouse_active = 1;
-    /* Don't capture mouse - needed for UI menus */
-    SDL_SetRelativeMouseMode(SDL_FALSE);
-    SDL_ShowCursor(SDL_ENABLE);
+    /* Hide OS cursor, use relative mode so game cursor tracks from (0,0) */
+    SDL_ShowCursor(SDL_DISABLE);
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 }
 
 void IN_Shutdown(void)

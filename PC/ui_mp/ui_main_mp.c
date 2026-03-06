@@ -3760,6 +3760,7 @@ void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float
         "pushl %ebx\n"
         "subl $0x60, %esp\n"
         "movl 0x10(%ebp), %esi\n" /* font */
+        "emms\n"
         /* { scope 1 */
         "movl 0x24(%ebp), %eax\n" /* line 398 | scale */
         "movl %eax, 4(%esp)\n"

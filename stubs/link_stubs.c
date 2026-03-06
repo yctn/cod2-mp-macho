@@ -148,8 +148,7 @@ extern unsigned char clients[];
 void *cl __attribute__((aligned(4))) = (void *)clients;
 extern unsigned char clientConnections[];
 void *clc __attribute__((aligned(4))) = (void *)clientConnections;
-char clc_ptr[64] __attribute__((aligned(4))) = {0};
-char clc_ptr_195ee8c[64] __attribute__((aligned(4))) = {0};
+/* clc_ptr, clc_ptr_195ee8c: aliases for imp_clc — defined in import_pointers.S */
 char ClipRect[64] __attribute__((aligned(4))) = {0};
 char CloseComponent[64] __attribute__((aligned(4))) = {0};
 char CloseMovieFile[64] __attribute__((aligned(4))) = {0};
@@ -354,7 +353,7 @@ char MediaSetSoundBalance[64] __attribute__((aligned(4))) = {0};
 char MoveWindow[64] __attribute__((aligned(4))) = {0};
 char MoviesTask[64] __attribute__((aligned(4))) = {0};
 char name[64] __attribute__((aligned(4))) = {0};
-char net_profile_dvar[64] __attribute__((aligned(4))) = {0};
+/* net_profile_dvar: alias for imp_net_profile — defined in import_pointers.S */
 char NewControlEditTextValidationUPP[64] __attribute__((aligned(4))) = {0};
 char NewControlKeyFilterUPP[64] __attribute__((aligned(4))) = {0};
 char NewControlUserPaneDrawUPP[64] __attribute__((aligned(4))) = {0};

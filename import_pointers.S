@@ -956,6 +956,10 @@ imp_cl_voice: .long cl_voice
 imp_cl_yawspeed: .long cl_yawspeed
 .globl imp_clc
 imp_clc: .long clc
+.set clc_ptr, imp_clc
+.globl clc_ptr
+.set clc_ptr_195ee8c, imp_clc
+.globl clc_ptr_195ee8c
 .globl imp_clients
 imp_clients: .long clients
 .globl imp_cls
@@ -1282,6 +1286,8 @@ imp_modNames: .long modNames
 imp_net_lanauthorize: .long net_lanauthorize
 .globl imp_net_profile
 imp_net_profile: .long net_profile
+.set net_profile_dvar, imp_net_profile
+.globl net_profile_dvar
 .globl imp_net_showprofile
 imp_net_showprofile: .long net_showprofile
 .globl imp_nextdemo
