@@ -2654,7 +2654,7 @@ void UI_Init(void)
 
 /* line 4274 */
 __attribute__((naked))
-void UI_KeyEvent(int key, qboolean down)
+void UI_KeyEvent_impl(int key, qboolean down)
 {
     __asm__ __volatile__ (
         "pushl %ebp\n" /* line 4274 */
@@ -2754,6 +2754,15 @@ void UI_KeyEvent(int key, qboolean down)
         "calll Key_ClearStates\n" /* line 4324 */
         "jmp .Lf150c50_00150d2f\n"
     );
+}
+
+extern void Com_Printf(const char *fmt, ...);
+void UI_KeyEvent(int key, qboolean down)
+{
+    if (key >= 0xc8 && key <= 0xce) {
+        Com_Printf("UI_KeyEvent: key=0x%x down=%d\n", key, down);
+    }
+    UI_KeyEvent_impl(key, down);
 }
 
 /* line 4340 */

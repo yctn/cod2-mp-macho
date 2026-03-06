@@ -1471,6 +1471,14 @@ int Com_EventLoop(void)
                 Com_Printf("BAD KEY: evValue=%d evValue2=%d\n", evValue, evValue2);
                 break;
             }
+            {
+                extern void *imp_cl;
+                byte *cl_ptr = (byte *)*(void **)&imp_cl;
+                int keyCatchers = *(int *)(cl_ptr + 4);
+                if (evValue2 == 1) {
+                    Com_Printf("KEY DOWN: key=0x%x keyCatchers=0x%x\n", evValue, keyCatchers);
+                }
+            }
             CL_KeyEvent(evValue, evValue2, evTime);
             break;
         case 2: /* SE_CHAR */
