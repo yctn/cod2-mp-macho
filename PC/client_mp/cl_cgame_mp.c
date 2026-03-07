@@ -92,7 +92,7 @@ extern char *strcat(char *dest, const char *src);
 static int warnCount; /* warnCount */
 static int warnCount_00f13084; /* warnCount */
 static char bigConfigString[8192]; /* bigConfigString */
-static vec4_t g_color_table[8]; /* g_color_table */
+extern const vec4_t g_color_table[]; /* g_color_table — rodata.c */
 
 #define RE         ((refexport_t *)imp_re)
 #define CLS        ((char *)imp_cls)

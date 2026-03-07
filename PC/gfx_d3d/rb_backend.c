@@ -61,8 +61,8 @@ extern struct materialCommands_t tess; /* 0x0 */
 extern struct r_backEndGlobals_t backEnd; /* 0x0 */
 extern const GfxBackEndData *backEndData; /* 0x0 */
 extern GLuint g_FenceID; /* 0x0 */
-static const byte color_table[8][4]; /* color_table */
-static const Bool refEntIsInWorldSpace[10]; /* refEntIsInWorldSpace */
+extern const byte color_table[8][4]; /* color_table — rodata.c */
+extern const Bool refEntIsInWorldSpace[10]; /* refEntIsInWorldSpace — rodata.c */
 
 extern void RB_TessBad(const surfaceType_t *surfType);
 extern void RB_TessPoly(const surfaceType_t *surfType);

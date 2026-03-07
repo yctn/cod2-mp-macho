@@ -3,12 +3,41 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/ui/ui_utils.h"
  *   #include "PC/universal/com_math.h"
  *   #include "PC/universal/com_vector.h"
  */
+
+/* Diagnostic: trace Item_Paint flow */
+static int diag_item_paint_count = 0;
+void diag_item_paint_enter(void *item) {
+    const char *name = *(const char **)((char*)item + 0xC0);
+    int staticFlags = *(int*)((char*)item + 0xe8);
+    int type = *(int*)((char*)item + 0x270);
+    if (diag_item_paint_count < 200) {
+        fprintf(stderr, "[ItemPaint] name=%-30s type=%2d flags=%08x\n",
+                name ? name : "(null)", type, staticFlags);
+    }
+    diag_item_paint_count++;
+}
+void diag_item_paint_skip(void *item, int reason) {
+    const char *name = *(const char **)((char*)item + 0xC0);
+    if (diag_item_paint_count < 200) {
+        fprintf(stderr, "[ItemPaint] SKIP name=%-30s reason=%d\n",
+                name ? name : "(null)", reason);
+    }
+}
+void diag_item_paint_draw(void *item) {
+    const char *name = *(const char **)((char*)item + 0xC0);
+    if (diag_item_paint_count < 200) {
+        unsigned int *fc = (unsigned int *)((char*)item + 0x1cc);
+        fprintf(stderr, "[ItemPaint] DRAW name=%-30s foreColor=%08x %08x %08x %08x\n",
+                name ? name : "(null)", fc[0], fc[1], fc[2], fc[3]);
+    }
+}
 
 extern unsigned char updateScreenCalled[];
 extern qboolean g_waitingForKey; /* 0x0 */
@@ -13497,6 +13526,10 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0xac, %esp\n"
+        /* DIAG: trace entry */
+        "movl 0xc(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll diag_item_paint_enter\n"
         /* { scope 1: color, ry, w, h, ... */
         "movl 0xc(%ebp), %eax\n" /* line 5118 | item */
         "movl 0x29c(%eax), %eax\n"
@@ -13548,6 +13581,11 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "jne .Lf16e76c_0016eded\n"
         /* } scope */
         ".Lf16e76c_0016e833:\n"
+        /* DIAG: item skipped/returned */
+        "movl 0xc(%ebp), %eax\n"
+        "movl $0, 4(%esp)\n"
+        "movl %eax, (%esp)\n"
+        "calll diag_item_paint_skip\n"
         "addl $0xac, %esp\n" /* line 5375 */
         "popl %ebx\n"
         "popl %esi\n"
@@ -13620,6 +13658,10 @@ void Item_Paint(displayContextDef_t *dc, itemDef_t *item)
         "cmpl $6, 0xd0(%ecx)\n" /* line 5310 */
         "je .Lf16e76c_0016ed0e\n"
         ".Lf16e76c_0016e910:\n"
+        /* DIAG: item will be drawn */
+        "movl 0xc(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll diag_item_paint_draw\n"
         "movl -0x70(%ebp), %eax\n" /* line 5316 | parent */
         "cvtsi2ssl 0x230(%eax), %xmm0\n"
         "movss %xmm0, 0x14(%esp)\n"

@@ -3,12 +3,23 @@
 
 #include "common_types.h"
 #include "imports.h"
+#include <stdio.h>
 
 /* Original includes (from N_BINCL debug info):
  *   #include "PC/universal/q_shared.h"
  *   #include "PC/universal/com_math.h"
  *   #include "PC/universal/com_vector.h"
  */
+
+static int diag_drawtext_count = 0;
+void diag_drawtext(const char *text, void *font, float x, float y, float scale) {
+    if (diag_drawtext_count < 100) {
+        fprintf(stderr, "[DrawText] text='%.40s' font=%p x=%08x y=%08x scale=%08x\n",
+                text ? text : "(null)", font,
+                *(unsigned int*)&x, *(unsigned int*)&y, *(unsigned int*)&scale);
+    }
+    diag_drawtext_count++;
+}
 
 extern const dvar_t *ui_smallFont; /* 0x0 */
 extern const dvar_t *ui_bigFont; /* 0x0 */
@@ -3759,6 +3770,18 @@ void UI_DrawText(const char *text, int maxChars, FontHandle font, float x, float
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x60, %esp\n"
+        /* DIAG: trace UI_DrawText */
+        "movl 0x24(%ebp), %eax\n"
+        "movl %eax, 0x10(%esp)\n"
+        "movl 0x18(%ebp), %eax\n"
+        "movl %eax, 0xc(%esp)\n"
+        "movl 0x14(%ebp), %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl 0x10(%ebp), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl 8(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll diag_drawtext\n"
         "movl 0x10(%ebp), %esi\n" /* font */
         /* { scope 1 */
         "movl 0x24(%ebp), %eax\n" /* line 398 | scale */

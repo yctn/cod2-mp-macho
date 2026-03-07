@@ -19,7 +19,7 @@ extern byte *r_surftype_table_ptr; /* imp_infoParms */
 int R_HashAssetName(const char *name);
 int R_HashString(const char *string);
 int R_CullPointAndRadius(const vec_t *pt, float radius, const DpvsPlane *clipPlanes, int clipPlaneCount);
-double R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
+void R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
 qboolean R_PickMaterial(const vec_t *org, const vec_t *dir, char *name, char *surfaceFlags, char *contents, int charLimit);
 Bool R_ValidXModelName(const char *name);
 float FresnelTerm(float n0, float n1, float cosIncidentAngle);
@@ -71,11 +71,11 @@ int R_CullPointAndRadius(const vec_t *pt, float radius, const DpvsPlane *clipPla
 }
 
 /* line 106 */
-double R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes)
+void R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes)
 {
     if (colorFloat == NULL) {
         *(int *)colorBytes = -1;
-        return 0;
+        return;
     }
 
     colorBytes[0] = (byte)(int)(colorFloat[3] * 255.0f);

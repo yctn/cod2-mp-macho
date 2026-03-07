@@ -15,18 +15,18 @@ extern struct DxState dxState; /* 0x0 */
 static const DxTextureStageEnums texStageEnums; /* texStageEnums */
 static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
 static const DxTextureStageEnums texStageEnums_002f24ac; /* texStageEnums */
-static const byte defaultSamplerStateTable[5]; /* defaultSamplerStateTable */
-static const DWORD s_blendTable[13]; /* s_blendTable */
-static const DWORD s_blendOpTable[6]; /* s_blendOpTable */
-static const DWORD s_cullTable[4]; /* s_cullTable */
-static const D3DTEXTUREFILTERTYPE s_filterTable[4]; /* s_filterTable */
-static const DWORD s_stencilOpTable[8]; /* s_stencilOpTable */
-static const DWORD s_stencilFuncTable[8]; /* s_stencilFuncTable */
-static const DxStencilDecode s_stencilOpDecode[6]; /* s_stencilOpDecode */
-static const DxStencilDecode s_stencilFuncDecode[2]; /* s_stencilFuncDecode */
-static const DxTextureOpDecode s_textureOpTable[23]; /* s_textureOpTable */
-static const DWORD s_textureArgTable[7]; /* s_textureArgTable */
-static const GfxViewportBehavior s_viewportBehaviorForRenderTarget[12]; /* s_viewportBehaviorForRenderTarget */
+extern const byte defaultSamplerStateTable[]; /* rodata.c */
+extern const DWORD s_blendTable[]; /* rodata.c */
+extern const DWORD s_blendOpTable[]; /* rodata.c */
+extern const DWORD s_cullTable[]; /* rodata.c */
+extern const D3DTEXTUREFILTERTYPE s_filterTable[]; /* rodata.c */
+extern const DWORD s_stencilOpTable[]; /* rodata.c */
+extern const DWORD s_stencilFuncTable[]; /* rodata.c */
+extern const DxStencilDecode s_stencilOpDecode[]; /* rodata.c */
+extern const DxStencilDecode s_stencilFuncDecode[]; /* rodata.c */
+extern const DxTextureOpDecode s_textureOpTable[]; /* rodata.c */
+extern const DWORD s_textureArgTable[]; /* rodata.c */
+extern const GfxViewportBehavior s_viewportBehaviorForRenderTarget[]; /* rodata.c */
 
 void RB_ChangeIndices(IDirect3DIndexBuffer9 *ib);
 void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vertexOffset, int vertexStride);
@@ -156,8 +156,8 @@ void RB_ChangeStreamSource(int streamIndex, IDirect3DVertexBuffer9 *vb, int vert
 /* line 899 */
 void RB_DecideDefaultSamplerState(void)
 {
-    int idx = *(int *)((byte *)*(void **)*(void **)imp_r_textureMode + 8);
-    *((byte *)(void *)imp_backEnd + 0x4be) = defaultSamplerStateTable[idx];
+    int idx = *(int *)((byte *)*(void **)imp_r_textureMode + 8);
+    *((byte *)imp_backEnd + 0x4be) = defaultSamplerStateTable[idx];
 }
 
 /* line 907 */

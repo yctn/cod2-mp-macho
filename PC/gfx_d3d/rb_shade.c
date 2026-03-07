@@ -12,10 +12,10 @@
  *   #include "PC/gfx_d3d/rb_shade.h"
  */
 
-static const float lightGridLookupMatrix[4][4]; /* lightGridLookupMatrix */
-static vec4_t debugShaderConsts[5]; /* debugShaderConsts */
-static const GfxStateOverride overrideEnableRenormalize; /* overrideEnableRenormalize */
-static const DWORD s_fvfForVertDeclType[4]; /* s_fvfForVertDeclType */
+extern const float lightGridLookupMatrix[4][4]; /* rodata.c */
+extern const vec4_t debugShaderConsts[]; /* rodata.c */
+extern const GfxStateOverride overrideEnableRenormalize; /* rodata.c */
+extern const DWORD s_fvfForVertDeclType[]; /* rodata.c */
 
 static inline char *RB_TessBase(void)
 {

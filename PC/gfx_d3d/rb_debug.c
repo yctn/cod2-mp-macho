@@ -16,7 +16,7 @@ extern r_backEndGlobals_t *backEnd;     /* imp_backEnd */
 extern void **g_drawSurf;              /* imp_tess */
 extern void **g_viewParms;             /* imp_backEndData */
 
-extern double R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
+extern void R_ConvertColorToBytes(const vec_t *colorFloat, byte *colorBytes);
 extern void RB_DrawLines3D(int count, int width, const GfxPointVertex *verts, int depthTest);
 extern void RB_EndSurface(void);
 extern void RB_Set3D(void);
