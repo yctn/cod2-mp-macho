@@ -4,9 +4,9 @@
 #include "common_types.h"
 #include "imports.h"
 
-static const WaveletHuffmanDecode waveletDecodeBlue[4096]; /* waveletDecodeBlue */
-static const WaveletHuffmanDecode waveletDecodeRedGreen[4096]; /* waveletDecodeRedGreen */
-static const WaveletHuffmanDecode waveletDecodeAlpha[4096]; /* waveletDecodeAlpha */
+extern const WaveletHuffmanDecode waveletDecodeBlue[4096]; /* waveletDecodeBlue - in rodata.c */
+extern const WaveletHuffmanDecode waveletDecodeRedGreen[4096]; /* waveletDecodeRedGreen - in rodata.c */
+extern const WaveletHuffmanDecode waveletDecodeAlpha[4096]; /* waveletDecodeAlpha - in rodata.c */
 
 void Wavelet_DecompressLevel(byte *src, byte *dst, WaveletDecode *decode);
 
