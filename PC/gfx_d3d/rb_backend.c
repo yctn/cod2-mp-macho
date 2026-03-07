@@ -148,7 +148,7 @@ static void RB_DrawLinesCmd(GfxRenderCommandExecState *execState);
 static void RB_StencilPlanesCmd(GfxRenderCommandExecState *execState);
 static void RB_DrawPointsCmd(GfxRenderCommandExecState *execState);
 
-static void (*const RB_RenderCommandTable[34])(GfxRenderCommandExecState *execState) = {
+void (*const RB_RenderCommandTable[34])(GfxRenderCommandExecState *execState) = {
     NULL,
     RB_GotoCmd,
     RB_CallCmd,
@@ -5623,6 +5623,9 @@ float RB_BenchmarkRepeatedCalls(float width, float height)
 }
 
 int g_rb_exec_count = 0; /* diagnostic */
+static const char rb_diag_fmt[] = "RB_Exec #%d firstCmd=%d\n";
+static const char rb_diag_dispatch_fmt[] = "  dispatch cmd=%d func=%p\n";
+static const char rb_diag_post_fmt[] = "  dispatch returned\n";
 int g_rb_dispatch_count = 0; /* diagnostic: how many commands dispatched */
 int g_rb_first_cmd = -1; /* diagnostic: first command word seen */
 int g_rb_skip_reason = 0; /* diagnostic: 1=disableRendering, 2=needToTouch+recover_fail, 3=skipBackEnd, 4=empty_buf */
@@ -5720,6 +5723,17 @@ void RB_ExecuteRenderCommands(const void *data)
         "movl $0, -0x24(%ebp)\n" /* line 3971 */
         "movzwl 0x219d0c(%edx), %eax\n" /* line 3980 */
         "movl %eax, g_rb_first_cmd\n" /* diagnostic: record first cmd */
+        /* DIAG: print skip reason + first cmd for first 5 frames */
+        "cmpl $5, g_rb_exec_count\n"
+        "jg .Lfd9182_diag_skip_print\n"
+        "pushal\n"
+        "pushl %eax\n"
+        "pushl g_rb_exec_count\n"
+        "pushl $rb_diag_fmt\n"
+        "calll printf\n"
+        "addl $12, %esp\n"
+        "popal\n"
+        ".Lfd9182_diag_skip_print:\n"
         "testw %ax, %ax\n"
         "jne .Lfd9182_000d9c52\n"
         "movl $4, g_rb_skip_reason\n" /* diagnostic: empty buffer */
@@ -6282,8 +6296,29 @@ void RB_ExecuteRenderCommands(const void *data)
         ".Lfd9182_000d9c55:\n"
         "movzwl %ax, %eax\n" /* line 3985 */
         "incl g_rb_dispatch_count\n" /* diagnostic */
+        /* DIAG: print cmd before dispatch (first 20 dispatches) */
+        "cmpl $20, g_rb_dispatch_count\n"
+        "jg .Lfd9182_diag_skip_dispatch\n"
+        "pushal\n"
+        "movl RB_RenderCommandTable(, %eax, 4), %edx\n"
+        "pushl %edx\n"
+        "pushl %eax\n"
+        "pushl $rb_diag_dispatch_fmt\n"
+        "calll printf\n"
+        "addl $12, %esp\n"
+        "popal\n"
+        ".Lfd9182_diag_skip_dispatch:\n"
         "movl %ebx, (%esp)\n"
         "calll *RB_RenderCommandTable(, %eax, 4)\n"
+        /* DIAG: print after dispatch returns */
+        "cmpl $20, g_rb_dispatch_count\n"
+        "jg .Lfd9182_diag_skip_post\n"
+        "pushal\n"
+        "pushl $rb_diag_post_fmt\n"
+        "calll printf\n"
+        "addl $4, %esp\n"
+        "popal\n"
+        ".Lfd9182_diag_skip_post:\n"
         "movl -0x28(%ebp), %eax\n" /* line 3980 | execState */
         "movzwl (%eax), %eax\n"
         "testw %ax, %ax\n"

@@ -50,10 +50,9 @@ __asm__(
     ".long str_002242f8, rgp+0x10c4\n"  /* filter_symmetric_6 */
     ".long str_0022430c, rgp+0x10c8\n"  /* filter_symmetric_7 */
     ".long str_00224320, rgp+0x10cc\n"  /* filter_symmetric_8 */
-    /* RB_RenderCommandTable must follow immediately — loop terminator */
-    ".globl RB_RenderCommandTable\n"
-    "RB_RenderCommandTable:\n"
-    ".space 136, 0\n"  /* 34 entries * 4 bytes, filled at runtime or later */
+    /* end-of-builtInMaterials sentinel — loop terminator for Material_Init */
+    ".globl s_builtInMaterials_end\n"
+    "s_builtInMaterials_end:\n"
     ".previous\n"
 );
 
@@ -1800,7 +1799,7 @@ void Material_Init(void)
         "calll memset\n"
         "calll Material_PreLoadAllShaderText\n" /* line 1349 */
         "movl $s_builtInMaterials+4, %esi\n"
-        "movl $RB_RenderCommandTable+4, %edi\n"
+        "movl $s_builtInMaterials_end+4, %edi\n"
         "jmp .Lfd4686_000d46c3\n"
         ".Lfd4686_000d46bc:\n"
         "addl $8, %esi\n" /* line 1325 */

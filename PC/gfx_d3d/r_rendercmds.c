@@ -645,6 +645,20 @@ DP4 oPos.z," */
         "calll R_TransferDebugGlobals\n"
         "movl s_cmdList, %ecx\n" /* line 950 */
         "movl 0x30000(%ecx), %ebx\n"
+        /* DIAG: print s_cmdList, usedTotal, remaining before backend exec */
+        "cmpl $10, g_endframe_count\n"
+        "jg .Lfc844a_diag_skip2\n"
+        "pushal\n"
+        "movl $0x30000, %eax\n"
+        "subl %ebx, %eax\n"
+        "pushl %eax\n"
+        "pushl %ebx\n"
+        "pushl %ecx\n"
+        "pushl $rb_diag_cmdlist_fmt\n"
+        "calll printf\n"
+        "addl $16, %esp\n"
+        "popal\n"
+        ".Lfc844a_diag_skip2:\n"
         "movl $0x30000, %eax\n" /* line 953 */
         "subl %ebx, %eax\n"
         "cmpl $3, %eax\n"
@@ -728,9 +742,20 @@ DP4 oPos.z," */
     );
 }
 
+static const char rb_diag_cmdlist_fmt[] = "  cmdList=%p used=0x%x remain=0x%x\n";
+static int g_endframe_count = 0;
 void R_EndFrame(void)
 {
+    g_endframe_count++;
+    if (g_endframe_count <= 5) {
+        extern r_globals_t rg;
+        fprintf(stderr, "R_EndFrame #%d rg.registered=%d\n", g_endframe_count, *(char *)&rg);
+    }
     R_EndFrame_impl();
+    fflush(stdout);
+    if (g_endframe_count <= 5) {
+        fprintf(stderr, "  R_EndFrame_impl returned (#%d)\n", g_endframe_count);
+    }
     R_ResetCmdListState();
 }
 

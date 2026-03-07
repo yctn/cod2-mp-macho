@@ -270,9 +270,12 @@ static void SCR_UpdateFrame(void)
     int gameLoaded = CLS_CONN_STATE_FLAG(cls);
 
     static int frame_diag = 0;
-    if (frame_diag < 3) {
-        fprintf(stderr, "[frame#%d] gameLoaded=%d cls=%p cls+0x110=%p val=%d\n",
-                frame_diag, gameLoaded, cls, cls+0x110, *(int*)(cls+0x110));
+    if (frame_diag < 10) {
+        byte *clc_tmp = *(byte **)clc_ptr_195ee8c;
+        int cs_tmp = *(int *)clc_tmp;
+        int fs_tmp = UI_IsFullscreen();
+        fprintf(stderr, "[frame#%d] gameLoaded=%d connstate=%d fullscr=%d\n",
+                frame_diag, gameLoaded, cs_tmp, fs_tmp);
         frame_diag++;
     }
 
@@ -425,20 +428,61 @@ check_ui:
     }
 
     /* Render screen */
+    {
+        static int ck1 = 0;
+        if (ck1 < 10) {
+            void *fn = *(void **)((byte *)re_ptr_195eca8 + 0xb8);
+            fprintf(stderr, "[ck:render#%d] R_EndView=%p\n", ck1, fn);
+            ck1++;
+        }
+    }
     RE_FUNC(re_ptr_195eca8, 0xb8, re_int_func)(0);
+    {
+        static int ck2 = 0;
+        if (ck2 < 10) { fprintf(stderr, "[ck:post_render#%d]\n", ck2); ck2++; }
+    }
 
 end_frame_draw:
     re = re_ptr_195eca8;
+    {
+        static int ck3 = 0;
+        if (ck3 < 10) { fprintf(stderr, "[ck:doneViews#%d]\n", ck3); ck3++; }
+    }
     RE_FUNC(re, 0xbc, re_void_func)();
+    {
+        static int ck4 = 0;
+        if (ck4 < 10) { fprintf(stderr, "[ck:postDoneViews#%d]\n", ck4); ck4++; }
+    }
     Con_DrawConsole();
-    RE_FUNC(re, 0xac, re_void_func)();
+    {
+        static int ck5 = 0;
+        if (ck5 < 10) { fprintf(stderr, "[ck:postConsole#%d]\n", ck5); ck5++; }
+    }
+    {
+        static int ef_diag = 0;
+        void *fn = *(void **)((byte *)re + 0xac);
+        if (ef_diag < 5) {
+            printf("  end_frame_draw: re=%p re+0xac fn=%p\n", re, fn);
+            ef_diag++;
+        }
+        if (fn) ((re_void_func)fn)();
+    }
     Sys_IsMainThread();
     return;
 
 end_frame:
     RE_FUNC(re_ptr_195eca8, 0xbc, re_void_func)();
     Con_DrawConsole();
-    RE_FUNC(re_ptr_195eca8, 0xac, re_void_func)();
+    {
+        static int ef_diag2 = 0;
+        byte *re2 = re_ptr_195eca8;
+        void *fn = *(void **)((byte *)re2 + 0xac);
+        if (ef_diag2 < 5) {
+            printf("  end_frame: re=%p re+0xac fn=%p\n", re2, fn);
+            ef_diag2++;
+        }
+        if (fn) ((re_void_func)fn)();
+    }
     Sys_IsMainThread();
 }
 
