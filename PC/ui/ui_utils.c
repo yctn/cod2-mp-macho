@@ -87,16 +87,16 @@ qboolean Item_EnableShowViaDvar(const itemDef_t *item, int flag)
         if (!String_Parse(&p, val, 1024)) {
             /* Ran out of values to parse */
             if (*(int *)(ib + 0x2d0) & flag)
-                return 1;
-            return 0;
+                return 0;
+            return 1;
         }
 
         /* Skip semicolons (single ';' char) */
         if (val[0] == ';' && val[1] == '\0') {
             if (!String_Parse(&p, val, 1024)) {
                 if (*(int *)(ib + 0x2d0) & flag)
-                    return 1;
-                return 0;
+                    return 0;
+                return 1;
             }
         }
 

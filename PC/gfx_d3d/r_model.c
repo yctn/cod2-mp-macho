@@ -1434,13 +1434,13 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "cmovnel %eax, %edx\n"
         "movl imp_frontEndDataOut, %edi\n" /* line 620 */
         "movl (%edi), %eax\n"
-        "movl str_00217c60+24(%eax), %eax\n"
+        "movl 0x217c78(%eax), %eax\n"
         "imull %ecx, %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll InterlockedExchangeAdd\n"
         "movl (%edi), %ecx\n" /* line 621 */
-        "movl str_00217c60+24(%ecx), %edx\n"
+        "movl 0x217c78(%ecx), %edx\n"
         "movl 4(%edx), %ebx\n"
         "cmpl %ebx, (%edx)\n"
         "jle .Lfd1326_000d146f\n"
@@ -1466,7 +1466,7 @@ int R_PreSkinXSurface(GfxSceneEntity *sceneEnt, const struct DObj_s *obj, long u
         "js .Lfd1326_000d14ad\n"
         "movl imp_frontEndDataOut, %eax\n" /* line 1891 */
         "movl (%eax), %eax\n"
-        "movl str_00217c60+24(%eax), %edx\n"
+        "movl 0x217c78(%eax), %edx\n"
         "movl imp_dx, %eax\n" /* line 1895 */
         "movl 0x2dc0(%eax), %eax\n"
         "addl (%edx), %eax\n"
@@ -1948,13 +1948,13 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "cmovnel %eax, %edx\n"
         "movl imp_frontEndDataOut, %ebx\n" /* line 620 */
         "movl (%ebx), %eax\n"
-        "movl str_00217c60+24(%eax), %eax\n"
+        "movl 0x217c78(%eax), %eax\n"
         "imull %ecx, %edx\n"
         "movl %edx, 4(%esp)\n"
         "movl %eax, (%esp)\n"
         "calll InterlockedExchangeAdd\n"
         "movl (%ebx), %ebx\n" /* line 621 */
-        "movl str_00217c60+24(%ebx), %edx\n"
+        "movl 0x217c78(%ebx), %edx\n"
         "movl 4(%edx), %ecx\n"
         "cmpl %ecx, (%edx)\n"
         "jle .Lfd193e_000d1b12\n"
@@ -1979,7 +1979,7 @@ int R_PreSkinStaticSurface(GfxSceneEntity *sceneEnt, GfxEntity *ent, int smodelI
         "js .Lfd193e_000d1b53\n"
         "movl imp_frontEndDataOut, %eax\n" /* line 2040 */
         "movl (%eax), %eax\n"
-        "movl str_00217c60+24(%eax), %edx\n"
+        "movl 0x217c78(%eax), %edx\n"
         "movl imp_dx, %eax\n" /* line 2044 */
         "movl 0x2dc0(%eax), %eax\n"
         "addl (%edx), %eax\n"

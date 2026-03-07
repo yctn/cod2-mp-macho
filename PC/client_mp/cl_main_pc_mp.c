@@ -252,7 +252,7 @@ int CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
         "jg .Lf15f92e_0015fac4\n"
         ".Lf15f92e_0015fa10:\n"
         "movl $0, -0x50(%ebp)\n"
-        "leal str_0029c494+436(%ecx), %eax\n"
+        "leal 0x29c648(%ecx), %eax\n"
         "movl %eax, -0x58(%ebp)\n"
         "movl %eax, -0x64(%ebp)\n"
         "movl %eax, %edx\n"
@@ -568,7 +568,7 @@ int CL_ServerInfoPacket(netadr_t from, msg_t *msg, int time)
         "jmp .Lf15fbbe_0015fc64\n"
         ".Lf15fbbe_0015fe56:\n"
         "movl imp_cls, %eax\n" /* line 255 */
-        "movl str_002a0938+272(%eax), %edx\n"
+        "movl 0x2a0a48(%eax), %edx\n"
         "testl %edx, %edx\n"
         "jne .Lf15fbbe_0015fc64\n"
         "xorl %esi, %esi\n" /* line 257 | i */
@@ -1404,7 +1404,7 @@ int CL_GlobalServers_f(void)
         "calll NET_StringToAdr\n"
         "movl imp_cls, %eax\n" /* line 650 */
         "movl $1, 0x453c(%eax)\n"
-        "movl $1, str_002a0938+272(%eax)\n" /* line 651 */
+        "movl $1, 0x2a0a48(%eax)\n" /* line 651 */
         "movl $4, -0x30(%ebp)\n" /* line 653 | to */
         "movw $0xe650, -0x28(%ebp)\n" /* line 654 */
         "movl $2, (%esp)\n" /* line 656 */
@@ -2578,4 +2578,3 @@ int CL_ServerStatus_f(void)
         "jmp .Lf1617da_00161967\n"
     );
 }
-

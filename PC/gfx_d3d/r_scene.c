@@ -1125,21 +1125,21 @@ void R_RenderScene(const refdef_t *refdef)
         "movl imp_frontEndDataOut, %eax\n" /* line 577 */
         "movl (%eax), %edx\n"
         "movl 0x14ac(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+24(%edx)\n"
+        "movl %eax, 0x219cec(%edx)\n"
         "movl 0x14b0(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+28(%edx)\n"
+        "movl %eax, 0x219cf0(%edx)\n"
         "movl 0x14b4(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+32(%edx)\n"
+        "movl %eax, 0x219cf4(%edx)\n"
         "movl 0x14b8(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+36(%edx)\n"
+        "movl %eax, 0x219cf8(%edx)\n"
         "movl 0x14bc(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+40(%edx)\n"
+        "movl %eax, 0x219cfc(%edx)\n"
         "movl 0x14c0(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+44(%edx)\n"
+        "movl %eax, 0x219d00(%edx)\n"
         "movl 0x14c4(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+48(%edx)\n"
+        "movl %eax, 0x219d04(%edx)\n"
         "movl 0x14c8(%ecx), %eax\n"
-        "movl %eax, str_00219cd4+52(%edx)\n"
+        "movl %eax, 0x219d08(%edx)\n"
         /* } scope */
         ".Lfc643c_000c660d:\n"
         "movl 0x54(%esi), %esi\n" /* line 1532 | refdef */
@@ -1386,7 +1386,7 @@ void R_RenderScene(const refdef_t *refdef)
         ".Lfc643c_000c6a1b:\n"
         "movl imp_frontEndDataOut, %eax\n" /* line 582 */
         "movl (%eax), %eax\n"
-        "movl $0, str_00219cd4+24(%eax)\n"
+        "movl $0, 0x219cec(%eax)\n"
         "jmp .Lfc643c_000c660d\n"
         ".Lfc643c_000c6a31:\n"
         "movl 0x14cc(%ecx), %eax\n" /* line 542 */

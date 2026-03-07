@@ -3897,9 +3897,9 @@ qboolean CL_UpdateDirtyPings_f(int source)
         "movl $cls+316, %eax\n"
         "jmp .Lf14aa5e_0014ac9a\n"
         ".Lf14aa5e_0014ad38:\n"
-        "movl 0x14bcfa4, %eax\n" /* line 4612 */
+        "movl cls+0x29c644, %eax\n" /* line 4612 */
         "movl %eax, -0x454(%ebp)\n" /* max */
-        "movl $0x14bcfa8, %eax\n"
+        "movl $cls+0x29c648, %eax\n"
         "jmp .Lf14aa5e_0014ac9a\n"
     );
 }

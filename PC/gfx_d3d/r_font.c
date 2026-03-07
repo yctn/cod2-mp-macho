@@ -160,30 +160,8 @@ int R_TextHeight(FontHandle font)
 }
 
 /* line 209 */
-static int rdt_count = 0;
 int R_DrawText(const char *text, int maxChars, FontHandle font, float x, float y, float xScale, float yScale, const vec_t *color, int style)
 {
-    if (rdt_count < 3 && text && text[0] == 'J') {
-        Glyph *glyphs = *(Glyph **)((byte *)font + 0x10);
-        int numGlyphs = *(int *)((byte *)font + 8);
-        int i;
-        fprintf(stderr, "FONT '%s' numGlyphs=%d glyphs=%p\n", text, numGlyphs, (void*)glyphs);
-        for (i = 0; i < 10 && i < numGlyphs; i++) {
-            fprintf(stderr, "  g[%d] letter=0x%04x dx=%u pw=%u ph=%u x0=%d y0=%d s0=%08x t0=%08x s1=%08x t1=%08x\n",
-                    i, glyphs[i].letter, glyphs[i].dx, glyphs[i].pixelWidth, glyphs[i].pixelHeight,
-                    glyphs[i].x0, glyphs[i].y0,
-                    *(unsigned int*)&glyphs[i].s0, *(unsigned int*)&glyphs[i].t0,
-                    *(unsigned int*)&glyphs[i].s1, *(unsigned int*)&glyphs[i].t1);
-        }
-        /* Show glyph for 'J' (0x4a), space (0x20), 'G' (0x47) */
-        const Glyph *gJ = R_GetCharacterGlyph(font, 'J');
-        const Glyph *gSp = R_GetCharacterGlyph(font, ' ');
-        const Glyph *gG = R_GetCharacterGlyph(font, 'G');
-        fprintf(stderr, "  J: letter=0x%04x dx=%u s0=%08x t0=%08x\n", gJ->letter, gJ->dx, *(unsigned int*)&gJ->s0, *(unsigned int*)&gJ->t0);
-        fprintf(stderr, "  SP: letter=0x%04x dx=%u pw=%u s0=%08x t0=%08x\n", gSp->letter, gSp->dx, gSp->pixelWidth, *(unsigned int*)&gSp->s0, *(unsigned int*)&gSp->t0);
-        fprintf(stderr, "  G: letter=0x%04x dx=%u s0=%08x t0=%08x\n", gG->letter, gG->dx, *(unsigned int*)&gG->s0, *(unsigned int*)&gG->t0);
-        rdt_count++;
-    }
     R_AddCmdDrawTextWithCursor(text, maxChars, font, x, y, xScale, yScale, color, style, -1, 0);
 }
 

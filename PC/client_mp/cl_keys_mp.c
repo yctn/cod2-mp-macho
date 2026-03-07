@@ -87,7 +87,7 @@ void Field_AdjustScroll(field_t *edit)
         "calll GetVirtualHeightFromRealHeight\n"
         "fstps -0x1c(%ebp)\n" /* lineWidth */
         "movl imp_cls, %eax\n" /* line 468 */
-        "movl str_002a0938+296(%eax), %eax\n"
+        "movl 0x2a0a60(%eax), %eax\n"
         "movl %eax, -0x28(%ebp)\n" /* font */
         ".Lf13fac6_0013fb26:\n"
         "movl imp_re, %ebx\n" /* line 475 */
@@ -729,7 +729,7 @@ void Key_SetBinding(int keynum, const char *binding)
     if (keynum == -1)
         return;
     ReplaceStringInternal((char **)((byte *)keys + keynum * 12 + 8), binding);
-    *(int *)(*(int *)imp_dvar_modifiedFlags) |= 1;
+    *(int *)imp_dvar_modifiedFlags |= 1;
 }
 
 /* line 1366 */
@@ -814,7 +814,7 @@ void Field_Draw(field_t *edit, int x, int y, int horzAlign, int vertAlign, qbool
         "testl %eax, %eax\n"
         "je .Lf14026c_001403e8\n"
         "movl imp_cls, %eax\n" /* line 404 */
-        "movl str_002a0938+296(%eax), %eax\n"
+        "movl 0x2a0a60(%eax), %eax\n"
         "movl %eax, -0x43c(%ebp)\n" /* font */
         "movl key_overstrikeMode, %eax\n" /* line 409 */
         "movl (%eax), %eax\n"
@@ -3132,4 +3132,3 @@ void Key_ClearStates(void)
         "retl\n"
     );
 }
-

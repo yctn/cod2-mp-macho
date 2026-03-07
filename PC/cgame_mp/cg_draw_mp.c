@@ -553,8 +553,8 @@ unsigned int CG_DrawFrameOverlay(float innerLeft, float innerRight, float innerT
         "movl 0x1c(%ebp), %ebx\n" /* material */
         /* { scope 1 */
         "movl imp_cls, %eax\n" /* line 1188 */
-        "cvtsi2ssl str_002a0938+300(%eax), %xmm0\n" /* screenWidth */
-        "cvtsi2ssl str_002a0938+304(%eax), %xmm1\n" /* line 1189 */
+        "cvtsi2ssl 0x2a0a64(%eax), %xmm0\n" /* screenWidth */
+        "cvtsi2ssl 0x2a0a68(%eax), %xmm1\n" /* line 1189 */
         "movss %xmm1, -0xc(%ebp)\n" /* screenHeight */
         "pxor %xmm1, %xmm1\n" /* line 1192 */
         "movss 8(%ebp), %xmm2\n" /* innerLeft */
@@ -4109,9 +4109,9 @@ unsigned int CG_Draw2D(void)
         "movl %edx, 0x10(%esp)\n"
         ".Lf1cebea_001cecab:\n"
         "movl imp_cls, %eax\n"
-        "cvtsi2ssl str_002a0938+304(%eax), %xmm0\n"
+        "cvtsi2ssl 0x2a0a68(%eax), %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl str_002a0938+300(%eax), %xmm0\n"
+        "cvtsi2ssl 0x2a0a64(%eax), %xmm0\n"
         "movss %xmm0, 8(%esp)\n"
         "movl $0, 4(%esp)\n"
         "movl $0, (%esp)\n"
@@ -4181,11 +4181,11 @@ unsigned int CG_Draw2D(void)
         "leal -0x620(%ebp), %ebx\n" /* line 1901 */
         "movl %ebx, 0x10(%esp)\n"
         "movl imp_cls, %eax\n"
-        "cvtsi2ssl str_002a0938+304(%eax), %xmm0\n"
+        "cvtsi2ssl 0x2a0a68(%eax), %xmm0\n"
         "movss lit4_002ed6b4, %xmm1\n" /* 10.0f */
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 0xc(%esp)\n"
-        "cvtsi2ssl str_002a0938+300(%eax), %xmm0\n"
+        "cvtsi2ssl 0x2a0a64(%eax), %xmm0\n"
         "addss %xmm1, %xmm0\n"
         "movss %xmm0, 8(%esp)\n"
         "movl $0xc1200000, %eax\n"
@@ -5556,4 +5556,3 @@ unsigned int CG_Draw2D(void)
         "jmp .Lf1cebea_001cff68\n"
     );
 }
-
