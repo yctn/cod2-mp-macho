@@ -20,7 +20,7 @@ enum {
 extern struct scrAnimPub_t scrAnimPub; /* 0x0 */
 extern struct scrVarPub_t scrVarPub; /* 0x0 */
 extern struct scrParserPub_t scrParserPub; /* 0x0 */
-static struct scrAnimGlob_t scrAnimGlob; /* scrAnimGlob */
+extern struct scrAnimGlob_t scrAnimGlob; /* scrAnimGlob - BSS */
 static const char *propertyNames[3] = {
     "loopsync",
     "nonloopsync",

@@ -416,6 +416,7 @@ void Hunk_ClearToMarkLow(int mark)
 }
 
 /* line 1280 */
+extern unsigned char mtlLoadGlob[];
 void Hunk_Clear(void)
 {
     hunk_low.permanent = 0;
@@ -423,6 +424,8 @@ void Hunk_Clear(void)
     hunk_high.permanent = 0;
     hunk_high.temp = 0;
     Hunk_ClearData();
+    /* Invalidate stale hunk pointers in shader text cache (count + array ptr) */
+    memset(mtlLoadGlob, 0, 8);
 }
 
 /* line 1306 */

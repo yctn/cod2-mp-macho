@@ -51,7 +51,7 @@ void G_SpawnEntitiesFromString(void);
 /* line 7 */
 qboolean G_SpawnString(const char *key, const char *defaultString, const char * *out)
 {
-    return G_SpawnStringInternal((const char *)(*(int *)imp_level + 0x1348), key, defaultString, out);
+    return G_SpawnStringInternal((const char *)((byte *)imp_level + 0x1348), key, defaultString, out);
 }
 
 /* line 47 */

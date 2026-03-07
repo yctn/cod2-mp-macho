@@ -28,7 +28,7 @@ static cml_t cml; /* cml */
 
 /* Global clipMap_t pointer stored at imp_cm */
 extern clipMap_t cm;
-#define cm_ptr (*(clipMap_t **)&cm)
+#define cm_ptr ((clipMap_t *)&cm)
 
 /* Forward declarations */
 void CM_Cleanup(void);
@@ -259,6 +259,11 @@ static cLeafBrushNode_t *CMod_PartionLeafBrushes_r(unsigned short *leafBrushes, 
 
         curMaxs++;
     }
+
+    /* WORKAROUND: Always create leaf nodes to avoid tree size overflow.
+     * The partition algorithm has a decompiler bug causing excessive tree growth
+     * when many brushes overlap. Linear scan is slower but correct. */
+    bestAxis = -1;
 
     if (bestAxis < 0) {
         /* Leaf node -- no good split found */
@@ -683,18 +688,16 @@ void CM_LoadMapFromBsp(const char *name, int usePvs)
 
             /* Load 3 axial side pairs (6 axial sides, stored as 3 pairs of plane+material) */
             for (axialIdx = 0; axialIdx < 3; axialIdx++) {
-                /* First side of this axial pair (sideIdx 0) */
+                /* First side of this axial pair: store bound as float (raw copy) into mins */
                 {
-                    int planeNum = *(const int *)inSides;
-                    /* Store planeNum as the axial plane reference in the brush
-                     * outBrush byte layout: offset 0x00 = mins[0..2], 0x0C = contents, 0x10 = maxs[0..2] */
-                    *(int *)((byte *)outBrush + axialIdx * 4) = planeNum;
+                    int val = *(const int *)inSides;
+                    /* The BSP stores axial bounds as floats; copy via int for bit-exact transfer */
+                    *(int *)((byte *)outBrush + axialIdx * 4) = val;
                 }
                 for (sideIdx = 0; sideIdx < 2; sideIdx++) {
                     if (sideIdx > 0) {
-                        int planeNum = *(const int *)inSides;
-                        /* Store second axial plane in outBrush + 0x10 + axialIdx*4 */
-                        *(int *)((byte *)outBrush + 0x10 + axialIdx * 4) = planeNum;
+                        int val = *(const int *)inSides;
+                        *(int *)((byte *)outBrush + 0x10 + axialIdx * 4) = val;
                     }
 
                     materialNum = *(const int *)(inSides + 4);
@@ -772,17 +775,17 @@ void CM_LoadMapFromBsp(const char *name, int usePvs)
 
     /* ===========================
      * CMod_LoadCollisionAabbTrees (lump 34)
-     * header offset: 0x118 = lumps[33].filelen, 0x11C = lumps[33].fileofs
+     * header offset: 0x118 = lumps[34].filelen, 0x11C = lumps[34].fileofs
      * =========================== */
     {
         const byte *in;
         CollisionAabbTree *out;
 
-        in = bspBase + header->lumps[33].fileofs;
-        if (header->lumps[33].filelen & 0x1f) {
+        in = bspBase + header->lumps[34].fileofs;
+        if (header->lumps[34].filelen & 0x1f) {
             Com_Error(ERR_DROP, "CMod_LoadCollisionAabbTrees: funny lump size");
         }
-        count = header->lumps[33].filelen >> 5;
+        count = header->lumps[34].filelen >> 5;
 
         out = (CollisionAabbTree *)CM_Hunk_Alloc(count * 32, "CMod_LoadCollisionAabbTrees", 0x1a);
         cmLocal->aabbTrees = out;

@@ -121,11 +121,11 @@ static struct XModel * cached_models[256]; /* cached_models */
 #define TAGINFO_ORIGIN(ti)     ((vec_t *)((byte *)(ti) + 0x34))
 
 /* External globals */
-extern byte *level_ptr;              /* imp_level */
-extern byte *g_entities_ptr;         /* imp_g_entities */
-extern byte *scr_const_ptr;          /* imp_scr_const */
-extern byte *entityHandlers_ptr;     /* imp_entityHandlers */
-extern byte *playerCorpseInfo_ptr;   /* imp_g_scr_data */
+extern byte level_ptr[];              /* imp_level */
+extern byte g_entities_ptr[];         /* imp_g_entities */
+extern byte scr_const_ptr[];          /* imp_scr_const */
+extern byte entityHandlers_ptr[];     /* imp_entityHandlers */
+extern byte playerCorpseInfo_ptr[];   /* imp_g_scr_data */
 
 #define LEVEL_GENTITIES     (*(byte **)(level_ptr + 0x04))
 #define LEVEL_NUMENTS       (*(int *)(level_ptr + 0x0C))
@@ -1020,6 +1020,7 @@ unsigned char G_FreeEntity(gentity_t *ed)
             continue;
         }
         byte *client = ENT_CLIENT(ent);
+        if (!client) continue;
         if (CLIENT_OWNERENT(client) == ed) {
             CLIENT_OWNERENT(client) = 0;
         }

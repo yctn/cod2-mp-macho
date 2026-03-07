@@ -11,7 +11,7 @@
  *   #include "PC/universal/q_shared.h"
  */
 
-static struct scrStringGlob_t scrStringGlob; /* scrStringGlob */
+extern unsigned char scrStringGlob[]; /* scrStringGlob - BSS */
 
 /*
  * scrStringGlob layout (as raw bytes):
@@ -286,18 +286,20 @@ unsigned int SL_RemoveRefToStringOfLen(unsigned int stringValue, unsigned int le
         }
         /* Walk the chain */
         prev_idx = esi;
+        { int _rml_iters = 0;
         while (1)
         {
+            if (++_rml_iters > 16384) { /* cycle */
+                edi = hash_ptr; ecx_slot = esi;
+                goto add_to_freelist;
+            }
             unsigned int old_prev = prev_idx;
-            /* "movl %ecx, %esi": prev_idx = chain_next_idx (= hash pointer index) */
             prev_idx = chain_next_idx;
-            /* "movzwl (%ebx), %ecx; andl $0x3fff, %ecx": next from hash_ptr */
             chain_next_idx = (unsigned int)(hash_ptr[0] & 0x3fff);
-            /* "leal scrStringGlob(, %ecx, 4), %ebx": hash_ptr = &scrStringGlob[chain_next_idx*4] */
             hash_ptr = (unsigned short *)((char *)&scrStringGlob + chain_next_idx * 4);
             if (hash_ptr[1] == (unsigned short)stringValue)
                 break;
-        }
+        } }
         /* .Lf43568_0004363d: */
     patch_and_free:
         /* Patch prev's word0: keep upper flags, replace lower 14 bits with hash_ptr's lower 14 */
@@ -432,28 +434,22 @@ unsigned int SL_FindStringOfLen(const char *str, unsigned int len)
 
         prev_idx = hash;
 
+        { int _find_iters = 0;
         while (1)
         {
             unsigned int sv2;
             byte *e2;
 
-            /* -0x2c(%ebp) = sv2 = newEntry_ptr[1] */
+            if (++_find_iters > 16384)
+                return 0; /* cycle detected */
+
             sv2 = (unsigned int)newEntry_ptr[1];
             e2 = base + sv2 * 8;
 
-            /* Check byteLen match */
             if ((unsigned char)e2[0] == (unsigned char)byteLen)
             {
-                /* Compare string */
                 if (memcmp(str, e2 + 4, len) == 0)
                 {
-                    /* Found. Do LRU reorder. */
-                    /* lines 364-369:
-                     * prev's word0: keep flags, link = newEntry's word0 & 0x3fff
-                     * newEntry's word0: keep flags, link = entry's word0 & 0x3fff
-                     * entry's word0: keep flags, link = newIndex (newEntry_idx)
-                     * swap word1s: tmp=newEntry[1]; newEntry[1]=entry[1]; entry[1]=sv2
-                     */
                     {
                         unsigned short pf = SG_W0(prev_idx) & 0xc000;
                         unsigned short nxt1 = newEntry_ptr[0] & 0x3fff;
@@ -478,15 +474,13 @@ unsigned int SL_FindStringOfLen(const char *str, unsigned int len)
                 }
             }
 
-            /* Advance: prev = current index, move to next node */
             prev_idx = newEntry_idx;
             newEntry_idx = (unsigned int)(newEntry_ptr[0]) & 0x3fff;
             newEntry_ptr = (unsigned short *)((char *)&scrStringGlob + newEntry_idx * 4);
 
-            /* Check if wrapped back to entry */
             if (newEntry_ptr == entry)
                 return 0;
-        }
+        } }
     }
 }
 
@@ -662,11 +656,17 @@ loop_top:
 
                     {
                         unsigned int prev_sv = hash; /* -0x20(%ebp) */
+                        int _chain_iters = 0;
 
                         while (1)
                         {
                             unsigned int node_sv;
                             byte *node_entry;
+
+                            if (++_chain_iters > 16384) {
+                                /* Chain cycle detected — treat as not found */
+                                goto alloc_mid_chain_occupied;
+                            }
 
                             /* -0x3c(%ebp) = cur_ptr[1] = sv2 */
                             node_sv = (unsigned int)cur_ptr[1];
@@ -679,32 +679,26 @@ loop_top:
                                 if (memcmp(str, cmp_ptr, len) == 0)
                                 {
                                     /* Found in chain (.Lf43a06_00043cc7 match): LRU reorder */
-                                    /* lines 548-553 */
-                                    /* prev's word0: keep flags, link = cur->word0 & 0x3fff */
                                     {
                                         unsigned short pf = SG_W0(prev_sv) & 0xc000;
                                         unsigned short cn = cur_ptr[0] & 0x3fff;
                                         SG_W0(prev_sv) = pf | cn;
                                     }
-                                    /* cur's word0: keep flags, link = entry->word0 & 0x3fff */
                                     {
                                         unsigned short cf = cur_ptr[0] & 0xc000;
                                         unsigned short en = entry_ptr[0] & 0x3fff;
                                         cur_ptr[0] = cf | en;
                                     }
-                                    /* entry's word0: keep flags, link = cur_idx */
                                     {
                                         unsigned short ef = entry_ptr[0] & 0xc000;
                                         entry_ptr[0] = ef | (unsigned short)(cur_idx & 0x3fff);
                                     }
-                                    /* swap word1s */
                                     {
                                         unsigned short tmp = cur_ptr[1];
                                         cur_ptr[1] = entry_ptr[1];
                                         entry_ptr[1] = (unsigned short)node_sv;
                                     }
 
-                                    /* Update user/refcount on node_entry */
                                     if (!((unsigned char)node_entry[1] & (unsigned char)user))
                                     {
                                         node_entry[1] |= (unsigned char)user;
@@ -810,17 +804,15 @@ loop_top:
                     /* "movzwl scrStringGlob(%ebx), %edx; andl $0x3fff, %edx" - edx = SG_W0(hash) & 0x3fff = newIndex2->next in freelist */
                     /* "movzwl scrStringGlob(, %ecx, 4), %eax; andw $0xc000, %ax; orl %edx, %eax; movw %ax, scrStringGlob(, %ecx, 4)" */
                     /* This patches ecx's slot: ecx = entry->word1, ecx's word0: keep flags, link = edx */
+                    /* Remove hash slot from doubly-linked freelist:
+                     * ASM loads ecx=entry[1] and edx=SG_W0(hash)&0x3fff ONCE, uses both.
+                     * ecx = hash.prev (backward link), edx = hash.next (forward link) */
                     {
-                        unsigned int ecx2 = (unsigned int)entry_ptr[1]; /* old word1 of entry (freelist "next" chain) */
-                        unsigned short edx2 = SG_W0(newIndex2) & 0x3fff; /* freenext */
+                        unsigned int ecx2 = (unsigned int)entry_ptr[1]; /* hash's backward link */
+                        unsigned short edx2 = entry_ptr[0] & 0x3fff; /* hash's forward link */
                         unsigned short af2 = SG_W0(ecx2) & 0xc000;
-                        SG_W0(ecx2) = af2 | edx2;
-                    }
-                    /* "movw %cx, scrStringGlob+2(, %edx, 4)" - SG_W1(edx) = ecx2 (old entry word1) */
-                    {
-                        unsigned int ecx2 = (unsigned int)entry_ptr[1];
-                        unsigned short edx2 = SG_W0(newIndex2) & 0x3fff;
-                        SG_W1((unsigned int)edx2) = (unsigned short)ecx2;
+                        SG_W0(ecx2) = af2 | edx2; /* prev.next = hash.next */
+                        SG_W1((unsigned int)edx2) = (unsigned short)ecx2; /* next.prev = hash.prev */
                     }
                     /* "movl -0x38(%ebp), %ecx" - ecx = entry_ptr */
                     /* Fall to .Lf43a06_00043b6f */
@@ -845,10 +837,12 @@ loop_top:
                 unsigned int cur_search = next_idx;
 
                 /* Find the node whose next points to hash */
+                { int _mid_iters = 0;
                 while ((SG_W0(cur_search) & 0x3fff) != hash)
                 {
                     cur_search = (unsigned int)(SG_W0(cur_search) & 0x3fff);
-                }
+                    if (++_mid_iters > 16384) break; /* cycle safety */
+                } }
                 /* cur_search is now the node that points to hash */
 
                 base = *(byte **)imp_scrMemTreePub;
@@ -1285,15 +1279,15 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
                 unsigned short *ecx_walk = (unsigned short *)((char *)&scrStringGlob + ebx_walk * 4);
                 esi_prev = esi_chain_next_idx; /* esi = chain_next_idx as initial prev */
 
+                { int _iters = 0;
                 while (ecx_walk[1] != (unsigned short)stringValue)
                 {
-                    /* .Lf43f48_00044020: "movl %ebx, %esi" */
+                    if (ebx_walk == 0 || ++_iters > 16384)
+                        return 0; /* chain end or cycle */
                     esi_prev = ebx_walk;
-                    /* .Lf43f48_00044022: "movzwl (%ecx), %ebx; andl $0x3fff, %ebx" */
                     ebx_walk = (unsigned int)(ecx_walk[0] & 0x3fff);
-                    /* "leal scrStringGlob(, %ebx, 4), %ecx" */
                     ecx_walk = (unsigned short *)((char *)&scrStringGlob + ebx_walk * 4);
-                }
+                } }
 
                 /* Found: ecx_walk = found node, ebx_walk = found_idx, esi_prev = prev_idx */
                 /* .Lf43f48_0004403b: */

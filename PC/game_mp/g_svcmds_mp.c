@@ -20,8 +20,8 @@ extern char *ConcatArgs(int start);
 extern void SV_GameSendServerCommand(int clientNum, int type, const char *text);
 extern void Cbuf_ExecuteText(int exec_when, const char *text);
 
-extern byte *g_entities_ptr; /* imp_g_entities */
-extern byte *level_ptr;      /* imp_level */
+extern byte g_entities_ptr[]; /* imp_g_entities */
+extern byte level_ptr[];      /* imp_level */
 extern byte *g_banIPs_dvar;  /* imp_g_banIPs */
 extern byte *g_cheats_dvar;  /* imp_g_dedicated */
 

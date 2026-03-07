@@ -22,8 +22,8 @@
 #define SVSCMD_SIZE                  1032
 
 /* Globals accessed by absolute address in the original binary */
-extern byte *svs_ptr;   /* pointer to serverStatic_t */
-extern byte *sv_ptr;    /* pointer to a dvar (sv_maxclients) - double deref */
+extern byte svs_ptr[];   /* pointer to serverStatic_t */
+extern byte sv_ptr[];    /* pointer to a dvar (sv_maxclients) - double deref */
 extern byte *net_profile_dvar; /* pointer to net profiling dvar */
 
 /* svs field offsets (match serverStatic_t) */

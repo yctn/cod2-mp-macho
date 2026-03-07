@@ -807,7 +807,7 @@ snd_alias_t * Com_PickSoundAliasFromList(snd_alias_list_t *aliasList)
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "leal str_00269ec3(%edx, %eax, 4), %eax\n"
         "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1221 */
         "andl $0x7fff, %eax\n"
@@ -864,7 +864,7 @@ snd_alias_t * Com_PickSoundAliasFromList(snd_alias_list_t *aliasList)
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "leal str_00269ec3(%edx, %eax, 4), %eax\n"
         "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1240 */
         "andl $0x7fff, %eax\n"
@@ -1489,7 +1489,7 @@ snd_alias_t * Com_PickSoundAlias(const char *aliasname)
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "leal str_00269ec3(%edx, %eax, 4), %eax\n"
         "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1221 */
         "andl $0x7fff, %eax\n"
@@ -1552,7 +1552,7 @@ snd_alias_t * Com_PickSoundAlias(const char *aliasname)
         "addl %edx, %eax\n"
         "shll $8, %eax\n"
         "subl %edx, %eax\n"
-        "leal str_00269d54+367(%edx, %eax, 4), %eax\n"
+        "leal str_00269ec3(%edx, %eax, 4), %eax\n"
         "movl %eax, g_sa+4\n"
         "sarl $0x10, %eax\n" /* line 1240 */
         "andl $0x7fff, %eax\n"

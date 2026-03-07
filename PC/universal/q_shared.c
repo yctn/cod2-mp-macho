@@ -817,32 +817,32 @@ qboolean ParseConfigStringToStruct(byte *pStruct, const cspField_t *pFieldList, 
             continue;
 
         switch (fieldType) {
-        case 0: /* 1024-byte string */
+        case 0: /* string pointer (via callback) */
+            parseStrcpy(dest, val);
+            break;
+        case 1: /* 1024-byte inline string */
             strncpy((char *)dest, val, 1023);
             dest[1023] = '\0';
             break;
-        case 1: /* 64-byte string */
+        case 2: /* 64-byte inline string */
             strncpy((char *)dest, val, 63);
             dest[63] = '\0';
             break;
-        case 2: /* 256-byte string */
+        case 3: /* 256-byte inline string */
             strncpy((char *)dest, val, 255);
             dest[255] = '\0';
             break;
-        case 3: /* int */
+        case 4: /* int */
             *(int *)dest = atoi(val);
             break;
-        case 4: /* qboolean */
+        case 5: /* qboolean */
             *(int *)dest = (atoi(val) != 0);
             break;
-        case 5: /* float */
+        case 6: /* float */
             *(float *)dest = (float)atof(val);
             break;
-        case 6: /* milliseconds (float seconds * 1000) */
+        case 7: /* milliseconds (float seconds * 1000) */
             *(int *)dest = (int)((float)atof(val) * 1000.0f);
-            break;
-        case 7: /* custom string copy */
-            parseStrcpy(dest, val);
             break;
         }
     }

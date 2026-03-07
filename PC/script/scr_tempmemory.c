@@ -6,7 +6,7 @@
 
 extern char *Hunk_ReallocateTempMemoryInternal(int minimumSize);
 
-static int currentPos; /* currentPos */
+extern int currentPos; /* currentPos - BSS */
 
 void TempMemoryReset(void)
 {

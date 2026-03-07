@@ -4913,6 +4913,8 @@ BuiltinMethod Scr_GetMethod(const char * *pName, int *type)
         "movl -0x1c(%ebp), %edx\n" /* name */
         ".Lf198e3e_00198eaf:\n"
         "movl (%edi), %eax\n" /* line 5996 */
+        "testl %eax, %eax\n"  /* NULL check for zero-init methods table */
+        "je .Lf198e3e_00198e9b\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll strcmp\n"
@@ -7194,7 +7196,7 @@ unsigned int GScr_MakeDvarServerInfo(void)
         "movl -0x81c(%ebp), %edx\n" /* dvarValue */
         "movl %edx, 4(%esp)\n"
         "movl %edi, (%esp)\n" /* dvarName */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         /* } scope */
         "addl $0x83c, %esp\n" /* line 4877 */
         "popl %ebx\n"
@@ -11890,7 +11892,7 @@ unsigned int GScr_LoadScripts(void)
         "movl $0x1044, 8(%esp)\n" /* line 111 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002a7124, (%esp)\n" /* "mapname" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl 8(%eax), %eax\n" /* line 112 */
         "movl %eax, 0xc(%esp)\n"
         "movl $str_002b3278, 8(%esp)\n" /* "maps/mp/%s" */

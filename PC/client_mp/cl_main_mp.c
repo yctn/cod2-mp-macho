@@ -749,7 +749,6 @@ void CL_SetupForNewServerMap(const char *pszMapName, const char *pszGametype)
         "jne .Lf147e0e_00147e9f\n"
         "movl $0, 4(%esp)\n" /* line 4748 */
         "movl imp_com_expectedHunkUsage, %eax\n"
-        "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetInt\n"
         "movb $1, g_waitingForServer\n" /* line 4750 */
@@ -1486,12 +1485,12 @@ void CL_InitOnceForAllClients(void)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 3981 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8d50, (%esp)\n" /* "cl_noprint" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_noprint\n"
         "movl $0x1003, 8(%esp)\n" /* line 3991 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8d5c, (%esp)\n" /* "cl_voice" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_voice\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 3997 */
         "movl $0x45610000, %esi\n"
@@ -1519,32 +1518,32 @@ void CL_InitOnceForAllClients(void)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4003 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8d94, (%esp)\n" /* "cl_shownuments" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_shownuments\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4004 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8da4, (%esp)\n" /* "cl_showServerCommands" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_showServerCommands\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4005 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8dbc, (%esp)\n" /* "cl_showSend" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_showSend\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4006 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8dc8, (%esp)\n" /* "cl_showTimeDelta" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_showTimeDelta\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4007 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8ddc, (%esp)\n" /* "cl_freezeDemo" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_freezeDemo\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4008 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002a8dec, (%esp)\n" /* "activeAction" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, cl_activeAction\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4010 */
         "movl $0x7fffffff, 0xc(%esp)\n"
@@ -1556,7 +1555,7 @@ void CL_InitOnceForAllClients(void)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4011 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8e08, (%esp)\n" /* "cl_forceavidemo" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_forceavidemo\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 4013 */
         "movl $0x7f7fffff, %ebx\n"
@@ -1616,28 +1615,28 @@ void CL_InitOnceForAllClients(void)
         "movl $0x1001, 8(%esp)\n" /* line 4022 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8e84, (%esp)\n" /* "cl_freelook" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_freelook\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4024 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8e90, (%esp)\n" /* "cl_showmouserate" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_showMouseRate\n"
         "movl $0x1001, 8(%esp)\n" /* line 4027 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8ea4, (%esp)\n" /* "cl_allowDownload" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_allowDownload\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4031 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8eb8, (%esp)\n" /* "cl_talking" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl imp_cl_talking, %edx\n"
         "movl %eax, (%edx)\n"
         "movl $0x1001, 8(%esp)\n" /* line 4034 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8ec4, (%esp)\n" /* "r_inGameVideo" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_inGameVideo\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 4036 */
         "movl $0xe10, 0xc(%esp)\n"
@@ -1649,7 +1648,7 @@ void CL_InitOnceForAllClients(void)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4038 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8ef0, (%esp)\n" /* "cl_bypassMouseInput" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl imp_cl_bypassMouseInput, %edx\n"
         "movl %eax, (%edx)\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 4040 */
@@ -1687,7 +1686,7 @@ void CL_InitOnceForAllClients(void)
         "movl $0x1001, 8(%esp)\n" /* line 4044 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8f28, (%esp)\n" /* "m_filter" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, m_filter\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 4049 */
         "movl $0x40a00000, 0xc(%esp)\n"
@@ -1699,18 +1698,18 @@ void CL_InitOnceForAllClients(void)
         "movl $0x1001, 8(%esp)\n" /* line 4050 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8f4c, (%esp)\n" /* "cg_drawCrosshair" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl imp_cg_drawCrosshair, %edx\n"
         "movl %eax, (%edx)\n"
         "movl $0x1040, 8(%esp)\n" /* line 4056 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002a8f60, (%esp)\n" /* "cl_motdString" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, cl_motdString\n"
         "movl $0x1040, 8(%esp)\n" /* line 4058 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8f70, (%esp)\n" /* "cl_ingame" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cl_ingame\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 4060 */
         "movl $0x7d0, 0xc(%esp)\n"
@@ -1721,7 +1720,7 @@ void CL_InitOnceForAllClients(void)
         "movl $0x1003, 8(%esp)\n" /* line 4068 */
         "movl $str_002a8f88, 4(%esp)\n" /* "Unknown Soldier" */
         "movl $str_002194b4, (%esp)\n" /* "name" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, name\n"
         "movl $0x1003, 0x10(%esp)\n" /* line 4069 */
         "movl $0x61a8, 0xc(%esp)\n"
@@ -1738,36 +1737,36 @@ void CL_InitOnceForAllClients(void)
         "movl $0x1002, 8(%esp)\n" /* line 4074 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002a8fa0, (%esp)\n" /* "password" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1080, 8(%esp)\n" /* line 4076 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8fac, (%esp)\n" /* "fx_enable" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_enable\n"
         "movl $0x1080, 8(%esp)\n" /* line 4077 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8fb8, (%esp)\n" /* "fx_draw" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_draw\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4078 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8fc0, (%esp)\n" /* "fx_cull" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_cull\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4079 */
         "movl $1, 4(%esp)\n"
         "movl $str_00223858, (%esp)\n" /* "fx_sort" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_sort\n"
         "movl $0x1080, 8(%esp)\n" /* line 4080 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8fc8, (%esp)\n" /* "fx_freeze" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_freeze\n"
         "movl $0x1080, 8(%esp)\n" /* line 4081 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8fd4, (%esp)\n" /* "fx_debug" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_debug\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 4082 */
         "movl $0x42c80000, 0xc(%esp)\n"
@@ -1779,7 +1778,7 @@ void CL_InitOnceForAllClients(void)
         "movl $0x1080, 8(%esp)\n" /* line 4083 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8ff0, (%esp)\n" /* "fx_count" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_count\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 4084 */
         "movl $0x447a0000, 0xc(%esp)\n"
@@ -1791,21 +1790,21 @@ void CL_InitOnceForAllClients(void)
         "movl $0x1080, 8(%esp)\n" /* line 4085 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a9010, (%esp)\n" /* "fx_profile" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fx_profile\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 4087 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002a901c, (%esp)\n" /* "nextdemo" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, nextdemo\n"
         "movl $0x1001, 8(%esp)\n" /* line 4090 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a9028, (%esp)\n" /* "hud_enable" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 4092 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a892c, (%esp)\n" /* "cg_blood" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl $CL_ForwardToServer_f, 4(%esp)\n" /* line 4118 */
         "movl $str_002a9034, (%esp)\n" /* "cmd" */
         "calll Cmd_AddCommand\n"
@@ -2824,7 +2823,6 @@ void CL_InitLoad(const char *mapname, const char *gametype)
         "movl 8(%ebp), %esi\n" /* mapname */
         "movl 0xc(%ebp), %ebx\n" /* gametype */
         "movl imp_legacyHacks, %eax\n" /* line 2707 */
-        "movl (%eax), %eax\n"
         "movl 4(%eax), %eax\n"
         "testl %eax, %eax\n"
         "jne .Lf149eb4_00149ed7\n"
@@ -2836,7 +2834,6 @@ void CL_InitLoad(const char *mapname, const char *gametype)
         ".Lf149eb4_00149ed7:\n"
         "movl $0, 4(%esp)\n" /* line 2711 */
         "movl imp_com_expectedHunkUsage, %eax\n"
-        "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetInt\n"
         "movl %ebx, 4(%esp)\n" /* line 2714 | gametype */
@@ -3208,7 +3205,7 @@ void CL_RequestAuthorization(void)
         "movl $0x101b, 8(%esp)\n" /* line 1628 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a9300, (%esp)\n" /* "cl_anonymous" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %ebx, 8(%esp)\n" /* line 1629 | i */
         "movzbl 8(%eax), %eax\n"
         "movl %eax, 4(%esp)\n"
@@ -5117,7 +5114,6 @@ void CL_Vid_Restart_f(void)
         ".Lf14beac_0014bee2:\n"
         "movl $0, 4(%esp)\n" /* line 1833 */
         "movl imp_com_expectedHunkUsage, %eax\n"
-        "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetInt\n"
         "movb $0, g_waitingForServer\n" /* line 1835 */
@@ -5174,11 +5170,11 @@ void CL_Vid_Restart_f(void)
         "movl $0x1020, 8(%esp)\n" /* line 1855 */
         "movl $1, 4(%esp)\n"
         "movl $str_00216a38, (%esp)\n" /* "loc_translate" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl $0x10a0, 8(%esp)\n" /* line 1856 */
         "movl $0, 4(%esp)\n"
         "movl $str_00216d78, (%esp)\n" /* "fs_ignoreLocalized" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl 0x12c(%ebx), %eax\n" /* line 1860 */
         "movl %eax, (%esp)\n"
         "calll FS_ConditionalRestart\n"
@@ -5681,7 +5677,7 @@ void CL_Shutdown(void)
         "calll Cmd_RemoveCommand\n"
         "movl $str_002a91d0, (%esp)\n" /* line 4344 */
         "calll Cmd_RemoveCommand\n"
-        "movl $str_002a0938+380, 8(%esp)\n" /* line 4346 */
+        "movl $str_002a0ab4, 8(%esp)\n" /* line 4346 */
         "movl $0, 4(%esp)\n"
         "movl $cls, (%esp)\n"
         "calll memset\n"

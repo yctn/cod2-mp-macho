@@ -557,7 +557,7 @@ void R_AddXModelSurfaces(int entIndex)
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249a1c+764, %eax\n" /* "x;
+        "addl $str_00249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */

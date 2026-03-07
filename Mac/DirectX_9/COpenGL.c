@@ -4042,7 +4042,7 @@ void ZN20COpenGLVertexProgramD2Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll glDeleteProgramsARB\n"
-        "movl 0xff347c, %eax\n" /* line 2311 */
+        "movl __ZN7COpenGL7sOpenGLE + 0x67c, %eax\n" /* line 2311 */
         "cmpl -0x20(%ebp), %eax\n" /* ProgramID */
         "je .Lf23eb4_00023f23\n"
         ".Lf23eb4_00023ee9:\n"
@@ -4076,10 +4076,10 @@ void ZN20COpenGLVertexProgramD2Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "retl\n"
         /* { scope 1 */
         ".Lf23eb4_00023f23:\n"
-        "movl $0, 0xff347c\n" /* line 112 */
-        "cmpb $0, 0xff360d\n" /* line 596 */
+        "movl $0, __ZN7COpenGL7sOpenGLE + 0x67c\n" /* line 112 */
+        "cmpb $0, __ZN7COpenGL7sOpenGLE + 0x80d\n" /* line 596 */
         "je .Lf23eb4_00023ee9\n"
-        "movb $0, 0xff360d\n" /* line 598 */
+        "movb $0, __ZN7COpenGL7sOpenGLE + 0x80d\n" /* line 598 */
         "movl $0x8620, (%esp)\n" /* line 599 */
         "calll glDisable\n"
         "jmp .Lf23eb4_00023ee9\n"
@@ -4191,7 +4191,7 @@ void ZN20COpenGLVertexProgramD1Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll glDeleteProgramsARB\n"
-        "movl 0xff347c, %eax\n" /* line 2311 */
+        "movl __ZN7COpenGL7sOpenGLE + 0x67c, %eax\n" /* line 2311 */
         "cmpl -0x20(%ebp), %eax\n" /* ProgramID */
         "je .Lf24030_0002409f\n"
         ".Lf24030_00024065:\n"
@@ -4225,10 +4225,10 @@ void ZN20COpenGLVertexProgramD1Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "retl\n"
         /* { scope 1 */
         ".Lf24030_0002409f:\n"
-        "movl $0, 0xff347c\n" /* line 112 */
-        "cmpb $0, 0xff360d\n" /* line 596 */
+        "movl $0, __ZN7COpenGL7sOpenGLE + 0x67c\n" /* line 112 */
+        "cmpb $0, __ZN7COpenGL7sOpenGLE + 0x80d\n" /* line 596 */
         "je .Lf24030_00024065\n"
-        "movb $0, 0xff360d\n" /* line 598 */
+        "movb $0, __ZN7COpenGL7sOpenGLE + 0x80d\n" /* line 598 */
         "movl $0x8620, (%esp)\n" /* line 599 */
         "calll glDisable\n"
         "jmp .Lf24030_00024065\n"
@@ -4340,7 +4340,7 @@ void ZN20COpenGLVertexProgramD0Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "movl %eax, 4(%esp)\n"
         "movl $1, (%esp)\n"
         "calll glDeleteProgramsARB\n"
-        "movl 0xff347c, %eax\n" /* line 2311 */
+        "movl __ZN7COpenGL7sOpenGLE + 0x67c, %eax\n" /* line 2311 */
         "cmpl -0x20(%ebp), %eax\n" /* ProgramID */
         "je .Lf241ac_00024223\n"
         ".Lf241ac_000241e1:\n"
@@ -4376,10 +4376,10 @@ void ZN20COpenGLVertexProgramD0Ev(void) /* COpenGLVertexProgram_~COpenGLVertexPr
         "retl\n"
         /* { scope 1 */
         ".Lf241ac_00024223:\n"
-        "movl $0, 0xff347c\n" /* line 112 */
-        "cmpb $0, 0xff360d\n" /* line 596 */
+        "movl $0, __ZN7COpenGL7sOpenGLE + 0x67c\n" /* line 112 */
+        "cmpb $0, __ZN7COpenGL7sOpenGLE + 0x80d\n" /* line 596 */
         "je .Lf241ac_000241e1\n"
-        "movb $0, 0xff360d\n" /* line 598 */
+        "movb $0, __ZN7COpenGL7sOpenGLE + 0x80d\n" /* line 598 */
         "movl $0x8620, (%esp)\n" /* line 599 */
         "calll glDisable\n"
         "jmp .Lf241ac_000241e1\n"

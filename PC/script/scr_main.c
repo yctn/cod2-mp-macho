@@ -45,10 +45,7 @@ extern void Hunk_ClearToMark(int mark);
 extern int Hunk_SetMark(void);
 extern void Hunk_ConvertTempToPermLowInternal(void);
 
-extern byte *scrCompPub_ptr;    /* imp_scrVarPub */
-extern byte *scrCompGlob_ptr;   /* imp_scrCompilePub */
-extern byte *scrAnimPub_ptr;    /* imp_scrAnimPub */
-extern byte *scrParserPub_ptr;  /* imp_scrParserPub */
+/* Using imp_* import pointers from generated_syms.h (declared as void*) */
 
 int Scr_IsInOpcodeMemory(const char *pos);
 Bool Scr_IsIdentifier(const char *token);
@@ -68,10 +65,10 @@ unsigned int SL_GetCanonicalString(const char *str);
 /* line 22 */
 int Scr_IsInOpcodeMemory(const char *pos)
 {
-    byte *scrCompPub = *(byte **)scrCompPub_ptr;
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
+    byte *scrVarPub = (byte *)imp_scrVarPub;
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
 
-    return (unsigned int)(pos - *(const char **)(scrCompPub + 0x48)) < *(unsigned int *)(scrCompGlob + 0x30);
+    return (unsigned int)(pos - *(const char **)(scrVarPub + 0x48)) < *(unsigned int *)(scrCompPub + 0x30);
 }
 
 /* line 55 */
@@ -104,31 +101,31 @@ Bool Scr_IsIdentifier(const char *token)
 /* line 138 */
 unsigned int SL_TransferToCanonicalString(unsigned int stringValue)
 {
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
-    byte *scrCompPub;
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
+    byte *scrVarPub;
     unsigned short *entry;
     unsigned short val;
 
     SL_TransferRefToUser(stringValue, 2);
 
-    entry = (unsigned short *)(*(byte **)(scrCompGlob + 0x18) + stringValue * 2);
+    entry = (unsigned short *)(*(byte **)(scrCompPub + 0x18) + stringValue * 2);
     val = *entry;
 
     if (val != 0)
         return val;
 
-    scrCompPub = *(byte **)scrCompPub_ptr;
-    val = *(unsigned short *)(scrCompPub + 8) + 1;
-    *(unsigned short *)(scrCompPub + 8) = val;
+    scrVarPub = (byte *)imp_scrVarPub;
+    val = *(unsigned short *)(scrVarPub + 8) + 1;
+    *(unsigned short *)(scrVarPub + 8) = val;
     *entry = val;
-    return *(unsigned short *)(scrCompPub + 8);
+    return *(unsigned short *)(scrVarPub + 8);
 }
 
 /* line 261 */
 void Scr_BeginLoadAnimTrees(int user)
 {
-    byte *scrAnimPub = *(byte **)scrAnimPub_ptr;
-    byte *scrCompGlob;
+    byte *scrAnimPub = (byte *)imp_scrAnimPub;
+    byte *scrCompPub;
 
     *(byte *)(scrAnimPub + 0x418) = 1;
     *(int *)(scrAnimPub + 0x40c + user * 4) = 0;
@@ -137,14 +134,14 @@ void Scr_BeginLoadAnimTrees(int user)
     *(int *)scrAnimPub = Scr_AllocArray();
     *(int *)(scrAnimPub + 4) = 0;
 
-    scrCompGlob = *(byte **)scrCompGlob_ptr;
-    *(int *)(scrCompGlob + 0x28) = 0;
+    scrCompPub = (byte *)imp_scrCompilePub;
+    *(int *)(scrCompPub + 0x28) = 0;
 }
 
 /* line 285 */
 int Scr_ScanFile(char *buf, int max_size)
 {
-    byte *g = *(byte **)scrCompGlob_ptr;
+    byte *g = (byte *)imp_scrCompilePub;
     byte *src;
     char ch;
     int count;
@@ -210,7 +207,7 @@ source_exhausted:
 /* line 313 */
 unsigned int Scr_LoadScript(const char *filename)
 {
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
     unsigned int fileId;
     unsigned int scriptId;
     char extFilename[64];
@@ -223,25 +220,28 @@ unsigned int Scr_LoadScript(const char *filename)
     unsigned int compiledObj;
     unsigned int result;
 
+    if (!filename) {
+        return 0;
+    }
     fileId = Scr_CreateCanonicalFilename(filename);
 
-    result = FindVariable(*(unsigned int *)(scrCompGlob + 8), fileId);
+    result = FindVariable(*(unsigned int *)(scrCompPub + 8), fileId);
     if (result != 0) {
         /* Already loaded */
         SL_RemoveRefToString(fileId);
-        result = FindVariable(*(unsigned int *)(scrCompGlob + 0xc), fileId);
+        result = FindVariable(*(unsigned int *)(scrCompPub + 0xc), fileId);
         if (result == 0)
             return 0;
         return FindObject(result);
     }
 
     /* Not loaded - compile */
-    scriptId = GetNewVariable(*(unsigned int *)(scrCompGlob + 8), fileId);
+    scriptId = GetNewVariable(*(unsigned int *)(scrCompPub + 8), fileId);
     SL_RemoveRefToString(fileId);
 
     Com_sprintf(extFilename, 0x40, "%s.gsc", SL_ConvertToString(fileId));
 
-    parserPub = *(byte **)scrParserPub_ptr;
+    parserPub = (byte *)imp_scrParserPub;
     oldSourceBuf = *(int *)(parserPub + 0xc);
 
     oldFilename = TempMalloc(0);
@@ -249,22 +249,22 @@ unsigned int Scr_LoadScript(const char *filename)
     if (sourceBuf == NULL)
         return 0;
 
-    *(int *)(*(byte **)scrAnimPub_ptr + 8) = 0;
-    *(int *)(scrCompGlob + 4) = 0;
+    *(int *)((byte *)imp_scrAnimPub + 8) = 0;
+    *(int *)(scrCompPub + 4) = 0;
 
-    parserPub = *(byte **)scrParserPub_ptr;
+    parserPub = (byte *)imp_scrParserPub;
     savedParserFilename = *(byte **)(parserPub + 8);
     *(byte **)(parserPub + 8) = (byte *)extFilename;
 
-    *(byte **)(scrCompGlob + 0x1c) = (byte *)"+";
-    *(byte **)(scrCompGlob + 0x20) = sourceBuf;
+    *(byte **)(scrCompPub + 0x1c) = (byte *)"+";
+    *(byte **)(scrCompPub + 0x20) = sourceBuf;
 
     ScriptParse((byte *)&parseData, 0);
 
-    compiledObj = GetObjectA(GetVariable(*(unsigned int *)(scrCompGlob + 0xc), fileId));
+    compiledObj = GetObjectA(GetVariable(*(unsigned int *)(scrCompPub + 0xc), fileId));
     ScriptCompile(parseData, compiledObj, scriptId);
 
-    parserPub = *(byte **)scrParserPub_ptr;
+    parserPub = (byte *)imp_scrParserPub;
     *(byte **)(parserPub + 8) = savedParserFilename;
     *(int *)(parserPub + 0xc) = oldSourceBuf;
 
@@ -280,36 +280,36 @@ void Scr_PostCompileScripts(void)
 /* line 383 */
 void Scr_EndLoadScripts(void)
 {
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
-    byte *scrCompPub = *(byte **)scrCompPub_ptr;
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
+    byte *scrVarPub = (byte *)imp_scrVarPub;
 
-    *(int *)(scrCompGlob + 0x18) = 0;
-    Hunk_ClearToMark(*(int *)(scrCompPub + 4));
+    *(int *)(scrCompPub + 0x18) = 0;
+    Hunk_ClearToMark(*(int *)(scrVarPub + 4));
     SL_ShutdownSystem(2);
 
-    *(byte *)(scrCompGlob + 0x24) = 0;
+    *(byte *)(scrCompPub + 0x24) = 0;
 
-    ClearObject(*(unsigned int *)(scrCompGlob + 8));
-    RemoveRefToObject(*(unsigned int *)(scrCompGlob + 8));
-    *(int *)(scrCompGlob + 8) = 0;
+    ClearObject(*(unsigned int *)(scrCompPub + 8));
+    RemoveRefToObject(*(unsigned int *)(scrCompPub + 8));
+    *(int *)(scrCompPub + 8) = 0;
 
-    ClearObject(*(unsigned int *)(scrCompGlob + 0xc));
-    RemoveRefToObject(*(unsigned int *)(scrCompGlob + 0xc));
-    *(int *)(scrCompGlob + 0xc) = 0;
+    ClearObject(*(unsigned int *)(scrCompPub + 0xc));
+    RemoveRefToObject(*(unsigned int *)(scrCompPub + 0xc));
+    *(int *)(scrCompPub + 0xc) = 0;
 
-    ClearObject(*(unsigned int *)(scrCompGlob + 0x10));
-    RemoveRefToObject(*(unsigned int *)(scrCompGlob + 0x10));
-    *(int *)(scrCompGlob + 0x10) = 0;
+    ClearObject(*(unsigned int *)(scrCompPub + 0x10));
+    RemoveRefToObject(*(unsigned int *)(scrCompPub + 0x10));
+    *(int *)(scrCompPub + 0x10) = 0;
 
-    ClearObject(*(unsigned int *)(scrCompGlob + 0x14));
-    RemoveRefToObject(*(unsigned int *)(scrCompGlob + 0x14));
-    *(int *)(scrCompGlob + 0x14) = 0;
+    ClearObject(*(unsigned int *)(scrCompPub + 0x14));
+    RemoveRefToObject(*(unsigned int *)(scrCompPub + 0x14));
+    *(int *)(scrCompPub + 0x14) = 0;
 }
 
 /* line 444 */
 void Scr_PrecacheAnimTrees(Alloc_t Alloc, int user)
 {
-    byte *scrAnimPub = *(byte **)scrAnimPub_ptr;
+    byte *scrAnimPub = (byte *)imp_scrAnimPub;
     int count = *(int *)(scrAnimPub + 0x40c + user * 4);
     int i;
 
@@ -324,8 +324,8 @@ void Scr_PrecacheAnimTrees(Alloc_t Alloc, int user)
 /* line 453 */
 void Scr_EndLoadAnimTrees(void)
 {
-    byte *scrAnimPub = *(byte **)scrAnimPub_ptr;
-    byte *scrCompPub;
+    byte *scrAnimPub = (byte *)imp_scrAnimPub;
+    byte *scrVarPub;
 
     ClearObject(*(unsigned int *)scrAnimPub);
     RemoveRefToObject(*(unsigned int *)scrAnimPub);
@@ -336,24 +336,24 @@ void Scr_EndLoadAnimTrees(void)
 
     SL_ShutdownSystem(2);
 
-    scrCompPub = *(byte **)scrCompPub_ptr;
-    *(int *)(scrCompPub + 0x4c) = (int)Hunk_AllocLowInternal(0);
+    scrVarPub = (byte *)imp_scrVarPub;
+    *(int *)(scrVarPub + 0x4c) = (int)Hunk_AllocLowInternal(0);
     *(byte *)(scrAnimPub + 0x418) = 0;
 }
 
 /* line 478 */
 void Scr_FreeScripts(int sys)
 {
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
     byte *scrAnimPub;
-    byte *scrCompPub;
+    byte *scrVarPub;
 
-    if (*(byte *)(scrCompGlob + 0x24) != 0) {
-        *(byte *)(scrCompGlob + 0x24) = 0;
+    if (*(byte *)(scrCompPub + 0x24) != 0) {
+        *(byte *)(scrCompPub + 0x24) = 0;
         Scr_EndLoadScripts();
     }
 
-    scrAnimPub = *(byte **)scrAnimPub_ptr;
+    scrAnimPub = (byte *)imp_scrAnimPub;
     if (*(byte *)(scrAnimPub + 0x418) != 0) {
         *(byte *)(scrAnimPub + 0x418) = 0;
         Scr_EndLoadAnimTrees();
@@ -362,18 +362,18 @@ void Scr_FreeScripts(int sys)
     SL_ShutdownSystem(1);
     Scr_ShutdownOpcodeLookup();
 
-    scrCompPub = *(byte **)scrCompPub_ptr;
-    *(int *)(scrCompPub + 0x48) = 0;
-    *(int *)(scrCompGlob + 0x30) = 0;
-    *(int *)(scrCompPub + 0x4c) = 0;
-    *(int *)(scrCompPub + 0x3c) = 0;
+    scrVarPub = (byte *)imp_scrVarPub;
+    *(int *)(scrVarPub + 0x48) = 0;
+    *(int *)(scrCompPub + 0x30) = 0;
+    *(int *)(scrVarPub + 0x4c) = 0;
+    *(int *)(scrVarPub + 0x3c) = 0;
 }
 
 /* line 67 */
 scr_func_t Scr_GetFunctionHandle(const char *filename, const char *name)
 {
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
-    byte *scrCompPub;
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
+    byte *scrVarPub;
     unsigned int nameStr;
     unsigned int fileId;
     unsigned int fileObj;
@@ -383,7 +383,7 @@ scr_func_t Scr_GetFunctionHandle(const char *filename, const char *name)
     unsigned int codePos;
 
     nameStr = Scr_CreateCanonicalFilename(filename);
-    fileId = FindVariable(*(unsigned int *)(scrCompGlob + 0xc), nameStr);
+    fileId = FindVariable(*(unsigned int *)(scrCompPub + 0xc), nameStr);
     SL_RemoveRefToString(nameStr);
 
     if (fileId == 0)
@@ -405,9 +405,9 @@ scr_func_t Scr_GetFunctionHandle(const char *filename, const char *name)
     codeVar = FindVariable(obj, 1);
     codePos = (unsigned int)Scr_EvalVariable(codeVar);
 
-    scrCompPub = *(byte **)scrCompPub_ptr;
-    codePos -= *(unsigned int *)(scrCompPub + 0x48);
-    if (codePos >= *(unsigned int *)(scrCompGlob + 0x30))
+    scrVarPub = (byte *)imp_scrVarPub;
+    codePos -= *(unsigned int *)(scrVarPub + 0x48);
+    if (codePos >= *(unsigned int *)(scrCompPub + 0x30))
         return 0;
 
     return (scr_func_t)codePos;
@@ -416,31 +416,31 @@ scr_func_t Scr_GetFunctionHandle(const char *filename, const char *name)
 /* line 165 */
 void Scr_BeginLoadScripts(void)
 {
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
-    byte *scrCompPub;
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
+    byte *scrVarPub;
 
-    *(byte *)(scrCompGlob + 0x24) = 1;
+    *(byte *)(scrCompPub + 0x24) = 1;
     Scr_InitOpcodeLookup();
 
-    *(int *)(scrCompGlob + 0x8) = Scr_AllocArray();
-    *(int *)(scrCompGlob + 0xc) = Scr_AllocArray();
-    *(int *)(scrCompGlob + 0x10) = Scr_AllocArray();
-    *(int *)(scrCompGlob + 0x14) = Scr_AllocArray();
+    *(int *)(scrCompPub + 0x8) = Scr_AllocArray();
+    *(int *)(scrCompPub + 0xc) = Scr_AllocArray();
+    *(int *)(scrCompPub + 0x10) = Scr_AllocArray();
+    *(int *)(scrCompPub + 0x14) = Scr_AllocArray();
 
-    scrCompPub = *(byte **)scrCompPub_ptr;
-    *(int *)(scrCompPub + 0x48) = (int)Hunk_AllocLowInternal(0);
-    *(int *)(scrCompGlob + 0x30) = 0;
-    *(int *)(scrCompPub + 0x4c) = 0;
+    scrVarPub = (byte *)imp_scrVarPub;
+    *(int *)(scrVarPub + 0x48) = (int)Hunk_AllocLowInternal(0);
+    *(int *)(scrCompPub + 0x30) = 0;
+    *(int *)(scrVarPub + 0x4c) = 0;
 
-    *(int *)(scrCompPub + 4) = Hunk_SetMark();
-    *(int *)(scrCompGlob + 0x18) = (int)Hunk_AllocInternal(0x20000);
-    *(short *)(scrCompPub + 8) = 0;
+    *(int *)(scrVarPub + 4) = Hunk_SetMark();
+    *(int *)(scrCompPub + 0x18) = (int)Hunk_AllocInternal(0x20000);
+    *(short *)(scrVarPub + 8) = 0;
 
+    *(int *)scrVarPub = 0;
     *(int *)scrCompPub = 0;
-    *(int *)scrCompGlob = 0;
 
     Scr_ClearErrorMessage();
-    *(int *)(scrCompGlob + 0x34) = 0;
+    *(int *)(scrCompPub + 0x34) = 0;
 
     Scr_BeginLoadAnimTrees(1);
     TempMemoryReset();
@@ -449,8 +449,8 @@ void Scr_BeginLoadScripts(void)
 /* line 154 */
 unsigned int SL_GetCanonicalString(const char *str)
 {
-    byte *scrCompGlob = *(byte **)scrCompGlob_ptr;
-    byte *table = *(byte **)(scrCompGlob + 0x18);
+    byte *scrCompPub = (byte *)imp_scrCompilePub;
+    byte *table = *(byte **)(scrCompPub + 0x18);
     unsigned int stringValue;
     unsigned short val;
 

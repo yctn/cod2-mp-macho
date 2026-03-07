@@ -20,7 +20,7 @@ extern byte *cm_global; /* imp_cm */
 
 void CM_LoadStaticModels(void)
 {
-    byte *cm = *(byte **)&cm_global;
+    byte *cm = (byte *)&cm_global;
     const char *ptr = *(const char **)(cm + 0x98);
 
     /* Reset counts */

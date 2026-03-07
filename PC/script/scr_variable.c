@@ -11,7 +11,7 @@
 extern const char * var_typename[24]; /* 0x0 */
 extern struct scrVarPub_t scrVarPub; /* 0x0 */
 extern scr_classStruct_t g_classMap[4]; /* 0x0 */
-extern struct scrVarGlob_t scrVarGlob; /* 0x0 */
+extern unsigned char scrVarGlob[]; /* scrVarGlob - base of 16-byte variable entries */
 
 extern void * MT_Alloc(int size, int type);
 extern void MT_Free(void *ptr, int type);
@@ -148,7 +148,7 @@ JCOEF ClearArray(unsigned int parentId, VariableValue *value);
 /* line 3584 */
 int GetVarType(unsigned int id)
 {
-    return *(unsigned int *)(0x104cf08 + id * 16) & 0x1f;
+    return *(unsigned int *)(((size_t)scrVarGlob + 8) + id * 16) & 0x1f;
 }
 
 /* line 361 */
@@ -224,9 +224,9 @@ int ThreadInfoCompare(const JCOEF *info1, const JCOEF *info2)
 /* line 2647 */
 unsigned int FindNextSibling(unsigned int id)
 {
-    unsigned int nextIdx = *(unsigned short *)(0x104cf0e + id * 16);
+    unsigned int nextIdx = *(unsigned short *)(((size_t)scrVarGlob + 14) + id * 16);
     unsigned int sibling = *(unsigned short *)((byte *)&scrVarGlob + nextIdx * 16);
-    if (sibling == id || (*(unsigned int *)(0x104cf08 + sibling * 16) & 0x1f) > 0xe)
+    if (sibling == id || (*(unsigned int *)(((size_t)scrVarGlob + 8) + sibling * 16) & 0x1f) > 0xe)
         return 0;
     return sibling;
 }
@@ -296,13 +296,13 @@ unsigned int Scr_GetNumScriptVars(void)
 /* line 725 */
 unsigned int GetVariableKeyObject(unsigned int id)
 {
-    return (*(unsigned int *)(0x104cf08 + id * 16) >> 8) - 0x10000;
+    return (*(unsigned int *)(((size_t)scrVarGlob + 8) + id * 16) >> 8) - 0x10000;
 }
 
 /* line 1737 */
 JCOEF AddRefToObject(unsigned int id)
 {
-    *(unsigned short *)(0x104cf04 + id * 16) += 1;
+    *(unsigned short *)(((size_t)scrVarGlob + 4) + id * 16) += 1;
 }
 
 /* line 1279 */
@@ -317,7 +317,7 @@ void Scr_SetThreadNotifyName(unsigned int startLocalId, unsigned int stringValue
 /* line 1352 */
 short unsigned int Scr_GetThreadNotifyName(unsigned int startLocalId)
 {
-    return *(unsigned short *)(0x104cf09 + startLocalId * 16);
+    return *(unsigned short *)(((size_t)scrVarGlob + 9) + startLocalId * 16);
 }
 
 /* line 1360 */
@@ -325,7 +325,7 @@ void Scr_SetThreadWaitTime(unsigned int startLocalId, unsigned int waitTime)
 {
     byte *entry = (byte *)&scrVarGlob + startLocalId * 16;
     *(unsigned int *)(entry + 8) = (*(unsigned int *)(entry + 8) & 0xe0) | 0x11;
-    *(unsigned int *)(0x104cf08 + startLocalId * 16) |= (waitTime << 8);
+    *(unsigned int *)(((size_t)scrVarGlob + 8) + startLocalId * 16) |= (waitTime << 8);
 }
 
 /* line 1375 */
@@ -338,19 +338,19 @@ void Scr_ClearWaitTime(unsigned int startLocalId)
 /* line 1387 */
 unsigned int Scr_GetThreadWaitTime(unsigned int startLocalId)
 {
-    return *(unsigned int *)(0x104cf08 + startLocalId * 16) >> 8;
+    return *(unsigned int *)(((size_t)scrVarGlob + 8) + startLocalId * 16) >> 8;
 }
 
 /* line 1395 */
 unsigned int GetParentLocalId(unsigned int threadId)
 {
-    return *(unsigned int *)(0x104cf08 + threadId * 16) >> 8;
+    return *(unsigned int *)(((size_t)scrVarGlob + 8) + threadId * 16) >> 8;
 }
 
 /* line 1403 */
 unsigned int GetSafeParentLocalId(unsigned int threadId)
 {
-    unsigned int val = *(unsigned int *)(0x104cf08 + threadId * 16);
+    unsigned int val = *(unsigned int *)(((size_t)scrVarGlob + 8) + threadId * 16);
     if ((val & 0x1f) == 0x12)
         return val >> 8;
     return 0;
@@ -359,8 +359,8 @@ unsigned int GetSafeParentLocalId(unsigned int threadId)
 /* line 1411 */
 unsigned int GetStartLocalId(unsigned int threadId)
 {
-    while ((*(unsigned int *)(0x104cf08 + threadId * 16) & 0x1f) == 0x12) {
-        threadId = *(unsigned int *)(0x104cf08 + threadId * 16) >> 8;
+    while ((*(unsigned int *)(((size_t)scrVarGlob + 8) + threadId * 16) & 0x1f) == 0x12) {
+        threadId = *(unsigned int *)(((size_t)scrVarGlob + 8) + threadId * 16) >> 8;
     }
     return threadId;
 }
@@ -368,13 +368,13 @@ unsigned int GetStartLocalId(unsigned int threadId)
 /* line 2733 */
 unsigned int FindObject(unsigned int id)
 {
-    return *(unsigned int *)(0x104cf04 + id * 16);
+    return *(unsigned int *)(((size_t)scrVarGlob + 4) + id * 16);
 }
 
 /* line 2442 */
 VariableUnion * GetVariableValueAddress(unsigned int id)
 {
-    return (VariableUnion *)(0x104cf04 + id * 16);
+    return (VariableUnion *)(((size_t)scrVarGlob + 4) + id * 16);
 }
 
 /* line 1802 */
@@ -439,7 +439,7 @@ JCOEF RemoveRefToEmptyObject(unsigned int id)
 /* line 1709 */
 unsigned int Scr_GetSelf(unsigned int threadId)
 {
-    return *(unsigned short *)(0x104cf06 + threadId * 16);
+    return *(unsigned short *)(((size_t)scrVarGlob + 6) + threadId * 16);
 }
 
 /* line 1899 */
@@ -487,7 +487,7 @@ unsigned int Scr_EvalVariableObject(unsigned int id)
 
     if (type == 1) {
         objectId = *(unsigned int *)(entry + 4);
-        type = *(unsigned int *)(0x104cf08 + objectId * 16) & 0x1f;
+        type = *(unsigned int *)(((size_t)scrVarGlob + 8) + objectId * 16) & 0x1f;
         if (type <= 0x15)
             return objectId;
     }
@@ -499,7 +499,7 @@ unsigned int Scr_EvalVariableObject(unsigned int id)
 /* line 2634 */
 unsigned int GetArraySize(unsigned int id)
 {
-    return *(unsigned short *)(0x104cf06 + id * 16);
+    return *(unsigned short *)(((size_t)scrVarGlob + 6) + id * 16);
 }
 
 /* line 2669 */
@@ -507,12 +507,12 @@ unsigned int FindPrevSibling(unsigned int id)
 {
     unsigned int next, result;
 
-    next = *(unsigned short *)(0x104cf0e + id * 16);      /* nextSibling */
-    next = *(unsigned short *)(0x104cf02 + next * 16);     /* hash.u (prevSibling) */
-    next = *(unsigned short *)(0x104cf02 + next * 16);     /* hash.u (prevSibling) */
+    next = *(unsigned short *)(((size_t)scrVarGlob + 14) + id * 16);      /* nextSibling */
+    next = *(unsigned short *)(((size_t)scrVarGlob + 2) + next * 16);     /* hash.u (prevSibling) */
+    next = *(unsigned short *)(((size_t)scrVarGlob + 2) + next * 16);     /* hash.u (prevSibling) */
     result = *(unsigned short *)((byte *)&scrVarGlob + next * 16); /* hash.id */
 
-    if ((*(unsigned int *)(0x104cf08 + result * 16) & 0x1f) >= 0xf)
+    if ((*(unsigned int *)(((size_t)scrVarGlob + 8) + result * 16) & 0x1f) >= 0xf)
         return 0;
     return result;
 }
@@ -520,19 +520,19 @@ unsigned int FindPrevSibling(unsigned int id)
 /* line 2681 */
 unsigned int GetVariableName(unsigned int id)
 {
-    return *(unsigned int *)(0x104cf08 + id * 16) >> 8;
+    return *(unsigned int *)(((size_t)scrVarGlob + 8) + id * 16) >> 8;
 }
 
 /* line 2747 */
 Bool IsFieldObject(unsigned int id)
 {
-    return (*(unsigned int *)(0x104cf08 + id * 16) & 0x1f) <= 0x15;
+    return (*(unsigned int *)(((size_t)scrVarGlob + 8) + id * 16) & 0x1f) <= 0x15;
 }
 
 /* line 3578 */
 Bool IsVarFree(unsigned int id)
 {
-    return (*(unsigned char *)(0x104cf08 + id * 16) & 0x60) == 0;
+    return (*(unsigned char *)(((size_t)scrVarGlob + 8) + id * 16) & 0x60) == 0;
 }
 
 /* line 4185 */
@@ -630,7 +630,7 @@ int Scr_GetClassnumForCharId(int charId)
 void Scr_RemoveThreadNotifyName(unsigned int startLocalId)
 {
     byte *entry = (byte *)&scrVarGlob + startLocalId * 16;
-    unsigned int notifyName = *(unsigned short *)(0x104cf09 + startLocalId * 16);
+    unsigned int notifyName = *(unsigned short *)(((size_t)scrVarGlob + 9) + startLocalId * 16);
 
     SL_RemoveRefToString(notifyName);
 
@@ -643,7 +643,7 @@ void AddRefToValue(int type, VariableUnion u)
 {
     switch (type) {
     case 1: /* object */
-        *(unsigned short *)(0x104cf04 + u.intValue * 16) += 1;
+        *(unsigned short *)(((size_t)scrVarGlob + 4) + u.intValue * 16) += 1;
         break;
     case 2: /* string */
     case 3: /* localized string */

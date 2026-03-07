@@ -45,7 +45,7 @@ extern MaterialHandle CL_RegisterMaterial(const char *name, int flags);
 
 extern byte *cgs_ptr;           /* imp_cg */
 extern byte *cg_ptr;            /* imp_cgs */
-extern byte *cg_entities_ptr;   /* imp_cg_entities */
+extern byte cg_entities_ptr[];   /* imp_cg_entities */
 extern byte *cg_tags_ptr;       /* imp_scr_const */
 extern byte *cg_debug_ptr;      /* imp_cg_debugPosition */
 extern byte *cg_sprite_ptr;     /* imp_cg_headIconMinScreenRadius */

@@ -26,7 +26,7 @@ extern void *Hunk_AllocateTempMemoryHighInternal(int size);
 extern void Hunk_ClearTempMemory(void);
 extern void Hunk_ClearTempMemoryHigh(void);
 
-extern byte *cm_phys_ptr; /* imp_g_traceThreadInfo */
+extern byte g_traceThreadInfo[]; /* imp_g_traceThreadInfo */
 
 extern struct clipMap_t cm; /* 0x0 */
 
@@ -66,7 +66,7 @@ void CM_LoadMap(const char *name, int *checksum)
     CM_LoadMapFromBsp(name, 1);
     CM_LoadStaticModels();
 
-    phys = *(byte **)cm_phys_ptr;
+    phys = (byte *)g_traceThreadInfo;
     *(int *)phys = 0;
 
     alloc = Hunk_AllocInternal(*(int *)(cm_base + 0x64) * 2);

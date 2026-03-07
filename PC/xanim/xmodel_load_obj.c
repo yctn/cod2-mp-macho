@@ -34,7 +34,7 @@ extern unsigned int SL_GetStringOfLen(const char *str, unsigned int user, unsign
 
 extern float floorf(float x);
 extern float sqrtf(float x);
-extern char *g_renderer_ptr; /* imp_re */
+extern char g_renderer_ptr[]; /* imp_re */
 
 /* line 711 */
 int XModelGetStaticBounds(const XModel *model, vec3_t *axis, vec_t *mins, vec_t *maxs)

@@ -10,7 +10,7 @@
 
 extern struct scrCompilePub_t scrCompilePub; /* 0x0 */
 extern void Z_FreeInternal(void *ptr);
-static struct scrCompileGlob_t scrCompileGlob; /* scrCompileGlob */
+extern unsigned char scrCompileGlob[];
 
 static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]);
 static unsigned int SpecifyThreadPosition(int type);

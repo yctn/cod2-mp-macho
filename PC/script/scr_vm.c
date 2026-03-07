@@ -16,7 +16,7 @@ extern struct scrVmPub_t scrVmPub; /* 0x0 */
 extern char g_EndPos; /* 0x0 */
 extern jmp_buf g_script_error[33]; /* 0x0 */
 extern int g_script_error_level; /* 0x0 */
-static struct scrVmGlob_t scrVmGlob; /* scrVmGlob */
+extern unsigned char scrVmGlob[]; /* scrVmGlob - BSS */
 
 void Scr_ClearErrorMessage(void);
 void Scr_Settings(int developer, int developer_script, int abort_on_error);

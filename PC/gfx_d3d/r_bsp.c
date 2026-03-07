@@ -23,7 +23,7 @@ extern void *Image_Register(const char *name, int flag1, int flag2);
 extern byte *r_glob_ptr;         /* imp_rgp */
 /* r_device_ptr was imp_r_rendererInUse */
 extern byte *r_vtable_ptr;       /* imp_ri */
-extern byte *r_frontEndData_ptr; /* imp_rg */
+extern byte r_frontEndData_ptr[]; /* imp_rg */
 extern byte *r_dvar_ef30;        /* imp_r_lightTweakSunColor */
 extern byte *r_dvar_ef34;        /* imp_r_lightTweakDiffuseFraction */
 extern byte *r_dvar_ef38;        /* imp_r_lightTweakAmbient */

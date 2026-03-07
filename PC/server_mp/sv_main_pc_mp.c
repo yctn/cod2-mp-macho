@@ -22,7 +22,7 @@ extern long int SVC_Status(netadr_t from);
 extern long int SVC_GameCompleteStatus(netadr_t from);
 
 /* Global pointers accessed by absolute address in the original binary */
-extern byte *svs_ptr;                /* imp_svs - pointer to serverStatic_t */
+extern byte svs_ptr[];                /* imp_svs - pointer to serverStatic_t */
 extern const dvar_t *sv_dedicated_dvar;
 extern const dvar_t *rcon_password_dvar;
 
@@ -53,7 +53,7 @@ void SV_FlushRedirect(char *outputbuf)
     netadr_t addr;
     byte *svs;
 
-    svs = *(byte **)&svs_ptr;
+    svs = (byte *)imp_svs;
 
     len = strlen(outputbuf);
 
@@ -95,7 +95,7 @@ void SVC_RemoteCommand(struct netadr_t from, msg_t *msg)
     netadr_t addr;
     const dvar_t *rcon_dvar;
 
-    svs = *(byte **)&svs_ptr;
+    svs = (byte *)imp_svs;
 
     time = Com_Milliseconds();
 
@@ -219,7 +219,7 @@ void SV_MasterHeartbeat(const char *hbname)
     netadr_t addr;
     int time;
 
-    svs = *(byte **)&svs_ptr;
+    svs = (byte *)imp_svs;
 
     dedicated = sv_dedicated_dvar;
     if (!dedicated || dedicated->current.integer != 2) {
@@ -265,7 +265,7 @@ void SV_MasterShutdown(void)
 {
     byte *svs;
 
-    svs = *(byte **)&svs_ptr;
+    svs = (byte *)imp_svs;
     *(int *)(svs + SVS_NEXTHEARTBEATTIME_OFF) = (int)0x80000000;
 
     SV_MasterHeartbeat("flatline");

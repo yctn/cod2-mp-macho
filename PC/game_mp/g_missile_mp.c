@@ -72,9 +72,9 @@ extern int rand(void);
 #define ENTITY_STRIDE sizeof(gentity_s)
 
 /* External globals (BSS/data pointers) */
-extern byte *level_ptr;         /* imp_level */
-extern byte *scr_const_ptr;     /* imp_scr_const */
-extern byte *g_entities_ptr;    /* imp_g_entities */
+extern byte level_ptr[];         /* imp_level */
+extern byte scr_const_ptr[];     /* imp_scr_const */
+extern byte g_entities_ptr[];    /* imp_g_entities */
 extern byte *entityHandlers_ptr; /* imp_entityHandlers */
 extern byte *vec3_origin_ptr;   /* imp_vec3_origin */
 extern byte *pPriorityMap;      /* imp_bulletPriorityMap */

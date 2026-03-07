@@ -666,29 +666,29 @@ Bool FS_RegisterDvars(void)
         "movl $0x1010, 8(%esp)\n" /* line 3556 */
         "movl $0, 4(%esp)\n"
         "movl $str_00216d14, (%esp)\n" /* "fs_copyfiles" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fs_copyfiles\n"
         "calll Sys_DefaultCDPath\n" /* line 3560 */
         "movl $0x1010, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
         "movl $str_00216d24, (%esp)\n" /* "fs_cdpath" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, fs_cdpath\n"
         "calll Sys_DefaultInstallPath\n" /* line 3564 */
         "movl $0x1010, 8(%esp)\n"
         "movl %eax, 4(%esp)\n"
         "movl $str_00216d30, (%esp)\n" /* "fs_basepath" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, fs_basepath\n"
         "movl $0x1010, 8(%esp)\n" /* line 3568 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_00216d3c, (%esp)\n" /* "fs_basegame" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, fs_basegame\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 3572 */
         "movl $0, 4(%esp)\n"
         "movl $str_00216d48, (%esp)\n" /* "fs_useOldAssets" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fs_useOldAssets\n"
         "calll Sys_DefaultHomePath\n" /* line 3575 */
         "testl %eax, %eax\n" /* line 3576 */
@@ -702,22 +702,22 @@ Bool FS_RegisterDvars(void)
         "movl $0x1010, 8(%esp)\n" /* line 3580 */
         "movl %eax, 4(%esp)\n"
         "movl $str_00216d58, (%esp)\n" /* "fs_homepath" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, fs_homepath\n"
         "movl $0x101c, 8(%esp)\n" /* line 3584 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_00216d64, (%esp)\n" /* "fs_game" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, fs_gameDirVar\n"
         "movl $0x1010, 8(%esp)\n" /* line 3589 */
         "movl $0, 4(%esp)\n"
         "movl $str_00216d6c, (%esp)\n" /* "fs_restrict" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fs_restrict\n"
         "movl $0x10a0, 8(%esp)\n" /* line 3594 */
         "movl $0, 4(%esp)\n"
         "movl $str_00216d78, (%esp)\n" /* "fs_ignoreLocalized" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, fs_ignoreLocalized\n"
         "movl $1, %eax\n"
         /* } scope */
@@ -1436,7 +1436,7 @@ float FS_Flush(fileHandle_t f)
 
 /* line 1270 */
 static __attribute__((regparm(3)))
-Bool FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize)
+Bool __attribute__((regparm(3))) FS_SanitizeFilename(const char *filename, char *sanitizedName, unsigned int sanitizedNameSize)
 {
     unsigned int srcIndex = 0;
     unsigned int dstIndex = 0;

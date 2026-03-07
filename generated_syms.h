@@ -795,6 +795,7 @@ extern void *imp_sc_enable;
 extern void *imp_sc_showDebug;
 extern void *imp_scene;
 extern void *imp_scrAnimPub;
+extern void *imp_scrCompileGlob;
 extern void *imp_scrCompilePub;
 extern void *imp_scrMemTreePub;
 extern void *imp_scrParserPub;

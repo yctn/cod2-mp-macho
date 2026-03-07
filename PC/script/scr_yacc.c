@@ -17,37 +17,37 @@ extern int yyleng; /* 0x0 */
 extern FILE *yyin; /* 0x0 */
 extern FILE *yyout; /* 0x0 */
 extern char *yytext; /* 0x0 */
-static sval_t yaccResult; /* yaccResult */
-static unsigned int g_out_pos; /* g_out_pos */
-static unsigned int g_sourcePos; /* g_sourcePos */
-static unsigned char g_parse_user; /* g_parse_user */
-static sval_t g_dummyVal; /* g_dummyVal */
-static const char yytranslate[344]; /* yytranslate */
-static const short int yyr1[131]; /* yyr1 */
-static const short int yyr2[131]; /* yyr2 */
-static const short int yydefact[256]; /* yydefact */
-static const short int yydefgoto[26]; /* yydefgoto */
-static const short int yypact[256]; /* yypact */
-static const short int yypgoto[26]; /* yypgoto */
-static const short int yytable[1313]; /* yytable */
-static const short int yycheck[1313]; /* yycheck */
-static YY_BUFFER_STATE yy_current_buffer; /* yy_current_buffer */
-static char yy_hold_char; /* yy_hold_char */
-static int yy_n_chars; /* yy_n_chars */
-static char *yy_c_buf_p; /* yy_c_buf_p */
+extern sval_t yaccResult; /* yaccResult - BSS */
+extern unsigned int g_out_pos; /* g_out_pos - BSS */
+extern unsigned int g_sourcePos; /* g_sourcePos - BSS */
+extern unsigned char g_parse_user; /* g_parse_user - BSS */
+extern sval_t g_dummyVal; /* g_dummyVal - BSS */
+extern const unsigned char yytranslate[];
+extern const unsigned char yyr1[];
+extern const unsigned char yyr2[];
+extern const unsigned char yydefact[];
+extern const unsigned char yydefgoto[];
+extern const unsigned char yypact[];
+extern const unsigned char yypgoto[];
+extern const unsigned char yytable[];
+extern const unsigned char yycheck[];
+extern YY_BUFFER_STATE yy_current_buffer; /* yy_current_buffer - BSS */
+extern char yy_hold_char; /* yy_hold_char - BSS */
+extern int yy_n_chars; /* yy_n_chars - BSS */
+extern char *yy_c_buf_p; /* yy_c_buf_p - BSS */
 extern int yy_init; /* yy_init */
-static int yy_start; /* yy_start */
-static int yy_did_buffer_switch_on_eof; /* yy_did_buffer_switch_on_eof */
-static const short int yy_accept[256]; /* yy_accept */
-static const int yy_ec[256]; /* yy_ec */
-static const int yy_meta[59]; /* yy_meta */
-static const short int yy_base[264]; /* yy_base */
-static const short int yy_def[264]; /* yy_def */
-static const short int yy_nxt[490]; /* yy_nxt */
-static const short int yy_chk[490]; /* yy_chk */
-static yy_state_type yy_last_accepting_state; /* yy_last_accepting_state */
-static char *yy_last_accepting_cpos; /* yy_last_accepting_cpos */
-static char ch_buf[16386]; /* ch_buf */
+extern int yy_start; /* yy_start - BSS */
+extern int yy_did_buffer_switch_on_eof; /* yy_did_buffer_switch_on_eof - BSS */
+extern const unsigned char yy_accept[];
+extern const unsigned char yy_ec[];
+extern const unsigned char yy_meta[];
+extern const unsigned char yy_base[];
+extern const unsigned char yy_def[];
+extern const unsigned char yy_nxt[];
+extern const unsigned char yy_chk[];
+extern yy_state_type yy_last_accepting_state; /* yy_last_accepting_state - BSS */
+extern char *yy_last_accepting_cpos; /* yy_last_accepting_cpos - BSS */
+extern char ch_buf[]; /* ch_buf - BSS */
 
 YY_BUFFER_STATE yy_create_buffer(FILE *file, int size);
 int yyparse(void);

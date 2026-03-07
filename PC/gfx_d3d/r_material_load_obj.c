@@ -8,7 +8,7 @@
  *   #include "PC/universal/com_math.h"
  */
 
-static int mtlLoadGlob; /* mtlLoadGlob */
+extern unsigned char mtlLoadGlob[]; /* mtlLoadGlob - 128 bytes in BSS */
 extern const unsigned char g_useTechnique[]; /* g_useTechnique — defined in rodata.c */
 /* Static data tables — defined in r_material_load_obj_data.h (extracted from binary) */
 #include "r_material_load_obj_data.h"

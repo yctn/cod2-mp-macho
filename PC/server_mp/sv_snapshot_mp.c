@@ -13,8 +13,8 @@ extern int startOffset; /* startOffset */
 extern int endOffset; /* endOffset */
 
 /* Global pointers accessed by absolute address */
-extern byte *svs_ptr;              /* imp_svs - serverStatic_t */
-extern byte *sv_ptr;               /* imp_sv - server_t */
+extern byte svs_ptr[];              /* imp_svs - serverStatic_t */
+extern byte sv_ptr[];               /* imp_sv - server_t */
 extern byte *sv_showcommands_dvar; /* imp_sv_debugReliableCmds */
 extern byte *sv_maxclients_dvar;   /* imp_sv_maxclients */
 extern byte *sv_minPingRate_dvar;  /* imp_sv_maxRate */
@@ -178,7 +178,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
     LargeLocal_LargeLocal(msg_buf_ll, 0x20000);
     msg_buf = LargeLocal_GetBuf(msg_buf_ll);
 
-    svs = *(byte **)&svs_ptr;
+    svs = (byte *)imp_svs;
 
     /* Compute archived entity part entry (archivedFrame % 1200, stride 8) */
     partEntry = *(byte **)(svs + SVS_ARCHIVEDENTITYPARTS) + (archivedFrame % 1200) * 8;
@@ -197,12 +197,12 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         if (searchEnd < 0) searchEnd = 0;
 
         if (searchStart - 1 >= searchEnd) {
-            cfBase = *(byte **)(*(byte **)&svs_ptr + SVS_CACHEDFRAMES);
+            cfBase = *(byte **)((byte *)imp_svs + SVS_CACHEDFRAMES);
             for (i = searchStart - 1; i >= searchEnd; i--) {
                 cachedSnapshot_t *cf = (cachedSnapshot_t *)(cfBase + (i % 512) * 28);
                 if (cf->archivedFrame == archivedFrame) {
                     cachedFrame = cf;
-                    svs = *(byte **)&svs_ptr;
+                    svs = (byte *)imp_svs;
                     if (cf->first_entity >= *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) - 0x4000) {
                         if (cf->first_client >= *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) - (int)&__mh_execute_header) {
                             goto cleanup; /* Still valid */
@@ -224,11 +224,11 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         byte *entBuf;
 
         if (msg.cursize <= remaining) {
-            svs = *(byte **)&svs_ptr;
+            svs = (byte *)imp_svs;
             entBuf = *(byte **)(svs + SVS_ARCHIVEDENTITYBUF);
             memcpy(msg.data, entBuf + dataOffset, msg.cursize);
         } else {
-            svs = *(byte **)&svs_ptr;
+            svs = (byte *)imp_svs;
             entBuf = *(byte **)(svs + SVS_ARCHIVEDENTITYBUF);
             memcpy(msg.data, entBuf + dataOffset, remaining);
             memcpy(msg.data + remaining, entBuf, msg.cursize - remaining);
@@ -240,7 +240,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         int oldArchivedFrame = MSG_ReadLong(&msg);
         cachedSnapshot_t *oldCachedFrame;
 
-        svs = *(byte **)&svs_ptr;
+        svs = (byte *)imp_svs;
         if (oldArchivedFrame < *(int *)(svs + SVS_ARCHIVEDFRAMECOUNT) - 0x4b0)
             goto return_null;
 
@@ -297,14 +297,14 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                         break;
                     }
                     {
-                        byte *cdata = *(byte **)(*(byte **)&svs_ptr + SVS_ARCHIVEDCLIENTDATA);
+                        byte *cdata = *(byte **)((byte *)imp_svs + SVS_ARCHIVEDCLIENTDATA);
                         int nextIdx = (oldCachedFrame->first_client + oldindex) % 0x1000;
                         oldCachedClient = cdata + nextIdx * CACHEDCLIENT_STRIDE;
                         oldClientNum = *(int *)(oldCachedClient + 4);
                     }
                 }
 
-                svs = *(byte **)&svs_ptr;
+                svs = (byte *)imp_svs;
                 clientIdx = *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) % 0x1000;
                 newCachedClient = *(byte **)(svs + SVS_ARCHIVEDCLIENTDATA) + clientIdx * CACHEDCLIENT_STRIDE;
 
@@ -315,7 +315,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     if (*(int *)newCachedClient != 0)
                         MSG_ReadDeltaPlayerstate(&msg, oldCachedClient + 0x60, newCachedClient + 0x60);
 
-                    svs = *(byte **)&svs_ptr;
+                    svs = (byte *)imp_svs;
                     *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
                     if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
                         Com_Error(0, "SV_GetCachedSnapshot: too many clients");
@@ -327,7 +327,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     if (oldindex >= oldCachedFrame->num_clients) {
                         oldClientNum = 0x1869f;
                     } else {
-                        byte *cdata = *(byte **)(*(byte **)&svs_ptr + SVS_ARCHIVEDCLIENTDATA);
+                        byte *cdata = *(byte **)((byte *)imp_svs + SVS_ARCHIVEDCLIENTDATA);
                         int nextIdx = (oldCachedFrame->first_client + oldindex) % 0x1000;
                         oldCachedClient = cdata + nextIdx * CACHEDCLIENT_STRIDE;
                         oldClientNum = *(int *)(oldCachedClient + 4);
@@ -339,7 +339,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
                     if (*(int *)newCachedClient != 0)
                         MSG_ReadDeltaPlayerstate(&msg, NULL, newCachedClient + 0x60);
 
-                    svs = *(byte **)&svs_ptr;
+                    svs = (byte *)imp_svs;
                     *(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) += 1;
                     if (*(int *)(svs + SVS_ARCHIVEDCLIENTNUMINDEX) > 0x7ffffffd)
                         Com_Error(0, "SV_GetCachedSnapshot: too many clients");
@@ -350,7 +350,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         }
     } else {
         /* Full fresh decode (no delta base) */
-        svs = *(byte **)&svs_ptr;
+        svs = (byte *)imp_svs;
 
         {
             int frameIdx = *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) % 512;
@@ -402,11 +402,11 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
         if (msg.readcount > msg.cursize)
             Com_Error(1, "SV_GetCachedSnapshot: msg overflow");
 
-        svs = *(byte **)&svs_ptr;
+        svs = (byte *)imp_svs;
         entIdx = *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) % 0x4000;
         archivedEnt = *(byte **)(svs + SVS_ARCHIVEDENTITYDATA) + entIdx * 276;
 
-        sv = *(byte **)&sv_ptr;
+        sv = (byte *)imp_sv;
         MSG_ReadDeltaArchivedEntity(&msg, sv + 0x241c + entNum * 372, archivedEnt, entNum);
 
         *(int *)(svs + SVS_ARCHIVEDENTNUMINDEX) += 1;
@@ -417,7 +417,7 @@ cachedSnapshot_t * SV_GetCachedSnapshotInternal(int archivedFrame)
     }
 
     /* Increment archived frame number */
-    svs = *(byte **)&svs_ptr;
+    svs = (byte *)imp_svs;
     *(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) += 1;
     if (*(int *)(svs + SVS_NEXTARCHIVEDFRAMENUM) > 0x7ffffffd)
         Com_Error(0, "SV_GetCachedSnapshot: too many frames");
@@ -1141,8 +1141,8 @@ void SV_ArchiveSnapshot(void)
 void SV_SendMessageToClient(msg_t *msg, client_t *client)
 {
     byte *cl = (byte *)client;
-    byte *svs = *(byte **)&svs_ptr;
-    byte *sv = *(byte **)&sv_ptr;
+    byte *svs = (byte *)imp_svs;
+    byte *sv = (byte *)imp_sv;
     byte compressedBuf_ll[24];
     byte *compressedBuf;
     int compressedSize;
@@ -1246,7 +1246,7 @@ void SV_SendMessageToClient(msg_t *msg, client_t *client)
 /* line 1302 */
 qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4], void (*cs)())
 {
-    byte *svs = *(byte **)&svs_ptr;
+    byte *svs = (byte *)imp_svs;
     cachedSnapshot_t *snap = NULL;
     int archivedFrame = 0;
 
@@ -1269,7 +1269,7 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
         }
 
         if (*(int *)(svs + SVS_ARCHIVEDFRAMECOUNT) > archivedFrame) {
-            byte *svsReload = *(byte **)&svs_ptr;
+            byte *svsReload = (byte *)imp_svs;
             while (archivedFrame < *(int *)(svsReload + SVS_ARCHIVEDFRAMECOUNT)) {
                 snap = SV_GetCachedSnapshotInternal(archivedFrame);
                 if (snap != NULL)
@@ -1286,7 +1286,7 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
     if (snap != NULL) {
         /* Found cached snapshot - extract archived client data */
         byte *snapBytes = (byte *)snap;
-        byte *svs2 = *(byte **)&svs_ptr;
+        byte *svs2 = (byte *)imp_svs;
         int deltaTime = *(int *)(svs2 + SVS_TIME) - *(int *)(snapBytes + 4);
         int numClients = *(int *)(snapBytes + 0x10);
         byte *cachedClientsBase;
@@ -1336,7 +1336,7 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
         /* Adjust time fields in 31 weapon/anim entries at stride 0x80 */
         {
             byte *p = psBytes;
-            byte *svsPtr = *(byte **)&svs_ptr;
+            byte *svsPtr = (byte *)imp_svs;
             for (i = 0; i < 31; i++) {
                 if (*(int *)(p + 0x1790) != 0)
                     *(int *)(p + 0x1790) += deltaTime;
@@ -1379,8 +1379,8 @@ qboolean SV_GetArchivedClientInfo(int clientNum, int *pArchiveTime, int (*ps)[4]
 /* line 1179 */
 Bool SV_GetClientPositionAtTime(int clientNum, int gametime, vec_t *pos)
 {
-    byte *svs = *(byte **)&svs_ptr;
-    byte *maxRateDvar = *(byte **)&sv_maxRate_dvar;
+    byte *svs = (byte *)imp_svs;
+    byte *maxRateDvar = *(byte **)imp_sv_maxRate;
     int msPerFrame;
     int svsTime;
     int frameOffset;
@@ -2844,8 +2844,8 @@ void SV_SendClientSnapshot(client_t *client)
 /* line 2077 */
 void SV_SendClientMessages(void)
 {
-    byte *sv = *(byte **)&sv_ptr;
-    byte *svs = *(byte **)&svs_ptr;
+    byte *sv = (byte *)imp_sv;
+    byte *svs = (byte *)imp_svs;
     byte *c;
     int i, numclients;
     int maxClients;
@@ -2861,7 +2861,7 @@ void SV_SendClientMessages(void)
     *(int *)(sv + 0x5f4e4) = 0;
 
     c = *(byte **)(svs + SVS_CLIENTS);
-    dvar = *(byte **)&sv_maxclients_dvar;
+    dvar = *(byte **)imp_sv_maxclients;
     maxClients = *(int *)(*(byte **)dvar + 8);
     numclients = 0;
 
@@ -2919,11 +2919,11 @@ void SV_SendClientMessages(void)
     }
 
     /* BPS tracking */
-    dvar = *(byte **)&sv_showAverageBPS_dvar;
+    dvar = *(byte **)imp_sv_showAverageBPS;
     if (*(byte *)(*(byte **)dvar + 8) == 0 || numclients <= 0)
         return;
 
-    sv = *(byte **)&sv_ptr;
+    sv = (byte *)imp_sv;
     totalBps = 0.0f;
     totalUBps = 0.0f;
 

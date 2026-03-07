@@ -28,9 +28,9 @@ extern void G_Trigger(gentity_t *self, gentity_t *other);
 extern void *BG_GetWeaponDef(int weapon);
 
 /* Extern global pointers (binary addresses) */
-extern byte *g_entities_ptr;    /* imp_g_entities */
-extern byte *level_ptr;         /* imp_level */
-extern byte *scr_const_ptr;     /* imp_scr_const */
+extern byte g_entities_ptr[];    /* imp_g_entities */
+extern byte level_ptr[];         /* imp_level */
+extern byte scr_const_ptr[];     /* imp_scr_const */
 extern byte *entityHandlers_ptr; /* imp_entityHandlers */
 extern byte *vec3_origin_ptr;   /* imp_vec3_origin */
 extern byte *bg_itemlist_ptr;   /* imp_bg_itemlist */

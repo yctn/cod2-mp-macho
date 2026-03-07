@@ -20,8 +20,8 @@ extern void jpeg_read_scanlines(void *cinfo, byte **scanlines, int num_lines);
 extern void jpeg_finish_decompress(void *cinfo);
 extern void jpeg_destroy_decompress(void *cinfo);
 
-extern byte *r_sys_ptr;     /* imp_ri - renderer system vtable */
-extern byte *r_limits_ptr;  /* imp_vidConfig - renderer limits */
+extern byte r_sys_ptr[];     /* imp_ri - renderer system vtable */
+extern byte r_limits_ptr[];  /* imp_vidConfig - renderer limits */
 
 static int hackSize; /* hackSize */
 

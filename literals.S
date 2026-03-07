@@ -1955,3 +1955,7 @@ sse_float_abs_mask: .long 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff
 .align 16
 .globl sse_float_sign_mask
 sse_float_sign_mask: .long 0x80000000, 0x80000000, 0x80000000, 0x80000000
+
+/* game_mp BSS struct aliases defined via linker --defsym in Makefile:
+   level_ptr=level, g_entities_ptr=g_entities,
+   scr_const_ptr=scr_const, playerCorpseInfo_ptr=g_scr_data */

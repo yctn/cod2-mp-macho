@@ -129,7 +129,7 @@ Bool G_ParseWeaponAccurayGraphs(WeaponDef *weaponDef)
         if (weapType != 0 && weapType != 2)
             continue;
 
-        if (*graphName == '\0')
+        if (!graphName || *graphName == '\0')
             continue;
 
         char fileName[64];
@@ -146,7 +146,7 @@ Bool G_ParseWeaponAccurayGraphs(WeaponDef *weaponDef)
         FS_Read(buffer, 14, fileHandle);
         buffer[14] = '\0';
 
-        if (memcmp(buffer, "WEAPONACCURACY", 14) != 0) {
+        if (memcmp(buffer, "WEAPONACCUFILE", 14) != 0) {
             Com_Printf("^3WARNING: \"%s\" does not appear to be an ai weapon accuracy file\n", fileName);
             FS_FCloseFile(fileHandle);
             return 0;

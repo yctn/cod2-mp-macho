@@ -53,8 +53,8 @@ extern void Com_Error(int level, const char *fmt, ...);
 extern vec3_t playerMins; /* 0x0 */
 extern vec3_t playerMaxs; /* 0x0 */
 
-extern byte *g_entities_ptr; /* imp_g_entities - g_entities base */
-extern byte *level_ptr; /* imp_level */
+extern byte g_entities_ptr[]; /* imp_g_entities - g_entities base */
+extern byte level_ptr[]; /* imp_level */
 extern byte *g_scr_data_ptr; /* imp_scr_const */
 extern byte *g_sv_running_ptr; /* imp_voice_global */
 extern byte *g_deadChat_ptr; /* imp_voice_deadChat */

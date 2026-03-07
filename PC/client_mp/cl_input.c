@@ -1418,7 +1418,7 @@ void CL_InitInput(void)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 1837 */
         "movl $0, 4(%esp)\n"
         "movl $str_002af7c0, (%esp)\n" /* "cl_nodelta" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl imp_cl_nodelta, %edx\n"
         "movl %eax, (%edx)\n"
         "leave\n" /* line 1838 */

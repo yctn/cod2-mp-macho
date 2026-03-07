@@ -602,7 +602,7 @@ void Cmd_CallVote_f(gentity_t *ent)
         "movl $0x1044, 8(%esp)\n" /* line 1166 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002a7124, (%esp)\n" /* "mapname" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl 8(%eax), %eax\n" /* line 1167 */
         "movl %eax, 4(%esp)\n"
         "movl %edi, (%esp)\n"

@@ -130,21 +130,21 @@ qboolean SV_DObjCreateSkelForBones(gentity_t *ent, int *partBits);
 /* line 76 */
 gentity_t * SV_GentityNum(int num)
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     return (gentity_t *)(*(char **)(sv_data + 0x5f41c) + num * *(int *)(sv_data + 0x5f420));
 }
 
 /* line 86 */
 playerState_t * SV_GameClientNum(int num)
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     return (playerState_t *)(*(char **)(sv_data + 0x5f428) + num * *(int *)(sv_data + 0x5f42c));
 }
 
 /* line 96 */
 int SV_SvEntityForGentity(const gentity_t *gEnt)
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     int number;
 
     if (gEnt == NULL || *(int *)gEnt < 0 || *(int *)gEnt > 1023) {
@@ -169,7 +169,7 @@ long unsigned int SV_GameSendServerCommand(int clientNum, svscmd_type type, cons
         p = *(char **)imp_sv_maxclients;
         maxClients = *(int *)(p + 8);
         if (clientNum < maxClients) {
-            clients_base = *(char **)(*(char **)imp_svs + 0xc);
+            clients_base = *(char **)((char *)imp_svs + 0xc);
             client = clients_base + clientNum * 495372;
             SV_SendServerCommand(client, type, "%s", text);
         }
@@ -186,7 +186,7 @@ long unsigned int SV_GameDropClient(int clientNum, const char *reason)
     p = *(char **)imp_sv_maxclients;
     maxClients = *(int *)(p + 8);
     if (clientNum >= 0 && clientNum < maxClients) {
-        clients_base = *(char **)(*(char **)imp_svs + 0xc);
+        clients_base = *(char **)((char *)imp_svs + 0xc);
         SV_DropClient(clients_base + clientNum * 495372, reason);
     }
 }
@@ -203,7 +203,7 @@ long unsigned int SV_GetServerinfo(char *buffer, int bufferSize)
 /* line 424 */
 long unsigned int SV_LocateGameData(gentity_t *gEnts, int numGEntities, int sizeofGEntity_t, playerState_t *clients, int sizeofGameClient)
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     *(int *)(sv_data + 0x5f41c) = (int)gEnts;
     *(int *)(sv_data + 0x5f420) = sizeofGEntity_t;
     *(int *)(sv_data + 0x5f424) = numGEntities;
@@ -214,7 +214,7 @@ long unsigned int SV_LocateGameData(gentity_t *gEnts, int numGEntities, int size
 /* line 441 */
 long unsigned int SV_GetUsercmd(int clientNum, usercmd_t *cmd)
 {
-    char *clients_base = *(char **)(*(char **)imp_svs + 0xc);
+    char *clients_base = *(char **)((char *)imp_svs + 0xc);
     int *dst = (int *)cmd;
     int *src = (int *)(clients_base + clientNum * 495372 + 0x20824);
     dst[0] = src[0];
@@ -265,7 +265,7 @@ long unsigned int SV_DObjDumpInfo(gentity_t *ent)
 /* line 512 */
 long unsigned int SV_ResetSkeletonCache(void)
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     int idx = *(int *)(sv_data + 0x5f430) + 1;
     if (idx == 0) idx = 1;
     *(int *)(sv_data + 0x5f430) = idx;
@@ -357,7 +357,7 @@ qboolean SV_MapExists(const char *name)
 /* line 946 */
 long unsigned int SV_ResetEntityParsePoint(void)
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     *(int *)(sv_data + 0x5f418) = (int)CM_EntityString();
 }
 
@@ -376,7 +376,7 @@ long unsigned int SV_SetWeaponInfoMemory(void)
 /* line 993 */
 qboolean SV_GetEntityToken(char *buffer, int bufferSize)
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     const char *s = Com_Parse((char **)(sv_data + 0x5f418));
     I_strncpyz(buffer, s, bufferSize);
     if (*(char **)(sv_data + 0x5f418) || *s) {
@@ -393,21 +393,21 @@ int SV_GetGuid(int clientNum)
     if (clientNum < 0 || clientNum >= *(int *)(p + 8)) {
         return 0;
     }
-    clients_base = *(char **)(*(char **)imp_svs + 0xc);
+    clients_base = *(char **)((char *)imp_svs + 0xc);
     return *(int *)(clients_base + clientNum * 495372 + 0x765ec);
 }
 
 /* line 1052 */
 int SV_GetClientPing(int clientNum)
 {
-    char *clients_base = *(char **)(*(char **)imp_svs + 0xc);
+    char *clients_base = *(char **)((char *)imp_svs + 0xc);
     return *(int *)(clients_base + clientNum * 495372 + 0x6e5a4);
 }
 
 /* line 1064 */
 qboolean SV_IsLocalClient(int clientNum)
 {
-    char *clients_base = *(char **)(*(char **)imp_svs + 0xc);
+    char *clients_base = *(char **)((char *)imp_svs + 0xc);
     char *client = clients_base + clientNum * 495372;
     return NET_IsLocalAddress(*(int *)(client + 0x6e5c4), *(int *)(client + 0x6e5c8), *(int *)(client + 0x6e5cc));
 }
@@ -418,13 +418,13 @@ void SV_SetGametype(void)
     char gametype[64];
     char *s;
 
-    Dvar_RegisterString("g_gametype", "dm", 0x1024);
+    *(dvar_t **)imp_sv_gametype = Dvar_RegisterString("g_gametype", "dm", 0x1024);
 
     /* If server is running and has save persist, use current gametype from sv */
     if (*(char *)(*(char **)imp_com_sv_running + 8) && G_GetSavePersist()) {
-        I_strncpyz(gametype, *(char **)imp_sv + 0x5f4f4, 64);
+        I_strncpyz(gametype, (char *)imp_sv + 0x5f4f4, 64);
     } else {
-        I_strncpyz(gametype, *(char **)(*(char **)imp_sv_gametype + 8), 64);
+        I_strncpyz(gametype, *(char **)((char *)imp_sv_gametype + 8), 64);
     }
 
     /* Lowercase the gametype string */
@@ -453,19 +453,19 @@ static void SV_InitGameVM(int restart, int savepersist)
 
     FX_InitServer();
 
-    sv_data = *(char **)imp_sv;
+    sv_data = (char *)imp_sv;
     *(const char **)(sv_data + 0x5f418) = CM_EntityString();
 
     Sys_LoadingKeepAlive();
 
-    svs = *(char **)imp_svs;
+    svs = (char *)imp_svs;
     G_InitGame(*(int *)(svs + 4), Sys_MillisecondsRaw(), restart, savepersist);
 
     Sys_LoadingKeepAlive();
 
     /* Clear client gentityNum for all clients */
     maxclients = *(int *)(*(char **)imp_sv_maxclients + 8);
-    clients = *(char **)(*(char **)imp_svs + 0xc);
+    clients = *(char **)((char *)imp_svs + 0xc);
     for (i = 0; i < maxclients; i++) {
         *(int *)(clients + i * 495372 + 0x20c44) = 0;
     }
@@ -494,7 +494,7 @@ void SV_InitGameProgs(qboolean savepersist)
 /* line 1223 */
 qboolean SV_GameCommand(void)
 {
-    if (*(int *)*(char **)imp_sv != 2) return 0;
+    if (*(int *)(char *)imp_sv != 2) return 0;
     return ConsoleCommand();
 }
 
@@ -564,7 +564,7 @@ qboolean SV_EntityContact(const vec_t *mins, const vec_t *maxs, const gentity_t 
 /* line 106 */
 gentity_t * SV_GEntityForSvEntity(gentity_s (*svEnt)[4])
 {
-    char *sv_data = *(char **)imp_sv;
+    char *sv_data = (char *)imp_sv;
     char *sv_entities_base = sv_data + 0x2418;
     int index = ((int)svEnt - (int)sv_entities_base) / 372;
     return (gentity_t *)(*(char **)(sv_data + 0x5f41c) + index * *(int *)(sv_data + 0x5f420));
@@ -674,7 +674,7 @@ long unsigned int SV_XModelDebugBoxes(gentity_t *ent)
 /* line 1077 */
 long unsigned int SV_ShutdownGameProgs(void)
 {
-    *(int *)*(char **)imp_sv = 0;
+    *(int *)(char *)imp_sv = 0;
     Com_UnloadSoundAliases(2);
     if (gameInitialized) {
         G_ShutdownGame(1);
@@ -699,7 +699,7 @@ qboolean SV_inSnapshot(const vec_t *origin, int iEntityNum)
     float fogDistSqrd;
 
     /* Get entity pointer */
-    sv_data = *(char **)imp_sv;
+    sv_data = (char *)imp_sv;
     ent = *(char **)(sv_data + 0x5f41c) + iEntityNum * *(int *)(sv_data + 0x5f420);
 
     /* Check if entity is linked */
@@ -726,7 +726,7 @@ qboolean SV_inSnapshot(const vec_t *origin, int iEntityNum)
         int number = *(int *)ent;
         if (ent == 0 || number < 0 || number > 1023) {
             Com_Error(1, "SV_SvEntityForGentity: bad gEnt");
-            sv_data = *(char **)imp_sv;
+            sv_data = (char *)imp_sv;
             number = *(int *)ent;
         }
         svEnt = sv_data + 0x2418 + number * 372;
@@ -801,7 +801,7 @@ qboolean SV_DObjCreateSkelForBone(gentity_t *ent, int boneIndex)
     int timestamp;
 
     obj = Com_GetServerDObj(*(int *)ent);
-    sv = *(char **)imp_sv;
+    sv = (char *)imp_sv;
 
     if (DObjSkelExists(obj, *(int *)(sv + 0x5f430))) {
         return DObjSkelIsBoneUpToDate(obj, boneIndex);
@@ -830,7 +830,7 @@ qboolean SV_DObjCreateSkelForBone(gentity_t *ent, int boneIndex)
         } while (alignedSize > 0x3fff0);
     }
 
-    sv = *(char **)imp_sv;
+    sv = (char *)imp_sv;
     DObjCreateSkel(obj, buf, *(int *)(sv + 0x5f430));
     return 0;
 }
@@ -846,7 +846,7 @@ qboolean SV_DObjCreateSkelForBones(gentity_t *ent, int *partBits)
     int timestamp;
 
     obj = Com_GetServerDObj(*(int *)ent);
-    sv = *(char **)imp_sv;
+    sv = (char *)imp_sv;
 
     if (DObjSkelExists(obj, *(int *)(sv + 0x5f430))) {
         return DObjSkelAreBonesUpToDate(obj, partBits);
@@ -875,7 +875,7 @@ qboolean SV_DObjCreateSkelForBones(gentity_t *ent, int *partBits)
         } while (alignedSize > 0x3fff0);
     }
 
-    sv = *(char **)imp_sv;
+    sv = (char *)imp_sv;
     DObjCreateSkel(obj, buf, *(int *)(sv + 0x5f430));
     return 0;
 }

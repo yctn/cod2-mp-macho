@@ -2226,7 +2226,7 @@ startup_failed:
         "movl $0x1020, 8(%esp)\n" /* line 419 */
         "movl $1, 4(%esp)\n"
         "movl $str_00219a94, (%esp)\n" /* "mss_q3fs" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, mss_q3fs\n"
         "cmpb $0, 8(%eax)\n" /* line 420 */
         "jne .Lf58d2a_000590f8\n"
@@ -2240,7 +2240,7 @@ startup_failed:
         "movl $0x1021, 8(%esp)\n" /* line 445 */
         "movl $str_00219ae4, 4(%esp)\n" /* "Miles Fast 2D Positional Audio" */
         "movl $str_00219b04, (%esp)\n" /* "mss_3d_provider" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, mss_3d_provider\n"
         "movl imp_snd_khz, %eax\n" /* line 219 */
         "movl (%eax), %eax\n"

@@ -568,11 +568,14 @@ BuiltinMethod HudElem_GetMethod(const char * *pName)
         "movl -0x1c(%ebp), %edx\n" /* name */
         ".Lf1b0ed4_001b0ef5:\n"
         "movl (%ebx), %eax\n" /* line 1226 */
+        "testl %eax, %eax\n"  /* NULL check for zero-init methods table */
+        "je .Lf1b0ed4_hud_next\n"
         "movl %eax, 4(%esp)\n"
         "movl %edx, (%esp)\n"
         "calll strcmp\n"
         "testl %eax, %eax\n"
         "je .Lf1b0ed4_001b0f1f\n"
+        ".Lf1b0ed4_hud_next:\n"
         "addl $1, %esi\n" /* line 1224 | i */
         "addl $0xc, %edi\n"
         "addl $0xc, %ebx\n"

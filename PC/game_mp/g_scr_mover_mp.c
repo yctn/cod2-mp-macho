@@ -229,7 +229,7 @@ BuiltinMethod ScriptEnt_GetMethod(const char **pName)
 
     name = *pName;
     for (i = 0; i < 12; i++) {
-        if (strcmp(name, methods[i].actionString) == 0) {
+        if (methods[i].actionString && strcmp(name, methods[i].actionString) == 0) {
             *pName = methods[i].actionString;
             return methods[i].actionFunc;
         }
@@ -278,7 +278,7 @@ void InitScriptMover(gentity_t *pSelf)
     VectorCopy(pSelf->r.currentAngles, pSelf->s.apos.trBase);
     pSelf->s.apos.trType = TR_STATIONARY;
 
-    pSelf->flags |= __mh_execute_header;
+    pSelf->flags |= 0x1000;
 }
 
 /* line 463 */

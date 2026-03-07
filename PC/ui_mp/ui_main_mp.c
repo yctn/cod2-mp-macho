@@ -2300,79 +2300,79 @@ void UI_Init(void)
         "movl $0x1001, 8(%esp)\n" /* line 197 */
         "movl $1, 4(%esp)\n"
         "movl $str_002aa3b8, (%esp)\n" /* "g_allowvote" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 199 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a81f4, (%esp)\n" /* "cg_brass" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 200 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8200, (%esp)\n" /* "cg_marks" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 202 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3c4, (%esp)\n" /* "server1" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 203 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3cc, (%esp)\n" /* "server2" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 204 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3d4, (%esp)\n" /* "server3" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 205 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3dc, (%esp)\n" /* "server4" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 206 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3e4, (%esp)\n" /* "server5" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 207 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3ec, (%esp)\n" /* "server6" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 208 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3f4, (%esp)\n" /* "server7" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 209 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa3fc, (%esp)\n" /* "server8" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 210 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa404, (%esp)\n" /* "server9" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 211 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa40c, (%esp)\n" /* "server10" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 212 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa418, (%esp)\n" /* "server11" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 213 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa424, (%esp)\n" /* "server12" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 214 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa430, (%esp)\n" /* "server13" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 215 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa43c, (%esp)\n" /* "server14" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 216 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa448, (%esp)\n" /* "server15" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 8(%esp)\n" /* line 217 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa454, (%esp)\n" /* "server16" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 219 */
         "movl $2, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
@@ -2427,7 +2427,7 @@ void UI_Init(void)
         "movl $0x1001, 8(%esp)\n" /* line 238 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa4c8, (%esp)\n" /* "ui_netGametypeName" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, ui_netGameTypeName\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 240 */
         "movl $2, 0xc(%esp)\n"
@@ -2446,32 +2446,32 @@ void UI_Init(void)
         "movl $0x1001, 8(%esp)\n" /* line 244 */
         "movl $1, 4(%esp)\n"
         "movl $str_002aa500, (%esp)\n" /* "ui_browserShowFull" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, ui_browserShowFull\n"
         "movl $0x1001, 8(%esp)\n" /* line 245 */
         "movl $1, 4(%esp)\n"
         "movl $str_002aa514, (%esp)\n" /* "ui_browserShowEmpty" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, ui_browserShowEmpty\n"
         "movl $0x1001, 8(%esp)\n" /* line 246 */
         "movl $1, 4(%esp)\n"
         "movl $str_002aa528, (%esp)\n" /* "ui_browserShowPassword" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, ui_browserShowPassword\n"
         "movl $0x1001, 8(%esp)\n" /* line 247 */
         "movl $1, 4(%esp)\n"
         "movl $str_002aa540, (%esp)\n" /* "ui_browserShowNoPassword" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, ui_browserShowNoPassword\n"
         "movl $0x1001, 8(%esp)\n" /* line 248 */
         "movl $1, 4(%esp)\n"
         "movl $str_002aa55c, (%esp)\n" /* "ui_browserShowPure" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, ui_browserShowPure\n"
         "movl $0x1001, 8(%esp)\n" /* line 249 */
         "movl $0, 4(%esp)\n"
         "movl $str_002aa570, (%esp)\n" /* "ui_browserShowDedicated" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, ui_browserShowDedicated\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 250 */
         "movl $0x7fffffff, 0xc(%esp)\n"
@@ -2511,12 +2511,12 @@ void UI_Init(void)
         "movl $0x1040, 8(%esp)\n" /* line 265 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa5f4, (%esp)\n" /* "ui_playerProfileSelected" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, ui_playerProfileSelected\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 266 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_002aa610, (%esp)\n" /* "ui_playerProfileNameNew" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, ui_playerProfileNameNew\n"
         "movl imp_legacyHacksArray, %eax\n" /* line 4169 */
         "movb $0, 0x2e4(%eax)\n"
@@ -2641,7 +2641,7 @@ void UI_Init(void)
         "movl $0x1040, 8(%esp)\n" /* line 4265 */
         "movl $1, 4(%esp)\n"
         "movl $str_002aa708, (%esp)\n" /* "ui_multiplayer" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         /* } scope */
         "addl $0x3c, %esp\n" /* line 4266 */
         "popl %ebx\n"

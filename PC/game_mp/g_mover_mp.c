@@ -73,8 +73,8 @@
 #define ENTITY_STRIDE sizeof(gentity_s)
 
 /* External globals (BSS/data pointers) */
-extern byte *level_ptr;         /* imp_level */
-extern byte *g_entities_ptr;    /* imp_g_entities */
+extern byte level_ptr[];         /* imp_level */
+extern byte g_entities_ptr[];    /* imp_g_entities */
 extern byte *entityHandlers_ptr; /* imp_entityHandlers */
 
 /* level_ptr field access */
@@ -115,13 +115,13 @@ extern unsigned char G_GeneralLink(gentity_t *ent);
 extern int G_RunThink(gentity_t *ent);
 
 /* Function prototypes */
-bitread_perm_state use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator);
+void use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator);
 static void trigger_use_shared(gentity_t *ent);
-bitread_perm_state trigger_use(gentity_t *ent);
-bitread_perm_state trigger_use_touch(gentity_t *ent);
+void trigger_use(gentity_t *ent);
+void trigger_use_touch(gentity_t *ent);
 qboolean G_TryPushingEntity(gentity_t *check, gentity_t *pusher, vec_t *move, vec_t *amove);
-bitread_perm_state G_MoverTeam(gentity_t *ent);
-bitread_perm_state G_RunMover(gentity_t *ent);
+void G_MoverTeam(gentity_t *ent);
+void G_RunMover(gentity_t *ent);
 
 /*
  * Helper: G_TraceCapsuleForEntity
@@ -165,7 +165,7 @@ static void G_TraceCapsuleForEntity(trace_t *tr, gentity_t *check, vec_t *origin
 #define TRACE_IS_STUCK(tr) (*(unsigned short *)&(tr)->allsolid)
 
 /* line 522 */
-bitread_perm_state use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
+void use_trigger_use(gentity_t *ent, gentity_t *other, gentity_t *activator)
 {
     /* Empty function - just returns */
     (void)ent;
@@ -247,14 +247,14 @@ static void trigger_use_shared(gentity_t *ent)
 }
 
 /* line 596 */
-bitread_perm_state trigger_use(gentity_t *ent)
+void trigger_use(gentity_t *ent)
 {
     /* line 598 */
     trigger_use_shared(ent);
 }
 
 /* line 602 */
-bitread_perm_state trigger_use_touch(gentity_t *ent)
+void trigger_use_touch(gentity_t *ent)
 {
     /* line 604 */
     trigger_use_shared(ent);
@@ -444,7 +444,7 @@ try_push_success:
 }
 
 /* line 417 */
-bitread_perm_state G_MoverTeam(gentity_t *ent)
+void G_MoverTeam(gentity_t *ent)
 {
     vec3_t origin, angles;
     vec3_t move, amove;
@@ -736,7 +736,7 @@ skip_entity:
 }
 
 /* line 510 */
-bitread_perm_state G_RunMover(gentity_t *ent)
+void G_RunMover(gentity_t *ent)
 {
     /* line 512: check tagInfo */
     if (ENT_TAGINFO(ent) != 0) {

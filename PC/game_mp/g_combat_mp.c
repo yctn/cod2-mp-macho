@@ -46,8 +46,8 @@ extern float g_fHitLocDamageMult[19]; /* 0x0 */
 extern const char * g_HitLocNames[19]; /* g_HitLocNames */
 static scr_string_t g_HitLocConstNames[19]; /* g_HitLocConstNames */
 
-extern byte *g_entities_ptr; /* imp_g_entities - g_entities base */
-extern byte *level_ptr; /* imp_level */
+extern byte g_entities_ptr[]; /* imp_g_entities - g_entities base */
+extern byte level_ptr[]; /* imp_level */
 extern byte *g_clients_ptr; /* imp_entityHandlers */
 extern byte *g_debug_damage_ptr; /* imp_g_debugDamage */
 extern byte *g_scr_data_ptr; /* imp_scr_const */

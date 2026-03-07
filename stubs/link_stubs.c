@@ -1,5 +1,24 @@
 /* Auto-generated stubs for remaining undefined symbols */
 #include <stdio.h>
+#include "common_types.h"
+
+/*
+ * Mac binary's Dvar_RegisterString/Bool used a 5-param convention:
+ *   (name, value, min, max, flags)
+ * Our decompiled versions only take 3 params: (name, value, flags).
+ * All inline asm from the Mac decompilation uses the 5-param convention.
+ * These wrappers translate between the two calling conventions.
+ */
+extern const dvar_t * Dvar_RegisterString(const char *dvarName, const char *value, int flags);
+extern const dvar_t * Dvar_RegisterBool(const char *dvarName, int value, int flags);
+
+const dvar_t * Dvar_RegisterString_mac(const char *name, const char *value, int min, int max, int flags) {
+    return Dvar_RegisterString(name, value ? value : "", flags);
+}
+
+const dvar_t * Dvar_RegisterBool_mac(const char *name, int value, int min, int max, int flags) {
+    return Dvar_RegisterBool(name, value, flags);
+}
 
 /* --- Function stubs --- */
 int AddMovieResource() { return 0; }
@@ -247,7 +266,7 @@ char fx_time_dst2[64] __attribute__((aligned(4))) = {0};
 char fx_time_src1[64] __attribute__((aligned(4))) = {0};
 char fx_time_src2[64] __attribute__((aligned(4))) = {0};
 /* g_backEndData: decompiler alias for imp_dxState — now a symbol alias in import_pointers.S */
-char g_banIPs_dvar[64] __attribute__((aligned(4))) = {0};
+/* g_banIPs_dvar: aliased to g_banIPs in import_pointers.S */
 char g_bobMax_ptr[64] __attribute__((aligned(4))) = {0};
 char g_cheats_dvar[64] __attribute__((aligned(4))) = {0};
 char g_clients_ptr[64] __attribute__((aligned(4))) = {0};
@@ -259,7 +278,7 @@ char g_debug_damage_ptr[64] __attribute__((aligned(4))) = {0};
 /* g_dxCaps: decompiler alias for BSS 'r_rendererInUse' — now a symbol alias in stubs/symbol_aliases.S */
 /* g_dxIter: decompiler alias for 'alwaysfails' — now a symbol alias in stubs/symbol_aliases.S */
 char g_enemylookDist[64] __attribute__((aligned(4))) = {0};
-char g_entities_ptr[64] __attribute__((aligned(4))) = {0};
+/* g_entities_ptr: alias defined in literals.S as .set g_entities_ptr, g_entities */
 char GetAvailableWindowPositioningBounds[64] __attribute__((aligned(4))) = {0};
 char GetComponentVersion[64] __attribute__((aligned(4))) = {0};
 char GetCurrentKeyModifiers[64] __attribute__((aligned(4))) = {0};
@@ -298,15 +317,14 @@ char GLOBAL__I__ZN13CMemoryBuffer20sDelayedFreeRequestsE[64] __attribute__((alig
 char GoToBeginningOfMovie[64] __attribute__((aligned(4))) = {0};
 char g_password_ptr[64] __attribute__((aligned(4))) = {0};
 char g_phys_world[64] __attribute__((aligned(4))) = {0};
-char G_RegisterDvars[64] __attribute__((aligned(4))) = {0};
-char g_renderer_ptr[64] __attribute__((aligned(4))) = {0};
+/* g_renderer_ptr: linker alias to re */
 /* g_renderState: decompiler alias for imp_r_fog — now a symbol alias in import_pointers.S */
 char g_ri[64] __attribute__((aligned(4))) = {0};
 char g_scr_data_ptr[64] __attribute__((aligned(4))) = {0};
-char GScr_LoadAnimScripts[64] __attribute__((aligned(4))) = {0};
-char GScr_PostResetTimeout[64] __attribute__((aligned(4))) = {0};
+void GScr_LoadAnimScripts(void) {}
+void GScr_PostResetTimeout(void) {}
 char g_sNextDmgTableId[64] __attribute__((aligned(4))) = {0};
-char G_SpawnTriggerHurt[64] __attribute__((aligned(4))) = {0};
+void G_SpawnTriggerHurt(void) {}
 char g_sv_running_ptr[64] __attribute__((aligned(4))) = {0};
 char g_time[64] __attribute__((aligned(4))) = {0};
 char g_time_ptr[64] __attribute__((aligned(4))) = {0};
@@ -343,7 +361,7 @@ char IsMovieDone[64] __attribute__((aligned(4))) = {0};
 char IsWindowVisible[64] __attribute__((aligned(4))) = {0};
 char jpeg_memory_src[64] __attribute__((aligned(4))) = {0};
 char kCFAllocatorDefault[64] __attribute__((aligned(4))) = {0};
-char level_ptr[64] __attribute__((aligned(4))) = {0};
+/* level_ptr: alias defined in literals.S as .set level_ptr, level */
 char loadingMessage[64] __attribute__((aligned(4))) = {0};
 char LockPixels[64] __attribute__((aligned(4))) = {0};
 char LSCopyItemInfoForRef[64] __attribute__((aligned(4))) = {0};
@@ -375,7 +393,7 @@ char PaintRect[64] __attribute__((aligned(4))) = {0};
 char PaintRoundRect[64] __attribute__((aligned(4))) = {0};
 char PBGetCatInfoSync[64] __attribute__((aligned(4))) = {0};
 char PBHGetVolParmsSync[64] __attribute__((aligned(4))) = {0};
-char playerCorpseInfo_ptr[64] __attribute__((aligned(4))) = {0};
+/* playerCorpseInfo_ptr: alias defined in literals.S as .set playerCorpseInfo_ptr, g_scr_data */
 char PlotIconRef[64] __attribute__((aligned(4))) = {0};
 char PostEventToQueue[64] __attribute__((aligned(4))) = {0};
 char pPriorityMap[64] __attribute__((aligned(4))) = {0};
@@ -410,9 +428,9 @@ char record_callback_ptr[64] __attribute__((aligned(4))) = {0};
 char ReleaseEvent[64] __attribute__((aligned(4))) = {0};
 char ReleaseIconRef[64] __attribute__((aligned(4))) = {0};
 char re_ptr_195eca8[64] __attribute__((aligned(4))) = {0};
-char RestoreBody[64] __attribute__((aligned(4))) = {0};
+void RestoreBody(void) {}
 char r_frontEndDataOut[64] __attribute__((aligned(4))) = {0};
-char r_frontEndData_ptr[64] __attribute__((aligned(4))) = {0};
+/* r_frontEndData_ptr: linker alias to rg */
 char r_gammaSetting[64] __attribute__((aligned(4))) = {0};
 char RGBForeColor[64] __attribute__((aligned(4))) = {0};
 char r_glob[64] __attribute__((aligned(4))) = {0};
@@ -423,7 +441,7 @@ char r_lightGridEnableTweaks[64] __attribute__((aligned(4))) = {0};
 char r_lightGridSpread[64] __attribute__((aligned(4))) = {0};
 char r_lightGridSunDir[64] __attribute__((aligned(4))) = {0};
 char r_lightGridUseTweakedValues[64] __attribute__((aligned(4))) = {0};
-char r_limits_ptr[64] __attribute__((aligned(4))) = {0};
+/* r_limits_ptr: linker alias to vidConfig */
 char R_LoadSun_f[64] __attribute__((aligned(4))) = {0};
 char r_occlusionQuery[64] __attribute__((aligned(4))) = {0};
 char r_phys[64] __attribute__((aligned(4))) = {0};
@@ -435,19 +453,19 @@ char R_SmcStats_f[64] __attribute__((aligned(4))) = {0};
 char r_sundvar_table[64] __attribute__((aligned(4))) = {0};
 char r_sunFlareState[64] __attribute__((aligned(4))) = {0};
 char r_surftype_table_ptr[64] __attribute__((aligned(4))) = {0};
-char r_sys_ptr[64] __attribute__((aligned(4))) = {0};
+/* r_sys_ptr: linker alias to ri */
 char RunAppModalLoopForWindow[64] __attribute__((aligned(4))) = {0};
 char RunStandardAlert[64] __attribute__((aligned(4))) = {0};
 char r_videoConfig[64] __attribute__((aligned(4))) = {0};
 char r_vtable_ptr[64] __attribute__((aligned(4))) = {0};
 char r_world_ptr[64] __attribute__((aligned(4))) = {0};
-char scrAnimPub_ptr[64] __attribute__((aligned(4))) = {0};
-char Scr_BeginLoadAnimScripts[64] __attribute__((aligned(4))) = {0};
-char scrCompGlob_ptr[64] __attribute__((aligned(4))) = {0};
-char scrCompPub_ptr[64] __attribute__((aligned(4))) = {0};
-char scr_const_ptr[64] __attribute__((aligned(4))) = {0};
-char Scr_EndLoadAnimScripts[64] __attribute__((aligned(4))) = {0};
-char scrParserPub_ptr[64] __attribute__((aligned(4))) = {0};
+/* scrAnimPub_ptr: linker alias to scrAnimPub */
+void Scr_BeginLoadAnimScripts(void) {}
+/* scrCompGlob_ptr: replaced by imp_scrCompileGlob in import_pointers.S */
+/* scrCompPub_ptr: linker alias to scrCompilePub */
+/* scr_const_ptr: alias defined in literals.S as .set scr_const_ptr, scr_const */
+void Scr_EndLoadAnimScripts(void) {}
+/* scrParserPub_ptr: linker alias to scrParserPub */
 char scrPlace[64] __attribute__((aligned(4))) = {0};
 char SetClip[64] __attribute__((aligned(4))) = {0};
 char SetControlData[64] __attribute__((aligned(4))) = {0};
@@ -515,7 +533,7 @@ char sv_packet_info_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_padPackets_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_privateClients_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_privatePassword_dvar[64] __attribute__((aligned(4))) = {0};
-char sv_ptr[64] __attribute__((aligned(4))) = {0};
+/* sv_ptr: linker alias to sv */
 char sv_pure_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_reconnectlimit_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_referencedIwdNames_dvar[64] __attribute__((aligned(4))) = {0};
@@ -525,7 +543,7 @@ char sv_serverid_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_showAverageBPS_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_showcommands_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_showCommands_dvar[64] __attribute__((aligned(4))) = {0};
-char svs_ptr[64] __attribute__((aligned(4))) = {0};
+/* svs_ptr: linker alias to svs */
 char sv_timeout_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_voice_dvar[64] __attribute__((aligned(4))) = {0};
 char sv_voiceQuality_dvar[64] __attribute__((aligned(4))) = {0};

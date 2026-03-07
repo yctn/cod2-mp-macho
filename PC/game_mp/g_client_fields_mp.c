@@ -25,8 +25,8 @@ extern int GScr_GetHeadIconIndex(const char *name);
 extern void SV_GetConfigstring(int index, char *buf, int bufSize);
 
 extern byte *g_scr_data_ptr; /* imp_scr_const - direct pointer to scr data */
-extern byte *level_ptr;      /* imp_level - points to level struct */
-extern byte *g_entities_ptr; /* imp_g_entities - points to entity array */
+extern byte level_ptr[];      /* imp_level - points to level struct */
+extern byte g_entities_ptr[]; /* imp_g_entities - points to entity array */
 
 #define CLIENT_STRIDE sizeof(gclient_s)
 #define ENTITY_STRIDE sizeof(gentity_s)

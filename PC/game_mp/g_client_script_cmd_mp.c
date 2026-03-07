@@ -8,7 +8,7 @@
  *   #include "PC/universal/com_vector.h"
  */
 
-static const BuiltinMethodDef methods[59]; /* methods */
+extern const unsigned char player_methods[];
 
 void PlayerCmd_takeWeapon(struct scr_entref_t entref);
 void PlayerCmd_takeAllWeapons(scr_entref_t entref);
@@ -3545,7 +3545,7 @@ BuiltinMethod Player_GetMethod(const char * *pName)
         "movl (%eax), %eax\n"
         "movl %eax, -0x1c(%ebp)\n" /* name */
         "xorl %esi, %esi\n" /* i */
-        "movl $methods, %ebx\n"
+        "movl $player_methods, %ebx\n"
         "xorl %edi, %edi\n"
         "movl %eax, %edx\n"
         "jmp .Lf1c01fc_001c022b\n"
@@ -3563,10 +3563,10 @@ BuiltinMethod Player_GetMethod(const char * *pName)
         "calll strcmp\n"
         "testl %eax, %eax\n"
         "jne .Lf1c01fc_001c021a\n"
-        "movl methods(%edi), %eax\n" /* line 1961 */
+        "movl player_methods(%edi), %eax\n" /* line 1961 */
         "movl 8(%ebp), %edx\n" /* pName */
         "movl %eax, (%edx)\n"
-        "movl methods+4(%edi), %eax\n" /* line 1962 */
+        "movl player_methods+4(%edi), %eax\n" /* line 1962 */
         /* } scope */
         "addl $0x2c, %esp\n" /* line 1966 */
         "popl %ebx\n"

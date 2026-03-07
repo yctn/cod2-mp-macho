@@ -2441,7 +2441,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 392 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a7cf8, (%esp)\n" /* "cg_drawGun" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawGun\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 393 */
         "movl $4, 0xc(%esp)\n"
@@ -2489,22 +2489,22 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 405 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a7d50, (%esp)\n" /* "cg_draw2D" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_draw2D\n"
         "movl $0x1080, 8(%esp)\n" /* line 406 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a7d5c, (%esp)\n" /* "cg_drawHealth" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawHealth\n"
         "movl $0x1001, 8(%esp)\n" /* line 407 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a7d6c, (%esp)\n" /* "cg_drawBreathHint" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawBreathHint\n"
         "movl $0x1001, 8(%esp)\n" /* line 408 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a7d80, (%esp)\n" /* "cg_drawMantleHint" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawMantleHint\n"
         "movl $0x1001, 0xc(%esp)\n" /* line 409 */
         "movl $0, 8(%esp)\n"
@@ -2521,27 +2521,27 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 414 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a7db4, (%esp)\n" /* "cg_drawScriptUsage" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawScriptUsage\n"
         "movl $0x1080, 8(%esp)\n" /* line 415 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a7dc8, (%esp)\n" /* "cg_drawMaterial" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawMaterial\n"
         "movl $0x1001, 8(%esp)\n" /* line 416 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a7dd8, (%esp)\n" /* "cg_drawSnapshot" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawSnapshot\n"
         "movl $0x1001, 8(%esp)\n" /* line 417 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a7de8, (%esp)\n" /* "cg_drawTurretCrosshair" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawTurretCrosshair\n"
         "movl $0x1001, 8(%esp)\n" /* line 418 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a7e00, (%esp)\n" /* "cg_drawCrosshairNames" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawCrosshairNames\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 419 */
         "movl $0x280, 0xc(%esp)\n"
@@ -2589,7 +2589,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1001, 8(%esp)\n" /* line 431 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a7eac, (%esp)\n" /* "cg_hudCompassSpringyPointers" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_hudCompassSpringyPointers\n"
         "movl $0x1081, 0x10(%esp)\n" /* line 432 */
         "movl $0x41200000, 0xc(%esp)\n"
@@ -2630,7 +2630,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1001, 8(%esp)\n" /* line 440 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a7f4c, (%esp)\n" /* "cg_hudStanceHintPrints" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_hudStanceHintPrints\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 441 */
         "movl $0x44000000, %esi\n"
@@ -2665,7 +2665,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 445 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a7fc4, (%esp)\n" /* "cg_hudDamageIconInScope" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_hudDamageIconInScope\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 446 */
         "movl $0x447a0000, %edi\n"
@@ -2685,7 +2685,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 448 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8014, (%esp)\n" /* "cg_hudGrenadeIconInScope" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_hudGrenadeIconInScope\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 449 */
         "movl %esi, 0xc(%esp)\n"
@@ -2772,7 +2772,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1001, 8(%esp)\n" /* line 460 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8154, (%esp)\n" /* "cg_drawLagometer" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawLagometer\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 465 */
         "movl $0x461c4000, %esi\n"
@@ -2814,22 +2814,22 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1081, 8(%esp)\n" /* line 496 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a81c8, (%esp)\n" /* "cg_crosshairDynamic" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_crosshairDynamic\n"
         "movl $0x1081, 8(%esp)\n" /* line 497 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a81dc, (%esp)\n" /* "cg_crosshairEnemyColor" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_crosshairEnemyColor\n"
         "movl $0x1001, 8(%esp)\n" /* line 498 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a81f4, (%esp)\n" /* "cg_brass" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_brass\n"
         "movl $0x1001, 8(%esp)\n" /* line 499 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8200, (%esp)\n" /* "cg_marks" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_marks\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 500 */
         "movl $0x400, 0xc(%esp)\n"
@@ -2925,12 +2925,12 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 515 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a82dc, (%esp)\n" /* "cg_debugposition" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_debugPosition\n"
         "movl $0x1080, 8(%esp)\n" /* line 516 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a82f0, (%esp)\n" /* "cg_debugevents" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_debugEvents\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 517 */
         "movl $0x7f7fffff, 0xc(%esp)\n"
@@ -2942,7 +2942,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 518 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8310, (%esp)\n" /* "cg_nopredict" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_nopredict\n"
         "movl $__mh_execute_header, 0x10(%esp)\n" /* line 520 */
         "movl $2, 0xc(%esp)\n"
@@ -2954,7 +2954,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 521 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a832c, (%esp)\n" /* "cg_footsteps" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_footsteps\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 522 */
         "movl $0x3f800000, 0xc(%esp)\n"
@@ -3023,7 +3023,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 531 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a83e4, (%esp)\n" /* "cg_thirdPerson" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_thirdPerson\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 532 */
         "movl $0xea60, 0xc(%esp)\n"
@@ -3042,12 +3042,12 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1003, 8(%esp)\n" /* line 534 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8410, (%esp)\n" /* "cg_predictItems" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_predictItems\n"
         "movl $0x1001, 8(%esp)\n" /* line 536 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8420, (%esp)\n" /* "cg_noTaunt" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_noTaunt\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 537 */
         "movl $0xea60, 0xc(%esp)\n"
@@ -3059,7 +3059,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1001, 8(%esp)\n" /* line 539 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8440, (%esp)\n" /* "cg_teamChatsOnly" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_teamChatsOnly\n"
         "movl $0x1040, 0x10(%esp)\n" /* line 544 */
         "movl $2, 0xc(%esp)\n"
@@ -3071,7 +3071,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1008, 8(%esp)\n" /* line 546 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a8454, (%esp)\n" /* "g_synchronousClients" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_synchronousClients\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 554 */
         "movl $0x3ff, 0xc(%esp)\n"
@@ -3090,12 +3090,12 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1001, 8(%esp)\n" /* line 557 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a847c, (%esp)\n" /* "con_minicon" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_minicon\n"
         "movl $0x1001, 8(%esp)\n" /* line 559 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8488, (%esp)\n" /* "cg_subtitles" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_subtitles\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 560 */
         "movl $0x7f7fffff, 0xc(%esp)\n"
@@ -3156,7 +3156,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 578 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8548, (%esp)\n" /* "cg_drawGameMessages" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_drawGameMessages\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 580 */
         "movl $8, 0xc(%esp)\n"
@@ -3182,7 +3182,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1001, 8(%esp)\n" /* line 584 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a85a8, (%esp)\n" /* "cg_descriptiveText" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_descriptiveText\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 586 */
         "movl $0x41200000, 0xc(%esp)\n"
@@ -3216,7 +3216,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 590 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a8628, (%esp)\n" /* "cg_shock_sound" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_shock_sound\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 591 */
         "movl $0x41200000, 0xc(%esp)\n"
@@ -3355,7 +3355,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 610 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a881c, (%esp)\n" /* "cg_shock_mouse" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_shock_mouse\n"
         "movl $0x1080, 0x10(%esp)\n" /* line 611 */
         "movl $0x7f7fffff, 0xc(%esp)\n"
@@ -3418,7 +3418,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1080, 8(%esp)\n" /* line 620 */
         "movl $0, 4(%esp)\n"
         "movl $str_002a88f4, (%esp)\n" /* "cg_constantSizeHeadIcons" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_constantSizeHeadIcons\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 621 */
         "movl $0x3f800000, 0xc(%esp)\n"
@@ -3430,7 +3430,7 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $0x1001, 8(%esp)\n" /* line 623 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a892c, (%esp)\n" /* "cg_blood" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, cg_blood\n"
         "movl imp_legacyHacks, %ebx\n" /* line 625 */
         "movl (%ebx), %eax\n"
@@ -3442,12 +3442,12 @@ void CG_Init(int serverMessageNum, int serverCommandSequence, int clientNum)
         "movl $__mh_execute_header, 8(%esp)\n" /* line 628 */
         "movl $str_002a8938, 4(%esp)\n" /* "tag_weapon_left" */
         "movl $str_002a8948, (%esp)\n" /* "cg_weaponleftbone" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, cg_weaponleftbone\n"
         "movl $__mh_execute_header, 8(%esp)\n" /* line 629 */
         "movl $str_002a895c, 4(%esp)\n" /* "tag_weapon_right" */
         "movl $str_002a8970, (%esp)\n" /* "cg_weaponrightbone" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "movl %eax, cg_weaponrightbone\n"
         "movl imp_com_sv_running, %edx\n" /* line 632 */
         "movl (%edx), %eax\n"

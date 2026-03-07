@@ -4147,7 +4147,7 @@ void Con_Init(void)
         "movl $0x1001, 8(%esp)\n" /* line 559 */
         "movl $0, 4(%esp)\n"
         "movl $str_002ab870, (%esp)\n" /* "con_restricted" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, con_restricted\n"
         "movl imp_g_consoleField, %ebx\n" /* line 561 */
         "movl %ebx, (%esp)\n"

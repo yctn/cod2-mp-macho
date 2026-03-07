@@ -87,7 +87,7 @@ void CG_AntiBurnInHUD_RegisterDvars(void)
         "movl $0x1001, 8(%esp)\n" /* line 64 */
         "movl $1, 4(%esp)\n"
         "movl $str_002a9028, (%esp)\n" /* "hud_enable" */
-        "calll Dvar_RegisterBool\n"
+        "calll Dvar_RegisterBool_mac\n"
         "movl %eax, hud_enable\n"
         "movl $0x1001, 0x10(%esp)\n" /* line 68 */
         "movl $0x41f00000, %esi\n"

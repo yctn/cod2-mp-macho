@@ -19,7 +19,7 @@ extern void NET_OutOfBandVoiceData(netsrc_t sock, netadr_t adr, byte *data, int 
 extern void G_BroadcastVoice(gentity_t *talker, VoicePacket_t *voicePacket);
 extern void Com_Printf(const char *msg, ...);
 
-extern byte *svs_ptr;        /* imp_svs */
+extern byte svs_ptr[];        /* imp_svs */
 extern byte *sv_voice_dvar;  /* imp_sv_voice */
 
 void SV_SendClientVoiceData(client_t *client);
@@ -101,7 +101,7 @@ void SV_SendClientVoiceData(client_t *client)
 /* line 97 */
 Bool SV_ClientWantsVoiceData(int clientNum)
 {
-    byte *svs = *(byte **)&svs_ptr;
+    byte *svs = (byte *)imp_svs;
     byte *clients = *(byte **)(svs + 0xc);
     return *(Bool *)(clients + clientNum * 0x78f0c + 0x78f08);
 }
@@ -109,7 +109,7 @@ Bool SV_ClientWantsVoiceData(int clientNum)
 /* line 106 */
 Bool SV_ClientHasClientMuted(int listener, int talker)
 {
-    byte *svs = *(byte **)&svs_ptr;
+    byte *svs = (byte *)imp_svs;
     byte *clients = *(byte **)(svs + 0xc);
     byte *client = clients + listener * 0x78f0c;
     return *(Bool *)(client + 0x78ec8 + talker);
@@ -118,7 +118,7 @@ Bool SV_ClientHasClientMuted(int listener, int talker)
 /* line 115 */
 void SV_QueueVoicePacket(int talkerNum, int clientNum, VoicePacket_t *voicePacket)
 {
-    byte *svs = *(byte **)&svs_ptr;
+    byte *svs = (byte *)imp_svs;
     byte *clients = *(byte **)(svs + 0xc);
     byte *client = clients + clientNum * 0x78f0c;
     int count;
@@ -149,7 +149,7 @@ void SV_UserVoice(client_t *cl, msg_t *msg)
     int i;
 
     /* Check voice dvar enabled */
-    if (*(byte *)(*(int *)(*(int *)&sv_voice_dvar) + 8) == 0)
+    if (*(byte *)(*(int *)(*(int *)imp_sv_voice) + 8) == 0)
         return;
 
     packetCount = MSG_ReadByte(msg);
@@ -192,11 +192,11 @@ void SV_PreGameUserVoice(client_t *cl, msg_t *msg)
     int otherOffset;
 
     /* Check voice dvar enabled */
-    if (*(byte *)(*(int *)(*(int *)&sv_voice_dvar) + 8) == 0)
+    if (*(byte *)(*(int *)(*(int *)imp_sv_voice) + 8) == 0)
         return;
 
     /* Compute clientNum from pointer difference */
-    svs = *(byte **)&svs_ptr;
+    svs = (byte *)imp_svs;
     clients = *(byte **)(svs + 0xc);
     clientNum = (int)((byte *)cl - clients) / 0x78f0c;
 

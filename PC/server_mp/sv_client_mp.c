@@ -75,7 +75,7 @@ void SV_AuthorizeRequest(struct netadr_t from, int challenge)
         "movl $0x101c, 8(%esp)\n" /* line 150 */
         "movl $str_002157b8, 4(%esp)\n"
         "movl $str_00216d64, (%esp)\n" /* "fs_game" */
-        "calll Dvar_RegisterString\n"
+        "calll Dvar_RegisterString_mac\n"
         "testl %eax, %eax\n" /* line 151 */
         "je .Lf17ad28_0017ada1\n"
         "movl 8(%eax), %eax\n"

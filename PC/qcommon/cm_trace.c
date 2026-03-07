@@ -34,7 +34,7 @@ int CM_TransformedBoxSightTrace(int hitNum, const vec_t *start, const vec_t *end
 /* line 79 */
 cmodel_t * CM_ClipHandleToModel(clipHandle_t handle)
 {
-    char *cm = *(char **)imp_cm;
+    char *cm = (char *)imp_cm;
     if (handle < *(int *)(cm + 0x74)) {
         return (cmodel_t *)(*(char **)(cm + 0x78) + handle * 72);
     }

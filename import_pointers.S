@@ -1594,6 +1594,8 @@ imp_sc_showDebug: .long sc_showDebug
 imp_scene: .long scene
 .globl imp_scrAnimPub
 imp_scrAnimPub: .long scrAnimPub
+.globl imp_scrCompileGlob
+imp_scrCompileGlob: .long scrCompileGlob
 .globl imp_scrCompilePub
 imp_scrCompilePub: .long scrCompilePub
 .globl imp_scrMemTreePub

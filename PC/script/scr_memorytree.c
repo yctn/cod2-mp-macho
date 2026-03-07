@@ -5,7 +5,7 @@
 #include "imports.h"
 
 extern struct scrMemTreePub_t scrMemTreePub; /* 0x0 */
-static struct scrMemTreeGlob_t scrMemTreeGlob; /* scrMemTreeGlob */
+extern unsigned char scrMemTreeGlob[]; /* scrMemTreeGlob - BSS */
 
 extern byte * Z_VirtualAllocInternal(int size);
 
