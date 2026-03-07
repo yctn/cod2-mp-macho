@@ -166,7 +166,7 @@ long unsigned int SV_GameSendServerCommand(int clientNum, svscmd_type type, cons
     if (clientNum == -1) {
         SV_SendServerCommand((void *)0, type, "%s", text);
     } else if (clientNum >= 0) {
-        p = *(char **)*(char **)imp_sv_maxclients;
+        p = *(char **)imp_sv_maxclients;
         maxClients = *(int *)(p + 8);
         if (clientNum < maxClients) {
             clients_base = *(char **)(*(char **)imp_svs + 0xc);
@@ -183,7 +183,7 @@ long unsigned int SV_GameDropClient(int clientNum, const char *reason)
     int maxClients;
     char *clients_base;
 
-    p = *(char **)*(char **)imp_sv_maxclients;
+    p = *(char **)imp_sv_maxclients;
     maxClients = *(int *)(p + 8);
     if (clientNum >= 0 && clientNum < maxClients) {
         clients_base = *(char **)(*(char **)imp_svs + 0xc);
@@ -251,7 +251,7 @@ struct XModel * SV_XModelGet(const char *name)
 long unsigned int SV_DObjDumpInfo(gentity_t *ent)
 {
     void *obj;
-    char *p = *(char **)*(char **)imp_com_developer;
+    char *p = *(char **)imp_com_developer;
     if (*(int *)(p + 8) != 0) {
         obj = Com_GetServerDObj(*(int *)ent);
         if (obj) {
@@ -388,7 +388,7 @@ qboolean SV_GetEntityToken(char *buffer, int bufferSize)
 /* line 1037 */
 int SV_GetGuid(int clientNum)
 {
-    char *p = *(char **)*(char **)imp_sv_maxclients;
+    char *p = *(char **)imp_sv_maxclients;
     char *clients_base;
     if (clientNum < 0 || clientNum >= *(int *)(p + 8)) {
         return 0;
@@ -421,10 +421,10 @@ void SV_SetGametype(void)
     Dvar_RegisterString("g_gametype", "dm", 0x1024);
 
     /* If server is running and has save persist, use current gametype from sv */
-    if (*(char *)(*(char **)*(char **)imp_com_sv_running + 8) && G_GetSavePersist()) {
+    if (*(char *)(*(char **)imp_com_sv_running + 8) && G_GetSavePersist()) {
         I_strncpyz(gametype, *(char **)imp_sv + 0x5f4f4, 64);
     } else {
-        I_strncpyz(gametype, *(char **)(*(char **)*(char **)imp_sv_gametype + 8), 64);
+        I_strncpyz(gametype, *(char **)(*(char **)imp_sv_gametype + 8), 64);
     }
 
     /* Lowercase the gametype string */
@@ -439,7 +439,7 @@ void SV_SetGametype(void)
         gametype[2] = '\0';
     }
 
-    Dvar_SetString(*(dvar_t **)*(char **)imp_sv_gametype, gametype);
+    Dvar_SetString(*(dvar_t **)imp_sv_gametype, gametype);
 }
 
 /* line 1152 */
@@ -464,14 +464,14 @@ static void SV_InitGameVM(int restart, int savepersist)
     Sys_LoadingKeepAlive();
 
     /* Clear client gentityNum for all clients */
-    maxclients = *(int *)(*(char **)*(char **)imp_sv_maxclients + 8);
+    maxclients = *(int *)(*(char **)imp_sv_maxclients + 8);
     clients = *(char **)(*(char **)imp_svs + 0xc);
     for (i = 0; i < maxclients; i++) {
         *(int *)(clients + i * 495372 + 0x20c44) = 0;
     }
 
     /* Dump dvars if dedicated */
-    if (*(int *)(*(char **)*(char **)imp_com_dedicated + 8)) {
+    if (*(int *)(*(char **)imp_com_dedicated + 8)) {
         Com_DvarDump(4);
     }
 }
