@@ -142,6 +142,20 @@ void IN_Frame(void)
                                  ev.type == SDL_KEYDOWN ? 1 : 0,
                                  0, NULL);
                 }
+                /* SDL_TEXTINPUT doesn't fire for control keys, so generate
+                   SE_CHAR events manually for keys that Field_CharEvent needs */
+                if (ev.type == SDL_KEYDOWN) {
+                    int ch = 0;
+                    switch (ev.key.keysym.sym) {
+                    case SDLK_BACKSPACE: ch = 8; break;   /* ctrl-H */
+                    case SDLK_RETURN:    ch = 13; break;   /* enter */
+                    case SDLK_KP_ENTER:  ch = 13; break;
+                    default: break;
+                    }
+                    if (ch) {
+                        Sys_QueEvent(0, (sysEventType_t)2, ch, 0, 0, NULL);
+                    }
+                }
             }
             break;
 

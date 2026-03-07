@@ -27,12 +27,12 @@ static const dvar_t *con_outputSliderColor; /* con_outputSliderColor */
 static const dvar_t *con_outputWindowColor; /* con_outputWindowColor */
 extern int I_stricmp(const char *s1, const char *s2);
 
-static vec4_t con_versionColor; /* con_versionColor */
-static vec4_t con_inputCommandMatchColor; /* con_inputCommandMatchColor */
-static vec4_t con_inputDvarMatchColor; /* con_inputDvarMatchColor */
-static vec4_t con_inputDvarValueColor; /* con_inputDvarValueColor */
-static vec4_t con_inputDvarInactiveValueColor; /* con_inputDvarInactiveValueColor */
-static vec4_t con_inputDvarInfoColor; /* con_inputDvarInfoColor */
+extern const vec4_t con_versionColor; /* con_versionColor - rodata.c */
+extern const vec4_t con_inputCommandMatchColor; /* con_inputCommandMatchColor - rodata.c */
+extern const vec4_t con_inputDvarMatchColor; /* con_inputDvarMatchColor - rodata.c */
+extern const vec4_t con_inputDvarValueColor; /* con_inputDvarValueColor - rodata.c */
+extern const vec4_t con_inputDvarInactiveValueColor; /* con_inputDvarInactiveValueColor - rodata.c */
+extern const vec4_t con_inputDvarInfoColor; /* con_inputDvarInfoColor - rodata.c */
 static int registeredIconMaterialCount; /* registeredIconMaterialCount */
 static const char * hudMsgIconMaterials[256]; /* hudMsgIconMaterials */
 
@@ -141,7 +141,9 @@ const char * CL_GetHudMsgIconMaterialName(int index)
 void Con_ToggleConsole_f(void)
 {
     char *field;
-    if (!*(byte *)((char *)con_restricted + 8)) {
+    /* Decompiler had inverted logic: `!con_restricted` blocked console when NOT restricted.
+       Fixed: only restrict when con_restricted IS set. */
+    if (*(byte *)((char *)con_restricted + 8)) {
         if (*(int *)((char *)*(void **)imp_keys + 0x780))
             goto toggle;
         if (!(*(int *)((char *)*(void **)imp_cl + 4) & 1))
