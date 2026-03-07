@@ -1052,7 +1052,7 @@ write_new:
 /* line 1411 */
 void CL_StartLoading(const char *mapname, const char *gametype)
 {
-    char *ptr = (char *)imp_legacyHacks;
+    char *ptr = *(char **)imp_legacyHacks;
     if (*(int *)(ptr + 4) == 0)
         return;
     CL_StartHunkUsers();

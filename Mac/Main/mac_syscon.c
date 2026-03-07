@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/select.h>
 #include "common_types.h"
 #include "imports.h"
 
@@ -45,12 +47,38 @@ void Sys_ShowConsole(int visLevel, qboolean quitOnClose)
 
 char *Sys_ConsoleInput(void)
 {
-    if (sConsoleText[0] == '\0')
-        return NULL;
+    static int len = 0;
+    fd_set fds;
+    struct timeval tv;
+    int ret;
+    char c;
 
-    strcpy(sReturnedText, sConsoleText);
-    sConsoleText[0] = '\0';
-    return sReturnedText;
+    FD_ZERO(&fds);
+    FD_SET(STDIN_FILENO, &fds);
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+
+    while (select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv) > 0) {
+        ret = read(STDIN_FILENO, &c, 1);
+        if (ret <= 0)
+            break;
+        if (c == '\n') {
+            sConsoleText[len] = '\0';
+            len = 0;
+            strcpy(sReturnedText, sConsoleText);
+            sConsoleText[0] = '\0';
+            return sReturnedText;
+        }
+        if (len < (int)sizeof(sConsoleText) - 1)
+            sConsoleText[len++] = c;
+
+        FD_ZERO(&fds);
+        FD_SET(STDIN_FILENO, &fds);
+        tv.tv_sec = 0;
+        tv.tv_usec = 0;
+    }
+
+    return NULL;
 }
 
 void Conbuf_AppendText(const char *pMsg)

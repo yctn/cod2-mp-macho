@@ -23,7 +23,7 @@ extern void Cbuf_ExecuteText(int exec_when, const char *text);
 extern byte g_entities_ptr[]; /* imp_g_entities */
 extern byte level_ptr[];      /* imp_level */
 extern byte *g_banIPs_dvar;  /* imp_g_banIPs */
-extern byte *g_cheats_dvar;  /* imp_g_dedicated */
+extern void *imp_g_cheats;  /* import pointer to g_cheats dvar */
 
 static ipFilter_t ipFilters[1024]; /* ipFilters */
 static int numIPFilters; /* numIPFilters */
@@ -286,7 +286,7 @@ qboolean ConsoleCommand(void)
     }
 
     /* Check if cheats are enabled: *(*(cheats_dvar) + 8) */
-    if (*(int *)(*(int *)&g_cheats_dvar + 8) == 0)
+    if (*(int *)(*(int *)imp_g_cheats + 8) == 0)
         return 0;
 
     if (I_stricmp(cmd, "say") == 0) {

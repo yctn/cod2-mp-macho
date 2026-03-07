@@ -334,7 +334,7 @@ sysEvent_t Sys_GetEvent(void)
     if (s) {
         len = strlen(s);
         char *b = (char *)Z_MallocInternal(len + 1);
-        I_strncpyz(b, s, len);
+        I_strncpyz(b, s, len + 1);
         Sys_QueEventInternal(0, (sysEventType_t)4, 0, 0, len + 1, b);
     }
 

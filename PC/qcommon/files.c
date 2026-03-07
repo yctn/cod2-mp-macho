@@ -403,7 +403,7 @@ double FS_NewDir_f(void)
 
     /* line 668 | list filtered files starting from fs_searchpaths */
     {
-        void *searchpaths = *(void **)*(void **)imp_fs_searchpaths;
+        void *searchpaths = *(void **)imp_fs_searchpaths;
         dirnames = FS_ListFilteredFiles(searchpaths, "", "", filter, &ndirs, 10);
     }
 
@@ -481,8 +481,8 @@ qboolean FS_iwIwd(char *iwd, char *base)
 /* line 875 */
 double FS_AddCommands(void)
 {
-    Cmd_AddCommand("path", *(void **)imp_FS_Path_f); /* line 877 */
-    Cmd_AddCommand("fullpath", *(void **)imp_FS_FullPath_f); /* line 878 */
+    Cmd_AddCommand("path", (void *)imp_FS_Path_f); /* line 877 */
+    Cmd_AddCommand("fullpath", (void *)imp_FS_FullPath_f); /* line 878 */
     Cmd_AddCommand("dir", FS_Dir_f); /* line 879 */
     Cmd_AddCommand("fdir", FS_NewDir_f); /* line 880 */
     Cmd_AddCommand("touchFile", FS_TouchFile_f); /* line 881 */
@@ -513,7 +513,7 @@ double FS_SetRestrictions(void)
     FS_Startup("main"); /* line 914 */
 
     /* line 923 | walk search paths and verify checksums */
-    path = *(void **)*(void **)imp_fs_searchpaths;
+    path = *(void **)imp_fs_searchpaths;
     while (path != NULL) {
         /* line 925 */
         if (FS_UseSearchPath(path)) {
@@ -540,7 +540,7 @@ const char * FS_LoadedIwdChecksums(void)
     info2[0] = '\0'; /* line 955 */
 
     /* line 957 | walk search paths */
-    search = *(void **)*(void **)imp_fs_searchpaths;
+    search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = *(void **)((char *)search + 4); /* line 960 */
         if (iwd != NULL) {
@@ -564,7 +564,7 @@ const char * FS_LoadedIwdNames(void)
     info3[0] = '\0'; /* line 986 */
 
     /* line 988 | walk search paths */
-    search = *(void **)*(void **)imp_fs_searchpaths;
+    search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = *(void **)((char *)search + 4); /* line 991 */
         if (iwd != NULL) {
@@ -592,7 +592,7 @@ const char * FS_LoadedIwdPureChecksums(void)
     info4[0] = '\0'; /* line 1021 */
 
     /* line 1023 | walk search paths */
-    search = *(void **)*(void **)imp_fs_searchpaths;
+    search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = *(void **)((char *)search + 4); /* line 1026 */
         if (iwd != NULL) {
@@ -616,7 +616,7 @@ const char * FS_ReferencedIwdChecksums(void)
     info5[0] = '\0'; /* line 1052 */
 
     /* line 1054 | walk search paths */
-    search = *(void **)*(void **)imp_fs_searchpaths;
+    search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = *(void **)((char *)search + 4); /* line 1057 */
         if (iwd != NULL) {
@@ -652,7 +652,7 @@ const char * FS_ReferencedIwdNames(void)
     info8[0] = '\0'; /* line 1080 */
 
     /* line 1084 | walk search paths */
-    search = *(void **)*(void **)imp_fs_searchpaths;
+    search = *(void **)imp_fs_searchpaths;
     while (search != NULL) {
         void *iwd = *(void **)((char *)search + 4); /* line 1087 */
         if (iwd != NULL) {
@@ -690,10 +690,10 @@ const char * FS_ReferencedIwdPureChecksums(void)
 
     info6[0] = '\0'; /* line 1124 */
 
-    checksumFeed = *(int *)*(void **)imp_fs_checksumFeed; /* line 1125 */
+    checksumFeed = *(int *)imp_fs_checksumFeed; /* line 1125 */
 
     /* line 1136 | walk search paths */
-    search = *(void **)*(void **)imp_fs_searchpaths;
+    search = *(void **)imp_fs_searchpaths;
     numIwds = 0;
     if (search == NULL) {
         goto no_searchpaths;
@@ -718,7 +718,7 @@ const char * FS_ReferencedIwdPureChecksums(void)
 
     /* line 1155 | optionally append fakeChkSum */
     {
-        int fakeChk = *(int *)*(void **)imp_fs_fakeChkSum;
+        int fakeChk = *(int *)imp_fs_fakeChkSum;
         if (fakeChk != 0) {
             I_strncat(info6, 0x2000, va("%i ", fakeChk)); /* line 1156 */
         }
@@ -734,7 +734,7 @@ no_searchpaths:
     numIwds = 0;
     /* jump to fakeChkSum check */
     {
-        int fakeChk = *(int *)*(void **)imp_fs_fakeChkSum;
+        int fakeChk = *(int *)imp_fs_fakeChkSum;
         if (fakeChk != 0) {
             I_strncat(info6, 0x2000, va("%i ", fakeChk));
         }
@@ -790,7 +790,7 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
 
     /* line 1548 | check if list changed */
     {
-        int *fs_numServerIwds = (int *)*(void **)imp_fs_numServerIwds;
+        int *fs_numServerIwds = (int *)imp_fs_numServerIwds;
         if (c == *fs_numServerIwds) {
             /* line 1550 | same count; check each entry */
             int changed = 0;
@@ -808,8 +808,8 @@ double FS_PureServerSetLoadedIwds(const char *iwdSums, const char *iwdNames)
                 }
 
                 {
-                    int *fs_serverIwds = (int *)*(void **)imp_fs_serverIwds;
-                    char **fs_serverIwdNames = (char **)*(void **)imp_fs_serverIwdNames;
+                    int *fs_serverIwds = (int *)imp_fs_serverIwds;
+                    char **fs_serverIwdNames = (char **)imp_fs_serverIwdNames;
 
                     for (j = 0; j < numOld; j++) { /* line 1552 */
                         /* line 1554 | compare sum */
@@ -848,7 +848,7 @@ do_reload:
     FS_ShutdownServerIwdNames(); /* line 1571 */
 
     {
-        int *fs_numServerIwds = (int *)*(void **)imp_fs_numServerIwds;
+        int *fs_numServerIwds = (int *)imp_fs_numServerIwds;
         *fs_numServerIwds = c; /* line 1573 */
 
         if (c == 0) {
@@ -858,12 +858,12 @@ do_reload:
         Com_DPrintf("Setting pure server iwds\n"); /* line 1576 */
 
         /* line 1577 | copy sums */
-        Com_Memcpy(*(void **)imp_fs_serverIwds, serverIwds, c * 4);
+        Com_Memcpy(imp_fs_serverIwds, serverIwds, c * 4);
         /* line 1578 | copy names */
-        Com_Memcpy(*(void **)imp_fs_serverIwdNames, serverIwdNames, c * 4);
+        Com_Memcpy(imp_fs_serverIwdNames, serverIwdNames, c * 4);
 
         /* line 1579 */
-        *(int *)*(void **)imp_fs_fakeChkSum = 0;
+        *(int *)imp_fs_fakeChkSum = 0;
     }
 
     return 0.0; /* line 1581 */
@@ -888,7 +888,7 @@ double FS_PureServerSetReferencedIwds(const char *iwdSums, const char *iwdNames)
     FS_ShutdownServerReferencedIwds(); /* line 1605 */
 
     /* line 1607 | fill referenced iwds array with sums */
-    fs_serverReferencedIwds = (int *)*(void **)imp_fs_serverReferencedIwds;
+    fs_serverReferencedIwds = (int *)imp_fs_serverReferencedIwds;
     if (c > 0) {
         for (i = 0; i < c; i++) { /* line 1607 */
             fs_serverReferencedIwds[i] = atoi(Cmd_Argv(i)); /* line 1609 */
@@ -902,7 +902,7 @@ double FS_PureServerSetReferencedIwds(const char *iwdSums, const char *iwdNames)
             Com_Error(1, "FS_PureServerSetReferencedIwds: count mismatch"); /* line 1632 */
         }
         /* line 1635 */
-        *(int *)*(void **)imp_fs_numServerReferencedIwds = c;
+        *(int *)imp_fs_numServerReferencedIwds = c;
         return 0.0; /* line 1636 */
     }
 
@@ -920,14 +920,14 @@ double FS_PureServerSetReferencedIwds(const char *iwdSums, const char *iwdNames)
 
     /* line 1624 | fill referenced iwd names */
     if (d > 0) {
-        fs_serverReferencedIwdNames = (char **)*(void **)imp_fs_serverReferencedIwdNames;
+        fs_serverReferencedIwdNames = (char **)imp_fs_serverReferencedIwdNames;
         for (i = 0; i < d; i++) { /* line 1624 */
             fs_serverReferencedIwdNames[i] = CopyStringInternal(Cmd_Argv(i)); /* line 1626 */
         }
     }
 
     /* line 1635 */
-    *(int *)*(void **)imp_fs_numServerReferencedIwds = c;
+    *(int *)imp_fs_numServerReferencedIwds = c;
     return 0.0; /* line 1636 */
 }
 
@@ -1200,7 +1200,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
     char testpath[264];
 
     /* line 778 */
-    numServerIwds = *(int *)*(void **)imp_fs_numServerReferencedIwds;
+    numServerIwds = *(int *)imp_fs_numServerReferencedIwds;
     if (numServerIwds == 0) {
         return 0; /* line 848 */
     }
@@ -1216,8 +1216,8 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
     }
 
     /* line 783 | iterate server-referenced iwds */
-    fs_serverReferencedIwdNames = (char **)*(void **)imp_fs_serverReferencedIwdNames;
-    fs_serverReferencedIwds = (int *)*(void **)imp_fs_serverReferencedIwds;
+    fs_serverReferencedIwdNames = (char **)imp_fs_serverReferencedIwdNames;
+    fs_serverReferencedIwds = (int *)imp_fs_serverReferencedIwds;
 
     for (i = 0; i < numServerIwds; i++) { /* line 783 */
         char *iwdName = fs_serverReferencedIwdNames[i];
@@ -1230,7 +1230,7 @@ qboolean FS_CompareIwds(char *needediwds, int len, qboolean dlstring)
 
         /* line 793 | check if this iwd is in search paths */
         {
-            void *search = *(void **)*(void **)imp_fs_searchpaths;
+            void *search = *(void **)imp_fs_searchpaths;
             int found = 0;
             while (search != NULL) {
                 void *iwd = *(void **)((char *)search + 4); /* line 795 */

@@ -1183,38 +1183,34 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
         newEntry_idx = hash_slot;
 
         {
+            static unsigned int mt_cycle_buckets = 0; /* bitmask of buckets with cycles */
+            static int mt_cycle_warned = 0;
             extern unsigned char scrMemTreeGlob_arr[] __asm__("scrMemTreeGlob");
-            static int mt_free_count = 0;
-            mt_free_count++;
-            /* Check ALL 17 size buckets for cycles BEFORE calling MT_FreeIndex */
-            {
-                int si;
-                for (si = 0; si <= 16; si++) {
-                    unsigned short *root = (unsigned short *)(scrMemTreeGlob_arr + 0x80300 + si * 2);
-                    unsigned short cur = *root;
-                    int steps = 0;
-                    while (cur != 0 && steps < 100000) {
-                        cur = *(unsigned short *)(scrMemTreeGlob_arr + cur * 8);
-                        steps++;
+            /* Compute which bucket this free goes to */
+            int bucket = 0;
+            unsigned int sz = len + 4;
+            { unsigned int s2 = sz; while (s2 > 8 && bucket < 16) { s2 = (s2 + 1) >> 1; bucket++; } }
+            if (mt_cycle_buckets & (1u << bucket)) {
+                /* Already know this bucket has a cycle, skip silently */
+            } else {
+                /* Quick cycle check */
+                unsigned short *root = (unsigned short *)(scrMemTreeGlob_arr + 0x80300 + bucket * 2);
+                unsigned short cur = *root;
+                int steps = 0;
+                while (cur != 0 && steps < 100000) {
+                    cur = *(unsigned short *)(scrMemTreeGlob_arr + cur * 8);
+                    steps++;
+                }
+                if (steps >= 100000) {
+                    if (!mt_cycle_warned) {
+                        Com_Printf("MT_FreeIndex: tree cycle in bucket %d, skipping affected frees\n", bucket);
+                        mt_cycle_warned = 1;
                     }
-                    if (steps >= 100000) {
-                        Com_Printf("TREE CYCLE BEFORE MT_FreeIndex #%d (sv=%d, numBytes=%d) in size bucket %d\n",
-                            mt_free_count, stringValue, (int)(len+4), si);
-                        {
-                            unsigned short c2 = *root;
-                            int j;
-                            for (j = 0; j < 30 && c2 != 0; j++) {
-                                unsigned short l = *(unsigned short *)(scrMemTreeGlob_arr + c2 * 8);
-                                unsigned short r = *(unsigned short *)(scrMemTreeGlob_arr + c2 * 8 + 2);
-                                Com_Printf("  node[%d]: L=%d R=%d\n", (int)c2, (int)l, (int)r);
-                                c2 = l;
-                            }
-                        }
-                        *(volatile int *)0 = 0;
-                    }
+                    mt_cycle_buckets |= (1u << bucket);
+                } else {
+                    MT_FreeIndex(stringValue, len + 4);
                 }
             }
-            MT_FreeIndex(stringValue, len + 4);
         }
 
         /* Re-read chain_next */

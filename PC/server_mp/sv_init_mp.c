@@ -58,7 +58,7 @@ extern byte *sv_debugReliableCmds_dvar; /* imp_sv_debugReliableCmds */
 extern int nextmap;                /* imp_nextmap — BSS dvar pointer */
 extern byte *com_dvarflags_ptr;    /* imp_dvar_modifiedFlags */
 extern byte *com_checksumFeed_dvar; /* imp_com_frameTime */
-extern byte *com_errorEntered_ptr; /* imp_bgs */
+extern void *imp_com_errorEntered;
 /* sv_dedicated_dvar2 removed - use imp_com_dedicated directly */
 extern byte *sv_com_dvarDump_ptr;  /* imp_cl_paused */
 
@@ -638,7 +638,7 @@ next_client1:
         DObjAbort();
         XAnimAbort();
         Scr_Abort();
-        *(int *)*(byte **)&com_errorEntered_ptr = 0;
+        *(int *)imp_com_errorEntered = 0;
     }
 }
 
@@ -891,12 +891,11 @@ void SV_SpawnServer(const char *server)
     SV_SetExpectedHunkUsage(filename);
     CL_StartLoading(server, (char *)((byte *)imp_sv + SV_GAMETYPE_OFF));
 
-    /* Re-preload shader text if CL_StartHunkUsers failed to re-init renderer.
-       CL_ShutdownAll → R_Shutdown → Material_Shutdown clears the shader hash
-       table, and Hunk_Clear frees the shader text cache. CL_StartHunkUsers
-       should re-init via CL_InitRenderer but the legacyHacks guard check
-       fails because it dereferences freed hunk memory. Ensure the shader text
-       cache is available before any material loading. */
+    /* Re-preload shader text: CL_ShutdownAll → R_Shutdown → Material_Shutdown
+       clears the shader hash table, and Hunk_Clear frees the shader text cache.
+       CL_StartLoading → CL_StartHunkUsers re-inits the renderer, but the
+       shader text cache may not be reloaded by that path. Ensure it is
+       available before any material loading. */
     {
         extern unsigned char mtlLoadGlob[];
         if (*(int *)mtlLoadGlob == 0)

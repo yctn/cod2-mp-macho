@@ -150,12 +150,16 @@ int R_ShutdownFonts(void)
 /* line 152 */
 float R_NormalizedTextScale(FontHandle font, float scale)
 {
+    if (!font)
+        return scale;
     return 48.0f * scale / (float)*(int *)((byte *)font + 4);
 }
 
 /* line 202 */
 int R_TextHeight(FontHandle font)
 {
+    if (!font)
+        return 0;
     return *(int *)((byte *)font + 4);
 }
 

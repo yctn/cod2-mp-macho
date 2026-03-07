@@ -424,7 +424,7 @@ void SV_SetGametype(void)
     if (*(char *)(*(char **)imp_com_sv_running + 8) && G_GetSavePersist()) {
         I_strncpyz(gametype, (char *)imp_sv + 0x5f4f4, 64);
     } else {
-        I_strncpyz(gametype, *(char **)((char *)imp_sv_gametype + 8), 64);
+        I_strncpyz(gametype, *(char **)((char *)*(void **)imp_sv_gametype + 8), 64);
     }
 
     /* Lowercase the gametype string */

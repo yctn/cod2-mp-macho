@@ -23,7 +23,7 @@ extern void SetClientViewAngle(gentity_t *ent, vec_t *angles);
 extern void BG_PlayerStateToEntityState(playerState_t *ps, gentity_t *ent, qboolean snap, qboolean forceSnap);
 extern void G_AddEvent(gentity_t *ent, int event, int eventParm);
 
-static turretInfo_t turretInfo[32]; /* turretInfo */
+extern unsigned char turretInfo[]; /* turretInfo - bss.c */
 
 void SP_info_null(gentity_t *self);
 void SP_info_notnull(gentity_t *self);
@@ -394,7 +394,7 @@ void G_FreeTurret(gentity_t *self)
 
     /* Check if owner entity has a client (entity stride 560 = 0x230, field 0x158 = client) */
     ownerNum = *(int *)((byte *)self + 0x150);
-    g_ents = *(gentity_t **)imp_g_entities;
+    g_ents = (gentity_t *)imp_g_entities;
     if (*(int *)((byte *)g_ents + ownerNum * 560 + 0x158))
         G_ClientStopUsingTurret(self);
 

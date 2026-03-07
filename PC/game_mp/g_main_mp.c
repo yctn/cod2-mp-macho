@@ -1132,7 +1132,7 @@ int G_ShutdownGame(qboolean freeScripts)
         FS_FCloseFile(*(int *)((char *)&level + 24));
     }
 
-    *(int *)*(int *)imp_bgs = 0;
+    *(int *)imp_bgs = 0;
 
     for (i = 0; i < *(int *)((char *)&level + 12); i++) {
         if (*(char *)((char *)&g_entities[i] + 0xfc))
@@ -1171,7 +1171,7 @@ int G_ShutdownGame(qboolean freeScripts)
 
         /* Free XAnimTrees in clients (stride 0x4c8) */
         {
-            char *clients_base = (char *)*(int *)imp_g_scr_data;
+            char *clients_base = (char *)imp_g_scr_data;
             char *clients_end = clients_base + 0x2640;
             for (ptr = clients_base; ptr != clients_end; ptr += 0x4c8) {
                 struct XAnimTree_s *tree = *(struct XAnimTree_s **)(ptr + 0x10b8);
