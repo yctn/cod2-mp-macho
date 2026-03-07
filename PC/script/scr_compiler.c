@@ -11,6 +11,8 @@
 extern struct scrCompilePub_t scrCompilePub; /* 0x0 */
 extern void Z_FreeInternal(void *ptr);
 extern unsigned char scrCompileGlob[];
+extern void DumpCompiledObject(const char *label, unsigned int compiledObj);
+static const char str_dbg_before_lt[] = "before-LinkThread";
 
 static unsigned int LinkThread(unsigned int threadId, VariableUnion (*pos)[16]);
 static unsigned int SpecifyThreadPosition(int type);
@@ -11664,6 +11666,12 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "calll Z_FreeInternal\n"
         /* { scope 2: stmttblock */
         ".Lf9a7ce_0009aabb:\n"
+        /* DBG: dump compiled object before LinkThread */
+        "movl 0xc(%ebp), %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $str_dbg_before_lt, (%esp)\n"
+        "calll DumpCompiledObject\n"
+        /* end DBG */
         "movl $0, -0x34(%ebp)\n" /* line 2360 */
         "movl $0, -0x38(%ebp)\n" /* line 2361 | emptyValue */
         "movl 0xc(%ebp), %ebx\n" /* line 2363 | fileId, threadId */
@@ -12001,6 +12009,7 @@ unsigned int ScriptCompile(sval_t val, unsigned int fileId, unsigned int scriptI
         "movl %eax, (%esp)\n"
         "calll Scr_LoadScript\n"
         "movl %eax, -0x5c(%ebp)\n" /* includeFileId */
+        "movl -0x5c(%ebp), %eax\n"
         "testl %eax, %eax\n" /* line 5021 */
         "je .Lf9a7ce_0009b1e4\n"
         "movl %edi, (%esp)\n" /* line 5026 | threadPtr */

@@ -37,6 +37,34 @@ extern void ClearObject(unsigned int objId);
 extern void RemoveRefToObject(unsigned int objId);
 
 extern void Com_sprintf(char *dest, int size, const char *fmt, ...);
+extern void Com_Printf(const char *fmt, ...);
+extern unsigned int FindNextSibling(unsigned int id);
+extern unsigned int GetVariableName(unsigned int id);
+
+void DumpCompiledObject(const char *label, unsigned int compiledObj)
+{
+    unsigned int child;
+    unsigned int funcObj;
+    unsigned int posVar;
+    unsigned int fwdRef;
+    int count = 0;
+
+    Com_Printf("--- DumpCompiledObject: %s (obj=%u) ---\n", label, compiledObj);
+    child = FindNextSibling(compiledObj);
+    while (child != 0) {
+        unsigned int name = GetVariableName(child);
+        const char *nameStr = SL_ConvertToString(name);
+        funcObj = FindObject(child);
+        posVar = FindVariable(funcObj, 1);
+        fwdRef = FindVariable(funcObj, 0);
+        Com_Printf("  [%d] name='%s' (id=%u) obj=%u posVar=%u fwdRef=%u\n",
+                   count, nameStr, name, funcObj, posVar, fwdRef);
+        count++;
+        child = FindNextSibling(child);
+        if (count > 20) break;
+    }
+    Com_Printf("--- total: %d entries ---\n", count);
+}
 extern byte *TempMalloc(int size);
 extern void TempMemoryReset(void);
 extern void *Hunk_AllocLowInternal(int size);
@@ -262,7 +290,9 @@ unsigned int Scr_LoadScript(const char *filename)
     ScriptParse((byte *)&parseData, 0);
 
     compiledObj = GetObjectA(GetVariable(*(unsigned int *)(scrCompPub + 0xc), fileId));
+    DumpCompiledObject(extFilename, compiledObj);
     ScriptCompile(parseData, compiledObj, scriptId);
+    DumpCompiledObject(extFilename, compiledObj);
 
     parserPub = (byte *)imp_scrParserPub;
     *(byte **)(parserPub + 8) = savedParserFilename;

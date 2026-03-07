@@ -75,7 +75,7 @@ extern void SV_GetConfigstring(int index, char *buffer, int bufferSize);
 extern int G_EffectIndex(const char *name);
 extern const char *SL_ConvertToString(unsigned int stringValue);
 extern BuiltinFunctionDef functions[144]; /* 0x0 */
-static BuiltinMethodDef methods[59]; /* methods */
+extern BuiltinMethodDef methods[]; /* methods - defined in data.S */
 
 unsigned int GScr_AllocString(const char *s);
 unsigned int Scr_LoadLevel(void);
