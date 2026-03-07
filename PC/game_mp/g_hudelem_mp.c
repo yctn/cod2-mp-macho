@@ -15,7 +15,45 @@ extern const char * g_he_alignx[3]; /* g_he_alignx */
 extern const char * g_he_aligny[3]; /* g_he_aligny */
 extern const char * g_he_horzalign[8]; /* g_he_horzalign */
 extern const char * g_he_vertalign[8]; /* g_he_vertalign */
-static const BuiltinMethodDef methods[18]; /* methods */
+static void HECmd_SetText(scr_entref_t entref);
+static void HECmd_SetPlayerNameString(scr_entref_t entref);
+static void HECmd_SetMapNameString(scr_entref_t entref);
+static void HECmd_SetGameTypeString(scr_entref_t entref);
+static void HECmd_SetShader(scr_entref_t entref);
+static void HECmd_SetTimer(scr_entref_t entref);
+static void HECmd_SetTimerUp(scr_entref_t entref);
+static void HECmd_SetTenthsTimer(scr_entref_t entref);
+static void HECmd_SetTenthsTimerUp(scr_entref_t entref);
+static void HECmd_SetClock(scr_entref_t entref);
+static void HECmd_SetClockUp(scr_entref_t entref);
+static void HECmd_SetValue(scr_entref_t entref);
+static void HECmd_SetWaypoint(scr_entref_t entref);
+static void HECmd_FadeOverTime(scr_entref_t entref);
+static void HECmd_ScaleOverTime(scr_entref_t entref);
+static void HECmd_MoveOverTime(scr_entref_t entref);
+static void HECmd_Reset(scr_entref_t entref);
+static void HECmd_Destroy(struct scr_entref_t entref);
+
+static const BuiltinMethodDef methods[] __attribute__((used)) = {
+    {"settext", (BuiltinMethod)HECmd_SetText, 0},
+    {"setplayernamestring", (BuiltinMethod)HECmd_SetPlayerNameString, 0},
+    {"setmapnamestring", (BuiltinMethod)HECmd_SetMapNameString, 0},
+    {"setgametypestring", (BuiltinMethod)HECmd_SetGameTypeString, 0},
+    {"setshader", (BuiltinMethod)HECmd_SetShader, 0},
+    {"settimer", (BuiltinMethod)HECmd_SetTimer, 0},
+    {"settimerup", (BuiltinMethod)HECmd_SetTimerUp, 0},
+    {"settenthstimer", (BuiltinMethod)HECmd_SetTenthsTimer, 0},
+    {"settenthstimerup", (BuiltinMethod)HECmd_SetTenthsTimerUp, 0},
+    {"setclock", (BuiltinMethod)HECmd_SetClock, 0},
+    {"setclockup", (BuiltinMethod)HECmd_SetClockUp, 0},
+    {"setvalue", (BuiltinMethod)HECmd_SetValue, 0},
+    {"setwaypoint", (BuiltinMethod)HECmd_SetWaypoint, 0},
+    {"fadeovertime", (BuiltinMethod)HECmd_FadeOverTime, 0},
+    {"scaleovertime", (BuiltinMethod)HECmd_ScaleOverTime, 0},
+    {"moveovertime", (BuiltinMethod)HECmd_MoveOverTime, 0},
+    {"reset", (BuiltinMethod)HECmd_Reset, 0},
+    {"destroy", (BuiltinMethod)HECmd_Destroy, 0},
+};
 
 extern void Scr_AddFloat(float value);
 extern float Scr_GetFloat(unsigned int index);

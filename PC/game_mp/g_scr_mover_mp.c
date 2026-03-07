@@ -31,7 +31,33 @@ extern gentity_t *g_entities;       /* imp_g_entities */
 extern level_locals_t level;        /* imp_level */
 extern byte *g_scr_data_ptr;        /* imp_scr_const */
 
-static const BuiltinMethodDef methods[12]; /* methods */
+void ScriptEntCmd_MoveTo(scr_entref_t entref);
+void ScriptEntCmd_MoveX(scr_entref_t entref);
+void ScriptEntCmd_MoveY(scr_entref_t entref);
+void ScriptEntCmd_MoveZ(scr_entref_t entref);
+void ScriptEntCmd_GravityMove(scr_entref_t entref);
+void ScriptEntCmd_RotateTo(scr_entref_t entref);
+void ScriptEntCmd_RotatePitch(scr_entref_t entref);
+void ScriptEntCmd_RotateYaw(scr_entref_t entref);
+void ScriptEntCmd_RotateRoll(scr_entref_t entref);
+void ScriptEntCmd_RotateVelocity(scr_entref_t entref);
+void ScriptEntCmd_Solid(scr_entref_t entref);
+void ScriptEntCmd_NotSolid(scr_entref_t entref);
+
+static const BuiltinMethodDef methods[] = {
+    {"moveto", (BuiltinMethod)ScriptEntCmd_MoveTo, 0},
+    {"movex", (BuiltinMethod)ScriptEntCmd_MoveX, 0},
+    {"movey", (BuiltinMethod)ScriptEntCmd_MoveY, 0},
+    {"movez", (BuiltinMethod)ScriptEntCmd_MoveZ, 0},
+    {"movegravity", (BuiltinMethod)ScriptEntCmd_GravityMove, 0},
+    {"rotateto", (BuiltinMethod)ScriptEntCmd_RotateTo, 0},
+    {"rotatepitch", (BuiltinMethod)ScriptEntCmd_RotatePitch, 0},
+    {"rotateyaw", (BuiltinMethod)ScriptEntCmd_RotateYaw, 0},
+    {"rotateroll", (BuiltinMethod)ScriptEntCmd_RotateRoll, 0},
+    {"rotatevelocity", (BuiltinMethod)ScriptEntCmd_RotateVelocity, 0},
+    {"solid", (BuiltinMethod)ScriptEntCmd_Solid, 0},
+    {"notsolid", (BuiltinMethod)ScriptEntCmd_NotSolid, 0},
+};
 
 /* Helper to get mover_ent_t from gentity - overlaid at offset 0x1A8 */
 #define MOVER(ent) ((mover_ent_t *)((byte *)(ent) + 0x1A8))

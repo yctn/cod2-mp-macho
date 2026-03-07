@@ -74,7 +74,7 @@ extern int Scr_GetNumParam(void);
 extern void SV_GetConfigstring(int index, char *buffer, int bufferSize);
 extern int G_EffectIndex(const char *name);
 extern const char *SL_ConvertToString(unsigned int stringValue);
-extern BuiltinFunctionDef functions[144]; /* 0x0 */
+extern BuiltinFunctionDef functions[145]; /* 0x0 */
 extern BuiltinMethodDef methods[]; /* methods - defined in data.S */
 
 unsigned int GScr_AllocString(const char *s);
@@ -204,6 +204,7 @@ unsigned int Scr_IsSplitscreen(void);
 unsigned int GScr_MatchEnd(void);
 unsigned int GScr_SetPlayerTeamRank(void);
 unsigned int GScr_SendXboxLiveRanks(void);
+void GScr_EndXboxLiveLobby(void);
 unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref);
 BuiltinFunction Scr_GetFunction(const char * *pName, int *type);
 BuiltinMethod Scr_GetMethod(const char * *pName, int *type);
@@ -4736,6 +4737,11 @@ unsigned int GScr_SendXboxLiveRanks(void)
     return 0;
 }
 
+/* 1.3 stub - endparty (no-op on PC) */
+void GScr_EndXboxLiveLobby(void)
+{
+}
+
 /* line 5678 */
 __attribute__((naked))
 unsigned int GScr_ReleaseClaimedTrigger(scr_entref_t entref)
@@ -4822,7 +4828,7 @@ BuiltinFunction Scr_GetFunction(const char * *pName, int *type)
         "addl $1, %esi\n" /* line 5900 | i */
         "addl $0xc, %edi\n"
         "addl $0xc, %ebx\n"
-        "cmpl $0x90, %esi\n" /* i */
+        "cmpl $0x91, %esi\n" /* i: 145 entries (144 base + endparty) */
         "je .Lf198dcc_00198e34\n"
         "movl -0x1c(%ebp), %edx\n" /* name */
         ".Lf198dcc_00198dfe:\n"
