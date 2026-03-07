@@ -63,9 +63,9 @@ extern int stricmp(const char *s1, const char *s2);
  *   imp_cg_thirdPerson -> dvar
  *   imp_cg_teamChatsOnly -> dvar (cl_paused)
  */
-#define CGS_PTR      (*(char **)*(void **)imp_cgs)
-#define CG_PTR       (*(char **)*(void **)imp_cg)
-#define CGUI_PTR     (*(char **)*(void **)imp_legacyHacks)
+#define CGS_PTR      ((char *)*(void **)imp_cgs)
+#define CG_PTR       ((char *)*(void **)imp_cg)
+#define CGUI_PTR     ((char *)*(void **)imp_legacyHacks)
 
 void CG_ParseServerinfo(void);
 void CG_ParseCodinfo(void);

@@ -137,7 +137,7 @@ char cg_entities_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_eventNames[64] __attribute__((aligned(4))) = {0};
 char cg_glob[64] __attribute__((aligned(4))) = {0};
 char cg_globSnap[64] __attribute__((aligned(4))) = {0};
-char cg_globUI[64] __attribute__((aligned(4))) = {0};
+/* cg_globUI: aliased to legacyHacks via --defsym */
 char cg_hud_ptr[64] __attribute__((aligned(4))) = {0};
 char cg_itemCount[64] __attribute__((aligned(4))) = {0};
 char cg_itemDefs[64] __attribute__((aligned(4))) = {0};

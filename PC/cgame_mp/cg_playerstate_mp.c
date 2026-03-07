@@ -10,7 +10,7 @@
 
 /* External globals (pointer-to-pointer indirections from binary) */
 extern char **cg_glob;    /* imp_cg -- pointer to cg_t base */
-extern char **cg_globUI;  /* imp_legacyHacks -- pointer to cg_t base (UI/alternate) */
+extern char *cg_globUI[];  /* legacyHacks -- first element is cg_t base pointer */
 extern char **cg_globSnap; /* imp_cg_hudDamageIconTime -- pointer to snap/cgs base */
 
 /* External function declarations */

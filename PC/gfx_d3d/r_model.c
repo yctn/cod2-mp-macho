@@ -754,7 +754,7 @@ void R_XModelDebugBoxes(void)
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -916,7 +916,7 @@ void R_XModelDebugAxes(void)
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */

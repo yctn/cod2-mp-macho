@@ -27,7 +27,7 @@ extern void UI_DrawText(const char *text, int maxChars, void *font, float x, flo
 
 /* External globals */
 extern char **cg_glob;           /* imp_cg — pointer to cg_t base */
-extern char **cg_globUI;         /* imp_legacyHacks — pointer to cg_t base (UI side) */
+extern char *cg_globUI[];         /* legacyHacks — first element is cg_t base pointer */
 extern const float *scrPlace;    /* imp_colorWhite — screen placement */
 extern char *loadingMessage;     /* imp_g_waitingForServer — loading message string */
 

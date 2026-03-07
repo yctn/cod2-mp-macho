@@ -937,7 +937,7 @@ void R_AddStaticModelWithCull(int smodelIndex, int planeCount, int stackLevel)
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -1585,7 +1585,7 @@ void R_AddAabbTreeSurfaces_r(const DpvsPlane *planes, int planeCount, int stackL
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -2429,7 +2429,7 @@ void R_AddVisibleSurfacesInCell(const GfxCell *cell, const DpvsPlane *planes, in
         "movl %esi, 4(%esp)\n" /* group */
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -3096,7 +3096,7 @@ void R_VisitPortalsForCell(const GfxCell *cell, GfxPortal *parentPortal, const D
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4538,7 +4538,7 @@ void R_VisitPortals(const GfxCell *cell, const DpvsPlane *parentPlane, const Dpv
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4745,7 +4745,7 @@ DP4 oPos.z," */
         "movl $color, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */
@@ -4770,7 +4770,7 @@ DP4 oPos.z," */
         "movl %eax, 4(%esp)\n"
         "movl imp_frontEndDataOut, %eax\n"
         "movl (%eax), %eax\n"
-        "addl $str_00249d18, %eax\n" /* "x;
+        "addl $0x249d18, %eax\n" /* "x;
 DP4 oPos.y, v0, c23[1];
 MAX r0.w, r0.w, c0.y;
 DP4 oPos.z," */

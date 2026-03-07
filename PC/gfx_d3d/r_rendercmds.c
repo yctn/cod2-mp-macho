@@ -10,13 +10,13 @@
 
 extern SkinBuffers g_skinBuffers[1]; /* 0x0 */
 extern GfxBackEndData *frontEndDataOut; /* 0x0 */
-static byte g_dummyBuf[1]; /* g_dummyBuf */
+extern byte g_dummyBuf[]; /* g_dummyBuf */
 extern void R_ShutdownDebugEntry(void *entry);
 extern void R_UnlockSkinnedCache(void);
 
-static GfxBackEndData s_backEndData[1]; /* s_backEndData */
-static GfxCmdArray *s_cmdList; /* s_cmdList */
-static struct GfxDebugFrameGlob s_debugFrameGlob; /* s_debugFrameGlob */
+extern unsigned char s_backEndData[]; /* s_backEndData */
+extern GfxCmdArray *s_cmdList; /* s_cmdList */
+extern struct GfxDebugFrameGlob s_debugFrameGlob; /* s_debugFrameGlob */
 
 void R_ShutdownBackendData(void);
 static __attribute__((regparm(3))) void R_ProcessFrontendCmdInternal(int type, void *data, int isRenderThread);
@@ -213,8 +213,7 @@ void R_AbortRenderCommands(void)
         ".Lfc7e86_000c7e9d:\n"
         "calll R_UnlockSkinnedCache\n" /* line 903 */
         "movl frontEndDataOut, %eax\n" /* line 656 */
-        "addl $str_00219d0c, %eax\n" /* "Active    FX: %i
-" */
+        "addl $0x219d0c, %eax\n" /* offset into GfxBackEndData */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
         "movl $0, 0x30008(%eax)\n" /* line 659 */
@@ -555,7 +554,7 @@ void R_InitBackendData(void)
         "movl frontEndDataOut, %eax\n" /* line 146 */
         "testl %eax, %eax\n"
         "je .Lfc8308_000c834d\n"
-        "addl $str_00219d0c, %eax\n" /* line 656 */
+        "addl $0x219d0c, %eax\n" /* line 656 */
         "movl $0, 0x30000(%eax)\n" /* line 657 */
         "movl $0, 0x30004(%eax)\n" /* line 658 */
         "movl $0, 0x30008(%eax)\n" /* line 659 */
