@@ -773,7 +773,7 @@ qboolean CL_CDKeyValidate(const char *key, const char *checksum)
 /* line 432 */
 int CL_SortGlobalServers(void)
 {
-    byte *base = *(byte **)imp_cls;
+    byte *base = (byte *)imp_cls;
     int count = *(int *)(base + 0x4540);
     qsort(base + 0x4544, count, 0x88, (int (*)(const void *, const void *))CL_CompareAdrSigned);
     return 0;

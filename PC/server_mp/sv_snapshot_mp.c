@@ -2862,7 +2862,7 @@ void SV_SendClientMessages(void)
 
     c = *(byte **)(svs + SVS_CLIENTS);
     dvar = *(byte **)imp_sv_maxclients;
-    maxClients = *(int *)(*(byte **)dvar + 8);
+    maxClients = *(int *)(dvar + 8);
     numclients = 0;
 
     svsTime = *(int *)(svs + SVS_TIME);
@@ -2920,7 +2920,7 @@ void SV_SendClientMessages(void)
 
     /* BPS tracking */
     dvar = *(byte **)imp_sv_showAverageBPS;
-    if (*(byte *)(*(byte **)dvar + 8) == 0 || numclients <= 0)
+    if (*(byte *)(dvar + 8) == 0 || numclients <= 0)
         return;
 
     sv = (byte *)imp_sv;

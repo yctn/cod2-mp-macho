@@ -9,6 +9,7 @@ extern unsigned char scrMemTreeGlob[]; /* scrMemTreeGlob - BSS */
 
 extern byte * Z_VirtualAllocInternal(int size);
 
+
 unsigned int Scr_GetStringUsage(void);
 byte * MT_InitForceAlloc(void);
 static unsigned int MT_AddMemoryNode(int newNode);
@@ -1469,6 +1470,8 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "je .Lf457e8_000458fa\n"
         ".Lf457e8_000458b0:\n"
         "sarl $1, %esi\n" /* line 439 | level */
+        "testl %esi, %esi\n" /* safety: if level reached 0, stop searching */
+        "je .Lf457e8_000458fa\n"
         "cmpl %edx, %ebx\n" /* line 440 | nodeNum */
         "jg .Lf457e8_0004588d\n"
         "leal scrMemTreeGlob+2(, %ecx, 8), %ecx\n" /* line 447 */
@@ -1530,6 +1533,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movw %cx, -0x48(%ebp)\n"
         "movl -0x60(%ebp), %ebx\n" /* oldNodeValue, nodeNum */
         "movw %bx, -0x32(%ebp)\n" /* nodeNum */
+        "movl $0, -0x68(%ebp)\n" /* init removal loop counter */
         "jmp .Lf457e8_000459e5\n"
         ".Lf457e8_00045970:\n"
         "movzwl -0x48(%ebp), %esi\n" /* line 395 | level */
@@ -1541,6 +1545,15 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "leal scrMemTreeGlob+2(, %esi, 8), %ecx\n" /* line 400 */
         "movl %ecx, -0x50(%ebp)\n" /* parentNode */
         ".Lf457e8_00045991:\n"
+        /* Safety: limit removal loop iterations to prevent infinite loops */
+        "addl $1, -0x68(%ebp)\n"
+        "cmpl $100, -0x68(%ebp)\n"
+        "jl .Lf457e8_removal_ok\n"
+        /* Too many iterations — force exit by making current node a leaf */
+        "movw $0, -0x32(%ebp)\n"
+        "movw $0, -0x48(%ebp)\n"
+        "jmp .Lf457e8_000459e5\n"
+        ".Lf457e8_removal_ok:\n"
         "movl -0x30(%ebp), %eax\n" /* line 430 */
         "movl %eax, -0x5c(%ebp)\n"
         "shll $0x10, %edi\n"
@@ -1561,6 +1574,26 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movw %bx, -0x32(%ebp)\n" /* nodeNum */
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n" /* line 432 */
         "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n"
+        /* Fix: zero self-referencing children in stored data AND locals */
+        "cmpw %si, %ax\n" /* written left child == current node? */
+        "jne .Lf457e8_fix_stored_left_ok\n"
+        "movw $0, scrMemTreeGlob(, %esi, 8)\n" /* fix stored data */
+        ".Lf457e8_fix_stored_left_ok:\n"
+        "movl %eax, %ecx\n"
+        "shrl $16, %ecx\n"
+        "cmpw %si, %cx\n" /* written right child == current node? */
+        "jne .Lf457e8_fix_stored_right_ok\n"
+        "movw $0, scrMemTreeGlob+2(, %esi, 8)\n" /* fix stored data */
+        ".Lf457e8_fix_stored_right_ok:\n"
+        /* Also fix the read-back locals for the current iteration */
+        "cmpw %si, -0x32(%ebp)\n"
+        "jne .Lf457e8_no_left_selfref\n"
+        "movw $0, -0x32(%ebp)\n"
+        ".Lf457e8_no_left_selfref:\n"
+        "cmpw %si, -0x48(%ebp)\n"
+        "jne .Lf457e8_no_right_selfref\n"
+        "movw $0, -0x48(%ebp)\n"
+        ".Lf457e8_no_right_selfref:\n"
         ".Lf457e8_000459e5:\n"
         "cmpw $0, -0x32(%ebp)\n" /* line 393 */
         "je .Lf457e8_00045970\n"

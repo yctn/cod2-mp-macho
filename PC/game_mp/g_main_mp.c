@@ -932,7 +932,7 @@ int G_InitGame(int levelTime, int randomSeed, qboolean restart, qboolean saveper
         "movl $0, 0xc(%esp)\n"
         "movl $0, 8(%esp)\n"
         "movl $0xffffffff, 4(%esp)\n"
-        "movl $str_002160e8, (%esp)\n"
+        "movl $str_002b482c, (%esp)\n" /* "g_dumpAnims" */
         "calll Dvar_RegisterInt\n"
         "movl %eax, g_dumpAnims\n"
         "movl $0x800, 0x10(%esp)\n"

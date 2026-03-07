@@ -1020,7 +1020,7 @@ short int SV_ConTell_f(void)
 /* line 848 */
 short int SV_Heartbeat_f(void)
 {
-    *(int *)(*(int *)imp_svs + 0x54) = (int)0x80000000;
+    *(int *)((byte *)imp_svs + 0x54) = (int)0x80000000;
 }
 
 /* line 861 */

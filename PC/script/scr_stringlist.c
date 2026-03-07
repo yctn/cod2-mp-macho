@@ -38,6 +38,7 @@ extern void MT_FinishForceAlloc(byte *allocBits);
 extern void Scr_DumpScriptThreads(void);
 extern void Scr_DumpScriptVariables(void);
 extern void Com_Error(int code, const char *fmt, ...);
+extern void Com_Printf(const char *fmt, ...);
 
 unsigned int SL_ConvertFromString(const char *str);
 unsigned int SL_Shutdown(void);
@@ -1181,7 +1182,40 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
         edi_newEntry = (unsigned short *)((char *)&scrStringGlob + edx_offset);
         newEntry_idx = hash_slot;
 
-        MT_FreeIndex(stringValue, len + 4);
+        {
+            extern unsigned char scrMemTreeGlob_arr[] __asm__("scrMemTreeGlob");
+            static int mt_free_count = 0;
+            mt_free_count++;
+            /* Check ALL 17 size buckets for cycles BEFORE calling MT_FreeIndex */
+            {
+                int si;
+                for (si = 0; si <= 16; si++) {
+                    unsigned short *root = (unsigned short *)(scrMemTreeGlob_arr + 0x80300 + si * 2);
+                    unsigned short cur = *root;
+                    int steps = 0;
+                    while (cur != 0 && steps < 100000) {
+                        cur = *(unsigned short *)(scrMemTreeGlob_arr + cur * 8);
+                        steps++;
+                    }
+                    if (steps >= 100000) {
+                        Com_Printf("TREE CYCLE BEFORE MT_FreeIndex #%d (sv=%d, numBytes=%d) in size bucket %d\n",
+                            mt_free_count, stringValue, (int)(len+4), si);
+                        {
+                            unsigned short c2 = *root;
+                            int j;
+                            for (j = 0; j < 30 && c2 != 0; j++) {
+                                unsigned short l = *(unsigned short *)(scrMemTreeGlob_arr + c2 * 8);
+                                unsigned short r = *(unsigned short *)(scrMemTreeGlob_arr + c2 * 8 + 2);
+                                Com_Printf("  node[%d]: L=%d R=%d\n", (int)c2, (int)l, (int)r);
+                                c2 = l;
+                            }
+                        }
+                        *(volatile int *)0 = 0;
+                    }
+                }
+            }
+            MT_FreeIndex(stringValue, len + 4);
+        }
 
         /* Re-read chain_next */
         esi_chain_next_idx = (unsigned int)(SG_W0(hash_slot) & 0x3fff);
