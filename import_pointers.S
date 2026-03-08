@@ -1895,3 +1895,59 @@ g_renderState: .long imp_r_fog
 .set gfx_buf, imp_tess
 .globl gfxScene
 .set gfxScene, imp_scene
+
+/* Fix #109: Renderer import pointer aliases */
+.globl dx_device_ptr
+.set dx_device_ptr, imp_dx
+.globl dx_fence
+.set dx_fence, imp_alwaysfails
+.globl r_glob
+.set r_glob, imp_rgp
+.globl r_frontEndDataOut
+.set r_frontEndDataOut, imp_backEnd
+.globl r_dvar_sunEnable
+.set r_dvar_sunEnable, imp_r_drawSun
+.globl r_defaultColor
+.set r_defaultColor, imp_colorWhite
+.globl r_videoConfig
+.set r_videoConfig, imp_vidConfig
+.globl r_phys
+.set r_phys, imp_ri
+.globl r_contentmask
+.set r_contentmask, imp_vec3_origin
+.globl r_vtable_ptr
+.set r_vtable_ptr, imp_ri
+.globl r_world_ptr
+.set r_world_ptr, imp_vec3_origin
+.globl r_surftype_table_ptr
+.set r_surftype_table_ptr, imp_infoParms
+.globl r_dvar_ef30
+.set r_dvar_ef30, imp_r_lightTweakSunColor
+.globl r_dvar_ef34
+.set r_dvar_ef34, imp_r_lightTweakDiffuseFraction
+.globl r_dvar_ef38
+.set r_dvar_ef38, imp_r_lightTweakAmbient
+.globl r_dvar_ef3c
+.set r_dvar_ef3c, imp_r_lightTweakAmbientColor
+.globl r_dvar_ef44
+.set r_dvar_ef44, imp_r_lightTweakSunDiffuseColor
+.globl r_dvar_ef48
+.set r_dvar_ef48, imp_r_lightTweakSunLight
+.globl r_dvar_ef4c
+.set r_dvar_ef4c, imp_r_lightTweakSunDirection
+.globl r_lightGridSunDir
+.set r_lightGridSunDir, imp_vec3_colorintensity
+.globl r_lightGridEnableTweaks
+.set r_lightGridEnableTweaks, imp_r_showLightGrid
+.globl r_lightGridSpread
+.set r_lightGridSpread, imp_r_vc_showlog
+.globl r_lightGridUseTweakedValues
+.set r_lightGridUseTweakedValues, imp_r_showMissingLightGrid
+.globl r_sunFlareState
+.set r_sunFlareState, imp_sunFlareArray
+.globl r_sundvar_table
+.set r_sundvar_table, imp_s_sundvars
+.globl sm_mtl_init
+.set sm_mtl_init, imp_cls
+.globl sm_mtl_vtable
+.set sm_mtl_vtable, imp_re

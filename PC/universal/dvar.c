@@ -6041,12 +6041,14 @@ qboolean Com_LoadDvarsFromBuffer(const char * *dvarnames, int numDvars, const ch
         "jne .Lf54f6e_00054fd4\n"
         ".Lf54f6e_00054fed:\n"
         "xorl %ebx, %ebx\n" /* var */
+        "jmp .Lf54f6e_skip_dvar_set\n" /* skip Dvar_SetVariant when dvar not found */
         /* } scope */
         ".Lf54f6e_00054fef:\n"
         "movl 0x10(%ebx), %edx\n" /* line 2335 | var */
         "xorl %ecx, %ecx\n"
         "movl %ebx, %eax\n" /* var */
         "calll Dvar_SetVariant\n"
+        ".Lf54f6e_skip_dvar_set:\n"
         "addl $1, -0x4024(%ebp)\n" /* line 2590 | i */
         "movl -0x4024(%ebp), %eax\n" /* i */
         "cmpl %eax, 0xc(%ebp)\n" /* numDvars */

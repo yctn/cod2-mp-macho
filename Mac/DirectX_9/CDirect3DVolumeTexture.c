@@ -83,7 +83,7 @@ void ZN15CDirect3DVolumeD1Ev(void) /* CDirect3DVolume_~CDirect3DVolume */
         "pushl %ebp\n" /* line 51 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x332368, (%eax)\n"
+        "movl $__ZTV18IDirect3DResource9+8, (%eax)\n"
         "popl %ebp\n" /* line 54 */
         "retl\n"
     );
@@ -97,7 +97,7 @@ void ZN15CDirect3DVolumeD0Ev(void) /* CDirect3DVolume_~CDirect3DVolume */
         "pushl %ebp\n" /* line 51 */
         "movl %esp, %ebp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x332368, (%eax)\n"
+        "movl $__ZTV18IDirect3DResource9+8, (%eax)\n"
         "movl %eax, 8(%ebp)\n" /* line 54 | this */
         "popl %ebp\n"
         "jmp __ZdlPv\n"
@@ -645,8 +645,8 @@ void ZN22CDirect3DVolumeTextureD0Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "pushl %ebx\n"
         "subl $0x2c, %esp\n"
         "movl 8(%ebp), %edi\n" /* this */
-        "movl $0x3323a8, (%edi)\n" /* this */
-        "movl $0x332410, 4(%edi)\n" /* this */
+        "movl $__ZTV23IDirect3DVolumeTexture9+8, (%edi)\n" /* this */
+        "movl $__ZTV14COpenGLTexture+8, 4(%edi)\n" /* this */
         "leal 0x60(%edi), %eax\n" /* line 428 | this */
         "movl %eax, -0x1c(%ebp)\n"
         "movl 0x60(%edi), %eax\n" /* line 334 */
@@ -1046,7 +1046,7 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "movl imp___ZTV21IDirect3DBaseTexture9, %eax\n" /* line 1020 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
-        "movl 0x195f250, %eax\n" /* line 1192 */
+        "movl imp___ZTV23IDirect3DVolumeTexture9, %eax\n" /* line 1192 */
         "addl $8, %eax\n"
         "movl %eax, (%edx)\n"
         "addl $4, %edx\n" /* line 355 */
@@ -1094,8 +1094,8 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "movl %edx, 0x2c(%eax)\n"
         "movl %edi, 0x30(%eax)\n"
         "movl 8(%ebp), %eax\n" /* line 355 | this */
-        "movl $0x3323a8, (%eax)\n"
-        "movl $0x332410, 4(%eax)\n"
+        "movl $__ZTV23IDirect3DVolumeTexture9+8, (%eax)\n"
+        "movl $__ZTV14COpenGLTexture+8, 4(%eax)\n"
         "movl $0, 0x38(%eax)\n"
         "movl 0xc(%ebp), %edx\n" /* Width */
         "movl %edx, 0x3c(%eax)\n"
@@ -1231,7 +1231,7 @@ void CDirect3DVolumeTexture_CDirect3DVolumeTexture(const CDirect3DVolumeTexture 
         "movl %eax, %ebx\n" /* Format, TextureSizeInBytes */
         "movl 0x20(%ebp), %eax\n" /* Format */
         /* { scope 2: CreateOpenGLResources */
-        "movl $0x332368, (%ebx)\n" /* line 35 */
+        "movl $__ZTV18IDirect3DResource9+8, (%ebx)\n" /* line 35 */
         "movl $0, 4(%ebx)\n"
         "movl -0x2c(%ebp), %edx\n" /* Level */
         "movl %edx, 8(%ebx)\n"
@@ -1367,8 +1367,8 @@ void ZN22CDirect3DVolumeTextureD2Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x3323a8, (%eax)\n"
-        "movl $0x332410, 4(%eax)\n"
+        "movl $__ZTV23IDirect3DVolumeTexture9+8, (%eax)\n"
+        "movl $__ZTV14COpenGLTexture+8, 4(%eax)\n"
         "movl %eax, %edi\n" /* line 428 */
         "addl $0x60, %edi\n"
         "movl 8(%ebp), %edx\n" /* line 334 | this */
@@ -1485,8 +1485,8 @@ void ZN22CDirect3DVolumeTextureD1Ev(void) /* CDirect3DVolumeTexture_~CDirect3DVo
         "pushl %ebx\n"
         "subl $0x1c, %esp\n"
         "movl 8(%ebp), %eax\n" /* this */
-        "movl $0x3323a8, (%eax)\n"
-        "movl $0x332410, 4(%eax)\n"
+        "movl $__ZTV23IDirect3DVolumeTexture9+8, (%eax)\n"
+        "movl $__ZTV14COpenGLTexture+8, 4(%eax)\n"
         "movl %eax, %edi\n" /* line 428 */
         "addl $0x60, %edi\n"
         "movl 8(%ebp), %edx\n" /* line 334 | this */

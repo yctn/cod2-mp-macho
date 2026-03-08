@@ -285,6 +285,10 @@ void Image_UploadData(GfxImage *image, D3DFORMAT format, int face, int mipLevel,
     void *texture;
     void **vtable;
 
+    /* No D3D device (com_skipRenderer 1) — skip GPU upload */
+    if (*(int *)imp_dx == 0 || *(int *)(*(int *)imp_dx) == 0)
+        return;
+
     if (image->mapType == 4) {
         /* line 298: 3D Volume texture upload */
         srcWidth = Image_Max1(image->width >> mipLevel);

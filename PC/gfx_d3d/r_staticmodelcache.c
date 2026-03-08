@@ -35,8 +35,8 @@ void R_FlushStaticModelCache(void);
 /* line 781 */
 void R_InitStaticModelIndexCache(void)
 {
-    void *mem = ((void *(*)(int))(*(void **)(*(int *)imp_ri + 0xc)))(0xc0000);
-    *(void **)(*(int *)imp_dx + 0x2dc8) = mem;
+    void *mem = ((void *(*)(int))(*(void **)((char *)imp_ri + 0xc)))(0xc0000);
+    *(void **)((char *)imp_dx + 0x2dc8) = mem;
 }
 
 /* line 819 */

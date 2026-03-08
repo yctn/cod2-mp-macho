@@ -18,9 +18,9 @@ extern GfxImage * Image_Alloc(const char *name, int category, int semantic, int 
 static vec3_t lightGridLookupMatrix[3]; /* lightGridLookupMatrix */
 static const int faceAxis[6][3]; /* faceAxis */
 
-jpeg_alloc Image_Generate2D(GfxImage *image, byte *pixels, int width, int height, int imageFormat);
-jpeg_alloc Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int depth, D3DFORMAT imageFormat);
-jpeg_alloc Image_BuildWaterMap(GfxImage *image);
+void Image_Generate2D(GfxImage *image, byte *pixels, int width, int height, int imageFormat);
+void Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int depth, D3DFORMAT imageFormat);
+void Image_BuildWaterMap(GfxImage *image);
 static jpeg_alloc Image_LoadBitmap(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerPixel);
 static jpeg_alloc Image_LoadDxtc(GfxImage *image, const GfxImageFileHeader *fileHeader, const byte *data, D3DFORMAT format, int bytesPerBlock);
 static jpeg_alloc Image_LoadWavelet(GfxImage *image, const byte *data, D3DFORMAT format, int bytesPerPixel);
@@ -36,7 +36,7 @@ static jpeg_alloc Image_LoadLightmapWeights(GfxImage *image);
 GfxImage * Image_Load(const char *name, int semantic, int imageTrack);
 
 /* line 560 */
-jpeg_alloc Image_Generate2D(GfxImage *image, byte *pixels, int width, int height, int imageFormat)
+void Image_Generate2D(GfxImage *image, byte *pixels, int width, int height, int imageFormat)
 {
     int face;
     Image_Setup(image, width, height, 1, 3, 0, imageFormat);
@@ -45,7 +45,7 @@ jpeg_alloc Image_Generate2D(GfxImage *image, byte *pixels, int width, int height
 }
 
 /* line 598 */
-jpeg_alloc Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int depth, D3DFORMAT imageFormat)
+void Image_Generate3D(GfxImage *image, byte *pixels, int width, int height, int depth, D3DFORMAT imageFormat)
 {
     int face;
     Image_Setup(image, width, height, depth, 0xb, 0, imageFormat);
@@ -54,7 +54,7 @@ jpeg_alloc Image_Generate3D(GfxImage *image, byte *pixels, int width, int height
 }
 
 /* line 1180 */
-jpeg_alloc Image_BuildWaterMap(GfxImage *image)
+void Image_BuildWaterMap(GfxImage *image)
 {
     if (*(int *)((char *)(*(void **)imp_r_rendererInUse) + 8) == 2) {
         Image_Create2DTexture(image, *(unsigned short *)((char *)image + 0x18), *(unsigned short *)((char *)image + 0x1a), 1, 0x200, 0x16, 0);

@@ -8,7 +8,7 @@ extern char *va(const char *format, ...);
 extern int FS_ReadFile(const char *filename, void **buffer);
 extern void FS_FreeFile(void *buffer);
 extern int R_GetSundvarsSize(void);
-extern int Com_LoadDvarsFromBuffer(void *dvarTable, void *buffer, int size, const char *filename);
+extern int Com_LoadDvarsFromBuffer(void *dvarTable, int numDvars, const void *buffer, const char *filename);
 extern void R_SetSunFromDvars(sunflare_t *sun);
 extern void Com_Printf(const char *fmt, ...);
 extern void Com_Memset(void *dest, int val, int count);
@@ -28,7 +28,7 @@ void R_LoadSunThroughDvars(const char *sunName, sunflare_t *sun)
         return;
     }
 
-    if (Com_LoadDvarsFromBuffer(&r_sundvar_table, sunFile, R_GetSundvarsSize(), fullpath)) {
+    if (Com_LoadDvarsFromBuffer(&r_sundvar_table, R_GetSundvarsSize(), sunFile, fullpath)) {
         R_SetSunFromDvars(sun);
     }
 

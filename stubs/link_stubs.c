@@ -246,8 +246,8 @@ char _dvar_shellshock_viewkickpitch[64] __attribute__((aligned(4))) = {0};
 char _dvar_shellshock_viewkickradius[64] __attribute__((aligned(4))) = {0};
 char _dvar_shellshock_viewkickyaw[64] __attribute__((aligned(4))) = {0};
 char dvar_synchronous[64] __attribute__((aligned(4))) = {0};
-char dx_device_ptr[64] __attribute__((aligned(4))) = {0};
-char dx_fence[64] __attribute__((aligned(4))) = {0};
+/* dx_device_ptr: alias for imp_dx — defined in import_pointers.S */
+/* dx_fence: alias for imp_alwaysfails — defined in import_pointers.S */
 char dxIter[64] __attribute__((aligned(4))) = {0};
 char __dyld_func_lookup[64] __attribute__((aligned(4))) = {0};
 char EnableControl[64] __attribute__((aligned(4))) = {0};
@@ -416,34 +416,34 @@ char QDRegisterNamedPixMapCursor[64] __attribute__((aligned(4))) = {0};
 char QDSetNamedPixMapCursor[64] __attribute__((aligned(4))) = {0};
 char QuitAppModalLoopForWindow[64] __attribute__((aligned(4))) = {0};
 char rcon_password_dvar[64] __attribute__((aligned(4))) = {0};
-char r_contentmask[64] __attribute__((aligned(4))) = {0};
-char r_defaultColor[64] __attribute__((aligned(4))) = {0};
+/* r_contentmask: alias for imp_vec3_origin — defined in import_pointers.S */
+/* r_defaultColor: alias for imp_colorWhite — defined in import_pointers.S */
 /* r_device_ptr: decompiler alias for BSS 'r_rendererInUse' — now a symbol alias in stubs/symbol_aliases.S */
-char r_dvar_ef30[64] __attribute__((aligned(4))) = {0};
-char r_dvar_ef34[64] __attribute__((aligned(4))) = {0};
-char r_dvar_ef38[64] __attribute__((aligned(4))) = {0};
-char r_dvar_ef3c[64] __attribute__((aligned(4))) = {0};
-char r_dvar_ef44[64] __attribute__((aligned(4))) = {0};
-char r_dvar_ef48[64] __attribute__((aligned(4))) = {0};
-char r_dvar_ef4c[64] __attribute__((aligned(4))) = {0};
-char r_dvar_sunEnable[64] __attribute__((aligned(4))) = {0};
+/* r_dvar_ef30: alias for imp_r_lightTweakSunColor — defined in import_pointers.S */
+/* r_dvar_ef34: alias for imp_r_lightTweakDiffuseFraction — defined in import_pointers.S */
+/* r_dvar_ef38: alias for imp_r_lightTweakAmbient — defined in import_pointers.S */
+/* r_dvar_ef3c: alias for imp_r_lightTweakAmbientColor — defined in import_pointers.S */
+/* r_dvar_ef44: alias for imp_r_lightTweakSunDiffuseColor — defined in import_pointers.S */
+/* r_dvar_ef48: alias for imp_r_lightTweakSunLight — defined in import_pointers.S */
+/* r_dvar_ef4c: alias for imp_r_lightTweakSunDirection — defined in import_pointers.S */
+/* r_dvar_sunEnable: alias for imp_r_drawSun — defined in import_pointers.S */
 char record_callback_ptr[64] __attribute__((aligned(4))) = {0};
 char ReleaseEvent[64] __attribute__((aligned(4))) = {0};
 char ReleaseIconRef[64] __attribute__((aligned(4))) = {0};
 char re_ptr_195eca8[64] __attribute__((aligned(4))) = {0};
 void RestoreBody(void) {}
-char r_frontEndDataOut[64] __attribute__((aligned(4))) = {0};
+/* r_frontEndDataOut: alias for imp_backEnd — defined in import_pointers.S */
 /* r_frontEndData_ptr: linker alias to rg */
 char r_gammaSetting[64] __attribute__((aligned(4))) = {0};
 char RGBForeColor[64] __attribute__((aligned(4))) = {0};
-char r_glob[64] __attribute__((aligned(4))) = {0};
+/* r_glob: alias for imp_rgp — defined in import_pointers.S */
 extern unsigned char rgp[];
 void *r_glob_ptr = (void *)rgp;
 /* r_lightGridContrast: alias to imp_r_vc_makelog in import_pointers.S */
-char r_lightGridEnableTweaks[64] __attribute__((aligned(4))) = {0};
-char r_lightGridSpread[64] __attribute__((aligned(4))) = {0};
-char r_lightGridSunDir[64] __attribute__((aligned(4))) = {0};
-char r_lightGridUseTweakedValues[64] __attribute__((aligned(4))) = {0};
+/* r_lightGridEnableTweaks: alias for imp_r_showLightGrid — defined in import_pointers.S */
+/* r_lightGridSpread: alias for imp_r_vc_showlog — defined in import_pointers.S */
+/* r_lightGridSunDir: alias for imp_vec3_colorintensity — defined in import_pointers.S */
+/* r_lightGridUseTweakedValues: alias for imp_r_showMissingLightGrid — defined in import_pointers.S */
 /* r_limits_ptr: linker alias to vidConfig */
 char R_LoadSun_f[64] __attribute__((aligned(4))) = {0};
 char r_occlusionQuery[64] __attribute__((aligned(4))) = {0};
@@ -453,15 +453,15 @@ char R_ReloadMaterialTextures_f[64] __attribute__((aligned(4))) = {0};
 char R_SaveSun_f[64] __attribute__((aligned(4))) = {0};
 char R_SmcFlush_f[64] __attribute__((aligned(4))) = {0};
 char R_SmcStats_f[64] __attribute__((aligned(4))) = {0};
-char r_sundvar_table[64] __attribute__((aligned(4))) = {0};
-char r_sunFlareState[64] __attribute__((aligned(4))) = {0};
-char r_surftype_table_ptr[64] __attribute__((aligned(4))) = {0};
+/* r_sundvar_table: alias for imp_s_sundvars — defined in import_pointers.S */
+/* r_sunFlareState: alias for imp_sunFlareArray — defined in import_pointers.S */
+/* r_surftype_table_ptr: alias for imp_infoParms — defined in import_pointers.S */
 /* r_sys_ptr: linker alias to ri */
 char RunAppModalLoopForWindow[64] __attribute__((aligned(4))) = {0};
 char RunStandardAlert[64] __attribute__((aligned(4))) = {0};
-char r_videoConfig[64] __attribute__((aligned(4))) = {0};
-char r_vtable_ptr[64] __attribute__((aligned(4))) = {0};
-char r_world_ptr[64] __attribute__((aligned(4))) = {0};
+/* r_videoConfig: alias for imp_vidConfig — defined in import_pointers.S */
+/* r_vtable_ptr: alias for imp_ri — defined in import_pointers.S */
+/* r_world_ptr: alias for imp_vec3_origin — defined in import_pointers.S */
 /* scrAnimPub_ptr: linker alias to scrAnimPub */
 void Scr_BeginLoadAnimScripts(void) {}
 /* scrCompGlob_ptr: replaced by imp_scrCompileGlob in import_pointers.S */
@@ -494,8 +494,8 @@ char ShowMenuBar[64] __attribute__((aligned(4))) = {0};
 /* showpackets_dvar: alias for imp_showpackets — defined in import_pointers.S */
 char SizeWindow[64] __attribute__((aligned(4))) = {0};
 /* sm_dvar_ptr: alias for imp_com_statmon — defined in import_pointers.S */
-char sm_mtl_init[64] __attribute__((aligned(4))) = {0};
-char sm_mtl_vtable[64] __attribute__((aligned(4))) = {0};
+/* sm_mtl_init: alias for imp_cls — defined in import_pointers.S */
+/* sm_mtl_vtable: alias for imp_re — defined in import_pointers.S */
 char _snd_local_listener[64] __attribute__((aligned(4))) = {0};
 char speex_nb_mode_ptr[64] __attribute__((aligned(4))) = {0};
 char speex_quality_ptr[64] __attribute__((aligned(4))) = {0};

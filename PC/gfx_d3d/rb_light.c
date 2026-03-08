@@ -28,11 +28,11 @@ extern const dvar_t **r_lightGridSpread;      /* imp_r_vc_showlog */
 extern const dvar_t **r_lightGridUseTweakedValues; /* imp_r_showMissingLightGrid */
 
 /* Color constants used in various places */
-extern const float *colorRed;       /* imp_colorYellow */
-extern const float *colorGreen;     /* imp_colorGreen */
-extern const float *colorYellow;    /* imp_colorBlue */
-extern const float *colorWhite;     /* imp_colorWhite */
-extern const float *vec3_origin;    /* imp_vec3_origin */
+extern const float colorRed[];       /* rodata */
+extern const float colorGreen[];     /* rodata */
+extern const float colorYellow[];    /* rodata */
+extern const float colorWhite[];     /* rodata */
+extern const float vec3_origin[];    /* rodata */
 
 /* External function declarations */
 extern void Com_StripExtension(const char *src, char *dest);
