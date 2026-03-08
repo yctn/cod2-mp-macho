@@ -5385,7 +5385,7 @@ GfxWorld * R_LoadWorldInternal(const char *name)
         "testl %edx, %edx\n"
         "jns .Lfe5778_000e5aac\n"
         ".Lfe5778_000e705b:\n"
-        "leal scrMemTreeGlob+39167(%edx), %eax\n"
+        "leal 0x3fffff(%edx), %eax\n" /* was scrMemTreeGlob+39167 — decompiler-symbolized Mac address 0x3f6700+0x98ff=0x3fffff */
         "jmp .Lfe5778_000e5aac\n"
         ".Lfe5778_000e7066:\n"
         "movl s_world, %eax\n" /* line 48 */

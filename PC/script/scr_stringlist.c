@@ -106,6 +106,11 @@ unsigned int SL_TransferRefToUser(unsigned int stringValue, unsigned int user)
 unsigned int SL_AddRefToString(unsigned int stringValue)
 {
     byte *base = *(byte **)imp_scrMemTreePub;
+    /* DBG */
+    if (stringValue == 23) {
+        unsigned short old_ref = *(unsigned short *)(base + 23 * 8 + 2);
+        Com_Printf("DBG SL_AddRefToString(23): refcount %u -> %u\n", old_ref, old_ref + 1);
+    }
     *(unsigned short *)(base + stringValue * 8 + 2) += 1;
     return 0;
 }
@@ -698,6 +703,13 @@ loop_top:
                                         unsigned short tmp = cur_ptr[1];
                                         cur_ptr[1] = entry_ptr[1];
                                         entry_ptr[1] = (unsigned short)node_sv;
+                                        /* DBG: check for sv=23 swap */
+                                        if (cur_ptr[1] == 23 || entry_ptr[1] == 23) {
+                                            unsigned int ci = (unsigned int)((char *)cur_ptr - (char *)&scrStringGlob) / 4;
+                                            unsigned int ei = (unsigned int)((char *)entry_ptr - (char *)&scrStringGlob) / 4;
+                                            Com_Printf("DBG swap created sv=23: cur[%u]=%u entry[%u]=%u str=\"%.16s\"\n",
+                                                ci, (unsigned int)cur_ptr[1], ei, (unsigned int)entry_ptr[1], str);
+                                        }
                                     }
 
                                     if (!((unsigned char)node_entry[1] & (unsigned char)user))
@@ -924,6 +936,41 @@ store_and_return:
         newMem[0] = (byte)byteLen;
     }
 
+    /* DBG: detect when any hash entry points to sv=23 */
+    {
+        static int sv23_checked = 0;
+        if (!sv23_checked) {
+            unsigned int slot;
+            for (slot = 1; slot < 16384; slot++) {
+                if (SG_W1(slot) == 23 && (SG_W0(slot) & 0xc000) != 0) {
+                    unsigned int entry_idx = (unsigned int)((char *)entry_ptr - (char *)&scrStringGlob) / 4;
+                    Com_Printf("DBG sv=23 appeared in slot %u (w0=0x%04x) after alloc sv=%u str=\"%.16s\" hash=%u entry_idx=%u\n",
+                        slot, (unsigned int)SG_W0(slot), esi_sv, str, hash, entry_idx);
+                    sv23_checked = 1;
+                    break;
+                }
+            }
+        }
+    }
+
+    /* DBG: track allocations near node 23 */
+    if (esi_sv >= 20 && esi_sv <= 24) {
+        Com_Printf("DBG ALLOC sv=%u: len=%u byteLen=%u user=%u numBytes=%u str=\"%.16s\"\n",
+            esi_sv, len, byteLen, user, (unsigned int)(len + 4), (const char *)str);
+    }
+    /* DBG: check if node 23 data changes unexpectedly */
+    {
+        static unsigned char last_node23_byte0 = 0;
+        static int alloc_count = 0;
+        byte *m23 = *(byte **)imp_scrMemTreePub + 23 * 8;
+        alloc_count++;
+        if (m23[0] != last_node23_byte0) {
+            Com_Printf("DBG node23 byte0 changed: %u -> %u at alloc #%d (sv=%u str=\"%.16s\")\n",
+                (unsigned int)last_node23_byte0, (unsigned int)m23[0], alloc_count, esi_sv, str);
+            last_node23_byte0 = m23[0];
+        }
+    }
+
     return esi_sv;
 }
 
@@ -1143,6 +1190,47 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
     unsigned int esi_chain_next_idx;
     unsigned short *ecx_hash;
 
+    /* DBG: monitor when slot 703 word1 changes to 23 */
+    {
+        static unsigned short prev_w1_703 = 0;
+        unsigned short cur_w1_703 = SG_W1(703);
+        if (cur_w1_703 == 23 && prev_w1_703 != 23) {
+            /* Dump the chain at hash 703 */
+            unsigned int walk = 703;
+            int i;
+            Com_Printf("DBG slot703 changed to sv=23 at SL_RemoveRefToString(%u)! prev_w1=%u\n",
+                stringValue, (unsigned int)prev_w1_703);
+            Com_Printf("  Chain from slot 703:");
+            for (i = 0; i < 10 && walk != 0; i++) {
+                unsigned short w0 = SG_W0(walk);
+                unsigned short w1 = SG_W1(walk);
+                Com_Printf(" [%u: w0=0x%04x sv=%u]", walk, (unsigned int)w0, (unsigned int)w1);
+                walk = w0 & 0x3fff;
+                if (walk == 703) break; /* cycle */
+            }
+            Com_Printf("\n");
+            /* Also dump what string sv=3088 and sv=3100 point to */
+            {
+                byte *b = *(byte **)imp_scrMemTreePub;
+                Com_Printf("  sv=%u: byteLen=%u str=\"%.16s\"\n", stringValue,
+                    (unsigned int)(unsigned char)b[stringValue*8], (const char *)(b + stringValue*8 + 4));
+                Com_Printf("  sv=3100: byteLen=%u str=\"%.16s\"\n",
+                    (unsigned int)(unsigned char)b[3100*8], (const char *)(b + 3100*8 + 4));
+                Com_Printf("  sv=23: byteLen=%u str=\"%.16s\"\n",
+                    (unsigned int)(unsigned char)b[23*8], (const char *)(b + 23*8 + 4));
+            }
+        }
+        prev_w1_703 = cur_w1_703;
+    }
+
+    /* DBG: track SL_RemoveRefToString(23) */
+    if (stringValue == 23) {
+        Com_Printf("DBG SL_RemoveRefToString(23): byteLen=%u refcount=%u retaddr=%p\n",
+            (unsigned int)(unsigned char)entry[0],
+            (unsigned int)*(unsigned short *)(entry + 2),
+            __builtin_return_address(0));
+    }
+
     /* Compute strlen from entry[0] (same pattern as SL_GetStringLen) */
     ecx_len = (unsigned int)((unsigned char)(entry[0] - 1));
     if (entry[4 + ecx_len] != 0)
@@ -1155,6 +1243,17 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
     }
     ecx_len += 1;  /* .Lf43f48_00043f71: addl $1, %ecx */
     len = ecx_len;
+
+    /* DBG: detect strings with unexpectedly large len */
+    if (len > 200) {
+        /* Check if this node is in the free tree (would mean stale string list entry) */
+        extern void MT_VerifyNotInTree(int nodeNum);
+        MT_VerifyNotInTree(stringValue);
+        Com_Printf("DBG SL_RemoveRef: sv=%u byteLen=%u len=%u refcount=%u str=\"%.32s\"\n",
+            stringValue, (unsigned int)(unsigned char)entry[0], len,
+            (unsigned int)*(unsigned short *)(entry + 2),
+            (const char *)(entry + 4));
+    }
 
     /* Decrement refcount */
     {
@@ -1208,7 +1307,16 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
                     }
                     mt_cycle_buckets |= (1u << bucket);
                 } else {
+                    int bkt_before = *(int *)(scrMemTreeGlob_arr + 525096);
                     MT_FreeIndex(stringValue, len + 4);
+                    {
+                        int bkt_after = *(int *)(scrMemTreeGlob_arr + 525096);
+                        int bkt_delta = bkt_before - bkt_after;
+                        if (bkt_delta > 32 || bkt_delta < 0) {
+                            Com_Printf("DBG SL_Free: sv=%u len=%u numBytes=%u delta=%d (before=%d after=%d)\n",
+                                stringValue, len, len + 4, bkt_delta, bkt_before, bkt_after);
+                        }
+                    }
                 }
             }
         }
@@ -1236,9 +1344,12 @@ unsigned int SL_RemoveRefToString(unsigned int stringValue)
             else
             {
                 /* "movzwl scrStringGlob(%edx), %eax; andw $0x3fff, %ax; orw $0x8000, %ax" */
-                /* SG_W0(hash_slot) = (esi_chain_next_idx & 0x3fff) | 0x8000 */
+                /* FIX #103: %edx = chain_next_idx*4 at this point (not hash_slot*4).
+                 * Read chain_next's w0 to skip past chain_next, since chain_next is being freed.
+                 * Original decompilation assumed %edx was still hash_slot*4, but it was reloaded
+                 * to chain_next_idx*4 when computing ecx_hash pointer. */
                 {
-                    unsigned short new_w0 = (unsigned short)((esi_chain_next_idx & 0x3fff) | 0x8000);
+                    unsigned short new_w0 = (unsigned short)((SG_W0(esi_chain_next_idx) & 0x3fff) | 0x8000);
                     SG_W0(hash_slot) = new_w0;
                 }
                 /* "movzwl 2(%ecx), %eax; movw %ax, 2(%edi)" */
@@ -1375,6 +1486,12 @@ unsigned int SL_ShutdownSystem(unsigned int user)
     unsigned int sv;
     byte *mem;
 
+    {
+        extern unsigned char scrMemTreeGlob_arr2[] __asm__("scrMemTreeGlob");
+        Com_Printf("DBG SL_ShutdownSystem(%d): totalAlloc=%d totalAllocBuckets=%d\n",
+            user, *(int *)(scrMemTreeGlob_arr2 + 525092), *(int *)(scrMemTreeGlob_arr2 + 525096));
+    }
+
     for (esi = 1; esi < 0x4000; esi++)
     {
     retry_slot:
@@ -1396,6 +1513,12 @@ unsigned int SL_ShutdownSystem(unsigned int user)
 
         if (SG_RESTART != (void *)0)
             goto retry_slot;
+    }
+
+    {
+        extern unsigned char scrMemTreeGlob_arr2[] __asm__("scrMemTreeGlob");
+        Com_Printf("DBG SL_ShutdownSystem(%d) EXIT: totalAlloc=%d totalAllocBuckets=%d\n",
+            user, *(int *)(scrMemTreeGlob_arr2 + 525092), *(int *)(scrMemTreeGlob_arr2 + 525096));
     }
 
     return 0;
@@ -1622,6 +1745,12 @@ unsigned int Scr_ShutdownGameStrings(void)
  */
 unsigned int SL_Init(void)
 {
+    {
+        extern unsigned char scrMemTreeGlob_dbg[] __asm__("scrMemTreeGlob");
+        Com_Printf("DBG SL_Init: init_flag=%d totalAlloc=%d totalAllocBuckets=%d\n",
+            SG_INIT_FLAG != 0 ? 1 : 0,
+            *(int *)(scrMemTreeGlob_dbg + 525092), *(int *)(scrMemTreeGlob_dbg + 525096));
+    }
     /* Phase check */
     if (SG_INIT_FLAG != 0)
     {

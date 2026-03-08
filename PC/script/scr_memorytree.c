@@ -8,6 +8,7 @@ extern struct scrMemTreePub_t scrMemTreePub; /* 0x0 */
 extern unsigned char scrMemTreeGlob[]; /* scrMemTreeGlob - BSS */
 
 extern byte * Z_VirtualAllocInternal(int size);
+extern void Com_Printf(const char *fmt, ...);
 
 
 unsigned int Scr_GetStringUsage(void);
@@ -644,6 +645,30 @@ unsigned int MT_DumpTree(void)
     );
 }
 
+/* Diagnostic: check if a node is reachable from any tree */
+static int MT_SearchTreeRec(int node, int target, int depth)
+{
+    unsigned int word0;
+    unsigned short prev, next;
+    if (node == 0 || depth > 20) return 0;
+    if (node == target) return 1;
+    word0 = *(unsigned int *)((char *)scrMemTreeGlob + 8 * node);
+    prev = word0 & 0xFFFF;
+    next = (word0 >> 16) & 0xFFFF;
+    return MT_SearchTreeRec(prev, target, depth + 1) || MT_SearchTreeRec(next, target, depth + 1);
+}
+void MT_VerifyNotInTree(int nodeNum)
+{
+    int size;
+    unsigned short head;
+    for (size = 0; size <= 16; size++) {
+        head = *(unsigned short *)((char *)scrMemTreeGlob + 525056 + 2 * size);
+        if (MT_SearchTreeRec(head, nodeNum, 0)) {
+            Com_Printf("TREE BUG: allocated node %d found in tree[%d]!\n", nodeNum, size);
+        }
+    }
+}
+
 /* line 578 */
 __attribute__((naked))
 short unsigned int MT_AllocIndex(int numBytes, int type)
@@ -656,6 +681,18 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "pushl %ebx\n"
         "subl $0x8c, %esp\n"
         "movl 8(%ebp), %ebx\n" /* numBytes */
+        /* DBG: print allocation request */
+        "cmpl $100, %ebx\n"
+        "jle .Ldbg_mt_skip\n"
+        "jmp .Ldbg_mt_skip2\n"
+        ".Ldbg_mt_str: .asciz \"DBG MT_AllocIndex: numBytes=%d type=0x%x\\n\"\n"
+        ".Ldbg_mt_skip2:\n"
+        "movl 0xc(%ebp), %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl %ebx, 4(%esp)\n"
+        "movl $.Ldbg_mt_str, (%esp)\n"
+        "calll Com_Printf\n"
+        ".Ldbg_mt_skip:\n"
         /* { scope 1: parentNode, prevScore, oldNodeValue */
         /* { scope 2: num */
         "cmpl $0xffff, %ebx\n" /* line 567 */
@@ -863,6 +900,34 @@ short unsigned int MT_AllocIndex(int numBytes, int type)
         "movzbl -0x58(%ebp), %ecx\n" /* size */
         "shll %cl, %eax\n"
         "addl %eax, scrMemTreeGlob+525096\n"
+        /* Diagnostic: verify allocated node is not in any tree */
+        "movzwl -0x5c(%ebp), %eax\n"
+        "movl %eax, (%esp)\n"
+        "calll MT_VerifyNotInTree\n"
+        /* DBG: print when specific nodes are allocated */
+        "movzwl -0x5c(%ebp), %eax\n"
+        "cmpl $23, %eax\n"
+        "jne .Ldbg_skip_23\n"
+        "movl %eax, 8(%esp)\n"
+        "movzbl -0x58(%ebp), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        "jmp .Ldbg_print_alloc\n"
+        ".Ldbg_alloc_str: .asciz \"DBG MT_AllocIndex RETURNS node=%d size=%d numBytes=%d\\n\"\n"
+        ".Ldbg_skip_23:\n"
+        "cmpl $976, %eax\n"
+        "je .Ldbg_do_print\n"
+        "cmpl $592, %eax\n"
+        "jne .Ldbg_skip_alloc\n"
+        ".Ldbg_do_print:\n"
+        "movl %eax, 8(%esp)\n"
+        "movzbl -0x58(%ebp), %ecx\n"
+        "movl %ecx, 4(%esp)\n"
+        ".Ldbg_print_alloc:\n"
+        "movl 8(%ebp), %ecx\n"
+        "movl %ecx, 0xc(%esp)\n"
+        "movl $.Ldbg_alloc_str, (%esp)\n"
+        "calll Com_Printf\n"
+        ".Ldbg_skip_alloc:\n"
         "movzwl -0x5c(%ebp), %eax\n" /* line 623 | nodeNum */
         /* } scope */
         "addl $0x8c, %esp\n" /* line 633 */
@@ -1432,6 +1497,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         ".Lf457e8_00045832:\n"
         "subl $1, scrMemTreeGlob+525092\n" /* line 648 */
         "movl -0x58(%ebp), %ebx\n" /* line 649 | lowBit, numBytes */
+        /* diagnostic removed */
         "subl %ebx, scrMemTreeGlob+525096\n" /* numBytes */
         "cmpl $0x10, -0x54(%ebp)\n" /* line 665 | size */
         "je .Lf457e8_000458fa\n"
@@ -1470,8 +1536,6 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "je .Lf457e8_000458fa\n"
         ".Lf457e8_000458b0:\n"
         "sarl $1, %esi\n" /* line 439 | level */
-        "testl %esi, %esi\n" /* safety: if level reached 0, stop searching */
-        "je .Lf457e8_000458fa\n"
         "cmpl %edx, %ebx\n" /* line 440 | nodeNum */
         "jg .Lf457e8_0004588d\n"
         "leal scrMemTreeGlob+2(, %ecx, 8), %ecx\n" /* line 447 */
@@ -1492,6 +1556,7 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         /* } scope */
         "subl $1, scrMemTreeGlob+525092\n" /* line 648 */
         "movl -0x58(%ebp), %ebx\n" /* line 649 | lowBit, numBytes */
+        /* diagnostic removed (path 2) */
         "subl %ebx, scrMemTreeGlob+525096\n" /* numBytes */
         "cmpl $0x10, -0x54(%ebp)\n" /* line 665 | size */
         "jne .Lf457e8_0004584c\n"
@@ -1533,7 +1598,6 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movw %cx, -0x48(%ebp)\n"
         "movl -0x60(%ebp), %ebx\n" /* oldNodeValue, nodeNum */
         "movw %bx, -0x32(%ebp)\n" /* nodeNum */
-        "movl $0, -0x68(%ebp)\n" /* init removal loop counter */
         "jmp .Lf457e8_000459e5\n"
         ".Lf457e8_00045970:\n"
         "movzwl -0x48(%ebp), %esi\n" /* line 395 | level */
@@ -1545,15 +1609,6 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "leal scrMemTreeGlob+2(, %esi, 8), %ecx\n" /* line 400 */
         "movl %ecx, -0x50(%ebp)\n" /* parentNode */
         ".Lf457e8_00045991:\n"
-        /* Safety: limit removal loop iterations to prevent infinite loops */
-        "addl $1, -0x68(%ebp)\n"
-        "cmpl $100, -0x68(%ebp)\n"
-        "jl .Lf457e8_removal_ok\n"
-        /* Too many iterations — force exit by making current node a leaf */
-        "movw $0, -0x32(%ebp)\n"
-        "movw $0, -0x48(%ebp)\n"
-        "jmp .Lf457e8_000459e5\n"
-        ".Lf457e8_removal_ok:\n"
         "movl -0x30(%ebp), %eax\n" /* line 430 */
         "movl %eax, -0x5c(%ebp)\n"
         "shll $0x10, %edi\n"
@@ -1574,26 +1629,6 @@ unsigned int MT_FreeIndex(unsigned int nodeNum, int numBytes)
         "movw %bx, -0x32(%ebp)\n" /* nodeNum */
         "movl %eax, scrMemTreeGlob(, %esi, 8)\n" /* line 432 */
         "movl %edx, scrMemTreeGlob+4(, %esi, 8)\n"
-        /* Fix: zero self-referencing children in stored data AND locals */
-        "cmpw %si, %ax\n" /* written left child == current node? */
-        "jne .Lf457e8_fix_stored_left_ok\n"
-        "movw $0, scrMemTreeGlob(, %esi, 8)\n" /* fix stored data */
-        ".Lf457e8_fix_stored_left_ok:\n"
-        "movl %eax, %ecx\n"
-        "shrl $16, %ecx\n"
-        "cmpw %si, %cx\n" /* written right child == current node? */
-        "jne .Lf457e8_fix_stored_right_ok\n"
-        "movw $0, scrMemTreeGlob+2(, %esi, 8)\n" /* fix stored data */
-        ".Lf457e8_fix_stored_right_ok:\n"
-        /* Also fix the read-back locals for the current iteration */
-        "cmpw %si, -0x32(%ebp)\n"
-        "jne .Lf457e8_no_left_selfref\n"
-        "movw $0, -0x32(%ebp)\n"
-        ".Lf457e8_no_left_selfref:\n"
-        "cmpw %si, -0x48(%ebp)\n"
-        "jne .Lf457e8_no_right_selfref\n"
-        "movw $0, -0x48(%ebp)\n"
-        ".Lf457e8_no_right_selfref:\n"
         ".Lf457e8_000459e5:\n"
         "cmpw $0, -0x32(%ebp)\n" /* line 393 */
         "je .Lf457e8_00045970\n"

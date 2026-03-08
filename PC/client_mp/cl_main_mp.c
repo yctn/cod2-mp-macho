@@ -6385,7 +6385,19 @@ void CL_DownloadsComplete(void)
         "movl (%eax), %eax\n"
         "movl %eax, (%esp)\n"
         "calll Dvar_SetInt\n"
+        "jmp .Ldbg_dl1_skip\n"
+        ".Ldbg_dl1_str: .asciz \"DBG: CL_DownloadsComplete calling CL_InitCGame\\n\"\n"
+        ".Ldbg_dl1_skip:\n"
+        "pushl $.Ldbg_dl1_str\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
         "calll CL_InitCGame\n" /* line 2126 */
+        "jmp .Ldbg_dl2_skip\n"
+        ".Ldbg_dl2_str: .asciz \"DBG: CL_InitCGame returned\\n\"\n"
+        ".Ldbg_dl2_skip:\n"
+        "pushl $.Ldbg_dl2_str\n"
+        "calll Com_Printf\n"
+        "addl $4, %esp\n"
         "calll FS_ReferencedIwdPureChecksums\n" /* line 1769 */
         "movl %eax, %ebx\n"
         "movl $str_002a96d8, 8(%esp)\n" /* line 1772 */
@@ -6701,6 +6713,11 @@ void CL_InitDownloads(void)
         "pushl %esi\n"
         "pushl %ebx\n"
         "subl $0x410, %esp\n"
+        "jmp .Ldbg_dl3_skip\n"
+        ".Ldbg_dl3_str: .asciz \"DBG: CL_InitDownloads entered\\n\"\n"
+        ".Ldbg_dl3_skip:\n"
+        "movl $.Ldbg_dl3_str, (%esp)\n"
+        "calll Com_Printf\n"
         /* { scope 1 */
         "movl $7, 4(%esp)\n" /* line 2234 */
         "movl $str_002a9924, (%esp)\n" /* "ni]Zm^l" */

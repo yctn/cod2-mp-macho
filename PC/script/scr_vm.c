@@ -1073,6 +1073,18 @@ void Scr_Init(void)
         "cmpb $0, 0x38(%ebx)\n"
         "jne .Lf82042_00082155\n"
         "calll SL_Init\n" /* line 166 */
+        /* DBG: check totalAllocBuckets after SL_Init */
+        "jmp .Ldbg_slinit_skip\n"
+        ".Ldbg_slinit_str: .asciz \"DBG after SL_Init: totalAlloc=%d totalAllocBuckets=%d\\n\"\n"
+        ".Ldbg_slinit_skip:\n"
+        "subl $12, %esp\n"
+        "movl scrMemTreeGlob+525096, %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl scrMemTreeGlob+525092, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $.Ldbg_slinit_str, (%esp)\n"
+        "calll Com_Printf\n"
+        "addl $12, %esp\n"
         "calll Var_Init\n" /* line 167 */
         "movl $scrVmPub+17176, scrVmPub+4\n" /* line 103 */
         "movl $scrVmPub+800, scrVmPub+16\n" /* line 104 */

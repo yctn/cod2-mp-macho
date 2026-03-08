@@ -5230,6 +5230,15 @@ void BG_LoadAnim(playerState_t *ps, char *animName, animBodyPart_t bodyPart, qbo
         "movl %ebx, %edx\n" /* duration */
         "movl bgs, %eax\n"
         "calll BG_AnimParseAnimScript\n"
+        "jmp .Ldbg_bganim_skip\n"
+        ".Ldbg_bganim_str: .asciz \"DBG: BG_LoadAnim before Scr_PrecacheAnimTrees, memtree alloc=%d bytes=%d\\n\"\n"
+        ".Ldbg_bganim_skip:\n"
+        "movl scrMemTreeGlob+525096, %eax\n"
+        "movl %eax, 8(%esp)\n"
+        "movl scrMemTreeGlob+525092, %eax\n"
+        "movl %eax, 4(%esp)\n"
+        "movl $.Ldbg_bganim_str, (%esp)\n"
+        "calll Com_Printf\n"
         "movl bgs, %eax\n" /* line 3561 */
         "movl 0xb3be8(%eax), %edx\n"
         "movl %edx, 4(%esp)\n"
